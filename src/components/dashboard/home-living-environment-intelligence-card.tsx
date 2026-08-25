@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
   Loader2, AlertCircle, AlertTriangle,
@@ -97,7 +98,7 @@ export function HomeLivingEnvironmentIntelligenceCard() {
               {ratingStyle.label}
             </span>
             {d.living_environment_rating !== "insufficient_data" && (
-              <span className="text-xs font-bold tabular-nums text-slate-600">{d.living_environment_score}%</span>
+              <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.living_environment_score)}</span>
             )}
           </CardTitle>
         </div>
@@ -114,10 +115,10 @@ export function HomeLivingEnvironmentIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <BedDouble className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.bedrooms.child_coverage >= 90 ? "text-[--cs-success]" :
-                  d.bedrooms.child_coverage >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.bedrooms.child_coverage, 90) ? "text-[--cs-success]" :
+                  meets(d.bedrooms.child_coverage, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.bedrooms.total_profiles > 0 ? `${d.bedrooms.child_coverage}%` : "—"}
+                  {d.bedrooms.total_profiles > 0 ? `${formatRate(d.bedrooms.child_coverage)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Bedrooms</p>

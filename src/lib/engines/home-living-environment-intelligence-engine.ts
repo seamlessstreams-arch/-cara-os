@@ -1,3 +1,4 @@
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME LIVING ENVIRONMENT INTELLIGENCE ENGINE
 // Home-level: aggregates bedroom personalisation, pet care, garden plots,
@@ -75,7 +76,8 @@ export type LivingEnvironmentRating =
 
 export interface BedroomProfile {
   total_profiles: number;
-  child_coverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_coverage: number | null;
   avg_satisfaction: number | null;
   child_choose_colours_rate: number | null;
   furniture_chosen_rate: number | null;
@@ -137,10 +139,6 @@ export interface HomeLivingEnvironmentResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function daysBetween(a: string, b: string): number {
   return Math.round(
     (new Date(b).getTime() - new Date(a).getTime()) / 86_400_000,
@@ -170,7 +168,7 @@ export function computeHomeLivingEnvironment(
       living_environment_rating: "insufficient_data",
       living_environment_score: 0,
       headline: "No living environment data available for analysis.",
-      bedrooms: { total_profiles: 0, child_coverage: 0, avg_satisfaction: 0, child_choose_colours_rate: null, furniture_chosen_rate: null, child_authored_rate: null, meaningful_items_rate: null, artwork_photos_rate: null, sensory_accommodations_rate: null, overdue_reviews: 0 },
+      bedrooms: { total_profiles: 0, child_coverage: null, avg_satisfaction: 0, child_choose_colours_rate: null, furniture_chosen_rate: null, child_authored_rate: null, meaningful_items_rate: null, artwork_photos_rate: null, sensory_accommodations_rate: null, overdue_reviews: 0 },
       pets: { total_pets: 0, vaccination_rate: null, insurance_rate: null, children_involved_avg: 0, therapeutic_value_rate: null, risk_assessment_overdue: 0 },
       gardens: { total_plots: 0, avg_contributing_children: 0, avg_hours: 0, sensory_benefits_rate: null, child_voice_rate: null, overdue_reviews: 0 },
       outdoor_activities: { total_activities: 0, rm_sign_off_rate: null, permissions_rate: null, emergency_procedures_rate: null, child_considerations_rate: null },
@@ -184,32 +182,32 @@ export function computeHomeLivingEnvironment(
 
   // ── Bedroom Profiles ─────────────────────────────────────────────────
   const uniqueBedroomChildren = new Set(bedroom_profiles.map(b => b.child_id));
-  const bedroomCoverage = pct(uniqueBedroomChildren.size, total_children);
+  const bedroomCoverage = rate(uniqueBedroomChildren.size, total_children);
 
   const avgSatisfaction = bedroom_profiles.length > 0
     ? Math.round((bedroom_profiles.reduce((s, b) => s + b.child_satisfaction_rating, 0) / bedroom_profiles.length) * 10) / 10
     : null;
-  const chooseColoursRate = pct(
+  const chooseColoursRate = rate(
     bedroom_profiles.filter(b => b.child_choose_colours).length,
     bedroom_profiles.length,
   );
-  const furnitureChosenRate = pct(
+  const furnitureChosenRate = rate(
     bedroom_profiles.filter(b => b.furniture_chosen_by_child).length,
     bedroom_profiles.length,
   );
-  const childAuthoredRate = pct(
+  const childAuthoredRate = rate(
     bedroom_profiles.filter(b => b.child_authored).length,
     bedroom_profiles.length,
   );
-  const meaningfulItemsRate = pct(
+  const meaningfulItemsRate = rate(
     bedroom_profiles.filter(b => b.meaningful_items_count > 0).length,
     bedroom_profiles.length,
   );
-  const artworkPhotosRate = pct(
+  const artworkPhotosRate = rate(
     bedroom_profiles.filter(b => b.personal_artwork_count > 0 || b.photos_displayed_count > 0).length,
     bedroom_profiles.length,
   );
-  const sensoryAccommodationsRate = pct(
+  const sensoryAccommodationsRate = rate(
     bedroom_profiles.filter(b => b.sensory_accommodations_count > 0).length,
     bedroom_profiles.length,
   );
@@ -231,18 +229,18 @@ export function computeHomeLivingEnvironment(
   };
 
   // ── Pet Records ──────────────────────────────────────────────────────
-  const vaccinationRate = pct(
+  const vaccinationRate = rate(
     pet_records.filter(p => p.vaccinations_up_to_date).length,
     pet_records.length,
   );
-  const insuranceRate = pct(
+  const insuranceRate = rate(
     pet_records.filter(p => p.insurance).length,
     pet_records.length,
   );
   const childrenInvolvedAvg = pet_records.length > 0
     ? Math.round((pet_records.reduce((s, p) => s + p.children_involved_in_care_count, 0) / pet_records.length) * 10) / 10
     : null;
-  const therapeuticValueRate = pct(
+  const therapeuticValueRate = rate(
     pet_records.filter(p => p.therapeutic_value.trim().length > 0).length,
     pet_records.length,
   );
@@ -266,11 +264,11 @@ export function computeHomeLivingEnvironment(
   const avgGardenHours = garden_plots.length > 0
     ? Math.round((garden_plots.reduce((s, g) => s + g.hours_this_month, 0) / garden_plots.length) * 10) / 10
     : null;
-  const sensoryBenefitsRate = pct(
+  const sensoryBenefitsRate = rate(
     garden_plots.filter(g => g.sensory_benefits_count > 0).length,
     garden_plots.length,
   );
-  const gardenChildVoiceRate = pct(
+  const gardenChildVoiceRate = rate(
     garden_plots.filter(g => g.child_voice.trim().length > 0).length,
     garden_plots.length,
   );
@@ -288,19 +286,19 @@ export function computeHomeLivingEnvironment(
   };
 
   // ── Outdoor Activities ───────────────────────────────────────────────
-  const rmSignOffRate = pct(
+  const rmSignOffRate = rate(
     outdoor_activities.filter(o => o.signed_off_by_rm).length,
     outdoor_activities.length,
   );
-  const permissionsRate = pct(
+  const permissionsRate = rate(
     outdoor_activities.filter(o => o.permissions_obtained).length,
     outdoor_activities.length,
   );
-  const emergencyProceduresRate = pct(
+  const emergencyProceduresRate = rate(
     outdoor_activities.filter(o => o.emergency_procedures_count > 0).length,
     outdoor_activities.length,
   );
-  const childConsiderationsRate = pct(
+  const childConsiderationsRate = rate(
     outdoor_activities.filter(o => o.child_specific_considerations_count > 0).length,
     outdoor_activities.length,
   );
@@ -317,7 +315,7 @@ export function computeHomeLivingEnvironment(
   const openRisks = environmental_risks.filter(e => e.status === "open");
   const criticalRisks = environmental_risks.filter(e => e.risk_level === "critical");
   const mitigatedOrClosed = environmental_risks.filter(e => e.status === "mitigated" || e.status === "closed");
-  const mitigatedRate = pct(mitigatedOrClosed.length, environmental_risks.length);
+  const mitigatedRate = rate(mitigatedOrClosed.length, environmental_risks.length);
   const overdueEnvReviews = environmental_risks.filter(e =>
     daysBetween(e.review_date, today) > 0,
   ).length;
@@ -339,10 +337,10 @@ export function computeHomeLivingEnvironment(
     score += (total_children === 0 ? 0 : -5);
   } else {
     const satisfactionGood = (avgSatisfaction ?? 0) >= 4.0;
-    const coloursGood = chooseColoursRate >= 80;
-    const furnitureGood = furnitureChosenRate >= 70;
-    const authoredGood = childAuthoredRate >= 70;
-    const meaningfulGood = meaningfulItemsRate >= 80;
+    const coloursGood = meets(chooseColoursRate, 80);
+    const furnitureGood = meets(furnitureChosenRate, 70);
+    const authoredGood = meets(childAuthoredRate, 70);
+    const meaningfulGood = meets(meaningfulItemsRate, 80);
     const positives = [satisfactionGood, coloursGood, furnitureGood, authoredGood, meaningfulGood].filter(Boolean).length;
 
     if (positives >= 5) score += 5;
@@ -357,10 +355,10 @@ export function computeHomeLivingEnvironment(
   } else if (bedroom_profiles.length === 0 && total_children > 0) {
     score -= 4;
   } else {
-    const coverageGood = bedroomCoverage >= 90;
+    const coverageGood = meets(bedroomCoverage, 90);
     const reviewsOk = overdueBedroomReviews === 0;
-    const artworkGood = artworkPhotosRate >= 80;
-    const sensoryGood = sensoryAccommodationsRate >= 50;
+    const artworkGood = meets(artworkPhotosRate, 80);
+    const sensoryGood = meets(sensoryAccommodationsRate, 50);
     const qualityPositives = [coverageGood, reviewsOk, artworkGood, sensoryGood].filter(Boolean).length;
 
     if (qualityPositives >= 4) score += 4;
@@ -373,10 +371,10 @@ export function computeHomeLivingEnvironment(
   if (pet_records.length === 0) {
     score += 0;
   } else {
-    const vacGood = vaccinationRate >= 100;
-    const insGood = insuranceRate >= 100;
+    const vacGood = meets(vaccinationRate, 100);
+    const insGood = meets(insuranceRate, 100);
     const involvedGood = (childrenInvolvedAvg ?? 0) >= 2;
-    const therapGood = therapeuticValueRate >= 80;
+    const therapGood = meets(therapeuticValueRate, 80);
     const raOk = riskAssessmentOverdue === 0;
     const petPositives = [vacGood, insGood, involvedGood, therapGood, raOk].filter(Boolean).length;
 
@@ -392,8 +390,8 @@ export function computeHomeLivingEnvironment(
   } else {
     const participationGood = (avgContributingChildren ?? 0) >= 2;
     const hoursGood = (avgGardenHours ?? 0) >= 4;
-    const sensoryGood = sensoryBenefitsRate >= 80;
-    const voiceGood = gardenChildVoiceRate >= 80;
+    const sensoryGood = meets(sensoryBenefitsRate, 80);
+    const voiceGood = meets(gardenChildVoiceRate, 80);
     const gardenPositives = [participationGood, hoursGood, sensoryGood, voiceGood].filter(Boolean).length;
 
     if (gardenPositives >= 4) score += 3;
@@ -406,10 +404,10 @@ export function computeHomeLivingEnvironment(
   if (outdoor_activities.length === 0) {
     score += 0;
   } else {
-    const rmGood = rmSignOffRate >= 100;
-    const permGood = permissionsRate >= 100;
-    const emergGood = emergencyProceduresRate >= 90;
-    const considGood = childConsiderationsRate >= 90;
+    const rmGood = meets(rmSignOffRate, 100);
+    const permGood = meets(permissionsRate, 100);
+    const emergGood = meets(emergencyProceduresRate, 90);
+    const considGood = meets(childConsiderationsRate, 90);
     const safetyPositives = [rmGood, permGood, emergGood, considGood].filter(Boolean).length;
 
     if (safetyPositives >= 4) score += 4;
@@ -424,7 +422,7 @@ export function computeHomeLivingEnvironment(
   } else {
     const noCriticalOpen = criticalRisks.filter(r => r.status === "open").length === 0;
     const lowOpenCount = openRisks.length <= 1;
-    const goodMitigatedRate = mitigatedRate >= 70;
+    const goodMitigatedRate = meets(mitigatedRate, 70);
     const reviewsOk = overdueEnvReviews === 0;
     const riskPositives = [noCriticalOpen, lowOpenCount, goodMitigatedRate, reviewsOk].filter(Boolean).length;
 
@@ -436,8 +434,8 @@ export function computeHomeLivingEnvironment(
 
   // mod7: Child Voice Across Environment (±3)
   {
-    const bedroomVoice = bedroom_profiles.length > 0 ? childAuthoredRate >= 70 : false;
-    const gardenVoice = garden_plots.length > 0 ? gardenChildVoiceRate >= 80 : false;
+    const bedroomVoice = bedroom_profiles.length > 0 ? meets(childAuthoredRate, 70) : false;
+    const gardenVoice = garden_plots.length > 0 ? meets(gardenChildVoiceRate, 80) : false;
     const satisfactionVoice = bedroom_profiles.length > 0 ? (avgSatisfaction ?? 0) >= 4.0 : false;
     const voiceDataSources = [bedroom_profiles.length > 0, garden_plots.length > 0].filter(Boolean).length;
 
@@ -460,7 +458,7 @@ export function computeHomeLivingEnvironment(
     if (totalReviewable === 0) {
       score += 0;
     } else {
-      const overdueRate = pct(totalOverdue, totalReviewable);
+      const overdueRate = rate(totalOverdue, totalReviewable)!;
       if (overdueRate === 0) score += 3;
       else if (overdueRate <= 10) score += 1;
       else if (overdueRate <= 30) score += 0;
@@ -487,20 +485,20 @@ export function computeHomeLivingEnvironment(
 
   // Strengths
   if ((avgSatisfaction ?? 0) >= 4.0 && bedroom_profiles.length > 0) strengths.push(`Average bedroom satisfaction ${(avgSatisfaction ?? 0)}/5 — children feel ownership of their spaces.`);
-  if (chooseColoursRate >= 80 && bedroom_profiles.length > 0) strengths.push(`${chooseColoursRate}% of children chose their bedroom colours — personalisation is prioritised.`);
-  if (bedroomCoverage >= 90 && bedroom_profiles.length > 0) strengths.push(`${bedroomCoverage}% bedroom profile coverage — every child's living space is documented.`);
-  if (vaccinationRate >= 100 && pet_records.length > 0) strengths.push("All pets fully vaccinated and compliant — animal welfare standards are high.");
-  if (rmSignOffRate >= 100 && outdoor_activities.length > 0) strengths.push(`100% RM sign-off on outdoor activities — robust oversight of external engagement.`);
-  if (mitigatedRate >= 80 && environmental_risks.length > 0) strengths.push(`${mitigatedRate}% of environmental risks mitigated or closed — proactive risk management.`);
-  if (gardenChildVoiceRate >= 80 && garden_plots.length > 0) strengths.push(`${gardenChildVoiceRate}% of garden plots capture child voice — enrichment reflects children's views.`);
+  if (meets(chooseColoursRate, 80) && bedroom_profiles.length > 0) strengths.push(`${chooseColoursRate}% of children chose their bedroom colours — personalisation is prioritised.`);
+  if (meets(bedroomCoverage, 90) && bedroom_profiles.length > 0) strengths.push(`${bedroomCoverage}% bedroom profile coverage — every child's living space is documented.`);
+  if (meets(vaccinationRate, 100) && pet_records.length > 0) strengths.push("All pets fully vaccinated and compliant — animal welfare standards are high.");
+  if (meets(rmSignOffRate, 100) && outdoor_activities.length > 0) strengths.push(`100% RM sign-off on outdoor activities — robust oversight of external engagement.`);
+  if (meets(mitigatedRate, 80) && environmental_risks.length > 0) strengths.push(`${mitigatedRate}% of environmental risks mitigated or closed — proactive risk management.`);
+  if (meets(gardenChildVoiceRate, 80) && garden_plots.length > 0) strengths.push(`${gardenChildVoiceRate}% of garden plots capture child voice — enrichment reflects children's views.`);
 
   // Concerns
-  if (bedroomCoverage < 50 && total_children > 0 && bedroom_profiles.length > 0) concerns.push(`Only ${bedroomCoverage}% of children have bedroom profiles — Reg 15 requires documented living arrangements.`);
+  if (below(bedroomCoverage, 50) && total_children > 0 && bedroom_profiles.length > 0) concerns.push(`Only ${bedroomCoverage}% of children have bedroom profiles — Reg 15 requires documented living arrangements.`);
   if (bedroom_profiles.length === 0 && total_children > 0) concerns.push("No bedroom profiles — children's living spaces are not documented.");
   if ((avgSatisfaction ?? 0) < 3.0 && bedroom_profiles.length > 0) concerns.push(`Average bedroom satisfaction only ${(avgSatisfaction ?? 0)}/5 — children may not feel at home.`);
   if (criticalRisks.filter(r => r.status === "open").length > 0) concerns.push(`${criticalRisks.filter(r => r.status === "open").length} critical environmental risk${criticalRisks.filter(r => r.status === "open").length !== 1 ? "s" : ""} remain open — immediate action required.`);
   if (openRisks.length >= 3) concerns.push(`${openRisks.length} open environmental risks — risk management needs attention.`);
-  if (rmSignOffRate < 80 && outdoor_activities.length > 0) concerns.push(`Only ${rmSignOffRate}% of outdoor activities signed off by RM — governance gap.`);
+  if (below(rmSignOffRate, 80) && outdoor_activities.length > 0) concerns.push(`Only ${rmSignOffRate}% of outdoor activities signed off by RM — governance gap.`);
   if (overdueBedroomReviews >= 2) concerns.push(`${overdueBedroomReviews} overdue bedroom profile reviews — children's changing preferences may not be reflected.`);
   if (riskAssessmentOverdue > 0 && pet_records.length > 0) concerns.push(`${riskAssessmentOverdue} pet risk assessment${riskAssessmentOverdue !== 1 ? "s" : ""} overdue — animal safety needs review.`);
 
@@ -508,16 +506,16 @@ export function computeHomeLivingEnvironment(
   if (bedroom_profiles.length === 0 && total_children > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Create bedroom profiles for all children — document their personalisation, comfort items, and satisfaction.", urgency: "immediate", regulatory_ref: "Reg 15" });
   }
-  if (bedroomCoverage < 70 && bedroom_profiles.length > 0 && total_children > 0) {
+  if (below(bedroomCoverage, 70) && bedroom_profiles.length > 0 && total_children > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Extend bedroom profiles to cover all children — each child's living space should be individually documented.", urgency: "soon", regulatory_ref: "Reg 15" });
   }
   if (criticalRisks.filter(r => r.status === "open").length > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Address open critical environmental risks immediately — these pose a direct safety threat to children and staff.", urgency: "immediate", regulatory_ref: "Reg 15" });
   }
-  if (rmSignOffRate < 100 && outdoor_activities.length > 0) {
+  if (below(rmSignOffRate, 100) && outdoor_activities.length > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Ensure all outdoor activities receive RM sign-off before proceeding — this is essential for child safety governance.", urgency: "soon", regulatory_ref: "Reg 15" });
   }
-  if (chooseColoursRate < 50 && bedroom_profiles.length > 0) {
+  if (below(chooseColoursRate, 50) && bedroom_profiles.length > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Involve more children in choosing their bedroom colours and furnishings — personalisation supports belonging.", urgency: "planned", regulatory_ref: "Reg 15" });
   }
   if (overdueBedroomReviews + overdueGardenReviews + overdueEnvReviews >= 3) {
@@ -525,26 +523,26 @@ export function computeHomeLivingEnvironment(
   }
 
   // Cara Insights
-  if ((avgSatisfaction ?? 0) >= 4.5 && chooseColoursRate >= 90 && childAuthoredRate >= 80 && bedroomCoverage >= 90) {
+  if ((avgSatisfaction ?? 0) >= 4.5 && meets(chooseColoursRate, 90) && meets(childAuthoredRate, 80) && meets(bedroomCoverage, 90)) {
     insights.push({ text: "Bedroom personalisation is exemplary. Children are actively shaping their living spaces with high satisfaction — this demonstrates truly child-centred care under Reg 15.", severity: "positive" });
   }
   if (criticalRisks.filter(r => r.status === "open").length >= 2) {
     insights.push({ text: `${criticalRisks.filter(r => r.status === "open").length} critical environmental risks remain open. This represents a serious safety concern that would be flagged during inspection.`, severity: "critical" });
   }
-  if (pet_records.length > 0 && vaccinationRate >= 100 && therapeuticValueRate >= 80 && (childrenInvolvedAvg ?? 0) >= 2) {
+  if (pet_records.length > 0 && meets(vaccinationRate, 100) && meets(therapeuticValueRate, 80) && (childrenInvolvedAvg ?? 0) >= 2) {
     insights.push({ text: "Pet care is well-managed with strong therapeutic value and child involvement — animals are being used effectively to support children's wellbeing.", severity: "positive" });
   }
-  if (garden_plots.length > 0 && gardenChildVoiceRate >= 80 && sensoryBenefitsRate >= 80 && (avgGardenHours ?? 0) >= 4) {
+  if (garden_plots.length > 0 && meets(gardenChildVoiceRate, 80) && meets(sensoryBenefitsRate, 80) && (avgGardenHours ?? 0) >= 4) {
     insights.push({ text: "Garden engagement is strong with sensory benefits and child voice well-captured — outdoor enrichment is meaningfully integrated into children's daily lives.", severity: "positive" });
   }
-  if (rmSignOffRate < 50 && outdoor_activities.length >= 3) {
+  if (below(rmSignOffRate, 50) && outdoor_activities.length >= 3) {
     insights.push({ text: `Only ${rmSignOffRate}% RM sign-off across ${outdoor_activities.length} outdoor activities. This governance gap could expose children to unassessed risks and would be a serious concern at inspection.`, severity: "critical" });
   }
 
   // ── Headline ──────────────────────────────────────────────────────────
   let headline: string;
   if (living_environment_rating === "outstanding") {
-    headline = `Outstanding living environment — ${bedroomCoverage}% bedroom coverage, ${avgSatisfaction}/5 satisfaction.`;
+    headline = `Outstanding living environment — ${formatRate(bedroomCoverage)} bedroom coverage, ${avgSatisfaction}/5 satisfaction.`;
   } else if (living_environment_rating === "good") {
     headline = `Good living environment — ${concerns.length > 0 ? concerns.length + " area" + (concerns.length > 1 ? "s" : "") + " for improvement." : "well-managed spaces and safety."}`;
   } else if (living_environment_rating === "adequate") {

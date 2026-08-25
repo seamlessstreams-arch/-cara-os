@@ -229,12 +229,12 @@ describe("Home IT Equipment & Connectivity Intelligence Engine", () => {
 
     it("returns zero rates for all metrics", () => {
       const r = computeItEquipmentConnectivity(baseInput({ total_children: 0 }));
-      expect(r.wifi_reliability_rate).toBe(0);
-      expect(r.device_availability_rate).toBe(0);
-      expect(r.printer_access_rate).toBe(0);
-      expect(r.software_currency_rate).toBe(0);
-      expect(r.digital_access_rate).toBe(0);
-      expect(r.child_satisfaction_rate).toBe(0);
+      expect(r.wifi_reliability_rate).toBeNull();
+      expect(r.device_availability_rate).toBeNull();
+      expect(r.printer_access_rate).toBeNull();
+      expect(r.software_currency_rate).toBeNull();
+      expect(r.digital_access_rate).toBeNull();
+      expect(r.child_satisfaction_rate).toBeNull();
     });
 
     it("returns empty strengths, concerns, recommendations, insights", () => {
@@ -358,9 +358,9 @@ describe("Home IT Equipment & Connectivity Intelligence Engine", () => {
       expect(r.wifi_reliability_rate).toBe(50);
     });
 
-    it("returns 0 when no wifi records exist", () => {
+    it("returns null when no wifi records exist", () => {
       const r = computeItEquipmentConnectivity(baseInput());
-      expect(r.wifi_reliability_rate).toBe(0);
+      expect(r.wifi_reliability_rate).toBeNull();
     });
   });
 
@@ -541,9 +541,9 @@ describe("Home IT Equipment & Connectivity Intelligence Engine", () => {
       expect(r.child_satisfaction_rate).toBe(75);
     });
 
-    it("returns 0 when no digital access records exist", () => {
+    it("returns null when no digital access records exist", () => {
       const r = computeItEquipmentConnectivity(baseInput());
-      expect(r.child_satisfaction_rate).toBe(0);
+      expect(r.child_satisfaction_rate).toBeNull();
     });
   });
 

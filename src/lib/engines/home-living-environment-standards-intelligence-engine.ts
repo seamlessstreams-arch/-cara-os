@@ -1,3 +1,4 @@
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME LIVING ENVIRONMENT STANDARDS INTELLIGENCE ENGINE
 // Cross-domain composite: assesses quality, safety, and personalisation of the
@@ -126,10 +127,6 @@ export interface LivingEnvironmentStandardsResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -166,18 +163,18 @@ export function computeLivingEnvironmentStandards(
     environment_score: score,
     headline,
     total_cleaning_entries: 0,
-    cleaning_completion_rate: 0,
+    cleaning_completion_rate: null,
     cleaning_quality_avg: 0,
     total_maintenance_items: 0,
-    maintenance_completion_rate: 0,
+    maintenance_completion_rate: null,
     overdue_maintenance_count: 0,
     safety_maintenance_open: 0,
-    kitchen_hygiene_pass_rate: 0,
-    bedroom_personalisation_rate: 0,
-    bedroom_condition_good_rate: 0,
-    room_suitability_rate: 0,
-    room_risk_assessment_rate: 0,
-    child_consultation_rate: 0,
+    kitchen_hygiene_pass_rate: null,
+    bedroom_personalisation_rate: null,
+    bedroom_condition_good_rate: null,
+    room_suitability_rate: null,
+    room_risk_assessment_rate: null,
+    child_consultation_rate: null,
     strengths: [],
     concerns,
     recommendations: [],
@@ -214,7 +211,7 @@ export function computeLivingEnvironmentStandards(
 
   // ── Cleaning metrics ──────────────────────────────────────────────────
   const completedCleaningEntries = cleaning_entries.filter(c => c.completed);
-  const cleaningCompletionRate = pct(completedCleaningEntries.length, cleaning_entries.length);
+  const cleaningCompletionRate = rate(completedCleaningEntries.length, cleaning_entries.length);
 
   const ratedEntries = cleaning_entries.filter(c => c.quality_rating >= 1 && c.quality_rating <= 5);
   const cleaningQualityAvg =
@@ -226,7 +223,7 @@ export function computeLivingEnvironmentStandards(
 
   // ── Maintenance metrics ───────────────────────────────────────────────
   const completedMaintenance = maintenance_items.filter(m => m.status === "completed");
-  const maintenanceCompletionRate = pct(completedMaintenance.length, maintenance_items.length);
+  const maintenanceCompletionRate = rate(completedMaintenance.length, maintenance_items.length);
 
   const overdueMaintenance = maintenance_items.filter(m => m.status === "overdue");
   const overdueMaintenanceCount = overdueMaintenance.length;
@@ -241,35 +238,35 @@ export function computeLivingEnvironmentStandards(
 
   // ── Kitchen hygiene metrics ───────────────────────────────────────────
   const kitchenPassCount = kitchen_hygiene_checks.filter(c => c.overall_pass).length;
-  const kitchenHygienePassRate = pct(kitchenPassCount, kitchen_hygiene_checks.length);
+  const kitchenHygienePassRate = rate(kitchenPassCount, kitchen_hygiene_checks.length);
 
-  const surfacesCleanRate = pct(
+  const surfacesCleanRate = rate(
     kitchen_hygiene_checks.filter(c => c.surfaces_clean).length,
     kitchen_hygiene_checks.length,
   );
-  const foodStorageRate = pct(
+  const foodStorageRate = rate(
     kitchen_hygiene_checks.filter(c => c.food_storage_compliant).length,
     kitchen_hygiene_checks.length,
   );
-  const fireBlanketRate = pct(
+  const fireBlanketRate = rate(
     kitchen_hygiene_checks.filter(c => c.fire_blanket_accessible).length,
     kitchen_hygiene_checks.length,
   );
 
   // ── Bedroom personalisation metrics ───────────────────────────────────
   const personalisedBedrooms = bedroom_profiles.filter(b => b.personalised);
-  const bedroomPersonalisationRate = pct(personalisedBedrooms.length, bedroom_profiles.length);
+  const bedroomPersonalisationRate = rate(personalisedBedrooms.length, bedroom_profiles.length);
 
   const goodConditionBedrooms = bedroom_profiles.filter(
     b => b.condition === "excellent" || b.condition === "good",
   );
-  const bedroomConditionGoodRate = pct(goodConditionBedrooms.length, bedroom_profiles.length);
+  const bedroomConditionGoodRate = rate(goodConditionBedrooms.length, bedroom_profiles.length);
 
-  const childChoseDecorRate = pct(
+  const childChoseDecorRate = rate(
     bedroom_profiles.filter(b => b.child_chose_decor).length,
     bedroom_profiles.length,
   );
-  const privacyLockRate = pct(
+  const privacyLockRate = rate(
     bedroom_profiles.filter(b => b.privacy_lock).length,
     bedroom_profiles.length,
   );
@@ -277,64 +274,64 @@ export function computeLivingEnvironmentStandards(
 
   // ── Room allocation metrics ───────────────────────────────────────────
   const suitableRooms = room_allocations.filter(r => r.suitable_for_needs);
-  const roomSuitabilityRate = pct(suitableRooms.length, room_allocations.length);
+  const roomSuitabilityRate = rate(suitableRooms.length, room_allocations.length);
 
   const riskAssessedRooms = room_allocations.filter(r => r.risk_assessed);
-  const roomRiskAssessmentRate = pct(riskAssessedRooms.length, room_allocations.length);
+  const roomRiskAssessmentRate = rate(riskAssessedRooms.length, room_allocations.length);
 
   const consultedChildren = room_allocations.filter(r => r.child_consulted);
-  const childConsultationRate = pct(consultedChildren.length, room_allocations.length);
+  const childConsultationRate = rate(consultedChildren.length, room_allocations.length);
 
   // ── Scoring (Base 52) ─────────────────────────────────────────────────
   let score = 52;
 
   // Bonus: Cleaning completion rate
-  if (cleaningCompletionRate >= 95) score += 4;
-  else if (cleaningCompletionRate >= 80) score += 2;
+  if (meets(cleaningCompletionRate, 95)) score += 4;
+  else if (meets(cleaningCompletionRate, 80)) score += 2;
 
   // Bonus: Cleaning quality average
   if ((cleaningQualityAvg ?? 0) >= 4.0) score += 3;
   else if ((cleaningQualityAvg ?? 0) >= 3.0) score += 1;
 
   // Bonus: Maintenance completion rate
-  if (maintenanceCompletionRate >= 90) score += 4;
-  else if (maintenanceCompletionRate >= 75) score += 2;
+  if (meets(maintenanceCompletionRate, 90)) score += 4;
+  else if (meets(maintenanceCompletionRate, 75)) score += 2;
 
   // Bonus: Kitchen hygiene pass rate
-  if (kitchenHygienePassRate >= 100) score += 3;
-  else if (kitchenHygienePassRate >= 85) score += 1;
+  if (meets(kitchenHygienePassRate, 100)) score += 3;
+  else if (meets(kitchenHygienePassRate, 85)) score += 1;
 
   // Bonus: Bedroom personalisation rate
-  if (bedroomPersonalisationRate >= 100) score += 3;
-  else if (bedroomPersonalisationRate >= 80) score += 1;
+  if (meets(bedroomPersonalisationRate, 100)) score += 3;
+  else if (meets(bedroomPersonalisationRate, 80)) score += 1;
 
   // Bonus: Bedroom condition good rate
-  if (bedroomConditionGoodRate >= 90) score += 3;
-  else if (bedroomConditionGoodRate >= 70) score += 1;
+  if (meets(bedroomConditionGoodRate, 90)) score += 3;
+  else if (meets(bedroomConditionGoodRate, 70)) score += 1;
 
   // Bonus: Room suitability rate
-  if (roomSuitabilityRate >= 100) score += 3;
-  else if (roomSuitabilityRate >= 80) score += 1;
+  if (meets(roomSuitabilityRate, 100)) score += 3;
+  else if (meets(roomSuitabilityRate, 80)) score += 1;
 
   // Bonus: Room risk assessment rate
-  if (roomRiskAssessmentRate >= 100) score += 2;
-  else if (roomRiskAssessmentRate >= 80) score += 1;
+  if (meets(roomRiskAssessmentRate, 100)) score += 2;
+  else if (meets(roomRiskAssessmentRate, 80)) score += 1;
 
   // Bonus: Child consultation rate
-  if (childConsultationRate >= 100) score += 3;
-  else if (childConsultationRate >= 80) score += 1;
+  if (meets(childConsultationRate, 100)) score += 3;
+  else if (meets(childConsultationRate, 80)) score += 1;
 
   // Penalty: Safety maintenance open
   if (safetyMaintenanceOpen > 0) score -= 5;
 
   // Penalty: Maintenance completion below 50%
-  if (maintenanceCompletionRate < 50) score -= 5;
+  if (below(maintenanceCompletionRate, 50)) score -= 5;
 
   // Penalty: Kitchen hygiene pass rate below 70%
-  if (kitchenHygienePassRate < 70) score -= 5;
+  if (below(kitchenHygienePassRate, 70)) score -= 5;
 
   // Penalty: Cleaning completion below 50%
-  if (cleaningCompletionRate < 50) score -= 3;
+  if (below(cleaningCompletionRate, 50)) score -= 3;
 
   // Clamp final score
   score = clamp(score, 0, 100);
@@ -345,7 +342,7 @@ export function computeLivingEnvironmentStandards(
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
 
-  if (cleaningCompletionRate >= 95 && cleaning_entries.length > 0) {
+  if (meets(cleaningCompletionRate, 95) && cleaning_entries.length > 0) {
     strengths.push(
       `${cleaningCompletionRate}% cleaning completion rate — the home is consistently maintained to a high standard.`,
     );
@@ -355,50 +352,50 @@ export function computeLivingEnvironmentStandards(
       `Average cleaning quality rating of ${cleaningQualityAvg}/5 — quality is rigorously upheld across all areas.`,
     );
   }
-  if (maintenanceCompletionRate >= 90 && maintenance_items.length > 0) {
+  if (meets(maintenanceCompletionRate, 90) && maintenance_items.length > 0) {
     strengths.push(
       `${maintenanceCompletionRate}% maintenance completion — repairs and upkeep are addressed promptly.`,
     );
   }
-  if (kitchenHygienePassRate >= 100 && kitchen_hygiene_checks.length > 0) {
+  if (meets(kitchenHygienePassRate, 100) && kitchen_hygiene_checks.length > 0) {
     strengths.push(
       "100% kitchen hygiene pass rate — food safety and hygiene standards are exemplary.",
     );
-  } else if (kitchenHygienePassRate >= 90 && kitchen_hygiene_checks.length > 0) {
+  } else if (meets(kitchenHygienePassRate, 90) && kitchen_hygiene_checks.length > 0) {
     strengths.push(
       `${kitchenHygienePassRate}% kitchen hygiene pass rate — strong compliance with food safety requirements.`,
     );
   }
-  if (bedroomPersonalisationRate >= 100 && bedroom_profiles.length > 0) {
+  if (meets(bedroomPersonalisationRate, 100) && bedroom_profiles.length > 0) {
     strengths.push(
       "Every bedroom is personalised — children are supported to make their rooms feel like home.",
     );
-  } else if (bedroomPersonalisationRate >= 85 && bedroom_profiles.length > 0) {
+  } else if (meets(bedroomPersonalisationRate, 85) && bedroom_profiles.length > 0) {
     strengths.push(
       `${bedroomPersonalisationRate}% of bedrooms personalised — strong commitment to children's sense of belonging.`,
     );
   }
-  if (childChoseDecorRate >= 90 && bedroom_profiles.length > 0) {
+  if (meets(childChoseDecorRate, 90) && bedroom_profiles.length > 0) {
     strengths.push(
       `${childChoseDecorRate}% of children chose their own decor — child agency in living spaces is prioritised.`,
     );
   }
-  if (roomSuitabilityRate >= 100 && room_allocations.length > 0) {
+  if (meets(roomSuitabilityRate, 100) && room_allocations.length > 0) {
     strengths.push(
       "All room allocations assessed as suitable for individual needs — placement matching is thorough.",
     );
   }
-  if (childConsultationRate >= 100 && room_allocations.length > 0) {
+  if (meets(childConsultationRate, 100) && room_allocations.length > 0) {
     strengths.push(
       "Every child was consulted on their room allocation — children's views are central to placement decisions.",
     );
   }
-  if (roomRiskAssessmentRate >= 100 && room_allocations.length > 0) {
+  if (meets(roomRiskAssessmentRate, 100) && room_allocations.length > 0) {
     strengths.push(
       "All room allocations have completed risk assessments — safety governance is comprehensive.",
     );
   }
-  if (bedroomConditionGoodRate >= 90 && bedroom_profiles.length > 0) {
+  if (meets(bedroomConditionGoodRate, 90) && bedroom_profiles.length > 0) {
     strengths.push(
       `${bedroomConditionGoodRate}% of bedrooms in excellent or good condition — the physical environment is well-maintained.`,
     );
@@ -408,7 +405,7 @@ export function computeLivingEnvironmentStandards(
       "No open safety-related maintenance items — safety repairs are prioritised and resolved.",
     );
   }
-  if (fireBlanketRate >= 100 && kitchen_hygiene_checks.length > 0) {
+  if (meets(fireBlanketRate, 100) && kitchen_hygiene_checks.length > 0) {
     strengths.push(
       "Fire blanket accessible at every kitchen hygiene check — fire safety in the kitchen is consistently maintained.",
     );
@@ -432,25 +429,25 @@ export function computeLivingEnvironmentStandards(
       `${overdueMaintenanceCount} overdue maintenance item${overdueMaintenanceCount !== 1 ? "s" : ""} — repairs are falling behind schedule.`,
     );
   }
-  if (maintenanceCompletionRate < 50 && maintenance_items.length > 0) {
+  if (below(maintenanceCompletionRate, 50) && maintenance_items.length > 0) {
     concerns.push(
       `Only ${maintenanceCompletionRate}% of maintenance items completed — significant backlog exists.`,
     );
   }
-  if (kitchenHygienePassRate < 70 && kitchen_hygiene_checks.length > 0) {
+  if (below(kitchenHygienePassRate, 70) && kitchen_hygiene_checks.length > 0) {
     concerns.push(
       `Kitchen hygiene pass rate is ${kitchenHygienePassRate}% — food safety standards are not being met.`,
     );
-  } else if (kitchenHygienePassRate < 85 && kitchen_hygiene_checks.length > 0) {
+  } else if (below(kitchenHygienePassRate, 85) && kitchen_hygiene_checks.length > 0) {
     concerns.push(
       `Kitchen hygiene pass rate is ${kitchenHygienePassRate}% — inconsistent compliance with food safety requirements.`,
     );
   }
-  if (cleaningCompletionRate < 50 && cleaning_entries.length > 0) {
+  if (below(cleaningCompletionRate, 50) && cleaning_entries.length > 0) {
     concerns.push(
       `Only ${cleaningCompletionRate}% of scheduled cleaning completed — the home's cleanliness standards are inadequate.`,
     );
-  } else if (cleaningCompletionRate < 80 && cleaning_entries.length > 0) {
+  } else if (below(cleaningCompletionRate, 80) && cleaning_entries.length > 0) {
     concerns.push(
       `Cleaning completion at ${cleaningCompletionRate}% — missed tasks risk a decline in living standards.`,
     );
@@ -460,7 +457,7 @@ export function computeLivingEnvironmentStandards(
       `Average cleaning quality only ${cleaningQualityAvg}/5 — quality of completed cleaning is below acceptable standards.`,
     );
   }
-  if (bedroomPersonalisationRate < 50 && bedroom_profiles.length > 0) {
+  if (below(bedroomPersonalisationRate, 50) && bedroom_profiles.length > 0) {
     concerns.push(
       `Only ${bedroomPersonalisationRate}% of bedrooms personalised — children may not feel a sense of belonging in their living spaces.`,
     );
@@ -470,22 +467,22 @@ export function computeLivingEnvironmentStandards(
       `${poorConditionBedrooms} bedroom${poorConditionBedrooms !== 1 ? "s" : ""} rated in poor condition — physical environment does not meet minimum standards.`,
     );
   }
-  if (roomSuitabilityRate < 80 && room_allocations.length > 0) {
+  if (below(roomSuitabilityRate, 80) && room_allocations.length > 0) {
     concerns.push(
       `Only ${roomSuitabilityRate}% of room allocations suitable for children's needs — placement matching needs review.`,
     );
   }
-  if (roomRiskAssessmentRate < 80 && room_allocations.length > 0) {
+  if (below(roomRiskAssessmentRate, 80) && room_allocations.length > 0) {
     concerns.push(
       `Only ${roomRiskAssessmentRate}% of room allocations have risk assessments — gaps in safety governance.`,
     );
   }
-  if (childConsultationRate < 50 && room_allocations.length > 0) {
+  if (below(childConsultationRate, 50) && room_allocations.length > 0) {
     concerns.push(
       `Only ${childConsultationRate}% of children consulted on room allocation — children's voices are not being heard in placement decisions.`,
     );
   }
-  if (privacyLockRate < 50 && bedroom_profiles.length > 0) {
+  if (below(privacyLockRate, 50) && bedroom_profiles.length > 0) {
     concerns.push(
       `Only ${privacyLockRate}% of bedrooms have privacy locks — children's right to privacy is not consistently upheld.`,
     );
@@ -530,7 +527,7 @@ export function computeLivingEnvironmentStandards(
     });
   }
 
-  if (kitchenHygienePassRate < 70 && kitchen_hygiene_checks.length > 0) {
+  if (below(kitchenHygienePassRate, 70) && kitchen_hygiene_checks.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -538,7 +535,7 @@ export function computeLivingEnvironmentStandards(
       urgency: "immediate",
       regulatory_ref: "Reg 27 — Premises — hygiene",
     });
-  } else if (kitchenHygienePassRate < 85 && kitchen_hygiene_checks.length > 0) {
+  } else if (below(kitchenHygienePassRate, 85) && kitchen_hygiene_checks.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -558,7 +555,7 @@ export function computeLivingEnvironmentStandards(
     });
   }
 
-  if (fireBlanketRate < 100 && kitchen_hygiene_checks.length > 0) {
+  if (below(fireBlanketRate, 100) && kitchen_hygiene_checks.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -578,7 +575,7 @@ export function computeLivingEnvironmentStandards(
     });
   }
 
-  if (maintenanceCompletionRate < 50 && maintenance_items.length > 0) {
+  if (below(maintenanceCompletionRate, 50) && maintenance_items.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -586,7 +583,7 @@ export function computeLivingEnvironmentStandards(
       urgency: "immediate",
       regulatory_ref: "Reg 25 — Premises",
     });
-  } else if (maintenanceCompletionRate < 75 && maintenance_items.length > 0) {
+  } else if (below(maintenanceCompletionRate, 75) && maintenance_items.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -606,7 +603,7 @@ export function computeLivingEnvironmentStandards(
     });
   }
 
-  if (cleaningCompletionRate < 50 && cleaning_entries.length > 0) {
+  if (below(cleaningCompletionRate, 50) && cleaning_entries.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -614,7 +611,7 @@ export function computeLivingEnvironmentStandards(
       urgency: "immediate",
       regulatory_ref: "Reg 27 — Premises — hygiene",
     });
-  } else if (cleaningCompletionRate < 80 && cleaning_entries.length > 0) {
+  } else if (below(cleaningCompletionRate, 80) && cleaning_entries.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -644,7 +641,7 @@ export function computeLivingEnvironmentStandards(
     });
   }
 
-  if (bedroomPersonalisationRate < 50 && bedroom_profiles.length > 0) {
+  if (below(bedroomPersonalisationRate, 50) && bedroom_profiles.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -652,7 +649,7 @@ export function computeLivingEnvironmentStandards(
       urgency: "soon",
       regulatory_ref: "Reg 25 — Premises",
     });
-  } else if (bedroomPersonalisationRate < 80 && bedroom_profiles.length > 0) {
+  } else if (below(bedroomPersonalisationRate, 80) && bedroom_profiles.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -682,7 +679,7 @@ export function computeLivingEnvironmentStandards(
     });
   }
 
-  if (privacyLockRate < 70 && bedroom_profiles.length > 0) {
+  if (below(privacyLockRate, 70) && bedroom_profiles.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -692,7 +689,7 @@ export function computeLivingEnvironmentStandards(
     });
   }
 
-  if (roomSuitabilityRate < 80 && room_allocations.length > 0) {
+  if (below(roomSuitabilityRate, 80) && room_allocations.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -712,7 +709,7 @@ export function computeLivingEnvironmentStandards(
     });
   }
 
-  if (roomRiskAssessmentRate < 80 && room_allocations.length > 0) {
+  if (below(roomRiskAssessmentRate, 80) && room_allocations.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -722,7 +719,7 @@ export function computeLivingEnvironmentStandards(
     });
   }
 
-  if (childConsultationRate < 50 && room_allocations.length > 0) {
+  if (below(childConsultationRate, 50) && room_allocations.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -730,7 +727,7 @@ export function computeLivingEnvironmentStandards(
       urgency: "soon",
       regulatory_ref: "Reg 6 — Quality of care",
     });
-  } else if (childConsultationRate < 80 && room_allocations.length > 0) {
+  } else if (below(childConsultationRate, 80) && room_allocations.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -745,10 +742,10 @@ export function computeLivingEnvironmentStandards(
 
   // Positive composite insights
   if (
-    cleaningCompletionRate >= 95 &&
+    meets(cleaningCompletionRate, 95) &&
     (cleaningQualityAvg ?? 0) >= 4.0 &&
-    maintenanceCompletionRate >= 90 &&
-    kitchenHygienePassRate >= 100 &&
+    meets(maintenanceCompletionRate, 90) &&
+    meets(kitchenHygienePassRate, 100) &&
     cleaning_entries.length > 0 &&
     maintenance_items.length > 0 &&
     kitchen_hygiene_checks.length > 0
@@ -760,9 +757,9 @@ export function computeLivingEnvironmentStandards(
   }
 
   if (
-    bedroomPersonalisationRate >= 100 &&
-    childChoseDecorRate >= 90 &&
-    bedroomConditionGoodRate >= 90 &&
+    meets(bedroomPersonalisationRate, 100) &&
+    meets(childChoseDecorRate, 90) &&
+    meets(bedroomConditionGoodRate, 90) &&
     bedroom_profiles.length > 0
   ) {
     insights.push({
@@ -772,9 +769,9 @@ export function computeLivingEnvironmentStandards(
   }
 
   if (
-    roomSuitabilityRate >= 100 &&
-    roomRiskAssessmentRate >= 100 &&
-    childConsultationRate >= 100 &&
+    meets(roomSuitabilityRate, 100) &&
+    meets(roomRiskAssessmentRate, 100) &&
+    meets(childConsultationRate, 100) &&
     room_allocations.length > 0
   ) {
     insights.push({
@@ -784,10 +781,10 @@ export function computeLivingEnvironmentStandards(
   }
 
   if (
-    kitchenHygienePassRate >= 100 &&
-    fireBlanketRate >= 100 &&
-    surfacesCleanRate >= 100 &&
-    foodStorageRate >= 100 &&
+    meets(kitchenHygienePassRate, 100) &&
+    meets(fireBlanketRate, 100) &&
+    meets(surfacesCleanRate, 100) &&
+    meets(foodStorageRate, 100) &&
     kitchen_hygiene_checks.length > 0
   ) {
     insights.push({
@@ -798,7 +795,7 @@ export function computeLivingEnvironmentStandards(
 
   // Warning insights
   if (
-    cleaningCompletionRate < 80 &&
+    below(cleaningCompletionRate, 80) &&
     (cleaningQualityAvg ?? 0) < 3.0 &&
     cleaning_entries.length > 0
   ) {
@@ -816,8 +813,8 @@ export function computeLivingEnvironmentStandards(
   }
 
   if (
-    bedroomPersonalisationRate < 50 &&
-    childChoseDecorRate < 50 &&
+    below(bedroomPersonalisationRate, 50) &&
+    below(childChoseDecorRate, 50) &&
     bedroom_profiles.length > 0
   ) {
     insights.push({
@@ -827,8 +824,8 @@ export function computeLivingEnvironmentStandards(
   }
 
   if (
-    childConsultationRate < 50 &&
-    roomRiskAssessmentRate < 50 &&
+    below(childConsultationRate, 50) &&
+    below(roomRiskAssessmentRate, 50) &&
     room_allocations.length > 0
   ) {
     insights.push({
@@ -850,7 +847,7 @@ export function computeLivingEnvironmentStandards(
     });
   }
 
-  if (kitchenHygienePassRate < 50 && kitchen_hygiene_checks.length > 0) {
+  if (below(kitchenHygienePassRate, 50) && kitchen_hygiene_checks.length > 0) {
     insights.push({
       text: `Kitchen hygiene pass rate is only ${kitchenHygienePassRate}%. Fewer than half of checks are passing — this represents a serious food safety risk and potential regulatory breach under Reg 27.`,
       severity: "critical",
@@ -858,7 +855,7 @@ export function computeLivingEnvironmentStandards(
   }
 
   if (
-    maintenanceCompletionRate < 50 &&
+    below(maintenanceCompletionRate, 50) &&
     safetyMaintenanceOpen > 0 &&
     overdueMaintenanceCount >= 3 &&
     maintenance_items.length > 0
@@ -870,8 +867,8 @@ export function computeLivingEnvironmentStandards(
   }
 
   if (
-    cleaningCompletionRate < 50 &&
-    kitchenHygienePassRate < 70 &&
+    below(cleaningCompletionRate, 50) &&
+    below(kitchenHygienePassRate, 70) &&
     cleaning_entries.length > 0 &&
     kitchen_hygiene_checks.length > 0
   ) {
@@ -907,7 +904,7 @@ export function computeLivingEnvironmentStandards(
   // ── Headline ──────────────────────────────────────────────────────────
   let headline: string;
   if (environment_rating === "outstanding") {
-    headline = `Outstanding living environment — ${cleaningCompletionRate}% cleaning completion, ${kitchenHygienePassRate}% kitchen hygiene, ${bedroomPersonalisationRate}% bedrooms personalised.`;
+    headline = `Outstanding living environment — ${formatRate(cleaningCompletionRate)} cleaning completion, ${formatRate(kitchenHygienePassRate)} kitchen hygiene, ${formatRate(bedroomPersonalisationRate)} bedrooms personalised.`;
   } else if (environment_rating === "good") {
     headline = concerns.length > 0
       ? `Good living environment — ${concerns.length} area${concerns.length !== 1 ? "s" : ""} for improvement identified.`

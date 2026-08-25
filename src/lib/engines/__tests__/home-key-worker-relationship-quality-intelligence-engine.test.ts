@@ -1252,7 +1252,7 @@ describe("Home Key Worker Relationship Quality Intelligence Engine", () => {
           continuity_records: [],
         }));
         // No surveys → penalty doesn't fire
-        expect(r.child_satisfaction_rate).toBe(0);
+        expect(r.child_satisfaction_rate).toBeNull();
       });
     });
 
@@ -1343,7 +1343,7 @@ describe("Home Key Worker Relationship Quality Intelligence Engine", () => {
           child_satisfaction_records: [],
           continuity_records: [],
         }));
-        expect(r.continuity_rate).toBe(0);
+        expect(r.continuity_rate).toBeNull();
       });
     });
   });
@@ -1439,13 +1439,13 @@ describe("Home Key Worker Relationship Quality Intelligence Engine", () => {
         expect(r.relationship_quality_rate).toBe(50);
       });
 
-      it("returns 0 when no assessments", () => {
+      it("returns null when no assessments", () => {
         const r = computeKeyWorkerRelationshipQuality(baseInput({
           total_children: 1,
           key_worker_allocation_records: [makeAllocation({ child_id: "yp_alex", allocated: true, active: true })],
           relationship_assessment_records: [],
         }));
-        expect(r.relationship_quality_rate).toBe(0);
+        expect(r.relationship_quality_rate).toBeNull();
       });
     });
 
@@ -1512,13 +1512,13 @@ describe("Home Key Worker Relationship Quality Intelligence Engine", () => {
         expect(r.child_satisfaction_rate).toBe(67);
       });
 
-      it("returns 0 when no surveys", () => {
+      it("returns null when no surveys", () => {
         const r = computeKeyWorkerRelationshipQuality(baseInput({
           total_children: 1,
           key_worker_allocation_records: [makeAllocation({ child_id: "yp_alex", allocated: true, active: true })],
           child_satisfaction_records: [],
         }));
-        expect(r.child_satisfaction_rate).toBe(0);
+        expect(r.child_satisfaction_rate).toBeNull();
       });
     });
 
@@ -1536,13 +1536,13 @@ describe("Home Key Worker Relationship Quality Intelligence Engine", () => {
         expect(r.continuity_rate).toBe(67);
       });
 
-      it("returns 0 when no continuity records", () => {
+      it("returns null when no continuity records", () => {
         const r = computeKeyWorkerRelationshipQuality(baseInput({
           total_children: 1,
           key_worker_allocation_records: [makeAllocation({ child_id: "yp_alex", allocated: true, active: true })],
           continuity_records: [],
         }));
-        expect(r.continuity_rate).toBe(0);
+        expect(r.continuity_rate).toBeNull();
       });
     });
 
@@ -3047,8 +3047,8 @@ describe("Home Key Worker Relationship Quality Intelligence Engine", () => {
         key_worker_allocation_records: [makeAllocation({ child_id: "yp_alex", allocated: true, active: true })],
         key_worker_session_records: [],
       }));
-      expect(r.session_completion_rate).toBe(0);
-      expect(r.session_cancellation_rate).toBe(0);
+      expect(r.session_completion_rate).toBeNull();
+      expect(r.session_cancellation_rate).toBeNull();
     });
 
     it("multiple session types do not affect scoring", () => {

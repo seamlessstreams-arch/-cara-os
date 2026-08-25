@@ -264,18 +264,18 @@ function badChildSatisfaction(id = "cs_bad"): ChildSatisfactionRecordInput {
 describe("computeLaundryLinenManagement", () => {
   // ── pct() edge case ──────────────────────────────────────────────────
   describe("pct(0,0) = 0 via empty arrays", () => {
-    it("returns 0 rates when arrays are empty (pct(0,0) = 0)", () => {
+    it("returns null rates when arrays are empty (rate(0,0)=null)", () => {
       // Provide only hygiene records so allEmpty = false, but laundry/linen/clothing/satisfaction empty
       const r = computeLaundryLinenManagement(
         baseInput({
           hygiene_compliance_records: [makeHygieneCompliance()],
         }),
       );
-      expect(r.laundry_timeliness_rate).toBe(0);
-      expect(r.linen_adequacy_rate).toBe(0);
-      expect(r.clothing_care_rate).toBe(0);
-      expect(r.child_satisfaction_rate).toBe(0);
-      expect(r.child_independence_rate).toBe(0);
+      expect(r.laundry_timeliness_rate).toBeNull();
+      expect(r.linen_adequacy_rate).toBeNull();
+      expect(r.clothing_care_rate).toBeNull();
+      expect(r.child_satisfaction_rate).toBeNull();
+      expect(r.child_independence_rate).toBeNull();
     });
   });
 
@@ -303,12 +303,12 @@ describe("computeLaundryLinenManagement", () => {
 
     it("returns all rates as 0", () => {
       const r = computeLaundryLinenManagement(baseInput({ total_children: 0 }));
-      expect(r.laundry_timeliness_rate).toBe(0);
-      expect(r.linen_adequacy_rate).toBe(0);
-      expect(r.clothing_care_rate).toBe(0);
-      expect(r.hygiene_compliance_rate).toBe(0);
-      expect(r.child_satisfaction_rate).toBe(0);
-      expect(r.child_independence_rate).toBe(0);
+      expect(r.laundry_timeliness_rate).toBeNull();
+      expect(r.linen_adequacy_rate).toBeNull();
+      expect(r.clothing_care_rate).toBeNull();
+      expect(r.hygiene_compliance_rate).toBeNull();
+      expect(r.child_satisfaction_rate).toBeNull();
+      expect(r.child_independence_rate).toBeNull();
     });
   });
 
@@ -354,12 +354,12 @@ describe("computeLaundryLinenManagement", () => {
       expect(r.total_clothing_care_records).toBe(0);
       expect(r.total_hygiene_assessments).toBe(0);
       expect(r.total_satisfaction_records).toBe(0);
-      expect(r.laundry_timeliness_rate).toBe(0);
-      expect(r.linen_adequacy_rate).toBe(0);
-      expect(r.clothing_care_rate).toBe(0);
-      expect(r.hygiene_compliance_rate).toBe(0);
-      expect(r.child_satisfaction_rate).toBe(0);
-      expect(r.child_independence_rate).toBe(0);
+      expect(r.laundry_timeliness_rate).toBeNull();
+      expect(r.linen_adequacy_rate).toBeNull();
+      expect(r.clothing_care_rate).toBeNull();
+      expect(r.hygiene_compliance_rate).toBeNull();
+      expect(r.child_satisfaction_rate).toBeNull();
+      expect(r.child_independence_rate).toBeNull();
     });
   });
 
@@ -1488,13 +1488,13 @@ describe("computeLaundryLinenManagement", () => {
       expect(r.child_independence_rate).toBe(50);
     });
 
-    it("0% when both array types empty (pct(0,0)=0)", () => {
+    it("null when both array types empty (rate(0,0)=null)", () => {
       const r = computeLaundryLinenManagement(
         baseInput({
           laundry_service_records: [makeLaundryService()],
         }),
       );
-      expect(r.child_independence_rate).toBe(0);
+      expect(r.child_independence_rate).toBeNull();
     });
   });
 

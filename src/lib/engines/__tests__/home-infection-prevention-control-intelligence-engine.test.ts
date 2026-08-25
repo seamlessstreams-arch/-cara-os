@@ -263,12 +263,12 @@ describe("computeInfectionPreventionControl", () => {
       expect(r.total_hand_hygiene_observations).toBe(0);
       expect(r.total_cleaning_records).toBe(0);
       expect(r.total_immunisation_records).toBe(0);
-      expect(r.hygiene_audit_compliance_rate).toBe(0);
-      expect(r.outbreak_management_rate).toBe(0);
-      expect(r.hand_hygiene_rate).toBe(0);
-      expect(r.cleaning_compliance_rate).toBe(0);
-      expect(r.immunisation_coverage_rate).toBe(0);
-      expect(r.staff_training_rate).toBe(0);
+      expect(r.hygiene_audit_compliance_rate).toBeNull();
+      expect(r.outbreak_management_rate).toBeNull();
+      expect(r.hand_hygiene_rate).toBeNull();
+      expect(r.cleaning_compliance_rate).toBeNull();
+      expect(r.immunisation_coverage_rate).toBeNull();
+      expect(r.staff_training_rate).toBeNull();
     });
   });
 
@@ -311,32 +311,32 @@ describe("computeInfectionPreventionControl", () => {
   // ── pct helper: pct(0,0)=0 ──────────────────────────────────────────
 
   describe("pct(0,0) edge", () => {
-    it("hygiene_audit_compliance_rate is 0 when no audits", () => {
+    it("hygiene_audit_compliance_rate is null when no audits", () => {
       const r = computeInfectionPreventionControl(baseInput({
         hand_hygiene_records: nHandHygiene(1),
       }));
-      expect(r.hygiene_audit_compliance_rate).toBe(0);
+      expect(r.hygiene_audit_compliance_rate).toBeNull();
     });
 
-    it("outbreak_management_rate is 0 when no outbreaks", () => {
+    it("outbreak_management_rate is null when no outbreaks", () => {
       const r = computeInfectionPreventionControl(baseInput({
         hand_hygiene_records: nHandHygiene(1),
       }));
-      expect(r.outbreak_management_rate).toBe(0);
+      expect(r.outbreak_management_rate).toBeNull();
     });
 
-    it("hand_hygiene_rate is 0 when no hand hygiene records", () => {
+    it("hand_hygiene_rate is null when no hand hygiene records", () => {
       const r = computeInfectionPreventionControl(baseInput({
         hygiene_audit_records: nAudits(1),
       }));
-      expect(r.hand_hygiene_rate).toBe(0);
+      expect(r.hand_hygiene_rate).toBeNull();
     });
 
-    it("cleaning_compliance_rate is 0 when no cleaning records", () => {
+    it("cleaning_compliance_rate is null when no cleaning records", () => {
       const r = computeInfectionPreventionControl(baseInput({
         hand_hygiene_records: nHandHygiene(1),
       }));
-      expect(r.cleaning_compliance_rate).toBe(0);
+      expect(r.cleaning_compliance_rate).toBeNull();
     });
 
     it("immunisation_coverage_rate is 0 when no immunisation records", () => {
@@ -346,11 +346,11 @@ describe("computeInfectionPreventionControl", () => {
       expect(r.immunisation_coverage_rate).toBe(0);
     });
 
-    it("staff_training_rate is 0 when no hand hygiene records", () => {
+    it("staff_training_rate is null when no hand hygiene records", () => {
       const r = computeInfectionPreventionControl(baseInput({
         hygiene_audit_records: nAudits(1),
       }));
-      expect(r.staff_training_rate).toBe(0);
+      expect(r.staff_training_rate).toBeNull();
     });
   });
 

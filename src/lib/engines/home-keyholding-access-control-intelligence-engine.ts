@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME KEYHOLDING & ACCESS CONTROL INTELLIGENCE ENGINE
 // Monitors key register accuracy, access control compliance, key issue/return
@@ -148,12 +149,18 @@ export interface KeyholdingAccessControlResult {
   total_key_tracking_records: number;
   total_security_audit_records: number;
   total_child_safe_records: number;
-  key_register_rate: number;
-  access_control_rate: number;
-  key_tracking_rate: number;
-  security_audit_rate: number;
-  child_safe_rate: number;
-  staff_compliance_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  key_register_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  access_control_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  key_tracking_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  security_audit_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_safe_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staff_compliance_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: KeyholdingRecommendation[];
@@ -161,10 +168,6 @@ export interface KeyholdingAccessControlResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -193,12 +196,12 @@ function emptyResult(
     total_key_tracking_records: 0,
     total_security_audit_records: 0,
     total_child_safe_records: 0,
-    key_register_rate: 0,
-    access_control_rate: 0,
-    key_tracking_rate: 0,
-    security_audit_rate: 0,
-    child_safe_rate: 0,
-    staff_compliance_rate: 0,
+    key_register_rate: null,
+    access_control_rate: null,
+    key_tracking_rate: null,
+    security_audit_rate: null,
+    child_safe_rate: null,
+    staff_compliance_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -279,34 +282,34 @@ export function computeKeyholdingAccessControl(
   const accurateEntries = key_register_records.filter(
     (k) => k.register_entry_accurate && k.register_entry_complete,
   ).length;
-  const keyRegisterRate = pct(accurateEntries, totalKeyRegisterRecords);
+  const keyRegisterRate = rate(accurateEntries, totalKeyRegisterRecords);
 
   const locationCorrect = key_register_records.filter((k) => k.location_correct).length;
-  const locationCorrectRate = pct(locationCorrect, totalKeyRegisterRecords);
+  const locationCorrectRate = rate(locationCorrect, totalKeyRegisterRecords);
 
   const holderRecorded = key_register_records.filter((k) => k.holder_recorded).length;
-  const holderRecordedRate = pct(holderRecorded, totalKeyRegisterRecords);
+  const holderRecordedRate = rate(holderRecorded, totalKeyRegisterRecords);
 
   const holderAuthorised = key_register_records.filter((k) => k.holder_authorised).length;
 
   const duplicateExists = key_register_records.filter((k) => k.duplicate_exists).length;
-  const duplicateRate = pct(duplicateExists, totalKeyRegisterRecords);
+  const duplicateRate = rate(duplicateExists, totalKeyRegisterRecords);
 
   const spareKeySecured = key_register_records.filter((k) => k.spare_key_secured).length;
-  const spareKeySecuredRate = pct(spareKeySecured, totalKeyRegisterRecords);
+  const spareKeySecuredRate = rate(spareKeySecured, totalKeyRegisterRecords);
 
   // --- Access control metrics ---
   const totalAccessControlRecords = access_control_records.length;
   const compliantAccess = access_control_records.filter((a) => a.compliant).length;
-  const accessControlRate = pct(compliantAccess, totalAccessControlRecords);
+  const accessControlRate = rate(compliantAccess, totalAccessControlRecords);
 
   const accessLogged = access_control_records.filter((a) => a.access_logged).length;
-  const accessLoggedRate = pct(accessLogged, totalAccessControlRecords);
+  const accessLoggedRate = rate(accessLogged, totalAccessControlRecords);
 
   const unauthorisedAttempts = access_control_records.filter(
     (a) => a.unauthorised_access_attempt,
   ).length;
-  const unauthorisedAttemptRate = pct(unauthorisedAttempts, totalAccessControlRecords);
+  const unauthorisedAttemptRate = rate(unauthorisedAttempts, totalAccessControlRecords);
 
   const visitorProtocolFollowed = access_control_records.filter(
     (a) => a.visitor_protocol_followed,
@@ -315,7 +318,7 @@ export function computeKeyholdingAccessControl(
   const emergencyOverrideTested = access_control_records.filter(
     (a) => a.emergency_override_tested,
   ).length;
-  const emergencyOverrideRate = pct(emergencyOverrideTested, totalAccessControlRecords);
+  const emergencyOverrideRate = rate(emergencyOverrideTested, totalAccessControlRecords);
 
   // --- Key tracking metrics ---
   const totalKeyTrackingRecords = key_tracking_records.length;
@@ -327,29 +330,29 @@ export function computeKeyholdingAccessControl(
   const returnedOnTime = key_tracking_records.filter(
     (t) => (t.action === "returned" || t.action === "issued") && t.returned_on_time,
   ).length;
-  const keyTrackingRate = pct(returnedOnTime, totalIssueReturn > 0 ? totalIssueReturn : totalKeyTrackingRecords);
+  const keyTrackingRate = rate(returnedOnTime, totalIssueReturn > 0 ? totalIssueReturn : totalKeyTrackingRecords);
 
   const handoverWitnessed = key_tracking_records.filter((t) => t.handover_witnessed).length;
-  const handoverWitnessedRate = pct(handoverWitnessed, totalKeyTrackingRecords);
+  const handoverWitnessedRate = rate(handoverWitnessed, totalKeyTrackingRecords);
 
   const signedFor = key_tracking_records.filter((t) => t.signed_for).length;
-  const signedForRate = pct(signedFor, totalKeyTrackingRecords);
+  const signedForRate = rate(signedFor, totalKeyTrackingRecords);
 
   const shiftEndCompliant = key_tracking_records.filter(
     (t) => t.shift_end_return_compliant,
   ).length;
-  const shiftEndComplianceRate = pct(shiftEndCompliant, totalKeyTrackingRecords);
+  const shiftEndComplianceRate = rate(shiftEndCompliant, totalKeyTrackingRecords);
 
   const lostKeys = key_tracking_records.filter((t) => t.action === "lost").length;
-  const lostKeyRate = pct(lostKeys, totalKeyTrackingRecords);
+  const lostKeyRate = rate(lostKeys, totalKeyTrackingRecords);
 
   // --- Security audit metrics ---
   const totalSecurityAuditRecords = security_audit_records.length;
   const passedAudits = security_audit_records.filter((a) => a.passed).length;
-  const securityAuditRate = pct(passedAudits, totalSecurityAuditRecords);
+  const securityAuditRate = rate(passedAudits, totalSecurityAuditRecords);
 
   const overdueAudits = security_audit_records.filter((a) => a.overdue).length;
-  const overdueAuditRate = pct(overdueAudits, totalSecurityAuditRecords);
+  const overdueAuditRate = rate(overdueAudits, totalSecurityAuditRecords);
 
   const totalActionsRaised = security_audit_records.reduce(
     (sum, a) => sum + a.actions_raised,
@@ -359,7 +362,7 @@ export function computeKeyholdingAccessControl(
     (sum, a) => sum + a.actions_completed,
     0,
   );
-  const auditActionCompletionRate = pct(totalActionsCompleted, totalActionsRaised);
+  const auditActionCompletionRate = rate(totalActionsCompleted, totalActionsRaised);
 
   const totalCriticalFindings = security_audit_records.reduce(
     (sum, a) => sum + a.critical_findings,
@@ -369,30 +372,30 @@ export function computeKeyholdingAccessControl(
     (sum, a) => sum + a.findings_count,
     0,
   );
-  const criticalFindingRate = pct(totalCriticalFindings, totalFindings);
+  const criticalFindingRate = rate(totalCriticalFindings, totalFindings);
 
   // --- Child safe area metrics ---
   const totalChildSafeRecords = child_safe_records.length;
   const compliantChildSafe = child_safe_records.filter((c) => c.compliant).length;
-  const childSafeRate = pct(compliantChildSafe, totalChildSafeRecords);
+  const childSafeRate = rate(compliantChildSafe, totalChildSafeRecords);
 
   const canExitSafely = child_safe_records.filter(
     (c) => c.child_can_exit_safely,
   ).length;
-  const canExitSafelyRate = pct(canExitSafely, totalChildSafeRecords);
+  const canExitSafelyRate = rate(canExitSafely, totalChildSafeRecords);
 
   const restrictedItemsSecured = child_safe_records.filter(
     (c) => c.restricted_items_secured,
   ).length;
-  const restrictedItemsSecuredRate = pct(restrictedItemsSecured, totalChildSafeRecords);
+  const restrictedItemsSecuredRate = rate(restrictedItemsSecured, totalChildSafeRecords);
 
   const windowRestrictorFitted = child_safe_records.filter(
     (c) => c.window_restrictor_fitted,
   ).length;
-  const windowRestrictorRate = pct(windowRestrictorFitted, totalChildSafeRecords);
+  const windowRestrictorRate = rate(windowRestrictorFitted, totalChildSafeRecords);
 
   const hazardFree = child_safe_records.filter((c) => c.hazard_free).length;
-  const hazardFreeRate = pct(hazardFree, totalChildSafeRecords);
+  const hazardFreeRate = rate(hazardFree, totalChildSafeRecords);
 
   const childSafeActionsRaised = child_safe_records.reduce(
     (sum, c) => sum + c.actions_required,
@@ -402,7 +405,7 @@ export function computeKeyholdingAccessControl(
     (sum, c) => sum + c.actions_completed,
     0,
   );
-  const childSafeActionCompletionRate = pct(childSafeActionsCompleted, childSafeActionsRaised);
+  const childSafeActionCompletionRate = rate(childSafeActionsCompleted, childSafeActionsRaised);
 
   // --- Staff compliance composite ---
   // Composite across: holder_authorised, handover_witnessed, signed_for, shift_end_return_compliant, visitor_protocol
@@ -428,55 +431,55 @@ export function computeKeyholdingAccessControl(
 
   const totalStaffCompNum = staffCompNumerators.reduce((a, b) => a + b, 0);
   const totalStaffCompDenom = staffCompDenominators.reduce((a, b) => a + b, 0);
-  const staffComplianceRate = pct(totalStaffCompNum, totalStaffCompDenom);
+  const staffComplianceRate = rate(totalStaffCompNum, totalStaffCompDenom);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: keyRegisterRate (>=95: +5, >=80: +3) ---
-  if (keyRegisterRate >= 95) score += 5;
-  else if (keyRegisterRate >= 80) score += 3;
+  if (meets(keyRegisterRate, 95)) score += 5;
+  else if (meets(keyRegisterRate, 80)) score += 3;
 
   // --- Bonus 2: accessControlRate (>=95: +5, >=80: +3) ---
-  if (accessControlRate >= 95) score += 5;
-  else if (accessControlRate >= 80) score += 3;
+  if (meets(accessControlRate, 95)) score += 5;
+  else if (meets(accessControlRate, 80)) score += 3;
 
   // --- Bonus 3: keyTrackingRate (>=95: +4, >=80: +2) ---
-  if (keyTrackingRate >= 95) score += 4;
-  else if (keyTrackingRate >= 80) score += 2;
+  if (meets(keyTrackingRate, 95)) score += 4;
+  else if (meets(keyTrackingRate, 80)) score += 2;
 
   // --- Bonus 4: securityAuditRate (>=90: +4, >=75: +2) ---
-  if (securityAuditRate >= 90) score += 4;
-  else if (securityAuditRate >= 75) score += 2;
+  if (meets(securityAuditRate, 90)) score += 4;
+  else if (meets(securityAuditRate, 75)) score += 2;
 
   // --- Bonus 5: childSafeRate (>=95: +4, >=80: +2) ---
-  if (childSafeRate >= 95) score += 4;
-  else if (childSafeRate >= 80) score += 2;
+  if (meets(childSafeRate, 95)) score += 4;
+  else if (meets(childSafeRate, 80)) score += 2;
 
   // --- Bonus 6: staffComplianceRate (>=95: +3, >=80: +1) ---
-  if (staffComplianceRate >= 95) score += 3;
-  else if (staffComplianceRate >= 80) score += 1;
+  if (meets(staffComplianceRate, 95)) score += 3;
+  else if (meets(staffComplianceRate, 80)) score += 1;
 
   // --- Bonus 7: auditActionCompletionRate (>=90: +3, >=70: +1) ---
-  if (auditActionCompletionRate >= 90) score += 3;
-  else if (auditActionCompletionRate >= 70) score += 1;
+  if (meets(auditActionCompletionRate, 90)) score += 3;
+  else if (meets(auditActionCompletionRate, 70)) score += 1;
 
   // max bonuses = 5+5+4+4+4+3+3 = 28
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // keyRegisterRate < 50 → -5 (guarded)
-  if (keyRegisterRate < 50 && totalKeyRegisterRecords > 0) score -= 5;
+  if (below(keyRegisterRate, 50) && totalKeyRegisterRecords > 0) score -= 5;
 
   // accessControlRate < 50 → -5 (guarded)
-  if (accessControlRate < 50 && totalAccessControlRecords > 0) score -= 5;
+  if (below(accessControlRate, 50) && totalAccessControlRecords > 0) score -= 5;
 
   // securityAuditRate < 50 → -4 (guarded)
-  if (securityAuditRate < 50 && totalSecurityAuditRecords > 0) score -= 4;
+  if (below(securityAuditRate, 50) && totalSecurityAuditRecords > 0) score -= 4;
 
   // childSafeRate < 50 → -4 (guarded)
-  if (childSafeRate < 50 && totalChildSafeRecords > 0) score -= 4;
+  if (below(childSafeRate, 50) && totalChildSafeRecords > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -486,95 +489,95 @@ export function computeKeyholdingAccessControl(
 
   const strengths: string[] = [];
 
-  if (keyRegisterRate >= 95 && totalKeyRegisterRecords > 0) {
+  if (meets(keyRegisterRate, 95) && totalKeyRegisterRecords > 0) {
     strengths.push(
       `${keyRegisterRate}% key register accuracy — the home maintains an exemplary key register with complete and accurate entries for all keys held.`,
     );
-  } else if (keyRegisterRate >= 80 && totalKeyRegisterRecords > 0) {
+  } else if (meets(keyRegisterRate, 80) && totalKeyRegisterRecords > 0) {
     strengths.push(
       `${keyRegisterRate}% key register accuracy — the home maintains a well-managed key register with strong recording practices.`,
     );
   }
 
-  if (accessControlRate >= 95 && totalAccessControlRecords > 0) {
+  if (meets(accessControlRate, 95) && totalAccessControlRecords > 0) {
     strengths.push(
       `${accessControlRate}% access control compliance — all entry points, exits, and restricted areas are consistently secured and monitored to an excellent standard.`,
     );
-  } else if (accessControlRate >= 80 && totalAccessControlRecords > 0) {
+  } else if (meets(accessControlRate, 80) && totalAccessControlRecords > 0) {
     strengths.push(
       `${accessControlRate}% access control compliance — the home demonstrates strong access control management across its premises.`,
     );
   }
 
-  if (keyTrackingRate >= 95 && totalKeyTrackingRecords > 0) {
+  if (meets(keyTrackingRate, 95) && totalKeyTrackingRecords > 0) {
     strengths.push(
       `${keyTrackingRate}% key tracking compliance — keys are consistently issued, returned, and accounted for within required timescales.`,
     );
-  } else if (keyTrackingRate >= 80 && totalKeyTrackingRecords > 0) {
+  } else if (meets(keyTrackingRate, 80) && totalKeyTrackingRecords > 0) {
     strengths.push(
       `${keyTrackingRate}% key tracking compliance — good key issue and return practices with timely handovers.`,
     );
   }
 
-  if (securityAuditRate >= 90 && totalSecurityAuditRecords > 0) {
+  if (meets(securityAuditRate, 90) && totalSecurityAuditRecords > 0) {
     strengths.push(
       `${securityAuditRate}% security audit pass rate — security audits consistently confirm that premises security measures meet required standards.`,
     );
-  } else if (securityAuditRate >= 75 && totalSecurityAuditRecords > 0) {
+  } else if (meets(securityAuditRate, 75) && totalSecurityAuditRecords > 0) {
     strengths.push(
       `${securityAuditRate}% security audit pass rate — the majority of security audits confirm satisfactory premises security.`,
     );
   }
 
-  if (childSafeRate >= 95 && totalChildSafeRecords > 0) {
+  if (meets(childSafeRate, 95) && totalChildSafeRecords > 0) {
     strengths.push(
       `${childSafeRate}% child-safe area compliance — all areas assessed demonstrate excellent child-safe measures including appropriate locks, window restrictors, and hazard-free environments.`,
     );
-  } else if (childSafeRate >= 80 && totalChildSafeRecords > 0) {
+  } else if (meets(childSafeRate, 80) && totalChildSafeRecords > 0) {
     strengths.push(
       `${childSafeRate}% child-safe area compliance — the home maintains strong child-safe measures across assessed areas.`,
     );
   }
 
-  if (staffComplianceRate >= 95 && totalStaffCompDenom > 0) {
+  if (meets(staffComplianceRate, 95) && totalStaffCompDenom > 0) {
     strengths.push(
       `${staffComplianceRate}% staff compliance with keyholding protocols — staff consistently follow key management procedures including witnessed handovers, signing for keys, and shift-end returns.`,
     );
-  } else if (staffComplianceRate >= 80 && totalStaffCompDenom > 0) {
+  } else if (meets(staffComplianceRate, 80) && totalStaffCompDenom > 0) {
     strengths.push(
       `${staffComplianceRate}% staff compliance with keyholding protocols — staff generally follow key management procedures well.`,
     );
   }
 
-  if (auditActionCompletionRate >= 90 && totalActionsRaised > 0) {
+  if (meets(auditActionCompletionRate, 90) && totalActionsRaised > 0) {
     strengths.push(
       `${auditActionCompletionRate}% of security audit actions completed — the home follows through on security improvement actions identified through audits.`,
     );
-  } else if (auditActionCompletionRate >= 70 && totalActionsRaised > 0) {
+  } else if (meets(auditActionCompletionRate, 70) && totalActionsRaised > 0) {
     strengths.push(
       `${auditActionCompletionRate}% of security audit actions completed — the home generally delivers on security improvement plans.`,
     );
   }
 
-  if (locationCorrectRate >= 95 && totalKeyRegisterRecords > 0) {
+  if (meets(locationCorrectRate, 95) && totalKeyRegisterRecords > 0) {
     strengths.push(
       `${locationCorrectRate}% of keys in correct locations — keys are stored securely and can be located as expected.`,
     );
   }
 
-  if (holderRecordedRate >= 95 && totalKeyRegisterRecords > 0) {
+  if (meets(holderRecordedRate, 95) && totalKeyRegisterRecords > 0) {
     strengths.push(
       `${holderRecordedRate}% of key holders recorded — the home maintains an accurate record of who holds each key at all times.`,
     );
   }
 
-  if (accessLoggedRate >= 95 && totalAccessControlRecords > 0) {
+  if (meets(accessLoggedRate, 95) && totalAccessControlRecords > 0) {
     strengths.push(
       `${accessLoggedRate}% of access events logged — comprehensive access logging enables effective monitoring and audit trail maintenance.`,
     );
   }
 
-  if (shiftEndComplianceRate >= 95 && totalKeyTrackingRecords > 0) {
+  if (meets(shiftEndComplianceRate, 95) && totalKeyTrackingRecords > 0) {
     strengths.push(
       `${shiftEndComplianceRate}% shift-end key return compliance — keys are consistently returned at the end of shifts, preventing unauthorised out-of-hours access.`,
     );
@@ -586,31 +589,31 @@ export function computeKeyholdingAccessControl(
     );
   }
 
-  if (canExitSafelyRate >= 95 && totalChildSafeRecords > 0) {
+  if (meets(canExitSafelyRate, 95) && totalChildSafeRecords > 0) {
     strengths.push(
       `${canExitSafelyRate}% of areas confirm children can exit safely — emergency egress is not compromised by security measures.`,
     );
   }
 
-  if (hazardFreeRate >= 95 && totalChildSafeRecords > 0) {
+  if (meets(hazardFreeRate, 95) && totalChildSafeRecords > 0) {
     strengths.push(
       `${hazardFreeRate}% of child-safe inspections found areas hazard-free — the physical environment is maintained to a high safety standard.`,
     );
   }
 
-  if (windowRestrictorRate >= 95 && totalChildSafeRecords > 0) {
+  if (meets(windowRestrictorRate, 95) && totalChildSafeRecords > 0) {
     strengths.push(
       `${windowRestrictorRate}% of areas have window restrictors fitted — window safety is comprehensively managed to protect children.`,
     );
   }
 
-  if (spareKeySecuredRate >= 95 && totalKeyRegisterRecords > 0) {
+  if (meets(spareKeySecuredRate, 95) && totalKeyRegisterRecords > 0) {
     strengths.push(
       `${spareKeySecuredRate}% of spare keys secured appropriately — spare key management is robust, preventing unauthorised access.`,
     );
   }
 
-  if (emergencyOverrideRate >= 90 && totalAccessControlRecords > 0) {
+  if (meets(emergencyOverrideRate, 90) && totalAccessControlRecords > 0) {
     strengths.push(
       `${emergencyOverrideRate}% of emergency overrides tested — the home ensures security measures do not impede emergency response.`,
     );
@@ -628,13 +631,13 @@ export function computeKeyholdingAccessControl(
     );
   }
 
-  if (restrictedItemsSecuredRate >= 95 && totalChildSafeRecords > 0) {
+  if (meets(restrictedItemsSecuredRate, 95) && totalChildSafeRecords > 0) {
     strengths.push(
       `${restrictedItemsSecuredRate}% of restricted items secured — hazardous materials, medications, and restricted items are consistently locked away from children.`,
     );
   }
 
-  if (childSafeActionCompletionRate >= 90 && childSafeActionsRaised > 0) {
+  if (meets(childSafeActionCompletionRate, 90) && childSafeActionsRaised > 0) {
     strengths.push(
       `${childSafeActionCompletionRate}% of child-safe actions completed — identified safety improvements are promptly addressed.`,
     );
@@ -644,127 +647,127 @@ export function computeKeyholdingAccessControl(
 
   const concerns: string[] = [];
 
-  if (keyRegisterRate < 50 && totalKeyRegisterRecords > 0) {
+  if (below(keyRegisterRate, 50) && totalKeyRegisterRecords > 0) {
     concerns.push(
       `Only ${keyRegisterRate}% key register accuracy — the majority of key register entries are incomplete or inaccurate, meaning the home cannot reliably account for its keys. This is a significant premises security failure under Reg 25.`,
     );
-  } else if (keyRegisterRate < 80 && keyRegisterRate >= 50 && totalKeyRegisterRecords > 0) {
+  } else if (below(keyRegisterRate, 80) && meets(keyRegisterRate, 50) && totalKeyRegisterRecords > 0) {
     concerns.push(
       `Key register accuracy at ${keyRegisterRate}% — gaps in the key register mean some keys cannot be fully accounted for, weakening the home's physical security assurance.`,
     );
   }
 
-  if (accessControlRate < 50 && totalAccessControlRecords > 0) {
+  if (below(accessControlRate, 50) && totalAccessControlRecords > 0) {
     concerns.push(
       `Only ${accessControlRate}% access control compliance — the majority of access control checks show non-compliance, indicating fundamental failures in premises security under Reg 25.`,
     );
-  } else if (accessControlRate < 80 && accessControlRate >= 50 && totalAccessControlRecords > 0) {
+  } else if (below(accessControlRate, 80) && meets(accessControlRate, 50) && totalAccessControlRecords > 0) {
     concerns.push(
       `Access control compliance at ${accessControlRate}% — inconsistent access control practices create potential vulnerabilities in premises security.`,
     );
   }
 
-  if (keyTrackingRate < 50 && totalKeyTrackingRecords > 0) {
+  if (below(keyTrackingRate, 50) && totalKeyTrackingRecords > 0) {
     concerns.push(
       `Only ${keyTrackingRate}% key tracking compliance — keys are not being issued and returned in accordance with policy, creating significant security risks.`,
     );
-  } else if (keyTrackingRate < 80 && keyTrackingRate >= 50 && totalKeyTrackingRecords > 0) {
+  } else if (below(keyTrackingRate, 80) && meets(keyTrackingRate, 50) && totalKeyTrackingRecords > 0) {
     concerns.push(
       `Key tracking compliance at ${keyTrackingRate}% — some key issue/return events are not meeting required standards for timeliness and accountability.`,
     );
   }
 
-  if (securityAuditRate < 50 && totalSecurityAuditRecords > 0) {
+  if (below(securityAuditRate, 50) && totalSecurityAuditRecords > 0) {
     concerns.push(
       `Only ${securityAuditRate}% security audit pass rate — the majority of security audits are identifying failures, indicating systemic premises security weaknesses.`,
     );
-  } else if (securityAuditRate < 75 && securityAuditRate >= 50 && totalSecurityAuditRecords > 0) {
+  } else if (below(securityAuditRate, 75) && meets(securityAuditRate, 50) && totalSecurityAuditRecords > 0) {
     concerns.push(
       `Security audit pass rate at ${securityAuditRate}% — too many audits are identifying compliance failures that need to be addressed to ensure premises security.`,
     );
   }
 
-  if (childSafeRate < 50 && totalChildSafeRecords > 0) {
+  if (below(childSafeRate, 50) && totalChildSafeRecords > 0) {
     concerns.push(
       `Only ${childSafeRate}% child-safe area compliance — the majority of areas assessed do not meet child-safe standards, creating direct risks to children's physical safety under Reg 25.`,
     );
-  } else if (childSafeRate < 80 && childSafeRate >= 50 && totalChildSafeRecords > 0) {
+  } else if (below(childSafeRate, 80) && meets(childSafeRate, 50) && totalChildSafeRecords > 0) {
     concerns.push(
       `Child-safe area compliance at ${childSafeRate}% — some areas do not meet child-safe standards, requiring improvement to ensure children's physical safety.`,
     );
   }
 
-  if (staffComplianceRate < 50 && totalStaffCompDenom > 0) {
+  if (below(staffComplianceRate, 50) && totalStaffCompDenom > 0) {
     concerns.push(
       `Only ${staffComplianceRate}% staff compliance with keyholding protocols — staff are not consistently following key management procedures, undermining the entire security framework.`,
     );
-  } else if (staffComplianceRate < 80 && staffComplianceRate >= 50 && totalStaffCompDenom > 0) {
+  } else if (below(staffComplianceRate, 80) && meets(staffComplianceRate, 50) && totalStaffCompDenom > 0) {
     concerns.push(
       `Staff compliance with keyholding protocols at ${staffComplianceRate}% — inconsistent adherence to key management procedures weakens security controls.`,
     );
   }
 
-  if (lostKeyRate >= 10 && totalKeyTrackingRecords > 0) {
+  if (meets(lostKeyRate, 10) && totalKeyTrackingRecords > 0) {
     concerns.push(
       `${lostKeyRate}% of key tracking records involve lost keys — key losses represent a direct security risk requiring immediate investigation and remediation including potential lock changes.`,
     );
-  } else if (lostKeyRate >= 5 && lostKeyRate < 10 && totalKeyTrackingRecords > 0) {
+  } else if (meets(lostKeyRate, 5) && below(lostKeyRate, 10) && totalKeyTrackingRecords > 0) {
     concerns.push(
       `${lostKeyRate}% of key tracking records involve lost keys — while individual losses may be addressed, the rate suggests systemic weaknesses in key handling.`,
     );
   }
 
-  if (unauthorisedAttemptRate >= 10 && totalAccessControlRecords > 0) {
+  if (meets(unauthorisedAttemptRate, 10) && totalAccessControlRecords > 0) {
     concerns.push(
       `${unauthorisedAttemptRate}% of access records include unauthorised access attempts — this indicates access control measures may not be sufficient to prevent breaches.`,
     );
-  } else if (unauthorisedAttemptRate >= 5 && unauthorisedAttemptRate < 10 && totalAccessControlRecords > 0) {
+  } else if (meets(unauthorisedAttemptRate, 5) && below(unauthorisedAttemptRate, 10) && totalAccessControlRecords > 0) {
     concerns.push(
       `${unauthorisedAttemptRate}% unauthorised access attempts recorded — while managed, the frequency warrants review of access control effectiveness.`,
     );
   }
 
-  if (overdueAuditRate >= 30 && totalSecurityAuditRecords > 0) {
+  if (meets(overdueAuditRate, 30) && totalSecurityAuditRecords > 0) {
     concerns.push(
       `${overdueAuditRate}% of security audits are overdue — the home is not maintaining its security audit schedule, leaving potential vulnerabilities undetected.`,
     );
-  } else if (overdueAuditRate >= 15 && overdueAuditRate < 30 && totalSecurityAuditRecords > 0) {
+  } else if (meets(overdueAuditRate, 15) && below(overdueAuditRate, 30) && totalSecurityAuditRecords > 0) {
     concerns.push(
       `${overdueAuditRate}% of security audits are overdue — some audits are not being completed on schedule, creating gaps in security assurance.`,
     );
   }
 
-  if (canExitSafelyRate < 80 && totalChildSafeRecords > 0) {
+  if (below(canExitSafelyRate, 80) && totalChildSafeRecords > 0) {
     concerns.push(
       `Only ${canExitSafelyRate}% of areas confirm children can exit safely — security measures must never compromise emergency egress. This is a critical safety concern under Reg 25.`,
     );
   }
 
-  if (restrictedItemsSecuredRate < 80 && totalChildSafeRecords > 0) {
+  if (below(restrictedItemsSecuredRate, 80) && totalChildSafeRecords > 0) {
     concerns.push(
       `Only ${restrictedItemsSecuredRate}% of restricted items secured — hazardous materials, medications, or restricted items are not consistently locked away from children.`,
     );
   }
 
-  if (handoverWitnessedRate < 50 && totalKeyTrackingRecords > 0) {
+  if (below(handoverWitnessedRate, 50) && totalKeyTrackingRecords > 0) {
     concerns.push(
       `Only ${handoverWitnessedRate}% of key handovers witnessed — unwitnessed handovers create accountability gaps and undermine the chain of custody for keys.`,
     );
   }
 
-  if (signedForRate < 50 && totalKeyTrackingRecords > 0) {
+  if (below(signedForRate, 50) && totalKeyTrackingRecords > 0) {
     concerns.push(
       `Only ${signedForRate}% of key transactions signed for — without signatures, the home cannot evidence accountability for key custody.`,
     );
   }
 
-  if (auditActionCompletionRate < 50 && totalActionsRaised > 0) {
+  if (below(auditActionCompletionRate, 50) && totalActionsRaised > 0) {
     concerns.push(
       `Only ${auditActionCompletionRate}% of security audit actions completed — identified security improvements are not being followed through, leaving known vulnerabilities unresolved.`,
     );
   }
 
-  if (criticalFindingRate >= 30 && totalFindings > 0) {
+  if (meets(criticalFindingRate, 30) && totalFindings > 0) {
     concerns.push(
       `${criticalFindingRate}% of security audit findings are critical — a high proportion of serious findings indicates significant premises security weaknesses.`,
     );
@@ -788,13 +791,13 @@ export function computeKeyholdingAccessControl(
     );
   }
 
-  if (locationCorrectRate < 70 && totalKeyRegisterRecords > 0) {
+  if (below(locationCorrectRate, 70) && totalKeyRegisterRecords > 0) {
     concerns.push(
       `Only ${locationCorrectRate}% of keys in correct locations — keys are frequently not where they should be, making it impossible to ensure they are secure and accessible when needed.`,
     );
   }
 
-  if (emergencyOverrideRate < 50 && totalAccessControlRecords > 0) {
+  if (below(emergencyOverrideRate, 50) && totalAccessControlRecords > 0) {
     concerns.push(
       `Only ${emergencyOverrideRate}% of emergency overrides tested — untested emergency overrides may fail when needed, putting children and staff at risk during emergencies.`,
     );
@@ -805,7 +808,7 @@ export function computeKeyholdingAccessControl(
   const recommendations: KeyholdingRecommendation[] = [];
   let rank = 0;
 
-  if (keyRegisterRate < 50 && totalKeyRegisterRecords > 0) {
+  if (below(keyRegisterRate, 50) && totalKeyRegisterRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -815,7 +818,7 @@ export function computeKeyholdingAccessControl(
     });
   }
 
-  if (accessControlRate < 50 && totalAccessControlRecords > 0) {
+  if (below(accessControlRate, 50) && totalAccessControlRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -825,7 +828,7 @@ export function computeKeyholdingAccessControl(
     });
   }
 
-  if (childSafeRate < 50 && totalChildSafeRecords > 0) {
+  if (below(childSafeRate, 50) && totalChildSafeRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -835,7 +838,7 @@ export function computeKeyholdingAccessControl(
     });
   }
 
-  if (securityAuditRate < 50 && totalSecurityAuditRecords > 0) {
+  if (below(securityAuditRate, 50) && totalSecurityAuditRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -845,7 +848,7 @@ export function computeKeyholdingAccessControl(
     });
   }
 
-  if (lostKeyRate >= 10 && totalKeyTrackingRecords > 0) {
+  if (meets(lostKeyRate, 10) && totalKeyTrackingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -855,7 +858,7 @@ export function computeKeyholdingAccessControl(
     });
   }
 
-  if (canExitSafelyRate < 80 && totalChildSafeRecords > 0) {
+  if (below(canExitSafelyRate, 80) && totalChildSafeRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -865,7 +868,7 @@ export function computeKeyholdingAccessControl(
     });
   }
 
-  if (restrictedItemsSecuredRate < 80 && totalChildSafeRecords > 0) {
+  if (below(restrictedItemsSecuredRate, 80) && totalChildSafeRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -875,7 +878,7 @@ export function computeKeyholdingAccessControl(
     });
   }
 
-  if (staffComplianceRate < 50 && totalStaffCompDenom > 0) {
+  if (below(staffComplianceRate, 50) && totalStaffCompDenom > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -885,7 +888,7 @@ export function computeKeyholdingAccessControl(
     });
   }
 
-  if (unauthorisedAttemptRate >= 10 && totalAccessControlRecords > 0) {
+  if (meets(unauthorisedAttemptRate, 10) && totalAccessControlRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -895,7 +898,7 @@ export function computeKeyholdingAccessControl(
     });
   }
 
-  if (overdueAuditRate >= 30 && totalSecurityAuditRecords > 0) {
+  if (meets(overdueAuditRate, 30) && totalSecurityAuditRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -905,7 +908,7 @@ export function computeKeyholdingAccessControl(
     });
   }
 
-  if (keyRegisterRate >= 50 && keyRegisterRate < 80 && totalKeyRegisterRecords > 0) {
+  if (meets(keyRegisterRate, 50) && below(keyRegisterRate, 80) && totalKeyRegisterRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -915,7 +918,7 @@ export function computeKeyholdingAccessControl(
     });
   }
 
-  if (accessControlRate >= 50 && accessControlRate < 80 && totalAccessControlRecords > 0) {
+  if (meets(accessControlRate, 50) && below(accessControlRate, 80) && totalAccessControlRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -925,7 +928,7 @@ export function computeKeyholdingAccessControl(
     });
   }
 
-  if (keyTrackingRate < 80 && totalKeyTrackingRecords > 0) {
+  if (below(keyTrackingRate, 80) && totalKeyTrackingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -935,7 +938,7 @@ export function computeKeyholdingAccessControl(
     });
   }
 
-  if (auditActionCompletionRate < 50 && totalActionsRaised > 0) {
+  if (below(auditActionCompletionRate, 50) && totalActionsRaised > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -945,7 +948,7 @@ export function computeKeyholdingAccessControl(
     });
   }
 
-  if (handoverWitnessedRate < 50 && totalKeyTrackingRecords > 0) {
+  if (below(handoverWitnessedRate, 50) && totalKeyTrackingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -955,7 +958,7 @@ export function computeKeyholdingAccessControl(
     });
   }
 
-  if (signedForRate < 50 && totalKeyTrackingRecords > 0) {
+  if (below(signedForRate, 50) && totalKeyTrackingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -965,7 +968,7 @@ export function computeKeyholdingAccessControl(
     });
   }
 
-  if (emergencyOverrideRate < 50 && totalAccessControlRecords > 0) {
+  if (below(emergencyOverrideRate, 50) && totalAccessControlRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -975,7 +978,7 @@ export function computeKeyholdingAccessControl(
     });
   }
 
-  if (childSafeRate >= 50 && childSafeRate < 80 && totalChildSafeRecords > 0) {
+  if (meets(childSafeRate, 50) && below(childSafeRate, 80) && totalChildSafeRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -985,7 +988,7 @@ export function computeKeyholdingAccessControl(
     });
   }
 
-  if (staffComplianceRate >= 50 && staffComplianceRate < 80 && totalStaffCompDenom > 0) {
+  if (meets(staffComplianceRate, 50) && below(staffComplianceRate, 80) && totalStaffCompDenom > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -995,7 +998,7 @@ export function computeKeyholdingAccessControl(
     });
   }
 
-  if (securityAuditRate >= 50 && securityAuditRate < 75 && totalSecurityAuditRecords > 0) {
+  if (meets(securityAuditRate, 50) && below(securityAuditRate, 75) && totalSecurityAuditRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1005,7 +1008,7 @@ export function computeKeyholdingAccessControl(
     });
   }
 
-  if (locationCorrectRate < 70 && totalKeyRegisterRecords > 0) {
+  if (below(locationCorrectRate, 70) && totalKeyRegisterRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1051,42 +1054,42 @@ export function computeKeyholdingAccessControl(
 
   // -- Critical insights --
 
-  if (keyRegisterRate < 50 && totalKeyRegisterRecords > 0) {
+  if (below(keyRegisterRate, 50) && totalKeyRegisterRecords > 0) {
     insights.push({
       text: `Only ${keyRegisterRate}% key register accuracy. An inaccurate key register means the home cannot account for who holds keys to the premises and restricted areas. Under CHR 2015 Reg 25, the registered person must ensure the premises are secure — an unreliable key register fundamentally undermines this obligation.`,
       severity: "critical",
     });
   }
 
-  if (accessControlRate < 50 && totalAccessControlRecords > 0) {
+  if (below(accessControlRate, 50) && totalAccessControlRecords > 0) {
     insights.push({
       text: `Only ${accessControlRate}% access control compliance. Widespread access control failures mean the home cannot demonstrate that its premises are secure or that children are protected from unauthorised access. This represents a direct risk to children's safety under Reg 25.`,
       severity: "critical",
     });
   }
 
-  if (childSafeRate < 50 && totalChildSafeRecords > 0) {
+  if (below(childSafeRate, 50) && totalChildSafeRecords > 0) {
     insights.push({
       text: `Only ${childSafeRate}% child-safe area compliance. The majority of areas assessed do not meet child-safe standards — children may be exposed to hazards, inappropriate locks, unsecured restricted items, or environments where they cannot exit safely in an emergency.`,
       severity: "critical",
     });
   }
 
-  if (securityAuditRate < 50 && totalSecurityAuditRecords > 0) {
+  if (below(securityAuditRate, 50) && totalSecurityAuditRecords > 0) {
     insights.push({
       text: `Only ${securityAuditRate}% security audit pass rate. Persistent audit failures indicate systemic premises security weaknesses that are not being resolved. The registered person must ensure that security deficiencies are identified, actioned, and verified through re-audit.`,
       severity: "critical",
     });
   }
 
-  if (lostKeyRate >= 10 && totalKeyTrackingRecords > 0) {
+  if (meets(lostKeyRate, 10) && totalKeyTrackingRecords > 0) {
     insights.push({
       text: `${lostKeyRate}% of key tracking records involve lost keys. Each lost key represents a potential security breach — locks may need changing, and the pattern of losses suggests inadequate key management controls. Lost keys to restricted areas such as medication rooms or offices create immediate safeguarding risks.`,
       severity: "critical",
     });
   }
 
-  if (canExitSafelyRate < 70 && totalChildSafeRecords > 0) {
+  if (below(canExitSafelyRate, 70) && totalChildSafeRecords > 0) {
     insights.push({
       text: `Only ${canExitSafelyRate}% of areas confirm children can exit safely. Security measures must never compromise emergency egress — children must always be able to leave areas safely in an emergency. This is a fundamental safety requirement under fire safety regulations and Reg 25.`,
       severity: "critical",
@@ -1109,84 +1112,84 @@ export function computeKeyholdingAccessControl(
 
   // -- Warning insights --
 
-  if (keyRegisterRate >= 50 && keyRegisterRate < 80 && totalKeyRegisterRecords > 0) {
+  if (meets(keyRegisterRate, 50) && below(keyRegisterRate, 80) && totalKeyRegisterRecords > 0) {
     insights.push({
       text: `Key register accuracy at ${keyRegisterRate}% — while improving, gaps in the register mean some keys cannot be fully accounted for. Regular weekly register checks and named accountability would strengthen this area.`,
       severity: "warning",
     });
   }
 
-  if (accessControlRate >= 50 && accessControlRate < 80 && totalAccessControlRecords > 0) {
+  if (meets(accessControlRate, 50) && below(accessControlRate, 80) && totalAccessControlRecords > 0) {
     insights.push({
       text: `Access control compliance at ${accessControlRate}% — while some areas are well-managed, inconsistency creates potential security vulnerabilities. A systematic review of all access points would identify and close gaps.`,
       severity: "warning",
     });
   }
 
-  if (keyTrackingRate < 80 && totalKeyTrackingRecords > 0) {
+  if (below(keyTrackingRate, 80) && totalKeyTrackingRecords > 0) {
     insights.push({
       text: `Key tracking compliance at ${keyTrackingRate}% — keys are not always being issued and returned according to policy. Inconsistent tracking undermines the chain of custody and creates windows where key whereabouts are uncertain.`,
       severity: "warning",
     });
   }
 
-  if (securityAuditRate >= 50 && securityAuditRate < 75 && totalSecurityAuditRecords > 0) {
+  if (meets(securityAuditRate, 50) && below(securityAuditRate, 75) && totalSecurityAuditRecords > 0) {
     insights.push({
       text: `Security audit pass rate at ${securityAuditRate}% — while audits are being conducted, too many are identifying failures. This suggests systemic issues that need addressing through a structured security improvement programme.`,
       severity: "warning",
     });
   }
 
-  if (childSafeRate >= 50 && childSafeRate < 80 && totalChildSafeRecords > 0) {
+  if (meets(childSafeRate, 50) && below(childSafeRate, 80) && totalChildSafeRecords > 0) {
     insights.push({
       text: `Child-safe area compliance at ${childSafeRate}% — some areas are not meeting child-safe standards. Consistent application of child-safe measures across all areas is essential to protect children's physical safety.`,
       severity: "warning",
     });
   }
 
-  if (staffComplianceRate >= 50 && staffComplianceRate < 80 && totalStaffCompDenom > 0) {
+  if (meets(staffComplianceRate, 50) && below(staffComplianceRate, 80) && totalStaffCompDenom > 0) {
     insights.push({
       text: `Staff compliance with keyholding protocols at ${staffComplianceRate}% — while many staff follow procedures, inconsistency means the security framework has weak points. Targeted training and supervision would help.`,
       severity: "warning",
     });
   }
 
-  if (overdueAuditRate >= 15 && overdueAuditRate < 30 && totalSecurityAuditRecords > 0) {
+  if (meets(overdueAuditRate, 15) && below(overdueAuditRate, 30) && totalSecurityAuditRecords > 0) {
     insights.push({
       text: `${overdueAuditRate}% of security audits overdue — while the majority are on schedule, gaps in the audit cycle mean some security measures are not being regularly verified.`,
       severity: "warning",
     });
   }
 
-  if (auditActionCompletionRate >= 50 && auditActionCompletionRate < 70 && totalActionsRaised > 0) {
+  if (meets(auditActionCompletionRate, 50) && below(auditActionCompletionRate, 70) && totalActionsRaised > 0) {
     insights.push({
       text: `Security audit action completion at ${auditActionCompletionRate}% — some identified vulnerabilities are not being addressed. Without follow-through, audits become a paper exercise rather than a genuine security improvement tool.`,
       severity: "warning",
     });
   }
 
-  if (duplicateRate >= 20 && totalKeyRegisterRecords > 0) {
+  if (meets(duplicateRate, 20) && totalKeyRegisterRecords > 0) {
     insights.push({
       text: `${duplicateRate}% of key register entries show duplicate keys exist — while spares may be legitimate, uncontrolled duplicates create security risks. Each duplicate should be accounted for and its holder authorised.`,
       severity: "warning",
     });
   }
 
-  if (unauthorisedAttemptRate >= 5 && unauthorisedAttemptRate < 10 && totalAccessControlRecords > 0) {
+  if (meets(unauthorisedAttemptRate, 5) && below(unauthorisedAttemptRate, 10) && totalAccessControlRecords > 0) {
     insights.push({
       text: `${unauthorisedAttemptRate}% unauthorised access attempts recorded — while access controls are detecting these, the frequency suggests potential vulnerabilities or gaps in visitor/access management protocols.`,
       severity: "warning",
     });
   }
 
-  if (handoverWitnessedRate >= 50 && handoverWitnessedRate < 80 && totalKeyTrackingRecords > 0) {
+  if (meets(handoverWitnessedRate, 50) && below(handoverWitnessedRate, 80) && totalKeyTrackingRecords > 0) {
     insights.push({
       text: `Key handover witnessing at ${handoverWitnessedRate}% — not all key handovers are witnessed, creating accountability gaps. Witnessed handovers are essential for maintaining the chain of custody.`,
       severity: "warning",
     });
   }
 
-  if (shiftEndComplianceRate < 80 && shiftEndComplianceRate >= 50 && totalKeyTrackingRecords > 0) {
+  if (below(shiftEndComplianceRate, 80) && meets(shiftEndComplianceRate, 50) && totalKeyTrackingRecords > 0) {
     insights.push({
       text: `Shift-end key return compliance at ${shiftEndComplianceRate}% — some staff are not returning keys at the end of their shifts, leaving keys unaccounted for outside working hours.`,
       severity: "warning",
@@ -1219,8 +1222,8 @@ export function computeKeyholdingAccessControl(
   }
 
   if (
-    keyRegisterRate >= 95 &&
-    locationCorrectRate >= 95 &&
+    meets(keyRegisterRate, 95) &&
+    meets(locationCorrectRate, 95) &&
     totalKeyRegisterRecords > 0
   ) {
     insights.push({
@@ -1230,8 +1233,8 @@ export function computeKeyholdingAccessControl(
   }
 
   if (
-    accessControlRate >= 95 &&
-    accessLoggedRate >= 95 &&
+    meets(accessControlRate, 95) &&
+    meets(accessLoggedRate, 95) &&
     totalAccessControlRecords > 0
   ) {
     insights.push({
@@ -1241,9 +1244,9 @@ export function computeKeyholdingAccessControl(
   }
 
   if (
-    keyTrackingRate >= 95 &&
-    handoverWitnessedRate >= 95 &&
-    signedForRate >= 95 &&
+    meets(keyTrackingRate, 95) &&
+    meets(handoverWitnessedRate, 95) &&
+    meets(signedForRate, 95) &&
     totalKeyTrackingRecords > 0
   ) {
     insights.push({
@@ -1253,8 +1256,8 @@ export function computeKeyholdingAccessControl(
   }
 
   if (
-    securityAuditRate >= 90 &&
-    auditActionCompletionRate >= 90 &&
+    meets(securityAuditRate, 90) &&
+    meets(auditActionCompletionRate, 90) &&
     totalSecurityAuditRecords > 0 &&
     totalActionsRaised > 0
   ) {
@@ -1265,9 +1268,9 @@ export function computeKeyholdingAccessControl(
   }
 
   if (
-    childSafeRate >= 95 &&
-    canExitSafelyRate >= 95 &&
-    hazardFreeRate >= 95 &&
+    meets(childSafeRate, 95) &&
+    meets(canExitSafelyRate, 95) &&
+    meets(hazardFreeRate, 95) &&
     totalChildSafeRecords > 0
   ) {
     insights.push({
@@ -1277,7 +1280,7 @@ export function computeKeyholdingAccessControl(
   }
 
   if (
-    staffComplianceRate >= 95 &&
+    meets(staffComplianceRate, 95) &&
     totalStaffCompDenom > 0
   ) {
     insights.push({
@@ -1310,8 +1313,8 @@ export function computeKeyholdingAccessControl(
   }
 
   if (
-    restrictedItemsSecuredRate >= 95 &&
-    windowRestrictorRate >= 95 &&
+    meets(restrictedItemsSecuredRate, 95) &&
+    meets(windowRestrictorRate, 95) &&
     totalChildSafeRecords > 0
   ) {
     insights.push({

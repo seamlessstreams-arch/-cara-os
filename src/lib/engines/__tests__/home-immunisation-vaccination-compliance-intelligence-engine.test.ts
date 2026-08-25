@@ -223,7 +223,7 @@ describe("insufficient data / empty special cases", () => {
       gp_liaison_records: [],
       child_understanding_records: [],
     }));
-    expect(r.schedule_adherence_rate).toBe(0);
+    expect(r.schedule_adherence_rate).toBeNull();
     expect(r.catch_up_rate).toBeNull();
     expect(r.consent_management_rate).toBeNull();
     expect(r.gp_liaison_rate).toBeNull();
@@ -457,9 +457,9 @@ describe("schedule adherence rate", () => {
     expect(r.schedule_adherence_rate).toBe(33);
   });
 
-  it("0% when no schedule records", () => {
+  it("null when no schedule records", () => {
     const r = compute(baseInput({ vaccination_schedule_records: [] }));
-    expect(r.schedule_adherence_rate).toBe(0);
+    expect(r.schedule_adherence_rate).toBeNull();
   });
 });
 
@@ -477,7 +477,7 @@ describe("catch-up rate", () => {
     expect(r.catch_up_rate).toBe(100);
   });
 
-  it("0% when no catch-up records", () => {
+  it("null when no catch-up records", () => {
     const r = compute(baseInput({ catch_up_programme_records: [] }));
     expect(r.catch_up_rate).toBeNull();
   });
@@ -524,7 +524,7 @@ describe("consent management rate", () => {
     expect(r.consent_management_rate).toBe(100);
   });
 
-  it("0% when no consent records", () => {
+  it("null when no consent records", () => {
     const r = compute(baseInput({ consent_management_records: [] }));
     expect(r.consent_management_rate).toBeNull();
   });
@@ -568,7 +568,7 @@ describe("GP liaison rate", () => {
     expect(r.gp_liaison_rate).toBe(100);
   });
 
-  it("0% when no GP liaison records", () => {
+  it("null when no GP liaison records", () => {
     const r = compute(baseInput({ gp_liaison_records: [] }));
     expect(r.gp_liaison_rate).toBeNull();
   });
@@ -613,7 +613,7 @@ describe("child understanding rate", () => {
     expect(r.child_understanding_rate).toBe(100);
   });
 
-  it("0% when no understanding records", () => {
+  it("null when no understanding records", () => {
     const r = compute(baseInput({ child_understanding_records: [] }));
     expect(r.child_understanding_rate).toBeNull();
   });
@@ -673,7 +673,7 @@ describe("documentation rate", () => {
     expect(r.documentation_rate).toBe(100);
   });
 
-  it("0% when no schedule or consent records to compute from", () => {
+  it("null when no schedule or consent records to compute from", () => {
     const r = compute(baseInput({
       vaccination_schedule_records: [],
       consent_management_records: [],
@@ -809,7 +809,7 @@ describe("scoring penalties", () => {
     const r = compute(baseInput({
       vaccination_schedule_records: [],
     }));
-    expect(r.schedule_adherence_rate).toBe(0);
+    expect(r.schedule_adherence_rate).toBeNull();
     // no penalty applied because array is empty
   });
 
@@ -2490,10 +2490,10 @@ describe("edge cases", () => {
         makeVaccinationSchedule({ administered: false, administered_on_time: false, administered_date: null }),
       ],
     }));
-    // adverseScreeningRate, batchRecordingRate, siteRecordingRate, healthRecordDocRate, redBookUpdateRate all depend on administered
-    // They should be 0 since pct(0, 0) = 0
-    // Observable via documentation composite: (health 0 + red book 0 + batch 0 + consent 100) / 4 = 25
-    expect(r.documentation_rate).toBe(25);
+    // The administered-dependent rates are unmeasured (nothing administered), so
+    // rate(0,0) = null and meanOf drops them: only the measured consent rate
+    // (100%) remains in the documentation composite.
+    expect(r.documentation_rate).toBe(100);
   });
 
   it("total_children=1 with full data is valid", () => {
@@ -2516,14 +2516,15 @@ describe("edge cases", () => {
     expect(r.immunisation_score).toBeGreaterThanOrEqual(0);
   });
 
-  it("catch-up with 0 vaccines_required yields 0% progress", () => {
+  it("catch-up with 0 vaccines_required leaves progress unmeasured", () => {
     const r = compute(baseInput({
       catch_up_programme_records: [
         makeCatchUp({ vaccines_required: 0, vaccines_administered: 0, programme_completed: true, on_track: true }),
       ],
     }));
-    // pct(0, 0) = 0, so vaccineProgress = 0. completion=100, onTrack=100, progress=0 => avg=67
-    expect(r.catch_up_rate).toBe(67);
+    // No vaccines were required, so vaccineProgress is null and meanOf averages
+    // the measured components: mean(100 completion, 100 on-track) = 100.
+    expect(r.catch_up_rate).toBe(100);
   });
 
   it("multiple children with same child_id are counted once for coverage", () => {

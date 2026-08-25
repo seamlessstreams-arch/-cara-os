@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME IT EQUIPMENT & CONNECTIVITY INTELLIGENCE ENGINE
 // Monitors the home's IT equipment and connectivity including WiFi reliability,
@@ -173,10 +174,6 @@ export interface ItEquipmentConnectivityResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -204,12 +201,12 @@ function emptyResult(
     total_printer_records: 0,
     total_software_records: 0,
     total_digital_access_records: 0,
-    wifi_reliability_rate: 0,
-    device_availability_rate: 0,
-    printer_access_rate: 0,
-    software_currency_rate: 0,
-    digital_access_rate: 0,
-    child_satisfaction_rate: 0,
+    wifi_reliability_rate: null,
+    device_availability_rate: null,
+    printer_access_rate: null,
+    software_currency_rate: null,
+    digital_access_rate: null,
+    child_satisfaction_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -288,13 +285,13 @@ export function computeItEquipmentConnectivity(
   // --- WiFi reliability metrics ---
   const totalWifiRecords = wifi_records.length;
   const wifiMeetsTarget = wifi_records.filter((w) => w.meets_target).length;
-  const wifiReliabilityRate = pct(wifiMeetsTarget, totalWifiRecords);
+  const wifiReliabilityRate = rate(wifiMeetsTarget, totalWifiRecords);
 
   const contentFilterActive = wifi_records.filter((w) => w.content_filter_active).length;
-  const contentFilterRate = pct(contentFilterActive, totalWifiRecords);
+  const contentFilterRate = rate(contentFilterActive, totalWifiRecords);
 
   const parentalControlsEnabled = wifi_records.filter((w) => w.parental_controls_enabled).length;
-  const parentalControlsRate = pct(parentalControlsEnabled, totalWifiRecords);
+  const parentalControlsRate = rate(parentalControlsEnabled, totalWifiRecords);
 
   const totalOutageMinutes = wifi_records.reduce((sum, w) => sum + w.outage_minutes, 0);
   const avgOutageMinutes = totalWifiRecords > 0 ? Math.round(totalOutageMinutes / totalWifiRecords) : null;
@@ -302,33 +299,33 @@ export function computeItEquipmentConnectivity(
   const excellentOrGoodSignal = wifi_records.filter(
     (w) => w.signal_strength === "excellent" || w.signal_strength === "good",
   ).length;
-  const signalQualityRate = pct(excellentOrGoodSignal, totalWifiRecords);
+  const signalQualityRate = rate(excellentOrGoodSignal, totalWifiRecords);
 
   // --- Device availability metrics ---
   const totalDeviceRecords = device_records.length;
   const operationalDevices = device_records.filter((d) => d.operational).length;
-  const deviceAvailabilityRate = pct(operationalDevices, totalDeviceRecords);
+  const deviceAvailabilityRate = rate(operationalDevices, totalDeviceRecords);
 
   const devicesMeetingEdNeeds = device_records.filter(
     (d) => d.operational && d.meets_educational_needs,
   ).length;
-  const educationalNeedsRate = pct(devicesMeetingEdNeeds, totalDeviceRecords);
+  const educationalNeedsRate = rate(devicesMeetingEdNeeds, totalDeviceRecords);
 
   const devicesMaintenanceDue = device_records.filter((d) => d.maintenance_due).length;
-  const maintenanceDueRate = pct(devicesMaintenanceDue, totalDeviceRecords);
+  const maintenanceDueRate = rate(devicesMaintenanceDue, totalDeviceRecords);
 
   const devicesInGoodCondition = device_records.filter(
     (d) => d.condition === "excellent" || d.condition === "good",
   ).length;
-  const deviceConditionRate = pct(devicesInGoodCondition, totalDeviceRecords);
+  const deviceConditionRate = rate(devicesInGoodCondition, totalDeviceRecords);
 
   const agingDevices = device_records.filter((d) => d.age_years >= 5).length;
-  const agingDeviceRate = pct(agingDevices, totalDeviceRecords);
+  const agingDeviceRate = rate(agingDevices, totalDeviceRecords);
 
   const uniqueChildrenWithDevice = new Set(
     device_records.filter((d) => d.child_id !== null).map((d) => d.child_id),
   ).size;
-  const deviceChildCoverage = total_children > 0 ? pct(uniqueChildrenWithDevice, total_children) : 0;
+  const deviceChildCoverage = total_children > 0 ? rate(uniqueChildrenWithDevice, total_children) : 0;
 
   // --- Printer access metrics ---
   const totalPrinterRecords = printer_records.length;
@@ -336,18 +333,18 @@ export function computeItEquipmentConnectivity(
   const printersAccessibleToChildren = printer_records.filter(
     (p) => p.operational && p.accessible_to_children,
   ).length;
-  const printerAccessRate = pct(printersAccessibleToChildren, totalPrinterRecords);
+  const printerAccessRate = rate(printersAccessibleToChildren, totalPrinterRecords);
 
   // --- Software currency metrics ---
   const totalSoftwareRecords = software_records.length;
   const upToDateSoftware = software_records.filter((s) => s.is_up_to_date).length;
-  const softwareCurrencyRate = pct(upToDateSoftware, totalSoftwareRecords);
+  const softwareCurrencyRate = rate(upToDateSoftware, totalSoftwareRecords);
 
   const validLicences = software_records.filter((s) => s.licence_valid).length;
-  const licenceValidRate = pct(validLicences, totalSoftwareRecords);
+  const licenceValidRate = rate(validLicences, totalSoftwareRecords);
 
   const securityPatched = software_records.filter((s) => s.security_patched).length;
-  const securityPatchRate = pct(securityPatched, totalSoftwareRecords);
+  const securityPatchRate = rate(securityPatched, totalSoftwareRecords);
 
   // --- Digital access equity metrics ---
   const totalDigitalAccessRecords = digital_access_records.length;
@@ -355,22 +352,22 @@ export function computeItEquipmentConnectivity(
   const childrenWithAccess = digital_access_records.filter(
     (d) => d.has_personal_device || d.has_shared_device_access,
   ).length;
-  const digitalAccessRate = pct(childrenWithAccess, totalDigitalAccessRecords);
+  const digitalAccessRate = rate(childrenWithAccess, totalDigitalAccessRecords);
 
   const homeworkAccessAdequate = digital_access_records.filter(
     (d) => d.homework_access_adequate,
   ).length;
-  const homeworkAccessRate = pct(homeworkAccessAdequate, totalDigitalAccessRecords);
+  const homeworkAccessRate = rate(homeworkAccessAdequate, totalDigitalAccessRecords);
 
   const onlineSafetyTrained = digital_access_records.filter(
     (d) => d.online_safety_training_completed,
   ).length;
-  const onlineSafetyTrainingRate = pct(onlineSafetyTrained, totalDigitalAccessRecords);
+  const onlineSafetyTrainingRate = rate(onlineSafetyTrained, totalDigitalAccessRecords);
 
   const skillsAssessed = digital_access_records.filter(
     (d) => d.digital_skills_assessed,
   ).length;
-  const skillsAssessedRate = pct(skillsAssessed, totalDigitalAccessRecords);
+  const skillsAssessedRate = rate(skillsAssessed, totalDigitalAccessRecords);
 
   const assistiveTechNeeded = digital_access_records.filter(
     (d) => d.assistive_technology_needed,
@@ -378,7 +375,7 @@ export function computeItEquipmentConnectivity(
   const assistiveTechProvided = digital_access_records.filter(
     (d) => d.assistive_technology_needed && d.assistive_technology_provided,
   ).length;
-  const assistiveTechRate = pct(assistiveTechProvided, assistiveTechNeeded);
+  const assistiveTechRate = rate(assistiveTechProvided, assistiveTechNeeded);
 
   const barriersIdentified = digital_access_records.filter(
     (d) => d.barriers_identified.length > 0,
@@ -386,12 +383,12 @@ export function computeItEquipmentConnectivity(
   const barriersAddressed = digital_access_records.filter(
     (d) => d.barriers_identified.length > 0 && d.barriers_addressed,
   ).length;
-  const barriersAddressedRate = pct(barriersAddressed, barriersIdentified);
+  const barriersAddressedRate = rate(barriersAddressed, barriersIdentified);
 
   const uniqueChildrenInAccess = new Set(
     digital_access_records.map((d) => d.child_id),
   ).size;
-  const accessChildCoverage = total_children > 0 ? pct(uniqueChildrenInAccess, total_children) : 0;
+  const accessChildCoverage = total_children > 0 ? rate(uniqueChildrenInAccess, total_children) : 0;
 
   // --- Child satisfaction composite ---
   const satisfactionRatings = digital_access_records
@@ -415,50 +412,50 @@ export function computeItEquipmentConnectivity(
   let score = 52;
 
   // --- Bonus 1: wifiReliabilityRate (>=90: +5, >=70: +3) ---
-  if (wifiReliabilityRate >= 90) score += 5;
-  else if (wifiReliabilityRate >= 70) score += 3;
+  if (meets(wifiReliabilityRate, 90)) score += 5;
+  else if (meets(wifiReliabilityRate, 70)) score += 3;
 
   // --- Bonus 2: deviceAvailabilityRate (>=95: +5, >=80: +3) ---
-  if (deviceAvailabilityRate >= 95) score += 5;
-  else if (deviceAvailabilityRate >= 80) score += 3;
+  if (meets(deviceAvailabilityRate, 95)) score += 5;
+  else if (meets(deviceAvailabilityRate, 80)) score += 3;
 
   // --- Bonus 3: softwareCurrencyRate (>=90: +4, >=70: +2) ---
-  if (softwareCurrencyRate >= 90) score += 4;
-  else if (softwareCurrencyRate >= 70) score += 2;
+  if (meets(softwareCurrencyRate, 90)) score += 4;
+  else if (meets(softwareCurrencyRate, 70)) score += 2;
 
   // --- Bonus 4: digitalAccessRate (>=95: +4, >=80: +2) ---
-  if (digitalAccessRate >= 95) score += 4;
-  else if (digitalAccessRate >= 80) score += 2;
+  if (meets(digitalAccessRate, 95)) score += 4;
+  else if (meets(digitalAccessRate, 80)) score += 2;
 
   // --- Bonus 5: childSatisfactionRate (>=80: +3, >=60: +1) ---
   if ((childSatisfactionRate ?? 0) >= 80) score += 3;
   else if ((childSatisfactionRate ?? 0) >= 60) score += 1;
 
   // --- Bonus 6: printerAccessRate (>=90: +3, >=70: +1) ---
-  if (printerAccessRate >= 90) score += 3;
-  else if (printerAccessRate >= 70) score += 1;
+  if (meets(printerAccessRate, 90)) score += 3;
+  else if (meets(printerAccessRate, 70)) score += 1;
 
   // --- Bonus 7: securityPatchRate (>=95: +2, >=80: +1) ---
-  if (securityPatchRate >= 95) score += 2;
-  else if (securityPatchRate >= 80) score += 1;
+  if (meets(securityPatchRate, 95)) score += 2;
+  else if (meets(securityPatchRate, 80)) score += 1;
 
   // --- Bonus 8: onlineSafetyTrainingRate (>=90: +2, >=70: +1) ---
-  if (onlineSafetyTrainingRate >= 90) score += 2;
-  else if (onlineSafetyTrainingRate >= 70) score += 1;
+  if (meets(onlineSafetyTrainingRate, 90)) score += 2;
+  else if (meets(onlineSafetyTrainingRate, 70)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // wifiReliabilityRate < 40 → -5 (guarded)
-  if (wifiReliabilityRate < 40 && totalWifiRecords > 0) score -= 5;
+  if (below(wifiReliabilityRate, 40) && totalWifiRecords > 0) score -= 5;
 
   // deviceAvailabilityRate < 50 → -5 (guarded)
-  if (deviceAvailabilityRate < 50 && totalDeviceRecords > 0) score -= 5;
+  if (below(deviceAvailabilityRate, 50) && totalDeviceRecords > 0) score -= 5;
 
   // softwareCurrencyRate < 40 → -4 (guarded)
-  if (softwareCurrencyRate < 40 && totalSoftwareRecords > 0) score -= 4;
+  if (below(softwareCurrencyRate, 40) && totalSoftwareRecords > 0) score -= 4;
 
   // digitalAccessRate < 50 → -4 (guarded)
-  if (digitalAccessRate < 50 && totalDigitalAccessRecords > 0) score -= 4;
+  if (below(digitalAccessRate, 50) && totalDigitalAccessRecords > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -468,51 +465,51 @@ export function computeItEquipmentConnectivity(
 
   const strengths: string[] = [];
 
-  if (wifiReliabilityRate >= 90 && totalWifiRecords > 0) {
+  if (meets(wifiReliabilityRate, 90) && totalWifiRecords > 0) {
     strengths.push(
       `${wifiReliabilityRate}% WiFi reliability — the home provides consistently strong, reliable internet connectivity that supports children's education and development.`,
     );
-  } else if (wifiReliabilityRate >= 70 && totalWifiRecords > 0) {
+  } else if (meets(wifiReliabilityRate, 70) && totalWifiRecords > 0) {
     strengths.push(
       `${wifiReliabilityRate}% WiFi reliability rate — the home maintains good internet connectivity for children's educational and personal needs.`,
     );
   }
 
-  if (deviceAvailabilityRate >= 95 && totalDeviceRecords > 0) {
+  if (meets(deviceAvailabilityRate, 95) && totalDeviceRecords > 0) {
     strengths.push(
       `${deviceAvailabilityRate}% device availability — virtually all computing devices are operational and available for children's use.`,
     );
-  } else if (deviceAvailabilityRate >= 80 && totalDeviceRecords > 0) {
+  } else if (meets(deviceAvailabilityRate, 80) && totalDeviceRecords > 0) {
     strengths.push(
       `${deviceAvailabilityRate}% device availability rate — good levels of operational computing equipment available to support children.`,
     );
   }
 
-  if (printerAccessRate >= 90 && totalPrinterRecords > 0) {
+  if (meets(printerAccessRate, 90) && totalPrinterRecords > 0) {
     strengths.push(
       `${printerAccessRate}% printer access for children — children have excellent access to printing facilities to support homework and personal projects.`,
     );
-  } else if (printerAccessRate >= 70 && totalPrinterRecords > 0) {
+  } else if (meets(printerAccessRate, 70) && totalPrinterRecords > 0) {
     strengths.push(
       `${printerAccessRate}% printer access — good availability of printing facilities for children's educational needs.`,
     );
   }
 
-  if (softwareCurrencyRate >= 90 && totalSoftwareRecords > 0) {
+  if (meets(softwareCurrencyRate, 90) && totalSoftwareRecords > 0) {
     strengths.push(
       `${softwareCurrencyRate}% software currency — software is kept up to date, ensuring children have access to current tools and security protections.`,
     );
-  } else if (softwareCurrencyRate >= 70 && totalSoftwareRecords > 0) {
+  } else if (meets(softwareCurrencyRate, 70) && totalSoftwareRecords > 0) {
     strengths.push(
       `${softwareCurrencyRate}% software currency rate — the home generally maintains current software versions across its devices.`,
     );
   }
 
-  if (digitalAccessRate >= 95 && totalDigitalAccessRecords > 0) {
+  if (meets(digitalAccessRate, 95) && totalDigitalAccessRecords > 0) {
     strengths.push(
       `${digitalAccessRate}% digital access equity — virtually all children have equitable access to computing devices and the internet for their education and development.`,
     );
-  } else if (digitalAccessRate >= 80 && totalDigitalAccessRecords > 0) {
+  } else if (meets(digitalAccessRate, 80) && totalDigitalAccessRecords > 0) {
     strengths.push(
       `${digitalAccessRate}% digital access rate — good levels of equitable digital access across children in the home.`,
     );
@@ -528,85 +525,85 @@ export function computeItEquipmentConnectivity(
     );
   }
 
-  if (securityPatchRate >= 95 && totalSoftwareRecords > 0) {
+  if (meets(securityPatchRate, 95) && totalSoftwareRecords > 0) {
     strengths.push(
       `${securityPatchRate}% of software security-patched — the home demonstrates excellent cyber security practice, protecting children's data and online safety.`,
     );
-  } else if (securityPatchRate >= 80 && totalSoftwareRecords > 0) {
+  } else if (meets(securityPatchRate, 80) && totalSoftwareRecords > 0) {
     strengths.push(
       `${securityPatchRate}% security patch rate — good levels of software security maintenance across the home's devices.`,
     );
   }
 
-  if (onlineSafetyTrainingRate >= 90 && totalDigitalAccessRecords > 0) {
+  if (meets(onlineSafetyTrainingRate, 90) && totalDigitalAccessRecords > 0) {
     strengths.push(
       `${onlineSafetyTrainingRate}% of children have completed online safety training — the home prioritises children's digital safety awareness.`,
     );
-  } else if (onlineSafetyTrainingRate >= 70 && totalDigitalAccessRecords > 0) {
+  } else if (meets(onlineSafetyTrainingRate, 70) && totalDigitalAccessRecords > 0) {
     strengths.push(
       `${onlineSafetyTrainingRate}% online safety training completion — most children have received digital safety training.`,
     );
   }
 
-  if (contentFilterRate >= 95 && totalWifiRecords > 0) {
+  if (meets(contentFilterRate, 95) && totalWifiRecords > 0) {
     strengths.push(
       "Content filtering active across virtually all WiFi access points — strong safeguarding controls are in place to protect children online.",
     );
   }
 
-  if (parentalControlsRate >= 95 && totalWifiRecords > 0) {
+  if (meets(parentalControlsRate, 95) && totalWifiRecords > 0) {
     strengths.push(
       "Parental controls enabled across all WiFi access points — age-appropriate internet access controls are comprehensively implemented.",
     );
   }
 
-  if (educationalNeedsRate >= 90 && totalDeviceRecords > 0) {
+  if (meets(educationalNeedsRate, 90) && totalDeviceRecords > 0) {
     strengths.push(
       `${educationalNeedsRate}% of devices meet educational needs — the home's IT equipment is well-suited to supporting children's learning and homework requirements.`,
     );
   }
 
-  if (homeworkAccessRate >= 90 && totalDigitalAccessRecords > 0) {
+  if (meets(homeworkAccessRate, 90) && totalDigitalAccessRecords > 0) {
     strengths.push(
       `${homeworkAccessRate}% of children have adequate homework access — digital resources effectively support children's educational attainment.`,
     );
   }
 
-  if (deviceChildCoverage >= 100 && total_children > 0) {
+  if (meets(deviceChildCoverage, 100) && total_children > 0) {
     strengths.push(
       "Every child has access to a dedicated computing device — digital equity is fully embedded in the home's provision.",
     );
-  } else if (deviceChildCoverage >= 80 && total_children > 0) {
+  } else if (meets(deviceChildCoverage, 80) && total_children > 0) {
     strengths.push(
       `${deviceChildCoverage}% of children have an assigned device — strong device allocation ensuring most children have personal access to technology.`,
     );
   }
 
-  if (assistiveTechRate >= 100 && assistiveTechNeeded > 0) {
+  if (meets(assistiveTechRate, 100) && assistiveTechNeeded > 0) {
     strengths.push(
       "All children requiring assistive technology have been provided with appropriate solutions — the home demonstrates inclusive digital provision.",
     );
   }
 
-  if (barriersAddressedRate >= 90 && barriersIdentified > 0) {
+  if (meets(barriersAddressedRate, 90) && barriersIdentified > 0) {
     strengths.push(
       `${barriersAddressedRate}% of identified digital access barriers have been addressed — the home actively works to remove obstacles to children's digital participation.`,
     );
   }
 
-  if (deviceConditionRate >= 90 && totalDeviceRecords > 0) {
+  if (meets(deviceConditionRate, 90) && totalDeviceRecords > 0) {
     strengths.push(
       `${deviceConditionRate}% of devices in good or excellent condition — IT equipment is well-maintained, providing children with a positive technology experience.`,
     );
   }
 
-  if (licenceValidRate >= 95 && totalSoftwareRecords > 0) {
+  if (meets(licenceValidRate, 95) && totalSoftwareRecords > 0) {
     strengths.push(
       `${licenceValidRate}% of software licences valid — the home maintains proper software licensing, demonstrating responsible IT governance.`,
     );
   }
 
-  if (signalQualityRate >= 90 && totalWifiRecords > 0) {
+  if (meets(signalQualityRate, 90) && totalWifiRecords > 0) {
     strengths.push(
       `${signalQualityRate}% of WiFi tests show excellent or good signal quality — the home provides reliable wireless coverage throughout.`,
     );
@@ -616,51 +613,51 @@ export function computeItEquipmentConnectivity(
 
   const concerns: string[] = [];
 
-  if (wifiReliabilityRate < 40 && totalWifiRecords > 0) {
+  if (below(wifiReliabilityRate, 40) && totalWifiRecords > 0) {
     concerns.push(
       `Only ${wifiReliabilityRate}% WiFi reliability — the home's internet connectivity is frequently failing to meet targets, directly impacting children's ability to access educational resources and complete homework.`,
     );
-  } else if (wifiReliabilityRate < 70 && wifiReliabilityRate >= 40 && totalWifiRecords > 0) {
+  } else if (below(wifiReliabilityRate, 70) && meets(wifiReliabilityRate, 40) && totalWifiRecords > 0) {
     concerns.push(
       `WiFi reliability at ${wifiReliabilityRate}% — inconsistent internet connectivity may disrupt children's education, homework, and communication with family and professionals.`,
     );
   }
 
-  if (deviceAvailabilityRate < 50 && totalDeviceRecords > 0) {
+  if (below(deviceAvailabilityRate, 50) && totalDeviceRecords > 0) {
     concerns.push(
       `Only ${deviceAvailabilityRate}% device availability — more than half of computing devices are non-operational, creating significant barriers to children's digital access and educational support.`,
     );
-  } else if (deviceAvailabilityRate < 80 && deviceAvailabilityRate >= 50 && totalDeviceRecords > 0) {
+  } else if (below(deviceAvailabilityRate, 80) && meets(deviceAvailabilityRate, 50) && totalDeviceRecords > 0) {
     concerns.push(
       `Device availability at ${deviceAvailabilityRate}% — a notable proportion of computing devices are non-operational, potentially limiting children's access to technology.`,
     );
   }
 
-  if (softwareCurrencyRate < 40 && totalSoftwareRecords > 0) {
+  if (below(softwareCurrencyRate, 40) && totalSoftwareRecords > 0) {
     concerns.push(
       `Only ${softwareCurrencyRate}% software currency — the majority of software is outdated, exposing children to security vulnerabilities and limiting access to current educational tools.`,
     );
-  } else if (softwareCurrencyRate < 70 && softwareCurrencyRate >= 40 && totalSoftwareRecords > 0) {
+  } else if (below(softwareCurrencyRate, 70) && meets(softwareCurrencyRate, 40) && totalSoftwareRecords > 0) {
     concerns.push(
       `Software currency at ${softwareCurrencyRate}% — many software applications are not up to date, risking security gaps and compatibility issues.`,
     );
   }
 
-  if (digitalAccessRate < 50 && totalDigitalAccessRecords > 0) {
+  if (below(digitalAccessRate, 50) && totalDigitalAccessRecords > 0) {
     concerns.push(
       `Only ${digitalAccessRate}% digital access equity — more than half of children lack adequate access to computing devices, creating a significant digital divide that impacts educational outcomes.`,
     );
-  } else if (digitalAccessRate < 80 && digitalAccessRate >= 50 && totalDigitalAccessRecords > 0) {
+  } else if (below(digitalAccessRate, 80) && meets(digitalAccessRate, 50) && totalDigitalAccessRecords > 0) {
     concerns.push(
       `Digital access at ${digitalAccessRate}% — not all children have equitable access to computing devices and the internet, risking educational disadvantage.`,
     );
   }
 
-  if (printerAccessRate < 50 && totalPrinterRecords > 0) {
+  if (below(printerAccessRate, 50) && totalPrinterRecords > 0) {
     concerns.push(
       `Only ${printerAccessRate}% printer access for children — limited printing facilities may hinder children's ability to complete homework and school projects.`,
     );
-  } else if (printerAccessRate < 70 && printerAccessRate >= 50 && totalPrinterRecords > 0) {
+  } else if (below(printerAccessRate, 70) && meets(printerAccessRate, 50) && totalPrinterRecords > 0) {
     concerns.push(
       `Printer access at ${printerAccessRate}% — not all printers are accessible to children, potentially limiting their ability to print homework and educational materials.`,
     );
@@ -676,69 +673,69 @@ export function computeItEquipmentConnectivity(
     );
   }
 
-  if (securityPatchRate < 50 && totalSoftwareRecords > 0) {
+  if (below(securityPatchRate, 50) && totalSoftwareRecords > 0) {
     concerns.push(
       `Only ${securityPatchRate}% of software security-patched — the majority of software lacks current security patches, leaving children's devices and data vulnerable to cyber threats.`,
     );
-  } else if (securityPatchRate < 80 && securityPatchRate >= 50 && totalSoftwareRecords > 0) {
+  } else if (below(securityPatchRate, 80) && meets(securityPatchRate, 50) && totalSoftwareRecords > 0) {
     concerns.push(
       `Security patch rate at ${securityPatchRate}% — some software lacks current security patches, creating potential vulnerabilities.`,
     );
   }
 
-  if (contentFilterRate < 80 && totalWifiRecords > 0) {
+  if (below(contentFilterRate, 80) && totalWifiRecords > 0) {
     concerns.push(
       `Content filtering active on only ${contentFilterRate}% of WiFi access points — gaps in content filtering compromise children's online safety and safeguarding arrangements.`,
     );
   }
 
-  if (parentalControlsRate < 80 && totalWifiRecords > 0) {
+  if (below(parentalControlsRate, 80) && totalWifiRecords > 0) {
     concerns.push(
       `Parental controls enabled on only ${parentalControlsRate}% of WiFi access points — incomplete parental controls risk children accessing age-inappropriate content.`,
     );
   }
 
-  if (onlineSafetyTrainingRate < 50 && totalDigitalAccessRecords > 0) {
+  if (below(onlineSafetyTrainingRate, 50) && totalDigitalAccessRecords > 0) {
     concerns.push(
       `Only ${onlineSafetyTrainingRate}% of children have completed online safety training — the majority of children lack formal digital safety awareness, undermining safeguarding efforts.`,
     );
-  } else if (onlineSafetyTrainingRate < 70 && onlineSafetyTrainingRate >= 50 && totalDigitalAccessRecords > 0) {
+  } else if (below(onlineSafetyTrainingRate, 70) && meets(onlineSafetyTrainingRate, 50) && totalDigitalAccessRecords > 0) {
     concerns.push(
       `Online safety training at ${onlineSafetyTrainingRate}% — not all children have received digital safety training, leaving gaps in online safeguarding.`,
     );
   }
 
-  if (agingDeviceRate >= 40 && totalDeviceRecords > 0) {
+  if (meets(agingDeviceRate, 40) && totalDeviceRecords > 0) {
     concerns.push(
       `${agingDeviceRate}% of devices are 5+ years old — aging equipment may not support current software, run slowly, or fail to meet children's educational requirements.`,
     );
   }
 
-  if (maintenanceDueRate >= 30 && totalDeviceRecords > 0) {
+  if (meets(maintenanceDueRate, 30) && totalDeviceRecords > 0) {
     concerns.push(
       `${maintenanceDueRate}% of devices have maintenance overdue — neglected maintenance increases the risk of equipment failure and data loss.`,
     );
   }
 
-  if (homeworkAccessRate < 60 && totalDigitalAccessRecords > 0) {
+  if (below(homeworkAccessRate, 60) && totalDigitalAccessRecords > 0) {
     concerns.push(
       `Only ${homeworkAccessRate}% of children have adequate homework access — children are unable to access the digital resources they need for their education (Reg 8).`,
     );
   }
 
-  if (assistiveTechRate < 80 && assistiveTechNeeded > 0) {
+  if (below(assistiveTechRate, 80) && assistiveTechNeeded > 0) {
     concerns.push(
       `Only ${assistiveTechRate}% of children needing assistive technology have been provided with it — unmet assistive technology needs represent a failure in inclusive digital provision.`,
     );
   }
 
-  if (barriersAddressedRate < 50 && barriersIdentified > 0) {
+  if (below(barriersAddressedRate, 50) && barriersIdentified > 0) {
     concerns.push(
       `Only ${barriersAddressedRate}% of identified digital access barriers have been addressed — known obstacles to children's digital participation remain unresolved.`,
     );
   }
 
-  if (licenceValidRate < 70 && totalSoftwareRecords > 0) {
+  if (below(licenceValidRate, 70) && totalSoftwareRecords > 0) {
     concerns.push(
       `Only ${licenceValidRate}% of software licences are valid — unlicensed software exposes the home to legal risk and may result in loss of access to critical applications.`,
     );
@@ -750,7 +747,7 @@ export function computeItEquipmentConnectivity(
     );
   }
 
-  if (accessChildCoverage < 60 && total_children > 0 && totalDigitalAccessRecords > 0) {
+  if (below(accessChildCoverage, 60) && total_children > 0 && totalDigitalAccessRecords > 0) {
     concerns.push(
       `Only ${accessChildCoverage}% of children have digital access records — many children's digital access needs have not been assessed or documented.`,
     );
@@ -761,7 +758,7 @@ export function computeItEquipmentConnectivity(
   const recommendations: ItEquipmentRecommendation[] = [];
   let rank = 0;
 
-  if (wifiReliabilityRate < 40 && totalWifiRecords > 0) {
+  if (below(wifiReliabilityRate, 40) && totalWifiRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -771,7 +768,7 @@ export function computeItEquipmentConnectivity(
     });
   }
 
-  if (deviceAvailabilityRate < 50 && totalDeviceRecords > 0) {
+  if (below(deviceAvailabilityRate, 50) && totalDeviceRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -781,7 +778,7 @@ export function computeItEquipmentConnectivity(
     });
   }
 
-  if (digitalAccessRate < 50 && totalDigitalAccessRecords > 0) {
+  if (below(digitalAccessRate, 50) && totalDigitalAccessRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -791,7 +788,7 @@ export function computeItEquipmentConnectivity(
     });
   }
 
-  if (softwareCurrencyRate < 40 && totalSoftwareRecords > 0) {
+  if (below(softwareCurrencyRate, 40) && totalSoftwareRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -801,7 +798,7 @@ export function computeItEquipmentConnectivity(
     });
   }
 
-  if (securityPatchRate < 50 && totalSoftwareRecords > 0) {
+  if (below(securityPatchRate, 50) && totalSoftwareRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -811,7 +808,7 @@ export function computeItEquipmentConnectivity(
     });
   }
 
-  if (contentFilterRate < 80 && totalWifiRecords > 0) {
+  if (below(contentFilterRate, 80) && totalWifiRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -821,7 +818,7 @@ export function computeItEquipmentConnectivity(
     });
   }
 
-  if (onlineSafetyTrainingRate < 50 && totalDigitalAccessRecords > 0) {
+  if (below(onlineSafetyTrainingRate, 50) && totalDigitalAccessRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -831,7 +828,7 @@ export function computeItEquipmentConnectivity(
     });
   }
 
-  if (assistiveTechRate < 80 && assistiveTechNeeded > 0) {
+  if (below(assistiveTechRate, 80) && assistiveTechNeeded > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -841,7 +838,7 @@ export function computeItEquipmentConnectivity(
     });
   }
 
-  if (printerAccessRate < 50 && totalPrinterRecords > 0) {
+  if (below(printerAccessRate, 50) && totalPrinterRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -862,8 +859,8 @@ export function computeItEquipmentConnectivity(
   }
 
   if (
-    wifiReliabilityRate >= 40 &&
-    wifiReliabilityRate < 70 &&
+    meets(wifiReliabilityRate, 40) &&
+    below(wifiReliabilityRate, 70) &&
     totalWifiRecords > 0
   ) {
     recommendations.push({
@@ -876,8 +873,8 @@ export function computeItEquipmentConnectivity(
   }
 
   if (
-    deviceAvailabilityRate >= 50 &&
-    deviceAvailabilityRate < 80 &&
+    meets(deviceAvailabilityRate, 50) &&
+    below(deviceAvailabilityRate, 80) &&
     totalDeviceRecords > 0
   ) {
     recommendations.push({
@@ -889,7 +886,7 @@ export function computeItEquipmentConnectivity(
     });
   }
 
-  if (agingDeviceRate >= 40 && totalDeviceRecords > 0) {
+  if (meets(agingDeviceRate, 40) && totalDeviceRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -900,8 +897,8 @@ export function computeItEquipmentConnectivity(
   }
 
   if (
-    softwareCurrencyRate >= 40 &&
-    softwareCurrencyRate < 70 &&
+    meets(softwareCurrencyRate, 40) &&
+    below(softwareCurrencyRate, 70) &&
     totalSoftwareRecords > 0
   ) {
     recommendations.push({
@@ -914,8 +911,8 @@ export function computeItEquipmentConnectivity(
   }
 
   if (
-    digitalAccessRate >= 50 &&
-    digitalAccessRate < 80 &&
+    meets(digitalAccessRate, 50) &&
+    below(digitalAccessRate, 80) &&
     totalDigitalAccessRecords > 0
   ) {
     recommendations.push({
@@ -928,8 +925,8 @@ export function computeItEquipmentConnectivity(
   }
 
   if (
-    printerAccessRate >= 50 &&
-    printerAccessRate < 70 &&
+    meets(printerAccessRate, 50) &&
+    below(printerAccessRate, 70) &&
     totalPrinterRecords > 0
   ) {
     recommendations.push({
@@ -942,8 +939,8 @@ export function computeItEquipmentConnectivity(
   }
 
   if (
-    onlineSafetyTrainingRate >= 50 &&
-    onlineSafetyTrainingRate < 70 &&
+    meets(onlineSafetyTrainingRate, 50) &&
+    below(onlineSafetyTrainingRate, 70) &&
     totalDigitalAccessRecords > 0
   ) {
     recommendations.push({
@@ -956,8 +953,8 @@ export function computeItEquipmentConnectivity(
   }
 
   if (
-    barriersAddressedRate >= 50 &&
-    barriersAddressedRate < 80 &&
+    meets(barriersAddressedRate, 50) &&
+    below(barriersAddressedRate, 80) &&
     barriersIdentified > 0
   ) {
     recommendations.push({
@@ -970,7 +967,7 @@ export function computeItEquipmentConnectivity(
   }
 
   if (
-    skillsAssessedRate < 70 &&
+    below(skillsAssessedRate, 70) &&
     totalDigitalAccessRecords > 0
   ) {
     recommendations.push({
@@ -997,7 +994,7 @@ export function computeItEquipmentConnectivity(
   }
 
   if (
-    accessChildCoverage < 80 &&
+    below(accessChildCoverage, 80) &&
     total_children > 0 &&
     totalDigitalAccessRecords > 0
   ) {
@@ -1016,35 +1013,35 @@ export function computeItEquipmentConnectivity(
 
   // -- Critical insights --
 
-  if (wifiReliabilityRate < 40 && totalWifiRecords > 0) {
+  if (below(wifiReliabilityRate, 40) && totalWifiRecords > 0) {
     insights.push({
       text: `Only ${wifiReliabilityRate}% WiFi reliability. Unreliable internet connectivity directly undermines children's access to education, homework resources, and communication with family and professionals. Under CHR 2015 Reg 8, the home must support children's education — this includes providing adequate digital infrastructure.`,
       severity: "critical",
     });
   }
 
-  if (deviceAvailabilityRate < 50 && totalDeviceRecords > 0) {
+  if (below(deviceAvailabilityRate, 50) && totalDeviceRecords > 0) {
     insights.push({
       text: `Only ${deviceAvailabilityRate}% device availability. More than half of computing devices are non-operational. Children cannot access digital education resources, complete homework effectively, or develop essential digital skills without functioning equipment.`,
       severity: "critical",
     });
   }
 
-  if (softwareCurrencyRate < 40 && totalSoftwareRecords > 0) {
+  if (below(softwareCurrencyRate, 40) && totalSoftwareRecords > 0) {
     insights.push({
       text: `Only ${softwareCurrencyRate}% software currency. Outdated software creates security vulnerabilities that could compromise children's personal data and exposes them to online risks. Current software is essential for both safeguarding and educational quality.`,
       severity: "critical",
     });
   }
 
-  if (digitalAccessRate < 50 && totalDigitalAccessRecords > 0) {
+  if (below(digitalAccessRate, 50) && totalDigitalAccessRecords > 0) {
     insights.push({
       text: `Only ${digitalAccessRate}% digital access equity. More than half of children lack adequate access to computing devices or the internet. This digital divide creates educational disadvantage and is inconsistent with the home's duty to promote children's achievement and wellbeing (Reg 8).`,
       severity: "critical",
     });
   }
 
-  if (securityPatchRate < 50 && totalSoftwareRecords > 0) {
+  if (below(securityPatchRate, 50) && totalSoftwareRecords > 0) {
     insights.push({
       text: `Only ${securityPatchRate}% of software is security-patched. Unpatched devices represent a serious cyber security risk. Children's personal data, educational work, and online safety are compromised when security updates are not applied promptly.`,
       severity: "critical",
@@ -1068,8 +1065,8 @@ export function computeItEquipmentConnectivity(
   // -- Warning insights --
 
   if (
-    wifiReliabilityRate >= 40 &&
-    wifiReliabilityRate < 70 &&
+    meets(wifiReliabilityRate, 40) &&
+    below(wifiReliabilityRate, 70) &&
     totalWifiRecords > 0
   ) {
     insights.push({
@@ -1079,8 +1076,8 @@ export function computeItEquipmentConnectivity(
   }
 
   if (
-    deviceAvailabilityRate >= 50 &&
-    deviceAvailabilityRate < 80 &&
+    meets(deviceAvailabilityRate, 50) &&
+    below(deviceAvailabilityRate, 80) &&
     totalDeviceRecords > 0
   ) {
     insights.push({
@@ -1090,8 +1087,8 @@ export function computeItEquipmentConnectivity(
   }
 
   if (
-    softwareCurrencyRate >= 40 &&
-    softwareCurrencyRate < 70 &&
+    meets(softwareCurrencyRate, 40) &&
+    below(softwareCurrencyRate, 70) &&
     totalSoftwareRecords > 0
   ) {
     insights.push({
@@ -1101,8 +1098,8 @@ export function computeItEquipmentConnectivity(
   }
 
   if (
-    digitalAccessRate >= 50 &&
-    digitalAccessRate < 80 &&
+    meets(digitalAccessRate, 50) &&
+    below(digitalAccessRate, 80) &&
     totalDigitalAccessRecords > 0
   ) {
     insights.push({
@@ -1123,8 +1120,8 @@ export function computeItEquipmentConnectivity(
   }
 
   if (
-    printerAccessRate >= 50 &&
-    printerAccessRate < 70 &&
+    meets(printerAccessRate, 50) &&
+    below(printerAccessRate, 70) &&
     totalPrinterRecords > 0
   ) {
     insights.push({
@@ -1134,8 +1131,8 @@ export function computeItEquipmentConnectivity(
   }
 
   if (
-    onlineSafetyTrainingRate >= 50 &&
-    onlineSafetyTrainingRate < 70 &&
+    meets(onlineSafetyTrainingRate, 50) &&
+    below(onlineSafetyTrainingRate, 70) &&
     totalDigitalAccessRecords > 0
   ) {
     insights.push({
@@ -1145,8 +1142,8 @@ export function computeItEquipmentConnectivity(
   }
 
   if (
-    maintenanceDueRate >= 20 &&
-    maintenanceDueRate < 30 &&
+    meets(maintenanceDueRate, 20) &&
+    below(maintenanceDueRate, 30) &&
     totalDeviceRecords > 0
   ) {
     insights.push({
@@ -1156,8 +1153,8 @@ export function computeItEquipmentConnectivity(
   }
 
   if (
-    licenceValidRate >= 70 &&
-    licenceValidRate < 90 &&
+    meets(licenceValidRate, 70) &&
+    below(licenceValidRate, 90) &&
     totalSoftwareRecords > 0
   ) {
     insights.push({
@@ -1192,8 +1189,8 @@ export function computeItEquipmentConnectivity(
   }
 
   if (
-    wifiReliabilityRate >= 90 &&
-    signalQualityRate >= 90 &&
+    meets(wifiReliabilityRate, 90) &&
+    meets(signalQualityRate, 90) &&
     totalWifiRecords > 0
   ) {
     insights.push({
@@ -1203,8 +1200,8 @@ export function computeItEquipmentConnectivity(
   }
 
   if (
-    deviceAvailabilityRate >= 95 &&
-    deviceConditionRate >= 90 &&
+    meets(deviceAvailabilityRate, 95) &&
+    meets(deviceConditionRate, 90) &&
     totalDeviceRecords > 0
   ) {
     insights.push({
@@ -1214,8 +1211,8 @@ export function computeItEquipmentConnectivity(
   }
 
   if (
-    softwareCurrencyRate >= 90 &&
-    securityPatchRate >= 95 &&
+    meets(softwareCurrencyRate, 90) &&
+    meets(securityPatchRate, 95) &&
     totalSoftwareRecords > 0
   ) {
     insights.push({
@@ -1225,8 +1222,8 @@ export function computeItEquipmentConnectivity(
   }
 
   if (
-    digitalAccessRate >= 95 &&
-    homeworkAccessRate >= 90 &&
+    meets(digitalAccessRate, 95) &&
+    meets(homeworkAccessRate, 90) &&
     totalDigitalAccessRecords > 0
   ) {
     insights.push({
@@ -1246,9 +1243,9 @@ export function computeItEquipmentConnectivity(
   }
 
   if (
-    onlineSafetyTrainingRate >= 90 &&
-    contentFilterRate >= 95 &&
-    parentalControlsRate >= 95 &&
+    meets(onlineSafetyTrainingRate, 90) &&
+    meets(contentFilterRate, 95) &&
+    meets(parentalControlsRate, 95) &&
     totalDigitalAccessRecords > 0 &&
     totalWifiRecords > 0
   ) {
@@ -1259,7 +1256,7 @@ export function computeItEquipmentConnectivity(
   }
 
   if (
-    assistiveTechRate >= 100 &&
+    meets(assistiveTechRate, 100) &&
     assistiveTechNeeded > 0
   ) {
     insights.push({
@@ -1269,7 +1266,7 @@ export function computeItEquipmentConnectivity(
   }
 
   if (
-    barriersAddressedRate >= 90 &&
+    meets(barriersAddressedRate, 90) &&
     barriersIdentified > 0
   ) {
     insights.push({

@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME MEDICATION GOVERNANCE INTELLIGENCE ENGINE
 //
@@ -191,10 +192,6 @@ export interface HomeMedicationGovernanceResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function daysBetween(a: string, b: string): number {
   return Math.round(
     (new Date(b).getTime() - new Date(a).getTime()) / 86_400_000,
@@ -238,11 +235,11 @@ export function computeHomeMedicationGovernance(
   const auditPassCount = audits.filter(a => a.result === "pass").length;
   const auditFailCount = audits.filter(a => a.result === "fail").length;
   const auditActionCount = audits.filter(a => a.result === "action_required").length;
-  const auditPassRate = pct(auditPassCount, audits.length);
+  const auditPassRate = rate(auditPassCount, audits.length);
   const auditDiscrepancies = audits.filter(a => a.discrepancy > 0).length;
-  const storageCorrectRate = pct(audits.filter(a => a.storage_correct).length, audits.length);
-  const temperatureOkRate = pct(audits.filter(a => a.temperature_ok).length, audits.length);
-  const labellingCorrectRate = pct(audits.filter(a => a.labelling_correct).length, audits.length);
+  const storageCorrectRate = rate(audits.filter(a => a.storage_correct).length, audits.length);
+  const temperatureOkRate = rate(audits.filter(a => a.temperature_ok).length, audits.length);
+  const labellingCorrectRate = rate(audits.filter(a => a.labelling_correct).length, audits.length);
   const followUpRequired = audits.filter(a => a.follow_up_required).length;
 
   const audit: AuditProfile = {
@@ -280,9 +277,9 @@ export function computeHomeMedicationGovernance(
     minor_harm_count: minorHarm,
     moderate_harm_count: moderateHarm,
     major_harm_count: majorHarm,
-    debrief_rate: pct(debriefedErrors, errors.length),
-    root_cause_rate: pct(rootCauseDocumented, errors.length),
-    preventive_embedded_rate: pct(preventiveEmbedded, errors.length),
+    debrief_rate: rate(debriefedErrors, errors.length),
+    root_cause_rate: rate(rootCauseDocumented, errors.length),
+    preventive_embedded_rate: rate(preventiveEmbedded, errors.length),
     open_investigations: openInvestigations,
     ofsted_notifiable_count: ofstedNotifiable,
   };
@@ -301,7 +298,7 @@ export function computeHomeMedicationGovernance(
     total_near_misses: nearMisses.length,
     by_risk_grade: byRiskGrade,
     high_critical_count: highCriticalNM,
-    debrief_rate: pct(debriefedNM, nearMisses.length),
+    debrief_rate: rate(debriefedNM, nearMisses.length),
     avg_learning_points: avgLP,
   };
 
@@ -318,7 +315,7 @@ export function computeHomeMedicationGovernance(
     balanced_count: stockBalanced,
     discrepancy_count: stockDiscrepancy,
     action_required_count: stockActionRequired,
-    balanced_rate: pct(stockBalanced, stockChecks.length),
+    balanced_rate: rate(stockBalanced, stockChecks.length),
     weekly_checks: stockWeekly,
     monthly_audits: stockMonthly,
     total_discrepant_items: totalDiscrepantItems,
@@ -328,14 +325,14 @@ export function computeHomeMedicationGovernance(
   const stPass = storageAudits.filter(s => s.overall_verdict === "pass").length;
   const stPassMinor = storageAudits.filter(s => s.overall_verdict === "pass_with_minor_actions").length;
   const stFail = storageAudits.filter(s => s.overall_verdict === "fail_immediate_action").length;
-  const stPassRate = pct(stPass + stPassMinor, storageAudits.length);
-  const stTempRate = pct(storageAudits.filter(s => s.temperature_within_range).length, storageAudits.length);
-  const stExpiryRate = pct(storageAudits.filter(s => s.expiry_check_completed).length, storageAudits.length);
+  const stPassRate = rate(stPass + stPassMinor, storageAudits.length);
+  const stTempRate = rate(storageAudits.filter(s => s.temperature_within_range).length, storageAudits.length);
+  const stExpiryRate = rate(storageAudits.filter(s => s.expiry_check_completed).length, storageAudits.length);
   const stTotalExpired = storageAudits.reduce((sum, s) => sum + s.expired_items_count, 0);
-  const stCdCorrectRate = pct(storageAudits.filter(s => s.controlled_drugs_correct).length, storageAudits.length);
-  const stSecurityRate = pct(storageAudits.filter(s => s.security_pass).length, storageAudits.length);
-  const stKeysRate = pct(storageAudits.filter(s => s.keys_accounted).length, storageAudits.length);
-  const stRecordRate = pct(storageAudits.filter(s => s.record_keeping_pass).length, storageAudits.length);
+  const stCdCorrectRate = rate(storageAudits.filter(s => s.controlled_drugs_correct).length, storageAudits.length);
+  const stSecurityRate = rate(storageAudits.filter(s => s.security_pass).length, storageAudits.length);
+  const stKeysRate = rate(storageAudits.filter(s => s.keys_accounted).length, storageAudits.length);
+  const stRecordRate = rate(storageAudits.filter(s => s.record_keeping_pass).length, storageAudits.length);
   const stOverdue = storageAudits.filter(s => daysBetween(s.next_audit_due, today) > 0).length;
   const stOpenFollowUps = storageAudits.reduce((sum, s) => sum + s.open_follow_ups, 0);
 
@@ -372,7 +369,7 @@ export function computeHomeMedicationGovernance(
   const epProfile: EmergencyProtocolProfile = {
     total_protocols: emergencyProtocols.length,
     unique_children: uniqueChildren,
-    gp_signed_off_rate: pct(gpSignedOff, emergencyProtocols.length),
+    gp_signed_off_rate: rate(gpSignedOff, emergencyProtocols.length),
     avg_staff_trained: avgStaffTrained,
     self_administer_count: selfAdministerCount,
     recognises_symptoms_count: recognisesSymptoms,
@@ -387,13 +384,13 @@ export function computeHomeMedicationGovernance(
   // mod1: Audit pass rate (±5)
   if (audits.length === 0) {
     score += 0;  // no audits — neutral
-  } else if (auditPassRate >= 90) {
+  } else if (meets(auditPassRate, 90)) {
     score += 5;
-  } else if (auditPassRate >= 75) {
+  } else if (meets(auditPassRate, 75)) {
     score += 2;
-  } else if (auditPassRate >= 60) {
+  } else if (meets(auditPassRate, 60)) {
     score += 0;
-  } else if (auditPassRate >= 40) {
+  } else if (meets(auditPassRate, 40)) {
     score -= 3;
   } else {
     score -= 5;
@@ -415,13 +412,13 @@ export function computeHomeMedicationGovernance(
   // mod3: Near miss learning (±3)
   if (nearMisses.length === 0) {
     score += 1;  // no near misses — slightly positive
-  } else if ((avgLP ?? 0) >= 3 && pct(debriefedNM, nearMisses.length) >= 90) {
+  } else if ((avgLP ?? 0) >= 3 && meets(rate(debriefedNM, nearMisses.length), 90)) {
     score += 3;  // strong learning culture
-  } else if ((avgLP ?? 0) >= 2 && pct(debriefedNM, nearMisses.length) >= 70) {
+  } else if ((avgLP ?? 0) >= 2 && meets(rate(debriefedNM, nearMisses.length), 70)) {
     score += 1;
-  } else if (pct(debriefedNM, nearMisses.length) >= 50) {
+  } else if (meets(rate(debriefedNM, nearMisses.length), 50)) {
     score += 0;
-  } else if (pct(debriefedNM, nearMisses.length) >= 30) {
+  } else if (meets(rate(debriefedNM, nearMisses.length), 30)) {
     score -= 1;
   } else {
     score -= 3;
@@ -430,13 +427,13 @@ export function computeHomeMedicationGovernance(
   // mod4: Stock check compliance (±4)
   if (stockChecks.length === 0) {
     score += 0;  // no stock checks — neutral
-  } else if (pct(stockBalanced, stockChecks.length) >= 90) {
+  } else if (meets(rate(stockBalanced, stockChecks.length), 90)) {
     score += 4;
-  } else if (pct(stockBalanced, stockChecks.length) >= 75) {
+  } else if (meets(rate(stockBalanced, stockChecks.length), 75)) {
     score += 2;
-  } else if (pct(stockBalanced, stockChecks.length) >= 60) {
+  } else if (meets(rate(stockBalanced, stockChecks.length), 60)) {
     score += 0;
-  } else if (pct(stockBalanced, stockChecks.length) >= 40) {
+  } else if (meets(rate(stockBalanced, stockChecks.length), 40)) {
     score -= 2;
   } else {
     score -= 4;
@@ -445,9 +442,9 @@ export function computeHomeMedicationGovernance(
   // mod5: Storage audit verdicts (±3)
   if (storageAudits.length === 0) {
     score += 0;  // no storage audits — neutral
-  } else if (stFail === 0 && stPassRate >= 90) {
+  } else if (stFail === 0 && meets(stPassRate, 90)) {
     score += 3;
-  } else if (stFail === 0 && stPassRate >= 70) {
+  } else if (stFail === 0 && meets(stPassRate, 70)) {
     score += 1;
   } else if (stFail <= 1) {
     score += 0;
@@ -460,11 +457,11 @@ export function computeHomeMedicationGovernance(
   // mod6: Emergency protocol coverage (±3)
   if (emergencyProtocols.length === 0) {
     score += 0;  // no protocols — neutral (may not be needed)
-  } else if (pct(gpSignedOff, emergencyProtocols.length) >= 90 && overdueReviews === 0) {
+  } else if (meets(rate(gpSignedOff, emergencyProtocols.length), 90) && overdueReviews === 0) {
     score += 3;
-  } else if (pct(gpSignedOff, emergencyProtocols.length) >= 70 && overdueReviews <= 1) {
+  } else if (meets(rate(gpSignedOff, emergencyProtocols.length), 70) && overdueReviews <= 1) {
     score += 1;
-  } else if (pct(gpSignedOff, emergencyProtocols.length) >= 50) {
+  } else if (meets(rate(gpSignedOff, emergencyProtocols.length), 50)) {
     score += 0;
   } else if (overdueReviews >= 2) {
     score -= 1;
@@ -475,16 +472,16 @@ export function computeHomeMedicationGovernance(
   // mod7: Debrief culture (±3) — across errors and near misses combined
   const totalDebriefable = errors.length + nearMisses.length;
   const totalDebriefed = debriefedErrors + debriefedNM;
-  const debriefRate = pct(totalDebriefed, totalDebriefable);
+  const debriefRate = rate(totalDebriefed, totalDebriefable);
   if (totalDebriefable === 0) {
     score += 2;  // nothing to debrief — positive
-  } else if (debriefRate >= 90) {
+  } else if (meets(debriefRate, 90)) {
     score += 3;
-  } else if (debriefRate >= 70) {
+  } else if (meets(debriefRate, 70)) {
     score += 1;
-  } else if (debriefRate >= 50) {
+  } else if (meets(debriefRate, 50)) {
     score += 0;
-  } else if (debriefRate >= 30) {
+  } else if (meets(debriefRate, 30)) {
     score -= 1;
   } else {
     score -= 3;
@@ -493,13 +490,13 @@ export function computeHomeMedicationGovernance(
   // mod8: Controlled drugs governance (±3)
   if (storageAudits.length === 0) {
     score += 0;  // no data — neutral
-  } else if (stCdCorrectRate >= 100 && stSecurityRate >= 100 && stKeysRate >= 100) {
+  } else if (meets(stCdCorrectRate, 100) && meets(stSecurityRate, 100) && meets(stKeysRate, 100)) {
     score += 3;
-  } else if (stCdCorrectRate >= 90 && stSecurityRate >= 90) {
+  } else if (meets(stCdCorrectRate, 90) && meets(stSecurityRate, 90)) {
     score += 1;
-  } else if (stCdCorrectRate >= 70) {
+  } else if (meets(stCdCorrectRate, 70)) {
     score += 0;
-  } else if (stCdCorrectRate >= 50) {
+  } else if (meets(stCdCorrectRate, 50)) {
     score -= 1;
   } else {
     score -= 3;
@@ -523,18 +520,18 @@ export function computeHomeMedicationGovernance(
   let rank = 0;
 
   // Strengths
-  if (audits.length > 0 && auditPassRate >= 90) strengths.push(`Audit pass rate at ${auditPassRate}% — medication audits demonstrate consistently high governance standards.`);
+  if (audits.length > 0 && meets(auditPassRate, 90)) strengths.push(`Audit pass rate at ${auditPassRate}% — medication audits demonstrate consistently high governance standards.`);
   if (errors.length === 0) strengths.push("No medication errors recorded — strong safety culture in medication management.");
   if (errors.length > 0 && (errorProfile.root_cause_rate ?? 0) >= 90) strengths.push(`Root cause analysis completed for ${(errorProfile.root_cause_rate ?? 0)}% of errors — thorough investigation practice embedded.`);
   if (nearMisses.length > 0 && (nearMissProfile.debrief_rate ?? 0) >= 90) strengths.push(`Near miss debrief rate at ${(nearMissProfile.debrief_rate ?? 0)}% — learning from near misses is embedded in practice.`);
   if (stockChecks.length > 0 && (stock.balanced_rate ?? 0) >= 90) strengths.push(`Stock checks balanced at ${(stock.balanced_rate ?? 0)}% — robust stock management and pharmacy liaison.`);
-  if (storageAudits.length > 0 && stFail === 0 && stPassRate >= 90) strengths.push(`Storage audits achieving ${stPassRate}% pass rate with zero failures — excellent storage governance.`);
+  if (storageAudits.length > 0 && stFail === 0 && meets(stPassRate, 90)) strengths.push(`Storage audits achieving ${stPassRate}% pass rate with zero failures — excellent storage governance.`);
   if (emergencyProtocols.length > 0 && (epProfile.gp_signed_off_rate ?? 0) >= 90 && overdueReviews === 0) strengths.push(`All emergency protocols GP-signed and reviews up to date — children with emergency medications are well protected.`);
-  if (totalDebriefable > 0 && debriefRate >= 90) strengths.push(`Debrief culture at ${debriefRate}% — staff consistently learn from errors and near misses.`);
+  if (totalDebriefable > 0 && meets(debriefRate, 90)) strengths.push(`Debrief culture at ${debriefRate}% — staff consistently learn from errors and near misses.`);
   if (storageAudits.length > 0 && stCdCorrectRate === 100 && stSecurityRate === 100 && stKeysRate === 100) strengths.push("Controlled drugs governance is exemplary — balances correct, security maintained, all keys accounted for.");
 
   // Concerns
-  if (audits.length > 0 && auditPassRate < 60) concerns.push(`Audit pass rate at ${auditPassRate}% is critically low — medication governance falls below acceptable standards.`);
+  if (audits.length > 0 && below(auditPassRate, 60)) concerns.push(`Audit pass rate at ${auditPassRate}% is critically low — medication governance falls below acceptable standards.`);
   if (auditFailCount > 0) concerns.push(`${auditFailCount} medication audit${auditFailCount > 1 ? "s" : ""} failed — discrepancies or storage issues require immediate attention.`);
   if (majorHarm > 0) concerns.push(`${majorHarm} major harm medication error${majorHarm > 1 ? "s" : ""} recorded — this is a serious safeguarding concern requiring immediate review.`);
   if (moderateHarm > 0) concerns.push(`${moderateHarm} moderate harm error${moderateHarm > 1 ? "s" : ""} — children have been affected by medication management failures.`);
@@ -544,11 +541,11 @@ export function computeHomeMedicationGovernance(
   if (stTotalExpired > 0) concerns.push(`${stTotalExpired} expired medication item${stTotalExpired > 1 ? "s" : ""} found during storage audits — expired medications must not be available for administration.`);
   if (overdueReviews > 0) concerns.push(`${overdueReviews} emergency medication protocol${overdueReviews > 1 ? "s" : ""} overdue for review — children with emergency medications may not be adequately protected.`);
   if (ofstedNotifiable > 0) concerns.push(`${ofstedNotifiable} error${ofstedNotifiable > 1 ? "s" : ""} requiring Ofsted notification — regulatory reporting obligations must be met.`);
-  if (storageAudits.length > 0 && stCdCorrectRate < 70) concerns.push(`Controlled drugs balance accuracy at ${stCdCorrectRate}% — discrepancies in controlled drug records are a serious governance failure.`);
+  if (storageAudits.length > 0 && below(stCdCorrectRate, 70)) concerns.push(`Controlled drugs balance accuracy at ${stCdCorrectRate}% — discrepancies in controlled drug records are a serious governance failure.`);
 
   // Recommendations
-  if (audits.length > 0 && auditPassRate < 75) {
-    recommendations.push({ rank: ++rank, recommendation: "Increase frequency of medication audits and implement corrective action plans for failed audits.", urgency: auditPassRate < 60 ? "immediate" : "soon", regulatory_ref: "Reg 12" });
+  if (audits.length > 0 && below(auditPassRate, 75)) {
+    recommendations.push({ rank: ++rank, recommendation: "Increase frequency of medication audits and implement corrective action plans for failed audits.", urgency: below(auditPassRate, 60) ? "immediate" : "soon", regulatory_ref: "Reg 12" });
   }
   if (errors.length > 0 && (errorProfile.root_cause_rate ?? 0) < 80) {
     recommendations.push({ rank: ++rank, recommendation: "Ensure root cause analysis is completed for every medication error — this is essential for preventing recurrence.", urgency: "immediate", regulatory_ref: "Reg 12" });
@@ -579,7 +576,7 @@ export function computeHomeMedicationGovernance(
   }
 
   // Cara Insights
-  if (audits.length > 0 && auditPassRate >= 90 && errors.length === 0 && stFail === 0 && totalDebriefable === 0) {
+  if (audits.length > 0 && meets(auditPassRate, 90) && errors.length === 0 && stFail === 0 && totalDebriefable === 0) {
     insights.push({ text: "Medication governance is exemplary. High audit pass rates, zero errors, and clean storage audits demonstrate an embedded safety culture. This is a key strength for Ofsted inspection under Reg 12.", severity: "positive" });
   }
   if (majorHarm > 0 || (moderateHarm >= 2)) {
@@ -597,13 +594,13 @@ export function computeHomeMedicationGovernance(
   if (stFail >= 2) {
     insights.push({ text: `${stFail} failed storage audits indicate fundamental issues with medication storage arrangements. Under Reg 12, the registered person must ensure that medicines are stored safely. Multiple failures will trigger Ofsted concern.`, severity: "critical" });
   }
-  if (storageAudits.length > 0 && stCdCorrectRate < 80) {
+  if (storageAudits.length > 0 && below(stCdCorrectRate, 80)) {
     insights.push({ text: `Controlled drugs balance accuracy at ${stCdCorrectRate}%. Discrepancies in controlled drug records are taken extremely seriously by regulators and could trigger a safeguarding concern or police referral.`, severity: "critical" });
   }
   if (overdueReviews >= 2) {
     insights.push({ text: `${overdueReviews} emergency medication protocols are overdue for review. Children with conditions requiring emergency medication (e.g. anaphylaxis, epilepsy) depend on current protocols and trained staff. Overdue reviews create a direct risk to life.`, severity: "critical" });
   }
-  if (totalDebriefable > 0 && debriefRate >= 90) {
+  if (totalDebriefable > 0 && meets(debriefRate, 90)) {
     insights.push({ text: `Debrief culture is strong at ${debriefRate}% across ${totalDebriefable} incident${totalDebriefable > 1 ? "s" : ""}. Consistent debriefing demonstrates that the home treats every medication incident as a learning opportunity — a hallmark of outstanding practice.`, severity: "positive" });
   }
 

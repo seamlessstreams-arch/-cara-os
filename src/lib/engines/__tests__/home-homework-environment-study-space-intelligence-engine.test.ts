@@ -307,12 +307,12 @@ describe("computeHomeworkEnvironmentStudySpace", () => {
         lighting_records: [],
         child_satisfaction_records: [],
       });
-      expect(r.study_space_rate).toBe(0);
-      expect(r.noise_environment_rate).toBe(0);
-      expect(r.equipment_rate).toBe(0);
-      expect(r.lighting_rate).toBe(0);
-      expect(r.child_satisfaction_rate).toBe(0);
-      expect(r.utilisation_rate).toBe(0);
+      expect(r.study_space_rate).toBeNull();
+      expect(r.noise_environment_rate).toBeNull();
+      expect(r.equipment_rate).toBeNull();
+      expect(r.lighting_rate).toBeNull();
+      expect(r.child_satisfaction_rate).toBeNull();
+      expect(r.utilisation_rate).toBeNull();
     });
 
     it("8 — all-empty+children headline mentions urgent attention", () => {
@@ -960,7 +960,7 @@ describe("computeHomeworkEnvironmentStudySpace", () => {
         child_satisfaction_records: [],
       }));
       // empty+children returns early, but let's verify with at least one other record type
-      expect(r.study_space_rate).toBe(0);
+      expect(r.study_space_rate).toBeNull();
     });
   });
 
@@ -1181,7 +1181,7 @@ describe("computeHomeworkEnvironmentStudySpace", () => {
       expect(r.utilisation_rate).toBe(50);
     });
 
-    it("72 — total_children 0 yields 0% utilisation", () => {
+    it("72 — total_children 0 yields null utilisation", () => {
       const r = computeHomeworkEnvironmentStudySpace(baseInput({
         total_children: 0,
         study_space_records: [],
@@ -1191,7 +1191,7 @@ describe("computeHomeworkEnvironmentStudySpace", () => {
         child_satisfaction_records: [],
       }));
       // actually returns insufficient_data early
-      expect(r.utilisation_rate).toBe(0);
+      expect(r.utilisation_rate).toBeNull();
     });
   });
 

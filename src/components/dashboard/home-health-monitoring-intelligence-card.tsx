@@ -18,6 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { HomeHealthMonitoringResult } from "@/lib/engines/home-health-monitoring-intelligence-engine";
 import type { HomeHealthMonitoringRating } from "@/lib/engines/home-health-monitoring-intelligence-engine";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface HomeHealthMonitoringResponse {
   data: HomeHealthMonitoringResult;
@@ -104,7 +105,7 @@ export function HomeHealthMonitoringIntelligenceCard() {
               {ratingStyle.label}
             </span>
             {d.health_monitoring_rating !== "insufficient_data" && (
-              <span className="text-xs font-bold tabular-nums text-slate-600">{d.health_monitoring_score}%</span>
+              <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.health_monitoring_score)}</span>
             )}
           </CardTitle>
         </div>
@@ -142,8 +143,8 @@ export function HomeHealthMonitoringIntelligenceCard() {
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <div className="flex items-center justify-center gap-1">
                 <SmilePlus className="h-3.5 w-3.5 text-slate-400" />
-                <p className={cn("text-lg font-bold tabular-nums", d.dental.registered_rate === 100 ? "text-[--cs-success]" : (d.dental.registered_rate ?? 0) >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-                  {d.dental.registered_rate}%
+                <p className={cn("text-lg font-bold tabular-nums", d.dental.registered_rate === null ? "text-slate-500" : d.dental.registered_rate === 100 ? "text-[--cs-success]" : d.dental.registered_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
+                  {formatRate(d.dental.registered_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Dental Reg</p>
@@ -153,8 +154,8 @@ export function HomeHealthMonitoringIntelligenceCard() {
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <div className="flex items-center justify-center gap-1">
                 <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
-                <p className={cn("text-lg font-bold tabular-nums", d.passport.currency_rate === 100 ? "text-[--cs-success]" : (d.passport.currency_rate ?? 0) >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
-                  {d.passport.currency_rate}%
+                <p className={cn("text-lg font-bold tabular-nums", d.passport.currency_rate === null ? "text-slate-500" : d.passport.currency_rate === 100 ? "text-[--cs-success]" : d.passport.currency_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
+                  {formatRate(d.passport.currency_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Passport</p>
@@ -169,9 +170,9 @@ export function HomeHealthMonitoringIntelligenceCard() {
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Assessments</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>Completion: <span className={cn("font-medium", d.assessment.completion_rate === 100 ? "text-[--cs-success]" : (d.assessment.completion_rate ?? 0) >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.assessment.completion_rate}%</span></p>
-                <p>LA sign-off: <span className={cn("font-medium", d.assessment.la_sign_off_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.assessment.la_sign_off_rate}%</span></p>
-                <p>Optical: <span className={cn("font-medium", d.assessment.optical_up_to_date_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.assessment.optical_up_to_date_rate}%</span></p>
+                <p>Completion: <span className={cn("font-medium", d.assessment.completion_rate === 100 ? "text-[--cs-success]" : (d.assessment.completion_rate ?? 0) >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.assessment.completion_rate)}</span></p>
+                <p>LA sign-off: <span className={cn("font-medium", d.assessment.la_sign_off_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(d.assessment.la_sign_off_rate)}</span></p>
+                <p>Optical: <span className={cn("font-medium", d.assessment.optical_up_to_date_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(d.assessment.optical_up_to_date_rate)}</span></p>
                 {(d.assessment.avg_recommendations ?? 0) > 0 && <p>Avg recs: <span className="font-medium text-slate-600">{d.assessment.avg_recommendations}</span></p>}
               </div>
             </div>
@@ -180,7 +181,7 @@ export function HomeHealthMonitoringIntelligenceCard() {
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Dental & Immun</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>GP registered: <span className={cn("font-medium", d.immunisation.gp_registered_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.immunisation.gp_registered_rate}%</span></p>
+                <p>GP registered: <span className={cn("font-medium", d.immunisation.gp_registered_rate === 100 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(d.immunisation.gp_registered_rate)}</span></p>
                 {d.immunisation.missed_total > 0 && <p>Missed immun: <span className="font-medium text-red-600">{d.immunisation.missed_total}</span></p>}
                 {d.dental.overdue_checkups > 0 && <p>Overdue dental: <span className="font-medium text-red-600">{d.dental.overdue_checkups}</span></p>}
                 {d.dental.anxiety_count > 0 && <p>Dental anxiety: <span className="font-medium text-amber-600">{d.dental.anxiety_count}</span></p>}

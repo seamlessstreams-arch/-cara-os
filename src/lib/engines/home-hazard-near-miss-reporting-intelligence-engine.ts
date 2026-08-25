@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME HAZARD IDENTIFICATION & NEAR MISS REPORTING INTELLIGENCE ENGINE
 // Monitors safety reporting culture — hazard identification and reporting rates,
@@ -191,10 +192,6 @@ export interface HazardNearMissResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -222,12 +219,12 @@ function emptyResult(
     total_corrective_actions: 0,
     total_safety_walks: 0,
     total_incident_learnings: 0,
-    hazard_reporting_rate: 0,
-    near_miss_tracking_rate: 0,
-    corrective_action_rate: 0,
-    safety_walk_rate: 0,
-    incident_learning_rate: 0,
-    staff_engagement_rate: 0,
+    hazard_reporting_rate: null,
+    near_miss_tracking_rate: null,
+    corrective_action_rate: null,
+    safety_walk_rate: null,
+    incident_learning_rate: null,
+    staff_engagement_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -309,17 +306,17 @@ export function computeHazardNearMissReporting(
   const hazardsWithImmediateAction = hazard_report_records.filter(
     (h) => h.immediate_action_taken,
   ).length;
-  const immediateActionRate = pct(hazardsWithImmediateAction, totalHazardReports);
+  const immediateActionRate = rate(hazardsWithImmediateAction, totalHazardReports);
 
   const hazardsResolved = hazard_report_records.filter(
     (h) => h.status === "resolved" || h.status === "closed",
   ).length;
-  const hazardResolutionRate = pct(hazardsResolved, totalHazardReports);
+  const hazardResolutionRate = rate(hazardsResolved, totalHazardReports);
 
   const hazardsWithRiskAssessment = hazard_report_records.filter(
     (h) => h.risk_assessment_completed,
   ).length;
-  const riskAssessmentCompletionRate = pct(hazardsWithRiskAssessment, totalHazardReports);
+  const riskAssessmentCompletionRate = rate(hazardsWithRiskAssessment, totalHazardReports);
 
   const hazardsVerified = hazard_report_records.filter(
     (h) => (h.status === "resolved" || h.status === "closed") && h.resolution_verified,
@@ -332,13 +329,13 @@ export function computeHazardNearMissReporting(
   const recurrentHazards = hazard_report_records.filter(
     (h) => h.recurrence_flag,
   ).length;
-  const recurrenceRate = pct(recurrentHazards, totalHazardReports);
+  const recurrenceRate = rate(recurrentHazards, totalHazardReports);
 
   // Composite hazard reporting rate: immediate action + resolved + risk assessment + verified
   const hazardReportingNumerator =
     hazardsWithImmediateAction + hazardsResolved + hazardsWithRiskAssessment + hazardsVerified;
   const hazardReportingDenominator = totalHazardReports * 4;
-  const hazardReportingRate = pct(hazardReportingNumerator, hazardReportingDenominator);
+  const hazardReportingRate = rate(hazardReportingNumerator, hazardReportingDenominator);
 
   // Reporter role diversity — how many distinct roles are reporting
   const reporterRoles = new Set(hazard_report_records.map((h) => h.reporter_role));
@@ -350,12 +347,12 @@ export function computeHazardNearMissReporting(
   const nearMissInvestigated = near_miss_records.filter(
     (n) => n.investigated,
   ).length;
-  const nearMissInvestigationRate = pct(nearMissInvestigated, totalNearMisses);
+  const nearMissInvestigationRate = rate(nearMissInvestigated, totalNearMisses);
 
   const nearMissReportedWithin24h = near_miss_records.filter(
     (n) => n.reported_within_24h,
   ).length;
-  const timelyReportingRate = pct(nearMissReportedWithin24h, totalNearMisses);
+  const timelyReportingRate = rate(nearMissReportedWithin24h, totalNearMisses);
 
   const nearMissPreventiveIdentified = near_miss_records.filter(
     (n) => n.preventive_actions_identified,
@@ -364,7 +361,7 @@ export function computeHazardNearMissReporting(
   const nearMissPreventiveCompleted = near_miss_records.filter(
     (n) => n.preventive_actions_identified && n.preventive_actions_completed,
   ).length;
-  const preventiveActionCompletedRate = pct(
+  const preventiveActionCompletedRate = rate(
     nearMissPreventiveCompleted,
     nearMissPreventiveIdentified,
   );
@@ -376,18 +373,18 @@ export function computeHazardNearMissReporting(
   const nearMissWithImmediateAction = near_miss_records.filter(
     (n) => n.immediate_action_taken,
   ).length;
-  const nearMissImmediateActionRate = pct(nearMissWithImmediateAction, totalNearMisses);
+  const nearMissImmediateActionRate = rate(nearMissWithImmediateAction, totalNearMisses);
 
   const nearMissCatastrophic = near_miss_records.filter(
     (n) => n.potential_severity === "catastrophic" || n.potential_severity === "serious",
   ).length;
-  const seriousNearMissRate = pct(nearMissCatastrophic, totalNearMisses);
+  const seriousNearMissRate = rate(nearMissCatastrophic, totalNearMisses);
 
   // Composite near miss tracking rate: investigated + timely + preventive completed + shared
   const nearMissTrackingNumerator =
     nearMissInvestigated + nearMissReportedWithin24h + nearMissPreventiveCompleted + nearMissShared;
   const nearMissTrackingDenominator = totalNearMisses * 4;
-  const nearMissTrackingRate = pct(nearMissTrackingNumerator, nearMissTrackingDenominator);
+  const nearMissTrackingRate = rate(nearMissTrackingNumerator, nearMissTrackingDenominator);
 
   // Near miss type analysis
   const nearMissTypes: Record<string, number> = {};
@@ -405,28 +402,28 @@ export function computeHazardNearMissReporting(
   const actionsCompletedOnTime = corrective_action_records.filter(
     (a) => a.status === "completed" && a.completed_on_time,
   ).length;
-  const onTimeCompletionRate = pct(actionsCompletedOnTime, actionsCompleted);
+  const onTimeCompletionRate = rate(actionsCompletedOnTime, actionsCompleted);
 
   const actionsVerified = corrective_action_records.filter(
     (a) => a.effectiveness_verified,
   ).length;
-  const effectivenessVerificationRate = pct(actionsVerified, totalCorrectiveActions);
+  const effectivenessVerificationRate = rate(actionsVerified, totalCorrectiveActions);
 
   const actionsRecurrencePrevented = corrective_action_records.filter(
     (a) => a.status === "completed" && a.recurrence_prevented,
   ).length;
-  const recurrencePreventionRate = pct(actionsRecurrencePrevented, actionsCompleted);
+  const recurrencePreventionRate = rate(actionsRecurrencePrevented, actionsCompleted);
 
   const overdueActions = corrective_action_records.filter(
     (a) => a.status === "overdue",
   ).length;
-  const overdueActionRate = pct(overdueActions, totalCorrectiveActions);
+  const overdueActionRate = rate(overdueActions, totalCorrectiveActions);
 
   // Composite corrective action rate: completed + on time + verified + recurrence prevented
   const correctiveActionNumerator =
     actionsCompleted + actionsCompletedOnTime + actionsVerified + actionsRecurrencePrevented;
   const correctiveActionDenominator = totalCorrectiveActions * 4;
-  const correctiveActionRate = pct(correctiveActionNumerator, correctiveActionDenominator);
+  const correctiveActionRate = rate(correctiveActionNumerator, correctiveActionDenominator);
 
   // --- Safety walk metrics ---
   const totalSafetyWalks = safety_walk_records.length;
@@ -446,7 +443,7 @@ export function computeHazardNearMissReporting(
   const walksWithChildConsultation = safety_walk_records.filter(
     (w) => w.children_consulted,
   ).length;
-  const walkChildConsultationRate = pct(walksWithChildConsultation, totalSafetyWalks);
+  const walkChildConsultationRate = rate(walksWithChildConsultation, totalSafetyWalks);
 
   // Walk area coverage
   const totalAreasPlanned = safety_walk_records.reduce(
@@ -467,7 +464,7 @@ export function computeHazardNearMissReporting(
     (sum, w) => sum + w.actions_completed,
     0,
   );
-  const walkActionCompletionRate = pct(totalWalkActionsCompleted, totalWalkActionsRaised);
+  const walkActionCompletionRate = rate(totalWalkActionsCompleted, totalWalkActionsRaised);
 
   // Walk compliance score average
   const walkComplianceSum = safety_walk_records.reduce(
@@ -484,7 +481,7 @@ export function computeHazardNearMissReporting(
     walksWithReports + walksShared + totalAreasCompleted + totalWalkActionsCompleted;
   const safetyWalkDenominator =
     totalSafetyWalks + totalSafetyWalks + totalAreasPlanned + totalWalkActionsRaised;
-  const safetyWalkRate = pct(safetyWalkNumerator, safetyWalkDenominator);
+  const safetyWalkRate = rate(safetyWalkNumerator, safetyWalkDenominator);
 
   // --- Incident learning metrics ---
   const totalIncidentLearnings = incident_learning_records.length;
@@ -492,12 +489,12 @@ export function computeHazardNearMissReporting(
   const rootCauseIdentified = incident_learning_records.filter(
     (l) => l.root_cause_identified,
   ).length;
-  const rootCauseRate = pct(rootCauseIdentified, totalIncidentLearnings);
+  const rootCauseRate = rate(rootCauseIdentified, totalIncidentLearnings);
 
   const lessonsShared = incident_learning_records.filter(
     (l) => l.lessons_shared_with_team,
   ).length;
-  const lessonSharingRate = pct(lessonsShared, totalIncidentLearnings);
+  const lessonSharingRate = rate(lessonsShared, totalIncidentLearnings);
 
   const trainingNeedIdentified = incident_learning_records.filter(
     (l) => l.training_need_identified,
@@ -505,7 +502,7 @@ export function computeHazardNearMissReporting(
   const trainingDelivered = incident_learning_records.filter(
     (l) => l.training_need_identified && l.training_delivered,
   ).length;
-  const trainingDeliveryRate = pct(trainingDelivered, trainingNeedIdentified);
+  const trainingDeliveryRate = rate(trainingDelivered, trainingNeedIdentified);
 
   const improvementActionCompleted = incident_learning_records.filter(
     (l) => l.improvement_action_identified && l.improvement_action_completed,
@@ -517,7 +514,7 @@ export function computeHazardNearMissReporting(
       l.improvement_action_completed &&
       l.improvement_action_effective,
   ).length;
-  const improvementEffectivenessRate = pct(
+  const improvementEffectivenessRate = rate(
     improvementActionEffective,
     improvementActionCompleted,
   );
@@ -525,23 +522,23 @@ export function computeHazardNearMissReporting(
   const childDebriefCompleted = incident_learning_records.filter(
     (l) => l.child_debrief_completed,
   ).length;
-  const childDebriefRate = pct(childDebriefCompleted, totalIncidentLearnings);
+  const childDebriefRate = rate(childDebriefCompleted, totalIncidentLearnings);
 
   const staffDebriefCompleted = incident_learning_records.filter(
     (l) => l.staff_debrief_completed,
   ).length;
-  const staffDebriefRate = pct(staffDebriefCompleted, totalIncidentLearnings);
+  const staffDebriefRate = rate(staffDebriefCompleted, totalIncidentLearnings);
 
   const recurrenceOccurred = incident_learning_records.filter(
     (l) => l.recurrence_occurred,
   ).length;
-  const actualRecurrenceRate = pct(recurrenceOccurred, totalIncidentLearnings);
+  const actualRecurrenceRate = rate(recurrenceOccurred, totalIncidentLearnings);
 
   // Composite incident learning rate: root cause + lessons shared + improvement completed + child debrief
   const incidentLearningNumerator =
     rootCauseIdentified + lessonsShared + improvementActionCompleted + childDebriefCompleted;
   const incidentLearningDenominator = totalIncidentLearnings * 4;
-  const incidentLearningRate = pct(incidentLearningNumerator, incidentLearningDenominator);
+  const incidentLearningRate = rate(incidentLearningNumerator, incidentLearningDenominator);
 
   // --- Staff engagement rate (cross-cutting) ---
   // Composite: walk staff engagement + near miss sharing + hazard escalation + lessons shared
@@ -549,59 +546,59 @@ export function computeHazardNearMissReporting(
     walksWithStaffEngagement + nearMissShared + hazardsEscalated + lessonsShared;
   const staffEngagementDenominator =
     totalSafetyWalks + totalNearMisses + totalHazardReports + totalIncidentLearnings;
-  const staffEngagementRate = pct(staffEngagementNumerator, staffEngagementDenominator);
+  const staffEngagementRate = rate(staffEngagementNumerator, staffEngagementDenominator);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: hazardReportingRate (>=85: +4, >=65: +2) ---
-  if (hazardReportingRate >= 85) score += 4;
-  else if (hazardReportingRate >= 65) score += 2;
+  if (meets(hazardReportingRate, 85)) score += 4;
+  else if (meets(hazardReportingRate, 65)) score += 2;
 
   // --- Bonus 2: nearMissTrackingRate (>=85: +4, >=65: +2) ---
-  if (nearMissTrackingRate >= 85) score += 4;
-  else if (nearMissTrackingRate >= 65) score += 2;
+  if (meets(nearMissTrackingRate, 85)) score += 4;
+  else if (meets(nearMissTrackingRate, 65)) score += 2;
 
   // --- Bonus 3: correctiveActionRate (>=85: +4, >=65: +2) ---
-  if (correctiveActionRate >= 85) score += 4;
-  else if (correctiveActionRate >= 65) score += 2;
+  if (meets(correctiveActionRate, 85)) score += 4;
+  else if (meets(correctiveActionRate, 65)) score += 2;
 
   // --- Bonus 4: safetyWalkRate (>=85: +3, >=65: +1) ---
-  if (safetyWalkRate >= 85) score += 3;
-  else if (safetyWalkRate >= 65) score += 1;
+  if (meets(safetyWalkRate, 85)) score += 3;
+  else if (meets(safetyWalkRate, 65)) score += 1;
 
   // --- Bonus 5: incidentLearningRate (>=85: +4, >=65: +2) ---
-  if (incidentLearningRate >= 85) score += 4;
-  else if (incidentLearningRate >= 65) score += 2;
+  if (meets(incidentLearningRate, 85)) score += 4;
+  else if (meets(incidentLearningRate, 65)) score += 2;
 
   // --- Bonus 6: staffEngagementRate (>=85: +3, >=65: +1) ---
-  if (staffEngagementRate >= 85) score += 3;
-  else if (staffEngagementRate >= 65) score += 1;
+  if (meets(staffEngagementRate, 85)) score += 3;
+  else if (meets(staffEngagementRate, 65)) score += 1;
 
   // --- Bonus 7: timelyReportingRate (>=90: +3, >=70: +1) ---
-  if (timelyReportingRate >= 90) score += 3;
-  else if (timelyReportingRate >= 70) score += 1;
+  if (meets(timelyReportingRate, 90)) score += 3;
+  else if (meets(timelyReportingRate, 70)) score += 1;
 
   // --- Bonus 8: rootCauseRate (>=90: +3, >=70: +1) ---
-  if (rootCauseRate >= 90) score += 3;
-  else if (rootCauseRate >= 70) score += 1;
+  if (meets(rootCauseRate, 90)) score += 3;
+  else if (meets(rootCauseRate, 70)) score += 1;
 
   // Max bonuses: 4+4+4+3+4+3+3+3 = 28
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // hazardResolutionRate < 50 → -5
-  if (hazardResolutionRate < 50 && hazard_report_records.length > 0) score -= 5;
+  if (below(hazardResolutionRate, 50) && hazard_report_records.length > 0) score -= 5;
 
   // nearMissInvestigationRate < 50 → -5
-  if (nearMissInvestigationRate < 50 && near_miss_records.length > 0) score -= 5;
+  if (below(nearMissInvestigationRate, 50) && near_miss_records.length > 0) score -= 5;
 
   // overdueActionRate > 40 → -5
-  if (overdueActionRate > 40 && corrective_action_records.length > 0) score -= 5;
+  if (above(overdueActionRate, 40) && corrective_action_records.length > 0) score -= 5;
 
   // actualRecurrenceRate > 30 → -3
-  if (actualRecurrenceRate > 30 && incident_learning_records.length > 0) score -= 3;
+  if (above(actualRecurrenceRate, 30) && incident_learning_records.length > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -611,141 +608,141 @@ export function computeHazardNearMissReporting(
 
   const strengths: string[] = [];
 
-  if (hazardReportingRate >= 85 && totalHazardReports > 0) {
+  if (meets(hazardReportingRate, 85) && totalHazardReports > 0) {
     strengths.push(
       `${hazardReportingRate}% hazard reporting quality — hazards are identified with immediate action, risk assessments are completed, resolutions are verified, and the home demonstrates a proactive approach to hazard management.`,
     );
-  } else if (hazardReportingRate >= 65 && totalHazardReports > 0) {
+  } else if (meets(hazardReportingRate, 65) && totalHazardReports > 0) {
     strengths.push(
       `${hazardReportingRate}% hazard reporting quality — the home generally manages identified hazards with appropriate risk assessments and follow-through.`,
     );
   }
 
-  if (nearMissTrackingRate >= 85 && totalNearMisses > 0) {
+  if (meets(nearMissTrackingRate, 85) && totalNearMisses > 0) {
     strengths.push(
       `${nearMissTrackingRate}% near miss tracking quality — near misses are investigated promptly, reported within 24 hours, preventive actions completed, and learnings shared with the team.`,
     );
-  } else if (nearMissTrackingRate >= 65 && totalNearMisses > 0) {
+  } else if (meets(nearMissTrackingRate, 65) && totalNearMisses > 0) {
     strengths.push(
       `${nearMissTrackingRate}% near miss tracking quality — near misses are generally investigated and acted upon with appropriate team communication.`,
     );
   }
 
-  if (correctiveActionRate >= 85 && totalCorrectiveActions > 0) {
+  if (meets(correctiveActionRate, 85) && totalCorrectiveActions > 0) {
     strengths.push(
       `${correctiveActionRate}% corrective action effectiveness — actions are completed on time, effectiveness is verified, and recurrence is prevented, demonstrating a robust corrective action process.`,
     );
-  } else if (correctiveActionRate >= 65 && totalCorrectiveActions > 0) {
+  } else if (meets(correctiveActionRate, 65) && totalCorrectiveActions > 0) {
     strengths.push(
       `${correctiveActionRate}% corrective action effectiveness — the home generally follows through on corrective actions with reasonable verification and prevention of recurrence.`,
     );
   }
 
-  if (safetyWalkRate >= 85 && totalSafetyWalks > 0) {
+  if (meets(safetyWalkRate, 85) && totalSafetyWalks > 0) {
     strengths.push(
       `${safetyWalkRate}% safety walk compliance — walks cover planned areas, reports are completed and shared, and identified actions are followed through, showing strong management oversight of premises safety.`,
     );
-  } else if (safetyWalkRate >= 65 && totalSafetyWalks > 0) {
+  } else if (meets(safetyWalkRate, 65) && totalSafetyWalks > 0) {
     strengths.push(
       `${safetyWalkRate}% safety walk compliance — the home conducts regular safety walks with generally adequate reporting and action follow-through.`,
     );
   }
 
-  if (incidentLearningRate >= 85 && totalIncidentLearnings > 0) {
+  if (meets(incidentLearningRate, 85) && totalIncidentLearnings > 0) {
     strengths.push(
       `${incidentLearningRate}% incident learning quality — root causes are identified, lessons are shared with the team, improvement actions are completed, and children are debriefed, evidencing a genuine learning culture.`,
     );
-  } else if (incidentLearningRate >= 65 && totalIncidentLearnings > 0) {
+  } else if (meets(incidentLearningRate, 65) && totalIncidentLearnings > 0) {
     strengths.push(
       `${incidentLearningRate}% incident learning quality — the home generally learns from incidents with root cause analysis and team sharing.`,
     );
   }
 
-  if (staffEngagementRate >= 85) {
+  if (meets(staffEngagementRate, 85)) {
     strengths.push(
       `${staffEngagementRate}% staff engagement in safety reporting — staff actively participate in safety walks, share near miss learnings, escalate hazards to management, and engage with incident review, demonstrating a strong safety culture.`,
     );
-  } else if (staffEngagementRate >= 65) {
+  } else if (meets(staffEngagementRate, 65)) {
     strengths.push(
       `${staffEngagementRate}% staff engagement in safety reporting — staff generally participate in safety reporting activities and team learning.`,
     );
   }
 
-  if (timelyReportingRate >= 90 && totalNearMisses > 0) {
+  if (meets(timelyReportingRate, 90) && totalNearMisses > 0) {
     strengths.push(
       `${timelyReportingRate}% of near misses reported within 24 hours — the home demonstrates a culture of timely reporting where staff understand the importance of prompt near miss disclosure.`,
     );
-  } else if (timelyReportingRate >= 70 && totalNearMisses > 0) {
+  } else if (meets(timelyReportingRate, 70) && totalNearMisses > 0) {
     strengths.push(
       `${timelyReportingRate}% of near misses reported within 24 hours — most near misses are reported promptly, supporting effective investigation and action.`,
     );
   }
 
-  if (rootCauseRate >= 90 && totalIncidentLearnings > 0) {
+  if (meets(rootCauseRate, 90) && totalIncidentLearnings > 0) {
     strengths.push(
       `${rootCauseRate}% root cause identification — the home consistently identifies underlying causes of incidents, enabling targeted interventions that address systemic issues rather than symptoms.`,
     );
-  } else if (rootCauseRate >= 70 && totalIncidentLearnings > 0) {
+  } else if (meets(rootCauseRate, 70) && totalIncidentLearnings > 0) {
     strengths.push(
       `${rootCauseRate}% root cause identification — the home generally identifies root causes of incidents to guide corrective actions.`,
     );
   }
 
-  if (immediateActionRate >= 90 && totalHazardReports > 0) {
+  if (meets(immediateActionRate, 90) && totalHazardReports > 0) {
     strengths.push(
       `${immediateActionRate}% immediate action taken on reported hazards — staff respond promptly to identified risks, minimising the window of exposure for children and others.`,
     );
-  } else if (immediateActionRate >= 70 && totalHazardReports > 0) {
+  } else if (meets(immediateActionRate, 70) && totalHazardReports > 0) {
     strengths.push(
       `${immediateActionRate}% immediate action on hazards — the majority of identified hazards receive prompt initial response.`,
     );
   }
 
-  if (walkChildConsultationRate >= 80 && totalSafetyWalks > 0) {
+  if (meets(walkChildConsultationRate, 80) && totalSafetyWalks > 0) {
     strengths.push(
       `${walkChildConsultationRate}% of safety walks include child consultation — children's perspectives on their safety and environment are actively sought during safety walks, supporting the voice of the child.`,
     );
-  } else if (walkChildConsultationRate >= 60 && totalSafetyWalks > 0) {
+  } else if (meets(walkChildConsultationRate, 60) && totalSafetyWalks > 0) {
     strengths.push(
       `${walkChildConsultationRate}% of safety walks include child consultation — children are consulted during the majority of safety walks about their environment.`,
     );
   }
 
-  if (lessonSharingRate >= 90 && totalIncidentLearnings > 0) {
+  if (meets(lessonSharingRate, 90) && totalIncidentLearnings > 0) {
     strengths.push(
       `${lessonSharingRate}% lesson sharing rate — learnings from incidents are consistently disseminated across the team, building collective understanding and preventing recurrence.`,
     );
-  } else if (lessonSharingRate >= 70 && totalIncidentLearnings > 0) {
+  } else if (meets(lessonSharingRate, 70) && totalIncidentLearnings > 0) {
     strengths.push(
       `${lessonSharingRate}% lesson sharing rate — the majority of incident learnings are shared with the wider team.`,
     );
   }
 
-  if (preventiveActionCompletedRate >= 90 && nearMissPreventiveIdentified > 0) {
+  if (meets(preventiveActionCompletedRate, 90) && nearMissPreventiveIdentified > 0) {
     strengths.push(
       `${preventiveActionCompletedRate}% of identified preventive actions completed following near misses — the home consistently converts near miss investigations into tangible safety improvements.`,
     );
-  } else if (preventiveActionCompletedRate >= 70 && nearMissPreventiveIdentified > 0) {
+  } else if (meets(preventiveActionCompletedRate, 70) && nearMissPreventiveIdentified > 0) {
     strengths.push(
       `${preventiveActionCompletedRate}% of preventive actions completed — the majority of near miss investigations lead to completed preventive measures.`,
     );
   }
 
-  if (onTimeCompletionRate >= 90 && actionsCompleted > 0) {
+  if (meets(onTimeCompletionRate, 90) && actionsCompleted > 0) {
     strengths.push(
       `${onTimeCompletionRate}% of corrective actions completed on time — the home demonstrates disciplined follow-through on safety-related actions within agreed timescales.`,
     );
-  } else if (onTimeCompletionRate >= 70 && actionsCompleted > 0) {
+  } else if (meets(onTimeCompletionRate, 70) && actionsCompleted > 0) {
     strengths.push(
       `${onTimeCompletionRate}% of corrective actions completed on time — most corrective actions are delivered within the agreed timescales.`,
     );
   }
 
-  if (recurrencePreventionRate >= 90 && actionsCompleted > 0) {
+  if (meets(recurrencePreventionRate, 90) && actionsCompleted > 0) {
     strengths.push(
       `${recurrencePreventionRate}% recurrence prevention rate — completed corrective actions are effective in preventing the same hazards or incidents from recurring, indicating well-targeted interventions.`,
     );
-  } else if (recurrencePreventionRate >= 70 && actionsCompleted > 0) {
+  } else if (meets(recurrencePreventionRate, 70) && actionsCompleted > 0) {
     strengths.push(
       `${recurrencePreventionRate}% recurrence prevention rate — the majority of completed corrective actions successfully prevent recurrence of the original issue.`,
     );
@@ -757,13 +754,13 @@ export function computeHazardNearMissReporting(
     );
   }
 
-  if (childDebriefRate >= 80 && totalIncidentLearnings > 0) {
+  if (meets(childDebriefRate, 80) && totalIncidentLearnings > 0) {
     strengths.push(
       `${childDebriefRate}% child debrief completion rate — children are consistently debriefed following incidents, ensuring their voice is heard and their experience is understood.`,
     );
   }
 
-  if (staffDebriefRate >= 80 && totalIncidentLearnings > 0) {
+  if (meets(staffDebriefRate, 80) && totalIncidentLearnings > 0) {
     strengths.push(
       `${staffDebriefRate}% staff debrief completion rate — staff are consistently debriefed following incidents, supporting their wellbeing and enabling reflective practice.`,
     );
@@ -779,7 +776,7 @@ export function computeHazardNearMissReporting(
     );
   }
 
-  if (trainingDeliveryRate >= 90 && trainingNeedIdentified > 0) {
+  if (meets(trainingDeliveryRate, 90) && trainingNeedIdentified > 0) {
     strengths.push(
       `${trainingDeliveryRate}% training delivery rate following incident learning — identified training needs are consistently delivered, ensuring staff develop the competencies required to prevent recurrence.`,
     );
@@ -789,121 +786,121 @@ export function computeHazardNearMissReporting(
 
   const concerns: string[] = [];
 
-  if (hazardResolutionRate < 50 && totalHazardReports > 0) {
+  if (below(hazardResolutionRate, 50) && totalHazardReports > 0) {
     concerns.push(
       `Only ${hazardResolutionRate}% of reported hazards resolved — the majority of identified hazards remain open, leaving children and staff exposed to known risks. This fundamentally undermines the home's duty to maintain safe premises.`,
     );
-  } else if (hazardResolutionRate < 70 && hazardResolutionRate >= 50 && totalHazardReports > 0) {
+  } else if (below(hazardResolutionRate, 70) && meets(hazardResolutionRate, 50) && totalHazardReports > 0) {
     concerns.push(
       `Hazard resolution rate at ${hazardResolutionRate}% — a significant proportion of identified hazards have not been resolved, creating ongoing risk exposure.`,
     );
   }
 
-  if (nearMissInvestigationRate < 50 && totalNearMisses > 0) {
+  if (below(nearMissInvestigationRate, 50) && totalNearMisses > 0) {
     concerns.push(
       `Only ${nearMissInvestigationRate}% of near misses investigated — the majority of near misses are not being investigated, meaning the home is missing critical opportunities to prevent actual incidents. This represents a significant gap in proactive safety management.`,
     );
-  } else if (nearMissInvestigationRate < 70 && nearMissInvestigationRate >= 50 && totalNearMisses > 0) {
+  } else if (below(nearMissInvestigationRate, 70) && meets(nearMissInvestigationRate, 50) && totalNearMisses > 0) {
     concerns.push(
       `Near miss investigation rate at ${nearMissInvestigationRate}% — a significant proportion of near misses are not being investigated, limiting the home's ability to learn and prevent incidents.`,
     );
   }
 
-  if (overdueActionRate > 40 && totalCorrectiveActions > 0) {
+  if (above(overdueActionRate, 40) && totalCorrectiveActions > 0) {
     concerns.push(
       `${overdueActionRate}% of corrective actions are overdue — a critical proportion of safety actions have not been completed within agreed timescales, indicating failure in the home's action tracking and accountability systems.`,
     );
-  } else if (overdueActionRate > 20 && overdueActionRate <= 40 && totalCorrectiveActions > 0) {
+  } else if (above(overdueActionRate, 20) && overdueActionRate! <= 40 && totalCorrectiveActions > 0) {
     concerns.push(
       `${overdueActionRate}% of corrective actions are overdue — some safety actions are not being completed within agreed timescales, requiring management attention.`,
     );
   }
 
-  if (actualRecurrenceRate > 30 && totalIncidentLearnings > 0) {
+  if (above(actualRecurrenceRate, 30) && totalIncidentLearnings > 0) {
     concerns.push(
       `${actualRecurrenceRate}% incident recurrence rate — a significant proportion of incidents are recurring despite learning reviews, indicating that corrective actions are not effectively preventing the same issues from happening again.`,
     );
-  } else if (actualRecurrenceRate > 15 && actualRecurrenceRate <= 30 && totalIncidentLearnings > 0) {
+  } else if (above(actualRecurrenceRate, 15) && actualRecurrenceRate! <= 30 && totalIncidentLearnings > 0) {
     concerns.push(
       `${actualRecurrenceRate}% incident recurrence rate — some incidents continue to recur despite learning reviews, suggesting corrective actions need strengthening.`,
     );
   }
 
-  if (immediateActionRate < 50 && totalHazardReports > 0) {
+  if (below(immediateActionRate, 50) && totalHazardReports > 0) {
     concerns.push(
       `Only ${immediateActionRate}% immediate action taken on hazards — the majority of identified hazards do not receive prompt initial action, increasing the duration of risk exposure for children.`,
     );
-  } else if (immediateActionRate < 70 && immediateActionRate >= 50 && totalHazardReports > 0) {
+  } else if (below(immediateActionRate, 70) && meets(immediateActionRate, 50) && totalHazardReports > 0) {
     concerns.push(
       `Immediate action rate at ${immediateActionRate}% — some identified hazards are not receiving prompt initial response, delaying risk mitigation.`,
     );
   }
 
-  if (timelyReportingRate < 50 && totalNearMisses > 0) {
+  if (below(timelyReportingRate, 50) && totalNearMisses > 0) {
     concerns.push(
       `Only ${timelyReportingRate}% of near misses reported within 24 hours — delayed reporting undermines the home's ability to investigate effectively and implement timely preventive actions.`,
     );
-  } else if (timelyReportingRate < 70 && timelyReportingRate >= 50 && totalNearMisses > 0) {
+  } else if (below(timelyReportingRate, 70) && meets(timelyReportingRate, 50) && totalNearMisses > 0) {
     concerns.push(
       `Timely reporting rate at ${timelyReportingRate}% — a significant proportion of near misses are not reported within 24 hours, delaying investigation and action.`,
     );
   }
 
-  if (rootCauseRate < 50 && totalIncidentLearnings > 0) {
+  if (below(rootCauseRate, 50) && totalIncidentLearnings > 0) {
     concerns.push(
       `Only ${rootCauseRate}% root cause identification — the majority of incident reviews fail to identify underlying causes, meaning the home is treating symptoms rather than addressing systemic issues.`,
     );
-  } else if (rootCauseRate < 70 && rootCauseRate >= 50 && totalIncidentLearnings > 0) {
+  } else if (below(rootCauseRate, 70) && meets(rootCauseRate, 50) && totalIncidentLearnings > 0) {
     concerns.push(
       `Root cause identification rate at ${rootCauseRate}% — a significant proportion of incident reviews are not identifying underlying causes.`,
     );
   }
 
-  if (lessonSharingRate < 50 && totalIncidentLearnings > 0) {
+  if (below(lessonSharingRate, 50) && totalIncidentLearnings > 0) {
     concerns.push(
       `Only ${lessonSharingRate}% of incident learnings shared with the team — the majority of lessons are not being communicated, preventing the development of a shared learning culture.`,
     );
-  } else if (lessonSharingRate < 70 && lessonSharingRate >= 50 && totalIncidentLearnings > 0) {
+  } else if (below(lessonSharingRate, 70) && meets(lessonSharingRate, 50) && totalIncidentLearnings > 0) {
     concerns.push(
       `Lesson sharing rate at ${lessonSharingRate}% — not all incident learnings are being shared with the wider team, limiting organisational learning.`,
     );
   }
 
-  if (riskAssessmentCompletionRate < 50 && totalHazardReports > 0) {
+  if (below(riskAssessmentCompletionRate, 50) && totalHazardReports > 0) {
     concerns.push(
       `Only ${riskAssessmentCompletionRate}% of hazards have completed risk assessments — without risk assessments, the home cannot evidence that identified hazards are being evaluated systematically.`,
     );
-  } else if (riskAssessmentCompletionRate < 70 && riskAssessmentCompletionRate >= 50 && totalHazardReports > 0) {
+  } else if (below(riskAssessmentCompletionRate, 70) && meets(riskAssessmentCompletionRate, 50) && totalHazardReports > 0) {
     concerns.push(
       `Risk assessment completion rate at ${riskAssessmentCompletionRate}% — not all identified hazards have undergone formal risk assessment.`,
     );
   }
 
-  if (walkActionCompletionRate < 50 && totalWalkActionsRaised > 0) {
+  if (below(walkActionCompletionRate, 50) && totalWalkActionsRaised > 0) {
     concerns.push(
       `Only ${walkActionCompletionRate}% of safety walk actions completed — the majority of issues identified during safety walks are not being resolved, undermining the value of the safety walk programme.`,
     );
-  } else if (walkActionCompletionRate < 70 && walkActionCompletionRate >= 50 && totalWalkActionsRaised > 0) {
+  } else if (below(walkActionCompletionRate, 70) && meets(walkActionCompletionRate, 50) && totalWalkActionsRaised > 0) {
     concerns.push(
       `Safety walk action completion at ${walkActionCompletionRate}% — some issues identified during safety walks are not being followed through.`,
     );
   }
 
-  if (childDebriefRate < 50 && totalIncidentLearnings > 0) {
+  if (below(childDebriefRate, 50) && totalIncidentLearnings > 0) {
     concerns.push(
       `Only ${childDebriefRate}% child debrief completion — children are not being debriefed after the majority of incidents, which means their experience and perspective are not being captured or addressed.`,
     );
-  } else if (childDebriefRate < 70 && childDebriefRate >= 50 && totalIncidentLearnings > 0) {
+  } else if (below(childDebriefRate, 70) && meets(childDebriefRate, 50) && totalIncidentLearnings > 0) {
     concerns.push(
       `Child debrief completion at ${childDebriefRate}% — not all children are being debriefed following incidents.`,
     );
   }
 
-  if (effectivenessVerificationRate < 50 && totalCorrectiveActions > 0) {
+  if (below(effectivenessVerificationRate, 50) && totalCorrectiveActions > 0) {
     concerns.push(
       `Only ${effectivenessVerificationRate}% of corrective actions have verified effectiveness — the home cannot evidence that completed actions have actually achieved their intended safety improvement.`,
     );
-  } else if (effectivenessVerificationRate < 70 && effectivenessVerificationRate >= 50 && totalCorrectiveActions > 0) {
+  } else if (below(effectivenessVerificationRate, 70) && meets(effectivenessVerificationRate, 50) && totalCorrectiveActions > 0) {
     concerns.push(
       `Effectiveness verification at ${effectivenessVerificationRate}% — not all corrective actions are being verified for effectiveness after completion.`,
     );
@@ -933,29 +930,29 @@ export function computeHazardNearMissReporting(
     );
   }
 
-  if (recurrenceRate > 30 && totalHazardReports > 0) {
+  if (above(recurrenceRate, 30) && totalHazardReports > 0) {
     concerns.push(
       `${recurrenceRate}% hazard recurrence rate — a significant proportion of hazards are recurring, suggesting that initial resolutions are not adequately addressing root causes or maintaining fixes.`,
     );
   }
 
-  if (seriousNearMissRate > 40 && totalNearMisses > 0) {
+  if (above(seriousNearMissRate, 40) && totalNearMisses > 0) {
     concerns.push(
       `${seriousNearMissRate}% of near misses have serious or catastrophic potential severity — the home is experiencing a high proportion of near misses that could have resulted in major harm if circumstances had been slightly different.`,
     );
   }
 
-  if (preventiveActionCompletedRate < 50 && nearMissPreventiveIdentified > 0) {
+  if (below(preventiveActionCompletedRate, 50) && nearMissPreventiveIdentified > 0) {
     concerns.push(
       `Only ${preventiveActionCompletedRate}% of identified preventive actions completed — near miss investigations are identifying actions but these are not being followed through, negating the value of the investigation.`,
     );
   }
 
-  if (staffEngagementRate < 50) {
+  if (below(staffEngagementRate, 50)) {
     concerns.push(
       `Staff engagement in safety reporting at only ${staffEngagementRate}% — staff are not actively participating in safety walks, hazard escalation, near miss sharing, or incident learning, indicating a weak safety culture.`,
     );
-  } else if (staffEngagementRate < 65 && staffEngagementRate >= 50) {
+  } else if (below(staffEngagementRate, 65) && meets(staffEngagementRate, 50)) {
     concerns.push(
       `Staff engagement in safety reporting at ${staffEngagementRate}% — staff participation in safety reporting activities is below expected levels.`,
     );
@@ -966,7 +963,7 @@ export function computeHazardNearMissReporting(
   const recommendations: HazardNearMissRecommendation[] = [];
   let rank = 0;
 
-  if (hazardResolutionRate < 50 && totalHazardReports > 0) {
+  if (below(hazardResolutionRate, 50) && totalHazardReports > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -976,7 +973,7 @@ export function computeHazardNearMissReporting(
     });
   }
 
-  if (nearMissInvestigationRate < 50 && totalNearMisses > 0) {
+  if (below(nearMissInvestigationRate, 50) && totalNearMisses > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -986,7 +983,7 @@ export function computeHazardNearMissReporting(
     });
   }
 
-  if (overdueActionRate > 40 && totalCorrectiveActions > 0) {
+  if (above(overdueActionRate, 40) && totalCorrectiveActions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -996,7 +993,7 @@ export function computeHazardNearMissReporting(
     });
   }
 
-  if (actualRecurrenceRate > 30 && totalIncidentLearnings > 0) {
+  if (above(actualRecurrenceRate, 30) && totalIncidentLearnings > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1006,7 +1003,7 @@ export function computeHazardNearMissReporting(
     });
   }
 
-  if (immediateActionRate < 50 && totalHazardReports > 0) {
+  if (below(immediateActionRate, 50) && totalHazardReports > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1056,7 +1053,7 @@ export function computeHazardNearMissReporting(
     });
   }
 
-  if (rootCauseRate < 50 && totalIncidentLearnings > 0) {
+  if (below(rootCauseRate, 50) && totalIncidentLearnings > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1066,7 +1063,7 @@ export function computeHazardNearMissReporting(
     });
   }
 
-  if (timelyReportingRate < 50 && totalNearMisses > 0) {
+  if (below(timelyReportingRate, 50) && totalNearMisses > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1076,7 +1073,7 @@ export function computeHazardNearMissReporting(
     });
   }
 
-  if (lessonSharingRate < 50 && totalIncidentLearnings > 0) {
+  if (below(lessonSharingRate, 50) && totalIncidentLearnings > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1086,7 +1083,7 @@ export function computeHazardNearMissReporting(
     });
   }
 
-  if (childDebriefRate < 50 && totalIncidentLearnings > 0) {
+  if (below(childDebriefRate, 50) && totalIncidentLearnings > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1096,7 +1093,7 @@ export function computeHazardNearMissReporting(
     });
   }
 
-  if (riskAssessmentCompletionRate < 50 && totalHazardReports > 0) {
+  if (below(riskAssessmentCompletionRate, 50) && totalHazardReports > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1107,8 +1104,8 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    hazardResolutionRate >= 50 &&
-    hazardResolutionRate < 70 &&
+    meets(hazardResolutionRate, 50) &&
+    below(hazardResolutionRate, 70) &&
     totalHazardReports > 0
   ) {
     recommendations.push({
@@ -1121,8 +1118,8 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    nearMissInvestigationRate >= 50 &&
-    nearMissInvestigationRate < 70 &&
+    meets(nearMissInvestigationRate, 50) &&
+    below(nearMissInvestigationRate, 70) &&
     totalNearMisses > 0
   ) {
     recommendations.push({
@@ -1135,8 +1132,8 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    walkActionCompletionRate >= 50 &&
-    walkActionCompletionRate < 70 &&
+    meets(walkActionCompletionRate, 50) &&
+    below(walkActionCompletionRate, 70) &&
     totalWalkActionsRaised > 0
   ) {
     recommendations.push({
@@ -1148,7 +1145,7 @@ export function computeHazardNearMissReporting(
     });
   }
 
-  if (walkActionCompletionRate < 50 && totalWalkActionsRaised > 0) {
+  if (below(walkActionCompletionRate, 50) && totalWalkActionsRaised > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1159,8 +1156,8 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    staffEngagementRate >= 50 &&
-    staffEngagementRate < 65
+    meets(staffEngagementRate, 50) &&
+    below(staffEngagementRate, 65)
   ) {
     recommendations.push({
       rank: ++rank,
@@ -1171,7 +1168,7 @@ export function computeHazardNearMissReporting(
     });
   }
 
-  if (staffEngagementRate < 50) {
+  if (below(staffEngagementRate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1182,8 +1179,8 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    effectivenessVerificationRate >= 50 &&
-    effectivenessVerificationRate < 70 &&
+    meets(effectivenessVerificationRate, 50) &&
+    below(effectivenessVerificationRate, 70) &&
     totalCorrectiveActions > 0
   ) {
     recommendations.push({
@@ -1195,7 +1192,7 @@ export function computeHazardNearMissReporting(
     });
   }
 
-  if (effectivenessVerificationRate < 50 && totalCorrectiveActions > 0) {
+  if (below(effectivenessVerificationRate, 50) && totalCorrectiveActions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1205,7 +1202,7 @@ export function computeHazardNearMissReporting(
     });
   }
 
-  if (walkChildConsultationRate < 50 && totalSafetyWalks > 0) {
+  if (below(walkChildConsultationRate, 50) && totalSafetyWalks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1216,8 +1213,8 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    preventiveActionCompletedRate >= 50 &&
-    preventiveActionCompletedRate < 70 &&
+    meets(preventiveActionCompletedRate, 50) &&
+    below(preventiveActionCompletedRate, 70) &&
     nearMissPreventiveIdentified > 0
   ) {
     recommendations.push({
@@ -1230,8 +1227,8 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    recurrenceRate > 15 &&
-    recurrenceRate <= 30 &&
+    above(recurrenceRate, 15) &&
+    recurrenceRate! <= 30 &&
     totalHazardReports > 0
   ) {
     recommendations.push({
@@ -1244,7 +1241,7 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    trainingDeliveryRate < 70 &&
+    below(trainingDeliveryRate, 70) &&
     trainingNeedIdentified > 0
   ) {
     recommendations.push({
@@ -1262,35 +1259,35 @@ export function computeHazardNearMissReporting(
 
   // -- Critical insights --
 
-  if (hazardResolutionRate < 50 && totalHazardReports > 0) {
+  if (below(hazardResolutionRate, 50) && totalHazardReports > 0) {
     insights.push({
       text: `Only ${hazardResolutionRate}% of hazards resolved. Ofsted expects children's homes to maintain safe premises under Reg 25. When the majority of identified hazards remain unresolved, the home cannot demonstrate that it is managing risk to children's safety, and Ofsted will question whether the registered person is discharging their duty under Reg 5.`,
       severity: "critical",
     });
   }
 
-  if (nearMissInvestigationRate < 50 && totalNearMisses > 0) {
+  if (below(nearMissInvestigationRate, 50) && totalNearMisses > 0) {
     insights.push({
       text: `Only ${nearMissInvestigationRate}% of near misses investigated. Near misses are the most valuable source of proactive safety intelligence — they reveal latent hazards before they cause harm. Failing to investigate them means the home is ignoring its best early warning system for preventing serious incidents.`,
       severity: "critical",
     });
   }
 
-  if (overdueActionRate > 40 && totalCorrectiveActions > 0) {
+  if (above(overdueActionRate, 40) && totalCorrectiveActions > 0) {
     insights.push({
       text: `${overdueActionRate}% of corrective actions are overdue. When safety actions are not completed on time, identified risks persist and the action tracking system loses credibility. Staff may stop reporting hazards if they see that identified actions are not followed through. This represents a systemic management failure.`,
       severity: "critical",
     });
   }
 
-  if (actualRecurrenceRate > 30 && totalIncidentLearnings > 0) {
+  if (above(actualRecurrenceRate, 30) && totalIncidentLearnings > 0) {
     insights.push({
       text: `${actualRecurrenceRate}% incident recurrence. When incidents keep happening despite review and action, it indicates that root cause analysis is not reaching deep enough, corrective actions are too superficial, or systemic factors are being overlooked. Ofsted will view repeated incidents as evidence of inadequate learning.`,
       severity: "critical",
     });
   }
 
-  if (immediateActionRate < 50 && totalHazardReports > 0) {
+  if (below(immediateActionRate, 50) && totalHazardReports > 0) {
     insights.push({
       text: `Only ${immediateActionRate}% of hazards receive immediate action. Every moment a hazard is left unmitigated after identification represents ongoing risk to children. The gap between identification and initial response is a critical vulnerability in the home's safety system.`,
       severity: "critical",
@@ -1318,21 +1315,21 @@ export function computeHazardNearMissReporting(
     });
   }
 
-  if (rootCauseRate < 50 && totalIncidentLearnings > 0) {
+  if (below(rootCauseRate, 50) && totalIncidentLearnings > 0) {
     insights.push({
       text: `Only ${rootCauseRate}% root cause identification. Without identifying why incidents happen, the home can only address surface-level symptoms. This creates a cycle where the same underlying issues repeatedly generate new incidents. Ofsted expects evidence that the home understands the causes of safety events.`,
       severity: "critical",
     });
   }
 
-  if (staffEngagementRate < 50) {
+  if (below(staffEngagementRate, 50)) {
     insights.push({
       text: `Staff engagement in safety reporting at only ${staffEngagementRate}%. A strong safety culture depends on active staff participation — when staff do not engage with safety walks, do not share near miss learnings, and do not escalate hazards, the entire safety reporting system becomes hollow. This requires fundamental cultural change led by management.`,
       severity: "critical",
     });
   }
 
-  if (seriousNearMissRate > 40 && totalNearMisses > 0) {
+  if (above(seriousNearMissRate, 40) && totalNearMisses > 0) {
     insights.push({
       text: `${seriousNearMissRate}% of near misses have serious or catastrophic potential severity. The home is experiencing a concerning proportion of high-severity near misses that could have resulted in significant harm. This pattern demands urgent management attention and specialist safety review.`,
       severity: "critical",
@@ -1342,8 +1339,8 @@ export function computeHazardNearMissReporting(
   // -- Warning insights --
 
   if (
-    hazardResolutionRate >= 50 &&
-    hazardResolutionRate < 70 &&
+    meets(hazardResolutionRate, 50) &&
+    below(hazardResolutionRate, 70) &&
     totalHazardReports > 0
   ) {
     insights.push({
@@ -1353,8 +1350,8 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    nearMissInvestigationRate >= 50 &&
-    nearMissInvestigationRate < 70 &&
+    meets(nearMissInvestigationRate, 50) &&
+    below(nearMissInvestigationRate, 70) &&
     totalNearMisses > 0
   ) {
     insights.push({
@@ -1364,8 +1361,8 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    overdueActionRate > 20 &&
-    overdueActionRate <= 40 &&
+    above(overdueActionRate, 20) &&
+    overdueActionRate! <= 40 &&
     totalCorrectiveActions > 0
   ) {
     insights.push({
@@ -1375,8 +1372,8 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    timelyReportingRate >= 50 &&
-    timelyReportingRate < 70 &&
+    meets(timelyReportingRate, 50) &&
+    below(timelyReportingRate, 70) &&
     totalNearMisses > 0
   ) {
     insights.push({
@@ -1386,8 +1383,8 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    rootCauseRate >= 50 &&
-    rootCauseRate < 70 &&
+    meets(rootCauseRate, 50) &&
+    below(rootCauseRate, 70) &&
     totalIncidentLearnings > 0
   ) {
     insights.push({
@@ -1397,8 +1394,8 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    lessonSharingRate >= 50 &&
-    lessonSharingRate < 70 &&
+    meets(lessonSharingRate, 50) &&
+    below(lessonSharingRate, 70) &&
     totalIncidentLearnings > 0
   ) {
     insights.push({
@@ -1408,8 +1405,8 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    walkActionCompletionRate >= 50 &&
-    walkActionCompletionRate < 70 &&
+    meets(walkActionCompletionRate, 50) &&
+    below(walkActionCompletionRate, 70) &&
     totalWalkActionsRaised > 0
   ) {
     insights.push({
@@ -1419,8 +1416,8 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    riskAssessmentCompletionRate >= 50 &&
-    riskAssessmentCompletionRate < 70 &&
+    meets(riskAssessmentCompletionRate, 50) &&
+    below(riskAssessmentCompletionRate, 70) &&
     totalHazardReports > 0
   ) {
     insights.push({
@@ -1430,8 +1427,8 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    childDebriefRate >= 50 &&
-    childDebriefRate < 70 &&
+    meets(childDebriefRate, 50) &&
+    below(childDebriefRate, 70) &&
     totalIncidentLearnings > 0
   ) {
     insights.push({
@@ -1441,8 +1438,8 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    effectivenessVerificationRate >= 50 &&
-    effectivenessVerificationRate < 70 &&
+    meets(effectivenessVerificationRate, 50) &&
+    below(effectivenessVerificationRate, 70) &&
     totalCorrectiveActions > 0
   ) {
     insights.push({
@@ -1452,8 +1449,8 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    recurrenceRate > 15 &&
-    recurrenceRate <= 30 &&
+    above(recurrenceRate, 15) &&
+    recurrenceRate! <= 30 &&
     totalHazardReports > 0
   ) {
     insights.push({
@@ -1463,8 +1460,8 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    staffEngagementRate >= 50 &&
-    staffEngagementRate < 65
+    meets(staffEngagementRate, 50) &&
+    below(staffEngagementRate, 65)
   ) {
     insights.push({
       text: `Staff engagement in safety reporting at ${staffEngagementRate}% — staff participation is below optimal levels. A safety culture requires every team member to feel empowered and accountable for identifying and reporting hazards.`,
@@ -1473,8 +1470,8 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    actualRecurrenceRate > 15 &&
-    actualRecurrenceRate <= 30 &&
+    above(actualRecurrenceRate, 15) &&
+    actualRecurrenceRate! <= 30 &&
     totalIncidentLearnings > 0
   ) {
     insights.push({
@@ -1545,8 +1542,8 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    hazardReportingRate >= 85 &&
-    nearMissTrackingRate >= 85 &&
+    meets(hazardReportingRate, 85) &&
+    meets(nearMissTrackingRate, 85) &&
     totalHazardReports > 0 &&
     totalNearMisses > 0
   ) {
@@ -1557,8 +1554,8 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    correctiveActionRate >= 85 &&
-    recurrencePreventionRate >= 90 &&
+    meets(correctiveActionRate, 85) &&
+    meets(recurrencePreventionRate, 90) &&
     totalCorrectiveActions > 0
   ) {
     insights.push({
@@ -1568,8 +1565,8 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    safetyWalkRate >= 85 &&
-    walkActionCompletionRate >= 90 &&
+    meets(safetyWalkRate, 85) &&
+    meets(walkActionCompletionRate, 90) &&
     totalSafetyWalks > 0
   ) {
     insights.push({
@@ -1579,8 +1576,8 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    incidentLearningRate >= 85 &&
-    rootCauseRate >= 90 &&
+    meets(incidentLearningRate, 85) &&
+    meets(rootCauseRate, 90) &&
     totalIncidentLearnings > 0
   ) {
     insights.push({
@@ -1589,7 +1586,7 @@ export function computeHazardNearMissReporting(
     });
   }
 
-  if (staffEngagementRate >= 85) {
+  if (meets(staffEngagementRate, 85)) {
     insights.push({
       text: `${staffEngagementRate}% staff engagement in safety reporting — a strong safety culture is evident where staff actively participate in hazard escalation, near miss sharing, safety walks, and incident learning. Ofsted values evidence that safety is everyone's responsibility.`,
       severity: "positive",
@@ -1597,8 +1594,8 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    timelyReportingRate >= 90 &&
-    nearMissImmediateActionRate >= 90 &&
+    meets(timelyReportingRate, 90) &&
+    meets(nearMissImmediateActionRate, 90) &&
     totalNearMisses > 0
   ) {
     insights.push({
@@ -1608,8 +1605,8 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    childDebriefRate >= 80 &&
-    walkChildConsultationRate >= 80 &&
+    meets(childDebriefRate, 80) &&
+    meets(walkChildConsultationRate, 80) &&
     totalIncidentLearnings > 0 &&
     totalSafetyWalks > 0
   ) {
@@ -1630,7 +1627,7 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    improvementEffectivenessRate >= 90 &&
+    meets(improvementEffectivenessRate, 90) &&
     improvementActionCompleted > 0
   ) {
     insights.push({
@@ -1650,8 +1647,8 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    lessonSharingRate >= 90 &&
-    trainingDeliveryRate >= 90 &&
+    meets(lessonSharingRate, 90) &&
+    meets(trainingDeliveryRate, 90) &&
     totalIncidentLearnings > 0 &&
     trainingNeedIdentified > 0
   ) {
@@ -1662,7 +1659,7 @@ export function computeHazardNearMissReporting(
   }
 
   if (
-    onTimeCompletionRate >= 90 &&
+    meets(onTimeCompletionRate, 90) &&
     actionsCompleted > 0
   ) {
     insights.push({

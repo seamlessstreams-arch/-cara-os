@@ -176,12 +176,12 @@ describe("computeIndependenceLifeSkillsDevelopment", () => {
       );
       expect(r.independence_rating).toBe("insufficient_data");
       expect(r.independence_score).toBe(0);
-      expect(r.skills_assessment_coverage_rate).toBe(0);
-      expect(r.cooking_competency_rate).toBe(0);
-      expect(r.travel_independence_rate).toBe(0);
-      expect(r.personal_care_rate).toBe(0);
-      expect(r.milestone_achievement_rate).toBe(0);
-      expect(r.child_engagement_rate).toBe(0);
+      expect(r.skills_assessment_coverage_rate).toBeNull();
+      expect(r.cooking_competency_rate).toBeNull();
+      expect(r.travel_independence_rate).toBeNull();
+      expect(r.personal_care_rate).toBeNull();
+      expect(r.milestone_achievement_rate).toBeNull();
+      expect(r.child_engagement_rate).toBeNull();
       expect(r.strengths).toHaveLength(0);
       expect(r.concerns).toHaveLength(0);
       expect(r.recommendations).toHaveLength(0);
@@ -226,14 +226,14 @@ describe("computeIndependenceLifeSkillsDevelopment", () => {
       expect(r.insights[0].severity).toBe("critical");
     });
 
-    it("all rates are 0", () => {
+    it("all rates are null", () => {
       const r = computeIndependenceLifeSkillsDevelopment(baseInput());
-      expect(r.skills_assessment_coverage_rate).toBe(0);
-      expect(r.cooking_competency_rate).toBe(0);
-      expect(r.travel_independence_rate).toBe(0);
-      expect(r.personal_care_rate).toBe(0);
-      expect(r.milestone_achievement_rate).toBe(0);
-      expect(r.child_engagement_rate).toBe(0);
+      expect(r.skills_assessment_coverage_rate).toBeNull();
+      expect(r.cooking_competency_rate).toBeNull();
+      expect(r.travel_independence_rate).toBeNull();
+      expect(r.personal_care_rate).toBeNull();
+      expect(r.milestone_achievement_rate).toBeNull();
+      expect(r.child_engagement_rate).toBeNull();
     });
   });
 
@@ -1565,7 +1565,7 @@ describe("computeIndependenceLifeSkillsDevelopment", () => {
         expect(r.cooking_competency_rate).toBe(50);
       });
 
-      it("returns 0 when no cooking records", () => {
+      it("returns null when no cooking records", () => {
         const r = computeIndependenceLifeSkillsDevelopment(
           baseInput({
             life_skills_assessment_records: [
@@ -1573,7 +1573,7 @@ describe("computeIndependenceLifeSkillsDevelopment", () => {
             ],
           }),
         );
-        expect(r.cooking_competency_rate).toBe(0);
+        expect(r.cooking_competency_rate).toBeNull();
       });
     });
 
@@ -1593,7 +1593,7 @@ describe("computeIndependenceLifeSkillsDevelopment", () => {
         expect(r.travel_independence_rate).toBe(50);
       });
 
-      it("returns 0 when no travel records", () => {
+      it("returns null when no travel records", () => {
         const r = computeIndependenceLifeSkillsDevelopment(
           baseInput({
             life_skills_assessment_records: [
@@ -1601,7 +1601,7 @@ describe("computeIndependenceLifeSkillsDevelopment", () => {
             ],
           }),
         );
-        expect(r.travel_independence_rate).toBe(0);
+        expect(r.travel_independence_rate).toBeNull();
       });
     });
 
@@ -1621,7 +1621,7 @@ describe("computeIndependenceLifeSkillsDevelopment", () => {
         expect(r.personal_care_rate).toBe(50);
       });
 
-      it("returns 0 when no personal care records", () => {
+      it("returns null when no personal care records", () => {
         const r = computeIndependenceLifeSkillsDevelopment(
           baseInput({
             life_skills_assessment_records: [
@@ -1629,7 +1629,7 @@ describe("computeIndependenceLifeSkillsDevelopment", () => {
             ],
           }),
         );
-        expect(r.personal_care_rate).toBe(0);
+        expect(r.personal_care_rate).toBeNull();
       });
     });
 
@@ -1648,7 +1648,7 @@ describe("computeIndependenceLifeSkillsDevelopment", () => {
         expect(r.milestone_achievement_rate).toBe(67);
       });
 
-      it("returns 0 when no milestones", () => {
+      it("returns null when no milestones", () => {
         const r = computeIndependenceLifeSkillsDevelopment(
           baseInput({
             life_skills_assessment_records: [
@@ -1656,7 +1656,7 @@ describe("computeIndependenceLifeSkillsDevelopment", () => {
             ],
           }),
         );
-        expect(r.milestone_achievement_rate).toBe(0);
+        expect(r.milestone_achievement_rate).toBeNull();
       });
     });
 

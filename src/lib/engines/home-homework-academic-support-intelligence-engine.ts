@@ -11,7 +11,7 @@
 //             schoolLiaisonRecords
 // ==============================================================================
 
-import { below, meets } from "@/lib/metrics/rate";
+import { below, meanOf, meets, rate } from "@/lib/metrics/rate";
 
 // -- Input Types --------------------------------------------------------------
 
@@ -142,16 +142,20 @@ export interface HomeworkAcademicSupportResult {
   academic_rating: AcademicSupportRating;
   academic_score: number;
   headline: string;
-  // Most rates use pct() directly (deterministic 0 on empty). The 2 composite
+  // Most rates use rate() directly (deterministic 0 on empty). The 2 composite
   // rates below are null on empty: no source records ⇒ no signal. "0% resource
   // availability / 0% school liaison" would read as a home not communicating
   // with any school about any child, not "unmeasured". Fab-0 doctrine.
-  homework_completion_rate: number;
-  study_environment_quality_rate: number;
-  tutoring_coverage_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  homework_completion_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  study_environment_quality_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  tutoring_coverage_rate: number | null;
   resource_availability_rate: number | null;
   school_liaison_rate: number | null;
-  child_engagement_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_engagement_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: AcademicSupportRecommendation[];
@@ -159,10 +163,6 @@ export interface HomeworkAcademicSupportResult {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -186,12 +186,12 @@ function emptyResult(
     academic_rating: rating,
     academic_score: score,
     headline,
-    homework_completion_rate: 0,
-    study_environment_quality_rate: 0,
-    tutoring_coverage_rate: 0,
+    homework_completion_rate: null,
+    study_environment_quality_rate: null,
+    tutoring_coverage_rate: null,
     resource_availability_rate: null,
     school_liaison_rate: null,
-    child_engagement_rate: 0,
+    child_engagement_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -273,22 +273,22 @@ export function computeHomeworkAcademicSupport(
   const homeworkCompleted = homework_support_records.filter(
     (r) => r.homework_set && r.homework_completed,
   ).length;
-  const homeworkCompletionRate = pct(homeworkCompleted, homeworkSet);
+  const homeworkCompletionRate = rate(homeworkCompleted, homeworkSet);
 
   const staffSupportedHomework = homework_support_records.filter(
     (r) => r.staff_supported,
   ).length;
-  const staffSupportRate = pct(staffSupportedHomework, totalHomeworkRecords);
+  const staffSupportRate = rate(staffSupportedHomework, totalHomeworkRecords);
 
   const homeworkEngaged = homework_support_records.filter(
     (r) => r.child_engaged,
   ).length;
-  const homeworkEngagementRate = pct(homeworkEngaged, totalHomeworkRecords);
+  const homeworkEngagementRate = rate(homeworkEngaged, totalHomeworkRecords);
 
   const homeworkBarriersTotal = homework_support_records.filter(
     (r) => r.barriers_encountered.length > 0,
   ).length;
-  const homeworkBarrierRate = pct(homeworkBarriersTotal, totalHomeworkRecords);
+  const homeworkBarrierRate = rate(homeworkBarriersTotal, totalHomeworkRecords);
 
   const supportQualityScores: Record<string, number> = {
     excellent: 5,
@@ -312,7 +312,7 @@ export function computeHomeworkAcademicSupport(
   const quietSpaceAvailable = study_environment_records.filter(
     (r) => r.quiet_space_available,
   ).length;
-  const quietSpaceRate = pct(quietSpaceAvailable, totalStudyEnvRecords);
+  const quietSpaceRate = rate(quietSpaceAvailable, totalStudyEnvRecords);
 
   const envSatisfactionSum = study_environment_records.reduce(
     (sum, r) => sum + r.child_satisfaction,
@@ -326,7 +326,7 @@ export function computeHomeworkAcademicSupport(
   const excellentOrGoodEnv = study_environment_records.filter(
     (r) => r.overall_quality === "excellent" || r.overall_quality === "good",
   ).length;
-  const studyEnvironmentQualityRate = pct(excellentOrGoodEnv, totalStudyEnvRecords);
+  const studyEnvironmentQualityRate = rate(excellentOrGoodEnv, totalStudyEnvRecords);
 
   // --- Tutoring coverage ---
   const totalTutoringRecords = tutoring_records.length;
@@ -336,7 +336,7 @@ export function computeHomeworkAcademicSupport(
   const tutoringAttended = tutoring_records.filter(
     (r) => r.session_attended,
   ).length;
-  const tutoringAttendanceRate = pct(tutoringAttended, tutoringPlanned);
+  const tutoringAttendanceRate = rate(tutoringAttended, tutoringPlanned);
 
   const tutoringEngaged = tutoring_records.filter(
     (r) => r.child_engaged,
@@ -345,7 +345,7 @@ export function computeHomeworkAcademicSupport(
   const tutoringProgressNoted = tutoring_records.filter(
     (r) => r.progress_noted,
   ).length;
-  const tutoringProgressRate = pct(tutoringProgressNoted, totalTutoringRecords);
+  const tutoringProgressRate = rate(tutoringProgressNoted, totalTutoringRecords);
 
   const tutoringSatisfactionSum = tutoring_records.reduce(
     (sum, r) => sum + r.child_satisfaction,
@@ -359,13 +359,13 @@ export function computeHomeworkAcademicSupport(
   const linkedToCurriculum = tutoring_records.filter(
     (r) => r.linked_to_school_curriculum,
   ).length;
-  const curriculumAlignmentRate = pct(linkedToCurriculum, totalTutoringRecords);
+  const curriculumAlignmentRate = rate(linkedToCurriculum, totalTutoringRecords);
 
   const uniqueChildrenWithTutoring = new Set(
     tutoring_records.map((r) => r.child_id),
   ).size;
   const tutoringCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenWithTutoring, total_children) : tutoringAttendanceRate;
+    total_children > 0 ? rate(uniqueChildrenWithTutoring, total_children) : tutoringAttendanceRate;
 
   // --- Educational resource availability ---
   const totalResourceRecords = educational_resource_records.length;
@@ -375,29 +375,30 @@ export function computeHomeworkAcademicSupport(
   const resourcesProvided = educational_resource_records.filter(
     (r) => r.provided,
   ).length;
-  const resourceFulfilmentRate = pct(resourcesProvided, resourcesRequested);
+  const resourceFulfilmentRate = rate(resourcesProvided, resourcesRequested);
 
   const resourcesAgeAppropriate = educational_resource_records.filter(
     (r) => r.age_appropriate,
   ).length;
-  const ageAppropriateRate = pct(resourcesAgeAppropriate, totalResourceRecords);
+  const ageAppropriateRate = rate(resourcesAgeAppropriate, totalResourceRecords);
 
   const resourcesInUse = educational_resource_records.filter(
     (r) => r.child_using_resource,
   ).length;
-  const resourceUsageRate = pct(resourcesInUse, totalResourceRecords);
+  const resourceUsageRate = rate(resourcesInUse, totalResourceRecords);
 
-  const resourceAvailabilityRate: number | null =
-    totalResourceRecords > 0
-      ? Math.round((resourceFulfilmentRate + ageAppropriateRate + resourceUsageRate) / 3)
-      : null;
+  // resourceFulfilmentRate is per REQUESTED resource — meanOf drops it when
+  // nothing was requested instead of averaging a phantom term.
+  const resourceAvailabilityRate: number | null = meanOf([
+    resourceFulfilmentRate, ageAppropriateRate, resourceUsageRate,
+  ]);
 
   // --- School liaison ---
   const totalLiaisonRecords = school_liaison_records.length;
   const staffAttendedLiaison = school_liaison_records.filter(
     (r) => r.staff_attended,
   ).length;
-  const staffAttendanceRate = pct(staffAttendedLiaison, totalLiaisonRecords);
+  const staffAttendanceRate = rate(staffAttendedLiaison, totalLiaisonRecords);
 
   const totalActionsAgreed = school_liaison_records.reduce(
     (sum, r) => sum + r.actions_agreed,
@@ -407,12 +408,12 @@ export function computeHomeworkAcademicSupport(
     (sum, r) => sum + r.actions_completed,
     0,
   );
-  const actionCompletionRate = pct(totalActionsCompleted, totalActionsAgreed);
+  const actionCompletionRate = rate(totalActionsCompleted, totalActionsAgreed);
 
   const academicProgressDiscussed = school_liaison_records.filter(
     (r) => r.academic_progress_discussed,
   ).length;
-  const academicDiscussionRate = pct(academicProgressDiscussed, totalLiaisonRecords);
+  const academicDiscussionRate = rate(academicProgressDiscussed, totalLiaisonRecords);
 
   const followUpRequired = school_liaison_records.filter(
     (r) => r.follow_up_date !== null,
@@ -420,45 +421,45 @@ export function computeHomeworkAcademicSupport(
   const followUpCompleted = school_liaison_records.filter(
     (r) => r.follow_up_date !== null && r.follow_up_completed,
   ).length;
-  const followUpCompletionRate = pct(followUpCompleted, followUpRequired);
+  const followUpCompletionRate = rate(followUpCompleted, followUpRequired);
 
   const childVoiceIncluded = school_liaison_records.filter(
     (r) => r.child_voice_included,
   ).length;
-  const liaisonChildVoiceRate = pct(childVoiceIncluded, totalLiaisonRecords);
+  const liaisonChildVoiceRate = rate(childVoiceIncluded, totalLiaisonRecords);
 
   const pepUpToDate = school_liaison_records.filter(
     (r) => r.pep_up_to_date,
   ).length;
-  const pepUpToDateRate = pct(pepUpToDate, totalLiaisonRecords);
+  const pepUpToDateRate = rate(pepUpToDate, totalLiaisonRecords);
 
-  const schoolLiaisonRate: number | null =
-    totalLiaisonRecords > 0
-      ? Math.round((staffAttendanceRate + actionCompletionRate + academicDiscussionRate) / 3)
-      : null;
+  // actionCompletionRate is per AGREED action — meanOf averages what is measured.
+  const schoolLiaisonRate: number | null = meanOf([
+    staffAttendanceRate, actionCompletionRate, academicDiscussionRate,
+  ]);
 
   // --- Child engagement composite ---
   const engagementNumerator =
     homeworkEngaged + tutoringEngaged + resourcesInUse;
   const engagementDenominator =
     totalHomeworkRecords + totalTutoringRecords + totalResourceRecords;
-  const childEngagementRate = pct(engagementNumerator, engagementDenominator);
+  const childEngagementRate = rate(engagementNumerator, engagementDenominator);
 
   // -- Scoring: base 52 ----------------------------------------------------
 
   let score = 52;
 
   // --- Bonus 1: homeworkCompletionRate (>=90: +4, >=70: +2) ---
-  if (homeworkCompletionRate >= 90) score += 4;
-  else if (homeworkCompletionRate >= 70) score += 2;
+  if (meets(homeworkCompletionRate, 90)) score += 4;
+  else if (meets(homeworkCompletionRate, 70)) score += 2;
 
   // --- Bonus 2: studyEnvironmentQualityRate (>=90: +3, >=70: +2) ---
-  if (studyEnvironmentQualityRate >= 90) score += 3;
-  else if (studyEnvironmentQualityRate >= 70) score += 2;
+  if (meets(studyEnvironmentQualityRate, 90)) score += 3;
+  else if (meets(studyEnvironmentQualityRate, 70)) score += 2;
 
   // --- Bonus 3: tutoringCoverageRate (>=80: +3, >=60: +1) ---
-  if (tutoringCoverageRate >= 80) score += 3;
-  else if (tutoringCoverageRate >= 60) score += 1;
+  if (meets(tutoringCoverageRate, 80)) score += 3;
+  else if (meets(tutoringCoverageRate, 60)) score += 1;
 
   // --- Bonus 4: resourceAvailabilityRate (>=90: +4, >=70: +2) ---
   if (meets(resourceAvailabilityRate, 90)) score += 4;
@@ -469,34 +470,34 @@ export function computeHomeworkAcademicSupport(
   else if (meets(schoolLiaisonRate, 70)) score += 1;
 
   // --- Bonus 6: childEngagementRate (>=90: +3, >=70: +2) ---
-  if (childEngagementRate >= 90) score += 3;
-  else if (childEngagementRate >= 70) score += 2;
+  if (meets(childEngagementRate, 90)) score += 3;
+  else if (meets(childEngagementRate, 70)) score += 2;
 
   // --- Bonus 7: staffSupportRate (>=90: +3, >=70: +1) ---
-  if (staffSupportRate >= 90) score += 3;
-  else if (staffSupportRate >= 70) score += 1;
+  if (meets(staffSupportRate, 90)) score += 3;
+  else if (meets(staffSupportRate, 70)) score += 1;
 
   // --- Bonus 8: pepUpToDateRate (>=90: +3, >=70: +1) ---
-  if (pepUpToDateRate >= 90) score += 3;
-  else if (pepUpToDateRate >= 70) score += 1;
+  if (meets(pepUpToDateRate, 90)) score += 3;
+  else if (meets(pepUpToDateRate, 70)) score += 1;
 
   // --- Bonus 9: tutoringProgressRate (>=80: +2, >=60: +1) ---
-  if (tutoringProgressRate >= 80) score += 2;
-  else if (tutoringProgressRate >= 60) score += 1;
+  if (meets(tutoringProgressRate, 80)) score += 2;
+  else if (meets(tutoringProgressRate, 60)) score += 1;
 
   // -- Penalties (4 with guards) -------------------------------------------
 
   // homeworkCompletionRate < 40 -> -6
-  if (homeworkCompletionRate < 40 && homeworkSet > 0) score -= 6;
+  if (below(homeworkCompletionRate, 40) && homeworkSet > 0) score -= 6;
 
   // studyEnvironmentQualityRate < 40 -> -5
-  if (studyEnvironmentQualityRate < 40 && totalStudyEnvRecords > 0) score -= 5;
+  if (below(studyEnvironmentQualityRate, 40) && totalStudyEnvRecords > 0) score -= 5;
 
   // below(schoolLiaisonRate, 40) -> -5
   if (below(schoolLiaisonRate, 40) && totalLiaisonRecords > 0) score -= 5;
 
   // childEngagementRate < 30 -> -3
-  if (childEngagementRate < 30 && engagementDenominator > 0) score -= 3;
+  if (below(childEngagementRate, 30) && engagementDenominator > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -506,21 +507,21 @@ export function computeHomeworkAcademicSupport(
 
   const strengths: string[] = [];
 
-  if (homeworkCompletionRate >= 90 && homeworkSet > 0) {
+  if (meets(homeworkCompletionRate, 90) && homeworkSet > 0) {
     strengths.push(
       `${homeworkCompletionRate}% homework completion rate -- the home demonstrates exceptional support for children's homework, ensuring tasks are completed to a high standard.`,
     );
-  } else if (homeworkCompletionRate >= 70 && homeworkSet > 0) {
+  } else if (meets(homeworkCompletionRate, 70) && homeworkSet > 0) {
     strengths.push(
       `${homeworkCompletionRate}% homework completion rate -- most children are completing their homework with appropriate support from the home.`,
     );
   }
 
-  if (staffSupportRate >= 90 && totalHomeworkRecords > 0) {
+  if (meets(staffSupportRate, 90) && totalHomeworkRecords > 0) {
     strengths.push(
       `Staff actively support ${staffSupportRate}% of homework activities -- staff engagement with children's educational needs is exemplary.`,
     );
-  } else if (staffSupportRate >= 70 && totalHomeworkRecords > 0) {
+  } else if (meets(staffSupportRate, 70) && totalHomeworkRecords > 0) {
     strengths.push(
       `Staff support provided in ${staffSupportRate}% of homework sessions -- good staff involvement in children's learning.`,
     );
@@ -532,27 +533,27 @@ export function computeHomeworkAcademicSupport(
     );
   }
 
-  if (homeworkEngagementRate >= 90 && totalHomeworkRecords > 0) {
+  if (meets(homeworkEngagementRate, 90) && totalHomeworkRecords > 0) {
     strengths.push(
       `${homeworkEngagementRate}% child engagement during homework -- children are motivated and actively participating in their learning at home.`,
     );
-  } else if (homeworkEngagementRate >= 70 && totalHomeworkRecords > 0) {
+  } else if (meets(homeworkEngagementRate, 70) && totalHomeworkRecords > 0) {
     strengths.push(
       `${homeworkEngagementRate}% child engagement during homework sessions -- most children are engaged with their learning.`,
     );
   }
 
-  if (studyEnvironmentQualityRate >= 90 && totalStudyEnvRecords > 0) {
+  if (meets(studyEnvironmentQualityRate, 90) && totalStudyEnvRecords > 0) {
     strengths.push(
       `${studyEnvironmentQualityRate}% of study environment assessments rated good or excellent -- the home provides outstanding learning spaces for children.`,
     );
-  } else if (studyEnvironmentQualityRate >= 70 && totalStudyEnvRecords > 0) {
+  } else if (meets(studyEnvironmentQualityRate, 70) && totalStudyEnvRecords > 0) {
     strengths.push(
       `${studyEnvironmentQualityRate}% of study environments rated good or excellent -- children generally have suitable spaces to study.`,
     );
   }
 
-  if (quietSpaceRate >= 90 && totalStudyEnvRecords > 0) {
+  if (meets(quietSpaceRate, 90) && totalStudyEnvRecords > 0) {
     strengths.push(
       `Quiet study space available in ${quietSpaceRate}% of assessments -- the home prioritises calm, distraction-free learning environments.`,
     );
@@ -564,27 +565,27 @@ export function computeHomeworkAcademicSupport(
     );
   }
 
-  if (tutoringAttendanceRate >= 90 && tutoringPlanned > 0) {
+  if (meets(tutoringAttendanceRate, 90) && tutoringPlanned > 0) {
     strengths.push(
       `${tutoringAttendanceRate}% tutoring session attendance rate -- excellent take-up of tutoring opportunities, indicating strong support and motivation.`,
     );
-  } else if (tutoringAttendanceRate >= 70 && tutoringPlanned > 0) {
+  } else if (meets(tutoringAttendanceRate, 70) && tutoringPlanned > 0) {
     strengths.push(
       `${tutoringAttendanceRate}% tutoring attendance -- good engagement with additional educational support.`,
     );
   }
 
-  if (tutoringProgressRate >= 80 && totalTutoringRecords > 0) {
+  if (meets(tutoringProgressRate, 80) && totalTutoringRecords > 0) {
     strengths.push(
       `Progress noted in ${tutoringProgressRate}% of tutoring sessions -- tutoring is making a measurable difference to children's academic outcomes.`,
     );
-  } else if (tutoringProgressRate >= 60 && totalTutoringRecords > 0) {
+  } else if (meets(tutoringProgressRate, 60) && totalTutoringRecords > 0) {
     strengths.push(
       `Progress noted in ${tutoringProgressRate}% of tutoring sessions -- tutoring is contributing positively to children's learning.`,
     );
   }
 
-  if (curriculumAlignmentRate >= 80 && totalTutoringRecords > 0) {
+  if (meets(curriculumAlignmentRate, 80) && totalTutoringRecords > 0) {
     strengths.push(
       `${curriculumAlignmentRate}% of tutoring sessions linked to the school curriculum -- tutoring is targeted and aligned with what children are learning at school.`,
     );
@@ -596,75 +597,75 @@ export function computeHomeworkAcademicSupport(
     );
   }
 
-  if (resourceFulfilmentRate >= 90 && resourcesRequested > 0) {
+  if (meets(resourceFulfilmentRate, 90) && resourcesRequested > 0) {
     strengths.push(
       `${resourceFulfilmentRate}% of requested educational resources provided -- the home responds promptly and fully to children's educational resource needs.`,
     );
-  } else if (resourceFulfilmentRate >= 70 && resourcesRequested > 0) {
+  } else if (meets(resourceFulfilmentRate, 70) && resourcesRequested > 0) {
     strengths.push(
       `${resourceFulfilmentRate}% of requested educational resources provided -- most resource requests are being met.`,
     );
   }
 
-  if (ageAppropriateRate >= 90 && totalResourceRecords > 0) {
+  if (meets(ageAppropriateRate, 90) && totalResourceRecords > 0) {
     strengths.push(
       `${ageAppropriateRate}% of educational resources are age-appropriate -- the home ensures resources match each child's developmental stage and learning needs.`,
     );
   }
 
-  if (resourceUsageRate >= 80 && totalResourceRecords > 0) {
+  if (meets(resourceUsageRate, 80) && totalResourceRecords > 0) {
     strengths.push(
       `${resourceUsageRate}% of provided resources are actively used by children -- resources are well-chosen and genuinely supporting learning.`,
     );
   }
 
-  if (staffAttendanceRate >= 90 && totalLiaisonRecords > 0) {
+  if (meets(staffAttendanceRate, 90) && totalLiaisonRecords > 0) {
     strengths.push(
       `Staff attend ${staffAttendanceRate}% of school liaison activities -- the home demonstrates strong commitment to working with schools for children's benefit.`,
     );
-  } else if (staffAttendanceRate >= 70 && totalLiaisonRecords > 0) {
+  } else if (meets(staffAttendanceRate, 70) && totalLiaisonRecords > 0) {
     strengths.push(
       `Staff attendance at school liaison activities at ${staffAttendanceRate}% -- good engagement with children's schools.`,
     );
   }
 
-  if (actionCompletionRate >= 90 && totalActionsAgreed > 0) {
+  if (meets(actionCompletionRate, 90) && totalActionsAgreed > 0) {
     strengths.push(
       `${actionCompletionRate}% of school liaison actions completed -- the home follows through reliably on agreed educational actions.`,
     );
-  } else if (actionCompletionRate >= 70 && totalActionsAgreed > 0) {
+  } else if (meets(actionCompletionRate, 70) && totalActionsAgreed > 0) {
     strengths.push(
       `${actionCompletionRate}% of school liaison actions completed -- good follow-through on educational commitments.`,
     );
   }
 
-  if (pepUpToDateRate >= 90 && totalLiaisonRecords > 0) {
+  if (meets(pepUpToDateRate, 90) && totalLiaisonRecords > 0) {
     strengths.push(
       `${pepUpToDateRate}% of PEPs reported as up to date -- Personal Education Plans are being maintained to support children's educational progress.`,
     );
   }
 
-  if (followUpCompletionRate >= 90 && followUpRequired > 0) {
+  if (meets(followUpCompletionRate, 90) && followUpRequired > 0) {
     strengths.push(
       `${followUpCompletionRate}% of school liaison follow-ups completed on time -- the home is proactive in ensuring continuity of educational support.`,
     );
   }
 
-  if (liaisonChildVoiceRate >= 80 && totalLiaisonRecords > 0) {
+  if (meets(liaisonChildVoiceRate, 80) && totalLiaisonRecords > 0) {
     strengths.push(
       `Child voice included in ${liaisonChildVoiceRate}% of school liaison activities -- children's views are shaping educational decisions and planning.`,
     );
-  } else if (liaisonChildVoiceRate >= 60 && totalLiaisonRecords > 0) {
+  } else if (meets(liaisonChildVoiceRate, 60) && totalLiaisonRecords > 0) {
     strengths.push(
       `Child voice included in ${liaisonChildVoiceRate}% of school liaison activities -- good practice in consulting children about their education.`,
     );
   }
 
-  if (childEngagementRate >= 90 && engagementDenominator > 0) {
+  if (meets(childEngagementRate, 90) && engagementDenominator > 0) {
     strengths.push(
       `${childEngagementRate}% overall child engagement rate across homework, tutoring, and resource use -- children are actively invested in their education.`,
     );
-  } else if (childEngagementRate >= 70 && engagementDenominator > 0) {
+  } else if (meets(childEngagementRate, 70) && engagementDenominator > 0) {
     strengths.push(
       `${childEngagementRate}% overall child engagement rate -- most children are actively participating in educational activities.`,
     );
@@ -674,45 +675,45 @@ export function computeHomeworkAcademicSupport(
 
   const concerns: string[] = [];
 
-  if (homeworkCompletionRate < 40 && homeworkSet > 0) {
+  if (below(homeworkCompletionRate, 40) && homeworkSet > 0) {
     concerns.push(
       `Only ${homeworkCompletionRate}% homework completion rate -- the majority of homework set by schools is not being completed, which will directly impact children's academic progress and attainment.`,
     );
-  } else if (homeworkCompletionRate < 70 && homeworkCompletionRate >= 40 && homeworkSet > 0) {
+  } else if (below(homeworkCompletionRate, 70) && meets(homeworkCompletionRate, 40) && homeworkSet > 0) {
     concerns.push(
       `Homework completion rate at ${homeworkCompletionRate}% -- a significant proportion of homework is not being completed, risking children falling behind academically.`,
     );
   }
 
-  if (staffSupportRate < 50 && totalHomeworkRecords > 0) {
+  if (below(staffSupportRate, 50) && totalHomeworkRecords > 0) {
     concerns.push(
       `Staff support provided in only ${staffSupportRate}% of homework sessions -- children are not receiving sufficient adult support to complete their schoolwork.`,
     );
   }
 
-  if (homeworkBarrierRate >= 30 && totalHomeworkRecords > 0) {
+  if (meets(homeworkBarrierRate, 30) && totalHomeworkRecords > 0) {
     concerns.push(
       `Barriers encountered in ${homeworkBarrierRate}% of homework sessions -- persistent obstacles are preventing children from completing their schoolwork.`,
     );
   }
 
-  if (homeworkEngagementRate < 50 && totalHomeworkRecords > 0) {
+  if (below(homeworkEngagementRate, 50) && totalHomeworkRecords > 0) {
     concerns.push(
       `Only ${homeworkEngagementRate}% child engagement during homework -- children are disengaged from their learning at home, which may indicate poor study environments, lack of motivation, or insufficient support.`,
     );
   }
 
-  if (studyEnvironmentQualityRate < 40 && totalStudyEnvRecords > 0) {
+  if (below(studyEnvironmentQualityRate, 40) && totalStudyEnvRecords > 0) {
     concerns.push(
       `Only ${studyEnvironmentQualityRate}% of study environments rated good or excellent -- the home is failing to provide adequate learning spaces for children.`,
     );
-  } else if (studyEnvironmentQualityRate < 70 && studyEnvironmentQualityRate >= 40 && totalStudyEnvRecords > 0) {
+  } else if (below(studyEnvironmentQualityRate, 70) && meets(studyEnvironmentQualityRate, 40) && totalStudyEnvRecords > 0) {
     concerns.push(
       `Study environment quality at ${studyEnvironmentQualityRate}% -- not all children have access to suitable study spaces.`,
     );
   }
 
-  if (quietSpaceRate < 50 && totalStudyEnvRecords > 0) {
+  if (below(quietSpaceRate, 50) && totalStudyEnvRecords > 0) {
     concerns.push(
       `Quiet study space available in only ${quietSpaceRate}% of assessments -- children lack the calm environments needed to focus on their learning.`,
     );
@@ -724,75 +725,75 @@ export function computeHomeworkAcademicSupport(
     );
   }
 
-  if (tutoringAttendanceRate < 50 && tutoringPlanned > 0) {
+  if (below(tutoringAttendanceRate, 50) && tutoringPlanned > 0) {
     concerns.push(
       `Only ${tutoringAttendanceRate}% tutoring session attendance -- the majority of planned tutoring is not being attended, denying children additional academic support.`,
     );
-  } else if (tutoringAttendanceRate < 70 && tutoringAttendanceRate >= 50 && tutoringPlanned > 0) {
+  } else if (below(tutoringAttendanceRate, 70) && meets(tutoringAttendanceRate, 50) && tutoringPlanned > 0) {
     concerns.push(
       `Tutoring attendance at ${tutoringAttendanceRate}% -- some planned tutoring sessions are being missed.`,
     );
   }
 
-  if (tutoringProgressRate < 50 && totalTutoringRecords > 0) {
+  if (below(tutoringProgressRate, 50) && totalTutoringRecords > 0) {
     concerns.push(
       `Progress noted in only ${tutoringProgressRate}% of tutoring sessions -- tutoring is not delivering measurable academic improvement.`,
     );
   }
 
-  if (resourceFulfilmentRate < 50 && resourcesRequested > 0) {
+  if (below(resourceFulfilmentRate, 50) && resourcesRequested > 0) {
     concerns.push(
       `Only ${resourceFulfilmentRate}% of requested educational resources provided -- children are being denied materials they need for their education.`,
     );
-  } else if (resourceFulfilmentRate < 70 && resourceFulfilmentRate >= 50 && resourcesRequested > 0) {
+  } else if (below(resourceFulfilmentRate, 70) && meets(resourceFulfilmentRate, 50) && resourcesRequested > 0) {
     concerns.push(
       `Resource fulfilment at ${resourceFulfilmentRate}% -- not all educational resource requests are being met.`,
     );
   }
 
-  if (resourceUsageRate < 50 && totalResourceRecords > 0) {
+  if (below(resourceUsageRate, 50) && totalResourceRecords > 0) {
     concerns.push(
       `Only ${resourceUsageRate}% of educational resources actively used by children -- resources may not be well-matched to children's needs or interests.`,
     );
   }
 
-  if (staffAttendanceRate < 50 && totalLiaisonRecords > 0) {
+  if (below(staffAttendanceRate, 50) && totalLiaisonRecords > 0) {
     concerns.push(
       `Staff attend only ${staffAttendanceRate}% of school liaison activities -- the home is not adequately engaging with children's schools to support academic progress.`,
     );
-  } else if (staffAttendanceRate < 70 && staffAttendanceRate >= 50 && totalLiaisonRecords > 0) {
+  } else if (below(staffAttendanceRate, 70) && meets(staffAttendanceRate, 50) && totalLiaisonRecords > 0) {
     concerns.push(
       `Staff attendance at school liaison activities at ${staffAttendanceRate}% -- attendance at school meetings needs to improve.`,
     );
   }
 
-  if (actionCompletionRate < 50 && totalActionsAgreed > 0) {
+  if (below(actionCompletionRate, 50) && totalActionsAgreed > 0) {
     concerns.push(
       `Only ${actionCompletionRate}% of school liaison actions completed -- the home is not following through on agreed educational support actions.`,
     );
   }
 
-  if (pepUpToDateRate < 50 && totalLiaisonRecords > 0) {
+  if (below(pepUpToDateRate, 50) && totalLiaisonRecords > 0) {
     concerns.push(
       `Only ${pepUpToDateRate}% of PEPs reported as up to date -- Personal Education Plans are not being maintained, which means children's educational needs may not be properly planned for.`,
     );
-  } else if (pepUpToDateRate < 70 && pepUpToDateRate >= 50 && totalLiaisonRecords > 0) {
+  } else if (below(pepUpToDateRate, 70) && meets(pepUpToDateRate, 50) && totalLiaisonRecords > 0) {
     concerns.push(
       `PEP up-to-date rate at ${pepUpToDateRate}% -- some Personal Education Plans need reviewing and updating.`,
     );
   }
 
-  if (liaisonChildVoiceRate < 50 && totalLiaisonRecords > 0) {
+  if (below(liaisonChildVoiceRate, 50) && totalLiaisonRecords > 0) {
     concerns.push(
       `Child voice included in only ${liaisonChildVoiceRate}% of school liaison activities -- children's views are not sufficiently shaping educational decisions.`,
     );
   }
 
-  if (childEngagementRate < 30 && engagementDenominator > 0) {
+  if (below(childEngagementRate, 30) && engagementDenominator > 0) {
     concerns.push(
       `Overall child engagement at only ${childEngagementRate}% -- children are largely disengaged from educational activities at home, which represents a serious concern for academic outcomes.`,
     );
-  } else if (childEngagementRate < 50 && childEngagementRate >= 30 && engagementDenominator > 0) {
+  } else if (below(childEngagementRate, 50) && meets(childEngagementRate, 30) && engagementDenominator > 0) {
     concerns.push(
       `Overall child engagement at ${childEngagementRate}% -- many children are not actively participating in educational activities.`,
     );
@@ -821,7 +822,7 @@ export function computeHomeworkAcademicSupport(
   const recommendations: AcademicSupportRecommendation[] = [];
   let rank = 0;
 
-  if (homeworkCompletionRate < 40 && homeworkSet > 0) {
+  if (below(homeworkCompletionRate, 40) && homeworkSet > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -831,7 +832,7 @@ export function computeHomeworkAcademicSupport(
     });
   }
 
-  if (studyEnvironmentQualityRate < 40 && totalStudyEnvRecords > 0) {
+  if (below(studyEnvironmentQualityRate, 40) && totalStudyEnvRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -851,7 +852,7 @@ export function computeHomeworkAcademicSupport(
     });
   }
 
-  if (childEngagementRate < 30 && engagementDenominator > 0) {
+  if (below(childEngagementRate, 30) && engagementDenominator > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -861,7 +862,7 @@ export function computeHomeworkAcademicSupport(
     });
   }
 
-  if (pepUpToDateRate < 50 && totalLiaisonRecords > 0) {
+  if (below(pepUpToDateRate, 50) && totalLiaisonRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -871,7 +872,7 @@ export function computeHomeworkAcademicSupport(
     });
   }
 
-  if (liaisonChildVoiceRate < 50 && totalLiaisonRecords > 0) {
+  if (below(liaisonChildVoiceRate, 50) && totalLiaisonRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -881,7 +882,7 @@ export function computeHomeworkAcademicSupport(
     });
   }
 
-  if (homeworkCompletionRate >= 40 && homeworkCompletionRate < 70 && homeworkSet > 0) {
+  if (meets(homeworkCompletionRate, 40) && below(homeworkCompletionRate, 70) && homeworkSet > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -891,7 +892,7 @@ export function computeHomeworkAcademicSupport(
     });
   }
 
-  if (staffSupportRate < 50 && totalHomeworkRecords > 0) {
+  if (below(staffSupportRate, 50) && totalHomeworkRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -901,7 +902,7 @@ export function computeHomeworkAcademicSupport(
     });
   }
 
-  if (studyEnvironmentQualityRate >= 40 && studyEnvironmentQualityRate < 70 && totalStudyEnvRecords > 0) {
+  if (meets(studyEnvironmentQualityRate, 40) && below(studyEnvironmentQualityRate, 70) && totalStudyEnvRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -911,7 +912,7 @@ export function computeHomeworkAcademicSupport(
     });
   }
 
-  if (tutoringAttendanceRate < 50 && tutoringPlanned > 0) {
+  if (below(tutoringAttendanceRate, 50) && tutoringPlanned > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -921,7 +922,7 @@ export function computeHomeworkAcademicSupport(
     });
   }
 
-  if (curriculumAlignmentRate < 50 && totalTutoringRecords > 0) {
+  if (below(curriculumAlignmentRate, 50) && totalTutoringRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -931,7 +932,7 @@ export function computeHomeworkAcademicSupport(
     });
   }
 
-  if (resourceFulfilmentRate < 50 && resourcesRequested > 0) {
+  if (below(resourceFulfilmentRate, 50) && resourcesRequested > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -941,7 +942,7 @@ export function computeHomeworkAcademicSupport(
     });
   }
 
-  if (actionCompletionRate < 50 && totalActionsAgreed > 0) {
+  if (below(actionCompletionRate, 50) && totalActionsAgreed > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -951,7 +952,7 @@ export function computeHomeworkAcademicSupport(
     });
   }
 
-  if (followUpCompletionRate < 50 && followUpRequired > 0) {
+  if (below(followUpCompletionRate, 50) && followUpRequired > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -961,7 +962,7 @@ export function computeHomeworkAcademicSupport(
     });
   }
 
-  if (tutoringProgressRate < 50 && totalTutoringRecords > 0) {
+  if (below(tutoringProgressRate, 50) && totalTutoringRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -971,7 +972,7 @@ export function computeHomeworkAcademicSupport(
     });
   }
 
-  if (homeworkBarrierRate >= 30 && totalHomeworkRecords > 0) {
+  if (meets(homeworkBarrierRate, 30) && totalHomeworkRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -981,7 +982,7 @@ export function computeHomeworkAcademicSupport(
     });
   }
 
-  if (tutoringAttendanceRate >= 50 && tutoringAttendanceRate < 70 && tutoringPlanned > 0) {
+  if (meets(tutoringAttendanceRate, 50) && below(tutoringAttendanceRate, 70) && tutoringPlanned > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -991,7 +992,7 @@ export function computeHomeworkAcademicSupport(
     });
   }
 
-  if (staffAttendanceRate >= 50 && staffAttendanceRate < 70 && totalLiaisonRecords > 0) {
+  if (meets(staffAttendanceRate, 50) && below(staffAttendanceRate, 70) && totalLiaisonRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1001,7 +1002,7 @@ export function computeHomeworkAcademicSupport(
     });
   }
 
-  if (childEngagementRate >= 30 && childEngagementRate < 50 && engagementDenominator > 0) {
+  if (meets(childEngagementRate, 30) && below(childEngagementRate, 50) && engagementDenominator > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1011,7 +1012,7 @@ export function computeHomeworkAcademicSupport(
     });
   }
 
-  if (pepUpToDateRate >= 50 && pepUpToDateRate < 70 && totalLiaisonRecords > 0) {
+  if (meets(pepUpToDateRate, 50) && below(pepUpToDateRate, 70) && totalLiaisonRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1047,14 +1048,14 @@ export function computeHomeworkAcademicSupport(
 
   // --- Critical insights ---
 
-  if (homeworkCompletionRate < 40 && homeworkSet > 0) {
+  if (below(homeworkCompletionRate, 40) && homeworkSet > 0) {
     insights.push({
       text: `Only ${homeworkCompletionRate}% homework completion rate. Ofsted will view the failure to support homework completion as evidence that the home does not prioritise children's education -- a direct failure under Reg 8. Looked-after children already face educational disadvantage; poor homework support compounds this.`,
       severity: "critical",
     });
   }
 
-  if (studyEnvironmentQualityRate < 40 && totalStudyEnvRecords > 0) {
+  if (below(studyEnvironmentQualityRate, 40) && totalStudyEnvRecords > 0) {
     insights.push({
       text: `Only ${studyEnvironmentQualityRate}% of study environments rated good or excellent. Without suitable learning spaces, children cannot study effectively. Ofsted expects homes to provide environments that actively promote educational achievement.`,
       severity: "critical",
@@ -1068,7 +1069,7 @@ export function computeHomeworkAcademicSupport(
     });
   }
 
-  if (childEngagementRate < 30 && engagementDenominator > 0) {
+  if (below(childEngagementRate, 30) && engagementDenominator > 0) {
     insights.push({
       text: `Overall child engagement at only ${childEngagementRate}%. When children are not engaged with educational activities at home, learning outcomes suffer. Ofsted expects homes to create a culture where education is valued and children are motivated to learn.`,
       severity: "critical",
@@ -1082,7 +1083,7 @@ export function computeHomeworkAcademicSupport(
     });
   }
 
-  if (pepUpToDateRate < 50 && totalLiaisonRecords > 0) {
+  if (below(pepUpToDateRate, 50) && totalLiaisonRecords > 0) {
     insights.push({
       text: `Only ${pepUpToDateRate}% of PEPs up to date. The Personal Education Plan is the primary mechanism for tracking and planning looked-after children's educational progress. Out-of-date PEPs mean educational needs may not be identified or resourced.`,
       severity: "critical",
@@ -1091,63 +1092,63 @@ export function computeHomeworkAcademicSupport(
 
   // --- Warning insights ---
 
-  if (homeworkCompletionRate >= 40 && homeworkCompletionRate < 70 && homeworkSet > 0) {
+  if (meets(homeworkCompletionRate, 40) && below(homeworkCompletionRate, 70) && homeworkSet > 0) {
     insights.push({
       text: `Homework completion at ${homeworkCompletionRate}% -- improving but not yet at the level needed to ensure children keep pace academically. Each missed homework represents a gap in learning that accumulates over time.`,
       severity: "warning",
     });
   }
 
-  if (studyEnvironmentQualityRate >= 40 && studyEnvironmentQualityRate < 70 && totalStudyEnvRecords > 0) {
+  if (meets(studyEnvironmentQualityRate, 40) && below(studyEnvironmentQualityRate, 70) && totalStudyEnvRecords > 0) {
     insights.push({
       text: `Study environment quality at ${studyEnvironmentQualityRate}% -- some children's learning spaces need improvement. Environmental factors such as noise, poor lighting, and lack of materials directly impact concentration and learning outcomes.`,
       severity: "warning",
     });
   }
 
-  if (tutoringAttendanceRate >= 50 && tutoringAttendanceRate < 70 && tutoringPlanned > 0) {
+  if (meets(tutoringAttendanceRate, 50) && below(tutoringAttendanceRate, 70) && tutoringPlanned > 0) {
     insights.push({
       text: `Tutoring attendance at ${tutoringAttendanceRate}% -- some sessions are being missed. Consider whether timing, tutor matching, or session format needs adjusting to improve engagement.`,
       severity: "warning",
     });
   }
 
-  if (tutoringProgressRate >= 50 && tutoringProgressRate < 80 && totalTutoringRecords > 0) {
+  if (meets(tutoringProgressRate, 50) && below(tutoringProgressRate, 80) && totalTutoringRecords > 0) {
     insights.push({
       text: `Progress noted in ${tutoringProgressRate}% of tutoring sessions -- tutoring is contributing but not yet consistently delivering measurable improvement. Review whether sessions are sufficiently targeted to each child's learning gaps.`,
       severity: "warning",
     });
   }
 
-  if (resourceFulfilmentRate >= 50 && resourceFulfilmentRate < 70 && resourcesRequested > 0) {
+  if (meets(resourceFulfilmentRate, 50) && below(resourceFulfilmentRate, 70) && resourcesRequested > 0) {
     insights.push({
       text: `Resource fulfilment at ${resourceFulfilmentRate}% -- some children's educational resource needs are unmet. Each unfulfilled request may represent a barrier to learning that could have been easily resolved.`,
       severity: "warning",
     });
   }
 
-  if (staffAttendanceRate >= 50 && staffAttendanceRate < 70 && totalLiaisonRecords > 0) {
+  if (meets(staffAttendanceRate, 50) && below(staffAttendanceRate, 70) && totalLiaisonRecords > 0) {
     insights.push({
       text: `Staff attendance at school liaison at ${staffAttendanceRate}% -- missed meetings mean missed opportunities to advocate for children's educational needs and stay informed about academic progress.`,
       severity: "warning",
     });
   }
 
-  if (actionCompletionRate >= 50 && actionCompletionRate < 70 && totalActionsAgreed > 0) {
+  if (meets(actionCompletionRate, 50) && below(actionCompletionRate, 70) && totalActionsAgreed > 0) {
     insights.push({
       text: `School liaison action completion at ${actionCompletionRate}% -- incomplete actions undermine the home-school relationship and may leave gaps in children's educational support.`,
       severity: "warning",
     });
   }
 
-  if (childEngagementRate >= 30 && childEngagementRate < 70 && engagementDenominator > 0) {
+  if (meets(childEngagementRate, 30) && below(childEngagementRate, 70) && engagementDenominator > 0) {
     insights.push({
       text: `Child engagement at ${childEngagementRate}% -- not all children are fully invested in educational activities at home. Building a positive learning culture requires consistent encouragement, appropriate challenge, and celebrating achievements.`,
       severity: "warning",
     });
   }
 
-  if (homeworkBarrierRate >= 30 && totalHomeworkRecords > 0) {
+  if (meets(homeworkBarrierRate, 30) && totalHomeworkRecords > 0) {
     insights.push({
       text: `Barriers encountered in ${homeworkBarrierRate}% of homework sessions -- recurring obstacles need systematic identification and resolution. Common barriers for looked-after children include prior educational disruption, undiagnosed learning needs, and emotional dysregulation.`,
       severity: "warning",
@@ -1178,21 +1179,21 @@ export function computeHomeworkAcademicSupport(
     });
   }
 
-  if (homeworkCompletionRate >= 90 && staffSupportRate >= 90 && homeworkSet > 0 && totalHomeworkRecords > 0) {
+  if (meets(homeworkCompletionRate, 90) && meets(staffSupportRate, 90) && homeworkSet > 0 && totalHomeworkRecords > 0) {
     insights.push({
       text: `${homeworkCompletionRate}% homework completion with ${staffSupportRate}% staff support -- the home provides exceptional homework support. Staff are consistently available and effective in helping children complete their schoolwork.`,
       severity: "positive",
     });
   }
 
-  if (studyEnvironmentQualityRate >= 90 && meets(envSatisfactionAvg, 4.0) && totalStudyEnvRecords > 0) {
+  if (meets(studyEnvironmentQualityRate, 90) && meets(envSatisfactionAvg, 4.0) && totalStudyEnvRecords > 0) {
     insights.push({
       text: `${studyEnvironmentQualityRate}% study environment quality with child satisfaction averaging ${envSatisfactionAvg}/5 -- children have access to excellent learning spaces and feel these support their education well. This creates optimal conditions for academic achievement.`,
       severity: "positive",
     });
   }
 
-  if (tutoringAttendanceRate >= 90 && tutoringProgressRate >= 80 && tutoringPlanned > 0 && totalTutoringRecords > 0) {
+  if (meets(tutoringAttendanceRate, 90) && meets(tutoringProgressRate, 80) && tutoringPlanned > 0 && totalTutoringRecords > 0) {
     insights.push({
       text: `${tutoringAttendanceRate}% tutoring attendance with progress noted in ${tutoringProgressRate}% of sessions -- tutoring is well-attended and delivering measurable academic improvement. This represents excellent value and genuine educational impact.`,
       severity: "positive",
@@ -1206,28 +1207,28 @@ export function computeHomeworkAcademicSupport(
     });
   }
 
-  if (meets(schoolLiaisonRate, 90) && pepUpToDateRate >= 90 && totalLiaisonRecords > 0) {
+  if (meets(schoolLiaisonRate, 90) && meets(pepUpToDateRate, 90) && totalLiaisonRecords > 0) {
     insights.push({
       text: `School liaison rate at ${schoolLiaisonRate}% with ${pepUpToDateRate}% PEPs up to date -- the home maintains exemplary relationships with schools and ensures educational planning is current and effective. This proactive approach ensures children's academic needs are identified and met.`,
       severity: "positive",
     });
   }
 
-  if (childEngagementRate >= 90 && engagementDenominator > 0) {
+  if (meets(childEngagementRate, 90) && engagementDenominator > 0) {
     insights.push({
       text: `${childEngagementRate}% overall child engagement -- children are actively invested in their education at home. This reflects a positive learning culture where education is valued and children feel motivated to succeed.`,
       severity: "positive",
     });
   }
 
-  if (actionCompletionRate >= 90 && totalActionsAgreed > 0) {
+  if (meets(actionCompletionRate, 90) && totalActionsAgreed > 0) {
     insights.push({
       text: `${actionCompletionRate}% of school liaison actions completed -- the home demonstrates exceptional follow-through on educational commitments. Schools can rely on the home to deliver agreed support, strengthening the partnership.`,
       severity: "positive",
     });
   }
 
-  if (liaisonChildVoiceRate >= 80 && totalLiaisonRecords > 0) {
+  if (meets(liaisonChildVoiceRate, 80) && totalLiaisonRecords > 0) {
     insights.push({
       text: `Child voice included in ${liaisonChildVoiceRate}% of school liaison activities -- children's educational preferences and concerns genuinely shape the home's approach to supporting their learning. This is exemplary practice in empowering children.`,
       severity: "positive",

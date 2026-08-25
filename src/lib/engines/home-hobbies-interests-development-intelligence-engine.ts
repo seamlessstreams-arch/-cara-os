@@ -14,7 +14,7 @@
 //             childLedActivityRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { meets } from "@/lib/metrics/rate";
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -153,12 +153,18 @@ export interface HobbiesInterestsResult {
   total_hobbies: number;
   // Rates use total_children as denominator (unrelated to fab-0). Only the
   // avgs below are gated on record-count denominators — widened to null.
-  hobby_participation_rate: number;
-  interest_exploration_rate: number;
-  talent_development_rate: number;
-  creative_expression_rate: number;
-  child_led_rate: number;
-  child_satisfaction_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  hobby_participation_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  interest_exploration_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  talent_development_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  creative_expression_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_led_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_satisfaction_rate: number | null;
   // Null on empty: no records ⇒ no signal. "0.0 enjoyment" or "0.0 skill
   // progression" would read as "children hate their hobbies", not "unmeasured".
   // Fab-0 doctrine.
@@ -172,10 +178,6 @@ export interface HobbiesInterestsResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -200,12 +202,12 @@ function emptyResult(
     hobbies_score: score,
     headline,
     total_hobbies: 0,
-    hobby_participation_rate: 0,
-    interest_exploration_rate: 0,
-    talent_development_rate: 0,
-    creative_expression_rate: 0,
-    child_led_rate: 0,
-    child_satisfaction_rate: 0,
+    hobby_participation_rate: null,
+    interest_exploration_rate: null,
+    talent_development_rate: null,
+    creative_expression_rate: null,
+    child_led_rate: null,
+    child_satisfaction_rate: null,
     hobby_enjoyment_avg: null,
     skill_progression_avg: null,
     exploration_breadth_avg: null,
@@ -291,7 +293,7 @@ export function computeHobbiesInterestsDevelopment(
     hobby_participation_records.map((h) => h.child_id),
   ).size;
   const hobbyParticipationRate =
-    total_children > 0 ? pct(uniqueChildrenWithHobbies, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenWithHobbies, total_children) : 0;
 
   const hobbyAttendanceTotal = hobby_participation_records.reduce(
     (sum, h) => sum + h.sessions_attended,
@@ -301,7 +303,7 @@ export function computeHobbiesInterestsDevelopment(
     (sum, h) => sum + h.sessions_planned,
     0,
   );
-  const hobbyAttendanceRate = pct(hobbyAttendanceTotal, hobbyPlannedTotal);
+  const hobbyAttendanceRate = rate(hobbyAttendanceTotal, hobbyPlannedTotal);
 
   const hobbyEnjoymentSum = hobby_participation_records.reduce(
     (sum, h) => sum + h.child_enjoyment_rating,
@@ -324,22 +326,22 @@ export function computeHobbiesInterestsDevelopment(
   const childChosenHobbies = hobby_participation_records.filter(
     (h) => h.child_chose_hobby,
   ).length;
-  const childChoiceRate = pct(childChosenHobbies, totalHobbies);
+  const childChoiceRate = rate(childChosenHobbies, totalHobbies);
 
   const externalClubHobbies = hobby_participation_records.filter(
     (h) => h.external_club,
   ).length;
-  const externalClubRate = pct(externalClubHobbies, totalHobbies);
+  const externalClubRate = rate(externalClubHobbies, totalHobbies);
 
   const peerParticipationHobbies = hobby_participation_records.filter(
     (h) => h.peer_participation,
   ).length;
-  const peerParticipationRate = pct(peerParticipationHobbies, totalHobbies);
+  const peerParticipationRate = rate(peerParticipationHobbies, totalHobbies);
 
   const hobbyNotesRecorded = hobby_participation_records.filter(
     (h) => h.notes_recorded,
   ).length;
-  const hobbyDocumentationRate = pct(hobbyNotesRecorded, totalHobbies);
+  const hobbyDocumentationRate = rate(hobbyNotesRecorded, totalHobbies);
 
   const overdueHobbyReviews = hobby_participation_records.filter(
     (h) => h.review_overdue && h.active,
@@ -358,27 +360,27 @@ export function computeHobbiesInterestsDevelopment(
     interest_exploration_records.map((e) => e.child_id),
   ).size;
   const interestExplorationRate =
-    total_children > 0 ? pct(uniqueChildrenExploring, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenExploring, total_children) : 0;
 
   const newExperiences = interest_exploration_records.filter(
     (e) => e.new_experience,
   ).length;
-  const newExperienceRate = pct(newExperiences, totalExplorations);
+  const newExperienceRate = rate(newExperiences, totalExplorations);
 
   const culturalExposures = interest_exploration_records.filter(
     (e) => e.cultural_exposure,
   ).length;
-  const culturalExposureRate = pct(culturalExposures, totalExplorations);
+  const culturalExposureRate = rate(culturalExposures, totalExplorations);
 
   const ledToOngoingHobby = interest_exploration_records.filter(
     (e) => e.led_to_ongoing_hobby,
   ).length;
-  const conversionRate = pct(ledToOngoingHobby, totalExplorations);
+  const conversionRate = rate(ledToOngoingHobby, totalExplorations);
 
   const explorationDocumented = interest_exploration_records.filter(
     (e) => e.documented,
   ).length;
-  const explorationDocumentationRate = pct(explorationDocumented, totalExplorations);
+  const explorationDocumentationRate = rate(explorationDocumented, totalExplorations);
 
   // --- Exploration breadth per child ---
   const explorationsByChild: Record<string, Set<string>> = {};
@@ -407,7 +409,7 @@ export function computeHobbiesInterestsDevelopment(
     talent_development_records.map((t) => t.child_id),
   ).size;
   const talentDevelopmentRate =
-    total_children > 0 ? pct(uniqueChildrenInTalent, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenInTalent, total_children) : 0;
 
   const talentSessionsCompleted = talent_development_records.reduce(
     (sum, t) => sum + t.sessions_completed,
@@ -417,22 +419,22 @@ export function computeHobbiesInterestsDevelopment(
     (sum, t) => sum + t.sessions_planned,
     0,
   );
-  const talentSessionCompletionRate = pct(talentSessionsCompleted, talentSessionsPlanned);
+  const talentSessionCompletionRate = rate(talentSessionsCompleted, talentSessionsPlanned);
 
   const talentWithExternalRecognition = talent_development_records.filter(
     (t) => t.external_recognition,
   ).length;
-  const externalRecognitionRate = pct(talentWithExternalRecognition, totalTalentProgrammes);
+  const externalRecognitionRate = rate(talentWithExternalRecognition, totalTalentProgrammes);
 
   const talentWithProfessionalInstructor = talent_development_records.filter(
     (t) => t.professional_instructor,
   ).length;
-  const professionalInstructorRate = pct(talentWithProfessionalInstructor, totalTalentProgrammes);
+  const professionalInstructorRate = rate(talentWithProfessionalInstructor, totalTalentProgrammes);
 
   const talentProgressDocumented = talent_development_records.filter(
     (t) => t.progress_documented,
   ).length;
-  const talentDocumentationRate = pct(talentProgressDocumented, totalTalentProgrammes);
+  const talentDocumentationRate = rate(talentProgressDocumented, totalTalentProgrammes);
 
   const talentMotivationSum = talent_development_records.reduce(
     (sum, t) => sum + t.child_motivation_rating,
@@ -459,7 +461,7 @@ export function computeHobbiesInterestsDevelopment(
     creative_expression_records.map((c) => c.child_id),
   ).size;
   const creativeExpressionRate =
-    total_children > 0 ? pct(uniqueChildrenCreative, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenCreative, total_children) : 0;
 
   const outputProduced = creative_expression_records.filter(
     (c) => c.output_produced,
@@ -468,7 +470,7 @@ export function computeHobbiesInterestsDevelopment(
   const outputDisplayed = creative_expression_records.filter(
     (c) => c.output_displayed,
   ).length;
-  const outputDisplayRate = pct(outputDisplayed, totalCreativeActivities);
+  const outputDisplayRate = rate(outputDisplayed, totalCreativeActivities);
 
   const creativeSatisfactionSum = creative_expression_records.reduce(
     (sum, c) => sum + c.child_satisfaction_rating,
@@ -482,12 +484,12 @@ export function computeHobbiesInterestsDevelopment(
   const therapeuticCreativeActivities = creative_expression_records.filter(
     (c) => c.therapeutic_value,
   ).length;
-  const therapeuticRate = pct(therapeuticCreativeActivities, totalCreativeActivities);
+  const therapeuticRate = rate(therapeuticCreativeActivities, totalCreativeActivities);
 
   const creativeDocumented = creative_expression_records.filter(
     (c) => c.documented,
   ).length;
-  const creativeDocumentationRate = pct(creativeDocumented, totalCreativeActivities);
+  const creativeDocumentationRate = rate(creativeDocumented, totalCreativeActivities);
 
   // --- Creative expression type diversity ---
   const creativeTypeCounts: Record<string, number> = {};
@@ -502,17 +504,17 @@ export function computeHobbiesInterestsDevelopment(
     child_led_activity_records.map((a) => a.child_id),
   ).size;
   const childLedRate =
-    total_children > 0 ? pct(uniqueChildrenLeading, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenLeading, total_children) : 0;
 
   const childLedAutonomyRespected = child_led_activity_records.filter(
     (a) => a.autonomy_respected,
   ).length;
-  const autonomyRespectedRate = pct(childLedAutonomyRespected, totalChildLedActivities);
+  const autonomyRespectedRate = rate(childLedAutonomyRespected, totalChildLedActivities);
 
   const childLedWithPeers = child_led_activity_records.filter(
     (a) => a.other_children_involved > 0,
   ).length;
-  const childLedPeerRate = pct(childLedWithPeers, totalChildLedActivities);
+  const childLedPeerRate = rate(childLedWithPeers, totalChildLedActivities);
 
   // --- Child satisfaction rate (composite across all domains) ---
   const satisfactionOpportunities =
@@ -522,57 +524,57 @@ export function computeHobbiesInterestsDevelopment(
     interest_exploration_records.filter((e) => e.child_feedback_positive).length +
     creative_expression_records.filter((c) => c.child_satisfaction_rating >= 4).length +
     child_led_activity_records.filter((a) => a.child_satisfaction_rating >= 4).length;
-  const childSatisfactionRate = pct(satisfactionPositive, satisfactionOpportunities);
+  const childSatisfactionRate = rate(satisfactionPositive, satisfactionOpportunities);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: hobbyParticipationRate (>=100: +5, >=80: +3) ---
-  if (hobbyParticipationRate >= 100) score += 5;
-  else if (hobbyParticipationRate >= 80) score += 3;
+  if (meets(hobbyParticipationRate, 100)) score += 5;
+  else if (meets(hobbyParticipationRate, 80)) score += 3;
 
   // --- Bonus 2: interestExplorationRate (>=80: +4, >=60: +2) ---
-  if (interestExplorationRate >= 80) score += 4;
-  else if (interestExplorationRate >= 60) score += 2;
+  if (meets(interestExplorationRate, 80)) score += 4;
+  else if (meets(interestExplorationRate, 60)) score += 2;
 
   // --- Bonus 3: talentDevelopmentRate (>=60: +4, >=40: +2) ---
-  if (talentDevelopmentRate >= 60) score += 4;
-  else if (talentDevelopmentRate >= 40) score += 2;
+  if (meets(talentDevelopmentRate, 60)) score += 4;
+  else if (meets(talentDevelopmentRate, 40)) score += 2;
 
   // --- Bonus 4: creativeExpressionRate (>=80: +4, >=60: +2) ---
-  if (creativeExpressionRate >= 80) score += 4;
-  else if (creativeExpressionRate >= 60) score += 2;
+  if (meets(creativeExpressionRate, 80)) score += 4;
+  else if (meets(creativeExpressionRate, 60)) score += 2;
 
   // --- Bonus 5: childLedRate (>=70: +4, >=50: +2) ---
-  if (childLedRate >= 70) score += 4;
-  else if (childLedRate >= 50) score += 2;
+  if (meets(childLedRate, 70)) score += 4;
+  else if (meets(childLedRate, 50)) score += 2;
 
   // --- Bonus 6: childSatisfactionRate (>=90: +3, >=70: +1) ---
-  if (childSatisfactionRate >= 90) score += 3;
-  else if (childSatisfactionRate >= 70) score += 1;
+  if (meets(childSatisfactionRate, 90)) score += 3;
+  else if (meets(childSatisfactionRate, 70)) score += 1;
 
   // --- Bonus 7: hobbyEnjoymentAvg (>=4.0: +2, >=3.0: +1) ---
   if (meets(hobbyEnjoymentAvg, 4.0)) score += 2;
   else if (meets(hobbyEnjoymentAvg, 3.0)) score += 1;
 
   // --- Bonus 8: childChoiceRate (>=80: +2, >=60: +1) ---
-  if (childChoiceRate >= 80) score += 2;
-  else if (childChoiceRate >= 60) score += 1;
+  if (meets(childChoiceRate, 80)) score += 2;
+  else if (meets(childChoiceRate, 60)) score += 1;
 
   // ── Penalties (guarded by array.length > 0) ───────────────────────────
 
   // hobbyParticipationRate < 40 → -6
-  if (hobbyParticipationRate < 40 && hobby_participation_records.length > 0) score -= 6;
+  if (below(hobbyParticipationRate, 40) && hobby_participation_records.length > 0) score -= 6;
 
   // interestExplorationRate < 40 → -5
-  if (interestExplorationRate < 40 && interest_exploration_records.length > 0) score -= 5;
+  if (below(interestExplorationRate, 40) && interest_exploration_records.length > 0) score -= 5;
 
   // creativeExpressionRate < 40 → -5
-  if (creativeExpressionRate < 40 && creative_expression_records.length > 0) score -= 5;
+  if (below(creativeExpressionRate, 40) && creative_expression_records.length > 0) score -= 5;
 
   // childSatisfactionRate < 40 → -4
-  if (childSatisfactionRate < 40 && satisfactionOpportunities > 0) score -= 4;
+  if (below(childSatisfactionRate, 40) && satisfactionOpportunities > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -582,61 +584,61 @@ export function computeHobbiesInterestsDevelopment(
 
   const strengths: string[] = [];
 
-  if (hobbyParticipationRate >= 100 && total_children > 0) {
+  if (meets(hobbyParticipationRate, 100) && total_children > 0) {
     strengths.push(
       "Every child is participating in at least one hobby — the home demonstrates comprehensive commitment to ensuring all children have regular, meaningful hobby activities.",
     );
-  } else if (hobbyParticipationRate >= 80 && total_children > 0) {
+  } else if (meets(hobbyParticipationRate, 80) && total_children > 0) {
     strengths.push(
       `${hobbyParticipationRate}% of children participate in hobbies — strong coverage ensuring the vast majority of children have access to hobby activities.`,
     );
   }
 
-  if (interestExplorationRate >= 80 && total_children > 0) {
+  if (meets(interestExplorationRate, 80) && total_children > 0) {
     strengths.push(
       `${interestExplorationRate}% of children have explored new interests — the home actively facilitates broad interest exploration, helping children discover what they enjoy.`,
     );
-  } else if (interestExplorationRate >= 60 && total_children > 0) {
+  } else if (meets(interestExplorationRate, 60) && total_children > 0) {
     strengths.push(
       `${interestExplorationRate}% interest exploration rate — good levels of access to taster sessions, workshops, and new experiences for children.`,
     );
   }
 
-  if (talentDevelopmentRate >= 60 && total_children > 0) {
+  if (meets(talentDevelopmentRate, 60) && total_children > 0) {
     strengths.push(
       `${talentDevelopmentRate}% of children are in talent development programmes — the home invests in nurturing identified talents through structured coaching, lessons, or mentoring.`,
     );
-  } else if (talentDevelopmentRate >= 40 && total_children > 0) {
+  } else if (meets(talentDevelopmentRate, 40) && total_children > 0) {
     strengths.push(
       `${talentDevelopmentRate}% of children are supported in talent development — a meaningful proportion of children receive structured support to develop their skills.`,
     );
   }
 
-  if (creativeExpressionRate >= 80 && total_children > 0) {
+  if (meets(creativeExpressionRate, 80) && total_children > 0) {
     strengths.push(
       `${creativeExpressionRate}% of children engage in creative expression — the home provides rich, varied creative opportunities that support children's emotional and personal development.`,
     );
-  } else if (creativeExpressionRate >= 60 && total_children > 0) {
+  } else if (meets(creativeExpressionRate, 60) && total_children > 0) {
     strengths.push(
       `${creativeExpressionRate}% creative expression rate — good availability of creative activities for the majority of children.`,
     );
   }
 
-  if (childLedRate >= 70 && total_children > 0) {
+  if (meets(childLedRate, 70) && total_children > 0) {
     strengths.push(
       `${childLedRate}% of children lead their own activities — the home empowers children to plan, organise, and direct their own leisure time, building autonomy and confidence.`,
     );
-  } else if (childLedRate >= 50 && total_children > 0) {
+  } else if (meets(childLedRate, 50) && total_children > 0) {
     strengths.push(
       `${childLedRate}% child-led activity rate — over half of children are initiating and leading their own activities, demonstrating growing independence.`,
     );
   }
 
-  if (childSatisfactionRate >= 90 && satisfactionOpportunities > 0) {
+  if (meets(childSatisfactionRate, 90) && satisfactionOpportunities > 0) {
     strengths.push(
       `${childSatisfactionRate}% child satisfaction across all activities — children overwhelmingly report enjoyment and positive experience from their hobby and interest activities.`,
     );
-  } else if (childSatisfactionRate >= 70 && satisfactionOpportunities > 0) {
+  } else if (meets(childSatisfactionRate, 70) && satisfactionOpportunities > 0) {
     strengths.push(
       `${childSatisfactionRate}% child satisfaction rate — the majority of children report positive experiences with their hobbies and activities.`,
     );
@@ -652,33 +654,33 @@ export function computeHobbiesInterestsDevelopment(
     );
   }
 
-  if (childChoiceRate >= 80 && totalHobbies > 0) {
+  if (meets(childChoiceRate, 80) && totalHobbies > 0) {
     strengths.push(
       `${childChoiceRate}% of hobbies are child-chosen — the home prioritises children's own preferences and autonomy when selecting hobby activities.`,
     );
-  } else if (childChoiceRate >= 60 && totalHobbies > 0) {
+  } else if (meets(childChoiceRate, 60) && totalHobbies > 0) {
     strengths.push(
       `${childChoiceRate}% child choice in hobby selection — the home generally respects children's wishes when choosing hobby activities.`,
     );
   }
 
-  if (externalClubRate >= 50 && totalHobbies > 0) {
+  if (meets(externalClubRate, 50) && totalHobbies > 0) {
     strengths.push(
       `${externalClubRate}% of hobbies involve external clubs — children are accessing community-based activities, supporting social integration and peer relationships beyond the home.`,
     );
   }
 
-  if (peerParticipationRate >= 60 && totalHobbies > 0) {
+  if (meets(peerParticipationRate, 60) && totalHobbies > 0) {
     strengths.push(
       `${peerParticipationRate}% of hobbies involve peer participation — children are developing social skills and friendships through shared hobby activities.`,
     );
   }
 
-  if (hobbyAttendanceRate >= 90 && hobbyPlannedTotal > 0) {
+  if (meets(hobbyAttendanceRate, 90) && hobbyPlannedTotal > 0) {
     strengths.push(
       `${hobbyAttendanceRate}% hobby session attendance — excellent commitment to attending planned hobby sessions, demonstrating consistency and dedication.`,
     );
-  } else if (hobbyAttendanceRate >= 75 && hobbyPlannedTotal > 0) {
+  } else if (meets(hobbyAttendanceRate, 75) && hobbyPlannedTotal > 0) {
     strengths.push(
       `${hobbyAttendanceRate}% hobby attendance rate — children are attending the majority of their planned hobby sessions.`,
     );
@@ -690,59 +692,59 @@ export function computeHobbiesInterestsDevelopment(
     );
   }
 
-  if (newExperienceRate >= 70 && totalExplorations > 0) {
+  if (meets(newExperienceRate, 70) && totalExplorations > 0) {
     strengths.push(
       `${newExperienceRate}% of explorations are new experiences — the home consistently introduces children to activities they have not tried before, broadening their horizons.`,
     );
   }
 
-  if (culturalExposureRate >= 50 && totalExplorations > 0) {
+  if (meets(culturalExposureRate, 50) && totalExplorations > 0) {
     strengths.push(
       `${culturalExposureRate}% of explorations include cultural exposure — the home integrates cultural experiences into interest exploration, enriching children's understanding of diversity.`,
     );
   }
 
-  if (conversionRate >= 30 && totalExplorations > 0) {
+  if (meets(conversionRate, 30) && totalExplorations > 0) {
     strengths.push(
       `${conversionRate}% of taster explorations led to ongoing hobbies — the home successfully converts interest exploration into sustained engagement.`,
     );
   }
 
-  if (externalRecognitionRate >= 30 && totalTalentProgrammes > 0) {
+  if (meets(externalRecognitionRate, 30) && totalTalentProgrammes > 0) {
     strengths.push(
       `${externalRecognitionRate}% of talent programmes have led to external recognition — children's achievements are being celebrated beyond the home through competitions, gradings, or performances.`,
     );
   }
 
-  if (professionalInstructorRate >= 70 && totalTalentProgrammes > 0) {
+  if (meets(professionalInstructorRate, 70) && totalTalentProgrammes > 0) {
     strengths.push(
       `${professionalInstructorRate}% of talent programmes use professional instructors — the home invests in high-quality coaching and tuition to develop children's talents.`,
     );
   }
 
-  if (outputDisplayRate >= 50 && totalCreativeActivities > 0) {
+  if (meets(outputDisplayRate, 50) && totalCreativeActivities > 0) {
     strengths.push(
       `${outputDisplayRate}% of creative outputs are displayed — children's creative work is valued and celebrated within the home, building pride and self-esteem.`,
     );
   }
 
-  if (therapeuticRate >= 40 && totalCreativeActivities > 0) {
+  if (meets(therapeuticRate, 40) && totalCreativeActivities > 0) {
     strengths.push(
       `${therapeuticRate}% of creative activities have therapeutic value — the home recognises and uses creative expression as a means of emotional processing and healing.`,
     );
   }
 
-  if (autonomyRespectedRate >= 90 && totalChildLedActivities > 0) {
+  if (meets(autonomyRespectedRate, 90) && totalChildLedActivities > 0) {
     strengths.push(
       "Children's autonomy is respected in virtually all child-led activities — the home supports children to make genuine choices about their leisure time without undue restriction.",
     );
-  } else if (autonomyRespectedRate >= 70 && totalChildLedActivities > 0) {
+  } else if (meets(autonomyRespectedRate, 70) && totalChildLedActivities > 0) {
     strengths.push(
       `${autonomyRespectedRate}% autonomy respected in child-led activities — the home generally supports children's independence in planning their own activities.`,
     );
   }
 
-  if (childLedPeerRate >= 50 && totalChildLedActivities > 0) {
+  if (meets(childLedPeerRate, 50) && totalChildLedActivities > 0) {
     strengths.push(
       `${childLedPeerRate}% of child-led activities involve other children — child-initiated activities are building positive peer relationships and social cohesion within the home.`,
     );
@@ -764,73 +766,73 @@ export function computeHobbiesInterestsDevelopment(
 
   const concerns: string[] = [];
 
-  if (hobbyParticipationRate < 40 && total_children > 0) {
+  if (below(hobbyParticipationRate, 40) && total_children > 0) {
     concerns.push(
       `Only ${hobbyParticipationRate}% of children participate in hobbies — the majority of children do not have a regular hobby activity, limiting their opportunities for skill development, enjoyment, and social engagement.`,
     );
-  } else if (hobbyParticipationRate < 80 && hobbyParticipationRate >= 40 && total_children > 0) {
+  } else if (below(hobbyParticipationRate, 80) && meets(hobbyParticipationRate, 40) && total_children > 0) {
     concerns.push(
       `Hobby participation at ${hobbyParticipationRate}% — some children are not accessing regular hobby activities, which may limit their personal development and enjoyment opportunities.`,
     );
   }
 
-  if (interestExplorationRate < 40 && total_children > 0 && totalExplorations > 0) {
+  if (below(interestExplorationRate, 40) && total_children > 0 && totalExplorations > 0) {
     concerns.push(
       `Only ${interestExplorationRate}% of children have explored new interests — the majority of children are not being offered sufficient opportunities to discover new activities and broaden their experiences.`,
     );
-  } else if (interestExplorationRate < 60 && interestExplorationRate >= 40 && total_children > 0 && totalExplorations > 0) {
+  } else if (below(interestExplorationRate, 60) && meets(interestExplorationRate, 40) && total_children > 0 && totalExplorations > 0) {
     concerns.push(
       `Interest exploration at ${interestExplorationRate}% — some children have limited access to taster sessions and new experiences, reducing the breadth of their personal development.`,
     );
   }
 
-  if (talentDevelopmentRate < 20 && total_children > 0 && totalTalentProgrammes > 0) {
+  if (below(talentDevelopmentRate, 20) && total_children > 0 && totalTalentProgrammes > 0) {
     concerns.push(
       `Only ${talentDevelopmentRate}% of children are in talent development programmes — very few children receive structured support to develop identified talents, which may indicate the home is not recognising or nurturing children's potential.`,
     );
   }
 
-  if (creativeExpressionRate < 40 && total_children > 0 && totalCreativeActivities > 0) {
+  if (below(creativeExpressionRate, 40) && total_children > 0 && totalCreativeActivities > 0) {
     concerns.push(
       `Only ${creativeExpressionRate}% of children engage in creative expression — the majority of children do not have access to regular creative activities, limiting an important avenue for emotional expression and personal development.`,
     );
-  } else if (creativeExpressionRate < 60 && creativeExpressionRate >= 40 && total_children > 0 && totalCreativeActivities > 0) {
+  } else if (below(creativeExpressionRate, 60) && meets(creativeExpressionRate, 40) && total_children > 0 && totalCreativeActivities > 0) {
     concerns.push(
       `Creative expression rate at ${creativeExpressionRate}% — some children are missing out on creative activities that support emotional wellbeing and self-expression.`,
     );
   }
 
-  if (childLedRate < 30 && total_children > 0 && totalChildLedActivities > 0) {
+  if (below(childLedRate, 30) && total_children > 0 && totalChildLedActivities > 0) {
     concerns.push(
       `Only ${childLedRate}% of children lead their own activities — very few children are exercising genuine autonomy over their leisure time, raising questions about whether the home truly empowers children to make choices.`,
     );
-  } else if (childLedRate < 50 && childLedRate >= 30 && total_children > 0 && totalChildLedActivities > 0) {
+  } else if (below(childLedRate, 50) && meets(childLedRate, 30) && total_children > 0 && totalChildLedActivities > 0) {
     concerns.push(
       `Child-led activity rate at ${childLedRate}% — fewer than half of children are initiating and leading their own activities, suggesting the home could do more to promote child autonomy.`,
     );
   }
 
-  if (childSatisfactionRate < 40 && satisfactionOpportunities > 0) {
+  if (below(childSatisfactionRate, 40) && satisfactionOpportunities > 0) {
     concerns.push(
       `Only ${childSatisfactionRate}% child satisfaction across activities — most children do not report positive experiences, suggesting activities may not be well-matched to their interests or delivered in an engaging way.`,
     );
-  } else if (childSatisfactionRate < 70 && childSatisfactionRate >= 40 && satisfactionOpportunities > 0) {
+  } else if (below(childSatisfactionRate, 70) && meets(childSatisfactionRate, 40) && satisfactionOpportunities > 0) {
     concerns.push(
       `Child satisfaction at ${childSatisfactionRate}% — a significant proportion of children are not reporting positive experiences, indicating scope to better tailor activities to individual preferences.`,
     );
   }
 
-  if (hobbyAttendanceRate < 50 && hobbyPlannedTotal > 0) {
+  if (below(hobbyAttendanceRate, 50) && hobbyPlannedTotal > 0) {
     concerns.push(
       `Hobby session attendance at only ${hobbyAttendanceRate}% — poor attendance may indicate barriers to participation, lack of motivation, or hobbies that do not genuinely interest the child.`,
     );
-  } else if (hobbyAttendanceRate < 75 && hobbyAttendanceRate >= 50 && hobbyPlannedTotal > 0) {
+  } else if (below(hobbyAttendanceRate, 75) && meets(hobbyAttendanceRate, 50) && hobbyPlannedTotal > 0) {
     concerns.push(
       `Hobby attendance rate at ${hobbyAttendanceRate}% — inconsistent attendance may reduce the benefit children gain from their hobby activities.`,
     );
   }
 
-  if (childChoiceRate < 40 && totalHobbies > 0) {
+  if (below(childChoiceRate, 40) && totalHobbies > 0) {
     concerns.push(
       `Only ${childChoiceRate}% of hobbies are child-chosen — most hobbies appear to be selected for children rather than by them, raising concerns about whether the child's voice is genuinely heard in activity planning.`,
     );
@@ -842,43 +844,43 @@ export function computeHobbiesInterestsDevelopment(
     );
   }
 
-  if (overdueTalentReviews > 0 && activeTalentProgrammes > 0) {
+  if (above(overdueTalentReviews, 0) && activeTalentProgrammes > 0) {
     concerns.push(
       `${overdueTalentReviews} talent programme review${overdueTalentReviews !== 1 ? "s are" : " is"} overdue — delayed reviews may mean children continue in programmes that are no longer meeting their needs or aspirations.`,
     );
   }
 
-  if (hobbyDocumentationRate < 60 && totalHobbies > 0) {
+  if (below(hobbyDocumentationRate, 60) && totalHobbies > 0) {
     concerns.push(
       `Hobby documentation at only ${hobbyDocumentationRate}% — poor recording makes it difficult to evidence children's hobby participation, progress, and enjoyment for reviews and inspections.`,
     );
   }
 
-  if (explorationDocumentationRate < 60 && totalExplorations > 0) {
+  if (below(explorationDocumentationRate, 60) && totalExplorations > 0) {
     concerns.push(
       `Interest exploration documentation at only ${explorationDocumentationRate}% — insufficient recording means the home cannot fully evidence the breadth of experiences offered to children.`,
     );
   }
 
-  if (talentDocumentationRate < 60 && totalTalentProgrammes > 0) {
+  if (below(talentDocumentationRate, 60) && totalTalentProgrammes > 0) {
     concerns.push(
       `Talent development documentation at only ${talentDocumentationRate}% — incomplete progress records make it difficult to track children's development and demonstrate outcomes.`,
     );
   }
 
-  if (creativeDocumentationRate < 60 && totalCreativeActivities > 0) {
+  if (below(creativeDocumentationRate, 60) && totalCreativeActivities > 0) {
     concerns.push(
       `Creative expression documentation at only ${creativeDocumentationRate}% — insufficient records mean the home cannot fully evidence the creative opportunities provided to children.`,
     );
   }
 
-  if (autonomyRespectedRate < 60 && totalChildLedActivities > 0) {
+  if (below(autonomyRespectedRate, 60) && totalChildLedActivities > 0) {
     concerns.push(
       `Children's autonomy respected in only ${autonomyRespectedRate}% of child-led activities — this undermines the purpose of child-led activity and suggests staff may be over-directing children's choices.`,
     );
   }
 
-  if (talentSessionCompletionRate < 60 && talentSessionsPlanned > 0) {
+  if (below(talentSessionCompletionRate, 60) && talentSessionsPlanned > 0) {
     concerns.push(
       `Talent programme session completion at only ${talentSessionCompletionRate}% — children are missing significant proportions of their planned talent development sessions, reducing the effectiveness of investment in their skills.`,
     );
@@ -889,7 +891,7 @@ export function computeHobbiesInterestsDevelopment(
   const recommendations: HobbiesInterestsRecommendation[] = [];
   let rank = 0;
 
-  if (hobbyParticipationRate < 40 && total_children > 0) {
+  if (below(hobbyParticipationRate, 40) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -899,7 +901,7 @@ export function computeHobbiesInterestsDevelopment(
     });
   }
 
-  if (interestExplorationRate < 40 && total_children > 0 && totalExplorations > 0) {
+  if (below(interestExplorationRate, 40) && total_children > 0 && totalExplorations > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -909,7 +911,7 @@ export function computeHobbiesInterestsDevelopment(
     });
   }
 
-  if (creativeExpressionRate < 40 && total_children > 0 && totalCreativeActivities > 0) {
+  if (below(creativeExpressionRate, 40) && total_children > 0 && totalCreativeActivities > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -919,7 +921,7 @@ export function computeHobbiesInterestsDevelopment(
     });
   }
 
-  if (childSatisfactionRate < 40 && satisfactionOpportunities > 0) {
+  if (below(childSatisfactionRate, 40) && satisfactionOpportunities > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -929,7 +931,7 @@ export function computeHobbiesInterestsDevelopment(
     });
   }
 
-  if (childChoiceRate < 40 && totalHobbies > 0) {
+  if (below(childChoiceRate, 40) && totalHobbies > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -939,7 +941,7 @@ export function computeHobbiesInterestsDevelopment(
     });
   }
 
-  if (autonomyRespectedRate < 60 && totalChildLedActivities > 0) {
+  if (below(autonomyRespectedRate, 60) && totalChildLedActivities > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -949,7 +951,7 @@ export function computeHobbiesInterestsDevelopment(
     });
   }
 
-  if (hobbyAttendanceRate < 50 && hobbyPlannedTotal > 0) {
+  if (below(hobbyAttendanceRate, 50) && hobbyPlannedTotal > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -960,8 +962,8 @@ export function computeHobbiesInterestsDevelopment(
   }
 
   if (
-    hobbyParticipationRate >= 40 &&
-    hobbyParticipationRate < 80 &&
+    meets(hobbyParticipationRate, 40) &&
+    below(hobbyParticipationRate, 80) &&
     total_children > 0
   ) {
     recommendations.push({
@@ -974,8 +976,8 @@ export function computeHobbiesInterestsDevelopment(
   }
 
   if (
-    interestExplorationRate >= 40 &&
-    interestExplorationRate < 60 &&
+    meets(interestExplorationRate, 40) &&
+    below(interestExplorationRate, 60) &&
     total_children > 0 &&
     totalExplorations > 0
   ) {
@@ -989,8 +991,8 @@ export function computeHobbiesInterestsDevelopment(
   }
 
   if (
-    creativeExpressionRate >= 40 &&
-    creativeExpressionRate < 60 &&
+    meets(creativeExpressionRate, 40) &&
+    below(creativeExpressionRate, 60) &&
     total_children > 0 &&
     totalCreativeActivities > 0
   ) {
@@ -1004,7 +1006,7 @@ export function computeHobbiesInterestsDevelopment(
   }
 
   if (
-    childLedRate < 50 &&
+    below(childLedRate, 50) &&
     total_children > 0 &&
     totalChildLedActivities > 0
   ) {
@@ -1037,7 +1039,7 @@ export function computeHobbiesInterestsDevelopment(
     });
   }
 
-  if (talentSessionCompletionRate < 60 && talentSessionsPlanned > 0) {
+  if (below(talentSessionCompletionRate, 60) && talentSessionsPlanned > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1048,8 +1050,8 @@ export function computeHobbiesInterestsDevelopment(
   }
 
   if (
-    childSatisfactionRate >= 40 &&
-    childSatisfactionRate < 70 &&
+    meets(childSatisfactionRate, 40) &&
+    below(childSatisfactionRate, 70) &&
     satisfactionOpportunities > 0
   ) {
     recommendations.push({
@@ -1062,8 +1064,8 @@ export function computeHobbiesInterestsDevelopment(
   }
 
   if (
-    hobbyAttendanceRate >= 50 &&
-    hobbyAttendanceRate < 75 &&
+    meets(hobbyAttendanceRate, 50) &&
+    below(hobbyAttendanceRate, 75) &&
     hobbyPlannedTotal > 0
   ) {
     recommendations.push({
@@ -1075,7 +1077,7 @@ export function computeHobbiesInterestsDevelopment(
     });
   }
 
-  if (externalClubRate < 30 && totalHobbies > 0) {
+  if (below(externalClubRate, 30) && totalHobbies > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1085,7 +1087,7 @@ export function computeHobbiesInterestsDevelopment(
     });
   }
 
-  if (hobbyDocumentationRate < 60 && totalHobbies > 0) {
+  if (below(hobbyDocumentationRate, 60) && totalHobbies > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1095,7 +1097,7 @@ export function computeHobbiesInterestsDevelopment(
     });
   }
 
-  if (explorationDocumentationRate < 60 && totalExplorations > 0) {
+  if (below(explorationDocumentationRate, 60) && totalExplorations > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1105,7 +1107,7 @@ export function computeHobbiesInterestsDevelopment(
     });
   }
 
-  if (talentDocumentationRate < 60 && totalTalentProgrammes > 0) {
+  if (below(talentDocumentationRate, 60) && totalTalentProgrammes > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1115,7 +1117,7 @@ export function computeHobbiesInterestsDevelopment(
     });
   }
 
-  if (professionalInstructorRate < 50 && totalTalentProgrammes > 0) {
+  if (below(professionalInstructorRate, 50) && totalTalentProgrammes > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1125,7 +1127,7 @@ export function computeHobbiesInterestsDevelopment(
     });
   }
 
-  if (outputDisplayRate < 30 && totalCreativeActivities > 0 && outputProduced > 0) {
+  if (below(outputDisplayRate, 30) && totalCreativeActivities > 0 && outputProduced > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1141,35 +1143,35 @@ export function computeHobbiesInterestsDevelopment(
 
   // -- Critical insights --
 
-  if (hobbyParticipationRate < 40 && total_children > 0) {
+  if (below(hobbyParticipationRate, 40) && total_children > 0) {
     insights.push({
       text: `Only ${hobbyParticipationRate}% of children participate in hobbies. Without access to regular hobby activities, children miss out on opportunities for skill development, enjoyment, social engagement, and the sense of achievement that comes from pursuing an interest. Ofsted expects evidence that children in residential care have rich, varied experiences that support their development under Reg 6.`,
       severity: "critical",
     });
   }
 
-  if (interestExplorationRate < 40 && total_children > 0 && totalExplorations > 0) {
+  if (below(interestExplorationRate, 40) && total_children > 0 && totalExplorations > 0) {
     insights.push({
       text: `Only ${interestExplorationRate}% of children have explored new interests. Limited exploration restricts children's ability to discover what they enjoy and develop a sense of identity through personal interests. The SCCIF expects children to have access to a range of enriching experiences that broaden their horizons.`,
       severity: "critical",
     });
   }
 
-  if (creativeExpressionRate < 40 && total_children > 0 && totalCreativeActivities > 0) {
+  if (below(creativeExpressionRate, 40) && total_children > 0 && totalCreativeActivities > 0) {
     insights.push({
       text: `Only ${creativeExpressionRate}% of children engage in creative expression. Creative activities serve as vital outlets for emotional processing, self-expression, and personal development — particularly important for children who may have experienced trauma. The lack of creative opportunities represents a significant gap in holistic care provision.`,
       severity: "critical",
     });
   }
 
-  if (childSatisfactionRate < 40 && satisfactionOpportunities > 0) {
+  if (below(childSatisfactionRate, 40) && satisfactionOpportunities > 0) {
     insights.push({
       text: `Only ${childSatisfactionRate}% child satisfaction across hobby and interest activities. When children do not enjoy their activities, this suggests provision may be adult-directed rather than child-centred. Activities should reflect what children genuinely want to do — their voice must be central to planning under Reg 7.`,
       severity: "critical",
     });
   }
 
-  if (childChoiceRate < 40 && totalHobbies > 0 && hobbyParticipationRate < 60) {
+  if (below(childChoiceRate, 40) && totalHobbies > 0 && below(hobbyParticipationRate, 60)) {
     insights.push({
       text: `Only ${childChoiceRate}% of hobbies are child-chosen alongside low participation of ${hobbyParticipationRate}%. The combination of limited choice and low participation suggests the home is not effectively engaging children in activity planning. When children choose their own hobbies, participation and enjoyment significantly increase.`,
       severity: "critical",
@@ -1179,8 +1181,8 @@ export function computeHobbiesInterestsDevelopment(
   // -- Warning insights --
 
   if (
-    hobbyParticipationRate >= 40 &&
-    hobbyParticipationRate < 80 &&
+    meets(hobbyParticipationRate, 40) &&
+    below(hobbyParticipationRate, 80) &&
     total_children > 0
   ) {
     insights.push({
@@ -1190,8 +1192,8 @@ export function computeHobbiesInterestsDevelopment(
   }
 
   if (
-    interestExplorationRate >= 40 &&
-    interestExplorationRate < 60 &&
+    meets(interestExplorationRate, 40) &&
+    below(interestExplorationRate, 60) &&
     total_children > 0 &&
     totalExplorations > 0
   ) {
@@ -1202,8 +1204,8 @@ export function computeHobbiesInterestsDevelopment(
   }
 
   if (
-    creativeExpressionRate >= 40 &&
-    creativeExpressionRate < 60 &&
+    meets(creativeExpressionRate, 40) &&
+    below(creativeExpressionRate, 60) &&
     total_children > 0 &&
     totalCreativeActivities > 0
   ) {
@@ -1214,8 +1216,8 @@ export function computeHobbiesInterestsDevelopment(
   }
 
   if (
-    childSatisfactionRate >= 40 &&
-    childSatisfactionRate < 70 &&
+    meets(childSatisfactionRate, 40) &&
+    below(childSatisfactionRate, 70) &&
     satisfactionOpportunities > 0
   ) {
     insights.push({
@@ -1225,8 +1227,8 @@ export function computeHobbiesInterestsDevelopment(
   }
 
   if (
-    childLedRate < 50 &&
-    childLedRate >= 30 &&
+    below(childLedRate, 50) &&
+    meets(childLedRate, 30) &&
     total_children > 0 &&
     totalChildLedActivities > 0
   ) {
@@ -1251,8 +1253,8 @@ export function computeHobbiesInterestsDevelopment(
   }
 
   if (
-    hobbyAttendanceRate >= 50 &&
-    hobbyAttendanceRate < 75 &&
+    meets(hobbyAttendanceRate, 50) &&
+    below(hobbyAttendanceRate, 75) &&
     hobbyPlannedTotal > 0
   ) {
     insights.push({
@@ -1261,7 +1263,7 @@ export function computeHobbiesInterestsDevelopment(
     });
   }
 
-  if (talentSessionCompletionRate < 60 && talentSessionCompletionRate >= 30 && talentSessionsPlanned > 0) {
+  if (below(talentSessionCompletionRate, 60) && meets(talentSessionCompletionRate, 30) && talentSessionsPlanned > 0) {
     insights.push({
       text: `Talent programme session completion at ${talentSessionCompletionRate}% — children are missing significant proportions of their planned sessions. This reduces the value of investment in talent development and may slow progression.`,
       severity: "warning",
@@ -1269,8 +1271,8 @@ export function computeHobbiesInterestsDevelopment(
   }
 
   if (
-    childChoiceRate >= 40 &&
-    childChoiceRate < 60 &&
+    meets(childChoiceRate, 40) &&
+    below(childChoiceRate, 60) &&
     totalHobbies > 0
   ) {
     insights.push({
@@ -1317,8 +1319,8 @@ export function computeHobbiesInterestsDevelopment(
   }
 
   if (
-    hobbyParticipationRate >= 100 &&
-    childChoiceRate >= 80 &&
+    meets(hobbyParticipationRate, 100) &&
+    meets(childChoiceRate, 80) &&
     total_children > 0 &&
     totalHobbies > 0
   ) {
@@ -1329,8 +1331,8 @@ export function computeHobbiesInterestsDevelopment(
   }
 
   if (
-    interestExplorationRate >= 80 &&
-    newExperienceRate >= 70 &&
+    meets(interestExplorationRate, 80) &&
+    meets(newExperienceRate, 70) &&
     total_children > 0 &&
     totalExplorations > 0
   ) {
@@ -1341,7 +1343,7 @@ export function computeHobbiesInterestsDevelopment(
   }
 
   if (
-    creativeExpressionRate >= 80 &&
+    meets(creativeExpressionRate, 80) &&
     meets(creativeSatisfactionAvg, 4.0) &&
     total_children > 0 &&
     totalCreativeActivities > 0
@@ -1353,8 +1355,8 @@ export function computeHobbiesInterestsDevelopment(
   }
 
   if (
-    childLedRate >= 70 &&
-    autonomyRespectedRate >= 90 &&
+    meets(childLedRate, 70) &&
+    meets(autonomyRespectedRate, 90) &&
     total_children > 0 &&
     totalChildLedActivities > 0
   ) {
@@ -1365,8 +1367,8 @@ export function computeHobbiesInterestsDevelopment(
   }
 
   if (
-    talentDevelopmentRate >= 60 &&
-    externalRecognitionRate >= 30 &&
+    meets(talentDevelopmentRate, 60) &&
+    meets(externalRecognitionRate, 30) &&
     total_children > 0 &&
     totalTalentProgrammes > 0
   ) {
@@ -1377,7 +1379,7 @@ export function computeHobbiesInterestsDevelopment(
   }
 
   if (
-    childSatisfactionRate >= 90 &&
+    meets(childSatisfactionRate, 90) &&
     satisfactionOpportunities > 0
   ) {
     insights.push({
@@ -1387,7 +1389,7 @@ export function computeHobbiesInterestsDevelopment(
   }
 
   if (
-    hobbyAttendanceRate >= 90 &&
+    meets(hobbyAttendanceRate, 90) &&
     meets(hobbyEnjoymentAvg, 4.0) &&
     hobbyPlannedTotal > 0 &&
     totalHobbies > 0
@@ -1399,8 +1401,8 @@ export function computeHobbiesInterestsDevelopment(
   }
 
   if (
-    externalClubRate >= 50 &&
-    peerParticipationRate >= 60 &&
+    meets(externalClubRate, 50) &&
+    meets(peerParticipationRate, 60) &&
     totalHobbies > 0
   ) {
     insights.push({
@@ -1410,7 +1412,7 @@ export function computeHobbiesInterestsDevelopment(
   }
 
   if (
-    therapeuticRate >= 40 &&
+    meets(therapeuticRate, 40) &&
     meets(creativeSatisfactionAvg, 4.0) &&
     totalCreativeActivities > 0
   ) {

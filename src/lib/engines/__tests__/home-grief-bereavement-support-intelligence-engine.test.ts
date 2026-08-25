@@ -294,12 +294,12 @@ describe("Home Grief & Bereavement Support Intelligence Engine", () => {
         grief_intervention_records: [],
         anniversary_management_records: [],
       });
-      expect(r.loss_identification_rate).toBe(0);
-      expect(r.counselling_access_rate).toBe(0);
-      expect(r.memory_work_rate).toBe(0);
-      expect(r.intervention_effectiveness_rate).toBe(0);
-      expect(r.anniversary_management_rate).toBe(0);
-      expect(r.child_coping_rate).toBe(0);
+      expect(r.loss_identification_rate).toBeNull();
+      expect(r.counselling_access_rate).toBeNull();
+      expect(r.memory_work_rate).toBeNull();
+      expect(r.intervention_effectiveness_rate).toBeNull();
+      expect(r.anniversary_management_rate).toBeNull();
+      expect(r.child_coping_rate).toBeNull();
       // fab-0: null (no records)
       expect(r.counselling_wait_avg_days).toBeNull();
       expect(r.intervention_progress_avg).toBeNull();
@@ -379,12 +379,12 @@ describe("Home Grief & Bereavement Support Intelligence Engine", () => {
         grief_intervention_records: [],
         anniversary_management_records: [],
       });
-      expect(r.loss_identification_rate).toBe(0);
-      expect(r.counselling_access_rate).toBe(0);
-      expect(r.memory_work_rate).toBe(0);
-      expect(r.intervention_effectiveness_rate).toBe(0);
-      expect(r.anniversary_management_rate).toBe(0);
-      expect(r.child_coping_rate).toBe(0);
+      expect(r.loss_identification_rate).toBeNull();
+      expect(r.counselling_access_rate).toBeNull();
+      expect(r.memory_work_rate).toBeNull();
+      expect(r.intervention_effectiveness_rate).toBeNull();
+      expect(r.anniversary_management_rate).toBeNull();
+      expect(r.child_coping_rate).toBeNull();
     });
   });
 
@@ -1042,7 +1042,7 @@ describe("Home Grief & Bereavement Support Intelligence Engine", () => {
       expect(r.loss_identification_rate).toBe(50);
     });
 
-    it("pct(0,0) returns 0 when no losses", () => {
+    it("rate(0,0)=nullreturns 0 when no losses", () => {
       const r = computeGriefBereavementSupport({
         today: "2026-05-15",
         total_children: 0,
@@ -1052,7 +1052,7 @@ describe("Home Grief & Bereavement Support Intelligence Engine", () => {
         grief_intervention_records: [],
         anniversary_management_records: [],
       });
-      expect(r.loss_identification_rate).toBe(0);
+      expect(r.loss_identification_rate).toBeNull();
     });
   });
 
@@ -1154,11 +1154,11 @@ describe("Home Grief & Bereavement Support Intelligence Engine", () => {
       expect(r.intervention_effectiveness_rate).toBe(0);
     });
 
-    it("returns 0 when no interventions", () => {
+    it("returns null when no interventions", () => {
       const r = computeGriefBereavementSupport(
         baseInput({ grief_intervention_records: [] }),
       );
-      expect(r.intervention_effectiveness_rate).toBe(0);
+      expect(r.intervention_effectiveness_rate).toBeNull();
     });
   });
 
@@ -1180,11 +1180,11 @@ describe("Home Grief & Bereavement Support Intelligence Engine", () => {
       expect(r.anniversary_management_rate).toBe(0);
     });
 
-    it("returns 0 when no anniversaries", () => {
+    it("returns null when no anniversaries", () => {
       const r = computeGriefBereavementSupport(
         baseInput({ anniversary_management_records: [] }),
       );
-      expect(r.anniversary_management_rate).toBe(0);
+      expect(r.anniversary_management_rate).toBeNull();
     });
   });
 
@@ -1211,7 +1211,7 @@ describe("Home Grief & Bereavement Support Intelligence Engine", () => {
       expect(r.child_coping_rate).toBe(0);
     });
 
-    it("returns 0 when no coping opportunities", () => {
+    it("returns null when no coping opportunities", () => {
       const r = computeGriefBereavementSupport(
         baseInput({
           grief_intervention_records: [],
@@ -1219,7 +1219,7 @@ describe("Home Grief & Bereavement Support Intelligence Engine", () => {
           memory_work_records: [],
         }),
       );
-      expect(r.child_coping_rate).toBe(0);
+      expect(r.child_coping_rate).toBeNull();
     });
   });
 
@@ -2488,7 +2488,7 @@ describe("Home Grief & Bereavement Support Intelligence Engine", () => {
   /*  Edge cases                                                         */
   /* ================================================================== */
   describe("edge cases", () => {
-    it("pct(0, 0) returns 0", () => {
+    it("rate(0,0)=nullreturns 0", () => {
       const r = computeGriefBereavementSupport({
         today: "2026-05-15",
         total_children: 0,
@@ -2498,12 +2498,12 @@ describe("Home Grief & Bereavement Support Intelligence Engine", () => {
         grief_intervention_records: [],
         anniversary_management_records: [],
       });
-      expect(r.loss_identification_rate).toBe(0);
-      expect(r.counselling_access_rate).toBe(0);
-      expect(r.memory_work_rate).toBe(0);
-      expect(r.intervention_effectiveness_rate).toBe(0);
-      expect(r.anniversary_management_rate).toBe(0);
-      expect(r.child_coping_rate).toBe(0);
+      expect(r.loss_identification_rate).toBeNull();
+      expect(r.counselling_access_rate).toBeNull();
+      expect(r.memory_work_rate).toBeNull();
+      expect(r.intervention_effectiveness_rate).toBeNull();
+      expect(r.anniversary_management_rate).toBeNull();
+      expect(r.child_coping_rate).toBeNull();
     });
 
     it("score is clamped to 0 minimum", () => {

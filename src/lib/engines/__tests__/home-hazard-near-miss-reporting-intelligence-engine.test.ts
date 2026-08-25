@@ -192,12 +192,12 @@ describe("computeHazardNearMissReporting", () => {
 
     it("returns zero rates for insufficient_data", () => {
       const r = computeHazardNearMissReporting(baseInput({ total_children: 0 }));
-      expect(r.hazard_reporting_rate).toBe(0);
-      expect(r.near_miss_tracking_rate).toBe(0);
-      expect(r.corrective_action_rate).toBe(0);
-      expect(r.safety_walk_rate).toBe(0);
-      expect(r.incident_learning_rate).toBe(0);
-      expect(r.staff_engagement_rate).toBe(0);
+      expect(r.hazard_reporting_rate).toBeNull();
+      expect(r.near_miss_tracking_rate).toBeNull();
+      expect(r.corrective_action_rate).toBeNull();
+      expect(r.safety_walk_rate).toBeNull();
+      expect(r.incident_learning_rate).toBeNull();
+      expect(r.staff_engagement_rate).toBeNull();
     });
 
     it("returns empty arrays for insufficient_data", () => {
@@ -260,10 +260,10 @@ describe("computeHazardNearMissReporting", () => {
       const r = computeHazardNearMissReporting(baseInput({
         corrective_action_records: [makeCorrective()],
       }));
-      expect(r.hazard_reporting_rate).toBe(0);
-      expect(r.near_miss_tracking_rate).toBe(0);
-      expect(r.safety_walk_rate).toBe(0);
-      expect(r.incident_learning_rate).toBe(0);
+      expect(r.hazard_reporting_rate).toBeNull();
+      expect(r.near_miss_tracking_rate).toBeNull();
+      expect(r.safety_walk_rate).toBeNull();
+      expect(r.incident_learning_rate).toBeNull();
     });
   });
 
@@ -1351,11 +1351,11 @@ describe("computeHazardNearMissReporting", () => {
         expect(r.hazard_reporting_rate).toBe(50);
       });
 
-      it("returns 0 when no hazard records", () => {
+      it("returns null when no hazard records", () => {
         const r = computeHazardNearMissReporting(baseInput({
           corrective_action_records: [makeCorrective()],
         }));
-        expect(r.hazard_reporting_rate).toBe(0);
+        expect(r.hazard_reporting_rate).toBeNull();
       });
     });
 
@@ -1370,11 +1370,11 @@ describe("computeHazardNearMissReporting", () => {
         expect(r.near_miss_tracking_rate).toBe(63);
       });
 
-      it("returns 0 when no near miss records", () => {
+      it("returns null when no near miss records", () => {
         const r = computeHazardNearMissReporting(baseInput({
           hazard_report_records: [makeHazard({ status: "resolved" })],
         }));
-        expect(r.near_miss_tracking_rate).toBe(0);
+        expect(r.near_miss_tracking_rate).toBeNull();
       });
     });
 
@@ -1431,12 +1431,12 @@ describe("computeHazardNearMissReporting", () => {
         expect(r.staff_engagement_rate).toBe(100);
       });
 
-      it("returns 0 when all source arrays empty but not allEmpty (corrective only)", () => {
+      it("returns null when all source arrays empty but not allEmpty (corrective only)", () => {
         const r = computeHazardNearMissReporting(baseInput({
           corrective_action_records: [makeCorrective()],
         }));
         // denominator = 0+0+0+0 = 0 → pct(0,0) = 0
-        expect(r.staff_engagement_rate).toBe(0);
+        expect(r.staff_engagement_rate).toBeNull();
       });
     });
   });

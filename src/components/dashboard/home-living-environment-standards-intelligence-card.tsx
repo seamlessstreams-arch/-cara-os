@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 type LivingEnvironmentRating = "outstanding" | "good" | "adequate" | "inadequate" | "insufficient_data";
 
@@ -59,7 +60,7 @@ export function HomeLivingEnvironmentStandardsIntelligenceCard() {
             <Building2 className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-purple-600")} />
             <span className="text-slate-900 font-bold">Living Environment Standards</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.environment_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.environment_score}%</span>}
+            {d.environment_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.environment_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -67,20 +68,20 @@ export function HomeLivingEnvironmentStandardsIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.environment_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.cleaning_completion_rate >= 90 ? "bg-green-50" : d.cleaning_completion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.cleaning_completion_rate >= 90 ? "text-[--cs-success]" : d.cleaning_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.cleaning_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.cleaning_completion_rate, 90) ? "bg-green-50" : meets(d.cleaning_completion_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.cleaning_completion_rate, 90) ? "text-[--cs-success]" : meets(d.cleaning_completion_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.cleaning_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Cleaning</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.maintenance_completion_rate >= 85 ? "bg-green-50" : d.maintenance_completion_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.maintenance_completion_rate >= 85 ? "text-[--cs-success]" : d.maintenance_completion_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.maintenance_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.maintenance_completion_rate, 85) ? "bg-green-50" : meets(d.maintenance_completion_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.maintenance_completion_rate, 85) ? "text-[--cs-success]" : meets(d.maintenance_completion_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.maintenance_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Maint</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.kitchen_hygiene_pass_rate >= 100 ? "bg-green-50" : d.kitchen_hygiene_pass_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.kitchen_hygiene_pass_rate >= 100 ? "text-[--cs-success]" : d.kitchen_hygiene_pass_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.kitchen_hygiene_pass_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.kitchen_hygiene_pass_rate, 100) ? "bg-green-50" : meets(d.kitchen_hygiene_pass_rate, 80) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.kitchen_hygiene_pass_rate, 100) ? "text-[--cs-success]" : meets(d.kitchen_hygiene_pass_rate, 80) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.kitchen_hygiene_pass_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Kitchen</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.bedroom_personalisation_rate >= 90 ? "bg-green-50" : d.bedroom_personalisation_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.bedroom_personalisation_rate >= 90 ? "text-[--cs-success]" : d.bedroom_personalisation_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.bedroom_personalisation_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.bedroom_personalisation_rate, 90) ? "bg-green-50" : meets(d.bedroom_personalisation_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.bedroom_personalisation_rate, 90) ? "text-[--cs-success]" : meets(d.bedroom_personalisation_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.bedroom_personalisation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Personal</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.overdue_maintenance_count === 0 ? "bg-green-50" : "bg-red-50")}>

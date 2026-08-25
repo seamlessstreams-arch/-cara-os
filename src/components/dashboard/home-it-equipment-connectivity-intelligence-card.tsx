@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Wifi } from "luci
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { ItEquipmentRating } from "@/lib/engines/home-it-equipment-connectivity-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 const RATING_STYLES: Record<ItEquipmentRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -57,7 +58,7 @@ export function HomeItEquipmentConnectivityIntelligenceCard() {
             <Wifi className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-indigo-600")} />
             <span className="text-slate-900 font-bold">IT Equipment & Connectivity</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.it_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.it_score}%</span>}
+            {d.it_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.it_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -65,28 +66,28 @@ export function HomeItEquipmentConnectivityIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.it_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.wifi_reliability_rate >= 90 ? "bg-green-50" : d.wifi_reliability_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.wifi_reliability_rate >= 90 ? "text-[--cs-success]" : d.wifi_reliability_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.wifi_reliability_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.wifi_reliability_rate, 90) ? "bg-green-50" : meets(d.wifi_reliability_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.wifi_reliability_rate, 90) ? "text-[--cs-success]" : meets(d.wifi_reliability_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.wifi_reliability_rate)}</p>
               <p className="text-[9px] text-muted-foreground">WiFi</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.device_availability_rate >= 90 ? "bg-green-50" : d.device_availability_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.device_availability_rate >= 90 ? "text-[--cs-success]" : d.device_availability_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.device_availability_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.device_availability_rate, 90) ? "bg-green-50" : meets(d.device_availability_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.device_availability_rate, 90) ? "text-[--cs-success]" : meets(d.device_availability_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.device_availability_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Devices</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.printer_access_rate >= 90 ? "bg-green-50" : d.printer_access_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.printer_access_rate >= 90 ? "text-[--cs-success]" : d.printer_access_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.printer_access_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.printer_access_rate, 90) ? "bg-green-50" : meets(d.printer_access_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.printer_access_rate, 90) ? "text-[--cs-success]" : meets(d.printer_access_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.printer_access_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Printers</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.software_currency_rate >= 90 ? "bg-green-50" : d.software_currency_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.software_currency_rate >= 90 ? "text-[--cs-success]" : d.software_currency_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.software_currency_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.software_currency_rate, 90) ? "bg-green-50" : meets(d.software_currency_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.software_currency_rate, 90) ? "text-[--cs-success]" : meets(d.software_currency_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.software_currency_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Software</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.digital_access_rate >= 90 ? "bg-green-50" : d.digital_access_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.digital_access_rate >= 90 ? "text-[--cs-success]" : d.digital_access_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.digital_access_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.digital_access_rate, 90) ? "bg-green-50" : meets(d.digital_access_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.digital_access_rate, 90) ? "text-[--cs-success]" : meets(d.digital_access_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.digital_access_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Access</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_satisfaction_rate >= 90 ? "bg-green-50" : d.child_satisfaction_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_satisfaction_rate >= 90 ? "text-[--cs-success]" : d.child_satisfaction_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_satisfaction_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_satisfaction_rate, 90) ? "bg-green-50" : meets(d.child_satisfaction_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_satisfaction_rate, 90) ? "text-[--cs-success]" : meets(d.child_satisfaction_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_satisfaction_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Satisf.</p>
             </div>
           </div>

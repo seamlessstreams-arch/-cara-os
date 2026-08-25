@@ -1030,7 +1030,7 @@ describe("computeHomeLivingEnvironment", () => {
         environmental_risks: [makeEnvRisk()],
         total_children: 0,
       }));
-      expect(r.bedrooms.child_coverage).toBe(0);
+      expect(r.bedrooms.child_coverage).toBeNull();
     });
   });
 });

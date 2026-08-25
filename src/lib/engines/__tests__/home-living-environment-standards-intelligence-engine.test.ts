@@ -166,18 +166,18 @@ describe("Special cases", () => {
       room_allocations: [],
     });
     expect(r.total_cleaning_entries).toBe(0);
-    expect(r.cleaning_completion_rate).toBe(0);
+    expect(r.cleaning_completion_rate).toBeNull();
     expect(r.cleaning_quality_avg).toBe(0);
     expect(r.total_maintenance_items).toBe(0);
-    expect(r.maintenance_completion_rate).toBe(0);
+    expect(r.maintenance_completion_rate).toBeNull();
     expect(r.overdue_maintenance_count).toBe(0);
     expect(r.safety_maintenance_open).toBe(0);
-    expect(r.kitchen_hygiene_pass_rate).toBe(0);
-    expect(r.bedroom_personalisation_rate).toBe(0);
-    expect(r.bedroom_condition_good_rate).toBe(0);
-    expect(r.room_suitability_rate).toBe(0);
-    expect(r.room_risk_assessment_rate).toBe(0);
-    expect(r.child_consultation_rate).toBe(0);
+    expect(r.kitchen_hygiene_pass_rate).toBeNull();
+    expect(r.bedroom_personalisation_rate).toBeNull();
+    expect(r.bedroom_condition_good_rate).toBeNull();
+    expect(r.room_suitability_rate).toBeNull();
+    expect(r.room_risk_assessment_rate).toBeNull();
+    expect(r.child_consultation_rate).toBeNull();
   });
 });
 
@@ -2166,8 +2166,8 @@ describe("Headlines", () => {
 // 13. EDGE CASES — pct(0,0) = 0
 // ════════════════════════════════════════════════════════════════════════════
 
-describe("Edge cases: pct(0,0) = 0", () => {
-  it("empty cleaning_entries yields 0% completion and triggers cleaning<50 penalty", () => {
+describe("Edge cases: rate(0,0) = null", () => {
+  it("empty cleaning_entries yields null completion and the cleaning<50 penalty does not fire", () => {
     // pct(0,0)=0 for cleaning completion -> 0% < 50 -> penalty -3
     // But the cleaning<50 penalty guard also checks cleaning_entries.length > 0 for concerns,
     // but NOT for the score penalty. Let's check:
@@ -2184,21 +2184,17 @@ describe("Edge cases: pct(0,0) = 0", () => {
       bedroom_profiles: [makeBedroom()],
       room_allocations: [makeRoomAllocation()],
     });
-    // cleaning 0% -> -3, quality avg = 0 -> no bonus
-    // maintenance 100% -> +4
-    // kitchen 100% -> +3
-    // bedroom pers 100% -> +3
-    // bedroom cond good -> +3
-    // room suit 100% -> +3
-    // room risk 100% -> +2
-    // child consult 100% -> +3
-    // 52 + 4 + 3 + 3 + 3 + 3 + 2 + 3 - 3 = 70
-    expect(r.cleaning_completion_rate).toBe(0);
-    expect(r.cleaning_quality_avg).toBeNull();;
-    expect(r.environment_score).toBe(70);
+    // cleaning is UNMEASURED (no entries), not 0% — below(null) is false so the
+    // -3 penalty that used to fire off a fabricated 0% no longer applies.
+    // maintenance 100% -> +4, kitchen 100% -> +3, bedroom pers +3, cond +3,
+    // room suit +3, risk +2, consult +3
+    // 52 + 4 + 3 + 3 + 3 + 3 + 2 + 3 = 73
+    expect(r.cleaning_completion_rate).toBeNull();
+    expect(r.cleaning_quality_avg).toBeNull();
+    expect(r.environment_score).toBe(73);
   });
 
-  it("empty maintenance_items yields 0% completion and triggers maintenance<50 penalty", () => {
+  it("empty maintenance_items yields null completion and the maintenance<50 penalty does not fire", () => {
     const r = computeLivingEnvironmentStandards({
       today: "2026-05-28",
       total_children: 3,
@@ -2208,15 +2204,17 @@ describe("Edge cases: pct(0,0) = 0", () => {
       bedroom_profiles: [makeBedroom()],
       room_allocations: [makeRoomAllocation()],
     });
-    // maintenance 0% -> -5 penalty
-    expect(r.maintenance_completion_rate).toBe(0);
-    // cleaning 100% -> +4, quality 4 -> +3, maint penalty -5, kitchen +3,
-    // bedroom pers +3, cond +3, room +3, risk +2, consult +3
-    // 52 + 4 + 3 - 5 + 3 + 3 + 3 + 3 + 2 + 3 = 71
-    expect(r.environment_score).toBe(71);
+    // maintenance is UNMEASURED (no items) — the -5 penalty no longer fires
+    // off a fabricated 0% (below(null) is false).
+    expect(r.maintenance_completion_rate).toBeNull();
+    // No maintenance bonus applies either (meets(null) is false):
+    // cleaning 100% -> +4, quality 4 -> +3, kitchen +3,
+    // bedroom pers +3, cond +3, room suit +3, risk +2, consult +3
+    // 52 + 4 + 3 + 3 + 3 + 3 + 3 + 2 + 3 = 76
+    expect(r.environment_score).toBe(76);
   });
 
-  it("empty kitchen_hygiene_checks yields 0% pass rate and triggers kitchen<70 penalty", () => {
+  it("empty kitchen_hygiene_checks yields null pass rate and the kitchen<70 penalty does not fire", () => {
     const r = computeLivingEnvironmentStandards({
       today: "2026-05-28",
       total_children: 3,
@@ -2226,15 +2224,16 @@ describe("Edge cases: pct(0,0) = 0", () => {
       bedroom_profiles: [makeBedroom()],
       room_allocations: [makeRoomAllocation()],
     });
-    expect(r.kitchen_hygiene_pass_rate).toBe(0);
-    // kitchen 0% < 70 -> -5 penalty
-    // cleaning 100% -> +4, quality 4 -> +3, maint 100% -> +4, kitchen penalty -5,
+    expect(r.kitchen_hygiene_pass_rate).toBeNull();
+    // kitchen is UNMEASURED (no checks) — the -5 penalty no longer fires off a
+    // fabricated 0% (below(null) is false), and no kitchen bonus applies either.
+    // cleaning 100% -> +4, quality 4 -> +3, maint 100% -> +4,
     // bedroom pers +3, cond +3, room +3, risk +2, consult +3
-    // 52 + 4 + 3 + 4 - 5 + 3 + 3 + 3 + 2 + 3 = 72
-    expect(r.environment_score).toBe(72);
+    // 52 + 4 + 3 + 4 + 3 + 3 + 3 + 2 + 3 = 77
+    expect(r.environment_score).toBe(77);
   });
 
-  it("empty bedroom_profiles yields 0% personalisation (no bonus)", () => {
+  it("empty bedroom_profiles yields null personalisation (no bonus)", () => {
     const r = computeLivingEnvironmentStandards({
       today: "2026-05-28",
       total_children: 3,
@@ -2244,11 +2243,11 @@ describe("Edge cases: pct(0,0) = 0", () => {
       bedroom_profiles: [],
       room_allocations: [makeRoomAllocation()],
     });
-    expect(r.bedroom_personalisation_rate).toBe(0);
-    expect(r.bedroom_condition_good_rate).toBe(0);
+    expect(r.bedroom_personalisation_rate).toBeNull();
+    expect(r.bedroom_condition_good_rate).toBeNull();
   });
 
-  it("empty room_allocations yields 0% rates (no bonuses)", () => {
+  it("empty room_allocations yields null rates (no bonuses)", () => {
     const r = computeLivingEnvironmentStandards({
       today: "2026-05-28",
       total_children: 3,
@@ -2258,9 +2257,9 @@ describe("Edge cases: pct(0,0) = 0", () => {
       bedroom_profiles: [makeBedroom()],
       room_allocations: [],
     });
-    expect(r.room_suitability_rate).toBe(0);
-    expect(r.room_risk_assessment_rate).toBe(0);
-    expect(r.child_consultation_rate).toBe(0);
+    expect(r.room_suitability_rate).toBeNull();
+    expect(r.room_risk_assessment_rate).toBeNull();
+    expect(r.child_consultation_rate).toBeNull();
   });
 });
 
