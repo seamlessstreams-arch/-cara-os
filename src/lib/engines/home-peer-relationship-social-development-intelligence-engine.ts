@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME PEER RELATIONSHIP & SOCIAL DEVELOPMENT INTELLIGENCE ENGINE
 // Evaluates quality of peer relationships and social development support:
@@ -183,10 +184,6 @@ export interface PeerRelationshipSocialDevelopmentResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -214,18 +211,18 @@ function emptyResult(
     total_bullying_incidents: 0,
     total_friendship_plans: 0,
     total_social_activities: 0,
-    peer_assessment_coverage_rate: 0,
-    social_skills_engagement_rate: 0,
-    bullying_resolution_rate: 0,
-    friendship_plan_coverage_rate: 0,
-    social_activity_participation_rate: 0,
-    child_voice_in_plans_rate: 0,
+    peer_assessment_coverage_rate: null,
+    social_skills_engagement_rate: null,
+    bullying_resolution_rate: null,
+    friendship_plan_coverage_rate: null,
+    social_activity_participation_rate: null,
+    child_voice_in_plans_rate: null,
     average_relationship_quality: 0,
     average_social_confidence: 0,
-    programme_attendance_rate: 0,
-    bullying_investigation_rate: 0,
-    friendship_goal_achievement_rate: 0,
-    activity_enjoyment_rate: 0,
+    programme_attendance_rate: null,
+    bullying_investigation_rate: null,
+    friendship_goal_achievement_rate: null,
+    activity_enjoyment_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -308,7 +305,7 @@ export function computePeerRelationshipSocialDevelopment(
     peer_assessments.map((a) => a.child_id),
   ).size;
   const peerAssessmentCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenAssessed, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenAssessed, total_children) : 0;
 
   const relationshipQualitySum = peer_assessments.reduce(
     (sum, a) => sum + (a.relationship_quality_score ?? 0),
@@ -375,7 +372,7 @@ export function computePeerRelationshipSocialDevelopment(
     social_skills_programmes.filter((p) => p.active).map((p) => p.child_id),
   ).size;
   const socialSkillsEngagementRate =
-    total_children > 0 ? pct(uniqueChildrenInProgrammes, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenInProgrammes, total_children) : 0;
 
   const totalSessionsPlanned = social_skills_programmes.reduce(
     (sum, p) => sum + p.sessions_planned,
@@ -385,12 +382,12 @@ export function computePeerRelationshipSocialDevelopment(
     (sum, p) => sum + p.sessions_attended,
     0,
   );
-  const programmeAttendanceRate = pct(totalSessionsAttended, totalSessionsPlanned);
+  const programmeAttendanceRate = rate(totalSessionsAttended, totalSessionsPlanned);
 
   const programmesWithImprovement = social_skills_programmes.filter(
     (p) => p.measurable_improvement,
   ).length;
-  const measureableImprovementRate = pct(programmesWithImprovement, totalProgrammes);
+  const measureableImprovementRate = rate(programmesWithImprovement, totalProgrammes);
 
   // --- Bullying incident metrics ---
   const totalBullyingIncidents = bullying_incidents.length;
@@ -398,32 +395,32 @@ export function computePeerRelationshipSocialDevelopment(
   const resolvedBullyingIncidents = bullying_incidents.filter(
     (b) => b.resolved,
   ).length;
-  const bullyingResolutionRate = pct(resolvedBullyingIncidents, totalBullyingIncidents);
+  const bullyingResolutionRate = rate(resolvedBullyingIncidents, totalBullyingIncidents);
 
   const investigatedIncidents = bullying_incidents.filter(
     (b) => b.investigated,
   ).length;
-  const bullyingInvestigationRate = pct(investigatedIncidents, totalBullyingIncidents);
+  const bullyingInvestigationRate = rate(investigatedIncidents, totalBullyingIncidents);
 
   const safetyPlansCreated = bullying_incidents.filter(
     (b) => b.safety_plan_created,
   ).length;
-  const safetyPlanRate = pct(safetyPlansCreated, totalBullyingIncidents);
+  const safetyPlanRate = rate(safetyPlansCreated, totalBullyingIncidents);
 
   const bullyingFollowUps = bullying_incidents.filter(
     (b) => b.follow_up_completed,
   ).length;
-  const bullyingFollowUpRate = pct(bullyingFollowUps, totalBullyingIncidents);
+  const bullyingFollowUpRate = rate(bullyingFollowUps, totalBullyingIncidents);
 
   const parentCarerInformed = bullying_incidents.filter(
     (b) => b.parent_carer_informed,
   ).length;
-  const parentCarerInformedRate = pct(parentCarerInformed, totalBullyingIncidents);
+  const parentCarerInformedRate = rate(parentCarerInformed, totalBullyingIncidents);
 
   const socialWorkerInformed = bullying_incidents.filter(
     (b) => b.social_worker_informed,
   ).length;
-  const socialWorkerInformedRate = pct(socialWorkerInformed, totalBullyingIncidents);
+  const socialWorkerInformedRate = rate(socialWorkerInformed, totalBullyingIncidents);
 
   const highSeverityUnresolved = bullying_incidents.filter(
     (b) => (b.severity === "high" || b.severity === "critical") && !b.resolved,
@@ -432,7 +429,7 @@ export function computePeerRelationshipSocialDevelopment(
   const restorativeResolutions = bullying_incidents.filter(
     (b) => b.resolution_type === "restorative" || b.resolution_type === "mediation",
   ).length;
-  const restorativeRate = pct(restorativeResolutions, resolvedBullyingIncidents);
+  const restorativeRate = rate(restorativeResolutions, resolvedBullyingIncidents);
 
   const avgDaysToResolve =
     resolvedBullyingIncidents > 0
@@ -451,7 +448,7 @@ export function computePeerRelationshipSocialDevelopment(
     friendship_support_plans.filter((p) => p.active).map((p) => p.child_id),
   ).size;
   const friendshipPlanCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenWithPlans, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenWithPlans, total_children) : 0;
 
   const totalGoalsSet = friendship_support_plans.reduce(
     (sum, p) => sum + p.goals_set,
@@ -461,12 +458,12 @@ export function computePeerRelationshipSocialDevelopment(
     (sum, p) => sum + p.goals_achieved,
     0,
   );
-  const friendshipGoalAchievementRate = pct(totalGoalsAchieved, totalGoalsSet);
+  const friendshipGoalAchievementRate = rate(totalGoalsAchieved, totalGoalsSet);
 
   const externalFriendshipsSupported = friendship_support_plans.filter(
     (p) => p.external_friendships_supported,
   ).length;
-  const externalFriendshipRate = pct(externalFriendshipsSupported, totalFriendshipPlans);
+  const externalFriendshipRate = rate(externalFriendshipsSupported, totalFriendshipPlans);
 
   const peerMatchingAttempted = friendship_support_plans.filter(
     (p) => p.peer_matching_attempted,
@@ -474,7 +471,7 @@ export function computePeerRelationshipSocialDevelopment(
   const peerMatchingSuccessful = friendship_support_plans.filter(
     (p) => p.peer_matching_successful,
   ).length;
-  const peerMatchingSuccessRate = pct(peerMatchingSuccessful, peerMatchingAttempted);
+  const peerMatchingSuccessRate = rate(peerMatchingSuccessful, peerMatchingAttempted);
 
   const childVoiceInPlans = friendship_support_plans.filter(
     (p) => p.child_voice_in_plan,
@@ -486,32 +483,32 @@ export function computePeerRelationshipSocialDevelopment(
   const attendedActivities = social_activity_records.filter(
     (a) => a.attendance_status === "attended",
   ).length;
-  const socialActivityParticipationRate = pct(attendedActivities, totalSocialActivities);
+  const socialActivityParticipationRate = rate(attendedActivities, totalSocialActivities);
 
   const enjoyedActivities = social_activity_records.filter(
     (a) => a.child_enjoyed && a.attendance_status === "attended",
   ).length;
-  const activityEnjoymentRate = pct(enjoyedActivities, attendedActivities);
+  const activityEnjoymentRate = rate(enjoyedActivities, attendedActivities);
 
   const childInitiatedActivities = social_activity_records.filter(
     (a) => a.child_initiated,
   ).length;
-  const childInitiatedRate = pct(childInitiatedActivities, totalSocialActivities);
+  const childInitiatedRate = rate(childInitiatedActivities, totalSocialActivities);
 
   const groupActivities = social_activity_records.filter(
     (a) => a.group_activity && a.attendance_status === "attended",
   ).length;
-  const groupActivityRate = pct(groupActivities, attendedActivities);
+  const groupActivityRate = rate(groupActivities, attendedActivities);
 
   const externalActivities = social_activity_records.filter(
     (a) => a.external_activity && a.attendance_status === "attended",
   ).length;
-  const externalActivityRate = pct(externalActivities, attendedActivities);
+  const externalActivityRate = rate(externalActivities, attendedActivities);
 
   const newConnectionsMade = social_activity_records.filter(
     (a) => a.new_connections_made && a.attendance_status === "attended",
   ).length;
-  const newConnectionsRate = pct(newConnectionsMade, attendedActivities);
+  const newConnectionsRate = rate(newConnectionsMade, attendedActivities);
 
   const peerInteractionQualitySum = social_activity_records
     .filter((a) => a.attendance_status === "attended")
@@ -524,13 +521,13 @@ export function computePeerRelationshipSocialDevelopment(
   const refusedActivities = social_activity_records.filter(
     (a) => a.attendance_status === "refused",
   ).length;
-  const refusalRate = pct(refusedActivities, totalSocialActivities);
+  const refusalRate = rate(refusedActivities, totalSocialActivities);
 
   // --- Combined child voice metric ---
   // Across friendship plans + peer assessments
   const totalVoiceOpportunities = totalFriendshipPlans + totalAssessments;
   const totalVoiceCaptured = childVoiceInPlans + assessmentChildVoice;
-  const combinedChildVoiceRate = pct(totalVoiceCaptured, totalVoiceOpportunities);
+  const combinedChildVoiceRate = rate(totalVoiceCaptured, totalVoiceOpportunities);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
@@ -538,33 +535,33 @@ export function computePeerRelationshipSocialDevelopment(
 
   // --- Bonus 1: peerAssessmentCoverageRate (>=90: +4, >=70: +2) ---
   // Max bonus: 4
-  if (peerAssessmentCoverageRate >= 90) score += 4;
-  else if (peerAssessmentCoverageRate >= 70) score += 2;
+  if (meets(peerAssessmentCoverageRate, 90)) score += 4;
+  else if (meets(peerAssessmentCoverageRate, 70)) score += 2;
 
   // --- Bonus 2: socialSkillsEngagementRate (>=80: +3, >=60: +1) ---
   // Max bonus: 3
-  if (socialSkillsEngagementRate >= 80) score += 3;
-  else if (socialSkillsEngagementRate >= 60) score += 1;
+  if (meets(socialSkillsEngagementRate, 80)) score += 3;
+  else if (meets(socialSkillsEngagementRate, 60)) score += 1;
 
   // --- Bonus 3: bullyingResolutionRate (>=100: +3, >=80: +1) ---
   // Max bonus: 3
-  if (bullyingResolutionRate >= 100) score += 3;
-  else if (bullyingResolutionRate >= 80) score += 1;
+  if (meets(bullyingResolutionRate, 100)) score += 3;
+  else if (meets(bullyingResolutionRate, 80)) score += 1;
 
   // --- Bonus 4: friendshipPlanCoverageRate (>=80: +3, >=60: +1) ---
   // Max bonus: 3
-  if (friendshipPlanCoverageRate >= 80) score += 3;
-  else if (friendshipPlanCoverageRate >= 60) score += 1;
+  if (meets(friendshipPlanCoverageRate, 80)) score += 3;
+  else if (meets(friendshipPlanCoverageRate, 60)) score += 1;
 
   // --- Bonus 5: socialActivityParticipationRate (>=90: +3, >=70: +1) ---
   // Max bonus: 3
-  if (socialActivityParticipationRate >= 90) score += 3;
-  else if (socialActivityParticipationRate >= 70) score += 1;
+  if (meets(socialActivityParticipationRate, 90)) score += 3;
+  else if (meets(socialActivityParticipationRate, 70)) score += 1;
 
   // --- Bonus 6: combinedChildVoiceRate (>=90: +3, >=70: +1) ---
   // Max bonus: 3
-  if (combinedChildVoiceRate >= 90) score += 3;
-  else if (combinedChildVoiceRate >= 70) score += 1;
+  if (meets(combinedChildVoiceRate, 90)) score += 3;
+  else if (meets(combinedChildVoiceRate, 70)) score += 1;
 
   // --- Bonus 7: averageRelationshipQuality (>=4.0: +3, >=3.0: +1) ---
   // Max bonus: 3
@@ -573,26 +570,26 @@ export function computePeerRelationshipSocialDevelopment(
 
   // --- Bonus 8: programmeAttendanceRate (>=90: +3, >=70: +1) ---
   // Max bonus: 3
-  if (programmeAttendanceRate >= 90) score += 3;
-  else if (programmeAttendanceRate >= 70) score += 1;
+  if (meets(programmeAttendanceRate, 90)) score += 3;
+  else if (meets(programmeAttendanceRate, 70)) score += 1;
 
   // --- Bonus 9: friendshipGoalAchievementRate (>=80: +3, >=60: +1) ---
   // Max bonus: 3
-  if (friendshipGoalAchievementRate >= 80) score += 3;
-  else if (friendshipGoalAchievementRate >= 60) score += 1;
+  if (meets(friendshipGoalAchievementRate, 80)) score += 3;
+  else if (meets(friendshipGoalAchievementRate, 60)) score += 1;
 
   // Total max bonus: 4+3+3+3+3+3+3+3+3 = 28 → max score = 52+28 = 80
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // Penalty 1: bullyingResolutionRate < 50 → -5
-  if (bullyingResolutionRate < 50 && totalBullyingIncidents > 0) score -= 5;
+  if (below(bullyingResolutionRate, 50) && totalBullyingIncidents > 0) score -= 5;
 
   // Penalty 2: peerAssessmentCoverageRate < 30 → -4
-  if (peerAssessmentCoverageRate < 30 && total_children > 0) score -= 4;
+  if (below(peerAssessmentCoverageRate, 30) && total_children > 0) score -= 4;
 
   // Penalty 3: socialActivityParticipationRate < 40 → -5
-  if (socialActivityParticipationRate < 40 && totalSocialActivities > 0) score -= 5;
+  if (below(socialActivityParticipationRate, 40) && totalSocialActivities > 0) score -= 5;
 
   // Penalty 4: highSeverityUnresolved > 0 → -4
   if (highSeverityUnresolved > 0 && totalBullyingIncidents > 0) score -= 4;
@@ -606,11 +603,11 @@ export function computePeerRelationshipSocialDevelopment(
   const strengths: string[] = [];
 
   // Peer assessment coverage strengths
-  if (peerAssessmentCoverageRate >= 100 && total_children > 0) {
+  if (meets(peerAssessmentCoverageRate, 100) && total_children > 0) {
     strengths.push(
       "Every child has received a peer relationship assessment — the home maintains comprehensive visibility of children's social development needs.",
     );
-  } else if (peerAssessmentCoverageRate >= 80 && total_children > 0) {
+  } else if (meets(peerAssessmentCoverageRate, 80) && total_children > 0) {
     strengths.push(
       `${peerAssessmentCoverageRate}% peer assessment coverage — the majority of children have had their peer relationships formally assessed.`,
     );
@@ -635,159 +632,159 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   // Social skills programme strengths
-  if (socialSkillsEngagementRate >= 80 && total_children > 0) {
+  if (meets(socialSkillsEngagementRate, 80) && total_children > 0) {
     strengths.push(
       `${socialSkillsEngagementRate}% of children engaged in social skills programmes — comprehensive social development support across the home.`,
     );
-  } else if (socialSkillsEngagementRate >= 60 && total_children > 0) {
+  } else if (meets(socialSkillsEngagementRate, 60) && total_children > 0) {
     strengths.push(
       `${socialSkillsEngagementRate}% of children engaged in social skills programmes — good levels of structured social development support.`,
     );
   }
 
   // Programme attendance strengths
-  if (programmeAttendanceRate >= 90 && totalSessionsPlanned > 0) {
+  if (meets(programmeAttendanceRate, 90) && totalSessionsPlanned > 0) {
     strengths.push(
       `${programmeAttendanceRate}% programme session attendance — children consistently attend their social skills development sessions.`,
     );
-  } else if (programmeAttendanceRate >= 70 && totalSessionsPlanned > 0) {
+  } else if (meets(programmeAttendanceRate, 70) && totalSessionsPlanned > 0) {
     strengths.push(
       `${programmeAttendanceRate}% programme session attendance — good engagement with social skills development sessions.`,
     );
   }
 
   // Measurable improvement strengths
-  if (measureableImprovementRate >= 80 && totalProgrammes > 0) {
+  if (meets(measureableImprovementRate, 80) && totalProgrammes > 0) {
     strengths.push(
       `${measureableImprovementRate}% of social skills programmes show measurable improvement — the programmes are delivering tangible social development outcomes.`,
     );
-  } else if (measureableImprovementRate >= 60 && totalProgrammes > 0) {
+  } else if (meets(measureableImprovementRate, 60) && totalProgrammes > 0) {
     strengths.push(
       `${measureableImprovementRate}% of social skills programmes show measurable improvement — evidence of positive social development progress.`,
     );
   }
 
   // Bullying resolution strengths
-  if (bullyingResolutionRate >= 100 && totalBullyingIncidents > 0) {
+  if (meets(bullyingResolutionRate, 100) && totalBullyingIncidents > 0) {
     strengths.push(
       "Every bullying incident has been resolved — the home demonstrates zero tolerance for bullying with comprehensive follow-through.",
     );
-  } else if (bullyingResolutionRate >= 80 && totalBullyingIncidents > 0) {
+  } else if (meets(bullyingResolutionRate, 80) && totalBullyingIncidents > 0) {
     strengths.push(
       `${bullyingResolutionRate}% bullying resolution rate — the majority of bullying incidents are resolved effectively.`,
     );
   }
 
   // Bullying investigation strengths
-  if (bullyingInvestigationRate >= 100 && totalBullyingIncidents > 0) {
+  if (meets(bullyingInvestigationRate, 100) && totalBullyingIncidents > 0) {
     strengths.push(
       "Every bullying incident has been investigated — the home takes all reports seriously and follows a thorough investigation process.",
     );
-  } else if (bullyingInvestigationRate >= 80 && totalBullyingIncidents > 0) {
+  } else if (meets(bullyingInvestigationRate, 80) && totalBullyingIncidents > 0) {
     strengths.push(
       `${bullyingInvestigationRate}% of bullying incidents investigated — strong investigation practice for reported incidents.`,
     );
   }
 
   // Safety plan strengths
-  if (safetyPlanRate >= 90 && totalBullyingIncidents > 0) {
+  if (meets(safetyPlanRate, 90) && totalBullyingIncidents > 0) {
     strengths.push(
       `Safety plans created for ${safetyPlanRate}% of bullying incidents — proactive safeguarding ensures children feel protected.`,
     );
   }
 
   // Restorative approach strengths
-  if (restorativeRate >= 50 && resolvedBullyingIncidents > 0) {
+  if (meets(restorativeRate, 50) && resolvedBullyingIncidents > 0) {
     strengths.push(
       `${restorativeRate}% of resolved bullying incidents used restorative or mediation approaches — the home prioritises relationship repair and learning over punitive measures.`,
     );
   }
 
   // Friendship plan coverage strengths
-  if (friendshipPlanCoverageRate >= 80 && total_children > 0) {
+  if (meets(friendshipPlanCoverageRate, 80) && total_children > 0) {
     strengths.push(
       `${friendshipPlanCoverageRate}% of children have active friendship support plans — comprehensive friendship development support.`,
     );
-  } else if (friendshipPlanCoverageRate >= 60 && total_children > 0) {
+  } else if (meets(friendshipPlanCoverageRate, 60) && total_children > 0) {
     strengths.push(
       `${friendshipPlanCoverageRate}% of children have active friendship support plans — good coverage of friendship support needs.`,
     );
   }
 
   // Friendship goal achievement strengths
-  if (friendshipGoalAchievementRate >= 80 && totalGoalsSet > 0) {
+  if (meets(friendshipGoalAchievementRate, 80) && totalGoalsSet > 0) {
     strengths.push(
       `${friendshipGoalAchievementRate}% of friendship plan goals achieved — children are making excellent progress towards their social development objectives.`,
     );
-  } else if (friendshipGoalAchievementRate >= 60 && totalGoalsSet > 0) {
+  } else if (meets(friendshipGoalAchievementRate, 60) && totalGoalsSet > 0) {
     strengths.push(
       `${friendshipGoalAchievementRate}% of friendship plan goals achieved — good progress towards social development objectives.`,
     );
   }
 
   // External friendship support strengths
-  if (externalFriendshipRate >= 80 && totalFriendshipPlans > 0) {
+  if (meets(externalFriendshipRate, 80) && totalFriendshipPlans > 0) {
     strengths.push(
       `${externalFriendshipRate}% of friendship plans support external friendships — the home actively facilitates children maintaining relationships beyond the home.`,
     );
   }
 
   // Social activity participation strengths
-  if (socialActivityParticipationRate >= 90 && totalSocialActivities > 0) {
+  if (meets(socialActivityParticipationRate, 90) && totalSocialActivities > 0) {
     strengths.push(
       `${socialActivityParticipationRate}% social activity participation rate — children consistently engage in planned social activities.`,
     );
-  } else if (socialActivityParticipationRate >= 70 && totalSocialActivities > 0) {
+  } else if (meets(socialActivityParticipationRate, 70) && totalSocialActivities > 0) {
     strengths.push(
       `${socialActivityParticipationRate}% social activity participation rate — good levels of engagement in social activities.`,
     );
   }
 
   // Activity enjoyment strengths
-  if (activityEnjoymentRate >= 90 && attendedActivities > 0) {
+  if (meets(activityEnjoymentRate, 90) && attendedActivities > 0) {
     strengths.push(
       `${activityEnjoymentRate}% activity enjoyment rate — children are enjoying their social activities, which promotes continued engagement.`,
     );
-  } else if (activityEnjoymentRate >= 70 && attendedActivities > 0) {
+  } else if (meets(activityEnjoymentRate, 70) && attendedActivities > 0) {
     strengths.push(
       `${activityEnjoymentRate}% of activities enjoyed by children — social activities are generally well-received.`,
     );
   }
 
   // Child-initiated activities strengths
-  if (childInitiatedRate >= 30 && totalSocialActivities > 0) {
+  if (meets(childInitiatedRate, 30) && totalSocialActivities > 0) {
     strengths.push(
       `${childInitiatedRate}% of social activities are child-initiated — children feel empowered to suggest and shape their own social opportunities.`,
     );
   }
 
   // External activity strengths
-  if (externalActivityRate >= 50 && attendedActivities > 0) {
+  if (meets(externalActivityRate, 50) && attendedActivities > 0) {
     strengths.push(
       `${externalActivityRate}% of attended activities are external — children engage with the wider community and develop social networks beyond the home.`,
     );
   }
 
   // New connections strengths
-  if (newConnectionsRate >= 40 && attendedActivities > 0) {
+  if (meets(newConnectionsRate, 40) && attendedActivities > 0) {
     strengths.push(
       `New peer connections made in ${newConnectionsRate}% of attended activities — social activities are expanding children's friendship networks.`,
     );
   }
 
   // Group activity strengths
-  if (groupActivityRate >= 60 && attendedActivities > 0) {
+  if (meets(groupActivityRate, 60) && attendedActivities > 0) {
     strengths.push(
       `${groupActivityRate}% of activities are group-based — children regularly practise social skills in group settings.`,
     );
   }
 
   // Child voice strengths
-  if (combinedChildVoiceRate >= 90 && totalVoiceOpportunities > 0) {
+  if (meets(combinedChildVoiceRate, 90) && totalVoiceOpportunities > 0) {
     strengths.push(
       "Child voice captured in the vast majority of assessments and support plans — the home ensures children's perspectives shape their own social development support.",
     );
-  } else if (combinedChildVoiceRate >= 70 && totalVoiceOpportunities > 0) {
+  } else if (meets(combinedChildVoiceRate, 70) && totalVoiceOpportunities > 0) {
     strengths.push(
       `Child voice captured in ${combinedChildVoiceRate}% of assessments and plans — good practice in seeking children's views on their social development.`,
     );
@@ -801,7 +798,7 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   // Peer matching strengths
-  if (peerMatchingSuccessRate >= 70 && peerMatchingAttempted > 0) {
+  if (meets(peerMatchingSuccessRate, 70) && peerMatchingAttempted > 0) {
     strengths.push(
       `${peerMatchingSuccessRate}% peer matching success rate — the home effectively pairs children with compatible peers for friendship development.`,
     );
@@ -833,11 +830,11 @@ export function computePeerRelationshipSocialDevelopment(
   const concerns: string[] = [];
 
   // Peer assessment coverage concerns
-  if (peerAssessmentCoverageRate < 30 && total_children > 0) {
+  if (below(peerAssessmentCoverageRate, 30) && total_children > 0) {
     concerns.push(
       `Only ${peerAssessmentCoverageRate}% of children have received peer relationship assessments — the home lacks visibility of the majority of children's social development needs and peer relationship quality.`,
     );
-  } else if (peerAssessmentCoverageRate < 70 && peerAssessmentCoverageRate >= 30 && total_children > 0) {
+  } else if (below(peerAssessmentCoverageRate, 70) && meets(peerAssessmentCoverageRate, 30) && total_children > 0) {
     concerns.push(
       `Peer assessment coverage at ${peerAssessmentCoverageRate}% — not all children have had their peer relationships and social development formally assessed.`,
     );
@@ -866,47 +863,47 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   // Social skills engagement concerns
-  if (socialSkillsEngagementRate < 30 && total_children > 0 && totalProgrammes > 0) {
+  if (below(socialSkillsEngagementRate, 30) && total_children > 0 && totalProgrammes > 0) {
     concerns.push(
       `Only ${socialSkillsEngagementRate}% of children engaged in social skills programmes — the majority of children lack structured social development support.`,
     );
-  } else if (socialSkillsEngagementRate < 60 && socialSkillsEngagementRate >= 30 && total_children > 0) {
+  } else if (below(socialSkillsEngagementRate, 60) && meets(socialSkillsEngagementRate, 30) && total_children > 0) {
     concerns.push(
       `Social skills programme engagement at ${socialSkillsEngagementRate}% — not all children who may benefit are receiving structured social development support.`,
     );
   }
 
   // Programme attendance concerns
-  if (programmeAttendanceRate < 50 && totalSessionsPlanned > 0) {
+  if (below(programmeAttendanceRate, 50) && totalSessionsPlanned > 0) {
     concerns.push(
       `Only ${programmeAttendanceRate}% programme session attendance — children are not consistently attending their social skills development sessions, reducing the effectiveness of the programmes.`,
     );
-  } else if (programmeAttendanceRate < 70 && programmeAttendanceRate >= 50 && totalSessionsPlanned > 0) {
+  } else if (below(programmeAttendanceRate, 70) && meets(programmeAttendanceRate, 50) && totalSessionsPlanned > 0) {
     concerns.push(
       `Programme attendance at ${programmeAttendanceRate}% — some children are missing social skills sessions, which may slow their social development progress.`,
     );
   }
 
   // Measurable improvement concerns
-  if (measureableImprovementRate < 40 && totalProgrammes > 0) {
+  if (below(measureableImprovementRate, 40) && totalProgrammes > 0) {
     concerns.push(
       `Only ${measureableImprovementRate}% of social skills programmes show measurable improvement — the effectiveness of current programmes should be reviewed and adapted.`,
     );
   }
 
   // Bullying resolution concerns
-  if (bullyingResolutionRate < 50 && totalBullyingIncidents > 0) {
+  if (below(bullyingResolutionRate, 50) && totalBullyingIncidents > 0) {
     concerns.push(
       `Only ${bullyingResolutionRate}% of bullying incidents resolved — the majority of bullying situations remain unresolved, leaving children in potentially unsafe peer environments.`,
     );
-  } else if (bullyingResolutionRate < 80 && bullyingResolutionRate >= 50 && totalBullyingIncidents > 0) {
+  } else if (below(bullyingResolutionRate, 80) && meets(bullyingResolutionRate, 50) && totalBullyingIncidents > 0) {
     concerns.push(
       `Bullying resolution rate at ${bullyingResolutionRate}% — some bullying incidents are not being resolved, which may undermine children's sense of safety.`,
     );
   }
 
   // Bullying investigation concerns
-  if (bullyingInvestigationRate < 80 && totalBullyingIncidents > 0) {
+  if (below(bullyingInvestigationRate, 80) && totalBullyingIncidents > 0) {
     concerns.push(
       `Only ${bullyingInvestigationRate}% of bullying incidents investigated — all reported incidents must be thoroughly investigated regardless of perceived severity.`,
     );
@@ -920,86 +917,86 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   // Safety plan concerns
-  if (safetyPlanRate < 50 && totalBullyingIncidents > 0) {
+  if (below(safetyPlanRate, 50) && totalBullyingIncidents > 0) {
     concerns.push(
       `Safety plans created for only ${safetyPlanRate}% of bullying incidents — children involved in bullying may lack adequate protection and support without documented safety measures.`,
     );
   }
 
   // Bullying follow-up concerns
-  if (bullyingFollowUpRate < 70 && totalBullyingIncidents > 0) {
+  if (below(bullyingFollowUpRate, 70) && totalBullyingIncidents > 0) {
     concerns.push(
       `Bullying follow-up completed in only ${bullyingFollowUpRate}% of cases — without consistent follow-up, the home cannot verify that bullying has stopped and children feel safe.`,
     );
   }
 
   // Parent/carer notification concerns
-  if (parentCarerInformedRate < 80 && totalBullyingIncidents > 0) {
+  if (below(parentCarerInformedRate, 80) && totalBullyingIncidents > 0) {
     concerns.push(
       `Parents/carers informed in only ${parentCarerInformedRate}% of bullying incidents — relevant adults must be notified of bullying to ensure coordinated safeguarding.`,
     );
   }
 
   // Social worker notification concerns
-  if (socialWorkerInformedRate < 80 && totalBullyingIncidents > 0) {
+  if (below(socialWorkerInformedRate, 80) && totalBullyingIncidents > 0) {
     concerns.push(
       `Social workers informed in only ${socialWorkerInformedRate}% of bullying incidents — social workers must be notified to fulfil regulatory reporting requirements.`,
     );
   }
 
   // Friendship plan coverage concerns
-  if (friendshipPlanCoverageRate < 30 && total_children > 0 && totalFriendshipPlans > 0) {
+  if (below(friendshipPlanCoverageRate, 30) && total_children > 0 && totalFriendshipPlans > 0) {
     concerns.push(
       `Only ${friendshipPlanCoverageRate}% of children have active friendship support plans — the majority of children lack structured support for developing and maintaining friendships.`,
     );
-  } else if (friendshipPlanCoverageRate < 60 && friendshipPlanCoverageRate >= 30 && total_children > 0) {
+  } else if (below(friendshipPlanCoverageRate, 60) && meets(friendshipPlanCoverageRate, 30) && total_children > 0) {
     concerns.push(
       `Friendship plan coverage at ${friendshipPlanCoverageRate}% — not all children receive targeted friendship development support.`,
     );
   }
 
   // Goal achievement concerns
-  if (friendshipGoalAchievementRate < 40 && totalGoalsSet > 0) {
+  if (below(friendshipGoalAchievementRate, 40) && totalGoalsSet > 0) {
     concerns.push(
       `Only ${friendshipGoalAchievementRate}% of friendship plan goals achieved — children are not making expected progress towards their social development objectives.`,
     );
-  } else if (friendshipGoalAchievementRate < 60 && friendshipGoalAchievementRate >= 40 && totalGoalsSet > 0) {
+  } else if (below(friendshipGoalAchievementRate, 60) && meets(friendshipGoalAchievementRate, 40) && totalGoalsSet > 0) {
     concerns.push(
       `Friendship goal achievement at ${friendshipGoalAchievementRate}% — some children are falling short of their social development targets.`,
     );
   }
 
   // Social activity participation concerns
-  if (socialActivityParticipationRate < 40 && totalSocialActivities > 0) {
+  if (below(socialActivityParticipationRate, 40) && totalSocialActivities > 0) {
     concerns.push(
       `Only ${socialActivityParticipationRate}% social activity participation — children are not regularly engaging in social activities, limiting opportunities for social development and peer interaction.`,
     );
-  } else if (socialActivityParticipationRate < 70 && socialActivityParticipationRate >= 40 && totalSocialActivities > 0) {
+  } else if (below(socialActivityParticipationRate, 70) && meets(socialActivityParticipationRate, 40) && totalSocialActivities > 0) {
     concerns.push(
       `Social activity participation at ${socialActivityParticipationRate}% — some children are not engaging in social activities, reducing their opportunities for peer interaction.`,
     );
   }
 
   // Activity enjoyment concerns
-  if (activityEnjoymentRate < 50 && attendedActivities > 0) {
+  if (below(activityEnjoymentRate, 50) && attendedActivities > 0) {
     concerns.push(
       `Only ${activityEnjoymentRate}% of attended activities enjoyed — the social activities offered may not match children's interests or preferences.`,
     );
   }
 
   // High refusal rate concerns
-  if (refusalRate >= 30 && totalSocialActivities > 0) {
+  if (meets(refusalRate, 30) && totalSocialActivities > 0) {
     concerns.push(
       `${refusalRate}% activity refusal rate — children are frequently declining social activities, which may indicate anxiety, disinterest, or barriers to participation that need exploration.`,
     );
   }
 
   // Child voice concerns
-  if (combinedChildVoiceRate < 50 && totalVoiceOpportunities > 0) {
+  if (below(combinedChildVoiceRate, 50) && totalVoiceOpportunities > 0) {
     concerns.push(
       `Child voice captured in only ${combinedChildVoiceRate}% of assessments and plans — children's perspectives are not adequately informing their own social development support.`,
     );
-  } else if (combinedChildVoiceRate < 70 && combinedChildVoiceRate >= 50 && totalVoiceOpportunities > 0) {
+  } else if (below(combinedChildVoiceRate, 70) && meets(combinedChildVoiceRate, 50) && totalVoiceOpportunities > 0) {
     concerns.push(
       `Child voice captured in ${combinedChildVoiceRate}% of assessments and plans — the home should seek children's views more consistently to ensure support is child-centred.`,
     );
@@ -1064,7 +1061,7 @@ export function computePeerRelationshipSocialDevelopment(
     });
   }
 
-  if (bullyingResolutionRate < 50 && totalBullyingIncidents > 0) {
+  if (below(bullyingResolutionRate, 50) && totalBullyingIncidents > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1074,7 +1071,7 @@ export function computePeerRelationshipSocialDevelopment(
     });
   }
 
-  if (peerAssessmentCoverageRate < 30 && total_children > 0) {
+  if (below(peerAssessmentCoverageRate, 30) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1084,7 +1081,7 @@ export function computePeerRelationshipSocialDevelopment(
     });
   }
 
-  if (socialActivityParticipationRate < 40 && totalSocialActivities > 0) {
+  if (below(socialActivityParticipationRate, 40) && totalSocialActivities > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1094,7 +1091,7 @@ export function computePeerRelationshipSocialDevelopment(
     });
   }
 
-  if (combinedChildVoiceRate < 50 && totalVoiceOpportunities > 0) {
+  if (below(combinedChildVoiceRate, 50) && totalVoiceOpportunities > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1104,7 +1101,7 @@ export function computePeerRelationshipSocialDevelopment(
     });
   }
 
-  if (bullyingInvestigationRate < 80 && totalBullyingIncidents > 0) {
+  if (below(bullyingInvestigationRate, 80) && totalBullyingIncidents > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1114,7 +1111,7 @@ export function computePeerRelationshipSocialDevelopment(
     });
   }
 
-  if (safetyPlanRate < 50 && totalBullyingIncidents > 0) {
+  if (below(safetyPlanRate, 50) && totalBullyingIncidents > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1137,8 +1134,8 @@ export function computePeerRelationshipSocialDevelopment(
   // Soon recommendations
 
   if (
-    peerAssessmentCoverageRate >= 30 &&
-    peerAssessmentCoverageRate < 70 &&
+    meets(peerAssessmentCoverageRate, 30) &&
+    below(peerAssessmentCoverageRate, 70) &&
     total_children > 0
   ) {
     recommendations.push({
@@ -1150,7 +1147,7 @@ export function computePeerRelationshipSocialDevelopment(
     });
   }
 
-  if (programmeAttendanceRate < 70 && totalSessionsPlanned > 0) {
+  if (below(programmeAttendanceRate, 70) && totalSessionsPlanned > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1161,8 +1158,8 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    bullyingResolutionRate >= 50 &&
-    bullyingResolutionRate < 80 &&
+    meets(bullyingResolutionRate, 50) &&
+    below(bullyingResolutionRate, 80) &&
     totalBullyingIncidents > 0
   ) {
     recommendations.push({
@@ -1175,7 +1172,7 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    friendshipPlanCoverageRate < 60 &&
+    below(friendshipPlanCoverageRate, 60) &&
     total_children > 0
   ) {
     recommendations.push({
@@ -1188,7 +1185,7 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    friendshipGoalAchievementRate < 60 &&
+    below(friendshipGoalAchievementRate, 60) &&
     totalGoalsSet > 0
   ) {
     recommendations.push({
@@ -1200,7 +1197,7 @@ export function computePeerRelationshipSocialDevelopment(
     });
   }
 
-  if (measureableImprovementRate < 40 && totalProgrammes > 0) {
+  if (below(measureableImprovementRate, 40) && totalProgrammes > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1210,7 +1207,7 @@ export function computePeerRelationshipSocialDevelopment(
     });
   }
 
-  if (activityEnjoymentRate < 50 && attendedActivities > 0) {
+  if (below(activityEnjoymentRate, 50) && attendedActivities > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1220,7 +1217,7 @@ export function computePeerRelationshipSocialDevelopment(
     });
   }
 
-  if (refusalRate >= 30 && totalSocialActivities > 0) {
+  if (meets(refusalRate, 30) && totalSocialActivities > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1230,7 +1227,7 @@ export function computePeerRelationshipSocialDevelopment(
     });
   }
 
-  if (bullyingFollowUpRate < 70 && totalBullyingIncidents > 0) {
+  if (below(bullyingFollowUpRate, 70) && totalBullyingIncidents > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1240,7 +1237,7 @@ export function computePeerRelationshipSocialDevelopment(
     });
   }
 
-  if (parentCarerInformedRate < 80 && totalBullyingIncidents > 0) {
+  if (below(parentCarerInformedRate, 80) && totalBullyingIncidents > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1253,8 +1250,8 @@ export function computePeerRelationshipSocialDevelopment(
   // Planned recommendations
 
   if (
-    socialSkillsEngagementRate >= 30 &&
-    socialSkillsEngagementRate < 60 &&
+    meets(socialSkillsEngagementRate, 30) &&
+    below(socialSkillsEngagementRate, 60) &&
     total_children > 0
   ) {
     recommendations.push({
@@ -1267,8 +1264,8 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    socialActivityParticipationRate >= 40 &&
-    socialActivityParticipationRate < 70 &&
+    meets(socialActivityParticipationRate, 40) &&
+    below(socialActivityParticipationRate, 70) &&
     totalSocialActivities > 0
   ) {
     recommendations.push({
@@ -1280,7 +1277,7 @@ export function computePeerRelationshipSocialDevelopment(
     });
   }
 
-  if (externalActivityRate < 30 && attendedActivities > 0) {
+  if (below(externalActivityRate, 30) && attendedActivities > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1291,8 +1288,8 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    combinedChildVoiceRate >= 50 &&
-    combinedChildVoiceRate < 70 &&
+    meets(combinedChildVoiceRate, 50) &&
+    below(combinedChildVoiceRate, 70) &&
     totalVoiceOpportunities > 0
   ) {
     recommendations.push({
@@ -1318,7 +1315,7 @@ export function computePeerRelationshipSocialDevelopment(
     });
   }
 
-  if (childInitiatedRate < 15 && totalSocialActivities > 0) {
+  if (below(childInitiatedRate, 15) && totalSocialActivities > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1361,28 +1358,28 @@ export function computePeerRelationshipSocialDevelopment(
     });
   }
 
-  if (bullyingResolutionRate < 50 && totalBullyingIncidents > 0) {
+  if (below(bullyingResolutionRate, 50) && totalBullyingIncidents > 0) {
     insights.push({
       text: `Only ${bullyingResolutionRate}% of bullying incidents resolved. Children who experience unresolved bullying lose trust in the home's ability to keep them safe. Ofsted will view this as evidence that the home's anti-bullying practice is ineffective, directly undermining Reg 9 compliance.`,
       severity: "critical",
     });
   }
 
-  if (peerAssessmentCoverageRate < 30 && total_children > 0) {
+  if (below(peerAssessmentCoverageRate, 30) && total_children > 0) {
     insights.push({
       text: `Only ${peerAssessmentCoverageRate}% peer assessment coverage. Without formal assessment of children's peer relationships, the home cannot identify social development needs, intervene early when relationships are struggling, or evidence that children's social wellbeing is monitored. This is a gap in Reg 7 compliance.`,
       severity: "critical",
     });
   }
 
-  if (socialActivityParticipationRate < 40 && totalSocialActivities > 0) {
+  if (below(socialActivityParticipationRate, 40) && totalSocialActivities > 0) {
     insights.push({
       text: `Only ${socialActivityParticipationRate}% social activity participation. Children in residential care depend on the home to provide social opportunities — low participation means children are missing crucial opportunities for social development, peer interaction, and community engagement. This undermines Reg 5 compliance.`,
       severity: "critical",
     });
   }
 
-  if (combinedChildVoiceRate < 50 && totalVoiceOpportunities > 0) {
+  if (below(combinedChildVoiceRate, 50) && totalVoiceOpportunities > 0) {
     insights.push({
       text: `Child voice captured in only ${combinedChildVoiceRate}% of assessments and plans. Social development support that does not reflect children's own views, friendships, and goals is unlikely to be effective. Ofsted expects children's voices to drive their care planning.`,
       severity: "critical",
@@ -1406,8 +1403,8 @@ export function computePeerRelationshipSocialDevelopment(
   // -- Warning insights --
 
   if (
-    peerAssessmentCoverageRate >= 30 &&
-    peerAssessmentCoverageRate < 70 &&
+    meets(peerAssessmentCoverageRate, 30) &&
+    below(peerAssessmentCoverageRate, 70) &&
     total_children > 0
   ) {
     insights.push({
@@ -1428,8 +1425,8 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    socialSkillsEngagementRate >= 30 &&
-    socialSkillsEngagementRate < 60 &&
+    meets(socialSkillsEngagementRate, 30) &&
+    below(socialSkillsEngagementRate, 60) &&
     total_children > 0
   ) {
     insights.push({
@@ -1439,8 +1436,8 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    programmeAttendanceRate >= 50 &&
-    programmeAttendanceRate < 70 &&
+    meets(programmeAttendanceRate, 50) &&
+    below(programmeAttendanceRate, 70) &&
     totalSessionsPlanned > 0
   ) {
     insights.push({
@@ -1449,7 +1446,7 @@ export function computePeerRelationshipSocialDevelopment(
     });
   }
 
-  if (measureableImprovementRate < 40 && totalProgrammes > 0) {
+  if (below(measureableImprovementRate, 40) && totalProgrammes > 0) {
     insights.push({
       text: `Only ${measureableImprovementRate}% of programmes show measurable improvement — the current programme approaches may not be sufficiently evidence-based or well-matched to children's needs. Consider reviewing and adapting programme content.`,
       severity: "warning",
@@ -1457,8 +1454,8 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    bullyingResolutionRate >= 50 &&
-    bullyingResolutionRate < 80 &&
+    meets(bullyingResolutionRate, 50) &&
+    below(bullyingResolutionRate, 80) &&
     totalBullyingIncidents > 0
   ) {
     insights.push({
@@ -1468,8 +1465,8 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    friendshipPlanCoverageRate >= 30 &&
-    friendshipPlanCoverageRate < 60 &&
+    meets(friendshipPlanCoverageRate, 30) &&
+    below(friendshipPlanCoverageRate, 60) &&
     total_children > 0
   ) {
     insights.push({
@@ -1479,8 +1476,8 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    friendshipGoalAchievementRate >= 40 &&
-    friendshipGoalAchievementRate < 60 &&
+    meets(friendshipGoalAchievementRate, 40) &&
+    below(friendshipGoalAchievementRate, 60) &&
     totalGoalsSet > 0
   ) {
     insights.push({
@@ -1490,8 +1487,8 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    socialActivityParticipationRate >= 40 &&
-    socialActivityParticipationRate < 70 &&
+    meets(socialActivityParticipationRate, 40) &&
+    below(socialActivityParticipationRate, 70) &&
     totalSocialActivities > 0
   ) {
     insights.push({
@@ -1501,8 +1498,8 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    activityEnjoymentRate >= 50 &&
-    activityEnjoymentRate < 70 &&
+    meets(activityEnjoymentRate, 50) &&
+    below(activityEnjoymentRate, 70) &&
     attendedActivities > 0
   ) {
     insights.push({
@@ -1511,7 +1508,7 @@ export function computePeerRelationshipSocialDevelopment(
     });
   }
 
-  if (refusalRate >= 30 && totalSocialActivities > 0) {
+  if (meets(refusalRate, 30) && totalSocialActivities > 0) {
     insights.push({
       text: `Activity refusal rate at ${refusalRate}% — children frequently decline social activities. This may indicate social anxiety, negative peer dynamics, or a mismatch between activities offered and children's interests.`,
       severity: "warning",
@@ -1519,8 +1516,8 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    combinedChildVoiceRate >= 50 &&
-    combinedChildVoiceRate < 70 &&
+    meets(combinedChildVoiceRate, 50) &&
+    below(combinedChildVoiceRate, 70) &&
     totalVoiceOpportunities > 0
   ) {
     insights.push({
@@ -1581,7 +1578,7 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    peerAssessmentCoverageRate >= 90 &&
+    meets(peerAssessmentCoverageRate, 90) &&
     total_children > 0
   ) {
     insights.push({
@@ -1602,8 +1599,8 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    bullyingResolutionRate >= 100 &&
-    bullyingInvestigationRate >= 100 &&
+    meets(bullyingResolutionRate, 100) &&
+    meets(bullyingInvestigationRate, 100) &&
     totalBullyingIncidents > 0
   ) {
     insights.push({
@@ -1613,9 +1610,9 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    bullyingResolutionRate >= 90 &&
-    safetyPlanRate >= 90 &&
-    bullyingFollowUpRate >= 90 &&
+    meets(bullyingResolutionRate, 90) &&
+    meets(safetyPlanRate, 90) &&
+    meets(bullyingFollowUpRate, 90) &&
     totalBullyingIncidents > 0
   ) {
     insights.push({
@@ -1625,8 +1622,8 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    friendshipPlanCoverageRate >= 80 &&
-    friendshipGoalAchievementRate >= 80 &&
+    meets(friendshipPlanCoverageRate, 80) &&
+    meets(friendshipGoalAchievementRate, 80) &&
     total_children > 0 &&
     totalGoalsSet > 0
   ) {
@@ -1637,8 +1634,8 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    socialActivityParticipationRate >= 90 &&
-    activityEnjoymentRate >= 80 &&
+    meets(socialActivityParticipationRate, 90) &&
+    meets(activityEnjoymentRate, 80) &&
     totalSocialActivities > 0
   ) {
     insights.push({
@@ -1648,8 +1645,8 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    externalActivityRate >= 50 &&
-    newConnectionsRate >= 30 &&
+    meets(externalActivityRate, 50) &&
+    meets(newConnectionsRate, 30) &&
     attendedActivities > 0
   ) {
     insights.push({
@@ -1659,7 +1656,7 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    childInitiatedRate >= 30 &&
+    meets(childInitiatedRate, 30) &&
     totalSocialActivities > 0
   ) {
     insights.push({
@@ -1669,7 +1666,7 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    combinedChildVoiceRate >= 90 &&
+    meets(combinedChildVoiceRate, 90) &&
     totalVoiceOpportunities > 0
   ) {
     insights.push({
@@ -1679,7 +1676,7 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    restorativeRate >= 50 &&
+    meets(restorativeRate, 50) &&
     resolvedBullyingIncidents > 0
   ) {
     insights.push({
@@ -1689,8 +1686,8 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    programmeAttendanceRate >= 90 &&
-    measureableImprovementRate >= 70 &&
+    meets(programmeAttendanceRate, 90) &&
+    meets(measureableImprovementRate, 70) &&
     totalProgrammes > 0
   ) {
     insights.push({
@@ -1719,7 +1716,7 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    externalFriendshipRate >= 80 &&
+    meets(externalFriendshipRate, 80) &&
     totalFriendshipPlans > 0
   ) {
     insights.push({
@@ -1729,7 +1726,7 @@ export function computePeerRelationshipSocialDevelopment(
   }
 
   if (
-    peerMatchingSuccessRate >= 70 &&
+    meets(peerMatchingSuccessRate, 70) &&
     peerMatchingAttempted > 0
   ) {
     insights.push({

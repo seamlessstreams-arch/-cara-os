@@ -12,7 +12,7 @@
 //             childPreparationRecords
 // ==============================================================================
 
-import { meets, below } from "@/lib/metrics/rate";
+import { rate, below, meets } from "@/lib/metrics/rate";
 
 // -- Input Types --------------------------------------------------------------
 
@@ -145,10 +145,14 @@ export interface PersonalCalendarResult {
   calendar_rating: PersonalCalendarRating;
   calendar_score: number;
   headline: string;
-  appointment_attendance_rate: number;
-  calendar_accuracy_rate: number;
-  medical_compliance_rate: number;
-  transport_timeliness_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  appointment_attendance_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  calendar_accuracy_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  medical_compliance_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  transport_timeliness_rate: number | null;
   // fab-0: null when no preparation records exist.
   child_preparation_rate: number | null;
   child_autonomy_rate: number | null;
@@ -159,10 +163,6 @@ export interface PersonalCalendarResult {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -186,10 +186,10 @@ function emptyResult(
     calendar_rating: rating,
     calendar_score: score,
     headline,
-    appointment_attendance_rate: 0,
-    calendar_accuracy_rate: 0,
-    medical_compliance_rate: 0,
-    transport_timeliness_rate: 0,
+    appointment_attendance_rate: null,
+    calendar_accuracy_rate: null,
+    medical_compliance_rate: null,
+    transport_timeliness_rate: null,
     child_preparation_rate: null,
     child_autonomy_rate: null,
     strengths: [],
@@ -270,24 +270,24 @@ export function computePersonalCalendarAppointments(
   // --- Appointment attendance ---
   const totalAppointments = appointment_records.length;
   const attendedAppointments = appointment_records.filter((r) => r.attended).length;
-  const appointmentAttendanceRate = pct(attendedAppointments, totalAppointments);
+  const appointmentAttendanceRate = rate(attendedAppointments, totalAppointments);
 
   const cancelledAppointments = appointment_records.filter((r) => r.cancelled).length;
-  const cancellationRate = pct(cancelledAppointments, totalAppointments);
+  const cancellationRate = rate(cancelledAppointments, totalAppointments);
 
   const homeCancelled = appointment_records.filter(
     (r) => r.cancelled && r.cancelled_by === "home",
   ).length;
-  const homeCancellationRate = pct(homeCancelled, totalAppointments);
+  const homeCancellationRate = rate(homeCancelled, totalAppointments);
 
   const rescheduledAppointments = appointment_records.filter((r) => r.rescheduled).length;
   const rescheduledWithin14Days = appointment_records.filter(
     (r) => r.rescheduled && r.rescheduled_within_14_days,
   ).length;
-  const reschedulingTimelinessRate = pct(rescheduledWithin14Days, rescheduledAppointments);
+  const reschedulingTimelinessRate = rate(rescheduledWithin14Days, rescheduledAppointments);
 
   const outcomeRecorded = appointment_records.filter((r) => r.outcome_recorded).length;
-  const outcomeRecordingRate = pct(outcomeRecorded, totalAppointments);
+  const outcomeRecordingRate = rate(outcomeRecorded, totalAppointments);
 
   const followUpIdentified = appointment_records.filter(
     (r) => r.follow_up_actions_identified,
@@ -295,13 +295,13 @@ export function computePersonalCalendarAppointments(
   const followUpCompleted = appointment_records.filter(
     (r) => r.follow_up_actions_identified && r.follow_up_actions_completed,
   ).length;
-  const followUpCompletionRate = pct(followUpCompleted, followUpIdentified);
+  const followUpCompletionRate = rate(followUpCompleted, followUpIdentified);
 
   const consentObtained = appointment_records.filter((r) => r.child_consented).length;
-  const consentRate = pct(consentObtained, totalAppointments);
+  const consentRate = rate(consentObtained, totalAppointments);
 
   const overdueAppointments = appointment_records.filter((r) => r.is_overdue).length;
-  const overdueRate = pct(overdueAppointments, totalAppointments);
+  const overdueRate = rate(overdueAppointments, totalAppointments);
 
   const uniqueChildrenWithAppointments = new Set(
     appointment_records.map((r) => r.child_id),
@@ -312,19 +312,19 @@ export function computePersonalCalendarAppointments(
     (r) => r.appointment_type === "medical" || r.appointment_type === "specialist" || r.appointment_type === "mental_health" || r.appointment_type === "camhs",
   );
   const medicalAttended = medicalAppointments.filter((r) => r.attended).length;
-  const medicalAttendanceRate = pct(medicalAttended, medicalAppointments.length);
+  const medicalAttendanceRate = rate(medicalAttended, medicalAppointments.length);
 
   const dentalAppointments = appointment_records.filter(
     (r) => r.appointment_type === "dental" || r.appointment_type === "optician",
   );
   const dentalAttended = dentalAppointments.filter((r) => r.attended).length;
-  const dentalAttendanceRate = pct(dentalAttended, dentalAppointments.length);
+  const dentalAttendanceRate = rate(dentalAttended, dentalAppointments.length);
 
   const educationAppointments = appointment_records.filter(
     (r) => r.appointment_type === "education" || r.appointment_type === "pep" || r.appointment_type === "lac_review",
   );
   const educationAttended = educationAppointments.filter((r) => r.attended).length;
-  const educationAttendanceRate = pct(educationAttended, educationAppointments.length);
+  const educationAttendanceRate = rate(educationAttended, educationAppointments.length);
 
   // --- Calendar management ---
   const totalCalendarRecords = calendar_management_records.length;
@@ -335,12 +335,12 @@ export function computePersonalCalendarAppointments(
   const calendarAccurate = calendar_management_records.filter(
     (r) => r.calendar_accurate,
   ).length;
-  const calendarAccuracyRate = pct(calendarAccurate, totalCalendarRecords);
+  const calendarAccuracyRate = rate(calendarAccurate, totalCalendarRecords);
 
   const remindersSet = calendar_management_records.filter(
     (r) => r.reminders_set,
   ).length;
-  const reminderRate = pct(remindersSet, totalCalendarRecords);
+  const reminderRate = rate(remindersSet, totalCalendarRecords);
 
   const totalConflicts = calendar_management_records.reduce(
     (sum, r) => sum + r.conflicts_identified, 0,
@@ -348,44 +348,44 @@ export function computePersonalCalendarAppointments(
   const totalConflictsResolved = calendar_management_records.reduce(
     (sum, r) => sum + r.conflicts_resolved, 0,
   );
-  const conflictResolutionRate = pct(totalConflictsResolved, totalConflicts);
+  const conflictResolutionRate = rate(totalConflictsResolved, totalConflicts);
 
   const sharedWithChild = calendar_management_records.filter(
     (r) => r.calendar_shared_with_child,
   ).length;
-  const childShareRate = pct(sharedWithChild, totalCalendarRecords);
+  const childShareRate = rate(sharedWithChild, totalCalendarRecords);
 
   const sharedWithSW = calendar_management_records.filter(
     (r) => r.calendar_shared_with_social_worker,
   ).length;
-  const swShareRate = pct(sharedWithSW, totalCalendarRecords);
+  const swShareRate = rate(sharedWithSW, totalCalendarRecords);
 
   const totalMissedFromCalendar = calendar_management_records.reduce(
     (sum, r) => sum + r.missed_from_calendar, 0,
   );
-  const missedFromCalendarRate = pct(totalMissedFromCalendar, totalScheduled);
+  const missedFromCalendarRate = rate(totalMissedFromCalendar, totalScheduled);
 
   const totalDoubleBookings = calendar_management_records.reduce(
     (sum, r) => sum + r.double_bookings, 0,
   );
-  const doubleBookingRate = pct(totalDoubleBookings, totalScheduled);
+  const doubleBookingRate = rate(totalDoubleBookings, totalScheduled);
 
   // --- Medical compliance ---
   const totalMedicalCompliance = medical_compliance_records.length;
   const completedCompliance = medical_compliance_records.filter(
     (r) => r.completed,
   ).length;
-  const medicalComplianceRate = pct(completedCompliance, totalMedicalCompliance);
+  const medicalComplianceRate = rate(completedCompliance, totalMedicalCompliance);
 
   const overdueCompliance = medical_compliance_records.filter(
     (r) => r.overdue,
   ).length;
-  const overdueComplianceRate = pct(overdueCompliance, totalMedicalCompliance);
+  const overdueComplianceRate = rate(overdueCompliance, totalMedicalCompliance);
 
   const healthPlanUpdated = medical_compliance_records.filter(
     (r) => r.health_plan_updated,
   ).length;
-  const healthPlanUpdateRate = pct(healthPlanUpdated, totalMedicalCompliance);
+  const healthPlanUpdateRate = rate(healthPlanUpdated, totalMedicalCompliance);
 
   // fab-0: null when no overdue compliance items to average.
   const avgDaysOverdue: number | null =
@@ -402,83 +402,83 @@ export function computePersonalCalendarAppointments(
     (r) => r.compliance_type === "annual_health_assessment",
   );
   const ahaCompleted = annualHealthAssessments.filter((r) => r.completed).length;
-  const ahaCompletionRate = pct(ahaCompleted, annualHealthAssessments.length);
+  const ahaCompletionRate = rate(ahaCompleted, annualHealthAssessments.length);
 
   const dentalCheckups = medical_compliance_records.filter(
     (r) => r.compliance_type === "dental_checkup",
   );
   const dentalCompleted = dentalCheckups.filter((r) => r.completed).length;
-  const dentalCompletionRate = pct(dentalCompleted, dentalCheckups.length);
+  const dentalCompletionRate = rate(dentalCompleted, dentalCheckups.length);
 
   const immunisations = medical_compliance_records.filter(
     (r) => r.compliance_type === "immunisation",
   );
   const immunisationCompleted = immunisations.filter((r) => r.completed).length;
-  const immunisationRate = pct(immunisationCompleted, immunisations.length);
+  const immunisationRate = rate(immunisationCompleted, immunisations.length);
 
   // --- Transport arrangements ---
   const totalTransportRecords = transport_arrangement_records.length;
   const onTimeTransport = transport_arrangement_records.filter(
     (r) => r.on_time,
   ).length;
-  const transportTimelinessRate = pct(onTimeTransport, totalTransportRecords);
+  const transportTimelinessRate = rate(onTimeTransport, totalTransportRecords);
 
   const arrangedInAdvance = transport_arrangement_records.filter(
     (r) => r.arranged_in_advance,
   ).length;
-  const advanceArrangementRate = pct(arrangedInAdvance, totalTransportRecords);
+  const advanceArrangementRate = rate(arrangedInAdvance, totalTransportRecords);
 
   const childComfortable = transport_arrangement_records.filter(
     (r) => r.child_comfortable,
   ).length;
-  const childComfortRate = pct(childComfortable, totalTransportRecords);
+  const childComfortRate = rate(childComfortable, totalTransportRecords);
 
   const driverChecked = transport_arrangement_records.filter(
     (r) => r.staff_driver_checked,
   ).length;
-  const driverCheckRate = pct(driverChecked, totalTransportRecords);
+  const driverCheckRate = rate(driverChecked, totalTransportRecords);
 
   const backupPlan = transport_arrangement_records.filter(
     (r) => r.backup_plan_in_place,
   ).length;
-  const backupPlanRate = pct(backupPlan, totalTransportRecords);
+  const backupPlanRate = rate(backupPlan, totalTransportRecords);
 
   const significantDelays = transport_arrangement_records.filter(
     (r) => r.delay_minutes > 15,
   ).length;
-  const significantDelayRate = pct(significantDelays, totalTransportRecords);
+  const significantDelayRate = rate(significantDelays, totalTransportRecords);
 
   // --- Child preparation ---
   const totalPreparationRecords = child_preparation_records.length;
   const informedInAdvance = child_preparation_records.filter(
     (r) => r.child_informed_in_advance,
   ).length;
-  const advanceInformationRate = pct(informedInAdvance, totalPreparationRecords);
+  const advanceInformationRate = rate(informedInAdvance, totalPreparationRecords);
 
   const anxietiesAddressed = child_preparation_records.filter(
     (r) => r.child_anxieties_addressed,
   ).length;
-  const anxietyAddressRate = pct(anxietiesAddressed, totalPreparationRecords);
+  const anxietyAddressRate = rate(anxietiesAddressed, totalPreparationRecords);
 
   const preferencesCapture = child_preparation_records.filter(
     (r) => r.preferences_captured,
   ).length;
-  const preferencesCaptureRate = pct(preferencesCapture, totalPreparationRecords);
+  const preferencesCaptureRate = rate(preferencesCapture, totalPreparationRecords);
 
   const choseAccompaniment = child_preparation_records.filter(
     (r) => r.child_chose_accompaniment,
   ).length;
-  const accompanimentChoiceRate = pct(choseAccompaniment, totalPreparationRecords);
+  const accompanimentChoiceRate = rate(choseAccompaniment, totalPreparationRecords);
 
   const debriefAfter = child_preparation_records.filter(
     (r) => r.debrief_after,
   ).length;
-  const debriefRate = pct(debriefAfter, totalPreparationRecords);
+  const debriefRate = rate(debriefAfter, totalPreparationRecords);
 
   const feedbackCaptured = child_preparation_records.filter(
     (r) => r.child_feedback_captured,
   ).length;
-  const feedbackCaptureRate = pct(feedbackCaptured, totalPreparationRecords);
+  const feedbackCaptureRate = rate(feedbackCaptured, totalPreparationRecords);
 
   const childSatisfactionSum = child_preparation_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
@@ -492,48 +492,42 @@ export function computePersonalCalendarAppointments(
   const autonomySupported = child_preparation_records.filter(
     (r) => r.autonomy_supported,
   ).length;
-  const autonomyRate = pct(autonomySupported, totalPreparationRecords);
+  const autonomyRate = rate(autonomySupported, totalPreparationRecords);
 
   const ageAppropriate = child_preparation_records.filter(
     (r) => r.age_appropriate_information,
   ).length;
-  const ageAppropriateRate = pct(ageAppropriate, totalPreparationRecords);
+  const ageAppropriateRate = rate(ageAppropriate, totalPreparationRecords);
 
   // --- Child preparation composite rate ---
   const childPreparationRate: number | null =
-    totalPreparationRecords > 0
-      ? Math.round(
-          (advanceInformationRate + anxietyAddressRate + preferencesCaptureRate + debriefRate) / 4,
-        )
-      : null;
+    totalPreparationRecords > 0 ? Math.round(
+          (advanceInformationRate! + anxietyAddressRate! + preferencesCaptureRate! + debriefRate!) / 4) : null;
 
   // --- Child autonomy composite rate ---
   const childAutonomyRate: number | null =
-    totalPreparationRecords > 0
-      ? Math.round(
-          (autonomyRate + accompanimentChoiceRate + feedbackCaptureRate) / 3,
-        )
-      : null;
+    totalPreparationRecords > 0 ? Math.round(
+          (autonomyRate! + accompanimentChoiceRate! + feedbackCaptureRate!) / 3) : null;
 
   // -- Scoring: base 52 ----------------------------------------------------
 
   let score = 52;
 
   // --- Bonus 1: appointmentAttendanceRate (>=90: +4, >=75: +2) ---
-  if (appointmentAttendanceRate >= 90) score += 4;
-  else if (appointmentAttendanceRate >= 75) score += 2;
+  if (meets(appointmentAttendanceRate, 90)) score += 4;
+  else if (meets(appointmentAttendanceRate, 75)) score += 2;
 
   // --- Bonus 2: calendarAccuracyRate (>=90: +3, >=70: +1) ---
-  if (calendarAccuracyRate >= 90) score += 3;
-  else if (calendarAccuracyRate >= 70) score += 1;
+  if (meets(calendarAccuracyRate, 90)) score += 3;
+  else if (meets(calendarAccuracyRate, 70)) score += 1;
 
   // --- Bonus 3: medicalComplianceRate (>=95: +4, >=80: +2) ---
-  if (medicalComplianceRate >= 95) score += 4;
-  else if (medicalComplianceRate >= 80) score += 2;
+  if (meets(medicalComplianceRate, 95)) score += 4;
+  else if (meets(medicalComplianceRate, 80)) score += 2;
 
   // --- Bonus 4: transportTimelinessRate (>=90: +3, >=75: +1) ---
-  if (transportTimelinessRate >= 90) score += 3;
-  else if (transportTimelinessRate >= 75) score += 1;
+  if (meets(transportTimelinessRate, 90)) score += 3;
+  else if (meets(transportTimelinessRate, 75)) score += 1;
 
   // --- Bonus 5: childPreparationRate (>=85: +3, >=65: +1) ---
   if (meets(childPreparationRate, 85)) score += 3;
@@ -544,27 +538,27 @@ export function computePersonalCalendarAppointments(
   else if (meets(childAutonomyRate, 60)) score += 1;
 
   // --- Bonus 7: followUpCompletionRate (>=90: +3, >=70: +1) ---
-  if (followUpCompletionRate >= 90) score += 3;
-  else if (followUpCompletionRate >= 70) score += 1;
+  if (meets(followUpCompletionRate, 90)) score += 3;
+  else if (meets(followUpCompletionRate, 70)) score += 1;
 
   // --- Bonus 8: outcomeRecordingRate (>=90: +3, >=70: +1) ---
-  if (outcomeRecordingRate >= 90) score += 3;
-  else if (outcomeRecordingRate >= 70) score += 1;
+  if (meets(outcomeRecordingRate, 90)) score += 3;
+  else if (meets(outcomeRecordingRate, 70)) score += 1;
 
   // --- Bonus 9: reschedulingTimelinessRate (>=80: +2, >=50: +1) ---
-  if (reschedulingTimelinessRate >= 80) score += 2;
-  else if (reschedulingTimelinessRate >= 50) score += 1;
+  if (meets(reschedulingTimelinessRate, 80)) score += 2;
+  else if (meets(reschedulingTimelinessRate, 50)) score += 1;
 
   // -- Penalties (4 with guards) -------------------------------------------
 
   // appointmentAttendanceRate < 50 -> -5
-  if (appointmentAttendanceRate < 50 && totalAppointments > 0) score -= 5;
+  if (below(appointmentAttendanceRate, 50) && totalAppointments > 0) score -= 5;
 
   // medicalComplianceRate < 50 -> -5
-  if (medicalComplianceRate < 50 && totalMedicalCompliance > 0) score -= 5;
+  if (below(medicalComplianceRate, 50) && totalMedicalCompliance > 0) score -= 5;
 
   // transportTimelinessRate < 50 -> -4
-  if (transportTimelinessRate < 50 && totalTransportRecords > 0) score -= 4;
+  if (below(transportTimelinessRate, 50) && totalTransportRecords > 0) score -= 4;
 
   // childPreparationRate < 30 -> -4
   if (below(childPreparationRate, 30) && totalPreparationRecords > 0) score -= 4;
@@ -577,151 +571,151 @@ export function computePersonalCalendarAppointments(
 
   const strengths: string[] = [];
 
-  if (appointmentAttendanceRate >= 90 && totalAppointments > 0) {
+  if (meets(appointmentAttendanceRate, 90) && totalAppointments > 0) {
     strengths.push(
       `${appointmentAttendanceRate}% appointment attendance rate -- the home demonstrates consistent commitment to ensuring children attend their health, education, and welfare appointments.`,
     );
-  } else if (appointmentAttendanceRate >= 75 && totalAppointments > 0) {
+  } else if (meets(appointmentAttendanceRate, 75) && totalAppointments > 0) {
     strengths.push(
       `${appointmentAttendanceRate}% appointment attendance rate -- most children's appointments are being attended with good overall management.`,
     );
   }
 
-  if (medicalAttendanceRate >= 90 && medicalAppointments.length > 0) {
+  if (meets(medicalAttendanceRate, 90) && medicalAppointments.length > 0) {
     strengths.push(
       `${medicalAttendanceRate}% medical appointment attendance -- children's health appointments are prioritised and consistently attended.`,
     );
   }
 
-  if (dentalAttendanceRate >= 90 && dentalAppointments.length > 0) {
+  if (meets(dentalAttendanceRate, 90) && dentalAppointments.length > 0) {
     strengths.push(
       `${dentalAttendanceRate}% dental/optician appointment attendance -- the home ensures children's routine health checks are maintained.`,
     );
   }
 
-  if (educationAttendanceRate >= 90 && educationAppointments.length > 0) {
+  if (meets(educationAttendanceRate, 90) && educationAppointments.length > 0) {
     strengths.push(
       `${educationAttendanceRate}% education appointment attendance -- PEP meetings, LAC reviews, and education-related appointments are consistently attended.`,
     );
   }
 
-  if (outcomeRecordingRate >= 90 && totalAppointments > 0) {
+  if (meets(outcomeRecordingRate, 90) && totalAppointments > 0) {
     strengths.push(
       `Outcomes recorded for ${outcomeRecordingRate}% of appointments -- the home maintains excellent documentation of appointment outcomes and actions.`,
     );
-  } else if (outcomeRecordingRate >= 70 && totalAppointments > 0) {
+  } else if (meets(outcomeRecordingRate, 70) && totalAppointments > 0) {
     strengths.push(
       `Outcomes recorded for ${outcomeRecordingRate}% of appointments -- good practice in documenting what happened at appointments and what needs to follow.`,
     );
   }
 
-  if (followUpCompletionRate >= 90 && followUpIdentified > 0) {
+  if (meets(followUpCompletionRate, 90) && followUpIdentified > 0) {
     strengths.push(
       `${followUpCompletionRate}% of follow-up actions completed -- the home reliably completes actions arising from appointments, ensuring continuity of care.`,
     );
-  } else if (followUpCompletionRate >= 70 && followUpIdentified > 0) {
+  } else if (meets(followUpCompletionRate, 70) && followUpIdentified > 0) {
     strengths.push(
       `${followUpCompletionRate}% follow-up action completion rate -- most actions arising from appointments are being completed.`,
     );
   }
 
-  if (consentRate >= 90 && totalAppointments > 0) {
+  if (meets(consentRate, 90) && totalAppointments > 0) {
     strengths.push(
       `Child consent obtained for ${consentRate}% of appointments -- the home demonstrates strong practice in involving children in decisions about their healthcare and appointments.`,
     );
   }
 
-  if (calendarAccuracyRate >= 90 && totalCalendarRecords > 0) {
+  if (meets(calendarAccuracyRate, 90) && totalCalendarRecords > 0) {
     strengths.push(
       `${calendarAccuracyRate}% calendar accuracy rate -- appointment calendars are reliably maintained and reflect children's actual schedules.`,
     );
-  } else if (calendarAccuracyRate >= 70 && totalCalendarRecords > 0) {
+  } else if (meets(calendarAccuracyRate, 70) && totalCalendarRecords > 0) {
     strengths.push(
       `${calendarAccuracyRate}% calendar accuracy rate -- good calendar management supporting effective appointment scheduling.`,
     );
   }
 
-  if (reminderRate >= 90 && totalCalendarRecords > 0) {
+  if (meets(reminderRate, 90) && totalCalendarRecords > 0) {
     strengths.push(
       `Reminders set for ${reminderRate}% of calendar periods -- proactive reminder systems reduce the risk of missed appointments.`,
     );
   }
 
-  if (conflictResolutionRate >= 90 && totalConflicts > 0) {
+  if (meets(conflictResolutionRate, 90) && totalConflicts > 0) {
     strengths.push(
       `${conflictResolutionRate}% of scheduling conflicts resolved -- the home effectively manages competing appointment demands.`,
     );
   }
 
-  if (childShareRate >= 80 && totalCalendarRecords > 0) {
+  if (meets(childShareRate, 80) && totalCalendarRecords > 0) {
     strengths.push(
       `Calendar shared with children in ${childShareRate}% of cases -- children are kept informed about their upcoming appointments, supporting their autonomy and reducing anxiety.`,
     );
   }
 
-  if (swShareRate >= 80 && totalCalendarRecords > 0) {
+  if (meets(swShareRate, 80) && totalCalendarRecords > 0) {
     strengths.push(
       `Calendar shared with social workers in ${swShareRate}% of cases -- good information sharing with placing authorities about children's appointment schedules.`,
     );
   }
 
-  if (medicalComplianceRate >= 95 && totalMedicalCompliance > 0) {
+  if (meets(medicalComplianceRate, 95) && totalMedicalCompliance > 0) {
     strengths.push(
       `${medicalComplianceRate}% medical compliance rate -- routine health assessments, dental checks, immunisations, and specialist follow-ups are completed on schedule.`,
     );
-  } else if (medicalComplianceRate >= 80 && totalMedicalCompliance > 0) {
+  } else if (meets(medicalComplianceRate, 80) && totalMedicalCompliance > 0) {
     strengths.push(
       `${medicalComplianceRate}% medical compliance rate -- most statutory and routine health requirements are being met on time.`,
     );
   }
 
-  if (ahaCompletionRate >= 95 && annualHealthAssessments.length > 0) {
+  if (meets(ahaCompletionRate, 95) && annualHealthAssessments.length > 0) {
     strengths.push(
       `${ahaCompletionRate}% annual health assessment completion rate -- the home ensures every child's annual health assessment is completed as required under Reg 14.`,
     );
   }
 
-  if (immunisationRate >= 95 && immunisations.length > 0) {
+  if (meets(immunisationRate, 95) && immunisations.length > 0) {
     strengths.push(
       `${immunisationRate}% immunisation compliance rate -- children's immunisation schedules are maintained ensuring their health protection.`,
     );
   }
 
-  if (healthPlanUpdateRate >= 90 && totalMedicalCompliance > 0) {
+  if (meets(healthPlanUpdateRate, 90) && totalMedicalCompliance > 0) {
     strengths.push(
       `Health plans updated after ${healthPlanUpdateRate}% of compliance activities -- appointment outcomes systematically feed into children's health plans.`,
     );
   }
 
-  if (transportTimelinessRate >= 90 && totalTransportRecords > 0) {
+  if (meets(transportTimelinessRate, 90) && totalTransportRecords > 0) {
     strengths.push(
       `${transportTimelinessRate}% transport timeliness rate -- children arrive at appointments on time with well-organised transport arrangements.`,
     );
-  } else if (transportTimelinessRate >= 75 && totalTransportRecords > 0) {
+  } else if (meets(transportTimelinessRate, 75) && totalTransportRecords > 0) {
     strengths.push(
       `${transportTimelinessRate}% transport timeliness rate -- most transport arrangements are effective and timely.`,
     );
   }
 
-  if (advanceArrangementRate >= 90 && totalTransportRecords > 0) {
+  if (meets(advanceArrangementRate, 90) && totalTransportRecords > 0) {
     strengths.push(
       `Transport arranged in advance for ${advanceArrangementRate}% of appointments -- proactive planning reduces last-minute disruption and child anxiety.`,
     );
   }
 
-  if (childComfortRate >= 90 && totalTransportRecords > 0) {
+  if (meets(childComfortRate, 90) && totalTransportRecords > 0) {
     strengths.push(
       `Children comfortable with transport arrangements in ${childComfortRate}% of cases -- the home considers children's preferences and needs when arranging travel.`,
     );
   }
 
-  if (driverCheckRate >= 95 && totalTransportRecords > 0) {
+  if (meets(driverCheckRate, 95) && totalTransportRecords > 0) {
     strengths.push(
       `Staff driver checks completed for ${driverCheckRate}% of journeys -- strong safeguarding practice around transport safety.`,
     );
   }
 
-  if (backupPlanRate >= 80 && totalTransportRecords > 0) {
+  if (meets(backupPlanRate, 80) && totalTransportRecords > 0) {
     strengths.push(
       `Backup transport plans in place for ${backupPlanRate}% of appointments -- the home plans for contingencies to avoid missed appointments.`,
     );
@@ -737,7 +731,7 @@ export function computePersonalCalendarAppointments(
     );
   }
 
-  if (anxietyAddressRate >= 90 && totalPreparationRecords > 0) {
+  if (meets(anxietyAddressRate, 90) && totalPreparationRecords > 0) {
     strengths.push(
       `Children's anxieties addressed in ${anxietyAddressRate}% of cases -- staff proactively identify and manage appointment-related anxiety, enabling children to engage positively with healthcare and education professionals.`,
     );
@@ -749,19 +743,19 @@ export function computePersonalCalendarAppointments(
     );
   }
 
-  if (autonomyRate >= 80 && totalPreparationRecords > 0) {
+  if (meets(autonomyRate, 80) && totalPreparationRecords > 0) {
     strengths.push(
       `Autonomy supported in ${autonomyRate}% of appointment preparations -- children are empowered to make choices about their appointments and healthcare.`,
     );
   }
 
-  if (debriefRate >= 85 && totalPreparationRecords > 0) {
+  if (meets(debriefRate, 85) && totalPreparationRecords > 0) {
     strengths.push(
       `Post-appointment debrief conducted in ${debriefRate}% of cases -- children have the opportunity to process and discuss their appointment experiences.`,
     );
   }
 
-  if (ageAppropriateRate >= 90 && totalPreparationRecords > 0) {
+  if (meets(ageAppropriateRate, 90) && totalPreparationRecords > 0) {
     strengths.push(
       `Age-appropriate information provided in ${ageAppropriateRate}% of preparations -- information is tailored to each child's developmental stage and understanding.`,
     );
@@ -773,7 +767,7 @@ export function computePersonalCalendarAppointments(
     );
   }
 
-  if (reschedulingTimelinessRate >= 80 && rescheduledAppointments > 0) {
+  if (meets(reschedulingTimelinessRate, 80) && rescheduledAppointments > 0) {
     strengths.push(
       `${reschedulingTimelinessRate}% of cancelled appointments rescheduled within 14 days -- the home ensures minimal disruption when appointments cannot be kept.`,
     );
@@ -783,93 +777,93 @@ export function computePersonalCalendarAppointments(
 
   const concerns: string[] = [];
 
-  if (appointmentAttendanceRate < 50 && totalAppointments > 0) {
+  if (below(appointmentAttendanceRate, 50) && totalAppointments > 0) {
     concerns.push(
       `Only ${appointmentAttendanceRate}% of appointments attended -- the majority of children's health, education, and welfare appointments are being missed, which is a fundamental failure of care and a serious Reg 14 compliance concern.`,
     );
-  } else if (appointmentAttendanceRate < 75 && appointmentAttendanceRate >= 50 && totalAppointments > 0) {
+  } else if (below(appointmentAttendanceRate, 75) && meets(appointmentAttendanceRate, 50) && totalAppointments > 0) {
     concerns.push(
       `Appointment attendance at ${appointmentAttendanceRate}% -- a significant proportion of children's appointments are not being attended, putting their health and educational outcomes at risk.`,
     );
   }
 
-  if (homeCancellationRate >= 15 && totalAppointments > 0) {
+  if (meets(homeCancellationRate, 15) && totalAppointments > 0) {
     concerns.push(
       `The home cancelled ${homeCancellationRate}% of appointments -- cancellations initiated by the home suggest systemic issues with staffing, transport, or prioritisation that are preventing children from accessing essential services.`,
     );
   }
 
-  if (cancellationRate >= 25 && totalAppointments > 0) {
+  if (meets(cancellationRate, 25) && totalAppointments > 0) {
     concerns.push(
       `Overall cancellation rate at ${cancellationRate}% -- one in four appointments is being cancelled, creating a pattern of disrupted care that undermines children's health and educational progress.`,
     );
   }
 
-  if (overdueRate >= 20 && totalAppointments > 0) {
+  if (meets(overdueRate, 20) && totalAppointments > 0) {
     concerns.push(
       `${overdueRate}% of appointments are overdue -- children are waiting too long for essential health and education appointments, with potential consequences for their wellbeing.`,
     );
   }
 
-  if (outcomeRecordingRate < 50 && totalAppointments > 0) {
+  if (below(outcomeRecordingRate, 50) && totalAppointments > 0) {
     concerns.push(
       `Outcomes recorded for only ${outcomeRecordingRate}% of appointments -- the home cannot evidence what happened at most appointments or what actions are needed, creating gaps in continuity of care.`,
     );
-  } else if (outcomeRecordingRate < 70 && outcomeRecordingRate >= 50 && totalAppointments > 0) {
+  } else if (below(outcomeRecordingRate, 70) && meets(outcomeRecordingRate, 50) && totalAppointments > 0) {
     concerns.push(
       `Outcome recording at ${outcomeRecordingRate}% -- not all appointment outcomes are being documented, risking important information being lost.`,
     );
   }
 
-  if (followUpCompletionRate < 50 && followUpIdentified > 0) {
+  if (below(followUpCompletionRate, 50) && followUpIdentified > 0) {
     concerns.push(
       `Only ${followUpCompletionRate}% of follow-up actions completed -- the majority of actions arising from appointments are not being completed, undermining the purpose of attending appointments in the first place.`,
     );
-  } else if (followUpCompletionRate < 70 && followUpCompletionRate >= 50 && followUpIdentified > 0) {
+  } else if (below(followUpCompletionRate, 70) && meets(followUpCompletionRate, 50) && followUpIdentified > 0) {
     concerns.push(
       `Follow-up action completion at ${followUpCompletionRate}% -- not all actions arising from appointments are being completed in a timely manner.`,
     );
   }
 
-  if (consentRate < 50 && totalAppointments > 0) {
+  if (below(consentRate, 50) && totalAppointments > 0) {
     concerns.push(
       `Child consent obtained for only ${consentRate}% of appointments -- children are not being adequately consulted about or consenting to their healthcare and appointments.`,
     );
   }
 
-  if (calendarAccuracyRate < 50 && totalCalendarRecords > 0) {
+  if (below(calendarAccuracyRate, 50) && totalCalendarRecords > 0) {
     concerns.push(
       `Calendar accuracy at only ${calendarAccuracyRate}% -- calendars do not reliably reflect children's appointment schedules, increasing the risk of missed or double-booked appointments.`,
     );
-  } else if (calendarAccuracyRate < 70 && calendarAccuracyRate >= 50 && totalCalendarRecords > 0) {
+  } else if (below(calendarAccuracyRate, 70) && meets(calendarAccuracyRate, 50) && totalCalendarRecords > 0) {
     concerns.push(
       `Calendar accuracy at ${calendarAccuracyRate}% -- appointment calendars need improvement to reliably support scheduling.`,
     );
   }
 
-  if (missedFromCalendarRate >= 15 && totalScheduled > 0) {
+  if (meets(missedFromCalendarRate, 15) && totalScheduled > 0) {
     concerns.push(
       `${missedFromCalendarRate}% of scheduled appointments missing from calendars -- appointments are being scheduled but not recorded in the calendar system, creating blind spots in appointment management.`,
     );
   }
 
-  if (doubleBookingRate >= 10 && totalScheduled > 0) {
+  if (meets(doubleBookingRate, 10) && totalScheduled > 0) {
     concerns.push(
       `Double booking rate at ${doubleBookingRate}% -- scheduling conflicts are occurring too frequently, forcing children to choose between important appointments.`,
     );
   }
 
-  if (medicalComplianceRate < 50 && totalMedicalCompliance > 0) {
+  if (below(medicalComplianceRate, 50) && totalMedicalCompliance > 0) {
     concerns.push(
       `Only ${medicalComplianceRate}% medical compliance rate -- the majority of statutory and routine health requirements are not being met, which is a direct Reg 14 failure and a serious safeguarding concern.`,
     );
-  } else if (medicalComplianceRate < 80 && medicalComplianceRate >= 50 && totalMedicalCompliance > 0) {
+  } else if (below(medicalComplianceRate, 80) && meets(medicalComplianceRate, 50) && totalMedicalCompliance > 0) {
     concerns.push(
       `Medical compliance at ${medicalComplianceRate}% -- not all statutory health assessments, dental checks, and specialist follow-ups are being completed on schedule.`,
     );
   }
 
-  if (overdueComplianceRate >= 25 && totalMedicalCompliance > 0) {
+  if (meets(overdueComplianceRate, 25) && totalMedicalCompliance > 0) {
     concerns.push(
       `${overdueComplianceRate}% of medical compliance requirements are overdue -- children are waiting beyond required timescales for essential health assessments and follow-ups.`,
     );
@@ -881,53 +875,53 @@ export function computePersonalCalendarAppointments(
     );
   }
 
-  if (ahaCompletionRate < 80 && annualHealthAssessments.length > 0) {
+  if (below(ahaCompletionRate, 80) && annualHealthAssessments.length > 0) {
     concerns.push(
       `Annual health assessment completion at only ${ahaCompletionRate}% -- this is a core Reg 14 requirement and incomplete assessments leave gaps in understanding children's health needs.`,
     );
   }
 
-  if (dentalCompletionRate < 80 && dentalCheckups.length > 0) {
+  if (below(dentalCompletionRate, 80) && dentalCheckups.length > 0) {
     concerns.push(
       `Dental checkup completion at only ${dentalCompletionRate}% -- looked-after children are entitled to regular dental care and the home must ensure these appointments are kept.`,
     );
   }
 
-  if (healthPlanUpdateRate < 50 && totalMedicalCompliance > 0) {
+  if (below(healthPlanUpdateRate, 50) && totalMedicalCompliance > 0) {
     concerns.push(
       `Health plans updated after only ${healthPlanUpdateRate}% of compliance activities -- appointment outcomes are not feeding into children's health plans, undermining continuity of care.`,
     );
   }
 
-  if (transportTimelinessRate < 50 && totalTransportRecords > 0) {
+  if (below(transportTimelinessRate, 50) && totalTransportRecords > 0) {
     concerns.push(
       `Only ${transportTimelinessRate}% transport timeliness rate -- the majority of transport arrangements result in children arriving late for appointments, which is unacceptable and may cause appointments to be missed entirely.`,
     );
-  } else if (transportTimelinessRate < 75 && transportTimelinessRate >= 50 && totalTransportRecords > 0) {
+  } else if (below(transportTimelinessRate, 75) && meets(transportTimelinessRate, 50) && totalTransportRecords > 0) {
     concerns.push(
       `Transport timeliness at ${transportTimelinessRate}% -- too many transport arrangements result in late arrivals, disrupting appointments and causing stress for children.`,
     );
   }
 
-  if (significantDelayRate >= 15 && totalTransportRecords > 0) {
+  if (meets(significantDelayRate, 15) && totalTransportRecords > 0) {
     concerns.push(
       `${significantDelayRate}% of transport arrangements have delays exceeding 15 minutes -- significant delays cause anxiety for children and may result in shortened or missed appointments.`,
     );
   }
 
-  if (advanceArrangementRate < 50 && totalTransportRecords > 0) {
+  if (below(advanceArrangementRate, 50) && totalTransportRecords > 0) {
     concerns.push(
       `Transport arranged in advance for only ${advanceArrangementRate}% of appointments -- last-minute transport arrangements increase stress and the risk of missed appointments.`,
     );
   }
 
-  if (childComfortRate < 50 && totalTransportRecords > 0) {
+  if (below(childComfortRate, 50) && totalTransportRecords > 0) {
     concerns.push(
       `Children comfortable with transport in only ${childComfortRate}% of cases -- transport arrangements are not meeting children's needs and preferences.`,
     );
   }
 
-  if (driverCheckRate < 80 && totalTransportRecords > 0) {
+  if (below(driverCheckRate, 80) && totalTransportRecords > 0) {
     concerns.push(
       `Staff driver checks completed for only ${driverCheckRate}% of journeys -- insufficient safeguarding checks around transport arrangements.`,
     );
@@ -943,7 +937,7 @@ export function computePersonalCalendarAppointments(
     );
   }
 
-  if (anxietyAddressRate < 50 && totalPreparationRecords > 0) {
+  if (below(anxietyAddressRate, 50) && totalPreparationRecords > 0) {
     concerns.push(
       `Children's appointment anxieties addressed in only ${anxietyAddressRate}% of cases -- many children are attending appointments without their worries being acknowledged or managed.`,
     );
@@ -984,7 +978,7 @@ export function computePersonalCalendarAppointments(
   const recommendations: PersonalCalendarRecommendation[] = [];
   let rank = 0;
 
-  if (appointmentAttendanceRate < 50 && totalAppointments > 0) {
+  if (below(appointmentAttendanceRate, 50) && totalAppointments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -994,7 +988,7 @@ export function computePersonalCalendarAppointments(
     });
   }
 
-  if (medicalComplianceRate < 50 && totalMedicalCompliance > 0) {
+  if (below(medicalComplianceRate, 50) && totalMedicalCompliance > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1004,7 +998,7 @@ export function computePersonalCalendarAppointments(
     });
   }
 
-  if (transportTimelinessRate < 50 && totalTransportRecords > 0) {
+  if (below(transportTimelinessRate, 50) && totalTransportRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1024,7 +1018,7 @@ export function computePersonalCalendarAppointments(
     });
   }
 
-  if (outcomeRecordingRate < 50 && totalAppointments > 0) {
+  if (below(outcomeRecordingRate, 50) && totalAppointments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1034,7 +1028,7 @@ export function computePersonalCalendarAppointments(
     });
   }
 
-  if (followUpCompletionRate < 50 && followUpIdentified > 0) {
+  if (below(followUpCompletionRate, 50) && followUpIdentified > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1044,7 +1038,7 @@ export function computePersonalCalendarAppointments(
     });
   }
 
-  if (calendarAccuracyRate < 50 && totalCalendarRecords > 0) {
+  if (below(calendarAccuracyRate, 50) && totalCalendarRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1054,7 +1048,7 @@ export function computePersonalCalendarAppointments(
     });
   }
 
-  if (consentRate < 50 && totalAppointments > 0) {
+  if (below(consentRate, 50) && totalAppointments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1064,7 +1058,7 @@ export function computePersonalCalendarAppointments(
     });
   }
 
-  if (homeCancellationRate >= 15 && totalAppointments > 0) {
+  if (meets(homeCancellationRate, 15) && totalAppointments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1074,7 +1068,7 @@ export function computePersonalCalendarAppointments(
     });
   }
 
-  if (overdueComplianceRate >= 25 && totalMedicalCompliance > 0) {
+  if (meets(overdueComplianceRate, 25) && totalMedicalCompliance > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1084,7 +1078,7 @@ export function computePersonalCalendarAppointments(
     });
   }
 
-  if (ahaCompletionRate < 80 && annualHealthAssessments.length > 0) {
+  if (below(ahaCompletionRate, 80) && annualHealthAssessments.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1094,7 +1088,7 @@ export function computePersonalCalendarAppointments(
     });
   }
 
-  if (healthPlanUpdateRate < 50 && totalMedicalCompliance > 0) {
+  if (below(healthPlanUpdateRate, 50) && totalMedicalCompliance > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1104,7 +1098,7 @@ export function computePersonalCalendarAppointments(
     });
   }
 
-  if (significantDelayRate >= 15 && totalTransportRecords > 0) {
+  if (meets(significantDelayRate, 15) && totalTransportRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1114,7 +1108,7 @@ export function computePersonalCalendarAppointments(
     });
   }
 
-  if (driverCheckRate < 80 && totalTransportRecords > 0) {
+  if (below(driverCheckRate, 80) && totalTransportRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1124,7 +1118,7 @@ export function computePersonalCalendarAppointments(
     });
   }
 
-  if (anxietyAddressRate < 50 && totalPreparationRecords > 0) {
+  if (below(anxietyAddressRate, 50) && totalPreparationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1134,7 +1128,7 @@ export function computePersonalCalendarAppointments(
     });
   }
 
-  if (appointmentAttendanceRate >= 50 && appointmentAttendanceRate < 75 && totalAppointments > 0) {
+  if (meets(appointmentAttendanceRate, 50) && below(appointmentAttendanceRate, 75) && totalAppointments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1144,7 +1138,7 @@ export function computePersonalCalendarAppointments(
     });
   }
 
-  if (medicalComplianceRate >= 50 && medicalComplianceRate < 80 && totalMedicalCompliance > 0) {
+  if (meets(medicalComplianceRate, 50) && below(medicalComplianceRate, 80) && totalMedicalCompliance > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1154,7 +1148,7 @@ export function computePersonalCalendarAppointments(
     });
   }
 
-  if (transportTimelinessRate >= 50 && transportTimelinessRate < 75 && totalTransportRecords > 0) {
+  if (meets(transportTimelinessRate, 50) && below(transportTimelinessRate, 75) && totalTransportRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1184,7 +1178,7 @@ export function computePersonalCalendarAppointments(
     });
   }
 
-  if (childShareRate < 50 && totalCalendarRecords > 0) {
+  if (below(childShareRate, 50) && totalCalendarRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1230,21 +1224,21 @@ export function computePersonalCalendarAppointments(
 
   // --- Critical insights ---
 
-  if (appointmentAttendanceRate < 50 && totalAppointments > 0) {
+  if (below(appointmentAttendanceRate, 50) && totalAppointments > 0) {
     insights.push({
       text: `Only ${appointmentAttendanceRate}% of appointments attended. Ofsted will view this pattern of missed appointments as evidence that the home is failing to ensure children access essential health, education, and welfare services -- a direct failure under Reg 14 and potentially Reg 8.`,
       severity: "critical",
     });
   }
 
-  if (medicalComplianceRate < 50 && totalMedicalCompliance > 0) {
+  if (below(medicalComplianceRate, 50) && totalMedicalCompliance > 0) {
     insights.push({
       text: `Only ${medicalComplianceRate}% medical compliance rate. Failing to complete statutory health assessments, dental checks, and specialist follow-ups puts children's health at risk and represents a fundamental Reg 14 compliance failure that Ofsted will treat with serious concern.`,
       severity: "critical",
     });
   }
 
-  if (transportTimelinessRate < 50 && totalTransportRecords > 0) {
+  if (below(transportTimelinessRate, 50) && totalTransportRecords > 0) {
     insights.push({
       text: `Only ${transportTimelinessRate}% transport timeliness rate. Persistent late arrivals undermine appointment effectiveness and cause unnecessary stress for children. Ofsted will question whether the home's infrastructure supports children's access to community services under Reg 5.`,
       severity: "critical",
@@ -1265,14 +1259,14 @@ export function computePersonalCalendarAppointments(
     });
   }
 
-  if (homeCancellationRate >= 15 && totalAppointments > 0) {
+  if (meets(homeCancellationRate, 15) && totalAppointments > 0) {
     insights.push({
       text: `The home cancelled ${homeCancellationRate}% of appointments. Home-initiated cancellations are particularly concerning because they suggest the home is deprioritising children's appointments due to operational pressures rather than child-centred reasons.`,
       severity: "critical",
     });
   }
 
-  if (overdueComplianceRate >= 40 && totalMedicalCompliance > 0) {
+  if (meets(overdueComplianceRate, 40) && totalMedicalCompliance > 0) {
     insights.push({
       text: `${overdueComplianceRate}% of medical compliance requirements are overdue with an average overdue period of ${avgDaysOverdue} days. This level of non-compliance creates cumulative health risks for children and will be a key focus area for Ofsted under Reg 14.`,
       severity: "critical",
@@ -1281,28 +1275,28 @@ export function computePersonalCalendarAppointments(
 
   // --- Warning insights ---
 
-  if (appointmentAttendanceRate >= 50 && appointmentAttendanceRate < 75 && totalAppointments > 0) {
+  if (meets(appointmentAttendanceRate, 50) && below(appointmentAttendanceRate, 75) && totalAppointments > 0) {
     insights.push({
       text: `Appointment attendance at ${appointmentAttendanceRate}% -- improving but too many appointments are still being missed. Each missed appointment represents a lost opportunity to support a child's health, education, or welfare.`,
       severity: "warning",
     });
   }
 
-  if (medicalComplianceRate >= 50 && medicalComplianceRate < 80 && totalMedicalCompliance > 0) {
+  if (meets(medicalComplianceRate, 50) && below(medicalComplianceRate, 80) && totalMedicalCompliance > 0) {
     insights.push({
       text: `Medical compliance at ${medicalComplianceRate}% -- while some statutory requirements are being met, the gap exposes children to unaddressed health needs that could have been identified through timely assessments and checks.`,
       severity: "warning",
     });
   }
 
-  if (calendarAccuracyRate >= 50 && calendarAccuracyRate < 70 && totalCalendarRecords > 0) {
+  if (meets(calendarAccuracyRate, 50) && below(calendarAccuracyRate, 70) && totalCalendarRecords > 0) {
     insights.push({
       text: `Calendar accuracy at ${calendarAccuracyRate}% -- inaccurate calendars create a cascade of problems: missed appointments, scheduling conflicts, and children being unprepared for upcoming commitments.`,
       severity: "warning",
     });
   }
 
-  if (transportTimelinessRate >= 50 && transportTimelinessRate < 75 && totalTransportRecords > 0) {
+  if (meets(transportTimelinessRate, 50) && below(transportTimelinessRate, 75) && totalTransportRecords > 0) {
     insights.push({
       text: `Transport timeliness at ${transportTimelinessRate}% -- late arrivals at appointments may result in shortened consultations or children being turned away, undermining the purpose of the appointment.`,
       severity: "warning",
@@ -1316,7 +1310,7 @@ export function computePersonalCalendarAppointments(
     });
   }
 
-  if (followUpCompletionRate >= 50 && followUpCompletionRate < 70 && followUpIdentified > 0) {
+  if (meets(followUpCompletionRate, 50) && below(followUpCompletionRate, 70) && followUpIdentified > 0) {
     insights.push({
       text: `Follow-up action completion at ${followUpCompletionRate}% -- incomplete follow-up actions mean appointment recommendations are not being translated into improved care, reducing the value of the appointment itself.`,
       severity: "warning",
@@ -1330,21 +1324,21 @@ export function computePersonalCalendarAppointments(
     });
   }
 
-  if (cancellationRate >= 15 && cancellationRate < 25 && totalAppointments > 0) {
+  if (meets(cancellationRate, 15) && below(cancellationRate, 25) && totalAppointments > 0) {
     insights.push({
       text: `Cancellation rate at ${cancellationRate}% -- while not yet critical, this level of cancellation disrupts continuity of care and may indicate emerging issues with appointment management.`,
       severity: "warning",
     });
   }
 
-  if (reschedulingTimelinessRate < 50 && rescheduledAppointments > 0) {
+  if (below(reschedulingTimelinessRate, 50) && rescheduledAppointments > 0) {
     insights.push({
       text: `Only ${reschedulingTimelinessRate}% of cancelled appointments rescheduled within 14 days -- slow rescheduling extends gaps in care and may result in overdue statutory health requirements.`,
       severity: "warning",
     });
   }
 
-  if (missedFromCalendarRate >= 10 && missedFromCalendarRate < 15 && totalScheduled > 0) {
+  if (meets(missedFromCalendarRate, 10) && below(missedFromCalendarRate, 15) && totalScheduled > 0) {
     insights.push({
       text: `${missedFromCalendarRate}% of appointments missing from calendars -- this gap between what is scheduled and what is recorded creates a risk of appointments being overlooked.`,
       severity: "warning",
@@ -1371,14 +1365,14 @@ export function computePersonalCalendarAppointments(
     });
   }
 
-  if (appointmentAttendanceRate >= 90 && medicalComplianceRate >= 90 && totalAppointments > 0 && totalMedicalCompliance > 0) {
+  if (meets(appointmentAttendanceRate, 90) && meets(medicalComplianceRate, 90) && totalAppointments > 0 && totalMedicalCompliance > 0) {
     insights.push({
       text: `${appointmentAttendanceRate}% appointment attendance with ${medicalComplianceRate}% medical compliance -- the home ensures children attend their appointments and statutory health requirements are met on schedule. Ofsted will recognise this as evidence of genuinely proactive health care management.`,
       severity: "positive",
     });
   }
 
-  if (transportTimelinessRate >= 90 && childComfortRate >= 90 && totalTransportRecords > 0) {
+  if (meets(transportTimelinessRate, 90) && meets(childComfortRate, 90) && totalTransportRecords > 0) {
     insights.push({
       text: `${transportTimelinessRate}% transport timeliness with ${childComfortRate}% child comfort rate -- children arrive at appointments on time and feel comfortable with travel arrangements. This demonstrates thoughtful, child-centred transport planning.`,
       severity: "positive",
@@ -1399,28 +1393,28 @@ export function computePersonalCalendarAppointments(
     });
   }
 
-  if (followUpCompletionRate >= 90 && outcomeRecordingRate >= 90 && followUpIdentified > 0 && totalAppointments > 0) {
+  if (meets(followUpCompletionRate, 90) && meets(outcomeRecordingRate, 90) && followUpIdentified > 0 && totalAppointments > 0) {
     insights.push({
       text: `${outcomeRecordingRate}% outcome recording with ${followUpCompletionRate}% follow-up completion -- the home not only attends appointments but ensures outcomes are captured and actions are completed, creating a genuine cycle of continuous care improvement.`,
       severity: "positive",
     });
   }
 
-  if (calendarAccuracyRate >= 90 && reminderRate >= 90 && totalCalendarRecords > 0) {
+  if (meets(calendarAccuracyRate, 90) && meets(reminderRate, 90) && totalCalendarRecords > 0) {
     insights.push({
       text: `${calendarAccuracyRate}% calendar accuracy with ${reminderRate}% reminder coverage -- the home's calendar management system is reliable and proactive, minimising the risk of missed appointments.`,
       severity: "positive",
     });
   }
 
-  if (consentRate >= 90 && autonomyRate >= 80 && totalAppointments > 0 && totalPreparationRecords > 0) {
+  if (meets(consentRate, 90) && meets(autonomyRate, 80) && totalAppointments > 0 && totalPreparationRecords > 0) {
     insights.push({
       text: `Consent obtained for ${consentRate}% of appointments with ${autonomyRate}% autonomy support -- children are meaningfully involved in decisions about their health and appointments, demonstrating excellent rights-based practice.`,
       severity: "positive",
     });
   }
 
-  if (reschedulingTimelinessRate >= 80 && rescheduledAppointments > 0) {
+  if (meets(reschedulingTimelinessRate, 80) && rescheduledAppointments > 0) {
     insights.push({
       text: `${reschedulingTimelinessRate}% of cancelled appointments rescheduled within 14 days -- the home acts quickly to minimise disruption when appointments cannot be kept, maintaining continuity of care.`,
       severity: "positive",

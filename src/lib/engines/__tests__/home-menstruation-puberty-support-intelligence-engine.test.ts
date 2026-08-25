@@ -199,7 +199,7 @@ function allPerfectInput(): MenstruationPubertyInput {
 describe("computeMenstruationPubertySupport", () => {
   // ── pct(0,0) ── ────────────────────────────────────────────────────────
   describe("pct helper edge case", () => {
-    it("returns 0 when both numerator and denominator are 0 (all rates default to 0 with no records)", () => {
+    it("returns null when both numerator and denominator are 0 (all rates default to null with no records)", () => {
       const r = computeMenstruationPubertySupport(
         baseInput({ total_children: 0 }),
       );
@@ -272,7 +272,7 @@ describe("computeMenstruationPubertySupport", () => {
       expect(r.insights[0].severity).toBe("critical");
     });
 
-    it("all rates are 0", () => {
+    it("all rates are null", () => {
       const r = computeMenstruationPubertySupport(baseInput());
       expect(r.puberty_education_rate).toBeNull();
       expect(r.menstruation_support_rate).toBeNull();
@@ -1222,7 +1222,7 @@ describe("computeMenstruationPubertySupport", () => {
         expect(r.puberty_education_rate).toBe(70);
       });
 
-      it("returns 0 when no records", () => {
+      it("returns null when no records", () => {
         const r = computeMenstruationPubertySupport(baseInput());
         expect(r.puberty_education_rate).toBeNull();
       });
@@ -1259,7 +1259,7 @@ describe("computeMenstruationPubertySupport", () => {
         expect(r.menstruation_support_rate).toBe(90);
       });
 
-      it("returns 0 when no records", () => {
+      it("returns null when no records", () => {
         const r = computeMenstruationPubertySupport(baseInput());
         expect(r.menstruation_support_rate).toBeNull();
       });
@@ -1280,7 +1280,7 @@ describe("computeMenstruationPubertySupport", () => {
         expect(r.product_availability_rate).toBe(80);
       });
 
-      it("returns 0 when no records", () => {
+      it("returns null when no records", () => {
         const r = computeMenstruationPubertySupport(baseInput());
         expect(r.product_availability_rate).toBeNull();
       });
@@ -1302,7 +1302,7 @@ describe("computeMenstruationPubertySupport", () => {
         expect(r.dignity_care_rate).toBe(90);
       });
 
-      it("returns 0 when no records", () => {
+      it("returns null when no records", () => {
         const r = computeMenstruationPubertySupport(baseInput());
         expect(r.dignity_care_rate).toBeNull();
       });
@@ -1323,14 +1323,14 @@ describe("computeMenstruationPubertySupport", () => {
         expect(r.body_confidence_rate).toBe(80);
       });
 
-      it("returns 0 when no records", () => {
+      it("returns null when no records", () => {
         const r = computeMenstruationPubertySupport(baseInput());
         expect(r.body_confidence_rate).toBeNull();
       });
     });
 
     describe("child_comfort_rate", () => {
-      it("returns 0 when no comfort sources exist", () => {
+      it("returns null when no comfort sources exist", () => {
         const r = computeMenstruationPubertySupport(
           baseInput({
             product_availability_records: nRecords(5, makeProduct),

@@ -194,12 +194,12 @@ describe("Insufficient data", () => {
 
   it("all metric rates are 0 on insufficient_data", () => {
     const r = run();
-    expect(r.exercise_engagement_rate).toBe(0);
+    expect(r.exercise_engagement_rate).toBeNull();
     expect(r.recreational_diversity_score).toBe(0);
-    expect(r.outdoor_participation_rate).toBe(0);
-    expect(r.fitness_assessment_coverage_rate).toBe(0);
-    expect(r.activity_accessibility_rate).toBe(0);
-    expect(r.child_choice_rate).toBe(0);
+    expect(r.outdoor_participation_rate).toBeNull();
+    expect(r.fitness_assessment_coverage_rate).toBeNull();
+    expect(r.activity_accessibility_rate).toBeNull();
+    expect(r.child_choice_rate).toBeNull();
   });
 });
 
@@ -248,12 +248,12 @@ describe("Inadequate baseline — all empty with children", () => {
     expect(r.total_outdoor_engagements).toBe(0);
     expect(r.total_fitness_assessments).toBe(0);
     expect(r.total_accessibility_records).toBe(0);
-    expect(r.exercise_engagement_rate).toBe(0);
+    expect(r.exercise_engagement_rate).toBeNull();
     expect(r.recreational_diversity_score).toBe(0);
-    expect(r.outdoor_participation_rate).toBe(0);
-    expect(r.fitness_assessment_coverage_rate).toBe(0);
-    expect(r.activity_accessibility_rate).toBe(0);
-    expect(r.child_choice_rate).toBe(0);
+    expect(r.outdoor_participation_rate).toBeNull();
+    expect(r.fitness_assessment_coverage_rate).toBeNull();
+    expect(r.activity_accessibility_rate).toBeNull();
+    expect(r.child_choice_rate).toBeNull();
   });
 });
 
@@ -1062,7 +1062,7 @@ describe("Penalty guards — zero denominator prevents penalty", () => {
       ],
     });
     // pct(0,0) = 0 but guard: totalSessionsPlanned=0 => no penalty
-    expect(r.exercise_engagement_rate).toBe(0);
+    expect(r.exercise_engagement_rate).toBeNull();
     // base=52 +0(eng,no bonus since 0%<70) +3(coverage100) -5(outdoor<50) -3(fitness<30) = 47
     // no -5 for engagement since guard prevents it
     expect(r.activity_score).toBe(47);
@@ -1515,7 +1515,7 @@ describe("Metric calculations", () => {
     expect(r.total_accessibility_records).toBe(1);
   });
 
-  it("pct(0, 0) = 0", () => {
+  it("rate(0,0)=null", () => {
     const r = run({
       total_children: 1,
       exercise_programme_records: [
@@ -1525,7 +1525,7 @@ describe("Metric calculations", () => {
         }),
       ],
     });
-    expect(r.exercise_engagement_rate).toBe(0);
+    expect(r.exercise_engagement_rate).toBeNull();
   });
 
   it("exercise coverage counts only active programmes", () => {

@@ -213,17 +213,17 @@ function nPreventative(
 
 // ── Helper: pct(0,0) = 0 ───────────────────────────────────────────────────
 
-describe("pct(0,0) = 0 invariant", () => {
-  it("all rates are 0 when arrays are empty (insufficient_data path)", () => {
+describe("rate(0,0)=null invariant", () => {
+  it("all rates are null when arrays are empty (insufficient_data path)", () => {
     const r = computeMinorRepairsMaintenance(
       baseInput({ total_children: 0 }),
     );
-    expect(r.request_response_rate).toBe(0);
-    expect(r.repair_completion_rate).toBe(0);
-    expect(r.safety_check_rate).toBe(0);
-    expect(r.condition_compliance_rate).toBe(0);
-    expect(r.preventative_maintenance_rate).toBe(0);
-    expect(r.child_environment_rate).toBe(0);
+    expect(r.request_response_rate).toBeNull();
+    expect(r.repair_completion_rate).toBeNull();
+    expect(r.safety_check_rate).toBeNull();
+    expect(r.condition_compliance_rate).toBeNull();
+    expect(r.preventative_maintenance_rate).toBeNull();
+    expect(r.child_environment_rate).toBeNull();
   });
 });
 
@@ -252,12 +252,12 @@ describe("insufficient_data", () => {
     const r = computeMinorRepairsMaintenance(
       baseInput({ total_children: 0 }),
     );
-    expect(r.request_response_rate).toBe(0);
-    expect(r.repair_completion_rate).toBe(0);
-    expect(r.safety_check_rate).toBe(0);
-    expect(r.condition_compliance_rate).toBe(0);
-    expect(r.preventative_maintenance_rate).toBe(0);
-    expect(r.child_environment_rate).toBe(0);
+    expect(r.request_response_rate).toBeNull();
+    expect(r.repair_completion_rate).toBeNull();
+    expect(r.safety_check_rate).toBeNull();
+    expect(r.condition_compliance_rate).toBeNull();
+    expect(r.preventative_maintenance_rate).toBeNull();
+    expect(r.child_environment_rate).toBeNull();
   });
 });
 
@@ -300,14 +300,14 @@ describe("inadequate floor — all empty with children on placement", () => {
     expect(r.insights[0].text).toContain("complete absence");
   });
 
-  it("all rates are 0 in inadequate floor", () => {
+  it("all rates are null in inadequate floor", () => {
     const r = computeMinorRepairsMaintenance(baseInput({ total_children: 5 }));
-    expect(r.request_response_rate).toBe(0);
-    expect(r.repair_completion_rate).toBe(0);
-    expect(r.safety_check_rate).toBe(0);
-    expect(r.condition_compliance_rate).toBe(0);
-    expect(r.preventative_maintenance_rate).toBe(0);
-    expect(r.child_environment_rate).toBe(0);
+    expect(r.request_response_rate).toBeNull();
+    expect(r.repair_completion_rate).toBeNull();
+    expect(r.safety_check_rate).toBeNull();
+    expect(r.condition_compliance_rate).toBeNull();
+    expect(r.preventative_maintenance_rate).toBeNull();
+    expect(r.child_environment_rate).toBeNull();
   });
 
   it("total counts are all 0", () => {
@@ -2229,13 +2229,13 @@ describe("rate: request_response_rate", () => {
     expect(r.request_response_rate).toBe(50);
   });
 
-  it("0% with no records", () => {
+  it("null with no records", () => {
     const r = computeMinorRepairsMaintenance(
       baseInput({
         total_children: 0,
       }),
     );
-    expect(r.request_response_rate).toBe(0);
+    expect(r.request_response_rate).toBeNull();
   });
 });
 
@@ -2435,7 +2435,7 @@ describe("rate: child_environment_rate (composite)", () => {
     expect(r.child_environment_rate).toBe(0);
   });
 
-  it("returns 0 when no child environment components exist", () => {
+  it("returns null when no child environment components exist", () => {
     const r = computeMinorRepairsMaintenance(
       baseInput({
         maintenance_request_records: nRequests(5, {
@@ -2449,7 +2449,7 @@ describe("rate: child_environment_rate (composite)", () => {
       }),
     );
     // No components contribute -> pct(0,0) = 0
-    expect(r.child_environment_rate).toBe(0);
+    expect(r.child_environment_rate).toBeNull();
   });
 
   it("composite only includes components with data", () => {

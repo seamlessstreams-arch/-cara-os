@@ -90,8 +90,8 @@ export function HomeNeighbourhoodSafetyRiskAssessmentIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", meets(d.community_partnership_rate, 90) ? "text-[--cs-success]" : meets(d.community_partnership_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.community_partnership_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Partners</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_awareness_rate >= 90 ? "bg-green-50" : d.child_awareness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_awareness_rate >= 90 ? "text-[--cs-success]" : d.child_awareness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_awareness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_awareness_rate, 90) ? "bg-green-50" : meets(d.child_awareness_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_awareness_rate, 90) ? "text-[--cs-success]" : meets(d.child_awareness_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_awareness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Aware.</p>
             </div>
           </div>

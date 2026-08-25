@@ -220,7 +220,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
       expect(r.headline).toContain("insufficient data");
     });
 
-    it("all rates are 0", () => {
+    it("all rates are null", () => {
       const r = computeNeighbourhoodSafetyRiskAssessment({
         today: "2026-05-15",
         total_children: 0,
@@ -235,7 +235,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
       expect(r.hazard_identification_rate).toBeNull();
       expect(r.route_safety_rate).toBeNull();
       expect(r.community_partnership_rate).toBeNull();
-      expect(r.child_awareness_rate).toBe(0);
+      expect(r.child_awareness_rate).toBeNull();
     });
 
     it("returns empty arrays for strengths, concerns, recommendations, insights", () => {
@@ -766,7 +766,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
   // ── 7. Risk assessment rate computation ──────────────────────────────────
 
   describe("risk assessment rate computation", () => {
-    it("returns 0 when no risk assessments exist", () => {
+    it("returns null when no risk assessments exist", () => {
       const r = computeNeighbourhoodSafetyRiskAssessment(baseInput({
         risk_assessment_records: [],
       }));
@@ -822,7 +822,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
   // ── 8. Safety mapping rate computation ───────────────────────────────────
 
   describe("safety mapping rate computation", () => {
-    it("returns 0 when no mappings exist", () => {
+    it("returns null when no mappings exist", () => {
       const r = computeNeighbourhoodSafetyRiskAssessment(baseInput({
         safety_mapping_records: [],
       }));
@@ -878,7 +878,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
   // ── 9. Hazard identification rate computation ────────────────────────────
 
   describe("hazard identification rate computation", () => {
-    it("returns 0 when no hazards exist", () => {
+    it("returns null when no hazards exist", () => {
       const r = computeNeighbourhoodSafetyRiskAssessment(baseInput({
         hazard_records: [],
       }));
@@ -924,7 +924,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
   // ── 10. Route safety rate computation ────────────────────────────────────
 
   describe("route safety rate computation", () => {
-    it("returns 0 when no routes exist", () => {
+    it("returns null when no routes exist", () => {
       const r = computeNeighbourhoodSafetyRiskAssessment(baseInput({
         route_safety_records: [],
       }));
@@ -980,7 +980,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
   // ── 11. Community partnership rate computation ───────────────────────────
 
   describe("community partnership rate computation", () => {
-    it("returns 0 when no partnerships exist", () => {
+    it("returns null when no partnerships exist", () => {
       const r = computeNeighbourhoodSafetyRiskAssessment(baseInput({
         community_partnership_records: [],
       }));
@@ -1066,7 +1066,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
         hazard_records: [],
         route_safety_records: [],
       }));
-      expect(r.child_awareness_rate).toBe(0);
+      expect(r.child_awareness_rate).toBeNull();
     });
 
     it("partial child involvement gives mid-range rate", () => {
@@ -2275,7 +2275,7 @@ describe("Home Neighbourhood Safety & Risk Assessment Intelligence Engine", () =
         ],
       }));
       // 1+2+2+2 = 7 out of 3+2+2+3 = 10 => 70%
-      if (r.child_awareness_rate >= 50 && r.child_awareness_rate < 80) {
+      if (meets(r.child_awareness_rate, 50) && below(r.child_awareness_rate, 80)) {
         expect(r.insights.some((i) => i.severity === "warning" && i.text.includes("Child awareness and involvement"))).toBe(true);
       }
     });

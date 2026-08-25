@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Apple } from "luc
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { NutritionRating } from "@/lib/engines/home-nutrition-dietary-management-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 function useHomeNutritionDietaryManagementIntelligence() {
   return useQuery({
@@ -61,7 +62,7 @@ export function HomeNutritionDietaryManagementIntelligenceCard() {
             <Apple className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-lime-600")} />
             <span className="text-slate-900 font-bold">Nutrition & Dietary Management</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.nutrition_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.nutrition_score}%</span>}
+            {d.nutrition_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.nutrition_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -69,28 +70,28 @@ export function HomeNutritionDietaryManagementIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.nutrition_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.meal_plan_compliance_rate >= 90 ? "bg-green-50" : d.meal_plan_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.meal_plan_compliance_rate >= 90 ? "text-[--cs-success]" : d.meal_plan_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.meal_plan_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.meal_plan_compliance_rate, 90) ? "bg-green-50" : meets(d.meal_plan_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.meal_plan_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.meal_plan_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.meal_plan_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Meals</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.dietary_requirement_coverage_rate >= 90 ? "bg-green-50" : d.dietary_requirement_coverage_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.dietary_requirement_coverage_rate >= 90 ? "text-[--cs-success]" : d.dietary_requirement_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.dietary_requirement_coverage_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.dietary_requirement_coverage_rate, 90) ? "bg-green-50" : meets(d.dietary_requirement_coverage_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.dietary_requirement_coverage_rate, 90) ? "text-[--cs-success]" : meets(d.dietary_requirement_coverage_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.dietary_requirement_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Dietary</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.nutrition_assessment_rate >= 90 ? "bg-green-50" : d.nutrition_assessment_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.nutrition_assessment_rate >= 90 ? "text-[--cs-success]" : d.nutrition_assessment_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.nutrition_assessment_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.nutrition_assessment_rate, 90) ? "bg-green-50" : meets(d.nutrition_assessment_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.nutrition_assessment_rate, 90) ? "text-[--cs-success]" : meets(d.nutrition_assessment_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.nutrition_assessment_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Assessed</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.food_hygiene_score >= 90 ? "bg-green-50" : d.food_hygiene_score >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.food_hygiene_score >= 90 ? "text-[--cs-success]" : d.food_hygiene_score >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.food_hygiene_score}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.food_hygiene_score, 90) ? "bg-green-50" : meets(d.food_hygiene_score, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.food_hygiene_score, 90) ? "text-[--cs-success]" : meets(d.food_hygiene_score, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.food_hygiene_score)}</p>
               <p className="text-[9px] text-muted-foreground">Hygiene</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.special_diet_adherence_rate >= 90 ? "bg-green-50" : d.special_diet_adherence_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.special_diet_adherence_rate >= 90 ? "text-[--cs-success]" : d.special_diet_adherence_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.special_diet_adherence_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.special_diet_adherence_rate, 90) ? "bg-green-50" : meets(d.special_diet_adherence_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.special_diet_adherence_rate, 90) ? "text-[--cs-success]" : meets(d.special_diet_adherence_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.special_diet_adherence_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Special</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_choice_rate >= 90 ? "bg-green-50" : d.child_choice_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_choice_rate >= 90 ? "text-[--cs-success]" : d.child_choice_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_choice_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_choice_rate, 90) ? "bg-green-50" : meets(d.child_choice_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_choice_rate, 90) ? "text-[--cs-success]" : meets(d.child_choice_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_choice_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Choice</p>
             </div>
           </div>

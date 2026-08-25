@@ -1,3 +1,4 @@
+import { below, meanOf, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME PLACEMENT JOURNEY INTELLIGENCE ENGINE
 // Pre-admission, welcome, return interviews, objectives, anniversaries.
@@ -53,7 +54,7 @@ export interface HomePlacementJourneyInput {
 export type PlacementJourneyRating = "outstanding" | "good" | "adequate" | "inadequate" | "insufficient_data";
 
 export interface PreAdmissionSummary { total: number; all_complete_rate: number | null; risk_included_rate: number | null; child_visited_rate: number | null; }
-export interface WelcomePackSummary { total: number; child_coverage: number; personalised_rate: number | null; }
+export interface WelcomePackSummary { total: number; child_coverage: number | null; personalised_rate: number | null; }
 export interface WelcomeTourSummary { total: number; completed_rate: number | null; feedback_rate: number | null; buddy_rate: number | null; }
 export interface ReturnInterviewSummary { total: number; within_24h_rate: number | null; child_views_rate: number | null; action_completion_rate: number | null; }
 export interface ObjectiveSummary { total: number; on_track_rate: number | null; overdue_reviews: number; child_involved_rate: number | null; }
@@ -68,7 +69,6 @@ export interface HomePlacementJourneyResult {
   insights: { text: string; severity: string }[];
 }
 
-function pct(n: number, d: number): number { return d === 0 ? 0 : Math.round((n / d) * 100); }
 function daysBetween(a: string, b: string): number { return Math.round((new Date(b).getTime() - new Date(a).getTime()) / 86_400_000); }
 
 export function computeHomePlacementJourney(input: HomePlacementJourneyInput): HomePlacementJourneyResult {
@@ -79,7 +79,7 @@ export function computeHomePlacementJourney(input: HomePlacementJourneyInput): H
       placement_journey_rating: "insufficient_data", placement_journey_score: 0,
       headline: "No placement journey data available for analysis.",
       pre_admission: { total: 0, all_complete_rate: null, risk_included_rate: null, child_visited_rate: null },
-      welcome_packs: { total: 0, child_coverage: 0, personalised_rate: null },
+      welcome_packs: { total: 0, child_coverage: null, personalised_rate: null },
       welcome_tours: { total: 0, completed_rate: null, feedback_rate: null, buddy_rate: null },
       return_interviews: { total: 0, within_24h_rate: null, child_views_rate: null, action_completion_rate: null },
       objectives: { total: 0, on_track_rate: null, overdue_reviews: 0, child_involved_rate: null },
@@ -90,44 +90,44 @@ export function computeHomePlacementJourney(input: HomePlacementJourneyInput): H
 
   // Analysis
   const paComplete = pre_admission_checklists.filter(p => p.all_sections_complete).length;
-  const paCompleteRate = pct(paComplete, pre_admission_checklists.length);
+  const paCompleteRate = rate(paComplete, pre_admission_checklists.length);
   const paRisk = pre_admission_checklists.filter(p => p.risk_assessment_included).length;
-  const paRiskRate = pct(paRisk, pre_admission_checklists.length);
+  const paRiskRate = rate(paRisk, pre_admission_checklists.length);
   const paVisited = pre_admission_checklists.filter(p => p.child_visited_home).length;
-  const paVisitedRate = pct(paVisited, pre_admission_checklists.length);
+  const paVisitedRate = rate(paVisited, pre_admission_checklists.length);
 
   const wpChildIds = new Set(warm_welcome_packs.map(w => w.child_id));
-  const wpCoverage = pct(wpChildIds.size, total_children);
+  const wpCoverage = rate(wpChildIds.size, total_children);
   const wpPersonalised = warm_welcome_packs.filter(w => w.personalised).length;
-  const wpPersonalisedRate = pct(wpPersonalised, warm_welcome_packs.length);
+  const wpPersonalisedRate = rate(wpPersonalised, warm_welcome_packs.length);
 
   const wtCompleted = welcome_tours.filter(t => t.completed).length;
-  const wtCompletedRate = pct(wtCompleted, welcome_tours.length);
+  const wtCompletedRate = rate(wtCompleted, welcome_tours.length);
   const wtFeedback = welcome_tours.filter(t => t.child_feedback_captured).length;
-  const wtFeedbackRate = pct(wtFeedback, welcome_tours.length);
+  const wtFeedbackRate = rate(wtFeedback, welcome_tours.length);
   const wtBuddy = welcome_tours.filter(t => t.buddy_assigned).length;
-  const wtBuddyRate = pct(wtBuddy, welcome_tours.length);
+  const wtBuddyRate = rate(wtBuddy, welcome_tours.length);
 
   const ri24h = return_interviews.filter(r => r.conducted_within_24h).length;
-  const ri24hRate = pct(ri24h, return_interviews.length);
+  const ri24hRate = rate(ri24h, return_interviews.length);
   const riViews = return_interviews.filter(r => r.child_views_recorded).length;
-  const riViewsRate = pct(riViews, return_interviews.length);
+  const riViewsRate = rate(riViews, return_interviews.length);
   const riActTotal = return_interviews.reduce((s, r) => s + r.actions_identified, 0);
   const riActComp = return_interviews.reduce((s, r) => s + r.actions_completed, 0);
-  const riActCompRate = pct(riActComp, riActTotal);
+  const riActCompRate = rate(riActComp, riActTotal);
 
   const objOnTrack = placement_objectives.filter(o => o.progress_status === "on_track" || o.progress_status === "achieved").length;
-  const objOnTrackRate = pct(objOnTrack, placement_objectives.length);
+  const objOnTrackRate = rate(objOnTrack, placement_objectives.length);
   const objOverdue = placement_objectives.filter(o => daysBetween(o.review_date, today) > 0).length;
   const objInvolved = placement_objectives.filter(o => o.child_involved).length;
-  const objInvolvedRate = pct(objInvolved, placement_objectives.length);
+  const objInvolvedRate = rate(objInvolved, placement_objectives.length);
 
   const annCelebrated = placement_anniversaries.filter(a => a.celebrated).length;
-  const annCelebratedRate = pct(annCelebrated, placement_anniversaries.length);
+  const annCelebratedRate = rate(annCelebrated, placement_anniversaries.length);
   const annVoice = placement_anniversaries.filter(a => a.child_voice_captured).length;
-  const annVoiceRate = pct(annVoice, placement_anniversaries.length);
+  const annVoiceRate = rate(annVoice, placement_anniversaries.length);
   const annMemory = placement_anniversaries.filter(a => a.memory_box_updated).length;
-  const annMemoryRate = pct(annMemory, placement_anniversaries.length);
+  const annMemoryRate = rate(annMemory, placement_anniversaries.length);
 
   // Summaries
   const pre_admission: PreAdmissionSummary = { total: pre_admission_checklists.length, all_complete_rate: paCompleteRate, risk_included_rate: paRiskRate, child_visited_rate: paVisitedRate };
@@ -145,9 +145,9 @@ export function computeHomePlacementJourney(input: HomePlacementJourneyInput): H
   // Mod 1: Pre-admission thoroughness (±5)
   { let m = 0;
     if (pre_admission_checklists.length > 0) {
-      if (paCompleteRate >= 90) m += 2; else if (paCompleteRate < 50) m -= 2;
-      if (paRiskRate >= 90) m += 2; else if (paRiskRate < 50) m -= 2;
-      if (paVisitedRate >= 70) m += 1; else if (paVisitedRate < 30) m -= 1;
+      if (meets(paCompleteRate, 90)) m += 2; else if (below(paCompleteRate, 50)) m -= 2;
+      if (meets(paRiskRate, 90)) m += 2; else if (below(paRiskRate, 50)) m -= 2;
+      if (meets(paVisitedRate, 70)) m += 1; else if (below(paVisitedRate, 30)) m -= 1;
     } else { if (total_children >= 2) m -= 2; }
     score += Math.max(-5, Math.min(5, m));
   }
@@ -155,8 +155,8 @@ export function computeHomePlacementJourney(input: HomePlacementJourneyInput): H
   // Mod 2: Welcome process (±4)
   { let m = 0;
     if (warm_welcome_packs.length > 0) {
-      if (wpCoverage >= 80) m += 2; else if (wpCoverage < 40) m -= 1;
-      if (wpPersonalisedRate >= 80) m += 2; else if (wpPersonalisedRate < 40) m -= 1;
+      if (meets(wpCoverage, 80)) m += 2; else if (below(wpCoverage, 40)) m -= 1;
+      if (meets(wpPersonalisedRate, 80)) m += 2; else if (below(wpPersonalisedRate, 40)) m -= 1;
     } else { if (total_children >= 2) m -= 2; }
     score += Math.max(-4, Math.min(4, m));
   }
@@ -164,9 +164,9 @@ export function computeHomePlacementJourney(input: HomePlacementJourneyInput): H
   // Mod 3: Welcome tour & orientation (±3)
   { let m = 0;
     if (welcome_tours.length > 0) {
-      if (wtCompletedRate >= 90) m += 1; else if (wtCompletedRate < 50) m -= 1;
-      if (wtFeedbackRate >= 80) m += 1; else if (wtFeedbackRate < 40) m -= 1;
-      if (wtBuddyRate >= 70) m += 1; else if (wtBuddyRate < 30) m -= 1;
+      if (meets(wtCompletedRate, 90)) m += 1; else if (below(wtCompletedRate, 50)) m -= 1;
+      if (meets(wtFeedbackRate, 80)) m += 1; else if (below(wtFeedbackRate, 40)) m -= 1;
+      if (meets(wtBuddyRate, 70)) m += 1; else if (below(wtBuddyRate, 30)) m -= 1;
     } else { if (total_children >= 2) m -= 1; }
     score += Math.max(-3, Math.min(3, m));
   }
@@ -174,9 +174,9 @@ export function computeHomePlacementJourney(input: HomePlacementJourneyInput): H
   // Mod 4: Return interview compliance (±4)
   { let m = 0;
     if (return_interviews.length > 0) {
-      if (ri24hRate >= 90) m += 2; else if (ri24hRate < 50) m -= 1;
-      if (riViewsRate >= 80) m += 1; else if (riViewsRate < 40) m -= 1;
-      if (riActCompRate >= 80) m += 1; else if (riActCompRate < 40) m -= 1;
+      if (meets(ri24hRate, 90)) m += 2; else if (below(ri24hRate, 50)) m -= 1;
+      if (meets(riViewsRate, 80)) m += 1; else if (below(riViewsRate, 40)) m -= 1;
+      if (meets(riActCompRate, 80)) m += 1; else if (below(riActCompRate, 40)) m -= 1;
     }
     score += Math.max(-4, Math.min(4, m));
   }
@@ -184,9 +184,9 @@ export function computeHomePlacementJourney(input: HomePlacementJourneyInput): H
   // Mod 5: Placement objectives (±3)
   { let m = 0;
     if (placement_objectives.length > 0) {
-      if (objOnTrackRate >= 80) m += 1; else if (objOnTrackRate < 40) m -= 1;
+      if (meets(objOnTrackRate, 80)) m += 1; else if (below(objOnTrackRate, 40)) m -= 1;
       if (objOverdue === 0) m += 1; else if (objOverdue >= 5) m -= 2; else m -= 1;
-      if (objInvolvedRate >= 80) m += 1; else if (objInvolvedRate < 40) m -= 1;
+      if (meets(objInvolvedRate, 80)) m += 1; else if (below(objInvolvedRate, 40)) m -= 1;
     } else { if (total_children >= 2) m -= 1; }
     score += Math.max(-3, Math.min(3, m));
   }
@@ -194,9 +194,9 @@ export function computeHomePlacementJourney(input: HomePlacementJourneyInput): H
   // Mod 6: Anniversary & celebration (±3)
   { let m = 0;
     if (placement_anniversaries.length > 0) {
-      if (annCelebratedRate >= 80) m += 1; else if (annCelebratedRate < 40) m -= 1;
-      if (annVoiceRate >= 70) m += 1; else if (annVoiceRate < 30) m -= 1;
-      if (annMemoryRate >= 70) m += 1; else if (annMemoryRate < 30) m -= 1;
+      if (meets(annCelebratedRate, 80)) m += 1; else if (below(annCelebratedRate, 40)) m -= 1;
+      if (meets(annVoiceRate, 70)) m += 1; else if (below(annVoiceRate, 30)) m -= 1;
+      if (meets(annMemoryRate, 70)) m += 1; else if (below(annMemoryRate, 30)) m -= 1;
     }
     score += Math.max(-3, Math.min(3, m));
   }
@@ -204,10 +204,10 @@ export function computeHomePlacementJourney(input: HomePlacementJourneyInput): H
   // Mod 7: Child voice across journey (±3)
   { let m = 0;
     const voices: number[] = [];
-    if (welcome_tours.length > 0) voices.push(wtFeedbackRate);
-    if (return_interviews.length > 0) voices.push(riViewsRate);
-    if (placement_objectives.length > 0) voices.push(objInvolvedRate);
-    if (placement_anniversaries.length > 0) voices.push(annVoiceRate);
+    if (welcome_tours.length > 0) voices.push(wtFeedbackRate!);
+    if (return_interviews.length > 0) voices.push(riViewsRate!);
+    if (placement_objectives.length > 0) voices.push(objInvolvedRate!);
+    if (placement_anniversaries.length > 0) voices.push(annVoiceRate!);
     if (voices.length > 0) {
       const avg = Math.round(voices.reduce((s, v) => s + v, 0) / voices.length);
       if (avg >= 90) m += 3; else if (avg >= 70) m += 2; else if (avg >= 50) m += 1; else if (avg < 30) m -= 2;
@@ -217,11 +217,14 @@ export function computeHomePlacementJourney(input: HomePlacementJourneyInput): H
 
   // Mod 8: Review & documentation quality (±3)
   { let m = 0;
-    const docSources: number[] = [];
-    if (pre_admission_checklists.length > 0) docSources.push(paCompleteRate);
+    // riActCompRate is per agreed ACTION — interviews can exist with none agreed,
+    // so the array holds nullables and meanOf averages what is measured.
+    const docSources: (number | null)[] = [];
+    if (pre_admission_checklists.length > 0) docSources.push(paCompleteRate!);
     if (return_interviews.length > 0) docSources.push(riActCompRate);
-    if (docSources.length > 0) {
-      const avg = Math.round(docSources.reduce((s, v) => s + v, 0) / docSources.length);
+    const docAvg = meanOf(docSources);
+    if (docAvg !== null) {
+      const avg = docAvg;
       if (avg >= 90) m += 3; else if (avg >= 70) m += 2; else if (avg >= 50) m += 1; else if (avg < 30) m -= 2;
     }
     score += Math.max(-3, Math.min(3, m));
@@ -242,9 +245,9 @@ export function computeHomePlacementJourney(input: HomePlacementJourneyInput): H
   const insights: HomePlacementJourneyResult["insights"] = [];
   let rank = 0;
 
-  if (pre_admission_checklists.length > 0 && paCompleteRate >= 90 && paRiskRate >= 90) strengths.push(`Thorough pre-admission process — ${paCompleteRate}% checklists complete with ${paRiskRate}% risk assessments included.`);
-  if (warm_welcome_packs.length > 0 && wpCoverage >= 80 && wpPersonalisedRate >= 80) strengths.push(`Excellent welcome packs — ${wpCoverage}% child coverage with ${wpPersonalisedRate}% personalised.`);
-  if (return_interviews.length > 0 && ri24hRate >= 90) strengths.push(`Strong return interview compliance — ${ri24hRate}% conducted within 24 hours.`);
+  if (pre_admission_checklists.length > 0 && meets(paCompleteRate, 90) && meets(paRiskRate, 90)) strengths.push(`Thorough pre-admission process — ${paCompleteRate}% checklists complete with ${paRiskRate}% risk assessments included.`);
+  if (warm_welcome_packs.length > 0 && meets(wpCoverage, 80) && meets(wpPersonalisedRate, 80)) strengths.push(`Excellent welcome packs — ${wpCoverage}% child coverage with ${wpPersonalisedRate}% personalised.`);
+  if (return_interviews.length > 0 && meets(ri24hRate, 90)) strengths.push(`Strong return interview compliance — ${ri24hRate}% conducted within 24 hours.`);
 
   if (pre_admission_checklists.length === 0 && total_children >= 2) {
     concerns.push("No pre-admission checklists — placements are not being formally assessed before admission.");

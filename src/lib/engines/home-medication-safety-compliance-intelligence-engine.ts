@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME MEDICATION SAFETY & COMPLIANCE INTELLIGENCE ENGINE
 // Monitors medication management safety across the home — administration
@@ -125,10 +126,6 @@ export interface MedicationSafetyComplianceResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -152,15 +149,15 @@ function emptyResult(
     safety_score: score,
     headline,
     total_administrations: 0,
-    administration_accuracy_rate: 0,
-    error_rate: 0,
-    audit_compliance_rate: 0,
-    storage_pass_rate: 0,
-    emergency_protocol_currency_rate: 0,
-    witness_rate: 0,
-    controlled_drug_compliance_rate: 0,
-    prn_documentation_rate: 0,
-    staff_competency_rate: 0,
+    administration_accuracy_rate: null,
+    error_rate: null,
+    audit_compliance_rate: null,
+    storage_pass_rate: null,
+    emergency_protocol_currency_rate: null,
+    witness_rate: null,
+    controlled_drug_compliance_rate: null,
+    prn_documentation_rate: null,
+    staff_competency_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -245,13 +242,13 @@ export function computeMedicationSafetyCompliance(
   const onTimeNonRefused = nonRefusedAdministrations.filter(
     (a) => a.on_time,
   ).length;
-  const administrationAccuracyRate = pct(onTimeNonRefused, nonRefusedAdministrations.length);
+  const administrationAccuracyRate = rate(onTimeNonRefused, nonRefusedAdministrations.length);
 
   // Witness rate: administrations with a witness
   const witnessedAdministrations = medication_administrations.filter(
     (a) => a.witnessed_by !== null && a.witnessed_by.trim() !== "",
   ).length;
-  const witnessRate = pct(witnessedAdministrations, totalAdministrations);
+  const witnessRate = rate(witnessedAdministrations, totalAdministrations);
 
   // Controlled drug compliance: controlled drug administrations that were witnessed
   const controlledDrugAdministrations = medication_administrations.filter(
@@ -260,7 +257,7 @@ export function computeMedicationSafetyCompliance(
   const controlledDrugWitnessed = controlledDrugAdministrations.filter(
     (a) => a.witnessed_by !== null && a.witnessed_by.trim() !== "",
   ).length;
-  const controlledDrugComplianceRate = pct(
+  const controlledDrugComplianceRate = rate(
     controlledDrugWitnessed,
     controlledDrugAdministrations.length,
   );
@@ -272,7 +269,7 @@ export function computeMedicationSafetyCompliance(
   const prnDocumented = prnAdministrations.filter(
     (a) => a.prn_reason_documented,
   ).length;
-  const prnDocumentationRate = pct(prnDocumented, prnAdministrations.length);
+  const prnDocumentationRate = rate(prnDocumented, prnAdministrations.length);
 
   // Refused medications with reason documented
   const refusedAdministrations = medication_administrations.filter(
@@ -281,11 +278,11 @@ export function computeMedicationSafetyCompliance(
   const refusedWithReason = refusedAdministrations.filter(
     (a) => a.reason_refused !== null && a.reason_refused.trim() !== "",
   ).length;
-  const refusalDocumentationRate = pct(refusedWithReason, refusedAdministrations.length);
+  const refusalDocumentationRate = rate(refusedWithReason, refusedAdministrations.length);
 
   // --- Error metrics ---
   const totalErrors = medication_errors.length;
-  const errorRate = pct(totalErrors, totalAdministrations);
+  const errorRate = rate(totalErrors, totalAdministrations);
   const seriousErrors = medication_errors.filter(
     (e) => e.severity === "serious",
   ).length;
@@ -295,19 +292,19 @@ export function computeMedicationSafetyCompliance(
   const investigatedErrors = medication_errors.filter(
     (e) => e.investigation_completed,
   ).length;
-  const errorInvestigationRate = pct(investigatedErrors, totalErrors);
+  const errorInvestigationRate = rate(investigatedErrors, totalErrors);
 
   // --- Audit metrics ---
   const totalAudits = medication_audit_records.length;
   const accurateAudits = medication_audit_records.filter(
     (a) => a.all_records_accurate,
   ).length;
-  const auditComplianceRate = pct(accurateAudits, totalAudits);
+  const auditComplianceRate = rate(accurateAudits, totalAudits);
 
   const auditsWithMarCorrect = medication_audit_records.filter(
     (a) => a.mar_charts_correct,
   ).length;
-  const marChartAccuracyRate = pct(auditsWithMarCorrect, totalAudits);
+  const marChartAccuracyRate = rate(auditsWithMarCorrect, totalAudits);
 
   const totalDiscrepanciesFound = medication_audit_records.reduce(
     (sum, a) => sum + a.discrepancies_found,
@@ -317,7 +314,7 @@ export function computeMedicationSafetyCompliance(
     (sum, a) => sum + a.discrepancies_resolved,
     0,
   );
-  const discrepancyResolutionRate = pct(totalDiscrepanciesResolved, totalDiscrepanciesFound);
+  const discrepancyResolutionRate = rate(totalDiscrepanciesResolved, totalDiscrepanciesFound);
 
   // --- Storage audit metrics ---
   const totalStorageAudits = medication_storage_audits.length;
@@ -328,19 +325,19 @@ export function computeMedicationSafetyCompliance(
       s.expiry_dates_checked &&
       s.stock_levels_adequate,
   ).length;
-  const storagePassRate = pct(storageFullyCompliant, totalStorageAudits);
+  const storagePassRate = rate(storageFullyCompliant, totalStorageAudits);
 
   const lockedStorageCompliant = medication_storage_audits.filter(
     (s) => s.locked_storage_verified,
   ).length;
-  const lockedStorageRate = pct(lockedStorageCompliant, totalStorageAudits);
+  const lockedStorageRate = rate(lockedStorageCompliant, totalStorageAudits);
 
   // --- Emergency protocol metrics ---
   const totalProtocols = emergency_medication_protocols.length;
   const currentProtocols = emergency_medication_protocols.filter(
     (p) => p.protocol_current,
   ).length;
-  const emergencyProtocolCurrencyRate = pct(currentProtocols, totalProtocols);
+  const emergencyProtocolCurrencyRate = rate(currentProtocols, totalProtocols);
 
   const overdueProtocols = emergency_medication_protocols.filter(
     (p) => p.next_review_date && p.next_review_date < today,
@@ -350,7 +347,7 @@ export function computeMedicationSafetyCompliance(
   const protocolsWithAdequateTraining = emergency_medication_protocols.filter(
     (p) => p.staff_trained_count >= 2,
   ).length;
-  const staffCompetencyRate = pct(protocolsWithAdequateTraining, totalProtocols);
+  const staffCompetencyRate = rate(protocolsWithAdequateTraining, totalProtocols);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
   // Bonuses sum to exactly 28: 4+3+3+3+3+3+3+3+3 = 28
@@ -358,42 +355,42 @@ export function computeMedicationSafetyCompliance(
   let score = 52;
 
   // --- Bonus 1: Administration accuracy rate (>=95: +4, >=80: +2) ---
-  if (administrationAccuracyRate >= 95) score += 4;
-  else if (administrationAccuracyRate >= 80) score += 2;
+  if (meets(administrationAccuracyRate, 95)) score += 4;
+  else if (meets(administrationAccuracyRate, 80)) score += 2;
 
   // --- Bonus 2: Error rate (inverse — low errors) (0 errors: +3, errorRate<=2: +1) ---
   if (totalAdministrations > 0 && totalErrors === 0) score += 3;
-  else if (totalAdministrations > 0 && errorRate <= 2) score += 1;
+  else if (totalAdministrations > 0 && errorRate! <= 2) score += 1;
 
   // --- Bonus 3: Audit compliance rate (>=95: +3, >=80: +1) ---
-  if (auditComplianceRate >= 95) score += 3;
-  else if (auditComplianceRate >= 80) score += 1;
+  if (meets(auditComplianceRate, 95)) score += 3;
+  else if (meets(auditComplianceRate, 80)) score += 1;
 
   // --- Bonus 4: Storage audit pass rate (>=95: +3, >=80: +1) ---
-  if (storagePassRate >= 95) score += 3;
-  else if (storagePassRate >= 80) score += 1;
+  if (meets(storagePassRate, 95)) score += 3;
+  else if (meets(storagePassRate, 80)) score += 1;
 
   // --- Bonus 5: Emergency protocol currency (>=100: +3, >=80: +1) ---
-  if (emergencyProtocolCurrencyRate >= 100) score += 3;
-  else if (emergencyProtocolCurrencyRate >= 80) score += 1;
+  if (meets(emergencyProtocolCurrencyRate, 100)) score += 3;
+  else if (meets(emergencyProtocolCurrencyRate, 80)) score += 1;
 
   // --- Bonus 6: Witness rate (>=90: +3, >=70: +1) ---
-  if (witnessRate >= 90) score += 3;
-  else if (witnessRate >= 70) score += 1;
+  if (meets(witnessRate, 90)) score += 3;
+  else if (meets(witnessRate, 70)) score += 1;
 
   // --- Bonus 7: Controlled drug compliance (>=100: +3, >=90: +1) ---
-  if (controlledDrugAdministrations.length > 0 && controlledDrugComplianceRate >= 100) score += 3;
-  else if (controlledDrugAdministrations.length > 0 && controlledDrugComplianceRate >= 90) score += 1;
+  if (controlledDrugAdministrations.length > 0 && meets(controlledDrugComplianceRate, 100)) score += 3;
+  else if (controlledDrugAdministrations.length > 0 && meets(controlledDrugComplianceRate, 90)) score += 1;
   else if (controlledDrugAdministrations.length === 0 && totalAdministrations > 0) score += 3;
 
   // --- Bonus 8: PRN documentation rate (>=95: +3, >=80: +1) ---
-  if (prnAdministrations.length > 0 && prnDocumentationRate >= 95) score += 3;
-  else if (prnAdministrations.length > 0 && prnDocumentationRate >= 80) score += 1;
+  if (prnAdministrations.length > 0 && meets(prnDocumentationRate, 95)) score += 3;
+  else if (prnAdministrations.length > 0 && meets(prnDocumentationRate, 80)) score += 1;
   else if (prnAdministrations.length === 0 && totalAdministrations > 0) score += 3;
 
   // --- Bonus 9: Staff competency rate (>=90: +3, >=70: +1) ---
-  if (staffCompetencyRate >= 90) score += 3;
-  else if (staffCompetencyRate >= 70) score += 1;
+  if (meets(staffCompetencyRate, 90)) score += 3;
+  else if (meets(staffCompetencyRate, 70)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
@@ -401,10 +398,10 @@ export function computeMedicationSafetyCompliance(
   if (seriousErrors > 0) score -= 8;
 
   // Penalty 2: Error rate > 5% — -5 (guard: need administrations)
-  if (errorRate > 5 && totalAdministrations > 0) score -= 5;
+  if (above(errorRate, 5) && totalAdministrations > 0) score -= 5;
 
   // Penalty 3: Storage audit failures — locked storage not verified — -5 (guard: need audits)
-  if (lockedStorageRate < 80 && totalStorageAudits > 0) score -= 5;
+  if (below(lockedStorageRate, 80) && totalStorageAudits > 0) score -= 5;
 
   // Penalty 4: No medication audits despite administrations — -4 (guard: no children check)
   if (totalAudits === 0 && totalAdministrations > 0 && total_children > 0) score -= 4;
@@ -417,11 +414,11 @@ export function computeMedicationSafetyCompliance(
 
   const strengths: string[] = [];
 
-  if (administrationAccuracyRate >= 95 && nonRefusedAdministrations.length > 0) {
+  if (meets(administrationAccuracyRate, 95) && nonRefusedAdministrations.length > 0) {
     strengths.push(
       `${administrationAccuracyRate}% medication administration accuracy rate — medicines are being administered on time and as prescribed, demonstrating excellent medication management practice.`,
     );
-  } else if (administrationAccuracyRate >= 80 && nonRefusedAdministrations.length > 0) {
+  } else if (meets(administrationAccuracyRate, 80) && nonRefusedAdministrations.length > 0) {
     strengths.push(
       `${administrationAccuracyRate}% administration accuracy rate — good standard of medication administration with the majority of medicines given on time.`,
     );
@@ -431,99 +428,99 @@ export function computeMedicationSafetyCompliance(
     strengths.push(
       "Zero medication errors recorded — the home demonstrates an excellent safety record in medication management.",
     );
-  } else if (totalAdministrations > 0 && errorRate <= 2) {
+  } else if (totalAdministrations > 0 && errorRate! <= 2) {
     strengths.push(
       `Medication error rate at ${errorRate}% — errors are rare and the home maintains a strong safety record.`,
     );
   }
 
-  if (auditComplianceRate >= 95 && totalAudits > 0) {
+  if (meets(auditComplianceRate, 95) && totalAudits > 0) {
     strengths.push(
       `${auditComplianceRate}% medication audit compliance — records are consistently accurate and audits confirm robust medication management systems.`,
     );
-  } else if (auditComplianceRate >= 80 && totalAudits > 0) {
+  } else if (meets(auditComplianceRate, 80) && totalAudits > 0) {
     strengths.push(
       `${auditComplianceRate}% audit compliance rate — medication records are largely accurate with good auditing practice in place.`,
     );
   }
 
-  if (storagePassRate >= 95 && totalStorageAudits > 0) {
+  if (meets(storagePassRate, 95) && totalStorageAudits > 0) {
     strengths.push(
       `${storagePassRate}% storage audit pass rate — medication storage consistently meets all safety standards including temperature, security, and stock management.`,
     );
-  } else if (storagePassRate >= 80 && totalStorageAudits > 0) {
+  } else if (meets(storagePassRate, 80) && totalStorageAudits > 0) {
     strengths.push(
       `${storagePassRate}% storage compliance — medication storage generally meets safety requirements.`,
     );
   }
 
-  if (emergencyProtocolCurrencyRate >= 100 && totalProtocols > 0) {
+  if (meets(emergencyProtocolCurrencyRate, 100) && totalProtocols > 0) {
     strengths.push(
       "All emergency medication protocols are current — the home ensures emergency medication plans are reviewed and up to date for every child who requires them.",
     );
-  } else if (emergencyProtocolCurrencyRate >= 80 && totalProtocols > 0) {
+  } else if (meets(emergencyProtocolCurrencyRate, 80) && totalProtocols > 0) {
     strengths.push(
       `${emergencyProtocolCurrencyRate}% of emergency medication protocols are current — good oversight of emergency medication readiness.`,
     );
   }
 
-  if (witnessRate >= 90 && totalAdministrations > 0) {
+  if (meets(witnessRate, 90) && totalAdministrations > 0) {
     strengths.push(
       `${witnessRate}% of medication administrations are witnessed — the home operates robust dual-signature verification for medication safety.`,
     );
-  } else if (witnessRate >= 70 && totalAdministrations > 0) {
+  } else if (meets(witnessRate, 70) && totalAdministrations > 0) {
     strengths.push(
       `${witnessRate}% witness rate for medication administration — good practice in verification of medication given.`,
     );
   }
 
-  if (controlledDrugComplianceRate >= 100 && controlledDrugAdministrations.length > 0) {
+  if (meets(controlledDrugComplianceRate, 100) && controlledDrugAdministrations.length > 0) {
     strengths.push(
       "All controlled drug administrations are witnessed — full compliance with controlled drug witness requirements.",
     );
-  } else if (controlledDrugComplianceRate >= 90 && controlledDrugAdministrations.length > 0) {
+  } else if (meets(controlledDrugComplianceRate, 90) && controlledDrugAdministrations.length > 0) {
     strengths.push(
       `${controlledDrugComplianceRate}% controlled drug witness compliance — strong adherence to controlled substance protocols.`,
     );
   }
 
-  if (prnDocumentationRate >= 95 && prnAdministrations.length > 0) {
+  if (meets(prnDocumentationRate, 95) && prnAdministrations.length > 0) {
     strengths.push(
       `${prnDocumentationRate}% of PRN (as-needed) medication administrations have documented reasons — excellent practice in recording clinical rationale for PRN use.`,
     );
-  } else if (prnDocumentationRate >= 80 && prnAdministrations.length > 0) {
+  } else if (meets(prnDocumentationRate, 80) && prnAdministrations.length > 0) {
     strengths.push(
       `${prnDocumentationRate}% PRN documentation rate — good recording of reasons for as-needed medication use.`,
     );
   }
 
-  if (staffCompetencyRate >= 90 && totalProtocols > 0) {
+  if (meets(staffCompetencyRate, 90) && totalProtocols > 0) {
     strengths.push(
       `${staffCompetencyRate}% of emergency medication protocols have at least 2 trained staff — robust staff competency coverage ensures emergency medication can be administered safely at all times.`,
     );
-  } else if (staffCompetencyRate >= 70 && totalProtocols > 0) {
+  } else if (meets(staffCompetencyRate, 70) && totalProtocols > 0) {
     strengths.push(
       `${staffCompetencyRate}% of emergency protocols have adequate trained staff — good coverage of staff competency for emergency medication.`,
     );
   }
 
-  if (errorInvestigationRate >= 100 && totalErrors > 0) {
+  if (meets(errorInvestigationRate, 100) && totalErrors > 0) {
     strengths.push(
       "All medication errors have been fully investigated — the home demonstrates a learning culture that responds to errors with thorough investigation.",
     );
-  } else if (errorInvestigationRate >= 80 && totalErrors > 0) {
+  } else if (meets(errorInvestigationRate, 80) && totalErrors > 0) {
     strengths.push(
       `${errorInvestigationRate}% of medication errors investigated — good practice in learning from medication incidents.`,
     );
   }
 
-  if (marChartAccuracyRate >= 100 && totalAudits > 0) {
+  if (meets(marChartAccuracyRate, 100) && totalAudits > 0) {
     strengths.push(
       "MAR charts confirmed accurate in all audits — medication administration records are consistently well-maintained.",
     );
   }
 
-  if (discrepancyResolutionRate >= 100 && totalDiscrepanciesFound > 0) {
+  if (meets(discrepancyResolutionRate, 100) && totalDiscrepanciesFound > 0) {
     strengths.push(
       "All audit discrepancies have been resolved — the home responds effectively to identified medication record issues.",
     );
@@ -539,67 +536,67 @@ export function computeMedicationSafetyCompliance(
     );
   }
 
-  if (errorRate > 5 && totalAdministrations > 0) {
+  if (above(errorRate, 5) && totalAdministrations > 0) {
     concerns.push(
       `Medication error rate at ${errorRate}% — this exceeds acceptable thresholds and indicates systemic issues with medication management that must be addressed urgently.`,
     );
-  } else if (errorRate > 2 && errorRate <= 5 && totalAdministrations > 0) {
+  } else if (above(errorRate, 2) && errorRate! <= 5 && totalAdministrations > 0) {
     concerns.push(
       `Medication error rate at ${errorRate}% — while not critical, this rate warrants review of medication processes to prevent escalation.`,
     );
   }
 
-  if (administrationAccuracyRate < 50 && nonRefusedAdministrations.length > 0) {
+  if (below(administrationAccuracyRate, 50) && nonRefusedAdministrations.length > 0) {
     concerns.push(
       `Only ${administrationAccuracyRate}% of medications administered on time — the majority of medicines are not given as prescribed, posing significant risk to children's health.`,
     );
-  } else if (administrationAccuracyRate < 80 && administrationAccuracyRate >= 50 && nonRefusedAdministrations.length > 0) {
+  } else if (below(administrationAccuracyRate, 80) && meets(administrationAccuracyRate, 50) && nonRefusedAdministrations.length > 0) {
     concerns.push(
       `Administration accuracy at ${administrationAccuracyRate}% — a significant proportion of medications are not being administered on time.`,
     );
   }
 
-  if (lockedStorageRate < 80 && totalStorageAudits > 0) {
+  if (below(lockedStorageRate, 80) && totalStorageAudits > 0) {
     concerns.push(
       `Locked storage verification rate at only ${lockedStorageRate}% — medications must be stored securely at all times. Failure to maintain locked storage is a serious regulatory breach.`,
     );
   }
 
-  if (controlledDrugComplianceRate < 80 && controlledDrugAdministrations.length > 0) {
+  if (below(controlledDrugComplianceRate, 80) && controlledDrugAdministrations.length > 0) {
     concerns.push(
       `Only ${controlledDrugComplianceRate}% of controlled drug administrations are witnessed — controlled drugs require dual-signature witnessing for every administration. This is a regulatory requirement.`,
     );
-  } else if (controlledDrugComplianceRate < 100 && controlledDrugComplianceRate >= 80 && controlledDrugAdministrations.length > 0) {
+  } else if (below(controlledDrugComplianceRate, 100) && meets(controlledDrugComplianceRate, 80) && controlledDrugAdministrations.length > 0) {
     concerns.push(
       `Controlled drug witness rate at ${controlledDrugComplianceRate}% — while good, all controlled drug administrations must be witnessed without exception.`,
     );
   }
 
-  if (auditComplianceRate < 50 && totalAudits > 0) {
+  if (below(auditComplianceRate, 50) && totalAudits > 0) {
     concerns.push(
       `Only ${auditComplianceRate}% of medication audits show accurate records — widespread record inaccuracies suggest fundamental problems with medication documentation.`,
     );
-  } else if (auditComplianceRate < 80 && auditComplianceRate >= 50 && totalAudits > 0) {
+  } else if (below(auditComplianceRate, 80) && meets(auditComplianceRate, 50) && totalAudits > 0) {
     concerns.push(
       `Medication audit compliance at ${auditComplianceRate}% — record accuracy needs improvement to meet regulatory standards.`,
     );
   }
 
-  if (storagePassRate < 50 && totalStorageAudits > 0) {
+  if (below(storagePassRate, 50) && totalStorageAudits > 0) {
     concerns.push(
       `Only ${storagePassRate}% of storage audits fully pass — medication storage standards are not being consistently maintained, risking medication safety and efficacy.`,
     );
-  } else if (storagePassRate < 80 && storagePassRate >= 50 && totalStorageAudits > 0) {
+  } else if (below(storagePassRate, 80) && meets(storagePassRate, 50) && totalStorageAudits > 0) {
     concerns.push(
       `Storage audit pass rate at ${storagePassRate}% — storage conditions do not consistently meet all safety requirements.`,
     );
   }
 
-  if (emergencyProtocolCurrencyRate < 50 && totalProtocols > 0) {
+  if (below(emergencyProtocolCurrencyRate, 50) && totalProtocols > 0) {
     concerns.push(
       `Only ${emergencyProtocolCurrencyRate}% of emergency medication protocols are current — the majority of emergency medication plans are outdated, meaning staff may not have correct guidance in an emergency.`,
     );
-  } else if (emergencyProtocolCurrencyRate < 80 && emergencyProtocolCurrencyRate >= 50 && totalProtocols > 0) {
+  } else if (below(emergencyProtocolCurrencyRate, 80) && meets(emergencyProtocolCurrencyRate, 50) && totalProtocols > 0) {
     concerns.push(
       `Emergency protocol currency at ${emergencyProtocolCurrencyRate}% — some emergency medication plans need review to ensure they reflect current prescriptions and guidance.`,
     );
@@ -611,31 +608,31 @@ export function computeMedicationSafetyCompliance(
     );
   }
 
-  if (witnessRate < 50 && totalAdministrations > 0) {
+  if (below(witnessRate, 50) && totalAdministrations > 0) {
     concerns.push(
       `Only ${witnessRate}% of medication administrations are witnessed — the majority of medications are administered without a second person verifying the correct medication and dose.`,
     );
-  } else if (witnessRate < 70 && witnessRate >= 50 && totalAdministrations > 0) {
+  } else if (below(witnessRate, 70) && meets(witnessRate, 50) && totalAdministrations > 0) {
     concerns.push(
       `Witness rate at ${witnessRate}% — a significant proportion of medication administrations lack secondary verification.`,
     );
   }
 
-  if (prnDocumentationRate < 50 && prnAdministrations.length > 0) {
+  if (below(prnDocumentationRate, 50) && prnAdministrations.length > 0) {
     concerns.push(
       `Only ${prnDocumentationRate}% of PRN medication administrations have a documented reason — PRN medication must always have a clinical rationale recorded to justify its use.`,
     );
-  } else if (prnDocumentationRate < 80 && prnDocumentationRate >= 50 && prnAdministrations.length > 0) {
+  } else if (below(prnDocumentationRate, 80) && meets(prnDocumentationRate, 50) && prnAdministrations.length > 0) {
     concerns.push(
       `PRN documentation rate at ${prnDocumentationRate}% — not all as-needed medication use is supported by a documented reason.`,
     );
   }
 
-  if (staffCompetencyRate < 50 && totalProtocols > 0) {
+  if (below(staffCompetencyRate, 50) && totalProtocols > 0) {
     concerns.push(
       `Only ${staffCompetencyRate}% of emergency medication protocols have at least 2 trained staff — children may be at risk if an emergency occurs and no trained staff member is available.`,
     );
-  } else if (staffCompetencyRate < 70 && staffCompetencyRate >= 50 && totalProtocols > 0) {
+  } else if (below(staffCompetencyRate, 70) && meets(staffCompetencyRate, 50) && totalProtocols > 0) {
     concerns.push(
       `Staff competency coverage at ${staffCompetencyRate}% — not all emergency protocols have sufficient trained staff for safe round-the-clock coverage.`,
     );
@@ -647,7 +644,7 @@ export function computeMedicationSafetyCompliance(
     );
   }
 
-  if (errorInvestigationRate < 50 && totalErrors > 0) {
+  if (below(errorInvestigationRate, 50) && totalErrors > 0) {
     concerns.push(
       `Only ${errorInvestigationRate}% of medication errors have been investigated — the home is not learning from medication incidents, increasing the risk of recurrence.`,
     );
@@ -674,7 +671,7 @@ export function computeMedicationSafetyCompliance(
     });
   }
 
-  if (errorRate > 5 && totalAdministrations > 0) {
+  if (above(errorRate, 5) && totalAdministrations > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -684,7 +681,7 @@ export function computeMedicationSafetyCompliance(
     });
   }
 
-  if (lockedStorageRate < 80 && totalStorageAudits > 0) {
+  if (below(lockedStorageRate, 80) && totalStorageAudits > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -694,7 +691,7 @@ export function computeMedicationSafetyCompliance(
     });
   }
 
-  if (controlledDrugComplianceRate < 80 && controlledDrugAdministrations.length > 0) {
+  if (below(controlledDrugComplianceRate, 80) && controlledDrugAdministrations.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -724,7 +721,7 @@ export function computeMedicationSafetyCompliance(
     });
   }
 
-  if (emergencyProtocolCurrencyRate < 50 && totalProtocols > 0) {
+  if (below(emergencyProtocolCurrencyRate, 50) && totalProtocols > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -734,7 +731,7 @@ export function computeMedicationSafetyCompliance(
     });
   }
 
-  if (staffCompetencyRate < 50 && totalProtocols > 0) {
+  if (below(staffCompetencyRate, 50) && totalProtocols > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -744,7 +741,7 @@ export function computeMedicationSafetyCompliance(
     });
   }
 
-  if (administrationAccuracyRate < 50 && nonRefusedAdministrations.length > 0) {
+  if (below(administrationAccuracyRate, 50) && nonRefusedAdministrations.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -754,7 +751,7 @@ export function computeMedicationSafetyCompliance(
     });
   }
 
-  if (prnDocumentationRate < 50 && prnAdministrations.length > 0) {
+  if (below(prnDocumentationRate, 50) && prnAdministrations.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -764,7 +761,7 @@ export function computeMedicationSafetyCompliance(
     });
   }
 
-  if (errorInvestigationRate < 50 && totalErrors > 0) {
+  if (below(errorInvestigationRate, 50) && totalErrors > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -774,7 +771,7 @@ export function computeMedicationSafetyCompliance(
     });
   }
 
-  if (auditComplianceRate < 50 && totalAudits > 0) {
+  if (below(auditComplianceRate, 50) && totalAudits > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -784,7 +781,7 @@ export function computeMedicationSafetyCompliance(
     });
   }
 
-  if (administrationAccuracyRate >= 50 && administrationAccuracyRate < 80 && nonRefusedAdministrations.length > 0) {
+  if (meets(administrationAccuracyRate, 50) && below(administrationAccuracyRate, 80) && nonRefusedAdministrations.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -794,7 +791,7 @@ export function computeMedicationSafetyCompliance(
     });
   }
 
-  if (witnessRate < 70 && totalAdministrations > 0) {
+  if (below(witnessRate, 70) && totalAdministrations > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -804,7 +801,7 @@ export function computeMedicationSafetyCompliance(
     });
   }
 
-  if (emergencyProtocolCurrencyRate >= 50 && emergencyProtocolCurrencyRate < 80 && totalProtocols > 0) {
+  if (meets(emergencyProtocolCurrencyRate, 50) && below(emergencyProtocolCurrencyRate, 80) && totalProtocols > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -814,7 +811,7 @@ export function computeMedicationSafetyCompliance(
     });
   }
 
-  if (storagePassRate >= 50 && storagePassRate < 80 && totalStorageAudits > 0) {
+  if (meets(storagePassRate, 50) && below(storagePassRate, 80) && totalStorageAudits > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -834,7 +831,7 @@ export function computeMedicationSafetyCompliance(
     });
   }
 
-  if (prnDocumentationRate >= 50 && prnDocumentationRate < 80 && prnAdministrations.length > 0) {
+  if (meets(prnDocumentationRate, 50) && below(prnDocumentationRate, 80) && prnAdministrations.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -844,7 +841,7 @@ export function computeMedicationSafetyCompliance(
     });
   }
 
-  if (staffCompetencyRate >= 50 && staffCompetencyRate < 70 && totalProtocols > 0) {
+  if (meets(staffCompetencyRate, 50) && below(staffCompetencyRate, 70) && totalProtocols > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -854,7 +851,7 @@ export function computeMedicationSafetyCompliance(
     });
   }
 
-  if (auditComplianceRate >= 50 && auditComplianceRate < 80 && totalAudits > 0) {
+  if (meets(auditComplianceRate, 50) && below(auditComplianceRate, 80) && totalAudits > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -877,35 +874,35 @@ export function computeMedicationSafetyCompliance(
     });
   }
 
-  if (errorRate > 5 && totalAdministrations > 0) {
+  if (above(errorRate, 5) && totalAdministrations > 0) {
     insights.push({
       text: `The medication error rate of ${errorRate}% is above safe operating thresholds. This pattern of errors suggests systemic issues with medication management — possible contributing factors include inadequate staff training, insufficient checking procedures, or poorly maintained MAR charts.`,
       severity: "critical",
     });
   }
 
-  if (lockedStorageRate < 80 && totalStorageAudits > 0) {
+  if (below(lockedStorageRate, 80) && totalStorageAudits > 0) {
     insights.push({
       text: `Locked storage verification rate at ${lockedStorageRate}% — medication storage must be locked and secure at all times under Reg 23. Unsecured medication storage creates a direct risk of children or unauthorised persons accessing medicines.`,
       severity: "critical",
     });
   }
 
-  if (controlledDrugComplianceRate < 80 && controlledDrugAdministrations.length > 0) {
+  if (below(controlledDrugComplianceRate, 80) && controlledDrugAdministrations.length > 0) {
     insights.push({
       text: `Only ${controlledDrugComplianceRate}% of controlled drug administrations are witnessed. Controlled drugs are subject to the Misuse of Drugs Regulations and require witnessed administration. The current compliance gap creates both regulatory risk and the potential for diversion.`,
       severity: "critical",
     });
   }
 
-  if (emergencyProtocolCurrencyRate < 50 && totalProtocols > 0) {
+  if (below(emergencyProtocolCurrencyRate, 50) && totalProtocols > 0) {
     insights.push({
       text: `Only ${emergencyProtocolCurrencyRate}% of emergency medication protocols are current. Outdated protocols mean staff may administer emergency medication based on incorrect dosages, routes, or indications — this creates a direct risk to children's safety in an emergency.`,
       severity: "critical",
     });
   }
 
-  if (administrationAccuracyRate < 50 && nonRefusedAdministrations.length > 0) {
+  if (below(administrationAccuracyRate, 50) && nonRefusedAdministrations.length > 0) {
     insights.push({
       text: `Medication administration accuracy at only ${administrationAccuracyRate}%. The majority of medications are not being given on time or as prescribed. Late or missed medications can have serious clinical consequences, particularly for time-sensitive medicines such as epilepsy medication, insulin, or antibiotics.`,
       severity: "critical",
@@ -921,56 +918,56 @@ export function computeMedicationSafetyCompliance(
 
   // -- Warning insights --
 
-  if (errorRate > 2 && errorRate <= 5 && totalAdministrations > 0) {
+  if (above(errorRate, 2) && errorRate! <= 5 && totalAdministrations > 0) {
     insights.push({
       text: `Medication error rate at ${errorRate}% — while not at crisis level, this rate warrants proactive review of medication administration processes to identify patterns and prevent escalation.`,
       severity: "warning",
     });
   }
 
-  if (administrationAccuracyRate >= 50 && administrationAccuracyRate < 80 && nonRefusedAdministrations.length > 0) {
+  if (meets(administrationAccuracyRate, 50) && below(administrationAccuracyRate, 80) && nonRefusedAdministrations.length > 0) {
     insights.push({
       text: `Administration accuracy at ${administrationAccuracyRate}% — improving but not yet meeting expected standards. Consistent on-time administration is essential for medication effectiveness and children's health outcomes.`,
       severity: "warning",
     });
   }
 
-  if (witnessRate >= 50 && witnessRate < 70 && totalAdministrations > 0) {
+  if (meets(witnessRate, 50) && below(witnessRate, 70) && totalAdministrations > 0) {
     insights.push({
       text: `Witness rate at ${witnessRate}% — while some medications are verified by a second person, increasing this rate would strengthen the home's safety net against medication errors.`,
       severity: "warning",
     });
   }
 
-  if (storagePassRate >= 50 && storagePassRate < 80 && totalStorageAudits > 0) {
+  if (meets(storagePassRate, 50) && below(storagePassRate, 80) && totalStorageAudits > 0) {
     insights.push({
       text: `Storage audit pass rate at ${storagePassRate}% — not all storage audits meet the full range of safety criteria. Consistent storage compliance is essential for maintaining medication efficacy and safety.`,
       severity: "warning",
     });
   }
 
-  if (emergencyProtocolCurrencyRate >= 50 && emergencyProtocolCurrencyRate < 80 && totalProtocols > 0) {
+  if (meets(emergencyProtocolCurrencyRate, 50) && below(emergencyProtocolCurrencyRate, 80) && totalProtocols > 0) {
     insights.push({
       text: `${emergencyProtocolCurrencyRate}% of emergency protocols are current — some protocols are becoming outdated which could lead to incorrect emergency medication guidance for staff.`,
       severity: "warning",
     });
   }
 
-  if (prnDocumentationRate >= 50 && prnDocumentationRate < 80 && prnAdministrations.length > 0) {
+  if (meets(prnDocumentationRate, 50) && below(prnDocumentationRate, 80) && prnAdministrations.length > 0) {
     insights.push({
       text: `PRN documentation at ${prnDocumentationRate}% — not all as-needed medication use is supported by documented clinical reasoning. Ofsted may question whether PRN medication is being used appropriately if reasons are not recorded.`,
       severity: "warning",
     });
   }
 
-  if (staffCompetencyRate >= 50 && staffCompetencyRate < 70 && totalProtocols > 0) {
+  if (meets(staffCompetencyRate, 50) && below(staffCompetencyRate, 70) && totalProtocols > 0) {
     insights.push({
       text: `Staff competency coverage at ${staffCompetencyRate}% — not all emergency protocols have sufficient trained staff to guarantee safe coverage across all shift patterns.`,
       severity: "warning",
     });
   }
 
-  if (auditComplianceRate >= 50 && auditComplianceRate < 80 && totalAudits > 0) {
+  if (meets(auditComplianceRate, 50) && below(auditComplianceRate, 80) && totalAudits > 0) {
     insights.push({
       text: `Medication audit compliance at ${auditComplianceRate}% — record inaccuracies are being identified through auditing, which is positive, but the accuracy rate needs improvement to provide confidence in medication management systems.`,
       severity: "warning",
@@ -998,7 +995,7 @@ export function computeMedicationSafetyCompliance(
     });
   }
 
-  if (refusedAdministrations.length > 0 && refusalDocumentationRate < 80) {
+  if (refusedAdministrations.length > 0 && below(refusalDocumentationRate, 80)) {
     insights.push({
       text: `Only ${refusalDocumentationRate}% of medication refusals have a documented reason — understanding why children refuse medication is important for addressing concerns, adjusting care plans, and evidencing that the child's voice is heard.`,
       severity: "warning",
@@ -1021,42 +1018,42 @@ export function computeMedicationSafetyCompliance(
     });
   }
 
-  if (administrationAccuracyRate >= 95 && nonRefusedAdministrations.length > 0) {
+  if (meets(administrationAccuracyRate, 95) && nonRefusedAdministrations.length > 0) {
     insights.push({
       text: `${administrationAccuracyRate}% administration accuracy demonstrates excellent medication management — medicines are being given as prescribed, on time, and in the correct doses, optimising therapeutic outcomes for children.`,
       severity: "positive",
     });
   }
 
-  if (controlledDrugComplianceRate >= 100 && controlledDrugAdministrations.length > 0) {
+  if (meets(controlledDrugComplianceRate, 100) && controlledDrugAdministrations.length > 0) {
     insights.push({
       text: "Full compliance with controlled drug witness requirements demonstrates the home's understanding of the heightened regulatory standards for controlled substances and its commitment to safe practice.",
       severity: "positive",
     });
   }
 
-  if (storagePassRate >= 95 && totalStorageAudits > 0) {
+  if (meets(storagePassRate, 95) && totalStorageAudits > 0) {
     insights.push({
       text: `${storagePassRate}% storage compliance confirms that medication is consistently stored safely — temperature control, secure storage, expiry management, and stock levels all meet safety standards.`,
       severity: "positive",
     });
   }
 
-  if (emergencyProtocolCurrencyRate >= 100 && staffCompetencyRate >= 90 && totalProtocols > 0) {
+  if (meets(emergencyProtocolCurrencyRate, 100) && meets(staffCompetencyRate, 90) && totalProtocols > 0) {
     insights.push({
       text: "All emergency medication protocols are current and adequately staffed — the home is well-prepared to respond to medication emergencies safely and effectively.",
       severity: "positive",
     });
   }
 
-  if (errorInvestigationRate >= 100 && totalErrors > 0) {
+  if (meets(errorInvestigationRate, 100) && totalErrors > 0) {
     insights.push({
       text: "All medication errors have been fully investigated — the home demonstrates an open learning culture that uses incidents as opportunities to improve practice and prevent recurrence.",
       severity: "positive",
     });
   }
 
-  if (auditComplianceRate >= 95 && marChartAccuracyRate >= 95 && totalAudits > 0) {
+  if (meets(auditComplianceRate, 95) && meets(marChartAccuracyRate, 95) && totalAudits > 0) {
     insights.push({
       text: "Medication audits consistently confirm accurate records and correct MAR charts — this provides strong governance assurance that medication systems are functioning safely.",
       severity: "positive",

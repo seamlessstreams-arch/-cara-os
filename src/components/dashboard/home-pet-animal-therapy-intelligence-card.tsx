@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, PawPrint } from "
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { PetAnimalTherapyRating } from "@/lib/engines/home-pet-animal-therapy-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 function useHomePetAnimalTherapyIntelligence() {
   return useQuery({
@@ -69,28 +70,28 @@ export function HomePetAnimalTherapyIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.therapy_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.therapy_frequency_rate >= 90 ? "bg-green-50" : d.therapy_frequency_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.therapy_frequency_rate >= 90 ? "text-[--cs-success]" : d.therapy_frequency_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.therapy_frequency_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.therapy_frequency_rate, 90) ? "bg-green-50" : meets(d.therapy_frequency_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.therapy_frequency_rate, 90) ? "text-[--cs-success]" : meets(d.therapy_frequency_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.therapy_frequency_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Therapy</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.pet_care_responsibility_rate >= 90 ? "bg-green-50" : d.pet_care_responsibility_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.pet_care_responsibility_rate >= 90 ? "text-[--cs-success]" : d.pet_care_responsibility_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.pet_care_responsibility_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.pet_care_responsibility_rate, 90) ? "bg-green-50" : meets(d.pet_care_responsibility_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.pet_care_responsibility_rate, 90) ? "text-[--cs-success]" : meets(d.pet_care_responsibility_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.pet_care_responsibility_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Pet Care</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.interaction_outcome_rate >= 90 ? "bg-green-50" : d.interaction_outcome_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.interaction_outcome_rate >= 90 ? "text-[--cs-success]" : d.interaction_outcome_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.interaction_outcome_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.interaction_outcome_rate, 90) ? "bg-green-50" : meets(d.interaction_outcome_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.interaction_outcome_rate, 90) ? "text-[--cs-success]" : meets(d.interaction_outcome_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.interaction_outcome_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Outcomes</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.welfare_compliance_rate >= 90 ? "bg-green-50" : d.welfare_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.welfare_compliance_rate >= 90 ? "text-[--cs-success]" : d.welfare_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.welfare_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.welfare_compliance_rate, 90) ? "bg-green-50" : meets(d.welfare_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.welfare_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.welfare_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.welfare_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Welfare</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_engagement_rate >= 90 ? "bg-green-50" : d.child_engagement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_engagement_rate >= 90 ? "text-[--cs-success]" : d.child_engagement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_engagement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_engagement_rate, 90) ? "bg-green-50" : meets(d.child_engagement_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_engagement_rate, 90) ? "text-[--cs-success]" : meets(d.child_engagement_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_engagement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Engage</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_benefit_rate >= 90 ? "bg-green-50" : d.child_benefit_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_benefit_rate >= 90 ? "text-[--cs-success]" : d.child_benefit_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_benefit_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_benefit_rate, 90) ? "bg-green-50" : meets(d.child_benefit_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_benefit_rate, 90) ? "text-[--cs-success]" : meets(d.child_benefit_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_benefit_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Benefit</p>
             </div>
           </div>

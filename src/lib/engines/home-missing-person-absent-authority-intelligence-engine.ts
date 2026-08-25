@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME MISSING PERSON & ABSENT WITHOUT AUTHORITY INTELLIGENCE ENGINE
 // Monitors missing person protocol adherence, return interview completion,
@@ -160,10 +161,6 @@ export interface MissingPersonResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -187,16 +184,16 @@ function emptyResult(
     missing_score: score,
     headline,
     total_episodes: 0,
-    protocol_adherence_rate: 0,
-    return_interview_rate: 0,
-    risk_update_rate: 0,
-    police_liaison_rate: 0,
-    pattern_analysis_rate: 0,
-    prevention_rate: 0,
-    notification_timeliness_rate: 0,
+    protocol_adherence_rate: null,
+    return_interview_rate: null,
+    risk_update_rate: null,
+    police_liaison_rate: null,
+    pattern_analysis_rate: null,
+    prevention_rate: null,
+    notification_timeliness_rate: null,
     return_interview_quality_avg: 0,
-    risk_assessment_timeliness_rate: 0,
-    exploitation_screening_rate: 0,
+    risk_assessment_timeliness_rate: null,
+    exploitation_screening_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -278,13 +275,13 @@ export function computeMissingPersonAbsentAuthority(
   const protocolFollowed = missing_protocol_records.filter(
     (p) => p.protocol_followed,
   ).length;
-  const protocolAdherenceRate = pct(protocolFollowed, totalEpisodes);
+  const protocolAdherenceRate = rate(protocolFollowed, totalEpisodes);
 
   // --- Notification timeliness ---
   const notifiedWithinTimeframe = missing_protocol_records.filter(
     (p) => p.notification_within_timeframe,
   ).length;
-  const notificationTimelinessRate = pct(notifiedWithinTimeframe, totalEpisodes);
+  const notificationTimelinessRate = rate(notifiedWithinTimeframe, totalEpisodes);
 
   // --- Police notification rate (for high/very_high risk) ---
   const highRiskEpisodes = missing_protocol_records.filter(
@@ -293,19 +290,19 @@ export function computeMissingPersonAbsentAuthority(
   const highRiskPoliceNotified = highRiskEpisodes.filter(
     (p) => p.police_notified,
   ).length;
-  const highRiskPoliceNotificationRate = pct(highRiskPoliceNotified, highRiskEpisodes.length);
+  const highRiskPoliceNotificationRate = rate(highRiskPoliceNotified, highRiskEpisodes.length);
 
   // --- Trigger factors recorded ---
   const triggersRecorded = missing_protocol_records.filter(
     (p) => p.trigger_factors_recorded,
   ).length;
-  const triggersRecordedRate = pct(triggersRecorded, totalEpisodes);
+  const triggersRecordedRate = rate(triggersRecorded, totalEpisodes);
 
   // --- Debriefing completion ---
   const debriefCompleted = missing_protocol_records.filter(
     (p) => p.debriefing_completed,
   ).length;
-  const debriefCompletionRate = pct(debriefCompleted, totalEpisodes);
+  const debriefCompletionRate = rate(debriefCompleted, totalEpisodes);
 
   // --- Episode types ---
   const missingEpisodes = missing_protocol_records.filter(
@@ -339,31 +336,31 @@ export function computeMissingPersonAbsentAuthority(
   const episodesWithInterviews = new Set(
     return_interview_records.map((r) => r.episode_id),
   ).size;
-  const returnInterviewRate = pct(episodesWithInterviews, closedEpisodes);
+  const returnInterviewRate = rate(episodesWithInterviews, closedEpisodes);
 
   // --- Interview timeliness ---
   const interviewsWithin72 = return_interview_records.filter(
     (r) => r.completed_within_72_hours,
   ).length;
-  const interviewTimelinessRate = pct(interviewsWithin72, totalReturnInterviews);
+  const interviewTimelinessRate = rate(interviewsWithin72, totalReturnInterviews);
 
   // --- Independence ---
   const independentInterviews = return_interview_records.filter(
     (r) => r.interviewer_independent,
   ).length;
-  const independentInterviewRate = pct(independentInterviews, totalReturnInterviews);
+  const independentInterviewRate = rate(independentInterviews, totalReturnInterviews);
 
   // --- Child views captured ---
   const childViewsCaptured = return_interview_records.filter(
     (r) => r.child_views_captured,
   ).length;
-  const childViewsRate = pct(childViewsCaptured, totalReturnInterviews);
+  const childViewsRate = rate(childViewsCaptured, totalReturnInterviews);
 
   // --- Push/pull factors explored ---
   const pushPullExplored = return_interview_records.filter(
     (r) => r.push_pull_factors_explored,
   ).length;
-  const pushPullRate = pct(pushPullExplored, totalReturnInterviews);
+  const pushPullRate = rate(pushPullExplored, totalReturnInterviews);
 
   // --- Actions follow-up ---
   const interviewsWithActions = return_interview_records.filter(
@@ -372,7 +369,7 @@ export function computeMissingPersonAbsentAuthority(
   const actionsFollowedUp = interviewsWithActions.filter(
     (r) => r.actions_followed_up,
   ).length;
-  const actionsFollowUpRate = pct(actionsFollowedUp, interviewsWithActions.length);
+  const actionsFollowUpRate = rate(actionsFollowedUp, interviewsWithActions.length);
 
   // --- Quality rating ---
   const qualitySum = return_interview_records.reduce(
@@ -392,37 +389,37 @@ export function computeMissingPersonAbsentAuthority(
   const episodesWithRiskUpdate = new Set(
     risk_assessment_update_records.map((r) => r.episode_id),
   ).size;
-  const riskUpdateRate = pct(episodesWithRiskUpdate, totalEpisodes);
+  const riskUpdateRate = rate(episodesWithRiskUpdate, totalEpisodes);
 
   // --- Timeliness ---
   const updatedWithin48 = risk_assessment_update_records.filter(
     (r) => r.updated_within_48_hours,
   ).length;
-  const riskAssessmentTimelinessRate = pct(updatedWithin48, totalRiskUpdates);
+  const riskAssessmentTimelinessRate = rate(updatedWithin48, totalRiskUpdates);
 
   // --- Contextual safeguarding ---
   const contextualConsidered = risk_assessment_update_records.filter(
     (r) => r.contextual_safeguarding_considered,
   ).length;
-  const contextualSafeguardingRate = pct(contextualConsidered, totalRiskUpdates);
+  const contextualSafeguardingRate = rate(contextualConsidered, totalRiskUpdates);
 
   // --- Exploitation screening ---
   const exploitationScreened = risk_assessment_update_records.filter(
     (r) => r.exploitation_screening_completed,
   ).length;
-  const exploitationScreeningRate = pct(exploitationScreened, totalRiskUpdates);
+  const exploitationScreeningRate = rate(exploitationScreened, totalRiskUpdates);
 
   // --- Safety plan updated ---
   const safetyPlanUpdated = risk_assessment_update_records.filter(
     (r) => r.safety_plan_updated,
   ).length;
-  const safetyPlanUpdateRate = pct(safetyPlanUpdated, totalRiskUpdates);
+  const safetyPlanUpdateRate = rate(safetyPlanUpdated, totalRiskUpdates);
 
   // --- Care plan updated ---
   const carePlanUpdated = risk_assessment_update_records.filter(
     (r) => r.care_plan_updated,
   ).length;
-  const carePlanUpdateRate = pct(carePlanUpdated, totalRiskUpdates);
+  const carePlanUpdateRate = rate(carePlanUpdated, totalRiskUpdates);
 
   // --- Risk escalation/de-escalation tracking ---
   const riskEscalated = risk_assessment_update_records.filter(
@@ -440,13 +437,13 @@ export function computeMissingPersonAbsentAuthority(
   const episodesWithPoliceLiaison = new Set(
     police_liaison_records.map((r) => r.episode_id),
   ).size;
-  const policeLiaisonRate = pct(episodesWithPoliceLiaison, totalEpisodes);
+  const policeLiaisonRate = rate(episodesWithPoliceLiaison, totalEpisodes);
 
   // --- Reference obtained ---
   const referenceObtained = police_liaison_records.filter(
     (r) => r.police_reference_obtained,
   ).length;
-  const referenceObtainedRate = pct(referenceObtained, totalPoliceLiaisons);
+  const referenceObtainedRate = rate(referenceObtained, totalPoliceLiaisons);
 
   // ── Pattern Analysis Metrics ──────────────────────────────────────────
 
@@ -458,7 +455,7 @@ export function computeMissingPersonAbsentAuthority(
   ).size;
   const patternAnalysisRate =
     uniqueChildrenWithEpisodes > 0
-      ? pct(uniqueChildrenWithAnalysis, uniqueChildrenWithEpisodes)
+      ? rate(uniqueChildrenWithAnalysis, uniqueChildrenWithEpisodes)
       : null;
 
   // --- Patterns identified ---
@@ -471,20 +468,20 @@ export function computeMissingPersonAbsentAuthority(
     (r) => r.prevention_effective,
   ).length;
   const preventionRate = totalPatternAnalyses > 0
-    ? pct(preventionEffective, totalPatternAnalyses)
+    ? rate(preventionEffective, totalPatternAnalyses)
     : null;
 
   // --- Multi-agency mapping ---
   const multiAgencyMapping = pattern_analysis_records.filter(
     (r) => r.multi_agency_mapping_completed,
   ).length;
-  const multiAgencyMappingRate = pct(multiAgencyMapping, totalPatternAnalyses);
+  const multiAgencyMappingRate = rate(multiAgencyMapping, totalPatternAnalyses);
 
   // --- Shared with placing authority ---
   const sharedWithPA = pattern_analysis_records.filter(
     (r) => r.shared_with_placing_authority,
   ).length;
-  const sharedWithPARate = pct(sharedWithPA, totalPatternAnalyses);
+  const sharedWithPARate = rate(sharedWithPA, totalPatternAnalyses);
 
   // --- Overdue reviews ---
   const overduePatternReviews = pattern_analysis_records.filter(
@@ -512,20 +509,20 @@ export function computeMissingPersonAbsentAuthority(
   let score = 52;
 
   // --- Bonus 1: protocolAdherenceRate (>=95: +5, >=80: +3) ---
-  if (protocolAdherenceRate >= 95) score += 5;
-  else if (protocolAdherenceRate >= 80) score += 3;
+  if (meets(protocolAdherenceRate, 95)) score += 5;
+  else if (meets(protocolAdherenceRate, 80)) score += 3;
 
   // --- Bonus 2: returnInterviewRate (>=95: +5, >=80: +3) ---
-  if (returnInterviewRate >= 95) score += 5;
-  else if (returnInterviewRate >= 80) score += 3;
+  if (meets(returnInterviewRate, 95)) score += 5;
+  else if (meets(returnInterviewRate, 80)) score += 3;
 
   // --- Bonus 3: riskUpdateRate (>=90: +4, >=70: +2) ---
-  if (riskUpdateRate >= 90) score += 4;
-  else if (riskUpdateRate >= 70) score += 2;
+  if (meets(riskUpdateRate, 90)) score += 4;
+  else if (meets(riskUpdateRate, 70)) score += 2;
 
   // --- Bonus 4: policeLiaisonRate (>=90: +4, >=70: +2) ---
-  if (policeLiaisonRate >= 90) score += 4;
-  else if (policeLiaisonRate >= 70) score += 2;
+  if (meets(policeLiaisonRate, 90)) score += 4;
+  else if (meets(policeLiaisonRate, 70)) score += 2;
 
   // --- Bonus 5: patternAnalysisRate (>=90: +3, >=70: +1) ---
   if ((patternAnalysisRate ?? 0) >= 90) score += 3;
@@ -540,22 +537,22 @@ export function computeMissingPersonAbsentAuthority(
   else if ((returnInterviewQualityAvg ?? 0) >= 3.0) score += 1;
 
   // --- Bonus 8: exploitationScreeningRate (>=90: +2, >=70: +1) ---
-  if (exploitationScreeningRate >= 90) score += 2;
-  else if (exploitationScreeningRate >= 70) score += 1;
+  if (meets(exploitationScreeningRate, 90)) score += 2;
+  else if (meets(exploitationScreeningRate, 70)) score += 1;
 
   // ── Penalties (4 penalties, guarded by array.length > 0) ──────────────
 
   // Penalty 1: protocolAdherenceRate < 50
-  if (protocolAdherenceRate < 50 && missing_protocol_records.length > 0) score -= 6;
+  if (below(protocolAdherenceRate, 50) && missing_protocol_records.length > 0) score -= 6;
 
   // Penalty 2: returnInterviewRate < 50
-  if (returnInterviewRate < 50 && return_interview_records.length > 0) score -= 6;
+  if (below(returnInterviewRate, 50) && return_interview_records.length > 0) score -= 6;
 
   // Penalty 3: riskUpdateRate < 40
-  if (riskUpdateRate < 40 && risk_assessment_update_records.length > 0) score -= 4;
+  if (below(riskUpdateRate, 40) && risk_assessment_update_records.length > 0) score -= 4;
 
   // Penalty 4: exploitationScreeningRate < 40
-  if (exploitationScreeningRate < 40 && risk_assessment_update_records.length > 0) score -= 4;
+  if (below(exploitationScreeningRate, 40) && risk_assessment_update_records.length > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -565,41 +562,41 @@ export function computeMissingPersonAbsentAuthority(
 
   const strengths: string[] = [];
 
-  if (protocolAdherenceRate >= 95 && totalEpisodes > 0) {
+  if (meets(protocolAdherenceRate, 95) && totalEpisodes > 0) {
     strengths.push(
       "Missing person protocols followed in virtually every episode — the home demonstrates exemplary adherence to statutory procedures and ensures every missing or absent episode is managed consistently and safely.",
     );
-  } else if (protocolAdherenceRate >= 80 && totalEpisodes > 0) {
+  } else if (meets(protocolAdherenceRate, 80) && totalEpisodes > 0) {
     strengths.push(
       `${protocolAdherenceRate}% protocol adherence — strong compliance with missing person procedures across the majority of episodes.`,
     );
   }
 
-  if (returnInterviewRate >= 95 && closedEpisodes > 0) {
+  if (meets(returnInterviewRate, 95) && closedEpisodes > 0) {
     strengths.push(
       "Return interviews completed for virtually every closed episode — the home ensures that every child who goes missing or is absent without authority receives a structured return discussion to explore safeguarding concerns.",
     );
-  } else if (returnInterviewRate >= 80 && closedEpisodes > 0) {
+  } else if (meets(returnInterviewRate, 80) && closedEpisodes > 0) {
     strengths.push(
       `${returnInterviewRate}% return interview coverage — the home demonstrates strong commitment to understanding children's experiences when they go missing.`,
     );
   }
 
-  if (riskUpdateRate >= 90 && totalEpisodes > 0) {
+  if (meets(riskUpdateRate, 90) && totalEpisodes > 0) {
     strengths.push(
       `${riskUpdateRate}% of episodes have triggered risk assessment updates — the home consistently reviews and updates risk following missing or absent episodes, ensuring care plans reflect current risk levels.`,
     );
-  } else if (riskUpdateRate >= 70 && totalEpisodes > 0) {
+  } else if (meets(riskUpdateRate, 70) && totalEpisodes > 0) {
     strengths.push(
       `${riskUpdateRate}% risk assessment update rate — the majority of episodes result in updated risk assessments, supporting responsive safeguarding.`,
     );
   }
 
-  if (policeLiaisonRate >= 90 && totalEpisodes > 0) {
+  if (meets(policeLiaisonRate, 90) && totalEpisodes > 0) {
     strengths.push(
       `${policeLiaisonRate}% police liaison rate — the home maintains strong partnerships with the police across nearly all missing and absent episodes, supporting multi-agency safeguarding.`,
     );
-  } else if (policeLiaisonRate >= 70 && totalEpisodes > 0) {
+  } else if (meets(policeLiaisonRate, 70) && totalEpisodes > 0) {
     strengths.push(
       `${policeLiaisonRate}% police liaison coverage — the home engages effectively with the police for the majority of episodes.`,
     );
@@ -635,77 +632,77 @@ export function computeMissingPersonAbsentAuthority(
     );
   }
 
-  if (exploitationScreeningRate >= 90 && totalRiskUpdates > 0) {
+  if (meets(exploitationScreeningRate, 90) && totalRiskUpdates > 0) {
     strengths.push(
       `${exploitationScreeningRate}% exploitation screening rate — the home systematically screens for criminal and sexual exploitation following missing and absent episodes, a critical safeguarding practice.`,
     );
-  } else if (exploitationScreeningRate >= 70 && totalRiskUpdates > 0) {
+  } else if (meets(exploitationScreeningRate, 70) && totalRiskUpdates > 0) {
     strengths.push(
       `${exploitationScreeningRate}% exploitation screening — good practice in screening for exploitation risks following missing or absent episodes.`,
     );
   }
 
-  if (notificationTimelinessRate >= 95 && totalEpisodes > 0) {
+  if (meets(notificationTimelinessRate, 95) && totalEpisodes > 0) {
     strengths.push(
       "Notifications are made within required timeframes in virtually every episode — the home ensures that the police, local authority, and other agencies are informed promptly, supporting rapid safeguarding responses.",
     );
-  } else if (notificationTimelinessRate >= 80 && totalEpisodes > 0) {
+  } else if (meets(notificationTimelinessRate, 80) && totalEpisodes > 0) {
     strengths.push(
       `${notificationTimelinessRate}% notification timeliness — strong performance in alerting agencies within required timeframes.`,
     );
   }
 
-  if (independentInterviewRate >= 90 && totalReturnInterviews > 0) {
+  if (meets(independentInterviewRate, 90) && totalReturnInterviews > 0) {
     strengths.push(
       `${independentInterviewRate}% of return interviews conducted by independent interviewers — the home ensures children can speak freely to someone outside the home, supporting disclosure of safeguarding concerns.`,
     );
-  } else if (independentInterviewRate >= 70 && totalReturnInterviews > 0) {
+  } else if (meets(independentInterviewRate, 70) && totalReturnInterviews > 0) {
     strengths.push(
       `${independentInterviewRate}% independent return interviews — good practice in providing children with independent return interview access.`,
     );
   }
 
-  if (contextualSafeguardingRate >= 90 && totalRiskUpdates > 0) {
+  if (meets(contextualSafeguardingRate, 90) && totalRiskUpdates > 0) {
     strengths.push(
       `Contextual safeguarding is considered in ${contextualSafeguardingRate}% of risk updates — the home looks beyond the child to understand the environmental and social contexts that contribute to missing and absent episodes.`,
     );
-  } else if (contextualSafeguardingRate >= 70 && totalRiskUpdates > 0) {
+  } else if (meets(contextualSafeguardingRate, 70) && totalRiskUpdates > 0) {
     strengths.push(
       `${contextualSafeguardingRate}% contextual safeguarding consideration — good awareness of wider contextual factors in risk assessment.`,
     );
   }
 
-  if (childViewsRate >= 90 && totalReturnInterviews > 0) {
+  if (meets(childViewsRate, 90) && totalReturnInterviews > 0) {
     strengths.push(
       "Children's views are captured in the vast majority of return interviews — the home ensures that children's own perspectives on why they went missing or were absent are central to safeguarding analysis.",
     );
   }
 
-  if (actionsFollowUpRate >= 90 && interviewsWithActions.length > 0) {
+  if (meets(actionsFollowUpRate, 90) && interviewsWithActions.length > 0) {
     strengths.push(
       `${actionsFollowUpRate}% of return interview actions followed up — the home demonstrates that agreed actions translate into real change, not just documentation.`,
     );
   }
 
-  if (safetyPlanUpdateRate >= 90 && totalRiskUpdates > 0) {
+  if (meets(safetyPlanUpdateRate, 90) && totalRiskUpdates > 0) {
     strengths.push(
       `Safety plans updated in ${safetyPlanUpdateRate}% of risk reviews — the home ensures that safety planning remains dynamic and responsive to each episode.`,
     );
   }
 
-  if (referenceObtainedRate >= 90 && totalPoliceLiaisons > 0) {
+  if (meets(referenceObtainedRate, 90) && totalPoliceLiaisons > 0) {
     strengths.push(
       `Police reference numbers obtained in ${referenceObtainedRate}% of liaison contacts — robust record-keeping supporting evidenced police engagement.`,
     );
   }
 
-  if (multiAgencyMappingRate >= 80 && totalPatternAnalyses > 0) {
+  if (meets(multiAgencyMappingRate, 80) && totalPatternAnalyses > 0) {
     strengths.push(
       `${multiAgencyMappingRate}% of pattern analyses include multi-agency mapping — the home collaborates with partner agencies to build a comprehensive picture of risks and patterns.`,
     );
   }
 
-  if (debriefCompletionRate >= 90 && totalEpisodes > 0) {
+  if (meets(debriefCompletionRate, 90) && totalEpisodes > 0) {
     strengths.push(
       `Debriefing completed in ${debriefCompletionRate}% of episodes — the home uses debriefing to support both staff and children following missing or absent episodes.`,
     );
@@ -715,41 +712,41 @@ export function computeMissingPersonAbsentAuthority(
 
   const concerns: string[] = [];
 
-  if (protocolAdherenceRate < 50 && totalEpisodes > 0) {
+  if (below(protocolAdherenceRate, 50) && totalEpisodes > 0) {
     concerns.push(
       `Protocol adherence at only ${protocolAdherenceRate}% — the majority of missing and absent episodes are not managed in accordance with the home's procedures, creating significant safeguarding risk and regulatory non-compliance.`,
     );
-  } else if (protocolAdherenceRate < 80 && protocolAdherenceRate >= 50 && totalEpisodes > 0) {
+  } else if (below(protocolAdherenceRate, 80) && meets(protocolAdherenceRate, 50) && totalEpisodes > 0) {
     concerns.push(
       `Protocol adherence at ${protocolAdherenceRate}% — not all episodes are managed in accordance with missing person procedures, leaving gaps in safeguarding response.`,
     );
   }
 
-  if (returnInterviewRate < 50 && closedEpisodes > 0) {
+  if (below(returnInterviewRate, 50) && closedEpisodes > 0) {
     concerns.push(
       `Return interview rate at only ${returnInterviewRate}% — the majority of children who go missing or are absent without authority do not receive a return interview, meaning safeguarding concerns, exploitation risks, and push/pull factors are not being identified.`,
     );
-  } else if (returnInterviewRate < 80 && returnInterviewRate >= 50 && closedEpisodes > 0) {
+  } else if (below(returnInterviewRate, 80) && meets(returnInterviewRate, 50) && closedEpisodes > 0) {
     concerns.push(
       `Return interview coverage at ${returnInterviewRate}% — some children are missing return interviews, reducing the home's ability to identify and respond to underlying safeguarding concerns.`,
     );
   }
 
-  if (riskUpdateRate < 40 && totalEpisodes > 0) {
+  if (below(riskUpdateRate, 40) && totalEpisodes > 0) {
     concerns.push(
       `Risk assessment updates follow only ${riskUpdateRate}% of episodes — the majority of missing and absent episodes do not trigger risk assessment review, meaning risk levels and safety plans may not reflect the child's current situation.`,
     );
-  } else if (riskUpdateRate < 70 && riskUpdateRate >= 40 && totalEpisodes > 0) {
+  } else if (below(riskUpdateRate, 70) && meets(riskUpdateRate, 40) && totalEpisodes > 0) {
     concerns.push(
       `Risk update rate at ${riskUpdateRate}% — not all episodes trigger appropriate risk assessment review, potentially leaving outdated risk assessments in place.`,
     );
   }
 
-  if (policeLiaisonRate < 50 && totalEpisodes > 0) {
+  if (below(policeLiaisonRate, 50) && totalEpisodes > 0) {
     concerns.push(
       `Police liaison recorded for only ${policeLiaisonRate}% of episodes — inadequate engagement with the police undermines multi-agency safeguarding and may mean that intelligence about exploitation or harm is not being shared.`,
     );
-  } else if (policeLiaisonRate < 70 && policeLiaisonRate >= 50 && totalEpisodes > 0) {
+  } else if (below(policeLiaisonRate, 70) && meets(policeLiaisonRate, 50) && totalEpisodes > 0) {
     concerns.push(
       `Police liaison at ${policeLiaisonRate}% — engagement with the police is inconsistent, which may result in missed opportunities for joint safeguarding action.`,
     );
@@ -765,24 +762,24 @@ export function computeMissingPersonAbsentAuthority(
     );
   }
 
-  if (exploitationScreeningRate < 40 && totalRiskUpdates > 0) {
+  if (below(exploitationScreeningRate, 40) && totalRiskUpdates > 0) {
     concerns.push(
       `Exploitation screening completed in only ${exploitationScreeningRate}% of risk updates — the majority of missing and absent episodes are not being screened for exploitation, a fundamental gap in safeguarding under Reg 34.`,
     );
-  } else if (exploitationScreeningRate < 70 && exploitationScreeningRate >= 40 && totalRiskUpdates > 0) {
+  } else if (below(exploitationScreeningRate, 70) && meets(exploitationScreeningRate, 40) && totalRiskUpdates > 0) {
     concerns.push(
       `Exploitation screening at ${exploitationScreeningRate}% — not all risk updates include exploitation screening, which may mean exploitation indicators are being missed.`,
     );
   }
 
-  if (highRiskPoliceNotificationRate < 100 && highRiskEpisodes.length > 0) {
+  if (below(highRiskPoliceNotificationRate, 100) && highRiskEpisodes.length > 0) {
     const notNotified = highRiskEpisodes.length - highRiskPoliceNotified;
     concerns.push(
       `${notNotified} high/very-high risk episode${notNotified !== 1 ? "s" : ""} without police notification — failure to notify the police of high-risk missing episodes represents a critical safeguarding failure.`,
     );
   }
 
-  if (notificationTimelinessRate < 70 && totalEpisodes > 0) {
+  if (below(notificationTimelinessRate, 70) && totalEpisodes > 0) {
     concerns.push(
       `Only ${notificationTimelinessRate}% of notifications made within required timeframes — delayed notifications reduce the effectiveness of search and safeguarding responses and may breach regulatory requirements.`,
     );
@@ -804,25 +801,25 @@ export function computeMissingPersonAbsentAuthority(
     );
   }
 
-  if (independentInterviewRate < 50 && totalReturnInterviews > 0) {
+  if (below(independentInterviewRate, 50) && totalReturnInterviews > 0) {
     concerns.push(
       `Only ${independentInterviewRate}% of return interviews conducted independently — children may not feel safe disclosing concerns to staff from the home, reducing the effectiveness of return interviews as a safeguarding tool.`,
     );
   }
 
-  if (childViewsRate < 70 && totalReturnInterviews > 0) {
+  if (below(childViewsRate, 70) && totalReturnInterviews > 0) {
     concerns.push(
       `Children's views captured in only ${childViewsRate}% of return interviews — interviews that do not capture the child's perspective fail to meet their primary purpose of understanding the child's experience.`,
     );
   }
 
-  if (actionsFollowUpRate < 60 && interviewsWithActions.length > 0) {
+  if (below(actionsFollowUpRate, 60) && interviewsWithActions.length > 0) {
     concerns.push(
       `Only ${actionsFollowUpRate}% of return interview actions followed up — agreed actions are not translating into change, undermining the purpose of return interviews and the home's ability to prevent recurrence.`,
     );
   }
 
-  if (contextualSafeguardingRate < 50 && totalRiskUpdates > 0) {
+  if (below(contextualSafeguardingRate, 50) && totalRiskUpdates > 0) {
     concerns.push(
       `Contextual safeguarding considered in only ${contextualSafeguardingRate}% of risk updates — the home is not systematically examining the wider context in which children go missing, potentially missing environmental risks and exploitation indicators.`,
     );
@@ -840,7 +837,7 @@ export function computeMissingPersonAbsentAuthority(
     );
   }
 
-  if (debriefCompletionRate < 50 && totalEpisodes > 0) {
+  if (below(debriefCompletionRate, 50) && totalEpisodes > 0) {
     concerns.push(
       `Debriefing completed in only ${debriefCompletionRate}% of episodes — children and staff are not routinely debriefed following missing or absent episodes, missing opportunities for learning and emotional support.`,
     );
@@ -851,7 +848,7 @@ export function computeMissingPersonAbsentAuthority(
   const recommendations: MissingPersonRecommendation[] = [];
   let rank = 0;
 
-  if (protocolAdherenceRate < 50 && totalEpisodes > 0) {
+  if (below(protocolAdherenceRate, 50) && totalEpisodes > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -861,7 +858,7 @@ export function computeMissingPersonAbsentAuthority(
     });
   }
 
-  if (returnInterviewRate < 50 && closedEpisodes > 0) {
+  if (below(returnInterviewRate, 50) && closedEpisodes > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -871,7 +868,7 @@ export function computeMissingPersonAbsentAuthority(
     });
   }
 
-  if (exploitationScreeningRate < 40 && totalRiskUpdates > 0) {
+  if (below(exploitationScreeningRate, 40) && totalRiskUpdates > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -881,7 +878,7 @@ export function computeMissingPersonAbsentAuthority(
     });
   }
 
-  if (highRiskPoliceNotificationRate < 100 && highRiskEpisodes.length > 0) {
+  if (below(highRiskPoliceNotificationRate, 100) && highRiskEpisodes.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -891,7 +888,7 @@ export function computeMissingPersonAbsentAuthority(
     });
   }
 
-  if (riskUpdateRate < 40 && totalEpisodes > 0) {
+  if (below(riskUpdateRate, 40) && totalEpisodes > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -901,7 +898,7 @@ export function computeMissingPersonAbsentAuthority(
     });
   }
 
-  if (notificationTimelinessRate < 70 && totalEpisodes > 0) {
+  if (below(notificationTimelinessRate, 70) && totalEpisodes > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -911,7 +908,7 @@ export function computeMissingPersonAbsentAuthority(
     });
   }
 
-  if (contextualSafeguardingRate < 50 && totalRiskUpdates > 0) {
+  if (below(contextualSafeguardingRate, 50) && totalRiskUpdates > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -921,7 +918,7 @@ export function computeMissingPersonAbsentAuthority(
     });
   }
 
-  if (independentInterviewRate < 50 && totalReturnInterviews > 0) {
+  if (below(independentInterviewRate, 50) && totalReturnInterviews > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -932,8 +929,8 @@ export function computeMissingPersonAbsentAuthority(
   }
 
   if (
-    protocolAdherenceRate >= 50 &&
-    protocolAdherenceRate < 80 &&
+    meets(protocolAdherenceRate, 50) &&
+    below(protocolAdherenceRate, 80) &&
     totalEpisodes > 0
   ) {
     recommendations.push({
@@ -946,8 +943,8 @@ export function computeMissingPersonAbsentAuthority(
   }
 
   if (
-    returnInterviewRate >= 50 &&
-    returnInterviewRate < 80 &&
+    meets(returnInterviewRate, 50) &&
+    below(returnInterviewRate, 80) &&
     closedEpisodes > 0
   ) {
     recommendations.push({
@@ -960,8 +957,8 @@ export function computeMissingPersonAbsentAuthority(
   }
 
   if (
-    riskUpdateRate >= 40 &&
-    riskUpdateRate < 70 &&
+    meets(riskUpdateRate, 40) &&
+    below(riskUpdateRate, 70) &&
     totalEpisodes > 0
   ) {
     recommendations.push({
@@ -974,8 +971,8 @@ export function computeMissingPersonAbsentAuthority(
   }
 
   if (
-    policeLiaisonRate >= 50 &&
-    policeLiaisonRate < 70 &&
+    meets(policeLiaisonRate, 50) &&
+    below(policeLiaisonRate, 70) &&
     totalEpisodes > 0
   ) {
     recommendations.push({
@@ -987,7 +984,7 @@ export function computeMissingPersonAbsentAuthority(
     });
   }
 
-  if (policeLiaisonRate < 50 && totalEpisodes > 0) {
+  if (below(policeLiaisonRate, 50) && totalEpisodes > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -997,7 +994,7 @@ export function computeMissingPersonAbsentAuthority(
     });
   }
 
-  if (actionsFollowUpRate < 60 && interviewsWithActions.length > 0) {
+  if (below(actionsFollowUpRate, 60) && interviewsWithActions.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1032,8 +1029,8 @@ export function computeMissingPersonAbsentAuthority(
   }
 
   if (
-    exploitationScreeningRate >= 40 &&
-    exploitationScreeningRate < 70 &&
+    meets(exploitationScreeningRate, 40) &&
+    below(exploitationScreeningRate, 70) &&
     totalRiskUpdates > 0
   ) {
     recommendations.push({
@@ -1055,7 +1052,7 @@ export function computeMissingPersonAbsentAuthority(
     });
   }
 
-  if (childViewsRate < 70 && totalReturnInterviews > 0) {
+  if (below(childViewsRate, 70) && totalReturnInterviews > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1065,7 +1062,7 @@ export function computeMissingPersonAbsentAuthority(
     });
   }
 
-  if (multiAgencyMappingRate < 50 && totalPatternAnalyses > 0) {
+  if (below(multiAgencyMappingRate, 50) && totalPatternAnalyses > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1075,7 +1072,7 @@ export function computeMissingPersonAbsentAuthority(
     });
   }
 
-  if (debriefCompletionRate < 70 && totalEpisodes > 0) {
+  if (below(debriefCompletionRate, 70) && totalEpisodes > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1085,7 +1082,7 @@ export function computeMissingPersonAbsentAuthority(
     });
   }
 
-  if (triggersRecordedRate < 70 && totalEpisodes > 0) {
+  if (below(triggersRecordedRate, 70) && totalEpisodes > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1095,7 +1092,7 @@ export function computeMissingPersonAbsentAuthority(
     });
   }
 
-  if (sharedWithPARate < 70 && totalPatternAnalyses > 0) {
+  if (below(sharedWithPARate, 70) && totalPatternAnalyses > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1111,35 +1108,35 @@ export function computeMissingPersonAbsentAuthority(
 
   // -- Critical insights --
 
-  if (protocolAdherenceRate < 50 && totalEpisodes > 0) {
+  if (below(protocolAdherenceRate, 50) && totalEpisodes > 0) {
     insights.push({
       text: `Protocol adherence at only ${protocolAdherenceRate}%. When protocols are not followed, children's safety during missing and absent episodes cannot be assured. Ofsted will view systematic protocol failure as evidence that the home is not meeting its safeguarding obligations under Reg 34. Urgent staff training and management oversight is needed.`,
       severity: "critical",
     });
   }
 
-  if (returnInterviewRate < 50 && closedEpisodes > 0) {
+  if (below(returnInterviewRate, 50) && closedEpisodes > 0) {
     insights.push({
       text: `Return interviews completed for only ${returnInterviewRate}% of closed episodes. Return interviews are a critical safeguarding tool — they are the primary means of identifying exploitation, abuse, and other safeguarding concerns following missing episodes. Without them, the home has a significant blind spot in its safeguarding framework.`,
       severity: "critical",
     });
   }
 
-  if (exploitationScreeningRate < 40 && totalRiskUpdates > 0) {
+  if (below(exploitationScreeningRate, 40) && totalRiskUpdates > 0) {
     insights.push({
       text: `Exploitation screening at only ${exploitationScreeningRate}%. Missing and absent episodes are a key indicator of criminal and sexual exploitation. Without systematic screening, children being exploited may not be identified, leaving them at continued risk. This is a critical gap that Ofsted will scrutinise under Reg 34.`,
       severity: "critical",
     });
   }
 
-  if (highRiskPoliceNotificationRate < 100 && highRiskEpisodes.length > 0) {
+  if (below(highRiskPoliceNotificationRate, 100) && highRiskEpisodes.length > 0) {
     insights.push({
       text: `Not all high/very-high risk episodes have police notification. Failure to notify the police of high-risk missing episodes is a serious safeguarding failure — the police are a key partner in locating and safeguarding missing children. Every high-risk episode must trigger immediate police notification.`,
       severity: "critical",
     });
   }
 
-  if (riskUpdateRate < 40 && totalEpisodes > 0) {
+  if (below(riskUpdateRate, 40) && totalEpisodes > 0) {
     insights.push({
       text: `Risk assessments updated for only ${riskUpdateRate}% of episodes. Without post-episode risk review, the home's risk assessments and safety plans may be based on outdated information, potentially leaving children at unrecognised risk. Each episode should automatically trigger a risk review cycle.`,
       severity: "critical",
@@ -1156,8 +1153,8 @@ export function computeMissingPersonAbsentAuthority(
   // -- Warning insights --
 
   if (
-    protocolAdherenceRate >= 50 &&
-    protocolAdherenceRate < 80 &&
+    meets(protocolAdherenceRate, 50) &&
+    below(protocolAdherenceRate, 80) &&
     totalEpisodes > 0
   ) {
     insights.push({
@@ -1167,8 +1164,8 @@ export function computeMissingPersonAbsentAuthority(
   }
 
   if (
-    returnInterviewRate >= 50 &&
-    returnInterviewRate < 80 &&
+    meets(returnInterviewRate, 50) &&
+    below(returnInterviewRate, 80) &&
     closedEpisodes > 0
   ) {
     insights.push({
@@ -1178,8 +1175,8 @@ export function computeMissingPersonAbsentAuthority(
   }
 
   if (
-    riskUpdateRate >= 40 &&
-    riskUpdateRate < 70 &&
+    meets(riskUpdateRate, 40) &&
+    below(riskUpdateRate, 70) &&
     totalEpisodes > 0
   ) {
     insights.push({
@@ -1189,8 +1186,8 @@ export function computeMissingPersonAbsentAuthority(
   }
 
   if (
-    policeLiaisonRate >= 50 &&
-    policeLiaisonRate < 70 &&
+    meets(policeLiaisonRate, 50) &&
+    below(policeLiaisonRate, 70) &&
     totalEpisodes > 0
   ) {
     insights.push({
@@ -1211,8 +1208,8 @@ export function computeMissingPersonAbsentAuthority(
   }
 
   if (
-    exploitationScreeningRate >= 40 &&
-    exploitationScreeningRate < 70 &&
+    meets(exploitationScreeningRate, 40) &&
+    below(exploitationScreeningRate, 70) &&
     totalRiskUpdates > 0
   ) {
     insights.push({
@@ -1241,8 +1238,8 @@ export function computeMissingPersonAbsentAuthority(
   }
 
   if (
-    independentInterviewRate >= 50 &&
-    independentInterviewRate < 70 &&
+    meets(independentInterviewRate, 50) &&
+    below(independentInterviewRate, 70) &&
     totalReturnInterviews > 0
   ) {
     insights.push({
@@ -1251,14 +1248,14 @@ export function computeMissingPersonAbsentAuthority(
     });
   }
 
-  if (riskAssessmentTimelinessRate < 70 && totalRiskUpdates > 0) {
+  if (below(riskAssessmentTimelinessRate, 70) && totalRiskUpdates > 0) {
     insights.push({
       text: `Only ${riskAssessmentTimelinessRate}% of risk assessments updated within 48 hours. Timely risk review is essential to ensure that safety plans reflect the current situation — delayed updates may leave children at unrecognised risk between episodes.`,
       severity: "warning",
     });
   }
 
-  if (interviewTimelinessRate < 70 && totalReturnInterviews > 0) {
+  if (below(interviewTimelinessRate, 70) && totalReturnInterviews > 0) {
     insights.push({
       text: `Only ${interviewTimelinessRate}% of return interviews completed within 72 hours. Timely interviews capture more reliable information while the child's experience is fresh. Delayed interviews reduce the quality of safeguarding intelligence gathered.`,
       severity: "warning",
@@ -1311,8 +1308,8 @@ export function computeMissingPersonAbsentAuthority(
   }
 
   if (
-    protocolAdherenceRate >= 95 &&
-    notificationTimelinessRate >= 95 &&
+    meets(protocolAdherenceRate, 95) &&
+    meets(notificationTimelinessRate, 95) &&
     totalEpisodes > 0
   ) {
     insights.push({
@@ -1322,7 +1319,7 @@ export function computeMissingPersonAbsentAuthority(
   }
 
   if (
-    returnInterviewRate >= 95 &&
+    meets(returnInterviewRate, 95) &&
     (returnInterviewQualityAvg ?? 0) >= 4.0 &&
     closedEpisodes > 0 &&
     totalReturnInterviews > 0
@@ -1334,8 +1331,8 @@ export function computeMissingPersonAbsentAuthority(
   }
 
   if (
-    exploitationScreeningRate >= 90 &&
-    contextualSafeguardingRate >= 90 &&
+    meets(exploitationScreeningRate, 90) &&
+    meets(contextualSafeguardingRate, 90) &&
     totalRiskUpdates > 0
   ) {
     insights.push({
@@ -1357,8 +1354,8 @@ export function computeMissingPersonAbsentAuthority(
   }
 
   if (
-    policeLiaisonRate >= 90 &&
-    referenceObtainedRate >= 90 &&
+    meets(policeLiaisonRate, 90) &&
+    meets(referenceObtainedRate, 90) &&
     totalEpisodes > 0 &&
     totalPoliceLiaisons > 0
   ) {
@@ -1369,8 +1366,8 @@ export function computeMissingPersonAbsentAuthority(
   }
 
   if (
-    childViewsRate >= 90 &&
-    pushPullRate >= 90 &&
+    meets(childViewsRate, 90) &&
+    meets(pushPullRate, 90) &&
     totalReturnInterviews > 0
   ) {
     insights.push({
@@ -1380,8 +1377,8 @@ export function computeMissingPersonAbsentAuthority(
   }
 
   if (
-    safetyPlanUpdateRate >= 90 &&
-    carePlanUpdateRate >= 90 &&
+    meets(safetyPlanUpdateRate, 90) &&
+    meets(carePlanUpdateRate, 90) &&
     totalRiskUpdates > 0
   ) {
     insights.push({
@@ -1398,7 +1395,7 @@ export function computeMissingPersonAbsentAuthority(
   }
 
   if (
-    actionsFollowUpRate >= 90 &&
+    meets(actionsFollowUpRate, 90) &&
     interviewsWithActions.length > 0
   ) {
     insights.push({

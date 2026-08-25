@@ -10,7 +10,7 @@
 //             routeSafetyRecords, communityPartnershipRecords
 // ==============================================================================
 
-import { below, meets } from "@/lib/metrics/rate";
+import { rate, below, meets } from "@/lib/metrics/rate";
 
 // -- Input Types --------------------------------------------------------------
 
@@ -160,7 +160,7 @@ export interface NeighbourhoodSafetyRiskAssessmentResult {
   neighbourhood_rating: NeighbourhoodSafetyRating;
   neighbourhood_score: number;
   headline: string;
-  // child_awareness_rate uses pct() over a manual multi-source denominator
+  // child_awareness_rate uses rate() over a manual multi-source denominator
   // (deterministic 0 on empty). The five composite rates below are null on
   // empty: no records ⇒ no signal. "0% risk assessment / 0% hazard resolution
   // / 0% route safety" would read as a home actively ignoring neighbourhood
@@ -170,7 +170,8 @@ export interface NeighbourhoodSafetyRiskAssessmentResult {
   hazard_identification_rate: number | null;
   route_safety_rate: number | null;
   community_partnership_rate: number | null;
-  child_awareness_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_awareness_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: NeighbourhoodSafetyRecommendation[];
@@ -178,10 +179,6 @@ export interface NeighbourhoodSafetyRiskAssessmentResult {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -210,7 +207,7 @@ function emptyResult(
     hazard_identification_rate: null,
     route_safety_rate: null,
     community_partnership_rate: null,
-    child_awareness_rate: 0,
+    child_awareness_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -294,43 +291,43 @@ export function computeNeighbourhoodSafetyRiskAssessment(
   const mitigationsImplemented = risk_assessment_records.filter(
     (r) => r.mitigations_implemented,
   ).length;
-  const mitigationDocRate = pct(mitigationsDocumented, totalRiskAssessments);
-  const mitigationImplRate = pct(mitigationsImplemented, totalRiskAssessments);
+  const mitigationDocRate = rate(mitigationsDocumented, totalRiskAssessments);
+  const mitigationImplRate = rate(mitigationsImplemented, totalRiskAssessments);
 
   const exploitationReviewed = risk_assessment_records.filter(
     (r) => r.exploitation_risk_reviewed,
   ).length;
-  const exploitationReviewRate = pct(exploitationReviewed, totalRiskAssessments);
+  const exploitationReviewRate = rate(exploitationReviewed, totalRiskAssessments);
 
   const gangReviewed = risk_assessment_records.filter(
     (r) => r.gang_activity_reviewed,
   ).length;
-  const gangReviewRate = pct(gangReviewed, totalRiskAssessments);
+  const gangReviewRate = rate(gangReviewed, totalRiskAssessments);
 
   const managerApproved = risk_assessment_records.filter(
     (r) => r.approved_by_manager,
   ).length;
-  const managerApprovalRate = pct(managerApproved, totalRiskAssessments);
+  const managerApprovalRate = rate(managerApproved, totalRiskAssessments);
 
   const overdueRiskAssessments = risk_assessment_records.filter(
     (r) => r.overdue,
   ).length;
-  const overdueRiskRate = pct(overdueRiskAssessments, totalRiskAssessments);
+  const overdueRiskRate = rate(overdueRiskAssessments, totalRiskAssessments);
 
   const childConsulted = risk_assessment_records.filter(
     (r) => r.child_consulted,
   ).length;
-  const childConsultedRate = pct(childConsulted, totalRiskAssessments);
+  const childConsultedRate = rate(childConsulted, totalRiskAssessments);
 
   const outcomeShared = risk_assessment_records.filter(
     (r) => r.outcome_shared_with_child,
   ).length;
-  const outcomeSharedRate = pct(outcomeShared, totalRiskAssessments);
+  const outcomeSharedRate = rate(outcomeShared, totalRiskAssessments);
 
   const highCriticalAssessments = risk_assessment_records.filter(
     (r) => r.risk_level === "high" || r.risk_level === "critical",
   ).length;
-  const highCriticalRate = pct(highCriticalAssessments, totalRiskAssessments);
+  const highCriticalRate = rate(highCriticalAssessments, totalRiskAssessments);
 
   // Comprehensive coverage: all 7 areas reviewed
   const comprehensiveAssessments = risk_assessment_records.filter(
@@ -343,42 +340,39 @@ export function computeNeighbourhoodSafetyRiskAssessment(
       r.traffic_risk_reviewed &&
       r.environmental_risk_reviewed,
   ).length;
-  const comprehensiveCoverageRate = pct(comprehensiveAssessments, totalRiskAssessments);
+  const comprehensiveCoverageRate = rate(comprehensiveAssessments, totalRiskAssessments);
 
   // Risk assessment composite rate
   const riskAssessmentRate: number | null =
-    totalRiskAssessments > 0
-      ? Math.round(
-          (mitigationDocRate + mitigationImplRate + comprehensiveCoverageRate + managerApprovalRate) / 4,
-        )
-      : null;
+    totalRiskAssessments > 0 ? Math.round(
+          (mitigationDocRate! + mitigationImplRate! + comprehensiveCoverageRate! + managerApprovalRate!) / 4) : null;
 
   // --- Safety mapping coverage ---
   const totalMappings = safety_mapping_records.length;
   const staffWalked = safety_mapping_records.filter(
     (r) => r.staff_walked_area,
   ).length;
-  const staffWalkedRate = pct(staffWalked, totalMappings);
+  const staffWalkedRate = rate(staffWalked, totalMappings);
 
   const lightingAssessed = safety_mapping_records.filter(
     (r) => r.lighting_assessed,
   ).length;
-  const lightingAssessedRate = pct(lightingAssessed, totalMappings);
+  const lightingAssessedRate = rate(lightingAssessed, totalMappings);
 
   const lightingAdequate = safety_mapping_records.filter(
     (r) => r.lighting_adequate,
   ).length;
-  const lightingAdequateRate = pct(lightingAdequate, totalMappings);
+  const lightingAdequateRate = rate(lightingAdequate, totalMappings);
 
   const cctvNoted = safety_mapping_records.filter(
     (r) => r.cctv_coverage_noted,
   ).length;
-  const cctvRate = pct(cctvNoted, totalMappings);
+  const cctvRate = rate(cctvNoted, totalMappings);
 
   const updateFrequencyMet = safety_mapping_records.filter(
     (r) => r.update_frequency_met,
   ).length;
-  const updateFrequencyRate = pct(updateFrequencyMet, totalMappings);
+  const updateFrequencyRate = rate(updateFrequencyMet, totalMappings);
 
   const childInvolvedMapping = safety_mapping_records.filter(
     (r) => r.child_involvement,
@@ -390,33 +384,30 @@ export function computeNeighbourhoodSafetyRiskAssessment(
 
   // Safety mapping composite rate
   const safetyMappingRate: number | null =
-    totalMappings > 0
-      ? Math.round(
-          (staffWalkedRate + lightingAssessedRate + updateFrequencyRate + cctvRate) / 4,
-        )
-      : null;
+    totalMappings > 0 ? Math.round(
+          (staffWalkedRate! + lightingAssessedRate! + updateFrequencyRate! + cctvRate!) / 4) : null;
 
   // --- Hazard identification and resolution ---
   const totalHazards = hazard_records.length;
   const reportedHazards = hazard_records.filter(
     (r) => r.reported_to_authority,
   ).length;
-  const hazardReportingRate = pct(reportedHazards, totalHazards);
+  const hazardReportingRate = rate(reportedHazards, totalHazards);
 
   const mitigatedHazards = hazard_records.filter(
     (r) => r.mitigation_in_place,
   ).length;
-  const hazardMitigationRate = pct(mitigatedHazards, totalHazards);
+  const hazardMitigationRate = rate(mitigatedHazards, totalHazards);
 
   const resolvedHazards = hazard_records.filter(
     (r) => r.resolved,
   ).length;
-  const hazardResolutionRate = pct(resolvedHazards, totalHazards);
+  const hazardResolutionRate = rate(resolvedHazards, totalHazards);
 
   const childrenInformedHazards = hazard_records.filter(
     (r) => r.children_informed,
   ).length;
-  const childrenInformedHazardRate = pct(childrenInformedHazards, totalHazards);
+  const childrenInformedHazardRate = rate(childrenInformedHazards, totalHazards);
 
   const unresolvedHighCritical = hazard_records.filter(
     (r) => (r.severity === "high" || r.severity === "critical") && !r.resolved,
@@ -425,7 +416,7 @@ export function computeNeighbourhoodSafetyRiskAssessment(
   const recurrentHazards = hazard_records.filter(
     (r) => r.recurrent,
   ).length;
-  const recurrentHazardRate = pct(recurrentHazards, totalHazards);
+  const recurrentHazardRate = rate(recurrentHazards, totalHazards);
 
   const avgDaysToResolve: number | null =
     resolvedHazards > 0
@@ -438,93 +429,87 @@ export function computeNeighbourhoodSafetyRiskAssessment(
 
   // Hazard identification composite rate
   const hazardIdentificationRate: number | null =
-    totalHazards > 0
-      ? Math.round(
-          (hazardReportingRate + hazardMitigationRate + hazardResolutionRate) / 3,
-        )
-      : null;
+    totalHazards > 0 ? Math.round(
+          (hazardReportingRate! + hazardMitigationRate! + hazardResolutionRate!) / 3) : null;
 
   // --- Route safety assessment ---
   const totalRoutes = route_safety_records.length;
   const routeMitigated = route_safety_records.filter(
     (r) => r.mitigations_in_place,
   ).length;
-  const routeMitigationRate = pct(routeMitigated, totalRoutes);
+  const routeMitigationRate = rate(routeMitigated, totalRoutes);
 
   const routeChildWalked = route_safety_records.filter(
     (r) => r.child_walked_route,
   ).length;
-  const routeChildWalkedRate = pct(routeChildWalked, totalRoutes);
+  const routeChildWalkedRate = rate(routeChildWalked, totalRoutes);
 
   const routeChildConfident = route_safety_records.filter(
     (r) => r.child_confident_on_route,
   ).length;
-  const routeChildConfidentRate = pct(routeChildConfident, totalRoutes);
+  const routeChildConfidentRate = rate(routeChildConfident, totalRoutes);
 
   const routeSafeCrossings = route_safety_records.filter(
     (r) => r.safe_crossing_points,
   ).length;
-  const safeCrossingRate = pct(routeSafeCrossings, totalRoutes);
+  const safeCrossingRate = rate(routeSafeCrossings, totalRoutes);
 
   const routeAdequateLighting = route_safety_records.filter(
     (r) => r.adequate_lighting,
   ).length;
-  const routeLightingRate = pct(routeAdequateLighting, totalRoutes);
+  const routeLightingRate = rate(routeAdequateLighting, totalRoutes);
 
   const routeAlternative = route_safety_records.filter(
     (r) => r.alternative_route_available,
   ).length;
-  const alternativeRouteRate = pct(routeAlternative, totalRoutes);
+  const alternativeRouteRate = rate(routeAlternative, totalRoutes);
 
   const overdueRoutes = route_safety_records.filter(
     (r) => r.overdue,
   ).length;
-  const overdueRouteRate = pct(overdueRoutes, totalRoutes);
+  const overdueRouteRate = rate(overdueRoutes, totalRoutes);
 
   const highCriticalRoutes = route_safety_records.filter(
     (r) => r.risk_level === "high" || r.risk_level === "critical",
   ).length;
-  const highCriticalRouteRate = pct(highCriticalRoutes, totalRoutes);
+  const highCriticalRouteRate = rate(highCriticalRoutes, totalRoutes);
 
   const highTrafficRoutes = route_safety_records.filter(
     (r) => r.traffic_risk_level === "high",
   ).length;
-  const highTrafficRate = pct(highTrafficRoutes, totalRoutes);
+  const highTrafficRate = rate(highTrafficRoutes, totalRoutes);
 
   // Route safety composite rate
   const routeSafetyRate: number | null =
-    totalRoutes > 0
-      ? Math.round(
-          (routeMitigationRate + routeChildWalkedRate + safeCrossingRate + routeLightingRate) / 4,
-        )
-      : null;
+    totalRoutes > 0 ? Math.round(
+          (routeMitigationRate! + routeChildWalkedRate! + safeCrossingRate! + routeLightingRate!) / 4) : null;
 
   // --- Community partnership effectiveness ---
   const totalPartnerships = community_partnership_records.length;
   const activePartnerships = community_partnership_records.filter(
     (r) => r.relationship_status === "active",
   ).length;
-  const activePartnershipRate = pct(activePartnerships, totalPartnerships);
+  const activePartnershipRate = rate(activePartnerships, totalPartnerships);
 
   const frequencyMet = community_partnership_records.filter(
     (r) => r.contact_frequency_met,
   ).length;
-  const contactFrequencyRate = pct(frequencyMet, totalPartnerships);
+  const contactFrequencyRate = rate(frequencyMet, totalPartnerships);
 
   const infoSharingAgreed = community_partnership_records.filter(
     (r) => r.information_sharing_agreement,
   ).length;
-  const infoSharingRate = pct(infoSharingAgreed, totalPartnerships);
+  const infoSharingRate = rate(infoSharingAgreed, totalPartnerships);
 
   const jointRiskAssessments = community_partnership_records.filter(
     (r) => r.joint_risk_assessments,
   ).length;
-  const jointRiskRate = pct(jointRiskAssessments, totalPartnerships);
+  const jointRiskRate = rate(jointRiskAssessments, totalPartnerships);
 
   const safeguardingProtocols = community_partnership_records.filter(
     (r) => r.safeguarding_protocols_agreed,
   ).length;
-  const safeguardingProtocolRate = pct(safeguardingProtocols, totalPartnerships);
+  const safeguardingProtocolRate = rate(safeguardingProtocols, totalPartnerships);
 
   const effectivenessSum = community_partnership_records.reduce(
     (sum, r) => sum + r.partnership_effectiveness, 0,
@@ -541,15 +526,12 @@ export function computeNeighbourhoodSafetyRiskAssessment(
   const dormantPartnerships = community_partnership_records.filter(
     (r) => r.relationship_status === "dormant",
   ).length;
-  const dormantPartnershipRate = pct(dormantPartnerships, totalPartnerships);
+  const dormantPartnershipRate = rate(dormantPartnerships, totalPartnerships);
 
   // Community partnership composite rate
   const communityPartnershipRate: number | null =
-    totalPartnerships > 0
-      ? Math.round(
-          (activePartnershipRate + contactFrequencyRate + infoSharingRate + safeguardingProtocolRate) / 4,
-        )
-      : null;
+    totalPartnerships > 0 ? Math.round(
+          (activePartnershipRate! + contactFrequencyRate! + infoSharingRate! + safeguardingProtocolRate!) / 4) : null;
 
   // --- Child awareness composite ---
   const childAwarenessDenominator =
@@ -559,7 +541,7 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     childrenInformedHazards +
     routeChildWalked +
     childInvolvedMapping;
-  const childAwarenessRate = pct(childAwarenessNumerator, childAwarenessDenominator);
+  const childAwarenessRate = rate(childAwarenessNumerator, childAwarenessDenominator);
 
   // -- Scoring: base 52 ------------------------------------------------------
 
@@ -586,11 +568,11 @@ export function computeNeighbourhoodSafetyRiskAssessment(
   else if (meets(communityPartnershipRate, 70)) score += 2;
 
   // --- Bonus 6: childAwarenessRate (>=80: +3, >=60: +1) ---
-  if (childAwarenessRate >= 80) score += 3;
-  else if (childAwarenessRate >= 60) score += 1;
+  if (meets(childAwarenessRate, 80)) score += 3;
+  else if (meets(childAwarenessRate, 60)) score += 1;
 
   // --- Bonus 7: comprehensiveCoverageRate (>=90: +2) ---
-  if (comprehensiveCoverageRate >= 90 && totalRiskAssessments > 0) score += 2;
+  if (meets(comprehensiveCoverageRate, 90) && totalRiskAssessments > 0) score += 2;
 
   // -- Penalties (4 with guards) ----------------------------------------------
 
@@ -624,29 +606,29 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     );
   }
 
-  if (comprehensiveCoverageRate >= 90 && totalRiskAssessments > 0) {
+  if (meets(comprehensiveCoverageRate, 90) && totalRiskAssessments > 0) {
     strengths.push(
       `${comprehensiveCoverageRate}% of risk assessments cover all seven key areas (crime, ASB, drugs, exploitation, gangs, traffic, environment) -- assessments are thorough and leave no area unexamined.`,
     );
-  } else if (comprehensiveCoverageRate >= 70 && totalRiskAssessments > 0) {
+  } else if (meets(comprehensiveCoverageRate, 70) && totalRiskAssessments > 0) {
     strengths.push(
       `${comprehensiveCoverageRate}% of risk assessments cover all seven key areas -- most assessments demonstrate comprehensive area coverage.`,
     );
   }
 
-  if (mitigationImplRate >= 90 && totalRiskAssessments > 0) {
+  if (meets(mitigationImplRate, 90) && totalRiskAssessments > 0) {
     strengths.push(
       `${mitigationImplRate}% of identified risk mitigations have been implemented -- the home moves decisively from risk identification to protective action.`,
     );
   }
 
-  if (managerApprovalRate >= 90 && totalRiskAssessments > 0) {
+  if (meets(managerApprovalRate, 90) && totalRiskAssessments > 0) {
     strengths.push(
       `${managerApprovalRate}% of risk assessments are manager-approved -- strong management oversight ensures quality and accountability in risk assessment.`,
     );
   }
 
-  if (exploitationReviewRate >= 90 && totalRiskAssessments > 0) {
+  if (meets(exploitationReviewRate, 90) && totalRiskAssessments > 0) {
     strengths.push(
       `Exploitation risk reviewed in ${exploitationReviewRate}% of assessments -- the home is proactive in identifying and mitigating exploitation threats in the local area.`,
     );
@@ -662,7 +644,7 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     );
   }
 
-  if (staffWalkedRate >= 90 && totalMappings > 0) {
+  if (meets(staffWalkedRate, 90) && totalMappings > 0) {
     strengths.push(
       `Staff have physically walked ${staffWalkedRate}% of mapped areas -- first-hand knowledge of the neighbourhood ensures assessments reflect ground-level reality.`,
     );
@@ -674,7 +656,7 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     );
   }
 
-  if (lightingAdequateRate >= 90 && totalMappings > 0) {
+  if (meets(lightingAdequateRate, 90) && totalMappings > 0) {
     strengths.push(
       `Lighting assessed as adequate in ${lightingAdequateRate}% of mapped areas -- the local environment supports safe movement after dark.`,
     );
@@ -690,7 +672,7 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     );
   }
 
-  if (hazardResolutionRate >= 90 && totalHazards > 0) {
+  if (meets(hazardResolutionRate, 90) && totalHazards > 0) {
     strengths.push(
       `${hazardResolutionRate}% of identified hazards resolved -- the home drives hazards through to full resolution, not just temporary mitigation.`,
     );
@@ -702,7 +684,7 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     );
   }
 
-  if (childrenInformedHazardRate >= 90 && totalHazards > 0) {
+  if (meets(childrenInformedHazardRate, 90) && totalHazards > 0) {
     strengths.push(
       `Children informed about ${childrenInformedHazardRate}% of identified hazards -- children are empowered to recognise and avoid environmental dangers.`,
     );
@@ -718,19 +700,19 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     );
   }
 
-  if (routeChildConfidentRate >= 80 && totalRoutes > 0) {
+  if (meets(routeChildConfidentRate, 80) && totalRoutes > 0) {
     strengths.push(
       `${routeChildConfidentRate}% of children report confidence on their assessed routes -- children feel safe navigating their neighbourhood independently.`,
     );
   }
 
-  if (safeCrossingRate >= 90 && totalRoutes > 0) {
+  if (meets(safeCrossingRate, 90) && totalRoutes > 0) {
     strengths.push(
       `Safe crossing points confirmed on ${safeCrossingRate}% of assessed routes -- pedestrian safety is a clear priority in route planning.`,
     );
   }
 
-  if (alternativeRouteRate >= 70 && totalRoutes > 0) {
+  if (meets(alternativeRouteRate, 70) && totalRoutes > 0) {
     strengths.push(
       `Alternative routes available for ${alternativeRouteRate}% of assessed routes -- contingency planning ensures children always have a safe option.`,
     );
@@ -752,19 +734,19 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     );
   }
 
-  if (infoSharingRate >= 90 && totalPartnerships > 0) {
+  if (meets(infoSharingRate, 90) && totalPartnerships > 0) {
     strengths.push(
       `Information sharing agreements in place with ${infoSharingRate}% of partners -- the home can access and share safety-critical intelligence effectively.`,
     );
   }
 
-  if (safeguardingProtocolRate >= 90 && totalPartnerships > 0) {
+  if (meets(safeguardingProtocolRate, 90) && totalPartnerships > 0) {
     strengths.push(
       `Safeguarding protocols agreed with ${safeguardingProtocolRate}% of partners -- clear safeguarding expectations underpin all community safety partnerships.`,
     );
   }
 
-  if (jointRiskRate >= 70 && totalPartnerships > 0) {
+  if (meets(jointRiskRate, 70) && totalPartnerships > 0) {
     strengths.push(
       `Joint risk assessments conducted with ${jointRiskRate}% of partners -- collaborative risk assessment strengthens the home's understanding of neighbourhood threats.`,
     );
@@ -776,23 +758,23 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     );
   }
 
-  if (childAwarenessRate >= 80 && childAwarenessDenominator > 0) {
+  if (meets(childAwarenessRate, 80) && childAwarenessDenominator > 0) {
     strengths.push(
       `Child awareness and involvement at ${childAwarenessRate}% -- children are consulted on risk assessments, informed about hazards, walked through routes, and involved in safety mapping. Their voice genuinely shapes safety planning.`,
     );
-  } else if (childAwarenessRate >= 60 && childAwarenessDenominator > 0) {
+  } else if (meets(childAwarenessRate, 60) && childAwarenessDenominator > 0) {
     strengths.push(
       `Child awareness and involvement at ${childAwarenessRate}% -- children are regularly included in neighbourhood safety processes.`,
     );
   }
 
-  if (childConsultedRate >= 90 && totalRiskAssessments > 0) {
+  if (meets(childConsultedRate, 90) && totalRiskAssessments > 0) {
     strengths.push(
       `Children consulted in ${childConsultedRate}% of risk assessments -- children's lived experience of the neighbourhood directly informs risk management decisions.`,
     );
   }
 
-  if (outcomeSharedRate >= 90 && totalRiskAssessments > 0) {
+  if (meets(outcomeSharedRate, 90) && totalRiskAssessments > 0) {
     strengths.push(
       `Risk assessment outcomes shared with children in ${outcomeSharedRate}% of cases -- children understand the safety measures in place for their protection.`,
     );
@@ -812,37 +794,37 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     );
   }
 
-  if (comprehensiveCoverageRate < 50 && totalRiskAssessments > 0) {
+  if (below(comprehensiveCoverageRate, 50) && totalRiskAssessments > 0) {
     concerns.push(
       `Only ${comprehensiveCoverageRate}% of risk assessments cover all seven key areas -- incomplete assessments leave blind spots in the home's understanding of neighbourhood threats.`,
     );
   }
 
-  if (overdueRiskRate >= 20 && totalRiskAssessments > 0) {
+  if (meets(overdueRiskRate, 20) && totalRiskAssessments > 0) {
     concerns.push(
       `${overdueRiskRate}% of risk assessments are overdue for review -- outdated assessments may not reflect current neighbourhood risks and could leave children exposed to unidentified threats.`,
     );
   }
 
-  if (exploitationReviewRate < 70 && totalRiskAssessments > 0) {
+  if (below(exploitationReviewRate, 70) && totalRiskAssessments > 0) {
     concerns.push(
       `Exploitation risk reviewed in only ${exploitationReviewRate}% of assessments -- failure to consistently assess exploitation risk is a serious safeguarding gap given the vulnerability of looked-after children.`,
     );
   }
 
-  if (gangReviewRate < 70 && totalRiskAssessments > 0) {
+  if (below(gangReviewRate, 70) && totalRiskAssessments > 0) {
     concerns.push(
       `Gang activity reviewed in only ${gangReviewRate}% of assessments -- gang presence is a critical risk factor for children in care that must be systematically assessed.`,
     );
   }
 
-  if (mitigationImplRate < 50 && totalRiskAssessments > 0) {
+  if (below(mitigationImplRate, 50) && totalRiskAssessments > 0) {
     concerns.push(
       `Only ${mitigationImplRate}% of identified mitigations have been implemented -- risk assessments are identifying threats but the home is not acting on its own recommendations.`,
     );
   }
 
-  if (highCriticalRate >= 40 && totalRiskAssessments > 0) {
+  if (meets(highCriticalRate, 40) && totalRiskAssessments > 0) {
     concerns.push(
       `${highCriticalRate}% of risk assessments identify high or critical risk levels -- the neighbourhood presents significant safety challenges requiring robust and sustained mitigation.`,
     );
@@ -858,19 +840,19 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     );
   }
 
-  if (staffWalkedRate < 50 && totalMappings > 0) {
+  if (below(staffWalkedRate, 50) && totalMappings > 0) {
     concerns.push(
       `Staff have only walked ${staffWalkedRate}% of mapped areas -- desk-based mapping alone cannot provide the ground-level insight needed to keep children safe.`,
     );
   }
 
-  if (lightingAdequateRate < 50 && totalMappings > 0) {
+  if (below(lightingAdequateRate, 50) && totalMappings > 0) {
     concerns.push(
       `Lighting assessed as adequate in only ${lightingAdequateRate}% of mapped areas -- poor lighting increases children's vulnerability, particularly during darker months.`,
     );
   }
 
-  if (updateFrequencyRate < 50 && totalMappings > 0) {
+  if (below(updateFrequencyRate, 50) && totalMappings > 0) {
     concerns.push(
       `Safety mapping update frequency met in only ${updateFrequencyRate}% of areas -- outdated maps cannot reflect changes in the local environment.`,
     );
@@ -892,7 +874,7 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     );
   }
 
-  if (recurrentHazardRate >= 30 && totalHazards > 0) {
+  if (meets(recurrentHazardRate, 30) && totalHazards > 0) {
     concerns.push(
       `${recurrentHazardRate}% of hazards are recurrent -- the same hazards keep reappearing, suggesting root causes are not being addressed.`,
     );
@@ -904,7 +886,7 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     );
   }
 
-  if (hazardReportingRate < 50 && totalHazards > 0) {
+  if (below(hazardReportingRate, 50) && totalHazards > 0) {
     concerns.push(
       `Only ${hazardReportingRate}% of hazards reported to relevant authorities -- under-reporting means hazards may persist longer than necessary.`,
     );
@@ -920,25 +902,25 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     );
   }
 
-  if (highCriticalRouteRate >= 30 && totalRoutes > 0) {
+  if (meets(highCriticalRouteRate, 30) && totalRoutes > 0) {
     concerns.push(
       `${highCriticalRouteRate}% of assessed routes are rated high or critical risk -- children are regularly using routes with significant safety concerns.`,
     );
   }
 
-  if (overdueRouteRate >= 20 && totalRoutes > 0) {
+  if (meets(overdueRouteRate, 20) && totalRoutes > 0) {
     concerns.push(
       `${overdueRouteRate}% of route safety assessments are overdue for review -- changing conditions may have altered route safety since last assessment.`,
     );
   }
 
-  if (routeChildConfidentRate < 50 && totalRoutes > 0) {
+  if (below(routeChildConfidentRate, 50) && totalRoutes > 0) {
     concerns.push(
       `Only ${routeChildConfidentRate}% of children report confidence on their assessed routes -- children feel unsafe navigating their neighbourhood, which may restrict their independence and wellbeing.`,
     );
   }
 
-  if (highTrafficRate >= 40 && totalRoutes > 0) {
+  if (meets(highTrafficRate, 40) && totalRoutes > 0) {
     concerns.push(
       `${highTrafficRate}% of assessed routes have high traffic risk -- children face significant road safety hazards on their regular journeys.`,
     );
@@ -960,7 +942,7 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     );
   }
 
-  if (dormantPartnershipRate >= 30 && totalPartnerships > 0) {
+  if (meets(dormantPartnershipRate, 30) && totalPartnerships > 0) {
     concerns.push(
       `${dormantPartnershipRate}% of community partnerships are dormant -- inactive relationships reduce the home's safety network and intelligence-gathering capability.`,
     );
@@ -972,17 +954,17 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     );
   }
 
-  if (childAwarenessRate < 50 && childAwarenessDenominator > 0) {
+  if (below(childAwarenessRate, 50) && childAwarenessDenominator > 0) {
     concerns.push(
       `Child awareness and involvement at only ${childAwarenessRate}% -- children are not being sufficiently consulted, informed, or included in neighbourhood safety planning.`,
     );
-  } else if (childAwarenessRate < 60 && childAwarenessRate >= 50 && childAwarenessDenominator > 0) {
+  } else if (below(childAwarenessRate, 60) && meets(childAwarenessRate, 50) && childAwarenessDenominator > 0) {
     concerns.push(
       `Child awareness at ${childAwarenessRate}% -- children's involvement in neighbourhood safety processes needs strengthening.`,
     );
   }
 
-  if (childConsultedRate < 50 && totalRiskAssessments > 0) {
+  if (below(childConsultedRate, 50) && totalRiskAssessments > 0) {
     concerns.push(
       `Children consulted in only ${childConsultedRate}% of risk assessments -- children's lived experience of the neighbourhood is not informing risk management.`,
     );
@@ -1077,7 +1059,7 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     });
   }
 
-  if (childAwarenessRate < 50 && childAwarenessDenominator > 0) {
+  if (below(childAwarenessRate, 50) && childAwarenessDenominator > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1087,7 +1069,7 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     });
   }
 
-  if (exploitationReviewRate < 70 && totalRiskAssessments > 0) {
+  if (below(exploitationReviewRate, 70) && totalRiskAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1097,7 +1079,7 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     });
   }
 
-  if (overdueRiskRate >= 20 && totalRiskAssessments > 0) {
+  if (meets(overdueRiskRate, 20) && totalRiskAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1107,7 +1089,7 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     });
   }
 
-  if (mitigationImplRate >= 50 && mitigationImplRate < 80 && totalRiskAssessments > 0) {
+  if (meets(mitigationImplRate, 50) && below(mitigationImplRate, 80) && totalRiskAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1127,7 +1109,7 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     });
   }
 
-  if (staffWalkedRate < 50 && totalMappings > 0) {
+  if (below(staffWalkedRate, 50) && totalMappings > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1137,7 +1119,7 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     });
   }
 
-  if (recurrentHazardRate >= 30 && totalHazards > 0) {
+  if (meets(recurrentHazardRate, 30) && totalHazards > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1147,7 +1129,7 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     });
   }
 
-  if (hazardReportingRate >= 50 && hazardReportingRate < 80 && totalHazards > 0) {
+  if (meets(hazardReportingRate, 50) && below(hazardReportingRate, 80) && totalHazards > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1157,7 +1139,7 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     });
   }
 
-  if (overdueRouteRate >= 20 && totalRoutes > 0) {
+  if (meets(overdueRouteRate, 20) && totalRoutes > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1167,7 +1149,7 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     });
   }
 
-  if (routeChildConfidentRate >= 50 && routeChildConfidentRate < 80 && totalRoutes > 0) {
+  if (meets(routeChildConfidentRate, 50) && below(routeChildConfidentRate, 80) && totalRoutes > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1177,7 +1159,7 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     });
   }
 
-  if (dormantPartnershipRate >= 30 && totalPartnerships > 0) {
+  if (meets(dormantPartnershipRate, 30) && totalPartnerships > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1187,7 +1169,7 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     });
   }
 
-  if (infoSharingRate < 70 && totalPartnerships > 0) {
+  if (below(infoSharingRate, 70) && totalPartnerships > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1322,7 +1304,7 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     });
   }
 
-  if (exploitationReviewRate < 50 && totalRiskAssessments > 0) {
+  if (below(exploitationReviewRate, 50) && totalRiskAssessments > 0) {
     insights.push({
       text: `Exploitation risk reviewed in only ${exploitationReviewRate}% of assessments. Looked-after children are disproportionately vulnerable to criminal and sexual exploitation. Failing to systematically assess local exploitation risks is a serious safeguarding gap that Ofsted will challenge.`,
       severity: "critical",
@@ -1366,35 +1348,35 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     });
   }
 
-  if (childAwarenessRate >= 50 && childAwarenessRate < 80 && childAwarenessDenominator > 0) {
+  if (meets(childAwarenessRate, 50) && below(childAwarenessRate, 80) && childAwarenessDenominator > 0) {
     insights.push({
       text: `Child awareness and involvement at ${childAwarenessRate}% -- children are partially involved in neighbourhood safety processes but their voice needs to be more consistently embedded in risk assessments, hazard awareness, route familiarisation, and safety mapping.`,
       severity: "warning",
     });
   }
 
-  if (overdueRiskRate >= 20 && totalRiskAssessments > 0) {
+  if (meets(overdueRiskRate, 20) && totalRiskAssessments > 0) {
     insights.push({
       text: `${overdueRiskRate}% of risk assessments overdue. Neighbourhood conditions change -- new developments, seasonal patterns, crime trends -- and outdated assessments may not reflect current risks to children.`,
       severity: "warning",
     });
   }
 
-  if (recurrentHazardRate >= 30 && totalHazards > 0) {
+  if (meets(recurrentHazardRate, 30) && totalHazards > 0) {
     insights.push({
       text: `${recurrentHazardRate}% of hazards are recurrent. Repeated temporary fixes without addressing root causes suggest a reactive rather than preventative approach to environmental hazard management.`,
       severity: "warning",
     });
   }
 
-  if (highCriticalRouteRate >= 30 && totalRoutes > 0) {
+  if (meets(highCriticalRouteRate, 30) && totalRoutes > 0) {
     insights.push({
       text: `${highCriticalRouteRate}% of routes rated high/critical risk. Children regularly using high-risk routes need enhanced mitigations, alternative options, and close monitoring of route conditions.`,
       severity: "warning",
     });
   }
 
-  if (dormantPartnershipRate >= 30 && totalPartnerships > 0) {
+  if (meets(dormantPartnershipRate, 30) && totalPartnerships > 0) {
     insights.push({
       text: `${dormantPartnershipRate}% of partnerships dormant. Inactive partnerships create a false impression of collaborative safety management. The home should either reactivate these relationships or replace them with effective alternatives.`,
       severity: "warning",
@@ -1423,7 +1405,7 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     });
   }
 
-  if (meets(riskAssessmentRate, 90) && comprehensiveCoverageRate >= 90 && totalRiskAssessments > 0) {
+  if (meets(riskAssessmentRate, 90) && meets(comprehensiveCoverageRate, 90) && totalRiskAssessments > 0) {
     insights.push({
       text: `${riskAssessmentRate}% risk assessment completeness with ${comprehensiveCoverageRate}% comprehensive coverage -- every assessment addresses all key risk areas with documented mitigations and management approval. This is exemplary evidence for Reg 25 compliance.`,
       severity: "positive",
@@ -1437,7 +1419,7 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     });
   }
 
-  if (meets(routeSafetyRate, 90) && routeChildConfidentRate >= 80 && totalRoutes > 0) {
+  if (meets(routeSafetyRate, 90) && meets(routeChildConfidentRate, 80) && totalRoutes > 0) {
     insights.push({
       text: `${routeSafetyRate}% route safety completeness with ${routeChildConfidentRate}% child confidence -- children's routes are thoroughly assessed and children feel safe navigating their neighbourhood. This supports independence and wellbeing.`,
       severity: "positive",
@@ -1451,21 +1433,21 @@ export function computeNeighbourhoodSafetyRiskAssessment(
     });
   }
 
-  if (childAwarenessRate >= 80 && childAwarenessDenominator > 0) {
+  if (meets(childAwarenessRate, 80) && childAwarenessDenominator > 0) {
     insights.push({
       text: `Child awareness and involvement at ${childAwarenessRate}% -- children are consulted in risk assessments, informed about hazards, walked through routes, and involved in safety mapping. Their lived experience genuinely shapes neighbourhood safety planning.`,
       severity: "positive",
     });
   }
 
-  if (meets(safetyMappingRate, 90) && staffWalkedRate >= 90 && totalMappings > 0) {
+  if (meets(safetyMappingRate, 90) && meets(staffWalkedRate, 90) && totalMappings > 0) {
     insights.push({
       text: `${safetyMappingRate}% safety mapping completeness with ${staffWalkedRate}% staff-walked verification -- the home maintains a thorough, first-hand understanding of the local area's safety landscape, regularly updated to reflect changing conditions.`,
       severity: "positive",
     });
   }
 
-  if (infoSharingRate >= 90 && safeguardingProtocolRate >= 90 && totalPartnerships > 0) {
+  if (meets(infoSharingRate, 90) && meets(safeguardingProtocolRate, 90) && totalPartnerships > 0) {
     insights.push({
       text: `Information sharing agreements (${infoSharingRate}%) and safeguarding protocols (${safeguardingProtocolRate}%) in place across partnerships -- the home can access and share safety-critical intelligence with clear safeguarding expectations underpinning all collaborative relationships.`,
       severity: "positive",

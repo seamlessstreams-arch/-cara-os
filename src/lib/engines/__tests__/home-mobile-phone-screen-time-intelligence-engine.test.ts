@@ -253,12 +253,12 @@ describe("Home Mobile Phone & Screen Time Intelligence Engine", () => {
         digital_wellbeing_records: [],
         self_regulation_records: [],
       }));
-      expect(r.screen_time_management_rate).toBe(0);
-      expect(r.content_monitoring_rate).toBe(0);
-      expect(r.usage_agreement_rate).toBe(0);
-      expect(r.digital_wellbeing_rate).toBe(0);
-      expect(r.self_regulation_rate).toBe(0);
-      expect(r.child_satisfaction_rate).toBe(0);
+      expect(r.screen_time_management_rate).toBeNull();
+      expect(r.content_monitoring_rate).toBeNull();
+      expect(r.usage_agreement_rate).toBeNull();
+      expect(r.digital_wellbeing_rate).toBeNull();
+      expect(r.self_regulation_rate).toBeNull();
+      expect(r.child_satisfaction_rate).toBeNull();
     });
 
     it("returns empty arrays for insufficient_data", () => {
@@ -802,11 +802,11 @@ describe("Home Mobile Phone & Screen Time Intelligence Engine", () => {
       expect(r.screen_time_management_rate).toBe(50);
     });
 
-    it("returns 0 screen_time_management_rate when no records", () => {
+    it("returns null screen_time_management_rate when no records", () => {
       const r = computeMobilePhoneScreenTime(baseInput({
         screen_time_records: [],
       }));
-      expect(r.screen_time_management_rate).toBe(0);
+      expect(r.screen_time_management_rate).toBeNull();
     });
 
     it("returns 100% screen_time_management_rate when all adhered and handover done", () => {
@@ -833,11 +833,11 @@ describe("Home Mobile Phone & Screen Time Intelligence Engine", () => {
       expect(r.content_monitoring_rate).toBe(67);
     });
 
-    it("returns 0 content_monitoring_rate when no records", () => {
+    it("returns null content_monitoring_rate when no records", () => {
       const r = computeMobilePhoneScreenTime(baseInput({
         content_monitoring_records: [],
       }));
-      expect(r.content_monitoring_rate).toBe(0);
+      expect(r.content_monitoring_rate).toBeNull();
     });
 
     it("returns 100% content_monitoring_rate when all pass", () => {
@@ -865,7 +865,7 @@ describe("Home Mobile Phone & Screen Time Intelligence Engine", () => {
       expect(r.usage_agreement_rate).toBe(100);
     });
 
-    it("returns 0 usage_agreement_rate when no agreements", () => {
+    it("returns null usage_agreement_rate when no agreements", () => {
       const r = computeMobilePhoneScreenTime(baseInput({
         usage_agreement_records: [],
       }));
@@ -935,7 +935,7 @@ describe("Home Mobile Phone & Screen Time Intelligence Engine", () => {
       expect(r.digital_wellbeing_rate).toBe(67);
     });
 
-    it("returns 0 digital_wellbeing_rate when no records", () => {
+    it("returns null digital_wellbeing_rate when no records", () => {
       const r = computeMobilePhoneScreenTime(baseInput({
         digital_wellbeing_records: [],
       }));
@@ -965,11 +965,11 @@ describe("Home Mobile Phone & Screen Time Intelligence Engine", () => {
       expect(r.child_satisfaction_rate).toBe(67);
     });
 
-    it("returns 0 child_satisfaction_rate when no records", () => {
+    it("returns null child_satisfaction_rate when no records", () => {
       const r = computeMobilePhoneScreenTime(baseInput({
         digital_wellbeing_records: [],
       }));
-      expect(r.child_satisfaction_rate).toBe(0);
+      expect(r.child_satisfaction_rate).toBeNull();
     });
   });
 
@@ -985,11 +985,11 @@ describe("Home Mobile Phone & Screen Time Intelligence Engine", () => {
       expect(r.self_regulation_rate).toBe(50);
     });
 
-    it("returns 0 self_regulation_rate when no records", () => {
+    it("returns null self_regulation_rate when no records", () => {
       const r = computeMobilePhoneScreenTime(baseInput({
         self_regulation_records: [],
       }));
-      expect(r.self_regulation_rate).toBe(0);
+      expect(r.self_regulation_rate).toBeNull();
     });
 
     it("returns 100% self_regulation_rate when all checks pass", () => {
@@ -2350,7 +2350,7 @@ describe("Home Mobile Phone & Screen Time Intelligence Engine", () => {
       const r = computeMobilePhoneScreenTime(baseInput({
         digital_wellbeing_records: [],
       }));
-      expect(r.child_satisfaction_rate).toBe(0);
+      expect(r.child_satisfaction_rate).toBeNull();
       expect(r.digital_wellbeing_rate).toBeNull();;
     });
 

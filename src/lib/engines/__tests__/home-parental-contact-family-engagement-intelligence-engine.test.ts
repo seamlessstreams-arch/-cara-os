@@ -239,8 +239,8 @@ describe("Home Parental Contact & Family Engagement Intelligence Engine", () => 
 
   // ── pct(0,0) = 0 ──────────────────────────────────────────────────────
 
-  describe("pct(0,0) = 0 edge case", () => {
-    it("contact compliance is 0 when no contacts exist", () => {
+  describe("rate(0,0)=null edge case", () => {
+    it("contact compliance is null when no contacts exist", () => {
       // Use 1 child + 1 support record so we exit the "allEmpty" paths
       const r = computeParentalContactFamilyEngagement(
         baseInput({
@@ -248,9 +248,9 @@ describe("Home Parental Contact & Family Engagement Intelligence Engine", () => 
           family_support_records: [makeSupport()],
         }),
       );
-      expect(r.contact_compliance_rate).toBe(0);
-      expect(r.family_visit_quality_rate).toBe(0);
-      expect(r.parental_engagement_rate).toBe(0);
+      expect(r.contact_compliance_rate).toBeNull();
+      expect(r.family_visit_quality_rate).toBeNull();
+      expect(r.parental_engagement_rate).toBeNull();
       expect(r.supervised_contact_adherence_rate).toBeNull();
     });
   });
@@ -2537,7 +2537,7 @@ describe("Home Parental Contact & Family Engagement Intelligence Engine", () => 
       const r = computeParentalContactFamilyEngagement(
         baseInput({ total_children: 1, family_visit_records: visits }),
       );
-      expect(r.family_visit_quality_rate).toBe(0); // pct(0,0) = 0
+      expect(r.family_visit_quality_rate).toBeNull(); // pct(0,0) = 0
     });
 
     it("supervised child voice does not require occurred flag", () => {
@@ -2620,14 +2620,14 @@ describe("Home Parental Contact & Family Engagement Intelligence Engine", () => 
       expect(r.supervised_contact_adherence_rate).toBeNull();
     });
 
-    it("parent views incorporation rate is 0 when no parent participated", () => {
+    it("parent views incorporation rate is null when no parent participated", () => {
       const records = [
         makeEngagement({ parent_participated: false }),
       ];
       const r = computeParentalContactFamilyEngagement(
         baseInput({ total_children: 1, parental_engagement_records: records }),
       );
-      expect(r.parent_views_incorporation_rate).toBe(0);
+      expect(r.parent_views_incorporation_rate).toBeNull();
     });
 
     it("family support coverage is 0 when total_children is 0 (non-allEmpty)", () => {

@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Dumbbell } from "
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { PhysicalActivityRating } from "@/lib/engines/home-physical-activity-recreation-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 function useHomePhysicalActivityRecreationIntelligence() {
   return useQuery({
@@ -61,7 +62,7 @@ export function HomePhysicalActivityRecreationIntelligenceCard() {
             <Dumbbell className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-yellow-600")} />
             <span className="text-slate-900 font-bold">Physical Activity & Recreation</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.activity_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.activity_score}%</span>}
+            {d.activity_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.activity_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -69,28 +70,28 @@ export function HomePhysicalActivityRecreationIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.activity_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.exercise_engagement_rate >= 90 ? "bg-green-50" : d.exercise_engagement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.exercise_engagement_rate >= 90 ? "text-[--cs-success]" : d.exercise_engagement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.exercise_engagement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.exercise_engagement_rate, 90) ? "bg-green-50" : meets(d.exercise_engagement_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.exercise_engagement_rate, 90) ? "text-[--cs-success]" : meets(d.exercise_engagement_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.exercise_engagement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Exercise</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.recreational_diversity_score >= 80 ? "bg-green-50" : d.recreational_diversity_score >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.recreational_diversity_score >= 80 ? "text-[--cs-success]" : d.recreational_diversity_score >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.recreational_diversity_score}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.recreational_diversity_score, 80) ? "bg-green-50" : meets(d.recreational_diversity_score, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.recreational_diversity_score, 80) ? "text-[--cs-success]" : meets(d.recreational_diversity_score, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.recreational_diversity_score)}</p>
               <p className="text-[9px] text-muted-foreground">Diversity</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.outdoor_participation_rate >= 90 ? "bg-green-50" : d.outdoor_participation_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.outdoor_participation_rate >= 90 ? "text-[--cs-success]" : d.outdoor_participation_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.outdoor_participation_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.outdoor_participation_rate, 90) ? "bg-green-50" : meets(d.outdoor_participation_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.outdoor_participation_rate, 90) ? "text-[--cs-success]" : meets(d.outdoor_participation_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.outdoor_participation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Outdoor</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.fitness_assessment_coverage_rate >= 90 ? "bg-green-50" : d.fitness_assessment_coverage_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.fitness_assessment_coverage_rate >= 90 ? "text-[--cs-success]" : d.fitness_assessment_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.fitness_assessment_coverage_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.fitness_assessment_coverage_rate, 90) ? "bg-green-50" : meets(d.fitness_assessment_coverage_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.fitness_assessment_coverage_rate, 90) ? "text-[--cs-success]" : meets(d.fitness_assessment_coverage_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.fitness_assessment_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Fitness</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.activity_accessibility_rate >= 90 ? "bg-green-50" : d.activity_accessibility_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.activity_accessibility_rate >= 90 ? "text-[--cs-success]" : d.activity_accessibility_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.activity_accessibility_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.activity_accessibility_rate, 90) ? "bg-green-50" : meets(d.activity_accessibility_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.activity_accessibility_rate, 90) ? "text-[--cs-success]" : meets(d.activity_accessibility_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.activity_accessibility_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Access</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_choice_rate >= 80 ? "bg-green-50" : d.child_choice_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_choice_rate >= 80 ? "text-[--cs-success]" : d.child_choice_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_choice_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_choice_rate, 80) ? "bg-green-50" : meets(d.child_choice_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_choice_rate, 80) ? "text-[--cs-success]" : meets(d.child_choice_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_choice_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Choice</p>
             </div>
           </div>

@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME PHYSICAL ACTIVITY & RECREATION INTELLIGENCE ENGINE
 // Evaluates physical activity and recreation provision: exercise programme
@@ -162,10 +163,6 @@ export interface PhysicalActivityRecreationResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -193,12 +190,12 @@ function emptyResult(
     total_outdoor_engagements: 0,
     total_fitness_assessments: 0,
     total_accessibility_records: 0,
-    exercise_engagement_rate: 0,
+    exercise_engagement_rate: null,
     recreational_diversity_score: 0,
-    outdoor_participation_rate: 0,
-    fitness_assessment_coverage_rate: 0,
-    activity_accessibility_rate: 0,
-    child_choice_rate: 0,
+    outdoor_participation_rate: null,
+    fitness_assessment_coverage_rate: null,
+    activity_accessibility_rate: null,
+    child_choice_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -285,10 +282,10 @@ export function computePhysicalActivityRecreation(
     (sum, e) => sum + e.sessions_attended,
     0,
   );
-  const exerciseEngagementRate = pct(totalSessionsAttended, totalSessionsPlanned);
+  const exerciseEngagementRate = rate(totalSessionsAttended, totalSessionsPlanned);
 
   const childEnjoysExercise = exercise_programme_records.filter((e) => e.child_enjoys).length;
-  const exerciseEnjoymentRate = pct(childEnjoysExercise, totalExerciseProgrammes);
+  const exerciseEnjoymentRate = rate(childEnjoysExercise, totalExerciseProgrammes);
 
   const totalGoalsSet = exercise_programme_records.reduce(
     (sum, e) => sum + e.goals_set,
@@ -298,19 +295,19 @@ export function computePhysicalActivityRecreation(
     (sum, e) => sum + e.goals_achieved,
     0,
   );
-  const goalAchievementRate = pct(totalGoalsAchieved, totalGoalsSet);
+  const goalAchievementRate = rate(totalGoalsAchieved, totalGoalsSet);
 
   const reviewedProgrammes = exercise_programme_records.filter((e) => e.reviewed).length;
-  const programmeReviewRate = pct(reviewedProgrammes, totalExerciseProgrammes);
+  const programmeReviewRate = rate(reviewedProgrammes, totalExerciseProgrammes);
 
   const uniqueChildrenWithExercise = new Set(
     exercise_programme_records.filter((e) => e.active).map((e) => e.child_id),
   ).size;
   const exerciseCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenWithExercise, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenWithExercise, total_children) : 0;
 
   const externalProviders = exercise_programme_records.filter((e) => e.external_provider).length;
-  const externalProviderRate = pct(externalProviders, totalExerciseProgrammes);
+  const externalProviderRate = rate(externalProviders, totalExerciseProgrammes);
 
   const therapeuticProgrammes = exercise_programme_records.filter(
     (e) => e.programme_type === "therapeutic",
@@ -326,42 +323,42 @@ export function computePhysicalActivityRecreation(
     recreational_activity_records.map((r) => r.activity_category),
   );
   const totalPossibleCategories = 7; // sport, creative, social, cultural, adventure, relaxation, educational
-  const recreationalDiversityScore = pct(distinctCategories.size, totalPossibleCategories);
+  const recreationalDiversityScore = rate(distinctCategories.size, totalPossibleCategories);
 
   const childChoiceActivities = recreational_activity_records.filter(
     (r) => r.child_choice,
   ).length;
-  const childChoiceRate = pct(childChoiceActivities, totalRecActivities);
+  const childChoiceRate = rate(childChoiceActivities, totalRecActivities);
 
   const childEnjoyedActivities = recreational_activity_records.filter(
     (r) => r.child_enjoyed,
   ).length;
-  const recreationalEnjoymentRate = pct(childEnjoyedActivities, totalRecActivities);
+  const recreationalEnjoymentRate = rate(childEnjoyedActivities, totalRecActivities);
 
   const inclusiveActivities = recreational_activity_records.filter(
     (r) => r.inclusive,
   ).length;
-  const inclusivityRate = pct(inclusiveActivities, totalRecActivities);
+  const inclusivityRate = rate(inclusiveActivities, totalRecActivities);
 
   const skillDevelopmentActivities = recreational_activity_records.filter(
     (r) => r.skill_development,
   ).length;
-  const skillDevRate = pct(skillDevelopmentActivities, totalRecActivities);
+  const skillDevRate = rate(skillDevelopmentActivities, totalRecActivities);
 
   const peerInteractionActivities = recreational_activity_records.filter(
     (r) => r.peer_interaction,
   ).length;
-  const peerInteractionRate = pct(peerInteractionActivities, totalRecActivities);
+  const peerInteractionRate = rate(peerInteractionActivities, totalRecActivities);
 
   const newExperienceActivities = recreational_activity_records.filter(
     (r) => r.new_experience,
   ).length;
-  const newExperienceRate = pct(newExperienceActivities, totalRecActivities);
+  const newExperienceRate = rate(newExperienceActivities, totalRecActivities);
 
   const communityBasedActivities = recreational_activity_records.filter(
     (r) => r.community_based,
   ).length;
-  const communityBasedRate = pct(communityBasedActivities, totalRecActivities);
+  const communityBasedRate = rate(communityBasedActivities, totalRecActivities);
 
   // --- Outdoor engagement metrics ---
   const totalOutdoorEngagements = outdoor_engagement_records.length;
@@ -370,7 +367,7 @@ export function computePhysicalActivityRecreation(
     outdoor_engagement_records.map((o) => o.child_id),
   ).size;
   const outdoorParticipationRate =
-    total_children > 0 ? pct(uniqueChildrenOutdoors, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenOutdoors, total_children) : 0;
 
   const outdoorEnjoymentSum = outdoor_engagement_records.reduce(
     (sum, o) => sum + o.enjoyment_rating,
@@ -384,17 +381,17 @@ export function computePhysicalActivityRecreation(
   const outdoorRiskAssessed = outdoor_engagement_records.filter(
     (o) => o.risk_assessed,
   ).length;
-  const outdoorRiskAssessedRate = pct(outdoorRiskAssessed, totalOutdoorEngagements);
+  const outdoorRiskAssessedRate = rate(outdoorRiskAssessed, totalOutdoorEngagements);
 
   const childInitiatedOutdoor = outdoor_engagement_records.filter(
     (o) => o.child_initiated,
   ).length;
-  const childInitiatedOutdoorRate = pct(childInitiatedOutdoor, totalOutdoorEngagements);
+  const childInitiatedOutdoorRate = rate(childInitiatedOutdoor, totalOutdoorEngagements);
 
   const weatherAppropriate = outdoor_engagement_records.filter(
     (o) => o.weather_appropriate,
   ).length;
-  const weatherAppropriateRate = pct(weatherAppropriate, totalOutdoorEngagements);
+  const weatherAppropriateRate = rate(weatherAppropriate, totalOutdoorEngagements);
 
   // --- Fitness assessment metrics ---
   const totalFitnessAssessments = fitness_assessment_records.length;
@@ -403,7 +400,7 @@ export function computePhysicalActivityRecreation(
     fitness_assessment_records.map((f) => f.child_id),
   ).size;
   const fitnessAssessmentCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenAssessed, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenAssessed, total_children) : 0;
 
   const followUpPlanned = fitness_assessment_records.filter(
     (f) => f.follow_up_planned,
@@ -411,15 +408,15 @@ export function computePhysicalActivityRecreation(
   const followUpCompleted = fitness_assessment_records.filter(
     (f) => f.follow_up_planned && f.follow_up_completed,
   ).length;
-  const followUpCompletionRate = pct(followUpCompleted, followUpPlanned);
+  const followUpCompletionRate = rate(followUpCompleted, followUpPlanned);
 
   const healthProfInvolved = fitness_assessment_records.filter(
     (f) => f.health_professional_involved,
   ).length;
-  const healthProfInvolvedRate = pct(healthProfInvolved, totalFitnessAssessments);
+  const healthProfInvolvedRate = rate(healthProfInvolved, totalFitnessAssessments);
 
   const bmiRecorded = fitness_assessment_records.filter((f) => f.bmi_recorded).length;
-  const bmiRecordedRate = pct(bmiRecorded, totalFitnessAssessments);
+  const bmiRecordedRate = rate(bmiRecorded, totalFitnessAssessments);
 
   // --- Activity accessibility metrics ---
   const totalAccessibilityRecords = activity_accessibility_records.length;
@@ -430,7 +427,7 @@ export function computePhysicalActivityRecreation(
   const adaptationProvided = activity_accessibility_records.filter(
     (a) => a.adaptation_required && a.adaptation_provided,
   ).length;
-  const adaptationRate = pct(adaptationProvided, adaptationRequired);
+  const adaptationRate = rate(adaptationProvided, adaptationRequired);
 
   const barrierIdentified = activity_accessibility_records.filter(
     (a) => a.barrier_identified !== null && a.barrier_identified !== "",
@@ -441,83 +438,83 @@ export function computePhysicalActivityRecreation(
       a.barrier_identified !== "" &&
       a.barrier_resolved,
   ).length;
-  const barrierResolutionRate = pct(barrierResolved, barrierIdentified);
+  const barrierResolutionRate = rate(barrierResolved, barrierIdentified);
 
   const ableToParticipate = activity_accessibility_records.filter(
     (a) => a.child_able_to_participate,
   ).length;
-  const activityAccessibilityRate = pct(ableToParticipate, totalAccessibilityRecords);
+  const activityAccessibilityRate = rate(ableToParticipate, totalAccessibilityRecords);
 
   const transportArranged = activity_accessibility_records.filter(
     (a) => a.transport_arranged,
   ).length;
-  const transportArrangedRate = pct(transportArranged, totalAccessibilityRecords);
+  const transportArrangedRate = rate(transportArranged, totalAccessibilityRecords);
 
   const costCovered = activity_accessibility_records.filter(
     (a) => a.cost_covered,
   ).length;
-  const costCoveredRate = pct(costCovered, totalAccessibilityRecords);
+  const costCoveredRate = rate(costCovered, totalAccessibilityRecords);
 
   const equalOpportunity = activity_accessibility_records.filter(
     (a) => a.equal_opportunity,
   ).length;
-  const equalOpportunityRate = pct(equalOpportunity, totalAccessibilityRecords);
+  const equalOpportunityRate = rate(equalOpportunity, totalAccessibilityRecords);
 
   // ── Scoring: base 52, 9 bonus categories summing to 28 (max 80) ──────
 
   let score = 52;
 
   // --- Bonus 1: exerciseEngagementRate (>=90: +4, >=70: +2) --- [max 4]
-  if (exerciseEngagementRate >= 90) score += 4;
-  else if (exerciseEngagementRate >= 70) score += 2;
+  if (meets(exerciseEngagementRate, 90)) score += 4;
+  else if (meets(exerciseEngagementRate, 70)) score += 2;
 
   // --- Bonus 2: recreationalDiversityScore (>=80: +3, >=60: +1) --- [max 3]
-  if (recreationalDiversityScore >= 80) score += 3;
-  else if (recreationalDiversityScore >= 60) score += 1;
+  if (meets(recreationalDiversityScore, 80)) score += 3;
+  else if (meets(recreationalDiversityScore, 60)) score += 1;
 
   // --- Bonus 3: outdoorParticipationRate (>=100: +4, >=80: +2) --- [max 4]
-  if (outdoorParticipationRate >= 100) score += 4;
-  else if (outdoorParticipationRate >= 80) score += 2;
+  if (meets(outdoorParticipationRate, 100)) score += 4;
+  else if (meets(outdoorParticipationRate, 80)) score += 2;
 
   // --- Bonus 4: fitnessAssessmentCoverageRate (>=100: +3, >=80: +1) --- [max 3]
-  if (fitnessAssessmentCoverageRate >= 100) score += 3;
-  else if (fitnessAssessmentCoverageRate >= 80) score += 1;
+  if (meets(fitnessAssessmentCoverageRate, 100)) score += 3;
+  else if (meets(fitnessAssessmentCoverageRate, 80)) score += 1;
 
   // --- Bonus 5: activityAccessibilityRate (>=100: +3, >=80: +1) --- [max 3]
-  if (activityAccessibilityRate >= 100) score += 3;
-  else if (activityAccessibilityRate >= 80) score += 1;
+  if (meets(activityAccessibilityRate, 100)) score += 3;
+  else if (meets(activityAccessibilityRate, 80)) score += 1;
 
   // --- Bonus 6: childChoiceRate (>=80: +3, >=60: +1) --- [max 3]
-  if (childChoiceRate >= 80) score += 3;
-  else if (childChoiceRate >= 60) score += 1;
+  if (meets(childChoiceRate, 80)) score += 3;
+  else if (meets(childChoiceRate, 60)) score += 1;
 
   // --- Bonus 7: exerciseCoverageRate (>=100: +3, >=80: +1) --- [max 3]
-  if (exerciseCoverageRate >= 100) score += 3;
-  else if (exerciseCoverageRate >= 80) score += 1;
+  if (meets(exerciseCoverageRate, 100)) score += 3;
+  else if (meets(exerciseCoverageRate, 80)) score += 1;
 
   // --- Bonus 8: goalAchievementRate (>=80: +2, >=60: +1) --- [max 2]
-  if (goalAchievementRate >= 80) score += 2;
-  else if (goalAchievementRate >= 60) score += 1;
+  if (meets(goalAchievementRate, 80)) score += 2;
+  else if (meets(goalAchievementRate, 60)) score += 1;
 
   // --- Bonus 9: recreationalEnjoymentRate (>=90: +3, >=70: +1) --- [max 3]
-  if (recreationalEnjoymentRate >= 90) score += 3;
-  else if (recreationalEnjoymentRate >= 70) score += 1;
+  if (meets(recreationalEnjoymentRate, 90)) score += 3;
+  else if (meets(recreationalEnjoymentRate, 70)) score += 1;
 
   // Bonus total: 4+3+4+3+3+3+3+2+3 = 28  ✓  Base 52 + 28 = 80 (outstanding threshold)
 
   // ── Penalties (all guard denominator > 0) ────────────────────────────
 
   // Penalty 1: exerciseEngagementRate < 40 → -5
-  if (exerciseEngagementRate < 40 && totalSessionsPlanned > 0) score -= 5;
+  if (below(exerciseEngagementRate, 40) && totalSessionsPlanned > 0) score -= 5;
 
   // Penalty 2: outdoorParticipationRate < 50 → -5
-  if (outdoorParticipationRate < 50 && total_children > 0) score -= 5;
+  if (below(outdoorParticipationRate, 50) && total_children > 0) score -= 5;
 
   // Penalty 3: activityAccessibilityRate < 50 → -5
-  if (activityAccessibilityRate < 50 && totalAccessibilityRecords > 0) score -= 5;
+  if (below(activityAccessibilityRate, 50) && totalAccessibilityRecords > 0) score -= 5;
 
   // Penalty 4: fitnessAssessmentCoverageRate < 30 → -3
-  if (fitnessAssessmentCoverageRate < 30 && total_children > 0) score -= 3;
+  if (below(fitnessAssessmentCoverageRate, 30) && total_children > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -528,138 +525,138 @@ export function computePhysicalActivityRecreation(
   const strengths: string[] = [];
 
   // Exercise engagement strengths
-  if (exerciseEngagementRate >= 90 && totalSessionsPlanned > 0) {
+  if (meets(exerciseEngagementRate, 90) && totalSessionsPlanned > 0) {
     strengths.push(
       `${exerciseEngagementRate}% exercise session attendance — children demonstrate excellent commitment to their exercise programmes, attending the vast majority of planned sessions.`,
     );
-  } else if (exerciseEngagementRate >= 70 && totalSessionsPlanned > 0) {
+  } else if (meets(exerciseEngagementRate, 70) && totalSessionsPlanned > 0) {
     strengths.push(
       `${exerciseEngagementRate}% exercise session attendance — children attend the majority of their planned exercise sessions, showing positive engagement with physical activity.`,
     );
   }
 
   // Exercise coverage strengths
-  if (exerciseCoverageRate >= 100 && total_children > 0) {
+  if (meets(exerciseCoverageRate, 100) && total_children > 0) {
     strengths.push(
       "Every child has an active exercise programme — comprehensive physical activity provision ensuring all children benefit from structured exercise.",
     );
-  } else if (exerciseCoverageRate >= 80 && total_children > 0) {
+  } else if (meets(exerciseCoverageRate, 80) && total_children > 0) {
     strengths.push(
       `${exerciseCoverageRate}% of children have active exercise programmes — strong exercise provision across the home.`,
     );
   }
 
   // Recreational diversity strengths
-  if (recreationalDiversityScore >= 80 && totalRecActivities > 0) {
+  if (meets(recreationalDiversityScore, 80) && totalRecActivities > 0) {
     strengths.push(
       `Recreational activities span ${distinctCategories.size} of ${totalPossibleCategories} categories — children enjoy a genuinely diverse range of leisure activities covering sport, creative, social, cultural, and adventure experiences.`,
     );
-  } else if (recreationalDiversityScore >= 60 && totalRecActivities > 0) {
+  } else if (meets(recreationalDiversityScore, 60) && totalRecActivities > 0) {
     strengths.push(
       `Recreational activities cover ${distinctCategories.size} of ${totalPossibleCategories} categories — good diversity in leisure provision for children.`,
     );
   }
 
   // Child choice strengths
-  if (childChoiceRate >= 80 && totalRecActivities > 0) {
+  if (meets(childChoiceRate, 80) && totalRecActivities > 0) {
     strengths.push(
       `${childChoiceRate}% of recreational activities chosen by children — the home empowers children to direct their own leisure time, promoting autonomy and personal interests.`,
     );
-  } else if (childChoiceRate >= 60 && totalRecActivities > 0) {
+  } else if (meets(childChoiceRate, 60) && totalRecActivities > 0) {
     strengths.push(
       `${childChoiceRate}% of activities child-chosen — children have meaningful input into their recreational activities.`,
     );
   }
 
   // Outdoor participation strengths
-  if (outdoorParticipationRate >= 100 && total_children > 0) {
+  if (meets(outdoorParticipationRate, 100) && total_children > 0) {
     strengths.push(
       "Every child engages in outdoor activities — comprehensive outdoor provision ensuring all children benefit from fresh air, physical activity, and connection with nature.",
     );
-  } else if (outdoorParticipationRate >= 80 && total_children > 0) {
+  } else if (meets(outdoorParticipationRate, 80) && total_children > 0) {
     strengths.push(
       `${outdoorParticipationRate}% of children participate in outdoor activities — strong outdoor engagement across the home.`,
     );
   }
 
   // Fitness assessment strengths
-  if (fitnessAssessmentCoverageRate >= 100 && total_children > 0) {
+  if (meets(fitnessAssessmentCoverageRate, 100) && total_children > 0) {
     strengths.push(
       "Every child has received a fitness assessment — comprehensive health monitoring ensuring physical development is tracked and supported for all children.",
     );
-  } else if (fitnessAssessmentCoverageRate >= 80 && total_children > 0) {
+  } else if (meets(fitnessAssessmentCoverageRate, 80) && total_children > 0) {
     strengths.push(
       `${fitnessAssessmentCoverageRate}% of children have received fitness assessments — strong coverage of physical health monitoring.`,
     );
   }
 
   // Activity accessibility strengths
-  if (activityAccessibilityRate >= 100 && totalAccessibilityRecords > 0) {
+  if (meets(activityAccessibilityRate, 100) && totalAccessibilityRecords > 0) {
     strengths.push(
       "All children are able to participate in activities — the home ensures every child can access physical and recreational opportunities regardless of individual needs.",
     );
-  } else if (activityAccessibilityRate >= 80 && totalAccessibilityRecords > 0) {
+  } else if (meets(activityAccessibilityRate, 80) && totalAccessibilityRecords > 0) {
     strengths.push(
       `${activityAccessibilityRate}% activity accessibility rate — the vast majority of children can participate in activities, demonstrating strong inclusive practice.`,
     );
   }
 
   // Goal achievement strengths
-  if (goalAchievementRate >= 80 && totalGoalsSet > 0) {
+  if (meets(goalAchievementRate, 80) && totalGoalsSet > 0) {
     strengths.push(
       `${goalAchievementRate}% of exercise goals achieved — children are making excellent progress against their physical activity targets, reflecting well-designed programmes and motivated engagement.`,
     );
-  } else if (goalAchievementRate >= 60 && totalGoalsSet > 0) {
+  } else if (meets(goalAchievementRate, 60) && totalGoalsSet > 0) {
     strengths.push(
       `${goalAchievementRate}% exercise goal achievement — children are making solid progress against their physical activity targets.`,
     );
   }
 
   // Enjoyment strengths
-  if (recreationalEnjoymentRate >= 90 && totalRecActivities > 0) {
+  if (meets(recreationalEnjoymentRate, 90) && totalRecActivities > 0) {
     strengths.push(
       `${recreationalEnjoymentRate}% of children report enjoying their recreational activities — the home's activity provision is genuinely child-centred and enjoyable.`,
     );
-  } else if (recreationalEnjoymentRate >= 70 && totalRecActivities > 0) {
+  } else if (meets(recreationalEnjoymentRate, 70) && totalRecActivities > 0) {
     strengths.push(
       `${recreationalEnjoymentRate}% recreational enjoyment rate — the majority of children enjoy the activities provided.`,
     );
   }
 
   // Exercise enjoyment strengths
-  if (exerciseEnjoymentRate >= 90 && totalExerciseProgrammes > 0) {
+  if (meets(exerciseEnjoymentRate, 90) && totalExerciseProgrammes > 0) {
     strengths.push(
       `${exerciseEnjoymentRate}% of children enjoy their exercise programmes — programmes are well-matched to children's interests and abilities.`,
     );
   }
 
   // New experiences strengths
-  if (newExperienceRate >= 50 && totalRecActivities > 0) {
+  if (meets(newExperienceRate, 50) && totalRecActivities > 0) {
     strengths.push(
       `${newExperienceRate}% of recreational activities offer new experiences — the home is proactively broadening children's horizons through novel activities.`,
     );
   }
 
   // Community engagement strengths
-  if (communityBasedRate >= 50 && totalRecActivities > 0) {
+  if (meets(communityBasedRate, 50) && totalRecActivities > 0) {
     strengths.push(
       `${communityBasedRate}% of recreational activities are community-based — children are integrated into wider community life through their leisure pursuits.`,
     );
   }
 
   // Peer interaction strengths
-  if (peerInteractionRate >= 70 && totalRecActivities > 0) {
+  if (meets(peerInteractionRate, 70) && totalRecActivities > 0) {
     strengths.push(
       `${peerInteractionRate}% of activities promote peer interaction — physical activity is supporting social development and positive relationships.`,
     );
   }
 
   // Adaptation strengths
-  if (adaptationRate >= 100 && adaptationRequired > 0) {
+  if (meets(adaptationRate, 100) && adaptationRequired > 0) {
     strengths.push(
       "Every required adaptation has been provided — the home demonstrates exemplary inclusive practice by ensuring all children can access activities regardless of their needs.",
     );
-  } else if (adaptationRate >= 80 && adaptationRequired > 0) {
+  } else if (meets(adaptationRate, 80) && adaptationRequired > 0) {
     strengths.push(
       `${adaptationRate}% of required adaptations provided — strong commitment to removing barriers and enabling participation for all children.`,
     );
@@ -673,49 +670,49 @@ export function computePhysicalActivityRecreation(
   }
 
   // Risk assessment strengths
-  if (outdoorRiskAssessedRate >= 90 && totalOutdoorEngagements > 0) {
+  if (meets(outdoorRiskAssessedRate, 90) && totalOutdoorEngagements > 0) {
     strengths.push(
       `${outdoorRiskAssessedRate}% of outdoor activities risk-assessed — safety is embedded into outdoor activity planning without restricting children's experiences.`,
     );
   }
 
   // Health professional involvement strengths
-  if (healthProfInvolvedRate >= 70 && totalFitnessAssessments > 0) {
+  if (meets(healthProfInvolvedRate, 70) && totalFitnessAssessments > 0) {
     strengths.push(
       `${healthProfInvolvedRate}% of fitness assessments involve a health professional — robust clinical oversight of children's physical development.`,
     );
   }
 
   // Child-initiated outdoor strengths
-  if (childInitiatedOutdoorRate >= 50 && totalOutdoorEngagements > 0) {
+  if (meets(childInitiatedOutdoorRate, 50) && totalOutdoorEngagements > 0) {
     strengths.push(
       `${childInitiatedOutdoorRate}% of outdoor activities are child-initiated — children are motivated to seek out outdoor experiences independently.`,
     );
   }
 
   // Barrier resolution strengths
-  if (barrierResolutionRate >= 90 && barrierIdentified > 0) {
+  if (meets(barrierResolutionRate, 90) && barrierIdentified > 0) {
     strengths.push(
       `${barrierResolutionRate}% of identified barriers resolved — the home proactively removes obstacles to children's participation in activities.`,
     );
   }
 
   // Follow-up strengths
-  if (followUpCompletionRate >= 90 && followUpPlanned > 0) {
+  if (meets(followUpCompletionRate, 90) && followUpPlanned > 0) {
     strengths.push(
       `${followUpCompletionRate}% of fitness assessment follow-ups completed — thorough follow-through on health recommendations ensuring children benefit from assessment findings.`,
     );
   }
 
   // Skill development strengths
-  if (skillDevRate >= 60 && totalRecActivities > 0) {
+  if (meets(skillDevRate, 60) && totalRecActivities > 0) {
     strengths.push(
       `${skillDevRate}% of activities support skill development — recreational time is used purposefully to build children's capabilities and confidence.`,
     );
   }
 
   // Equal opportunity strengths
-  if (equalOpportunityRate >= 90 && totalAccessibilityRecords > 0) {
+  if (meets(equalOpportunityRate, 90) && totalAccessibilityRecords > 0) {
     strengths.push(
       `${equalOpportunityRate}% equal opportunity rate — the home ensures fair and equitable access to activities for all children.`,
     );
@@ -729,7 +726,7 @@ export function computePhysicalActivityRecreation(
   }
 
   // External provider strengths
-  if (externalProviderRate >= 40 && totalExerciseProgrammes > 0) {
+  if (meets(externalProviderRate, 40) && totalExerciseProgrammes > 0) {
     strengths.push(
       `${externalProviderRate}% of exercise programmes involve external providers — children benefit from specialist expertise and community integration through external activity partnerships.`,
     );
@@ -740,150 +737,150 @@ export function computePhysicalActivityRecreation(
   const concerns: string[] = [];
 
   // Exercise engagement concerns
-  if (exerciseEngagementRate < 40 && totalSessionsPlanned > 0) {
+  if (below(exerciseEngagementRate, 40) && totalSessionsPlanned > 0) {
     concerns.push(
       `Only ${exerciseEngagementRate}% exercise session attendance — children are attending fewer than half of their planned sessions, indicating significant disengagement from physical activity programmes.`,
     );
-  } else if (exerciseEngagementRate < 70 && exerciseEngagementRate >= 40 && totalSessionsPlanned > 0) {
+  } else if (below(exerciseEngagementRate, 70) && meets(exerciseEngagementRate, 40) && totalSessionsPlanned > 0) {
     concerns.push(
       `Exercise engagement at ${exerciseEngagementRate}% — a notable proportion of planned sessions are not being attended, which may limit the physical health benefits for children.`,
     );
   }
 
   // Exercise coverage concerns
-  if (exerciseCoverageRate < 50 && total_children > 0) {
+  if (below(exerciseCoverageRate, 50) && total_children > 0) {
     concerns.push(
       `Only ${exerciseCoverageRate}% of children have active exercise programmes — the majority of children lack structured physical activity provision.`,
     );
-  } else if (exerciseCoverageRate < 80 && exerciseCoverageRate >= 50 && total_children > 0) {
+  } else if (below(exerciseCoverageRate, 80) && meets(exerciseCoverageRate, 50) && total_children > 0) {
     concerns.push(
       `Exercise programme coverage at ${exerciseCoverageRate}% — not all children have access to a structured exercise programme to support their physical development.`,
     );
   }
 
   // Recreational diversity concerns
-  if (recreationalDiversityScore < 40 && totalRecActivities > 0) {
+  if (below(recreationalDiversityScore, 40) && totalRecActivities > 0) {
     concerns.push(
       `Recreational diversity is limited to ${distinctCategories.size} of ${totalPossibleCategories} activity categories — children are not experiencing the breadth of leisure activities needed for holistic development.`,
     );
-  } else if (recreationalDiversityScore < 60 && recreationalDiversityScore >= 40 && totalRecActivities > 0) {
+  } else if (below(recreationalDiversityScore, 60) && meets(recreationalDiversityScore, 40) && totalRecActivities > 0) {
     concerns.push(
       `Recreational diversity covers ${distinctCategories.size} of ${totalPossibleCategories} categories — some activity types (sport, creative, social, cultural, adventure, relaxation, educational) are not represented.`,
     );
   }
 
   // Child choice concerns
-  if (childChoiceRate < 30 && totalRecActivities > 0) {
+  if (below(childChoiceRate, 30) && totalRecActivities > 0) {
     concerns.push(
       `Only ${childChoiceRate}% of recreational activities are child-chosen — children have very limited autonomy over their leisure time, which may undermine engagement and personal development.`,
     );
-  } else if (childChoiceRate < 60 && childChoiceRate >= 30 && totalRecActivities > 0) {
+  } else if (below(childChoiceRate, 60) && meets(childChoiceRate, 30) && totalRecActivities > 0) {
     concerns.push(
       `Child choice rate at ${childChoiceRate}% — many activities are not driven by children's preferences, which may reduce engagement and fail to promote their individual interests.`,
     );
   }
 
   // Outdoor participation concerns
-  if (outdoorParticipationRate < 50 && total_children > 0) {
+  if (below(outdoorParticipationRate, 50) && total_children > 0) {
     concerns.push(
       `Only ${outdoorParticipationRate}% of children participate in outdoor activities — the majority of children are missing the physical, emotional, and developmental benefits of regular outdoor engagement.`,
     );
-  } else if (outdoorParticipationRate < 80 && outdoorParticipationRate >= 50 && total_children > 0) {
+  } else if (below(outdoorParticipationRate, 80) && meets(outdoorParticipationRate, 50) && total_children > 0) {
     concerns.push(
       `Outdoor participation at ${outdoorParticipationRate}% — not all children are engaging in outdoor activities, which may limit their physical health and connection with nature.`,
     );
   }
 
   // Fitness assessment coverage concerns
-  if (fitnessAssessmentCoverageRate < 30 && total_children > 0) {
+  if (below(fitnessAssessmentCoverageRate, 30) && total_children > 0) {
     concerns.push(
       `Only ${fitnessAssessmentCoverageRate}% of children have received fitness assessments — the home cannot evidence that it monitors and supports children's physical development through regular assessment.`,
     );
-  } else if (fitnessAssessmentCoverageRate < 80 && fitnessAssessmentCoverageRate >= 30 && total_children > 0) {
+  } else if (below(fitnessAssessmentCoverageRate, 80) && meets(fitnessAssessmentCoverageRate, 30) && total_children > 0) {
     concerns.push(
       `Fitness assessment coverage at ${fitnessAssessmentCoverageRate}% — not all children have been assessed, which may mean physical health needs are going unidentified.`,
     );
   }
 
   // Activity accessibility concerns
-  if (activityAccessibilityRate < 50 && totalAccessibilityRecords > 0) {
+  if (below(activityAccessibilityRate, 50) && totalAccessibilityRecords > 0) {
     concerns.push(
       `Only ${activityAccessibilityRate}% activity accessibility rate — the majority of children with recorded accessibility needs are unable to fully participate in activities, indicating significant barriers to inclusion.`,
     );
-  } else if (activityAccessibilityRate < 80 && activityAccessibilityRate >= 50 && totalAccessibilityRecords > 0) {
+  } else if (below(activityAccessibilityRate, 80) && meets(activityAccessibilityRate, 50) && totalAccessibilityRecords > 0) {
     concerns.push(
       `Activity accessibility at ${activityAccessibilityRate}% — some children are unable to participate in activities due to unmet accessibility needs or unresolved barriers.`,
     );
   }
 
   // Goal achievement concerns
-  if (goalAchievementRate < 30 && totalGoalsSet > 0) {
+  if (below(goalAchievementRate, 30) && totalGoalsSet > 0) {
     concerns.push(
       `Only ${goalAchievementRate}% of exercise goals achieved — children are not progressing against their physical activity targets, suggesting programmes may not be well-designed or adequately supported.`,
     );
-  } else if (goalAchievementRate < 60 && goalAchievementRate >= 30 && totalGoalsSet > 0) {
+  } else if (below(goalAchievementRate, 60) && meets(goalAchievementRate, 30) && totalGoalsSet > 0) {
     concerns.push(
       `Exercise goal achievement at ${goalAchievementRate}% — progress against physical activity targets is inconsistent and needs strengthening.`,
     );
   }
 
   // Enjoyment concerns
-  if (recreationalEnjoymentRate < 50 && totalRecActivities > 0) {
+  if (below(recreationalEnjoymentRate, 50) && totalRecActivities > 0) {
     concerns.push(
       `Only ${recreationalEnjoymentRate}% of children enjoy their recreational activities — activities may not be well-matched to children's interests, potentially reducing engagement and wellbeing benefits.`,
     );
-  } else if (recreationalEnjoymentRate < 70 && recreationalEnjoymentRate >= 50 && totalRecActivities > 0) {
+  } else if (below(recreationalEnjoymentRate, 70) && meets(recreationalEnjoymentRate, 50) && totalRecActivities > 0) {
     concerns.push(
       `Recreational enjoyment at ${recreationalEnjoymentRate}% — a significant number of children do not report enjoying their leisure activities.`,
     );
   }
 
   // Adaptation concerns
-  if (adaptationRate < 50 && adaptationRequired > 0) {
+  if (below(adaptationRate, 50) && adaptationRequired > 0) {
     concerns.push(
       `Only ${adaptationRate}% of required adaptations provided — children with accessibility needs are not receiving the support they need to participate fully in activities.`,
     );
-  } else if (adaptationRate < 80 && adaptationRate >= 50 && adaptationRequired > 0) {
+  } else if (below(adaptationRate, 80) && meets(adaptationRate, 50) && adaptationRequired > 0) {
     concerns.push(
       `Adaptation provision at ${adaptationRate}% — some required adaptations are not being made, which may exclude children from activities they could otherwise enjoy.`,
     );
   }
 
   // Barrier resolution concerns
-  if (barrierResolutionRate < 50 && barrierIdentified > 0) {
+  if (below(barrierResolutionRate, 50) && barrierIdentified > 0) {
     concerns.push(
       `Only ${barrierResolutionRate}% of identified activity barriers resolved — barriers to children's participation are being identified but not addressed.`,
     );
-  } else if (barrierResolutionRate < 80 && barrierResolutionRate >= 50 && barrierIdentified > 0) {
+  } else if (below(barrierResolutionRate, 80) && meets(barrierResolutionRate, 50) && barrierIdentified > 0) {
     concerns.push(
       `Barrier resolution at ${barrierResolutionRate}% — some identified barriers to activity participation remain unresolved.`,
     );
   }
 
   // Follow-up concerns
-  if (followUpCompletionRate < 50 && followUpPlanned > 0) {
+  if (below(followUpCompletionRate, 50) && followUpPlanned > 0) {
     concerns.push(
       `Only ${followUpCompletionRate}% of fitness assessment follow-ups completed — health recommendations from assessments are not being acted upon.`,
     );
-  } else if (followUpCompletionRate < 80 && followUpCompletionRate >= 50 && followUpPlanned > 0) {
+  } else if (below(followUpCompletionRate, 80) && meets(followUpCompletionRate, 50) && followUpPlanned > 0) {
     concerns.push(
       `Fitness follow-up completion at ${followUpCompletionRate}% — some health recommendations are not being followed through.`,
     );
   }
 
   // Programme review concerns
-  if (programmeReviewRate < 50 && totalExerciseProgrammes > 0) {
+  if (below(programmeReviewRate, 50) && totalExerciseProgrammes > 0) {
     concerns.push(
       `Only ${programmeReviewRate}% of exercise programmes reviewed — without regular review, programmes may not be meeting children's changing needs.`,
     );
-  } else if (programmeReviewRate < 80 && programmeReviewRate >= 50 && totalExerciseProgrammes > 0) {
+  } else if (below(programmeReviewRate, 80) && meets(programmeReviewRate, 50) && totalExerciseProgrammes > 0) {
     concerns.push(
       `Programme review rate at ${programmeReviewRate}% — some exercise programmes have not been reviewed to assess effectiveness and relevance.`,
     );
   }
 
   // Outdoor risk assessment concerns
-  if (outdoorRiskAssessedRate < 70 && totalOutdoorEngagements > 0) {
+  if (below(outdoorRiskAssessedRate, 70) && totalOutdoorEngagements > 0) {
     concerns.push(
       `Only ${outdoorRiskAssessedRate}% of outdoor activities risk-assessed — outdoor engagement should be supported by appropriate risk assessment to ensure children's safety.`,
     );
@@ -893,8 +890,8 @@ export function computePhysicalActivityRecreation(
   const disengagedProgrammes = exercise_programme_records.filter(
     (e) => e.engagement_level === "disengaged" || e.engagement_level === "low",
   ).length;
-  const disengagedRate = pct(disengagedProgrammes, totalExerciseProgrammes);
-  if (disengagedRate >= 40 && totalExerciseProgrammes > 0) {
+  const disengagedRate = rate(disengagedProgrammes, totalExerciseProgrammes);
+  if (meets(disengagedRate, 40) && totalExerciseProgrammes > 0) {
     concerns.push(
       `${disengagedRate}% of exercise programmes show low or disengaged participation — a significant number of children are not benefiting from their exercise provision.`,
     );
@@ -915,7 +912,7 @@ export function computePhysicalActivityRecreation(
   }
 
   // Inclusivity concerns
-  if (inclusivityRate < 70 && totalRecActivities > 0) {
+  if (below(inclusivityRate, 70) && totalRecActivities > 0) {
     concerns.push(
       `Only ${inclusivityRate}% of recreational activities recorded as inclusive — activities may not be designed to accommodate all children's needs and abilities.`,
     );
@@ -926,7 +923,7 @@ export function computePhysicalActivityRecreation(
   const recommendations: PhysicalActivityRecommendation[] = [];
   let rank = 0;
 
-  if (exerciseEngagementRate < 40 && totalSessionsPlanned > 0) {
+  if (below(exerciseEngagementRate, 40) && totalSessionsPlanned > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -936,7 +933,7 @@ export function computePhysicalActivityRecreation(
     });
   }
 
-  if (outdoorParticipationRate < 50 && total_children > 0) {
+  if (below(outdoorParticipationRate, 50) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -946,7 +943,7 @@ export function computePhysicalActivityRecreation(
     });
   }
 
-  if (activityAccessibilityRate < 50 && totalAccessibilityRecords > 0) {
+  if (below(activityAccessibilityRate, 50) && totalAccessibilityRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -956,7 +953,7 @@ export function computePhysicalActivityRecreation(
     });
   }
 
-  if (fitnessAssessmentCoverageRate < 30 && total_children > 0) {
+  if (below(fitnessAssessmentCoverageRate, 30) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -966,7 +963,7 @@ export function computePhysicalActivityRecreation(
     });
   }
 
-  if (exerciseCoverageRate < 50 && total_children > 0) {
+  if (below(exerciseCoverageRate, 50) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -976,7 +973,7 @@ export function computePhysicalActivityRecreation(
     });
   }
 
-  if (childChoiceRate < 30 && totalRecActivities > 0) {
+  if (below(childChoiceRate, 30) && totalRecActivities > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -986,7 +983,7 @@ export function computePhysicalActivityRecreation(
     });
   }
 
-  if (recreationalDiversityScore < 40 && totalRecActivities > 0) {
+  if (below(recreationalDiversityScore, 40) && totalRecActivities > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -996,7 +993,7 @@ export function computePhysicalActivityRecreation(
     });
   }
 
-  if (recreationalEnjoymentRate < 50 && totalRecActivities > 0) {
+  if (below(recreationalEnjoymentRate, 50) && totalRecActivities > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1006,7 +1003,7 @@ export function computePhysicalActivityRecreation(
     });
   }
 
-  if (adaptationRate < 50 && adaptationRequired > 0) {
+  if (below(adaptationRate, 50) && adaptationRequired > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1016,7 +1013,7 @@ export function computePhysicalActivityRecreation(
     });
   }
 
-  if (goalAchievementRate < 30 && totalGoalsSet > 0) {
+  if (below(goalAchievementRate, 30) && totalGoalsSet > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1026,7 +1023,7 @@ export function computePhysicalActivityRecreation(
     });
   }
 
-  if (followUpCompletionRate < 50 && followUpPlanned > 0) {
+  if (below(followUpCompletionRate, 50) && followUpPlanned > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1037,8 +1034,8 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    exerciseEngagementRate >= 40 &&
-    exerciseEngagementRate < 70 &&
+    meets(exerciseEngagementRate, 40) &&
+    below(exerciseEngagementRate, 70) &&
     totalSessionsPlanned > 0
   ) {
     recommendations.push({
@@ -1051,8 +1048,8 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    outdoorParticipationRate >= 50 &&
-    outdoorParticipationRate < 80 &&
+    meets(outdoorParticipationRate, 50) &&
+    below(outdoorParticipationRate, 80) &&
     total_children > 0
   ) {
     recommendations.push({
@@ -1065,8 +1062,8 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    fitnessAssessmentCoverageRate >= 30 &&
-    fitnessAssessmentCoverageRate < 80 &&
+    meets(fitnessAssessmentCoverageRate, 30) &&
+    below(fitnessAssessmentCoverageRate, 80) &&
     total_children > 0
   ) {
     recommendations.push({
@@ -1079,8 +1076,8 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    childChoiceRate >= 30 &&
-    childChoiceRate < 60 &&
+    meets(childChoiceRate, 30) &&
+    below(childChoiceRate, 60) &&
     totalRecActivities > 0
   ) {
     recommendations.push({
@@ -1093,8 +1090,8 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    recreationalDiversityScore >= 40 &&
-    recreationalDiversityScore < 60 &&
+    meets(recreationalDiversityScore, 40) &&
+    below(recreationalDiversityScore, 60) &&
     totalRecActivities > 0
   ) {
     recommendations.push({
@@ -1107,8 +1104,8 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    activityAccessibilityRate >= 50 &&
-    activityAccessibilityRate < 80 &&
+    meets(activityAccessibilityRate, 50) &&
+    below(activityAccessibilityRate, 80) &&
     totalAccessibilityRecords > 0
   ) {
     recommendations.push({
@@ -1121,8 +1118,8 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    exerciseCoverageRate >= 50 &&
-    exerciseCoverageRate < 80 &&
+    meets(exerciseCoverageRate, 50) &&
+    below(exerciseCoverageRate, 80) &&
     total_children > 0
   ) {
     recommendations.push({
@@ -1135,8 +1132,8 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    recreationalEnjoymentRate >= 50 &&
-    recreationalEnjoymentRate < 70 &&
+    meets(recreationalEnjoymentRate, 50) &&
+    below(recreationalEnjoymentRate, 70) &&
     totalRecActivities > 0
   ) {
     recommendations.push({
@@ -1148,7 +1145,7 @@ export function computePhysicalActivityRecreation(
     });
   }
 
-  if (programmeReviewRate < 50 && totalExerciseProgrammes > 0) {
+  if (below(programmeReviewRate, 50) && totalExerciseProgrammes > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1158,7 +1155,7 @@ export function computePhysicalActivityRecreation(
     });
   }
 
-  if (outdoorRiskAssessedRate < 70 && totalOutdoorEngagements > 0) {
+  if (below(outdoorRiskAssessedRate, 70) && totalOutdoorEngagements > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1189,7 +1186,7 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    barrierResolutionRate < 50 &&
+    below(barrierResolutionRate, 50) &&
     barrierIdentified > 0
   ) {
     recommendations.push({
@@ -1201,7 +1198,7 @@ export function computePhysicalActivityRecreation(
     });
   }
 
-  if (communityBasedRate < 30 && totalRecActivities > 0) {
+  if (below(communityBasedRate, 30) && totalRecActivities > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1211,7 +1208,7 @@ export function computePhysicalActivityRecreation(
     });
   }
 
-  if (newExperienceRate < 20 && totalRecActivities > 0) {
+  if (below(newExperienceRate, 20) && totalRecActivities > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1227,28 +1224,28 @@ export function computePhysicalActivityRecreation(
 
   // -- Critical insights --
 
-  if (exerciseEngagementRate < 40 && totalSessionsPlanned > 0) {
+  if (below(exerciseEngagementRate, 40) && totalSessionsPlanned > 0) {
     insights.push({
       text: `Only ${exerciseEngagementRate}% exercise session attendance. Ofsted will view very low engagement as evidence that exercise programmes are not meeting children's needs or interests. The home must urgently review programme design, timing, and child involvement in planning to reverse this trend.`,
       severity: "critical",
     });
   }
 
-  if (outdoorParticipationRate < 50 && total_children > 0) {
+  if (below(outdoorParticipationRate, 50) && total_children > 0) {
     insights.push({
       text: `Only ${outdoorParticipationRate}% of children participate in outdoor activities. Regular outdoor engagement is fundamental to children's physical health, emotional wellbeing, and development. Ofsted expects children to enjoy regular outdoor time as part of a healthy, active lifestyle.`,
       severity: "critical",
     });
   }
 
-  if (activityAccessibilityRate < 50 && totalAccessibilityRecords > 0) {
+  if (below(activityAccessibilityRate, 50) && totalAccessibilityRecords > 0) {
     insights.push({
       text: `Only ${activityAccessibilityRate}% activity accessibility rate. Children are being denied participation in physical and recreational activities due to unmet accessibility needs. This represents a failure to ensure equal opportunities for all children regardless of their individual circumstances.`,
       severity: "critical",
     });
   }
 
-  if (fitnessAssessmentCoverageRate < 30 && total_children > 0) {
+  if (below(fitnessAssessmentCoverageRate, 30) && total_children > 0) {
     insights.push({
       text: `Only ${fitnessAssessmentCoverageRate}% of children have received fitness assessments. Without regular assessment, the home cannot evidence that it monitors children's physical development or identifies health needs early. This is a significant gap in Reg 10 (health) compliance.`,
       severity: "critical",
@@ -1269,14 +1266,14 @@ export function computePhysicalActivityRecreation(
     });
   }
 
-  if (childChoiceRate < 30 && totalRecActivities > 0) {
+  if (below(childChoiceRate, 30) && totalRecActivities > 0) {
     insights.push({
       text: `Only ${childChoiceRate}% of recreational activities chosen by children. The voice of the child is not sufficiently reflected in activity planning. Ofsted expects children to have genuine influence over their leisure time, not simply be directed into adult-chosen activities.`,
       severity: "critical",
     });
   }
 
-  if (exerciseCoverageRate < 50 && total_children > 0 && totalExerciseProgrammes > 0) {
+  if (below(exerciseCoverageRate, 50) && total_children > 0 && totalExerciseProgrammes > 0) {
     insights.push({
       text: `Only ${exerciseCoverageRate}% of children have active exercise programmes. The majority of children lack structured physical activity provision. Reg 9 requires the home to ensure all children enjoy activities that promote their development.`,
       severity: "critical",
@@ -1286,8 +1283,8 @@ export function computePhysicalActivityRecreation(
   // -- Warning insights --
 
   if (
-    exerciseEngagementRate >= 40 &&
-    exerciseEngagementRate < 70 &&
+    meets(exerciseEngagementRate, 40) &&
+    below(exerciseEngagementRate, 70) &&
     totalSessionsPlanned > 0
   ) {
     insights.push({
@@ -1297,8 +1294,8 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    recreationalDiversityScore >= 40 &&
-    recreationalDiversityScore < 60 &&
+    meets(recreationalDiversityScore, 40) &&
+    below(recreationalDiversityScore, 60) &&
     totalRecActivities > 0
   ) {
     insights.push({
@@ -1308,8 +1305,8 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    outdoorParticipationRate >= 50 &&
-    outdoorParticipationRate < 80 &&
+    meets(outdoorParticipationRate, 50) &&
+    below(outdoorParticipationRate, 80) &&
     total_children > 0
   ) {
     insights.push({
@@ -1319,8 +1316,8 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    fitnessAssessmentCoverageRate >= 30 &&
-    fitnessAssessmentCoverageRate < 80 &&
+    meets(fitnessAssessmentCoverageRate, 30) &&
+    below(fitnessAssessmentCoverageRate, 80) &&
     total_children > 0
   ) {
     insights.push({
@@ -1330,8 +1327,8 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    activityAccessibilityRate >= 50 &&
-    activityAccessibilityRate < 80 &&
+    meets(activityAccessibilityRate, 50) &&
+    below(activityAccessibilityRate, 80) &&
     totalAccessibilityRecords > 0
   ) {
     insights.push({
@@ -1341,8 +1338,8 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    childChoiceRate >= 30 &&
-    childChoiceRate < 60 &&
+    meets(childChoiceRate, 30) &&
+    below(childChoiceRate, 60) &&
     totalRecActivities > 0
   ) {
     insights.push({
@@ -1352,8 +1349,8 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    goalAchievementRate >= 30 &&
-    goalAchievementRate < 60 &&
+    meets(goalAchievementRate, 30) &&
+    below(goalAchievementRate, 60) &&
     totalGoalsSet > 0
   ) {
     insights.push({
@@ -1363,8 +1360,8 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    recreationalEnjoymentRate >= 50 &&
-    recreationalEnjoymentRate < 70 &&
+    meets(recreationalEnjoymentRate, 50) &&
+    below(recreationalEnjoymentRate, 70) &&
     totalRecActivities > 0
   ) {
     insights.push({
@@ -1374,8 +1371,8 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    adaptationRate >= 50 &&
-    adaptationRate < 80 &&
+    meets(adaptationRate, 50) &&
+    below(adaptationRate, 80) &&
     adaptationRequired > 0
   ) {
     insights.push({
@@ -1385,8 +1382,8 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    followUpCompletionRate >= 50 &&
-    followUpCompletionRate < 80 &&
+    meets(followUpCompletionRate, 50) &&
+    below(followUpCompletionRate, 80) &&
     followUpPlanned > 0
   ) {
     insights.push({
@@ -1395,7 +1392,7 @@ export function computePhysicalActivityRecreation(
     });
   }
 
-  if (programmeReviewRate < 50 && totalExerciseProgrammes > 0) {
+  if (below(programmeReviewRate, 50) && totalExerciseProgrammes > 0) {
     insights.push({
       text: `Only ${programmeReviewRate}% of exercise programmes reviewed — without regular review, programmes may become stale, irrelevant, or poorly matched to children's changing needs and interests.`,
       severity: "warning",
@@ -1403,8 +1400,8 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    barrierResolutionRate >= 50 &&
-    barrierResolutionRate < 80 &&
+    meets(barrierResolutionRate, 50) &&
+    below(barrierResolutionRate, 80) &&
     barrierIdentified > 0
   ) {
     insights.push({
@@ -1413,21 +1410,21 @@ export function computePhysicalActivityRecreation(
     });
   }
 
-  if (disengagedRate >= 40 && totalExerciseProgrammes > 0) {
+  if (meets(disengagedRate, 40) && totalExerciseProgrammes > 0) {
     insights.push({
       text: `${disengagedRate}% of exercise programmes show low or disengaged participation — a significant proportion of children are not benefiting from their exercise provision. This may indicate programmes are not sufficiently motivating or child-centred.`,
       severity: "warning",
     });
   }
 
-  if (outdoorRiskAssessedRate < 70 && outdoorRiskAssessedRate > 0 && totalOutdoorEngagements > 0) {
+  if (below(outdoorRiskAssessedRate, 70) && above(outdoorRiskAssessedRate, 0) && totalOutdoorEngagements > 0) {
     insights.push({
       text: `Only ${outdoorRiskAssessedRate}% of outdoor activities risk-assessed — while avoiding overly cautious practice, basic risk assessment supports safe outdoor engagement and protects both children and staff.`,
       severity: "warning",
     });
   }
 
-  if (communityBasedRate < 30 && totalRecActivities > 0) {
+  if (below(communityBasedRate, 30) && totalRecActivities > 0) {
     insights.push({
       text: `Only ${communityBasedRate}% of recreational activities are community-based — children may be missing opportunities for social integration and normalised experiences outside the home setting.`,
       severity: "warning",
@@ -1444,8 +1441,8 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    exerciseEngagementRate >= 90 &&
-    exerciseCoverageRate >= 100 &&
+    meets(exerciseEngagementRate, 90) &&
+    meets(exerciseCoverageRate, 100) &&
     totalSessionsPlanned > 0 &&
     total_children > 0
   ) {
@@ -1456,8 +1453,8 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    recreationalDiversityScore >= 80 &&
-    childChoiceRate >= 80 &&
+    meets(recreationalDiversityScore, 80) &&
+    meets(childChoiceRate, 80) &&
     totalRecActivities > 0
   ) {
     insights.push({
@@ -1467,7 +1464,7 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    outdoorParticipationRate >= 100 &&
+    meets(outdoorParticipationRate, 100) &&
     (outdoorEnjoymentAvg ?? 0) >= 4.0 &&
     total_children > 0 &&
     totalOutdoorEngagements > 0
@@ -1479,8 +1476,8 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    fitnessAssessmentCoverageRate >= 100 &&
-    followUpCompletionRate >= 90 &&
+    meets(fitnessAssessmentCoverageRate, 100) &&
+    meets(followUpCompletionRate, 90) &&
     total_children > 0 &&
     followUpPlanned > 0
   ) {
@@ -1491,8 +1488,8 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    activityAccessibilityRate >= 100 &&
-    adaptationRate >= 100 &&
+    meets(activityAccessibilityRate, 100) &&
+    meets(adaptationRate, 100) &&
     totalAccessibilityRecords > 0 &&
     adaptationRequired > 0
   ) {
@@ -1503,7 +1500,7 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    goalAchievementRate >= 80 &&
+    meets(goalAchievementRate, 80) &&
     totalGoalsSet > 0
   ) {
     insights.push({
@@ -1513,7 +1510,7 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    recreationalEnjoymentRate >= 90 &&
+    meets(recreationalEnjoymentRate, 90) &&
     totalRecActivities > 0
   ) {
     insights.push({
@@ -1523,9 +1520,9 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    exerciseEnjoymentRate >= 90 &&
+    meets(exerciseEnjoymentRate, 90) &&
     totalExerciseProgrammes > 0 &&
-    exerciseEngagementRate >= 80
+    meets(exerciseEngagementRate, 80)
   ) {
     insights.push({
       text: `${exerciseEnjoymentRate}% exercise enjoyment with ${exerciseEngagementRate}% attendance — children both enjoy and consistently attend their exercise programmes. This combination of enjoyment and commitment reflects well-designed, motivating physical activity provision.`,
@@ -1534,7 +1531,7 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    newExperienceRate >= 50 &&
+    meets(newExperienceRate, 50) &&
     totalRecActivities > 0
   ) {
     insights.push({
@@ -1544,8 +1541,8 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    communityBasedRate >= 50 &&
-    peerInteractionRate >= 70 &&
+    meets(communityBasedRate, 50) &&
+    meets(peerInteractionRate, 70) &&
     totalRecActivities > 0
   ) {
     insights.push({
@@ -1555,7 +1552,7 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    childInitiatedOutdoorRate >= 50 &&
+    meets(childInitiatedOutdoorRate, 50) &&
     totalOutdoorEngagements > 0
   ) {
     insights.push({
@@ -1565,8 +1562,8 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    healthProfInvolvedRate >= 70 &&
-    bmiRecordedRate >= 80 &&
+    meets(healthProfInvolvedRate, 70) &&
+    meets(bmiRecordedRate, 80) &&
     totalFitnessAssessments > 0
   ) {
     insights.push({
@@ -1576,7 +1573,7 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    barrierResolutionRate >= 90 &&
+    meets(barrierResolutionRate, 90) &&
     barrierIdentified > 0
   ) {
     insights.push({
@@ -1586,7 +1583,7 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    skillDevRate >= 60 &&
+    meets(skillDevRate, 60) &&
     totalRecActivities > 0
   ) {
     insights.push({
@@ -1596,8 +1593,8 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    weatherAppropriateRate >= 90 &&
-    outdoorRiskAssessedRate >= 90 &&
+    meets(weatherAppropriateRate, 90) &&
+    meets(outdoorRiskAssessedRate, 90) &&
     totalOutdoorEngagements > 0
   ) {
     insights.push({
@@ -1607,9 +1604,9 @@ export function computePhysicalActivityRecreation(
   }
 
   if (
-    equalOpportunityRate >= 90 &&
-    costCoveredRate >= 90 &&
-    transportArrangedRate >= 80 &&
+    meets(equalOpportunityRate, 90) &&
+    meets(costCoveredRate, 90) &&
+    meets(transportArrangedRate, 80) &&
     totalAccessibilityRecords > 0
   ) {
     insights.push({

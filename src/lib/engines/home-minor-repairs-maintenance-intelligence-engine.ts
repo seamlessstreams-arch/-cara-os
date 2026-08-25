@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME MINOR REPAIRS & MAINTENANCE INTELLIGENCE ENGINE
 // Monitors premises maintenance quality including maintenance request tracking,
@@ -207,10 +208,6 @@ export interface MinorRepairsResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -238,12 +235,12 @@ function emptyResult(
     total_safety_checks: 0,
     total_condition_audits: 0,
     total_preventative_tasks: 0,
-    request_response_rate: 0,
-    repair_completion_rate: 0,
-    safety_check_rate: 0,
-    condition_compliance_rate: 0,
-    preventative_maintenance_rate: 0,
-    child_environment_rate: 0,
+    request_response_rate: null,
+    repair_completion_rate: null,
+    safety_check_rate: null,
+    condition_compliance_rate: null,
+    preventative_maintenance_rate: null,
+    child_environment_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -324,7 +321,7 @@ export function computeMinorRepairsMaintenance(
   const acknowledgedWithinTarget = maintenance_request_records.filter(
     (r) => r.acknowledged_within_target,
   ).length;
-  const requestResponseRate = pct(acknowledgedWithinTarget, totalMaintenanceRequests);
+  const requestResponseRate = rate(acknowledgedWithinTarget, totalMaintenanceRequests);
 
   const safetyAffectingRequests = maintenance_request_records.filter(
     (r) => r.affects_safety,
@@ -332,7 +329,7 @@ export function computeMinorRepairsMaintenance(
   const safetyRequestsResolved = maintenance_request_records.filter(
     (r) => r.affects_safety && r.status === "completed",
   ).length;
-  const safetyResolutionRate = pct(safetyRequestsResolved, safetyAffectingRequests);
+  const safetyResolutionRate = rate(safetyRequestsResolved, safetyAffectingRequests);
 
   const childAreaRequests = maintenance_request_records.filter(
     (r) => r.affects_child_area,
@@ -347,7 +344,7 @@ export function computeMinorRepairsMaintenance(
   const emergencyResolved = maintenance_request_records.filter(
     (r) => r.priority === "emergency" && r.status === "completed",
   ).length;
-  const emergencyResolutionRate = pct(emergencyResolved, emergencyRequests);
+  const emergencyResolutionRate = rate(emergencyResolved, emergencyRequests);
 
   const urgentRequests = maintenance_request_records.filter(
     (r) => r.priority === "urgent",
@@ -355,7 +352,7 @@ export function computeMinorRepairsMaintenance(
   const urgentResolved = maintenance_request_records.filter(
     (r) => r.priority === "urgent" && r.status === "completed",
   ).length;
-  const urgentResolutionRate = pct(urgentResolved, urgentRequests);
+  const urgentResolutionRate = rate(urgentResolved, urgentRequests);
 
   const deferredRequests = maintenance_request_records.filter(
     (r) => r.status === "deferred",
@@ -366,22 +363,22 @@ export function computeMinorRepairsMaintenance(
   const completedWithinTarget = repair_completion_records.filter(
     (r) => r.completed_within_target,
   ).length;
-  const repairCompletionRate = pct(completedWithinTarget, totalRepairCompletions);
+  const repairCompletionRate = rate(completedWithinTarget, totalRepairCompletions);
 
   const excellentOrGoodRepairs = repair_completion_records.filter(
     (r) => r.repair_quality === "excellent" || r.repair_quality === "good",
   ).length;
-  const repairQualityRate = pct(excellentOrGoodRepairs, totalRepairCompletions);
+  const repairQualityRate = rate(excellentOrGoodRepairs, totalRepairCompletions);
 
   const poorOrFailedRepairs = repair_completion_records.filter(
     (r) => r.repair_quality === "poor" || r.repair_quality === "failed",
   ).length;
-  const poorRepairRate = pct(poorOrFailedRepairs, totalRepairCompletions);
+  const poorRepairRate = rate(poorOrFailedRepairs, totalRepairCompletions);
 
   const signedOffRepairs = repair_completion_records.filter(
     (r) => r.sign_off_date !== null && r.sign_off_date !== "",
   ).length;
-  const signOffRate = pct(signedOffRepairs, totalRepairCompletions);
+  const signOffRate = rate(signedOffRepairs, totalRepairCompletions);
 
   const followUpRequired = repair_completion_records.filter(
     (r) => r.follow_up_required,
@@ -389,7 +386,7 @@ export function computeMinorRepairsMaintenance(
   const followUpCompleted = repair_completion_records.filter(
     (r) => r.follow_up_required && r.follow_up_completed,
   ).length;
-  const repairFollowUpRate = pct(followUpCompleted, followUpRequired);
+  const repairFollowUpRate = rate(followUpCompleted, followUpRequired);
 
   const childAreaRestored = repair_completion_records.filter(
     (r) => r.child_area_restored,
@@ -398,7 +395,7 @@ export function computeMinorRepairsMaintenance(
   const photoEvidenceRepairs = repair_completion_records.filter(
     (r) => r.photographic_evidence,
   ).length;
-  const photoEvidenceRate = pct(photoEvidenceRepairs, totalRepairCompletions);
+  const photoEvidenceRate = rate(photoEvidenceRepairs, totalRepairCompletions);
 
   const avgActualDays =
     totalRepairCompletions > 0
@@ -413,17 +410,17 @@ export function computeMinorRepairsMaintenance(
   const compliantChecks = safety_check_records.filter(
     (c) => c.compliant,
   ).length;
-  const safetyCheckRate = pct(compliantChecks, totalSafetyChecks);
+  const safetyCheckRate = rate(compliantChecks, totalSafetyChecks);
 
   const certificateObtained = safety_check_records.filter(
     (c) => c.certificate_obtained,
   ).length;
-  const certificateRate = pct(certificateObtained, totalSafetyChecks);
+  const certificateRate = rate(certificateObtained, totalSafetyChecks);
 
   const overdueChecks = safety_check_records.filter(
     (c) => c.overdue,
   ).length;
-  const overdueCheckRate = pct(overdueChecks, totalSafetyChecks);
+  const overdueCheckRate = rate(overdueChecks, totalSafetyChecks);
 
   const regulatoryChecks = safety_check_records.filter(
     (c) => c.regulatory_requirement,
@@ -431,12 +428,12 @@ export function computeMinorRepairsMaintenance(
   const regulatoryCompliant = safety_check_records.filter(
     (c) => c.regulatory_requirement && c.compliant,
   ).length;
-  const regulatoryComplianceRate = pct(regulatoryCompliant, regulatoryChecks);
+  const regulatoryComplianceRate = rate(regulatoryCompliant, regulatoryChecks);
 
   const highRiskChecks = safety_check_records.filter(
     (c) => c.risk_level === "high",
   ).length;
-  const highRiskRate = pct(highRiskChecks, totalSafetyChecks);
+  const highRiskRate = rate(highRiskChecks, totalSafetyChecks);
 
   const totalSafetyActionsReq = safety_check_records.reduce(
     (sum, c) => sum + c.actions_required,
@@ -446,7 +443,7 @@ export function computeMinorRepairsMaintenance(
     (sum, c) => sum + c.actions_completed,
     0,
   );
-  const safetyActionCompletionRate = pct(totalSafetyActionsComp, totalSafetyActionsReq);
+  const safetyActionCompletionRate = rate(totalSafetyActionsComp, totalSafetyActionsReq);
 
   // --- Condition audit metrics ---
   const totalConditionAudits = condition_audit_records.length;
@@ -454,17 +451,17 @@ export function computeMinorRepairsMaintenance(
   const excellentOrGoodCondition = condition_audit_records.filter(
     (a) => a.overall_condition === "excellent" || a.overall_condition === "good",
   ).length;
-  const conditionComplianceRate = pct(excellentOrGoodCondition, totalConditionAudits);
+  const conditionComplianceRate = rate(excellentOrGoodCondition, totalConditionAudits);
 
   const poorOrCriticalCondition = condition_audit_records.filter(
     (a) => a.overall_condition === "poor" || a.overall_condition === "critical",
   ).length;
-  const poorConditionRate = pct(poorOrCriticalCondition, totalConditionAudits);
+  const poorConditionRate = rate(poorOrCriticalCondition, totalConditionAudits);
 
   const childFriendlyAreas = condition_audit_records.filter(
     (a) => a.child_friendly,
   ).length;
-  const childFriendlyRate = pct(childFriendlyAreas, totalConditionAudits);
+  const childFriendlyRate = rate(childFriendlyAreas, totalConditionAudits);
 
   const avgSafetyScore =
     totalConditionAudits > 0
@@ -483,7 +480,7 @@ export function computeMinorRepairsMaintenance(
     (sum, a) => sum + a.issues_resolved,
     0,
   );
-  const conditionIssueResolutionRate = pct(
+  const conditionIssueResolutionRate = rate(
     totalConditionIssuesResolved,
     totalConditionIssuesFound,
   );
@@ -491,24 +488,24 @@ export function computeMinorRepairsMaintenance(
   const childFeedbackSought = condition_audit_records.filter(
     (a) => a.child_feedback_sought,
   ).length;
-  const childFeedbackSoughtRate = pct(childFeedbackSought, totalConditionAudits);
+  const childFeedbackSoughtRate = rate(childFeedbackSought, totalConditionAudits);
 
   const childFeedbackPositive = condition_audit_records.filter(
     (a) => a.child_feedback_sought && a.child_feedback_positive,
   ).length;
-  const childFeedbackPositiveRate = pct(childFeedbackPositive, childFeedbackSought);
+  const childFeedbackPositiveRate = rate(childFeedbackPositive, childFeedbackSought);
 
   // --- Preventative maintenance metrics ---
   const totalPreventativeTasks = preventative_maintenance_records.length;
   const completedOnSchedule = preventative_maintenance_records.filter(
     (p) => p.completed_on_schedule,
   ).length;
-  const preventativeMaintenanceRate = pct(completedOnSchedule, totalPreventativeTasks);
+  const preventativeMaintenanceRate = rate(completedOnSchedule, totalPreventativeTasks);
 
   const overduePreventative = preventative_maintenance_records.filter(
     (p) => p.overdue,
   ).length;
-  const overduePreventativeRate = pct(overduePreventative, totalPreventativeTasks);
+  const overduePreventativeRate = rate(overduePreventative, totalPreventativeTasks);
 
   const highRiskMissed = preventative_maintenance_records.filter(
     (p) => p.overdue && p.risk_if_missed === "high",
@@ -517,7 +514,7 @@ export function computeMinorRepairsMaintenance(
   const documentedPreventative = preventative_maintenance_records.filter(
     (p) => p.documented,
   ).length;
-  const preventativeDocumentationRate = pct(documentedPreventative, totalPreventativeTasks);
+  const preventativeDocumentationRate = rate(documentedPreventative, totalPreventativeTasks);
 
   const contractorRequired = preventative_maintenance_records.filter(
     (p) => p.contractor_required,
@@ -525,7 +522,7 @@ export function computeMinorRepairsMaintenance(
   const contractorBooked = preventative_maintenance_records.filter(
     (p) => p.contractor_required && p.contractor_booked,
   ).length;
-  const contractorBookingRate = pct(contractorBooked, contractorRequired);
+  const contractorBookingRate = rate(contractorBooked, contractorRequired);
 
   const affectsChildEnvPreventative = preventative_maintenance_records.filter(
     (p) => p.affects_child_environment,
@@ -563,61 +560,61 @@ export function computeMinorRepairsMaintenance(
 
   const totalChildEnvNum = childEnvNumerators.reduce((a, b) => a + b, 0);
   const totalChildEnvDenom = childEnvDenominators.reduce((a, b) => a + b, 0);
-  const childEnvironmentRate = pct(totalChildEnvNum, totalChildEnvDenom);
+  const childEnvironmentRate = rate(totalChildEnvNum, totalChildEnvDenom);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: requestResponseRate (>=90: +4, >=70: +2) ---
-  if (requestResponseRate >= 90) score += 4;
-  else if (requestResponseRate >= 70) score += 2;
+  if (meets(requestResponseRate, 90)) score += 4;
+  else if (meets(requestResponseRate, 70)) score += 2;
 
   // --- Bonus 2: repairCompletionRate (>=95: +4, >=80: +2) ---
-  if (repairCompletionRate >= 95) score += 4;
-  else if (repairCompletionRate >= 80) score += 2;
+  if (meets(repairCompletionRate, 95)) score += 4;
+  else if (meets(repairCompletionRate, 80)) score += 2;
 
   // --- Bonus 3: safetyCheckRate (>=95: +4, >=80: +2) ---
-  if (safetyCheckRate >= 95) score += 4;
-  else if (safetyCheckRate >= 80) score += 2;
+  if (meets(safetyCheckRate, 95)) score += 4;
+  else if (meets(safetyCheckRate, 80)) score += 2;
 
   // --- Bonus 4: conditionComplianceRate (>=90: +3, >=70: +1) ---
-  if (conditionComplianceRate >= 90) score += 3;
-  else if (conditionComplianceRate >= 70) score += 1;
+  if (meets(conditionComplianceRate, 90)) score += 3;
+  else if (meets(conditionComplianceRate, 70)) score += 1;
 
   // --- Bonus 5: preventativeMaintenanceRate (>=90: +3, >=70: +1) ---
-  if (preventativeMaintenanceRate >= 90) score += 3;
-  else if (preventativeMaintenanceRate >= 70) score += 1;
+  if (meets(preventativeMaintenanceRate, 90)) score += 3;
+  else if (meets(preventativeMaintenanceRate, 70)) score += 1;
 
   // --- Bonus 6: childEnvironmentRate (>=90: +3, >=70: +1) ---
-  if (childEnvironmentRate >= 90) score += 3;
-  else if (childEnvironmentRate >= 70) score += 1;
+  if (meets(childEnvironmentRate, 90)) score += 3;
+  else if (meets(childEnvironmentRate, 70)) score += 1;
 
   // --- Bonus 7: repairQualityRate (>=90: +3, >=70: +1) ---
-  if (repairQualityRate >= 90) score += 3;
-  else if (repairQualityRate >= 70) score += 1;
+  if (meets(repairQualityRate, 90)) score += 3;
+  else if (meets(repairQualityRate, 70)) score += 1;
 
   // --- Bonus 8: safetyActionCompletionRate (>=90: +2, >=70: +1) ---
-  if (safetyActionCompletionRate >= 90) score += 2;
-  else if (safetyActionCompletionRate >= 70) score += 1;
+  if (meets(safetyActionCompletionRate, 90)) score += 2;
+  else if (meets(safetyActionCompletionRate, 70)) score += 1;
 
   // --- Bonus 9: preventativeDocumentationRate (>=90: +2, >=70: +1) ---
-  if (preventativeDocumentationRate >= 90) score += 2;
-  else if (preventativeDocumentationRate >= 70) score += 1;
+  if (meets(preventativeDocumentationRate, 90)) score += 2;
+  else if (meets(preventativeDocumentationRate, 70)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // requestResponseRate < 40 -> -5 (guarded)
-  if (requestResponseRate < 40 && maintenance_request_records.length > 0) score -= 5;
+  if (below(requestResponseRate, 40) && maintenance_request_records.length > 0) score -= 5;
 
   // safetyCheckRate < 50 -> -5 (guarded)
-  if (safetyCheckRate < 50 && safety_check_records.length > 0) score -= 5;
+  if (below(safetyCheckRate, 50) && safety_check_records.length > 0) score -= 5;
 
   // conditionComplianceRate < 40 -> -4 (guarded)
-  if (conditionComplianceRate < 40 && condition_audit_records.length > 0) score -= 4;
+  if (below(conditionComplianceRate, 40) && condition_audit_records.length > 0) score -= 4;
 
   // preventativeMaintenanceRate < 40 -> -4 (guarded)
-  if (preventativeMaintenanceRate < 40 && preventative_maintenance_records.length > 0) score -= 4;
+  if (below(preventativeMaintenanceRate, 40) && preventative_maintenance_records.length > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -627,111 +624,111 @@ export function computeMinorRepairsMaintenance(
 
   const strengths: string[] = [];
 
-  if (requestResponseRate >= 90 && totalMaintenanceRequests > 0) {
+  if (meets(requestResponseRate, 90) && totalMaintenanceRequests > 0) {
     strengths.push(
       `${requestResponseRate}% of maintenance requests acknowledged within target — the home demonstrates excellent responsiveness to premises issues, ensuring problems are addressed promptly.`,
     );
-  } else if (requestResponseRate >= 70 && totalMaintenanceRequests > 0) {
+  } else if (meets(requestResponseRate, 70) && totalMaintenanceRequests > 0) {
     strengths.push(
       `${requestResponseRate}% request response rate — the home generally responds to maintenance requests in a timely manner.`,
     );
   }
 
-  if (repairCompletionRate >= 95 && totalRepairCompletions > 0) {
+  if (meets(repairCompletionRate, 95) && totalRepairCompletions > 0) {
     strengths.push(
       `${repairCompletionRate}% of repairs completed within target timescale — exemplary repair turnaround ensuring premises remain safe and well-maintained.`,
     );
-  } else if (repairCompletionRate >= 80 && totalRepairCompletions > 0) {
+  } else if (meets(repairCompletionRate, 80) && totalRepairCompletions > 0) {
     strengths.push(
       `${repairCompletionRate}% repair completion rate within target — the home completes the majority of repairs in a timely manner.`,
     );
   }
 
-  if (safetyCheckRate >= 95 && totalSafetyChecks > 0) {
+  if (meets(safetyCheckRate, 95) && totalSafetyChecks > 0) {
     strengths.push(
       `${safetyCheckRate}% safety check compliance — the home maintains outstanding statutory and regulatory compliance across all health and safety checks.`,
     );
-  } else if (safetyCheckRate >= 80 && totalSafetyChecks > 0) {
+  } else if (meets(safetyCheckRate, 80) && totalSafetyChecks > 0) {
     strengths.push(
       `${safetyCheckRate}% safety check compliance rate — strong compliance with health and safety inspection requirements.`,
     );
   }
 
-  if (conditionComplianceRate >= 90 && totalConditionAudits > 0) {
+  if (meets(conditionComplianceRate, 90) && totalConditionAudits > 0) {
     strengths.push(
       `${conditionComplianceRate}% of premises areas rated excellent or good — the home is maintained to a high standard across inspected areas.`,
     );
-  } else if (conditionComplianceRate >= 70 && totalConditionAudits > 0) {
+  } else if (meets(conditionComplianceRate, 70) && totalConditionAudits > 0) {
     strengths.push(
       `${conditionComplianceRate}% condition compliance — the majority of premises areas are in good or excellent condition.`,
     );
   }
 
-  if (preventativeMaintenanceRate >= 90 && totalPreventativeTasks > 0) {
+  if (meets(preventativeMaintenanceRate, 90) && totalPreventativeTasks > 0) {
     strengths.push(
       `${preventativeMaintenanceRate}% of preventative maintenance completed on schedule — the home has a proactive, well-managed approach to premises upkeep.`,
     );
-  } else if (preventativeMaintenanceRate >= 70 && totalPreventativeTasks > 0) {
+  } else if (meets(preventativeMaintenanceRate, 70) && totalPreventativeTasks > 0) {
     strengths.push(
       `${preventativeMaintenanceRate}% preventative maintenance on schedule — the home generally completes planned maintenance tasks on time.`,
     );
   }
 
-  if (childEnvironmentRate >= 90 && totalChildEnvDenom > 0) {
+  if (meets(childEnvironmentRate, 90) && totalChildEnvDenom > 0) {
     strengths.push(
       `${childEnvironmentRate}% child environment quality — maintenance issues affecting children's living areas are prioritised and resolved effectively.`,
     );
-  } else if (childEnvironmentRate >= 70 && totalChildEnvDenom > 0) {
+  } else if (meets(childEnvironmentRate, 70) && totalChildEnvDenom > 0) {
     strengths.push(
       `${childEnvironmentRate}% child environment rate — good attention to maintaining the quality of children's living spaces.`,
     );
   }
 
-  if (repairQualityRate >= 90 && totalRepairCompletions > 0) {
+  if (meets(repairQualityRate, 90) && totalRepairCompletions > 0) {
     strengths.push(
       `${repairQualityRate}% of repairs rated excellent or good quality — repairs are completed to a consistently high standard.`,
     );
-  } else if (repairQualityRate >= 70 && totalRepairCompletions > 0) {
+  } else if (meets(repairQualityRate, 70) && totalRepairCompletions > 0) {
     strengths.push(
       `${repairQualityRate}% repair quality rate — the majority of repairs meet a good or excellent standard.`,
     );
   }
 
-  if (emergencyResolutionRate >= 100 && emergencyRequests > 0) {
+  if (meets(emergencyResolutionRate, 100) && emergencyRequests > 0) {
     strengths.push(
       "All emergency maintenance requests have been resolved — the home demonstrates the ability to respond effectively to urgent premises issues.",
     );
   }
 
-  if (regulatoryComplianceRate >= 100 && regulatoryChecks > 0) {
+  if (meets(regulatoryComplianceRate, 100) && regulatoryChecks > 0) {
     strengths.push(
       "100% compliance across all regulatory safety checks — the home meets every statutory safety requirement.",
     );
-  } else if (regulatoryComplianceRate >= 90 && regulatoryChecks > 0) {
+  } else if (meets(regulatoryComplianceRate, 90) && regulatoryChecks > 0) {
     strengths.push(
       `${regulatoryComplianceRate}% regulatory compliance across statutory safety checks — strong adherence to statutory inspection requirements.`,
     );
   }
 
-  if (safetyActionCompletionRate >= 90 && totalSafetyActionsReq > 0) {
+  if (meets(safetyActionCompletionRate, 90) && totalSafetyActionsReq > 0) {
     strengths.push(
       `${safetyActionCompletionRate}% of safety check actions completed — follow-through on safety inspection findings is thorough and consistent.`,
     );
   }
 
-  if (conditionIssueResolutionRate >= 90 && totalConditionIssuesFound > 0) {
+  if (meets(conditionIssueResolutionRate, 90) && totalConditionIssuesFound > 0) {
     strengths.push(
       `${conditionIssueResolutionRate}% of condition audit issues resolved — the home addresses identified premises issues effectively.`,
     );
   }
 
-  if (childFeedbackSoughtRate >= 80 && totalConditionAudits > 0) {
+  if (meets(childFeedbackSoughtRate, 80) && totalConditionAudits > 0) {
     strengths.push(
       `Children's feedback sought in ${childFeedbackSoughtRate}% of condition audits — the home actively involves children in assessing their living environment.`,
     );
   }
 
-  if (signOffRate >= 90 && totalRepairCompletions > 0) {
+  if (meets(signOffRate, 90) && totalRepairCompletions > 0) {
     strengths.push(
       `${signOffRate}% of repairs formally signed off — strong governance and quality assurance in the repair completion process.`,
     );
@@ -749,7 +746,7 @@ export function computeMinorRepairsMaintenance(
     );
   }
 
-  if (contractorBookingRate >= 100 && contractorRequired > 0) {
+  if (meets(contractorBookingRate, 100) && contractorRequired > 0) {
     strengths.push(
       "All contractor-required maintenance tasks have contractors booked — proactive management of external maintenance dependencies.",
     );
@@ -759,13 +756,13 @@ export function computeMinorRepairsMaintenance(
 
   const concerns: string[] = [];
 
-  if (requestResponseRate < 40 && totalMaintenanceRequests > 0) {
+  if (below(requestResponseRate, 40) && totalMaintenanceRequests > 0) {
     concerns.push(
       `Only ${requestResponseRate}% of maintenance requests acknowledged within target — the home is failing to respond to premises issues in a timely manner, risking the safety and wellbeing of children and staff.`,
     );
   } else if (
-    requestResponseRate >= 40 &&
-    requestResponseRate < 70 &&
+    meets(requestResponseRate, 40) &&
+    below(requestResponseRate, 70) &&
     totalMaintenanceRequests > 0
   ) {
     concerns.push(
@@ -773,13 +770,13 @@ export function computeMinorRepairsMaintenance(
     );
   }
 
-  if (repairCompletionRate < 50 && totalRepairCompletions > 0) {
+  if (below(repairCompletionRate, 50) && totalRepairCompletions > 0) {
     concerns.push(
       `Only ${repairCompletionRate}% of repairs completed within target — the majority of repairs are overrunning their target timescales, leaving premises issues unresolved for too long.`,
     );
   } else if (
-    repairCompletionRate >= 50 &&
-    repairCompletionRate < 80 &&
+    meets(repairCompletionRate, 50) &&
+    below(repairCompletionRate, 80) &&
     totalRepairCompletions > 0
   ) {
     concerns.push(
@@ -787,13 +784,13 @@ export function computeMinorRepairsMaintenance(
     );
   }
 
-  if (safetyCheckRate < 50 && totalSafetyChecks > 0) {
+  if (below(safetyCheckRate, 50) && totalSafetyChecks > 0) {
     concerns.push(
       `Only ${safetyCheckRate}% safety check compliance — the home is failing to meet health and safety compliance requirements, creating significant risk to children and staff.`,
     );
   } else if (
-    safetyCheckRate >= 50 &&
-    safetyCheckRate < 80 &&
+    meets(safetyCheckRate, 50) &&
+    below(safetyCheckRate, 80) &&
     totalSafetyChecks > 0
   ) {
     concerns.push(
@@ -801,13 +798,13 @@ export function computeMinorRepairsMaintenance(
     );
   }
 
-  if (conditionComplianceRate < 40 && totalConditionAudits > 0) {
+  if (below(conditionComplianceRate, 40) && totalConditionAudits > 0) {
     concerns.push(
       `Only ${conditionComplianceRate}% of premises areas rated good or excellent — the majority of areas are in fair, poor, or critical condition, indicating widespread maintenance neglect.`,
     );
   } else if (
-    conditionComplianceRate >= 40 &&
-    conditionComplianceRate < 70 &&
+    meets(conditionComplianceRate, 40) &&
+    below(conditionComplianceRate, 70) &&
     totalConditionAudits > 0
   ) {
     concerns.push(
@@ -815,13 +812,13 @@ export function computeMinorRepairsMaintenance(
     );
   }
 
-  if (preventativeMaintenanceRate < 40 && totalPreventativeTasks > 0) {
+  if (below(preventativeMaintenanceRate, 40) && totalPreventativeTasks > 0) {
     concerns.push(
       `Only ${preventativeMaintenanceRate}% of preventative maintenance completed on schedule — the home is not maintaining a proactive maintenance programme, increasing the risk of breakdowns and safety issues.`,
     );
   } else if (
-    preventativeMaintenanceRate >= 40 &&
-    preventativeMaintenanceRate < 70 &&
+    meets(preventativeMaintenanceRate, 40) &&
+    below(preventativeMaintenanceRate, 70) &&
     totalPreventativeTasks > 0
   ) {
     concerns.push(
@@ -829,13 +826,13 @@ export function computeMinorRepairsMaintenance(
     );
   }
 
-  if (childEnvironmentRate < 50 && totalChildEnvDenom > 0) {
+  if (below(childEnvironmentRate, 50) && totalChildEnvDenom > 0) {
     concerns.push(
       `Child environment quality at only ${childEnvironmentRate}% — maintenance affecting children's living areas is not being adequately prioritised, impacting the quality of the home environment.`,
     );
   } else if (
-    childEnvironmentRate >= 50 &&
-    childEnvironmentRate < 70 &&
+    meets(childEnvironmentRate, 50) &&
+    below(childEnvironmentRate, 70) &&
     totalChildEnvDenom > 0
   ) {
     concerns.push(
@@ -843,13 +840,13 @@ export function computeMinorRepairsMaintenance(
     );
   }
 
-  if (poorRepairRate >= 20 && totalRepairCompletions > 0) {
+  if (meets(poorRepairRate, 20) && totalRepairCompletions > 0) {
     concerns.push(
       `${poorRepairRate}% of repairs rated poor or failed quality — the standard of repair work is unacceptable and may require re-work, wasting resources and leaving premises issues unresolved.`,
     );
   } else if (
-    poorRepairRate >= 10 &&
-    poorRepairRate < 20 &&
+    meets(poorRepairRate, 10) &&
+    below(poorRepairRate, 20) &&
     totalRepairCompletions > 0
   ) {
     concerns.push(
@@ -857,13 +854,13 @@ export function computeMinorRepairsMaintenance(
     );
   }
 
-  if (overdueCheckRate >= 20 && totalSafetyChecks > 0) {
+  if (meets(overdueCheckRate, 20) && totalSafetyChecks > 0) {
     concerns.push(
       `${overdueCheckRate}% of safety checks are overdue — overdue statutory checks represent a significant compliance and safety risk.`,
     );
   } else if (
-    overdueCheckRate >= 10 &&
-    overdueCheckRate < 20 &&
+    meets(overdueCheckRate, 10) &&
+    below(overdueCheckRate, 20) &&
     totalSafetyChecks > 0
   ) {
     concerns.push(
@@ -871,7 +868,7 @@ export function computeMinorRepairsMaintenance(
     );
   }
 
-  if (highRiskRate >= 15 && totalSafetyChecks > 0) {
+  if (meets(highRiskRate, 15) && totalSafetyChecks > 0) {
     concerns.push(
       `${highRiskRate}% of safety checks identified high risk — the proportion of high-risk findings requires urgent attention and remediation.`,
     );
@@ -883,19 +880,19 @@ export function computeMinorRepairsMaintenance(
     );
   }
 
-  if (poorConditionRate >= 20 && totalConditionAudits > 0) {
+  if (meets(poorConditionRate, 20) && totalConditionAudits > 0) {
     concerns.push(
       `${poorConditionRate}% of premises areas rated poor or critical condition — significant parts of the premises are deteriorating and require urgent maintenance attention.`,
     );
   }
 
-  if (safetyResolutionRate < 70 && safetyAffectingRequests > 0) {
+  if (below(safetyResolutionRate, 70) && safetyAffectingRequests > 0) {
     concerns.push(
       `Only ${safetyResolutionRate}% of safety-affecting maintenance requests resolved — unresolved safety issues represent a direct risk to children and staff.`,
     );
   }
 
-  if (repairFollowUpRate < 60 && followUpRequired > 0) {
+  if (below(repairFollowUpRate, 60) && followUpRequired > 0) {
     concerns.push(
       `Only ${repairFollowUpRate}% of repair follow-ups completed — incomplete follow-through on repairs means issues may not be fully resolved.`,
     );
@@ -907,7 +904,7 @@ export function computeMinorRepairsMaintenance(
     );
   }
 
-  if (overduePreventativeRate >= 30 && totalPreventativeTasks > 0) {
+  if (meets(overduePreventativeRate, 30) && totalPreventativeTasks > 0) {
     concerns.push(
       `${overduePreventativeRate}% of preventative maintenance tasks are overdue — the planned maintenance programme is significantly behind schedule.`,
     );
@@ -919,7 +916,7 @@ export function computeMinorRepairsMaintenance(
     );
   }
 
-  if (childFeedbackSoughtRate < 30 && totalConditionAudits > 0 && total_children > 0) {
+  if (below(childFeedbackSoughtRate, 30) && totalConditionAudits > 0 && total_children > 0) {
     concerns.push(
       `Children's feedback sought in only ${childFeedbackSoughtRate}% of condition audits — the home is not consistently seeking children's views about their living environment.`,
     );
@@ -930,7 +927,7 @@ export function computeMinorRepairsMaintenance(
   const recommendations: MinorRepairsRecommendation[] = [];
   let rank = 0;
 
-  if (requestResponseRate < 40 && totalMaintenanceRequests > 0) {
+  if (below(requestResponseRate, 40) && totalMaintenanceRequests > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -940,7 +937,7 @@ export function computeMinorRepairsMaintenance(
     });
   }
 
-  if (safetyCheckRate < 50 && totalSafetyChecks > 0) {
+  if (below(safetyCheckRate, 50) && totalSafetyChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -950,7 +947,7 @@ export function computeMinorRepairsMaintenance(
     });
   }
 
-  if (conditionComplianceRate < 40 && totalConditionAudits > 0) {
+  if (below(conditionComplianceRate, 40) && totalConditionAudits > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -960,7 +957,7 @@ export function computeMinorRepairsMaintenance(
     });
   }
 
-  if (preventativeMaintenanceRate < 40 && totalPreventativeTasks > 0) {
+  if (below(preventativeMaintenanceRate, 40) && totalPreventativeTasks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -970,7 +967,7 @@ export function computeMinorRepairsMaintenance(
     });
   }
 
-  if (safetyResolutionRate < 70 && safetyAffectingRequests > 0) {
+  if (below(safetyResolutionRate, 70) && safetyAffectingRequests > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -990,7 +987,7 @@ export function computeMinorRepairsMaintenance(
     });
   }
 
-  if (poorRepairRate >= 20 && totalRepairCompletions > 0) {
+  if (meets(poorRepairRate, 20) && totalRepairCompletions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1000,7 +997,7 @@ export function computeMinorRepairsMaintenance(
     });
   }
 
-  if (overdueCheckRate >= 20 && totalSafetyChecks > 0) {
+  if (meets(overdueCheckRate, 20) && totalSafetyChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1010,7 +1007,7 @@ export function computeMinorRepairsMaintenance(
     });
   }
 
-  if (childEnvironmentRate < 50 && totalChildEnvDenom > 0) {
+  if (below(childEnvironmentRate, 50) && totalChildEnvDenom > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1021,8 +1018,8 @@ export function computeMinorRepairsMaintenance(
   }
 
   if (
-    repairCompletionRate >= 50 &&
-    repairCompletionRate < 80 &&
+    meets(repairCompletionRate, 50) &&
+    below(repairCompletionRate, 80) &&
     totalRepairCompletions > 0
   ) {
     recommendations.push({
@@ -1035,8 +1032,8 @@ export function computeMinorRepairsMaintenance(
   }
 
   if (
-    requestResponseRate >= 40 &&
-    requestResponseRate < 70 &&
+    meets(requestResponseRate, 40) &&
+    below(requestResponseRate, 70) &&
     totalMaintenanceRequests > 0
   ) {
     recommendations.push({
@@ -1049,8 +1046,8 @@ export function computeMinorRepairsMaintenance(
   }
 
   if (
-    safetyCheckRate >= 50 &&
-    safetyCheckRate < 80 &&
+    meets(safetyCheckRate, 50) &&
+    below(safetyCheckRate, 80) &&
     totalSafetyChecks > 0
   ) {
     recommendations.push({
@@ -1063,8 +1060,8 @@ export function computeMinorRepairsMaintenance(
   }
 
   if (
-    conditionComplianceRate >= 40 &&
-    conditionComplianceRate < 70 &&
+    meets(conditionComplianceRate, 40) &&
+    below(conditionComplianceRate, 70) &&
     totalConditionAudits > 0
   ) {
     recommendations.push({
@@ -1077,8 +1074,8 @@ export function computeMinorRepairsMaintenance(
   }
 
   if (
-    preventativeMaintenanceRate >= 40 &&
-    preventativeMaintenanceRate < 70 &&
+    meets(preventativeMaintenanceRate, 40) &&
+    below(preventativeMaintenanceRate, 70) &&
     totalPreventativeTasks > 0
   ) {
     recommendations.push({
@@ -1090,7 +1087,7 @@ export function computeMinorRepairsMaintenance(
     });
   }
 
-  if (safetyActionCompletionRate < 70 && totalSafetyActionsReq > 0) {
+  if (below(safetyActionCompletionRate, 70) && totalSafetyActionsReq > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1100,7 +1097,7 @@ export function computeMinorRepairsMaintenance(
     });
   }
 
-  if (repairFollowUpRate < 60 && followUpRequired > 0) {
+  if (below(repairFollowUpRate, 60) && followUpRequired > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1110,7 +1107,7 @@ export function computeMinorRepairsMaintenance(
     });
   }
 
-  if (childFeedbackSoughtRate < 30 && totalConditionAudits > 0 && total_children > 0) {
+  if (below(childFeedbackSoughtRate, 30) && totalConditionAudits > 0 && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1121,8 +1118,8 @@ export function computeMinorRepairsMaintenance(
   }
 
   if (
-    childEnvironmentRate >= 50 &&
-    childEnvironmentRate < 70 &&
+    meets(childEnvironmentRate, 50) &&
+    below(childEnvironmentRate, 70) &&
     totalChildEnvDenom > 0
   ) {
     recommendations.push({
@@ -1134,7 +1131,7 @@ export function computeMinorRepairsMaintenance(
     });
   }
 
-  if (preventativeDocumentationRate < 70 && totalPreventativeTasks > 0) {
+  if (below(preventativeDocumentationRate, 70) && totalPreventativeTasks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1144,7 +1141,7 @@ export function computeMinorRepairsMaintenance(
     });
   }
 
-  if (contractorBookingRate < 80 && contractorRequired > 0) {
+  if (below(contractorBookingRate, 80) && contractorRequired > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1155,7 +1152,7 @@ export function computeMinorRepairsMaintenance(
   }
 
   if (
-    photoEvidenceRate < 60 &&
+    below(photoEvidenceRate, 60) &&
     totalRepairCompletions > 0
   ) {
     recommendations.push({
@@ -1173,28 +1170,28 @@ export function computeMinorRepairsMaintenance(
 
   // -- Critical insights --
 
-  if (requestResponseRate < 40 && totalMaintenanceRequests > 0) {
+  if (below(requestResponseRate, 40) && totalMaintenanceRequests > 0) {
     insights.push({
       text: `Only ${requestResponseRate}% of maintenance requests acknowledged within target. Slow response to premises issues signals poor governance and can allow minor problems to escalate into safety hazards. Ofsted expects homes to demonstrate prompt, systematic handling of maintenance requests.`,
       severity: "critical",
     });
   }
 
-  if (safetyCheckRate < 50 && totalSafetyChecks > 0) {
+  if (below(safetyCheckRate, 50) && totalSafetyChecks > 0) {
     insights.push({
       text: `Only ${safetyCheckRate}% safety check compliance. Non-compliance with statutory safety checks (gas, electrical, fire, legionella, etc.) represents a serious regulatory breach. Ofsted and local authority inspectors will view this as a fundamental failure to safeguard children's safety.`,
       severity: "critical",
     });
   }
 
-  if (conditionComplianceRate < 40 && totalConditionAudits > 0) {
+  if (below(conditionComplianceRate, 40) && totalConditionAudits > 0) {
     insights.push({
       text: `Only ${conditionComplianceRate}% of premises areas rated good or excellent. Widespread poor condition across the premises indicates systemic maintenance failure. Children deserve to live in a home that is clean, well-decorated, structurally sound, and safe — Reg 25 requires the registered person to ensure premises are maintained to this standard.`,
       severity: "critical",
     });
   }
 
-  if (preventativeMaintenanceRate < 40 && totalPreventativeTasks > 0) {
+  if (below(preventativeMaintenanceRate, 40) && totalPreventativeTasks > 0) {
     insights.push({
       text: `Only ${preventativeMaintenanceRate}% of preventative maintenance completed on schedule. A reactive-only approach to premises maintenance is significantly more costly, disruptive, and risky than planned preventative care. Without a functioning preventative programme, breakdowns and safety failures become inevitable.`,
       severity: "critical",
@@ -1229,7 +1226,7 @@ export function computeMinorRepairsMaintenance(
     });
   }
 
-  if (safetyResolutionRate < 50 && safetyAffectingRequests > 0) {
+  if (below(safetyResolutionRate, 50) && safetyAffectingRequests > 0) {
     insights.push({
       text: `Only ${safetyResolutionRate}% of safety-affecting maintenance requests resolved. Unresolved premises issues that affect safety represent an ongoing risk to children and staff. The registered manager must ensure safety-related maintenance is treated with the highest priority.`,
       severity: "critical",
@@ -1239,8 +1236,8 @@ export function computeMinorRepairsMaintenance(
   // -- Warning insights --
 
   if (
-    requestResponseRate >= 40 &&
-    requestResponseRate < 70 &&
+    meets(requestResponseRate, 40) &&
+    below(requestResponseRate, 70) &&
     totalMaintenanceRequests > 0
   ) {
     insights.push({
@@ -1250,8 +1247,8 @@ export function computeMinorRepairsMaintenance(
   }
 
   if (
-    repairCompletionRate >= 50 &&
-    repairCompletionRate < 80 &&
+    meets(repairCompletionRate, 50) &&
+    below(repairCompletionRate, 80) &&
     totalRepairCompletions > 0
   ) {
     insights.push({
@@ -1261,8 +1258,8 @@ export function computeMinorRepairsMaintenance(
   }
 
   if (
-    safetyCheckRate >= 50 &&
-    safetyCheckRate < 80 &&
+    meets(safetyCheckRate, 50) &&
+    below(safetyCheckRate, 80) &&
     totalSafetyChecks > 0
   ) {
     insights.push({
@@ -1272,8 +1269,8 @@ export function computeMinorRepairsMaintenance(
   }
 
   if (
-    conditionComplianceRate >= 40 &&
-    conditionComplianceRate < 70 &&
+    meets(conditionComplianceRate, 40) &&
+    below(conditionComplianceRate, 70) &&
     totalConditionAudits > 0
   ) {
     insights.push({
@@ -1283,8 +1280,8 @@ export function computeMinorRepairsMaintenance(
   }
 
   if (
-    preventativeMaintenanceRate >= 40 &&
-    preventativeMaintenanceRate < 70 &&
+    meets(preventativeMaintenanceRate, 40) &&
+    below(preventativeMaintenanceRate, 70) &&
     totalPreventativeTasks > 0
   ) {
     insights.push({
@@ -1294,8 +1291,8 @@ export function computeMinorRepairsMaintenance(
   }
 
   if (
-    childEnvironmentRate >= 50 &&
-    childEnvironmentRate < 70 &&
+    meets(childEnvironmentRate, 50) &&
+    below(childEnvironmentRate, 70) &&
     totalChildEnvDenom > 0
   ) {
     insights.push({
@@ -1305,8 +1302,8 @@ export function computeMinorRepairsMaintenance(
   }
 
   if (
-    poorRepairRate >= 10 &&
-    poorRepairRate < 20 &&
+    meets(poorRepairRate, 10) &&
+    below(poorRepairRate, 20) &&
     totalRepairCompletions > 0
   ) {
     insights.push({
@@ -1316,8 +1313,8 @@ export function computeMinorRepairsMaintenance(
   }
 
   if (
-    overduePreventativeRate >= 15 &&
-    overduePreventativeRate < 30 &&
+    meets(overduePreventativeRate, 15) &&
+    below(overduePreventativeRate, 30) &&
     totalPreventativeTasks > 0
   ) {
     insights.push({
@@ -1327,8 +1324,8 @@ export function computeMinorRepairsMaintenance(
   }
 
   if (
-    safetyActionCompletionRate >= 50 &&
-    safetyActionCompletionRate < 70 &&
+    meets(safetyActionCompletionRate, 50) &&
+    below(safetyActionCompletionRate, 70) &&
     totalSafetyActionsReq > 0
   ) {
     insights.push({
@@ -1345,8 +1342,8 @@ export function computeMinorRepairsMaintenance(
   }
 
   if (
-    contractorBookingRate >= 50 &&
-    contractorBookingRate < 80 &&
+    meets(contractorBookingRate, 50) &&
+    below(contractorBookingRate, 80) &&
     contractorRequired > 0
   ) {
     insights.push({
@@ -1383,8 +1380,8 @@ export function computeMinorRepairsMaintenance(
   }
 
   if (
-    requestResponseRate >= 90 &&
-    repairCompletionRate >= 90 &&
+    meets(requestResponseRate, 90) &&
+    meets(repairCompletionRate, 90) &&
     totalMaintenanceRequests > 0 &&
     totalRepairCompletions > 0
   ) {
@@ -1395,7 +1392,7 @@ export function computeMinorRepairsMaintenance(
   }
 
   if (
-    safetyCheckRate >= 95 &&
+    meets(safetyCheckRate, 95) &&
     overdueChecks === 0 &&
     totalSafetyChecks > 0
   ) {
@@ -1406,8 +1403,8 @@ export function computeMinorRepairsMaintenance(
   }
 
   if (
-    conditionComplianceRate >= 90 &&
-    childFriendlyRate >= 90 &&
+    meets(conditionComplianceRate, 90) &&
+    meets(childFriendlyRate, 90) &&
     totalConditionAudits > 0
   ) {
     insights.push({
@@ -1417,7 +1414,7 @@ export function computeMinorRepairsMaintenance(
   }
 
   if (
-    preventativeMaintenanceRate >= 90 &&
+    meets(preventativeMaintenanceRate, 90) &&
     overduePreventative === 0 &&
     totalPreventativeTasks > 0
   ) {
@@ -1428,7 +1425,7 @@ export function computeMinorRepairsMaintenance(
   }
 
   if (
-    childEnvironmentRate >= 90 &&
+    meets(childEnvironmentRate, 90) &&
     totalChildEnvDenom > 0
   ) {
     insights.push({
@@ -1438,9 +1435,9 @@ export function computeMinorRepairsMaintenance(
   }
 
   if (
-    regulatoryComplianceRate >= 100 &&
+    meets(regulatoryComplianceRate, 100) &&
     regulatoryChecks > 0 &&
-    certificateRate >= 90
+    meets(certificateRate, 90)
   ) {
     insights.push({
       text: `100% regulatory compliance with ${certificateRate}% certificate coverage — the home can fully evidence compliance with all statutory safety requirements, providing robust assurance for Ofsted inspections and Reg 44/45 visits.`,
@@ -1449,8 +1446,8 @@ export function computeMinorRepairsMaintenance(
   }
 
   if (
-    repairQualityRate >= 90 &&
-    signOffRate >= 90 &&
+    meets(repairQualityRate, 90) &&
+    meets(signOffRate, 90) &&
     totalRepairCompletions > 0
   ) {
     insights.push({
@@ -1460,8 +1457,8 @@ export function computeMinorRepairsMaintenance(
   }
 
   if (
-    childFeedbackSoughtRate >= 80 &&
-    childFeedbackPositiveRate >= 80 &&
+    meets(childFeedbackSoughtRate, 80) &&
+    meets(childFeedbackPositiveRate, 80) &&
     childFeedbackSought > 0
   ) {
     insights.push({
@@ -1471,8 +1468,8 @@ export function computeMinorRepairsMaintenance(
   }
 
   if (
-    emergencyResolutionRate >= 100 &&
-    urgentResolutionRate >= 90 &&
+    meets(emergencyResolutionRate, 100) &&
+    meets(urgentResolutionRate, 90) &&
     emergencyRequests > 0 &&
     urgentRequests > 0
   ) {

@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
   Loader2, AlertCircle, AlertTriangle,
@@ -104,7 +105,7 @@ export function HomeNutritionCateringIntelligenceCard() {
               {ratingStyle.label}
             </span>
             {d.nutrition_rating !== "insufficient_data" && (
-              <span className="text-xs font-bold tabular-nums text-slate-600">{d.nutrition_score}%</span>
+              <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.nutrition_score)}</span>
             )}
           </CardTitle>
         </div>
@@ -124,7 +125,7 @@ export function HomeNutritionCateringIntelligenceCard() {
                   (d.food_hygiene.pass_rate ?? 0) >= 95 ? "text-[--cs-success]" :
                   (d.food_hygiene.pass_rate ?? 0) >= 80 ? "text-blue-600" : "text-[--cs-risk]"
                 )}>
-                  {d.food_hygiene.total_checks_30d > 0 ? `${d.food_hygiene.pass_rate}%` : "—"}
+                  {d.food_hygiene.total_checks_30d > 0 ? `${formatRate(d.food_hygiene.pass_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Hygiene</p>
@@ -138,7 +139,7 @@ export function HomeNutritionCateringIntelligenceCard() {
                   (d.kitchen.temperature_compliance_rate ?? 0) >= 100 ? "text-[--cs-success]" :
                   (d.kitchen.temperature_compliance_rate ?? 0) >= 90 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.kitchen.total_checks_30d > 0 ? `${d.kitchen.temperature_compliance_rate}%` : "—"}
+                  {d.kitchen.total_checks_30d > 0 ? `${formatRate(d.kitchen.temperature_compliance_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Temp</p>
@@ -149,10 +150,10 @@ export function HomeNutritionCateringIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Salad className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.dietary_plans.child_coverage >= 90 ? "text-[--cs-success]" :
-                  d.dietary_plans.child_coverage >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.dietary_plans.child_coverage, 90) ? "text-[--cs-success]" :
+                  meets(d.dietary_plans.child_coverage, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.dietary_plans.total_plans > 0 ? `${d.dietary_plans.child_coverage}%` : "—"}
+                  {d.dietary_plans.total_plans > 0 ? `${formatRate(d.dietary_plans.child_coverage)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Dietary</p>

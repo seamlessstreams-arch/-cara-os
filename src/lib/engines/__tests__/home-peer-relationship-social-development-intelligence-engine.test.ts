@@ -198,11 +198,11 @@ describe("computePeerRelationshipSocialDevelopment", () => {
 
     it("insufficient_data result has all rates at 0", () => {
       const r = computePeerRelationshipSocialDevelopment(baseInput());
-      expect(r.peer_assessment_coverage_rate).toBe(0);
-      expect(r.social_skills_engagement_rate).toBe(0);
-      expect(r.bullying_resolution_rate).toBe(0);
-      expect(r.friendship_plan_coverage_rate).toBe(0);
-      expect(r.social_activity_participation_rate).toBe(0);
+      expect(r.peer_assessment_coverage_rate).toBeNull();
+      expect(r.social_skills_engagement_rate).toBeNull();
+      expect(r.bullying_resolution_rate).toBeNull();
+      expect(r.friendship_plan_coverage_rate).toBeNull();
+      expect(r.social_activity_participation_rate).toBeNull();
     });
 
     it("inadequate empty result has correct recommendations urgency", () => {
@@ -2019,7 +2019,7 @@ describe("computePeerRelationshipSocialDevelopment", () => {
       expect(r.social_activity_participation_rate).toBe(25);
     });
 
-    it("pct(0,0) = 0 for all rate metrics when denominators are 0", () => {
+    it("rate(0,0)=null for all rate metrics when denominators are 0", () => {
       const r = computePeerRelationshipSocialDevelopment(
         baseInput({
           total_children: 0,
@@ -2036,11 +2036,11 @@ describe("computePeerRelationshipSocialDevelopment", () => {
           ],
         }),
       );
-      expect(r.bullying_resolution_rate).toBe(0);
-      expect(r.bullying_investigation_rate).toBe(0);
-      expect(r.friendship_goal_achievement_rate).toBe(0);
-      expect(r.activity_enjoyment_rate).toBe(0);
-      expect(r.programme_attendance_rate).toBe(0);
+      expect(r.bullying_resolution_rate).toBeNull();
+      expect(r.bullying_investigation_rate).toBeNull();
+      expect(r.friendship_goal_achievement_rate).toBeNull();
+      expect(r.activity_enjoyment_rate).toBeNull();
+      expect(r.programme_attendance_rate).toBeNull();
     });
   });
 
@@ -3039,7 +3039,7 @@ describe("computePeerRelationshipSocialDevelopment", () => {
       expect(r.insights.some((i) => i.text.includes("Bullying incident patterns"))).toBe(false);
     });
 
-    it("programme attendance pct(0,0) = 0", () => {
+    it("programme attendance rate(0,0)=null", () => {
       const r = computePeerRelationshipSocialDevelopment(
         baseInput({
           total_children: 3,
@@ -3047,10 +3047,10 @@ describe("computePeerRelationshipSocialDevelopment", () => {
           social_skills_programmes: [makeSocialSkillsProgramme({ active: false, sessions_planned: 0, sessions_attended: 0, measurable_improvement: false, child_engaged: false })],
         }),
       );
-      expect(r.programme_attendance_rate).toBe(0);
+      expect(r.programme_attendance_rate).toBeNull();
     });
 
-    it("friendship goal rate with 0 goals set returns 0", () => {
+    it("friendship goal rate with 0 goals set returns null", () => {
       const r = computePeerRelationshipSocialDevelopment(
         baseInput({
           total_children: 3,
@@ -3058,7 +3058,7 @@ describe("computePeerRelationshipSocialDevelopment", () => {
           friendship_support_plans: [makeFriendshipSupportPlan({ active: false, child_voice_in_plan: false, goals_set: 0, goals_achieved: 0, activities_planned: 0, activities_completed: 0, external_friendships_supported: false, family_contact_supported: false, peer_matching_attempted: false, peer_matching_successful: false })],
         }),
       );
-      expect(r.friendship_goal_achievement_rate).toBe(0);
+      expect(r.friendship_goal_achievement_rate).toBeNull();
     });
 
     it("all-empty + total_children = 0 yields empty arrays", () => {

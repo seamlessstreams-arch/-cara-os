@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Pill } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { MedicationSafetyRating } from "@/lib/engines/home-medication-safety-compliance-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 const RATING_STYLES: Record<MedicationSafetyRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -57,7 +58,7 @@ export function HomeMedicationSafetyComplianceIntelligenceCard() {
             <Pill className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-cyan-600")} />
             <span className="text-slate-900 font-bold">Medication Safety & Compliance</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.safety_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.safety_score}%</span>}
+            {d.safety_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.safety_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -65,28 +66,28 @@ export function HomeMedicationSafetyComplianceIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.safety_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.administration_accuracy_rate >= 90 ? "bg-green-50" : d.administration_accuracy_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.administration_accuracy_rate >= 90 ? "text-[--cs-success]" : d.administration_accuracy_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.administration_accuracy_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.administration_accuracy_rate, 90) ? "bg-green-50" : meets(d.administration_accuracy_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.administration_accuracy_rate, 90) ? "text-[--cs-success]" : meets(d.administration_accuracy_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.administration_accuracy_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Accuracy</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.error_rate <= 2 ? "bg-green-50" : d.error_rate <= 5 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.error_rate <= 2 ? "text-[--cs-success]" : d.error_rate <= 5 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.error_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.error_rate === null ? "bg-slate-50" : d.error_rate <= 2 ? "bg-green-50" : d.error_rate <= 5 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.error_rate === null ? "text-slate-500" : d.error_rate <= 2 ? "text-[--cs-success]" : d.error_rate <= 5 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.error_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Error Rate</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.audit_compliance_rate >= 90 ? "bg-green-50" : d.audit_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.audit_compliance_rate >= 90 ? "text-[--cs-success]" : d.audit_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.audit_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.audit_compliance_rate, 90) ? "bg-green-50" : meets(d.audit_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.audit_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.audit_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.audit_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Audit</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.storage_pass_rate >= 90 ? "bg-green-50" : d.storage_pass_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.storage_pass_rate >= 90 ? "text-[--cs-success]" : d.storage_pass_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.storage_pass_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.storage_pass_rate, 90) ? "bg-green-50" : meets(d.storage_pass_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.storage_pass_rate, 90) ? "text-[--cs-success]" : meets(d.storage_pass_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.storage_pass_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Storage</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.witness_rate >= 90 ? "bg-green-50" : d.witness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.witness_rate >= 90 ? "text-[--cs-success]" : d.witness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.witness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.witness_rate, 90) ? "bg-green-50" : meets(d.witness_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.witness_rate, 90) ? "text-[--cs-success]" : meets(d.witness_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.witness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Witnessed</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.emergency_protocol_currency_rate >= 90 ? "bg-green-50" : d.emergency_protocol_currency_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.emergency_protocol_currency_rate >= 90 ? "text-[--cs-success]" : d.emergency_protocol_currency_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.emergency_protocol_currency_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.emergency_protocol_currency_rate, 90) ? "bg-green-50" : meets(d.emergency_protocol_currency_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.emergency_protocol_currency_rate, 90) ? "text-[--cs-success]" : meets(d.emergency_protocol_currency_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.emergency_protocol_currency_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Emergency</p>
             </div>
           </div>

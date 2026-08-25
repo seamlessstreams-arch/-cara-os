@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { MissingPersonRating } from "@/lib/engines/home-missing-person-absent-authority-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 const RATING_STYLES: Record<MissingPersonRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -57,7 +58,7 @@ export function HomeMissingPersonAbsentAuthorityIntelligenceCard() {
             <Search className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-[--cs-risk]")} />
             <span className="text-slate-900 font-bold">Missing Person & Absent Without Authority</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.missing_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.missing_score}%</span>}
+            {d.missing_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.missing_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -65,28 +66,28 @@ export function HomeMissingPersonAbsentAuthorityIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.missing_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.protocol_adherence_rate >= 90 ? "bg-green-50" : d.protocol_adherence_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.protocol_adherence_rate >= 90 ? "text-[--cs-success]" : d.protocol_adherence_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.protocol_adherence_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.protocol_adherence_rate, 90) ? "bg-green-50" : meets(d.protocol_adherence_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.protocol_adherence_rate, 90) ? "text-[--cs-success]" : meets(d.protocol_adherence_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.protocol_adherence_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Protocol</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.return_interview_rate >= 90 ? "bg-green-50" : d.return_interview_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.return_interview_rate >= 90 ? "text-[--cs-success]" : d.return_interview_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.return_interview_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.return_interview_rate, 90) ? "bg-green-50" : meets(d.return_interview_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.return_interview_rate, 90) ? "text-[--cs-success]" : meets(d.return_interview_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.return_interview_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Interviews</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.risk_update_rate >= 90 ? "bg-green-50" : d.risk_update_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.risk_update_rate >= 90 ? "text-[--cs-success]" : d.risk_update_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.risk_update_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.risk_update_rate, 90) ? "bg-green-50" : meets(d.risk_update_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.risk_update_rate, 90) ? "text-[--cs-success]" : meets(d.risk_update_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.risk_update_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Risk Upd.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.police_liaison_rate >= 90 ? "bg-green-50" : d.police_liaison_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.police_liaison_rate >= 90 ? "text-[--cs-success]" : d.police_liaison_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.police_liaison_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.police_liaison_rate, 90) ? "bg-green-50" : meets(d.police_liaison_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.police_liaison_rate, 90) ? "text-[--cs-success]" : meets(d.police_liaison_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.police_liaison_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Police</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.pattern_analysis_rate >= 90 ? "bg-green-50" : d.pattern_analysis_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.pattern_analysis_rate >= 90 ? "text-[--cs-success]" : d.pattern_analysis_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.pattern_analysis_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.pattern_analysis_rate, 90) ? "bg-green-50" : meets(d.pattern_analysis_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.pattern_analysis_rate, 90) ? "text-[--cs-success]" : meets(d.pattern_analysis_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.pattern_analysis_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Patterns</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.prevention_rate >= 90 ? "bg-green-50" : d.prevention_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.prevention_rate >= 90 ? "text-[--cs-success]" : d.prevention_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.prevention_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.prevention_rate, 90) ? "bg-green-50" : meets(d.prevention_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.prevention_rate, 90) ? "text-[--cs-success]" : meets(d.prevention_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.prevention_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Prevent.</p>
             </div>
           </div>

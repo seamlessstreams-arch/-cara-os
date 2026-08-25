@@ -1,3 +1,4 @@
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME NUTRITION & CATERING INTELLIGENCE ENGINE
 // Home-level: aggregates meal planning, dietary plans, food hygiene,
@@ -106,7 +107,8 @@ export interface MealPlanProfile {
 
 export interface DietaryPlanProfile {
   total_plans: number;
-  child_coverage: number;         // pct of total_children
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_coverage: number | null;         // pct of total_children
   reviewed_with_child_rate: number | null;
   child_agreed_rate: number | null;
   dietitian_sign_off_rate: number | null;
@@ -163,10 +165,6 @@ export interface HomeNutritionCateringResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function daysBetween(a: string, b: string): number {
   return Math.round(
     (new Date(b).getTime() - new Date(a).getTime()) / 86_400_000,
@@ -195,7 +193,7 @@ export function computeHomeNutritionCatering(
       nutrition_score: 0,
       headline: "No nutrition or catering data available for analysis.",
       meal_plans: { total_plans_30d: 0, unique_meals_covered: 0, avg_dietary_flags: 0, avg_child_preferences: 0 },
-      dietary_plans: { total_plans: 0, child_coverage: 0, reviewed_with_child_rate: null, child_agreed_rate: null, dietitian_sign_off_rate: null, overdue_reviews: 0 },
+      dietary_plans: { total_plans: 0, child_coverage: null, reviewed_with_child_rate: null, child_agreed_rate: null, dietitian_sign_off_rate: null, overdue_reviews: 0 },
       food_hygiene: { total_checks_30d: 0, pass_rate: null, fail_count: 0, action_completion_rate: null, check_type_diversity: 0 },
       kitchen: { total_checks_30d: 0, pass_rate: null, temperature_compliance_rate: null, allergen_labelling_rate: null, expired_items_total: 0 },
       eating_support: { total_plans: 0, child_choice_rate: null, overdue_reviews: 0, flags_for_review_total: 0 },
@@ -230,16 +228,16 @@ export function computeHomeNutritionCatering(
 
   // ── Dietary Plans ─────────────────────────────────────────────────────
   const uniqueDietaryChildren = new Set(dietary_plans.map(d => d.child_id));
-  const dietaryCoverage = pct(uniqueDietaryChildren.size, total_children);
-  const reviewedWithChildRate = pct(
+  const dietaryCoverage = rate(uniqueDietaryChildren.size, total_children);
+  const reviewedWithChildRate = rate(
     dietary_plans.filter(d => d.reviewed_with_child).length,
     dietary_plans.length,
   );
-  const childAgreedRate = pct(
+  const childAgreedRate = rate(
     dietary_plans.filter(d => d.child_agreed).length,
     dietary_plans.length,
   );
-  const dietitianRate = pct(
+  const dietitianRate = rate(
     dietary_plans.filter(d => d.signed_off_by_dietitian).length,
     dietary_plans.length,
   );
@@ -263,13 +261,13 @@ export function computeHomeNutritionCatering(
   });
 
   const hygieneNonNA = foodHygiene30d.filter(r => r.compliance !== "n_a");
-  const hygienePassRate = pct(
+  const hygienePassRate = rate(
     hygieneNonNA.filter(r => r.compliance === "pass").length,
     hygieneNonNA.length,
   );
   const hygieneFailCount = foodHygiene30d.filter(r => r.compliance === "fail").length;
   const hygieneWithAction = foodHygiene30d.filter(r => r.action_required);
-  const hygieneActionCompletionRate = pct(
+  const hygieneActionCompletionRate = rate(
     hygieneWithAction.filter(r => r.action_completed).length,
     hygieneWithAction.length,
   );
@@ -289,15 +287,15 @@ export function computeHomeNutritionCatering(
     return d >= 0 && d <= 30;
   });
 
-  const kitchenPassRate = pct(
+  const kitchenPassRate = rate(
     kitchenChecks30d.filter(k => k.overall_verdict === "pass").length,
     kitchenChecks30d.length,
   );
-  const tempCompliance = pct(
+  const tempCompliance = rate(
     kitchenChecks30d.filter(k => k.fridge_within_range && k.freezer_within_range).length,
     kitchenChecks30d.length,
   );
-  const allergenLabellingRate = pct(
+  const allergenLabellingRate = rate(
     kitchenChecks30d.filter(k => k.allergen_labelling).length,
     kitchenChecks30d.length,
   );
@@ -312,7 +310,7 @@ export function computeHomeNutritionCatering(
   };
 
   // ── Eating Support Plans ──────────────────────────────────────────────
-  const childChoiceRate = pct(
+  const childChoiceRate = rate(
     eating_support_plans.filter(e => e.child_chose).length,
     eating_support_plans.length,
   );
@@ -337,15 +335,15 @@ export function computeHomeNutritionCatering(
   const avgVariance = budgets90d.length > 0
     ? Math.round((budgets90d.reduce((s, b) => s + b.variance, 0) / budgets90d.length) * 100) / 100
     : null;
-  const withinBudgetRate = pct(
+  const withinBudgetRate = rate(
     budgets90d.filter(b => b.variance >= 0).length,
     budgets90d.length,
   );
-  const culturalRate = pct(
+  const culturalRate = rate(
     budgets90d.filter(b => b.cultural_ingredients_included).length,
     budgets90d.length,
   );
-  const sensoryRate = pct(
+  const sensoryRate = rate(
     budgets90d.filter(b => b.sensory_friendly_options_included).length,
     budgets90d.length,
   );
@@ -374,10 +372,10 @@ export function computeHomeNutritionCatering(
       hygieneNonNA.filter(r => r.compliance === "pass").length +
       kitchenChecks30d.filter(k => k.overall_verdict === "pass").length;
     const combinedTotal = hygieneNonNA.length + kitchenChecks30d.length;
-    const combinedPassRate = pct(combinedPassCount, combinedTotal);
-    if (combinedPassRate >= 95) score += 5;
-    else if (combinedPassRate >= 80) score += 3;
-    else if (combinedPassRate >= 60) score += 0;
+    const combinedPassRate = rate(combinedPassCount, combinedTotal);
+    if (meets(combinedPassRate, 95)) score += 5;
+    else if (meets(combinedPassRate, 80)) score += 3;
+    else if (meets(combinedPassRate, 60)) score += 0;
     else score -= 5;
   }
 
@@ -387,9 +385,9 @@ export function computeHomeNutritionCatering(
   } else if (dietary_plans.length === 0 && total_children > 0) {
     score -= 4;
   } else {
-    if (dietaryCoverage >= 90) score += 4;
-    else if (dietaryCoverage >= 70) score += 2;
-    else if (dietaryCoverage >= 50) score += 0;
+    if (meets(dietaryCoverage, 90)) score += 4;
+    else if (meets(dietaryCoverage, 70)) score += 2;
+    else if (meets(dietaryCoverage, 50)) score += 0;
     else score -= 4;
   }
 
@@ -397,9 +395,9 @@ export function computeHomeNutritionCatering(
   if (kitchenChecks30d.length === 0) {
     score += (foodHygiene30d.length > 0 ? 1 : 0);
   } else {
-    if (tempCompliance >= 100) score += 4;
-    else if (tempCompliance >= 90) score += 2;
-    else if (tempCompliance >= 70) score += 0;
+    if (meets(tempCompliance, 100)) score += 4;
+    else if (meets(tempCompliance, 90)) score += 2;
+    else if (meets(tempCompliance, 70)) score += 0;
     else score -= 4;
   }
 
@@ -407,13 +405,13 @@ export function computeHomeNutritionCatering(
   if (dietary_plans.length === 0) {
     score += 0;
   } else {
-    const combinedVoice = pct(
+    const combinedVoice = rate(
       dietary_plans.filter(d => d.reviewed_with_child && d.child_agreed).length,
       dietary_plans.length,
     );
-    if (combinedVoice >= 90) score += 3;
-    else if (combinedVoice >= 70) score += 1;
-    else if (combinedVoice >= 50) score += 0;
+    if (meets(combinedVoice, 90)) score += 3;
+    else if (meets(combinedVoice, 70)) score += 1;
+    else if (meets(combinedVoice, 50)) score += 0;
     else score -= 3;
   }
 
@@ -421,9 +419,9 @@ export function computeHomeNutritionCatering(
   if (kitchenChecks30d.length === 0) {
     score += 0;
   } else {
-    if (allergenLabellingRate >= 100) score += 3;
-    else if (allergenLabellingRate >= 80) score += 1;
-    else if (allergenLabellingRate >= 60) score += 0;
+    if (meets(allergenLabellingRate, 100)) score += 3;
+    else if (meets(allergenLabellingRate, 80)) score += 1;
+    else if (meets(allergenLabellingRate, 60)) score += 0;
     else score -= 3;
   }
 
@@ -440,9 +438,9 @@ export function computeHomeNutritionCatering(
   if (budgets90d.length === 0) {
     score += 0;
   } else {
-    if (withinBudgetRate >= 90 && (avgScratch ?? 0) >= 50) score += 3;
-    else if (withinBudgetRate >= 70) score += 1;
-    else if (withinBudgetRate >= 50) score += 0;
+    if (meets(withinBudgetRate, 90) && (avgScratch ?? 0) >= 50) score += 3;
+    else if (meets(withinBudgetRate, 70)) score += 1;
+    else if (meets(withinBudgetRate, 50)) score += 0;
     else score -= 3;
   }
 
@@ -450,9 +448,9 @@ export function computeHomeNutritionCatering(
   if (budgets90d.length === 0) {
     score += 0;
   } else {
-    if (culturalRate >= 80 && sensoryRate >= 80) score += 3;
-    else if (culturalRate >= 60 || sensoryRate >= 60) score += 1;
-    else if (culturalRate >= 30 || sensoryRate >= 30) score += 0;
+    if (meets(culturalRate, 80) && meets(sensoryRate, 80)) score += 3;
+    else if (meets(culturalRate, 60) || meets(sensoryRate, 60)) score += 1;
+    else if (meets(culturalRate, 30) || meets(sensoryRate, 30)) score += 0;
     else score -= 3;
   }
 
@@ -474,34 +472,34 @@ export function computeHomeNutritionCatering(
   let rank = 0;
 
   // Strengths
-  if (hygienePassRate >= 95 && foodHygiene30d.length > 0) strengths.push(`${hygienePassRate}% food hygiene pass rate — excellent food safety standards.`);
-  if (kitchenPassRate >= 95 && kitchenChecks30d.length > 0) strengths.push(`${kitchenPassRate}% kitchen hygiene pass rate — consistently high standards.`);
-  if (tempCompliance >= 100 && kitchenChecks30d.length > 0) strengths.push("100% temperature compliance — fridge and freezer storage is exemplary.");
-  if (dietaryCoverage >= 90 && dietary_plans.length > 0) strengths.push(`${dietaryCoverage}% dietary plan coverage — every child's nutritional needs are documented.`);
-  if (allergenLabellingRate >= 100 && kitchenChecks30d.length > 0) strengths.push("100% allergen labelling compliance — protecting children with allergies.");
-  if (culturalRate >= 80 && budgets90d.length > 0) strengths.push(`${culturalRate}% of weeks include cultural ingredients — dietary diversity is valued.`);
+  if (meets(hygienePassRate, 95) && foodHygiene30d.length > 0) strengths.push(`${hygienePassRate}% food hygiene pass rate — excellent food safety standards.`);
+  if (meets(kitchenPassRate, 95) && kitchenChecks30d.length > 0) strengths.push(`${kitchenPassRate}% kitchen hygiene pass rate — consistently high standards.`);
+  if (meets(tempCompliance, 100) && kitchenChecks30d.length > 0) strengths.push("100% temperature compliance — fridge and freezer storage is exemplary.");
+  if (meets(dietaryCoverage, 90) && dietary_plans.length > 0) strengths.push(`${dietaryCoverage}% dietary plan coverage — every child's nutritional needs are documented.`);
+  if (meets(allergenLabellingRate, 100) && kitchenChecks30d.length > 0) strengths.push("100% allergen labelling compliance — protecting children with allergies.");
+  if (meets(culturalRate, 80) && budgets90d.length > 0) strengths.push(`${culturalRate}% of weeks include cultural ingredients — dietary diversity is valued.`);
   if ((avgScratch ?? 0) >= 70 && budgets90d.length > 0) strengths.push(`${(avgScratch ?? 0)}% average cook-from-scratch rate — promoting healthy, home-cooked meals.`);
 
   // Concerns
   if (hygieneFailCount >= 3) concerns.push(`${hygieneFailCount} food hygiene failures in 30 days — food safety requires immediate review.`);
-  if (totalExpiredItems >= 3) concerns.push(`${totalExpiredItems} expired items found in kitchen checks — stock rotation needs attention.`);
-  if (tempCompliance < 80 && kitchenChecks30d.length > 0) concerns.push(`Temperature compliance only ${tempCompliance}% — children's food may not be stored safely.`);
-  if (dietaryCoverage < 50 && total_children > 0 && dietary_plans.length > 0) concerns.push(`Only ${dietaryCoverage}% of children have dietary plans — nutritional needs may be unmet.`);
+  if (meets(totalExpiredItems, 3)) concerns.push(`${totalExpiredItems} expired items found in kitchen checks — stock rotation needs attention.`);
+  if (below(tempCompliance, 80) && kitchenChecks30d.length > 0) concerns.push(`Temperature compliance only ${tempCompliance}% — children's food may not be stored safely.`);
+  if (below(dietaryCoverage, 50) && total_children > 0 && dietary_plans.length > 0) concerns.push(`Only ${dietaryCoverage}% of children have dietary plans — nutritional needs may be unmet.`);
   if (dietaryCoverage === 0 && total_children > 0) concerns.push("No dietary plans for any children — Reg 9 requires documented nutritional care.");
-  if (overdueDietaryReviews >= 2) concerns.push(`${overdueDietaryReviews} overdue dietary plan reviews — children's changing needs may not be reflected.`);
-  if (allergenLabellingRate < 60 && kitchenChecks30d.length > 0) concerns.push(`Allergen labelling only ${allergenLabellingRate}% — children with allergies may be at risk.`);
+  if (meets(overdueDietaryReviews, 2)) concerns.push(`${overdueDietaryReviews} overdue dietary plan reviews — children's changing needs may not be reflected.`);
+  if (below(allergenLabellingRate, 60) && kitchenChecks30d.length > 0) concerns.push(`Allergen labelling only ${allergenLabellingRate}% — children with allergies may be at risk.`);
 
   // Recommendations
   if (hygieneFailCount >= 2) {
     recommendations.push({ rank: ++rank, recommendation: "Review and address food hygiene failures immediately — failed checks may indicate systemic kitchen safety issues.", urgency: "immediate", regulatory_ref: "Reg 9" });
   }
-  if (allergenLabellingRate < 80 && kitchenChecks30d.length > 0) {
+  if (below(allergenLabellingRate, 80) && kitchenChecks30d.length > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Improve allergen labelling to protect children with allergies — this is a fundamental food safety requirement.", urgency: "immediate", regulatory_ref: "Reg 9" });
   }
-  if (dietaryCoverage < 70 && total_children > 0) {
+  if (below(dietaryCoverage, 70) && total_children > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Ensure every child has a dietary plan capturing allergies, preferences, and cultural needs.", urgency: "soon", regulatory_ref: "Reg 9" });
   }
-  if (reviewedWithChildRate < 70 && dietary_plans.length > 0) {
+  if (below(reviewedWithChildRate, 70) && dietary_plans.length > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Review dietary plans with children and obtain their agreement — their voice should shape their nutrition.", urgency: "soon", regulatory_ref: "Reg 7" });
   }
   if (mealPlans30d.length < 10 && total_children > 0) {
@@ -509,13 +507,13 @@ export function computeHomeNutritionCatering(
   }
 
   // Cara Insights
-  if (hygienePassRate >= 95 && kitchenPassRate >= 95 && tempCompliance >= 100 && allergenLabellingRate >= 100) {
+  if (meets(hygienePassRate, 95) && meets(kitchenPassRate, 95) && meets(tempCompliance, 100) && meets(allergenLabellingRate, 100)) {
     insights.push({ text: "Nutrition and catering governance is exemplary. Food safety, temperature control, allergen management, and kitchen hygiene all exceed thresholds. Ofsted will recognise this as outstanding nutritional care.", severity: "positive" });
   }
   if (hygieneFailCount >= 3 && totalExpiredItems >= 3) {
     insights.push({ text: `${hygieneFailCount} hygiene failures and ${totalExpiredItems} expired items suggest systemic food safety weaknesses. This would be a serious concern during inspection.`, severity: "critical" });
   }
-  if (culturalRate >= 80 && reviewedWithChildRate >= 80 && childAgreedRate >= 80) {
+  if (meets(culturalRate, 80) && meets(reviewedWithChildRate, 80) && meets(childAgreedRate, 80)) {
     insights.push({ text: "Children's cultural dietary needs are being met and their voices are shaping meal planning — this demonstrates genuinely child-centred nutritional care.", severity: "positive" });
   }
   if ((avgScratch ?? 0) < 30 && budgets90d.length >= 4) {
@@ -525,7 +523,7 @@ export function computeHomeNutritionCatering(
   // ── Headline ──────────────────────────────────────────────────────────
   let headline: string;
   if (nutrition_rating === "outstanding") {
-    headline = `Outstanding nutritional care — ${hygienePassRate}% hygiene pass rate, ${dietaryCoverage}% dietary plan coverage.`;
+    headline = `Outstanding nutritional care — ${formatRate(hygienePassRate)} hygiene pass rate, ${formatRate(dietaryCoverage)} dietary plan coverage.`;
   } else if (nutrition_rating === "good") {
     headline = `Good nutrition standards — ${concerns.length > 0 ? concerns.length + " area" + (concerns.length > 1 ? "s" : "") + " for improvement." : "well-managed food safety and planning."}`;
   } else if (nutrition_rating === "adequate") {
