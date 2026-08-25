@@ -814,12 +814,12 @@ describe("Metrics calculations", () => {
     expect(r.review_compliance_rate).toBe(67);
   });
 
-  it("pct helper returns 0 when denominator is 0", () => {
+  it("every rate is unmeasured when its denominator is 0", () => {
     const r = computeContextualSafeguarding(baseInput({ total_children: 5, risks: [] }));
-    expect(r.protective_action_rate).toBe(0);
-    expect(r.multi_agency_rate).toBe(0);
-    expect(r.community_mapping_rate).toBe(0);
-    expect(r.review_compliance_rate).toBe(0);
+    expect(r.protective_action_rate).toBeNull();
+    expect(r.multi_agency_rate).toBeNull();
+    expect(r.community_mapping_rate).toBeNull();
+    expect(r.review_compliance_rate).toBeNull();
   });
 });
 

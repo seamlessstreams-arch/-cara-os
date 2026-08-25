@@ -1,4 +1,4 @@
-import { above, below, formatRate, meets } from "@/lib/metrics/rate";
+import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME STAFF SAFETY INTELLIGENCE ENGINE
 // Pure deterministic engine: lone working, debriefs, grievances, risk assessments.
@@ -160,10 +160,6 @@ export interface HomeStaffSafetyResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function daysBetween(a: string, b: string): number {
   return Math.round(
     (new Date(b).getTime() - new Date(a).getTime()) / 86_400_000,
@@ -228,10 +224,10 @@ export function computeHomeStaffSafety(
     due_review: lwDueReview.length,
     expired: lwExpired.length,
     unique_staff_covered: uniqueLWStaff.size,
-    coverage_rate: pct(uniqueLWStaff.size, total_staff),
+    coverage_rate: rate(uniqueLWStaff.size, total_staff),
     high_risk_count: lone_working_records.filter((r) => r.risk_level === "high").length,
     alarms_issued: alarmsIssued.length,
-    alarm_rate: pct(alarmsIssued.length, lone_working_records.length),
+    alarm_rate: rate(alarmsIssued.length, lone_working_records.length),
   };
 
   // ── Debrief Profile ───────────────────────────────────────────────────
@@ -252,11 +248,11 @@ export function computeHomeStaffSafety(
     scheduled: dbScheduled.length,
     overdue: dbOverdue.length,
     declined: dbDeclined.length,
-    completion_rate: pct(dbCompleted.length, completionDenom),
+    completion_rate: rate(dbCompleted.length, completionDenom),
     high_impact_count: dbHighImpact.length,
     follow_up_needed_count: dbFollowUp.length,
     with_learning_points: dbWithLearning.length,
-    learning_rate: pct(dbWithLearning.length, debriefRecords.length),
+    learning_rate: rate(dbWithLearning.length, debriefRecords.length),
   };
 
   // ── Grievance Profile ─────────────────────────────────────────────────
@@ -273,7 +269,7 @@ export function computeHomeStaffSafety(
     withdrawn: gWithdrawn.length,
     open: gOpen.length,
     critical_count: gCritical.length,
-    resolution_rate: pct(gResolved.length, grievances.length),
+    resolution_rate: rate(gResolved.length, grievances.length),
   };
 
   // ── LWRA Profile ──────────────────────────────────────────────────────
@@ -288,7 +284,7 @@ export function computeHomeStaffSafety(
     total: risk_assessments.length,
     approved: lwraApproved.length,
     not_approved: lwraNotApproved.length,
-    approval_rate: pct(lwraApproved.length, risk_assessments.length),
+    approval_rate: rate(lwraApproved.length, risk_assessments.length),
     overdue_review: lwraOverdue.length,
     high_risk_count: lwraHighRisk.length,
   };
@@ -308,12 +304,12 @@ export function computeHomeStaffSafety(
 
   // mod2: Assessment currency (±4)
   // Expired/due_review assessments
-  const expiredRate = pct(lwExpired.length + lwDueReview.length, lone_working_records.length);
+  const expiredRate = rate(lwExpired.length + lwDueReview.length, lone_working_records.length);
   const mod2 =
     lone_working_records.length === 0 ? -2 :
     expiredRate === 0 ? 4 :
-    expiredRate <= 20 ? 2 :
-    expiredRate <= 40 ? 0 : -4;
+    (expiredRate !== null && expiredRate <= 20) ? 2 :
+    (expiredRate !== null && expiredRate <= 40) ? 0 : -4;
   score += mod2;
 
   // mod3: Personal alarm provision (±3)
@@ -341,12 +337,12 @@ export function computeHomeStaffSafety(
       (d.emotional_impact === "high" || d.emotional_impact === "significant") &&
       d.follow_up_needed,
   ).length;
-  const followUpRate = pct(highImpactWithFollowUp, dbHighImpact.length);
+  const followUpRate = rate(highImpactWithFollowUp, dbHighImpact.length);
   const mod5 =
     dbHighImpact.length === 0 ? 0 :
-    followUpRate >= 80 ? 3 :
-    followUpRate >= 60 ? 1 :
-    followUpRate >= 40 ? 0 : -3;
+    meets(followUpRate, 80) ? 3 :
+    meets(followUpRate, 60) ? 1 :
+    meets(followUpRate, 40) ? 0 : -3;
   score += mod5;
 
   // mod6: Grievance resolution (±3)
@@ -387,7 +383,7 @@ export function computeHomeStaffSafety(
   if (lone_working_records.length > 0 && expiredRate === 0) strengths.push("All lone working assessments are current — none expired or due for review.");
   if (meets(lone_working.alarm_rate, 80) && lone_working_records.length > 0) strengths.push(`${formatRate(lone_working.alarm_rate)} of lone workers have been issued personal alarms.`);
   if (meets(debriefProfile.completion_rate, 90) && debriefRecords.length > 0) strengths.push(`${formatRate(debriefProfile.completion_rate)} debrief completion rate — staff are well-supported after incidents.`);
-  if (followUpRate >= 80 && dbHighImpact.length > 0) strengths.push("High/significant emotional impact debriefs consistently receive follow-up support.");
+  if (meets(followUpRate, 80) && dbHighImpact.length > 0) strengths.push("High/significant emotional impact debriefs consistently receive follow-up support.");
   if (meets(grievance_profile.resolution_rate, 70) && grievances.length > 0) strengths.push(`${formatRate(grievance_profile.resolution_rate)} of grievances resolved — effective dispute resolution.`);
   if (meets(lwra.approval_rate, 80) && risk_assessments.length > 0) strengths.push(`${formatRate(lwra.approval_rate)} of staff risk-assessed and approved for lone working.`);
   if (meets(debriefProfile.learning_rate, 80) && debriefRecords.length > 0) strengths.push(`${formatRate(debriefProfile.learning_rate)} of debriefs capture learning points — strong reflective culture.`);
@@ -398,7 +394,7 @@ export function computeHomeStaffSafety(
   if (lwExpired.length > 0) concerns.push(`${lwExpired.length} lone working assessment(s) have expired — staff may be working without valid risk controls.`);
   if (below(lone_working.alarm_rate, 40) && lone_working_records.length > 0) concerns.push(`Only ${formatRate(lone_working.alarm_rate)} of lone workers have personal alarms — inadequate safety provision.`);
   if (debriefProfile.overdue > 0) concerns.push(`${debriefProfile.overdue} debrief(s) are overdue — staff not receiving timely post-incident support.`);
-  if (dbHighImpact.length > 0 && followUpRate < 40) concerns.push("High-impact debriefs are not being followed up — staff welfare at risk.");
+  if (dbHighImpact.length > 0 && below(followUpRate, 40)) concerns.push("High-impact debriefs are not being followed up — staff welfare at risk.");
   if (gCritical.length > 0) concerns.push(`${gCritical.length} critical grievance(s) outstanding — requires immediate management attention.`);
   if (gOpen.length > 0 && below(grievance_profile.resolution_rate, 50)) concerns.push(`Only ${formatRate(grievance_profile.resolution_rate)} of grievances resolved — poor dispute resolution.`);
   if (lwra.overdue_review > 0) concerns.push(`${lwra.overdue_review} lone working risk assessment(s) overdue for review.`);
@@ -500,7 +496,7 @@ export function computeHomeStaffSafety(
       severity: "warning",
     });
   }
-  if (dbHighImpact.length > 0 && followUpRate >= 80) {
+  if (dbHighImpact.length > 0 && meets(followUpRate, 80)) {
     insights.push({
       text: `All high-impact debriefs have follow-up in place — demonstrates genuine duty of care to staff.`,
       severity: "positive",

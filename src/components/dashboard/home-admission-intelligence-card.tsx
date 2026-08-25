@@ -8,7 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { below, meets } from "@/lib/metrics/rate";
+import { below, formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
   Loader2, AlertCircle, AlertTriangle,
@@ -124,7 +124,7 @@ export function HomeAdmissionIntelligenceCard() {
                   meets(d.assessment_profile.impact_assessment_rate, 80) ? "text-[--cs-success]" :
                   meets(d.assessment_profile.impact_assessment_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.assessment_profile.impact_assessment_rate}%
+                  {formatRate(d.assessment_profile.impact_assessment_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Impact</p>

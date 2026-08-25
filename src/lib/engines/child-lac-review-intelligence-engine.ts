@@ -12,6 +12,8 @@
 // Reg 5 (placement plan). IRO Handbook. SCCIF: "Impact of leaders."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface LACReviewAction {
@@ -124,10 +126,6 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function pct(n: number, d: number): number | null {
-  return d > 0  ? Math.round((n / d) * 100)  : null;
-}
-
 // ── Main Computation ────────────────────────────────────────────────────────
 
 export function computeChildLACReview(
@@ -166,7 +164,7 @@ export function computeChildLACReview(
     next_review_date: nextDate,
     days_until_next: daysUntilNext,
     is_overdue: isOverdue,
-    reviews_on_time_rate: pct(onTimeCount, reviews.length),
+    reviews_on_time_rate: rate(onTimeCount, reviews.length),
   };
 
   // ── Participation ────────────────────────────────────────────────────
@@ -177,11 +175,11 @@ export function computeChildLACReview(
   const viewsRecorded = reviews.filter((r) => r.child_views_recorded);
 
   const participation: ParticipationProfile = {
-    attended_rate: pct(attended.length, reviews.length),
-    views_submitted_rate: pct(viewsSubmitted.length, reviews.length),
-    advocate_rate: pct(advocate.length, reviews.length),
-    did_not_participate_rate: pct(didNot.length, reviews.length),
-    views_recorded_rate: pct(viewsRecorded.length, reviews.length),
+    attended_rate: rate(attended.length, reviews.length),
+    views_submitted_rate: rate(viewsSubmitted.length, reviews.length),
+    advocate_rate: rate(advocate.length, reviews.length),
+    did_not_participate_rate: rate(didNot.length, reviews.length),
+    views_recorded_rate: rate(viewsRecorded.length, reviews.length),
   };
 
   // ── Action Completion ────────────────────────────────────────────────
@@ -196,7 +194,7 @@ export function computeChildLACReview(
   const action_completion: ActionCompletionProfile = {
     total_actions: allActions.length,
     completed_count: completedActions.length,
-    completion_rate: pct(completedActions.length, allActions.length),
+    completion_rate: rate(completedActions.length, allActions.length),
     overdue_count: overdueActions.length,
     overdue_actions: overdueActions.map((a) => a.action),
   };
@@ -214,7 +212,7 @@ export function computeChildLACReview(
 
   // ── Care Plan Updates ────────────────────────────────────────────────
   const carePlanUpdated = reviews.filter((r) => r.care_plan_updated);
-  const care_plan_update_rate = pct(carePlanUpdated.length, reviews.length);
+  const care_plan_update_rate = rate(carePlanUpdated.length, reviews.length);
 
   // ── Placement Stability ──────────────────────────────────────────────
   const placement_stability_current = mostRecent?.placement_stability ?? "unknown";

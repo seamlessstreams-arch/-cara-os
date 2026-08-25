@@ -375,22 +375,22 @@ describe("Home Task Action Completion Intelligence Engine", () => {
       expect(r.on_time_rate).toBe(100); // 1/1 with due date
     });
 
-    it("returns 0 on-time rate when no completed tasks have due dates", () => {
+    it("on_time_rate is unmeasured when no completed tasks have due dates", () => {
       const r = computeTaskActionCompletion(baseInput({
         tasks: [
           makeTask({ id: "t1", status: "completed", due_date: "", completed_at: "2026-05-24" }),
         ],
       }));
-      expect(r.on_time_rate).toBe(0);
+      expect(r.on_time_rate).toBeNull();
     });
 
-    it("returns 0 on-time rate when no tasks are completed", () => {
+    it("on_time_rate is unmeasured when no tasks are completed", () => {
       const r = computeTaskActionCompletion(baseInput({
         tasks: [
           makeTask({ id: "t1", status: "in_progress", due_date: "2026-05-25", completed_at: "" }),
         ],
       }));
-      expect(r.on_time_rate).toBe(0);
+      expect(r.on_time_rate).toBeNull();
     });
   });
 
@@ -409,12 +409,12 @@ describe("Home Task Action Completion Intelligence Engine", () => {
       expect(r.incident_follow_through).toBe(67);
     });
 
-    it("returns 0 when no incidents exist", () => {
+    it("incident_follow_through is unmeasured when no incidents exist", () => {
       const r = computeTaskActionCompletion(baseInput({
         tasks: [makeTask()],
         incidents: [],
       }));
-      expect(r.incident_follow_through).toBe(0);
+      expect(r.incident_follow_through).toBeNull();
     });
 
     it("returns 100 when all incidents have linked tasks", () => {
@@ -454,11 +454,11 @@ describe("Home Task Action Completion Intelligence Engine", () => {
       expect(r.urgent_completion_rate).toBe(50);
     });
 
-    it("returns 0 when no urgent tasks exist", () => {
+    it("urgent_completion_rate is unmeasured when no urgent tasks exist", () => {
       const r = computeTaskActionCompletion(baseInput({
         tasks: [makeTask({ priority: "medium" })],
       }));
-      expect(r.urgent_completion_rate).toBe(0);
+      expect(r.urgent_completion_rate).toBeNull();
     });
 
     it("returns 100 when all urgent tasks are completed", () => {
@@ -1187,7 +1187,7 @@ describe("Home Task Action Completion Intelligence Engine", () => {
       ];
       const r = computeTaskActionCompletion(baseInput({ tasks }));
       // No completed with due → -1
-      expect(r.on_time_rate).toBe(0);
+      expect(r.on_time_rate).toBeNull();
     });
 
     it("gives 0 modifier for 60-79% on-time", () => {
@@ -1237,9 +1237,9 @@ describe("Home Task Action Completion Intelligence Engine", () => {
       expect(r.incident_follow_through).toBe(50);
     });
 
-    it("gives 0 modifier when no incidents exist", () => {
+    it("incident_follow_through is unmeasured when no incidents exist", () => {
       const r = computeTaskActionCompletion(baseInput({ tasks: [makeTask()], incidents: [] }));
-      expect(r.incident_follow_through).toBe(0);
+      expect(r.incident_follow_through).toBeNull();
     });
 
     it("gives 0 modifier for 60-79% follow-through", () => {
@@ -1292,10 +1292,10 @@ describe("Home Task Action Completion Intelligence Engine", () => {
       expect(r.urgent_completion_rate).toBe(50);
     });
 
-    it("gives 0 modifier when no urgent tasks exist", () => {
+    it("urgent_completion_rate is unmeasured when no urgent tasks exist", () => {
       const tasks = [makeTask({ priority: "low" })];
       const r = computeTaskActionCompletion(baseInput({ tasks }));
-      expect(r.urgent_completion_rate).toBe(0);
+      expect(r.urgent_completion_rate).toBeNull();
     });
 
     it("gives 0 modifier for 60-79% urgent completion", () => {
@@ -2036,14 +2036,14 @@ describe("Home Task Action Completion Intelligence Engine", () => {
   // ── pct Helper Behaviour ─────────────────────────────────────────────────
 
   describe("pct helper behaviour (via engine rates)", () => {
-    it("returns 0 when denominator is 0 for incident follow-through", () => {
+    it("incident_follow_through is unmeasured for a zero denominator", () => {
       const r = computeTaskActionCompletion(baseInput({ tasks: [makeTask()], incidents: [] }));
-      expect(r.incident_follow_through).toBe(0);
+      expect(r.incident_follow_through).toBeNull();
     });
 
-    it("returns 0 when denominator is 0 for urgent completion", () => {
+    it("urgent_completion_rate is unmeasured for a zero denominator", () => {
       const r = computeTaskActionCompletion(baseInput({ tasks: [makeTask({ priority: "low" })] }));
-      expect(r.urgent_completion_rate).toBe(0);
+      expect(r.urgent_completion_rate).toBeNull();
     });
 
     it("rounds to nearest integer", () => {

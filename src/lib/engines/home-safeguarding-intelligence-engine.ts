@@ -6,6 +6,8 @@
 // CHR 2015 Reg 12, 13, 34. SCCIF: "Safe."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface ContextualRiskInput {
@@ -78,7 +80,8 @@ export interface ExploitationProfile {
   total_screenings: number;
   children_screened: string[];
   children_not_screened: string[];
-  screening_coverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  screening_coverage: number | null;
   high_risk_count: number;
   safety_plan_rate: number | null;
   social_worker_notification_rate: number | null;
@@ -140,10 +143,6 @@ function daysBetween(a: string, b: string): number {
   );
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 // ── Main Compute ────────────────────────────────────────────────────────────
 
 export function computeHomeSafeguarding(
@@ -187,10 +186,10 @@ export function computeHomeSafeguarding(
   const overdueReviews = activeRisks.filter(r => r.review_date < today).length;
 
   const withMultiAgency = contextual_risks.filter(r => r.has_multi_agency_actions).length;
-  const multiAgencyRate = pct(withMultiAgency, contextual_risks.length);
+  const multiAgencyRate = rate(withMultiAgency, contextual_risks.length);
 
   const withProtective = activeRisks.filter(r => r.has_protective_actions).length;
-  const protectiveRate = pct(withProtective, activeRisks.length);
+  const protectiveRate = rate(withProtective, activeRisks.length);
 
   const ctxProfile: ContextualRiskProfile = {
     total_risks: contextual_risks.length,
@@ -205,14 +204,14 @@ export function computeHomeSafeguarding(
   // ── Exploitation Profile ────────────────────────────────────────────
   const childrenScreened = [...new Set(latestScreenings.map(s => s.child_id))];
   const childrenNotScreened = child_ids.filter(id => !childrenScreened.includes(id));
-  const screenCoverage = total_children > 0 ? pct(childrenScreened.length, total_children) : 0;
+  const screenCoverage = total_children > 0 ? rate(childrenScreened.length, total_children) : 0;
 
   const highRiskScreenings = latestScreenings.filter(s => s.risk_level === "high" || s.risk_level === "very_high");
   const withSafetyPlan = highRiskScreenings.filter(s => s.has_safety_plan).length;
-  const safetyPlanRate = pct(withSafetyPlan, highRiskScreenings.length);
+  const safetyPlanRate = rate(withSafetyPlan, highRiskScreenings.length);
 
   const swNotified = latestScreenings.filter(s => s.social_worker_notified).length;
-  const swNotificationRate = pct(swNotified, latestScreenings.length);
+  const swNotificationRate = rate(swNotified, latestScreenings.length);
 
   const nrmCount = latestScreenings.filter(s => s.nrm_referral).length;
 
@@ -238,13 +237,13 @@ export function computeHomeSafeguarding(
   const unresolvedHC = onlineHighCritical.filter(o => o.status !== "resolved").length;
 
   const withDiscussion = online90d.filter(o => o.has_child_discussion).length;
-  const discussionRate = pct(withDiscussion, online90d.length);
+  const discussionRate = rate(withDiscussion, online90d.length);
 
   const withFollowUp = online90d.filter(o => o.has_follow_up).length;
-  const followUpRate = pct(withFollowUp, online90d.length);
+  const followUpRate = rate(withFollowUp, online90d.length);
 
   const parentNotified = online90d.filter(o => o.parent_notified).length;
-  const parentRate = pct(parentNotified, online90d.length);
+  const parentRate = rate(parentNotified, online90d.length);
 
   const onlineChildren = [...new Set(online90d.map(o => o.child_id))];
 
@@ -273,14 +272,14 @@ export function computeHomeSafeguarding(
 
   // 3. Multi-agency engagement (±4)
   if (contextual_risks.length > 0) {
-    if (multiAgencyRate >= 80) score += 4;
-    else if (multiAgencyRate >= 60) score += 2;
+    if (meets(multiAgencyRate, 80)) score += 4;
+    else if (meets(multiAgencyRate, 60)) score += 2;
     else score -= 3;
   }
 
   // 4. Exploitation screening coverage (±5)
-  if (screenCoverage >= 80) score += 5;
-  else if (screenCoverage >= 60) score += 3;
+  if (meets(screenCoverage, 80)) score += 5;
+  else if (meets(screenCoverage, 60)) score += 3;
   else if (latestScreenings.length > 0) score -= 3;
 
   // 5. High-risk management — safety plans (±4)
@@ -290,7 +289,7 @@ export function computeHomeSafeguarding(
 
   // 6. Social worker notification (±3)
   if (latestScreenings.length > 0) {
-    if (swNotificationRate >= 80) score += 3;
+    if (meets(swNotificationRate, 80)) score += 3;
     else score -= 2;
   }
 
@@ -302,14 +301,14 @@ export function computeHomeSafeguarding(
 
   // 8. Online — child discussion + follow-up (±3)
   if (online90d.length > 0) {
-    if (discussionRate >= 80 && followUpRate >= 80) score += 3;
-    else if (discussionRate >= 60 || followUpRate >= 60) score += 1;
+    if (meets(discussionRate, 80) && meets(followUpRate, 80)) score += 3;
+    else if (meets(discussionRate, 60) || meets(followUpRate, 60)) score += 1;
     else score -= 2;
   }
 
   // 9. Protective actions on active risks (±3)
   if (activeRisks.length > 0) {
-    if (protectiveRate >= 80) score += 3;
+    if (meets(protectiveRate, 80)) score += 3;
     else score -= 2;
   }
 
@@ -319,29 +318,29 @@ export function computeHomeSafeguarding(
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
   if (highVeryHigh.length === 0 && contextual_risks.length > 0) strengths.push("No active high or very high contextual safeguarding risks — the home environment is effectively managed.");
-  if (screenCoverage >= 80) strengths.push(`Exploitation screening coverage is ${screenCoverage}% — proactive risk identification across the home.`);
-  if (multiAgencyRate >= 80 && contextual_risks.length > 0) strengths.push(`Multi-agency engagement on ${multiAgencyRate}% of contextual risks — strong partnership working.`);
+  if (meets(screenCoverage, 80)) strengths.push(`Exploitation screening coverage is ${screenCoverage}% — proactive risk identification across the home.`);
+  if (meets(multiAgencyRate, 80) && contextual_risks.length > 0) strengths.push(`Multi-agency engagement on ${multiAgencyRate}% of contextual risks — strong partnership working.`);
   if (safetyPlanRate === 100 && highRiskScreenings.length > 0) strengths.push("All high-risk children have safety plans in place — robust protective measures.");
   if (unresolvedHC === 0 && online90d.length > 0) strengths.push("All high/critical online safety incidents resolved — effective digital safeguarding response.");
-  if (discussionRate >= 80 && online90d.length > 0) strengths.push(`Child discussions conducted after ${discussionRate}% of online incidents — children are supported to understand risks.`);
+  if (meets(discussionRate, 80) && online90d.length > 0) strengths.push(`Child discussions conducted after ${discussionRate}% of online incidents — children are supported to understand risks.`);
   if (overdueReviews === 0 && activeRisks.length > 0) strengths.push("All active contextual risk reviews are current — management oversight is timely.");
-  if (protectiveRate >= 80 && activeRisks.length > 0) strengths.push(`Protective actions in place for ${protectiveRate}% of active risks — risks are being actively managed.`);
+  if (meets(protectiveRate, 80) && activeRisks.length > 0) strengths.push(`Protective actions in place for ${protectiveRate}% of active risks — risks are being actively managed.`);
 
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (highVeryHigh.length > 0) concerns.push(`${highVeryHigh.length} active high/very high contextual safeguarding risk${highVeryHigh.length > 1 ? "s" : ""} — requires urgent multi-agency response.`);
   if (overdueReviews > 0) concerns.push(`${overdueReviews} contextual risk review${overdueReviews > 1 ? "s" : ""} overdue — active risks must be reviewed on schedule.`);
   if (childrenNotScreened.length > 0) concerns.push(`${childrenNotScreened.length} child${childrenNotScreened.length > 1 ? "ren" : ""} not screened for exploitation — all children must be assessed.`);
-  if (safetyPlanRate < 100 && highRiskScreenings.length > 0) concerns.push(`${highRiskScreenings.length - withSafetyPlan} high-risk child${(highRiskScreenings.length - withSafetyPlan) > 1 ? "ren" : ""} without a safety plan — immediate action required.`);
+  if (below(safetyPlanRate, 100) && highRiskScreenings.length > 0) concerns.push(`${highRiskScreenings.length - withSafetyPlan} high-risk child${(highRiskScreenings.length - withSafetyPlan) > 1 ? "ren" : ""} without a safety plan — immediate action required.`);
   if (unresolvedHC > 0) concerns.push(`${unresolvedHC} high/critical online safety incident${unresolvedHC > 1 ? "s" : ""} unresolved — these require urgent follow-up.`);
-  if (discussionRate < 60 && online90d.length > 0) concerns.push(`Child discussions only conducted after ${discussionRate}% of online incidents — children need support to understand digital risks.`);
-  if (multiAgencyRate < 60 && contextual_risks.length > 0) concerns.push(`Multi-agency engagement on only ${multiAgencyRate}% of contextual risks — safeguarding is a shared responsibility.`);
+  if (below(discussionRate, 60) && online90d.length > 0) concerns.push(`Child discussions only conducted after ${discussionRate}% of online incidents — children need support to understand digital risks.`);
+  if (below(multiAgencyRate, 60) && contextual_risks.length > 0) concerns.push(`Multi-agency engagement on only ${multiAgencyRate}% of contextual risks — safeguarding is a shared responsibility.`);
 
   // ── Recommendations ───────────────────────────────────────────────────
   const recs: SafeguardingRecommendation[] = [];
   let rank = 1;
 
-  if (safetyPlanRate < 100 && highRiskScreenings.length > 0) {
+  if (below(safetyPlanRate, 100) && highRiskScreenings.length > 0) {
     recs.push({ rank: rank++, recommendation: `Create safety plans for all high-risk children — ${highRiskScreenings.length - withSafetyPlan} currently without.`, urgency: "immediate", regulatory_ref: "Reg 12" });
   }
   if (highVeryHigh.length > 2) {
@@ -363,7 +362,7 @@ export function computeHomeSafeguarding(
   if (highVeryHigh.length > 0) {
     insights.push({ text: `${highVeryHigh.length} active high/very high contextual risk${highVeryHigh.length > 1 ? "s" : ""}. Ofsted will examine whether the home is working effectively with partners to manage environmental threats.`, severity: "critical" });
   }
-  if (safetyPlanRate < 100 && highRiskScreenings.length > 0) {
+  if (below(safetyPlanRate, 100) && highRiskScreenings.length > 0) {
     insights.push({ text: `Not all high-risk children have safety plans. Ofsted expects every child at risk of exploitation to have a clear, multi-agency safety plan.`, severity: "critical" });
   }
   if (overdueReviews > 0) {
@@ -372,10 +371,10 @@ export function computeHomeSafeguarding(
   if (childrenNotScreened.length > 0) {
     insights.push({ text: `${childrenNotScreened.length} child${childrenNotScreened.length > 1 ? "ren" : ""} not screened for exploitation. Ofsted expects all looked-after children to be regularly screened for exploitation risk.`, severity: "warning" });
   }
-  if (screenCoverage >= 80 && (highRiskScreenings.length === 0 || safetyPlanRate === 100) && latestScreenings.length > 0) {
+  if (meets(screenCoverage, 80) && (highRiskScreenings.length === 0 || safetyPlanRate === 100) && latestScreenings.length > 0) {
     insights.push({ text: `${screenCoverage}% exploitation screening coverage with complete safety planning. This demonstrates proactive safeguarding — Ofsted's key expectation under 'Safe.'`, severity: "positive" });
   }
-  if (multiAgencyRate >= 80 && contextual_risks.length > 0) {
+  if (meets(multiAgencyRate, 80) && contextual_risks.length > 0) {
     insights.push({ text: `Multi-agency engagement on ${multiAgencyRate}% of contextual risks evidences effective partnership working — a hallmark of outstanding safeguarding.`, severity: "positive" });
   }
   if (unresolvedHC === 0 && online90d.length > 0) {

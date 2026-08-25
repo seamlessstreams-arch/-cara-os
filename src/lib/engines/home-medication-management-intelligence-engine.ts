@@ -8,6 +8,8 @@
 //         medication are safe."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input types ─────────────────────────────────────────────────────────────
 
 export interface MedicationInput {
@@ -129,10 +131,6 @@ export interface HomeMedicationManagementResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function daysBetween(a: string, b: string): number {
   return Math.round(
     (new Date(b).getTime() - new Date(a).getTime()) / 86_400_000,
@@ -184,14 +182,14 @@ export function computeHomeMedicationManagement(
   const missed = admins90d.filter(a => a.status === "missed").length;
   const withheld = admins90d.filter(a => a.status === "withheld").length;
 
-  const complianceRate = pct(given + late, totalScheduled);
-  const onTimeRate = pct(given, given + late);
-  const refusalRate = pct(refused, totalScheduled);
+  const complianceRate = rate(given + late, totalScheduled);
+  const onTimeRate = rate(given, given + late);
+  const refusalRate = rate(refused, totalScheduled);
 
   // ── Witnessing ────────────────────────────────────────────────────────
   const administered = admins90d.filter(a => a.status === "given" || a.status === "late");
   const witnessed = administered.filter(a => a.witnessed_by && a.witnessed_by.trim() !== "");
-  const witnessingRate = pct(witnessed.length, administered.length);
+  const witnessingRate = rate(witnessed.length, administered.length);
 
   // ── Stock management ──────────────────────────────────────────────────
   const withStockData = activeMeds.filter(m => m.stock_count !== null && m.stock_count !== undefined);
@@ -200,7 +198,7 @@ export function computeHomeMedicationManagement(
     if (!m.stock_last_checked) return false;
     return daysBetween(m.stock_last_checked, today) <= 7;
   });
-  const stockCheckRate = pct(checkedRecently.length, activeMeds.length);
+  const stockCheckRate = rate(checkedRecently.length, activeMeds.length);
   const overdueStockChecks = activeMeds.filter(m => {
     if (!m.stock_last_checked) return true;
     return daysBetween(m.stock_last_checked, today) > 7;
@@ -263,24 +261,24 @@ export function computeHomeMedicationManagement(
   let score = 52;
 
   // mod1: Compliance rate (±5)
-  if (complianceRate >= 95) score += 5;
-  else if (complianceRate >= 85) score += 2;
-  else if (complianceRate >= 70) score += 0;
-  else if (complianceRate >= 50) score -= 3;
+  if (meets(complianceRate, 95)) score += 5;
+  else if (meets(complianceRate, 85)) score += 2;
+  else if (meets(complianceRate, 70)) score += 0;
+  else if (meets(complianceRate, 50)) score -= 3;
   else score -= 5;
 
   // mod2: On-time rate (±4)
-  if (onTimeRate >= 90) score += 4;
-  else if (onTimeRate >= 75) score += 2;
-  else if (onTimeRate >= 60) score += 0;
-  else if (onTimeRate >= 40) score -= 2;
+  if (meets(onTimeRate, 90)) score += 4;
+  else if (meets(onTimeRate, 75)) score += 2;
+  else if (meets(onTimeRate, 60)) score += 0;
+  else if (meets(onTimeRate, 40)) score -= 2;
   else score -= 4;
 
   // mod3: Witnessing rate (±4)
-  if (witnessingRate >= 95) score += 4;
-  else if (witnessingRate >= 80) score += 2;
-  else if (witnessingRate >= 60) score += 0;
-  else if (witnessingRate >= 40) score -= 2;
+  if (meets(witnessingRate, 95)) score += 4;
+  else if (meets(witnessingRate, 80)) score += 2;
+  else if (meets(witnessingRate, 60)) score += 0;
+  else if (meets(witnessingRate, 40)) score -= 2;
   else score -= 4;
 
   // mod4: Error rate (±4)
@@ -291,17 +289,17 @@ export function computeHomeMedicationManagement(
   else score -= 4;
 
   // mod5: Stock management (±3)
-  if (stockCheckRate >= 90 && lowStock.length === 0) score += 3;
-  else if (stockCheckRate >= 70) score += 1;
-  else if (stockCheckRate >= 50) score += 0;
-  else if (stockCheckRate >= 30) score -= 1;
+  if (meets(stockCheckRate, 90) && lowStock.length === 0) score += 3;
+  else if (meets(stockCheckRate, 70)) score += 1;
+  else if (meets(stockCheckRate, 50)) score += 0;
+  else if (meets(stockCheckRate, 30)) score -= 1;
   else score -= 3;
 
   // mod6: Refusal management (±3)
   if (refusalRate === 0) score += 3;
-  else if (refusalRate <= 5) score += 1;
-  else if (refusalRate <= 10) score += 0;
-  else if (refusalRate <= 20) score -= 1;
+  else if ((refusalRate !== null && refusalRate <= 5)) score += 1;
+  else if ((refusalRate !== null && refusalRate <= 10)) score += 0;
+  else if ((refusalRate !== null && refusalRate <= 20)) score -= 1;
   else score -= 3;
 
   // mod7: PRN documentation (±3) — PRN administrations with reason AND effectiveness documented
@@ -310,18 +308,18 @@ export function computeHomeMedicationManagement(
     return med?.type === "prn" && (a.status === "given" || a.status === "late");
   });
   const prnDocumented = prnAdmins.filter(a => a.prn_reason && a.prn_reason.trim() !== "" && a.prn_effectiveness && a.prn_effectiveness.trim() !== "");
-  const prnDocRate = pct(prnDocumented.length, prnAdmins.length);
+  const prnDocRate = rate(prnDocumented.length, prnAdmins.length);
   if (prnAdmins.length === 0) score += 2;  // no PRN needed — neutral-positive
-  else if (prnDocRate >= 90) score += 3;
-  else if (prnDocRate >= 70) score += 1;
-  else if (prnDocRate >= 50) score += 0;
-  else if (prnDocRate >= 30) score -= 1;
+  else if (meets(prnDocRate, 90)) score += 3;
+  else if (meets(prnDocRate, 70)) score += 1;
+  else if (meets(prnDocRate, 50)) score += 0;
+  else if (meets(prnDocRate, 30)) score -= 1;
   else score -= 3;
 
   // mod8: Open error resolution (±2)
   if (errors90d.length === 0) score += 2;
   else if (openErrors === 0) score += 2;
-  else if (pct(openErrors, errors90d.length) <= 25) score += 0;
+  else if (below(rate(openErrors, errors90d.length), 26)) score += 0;
   else score -= 2;
 
   // Clamp
@@ -342,30 +340,30 @@ export function computeHomeMedicationManagement(
   let rank = 0;
 
   // Strengths
-  if (complianceRate >= 95) strengths.push(`Excellent medication compliance at ${complianceRate}% — every scheduled administration is being completed.`);
-  if (witnessingRate >= 95) strengths.push(`Outstanding witnessing rate at ${witnessingRate}% — dual-signature practice is embedded.`);
+  if (meets(complianceRate, 95)) strengths.push(`Excellent medication compliance at ${complianceRate}% — every scheduled administration is being completed.`);
+  if (meets(witnessingRate, 95)) strengths.push(`Outstanding witnessing rate at ${witnessingRate}% — dual-signature practice is embedded.`);
   if (errors90d.length === 0) strengths.push("No medication errors recorded in the last 90 days — strong safety culture.");
-  if (onTimeRate >= 90) strengths.push(`${onTimeRate}% of medications given on time — excellent time management.`);
-  if (prnAdmins.length > 0 && prnDocRate >= 90) strengths.push(`PRN documentation at ${prnDocRate}% — reason and effectiveness recorded for each use.`);
-  if (stockCheckRate >= 90 && lowStock.length === 0) strengths.push("Stock levels healthy and checks completed on time — pharmacy liaison is effective.");
+  if (meets(onTimeRate, 90)) strengths.push(`${onTimeRate}% of medications given on time — excellent time management.`);
+  if (prnAdmins.length > 0 && meets(prnDocRate, 90)) strengths.push(`PRN documentation at ${prnDocRate}% — reason and effectiveness recorded for each use.`);
+  if (meets(stockCheckRate, 90) && lowStock.length === 0) strengths.push("Stock levels healthy and checks completed on time — pharmacy liaison is effective.");
 
   // Concerns
-  if (complianceRate < 70) concerns.push(`Medication compliance at ${complianceRate}% is below acceptable threshold. Children may not be receiving prescribed treatment.`);
+  if (below(complianceRate, 70)) concerns.push(`Medication compliance at ${complianceRate}% is below acceptable threshold. Children may not be receiving prescribed treatment.`);
   if (missed > 0) concerns.push(`${missed} missed administration${missed > 1 ? "s" : ""} in 90 days. Missed doses represent a direct risk to children's health.`);
-  if (witnessingRate < 60) concerns.push(`Witnessing rate at ${witnessingRate}% — insufficient dual-checking could mask errors.`);
+  if (below(witnessingRate, 60)) concerns.push(`Witnessing rate at ${witnessingRate}% — insufficient dual-checking could mask errors.`);
   if (errors90d.length > 0 && (bySeverity["serious"] ?? 0) + (bySeverity["critical"] ?? 0) > 0) {
     concerns.push(`${(bySeverity["serious"] ?? 0) + (bySeverity["critical"] ?? 0)} serious/critical medication error${((bySeverity["serious"] ?? 0) + (bySeverity["critical"] ?? 0)) > 1 ? "s" : ""} in 90 days — immediate review required.`);
   }
   if (openErrors > 0) concerns.push(`${openErrors} medication error${openErrors > 1 ? "s" : ""} still open/under investigation.`);
   if (lowStock.length > 0) concerns.push(`${lowStock.length} medication${lowStock.length > 1 ? "s" : ""} with low stock (≤7 days supply). Risk of missed doses if not reordered.`);
-  if (refusalRate > 10) concerns.push(`Refusal rate at ${refusalRate}% — persistent refusals need therapeutic exploration and prescriber review.`);
+  if (above(refusalRate, 10)) concerns.push(`Refusal rate at ${refusalRate}% — persistent refusals need therapeutic exploration and prescriber review.`);
 
   // Recommendations
-  if (complianceRate < 85) {
-    recommendations.push({ rank: ++rank, recommendation: "Implement medication round checklists and shift-leader sign-off to improve compliance.", urgency: complianceRate < 70 ? "immediate" : "soon", regulatory_ref: "Reg 23" });
+  if (below(complianceRate, 85)) {
+    recommendations.push({ rank: ++rank, recommendation: "Implement medication round checklists and shift-leader sign-off to improve compliance.", urgency: below(complianceRate, 70) ? "immediate" : "soon", regulatory_ref: "Reg 23" });
   }
-  if (witnessingRate < 80) {
-    recommendations.push({ rank: ++rank, recommendation: "Ensure all medication administrations are witnessed by a second trained staff member.", urgency: witnessingRate < 60 ? "immediate" : "soon", regulatory_ref: "Reg 23" });
+  if (below(witnessingRate, 80)) {
+    recommendations.push({ rank: ++rank, recommendation: "Ensure all medication administrations are witnessed by a second trained staff member.", urgency: below(witnessingRate, 60) ? "immediate" : "soon", regulatory_ref: "Reg 23" });
   }
   if (lowStock.length > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Reorder medications with low stock and establish automatic reorder triggers.", urgency: "soon", regulatory_ref: "Reg 23" });
@@ -376,24 +374,24 @@ export function computeHomeMedicationManagement(
   if (openErrors > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Close outstanding medication error investigations and implement lessons learned.", urgency: "immediate", regulatory_ref: "Reg 23" });
   }
-  if (prnAdmins.length > 0 && prnDocRate < 70) {
+  if (prnAdmins.length > 0 && below(prnDocRate, 70)) {
     recommendations.push({ rank: ++rank, recommendation: "Improve PRN documentation — record reason for use and effectiveness each time.", urgency: "soon", regulatory_ref: "Reg 23" });
   }
-  if (refusalRate > 5 && refusalRate <= 20) {
+  if (above(refusalRate, 5) && (refusalRate !== null && refusalRate <= 20)) {
     recommendations.push({ rank: ++rank, recommendation: "Review persistent medication refusals with prescriber and explore therapeutic approaches.", urgency: "planned", regulatory_ref: "Reg 23" });
   }
 
   // Cara Insights
-  if (complianceRate >= 95 && witnessingRate >= 95 && errors90d.length === 0) {
+  if (meets(complianceRate, 95) && meets(witnessingRate, 95) && errors90d.length === 0) {
     insights.push({ text: "Medication management is exemplary. High compliance, universal witnessing, and zero errors demonstrate a well-embedded safety culture. This is a key strength for Ofsted inspection.", severity: "positive" });
   }
   if (late > 0 && late >= given * 0.1) {
-    insights.push({ text: `${late} late administrations detected — ${pct(late, given + late)}% of administered doses. Late medication can reduce therapeutic effectiveness. Consider reviewing shift timing, handover processes, and staffing at medication rounds.`, severity: "warning" });
+    insights.push({ text: `${late} late administrations detected — ${rate(late, given + late)}% of administered doses. Late medication can reduce therapeutic effectiveness. Consider reviewing shift timing, handover processes, and staffing at medication rounds.`, severity: "warning" });
   }
   if (errors90d.length >= 3) {
     insights.push({ text: `${errors90d.length} medication errors in 90 days signals a systemic issue. This will be flagged at Ofsted inspection as a leadership and management concern. Root cause analysis across all errors should identify common factors.`, severity: "critical" });
   }
-  if (refusalRate > 10) {
+  if (above(refusalRate, 10)) {
     insights.push({ text: `Persistent medication refusals (${refusalRate}%) may indicate therapeutic resistance, side effects, or relationship issues. A multi-disciplinary approach — involving prescriber, CAMHS, and key worker — can help children understand the purpose of their medication.`, severity: "warning" });
   }
   if (prnAdmins.length >= 5 && prnAdmins.length > administered.length * 0.3) {

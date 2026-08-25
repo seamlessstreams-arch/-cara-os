@@ -83,7 +83,7 @@ export function HomeTaskActionCompletionIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">On Time</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.incident_follow_through >= 90 ? "bg-green-50" : d.incident_follow_through >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.incident_follow_through >= 90 ? "text-[--cs-success]" : d.incident_follow_through >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.incident_follow_through}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.incident_follow_through >= 90 ? "text-[--cs-success]" : d.incident_follow_through >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.incident_follow_through)}</p>
               <p className="text-[9px] text-muted-foreground">Incident</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.urgent_completion_rate >= 95 ? "bg-green-50" : d.urgent_completion_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>

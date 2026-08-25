@@ -783,9 +783,9 @@ describe("computeHomeMedicationManagement", () => {
         medications: [makeMed()],
         administrations: [],
       }));
-      // All rates should be 0
-      expect(r.administration.compliance_rate).toBe(0);
-      expect(r.witnessing.witnessing_rate).toBe(0);
+      // Both rates are unmeasured — 0 administrations is an empty population, not a 0% rate
+      expect(r.administration.compliance_rate).toBeNull();
+      expect(r.witnessing.witnessing_rate).toBeNull();
       expect(r.medication_rating).not.toBe("insufficient_data"); // has medications
     });
 

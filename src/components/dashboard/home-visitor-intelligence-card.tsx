@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { below, formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
   Loader2, AlertCircle, AlertTriangle,
@@ -93,7 +94,7 @@ export function HomeVisitorIntelligenceCard() {
   }
 
   const ratingStyle = RATING_STYLES[d.visitor_rating] ?? RATING_STYLES.insufficient_data;
-  const lowDbs = d.access_compliance.dbs_check_rate < 70 && d.access_compliance.total_visitors_90d > 0;
+  const lowDbs = below(d.access_compliance.dbs_check_rate, 70) && d.access_compliance.total_visitors_90d > 0;
   const isAlert = lowDbs || d.visitor_rating === "inadequate";
 
   return (
@@ -124,10 +125,10 @@ export function HomeVisitorIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.access_compliance.dbs_check_rate >= 90 ? "text-[--cs-success]" :
-                  d.access_compliance.dbs_check_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.access_compliance.dbs_check_rate, 90) ? "text-[--cs-success]" :
+                  meets(d.access_compliance.dbs_check_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.access_compliance.dbs_check_rate}%
+                  {formatRate(d.access_compliance.dbs_check_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">DBS</p>
@@ -138,10 +139,10 @@ export function HomeVisitorIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <UserCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.access_compliance.id_verification_rate >= 90 ? "text-[--cs-success]" :
-                  d.access_compliance.id_verification_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.access_compliance.id_verification_rate, 90) ? "text-[--cs-success]" :
+                  meets(d.access_compliance.id_verification_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.access_compliance.id_verification_rate}%
+                  {formatRate(d.access_compliance.id_verification_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">ID Check</p>
@@ -152,10 +153,10 @@ export function HomeVisitorIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <LogOut className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.access_compliance.sign_out_completion_rate >= 90 ? "text-[--cs-success]" :
-                  d.access_compliance.sign_out_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.access_compliance.sign_out_completion_rate, 90) ? "text-[--cs-success]" :
+                  meets(d.access_compliance.sign_out_completion_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.access_compliance.sign_out_completion_rate}%
+                  {formatRate(d.access_compliance.sign_out_completion_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Sign-out</p>
@@ -166,10 +167,10 @@ export function HomeVisitorIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <FileText className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.access_compliance.documentation_rate >= 70 ? "text-[--cs-success]" :
-                  d.access_compliance.documentation_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.access_compliance.documentation_rate, 70) ? "text-[--cs-success]" :
+                  meets(d.access_compliance.documentation_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.access_compliance.documentation_rate}%
+                  {formatRate(d.access_compliance.documentation_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Documented</p>
@@ -202,10 +203,10 @@ export function HomeVisitorIntelligenceCard() {
               <p className="font-medium text-slate-700 mb-1">Safeguarding</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 {d.safeguarding_profile.visitors_with_child_contact > 0 && (
-                  <p>Child contact DBS: <span className={cn("font-medium", d.safeguarding_profile.child_contact_dbs_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-risk]")}>{d.safeguarding_profile.child_contact_dbs_rate}%</span></p>
+                  <p>Child contact DBS: <span className={cn("font-medium", meets(d.safeguarding_profile.child_contact_dbs_rate, 90) ? "text-[--cs-success]" : "text-[--cs-risk]")}>{formatRate(d.safeguarding_profile.child_contact_dbs_rate)}</span></p>
                 )}
                 {d.safeguarding_profile.tradesperson_count > 0 && (
-                  <p>Tradesperson DBS: <span className={cn("font-medium", d.safeguarding_profile.tradesperson_dbs_rate >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.safeguarding_profile.tradesperson_dbs_rate}%</span></p>
+                  <p>Tradesperson DBS: <span className={cn("font-medium", meets(d.safeguarding_profile.tradesperson_dbs_rate, 80) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{formatRate(d.safeguarding_profile.tradesperson_dbs_rate)}</span></p>
                 )}
                 <p>Multi-agency: <span className={cn("font-medium", d.engagement_profile.multi_agency_engagement ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.engagement_profile.multi_agency_engagement ? "Yes" : "No"}</span></p>
               </div>

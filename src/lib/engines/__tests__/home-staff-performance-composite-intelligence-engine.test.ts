@@ -1145,7 +1145,7 @@ describe("Home Staff Performance Composite Intelligence Engine", () => {
         actions_completed: 0,
       }));
       const r = computeStaffPerformanceComposite(baseInput({ supervisions: sups }));
-      expect(r.action_completion_rate).toBe(0);
+      expect(r.action_completion_rate).toBeNull();
       // 52 + 6 + 5 + 5 + 5 - 1 + 5 = 77
       expect(r.performance_score).toBe(77);
     });
@@ -1376,12 +1376,12 @@ describe("Home Staff Performance Composite Intelligence Engine", () => {
       expect(r.objective_achievement_rate).toBe(73); // 11/15 = 73.3 → 73
     });
 
-    it("objective_achievement_rate is 0 when no objectives set", () => {
+    it("objective_achievement_rate is unmeasured when no objectives set", () => {
       const aprs = [
         makeAppraisal({ id: "a1", objectives_set: 0, objectives_met: 0 }),
       ];
       const r = computeStaffPerformanceComposite(baseInput({ appraisals: aprs }));
-      expect(r.objective_achievement_rate).toBe(0);
+      expect(r.objective_achievement_rate).toBeNull();
     });
 
     it("average_competency_score handles mixed 0 values", () => {
@@ -2033,10 +2033,10 @@ describe("Home Staff Performance Composite Intelligence Engine", () => {
       expect(r.objective_achievement_rate).toBe(0);
     });
 
-    it("pct helper returns 0 when denominator is 0", () => {
+    it("objective_achievement_rate is unmeasured for a zero denominator", () => {
       const aprs = [makeAppraisal({ objectives_set: 0, objectives_met: 0 })];
       const r = computeStaffPerformanceComposite(baseInput({ appraisals: aprs }));
-      expect(r.objective_achievement_rate).toBe(0);
+      expect(r.objective_achievement_rate).toBeNull();
     });
 
     it("today parameter is passed through (no date-based calculation in this engine)", () => {

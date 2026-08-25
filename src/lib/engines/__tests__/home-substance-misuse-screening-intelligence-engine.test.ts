@@ -617,7 +617,7 @@ describe("computeSubstanceMisuseScreening", () => {
       // Verified: mod2 has no adjustment on 0 records
       const r = computeSubstanceMisuseScreening(baseInput({ screenings: [] }));
       // Score includes no mod2 penalty (already tested as 45)
-      expect(r.harm_reduction_rate).toBe(0);
+      expect(r.harm_reduction_rate).toBeNull();
     });
 
     it("gap zone (30-49%) has no adjustment", () => {
@@ -681,7 +681,7 @@ describe("computeSubstanceMisuseScreening", () => {
     it("subtracts -1 when 0 records", () => {
       const r = computeSubstanceMisuseScreening(baseInput({ screenings: [] }));
       // Confirmed in zero-records score calculation
-      expect(r.professional_support_rate).toBe(0);
+      expect(r.professional_support_rate).toBeNull();
     });
 
     it("gap zone (20-39%) has no adjustment", () => {
@@ -756,7 +756,7 @@ describe("computeSubstanceMisuseScreening", () => {
 
     it("no adjustment when 0 records", () => {
       const r = computeSubstanceMisuseScreening(baseInput({ screenings: [] }));
-      expect(r.child_insight_rate).toBe(0);
+      expect(r.child_insight_rate).toBeNull();
     });
 
     it("gap zone (30-59%) has no adjustment", () => {
@@ -825,7 +825,7 @@ describe("computeSubstanceMisuseScreening", () => {
 
     it("subtracts -1 when 0 records", () => {
       const r = computeSubstanceMisuseScreening(baseInput({ screenings: [] }));
-      expect(r.information_sharing_rate).toBe(0);
+      expect(r.information_sharing_rate).toBeNull();
     });
 
     it("shared with CAMHS alone counts", () => {

@@ -1,4 +1,4 @@
-import { below, formatRate, meets } from "@/lib/metrics/rate";
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME SHIFT PATTERN INTELLIGENCE ENGINE
 // Staffing patterns: coverage, punctuality, overtime, workload fairness.
@@ -125,10 +125,6 @@ export interface HomeShiftPatternResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -195,7 +191,7 @@ export function computeHomeShiftPattern(
   const inProgress = shifts.filter((s) => s.status === "in_progress");
   const scheduled = shifts.filter((s) => s.status === "scheduled");
   const openShifts = shifts.filter((s) => s.is_open_shift);
-  const openShiftRate = pct(openShifts.length, shifts.length);
+  const openShiftRate = rate(openShifts.length, shifts.length);
   const uniqueStaff = new Set(
     shifts.filter((s) => s.staff_id).map((s) => s.staff_id),
   ).size;
@@ -235,7 +231,7 @@ export function computeHomeShiftPattern(
     shifts_with_actual_start: shiftsWithActualStart.length,
     avg_delay_minutes: avgDelay,
     on_time_count: onTime,
-    on_time_rate: pct(onTime, shiftsWithActualStart.length),
+    on_time_rate: rate(onTime, shiftsWithActualStart.length),
     late_count: late,
     early_count: early,
     max_delay_minutes: maxDelay,
@@ -260,7 +256,7 @@ export function computeHomeShiftPattern(
     total_overtime_minutes: totalOvertimeMinutes,
     avg_overtime_per_shift: avgOvertimePerShift,
     shifts_with_overtime: shiftsWithOvertime,
-    overtime_rate: pct(shiftsWithOvertime, shifts.length),
+    overtime_rate: rate(shiftsWithOvertime, shifts.length),
   };
 
   // ── Workload Profile ──────────────────────────────────────────────────
@@ -293,7 +289,7 @@ export function computeHomeShiftPattern(
   const approvedSwaps = shift_swaps.filter((s) => s.status === "approved");
   const rejectedSwaps = shift_swaps.filter((s) => s.status === "rejected");
   const resolvedSwaps = approvedSwaps.length + rejectedSwaps.length;
-  const swapResolutionRate = pct(resolvedSwaps, shift_swaps.length);
+  const swapResolutionRate = rate(resolvedSwaps, shift_swaps.length);
 
   const swaps: SwapProfile = {
     total_swaps: shift_swaps.length,
@@ -308,16 +304,16 @@ export function computeHomeShiftPattern(
 
   // Modifier 1: Open shift rate (±4)
   if (openShiftRate === 0) score += 4;
-  else if (openShiftRate <= 5) score += 2;
-  else if (openShiftRate <= 15) score += 0;
+  else if ((openShiftRate !== null && openShiftRate <= 5)) score += 2;
+  else if ((openShiftRate !== null && openShiftRate <= 15)) score += 0;
   else score -= 3;
 
   // Modifier 2: Punctuality (±4)
   if (shiftsWithActualStart.length > 0) {
-    const onTimeRate = pct(onTime, shiftsWithActualStart.length);
-    if (onTimeRate >= 90) score += 4;
-    else if (onTimeRate >= 75) score += 2;
-    else if (onTimeRate >= 50) score += 0;
+    const onTimeRate = rate(onTime, shiftsWithActualStart.length);
+    if (meets(onTimeRate, 90)) score += 4;
+    else if (meets(onTimeRate, 75)) score += 2;
+    else if (meets(onTimeRate, 50)) score += 0;
     else score -= 3;
   }
   // No actual starts = neutral
@@ -331,17 +327,17 @@ export function computeHomeShiftPattern(
   }
 
   // Modifier 4: Staff coverage spread (±4)
-  const staffCoverageRate = pct(uniqueStaff, total_staff);
-  if (staffCoverageRate >= 80) score += 4;
-  else if (staffCoverageRate >= 60) score += 2;
-  else if (staffCoverageRate >= 40) score += 0;
+  const staffCoverageRate = rate(uniqueStaff, total_staff);
+  if (meets(staffCoverageRate, 80)) score += 4;
+  else if (meets(staffCoverageRate, 60)) score += 2;
+  else if (meets(staffCoverageRate, 40)) score += 0;
   else score -= 3;
 
   // Modifier 5: Shift type balance (±3)
   if (dayShifts.length > 0 && sleepInShifts.length > 0) {
-    const sleepInRate = pct(sleepInShifts.length, shifts.length);
-    if (sleepInRate >= 15 && sleepInRate <= 40) score += 3;
-    else if (sleepInRate >= 10 && sleepInRate <= 50) score += 1;
+    const sleepInRate = rate(sleepInShifts.length, shifts.length);
+    if (meets(sleepInRate, 15) && (sleepInRate !== null && sleepInRate <= 40)) score += 3;
+    else if (meets(sleepInRate, 10) && (sleepInRate !== null && sleepInRate <= 50)) score += 1;
     else score += 0;
   } else if (dayShifts.length > 0 && sleepInShifts.length === 0) {
     score -= 2; // No sleep-in coverage
@@ -350,19 +346,19 @@ export function computeHomeShiftPattern(
 
   // Modifier 6: Swap resolution (±3)
   if (shift_swaps.length > 0) {
-    if (swapResolutionRate >= 80) score += 3;
-    else if (swapResolutionRate >= 50) score += 1;
-    else if (swapResolutionRate >= 25) score += 0;
+    if (meets(swapResolutionRate, 80)) score += 3;
+    else if (meets(swapResolutionRate, 50)) score += 1;
+    else if (meets(swapResolutionRate, 25)) score += 0;
     else score -= 2;
   } else {
     score += 3; // No swaps needed = excellent stability
   }
 
   // Modifier 7: Completion rate (±4)
-  const completionRate = pct(completed.length, completed.length + inProgress.length + scheduled.length);
-  if (completionRate >= 70) score += 4;
-  else if (completionRate >= 50) score += 2;
-  else if (completionRate >= 30) score += 0;
+  const completionRate = rate(completed.length, completed.length + inProgress.length + scheduled.length);
+  if (meets(completionRate, 70)) score += 4;
+  else if (meets(completionRate, 50)) score += 2;
+  else if (meets(completionRate, 30)) score += 0;
   else score -= 3;
 
   // Modifier 8: Workload fairness (±3)
@@ -400,7 +396,7 @@ export function computeHomeShiftPattern(
     strengths.push("Balanced mix of day and sleep-in shifts covering 24-hour care.");
   if (shift_swaps.length === 0)
     strengths.push("No shift swap requests — schedule stability.");
-  if (completed.length > 0 && completionRate >= 70)
+  if (completed.length > 0 && meets(completionRate, 70))
     strengths.push(`${completionRate}% shift completion rate — reliable shift execution.`);
 
   // ── Concerns ──────────────────────────────────────────────────────────
@@ -411,7 +407,7 @@ export function computeHomeShiftPattern(
     concerns.push(`Only ${formatRate(punctuality.on_time_rate)} punctuality — systemic lateness affects handovers and children's routines.`);
   if (completedShifts > 0 && avgOvertimePerShift !== null && avgOvertimePerShift > 30)
     concerns.push(`Average ${avgOvertimePerShift} minutes overtime per shift — staff wellbeing risk and potential regulatory concern.`);
-  if (staffCoverageRate < 40)
+  if (below(staffCoverageRate, 40))
     concerns.push(`Only ${staffCoverageRate}% of staff rostered — over-reliance on a small team.`);
   if (staffShiftCounts.length >= 2 && fairnessRatio !== null && fairnessRatio < 0.2)
     concerns.push("Significant workload imbalance — some staff working far more shifts than others.");

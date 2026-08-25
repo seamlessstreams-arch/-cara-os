@@ -5,6 +5,8 @@
 // CHR 2015 Reg 33. SCCIF: "Well-led and managed."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface SupervisionInput {
@@ -137,10 +139,6 @@ function daysBetween(a: string, b: string): number {
   );
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 // ── Main Compute ────────────────────────────────────────────────────────────
 
 export function computeHomeSupervision(
@@ -180,7 +178,7 @@ export function computeHomeSupervision(
 
   // ── Supervision Profile ─────────────────────────────────────────────
   const completedSups = sups90d.filter(s => s.status === "completed");
-  const completionRate = pct(completedSups.length, sups90d.length);
+  const completionRate = rate(completedSups.length, sups90d.length);
   const formalCount = completedSups.filter(s => s.type === "formal").length;
 
   let totalActions = 0;
@@ -189,7 +187,7 @@ export function computeHomeSupervision(
     totalActions += s.actions_total;
     completedActions += s.actions_completed;
   }
-  const actionCompletionRate = pct(completedActions, totalActions);
+  const actionCompletionRate = rate(completedActions, totalActions);
 
   const wellbeingScores = completedSups.map(s => s.wellbeing_score).filter((w): w is number => w !== null);
   const avgWellbeing = wellbeingScores.length > 0
@@ -197,11 +195,11 @@ export function computeHomeSupervision(
     : null;
 
   const signedSups = completedSups.filter(s => s.both_signatures).length;
-  const signatureRate = pct(signedSups, completedSups.length);
+  const signatureRate = rate(signedSups, completedSups.length);
 
   const staffWithSup = [...new Set(completedSups.map(s => s.staff_id))];
   const staffWithoutSup = staff_ids.filter(id => !staffWithSup.includes(id));
-  const supCoverage = total_staff > 0 ? pct(staffWithSup.length, total_staff) : 0;
+  const supCoverage = total_staff > 0 ? rate(staffWithSup.length, total_staff) : 0;
 
   const supProfile: SupervisionProfile = {
     total_supervisions_90d: sups90d.length,
@@ -220,14 +218,14 @@ export function computeHomeSupervision(
   const meetsStdObs = obs90d.filter(o => o.outcome === "meets_standard").length;
   const developingObs = obs90d.filter(o => o.outcome === "developing").length;
   const reqSupportObs = obs90d.filter(o => o.outcome === "requires_support").length;
-  const positiveOutcomeRate = pct(outstandingObs + meetsStdObs, obs90d.length);
+  const positiveOutcomeRate = rate(outstandingObs + meetsStdObs, obs90d.length);
 
   const staffObserved = [...new Set(obs90d.map(o => o.staff_id))];
   const staffNotObserved = staff_ids.filter(id => !staffObserved.includes(id));
-  const obsCoverage = total_staff > 0 ? pct(staffObserved.length, total_staff) : 0;
+  const obsCoverage = total_staff > 0 ? rate(staffObserved.length, total_staff) : 0;
 
   const signedObs = obs90d.filter(o => o.signed_off).length;
-  const obsSignOffRate = pct(signedObs, obs90d.length);
+  const obsSignOffRate = rate(signedObs, obs90d.length);
 
   const obsProfile: ObservationProfile = {
     total_observations_90d: obs90d.length,
@@ -252,7 +250,7 @@ export function computeHomeSupervision(
 
   const staffWithAppraisal = [...new Set(completedAppraisals.map(a => a.staff_id))];
   const staffWithoutAppraisal = staff_ids.filter(id => !staffWithAppraisal.includes(id));
-  const apprCoverage = total_staff > 0 ? pct(staffWithAppraisal.length, total_staff) : 0;
+  const apprCoverage = total_staff > 0 ? rate(staffWithAppraisal.length, total_staff) : 0;
 
   const apprProfile: AppraisalProfile = {
     total_appraisals: latestAppraisals.length,
@@ -268,27 +266,27 @@ export function computeHomeSupervision(
 
   // Supervision coverage (±6)
   if (supCoverage === 100) score += 6;
-  else if (supCoverage >= 80) score += 3;
+  else if (meets(supCoverage, 80)) score += 3;
   else score -= 4;
 
   // Supervision completion (±4)
   if (completionRate === 100) score += 4;
-  else if (completionRate >= 80) score += 2;
+  else if (meets(completionRate, 80)) score += 2;
   else score -= 3;
 
   // Action completion (±3)
-  if (actionCompletionRate >= 80) score += 3;
-  else if (actionCompletionRate >= 60) score += 1;
+  if (meets(actionCompletionRate, 80)) score += 3;
+  else if (meets(actionCompletionRate, 60)) score += 1;
   else score -= 3;
 
   // Observation coverage (±4)
-  if (obsCoverage >= 60) score += 4;
-  else if (obsCoverage >= 40) score += 2;
+  if (meets(obsCoverage, 60)) score += 4;
+  else if (meets(obsCoverage, 40)) score += 2;
   else score -= 3;
 
   // Observation quality (±4)
-  if (positiveOutcomeRate >= 80) score += 4;
-  else if (positiveOutcomeRate >= 60) score += 2;
+  if (meets(positiveOutcomeRate, 80)) score += 4;
+  else if (meets(positiveOutcomeRate, 60)) score += 2;
   else score -= 3;
 
   // Observation sign-off (±2)
@@ -296,8 +294,8 @@ export function computeHomeSupervision(
   else if (obs90d.length > 0) score -= 1;
 
   // Appraisal coverage (±4)
-  if (apprCoverage >= 80) score += 4;
-  else if (apprCoverage >= 60) score += 2;
+  if (meets(apprCoverage, 80)) score += 4;
+  else if (meets(apprCoverage, 60)) score += 2;
   else score -= 3;
 
   // Overdue appraisals (±3)
@@ -311,7 +309,7 @@ export function computeHomeSupervision(
 
   // Signature quality (±2)
   if (completedSups.length > 0 && signatureRate === 100) score += 2;
-  else if (completedSups.length > 0 && signatureRate < 80) score -= 2;
+  else if (completedSups.length > 0 && below(signatureRate, 80)) score -= 2;
 
   // Wellbeing monitoring (±2)
   if (wellbeingScores.length > 0 && (avgWellbeing ?? 0) >= 7) score += 2;
@@ -324,8 +322,8 @@ export function computeHomeSupervision(
   const strengths: string[] = [];
   if (supCoverage === 100) strengths.push("All staff have received supervision in the past 90 days — consistent with Reg 33 requirements.");
   if (completionRate === 100 && sups90d.length > 0) strengths.push("All scheduled supervisions completed — demonstrating strong management oversight.");
-  if (actionCompletionRate >= 80 && totalActions > 0) strengths.push(`Supervision action completion rate is ${actionCompletionRate}% — staff are following through on agreed actions.`);
-  if (positiveOutcomeRate >= 80 && obs90d.length > 0) strengths.push(`${positiveOutcomeRate}% of practice observations rated as meeting standard or above — workforce competence is strong.`);
+  if (meets(actionCompletionRate, 80) && totalActions > 0) strengths.push(`Supervision action completion rate is ${actionCompletionRate}% — staff are following through on agreed actions.`);
+  if (meets(positiveOutcomeRate, 80) && obs90d.length > 0) strengths.push(`${positiveOutcomeRate}% of practice observations rated as meeting standard or above — workforce competence is strong.`);
   if ((avgCompetency ?? 0) >= 3.5 && competencyScores.length > 0) strengths.push(`Average appraisal competency score is ${(avgCompetency ?? 0)}/5 — staff are performing at or above expected levels.`);
   if ((avgWellbeing ?? 0) >= 7 && wellbeingScores.length > 0) strengths.push(`Average staff wellbeing score is ${(avgWellbeing ?? 0)}/10 — the home is monitoring and supporting staff welfare.`);
   if (formalCount >= 3) strengths.push(`${formalCount} formal supervisions conducted — structured professional development is embedded.`);
@@ -333,13 +331,13 @@ export function computeHomeSupervision(
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (staffWithoutSup.length > 0) concerns.push(`${staffWithoutSup.length} staff member${staffWithoutSup.length > 1 ? "s have" : " has"} not received supervision in 90 days — Reg 33 requires regular supervision.`);
-  if (completionRate < 80 && sups90d.length > 0) concerns.push(`Supervision completion rate is only ${completionRate}% — scheduled supervisions must be prioritised.`);
-  if (actionCompletionRate < 60 && totalActions > 0) concerns.push(`Supervision action completion rate is ${actionCompletionRate}% — agreed actions are not being followed through.`);
+  if (below(completionRate, 80) && sups90d.length > 0) concerns.push(`Supervision completion rate is only ${completionRate}% — scheduled supervisions must be prioritised.`);
+  if (below(actionCompletionRate, 60) && totalActions > 0) concerns.push(`Supervision action completion rate is ${actionCompletionRate}% — agreed actions are not being followed through.`);
   if (staffNotObserved.length > 0 && total_staff > 0) concerns.push(`${staffNotObserved.length} staff member${staffNotObserved.length > 1 ? "s have" : " has"} not been observed in practice — observation is essential for quality assurance.`);
   if (reqSupportObs > 0) concerns.push(`${reqSupportObs} practice observation${reqSupportObs > 1 ? "s" : ""} rated 'requires support' — targeted development needed.`);
   if (overdueAppraisals > 0) concerns.push(`${overdueAppraisals} appraisal${overdueAppraisals > 1 ? "s are" : " is"} overdue — all staff must have a current appraisal.`);
   if ((avgWellbeing ?? 0) > 0 && (avgWellbeing ?? 0) < 4) concerns.push(`Average staff wellbeing score is ${(avgWellbeing ?? 0)}/10 — this indicates significant workforce stress.`);
-  if (signatureRate < 80 && completedSups.length > 0) concerns.push(`Only ${signatureRate}% of supervisions are fully signed — both parties must sign to evidence the session.`);
+  if (below(signatureRate, 80) && completedSups.length > 0) concerns.push(`Only ${signatureRate}% of supervisions are fully signed — both parties must sign to evidence the session.`);
 
   // ── Recommendations ───────────────────────────────────────────────────
   const recs: SupervisionRecommendation[] = [];
@@ -354,10 +352,10 @@ export function computeHomeSupervision(
   if (reqSupportObs > 0) {
     recs.push({ rank: rank++, recommendation: `Create development plans for staff with 'requires support' observation outcomes.`, urgency: "soon", regulatory_ref: "Reg 33" });
   }
-  if (actionCompletionRate < 80 && totalActions > 0) {
+  if (below(actionCompletionRate, 80) && totalActions > 0) {
     recs.push({ rank: rank++, recommendation: "Improve follow-through on supervision actions — track and review at each subsequent session.", urgency: "soon", regulatory_ref: "Reg 33" });
   }
-  if (staffNotObserved.length > 0 && obsCoverage < 60) {
+  if (staffNotObserved.length > 0 && below(obsCoverage, 60)) {
     recs.push({ rank: rank++, recommendation: `Schedule practice observations for unobserved staff to ensure quality assurance coverage.`, urgency: "planned", regulatory_ref: "Reg 33" });
   }
 
@@ -376,7 +374,7 @@ export function computeHomeSupervision(
   if (supCoverage === 100 && completionRate === 100 && sups90d.length > 0) {
     insights.push({ text: "All staff supervised with 100% completion. This demonstrates a well-managed supervision framework — a key Ofsted expectation for 'Well-led and managed.'", severity: "positive" });
   }
-  if (positiveOutcomeRate >= 80 && obs90d.length > 0) {
+  if (meets(positiveOutcomeRate, 80) && obs90d.length > 0) {
     insights.push({ text: `${positiveOutcomeRate}% positive observation outcomes demonstrate strong workforce competence. Ofsted values evidence of staff skill and therapeutic practice.`, severity: "positive" });
   }
   if ((avgCompetency ?? 0) >= 3.5 && competencyScores.length > 0) {

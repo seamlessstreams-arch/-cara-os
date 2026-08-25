@@ -6,6 +6,8 @@
 // SCCIF: "Children get a good night's sleep and feel rested."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface SleepDisturbanceInput {
@@ -109,10 +111,6 @@ export interface HomeSleepQualityResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function daysBetween(a: string, b: string): number {
   return Math.round(
     (new Date(b).getTime() - new Date(a).getTime()) / 86_400_000,
@@ -191,8 +189,8 @@ export function computeHomeSleepQuality(
         ? Math.round((allDisturbances.length / sleep_logs.length) * 10) / 10
         : null,
     level_distribution: levelDist,
-    none_rate: pct(noneNights.length, sleep_logs.length),
-    significant_rate: pct(significantNights.length, sleep_logs.length),
+    none_rate: rate(noneNights.length, sleep_logs.length),
+    significant_rate: rate(significantNights.length, sleep_logs.length),
     children_disturbed: childrenDisturbed,
   };
 
@@ -210,9 +208,9 @@ export function computeHomeSleepQuality(
     total_logs: sleep_logs.length,
     avg_checks_per_night: avgChecks,
     logs_with_5_plus_checks: with5Plus.length,
-    check_compliance_rate: pct(with5Plus.length, sleep_logs.length),
-    building_secure_rate: pct(buildingSecure.length, sleep_logs.length),
-    alarms_set_rate: pct(alarmsSet.length, sleep_logs.length),
+    check_compliance_rate: rate(with5Plus.length, sleep_logs.length),
+    building_secure_rate: rate(buildingSecure.length, sleep_logs.length),
+    alarms_set_rate: rate(alarmsSet.length, sleep_logs.length),
   };
 
   // ── Handover Profile ──────────────────────────────────────────────────
@@ -231,7 +229,7 @@ export function computeHomeSleepQuality(
   const handover: HandoverProfile = {
     with_handover_notes: withHandover.length,
     with_morning_handover: withMorning.length,
-    handover_rate: pct(withBoth.length, sleep_logs.length),
+    handover_rate: rate(withBoth.length, sleep_logs.length),
   };
 
   // ── Shift Profile ─────────────────────────────────────────────────────
@@ -249,7 +247,7 @@ export function computeHomeSleepQuality(
   const shifts: ShiftProfile = {
     waking_nights: wakingNights.length,
     sleep_ins: sleepIns.length,
-    waking_night_rate: pct(wakingNights.length, sleep_logs.length),
+    waking_night_rate: rate(wakingNights.length, sleep_logs.length),
     unique_staff: uniqueStaff.size,
     logs_last_7_days: last7.length,
     logs_last_14_days: last14.length,
@@ -298,11 +296,11 @@ export function computeHomeSleepQuality(
   const disturbancesWithAction = allDisturbances.filter(
     (d) => d.action_taken && d.action_taken.trim().length > 0,
   );
-  const responseRate = pct(disturbancesWithAction.length, allDisturbances.length);
+  const responseRate = rate(disturbancesWithAction.length, allDisturbances.length);
   const mod6 =
     allDisturbances.length === 0 ? 2 :
-    responseRate >= 100 ? 3 :
-    responseRate >= 80 ? 1 : -3;
+    meets(responseRate, 100) ? 3 :
+    meets(responseRate, 80) ? 1 : -3;
   score += mod6;
 
   // mod7: Staff diversity (±3)
@@ -333,7 +331,7 @@ export function computeHomeSleepQuality(
     strengths.push("Building confirmed secure on every night — consistent security practice.");
   if ((handover.handover_rate ?? 0) >= 90)
     strengths.push(`${handover.handover_rate}% of logs have complete handover notes — strong communication.`);
-  if (responseRate >= 100 && allDisturbances.length > 0)
+  if (meets(responseRate, 100) && allDisturbances.length > 0)
     strengths.push("All disturbances have documented response actions — reflective, child-centred care.");
   if (uniqueStaff.size >= 3)
     strengths.push(`${uniqueStaff.size} different staff members covering nights — good rotation.`);

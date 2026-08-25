@@ -6,9 +6,9 @@
 // Pure deterministic — no DB, no LLM, no side effects.
 // ══════════════════════════════════════════════════════════════════════════════
 
-// ── Input Types ─────────────────────────────────────────────────────────────
-
 import { rate } from "@/lib/metrics/rate";
+
+// ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface RestraintStaffInput {
   staff_id: string;
@@ -123,10 +123,6 @@ function clamp(n: number, lo: number, hi: number): number {
 }
 
 // Was `den === 0 ? 0 : …`: nothing recorded read as 0%.
-function pct(num: number, den: number): number | null {
-  return rate(num, den);
-}
-
 function avg(nums: number[]): number | null {
   if (nums.length === 0) return null;
   return Math.round((nums.reduce((s, n) => s + n, 0) / nums.length) * 10) / 10;
@@ -244,16 +240,16 @@ export function computeChildRestrictivePractice(input: ChildRestrictivePracticeI
   const withDeEscalation = r90d.filter((r) => r.de_escalation_attempts.length > 0).length;
 
   const compliance: ComplianceProfile = {
-    child_debrief_rate: pct(childDebriefed, r90d.length),
-    staff_debrief_rate: pct(staffDebriefed, r90d.length),
-    body_map_rate: pct(bodyMapDone, r90d.length),
-    medical_check_rate: pct(medCheckDone, r90d.length),
-    review_completion_rate: pct(reviewed, r90d.length),
+    child_debrief_rate: rate(childDebriefed, r90d.length),
+    staff_debrief_rate: rate(staffDebriefed, r90d.length),
+    body_map_rate: rate(bodyMapDone, r90d.length),
+    medical_check_rate: rate(medCheckDone, r90d.length),
+    review_completion_rate: rate(reviewed, r90d.length),
     pending_reviews: pendingReviews,
-    notification_rate: pct(notified, r90d.length),
-    antecedent_recorded_rate: pct(withAntecedent, r90d.length),
-    justification_recorded_rate: pct(withJustification, r90d.length),
-    de_escalation_documented_rate: pct(withDeEscalation, r90d.length),
+    notification_rate: rate(notified, r90d.length),
+    antecedent_recorded_rate: rate(withAntecedent, r90d.length),
+    justification_recorded_rate: rate(withJustification, r90d.length),
+    de_escalation_documented_rate: rate(withDeEscalation, r90d.length),
   };
 
   // ── Patterns ────────────────────────────────────────────────────────────

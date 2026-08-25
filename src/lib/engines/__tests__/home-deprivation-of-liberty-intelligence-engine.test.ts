@@ -2054,15 +2054,15 @@ describe("Home Deprivation of Liberty Intelligence Engine", () => {
   // ════════════════════════════════════════════════════════════════════════
 
   describe("pct helper — 0 denominator returns 0", () => {
-    it("rates with 0 active return 0 for all rate fields", () => {
+    it("leaves every rate unmeasured when there are 0 active restrictions", () => {
       const result = computeHomeDeprivationOfLiberty(baseInput({
         restrictions: [makeRestriction({ id: "r1", status: "ended" })],
       }));
-      expect(result.proportionality_rate).toBe(0);
-      expect(result.child_consultation_rate).toBe(0);
-      expect(result.sw_consultation_rate).toBe(0);
-      expect(result.alternatives_documented_rate).toBe(0);
-      expect(result.impact_assessment_rate).toBe(0);
+      expect(result.proportionality_rate).toBeNull();
+      expect(result.child_consultation_rate).toBeNull();
+      expect(result.sw_consultation_rate).toBeNull();
+      expect(result.alternatives_documented_rate).toBeNull();
+      expect(result.impact_assessment_rate).toBeNull();
     });
   });
 });

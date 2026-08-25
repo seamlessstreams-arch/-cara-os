@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -121,10 +122,10 @@ export function HomeSafeguardingIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Search className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.exploitation_profile.screening_coverage >= 80 ? "text-[--cs-success]" :
-                  d.exploitation_profile.screening_coverage >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.exploitation_profile.screening_coverage, 80) ? "text-[--cs-success]" :
+                  meets(d.exploitation_profile.screening_coverage, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.exploitation_profile.screening_coverage}%
+                  {formatRate(d.exploitation_profile.screening_coverage)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Screened</p>
@@ -193,7 +194,7 @@ export function HomeSafeguardingIntelligenceCard() {
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Exploitation</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>Screened: <span className={cn("font-medium", d.exploitation_profile.screening_coverage >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.exploitation_profile.children_screened.length}/{d.exploitation_profile.children_screened.length + d.exploitation_profile.children_not_screened.length}</span></p>
+                <p>Screened: <span className={cn("font-medium", meets(d.exploitation_profile.screening_coverage, 80) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.exploitation_profile.children_screened.length}/{d.exploitation_profile.children_screened.length + d.exploitation_profile.children_not_screened.length}</span></p>
                 <p>High risk: <span className={cn("font-medium", d.exploitation_profile.high_risk_count === 0 ? "text-[--cs-success]" : "text-[--cs-risk]")}>{d.exploitation_profile.high_risk_count}</span></p>
                 {d.exploitation_profile.children_not_screened.length > 0 && (
                   <p>Unscreened: <span className="font-medium text-amber-600">{d.exploitation_profile.children_not_screened.length}</span></p>
