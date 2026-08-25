@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME POCKET MONEY AUDIT & RECONCILIATION INTELLIGENCE ENGINE
 // Monitors financial audit and reconciliation quality — pocket money audit
@@ -192,10 +193,6 @@ export interface PocketMoneyAuditResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -221,12 +218,12 @@ function emptyResult(
     total_audits: 0,
     total_reconciliations: 0,
     total_discrepancies: 0,
-    audit_compliance_rate: 0,
-    reconciliation_accuracy_rate: 0,
-    discrepancy_resolution_rate: 0,
-    transparency_rate: 0,
-    child_awareness_rate: 0,
-    timeliness_rate: 0,
+    audit_compliance_rate: null,
+    reconciliation_accuracy_rate: null,
+    discrepancy_resolution_rate: null,
+    transparency_rate: null,
+    child_awareness_rate: null,
+    timeliness_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -308,13 +305,13 @@ export function computePocketMoneyAuditReconciliation(
   const auditsPassed = audit_records.filter(
     (a) => a.audit_outcome === "pass" || a.audit_outcome === "pass_with_observations",
   ).length;
-  const auditPassRate = pct(auditsPassed, totalAudits);
+  const auditPassRate = rate(auditsPassed, totalAudits);
 
   const childSignatures = audit_records.filter((a) => a.child_signature_obtained).length;
-  const childSignatureRate = pct(childSignatures, totalAudits);
+  const childSignatureRate = rate(childSignatures, totalAudits);
 
   const cashCountMatches = audit_records.filter((a) => a.cash_count_matches).length;
-  const cashCountMatchRate = pct(cashCountMatches, totalAudits);
+  const cashCountMatchRate = rate(cashCountMatches, totalAudits);
 
   // Composite audit compliance: pass + receipts + signatures + running total + cash count + ledger + dated + described + no unauthorized
   const auditComplianceChecks = [
@@ -336,17 +333,17 @@ export function computePocketMoneyAuditReconciliation(
       if (check(rec)) totalAuditChecksPassed++;
     }
   }
-  const auditComplianceRate = pct(totalAuditChecksPassed, totalAuditChecksPossible);
+  const auditComplianceRate = rate(totalAuditChecksPassed, totalAuditChecksPossible);
 
   // Corrective actions metrics
   const auditsNeedingCorrection = audit_records.filter((a) => a.corrective_actions_needed).length;
   const correctiveActionsCompleted = audit_records.filter(
     (a) => a.corrective_actions_needed && a.corrective_actions_completed,
   ).length;
-  const correctiveActionCompletionRate = pct(correctiveActionsCompleted, auditsNeedingCorrection);
+  const correctiveActionCompletionRate = rate(correctiveActionsCompleted, auditsNeedingCorrection);
 
   const auditsFailed = audit_records.filter((a) => a.audit_outcome === "fail").length;
-  const auditFailRate = pct(auditsFailed, totalAudits);
+  const auditFailRate = rate(auditsFailed, totalAudits);
 
   // --- Reconciliation accuracy metrics ---
   const totalReconciliations = reconciliation_records.length;
@@ -354,15 +351,15 @@ export function computePocketMoneyAuditReconciliation(
   const reconFullyBalanced = reconciliation_records.filter(
     (r) => r.reconciliation_outcome === "balanced",
   ).length;
-  const reconPerfectRate = pct(reconFullyBalanced, totalReconciliations);
+  const reconPerfectRate = rate(reconFullyBalanced, totalReconciliations);
 
   const reconUnexplained = reconciliation_records.filter(
     (r) => r.reconciliation_outcome === "variance_unexplained",
   ).length;
-  const reconUnexplainedRate = pct(reconUnexplained, totalReconciliations);
+  const reconUnexplainedRate = rate(reconUnexplained, totalReconciliations);
 
   const supervisorReviewed = reconciliation_records.filter((r) => r.supervisor_reviewed).length;
-  const supervisorReviewRate = pct(supervisorReviewed, totalReconciliations);
+  const supervisorReviewRate = rate(supervisorReviewed, totalReconciliations);
 
   // Composite reconciliation accuracy: balanced + all accounted + bank matched + petty cash + savings + supervisor reviewed
   const reconAccuracyChecks = [
@@ -380,7 +377,7 @@ export function computePocketMoneyAuditReconciliation(
       if (check(rec)) totalReconChecksPassed++;
     }
   }
-  const reconciliationAccuracyRate = pct(totalReconChecksPassed, totalReconChecksPossible);
+  const reconciliationAccuracyRate = rate(totalReconChecksPassed, totalReconChecksPossible);
 
   // --- Discrepancy resolution metrics ---
   const totalDiscrepancies = discrepancy_records.length;
@@ -388,18 +385,18 @@ export function computePocketMoneyAuditReconciliation(
   const discrepanciesResolved = discrepancy_records.filter(
     (d) => d.resolution_status === "resolved",
   ).length;
-  const discrepancyResolutionRate = pct(discrepanciesResolved, totalDiscrepancies);
+  const discrepancyResolutionRate = rate(discrepanciesResolved, totalDiscrepancies);
 
   const criticalDiscrepancies = discrepancy_records.filter(
     (d) => d.severity === "critical" || d.severity === "major",
   ).length;
-  const criticalDiscrepancyRate = pct(criticalDiscrepancies, totalDiscrepancies);
+  const criticalDiscrepancyRate = rate(criticalDiscrepancies, totalDiscrepancies);
 
   const rootCauseIdentified = discrepancy_records.filter((d) => d.root_cause_identified).length;
-  const rootCauseRate = pct(rootCauseIdentified, totalDiscrepancies);
+  const rootCauseRate = rate(rootCauseIdentified, totalDiscrepancies);
 
   const preventiveActionTaken = discrepancy_records.filter((d) => d.preventive_action_taken).length;
-  const preventiveActionRate = pct(preventiveActionTaken, totalDiscrepancies);
+  const preventiveActionRate = rate(preventiveActionTaken, totalDiscrepancies);
 
   // Timeliness: resolved discrepancies within target timeframes
   const resolvedDiscrepancies = discrepancy_records.filter(
@@ -411,7 +408,7 @@ export function computePocketMoneyAuditReconciliation(
   const resolvedWithin14Days = resolvedDiscrepancies.filter(
     (d) => d.days_to_resolve !== null && d.days_to_resolve <= 14,
   ).length;
-  const rapidResolutionRate = pct(resolvedWithin7Days, resolvedDiscrepancies.length);
+  const rapidResolutionRate = rate(resolvedWithin7Days, resolvedDiscrepancies.length);
 
   const avgDaysToResolve =
     resolvedDiscrepancies.length > 0
@@ -425,7 +422,7 @@ export function computePocketMoneyAuditReconciliation(
   const significantChildImpact = discrepancy_records.filter(
     (d) => d.child_impact === "significant" || d.child_impact === "moderate",
   ).length;
-  const significantImpactRate = pct(significantChildImpact, totalDiscrepancies);
+  const significantImpactRate = rate(significantChildImpact, totalDiscrepancies);
 
   // --- Transparency metrics ---
   const totalTransparency = transparency_records.length;
@@ -449,19 +446,19 @@ export function computePocketMoneyAuditReconciliation(
       if (check(rec)) totalTransparencyChecksPassed++;
     }
   }
-  const transparencyRate = pct(totalTransparencyChecksPassed, totalTransparencyChecksPossible);
+  const transparencyRate = rate(totalTransparencyChecksPassed, totalTransparencyChecksPossible);
 
   const childInvolvedBudget = transparency_records.filter((t) => t.child_involved_in_budget_decisions).length;
-  const childBudgetInvolvementRate = pct(childInvolvedBudget, totalTransparency);
+  const childBudgetInvolvementRate = rate(childInvolvedBudget, totalTransparency);
 
   const spendingRespected = transparency_records.filter((t) => t.spending_choices_respected).length;
-  const spendingRespectedRate = pct(spendingRespected, totalTransparency);
+  const spendingRespectedRate = rate(spendingRespected, totalTransparency);
 
   const savingsDiscussed = transparency_records.filter((t) => t.savings_goals_discussed).length;
-  const savingsDiscussedRate = pct(savingsDiscussed, totalTransparency);
+  const savingsDiscussedRate = rate(savingsDiscussed, totalTransparency);
 
   const independentOversight = transparency_records.filter((t) => t.independent_oversight_in_place).length;
-  const independentOversightRate = pct(independentOversight, totalTransparency);
+  const independentOversightRate = rate(independentOversight, totalTransparency);
 
   // --- Child awareness metrics ---
   const totalAwareness = child_awareness_records.length;
@@ -485,22 +482,22 @@ export function computePocketMoneyAuditReconciliation(
       if (check(rec)) totalAwarenessChecksPassed++;
     }
   }
-  const childAwarenessRate = pct(totalAwarenessChecksPassed, totalAwarenessChecksPossible);
+  const childAwarenessRate = rate(totalAwarenessChecksPassed, totalAwarenessChecksPossible);
 
   const feelsManageFairly = child_awareness_records.filter((c) => c.feels_money_is_managed_fairly).length;
-  const feelsFairRate = pct(feelsManageFairly, totalAwareness);
+  const feelsFairRate = rate(feelsManageFairly, totalAwareness);
 
   const receivedFinancialEd = child_awareness_records.filter((c) => c.has_received_financial_education).length;
-  const financialEdRate = pct(receivedFinancialEd, totalAwareness);
+  const financialEdRate = rate(receivedFinancialEd, totalAwareness);
 
   const canManageBudget = child_awareness_records.filter((c) => c.can_manage_small_budget).length;
-  const budgetManagementRate = pct(canManageBudget, totalAwareness);
+  const budgetManagementRate = rate(canManageBudget, totalAwareness);
 
   const childrenWithConcerns = child_awareness_records.filter((c) => c.has_raised_concerns).length;
   const concernsAddressed = child_awareness_records.filter(
     (c) => c.has_raised_concerns && c.concerns_addressed,
   ).length;
-  const concernsAddressedRate = pct(concernsAddressed, childrenWithConcerns);
+  const concernsAddressedRate = rate(concernsAddressed, childrenWithConcerns);
 
   // --- Timeliness composite ---
   // Combines: corrective action timeliness, discrepancy resolution timeliness, supervisor review timeliness
@@ -512,53 +509,53 @@ export function computePocketMoneyAuditReconciliation(
     auditsNeedingCorrection +
     resolvedDiscrepancies.length +
     totalReconciliations;
-  const timelinessRate = pct(timelinessNumerator, timelinessDenominator);
+  const timelinessRate = rate(timelinessNumerator, timelinessDenominator);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: auditComplianceRate (>=90: +5, >=70: +2) ---
-  if (auditComplianceRate >= 90) score += 5;
-  else if (auditComplianceRate >= 70) score += 2;
+  if (meets(auditComplianceRate, 90)) score += 5;
+  else if (meets(auditComplianceRate, 70)) score += 2;
 
   // --- Bonus 2: reconciliationAccuracyRate (>=90: +5, >=70: +2) ---
-  if (reconciliationAccuracyRate >= 90) score += 5;
-  else if (reconciliationAccuracyRate >= 70) score += 2;
+  if (meets(reconciliationAccuracyRate, 90)) score += 5;
+  else if (meets(reconciliationAccuracyRate, 70)) score += 2;
 
   // --- Bonus 3: discrepancyResolutionRate (>=90: +4, >=70: +2) ---
-  if (discrepancyResolutionRate >= 90) score += 4;
-  else if (discrepancyResolutionRate >= 70) score += 2;
+  if (meets(discrepancyResolutionRate, 90)) score += 4;
+  else if (meets(discrepancyResolutionRate, 70)) score += 2;
 
   // --- Bonus 4: transparencyRate (>=90: +4, >=70: +2) ---
-  if (transparencyRate >= 90) score += 4;
-  else if (transparencyRate >= 70) score += 2;
+  if (meets(transparencyRate, 90)) score += 4;
+  else if (meets(transparencyRate, 70)) score += 2;
 
   // --- Bonus 5: childAwarenessRate (>=90: +4, >=70: +2) ---
-  if (childAwarenessRate >= 90) score += 4;
-  else if (childAwarenessRate >= 70) score += 2;
+  if (meets(childAwarenessRate, 90)) score += 4;
+  else if (meets(childAwarenessRate, 70)) score += 2;
 
   // --- Bonus 6: timelinessRate (>=90: +3, >=70: +1) ---
-  if (timelinessRate >= 90) score += 3;
-  else if (timelinessRate >= 70) score += 1;
+  if (meets(timelinessRate, 90)) score += 3;
+  else if (meets(timelinessRate, 70)) score += 1;
 
   // --- Bonus 7: rootCauseRate (>=90: +3, >=70: +1) ---
-  if (rootCauseRate >= 90) score += 3;
-  else if (rootCauseRate >= 70) score += 1;
+  if (meets(rootCauseRate, 90)) score += 3;
+  else if (meets(rootCauseRate, 70)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // auditComplianceRate < 50 → -6
-  if (auditComplianceRate < 50 && audit_records.length > 0) score -= 6;
+  if (below(auditComplianceRate, 50) && audit_records.length > 0) score -= 6;
 
   // reconciliationAccuracyRate < 50 → -6
-  if (reconciliationAccuracyRate < 50 && reconciliation_records.length > 0) score -= 6;
+  if (below(reconciliationAccuracyRate, 50) && reconciliation_records.length > 0) score -= 6;
 
   // criticalDiscrepancyRate > 40 → -5
-  if (criticalDiscrepancyRate > 40 && discrepancy_records.length > 0) score -= 5;
+  if (above(criticalDiscrepancyRate, 40) && discrepancy_records.length > 0) score -= 5;
 
   // transparencyRate < 40 → -5
-  if (transparencyRate < 40 && transparency_records.length > 0) score -= 5;
+  if (below(transparencyRate, 40) && transparency_records.length > 0) score -= 5;
 
   score = clamp(score, 0, 100);
 
@@ -568,153 +565,153 @@ export function computePocketMoneyAuditReconciliation(
 
   const strengths: string[] = [];
 
-  if (auditComplianceRate >= 90 && totalAudits > 0) {
+  if (meets(auditComplianceRate, 90) && totalAudits > 0) {
     strengths.push(
       `${auditComplianceRate}% audit compliance — pocket money audits consistently meet all required standards including receipt verification, accurate running totals, cash counts, and complete documentation.`,
     );
-  } else if (auditComplianceRate >= 70 && totalAudits > 0) {
+  } else if (meets(auditComplianceRate, 70) && totalAudits > 0) {
     strengths.push(
       `${auditComplianceRate}% audit compliance — the home generally maintains good standards in pocket money auditing with the majority of checks passed.`,
     );
   }
 
-  if (reconciliationAccuracyRate >= 90 && totalReconciliations > 0) {
+  if (meets(reconciliationAccuracyRate, 90) && totalReconciliations > 0) {
     strengths.push(
       `${reconciliationAccuracyRate}% reconciliation accuracy — pocket money reconciliations are consistently accurate with balances verified, transactions accounted for, and supervisory oversight in place.`,
     );
-  } else if (reconciliationAccuracyRate >= 70 && totalReconciliations > 0) {
+  } else if (meets(reconciliationAccuracyRate, 70) && totalReconciliations > 0) {
     strengths.push(
       `${reconciliationAccuracyRate}% reconciliation accuracy — the home demonstrates generally reliable reconciliation of children's pocket money accounts.`,
     );
   }
 
-  if (discrepancyResolutionRate >= 90 && totalDiscrepancies > 0) {
+  if (meets(discrepancyResolutionRate, 90) && totalDiscrepancies > 0) {
     strengths.push(
       `${discrepancyResolutionRate}% discrepancy resolution — financial discrepancies are identified and resolved promptly, demonstrating robust financial governance and accountability.`,
     );
-  } else if (discrepancyResolutionRate >= 70 && totalDiscrepancies > 0) {
+  } else if (meets(discrepancyResolutionRate, 70) && totalDiscrepancies > 0) {
     strengths.push(
       `${discrepancyResolutionRate}% discrepancy resolution — the majority of identified financial discrepancies are resolved effectively.`,
     );
   }
 
-  if (transparencyRate >= 90 && totalTransparency > 0) {
+  if (meets(transparencyRate, 90) && totalTransparency > 0) {
     strengths.push(
       `${transparencyRate}% transparency — children have excellent access to their financial records, receive regular statements, and are actively involved in budget decisions with their spending choices respected.`,
     );
-  } else if (transparencyRate >= 70 && totalTransparency > 0) {
+  } else if (meets(transparencyRate, 70) && totalTransparency > 0) {
     strengths.push(
       `${transparencyRate}% transparency — the home provides generally good financial transparency to children regarding their pocket money.`,
     );
   }
 
-  if (childAwarenessRate >= 90 && totalAwareness > 0) {
+  if (meets(childAwarenessRate, 90) && totalAwareness > 0) {
     strengths.push(
       `${childAwarenessRate}% child financial awareness — children demonstrate strong understanding of their pocket money, how to check balances, query transactions, and manage budgets, reflecting excellent financial education provision.`,
     );
-  } else if (childAwarenessRate >= 70 && totalAwareness > 0) {
+  } else if (meets(childAwarenessRate, 70) && totalAwareness > 0) {
     strengths.push(
       `${childAwarenessRate}% child financial awareness — the majority of children have good understanding of their pocket money arrangements and financial management skills.`,
     );
   }
 
-  if (timelinessRate >= 90 && timelinessDenominator > 0) {
+  if (meets(timelinessRate, 90) && timelinessDenominator > 0) {
     strengths.push(
       `${timelinessRate}% timeliness — corrective actions, discrepancy resolutions, and supervisory reviews are completed promptly, demonstrating responsive financial management.`,
     );
-  } else if (timelinessRate >= 70 && timelinessDenominator > 0) {
+  } else if (meets(timelinessRate, 70) && timelinessDenominator > 0) {
     strengths.push(
       `${timelinessRate}% timeliness — financial management actions are generally completed within acceptable timeframes.`,
     );
   }
 
-  if (auditPassRate >= 95 && totalAudits > 0) {
+  if (meets(auditPassRate, 95) && totalAudits > 0) {
     strengths.push(
       `${auditPassRate}% of pocket money audits passed — the home demonstrates consistently high audit standards, providing strong evidence of robust financial management for Ofsted.`,
     );
-  } else if (auditPassRate >= 85 && totalAudits > 0) {
+  } else if (meets(auditPassRate, 85) && totalAudits > 0) {
     strengths.push(
       `${auditPassRate}% of pocket money audits passed — the home maintains a strong audit pass rate across pocket money management.`,
     );
   }
 
-  if (cashCountMatchRate >= 95 && totalAudits > 0) {
+  if (meets(cashCountMatchRate, 95) && totalAudits > 0) {
     strengths.push(
       `${cashCountMatchRate}% cash count accuracy — physical cash consistently matches recorded balances, evidencing meticulous financial management.`,
     );
   }
 
-  if (supervisorReviewRate >= 90 && totalReconciliations > 0) {
+  if (meets(supervisorReviewRate, 90) && totalReconciliations > 0) {
     strengths.push(
       `${supervisorReviewRate}% supervisor review of reconciliations — management oversight of financial processes is thorough and consistent, demonstrating strong governance.`,
     );
-  } else if (supervisorReviewRate >= 70 && totalReconciliations > 0) {
+  } else if (meets(supervisorReviewRate, 70) && totalReconciliations > 0) {
     strengths.push(
       `${supervisorReviewRate}% supervisor review of reconciliations — management generally provides appropriate oversight of financial processes.`,
     );
   }
 
-  if (rootCauseRate >= 90 && totalDiscrepancies > 0) {
+  if (meets(rootCauseRate, 90) && totalDiscrepancies > 0) {
     strengths.push(
       `${rootCauseRate}% root cause analysis for discrepancies — the home consistently identifies underlying causes of financial discrepancies, enabling systemic improvements to prevent recurrence.`,
     );
-  } else if (rootCauseRate >= 70 && totalDiscrepancies > 0) {
+  } else if (meets(rootCauseRate, 70) && totalDiscrepancies > 0) {
     strengths.push(
       `${rootCauseRate}% root cause identification — the home generally investigates the underlying causes of financial discrepancies.`,
     );
   }
 
-  if (preventiveActionRate >= 90 && totalDiscrepancies > 0) {
+  if (meets(preventiveActionRate, 90) && totalDiscrepancies > 0) {
     strengths.push(
       `${preventiveActionRate}% preventive action rate — the home consistently implements preventive measures after discrepancies, demonstrating a learning culture in financial management.`,
     );
   }
 
-  if (feelsFairRate >= 90 && totalAwareness > 0) {
+  if (meets(feelsFairRate, 90) && totalAwareness > 0) {
     strengths.push(
       `${feelsFairRate}% of children feel their money is managed fairly — children have confidence in the home's financial management, reflecting transparent and child-centred practices.`,
     );
-  } else if (feelsFairRate >= 70 && totalAwareness > 0) {
+  } else if (meets(feelsFairRate, 70) && totalAwareness > 0) {
     strengths.push(
       `${feelsFairRate}% of children feel their money is managed fairly — most children express confidence in how their pocket money is handled.`,
     );
   }
 
-  if (childSignatureRate >= 90 && totalAudits > 0) {
+  if (meets(childSignatureRate, 90) && totalAudits > 0) {
     strengths.push(
       `${childSignatureRate}% child signature rate on audits — children are actively involved in verifying their financial records, promoting ownership and transparency.`,
     );
   }
 
-  if (spendingRespectedRate >= 90 && totalTransparency > 0) {
+  if (meets(spendingRespectedRate, 90) && totalTransparency > 0) {
     strengths.push(
       `${spendingRespectedRate}% of children's spending choices respected — the home appropriately balances financial guidance with children's autonomy in spending decisions.`,
     );
   }
 
-  if (financialEdRate >= 90 && totalAwareness > 0) {
+  if (meets(financialEdRate, 90) && totalAwareness > 0) {
     strengths.push(
       `${financialEdRate}% of children have received financial education — the home actively equips children with financial literacy skills for independence.`,
     );
-  } else if (financialEdRate >= 70 && totalAwareness > 0) {
+  } else if (meets(financialEdRate, 70) && totalAwareness > 0) {
     strengths.push(
       `${financialEdRate}% of children have received financial education — the home provides financial literacy education to the majority of children.`,
     );
   }
 
-  if (concernsAddressedRate >= 90 && childrenWithConcerns > 0) {
+  if (meets(concernsAddressedRate, 90) && childrenWithConcerns > 0) {
     strengths.push(
       `${concernsAddressedRate}% of children's financial concerns addressed — when children raise issues about their pocket money, the home responds effectively and resolves them.`,
     );
   }
 
-  if (rapidResolutionRate >= 90 && resolvedDiscrepancies.length > 0) {
+  if (meets(rapidResolutionRate, 90) && resolvedDiscrepancies.length > 0) {
     strengths.push(
       `${rapidResolutionRate}% of discrepancies resolved within 7 days — the home demonstrates excellent responsiveness to financial issues, minimising the impact on children.`,
     );
   }
 
-  if (independentOversightRate >= 90 && totalTransparency > 0) {
+  if (meets(independentOversightRate, 90) && totalTransparency > 0) {
     strengths.push(
       `${independentOversightRate}% independent oversight in place — the home ensures pocket money management is subject to independent verification, strengthening governance.`,
     );
@@ -724,107 +721,107 @@ export function computePocketMoneyAuditReconciliation(
 
   const concerns: string[] = [];
 
-  if (auditComplianceRate < 50 && totalAudits > 0) {
+  if (below(auditComplianceRate, 50) && totalAudits > 0) {
     concerns.push(
       `Only ${auditComplianceRate}% audit compliance — the majority of pocket money audits are failing to meet required standards. Receipts, running totals, cash counts, or documentation are consistently deficient, representing a significant failure in financial governance.`,
     );
-  } else if (auditComplianceRate < 70 && auditComplianceRate >= 50 && totalAudits > 0) {
+  } else if (below(auditComplianceRate, 70) && meets(auditComplianceRate, 50) && totalAudits > 0) {
     concerns.push(
       `Audit compliance at ${auditComplianceRate}% — pocket money audits are not consistently meeting all required standards, with gaps in documentation, verification, or accuracy.`,
     );
   }
 
-  if (reconciliationAccuracyRate < 50 && totalReconciliations > 0) {
+  if (below(reconciliationAccuracyRate, 50) && totalReconciliations > 0) {
     concerns.push(
       `Only ${reconciliationAccuracyRate}% reconciliation accuracy — the majority of reconciliations reveal significant issues with balance verification, transaction accounting, or supervisory oversight. Children's finances are not being managed with adequate accuracy.`,
     );
-  } else if (reconciliationAccuracyRate < 70 && reconciliationAccuracyRate >= 50 && totalReconciliations > 0) {
+  } else if (below(reconciliationAccuracyRate, 70) && meets(reconciliationAccuracyRate, 50) && totalReconciliations > 0) {
     concerns.push(
       `Reconciliation accuracy at ${reconciliationAccuracyRate}% — pocket money reconciliations are not consistently achieving acceptable accuracy standards.`,
     );
   }
 
-  if (discrepancyResolutionRate < 50 && totalDiscrepancies > 0) {
+  if (below(discrepancyResolutionRate, 50) && totalDiscrepancies > 0) {
     concerns.push(
       `Only ${discrepancyResolutionRate}% discrepancy resolution — the majority of identified financial discrepancies remain unresolved, which may leave children's finances at risk and demonstrates inadequate financial management oversight.`,
     );
-  } else if (discrepancyResolutionRate < 70 && discrepancyResolutionRate >= 50 && totalDiscrepancies > 0) {
+  } else if (below(discrepancyResolutionRate, 70) && meets(discrepancyResolutionRate, 50) && totalDiscrepancies > 0) {
     concerns.push(
       `Discrepancy resolution at ${discrepancyResolutionRate}% — a significant proportion of financial discrepancies are not being resolved in a timely manner.`,
     );
   }
 
-  if (transparencyRate < 40 && totalTransparency > 0) {
+  if (below(transparencyRate, 40) && totalTransparency > 0) {
     concerns.push(
       `Only ${transparencyRate}% transparency — children lack adequate access to their financial records, are not receiving regular statements, and are not being involved in budget decisions. This undermines children's rights to understand and have oversight of their own finances.`,
     );
-  } else if (transparencyRate < 70 && transparencyRate >= 40 && totalTransparency > 0) {
+  } else if (below(transparencyRate, 70) && meets(transparencyRate, 40) && totalTransparency > 0) {
     concerns.push(
       `Transparency at ${transparencyRate}% — financial transparency to children needs improvement, with gaps in access to records, regular statements, or involvement in budget decisions.`,
     );
   }
 
-  if (childAwarenessRate < 50 && totalAwareness > 0) {
+  if (below(childAwarenessRate, 50) && totalAwareness > 0) {
     concerns.push(
       `Only ${childAwarenessRate}% child financial awareness — children do not adequately understand their pocket money arrangements, how to check balances, or how to raise concerns. This leaves children disempowered regarding their own finances.`,
     );
-  } else if (childAwarenessRate < 70 && childAwarenessRate >= 50 && totalAwareness > 0) {
+  } else if (below(childAwarenessRate, 70) && meets(childAwarenessRate, 50) && totalAwareness > 0) {
     concerns.push(
       `Child financial awareness at ${childAwarenessRate}% — a notable proportion of children lack adequate understanding of their pocket money arrangements and financial management.`,
     );
   }
 
-  if (criticalDiscrepancyRate > 40 && totalDiscrepancies > 0) {
+  if (above(criticalDiscrepancyRate, 40) && totalDiscrepancies > 0) {
     concerns.push(
       `${criticalDiscrepancyRate}% of discrepancies are critical or major — a high proportion of financial discrepancies are serious in nature, indicating systemic weaknesses in pocket money management that may place children's finances at risk.`,
     );
-  } else if (criticalDiscrepancyRate > 20 && criticalDiscrepancyRate <= 40 && totalDiscrepancies > 0) {
+  } else if (above(criticalDiscrepancyRate, 20) && criticalDiscrepancyRate! <= 40 && totalDiscrepancies > 0) {
     concerns.push(
       `${criticalDiscrepancyRate}% of discrepancies are critical or major — a notable proportion of financial discrepancies are serious, requiring focused attention to prevent recurrence.`,
     );
   }
 
-  if (auditFailRate > 30 && totalAudits > 0) {
+  if (above(auditFailRate, 30) && totalAudits > 0) {
     concerns.push(
       `${auditFailRate}% audit failure rate — a significant proportion of pocket money audits are failing, indicating persistent deficiencies in financial record-keeping and management.`,
     );
-  } else if (auditFailRate > 15 && auditFailRate <= 30 && totalAudits > 0) {
+  } else if (above(auditFailRate, 15) && auditFailRate! <= 30 && totalAudits > 0) {
     concerns.push(
       `${auditFailRate}% audit failure rate — the proportion of failed audits requires attention to identify and address recurring issues in pocket money management.`,
     );
   }
 
-  if (reconUnexplainedRate > 30 && totalReconciliations > 0) {
+  if (above(reconUnexplainedRate, 30) && totalReconciliations > 0) {
     concerns.push(
       `${reconUnexplainedRate}% of reconciliations have unexplained variances — money is unaccounted for, which raises serious concerns about the integrity of financial management and may indicate mismanagement.`,
     );
-  } else if (reconUnexplainedRate > 15 && reconUnexplainedRate <= 30 && totalReconciliations > 0) {
+  } else if (above(reconUnexplainedRate, 15) && reconUnexplainedRate! <= 30 && totalReconciliations > 0) {
     concerns.push(
       `${reconUnexplainedRate}% of reconciliations have unexplained variances — some pocket money balances cannot be fully accounted for.`,
     );
   }
 
-  if (feelsFairRate < 50 && totalAwareness > 0) {
+  if (below(feelsFairRate, 50) && totalAwareness > 0) {
     concerns.push(
       `Only ${feelsFairRate}% of children feel their money is managed fairly — a majority of children lack confidence in how their finances are handled, which may indicate a lack of transparency or perceived unfairness in pocket money management.`,
     );
-  } else if (feelsFairRate < 70 && feelsFairRate >= 50 && totalAwareness > 0) {
+  } else if (below(feelsFairRate, 70) && meets(feelsFairRate, 50) && totalAwareness > 0) {
     concerns.push(
       `Only ${feelsFairRate}% of children feel their money is managed fairly — a significant proportion of children are not confident in the fairness of pocket money management.`,
     );
   }
 
-  if (supervisorReviewRate < 50 && totalReconciliations > 0) {
+  if (below(supervisorReviewRate, 50) && totalReconciliations > 0) {
     concerns.push(
       `Only ${supervisorReviewRate}% supervisor review of reconciliations — management oversight of financial processes is inadequate, meaning errors and discrepancies may go unchecked.`,
     );
-  } else if (supervisorReviewRate < 70 && supervisorReviewRate >= 50 && totalReconciliations > 0) {
+  } else if (below(supervisorReviewRate, 70) && meets(supervisorReviewRate, 50) && totalReconciliations > 0) {
     concerns.push(
       `Supervisor review rate at ${supervisorReviewRate}% — not all reconciliations are receiving management oversight, which weakens financial governance.`,
     );
   }
 
-  if (significantImpactRate > 30 && totalDiscrepancies > 0) {
+  if (above(significantImpactRate, 30) && totalDiscrepancies > 0) {
     concerns.push(
       `${significantImpactRate}% of discrepancies have moderate or significant child impact — financial discrepancies are directly affecting children's access to their money or their trust in the home's financial management.`,
     );
@@ -854,13 +851,13 @@ export function computePocketMoneyAuditReconciliation(
     );
   }
 
-  if (correctiveActionCompletionRate < 50 && auditsNeedingCorrection > 0) {
+  if (below(correctiveActionCompletionRate, 50) && auditsNeedingCorrection > 0) {
     concerns.push(
       `Only ${correctiveActionCompletionRate}% of corrective actions completed — issues identified in audits are not being addressed, meaning the same problems are likely to recur.`,
     );
   }
 
-  if (rootCauseRate < 50 && totalDiscrepancies > 0) {
+  if (below(rootCauseRate, 50) && totalDiscrepancies > 0) {
     concerns.push(
       `Only ${rootCauseRate}% root cause analysis — the home is not consistently investigating why discrepancies occur, limiting its ability to prevent recurrence and learn from financial management failures.`,
     );
@@ -871,7 +868,7 @@ export function computePocketMoneyAuditReconciliation(
   const recommendations: PocketMoneyAuditRecommendation[] = [];
   let rank = 0;
 
-  if (auditComplianceRate < 50 && totalAudits > 0) {
+  if (below(auditComplianceRate, 50) && totalAudits > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -881,7 +878,7 @@ export function computePocketMoneyAuditReconciliation(
     });
   }
 
-  if (reconciliationAccuracyRate < 50 && totalReconciliations > 0) {
+  if (below(reconciliationAccuracyRate, 50) && totalReconciliations > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -891,7 +888,7 @@ export function computePocketMoneyAuditReconciliation(
     });
   }
 
-  if (criticalDiscrepancyRate > 40 && totalDiscrepancies > 0) {
+  if (above(criticalDiscrepancyRate, 40) && totalDiscrepancies > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -901,7 +898,7 @@ export function computePocketMoneyAuditReconciliation(
     });
   }
 
-  if (transparencyRate < 40 && totalTransparency > 0) {
+  if (below(transparencyRate, 40) && totalTransparency > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -911,7 +908,7 @@ export function computePocketMoneyAuditReconciliation(
     });
   }
 
-  if (reconUnexplainedRate > 30 && totalReconciliations > 0) {
+  if (above(reconUnexplainedRate, 30) && totalReconciliations > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -941,7 +938,7 @@ export function computePocketMoneyAuditReconciliation(
     });
   }
 
-  if (discrepancyResolutionRate < 50 && totalDiscrepancies > 0) {
+  if (below(discrepancyResolutionRate, 50) && totalDiscrepancies > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -951,7 +948,7 @@ export function computePocketMoneyAuditReconciliation(
     });
   }
 
-  if (feelsFairRate < 50 && totalAwareness > 0) {
+  if (below(feelsFairRate, 50) && totalAwareness > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -961,7 +958,7 @@ export function computePocketMoneyAuditReconciliation(
     });
   }
 
-  if (childAwarenessRate < 50 && totalAwareness > 0) {
+  if (below(childAwarenessRate, 50) && totalAwareness > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -971,7 +968,7 @@ export function computePocketMoneyAuditReconciliation(
     });
   }
 
-  if (supervisorReviewRate < 50 && totalReconciliations > 0) {
+  if (below(supervisorReviewRate, 50) && totalReconciliations > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -981,7 +978,7 @@ export function computePocketMoneyAuditReconciliation(
     });
   }
 
-  if (correctiveActionCompletionRate < 50 && auditsNeedingCorrection > 0) {
+  if (below(correctiveActionCompletionRate, 50) && auditsNeedingCorrection > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -991,7 +988,7 @@ export function computePocketMoneyAuditReconciliation(
     });
   }
 
-  if (rootCauseRate < 50 && totalDiscrepancies > 0) {
+  if (below(rootCauseRate, 50) && totalDiscrepancies > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1022,8 +1019,8 @@ export function computePocketMoneyAuditReconciliation(
   }
 
   if (
-    auditComplianceRate >= 50 &&
-    auditComplianceRate < 70 &&
+    meets(auditComplianceRate, 50) &&
+    below(auditComplianceRate, 70) &&
     totalAudits > 0
   ) {
     recommendations.push({
@@ -1036,8 +1033,8 @@ export function computePocketMoneyAuditReconciliation(
   }
 
   if (
-    reconciliationAccuracyRate >= 50 &&
-    reconciliationAccuracyRate < 70 &&
+    meets(reconciliationAccuracyRate, 50) &&
+    below(reconciliationAccuracyRate, 70) &&
     totalReconciliations > 0
   ) {
     recommendations.push({
@@ -1050,8 +1047,8 @@ export function computePocketMoneyAuditReconciliation(
   }
 
   if (
-    discrepancyResolutionRate >= 50 &&
-    discrepancyResolutionRate < 70 &&
+    meets(discrepancyResolutionRate, 50) &&
+    below(discrepancyResolutionRate, 70) &&
     totalDiscrepancies > 0
   ) {
     recommendations.push({
@@ -1064,8 +1061,8 @@ export function computePocketMoneyAuditReconciliation(
   }
 
   if (
-    transparencyRate >= 40 &&
-    transparencyRate < 70 &&
+    meets(transparencyRate, 40) &&
+    below(transparencyRate, 70) &&
     totalTransparency > 0
   ) {
     recommendations.push({
@@ -1078,8 +1075,8 @@ export function computePocketMoneyAuditReconciliation(
   }
 
   if (
-    childAwarenessRate >= 50 &&
-    childAwarenessRate < 70 &&
+    meets(childAwarenessRate, 50) &&
+    below(childAwarenessRate, 70) &&
     totalAwareness > 0
   ) {
     recommendations.push({
@@ -1091,7 +1088,7 @@ export function computePocketMoneyAuditReconciliation(
     });
   }
 
-  if (childSignatureRate < 70 && totalAudits > 0) {
+  if (below(childSignatureRate, 70) && totalAudits > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1101,7 +1098,7 @@ export function computePocketMoneyAuditReconciliation(
     });
   }
 
-  if (preventiveActionRate < 70 && totalDiscrepancies > 0) {
+  if (below(preventiveActionRate, 70) && totalDiscrepancies > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1111,7 +1108,7 @@ export function computePocketMoneyAuditReconciliation(
     });
   }
 
-  if (savingsDiscussedRate < 70 && totalTransparency > 0) {
+  if (below(savingsDiscussedRate, 70) && totalTransparency > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1122,8 +1119,8 @@ export function computePocketMoneyAuditReconciliation(
   }
 
   if (
-    significantImpactRate > 20 &&
-    significantImpactRate <= 30 &&
+    above(significantImpactRate, 20) &&
+    significantImpactRate! <= 30 &&
     totalDiscrepancies > 0
   ) {
     recommendations.push({
@@ -1141,35 +1138,35 @@ export function computePocketMoneyAuditReconciliation(
 
   // -- Critical insights --
 
-  if (auditComplianceRate < 50 && totalAudits > 0) {
+  if (below(auditComplianceRate, 50) && totalAudits > 0) {
     insights.push({
       text: `Only ${auditComplianceRate}% audit compliance. Ofsted expects children's homes to manage pocket money with the same rigour as any fiduciary responsibility. When audits consistently fail to verify receipts, cash counts, and running totals, the home cannot evidence that children's finances are being safeguarded. This is a Reg 36 compliance failure.`,
       severity: "critical",
     });
   }
 
-  if (reconciliationAccuracyRate < 50 && totalReconciliations > 0) {
+  if (below(reconciliationAccuracyRate, 50) && totalReconciliations > 0) {
     insights.push({
       text: `Only ${reconciliationAccuracyRate}% reconciliation accuracy. Inaccurate reconciliations mean the home cannot verify that children's pocket money balances are correct. This creates risk of undetected loss, misappropriation, or error that directly affects children's financial wellbeing.`,
       severity: "critical",
     });
   }
 
-  if (criticalDiscrepancyRate > 40 && totalDiscrepancies > 0) {
+  if (above(criticalDiscrepancyRate, 40) && totalDiscrepancies > 0) {
     insights.push({
       text: `${criticalDiscrepancyRate}% of discrepancies are critical or major. A high proportion of serious financial discrepancies indicates systemic weaknesses in pocket money management. Ofsted may view this as evidence of inadequate leadership and management, particularly regarding financial governance and children's welfare.`,
       severity: "critical",
     });
   }
 
-  if (transparencyRate < 40 && totalTransparency > 0) {
+  if (below(transparencyRate, 40) && totalTransparency > 0) {
     insights.push({
       text: `Only ${transparencyRate}% financial transparency. Children in care have a right to understand and oversee their own finances. When transparency is critically low, children cannot verify their balances, understand their entitlements, or raise concerns effectively — this undermines their voice and their rights.`,
       severity: "critical",
     });
   }
 
-  if (reconUnexplainedRate > 30 && totalReconciliations > 0) {
+  if (above(reconUnexplainedRate, 30) && totalReconciliations > 0) {
     insights.push({
       text: `${reconUnexplainedRate}% of reconciliations have unexplained variances. Unaccounted money in children's pocket money accounts is a serious governance concern. This may indicate inadequate record-keeping, potential misappropriation, or systemic failures in financial controls that could constitute a safeguarding issue.`,
       severity: "critical",
@@ -1190,14 +1187,14 @@ export function computePocketMoneyAuditReconciliation(
     });
   }
 
-  if (discrepancyResolutionRate < 50 && totalDiscrepancies > 0) {
+  if (below(discrepancyResolutionRate, 50) && totalDiscrepancies > 0) {
     insights.push({
       text: `Only ${discrepancyResolutionRate}% discrepancy resolution. Unresolved financial discrepancies accumulate risk and may indicate that the home lacks the capacity or commitment to investigate and resolve financial issues. Children's finances remain at risk until discrepancies are addressed.`,
       severity: "critical",
     });
   }
 
-  if (feelsFairRate < 50 && totalAwareness > 0) {
+  if (below(feelsFairRate, 50) && totalAwareness > 0) {
     insights.push({
       text: `Only ${feelsFairRate}% of children feel their money is managed fairly. When the majority of children do not trust the home's financial management, this is a significant safeguarding and welfare concern. Children's perceptions of financial unfairness can erode trust in the home overall and may indicate real issues with how money is handled.`,
       severity: "critical",
@@ -1207,8 +1204,8 @@ export function computePocketMoneyAuditReconciliation(
   // -- Warning insights --
 
   if (
-    auditComplianceRate >= 50 &&
-    auditComplianceRate < 70 &&
+    meets(auditComplianceRate, 50) &&
+    below(auditComplianceRate, 70) &&
     totalAudits > 0
   ) {
     insights.push({
@@ -1218,8 +1215,8 @@ export function computePocketMoneyAuditReconciliation(
   }
 
   if (
-    reconciliationAccuracyRate >= 50 &&
-    reconciliationAccuracyRate < 70 &&
+    meets(reconciliationAccuracyRate, 50) &&
+    below(reconciliationAccuracyRate, 70) &&
     totalReconciliations > 0
   ) {
     insights.push({
@@ -1229,8 +1226,8 @@ export function computePocketMoneyAuditReconciliation(
   }
 
   if (
-    discrepancyResolutionRate >= 50 &&
-    discrepancyResolutionRate < 70 &&
+    meets(discrepancyResolutionRate, 50) &&
+    below(discrepancyResolutionRate, 70) &&
     totalDiscrepancies > 0
   ) {
     insights.push({
@@ -1240,8 +1237,8 @@ export function computePocketMoneyAuditReconciliation(
   }
 
   if (
-    transparencyRate >= 40 &&
-    transparencyRate < 70 &&
+    meets(transparencyRate, 40) &&
+    below(transparencyRate, 70) &&
     totalTransparency > 0
   ) {
     insights.push({
@@ -1251,8 +1248,8 @@ export function computePocketMoneyAuditReconciliation(
   }
 
   if (
-    childAwarenessRate >= 50 &&
-    childAwarenessRate < 70 &&
+    meets(childAwarenessRate, 50) &&
+    below(childAwarenessRate, 70) &&
     totalAwareness > 0
   ) {
     insights.push({
@@ -1262,8 +1259,8 @@ export function computePocketMoneyAuditReconciliation(
   }
 
   if (
-    supervisorReviewRate >= 50 &&
-    supervisorReviewRate < 70 &&
+    meets(supervisorReviewRate, 50) &&
+    below(supervisorReviewRate, 70) &&
     totalReconciliations > 0
   ) {
     insights.push({
@@ -1273,8 +1270,8 @@ export function computePocketMoneyAuditReconciliation(
   }
 
   if (
-    auditFailRate > 15 &&
-    auditFailRate <= 30 &&
+    above(auditFailRate, 15) &&
+    auditFailRate! <= 30 &&
     totalAudits > 0
   ) {
     insights.push({
@@ -1284,8 +1281,8 @@ export function computePocketMoneyAuditReconciliation(
   }
 
   if (
-    correctiveActionCompletionRate >= 50 &&
-    correctiveActionCompletionRate < 70 &&
+    meets(correctiveActionCompletionRate, 50) &&
+    below(correctiveActionCompletionRate, 70) &&
     auditsNeedingCorrection > 0
   ) {
     insights.push({
@@ -1295,8 +1292,8 @@ export function computePocketMoneyAuditReconciliation(
   }
 
   if (
-    rootCauseRate >= 50 &&
-    rootCauseRate < 70 &&
+    meets(rootCauseRate, 50) &&
+    below(rootCauseRate, 70) &&
     totalDiscrepancies > 0
   ) {
     insights.push({
@@ -1336,7 +1333,7 @@ export function computePocketMoneyAuditReconciliation(
   }
 
   if (
-    childBudgetInvolvementRate < 50 &&
+    below(childBudgetInvolvementRate, 50) &&
     totalTransparency > 0
   ) {
     insights.push({
@@ -1345,7 +1342,7 @@ export function computePocketMoneyAuditReconciliation(
     });
   }
 
-  if (financialEdRate < 50 && totalAwareness > 0) {
+  if (below(financialEdRate, 50) && totalAwareness > 0) {
     insights.push({
       text: `Only ${financialEdRate}% of children have received financial education. Financial literacy is a critical independence skill — children leaving care without these skills are at increased risk of financial exploitation, debt, and poverty.`,
       severity: "warning",
@@ -1362,8 +1359,8 @@ export function computePocketMoneyAuditReconciliation(
   }
 
   if (
-    auditComplianceRate >= 90 &&
-    auditPassRate >= 95 &&
+    meets(auditComplianceRate, 90) &&
+    meets(auditPassRate, 95) &&
     totalAudits > 0
   ) {
     insights.push({
@@ -1373,8 +1370,8 @@ export function computePocketMoneyAuditReconciliation(
   }
 
   if (
-    reconciliationAccuracyRate >= 90 &&
-    reconPerfectRate >= 80 &&
+    meets(reconciliationAccuracyRate, 90) &&
+    meets(reconPerfectRate, 80) &&
     totalReconciliations > 0
   ) {
     insights.push({
@@ -1384,8 +1381,8 @@ export function computePocketMoneyAuditReconciliation(
   }
 
   if (
-    discrepancyResolutionRate >= 90 &&
-    rootCauseRate >= 90 &&
+    meets(discrepancyResolutionRate, 90) &&
+    meets(rootCauseRate, 90) &&
     totalDiscrepancies > 0
   ) {
     insights.push({
@@ -1395,8 +1392,8 @@ export function computePocketMoneyAuditReconciliation(
   }
 
   if (
-    transparencyRate >= 90 &&
-    childAwarenessRate >= 90 &&
+    meets(transparencyRate, 90) &&
+    meets(childAwarenessRate, 90) &&
     totalTransparency > 0 &&
     totalAwareness > 0
   ) {
@@ -1407,7 +1404,7 @@ export function computePocketMoneyAuditReconciliation(
   }
 
   if (
-    feelsFairRate >= 90 &&
+    meets(feelsFairRate, 90) &&
     totalAwareness > 0
   ) {
     insights.push({
@@ -1417,7 +1414,7 @@ export function computePocketMoneyAuditReconciliation(
   }
 
   if (
-    supervisorReviewRate >= 90 &&
+    meets(supervisorReviewRate, 90) &&
     totalReconciliations > 0
   ) {
     insights.push({
@@ -1427,7 +1424,7 @@ export function computePocketMoneyAuditReconciliation(
   }
 
   if (
-    preventiveActionRate >= 90 &&
+    meets(preventiveActionRate, 90) &&
     totalDiscrepancies > 0
   ) {
     insights.push({
@@ -1437,7 +1434,7 @@ export function computePocketMoneyAuditReconciliation(
   }
 
   if (
-    rapidResolutionRate >= 90 &&
+    meets(rapidResolutionRate, 90) &&
     resolvedDiscrepancies.length > 0
   ) {
     insights.push({
@@ -1447,8 +1444,8 @@ export function computePocketMoneyAuditReconciliation(
   }
 
   if (
-    childSignatureRate >= 90 &&
-    spendingRespectedRate >= 90 &&
+    meets(childSignatureRate, 90) &&
+    meets(spendingRespectedRate, 90) &&
     totalAudits > 0 &&
     totalTransparency > 0
   ) {
@@ -1459,8 +1456,8 @@ export function computePocketMoneyAuditReconciliation(
   }
 
   if (
-    financialEdRate >= 90 &&
-    budgetManagementRate >= 80 &&
+    meets(financialEdRate, 90) &&
+    meets(budgetManagementRate, 80) &&
     totalAwareness > 0
   ) {
     insights.push({
@@ -1470,7 +1467,7 @@ export function computePocketMoneyAuditReconciliation(
   }
 
   if (
-    concernsAddressedRate >= 90 &&
+    meets(concernsAddressedRate, 90) &&
     childrenWithConcerns > 0
   ) {
     insights.push({

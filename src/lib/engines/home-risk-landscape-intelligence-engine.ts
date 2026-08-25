@@ -1,3 +1,4 @@
+import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME RISK LANDSCAPE INTELLIGENCE ENGINE
 // Home-level: synthesises risk assessments across all children — risk
@@ -122,10 +123,6 @@ const ALL_RISK_DOMAINS = [
   "sexual_behaviour", "self_neglect", "emotional_harm",
 ];
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function daysBetween(a: string, b: string): number {
   return Math.round((new Date(b).getTime() - new Date(a).getTime()) / 86_400_000);
 }
@@ -146,19 +143,19 @@ function emptyDistribution(): RiskDistributionProfile {
 }
 
 function emptyTrend(): TrendProfile {
-  return { decreasing_count: 0, stable_count: 0, increasing_count: 0, decreasing_rate: 0, increasing_rate: 0 };
+  return { decreasing_count: 0, stable_count: 0, increasing_count: 0, decreasing_rate: null, increasing_rate: null };
 }
 
 function emptyMitigation(): MitigationProfile {
-  return { total_mitigations: 0, effective_count: 0, partially_effective_count: 0, not_effective_count: 0, effectiveness_rate: 0, avg_mitigations_per_assessment: 0 };
+  return { total_mitigations: 0, effective_count: 0, partially_effective_count: 0, not_effective_count: 0, effectiveness_rate: null, avg_mitigations_per_assessment: 0 };
 }
 
 function emptyCurrency(): CurrencyProfile {
-  return { overdue_reviews: 0, overdue_rate: 0, upcoming_reviews_7d: 0, avg_days_since_assessment: 0 };
+  return { overdue_reviews: 0, overdue_rate: null, upcoming_reviews_7d: 0, avg_days_since_assessment: 0 };
 }
 
 function emptyCoverage(): CoverageProfile {
-  return { children_with_assessments: 0, children_without_assessments: 0, child_coverage_rate: 0, child_voice_rate: 0, contingency_rate: 0 };
+  return { children_with_assessments: 0, children_without_assessments: 0, child_coverage_rate: null, child_voice_rate: null, contingency_rate: null };
 }
 
 // ── Main Function ──────────────────────────────────────────────────────────
@@ -216,8 +213,8 @@ export function computeHomeRiskLandscape(
     decreasing_count: decreasing,
     stable_count: stable,
     increasing_count: increasing,
-    decreasing_rate: pct(decreasing, current.length),
-    increasing_rate: pct(increasing, current.length),
+    decreasing_rate: rate(decreasing, current.length),
+    increasing_rate: rate(increasing, current.length),
   };
 
   // ── Mitigation Profile ────────────────────────────────────────
@@ -234,13 +231,13 @@ export function computeHomeRiskLandscape(
     effective_count: effectiveCount,
     partially_effective_count: partialCount,
     not_effective_count: notEffective,
-    effectiveness_rate: pct(effectiveCount, allMitigations.length),
+    effectiveness_rate: rate(effectiveCount, allMitigations.length),
     avg_mitigations_per_assessment: avgMitPerAssessment,
   };
 
   // ── Currency Profile ──────────────────────────────────────────
   const overdue = current.filter(a => a.review_date < today).length;
-  const overdueRate = pct(overdue, current.length);
+  const overdueRate = rate(overdue, current.length);
 
   const sevenDaysFromNow = new Date(today);
   sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7);
@@ -266,13 +263,13 @@ export function computeHomeRiskLandscape(
   const childrenWithAssessments = childSet.size;
   const childrenWithout = Math.max(0, total_children - childrenWithAssessments);
   const childCoverageRate = total_children > 0
-    ? pct(childrenWithAssessments, total_children)
+    ? rate(childrenWithAssessments, total_children)
     : (childrenWithAssessments > 0 ? 100 : 0);
 
   const withChildViews = current.filter(a => a.has_child_views).length;
-  const childVoiceRate = pct(withChildViews, current.length);
+  const childVoiceRate = rate(withChildViews, current.length);
   const withContingency = current.filter(a => a.has_contingency).length;
-  const contingencyRate = pct(withContingency, current.length);
+  const contingencyRate = rate(withContingency, current.length);
 
   const coverageProfile: CoverageProfile = {
     children_with_assessments: childrenWithAssessments,
@@ -287,51 +284,54 @@ export function computeHomeRiskLandscape(
   let score = 52;
 
   // 1. Risk trend (±5) — most important: are risks decreasing?
-  const decreasingRate = pct(decreasing, current.length);
-  const increasingRate = pct(increasing, current.length);
-  if (decreasingRate >= 50 && increasing === 0) score += 5;
-  else if (decreasingRate >= 30 && increasing === 0) score += 3;
+  const decreasingRate = rate(decreasing, current.length);
+  const increasingRate = rate(increasing, current.length);
+  if (meets(decreasingRate, 50) && increasing === 0) score += 5;
+  else if (meets(decreasingRate, 30) && increasing === 0) score += 3;
   else if (increasing === 0) score += 1;
-  else if (increasingRate <= 25) score += 0;
+  else if (increasingRate! <= 25) score += 0;
   else score -= 4;
 
   // 2. Mitigation effectiveness (±4)
-  const effectivenessRate = pct(effectiveCount, allMitigations.length);
+  const effectivenessRate = rate(effectiveCount, allMitigations.length);
   if (allMitigations.length === 0) score -= 3;
-  else if (effectivenessRate >= 70) score += 4;
-  else if (effectivenessRate >= 50) score += 2;
-  else if (effectivenessRate >= 30) score += 0;
+  else if (meets(effectivenessRate, 70)) score += 4;
+  else if (meets(effectivenessRate, 50)) score += 2;
+  else if (meets(effectivenessRate, 30)) score += 0;
   else score -= 3;
 
   // 3. Review currency (±3)
-  if (overdueRate === 0) score += 3;
-  else if (overdueRate <= 20) score += 1;
-  else if (overdueRate <= 50) score += 0;
-  else score -= 2;
+  if (overdueRate !== null) {
+    // unmeasured review currency (no current risks) is neutral, not a penalty
+    if (overdueRate === 0) score += 3;
+    else if (overdueRate <= 20) score += 1;
+    else if (overdueRate <= 50) score += 0;
+    else score -= 2;
+  }
 
   // 4. Child voice (±4)
-  if (childVoiceRate >= 90) score += 4;
-  else if (childVoiceRate >= 70) score += 2;
-  else if (childVoiceRate >= 50) score += 0;
+  if (meets(childVoiceRate, 90)) score += 4;
+  else if (meets(childVoiceRate, 70)) score += 2;
+  else if (meets(childVoiceRate, 50)) score += 0;
   else score -= 3;
 
   // 5. Contingency plans (±3)
-  if (contingencyRate >= 90) score += 3;
-  else if (contingencyRate >= 70) score += 1;
-  else if (contingencyRate >= 50) score += 0;
+  if (meets(contingencyRate, 90)) score += 3;
+  else if (meets(contingencyRate, 70)) score += 1;
+  else if (meets(contingencyRate, 50)) score += 0;
   else score -= 2;
 
   // 6. Child coverage (±3)
-  if (childCoverageRate >= 100) score += 3;
-  else if (childCoverageRate >= 75) score += 1;
-  else if (childCoverageRate >= 50) score += 0;
+  if (meets(childCoverageRate, 100)) score += 3;
+  else if (meets(childCoverageRate, 75)) score += 1;
+  else if (meets(childCoverageRate, 50)) score += 0;
   else score -= 2;
 
   // 7. High risk concentration (±3) — fewer high/very_high is better
-  const highRate = pct(highOrVeryHigh, current.length);
+  const highRate = rate(highOrVeryHigh, current.length);
   if (highOrVeryHigh === 0) score += 3;
-  else if (highRate <= 25) score += 1;
-  else if (highRate <= 50) score += 0;
+  else if (highRate! <= 25) score += 1;
+  else if (highRate! <= 50) score += 0;
   else score -= 2;
 
   // 8. Mitigation depth (±3) — avg mitigations per assessment
@@ -345,19 +345,19 @@ export function computeHomeRiskLandscape(
 
   // ── Strengths ─────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (decreasingRate >= 50) strengths.push(`${decreasingRate}% of risk assessments show decreasing trends — interventions are working.`);
-  if (effectivenessRate >= 70 && allMitigations.length > 0) strengths.push(`${effectivenessRate}% of mitigations rated effective — risk management strategies are well-targeted.`);
-  if (childVoiceRate >= 90) strengths.push(`${childVoiceRate}% of assessments include child views — children's perspectives inform risk management.`);
-  if (contingencyRate >= 90) strengths.push(`${contingencyRate}% of assessments have contingency plans — staff know what to do in escalation.`);
+  if (meets(decreasingRate, 50)) strengths.push(`${decreasingRate}% of risk assessments show decreasing trends — interventions are working.`);
+  if (meets(effectivenessRate, 70) && allMitigations.length > 0) strengths.push(`${effectivenessRate}% of mitigations rated effective — risk management strategies are well-targeted.`);
+  if (meets(childVoiceRate, 90)) strengths.push(`${childVoiceRate}% of assessments include child views — children's perspectives inform risk management.`);
+  if (meets(contingencyRate, 90)) strengths.push(`${contingencyRate}% of assessments have contingency plans — staff know what to do in escalation.`);
   if (increasing === 0) strengths.push("No risk assessments show increasing trends — the home is managing risk effectively.");
-  if (childCoverageRate >= 100 && total_children > 0) strengths.push("All children have current risk assessments — comprehensive safeguarding coverage.");
+  if (meets(childCoverageRate, 100) && total_children > 0) strengths.push("All children have current risk assessments — comprehensive safeguarding coverage.");
 
   // ── Concerns ──────────────────────────────────────────────────
   const concerns: string[] = [];
   if (increasing > 0) concerns.push(`${increasing} risk assessment${increasing > 1 ? "s show" : " shows"} an increasing trend — risks are escalating.`);
-  if (highOrVeryHigh > 0 && highRate > 50) concerns.push(`${highOrVeryHigh} of ${current.length} assessments are high or very high risk — concentrated risk profile.`);
-  if (overdueRate > 50) concerns.push(`${overdueRate}% of risk assessment reviews are overdue — currency has lapsed.`);
-  if (childVoiceRate < 50) concerns.push(`Only ${childVoiceRate}% of assessments include child views — their perspectives are missing from risk planning.`);
+  if (highOrVeryHigh > 0 && above(highRate, 50)) concerns.push(`${highOrVeryHigh} of ${current.length} assessments are high or very high risk — concentrated risk profile.`);
+  if (above(overdueRate, 50)) concerns.push(`${overdueRate}% of risk assessment reviews are overdue — currency has lapsed.`);
+  if (below(childVoiceRate, 50)) concerns.push(`Only ${childVoiceRate}% of assessments include child views — their perspectives are missing from risk planning.`);
   if (notEffective > 0) concerns.push(`${notEffective} mitigation${notEffective > 1 ? "s are" : " is"} rated not effective — strategies need revision.`);
   if (childrenWithout > 0 && total_children > 0) concerns.push(`${childrenWithout} child${childrenWithout > 1 ? "ren have" : " has"} no current risk assessment.`);
 
@@ -368,13 +368,13 @@ export function computeHomeRiskLandscape(
   if (increasing > 0) {
     recs.push({ rank: rank++, recommendation: `${increasing} risk${increasing > 1 ? "s are" : " is"} increasing — convene multi-disciplinary review to reassess triggers and strengthen mitigations.`, urgency: "immediate", regulatory_ref: "Reg 12" });
   }
-  if (overdueRate > 20) {
-    recs.push({ rank: rank++, recommendation: `${overdue} risk review${overdue > 1 ? "s are" : " is"} overdue — schedule within 7 days to maintain assessment currency.`, urgency: overdueRate > 50 ? "immediate" : "soon", regulatory_ref: "Reg 36" });
+  if (above(overdueRate, 20)) {
+    recs.push({ rank: rank++, recommendation: `${overdue} risk review${overdue > 1 ? "s are" : " is"} overdue — schedule within 7 days to maintain assessment currency.`, urgency: above(overdueRate, 50) ? "immediate" : "soon", regulatory_ref: "Reg 36" });
   }
   if (notEffective > 0) {
     recs.push({ rank: rank++, recommendation: `${notEffective} mitigation${notEffective > 1 ? "s are" : " is"} rated not effective — review and replace with evidence-based alternatives.`, urgency: "soon", regulatory_ref: "Reg 12" });
   }
-  if (childVoiceRate < 70) {
+  if (below(childVoiceRate, 70)) {
     recs.push({ rank: rank++, recommendation: `Child views recorded in only ${childVoiceRate}% of assessments — ensure each child's perspective is captured at every risk review.`, urgency: "soon", regulatory_ref: "Reg 7" });
   }
   if (childrenWithout > 0 && total_children > 0) {
@@ -385,12 +385,12 @@ export function computeHomeRiskLandscape(
   const insights: RiskLandscapeInsight[] = [];
 
   if (rating === "outstanding") {
-    insights.push({ text: `Exemplary risk management — ${current.length} current assessments across ${domainsCovered.length} domains with ${decreasingRate}% decreasing trends, ${effectivenessRate}% mitigation effectiveness, and ${childVoiceRate}% child voice. Ofsted inspectors will find strong evidence that risks are actively managed and reducing.`, severity: "positive" });
+    insights.push({ text: `Exemplary risk management — ${current.length} current assessments across ${domainsCovered.length} domains with ${formatRate(decreasingRate)} decreasing trends, ${formatRate(effectivenessRate)} mitigation effectiveness, and ${formatRate(childVoiceRate)} child voice. Ofsted inspectors will find strong evidence that risks are actively managed and reducing.`, severity: "positive" });
   }
   if (increasing > 0) {
-    insights.push({ text: `${increasing} risk assessment${increasing > 1 ? "s show" : " shows"} increasing trends. Under SCCIF, inspectors evaluate whether 'risks to children are identified, understood and reduced.' Escalating risk without management response is a significant concern.`, severity: increasingRate > 25 ? "critical" : "warning" });
+    insights.push({ text: `${increasing} risk assessment${increasing > 1 ? "s show" : " shows"} increasing trends. Under SCCIF, inspectors evaluate whether 'risks to children are identified, understood and reduced.' Escalating risk without management response is a significant concern.`, severity: above(increasingRate, 25) ? "critical" : "warning" });
   }
-  if (overdueRate > 50) {
+  if (above(overdueRate, 50)) {
     insights.push({ text: `${overdueRate}% of risk reviews are overdue. Risk assessments must be 'regularly reviewed' (Reg 36). Outdated assessments mean staff may be working with inaccurate risk information, directly impacting children's safety.`, severity: "critical" });
   }
   if (childrenWithout > 0 && total_children > 0) {
@@ -403,7 +403,7 @@ export function computeHomeRiskLandscape(
   // ── Headline ──────────────────────────────────────────────────
   let headline: string;
   if (rating === "outstanding") {
-    headline = `Outstanding risk management — ${current.length} assessments, ${decreasingRate}% decreasing, ${effectivenessRate}% effective mitigations.`;
+    headline = `Outstanding risk management — ${current.length} assessments, ${formatRate(decreasingRate)} decreasing, ${formatRate(effectivenessRate)} effective mitigations.`;
   } else if (rating === "good") {
     headline = `Good risk landscape — ${current.length} assessments with manageable risk profile and active mitigation.`;
   } else if (rating === "adequate") {

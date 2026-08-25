@@ -289,9 +289,9 @@ describe("active plan rate", () => {
     expect(r.active_plan_rate).toBe(67); // 2/3 = 66.7 → round to 67
   });
 
-  it("returns 0 when no plans exist", () => {
+  it("returns null when no plans exist", () => {
     const r = computeSelfHarmSafetyPlan(baseInput({ plans: [] }));
-    expect(r.active_plan_rate).toBe(0);
+    expect(r.active_plan_rate).toBeNull();
   });
 });
 

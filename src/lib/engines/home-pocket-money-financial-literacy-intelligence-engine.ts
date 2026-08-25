@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME POCKET MONEY & FINANCIAL LITERACY INTELLIGENCE ENGINE
 // Monitors how well the home manages pocket money, supports savings programmes,
@@ -145,10 +146,6 @@ export interface PocketMoneyFinancialLiteracyResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -176,12 +173,12 @@ function emptyResult(
     total_financial_education_sessions: 0,
     total_budgeting_records: 0,
     total_money_handling_records: 0,
-    pocket_money_compliance_rate: 0,
-    savings_engagement_rate: 0,
-    financial_education_rate: 0,
-    budgeting_coverage_rate: 0,
-    money_handling_accuracy_rate: 0,
-    child_autonomy_rate: 0,
+    pocket_money_compliance_rate: null,
+    savings_engagement_rate: null,
+    financial_education_rate: null,
+    budgeting_coverage_rate: null,
+    money_handling_accuracy_rate: null,
+    child_autonomy_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -262,13 +259,13 @@ export function computePocketMoneyFinancialLiteracy(
   const paidCorrectly = pocket_money_records.filter(
     (r) => r.amount_paid >= r.amount_due && r.paid_on_time,
   ).length;
-  const pocketMoneyComplianceRate = pct(paidCorrectly, totalPocketMoney);
+  const pocketMoneyComplianceRate = rate(paidCorrectly, totalPocketMoney);
 
   const receiptsSigned = pocket_money_records.filter((r) => r.receipt_signed).length;
-  const receiptSignedRate = pct(receiptsSigned, totalPocketMoney);
+  const receiptSignedRate = rate(receiptsSigned, totalPocketMoney);
 
   const paidOnTime = pocket_money_records.filter((r) => r.paid_on_time).length;
-  const paidOnTimeRate = pct(paidOnTime, totalPocketMoney);
+  const paidOnTimeRate = rate(paidOnTime, totalPocketMoney);
 
   // --- Savings engagement ---
   const totalSavings = savings_programme_records.length;
@@ -277,12 +274,12 @@ export function computePocketMoneyFinancialLiteracy(
     savings_programme_records.filter((s) => s.active).map((s) => s.child_id),
   ).size;
   const savingsEngagementRate =
-    total_children > 0 ? pct(uniqueChildrenWithSavings, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenWithSavings, total_children) : 0;
 
   const childInitiatedSavings = savings_programme_records.filter(
     (s) => s.child_initiated && s.active,
   ).length;
-  const childInitiatedRate = pct(childInitiatedSavings, activeSavings);
+  const childInitiatedRate = rate(childInitiatedSavings, activeSavings);
 
   // --- Financial education ---
   const totalEducation = financial_education_records.length;
@@ -290,16 +287,16 @@ export function computePocketMoneyFinancialLiteracy(
     financial_education_records.map((e) => e.child_id),
   ).size;
   const financialEducationRate =
-    total_children > 0 ? pct(uniqueChildrenWithEducation, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenWithEducation, total_children) : 0;
 
   const ageAppropriate = financial_education_records.filter((e) => e.age_appropriate).length;
-  const ageAppropriateRate = pct(ageAppropriate, totalEducation);
+  const ageAppropriateRate = rate(ageAppropriate, totalEducation);
 
   const childEngaged = financial_education_records.filter((e) => e.child_engaged).length;
-  const childEngagedRate = pct(childEngaged, totalEducation);
+  const childEngagedRate = rate(childEngaged, totalEducation);
 
   const learningEvidenced = financial_education_records.filter((e) => e.learning_evidenced).length;
-  const learningEvidencedRate = pct(learningEvidenced, totalEducation);
+  const learningEvidencedRate = rate(learningEvidenced, totalEducation);
 
   // --- Budgeting coverage ---
   const totalBudgeting = budgeting_records.length;
@@ -307,24 +304,24 @@ export function computePocketMoneyFinancialLiteracy(
     budgeting_records.map((b) => b.child_id),
   ).size;
   const budgetingCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenWithBudgets, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenWithBudgets, total_children) : 0;
 
   const withinBudget = budgeting_records.filter((b) => b.within_budget).length;
-  const withinBudgetRate = pct(withinBudget, totalBudgeting);
+  const withinBudgetRate = rate(withinBudget, totalBudgeting);
 
   const childLedBudgets = budgeting_records.filter((b) => b.child_led).length;
-  const childLedBudgetRate = pct(childLedBudgets, totalBudgeting);
+  const childLedBudgetRate = rate(childLedBudgets, totalBudgeting);
 
   const reviewedBudgets = budgeting_records.filter((b) => b.review_completed).length;
-  const budgetReviewRate = pct(reviewedBudgets, totalBudgeting);
+  const budgetReviewRate = rate(reviewedBudgets, totalBudgeting);
 
   // --- Money handling accuracy ---
   const totalMoneyHandling = money_handling_records.length;
   const reconciled = money_handling_records.filter((m) => m.reconciled).length;
-  const moneyHandlingAccuracyRate = pct(reconciled, totalMoneyHandling);
+  const moneyHandlingAccuracyRate = rate(reconciled, totalMoneyHandling);
 
   const dualSigned = money_handling_records.filter((m) => m.dual_signed).length;
-  const dualSignedRate = pct(dualSigned, totalMoneyHandling);
+  const dualSignedRate = rate(dualSigned, totalMoneyHandling);
 
   const unresolvedDiscrepancies = money_handling_records.filter(
     (m) => m.discrepancy_amount > 0 && !m.discrepancy_resolved,
@@ -332,9 +329,9 @@ export function computePocketMoneyFinancialLiteracy(
 
   // --- Child autonomy (composite of child-led budgets, child-initiated savings, and engagement) ---
   const autonomyNumerators: number[] = [];
-  if (totalBudgeting > 0) autonomyNumerators.push(childLedBudgetRate);
-  if (activeSavings > 0) autonomyNumerators.push(childInitiatedRate);
-  if (totalEducation > 0) autonomyNumerators.push(childEngagedRate);
+  if (totalBudgeting > 0) autonomyNumerators.push(childLedBudgetRate!);
+  if (activeSavings > 0) autonomyNumerators.push(childInitiatedRate!);
+  if (totalEducation > 0) autonomyNumerators.push(childEngagedRate!);
   const childAutonomyRate =
     autonomyNumerators.length > 0
       ? Math.round(autonomyNumerators.reduce((a, b) => a + b, 0) / autonomyNumerators.length)
@@ -345,51 +342,51 @@ export function computePocketMoneyFinancialLiteracy(
   let score = 52;
 
   // --- Bonus 1: pocketMoneyComplianceRate (>=95: +4, >=80: +2) ---
-  if (pocketMoneyComplianceRate >= 95) score += 4;
-  else if (pocketMoneyComplianceRate >= 80) score += 2;
+  if (meets(pocketMoneyComplianceRate, 95)) score += 4;
+  else if (meets(pocketMoneyComplianceRate, 80)) score += 2;
 
   // --- Bonus 2: savingsEngagementRate (>=90: +3, >=70: +1) ---
-  if (savingsEngagementRate >= 90) score += 3;
-  else if (savingsEngagementRate >= 70) score += 1;
+  if (meets(savingsEngagementRate, 90)) score += 3;
+  else if (meets(savingsEngagementRate, 70)) score += 1;
 
   // --- Bonus 3: financialEducationRate (>=100: +4, >=80: +2) ---
-  if (financialEducationRate >= 100) score += 4;
-  else if (financialEducationRate >= 80) score += 2;
+  if (meets(financialEducationRate, 100)) score += 4;
+  else if (meets(financialEducationRate, 80)) score += 2;
 
   // --- Bonus 4: budgetingCoverageRate (>=90: +3, >=70: +1) ---
-  if (budgetingCoverageRate >= 90) score += 3;
-  else if (budgetingCoverageRate >= 70) score += 1;
+  if (meets(budgetingCoverageRate, 90)) score += 3;
+  else if (meets(budgetingCoverageRate, 70)) score += 1;
 
   // --- Bonus 5: moneyHandlingAccuracyRate (>=95: +3, >=80: +1) ---
-  if (moneyHandlingAccuracyRate >= 95) score += 3;
-  else if (moneyHandlingAccuracyRate >= 80) score += 1;
+  if (meets(moneyHandlingAccuracyRate, 95)) score += 3;
+  else if (meets(moneyHandlingAccuracyRate, 80)) score += 1;
 
   // --- Bonus 6: childAutonomyRate (>=80: +3, >=60: +1) ---
   if ((childAutonomyRate ?? 0) >= 80) score += 3;
   else if ((childAutonomyRate ?? 0) >= 60) score += 1;
 
   // --- Bonus 7: learningEvidencedRate (>=90: +3, >=70: +1) ---
-  if (learningEvidencedRate >= 90) score += 3;
-  else if (learningEvidencedRate >= 70) score += 1;
+  if (meets(learningEvidencedRate, 90)) score += 3;
+  else if (meets(learningEvidencedRate, 70)) score += 1;
 
   // --- Bonus 8: dualSignedRate (>=95: +3, >=80: +1) ---
-  if (dualSignedRate >= 95) score += 3;
-  else if (dualSignedRate >= 80) score += 1;
+  if (meets(dualSignedRate, 95)) score += 3;
+  else if (meets(dualSignedRate, 80)) score += 1;
 
   // --- Bonus 9: receiptSignedRate (>=95: +2, >=80: +1) ---
-  if (receiptSignedRate >= 95) score += 2;
-  else if (receiptSignedRate >= 80) score += 1;
+  if (meets(receiptSignedRate, 95)) score += 2;
+  else if (meets(receiptSignedRate, 80)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // Penalty 1: pocketMoneyComplianceRate < 50 → -5
-  if (pocketMoneyComplianceRate < 50 && totalPocketMoney > 0) score -= 5;
+  if (below(pocketMoneyComplianceRate, 50) && totalPocketMoney > 0) score -= 5;
 
   // Penalty 2: moneyHandlingAccuracyRate < 50 → -5
-  if (moneyHandlingAccuracyRate < 50 && totalMoneyHandling > 0) score -= 5;
+  if (below(moneyHandlingAccuracyRate, 50) && totalMoneyHandling > 0) score -= 5;
 
   // Penalty 3: financialEducationRate < 30 → -5
-  if (financialEducationRate < 30 && total_children > 0) score -= 5;
+  if (below(financialEducationRate, 30) && total_children > 0) score -= 5;
 
   // Penalty 4: unresolvedDiscrepancies > 0 → -3
   if (unresolvedDiscrepancies > 0) score -= 3;
@@ -402,51 +399,51 @@ export function computePocketMoneyFinancialLiteracy(
 
   const strengths: string[] = [];
 
-  if (pocketMoneyComplianceRate >= 95 && totalPocketMoney > 0) {
+  if (meets(pocketMoneyComplianceRate, 95) && totalPocketMoney > 0) {
     strengths.push(
       "Pocket money is paid correctly and on time in virtually all cases — children can rely on receiving their entitlement consistently and predictably.",
     );
-  } else if (pocketMoneyComplianceRate >= 80 && totalPocketMoney > 0) {
+  } else if (meets(pocketMoneyComplianceRate, 80) && totalPocketMoney > 0) {
     strengths.push(
       `${pocketMoneyComplianceRate}% pocket money compliance rate — the majority of payments are made correctly and on time.`,
     );
   }
 
-  if (savingsEngagementRate >= 90 && total_children > 0) {
+  if (meets(savingsEngagementRate, 90) && total_children > 0) {
     strengths.push(
       "Almost all children are actively engaged in savings programmes — the home fosters a strong savings culture that supports financial independence.",
     );
-  } else if (savingsEngagementRate >= 70 && total_children > 0) {
+  } else if (meets(savingsEngagementRate, 70) && total_children > 0) {
     strengths.push(
       `${savingsEngagementRate}% of children have active savings programmes — good savings engagement across the home.`,
     );
   }
 
-  if (financialEducationRate >= 100 && total_children > 0) {
+  if (meets(financialEducationRate, 100) && total_children > 0) {
     strengths.push(
       "Every child has received financial literacy education — the home ensures all children are equipped with financial knowledge appropriate to their age and stage.",
     );
-  } else if (financialEducationRate >= 80 && total_children > 0) {
+  } else if (meets(financialEducationRate, 80) && total_children > 0) {
     strengths.push(
       `${financialEducationRate}% of children have participated in financial education — strong coverage of financial literacy across the home.`,
     );
   }
 
-  if (budgetingCoverageRate >= 90 && total_children > 0) {
+  if (meets(budgetingCoverageRate, 90) && total_children > 0) {
     strengths.push(
       "Budgeting activities cover almost all children — age-appropriate budgeting is embedded as a core life skill within the home.",
     );
-  } else if (budgetingCoverageRate >= 70 && total_children > 0) {
+  } else if (meets(budgetingCoverageRate, 70) && total_children > 0) {
     strengths.push(
       `${budgetingCoverageRate}% of children engage in budgeting activities — good coverage of budgeting skills across the home.`,
     );
   }
 
-  if (moneyHandlingAccuracyRate >= 95 && totalMoneyHandling > 0) {
+  if (meets(moneyHandlingAccuracyRate, 95) && totalMoneyHandling > 0) {
     strengths.push(
       "Money handling is reconciled to an excellent standard — financial accountability is robust, with near-complete reconciliation of all transactions.",
     );
-  } else if (moneyHandlingAccuracyRate >= 80 && totalMoneyHandling > 0) {
+  } else if (meets(moneyHandlingAccuracyRate, 80) && totalMoneyHandling > 0) {
     strengths.push(
       `${moneyHandlingAccuracyRate}% money handling accuracy — the home demonstrates strong financial accountability in its transaction management.`,
     );
@@ -462,45 +459,45 @@ export function computePocketMoneyFinancialLiteracy(
     );
   }
 
-  if (dualSignedRate >= 95 && totalMoneyHandling > 0) {
+  if (meets(dualSignedRate, 95) && totalMoneyHandling > 0) {
     strengths.push(
       "Dual-signature compliance is exemplary — robust safeguarding of financial transactions protects both children and staff.",
     );
-  } else if (dualSignedRate >= 80 && totalMoneyHandling > 0) {
+  } else if (meets(dualSignedRate, 80) && totalMoneyHandling > 0) {
     strengths.push(
       `${dualSignedRate}% of transactions are dual-signed — good compliance with financial safeguarding protocols.`,
     );
   }
 
-  if (learningEvidencedRate >= 90 && totalEducation > 0) {
+  if (meets(learningEvidencedRate, 90) && totalEducation > 0) {
     strengths.push(
       `${learningEvidencedRate}% of financial education sessions have evidenced learning outcomes — education is delivering measurable impact on children's financial knowledge.`,
     );
-  } else if (learningEvidencedRate >= 70 && totalEducation > 0) {
+  } else if (meets(learningEvidencedRate, 70) && totalEducation > 0) {
     strengths.push(
       `${learningEvidencedRate}% of sessions with evidenced learning — financial education is generally translating into demonstrable knowledge.`,
     );
   }
 
-  if (ageAppropriateRate >= 95 && totalEducation > 0) {
+  if (meets(ageAppropriateRate, 95) && totalEducation > 0) {
     strengths.push(
       "Financial education is age-appropriate in virtually all sessions — content is carefully tailored to each child's developmental stage.",
     );
   }
 
-  if (childInitiatedRate >= 70 && activeSavings > 0) {
+  if (meets(childInitiatedRate, 70) && activeSavings > 0) {
     strengths.push(
       `${childInitiatedRate}% of active savings programmes are child-initiated — children are proactively choosing to save, demonstrating genuine financial motivation.`,
     );
   }
 
-  if (withinBudgetRate >= 90 && totalBudgeting > 0) {
+  if (meets(withinBudgetRate, 90) && totalBudgeting > 0) {
     strengths.push(
       `${withinBudgetRate}% of budgets maintained within limits — children are successfully managing their spending within agreed boundaries.`,
     );
   }
 
-  if (receiptSignedRate >= 95 && totalPocketMoney > 0) {
+  if (meets(receiptSignedRate, 95) && totalPocketMoney > 0) {
     strengths.push(
       "Receipt-signing compliance is excellent — robust audit trail for all pocket money disbursements.",
     );
@@ -510,51 +507,51 @@ export function computePocketMoneyFinancialLiteracy(
 
   const concerns: string[] = [];
 
-  if (pocketMoneyComplianceRate < 50 && totalPocketMoney > 0) {
+  if (below(pocketMoneyComplianceRate, 50) && totalPocketMoney > 0) {
     concerns.push(
       `Only ${pocketMoneyComplianceRate}% of pocket money payments are compliant — the majority of children are not receiving their full entitlement on time, undermining trust and financial predictability.`,
     );
-  } else if (pocketMoneyComplianceRate < 80 && pocketMoneyComplianceRate >= 50 && totalPocketMoney > 0) {
+  } else if (below(pocketMoneyComplianceRate, 80) && meets(pocketMoneyComplianceRate, 50) && totalPocketMoney > 0) {
     concerns.push(
       `Pocket money compliance at ${pocketMoneyComplianceRate}% — some children are not receiving their full pocket money on time, which may affect their sense of financial security.`,
     );
   }
 
-  if (savingsEngagementRate < 50 && total_children > 0) {
+  if (below(savingsEngagementRate, 50) && total_children > 0) {
     concerns.push(
       `Only ${savingsEngagementRate}% of children have active savings programmes — the majority lack structured savings support, missing a key opportunity to develop financial habits.`,
     );
-  } else if (savingsEngagementRate < 70 && savingsEngagementRate >= 50 && total_children > 0) {
+  } else if (below(savingsEngagementRate, 70) && meets(savingsEngagementRate, 50) && total_children > 0) {
     concerns.push(
       `Savings engagement at ${savingsEngagementRate}% — not all children are supported with savings programmes to build financial resilience.`,
     );
   }
 
-  if (financialEducationRate < 30 && total_children > 0) {
+  if (below(financialEducationRate, 30) && total_children > 0) {
     concerns.push(
       `Only ${financialEducationRate}% of children have received financial literacy education — the vast majority are not being equipped with essential financial life skills for independence.`,
     );
-  } else if (financialEducationRate < 80 && financialEducationRate >= 30 && total_children > 0) {
+  } else if (below(financialEducationRate, 80) && meets(financialEducationRate, 30) && total_children > 0) {
     concerns.push(
       `Financial education coverage at ${financialEducationRate}% — not all children are receiving financial literacy support, creating gaps in preparation for adulthood.`,
     );
   }
 
-  if (moneyHandlingAccuracyRate < 50 && totalMoneyHandling > 0) {
+  if (below(moneyHandlingAccuracyRate, 50) && totalMoneyHandling > 0) {
     concerns.push(
       `Only ${moneyHandlingAccuracyRate}% of money handling transactions reconciled — the home cannot demonstrate adequate financial accountability, raising safeguarding concerns about how children's money is managed.`,
     );
-  } else if (moneyHandlingAccuracyRate < 80 && moneyHandlingAccuracyRate >= 50 && totalMoneyHandling > 0) {
+  } else if (below(moneyHandlingAccuracyRate, 80) && meets(moneyHandlingAccuracyRate, 50) && totalMoneyHandling > 0) {
     concerns.push(
       `Money handling accuracy at ${moneyHandlingAccuracyRate}% — some transactions are not reconciled, which weakens the home's financial accountability framework.`,
     );
   }
 
-  if (budgetingCoverageRate < 50 && total_children > 0) {
+  if (below(budgetingCoverageRate, 50) && total_children > 0) {
     concerns.push(
       `Only ${budgetingCoverageRate}% of children engage in budgeting activities — most children are not practising age-appropriate budgeting, a key independence skill.`,
     );
-  } else if (budgetingCoverageRate < 70 && budgetingCoverageRate >= 50 && total_children > 0) {
+  } else if (below(budgetingCoverageRate, 70) && meets(budgetingCoverageRate, 50) && total_children > 0) {
     concerns.push(
       `Budgeting coverage at ${budgetingCoverageRate}% — some children lack budgeting experiences that develop money management skills.`,
     );
@@ -566,19 +563,19 @@ export function computePocketMoneyFinancialLiteracy(
     );
   }
 
-  if (dualSignedRate < 80 && totalMoneyHandling > 0) {
+  if (below(dualSignedRate, 80) && totalMoneyHandling > 0) {
     concerns.push(
       `Dual-signature rate at ${dualSignedRate}% — insufficient dual-signing of financial transactions creates a safeguarding vulnerability and weakens the audit trail.`,
     );
   }
 
-  if (paidOnTimeRate < 70 && totalPocketMoney > 0) {
+  if (below(paidOnTimeRate, 70) && totalPocketMoney > 0) {
     concerns.push(
       `Only ${paidOnTimeRate}% of pocket money paid on time — delayed payments undermine children's financial planning and sense of entitlement to their own money.`,
     );
   }
 
-  if (ageAppropriateRate < 80 && totalEducation > 0) {
+  if (below(ageAppropriateRate, 80) && totalEducation > 0) {
     concerns.push(
       `Only ${ageAppropriateRate}% of financial education sessions assessed as age-appropriate — content may not be suitably matched to children's developmental stages.`,
     );
@@ -607,7 +604,7 @@ export function computePocketMoneyFinancialLiteracy(
   const recommendations: FinancialLiteracyRecommendation[] = [];
   let rank = 0;
 
-  if (pocketMoneyComplianceRate < 50 && totalPocketMoney > 0) {
+  if (below(pocketMoneyComplianceRate, 50) && totalPocketMoney > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -617,7 +614,7 @@ export function computePocketMoneyFinancialLiteracy(
     });
   }
 
-  if (moneyHandlingAccuracyRate < 50 && totalMoneyHandling > 0) {
+  if (below(moneyHandlingAccuracyRate, 50) && totalMoneyHandling > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -627,7 +624,7 @@ export function computePocketMoneyFinancialLiteracy(
     });
   }
 
-  if (financialEducationRate < 30 && total_children > 0) {
+  if (below(financialEducationRate, 30) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -647,7 +644,7 @@ export function computePocketMoneyFinancialLiteracy(
     });
   }
 
-  if (dualSignedRate < 80 && totalMoneyHandling > 0) {
+  if (below(dualSignedRate, 80) && totalMoneyHandling > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -667,7 +664,7 @@ export function computePocketMoneyFinancialLiteracy(
     });
   }
 
-  if (savingsEngagementRate < 50 && total_children > 0) {
+  if (below(savingsEngagementRate, 50) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -677,7 +674,7 @@ export function computePocketMoneyFinancialLiteracy(
     });
   }
 
-  if (budgetingCoverageRate < 50 && total_children > 0) {
+  if (below(budgetingCoverageRate, 50) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -688,8 +685,8 @@ export function computePocketMoneyFinancialLiteracy(
   }
 
   if (
-    financialEducationRate >= 30 &&
-    financialEducationRate < 80 &&
+    meets(financialEducationRate, 30) &&
+    below(financialEducationRate, 80) &&
     total_children > 0
   ) {
     recommendations.push({
@@ -712,8 +709,8 @@ export function computePocketMoneyFinancialLiteracy(
   }
 
   if (
-    pocketMoneyComplianceRate >= 50 &&
-    pocketMoneyComplianceRate < 80 &&
+    meets(pocketMoneyComplianceRate, 50) &&
+    below(pocketMoneyComplianceRate, 80) &&
     totalPocketMoney > 0
   ) {
     recommendations.push({
@@ -726,8 +723,8 @@ export function computePocketMoneyFinancialLiteracy(
   }
 
   if (
-    moneyHandlingAccuracyRate >= 50 &&
-    moneyHandlingAccuracyRate < 80 &&
+    meets(moneyHandlingAccuracyRate, 50) &&
+    below(moneyHandlingAccuracyRate, 80) &&
     totalMoneyHandling > 0
   ) {
     recommendations.push({
@@ -740,8 +737,8 @@ export function computePocketMoneyFinancialLiteracy(
   }
 
   if (
-    savingsEngagementRate >= 50 &&
-    savingsEngagementRate < 70 &&
+    meets(savingsEngagementRate, 50) &&
+    below(savingsEngagementRate, 70) &&
     total_children > 0
   ) {
     recommendations.push({
@@ -754,8 +751,8 @@ export function computePocketMoneyFinancialLiteracy(
   }
 
   if (
-    budgetingCoverageRate >= 50 &&
-    budgetingCoverageRate < 70 &&
+    meets(budgetingCoverageRate, 50) &&
+    below(budgetingCoverageRate, 70) &&
     total_children > 0
   ) {
     recommendations.push({
@@ -767,7 +764,7 @@ export function computePocketMoneyFinancialLiteracy(
     });
   }
 
-  if (learningEvidencedRate < 70 && totalEducation > 0) {
+  if (below(learningEvidencedRate, 70) && totalEducation > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -777,7 +774,7 @@ export function computePocketMoneyFinancialLiteracy(
     });
   }
 
-  if (ageAppropriateRate < 80 && totalEducation > 0) {
+  if (below(ageAppropriateRate, 80) && totalEducation > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -793,21 +790,21 @@ export function computePocketMoneyFinancialLiteracy(
 
   // -- Critical insights --
 
-  if (pocketMoneyComplianceRate < 50 && totalPocketMoney > 0) {
+  if (below(pocketMoneyComplianceRate, 50) && totalPocketMoney > 0) {
     insights.push({
       text: `Only ${pocketMoneyComplianceRate}% of pocket money payments are compliant. Ofsted will view inconsistent pocket money payments as evidence that children's financial entitlements are not protected, directly undermining Reg 14 compliance. Children who cannot rely on receiving their money lose trust in the home's care.`,
       severity: "critical",
     });
   }
 
-  if (moneyHandlingAccuracyRate < 50 && totalMoneyHandling > 0) {
+  if (below(moneyHandlingAccuracyRate, 50) && totalMoneyHandling > 0) {
     insights.push({
       text: `Only ${moneyHandlingAccuracyRate}% of money handling transactions reconciled. Inadequate financial reconciliation raises serious safeguarding concerns — the home cannot demonstrate that children's money is properly accounted for and protected. This is a significant Reg 14 compliance failure.`,
       severity: "critical",
     });
   }
 
-  if (financialEducationRate < 30 && total_children > 0) {
+  if (below(financialEducationRate, 30) && total_children > 0) {
     insights.push({
       text: `Only ${financialEducationRate}% of children have received financial literacy education. Without financial education, children are not being equipped with the life skills they need for independence and adulthood. Ofsted expects homes to actively prepare children for leaving care, and financial literacy is a fundamental component.`,
       severity: "critical",
@@ -831,8 +828,8 @@ export function computePocketMoneyFinancialLiteracy(
   // -- Warning insights --
 
   if (
-    pocketMoneyComplianceRate >= 50 &&
-    pocketMoneyComplianceRate < 80 &&
+    meets(pocketMoneyComplianceRate, 50) &&
+    below(pocketMoneyComplianceRate, 80) &&
     totalPocketMoney > 0
   ) {
     insights.push({
@@ -842,8 +839,8 @@ export function computePocketMoneyFinancialLiteracy(
   }
 
   if (
-    savingsEngagementRate >= 50 &&
-    savingsEngagementRate < 70 &&
+    meets(savingsEngagementRate, 50) &&
+    below(savingsEngagementRate, 70) &&
     total_children > 0
   ) {
     insights.push({
@@ -853,8 +850,8 @@ export function computePocketMoneyFinancialLiteracy(
   }
 
   if (
-    financialEducationRate >= 30 &&
-    financialEducationRate < 80 &&
+    meets(financialEducationRate, 30) &&
+    below(financialEducationRate, 80) &&
     total_children > 0
   ) {
     insights.push({
@@ -864,8 +861,8 @@ export function computePocketMoneyFinancialLiteracy(
   }
 
   if (
-    moneyHandlingAccuracyRate >= 50 &&
-    moneyHandlingAccuracyRate < 80 &&
+    meets(moneyHandlingAccuracyRate, 50) &&
+    below(moneyHandlingAccuracyRate, 80) &&
     totalMoneyHandling > 0
   ) {
     insights.push({
@@ -875,8 +872,8 @@ export function computePocketMoneyFinancialLiteracy(
   }
 
   if (
-    budgetingCoverageRate >= 50 &&
-    budgetingCoverageRate < 70 &&
+    meets(budgetingCoverageRate, 50) &&
+    below(budgetingCoverageRate, 70) &&
     total_children > 0
   ) {
     insights.push({
@@ -892,7 +889,7 @@ export function computePocketMoneyFinancialLiteracy(
     });
   }
 
-  if (withinBudgetRate < 70 && totalBudgeting > 0) {
+  if (below(withinBudgetRate, 70) && totalBudgeting > 0) {
     insights.push({
       text: `Only ${withinBudgetRate}% of budgets maintained within limits — children may need additional support in managing spending. Consider whether budgets are realistic and whether overspending reflects unmet needs.`,
       severity: "warning",
@@ -900,8 +897,8 @@ export function computePocketMoneyFinancialLiteracy(
   }
 
   if (
-    dualSignedRate >= 50 &&
-    dualSignedRate < 80 &&
+    meets(dualSignedRate, 50) &&
+    below(dualSignedRate, 80) &&
     totalMoneyHandling > 0
   ) {
     insights.push({
@@ -910,7 +907,7 @@ export function computePocketMoneyFinancialLiteracy(
     });
   }
 
-  if (budgetReviewRate < 70 && totalBudgeting > 0) {
+  if (below(budgetReviewRate, 70) && totalBudgeting > 0) {
     insights.push({
       text: `Only ${budgetReviewRate}% of budgets have been reviewed — without regular reviews, budgeting becomes an administrative exercise rather than a learning opportunity for children.`,
       severity: "warning",
@@ -936,8 +933,8 @@ export function computePocketMoneyFinancialLiteracy(
   }
 
   if (
-    pocketMoneyComplianceRate >= 95 &&
-    receiptSignedRate >= 95 &&
+    meets(pocketMoneyComplianceRate, 95) &&
+    meets(receiptSignedRate, 95) &&
     totalPocketMoney > 0
   ) {
     insights.push({
@@ -947,8 +944,8 @@ export function computePocketMoneyFinancialLiteracy(
   }
 
   if (
-    savingsEngagementRate >= 90 &&
-    childInitiatedRate >= 70 &&
+    meets(savingsEngagementRate, 90) &&
+    meets(childInitiatedRate, 70) &&
     total_children > 0 &&
     activeSavings > 0
   ) {
@@ -959,8 +956,8 @@ export function computePocketMoneyFinancialLiteracy(
   }
 
   if (
-    financialEducationRate >= 100 &&
-    learningEvidencedRate >= 90 &&
+    meets(financialEducationRate, 100) &&
+    meets(learningEvidencedRate, 90) &&
     total_children > 0 &&
     totalEducation > 0
   ) {
@@ -971,8 +968,8 @@ export function computePocketMoneyFinancialLiteracy(
   }
 
   if (
-    moneyHandlingAccuracyRate >= 95 &&
-    dualSignedRate >= 95 &&
+    meets(moneyHandlingAccuracyRate, 95) &&
+    meets(dualSignedRate, 95) &&
     totalMoneyHandling > 0
   ) {
     insights.push({
@@ -982,8 +979,8 @@ export function computePocketMoneyFinancialLiteracy(
   }
 
   if (
-    budgetingCoverageRate >= 90 &&
-    childLedBudgetRate >= 70 &&
+    meets(budgetingCoverageRate, 90) &&
+    meets(childLedBudgetRate, 70) &&
     total_children > 0 &&
     totalBudgeting > 0
   ) {
@@ -1001,7 +998,7 @@ export function computePocketMoneyFinancialLiteracy(
   }
 
   if (
-    withinBudgetRate >= 90 &&
+    meets(withinBudgetRate, 90) &&
     totalBudgeting > 0
   ) {
     insights.push({

@@ -238,13 +238,13 @@ describe("Home Restorative Practice & Conflict Resolution Intelligence Engine", 
       expect(r.headline).toContain("insufficient data");
     });
 
-    it("all rates are 0 for insufficient_data", () => {
+    it("all rates are null for insufficient_data", () => {
       const r = run({ total_children: 0 });
-      expect(r.conference_completion_rate).toBe(0);
-      expect(r.conflict_resolution_rate).toBe(0);
-      expect(r.relationship_repair_rate).toBe(0);
+      expect(r.conference_completion_rate).toBeNull();
+      expect(r.conflict_resolution_rate).toBeNull();
+      expect(r.relationship_repair_rate).toBeNull();
       expect(r.mediation_quality_rate).toBeNull();
-      expect(r.child_voice_rate).toBe(0);
+      expect(r.child_voice_rate).toBeNull();
       expect(r.satisfaction_rate).toBeNull();
     });
 
@@ -292,13 +292,13 @@ describe("Home Restorative Practice & Conflict Resolution Intelligence Engine", 
       expect(r.insights[0].severity).toBe("critical");
     });
 
-    it("all rates are 0", () => {
+    it("all rates are null", () => {
       const r = run({ total_children: 4 });
-      expect(r.conference_completion_rate).toBe(0);
-      expect(r.conflict_resolution_rate).toBe(0);
-      expect(r.relationship_repair_rate).toBe(0);
+      expect(r.conference_completion_rate).toBeNull();
+      expect(r.conflict_resolution_rate).toBeNull();
+      expect(r.relationship_repair_rate).toBeNull();
       expect(r.mediation_quality_rate).toBeNull();
-      expect(r.child_voice_rate).toBe(0);
+      expect(r.child_voice_rate).toBeNull();
       expect(r.satisfaction_rate).toBeNull();
     });
 
@@ -310,43 +310,43 @@ describe("Home Restorative Practice & Conflict Resolution Intelligence Engine", 
 
   // ── pct(0,0) = 0 ────────────────────────────────────────────────────────
 
-  describe("pct(0,0) = 0 edge case", () => {
-    it("conference_completion_rate is 0 when no conferences", () => {
+  describe("rate(0,0)=null edge case", () => {
+    it("conference_completion_rate is null when no conferences", () => {
       const r = run({
         conflict_resolution_records: [makeConflict()],
       });
-      expect(r.conference_completion_rate).toBe(0);
+      expect(r.conference_completion_rate).toBeNull();
     });
 
-    it("conflict_resolution_rate is 0 when no conflicts", () => {
+    it("conflict_resolution_rate is null when no conflicts", () => {
       const r = run({
         restorative_conference_records: [makeConference()],
       });
-      expect(r.conflict_resolution_rate).toBe(0);
+      expect(r.conflict_resolution_rate).toBeNull();
     });
 
-    it("relationship_repair_rate is 0 when no repairs", () => {
+    it("relationship_repair_rate is null when no repairs", () => {
       const r = run({
         restorative_conference_records: [makeConference()],
       });
-      expect(r.relationship_repair_rate).toBe(0);
+      expect(r.relationship_repair_rate).toBeNull();
     });
 
-    it("mediation_quality_rate is 0 when no mediations", () => {
+    it("mediation_quality_rate is null when no mediations", () => {
       const r = run({
         restorative_conference_records: [makeConference()],
       });
       expect(r.mediation_quality_rate).toBeNull();
     });
 
-    it("child_voice_rate uses composite denominator, returns 0 when all zero domains", () => {
+    it("child_voice_rate uses composite denominator, returns null when all zero domains", () => {
       // child_voice_rate = pct(voiceCaptured + conflictVoiceCaptured + childParticipated,
       //                        totalVoiceRecords + totalConflicts + totalConferences)
       // with only repairs, composite denom = 0, so child_voice_rate = 0
       const r = run({
         relationship_repair_records: [makeRepair()],
       });
-      expect(r.child_voice_rate).toBe(0);
+      expect(r.child_voice_rate).toBeNull();
     });
   });
 

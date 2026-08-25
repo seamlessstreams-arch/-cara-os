@@ -60,7 +60,7 @@ describe("insufficient data guard", () => {
     expect(r.rmp_score).toBe(0);
   });
 
-  it("leaves every rate unmeasured when total_children is 0", () => {
+  it("leaves every rate unmeasured when total_children is null", () => {
     const r = computeRiskManagementPlan(baseInput({ total_children: 0 }));
     expect(r.children_with_plan_rate).toBeNull();
     expect(r.active_plan_rate).toBeNull();
@@ -241,10 +241,10 @@ describe("modifier 2 — strategy effectiveness", () => {
     expect(r.strategy_effectiveness_rate).toBe(10);
   });
 
-  it("applies -1 when totalStrategies is 0", () => {
+  it("applies -1 when totalStrategies is null", () => {
     const plans = [makePlan({ strategy_count: 0, effective_strategy_count: 0 })];
     const r = computeRiskManagementPlan(baseInput({ plans }));
-    expect(r.strategy_effectiveness_rate).toBe(0);
+    expect(r.strategy_effectiveness_rate).toBeNull();
   });
 
   it("applies -1 when total plans is 0 (zero-plan penalty)", () => {
@@ -972,19 +972,19 @@ describe("metrics computation", () => {
     expect(r.approval_rate).toBe(75); // 3/4
   });
 
-  it("returns 0 for strategy_effectiveness_rate when no strategies exist", () => {
+  it("returns null for strategy_effectiveness_rate when no strategies exist", () => {
     const plans = [makePlan({ strategy_count: 0, effective_strategy_count: 0 })];
     const r = computeRiskManagementPlan(baseInput({ plans }));
-    expect(r.strategy_effectiveness_rate).toBe(0);
+    expect(r.strategy_effectiveness_rate).toBeNull();
   });
 
   it("returns all rate fields as 0 when no plans", () => {
     const r = computeRiskManagementPlan(baseInput({ plans: [] }));
-    expect(r.trigger_identification_rate).toBe(0);
-    expect(r.strategy_effectiveness_rate).toBe(0);
-    expect(r.emergency_plan_rate).toBe(0);
-    expect(r.child_voice_rate).toBe(0);
-    expect(r.approval_rate).toBe(0);
+    expect(r.trigger_identification_rate).toBeNull();
+    expect(r.strategy_effectiveness_rate).toBeNull();
+    expect(r.emergency_plan_rate).toBeNull();
+    expect(r.child_voice_rate).toBeNull();
+    expect(r.approval_rate).toBeNull();
   });
 });
 
@@ -1536,11 +1536,11 @@ describe("composite score scenarios", () => {
 describe("pct helper behavior (via computed rates)", () => {
   it("returns 0 when denominator is 0 (no plans for rates)", () => {
     const r = computeRiskManagementPlan(baseInput({ plans: [] }));
-    expect(r.active_plan_rate).toBe(0);
-    expect(r.trigger_identification_rate).toBe(0);
-    expect(r.emergency_plan_rate).toBe(0);
-    expect(r.child_voice_rate).toBe(0);
-    expect(r.approval_rate).toBe(0);
+    expect(r.active_plan_rate).toBeNull();
+    expect(r.trigger_identification_rate).toBeNull();
+    expect(r.emergency_plan_rate).toBeNull();
+    expect(r.child_voice_rate).toBeNull();
+    expect(r.approval_rate).toBeNull();
   });
 
   it("rounds to nearest integer (67% from 2/3)", () => {

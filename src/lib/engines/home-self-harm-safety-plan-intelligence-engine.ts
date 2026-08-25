@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME SELF-HARM SAFETY PLAN INTELLIGENCE ENGINE
 // Pure deterministic engine: safety plan coverage, co-production quality,
@@ -82,10 +83,6 @@ export interface SelfHarmSafetyPlanResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -128,38 +125,38 @@ export function computeSelfHarmSafetyPlan(
   // ── Metrics ────────────────────────────────────────────────────────────
   const total = plans.length;
   const uniqueChildren = new Set(plans.map(p => p.child_id)).size;
-  const childrenWithPlanRate = pct(uniqueChildren, total_children);
+  const childrenWithPlanRate = rate(uniqueChildren, total_children);
 
   const activePlans = plans.filter(
     p => p.status === "active_preventive" || p.status === "active_recent_incident" || p.status === "in_review",
   );
-  const activePlanRate = pct(activePlans.length, total);
+  const activePlanRate = rate(activePlans.length, total);
 
   // Co-production: plans where co_produced_with > 0 AND child_signed_off
   const coProducedPlans = plans.filter(p => p.co_produced_with_count > 0 && p.child_signed_off);
-  const coProductionRate = pct(coProducedPlans.length, total);
+  const coProductionRate = rate(coProducedPlans.length, total);
 
   // Warning sign coverage: plans with BOTH internal AND external warning signs
   const withWarningCoverage = plans.filter(
     p => p.warning_signs_external_count > 0 && p.warning_signs_internal_count > 0,
   );
-  const warningSignCoverageRate = pct(withWarningCoverage.length, total);
+  const warningSignCoverageRate = rate(withWarningCoverage.length, total);
 
   // Coping strategies: plans with internal coping + social distractions
   const withCopingStrategies = plans.filter(
     p => p.internal_coping_strategy_count > 0 && p.social_distraction_count > 0,
   );
-  const copingStrategyRate = pct(withCopingStrategies.length, total);
+  const copingStrategyRate = rate(withCopingStrategies.length, total);
 
   // Contact network: plans with people to contact + professional contacts
   const withContactNetwork = plans.filter(
     p => p.people_to_contact_count > 0 && p.professional_contact_count > 0,
   );
-  const contactNetworkRate = pct(withContactNetwork.length, total);
+  const contactNetworkRate = rate(withContactNetwork.length, total);
 
   // Child voice
   const withChildVoice = plans.filter(p => p.has_child_voice).length;
-  const childVoiceRate = pct(withChildVoice, total);
+  const childVoiceRate = rate(withChildVoice, total);
 
   // Means restriction
   const withMeansRestriction = plans.filter(p => p.means_restriction_count > 0).length;
@@ -185,56 +182,56 @@ export function computeSelfHarmSafetyPlan(
   if (total === 0) {
     score -= 3;
   } else {
-    if (coProductionRate >= 80) score += 6;
-    else if (coProductionRate >= 50) score += 2;
-    else if (coProductionRate < 25) score -= 5;
+    if (meets(coProductionRate, 80)) score += 6;
+    else if (meets(coProductionRate, 50)) score += 2;
+    else if (below(coProductionRate, 25)) score -= 5;
   }
 
   // Modifier 2: Warning sign identification
   if (total === 0) {
     score -= 1;
   } else {
-    if (warningSignCoverageRate >= 80) score += 5;
-    else if (warningSignCoverageRate >= 50) score += 2;
-    else if (warningSignCoverageRate < 25) score -= 5;
+    if (meets(warningSignCoverageRate, 80)) score += 5;
+    else if (meets(warningSignCoverageRate, 50)) score += 2;
+    else if (below(warningSignCoverageRate, 25)) score -= 5;
   }
 
   // Modifier 3: Coping strategy breadth
   if (total === 0) {
     score -= 1;
   } else {
-    if (copingStrategyRate >= 75) score += 5;
-    else if (copingStrategyRate >= 40) score += 2;
-    else if (copingStrategyRate < 20) score -= 4;
+    if (meets(copingStrategyRate, 75)) score += 5;
+    else if (meets(copingStrategyRate, 40)) score += 2;
+    else if (below(copingStrategyRate, 20)) score -= 4;
   }
 
   // Modifier 4: Contact network completeness
   if (total === 0) {
     // no adjustment
   } else {
-    if (contactNetworkRate >= 80) score += 5;
-    else if (contactNetworkRate >= 50) score += 2;
-    else if (contactNetworkRate < 25) score -= 4;
+    if (meets(contactNetworkRate, 80)) score += 5;
+    else if (meets(contactNetworkRate, 50)) score += 2;
+    else if (below(contactNetworkRate, 25)) score -= 4;
   }
 
   // Modifier 5: Child voice in safety planning
   if (total === 0) {
     score -= 1;
   } else {
-    if (childVoiceRate >= 80) score += 4;
-    else if (childVoiceRate >= 50) score += 1;
-    else if (childVoiceRate < 20) score -= 4;
+    if (meets(childVoiceRate, 80)) score += 4;
+    else if (meets(childVoiceRate, 50)) score += 1;
+    else if (below(childVoiceRate, 20)) score -= 4;
   }
 
   // Modifier 6: Review compliance and means restriction
   if (total === 0) {
     score -= 2;
   } else {
-    const reviewRate = pct(withCurrentReview, total);
-    const meansRate = pct(withMeansRestriction, total);
-    if (reviewRate >= 75 && meansRate >= 60) score += 5;
-    else if (reviewRate >= 50 || meansRate >= 40) score += 2;
-    else if (reviewRate < 25 && meansRate < 20) score -= 3;
+    const reviewRate = rate(withCurrentReview, total);
+    const meansRate = rate(withMeansRestriction, total);
+    if (meets(reviewRate, 75) && meets(meansRate, 60)) score += 5;
+    else if (meets(reviewRate, 50) || meets(meansRate, 40)) score += 2;
+    else if (below(reviewRate, 25) && below(meansRate, 20)) score -= 3;
   }
 
   score = clamp(score, 0, 100);
@@ -245,32 +242,32 @@ export function computeSelfHarmSafetyPlan(
 
   // ── Strengths ──────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (coProductionRate >= 80 && total > 0)
+  if (meets(coProductionRate, 80) && total > 0)
     strengths.push("Safety plans are genuinely co-produced with children — plans reflect their voice and ownership");
-  if (warningSignCoverageRate >= 80 && total > 0)
+  if (meets(warningSignCoverageRate, 80) && total > 0)
     strengths.push("Warning signs are comprehensively identified — both internal and external indicators are documented");
-  if (copingStrategyRate >= 75 && total > 0)
+  if (meets(copingStrategyRate, 75) && total > 0)
     strengths.push("Children have diverse coping strategies available — internal techniques and social distractions are well-planned");
-  if (contactNetworkRate >= 80 && total > 0)
+  if (meets(contactNetworkRate, 80) && total > 0)
     strengths.push("Contact networks are complete — children know who to reach out to in personal and professional circles");
-  if (childVoiceRate >= 80 && total > 0)
+  if (meets(childVoiceRate, 80) && total > 0)
     strengths.push("Children's voices are consistently present in safety planning — their perspective shapes protective measures");
-  if (pct(withMeansRestriction, total) >= 60 && total > 0)
+  if (total > 0 && meets(rate(withMeansRestriction, total), 60))
     strengths.push("Means restriction agreements are in place — practical steps reduce access to methods of self-harm");
 
   // ── Concerns ───────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (total === 0 && total_children > 0)
     concerns.push("No self-harm safety plans exist — children at risk may lack structured protective measures");
-  if (coProductionRate < 25 && total > 0)
+  if (below(coProductionRate, 25) && total > 0)
     concerns.push("Safety plans are rarely co-produced — children may not feel ownership or engagement with their safety plan");
-  if (warningSignCoverageRate < 25 && total > 0)
+  if (below(warningSignCoverageRate, 25) && total > 0)
     concerns.push("Warning signs are poorly identified — staff may miss early indicators of escalating risk");
-  if (copingStrategyRate < 20 && total > 0)
+  if (below(copingStrategyRate, 20) && total > 0)
     concerns.push("Coping strategies are inadequate — children lack practical alternatives when experiencing urges");
-  if (contactNetworkRate < 25 && total > 0)
+  if (below(contactNetworkRate, 25) && total > 0)
     concerns.push("Contact networks are incomplete — children may not know who to reach in crisis");
-  if (childVoiceRate < 20 && total > 0)
+  if (below(childVoiceRate, 20) && total > 0)
     concerns.push("Children's voices are absent from safety planning — plans may not reflect their actual needs");
   if (totalFlags > 5)
     concerns.push("Multiple flags for review across plans suggest safety plans may be outdated or insufficient");
@@ -281,31 +278,31 @@ export function computeSelfHarmSafetyPlan(
 
   if (total === 0 && total_children > 0)
     recommendations.push({ rank: ++rank, recommendation: "Assess all children for self-harm risk and create co-produced safety plans for those identified as at risk", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 12" });
-  if (coProductionRate < 50 && total > 0)
+  if (below(coProductionRate, 50) && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Ensure all safety plans are co-produced with children, with their input documented and sign-off obtained", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 13" });
-  if (warningSignCoverageRate < 50 && total > 0)
+  if (below(warningSignCoverageRate, 50) && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Review all safety plans to ensure both internal and external warning signs are identified for each child", urgency: "soon", regulatory_ref: "SCCIF Helped & Protected" });
-  if (copingStrategyRate < 40 && total > 0)
+  if (below(copingStrategyRate, 40) && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Work with each child to develop a broader range of coping strategies including internal techniques and social activities", urgency: "soon", regulatory_ref: "SCCIF Health" });
-  if (contactNetworkRate < 50 && total > 0)
+  if (below(contactNetworkRate, 50) && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Complete contact networks in all plans — ensure children have both personal and professional contacts identified", urgency: "soon", regulatory_ref: "CHR 2015 Reg 12" });
-  if (pct(withCurrentReview, total) < 50 && total > 0)
+  if (total > 0 && below(rate(withCurrentReview, total), 50))
     recommendations.push({ rank: ++rank, recommendation: "Schedule and complete overdue safety plan reviews to ensure plans remain current and responsive", urgency: "planned", regulatory_ref: "CHR 2015 Reg 13" });
 
   // ── Insights ───────────────────────────────────────────────────────────
   const insights: SelfHarmSafetyPlanResult["insights"] = [];
   if (total === 0 && total_children > 0)
     insights.push({ text: "No safety plans means Ofsted cannot verify the home has structured responses to self-harm risk", severity: "critical" });
-  if (total > 0 && coProductionRate >= 80 && childVoiceRate >= 80)
+  if (total > 0 && meets(coProductionRate, 80) && meets(childVoiceRate, 80))
     insights.push({ text: "Co-produced plans with strong child voice demonstrate genuine partnership in safety planning", severity: "positive" });
-  if (total > 0 && copingStrategyRate >= 75 && contactNetworkRate >= 80)
+  if (total > 0 && meets(copingStrategyRate, 75) && meets(contactNetworkRate, 80))
     insights.push({ text: "Comprehensive coping strategies combined with complete contact networks provide robust crisis support", severity: "positive" });
   const recentIncidentPlans = plans.filter(p => p.status === "active_recent_incident").length;
   if (recentIncidentPlans > 0)
     insights.push({ text: "Active plans following recent incidents require heightened monitoring and more frequent review", severity: "warning" });
   if (totalFlags > 3 && total > 0)
     insights.push({ text: "Flagged plans may indicate changing risk levels — prioritise review of flagged safety plans", severity: "warning" });
-  if (pct(withReasons, total) >= 75 && total > 0)
+  if (total > 0 && meets(rate(withReasons, total), 75))
     insights.push({ text: "Reasons to live and reasons for hope are documented — children's protective narratives strengthen resilience", severity: "positive" });
 
   // ── Headline ───────────────────────────────────────────────────────────

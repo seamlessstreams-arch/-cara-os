@@ -223,12 +223,12 @@ describe("insufficient_data", () => {
     const r = run({ total_children: 0 });
     expect(r.documentation_rating).toBe("insufficient_data");
     expect(r.documentation_score).toBe(0);
-    expect(r.daily_log_completion_rate).toBe(0);
-    expect(r.care_plan_currency_rate).toBe(0);
-    expect(r.risk_assessment_review_rate).toBe(0);
-    expect(r.incident_report_timeliness_rate).toBe(0);
-    expect(r.regulatory_compliance_rate).toBe(0);
-    expect(r.record_accuracy_rate).toBe(0);
+    expect(r.daily_log_completion_rate).toBeNull();
+    expect(r.care_plan_currency_rate).toBeNull();
+    expect(r.risk_assessment_review_rate).toBeNull();
+    expect(r.incident_report_timeliness_rate).toBeNull();
+    expect(r.regulatory_compliance_rate).toBeNull();
+    expect(r.record_accuracy_rate).toBeNull();
     expect(r.strengths).toHaveLength(0);
     expect(r.concerns).toHaveLength(0);
     expect(r.recommendations).toHaveLength(0);
@@ -271,14 +271,14 @@ describe("inadequate floor -- all empty with children on placement", () => {
     expect(r.insights[0].severity).toBe("critical");
   });
 
-  it("all rates are 0", () => {
+  it("all rates are null", () => {
     const r = run({ total_children: 3 });
-    expect(r.daily_log_completion_rate).toBe(0);
-    expect(r.care_plan_currency_rate).toBe(0);
-    expect(r.risk_assessment_review_rate).toBe(0);
-    expect(r.incident_report_timeliness_rate).toBe(0);
-    expect(r.regulatory_compliance_rate).toBe(0);
-    expect(r.record_accuracy_rate).toBe(0);
+    expect(r.daily_log_completion_rate).toBeNull();
+    expect(r.care_plan_currency_rate).toBeNull();
+    expect(r.risk_assessment_review_rate).toBeNull();
+    expect(r.incident_report_timeliness_rate).toBeNull();
+    expect(r.regulatory_compliance_rate).toBeNull();
+    expect(r.record_accuracy_rate).toBeNull();
   });
 
   it("headline references urgent attention", () => {
@@ -1625,9 +1625,9 @@ describe("rate calculations", () => {
       expect(r.daily_log_completion_rate).toBe(0);
     });
 
-    it("returns 0 when no logs", () => {
+    it("returns null when no logs", () => {
       const r = run({ daily_log_records: [], care_plan_records: nCarePlans(1) });
-      expect(r.daily_log_completion_rate).toBe(0);
+      expect(r.daily_log_completion_rate).toBeNull();
     });
 
     it("calculates correct percentage", () => {
@@ -1740,12 +1740,12 @@ describe("rate calculations", () => {
       expect(r.incident_report_timeliness_rate).toBe(0);
     });
 
-    it("returns 0 when no incidents", () => {
+    it("returns null when no incidents", () => {
       const r = run({
         incident_report_records: [],
         daily_log_records: nLogs(1),
       });
-      expect(r.incident_report_timeliness_rate).toBe(0);
+      expect(r.incident_report_timeliness_rate).toBeNull();
     });
 
     it("calculates correct percentage", () => {
@@ -1843,12 +1843,12 @@ describe("rate calculations", () => {
       expect(r.record_accuracy_rate).toBe(50);
     });
 
-    it("returns 0 when no records at all", () => {
+    it("returns null when no records at all", () => {
       const r = run({
         care_plan_records: nCarePlans(1), // just to avoid "all empty" special case
       });
       // denominator: 0+0+0+0+0 = 0 => pct(0,0) = 0
-      expect(r.record_accuracy_rate).toBe(0);
+      expect(r.record_accuracy_rate).toBeNull();
     });
 
     it("only counts currentRegDocs (not all) in denominator", () => {
@@ -2903,13 +2903,13 @@ describe("edge cases", () => {
     expect(r.risk_assessment_review_rate).toBe(0);
   });
 
-  it("pct(0,0) returns 0", () => {
+  it("rate(0,0)=nullreturns 0", () => {
     // Verified through record accuracy with no records
     const r = run({
       care_plan_records: [makeCarePlan()],
     });
     // No logs, no incidents, no reg docs in accuracy => pct(0,0) = 0
-    expect(r.record_accuracy_rate).toBe(0);
+    expect(r.record_accuracy_rate).toBeNull();
   });
 
   it("daily logs with word_count < 50 do not affect scoring directly", () => {
@@ -3453,14 +3453,17 @@ describe("return shape", () => {
     expect(r).toHaveProperty("insights");
   });
 
-  it("rates are numbers", () => {
+  it("rates are numbers or null (unmeasured)", () => {
     const r = run({ daily_log_records: nLogs(5) });
-    expect(typeof r.daily_log_completion_rate).toBe("number");
-    expect(typeof r.care_plan_currency_rate).toBe("number");
-    expect(typeof r.risk_assessment_review_rate).toBe("number");
-    expect(typeof r.incident_report_timeliness_rate).toBe("number");
-    expect(typeof r.regulatory_compliance_rate).toBe("number");
-    expect(typeof r.record_accuracy_rate).toBe("number");
+    // With only daily logs supplied, the other populations are unmeasured —
+    // each rate is either a number or an honest null, never a fabricated 0.
+    for (const v of [
+      r.daily_log_completion_rate, r.care_plan_currency_rate,
+      r.risk_assessment_review_rate, r.incident_report_timeliness_rate,
+      r.regulatory_compliance_rate, r.record_accuracy_rate,
+    ]) {
+      expect(v === null || typeof v === "number").toBe(true);
+    }
     expect(typeof r.documentation_score).toBe("number");
   });
 

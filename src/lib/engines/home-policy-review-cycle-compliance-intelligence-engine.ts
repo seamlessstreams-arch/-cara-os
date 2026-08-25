@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME POLICY REVIEW CYCLE COMPLIANCE INTELLIGENCE ENGINE
 // Measures policy review schedule adherence, version control, staff
@@ -143,12 +144,18 @@ export interface PolicyReviewCycleComplianceResult {
   total_acknowledgement_records: number;
   total_alignment_records: number;
   total_accessibility_records: number;
-  review_schedule_rate: number;
-  version_control_rate: number;
-  staff_acknowledgement_rate: number;
-  regulatory_alignment_rate: number;
-  accessibility_rate: number;
-  update_timeliness_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  review_schedule_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  version_control_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staff_acknowledgement_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  regulatory_alignment_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  accessibility_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  update_timeliness_rate: number | null;
   review_schedule_records: PolicyReviewScheduleRecordInput[];
   version_control_records: PolicyVersionControlRecordInput[];
   acknowledgement_records: PolicyAcknowledgementRecordInput[];
@@ -161,10 +168,6 @@ export interface PolicyReviewCycleComplianceResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -199,12 +202,12 @@ function emptyResult(
     total_acknowledgement_records: 0,
     total_alignment_records: 0,
     total_accessibility_records: 0,
-    review_schedule_rate: 0,
-    version_control_rate: 0,
-    staff_acknowledgement_rate: 0,
-    regulatory_alignment_rate: 0,
-    accessibility_rate: 0,
-    update_timeliness_rate: 0,
+    review_schedule_rate: null,
+    version_control_rate: null,
+    staff_acknowledgement_rate: null,
+    regulatory_alignment_rate: null,
+    accessibility_rate: null,
+    update_timeliness_rate: null,
     review_schedule_records: [],
     version_control_records: [],
     acknowledgement_records: [],
@@ -290,39 +293,39 @@ export function computePolicyReviewCycleCompliance(
   const totalReviewRecords = review_schedule_records.length;
 
   const reviewsCompleted = review_schedule_records.filter((r) => r.review_completed).length;
-  const reviewScheduleRate = pct(reviewsCompleted, totalReviewRecords);
+  const reviewScheduleRate = rate(reviewsCompleted, totalReviewRecords);
 
   const reviewsOnTime = review_schedule_records.filter(
     (r) => r.review_completed && r.days_overdue <= 0,
   ).length;
-  const onTimeReviewRate = pct(reviewsOnTime, totalReviewRecords);
+  const onTimeReviewRate = rate(reviewsOnTime, totalReviewRecords);
 
   const reviewsOverdue = review_schedule_records.filter(
     (r) => !r.review_completed && r.days_overdue > 0,
   ).length;
-  const overdueRate = pct(reviewsOverdue, totalReviewRecords);
+  const overdueRate = rate(reviewsOverdue, totalReviewRecords);
 
   const severelyOverdue = review_schedule_records.filter(
     (r) => !r.review_completed && r.days_overdue > 90,
   ).length;
-  const severelyOverdueRate = pct(severelyOverdue, totalReviewRecords);
+  const severelyOverdueRate = rate(severelyOverdue, totalReviewRecords);
 
   const consultationUndertaken = review_schedule_records.filter(
     (r) => r.review_completed && r.consultation_undertaken,
   ).length;
-  const consultationRate = pct(consultationUndertaken, reviewsCompleted);
+  const consultationRate = rate(consultationUndertaken, reviewsCompleted);
 
   const youngPeopleConsulted = review_schedule_records.filter(
     (r) => r.review_completed && r.young_people_consulted,
   ).length;
-  const youngPeopleConsultationRate = pct(youngPeopleConsulted, reviewsCompleted);
+  const youngPeopleConsultationRate = rate(youngPeopleConsulted, reviewsCompleted);
 
   // Safeguarding-specific tracking
   const safeguardingPolicies = review_schedule_records.filter(
     (r) => r.category === "safeguarding",
   );
   const safeguardingCompleted = safeguardingPolicies.filter((r) => r.review_completed).length;
-  const safeguardingReviewRate = pct(safeguardingCompleted, safeguardingPolicies.length);
+  const safeguardingReviewRate = rate(safeguardingCompleted, safeguardingPolicies.length);
 
   const safeguardingOverdue = safeguardingPolicies.filter(
     (r) => !r.review_completed && r.days_overdue > 0,
@@ -342,7 +345,7 @@ export function computePolicyReviewCycleCompliance(
   const changeLogMaintained = version_control_records.filter(
     (r) => r.change_log_maintained,
   ).length;
-  const changeLogRate = pct(changeLogMaintained, totalVersionRecords);
+  const changeLogRate = rate(changeLogMaintained, totalVersionRecords);
 
   const rationalDocumented = version_control_records.filter(
     (r) => r.rationale_documented,
@@ -351,7 +354,7 @@ export function computePolicyReviewCycleCompliance(
   // Version control composite: approved + archived + change_log + rationale
   const versionControlNumerator = approvedVersions + archivedVersions + changeLogMaintained + rationalDocumented;
   const versionControlDenominator = totalVersionRecords * 4;
-  const versionControlRate = pct(versionControlNumerator, versionControlDenominator);
+  const versionControlRate = rate(versionControlNumerator, versionControlDenominator);
 
   // Update timeliness — policies updated within 14 days of effective date
   const timelyUpdates = version_control_records.filter((r) => {
@@ -359,23 +362,23 @@ export function computePolicyReviewCycleCompliance(
     const daysToApprove = daysBetween(r.change_date, r.approval_date);
     return daysToApprove >= 0 && daysToApprove <= 14;
   }).length;
-  const updateTimelinessRate = pct(timelyUpdates, totalVersionRecords);
+  const updateTimelinessRate = rate(timelyUpdates, totalVersionRecords);
 
   // --- Staff acknowledgement metrics ---
   const totalAcknowledgementRecords = acknowledgement_records.length;
 
   const acknowledged = acknowledgement_records.filter((r) => r.acknowledged).length;
-  const staffAcknowledgementRate = pct(acknowledged, totalAcknowledgementRecords);
+  const staffAcknowledgementRate = rate(acknowledged, totalAcknowledgementRecords);
 
   const comprehensionConfirmed = acknowledgement_records.filter(
     (r) => r.acknowledged && r.comprehension_confirmed,
   ).length;
-  const comprehensionRate = pct(comprehensionConfirmed, totalAcknowledgementRecords);
+  const comprehensionRate = rate(comprehensionConfirmed, totalAcknowledgementRecords);
 
   const outstandingAcknowledgements = acknowledgement_records.filter(
     (r) => !r.acknowledged,
   ).length;
-  const outstandingAckRate = pct(outstandingAcknowledgements, totalAcknowledgementRecords);
+  const outstandingAckRate = rate(outstandingAcknowledgements, totalAcknowledgementRecords);
 
   // --- Regulatory alignment metrics ---
   const totalAlignmentRecords = alignment_records.length;
@@ -383,12 +386,12 @@ export function computePolicyReviewCycleCompliance(
   const fullyAligned = alignment_records.filter(
     (r) => r.alignment_status === "fully_aligned",
   ).length;
-  const regulatoryAlignmentRate = pct(fullyAligned, totalAlignmentRecords);
+  const regulatoryAlignmentRate = rate(fullyAligned, totalAlignmentRecords);
 
   const notAligned = alignment_records.filter(
     (r) => r.alignment_status === "not_aligned",
   ).length;
-  const nonAlignmentRate = pct(notAligned, totalAlignmentRecords);
+  const nonAlignmentRate = rate(notAligned, totalAlignmentRecords);
 
   const gapsIdentified = alignment_records.filter(
     (r) => r.gaps_identified.length > 0,
@@ -403,12 +406,12 @@ export function computePolicyReviewCycleCompliance(
   const remediationCompleted = alignment_records.filter(
     (r) => r.remediation_actions.length > 0 && r.remediation_completed,
   ).length;
-  const remediationCompletionRate = pct(remediationCompleted, remediationRequired);
+  const remediationCompletionRate = rate(remediationCompleted, remediationRequired);
 
   const legislativeTracked = alignment_records.filter(
     (r) => r.legislative_change_tracked,
   ).length;
-  const legislativeTrackingRate = pct(legislativeTracked, totalAlignmentRecords);
+  const legislativeTrackingRate = rate(legislativeTracked, totalAlignmentRecords);
 
   // --- Accessibility metrics ---
   const totalAccessibilityRecords = accessibility_records.length;
@@ -428,17 +431,17 @@ export function computePolicyReviewCycleCompliance(
       if (check(rec)) totalAccessChecksPassed++;
     }
   }
-  const accessibilityRate = pct(totalAccessChecksPassed, totalAccessChecksPossible);
+  const accessibilityRate = rate(totalAccessChecksPassed, totalAccessChecksPossible);
 
   const youngPeopleVersions = accessibility_records.filter(
     (r) => r.young_people_version_available,
   ).length;
-  const youngPeopleAccessRate = pct(youngPeopleVersions, totalAccessibilityRecords);
+  const youngPeopleAccessRate = rate(youngPeopleVersions, totalAccessibilityRecords);
 
   const easyReadAvailable = accessibility_records.filter(
     (r) => r.easy_read_version_available,
   ).length;
-  const easyReadRate = pct(easyReadAvailable, totalAccessibilityRecords);
+  const easyReadRate = rate(easyReadAvailable, totalAccessibilityRecords);
 
   const accessIssuesIdentified = accessibility_records.filter(
     (r) => r.accessibility_issues.length > 0,
@@ -446,51 +449,51 @@ export function computePolicyReviewCycleCompliance(
   const accessIssuesResolved = accessibility_records.filter(
     (r) => r.accessibility_issues.length > 0 && r.issues_resolved,
   ).length;
-  const accessIssueResolutionRate = pct(accessIssuesResolved, accessIssuesIdentified);
+  const accessIssueResolutionRate = rate(accessIssuesResolved, accessIssuesIdentified);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: reviewScheduleRate (>=90: +5, >=70: +3) ---
-  if (reviewScheduleRate >= 90) score += 5;
-  else if (reviewScheduleRate >= 70) score += 3;
+  if (meets(reviewScheduleRate, 90)) score += 5;
+  else if (meets(reviewScheduleRate, 70)) score += 3;
 
   // --- Bonus 2: versionControlRate (>=90: +5, >=70: +2) ---
-  if (versionControlRate >= 90) score += 5;
-  else if (versionControlRate >= 70) score += 2;
+  if (meets(versionControlRate, 90)) score += 5;
+  else if (meets(versionControlRate, 70)) score += 2;
 
   // --- Bonus 3: staffAcknowledgementRate (>=90: +5, >=70: +2) ---
-  if (staffAcknowledgementRate >= 90) score += 5;
-  else if (staffAcknowledgementRate >= 70) score += 2;
+  if (meets(staffAcknowledgementRate, 90)) score += 5;
+  else if (meets(staffAcknowledgementRate, 70)) score += 2;
 
   // --- Bonus 4: regulatoryAlignmentRate (>=90: +5, >=70: +2) ---
-  if (regulatoryAlignmentRate >= 90) score += 5;
-  else if (regulatoryAlignmentRate >= 70) score += 2;
+  if (meets(regulatoryAlignmentRate, 90)) score += 5;
+  else if (meets(regulatoryAlignmentRate, 70)) score += 2;
 
   // --- Bonus 5: accessibilityRate (>=90: +4, >=70: +2) ---
-  if (accessibilityRate >= 90) score += 4;
-  else if (accessibilityRate >= 70) score += 2;
+  if (meets(accessibilityRate, 90)) score += 4;
+  else if (meets(accessibilityRate, 70)) score += 2;
 
   // --- Bonus 6: updateTimelinessRate (>=90: +4, >=70: +2) ---
-  if (updateTimelinessRate >= 90) score += 4;
-  else if (updateTimelinessRate >= 70) score += 2;
+  if (meets(updateTimelinessRate, 90)) score += 4;
+  else if (meets(updateTimelinessRate, 70)) score += 2;
 
   // Max bonuses: 5+5+5+5+4+4 = 28
 
   // ── Penalties (4 guarded) ─────────────────────────────────────────────
 
   // Penalty 1: reviewScheduleRate < 50 → -6
-  if (reviewScheduleRate < 50 && totalReviewRecords > 0) score -= 6;
+  if (below(reviewScheduleRate, 50) && totalReviewRecords > 0) score -= 6;
 
   // Penalty 2: staffAcknowledgementRate < 50 → -5
-  if (staffAcknowledgementRate < 50 && totalAcknowledgementRecords > 0) score -= 5;
+  if (below(staffAcknowledgementRate, 50) && totalAcknowledgementRecords > 0) score -= 5;
 
   // Penalty 3: regulatoryAlignmentRate < 40 → -5
-  if (regulatoryAlignmentRate < 40 && totalAlignmentRecords > 0) score -= 5;
+  if (below(regulatoryAlignmentRate, 40) && totalAlignmentRecords > 0) score -= 5;
 
   // Penalty 4: severelyOverdueRate > 30 → -4
-  if (severelyOverdueRate > 30 && totalReviewRecords > 0) score -= 4;
+  if (above(severelyOverdueRate, 30) && totalReviewRecords > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -500,133 +503,133 @@ export function computePolicyReviewCycleCompliance(
 
   const strengths: string[] = [];
 
-  if (reviewScheduleRate >= 90 && totalReviewRecords > 0) {
+  if (meets(reviewScheduleRate, 90) && totalReviewRecords > 0) {
     strengths.push(
       `${reviewScheduleRate}% policy review completion — the home maintains an exemplary review cycle ensuring all policies are current, relevant, and reflective of best practice. This demonstrates robust leadership and governance under SCCIF.`,
     );
-  } else if (reviewScheduleRate >= 70 && totalReviewRecords > 0) {
+  } else if (meets(reviewScheduleRate, 70) && totalReviewRecords > 0) {
     strengths.push(
       `${reviewScheduleRate}% policy review completion — the majority of policies are reviewed on schedule, demonstrating a generally effective review cycle.`,
     );
   }
 
-  if (versionControlRate >= 90 && totalVersionRecords > 0) {
+  if (meets(versionControlRate, 90) && totalVersionRecords > 0) {
     strengths.push(
       `${versionControlRate}% version control compliance — policies are consistently approved, archived, change-logged, and rationale-documented, providing a comprehensive audit trail of policy evolution.`,
     );
-  } else if (versionControlRate >= 70 && totalVersionRecords > 0) {
+  } else if (meets(versionControlRate, 70) && totalVersionRecords > 0) {
     strengths.push(
       `${versionControlRate}% version control compliance — the home generally maintains good version control practices across its policy framework.`,
     );
   }
 
-  if (staffAcknowledgementRate >= 90 && totalAcknowledgementRecords > 0) {
+  if (meets(staffAcknowledgementRate, 90) && totalAcknowledgementRecords > 0) {
     strengths.push(
       `${staffAcknowledgementRate}% staff policy acknowledgement — staff consistently read, understand, and confirm their awareness of policies, ensuring consistent practice across the home.`,
     );
-  } else if (staffAcknowledgementRate >= 70 && totalAcknowledgementRecords > 0) {
+  } else if (meets(staffAcknowledgementRate, 70) && totalAcknowledgementRecords > 0) {
     strengths.push(
       `${staffAcknowledgementRate}% staff policy acknowledgement — the majority of staff acknowledge policies within required timeframes.`,
     );
   }
 
-  if (regulatoryAlignmentRate >= 90 && totalAlignmentRecords > 0) {
+  if (meets(regulatoryAlignmentRate, 90) && totalAlignmentRecords > 0) {
     strengths.push(
       `${regulatoryAlignmentRate}% regulatory alignment — policies are fully aligned with current legislation and regulatory requirements, demonstrating that the home proactively maintains compliance with Reg 36.`,
     );
-  } else if (regulatoryAlignmentRate >= 70 && totalAlignmentRecords > 0) {
+  } else if (meets(regulatoryAlignmentRate, 70) && totalAlignmentRecords > 0) {
     strengths.push(
       `${regulatoryAlignmentRate}% regulatory alignment — the majority of policies are aligned with current regulatory requirements.`,
     );
   }
 
-  if (accessibilityRate >= 90 && totalAccessibilityRecords > 0) {
+  if (meets(accessibilityRate, 90) && totalAccessibilityRecords > 0) {
     strengths.push(
       `${accessibilityRate}% policy accessibility — policies are available digitally, physically, in easy-read formats, and with young-people-friendly versions, ensuring everyone who needs them can access them.`,
     );
-  } else if (accessibilityRate >= 70 && totalAccessibilityRecords > 0) {
+  } else if (meets(accessibilityRate, 70) && totalAccessibilityRecords > 0) {
     strengths.push(
       `${accessibilityRate}% policy accessibility — policies are generally accessible to staff and young people across multiple formats.`,
     );
   }
 
-  if (updateTimelinessRate >= 90 && totalVersionRecords > 0) {
+  if (meets(updateTimelinessRate, 90) && totalVersionRecords > 0) {
     strengths.push(
       `${updateTimelinessRate}% update timeliness — policy changes are approved and implemented promptly, ensuring the home always operates under current guidance.`,
     );
-  } else if (updateTimelinessRate >= 70 && totalVersionRecords > 0) {
+  } else if (meets(updateTimelinessRate, 70) && totalVersionRecords > 0) {
     strengths.push(
       `${updateTimelinessRate}% update timeliness — the majority of policy updates are approved within 14 days of the change being made.`,
     );
   }
 
-  if (onTimeReviewRate >= 90 && totalReviewRecords > 0) {
+  if (meets(onTimeReviewRate, 90) && totalReviewRecords > 0) {
     strengths.push(
       `${onTimeReviewRate}% of reviews completed on time — the home's review schedule discipline ensures policies never lapse, providing continuous protection for children.`,
     );
-  } else if (onTimeReviewRate >= 70 && totalReviewRecords > 0) {
+  } else if (meets(onTimeReviewRate, 70) && totalReviewRecords > 0) {
     strengths.push(
       `${onTimeReviewRate}% of reviews completed on time — the home generally meets its review schedule deadlines.`,
     );
   }
 
-  if (comprehensionRate >= 90 && totalAcknowledgementRecords > 0) {
+  if (meets(comprehensionRate, 90) && totalAcknowledgementRecords > 0) {
     strengths.push(
       `${comprehensionRate}% comprehension confirmation — staff not only acknowledge policies but confirm their understanding, ensuring knowledge is embedded in practice rather than just documented.`,
     );
-  } else if (comprehensionRate >= 70 && totalAcknowledgementRecords > 0) {
+  } else if (meets(comprehensionRate, 70) && totalAcknowledgementRecords > 0) {
     strengths.push(
       `${comprehensionRate}% comprehension confirmation — the majority of staff confirm they understand the policies they acknowledge.`,
     );
   }
 
-  if (consultationRate >= 90 && reviewsCompleted > 0) {
+  if (meets(consultationRate, 90) && reviewsCompleted > 0) {
     strengths.push(
       `${consultationRate}% consultation during reviews — the home routinely consults with stakeholders when reviewing policies, ensuring policies reflect diverse perspectives and practical realities.`,
     );
-  } else if (consultationRate >= 70 && reviewsCompleted > 0) {
+  } else if (meets(consultationRate, 70) && reviewsCompleted > 0) {
     strengths.push(
       `${consultationRate}% consultation during reviews — consultation is undertaken for the majority of policy reviews.`,
     );
   }
 
-  if (youngPeopleConsultationRate >= 80 && reviewsCompleted > 0) {
+  if (meets(youngPeopleConsultationRate, 80) && reviewsCompleted > 0) {
     strengths.push(
       `${youngPeopleConsultationRate}% of reviews include young people's consultation — the home actively seeks the views of young people when reviewing policies that affect them, demonstrating child-centred governance.`,
     );
   }
 
-  if (legislativeTrackingRate >= 90 && totalAlignmentRecords > 0) {
+  if (meets(legislativeTrackingRate, 90) && totalAlignmentRecords > 0) {
     strengths.push(
       `${legislativeTrackingRate}% legislative change tracking — the home proactively monitors legislative developments and ensures policies reflect current law.`,
     );
   }
 
-  if (remediationCompletionRate >= 90 && remediationRequired > 0) {
+  if (meets(remediationCompletionRate, 90) && remediationRequired > 0) {
     strengths.push(
       `${remediationCompletionRate}% remediation completion — where alignment gaps are identified, remediation actions are consistently completed, demonstrating responsive governance.`,
     );
   }
 
-  if (safeguardingReviewRate >= 95 && safeguardingPolicies.length > 0) {
+  if (meets(safeguardingReviewRate, 95) && safeguardingPolicies.length > 0) {
     strengths.push(
       `${safeguardingReviewRate}% safeguarding policy review completion — critical safeguarding policies are reviewed to the highest standard, reflecting the home's commitment to children's protection.`,
     );
   }
 
-  if (youngPeopleAccessRate >= 80 && totalAccessibilityRecords > 0) {
+  if (meets(youngPeopleAccessRate, 80) && totalAccessibilityRecords > 0) {
     strengths.push(
       `${youngPeopleAccessRate}% of policies have young-people-friendly versions — the home ensures young people can understand and engage with policies that affect their care and rights.`,
     );
   }
 
-  if (changeLogRate >= 90 && totalVersionRecords > 0) {
+  if (meets(changeLogRate, 90) && totalVersionRecords > 0) {
     strengths.push(
       `${changeLogRate}% change log maintenance — the home maintains a thorough audit trail of all policy amendments, supporting transparency and accountability.`,
     );
   }
 
-  if (accessIssueResolutionRate >= 90 && accessIssuesIdentified > 0) {
+  if (meets(accessIssueResolutionRate, 90) && accessIssuesIdentified > 0) {
     strengths.push(
       `${accessIssueResolutionRate}% of accessibility issues resolved — identified barriers to policy access are addressed promptly, ensuring policies remain available to all stakeholders.`,
     );
@@ -636,111 +639,111 @@ export function computePolicyReviewCycleCompliance(
 
   const concerns: string[] = [];
 
-  if (reviewScheduleRate < 50 && totalReviewRecords > 0) {
+  if (below(reviewScheduleRate, 50) && totalReviewRecords > 0) {
     concerns.push(
       `Only ${reviewScheduleRate}% of policy reviews completed — the majority of policies have not been reviewed on schedule, meaning the home is operating under potentially outdated guidance that may not reflect current legislation or best practice.`,
     );
-  } else if (reviewScheduleRate < 70 && reviewScheduleRate >= 50 && totalReviewRecords > 0) {
+  } else if (below(reviewScheduleRate, 70) && meets(reviewScheduleRate, 50) && totalReviewRecords > 0) {
     concerns.push(
       `Policy review completion at ${reviewScheduleRate}% — a notable proportion of policies have not been reviewed within their scheduled cycle, creating compliance risk.`,
     );
   }
 
-  if (versionControlRate < 50 && totalVersionRecords > 0) {
+  if (below(versionControlRate, 50) && totalVersionRecords > 0) {
     concerns.push(
       `Only ${versionControlRate}% version control compliance — policies lack proper approval, archiving, change logging, or rationale documentation, undermining the home's ability to demonstrate transparent governance of its policy framework.`,
     );
-  } else if (versionControlRate < 70 && versionControlRate >= 50 && totalVersionRecords > 0) {
+  } else if (below(versionControlRate, 70) && meets(versionControlRate, 50) && totalVersionRecords > 0) {
     concerns.push(
       `Version control compliance at ${versionControlRate}% — some policy changes are not fully documented, approved, or archived, weakening the audit trail.`,
     );
   }
 
-  if (staffAcknowledgementRate < 50 && totalAcknowledgementRecords > 0) {
+  if (below(staffAcknowledgementRate, 50) && totalAcknowledgementRecords > 0) {
     concerns.push(
       `Only ${staffAcknowledgementRate}% staff policy acknowledgement — the majority of staff have not acknowledged key policies, meaning the home cannot evidence that staff understand the guidance under which they practice.`,
     );
-  } else if (staffAcknowledgementRate < 70 && staffAcknowledgementRate >= 50 && totalAcknowledgementRecords > 0) {
+  } else if (below(staffAcknowledgementRate, 70) && meets(staffAcknowledgementRate, 50) && totalAcknowledgementRecords > 0) {
     concerns.push(
       `Staff policy acknowledgement at ${staffAcknowledgementRate}% — a significant number of staff have not confirmed their awareness of current policies.`,
     );
   }
 
-  if (regulatoryAlignmentRate < 40 && totalAlignmentRecords > 0) {
+  if (below(regulatoryAlignmentRate, 40) && totalAlignmentRecords > 0) {
     concerns.push(
       `Only ${regulatoryAlignmentRate}% regulatory alignment — a significant proportion of policies are not aligned with current legislation, creating substantial compliance risk and potentially leaving children inadequately protected.`,
     );
-  } else if (regulatoryAlignmentRate < 70 && regulatoryAlignmentRate >= 40 && totalAlignmentRecords > 0) {
+  } else if (below(regulatoryAlignmentRate, 70) && meets(regulatoryAlignmentRate, 40) && totalAlignmentRecords > 0) {
     concerns.push(
       `Regulatory alignment at ${regulatoryAlignmentRate}% — some policies do not fully align with current regulations, requiring attention to ensure compliance.`,
     );
   }
 
-  if (accessibilityRate < 50 && totalAccessibilityRecords > 0) {
+  if (below(accessibilityRate, 50) && totalAccessibilityRecords > 0) {
     concerns.push(
       `Only ${accessibilityRate}% policy accessibility — policies are not consistently available in the formats and locations needed by staff and young people, undermining their practical usefulness.`,
     );
-  } else if (accessibilityRate < 70 && accessibilityRate >= 50 && totalAccessibilityRecords > 0) {
+  } else if (below(accessibilityRate, 70) && meets(accessibilityRate, 50) && totalAccessibilityRecords > 0) {
     concerns.push(
       `Policy accessibility at ${accessibilityRate}% — some policies are not available in all required formats or accessible locations.`,
     );
   }
 
-  if (severelyOverdueRate > 30 && totalReviewRecords > 0) {
+  if (above(severelyOverdueRate, 30) && totalReviewRecords > 0) {
     concerns.push(
       `${severelyOverdueRate}% of policies are more than 90 days overdue for review — severely overdue policies represent a governance failure and may contain guidance that is no longer legally compliant or reflective of current practice.`,
     );
-  } else if (overdueRate > 30 && totalReviewRecords > 0) {
+  } else if (above(overdueRate, 30) && totalReviewRecords > 0) {
     concerns.push(
       `${overdueRate}% of policies are overdue for review — a substantial proportion of the policy framework is past its review date, creating cumulative compliance risk.`,
     );
   }
 
-  if (safeguardingOverdue > 0 && safeguardingPolicies.length > 0) {
+  if (above(safeguardingOverdue, 0) && safeguardingPolicies.length > 0) {
     concerns.push(
       `${safeguardingOverdue} safeguarding polic${safeguardingOverdue === 1 ? "y is" : "ies are"} overdue for review — safeguarding policies are the most critical component of the home's policy framework and must never be allowed to lapse.`,
     );
   }
 
-  if (comprehensionRate < 50 && totalAcknowledgementRecords > 0) {
+  if (below(comprehensionRate, 50) && totalAcknowledgementRecords > 0) {
     concerns.push(
       `Only ${comprehensionRate}% comprehension confirmation — staff are acknowledging policies without confirming understanding, meaning acknowledgement is a procedural exercise rather than evidence of knowledge.`,
     );
-  } else if (comprehensionRate < 70 && comprehensionRate >= 50 && totalAcknowledgementRecords > 0) {
+  } else if (below(comprehensionRate, 70) && meets(comprehensionRate, 50) && totalAcknowledgementRecords > 0) {
     concerns.push(
       `Comprehension confirmation at ${comprehensionRate}% — not all staff who acknowledge policies confirm they understand the content.`,
     );
   }
 
-  if (outstandingAckRate > 30 && totalAcknowledgementRecords > 0) {
+  if (above(outstandingAckRate, 30) && totalAcknowledgementRecords > 0) {
     concerns.push(
       `${outstandingAckRate}% of policy acknowledgements remain outstanding — ${outstandingAcknowledgements} acknowledgement${outstandingAcknowledgements !== 1 ? "s have" : " has"} not been completed, meaning staff may be practising without awareness of current policies.`,
     );
   }
 
-  if (nonAlignmentRate > 20 && totalAlignmentRecords > 0) {
+  if (above(nonAlignmentRate, 20) && totalAlignmentRecords > 0) {
     concerns.push(
       `${nonAlignmentRate}% of policies are not aligned with current regulations — ${notAligned} polic${notAligned === 1 ? "y does" : "ies do"} not meet regulatory requirements, creating direct non-compliance risk.`,
     );
   }
 
-  if (remediationCompletionRate < 50 && remediationRequired > 0) {
+  if (below(remediationCompletionRate, 50) && remediationRequired > 0) {
     concerns.push(
       `Only ${remediationCompletionRate}% of alignment remediation actions completed — identified gaps between policies and regulations persist without resolution.`,
     );
   }
 
-  if (youngPeopleAccessRate < 40 && totalAccessibilityRecords > 0) {
+  if (below(youngPeopleAccessRate, 40) && totalAccessibilityRecords > 0) {
     concerns.push(
       `Only ${youngPeopleAccessRate}% of policies have young-people-friendly versions — young people cannot access or understand policies that directly affect their care, rights, and wellbeing.`,
     );
   }
 
-  if (updateTimelinessRate < 50 && totalVersionRecords > 0) {
+  if (below(updateTimelinessRate, 50) && totalVersionRecords > 0) {
     concerns.push(
       `Only ${updateTimelinessRate}% update timeliness — policy changes are not being approved promptly, meaning staff may be working under outdated guidance for extended periods.`,
     );
-  } else if (updateTimelinessRate < 70 && updateTimelinessRate >= 50 && totalVersionRecords > 0) {
+  } else if (below(updateTimelinessRate, 70) && meets(updateTimelinessRate, 50) && totalVersionRecords > 0) {
     concerns.push(
       `Update timeliness at ${updateTimelinessRate}% — some policy changes take longer than 14 days to approve and implement.`,
     );
@@ -769,7 +772,7 @@ export function computePolicyReviewCycleCompliance(
   const recommendations: PolicyReviewRecommendation[] = [];
   let rank = 0;
 
-  if (reviewScheduleRate < 50 && totalReviewRecords > 0) {
+  if (below(reviewScheduleRate, 50) && totalReviewRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -789,7 +792,7 @@ export function computePolicyReviewCycleCompliance(
     });
   }
 
-  if (staffAcknowledgementRate < 50 && totalAcknowledgementRecords > 0) {
+  if (below(staffAcknowledgementRate, 50) && totalAcknowledgementRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -799,7 +802,7 @@ export function computePolicyReviewCycleCompliance(
     });
   }
 
-  if (regulatoryAlignmentRate < 40 && totalAlignmentRecords > 0) {
+  if (below(regulatoryAlignmentRate, 40) && totalAlignmentRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -809,7 +812,7 @@ export function computePolicyReviewCycleCompliance(
     });
   }
 
-  if (severelyOverdueRate > 30 && totalReviewRecords > 0) {
+  if (above(severelyOverdueRate, 30) && totalReviewRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -849,7 +852,7 @@ export function computePolicyReviewCycleCompliance(
     });
   }
 
-  if (versionControlRate < 50 && totalVersionRecords > 0) {
+  if (below(versionControlRate, 50) && totalVersionRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -859,7 +862,7 @@ export function computePolicyReviewCycleCompliance(
     });
   }
 
-  if (accessibilityRate < 50 && totalAccessibilityRecords > 0) {
+  if (below(accessibilityRate, 50) && totalAccessibilityRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -869,7 +872,7 @@ export function computePolicyReviewCycleCompliance(
     });
   }
 
-  if (comprehensionRate < 50 && totalAcknowledgementRecords > 0) {
+  if (below(comprehensionRate, 50) && totalAcknowledgementRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -879,7 +882,7 @@ export function computePolicyReviewCycleCompliance(
     });
   }
 
-  if (remediationCompletionRate < 50 && remediationRequired > 0) {
+  if (below(remediationCompletionRate, 50) && remediationRequired > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -890,8 +893,8 @@ export function computePolicyReviewCycleCompliance(
   }
 
   if (
-    reviewScheduleRate >= 50 &&
-    reviewScheduleRate < 70 &&
+    meets(reviewScheduleRate, 50) &&
+    below(reviewScheduleRate, 70) &&
     totalReviewRecords > 0
   ) {
     recommendations.push({
@@ -904,8 +907,8 @@ export function computePolicyReviewCycleCompliance(
   }
 
   if (
-    staffAcknowledgementRate >= 50 &&
-    staffAcknowledgementRate < 70 &&
+    meets(staffAcknowledgementRate, 50) &&
+    below(staffAcknowledgementRate, 70) &&
     totalAcknowledgementRecords > 0
   ) {
     recommendations.push({
@@ -917,7 +920,7 @@ export function computePolicyReviewCycleCompliance(
     });
   }
 
-  if (youngPeopleAccessRate < 40 && totalAccessibilityRecords > 0) {
+  if (below(youngPeopleAccessRate, 40) && totalAccessibilityRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -928,8 +931,8 @@ export function computePolicyReviewCycleCompliance(
   }
 
   if (
-    regulatoryAlignmentRate >= 40 &&
-    regulatoryAlignmentRate < 70 &&
+    meets(regulatoryAlignmentRate, 40) &&
+    below(regulatoryAlignmentRate, 70) &&
     totalAlignmentRecords > 0
   ) {
     recommendations.push({
@@ -942,8 +945,8 @@ export function computePolicyReviewCycleCompliance(
   }
 
   if (
-    accessibilityRate >= 50 &&
-    accessibilityRate < 70 &&
+    meets(accessibilityRate, 50) &&
+    below(accessibilityRate, 70) &&
     totalAccessibilityRecords > 0
   ) {
     recommendations.push({
@@ -956,8 +959,8 @@ export function computePolicyReviewCycleCompliance(
   }
 
   if (
-    versionControlRate >= 50 &&
-    versionControlRate < 70 &&
+    meets(versionControlRate, 50) &&
+    below(versionControlRate, 70) &&
     totalVersionRecords > 0
   ) {
     recommendations.push({
@@ -969,7 +972,7 @@ export function computePolicyReviewCycleCompliance(
     });
   }
 
-  if (consultationRate < 70 && reviewsCompleted > 0) {
+  if (below(consultationRate, 70) && reviewsCompleted > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -979,7 +982,7 @@ export function computePolicyReviewCycleCompliance(
     });
   }
 
-  if (youngPeopleConsultationRate < 50 && reviewsCompleted > 0) {
+  if (below(youngPeopleConsultationRate, 50) && reviewsCompleted > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -990,8 +993,8 @@ export function computePolicyReviewCycleCompliance(
   }
 
   if (
-    updateTimelinessRate >= 50 &&
-    updateTimelinessRate < 70 &&
+    meets(updateTimelinessRate, 50) &&
+    below(updateTimelinessRate, 70) &&
     totalVersionRecords > 0
   ) {
     recommendations.push({
@@ -1003,7 +1006,7 @@ export function computePolicyReviewCycleCompliance(
     });
   }
 
-  if (easyReadRate < 50 && totalAccessibilityRecords > 0) {
+  if (below(easyReadRate, 50) && totalAccessibilityRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1019,28 +1022,28 @@ export function computePolicyReviewCycleCompliance(
 
   // -- Critical insights --
 
-  if (reviewScheduleRate < 50 && totalReviewRecords > 0) {
+  if (below(reviewScheduleRate, 50) && totalReviewRecords > 0) {
     insights.push({
       text: `Only ${reviewScheduleRate}% of policies reviewed on schedule. Ofsted expects that homes maintain a robust policy framework under Reg 36, with policies reviewed at appropriate intervals. When the majority of policies are out of date, the home cannot demonstrate effective governance or that children are protected by current guidance.`,
       severity: "critical",
     });
   }
 
-  if (staffAcknowledgementRate < 50 && totalAcknowledgementRecords > 0) {
+  if (below(staffAcknowledgementRate, 50) && totalAcknowledgementRecords > 0) {
     insights.push({
       text: `Only ${staffAcknowledgementRate}% staff policy acknowledgement. When the majority of staff have not confirmed awareness of current policies, the home cannot evidence that practice is informed by policy. This creates risk that staff act inconsistently or contrary to the home's stated approach, undermining children's safety and care quality.`,
       severity: "critical",
     });
   }
 
-  if (regulatoryAlignmentRate < 40 && totalAlignmentRecords > 0) {
+  if (below(regulatoryAlignmentRate, 40) && totalAlignmentRecords > 0) {
     insights.push({
       text: `Only ${regulatoryAlignmentRate}% regulatory alignment. Policies that do not reflect current legislation and regulations leave the home exposed to non-compliance. Ofsted views regulatory alignment as fundamental to effective leadership and management — policies must be living documents that evolve with the regulatory landscape.`,
       severity: "critical",
     });
   }
 
-  if (severelyOverdueRate > 30 && totalReviewRecords > 0) {
+  if (above(severelyOverdueRate, 30) && totalReviewRecords > 0) {
     insights.push({
       text: `${severelyOverdueRate}% of policies are more than 90 days overdue. Severely overdue policies represent a systemic governance failure. These policies may contain outdated procedures, superseded legislation references, or practices that have since been identified as inadequate. This directly undermines Reg 36 compliance.`,
       severity: "critical",
@@ -1075,7 +1078,7 @@ export function computePolicyReviewCycleCompliance(
     });
   }
 
-  if (nonAlignmentRate > 20 && totalAlignmentRecords > 0) {
+  if (above(nonAlignmentRate, 20) && totalAlignmentRecords > 0) {
     insights.push({
       text: `${nonAlignmentRate}% of policies are not aligned with current regulations. Non-aligned policies create direct regulatory risk — if policies do not reflect current law, staff may inadvertently breach regulatory requirements, and children may not receive the protection the legislation intends.`,
       severity: "critical",
@@ -1085,8 +1088,8 @@ export function computePolicyReviewCycleCompliance(
   // -- Warning insights --
 
   if (
-    reviewScheduleRate >= 50 &&
-    reviewScheduleRate < 70 &&
+    meets(reviewScheduleRate, 50) &&
+    below(reviewScheduleRate, 70) &&
     totalReviewRecords > 0
   ) {
     insights.push({
@@ -1096,8 +1099,8 @@ export function computePolicyReviewCycleCompliance(
   }
 
   if (
-    versionControlRate >= 50 &&
-    versionControlRate < 70 &&
+    meets(versionControlRate, 50) &&
+    below(versionControlRate, 70) &&
     totalVersionRecords > 0
   ) {
     insights.push({
@@ -1107,8 +1110,8 @@ export function computePolicyReviewCycleCompliance(
   }
 
   if (
-    staffAcknowledgementRate >= 50 &&
-    staffAcknowledgementRate < 70 &&
+    meets(staffAcknowledgementRate, 50) &&
+    below(staffAcknowledgementRate, 70) &&
     totalAcknowledgementRecords > 0
   ) {
     insights.push({
@@ -1118,8 +1121,8 @@ export function computePolicyReviewCycleCompliance(
   }
 
   if (
-    regulatoryAlignmentRate >= 40 &&
-    regulatoryAlignmentRate < 70 &&
+    meets(regulatoryAlignmentRate, 40) &&
+    below(regulatoryAlignmentRate, 70) &&
     totalAlignmentRecords > 0
   ) {
     insights.push({
@@ -1129,8 +1132,8 @@ export function computePolicyReviewCycleCompliance(
   }
 
   if (
-    accessibilityRate >= 50 &&
-    accessibilityRate < 70 &&
+    meets(accessibilityRate, 50) &&
+    below(accessibilityRate, 70) &&
     totalAccessibilityRecords > 0
   ) {
     insights.push({
@@ -1140,8 +1143,8 @@ export function computePolicyReviewCycleCompliance(
   }
 
   if (
-    updateTimelinessRate >= 50 &&
-    updateTimelinessRate < 70 &&
+    meets(updateTimelinessRate, 50) &&
+    below(updateTimelinessRate, 70) &&
     totalVersionRecords > 0
   ) {
     insights.push({
@@ -1151,8 +1154,8 @@ export function computePolicyReviewCycleCompliance(
   }
 
   if (
-    comprehensionRate >= 50 &&
-    comprehensionRate < 70 &&
+    meets(comprehensionRate, 50) &&
+    below(comprehensionRate, 70) &&
     totalAcknowledgementRecords > 0
   ) {
     insights.push({
@@ -1162,8 +1165,8 @@ export function computePolicyReviewCycleCompliance(
   }
 
   if (
-    overdueRate > 20 &&
-    overdueRate <= 30 &&
+    above(overdueRate, 20) &&
+    overdueRate! <= 30 &&
     totalReviewRecords > 0
   ) {
     insights.push({
@@ -1173,8 +1176,8 @@ export function computePolicyReviewCycleCompliance(
   }
 
   if (
-    remediationCompletionRate >= 50 &&
-    remediationCompletionRate < 70 &&
+    meets(remediationCompletionRate, 50) &&
+    below(remediationCompletionRate, 70) &&
     remediationRequired > 0
   ) {
     insights.push({
@@ -1183,7 +1186,7 @@ export function computePolicyReviewCycleCompliance(
     });
   }
 
-  if (consultationRate < 50 && reviewsCompleted > 0) {
+  if (below(consultationRate, 50) && reviewsCompleted > 0) {
     insights.push({
       text: `Only ${consultationRate}% of reviews include stakeholder consultation. Policies developed without input from those who implement them or are affected by them may be impractical, disconnected from lived experience, or fail to address real operational challenges.`,
       severity: "warning",
@@ -1201,12 +1204,12 @@ export function computePolicyReviewCycleCompliance(
     if (!r.review_completed && r.days_overdue > 0) categoryBreakdown[r.category].overdue++;
   }
   const worstCategories = Object.entries(categoryBreakdown)
-    .filter(([, v]) => v.total > 0 && pct(v.completed, v.total) < 60)
-    .sort((a, b) => pct(a[1].completed, a[1].total) - pct(b[1].completed, b[1].total))
+    .filter(([, v]) => v.total > 0 && below(rate(v.completed, v.total), 60))
+    .sort((a, b) => rate(a[1].completed, a[1].total)! - rate(b[1].completed, b[1].total)!)
     .slice(0, 3);
   if (worstCategories.length > 0) {
     const formatted = worstCategories
-      .map(([cat, v]) => `${cat.replace(/_/g, " ")} (${pct(v.completed, v.total)}% completed, ${v.overdue} overdue)`)
+      .map(([cat, v]) => `${cat.replace(/_/g, " ")} (${rate(v.completed, v.total)}% completed, ${v.overdue} overdue)`)
       .join(", ");
     insights.push({
       text: `Weakest policy categories: ${formatted}. These categories require focused attention to bring review compliance up to standard. Consider whether workload, expertise, or prioritisation is causing the shortfall.`,
@@ -1231,8 +1234,8 @@ export function computePolicyReviewCycleCompliance(
   }
 
   if (
-    reviewScheduleRate >= 90 &&
-    onTimeReviewRate >= 90 &&
+    meets(reviewScheduleRate, 90) &&
+    meets(onTimeReviewRate, 90) &&
     totalReviewRecords > 0
   ) {
     insights.push({
@@ -1242,8 +1245,8 @@ export function computePolicyReviewCycleCompliance(
   }
 
   if (
-    staffAcknowledgementRate >= 90 &&
-    comprehensionRate >= 90 &&
+    meets(staffAcknowledgementRate, 90) &&
+    meets(comprehensionRate, 90) &&
     totalAcknowledgementRecords > 0
   ) {
     insights.push({
@@ -1253,8 +1256,8 @@ export function computePolicyReviewCycleCompliance(
   }
 
   if (
-    regulatoryAlignmentRate >= 90 &&
-    legislativeTrackingRate >= 90 &&
+    meets(regulatoryAlignmentRate, 90) &&
+    meets(legislativeTrackingRate, 90) &&
     totalAlignmentRecords > 0
   ) {
     insights.push({
@@ -1264,7 +1267,7 @@ export function computePolicyReviewCycleCompliance(
   }
 
   if (
-    versionControlRate >= 90 &&
+    meets(versionControlRate, 90) &&
     totalVersionRecords > 0
   ) {
     insights.push({
@@ -1274,7 +1277,7 @@ export function computePolicyReviewCycleCompliance(
   }
 
   if (
-    accessibilityRate >= 90 &&
+    meets(accessibilityRate, 90) &&
     totalAccessibilityRecords > 0
   ) {
     insights.push({
@@ -1284,7 +1287,7 @@ export function computePolicyReviewCycleCompliance(
   }
 
   if (
-    updateTimelinessRate >= 90 &&
+    meets(updateTimelinessRate, 90) &&
     totalVersionRecords > 0
   ) {
     insights.push({
@@ -1293,21 +1296,21 @@ export function computePolicyReviewCycleCompliance(
     });
   }
 
-  if (youngPeopleConsultationRate >= 80 && youngPeopleAccessRate >= 80 && reviewsCompleted > 0 && totalAccessibilityRecords > 0) {
+  if (meets(youngPeopleConsultationRate, 80) && meets(youngPeopleAccessRate, 80) && reviewsCompleted > 0 && totalAccessibilityRecords > 0) {
     insights.push({
       text: `${youngPeopleConsultationRate}% young people consultation with ${youngPeopleAccessRate}% young-people-friendly policy availability — the home actively involves children in shaping and accessing policies that affect them.`,
       severity: "positive",
     });
   }
 
-  if (safeguardingReviewRate >= 95 && safeguardingPolicies.length > 0) {
+  if (meets(safeguardingReviewRate, 95) && safeguardingPolicies.length > 0) {
     insights.push({
       text: `${safeguardingReviewRate}% safeguarding policy review completion — the most critical category of policies is reviewed to the highest standard, directly supporting children's protection.`,
       severity: "positive",
     });
   }
 
-  if (consultationRate >= 90 && reviewsCompleted > 0) {
+  if (meets(consultationRate, 90) && reviewsCompleted > 0) {
     insights.push({
       text: `${consultationRate}% consultation rate during reviews — the home consistently involves stakeholders in policy development, ensuring policies are practical and informed by lived experience.`,
       severity: "positive",

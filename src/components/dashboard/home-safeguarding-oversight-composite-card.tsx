@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SafeguardingCompositeResult, SafeguardingCompositeRating } from "@/lib/engines/home-safeguarding-oversight-composite-engine";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface SafeguardingOversightCompositeResponse { data: SafeguardingCompositeResult; }
 
@@ -48,7 +49,7 @@ export function HomeSafeguardingOversightCompositeCard() {
             <ShieldAlert className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-orange-600")} />
             <span className="text-slate-900 font-bold">Safeguarding Oversight</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.safeguarding_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.safeguarding_score}%</span>}
+            {d.safeguarding_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.safeguarding_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>

@@ -11,7 +11,7 @@
 //             placementReviewRecords
 // ==============================================================================
 
-import { below, meets } from "@/lib/metrics/rate";
+import { above, below, meanOf, meets, rate } from "@/lib/metrics/rate";
 
 // -- Input Types --------------------------------------------------------------
 
@@ -162,14 +162,18 @@ export interface PlacementStabilityResult {
   stability_rating: PlacementStabilityRating;
   stability_score: number;
   headline: string;
-  // Most rates use pct() directly (deterministic 0 on empty). The 2 composite
+  // Most rates use rate() directly (deterministic 0 on empty). The 2 composite
   // rates below are null on empty: no source records ⇒ no signal. Fab-0 doctrine.
-  placement_stability_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  placement_stability_rate: number | null;
   matching_quality_rate: number | null;
   stability_meeting_rate: number | null;
-  disruption_prevention_rate: number;
-  planned_ending_rate: number;
-  child_consultation_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  disruption_prevention_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  planned_ending_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_consultation_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: PlacementStabilityRecommendation[];
@@ -177,10 +181,6 @@ export interface PlacementStabilityResult {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -204,12 +204,12 @@ function emptyResult(
     stability_rating: rating,
     stability_score: score,
     headline,
-    placement_stability_rate: 0,
+    placement_stability_rate: null,
     matching_quality_rate: null,
     stability_meeting_rate: null,
-    disruption_prevention_rate: 0,
-    planned_ending_rate: 0,
-    child_consultation_rate: 0,
+    disruption_prevention_rate: null,
+    planned_ending_rate: null,
+    child_consultation_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -312,7 +312,7 @@ export function computePlacementStabilityPermanence(
       r.ending_type === "planned" ||
       r.ending_type === "positive_move_on",
   ).length;
-  const placementStabilityRate = pct(stablePlacements, totalPlacements);
+  const placementStabilityRate = rate(stablePlacements, totalPlacements);
 
   // Unplanned endings & breakdowns
   const unplannedEndings = endedPlacements.filter(
@@ -321,30 +321,30 @@ export function computePlacementStabilityPermanence(
   const breakdowns = endedPlacements.filter(
     (r) => r.ending_type === "breakdown",
   ).length;
-  const unplannedEndingRate = pct(unplannedEndings + breakdowns, totalEnded > 0 ? totalEnded : totalPlacements);
-  const breakdownRate = pct(breakdowns, totalEnded > 0 ? totalEnded : totalPlacements);
+  const unplannedEndingRate = rate(unplannedEndings + breakdowns, totalEnded > 0 ? totalEnded : totalPlacements);
+  const breakdownRate = rate(breakdowns, totalEnded > 0 ? totalEnded : totalPlacements);
 
   // Planned ending rate (for ended placements)
   const plannedEndings = endedPlacements.filter(
     (r) => r.ending_type === "planned" || r.ending_type === "positive_move_on",
   ).length;
-  const plannedEndingRate = totalEnded > 0 ? pct(plannedEndings, totalEnded) : 100;
+  const plannedEndingRate = totalEnded > 0 ? rate(plannedEndings, totalEnded) : 100;
 
   // Care plan & risk assessment on admission
   const carePlanInPlace = placement_records.filter((r) => r.care_plan_in_place).length;
-  const carePlanRate = pct(carePlanInPlace, totalPlacements);
+  const carePlanRate = rate(carePlanInPlace, totalPlacements);
 
   const riskAssessmentCompleted = placement_records.filter((r) => r.risk_assessment_completed).length;
-  const riskAssessmentRate = pct(riskAssessmentCompleted, totalPlacements);
+  const riskAssessmentRate = rate(riskAssessmentCompleted, totalPlacements);
 
   const impactAssessmentCompleted = placement_records.filter((r) => r.impact_assessment_completed).length;
-  const impactAssessmentRate = pct(impactAssessmentCompleted, totalPlacements);
+  const impactAssessmentRate = rate(impactAssessmentCompleted, totalPlacements);
 
   const keyWorkerWithin48h = placement_records.filter((r) => r.key_worker_assigned_within_48h).length;
-  const keyWorkerTimelyRate = pct(keyWorkerWithin48h, totalPlacements);
+  const keyWorkerTimelyRate = rate(keyWorkerWithin48h, totalPlacements);
 
   const settlingInPlans = placement_records.filter((r) => r.settling_in_plan).length;
-  const settlingInRate = pct(settlingInPlans, totalPlacements);
+  const settlingInRate = rate(settlingInPlans, totalPlacements);
 
   // Placement satisfaction
   const placementSatisfactionSum = placement_records.reduce(
@@ -375,27 +375,27 @@ export function computePlacementStabilityPermanence(
   const matchingCriteriaMet = matching_assessment_records.filter(
     (r) => r.matching_criteria_met,
   ).length;
-  const matchingCriteriaRate = pct(matchingCriteriaMet, totalMatchingAssessments);
+  const matchingCriteriaRate = rate(matchingCriteriaMet, totalMatchingAssessments);
 
   const needsAssessmentDone = matching_assessment_records.filter(
     (r) => r.needs_assessment_completed,
   ).length;
-  const needsAssessmentRate = pct(needsAssessmentDone, totalMatchingAssessments);
+  const needsAssessmentRate = rate(needsAssessmentDone, totalMatchingAssessments);
 
   const riskCompatibilityAssessed = matching_assessment_records.filter(
     (r) => r.risk_compatibility_assessed,
   ).length;
-  const riskCompatibilityRate = pct(riskCompatibilityAssessed, totalMatchingAssessments);
+  const riskCompatibilityRate = rate(riskCompatibilityAssessed, totalMatchingAssessments);
 
   const existingResidentsConsidered = matching_assessment_records.filter(
     (r) => r.existing_residents_considered,
   ).length;
-  const existingResidentsRate = pct(existingResidentsConsidered, totalMatchingAssessments);
+  const existingResidentsRate = rate(existingResidentsConsidered, totalMatchingAssessments);
 
   const reg36Compliant = matching_assessment_records.filter(
     (r) => r.reg_36_compliant,
   ).length;
-  const reg36ComplianceRate = pct(reg36Compliant, totalMatchingAssessments);
+  const reg36ComplianceRate = rate(reg36Compliant, totalMatchingAssessments);
 
   const matchChildViewsSought = matching_assessment_records.filter(
     (r) => r.child_views_sought,
@@ -403,16 +403,8 @@ export function computePlacementStabilityPermanence(
 
   // Composite matching quality rate
   const matchingQualityRate: number | null =
-    totalMatchingAssessments > 0
-      ? Math.round(
-          (matchingCriteriaRate +
-            reg36ComplianceRate +
-            needsAssessmentRate +
-            riskCompatibilityRate +
-            existingResidentsRate) /
-            5,
-        )
-      : null;
+    totalMatchingAssessments > 0 ? Math.round(
+          (matchingCriteriaRate! + reg36ComplianceRate! + needsAssessmentRate! + riskCompatibilityRate! + existingResidentsRate!) / 5) : null;
 
   // ==========================================
   // METRIC 3 -- Stability Meeting Rate
@@ -423,7 +415,7 @@ export function computePlacementStabilityPermanence(
   const childViewsRepresented = stability_meeting_records.filter(
     (r) => r.child_views_represented,
   ).length;
-  const childViewsMeetingRate = pct(childViewsRepresented, totalStabilityMeetings);
+  const childViewsMeetingRate = rate(childViewsRepresented, totalStabilityMeetings);
 
   const totalActionsAgreed = stability_meeting_records.reduce(
     (sum, r) => sum + r.actions_agreed, 0,
@@ -431,7 +423,7 @@ export function computePlacementStabilityPermanence(
   const totalActionsCompleted = stability_meeting_records.reduce(
     (sum, r) => sum + r.actions_completed, 0,
   );
-  const meetingActionCompletionRate = pct(totalActionsCompleted, totalActionsAgreed);
+  const meetingActionCompletionRate = rate(totalActionsCompleted, totalActionsAgreed);
 
   const followUpRequired = stability_meeting_records.filter(
     (r) => r.follow_up_date !== null,
@@ -439,7 +431,7 @@ export function computePlacementStabilityPermanence(
   const followUpCompleted = followUpRequired.filter(
     (r) => r.follow_up_completed,
   ).length;
-  const followUpCompletionRate = pct(followUpCompleted, followUpRequired.length);
+  const followUpCompletionRate = rate(followUpCompleted, followUpRequired.length);
 
   const emergencyMeetings = stability_meeting_records.filter(
     (r) => r.meeting_type === "emergency" || r.meeting_type === "disruption_risk",
@@ -449,17 +441,14 @@ export function computePlacementStabilityPermanence(
   const uniqueChildrenWithMeetings = new Set(
     stability_meeting_records.map((r) => r.child_id),
   ).size;
-  const meetingCoverageRate = pct(uniqueChildrenWithMeetings, total_children);
+  const meetingCoverageRate = rate(uniqueChildrenWithMeetings, total_children);
 
   // Composite stability meeting rate
+  // action completion is per AGREED action and follow-up per REQUIRED
+  // follow-up — meanOf averages what is measured.
   const stabilityMeetingRate: number | null =
     totalStabilityMeetings > 0
-      ? Math.round(
-          (childViewsMeetingRate +
-            meetingActionCompletionRate +
-            followUpCompletionRate) /
-            3,
-        )
+      ? meanOf([childViewsMeetingRate, meetingActionCompletionRate, followUpCompletionRate])
       : null;
 
   // ==========================================
@@ -470,12 +459,12 @@ export function computePlacementStabilityPermanence(
   const preventedDisruptions = disruption_prevention_records.filter(
     (r) => r.outcome === "prevented",
   ).length;
-  const disruptionPreventionRate = pct(preventedDisruptions, totalDisruptionRecords);
+  const disruptionPreventionRate = rate(preventedDisruptions, totalDisruptionRecords);
 
   const timelyInterventions = disruption_prevention_records.filter(
     (r) => r.intervention_timely,
   ).length;
-  const timelyInterventionRate = pct(timelyInterventions, totalDisruptionRecords);
+  const timelyInterventionRate = rate(timelyInterventions, totalDisruptionRecords);
 
   const childConsultedDisruption = disruption_prevention_records.filter(
     (r) => r.child_consulted,
@@ -484,12 +473,12 @@ export function computePlacementStabilityPermanence(
   const multiAgencyInvolved = disruption_prevention_records.filter(
     (r) => r.multi_agency_involved,
   ).length;
-  const multiAgencyRate = pct(multiAgencyInvolved, totalDisruptionRecords);
+  const multiAgencyRate = rate(multiAgencyInvolved, totalDisruptionRecords);
 
   const lessonsDocumented = disruption_prevention_records.filter(
     (r) => r.lessons_learned_documented,
   ).length;
-  const lessonsDocumentedRate = pct(lessonsDocumented, totalDisruptionRecords);
+  const lessonsDocumentedRate = rate(lessonsDocumented, totalDisruptionRecords);
 
   const highCriticalDisruptions = disruption_prevention_records.filter(
     (r) => r.risk_level === "high" || r.risk_level === "critical",
@@ -499,7 +488,7 @@ export function computePlacementStabilityPermanence(
       (r.risk_level === "high" || r.risk_level === "critical") &&
       r.outcome === "prevented",
   ).length;
-  const highRiskPreventionRate = pct(highCriticalPreventedDisruptions, highCriticalDisruptions);
+  const highRiskPreventionRate = rate(highCriticalPreventedDisruptions, highCriticalDisruptions);
 
   // ==========================================
   // METRIC 5 -- Planned Ending Rate
@@ -534,7 +523,8 @@ export function computePlacementStabilityPermanence(
     childViewsRepresented +
     childConsultedDisruption +
     reviewChildViewsCaptured;
-  const childConsultationRate = clamp(pct(consultationNumerator, consultationDenominator), 0, 100);
+  const childConsultationRate =
+    consultationDenominator > 0 ? clamp(rate(consultationNumerator, consultationDenominator)!, 0, 100) : null;
 
   // ==========================================
   // PLACEMENT REVIEWS sub-metrics
@@ -545,7 +535,7 @@ export function computePlacementStabilityPermanence(
   const permanencePlanDiscussed = placement_review_records.filter(
     (r) => r.permanence_plan_discussed,
   ).length;
-  const permanencePlanRate = pct(permanencePlanDiscussed, totalReviews);
+  const permanencePlanRate = rate(permanencePlanDiscussed, totalReviews);
 
   const totalPreviousActions = placement_review_records.reduce(
     (sum, r) => sum + r.actions_from_previous_review, 0,
@@ -553,7 +543,7 @@ export function computePlacementStabilityPermanence(
   const totalPreviousActionsCompleted = placement_review_records.reduce(
     (sum, r) => sum + r.actions_completed_from_previous, 0,
   );
-  const reviewActionCompletionRate = pct(totalPreviousActionsCompleted, totalPreviousActions);
+  const reviewActionCompletionRate = rate(totalPreviousActionsCompleted, totalPreviousActions);
 
   const reviewQualitySum = placement_review_records.reduce(
     (sum, r) => sum + r.overall_placement_quality, 0,
@@ -570,55 +560,55 @@ export function computePlacementStabilityPermanence(
   let score = 52;
 
   // --- Bonus 1: Placement stability rate (>=90: +5, >=75: +3, >=60: +1) ---
-  if (placementStabilityRate >= 90) score += 5;
-  else if (placementStabilityRate >= 75) score += 3;
-  else if (placementStabilityRate >= 60) score += 1;
+  if (meets(placementStabilityRate, 90)) score += 5;
+  else if (meets(placementStabilityRate, 75)) score += 3;
+  else if (meets(placementStabilityRate, 60)) score += 1;
 
   // --- Bonus 2: Matching quality rate (>=85: +4, >=70: +2) ---
   if (meets(matchingQualityRate, 85)) score += 4;
   else if (meets(matchingQualityRate, 70)) score += 2;
 
   // --- Bonus 3: Disruption prevention rate (>=80: +3, >=60: +1) ---
-  if (disruptionPreventionRate >= 80) score += 3;
-  else if (disruptionPreventionRate >= 60) score += 1;
+  if (meets(disruptionPreventionRate, 80)) score += 3;
+  else if (meets(disruptionPreventionRate, 60)) score += 1;
 
   // --- Bonus 4: Planned ending rate (>=90: +3, >=70: +1) ---
-  if (plannedEndingRate >= 90) score += 3;
-  else if (plannedEndingRate >= 70) score += 1;
+  if (meets(plannedEndingRate, 90)) score += 3;
+  else if (meets(plannedEndingRate, 70)) score += 1;
 
   // --- Bonus 5: Child consultation rate (>=80: +3, >=60: +1) ---
-  if (childConsultationRate >= 80) score += 3;
-  else if (childConsultationRate >= 60) score += 1;
+  if (meets(childConsultationRate, 80)) score += 3;
+  else if (meets(childConsultationRate, 60)) score += 1;
 
   // --- Bonus 6: Reg 36 compliance rate (>=95: +3, >=80: +1) ---
-  if (reg36ComplianceRate >= 95) score += 3;
-  else if (reg36ComplianceRate >= 80) score += 1;
+  if (meets(reg36ComplianceRate, 95)) score += 3;
+  else if (meets(reg36ComplianceRate, 80)) score += 1;
 
   // --- Bonus 7: Stability meeting action completion (>=85: +3, >=65: +1) ---
-  if (meetingActionCompletionRate >= 85) score += 3;
-  else if (meetingActionCompletionRate >= 65) score += 1;
+  if (meets(meetingActionCompletionRate, 85)) score += 3;
+  else if (meets(meetingActionCompletionRate, 65)) score += 1;
 
   // --- Bonus 8: Review action completion rate (>=85: +2, >=65: +1) ---
-  if (reviewActionCompletionRate >= 85) score += 2;
-  else if (reviewActionCompletionRate >= 65) score += 1;
+  if (meets(reviewActionCompletionRate, 85)) score += 2;
+  else if (meets(reviewActionCompletionRate, 65)) score += 1;
 
   // --- Bonus 9: Permanence planning rate (>=80: +2, >=50: +1) ---
-  if (permanencePlanRate >= 80) score += 2;
-  else if (permanencePlanRate >= 50) score += 1;
+  if (meets(permanencePlanRate, 80)) score += 2;
+  else if (meets(permanencePlanRate, 50)) score += 1;
 
   // -- Penalties (4 with guards, -3 to -6 each) ----------------------------
 
   // Penalty 1: High breakdown rate -> -6
-  if (breakdownRate > 20 && totalPlacements > 0) score -= 6;
+  if (above(breakdownRate, 20) && totalPlacements > 0) score -= 6;
 
   // Penalty 2: Low matching quality -> -5
   if (below(matchingQualityRate, 50) && totalMatchingAssessments > 0) score -= 5;
 
   // Penalty 3: Low disruption prevention -> -4
-  if (disruptionPreventionRate < 40 && totalDisruptionRecords > 0) score -= 4;
+  if (below(disruptionPreventionRate, 40) && totalDisruptionRecords > 0) score -= 4;
 
   // Penalty 4: Low child consultation rate -> -3
-  if (childConsultationRate < 40 && consultationDenominator > 0) score -= 3;
+  if (below(childConsultationRate, 40) && consultationDenominator > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -631,11 +621,11 @@ export function computePlacementStabilityPermanence(
   const strengths: string[] = [];
 
   // S1: Placement stability rate high
-  if (placementStabilityRate >= 90 && totalPlacements > 0) {
+  if (meets(placementStabilityRate, 90) && totalPlacements > 0) {
     strengths.push(
       `${placementStabilityRate}% of placements are stable (ongoing, planned endings, or positive move-on) -- the home demonstrates exceptional placement stability across all residents.`,
     );
-  } else if (placementStabilityRate >= 75 && totalPlacements > 0) {
+  } else if (meets(placementStabilityRate, 75) && totalPlacements > 0) {
     strengths.push(
       `${placementStabilityRate}% placement stability rate -- the majority of children experience sustained, secure placements.`,
     );
@@ -660,65 +650,65 @@ export function computePlacementStabilityPermanence(
   }
 
   // S4: Reg 36 compliance
-  if (reg36ComplianceRate >= 95 && totalMatchingAssessments > 0) {
+  if (meets(reg36ComplianceRate, 95) && totalMatchingAssessments > 0) {
     strengths.push(
       `${reg36ComplianceRate}% Reg 36 compliance rate across matching assessments -- the home demonstrates robust regulatory adherence in admission and matching processes.`,
     );
-  } else if (reg36ComplianceRate >= 80 && totalMatchingAssessments > 0) {
+  } else if (meets(reg36ComplianceRate, 80) && totalMatchingAssessments > 0) {
     strengths.push(
       `${reg36ComplianceRate}% Reg 36 compliance in matching assessments -- strong regulatory alignment in the admission process.`,
     );
   }
 
   // S5: Disruption prevention effectiveness
-  if (disruptionPreventionRate >= 80 && totalDisruptionRecords > 0) {
+  if (meets(disruptionPreventionRate, 80) && totalDisruptionRecords > 0) {
     strengths.push(
       `${disruptionPreventionRate}% disruption prevention success rate -- interventions effectively preserve placements and prevent breakdowns.`,
     );
-  } else if (disruptionPreventionRate >= 60 && totalDisruptionRecords > 0) {
+  } else if (meets(disruptionPreventionRate, 60) && totalDisruptionRecords > 0) {
     strengths.push(
       `${disruptionPreventionRate}% disruption prevention rate -- the home demonstrates effective intervention when placements are at risk.`,
     );
   }
 
   // S6: Timely interventions
-  if (timelyInterventionRate >= 90 && totalDisruptionRecords > 0) {
+  if (meets(timelyInterventionRate, 90) && totalDisruptionRecords > 0) {
     strengths.push(
       `${timelyInterventionRate}% of disruption prevention interventions are timely -- the home responds swiftly when placement stability is threatened.`,
     );
   }
 
   // S7: Planned ending rate
-  if (plannedEndingRate >= 90 && totalEnded > 0) {
+  if (meets(plannedEndingRate, 90) && totalEnded > 0) {
     strengths.push(
       `${plannedEndingRate}% of placement endings are planned or represent positive move-on -- children experience well-managed transitions.`,
     );
-  } else if (plannedEndingRate >= 75 && totalEnded > 0) {
+  } else if (meets(plannedEndingRate, 75) && totalEnded > 0) {
     strengths.push(
       `${plannedEndingRate}% planned ending rate -- most placement transitions are managed in a structured, child-centred way.`,
     );
   }
 
   // S8: Child consultation rate
-  if (childConsultationRate >= 80) {
+  if (meets(childConsultationRate, 80)) {
     strengths.push(
       `${childConsultationRate}% child consultation rate across placement processes -- children's views are consistently sought and recorded in admissions, matching, stability meetings, and reviews.`,
     );
-  } else if (childConsultationRate >= 65) {
+  } else if (meets(childConsultationRate, 65)) {
     strengths.push(
       `${childConsultationRate}% child consultation rate -- good evidence that children's views inform placement decisions.`,
     );
   }
 
   // S9: Permanence planning
-  if (permanencePlanRate >= 80 && totalReviews > 0) {
+  if (meets(permanencePlanRate, 80) && totalReviews > 0) {
     strengths.push(
       `Permanence plans discussed in ${permanencePlanRate}% of placement reviews -- the home actively plans for children's long-term futures.`,
     );
   }
 
   // S10: Key worker assignment timeliness
-  if (keyWorkerTimelyRate >= 90 && totalPlacements > 0) {
+  if (meets(keyWorkerTimelyRate, 90) && totalPlacements > 0) {
     strengths.push(
       `${keyWorkerTimelyRate}% of children have a key worker assigned within 48 hours of admission -- new arrivals receive immediate relational support.`,
     );
@@ -732,7 +722,7 @@ export function computePlacementStabilityPermanence(
   }
 
   // S12: Meeting action completion
-  if (meetingActionCompletionRate >= 85 && totalActionsAgreed > 0) {
+  if (meets(meetingActionCompletionRate, 85) && totalActionsAgreed > 0) {
     strengths.push(
       `${meetingActionCompletionRate}% of stability meeting actions completed -- agreed interventions are followed through effectively.`,
     );
@@ -746,14 +736,14 @@ export function computePlacementStabilityPermanence(
   }
 
   // S14: Lessons learned documentation
-  if (lessonsDocumentedRate >= 90 && totalDisruptionRecords > 0) {
+  if (meets(lessonsDocumentedRate, 90) && totalDisruptionRecords > 0) {
     strengths.push(
       `Lessons learned documented in ${lessonsDocumentedRate}% of disruption prevention cases -- the home demonstrates strong reflective practice and continuous improvement.`,
     );
   }
 
   // S15: Impact assessments completed
-  if (impactAssessmentRate >= 90 && totalPlacements > 0) {
+  if (meets(impactAssessmentRate, 90) && totalPlacements > 0) {
     strengths.push(
       `${impactAssessmentRate}% of admissions have completed impact assessments -- the home carefully considers the effect of each new admission on existing residents.`,
     );
@@ -787,21 +777,21 @@ export function computePlacementStabilityPermanence(
   }
 
   // C4: Low Reg 36 compliance
-  if (reg36ComplianceRate < 80 && totalMatchingAssessments > 0) {
+  if (below(reg36ComplianceRate, 80) && totalMatchingAssessments > 0) {
     concerns.push(
       `Only ${reg36ComplianceRate}% of matching assessments are Reg 36 compliant -- the home is at risk of non-compliance with CHR 2015 Reg 36 admission and matching requirements.`,
     );
   }
 
   // C5: Low disruption prevention
-  if (disruptionPreventionRate < 50 && totalDisruptionRecords > 0) {
+  if (below(disruptionPreventionRate, 50) && totalDisruptionRecords > 0) {
     concerns.push(
       `Only ${disruptionPreventionRate}% of disruption prevention interventions successfully prevent placement breakdown -- intervention effectiveness needs urgent review.`,
     );
   }
 
   // C6: Low child consultation
-  if (childConsultationRate < 50 && consultationDenominator > 0) {
+  if (below(childConsultationRate, 50) && consultationDenominator > 0) {
     concerns.push(
       `Child consultation rate at ${childConsultationRate}% -- children's views are not consistently sought across placement processes, undermining child-centred practice and SCCIF expectations.`,
     );
@@ -815,35 +805,35 @@ export function computePlacementStabilityPermanence(
   }
 
   // C8: Low follow-up completion
-  if (followUpCompletionRate < 60 && followUpRequired.length > 0) {
+  if (below(followUpCompletionRate, 60) && followUpRequired.length > 0) {
     concerns.push(
       `Only ${followUpCompletionRate}% of stability meeting follow-up actions completed -- failure to complete agreed follow-up actions undermines the effectiveness of stability meetings.`,
     );
   }
 
   // C9: Low care plan rate
-  if (carePlanRate < 80 && totalPlacements > 0) {
+  if (below(carePlanRate, 80) && totalPlacements > 0) {
     concerns.push(
       `Only ${carePlanRate}% of placements have a care plan in place -- each child must have a documented care plan at admission as required under Reg 5.`,
     );
   }
 
   // C10: Low risk assessment rate
-  if (riskAssessmentRate < 80 && totalPlacements > 0) {
+  if (below(riskAssessmentRate, 80) && totalPlacements > 0) {
     concerns.push(
       `Only ${riskAssessmentRate}% of placements have completed risk assessments -- risk assessments at admission are essential for safeguarding and placement planning.`,
     );
   }
 
   // C11: Poor permanence planning
-  if (permanencePlanRate < 50 && totalReviews > 0) {
+  if (below(permanencePlanRate, 50) && totalReviews > 0) {
     concerns.push(
       `Permanence plans discussed in only ${permanencePlanRate}% of reviews -- insufficient permanence planning means children's long-term stability may not be adequately addressed.`,
     );
   }
 
   // C12: Low settling-in plan rate
-  if (settlingInRate < 70 && totalPlacements > 0) {
+  if (below(settlingInRate, 70) && totalPlacements > 0) {
     concerns.push(
       `Only ${settlingInRate}% of placements have settling-in plans -- new arrivals need structured support to build relationships and adjust to their new environment.`,
     );
@@ -868,7 +858,7 @@ export function computePlacementStabilityPermanence(
   }
 
   // R2: Low Reg 36 compliance
-  if (reg36ComplianceRate < 80 && totalMatchingAssessments > 0) {
+  if (below(reg36ComplianceRate, 80) && totalMatchingAssessments > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation:
@@ -890,7 +880,7 @@ export function computePlacementStabilityPermanence(
   }
 
   // R4: Low disruption prevention
-  if (disruptionPreventionRate < 60 && totalDisruptionRecords > 0) {
+  if (below(disruptionPreventionRate, 60) && totalDisruptionRecords > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation:
@@ -901,7 +891,7 @@ export function computePlacementStabilityPermanence(
   }
 
   // R5: Low child consultation
-  if (childConsultationRate < 60) {
+  if (below(childConsultationRate, 60)) {
     recommendations.push({
       rank: ++recRank,
       recommendation:
@@ -923,7 +913,7 @@ export function computePlacementStabilityPermanence(
   }
 
   // R7: Low permanence planning
-  if (permanencePlanRate < 60 && totalReviews > 0) {
+  if (below(permanencePlanRate, 60) && totalReviews > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation:
@@ -934,7 +924,7 @@ export function computePlacementStabilityPermanence(
   }
 
   // R8: Low care plan rate
-  if (carePlanRate < 90 && totalPlacements > 0) {
+  if (below(carePlanRate, 90) && totalPlacements > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation:
@@ -945,7 +935,7 @@ export function computePlacementStabilityPermanence(
   }
 
   // R9: Low risk assessment rate
-  if (riskAssessmentRate < 90 && totalPlacements > 0) {
+  if (below(riskAssessmentRate, 90) && totalPlacements > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation:
@@ -956,7 +946,7 @@ export function computePlacementStabilityPermanence(
   }
 
   // R10: Low impact assessment rate
-  if (impactAssessmentRate < 80 && totalPlacements > 0) {
+  if (below(impactAssessmentRate, 80) && totalPlacements > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation:
@@ -967,7 +957,7 @@ export function computePlacementStabilityPermanence(
   }
 
   // R11: Low follow-up completion
-  if (followUpCompletionRate < 70 && followUpRequired.length > 0) {
+  if (below(followUpCompletionRate, 70) && followUpRequired.length > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation:
@@ -978,7 +968,7 @@ export function computePlacementStabilityPermanence(
   }
 
   // R12: Low settling-in plan rate
-  if (settlingInRate < 80 && totalPlacements > 0) {
+  if (below(settlingInRate, 80) && totalPlacements > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation:
@@ -989,7 +979,7 @@ export function computePlacementStabilityPermanence(
   }
 
   // R13: Enhance lessons learned
-  if (lessonsDocumentedRate < 70 && totalDisruptionRecords > 0) {
+  if (below(lessonsDocumentedRate, 70) && totalDisruptionRecords > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation:
@@ -1000,7 +990,7 @@ export function computePlacementStabilityPermanence(
   }
 
   // R14: Low key worker timeliness
-  if (keyWorkerTimelyRate < 80 && totalPlacements > 0) {
+  if (below(keyWorkerTimelyRate, 80) && totalPlacements > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation:
@@ -1038,7 +1028,7 @@ export function computePlacementStabilityPermanence(
   }
 
   // I3: High disruption prevention with high-risk cases
-  if (highRiskPreventionRate >= 80 && highCriticalDisruptions >= 2) {
+  if (meets(highRiskPreventionRate, 80) && highCriticalDisruptions >= 2) {
     insights.push({
       text: `${highRiskPreventionRate}% of high/critical risk disruption situations were successfully prevented -- the home demonstrates exceptional capability in managing the most challenging placement risks, preserving stability even when under significant pressure.`,
       severity: "positive",
@@ -1046,7 +1036,7 @@ export function computePlacementStabilityPermanence(
   }
 
   // I4: Low matching quality contributing to instability
-  if (below(matchingQualityRate, 50) && unplannedEndingRate > 30 && totalMatchingAssessments > 0) {
+  if (below(matchingQualityRate, 50) && above(unplannedEndingRate, 30) && totalMatchingAssessments > 0) {
     insights.push({
       text: `Low matching quality (${matchingQualityRate}%) combined with high unplanned endings (${unplannedEndingRate}%) suggests that inadequate matching assessments may be contributing to placement instability. Ofsted will expect to see clear evidence that Reg 36 admission and matching processes are robust and effective.`,
       severity: "critical",
@@ -1054,7 +1044,7 @@ export function computePlacementStabilityPermanence(
   }
 
   // I5: Excellent child consultation across processes
-  if (childConsultationRate >= 85 && consultationDenominator >= 5) {
+  if (meets(childConsultationRate, 85) && consultationDenominator >= 5) {
     insights.push({
       text: `${childConsultationRate}% child consultation rate across all placement processes -- the home demonstrates exemplary child-centred practice, consistently ensuring children's views inform decisions about their placements, matching, stability, and reviews.`,
       severity: "positive",
@@ -1062,7 +1052,7 @@ export function computePlacementStabilityPermanence(
   }
 
   // I6: Low child consultation
-  if (childConsultationRate < 40 && consultationDenominator > 0) {
+  if (below(childConsultationRate, 40) && consultationDenominator > 0) {
     insights.push({
       text: `Child consultation rate at only ${childConsultationRate}% -- Ofsted expects children's voices to be central to all placement decisions. The current rate suggests children's views are not being systematically sought or recorded across admissions, matching, and reviews.`,
       severity: "critical",
@@ -1070,7 +1060,7 @@ export function computePlacementStabilityPermanence(
   }
 
   // I7: Strong meeting action completion
-  if (meetingActionCompletionRate >= 90 && totalActionsAgreed >= 5) {
+  if (meets(meetingActionCompletionRate, 90) && totalActionsAgreed >= 5) {
     insights.push({
       text: `${meetingActionCompletionRate}% of stability meeting actions completed -- the home demonstrates strong operational follow-through, translating meeting discussions into concrete actions that support placement stability.`,
       severity: "positive",
@@ -1078,7 +1068,7 @@ export function computePlacementStabilityPermanence(
   }
 
   // I8: Poor follow-up completion
-  if (followUpCompletionRate < 50 && followUpRequired.length >= 3) {
+  if (below(followUpCompletionRate, 50) && followUpRequired.length >= 3) {
     insights.push({
       text: `Only ${followUpCompletionRate}% of stability meeting follow-ups completed -- unfinished follow-up actions mean identified risks may not be addressed, potentially allowing placement concerns to escalate unchecked.`,
       severity: "warning",
@@ -1086,7 +1076,7 @@ export function computePlacementStabilityPermanence(
   }
 
   // I9: Permanence planning gap
-  if (permanencePlanRate < 40 && totalReviews >= 3) {
+  if (below(permanencePlanRate, 40) && totalReviews >= 3) {
     insights.push({
       text: `Permanence plans discussed in only ${permanencePlanRate}% of placement reviews -- without systematic permanence planning, children may experience prolonged uncertainty about their long-term future, which undermines their sense of security and belonging.`,
       severity: "critical",
@@ -1102,7 +1092,7 @@ export function computePlacementStabilityPermanence(
   }
 
   // I11: High Reg 36 compliance
-  if (reg36ComplianceRate >= 95 && totalMatchingAssessments >= 3) {
+  if (meets(reg36ComplianceRate, 95) && totalMatchingAssessments >= 3) {
     insights.push({
       text: `${reg36ComplianceRate}% Reg 36 compliance across ${totalMatchingAssessments} matching assessments -- the home demonstrates exemplary regulatory compliance in admission and matching, ensuring each child's placement is thoroughly assessed before a decision is made.`,
       severity: "positive",
@@ -1110,7 +1100,7 @@ export function computePlacementStabilityPermanence(
   }
 
   // I12: Proactive stability meetings
-  if (meetingCoverageRate >= 80 && totalStabilityMeetings >= 3) {
+  if (meets(meetingCoverageRate, 80) && totalStabilityMeetings >= 3) {
     insights.push({
       text: `Stability meetings cover ${meetingCoverageRate}% of children on placement -- the home takes a proactive approach to monitoring placement quality and identifying emerging risks before they threaten stability.`,
       severity: "positive",
@@ -1119,8 +1109,8 @@ export function computePlacementStabilityPermanence(
 
   // I13: Emergency meetings proportion high
   if (emergencyMeetings > 0 && totalStabilityMeetings > 0) {
-    const emergencyProportion = pct(emergencyMeetings, totalStabilityMeetings);
-    if (emergencyProportion > 40) {
+    const emergencyProportion = rate(emergencyMeetings, totalStabilityMeetings);
+    if (above(emergencyProportion, 40)) {
       insights.push({
         text: `${emergencyProportion}% of stability meetings are emergency or disruption-risk -- a high proportion of reactive meetings suggests the home may need to strengthen early identification of placement risks through routine monitoring.`,
         severity: "warning",
@@ -1137,7 +1127,7 @@ export function computePlacementStabilityPermanence(
   }
 
   // I15: Multi-agency involvement in disruption prevention
-  if (multiAgencyRate >= 80 && totalDisruptionRecords >= 3) {
+  if (meets(multiAgencyRate, 80) && totalDisruptionRecords >= 3) {
     insights.push({
       text: `Multi-agency involvement in ${multiAgencyRate}% of disruption prevention cases -- the home effectively engages external professionals to support placement stability, demonstrating strong partnership working.`,
       severity: "positive",

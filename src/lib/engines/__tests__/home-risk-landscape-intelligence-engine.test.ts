@@ -653,7 +653,7 @@ describe("computeHomeRiskLandscape", () => {
       const assessments = [makeAssessment({ mitigations: [] })];
       const r = computeHomeRiskLandscape(baseInput({ assessments }));
       expect(r.mitigation_profile.total_mitigations).toBe(0);
-      expect(r.mitigation_profile.effectiveness_rate).toBe(0);
+      expect(r.mitigation_profile.effectiveness_rate).toBeNull();
       expect(r.mitigation_profile.avg_mitigations_per_assessment).toBe(0);
     });
 

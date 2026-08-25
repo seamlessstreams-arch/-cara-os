@@ -295,12 +295,12 @@ describe("computePlacementStabilityPermanence", () => {
 
     it("returns zero for all 6 output rates on insufficient data", () => {
       const r = computePlacementStabilityPermanence(baseInput({ total_children: 0 }));
-      expect(r.placement_stability_rate).toBe(0);
+      expect(r.placement_stability_rate).toBeNull();
       expect(r.matching_quality_rate).toBeNull();
       expect(r.stability_meeting_rate).toBeNull();
-      expect(r.disruption_prevention_rate).toBe(0);
-      expect(r.planned_ending_rate).toBe(0);
-      expect(r.child_consultation_rate).toBe(0);
+      expect(r.disruption_prevention_rate).toBeNull();
+      expect(r.planned_ending_rate).toBeNull();
+      expect(r.child_consultation_rate).toBeNull();
     });
 
     it("returns empty arrays for strengths, concerns, recommendations, insights on insufficient data", () => {
@@ -351,12 +351,12 @@ describe("computePlacementStabilityPermanence", () => {
 
     it("returns zero for all 6 output rates", () => {
       const r = computePlacementStabilityPermanence(baseInput({ total_children: 3 }));
-      expect(r.placement_stability_rate).toBe(0);
+      expect(r.placement_stability_rate).toBeNull();
       expect(r.matching_quality_rate).toBeNull();
       expect(r.stability_meeting_rate).toBeNull();
-      expect(r.disruption_prevention_rate).toBe(0);
-      expect(r.planned_ending_rate).toBe(0);
-      expect(r.child_consultation_rate).toBe(0);
+      expect(r.disruption_prevention_rate).toBeNull();
+      expect(r.planned_ending_rate).toBeNull();
+      expect(r.child_consultation_rate).toBeNull();
     });
 
     it("headline mentions urgent attention", () => {
@@ -1651,13 +1651,13 @@ describe("computePlacementStabilityPermanence", () => {
         expect(r.placement_stability_rate).toBe(50);
       });
 
-      it("returns 0 when no placements", () => {
+      it("returns null when no placements", () => {
         const r = computePlacementStabilityPermanence(baseInput({
           total_children: 1,
           placement_records: [],
           matching_assessment_records: [makeMatching({ id: "ma-1", child_id: "c1" })],
         }));
-        expect(r.placement_stability_rate).toBe(0);
+        expect(r.placement_stability_rate).toBeNull();
       });
     });
 
@@ -1682,7 +1682,7 @@ describe("computePlacementStabilityPermanence", () => {
         expect(r.matching_quality_rate).toBe(50);
       });
 
-      it("returns 0 when no matching assessments", () => {
+      it("returns null when no matching assessments", () => {
         const r = computePlacementStabilityPermanence(baseInput({
           total_children: 1,
           placement_records: [makePlacement({ id: "pl-1", child_id: "c1" })],
@@ -1727,7 +1727,7 @@ describe("computePlacementStabilityPermanence", () => {
         expect(r.stability_meeting_rate).toBe(100);
       });
 
-      it("returns 0 when no stability meetings", () => {
+      it("returns null when no stability meetings", () => {
         const r = computePlacementStabilityPermanence(baseInput({
           total_children: 1,
           placement_records: [makePlacement({ id: "pl-1", child_id: "c1" })],
@@ -1737,8 +1737,9 @@ describe("computePlacementStabilityPermanence", () => {
 
       it("handles meetings with no follow-up required", () => {
         // follow_up_date=null → not in followUpRequired → follow-up completion = pct(0,0) = 0
-        // child_views_represented=true → 100%, actions 0/0 = 0
-        // avg = (100 + 0 + 0) / 3 = 33
+        // child_views_represented=true → 100%; no actions agreed and no
+        // follow-up required, so those two components are unmeasured (null) and
+        // meanOf averages only the measured one: 100.
         const r = computePlacementStabilityPermanence(baseInput({
           total_children: 1,
           placement_records: [makePlacement({ id: "pl-1", child_id: "c1" })],
@@ -1750,7 +1751,7 @@ describe("computePlacementStabilityPermanence", () => {
             }),
           ],
         }));
-        expect(r.stability_meeting_rate).toBe(33);
+        expect(r.stability_meeting_rate).toBe(100);
       });
     });
 
@@ -1768,12 +1769,12 @@ describe("computePlacementStabilityPermanence", () => {
         expect(r.disruption_prevention_rate).toBe(67);
       });
 
-      it("returns 0 when no disruption records", () => {
+      it("returns null when no disruption records", () => {
         const r = computePlacementStabilityPermanence(baseInput({
           total_children: 1,
           placement_records: [makePlacement({ id: "pl-1", child_id: "c1" })],
         }));
-        expect(r.disruption_prevention_rate).toBe(0);
+        expect(r.disruption_prevention_rate).toBeNull();
       });
 
       it("counts only 'prevented' outcome", () => {
@@ -2888,7 +2889,7 @@ describe("computePlacementStabilityPermanence", () => {
       expect(r.stability_score).toBeGreaterThanOrEqual(0);
       expect(r.matching_quality_rate).toBeNull();
       expect(r.stability_meeting_rate).toBeNull();
-      expect(r.disruption_prevention_rate).toBe(0);
+      expect(r.disruption_prevention_rate).toBeNull();
     });
 
     it("mixed ending types computed correctly", () => {
@@ -3033,13 +3034,13 @@ describe("computePlacementStabilityPermanence", () => {
       expect(insufficient.headline).not.toBe(inadequate.headline);
     });
 
-    it("pct(0,0) returns 0 — no division by zero", () => {
+    it("rate(0,0)=nullreturns 0 — no division by zero", () => {
       // No placement records → all rates that use pct with 0 denominator should be 0
       const r = computePlacementStabilityPermanence(baseInput({
         total_children: 1,
         matching_assessment_records: [makeMatching({ id: "ma-1", child_id: "c1" })],
       }));
-      expect(r.placement_stability_rate).toBe(0);
+      expect(r.placement_stability_rate).toBeNull();
     });
 
     it("only placement records exist — matching, meeting, disruption rates are 0", () => {
@@ -3049,7 +3050,7 @@ describe("computePlacementStabilityPermanence", () => {
       }));
       expect(r.matching_quality_rate).toBeNull();
       expect(r.stability_meeting_rate).toBeNull();
-      expect(r.disruption_prevention_rate).toBe(0);
+      expect(r.disruption_prevention_rate).toBeNull();
     });
 
     it("review recommendation types are valid", () => {

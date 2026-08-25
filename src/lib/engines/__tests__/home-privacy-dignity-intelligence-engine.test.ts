@@ -202,12 +202,12 @@ describe("computePrivacyDignity", () => {
 
     it("returns all six rates as 0 for insufficient_data", () => {
       const r = run({ total_children: 0 });
-      expect(r.privacy_audit_compliance_rate).toBe(0);
-      expect(r.knock_entry_rate).toBe(0);
-      expect(r.boundary_respect_rate).toBe(0);
+      expect(r.privacy_audit_compliance_rate).toBeNull();
+      expect(r.knock_entry_rate).toBeNull();
+      expect(r.boundary_respect_rate).toBeNull();
       expect(r.confidentiality_rate).toBeNull();
-      expect(r.dignity_practice_rate).toBe(0);
-      expect(r.child_satisfaction_rate).toBe(0);
+      expect(r.dignity_practice_rate).toBeNull();
+      expect(r.child_satisfaction_rate).toBeNull();
     });
   });
 
@@ -247,46 +247,46 @@ describe("computePrivacyDignity", () => {
 
     it("returns all six rates as 0", () => {
       const r = run({ total_children: 1 });
-      expect(r.privacy_audit_compliance_rate).toBe(0);
-      expect(r.knock_entry_rate).toBe(0);
-      expect(r.boundary_respect_rate).toBe(0);
+      expect(r.privacy_audit_compliance_rate).toBeNull();
+      expect(r.knock_entry_rate).toBeNull();
+      expect(r.boundary_respect_rate).toBeNull();
       expect(r.confidentiality_rate).toBeNull();
-      expect(r.dignity_practice_rate).toBe(0);
-      expect(r.child_satisfaction_rate).toBe(0);
+      expect(r.dignity_practice_rate).toBeNull();
+      expect(r.child_satisfaction_rate).toBeNull();
     });
   });
 
   // ── pct(0,0)=0 ─────────────────────────────────────────────────────────
-  describe("pct(0,0)=0 edge case", () => {
-    it("privacy_audit_compliance_rate is 0 when no privacy audits", () => {
+  describe("rate(0,0)=null edge case", () => {
+    it("privacy_audit_compliance_rate is null when no privacy audits", () => {
       const r = run({ knock_entry_records: [makeKnockEntry()] });
-      expect(r.privacy_audit_compliance_rate).toBe(0);
+      expect(r.privacy_audit_compliance_rate).toBeNull();
     });
 
-    it("knock_entry_rate is 0 when no knock records", () => {
+    it("knock_entry_rate is null when no knock records", () => {
       const r = run({ privacy_audit_records: [makePrivacyAudit()] });
-      expect(r.knock_entry_rate).toBe(0);
+      expect(r.knock_entry_rate).toBeNull();
     });
 
-    it("boundary_respect_rate is 0 when no boundary records", () => {
+    it("boundary_respect_rate is null when no boundary records", () => {
       const r = run({ privacy_audit_records: [makePrivacyAudit()] });
-      expect(r.boundary_respect_rate).toBe(0);
+      expect(r.boundary_respect_rate).toBeNull();
     });
 
-    it("confidentiality_rate is 0 when no confidentiality records", () => {
+    it("confidentiality_rate is null when no confidentiality records", () => {
       const r = run({ privacy_audit_records: [makePrivacyAudit()] });
       expect(r.confidentiality_rate).toBeNull();
     });
 
-    it("dignity_practice_rate is 0 when no dignity records", () => {
+    it("dignity_practice_rate is null when no dignity records", () => {
       const r = run({ privacy_audit_records: [makePrivacyAudit()] });
-      expect(r.dignity_practice_rate).toBe(0);
+      expect(r.dignity_practice_rate).toBeNull();
     });
 
-    it("child_satisfaction_rate is 0 when no satisfaction sources", () => {
+    it("child_satisfaction_rate is null when no satisfaction sources", () => {
       // only knock_entry contributes no satisfaction, so all 3 sat sources=0
       const r = run({ knock_entry_records: [makeKnockEntry()], confidentiality_records: [makeConfidentiality()] });
-      expect(r.child_satisfaction_rate).toBe(0);
+      expect(r.child_satisfaction_rate).toBeNull();
     });
   });
 
@@ -1001,7 +1001,7 @@ describe("computePrivacyDignity", () => {
 
     it("no penalty when knock_entry_records is empty", () => {
       const r = run({ knock_entry_records: [] });
-      expect(r.knock_entry_rate).toBe(0);
+      expect(r.knock_entry_rate).toBeNull();
       // No penalty because length === 0
     });
   });
@@ -1020,7 +1020,7 @@ describe("computePrivacyDignity", () => {
 
     it("no penalty when boundary_respect_records is empty", () => {
       const r = run({ boundary_respect_records: [] });
-      expect(r.boundary_respect_rate).toBe(0);
+      expect(r.boundary_respect_rate).toBeNull();
     });
   });
 
@@ -1062,7 +1062,7 @@ describe("computePrivacyDignity", () => {
 
     it("no penalty when dignity_care_records is empty", () => {
       const r = run({ dignity_care_records: [] });
-      expect(r.dignity_practice_rate).toBe(0);
+      expect(r.dignity_practice_rate).toBeNull();
     });
   });
 
@@ -2389,9 +2389,9 @@ describe("computePrivacyDignity", () => {
         dignity_care_records: [],
       });
       expect(r.privacy_rating).toBeDefined();
-      expect(r.knock_entry_rate).toBe(0);
-      expect(r.boundary_respect_rate).toBe(0);
-      expect(r.dignity_practice_rate).toBe(0);
+      expect(r.knock_entry_rate).toBeNull();
+      expect(r.boundary_respect_rate).toBeNull();
+      expect(r.dignity_practice_rate).toBeNull();
     });
 
     it("total_children=0 but records present still computes (not insufficient_data)", () => {

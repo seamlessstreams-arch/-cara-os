@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME REWARDS & INCENTIVES MANAGEMENT INTELLIGENCE ENGINE
 // Monitors reward scheme fairness, positive reinforcement consistency,
@@ -174,10 +175,6 @@ export interface RewardsIncentivesResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -205,12 +202,12 @@ function emptyResult(
     total_programme_records: 0,
     total_participation_records: 0,
     total_equity_reviews: 0,
-    reward_fairness_rate: 0,
-    reinforcement_consistency_rate: 0,
-    programme_effectiveness_rate: 0,
-    child_participation_rate: 0,
-    equity_rate: 0,
-    child_satisfaction_rate: 0,
+    reward_fairness_rate: null,
+    reinforcement_consistency_rate: null,
+    programme_effectiveness_rate: null,
+    child_participation_rate: null,
+    equity_rate: null,
+    child_satisfaction_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -306,27 +303,27 @@ export function computeRewardsIncentivesManagement(
       if (check(rec)) totalFairnessChecksPassed++;
     }
   }
-  const rewardFairnessRate = pct(totalFairnessChecksPassed, totalFairnessChecksPossible);
+  const rewardFairnessRate = rate(totalFairnessChecksPassed, totalFairnessChecksPossible);
 
   const schemesAchievable = reward_scheme_records.filter((r) => r.criteria_achievable).length;
-  const achievableCriteriaRate = pct(schemesAchievable, totalSchemeRecords);
+  const achievableCriteriaRate = rate(schemesAchievable, totalSchemeRecords);
 
   const meaningfulRewards = reward_scheme_records.filter((r) => r.reward_meaningful_to_child).length;
-  const meaningfulRewardRate = pct(meaningfulRewards, totalSchemeRecords);
+  const meaningfulRewardRate = rate(meaningfulRewards, totalSchemeRecords);
 
   const childConsultedOnDesign = reward_scheme_records.filter((r) => r.child_consulted_on_design).length;
-  const childConsultedRate = pct(childConsultedOnDesign, totalSchemeRecords);
+  const childConsultedRate = rate(childConsultedOnDesign, totalSchemeRecords);
 
   const schemesReviewed = reward_scheme_records.filter((r) => r.reviewed).length;
-  const schemeReviewRate = pct(schemesReviewed, totalSchemeRecords);
+  const schemeReviewRate = rate(schemesReviewed, totalSchemeRecords);
 
   const positiveOutcomesAchieved = reward_scheme_records.filter((r) => r.positive_outcomes_achieved).length;
-  const schemePositiveOutcomeRate = pct(positiveOutcomesAchieved, totalSchemeRecords);
+  const schemePositiveOutcomeRate = rate(positiveOutcomesAchieved, totalSchemeRecords);
 
   const uniqueChildrenWithSchemes = new Set(
     reward_scheme_records.filter((r) => r.scheme_active).map((r) => r.child_id),
   ).size;
-  const schemeCoverageRate = total_children > 0 ? pct(uniqueChildrenWithSchemes, total_children) : 0;
+  const schemeCoverageRate = total_children > 0 ? rate(uniqueChildrenWithSchemes, total_children) : 0;
 
   // --- Reinforcement metrics ---
   const totalReinforcementRecords = reinforcement_records.length;
@@ -344,10 +341,10 @@ export function computeRewardsIncentivesManagement(
       if (check(rec)) totalReinforcementChecksPassed++;
     }
   }
-  const reinforcementConsistencyRate = pct(totalReinforcementChecksPassed, totalReinforcementChecksPossible);
+  const reinforcementConsistencyRate = rate(totalReinforcementChecksPassed, totalReinforcementChecksPossible);
 
   const childResponsePositive = reinforcement_records.filter((r) => r.child_response_positive).length;
-  const reinforcementPositiveResponseRate = pct(childResponsePositive, totalReinforcementRecords);
+  const reinforcementPositiveResponseRate = rate(childResponsePositive, totalReinforcementRecords);
 
   // --- Incentive programme metrics ---
   const totalProgrammeRecords = incentive_programme_records.length;
@@ -357,7 +354,7 @@ export function computeRewardsIncentivesManagement(
   const progressTracked = incentive_programme_records.filter((p) => p.progress_tracked).length;
 
   const milestonesCelebrated = incentive_programme_records.filter((p) => p.milestones_celebrated).length;
-  const milestonesCelebratedRate = pct(milestonesCelebrated, totalProgrammeRecords);
+  const milestonesCelebratedRate = rate(milestonesCelebrated, totalProgrammeRecords);
 
   const effectivenessReviewed = incentive_programme_records.filter((p) => p.effectiveness_reviewed).length;
 
@@ -372,12 +369,12 @@ export function computeRewardsIncentivesManagement(
   // Programme effectiveness composite: goals + tracked + reviewed + positive outcomes
   const programmeEffectivenessNumerator = goalsCleared + progressTracked + effectivenessReviewed + programmePositiveOutcomes;
   const programmeEffectivenessDenominator = totalProgrammeRecords * 4;
-  const programmeEffectivenessRate = pct(programmeEffectivenessNumerator, programmeEffectivenessDenominator);
+  const programmeEffectivenessRate = rate(programmeEffectivenessNumerator, programmeEffectivenessDenominator);
 
   // Total participation across programmes
   const totalEligibleAcrossProgrammes = incentive_programme_records.reduce((sum, p) => sum + p.total_children_eligible, 0);
   const totalParticipatingAcrossProgrammes = incentive_programme_records.reduce((sum, p) => sum + p.total_children_participating, 0);
-  const programmeParticipationRate = pct(totalParticipatingAcrossProgrammes, totalEligibleAcrossProgrammes);
+  const programmeParticipationRate = rate(totalParticipatingAcrossProgrammes, totalEligibleAcrossProgrammes);
 
   // --- Child participation metrics ---
   const totalParticipationRecords = child_participation_records.length;
@@ -385,17 +382,17 @@ export function computeRewardsIncentivesManagement(
   const voiceCaptured = child_participation_records.filter((p) => p.child_voice_captured).length;
 
   const viewsActedUpon = child_participation_records.filter((p) => p.child_views_acted_upon).length;
-  const viewsActedUponRate = pct(viewsActedUpon, totalParticipationRecords);
+  const viewsActedUponRate = rate(viewsActedUpon, totalParticipationRecords);
 
   const satisfiedWithOutcome = child_participation_records.filter((p) => p.child_satisfied_with_outcome).length;
-  const childSatisfactionRate = pct(satisfiedWithOutcome, totalParticipationRecords);
+  const childSatisfactionRate = rate(satisfiedWithOutcome, totalParticipationRecords);
 
   const participationVoluntary = child_participation_records.filter((p) => p.participation_voluntary).length;
 
   // Child participation composite: voice captured + views acted upon + satisfied + voluntary
   const childParticipationNumerator = voiceCaptured + viewsActedUpon + satisfiedWithOutcome + participationVoluntary;
   const childParticipationDenominator = totalParticipationRecords * 4;
-  const childParticipationRate = pct(childParticipationNumerator, childParticipationDenominator);
+  const childParticipationRate = rate(childParticipationNumerator, childParticipationDenominator);
 
   // --- Equity review metrics ---
   const totalEquityReviews = equity_review_records.length;
@@ -416,15 +413,15 @@ export function computeRewardsIncentivesManagement(
       if (check(rec)) totalEquityChecksPassed++;
     }
   }
-  const equityRate = pct(totalEquityChecksPassed, totalEquityChecksPossible);
+  const equityRate = rate(totalEquityChecksPassed, totalEquityChecksPossible);
 
   const noDiscriminatoryPatterns = equity_review_records.filter((e) => e.no_discriminatory_patterns).length;
-  const noDiscriminatoryPatternsRate = pct(noDiscriminatoryPatterns, totalEquityReviews);
+  const noDiscriminatoryPatternsRate = rate(noDiscriminatoryPatterns, totalEquityReviews);
 
   const actionPlansCreated = equity_review_records.filter((e) => e.action_plan_created).length;
 
   const actionPlansCompleted = equity_review_records.filter((e) => e.action_plan_created && e.action_plan_completed).length;
-  const actionPlanCompletionRate = pct(actionPlansCompleted, actionPlansCreated);
+  const actionPlanCompletionRate = rate(actionPlansCompleted, actionPlansCreated);
 
   const totalChildrenExcluded = equity_review_records.reduce(
     (sum, e) => sum + e.children_excluded_from_schemes_count,
@@ -434,57 +431,57 @@ export function computeRewardsIncentivesManagement(
     (sum, e) => sum + e.total_children_assessed,
     0,
   );
-  const exclusionRate = pct(totalChildrenExcluded, totalChildrenAssessed);
+  const exclusionRate = rate(totalChildrenExcluded, totalChildrenAssessed);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: rewardFairnessRate (>=90: +4, >=70: +2) ---
-  if (rewardFairnessRate >= 90) score += 4;
-  else if (rewardFairnessRate >= 70) score += 2;
+  if (meets(rewardFairnessRate, 90)) score += 4;
+  else if (meets(rewardFairnessRate, 70)) score += 2;
 
   // --- Bonus 2: reinforcementConsistencyRate (>=90: +4, >=70: +2) ---
-  if (reinforcementConsistencyRate >= 90) score += 4;
-  else if (reinforcementConsistencyRate >= 70) score += 2;
+  if (meets(reinforcementConsistencyRate, 90)) score += 4;
+  else if (meets(reinforcementConsistencyRate, 70)) score += 2;
 
   // --- Bonus 3: programmeEffectivenessRate (>=85: +3, >=65: +1) ---
-  if (programmeEffectivenessRate >= 85) score += 3;
-  else if (programmeEffectivenessRate >= 65) score += 1;
+  if (meets(programmeEffectivenessRate, 85)) score += 3;
+  else if (meets(programmeEffectivenessRate, 65)) score += 1;
 
   // --- Bonus 4: childParticipationRate (>=90: +4, >=70: +2) ---
-  if (childParticipationRate >= 90) score += 4;
-  else if (childParticipationRate >= 70) score += 2;
+  if (meets(childParticipationRate, 90)) score += 4;
+  else if (meets(childParticipationRate, 70)) score += 2;
 
   // --- Bonus 5: equityRate (>=90: +4, >=70: +2) ---
-  if (equityRate >= 90) score += 4;
-  else if (equityRate >= 70) score += 2;
+  if (meets(equityRate, 90)) score += 4;
+  else if (meets(equityRate, 70)) score += 2;
 
   // --- Bonus 6: childSatisfactionRate (>=90: +3, >=70: +1) ---
-  if (childSatisfactionRate >= 90) score += 3;
-  else if (childSatisfactionRate >= 70) score += 1;
+  if (meets(childSatisfactionRate, 90)) score += 3;
+  else if (meets(childSatisfactionRate, 70)) score += 1;
 
   // --- Bonus 7: schemeReviewRate (>=90: +3, >=70: +1) ---
-  if (schemeReviewRate >= 90) score += 3;
-  else if (schemeReviewRate >= 70) score += 1;
+  if (meets(schemeReviewRate, 90)) score += 3;
+  else if (meets(schemeReviewRate, 70)) score += 1;
 
   // --- Bonus 8: schemeCoverageRate (>=80: +3, >=50: +1) ---
-  if (schemeCoverageRate >= 80) score += 3;
-  else if (schemeCoverageRate >= 50) score += 1;
+  if (meets(schemeCoverageRate, 80)) score += 3;
+  else if (meets(schemeCoverageRate, 50)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // rewardFairnessRate < 50 → -5
-  if (rewardFairnessRate < 50 && totalSchemeRecords > 0) score -= 5;
+  if (below(rewardFairnessRate, 50) && totalSchemeRecords > 0) score -= 5;
 
   // reinforcementConsistencyRate < 50 → -5
-  if (reinforcementConsistencyRate < 50 && totalReinforcementRecords > 0) score -= 5;
+  if (below(reinforcementConsistencyRate, 50) && totalReinforcementRecords > 0) score -= 5;
 
   // equityRate < 50 → -5
-  if (equityRate < 50 && totalEquityReviews > 0) score -= 5;
+  if (below(equityRate, 50) && totalEquityReviews > 0) score -= 5;
 
   // childParticipationRate < 40 → -3
-  if (childParticipationRate < 40 && totalParticipationRecords > 0) score -= 3;
+  if (below(childParticipationRate, 40) && totalParticipationRecords > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -494,121 +491,121 @@ export function computeRewardsIncentivesManagement(
 
   const strengths: string[] = [];
 
-  if (rewardFairnessRate >= 90 && totalSchemeRecords > 0) {
+  if (meets(rewardFairnessRate, 90) && totalSchemeRecords > 0) {
     strengths.push(
       `${rewardFairnessRate}% reward scheme fairness — schemes have clear, achievable, age-appropriate criteria with meaningful rewards that children helped design and understand.`,
     );
-  } else if (rewardFairnessRate >= 70 && totalSchemeRecords > 0) {
+  } else if (meets(rewardFairnessRate, 70) && totalSchemeRecords > 0) {
     strengths.push(
       `${rewardFairnessRate}% reward scheme fairness — the home generally maintains well-designed, fair reward schemes for children.`,
     );
   }
 
-  if (reinforcementConsistencyRate >= 90 && totalReinforcementRecords > 0) {
+  if (meets(reinforcementConsistencyRate, 90) && totalReinforcementRecords > 0) {
     strengths.push(
       `${reinforcementConsistencyRate}% positive reinforcement consistency — praise and rewards are delivered in a timely, specific, genuine manner consistent with children's individual plans.`,
     );
-  } else if (reinforcementConsistencyRate >= 70 && totalReinforcementRecords > 0) {
+  } else if (meets(reinforcementConsistencyRate, 70) && totalReinforcementRecords > 0) {
     strengths.push(
       `${reinforcementConsistencyRate}% reinforcement consistency — positive reinforcement is generally delivered effectively across the home.`,
     );
   }
 
-  if (programmeEffectivenessRate >= 85 && totalProgrammeRecords > 0) {
+  if (meets(programmeEffectivenessRate, 85) && totalProgrammeRecords > 0) {
     strengths.push(
       `${programmeEffectivenessRate}% incentive programme effectiveness — programmes have clear goals, tracked progress, reviewed effectiveness, and achieve positive outcomes for children.`,
     );
-  } else if (programmeEffectivenessRate >= 65 && totalProgrammeRecords > 0) {
+  } else if (meets(programmeEffectivenessRate, 65) && totalProgrammeRecords > 0) {
     strengths.push(
       `${programmeEffectivenessRate}% programme effectiveness — the home's incentive programmes generally meet their goals and benefit children.`,
     );
   }
 
-  if (childParticipationRate >= 90 && totalParticipationRecords > 0) {
+  if (meets(childParticipationRate, 90) && totalParticipationRecords > 0) {
     strengths.push(
       `${childParticipationRate}% child participation quality — children's voices are captured, their views are acted upon, participation is voluntary, and children are satisfied with outcomes.`,
     );
-  } else if (childParticipationRate >= 70 && totalParticipationRecords > 0) {
+  } else if (meets(childParticipationRate, 70) && totalParticipationRecords > 0) {
     strengths.push(
       `${childParticipationRate}% child participation — children are generally involved in shaping their reward and incentive experiences.`,
     );
   }
 
-  if (equityRate >= 90 && totalEquityReviews > 0) {
+  if (meets(equityRate, 90) && totalEquityReviews > 0) {
     strengths.push(
       `${equityRate}% equity across reward schemes — reward distribution is fair, culturally sensitive, adjusted for disability and age, with no discriminatory patterns and children consulted on fairness.`,
     );
-  } else if (equityRate >= 70 && totalEquityReviews > 0) {
+  } else if (meets(equityRate, 70) && totalEquityReviews > 0) {
     strengths.push(
       `${equityRate}% equity rate — the home generally ensures fair and inclusive reward distribution across all children.`,
     );
   }
 
-  if (childSatisfactionRate >= 90 && totalParticipationRecords > 0) {
+  if (meets(childSatisfactionRate, 90) && totalParticipationRecords > 0) {
     strengths.push(
       `${childSatisfactionRate}% child satisfaction with reward outcomes — children feel that the reward and incentive system works for them and reflects their input.`,
     );
-  } else if (childSatisfactionRate >= 70 && totalParticipationRecords > 0) {
+  } else if (meets(childSatisfactionRate, 70) && totalParticipationRecords > 0) {
     strengths.push(
       `${childSatisfactionRate}% child satisfaction — most children report positive experiences with the home's reward system.`,
     );
   }
 
-  if (schemeReviewRate >= 90 && totalSchemeRecords > 0) {
+  if (meets(schemeReviewRate, 90) && totalSchemeRecords > 0) {
     strengths.push(
       `${schemeReviewRate}% scheme review rate — reward schemes are actively monitored and adapted to remain meaningful and effective for each child.`,
     );
-  } else if (schemeReviewRate >= 70 && totalSchemeRecords > 0) {
+  } else if (meets(schemeReviewRate, 70) && totalSchemeRecords > 0) {
     strengths.push(
       `${schemeReviewRate}% scheme review rate — the home generally reviews reward schemes to ensure they remain appropriate.`,
     );
   }
 
-  if (schemeCoverageRate >= 80 && total_children > 0) {
+  if (meets(schemeCoverageRate, 80) && total_children > 0) {
     strengths.push(
       `${schemeCoverageRate}% reward scheme coverage — the majority of children have active, individualised reward schemes in place.`,
     );
-  } else if (schemeCoverageRate >= 60 && total_children > 0) {
+  } else if (meets(schemeCoverageRate, 60) && total_children > 0) {
     strengths.push(
       `${schemeCoverageRate}% of children have active reward schemes — good coverage with room to extend to remaining children.`,
     );
   }
 
-  if (reinforcementPositiveResponseRate >= 90 && totalReinforcementRecords > 0) {
+  if (meets(reinforcementPositiveResponseRate, 90) && totalReinforcementRecords > 0) {
     strengths.push(
       `${reinforcementPositiveResponseRate}% positive child response to reinforcement — children respond well to praise and rewards, suggesting reinforcement is meaningful and delivered with sensitivity.`,
     );
-  } else if (reinforcementPositiveResponseRate >= 70 && totalReinforcementRecords > 0) {
+  } else if (meets(reinforcementPositiveResponseRate, 70) && totalReinforcementRecords > 0) {
     strengths.push(
       `${reinforcementPositiveResponseRate}% positive child response — most children respond positively to the reinforcement they receive.`,
     );
   }
 
-  if (schemePositiveOutcomeRate >= 85 && totalSchemeRecords > 0) {
+  if (meets(schemePositiveOutcomeRate, 85) && totalSchemeRecords > 0) {
     strengths.push(
       `${schemePositiveOutcomeRate}% of reward schemes achieve positive outcomes — the home's reward approach is effective in supporting children's progress and self-esteem.`,
     );
   }
 
-  if (milestonesCelebratedRate >= 90 && totalProgrammeRecords > 0) {
+  if (meets(milestonesCelebratedRate, 90) && totalProgrammeRecords > 0) {
     strengths.push(
       `${milestonesCelebratedRate}% of programme milestones celebrated — the home actively marks children's achievements, building confidence and a sense of accomplishment.`,
     );
   }
 
-  if (meaningfulRewardRate >= 90 && totalSchemeRecords > 0) {
+  if (meets(meaningfulRewardRate, 90) && totalSchemeRecords > 0) {
     strengths.push(
       `${meaningfulRewardRate}% of rewards are meaningful to children — rewards reflect children's individual interests and preferences, making the incentive system genuinely motivating.`,
     );
   }
 
-  if (programmeParticipationRate >= 90 && totalEligibleAcrossProgrammes > 0) {
+  if (meets(programmeParticipationRate, 90) && totalEligibleAcrossProgrammes > 0) {
     strengths.push(
       `${programmeParticipationRate}% programme participation — eligible children are actively engaged in incentive programmes, demonstrating inclusive design and appeal.`,
     );
   }
 
-  if (noDiscriminatoryPatternsRate >= 90 && totalEquityReviews > 0) {
+  if (meets(noDiscriminatoryPatternsRate, 90) && totalEquityReviews > 0) {
     strengths.push(
       `${noDiscriminatoryPatternsRate}% of equity reviews confirm no discriminatory patterns — the reward system operates without bias across protected characteristics.`,
     );
@@ -618,81 +615,81 @@ export function computeRewardsIncentivesManagement(
 
   const concerns: string[] = [];
 
-  if (rewardFairnessRate < 50 && totalSchemeRecords > 0) {
+  if (below(rewardFairnessRate, 50) && totalSchemeRecords > 0) {
     concerns.push(
       `Only ${rewardFairnessRate}% reward scheme fairness — the majority of schemes do not meet basic fairness standards (clear, achievable, age-appropriate, individualised criteria with meaningful rewards). This undermines children's trust in the reward system and may feel punitive rather than motivating.`,
     );
-  } else if (rewardFairnessRate < 70 && rewardFairnessRate >= 50 && totalSchemeRecords > 0) {
+  } else if (below(rewardFairnessRate, 70) && meets(rewardFairnessRate, 50) && totalSchemeRecords > 0) {
     concerns.push(
       `Reward scheme fairness at ${rewardFairnessRate}% — some schemes do not fully meet fairness standards, which may leave some children feeling the system is unfair or inaccessible.`,
     );
   }
 
-  if (reinforcementConsistencyRate < 50 && totalReinforcementRecords > 0) {
+  if (below(reinforcementConsistencyRate, 50) && totalReinforcementRecords > 0) {
     concerns.push(
       `Only ${reinforcementConsistencyRate}% reinforcement consistency — positive reinforcement is not being delivered in a timely, specific, genuine, or plan-consistent manner. Inconsistent praise undermines children's motivation and can create confusion about expectations.`,
     );
-  } else if (reinforcementConsistencyRate < 70 && reinforcementConsistencyRate >= 50 && totalReinforcementRecords > 0) {
+  } else if (below(reinforcementConsistencyRate, 70) && meets(reinforcementConsistencyRate, 50) && totalReinforcementRecords > 0) {
     concerns.push(
       `Reinforcement consistency at ${reinforcementConsistencyRate}% — positive reinforcement is not consistently meeting quality standards across all interactions.`,
     );
   }
 
-  if (programmeEffectivenessRate < 50 && totalProgrammeRecords > 0) {
+  if (below(programmeEffectivenessRate, 50) && totalProgrammeRecords > 0) {
     concerns.push(
       `Only ${programmeEffectivenessRate}% incentive programme effectiveness — programmes lack clear goals, progress tracking, or effectiveness reviews. Without these, incentive programmes cannot be demonstrated to benefit children.`,
     );
-  } else if (programmeEffectivenessRate < 65 && programmeEffectivenessRate >= 50 && totalProgrammeRecords > 0) {
+  } else if (below(programmeEffectivenessRate, 65) && meets(programmeEffectivenessRate, 50) && totalProgrammeRecords > 0) {
     concerns.push(
       `Programme effectiveness at ${programmeEffectivenessRate}% — some incentive programmes are not fully achieving their objectives or being regularly reviewed.`,
     );
   }
 
-  if (childParticipationRate < 40 && totalParticipationRecords > 0) {
+  if (below(childParticipationRate, 40) && totalParticipationRecords > 0) {
     concerns.push(
       `Child participation in reward design at only ${childParticipationRate}% — children are not meaningfully involved in shaping their reward and incentive experiences. This conflicts with the principle that children should have a voice in decisions affecting them.`,
     );
-  } else if (childParticipationRate < 70 && childParticipationRate >= 40 && totalParticipationRecords > 0) {
+  } else if (below(childParticipationRate, 70) && meets(childParticipationRate, 40) && totalParticipationRecords > 0) {
     concerns.push(
       `Child participation rate at ${childParticipationRate}% — not all children are meaningfully involved in the design and review of reward schemes.`,
     );
   }
 
-  if (equityRate < 50 && totalEquityReviews > 0) {
+  if (below(equityRate, 50) && totalEquityReviews > 0) {
     concerns.push(
       `Only ${equityRate}% equity across reward schemes — reward distribution shows significant fairness issues including potential cultural insensitivity, lack of disability adjustments, or discriminatory patterns. This is a serious safeguarding and equality concern.`,
     );
-  } else if (equityRate < 70 && equityRate >= 50 && totalEquityReviews > 0) {
+  } else if (below(equityRate, 70) && meets(equityRate, 50) && totalEquityReviews > 0) {
     concerns.push(
       `Equity rate at ${equityRate}% — some aspects of reward distribution do not fully meet fairness and equality standards across all children.`,
     );
   }
 
-  if (childSatisfactionRate < 50 && totalParticipationRecords > 0) {
+  if (below(childSatisfactionRate, 50) && totalParticipationRecords > 0) {
     concerns.push(
       `Only ${childSatisfactionRate}% child satisfaction with reward outcomes — children do not feel the reward system works for them, suggesting rewards are not meaningful, criteria are unachievable, or children's input is being ignored.`,
     );
-  } else if (childSatisfactionRate < 70 && childSatisfactionRate >= 50 && totalParticipationRecords > 0) {
+  } else if (below(childSatisfactionRate, 70) && meets(childSatisfactionRate, 50) && totalParticipationRecords > 0) {
     concerns.push(
       `Child satisfaction at ${childSatisfactionRate}% — a significant proportion of children are not satisfied with how the reward system operates.`,
     );
   }
 
-  if (exclusionRate > 30 && totalChildrenAssessed > 0) {
+  if (above(exclusionRate, 30) && totalChildrenAssessed > 0) {
     concerns.push(
       `${exclusionRate}% of children assessed are excluded from reward schemes — high exclusion rates suggest the system may be inaccessible or discriminatory for some children.`,
     );
-  } else if (exclusionRate > 15 && exclusionRate <= 30 && totalChildrenAssessed > 0) {
+  } else if (above(exclusionRate, 15) && exclusionRate! <= 30 && totalChildrenAssessed > 0) {
     concerns.push(
       `${exclusionRate}% child exclusion from reward schemes — some children are not able to access the reward system, which requires investigation.`,
     );
   }
 
-  if (schemeReviewRate < 50 && totalSchemeRecords > 0) {
+  if (below(schemeReviewRate, 50) && totalSchemeRecords > 0) {
     concerns.push(
       `Only ${schemeReviewRate}% of reward schemes reviewed — schemes that are not reviewed may become stale, meaningless, or inappropriate as children's needs evolve.`,
     );
-  } else if (schemeReviewRate < 70 && schemeReviewRate >= 50 && totalSchemeRecords > 0) {
+  } else if (below(schemeReviewRate, 70) && meets(schemeReviewRate, 50) && totalSchemeRecords > 0) {
     concerns.push(
       `Scheme review rate at ${schemeReviewRate}% — not all reward schemes are being reviewed regularly to ensure continued relevance and effectiveness.`,
     );
@@ -722,13 +719,13 @@ export function computeRewardsIncentivesManagement(
     );
   }
 
-  if (viewsActedUponRate < 50 && totalParticipationRecords > 0) {
+  if (below(viewsActedUponRate, 50) && totalParticipationRecords > 0) {
     concerns.push(
       `Only ${viewsActedUponRate}% of children's views about rewards are acted upon — capturing children's voices without responding to them undermines trust and tokenises participation.`,
     );
   }
 
-  if (achievableCriteriaRate < 50 && totalSchemeRecords > 0) {
+  if (below(achievableCriteriaRate, 50) && totalSchemeRecords > 0) {
     concerns.push(
       `Only ${achievableCriteriaRate}% of reward schemes have achievable criteria — unachievable criteria can damage children's self-esteem and create a sense of failure rather than motivation.`,
     );
@@ -739,7 +736,7 @@ export function computeRewardsIncentivesManagement(
   const recommendations: RewardsIncentivesRecommendation[] = [];
   let rank = 0;
 
-  if (rewardFairnessRate < 50 && totalSchemeRecords > 0) {
+  if (below(rewardFairnessRate, 50) && totalSchemeRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -749,7 +746,7 @@ export function computeRewardsIncentivesManagement(
     });
   }
 
-  if (reinforcementConsistencyRate < 50 && totalReinforcementRecords > 0) {
+  if (below(reinforcementConsistencyRate, 50) && totalReinforcementRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -759,7 +756,7 @@ export function computeRewardsIncentivesManagement(
     });
   }
 
-  if (equityRate < 50 && totalEquityReviews > 0) {
+  if (below(equityRate, 50) && totalEquityReviews > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -769,7 +766,7 @@ export function computeRewardsIncentivesManagement(
     });
   }
 
-  if (childParticipationRate < 40 && totalParticipationRecords > 0) {
+  if (below(childParticipationRate, 40) && totalParticipationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -779,7 +776,7 @@ export function computeRewardsIncentivesManagement(
     });
   }
 
-  if (childSatisfactionRate < 50 && totalParticipationRecords > 0) {
+  if (below(childSatisfactionRate, 50) && totalParticipationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -829,7 +826,7 @@ export function computeRewardsIncentivesManagement(
     });
   }
 
-  if (exclusionRate > 30 && totalChildrenAssessed > 0) {
+  if (above(exclusionRate, 30) && totalChildrenAssessed > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -839,7 +836,7 @@ export function computeRewardsIncentivesManagement(
     });
   }
 
-  if (programmeEffectivenessRate < 50 && totalProgrammeRecords > 0) {
+  if (below(programmeEffectivenessRate, 50) && totalProgrammeRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -849,7 +846,7 @@ export function computeRewardsIncentivesManagement(
     });
   }
 
-  if (schemeReviewRate < 50 && totalSchemeRecords > 0) {
+  if (below(schemeReviewRate, 50) && totalSchemeRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -859,7 +856,7 @@ export function computeRewardsIncentivesManagement(
     });
   }
 
-  if (viewsActedUponRate < 50 && totalParticipationRecords > 0) {
+  if (below(viewsActedUponRate, 50) && totalParticipationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -869,7 +866,7 @@ export function computeRewardsIncentivesManagement(
     });
   }
 
-  if (achievableCriteriaRate < 50 && totalSchemeRecords > 0) {
+  if (below(achievableCriteriaRate, 50) && totalSchemeRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -880,8 +877,8 @@ export function computeRewardsIncentivesManagement(
   }
 
   if (
-    rewardFairnessRate >= 50 &&
-    rewardFairnessRate < 70 &&
+    meets(rewardFairnessRate, 50) &&
+    below(rewardFairnessRate, 70) &&
     totalSchemeRecords > 0
   ) {
     recommendations.push({
@@ -894,8 +891,8 @@ export function computeRewardsIncentivesManagement(
   }
 
   if (
-    reinforcementConsistencyRate >= 50 &&
-    reinforcementConsistencyRate < 70 &&
+    meets(reinforcementConsistencyRate, 50) &&
+    below(reinforcementConsistencyRate, 70) &&
     totalReinforcementRecords > 0
   ) {
     recommendations.push({
@@ -908,8 +905,8 @@ export function computeRewardsIncentivesManagement(
   }
 
   if (
-    equityRate >= 50 &&
-    equityRate < 70 &&
+    meets(equityRate, 50) &&
+    below(equityRate, 70) &&
     totalEquityReviews > 0
   ) {
     recommendations.push({
@@ -922,8 +919,8 @@ export function computeRewardsIncentivesManagement(
   }
 
   if (
-    childParticipationRate >= 40 &&
-    childParticipationRate < 70 &&
+    meets(childParticipationRate, 40) &&
+    below(childParticipationRate, 70) &&
     totalParticipationRecords > 0
   ) {
     recommendations.push({
@@ -936,8 +933,8 @@ export function computeRewardsIncentivesManagement(
   }
 
   if (
-    programmeEffectivenessRate >= 50 &&
-    programmeEffectivenessRate < 65 &&
+    meets(programmeEffectivenessRate, 50) &&
+    below(programmeEffectivenessRate, 65) &&
     totalProgrammeRecords > 0
   ) {
     recommendations.push({
@@ -950,7 +947,7 @@ export function computeRewardsIncentivesManagement(
   }
 
   if (
-    schemeCoverageRate < 50 &&
+    below(schemeCoverageRate, 50) &&
     total_children > 0 &&
     totalSchemeRecords > 0
   ) {
@@ -964,8 +961,8 @@ export function computeRewardsIncentivesManagement(
   }
 
   if (
-    childSatisfactionRate >= 50 &&
-    childSatisfactionRate < 70 &&
+    meets(childSatisfactionRate, 50) &&
+    below(childSatisfactionRate, 70) &&
     totalParticipationRecords > 0
   ) {
     recommendations.push({
@@ -977,7 +974,7 @@ export function computeRewardsIncentivesManagement(
     });
   }
 
-  if (milestonesCelebratedRate < 70 && totalProgrammeRecords > 0) {
+  if (below(milestonesCelebratedRate, 70) && totalProgrammeRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -993,35 +990,35 @@ export function computeRewardsIncentivesManagement(
 
   // -- Critical insights --
 
-  if (rewardFairnessRate < 50 && totalSchemeRecords > 0) {
+  if (below(rewardFairnessRate, 50) && totalSchemeRecords > 0) {
     insights.push({
       text: `Only ${rewardFairnessRate}% reward scheme fairness. Ofsted expects reward systems to be fair, transparent, and designed with children's input. When schemes have unclear, unachievable, or non-individualised criteria, they can damage children's self-esteem and create a sense of exclusion rather than motivation.`,
       severity: "critical",
     });
   }
 
-  if (reinforcementConsistencyRate < 50 && totalReinforcementRecords > 0) {
+  if (below(reinforcementConsistencyRate, 50) && totalReinforcementRecords > 0) {
     insights.push({
       text: `Only ${reinforcementConsistencyRate}% reinforcement consistency. Positive reinforcement is a cornerstone of effective residential care — when it is inconsistent, untimely, or generic, children cannot develop a clear understanding of expectations and may feel their efforts go unrecognised.`,
       severity: "critical",
     });
   }
 
-  if (equityRate < 50 && totalEquityReviews > 0) {
+  if (below(equityRate, 50) && totalEquityReviews > 0) {
     insights.push({
       text: `Only ${equityRate}% equity across reward schemes. Inequitable reward distribution has significant safeguarding implications — children who are systematically excluded or disadvantaged by the reward system may experience discrimination, reduced self-esteem, and a sense of injustice that undermines their placement stability.`,
       severity: "critical",
     });
   }
 
-  if (childParticipationRate < 40 && totalParticipationRecords > 0) {
+  if (below(childParticipationRate, 40) && totalParticipationRecords > 0) {
     insights.push({
       text: `Child participation in reward design at only ${childParticipationRate}%. Reward systems designed without children's meaningful input are fundamentally flawed — they cannot reflect children's motivations, preferences, or sense of fairness. Ofsted views child participation in decisions affecting them as essential.`,
       severity: "critical",
     });
   }
 
-  if (childSatisfactionRate < 50 && totalParticipationRecords > 0) {
+  if (below(childSatisfactionRate, 50) && totalParticipationRecords > 0) {
     insights.push({
       text: `Only ${childSatisfactionRate}% child satisfaction with reward outcomes. When children are dissatisfied with the reward system, it suggests a fundamental disconnect between what the home provides and what children value. This requires a complete review of the reward approach with children at the centre.`,
       severity: "critical",
@@ -1049,7 +1046,7 @@ export function computeRewardsIncentivesManagement(
     });
   }
 
-  if (exclusionRate > 30 && totalChildrenAssessed > 0) {
+  if (above(exclusionRate, 30) && totalChildrenAssessed > 0) {
     insights.push({
       text: `${exclusionRate}% of children are excluded from reward schemes. High exclusion rates are a significant concern — children who cannot access the reward system are likely to feel marginalised, lose motivation, and may exhibit increased challenging behaviour as a result.`,
       severity: "critical",
@@ -1059,8 +1056,8 @@ export function computeRewardsIncentivesManagement(
   // -- Warning insights --
 
   if (
-    rewardFairnessRate >= 50 &&
-    rewardFairnessRate < 70 &&
+    meets(rewardFairnessRate, 50) &&
+    below(rewardFairnessRate, 70) &&
     totalSchemeRecords > 0
   ) {
     insights.push({
@@ -1070,8 +1067,8 @@ export function computeRewardsIncentivesManagement(
   }
 
   if (
-    reinforcementConsistencyRate >= 50 &&
-    reinforcementConsistencyRate < 70 &&
+    meets(reinforcementConsistencyRate, 50) &&
+    below(reinforcementConsistencyRate, 70) &&
     totalReinforcementRecords > 0
   ) {
     insights.push({
@@ -1081,8 +1078,8 @@ export function computeRewardsIncentivesManagement(
   }
 
   if (
-    programmeEffectivenessRate >= 50 &&
-    programmeEffectivenessRate < 65 &&
+    meets(programmeEffectivenessRate, 50) &&
+    below(programmeEffectivenessRate, 65) &&
     totalProgrammeRecords > 0
   ) {
     insights.push({
@@ -1092,8 +1089,8 @@ export function computeRewardsIncentivesManagement(
   }
 
   if (
-    childParticipationRate >= 40 &&
-    childParticipationRate < 70 &&
+    meets(childParticipationRate, 40) &&
+    below(childParticipationRate, 70) &&
     totalParticipationRecords > 0
   ) {
     insights.push({
@@ -1103,8 +1100,8 @@ export function computeRewardsIncentivesManagement(
   }
 
   if (
-    equityRate >= 50 &&
-    equityRate < 70 &&
+    meets(equityRate, 50) &&
+    below(equityRate, 70) &&
     totalEquityReviews > 0
   ) {
     insights.push({
@@ -1114,8 +1111,8 @@ export function computeRewardsIncentivesManagement(
   }
 
   if (
-    childSatisfactionRate >= 50 &&
-    childSatisfactionRate < 70 &&
+    meets(childSatisfactionRate, 50) &&
+    below(childSatisfactionRate, 70) &&
     totalParticipationRecords > 0
   ) {
     insights.push({
@@ -1125,8 +1122,8 @@ export function computeRewardsIncentivesManagement(
   }
 
   if (
-    schemeReviewRate >= 50 &&
-    schemeReviewRate < 70 &&
+    meets(schemeReviewRate, 50) &&
+    below(schemeReviewRate, 70) &&
     totalSchemeRecords > 0
   ) {
     insights.push({
@@ -1136,8 +1133,8 @@ export function computeRewardsIncentivesManagement(
   }
 
   if (
-    viewsActedUponRate >= 50 &&
-    viewsActedUponRate < 70 &&
+    meets(viewsActedUponRate, 50) &&
+    below(viewsActedUponRate, 70) &&
     totalParticipationRecords > 0
   ) {
     insights.push({
@@ -1147,8 +1144,8 @@ export function computeRewardsIncentivesManagement(
   }
 
   if (
-    exclusionRate > 15 &&
-    exclusionRate <= 30 &&
+    above(exclusionRate, 15) &&
+    exclusionRate! <= 30 &&
     totalChildrenAssessed > 0
   ) {
     insights.push({
@@ -1210,8 +1207,8 @@ export function computeRewardsIncentivesManagement(
   }
 
   if (
-    rewardFairnessRate >= 90 &&
-    childConsultedRate >= 90 &&
+    meets(rewardFairnessRate, 90) &&
+    meets(childConsultedRate, 90) &&
     totalSchemeRecords > 0
   ) {
     insights.push({
@@ -1221,8 +1218,8 @@ export function computeRewardsIncentivesManagement(
   }
 
   if (
-    reinforcementConsistencyRate >= 90 &&
-    reinforcementPositiveResponseRate >= 90 &&
+    meets(reinforcementConsistencyRate, 90) &&
+    meets(reinforcementPositiveResponseRate, 90) &&
     totalReinforcementRecords > 0
   ) {
     insights.push({
@@ -1232,8 +1229,8 @@ export function computeRewardsIncentivesManagement(
   }
 
   if (
-    equityRate >= 90 &&
-    noDiscriminatoryPatternsRate >= 90 &&
+    meets(equityRate, 90) &&
+    meets(noDiscriminatoryPatternsRate, 90) &&
     totalEquityReviews > 0
   ) {
     insights.push({
@@ -1243,8 +1240,8 @@ export function computeRewardsIncentivesManagement(
   }
 
   if (
-    childParticipationRate >= 90 &&
-    childSatisfactionRate >= 90 &&
+    meets(childParticipationRate, 90) &&
+    meets(childSatisfactionRate, 90) &&
     totalParticipationRecords > 0
   ) {
     insights.push({
@@ -1254,7 +1251,7 @@ export function computeRewardsIncentivesManagement(
   }
 
   if (
-    programmeEffectivenessRate >= 85 &&
+    meets(programmeEffectivenessRate, 85) &&
     totalProgrammeRecords > 0
   ) {
     insights.push({
@@ -1264,7 +1261,7 @@ export function computeRewardsIncentivesManagement(
   }
 
   if (
-    schemeCoverageRate >= 80 &&
+    meets(schemeCoverageRate, 80) &&
     total_children > 0
   ) {
     insights.push({
@@ -1274,8 +1271,8 @@ export function computeRewardsIncentivesManagement(
   }
 
   if (
-    schemeReviewRate >= 90 &&
-    schemePositiveOutcomeRate >= 85 &&
+    meets(schemeReviewRate, 90) &&
+    meets(schemePositiveOutcomeRate, 85) &&
     totalSchemeRecords > 0
   ) {
     insights.push({
@@ -1285,7 +1282,7 @@ export function computeRewardsIncentivesManagement(
   }
 
   if (
-    childSatisfactionRate >= 90 &&
+    meets(childSatisfactionRate, 90) &&
     totalParticipationRecords > 0
   ) {
     insights.push({
@@ -1295,7 +1292,7 @@ export function computeRewardsIncentivesManagement(
   }
 
   if (
-    meaningfulRewardRate >= 90 &&
+    meets(meaningfulRewardRate, 90) &&
     totalSchemeRecords > 0
   ) {
     insights.push({
@@ -1305,7 +1302,7 @@ export function computeRewardsIncentivesManagement(
   }
 
   if (
-    actionPlanCompletionRate >= 90 &&
+    meets(actionPlanCompletionRate, 90) &&
     actionPlansCreated > 0
   ) {
     insights.push({

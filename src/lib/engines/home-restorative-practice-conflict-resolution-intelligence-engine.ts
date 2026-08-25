@@ -10,7 +10,7 @@
 //             relationshipRepairRecords, mediationRecords, childVoiceRecords
 // ==============================================================================
 
-import { below, meets } from "@/lib/metrics/rate";
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 
 // -- Input Types --------------------------------------------------------------
 
@@ -161,13 +161,17 @@ export interface RestorativePracticeResult {
   restorative_rating: RestorativePracticeRating;
   restorative_score: number;
   headline: string;
-  conference_completion_rate: number;
-  conflict_resolution_rate: number;
-  relationship_repair_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  conference_completion_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  conflict_resolution_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  relationship_repair_rate: number | null;
   // Null on empty — no mediations ⇒ no quality signal; no satisfaction records ⇒ no satisfaction.
   // "0% mediation quality / 0% satisfaction" reads as "we did all this and it failed", not "unmeasured".
   mediation_quality_rate: number | null;
-  child_voice_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_voice_rate: number | null;
   satisfaction_rate: number | null;
   strengths: string[];
   concerns: string[];
@@ -176,10 +180,6 @@ export interface RestorativePracticeResult {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -203,11 +203,11 @@ function emptyResult(
     restorative_rating: rating,
     restorative_score: score,
     headline,
-    conference_completion_rate: 0,
-    conflict_resolution_rate: 0,
-    relationship_repair_rate: 0,
+    conference_completion_rate: null,
+    conflict_resolution_rate: null,
+    relationship_repair_rate: null,
     mediation_quality_rate: null,
-    child_voice_rate: 0,
+    child_voice_rate: null,
     satisfaction_rate: null,
     strengths: [],
     concerns: [],
@@ -287,10 +287,10 @@ export function computeRestorativePracticeConflictResolution(
   // --- Restorative conference completion ---
   const totalConferences = restorative_conference_records.length;
   const completedConferences = restorative_conference_records.filter((r) => r.completed).length;
-  const conferenceCompletionRate = pct(completedConferences, totalConferences);
+  const conferenceCompletionRate = rate(completedConferences, totalConferences);
 
   const agreementReached = restorative_conference_records.filter((r) => r.agreement_reached).length;
-  const agreementRate = pct(agreementReached, totalConferences);
+  const agreementRate = rate(agreementReached, totalConferences);
 
   const totalAgreementActions = restorative_conference_records.reduce(
     (sum, r) => sum + r.agreement_actions, 0,
@@ -298,16 +298,16 @@ export function computeRestorativePracticeConflictResolution(
   const totalAgreementActionsCompleted = restorative_conference_records.reduce(
     (sum, r) => sum + r.agreement_actions_completed, 0,
   );
-  const agreementActionCompletionRate = pct(totalAgreementActionsCompleted, totalAgreementActions);
+  const agreementActionCompletionRate = rate(totalAgreementActionsCompleted, totalAgreementActions);
 
   const childParticipated = restorative_conference_records.filter((r) => r.child_participated).length;
-  const childParticipationRate = pct(childParticipated, totalConferences);
+  const childParticipationRate = rate(childParticipated, totalConferences);
 
   const childPrepared = restorative_conference_records.filter((r) => r.child_prepared_beforehand).length;
-  const childPreparationRate = pct(childPrepared, totalConferences);
+  const childPreparationRate = rate(childPrepared, totalConferences);
 
   const facilitatorTrained = restorative_conference_records.filter((r) => r.facilitator_trained).length;
-  const facilitatorTrainedRate = pct(facilitatorTrained, totalConferences);
+  const facilitatorTrainedRate = rate(facilitatorTrained, totalConferences);
 
   const conferenceSatisfactionSum = restorative_conference_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
@@ -320,32 +320,32 @@ export function computeRestorativePracticeConflictResolution(
   // --- Conflict resolution effectiveness ---
   const totalConflicts = conflict_resolution_records.length;
   const resolvedConflicts = conflict_resolution_records.filter((r) => r.resolved).length;
-  const conflictResolutionRate = pct(resolvedConflicts, totalConflicts);
+  const conflictResolutionRate = rate(resolvedConflicts, totalConflicts);
 
   const bothPartiesSatisfied = conflict_resolution_records.filter((r) => r.both_parties_satisfied).length;
-  const bothPartiesSatisfiedRate = pct(bothPartiesSatisfied, totalConflicts);
+  const bothPartiesSatisfiedRate = rate(bothPartiesSatisfied, totalConflicts);
 
   const underlyingCauseIdentified = conflict_resolution_records.filter((r) => r.underlying_cause_identified).length;
-  const underlyingCauseIdentifiedRate = pct(underlyingCauseIdentified, totalConflicts);
+  const underlyingCauseIdentifiedRate = rate(underlyingCauseIdentified, totalConflicts);
 
   const recurrenceWithin30Days = conflict_resolution_records.filter((r) => r.recurrence_within_30_days).length;
-  const recurrenceRate = pct(recurrenceWithin30Days, totalConflicts);
+  const recurrenceRate = rate(recurrenceWithin30Days, totalConflicts);
 
   const restorativeApproachUsed = conflict_resolution_records.filter((r) => r.restorative_approach_used).length;
-  const restorativeApproachRate = pct(restorativeApproachUsed, totalConflicts);
+  const restorativeApproachRate = rate(restorativeApproachUsed, totalConflicts);
 
   const sanctionsUsed = conflict_resolution_records.filter((r) => r.sanctions_used).length;
-  const sanctionsRate = pct(sanctionsUsed, totalConflicts);
+  const sanctionsRate = rate(sanctionsUsed, totalConflicts);
 
   const conflictStaffTrained = conflict_resolution_records.filter((r) => r.staff_trained_in_restorative).length;
-  const conflictStaffTrainedRate = pct(conflictStaffTrained, totalConflicts);
+  const conflictStaffTrainedRate = rate(conflictStaffTrained, totalConflicts);
 
   const conflictVoiceCaptured = conflict_resolution_records.filter((r) => r.child_voice_captured).length;
 
   // --- Relationship repair tracking ---
   const totalRepairRecords = relationship_repair_records.length;
   const relationshipRestored = relationship_repair_records.filter((r) => r.relationship_restored).length;
-  const relationshipRepairRate = pct(relationshipRestored, totalRepairRecords);
+  const relationshipRepairRate = rate(relationshipRestored, totalRepairRecords);
 
   const totalRepairSessionsPlanned = relationship_repair_records.reduce(
     (sum, r) => sum + r.sessions_planned, 0,
@@ -353,16 +353,16 @@ export function computeRestorativePracticeConflictResolution(
   const totalRepairSessionsCompleted = relationship_repair_records.reduce(
     (sum, r) => sum + r.sessions_completed, 0,
   );
-  const repairSessionCompletionRate = pct(totalRepairSessionsCompleted, totalRepairSessionsPlanned);
+  const repairSessionCompletionRate = rate(totalRepairSessionsCompleted, totalRepairSessionsPlanned);
 
   const childFeelsHeard = relationship_repair_records.filter((r) => r.child_feels_heard).length;
-  const childFeelsHeardRate = pct(childFeelsHeard, totalRepairRecords);
+  const childFeelsHeardRate = rate(childFeelsHeard, totalRepairRecords);
 
   const childInitiatedRepair = relationship_repair_records.filter((r) => r.repair_initiated_by === "child").length;
-  const childInitiatedRepairRate = pct(childInitiatedRepair, totalRepairRecords);
+  const childInitiatedRepairRate = rate(childInitiatedRepair, totalRepairRecords);
 
   const mutualInitiatedRepair = relationship_repair_records.filter((r) => r.repair_initiated_by === "mutual").length;
-  const mutualInitiatedRate = pct(mutualInitiatedRepair, totalRepairRecords);
+  const mutualInitiatedRate = rate(mutualInitiatedRepair, totalRepairRecords);
 
   const progressRatingSum = relationship_repair_records.reduce(
     (sum, r) => sum + r.progress_rating, 0,
@@ -383,16 +383,16 @@ export function computeRestorativePracticeConflictResolution(
   // --- Mediation quality ---
   const totalMediations = mediation_records.length;
   const mediationAgreementReached = mediation_records.filter((r) => r.agreement_reached).length;
-  const mediationAgreementRate = pct(mediationAgreementReached, totalMediations);
+  const mediationAgreementRate = rate(mediationAgreementReached, totalMediations);
 
   const mediationFairToAll = mediation_records.filter((r) => r.agreement_fair_to_all).length;
-  const mediationFairnessRate = pct(mediationFairToAll, totalMediations);
+  const mediationFairnessRate = rate(mediationFairToAll, totalMediations);
 
   const mediatorTrained = mediation_records.filter((r) => r.mediator_trained).length;
-  const mediatorTrainedRate = pct(mediatorTrained, totalMediations);
+  const mediatorTrainedRate = rate(mediatorTrained, totalMediations);
 
   const eachPartyHeard = mediation_records.filter((r) => r.each_party_heard).length;
-  const eachPartyHeardRate = pct(eachPartyHeard, totalMediations);
+  const eachPartyHeardRate = rate(eachPartyHeard, totalMediations);
 
   const mediationQualityScoreSum = mediation_records.reduce(
     (sum, r) => sum + r.mediation_quality_score, 0,
@@ -414,26 +414,26 @@ export function computeRestorativePracticeConflictResolution(
       : null;
 
   const peerMediation = mediation_records.filter((r) => r.mediation_type === "peer_mediation").length;
-  const peerMediationRate = pct(peerMediation, totalMediations);
+  const peerMediationRate = rate(peerMediation, totalMediations);
 
   // --- Child voice composite ---
   const totalVoiceRecords = child_voice_records.length;
   const voiceCaptured = child_voice_records.filter((r) => r.voice_captured).length;
-  const voiceCapturedRate = pct(voiceCaptured, totalVoiceRecords);
+  const voiceCapturedRate = rate(voiceCaptured, totalVoiceRecords);
 
   const feltListenedTo = child_voice_records.filter((r) => r.child_felt_listened_to).length;
-  const feltListenedToRate = pct(feltListenedTo, totalVoiceRecords);
+  const feltListenedToRate = rate(feltListenedTo, totalVoiceRecords);
 
   const viewsInfluencedOutcome = child_voice_records.filter((r) => r.child_views_influenced_outcome).length;
-  const viewsInfluencedRate = pct(viewsInfluencedOutcome, totalVoiceRecords);
+  const viewsInfluencedRate = rate(viewsInfluencedOutcome, totalVoiceRecords);
 
   const feltSafeToSpeak = child_voice_records.filter((r) => r.child_felt_safe_to_speak).length;
-  const feltSafeToSpeakRate = pct(feltSafeToSpeak, totalVoiceRecords);
+  const feltSafeToSpeakRate = rate(feltSafeToSpeak, totalVoiceRecords);
 
   const voiceBarriersPresent = child_voice_records.filter(
     (r) => r.barriers_to_participation.length > 0,
   ).length;
-  const voiceBarrierRate = pct(voiceBarriersPresent, totalVoiceRecords);
+  const voiceBarrierRate = rate(voiceBarriersPresent, totalVoiceRecords);
 
   const voiceSatisfactionSum = child_voice_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
@@ -448,7 +448,7 @@ export function computeRestorativePracticeConflictResolution(
     voiceCaptured + conflictVoiceCaptured + childParticipated;
   const compositeVoiceDenominator =
     totalVoiceRecords + totalConflicts + totalConferences;
-  const childVoiceRate = pct(compositeVoiceNumerator, compositeVoiceDenominator);
+  const childVoiceRate = rate(compositeVoiceNumerator, compositeVoiceDenominator);
 
   // --- Overall satisfaction composite ---
   // The outer `totalX > 0` guards prove each avg is a number here — non-null
@@ -472,54 +472,54 @@ export function computeRestorativePracticeConflictResolution(
   let score = 52;
 
   // --- Bonus 1: conferenceCompletionRate (>=90: +4, >=70: +2) ---
-  if (conferenceCompletionRate >= 90) score += 4;
-  else if (conferenceCompletionRate >= 70) score += 2;
+  if (meets(conferenceCompletionRate, 90)) score += 4;
+  else if (meets(conferenceCompletionRate, 70)) score += 2;
 
   // --- Bonus 2: conflictResolutionRate (>=85: +4, >=70: +2) ---
-  if (conflictResolutionRate >= 85) score += 4;
-  else if (conflictResolutionRate >= 70) score += 2;
+  if (meets(conflictResolutionRate, 85)) score += 4;
+  else if (meets(conflictResolutionRate, 70)) score += 2;
 
   // --- Bonus 3: relationshipRepairRate (>=80: +3, >=60: +1) ---
-  if (relationshipRepairRate >= 80) score += 3;
-  else if (relationshipRepairRate >= 60) score += 1;
+  if (meets(relationshipRepairRate, 80)) score += 3;
+  else if (meets(relationshipRepairRate, 60)) score += 1;
 
   // --- Bonus 4: mediationQualityRate (>=80: +3, >=60: +1) ---
   if (meets(mediationQualityRate, 80)) score += 3;
   else if (meets(mediationQualityRate, 60)) score += 1;
 
   // --- Bonus 5: childVoiceRate (>=85: +4, >=65: +2) ---
-  if (childVoiceRate >= 85) score += 4;
-  else if (childVoiceRate >= 65) score += 2;
+  if (meets(childVoiceRate, 85)) score += 4;
+  else if (meets(childVoiceRate, 65)) score += 2;
 
   // --- Bonus 6: restorativeApproachRate (>=90: +3, >=70: +1) ---
-  if (restorativeApproachRate >= 90) score += 3;
-  else if (restorativeApproachRate >= 70) score += 1;
+  if (meets(restorativeApproachRate, 90)) score += 3;
+  else if (meets(restorativeApproachRate, 70)) score += 1;
 
   // --- Bonus 7: agreementActionCompletionRate (>=90: +3, >=70: +1) ---
-  if (agreementActionCompletionRate >= 90) score += 3;
-  else if (agreementActionCompletionRate >= 70) score += 1;
+  if (meets(agreementActionCompletionRate, 90)) score += 3;
+  else if (meets(agreementActionCompletionRate, 70)) score += 1;
 
   // --- Bonus 8: satisfactionRate (>=80: +2, >=60: +1) ---
   if (meets(satisfactionRate, 80)) score += 2;
   else if (meets(satisfactionRate, 60)) score += 1;
 
   // --- Bonus 9: facilitatorTrainedRate (>=90: +2, >=70: +1) ---
-  if (facilitatorTrainedRate >= 90) score += 2;
-  else if (facilitatorTrainedRate >= 70) score += 1;
+  if (meets(facilitatorTrainedRate, 90)) score += 2;
+  else if (meets(facilitatorTrainedRate, 70)) score += 1;
 
   // -- Penalties (4 with guards) -------------------------------------------
 
   // conferenceCompletionRate < 50 -> -5
-  if (conferenceCompletionRate < 50 && totalConferences > 0) score -= 5;
+  if (below(conferenceCompletionRate, 50) && totalConferences > 0) score -= 5;
 
   // conflictResolutionRate < 50 -> -5
-  if (conflictResolutionRate < 50 && totalConflicts > 0) score -= 5;
+  if (below(conflictResolutionRate, 50) && totalConflicts > 0) score -= 5;
 
   // childVoiceRate < 40 -> -4
-  if (childVoiceRate < 40 && compositeVoiceDenominator > 0) score -= 4;
+  if (below(childVoiceRate, 40) && compositeVoiceDenominator > 0) score -= 4;
 
   // recurrenceRate > 40 -> -4
-  if (recurrenceRate > 40 && totalConflicts > 0) score -= 4;
+  if (above(recurrenceRate, 40) && totalConflicts > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -529,119 +529,119 @@ export function computeRestorativePracticeConflictResolution(
 
   const strengths: string[] = [];
 
-  if (conferenceCompletionRate >= 90 && totalConferences > 0) {
+  if (meets(conferenceCompletionRate, 90) && totalConferences > 0) {
     strengths.push(
       `${conferenceCompletionRate}% of restorative conferences completed -- the home demonstrates consistent commitment to following through on restorative processes.`,
     );
-  } else if (conferenceCompletionRate >= 70 && totalConferences > 0) {
+  } else if (meets(conferenceCompletionRate, 70) && totalConferences > 0) {
     strengths.push(
       `${conferenceCompletionRate}% restorative conference completion rate -- most conferences are being seen through to completion.`,
     );
   }
 
-  if (agreementRate >= 90 && totalConferences > 0) {
+  if (meets(agreementRate, 90) && totalConferences > 0) {
     strengths.push(
       `Agreements reached in ${agreementRate}% of restorative conferences -- skilled facilitation is enabling parties to find common ground and agree resolutions.`,
     );
-  } else if (agreementRate >= 70 && totalConferences > 0) {
+  } else if (meets(agreementRate, 70) && totalConferences > 0) {
     strengths.push(
       `Agreements reached in ${agreementRate}% of conferences -- good practice in achieving restorative outcomes.`,
     );
   }
 
-  if (agreementActionCompletionRate >= 90 && totalAgreementActions > 0) {
+  if (meets(agreementActionCompletionRate, 90) && totalAgreementActions > 0) {
     strengths.push(
       `${agreementActionCompletionRate}% of agreement actions completed -- the home follows through on restorative commitments, demonstrating that agreements are meaningful and enforced.`,
     );
-  } else if (agreementActionCompletionRate >= 70 && totalAgreementActions > 0) {
+  } else if (meets(agreementActionCompletionRate, 70) && totalAgreementActions > 0) {
     strengths.push(
       `${agreementActionCompletionRate}% agreement action completion rate -- good follow-through on restorative commitments.`,
     );
   }
 
-  if (childParticipationRate >= 90 && totalConferences > 0) {
+  if (meets(childParticipationRate, 90) && totalConferences > 0) {
     strengths.push(
       `Children participate in ${childParticipationRate}% of restorative conferences -- children are actively involved in resolving issues that affect them.`,
     );
   }
 
-  if (childPreparationRate >= 85 && totalConferences > 0) {
+  if (meets(childPreparationRate, 85) && totalConferences > 0) {
     strengths.push(
       `${childPreparationRate}% of children prepared beforehand for restorative conferences -- children are supported to understand the process and participate meaningfully.`,
     );
   }
 
-  if (facilitatorTrainedRate >= 90 && totalConferences > 0) {
+  if (meets(facilitatorTrainedRate, 90) && totalConferences > 0) {
     strengths.push(
       `${facilitatorTrainedRate}% of conference facilitators are trained in restorative practice -- skilled facilitation ensures quality restorative processes.`,
     );
   }
 
-  if (conflictResolutionRate >= 85 && totalConflicts > 0) {
+  if (meets(conflictResolutionRate, 85) && totalConflicts > 0) {
     strengths.push(
       `${conflictResolutionRate}% conflict resolution rate -- the home is highly effective at resolving conflicts between and involving children.`,
     );
-  } else if (conflictResolutionRate >= 70 && totalConflicts > 0) {
+  } else if (meets(conflictResolutionRate, 70) && totalConflicts > 0) {
     strengths.push(
       `${conflictResolutionRate}% conflict resolution rate -- most conflicts are being successfully resolved.`,
     );
   }
 
-  if (restorativeApproachRate >= 90 && totalConflicts > 0) {
+  if (meets(restorativeApproachRate, 90) && totalConflicts > 0) {
     strengths.push(
       `Restorative approaches used in ${restorativeApproachRate}% of conflict resolution -- the home consistently prioritises restorative over punitive responses.`,
     );
-  } else if (restorativeApproachRate >= 70 && totalConflicts > 0) {
+  } else if (meets(restorativeApproachRate, 70) && totalConflicts > 0) {
     strengths.push(
       `Restorative approaches used in ${restorativeApproachRate}% of conflicts -- good commitment to restorative practice principles.`,
     );
   }
 
-  if (bothPartiesSatisfiedRate >= 80 && totalConflicts > 0) {
+  if (meets(bothPartiesSatisfiedRate, 80) && totalConflicts > 0) {
     strengths.push(
       `Both parties satisfied in ${bothPartiesSatisfiedRate}% of conflict resolutions -- resolutions are fair and perceived as equitable by all involved.`,
     );
   }
 
-  if (underlyingCauseIdentifiedRate >= 80 && totalConflicts > 0) {
+  if (meets(underlyingCauseIdentifiedRate, 80) && totalConflicts > 0) {
     strengths.push(
       `Underlying causes identified in ${underlyingCauseIdentifiedRate}% of conflicts -- the home goes beyond surface-level resolution to understand root causes of conflict.`,
     );
   }
 
-  if (recurrenceRate <= 10 && totalConflicts > 0) {
+  if (totalConflicts > 0 && recurrenceRate! <= 10) {
     strengths.push(
       `Conflict recurrence rate of only ${recurrenceRate}% within 30 days -- resolutions are durable and effective at preventing repeat conflicts.`,
     );
-  } else if (recurrenceRate <= 20 && totalConflicts > 0) {
+  } else if (totalConflicts > 0 && recurrenceRate! <= 20) {
     strengths.push(
       `Conflict recurrence rate of ${recurrenceRate}% within 30 days -- most resolutions hold and prevent repeat conflicts.`,
     );
   }
 
-  if (relationshipRepairRate >= 80 && totalRepairRecords > 0) {
+  if (meets(relationshipRepairRate, 80) && totalRepairRecords > 0) {
     strengths.push(
       `${relationshipRepairRate}% of damaged relationships successfully repaired -- the home demonstrates exceptional commitment to healing and restoring connections.`,
     );
-  } else if (relationshipRepairRate >= 60 && totalRepairRecords > 0) {
+  } else if (meets(relationshipRepairRate, 60) && totalRepairRecords > 0) {
     strengths.push(
       `${relationshipRepairRate}% relationship repair success rate -- most relationships are being successfully restored.`,
     );
   }
 
-  if (childFeelsHeardRate >= 90 && totalRepairRecords > 0) {
+  if (meets(childFeelsHeardRate, 90) && totalRepairRecords > 0) {
     strengths.push(
       `Children feel heard in ${childFeelsHeardRate}% of relationship repair processes -- children's voices are central to the repair journey.`,
     );
   }
 
-  if (repairSessionCompletionRate >= 85 && totalRepairSessionsPlanned > 0) {
+  if (meets(repairSessionCompletionRate, 85) && totalRepairSessionsPlanned > 0) {
     strengths.push(
       `${repairSessionCompletionRate}% of planned repair sessions completed -- the home follows through on structured relationship repair plans.`,
     );
   }
 
-  if (childInitiatedRepairRate >= 30 && totalRepairRecords > 0) {
+  if (meets(childInitiatedRepairRate, 30) && totalRepairRecords > 0) {
     strengths.push(
       `${childInitiatedRepairRate}% of relationship repairs initiated by children -- children are developing the confidence and skills to take responsibility for repairing relationships.`,
     );
@@ -653,29 +653,29 @@ export function computeRestorativePracticeConflictResolution(
     );
   }
 
-  if (mediationAgreementRate >= 85 && totalMediations > 0) {
+  if (meets(mediationAgreementRate, 85) && totalMediations > 0) {
     strengths.push(
       `Agreements reached in ${mediationAgreementRate}% of mediations -- skilled mediation enables constructive dialogue and mutually acceptable outcomes.`,
     );
-  } else if (mediationAgreementRate >= 70 && totalMediations > 0) {
+  } else if (meets(mediationAgreementRate, 70) && totalMediations > 0) {
     strengths.push(
       `Agreements reached in ${mediationAgreementRate}% of mediations -- good success rate in mediated resolution.`,
     );
   }
 
-  if (mediatorTrainedRate >= 90 && totalMediations > 0) {
+  if (meets(mediatorTrainedRate, 90) && totalMediations > 0) {
     strengths.push(
       `${mediatorTrainedRate}% of mediators are trained -- high-quality mediation delivery through properly skilled practitioners.`,
     );
   }
 
-  if (eachPartyHeardRate >= 90 && totalMediations > 0) {
+  if (meets(eachPartyHeardRate, 90) && totalMediations > 0) {
     strengths.push(
       `Each party heard in ${eachPartyHeardRate}% of mediations -- the mediation process ensures all voices are genuinely listened to and considered.`,
     );
   }
 
-  if (mediationFairnessRate >= 85 && totalMediations > 0) {
+  if (meets(mediationFairnessRate, 85) && totalMediations > 0) {
     strengths.push(
       `Agreements judged fair to all parties in ${mediationFairnessRate}% of mediations -- outcomes are balanced and equitable.`,
     );
@@ -687,31 +687,31 @@ export function computeRestorativePracticeConflictResolution(
     );
   }
 
-  if (peerMediationRate >= 20 && totalMediations > 0) {
+  if (meets(peerMediationRate, 20) && totalMediations > 0) {
     strengths.push(
       `${peerMediationRate}% of mediations are peer-led -- children are developing mediation skills and taking active roles in conflict resolution.`,
     );
   }
 
-  if (voiceCapturedRate >= 90 && totalVoiceRecords > 0) {
+  if (meets(voiceCapturedRate, 90) && totalVoiceRecords > 0) {
     strengths.push(
       `Child voice captured in ${voiceCapturedRate}% of resolution processes -- children's views are consistently sought and recorded.`,
     );
   }
 
-  if (feltListenedToRate >= 90 && totalVoiceRecords > 0) {
+  if (meets(feltListenedToRate, 90) && totalVoiceRecords > 0) {
     strengths.push(
       `${feltListenedToRate}% of children felt genuinely listened to -- children experience authentic participation in resolution processes.`,
     );
   }
 
-  if (viewsInfluencedRate >= 80 && totalVoiceRecords > 0) {
+  if (meets(viewsInfluencedRate, 80) && totalVoiceRecords > 0) {
     strengths.push(
       `Children's views influenced outcomes in ${viewsInfluencedRate}% of cases -- child voice genuinely shapes resolutions rather than being tokenistic.`,
     );
   }
 
-  if (feltSafeToSpeakRate >= 90 && totalVoiceRecords > 0) {
+  if (meets(feltSafeToSpeakRate, 90) && totalVoiceRecords > 0) {
     strengths.push(
       `${feltSafeToSpeakRate}% of children felt safe to speak -- the home creates psychologically safe environments for children to express themselves during resolution processes.`,
     );
@@ -723,7 +723,7 @@ export function computeRestorativePracticeConflictResolution(
     );
   }
 
-  if (conflictStaffTrainedRate >= 90 && totalConflicts > 0) {
+  if (meets(conflictStaffTrainedRate, 90) && totalConflicts > 0) {
     strengths.push(
       `${conflictStaffTrainedRate}% of conflict-resolving staff trained in restorative practice -- the team has the skills to manage conflict restoratively.`,
     );
@@ -733,137 +733,137 @@ export function computeRestorativePracticeConflictResolution(
 
   const concerns: string[] = [];
 
-  if (conferenceCompletionRate < 50 && totalConferences > 0) {
+  if (below(conferenceCompletionRate, 50) && totalConferences > 0) {
     concerns.push(
       `Only ${conferenceCompletionRate}% of restorative conferences completed -- the majority of conferences are not being seen through, undermining the restorative process and denying children the opportunity for resolution.`,
     );
-  } else if (conferenceCompletionRate < 70 && conferenceCompletionRate >= 50 && totalConferences > 0) {
+  } else if (below(conferenceCompletionRate, 70) && meets(conferenceCompletionRate, 50) && totalConferences > 0) {
     concerns.push(
       `Restorative conference completion rate at ${conferenceCompletionRate}% -- too many conferences are not reaching conclusion, weakening the home's restorative approach.`,
     );
   }
 
-  if (agreementRate < 50 && totalConferences > 0) {
+  if (below(agreementRate, 50) && totalConferences > 0) {
     concerns.push(
       `Agreements reached in only ${agreementRate}% of restorative conferences -- conferences are frequently failing to achieve resolution, suggesting issues with facilitation quality or process design.`,
     );
-  } else if (agreementRate < 70 && agreementRate >= 50 && totalConferences > 0) {
+  } else if (below(agreementRate, 70) && meets(agreementRate, 50) && totalConferences > 0) {
     concerns.push(
       `Agreement rate of ${agreementRate}% in restorative conferences -- some conferences are not achieving outcomes, requiring review of facilitation approaches.`,
     );
   }
 
-  if (agreementActionCompletionRate < 50 && totalAgreementActions > 0) {
+  if (below(agreementActionCompletionRate, 50) && totalAgreementActions > 0) {
     concerns.push(
       `Only ${agreementActionCompletionRate}% of agreement actions completed -- restorative agreements are not being honoured, which damages trust in the process and teaches children that commitments are not meaningful.`,
     );
   }
 
-  if (facilitatorTrainedRate < 70 && totalConferences > 0) {
+  if (below(facilitatorTrainedRate, 70) && totalConferences > 0) {
     concerns.push(
       `Only ${facilitatorTrainedRate}% of conference facilitators trained in restorative practice -- untrained facilitation risks poor outcomes and may cause further harm.`,
     );
   }
 
-  if (childPreparationRate < 50 && totalConferences > 0) {
+  if (below(childPreparationRate, 50) && totalConferences > 0) {
     concerns.push(
       `Only ${childPreparationRate}% of children prepared before restorative conferences -- children are entering processes unprepared, which may increase anxiety and reduce meaningful participation.`,
     );
   }
 
-  if (conflictResolutionRate < 50 && totalConflicts > 0) {
+  if (below(conflictResolutionRate, 50) && totalConflicts > 0) {
     concerns.push(
       `Only ${conflictResolutionRate}% of conflicts resolved -- the majority of conflicts remain unresolved, creating a toxic environment and increasing risk of escalation and harm.`,
     );
-  } else if (conflictResolutionRate < 70 && conflictResolutionRate >= 50 && totalConflicts > 0) {
+  } else if (below(conflictResolutionRate, 70) && meets(conflictResolutionRate, 50) && totalConflicts > 0) {
     concerns.push(
       `Conflict resolution rate at ${conflictResolutionRate}% -- too many conflicts are left unresolved, impacting children's sense of safety and wellbeing.`,
     );
   }
 
-  if (restorativeApproachRate < 50 && totalConflicts > 0) {
+  if (below(restorativeApproachRate, 50) && totalConflicts > 0) {
     concerns.push(
       `Restorative approaches used in only ${restorativeApproachRate}% of conflicts -- the home is predominantly relying on non-restorative methods to manage conflict, contrary to best practice under Reg 35.`,
     );
-  } else if (restorativeApproachRate < 70 && restorativeApproachRate >= 50 && totalConflicts > 0) {
+  } else if (below(restorativeApproachRate, 70) && meets(restorativeApproachRate, 50) && totalConflicts > 0) {
     concerns.push(
       `Restorative approaches used in ${restorativeApproachRate}% of conflicts -- the home needs to strengthen its commitment to restorative practice as the primary conflict resolution method.`,
     );
   }
 
-  if (recurrenceRate > 40 && totalConflicts > 0) {
+  if (above(recurrenceRate, 40) && totalConflicts > 0) {
     concerns.push(
       `${recurrenceRate}% conflict recurrence rate within 30 days -- resolutions are not holding, suggesting underlying causes are not being addressed and children are trapped in cycles of conflict.`,
     );
-  } else if (recurrenceRate > 25 && recurrenceRate <= 40 && totalConflicts > 0) {
+  } else if (above(recurrenceRate, 25) && recurrenceRate! <= 40 && totalConflicts > 0) {
     concerns.push(
       `${recurrenceRate}% conflict recurrence rate within 30 days -- a significant proportion of resolved conflicts reoccur, indicating resolutions may be superficial.`,
     );
   }
 
-  if (sanctionsRate > 50 && totalConflicts > 0) {
+  if (above(sanctionsRate, 50) && totalConflicts > 0) {
     concerns.push(
       `Sanctions used in ${sanctionsRate}% of conflict resolutions -- the home is over-relying on punitive responses rather than restorative approaches, contrary to Reg 35 expectations.`,
     );
   }
 
-  if (bothPartiesSatisfiedRate < 50 && totalConflicts > 0) {
+  if (below(bothPartiesSatisfiedRate, 50) && totalConflicts > 0) {
     concerns.push(
       `Both parties satisfied in only ${bothPartiesSatisfiedRate}% of resolutions -- resolutions are perceived as unfair or one-sided, undermining trust in the process.`,
     );
   }
 
-  if (underlyingCauseIdentifiedRate < 50 && totalConflicts > 0) {
+  if (below(underlyingCauseIdentifiedRate, 50) && totalConflicts > 0) {
     concerns.push(
       `Underlying causes identified in only ${underlyingCauseIdentifiedRate}% of conflicts -- the home is treating symptoms rather than root causes, which drives recurrence and escalation.`,
     );
   }
 
-  if (conflictStaffTrainedRate < 50 && totalConflicts > 0) {
+  if (below(conflictStaffTrainedRate, 50) && totalConflicts > 0) {
     concerns.push(
       `Only ${conflictStaffTrainedRate}% of conflict-resolving staff trained in restorative practice -- untrained staff cannot deliver effective restorative resolution and may inadvertently escalate situations.`,
     );
   }
 
-  if (relationshipRepairRate < 40 && totalRepairRecords > 0) {
+  if (below(relationshipRepairRate, 40) && totalRepairRecords > 0) {
     concerns.push(
       `Only ${relationshipRepairRate}% of damaged relationships successfully repaired -- the majority of relationship breakdowns are not being resolved, leaving children in fractured relationships.`,
     );
-  } else if (relationshipRepairRate < 60 && relationshipRepairRate >= 40 && totalRepairRecords > 0) {
+  } else if (below(relationshipRepairRate, 60) && meets(relationshipRepairRate, 40) && totalRepairRecords > 0) {
     concerns.push(
       `Relationship repair rate at ${relationshipRepairRate}% -- too many damaged relationships are not being successfully restored.`,
     );
   }
 
-  if (childFeelsHeardRate < 50 && totalRepairRecords > 0) {
+  if (below(childFeelsHeardRate, 50) && totalRepairRecords > 0) {
     concerns.push(
       `Children feel heard in only ${childFeelsHeardRate}% of relationship repair processes -- children's voices are not central to the repair journey, undermining the restorative ethos.`,
     );
   }
 
-  if (repairSessionCompletionRate < 50 && totalRepairSessionsPlanned > 0) {
+  if (below(repairSessionCompletionRate, 50) && totalRepairSessionsPlanned > 0) {
     concerns.push(
       `Only ${repairSessionCompletionRate}% of planned repair sessions completed -- relationship repair plans are not being followed through, denying children sustained support.`,
     );
   }
 
-  if (mediationAgreementRate < 50 && totalMediations > 0) {
+  if (below(mediationAgreementRate, 50) && totalMediations > 0) {
     concerns.push(
       `Agreements reached in only ${mediationAgreementRate}% of mediations -- mediation processes are frequently failing to achieve resolution, suggesting quality or process issues.`,
     );
-  } else if (mediationAgreementRate < 70 && mediationAgreementRate >= 50 && totalMediations > 0) {
+  } else if (below(mediationAgreementRate, 70) && meets(mediationAgreementRate, 50) && totalMediations > 0) {
     concerns.push(
       `Mediation agreement rate at ${mediationAgreementRate}% -- some mediations are not achieving outcomes, requiring review.`,
     );
   }
 
-  if (mediatorTrainedRate < 60 && totalMediations > 0) {
+  if (below(mediatorTrainedRate, 60) && totalMediations > 0) {
     concerns.push(
       `Only ${mediatorTrainedRate}% of mediators are trained -- untrained mediators risk poor process quality and may cause further harm to parties.`,
     );
   }
 
-  if (eachPartyHeardRate < 70 && totalMediations > 0) {
+  if (below(eachPartyHeardRate, 70) && totalMediations > 0) {
     concerns.push(
       `Each party heard in only ${eachPartyHeardRate}% of mediations -- the mediation process is not consistently ensuring all voices are included.`,
     );
@@ -875,35 +875,35 @@ export function computeRestorativePracticeConflictResolution(
     );
   }
 
-  if (childVoiceRate < 40 && compositeVoiceDenominator > 0) {
+  if (below(childVoiceRate, 40) && compositeVoiceDenominator > 0) {
     concerns.push(
       `Child voice captured in only ${childVoiceRate}% of resolution processes -- children's perspectives are largely absent from conflict resolution, which is a fundamental failure of the restorative approach.`,
     );
-  } else if (childVoiceRate < 60 && childVoiceRate >= 40 && compositeVoiceDenominator > 0) {
+  } else if (below(childVoiceRate, 60) && meets(childVoiceRate, 40) && compositeVoiceDenominator > 0) {
     concerns.push(
       `Child voice rate at ${childVoiceRate}% -- children's views are not consistently captured or acted upon in resolution processes.`,
     );
   }
 
-  if (feltListenedToRate < 50 && totalVoiceRecords > 0) {
+  if (below(feltListenedToRate, 50) && totalVoiceRecords > 0) {
     concerns.push(
       `Only ${feltListenedToRate}% of children felt genuinely listened to -- children perceive the resolution process as not truly hearing them.`,
     );
   }
 
-  if (viewsInfluencedRate < 50 && totalVoiceRecords > 0) {
+  if (below(viewsInfluencedRate, 50) && totalVoiceRecords > 0) {
     concerns.push(
       `Children's views influenced outcomes in only ${viewsInfluencedRate}% of cases -- child voice is tokenistic rather than genuinely shaping resolutions.`,
     );
   }
 
-  if (feltSafeToSpeakRate < 60 && totalVoiceRecords > 0) {
+  if (below(feltSafeToSpeakRate, 60) && totalVoiceRecords > 0) {
     concerns.push(
       `Only ${feltSafeToSpeakRate}% of children felt safe to speak during resolution processes -- children do not feel psychologically safe to express themselves, which undermines the entire restorative approach.`,
     );
   }
 
-  if (voiceBarrierRate >= 30 && totalVoiceRecords > 0) {
+  if (meets(voiceBarrierRate, 30) && totalVoiceRecords > 0) {
     concerns.push(
       `Barriers to participation present in ${voiceBarrierRate}% of child voice records -- persistent barriers are preventing children from engaging in resolution processes.`,
     );
@@ -938,7 +938,7 @@ export function computeRestorativePracticeConflictResolution(
   const recommendations: RestorativePracticeRecommendation[] = [];
   let rank = 0;
 
-  if (conferenceCompletionRate < 50 && totalConferences > 0) {
+  if (below(conferenceCompletionRate, 50) && totalConferences > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -948,7 +948,7 @@ export function computeRestorativePracticeConflictResolution(
     });
   }
 
-  if (conflictResolutionRate < 50 && totalConflicts > 0) {
+  if (below(conflictResolutionRate, 50) && totalConflicts > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -958,7 +958,7 @@ export function computeRestorativePracticeConflictResolution(
     });
   }
 
-  if (childVoiceRate < 40 && compositeVoiceDenominator > 0) {
+  if (below(childVoiceRate, 40) && compositeVoiceDenominator > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -968,7 +968,7 @@ export function computeRestorativePracticeConflictResolution(
     });
   }
 
-  if (recurrenceRate > 40 && totalConflicts > 0) {
+  if (above(recurrenceRate, 40) && totalConflicts > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -978,7 +978,7 @@ export function computeRestorativePracticeConflictResolution(
     });
   }
 
-  if (restorativeApproachRate < 50 && totalConflicts > 0) {
+  if (below(restorativeApproachRate, 50) && totalConflicts > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -988,7 +988,7 @@ export function computeRestorativePracticeConflictResolution(
     });
   }
 
-  if (facilitatorTrainedRate < 70 && totalConferences > 0) {
+  if (below(facilitatorTrainedRate, 70) && totalConferences > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -998,7 +998,7 @@ export function computeRestorativePracticeConflictResolution(
     });
   }
 
-  if (relationshipRepairRate < 40 && totalRepairRecords > 0) {
+  if (below(relationshipRepairRate, 40) && totalRepairRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1008,7 +1008,7 @@ export function computeRestorativePracticeConflictResolution(
     });
   }
 
-  if (feltSafeToSpeakRate < 60 && totalVoiceRecords > 0) {
+  if (below(feltSafeToSpeakRate, 60) && totalVoiceRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1018,7 +1018,7 @@ export function computeRestorativePracticeConflictResolution(
     });
   }
 
-  if (sanctionsRate > 50 && totalConflicts > 0) {
+  if (above(sanctionsRate, 50) && totalConflicts > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1028,7 +1028,7 @@ export function computeRestorativePracticeConflictResolution(
     });
   }
 
-  if (agreementActionCompletionRate < 50 && totalAgreementActions > 0) {
+  if (below(agreementActionCompletionRate, 50) && totalAgreementActions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1038,7 +1038,7 @@ export function computeRestorativePracticeConflictResolution(
     });
   }
 
-  if (underlyingCauseIdentifiedRate < 50 && totalConflicts > 0) {
+  if (below(underlyingCauseIdentifiedRate, 50) && totalConflicts > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1048,7 +1048,7 @@ export function computeRestorativePracticeConflictResolution(
     });
   }
 
-  if (mediatorTrainedRate < 60 && totalMediations > 0) {
+  if (below(mediatorTrainedRate, 60) && totalMediations > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1058,7 +1058,7 @@ export function computeRestorativePracticeConflictResolution(
     });
   }
 
-  if (mediationAgreementRate < 50 && totalMediations > 0) {
+  if (below(mediationAgreementRate, 50) && totalMediations > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1068,7 +1068,7 @@ export function computeRestorativePracticeConflictResolution(
     });
   }
 
-  if (childFeelsHeardRate < 50 && totalRepairRecords > 0) {
+  if (below(childFeelsHeardRate, 50) && totalRepairRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1078,7 +1078,7 @@ export function computeRestorativePracticeConflictResolution(
     });
   }
 
-  if (childPreparationRate < 50 && totalConferences > 0) {
+  if (below(childPreparationRate, 50) && totalConferences > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1088,7 +1088,7 @@ export function computeRestorativePracticeConflictResolution(
     });
   }
 
-  if (viewsInfluencedRate < 50 && totalVoiceRecords > 0) {
+  if (below(viewsInfluencedRate, 50) && totalVoiceRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1098,7 +1098,7 @@ export function computeRestorativePracticeConflictResolution(
     });
   }
 
-  if (conflictResolutionRate >= 50 && conflictResolutionRate < 70 && totalConflicts > 0) {
+  if (meets(conflictResolutionRate, 50) && below(conflictResolutionRate, 70) && totalConflicts > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1108,7 +1108,7 @@ export function computeRestorativePracticeConflictResolution(
     });
   }
 
-  if (repairSessionCompletionRate < 50 && totalRepairSessionsPlanned > 0) {
+  if (below(repairSessionCompletionRate, 50) && totalRepairSessionsPlanned > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1118,7 +1118,7 @@ export function computeRestorativePracticeConflictResolution(
     });
   }
 
-  if (conferenceCompletionRate >= 50 && conferenceCompletionRate < 70 && totalConferences > 0) {
+  if (meets(conferenceCompletionRate, 50) && below(conferenceCompletionRate, 70) && totalConferences > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1128,7 +1128,7 @@ export function computeRestorativePracticeConflictResolution(
     });
   }
 
-  if (restorativeApproachRate >= 50 && restorativeApproachRate < 70 && totalConflicts > 0) {
+  if (meets(restorativeApproachRate, 50) && below(restorativeApproachRate, 70) && totalConflicts > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1138,7 +1138,7 @@ export function computeRestorativePracticeConflictResolution(
     });
   }
 
-  if (relationshipRepairRate >= 40 && relationshipRepairRate < 60 && totalRepairRecords > 0) {
+  if (meets(relationshipRepairRate, 40) && below(relationshipRepairRate, 60) && totalRepairRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1178,7 +1178,7 @@ export function computeRestorativePracticeConflictResolution(
     });
   }
 
-  if (voiceBarrierRate >= 30 && totalVoiceRecords > 0) {
+  if (meets(voiceBarrierRate, 30) && totalVoiceRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1194,42 +1194,42 @@ export function computeRestorativePracticeConflictResolution(
 
   // --- Critical insights ---
 
-  if (conferenceCompletionRate < 50 && totalConferences > 0) {
+  if (below(conferenceCompletionRate, 50) && totalConferences > 0) {
     insights.push({
       text: `Only ${conferenceCompletionRate}% of restorative conferences completed. Ofsted will view incomplete conferences as evidence that the home initiates but does not follow through on restorative processes -- this undermines trust and demonstrates a lack of commitment to restorative practice under Reg 12.`,
       severity: "critical",
     });
   }
 
-  if (conflictResolutionRate < 50 && totalConflicts > 0) {
+  if (below(conflictResolutionRate, 50) && totalConflicts > 0) {
     insights.push({
       text: `Only ${conflictResolutionRate}% of conflicts resolved. Unresolved conflict creates an unsafe, unstable environment for children. Ofsted will view this as evidence that the home cannot effectively manage behaviour or maintain positive relationships under Reg 35 and Reg 12.`,
       severity: "critical",
     });
   }
 
-  if (childVoiceRate < 40 && compositeVoiceDenominator > 0) {
+  if (below(childVoiceRate, 40) && compositeVoiceDenominator > 0) {
     insights.push({
       text: `Child voice captured in only ${childVoiceRate}% of resolution processes. The near-absence of children's perspectives in conflict resolution and restorative practice means the home cannot evidence child-centred approaches. Ofsted expects children to be active participants in processes that affect them.`,
       severity: "critical",
     });
   }
 
-  if (recurrenceRate > 40 && totalConflicts > 0) {
+  if (above(recurrenceRate, 40) && totalConflicts > 0) {
     insights.push({
       text: `${recurrenceRate}% of conflicts recur within 30 days. This high recurrence rate indicates resolutions are superficial and underlying issues are not being addressed. Children are trapped in cycles of conflict that damage their wellbeing and sense of safety.`,
       severity: "critical",
     });
   }
 
-  if (restorativeApproachRate < 50 && totalConflicts > 0) {
+  if (below(restorativeApproachRate, 50) && totalConflicts > 0) {
     insights.push({
       text: `Restorative approaches used in only ${restorativeApproachRate}% of conflicts. The home is predominantly using non-restorative methods, which is inconsistent with best practice under Reg 35 and the evidence base for effective behaviour management in residential care.`,
       severity: "critical",
     });
   }
 
-  if (sanctionsRate > 50 && totalConflicts > 0) {
+  if (above(sanctionsRate, 50) && totalConflicts > 0) {
     insights.push({
       text: `Sanctions used in ${sanctionsRate}% of conflict resolutions. Over-reliance on punitive responses is contrary to the restorative ethos expected under Reg 35 and can damage children's self-esteem, trust in adults, and willingness to engage in future resolution processes.`,
       severity: "critical",
@@ -1245,70 +1245,70 @@ export function computeRestorativePracticeConflictResolution(
 
   // --- Warning insights ---
 
-  if (conferenceCompletionRate >= 50 && conferenceCompletionRate < 70 && totalConferences > 0) {
+  if (meets(conferenceCompletionRate, 50) && below(conferenceCompletionRate, 70) && totalConferences > 0) {
     insights.push({
       text: `Restorative conference completion at ${conferenceCompletionRate}% -- improving but some conferences are not reaching conclusion. Each incomplete conference is a missed opportunity for resolution and learning.`,
       severity: "warning",
     });
   }
 
-  if (conflictResolutionRate >= 50 && conflictResolutionRate < 70 && totalConflicts > 0) {
+  if (meets(conflictResolutionRate, 50) && below(conflictResolutionRate, 70) && totalConflicts > 0) {
     insights.push({
       text: `Conflict resolution rate at ${conflictResolutionRate}% -- while more conflicts are being resolved, a significant proportion remain unresolved. The home needs to develop more effective strategies for complex or entrenched conflicts.`,
       severity: "warning",
     });
   }
 
-  if (restorativeApproachRate >= 50 && restorativeApproachRate < 70 && totalConflicts > 0) {
+  if (meets(restorativeApproachRate, 50) && below(restorativeApproachRate, 70) && totalConflicts > 0) {
     insights.push({
       text: `Restorative approaches used in ${restorativeApproachRate}% of conflicts -- the home is moving towards a restorative model but non-restorative responses are still too common. Consistent embedding of restorative practice requires ongoing training and supervision.`,
       severity: "warning",
     });
   }
 
-  if (relationshipRepairRate >= 40 && relationshipRepairRate < 60 && totalRepairRecords > 0) {
+  if (meets(relationshipRepairRate, 40) && below(relationshipRepairRate, 60) && totalRepairRecords > 0) {
     insights.push({
       text: `Relationship repair rate at ${relationshipRepairRate}% -- while some relationships are being restored, too many remain damaged. Long-term unrepaired relationships affect children's attachment, trust, and emotional wellbeing.`,
       severity: "warning",
     });
   }
 
-  if (childVoiceRate >= 40 && childVoiceRate < 60 && compositeVoiceDenominator > 0) {
+  if (meets(childVoiceRate, 40) && below(childVoiceRate, 60) && compositeVoiceDenominator > 0) {
     insights.push({
       text: `Child voice captured in ${childVoiceRate}% of resolution processes -- while some consultation is happening, children's perspectives need to be more systematically sought and evidenced.`,
       severity: "warning",
     });
   }
 
-  if (mediationAgreementRate >= 50 && mediationAgreementRate < 70 && totalMediations > 0) {
+  if (meets(mediationAgreementRate, 50) && below(mediationAgreementRate, 70) && totalMediations > 0) {
     insights.push({
       text: `Mediation agreement rate at ${mediationAgreementRate}% -- mediations are achieving some outcomes but the process could be strengthened through better preparation, trained mediators, and structured follow-up.`,
       severity: "warning",
     });
   }
 
-  if (recurrenceRate > 25 && recurrenceRate <= 40 && totalConflicts > 0) {
+  if (above(recurrenceRate, 25) && recurrenceRate! <= 40 && totalConflicts > 0) {
     insights.push({
       text: `${recurrenceRate}% conflict recurrence within 30 days -- a notable proportion of resolved conflicts reoccur, suggesting that resolution may be addressing symptoms rather than root causes.`,
       severity: "warning",
     });
   }
 
-  if (agreementActionCompletionRate >= 50 && agreementActionCompletionRate < 70 && totalAgreementActions > 0) {
+  if (meets(agreementActionCompletionRate, 50) && below(agreementActionCompletionRate, 70) && totalAgreementActions > 0) {
     insights.push({
       text: `Agreement action completion at ${agreementActionCompletionRate}% -- while some commitments are being honoured, inconsistent follow-through weakens trust in the restorative process.`,
       severity: "warning",
     });
   }
 
-  if (bothPartiesSatisfiedRate >= 50 && bothPartiesSatisfiedRate < 80 && totalConflicts > 0) {
+  if (meets(bothPartiesSatisfiedRate, 50) && below(bothPartiesSatisfiedRate, 80) && totalConflicts > 0) {
     insights.push({
       text: `Both parties satisfied in ${bothPartiesSatisfiedRate}% of resolutions -- while the majority find resolutions acceptable, there is room to improve the fairness and perceived equity of outcomes.`,
       severity: "warning",
     });
   }
 
-  if (feltListenedToRate >= 50 && feltListenedToRate < 80 && totalVoiceRecords > 0) {
+  if (meets(feltListenedToRate, 50) && below(feltListenedToRate, 80) && totalVoiceRecords > 0) {
     insights.push({
       text: `${feltListenedToRate}% of children felt genuinely listened to -- good but not yet consistent. Some children still feel their voices are not truly heard in resolution processes.`,
       severity: "warning",
@@ -1335,49 +1335,49 @@ export function computeRestorativePracticeConflictResolution(
     });
   }
 
-  if (conferenceCompletionRate >= 90 && agreementRate >= 90 && totalConferences > 0) {
+  if (meets(conferenceCompletionRate, 90) && meets(agreementRate, 90) && totalConferences > 0) {
     insights.push({
       text: `${conferenceCompletionRate}% conference completion with ${agreementRate}% agreement rate -- restorative conferences are consistently completed and achieving meaningful outcomes. Ofsted will recognise this as exemplary restorative practice.`,
       severity: "positive",
     });
   }
 
-  if (conflictResolutionRate >= 85 && restorativeApproachRate >= 90 && totalConflicts > 0) {
+  if (meets(conflictResolutionRate, 85) && meets(restorativeApproachRate, 90) && totalConflicts > 0) {
     insights.push({
       text: `${conflictResolutionRate}% conflict resolution using restorative approaches in ${restorativeApproachRate}% of cases -- the home has successfully embedded restorative practice as its primary conflict resolution method, with highly effective outcomes.`,
       severity: "positive",
     });
   }
 
-  if (recurrenceRate <= 10 && conflictResolutionRate >= 80 && totalConflicts > 0) {
+  if (totalConflicts > 0 && recurrenceRate! <= 10 && meets(conflictResolutionRate, 80)) {
     insights.push({
       text: `Only ${recurrenceRate}% conflict recurrence with ${conflictResolutionRate}% resolution rate -- resolutions are durable and effective, indicating that root causes are being addressed and children are learning lasting conflict resolution skills.`,
       severity: "positive",
     });
   }
 
-  if (relationshipRepairRate >= 80 && childFeelsHeardRate >= 90 && totalRepairRecords > 0) {
+  if (meets(relationshipRepairRate, 80) && meets(childFeelsHeardRate, 90) && totalRepairRecords > 0) {
     insights.push({
       text: `${relationshipRepairRate}% relationship repair success with ${childFeelsHeardRate}% of children feeling heard -- the home excels at restoring damaged relationships while ensuring children's voices drive the repair process. This is evidence of genuinely child-centred restorative practice.`,
       severity: "positive",
     });
   }
 
-  if (childVoiceRate >= 85 && viewsInfluencedRate >= 80 && compositeVoiceDenominator > 0 && totalVoiceRecords > 0) {
+  if (meets(childVoiceRate, 85) && meets(viewsInfluencedRate, 80) && compositeVoiceDenominator > 0 && totalVoiceRecords > 0) {
     insights.push({
       text: `Child voice captured in ${childVoiceRate}% of processes with views influencing ${viewsInfluencedRate}% of outcomes -- children genuinely shape their own resolutions. This is exemplary practice in child participation and a powerful indicator of authentic restorative practice.`,
       severity: "positive",
     });
   }
 
-  if (feltSafeToSpeakRate >= 90 && feltListenedToRate >= 90 && totalVoiceRecords > 0) {
+  if (meets(feltSafeToSpeakRate, 90) && meets(feltListenedToRate, 90) && totalVoiceRecords > 0) {
     insights.push({
       text: `${feltSafeToSpeakRate}% of children feel safe to speak and ${feltListenedToRate}% feel genuinely listened to -- the home creates psychologically safe environments where children can express themselves freely. This is fundamental to effective restorative practice.`,
       severity: "positive",
     });
   }
 
-  if (mediationAgreementRate >= 85 && mediatorTrainedRate >= 90 && totalMediations > 0) {
+  if (meets(mediationAgreementRate, 85) && meets(mediatorTrainedRate, 90) && totalMediations > 0) {
     insights.push({
       text: `${mediationAgreementRate}% mediation agreement rate with ${mediatorTrainedRate}% trained mediators -- skilled mediation is consistently achieving positive outcomes. Ofsted will recognise this as evidence of investment in professional conflict resolution.`,
       severity: "positive",
@@ -1391,14 +1391,14 @@ export function computeRestorativePracticeConflictResolution(
     });
   }
 
-  if (childInitiatedRepairRate >= 30 && mutualInitiatedRate >= 20 && totalRepairRecords > 0) {
+  if (meets(childInitiatedRepairRate, 30) && meets(mutualInitiatedRate, 20) && totalRepairRecords > 0) {
     insights.push({
       text: `${childInitiatedRepairRate}% child-initiated and ${mutualInitiatedRate}% mutually-initiated repairs -- children are developing the confidence, empathy, and skills to take responsibility for repairing relationships. This demonstrates embedded restorative values.`,
       severity: "positive",
     });
   }
 
-  if (peerMediationRate >= 20 && mediationAgreementRate >= 70 && totalMediations > 0) {
+  if (meets(peerMediationRate, 20) && meets(mediationAgreementRate, 70) && totalMediations > 0) {
     insights.push({
       text: `${peerMediationRate}% peer-led mediations with ${mediationAgreementRate}% agreement rate -- children are developing as mediators and peacemakers, building transferable life skills and contributing positively to the home community.`,
       severity: "positive",

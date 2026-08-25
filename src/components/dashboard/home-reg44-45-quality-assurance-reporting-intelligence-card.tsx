@@ -70,28 +70,28 @@ export function HomeReg4445QualityAssuranceReportingIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.quality_assurance_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.reg44_completion_rate >= 90 ? "bg-green-50" : d.reg44_completion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.reg44_completion_rate >= 90 ? "text-[--cs-success]" : d.reg44_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.reg44_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.reg44_completion_rate, 90) ? "bg-green-50" : meets(d.reg44_completion_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.reg44_completion_rate, 90) ? "text-[--cs-success]" : meets(d.reg44_completion_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.reg44_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Reg 44</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.reg45_timeliness_rate >= 90 ? "bg-green-50" : d.reg45_timeliness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.reg45_timeliness_rate >= 90 ? "text-[--cs-success]" : d.reg45_timeliness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.reg45_timeliness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.reg45_timeliness_rate, 90) ? "bg-green-50" : meets(d.reg45_timeliness_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.reg45_timeliness_rate, 90) ? "text-[--cs-success]" : meets(d.reg45_timeliness_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.reg45_timeliness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Reg 45</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.action_plan_rate >= 90 ? "bg-green-50" : d.action_plan_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.action_plan_rate >= 90 ? "text-[--cs-success]" : d.action_plan_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.action_plan_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.action_plan_rate, 90) ? "bg-green-50" : meets(d.action_plan_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.action_plan_rate, 90) ? "text-[--cs-success]" : meets(d.action_plan_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.action_plan_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Actions</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.quality_improvement_rate >= 90 ? "bg-green-50" : d.quality_improvement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.quality_improvement_rate >= 90 ? "text-[--cs-success]" : d.quality_improvement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.quality_improvement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.quality_improvement_rate, 90) ? "bg-green-50" : meets(d.quality_improvement_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.quality_improvement_rate, 90) ? "text-[--cs-success]" : meets(d.quality_improvement_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.quality_improvement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">QI Cycles</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.notification_compliance_rate, 90) ? "bg-green-50" : meets(d.notification_compliance_rate, 70) ? "bg-amber-50" : d.notification_compliance_rate === null ? "bg-muted" : "bg-red-50")}>
               <p className={cn("text-sm font-bold tabular-nums", meets(d.notification_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.notification_compliance_rate, 70) ? "text-[--cs-warning]" : d.notification_compliance_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.notification_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Notif.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.stakeholder_engagement_rate >= 90 ? "bg-green-50" : d.stakeholder_engagement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.stakeholder_engagement_rate >= 90 ? "text-[--cs-success]" : d.stakeholder_engagement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.stakeholder_engagement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.stakeholder_engagement_rate, 90) ? "bg-green-50" : meets(d.stakeholder_engagement_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.stakeholder_engagement_rate, 90) ? "text-[--cs-success]" : meets(d.stakeholder_engagement_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.stakeholder_engagement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Engage</p>
             </div>
           </div>

@@ -70,16 +70,16 @@ export function HomePocketMoneyDistributionEquityIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.equity_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.equitable_distribution_rate >= 90 ? "bg-green-50" : d.equitable_distribution_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.equitable_distribution_rate >= 90 ? "text-[--cs-success]" : d.equitable_distribution_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.equitable_distribution_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.equitable_distribution_rate, 90) ? "bg-green-50" : meets(d.equitable_distribution_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.equitable_distribution_rate, 90) ? "text-[--cs-success]" : meets(d.equitable_distribution_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.equitable_distribution_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Equity</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.age_appropriate_rate >= 90 ? "bg-green-50" : d.age_appropriate_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.age_appropriate_rate >= 90 ? "text-[--cs-success]" : d.age_appropriate_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.age_appropriate_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.age_appropriate_rate, 90) ? "bg-green-50" : meets(d.age_appropriate_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.age_appropriate_rate, 90) ? "text-[--cs-success]" : meets(d.age_appropriate_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.age_appropriate_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Age Apt.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.timely_payment_rate >= 90 ? "bg-green-50" : d.timely_payment_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.timely_payment_rate >= 90 ? "text-[--cs-success]" : d.timely_payment_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.timely_payment_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.timely_payment_rate, 90) ? "bg-green-50" : meets(d.timely_payment_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.timely_payment_rate, 90) ? "text-[--cs-success]" : meets(d.timely_payment_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.timely_payment_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Timely</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.child_understanding_rate, 90) ? "bg-green-50" : meets(d.child_understanding_rate, 70) ? "bg-amber-50" : d.child_understanding_rate === null ? "bg-muted" : "bg-red-50")}>

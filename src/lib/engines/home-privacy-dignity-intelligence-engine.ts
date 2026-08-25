@@ -10,7 +10,7 @@
 //             confidentialityRecords, dignityCareRecords
 // ==============================================================================
 
-import { meets, below } from "@/lib/metrics/rate";
+import { rate, below, meets } from "@/lib/metrics/rate";
 
 // -- Input Types --------------------------------------------------------------
 
@@ -148,13 +148,18 @@ export interface PrivacyDignityResult {
   privacy_rating: PrivacyDignityRating;
   privacy_score: number;
   headline: string;
-  privacy_audit_compliance_rate: number;
-  knock_entry_rate: number;
-  boundary_respect_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  privacy_audit_compliance_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  knock_entry_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  boundary_respect_rate: number | null;
   // fab-0: null when no confidentiality records.
   confidentiality_rate: number | null;
-  dignity_practice_rate: number;
-  child_satisfaction_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dignity_practice_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_satisfaction_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: PrivacyDignityRecommendation[];
@@ -162,10 +167,6 @@ export interface PrivacyDignityResult {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -189,12 +190,12 @@ function emptyResult(
     privacy_rating: rating,
     privacy_score: score,
     headline,
-    privacy_audit_compliance_rate: 0,
-    knock_entry_rate: 0,
-    boundary_respect_rate: 0,
+    privacy_audit_compliance_rate: null,
+    knock_entry_rate: null,
+    boundary_respect_rate: null,
     confidentiality_rate: null,
-    dignity_practice_rate: 0,
-    child_satisfaction_rate: 0,
+    dignity_practice_rate: null,
+    child_satisfaction_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -279,27 +280,27 @@ export function computePrivacyDignity(
       r.bathroom_privacy_adequate &&
       r.personal_storage_provided,
   ).length;
-  const privacyAuditComplianceRate = pct(privacyCompliantAudits, totalPrivacyAudits);
+  const privacyAuditComplianceRate = rate(privacyCompliantAudits, totalPrivacyAudits);
 
   const lockFunctionalCount = privacy_audit_records.filter(
     (r) => r.lock_on_bedroom_door && r.lock_functional,
   ).length;
-  const lockComplianceRate = pct(lockFunctionalCount, totalPrivacyAudits);
+  const lockComplianceRate = rate(lockFunctionalCount, totalPrivacyAudits);
 
   const lockableStorageCount = privacy_audit_records.filter(
     (r) => r.personal_storage_lockable,
   ).length;
-  const lockableStorageRate = pct(lockableStorageCount, totalPrivacyAudits);
+  const lockableStorageRate = rate(lockableStorageCount, totalPrivacyAudits);
 
   const phonePrivacyCount = privacy_audit_records.filter(
     (r) => r.phone_call_privacy,
   ).length;
-  const phonePrivacyRate = pct(phonePrivacyCount, totalPrivacyAudits);
+  const phonePrivacyRate = rate(phonePrivacyCount, totalPrivacyAudits);
 
   const correspondencePrivacyCount = privacy_audit_records.filter(
     (r) => r.correspondence_privacy,
   ).length;
-  const correspondencePrivacyRate = pct(correspondencePrivacyCount, totalPrivacyAudits);
+  const correspondencePrivacyRate = rate(correspondencePrivacyCount, totalPrivacyAudits);
 
   const privacyAuditSatisfactionSum = privacy_audit_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
@@ -316,19 +317,19 @@ export function computePrivacyDignity(
   const privacyIssuesResolved = privacy_audit_records.reduce(
     (sum, r) => sum + r.issues_resolved, 0,
   );
-  const privacyIssueResolutionRate = pct(privacyIssuesResolved, privacyIssuesTotal);
+  const privacyIssueResolutionRate = rate(privacyIssuesResolved, privacyIssuesTotal);
 
   // --- Knock-before-entry compliance ---
   const totalKnockRecords = knock_entry_records.length;
   const knockedAndWaited = knock_entry_records.filter(
     (r) => r.knocked_before_entry && r.waited_for_response,
   ).length;
-  const knockEntryRate = pct(knockedAndWaited, totalKnockRecords);
+  const knockEntryRate = rate(knockedAndWaited, totalKnockRecords);
 
   const consentObtained = knock_entry_records.filter(
     (r) => r.child_consent_obtained,
   ).length;
-  const consentRate = pct(consentObtained, totalKnockRecords);
+  const consentRate = rate(consentObtained, totalKnockRecords);
 
   const nonConsentEntries = knock_entry_records.filter(
     (r) => !r.child_consent_obtained && !r.knocked_before_entry,
@@ -340,7 +341,7 @@ export function computePrivacyDignity(
   const knockComplaints = knock_entry_records.filter(
     (r) => r.child_complaint_raised,
   ).length;
-  const knockComplaintRate = pct(knockComplaints, totalKnockRecords);
+  const knockComplaintRate = rate(knockComplaints, totalKnockRecords);
 
   const nightEntries = knock_entry_records.filter(
     (r) => r.time_of_day === "night",
@@ -348,29 +349,29 @@ export function computePrivacyDignity(
   const nightKnockCompliance = nightEntries.filter(
     (r) => r.knocked_before_entry || r.reason_for_entry === "welfare_concern" || r.reason_for_entry === "emergency",
   ).length;
-  const nightComplianceRate = pct(nightKnockCompliance, nightEntries.length);
+  const nightComplianceRate = rate(nightKnockCompliance, nightEntries.length);
 
   // --- Boundary respect ---
   const totalBoundaryRecords = boundary_respect_records.length;
   const boundariesRespected = boundary_respect_records.filter(
     (r) => r.boundary_respected,
   ).length;
-  const boundaryRespectRate = pct(boundariesRespected, totalBoundaryRecords);
+  const boundaryRespectRate = rate(boundariesRespected, totalBoundaryRecords);
 
   const boundariesDocumented = boundary_respect_records.filter(
     (r) => r.boundary_documented_in_plan,
   ).length;
-  const boundaryDocumentationRate = pct(boundariesDocumented, totalBoundaryRecords);
+  const boundaryDocumentationRate = rate(boundariesDocumented, totalBoundaryRecords);
 
   const staffAwareOfBoundary = boundary_respect_records.filter(
     (r) => r.staff_aware_of_boundary,
   ).length;
-  const staffAwarenessRate = pct(staffAwareOfBoundary, totalBoundaryRecords);
+  const staffAwarenessRate = rate(staffAwareOfBoundary, totalBoundaryRecords);
 
   const breachesOccurred = boundary_respect_records.filter(
     (r) => r.breach_occurred,
   ).length;
-  const breachRate = pct(breachesOccurred, totalBoundaryRecords);
+  const breachRate = rate(breachesOccurred, totalBoundaryRecords);
 
   const seriousBreaches = boundary_respect_records.filter(
     (r) => r.breach_occurred && (r.breach_severity === "serious" || r.breach_severity === "moderate"),
@@ -379,12 +380,12 @@ export function computePrivacyDignity(
   const breachesAddressed = boundary_respect_records.filter(
     (r) => r.breach_occurred && r.breach_addressed,
   ).length;
-  const breachAddressedRate = pct(breachesAddressed, breachesOccurred);
+  const breachAddressedRate = rate(breachesAddressed, breachesOccurred);
 
   const restorativeActions = boundary_respect_records.filter(
     (r) => r.breach_occurred && r.restorative_action_taken,
   ).length;
-  const restorativeRate = pct(restorativeActions, breachesOccurred);
+  const restorativeRate = rate(restorativeActions, breachesOccurred);
 
   const boundarySatisfactionSum = boundary_respect_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
@@ -400,27 +401,27 @@ export function computePrivacyDignity(
   const storedSecurely = confidentiality_records.filter(
     (r) => r.stored_securely && r.access_controlled,
   ).length;
-  const secureStorageRate = pct(storedSecurely, totalConfidentialityRecords);
+  const secureStorageRate = rate(storedSecurely, totalConfidentialityRecords);
 
   const sharedAppropriately = confidentiality_records.filter(
     (r) => r.shared_appropriately,
   ).length;
-  const appropriateSharingRate = pct(sharedAppropriately, totalConfidentialityRecords);
+  const appropriateSharingRate = rate(sharedAppropriately, totalConfidentialityRecords);
 
   const consentForSharing = confidentiality_records.filter(
     (r) => r.consent_for_sharing_obtained,
   ).length;
-  const sharingConsentRate = pct(consentForSharing, totalConfidentialityRecords);
+  const sharingConsentRate = rate(consentForSharing, totalConfidentialityRecords);
 
   const childInformedOfSharing = confidentiality_records.filter(
     (r) => r.child_informed_of_sharing,
   ).length;
-  const childInformedRate = pct(childInformedOfSharing, totalConfidentialityRecords);
+  const childInformedRate = rate(childInformedOfSharing, totalConfidentialityRecords);
 
   const confidentialityBreaches = confidentiality_records.filter(
     (r) => r.breach_occurred,
   ).length;
-  const confidentialityBreachRate = pct(confidentialityBreaches, totalConfidentialityRecords);
+  const confidentialityBreachRate = rate(confidentialityBreaches, totalConfidentialityRecords);
 
   const seriousConfBreaches = confidentiality_records.filter(
     (r) => r.breach_occurred && (r.breach_severity === "serious" || r.breach_severity === "moderate"),
@@ -429,45 +430,43 @@ export function computePrivacyDignity(
   const dataMinimisation = confidentiality_records.filter(
     (r) => r.data_minimisation_applied,
   ).length;
-  const dataMinimisationRate = pct(dataMinimisation, totalConfidentialityRecords);
+  const dataMinimisationRate = rate(dataMinimisation, totalConfidentialityRecords);
 
   const childRecordAccess = confidentiality_records.filter(
     (r) => r.child_has_access_to_own_records,
   ).length;
-  const childRecordAccessRate = pct(childRecordAccess, totalConfidentialityRecords);
+  const childRecordAccessRate = rate(childRecordAccess, totalConfidentialityRecords);
 
   // fab-0: null when no confidentiality records.
   const confidentialityRate: number | null =
-    totalConfidentialityRecords > 0
-      ? Math.round((secureStorageRate + appropriateSharingRate + sharingConsentRate) / 3)
-      : null;
+    totalConfidentialityRecords > 0 ? Math.round((secureStorageRate! + appropriateSharingRate! + sharingConsentRate!) / 3) : null;
 
   // --- Dignity in care ---
   const totalDignityRecords = dignity_care_records.length;
   const dignityMaintained = dignity_care_records.filter(
     (r) => r.dignity_maintained,
   ).length;
-  const dignityPracticeRate = pct(dignityMaintained, totalDignityRecords);
+  const dignityPracticeRate = rate(dignityMaintained, totalDignityRecords);
 
   const choiceOffered = dignity_care_records.filter(
     (r) => r.child_choice_offered,
   ).length;
-  const choiceRate = pct(choiceOffered, totalDignityRecords);
+  const choiceRate = rate(choiceOffered, totalDignityRecords);
 
   const preferenceFollowed = dignity_care_records.filter(
     (r) => r.child_preference_followed,
   ).length;
-  const preferenceRate = pct(preferenceFollowed, totalDignityRecords);
+  const preferenceRate = rate(preferenceFollowed, totalDignityRecords);
 
   const ageAppropriate = dignity_care_records.filter(
     (r) => r.age_appropriate_approach,
   ).length;
-  const ageAppropriateRate = pct(ageAppropriate, totalDignityRecords);
+  const ageAppropriateRate = rate(ageAppropriate, totalDignityRecords);
 
   const culturalSensitivity = dignity_care_records.filter(
     (r) => r.cultural_sensitivity_shown,
   ).length;
-  const culturalSensitivityRate = pct(culturalSensitivity, totalDignityRecords);
+  const culturalSensitivityRate = rate(culturalSensitivity, totalDignityRecords);
 
   const sameGenderRequested = dignity_care_records.filter(
     (r) => r.same_gender_carer_requested,
@@ -475,12 +474,12 @@ export function computePrivacyDignity(
   const sameGenderProvided = sameGenderRequested.filter(
     (r) => r.same_gender_carer_provided,
   ).length;
-  const sameGenderRate = pct(sameGenderProvided, sameGenderRequested.length);
+  const sameGenderRate = rate(sameGenderProvided, sameGenderRequested.length);
 
   const dignityConsentObtained = dignity_care_records.filter(
     (r) => r.child_consent_obtained,
   ).length;
-  const dignityConsentRate = pct(dignityConsentObtained, totalDignityRecords);
+  const dignityConsentRate = rate(dignityConsentObtained, totalDignityRecords);
 
   const dignitySatisfactionSum = dignity_care_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
@@ -494,7 +493,7 @@ export function computePrivacyDignity(
   const dignityComplaints = dignity_care_records.filter(
     (r) => r.complaint_raised,
   ).length;
-  const dignityComplaintRate = pct(dignityComplaints, totalDignityRecords);
+  const dignityComplaintRate = rate(dignityComplaints, totalDignityRecords);
 
   // --- Child satisfaction composite ---
   const satisfactionDenominator = totalPrivacyAudits + totalBoundaryRecords + totalDignityRecords;
@@ -502,61 +501,61 @@ export function computePrivacyDignity(
     privacy_audit_records.filter((r) => r.child_satisfaction >= 4).length +
     boundary_respect_records.filter((r) => r.child_satisfaction >= 4).length +
     dignity_care_records.filter((r) => r.child_satisfaction >= 4).length;
-  const childSatisfactionRate = pct(satisfactionNumerator, satisfactionDenominator);
+  const childSatisfactionRate = rate(satisfactionNumerator, satisfactionDenominator);
 
   // -- Scoring: base 52 ----------------------------------------------------
 
   let score = 52;
 
   // --- Bonus 1: privacyAuditComplianceRate (>=90: +4, >=70: +2) ---
-  if (privacyAuditComplianceRate >= 90) score += 4;
-  else if (privacyAuditComplianceRate >= 70) score += 2;
+  if (meets(privacyAuditComplianceRate, 90)) score += 4;
+  else if (meets(privacyAuditComplianceRate, 70)) score += 2;
 
   // --- Bonus 2: knockEntryRate (>=95: +4, >=80: +2) ---
-  if (knockEntryRate >= 95) score += 4;
-  else if (knockEntryRate >= 80) score += 2;
+  if (meets(knockEntryRate, 95)) score += 4;
+  else if (meets(knockEntryRate, 80)) score += 2;
 
   // --- Bonus 3: boundaryRespectRate (>=90: +3, >=70: +1) ---
-  if (boundaryRespectRate >= 90) score += 3;
-  else if (boundaryRespectRate >= 70) score += 1;
+  if (meets(boundaryRespectRate, 90)) score += 3;
+  else if (meets(boundaryRespectRate, 70)) score += 1;
 
   // --- Bonus 4: confidentialityRate (>=90: +4, >=70: +2) ---
   if (meets(confidentialityRate, 90)) score += 4;
   else if (meets(confidentialityRate, 70)) score += 2;
 
   // --- Bonus 5: dignityPracticeRate (>=90: +3, >=70: +1) ---
-  if (dignityPracticeRate >= 90) score += 3;
-  else if (dignityPracticeRate >= 70) score += 1;
+  if (meets(dignityPracticeRate, 90)) score += 3;
+  else if (meets(dignityPracticeRate, 70)) score += 1;
 
   // --- Bonus 6: childSatisfactionRate (>=80: +3, >=60: +1) ---
-  if (childSatisfactionRate >= 80) score += 3;
-  else if (childSatisfactionRate >= 60) score += 1;
+  if (meets(childSatisfactionRate, 80)) score += 3;
+  else if (meets(childSatisfactionRate, 60)) score += 1;
 
   // --- Bonus 7: lockComplianceRate (>=90: +3, >=70: +1) ---
-  if (lockComplianceRate >= 90) score += 3;
-  else if (lockComplianceRate >= 70) score += 1;
+  if (meets(lockComplianceRate, 90)) score += 3;
+  else if (meets(lockComplianceRate, 70)) score += 1;
 
   // --- Bonus 8: sameGenderRate (>=90: +2, >=70: +1) ---
-  if (sameGenderRate >= 90) score += 2;
-  else if (sameGenderRate >= 70) score += 1;
+  if (meets(sameGenderRate, 90)) score += 2;
+  else if (meets(sameGenderRate, 70)) score += 1;
 
   // --- Bonus 9: childRecordAccessRate (>=80: +2, >=60: +1) ---
-  if (childRecordAccessRate >= 80) score += 2;
-  else if (childRecordAccessRate >= 60) score += 1;
+  if (meets(childRecordAccessRate, 80)) score += 2;
+  else if (meets(childRecordAccessRate, 60)) score += 1;
 
   // -- Penalties (4 with guards) -------------------------------------------
 
   // knockEntryRate < 50 -> -5
-  if (knockEntryRate < 50 && knock_entry_records.length > 0) score -= 5;
+  if (below(knockEntryRate, 50) && knock_entry_records.length > 0) score -= 5;
 
   // boundaryRespectRate < 50 -> -5
-  if (boundaryRespectRate < 50 && boundary_respect_records.length > 0) score -= 5;
+  if (below(boundaryRespectRate, 50) && boundary_respect_records.length > 0) score -= 5;
 
   // confidentialityRate < 50 -> -4
   if (below(confidentialityRate, 50) && confidentiality_records.length > 0) score -= 4;
 
   // dignityPracticeRate < 50 -> -4
-  if (dignityPracticeRate < 50 && dignity_care_records.length > 0) score -= 4;
+  if (below(dignityPracticeRate, 50) && dignity_care_records.length > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -566,27 +565,27 @@ export function computePrivacyDignity(
 
   const strengths: string[] = [];
 
-  if (privacyAuditComplianceRate >= 90 && totalPrivacyAudits > 0) {
+  if (meets(privacyAuditComplianceRate, 90) && totalPrivacyAudits > 0) {
     strengths.push(
       `${privacyAuditComplianceRate}% of privacy audits fully compliant -- children have adequate private space, bathroom privacy, and personal storage. The home demonstrates strong commitment to children's right to privacy.`,
     );
-  } else if (privacyAuditComplianceRate >= 70 && totalPrivacyAudits > 0) {
+  } else if (meets(privacyAuditComplianceRate, 70) && totalPrivacyAudits > 0) {
     strengths.push(
       `${privacyAuditComplianceRate}% privacy audit compliance -- most children's living spaces meet privacy standards with adequate private areas and personal storage.`,
     );
   }
 
-  if (lockComplianceRate >= 90 && lockableStorageRate >= 90 && totalPrivacyAudits > 0) {
+  if (meets(lockComplianceRate, 90) && meets(lockableStorageRate, 90) && totalPrivacyAudits > 0) {
     strengths.push(
       `${lockComplianceRate}% functional bedroom locks and ${lockableStorageRate}% lockable storage -- children can control access to their personal space and keep belongings secure.`,
     );
-  } else if (lockComplianceRate >= 90 && totalPrivacyAudits > 0) {
+  } else if (meets(lockComplianceRate, 90) && totalPrivacyAudits > 0) {
     strengths.push(
       `${lockComplianceRate}% of children have functional locks on bedroom doors -- children can control access to their personal space.`,
     );
   }
 
-  if (phonePrivacyRate >= 90 && correspondencePrivacyRate >= 90 && totalPrivacyAudits > 0) {
+  if (meets(phonePrivacyRate, 90) && meets(correspondencePrivacyRate, 90) && totalPrivacyAudits > 0) {
     strengths.push(
       `Phone call privacy at ${phonePrivacyRate}% and correspondence privacy at ${correspondencePrivacyRate}% -- children's communications are not monitored or intercepted without consent.`,
     );
@@ -598,37 +597,37 @@ export function computePrivacyDignity(
     );
   }
 
-  if (knockEntryRate >= 95 && totalKnockRecords > 0) {
+  if (meets(knockEntryRate, 95) && totalKnockRecords > 0) {
     strengths.push(
       `${knockEntryRate}% knock-before-entry compliance with waiting for response -- staff consistently respect children's personal space and right to control who enters their room.`,
     );
-  } else if (knockEntryRate >= 80 && totalKnockRecords > 0) {
+  } else if (meets(knockEntryRate, 80) && totalKnockRecords > 0) {
     strengths.push(
       `${knockEntryRate}% knock-before-entry compliance -- strong culture of respecting children's private space with appropriate entry protocols.`,
     );
   }
 
-  if (consentRate >= 90 && nightComplianceRate >= 90 && totalKnockRecords > 0 && nightEntries.length > 0) {
+  if (meets(consentRate, 90) && meets(nightComplianceRate, 90) && totalKnockRecords > 0 && nightEntries.length > 0) {
     strengths.push(
       `Consent obtained in ${consentRate}% of entries with ${nightComplianceRate}% night-time compliance -- staff respect children's autonomy around the clock, including during welfare checks.`,
     );
-  } else if (consentRate >= 90 && totalKnockRecords > 0) {
+  } else if (meets(consentRate, 90) && totalKnockRecords > 0) {
     strengths.push(
       `Child consent obtained in ${consentRate}% of room entries -- staff demonstrate genuine respect for children's autonomy.`,
     );
   }
 
-  if (boundaryRespectRate >= 90 && totalBoundaryRecords > 0) {
+  if (meets(boundaryRespectRate, 90) && totalBoundaryRecords > 0) {
     strengths.push(
       `${boundaryRespectRate}% of personal boundaries respected -- staff consistently honour children's physical, emotional, and social boundaries.`,
     );
-  } else if (boundaryRespectRate >= 70 && totalBoundaryRecords > 0) {
+  } else if (meets(boundaryRespectRate, 70) && totalBoundaryRecords > 0) {
     strengths.push(
       `${boundaryRespectRate}% boundary respect rate -- most children's personal boundaries are being honoured by staff.`,
     );
   }
 
-  if (boundaryDocumentationRate >= 90 && staffAwarenessRate >= 90 && totalBoundaryRecords > 0) {
+  if (meets(boundaryDocumentationRate, 90) && meets(staffAwarenessRate, 90) && totalBoundaryRecords > 0) {
     strengths.push(
       `${boundaryDocumentationRate}% boundary documentation with ${staffAwarenessRate}% staff awareness -- boundaries are formally recorded and staff consistently know each child's limits.`,
     );
@@ -640,31 +639,31 @@ export function computePrivacyDignity(
     );
   }
 
-  if (breachAddressedRate >= 90 && restorativeRate >= 80 && breachesOccurred > 0) {
+  if (meets(breachAddressedRate, 90) && meets(restorativeRate, 80) && breachesOccurred > 0) {
     strengths.push(
       `${breachAddressedRate}% of breaches addressed with ${restorativeRate}% restorative action -- the home responds promptly to boundary violations and prioritises relationship repair.`,
     );
   }
 
-  if (secureStorageRate >= 90 && totalConfidentialityRecords > 0) {
+  if (meets(secureStorageRate, 90) && totalConfidentialityRecords > 0) {
     strengths.push(
       `${secureStorageRate}% of records stored securely with controlled access -- children's confidential information is properly protected.`,
     );
   }
 
-  if (appropriateSharingRate >= 90 && sharingConsentRate >= 90 && totalConfidentialityRecords > 0) {
+  if (meets(appropriateSharingRate, 90) && meets(sharingConsentRate, 90) && totalConfidentialityRecords > 0) {
     strengths.push(
       `Information shared appropriately in ${appropriateSharingRate}% of cases with consent obtained in ${sharingConsentRate}% -- children are actively involved in decisions about who sees their records.`,
     );
   }
 
-  if (childRecordAccessRate >= 80 && totalConfidentialityRecords > 0) {
+  if (meets(childRecordAccessRate, 80) && totalConfidentialityRecords > 0) {
     strengths.push(
       `${childRecordAccessRate}% of children have access to their own records -- the home supports children's right to know what is written about them.`,
     );
   }
 
-  if (confidentialityBreaches === 0 && dataMinimisationRate >= 90 && totalConfidentialityRecords > 0) {
+  if (confidentialityBreaches === 0 && meets(dataMinimisationRate, 90) && totalConfidentialityRecords > 0) {
     strengths.push(
       "Zero confidentiality breaches with strong data minimisation -- the home maintains excellent information governance and only records what is necessary.",
     );
@@ -674,39 +673,39 @@ export function computePrivacyDignity(
     );
   }
 
-  if (dignityPracticeRate >= 90 && totalDignityRecords > 0) {
+  if (meets(dignityPracticeRate, 90) && totalDignityRecords > 0) {
     strengths.push(
       `Dignity maintained in ${dignityPracticeRate}% of care interactions -- staff consistently deliver care that preserves children's self-respect and sense of worth.`,
     );
-  } else if (dignityPracticeRate >= 70 && totalDignityRecords > 0) {
+  } else if (meets(dignityPracticeRate, 70) && totalDignityRecords > 0) {
     strengths.push(
       `${dignityPracticeRate}% dignity practice rate -- most care interactions preserve children's dignity and self-respect.`,
     );
   }
 
-  if (choiceRate >= 90 && preferenceRate >= 90 && totalDignityRecords > 0) {
+  if (meets(choiceRate, 90) && meets(preferenceRate, 90) && totalDignityRecords > 0) {
     strengths.push(
       `Child choice offered in ${choiceRate}% and preferences followed in ${preferenceRate}% of care interactions -- children are genuinely empowered in decisions about their own care.`,
     );
   }
 
-  if (ageAppropriateRate >= 90 && culturalSensitivityRate >= 90 && totalDignityRecords > 0) {
+  if (meets(ageAppropriateRate, 90) && meets(culturalSensitivityRate, 90) && totalDignityRecords > 0) {
     strengths.push(
       `Age-appropriate approaches at ${ageAppropriateRate}% with ${culturalSensitivityRate}% cultural sensitivity -- care delivery is tailored to each child's developmental stage and cultural background.`,
     );
   }
 
-  if (sameGenderRate >= 90 && sameGenderRequested.length > 0) {
+  if (meets(sameGenderRate, 90) && sameGenderRequested.length > 0) {
     strengths.push(`Same-gender carer provided in ${sameGenderRate}% of requests -- children's gender preferences for personal care are consistently honoured.`);
   }
 
-  if (totalDignityRecords > 0 && dignitySatisfactionAvg !== null && dignityConsentRate >= 90 && dignitySatisfactionAvg >= 4.0) {
+  if (totalDignityRecords > 0 && dignitySatisfactionAvg !== null && meets(dignityConsentRate, 90) && dignitySatisfactionAvg >= 4.0) {
     strengths.push(
       `Consent obtained in ${dignityConsentRate}% of care interactions with satisfaction averaging ${dignitySatisfactionAvg}/5 -- children feel respected and in control of their care.`,
     );
   }
 
-  if (childSatisfactionRate >= 80 && satisfactionDenominator > 0) {
+  if (meets(childSatisfactionRate, 80) && satisfactionDenominator > 0) {
     strengths.push(`${childSatisfactionRate}% of children report high satisfaction (4+/5) with privacy and dignity -- children feel their rights are genuinely upheld.`);
   }
 
@@ -714,23 +713,23 @@ export function computePrivacyDignity(
 
   const concerns: string[] = [];
 
-  if (privacyAuditComplianceRate < 50 && totalPrivacyAudits > 0) {
+  if (below(privacyAuditComplianceRate, 50) && totalPrivacyAudits > 0) {
     concerns.push(
       `Only ${privacyAuditComplianceRate}% of privacy audits compliant -- the majority of children lack adequate private space, bathroom privacy, or personal storage. This is a fundamental failure to protect children's right to privacy.`,
     );
-  } else if (privacyAuditComplianceRate < 70 && privacyAuditComplianceRate >= 50 && totalPrivacyAudits > 0) {
+  } else if (below(privacyAuditComplianceRate, 70) && meets(privacyAuditComplianceRate, 50) && totalPrivacyAudits > 0) {
     concerns.push(
       `Privacy audit compliance at ${privacyAuditComplianceRate}% -- some children's living spaces do not meet privacy standards.`,
     );
   }
 
-  if (lockComplianceRate < 50 && totalPrivacyAudits > 0) {
+  if (below(lockComplianceRate, 50) && totalPrivacyAudits > 0) {
     concerns.push(
       `Only ${lockComplianceRate}% of children have functional bedroom door locks -- children cannot control access to their personal space, undermining their sense of safety and autonomy.`,
     );
   }
 
-  if (lockableStorageRate < 50 && totalPrivacyAudits > 0) {
+  if (below(lockableStorageRate, 50) && totalPrivacyAudits > 0) {
     concerns.push(
       `Only ${lockableStorageRate}% of children have lockable personal storage -- children cannot keep their personal belongings secure, eroding trust and privacy.`,
     );
@@ -742,17 +741,17 @@ export function computePrivacyDignity(
     );
   }
 
-  if (privacyIssuesTotal > 0 && privacyIssueResolutionRate < 50) {
+  if (privacyIssuesTotal > 0 && below(privacyIssueResolutionRate, 50)) {
     concerns.push(
       `Only ${privacyIssueResolutionRate}% of privacy audit issues resolved -- identified problems are not being addressed, leaving children's privacy compromised.`,
     );
   }
 
-  if (knockEntryRate < 50 && totalKnockRecords > 0) {
+  if (below(knockEntryRate, 50) && totalKnockRecords > 0) {
     concerns.push(
       `Only ${knockEntryRate}% knock-before-entry compliance -- staff are routinely entering children's rooms without knocking and waiting. This is a serious violation of children's privacy and can cause distress, anxiety, and a loss of trust.`,
     );
-  } else if (knockEntryRate < 80 && knockEntryRate >= 50 && totalKnockRecords > 0) {
+  } else if (below(knockEntryRate, 80) && meets(knockEntryRate, 50) && totalKnockRecords > 0) {
     concerns.push(
       `Knock-before-entry compliance at ${knockEntryRate}% -- too many room entries without proper knock-and-wait protocols.`,
     );
@@ -764,17 +763,17 @@ export function computePrivacyDignity(
     );
   }
 
-  if (knockComplaintRate >= 10 && totalKnockRecords > 0) {
+  if (meets(knockComplaintRate, 10) && totalKnockRecords > 0) {
     concerns.push(
       `${knockComplaintRate}% complaint rate about room entries -- children are raising concerns about how staff enter their private space.`,
     );
   }
 
-  if (boundaryRespectRate < 50 && totalBoundaryRecords > 0) {
+  if (below(boundaryRespectRate, 50) && totalBoundaryRecords > 0) {
     concerns.push(
       `Only ${boundaryRespectRate}% of personal boundaries respected -- the majority of children's physical, emotional, and social boundaries are being violated. This is a fundamental failure to respect children's dignity and autonomy.`,
     );
-  } else if (boundaryRespectRate < 70 && boundaryRespectRate >= 50 && totalBoundaryRecords > 0) {
+  } else if (below(boundaryRespectRate, 70) && meets(boundaryRespectRate, 50) && totalBoundaryRecords > 0) {
     concerns.push(
       `Boundary respect at ${boundaryRespectRate}% -- too many children's personal boundaries are not being honoured by staff.`,
     );
@@ -786,13 +785,13 @@ export function computePrivacyDignity(
     );
   }
 
-  if (boundaryDocumentationRate < 50 && totalBoundaryRecords > 0) {
+  if (below(boundaryDocumentationRate, 50) && totalBoundaryRecords > 0) {
     concerns.push(
       `Only ${boundaryDocumentationRate}% of children's boundaries documented in care plans -- without formal documentation, staff cannot consistently respect individual boundary needs.`,
     );
   }
 
-  if (staffAwarenessRate < 60 && totalBoundaryRecords > 0) {
+  if (below(staffAwarenessRate, 60) && totalBoundaryRecords > 0) {
     concerns.push(
       `Staff aware of boundaries in only ${staffAwarenessRate}% of cases -- insufficient staff knowledge of children's boundary preferences increases the risk of unintentional violations.`,
     );
@@ -804,17 +803,17 @@ export function computePrivacyDignity(
     );
   }
 
-  if (secureStorageRate < 50 && totalConfidentialityRecords > 0) {
+  if (below(secureStorageRate, 50) && totalConfidentialityRecords > 0) {
     concerns.push(
       `Only ${secureStorageRate}% of records stored securely with controlled access -- children's confidential information is at risk of unauthorised access or disclosure.`,
     );
-  } else if (secureStorageRate < 80 && secureStorageRate >= 50 && totalConfidentialityRecords > 0) {
+  } else if (below(secureStorageRate, 80) && meets(secureStorageRate, 50) && totalConfidentialityRecords > 0) {
     concerns.push(
       `Secure storage rate at ${secureStorageRate}% -- some children's confidential records are not adequately protected.`,
     );
   }
 
-  if (confidentialityBreachRate >= 10 && totalConfidentialityRecords > 0) {
+  if (meets(confidentialityBreachRate, 10) && totalConfidentialityRecords > 0) {
     concerns.push(
       `Confidentiality breach rate at ${confidentialityBreachRate}% -- breaches of children's confidential information are occurring at an unacceptable rate.`,
     );
@@ -826,19 +825,19 @@ export function computePrivacyDignity(
     );
   }
 
-  if (sharingConsentRate < 50 && totalConfidentialityRecords > 0) {
+  if (below(sharingConsentRate, 50) && totalConfidentialityRecords > 0) {
     concerns.push(
       `Consent for information sharing obtained in only ${sharingConsentRate}% of cases -- children are not being given adequate say in who sees their personal information.`,
     );
   }
 
-  if (childRecordAccessRate < 50 && totalConfidentialityRecords > 0) {
+  if (below(childRecordAccessRate, 50) && totalConfidentialityRecords > 0) {
     concerns.push(
       `Only ${childRecordAccessRate}% of children have access to their own records -- children are being denied their right to see what is written about them.`,
     );
   }
 
-  if (childInformedRate < 50 && totalConfidentialityRecords > 0) {
+  if (below(childInformedRate, 50) && totalConfidentialityRecords > 0) {
     concerns.push(
       `Children informed of information sharing in only ${childInformedRate}% of cases -- children are not being told when and with whom their information is shared.`,
     );
@@ -850,23 +849,23 @@ export function computePrivacyDignity(
     );
   }
 
-  if (dignityPracticeRate < 50 && totalDignityRecords > 0) {
+  if (below(dignityPracticeRate, 50) && totalDignityRecords > 0) {
     concerns.push(
       `Dignity maintained in only ${dignityPracticeRate}% of care interactions -- the majority of care delivery fails to preserve children's self-respect and sense of worth. This is a fundamental quality of care failure.`,
     );
-  } else if (dignityPracticeRate < 70 && dignityPracticeRate >= 50 && totalDignityRecords > 0) {
+  } else if (below(dignityPracticeRate, 70) && meets(dignityPracticeRate, 50) && totalDignityRecords > 0) {
     concerns.push(
       `Dignity practice rate at ${dignityPracticeRate}% -- too many care interactions are not preserving children's dignity.`,
     );
   }
 
-  if (choiceRate < 50 && totalDignityRecords > 0) {
+  if (below(choiceRate, 50) && totalDignityRecords > 0) {
     concerns.push(
       `Child choice offered in only ${choiceRate}% of care interactions -- children are not being empowered to make decisions about their own care.`,
     );
   }
 
-  if (sameGenderRate < 50 && sameGenderRequested.length > 0) {
+  if (below(sameGenderRate, 50) && sameGenderRequested.length > 0) {
     concerns.push(
       `Same-gender carer provided in only ${sameGenderRate}% of requests -- children's gender preferences for personal care are not being honoured, which can cause significant distress and undermine trust.`,
     );
@@ -878,7 +877,7 @@ export function computePrivacyDignity(
     );
   }
 
-  if (dignityComplaintRate >= 10 && totalDignityRecords > 0) {
+  if (meets(dignityComplaintRate, 10) && totalDignityRecords > 0) {
     concerns.push(
       `${dignityComplaintRate}% complaint rate about dignity in care -- children are raising concerns about how care is delivered.`,
     );
@@ -907,7 +906,7 @@ export function computePrivacyDignity(
   const recommendations: PrivacyDignityRecommendation[] = [];
   let rank = 0;
 
-  if (knockEntryRate < 50 && knock_entry_records.length > 0) {
+  if (below(knockEntryRate, 50) && knock_entry_records.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -917,7 +916,7 @@ export function computePrivacyDignity(
     });
   }
 
-  if (boundaryRespectRate < 50 && boundary_respect_records.length > 0) {
+  if (below(boundaryRespectRate, 50) && boundary_respect_records.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -937,7 +936,7 @@ export function computePrivacyDignity(
     });
   }
 
-  if (dignityPracticeRate < 50 && dignity_care_records.length > 0) {
+  if (below(dignityPracticeRate, 50) && dignity_care_records.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -947,7 +946,7 @@ export function computePrivacyDignity(
     });
   }
 
-  if (privacyAuditComplianceRate < 50 && totalPrivacyAudits > 0) {
+  if (below(privacyAuditComplianceRate, 50) && totalPrivacyAudits > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -987,7 +986,7 @@ export function computePrivacyDignity(
     });
   }
 
-  if (lockComplianceRate < 70 && totalPrivacyAudits > 0) {
+  if (below(lockComplianceRate, 70) && totalPrivacyAudits > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -997,7 +996,7 @@ export function computePrivacyDignity(
     });
   }
 
-  if (sameGenderRate < 70 && sameGenderRequested.length > 0) {
+  if (below(sameGenderRate, 70) && sameGenderRequested.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1007,7 +1006,7 @@ export function computePrivacyDignity(
     });
   }
 
-  if (boundaryDocumentationRate < 70 && totalBoundaryRecords > 0) {
+  if (below(boundaryDocumentationRate, 70) && totalBoundaryRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1017,7 +1016,7 @@ export function computePrivacyDignity(
     });
   }
 
-  if (childRecordAccessRate < 60 && totalConfidentialityRecords > 0) {
+  if (below(childRecordAccessRate, 60) && totalConfidentialityRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1027,7 +1026,7 @@ export function computePrivacyDignity(
     });
   }
 
-  if (sharingConsentRate < 70 && totalConfidentialityRecords > 0) {
+  if (below(sharingConsentRate, 70) && totalConfidentialityRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1037,7 +1036,7 @@ export function computePrivacyDignity(
     });
   }
 
-  if (knockEntryRate >= 50 && knockEntryRate < 80 && totalKnockRecords > 0) {
+  if (meets(knockEntryRate, 50) && below(knockEntryRate, 80) && totalKnockRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1047,7 +1046,7 @@ export function computePrivacyDignity(
     });
   }
 
-  if (choiceRate < 70 && totalDignityRecords > 0) {
+  if (below(choiceRate, 70) && totalDignityRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1057,7 +1056,7 @@ export function computePrivacyDignity(
     });
   }
 
-  if (staffAwarenessRate < 70 && totalBoundaryRecords > 0) {
+  if (below(staffAwarenessRate, 70) && totalBoundaryRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1067,7 +1066,7 @@ export function computePrivacyDignity(
     });
   }
 
-  if (privacyAuditComplianceRate >= 50 && privacyAuditComplianceRate < 70 && totalPrivacyAudits > 0) {
+  if (meets(privacyAuditComplianceRate, 50) && below(privacyAuditComplianceRate, 70) && totalPrivacyAudits > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1077,7 +1076,7 @@ export function computePrivacyDignity(
     });
   }
 
-  if (boundaryRespectRate >= 50 && boundaryRespectRate < 70 && totalBoundaryRecords > 0) {
+  if (meets(boundaryRespectRate, 50) && below(boundaryRespectRate, 70) && totalBoundaryRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1087,7 +1086,7 @@ export function computePrivacyDignity(
     });
   }
 
-  if (dignityPracticeRate >= 50 && dignityPracticeRate < 70 && totalDignityRecords > 0) {
+  if (meets(dignityPracticeRate, 50) && below(dignityPracticeRate, 70) && totalDignityRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1097,7 +1096,7 @@ export function computePrivacyDignity(
     });
   }
 
-  if (dataMinimisationRate < 70 && totalConfidentialityRecords > 0) {
+  if (below(dataMinimisationRate, 70) && totalConfidentialityRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1143,14 +1142,14 @@ export function computePrivacyDignity(
 
   // --- Critical insights ---
 
-  if (knockEntryRate < 50 && totalKnockRecords > 0) {
+  if (below(knockEntryRate, 50) && totalKnockRecords > 0) {
     insights.push({
       text: `Only ${knockEntryRate}% knock-before-entry compliance. Ofsted will view systematic failure to knock and wait before entering children's rooms as evidence that the home does not respect children's basic right to privacy -- a direct breach of Reg 10 that undermines trust and emotional safety.`,
       severity: "critical",
     });
   }
 
-  if (boundaryRespectRate < 50 && totalBoundaryRecords > 0) {
+  if (below(boundaryRespectRate, 50) && totalBoundaryRecords > 0) {
     insights.push({
       text: `Only ${boundaryRespectRate}% of personal boundaries respected. Widespread boundary violations indicate a culture that does not prioritise children's autonomy and dignity -- Ofsted will view this as a fundamental quality of care failure under Reg 5.`,
       severity: "critical",
@@ -1164,14 +1163,14 @@ export function computePrivacyDignity(
     });
   }
 
-  if (dignityPracticeRate < 50 && totalDignityRecords > 0) {
+  if (below(dignityPracticeRate, 50) && totalDignityRecords > 0) {
     insights.push({
       text: `Dignity maintained in only ${dignityPracticeRate}% of care interactions. When the majority of care delivery fails to preserve children's self-respect, Ofsted will conclude that the home's quality of care is fundamentally inadequate under Reg 5.`,
       severity: "critical",
     });
   }
 
-  if (privacyAuditComplianceRate < 50 && totalPrivacyAudits > 0) {
+  if (below(privacyAuditComplianceRate, 50) && totalPrivacyAudits > 0) {
     insights.push({
       text: `Only ${privacyAuditComplianceRate}% privacy audit compliance. Children lack basic privacy provisions in their living spaces -- this is a Reg 10 failure that Ofsted will view as evidence the home does not provide a suitable physical environment for children.`,
       severity: "critical",
@@ -1201,14 +1200,14 @@ export function computePrivacyDignity(
 
   // --- Warning insights ---
 
-  if (knockEntryRate >= 50 && knockEntryRate < 80 && totalKnockRecords > 0) {
+  if (meets(knockEntryRate, 50) && below(knockEntryRate, 80) && totalKnockRecords > 0) {
     insights.push({
       text: `Knock-before-entry compliance at ${knockEntryRate}% -- improving but inconsistent. Every entry without knocking erodes a child's sense of safety in their own space. Target consistent 95%+ compliance.`,
       severity: "warning",
     });
   }
 
-  if (boundaryRespectRate >= 50 && boundaryRespectRate < 80 && totalBoundaryRecords > 0) {
+  if (meets(boundaryRespectRate, 50) && below(boundaryRespectRate, 80) && totalBoundaryRecords > 0) {
     insights.push({
       text: `Boundary respect at ${boundaryRespectRate}% -- some children's personal limits are still being crossed. Each unrespected boundary damages trust and can trigger trauma responses in children who have experienced abuse or neglect.`,
       severity: "warning",
@@ -1222,49 +1221,49 @@ export function computePrivacyDignity(
     });
   }
 
-  if (dignityPracticeRate >= 50 && dignityPracticeRate < 80 && totalDignityRecords > 0) {
+  if (meets(dignityPracticeRate, 50) && below(dignityPracticeRate, 80) && totalDignityRecords > 0) {
     insights.push({
       text: `Dignity practice rate at ${dignityPracticeRate}% -- care delivery does not consistently preserve children's self-respect. Children who feel undignified in care interactions may disengage from support.`,
       severity: "warning",
     });
   }
 
-  if (privacyAuditComplianceRate >= 50 && privacyAuditComplianceRate < 80 && totalPrivacyAudits > 0) {
+  if (meets(privacyAuditComplianceRate, 50) && below(privacyAuditComplianceRate, 80) && totalPrivacyAudits > 0) {
     insights.push({
       text: `Privacy audit compliance at ${privacyAuditComplianceRate}% -- some children's living spaces still fall short of privacy standards. Privacy is foundational to children feeling safe and settled in their home.`,
       severity: "warning",
     });
   }
 
-  if (childSatisfactionRate >= 50 && childSatisfactionRate < 80 && satisfactionDenominator > 0) {
+  if (meets(childSatisfactionRate, 50) && below(childSatisfactionRate, 80) && satisfactionDenominator > 0) {
     insights.push({
       text: `Child satisfaction with privacy and dignity at ${childSatisfactionRate}% -- not all children feel their privacy and dignity are fully respected. Children's lived experience should be the primary measure of whether privacy and dignity provisions are working.`,
       severity: "warning",
     });
   }
 
-  if (breachRate >= 15 && breachRate < 30 && totalBoundaryRecords > 0) {
+  if (meets(breachRate, 15) && below(breachRate, 30) && totalBoundaryRecords > 0) {
     insights.push({
       text: `Boundary breach rate at ${breachRate}% -- while not the majority, this level of breaching indicates staff training or awareness gaps that need targeted attention.`,
       severity: "warning",
     });
   }
 
-  if (knockComplaintRate >= 5 && knockComplaintRate < 15 && totalKnockRecords > 0) {
+  if (meets(knockComplaintRate, 5) && below(knockComplaintRate, 15) && totalKnockRecords > 0) {
     insights.push({
       text: `${knockComplaintRate}% complaint rate about room entries -- children's complaints about privacy should be taken seriously as indicators of lived experience. Each complaint likely represents many unvoiced concerns.`,
       severity: "warning",
     });
   }
 
-  if (choiceRate >= 50 && choiceRate < 80 && totalDignityRecords > 0) {
+  if (meets(choiceRate, 50) && below(choiceRate, 80) && totalDignityRecords > 0) {
     insights.push({
       text: `Child choice offered in ${choiceRate}% of care interactions -- while some choice is provided, children in care often have fewer choices than peers. Every opportunity to offer genuine choice enhances dignity and autonomy.`,
       severity: "warning",
     });
   }
 
-  if (sameGenderRate >= 50 && sameGenderRate < 90 && sameGenderRequested.length > 0) {
+  if (meets(sameGenderRate, 50) && below(sameGenderRate, 90) && sameGenderRequested.length > 0) {
     insights.push({
       text: `Same-gender carer provided in ${sameGenderRate}% of requests -- gender preferences for personal care are particularly important for children with trauma histories. Staffing rotas should prioritise meeting these requests.`,
       severity: "warning",
@@ -1280,14 +1279,14 @@ export function computePrivacyDignity(
     });
   }
 
-  if (knockEntryRate >= 95 && boundaryRespectRate >= 90 && totalKnockRecords > 0 && totalBoundaryRecords > 0) {
+  if (meets(knockEntryRate, 95) && meets(boundaryRespectRate, 90) && totalKnockRecords > 0 && totalBoundaryRecords > 0) {
     insights.push({
       text: `${knockEntryRate}% knock-before-entry compliance with ${boundaryRespectRate}% boundary respect -- the home has embedded a culture of genuine respect for children's personal space and limits. This creates an environment where children feel safe, trusted, and in control.`,
       severity: "positive",
     });
   }
 
-  if (privacyAuditComplianceRate >= 90 && lockComplianceRate >= 90 && totalPrivacyAudits > 0) {
+  if (meets(privacyAuditComplianceRate, 90) && meets(lockComplianceRate, 90) && totalPrivacyAudits > 0) {
     insights.push({
       text: `${privacyAuditComplianceRate}% privacy audit compliance with ${lockComplianceRate}% functional bedroom locks -- the physical environment actively supports children's privacy. Children can retreat to their own space knowing it is genuinely private and secure.`,
       severity: "positive",
@@ -1301,35 +1300,35 @@ export function computePrivacyDignity(
     });
   }
 
-  if (totalDignityRecords > 0 && dignitySatisfactionAvg !== null && dignityPracticeRate >= 90 && dignitySatisfactionAvg >= 4.0) {
+  if (totalDignityRecords > 0 && dignitySatisfactionAvg !== null && meets(dignityPracticeRate, 90) && dignitySatisfactionAvg >= 4.0) {
     insights.push({
       text: `${dignityPracticeRate}% dignity practice rate with child satisfaction averaging ${dignitySatisfactionAvg}/5 -- care is delivered with consistent respect for children's self-worth. Children feel valued, respected, and treated as individuals with agency.`,
       severity: "positive",
     });
   }
 
-  if (childSatisfactionRate >= 80 && satisfactionDenominator > 0) {
+  if (meets(childSatisfactionRate, 80) && satisfactionDenominator > 0) {
     insights.push({
       text: `${childSatisfactionRate}% child satisfaction with privacy and dignity -- the strongest evidence of good practice is children's own testimony. High satisfaction indicates that privacy and dignity provisions are meaningful in children's lived experience, not just procedural.`,
       severity: "positive",
     });
   }
 
-  if (childRecordAccessRate >= 80 && sharingConsentRate >= 80 && totalConfidentialityRecords > 0) {
+  if (meets(childRecordAccessRate, 80) && meets(sharingConsentRate, 80) && totalConfidentialityRecords > 0) {
     insights.push({
       text: `${childRecordAccessRate}% record access for children with ${sharingConsentRate}% sharing consent obtained -- children are genuine partners in decisions about their information. This empowering approach builds trust and supports children's developing autonomy.`,
       severity: "positive",
     });
   }
 
-  if (sameGenderRate >= 90 && sameGenderRequested.length > 0 && culturalSensitivityRate >= 90 && totalDignityRecords > 0) {
+  if (meets(sameGenderRate, 90) && sameGenderRequested.length > 0 && meets(culturalSensitivityRate, 90) && totalDignityRecords > 0) {
     insights.push({
       text: `Same-gender carer requests met in ${sameGenderRate}% of cases with ${culturalSensitivityRate}% cultural sensitivity -- the home demonstrates sophisticated understanding of how gender, culture, and personal history shape children's experience of care delivery.`,
       severity: "positive",
     });
   }
 
-  if (restorativeRate >= 80 && breachAddressedRate >= 90 && breachesOccurred > 0) {
+  if (meets(restorativeRate, 80) && meets(breachAddressedRate, 90) && breachesOccurred > 0) {
     insights.push({
       text: `${breachAddressedRate}% of breaches addressed with ${restorativeRate}% restorative action -- when things go wrong, the home responds with accountability and relationship repair. This models healthy conflict resolution for children.`,
       severity: "positive",
