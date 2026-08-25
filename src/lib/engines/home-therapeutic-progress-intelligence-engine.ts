@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME THERAPEUTIC PROGRESS INTELLIGENCE ENGINE
 // Home-level: aggregates behaviour mapping, sensory profiles, sleep
@@ -122,7 +123,8 @@ export interface BehaviourMapProfile {
 
 export interface SensoryProfileSummary {
   total_profiles: number;
-  child_coverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_coverage: number | null;
   overdue_reviews: number;
   // fab-0: null when no sensory profiles.
   avg_strategies: number | null;
@@ -132,7 +134,8 @@ export interface SensoryProfileSummary {
 
 export interface SleepAssessmentSummary {
   total_assessments: number;
-  child_coverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_coverage: number | null;
   // fab-0: null when no sleep assessments.
   avg_hours: number | null;
   /** null when the population is empty — nothing measured, not 0%. */
@@ -144,7 +147,8 @@ export interface SleepAssessmentSummary {
 
 export interface EmotionalVocabSummary {
   total_records: number;
-  child_coverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_coverage: number | null;
   // fab-0: null when no emotional vocab records.
   avg_feelings_recognised: number | null;
   breakthrough_count: number;
@@ -165,7 +169,8 @@ export interface BereavementSummary {
 
 export interface AttachmentSummary {
   total_profiles: number;
-  child_coverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_coverage: number | null;
   overdue_reviews: number;
   // fab-0: null when no attachment profiles.
   avg_therapeutic_approaches: number | null;
@@ -175,7 +180,8 @@ export interface AttachmentSummary {
 
 export interface SelfSoothingSummary {
   total_toolkits: number;
-  child_coverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_coverage: number | null;
   /** null when the population is empty — nothing measured, not 0%. */
   child_led_rate: number | null;
   /** null when the population is empty — nothing measured, not 0%. */
@@ -202,10 +208,6 @@ export interface HomeTherapeuticProgressResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function daysBetween(a: string, b: string): number {
   return Math.round(
@@ -240,12 +242,12 @@ export function computeHomeTherapeuticProgress(
       therapeutic_score: 0,
       headline: "No therapeutic data available for analysis.",
       behaviour_map: { total_entries_90d: 0, crisis_count: 0, high_count: 0, de_escalation_rate: null, trigger_identification_rate: null, children_mapped: 0 },
-      sensory: { total_profiles: 0, child_coverage: 0, overdue_reviews: 0, avg_strategies: null, child_views_rate: null },
-      sleep: { total_assessments: 0, child_coverage: 0, avg_hours: null, good_quality_rate: null, improving_trend_rate: null, overdue_reviews: 0 },
-      emotional_vocab: { total_records: 0, child_coverage: 0, avg_feelings_recognised: null, breakthrough_count: 0, child_voice_rate: null },
+      sensory: { total_profiles: 0, child_coverage: null, overdue_reviews: 0, avg_strategies: null, child_views_rate: null },
+      sleep: { total_assessments: 0, child_coverage: null, avg_hours: null, good_quality_rate: null, improving_trend_rate: null, overdue_reviews: 0 },
+      emotional_vocab: { total_records: 0, child_coverage: null, avg_feelings_recognised: null, breakthrough_count: 0, child_voice_rate: null },
       bereavement: { total_records: 0, children_supported: 0, external_support_rate: null, memory_work_rate: null, child_voice_rate: null },
-      attachment: { total_profiles: 0, child_coverage: 0, overdue_reviews: 0, avg_therapeutic_approaches: null, child_views_rate: null },
-      self_soothing: { total_toolkits: 0, child_coverage: 0, child_led_rate: null, effectiveness_rate: null, child_voice_rate: null },
+      attachment: { total_profiles: 0, child_coverage: null, overdue_reviews: 0, avg_therapeutic_approaches: null, child_views_rate: null },
+      self_soothing: { total_toolkits: 0, child_coverage: null, child_led_rate: null, effectiveness_rate: null, child_voice_rate: null },
       strengths: [],
       concerns: [],
       recommendations: [],
@@ -258,9 +260,9 @@ export function computeHomeTherapeuticProgress(
   const bmCrisis = bm90.filter(e => e.intensity === "crisis").length;
   const bmHigh = bm90.filter(e => e.intensity === "high").length;
   const bmDeEscUsed = bm90.filter(e => e.de_escalation_used_count > 0).length;
-  const bmDeEscRate = pct(bmDeEscUsed, bm90.length);
+  const bmDeEscRate = rate(bmDeEscUsed, bm90.length);
   const bmTriggerFound = bm90.filter(e => e.trigger_pattern_present).length;
-  const bmTriggerRate = pct(bmTriggerFound, bm90.length);
+  const bmTriggerRate = rate(bmTriggerFound, bm90.length);
   const bmChildIds = new Set(bm90.map(e => e.child_id));
 
   const behaviour_map: BehaviourMapProfile = {
@@ -274,13 +276,13 @@ export function computeHomeTherapeuticProgress(
 
   // ── Sensory profile analysis ─────────────────────────────────────────
   const spChildIds = new Set(sensory_profiles.map(p => p.child_id));
-  const spCoverage = pct(spChildIds.size, total_children);
+  const spCoverage = rate(spChildIds.size, total_children);
   const spOverdue = sensory_profiles.filter(p => daysBetween(p.review_date, today) > 0).length;
   // fab-0: null when no sensory profiles.
   const spAvgStrat: number | null = sensory_profiles.length > 0
     ? Math.round(sensory_profiles.reduce((s, p) => s + p.strategies_count, 0) / sensory_profiles.length)
     : null;
-  const spViewsRate = pct(
+  const spViewsRate = rate(
     sensory_profiles.filter(p => p.child_views_provided).length,
     sensory_profiles.length,
   );
@@ -295,15 +297,15 @@ export function computeHomeTherapeuticProgress(
 
   // ── Sleep assessment analysis ────────────────────────────────────────
   const slChildIds = new Set(sleep_assessments.map(a => a.child_id));
-  const slCoverage = pct(slChildIds.size, total_children);
+  const slCoverage = rate(slChildIds.size, total_children);
   // fab-0: null when no sleep assessments.
   const slAvgHours: number | null = sleep_assessments.length > 0
     ? Math.round((sleep_assessments.reduce((s, a) => s + a.average_hours, 0) / sleep_assessments.length) * 10) / 10
     : null;
   const slGoodQuality = sleep_assessments.filter(a => a.sleep_quality === "good" || a.sleep_quality === "excellent").length;
-  const slGoodRate = pct(slGoodQuality, sleep_assessments.length);
+  const slGoodRate = rate(slGoodQuality, sleep_assessments.length);
   const slImproving = sleep_assessments.filter(a => a.trend === "improving").length;
-  const slImprovingRate = pct(slImproving, sleep_assessments.length);
+  const slImprovingRate = rate(slImproving, sleep_assessments.length);
   const slOverdue = sleep_assessments.filter(a => daysBetween(a.review_date, today) > 0).length;
 
   const sleep: SleepAssessmentSummary = {
@@ -317,13 +319,13 @@ export function computeHomeTherapeuticProgress(
 
   // ── Emotional vocabulary analysis ────────────────────────────────────
   const evChildIds = new Set(emotional_vocab_records.map(r => r.child_id));
-  const evCoverage = pct(evChildIds.size, total_children);
+  const evCoverage = rate(evChildIds.size, total_children);
   // fab-0: null when no emotional vocab records.
   const evAvgFeelings: number | null = emotional_vocab_records.length > 0
     ? Math.round(emotional_vocab_records.reduce((s, r) => s + r.feelings_recognised_count, 0) / emotional_vocab_records.length)
     : null;
   const evBreakthroughs = emotional_vocab_records.reduce((s, r) => s + r.breakthroughs_count, 0);
-  const evVoiceRate = pct(
+  const evVoiceRate = rate(
     emotional_vocab_records.filter(r => r.child_voice_provided).length,
     emotional_vocab_records.length,
   );
@@ -339,10 +341,10 @@ export function computeHomeTherapeuticProgress(
   // ── Bereavement & loss analysis ──────────────────────────────────────
   const brChildIds = new Set(bereavement_records.map(r => r.child_id));
   const brExtSupport = bereavement_records.filter(r => r.external_support_present).length;
-  const brExtRate = pct(brExtSupport, bereavement_records.length);
+  const brExtRate = rate(brExtSupport, bereavement_records.length);
   const brMemWork = bereavement_records.filter(r => r.memory_work_count > 0).length;
-  const brMemRate = pct(brMemWork, bereavement_records.length);
-  const brVoiceRate = pct(
+  const brMemRate = rate(brMemWork, bereavement_records.length);
+  const brVoiceRate = rate(
     bereavement_records.filter(r => r.child_voice_provided).length,
     bereavement_records.length,
   );
@@ -357,13 +359,13 @@ export function computeHomeTherapeuticProgress(
 
   // ── Attachment profile analysis ──────────────────────────────────────
   const atChildIds = new Set(attachment_profiles.map(p => p.child_id));
-  const atCoverage = pct(atChildIds.size, total_children);
+  const atCoverage = rate(atChildIds.size, total_children);
   const atOverdue = attachment_profiles.filter(p => daysBetween(p.review_date, today) > 0).length;
   // fab-0: null when no attachment profiles.
   const atAvgApproaches: number | null = attachment_profiles.length > 0
     ? Math.round(attachment_profiles.reduce((s, p) => s + p.therapeutic_approach_count, 0) / attachment_profiles.length)
     : null;
-  const atViewsRate = pct(
+  const atViewsRate = rate(
     attachment_profiles.filter(p => p.child_views_provided).length,
     attachment_profiles.length,
   );
@@ -378,14 +380,14 @@ export function computeHomeTherapeuticProgress(
 
   // ── Self-soothing toolkit analysis ───────────────────────────────────
   const ssChildIds = new Set(self_soothing_toolkits.map(t => t.child_id));
-  const ssCoverage = pct(ssChildIds.size, total_children);
+  const ssCoverage = rate(ssChildIds.size, total_children);
   const ssChildLed = self_soothing_toolkits.filter(t => t.child_chose_all).length;
-  const ssChildLedRate = pct(ssChildLed, self_soothing_toolkits.length);
+  const ssChildLedRate = rate(ssChildLed, self_soothing_toolkits.length);
   const ssEffective = self_soothing_toolkits.filter(t =>
     t.effectiveness_rating === "highly_effective" || t.effectiveness_rating === "effective",
   ).length;
-  const ssEffRate = pct(ssEffective, self_soothing_toolkits.length);
-  const ssVoiceRate = pct(
+  const ssEffRate = rate(ssEffective, self_soothing_toolkits.length);
+  const ssVoiceRate = rate(
     self_soothing_toolkits.filter(t => t.child_voice_provided).length,
     self_soothing_toolkits.length,
   );
@@ -408,16 +410,16 @@ export function computeHomeTherapeuticProgress(
   {
     let m = 0;
     if (bm90.length > 0) {
-      if (bmDeEscRate >= 90) m += 3;
-      else if (bmDeEscRate >= 70) m += 1;
+      if (meets(bmDeEscRate, 90)) m += 3;
+      else if (meets(bmDeEscRate, 70)) m += 1;
       else m -= 2;
 
-      if (bmTriggerRate >= 80) m += 2;
-      else if (bmTriggerRate >= 60) m += 1;
-      else if (bmTriggerRate < 30) m -= 2;
+      if (meets(bmTriggerRate, 80)) m += 2;
+      else if (meets(bmTriggerRate, 60)) m += 1;
+      else if (below(bmTriggerRate, 30)) m -= 2;
 
-      const crisisRatio = pct(bmCrisis, bm90.length);
-      if (crisisRatio > 30) m -= 1;
+      const crisisRatio = rate(bmCrisis, bm90.length);
+      if (above(crisisRatio, 30)) m -= 1;
     } else {
       // No behaviour mapping at all — neutral if few children, concern otherwise
       if (total_children >= 3) m -= 2;
@@ -429,8 +431,8 @@ export function computeHomeTherapeuticProgress(
   {
     let m = 0;
     if (sensory_profiles.length > 0) {
-      if (spCoverage >= 80) m += 2;
-      else if (spCoverage >= 50) m += 1;
+      if (meets(spCoverage, 80)) m += 2;
+      else if (meets(spCoverage, 50)) m += 1;
       else m -= 1;
 
       if (spOverdue === 0) m += 1;
@@ -448,12 +450,12 @@ export function computeHomeTherapeuticProgress(
   {
     let m = 0;
     if (sleep_assessments.length > 0) {
-      if (slCoverage >= 80) m += 2;
-      else if (slCoverage >= 50) m += 1;
+      if (meets(slCoverage, 80)) m += 2;
+      else if (meets(slCoverage, 50)) m += 1;
       else m -= 1;
 
-      if (slGoodRate >= 70) m += 1;
-      else if (slGoodRate < 30) m -= 1;
+      if (meets(slGoodRate, 70)) m += 1;
+      else if (below(slGoodRate, 30)) m -= 1;
 
       if (slOverdue === 0) m += 1;
       else if (slOverdue >= 3) m -= 2;
@@ -467,8 +469,8 @@ export function computeHomeTherapeuticProgress(
   {
     let m = 0;
     if (emotional_vocab_records.length > 0) {
-      if (evCoverage >= 80) m += 1;
-      else if (evCoverage < 40) m -= 1;
+      if (meets(evCoverage, 80)) m += 1;
+      else if (below(evCoverage, 40)) m -= 1;
 
       if (evAvgFeelings! >= 8) m += 1;
       else if (evAvgFeelings! < 3) m -= 1;
@@ -484,14 +486,14 @@ export function computeHomeTherapeuticProgress(
   {
     let m = 0;
     if (bereavement_records.length > 0) {
-      if (brExtRate >= 80) m += 1;
-      else if (brExtRate < 30) m -= 1;
+      if (meets(brExtRate, 80)) m += 1;
+      else if (below(brExtRate, 30)) m -= 1;
 
-      if (brMemRate >= 80) m += 1;
-      else if (brMemRate < 30) m -= 1;
+      if (meets(brMemRate, 80)) m += 1;
+      else if (below(brMemRate, 30)) m -= 1;
 
       const complicated = bereavement_records.filter(r => r.grief_stage === "complicated").length;
-      if (complicated > 0 && brExtRate < 50) m -= 1;
+      if (complicated > 0 && below(brExtRate, 50)) m -= 1;
       else if (complicated === 0) m += 1;
     }
     // No bereavement records is neutral — not all homes have children experiencing bereavement
@@ -502,8 +504,8 @@ export function computeHomeTherapeuticProgress(
   {
     let m = 0;
     if (attachment_profiles.length > 0) {
-      if (atCoverage >= 80) m += 1;
-      else if (atCoverage < 40) m -= 1;
+      if (meets(atCoverage, 80)) m += 1;
+      else if (below(atCoverage, 40)) m -= 1;
 
       if (atOverdue === 0) m += 1;
       else if (atOverdue >= 3) m -= 1;
@@ -520,14 +522,14 @@ export function computeHomeTherapeuticProgress(
   {
     let m = 0;
     if (self_soothing_toolkits.length > 0) {
-      if (ssCoverage >= 80) m += 1;
-      else if (ssCoverage < 40) m -= 1;
+      if (meets(ssCoverage, 80)) m += 1;
+      else if (below(ssCoverage, 40)) m -= 1;
 
-      if (ssChildLedRate >= 80) m += 1;
-      else if (ssChildLedRate < 30) m -= 1;
+      if (meets(ssChildLedRate, 80)) m += 1;
+      else if (below(ssChildLedRate, 30)) m -= 1;
 
-      if (ssEffRate >= 80) m += 1;
-      else if (ssEffRate < 30) m -= 1;
+      if (meets(ssEffRate, 80)) m += 1;
+      else if (below(ssEffRate, 30)) m -= 1;
     } else {
       if (total_children >= 2) m -= 1;
     }
@@ -538,11 +540,11 @@ export function computeHomeTherapeuticProgress(
   {
     let m = 0;
     const voiceSources: number[] = [];
-    if (sensory_profiles.length > 0) voiceSources.push(spViewsRate);
-    if (emotional_vocab_records.length > 0) voiceSources.push(evVoiceRate);
-    if (bereavement_records.length > 0) voiceSources.push(brVoiceRate);
-    if (attachment_profiles.length > 0) voiceSources.push(atViewsRate);
-    if (self_soothing_toolkits.length > 0) voiceSources.push(ssVoiceRate);
+    if (sensory_profiles.length > 0) voiceSources.push(spViewsRate!);
+    if (emotional_vocab_records.length > 0) voiceSources.push(evVoiceRate!);
+    if (bereavement_records.length > 0) voiceSources.push(brVoiceRate!);
+    if (attachment_profiles.length > 0) voiceSources.push(atViewsRate!);
+    if (self_soothing_toolkits.length > 0) voiceSources.push(ssVoiceRate!);
 
     if (voiceSources.length > 0) {
       const avgVoice = Math.round(voiceSources.reduce((s, v) => s + v, 0) / voiceSources.length);
@@ -575,13 +577,13 @@ export function computeHomeTherapeuticProgress(
   let rank = 0;
 
   // Behaviour mapping
-  if (bm90.length > 0 && bmDeEscRate >= 90) {
+  if (bm90.length > 0 && meets(bmDeEscRate, 90)) {
     strengths.push(`Excellent de-escalation practice — ${bmDeEscRate}% of behaviour entries show de-escalation techniques used.`);
   }
-  if (bm90.length > 0 && bmTriggerRate >= 80) {
+  if (bm90.length > 0 && meets(bmTriggerRate, 80)) {
     strengths.push(`Strong trigger identification — ${bmTriggerRate}% of behaviour entries have trigger patterns documented.`);
   }
-  if (bm90.length > 0 && bmDeEscRate < 50) {
+  if (bm90.length > 0 && below(bmDeEscRate, 50)) {
     concerns.push(`Low de-escalation usage — only ${bmDeEscRate}% of behaviour entries record de-escalation techniques.`);
     recommendations.push({ rank: ++rank, recommendation: "Review de-escalation training and ensure all staff are documenting techniques used during incidents.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 6" });
   }
@@ -591,7 +593,7 @@ export function computeHomeTherapeuticProgress(
   }
 
   // Sensory profiles
-  if (sensory_profiles.length > 0 && spCoverage >= 80 && spOverdue === 0) {
+  if (sensory_profiles.length > 0 && meets(spCoverage, 80) && spOverdue === 0) {
     strengths.push(`Comprehensive sensory profiling — ${spCoverage}% coverage with all reviews up to date.`);
   }
   if (spOverdue >= 3) {
@@ -600,10 +602,10 @@ export function computeHomeTherapeuticProgress(
   }
 
   // Sleep
-  if (sleep_assessments.length > 0 && slGoodRate >= 70) {
+  if (sleep_assessments.length > 0 && meets(slGoodRate, 70)) {
     strengths.push(`Good sleep quality across the home — ${slGoodRate}% of children assessed as good or excellent.`);
   }
-  if (sleep_assessments.length > 0 && slGoodRate < 30) {
+  if (sleep_assessments.length > 0 && below(slGoodRate, 30)) {
     concerns.push(`Poor sleep quality — only ${slGoodRate}% of sleep assessments rated good or excellent.`);
     recommendations.push({ rank: ++rank, recommendation: "Review bedtime routines and environmental factors affecting sleep quality.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 6" });
   }
@@ -624,19 +626,19 @@ export function computeHomeTherapeuticProgress(
   }
 
   // Bereavement
-  if (bereavement_records.length > 0 && brExtRate >= 80 && brMemRate >= 80) {
+  if (bereavement_records.length > 0 && meets(brExtRate, 80) && meets(brMemRate, 80)) {
     strengths.push("Excellent bereavement support — high rates of external support engagement and memory work.");
   }
   if (bereavement_records.length > 0) {
     const complicated = bereavement_records.filter(r => r.grief_stage === "complicated").length;
-    if (complicated > 0 && brExtRate < 50) {
+    if (complicated > 0 && below(brExtRate, 50)) {
       concerns.push(`${complicated} child(ren) in complicated grief with insufficient external support.`);
       recommendations.push({ rank: ++rank, recommendation: "Urgently refer children experiencing complicated grief for specialist bereavement counselling.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 6" });
     }
   }
 
   // Attachment
-  if (attachment_profiles.length > 0 && atCoverage >= 80 && atOverdue === 0) {
+  if (attachment_profiles.length > 0 && meets(atCoverage, 80) && atOverdue === 0) {
     strengths.push(`Attachment-informed practice embedded — ${atCoverage}% coverage with current reviews.`);
   }
   if (attachment_profiles.length === 0 && total_children >= 3) {
@@ -648,10 +650,10 @@ export function computeHomeTherapeuticProgress(
   }
 
   // Self-soothing
-  if (self_soothing_toolkits.length > 0 && ssChildLedRate >= 80 && ssEffRate >= 80) {
+  if (self_soothing_toolkits.length > 0 && meets(ssChildLedRate, 80) && meets(ssEffRate, 80)) {
     strengths.push(`Outstanding self-soothing practice — ${ssChildLedRate}% child-led with ${ssEffRate}% rated effective.`);
   }
-  if (self_soothing_toolkits.length > 0 && ssEffRate < 30) {
+  if (self_soothing_toolkits.length > 0 && below(ssEffRate, 30)) {
     concerns.push(`Low self-soothing effectiveness — only ${ssEffRate}% of toolkits rated as effective.`);
     recommendations.push({ rank: ++rank, recommendation: "Review and co-produce self-soothing toolkits with children — current strategies show low effectiveness.", urgency: "soon", regulatory_ref: null });
   }
@@ -659,8 +661,8 @@ export function computeHomeTherapeuticProgress(
   // ── Cara Insights ────────────────────────────────────────────────────
   if (bm90.length >= 10) {
     const selfHarm = bm90.filter(e => e.behaviour_type === "self_harm").length;
-    const selfHarmPct = pct(selfHarm, bm90.length);
-    if (selfHarmPct >= 20) {
+    const selfHarmPct = rate(selfHarm, bm90.length);
+    if (meets(selfHarmPct, 20)) {
       insights.push({ text: `Self-harm accounts for ${selfHarmPct}% of behaviour entries — review risk assessments and therapeutic interventions.`, severity: "critical" });
     }
   }
@@ -676,7 +678,7 @@ export function computeHomeTherapeuticProgress(
       insights.push({ text: `${disorg} children have disorganised attachment styles — ensure DDP/PACE-informed staff guidance is in place.`, severity: "warning" });
     }
   }
-  if (self_soothing_toolkits.length > 0 && ssChildLedRate >= 90 && ssEffRate >= 90) {
+  if (self_soothing_toolkits.length > 0 && meets(ssChildLedRate, 90) && meets(ssEffRate, 90)) {
     insights.push({ text: "Self-soothing toolkits are almost entirely child-led with high effectiveness — outstanding therapeutic co-production.", severity: "positive" });
   }
   if (evBreakthroughs >= 5) {

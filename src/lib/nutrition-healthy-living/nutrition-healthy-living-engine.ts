@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara Nutrition & Healthy Living Intelligence Engine
 //
@@ -151,12 +152,18 @@ export interface MenuPlan {
 export interface MealQualityResult {
   overallScore: number; // 0-25
   totalMeals: number;
-  excellentGoodRate: number;
-  dietaryComplianceRate: number;
-  freshFruitVegRate: number;
-  childInvolvementRate: number;
-  childEnjoymentRate: number;
-  portionAppropriateRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  excellentGoodRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dietaryComplianceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  freshFruitVegRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childInvolvementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childEnjoymentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  portionAppropriateRate: number | null;
   mealTypeBreakdown: Record<MealType, number>;
 }
 
@@ -164,40 +171,56 @@ export interface PhysicalActivityResult {
   overallScore: number; // 0-25
   totalActivities: number;
   averageMinutesPerChildPerWeek: number;
-  activeChildrenRate: number;
-  vigorousModerateRate: number;
-  childEnjoymentRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  activeChildrenRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  vigorousModerateRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childEnjoymentRate: number | null;
   activityVariety: number;
   meetsNHSGuidelines: boolean;
 }
 
 export interface HealthPromotionResult {
   overallScore: number; // 0-25
-  hydrationGoodRate: number;
-  sleepQualityRate: number;
-  dentalUpToDateRate: number;
-  opticalUpToDateRate: number;
-  annualHealthAssessmentRate: number;
-  cookingSkillsRate: number;
-  nutritionEducationRate: number;
-  mentalWellbeingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  hydrationGoodRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  sleepQualityRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dentalUpToDateRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  opticalUpToDateRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  annualHealthAssessmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  cookingSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  nutritionEducationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  mentalWellbeingRate: number | null;
 }
 
 export interface MenuPlanningResult {
   overallScore: number; // 0-25
   totalMenuPlans: number;
-  balancedMealRate: number;
-  childConsultationRate: number;
-  culturalDiversityRate: number;
-  specialDietsCateredRate: number;
-  seasonalIngredientRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  balancedMealRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childConsultationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  culturalDiversityRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  specialDietsCateredRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  seasonalIngredientRate: number | null;
 }
 
 export interface ChildNutritionProfile {
   childId: string;
   childName: string;
   dietaryRequirements: DietaryRequirement[];
-  dietaryComplianceRate: number;
+  dietaryComplianceRate: number | null;
   weeklyActivityMinutes: number;
   healthChecksUpToDate: boolean;
   overallScore: number; // 0-10
@@ -317,11 +340,6 @@ export function getHydrationStatusLabel(s: HydrationStatus): string {
 
 // ── Utility ──────────────────────────────────────────────────────────────────
 
-function pct(numerator: number, denominator: number): number {
-  if (denominator === 0) return 0;
-  return Math.round((numerator / denominator) * 100);
-}
-
 function weeksBetween(start: string, end: string): number {
   const ms = new Date(end).getTime() - new Date(start).getTime();
   const weeks = ms / (1000 * 60 * 60 * 24 * 7);
@@ -354,12 +372,12 @@ export function evaluateMealQuality(
     return {
       overallScore: 0,
       totalMeals: 0,
-      excellentGoodRate: 0,
-      dietaryComplianceRate: 0,
-      freshFruitVegRate: 0,
-      childInvolvementRate: 0,
-      childEnjoymentRate: 0,
-      portionAppropriateRate: 0,
+      excellentGoodRate: null,
+      dietaryComplianceRate: null,
+      freshFruitVegRate: null,
+      childInvolvementRate: null,
+      childEnjoymentRate: null,
+      portionAppropriateRate: null,
       mealTypeBreakdown,
     };
   }
@@ -369,45 +387,45 @@ export function evaluateMealQuality(
   const excellentGood = meals.filter(
     (m) => m.quality === "excellent" || m.quality === "good",
   ).length;
-  const excellentGoodRate = pct(excellentGood, meals.length);
+  const excellentGoodRate = rate(excellentGood, meals.length);
   // +7 for ≥ 90%, +5 for ≥ 70%, +3 for ≥ 50%
-  if (excellentGoodRate >= 90) score += 7;
-  else if (excellentGoodRate >= 70) score += 5;
-  else if (excellentGoodRate >= 50) score += 3;
+  if (meets(excellentGoodRate, 90)) score += 7;
+  else if (meets(excellentGoodRate, 70)) score += 5;
+  else if (meets(excellentGoodRate, 50)) score += 3;
 
   const dietaryMet = meals.filter((m) => m.dietaryRequirementsMet).length;
-  const dietaryComplianceRate = pct(dietaryMet, meals.length);
+  const dietaryComplianceRate = rate(dietaryMet, meals.length);
   // +5 for 100%, +3 for ≥ 90%
-  if (dietaryComplianceRate >= 100) score += 5;
-  else if (dietaryComplianceRate >= 90) score += 3;
-  else if (dietaryComplianceRate >= 70) score += 1;
+  if (meets(dietaryComplianceRate, 100)) score += 5;
+  else if (meets(dietaryComplianceRate, 90)) score += 3;
+  else if (meets(dietaryComplianceRate, 70)) score += 1;
 
   const freshFV = meals.filter((m) => m.freshFruitVegIncluded).length;
-  const freshFruitVegRate = pct(freshFV, meals.length);
+  const freshFruitVegRate = rate(freshFV, meals.length);
   // +4 for ≥ 80%
-  if (freshFruitVegRate >= 80) score += 4;
-  else if (freshFruitVegRate >= 60) score += 2;
+  if (meets(freshFruitVegRate, 80)) score += 4;
+  else if (meets(freshFruitVegRate, 60)) score += 2;
 
   const childInvolved = meals.filter(
     (m) => m.childInvolvedInPreparation,
   ).length;
-  const childInvolvementRate = pct(childInvolved, meals.length);
+  const childInvolvementRate = rate(childInvolved, meals.length);
   // +3 for ≥ 30% (children involved in preparation is positive but not expected every meal)
-  if (childInvolvementRate >= 30) score += 3;
-  else if (childInvolvementRate >= 15) score += 2;
-  else if (childInvolvementRate > 0) score += 1;
+  if (meets(childInvolvementRate, 30)) score += 3;
+  else if (meets(childInvolvementRate, 15)) score += 2;
+  else if (above(childInvolvementRate, 0)) score += 1;
 
   const enjoyed = meals.filter((m) => m.childEnjoyed).length;
-  const childEnjoymentRate = pct(enjoyed, meals.length);
+  const childEnjoymentRate = rate(enjoyed, meals.length);
   // +3 for ≥ 80%
-  if (childEnjoymentRate >= 80) score += 3;
-  else if (childEnjoymentRate >= 60) score += 2;
+  if (meets(childEnjoymentRate, 80)) score += 3;
+  else if (meets(childEnjoymentRate, 60)) score += 2;
 
   const portionOk = meals.filter((m) => m.portionAppropriate).length;
-  const portionAppropriateRate = pct(portionOk, meals.length);
+  const portionAppropriateRate = rate(portionOk, meals.length);
   // +3 for ≥ 90%
-  if (portionAppropriateRate >= 90) score += 3;
-  else if (portionAppropriateRate >= 70) score += 2;
+  if (meets(portionAppropriateRate, 90)) score += 3;
+  else if (meets(portionAppropriateRate, 70)) score += 2;
 
   return {
     overallScore: Math.min(score, 25),
@@ -437,9 +455,9 @@ export function evaluatePhysicalActivity(
       overallScore: 0,
       totalActivities: 0,
       averageMinutesPerChildPerWeek: 0,
-      activeChildrenRate: 0,
-      vigorousModerateRate: 0,
-      childEnjoymentRate: 0,
+      activeChildrenRate: null,
+      vigorousModerateRate: null,
+      childEnjoymentRate: null,
       activityVariety: 0,
       meetsNHSGuidelines: false,
     };
@@ -469,27 +487,27 @@ export function evaluatePhysicalActivity(
 
   // Active children rate (% with any activity)
   const activeChildren = new Set(activities.map((a) => a.childId));
-  const activeChildrenRate = pct(activeChildren.size, totalChildren);
+  const activeChildrenRate = rate(activeChildren.size, totalChildren);
   // +5 for 100%, +3 for ≥ 80%
-  if (activeChildrenRate >= 100) score += 5;
-  else if (activeChildrenRate >= 80) score += 3;
-  else if (activeChildrenRate >= 60) score += 1;
+  if (meets(activeChildrenRate, 100)) score += 5;
+  else if (meets(activeChildrenRate, 80)) score += 3;
+  else if (meets(activeChildrenRate, 60)) score += 1;
 
   // Vigorous/moderate rate
   const vigorousMod = activities.filter(
     (a) => a.intensity === "vigorous" || a.intensity === "moderate",
   ).length;
-  const vigorousModerateRate = pct(vigorousMod, activities.length);
+  const vigorousModerateRate = rate(vigorousMod, activities.length);
   // +4 for ≥ 70%
-  if (vigorousModerateRate >= 70) score += 4;
-  else if (vigorousModerateRate >= 50) score += 2;
+  if (meets(vigorousModerateRate, 70)) score += 4;
+  else if (meets(vigorousModerateRate, 50)) score += 2;
 
   // Child enjoyment
   const enjoyed = activities.filter((a) => a.childEnjoyment).length;
-  const childEnjoymentRate = pct(enjoyed, activities.length);
+  const childEnjoymentRate = rate(enjoyed, activities.length);
   // +4 for ≥ 80%
-  if (childEnjoymentRate >= 80) score += 4;
-  else if (childEnjoymentRate >= 60) score += 2;
+  if (meets(childEnjoymentRate, 80)) score += 4;
+  else if (meets(childEnjoymentRate, 60)) score += 2;
 
   // Activity variety (unique types)
   const uniqueTypes = new Set(activities.map((a) => a.activityType));
@@ -521,14 +539,14 @@ export function evaluateHealthPromotion(
   if (healthRecords.length === 0) {
     return {
       overallScore: 0,
-      hydrationGoodRate: 0,
-      sleepQualityRate: 0,
-      dentalUpToDateRate: 0,
-      opticalUpToDateRate: 0,
-      annualHealthAssessmentRate: 0,
-      cookingSkillsRate: 0,
-      nutritionEducationRate: 0,
-      mentalWellbeingRate: 0,
+      hydrationGoodRate: null,
+      sleepQualityRate: null,
+      dentalUpToDateRate: null,
+      opticalUpToDateRate: null,
+      annualHealthAssessmentRate: null,
+      cookingSkillsRate: null,
+      nutritionEducationRate: null,
+      mentalWellbeingRate: null,
     };
   }
 
@@ -540,64 +558,64 @@ export function evaluateHealthPromotion(
       h.hydrationStatus === "well_hydrated" ||
       h.hydrationStatus === "adequate",
   ).length;
-  const hydrationGoodRate = pct(hydrationGood, total);
+  const hydrationGoodRate = rate(hydrationGood, total);
   // +3 for ≥ 90%
-  if (hydrationGoodRate >= 90) score += 3;
-  else if (hydrationGoodRate >= 70) score += 2;
+  if (meets(hydrationGoodRate, 90)) score += 3;
+  else if (meets(hydrationGoodRate, 70)) score += 2;
 
   const sleepGood = healthRecords.filter((h) => h.sleepQualityGood).length;
-  const sleepQualityRate = pct(sleepGood, total);
+  const sleepQualityRate = rate(sleepGood, total);
   // +3 for ≥ 80%
-  if (sleepQualityRate >= 80) score += 3;
-  else if (sleepQualityRate >= 60) score += 2;
+  if (meets(sleepQualityRate, 80)) score += 3;
+  else if (meets(sleepQualityRate, 60)) score += 2;
 
   const dentalOk = healthRecords.filter(
     (h) => h.dentalCheckUpToDate,
   ).length;
-  const dentalUpToDateRate = pct(dentalOk, total);
+  const dentalUpToDateRate = rate(dentalOk, total);
   // +3 for ≥ 90%
-  if (dentalUpToDateRate >= 90) score += 3;
-  else if (dentalUpToDateRate >= 70) score += 2;
+  if (meets(dentalUpToDateRate, 90)) score += 3;
+  else if (meets(dentalUpToDateRate, 70)) score += 2;
 
   const opticalOk = healthRecords.filter(
     (h) => h.opticalCheckUpToDate,
   ).length;
-  const opticalUpToDateRate = pct(opticalOk, total);
+  const opticalUpToDateRate = rate(opticalOk, total);
   // +3 for ≥ 90%
-  if (opticalUpToDateRate >= 90) score += 3;
-  else if (opticalUpToDateRate >= 70) score += 2;
+  if (meets(opticalUpToDateRate, 90)) score += 3;
+  else if (meets(opticalUpToDateRate, 70)) score += 2;
 
   const annualHA = healthRecords.filter(
     (h) => h.annualHealthAssessmentComplete,
   ).length;
-  const annualHealthAssessmentRate = pct(annualHA, total);
+  const annualHealthAssessmentRate = rate(annualHA, total);
   // +4 for 100%, +2 for ≥ 80%
-  if (annualHealthAssessmentRate >= 100) score += 4;
-  else if (annualHealthAssessmentRate >= 80) score += 2;
+  if (meets(annualHealthAssessmentRate, 100)) score += 4;
+  else if (meets(annualHealthAssessmentRate, 80)) score += 2;
 
   const cookingSkills = healthRecords.filter(
     (h) => h.cookingSkillsDeveloping,
   ).length;
-  const cookingSkillsRate = pct(cookingSkills, total);
+  const cookingSkillsRate = rate(cookingSkills, total);
   // +3 for ≥ 80%
-  if (cookingSkillsRate >= 80) score += 3;
-  else if (cookingSkillsRate >= 50) score += 2;
+  if (meets(cookingSkillsRate, 80)) score += 3;
+  else if (meets(cookingSkillsRate, 50)) score += 2;
 
   const nutritionEd = healthRecords.filter(
     (h) => h.nutritionEducationProvided,
   ).length;
-  const nutritionEducationRate = pct(nutritionEd, total);
+  const nutritionEducationRate = rate(nutritionEd, total);
   // +3 for ≥ 80%
-  if (nutritionEducationRate >= 80) score += 3;
-  else if (nutritionEducationRate >= 50) score += 2;
+  if (meets(nutritionEducationRate, 80)) score += 3;
+  else if (meets(nutritionEducationRate, 50)) score += 2;
 
   const mentalWB = healthRecords.filter(
     (h) => h.mentalWellbeingSupported,
   ).length;
-  const mentalWellbeingRate = pct(mentalWB, total);
+  const mentalWellbeingRate = rate(mentalWB, total);
   // +3 for ≥ 90%
-  if (mentalWellbeingRate >= 90) score += 3;
-  else if (mentalWellbeingRate >= 70) score += 2;
+  if (meets(mentalWellbeingRate, 90)) score += 3;
+  else if (meets(mentalWellbeingRate, 70)) score += 2;
 
   return {
     overallScore: Math.min(score, 25),
@@ -623,11 +641,11 @@ export function evaluateMenuPlanning(
     return {
       overallScore: 0,
       totalMenuPlans: 0,
-      balancedMealRate: 0,
-      childConsultationRate: 0,
-      culturalDiversityRate: 0,
-      specialDietsCateredRate: 0,
-      seasonalIngredientRate: 0,
+      balancedMealRate: null,
+      childConsultationRate: null,
+      culturalDiversityRate: null,
+      specialDietsCateredRate: null,
+      seasonalIngredientRate: null,
     };
   }
 
@@ -637,47 +655,47 @@ export function evaluateMenuPlanning(
   // Balanced meal rate
   const totalPlanned = menuPlans.reduce((s, m) => s + m.mealsPlanned, 0);
   const totalBalanced = menuPlans.reduce((s, m) => s + m.balancedMeals, 0);
-  const balancedMealRate = pct(totalBalanced, totalPlanned);
+  const balancedMealRate = rate(totalBalanced, totalPlanned);
   // +6 for ≥ 90%, +4 for ≥ 70%
-  if (balancedMealRate >= 90) score += 6;
-  else if (balancedMealRate >= 70) score += 4;
-  else if (balancedMealRate >= 50) score += 2;
+  if (meets(balancedMealRate, 90)) score += 6;
+  else if (meets(balancedMealRate, 70)) score += 4;
+  else if (meets(balancedMealRate, 50)) score += 2;
 
   // Child consultation rate
   const consulted = menuPlans.filter((m) => m.childrenConsulted).length;
-  const childConsultationRate = pct(consulted, total);
+  const childConsultationRate = rate(consulted, total);
   // +5 for ≥ 90%
-  if (childConsultationRate >= 90) score += 5;
-  else if (childConsultationRate >= 70) score += 3;
-  else if (childConsultationRate >= 50) score += 1;
+  if (meets(childConsultationRate, 90)) score += 5;
+  else if (meets(childConsultationRate, 70)) score += 3;
+  else if (meets(childConsultationRate, 50)) score += 1;
 
   // Cultural diversity
   const culturalDiv = menuPlans.filter(
     (m) => m.culturalDiversityReflected,
   ).length;
-  const culturalDiversityRate = pct(culturalDiv, total);
+  const culturalDiversityRate = rate(culturalDiv, total);
   // +4 for ≥ 80%
-  if (culturalDiversityRate >= 80) score += 4;
-  else if (culturalDiversityRate >= 50) score += 2;
+  if (meets(culturalDiversityRate, 80)) score += 4;
+  else if (meets(culturalDiversityRate, 50)) score += 2;
 
   // Special diets catered
   const specialDiets = menuPlans.filter(
     (m) => m.specialDietsCatered,
   ).length;
-  const specialDietsCateredRate = pct(specialDiets, total);
+  const specialDietsCateredRate = rate(specialDiets, total);
   // +5 for 100%
-  if (specialDietsCateredRate >= 100) score += 5;
-  else if (specialDietsCateredRate >= 80) score += 3;
-  else if (specialDietsCateredRate >= 60) score += 1;
+  if (meets(specialDietsCateredRate, 100)) score += 5;
+  else if (meets(specialDietsCateredRate, 80)) score += 3;
+  else if (meets(specialDietsCateredRate, 60)) score += 1;
 
   // Seasonal ingredients
   const seasonal = menuPlans.filter(
     (m) => m.seasonalIngredientsUsed,
   ).length;
-  const seasonalIngredientRate = pct(seasonal, total);
+  const seasonalIngredientRate = rate(seasonal, total);
   // +5 for ≥ 80%
-  if (seasonalIngredientRate >= 80) score += 5;
-  else if (seasonalIngredientRate >= 50) score += 3;
+  if (meets(seasonalIngredientRate, 80)) score += 5;
+  else if (meets(seasonalIngredientRate, 50)) score += 3;
 
   return {
     overallScore: Math.min(score, 25),
@@ -715,7 +733,7 @@ export function buildChildNutritionProfiles(
     const dietaryMet = childMeals.filter(
       (m) => m.dietaryRequirementsMet,
     ).length;
-    const dietaryComplianceRate = pct(dietaryMet, childMeals.length);
+    const dietaryComplianceRate = rate(dietaryMet, childMeals.length);
 
     // Weekly activity minutes
     const totalMinutes = childActivities.reduce(
@@ -734,14 +752,14 @@ export function buildChildNutritionProfiles(
 
     // Profile score 0-10
     let profileScore = 3;
-    if (dietaryComplianceRate >= 95) profileScore += 2;
-    else if (dietaryComplianceRate >= 80) profileScore += 1;
+    if (meets(dietaryComplianceRate, 95)) profileScore += 2;
+    else if (meets(dietaryComplianceRate, 80)) profileScore += 1;
     if (weeklyActivityMinutes >= 420) profileScore += 2;
     else if (weeklyActivityMinutes >= 180) profileScore += 1;
     if (healthChecksUpToDate) profileScore += 2;
     if (profile.dietaryPlanInPlace) profileScore += 1;
     // Penalties
-    if (dietaryComplianceRate < 50 && childMeals.length > 0) profileScore -= 1;
+    if (below(dietaryComplianceRate, 50) && childMeals.length > 0) profileScore -= 1;
     if (weeklyActivityMinutes < 60) profileScore -= 1;
 
     return {
@@ -766,19 +784,19 @@ function generateStrengths(
 ): string[] {
   const strengths: string[] = [];
 
-  if (meal.excellentGoodRate >= 90) {
+  if (meets(meal.excellentGoodRate, 90)) {
     strengths.push(
       "Excellent meal quality — the majority of meals are rated good or excellent",
     );
   }
 
-  if (meal.dietaryComplianceRate >= 95) {
+  if (meets(meal.dietaryComplianceRate, 95)) {
     strengths.push(
       "Outstanding dietary compliance — individual dietary needs consistently met",
     );
   }
 
-  if (meal.childInvolvementRate >= 25) {
+  if (meets(meal.childInvolvementRate, 25)) {
     strengths.push(
       "Children actively involved in meal preparation — promoting independence and life skills",
     );
@@ -796,37 +814,37 @@ function generateStrengths(
     );
   }
 
-  if (activity.childEnjoymentRate >= 85) {
+  if (meets(activity.childEnjoymentRate, 85)) {
     strengths.push(
       "High child enjoyment rate in physical activities — children genuinely engaged",
     );
   }
 
-  if (health.annualHealthAssessmentRate >= 100) {
+  if (meets(health.annualHealthAssessmentRate, 100)) {
     strengths.push(
       "All children have completed annual health assessments — comprehensive health monitoring",
     );
   }
 
-  if (health.cookingSkillsRate >= 80) {
+  if (meets(health.cookingSkillsRate, 80)) {
     strengths.push(
       "Cooking skills development embedded for most children — supporting independence",
     );
   }
 
-  if (menu.childConsultationRate >= 90) {
+  if (meets(menu.childConsultationRate, 90)) {
     strengths.push(
       "Children consistently consulted on menu planning — strong participation and choice",
     );
   }
 
-  if (menu.culturalDiversityRate >= 80) {
+  if (meets(menu.culturalDiversityRate, 80)) {
     strengths.push(
       "Menus reflect cultural diversity — celebrating children's backgrounds through food",
     );
   }
 
-  if (meal.freshFruitVegRate >= 85) {
+  if (meets(meal.freshFruitVegRate, 85)) {
     strengths.push(
       "Fresh fruit and vegetables included in the majority of meals — 5-a-day commitment evident",
     );
@@ -843,19 +861,19 @@ function generateAreasForImprovement(
 ): string[] {
   const areas: string[] = [];
 
-  if (meal.dietaryComplianceRate < 90 && meal.totalMeals > 0) {
+  if (below(meal.dietaryComplianceRate, 90) && meal.totalMeals > 0) {
     areas.push(
       `Dietary compliance at ${meal.dietaryComplianceRate}% — all meals should meet individual dietary requirements`,
     );
   }
 
-  if (meal.excellentGoodRate < 70 && meal.totalMeals > 0) {
+  if (below(meal.excellentGoodRate, 70) && meal.totalMeals > 0) {
     areas.push(
       `Only ${meal.excellentGoodRate}% of meals rated good or excellent — meal quality needs attention`,
     );
   }
 
-  if (meal.freshFruitVegRate < 60 && meal.totalMeals > 0) {
+  if (below(meal.freshFruitVegRate, 60) && meal.totalMeals > 0) {
     areas.push(
       `Fresh fruit and vegetables included in only ${meal.freshFruitVegRate}% of meals`,
     );
@@ -867,31 +885,31 @@ function generateAreasForImprovement(
     );
   }
 
-  if (activity.activeChildrenRate < 100 && activity.totalActivities > 0) {
+  if (below(activity.activeChildrenRate, 100) && activity.totalActivities > 0) {
     areas.push(
       `Only ${activity.activeChildrenRate}% of children participating in physical activity`,
     );
   }
 
-  if (health.dentalUpToDateRate < 90) {
+  if (below(health.dentalUpToDateRate, 90)) {
     areas.push(
       `Dental checks up to date for only ${health.dentalUpToDateRate}% of children`,
     );
   }
 
-  if (health.annualHealthAssessmentRate < 100) {
+  if (below(health.annualHealthAssessmentRate, 100)) {
     areas.push(
       `Annual health assessments not complete for all children — ${health.annualHealthAssessmentRate}% completed`,
     );
   }
 
-  if (menu.childConsultationRate < 70 && menu.totalMenuPlans > 0) {
+  if (below(menu.childConsultationRate, 70) && menu.totalMenuPlans > 0) {
     areas.push(
       `Children consulted on menu planning in only ${menu.childConsultationRate}% of weeks`,
     );
   }
 
-  if (menu.specialDietsCateredRate < 100 && menu.totalMenuPlans > 0) {
+  if (below(menu.specialDietsCateredRate, 100) && menu.totalMenuPlans > 0) {
     areas.push(
       `Special dietary needs catered in only ${menu.specialDietsCateredRate}% of menu plans`,
     );
@@ -914,7 +932,7 @@ function generateActions(
 ): string[] {
   const actions: string[] = [];
 
-  if (meal.dietaryComplianceRate < 90 && meal.totalMeals > 0) {
+  if (below(meal.dietaryComplianceRate, 90) && meal.totalMeals > 0) {
     actions.push(
       "Review and update all children's dietary profiles — ensure kitchen staff have current information",
     );
@@ -944,19 +962,19 @@ function generateActions(
     );
   }
 
-  if (health.annualHealthAssessmentRate < 100) {
+  if (below(health.annualHealthAssessmentRate, 100)) {
     actions.push(
       "Schedule outstanding annual health assessments — statutory requirement for looked after children",
     );
   }
 
-  if (health.dentalUpToDateRate < 90) {
+  if (below(health.dentalUpToDateRate, 90)) {
     actions.push(
       "Arrange dental appointments for children overdue — dental health is a priority health need",
     );
   }
 
-  if (health.cookingSkillsRate < 50) {
+  if (below(health.cookingSkillsRate, 50)) {
     actions.push(
       "Develop cooking skills programme — involve children in meal preparation as part of independence planning",
     );
@@ -968,7 +986,7 @@ function generateActions(
     );
   }
 
-  if (menu.culturalDiversityRate < 50 && menu.totalMenuPlans > 0) {
+  if (below(menu.culturalDiversityRate, 50) && menu.totalMenuPlans > 0) {
     actions.push(
       "Increase cultural diversity in menu planning — reflect children's cultural backgrounds through food choices",
     );

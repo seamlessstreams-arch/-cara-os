@@ -151,10 +151,10 @@ export function HomeTherapeuticProgressIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Puzzle className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.sensory.child_coverage >= 80 ? "text-[--cs-success]" :
-                  d.sensory.child_coverage >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.sensory.child_coverage, 80) ? "text-[--cs-success]" :
+                  meets(d.sensory.child_coverage, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.sensory.total_profiles > 0 ? `${d.sensory.child_coverage}%` : "—"}
+                  {d.sensory.total_profiles > 0 ? `${formatRate(d.sensory.child_coverage)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Sensory</p>

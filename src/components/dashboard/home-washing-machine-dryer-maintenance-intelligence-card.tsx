@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, WashingMachine } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { WashingMachineDryerRating } from "@/lib/engines/home-washing-machine-dryer-maintenance-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 const RATING_STYLES: Record<WashingMachineDryerRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -65,28 +66,28 @@ export function HomeWashingMachineDryerMaintenanceIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.appliance_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.servicing_rate >= 90 ? "bg-green-50" : d.servicing_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.servicing_rate >= 90 ? "text-[--cs-success]" : d.servicing_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.servicing_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.servicing_rate, 90) ? "bg-green-50" : meets(d.servicing_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.servicing_rate, 90) ? "text-[--cs-success]" : meets(d.servicing_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.servicing_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Servicing</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.breakdown_response_rate >= 90 ? "bg-green-50" : d.breakdown_response_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.breakdown_response_rate >= 90 ? "text-[--cs-success]" : d.breakdown_response_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.breakdown_response_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.breakdown_response_rate, 90) ? "bg-green-50" : meets(d.breakdown_response_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.breakdown_response_rate, 90) ? "text-[--cs-success]" : meets(d.breakdown_response_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.breakdown_response_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Response</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_access_rate >= 90 ? "bg-green-50" : d.child_access_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_access_rate >= 90 ? "text-[--cs-success]" : d.child_access_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_access_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_access_rate, 90) ? "bg-green-50" : meets(d.child_access_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_access_rate, 90) ? "text-[--cs-success]" : meets(d.child_access_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_access_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Access</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.hygiene_cycle_rate >= 90 ? "bg-green-50" : d.hygiene_cycle_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.hygiene_cycle_rate >= 90 ? "text-[--cs-success]" : d.hygiene_cycle_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.hygiene_cycle_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.hygiene_cycle_rate, 90) ? "bg-green-50" : meets(d.hygiene_cycle_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.hygiene_cycle_rate, 90) ? "text-[--cs-success]" : meets(d.hygiene_cycle_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.hygiene_cycle_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Hygiene</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.energy_efficiency_rate >= 90 ? "bg-green-50" : d.energy_efficiency_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.energy_efficiency_rate >= 90 ? "text-[--cs-success]" : d.energy_efficiency_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.energy_efficiency_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.energy_efficiency_rate, 90) ? "bg-green-50" : meets(d.energy_efficiency_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.energy_efficiency_rate, 90) ? "text-[--cs-success]" : meets(d.energy_efficiency_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.energy_efficiency_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Energy</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_independence_rate >= 90 ? "bg-green-50" : d.child_independence_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_independence_rate >= 90 ? "text-[--cs-success]" : d.child_independence_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_independence_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_independence_rate, 90) ? "bg-green-50" : meets(d.child_independence_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_independence_rate, 90) ? "text-[--cs-success]" : meets(d.child_independence_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_independence_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Indep.</p>
             </div>
           </div>

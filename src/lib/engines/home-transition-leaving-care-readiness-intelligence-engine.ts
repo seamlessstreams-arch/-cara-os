@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME TRANSITION & LEAVING CARE READINESS INTELLIGENCE ENGINE
 // Monitors how well the home prepares young people for transitions and
@@ -132,10 +133,6 @@ export interface TransitionLeavingCareReadinessResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -159,12 +156,12 @@ function emptyResult(
     readiness_score: score,
     headline,
     total_transition_plans: 0,
-    transition_plan_coverage_rate: 0,
-    pathway_plan_currency_rate: 0,
-    leaving_care_completion_rate: 0,
-    independence_assessment_rate: 0,
-    aftercare_contact_rate: 0,
-    child_voice_in_transition_rate: 0,
+    transition_plan_coverage_rate: null,
+    pathway_plan_currency_rate: null,
+    leaving_care_completion_rate: null,
+    independence_assessment_rate: null,
+    aftercare_contact_rate: null,
+    child_voice_in_transition_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -249,25 +246,25 @@ export function computeTransitionLeavingCareReadiness(
   const childrenWithTransitionPlan = new Set(
     activePlans.map((t) => t.child_id),
   ).size;
-  const transitionPlanCoverageRate = pct(childrenWithTransitionPlan, total_children);
+  const transitionPlanCoverageRate = rate(childrenWithTransitionPlan, total_children);
 
   // Child voice captured in transition plans
   const plansWithChildVoice = transition_planning_records.filter(
     (t) => t.child_voice_captured,
   ).length;
-  const childVoiceInTransitionRate = pct(plansWithChildVoice, totalTransitionPlans);
+  const childVoiceInTransitionRate = rate(plansWithChildVoice, totalTransitionPlans);
 
   // Multi-agency involvement
   const plansWithMultiAgency = transition_planning_records.filter(
     (t) => t.multi_agency_involved,
   ).length;
-  const multiAgencyInvolvementRate = pct(plansWithMultiAgency, totalTransitionPlans);
+  const multiAgencyInvolvementRate = rate(plansWithMultiAgency, totalTransitionPlans);
 
   // Key worker allocation
   const plansWithKeyWorker = transition_planning_records.filter(
     (t) => t.key_worker_assigned,
   ).length;
-  const keyWorkerAllocationRate = pct(plansWithKeyWorker, totalTransitionPlans);
+  const keyWorkerAllocationRate = rate(plansWithKeyWorker, totalTransitionPlans);
 
   // Review timeliness: plans with next_review_date not overdue
   const plansWithReviewDate = transition_planning_records.filter(
@@ -277,7 +274,7 @@ export function computeTransitionLeavingCareReadiness(
     (t) => t.next_review_date && t.next_review_date < today,
   ).length;
   const reviewTimelinessRate = plansWithReviewDate > 0
-    ? pct(plansWithReviewDate - overduePlans, plansWithReviewDate)
+    ? rate(plansWithReviewDate - overduePlans, plansWithReviewDate)
     : null;
 
   // --- Pathway plan metrics ---
@@ -292,7 +289,7 @@ export function computeTransitionLeavingCareReadiness(
   const recentlyReviewedPathways = pathway_plans.filter(
     (p) => p.current && p.last_reviewed >= oneEightyDaysAgoStr,
   ).length;
-  const pathwayPlanCurrencyRate = pct(recentlyReviewedPathways, currentPathwayPlans.length);
+  const pathwayPlanCurrencyRate = rate(recentlyReviewedPathways, currentPathwayPlans.length);
 
   // Pathway plan completeness: has all core elements
   const completePathwayPlans = pathway_plans.filter(
@@ -304,13 +301,13 @@ export function computeTransitionLeavingCareReadiness(
       p.health_plan &&
       p.support_network_identified,
   ).length;
-  const pathwayCompletenessRate = pct(completePathwayPlans, currentPathwayPlans.length);
+  const pathwayCompletenessRate = rate(completePathwayPlans, currentPathwayPlans.length);
 
   // Personal adviser assigned
   const pathwaysWithAdvisor = pathway_plans.filter(
     (p) => p.current && p.personal_advisor_assigned,
   ).length;
-  const personalAdvisorRate = pct(pathwaysWithAdvisor, currentPathwayPlans.length);
+  const personalAdvisorRate = rate(pathwaysWithAdvisor, currentPathwayPlans.length);
 
   // --- Leaving care package metrics ---
   const totalLeavingCarePackages = leaving_care_packages.length;
@@ -326,10 +323,10 @@ export function computeTransitionLeavingCareReadiness(
       l.life_skills_assessed &&
       l.documentation_complete,
   ).length;
-  const leavingCareCompletionRate = pct(completeLeavingCarePackages, totalLeavingCarePackages);
+  const leavingCareCompletionRate = rate(completeLeavingCarePackages, totalLeavingCarePackages);
 
   // Individual element rates
-  const housingArrangedRate = pct(
+  const housingArrangedRate = rate(
     leaving_care_packages.filter((l) => l.housing_arranged).length,
     totalLeavingCarePackages,
   );
@@ -341,7 +338,7 @@ export function computeTransitionLeavingCareReadiness(
   const childrenWithIndependenceAssessment = new Set(
     independence_pathways.map((i) => i.child_id),
   ).size;
-  const independenceAssessmentRate = pct(childrenWithIndependenceAssessment, total_children);
+  const independenceAssessmentRate = rate(childrenWithIndependenceAssessment, total_children);
 
   // Comprehensive assessment: all skills assessed
   const comprehensiveAssessments = independence_pathways.filter(
@@ -352,7 +349,7 @@ export function computeTransitionLeavingCareReadiness(
       i.travel_skills_assessed &&
       i.social_skills_assessed,
   ).length;
-  const comprehensiveAssessmentRate = pct(comprehensiveAssessments, totalIndependencePathways);
+  const comprehensiveAssessmentRate = rate(comprehensiveAssessments, totalIndependencePathways);
 
   // --- Aftercare metrics ---
   const totalAftercareRecords = aftercare_records.length;
@@ -361,13 +358,13 @@ export function computeTransitionLeavingCareReadiness(
   const childrenWithAftercare = new Set(
     aftercare_records.map((a) => a.child_id),
   ).size;
-  const aftercareContactRate = pct(childrenWithAftercare, total_children);
+  const aftercareContactRate = rate(childrenWithAftercare, total_children);
 
   // Wellbeing checked
   const aftercareWellbeingChecked = aftercare_records.filter(
     (a) => a.wellbeing_checked,
   ).length;
-  const aftercareWellbeingRate = pct(aftercareWellbeingChecked, totalAftercareRecords);
+  const aftercareWellbeingRate = rate(aftercareWellbeingChecked, totalAftercareRecords);
 
   // Support provided when needs identified
   const aftercareNeedsIdentified = aftercare_records.filter(
@@ -376,7 +373,7 @@ export function computeTransitionLeavingCareReadiness(
   const aftercareSupportProvided = aftercare_records.filter(
     (a) => a.support_needs_identified && a.support_provided,
   ).length;
-  const aftercareSupportRate = pct(aftercareSupportProvided, aftercareNeedsIdentified);
+  const aftercareSupportRate = rate(aftercareSupportProvided, aftercareNeedsIdentified);
 
   // Overdue aftercare contacts
   const overdueAftercareContacts = aftercare_records.filter(
@@ -389,36 +386,36 @@ export function computeTransitionLeavingCareReadiness(
   let score = 52;
 
   // --- Bonus 1: transitionPlanCoverageRate (>=90: +4, >=70: +2) ---
-  if (transitionPlanCoverageRate >= 90) score += 4;
-  else if (transitionPlanCoverageRate >= 70) score += 2;
+  if (meets(transitionPlanCoverageRate, 90)) score += 4;
+  else if (meets(transitionPlanCoverageRate, 70)) score += 2;
 
   // --- Bonus 2: pathwayPlanCurrencyRate (>=90: +4, >=70: +2) ---
-  if (pathwayPlanCurrencyRate >= 90) score += 4;
-  else if (pathwayPlanCurrencyRate >= 70) score += 2;
+  if (meets(pathwayPlanCurrencyRate, 90)) score += 4;
+  else if (meets(pathwayPlanCurrencyRate, 70)) score += 2;
 
   // --- Bonus 3: leavingCareCompletionRate (>=90: +3, >=70: +1) ---
-  if (leavingCareCompletionRate >= 90) score += 3;
-  else if (leavingCareCompletionRate >= 70) score += 1;
+  if (meets(leavingCareCompletionRate, 90)) score += 3;
+  else if (meets(leavingCareCompletionRate, 70)) score += 1;
 
   // --- Bonus 4: independenceAssessmentRate (>=90: +3, >=70: +1) ---
-  if (independenceAssessmentRate >= 90) score += 3;
-  else if (independenceAssessmentRate >= 70) score += 1;
+  if (meets(independenceAssessmentRate, 90)) score += 3;
+  else if (meets(independenceAssessmentRate, 70)) score += 1;
 
   // --- Bonus 5: aftercareContactRate (>=90: +3, >=70: +1) ---
-  if (aftercareContactRate >= 90) score += 3;
-  else if (aftercareContactRate >= 70) score += 1;
+  if (meets(aftercareContactRate, 90)) score += 3;
+  else if (meets(aftercareContactRate, 70)) score += 1;
 
   // --- Bonus 6: childVoiceInTransitionRate (>=90: +3, >=70: +1) ---
-  if (childVoiceInTransitionRate >= 90) score += 3;
-  else if (childVoiceInTransitionRate >= 70) score += 1;
+  if (meets(childVoiceInTransitionRate, 90)) score += 3;
+  else if (meets(childVoiceInTransitionRate, 70)) score += 1;
 
   // --- Bonus 7: multiAgencyInvolvementRate (>=90: +3, >=70: +1) ---
-  if (multiAgencyInvolvementRate >= 90) score += 3;
-  else if (multiAgencyInvolvementRate >= 70) score += 1;
+  if (meets(multiAgencyInvolvementRate, 90)) score += 3;
+  else if (meets(multiAgencyInvolvementRate, 70)) score += 1;
 
   // --- Bonus 8: keyWorkerAllocationRate (>=100: +2, >=80: +1) ---
-  if (keyWorkerAllocationRate >= 100) score += 2;
-  else if (keyWorkerAllocationRate >= 80) score += 1;
+  if (meets(keyWorkerAllocationRate, 100)) score += 2;
+  else if (meets(keyWorkerAllocationRate, 80)) score += 1;
 
   // --- Bonus 9: reviewTimelinessRate (>=90: +3, >=70: +1) ---
   if ((reviewTimelinessRate ?? 0) >= 90) score += 3;
@@ -427,16 +424,16 @@ export function computeTransitionLeavingCareReadiness(
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // transitionPlanCoverageRate < 50 → -5
-  if (transitionPlanCoverageRate < 50 && total_children > 0) score -= 5;
+  if (below(transitionPlanCoverageRate, 50) && total_children > 0) score -= 5;
 
   // pathwayPlanCurrencyRate < 50 → -5
-  if (pathwayPlanCurrencyRate < 50 && currentPathwayPlans.length > 0) score -= 5;
+  if (below(pathwayPlanCurrencyRate, 50) && currentPathwayPlans.length > 0) score -= 5;
 
   // leavingCareCompletionRate < 50 → -4
-  if (leavingCareCompletionRate < 50 && totalLeavingCarePackages > 0) score -= 4;
+  if (below(leavingCareCompletionRate, 50) && totalLeavingCarePackages > 0) score -= 4;
 
   // independenceAssessmentRate < 50 → -4
-  if (independenceAssessmentRate < 50 && total_children > 0) score -= 4;
+  if (below(independenceAssessmentRate, 50) && total_children > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -446,81 +443,81 @@ export function computeTransitionLeavingCareReadiness(
 
   const strengths: string[] = [];
 
-  if (transitionPlanCoverageRate >= 100 && total_children > 0) {
+  if (meets(transitionPlanCoverageRate, 100) && total_children > 0) {
     strengths.push(
       "Every child has an active transition plan — the home demonstrates full commitment to preparing children for transitions with individualised planning.",
     );
-  } else if (transitionPlanCoverageRate >= 80 && total_children > 0) {
+  } else if (meets(transitionPlanCoverageRate, 80) && total_children > 0) {
     strengths.push(
       `${transitionPlanCoverageRate}% of children have an active transition plan — strong coverage of transition planning across the home.`,
     );
   }
 
-  if (pathwayPlanCurrencyRate >= 100 && currentPathwayPlans.length > 0) {
+  if (meets(pathwayPlanCurrencyRate, 100) && currentPathwayPlans.length > 0) {
     strengths.push(
       "All pathway plans have been reviewed within the last 6 months — the home maintains current, relevant pathway planning for young people.",
     );
-  } else if (pathwayPlanCurrencyRate >= 80 && currentPathwayPlans.length > 0) {
+  } else if (meets(pathwayPlanCurrencyRate, 80) && currentPathwayPlans.length > 0) {
     strengths.push(
       `${pathwayPlanCurrencyRate}% of pathway plans are current — strong pathway plan review practice ensuring plans remain relevant.`,
     );
   }
 
-  if (leavingCareCompletionRate >= 100 && totalLeavingCarePackages > 0) {
+  if (meets(leavingCareCompletionRate, 100) && totalLeavingCarePackages > 0) {
     strengths.push(
       "All leaving care packages are fully complete — young people have comprehensive preparation across housing, finance, education, health, and emotional support.",
     );
-  } else if (leavingCareCompletionRate >= 80 && totalLeavingCarePackages > 0) {
+  } else if (meets(leavingCareCompletionRate, 80) && totalLeavingCarePackages > 0) {
     strengths.push(
       `${leavingCareCompletionRate}% of leaving care packages are complete — strong leaving care preparation ensuring young people are well-supported.`,
     );
   }
 
-  if (independenceAssessmentRate >= 100 && total_children > 0) {
+  if (meets(independenceAssessmentRate, 100) && total_children > 0) {
     strengths.push(
       "Every child has had an independence skills assessment — the home proactively evaluates readiness for independent living.",
     );
-  } else if (independenceAssessmentRate >= 80 && total_children > 0) {
+  } else if (meets(independenceAssessmentRate, 80) && total_children > 0) {
     strengths.push(
       `${independenceAssessmentRate}% of children have had an independence skills assessment — good coverage of independence readiness evaluation.`,
     );
   }
 
-  if (aftercareContactRate >= 100 && total_children > 0) {
+  if (meets(aftercareContactRate, 100) && total_children > 0) {
     strengths.push(
       "All children have aftercare contact records — the home maintains strong staying-close support for young people who have moved on.",
     );
-  } else if (aftercareContactRate >= 80 && total_children > 0) {
+  } else if (meets(aftercareContactRate, 80) && total_children > 0) {
     strengths.push(
       `${aftercareContactRate}% of children have aftercare contact records — good aftercare coverage demonstrating ongoing support.`,
     );
   }
 
-  if (childVoiceInTransitionRate >= 100 && totalTransitionPlans > 0) {
+  if (meets(childVoiceInTransitionRate, 100) && totalTransitionPlans > 0) {
     strengths.push(
       "Child voice is captured in every transition plan — young people are meaningfully involved in decisions about their futures.",
     );
-  } else if (childVoiceInTransitionRate >= 80 && totalTransitionPlans > 0) {
+  } else if (meets(childVoiceInTransitionRate, 80) && totalTransitionPlans > 0) {
     strengths.push(
       `${childVoiceInTransitionRate}% of transition plans capture child voice — strong practice in ensuring young people shape their own transition planning.`,
     );
   }
 
-  if (multiAgencyInvolvementRate >= 100 && totalTransitionPlans > 0) {
+  if (meets(multiAgencyInvolvementRate, 100) && totalTransitionPlans > 0) {
     strengths.push(
       "Multi-agency involvement in every transition plan — the home collaborates effectively with external professionals to support transitions.",
     );
-  } else if (multiAgencyInvolvementRate >= 80 && totalTransitionPlans > 0) {
+  } else if (meets(multiAgencyInvolvementRate, 80) && totalTransitionPlans > 0) {
     strengths.push(
       `${multiAgencyInvolvementRate}% of transition plans involve multi-agency working — good partnership practice supporting holistic transition planning.`,
     );
   }
 
-  if (keyWorkerAllocationRate >= 100 && totalTransitionPlans > 0) {
+  if (meets(keyWorkerAllocationRate, 100) && totalTransitionPlans > 0) {
     strengths.push(
       "Every transition plan has a key worker assigned — children have a named person supporting them through their transition.",
     );
-  } else if (keyWorkerAllocationRate >= 80 && totalTransitionPlans > 0) {
+  } else if (meets(keyWorkerAllocationRate, 80) && totalTransitionPlans > 0) {
     strengths.push(
       `${keyWorkerAllocationRate}% of transition plans have a key worker assigned — most children have a named person guiding their transition.`,
     );
@@ -532,31 +529,31 @@ export function computeTransitionLeavingCareReadiness(
     );
   }
 
-  if (pathwayCompletenessRate >= 90 && currentPathwayPlans.length > 0) {
+  if (meets(pathwayCompletenessRate, 90) && currentPathwayPlans.length > 0) {
     strengths.push(
       `${pathwayCompletenessRate}% of pathway plans address all core areas (accommodation, education, finance, health, support) — comprehensive pathway planning practice.`,
     );
   }
 
-  if (personalAdvisorRate >= 100 && currentPathwayPlans.length > 0) {
+  if (meets(personalAdvisorRate, 100) && currentPathwayPlans.length > 0) {
     strengths.push(
       "All young people with pathway plans have a personal adviser assigned — statutory requirement under the Children (Leaving Care) Act 2000 is fully met.",
     );
   }
 
-  if (comprehensiveAssessmentRate >= 90 && totalIndependencePathways > 0) {
+  if (meets(comprehensiveAssessmentRate, 90) && totalIndependencePathways > 0) {
     strengths.push(
       `${comprehensiveAssessmentRate}% of independence assessments cover all skill domains — thorough evaluation of readiness across cooking, budgeting, self-care, travel, and social skills.`,
     );
   }
 
-  if (aftercareSupportRate >= 90 && aftercareNeedsIdentified > 0) {
+  if (meets(aftercareSupportRate, 90) && aftercareNeedsIdentified > 0) {
     strengths.push(
       `${aftercareSupportRate}% of identified aftercare support needs have been met — the home responds effectively to the ongoing needs of care leavers.`,
     );
   }
 
-  if (aftercareWellbeingRate >= 90 && totalAftercareRecords > 0) {
+  if (meets(aftercareWellbeingRate, 90) && totalAftercareRecords > 0) {
     strengths.push(
       `${aftercareWellbeingRate}% of aftercare contacts include a wellbeing check — the home prioritises emotional and physical wellbeing in staying-close work.`,
     );
@@ -566,73 +563,73 @@ export function computeTransitionLeavingCareReadiness(
 
   const concerns: string[] = [];
 
-  if (transitionPlanCoverageRate < 50 && total_children > 0) {
+  if (below(transitionPlanCoverageRate, 50) && total_children > 0) {
     concerns.push(
       `Only ${transitionPlanCoverageRate}% of children have an active transition plan — the majority of children lack any formal transition planning, representing a significant failure in preparing children for change.`,
     );
-  } else if (transitionPlanCoverageRate < 80 && transitionPlanCoverageRate >= 50 && total_children > 0) {
+  } else if (below(transitionPlanCoverageRate, 80) && meets(transitionPlanCoverageRate, 50) && total_children > 0) {
     concerns.push(
       `Transition plan coverage at ${transitionPlanCoverageRate}% — not all children have formal transition planning in place.`,
     );
   }
 
-  if (pathwayPlanCurrencyRate < 50 && currentPathwayPlans.length > 0) {
+  if (below(pathwayPlanCurrencyRate, 50) && currentPathwayPlans.length > 0) {
     concerns.push(
       `Only ${pathwayPlanCurrencyRate}% of pathway plans are current — the majority of pathway plans have not been reviewed within the last 6 months, meaning plans may no longer reflect young people's needs.`,
     );
-  } else if (pathwayPlanCurrencyRate < 80 && pathwayPlanCurrencyRate >= 50 && currentPathwayPlans.length > 0) {
+  } else if (below(pathwayPlanCurrencyRate, 80) && meets(pathwayPlanCurrencyRate, 50) && currentPathwayPlans.length > 0) {
     concerns.push(
       `Pathway plan currency at ${pathwayPlanCurrencyRate}% — some pathway plans have not been recently reviewed and may be outdated.`,
     );
   }
 
-  if (leavingCareCompletionRate < 50 && totalLeavingCarePackages > 0) {
+  if (below(leavingCareCompletionRate, 50) && totalLeavingCarePackages > 0) {
     concerns.push(
       `Only ${leavingCareCompletionRate}% of leaving care packages are complete — the majority of young people do not have all essential leaving care elements in place.`,
     );
-  } else if (leavingCareCompletionRate < 80 && leavingCareCompletionRate >= 50 && totalLeavingCarePackages > 0) {
+  } else if (below(leavingCareCompletionRate, 80) && meets(leavingCareCompletionRate, 50) && totalLeavingCarePackages > 0) {
     concerns.push(
       `Leaving care completion rate at ${leavingCareCompletionRate}% — some leaving care packages are missing essential elements.`,
     );
   }
 
-  if (independenceAssessmentRate < 50 && total_children > 0) {
+  if (below(independenceAssessmentRate, 50) && total_children > 0) {
     concerns.push(
       `Only ${independenceAssessmentRate}% of children have had an independence skills assessment — the majority of children's readiness for independent living has not been evaluated.`,
     );
-  } else if (independenceAssessmentRate < 80 && independenceAssessmentRate >= 50 && total_children > 0) {
+  } else if (below(independenceAssessmentRate, 80) && meets(independenceAssessmentRate, 50) && total_children > 0) {
     concerns.push(
       `Independence assessment coverage at ${independenceAssessmentRate}% — not all children have had their independence skills assessed.`,
     );
   }
 
-  if (childVoiceInTransitionRate < 50 && totalTransitionPlans > 0) {
+  if (below(childVoiceInTransitionRate, 50) && totalTransitionPlans > 0) {
     concerns.push(
       `Only ${childVoiceInTransitionRate}% of transition plans capture child voice — the majority of transition plans are being developed without meaningful input from the young person.`,
     );
-  } else if (childVoiceInTransitionRate < 80 && childVoiceInTransitionRate >= 50 && totalTransitionPlans > 0) {
+  } else if (below(childVoiceInTransitionRate, 80) && meets(childVoiceInTransitionRate, 50) && totalTransitionPlans > 0) {
     concerns.push(
       `Child voice captured in ${childVoiceInTransitionRate}% of transition plans — not all young people are meaningfully involved in their transition planning.`,
     );
   }
 
-  if (multiAgencyInvolvementRate < 50 && totalTransitionPlans > 0) {
+  if (below(multiAgencyInvolvementRate, 50) && totalTransitionPlans > 0) {
     concerns.push(
       `Only ${multiAgencyInvolvementRate}% of transition plans involve multi-agency working — transitions are being planned without adequate professional collaboration.`,
     );
-  } else if (multiAgencyInvolvementRate < 80 && multiAgencyInvolvementRate >= 50 && totalTransitionPlans > 0) {
+  } else if (below(multiAgencyInvolvementRate, 80) && meets(multiAgencyInvolvementRate, 50) && totalTransitionPlans > 0) {
     concerns.push(
       `Multi-agency involvement at ${multiAgencyInvolvementRate}% — some transition plans lack input from external professionals.`,
     );
   }
 
-  if (keyWorkerAllocationRate < 80 && totalTransitionPlans > 0) {
+  if (below(keyWorkerAllocationRate, 80) && totalTransitionPlans > 0) {
     concerns.push(
       `Only ${keyWorkerAllocationRate}% of transition plans have a key worker assigned — some children are navigating transitions without a named person to support them.`,
     );
   }
 
-  if (aftercareContactRate < 50 && total_children > 0 && totalAftercareRecords > 0) {
+  if (below(aftercareContactRate, 50) && total_children > 0 && totalAftercareRecords > 0) {
     concerns.push(
       `Only ${aftercareContactRate}% of children have aftercare contact records — staying-close support is not being provided consistently.`,
     );
@@ -656,13 +653,13 @@ export function computeTransitionLeavingCareReadiness(
     );
   }
 
-  if (personalAdvisorRate < 80 && currentPathwayPlans.length > 0) {
+  if (below(personalAdvisorRate, 80) && currentPathwayPlans.length > 0) {
     concerns.push(
       `Only ${personalAdvisorRate}% of young people with pathway plans have a personal adviser — this is a statutory requirement under the Children (Leaving Care) Act 2000.`,
     );
   }
 
-  if (housingArrangedRate < 50 && totalLeavingCarePackages > 0) {
+  if (below(housingArrangedRate, 50) && totalLeavingCarePackages > 0) {
     concerns.push(
       `Only ${housingArrangedRate}% of leaving care packages have housing arranged — young people risk leaving care without secure accommodation.`,
     );
@@ -673,7 +670,7 @@ export function computeTransitionLeavingCareReadiness(
   const recommendations: TransitionReadinessRecommendation[] = [];
   let rank = 0;
 
-  if (transitionPlanCoverageRate < 50 && total_children > 0) {
+  if (below(transitionPlanCoverageRate, 50) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -693,7 +690,7 @@ export function computeTransitionLeavingCareReadiness(
     });
   }
 
-  if (childVoiceInTransitionRate < 50 && totalTransitionPlans > 0) {
+  if (below(childVoiceInTransitionRate, 50) && totalTransitionPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -703,7 +700,7 @@ export function computeTransitionLeavingCareReadiness(
     });
   }
 
-  if (leavingCareCompletionRate < 50 && totalLeavingCarePackages > 0) {
+  if (below(leavingCareCompletionRate, 50) && totalLeavingCarePackages > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -713,7 +710,7 @@ export function computeTransitionLeavingCareReadiness(
     });
   }
 
-  if (independenceAssessmentRate < 50 && total_children > 0) {
+  if (below(independenceAssessmentRate, 50) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -723,7 +720,7 @@ export function computeTransitionLeavingCareReadiness(
     });
   }
 
-  if (personalAdvisorRate < 80 && currentPathwayPlans.length > 0) {
+  if (below(personalAdvisorRate, 80) && currentPathwayPlans.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -733,7 +730,7 @@ export function computeTransitionLeavingCareReadiness(
     });
   }
 
-  if (pathwayPlanCurrencyRate < 50 && currentPathwayPlans.length > 0) {
+  if (below(pathwayPlanCurrencyRate, 50) && currentPathwayPlans.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -743,7 +740,7 @@ export function computeTransitionLeavingCareReadiness(
     });
   }
 
-  if (multiAgencyInvolvementRate < 50 && totalTransitionPlans > 0) {
+  if (below(multiAgencyInvolvementRate, 50) && totalTransitionPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -753,7 +750,7 @@ export function computeTransitionLeavingCareReadiness(
     });
   }
 
-  if (transitionPlanCoverageRate >= 50 && transitionPlanCoverageRate < 80 && total_children > 0) {
+  if (meets(transitionPlanCoverageRate, 50) && below(transitionPlanCoverageRate, 80) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -763,7 +760,7 @@ export function computeTransitionLeavingCareReadiness(
     });
   }
 
-  if (independenceAssessmentRate >= 50 && independenceAssessmentRate < 80 && total_children > 0) {
+  if (meets(independenceAssessmentRate, 50) && below(independenceAssessmentRate, 80) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -783,7 +780,7 @@ export function computeTransitionLeavingCareReadiness(
     });
   }
 
-  if (leavingCareCompletionRate >= 50 && leavingCareCompletionRate < 80 && totalLeavingCarePackages > 0) {
+  if (meets(leavingCareCompletionRate, 50) && below(leavingCareCompletionRate, 80) && totalLeavingCarePackages > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -793,7 +790,7 @@ export function computeTransitionLeavingCareReadiness(
     });
   }
 
-  if (pathwayPlanCurrencyRate >= 50 && pathwayPlanCurrencyRate < 80 && currentPathwayPlans.length > 0) {
+  if (meets(pathwayPlanCurrencyRate, 50) && below(pathwayPlanCurrencyRate, 80) && currentPathwayPlans.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -803,7 +800,7 @@ export function computeTransitionLeavingCareReadiness(
     });
   }
 
-  if (childVoiceInTransitionRate >= 50 && childVoiceInTransitionRate < 80 && totalTransitionPlans > 0) {
+  if (meets(childVoiceInTransitionRate, 50) && below(childVoiceInTransitionRate, 80) && totalTransitionPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -813,7 +810,7 @@ export function computeTransitionLeavingCareReadiness(
     });
   }
 
-  if (multiAgencyInvolvementRate >= 50 && multiAgencyInvolvementRate < 80 && totalTransitionPlans > 0) {
+  if (meets(multiAgencyInvolvementRate, 50) && below(multiAgencyInvolvementRate, 80) && totalTransitionPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -829,7 +826,7 @@ export function computeTransitionLeavingCareReadiness(
 
   // -- Critical insights --
 
-  if (transitionPlanCoverageRate < 50 && total_children > 0) {
+  if (below(transitionPlanCoverageRate, 50) && total_children > 0) {
     insights.push({
       text: `Only ${transitionPlanCoverageRate}% of children have a transition plan. Ofsted will view the absence of transition planning for the majority of children as a failure to prepare them for changes in their lives, a core expectation under Reg 12.`,
       severity: "critical",
@@ -843,28 +840,28 @@ export function computeTransitionLeavingCareReadiness(
     });
   }
 
-  if (childVoiceInTransitionRate < 50 && totalTransitionPlans > 0) {
+  if (below(childVoiceInTransitionRate, 50) && totalTransitionPlans > 0) {
     insights.push({
       text: `Child voice is captured in only ${childVoiceInTransitionRate}% of transition plans. Transition planning without meaningful young person participation fails the fundamental principle that children should be active agents in decisions about their own lives.`,
       severity: "critical",
     });
   }
 
-  if (leavingCareCompletionRate < 50 && totalLeavingCarePackages > 0) {
+  if (below(leavingCareCompletionRate, 50) && totalLeavingCarePackages > 0) {
     insights.push({
       text: `Only ${leavingCareCompletionRate}% of leaving care packages are complete. Young people leaving care without comprehensive support across housing, finance, education, health, and emotional wellbeing face significantly poorer outcomes.`,
       severity: "critical",
     });
   }
 
-  if (independenceAssessmentRate < 50 && total_children > 0) {
+  if (below(independenceAssessmentRate, 50) && total_children > 0) {
     insights.push({
       text: `Only ${independenceAssessmentRate}% of children have had independence skills assessed. Without understanding children's current capabilities in cooking, budgeting, self-care, travel, and social skills, the home cannot provide targeted support for building independence.`,
       severity: "critical",
     });
   }
 
-  if (personalAdvisorRate < 50 && currentPathwayPlans.length > 0) {
+  if (below(personalAdvisorRate, 50) && currentPathwayPlans.length > 0) {
     insights.push({
       text: `Only ${personalAdvisorRate}% of young people with pathway plans have a personal adviser. This statutory requirement ensures young people have consistent professional support through their transition — its absence is a compliance failure.`,
       severity: "critical",
@@ -873,28 +870,28 @@ export function computeTransitionLeavingCareReadiness(
 
   // -- Warning insights --
 
-  if (transitionPlanCoverageRate >= 50 && transitionPlanCoverageRate < 80 && total_children > 0) {
+  if (meets(transitionPlanCoverageRate, 50) && below(transitionPlanCoverageRate, 80) && total_children > 0) {
     insights.push({
       text: `Transition plan coverage at ${transitionPlanCoverageRate}% — improving but not yet meeting the expected standard. Ofsted will want to see evidence that all children have appropriate transition planning.`,
       severity: "warning",
     });
   }
 
-  if (pathwayPlanCurrencyRate >= 50 && pathwayPlanCurrencyRate < 80 && currentPathwayPlans.length > 0) {
+  if (meets(pathwayPlanCurrencyRate, 50) && below(pathwayPlanCurrencyRate, 80) && currentPathwayPlans.length > 0) {
     insights.push({
       text: `${pathwayPlanCurrencyRate}% of pathway plans are current — some plans are becoming outdated, which means decisions may be based on stale information about young people's needs.`,
       severity: "warning",
     });
   }
 
-  if (leavingCareCompletionRate >= 50 && leavingCareCompletionRate < 80 && totalLeavingCarePackages > 0) {
+  if (meets(leavingCareCompletionRate, 50) && below(leavingCareCompletionRate, 80) && totalLeavingCarePackages > 0) {
     insights.push({
       text: `Leaving care completion at ${leavingCareCompletionRate}% — some young people's leaving care packages are missing key elements, which could leave them under-prepared for independence.`,
       severity: "warning",
     });
   }
 
-  if (multiAgencyInvolvementRate >= 50 && multiAgencyInvolvementRate < 80 && totalTransitionPlans > 0) {
+  if (meets(multiAgencyInvolvementRate, 50) && below(multiAgencyInvolvementRate, 80) && totalTransitionPlans > 0) {
     insights.push({
       text: `Multi-agency involvement at ${multiAgencyInvolvementRate}% — some transitions are being planned without input from all relevant professionals, limiting the quality of holistic support.`,
       severity: "warning",
@@ -915,21 +912,21 @@ export function computeTransitionLeavingCareReadiness(
     });
   }
 
-  if (independenceAssessmentRate >= 50 && independenceAssessmentRate < 80 && total_children > 0) {
+  if (meets(independenceAssessmentRate, 50) && below(independenceAssessmentRate, 80) && total_children > 0) {
     insights.push({
       text: `Independence assessment coverage at ${independenceAssessmentRate}% — not all children have had their readiness for independent living evaluated, limiting the home's ability to provide targeted support.`,
       severity: "warning",
     });
   }
 
-  if (housingArrangedRate < 70 && totalLeavingCarePackages > 0) {
+  if (below(housingArrangedRate, 70) && totalLeavingCarePackages > 0) {
     insights.push({
       text: `Only ${housingArrangedRate}% of leaving care packages have housing arranged — secure accommodation is the foundation of a successful care-leaving transition and must be prioritised.`,
       severity: "warning",
     });
   }
 
-  if (aftercareSupportRate < 70 && aftercareNeedsIdentified > 0) {
+  if (below(aftercareSupportRate, 70) && aftercareNeedsIdentified > 0) {
     insights.push({
       text: `Only ${aftercareSupportRate}% of identified aftercare support needs have been met — care leavers with unmet needs are at increased risk of poor outcomes.`,
       severity: "warning",
@@ -952,49 +949,49 @@ export function computeTransitionLeavingCareReadiness(
     });
   }
 
-  if (transitionPlanCoverageRate >= 100 && childVoiceInTransitionRate >= 100 && total_children > 0) {
+  if (meets(transitionPlanCoverageRate, 100) && meets(childVoiceInTransitionRate, 100) && total_children > 0) {
     insights.push({
       text: "Full transition plan coverage with child voice captured in every plan — the home exemplifies child-centred transition planning where young people are active participants in shaping their own futures.",
       severity: "positive",
     });
   }
 
-  if (leavingCareCompletionRate >= 100 && totalLeavingCarePackages > 0) {
+  if (meets(leavingCareCompletionRate, 100) && totalLeavingCarePackages > 0) {
     insights.push({
       text: "All leaving care packages are fully complete — young people are comprehensively prepared across housing, finance, education, health, and emotional support, maximising their chances of successful independence.",
       severity: "positive",
     });
   }
 
-  if (pathwayPlanCurrencyRate >= 100 && currentPathwayPlans.length > 0) {
+  if (meets(pathwayPlanCurrencyRate, 100) && currentPathwayPlans.length > 0) {
     insights.push({
       text: "All pathway plans are current and recently reviewed — the home ensures pathway plans remain a living document that evolves with each young person's changing needs.",
       severity: "positive",
     });
   }
 
-  if (comprehensiveAssessmentRate >= 100 && totalIndependencePathways > 0) {
+  if (meets(comprehensiveAssessmentRate, 100) && totalIndependencePathways > 0) {
     insights.push({
       text: "All independence assessments cover every skill domain — the home takes a thorough approach to evaluating readiness across cooking, budgeting, self-care, travel, and social skills.",
       severity: "positive",
     });
   }
 
-  if (multiAgencyInvolvementRate >= 100 && totalTransitionPlans > 0) {
+  if (meets(multiAgencyInvolvementRate, 100) && totalTransitionPlans > 0) {
     insights.push({
       text: "Multi-agency involvement in every transition plan — the home works collaboratively with external professionals to ensure holistic, well-coordinated transitions for every young person.",
       severity: "positive",
     });
   }
 
-  if (aftercareSupportRate >= 90 && aftercareNeedsIdentified > 0) {
+  if (meets(aftercareSupportRate, 90) && aftercareNeedsIdentified > 0) {
     insights.push({
       text: `${aftercareSupportRate}% of identified aftercare needs have been met — the home demonstrates excellent follow-through in supporting care leavers, ensuring their needs do not go unaddressed.`,
       severity: "positive",
     });
   }
 
-  if (personalAdvisorRate >= 100 && currentPathwayPlans.length > 0) {
+  if (meets(personalAdvisorRate, 100) && currentPathwayPlans.length > 0) {
     insights.push({
       text: "Every young person with a pathway plan has a personal adviser — the home fully meets the statutory requirement ensuring consistent professional guidance through the transition to adulthood.",
       severity: "positive",

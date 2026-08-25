@@ -1,3 +1,4 @@
+import { above, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME TRANSITION PLANNING INTELLIGENCE ENGINE
 // Pure deterministic engine: pathway planning, independence preparation,
@@ -106,10 +107,6 @@ export interface HomeTransitionPlanningResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function daysBetween(a: string, b: string): number {
   return Math.round(
     (new Date(b).getTime() - new Date(a).getTime()) / 86_400_000,
@@ -192,8 +189,8 @@ export function computeHomeTransitionPlanning(
   const goal_status: GoalStatusProfile = {
     total_goals: transition_goals.length,
     ...statusCounts,
-    achievement_rate: pct(statusCounts.achieved, transition_goals.length),
-    active_rate: pct(
+    achievement_rate: rate(statusCounts.achieved, transition_goals.length),
+    active_rate: rate(
       statusCounts.in_progress + statusCounts.on_track,
       transition_goals.length,
     ),
@@ -210,7 +207,7 @@ export function computeHomeTransitionPlanning(
   const area_coverage: AreaCoverageProfile = {
     areas_covered: areasCovered.length,
     total_possible_areas: ALL_AREAS.length,
-    coverage_rate: pct(areasCovered.length, ALL_AREAS.length),
+    coverage_rate: rate(areasCovered.length, ALL_AREAS.length),
     area_distribution: areaDistribution,
     gaps,
   };
@@ -225,7 +222,7 @@ export function computeHomeTransitionPlanning(
   const child_coverage: ChildCoverageProfile = {
     children_with_goals: childrenWithGoals,
     total_children,
-    coverage_rate: pct(childrenWithGoals, total_children),
+    coverage_rate: rate(childrenWithGoals, total_children),
     goals_per_child: goalsPerChild,
     children_without_goals: Math.max(0, total_children - childrenWithGoals),
   };
@@ -261,10 +258,10 @@ export function computeHomeTransitionPlanning(
     avg_percent_complete: avgPercent,
     goals_overdue: overdue.length,
     goals_with_reviews: withReview.length,
-    review_rate: pct(withReview.length, transition_goals.length),
+    review_rate: rate(withReview.length, transition_goals.length),
     reviews_overdue: reviewsOverdue.length,
     goals_with_actions: withActions.length,
-    action_coverage_rate: pct(withActions.length, transition_goals.length),
+    action_coverage_rate: rate(withActions.length, transition_goals.length),
   };
 
   // ── Scoring ───────────────────────────────────────────────────────────
@@ -304,8 +301,10 @@ export function computeHomeTransitionPlanning(
   score += mod4;
 
   // mod5: At-risk goals (±3)
-  const atRiskRate = pct(statusCounts.at_risk, transition_goals.length);
+  const atRiskRate = rate(statusCounts.at_risk, transition_goals.length);
+  // no goals -> modifier is neutral, not a fabricated verdict
   const mod5 =
+    atRiskRate === null ? 0 :
     atRiskRate === 0 ? 3 :
     atRiskRate <= 15 ? 1 :
     atRiskRate <= 30 ? -1 : -3;
@@ -328,8 +327,9 @@ export function computeHomeTransitionPlanning(
   score += mod7;
 
   // mod8: Overdue goals (±4)
-  const overdueRate = pct(overdue.length, transition_goals.length);
+  const overdueRate = rate(overdue.length, transition_goals.length);
   const mod8 =
+    overdueRate === null ? 0 :
     overdueRate === 0 ? 4 :
     overdueRate <= 10 ? 2 :
     overdueRate <= 25 ? 0 : -4;
@@ -367,8 +367,8 @@ export function computeHomeTransitionPlanning(
     concerns.push(`${reviewsOverdue.length} goal(s) haven't been reviewed in over 30 days.`);
   if (gaps.length >= 4)
     concerns.push(`${gaps.length} life areas have no transition goals — significant gaps in holistic preparation.`);
-  if (statusCounts.not_started > 0 && pct(statusCounts.not_started, transition_goals.length) > 30)
-    concerns.push(`${statusCounts.not_started} goal(s) not yet started (${pct(statusCounts.not_started, transition_goals.length)}%) — planning without action risks drift.`);
+  if (statusCounts.not_started > 0 && above(rate(statusCounts.not_started, transition_goals.length), 30))
+    concerns.push(`${statusCounts.not_started} goal(s) not yet started (${rate(statusCounts.not_started, transition_goals.length)}%) — planning without action risks drift.`);
 
   // ── Recommendations ───────────────────────────────────────────────────
   const recommendations: Recommendation[] = [];

@@ -446,7 +446,7 @@ describe("evaluateDietaryAccommodation", () => {
   it("handles no meals in period", () => {
     const result = evaluateDietaryAccommodation(children, [], PERIOD_START, PERIOD_END);
     expect(result.totalChildren).toBe(3);
-    expect(result.metRate).toBe(0);
+    expect(result.metRate).toBeNull();
   });
 
   it("excludes meals outside period", () => {
@@ -525,14 +525,14 @@ describe("evaluateMealQuality", () => {
     const result = evaluateMealQuality([], [], PERIOD_START, PERIOD_END);
     expect(result.totalMeals).toBe(0);
     expect(result.mealsPerDay).toBe(0);
-    expect(result.freshFruitVegRate).toBe(0);
+    expect(result.freshFruitVegRate).toBeNull();
     expect(result.averageFoodGroupsCovered).toBe(0);
   });
 
   it("handles no menu plans", () => {
     const result = evaluateMealQuality(meals, [], PERIOD_START, PERIOD_END);
-    expect(result.culturalMealRate).toBe(0);
-    expect(result.freshCookingRate).toBe(0);
+    expect(result.culturalMealRate).toBeNull();
+    expect(result.freshCookingRate).toBeNull();
   });
 });
 
@@ -610,8 +610,8 @@ describe("evaluateChildInvolvement", () => {
   it("handles no sessions and no meals", () => {
     const result = evaluateChildInvolvement(children, [], [], [], PERIOD_START, PERIOD_END);
     expect(result.cookingSessionsTotal).toBe(0);
-    expect(result.menuContributionRate).toBe(0);
-    expect(result.staffAteWithChildrenRate).toBe(0);
+    expect(result.menuContributionRate).toBeNull();
+    expect(result.staffAteWithChildrenRate).toBeNull();
   });
 });
 
@@ -670,8 +670,8 @@ describe("evaluateFoodSafety", () => {
   it("handles no checks", () => {
     const result = evaluateFoodSafety([], PERIOD_START, PERIOD_END);
     expect(result.totalChecks).toBe(0);
-    expect(result.complianceRate).toBe(0);
-    expect(result.correctionRate).toBe(0);
+    expect(result.complianceRate).toBeNull();
+    expect(result.correctionRate).toBeNull();
   });
 
   it("excludes checks outside period", () => {
@@ -690,7 +690,7 @@ describe("evaluateFoodSafety", () => {
     const result = evaluateFoodSafety(allGood, PERIOD_START, PERIOD_END);
     expect(result.complianceRate).toBe(100);
     expect(result.correctionsNeeded).toBe(0);
-    expect(result.correctionRate).toBe(0);
+    expect(result.correctionRate).toBeNull();
   });
 });
 

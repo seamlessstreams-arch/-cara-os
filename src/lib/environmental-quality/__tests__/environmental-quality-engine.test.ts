@@ -221,10 +221,10 @@ describe("evaluateInspectionQuality", () => {
     const result = evaluateInspectionQuality([], PERIOD_START, PERIOD_END);
     expect(result.averageScore).toBe(0);
     expect(result.inspectionCount).toBe(0);
-    expect(result.photographicRate).toBe(0);
+    expect(result.photographicRate).toBeNull();
     expect(result.issueCount).toBe(0);
     expect(result.areasCovered).toBe(0);
-    expect(result.areaCoverageRate).toBe(0);
+    expect(result.areaCoverageRate).toBeNull();
     expect(result.roomsCovered).toBe(0);
     expect(result.lowestScoringArea).toBe("N/A");
     expect(result.highestScoringArea).toBe("N/A");
@@ -347,14 +347,14 @@ describe("evaluateMaintenanceResponsiveness", () => {
   it("returns zeroed result for empty requests", () => {
     const result = evaluateMaintenanceResponsiveness([], PERIOD_START, PERIOD_END);
     expect(result.totalRequests).toBe(0);
-    expect(result.completionRate).toBe(0);
+    expect(result.completionRate).toBeNull();
     expect(result.overdueCount).toBe(0);
     expect(result.emergencyCount).toBe(0);
     expect(result.averageDaysToResolve).toBe(0);
     expect(result.scheduledCount).toBe(0);
     expect(result.cancelledCount).toBe(0);
     expect(result.completedCount).toBe(0);
-    expect(result.overdueRate).toBe(0);
+    expect(result.overdueRate).toBeNull();
   });
 
   it("counts only in-period requests", () => {
@@ -466,11 +466,11 @@ describe("evaluatePersonalisation", () => {
   it("returns zeroed result for empty records", () => {
     const result = evaluatePersonalisation([], REFERENCE_DATE);
     expect(result.totalChildren).toBe(0);
-    expect(result.bedroomPersonalisedRate).toBe(0);
-    expect(result.choiceInDecorRate).toBe(0);
-    expect(result.personalItemsRate).toBe(0);
-    expect(result.culturalConsiderationsRate).toBe(0);
-    expect(result.overallPersonalisationRate).toBe(0);
+    expect(result.bedroomPersonalisedRate).toBeNull();
+    expect(result.choiceInDecorRate).toBeNull();
+    expect(result.personalItemsRate).toBeNull();
+    expect(result.culturalConsiderationsRate).toBeNull();
+    expect(result.overallPersonalisationRate).toBeNull();
     expect(result.fullyPersonalisedCount).toBe(0);
     expect(result.reviewCurrency).toBe(0);
   });
@@ -557,9 +557,9 @@ describe("evaluateChildSatisfaction", () => {
   it("returns zeroed result for empty views", () => {
     const result = evaluateChildSatisfaction([], PERIOD_START, PERIOD_END);
     expect(result.averageSatisfaction).toBe(0);
-    expect(result.feelsHomelyRate).toBe(0);
-    expect(result.feelsPrivateRate).toBe(0);
-    expect(result.feelsSafeRate).toBe(0);
+    expect(result.feelsHomelyRate).toBeNull();
+    expect(result.feelsPrivateRate).toBeNull();
+    expect(result.feelsSafeRate).toBeNull();
     expect(result.totalViews).toBe(0);
     expect(result.childrenWithViews).toBe(0);
     expect(result.suggestionCount).toBe(0);

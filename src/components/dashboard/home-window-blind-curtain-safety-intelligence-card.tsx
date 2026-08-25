@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Blinds } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { WindowBlindCurtainRating } from "@/lib/engines/home-window-blind-curtain-safety-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 const RATING_STYLES: Record<WindowBlindCurtainRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -57,7 +58,7 @@ export function HomeWindowBlindCurtainSafetyIntelligenceCard() {
             <Blinds className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-stone-600")} />
             <span className="text-slate-900 font-bold">Window, Blind & Curtain Safety</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.window_safety_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.window_safety_score}%</span>}
+            {d.window_safety_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.window_safety_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -65,28 +66,28 @@ export function HomeWindowBlindCurtainSafetyIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.window_safety_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.window_restrictor_rate >= 90 ? "bg-green-50" : d.window_restrictor_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.window_restrictor_rate >= 90 ? "text-[--cs-success]" : d.window_restrictor_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.window_restrictor_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.window_restrictor_rate, 90) ? "bg-green-50" : meets(d.window_restrictor_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.window_restrictor_rate, 90) ? "text-[--cs-success]" : meets(d.window_restrictor_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.window_restrictor_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Restrictor</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.blind_cord_safety_rate >= 90 ? "bg-green-50" : d.blind_cord_safety_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.blind_cord_safety_rate >= 90 ? "text-[--cs-success]" : d.blind_cord_safety_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.blind_cord_safety_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.blind_cord_safety_rate, 90) ? "bg-green-50" : meets(d.blind_cord_safety_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.blind_cord_safety_rate, 90) ? "text-[--cs-success]" : meets(d.blind_cord_safety_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.blind_cord_safety_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Cord Safe</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.curtain_condition_rate >= 90 ? "bg-green-50" : d.curtain_condition_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.curtain_condition_rate >= 90 ? "text-[--cs-success]" : d.curtain_condition_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.curtain_condition_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.curtain_condition_rate, 90) ? "bg-green-50" : meets(d.curtain_condition_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.curtain_condition_rate, 90) ? "text-[--cs-success]" : meets(d.curtain_condition_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.curtain_condition_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Curtain</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.blackout_provision_rate >= 90 ? "bg-green-50" : d.blackout_provision_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.blackout_provision_rate >= 90 ? "text-[--cs-success]" : d.blackout_provision_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.blackout_provision_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.blackout_provision_rate, 90) ? "bg-green-50" : meets(d.blackout_provision_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.blackout_provision_rate, 90) ? "text-[--cs-success]" : meets(d.blackout_provision_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.blackout_provision_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Blackout</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_safety_rate >= 90 ? "bg-green-50" : d.child_safety_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_safety_rate >= 90 ? "text-[--cs-success]" : d.child_safety_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_safety_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_safety_rate, 90) ? "bg-green-50" : meets(d.child_safety_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_safety_rate, 90) ? "text-[--cs-success]" : meets(d.child_safety_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_safety_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Child Safe</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.inspection_compliance_rate >= 90 ? "bg-green-50" : d.inspection_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.inspection_compliance_rate >= 90 ? "text-[--cs-success]" : d.inspection_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.inspection_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.inspection_compliance_rate, 90) ? "bg-green-50" : meets(d.inspection_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.inspection_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.inspection_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.inspection_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Inspect.</p>
             </div>
           </div>

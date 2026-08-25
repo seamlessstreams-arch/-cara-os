@@ -17,6 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { TransitionRating, HomeTransitionPlanningResult } from "@/lib/engines/home-transition-planning-intelligence-engine";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface HomeTransitionPlanningResponse {
   data: HomeTransitionPlanningResult;
@@ -105,7 +106,7 @@ export function HomeTransitionPlanningIntelligenceCard() {
               {ratingStyle.label}
             </span>
             {d.transition_rating !== "insufficient_data" && (
-              <span className="text-xs font-bold tabular-nums text-slate-600">{d.transition_score}%</span>
+              <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.transition_score)}</span>
             )}
           </CardTitle>
         </div>
@@ -188,14 +189,14 @@ export function HomeTransitionPlanningIntelligenceCard() {
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Progress</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>Avg complete: <span className="font-medium text-slate-600">{d.progress.avg_percent_complete}%</span></p>
+                <p>Avg complete: <span className="font-medium text-slate-600">{formatRate(d.progress.avg_percent_complete)}</span></p>
                 <p>Overdue: <span className={cn("font-medium",
                   d.progress.goals_overdue === 0 ? "text-[--cs-success]" : "text-[--cs-risk]"
                 )}>{d.progress.goals_overdue}</span></p>
                 <p>Review rate: <span className={cn("font-medium",
                   (d.progress.review_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.progress.review_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
-                )}>{d.progress.review_rate}%</span></p>
+                )}>{formatRate(d.progress.review_rate)}</span></p>
                 <p>With actions: <span className="font-medium text-slate-600">{d.progress.goals_with_actions}</span></p>
               </div>
             </div>

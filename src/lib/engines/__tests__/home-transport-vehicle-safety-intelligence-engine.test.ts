@@ -164,15 +164,15 @@ describe("computeTransportVehicleSafety", () => {
     it("returns 0 for all metrics", () => {
       const r = run();
       expect(r.total_transport_logs).toBe(0);
-      expect(r.vehicle_check_compliance_rate).toBe(0);
-      expect(r.pre_use_check_completion_rate).toBe(0);
-      expect(r.driver_qualification_currency_rate).toBe(0);
-      expect(r.risk_assessment_completion_rate).toBe(0);
-      expect(r.journey_log_completion_rate).toBe(0);
-      expect(r.seatbelt_compliance_rate).toBe(0);
-      expect(r.insurance_currency_rate).toBe(0);
-      expect(r.mot_service_currency_rate).toBe(0);
-      expect(r.defect_resolution_rate).toBe(0);
+      expect(r.vehicle_check_compliance_rate).toBeNull();
+      expect(r.pre_use_check_completion_rate).toBeNull();
+      expect(r.driver_qualification_currency_rate).toBeNull();
+      expect(r.risk_assessment_completion_rate).toBeNull();
+      expect(r.journey_log_completion_rate).toBeNull();
+      expect(r.seatbelt_compliance_rate).toBeNull();
+      expect(r.insurance_currency_rate).toBeNull();
+      expect(r.mot_service_currency_rate).toBeNull();
+      expect(r.defect_resolution_rate).toBeNull();
     });
   });
 
@@ -722,12 +722,12 @@ describe("computeTransportVehicleSafety", () => {
       expect(r.transport_score).toBe(44);
     });
 
-    it("defect resolution rate is 0 when no defects found (pct(0,0)=0)", () => {
+    it("defect resolution rate is null when no defects found (rate(0,0)=null)", () => {
       const checks = [
         makeVehicleCheck({ defects_found: 0, defects_resolved: 0, passed: false }),
       ];
       const r = run({ total_children: 1, vehicle_checks: checks });
-      expect(r.defect_resolution_rate).toBe(0);
+      expect(r.defect_resolution_rate).toBeNull();
     });
   });
 
@@ -869,7 +869,7 @@ describe("computeTransportVehicleSafety", () => {
       // journeyLogCompletionRate = pct(0,1) = 0 → no bonus
       // vehicleCheckComplianceRate = pct(0,0) = 0 but guard fails → no penalty
       // score = 52 - 5 = 47
-      expect(r2.vehicle_check_compliance_rate).toBe(0);
+      expect(r2.vehicle_check_compliance_rate).toBeNull();
       expect(r2.transport_score).toBe(47);
     });
   });
@@ -902,7 +902,7 @@ describe("computeTransportVehicleSafety", () => {
         transport_logs: [makeTransportLog({ seatbelts_checked: true })],
       });
       // driverQualificationCurrencyRate = pct(0,0) = 0 but guard fails
-      expect(r.driver_qualification_currency_rate).toBe(0);
+      expect(r.driver_qualification_currency_rate).toBeNull();
       // seatbeltComplianceRate = pct(1,1) = 100 → +3
       // journeyLogCompletionRate = 100 → +3
       expect(r.transport_score).toBe(58);
@@ -941,7 +941,7 @@ describe("computeTransportVehicleSafety", () => {
         vehicle_pre_use_checks: [makePreUseCheck({ overall_pass: true })],
       });
       // seatbeltComplianceRate = pct(0,0) = 0 but guard fails
-      expect(r.seatbelt_compliance_rate).toBe(0);
+      expect(r.seatbelt_compliance_rate).toBeNull();
       // preUseCheckCompletionRate = 100 → +4
       expect(r.transport_score).toBe(56);
     });
@@ -987,7 +987,7 @@ describe("computeTransportVehicleSafety", () => {
           }),
         ],
       });
-      expect(r.mot_service_currency_rate).toBe(0);
+      expect(r.mot_service_currency_rate).toBeNull();
       // No vehicle check penalty, just bonuses from logs
       // seatbeltComplianceRate = 100 → +3
       // journeyLogCompletionRate = 100 → +3
@@ -1456,20 +1456,20 @@ describe("computeTransportVehicleSafety", () => {
       expect(r.defect_resolution_rate).toBe(70);
     });
 
-    it("pct(0,0) returns 0 for all rate metrics when arrays are empty (with some data to avoid special case)", () => {
+    it("rate(0,0)=nullreturns 0 for all rate metrics when arrays are empty (with some data to avoid special case)", () => {
       // Provide just one pre_use_check to avoid special cases
       const r = run({
         total_children: 1,
         vehicle_pre_use_checks: [makePreUseCheck()],
       });
-      expect(r.vehicle_check_compliance_rate).toBe(0);
-      expect(r.driver_qualification_currency_rate).toBe(0);
-      expect(r.risk_assessment_completion_rate).toBe(0);
-      expect(r.journey_log_completion_rate).toBe(0);
-      expect(r.seatbelt_compliance_rate).toBe(0);
-      expect(r.insurance_currency_rate).toBe(0);
-      expect(r.mot_service_currency_rate).toBe(0);
-      expect(r.defect_resolution_rate).toBe(0);
+      expect(r.vehicle_check_compliance_rate).toBeNull();
+      expect(r.driver_qualification_currency_rate).toBeNull();
+      expect(r.risk_assessment_completion_rate).toBeNull();
+      expect(r.journey_log_completion_rate).toBeNull();
+      expect(r.seatbelt_compliance_rate).toBeNull();
+      expect(r.insurance_currency_rate).toBeNull();
+      expect(r.mot_service_currency_rate).toBeNull();
+      expect(r.defect_resolution_rate).toBeNull();
     });
   });
 

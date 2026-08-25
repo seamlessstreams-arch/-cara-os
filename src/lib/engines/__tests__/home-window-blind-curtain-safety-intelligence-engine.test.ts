@@ -195,12 +195,12 @@ describe("insufficient data and edge cases", () => {
 
   it("all rates 0 for insufficient_data", () => {
     const r = run({ total_children: 0 });
-    expect(r.window_restrictor_rate).toBe(0);
-    expect(r.blind_cord_safety_rate).toBe(0);
-    expect(r.curtain_condition_rate).toBe(0);
-    expect(r.blackout_provision_rate).toBe(0);
-    expect(r.child_safety_rate).toBe(0);
-    expect(r.inspection_compliance_rate).toBe(0);
+    expect(r.window_restrictor_rate).toBeNull();
+    expect(r.blind_cord_safety_rate).toBeNull();
+    expect(r.curtain_condition_rate).toBeNull();
+    expect(r.blackout_provision_rate).toBeNull();
+    expect(r.child_safety_rate).toBeNull();
+    expect(r.inspection_compliance_rate).toBeNull();
   });
 
   it("empty arrays for insufficient_data", () => {
@@ -507,10 +507,10 @@ describe("curtain condition", () => {
     expect(r.curtain_condition_rate).toBe(100);
   });
 
-  it("0% when no curtains present", () => {
+  it("null when no curtains present", () => {
     const records = Array.from({ length: 5 }, () => makeCurtainCondition({ curtain_present: false }));
     const r = run({ curtain_condition_records: records });
-    expect(r.curtain_condition_rate).toBe(0);
+    expect(r.curtain_condition_rate).toBeNull();
   });
 
   it("strength for >=90%", () => {
@@ -1456,10 +1456,10 @@ describe("additional edge cases and rates", () => {
     expect(r.window_restrictor_rate).toBe(0);
   });
 
-  it("curtain not present has 0% condition checks", () => {
+  it("curtain not present has null condition checks", () => {
     const records = [makeCurtainCondition({ curtain_present: false })];
     const r = run({ curtain_condition_records: records });
-    expect(r.curtain_condition_rate).toBe(0);
+    expect(r.curtain_condition_rate).toBeNull();
   });
 
   it("blackout not provided does not count", () => {

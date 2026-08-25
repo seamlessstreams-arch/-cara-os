@@ -6,6 +6,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { below, meets } from "@/lib/metrics/rate";
 import {
   computeWeightManagementHealthyEating,
   type WeightManagementInput,
@@ -199,14 +200,14 @@ describe("insufficient data and edge cases", () => {
     expect(r.recommendations[1].regulatory_ref).toContain("Health and wellbeing");
   });
 
-  it("all rates are 0 for insufficient_data", () => {
+  it("all rates are null for insufficient_data", () => {
     const r = run({ total_children: 0 });
-    expect(r.weight_monitoring_rate).toBe(0);
+    expect(r.weight_monitoring_rate).toBeNull();
     expect(r.bmi_tracking_rate).toBeNull();
     expect(r.healthy_eating_rate).toBeNull();
     expect(r.portion_control_rate).toBeNull();
     expect(r.body_positivity_rate).toBeNull();
-    expect(r.child_engagement_rate).toBe(0);
+    expect(r.child_engagement_rate).toBeNull();
   });
 
   it("empty arrays for insufficient_data", () => {
@@ -385,7 +386,7 @@ describe("weight monitoring", () => {
 // ── 3. BMI Tracking ────────────────────────────────────────────────────────
 
 describe("BMI tracking", () => {
-  it("bmiTrackingRate is 0 when no records", () => {
+  it("bmiTrackingRate is null when no records", () => {
     const r = run({});
     expect(r.bmi_tracking_rate).toBeNull();
   });
@@ -537,7 +538,7 @@ describe("BMI tracking", () => {
 // ── 4. Healthy Eating ──────────────────────────────────────────────────────
 
 describe("healthy eating", () => {
-  it("healthyEatingRate is 0 when no records", () => {
+  it("healthyEatingRate is null when no records", () => {
     const r = run({});
     expect(r.healthy_eating_rate).toBeNull();
   });
@@ -661,7 +662,7 @@ describe("healthy eating", () => {
 // ── 5. Portion Control ─────────────────────────────────────────────────────
 
 describe("portion control", () => {
-  it("portionControlRate is 0 when no records", () => {
+  it("portionControlRate is null when no records", () => {
     const r = run({});
     expect(r.portion_control_rate).toBeNull();
   });
@@ -845,7 +846,7 @@ describe("portion control", () => {
 // ── 6. Body Positivity ─────────────────────────────────────────────────────
 
 describe("body positivity", () => {
-  it("bodyPositivityRate is 0 when no records", () => {
+  it("bodyPositivityRate is null when no records", () => {
     const r = run({});
     expect(r.body_positivity_rate).toBeNull();
   });
@@ -1007,9 +1008,9 @@ describe("body positivity", () => {
 // ── 7. Child Engagement ────────────────────────────────────────────────────
 
 describe("child engagement", () => {
-  it("0% when no engagement data", () => {
+  it("null when no engagement data", () => {
     const r = run({});
-    expect(r.child_engagement_rate).toBe(0);
+    expect(r.child_engagement_rate).toBeNull();
   });
 
   it("high engagement from healthy eating + body positivity + portion voice", () => {
@@ -1524,7 +1525,7 @@ describe("portion and body positivity bonuses", () => {
     const he = Array.from({ length: 5 }, () => makeHealthyEating({ engaged: true }));
     const bp = Array.from({ length: 10 }, () => makeBodyPositivity({ child_engaged: false, child_voice_captured: false }));
     const r = run({ healthy_eating_records: he, body_positivity_records: bp });
-    if (r.child_engagement_rate >= 50 && r.child_engagement_rate < 60) {
+    if (meets(r.child_engagement_rate, 50) && below(r.child_engagement_rate, 60)) {
       expect(r.concerns.some(c => c.includes("engagement with healthy eating"))).toBe(true);
     }
   });

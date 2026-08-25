@@ -192,12 +192,12 @@ describe("insufficient_data", () => {
     expect(r.total_hydration_records).toBe(0);
     expect(r.total_swimming_competency_records).toBe(0);
     expect(r.total_water_activity_records).toBe(0);
-    expect(r.temperature_check_rate).toBe(0);
-    expect(r.legionella_compliance_rate).toBe(0);
-    expect(r.hydration_monitoring_rate).toBe(0);
-    expect(r.swimming_competency_rate).toBe(0);
-    expect(r.water_activity_safety_rate).toBe(0);
-    expect(r.child_awareness_rate).toBe(0);
+    expect(r.temperature_check_rate).toBeNull();
+    expect(r.legionella_compliance_rate).toBeNull();
+    expect(r.hydration_monitoring_rate).toBeNull();
+    expect(r.swimming_competency_rate).toBeNull();
+    expect(r.water_activity_safety_rate).toBeNull();
+    expect(r.child_awareness_rate).toBeNull();
   });
 });
 
@@ -247,48 +247,48 @@ describe("inadequate floor — all empty with children", () => {
 // 3. pct HELPER EDGE CASE
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("pct(0,0) = 0 — zero-denominator safety", () => {
-  it("temperature_check_rate is 0 when no temp records but other records exist", () => {
+describe("rate(0,0)=null — zero-denominator safety", () => {
+  it("temperature_check_rate is null when no temp records but other records exist", () => {
     const r = run({
       legionella_assessment_records: [makeLegionella()],
     });
-    expect(r.temperature_check_rate).toBe(0);
+    expect(r.temperature_check_rate).toBeNull();
   });
 
-  it("legionella_compliance_rate is 0 when no legionella records but other records exist", () => {
+  it("legionella_compliance_rate is null when no legionella records but other records exist", () => {
     const r = run({
       water_temperature_records: [makeTemp()],
     });
-    expect(r.legionella_compliance_rate).toBe(0);
+    expect(r.legionella_compliance_rate).toBeNull();
   });
 
-  it("hydration_monitoring_rate is 0 when no hydration records", () => {
+  it("hydration_monitoring_rate is null when no hydration records", () => {
     const r = run({
       water_temperature_records: [makeTemp()],
     });
-    expect(r.hydration_monitoring_rate).toBe(0);
+    expect(r.hydration_monitoring_rate).toBeNull();
   });
 
-  it("swimming_competency_rate is 0 when no swimming records", () => {
+  it("swimming_competency_rate is null when no swimming records", () => {
     const r = run({
       water_temperature_records: [makeTemp()],
     });
     expect(r.swimming_competency_rate).toBeNull();;
   });
 
-  it("water_activity_safety_rate is 0 when no activity records", () => {
+  it("water_activity_safety_rate is null when no activity records", () => {
     const r = run({
       water_temperature_records: [makeTemp()],
     });
     expect(r.water_activity_safety_rate).toBeNull();;
   });
 
-  it("child_awareness_rate is 0 when no relevant records contribute", () => {
+  it("child_awareness_rate is null when no relevant records contribute", () => {
     const r = run({
       water_temperature_records: [makeTemp()],
       legionella_assessment_records: [makeLegionella()],
     });
-    expect(r.child_awareness_rate).toBe(0);
+    expect(r.child_awareness_rate).toBeNull();
   });
 });
 
@@ -1140,7 +1140,7 @@ describe("swimming_competency_rate — composite", () => {
     expect(r.swimming_competency_rate).toBe(50);
   });
 
-  it("0% when no swimming records", () => {
+  it("null when no swimming records", () => {
     const r = run({ water_temperature_records: [makeTemp()] });
     expect(r.swimming_competency_rate).toBeNull();;
   });

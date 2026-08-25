@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // Cara -- Financial Stewardship Intelligence Engine
 //
@@ -117,29 +118,42 @@ export interface AllowancePolicy {
 // -- Result Types -------------------------------------------------------------
 
 export interface AllowanceManagementResult {
-  regularPocketMoneyRate: number;
-  ageAppropriateRate: number;
-  childConsentRate: number;
-  receiptRate: number;
-  authorisationRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  regularPocketMoneyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  ageAppropriateRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childConsentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  receiptRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  authorisationRate: number | null;
   savingsEncouraged: boolean;
   overallScore: number; // 0-25
 }
 
 export interface SavingsInvestmentResult {
-  savingsAccountRate: number;
-  positiveBalanceRate: number;
-  budgetPlanRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  savingsAccountRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveBalanceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  budgetPlanRate: number | null;
   savingsGrowthDetected: boolean;
-  ageAppropriateAccountRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  ageAppropriateAccountRate: number | null;
   overallScore: number; // 0-25
 }
 
 export interface FinancialLiteracyResult {
-  assessmentRate: number;
-  competentOrIndependentRate: number;
-  developingPlusRate: number;
-  budgetPlanRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  assessmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  competentOrIndependentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  developingPlusRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  budgetPlanRate: number | null;
   improvementTrendDetected: boolean;
   overallScore: number; // 0-25
 }
@@ -147,8 +161,10 @@ export interface FinancialLiteracyResult {
 export interface AuditComplianceResult {
   auditCompletedRecently: boolean;
   compliantStatus: boolean;
-  discrepancyResolutionRate: number;
-  recommendationsActionedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  discrepancyResolutionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  recommendationsActionedRate: number | null;
   policyCurrent: boolean;
   recordsAccurate: boolean;
   overallScore: number; // 0-25
@@ -166,8 +182,8 @@ export interface ChildFinancialSummary {
   totalTransactions: number;
   totalSaved: number;
   totalSpent: number;
-  consentRate: number;
-  receiptRate: number;
+  consentRate: number | null;
+  receiptRate: number | null;
 }
 
 export interface FinancialStewardshipIntelligence {
@@ -188,11 +204,6 @@ export interface FinancialStewardshipIntelligence {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 1000) / 10;
-}
 
 function clamp(v: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, v));
@@ -283,11 +294,11 @@ export function evaluateAllowanceManagement(
 ): AllowanceManagementResult {
   if (profiles.length === 0) {
     return {
-      regularPocketMoneyRate: 0,
-      ageAppropriateRate: 0,
-      childConsentRate: 0,
-      receiptRate: 0,
-      authorisationRate: 0,
+      regularPocketMoneyRate: null,
+      ageAppropriateRate: null,
+      childConsentRate: null,
+      receiptRate: null,
+      authorisationRate: null,
       savingsEncouraged: false,
       overallScore: 0,
     };
@@ -297,24 +308,24 @@ export function evaluateAllowanceManagement(
 
   // Children receiving regular pocket money (weeklyPocketMoney > 0)
   const receivingPocketMoney = profiles.filter((p) => p.weeklyPocketMoney > 0).length;
-  const regularPocketMoneyRate = pct(receivingPocketMoney, profiles.length);
+  const regularPocketMoneyRate = rate(receivingPocketMoney, profiles.length);
 
   // Age-appropriate amounts
   const ageAppropriate = profiles.filter((p) => p.ageAppropriateAmount).length;
-  const ageAppropriateRate = pct(ageAppropriate, profiles.length);
+  const ageAppropriateRate = rate(ageAppropriate, profiles.length);
 
   // Child consent rate for transactions (>= 90% target)
   const consentedTxns = periodTxns.filter((t) => t.childConsented).length;
-  const childConsentRate = pct(consentedTxns, periodTxns.length);
+  const childConsentRate = rate(consentedTxns, periodTxns.length);
 
   // Receipt rate for spent transactions (>= 80% target)
   const spentTxns = periodTxns.filter((t) => t.type === "spent");
   const receiptsObtained = spentTxns.filter((t) => t.receiptObtained).length;
-  const receiptRate = pct(receiptsObtained, spentTxns.length);
+  const receiptRate = rate(receiptsObtained, spentTxns.length);
 
   // Authorisation rate
   const authorisedTxns = periodTxns.filter((t) => t.authorisedBy.trim().length > 0).length;
-  const authorisationRate = pct(authorisedTxns, periodTxns.length);
+  const authorisationRate = rate(authorisedTxns, periodTxns.length);
 
   // Savings encouraged -- any saved transactions exist
   const hasSavedTxns = periodTxns.some((t) => t.type === "saved");
@@ -324,28 +335,28 @@ export function evaluateAllowanceManagement(
   let score = 0;
 
   // +7 all children receive regular pocket money
-  score += (regularPocketMoneyRate / 100) * 7;
+  score += ((regularPocketMoneyRate ?? 0) / 100) * 7;
 
   // +5 age-appropriate amounts
-  score += (ageAppropriateRate / 100) * 5;
+  score += ((ageAppropriateRate ?? 0) / 100) * 5;
 
   // +4 child consent rate >= 90%
   if (periodTxns.length > 0) {
-    score += (Math.min(childConsentRate, 100) / 100) * 4;
+    score += (Math.min(childConsentRate ?? 0, 100) / 100) * 4;
   } else {
     score += 4; // no transactions, no consent issues
   }
 
   // +4 receipt rate for spent >= 80%
   if (spentTxns.length > 0) {
-    score += (Math.min(receiptRate, 100) / 100) * 4;
+    score += (Math.min(receiptRate ?? 0, 100) / 100) * 4;
   } else {
     score += 4; // no spent transactions, no receipt issues
   }
 
   // +3 authorisation rate
   if (periodTxns.length > 0) {
-    score += (Math.min(authorisationRate, 100) / 100) * 3;
+    score += (Math.min(authorisationRate ?? 0, 100) / 100) * 3;
   } else {
     score += 3;
   }
@@ -379,11 +390,11 @@ export function evaluateSavingsInvestment(
 ): SavingsInvestmentResult {
   if (profiles.length === 0) {
     return {
-      savingsAccountRate: 0,
-      positiveBalanceRate: 0,
-      budgetPlanRate: 0,
+      savingsAccountRate: null,
+      positiveBalanceRate: null,
+      budgetPlanRate: null,
       savingsGrowthDetected: false,
-      ageAppropriateAccountRate: 0,
+      ageAppropriateAccountRate: null,
       overallScore: 0,
     };
   }
@@ -392,15 +403,15 @@ export function evaluateSavingsInvestment(
 
   // Savings accounts in place (>= 90% target)
   const withSavings = profiles.filter((p) => p.savingsAccountInPlace).length;
-  const savingsAccountRate = pct(withSavings, profiles.length);
+  const savingsAccountRate = rate(withSavings, profiles.length);
 
   // Positive balance rate
   const positiveBalance = profiles.filter((p) => p.currentBalance > 0).length;
-  const positiveBalanceRate = pct(positiveBalance, profiles.length);
+  const positiveBalanceRate = rate(positiveBalance, profiles.length);
 
   // Budget plan rate
   const withBudgetPlan = profiles.filter((p) => p.budgetPlanInPlace).length;
-  const budgetPlanRate = pct(withBudgetPlan, profiles.length);
+  const budgetPlanRate = rate(withBudgetPlan, profiles.length);
 
   // Savings growth -- any saved transactions in period
   const savingsGrowthDetected = periodTxns.some((t) => t.type === "saved");
@@ -409,19 +420,19 @@ export function evaluateSavingsInvestment(
   const ageAppropriateAccounts = profiles.filter(
     (p) => p.savingsAccountInPlace && (p.accountType === "savings" || p.accountType === "junior_isa"),
   ).length;
-  const ageAppropriateAccountRate = pct(ageAppropriateAccounts, profiles.length);
+  const ageAppropriateAccountRate = rate(ageAppropriateAccounts, profiles.length);
 
   // Scoring -- 25 points max
   let score = 0;
 
   // +8 savings accounts >= 90%
-  score += (Math.min(savingsAccountRate, 100) / 100) * 8;
+  score += (Math.min(savingsAccountRate ?? 0, 100) / 100) * 8;
 
   // +5 positive balance rate
-  score += (Math.min(positiveBalanceRate, 100) / 100) * 5;
+  score += (Math.min(positiveBalanceRate ?? 0, 100) / 100) * 5;
 
   // +4 budget plan in place
-  score += (Math.min(budgetPlanRate, 100) / 100) * 4;
+  score += (Math.min(budgetPlanRate ?? 0, 100) / 100) * 4;
 
   // +4 savings growth
   if (savingsGrowthDetected) {
@@ -429,7 +440,7 @@ export function evaluateSavingsInvestment(
   }
 
   // +4 age-appropriate account types
-  score += (Math.min(ageAppropriateAccountRate, 100) / 100) * 4;
+  score += (Math.min(ageAppropriateAccountRate ?? 0, 100) / 100) * 4;
 
   return {
     savingsAccountRate,
@@ -451,10 +462,10 @@ export function evaluateFinancialLiteracy(
 ): FinancialLiteracyResult {
   if (profiles.length === 0) {
     return {
-      assessmentRate: 0,
-      competentOrIndependentRate: 0,
-      developingPlusRate: 0,
-      budgetPlanRate: 0,
+      assessmentRate: null,
+      competentOrIndependentRate: null,
+      developingPlusRate: null,
+      budgetPlanRate: null,
       improvementTrendDetected: false,
       overallScore: 0,
     };
@@ -464,13 +475,13 @@ export function evaluateFinancialLiteracy(
   const assessed = profiles.filter(
     (p) => p.financialLiteracyAssessedDate.trim().length > 0,
   ).length;
-  const assessmentRate = pct(assessed, profiles.length);
+  const assessmentRate = rate(assessed, profiles.length);
 
   // Competent/independent rate (>= 50% target)
   const competentOrIndependent = profiles.filter(
     (p) => p.financialLiteracyLevel === "competent" || p.financialLiteracyLevel === "independent",
   ).length;
-  const competentOrIndependentRate = pct(competentOrIndependent, profiles.length);
+  const competentOrIndependentRate = rate(competentOrIndependent, profiles.length);
 
   // Developing+ rate (>= 80% target)
   const developingPlus = profiles.filter(
@@ -479,11 +490,11 @@ export function evaluateFinancialLiteracy(
       p.financialLiteracyLevel === "competent" ||
       p.financialLiteracyLevel === "independent",
   ).length;
-  const developingPlusRate = pct(developingPlus, profiles.length);
+  const developingPlusRate = rate(developingPlus, profiles.length);
 
   // Budget plans
   const withBudgetPlan = profiles.filter((p) => p.budgetPlanInPlace).length;
-  const budgetPlanRate = pct(withBudgetPlan, profiles.length);
+  const budgetPlanRate = rate(withBudgetPlan, profiles.length);
 
   // Improvement trend -- if any child is at developing or above, consider it a positive trend
   // (In a real system this would compare historical data; here we use a proxy)
@@ -493,16 +504,16 @@ export function evaluateFinancialLiteracy(
   let score = 0;
 
   // +8 assessment rate (all assessed)
-  score += (Math.min(assessmentRate, 100) / 100) * 8;
+  score += (Math.min(assessmentRate ?? 0, 100) / 100) * 8;
 
   // +6 competent/independent rate >= 50%
-  score += (Math.min(competentOrIndependentRate, 100) / 100) * 6;
+  score += (Math.min(competentOrIndependentRate ?? 0, 100) / 100) * 6;
 
   // +4 developing+ rate >= 80%
-  score += (Math.min(developingPlusRate, 100) / 100) * 4;
+  score += (Math.min(developingPlusRate ?? 0, 100) / 100) * 4;
 
   // +4 budget plans
-  score += (Math.min(budgetPlanRate, 100) / 100) * 4;
+  score += (Math.min(budgetPlanRate ?? 0, 100) / 100) * 4;
 
   // +3 improvement trend
   if (improvementTrendDetected) {
@@ -534,8 +545,8 @@ export function evaluateAuditCompliance(
     return {
       auditCompletedRecently: false,
       compliantStatus: false,
-      discrepancyResolutionRate: 0,
-      recommendationsActionedRate: 0,
+      discrepancyResolutionRate: null,
+      recommendationsActionedRate: null,
       policyCurrent: false,
       recordsAccurate: false,
       overallScore: 0,
@@ -555,12 +566,12 @@ export function evaluateAuditCompliance(
   // Discrepancy resolution
   const totalDiscrepancies = audits.reduce((s, a) => s + a.discrepanciesFound, 0);
   const totalResolved = audits.reduce((s, a) => s + a.discrepanciesResolved, 0);
-  const discrepancyResolutionRate = pct(totalResolved, totalDiscrepancies);
+  const discrepancyResolutionRate = rate(totalResolved, totalDiscrepancies);
 
   // Recommendations actioned
   const totalRecommendations = audits.reduce((s, a) => s + a.recommendationsCount, 0);
   const totalActioned = audits.reduce((s, a) => s + a.recommendationsActioned, 0);
-  const recommendationsActionedRate = pct(totalActioned, totalRecommendations);
+  const recommendationsActionedRate = rate(totalActioned, totalRecommendations);
 
   // Policy current (reviewed within period or after period start)
   const policyCurrent = policy ? policy.policyReviewedDate >= periodStart : false;
@@ -582,14 +593,14 @@ export function evaluateAuditCompliance(
   if (totalDiscrepancies === 0) {
     score += 4; // no discrepancies is ideal
   } else {
-    score += (Math.min(discrepancyResolutionRate, 100) / 100) * 4;
+    score += (Math.min(discrepancyResolutionRate ?? 0, 100) / 100) * 4;
   }
 
   // +4 recommendations actioned
   if (totalRecommendations === 0) {
     score += 4; // no outstanding recommendations
   } else {
-    score += (Math.min(recommendationsActionedRate, 100) / 100) * 4;
+    score += (Math.min(recommendationsActionedRate ?? 0, 100) / 100) * 4;
   }
 
   // +4 policy current
@@ -634,11 +645,11 @@ export function buildChildFinancialSummaries(
       .reduce((s, t) => s + t.amount, 0);
 
     const consentedCount = childTxns.filter((t) => t.childConsented).length;
-    const consentRate = pct(consentedCount, childTxns.length);
+    const consentRate = rate(consentedCount, childTxns.length);
 
     const spentTxns = childTxns.filter((t) => t.type === "spent");
     const receiptsCount = spentTxns.filter((t) => t.receiptObtained).length;
-    const receiptRate = pct(receiptsCount, spentTxns.length);
+    const receiptRate = rate(receiptsCount, spentTxns.length);
 
     return {
       childId: profile.childId,
@@ -686,28 +697,28 @@ export function generateFinancialStewardshipIntelligence(
   // -- Strengths --
   const strengths: string[] = [];
 
-  if (allowanceManagement.regularPocketMoneyRate >= 100) {
+  if (meets(allowanceManagement.regularPocketMoneyRate, 100)) {
     strengths.push("All children receive regular pocket money, supporting their independence and financial skills");
   }
-  if (allowanceManagement.ageAppropriateRate >= 100) {
+  if (meets(allowanceManagement.ageAppropriateRate, 100)) {
     strengths.push("Pocket money amounts are age-appropriate for all children");
   }
-  if (allowanceManagement.childConsentRate >= 90 && transactions.length > 0) {
+  if (meets(allowanceManagement.childConsentRate, 90) && transactions.length > 0) {
     strengths.push("Children consistently consent to financial transactions, respecting their autonomy");
   }
-  if (allowanceManagement.receiptRate >= 80) {
+  if (meets(allowanceManagement.receiptRate, 80)) {
     strengths.push("Receipts are obtained for the majority of expenditure, supporting audit compliance");
   }
-  if (savingsInvestment.savingsAccountRate >= 90) {
+  if (meets(savingsInvestment.savingsAccountRate, 90)) {
     strengths.push("Savings accounts are in place for almost all children, encouraging financial responsibility");
   }
   if (savingsInvestment.savingsGrowthDetected) {
     strengths.push("Children are actively saving, demonstrating growing financial capability");
   }
-  if (financialLiteracy.assessmentRate >= 100) {
+  if (meets(financialLiteracy.assessmentRate, 100)) {
     strengths.push("All children have been assessed for financial literacy");
   }
-  if (financialLiteracy.competentOrIndependentRate >= 50) {
+  if (meets(financialLiteracy.competentOrIndependentRate, 50)) {
     strengths.push("A good proportion of children demonstrate competent or independent financial skills");
   }
   if (auditCompliance.auditCompletedRecently && auditCompliance.compliantStatus) {
@@ -720,28 +731,28 @@ export function generateFinancialStewardshipIntelligence(
   // -- Areas for Improvement --
   const areasForImprovement: string[] = [];
 
-  if (allowanceManagement.regularPocketMoneyRate < 100 && profiles.length > 0) {
+  if (below(allowanceManagement.regularPocketMoneyRate, 100) && profiles.length > 0) {
     areasForImprovement.push("Not all children are receiving regular pocket money");
   }
-  if (allowanceManagement.ageAppropriateRate < 100 && profiles.length > 0) {
+  if (below(allowanceManagement.ageAppropriateRate, 100) && profiles.length > 0) {
     areasForImprovement.push("Some children's pocket money amounts are not age-appropriate");
   }
-  if (allowanceManagement.childConsentRate < 90 && transactions.length > 0) {
+  if (below(allowanceManagement.childConsentRate, 90) && transactions.length > 0) {
     areasForImprovement.push("Child consent is not consistently obtained for financial transactions");
   }
-  if (allowanceManagement.receiptRate < 80 && transactions.some((t) => t.type === "spent")) {
+  if (below(allowanceManagement.receiptRate, 80) && transactions.some((t) => t.type === "spent")) {
     areasForImprovement.push("Receipts are not consistently obtained for expenditure");
   }
-  if (savingsInvestment.savingsAccountRate < 90 && profiles.length > 0) {
+  if (below(savingsInvestment.savingsAccountRate, 90) && profiles.length > 0) {
     areasForImprovement.push("Not all children have savings accounts in place");
   }
-  if (savingsInvestment.positiveBalanceRate < 80 && profiles.length > 0) {
+  if (below(savingsInvestment.positiveBalanceRate, 80) && profiles.length > 0) {
     areasForImprovement.push("Some children have zero or negative savings balances");
   }
-  if (financialLiteracy.assessmentRate < 100 && profiles.length > 0) {
+  if (below(financialLiteracy.assessmentRate, 100) && profiles.length > 0) {
     areasForImprovement.push("Not all children have been assessed for financial literacy");
   }
-  if (financialLiteracy.developingPlusRate < 80 && profiles.length > 0) {
+  if (below(financialLiteracy.developingPlusRate, 80) && profiles.length > 0) {
     areasForImprovement.push("Too few children are reaching at least developing level in financial literacy");
   }
   if (!auditCompliance.auditCompletedRecently) {
@@ -754,28 +765,28 @@ export function generateFinancialStewardshipIntelligence(
   // -- Actions --
   const actions: string[] = [];
 
-  if (allowanceManagement.regularPocketMoneyRate < 100 && profiles.length > 0) {
+  if (below(allowanceManagement.regularPocketMoneyRate, 100) && profiles.length > 0) {
     actions.push("URGENT: Ensure all children receive regular pocket money as required by NMS 15");
   }
   if (!auditCompliance.auditCompletedRecently) {
     actions.push("HIGH: Complete a financial audit covering the current period");
   }
-  if (savingsInvestment.savingsAccountRate < 90 && profiles.length > 0) {
+  if (below(savingsInvestment.savingsAccountRate, 90) && profiles.length > 0) {
     actions.push("HIGH: Open savings accounts for all children who do not currently have one");
   }
-  if (financialLiteracy.assessmentRate < 100 && profiles.length > 0) {
+  if (below(financialLiteracy.assessmentRate, 100) && profiles.length > 0) {
     actions.push("HIGH: Complete financial literacy assessments for all children");
   }
-  if (allowanceManagement.childConsentRate < 90 && transactions.length > 0) {
+  if (below(allowanceManagement.childConsentRate, 90) && transactions.length > 0) {
     actions.push("MEDIUM: Implement a process to obtain and record child consent for all financial transactions");
   }
-  if (allowanceManagement.receiptRate < 80 && transactions.some((t) => t.type === "spent")) {
+  if (below(allowanceManagement.receiptRate, 80) && transactions.some((t) => t.type === "spent")) {
     actions.push("MEDIUM: Improve receipt collection processes for all expenditure");
   }
   if (!auditCompliance.policyCurrent) {
     actions.push("MEDIUM: Review and update the allowance policy");
   }
-  if (financialLiteracy.developingPlusRate < 80 && profiles.length > 0) {
+  if (below(financialLiteracy.developingPlusRate, 80) && profiles.length > 0) {
     actions.push("LOW: Develop a financial literacy programme to support children reaching at least developing level");
   }
 

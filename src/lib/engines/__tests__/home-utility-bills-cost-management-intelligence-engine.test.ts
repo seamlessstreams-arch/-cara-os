@@ -156,12 +156,12 @@ describe("Empty / edge-case scenarios", () => {
 
   it("returns zero for all rates when insufficient_data", () => {
     const r = computeUtilityBillsCostManagement({ ...baseInput, total_children: 0 });
-    expect(r.cost_monitoring_rate).toBe(0);
-    expect(r.energy_efficiency_rate).toBe(0);
-    expect(r.bill_payment_rate).toBe(0);
-    expect(r.budget_adherence_rate).toBe(0);
-    expect(r.sustainability_rate).toBe(0);
-    expect(r.child_awareness_rate).toBe(0);
+    expect(r.cost_monitoring_rate).toBeNull();
+    expect(r.energy_efficiency_rate).toBeNull();
+    expect(r.bill_payment_rate).toBeNull();
+    expect(r.budget_adherence_rate).toBeNull();
+    expect(r.sustainability_rate).toBeNull();
+    expect(r.child_awareness_rate).toBeNull();
   });
 
   it("returns empty arrays for strengths/concerns/recommendations/insights when insufficient_data", () => {

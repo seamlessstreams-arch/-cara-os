@@ -6,7 +6,7 @@
 // Pure deterministic engine -- no imports, no LLM, no external deps.
 // CHR 2015 Reg 14 (Health care), Reg 5 (Statement of purpose),
 // SCCIF "Health and wellbeing".
-import { meets, below } from "@/lib/metrics/rate";
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 
 // Store keys: weightMonitoringRecords, bmiTrackingRecords,
 //             healthyEatingRecords, portionControlRecords,
@@ -158,7 +158,8 @@ export interface WeightManagementResult {
   weight_rating: WeightManagementRating;
   weight_score: number;
   headline: string;
-  weight_monitoring_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  weight_monitoring_rate: number | null;
   // fab-0: null when no records.
   bmi_tracking_rate: number | null;
   // fab-0: null when no records.
@@ -167,7 +168,8 @@ export interface WeightManagementResult {
   portion_control_rate: number | null;
   // fab-0: null when no records.
   body_positivity_rate: number | null;
-  child_engagement_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_engagement_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: WeightManagementRecommendation[];
@@ -175,10 +177,6 @@ export interface WeightManagementResult {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -202,12 +200,12 @@ function emptyResult(
     weight_rating: rating,
     weight_score: score,
     headline,
-    weight_monitoring_rate: 0,
+    weight_monitoring_rate: null,
     bmi_tracking_rate: null,
     healthy_eating_rate: null,
     portion_control_rate: null,
     body_positivity_rate: null,
-    child_engagement_rate: 0,
+    child_engagement_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -286,79 +284,75 @@ export function computeWeightManagementHealthyEating(
   // --- Weight monitoring rate ---
   const totalWeightRecords = weight_monitoring_records.length;
   const healthyRangeRecords = weight_monitoring_records.filter((r) => r.within_healthy_range).length;
-  const weightMonitoringRate = pct(healthyRangeRecords, totalWeightRecords);
+  const weightMonitoringRate = rate(healthyRangeRecords, totalWeightRecords);
 
   const uniqueChildrenMonitored = new Set(
     weight_monitoring_records.map((r) => r.child_id),
   ).size;
-  const weightCoverageRate = pct(uniqueChildrenMonitored, total_children);
+  const weightCoverageRate = rate(uniqueChildrenMonitored, total_children);
 
   const weightActionTaken = weight_monitoring_records.filter((r) => r.action_taken).length;
-  const weightActionRate = pct(weightActionTaken, totalWeightRecords);
+  const weightActionRate = rate(weightActionTaken, totalWeightRecords);
 
   const weightConsentObtained = weight_monitoring_records.filter((r) => r.child_consent_obtained).length;
-  const weightConsentRate = pct(weightConsentObtained, totalWeightRecords);
+  const weightConsentRate = rate(weightConsentObtained, totalWeightRecords);
 
   const weightChildInformed = weight_monitoring_records.filter((r) => r.child_informed).length;
-  const weightChildInformedRate = pct(weightChildInformed, totalWeightRecords);
+  const weightChildInformedRate = rate(weightChildInformed, totalWeightRecords);
 
   const weightFollowUpNeeded = weight_monitoring_records.filter((r) => r.follow_up_date !== null).length;
   const weightFollowUpCompleted = weight_monitoring_records.filter(
     (r) => r.follow_up_date !== null && r.follow_up_completed,
   ).length;
-  const weightFollowUpRate = pct(weightFollowUpCompleted, weightFollowUpNeeded);
+  const weightFollowUpRate = rate(weightFollowUpCompleted, weightFollowUpNeeded);
 
   const weightConcernRecords = weight_monitoring_records.filter(
     (r) => !r.within_healthy_range,
   ).length;
-  const weightConcernRate = pct(weightConcernRecords, totalWeightRecords);
+  const weightConcernRate = rate(weightConcernRecords, totalWeightRecords);
 
   const routineMonitoring = weight_monitoring_records.filter(
     (r) => r.measurement_context === "routine",
   ).length;
-  const routineMonitoringRate = pct(routineMonitoring, totalWeightRecords);
+  const routineMonitoringRate = rate(routineMonitoring, totalWeightRecords);
 
   // --- BMI tracking rate ---
   const totalBmiRecords = bmi_tracking_records.length;
   const bmiPlottedOnChart = bmi_tracking_records.filter((r) => r.plotted_on_growth_chart).length;
-  const bmiPlottingRate = pct(bmiPlottedOnChart, totalBmiRecords);
+  const bmiPlottingRate = rate(bmiPlottedOnChart, totalBmiRecords);
 
   const bmiChartReviewed = bmi_tracking_records.filter((r) => r.growth_chart_reviewed).length;
-  const bmiReviewRate = pct(bmiChartReviewed, totalBmiRecords);
+  const bmiReviewRate = rate(bmiChartReviewed, totalBmiRecords);
 
   // fab-0: null when no BMI records.
   const bmiTrackingRate: number | null =
-    totalBmiRecords > 0
-      ? Math.round((bmiPlottingRate + bmiReviewRate) / 2)
-      : null;
+    totalBmiRecords > 0 ? Math.round((bmiPlottingRate! + bmiReviewRate!) / 2) : null;
 
   const bmiHealthy = bmi_tracking_records.filter((r) => r.bmi_category === "healthy").length;
-  const bmiHealthyRate = pct(bmiHealthy, totalBmiRecords);
+  const bmiHealthyRate = rate(bmiHealthy, totalBmiRecords);
 
   const bmiProfessionalInvolved = bmi_tracking_records.filter((r) => r.professional_involved).length;
-  const bmiProfessionalRate = pct(bmiProfessionalInvolved, totalBmiRecords);
+  const bmiProfessionalRate = rate(bmiProfessionalInvolved, totalBmiRecords);
 
   const bmiAgeAppropriateDiscussion = bmi_tracking_records.filter(
     (r) => r.child_age_appropriate_discussion,
   ).length;
-  const bmiDiscussionRate = pct(bmiAgeAppropriateDiscussion, totalBmiRecords);
+  const bmiDiscussionRate = rate(bmiAgeAppropriateDiscussion, totalBmiRecords);
 
   const bmiDeclining = bmi_tracking_records.filter((r) => r.trend_direction === "declining").length;
-  const bmiDecliningRate = pct(bmiDeclining, totalBmiRecords);
+  const bmiDecliningRate = rate(bmiDeclining, totalBmiRecords);
 
   // --- Healthy eating programme engagement ---
   const totalHealthyEatingRecords = healthy_eating_records.length;
   const healthyEatingAttended = healthy_eating_records.filter((r) => r.attended).length;
-  const healthyEatingAttendanceRate = pct(healthyEatingAttended, totalHealthyEatingRecords);
+  const healthyEatingAttendanceRate = rate(healthyEatingAttended, totalHealthyEatingRecords);
 
   const healthyEatingEngaged = healthy_eating_records.filter((r) => r.engaged).length;
-  const healthyEatingEngagementRate = pct(healthyEatingEngaged, totalHealthyEatingRecords);
+  const healthyEatingEngagementRate = rate(healthyEatingEngaged, totalHealthyEatingRecords);
 
   // fab-0: null when no healthy-eating records.
   const healthyEatingRate: number | null =
-    totalHealthyEatingRecords > 0
-      ? Math.round((healthyEatingAttendanceRate + healthyEatingEngagementRate) / 2)
-      : null;
+    totalHealthyEatingRecords > 0 ? Math.round((healthyEatingAttendanceRate! + healthyEatingEngagementRate!) / 2) : null;
 
   const healthyEatingSatisfactionSum = healthy_eating_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
@@ -372,69 +366,67 @@ export function computeWeightManagementHealthyEating(
   const healthyEatingObjectivesMet = healthy_eating_records.filter(
     (r) => r.learning_objectives_met,
   ).length;
-  const healthyEatingObjectivesRate = pct(healthyEatingObjectivesMet, totalHealthyEatingRecords);
+  const healthyEatingObjectivesRate = rate(healthyEatingObjectivesMet, totalHealthyEatingRecords);
 
   const healthyChoiceMade = healthy_eating_records.filter((r) => r.healthy_choice_made).length;
-  const healthyChoiceRate = pct(healthyChoiceMade, totalHealthyEatingRecords);
+  const healthyChoiceRate = rate(healthyChoiceMade, totalHealthyEatingRecords);
 
   const dietaryKnowledgeImproved = healthy_eating_records.filter(
     (r) => r.dietary_knowledge_improved,
   ).length;
-  const dietaryKnowledgeRate = pct(dietaryKnowledgeImproved, totalHealthyEatingRecords);
+  const dietaryKnowledgeRate = rate(dietaryKnowledgeImproved, totalHealthyEatingRecords);
 
   // --- Portion control awareness ---
   const totalPortionRecords = portion_control_records.length;
   const understandsPortions = portion_control_records.filter(
     (r) => r.understands_portions,
   ).length;
-  const portionUnderstandingRate = pct(understandsPortions, totalPortionRecords);
+  const portionUnderstandingRate = rate(understandsPortions, totalPortionRecords);
 
   const ageAppropriatePortions = portion_control_records.filter(
     (r) => r.age_appropriate_portions_served,
   ).length;
-  const ageAppropriatePortionRate = pct(ageAppropriatePortions, totalPortionRecords);
+  const ageAppropriatePortionRate = rate(ageAppropriatePortions, totalPortionRecords);
 
   // fab-0: null when no portion records.
   const portionControlRate: number | null =
-    totalPortionRecords > 0
-      ? Math.round((portionUnderstandingRate + ageAppropriatePortionRate) / 2)
-      : null;
+    totalPortionRecords > 0 ? Math.round((portionUnderstandingRate! + ageAppropriatePortionRate!) / 2) : null;
 
   const mealsBalanced = portion_control_records.filter((r) => r.meals_balanced).length;
-  const mealsBalancedRate = pct(mealsBalanced, totalPortionRecords);
+  const mealsBalancedRate = rate(mealsBalanced, totalPortionRecords);
 
   const snackAppropriate = portion_control_records.filter(
     (r) => r.snack_provision_appropriate,
   ).length;
-  const snackAppropriateRate = pct(snackAppropriate, totalPortionRecords);
+  const snackAppropriateRate = rate(snackAppropriate, totalPortionRecords);
 
   const hydrationAdequate = portion_control_records.filter(
     (r) => r.hydration_adequate,
   ).length;
-  const hydrationRate = pct(hydrationAdequate, totalPortionRecords);
+  const hydrationRate = rate(hydrationAdequate, totalPortionRecords);
 
   const selfServes = portion_control_records.filter((r) => r.child_self_serves).length;
-  const selfServingRate = pct(selfServes, totalPortionRecords);
+  const selfServingRate = rate(selfServes, totalPortionRecords);
 
   const overeatingConcerns = portion_control_records.filter(
     (r) => r.overeating_concerns,
   ).length;
-  const overeatingRate = pct(overeatingConcerns, totalPortionRecords);
+  const overeatingRate = rate(overeatingConcerns, totalPortionRecords);
 
   const undereatingConcerns = portion_control_records.filter(
     (r) => r.undereating_concerns,
   ).length;
-  const undereatingRate = pct(undereatingConcerns, totalPortionRecords);
+  const undereatingRate = rate(undereatingConcerns, totalPortionRecords);
 
   const emotionalEating = portion_control_records.filter(
     (r) => r.emotional_eating_identified,
   ).length;
-  const emotionalEatingRate = pct(emotionalEating, totalPortionRecords);
+  const emotionalEatingRate = rate(emotionalEating, totalPortionRecords);
 
   const staffTrainedPortions = portion_control_records.filter(
     (r) => r.staff_trained_on_portions,
   ).length;
-  const staffTrainedPortionRate = pct(staffTrainedPortions, totalPortionRecords);
+  const staffTrainedPortionRate = rate(staffTrainedPortions, totalPortionRecords);
 
   const portionVoiceCaptured = portion_control_records.filter(
     (r) => r.child_voice_captured,
@@ -445,18 +437,16 @@ export function computeWeightManagementHealthyEating(
   const bodyPositivityEngaged = body_positivity_records.filter(
     (r) => r.child_engaged,
   ).length;
-  const bodyPositivityEngagementRate = pct(bodyPositivityEngaged, totalBodyPositivityRecords);
+  const bodyPositivityEngagementRate = rate(bodyPositivityEngaged, totalBodyPositivityRecords);
 
   const positiveImageDiscussed = body_positivity_records.filter(
     (r) => r.positive_body_image_discussed,
   ).length;
-  const positiveImageRate = pct(positiveImageDiscussed, totalBodyPositivityRecords);
+  const positiveImageRate = rate(positiveImageDiscussed, totalBodyPositivityRecords);
 
   // fab-0: null when no body-positivity records.
   const bodyPositivityRate: number | null =
-    totalBodyPositivityRecords > 0
-      ? Math.round((bodyPositivityEngagementRate + positiveImageRate) / 2)
-      : null;
+    totalBodyPositivityRecords > 0 ? Math.round((bodyPositivityEngagementRate! + positiveImageRate!) / 2) : null;
 
   const bodyPositivitySatisfactionSum = body_positivity_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
@@ -470,27 +460,27 @@ export function computeWeightManagementHealthyEating(
   const selfEsteemComponent = body_positivity_records.filter(
     (r) => r.self_esteem_component,
   ).length;
-  const selfEsteemRate = pct(selfEsteemComponent, totalBodyPositivityRecords);
+  const selfEsteemRate = rate(selfEsteemComponent, totalBodyPositivityRecords);
 
   const mediaLiteracy = body_positivity_records.filter(
     (r) => r.media_literacy_included,
   ).length;
-  const mediaLiteracyRate = pct(mediaLiteracy, totalBodyPositivityRecords);
+  const mediaLiteracyRate = rate(mediaLiteracy, totalBodyPositivityRecords);
 
   const weightStigmaAddressed = body_positivity_records.filter(
     (r) => r.weight_stigma_addressed,
   ).length;
-  const weightStigmaRate = pct(weightStigmaAddressed, totalBodyPositivityRecords);
+  const weightStigmaRate = rate(weightStigmaAddressed, totalBodyPositivityRecords);
 
   const bodyPositivityConcerns = body_positivity_records.filter(
     (r) => r.concerns_identified,
   ).length;
-  const bodyPositivityConcernRate = pct(bodyPositivityConcerns, totalBodyPositivityRecords);
+  const bodyPositivityConcernRate = rate(bodyPositivityConcerns, totalBodyPositivityRecords);
 
   const bodyPositivityOutcomes = body_positivity_records.filter(
     (r) => r.outcomes_documented,
   ).length;
-  const bodyPositivityOutcomesRate = pct(bodyPositivityOutcomes, totalBodyPositivityRecords);
+  const bodyPositivityOutcomesRate = rate(bodyPositivityOutcomes, totalBodyPositivityRecords);
 
   const bodyPositivityVoiceCaptured = body_positivity_records.filter(
     (r) => r.child_voice_captured,
@@ -507,15 +497,15 @@ export function computeWeightManagementHealthyEating(
     totalBodyPositivityRecords +
     totalPortionRecords +
     totalBodyPositivityRecords;
-  const childEngagementRate = pct(engagementNumerator, engagementDenominator);
+  const childEngagementRate = rate(engagementNumerator, engagementDenominator);
 
   // -- Scoring: base 52 ----------------------------------------------------
 
   let score = 52;
 
   // --- Bonus 1: weightMonitoringRate (>=90: +4, >=70: +2) ---
-  if (weightMonitoringRate >= 90) score += 4;
-  else if (weightMonitoringRate >= 70) score += 2;
+  if (meets(weightMonitoringRate, 90)) score += 4;
+  else if (meets(weightMonitoringRate, 70)) score += 2;
 
   // --- Bonus 2: bmiTrackingRate (>=80: +4, >=60: +2) ---
   if (meets(bmiTrackingRate, 80)) score += 4;
@@ -534,28 +524,28 @@ export function computeWeightManagementHealthyEating(
   else if (meets(bodyPositivityRate, 70)) score += 1;
 
   // --- Bonus 6: childEngagementRate (>=80: +3, >=60: +1) ---
-  if (childEngagementRate >= 80) score += 3;
-  else if (childEngagementRate >= 60) score += 1;
+  if (meets(childEngagementRate, 80)) score += 3;
+  else if (meets(childEngagementRate, 60)) score += 1;
 
   // --- Bonus 7: mealsBalancedRate (>=95: +3, >=80: +1) ---
-  if (mealsBalancedRate >= 95) score += 3;
-  else if (mealsBalancedRate >= 80) score += 1;
+  if (meets(mealsBalancedRate, 95)) score += 3;
+  else if (meets(mealsBalancedRate, 80)) score += 1;
 
   // --- Bonus 8: weightCoverageRate (>=90: +2, >=70: +1) ---
-  if (weightCoverageRate >= 90) score += 2;
-  else if (weightCoverageRate >= 70) score += 1;
+  if (meets(weightCoverageRate, 90)) score += 2;
+  else if (meets(weightCoverageRate, 70)) score += 1;
 
   // --- Bonus 9: hydrationRate (>=90: +2, >=70: +1) ---
-  if (hydrationRate >= 90) score += 2;
-  else if (hydrationRate >= 70) score += 1;
+  if (meets(hydrationRate, 90)) score += 2;
+  else if (meets(hydrationRate, 70)) score += 1;
 
   // -- Penalties (4 with guards) -------------------------------------------
 
   // weightConcernRate > 50 and no actions -> -5
-  if (weightConcernRate > 50 && weightActionRate < 50 && weight_monitoring_records.length > 0) score -= 5;
+  if (above(weightConcernRate, 50) && below(weightActionRate, 50) && weight_monitoring_records.length > 0) score -= 5;
 
   // bmiDecliningRate > 40 -> -5
-  if (bmiDecliningRate > 40 && bmi_tracking_records.length > 0) score -= 5;
+  if (above(bmiDecliningRate, 40) && bmi_tracking_records.length > 0) score -= 5;
 
   // healthyEatingRate < 40 -> -4
   if (below(healthyEatingRate, 40) && healthy_eating_records.length > 0) score -= 4;
@@ -571,39 +561,39 @@ export function computeWeightManagementHealthyEating(
 
   const strengths: string[] = [];
 
-  if (weightMonitoringRate >= 90 && totalWeightRecords > 0) {
+  if (meets(weightMonitoringRate, 90) && totalWeightRecords > 0) {
     strengths.push(
       `${weightMonitoringRate}% of children's weight measurements are within healthy range -- the home demonstrates effective weight monitoring and health promotion.`,
     );
-  } else if (weightMonitoringRate >= 70 && totalWeightRecords > 0) {
+  } else if (meets(weightMonitoringRate, 70) && totalWeightRecords > 0) {
     strengths.push(
       `${weightMonitoringRate}% of weight measurements within healthy range -- the majority of children's weight is well managed.`,
     );
   }
 
-  if (weightCoverageRate >= 90 && total_children > 0) {
+  if (meets(weightCoverageRate, 90) && total_children > 0) {
     strengths.push(
       `${weightCoverageRate}% of children have weight monitoring records -- comprehensive coverage ensures no child's nutritional health is overlooked.`,
     );
-  } else if (weightCoverageRate >= 70 && total_children > 0) {
+  } else if (meets(weightCoverageRate, 70) && total_children > 0) {
     strengths.push(
       `${weightCoverageRate}% weight monitoring coverage -- most children's weight is being actively tracked.`,
     );
   }
 
-  if (weightActionRate >= 90 && totalWeightRecords > 0) {
+  if (meets(weightActionRate, 90) && totalWeightRecords > 0) {
     strengths.push(
       `Actions taken in ${weightActionRate}% of weight monitoring records -- the home responds promptly to weight-related findings.`,
     );
   }
 
-  if (weightConsentRate >= 90 && totalWeightRecords > 0) {
+  if (meets(weightConsentRate, 90) && totalWeightRecords > 0) {
     strengths.push(
       `Child consent obtained for ${weightConsentRate}% of weight measurements -- the home respects children's autonomy and rights in health monitoring.`,
     );
   }
 
-  if (weightFollowUpRate >= 90 && weightFollowUpNeeded > 0) {
+  if (meets(weightFollowUpRate, 90) && weightFollowUpNeeded > 0) {
     strengths.push(
       `${weightFollowUpRate}% of weight monitoring follow-ups completed -- the home demonstrates strong continuity of care in weight management.`,
     );
@@ -619,19 +609,19 @@ export function computeWeightManagementHealthyEating(
     );
   }
 
-  if (bmiHealthyRate >= 80 && totalBmiRecords > 0) {
+  if (meets(bmiHealthyRate, 80) && totalBmiRecords > 0) {
     strengths.push(
       `${bmiHealthyRate}% of BMI assessments fall within the healthy category -- children's nutritional status is well maintained.`,
     );
   }
 
-  if (bmiProfessionalRate >= 80 && totalBmiRecords > 0) {
+  if (meets(bmiProfessionalRate, 80) && totalBmiRecords > 0) {
     strengths.push(
       `Health professionals involved in ${bmiProfessionalRate}% of BMI reviews -- clinical oversight ensures weight concerns are identified and addressed by qualified practitioners.`,
     );
   }
 
-  if (bmiDiscussionRate >= 80 && totalBmiRecords > 0) {
+  if (meets(bmiDiscussionRate, 80) && totalBmiRecords > 0) {
     strengths.push(
       `Age-appropriate BMI discussions held in ${bmiDiscussionRate}% of cases -- children understand their growth and development in a sensitive, supportive way.`,
     );
@@ -653,19 +643,19 @@ export function computeWeightManagementHealthyEating(
     );
   }
 
-  if (healthyChoiceRate >= 80 && totalHealthyEatingRecords > 0) {
+  if (meets(healthyChoiceRate, 80) && totalHealthyEatingRecords > 0) {
     strengths.push(
       `Healthy food choices observed in ${healthyChoiceRate}% of programme sessions -- children are translating nutrition knowledge into practical choices.`,
     );
   }
 
-  if (dietaryKnowledgeRate >= 80 && totalHealthyEatingRecords > 0) {
+  if (meets(dietaryKnowledgeRate, 80) && totalHealthyEatingRecords > 0) {
     strengths.push(
       `Dietary knowledge improved in ${dietaryKnowledgeRate}% of sessions -- the healthy eating programme is effectively building children's nutritional literacy.`,
     );
   }
 
-  if (healthyEatingObjectivesRate >= 80 && totalHealthyEatingRecords > 0) {
+  if (meets(healthyEatingObjectivesRate, 80) && totalHealthyEatingRecords > 0) {
     strengths.push(
       `Learning objectives met in ${healthyEatingObjectivesRate}% of healthy eating sessions -- programmes are well structured and delivering intended outcomes.`,
     );
@@ -681,31 +671,31 @@ export function computeWeightManagementHealthyEating(
     );
   }
 
-  if (mealsBalancedRate >= 90 && totalPortionRecords > 0) {
+  if (meets(mealsBalancedRate, 90) && totalPortionRecords > 0) {
     strengths.push(
       `${mealsBalancedRate}% of meals assessed as balanced -- the home consistently provides nutritionally balanced meals.`,
     );
   }
 
-  if (snackAppropriateRate >= 90 && totalPortionRecords > 0) {
+  if (meets(snackAppropriateRate, 90) && totalPortionRecords > 0) {
     strengths.push(
       `Appropriate snack provision in ${snackAppropriateRate}% of assessments -- snacking habits are healthy and well managed.`,
     );
   }
 
-  if (hydrationRate >= 90 && totalPortionRecords > 0) {
+  if (meets(hydrationRate, 90) && totalPortionRecords > 0) {
     strengths.push(
       `Adequate hydration reported in ${hydrationRate}% of assessments -- children are drinking enough water and healthy fluids.`,
     );
   }
 
-  if (selfServingRate >= 60 && totalPortionRecords > 0) {
+  if (meets(selfServingRate, 60) && totalPortionRecords > 0) {
     strengths.push(
       `${selfServingRate}% of children self-serve at meals -- the home promotes independence and self-regulation in eating habits.`,
     );
   }
 
-  if (staffTrainedPortionRate >= 80 && totalPortionRecords > 0) {
+  if (meets(staffTrainedPortionRate, 80) && totalPortionRecords > 0) {
     strengths.push(
       `Staff trained on portion guidance in ${staffTrainedPortionRate}% of assessments -- staff are equipped to support children's healthy eating.`,
     );
@@ -727,41 +717,41 @@ export function computeWeightManagementHealthyEating(
     );
   }
 
-  if (selfEsteemRate >= 80 && totalBodyPositivityRecords > 0) {
+  if (meets(selfEsteemRate, 80) && totalBodyPositivityRecords > 0) {
     strengths.push(
       `Self-esteem components included in ${selfEsteemRate}% of body positivity sessions -- the home links body image work to broader self-worth and confidence.`,
     );
   }
 
-  if (mediaLiteracyRate >= 60 && totalBodyPositivityRecords > 0) {
+  if (meets(mediaLiteracyRate, 60) && totalBodyPositivityRecords > 0) {
     strengths.push(
       `Media literacy included in ${mediaLiteracyRate}% of body positivity sessions -- children are developing critical thinking about media portrayals of body image.`,
     );
   }
 
-  if (weightStigmaRate >= 60 && totalBodyPositivityRecords > 0) {
+  if (meets(weightStigmaRate, 60) && totalBodyPositivityRecords > 0) {
     strengths.push(
       `Weight stigma addressed in ${weightStigmaRate}% of sessions -- the home actively challenges weight-based discrimination and promotes acceptance.`,
     );
   }
 
-  if (bodyPositivityOutcomesRate >= 80 && totalBodyPositivityRecords > 0) {
+  if (meets(bodyPositivityOutcomesRate, 80) && totalBodyPositivityRecords > 0) {
     strengths.push(
       `Outcomes documented in ${bodyPositivityOutcomesRate}% of body positivity sessions -- the home tracks the impact of its body image support work.`,
     );
   }
 
-  if (childEngagementRate >= 80 && engagementDenominator > 0) {
+  if (meets(childEngagementRate, 80) && engagementDenominator > 0) {
     strengths.push(
       `Overall child engagement rate at ${childEngagementRate}% -- children are actively participating in weight management and healthy eating activities.`,
     );
-  } else if (childEngagementRate >= 60 && engagementDenominator > 0) {
+  } else if (meets(childEngagementRate, 60) && engagementDenominator > 0) {
     strengths.push(
       `Child engagement rate at ${childEngagementRate}% -- good participation levels across healthy eating and body positivity programmes.`,
     );
   }
 
-  if (routineMonitoringRate >= 70 && totalWeightRecords > 0) {
+  if (meets(routineMonitoringRate, 70) && totalWeightRecords > 0) {
     strengths.push(
       `${routineMonitoringRate}% of weight measurements are routine -- the home has embedded proactive weight monitoring into regular care rather than only responding to concerns.`,
     );
@@ -771,43 +761,43 @@ export function computeWeightManagementHealthyEating(
 
   const concerns: string[] = [];
 
-  if (weightConcernRate > 50 && weightActionRate < 50 && totalWeightRecords > 0) {
+  if (above(weightConcernRate, 50) && below(weightActionRate, 50) && totalWeightRecords > 0) {
     concerns.push(
       `${weightConcernRate}% of weight measurements fall outside healthy range yet actions taken in only ${weightActionRate}% of records -- the home is identifying weight concerns but not responding adequately, failing in its duty of health care under Reg 14.`,
     );
-  } else if (weightConcernRate > 30 && totalWeightRecords > 0) {
+  } else if (above(weightConcernRate, 30) && totalWeightRecords > 0) {
     concerns.push(
       `${weightConcernRate}% of weight measurements outside healthy range -- elevated levels of weight concern require closer monitoring and targeted intervention.`,
     );
   }
 
-  if (weightCoverageRate < 50 && total_children > 0 && totalWeightRecords > 0) {
+  if (below(weightCoverageRate, 50) && total_children > 0 && totalWeightRecords > 0) {
     concerns.push(
       `Only ${weightCoverageRate}% of children have weight monitoring records -- the majority of children's weight is not being actively tracked, creating blind spots in health oversight.`,
     );
-  } else if (weightCoverageRate < 70 && weightCoverageRate >= 50 && total_children > 0 && totalWeightRecords > 0) {
+  } else if (below(weightCoverageRate, 70) && meets(weightCoverageRate, 50) && total_children > 0 && totalWeightRecords > 0) {
     concerns.push(
       `Weight monitoring coverage at ${weightCoverageRate}% -- not all children are having their weight regularly monitored.`,
     );
   }
 
-  if (weightConsentRate < 50 && totalWeightRecords > 0) {
+  if (below(weightConsentRate, 50) && totalWeightRecords > 0) {
     concerns.push(
       `Child consent obtained for only ${weightConsentRate}% of weight measurements -- the home is not consistently seeking children's consent for health monitoring, undermining their autonomy and rights.`,
     );
   }
 
-  if (weightFollowUpRate < 50 && weightFollowUpNeeded > 0) {
+  if (below(weightFollowUpRate, 50) && weightFollowUpNeeded > 0) {
     concerns.push(
       `Only ${weightFollowUpRate}% of weight monitoring follow-ups completed -- gaps in follow-up mean weight concerns may not be adequately addressed.`,
     );
   }
 
-  if (bmiDecliningRate > 40 && totalBmiRecords > 0) {
+  if (above(bmiDecliningRate, 40) && totalBmiRecords > 0) {
     concerns.push(
       `${bmiDecliningRate}% of BMI trends are declining -- a significant proportion of children's nutritional status is deteriorating, requiring urgent clinical review.`,
     );
-  } else if (bmiDecliningRate > 20 && bmiDecliningRate <= 40 && totalBmiRecords > 0) {
+  } else if (above(bmiDecliningRate, 20) && bmiDecliningRate! <= 40 && totalBmiRecords > 0) {
     concerns.push(
       `${bmiDecliningRate}% of BMI trends declining -- some children's weight trajectories are worsening and need closer attention.`,
     );
@@ -823,13 +813,13 @@ export function computeWeightManagementHealthyEating(
     );
   }
 
-  if (bmiProfessionalRate < 50 && totalBmiRecords > 0) {
+  if (below(bmiProfessionalRate, 50) && totalBmiRecords > 0) {
     concerns.push(
       `Health professionals involved in only ${bmiProfessionalRate}% of BMI reviews -- insufficient clinical oversight of children's growth and nutritional status.`,
     );
   }
 
-  if (bmiDiscussionRate < 50 && totalBmiRecords > 0) {
+  if (below(bmiDiscussionRate, 50) && totalBmiRecords > 0) {
     concerns.push(
       `Age-appropriate BMI discussions held in only ${bmiDiscussionRate}% of cases -- children are not being helped to understand their growth and development.`,
     );
@@ -851,7 +841,7 @@ export function computeWeightManagementHealthyEating(
     );
   }
 
-  if (healthyChoiceRate < 50 && totalHealthyEatingRecords > 0) {
+  if (below(healthyChoiceRate, 50) && totalHealthyEatingRecords > 0) {
     concerns.push(
       `Healthy food choices observed in only ${healthyChoiceRate}% of sessions -- nutrition education is not translating into practical behaviour change.`,
     );
@@ -867,31 +857,31 @@ export function computeWeightManagementHealthyEating(
     );
   }
 
-  if (mealsBalancedRate < 70 && totalPortionRecords > 0) {
+  if (below(mealsBalancedRate, 70) && totalPortionRecords > 0) {
     concerns.push(
       `Only ${mealsBalancedRate}% of meals assessed as balanced -- children may not be receiving nutritionally adequate meals.`,
     );
   }
 
-  if (overeatingRate > 30 && totalPortionRecords > 0) {
+  if (above(overeatingRate, 30) && totalPortionRecords > 0) {
     concerns.push(
       `Overeating concerns identified in ${overeatingRate}% of portion assessments -- the home needs to address overeating patterns with sensitive, supportive intervention.`,
     );
   }
 
-  if (undereatingRate > 30 && totalPortionRecords > 0) {
+  if (above(undereatingRate, 30) && totalPortionRecords > 0) {
     concerns.push(
       `Undereating concerns identified in ${undereatingRate}% of portion assessments -- restrictive eating patterns require prompt assessment and support.`,
     );
   }
 
-  if (emotionalEatingRate > 20 && totalPortionRecords > 0) {
+  if (above(emotionalEatingRate, 20) && totalPortionRecords > 0) {
     concerns.push(
       `Emotional eating identified in ${emotionalEatingRate}% of assessments -- children may be using food to manage emotions, requiring therapeutic support.`,
     );
   }
 
-  if (hydrationRate < 70 && totalPortionRecords > 0) {
+  if (below(hydrationRate, 70) && totalPortionRecords > 0) {
     concerns.push(
       `Adequate hydration reported in only ${hydrationRate}% of assessments -- children may not be drinking enough water and healthy fluids.`,
     );
@@ -907,7 +897,7 @@ export function computeWeightManagementHealthyEating(
     );
   }
 
-  if (bodyPositivityConcernRate > 30 && totalBodyPositivityRecords > 0) {
+  if (above(bodyPositivityConcernRate, 30) && totalBodyPositivityRecords > 0) {
     concerns.push(
       `Body image concerns identified in ${bodyPositivityConcernRate}% of sessions -- a significant proportion of children are struggling with body image and may need specialist support.`,
     );
@@ -919,11 +909,11 @@ export function computeWeightManagementHealthyEating(
     );
   }
 
-  if (childEngagementRate < 50 && engagementDenominator > 0) {
+  if (below(childEngagementRate, 50) && engagementDenominator > 0) {
     concerns.push(
       `Overall child engagement rate at only ${childEngagementRate}% -- children are not adequately involved in weight management and healthy eating activities.`,
     );
-  } else if (childEngagementRate < 60 && childEngagementRate >= 50 && engagementDenominator > 0) {
+  } else if (below(childEngagementRate, 60) && meets(childEngagementRate, 50) && engagementDenominator > 0) {
     concerns.push(
       `Child engagement rate at ${childEngagementRate}% -- engagement with healthy eating and body positivity programmes needs strengthening.`,
     );
@@ -952,7 +942,7 @@ export function computeWeightManagementHealthyEating(
   const recommendations: WeightManagementRecommendation[] = [];
   let rank = 0;
 
-  if (weightConcernRate > 50 && weightActionRate < 50 && totalWeightRecords > 0) {
+  if (above(weightConcernRate, 50) && below(weightActionRate, 50) && totalWeightRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -962,7 +952,7 @@ export function computeWeightManagementHealthyEating(
     });
   }
 
-  if (bmiDecliningRate > 40 && totalBmiRecords > 0) {
+  if (above(bmiDecliningRate, 40) && totalBmiRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -992,7 +982,7 @@ export function computeWeightManagementHealthyEating(
     });
   }
 
-  if (weightCoverageRate < 50 && total_children > 0 && totalWeightRecords > 0) {
+  if (below(weightCoverageRate, 50) && total_children > 0 && totalWeightRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1022,7 +1012,7 @@ export function computeWeightManagementHealthyEating(
     });
   }
 
-  if (mealsBalancedRate < 70 && totalPortionRecords > 0) {
+  if (below(mealsBalancedRate, 70) && totalPortionRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1032,7 +1022,7 @@ export function computeWeightManagementHealthyEating(
     });
   }
 
-  if (emotionalEatingRate > 20 && totalPortionRecords > 0) {
+  if (above(emotionalEatingRate, 20) && totalPortionRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1042,7 +1032,7 @@ export function computeWeightManagementHealthyEating(
     });
   }
 
-  if (bodyPositivityConcernRate > 30 && totalBodyPositivityRecords > 0) {
+  if (above(bodyPositivityConcernRate, 30) && totalBodyPositivityRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1052,7 +1042,7 @@ export function computeWeightManagementHealthyEating(
     });
   }
 
-  if (weightConsentRate < 50 && totalWeightRecords > 0) {
+  if (below(weightConsentRate, 50) && totalWeightRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1062,7 +1052,7 @@ export function computeWeightManagementHealthyEating(
     });
   }
 
-  if (bmiDiscussionRate < 50 && totalBmiRecords > 0) {
+  if (below(bmiDiscussionRate, 50) && totalBmiRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1072,7 +1062,7 @@ export function computeWeightManagementHealthyEating(
     });
   }
 
-  if (hydrationRate < 70 && totalPortionRecords > 0) {
+  if (below(hydrationRate, 70) && totalPortionRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1112,7 +1102,7 @@ export function computeWeightManagementHealthyEating(
     });
   }
 
-  if (weightCoverageRate >= 50 && weightCoverageRate < 70 && total_children > 0 && totalWeightRecords > 0) {
+  if (meets(weightCoverageRate, 50) && below(weightCoverageRate, 70) && total_children > 0 && totalWeightRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1158,14 +1148,14 @@ export function computeWeightManagementHealthyEating(
 
   // --- Critical insights ---
 
-  if (weightConcernRate > 50 && weightActionRate < 50 && totalWeightRecords > 0) {
+  if (above(weightConcernRate, 50) && below(weightActionRate, 50) && totalWeightRecords > 0) {
     insights.push({
       text: `${weightConcernRate}% of weight measurements outside healthy range with actions taken in only ${weightActionRate}% of records. Ofsted will view the failure to act on identified weight concerns as a serious breach of Reg 14 -- the home is identifying problems but not responding, which is arguably worse than not monitoring at all.`,
       severity: "critical",
     });
   }
 
-  if (bmiDecliningRate > 40 && totalBmiRecords > 0) {
+  if (above(bmiDecliningRate, 40) && totalBmiRecords > 0) {
     insights.push({
       text: `${bmiDecliningRate}% of BMI trends are declining. A deteriorating nutritional trajectory for this many children indicates a systemic failure in the home's approach to weight management and healthy eating. Ofsted will expect evidence of urgent clinical intervention and documented care plans.`,
       severity: "critical",
@@ -1195,14 +1185,14 @@ export function computeWeightManagementHealthyEating(
 
   // --- Warning insights ---
 
-  if (weightConcernRate > 30 && weightConcernRate <= 50 && totalWeightRecords > 0) {
+  if (above(weightConcernRate, 30) && weightConcernRate! <= 50 && totalWeightRecords > 0) {
     insights.push({
       text: `${weightConcernRate}% of weight measurements fall outside healthy range -- while not yet critical, elevated concern levels require closer monitoring and proactive intervention to prevent deterioration.`,
       severity: "warning",
     });
   }
 
-  if (bmiDecliningRate > 20 && bmiDecliningRate <= 40 && totalBmiRecords > 0) {
+  if (above(bmiDecliningRate, 20) && bmiDecliningRate! <= 40 && totalBmiRecords > 0) {
     insights.push({
       text: `${bmiDecliningRate}% of BMI trends are declining -- some children's nutritional trajectories are worsening. Early intervention can prevent these trends from becoming critical.`,
       severity: "warning",
@@ -1230,49 +1220,49 @@ export function computeWeightManagementHealthyEating(
     });
   }
 
-  if (overeatingRate > 30 && totalPortionRecords > 0) {
+  if (above(overeatingRate, 30) && totalPortionRecords > 0) {
     insights.push({
       text: `Overeating concerns in ${overeatingRate}% of portion assessments -- patterns of overeating in looked-after children often relate to early experiences of food insecurity or emotional regulation difficulties and require sensitive, trauma-informed support.`,
       severity: "warning",
     });
   }
 
-  if (undereatingRate > 30 && totalPortionRecords > 0) {
+  if (above(undereatingRate, 30) && totalPortionRecords > 0) {
     insights.push({
       text: `Undereating concerns in ${undereatingRate}% of portion assessments -- restrictive eating in looked-after children may indicate anxiety, control issues, or disordered eating patterns that require specialist assessment.`,
       severity: "warning",
     });
   }
 
-  if (emotionalEatingRate > 20 && totalPortionRecords > 0) {
+  if (above(emotionalEatingRate, 20) && totalPortionRecords > 0) {
     insights.push({
       text: `Emotional eating identified in ${emotionalEatingRate}% of assessments -- using food to manage emotions is common in children who have experienced trauma and adversity. Therapeutic support should address the underlying emotional needs.`,
       severity: "warning",
     });
   }
 
-  if (childEngagementRate >= 50 && childEngagementRate < 80 && engagementDenominator > 0) {
+  if (meets(childEngagementRate, 50) && below(childEngagementRate, 80) && engagementDenominator > 0) {
     insights.push({
       text: `Child engagement rate at ${childEngagementRate}% across healthy eating and body positivity activities -- while participation exists, more children need to be actively engaged to ensure equitable access to health promotion.`,
       severity: "warning",
     });
   }
 
-  if (weightCoverageRate >= 50 && weightCoverageRate < 70 && total_children > 0 && totalWeightRecords > 0) {
+  if (meets(weightCoverageRate, 50) && below(weightCoverageRate, 70) && total_children > 0 && totalWeightRecords > 0) {
     insights.push({
       text: `Weight monitoring covers ${weightCoverageRate}% of children -- gaps in coverage mean some children's weight may not be tracked, creating blind spots in health oversight.`,
       severity: "warning",
     });
   }
 
-  if (mealsBalancedRate >= 70 && mealsBalancedRate < 90 && totalPortionRecords > 0) {
+  if (meets(mealsBalancedRate, 70) && below(mealsBalancedRate, 90) && totalPortionRecords > 0) {
     insights.push({
       text: `${mealsBalancedRate}% of meals assessed as balanced -- while generally good, inconsistency in meal balance means some children may receive nutritionally inadequate meals on occasion.`,
       severity: "warning",
     });
   }
 
-  if (bodyPositivityConcernRate > 30 && totalBodyPositivityRecords > 0) {
+  if (above(bodyPositivityConcernRate, 30) && totalBodyPositivityRecords > 0) {
     insights.push({
       text: `Body image concerns identified in ${bodyPositivityConcernRate}% of sessions -- a significant minority of children are struggling with how they see their bodies. This requires proactive specialist support and close monitoring.`,
       severity: "warning",
@@ -1288,7 +1278,7 @@ export function computeWeightManagementHealthyEating(
     });
   }
 
-  if (totalWeightRecords > 0 && totalBmiRecords > 0 && meets(bmiTrackingRate, 80) && weightMonitoringRate >= 90) {
+  if (totalWeightRecords > 0 && totalBmiRecords > 0 && meets(bmiTrackingRate, 80) && meets(weightMonitoringRate, 90)) {
     insights.push({
       text: `${weightMonitoringRate}% healthy weight range with BMI tracking at ${bmiTrackingRate}% -- the home provides comprehensive, systematic weight monitoring with clinical rigour. Ofsted will recognise this as evidence of proactive health care.`,
       severity: "positive",
@@ -1302,49 +1292,49 @@ export function computeWeightManagementHealthyEating(
     });
   }
 
-  if (totalPortionRecords > 0 && meets(portionControlRate, 90) && mealsBalancedRate >= 90) {
+  if (totalPortionRecords > 0 && meets(portionControlRate, 90) && meets(mealsBalancedRate, 90)) {
     insights.push({
       text: `Portion awareness at ${portionControlRate}% with ${mealsBalancedRate}% balanced meals -- the home delivers consistently nutritious, appropriately portioned meals while building children's understanding of healthy eating. This supports both immediate health and long-term independence.`,
       severity: "positive",
     });
   }
 
-  if (totalBodyPositivityRecords > 0 && meets(bodyPositivityRate, 90) && selfEsteemRate >= 80) {
+  if (totalBodyPositivityRecords > 0 && meets(bodyPositivityRate, 90) && meets(selfEsteemRate, 80)) {
     insights.push({
       text: `Body positivity at ${bodyPositivityRate}% with self-esteem components in ${selfEsteemRate}% of sessions -- the home goes beyond weight management to nurture children's holistic wellbeing, confidence, and positive self-image. This is exemplary practice.`,
       severity: "positive",
     });
   }
 
-  if (childEngagementRate >= 80 && engagementDenominator > 0) {
+  if (meets(childEngagementRate, 80) && engagementDenominator > 0) {
     insights.push({
       text: `${childEngagementRate}% child engagement across weight management and healthy eating activities -- children are active participants in their own health, not passive recipients of care. This promotes autonomy, self-regulation, and lifelong healthy habits.`,
       severity: "positive",
     });
   }
 
-  if (healthyChoiceRate >= 80 && dietaryKnowledgeRate >= 80 && totalHealthyEatingRecords > 0) {
+  if (meets(healthyChoiceRate, 80) && meets(dietaryKnowledgeRate, 80) && totalHealthyEatingRecords > 0) {
     insights.push({
       text: `Healthy choices observed in ${healthyChoiceRate}% of sessions with dietary knowledge improving in ${dietaryKnowledgeRate}% -- nutrition education is successfully translating into practical behaviour change, demonstrating genuine impact on children's eating habits.`,
       severity: "positive",
     });
   }
 
-  if (hydrationRate >= 90 && snackAppropriateRate >= 90 && totalPortionRecords > 0) {
+  if (meets(hydrationRate, 90) && meets(snackAppropriateRate, 90) && totalPortionRecords > 0) {
     insights.push({
       text: `Hydration adequate in ${hydrationRate}% and snack provision appropriate in ${snackAppropriateRate}% of assessments -- the home's attention to hydration and healthy snacking complements its meal provision for comprehensive nutritional care.`,
       severity: "positive",
     });
   }
 
-  if (weightConsentRate >= 90 && weightChildInformedRate >= 90 && totalWeightRecords > 0) {
+  if (meets(weightConsentRate, 90) && meets(weightChildInformedRate, 90) && totalWeightRecords > 0) {
     insights.push({
       text: `Consent obtained in ${weightConsentRate}% and children informed in ${weightChildInformedRate}% of weight measurements -- the home respects children's autonomy and rights in health monitoring while maintaining comprehensive oversight.`,
       severity: "positive",
     });
   }
 
-  if (mediaLiteracyRate >= 60 && weightStigmaRate >= 60 && totalBodyPositivityRecords > 0) {
+  if (meets(mediaLiteracyRate, 60) && meets(weightStigmaRate, 60) && totalBodyPositivityRecords > 0) {
     insights.push({
       text: `Media literacy in ${mediaLiteracyRate}% and weight stigma addressed in ${weightStigmaRate}% of body positivity sessions -- the home equips children with critical thinking about media portrayals and actively challenges weight-based discrimination.`,
       severity: "positive",

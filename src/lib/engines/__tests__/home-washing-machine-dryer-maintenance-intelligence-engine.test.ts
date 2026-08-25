@@ -157,12 +157,12 @@ describe("Empty / edge-case scenarios", () => {
 
   it("returns zero for all rates when insufficient_data", () => {
     const r = computeWashingMachineDryerMaintenance({ ...baseInput, total_children: 0 });
-    expect(r.servicing_rate).toBe(0);
-    expect(r.breakdown_response_rate).toBe(0);
-    expect(r.child_access_rate).toBe(0);
-    expect(r.hygiene_cycle_rate).toBe(0);
-    expect(r.energy_efficiency_rate).toBe(0);
-    expect(r.child_independence_rate).toBe(0);
+    expect(r.servicing_rate).toBeNull();
+    expect(r.breakdown_response_rate).toBeNull();
+    expect(r.child_access_rate).toBeNull();
+    expect(r.hygiene_cycle_rate).toBeNull();
+    expect(r.energy_efficiency_rate).toBeNull();
+    expect(r.child_independence_rate).toBeNull();
   });
 
   it("returns empty arrays for strengths/concerns/recommendations/insights when insufficient_data", () => {
@@ -320,7 +320,7 @@ describe("Breakdown response rate", () => {
     expect(r.breakdown_resolution_avg_hours).toBe(24);
   });
 
-  it("returns 0 avg hours when no resolved breakdowns", () => {
+  it("returns null avg hours when no resolved breakdowns", () => {
     const r = computeWashingMachineDryerMaintenance({
       ...baseInput,
       breakdown_records: [makeBreakdownRecord({

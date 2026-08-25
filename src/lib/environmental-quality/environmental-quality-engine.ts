@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara Environmental Quality Intelligence Engine
 //
@@ -111,11 +112,13 @@ export interface ChildEnvironmentView {
 export interface InspectionQualityResult {
   averageScore: number;
   inspectionCount: number;
-  photographicRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  photographicRate: number | null;
   issueCount: number;
   areasCovered: number;
   totalAreas: number;
-  areaCoverageRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  areaCoverageRate: number | null;
   roomsCovered: number;
   lowestScoringArea: string;
   lowestScoringAreaScore: number;
@@ -125,32 +128,42 @@ export interface InspectionQualityResult {
 
 export interface MaintenanceResponsivenessResult {
   totalRequests: number;
-  completionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completionRate: number | null;
   overdueCount: number;
   emergencyCount: number;
   averageDaysToResolve: number;
   scheduledCount: number;
   cancelledCount: number;
   completedCount: number;
-  overdueRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  overdueRate: number | null;
 }
 
 export interface PersonalisationResult {
   totalChildren: number;
-  bedroomPersonalisedRate: number;
-  choiceInDecorRate: number;
-  personalItemsRate: number;
-  culturalConsiderationsRate: number;
-  overallPersonalisationRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  bedroomPersonalisedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  choiceInDecorRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  personalItemsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  culturalConsiderationsRate: number | null;
+  overallPersonalisationRate: number | null;
   fullyPersonalisedCount: number;
-  reviewCurrency: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reviewCurrency: number | null;
 }
 
 export interface ChildSatisfactionResult {
   averageSatisfaction: number;
-  feelsHomelyRate: number;
-  feelsPrivateRate: number;
-  feelsSafeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feelsHomelyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feelsPrivateRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feelsSafeRate: number | null;
   totalViews: number;
   childrenWithViews: number;
   suggestionCount: number;
@@ -175,10 +188,6 @@ export interface EnvironmentalQualityIntelligence {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function inPeriod(date: string, start: string, end: string): boolean {
   return date.slice(0, 10) >= start.slice(0, 10) && date.slice(0, 10) <= end.slice(0, 10);
@@ -274,11 +283,11 @@ export function evaluateInspectionQuality(
     return {
       averageScore: 0,
       inspectionCount: 0,
-      photographicRate: 0,
+      photographicRate: null,
       issueCount: 0,
       areasCovered: 0,
       totalAreas: ALL_INSPECTION_AREAS.length,
-      areaCoverageRate: 0,
+      areaCoverageRate: null,
       roomsCovered: 0,
       lowestScoringArea: "N/A",
       lowestScoringAreaScore: 0,
@@ -293,7 +302,7 @@ export function evaluateInspectionQuality(
     ) / 10;
 
   const withPhotos = periodInspections.filter((i) => i.photographic).length;
-  const photographicRate = pct(withPhotos, total);
+  const photographicRate = rate(withPhotos, total);
 
   const issueCount = periodInspections.reduce(
     (sum, i) => sum + i.issues.length,
@@ -302,7 +311,7 @@ export function evaluateInspectionQuality(
 
   const uniqueAreas = new Set(periodInspections.map((i) => i.area));
   const areasCovered = uniqueAreas.size;
-  const areaCoverageRate = pct(areasCovered, ALL_INSPECTION_AREAS.length);
+  const areaCoverageRate = rate(areasCovered, ALL_INSPECTION_AREAS.length);
 
   const uniqueRooms = new Set(periodInspections.map((i) => i.roomType));
   const roomsCovered = uniqueRooms.size;
@@ -367,14 +376,14 @@ export function evaluateMaintenanceResponsiveness(
   if (total === 0) {
     return {
       totalRequests: 0,
-      completionRate: 0,
+      completionRate: null,
       overdueCount: 0,
       emergencyCount: 0,
       averageDaysToResolve: 0,
       scheduledCount: 0,
       cancelledCount: 0,
       completedCount: 0,
-      overdueRate: 0,
+      overdueRate: null,
     };
   }
 
@@ -384,8 +393,8 @@ export function evaluateMaintenanceResponsiveness(
   const scheduled = periodRequests.filter((r) => r.status === "scheduled");
   const cancelled = periodRequests.filter((r) => r.status === "cancelled");
 
-  const completionRate = pct(completed.length, total);
-  const overdueRate = pct(overdue.length, total);
+  const completionRate = rate(completed.length, total);
+  const overdueRate = rate(overdue.length, total);
 
   // Average days to resolve for completed requests
   const completedWithDays = completed.filter(
@@ -423,11 +432,11 @@ export function evaluatePersonalisation(
   if (total === 0) {
     return {
       totalChildren: 0,
-      bedroomPersonalisedRate: 0,
-      choiceInDecorRate: 0,
-      personalItemsRate: 0,
-      culturalConsiderationsRate: 0,
-      overallPersonalisationRate: 0,
+      bedroomPersonalisedRate: null,
+      choiceInDecorRate: null,
+      personalItemsRate: null,
+      culturalConsiderationsRate: null,
+      overallPersonalisationRate: null,
       fullyPersonalisedCount: 0,
       reviewCurrency: 0,
     };
@@ -438,14 +447,14 @@ export function evaluatePersonalisation(
   const personalItems = records.filter((r) => r.personalItems).length;
   const culturalConsiderations = records.filter((r) => r.culturalConsiderations).length;
 
-  const bedroomPersonalisedRate = pct(bedroomPersonalised, total);
-  const choiceInDecorRate = pct(choiceInDecor, total);
-  const personalItemsRate = pct(personalItems, total);
-  const culturalConsiderationsRate = pct(culturalConsiderations, total);
+  const bedroomPersonalisedRate = rate(bedroomPersonalised, total);
+  const choiceInDecorRate = rate(choiceInDecor, total);
+  const personalItemsRate = rate(personalItems, total);
+  const culturalConsiderationsRate = rate(culturalConsiderations, total);
 
   // Overall personalisation: average of the four rates
   const overallPersonalisationRate = Math.round(
-    (bedroomPersonalisedRate + choiceInDecorRate + personalItemsRate + culturalConsiderationsRate) / 4,
+    (bedroomPersonalisedRate! + choiceInDecorRate! + personalItemsRate! + culturalConsiderationsRate!) / 4,
   );
 
   // Fully personalised: all four criteria met
@@ -459,7 +468,7 @@ export function evaluatePersonalisation(
   const sixMonthsAgoStr = sixMonthsAgo.toISOString().slice(0, 10);
 
   const currentReviews = records.filter((r) => r.lastReviewDate >= sixMonthsAgoStr);
-  const reviewCurrency = pct(currentReviews.length, total);
+  const reviewCurrency = rate(currentReviews.length, total);
 
   return {
     totalChildren: total,
@@ -488,9 +497,9 @@ export function evaluateChildSatisfaction(
   if (total === 0) {
     return {
       averageSatisfaction: 0,
-      feelsHomelyRate: 0,
-      feelsPrivateRate: 0,
-      feelsSafeRate: 0,
+      feelsHomelyRate: null,
+      feelsPrivateRate: null,
+      feelsSafeRate: null,
       totalViews: 0,
       childrenWithViews: 0,
       suggestionCount: 0,
@@ -522,9 +531,9 @@ export function evaluateChildSatisfaction(
 
   return {
     averageSatisfaction,
-    feelsHomelyRate: pct(homely, total),
-    feelsPrivateRate: pct(privateViews, total),
-    feelsSafeRate: pct(safe, total),
+    feelsHomelyRate: rate(homely, total),
+    feelsPrivateRate: rate(privateViews, total),
+    feelsSafeRate: rate(safe, total),
     totalViews: total,
     childrenWithViews: uniqueChildren.size,
     suggestionCount,
@@ -562,8 +571,8 @@ export function generateEnvironmentalQualityIntelligence(
   const inspScoreNorm = inspectionQuality.inspectionCount > 0
     ? ((inspectionQuality.averageScore - 1) / 9) * 15
     : null;
-  const areaCovPts = (inspectionQuality.areaCoverageRate / 100) * 5;
-  const photoPts = (inspectionQuality.photographicRate / 100) * 5;
+  const areaCovPts = ((inspectionQuality.areaCoverageRate ?? 0) / 100) * 5;
+  const photoPts = ((inspectionQuality.photographicRate ?? 0) / 100) * 5;
   const inspScore = Math.min(25, Math.round((inspScoreNorm ?? 0) + areaCovPts + photoPts));
 
   // 2. Maintenance Responsiveness (25 pts)
@@ -571,9 +580,9 @@ export function generateEnvironmentalQualityIntelligence(
   //    - No overdue items bonus (5 pts — inversely proportional to overdue rate)
   //    - Average resolution speed (5 pts — max at <=3 days)
   //    - Emergency handling (5 pts — emergency count == 0 is full marks)
-  const completionPts = (maintenanceResponsiveness.completionRate / 100) * 10;
+  const completionPts = ((maintenanceResponsiveness.completionRate ?? 0) / 100) * 10;
   const noOverduePts = maintenanceResponsiveness.totalRequests > 0
-    ? ((100 - maintenanceResponsiveness.overdueRate) / 100) * 5
+    ? ((100 - (maintenanceResponsiveness.overdueRate ?? 0)) / 100) * 5
     : null;
   const speedPts = maintenanceResponsiveness.completedCount > 0
     ? Math.min(5, Math.max(0, 5 - (maintenanceResponsiveness.averageDaysToResolve - 3) * 0.5))
@@ -588,10 +597,10 @@ export function generateEnvironmentalQualityIntelligence(
   //    - Bedroom personalised rate (5 pts)
   //    - Cultural considerations rate (5 pts)
   //    - Review currency (5 pts)
-  const persOverallPts = (personalisation.overallPersonalisationRate / 100) * 10;
-  const bedroomPts = (personalisation.bedroomPersonalisedRate / 100) * 5;
-  const culturalPts = (personalisation.culturalConsiderationsRate / 100) * 5;
-  const persReviewPts = (personalisation.reviewCurrency / 100) * 5;
+  const persOverallPts = ((personalisation.overallPersonalisationRate ?? 0) / 100) * 10;
+  const bedroomPts = ((personalisation.bedroomPersonalisedRate ?? 0) / 100) * 5;
+  const culturalPts = ((personalisation.culturalConsiderationsRate ?? 0) / 100) * 5;
+  const persReviewPts = ((personalisation.reviewCurrency ?? 0) / 100) * 5;
   const persScore = Math.min(25, Math.round(persOverallPts + bedroomPts + culturalPts + persReviewPts));
 
   // 4. Child Satisfaction (25 pts)
@@ -602,9 +611,9 @@ export function generateEnvironmentalQualityIntelligence(
   const satNorm = childSatisfaction.totalViews > 0
     ? ((childSatisfaction.averageSatisfaction - 1) / 9) * 10
     : null;
-  const homelyPts = (childSatisfaction.feelsHomelyRate / 100) * 5;
-  const safePts = (childSatisfaction.feelsSafeRate / 100) * 5;
-  const privatePts = (childSatisfaction.feelsPrivateRate / 100) * 5;
+  const homelyPts = ((childSatisfaction.feelsHomelyRate ?? 0) / 100) * 5;
+  const safePts = ((childSatisfaction.feelsSafeRate ?? 0) / 100) * 5;
+  const privatePts = ((childSatisfaction.feelsPrivateRate ?? 0) / 100) * 5;
   const satScore = Math.min(25, Math.round((satNorm ?? 0) + homelyPts + safePts + privatePts));
 
   // Overall
@@ -634,12 +643,12 @@ export function generateEnvironmentalQualityIntelligence(
       "All inspection areas are covered, demonstrating thorough environmental oversight.",
     );
   }
-  if (inspectionQuality.photographicRate >= 80) {
+  if (meets(inspectionQuality.photographicRate, 80)) {
     strengths.push(
       "Photographic evidence is captured in the majority of inspections, providing a robust audit trail.",
     );
   }
-  if (maintenanceResponsiveness.completionRate >= 80) {
+  if (meets(maintenanceResponsiveness.completionRate, 80)) {
     strengths.push(
       "Maintenance completion rate is strong, reflecting prompt attention to reported issues.",
     );
@@ -659,7 +668,7 @@ export function generateEnvironmentalQualityIntelligence(
       "All children's bedrooms are personalised, creating individual spaces that feel like their own.",
     );
   }
-  if (personalisation.overallPersonalisationRate >= 80) {
+  if (meets(personalisation.overallPersonalisationRate, 80)) {
     strengths.push(
       "Personalisation standards are high across the home, supporting a homely and child-centred environment.",
     );
@@ -679,12 +688,12 @@ export function generateEnvironmentalQualityIntelligence(
       "All children report feeling safe in their home, a fundamental requirement for quality residential care.",
     );
   }
-  if (childSatisfaction.feelsHomelyRate >= 80) {
+  if (meets(childSatisfaction.feelsHomelyRate, 80)) {
     strengths.push(
       "The majority of children feel the home is homely, reflecting successful efforts to create a warm and welcoming environment.",
     );
   }
-  if (childSatisfaction.feelsPrivateRate >= 80) {
+  if (meets(childSatisfaction.feelsPrivateRate, 80)) {
     strengths.push(
       "Children feel they have adequate privacy, supporting their dignity and personal development.",
     );
@@ -698,12 +707,12 @@ export function generateEnvironmentalQualityIntelligence(
       "Average inspection scores are below 6/10 — the physical environment requires significant improvement to meet expected standards.",
     );
   }
-  if (inspectionQuality.areaCoverageRate < 100 && inspectionQuality.inspectionCount > 0) {
+  if (below(inspectionQuality.areaCoverageRate, 100) && inspectionQuality.inspectionCount > 0) {
     areasForImprovement.push(
       `Only ${inspectionQuality.areasCovered} of ${inspectionQuality.totalAreas} inspection areas covered — expand inspections to include all areas for comprehensive oversight.`,
     );
   }
-  if (inspectionQuality.photographicRate < 50 && inspectionQuality.inspectionCount > 0) {
+  if (below(inspectionQuality.photographicRate, 50) && inspectionQuality.inspectionCount > 0) {
     areasForImprovement.push(
       "Less than half of inspections include photographic evidence — increase photo documentation to strengthen the audit trail.",
     );
@@ -718,7 +727,7 @@ export function generateEnvironmentalQualityIntelligence(
       `${maintenanceResponsiveness.overdueCount} maintenance request(s) are overdue — prioritise completing overdue repairs to maintain a safe and comfortable environment.`,
     );
   }
-  if (maintenanceResponsiveness.completionRate < 70 && maintenanceResponsiveness.totalRequests > 0) {
+  if (below(maintenanceResponsiveness.completionRate, 70) && maintenanceResponsiveness.totalRequests > 0) {
     areasForImprovement.push(
       "Maintenance completion rate is below 70% — review the maintenance workflow to identify and remove bottlenecks.",
     );
@@ -728,17 +737,17 @@ export function generateEnvironmentalQualityIntelligence(
       "Average maintenance resolution time exceeds one week — improve response times to minimise impact on children's daily experience.",
     );
   }
-  if (personalisation.bedroomPersonalisedRate < 100) {
+  if (below(personalisation.bedroomPersonalisedRate, 100)) {
     areasForImprovement.push(
       "Not all children's bedrooms are personalised — every child should have the opportunity to make their bedroom their own space.",
     );
   }
-  if (personalisation.culturalConsiderationsRate < 100) {
+  if (below(personalisation.culturalConsiderationsRate, 100)) {
     areasForImprovement.push(
       "Cultural considerations are not recorded for all children — review and ensure each child's cultural needs are reflected in their environment.",
     );
   }
-  if (personalisation.reviewCurrency < 80) {
+  if (below(personalisation.reviewCurrency, 80)) {
     areasForImprovement.push(
       "Personalisation reviews are not up to date for all children — ensure reviews are completed within the six-month cycle.",
     );
@@ -748,17 +757,17 @@ export function generateEnvironmentalQualityIntelligence(
       "Average child satisfaction is below 6/10 — engage directly with children to understand and address their concerns about the environment.",
     );
   }
-  if (childSatisfaction.feelsSafeRate < 100 && childSatisfaction.totalViews > 0) {
+  if (below(childSatisfaction.feelsSafeRate, 100) && childSatisfaction.totalViews > 0) {
     areasForImprovement.push(
       "Not all children feel safe in their home — this must be treated as an urgent priority to identify and resolve safety concerns.",
     );
   }
-  if (childSatisfaction.feelsHomelyRate < 70 && childSatisfaction.totalViews > 0) {
+  if (below(childSatisfaction.feelsHomelyRate, 70) && childSatisfaction.totalViews > 0) {
     areasForImprovement.push(
       "Fewer than 70% of children feel the home is homely — involve children in decisions about shared spaces and decoration.",
     );
   }
-  if (childSatisfaction.feelsPrivateRate < 70 && childSatisfaction.totalViews > 0) {
+  if (below(childSatisfaction.feelsPrivateRate, 70) && childSatisfaction.totalViews > 0) {
     areasForImprovement.push(
       "Fewer than 70% of children feel they have adequate privacy — review bedroom access, shared spaces, and personal boundaries.",
     );
@@ -777,37 +786,37 @@ export function generateEnvironmentalQualityIntelligence(
       "Review the emergency maintenance log to ensure all emergency items have been fully resolved and any root causes addressed.",
     );
   }
-  if (inspectionQuality.areaCoverageRate < 100 && inspectionQuality.inspectionCount > 0) {
+  if (below(inspectionQuality.areaCoverageRate, 100) && inspectionQuality.inspectionCount > 0) {
     actions.push(
       "Schedule inspections for all uncovered areas to ensure full environmental oversight by the end of the next reporting period.",
     );
   }
-  if (inspectionQuality.photographicRate < 70 && inspectionQuality.inspectionCount > 0) {
+  if (below(inspectionQuality.photographicRate, 70) && inspectionQuality.inspectionCount > 0) {
     actions.push(
       "Require photographic evidence for all future inspections to build a consistent visual record of the environment.",
     );
   }
-  if (personalisation.bedroomPersonalisedRate < 100) {
+  if (below(personalisation.bedroomPersonalisedRate, 100)) {
     actions.push(
       "Work with each child who does not yet have a personalised bedroom to choose colours, furnishings, and personal items.",
     );
   }
-  if (personalisation.culturalConsiderationsRate < 100) {
+  if (below(personalisation.culturalConsiderationsRate, 100)) {
     actions.push(
       "Complete cultural considerations reviews for all children, consulting with families and social workers where appropriate.",
     );
   }
-  if (personalisation.reviewCurrency < 80) {
+  if (below(personalisation.reviewCurrency, 80)) {
     actions.push(
       "Schedule personalisation reviews for all children whose reviews are overdue within the next month.",
     );
   }
-  if (childSatisfaction.feelsSafeRate < 100 && childSatisfaction.totalViews > 0) {
+  if (below(childSatisfaction.feelsSafeRate, 100) && childSatisfaction.totalViews > 0) {
     actions.push(
       "Conduct individual conversations with any child who does not feel safe to identify specific concerns and take immediate protective action.",
     );
   }
-  if (childSatisfaction.feelsHomelyRate < 80 && childSatisfaction.totalViews > 0) {
+  if (below(childSatisfaction.feelsHomelyRate, 80) && childSatisfaction.totalViews > 0) {
     actions.push(
       "Hold a children's meeting to discuss how communal spaces can be improved to feel more homely and welcoming.",
     );

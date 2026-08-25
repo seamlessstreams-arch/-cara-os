@@ -148,12 +148,12 @@ describe("Insufficient data", () => {
 
   it("all metric rates are 0", () => {
     const r = computeTransitionLeavingCareReadiness(baseInput());
-    expect(r.transition_plan_coverage_rate).toBe(0);
-    expect(r.pathway_plan_currency_rate).toBe(0);
-    expect(r.leaving_care_completion_rate).toBe(0);
-    expect(r.independence_assessment_rate).toBe(0);
-    expect(r.aftercare_contact_rate).toBe(0);
-    expect(r.child_voice_in_transition_rate).toBe(0);
+    expect(r.transition_plan_coverage_rate).toBeNull();
+    expect(r.pathway_plan_currency_rate).toBeNull();
+    expect(r.leaving_care_completion_rate).toBeNull();
+    expect(r.independence_assessment_rate).toBeNull();
+    expect(r.aftercare_contact_rate).toBeNull();
+    expect(r.child_voice_in_transition_rate).toBeNull();
   });
 });
 
@@ -197,12 +197,12 @@ describe("Inadequate baseline — children but no data", () => {
   });
 
   it("all metric rates are 0", () => {
-    expect(r.transition_plan_coverage_rate).toBe(0);
-    expect(r.pathway_plan_currency_rate).toBe(0);
-    expect(r.leaving_care_completion_rate).toBe(0);
-    expect(r.independence_assessment_rate).toBe(0);
-    expect(r.aftercare_contact_rate).toBe(0);
-    expect(r.child_voice_in_transition_rate).toBe(0);
+    expect(r.transition_plan_coverage_rate).toBeNull();
+    expect(r.pathway_plan_currency_rate).toBeNull();
+    expect(r.leaving_care_completion_rate).toBeNull();
+    expect(r.independence_assessment_rate).toBeNull();
+    expect(r.aftercare_contact_rate).toBeNull();
+    expect(r.child_voice_in_transition_rate).toBeNull();
   });
 
   it("single child also gives inadequate 15", () => {
@@ -1539,7 +1539,7 @@ describe("Metric calculations", () => {
     expect(r.child_voice_in_transition_rate).toBe(50); // pct(1, 2)
   });
 
-  it("pct(0, 0) returns 0", () => {
+  it("rate(0,0)=nullreturns 0", () => {
     // All rates with 0 denominator should be 0
     const r = computeTransitionLeavingCareReadiness(
       baseInput({
@@ -1547,9 +1547,9 @@ describe("Metric calculations", () => {
         transition_planning_records: [makeTransitionPlan()],
       }),
     );
-    expect(r.transition_plan_coverage_rate).toBe(0); // pct(0, 0) since total_children=0
-    expect(r.independence_assessment_rate).toBe(0);
-    expect(r.aftercare_contact_rate).toBe(0);
+    expect(r.transition_plan_coverage_rate).toBeNull(); // pct(0, 0) since total_children=0
+    expect(r.independence_assessment_rate).toBeNull();
+    expect(r.aftercare_contact_rate).toBeNull();
   });
 });
 
@@ -3220,7 +3220,7 @@ describe("Edge cases", () => {
       }),
     );
     // currentPathwayPlans.length = 0 → pct(0, 0) = 0
-    expect(r.pathway_plan_currency_rate).toBe(0);
+    expect(r.pathway_plan_currency_rate).toBeNull();
   });
 
   it("score is clamped to 0 minimum", () => {

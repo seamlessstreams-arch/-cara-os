@@ -177,9 +177,9 @@ describe("insufficient data and edge cases", () => {
     expect(r.recommendations[1].regulatory_ref).toContain("Reg 6");
   });
 
-  it("all rates are 0 for insufficient_data", () => {
+  it("all rates are null for insufficient_data", () => {
     const r = run({ total_children: 0 });
-    expect(r.schedule_timeliness_rate).toBe(0);
+    expect(r.schedule_timeliness_rate).toBeNull();
     expect(r.activity_variety_rate).toBeNull();
     expect(r.child_input_rate).toBeNull();
     expect(r.communication_rate).toBeNull();
@@ -187,9 +187,9 @@ describe("insufficient data and edge cases", () => {
     expect(r.child_satisfaction_rate).toBeNull();
   });
 
-  it("all rates are 0 for empty-with-children", () => {
+  it("all rates are null for empty-with-children", () => {
     const r = run({ total_children: 2 });
-    expect(r.schedule_timeliness_rate).toBe(0);
+    expect(r.schedule_timeliness_rate).toBeNull();
     expect(r.activity_variety_rate).toBeNull();
   });
 
@@ -443,7 +443,7 @@ describe("schedule coverage (full day, weekend, all children, manager approval)"
 // ── 4. Activity Variety ────────────────────────────────────────────────────
 
 describe("activity variety", () => {
-  it("activityVarietyRate is 0 when no records", () => {
+  it("activityVarietyRate is null when no records", () => {
     const r = run({});
     expect(r.activity_variety_rate).toBeNull();
   });
@@ -592,7 +592,7 @@ describe("activity variety", () => {
 // ── 5. Child Input in Planning ─────────────────────────────────────────────
 
 describe("child input in planning", () => {
-  it("childInputRate is 0 when no records", () => {
+  it("childInputRate is null when no records", () => {
     const r = run({});
     expect(r.child_input_rate).toBeNull();
   });
@@ -821,7 +821,7 @@ describe("child input in planning", () => {
 // ── 6. Communication Effectiveness ─────────────────────────────────────────
 
 describe("communication effectiveness", () => {
-  it("communicationRate is 0 when no records", () => {
+  it("communicationRate is null when no records", () => {
     const r = run({});
     expect(r.communication_rate).toBeNull();
   });
@@ -995,7 +995,7 @@ describe("communication effectiveness", () => {
 // ── 7. Adherence to Planned Activities ─────────────────────────────────────
 
 describe("adherence to planned activities", () => {
-  it("adherenceRate is 0 when no records", () => {
+  it("adherenceRate is null when no records", () => {
     const r = run({});
     expect(r.adherence_rate).toBeNull();
   });
@@ -1206,7 +1206,7 @@ describe("adherence to planned activities", () => {
 // ── 8. Child Satisfaction ──────────────────────────────────────────────────
 
 describe("child satisfaction", () => {
-  it("satisfaction is 0 when no satisfaction data", () => {
+  it("satisfaction is null when no satisfaction data", () => {
     const r = run({});
     expect(r.child_satisfaction_rate).toBeNull();
   });

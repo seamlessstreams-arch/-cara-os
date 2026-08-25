@@ -207,11 +207,6 @@ export interface MedicationErrorPreventionIntelligence {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 1000) / 10;
-}
-
 function clamp(v: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, v));
 }
@@ -323,31 +318,31 @@ export function evaluateAdministrationQuality(
   const onTimeCount = administrations.filter(
     (a) => a.status === "given_on_time" || a.status === "self_administered",
   ).length;
-  const onTimeRate = pct(onTimeCount, total);
+  const onTimeRate = rate(onTimeCount, total);
 
   const missedRefusedCount = administrations.filter(
     (a) => a.status === "missed" || a.status === "refused",
   ).length;
 
   const twoPersonCount = administrations.filter((a) => a.twoPersonCheck).length;
-  const twoPersonCheckRate = pct(twoPersonCount, total);
+  const twoPersonCheckRate = rate(twoPersonCount, total);
 
   const docCount = administrations.filter((a) => a.documentedImmediately).length;
-  const documentedImmediatelyRate = pct(docCount, total);
+  const documentedImmediatelyRate = rate(docCount, total);
 
   const consentCount = administrations.filter((a) => a.childConsent).length;
-  const childConsentRate = pct(consentCount, total);
+  const childConsentRate = rate(consentCount, total);
 
   const sideEffectsCount = administrations.filter((a) => a.sideEffectsMonitored).length;
-  const sideEffectsMonitoredRate = pct(sideEffectsCount, total);
+  const sideEffectsMonitoredRate = rate(sideEffectsCount, total);
 
   // Scoring — 25 points max
   let score = 0;
-  score += (onTimeRate / 100) * 8;                 // On-time administration: 8 pts
-  score += (twoPersonCheckRate / 100) * 5;         // Two-person checks: 5 pts
-  score += (documentedImmediatelyRate / 100) * 5;  // Immediate documentation: 5 pts
-  score += (childConsentRate / 100) * 4;           // Child consent: 4 pts
-  score += (sideEffectsMonitoredRate / 100) * 3;   // Side effects monitoring: 3 pts
+  score += ((onTimeRate ?? 0) / 100) * 8;                 // On-time administration: 8 pts
+  score += ((twoPersonCheckRate ?? 0) / 100) * 5;         // Two-person checks: 5 pts
+  score += ((documentedImmediatelyRate ?? 0) / 100) * 5;  // Immediate documentation: 5 pts
+  score += ((childConsentRate ?? 0) / 100) * 4;           // Child consent: 4 pts
+  score += ((sideEffectsMonitoredRate ?? 0) / 100) * 3;   // Side effects monitoring: 3 pts
 
   return {
     overallScore: Math.round(clamp(score, 0, 25) * 10) / 10,
@@ -395,16 +390,16 @@ export function evaluateErrorManagement(
   );
 
   const reportedCount = errors.filter((e) => e.reportedImmediately).length;
-  const reportedImmediatelyRate = pct(reportedCount, total);
+  const reportedImmediatelyRate = rate(reportedCount, total);
 
   const rootCauseCount = errors.filter((e) => e.rootCauseIdentified).length;
-  const rootCauseIdentifiedRate = pct(rootCauseCount, total);
+  const rootCauseIdentifiedRate = rate(rootCauseCount, total);
 
   const preventiveCount = errors.filter((e) => e.preventiveActionTaken).length;
-  const preventiveActionRate = pct(preventiveCount, total);
+  const preventiveActionRate = rate(preventiveCount, total);
 
   const dutyCount = errors.filter((e) => e.dutyOfCandourMet).length;
-  const dutyOfCandourRate = pct(dutyCount, total);
+  const dutyOfCandourRate = rate(dutyCount, total);
 
   const nearMissCount = errors.filter((e) => e.errorType === "near_miss").length;
 
@@ -460,20 +455,20 @@ export function evaluateStorageSafety(
   const fullyCompliantCount = audits.filter(
     (a) => a.overallCompliance === "fully_compliant",
   ).length;
-  const fullyCompliantRate = pct(fullyCompliantCount, total);
+  const fullyCompliantRate = rate(fullyCompliantCount, total);
 
   const tempCompliantCount = audits.filter(
     (a) => a.temperatureMonitored && a.temperatureInRange,
   ).length;
-  const temperatureComplianceRate = pct(tempCompliantCount, total);
+  const temperatureComplianceRate = rate(tempCompliantCount, total);
 
   const expiryCheckedNoExpired = audits.filter(
     (a) => a.expiryDatesChecked && !a.expiredMedicationFound,
   ).length;
-  const expiryComplianceRate = pct(expiryCheckedNoExpired, total);
+  const expiryComplianceRate = rate(expiryCheckedNoExpired, total);
 
   const marAccurateCount = audits.filter((a) => a.marChartAccurate).length;
-  const marChartAccuracyRate = pct(marAccurateCount, total);
+  const marChartAccuracyRate = rate(marAccurateCount, total);
 
   const expiredMedicationAudits = audits.filter(
     (a) => a.expiredMedicationFound,
@@ -481,10 +476,10 @@ export function evaluateStorageSafety(
 
   // Scoring — 25 points max
   let score = 0;
-  score += (fullyCompliantRate / 100) * 7;         // Overall compliance: 7 pts
-  score += (temperatureComplianceRate / 100) * 6;  // Temperature compliance: 6 pts
-  score += (expiryComplianceRate / 100) * 6;       // Expiry compliance: 6 pts
-  score += (marChartAccuracyRate / 100) * 6;       // MAR chart accuracy: 6 pts
+  score += ((fullyCompliantRate ?? 0) / 100) * 7;         // Overall compliance: 7 pts
+  score += ((temperatureComplianceRate ?? 0) / 100) * 6;  // Temperature compliance: 6 pts
+  score += ((expiryComplianceRate ?? 0) / 100) * 6;       // Expiry compliance: 6 pts
+  score += ((marChartAccuracyRate ?? 0) / 100) * 6;       // MAR chart accuracy: 6 pts
 
   return {
     overallScore: Math.round(clamp(score, 0, 25) * 10) / 10,
@@ -522,16 +517,16 @@ export function evaluateTrainingCompliance(
   const currentCount = training.filter(
     (t) => t.trainingStatus === "current",
   ).length;
-  const currentRate = pct(currentCount, total);
+  const currentRate = rate(currentCount, total);
 
   const competencyCount = training.filter((t) => t.competencyAssessed).length;
-  const competencyAssessedRate = pct(competencyCount, total);
+  const competencyAssessedRate = rate(competencyCount, total);
 
   const controlledCount = training.filter((t) => t.controlledDrugsTraining).length;
-  const controlledDrugsRate = pct(controlledCount, total);
+  const controlledDrugsRate = rate(controlledCount, total);
 
   const errorReportingCount = training.filter((t) => t.errorReportingTraining).length;
-  const errorReportingRate = pct(errorReportingCount, total);
+  const errorReportingRate = rate(errorReportingCount, total);
 
   const expiringCount = training.filter(
     (t) => t.trainingStatus === "expiring_soon",
@@ -539,10 +534,10 @@ export function evaluateTrainingCompliance(
 
   // Scoring — 25 points max
   let score = 0;
-  score += (currentRate / 100) * 8;               // Current training: 8 pts
-  score += (competencyAssessedRate / 100) * 7;    // Competency assessed: 7 pts
-  score += (controlledDrugsRate / 100) * 5;       // Controlled drugs training: 5 pts
-  score += (errorReportingRate / 100) * 5;        // Error reporting training: 5 pts
+  score += ((currentRate ?? 0) / 100) * 8;               // Current training: 8 pts
+  score += ((competencyAssessedRate ?? 0) / 100) * 7;    // Competency assessed: 7 pts
+  score += ((controlledDrugsRate ?? 0) / 100) * 5;       // Controlled drugs training: 5 pts
+  score += ((errorReportingRate ?? 0) / 100) * 5;        // Error reporting training: 5 pts
 
   return {
     overallScore: Math.round(clamp(score, 0, 25) * 10) / 10,

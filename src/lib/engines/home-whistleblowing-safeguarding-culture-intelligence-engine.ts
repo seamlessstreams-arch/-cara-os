@@ -11,7 +11,7 @@
 //             childProtectionRecords
 // ==============================================================================
 
-import { below, meets } from "@/lib/metrics/rate";
+import { rate, below, meets } from "@/lib/metrics/rate";
 
 // -- Input Types --------------------------------------------------------------
 
@@ -166,10 +166,6 @@ export interface WhistleblowingResult {
 
 // -- Helpers ------------------------------------------------------------------
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -277,47 +273,47 @@ export function computeWhistleblowingSafeguardingCulture(
   // === 1. Whistleblowing policy awareness ===
   const totalAwareness = whistleblowing_awareness_records.length;
   const policyRead = whistleblowing_awareness_records.filter((r) => r.policy_read).length;
-  const policyReadRate = pct(policyRead, totalAwareness);
+  const policyReadRate = rate(policyRead, totalAwareness);
 
   const policyVersionCurrent = whistleblowing_awareness_records.filter(
     (r) => r.policy_version_current,
   ).length;
-  const policyCurrentRate = pct(policyVersionCurrent, totalAwareness);
+  const policyCurrentRate = rate(policyVersionCurrent, totalAwareness);
 
   const understandsChannels = whistleblowing_awareness_records.filter(
     (r) => r.understands_reporting_channels,
   ).length;
-  const channelUnderstandingRate = pct(understandsChannels, totalAwareness);
+  const channelUnderstandingRate = rate(understandsChannels, totalAwareness);
 
   const knowsExternalEscalation = whistleblowing_awareness_records.filter(
     (r) => r.knows_external_escalation,
   ).length;
-  const externalEscalationRate = pct(knowsExternalEscalation, totalAwareness);
+  const externalEscalationRate = rate(knowsExternalEscalation, totalAwareness);
 
   const signedDeclaration = whistleblowing_awareness_records.filter(
     (r) => r.signed_declaration,
   ).length;
-  const declarationRate = pct(signedDeclaration, totalAwareness);
+  const declarationRate = rate(signedDeclaration, totalAwareness);
 
   const refresherCompleted = whistleblowing_awareness_records.filter(
     (r) => r.refresher_completed,
   ).length;
-  const refresherRate = pct(refresherCompleted, totalAwareness);
+  const refresherRate = rate(refresherCompleted, totalAwareness);
 
   const quizPassed = whistleblowing_awareness_records.filter(
     (r) => r.quiz_passed,
   ).length;
-  const quizPassRate = pct(quizPassed, totalAwareness);
+  const quizPassRate = rate(quizPassed, totalAwareness);
 
   const awareOfProtections = whistleblowing_awareness_records.filter(
     (r) => r.aware_of_protections,
   ).length;
-  const protectionAwarenessRate = pct(awareOfProtections, totalAwareness);
+  const protectionAwarenessRate = rate(awareOfProtections, totalAwareness);
 
   const concernsAboutRetaliation = whistleblowing_awareness_records.filter(
     (r) => r.concerns_about_retaliation,
   ).length;
-  const retaliationConcernRate = pct(concernsAboutRetaliation, totalAwareness);
+  const retaliationConcernRate = rate(concernsAboutRetaliation, totalAwareness);
 
   const quizScoreSum = whistleblowing_awareness_records.reduce(
     (sum, r) => sum + r.quiz_score, 0,
@@ -329,11 +325,8 @@ export function computeWhistleblowingSafeguardingCulture(
 
   // Composite policy awareness rate
   const policyAwarenessRate: number | null =
-    totalAwareness > 0
-      ? Math.round(
-          (policyReadRate + policyCurrentRate + channelUnderstandingRate + declarationRate) / 4,
-        )
-      : null;
+    totalAwareness > 0 ? Math.round(
+          (policyReadRate! + policyCurrentRate! + channelUnderstandingRate! + declarationRate!) / 4) : null;
 
   // === 2. Reporting confidence ===
   const totalConfidence = reporting_confidence_records.length;
@@ -349,22 +342,22 @@ export function computeWhistleblowingSafeguardingCulture(
   const wouldReportColleague = reporting_confidence_records.filter(
     (r) => r.would_report_colleague,
   ).length;
-  const colleagueReportRate = pct(wouldReportColleague, totalConfidence);
+  const colleagueReportRate = rate(wouldReportColleague, totalConfidence);
 
   const wouldReportManager = reporting_confidence_records.filter(
     (r) => r.would_report_manager,
   ).length;
-  const managerReportRate = pct(wouldReportManager, totalConfidence);
+  const managerReportRate = rate(wouldReportManager, totalConfidence);
 
   const wouldReportExternally = reporting_confidence_records.filter(
     (r) => r.would_report_externally,
   ).length;
-  const externalReportRate = pct(wouldReportExternally, totalConfidence);
+  const externalReportRate = rate(wouldReportExternally, totalConfidence);
 
   const feelsSafeReporting = reporting_confidence_records.filter(
     (r) => r.feels_safe_reporting,
   ).length;
-  const safeReportingRate = pct(feelsSafeReporting, totalConfidence);
+  const safeReportingRate = rate(feelsSafeReporting, totalConfidence);
 
   const hasReportedBefore = reporting_confidence_records.filter(
     (r) => r.has_reported_before,
@@ -372,20 +365,17 @@ export function computeWhistleblowingSafeguardingCulture(
   const reportHandledWell = hasReportedBefore.filter(
     (r) => r.report_handled_well === true,
   ).length;
-  const reportHandlingRate = pct(reportHandledWell, hasReportedBefore.length);
+  const reportHandlingRate = rate(reportHandledWell, hasReportedBefore.length);
 
   const withBarriers = reporting_confidence_records.filter(
     (r) => r.barriers_to_reporting.length > 0,
   ).length;
-  const barrierRate = pct(withBarriers, totalConfidence);
+  const barrierRate = rate(withBarriers, totalConfidence);
 
   // Composite reporting confidence rate
   const reportingConfidenceRate: number | null =
-    totalConfidence > 0
-      ? Math.round(
-          (colleagueReportRate + managerReportRate + safeReportingRate) / 3,
-        )
-      : null;
+    totalConfidence > 0 ? Math.round(
+          (colleagueReportRate! + managerReportRate! + safeReportingRate!) / 3) : null;
 
   // Staff confidence rate (average confidence as percentage of max 5)
   const staffConfidenceRate: number | null =
@@ -399,29 +389,29 @@ export function computeWhistleblowingSafeguardingCulture(
   const trainingPassed = safeguarding_training_records.filter(
     (r) => r.passed,
   ).length;
-  const trainingPassRate = pct(trainingPassed, totalTraining);
+  const trainingPassRate = rate(trainingPassed, totalTraining);
 
   const inDate = safeguarding_training_records.filter((r) => {
     if (!r.expiry_date) return r.passed;
     return r.expiry_date >= today && r.passed;
   }).length;
-  const inDateRate = pct(inDate, totalTraining);
+  const inDateRate = rate(inDate, totalTraining);
 
   const accredited = safeguarding_training_records.filter(
     (r) => r.accredited,
   ).length;
-  const accreditedRate = pct(accredited, totalTraining);
+  const accreditedRate = rate(accredited, totalTraining);
 
   const certificatesOnFile = safeguarding_training_records.filter(
     (r) => r.certificates_on_file,
   ).length;
-  const certificateRate = pct(certificatesOnFile, totalTraining);
+  const certificateRate = rate(certificatesOnFile, totalTraining);
 
   const expiredTraining = safeguarding_training_records.filter((r) => {
     if (!r.expiry_date) return false;
     return r.expiry_date < today;
   }).length;
-  const expiredRate = pct(expiredTraining, totalTraining);
+  const expiredRate = rate(expiredTraining, totalTraining);
 
   const trainingScoreSum = safeguarding_training_records.reduce(
     (sum, r) => sum + (r.score ?? 0), 0,
@@ -441,11 +431,8 @@ export function computeWhistleblowingSafeguardingCulture(
 
   // Composite training currency rate
   const trainingCurrencyRate: number | null =
-    totalTraining > 0
-      ? Math.round(
-          (inDateRate + trainingPassRate + certificateRate) / 3,
-        )
-      : null;
+    totalTraining > 0 ? Math.round(
+          (inDateRate! + trainingPassRate! + certificateRate!) / 3) : null;
 
   // === 4. Culture audit outcomes ===
   const totalAudits = culture_audit_records.length;
@@ -475,27 +462,27 @@ export function computeWhistleblowingSafeguardingCulture(
   const challengeAccepted = culture_audit_records.filter(
     (r) => r.challenge_accepted,
   ).length;
-  const challengeRate = pct(challengeAccepted, totalAudits);
+  const challengeRate = rate(challengeAccepted, totalAudits);
 
   const staffFeelHeard = culture_audit_records.filter(
     (r) => r.staff_feel_heard,
   ).length;
-  const staffHeardRate = pct(staffFeelHeard, totalAudits);
+  const staffHeardRate = rate(staffFeelHeard, totalAudits);
 
   const childrenFeelSafe = culture_audit_records.filter(
     (r) => r.children_feel_safe,
   ).length;
-  const childSafeRate = pct(childrenFeelSafe, totalAudits);
+  const childSafeRate = rate(childrenFeelSafe, totalAudits);
 
   const whistleblowingVisible = culture_audit_records.filter(
     (r) => r.whistleblowing_policy_visible,
   ).length;
-  const visibilityRate = pct(whistleblowingVisible, totalAudits);
+  const visibilityRate = rate(whistleblowingVisible, totalAudits);
 
   const childrenKnowComplain = culture_audit_records.filter(
     (r) => r.children_know_how_to_complain,
   ).length;
-  const complainKnowledgeRate = pct(childrenKnowComplain, totalAudits);
+  const complainKnowledgeRate = rate(childrenKnowComplain, totalAudits);
 
   const totalActionsRaised = culture_audit_records.reduce(
     (sum, r) => sum + r.total_actions_raised, 0,
@@ -503,17 +490,17 @@ export function computeWhistleblowingSafeguardingCulture(
   const totalActionsCompleted = culture_audit_records.reduce(
     (sum, r) => sum + r.actions_completed, 0,
   );
-  const actionCompletionRate = pct(totalActionsCompleted, totalActionsRaised);
+  const actionCompletionRate = rate(totalActionsCompleted, totalActionsRaised);
 
   const totalActionsOverdue = culture_audit_records.reduce(
     (sum, r) => sum + r.actions_overdue, 0,
   );
-  const actionOverdueRate = pct(totalActionsOverdue, totalActionsRaised);
+  const actionOverdueRate = rate(totalActionsOverdue, totalActionsRaised);
 
   const inadequateAudits = culture_audit_records.filter(
     (r) => r.overall_rating === "inadequate",
   ).length;
-  const inadequateAuditRate = pct(inadequateAudits, totalAudits);
+  const inadequateAuditRate = rate(inadequateAudits, totalAudits);
 
   const outstandingAudits = culture_audit_records.filter(
     (r) => r.overall_rating === "outstanding",
@@ -523,7 +510,7 @@ export function computeWhistleblowingSafeguardingCulture(
   const cultureAuditRate: number | null =
     totalAudits > 0
       ? Math.round(
-          (avgAuditRating! + avgOpenCultureScore! + childSafeRate) / 3,
+          (avgAuditRating! + avgOpenCultureScore! + childSafeRate!) / 3,
         )
       : null;
 
@@ -533,17 +520,17 @@ export function computeWhistleblowingSafeguardingCulture(
   const reportedWithin24h = child_protection_records.filter(
     (r) => r.reported_within_24h,
   ).length;
-  const timelyReportingRate = pct(reportedWithin24h, totalProtection);
+  const timelyReportingRate = rate(reportedWithin24h, totalProtection);
 
   const correctChannel = child_protection_records.filter(
     (r) => r.correct_channel_used,
   ).length;
-  const correctChannelRate = pct(correctChannel, totalProtection);
+  const correctChannelRate = rate(correctChannel, totalProtection);
 
   const childVoiceCaptured = child_protection_records.filter(
     (r) => r.child_voice_captured,
   ).length;
-  const childVoiceRate = pct(childVoiceCaptured, totalProtection);
+  const childVoiceRate = rate(childVoiceCaptured, totalProtection);
 
   const ladoReferralsNeeded = child_protection_records.filter(
     (r) => r.lado_referral_made !== null,
@@ -551,37 +538,37 @@ export function computeWhistleblowingSafeguardingCulture(
   const ladoReferralsMade = ladoReferralsNeeded.filter(
     (r) => r.lado_referral_made === true,
   ).length;
-  const ladoReferralRate = pct(ladoReferralsMade, ladoReferralsNeeded.length);
+  const ladoReferralRate = rate(ladoReferralsMade, ladoReferralsNeeded.length);
 
   const multiAgencyResponse = child_protection_records.filter(
     (r) => r.multi_agency_response,
   ).length;
-  const multiAgencyRate = pct(multiAgencyResponse, totalProtection);
+  const multiAgencyRate = rate(multiAgencyResponse, totalProtection);
 
   const outcomeDocumented = child_protection_records.filter(
     (r) => r.outcome_documented,
   ).length;
-  const outcomeRate = pct(outcomeDocumented, totalProtection);
+  const outcomeRate = rate(outcomeDocumented, totalProtection);
 
   const followUpCompleted = child_protection_records.filter(
     (r) => r.follow_up_completed,
   ).length;
-  const followUpRate = pct(followUpCompleted, totalProtection);
+  const followUpRate = rate(followUpCompleted, totalProtection);
 
   const lessonsLearned = child_protection_records.filter(
     (r) => r.lessons_learned_recorded,
   ).length;
-  const lessonsLearnedRate = pct(lessonsLearned, totalProtection);
+  const lessonsLearnedRate = rate(lessonsLearned, totalProtection);
 
   const staffDebriefed = child_protection_records.filter(
     (r) => r.staff_debriefed,
   ).length;
-  const debriefRate = pct(staffDebriefed, totalProtection);
+  const debriefRate = rate(staffDebriefed, totalProtection);
 
   const poorQuality = child_protection_records.filter(
     (r) => r.quality_rating === "poor",
   ).length;
-  const poorQualityRate = pct(poorQuality, totalProtection);
+  const poorQualityRate = rate(poorQuality, totalProtection);
 
   const excellentQuality = child_protection_records.filter(
     (r) => r.quality_rating === "excellent",
@@ -589,11 +576,8 @@ export function computeWhistleblowingSafeguardingCulture(
 
   // Composite child protection rate
   const childProtectionRate: number | null =
-    totalProtection > 0
-      ? Math.round(
-          (timelyReportingRate + correctChannelRate + childVoiceRate + outcomeRate + followUpRate) / 5,
-        )
-      : null;
+    totalProtection > 0 ? Math.round(
+          (timelyReportingRate! + correctChannelRate! + childVoiceRate! + outcomeRate! + followUpRate!) / 5) : null;
 
   // -- Scoring: base 52 ----------------------------------------------------
 
@@ -624,12 +608,12 @@ export function computeWhistleblowingSafeguardingCulture(
   else if (meets(staffConfidenceRate, 60)) score += 1;
 
   // --- Bonus 7: childSafeRate (>=90: +3, >=70: +1) ---
-  if (childSafeRate >= 90) score += 3;
-  else if (childSafeRate >= 70) score += 1;
+  if (meets(childSafeRate, 90)) score += 3;
+  else if (meets(childSafeRate, 70)) score += 1;
 
   // --- Bonus 8: safeReportingRate (>=90: +2, >=70: +1) ---
-  if (safeReportingRate >= 90) score += 2;
-  else if (safeReportingRate >= 70) score += 1;
+  if (meets(safeReportingRate, 90)) score += 2;
+  else if (meets(safeReportingRate, 70)) score += 1;
 
   // -- Penalties (4 with guards) -------------------------------------------
 
@@ -664,31 +648,31 @@ export function computeWhistleblowingSafeguardingCulture(
     );
   }
 
-  if (channelUnderstandingRate >= 90 && totalAwareness > 0) {
+  if (meets(channelUnderstandingRate, 90) && totalAwareness > 0) {
     strengths.push(
       `${channelUnderstandingRate}% of staff understand reporting channels -- staff know how to raise concerns through both internal and external routes.`,
     );
   }
 
-  if (externalEscalationRate >= 90 && totalAwareness > 0) {
+  if (meets(externalEscalationRate, 90) && totalAwareness > 0) {
     strengths.push(
       `${externalEscalationRate}% of staff know how to escalate externally -- staff are aware of routes to Ofsted, LADO, and other external bodies if internal escalation fails.`,
     );
   }
 
-  if (protectionAwarenessRate >= 90 && totalAwareness > 0) {
+  if (meets(protectionAwarenessRate, 90) && totalAwareness > 0) {
     strengths.push(
       `${protectionAwarenessRate}% of staff are aware of legal protections for whistleblowers -- staff understand they are protected from retaliation when raising genuine concerns.`,
     );
   }
 
-  if (quizPassRate >= 90 && totalAwareness > 0) {
+  if (meets(quizPassRate, 90) && totalAwareness > 0) {
     strengths.push(
       `${quizPassRate}% whistleblowing knowledge quiz pass rate with average score of ${avgQuizScore}% -- staff demonstrate strong working knowledge of whistleblowing procedures.`,
     );
   }
 
-  if (refresherRate >= 80 && totalAwareness > 0) {
+  if (meets(refresherRate, 80) && totalAwareness > 0) {
     strengths.push(
       `${refresherRate}% of staff have completed whistleblowing policy refresher training -- the home maintains currency of staff knowledge through regular updates.`,
     );
@@ -711,25 +695,25 @@ export function computeWhistleblowingSafeguardingCulture(
     );
   }
 
-  if (safeReportingRate >= 90 && totalConfidence > 0) {
+  if (meets(safeReportingRate, 90) && totalConfidence > 0) {
     strengths.push(
       `${safeReportingRate}% of staff feel safe reporting concerns -- the home has created a culture where whistleblowing is supported and protected.`,
     );
   }
 
-  if (reportHandlingRate >= 90 && hasReportedBefore.length > 0) {
+  if (meets(reportHandlingRate, 90) && hasReportedBefore.length > 0) {
     strengths.push(
       `${reportHandlingRate}% of staff who have previously reported concerns felt their report was handled well -- the home demonstrates effective follow-through on whistleblowing.`,
     );
   }
 
-  if (managerReportRate >= 80 && totalConfidence > 0) {
+  if (meets(managerReportRate, 80) && totalConfidence > 0) {
     strengths.push(
       `${managerReportRate}% of staff would report concerns about a manager -- the home's open culture extends to challenging senior staff when necessary.`,
     );
   }
 
-  if (externalReportRate >= 80 && totalConfidence > 0) {
+  if (meets(externalReportRate, 80) && totalConfidence > 0) {
     strengths.push(
       `${externalReportRate}% of staff would escalate concerns externally if needed -- staff understand and trust external safeguarding routes.`,
     );
@@ -746,13 +730,13 @@ export function computeWhistleblowingSafeguardingCulture(
     );
   }
 
-  if (inDateRate >= 95 && totalTraining > 0) {
+  if (meets(inDateRate, 95) && totalTraining > 0) {
     strengths.push(
       `${inDateRate}% of safeguarding training is in date -- the home maintains excellent training currency with minimal expiry risk.`,
     );
   }
 
-  if (accreditedRate >= 90 && totalTraining > 0) {
+  if (meets(accreditedRate, 90) && totalTraining > 0) {
     strengths.push(
       `${accreditedRate}% of safeguarding training is from accredited providers -- the home invests in quality-assured, recognised training programmes.`,
     );
@@ -781,37 +765,37 @@ export function computeWhistleblowingSafeguardingCulture(
     );
   }
 
-  if (childSafeRate >= 90 && totalAudits > 0) {
+  if (meets(childSafeRate, 90) && totalAudits > 0) {
     strengths.push(
       `Children reported feeling safe in ${childSafeRate}% of culture audits -- children experience the home as a safe, protective environment.`,
     );
   }
 
-  if (staffHeardRate >= 90 && totalAudits > 0) {
+  if (meets(staffHeardRate, 90) && totalAudits > 0) {
     strengths.push(
       `Staff feel heard in ${staffHeardRate}% of culture audits -- the home fosters an open, listening culture that supports whistleblowing and challenge.`,
     );
   }
 
-  if (challengeRate >= 90 && totalAudits > 0) {
+  if (meets(challengeRate, 90) && totalAudits > 0) {
     strengths.push(
       `Challenge is accepted constructively in ${challengeRate}% of audits -- the home welcomes professional challenge as part of its safeguarding culture.`,
     );
   }
 
-  if (visibilityRate >= 90 && totalAudits > 0) {
+  if (meets(visibilityRate, 90) && totalAudits > 0) {
     strengths.push(
       `Whistleblowing policy visibly displayed in ${visibilityRate}% of audits -- staff and visitors can easily access whistleblowing information.`,
     );
   }
 
-  if (complainKnowledgeRate >= 90 && totalAudits > 0) {
+  if (meets(complainKnowledgeRate, 90) && totalAudits > 0) {
     strengths.push(
       `Children know how to complain in ${complainKnowledgeRate}% of audits -- children are empowered with knowledge of how to raise concerns.`,
     );
   }
 
-  if (actionCompletionRate >= 90 && totalActionsRaised > 0) {
+  if (meets(actionCompletionRate, 90) && totalActionsRaised > 0) {
     strengths.push(
       `${actionCompletionRate}% of audit actions completed -- the home demonstrates strong follow-through on culture improvement actions.`,
     );
@@ -834,43 +818,43 @@ export function computeWhistleblowingSafeguardingCulture(
     );
   }
 
-  if (timelyReportingRate >= 95 && totalProtection > 0) {
+  if (meets(timelyReportingRate, 95) && totalProtection > 0) {
     strengths.push(
       `${timelyReportingRate}% of child protection concerns reported within 24 hours -- the home responds promptly to safeguarding concerns.`,
     );
   }
 
-  if (correctChannelRate >= 95 && totalProtection > 0) {
+  if (meets(correctChannelRate, 95) && totalProtection > 0) {
     strengths.push(
       `Correct reporting channels used in ${correctChannelRate}% of cases -- staff understand and follow established safeguarding reporting procedures.`,
     );
   }
 
-  if (childVoiceRate >= 90 && totalProtection > 0) {
+  if (meets(childVoiceRate, 90) && totalProtection > 0) {
     strengths.push(
       `Child voice captured in ${childVoiceRate}% of child protection cases -- children's perspectives are central to safeguarding responses.`,
     );
   }
 
-  if (lessonsLearnedRate >= 80 && totalProtection > 0) {
+  if (meets(lessonsLearnedRate, 80) && totalProtection > 0) {
     strengths.push(
       `Lessons learned recorded in ${lessonsLearnedRate}% of cases -- the home demonstrates a learning culture that strengthens future safeguarding practice.`,
     );
   }
 
-  if (debriefRate >= 80 && totalProtection > 0) {
+  if (meets(debriefRate, 80) && totalProtection > 0) {
     strengths.push(
       `Staff debriefed in ${debriefRate}% of child protection cases -- the home supports staff wellbeing after difficult safeguarding events.`,
     );
   }
 
-  if (ladoReferralRate >= 90 && ladoReferralsNeeded.length > 0) {
+  if (meets(ladoReferralRate, 90) && ladoReferralsNeeded.length > 0) {
     strengths.push(
       `LADO referrals made in ${ladoReferralRate}% of applicable cases -- the home correctly escalates allegations to the Local Authority Designated Officer.`,
     );
   }
 
-  if (multiAgencyRate >= 80 && totalProtection > 0) {
+  if (meets(multiAgencyRate, 80) && totalProtection > 0) {
     strengths.push(
       `Multi-agency responses recorded in ${multiAgencyRate}% of cases -- the home works effectively with partner agencies to protect children.`,
     );
@@ -897,31 +881,31 @@ export function computeWhistleblowingSafeguardingCulture(
     );
   }
 
-  if (channelUnderstandingRate < 70 && totalAwareness > 0) {
+  if (below(channelUnderstandingRate, 70) && totalAwareness > 0) {
     concerns.push(
       `Only ${channelUnderstandingRate}% of staff understand reporting channels -- staff cannot effectively raise concerns if they do not know how to do so.`,
     );
   }
 
-  if (externalEscalationRate < 60 && totalAwareness > 0) {
+  if (below(externalEscalationRate, 60) && totalAwareness > 0) {
     concerns.push(
       `Only ${externalEscalationRate}% of staff know how to escalate externally -- if internal channels fail, staff lack knowledge of external safeguarding routes to Ofsted, LADO, or the police.`,
     );
   }
 
-  if (retaliationConcernRate >= 20 && totalAwareness > 0) {
+  if (meets(retaliationConcernRate, 20) && totalAwareness > 0) {
     concerns.push(
       `${retaliationConcernRate}% of staff express concerns about retaliation for whistleblowing -- this suggests a culture of fear that suppresses safeguarding reporting.`,
     );
   }
 
-  if (quizPassRate < 70 && totalAwareness > 0) {
+  if (below(quizPassRate, 70) && totalAwareness > 0) {
     concerns.push(
       `Only ${quizPassRate}% of staff passed the whistleblowing knowledge quiz -- staff knowledge of whistleblowing procedures is insufficient.`,
     );
   }
 
-  if (refresherRate < 50 && totalAwareness > 0) {
+  if (below(refresherRate, 50) && totalAwareness > 0) {
     concerns.push(
       `Only ${refresherRate}% of staff have completed whistleblowing refresher training -- knowledge of current procedures may be outdated.`,
     );
@@ -944,25 +928,25 @@ export function computeWhistleblowingSafeguardingCulture(
     );
   }
 
-  if (safeReportingRate < 60 && totalConfidence > 0) {
+  if (below(safeReportingRate, 60) && totalConfidence > 0) {
     concerns.push(
       `Only ${safeReportingRate}% of staff feel safe reporting concerns -- the home has not created an environment where whistleblowing is supported and protected.`,
     );
   }
 
-  if (managerReportRate < 50 && totalConfidence > 0) {
+  if (below(managerReportRate, 50) && totalConfidence > 0) {
     concerns.push(
       `Only ${managerReportRate}% of staff would report concerns about a manager -- this power imbalance creates a significant safeguarding blind spot.`,
     );
   }
 
-  if (barrierRate >= 30 && totalConfidence > 0) {
+  if (meets(barrierRate, 30) && totalConfidence > 0) {
     concerns.push(
       `${barrierRate}% of staff report barriers to raising concerns -- persistent barriers are suppressing safeguarding disclosures and undermining the whistleblowing culture.`,
     );
   }
 
-  if (reportHandlingRate < 60 && hasReportedBefore.length > 0) {
+  if (below(reportHandlingRate, 60) && hasReportedBefore.length > 0) {
     concerns.push(
       `Only ${reportHandlingRate}% of staff who previously reported concerns felt their report was handled well -- poor follow-through discourages future reporting.`,
     );
@@ -979,19 +963,19 @@ export function computeWhistleblowingSafeguardingCulture(
     );
   }
 
-  if (expiredRate >= 20 && totalTraining > 0) {
+  if (meets(expiredRate, 20) && totalTraining > 0) {
     concerns.push(
       `${expiredRate}% of safeguarding training has expired -- staff are working with children without current safeguarding certification.`,
     );
   }
 
-  if (certificateRate < 70 && totalTraining > 0) {
+  if (below(certificateRate, 70) && totalTraining > 0) {
     concerns.push(
       `Certificates on file for only ${certificateRate}% of training -- the home cannot evidence that staff have completed the safeguarding training claimed.`,
     );
   }
 
-  if (accreditedRate < 60 && totalTraining > 0) {
+  if (below(accreditedRate, 60) && totalTraining > 0) {
     concerns.push(
       `Only ${accreditedRate}% of safeguarding training is from accredited providers -- the quality and validity of non-accredited training cannot be assured.`,
     );
@@ -1008,37 +992,37 @@ export function computeWhistleblowingSafeguardingCulture(
     );
   }
 
-  if (childSafeRate < 70 && totalAudits > 0) {
+  if (below(childSafeRate, 70) && totalAudits > 0) {
     concerns.push(
       `Children reported feeling safe in only ${childSafeRate}% of culture audits -- some children do not experience the home as a safe environment, which is a fundamental safeguarding concern.`,
     );
   }
 
-  if (staffHeardRate < 60 && totalAudits > 0) {
+  if (below(staffHeardRate, 60) && totalAudits > 0) {
     concerns.push(
       `Staff feel heard in only ${staffHeardRate}% of culture audits -- staff do not feel listened to, which suppresses whistleblowing and professional challenge.`,
     );
   }
 
-  if (inadequateAuditRate >= 20 && totalAudits > 0) {
+  if (meets(inadequateAuditRate, 20) && totalAudits > 0) {
     concerns.push(
       `${inadequateAuditRate}% of culture audits rated inadequate -- repeated inadequate audit outcomes indicate systemic safeguarding culture failures.`,
     );
   }
 
-  if (actionOverdueRate >= 20 && totalActionsRaised > 0) {
+  if (meets(actionOverdueRate, 20) && totalActionsRaised > 0) {
     concerns.push(
       `${actionOverdueRate}% of audit actions are overdue -- the home is not completing culture improvement actions in a timely manner.`,
     );
   }
 
-  if (visibilityRate < 70 && totalAudits > 0) {
+  if (below(visibilityRate, 70) && totalAudits > 0) {
     concerns.push(
       `Whistleblowing policy visible in only ${visibilityRate}% of audits -- staff and visitors cannot easily access information about how to raise concerns.`,
     );
   }
 
-  if (complainKnowledgeRate < 70 && totalAudits > 0) {
+  if (below(complainKnowledgeRate, 70) && totalAudits > 0) {
     concerns.push(
       `Children know how to complain in only ${complainKnowledgeRate}% of audits -- children are not sufficiently empowered to raise concerns about their care.`,
     );
@@ -1061,49 +1045,49 @@ export function computeWhistleblowingSafeguardingCulture(
     );
   }
 
-  if (timelyReportingRate < 80 && totalProtection > 0) {
+  if (below(timelyReportingRate, 80) && totalProtection > 0) {
     concerns.push(
       `Only ${timelyReportingRate}% of child protection concerns reported within 24 hours -- delayed reporting increases risk to children and may compromise investigations.`,
     );
   }
 
-  if (correctChannelRate < 80 && totalProtection > 0) {
+  if (below(correctChannelRate, 80) && totalProtection > 0) {
     concerns.push(
       `Correct reporting channels used in only ${correctChannelRate}% of cases -- staff are not consistently following established safeguarding reporting procedures.`,
     );
   }
 
-  if (childVoiceRate < 70 && totalProtection > 0) {
+  if (below(childVoiceRate, 70) && totalProtection > 0) {
     concerns.push(
       `Child voice captured in only ${childVoiceRate}% of child protection cases -- children's perspectives are not being sufficiently included in safeguarding responses.`,
     );
   }
 
-  if (outcomeRate < 70 && totalProtection > 0) {
+  if (below(outcomeRate, 70) && totalProtection > 0) {
     concerns.push(
       `Outcomes documented in only ${outcomeRate}% of cases -- the home cannot evidence what happened as a result of child protection responses.`,
     );
   }
 
-  if (followUpRate < 70 && totalProtection > 0) {
+  if (below(followUpRate, 70) && totalProtection > 0) {
     concerns.push(
       `Follow-up completed in only ${followUpRate}% of cases -- children may be left at continuing risk if safeguarding follow-up is not completed.`,
     );
   }
 
-  if (poorQualityRate >= 20 && totalProtection > 0) {
+  if (meets(poorQualityRate, 20) && totalProtection > 0) {
     concerns.push(
       `${poorQualityRate}% of child protection responses rated poor -- repeated poor practice represents a significant risk to children's safety.`,
     );
   }
 
-  if (lessonsLearnedRate < 50 && totalProtection > 0) {
+  if (below(lessonsLearnedRate, 50) && totalProtection > 0) {
     concerns.push(
       `Lessons learned recorded in only ${lessonsLearnedRate}% of cases -- the home is not systematically learning from safeguarding events to improve future practice.`,
     );
   }
 
-  if (ladoReferralRate < 80 && ladoReferralsNeeded.length > 0) {
+  if (below(ladoReferralRate, 80) && ladoReferralsNeeded.length > 0) {
     concerns.push(
       `LADO referrals made in only ${ladoReferralRate}% of applicable cases -- the home is not consistently escalating allegations as required.`,
     );
@@ -1179,7 +1163,7 @@ export function computeWhistleblowingSafeguardingCulture(
     });
   }
 
-  if (childSafeRate < 70 && totalAudits > 0) {
+  if (below(childSafeRate, 70) && totalAudits > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1189,7 +1173,7 @@ export function computeWhistleblowingSafeguardingCulture(
     });
   }
 
-  if (safeReportingRate < 60 && totalConfidence > 0) {
+  if (below(safeReportingRate, 60) && totalConfidence > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1199,7 +1183,7 @@ export function computeWhistleblowingSafeguardingCulture(
     });
   }
 
-  if (retaliationConcernRate >= 20 && totalAwareness > 0) {
+  if (meets(retaliationConcernRate, 20) && totalAwareness > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1209,7 +1193,7 @@ export function computeWhistleblowingSafeguardingCulture(
     });
   }
 
-  if (timelyReportingRate < 80 && totalProtection > 0) {
+  if (below(timelyReportingRate, 80) && totalProtection > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1260,7 +1244,7 @@ export function computeWhistleblowingSafeguardingCulture(
     });
   }
 
-  if (expiredRate >= 20 && totalTraining > 0) {
+  if (meets(expiredRate, 20) && totalTraining > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1270,7 +1254,7 @@ export function computeWhistleblowingSafeguardingCulture(
     });
   }
 
-  if (childVoiceRate < 70 && totalProtection > 0) {
+  if (below(childVoiceRate, 70) && totalProtection > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1280,7 +1264,7 @@ export function computeWhistleblowingSafeguardingCulture(
     });
   }
 
-  if (lessonsLearnedRate < 50 && totalProtection > 0) {
+  if (below(lessonsLearnedRate, 50) && totalProtection > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1290,7 +1274,7 @@ export function computeWhistleblowingSafeguardingCulture(
     });
   }
 
-  if (actionOverdueRate >= 20 && totalActionsRaised > 0) {
+  if (meets(actionOverdueRate, 20) && totalActionsRaised > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1300,7 +1284,7 @@ export function computeWhistleblowingSafeguardingCulture(
     });
   }
 
-  if (visibilityRate < 70 && totalAudits > 0) {
+  if (below(visibilityRate, 70) && totalAudits > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1310,7 +1294,7 @@ export function computeWhistleblowingSafeguardingCulture(
     });
   }
 
-  if (complainKnowledgeRate < 70 && totalAudits > 0) {
+  if (below(complainKnowledgeRate, 70) && totalAudits > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1320,7 +1304,7 @@ export function computeWhistleblowingSafeguardingCulture(
     });
   }
 
-  if (managerReportRate < 50 && totalConfidence > 0) {
+  if (below(managerReportRate, 50) && totalConfidence > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1381,7 +1365,7 @@ export function computeWhistleblowingSafeguardingCulture(
     });
   }
 
-  if (debriefRate < 60 && totalProtection > 0) {
+  if (below(debriefRate, 60) && totalProtection > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1391,7 +1375,7 @@ export function computeWhistleblowingSafeguardingCulture(
     });
   }
 
-  if (barrierRate >= 30 && totalConfidence > 0) {
+  if (meets(barrierRate, 30) && totalConfidence > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1435,21 +1419,21 @@ export function computeWhistleblowingSafeguardingCulture(
     });
   }
 
-  if (childSafeRate < 70 && totalAudits > 0) {
+  if (below(childSafeRate, 70) && totalAudits > 0) {
     insights.push({
       text: `Children feel safe in only ${childSafeRate}% of culture audits. When children do not feel safe in their home, no other safeguarding measure compensates. Ofsted will view this as prima facie evidence of a safety failure requiring immediate action under the SCCIF safety judgment.`,
       severity: "critical",
     });
   }
 
-  if (retaliationConcernRate >= 30 && totalAwareness > 0) {
+  if (meets(retaliationConcernRate, 30) && totalAwareness > 0) {
     insights.push({
       text: `${retaliationConcernRate}% of staff express retaliation concerns. A culture where staff fear consequences for reporting concerns is the antithesis of a safe, open home. Ofsted identifies fear of retaliation as a marker of a closed culture that allows abuse to remain hidden.`,
       severity: "critical",
     });
   }
 
-  if (safeReportingRate < 50 && totalConfidence > 0) {
+  if (below(safeReportingRate, 50) && totalConfidence > 0) {
     insights.push({
       text: `Only ${safeReportingRate}% of staff feel safe reporting concerns. When the majority of staff do not feel safe to raise safeguarding worries, the home has a closed culture that may conceal poor practice or abuse. This is one of the most significant safeguarding culture red flags Ofsted will identify.`,
       severity: "critical",
@@ -1493,7 +1477,7 @@ export function computeWhistleblowingSafeguardingCulture(
     });
   }
 
-  if (expiredRate >= 20 && expiredRate < 40 && totalTraining > 0) {
+  if (meets(expiredRate, 20) && below(expiredRate, 40) && totalTraining > 0) {
     insights.push({
       text: `${expiredRate}% of safeguarding training has expired -- staff with expired training may not be aware of current guidance, thresholds, or reporting procedures. This creates a tangible safeguarding risk.`,
       severity: "warning",
@@ -1507,28 +1491,28 @@ export function computeWhistleblowingSafeguardingCulture(
     });
   }
 
-  if (barrierRate >= 20 && barrierRate < 30 && totalConfidence > 0) {
+  if (meets(barrierRate, 20) && below(barrierRate, 30) && totalConfidence > 0) {
     insights.push({
       text: `${barrierRate}% of staff report barriers to raising concerns -- while not yet at critical levels, these barriers should be identified and addressed before they erode the home's whistleblowing culture.`,
       severity: "warning",
     });
   }
 
-  if (retaliationConcernRate >= 10 && retaliationConcernRate < 20 && totalAwareness > 0) {
+  if (meets(retaliationConcernRate, 10) && below(retaliationConcernRate, 20) && totalAwareness > 0) {
     insights.push({
       text: `${retaliationConcernRate}% of staff express some concern about retaliation -- even a small proportion of staff fearing consequences for raising concerns indicates room for improvement in the home's whistleblowing culture.`,
       severity: "warning",
     });
   }
 
-  if (actionCompletionRate >= 60 && actionCompletionRate < 90 && totalActionsRaised > 0) {
+  if (meets(actionCompletionRate, 60) && below(actionCompletionRate, 90) && totalActionsRaised > 0) {
     insights.push({
       text: `${actionCompletionRate}% of audit actions completed -- reasonable progress but overdue or incomplete actions suggest the home's pace of culture improvement needs acceleration.`,
       severity: "warning",
     });
   }
 
-  if (outcomeRate >= 70 && outcomeRate < 90 && totalProtection > 0) {
+  if (meets(outcomeRate, 70) && below(outcomeRate, 90) && totalProtection > 0) {
     insights.push({
       text: `Outcomes documented in ${outcomeRate}% of cases -- generally good but every undocumented outcome is a gap in the home's ability to evidence its safeguarding response and demonstrate learning.`,
       severity: "warning",
@@ -1576,14 +1560,14 @@ export function computeWhistleblowingSafeguardingCulture(
     });
   }
 
-  if (childSafeRate >= 90 && staffHeardRate >= 90 && totalAudits > 0) {
+  if (meets(childSafeRate, 90) && meets(staffHeardRate, 90) && totalAudits > 0) {
     insights.push({
       text: `Children feel safe in ${childSafeRate}% of audits and staff feel heard in ${staffHeardRate}% -- both children and staff experience the home as a safe, open environment. This dual perspective validates the home's safeguarding culture.`,
       severity: "positive",
     });
   }
 
-  if (safeReportingRate >= 90 && managerReportRate >= 80 && totalConfidence > 0) {
+  if (meets(safeReportingRate, 90) && meets(managerReportRate, 80) && totalConfidence > 0) {
     insights.push({
       text: `${safeReportingRate}% of staff feel safe reporting with ${managerReportRate}% willing to report concerns about managers -- the home's open culture extends to all levels of seniority. Staff trust the home to handle concerns appropriately regardless of who is involved.`,
       severity: "positive",
@@ -1597,21 +1581,21 @@ export function computeWhistleblowingSafeguardingCulture(
     });
   }
 
-  if (actionCompletionRate >= 90 && totalActionsRaised > 0) {
+  if (meets(actionCompletionRate, 90) && totalActionsRaised > 0) {
     insights.push({
       text: `${actionCompletionRate}% of culture audit actions completed -- the home consistently follows through on improvement actions. This demonstrates commitment to continuous safeguarding culture development.`,
       severity: "positive",
     });
   }
 
-  if (lessonsLearnedRate >= 80 && debriefRate >= 80 && totalProtection > 0) {
+  if (meets(lessonsLearnedRate, 80) && meets(debriefRate, 80) && totalProtection > 0) {
     insights.push({
       text: `Lessons learned in ${lessonsLearnedRate}% of cases with ${debriefRate}% staff debrief rate -- the home has a mature learning culture that strengthens future safeguarding practice and supports staff wellbeing.`,
       severity: "positive",
     });
   }
 
-  if (reportHandlingRate >= 90 && hasReportedBefore.length > 0) {
+  if (meets(reportHandlingRate, 90) && hasReportedBefore.length > 0) {
     insights.push({
       text: `${reportHandlingRate}% of previous whistleblowing reports handled well -- staff who have raised concerns confirm that the home responded appropriately. This positive track record reinforces the whistleblowing culture and encourages future reporting.`,
       severity: "positive",

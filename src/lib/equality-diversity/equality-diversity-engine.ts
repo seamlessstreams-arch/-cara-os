@@ -1,5 +1,6 @@
 import { todayStr } from "@/lib/utils";
 import { seedDay } from "@/lib/seed-date";
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — Equality & Diversity Intelligence Engine
 //
@@ -140,12 +141,18 @@ export interface IndividualSupportResult {
   fullySupported: number;
   partiallySupportedCount: number;
   notSupportedCount: number;
-  fullySupportedRate: number;
-  culturalPlanCoverage: number;
-  dietaryRate: number;
-  religiousRate: number;
-  languageRate: number;
-  identityWorkRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  fullySupportedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  culturalPlanCoverage: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dietaryRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  religiousRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  languageRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  identityWorkRate: number | null;
   allAssessedWithin90Days: boolean;
   score: number;
 }
@@ -153,27 +160,32 @@ export interface IndividualSupportResult {
 export interface StaffCompetencyResult {
   totalStaff: number;
   completedCount: number;
-  completionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completionRate: number | null;
   overdueCount: number;
   expiredCount: number;
   trainingTypes: string[];
   uniqueTrainingTypesCount: number;
   hasEqualityActTraining: boolean;
   hasCulturalCompetencyTraining: boolean;
-  coverageRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  coverageRate: number | null;
   score: number;
 }
 
 export interface IncidentResponseResult {
   totalIncidents: number;
   resolvedCount: number;
-  resolutionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  resolutionRate: number | null;
   lessonsIdentifiedCount: number;
-  lessonsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  lessonsRate: number | null;
   averageActionsPerIncident: number;
   unresolvedCriticalOrHigh: number;
   escalatedCount: number;
-  escalationRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  escalationRate: number | null;
   allLessonsIdentified: boolean;
   score: number;
 }
@@ -184,7 +196,8 @@ export interface AccessibilityInclusionResult {
   latestCommunicationScore: number;
   latestInformationScore: number;
   latestActivityScore: number;
-  improvementRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  improvementRate: number | null;
   allScoresAbove9: boolean;
   score: number;
 }
@@ -194,7 +207,7 @@ export interface ChildEDISummary {
   childName: string;
   characteristicCount: number;
   fullySupportedCount: number;
-  supportRate: number;
+  supportRate: number | null;
   culturalPlanStatus: CulturalPlanStatus;
   dietaryNeedsMet: boolean;
   religiousPracticeFacilitated: boolean;
@@ -312,10 +325,6 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function daysBetween(a: string, b: string): number {
   return Math.floor(
     (new Date(b).getTime() - new Date(a).getTime()) / 86_400_000,
@@ -350,12 +359,12 @@ export function evaluateIndividualSupport(
       fullySupported: 0,
       partiallySupportedCount: 0,
       notSupportedCount: 0,
-      fullySupportedRate: 0,
+      fullySupportedRate: null,
       culturalPlanCoverage: 0,
-      dietaryRate: 0,
-      religiousRate: 0,
-      languageRate: 0,
-      identityWorkRate: 0,
+      dietaryRate: null,
+      religiousRate: null,
+      languageRate: null,
+      identityWorkRate: null,
       allAssessedWithin90Days: false,
       score: 0,
     };
@@ -378,28 +387,28 @@ export function evaluateIndividualSupport(
     p.characteristics.some((c) => c.supportStatus === "not_supported"),
   ).length;
 
-  const fullySupportedRate = pct(fullySupported, totalChildren);
+  const fullySupportedRate = rate(fullySupported, totalChildren);
 
   // Cultural plan coverage: active or not_applicable
   const culturalPlanOk = profiles.filter(
     (p) => p.culturalPlanStatus === "active" || p.culturalPlanStatus === "not_applicable",
   ).length;
-  const culturalPlanCoverage = pct(culturalPlanOk, totalChildren);
+  const culturalPlanCoverage = rate(culturalPlanOk, totalChildren);
 
   // Rates
-  const dietaryRate = pct(
+  const dietaryRate = rate(
     profiles.filter((p) => p.dietaryNeedsMet).length,
     totalChildren,
   );
-  const religiousRate = pct(
+  const religiousRate = rate(
     profiles.filter((p) => p.religiousPracticeFacilitated).length,
     totalChildren,
   );
-  const languageRate = pct(
+  const languageRate = rate(
     profiles.filter((p) => p.languageSupportProvided).length,
     totalChildren,
   );
-  const identityWorkRate = pct(
+  const identityWorkRate = rate(
     profiles.filter((p) => p.identityWorkCompleted).length,
     totalChildren,
   );
@@ -411,12 +420,12 @@ export function evaluateIndividualSupport(
 
   // Scoring
   let score = 0;
-  score += Math.round((fullySupportedRate / 100) * 8);
-  score += Math.round((culturalPlanCoverage / 100) * 5);
-  score += Math.round((dietaryRate / 100) * 4);
-  score += Math.round((religiousRate / 100) * 4);
-  score += Math.round((languageRate / 100) * 3);
-  score += Math.round((identityWorkRate / 100) * 3);
+  score += Math.round(((fullySupportedRate ?? 0) / 100) * 8);
+  score += Math.round(((culturalPlanCoverage ?? 0) / 100) * 5);
+  score += Math.round(((dietaryRate ?? 0) / 100) * 4);
+  score += Math.round(((religiousRate ?? 0) / 100) * 4);
+  score += Math.round(((languageRate ?? 0) / 100) * 3);
+  score += Math.round(((identityWorkRate ?? 0) / 100) * 3);
   if (allAssessedWithin90Days) score += 3;
 
   score = clamp(score, 0, 30);
@@ -455,14 +464,14 @@ export function evaluateStaffCompetency(
     return {
       totalStaff: 0,
       completedCount: 0,
-      completionRate: 0,
+      completionRate: null,
       overdueCount: 0,
       expiredCount: 0,
       trainingTypes: [],
       uniqueTrainingTypesCount: 0,
       hasEqualityActTraining: false,
       hasCulturalCompetencyTraining: false,
-      coverageRate: 0,
+      coverageRate: null,
       score: 0,
     };
   }
@@ -471,7 +480,7 @@ export function evaluateStaffCompetency(
   // Unique staff who have completed training
   const staffWithCompletedTraining = new Set(completed.map((r) => r.staffId));
   const completedCount = staffWithCompletedTraining.size;
-  const completionRate = pct(completedCount, totalStaff);
+  const completionRate = rate(completedCount, totalStaff);
 
   const overdueCount = trainingRecords.filter((r) => r.status === "overdue").length;
 
@@ -500,9 +509,9 @@ export function evaluateStaffCompetency(
   let score = 0;
 
   // Completion rate tiers
-  if (completionRate >= 90) score += 10;
-  else if (completionRate >= 70) score += 7;
-  else if (completionRate >= 50) score += 4;
+  if (meets(completionRate, 90)) score += 10;
+  else if (meets(completionRate, 70)) score += 7;
+  else if (meets(completionRate, 50)) score += 4;
 
   // No overdue
   if (overdueCount === 0) score += 5;
@@ -555,13 +564,13 @@ export function evaluateIncidentResponse(
     return {
       totalIncidents: 0,
       resolvedCount: 0,
-      resolutionRate: 0,
+      resolutionRate: null,
       lessonsIdentifiedCount: 0,
-      lessonsRate: 0,
+      lessonsRate: null,
       averageActionsPerIncident: 0,
       unresolvedCriticalOrHigh: 0,
       escalatedCount: 0,
-      escalationRate: 0,
+      escalationRate: null,
       allLessonsIdentified: true,
       score: 25,
     };
@@ -570,10 +579,10 @@ export function evaluateIncidentResponse(
   const resolvedCount = incidents.filter(
     (i) => i.outcome === "resolved" || i.outcome === "lessons_learned",
   ).length;
-  const resolutionRate = pct(resolvedCount, totalIncidents);
+  const resolutionRate = rate(resolvedCount, totalIncidents);
 
   const lessonsIdentifiedCount = incidents.filter((i) => i.lessonsIdentified).length;
-  const lessonsRate = pct(lessonsIdentifiedCount, totalIncidents);
+  const lessonsRate = rate(lessonsIdentifiedCount, totalIncidents);
 
   const totalActions = incidents.reduce((sum, i) => sum + i.actionsTaken.length, 0);
   const averageActionsPerIncident =
@@ -587,17 +596,17 @@ export function evaluateIncidentResponse(
   ).length;
 
   const escalatedCount = incidents.filter((i) => i.outcome === "escalated").length;
-  const escalationRate = pct(escalatedCount, totalIncidents);
+  const escalationRate = rate(escalatedCount, totalIncidents);
 
   const allLessonsIdentified = incidents.every((i) => i.lessonsIdentified);
 
   // Scoring
   let score = 0;
-  if (resolutionRate >= 90) score += 8;
-  if (lessonsRate >= 80) score += 5;
+  if (meets(resolutionRate, 90)) score += 8;
+  if (meets(lessonsRate, 80)) score += 5;
   if (averageActionsPerIncident >= 2) score += 4;
   if (unresolvedCriticalOrHigh === 0) score += 3;
-  if (escalationRate < 20) score += 3;
+  if (below(escalationRate, 20)) score += 3;
   if (allLessonsIdentified) score += 2;
 
   score = clamp(score, 0, 25);
@@ -639,7 +648,7 @@ export function evaluateAccessibilityInclusion(
       latestCommunicationScore: 0,
       latestInformationScore: 0,
       latestActivityScore: 0,
-      improvementRate: 0,
+      improvementRate: null,
       allScoresAbove9: false,
       score: 0,
     };
@@ -657,7 +666,7 @@ export function evaluateAccessibilityInclusion(
   // Improvement rate across all audits
   const totalIdentified = audits.reduce((s, a) => s + a.improvementsIdentified, 0);
   const totalCompleted = audits.reduce((s, a) => s + a.improvementsCompleted, 0);
-  const improvementRate = pct(totalCompleted, totalIdentified);
+  const improvementRate = rate(totalCompleted, totalIdentified);
 
   const allScoresAbove9 =
     latestPhysicalScore >= 9 &&
@@ -671,7 +680,7 @@ export function evaluateAccessibilityInclusion(
   if (latestCommunicationScore >= 8) score += 4;
   if (latestInformationScore >= 8) score += 3;
   if (latestActivityScore >= 8) score += 3;
-  if (improvementRate >= 80) score += 3;
+  if (meets(improvementRate, 80)) score += 3;
   if (allScoresAbove9) score += 2;
 
   score = clamp(score, 0, 20);
@@ -698,7 +707,7 @@ function buildChildSummaries(profiles: ChildDiversityProfile[]): ChildEDISummary
     const fullySupportedCount = applicableChars.filter(
       (c) => c.supportStatus === "fully_supported",
     ).length;
-    const supportRate = pct(fullySupportedCount, applicableChars.length);
+    const supportRate = rate(fullySupportedCount, applicableChars.length);
 
     // Primary concern
     let primaryConcern: string | undefined;
@@ -759,7 +768,7 @@ function generateStrengths(
   if (support.allAssessedWithin90Days) {
     strengths.push("All equality assessments are up to date (within 90 days)");
   }
-  if (competency.completionRate >= 90) {
+  if (meets(competency.completionRate, 90)) {
     strengths.push("Excellent staff EDI training completion rate");
   }
   if (competency.overdueCount === 0 && competency.totalStaff > 0) {
@@ -780,7 +789,7 @@ function generateStrengths(
   if (accessibility.allScoresAbove9) {
     strengths.push("Excellent accessibility scores across all domains");
   }
-  if (accessibility.improvementRate >= 80 && accessibility.totalAudits > 0) {
+  if (meets(accessibility.improvementRate, 80) && accessibility.totalAudits > 0) {
     strengths.push("Strong completion rate for identified accessibility improvements");
   }
 
@@ -799,36 +808,36 @@ function generateAreasForDevelopment(
 ): string[] {
   const areas: string[] = [];
 
-  if (support.fullySupportedRate < 100 && support.totalChildren > 0) {
+  if (below(support.fullySupportedRate, 100) && support.totalChildren > 0) {
     areas.push(
       `${support.totalChildren - support.fullySupported} child${support.totalChildren - support.fullySupported !== 1 ? "ren" : ""} have characteristics not yet fully supported`,
     );
   }
-  if (support.culturalPlanCoverage < 100 && support.totalChildren > 0) {
+  if (below(support.culturalPlanCoverage, 100) && support.totalChildren > 0) {
     areas.push("Cultural support plan coverage needs improvement");
   }
-  if (support.identityWorkRate < 100 && support.totalChildren > 0) {
+  if (below(support.identityWorkRate, 100) && support.totalChildren > 0) {
     areas.push("Identity work not yet completed for all children");
   }
   if (!support.allAssessedWithin90Days && support.totalChildren > 0) {
     areas.push("Some equality assessments are overdue for review");
   }
-  if (competency.completionRate < 90 && competency.totalStaff > 0) {
+  if (below(competency.completionRate, 90) && competency.totalStaff > 0) {
     areas.push("Staff EDI training completion rate below target");
   }
   if (competency.uniqueTrainingTypesCount < 3) {
     areas.push("Limited variety of EDI training types — broaden training programme");
   }
-  if (incidents.totalIncidents > 0 && incidents.resolutionRate < 90) {
+  if (incidents.totalIncidents > 0 && below(incidents.resolutionRate, 90)) {
     areas.push("Incident resolution rate requires improvement");
   }
-  if (incidents.totalIncidents > 0 && incidents.lessonsRate < 80) {
+  if (incidents.totalIncidents > 0 && below(incidents.lessonsRate, 80)) {
     areas.push("Lessons not consistently identified from EDI incidents");
   }
   if (accessibility.totalAudits === 0) {
     areas.push("No accessibility audits completed — schedule an audit");
   }
-  if (accessibility.improvementRate < 80 && accessibility.totalAudits > 0) {
+  if (below(accessibility.improvementRate, 80) && accessibility.totalAudits > 0) {
     areas.push("Accessibility improvement completion rate below target");
   }
 
@@ -846,7 +855,7 @@ function generateImmediateActions(
 
   // Unsupported characteristics
   const unsupported = childSummaries.filter(
-    (c) => c.supportRate < 100 && c.characteristicCount > 0,
+    (c) => below(c.supportRate, 100) && c.characteristicCount > 0,
   );
   if (unsupported.length > 0) {
     actions.push(

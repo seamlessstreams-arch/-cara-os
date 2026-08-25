@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME WASHING MACHINE & DRYER MAINTENANCE INTELLIGENCE ENGINE
 // Measures appliance servicing schedules, breakdown response, child laundry
@@ -151,12 +152,18 @@ export interface WashingMachineDryerMaintenanceResult {
   appliance_score: number;
   headline: string;
   total_appliances: number;
-  servicing_rate: number;
-  breakdown_response_rate: number;
-  child_access_rate: number;
-  hygiene_cycle_rate: number;
-  energy_efficiency_rate: number;
-  child_independence_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  servicing_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  breakdown_response_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_access_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  hygiene_cycle_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  energy_efficiency_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_independence_rate: number | null;
   // fab-0: null when no energy records / no breakdowns.
   average_appliance_age: number | null;
   breakdown_resolution_avg_hours: number | null;
@@ -167,10 +174,6 @@ export interface WashingMachineDryerMaintenanceResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -202,12 +205,12 @@ function emptyResult(
     appliance_score: score,
     headline,
     total_appliances: 0,
-    servicing_rate: 0,
-    breakdown_response_rate: 0,
-    child_access_rate: 0,
-    hygiene_cycle_rate: 0,
-    energy_efficiency_rate: 0,
-    child_independence_rate: 0,
+    servicing_rate: null,
+    breakdown_response_rate: null,
+    child_access_rate: null,
+    hygiene_cycle_rate: null,
+    energy_efficiency_rate: null,
+    child_independence_rate: null,
     average_appliance_age: null,
     breakdown_resolution_avg_hours: null,
     strengths: [],
@@ -302,19 +305,19 @@ export function computeWashingMachineDryerMaintenance(
   const servicingCompliant = servicing_records.filter(
     (s) => !s.service_overdue,
   ).length;
-  const servicingRate = pct(servicingCompliant, totalServicingRecords);
+  const servicingRate = rate(servicingCompliant, totalServicingRecords);
 
   // Safety check pass rate
   const servicingPassedSafety = servicing_records.filter(
     (s) => s.passed_safety_check,
   ).length;
-  const safetyPassRate = pct(servicingPassedSafety, totalServicingRecords);
+  const safetyPassRate = rate(servicingPassedSafety, totalServicingRecords);
 
   // Certificate on file rate
   const certificatesOnFile = servicing_records.filter(
     (s) => s.certificate_on_file,
   ).length;
-  const certificateRate = pct(certificatesOnFile, totalServicingRecords);
+  const certificateRate = rate(certificatesOnFile, totalServicingRecords);
 
   // Overdue servicing count
   const overdueServicing = servicing_records.filter(
@@ -331,13 +334,13 @@ export function computeWashingMachineDryerMaintenance(
   const respondedWithin24h = breakdown_records.filter(
     (b) => b.response_within_24h,
   ).length;
-  const breakdownResponseRate = pct(respondedWithin24h, totalBreakdowns);
+  const breakdownResponseRate = rate(respondedWithin24h, totalBreakdowns);
 
   // Resolution rate
   const resolvedBreakdowns = breakdown_records.filter(
     (b) => b.resolved,
   ).length;
-  const breakdownResolutionRate = pct(resolvedBreakdowns, totalBreakdowns);
+  const breakdownResolutionRate = rate(resolvedBreakdowns, totalBreakdowns);
 
   // Average resolution time in hours (for resolved breakdowns)
   const resolutionHours: number[] = [];
@@ -360,7 +363,7 @@ export function computeWashingMachineDryerMaintenance(
   const tempArrangementProvided = breakdown_records.filter(
     (b) => b.temporary_arrangement_provided,
   ).length;
-  const tempArrangementRate = pct(tempArrangementProvided, totalBreakdowns);
+  const tempArrangementRate = rate(tempArrangementProvided, totalBreakdowns);
 
   // Safety critical breakdowns still unresolved
   const unresolvedSafetyCritical = breakdown_records.filter(
@@ -371,13 +374,13 @@ export function computeWashingMachineDryerMaintenance(
   const repeatFaults = breakdown_records.filter(
     (b) => b.repeat_fault,
   ).length;
-  const repeatFaultRate = pct(repeatFaults, totalBreakdowns);
+  const repeatFaultRate = rate(repeatFaults, totalBreakdowns);
 
   // Preventable breakdowns
   const preventableBreakdowns = breakdown_records.filter(
     (b) => b.preventable,
   ).length;
-  const preventableRate = pct(preventableBreakdowns, totalBreakdowns);
+  const preventableRate = rate(preventableBreakdowns, totalBreakdowns);
 
   // Health/hygiene impact breakdowns
   const healthHygieneImpact = breakdown_records.filter(
@@ -394,25 +397,25 @@ export function computeWashingMachineDryerMaintenance(
   const childrenWithAccess = child_access_records.filter(
     (c) => c.can_use_washing_machine || c.can_use_dryer,
   ).length;
-  const childAccessRate = pct(childrenWithAccess, totalChildAccessRecords);
+  const childAccessRate = rate(childrenWithAccess, totalChildAccessRecords);
 
   // Training completion rate
   const childrenTrained = child_access_records.filter(
     (c) => c.trained_on_appliance_use,
   ).length;
-  const trainingRate = pct(childrenTrained, totalChildAccessRecords);
+  const trainingRate = rate(childrenTrained, totalChildAccessRecords);
 
   // Risk assessment completion rate
   const riskAssessmentsCompleted = child_access_records.filter(
     (c) => c.risk_assessment_completed,
   ).length;
-  const riskAssessmentRate = pct(riskAssessmentsCompleted, totalChildAccessRecords);
+  const riskAssessmentRate = rate(riskAssessmentsCompleted, totalChildAccessRecords);
 
   // Child preference respected rate
   const preferencesRespected = child_access_records.filter(
     (c) => c.child_preference_respected,
   ).length;
-  const preferenceRate = pct(preferencesRespected, totalChildAccessRecords);
+  const preferenceRate = rate(preferencesRespected, totalChildAccessRecords);
 
   // Child satisfaction average (1-5)
   const satisfactionSum = child_access_records.reduce(
@@ -433,19 +436,19 @@ export function computeWashingMachineDryerMaintenance(
   const independentChildren = child_access_records.filter(
     (c) => c.access_type === "independent" || c.access_type === "supported",
   ).length;
-  const childIndependenceRate = pct(independentChildren, totalChildAccessRecords);
+  const childIndependenceRate = rate(independentChildren, totalChildAccessRecords);
 
   // Independence goals set
   const independenceGoalsSet = child_access_records.filter(
     (c) => c.independence_goal_set,
   ).length;
-  const independenceGoalSetRate = pct(independenceGoalsSet, totalChildAccessRecords);
+  const independenceGoalSetRate = rate(independenceGoalsSet, totalChildAccessRecords);
 
   // Independence goals met
   const independenceGoalsMet = child_access_records.filter(
     (c) => c.independence_goal_met,
   ).length;
-  const independenceGoalMetRate = pct(
+  const independenceGoalMetRate = rate(
     independenceGoalsMet,
     independenceGoalsSet > 0 ? independenceGoalsSet : 1,
   );
@@ -460,7 +463,7 @@ export function computeWashingMachineDryerMaintenance(
     (c) => c.child_age >= 14,
   ).length;
   const ageAppropriateRate = olderChildren > 0
-    ? pct(ageAppropriateIndependence, olderChildren)
+    ? rate(ageAppropriateIndependence, olderChildren)
     : 0;
 
   // ══════════════════════════════════════════════════════════════════════
@@ -473,19 +476,19 @@ export function computeWashingMachineDryerMaintenance(
   const completedHygieneCycles = hygiene_cycle_records.filter(
     (h) => h.completed,
   ).length;
-  const hygieneCycleRate = pct(completedHygieneCycles, totalHygieneCycles);
+  const hygieneCycleRate = rate(completedHygieneCycles, totalHygieneCycles);
 
   // Temperature verification rate
   const temperatureVerified = hygiene_cycle_records.filter(
     (h) => h.completed && h.temperature_verified,
   ).length;
-  const temperatureVerificationRate = pct(temperatureVerified, completedHygieneCycles);
+  const temperatureVerificationRate = rate(temperatureVerified, completedHygieneCycles);
 
   // Infection control compliance rate
   const infectionControlCompliant = hygiene_cycle_records.filter(
     (h) => h.infection_control_compliant,
   ).length;
-  const infectionControlRate = pct(infectionControlCompliant, totalHygieneCycles);
+  const infectionControlRate = rate(infectionControlCompliant, totalHygieneCycles);
 
   // ══════════════════════════════════════════════════════════════════════
   // 6. ENERGY EFFICIENCY RATE
@@ -498,7 +501,7 @@ export function computeWashingMachineDryerMaintenance(
   const energyEfficientAppliances = energy_records.filter(
     (e) => goodEnergyRatings.indexOf(e.energy_rating) !== -1,
   ).length;
-  const energyEfficiencyRate = pct(energyEfficientAppliances, totalEnergyRecords);
+  const energyEfficiencyRate = rate(energyEfficientAppliances, totalEnergyRecords);
 
   // Average appliance age
   const totalAge = energy_records.reduce((sum, e) => sum + e.age_years, 0);
@@ -543,39 +546,39 @@ export function computeWashingMachineDryerMaintenance(
   let score = 52;
 
   // --- Bonus 1: servicingRate (>=95: +5, >=80: +3) ---
-  if (servicingRate >= 95 && totalServicingRecords > 0) score += 5;
-  else if (servicingRate >= 80 && totalServicingRecords > 0) score += 3;
+  if (meets(servicingRate, 95) && totalServicingRecords > 0) score += 5;
+  else if (meets(servicingRate, 80) && totalServicingRecords > 0) score += 3;
 
   // --- Bonus 2: breakdownResponseRate (>=90: +5, >=70: +3) ---
-  if (breakdownResponseRate >= 90 && totalBreakdowns > 0) score += 5;
-  else if (breakdownResponseRate >= 70 && totalBreakdowns > 0) score += 3;
+  if (meets(breakdownResponseRate, 90) && totalBreakdowns > 0) score += 5;
+  else if (meets(breakdownResponseRate, 70) && totalBreakdowns > 0) score += 3;
 
   // --- Bonus 3: childAccessRate (>=90: +4, >=70: +2) ---
-  if (childAccessRate >= 90 && totalChildAccessRecords > 0) score += 4;
-  else if (childAccessRate >= 70 && totalChildAccessRecords > 0) score += 2;
+  if (meets(childAccessRate, 90) && totalChildAccessRecords > 0) score += 4;
+  else if (meets(childAccessRate, 70) && totalChildAccessRecords > 0) score += 2;
 
   // --- Bonus 4: hygieneCycleRate (>=95: +5, >=80: +3) ---
-  if (hygieneCycleRate >= 95 && totalHygieneCycles > 0) score += 5;
-  else if (hygieneCycleRate >= 80 && totalHygieneCycles > 0) score += 3;
+  if (meets(hygieneCycleRate, 95) && totalHygieneCycles > 0) score += 5;
+  else if (meets(hygieneCycleRate, 80) && totalHygieneCycles > 0) score += 3;
 
   // --- Bonus 5: energyEfficiencyRate (>=80: +4, >=60: +2) ---
-  if (energyEfficiencyRate >= 80 && totalEnergyRecords > 0) score += 4;
-  else if (energyEfficiencyRate >= 60 && totalEnergyRecords > 0) score += 2;
+  if (meets(energyEfficiencyRate, 80) && totalEnergyRecords > 0) score += 4;
+  else if (meets(energyEfficiencyRate, 60) && totalEnergyRecords > 0) score += 2;
 
   // --- Bonus 6: childIndependenceRate (>=80: +5, >=60: +3) ---
-  if (childIndependenceRate >= 80 && totalChildAccessRecords > 0) score += 5;
-  else if (childIndependenceRate >= 60 && totalChildAccessRecords > 0) score += 3;
+  if (meets(childIndependenceRate, 80) && totalChildAccessRecords > 0) score += 5;
+  else if (meets(childIndependenceRate, 60) && totalChildAccessRecords > 0) score += 3;
 
   // ── Penalties (4 guarded) ─────────────────────────────────────────────
 
   // Penalty 1: servicingRate < 50 → -6
-  if (servicingRate < 50 && totalServicingRecords > 0) score -= 6;
+  if (below(servicingRate, 50) && totalServicingRecords > 0) score -= 6;
 
   // Penalty 2: breakdownResponseRate < 50 → -5
-  if (breakdownResponseRate < 50 && totalBreakdowns > 0) score -= 5;
+  if (below(breakdownResponseRate, 50) && totalBreakdowns > 0) score -= 5;
 
   // Penalty 3: hygieneCycleRate < 50 → -5
-  if (hygieneCycleRate < 50 && totalHygieneCycles > 0) score -= 5;
+  if (below(hygieneCycleRate, 50) && totalHygieneCycles > 0) score -= 5;
 
   // Penalty 4: unresolvedSafetyCritical > 0 → -6
   if (unresolvedSafetyCritical > 0) score -= 6;
@@ -590,97 +593,97 @@ export function computeWashingMachineDryerMaintenance(
 
   const strengths: string[] = [];
 
-  if (servicingRate >= 95 && totalServicingRecords > 0) {
+  if (meets(servicingRate, 95) && totalServicingRecords > 0) {
     strengths.push(
       "Appliance servicing is fully up to date — the home demonstrates excellent preventive maintenance ensuring all washing machines and dryers are safe and operational.",
     );
-  } else if (servicingRate >= 80 && totalServicingRecords > 0) {
+  } else if (meets(servicingRate, 80) && totalServicingRecords > 0) {
     strengths.push(
       `${servicingRate}% servicing compliance — strong maintenance scheduling keeps the majority of appliances safely maintained and within service intervals.`,
     );
   }
 
-  if (breakdownResponseRate >= 90 && totalBreakdowns > 0) {
+  if (meets(breakdownResponseRate, 90) && totalBreakdowns > 0) {
     strengths.push(
       `${breakdownResponseRate}% of breakdowns responded to within 24 hours — the home demonstrates rapid response to appliance failures, minimising disruption to children's laundry access.`,
     );
-  } else if (breakdownResponseRate >= 70 && totalBreakdowns > 0) {
+  } else if (meets(breakdownResponseRate, 70) && totalBreakdowns > 0) {
     strengths.push(
       `${breakdownResponseRate}% breakdown response within 24 hours — good responsiveness when appliances fail, ensuring children are not left without laundry facilities for extended periods.`,
     );
   }
 
-  if (childAccessRate >= 90 && totalChildAccessRecords > 0) {
+  if (meets(childAccessRate, 90) && totalChildAccessRecords > 0) {
     strengths.push(
       `${childAccessRate}% of children have access to laundry facilities — the home ensures almost every child can wash and dry their own clothes, supporting dignity and independence.`,
     );
-  } else if (childAccessRate >= 70 && totalChildAccessRecords > 0) {
+  } else if (meets(childAccessRate, 70) && totalChildAccessRecords > 0) {
     strengths.push(
       `${childAccessRate}% child access to laundry facilities — most children can use washing machines or dryers, supporting their daily living skills development.`,
     );
   }
 
-  if (hygieneCycleRate >= 95 && totalHygieneCycles > 0) {
+  if (meets(hygieneCycleRate, 95) && totalHygieneCycles > 0) {
     strengths.push(
       "Hygiene cycle compliance is exemplary — all scheduled hot washes, anti-bacterial cycles, and sanitisation routines are being completed, ensuring appliances meet infection control standards.",
     );
-  } else if (hygieneCycleRate >= 80 && totalHygieneCycles > 0) {
+  } else if (meets(hygieneCycleRate, 80) && totalHygieneCycles > 0) {
     strengths.push(
       `${hygieneCycleRate}% of hygiene cycles completed — strong compliance with scheduled sanitisation and hot wash routines maintains good appliance hygiene.`,
     );
   }
 
-  if (energyEfficiencyRate >= 80 && totalEnergyRecords > 0) {
+  if (meets(energyEfficiencyRate, 80) && totalEnergyRecords > 0) {
     strengths.push(
       `${energyEfficiencyRate}% of appliances have energy ratings of A or better — the home demonstrates commitment to energy-efficient laundry provision, reducing environmental impact and operating costs.`,
     );
-  } else if (energyEfficiencyRate >= 60 && totalEnergyRecords > 0) {
+  } else if (meets(energyEfficiencyRate, 60) && totalEnergyRecords > 0) {
     strengths.push(
       `${energyEfficiencyRate}% of appliances are energy-efficient (rated A or better) — the majority of laundry appliances meet modern efficiency standards.`,
     );
   }
 
-  if (childIndependenceRate >= 80 && totalChildAccessRecords > 0) {
+  if (meets(childIndependenceRate, 80) && totalChildAccessRecords > 0) {
     strengths.push(
       `${childIndependenceRate}% of children manage laundry independently or with minimal support — the home excels at building practical independence skills that prepare children for adult life.`,
     );
-  } else if (childIndependenceRate >= 60 && totalChildAccessRecords > 0) {
+  } else if (meets(childIndependenceRate, 60) && totalChildAccessRecords > 0) {
     strengths.push(
       `${childIndependenceRate}% of children have independent or supported laundry access — good progress in developing children's self-care and daily living competencies.`,
     );
   }
 
-  if (safetyPassRate >= 100 && certificateRate >= 100 && totalServicingRecords > 0) {
+  if (meets(safetyPassRate, 100) && meets(certificateRate, 100) && totalServicingRecords > 0) {
     strengths.push(
       "Every serviced appliance has passed its safety check with certificates on file — exemplary documentation and safety compliance.",
     );
   }
 
-  if (breakdownResolutionRate >= 90 && tempArrangementRate >= 80 && totalBreakdowns > 0) {
+  if (meets(breakdownResolutionRate, 90) && meets(tempArrangementRate, 80) && totalBreakdowns > 0) {
     strengths.push(
       `${breakdownResolutionRate}% of breakdowns fully resolved with ${tempArrangementRate}% temporary arrangements — thorough follow-through ensures children always have laundry access.`,
     );
   }
 
-  if (trainingRate >= 90 && riskAssessmentRate >= 90 && totalChildAccessRecords > 0) {
+  if (meets(trainingRate, 90) && meets(riskAssessmentRate, 90) && totalChildAccessRecords > 0) {
     strengths.push(
       `${trainingRate}% trained and ${riskAssessmentRate}% risk assessed — children are well prepared to use laundry equipment safely and confidently.`,
     );
   }
 
-  if (totalChildAccessRecords > 0 && satisfactionAvg !== null && satisfactionAvg >= 4.0 && preferenceRate >= 90) {
+  if (above(totalChildAccessRecords, 0) && satisfactionAvg !== null && satisfactionAvg >= 4.0 && meets(preferenceRate, 90)) {
     strengths.push(
       `Child satisfaction averages ${satisfactionAvg}/5 with ${preferenceRate}% preferences respected — children report high satisfaction and feel their laundry choices are valued.`,
     );
   }
 
-  if (infectionControlRate >= 95 && totalHygieneCycles > 0) {
+  if (meets(infectionControlRate, 95) && totalHygieneCycles > 0) {
     strengths.push(
       `${infectionControlRate}% infection control compliance — rigorous hygiene standards in laundry operations.`,
     );
   }
 
-  if (independenceGoalMetRate >= 80 && ageAppropriateRate >= 90 && independenceGoalsSet > 0 && olderChildren > 0) {
+  if (meets(independenceGoalMetRate, 80) && meets(ageAppropriateRate, 90) && independenceGoalsSet > 0 && olderChildren > 0) {
     strengths.push(
       `${independenceGoalMetRate}% of independence goals met and ${ageAppropriateRate}% of 14+ manage laundry — strong life skills development preparing young people for leaving care.`,
     );
@@ -692,61 +695,61 @@ export function computeWashingMachineDryerMaintenance(
 
   const concerns: string[] = [];
 
-  if (servicingRate < 50 && totalServicingRecords > 0) {
+  if (below(servicingRate, 50) && totalServicingRecords > 0) {
     concerns.push(
       `Only ${servicingRate}% of servicing records are compliant — the majority of laundry appliances have overdue servicing, creating safety risks and potential equipment failure.`,
     );
-  } else if (servicingRate < 80 && servicingRate >= 50 && totalServicingRecords > 0) {
+  } else if (below(servicingRate, 80) && meets(servicingRate, 50) && totalServicingRecords > 0) {
     concerns.push(
       `Servicing compliance at ${servicingRate}% — some appliances have overdue maintenance which could affect their safety and reliability.`,
     );
   }
 
-  if (breakdownResponseRate < 50 && totalBreakdowns > 0) {
+  if (below(breakdownResponseRate, 50) && totalBreakdowns > 0) {
     concerns.push(
       `Only ${breakdownResponseRate}% of breakdowns responded to within 24 hours — slow response to appliance failures leaves children without access to clean laundry and undermines the home's duty to maintain premises.`,
     );
-  } else if (breakdownResponseRate < 70 && breakdownResponseRate >= 50 && totalBreakdowns > 0) {
+  } else if (below(breakdownResponseRate, 70) && meets(breakdownResponseRate, 50) && totalBreakdowns > 0) {
     concerns.push(
       `Breakdown response rate at ${breakdownResponseRate}% within 24 hours — a significant number of breakdowns are not addressed promptly, risking extended disruption to children.`,
     );
   }
 
-  if (childAccessRate < 50 && totalChildAccessRecords > 0) {
+  if (below(childAccessRate, 50) && totalChildAccessRecords > 0) {
     concerns.push(
       `Only ${childAccessRate}% of children have access to laundry facilities — more than half of children cannot independently wash or dry their own clothes, limiting their independence and dignity.`,
     );
-  } else if (childAccessRate < 70 && childAccessRate >= 50 && totalChildAccessRecords > 0) {
+  } else if (below(childAccessRate, 70) && meets(childAccessRate, 50) && totalChildAccessRecords > 0) {
     concerns.push(
       `Child laundry access at ${childAccessRate}% — a notable proportion of children lack direct access to washing machines or dryers.`,
     );
   }
 
-  if (hygieneCycleRate < 50 && totalHygieneCycles > 0) {
+  if (below(hygieneCycleRate, 50) && totalHygieneCycles > 0) {
     concerns.push(
       `Only ${hygieneCycleRate}% of scheduled hygiene cycles completed — the majority of sanitisation and hot wash routines are not being carried out, posing infection control and hygiene risks.`,
     );
-  } else if (hygieneCycleRate < 80 && hygieneCycleRate >= 50 && totalHygieneCycles > 0) {
+  } else if (below(hygieneCycleRate, 80) && meets(hygieneCycleRate, 50) && totalHygieneCycles > 0) {
     concerns.push(
       `Hygiene cycle completion at ${hygieneCycleRate}% — some scheduled sanitisation cycles are being missed, which could compromise appliance hygiene over time.`,
     );
   }
 
-  if (energyEfficiencyRate < 40 && totalEnergyRecords > 0) {
+  if (below(energyEfficiencyRate, 40) && totalEnergyRecords > 0) {
     concerns.push(
       `Only ${energyEfficiencyRate}% of appliances meet modern energy efficiency standards — the majority of laundry equipment is inefficient, resulting in higher running costs and greater environmental impact.`,
     );
-  } else if (energyEfficiencyRate < 60 && energyEfficiencyRate >= 40 && totalEnergyRecords > 0) {
+  } else if (below(energyEfficiencyRate, 60) && meets(energyEfficiencyRate, 40) && totalEnergyRecords > 0) {
     concerns.push(
       `Energy efficiency at ${energyEfficiencyRate}% — a notable proportion of laundry appliances do not meet modern energy efficiency standards and may benefit from planned replacement.`,
     );
   }
 
-  if (childIndependenceRate < 40 && totalChildAccessRecords > 0) {
+  if (below(childIndependenceRate, 40) && totalChildAccessRecords > 0) {
     concerns.push(
       `Only ${childIndependenceRate}% of children manage laundry independently or with support — the majority of children are not developing practical laundry skills, which may leave them unprepared for independent living.`,
     );
-  } else if (childIndependenceRate < 60 && childIndependenceRate >= 40 && totalChildAccessRecords > 0) {
+  } else if (below(childIndependenceRate, 60) && meets(childIndependenceRate, 40) && totalChildAccessRecords > 0) {
     concerns.push(
       `Child independence in laundry at ${childIndependenceRate}% — a significant number of children are not yet developing the laundry skills they will need for adult life.`,
     );
@@ -758,45 +761,45 @@ export function computeWashingMachineDryerMaintenance(
     );
   }
 
-  if (overdueServicing > 0 && totalServicingRecords > 0) {
+  if (above(overdueServicing, 0) && totalServicingRecords > 0) {
     concerns.push(
       `${overdueServicing} service record${overdueServicing !== 1 ? "s are" : " is"} overdue — appliances may not be safe or operating efficiently.`,
     );
   }
 
-  if (repeatFaultRate > 30 && preventableRate > 40 && totalBreakdowns > 0) {
+  if (above(repeatFaultRate, 30) && above(preventableRate, 40) && totalBreakdowns > 0) {
     concerns.push(
       `${repeatFaultRate}% repeat faults and ${preventableRate}% preventable breakdowns — recurring, avoidable failures indicate systemic maintenance gaps.`,
     );
-  } else if (repeatFaultRate > 30 && totalBreakdowns > 0) {
+  } else if (above(repeatFaultRate, 30) && totalBreakdowns > 0) {
     concerns.push(
       `${repeatFaultRate}% of breakdowns are repeat faults — recurring issues suggest root causes are not being properly addressed.`,
     );
   }
 
-  if (healthHygieneImpact > 0) {
+  if (above(healthHygieneImpact, 0)) {
     concerns.push(
       `${healthHygieneImpact} breakdown${healthHygieneImpact !== 1 ? "s have" : " has"} caused health or hygiene risks to children — a serious safeguarding and welfare concern.`,
     );
   }
 
-  if (trainingRate < 50 && riskAssessmentRate < 50 && totalChildAccessRecords > 0) {
+  if (below(trainingRate, 50) && below(riskAssessmentRate, 50) && totalChildAccessRecords > 0) {
     concerns.push(
       `Only ${trainingRate}% trained and ${riskAssessmentRate}% risk assessed — most children lack proper preparation and risk consideration for using laundry appliances safely.`,
     );
-  } else if (trainingRate < 50 && totalChildAccessRecords > 0) {
+  } else if (below(trainingRate, 50) && totalChildAccessRecords > 0) {
     concerns.push(
       `Only ${trainingRate}% of children have received appliance training — most children have not been taught how to safely use washing machines and dryers.`,
     );
   }
 
-  if (totalChildAccessRecords > 0 && satisfactionAvg !== null && satisfactionAvg < 2.5) {
+  if (above(totalChildAccessRecords, 0) && satisfactionAvg !== null && satisfactionAvg < 2.5) {
     concerns.push(
       `Child satisfaction with laundry access averages only ${satisfactionAvg}/5 — children are dissatisfied with how their laundry needs are being met.`,
     );
   }
 
-  if (infectionControlRate < 70 && totalHygieneCycles > 0) {
+  if (below(infectionControlRate, 70) && totalHygieneCycles > 0) {
     concerns.push(
       `Infection control compliance at only ${infectionControlRate}% — a significant proportion of hygiene cycles do not meet infection control standards.`,
     );
@@ -811,7 +814,7 @@ export function computeWashingMachineDryerMaintenance(
     );
   }
 
-  if (safetyPassRate < 80 && totalServicingRecords > 0) {
+  if (below(safetyPassRate, 80) && totalServicingRecords > 0) {
     concerns.push(
       `Only ${safetyPassRate}% of serviced appliances passed safety checks — appliances that fail safety checks must not be used until faults are rectified.`,
     );
@@ -836,7 +839,7 @@ export function computeWashingMachineDryerMaintenance(
     });
   }
 
-  if (servicingRate < 50 && totalServicingRecords > 0) {
+  if (below(servicingRate, 50) && totalServicingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -846,7 +849,7 @@ export function computeWashingMachineDryerMaintenance(
     });
   }
 
-  if (hygieneCycleRate < 50 && totalHygieneCycles > 0) {
+  if (below(hygieneCycleRate, 50) && totalHygieneCycles > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -856,7 +859,7 @@ export function computeWashingMachineDryerMaintenance(
     });
   }
 
-  if (breakdownResponseRate < 50 && totalBreakdowns > 0) {
+  if (below(breakdownResponseRate, 50) && totalBreakdowns > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -876,7 +879,7 @@ export function computeWashingMachineDryerMaintenance(
     });
   }
 
-  if (safetyPassRate < 80 && totalServicingRecords > 0) {
+  if (below(safetyPassRate, 80) && totalServicingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -886,7 +889,7 @@ export function computeWashingMachineDryerMaintenance(
     });
   }
 
-  if (childAccessRate < 50 && totalChildAccessRecords > 0) {
+  if (below(childAccessRate, 50) && totalChildAccessRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -898,7 +901,7 @@ export function computeWashingMachineDryerMaintenance(
 
   // --- Soon recommendations ---
 
-  if (servicingRate >= 50 && servicingRate < 80 && totalServicingRecords > 0) {
+  if (meets(servicingRate, 50) && below(servicingRate, 80) && totalServicingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -908,7 +911,7 @@ export function computeWashingMachineDryerMaintenance(
     });
   }
 
-  if (breakdownResponseRate >= 50 && breakdownResponseRate < 70 && totalBreakdowns > 0) {
+  if (meets(breakdownResponseRate, 50) && below(breakdownResponseRate, 70) && totalBreakdowns > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -918,7 +921,7 @@ export function computeWashingMachineDryerMaintenance(
     });
   }
 
-  if (hygieneCycleRate >= 50 && hygieneCycleRate < 80 && totalHygieneCycles > 0) {
+  if (meets(hygieneCycleRate, 50) && below(hygieneCycleRate, 80) && totalHygieneCycles > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -928,7 +931,7 @@ export function computeWashingMachineDryerMaintenance(
     });
   }
 
-  if (childAccessRate >= 50 && childAccessRate < 70 && totalChildAccessRecords > 0) {
+  if (meets(childAccessRate, 50) && below(childAccessRate, 70) && totalChildAccessRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -938,7 +941,7 @@ export function computeWashingMachineDryerMaintenance(
     });
   }
 
-  if (childIndependenceRate < 60 && totalChildAccessRecords > 0) {
+  if (below(childIndependenceRate, 60) && totalChildAccessRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -948,7 +951,7 @@ export function computeWashingMachineDryerMaintenance(
     });
   }
 
-  if (repeatFaultRate > 30 || (preventableRate > 40 && totalBreakdowns > 0)) {
+  if (above(repeatFaultRate, 30) || (above(preventableRate, 40) && totalBreakdowns > 0)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -958,7 +961,7 @@ export function computeWashingMachineDryerMaintenance(
     });
   }
 
-  if (trainingRate < 70 && riskAssessmentRate < 70 && totalChildAccessRecords > 0) {
+  if (below(trainingRate, 70) && below(riskAssessmentRate, 70) && totalChildAccessRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -966,7 +969,7 @@ export function computeWashingMachineDryerMaintenance(
       urgency: "soon",
       regulatory_ref: "CHR 2015 Reg 25 — Premises and safety",
     });
-  } else if (trainingRate < 70 && totalChildAccessRecords > 0) {
+  } else if (below(trainingRate, 70) && totalChildAccessRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -976,7 +979,7 @@ export function computeWashingMachineDryerMaintenance(
     });
   }
 
-  if (certificateRate < 80 && infectionControlRate < 80 && totalServicingRecords > 0 && totalHygieneCycles > 0) {
+  if (below(certificateRate, 80) && below(infectionControlRate, 80) && totalServicingRecords > 0 && totalHygieneCycles > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -984,7 +987,7 @@ export function computeWashingMachineDryerMaintenance(
       urgency: "soon",
       regulatory_ref: "CHR 2015 Reg 25 — Premises and safety",
     });
-  } else if (certificateRate < 80 && totalServicingRecords > 0) {
+  } else if (below(certificateRate, 80) && totalServicingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -996,7 +999,7 @@ export function computeWashingMachineDryerMaintenance(
 
   // --- Planned recommendations ---
 
-  if (energyEfficiencyRate < 60 && totalEnergyRecords > 0) {
+  if (below(energyEfficiencyRate, 60) && totalEnergyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1026,7 +1029,7 @@ export function computeWashingMachineDryerMaintenance(
     });
   }
 
-  if (temperatureVerificationRate < 80 && completedHygieneCycles > 0) {
+  if (below(temperatureVerificationRate, 80) && completedHygieneCycles > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1046,7 +1049,7 @@ export function computeWashingMachineDryerMaintenance(
     });
   }
 
-  if (independenceGoalSetRate < 70 && totalChildAccessRecords > 0) {
+  if (below(independenceGoalSetRate, 70) && totalChildAccessRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1056,7 +1059,7 @@ export function computeWashingMachineDryerMaintenance(
     });
   }
 
-  if (ageAppropriateRate < 70 && olderChildren > 0) {
+  if (below(ageAppropriateRate, 70) && olderChildren > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1081,21 +1084,21 @@ export function computeWashingMachineDryerMaintenance(
     });
   }
 
-  if (servicingRate < 50 && totalServicingRecords > 0) {
+  if (below(servicingRate, 50) && totalServicingRecords > 0) {
     insights.push({
       text: `Only ${servicingRate}% servicing compliance. The majority of laundry appliances have overdue servicing — the home cannot demonstrate safe maintenance under Reg 25.`,
       severity: "critical",
     });
   }
 
-  if (hygieneCycleRate < 50 && totalHygieneCycles > 0) {
+  if (below(hygieneCycleRate, 50) && totalHygieneCycles > 0) {
     insights.push({
       text: `Only ${hygieneCycleRate}% of hygiene cycles completed. Appliances without regular sanitisation can harbour bacteria and allergens that transfer to children's clothing, creating direct infection control risks.`,
       severity: "critical",
     });
   }
 
-  if (breakdownResponseRate < 50 && totalBreakdowns > 0) {
+  if (below(breakdownResponseRate, 50) && totalBreakdowns > 0) {
     insights.push({
       text: `Only ${breakdownResponseRate}% of breakdowns responded to within 24 hours. Extended periods without laundry facilities affect children's access to clean clothing, impacting dignity and self-esteem.`,
       severity: "critical",
@@ -1109,7 +1112,7 @@ export function computeWashingMachineDryerMaintenance(
     });
   }
 
-  if (childAccessRate < 50 && totalChildAccessRecords > 0) {
+  if (below(childAccessRate, 50) && totalChildAccessRecords > 0) {
     insights.push({
       text: `Only ${childAccessRate}% of children have laundry access. SCCIF expects children to develop daily living skills — when most children cannot access facilities, the home prevents development of fundamental self-care competencies.`,
       severity: "critical",
@@ -1118,52 +1121,52 @@ export function computeWashingMachineDryerMaintenance(
 
   // -- Warning insights --
 
-  if (servicingRate >= 50 && servicingRate < 80 && totalServicingRecords > 0) {
+  if (meets(servicingRate, 50) && below(servicingRate, 80) && totalServicingRecords > 0) {
     insights.push({
       text: `Servicing compliance at ${servicingRate}% — some appliances still have overdue maintenance, representing incremental safety risk.`,
       severity: "warning",
     });
   }
 
-  if (breakdownResponseRate >= 50 && breakdownResponseRate < 70 && totalBreakdowns > 0) {
+  if (meets(breakdownResponseRate, 50) && below(breakdownResponseRate, 70) && totalBreakdowns > 0) {
     insights.push({
       text: `Breakdown response at ${breakdownResponseRate}% within 24 hours — delays beyond 24 hours should trigger contingency plans to ensure children have access to clean clothing.`,
       severity: "warning",
     });
   }
 
-  if (hygieneCycleRate >= 50 && hygieneCycleRate < 80 && totalHygieneCycles > 0) {
+  if (meets(hygieneCycleRate, 50) && below(hygieneCycleRate, 80) && totalHygieneCycles > 0) {
     insights.push({
       text: `Hygiene cycle completion at ${hygieneCycleRate}% — missed sanitisation routines allow bacterial build-up in drums and seals.`,
       severity: "warning",
     });
   }
 
-  if (childAccessRate >= 50 && childAccessRate < 70 && totalChildAccessRecords > 0) {
+  if (meets(childAccessRate, 50) && below(childAccessRate, 70) && totalChildAccessRecords > 0) {
     insights.push({
       text: `Child laundry access at ${childAccessRate}% — each child without access misses opportunities to develop self-care skills essential for leaving care readiness.`,
       severity: "warning",
     });
   }
 
-  if (childIndependenceRate >= 40 && childIndependenceRate < 60 && totalChildAccessRecords > 0) {
+  if (meets(childIndependenceRate, 40) && below(childIndependenceRate, 60) && totalChildAccessRecords > 0) {
     insights.push({
       text: `Child independence at ${childIndependenceRate}% — a significant proportion remain reliant on staff. Laundry independence should be a progressive goal in each child's care plan.`,
       severity: "warning",
     });
   }
 
-  if (energyEfficiencyRate >= 40 && energyEfficiencyRate < 60 && totalEnergyRecords > 0) {
+  if (meets(energyEfficiencyRate, 40) && below(energyEfficiencyRate, 60) && totalEnergyRecords > 0) {
     insights.push({
       text: `Energy efficiency at ${energyEfficiencyRate}% — inefficient appliances cost more to run. Replacement presents an opportunity to improve sustainability and reliability.`,
       severity: "warning",
     });
   }
 
-  if ((repeatFaultRate > 30 || preventableRate > 40) && totalBreakdowns > 0) {
+  if ((above(repeatFaultRate, 30) || above(preventableRate, 40)) && totalBreakdowns > 0) {
     const parts: string[] = [];
-    if (repeatFaultRate > 30) parts.push(`${repeatFaultRate}% repeat faults`);
-    if (preventableRate > 40) parts.push(`${preventableRate}% preventable`);
+    if (above(repeatFaultRate, 30)) parts.push(`${repeatFaultRate}% repeat faults`);
+    if (above(preventableRate, 40)) parts.push(`${preventableRate}% preventable`);
     insights.push({
       text: `${parts.join(" and ")} — regular filter cleaning, descaling, root cause analysis, and timely replacement would reduce breakdown frequency.`,
       severity: "warning",
@@ -1207,28 +1210,28 @@ export function computeWashingMachineDryerMaintenance(
     });
   }
 
-  if (servicingRate >= 95 && safetyPassRate >= 100 && certificateRate >= 100 && totalServicingRecords > 0) {
+  if (meets(servicingRate, 95) && meets(safetyPassRate, 100) && meets(certificateRate, 100) && totalServicingRecords > 0) {
     insights.push({
       text: "Exemplary servicing — all appliances serviced on schedule with 100% safety checks passed and certificates on file, providing immediate Ofsted assurance of Reg 25 compliance.",
       severity: "positive",
     });
   }
 
-  if (breakdownResponseRate >= 90 && breakdownResolutionRate >= 90 && totalBreakdowns > 0) {
+  if (meets(breakdownResponseRate, 90) && meets(breakdownResolutionRate, 90) && totalBreakdowns > 0) {
     insights.push({
       text: `${breakdownResponseRate}% responded within 24 hours and ${breakdownResolutionRate}% fully resolved — rapid, thorough breakdown response ensures children always have laundry access.`,
       severity: "positive",
     });
   }
 
-  if (childAccessRate >= 90 && childIndependenceRate >= 80 && totalChildAccessRecords > 0) {
+  if (meets(childAccessRate, 90) && meets(childIndependenceRate, 80) && totalChildAccessRecords > 0) {
     insights.push({
       text: `${childAccessRate}% access and ${childIndependenceRate}% independence — children manage their own washing with confidence, building practical life skills while their preferences are respected.`,
       severity: "positive",
     });
   }
 
-  if (hygieneCycleRate >= 95 && infectionControlRate >= 95 && totalHygieneCycles > 0) {
+  if (meets(hygieneCycleRate, 95) && meets(infectionControlRate, 95) && totalHygieneCycles > 0) {
     insights.push({
       text: "Exemplary hygiene cycle compliance with strong infection control — rigorous appliance hygiene protects children from cross-contamination.",
       severity: "positive",
