@@ -360,12 +360,12 @@ describe("computeHomeKeyworker", () => {
       expect(r.therapeutic_profile.sessions_with_improvement).toBe(1);
     });
 
-    it("returns 0 improvement rate when no valid mood data", () => {
+    it("mood_improvement_rate is unmeasured when there is no valid mood data", () => {
       const sessions = [
         makeSession({ session_date: "2026-05-01", mood_before: 0, mood_after: 0 }),
       ];
       const r = computeHomeKeyworker(baseInput({ sessions }));
-      expect(r.therapeutic_profile.mood_improvement_rate).toBe(0);
+      expect(r.therapeutic_profile.mood_improvement_rate).toBeNull();
     });
 
     it("computes average mood before and after", () => {

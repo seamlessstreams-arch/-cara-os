@@ -656,7 +656,7 @@ describe("Home Young Person Daily Wellbeing Intelligence Engine", () => {
       const result = computeYoungPersonDailyWellbeing({
         today: TODAY, total_children: 1, summaries: [makeSummary()], daily_logs: [], behaviour_logs: [makeBehaviourLog()],
       });
-      expect(result.mood_tracking_rate).toBe(0);
+      expect(result.mood_tracking_rate).toBeNull();
     });
   });
 
@@ -712,7 +712,7 @@ describe("Home Young Person Daily Wellbeing Intelligence Engine", () => {
       const result = computeYoungPersonDailyWellbeing({
         today: TODAY, total_children: 1, summaries: [], daily_logs: [makeLog()], behaviour_logs: [],
       });
-      expect(result.behaviour_documentation_rate).toBe(0);
+      expect(result.behaviour_documentation_rate).toBeNull();
       expect(result.behaviour_logs_last_30_days).toBe(0);
     });
   });
@@ -778,7 +778,7 @@ describe("Home Young Person Daily Wellbeing Intelligence Engine", () => {
         behaviour_logs: buildDeEscLogs(5, 0, "low"),
       });
       // Low severity entries don't qualify → +1
-      expect(result.de_escalation_rate).toBe(0);
+      expect(result.de_escalation_rate).toBeNull();
     });
 
     it("0 behaviour logs → no qualifying → +1", () => {
@@ -787,7 +787,7 @@ describe("Home Young Person Daily Wellbeing Intelligence Engine", () => {
         daily_logs: [makeLog()],
         behaviour_logs: [],
       });
-      expect(result.de_escalation_rate).toBe(0);
+      expect(result.de_escalation_rate).toBeNull();
     });
 
     it("mixed severity only counts medium/high/critical", () => {
@@ -2275,35 +2275,35 @@ describe("Home Young Person Daily Wellbeing Intelligence Engine", () => {
   // ════════════════════════════════════════════════════════════════════════
 
   describe("pct helper behavior (through rates)", () => {
-    it("0 denominator returns 0 for mood tracking rate", () => {
-      // 0 logs → moodTrackingRate = pct(0, 0) = 0
+    it("mood_tracking_rate is unmeasured for a zero denominator", () => {
+      // 0 logs → moodTrackingRate = rate(0, 0) = null, unmeasured
       const result = computeYoungPersonDailyWellbeing({
         today: TODAY, total_children: 1,
         summaries: [makeSummary()],
         daily_logs: [],
         behaviour_logs: [makeBehaviourLog()],
       });
-      expect(result.mood_tracking_rate).toBe(0);
+      expect(result.mood_tracking_rate).toBeNull();
     });
 
-    it("0 denominator returns 0 for behaviour doc rate", () => {
+    it("behaviour_documentation_rate is unmeasured for a zero denominator", () => {
       const result = computeYoungPersonDailyWellbeing({
         today: TODAY, total_children: 1,
         summaries: [],
         daily_logs: [makeLog()],
         behaviour_logs: [],
       });
-      expect(result.behaviour_documentation_rate).toBe(0);
+      expect(result.behaviour_documentation_rate).toBeNull();
     });
 
-    it("0 denominator returns 0 for de-escalation rate", () => {
-      // All low severity → 0 qualifying → pct(0, 0) = 0
+    it("de_escalation_rate is unmeasured for a zero denominator", () => {
+      // All low severity → 0 qualifying → rate(0, 0) = null, unmeasured
       const result = computeYoungPersonDailyWellbeing({
         today: TODAY, total_children: 1, summaries: [],
         daily_logs: [makeLog()],
         behaviour_logs: [makeBehaviourLog({ severity: "low" })],
       });
-      expect(result.de_escalation_rate).toBe(0);
+      expect(result.de_escalation_rate).toBeNull();
     });
 
     it("n equals d returns 100", () => {

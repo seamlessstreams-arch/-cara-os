@@ -146,10 +146,6 @@ export interface HomeBSPEffectivenessResult {
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 function avg(values: number[]): number {
   if (values.length === 0) return 0;
   return Math.round((values.reduce((a, b) => a + b, 0) / values.length) * 10) / 10;
@@ -196,19 +192,19 @@ export function computeHomeBSPEffectiveness(
     total_inactive: inactivePlans.length,
     avg_triggers: avg(activePlans.map((p) => p.triggers_count)),
     avg_strategies: avg(activePlans.map((p) => p.strategies_count)),
-    strategy_effectiveness_rate: pct(
+    strategy_effectiveness_rate: rate(
       activePlans.reduce((s, p) => s + p.effective_strategies, 0),
       activePlans.reduce((s, p) => s + p.strategies_count, 0),
     ),
-    child_voice_rate: pct(
+    child_voice_rate: rate(
       activePlans.filter((p) => p.has_child_views).length,
       activePlans.length,
     ),
-    professional_input_rate: pct(
+    professional_input_rate: rate(
       activePlans.filter((p) => p.has_professional_input).length,
       activePlans.length,
     ),
-    safety_plan_rate: pct(
+    safety_plan_rate: rate(
       activePlans.filter((p) => p.has_safety_plan).length,
       activePlans.length,
     ),
@@ -252,10 +248,10 @@ export function computeHomeBSPEffectiveness(
     total_entries: bspBeh.length,
     positive_count: bspPositive.length,
     concerning_count: bspConcerning.length,
-    positive_rate: pct(bspPositive.length, bspBeh.length),
+    positive_rate: rate(bspPositive.length, bspBeh.length),
     high_intensity_count: bspHighIntensity.length,
-    high_intensity_rate: pct(bspHighIntensity.length, bspConcerning.length),
-    strategy_usage_rate: pct(bspWithStrategy.length, bspConcerning.length),
+    high_intensity_rate: rate(bspHighIntensity.length, bspConcerning.length),
+    strategy_usage_rate: rate(bspWithStrategy.length, bspConcerning.length),
   };
 
   // ── Restraint Profile (BSP children only) ────────────────────────────────
@@ -263,7 +259,7 @@ export function computeHomeBSPEffectiveness(
   const restraintProfile: BSPRestraintProfile = {
     total_restraints: bspRestraints.length,
     avg_de_escalation: avg(bspRestraints.map((r) => r.de_escalation_count)),
-    debrief_rate: pct(
+    debrief_rate: rate(
       bspRestraints.filter((r) => r.child_debriefed).length,
       bspRestraints.length,
     ),
@@ -288,7 +284,7 @@ export function computeHomeBSPEffectiveness(
     total_children,
     children_with_active_bsp: bspChildIds.size,
     children_with_concerning_no_bsp: childrenWithConcerningNoBSP,
-    coverage_rate: pct(childrenCovered, childrenNeedingBSP),
+    coverage_rate: rate(childrenCovered, childrenNeedingBSP),
   };
 
   // ── Scoring (base 52, max bonuses 28 = 80 for outstanding) ───────────────
@@ -312,7 +308,7 @@ export function computeHomeBSPEffectiveness(
   if (activePlans.length === 0) {
     // neutral
   } else {
-    const overdueRate = pct(overdueReviews, activePlans.length);
+    const overdueRate = rate(overdueReviews, activePlans.length);
     if (overdueReviews === 0) {
       bonuses += 3;
     } else if ((overdueRate !== null && overdueRate <= 25)) {

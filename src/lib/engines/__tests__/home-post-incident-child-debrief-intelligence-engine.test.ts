@@ -437,7 +437,7 @@ describe("computePostIncidentDebrief", () => {
         baseInput({ debriefs: [] }),
       );
       // included in the total -8 for empty debriefs
-      expect(result.child_readiness_rate).toBe(0);
+      expect(result.child_readiness_rate).toBeNull();
     });
 
     it("applies +5 when childReadinessRate >= 85%", () => {
@@ -521,7 +521,7 @@ describe("computePostIncidentDebrief", () => {
       const result = computePostIncidentDebrief(
         baseInput({ debriefs: [] }),
       );
-      expect(result.voice_depth_rate).toBe(0);
+      expect(result.voice_depth_rate).toBeNull();
     });
 
     it("applies +5 when voiceDepthRate >= 75%", () => {
@@ -612,7 +612,7 @@ describe("computePostIncidentDebrief", () => {
         baseInput({ debriefs: [] }),
       );
       // modifier 4 contributes 0 when total===0
-      expect(result.restorative_action_rate).toBe(0);
+      expect(result.restorative_action_rate).toBeNull();
     });
 
     it("applies +5 when restorativeActionRate >= 75%", () => {
@@ -744,7 +744,7 @@ describe("computePostIncidentDebrief", () => {
       const result = computePostIncidentDebrief(
         baseInput({ debriefs: [] }),
       );
-      expect(result.follow_up_rate).toBe(0);
+      expect(result.follow_up_rate).toBeNull();
     });
 
     it("applies +4 when followUpRate >= 80%", () => {
@@ -1875,15 +1875,15 @@ describe("computePostIncidentDebrief", () => {
       expect(result.total_debriefs).toBe(7);
     });
 
-    it("returns 0 for rates when total debriefs is 0 but total_children > 0", () => {
+    it("leaves every rate unmeasured when total debriefs is 0 but total_children > 0", () => {
       const result = computePostIncidentDebrief(
         baseInput({ total_children: 5, debriefs: [] }),
       );
-      expect(result.timeliness_rate).toBe(0);
-      expect(result.child_readiness_rate).toBe(0);
-      expect(result.voice_depth_rate).toBe(0);
-      expect(result.restorative_action_rate).toBe(0);
-      expect(result.follow_up_rate).toBe(0);
+      expect(result.timeliness_rate).toBeNull();
+      expect(result.child_readiness_rate).toBeNull();
+      expect(result.voice_depth_rate).toBeNull();
+      expect(result.restorative_action_rate).toBeNull();
+      expect(result.follow_up_rate).toBeNull();
     });
 
     it("calculates children_debriefed_rate as 100% when all children debriefed", () => {
@@ -2645,12 +2645,12 @@ describe("computePostIncidentDebrief", () => {
   // ════════════════════════════════════════════════════════════════════════
 
   describe("pct helper edge cases", () => {
-    it("pct returns 0 when denominator is 0", () => {
-      // timeliness_rate = pct(timely, total) where total = 0
+    it("timeliness_rate is unmeasured for a zero denominator", () => {
+      // timeliness_rate = rate(timely, total) where total = 0 — unmeasured
       const result = computePostIncidentDebrief(
         baseInput({ total_children: 5, debriefs: [] }),
       );
-      expect(result.timeliness_rate).toBe(0);
+      expect(result.timeliness_rate).toBeNull();
     });
 
     it("pct returns 100 for 1/1", () => {

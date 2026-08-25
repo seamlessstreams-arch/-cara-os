@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -104,7 +105,7 @@ export function HomeExpenseGovernanceIntelligenceCard() {
               {ratingStyle.label}
             </span>
             {d.expense_rating !== "insufficient_data" && (
-              <span className="text-xs font-bold tabular-nums text-slate-600">{d.expense_score}%</span>
+              <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.expense_score)}</span>
             )}
           </CardTitle>
         </div>
@@ -124,7 +125,7 @@ export function HomeExpenseGovernanceIntelligenceCard() {
                   (d.compliance.receipt_rate ?? 0) >= 90 ? "text-[--cs-success]" :
                   (d.compliance.receipt_rate ?? 0) >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.compliance.receipt_rate}%
+                  {formatRate(d.compliance.receipt_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Receipts</p>
@@ -194,7 +195,7 @@ export function HomeExpenseGovernanceIntelligenceCard() {
                 <p>Child-linked: <span className={cn("font-medium",
                   (d.compliance.child_linked_rate ?? 0) >= 40 ? "text-[--cs-success]" :
                   (d.compliance.child_linked_rate ?? 0) >= 25 ? "text-[--cs-warning]" : "text-[--cs-risk]"
-                )}>{d.compliance.child_linked_rate}%</span></p>
+                )}>{formatRate(d.compliance.child_linked_rate)}</span></p>
                 <p>Controlled pay: <span className={cn("font-medium",
                   ((d.compliance.house_card_rate ?? 0) + (d.compliance.petty_cash_rate ?? 0)) >= 50 ? "text-[--cs-success]" : "text-[--cs-warning]"
                 )}>{(d.compliance.house_card_rate ?? 0) + (d.compliance.petty_cash_rate ?? 0)}%</span></p>

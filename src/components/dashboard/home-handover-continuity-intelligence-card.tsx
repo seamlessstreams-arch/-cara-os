@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -104,7 +105,7 @@ export function HomeHandoverContinuityIntelligenceCard() {
               {ratingStyle.label}
             </span>
             {d.handover_rating !== "insufficient_data" && (
-              <span className="text-xs font-bold tabular-nums text-slate-600">{d.handover_score}%</span>
+              <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.handover_score)}</span>
             )}
           </CardTitle>
         </div>
@@ -124,7 +125,7 @@ export function HomeHandoverContinuityIntelligenceCard() {
                   (d.completion_profile.completion_rate ?? 0) >= 90 ? "text-[--cs-success]" :
                   (d.completion_profile.completion_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.completion_profile.completion_rate}%
+                  {formatRate(d.completion_profile.completion_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Completed</p>
@@ -138,7 +139,7 @@ export function HomeHandoverContinuityIntelligenceCard() {
                   (d.sign_off_profile.sign_off_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.sign_off_profile.sign_off_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.sign_off_profile.sign_off_rate}%
+                  {formatRate(d.sign_off_profile.sign_off_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Sign-Off</p>
@@ -152,7 +153,7 @@ export function HomeHandoverContinuityIntelligenceCard() {
                   (d.child_coverage_profile.avg_child_coverage ?? 0) >= 90 ? "text-[--cs-success]" :
                   (d.child_coverage_profile.avg_child_coverage ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.child_coverage_profile.avg_child_coverage}%
+                  {formatRate(d.child_coverage_profile.avg_child_coverage)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">YP Coverage</p>
@@ -166,7 +167,7 @@ export function HomeHandoverContinuityIntelligenceCard() {
                   (d.continuity_profile.notes_recording_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.continuity_profile.notes_recording_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.continuity_profile.notes_recording_rate}%
+                  {formatRate(d.continuity_profile.notes_recording_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Notes</p>
@@ -193,11 +194,11 @@ export function HomeHandoverContinuityIntelligenceCard() {
                 <p>Manager: <span className={cn("font-medium",
                   (d.sign_off_profile.sign_off_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.sign_off_profile.sign_off_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
-                )}>{d.sign_off_profile.sign_off_rate}%</span></p>
+                )}>{formatRate(d.sign_off_profile.sign_off_rate)}</span></p>
                 <p>Staff avg: <span className={cn("font-medium",
                   (d.sign_off_profile.avg_staff_sign_off_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.sign_off_profile.avg_staff_sign_off_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
-                )}>{d.sign_off_profile.avg_staff_sign_off_rate}%</span></p>
+                )}>{formatRate(d.sign_off_profile.avg_staff_sign_off_rate)}</span></p>
                 <p>Fully signed: <span className="font-medium text-slate-600">{d.sign_off_profile.fully_signed_count}</span></p>
               </div>
             </div>

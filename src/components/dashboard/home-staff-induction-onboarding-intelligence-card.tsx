@@ -62,7 +62,7 @@ export function HomeStaffInductionOnboardingIntelligenceCard() {
             <UserCheck className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-yellow-600")} />
             <span className="text-slate-900 font-bold">Staff Induction & Onboarding</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.induction_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.induction_score}%</span>}
+            {d.induction_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.induction_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -79,19 +79,19 @@ export function HomeStaffInductionOnboardingIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Complete</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.safeguarding_coverage_rate >= 100 ? "bg-green-50" : d.safeguarding_coverage_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.safeguarding_coverage_rate >= 100 ? "text-[--cs-success]" : d.safeguarding_coverage_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.safeguarding_coverage_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.safeguarding_coverage_rate >= 100 ? "text-[--cs-success]" : d.safeguarding_coverage_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.safeguarding_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Safegrd</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.shadowing_competency_rate >= 90 ? "bg-green-50" : d.shadowing_competency_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.shadowing_competency_rate >= 90 ? "text-[--cs-success]" : d.shadowing_competency_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.shadowing_competency_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.shadowing_competency_rate >= 90 ? "text-[--cs-success]" : d.shadowing_competency_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.shadowing_competency_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Shadow</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.handbook_acknowledgement_rate >= 90 ? "bg-green-50" : d.handbook_acknowledgement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.handbook_acknowledgement_rate >= 90 ? "text-[--cs-success]" : d.handbook_acknowledgement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.handbook_acknowledgement_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.handbook_acknowledgement_rate >= 90 ? "text-[--cs-success]" : d.handbook_acknowledgement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.handbook_acknowledgement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Handbook</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.agency_induction_completion_rate >= 100 ? "bg-green-50" : d.agency_induction_completion_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.agency_induction_completion_rate >= 100 ? "text-[--cs-success]" : d.agency_induction_completion_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.agency_induction_completion_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.agency_induction_completion_rate >= 100 ? "text-[--cs-success]" : d.agency_induction_completion_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.agency_induction_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Agency</p>
             </div>
           </div>

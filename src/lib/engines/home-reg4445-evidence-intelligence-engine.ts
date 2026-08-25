@@ -6,6 +6,8 @@
 // Regulatory: CHR 2015 Reg 44, Reg 45, Reg 46.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 export interface Reg44PackInput {
   id: string;
   month: string; // "2026-05"
@@ -135,10 +137,6 @@ export interface HomeReg4445EvidenceResult {
   insights: { text: string; severity: string }[];
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function daysBetween(a: string, b: string): number {
   return Math.round((new Date(b).getTime() - new Date(a).getTime()) / 86_400_000);
 }
@@ -169,9 +167,9 @@ export function computeHomeReg4445Evidence(input: HomeReg4445EvidenceInput): Hom
 
   // Reg 44 Packs
   const p44Completed = reg44_packs.filter(p => p.visit_completed).length;
-  const p44CompRate = pct(p44Completed, reg44_packs.length);
+  const p44CompRate = rate(p44Completed, reg44_packs.length);
   const p44Submitted = reg44_packs.filter(p => p.report_submitted).length;
-  const p44SubmitRate = pct(p44Submitted, reg44_packs.length);
+  const p44SubmitRate = rate(p44Submitted, reg44_packs.length);
   const p44AvgAreas = reg44_packs.length > 0
     ? Math.round((reg44_packs.reduce((s, p) => s + p.areas_covered, 0) / reg44_packs.length) * 10) / 10 : null;
 
@@ -179,35 +177,35 @@ export function computeHomeReg4445Evidence(input: HomeReg4445EvidenceInput): Hom
   const r44AvgChildren = reg44_visit_reports.length > 0
     ? Math.round((reg44_visit_reports.reduce((s, r) => s + r.children_interviewed, 0) / reg44_visit_reports.length) * 10) / 10 : null;
   const r44Voice = reg44_visit_reports.filter(r => r.child_voice_included).length;
-  const r44VoiceRate = pct(r44Voice, reg44_visit_reports.length);
+  const r44VoiceRate = rate(r44Voice, reg44_visit_reports.length);
   const r44AvgConcerns = reg44_visit_reports.length > 0
     ? Math.round((reg44_visit_reports.reduce((s, r) => s + r.concerns_raised, 0) / reg44_visit_reports.length) * 10) / 10 : null;
 
   // Reg 44 Actions
   const a44Completed = reg44_actions.filter(a => a.status === "completed").length;
-  const a44CompRate = pct(a44Completed, reg44_actions.length);
+  const a44CompRate = rate(a44Completed, reg44_actions.length);
   const a44Overdue = reg44_actions.filter(a => a.status === "overdue" || (a.status !== "completed" && daysBetween(a.due_date, today) > 0)).length;
   const a44HighOpen = reg44_actions.filter(a => a.priority === "high" && a.status !== "completed").length;
 
   // Reg 45 Evidence
   const e45Strong = reg45_evidence.filter(e => e.strength_of_evidence === "strong").length;
-  const e45StrongRate = pct(e45Strong, reg45_evidence.length);
+  const e45StrongRate = rate(e45Strong, reg45_evidence.length);
   const e45Voice = reg45_evidence.filter(e => e.child_voice_present).length;
-  const e45VoiceRate = pct(e45Voice, reg45_evidence.length);
+  const e45VoiceRate = rate(e45Voice, reg45_evidence.length);
   const e45Overdue = reg45_evidence.filter(e => daysBetween(e.review_date, today) > 0).length;
   const e45Areas = new Set(reg45_evidence.map(e => e.quality_area));
 
   // Reg 46 Reviews
   const r46ActionsSet = reg46_reviews.reduce((s, r) => s + r.actions_raised, 0);
   const r46ActionsComp = reg46_reviews.reduce((s, r) => s + r.actions_completed, 0);
-  const r46ActCompRate = pct(r46ActionsComp, r46ActionsSet);
+  const r46ActCompRate = rate(r46ActionsComp, r46ActionsSet);
   const r46Overdue = reg46_reviews.filter(r => daysBetween(r.next_review_date, today) > 0).length;
 
   // Annex A
   const aaPresent = annex_a_evidence.filter(a => a.evidence_present).length;
-  const aaPresentRate = pct(aaPresent, annex_a_evidence.length);
+  const aaPresentRate = rate(aaPresent, annex_a_evidence.length);
   const aaCurrent = annex_a_evidence.filter(a => a.evidence_current).length;
-  const aaCurrentRate = pct(aaCurrent, annex_a_evidence.length);
+  const aaCurrentRate = rate(aaCurrent, annex_a_evidence.length);
   const aaGaps = annex_a_evidence.filter(a => a.gap_identified).length;
 
   // ── Summaries ──────────────────────────────────────────────────────
@@ -228,8 +226,8 @@ export function computeHomeReg4445Evidence(input: HomeReg4445EvidenceInput): Hom
   {
     let m = 0;
     if (reg44_packs.length > 0) {
-      if (p44CompRate >= 90) m += 2; else if (p44CompRate < 50) m -= 2;
-      if (p44SubmitRate >= 90) m += 2; else if (p44SubmitRate < 50) m -= 2;
+      if (meets(p44CompRate, 90)) m += 2; else if (below(p44CompRate, 50)) m -= 2;
+      if (meets(p44SubmitRate, 90)) m += 2; else if (below(p44SubmitRate, 50)) m -= 2;
       if ((p44AvgAreas ?? 0) >= 5) m += 1; else if ((p44AvgAreas ?? 0) < 2) m -= 1;
     } else {
       if (total_children >= 1) m -= 3;
@@ -241,7 +239,7 @@ export function computeHomeReg4445Evidence(input: HomeReg4445EvidenceInput): Hom
   {
     let m = 0;
     if (reg44_visit_reports.length > 0) {
-      if (r44VoiceRate >= 80) m += 2; else if (r44VoiceRate < 40) m -= 1;
+      if (meets(r44VoiceRate, 80)) m += 2; else if (below(r44VoiceRate, 40)) m -= 1;
       if ((r44AvgChildren ?? 0) >= 3) m += 1; else if ((r44AvgChildren ?? 0) < 1) m -= 1;
       const avgAreas = reg44_visit_reports.length > 0
         ? reg44_visit_reports.reduce((s, r) => s + r.areas_inspected.length, 0) / reg44_visit_reports.length : 0;
@@ -256,7 +254,7 @@ export function computeHomeReg4445Evidence(input: HomeReg4445EvidenceInput): Hom
   {
     let m = 0;
     if (reg44_actions.length > 0) {
-      if (a44CompRate >= 80) m += 1; else if (a44CompRate < 40) m -= 1;
+      if (meets(a44CompRate, 80)) m += 1; else if (below(a44CompRate, 40)) m -= 1;
       if (a44Overdue === 0) m += 1; else if (a44Overdue >= 5) m -= 2; else m -= 1;
       if (a44HighOpen === 0) m += 1; else if (a44HighOpen >= 3) m -= 1;
     }
@@ -267,7 +265,7 @@ export function computeHomeReg4445Evidence(input: HomeReg4445EvidenceInput): Hom
   {
     let m = 0;
     if (reg45_evidence.length > 0) {
-      if (e45StrongRate >= 70) m += 2; else if (e45StrongRate < 30) m -= 1;
+      if (meets(e45StrongRate, 70)) m += 2; else if (below(e45StrongRate, 30)) m -= 1;
       if (e45Areas.size >= 5) m += 1; else if (e45Areas.size < 2) m -= 1;
       if (e45Overdue === 0) m += 1; else if (e45Overdue >= 5) m -= 2; else m -= 1;
     } else {
@@ -280,7 +278,7 @@ export function computeHomeReg4445Evidence(input: HomeReg4445EvidenceInput): Hom
   {
     let m = 0;
     if (reg46_reviews.length > 0) {
-      if (r46ActCompRate >= 80) m += 1; else if (r46ActCompRate < 40) m -= 1;
+      if (meets(r46ActCompRate, 80)) m += 1; else if (below(r46ActCompRate, 40)) m -= 1;
       if (r46Overdue === 0) m += 1; else if (r46Overdue >= 3) m -= 2; else m -= 1;
       if (reg46_reviews.length >= 2) m += 1;
     } else {
@@ -293,8 +291,8 @@ export function computeHomeReg4445Evidence(input: HomeReg4445EvidenceInput): Hom
   {
     let m = 0;
     if (annex_a_evidence.length > 0) {
-      if (aaPresentRate >= 90) m += 1; else if (aaPresentRate < 50) m -= 1;
-      if (aaCurrentRate >= 80) m += 1; else if (aaCurrentRate < 40) m -= 1;
+      if (meets(aaPresentRate, 90)) m += 1; else if (below(aaPresentRate, 50)) m -= 1;
+      if (meets(aaCurrentRate, 80)) m += 1; else if (below(aaCurrentRate, 40)) m -= 1;
       if (aaGaps === 0) m += 1; else if (aaGaps >= 5) m -= 2; else m -= 1;
     } else {
       if (total_children >= 1) m -= 1;
@@ -305,9 +303,11 @@ export function computeHomeReg4445Evidence(input: HomeReg4445EvidenceInput): Hom
   // Mod 7: Child voice in regulatory evidence (±3)
   {
     let m = 0;
+    // Each push is guarded by its own source population, so the rate is
+    // never null here — the `!` reflects that, not a blind assertion.
     const voiceSources: number[] = [];
-    if (reg44_visit_reports.length > 0) voiceSources.push(r44VoiceRate);
-    if (reg45_evidence.length > 0) voiceSources.push(e45VoiceRate);
+    if (reg44_visit_reports.length > 0) voiceSources.push(r44VoiceRate!);
+    if (reg45_evidence.length > 0) voiceSources.push(e45VoiceRate!);
     if (voiceSources.length > 0) {
       const avg = Math.round(voiceSources.reduce((s, v) => s + v, 0) / voiceSources.length);
       if (avg >= 90) m += 3; else if (avg >= 70) m += 2; else if (avg >= 50) m += 1; else if (avg < 30) m -= 2;
@@ -318,9 +318,11 @@ export function computeHomeReg4445Evidence(input: HomeReg4445EvidenceInput): Hom
   // Mod 8: Action resolution & learning (±3)
   {
     let m = 0;
+    // Each push is guarded by its own source population, so the rate is
+    // never null here — the `!` reflects that, not a blind assertion.
     const actionSources: number[] = [];
-    if (reg44_actions.length > 0) actionSources.push(a44CompRate);
-    if (reg46_reviews.length > 0) actionSources.push(r46ActCompRate);
+    if (reg44_actions.length > 0) actionSources.push(a44CompRate!);
+    if (reg46_reviews.length > 0) actionSources.push(r46ActCompRate!);
     if (actionSources.length > 0) {
       const avg = Math.round(actionSources.reduce((s, v) => s + v, 0) / actionSources.length);
       if (avg >= 90) m += 3; else if (avg >= 70) m += 2; else if (avg >= 50) m += 1; else if (avg < 30) m -= 2;
@@ -343,17 +345,17 @@ export function computeHomeReg4445Evidence(input: HomeReg4445EvidenceInput): Hom
   const insights: HomeReg4445EvidenceResult["insights"] = [];
   let rank = 0;
 
-  if (reg44_packs.length > 0 && p44CompRate >= 90 && p44SubmitRate >= 90) {
-    strengths.push(`Excellent Reg 44 visit compliance — ${p44CompRate}% visits completed with ${p44SubmitRate}% reports submitted.`);
+  if (reg44_packs.length > 0 && meets(p44CompRate, 90) && meets(p44SubmitRate, 90)) {
+    strengths.push(`Excellent Reg 44 visit compliance — ${formatRate(p44CompRate)} visits completed with ${formatRate(p44SubmitRate)} reports submitted.`);
   }
-  if (reg44_visit_reports.length > 0 && r44VoiceRate >= 80) {
-    strengths.push(`Strong child voice in Reg 44 reports — ${r44VoiceRate}% include children's views.`);
+  if (reg44_visit_reports.length > 0 && meets(r44VoiceRate, 80)) {
+    strengths.push(`Strong child voice in Reg 44 reports — ${formatRate(r44VoiceRate)} include children's views.`);
   }
-  if (reg45_evidence.length > 0 && e45StrongRate >= 70 && e45Overdue === 0) {
-    strengths.push(`Robust Reg 45 evidence base — ${e45StrongRate}% rated strong with no overdue reviews.`);
+  if (reg45_evidence.length > 0 && meets(e45StrongRate, 70) && e45Overdue === 0) {
+    strengths.push(`Robust Reg 45 evidence base — ${formatRate(e45StrongRate)} rated strong with no overdue reviews.`);
   }
-  if (annex_a_evidence.length > 0 && aaPresentRate >= 90 && aaGaps === 0) {
-    strengths.push(`Annex A evidence is comprehensive — ${aaPresentRate}% present with zero gaps identified.`);
+  if (annex_a_evidence.length > 0 && meets(aaPresentRate, 90) && aaGaps === 0) {
+    strengths.push(`Annex A evidence is comprehensive — ${formatRate(aaPresentRate)} present with zero gaps identified.`);
   }
 
   if (reg44_packs.length === 0 && total_children >= 1) {

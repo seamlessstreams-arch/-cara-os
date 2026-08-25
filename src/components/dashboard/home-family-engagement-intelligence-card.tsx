@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -107,7 +108,7 @@ export function HomeFamilyEngagementIntelligenceCard() {
               {ratingStyle.label}
             </span>
             {d.family_engagement_rating !== "insufficient_data" && (
-              <span className="text-xs font-bold tabular-nums text-slate-600">{d.family_engagement_score}%</span>
+              <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.family_engagement_score)}</span>
             )}
           </CardTitle>
         </div>
@@ -124,10 +125,10 @@ export function HomeFamilyEngagementIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Users className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.contact_profile.contact_coverage >= 80 ? "text-[--cs-success]" :
-                  d.contact_profile.contact_coverage >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.contact_profile.contact_coverage, 80) ? "text-[--cs-success]" :
+                  meets(d.contact_profile.contact_coverage, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.contact_profile.contact_coverage}%
+                  {formatRate(d.contact_profile.contact_coverage)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Contact</p>
@@ -141,7 +142,7 @@ export function HomeFamilyEngagementIntelligenceCard() {
                   (d.child_voice_profile.voice_capture_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.child_voice_profile.voice_capture_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.child_voice_profile.voice_capture_rate}%
+                  {formatRate(d.child_voice_profile.voice_capture_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Voice</p>
@@ -154,7 +155,7 @@ export function HomeFamilyEngagementIntelligenceCard() {
                 <p className={cn("text-lg font-bold tabular-nums",
                   d.contact_profile.safety_rate === 100 ? "text-[--cs-success]" : "text-[--cs-risk]"
                 )}>
-                  {d.contact_profile.safety_rate}%
+                  {formatRate(d.contact_profile.safety_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Safe</p>
@@ -195,7 +196,7 @@ export function HomeFamilyEngagementIntelligenceCard() {
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Relationships</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>Assessed: <span className={cn("font-medium", d.relationship_profile.assessment_coverage >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.relationship_profile.children_assessed.length}/{d.relationship_profile.children_assessed.length + d.relationship_profile.children_not_assessed.length}</span></p>
+                <p>Assessed: <span className={cn("font-medium", meets(d.relationship_profile.assessment_coverage, 80) ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.relationship_profile.children_assessed.length}/{d.relationship_profile.children_assessed.length + d.relationship_profile.children_not_assessed.length}</span></p>
                 {d.relationship_profile.improving_count > 0 && (
                   <p>Improving: <span className="font-medium text-green-600">{d.relationship_profile.improving_count}</span></p>
                 )}

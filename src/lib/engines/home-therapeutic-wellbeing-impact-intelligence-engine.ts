@@ -7,6 +7,8 @@
 // wellbeing is monitored, and specialist support is available for grief/loss.
 // ==============================================================================
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // -- Input Types --------------------------------------------------------------
 
 export interface TherapeuticImpactInput {
@@ -84,10 +86,6 @@ export interface TherapeuticWellbeingResult {
 
 // -- Helpers ------------------------------------------------------------------
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -157,7 +155,7 @@ export function computeTherapeuticWellbeingImpact(
       .filter((t) => t.has_key_outcomes && t.has_evidence_of_progress)
       .map((t) => t.child_id),
   );
-  const therapeuticCoverageRate = pct(
+  const therapeuticCoverageRate = rate(
     qualifyingImpactChildren.size,
     total_children,
   );
@@ -166,9 +164,9 @@ export function computeTherapeuticWellbeingImpact(
   let score = 52;
 
   // Mod 1: Therapeutic coverage
-  if (therapeuticCoverageRate >= 80) score += 5;
-  else if (therapeuticCoverageRate >= 50) score += 2;
-  else if (therapeuticCoverageRate >= 30) score += 0;
+  if (meets(therapeuticCoverageRate, 80)) score += 5;
+  else if (meets(therapeuticCoverageRate, 50)) score += 2;
+  else if (meets(therapeuticCoverageRate, 30)) score += 0;
   else score -= 5;
 
   // -- Mod 2: Wellbeing scores -----------------------------------------------
@@ -190,51 +188,51 @@ export function computeTherapeuticWellbeingImpact(
   const improvingCount = wellbeing_pulses.filter(
     (p) => p.trend === "improving",
   ).length;
-  const improvingRate = pct(improvingCount, wellbeing_pulses.length);
+  const improvingRate = rate(improvingCount, wellbeing_pulses.length);
 
   if (wellbeing_pulses.length === 0) score += 0;
-  else if (improvingRate >= 60) score += 5;
-  else if (improvingRate >= 35) score += 2;
-  else if (improvingRate >= 15) score += 0;
+  else if (meets(improvingRate, 60)) score += 5;
+  else if (meets(improvingRate, 35)) score += 2;
+  else if (meets(improvingRate, 15)) score += 0;
   else score -= 4;
 
   // -- Mod 4: Self-soothing engagement ---------------------------------------
   const engagedToolkits = self_soothing.filter(
     (s) => s.child_contributed && s.strategies_count >= 5,
   ).length;
-  const engagementRate = pct(engagedToolkits, self_soothing.length);
+  const engagementRate = rate(engagedToolkits, self_soothing.length);
 
   if (self_soothing.length === 0) score += 0;
-  else if (engagementRate >= 80) score += 5;
-  else if (engagementRate >= 50) score += 2;
-  else if (engagementRate >= 25) score += 0;
+  else if (meets(engagementRate, 80)) score += 5;
+  else if (meets(engagementRate, 50)) score += 2;
+  else if (meets(engagementRate, 25)) score += 0;
   else score -= 5;
 
   // -- Mod 5: Self-soothing review -------------------------------------------
   const reviewedToolkits = self_soothing.filter(
     (s) => s.recently_reviewed,
   ).length;
-  const reviewRate = pct(reviewedToolkits, self_soothing.length);
+  const reviewRate = rate(reviewedToolkits, self_soothing.length);
 
   if (self_soothing.length === 0) score += 0;
-  else if (reviewRate >= 80) score += 4;
-  else if (reviewRate >= 50) score += 1;
-  else if (reviewRate >= 25) score += 0;
+  else if (meets(reviewRate, 80)) score += 4;
+  else if (meets(reviewRate, 50)) score += 1;
+  else if (meets(reviewRate, 25)) score += 0;
   else score -= 4;
 
   // -- Mod 6: Grief support quality ------------------------------------------
   const qualifyingGrief = grief_support.filter(
     (g) => g.has_external_support && g.has_home_support && g.key_worker_involved,
   ).length;
-  const griefQualityRate = pct(qualifyingGrief, grief_support.length);
+  const griefQualityRate = rate(qualifyingGrief, grief_support.length);
 
   if (grief_support.length === 0) {
     score += 2; // no current need is neutral-positive
-  } else if (griefQualityRate >= 80) {
+  } else if (meets(griefQualityRate, 80)) {
     score += 5;
-  } else if (griefQualityRate >= 50) {
+  } else if (meets(griefQualityRate, 50)) {
     score += 2;
-  } else if (griefQualityRate >= 25) {
+  } else if (meets(griefQualityRate, 25)) {
     score += 0;
   } else {
     score -= 5;
@@ -244,16 +242,16 @@ export function computeTherapeuticWellbeingImpact(
   const rating = toRating(score);
 
   // -- Derived metrics -------------------------------------------------------
-  const selfSoothingCoverageRate = pct(self_soothing.length, total_children);
+  const selfSoothingCoverageRate = rate(self_soothing.length, total_children);
   const griefSupportRate =
     grief_support.length > 0 ? griefQualityRate : 0;
 
   // -- Strengths -------------------------------------------------------------
   const strengths: string[] = [];
 
-  if (therapeuticCoverageRate >= 80) {
+  if (meets(therapeuticCoverageRate, 80)) {
     strengths.push(
-      `${therapeuticCoverageRate}% of children have therapeutic plans with key outcomes and evidence of progress -- therapeutic approaches are well embedded.`,
+      `${formatRate(therapeuticCoverageRate)} of children have therapeutic plans with key outcomes and evidence of progress -- therapeutic approaches are well embedded.`,
     );
   }
   if ((avgWellbeing ?? 0) >= 7 && wellbeing_pulses.length > 0) {
@@ -261,24 +259,24 @@ export function computeTherapeuticWellbeingImpact(
       `Average wellbeing score of ${avgWellbeing}/10 -- children are reporting positive emotional states.`,
     );
   }
-  if (improvingRate >= 60 && wellbeing_pulses.length > 0) {
+  if (meets(improvingRate, 60) && wellbeing_pulses.length > 0) {
     strengths.push(
-      `${improvingRate}% of wellbeing pulses show an improving trend -- therapeutic interventions are making a tangible difference.`,
+      `${formatRate(improvingRate)} of wellbeing pulses show an improving trend -- therapeutic interventions are making a tangible difference.`,
     );
   }
-  if (engagementRate >= 80 && self_soothing.length > 0) {
+  if (meets(engagementRate, 80) && self_soothing.length > 0) {
     strengths.push(
-      `${engagementRate}% of self-soothing toolkits have child contribution with 5+ strategies -- children are active participants in their own regulation.`,
+      `${formatRate(engagementRate)} of self-soothing toolkits have child contribution with 5+ strategies -- children are active participants in their own regulation.`,
     );
   }
-  if (reviewRate >= 80 && self_soothing.length > 0) {
+  if (meets(reviewRate, 80) && self_soothing.length > 0) {
     strengths.push(
-      `${reviewRate}% of self-soothing toolkits reviewed within 90 days -- strategies remain current and relevant.`,
+      `${formatRate(reviewRate)} of self-soothing toolkits reviewed within 90 days -- strategies remain current and relevant.`,
     );
   }
-  if (griefQualityRate >= 80 && grief_support.length > 0) {
+  if (meets(griefQualityRate, 80) && grief_support.length > 0) {
     strengths.push(
-      `${griefQualityRate}% of grief support records have external support, home support, and key worker involvement -- comprehensive wraparound care for grieving children.`,
+      `${formatRate(griefQualityRate)} of grief support records have external support, home support, and key worker involvement -- comprehensive wraparound care for grieving children.`,
     );
   }
   if (grief_support.length === 0) {
@@ -290,9 +288,9 @@ export function computeTherapeuticWellbeingImpact(
   // -- Concerns --------------------------------------------------------------
   const concerns: string[] = [];
 
-  if (therapeuticCoverageRate < 30) {
+  if (below(therapeuticCoverageRate, 30)) {
     concerns.push(
-      `Only ${therapeuticCoverageRate}% of children have therapeutic plans with key outcomes and progress evidence -- therapeutic approaches are not embedded.`,
+      `Only ${formatRate(therapeuticCoverageRate)} of children have therapeutic plans with key outcomes and progress evidence -- therapeutic approaches are not embedded.`,
     );
   }
   if ((avgWellbeing ?? 0) < 3 && wellbeing_pulses.length > 0) {
@@ -305,35 +303,35 @@ export function computeTherapeuticWellbeingImpact(
       `Average wellbeing score of ${avgWellbeing}/10 is below the expected standard for positive emotional health.`,
     );
   }
-  if (improvingRate < 15 && wellbeing_pulses.length > 0) {
+  if (below(improvingRate, 15) && wellbeing_pulses.length > 0) {
     concerns.push(
-      `Only ${improvingRate}% of wellbeing pulses show improvement -- therapeutic interventions may not be effective.`,
+      `Only ${formatRate(improvingRate)} of wellbeing pulses show improvement -- therapeutic interventions may not be effective.`,
     );
   }
   const decliningPulses = wellbeing_pulses.filter(
     (p) => p.trend === "declining",
   );
   if (decliningPulses.length > 0 && wellbeing_pulses.length > 0) {
-    const decliningRate = pct(decliningPulses.length, wellbeing_pulses.length);
-    if (decliningRate >= 25) {
+    const decliningRate = rate(decliningPulses.length, wellbeing_pulses.length);
+    if (meets(decliningRate, 25)) {
       concerns.push(
-        `${decliningRate}% of wellbeing pulses show a declining trend -- urgent therapeutic review needed.`,
+        `${formatRate(decliningRate)} of wellbeing pulses show a declining trend -- urgent therapeutic review needed.`,
       );
     }
   }
-  if (engagementRate < 25 && self_soothing.length > 0) {
+  if (below(engagementRate, 25) && self_soothing.length > 0) {
     concerns.push(
-      `Only ${engagementRate}% of self-soothing toolkits have meaningful child contribution -- children are not participating in developing their own strategies.`,
+      `Only ${formatRate(engagementRate)} of self-soothing toolkits have meaningful child contribution -- children are not participating in developing their own strategies.`,
     );
   }
-  if (reviewRate < 25 && self_soothing.length > 0) {
+  if (below(reviewRate, 25) && self_soothing.length > 0) {
     concerns.push(
-      `Only ${reviewRate}% of self-soothing toolkits have been recently reviewed -- strategies may be outdated and ineffective.`,
+      `Only ${formatRate(reviewRate)} of self-soothing toolkits have been recently reviewed -- strategies may be outdated and ineffective.`,
     );
   }
-  if (griefQualityRate < 25 && grief_support.length > 0) {
+  if (below(griefQualityRate, 25) && grief_support.length > 0) {
     concerns.push(
-      `Only ${griefQualityRate}% of grief support records meet quality standards -- children experiencing loss are not receiving adequate wraparound care.`,
+      `Only ${formatRate(griefQualityRate)} of grief support records meet quality standards -- children experiencing loss are not receiving adequate wraparound care.`,
     );
   }
 
@@ -343,10 +341,10 @@ export function computeTherapeuticWellbeingImpact(
     (p) => p.follow_up_actioned,
   );
   if (needingFollowUp.length > 0) {
-    const followUpRate = pct(actionedFollowUp.length, needingFollowUp.length);
-    if (followUpRate < 80) {
+    const followUpRate = rate(actionedFollowUp.length, needingFollowUp.length);
+    if (below(followUpRate, 80)) {
       concerns.push(
-        `Only ${followUpRate}% of wellbeing follow-ups have been actioned -- flagged concerns are not being addressed.`,
+        `Only ${formatRate(followUpRate)} of wellbeing follow-ups have been actioned -- flagged concerns are not being addressed.`,
       );
     }
   }
@@ -355,10 +353,10 @@ export function computeTherapeuticWellbeingImpact(
   const recs: TherapeuticWellbeingResult["recommendations"] = [];
   let rank = 1;
 
-  if (therapeuticCoverageRate < 50) {
+  if (below(therapeuticCoverageRate, 50)) {
     recs.push({
       rank: rank++,
-      recommendation: `Therapeutic coverage is at ${therapeuticCoverageRate}% -- ensure every child has a therapeutic plan with defined key outcomes and measurable progress evidence.`,
+      recommendation: `Therapeutic coverage is at ${formatRate(therapeuticCoverageRate)} -- ensure every child has a therapeutic plan with defined key outcomes and measurable progress evidence.`,
       urgency: "immediate",
       regulatory_ref: "CHR 2015 Reg 9",
     });
@@ -373,45 +371,45 @@ export function computeTherapeuticWellbeingImpact(
     });
   }
 
-  if (improvingRate < 35 && wellbeing_pulses.length > 0) {
+  if (below(improvingRate, 35) && wellbeing_pulses.length > 0) {
     recs.push({
       rank: rank++,
-      recommendation: `Only ${improvingRate}% of wellbeing trends are improving -- review whether current therapeutic models are appropriate and adjust care plans accordingly.`,
+      recommendation: `Only ${formatRate(improvingRate)} of wellbeing trends are improving -- review whether current therapeutic models are appropriate and adjust care plans accordingly.`,
       urgency: "soon",
       regulatory_ref: "CHR 2015 Reg 9",
     });
   }
 
-  if (engagementRate < 50 && self_soothing.length > 0) {
+  if (below(engagementRate, 50) && self_soothing.length > 0) {
     recs.push({
       rank: rank++,
-      recommendation: `Self-soothing engagement is at ${engagementRate}% -- work with each child to co-create their toolkit with at least 5 strategies they have chosen.`,
+      recommendation: `Self-soothing engagement is at ${formatRate(engagementRate)} -- work with each child to co-create their toolkit with at least 5 strategies they have chosen.`,
       urgency: "soon",
       regulatory_ref: "CHR 2015 Reg 10",
     });
   }
 
-  if (reviewRate < 50 && self_soothing.length > 0) {
+  if (below(reviewRate, 50) && self_soothing.length > 0) {
     recs.push({
       rank: rank++,
-      recommendation: `Only ${reviewRate}% of self-soothing toolkits have been recently reviewed -- schedule 90-day reviews with each child to refresh strategies.`,
+      recommendation: `Only ${formatRate(reviewRate)} of self-soothing toolkits have been recently reviewed -- schedule 90-day reviews with each child to refresh strategies.`,
       urgency: "planned",
       regulatory_ref: "CHR 2015 Reg 9",
     });
   }
 
-  if (griefQualityRate < 50 && grief_support.length > 0) {
+  if (below(griefQualityRate, 50) && grief_support.length > 0) {
     recs.push({
       rank: rank++,
-      recommendation: `Grief support quality is at ${griefQualityRate}% -- ensure every child experiencing grief/loss has external specialist support, home-based support, and key worker involvement.`,
+      recommendation: `Grief support quality is at ${formatRate(griefQualityRate)} -- ensure every child experiencing grief/loss has external specialist support, home-based support, and key worker involvement.`,
       urgency: "immediate",
       regulatory_ref: "CHR 2015 Reg 9",
     });
   }
 
   if (needingFollowUp.length > 0) {
-    const followUpRate = pct(actionedFollowUp.length, needingFollowUp.length);
-    if (followUpRate < 80) {
+    const followUpRate = rate(actionedFollowUp.length, needingFollowUp.length);
+    if (below(followUpRate, 80)) {
       recs.push({
         rank: rank++,
         recommendation: `${needingFollowUp.length - actionedFollowUp.length} wellbeing follow-ups remain unactioned -- prioritise these to demonstrate responsive care.`,
@@ -446,7 +444,7 @@ export function computeTherapeuticWellbeingImpact(
 
   if (rating === "outstanding") {
     insights.push({
-      text: `Exemplary therapeutic wellbeing -- ${therapeuticCoverageRate}% therapeutic coverage, average wellbeing ${avgWellbeing}/10, ${improvingRate}% improving trends. The home demonstrates a deeply embedded therapeutic culture where children's emotional needs are understood, monitored, and responded to with measurable impact. Inspectors will find strong evidence of CHR 2015 Reg 9 and Reg 10 compliance.`,
+      text: `Exemplary therapeutic wellbeing -- ${formatRate(therapeuticCoverageRate)} therapeutic coverage, average wellbeing ${avgWellbeing}/10, ${formatRate(improvingRate)} improving trends. The home demonstrates a deeply embedded therapeutic culture where children's emotional needs are understood, monitored, and responded to with measurable impact. Inspectors will find strong evidence of CHR 2015 Reg 9 and Reg 10 compliance.`,
       severity: "positive",
     });
   }
@@ -466,43 +464,43 @@ export function computeTherapeuticWellbeingImpact(
   }
 
   if (
-    therapeuticCoverageRate < 30 &&
+    below(therapeuticCoverageRate, 30) &&
     therapeutic_impacts.length > 0
   ) {
     insights.push({
-      text: `Therapeutic approaches are not embedded across the home. Only ${therapeuticCoverageRate}% of children have plans with outcomes and progress evidence. CHR 2015 Reg 9 requires that children's care plans are informed by a therapeutic understanding of their needs. Inspectors will question whether the home's stated therapeutic model is genuinely applied.`,
+      text: `Therapeutic approaches are not embedded across the home. Only ${formatRate(therapeuticCoverageRate)} of children have plans with outcomes and progress evidence. CHR 2015 Reg 9 requires that children's care plans are informed by a therapeutic understanding of their needs. Inspectors will question whether the home's stated therapeutic model is genuinely applied.`,
       severity: "critical",
     });
   }
 
-  if (griefQualityRate < 25 && grief_support.length > 0) {
+  if (below(griefQualityRate, 25) && grief_support.length > 0) {
     insights.push({
-      text: `Grief and loss support is critically inadequate at ${griefQualityRate}%. Children experiencing bereavement or loss need coordinated external and home-based support with key worker involvement. Under CHR 2015 Reg 9, the registered person must ensure specialist support is accessible.`,
+      text: `Grief and loss support is critically inadequate at ${formatRate(griefQualityRate)}. Children experiencing bereavement or loss need coordinated external and home-based support with key worker involvement. Under CHR 2015 Reg 9, the registered person must ensure specialist support is accessible.`,
       severity: "critical",
     });
   }
 
-  if (engagementRate >= 80 && self_soothing.length > 0) {
+  if (meets(engagementRate, 80) && self_soothing.length > 0) {
     insights.push({
-      text: `${engagementRate}% of children are actively contributing to their self-soothing toolkits with robust strategy sets. This demonstrates a child-centred approach to emotional regulation consistent with CHR 2015 Reg 10 -- children are being supported to develop independence and self-management skills.`,
+      text: `${formatRate(engagementRate)} of children are actively contributing to their self-soothing toolkits with robust strategy sets. This demonstrates a child-centred approach to emotional regulation consistent with CHR 2015 Reg 10 -- children are being supported to develop independence and self-management skills.`,
       severity: "positive",
     });
   }
 
   if (
-    improvingRate >= 60 &&
+    meets(improvingRate, 60) &&
     (avgWellbeing ?? 0) >= 7 &&
     wellbeing_pulses.length > 0
   ) {
     insights.push({
-      text: `Strong positive trajectory -- ${improvingRate}% improving trends with an average score of ${avgWellbeing}/10 demonstrates that therapeutic interventions are translating into genuine emotional benefit for children.`,
+      text: `Strong positive trajectory -- ${formatRate(improvingRate)} improving trends with an average score of ${avgWellbeing}/10 demonstrates that therapeutic interventions are translating into genuine emotional benefit for children.`,
       severity: "positive",
     });
   }
 
-  if (grief_support.length > 0 && griefQualityRate >= 80) {
+  if (grief_support.length > 0 && meets(griefQualityRate, 80)) {
     insights.push({
-      text: `Grief and loss support is comprehensive -- ${griefQualityRate}% of children experiencing loss have external specialist support, home-based support, and key worker involvement. This wraparound approach evidences outstanding care under CHR 2015 Reg 9.`,
+      text: `Grief and loss support is comprehensive -- ${formatRate(griefQualityRate)} of children experiencing loss have external specialist support, home-based support, and key worker involvement. This wraparound approach evidences outstanding care under CHR 2015 Reg 9.`,
       severity: "positive",
     });
   }
@@ -510,7 +508,7 @@ export function computeTherapeuticWellbeingImpact(
   // -- Headline --------------------------------------------------------------
   let headline: string;
   if (rating === "outstanding") {
-    headline = `Outstanding therapeutic wellbeing -- ${therapeuticCoverageRate}% therapeutic coverage, average wellbeing ${avgWellbeing}/10, ${improvingRate}% improving trends.`;
+    headline = `Outstanding therapeutic wellbeing -- ${formatRate(therapeuticCoverageRate)} therapeutic coverage, average wellbeing ${avgWellbeing}/10, ${formatRate(improvingRate)} improving trends.`;
   } else if (rating === "good") {
     headline = `Good therapeutic wellbeing -- children's emotional health is monitored with broadly positive outcomes.`;
   } else if (rating === "adequate") {

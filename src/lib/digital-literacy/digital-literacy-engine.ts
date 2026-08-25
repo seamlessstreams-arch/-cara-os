@@ -292,10 +292,6 @@ export function getSkillLevelValue(level: SkillLevel): number {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 function inPeriod(date: string, start: string, end: string): boolean {
   return date.slice(0, 10) >= start.slice(0, 10) && date.slice(0, 10) <= end.slice(0, 10);
 }
@@ -331,7 +327,7 @@ export function evaluateDigitalSkills(
   }
 
   const childrenWithAssessment = latestMap.size;
-  const assessmentRate = pct(childrenWithAssessment, totalChildren);
+  const assessmentRate = rate(childrenWithAssessment, totalChildren);
 
   // Average skill level across all latest assessments
   const allSkillValues: number[] = [];
@@ -408,16 +404,16 @@ export function evaluateDeviceAccess(
   // Children with at least one device access record
   const childrenWithAccessSet = new Set(relevantRecords.map((r) => r.childId));
   const childrenWithAccess = childrenWithAccessSet.size;
-  const accessRate = pct(childrenWithAccess, totalChildren);
+  const accessRate = rate(childrenWithAccess, totalChildren);
 
   // Agreement compliance
   const totalRecords = relevantRecords.length;
   const signedAgreements = relevantRecords.filter((r) => r.agreementSigned).length;
-  const agreementComplianceRate = pct(signedAgreements, totalRecords);
+  const agreementComplianceRate = rate(signedAgreements, totalRecords);
 
   // Age appropriateness
   const ageAppropriateCount = relevantRecords.filter((r) => r.ageAppropriate).length;
-  const ageAppropriateRate = pct(ageAppropriateCount, totalRecords);
+  const ageAppropriateRate = rate(ageAppropriateCount, totalRecords);
 
   // Device type breakdown
   const deviceCounts = new Map<DeviceType, number>();
@@ -501,11 +497,11 @@ export function evaluateOnlineLearning(
 
   // Positive outcome rate
   const positiveCount = relevantRecords.filter((r) => r.outcomePositive).length;
-  const positiveOutcomeRate = pct(positiveCount, totalSessions);
+  const positiveOutcomeRate = rate(positiveCount, totalSessions);
 
   // Supervised rate
   const supervisedCount = relevantRecords.filter((r) => r.supervised).length;
-  const supervisedRate = pct(supervisedCount, totalSessions);
+  const supervisedRate = rate(supervisedCount, totalSessions);
 
   // Duration stats
   const totalLearningMinutes = relevantRecords.reduce((s, r) => s + r.durationMinutes, 0);
@@ -554,7 +550,7 @@ export function evaluateDigitalCitizenship(
 
   // Positive rate
   const positiveCount = relevantRecords.filter((r) => r.demonstratedPositively).length;
-  const positiveRate = pct(positiveCount, totalRecords);
+  const positiveRate = rate(positiveCount, totalRecords);
 
   // Area coverage
   const coveredAreas = new Set(relevantRecords.map((r) => r.area));
@@ -651,7 +647,7 @@ export function buildChildDigitalProfiles(
       (r) => r.demonstratedPositively,
     ).length;
     const citizenshipScore = totalCitizenship;
-    const citizenshipPositiveRate = pct(positiveCitizenship, totalCitizenship);
+    const citizenshipPositiveRate = rate(positiveCitizenship, totalCitizenship);
 
     // Strengths
     const strengths: string[] = [];
@@ -877,7 +873,7 @@ export function generateDigitalLiteracyIntelligence(
   else if (above(digitalCitizenship.positiveRate, 0)) citizenshipScore += 2;
 
   // Area coverage (up to 9 points)
-  const areaCoverageRate = pct(
+  const areaCoverageRate = rate(
     digitalCitizenship.areaCoverage,
     digitalCitizenship.totalAreas,
   );
@@ -887,7 +883,7 @@ export function generateDigitalLiteracyIntelligence(
   else if (above(areaCoverageRate, 0)) citizenshipScore += 2;
 
   // Children participation (up to 6 points)
-  const citizenshipParticipationRate = pct(
+  const citizenshipParticipationRate = rate(
     digitalCitizenship.childrenWithRecords,
     childIds.length,
   );

@@ -4,6 +4,8 @@
 // CHR 2015 Reg 36. SCCIF: "The arrangements for the financial management."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface ExpenseInput {
@@ -99,10 +101,6 @@ export interface HomeExpenseGovernanceResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function daysBetween(a: string, b: string): number {
   return Math.round(
@@ -201,10 +199,10 @@ export function computeHomeExpenseGovernance(
   // ── Compliance Profile ────────────────────────────────────────────────
   const nonDraft = expenses.filter((e) => e.status !== "draft");
   const withReceipt = nonDraft.filter((e) => e.has_receipt);
-  const receiptRate = pct(withReceipt.length, nonDraft.length);
+  const receiptRate = rate(withReceipt.length, nonDraft.length);
 
   const childLinked = expenses.filter((e) => e.linked_child_id !== null);
-  const childLinkedRate = pct(childLinked.length, expenses.length);
+  const childLinkedRate = rate(childLinked.length, expenses.length);
   const childLinkedAmount = childLinked.reduce((s, e) => s + e.amount, 0);
 
   const personalCard = expenses.filter((e) => e.payment_method === "personal card");
@@ -216,10 +214,10 @@ export function computeHomeExpenseGovernance(
     receipt_rate: receiptRate,
     child_linked_rate: childLinkedRate,
     child_linked_amount: Math.round(childLinkedAmount * 100) / 100,
-    personal_card_rate: pct(personalCard.length, expenses.length),
-    house_card_rate: pct(houseCard.length, expenses.length),
-    petty_cash_rate: pct(pettyCash.length, expenses.length),
-    mileage_rate: pct(mileage.length, expenses.length),
+    personal_card_rate: rate(personalCard.length, expenses.length),
+    house_card_rate: rate(houseCard.length, expenses.length),
+    petty_cash_rate: rate(pettyCash.length, expenses.length),
+    mileage_rate: rate(mileage.length, expenses.length),
   };
 
   // ── Category Distribution ─────────────────────────────────────────────
@@ -253,18 +251,18 @@ export function computeHomeExpenseGovernance(
 
   // Modifier 2: Receipt compliance (±5)
   if (nonDraft.length > 0) {
-    if (receiptRate >= 90) score += 5;
-    else if (receiptRate >= 75) score += 3;
-    else if (receiptRate >= 50) score += 0;
+    if (meets(receiptRate, 90)) score += 5;
+    else if (meets(receiptRate, 75)) score += 3;
+    else if (meets(receiptRate, 50)) score += 0;
     else score -= 4;
   }
   // No non-draft = neutral (0)
 
   // Modifier 3: Pending backlog (±3)
-  const pendingRate = pct(pending.length, expenses.length);
+  const pendingRate = rate(pending.length, expenses.length);
   if (pendingRate === 0) score += 3;
-  else if (pendingRate <= 20) score += 1;
-  else if (pendingRate <= 40) score += 0;
+  else if ((pendingRate !== null && pendingRate <= 20)) score += 1;
+  else if ((pendingRate !== null && pendingRate <= 40)) score += 0;
   else score -= 3;
 
   // Modifier 4: Category diversity (±3)
@@ -275,24 +273,24 @@ export function computeHomeExpenseGovernance(
   else score -= 2;
 
   // Modifier 5: Child benefit rate (±4)
-  if (childLinkedRate >= 40) score += 4;
-  else if (childLinkedRate >= 25) score += 2;
-  else if (childLinkedRate >= 10) score += 0;
+  if (meets(childLinkedRate, 40)) score += 4;
+  else if (meets(childLinkedRate, 25)) score += 2;
+  else if (meets(childLinkedRate, 10)) score += 0;
   else score -= 3;
 
   // Modifier 6: Payment method governance (±3)
   // Good governance = mix of house card + petty cash (controlled) not all personal
-  const controlledRate = pct(houseCard.length + pettyCash.length, expenses.length);
-  if (controlledRate >= 50) score += 3;
-  else if (controlledRate >= 30) score += 1;
-  else if (controlledRate >= 15) score += 0;
+  const controlledRate = rate(houseCard.length + pettyCash.length, expenses.length);
+  if (meets(controlledRate, 50)) score += 3;
+  else if (meets(controlledRate, 30)) score += 1;
+  else if (meets(controlledRate, 15)) score += 0;
   else score -= 2;
 
   // Modifier 7: Draft discipline (±3)
-  const draftRate = pct(drafts.length, expenses.length);
+  const draftRate = rate(drafts.length, expenses.length);
   if (draftRate === 0) score += 3;
-  else if (draftRate <= 10) score += 1;
-  else if (draftRate <= 25) score += 0;
+  else if ((draftRate !== null && draftRate <= 10)) score += 1;
+  else if ((draftRate !== null && draftRate <= 25)) score += 0;
   else score -= 2;
 
   // Modifier 8: Manager oversight (±3)
@@ -313,10 +311,10 @@ export function computeHomeExpenseGovernance(
   const strengths: string[] = [];
   if ((avgApprovalDays ?? 0) <= 2 && approvalDays.length > 0)
     strengths.push(`Expenses approved within ${avgApprovalDays} days on average — excellent turnaround.`);
-  if (receiptRate >= 90 && nonDraft.length > 0)
-    strengths.push(`${receiptRate}% receipt compliance across submitted expenses.`);
-  if (childLinkedRate >= 40)
-    strengths.push(`${childLinkedRate}% of expenses directly linked to children — strong child-benefit focus.`);
+  if (meets(receiptRate, 90) && nonDraft.length > 0)
+    strengths.push(`${formatRate(receiptRate)} receipt compliance across submitted expenses.`);
+  if (meets(childLinkedRate, 40))
+    strengths.push(`${formatRate(childLinkedRate)} of expenses directly linked to children — strong child-benefit focus.`);
   if (uniqueApprovers >= 2)
     strengths.push(`${uniqueApprovers} different managers approving expenses — good oversight distribution.`);
   if (uniqueCategories >= 4)
@@ -325,41 +323,41 @@ export function computeHomeExpenseGovernance(
     strengths.push("No pending expenses awaiting approval — fully up to date.");
   if (draftRate === 0)
     strengths.push("No draft expenses sitting unsubmitted — good claim discipline.");
-  if (controlledRate >= 50)
-    strengths.push(`${controlledRate}% of claims via house card or petty cash — proper controlled spending channels.`);
+  if (meets(controlledRate, 50))
+    strengths.push(`${formatRate(controlledRate)} of claims via house card or petty cash — proper controlled spending channels.`);
 
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
-  if (receiptRate < 50 && nonDraft.length > 0)
-    concerns.push(`Only ${receiptRate}% of submitted expenses have receipts — audit risk under Reg 36.`);
+  if (below(receiptRate, 50) && nonDraft.length > 0)
+    concerns.push(`Only ${formatRate(receiptRate)} of submitted expenses have receipts — audit risk under Reg 36.`);
   if ((avgApprovalDays ?? 0) > 10 && approvalDays.length > 0)
     concerns.push(`Average approval turnaround is ${avgApprovalDays} days — staff reimbursement significantly delayed.`);
-  if (pendingRate > 40)
-    concerns.push(`${pending.length} expenses (${pendingRate}% of total) pending approval — backlog needs attention.`);
+  if (above(pendingRate, 40))
+    concerns.push(`${pending.length} expenses (${formatRate(pendingRate)} of total) pending approval — backlog needs attention.`);
   if (uniqueApprovers === 0 && approvedOrPaid.length === 0 && submitted.length > 0)
     concerns.push("No expenses have been approved — management oversight gap.");
-  if (draftRate > 25)
+  if (above(draftRate, 25))
     concerns.push(`${drafts.length} draft expenses not yet submitted — potential unreported spending.`);
   if (childLinkedRate === 0)
     concerns.push("No expenses linked to individual children — missing child-benefit tracking.");
-  if (controlledRate < 15)
+  if (below(controlledRate, 15))
     concerns.push("Very few expenses via controlled channels (house card/petty cash) — financial controls may be weak.");
 
   // ── Recommendations ───────────────────────────────────────────────────
   const recommendations: Recommendation[] = [];
   let rank = 1;
-  if (receiptRate < 75 && nonDraft.length > 0)
+  if (below(receiptRate, 75) && nonDraft.length > 0)
     recommendations.push({
       rank: rank++,
       recommendation: "Implement mandatory receipt upload before expense submission to strengthen financial audit trail.",
-      urgency: receiptRate < 50 ? "immediate" : "soon",
+      urgency: below(receiptRate, 50) ? "immediate" : "soon",
       regulatory_ref: "Reg 36",
     });
-  if (pendingRate > 20)
+  if (above(pendingRate, 20))
     recommendations.push({
       rank: rank++,
       recommendation: `Clear the ${pending.length} pending expenses — establish a 48-hour approval target for all claims.`,
-      urgency: pendingRate > 40 ? "immediate" : "soon",
+      urgency: above(pendingRate, 40) ? "immediate" : "soon",
       regulatory_ref: "Reg 36",
     });
   if (uniqueApprovers < 2 && approvedOrPaid.length > 0)
@@ -369,14 +367,14 @@ export function computeHomeExpenseGovernance(
       urgency: "soon",
       regulatory_ref: "Reg 36",
     });
-  if (draftRate > 10)
+  if (above(draftRate, 10))
     recommendations.push({
       rank: rank++,
       recommendation: "Follow up on draft expenses — set a weekly reminder for staff to submit or discard stale drafts.",
       urgency: "planned",
       regulatory_ref: null,
     });
-  if (childLinkedRate < 25)
+  if (below(childLinkedRate, 25))
     recommendations.push({
       rank: rank++,
       recommendation: "Encourage staff to link child-related expenses to individual profiles for improved benefit-tracking and Reg 44 reporting.",
@@ -386,9 +384,9 @@ export function computeHomeExpenseGovernance(
 
   // ── Insights ──────────────────────────────────────────────────────────
   const insights: Insight[] = [];
-  if (receiptRate < 50 && nonDraft.length > 0)
+  if (below(receiptRate, 50) && nonDraft.length > 0)
     insights.push({
-      text: `Receipt compliance at ${receiptRate}% is significantly below the 90% audit threshold. This represents a material financial governance gap that would be flagged in any Reg 36 audit.`,
+      text: `Receipt compliance at ${formatRate(receiptRate)} is significantly below the 90% audit threshold. This represents a material financial governance gap that would be flagged in any Reg 36 audit.`,
       severity: "critical",
     });
   if (pendingAmount > 200)
@@ -396,9 +394,9 @@ export function computeHomeExpenseGovernance(
       text: `£${pendingAmount.toFixed(2)} in pending expenses awaiting approval. Delayed reimbursement can affect staff morale and indicates management oversight lag.`,
       severity: "warning",
     });
-  if (childLinkedRate >= 40 && childLinkedAmount > 0)
+  if (meets(childLinkedRate, 40) && childLinkedAmount > 0)
     insights.push({
-      text: `£${childLinkedAmount.toFixed(2)} in expenses directly benefit individual children (${childLinkedRate}% of claims). This demonstrates the home is actively investing in young people's experiences.`,
+      text: `£${childLinkedAmount.toFixed(2)} in expenses directly benefit individual children (${formatRate(childLinkedRate)} of claims). This demonstrates the home is actively investing in young people's experiences.`,
       severity: "positive",
     });
   if ((avgApprovalDays ?? 0) <= 2 && approvalDays.length >= 2)
@@ -415,9 +413,9 @@ export function computeHomeExpenseGovernance(
   // ── Headline ──────────────────────────────────────────────────────────
   let headline: string;
   if (expense_rating === "outstanding")
-    headline = `Strong financial governance: ${volume.total_expenses} expenses tracked with ${receiptRate}% receipt compliance and ${avgApprovalDays}-day average approval.`;
+    headline = `Strong financial governance: ${volume.total_expenses} expenses tracked with ${formatRate(receiptRate)} receipt compliance and ${avgApprovalDays}-day average approval.`;
   else if (expense_rating === "good")
-    headline = `Good financial management: ${volume.total_expenses} expenses processed with ${receiptRate}% receipt rate. Minor improvements available.`;
+    headline = `Good financial management: ${volume.total_expenses} expenses processed with ${formatRate(receiptRate)} receipt rate. Minor improvements available.`;
   else if (expense_rating === "adequate")
     headline = `Adequate expense governance: ${volume.total_expenses} claims tracked but ${concerns.length > 0 ? concerns.length + " areas need attention" : "some improvements needed"}.`;
   else

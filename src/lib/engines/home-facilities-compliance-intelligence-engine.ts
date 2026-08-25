@@ -5,6 +5,8 @@
 // CHR 2015 Reg 25: Premises. Health & Safety at Work Act. Fire Safety Order 2005.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface FireCheckInput {
@@ -82,14 +84,16 @@ export interface WaterProfile {
 
 export interface WindowProfile {
   total_checks: number;
-  restrictor_compliance_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  restrictor_compliance_rate: number | null;
   overdue_checks: number;
   above_ground_count: number;
 }
 
 export interface PestProfile {
   total_records: number;
-  follow_up_completion_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  follow_up_completion_rate: number | null;
   flags_total: number;
 }
 
@@ -120,10 +124,6 @@ export interface HomeFacilitiesComplianceResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function daysBetween(a: string, b: string): number {
   return Math.round(
@@ -202,18 +202,18 @@ export function computeHomeFacilitiesCompliance(
 
   // ── Fire profile ──────────────────────────────────────────────────────
   const firePassCount = fire_checks.filter((f) => f.result === "pass").length;
-  const firePassRate = pct(firePassCount, fire_checks.length);
+  const firePassRate = rate(firePassCount, fire_checks.length);
   const fireOverdue = fire_checks.filter(
     (f) => f.next_inspection_due && daysBetween(f.next_inspection_due, today) > 0,
   ).length;
   const fireTimely = fire_checks.filter(
     (f) => f.next_inspection_due && daysBetween(f.next_inspection_due, today) <= 0,
   ).length;
-  const fireTimelyRate = pct(fireTimely, fire_checks.length);
+  const fireTimelyRate = rate(fireTimely, fire_checks.length);
   const fireCompliant = fire_checks.filter(
     (f) => f.compliance_status === "compliant",
   ).length;
-  const fireCompliantRate = pct(fireCompliant, fire_checks.length);
+  const fireCompliantRate = rate(fireCompliant, fire_checks.length);
 
   const fire: FireProfile = {
     total_checks: fire_checks.length,
@@ -226,14 +226,14 @@ export function computeHomeFacilitiesCompliance(
   const waterCompliant = water_hygiene_records.filter(
     (w) => w.compliance === "compliant",
   ).length;
-  const waterComplianceRate = pct(waterCompliant, water_hygiene_records.length);
+  const waterComplianceRate = rate(waterCompliant, water_hygiene_records.length);
   const waterWithAction = water_hygiene_records.filter(
     (w) => w.action_required_present,
   );
   const waterActionCompleted = waterWithAction.filter(
     (w) => w.action_completed,
   ).length;
-  const waterActionCompletionRate = pct(
+  const waterActionCompletionRate = rate(
     waterActionCompleted,
     waterWithAction.length,
   );
@@ -253,14 +253,14 @@ export function computeHomeFacilitiesCompliance(
   const aboveGroundCompliant = aboveGround.filter(
     (w) => w.restrictor_present && w.restrictor_working && w.opening_compliance,
   ).length;
-  const restrictorComplianceRate = pct(aboveGroundCompliant, aboveGround.length);
+  const restrictorComplianceRate = rate(aboveGroundCompliant, aboveGround.length);
   const windowOverdue = window_checks.filter(
     (w) => w.next_due_date && daysBetween(w.next_due_date, today) > 0,
   ).length;
   const windowTimely = window_checks.filter(
     (w) => w.next_due_date && daysBetween(w.next_due_date, today) <= 0,
   ).length;
-  const windowTimelyRate = pct(windowTimely, window_checks.length);
+  const windowTimelyRate = rate(windowTimely, window_checks.length);
 
   const windows: WindowProfile = {
     total_checks: window_checks.length,
@@ -274,7 +274,7 @@ export function computeHomeFacilitiesCompliance(
   const pestFollowUpCompleted = pestNeedingFollowUp.filter(
     (p) => p.follow_up_completed,
   ).length;
-  const pestFollowUpRate = pct(pestFollowUpCompleted, pestNeedingFollowUp.length);
+  const pestFollowUpRate = rate(pestFollowUpCompleted, pestNeedingFollowUp.length);
   const pestFlagsTotal = pest_records.reduce(
     (sum, p) => sum + p.flags_count,
     0,
@@ -296,11 +296,11 @@ export function computeHomeFacilitiesCompliance(
   let mod1: number;
   if (fire_checks.length === 0) {
     mod1 = -3;
-  } else if (firePassRate >= 95) {
+  } else if (meets(firePassRate, 95)) {
     mod1 = 5;
-  } else if (firePassRate >= 85) {
+  } else if (meets(firePassRate, 85)) {
     mod1 = 3;
-  } else if (firePassRate >= 70) {
+  } else if (meets(firePassRate, 70)) {
     mod1 = 0;
   } else {
     mod1 = -5;
@@ -312,11 +312,11 @@ export function computeHomeFacilitiesCompliance(
   let mod2: number;
   if (fire_checks.length === 0) {
     mod2 = -2;
-  } else if (fireTimelyRate >= 95) {
+  } else if (meets(fireTimelyRate, 95)) {
     mod2 = 3;
-  } else if (fireTimelyRate >= 80) {
+  } else if (meets(fireTimelyRate, 80)) {
     mod2 = 1;
-  } else if (fireTimelyRate >= 60) {
+  } else if (meets(fireTimelyRate, 60)) {
     mod2 = 0;
   } else {
     mod2 = -3;
@@ -328,11 +328,11 @@ export function computeHomeFacilitiesCompliance(
   let mod3: number;
   if (water_hygiene_records.length === 0) {
     mod3 = -2;
-  } else if (waterComplianceRate >= 95) {
+  } else if (meets(waterComplianceRate, 95)) {
     mod3 = 4;
-  } else if (waterComplianceRate >= 85) {
+  } else if (meets(waterComplianceRate, 85)) {
     mod3 = 2;
-  } else if (waterComplianceRate >= 70) {
+  } else if (meets(waterComplianceRate, 70)) {
     mod3 = 0;
   } else {
     mod3 = -4;
@@ -344,11 +344,11 @@ export function computeHomeFacilitiesCompliance(
   let mod4: number;
   if (waterWithAction.length === 0) {
     mod4 = 2;
-  } else if (waterActionCompletionRate >= 90) {
+  } else if (meets(waterActionCompletionRate, 90)) {
     mod4 = 3;
-  } else if (waterActionCompletionRate >= 70) {
+  } else if (meets(waterActionCompletionRate, 70)) {
     mod4 = 1;
-  } else if (waterActionCompletionRate >= 50) {
+  } else if (meets(waterActionCompletionRate, 50)) {
     mod4 = 0;
   } else {
     mod4 = -3;
@@ -361,11 +361,11 @@ export function computeHomeFacilitiesCompliance(
   let mod5: number;
   if (aboveGround.length === 0) {
     mod5 = 1;
-  } else if (restrictorComplianceRate >= 100) {
+  } else if (meets(restrictorComplianceRate, 100)) {
     mod5 = 4;
-  } else if (restrictorComplianceRate >= 90) {
+  } else if (meets(restrictorComplianceRate, 90)) {
     mod5 = 2;
-  } else if (restrictorComplianceRate >= 70) {
+  } else if (meets(restrictorComplianceRate, 70)) {
     mod5 = 0;
   } else {
     mod5 = -4;
@@ -377,11 +377,11 @@ export function computeHomeFacilitiesCompliance(
   let mod6: number;
   if (window_checks.length === 0) {
     mod6 = 0;
-  } else if (windowTimelyRate >= 95) {
+  } else if (meets(windowTimelyRate, 95)) {
     mod6 = 3;
-  } else if (windowTimelyRate >= 80) {
+  } else if (meets(windowTimelyRate, 80)) {
     mod6 = 1;
-  } else if (windowTimelyRate >= 60) {
+  } else if (meets(windowTimelyRate, 60)) {
     mod6 = 0;
   } else {
     mod6 = -3;
@@ -393,11 +393,11 @@ export function computeHomeFacilitiesCompliance(
   let mod7: number;
   if (pestNeedingFollowUp.length === 0) {
     mod7 = 1;
-  } else if (pestFollowUpRate >= 90) {
+  } else if (meets(pestFollowUpRate, 90)) {
     mod7 = 3;
-  } else if (pestFollowUpRate >= 70) {
+  } else if (meets(pestFollowUpRate, 70)) {
     mod7 = 1;
-  } else if (pestFollowUpRate >= 50) {
+  } else if (meets(pestFollowUpRate, 50)) {
     mod7 = 0;
   } else {
     mod7 = -3;
@@ -434,16 +434,16 @@ export function computeHomeFacilitiesCompliance(
     fireDefects.length + waterWithAction.length + windowDefects.length;
   const totalAddressed =
     fireDefectsAddressed + waterActionCompleted + windowDefectsAddressed;
-  const defectRate = pct(totalAddressed, totalDefects);
+  const defectRate = rate(totalAddressed, totalDefects);
 
   let mod8: number;
   if (totalDefects === 0) {
     mod8 = 2;
-  } else if (defectRate >= 90) {
+  } else if (meets(defectRate, 90)) {
     mod8 = 3;
-  } else if (defectRate >= 70) {
+  } else if (meets(defectRate, 70)) {
     mod8 = 1;
-  } else if (defectRate >= 50) {
+  } else if (meets(defectRate, 50)) {
     mod8 = 0;
   } else {
     mod8 = -3;
@@ -458,27 +458,27 @@ export function computeHomeFacilitiesCompliance(
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
 
-  if (fire_checks.length > 0 && firePassRate >= 95)
+  if (fire_checks.length > 0 && meets(firePassRate, 95))
     strengths.push(
-      `${firePassRate}% fire equipment pass rate — excellent maintenance standards.`,
+      `${formatRate(firePassRate)} fire equipment pass rate — excellent maintenance standards.`,
     );
   if (fire_checks.length > 0 && fireOverdue === 0)
     strengths.push(
       "All fire inspections are within their due dates — no overdue equipment.",
     );
-  if (water_hygiene_records.length > 0 && waterComplianceRate >= 95)
+  if (water_hygiene_records.length > 0 && meets(waterComplianceRate, 95))
     strengths.push(
-      `${waterComplianceRate}% water hygiene compliance rate — legionella and temperature controls effective.`,
+      `${formatRate(waterComplianceRate)} water hygiene compliance rate — legionella and temperature controls effective.`,
     );
-  if (waterWithAction.length > 0 && waterActionCompletionRate >= 90)
+  if (waterWithAction.length > 0 && meets(waterActionCompletionRate, 90))
     strengths.push(
-      `${waterActionCompletionRate}% of water hygiene actions completed — responsive follow-through.`,
+      `${formatRate(waterActionCompletionRate)} of water hygiene actions completed — responsive follow-through.`,
     );
   if (waterWithAction.length === 0 && water_hygiene_records.length > 0)
     strengths.push(
       "No water hygiene actions required — all checks within parameters.",
     );
-  if (aboveGround.length > 0 && restrictorComplianceRate >= 100)
+  if (aboveGround.length > 0 && meets(restrictorComplianceRate, 100))
     strengths.push(
       "100% window restrictor compliance on above-ground floors — child safety maximised.",
     );
@@ -486,17 +486,17 @@ export function computeHomeFacilitiesCompliance(
     strengths.push(
       "All window checks within schedule — no overdue inspections.",
     );
-  if (pestNeedingFollowUp.length > 0 && pestFollowUpRate >= 90)
+  if (pestNeedingFollowUp.length > 0 && meets(pestFollowUpRate, 90))
     strengths.push(
-      `${pestFollowUpRate}% pest control follow-ups completed — proactive environmental management.`,
+      `${formatRate(pestFollowUpRate)} pest control follow-ups completed — proactive environmental management.`,
     );
   if (pestNeedingFollowUp.length === 0 && pest_records.length > 0)
     strengths.push(
       "No pest control follow-ups required — effective prevention programme.",
     );
-  if (totalDefects > 0 && defectRate >= 90)
+  if (totalDefects > 0 && meets(defectRate, 90))
     strengths.push(
-      `${defectRate}% of identified defects addressed across all domains — strong defect management.`,
+      `${formatRate(defectRate)} of identified defects addressed across all domains — strong defect management.`,
     );
   if (totalDefects === 0)
     strengths.push(
@@ -510,9 +510,9 @@ export function computeHomeFacilitiesCompliance(
     concerns.push(
       "No fire equipment checks recorded — fire safety is a statutory requirement under the Fire Safety Order 2005.",
     );
-  if (fire_checks.length > 0 && firePassRate < 70)
+  if (fire_checks.length > 0 && below(firePassRate, 70))
     concerns.push(
-      `Only ${firePassRate}% fire equipment pass rate — significant equipment failures detected.`,
+      `Only ${formatRate(firePassRate)} fire equipment pass rate — significant equipment failures detected.`,
     );
   if (fireOverdue > 0)
     concerns.push(
@@ -522,33 +522,33 @@ export function computeHomeFacilitiesCompliance(
     concerns.push(
       "No water hygiene records — legionella risk assessment and monitoring are statutory requirements.",
     );
-  if (water_hygiene_records.length > 0 && waterComplianceRate < 70)
+  if (water_hygiene_records.length > 0 && below(waterComplianceRate, 70))
     concerns.push(
-      `Only ${waterComplianceRate}% water hygiene compliance — temperature or quality failures present.`,
+      `Only ${formatRate(waterComplianceRate)} water hygiene compliance — temperature or quality failures present.`,
     );
-  if (waterWithAction.length > 0 && waterActionCompletionRate < 50)
+  if (waterWithAction.length > 0 && below(waterActionCompletionRate, 50))
     concerns.push(
-      `Only ${waterActionCompletionRate}% of water hygiene actions completed — remedial work stalling.`,
+      `Only ${formatRate(waterActionCompletionRate)} of water hygiene actions completed — remedial work stalling.`,
     );
-  if (aboveGround.length > 0 && restrictorComplianceRate < 70)
+  if (aboveGround.length > 0 && below(restrictorComplianceRate, 70))
     concerns.push(
-      `Only ${restrictorComplianceRate}% window restrictor compliance on upper floors — child fall risk.`,
+      `Only ${formatRate(restrictorComplianceRate)} window restrictor compliance on upper floors — child fall risk.`,
     );
   if (windowOverdue > 0)
     concerns.push(
       `${windowOverdue} window check(s) overdue — restrictor integrity unknown.`,
     );
-  if (pestNeedingFollowUp.length > 0 && pestFollowUpRate < 50)
+  if (pestNeedingFollowUp.length > 0 && below(pestFollowUpRate, 50))
     concerns.push(
-      `Only ${pestFollowUpRate}% pest control follow-ups completed — infestation risk persists.`,
+      `Only ${formatRate(pestFollowUpRate)} pest control follow-ups completed — infestation risk persists.`,
     );
   if (pestFlagsTotal > 0)
     concerns.push(
       `${pestFlagsTotal} pest control flag(s) raised — environmental health concerns noted.`,
     );
-  if (totalDefects > 0 && defectRate < 50)
+  if (totalDefects > 0 && below(defectRate, 50))
     concerns.push(
-      `Only ${defectRate}% of defects addressed — systemic defect management failures across fire, water, and window domains.`,
+      `Only ${formatRate(defectRate)} of defects addressed — systemic defect management failures across fire, water, and window domains.`,
     );
 
   // ── Recommendations ───────────────────────────────────────────────────
@@ -572,7 +572,7 @@ export function computeHomeFacilitiesCompliance(
       regulatory_ref: "Fire Safety Order 2005",
     });
 
-  if (fire_checks.length > 0 && firePassRate < 70)
+  if (fire_checks.length > 0 && below(firePassRate, 70))
     recommendations.push({
       rank: rank++,
       recommendation:
@@ -590,7 +590,7 @@ export function computeHomeFacilitiesCompliance(
       regulatory_ref: "HSE L8 / Reg 25",
     });
 
-  if (waterWithAction.length > 0 && waterActionCompletionRate < 50)
+  if (waterWithAction.length > 0 && below(waterActionCompletionRate, 50))
     recommendations.push({
       rank: rank++,
       recommendation:
@@ -599,7 +599,7 @@ export function computeHomeFacilitiesCompliance(
       regulatory_ref: "HSE L8 / Reg 25",
     });
 
-  if (aboveGround.length > 0 && restrictorComplianceRate < 70)
+  if (aboveGround.length > 0 && below(restrictorComplianceRate, 70))
     recommendations.push({
       rank: rank++,
       recommendation:
@@ -616,7 +616,7 @@ export function computeHomeFacilitiesCompliance(
       regulatory_ref: "Reg 25",
     });
 
-  if (pestNeedingFollowUp.length > 0 && pestFollowUpRate < 50)
+  if (pestNeedingFollowUp.length > 0 && below(pestFollowUpRate, 50))
     recommendations.push({
       rank: rank++,
       recommendation:
@@ -625,7 +625,7 @@ export function computeHomeFacilitiesCompliance(
       regulatory_ref: "Reg 25 / Environmental Health",
     });
 
-  if (totalDefects > 0 && defectRate < 70)
+  if (totalDefects > 0 && below(defectRate, 70))
     recommendations.push({
       rank: rank++,
       recommendation:
@@ -639,11 +639,11 @@ export function computeHomeFacilitiesCompliance(
 
   if (
     fire_checks.length > 0 &&
-    firePassRate >= 95 &&
+    meets(firePassRate, 95) &&
     fireOverdue === 0 &&
     water_hygiene_records.length > 0 &&
-    waterComplianceRate >= 95 &&
-    (aboveGround.length === 0 || restrictorComplianceRate >= 100) &&
+    meets(waterComplianceRate, 95) &&
+    (aboveGround.length === 0 || meets(restrictorComplianceRate, 100)) &&
     windowOverdue === 0
   ) {
     insights.push({
@@ -664,27 +664,27 @@ export function computeHomeFacilitiesCompliance(
     });
   }
 
-  if (aboveGround.length > 0 && restrictorComplianceRate < 70) {
+  if (aboveGround.length > 0 && below(restrictorComplianceRate, 70)) {
     insights.push({
-      text: `Only ${restrictorComplianceRate}% of above-ground windows meet restrictor compliance. Window falls are a serious safeguarding risk — Ofsted expects 100% compliance with the 100mm opening rule on all floors above ground.`,
+      text: `Only ${formatRate(restrictorComplianceRate)} of above-ground windows meet restrictor compliance. Window falls are a serious safeguarding risk — Ofsted expects 100% compliance with the 100mm opening rule on all floors above ground.`,
       severity: "critical",
     });
   }
 
-  if (waterWithAction.length > 0 && waterActionCompletionRate < 50) {
+  if (waterWithAction.length > 0 && below(waterActionCompletionRate, 50)) {
     insights.push({
-      text: `Only ${waterActionCompletionRate}% of water hygiene actions completed. Legionella is a serious health risk — incomplete remedials suggest the risk assessment is not being actively managed.`,
+      text: `Only ${formatRate(waterActionCompletionRate)} of water hygiene actions completed. Legionella is a serious health risk — incomplete remedials suggest the risk assessment is not being actively managed.`,
       severity: "warning",
     });
   }
 
   if (
     water_hygiene_records.length > 0 &&
-    waterComplianceRate >= 95 &&
-    (waterWithAction.length === 0 || waterActionCompletionRate >= 90)
+    meets(waterComplianceRate, 95) &&
+    (waterWithAction.length === 0 || meets(waterActionCompletionRate, 90))
   ) {
     insights.push({
-      text: `Water hygiene compliance at ${waterComplianceRate}% with actions well-managed. This demonstrates effective legionella risk management that meets HSE L8 guidance.`,
+      text: `Water hygiene compliance at ${formatRate(waterComplianceRate)} with actions well-managed. This demonstrates effective legionella risk management that meets HSE L8 guidance.`,
       severity: "positive",
     });
   }
@@ -696,9 +696,9 @@ export function computeHomeFacilitiesCompliance(
     });
   }
 
-  if (totalDefects > 0 && defectRate < 50) {
+  if (totalDefects > 0 && below(defectRate, 50)) {
     insights.push({
-      text: `Only ${defectRate}% of defects addressed across fire, water, and window checks. Systematic failure to close out defects indicates premises management is not being prioritised — Ofsted will note this as a leadership concern.`,
+      text: `Only ${formatRate(defectRate)} of defects addressed across fire, water, and window checks. Systematic failure to close out defects indicates premises management is not being prioritised — Ofsted will note this as a leadership concern.`,
       severity: "critical",
     });
   }

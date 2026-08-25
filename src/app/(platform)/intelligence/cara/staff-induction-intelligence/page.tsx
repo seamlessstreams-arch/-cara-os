@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate } from "@/lib/metrics/rate";
 import type {
   StaffInductionOnboardingResult,
   InductionOnboardingRating,
@@ -136,7 +137,7 @@ export default function StaffInductionIntelligencePage() {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {[
           { label: "Avg module completion", value: `${d.average_module_completion}%`, alert: d.average_module_completion < 80 },
-          { label: "Shadowing competency rate", value: `${d.shadowing_competency_rate}%`, alert: (d.shadowing_competency_rate ?? 0) < 80 },
+          { label: "Shadowing competency rate", value: `${formatRate(d.shadowing_competency_rate)}`, alert: (d.shadowing_competency_rate ?? 0) < 80 },
           { label: "Total inductions", value: d.total_inductions },
         ].map((m) => (
           <div key={m.label} className={`rounded-lg border p-4 ${m.alert ? "border-amber-300 bg-amber-50" : "border-slate-200 bg-white"}`}>

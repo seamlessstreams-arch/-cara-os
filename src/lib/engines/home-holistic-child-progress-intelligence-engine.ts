@@ -7,6 +7,8 @@
 // Pure deterministic engine. CHR 2015 Reg 5/7/8/10/33/34.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 /* ── Input types ──────────────────────────────────────────────────────────── */
 
 export interface OutcomeReviewInput {
@@ -94,10 +96,6 @@ export interface HolisticChildProgressResult {
 }
 
 /* ── Helpers ──────────────────────────────────────────────────────────────── */
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -200,16 +198,16 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
   // Outcome improvement rate: % of reviews where score > previous_score (only where previous exists)
   const reviewsWithPrevious = outcome_reviews.filter(r => r.previous_score !== null);
   const improved = reviewsWithPrevious.filter(r => r.score > r.previous_score!);
-  const outcomeImprovementRate = pct(improved.length, reviewsWithPrevious.length);
+  const outcomeImprovementRate = rate(improved.length, reviewsWithPrevious.length);
 
   // Outcome child voice rate
-  const outcomeChildVoiceRate = pct(
+  const outcomeChildVoiceRate = rate(
     outcome_reviews.filter(r => r.has_child_voice).length,
     outcome_reviews.length,
   );
 
   // Education engagement rate
-  const educationEngagementRate = pct(
+  const educationEngagementRate = rate(
     education_records.filter(r => r.is_engaged).length,
     education_records.length,
   );
@@ -220,7 +218,7 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
     : Math.round(education_records.reduce((sum, r) => sum + r.attendance_rate, 0) / education_records.length);
 
   // Key work completion rate
-  const keyWorkCompletionRate = pct(
+  const keyWorkCompletionRate = rate(
     key_work_sessions.filter(s => s.completed).length,
     key_work_sessions.length,
   );
@@ -228,7 +226,7 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
   // Key work goal progress rate
   const totalGoals = key_work_sessions.reduce((sum, s) => sum + s.goals_total, 0);
   const goalsProgressed = key_work_sessions.reduce((sum, s) => sum + s.goals_progressed, 0);
-  const keyWorkGoalProgressRate = pct(goalsProgressed, totalGoals);
+  const keyWorkGoalProgressRate = rate(goalsProgressed, totalGoals);
 
   // Independence readiness average
   const independenceReadinessAverage = independence_records.length === 0
@@ -242,18 +240,21 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
 
   // Child voice composite rate: average child voice across data types that have it
   // Sources: outcome reviews (has_child_voice), key work sessions (has_child_voice), independence records (has_child_view)
+  // Each push is guarded by its own source population, so rate() is never
+  // null here — the `!` reflects that, not a blind assertion.
   const voiceSources: number[] = [];
   if (outcome_reviews.length > 0) {
-    voiceSources.push(pct(outcome_reviews.filter(r => r.has_child_voice).length, outcome_reviews.length));
+    voiceSources.push(rate(outcome_reviews.filter(r => r.has_child_voice).length, outcome_reviews.length)!);
   }
   if (key_work_sessions.length > 0) {
-    voiceSources.push(pct(key_work_sessions.filter(s => s.has_child_voice).length, key_work_sessions.length));
+    voiceSources.push(rate(key_work_sessions.filter(s => s.has_child_voice).length, key_work_sessions.length)!);
   }
   if (independence_records.length > 0) {
-    voiceSources.push(pct(independence_records.filter(r => r.has_child_view).length, independence_records.length));
+    voiceSources.push(rate(independence_records.filter(r => r.has_child_view).length, independence_records.length)!);
   }
+  // No source recorded any child-voice data at all — unmeasured, not 0%.
   const childVoiceCompositeRate = voiceSources.length === 0
-    ? 0
+    ? null
     : Math.round(voiceSources.reduce((a, b) => a + b, 0) / voiceSources.length);
 
   // ── Scoring ──────────────────────────────────────────────────────────────
@@ -261,28 +262,28 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
   let score = 52;
 
   // Outcome improvement bonuses
-  if (outcomeImprovementRate >= 70) score += 4;
-  else if (outcomeImprovementRate >= 50) score += 2;
+  if (meets(outcomeImprovementRate, 70)) score += 4;
+  else if (meets(outcomeImprovementRate, 50)) score += 2;
 
   // Outcome child voice bonuses
-  if (outcomeChildVoiceRate >= 90) score += 3;
-  else if (outcomeChildVoiceRate >= 70) score += 1;
+  if (meets(outcomeChildVoiceRate, 90)) score += 3;
+  else if (meets(outcomeChildVoiceRate, 70)) score += 1;
 
   // Education engagement bonuses
-  if (educationEngagementRate >= 90) score += 4;
-  else if (educationEngagementRate >= 75) score += 2;
+  if (meets(educationEngagementRate, 90)) score += 4;
+  else if (meets(educationEngagementRate, 75)) score += 2;
 
   // Average attendance bonuses
   if (averageAttendance >= 95) score += 3;
   else if (averageAttendance >= 85) score += 1;
 
   // Key work completion bonuses
-  if (keyWorkCompletionRate >= 90) score += 4;
-  else if (keyWorkCompletionRate >= 75) score += 2;
+  if (meets(keyWorkCompletionRate, 90)) score += 4;
+  else if (meets(keyWorkCompletionRate, 75)) score += 2;
 
   // Key work goal progress bonuses
-  if (keyWorkGoalProgressRate >= 80) score += 3;
-  else if (keyWorkGoalProgressRate >= 60) score += 1;
+  if (meets(keyWorkGoalProgressRate, 80)) score += 3;
+  else if (meets(keyWorkGoalProgressRate, 60)) score += 1;
 
   // Independence readiness bonuses
   if (independenceReadinessAverage >= 70) score += 3;
@@ -293,13 +294,13 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
   else if (domainCoverage >= 3) score += 1;
 
   // Child voice composite bonuses
-  if (childVoiceCompositeRate >= 90) score += 2;
-  else if (childVoiceCompositeRate >= 70) score += 1;
+  if (meets(childVoiceCompositeRate, 90)) score += 2;
+  else if (meets(childVoiceCompositeRate, 70)) score += 1;
 
   // Penalties
-  if (educationEngagementRate < 50) score -= 5;
+  if (below(educationEngagementRate, 50)) score -= 5;
   if (averageAttendance < 70) score -= 5;
-  if (keyWorkCompletionRate < 50) score -= 5;
+  if (below(keyWorkCompletionRate, 50)) score -= 5;
   if (outcomeImprovementRate === 0 && outcome_reviews.length > 0) score -= 3;
 
   score = clamp(score, 0, 100);
@@ -310,22 +311,22 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
 
   const strengths: string[] = [];
 
-  if (outcomeImprovementRate >= 70) {
-    strengths.push(`Strong outcome improvement — ${outcomeImprovementRate}% of reviews show positive progress.`);
-  } else if (outcomeImprovementRate >= 50) {
-    strengths.push(`Majority of outcome reviews show improvement (${outcomeImprovementRate}%).`);
+  if (meets(outcomeImprovementRate, 70)) {
+    strengths.push(`Strong outcome improvement — ${formatRate(outcomeImprovementRate)} of reviews show positive progress.`);
+  } else if (meets(outcomeImprovementRate, 50)) {
+    strengths.push(`Majority of outcome reviews show improvement (${formatRate(outcomeImprovementRate)}).`);
   }
 
-  if (outcomeChildVoiceRate >= 90) {
-    strengths.push(`Excellent child voice capture in outcome reviews (${outcomeChildVoiceRate}%).`);
-  } else if (outcomeChildVoiceRate >= 70) {
-    strengths.push(`Good child voice capture in outcome reviews (${outcomeChildVoiceRate}%).`);
+  if (meets(outcomeChildVoiceRate, 90)) {
+    strengths.push(`Excellent child voice capture in outcome reviews (${formatRate(outcomeChildVoiceRate)}).`);
+  } else if (meets(outcomeChildVoiceRate, 70)) {
+    strengths.push(`Good child voice capture in outcome reviews (${formatRate(outcomeChildVoiceRate)}).`);
   }
 
-  if (educationEngagementRate >= 90) {
-    strengths.push(`Excellent education engagement across records (${educationEngagementRate}%).`);
-  } else if (educationEngagementRate >= 75) {
-    strengths.push(`Good education engagement rate (${educationEngagementRate}%).`);
+  if (meets(educationEngagementRate, 90)) {
+    strengths.push(`Excellent education engagement across records (${formatRate(educationEngagementRate)}).`);
+  } else if (meets(educationEngagementRate, 75)) {
+    strengths.push(`Good education engagement rate (${formatRate(educationEngagementRate)}).`);
   }
 
   if (averageAttendance >= 95) {
@@ -334,16 +335,16 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
     strengths.push(`Good average attendance at ${averageAttendance}%.`);
   }
 
-  if (keyWorkCompletionRate >= 90) {
-    strengths.push(`Excellent key work session completion (${keyWorkCompletionRate}%).`);
-  } else if (keyWorkCompletionRate >= 75) {
-    strengths.push(`Good key work session completion (${keyWorkCompletionRate}%).`);
+  if (meets(keyWorkCompletionRate, 90)) {
+    strengths.push(`Excellent key work session completion (${formatRate(keyWorkCompletionRate)}).`);
+  } else if (meets(keyWorkCompletionRate, 75)) {
+    strengths.push(`Good key work session completion (${formatRate(keyWorkCompletionRate)}).`);
   }
 
-  if (keyWorkGoalProgressRate >= 80) {
-    strengths.push(`Strong goal progress in key working — ${keyWorkGoalProgressRate}% of goals progressing.`);
-  } else if (keyWorkGoalProgressRate >= 60) {
-    strengths.push(`Majority of key working goals progressing (${keyWorkGoalProgressRate}%).`);
+  if (meets(keyWorkGoalProgressRate, 80)) {
+    strengths.push(`Strong goal progress in key working — ${formatRate(keyWorkGoalProgressRate)} of goals progressing.`);
+  } else if (meets(keyWorkGoalProgressRate, 60)) {
+    strengths.push(`Majority of key working goals progressing (${formatRate(keyWorkGoalProgressRate)}).`);
   }
 
   if (independenceReadinessAverage >= 70) {
@@ -356,9 +357,9 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
     strengths.push(`Broad domain coverage with ${domainCoverage} domains assessed in outcome reviews.`);
   }
 
-  if (childVoiceCompositeRate >= 90) {
+  if (meets(childVoiceCompositeRate, 90)) {
     strengths.push(`Outstanding composite child voice rate (${childVoiceCompositeRate}%) across all data types.`);
-  } else if (childVoiceCompositeRate >= 70) {
+  } else if (meets(childVoiceCompositeRate, 70)) {
     strengths.push(`Good composite child voice rate (${childVoiceCompositeRate}%) across data types.`);
   }
 
@@ -368,14 +369,14 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
 
   if (outcome_reviews.length > 0 && outcomeImprovementRate === 0) {
     concerns.push("No outcome reviews show improvement — children's progress is stagnant or declining.");
-  } else if (outcomeImprovementRate > 0 && outcomeImprovementRate < 50) {
-    concerns.push(`Low outcome improvement rate (${outcomeImprovementRate}%) — most reviews do not show progress.`);
+  } else if (above(outcomeImprovementRate, 0) && below(outcomeImprovementRate, 50)) {
+    concerns.push(`Low outcome improvement rate (${formatRate(outcomeImprovementRate)}) — most reviews do not show progress.`);
   }
 
-  if (educationEngagementRate < 50) {
-    concerns.push(`Critical: education engagement below 50% (${educationEngagementRate}%) — children are not engaging with learning.`);
-  } else if (educationEngagementRate < 75) {
-    concerns.push(`Education engagement needs improvement (${educationEngagementRate}%).`);
+  if (below(educationEngagementRate, 50)) {
+    concerns.push(`Critical: education engagement below 50% (${formatRate(educationEngagementRate)}) — children are not engaging with learning.`);
+  } else if (below(educationEngagementRate, 75)) {
+    concerns.push(`Education engagement needs improvement (${formatRate(educationEngagementRate)}).`);
   }
 
   if (averageAttendance < 70) {
@@ -384,14 +385,14 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
     concerns.push(`Average attendance below target (${averageAttendance}%) — risk of educational disengagement.`);
   }
 
-  if (keyWorkCompletionRate < 50) {
-    concerns.push(`Critical: key work session completion below 50% (${keyWorkCompletionRate}%) — children lack consistent keyworker support.`);
-  } else if (keyWorkCompletionRate < 75) {
-    concerns.push(`Key work completion needs improvement (${keyWorkCompletionRate}%).`);
+  if (below(keyWorkCompletionRate, 50)) {
+    concerns.push(`Critical: key work session completion below 50% (${formatRate(keyWorkCompletionRate)}) — children lack consistent keyworker support.`);
+  } else if (below(keyWorkCompletionRate, 75)) {
+    concerns.push(`Key work completion needs improvement (${formatRate(keyWorkCompletionRate)}).`);
   }
 
-  if (keyWorkGoalProgressRate < 60 && totalGoals > 0) {
-    concerns.push(`Low goal progress rate (${keyWorkGoalProgressRate}%) — key working goals are not translating into outcomes.`);
+  if (below(keyWorkGoalProgressRate, 60) && totalGoals > 0) {
+    concerns.push(`Low goal progress rate (${formatRate(keyWorkGoalProgressRate)}) — key working goals are not translating into outcomes.`);
   }
 
   if (independenceReadinessAverage < 50 && independence_records.length > 0) {
@@ -414,7 +415,7 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
     concerns.push("No independence records — cannot assess children's readiness for adulthood.");
   }
 
-  if (childVoiceCompositeRate < 50 && totalRecords > 0) {
+  if (below(childVoiceCompositeRate, 50) && totalRecords > 0) {
     concerns.push(`Low composite child voice rate (${childVoiceCompositeRate}%) — children's views are insufficiently captured.`);
   }
 
@@ -425,9 +426,9 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
   // Evidence gaps
   if (outcome_reviews.length > 0) {
     const withoutEvidence = outcome_reviews.filter(r => !r.has_evidence).length;
-    const evidenceRate = pct(outcome_reviews.length - withoutEvidence, outcome_reviews.length);
-    if (evidenceRate < 70) {
-      concerns.push(`Only ${evidenceRate}% of outcome reviews have supporting evidence — weakens regulatory evidence base.`);
+    const evidenceRate = rate(outcome_reviews.length - withoutEvidence, outcome_reviews.length);
+    if (below(evidenceRate, 70)) {
+      concerns.push(`Only ${formatRate(evidenceRate)} of outcome reviews have supporting evidence — weakens regulatory evidence base.`);
     }
   }
 
@@ -436,7 +437,7 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
   const recommendations: { rank: number; recommendation: string; urgency: "immediate" | "soon" | "planned"; regulatory_ref?: string }[] = [];
   let rank = 0;
 
-  if (educationEngagementRate < 50) {
+  if (below(educationEngagementRate, 50)) {
     recommendations.push({ rank: ++rank, recommendation: "Urgently review education engagement strategy — liaise with Virtual School Head to develop individual support plans.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 8" });
   }
 
@@ -444,7 +445,7 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
     recommendations.push({ rank: ++rank, recommendation: "Implement attendance improvement plan — consider barriers to attendance and coordinate with school and social worker.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 8" });
   }
 
-  if (keyWorkCompletionRate < 50) {
+  if (below(keyWorkCompletionRate, 50)) {
     recommendations.push({ rank: ++rank, recommendation: "Review key working capacity and scheduling — ensure each child receives consistent weekly keyworker time.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 10" });
   }
 
@@ -468,7 +469,7 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
     recommendations.push({ rank: ++rank, recommendation: "Begin independence skills assessments for all children, particularly those approaching transition age.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 7" });
   }
 
-  if (childVoiceCompositeRate < 50 && totalRecords > 0) {
+  if (below(childVoiceCompositeRate, 50) && totalRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Strengthen child voice capture across all recording types — ensure children's views are routinely sought and documented.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 7" });
   }
 
@@ -476,11 +477,11 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
     recommendations.push({ rank: ++rank, recommendation: "Expand outcome reviews to cover all seven life domains (health, education, emotional, social, independence, identity, family).", urgency: "soon", regulatory_ref: "CHR 2015 Reg 5" });
   }
 
-  if (outcomeImprovementRate > 0 && outcomeImprovementRate < 50) {
+  if (above(outcomeImprovementRate, 0) && below(outcomeImprovementRate, 50)) {
     recommendations.push({ rank: ++rank, recommendation: "Review and refresh outcome targets — ensure they are realistic, measurable, and aligned to each child's care plan.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 5" });
   }
 
-  if (educationEngagementRate >= 50 && educationEngagementRate < 75) {
+  if (meets(educationEngagementRate, 50) && below(educationEngagementRate, 75)) {
     recommendations.push({ rank: ++rank, recommendation: "Develop targeted education engagement strategies for disengaged children in partnership with schools.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 8" });
   }
 
@@ -488,11 +489,11 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
     recommendations.push({ rank: ++rank, recommendation: "Review attendance patterns and address barriers for children below 90% attendance.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 8" });
   }
 
-  if (keyWorkCompletionRate >= 50 && keyWorkCompletionRate < 75) {
+  if (meets(keyWorkCompletionRate, 50) && below(keyWorkCompletionRate, 75)) {
     recommendations.push({ rank: ++rank, recommendation: "Improve key work session completion through better scheduling and protected staff time.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 10" });
   }
 
-  if (keyWorkGoalProgressRate < 60 && totalGoals > 0 && keyWorkGoalProgressRate > 0) {
+  if (below(keyWorkGoalProgressRate, 60) && totalGoals > 0 && above(keyWorkGoalProgressRate, 0)) {
     recommendations.push({ rank: ++rank, recommendation: "Review key working goals — ensure they are SMART and linked to care plan objectives.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 10" });
   }
 
@@ -501,8 +502,8 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
   }
 
   if (outcome_reviews.length > 0) {
-    const evidenceRate = pct(outcome_reviews.filter(r => r.has_evidence).length, outcome_reviews.length);
-    if (evidenceRate < 70) {
+    const evidenceRate = rate(outcome_reviews.filter(r => r.has_evidence).length, outcome_reviews.length);
+    if (below(evidenceRate, 70)) {
       recommendations.push({ rank: ++rank, recommendation: "Improve evidence attachment to outcome reviews — each review should include supporting documentation.", urgency: "planned", regulatory_ref: "CHR 2015 Reg 33" });
     }
   }
@@ -515,19 +516,19 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
 
   const insights: { text: string; severity: "critical" | "warning" | "positive" }[] = [];
 
-  if (educationEngagementRate < 50) {
-    insights.push({ text: `Education engagement critically low at ${educationEngagementRate}% — immediate intervention required.`, severity: "critical" });
+  if (below(educationEngagementRate, 50)) {
+    insights.push({ text: `Education engagement critically low at ${formatRate(educationEngagementRate)} — immediate intervention required.`, severity: "critical" });
   }
   if (averageAttendance < 70) {
     insights.push({ text: `Average attendance critically low at ${averageAttendance}% — persistent absence puts children at risk.`, severity: "critical" });
   }
-  if (keyWorkCompletionRate < 50) {
-    insights.push({ text: `Key work completion critically low at ${keyWorkCompletionRate}% — children lack consistent keyworker support.`, severity: "critical" });
+  if (below(keyWorkCompletionRate, 50)) {
+    insights.push({ text: `Key work completion critically low at ${formatRate(keyWorkCompletionRate)} — children lack consistent keyworker support.`, severity: "critical" });
   }
   if (outcomeImprovementRate === 0 && outcome_reviews.length > 0) {
     insights.push({ text: "No children showing improvement in outcome reviews — fundamental concern for Ofsted.", severity: "critical" });
   }
-  if (childVoiceCompositeRate < 50 && totalRecords > 0) {
+  if (below(childVoiceCompositeRate, 50) && totalRecords > 0) {
     insights.push({ text: `Child voice composite rate only ${childVoiceCompositeRate}% — Ofsted expects children's views to inform practice.`, severity: "critical" });
   }
 
@@ -546,19 +547,19 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
   }
 
   // Warning-level
-  if (educationEngagementRate >= 50 && educationEngagementRate < 75) {
-    insights.push({ text: `Education engagement at ${educationEngagementRate}% — below target for good outcomes.`, severity: "warning" });
+  if (meets(educationEngagementRate, 50) && below(educationEngagementRate, 75)) {
+    insights.push({ text: `Education engagement at ${formatRate(educationEngagementRate)} — below target for good outcomes.`, severity: "warning" });
   }
   if (averageAttendance >= 70 && averageAttendance < 85) {
     insights.push({ text: `Average attendance at ${averageAttendance}% — below expected threshold.`, severity: "warning" });
   }
-  if (keyWorkCompletionRate >= 50 && keyWorkCompletionRate < 75) {
-    insights.push({ text: `Key work completion at ${keyWorkCompletionRate}% — improvement needed for consistent support.`, severity: "warning" });
+  if (meets(keyWorkCompletionRate, 50) && below(keyWorkCompletionRate, 75)) {
+    insights.push({ text: `Key work completion at ${formatRate(keyWorkCompletionRate)} — improvement needed for consistent support.`, severity: "warning" });
   }
-  if (outcomeImprovementRate > 0 && outcomeImprovementRate < 50) {
-    insights.push({ text: `Outcome improvement rate at ${outcomeImprovementRate}% — majority of reviews not showing progress.`, severity: "warning" });
+  if (above(outcomeImprovementRate, 0) && below(outcomeImprovementRate, 50)) {
+    insights.push({ text: `Outcome improvement rate at ${formatRate(outcomeImprovementRate)} — majority of reviews not showing progress.`, severity: "warning" });
   }
-  if (childVoiceCompositeRate >= 50 && childVoiceCompositeRate < 70) {
+  if (meets(childVoiceCompositeRate, 50) && below(childVoiceCompositeRate, 70)) {
     insights.push({ text: `Child voice composite at ${childVoiceCompositeRate}% — needs strengthening across all data types.`, severity: "warning" });
   }
   if (domainCoverage < 3 && outcome_reviews.length > 0) {
@@ -572,13 +573,13 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
   if (rating === "outstanding") {
     insights.push({ text: "Holistic progress rated outstanding — multi-domain outcomes are consistently strong.", severity: "positive" });
   }
-  if (outcomeImprovementRate >= 70) {
-    insights.push({ text: `${outcomeImprovementRate}% of outcome reviews show improvement — strong evidence of children making progress.`, severity: "positive" });
+  if (meets(outcomeImprovementRate, 70)) {
+    insights.push({ text: `${formatRate(outcomeImprovementRate)} of outcome reviews show improvement — strong evidence of children making progress.`, severity: "positive" });
   }
-  if (childVoiceCompositeRate >= 90) {
+  if (meets(childVoiceCompositeRate, 90)) {
     insights.push({ text: `Composite child voice rate at ${childVoiceCompositeRate}% — children's views are central to practice.`, severity: "positive" });
   }
-  if (keyWorkCompletionRate >= 90 && keyWorkGoalProgressRate >= 80) {
+  if (meets(keyWorkCompletionRate, 90) && meets(keyWorkGoalProgressRate, 80)) {
     insights.push({ text: "Key working is highly effective — both completion and goal progress are strong.", severity: "positive" });
   }
   if (averageAttendance >= 95) {
@@ -587,8 +588,8 @@ export function computeHolisticChildProgress(input: HolisticChildProgressInput):
   if (domainCoverage >= 5) {
     insights.push({ text: `${domainCoverage} outcome domains covered — comprehensive holistic assessment in place.`, severity: "positive" });
   }
-  if (educationEngagementRate >= 90) {
-    insights.push({ text: `Education engagement excellent at ${educationEngagementRate}% — children are actively learning.`, severity: "positive" });
+  if (meets(educationEngagementRate, 90)) {
+    insights.push({ text: `Education engagement excellent at ${formatRate(educationEngagementRate)} — children are actively learning.`, severity: "positive" });
   }
 
   return {

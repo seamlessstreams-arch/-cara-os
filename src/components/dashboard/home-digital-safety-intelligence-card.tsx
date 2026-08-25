@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -97,7 +98,7 @@ export function HomeDigitalSafetyIntelligenceCard() {
               {ratingStyle.label}
             </span>
             {d.digital_safety_rating !== "insufficient_data" && (
-              <span className="text-xs font-bold tabular-nums text-slate-600">{d.digital_safety_score}%</span>
+              <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.digital_safety_score)}</span>
             )}
           </CardTitle>
         </div>
@@ -117,7 +118,7 @@ export function HomeDigitalSafetyIntelligenceCard() {
                   (d.agreements.agreement_coverage_rate ?? 0) >= 100 ? "text-[--cs-success]" :
                   (d.agreements.agreement_coverage_rate ?? 0) >= 75 ? "text-blue-600" : "text-[--cs-risk]"
                 )}>
-                  {d.agreements.agreement_coverage_rate}%
+                  {formatRate(d.agreements.agreement_coverage_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Agreements</p>
@@ -131,7 +132,7 @@ export function HomeDigitalSafetyIntelligenceCard() {
                   (d.consents.photo_consent_coverage_rate ?? 0) >= 100 ? "text-[--cs-success]" :
                   (d.consents.photo_consent_coverage_rate ?? 0) >= 75 ? "text-blue-600" : "text-[--cs-risk]"
                 )}>
-                  {d.consents.photo_consent_coverage_rate}%
+                  {formatRate(d.consents.photo_consent_coverage_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Photo Consent</p>
@@ -175,7 +176,7 @@ export function HomeDigitalSafetyIntelligenceCard() {
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Signed: <span className={cn("font-medium",
                   (d.agreements.signed_rate ?? 0) >= 100 ? "text-[--cs-success]" : "text-[--cs-warning]"
-                )}>{d.agreements.signed_rate}%</span></p>
+                )}>{formatRate(d.agreements.signed_rate)}</span></p>
                 <p>Controls: <span className="font-medium text-slate-600">{d.agreements.with_parental_controls}</span></p>
                 <p>Avg devices: <span className="font-medium text-slate-600">{d.agreements.avg_devices_per_child}</span></p>
                 <p>Overdue: <span className={cn("font-medium",
@@ -193,8 +194,8 @@ export function HomeDigitalSafetyIntelligenceCard() {
                 <p>High/Crit: <span className={cn("font-medium",
                   d.incidents.high_severity_count === 0 ? "text-[--cs-success]" : "text-[--cs-risk]"
                 )}>{d.incidents.high_severity_count}</span></p>
-                <p>Resolved: <span className="font-medium text-slate-600">{d.incidents.resolution_rate}%</span></p>
-                <p>Parents told: <span className="font-medium text-slate-600">{d.incidents.parent_notification_rate}%</span></p>
+                <p>Resolved: <span className="font-medium text-slate-600">{formatRate(d.incidents.resolution_rate)}</span></p>
+                <p>Parents told: <span className="font-medium text-slate-600">{formatRate(d.incidents.parent_notification_rate)}</span></p>
               </div>
             </div>
           </div>

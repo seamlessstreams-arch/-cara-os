@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
   Loader2, AlertCircle, AlertTriangle,
@@ -103,7 +104,7 @@ export function HomeKeyworkerIntelligenceCard() {
               {ratingStyle.label}
             </span>
             {d.keyworker_rating !== "insufficient_data" && (
-              <span className="text-xs font-bold tabular-nums text-slate-600">{d.keyworker_score}%</span>
+              <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.keyworker_score)}</span>
             )}
           </CardTitle>
         </div>
@@ -123,7 +124,7 @@ export function HomeKeyworkerIntelligenceCard() {
                   (d.coverage_profile.coverage_rate ?? 0) >= 100 ? "text-[--cs-success]" :
                   (d.coverage_profile.coverage_rate ?? 0) >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.coverage_profile.coverage_rate}%
+                  {formatRate(d.coverage_profile.coverage_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Coverage</p>
@@ -151,7 +152,7 @@ export function HomeKeyworkerIntelligenceCard() {
                   (d.therapeutic_profile.mood_improvement_rate ?? 0) >= 70 ? "text-[--cs-success]" :
                   (d.therapeutic_profile.mood_improvement_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.therapeutic_profile.mood_improvement_rate}%
+                  {formatRate(d.therapeutic_profile.mood_improvement_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Mood ↑</p>
@@ -189,8 +190,8 @@ export function HomeKeyworkerIntelligenceCard() {
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
                 <p>Chose format: <span className={cn("font-medium",
                   (d.engagement_profile.child_chose_format_rate ?? 0) >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]"
-                )}>{d.engagement_profile.child_chose_format_rate}%</span></p>
-                <p>Child raised: <span className="font-medium text-slate-600">{d.engagement_profile.child_brought_up_rate}%</span></p>
+                )}>{formatRate(d.engagement_profile.child_chose_format_rate)}</span></p>
+                <p>Child raised: <span className="font-medium text-slate-600">{formatRate(d.engagement_profile.child_brought_up_rate)}</span></p>
                 <p>Flags raised: <span className={cn("font-medium",
                   d.follow_up_profile.flags_raised_total > 0 ? "text-[--cs-risk]" : "text-[--cs-success]"
                 )}>{d.follow_up_profile.flags_raised_total}</span></p>

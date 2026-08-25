@@ -614,10 +614,10 @@ describe("Home Workforce Planning Intelligence Engine", () => {
       expect(r.succession_profile.avg_readiness_score).toBeNull();;
     });
 
-    it("handles inductions with zero total items", () => {
+    it("avg_item_completion_rate is unmeasured for inductions with zero total items", () => {
       const inductions = [makeInduction({ total_items: 0, completed_items: 0 })];
       const r = computeHomeWorkforcePlanning(baseInput({ inductions }));
-      expect(r.induction_profile.avg_item_completion_rate).toBe(0);
+      expect(r.induction_profile.avg_item_completion_rate).toBeNull();
     });
 
     it("counts on_hold vacancies", () => {
