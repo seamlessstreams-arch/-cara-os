@@ -9,7 +9,7 @@
 //             cleanlinessRatingRecords, productSafetyRecords
 // ==============================================================================
 
-import { above, below, meets } from "@/lib/metrics/rate";
+import { rate, above, below, meets } from "@/lib/metrics/rate";
 
 // -- Input Types --------------------------------------------------------------
 
@@ -162,14 +162,18 @@ export interface PestControlResult {
   pest_control_rating: PestControlRating;
   pest_control_score: number;
   headline: string;
-  // Most rates use pct() directly (deterministic 0 on empty). The 2 composite
+  // Most rates use rate() directly (deterministic 0 on empty). The 2 composite
   // rates below are null on empty: no source records ⇒ no signal. Fab-0 doctrine.
-  inspection_compliance_rate: number;
-  treatment_effectiveness_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  inspection_compliance_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  treatment_effectiveness_rate: number | null;
   kitchen_hygiene_rate: number | null;
   cleanliness_rate: number | null;
-  product_safety_rate: number;
-  staff_training_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  product_safety_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staff_training_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: PestControlRecommendation[];
@@ -177,10 +181,6 @@ export interface PestControlResult {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -204,12 +204,12 @@ function emptyResult(
     pest_control_rating: rating,
     pest_control_score: score,
     headline,
-    inspection_compliance_rate: 0,
-    treatment_effectiveness_rate: 0,
+    inspection_compliance_rate: null,
+    treatment_effectiveness_rate: null,
     kitchen_hygiene_rate: null,
     cleanliness_rate: null,
-    product_safety_rate: 0,
-    staff_training_rate: 0,
+    product_safety_rate: null,
+    staff_training_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -289,33 +289,33 @@ export function computePestControlHygieneCompliance(
 
   const totalInspections = pest_inspection_records.length;
   const completedOnTime = pest_inspection_records.filter((r) => r.completed_on_time).length;
-  const inspectionComplianceRate = pct(completedOnTime, totalInspections);
+  const inspectionComplianceRate = rate(completedOnTime, totalInspections);
 
   const reportsFiled = pest_inspection_records.filter((r) => r.report_filed).length;
-  const reportFilingRate = pct(reportsFiled, totalInspections);
+  const reportFilingRate = rate(reportsFiled, totalInspections);
 
   const inspectionsWithFollowUp = pest_inspection_records.filter((r) => r.follow_up_required).length;
   const followUpCompleted = pest_inspection_records.filter(
     (r) => r.follow_up_required && r.follow_up_completed,
   ).length;
-  const inspectionFollowUpRate = pct(followUpCompleted, inspectionsWithFollowUp);
+  const inspectionFollowUpRate = rate(followUpCompleted, inspectionsWithFollowUp);
 
   const highSeverityInspections = pest_inspection_records.filter(
     (r) => r.severity === "high" || r.severity === "critical",
   ).length;
-  const highSeverityRate = pct(highSeverityInspections, totalInspections);
+  const highSeverityRate = rate(highSeverityInspections, totalInspections);
 
   // === 2. Treatment Effectiveness ===
 
   const totalTreatments = treatment_records.length;
   const effectiveTreatments = treatment_records.filter((r) => r.treatment_effective).length;
-  const treatmentEffectivenessRate = pct(effectiveTreatments, totalTreatments);
+  const treatmentEffectivenessRate = rate(effectiveTreatments, totalTreatments);
 
   const childSafeTreatments = treatment_records.filter((r) => r.product_child_safe).length;
-  const treatmentChildSafetyRate = pct(childSafeTreatments, totalTreatments);
+  const treatmentChildSafetyRate = rate(childSafeTreatments, totalTreatments);
 
   const coshhCompliantTreatments = treatment_records.filter((r) => r.coshh_compliant).length;
-  const treatmentCoshhRate = pct(coshhCompliantTreatments, totalTreatments);
+  const treatmentCoshhRate = rate(coshhCompliantTreatments, totalTreatments);
 
   const contractorCertified = treatment_records.filter(
     (r) => r.contractor_certified,
@@ -323,7 +323,7 @@ export function computePestControlHygieneCompliance(
   const contractorWithName = treatment_records.filter(
     (r) => r.contractor_name && r.contractor_name.length > 0,
   ).length;
-  const contractorCertificationRate = pct(
+  const contractorCertificationRate = rate(
     contractorCertified,
     contractorWithName > 0 ? contractorWithName : totalTreatments,
   );
@@ -334,7 +334,7 @@ export function computePestControlHygieneCompliance(
   const followUpTreatmentCompleted = treatment_records.filter(
     (r) => r.follow_up_treatment_required && r.follow_up_treatment_completed,
   ).length;
-  const treatmentFollowUpRate = pct(followUpTreatmentCompleted, followUpTreatmentRequired);
+  const treatmentFollowUpRate = rate(followUpTreatmentCompleted, followUpTreatmentRequired);
 
   // === 3. Kitchen Hygiene ===
 
@@ -350,27 +350,27 @@ export function computePestControlHygieneCompliance(
   const foodStorageCompliant = kitchen_hygiene_records.filter(
     (r) => r.food_storage_compliant,
   ).length;
-  const foodStorageRate = pct(foodStorageCompliant, totalKitchenAudits);
+  const foodStorageRate = rate(foodStorageCompliant, totalKitchenAudits);
 
   const tempMonitoringCompliant = kitchen_hygiene_records.filter(
     (r) => r.temperature_monitoring_compliant,
   ).length;
-  const tempMonitoringRate = pct(tempMonitoringCompliant, totalKitchenAudits);
+  const tempMonitoringRate = rate(tempMonitoringCompliant, totalKitchenAudits);
 
   const kitchenPestEvidence = kitchen_hygiene_records.filter(
     (r) => r.pest_evidence_found,
   ).length;
-  const kitchenPestRate = pct(kitchenPestEvidence, totalKitchenAudits);
+  const kitchenPestRate = rate(kitchenPestEvidence, totalKitchenAudits);
 
   const handHygieneCompliant = kitchen_hygiene_records.filter(
     (r) => r.hand_hygiene_compliant,
   ).length;
-  const handHygieneRate = pct(handHygieneCompliant, totalKitchenAudits);
+  const handHygieneRate = rate(handHygieneCompliant, totalKitchenAudits);
 
   const wasteManagementCompliant = kitchen_hygiene_records.filter(
     (r) => r.waste_management_compliant,
   ).length;
-  const wasteManagementRate = pct(wasteManagementCompliant, totalKitchenAudits);
+  const wasteManagementRate = rate(wasteManagementCompliant, totalKitchenAudits);
 
   const kitchenStaffTraining = kitchen_hygiene_records.filter(
     (r) => r.staff_training_current,
@@ -379,7 +379,7 @@ export function computePestControlHygieneCompliance(
   const allergenControls = kitchen_hygiene_records.filter(
     (r) => r.allergen_controls_in_place,
   ).length;
-  const allergenControlRate = pct(allergenControls, totalKitchenAudits);
+  const allergenControlRate = rate(allergenControls, totalKitchenAudits);
 
   const totalCorrectiveActionsKitchen = kitchen_hygiene_records.reduce(
     (sum, r) => sum + r.corrective_actions_raised, 0,
@@ -387,7 +387,7 @@ export function computePestControlHygieneCompliance(
   const closedCorrectiveActionsKitchen = kitchen_hygiene_records.reduce(
     (sum, r) => sum + r.corrective_actions_closed, 0,
   );
-  const kitchenCorrectiveActionRate = pct(
+  const kitchenCorrectiveActionRate = rate(
     closedCorrectiveActionsKitchen, totalCorrectiveActionsKitchen,
   );
 
@@ -417,7 +417,7 @@ export function computePestControlHygieneCompliance(
   const hygieneStandardMet = cleanliness_rating_records.filter(
     (r) => r.hygiene_standard_met,
   ).length;
-  const hygieneStandardRate = pct(hygieneStandardMet, totalCleanlinessAssessments);
+  const hygieneStandardRate = rate(hygieneStandardMet, totalCleanlinessAssessments);
 
   const deepCleanCompleted = cleanliness_rating_records.filter(
     (r) => r.deep_clean_completed,
@@ -426,12 +426,12 @@ export function computePestControlHygieneCompliance(
   const deepCleanOverdue = cleanliness_rating_records.filter(
     (r) => r.deep_clean_overdue,
   ).length;
-  const deepCleanOverdueRate = pct(deepCleanOverdue, totalCleanlinessAssessments);
+  const deepCleanOverdueRate = rate(deepCleanOverdue, totalCleanlinessAssessments);
 
   const infectionControlCompliant = cleanliness_rating_records.filter(
     (r) => r.infection_control_compliant,
   ).length;
-  const infectionControlRate = pct(infectionControlCompliant, totalCleanlinessAssessments);
+  const infectionControlRate = rate(infectionControlCompliant, totalCleanlinessAssessments);
 
   const totalHazardsIdentified = cleanliness_rating_records.reduce(
     (sum, r) => sum + r.hazards_identified, 0,
@@ -439,22 +439,22 @@ export function computePestControlHygieneCompliance(
   const totalHazardsResolved = cleanliness_rating_records.reduce(
     (sum, r) => sum + r.hazards_resolved, 0,
   );
-  const hazardResolutionRate = pct(totalHazardsResolved, totalHazardsIdentified);
+  const hazardResolutionRate = rate(totalHazardsResolved, totalHazardsIdentified);
 
   const dampMouldIssues = cleanliness_rating_records.filter(
     (r) => r.damp_mould_issues,
   ).length;
-  const dampMouldRate = pct(dampMouldIssues, totalCleanlinessAssessments);
+  const dampMouldRate = rate(dampMouldIssues, totalCleanlinessAssessments);
 
   const ventilationAdequate = cleanliness_rating_records.filter(
     (r) => r.ventilation_adequate,
   ).length;
-  const ventilationRate = pct(ventilationAdequate, totalCleanlinessAssessments);
+  const ventilationRate = rate(ventilationAdequate, totalCleanlinessAssessments);
 
   const childInvolvedAssessment = cleanliness_rating_records.filter(
     (r) => r.child_involved_in_assessment,
   ).length;
-  const childInvolvementRate = pct(childInvolvedAssessment, totalCleanlinessAssessments);
+  const childInvolvementRate = rate(childInvolvedAssessment, totalCleanlinessAssessments);
 
   const bedroomAssessments = cleanliness_rating_records.filter(
     (r) => r.area_type === "bedroom",
@@ -495,32 +495,32 @@ export function computePestControlHygieneCompliance(
   const childSafeProducts = product_safety_records.filter(
     (r) => r.child_safe_certified,
   ).length;
-  const productSafetyRate = pct(childSafeProducts, totalProducts);
+  const productSafetyRate = rate(childSafeProducts, totalProducts);
 
   const coshhAssessmentCompleted = product_safety_records.filter(
     (r) => r.coshh_assessment_completed,
   ).length;
-  const coshhAssessmentRate = pct(coshhAssessmentCompleted, totalProducts);
+  const coshhAssessmentRate = rate(coshhAssessmentCompleted, totalProducts);
 
   const storedSecurely = product_safety_records.filter(
     (r) => r.stored_securely,
   ).length;
-  const secureStorageRate = pct(storedSecurely, totalProducts);
+  const secureStorageRate = rate(storedSecurely, totalProducts);
 
   const lockedStorage = product_safety_records.filter(
     (r) => r.locked_storage,
   ).length;
-  const lockedStorageRate = pct(lockedStorage, totalProducts);
+  const lockedStorageRate = rate(lockedStorage, totalProducts);
 
   const staffTrainedOnProducts = product_safety_records.filter(
     (r) => r.staff_trained_on_use,
   ).length;
-  const productStaffTrainingRate = pct(staffTrainedOnProducts, totalProducts);
+  const productStaffTrainingRate = rate(staffTrainedOnProducts, totalProducts);
 
   const expiredProducts = product_safety_records.filter(
     (r) => !r.in_date,
   ).length;
-  const expiredProductRate = pct(expiredProducts, totalProducts);
+  const expiredProductRate = rate(expiredProducts, totalProducts);
 
   // === 6. Staff Training Composite ===
 
@@ -528,19 +528,19 @@ export function computePestControlHygieneCompliance(
     kitchenStaffTraining + staffTrainedOnProducts;
   const trainingDenominator =
     totalKitchenAudits + totalProducts;
-  const staffTrainingRate = pct(trainingNumerator, trainingDenominator);
+  const staffTrainingRate = rate(trainingNumerator, trainingDenominator);
 
   // -- Scoring: base 52 ----------------------------------------------------
 
   let score = 52;
 
   // --- Bonus 1: inspectionComplianceRate (>=90: +5, >=70: +2) ---
-  if (inspectionComplianceRate >= 90) score += 5;
-  else if (inspectionComplianceRate >= 70) score += 2;
+  if (meets(inspectionComplianceRate, 90)) score += 5;
+  else if (meets(inspectionComplianceRate, 70)) score += 2;
 
   // --- Bonus 2: treatmentEffectivenessRate (>=90: +4, >=70: +2) ---
-  if (treatmentEffectivenessRate >= 90) score += 4;
-  else if (treatmentEffectivenessRate >= 70) score += 2;
+  if (meets(treatmentEffectivenessRate, 90)) score += 4;
+  else if (meets(treatmentEffectivenessRate, 70)) score += 2;
 
   // --- Bonus 3: kitchenHygieneRate (>=85: +5, >=70: +2) ---
   if (meets(kitchenHygieneRate, 85)) score += 5;
@@ -551,29 +551,29 @@ export function computePestControlHygieneCompliance(
   else if (meets(cleanlinessRate, 70)) score += 2;
 
   // --- Bonus 5: productSafetyRate (>=90: +4, >=70: +2) ---
-  if (productSafetyRate >= 90) score += 4;
-  else if (productSafetyRate >= 70) score += 2;
+  if (meets(productSafetyRate, 90)) score += 4;
+  else if (meets(productSafetyRate, 70)) score += 2;
 
   // --- Bonus 6: staffTrainingRate (>=90: +3, >=70: +1) ---
-  if (staffTrainingRate >= 90) score += 3;
-  else if (staffTrainingRate >= 70) score += 1;
+  if (meets(staffTrainingRate, 90)) score += 3;
+  else if (meets(staffTrainingRate, 70)) score += 1;
 
   // --- Bonus 7: kitchenCorrectiveActionRate (>=90: +3, >=70: +1) ---
-  if (kitchenCorrectiveActionRate >= 90) score += 3;
-  else if (kitchenCorrectiveActionRate >= 70) score += 1;
+  if (meets(kitchenCorrectiveActionRate, 90)) score += 3;
+  else if (meets(kitchenCorrectiveActionRate, 70)) score += 1;
 
   // Total max bonuses = 5+4+5+4+4+3+3 = 28
 
   // -- Penalties (4 with guards) -------------------------------------------
 
   // inspectionComplianceRate < 50 -> -6
-  if (inspectionComplianceRate < 50 && pest_inspection_records.length > 0) score -= 6;
+  if (below(inspectionComplianceRate, 50) && pest_inspection_records.length > 0) score -= 6;
 
   // below(kitchenHygieneRate, 50) -> -6
   if (below(kitchenHygieneRate, 50) && kitchen_hygiene_records.length > 0) score -= 6;
 
   // productSafetyRate < 50 -> -5
-  if (productSafetyRate < 50 && product_safety_records.length > 0) score -= 5;
+  if (below(productSafetyRate, 50) && product_safety_records.length > 0) score -= 5;
 
   // below(cleanlinessRate, 50) -> -5
   if (below(cleanlinessRate, 50) && cleanliness_rating_records.length > 0) score -= 5;
@@ -586,49 +586,49 @@ export function computePestControlHygieneCompliance(
 
   const strengths: string[] = [];
 
-  if (inspectionComplianceRate >= 90 && totalInspections > 0) {
+  if (meets(inspectionComplianceRate, 90) && totalInspections > 0) {
     strengths.push(
       `${inspectionComplianceRate}% of pest inspections completed on time -- the home demonstrates excellent adherence to pest inspection schedules, providing strong evidence of proactive premises management.`,
     );
-  } else if (inspectionComplianceRate >= 70 && totalInspections > 0) {
+  } else if (meets(inspectionComplianceRate, 70) && totalInspections > 0) {
     strengths.push(
       `${inspectionComplianceRate}% pest inspection compliance rate -- most inspections are completed on schedule.`,
     );
   }
 
-  if (reportFilingRate >= 90 && totalInspections > 0) {
+  if (meets(reportFilingRate, 90) && totalInspections > 0) {
     strengths.push(
       `${reportFilingRate}% of pest inspection reports filed -- thorough documentation supports regulatory evidence.`,
     );
   }
 
-  if (inspectionFollowUpRate >= 90 && inspectionsWithFollowUp > 0) {
+  if (meets(inspectionFollowUpRate, 90) && inspectionsWithFollowUp > 0) {
     strengths.push(
       `${inspectionFollowUpRate}% of inspection follow-up actions completed -- the home responds promptly when pest issues are identified.`,
     );
   }
 
-  if (treatmentEffectivenessRate >= 90 && totalTreatments > 0) {
+  if (meets(treatmentEffectivenessRate, 90) && totalTreatments > 0) {
     strengths.push(
       `${treatmentEffectivenessRate}% treatment effectiveness -- pest control treatments consistently achieve intended outcomes.`,
     );
-  } else if (treatmentEffectivenessRate >= 70 && totalTreatments > 0) {
+  } else if (meets(treatmentEffectivenessRate, 70) && totalTreatments > 0) {
     strengths.push(
       `${treatmentEffectivenessRate}% treatment effectiveness -- the majority of treatments are effective.`,
     );
   }
 
-  if (treatmentChildSafetyRate >= 90 && treatmentCoshhRate >= 90 && totalTreatments > 0) {
+  if (meets(treatmentChildSafetyRate, 90) && meets(treatmentCoshhRate, 90) && totalTreatments > 0) {
     strengths.push(
       `${treatmentChildSafetyRate}% child-safe products and ${treatmentCoshhRate}% COSHH compliance -- robust chemical safety in pest control.`,
     );
-  } else if (treatmentChildSafetyRate >= 90 && totalTreatments > 0) {
+  } else if (meets(treatmentChildSafetyRate, 90) && totalTreatments > 0) {
     strengths.push(
       `${treatmentChildSafetyRate}% of treatments use child-safe products -- children's safety is prioritised.`,
     );
   }
 
-  if (contractorCertificationRate >= 90 && contractorWithName > 0) {
+  if (meets(contractorCertificationRate, 90) && contractorWithName > 0) {
     strengths.push(
       `${contractorCertificationRate}% of pest control contractors certified -- qualified professionals are used.`,
     );
@@ -650,25 +650,25 @@ export function computePestControlHygieneCompliance(
     );
   }
 
-  if (foodStorageRate >= 90 && tempMonitoringRate >= 90 && totalKitchenAudits > 0) {
+  if (meets(foodStorageRate, 90) && meets(tempMonitoringRate, 90) && totalKitchenAudits > 0) {
     strengths.push(
       `Food storage (${foodStorageRate}%) and temperature monitoring (${tempMonitoringRate}%) both compliant -- proper storage and temperature control prevent foodborne illness.`,
     );
   }
 
-  if (handHygieneRate >= 90 && totalKitchenAudits > 0) {
+  if (meets(handHygieneRate, 90) && totalKitchenAudits > 0) {
     strengths.push(
       `Hand hygiene compliant in ${handHygieneRate}% of audits -- excellent hand hygiene practice reduces infection risk.`,
     );
   }
 
-  if (allergenControlRate >= 90 && totalKitchenAudits > 0) {
+  if (meets(allergenControlRate, 90) && totalKitchenAudits > 0) {
     strengths.push(
       `Allergen controls in place for ${allergenControlRate}% of audits -- strong allergen awareness and management.`,
     );
   }
 
-  if (kitchenCorrectiveActionRate >= 90 && totalCorrectiveActionsKitchen > 0) {
+  if (meets(kitchenCorrectiveActionRate, 90) && totalCorrectiveActionsKitchen > 0) {
     strengths.push(
       `${kitchenCorrectiveActionRate}% of kitchen corrective actions closed -- audit findings are systematically resolved.`,
     );
@@ -684,45 +684,45 @@ export function computePestControlHygieneCompliance(
     );
   }
 
-  if (infectionControlRate >= 90 && totalCleanlinessAssessments > 0) {
+  if (meets(infectionControlRate, 90) && totalCleanlinessAssessments > 0) {
     strengths.push(
       `Infection control compliant in ${infectionControlRate}% of assessments -- strong infection prevention.`,
     );
   }
 
-  if (hazardResolutionRate >= 90 && totalHazardsIdentified > 0) {
+  if (meets(hazardResolutionRate, 90) && totalHazardsIdentified > 0) {
     strengths.push(
       `${hazardResolutionRate}% of environmental hazards resolved -- identified hazards are promptly addressed.`,
     );
   }
 
-  if (productSafetyRate >= 90 && totalProducts > 0) {
+  if (meets(productSafetyRate, 90) && totalProducts > 0) {
     strengths.push(
       `${productSafetyRate}% of products are child-safe certified -- the home prioritises child safety in product selection.`,
     );
-  } else if (productSafetyRate >= 70 && totalProducts > 0) {
+  } else if (meets(productSafetyRate, 70) && totalProducts > 0) {
     strengths.push(
       `${productSafetyRate}% product safety rate -- good progress in ensuring products used in the home are child-safe.`,
     );
   }
 
-  if (secureStorageRate >= 90 && lockedStorageRate >= 90 && totalProducts > 0) {
+  if (meets(secureStorageRate, 90) && meets(lockedStorageRate, 90) && totalProducts > 0) {
     strengths.push(
       `${secureStorageRate}% secure storage with ${lockedStorageRate}% locked -- hazardous substances are properly secured away from children.`,
     );
-  } else if (secureStorageRate >= 90 && totalProducts > 0) {
+  } else if (meets(secureStorageRate, 90) && totalProducts > 0) {
     strengths.push(
       `${secureStorageRate}% of products stored securely -- hazardous substances are kept safely away from children.`,
     );
   }
 
-  if (coshhAssessmentRate >= 90 && totalProducts > 0) {
+  if (meets(coshhAssessmentRate, 90) && totalProducts > 0) {
     strengths.push(
       `COSHH assessments completed for ${coshhAssessmentRate}% of products -- comprehensive chemical safety documentation.`,
     );
   }
 
-  if (staffTrainingRate >= 90 && trainingDenominator > 0) {
+  if (meets(staffTrainingRate, 90) && trainingDenominator > 0) {
     strengths.push(
       `Composite staff training rate at ${staffTrainingRate}% -- staff are well trained in both kitchen hygiene and product safety.`,
     );
@@ -744,57 +744,57 @@ export function computePestControlHygieneCompliance(
 
   const concerns: string[] = [];
 
-  if (inspectionComplianceRate < 50 && totalInspections > 0) {
+  if (below(inspectionComplianceRate, 50) && totalInspections > 0) {
     concerns.push(
       `Only ${inspectionComplianceRate}% of pest inspections completed on time -- the majority of scheduled inspections are overdue or missed, leaving the home unable to evidence proactive pest management.`,
     );
-  } else if (inspectionComplianceRate < 70 && inspectionComplianceRate >= 50 && totalInspections > 0) {
+  } else if (below(inspectionComplianceRate, 70) && meets(inspectionComplianceRate, 50) && totalInspections > 0) {
     concerns.push(
       `Pest inspection compliance at ${inspectionComplianceRate}% -- a significant proportion of inspections are not completed on schedule.`,
     );
   }
 
-  if (highSeverityRate >= 20 && totalInspections > 0) {
+  if (meets(highSeverityRate, 20) && totalInspections > 0) {
     concerns.push(
       `${highSeverityRate}% of inspections identified high/critical severity issues -- persistent serious pest problems indicate inadequate prevention.`,
     );
   }
 
-  if (inspectionFollowUpRate < 50 && inspectionsWithFollowUp > 0) {
+  if (below(inspectionFollowUpRate, 50) && inspectionsWithFollowUp > 0) {
     concerns.push(
       `Only ${inspectionFollowUpRate}% of inspection follow-ups completed -- identified pest issues are not being resolved.`,
     );
   }
 
-  if (reportFilingRate < 70 && totalInspections > 0) {
+  if (below(reportFilingRate, 70) && totalInspections > 0) {
     concerns.push(
       `Only ${reportFilingRate}% of pest inspection reports filed -- incomplete documentation undermines regulatory evidence.`,
     );
   }
 
-  if (treatmentEffectivenessRate < 50 && totalTreatments > 0) {
+  if (below(treatmentEffectivenessRate, 50) && totalTreatments > 0) {
     concerns.push(
       `Only ${treatmentEffectivenessRate}% of pest treatments effective -- inadequate pest management strategy.`,
     );
-  } else if (treatmentEffectivenessRate < 70 && treatmentEffectivenessRate >= 50 && totalTreatments > 0) {
+  } else if (below(treatmentEffectivenessRate, 70) && meets(treatmentEffectivenessRate, 50) && totalTreatments > 0) {
     concerns.push(
       `Treatment effectiveness at ${treatmentEffectivenessRate}% -- a significant proportion of treatments are not fully effective.`,
     );
   }
 
-  if (treatmentChildSafetyRate < 70 && totalTreatments > 0) {
+  if (below(treatmentChildSafetyRate, 70) && totalTreatments > 0) {
     concerns.push(
       `Only ${treatmentChildSafetyRate}% of treatments use child-safe products -- posing direct risk to children's health.`,
     );
   }
 
-  if (treatmentCoshhRate < 70 && totalTreatments > 0) {
+  if (below(treatmentCoshhRate, 70) && totalTreatments > 0) {
     concerns.push(
       `COSHH compliance at only ${treatmentCoshhRate}% for pest treatments -- chemical safety management is insufficient.`,
     );
   }
 
-  if (treatmentFollowUpRate < 50 && followUpTreatmentRequired > 0) {
+  if (below(treatmentFollowUpRate, 50) && followUpTreatmentRequired > 0) {
     concerns.push(
       `Only ${treatmentFollowUpRate}% of follow-up treatments completed -- incomplete cycles allow pest problems to recur.`,
     );
@@ -810,7 +810,7 @@ export function computePestControlHygieneCompliance(
     );
   }
 
-  if (kitchenPestRate >= 20 && totalKitchenAudits > 0) {
+  if (meets(kitchenPestRate, 20) && totalKitchenAudits > 0) {
     concerns.push(
       `Pest evidence found in ${kitchenPestRate}% of kitchen hygiene audits -- pest contamination in food preparation areas is a serious health risk.`,
     );
@@ -822,19 +822,19 @@ export function computePestControlHygieneCompliance(
     );
   }
 
-  if (foodStorageRate < 70 && totalKitchenAudits > 0) {
+  if (below(foodStorageRate, 70) && totalKitchenAudits > 0) {
     concerns.push(
       `Food storage compliant in only ${foodStorageRate}% of audits -- improper storage increases contamination risk.`,
     );
   }
 
-  if (handHygieneRate < 70 && totalKitchenAudits > 0) {
+  if (below(handHygieneRate, 70) && totalKitchenAudits > 0) {
     concerns.push(
       `Hand hygiene compliant in only ${handHygieneRate}% of audits -- poor hand hygiene increases infection risk.`,
     );
   }
 
-  if (wasteManagementRate < 70 && totalKitchenAudits > 0) {
+  if (below(wasteManagementRate, 70) && totalKitchenAudits > 0) {
     concerns.push(
       `Waste management compliant in only ${wasteManagementRate}% of audits -- poor waste management attracts pests and compromises hygiene.`,
     );
@@ -850,65 +850,65 @@ export function computePestControlHygieneCompliance(
     );
   }
 
-  if (hygieneStandardRate < 70 && totalCleanlinessAssessments > 0) {
+  if (below(hygieneStandardRate, 70) && totalCleanlinessAssessments > 0) {
     concerns.push(
       `Hygiene standards met in only ${hygieneStandardRate}% of area assessments -- many areas of the home do not meet required hygiene benchmarks.`,
     );
   }
 
-  if (dampMouldRate >= 20 && totalCleanlinessAssessments > 0) {
+  if (meets(dampMouldRate, 20) && totalCleanlinessAssessments > 0) {
     concerns.push(
       `Damp or mould in ${dampMouldRate}% of areas -- damp and mould pose respiratory health risks and indicate poor environmental management.`,
     );
   }
 
-  if (ventilationRate < 70 && totalCleanlinessAssessments > 0) {
+  if (below(ventilationRate, 70) && totalCleanlinessAssessments > 0) {
     concerns.push(
       `Ventilation adequate in only ${ventilationRate}% of areas -- poor ventilation leads to damp, mould, and unhealthy air quality.`,
     );
   }
 
-  if (infectionControlRate < 70 && totalCleanlinessAssessments > 0) {
+  if (below(infectionControlRate, 70) && totalCleanlinessAssessments > 0) {
     concerns.push(
       `Infection control compliant in only ${infectionControlRate}% of assessments -- inadequate infection prevention increases health risks.`,
     );
   }
 
-  if (hazardResolutionRate < 50 && totalHazardsIdentified > 0) {
+  if (below(hazardResolutionRate, 50) && totalHazardsIdentified > 0) {
     concerns.push(
       `Only ${hazardResolutionRate}% of environmental hazards resolved -- unresolved hazards pose ongoing safety risks to children.`,
     );
   }
 
-  if (productSafetyRate < 50 && totalProducts > 0) {
+  if (below(productSafetyRate, 50) && totalProducts > 0) {
     concerns.push(
       `Only ${productSafetyRate}% of products are child-safe certified -- most products are not safe for use around children.`,
     );
-  } else if (productSafetyRate < 70 && productSafetyRate >= 50 && totalProducts > 0) {
+  } else if (below(productSafetyRate, 70) && meets(productSafetyRate, 50) && totalProducts > 0) {
     concerns.push(
       `Product safety rate at ${productSafetyRate}% -- a significant proportion are not child-safe certified.`,
     );
   }
 
-  if (secureStorageRate < 70 && totalProducts > 0) {
+  if (below(secureStorageRate, 70) && totalProducts > 0) {
     concerns.push(
       `Only ${secureStorageRate}% of products stored securely -- hazardous substances may be accessible to children.`,
     );
   }
 
-  if (coshhAssessmentRate < 70 && totalProducts > 0) {
+  if (below(coshhAssessmentRate, 70) && totalProducts > 0) {
     concerns.push(
       `COSHH assessments completed for only ${coshhAssessmentRate}% of products -- incomplete chemical safety documentation.`,
     );
   }
 
-  if (expiredProductRate >= 20 && totalProducts > 0) {
+  if (meets(expiredProductRate, 20) && totalProducts > 0) {
     concerns.push(
       `${expiredProductRate}% of products are expired -- may be ineffective or pose safety risks.`,
     );
   }
 
-  if (staffTrainingRate < 50 && trainingDenominator > 0) {
+  if (below(staffTrainingRate, 50) && trainingDenominator > 0) {
     concerns.push(
       `Composite staff training rate at only ${staffTrainingRate}% -- staff lack adequate training in kitchen hygiene and product safety.`,
     );
@@ -943,7 +943,7 @@ export function computePestControlHygieneCompliance(
   const recommendations: PestControlRecommendation[] = [];
   let rank = 0;
 
-  if (inspectionComplianceRate < 50 && totalInspections > 0) {
+  if (below(inspectionComplianceRate, 50) && totalInspections > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -963,7 +963,7 @@ export function computePestControlHygieneCompliance(
     });
   }
 
-  if (productSafetyRate < 50 && totalProducts > 0) {
+  if (below(productSafetyRate, 50) && totalProducts > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -983,7 +983,7 @@ export function computePestControlHygieneCompliance(
     });
   }
 
-  if (kitchenPestRate >= 20 && totalKitchenAudits > 0) {
+  if (meets(kitchenPestRate, 20) && totalKitchenAudits > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -993,7 +993,7 @@ export function computePestControlHygieneCompliance(
     });
   }
 
-  if (highSeverityRate >= 20 && totalInspections > 0) {
+  if (meets(highSeverityRate, 20) && totalInspections > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1003,7 +1003,7 @@ export function computePestControlHygieneCompliance(
     });
   }
 
-  if (treatmentChildSafetyRate < 70 && totalTreatments > 0) {
+  if (below(treatmentChildSafetyRate, 70) && totalTreatments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1013,7 +1013,7 @@ export function computePestControlHygieneCompliance(
     });
   }
 
-  if (secureStorageRate < 70 && totalProducts > 0) {
+  if (below(secureStorageRate, 70) && totalProducts > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1023,7 +1023,7 @@ export function computePestControlHygieneCompliance(
     });
   }
 
-  if (dampMouldRate >= 20 && totalCleanlinessAssessments > 0) {
+  if (meets(dampMouldRate, 20) && totalCleanlinessAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1033,7 +1033,7 @@ export function computePestControlHygieneCompliance(
     });
   }
 
-  if (treatmentEffectivenessRate < 70 && treatmentEffectivenessRate >= 50 && totalTreatments > 0) {
+  if (below(treatmentEffectivenessRate, 70) && meets(treatmentEffectivenessRate, 50) && totalTreatments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1043,7 +1043,7 @@ export function computePestControlHygieneCompliance(
     });
   }
 
-  if (inspectionComplianceRate >= 50 && inspectionComplianceRate < 70 && totalInspections > 0) {
+  if (meets(inspectionComplianceRate, 50) && below(inspectionComplianceRate, 70) && totalInspections > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1073,7 +1073,7 @@ export function computePestControlHygieneCompliance(
     });
   }
 
-  if (coshhAssessmentRate < 70 && totalProducts > 0) {
+  if (below(coshhAssessmentRate, 70) && totalProducts > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1083,7 +1083,7 @@ export function computePestControlHygieneCompliance(
     });
   }
 
-  if (productStaffTrainingRate < 70 && totalProducts > 0) {
+  if (below(productStaffTrainingRate, 70) && totalProducts > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1093,7 +1093,7 @@ export function computePestControlHygieneCompliance(
     });
   }
 
-  if (productSafetyRate >= 50 && productSafetyRate < 70 && totalProducts > 0) {
+  if (meets(productSafetyRate, 50) && below(productSafetyRate, 70) && totalProducts > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1103,7 +1103,7 @@ export function computePestControlHygieneCompliance(
     });
   }
 
-  if (childInvolvementRate < 30 && totalCleanlinessAssessments > 0) {
+  if (below(childInvolvementRate, 30) && totalCleanlinessAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1113,7 +1113,7 @@ export function computePestControlHygieneCompliance(
     });
   }
 
-  if (ventilationRate < 70 && totalCleanlinessAssessments > 0) {
+  if (below(ventilationRate, 70) && totalCleanlinessAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1169,7 +1169,7 @@ export function computePestControlHygieneCompliance(
 
   // --- Critical insights ---
 
-  if (inspectionComplianceRate < 50 && totalInspections > 0) {
+  if (below(inspectionComplianceRate, 50) && totalInspections > 0) {
     insights.push({
       text: `Only ${inspectionComplianceRate}% of pest inspections completed on time. Ofsted will view the failure to maintain a pest inspection schedule as evidence that the home does not adequately manage premises safety -- a direct failure under Reg 25.`,
       severity: "critical",
@@ -1183,7 +1183,7 @@ export function computePestControlHygieneCompliance(
     });
   }
 
-  if (productSafetyRate < 50 && totalProducts > 0) {
+  if (below(productSafetyRate, 50) && totalProducts > 0) {
     insights.push({
       text: `Only ${productSafetyRate}% of products are child-safe certified. Using non-child-safe cleaning and pest control products in a children's home represents a direct risk to children's health and safety. This is a COSHH compliance failure and a Reg 25 concern.`,
       severity: "critical",
@@ -1197,21 +1197,21 @@ export function computePestControlHygieneCompliance(
     });
   }
 
-  if (kitchenPestRate >= 30 && totalKitchenAudits > 0) {
+  if (meets(kitchenPestRate, 30) && totalKitchenAudits > 0) {
     insights.push({
       text: `Pest evidence found in ${kitchenPestRate}% of kitchen audits. Pest contamination in food preparation areas is a serious public health risk that requires immediate professional intervention and may trigger Environmental Health enforcement action.`,
       severity: "critical",
     });
   }
 
-  if (secureStorageRate < 50 && totalProducts > 0) {
+  if (below(secureStorageRate, 50) && totalProducts > 0) {
     insights.push({
       text: `Only ${secureStorageRate}% of products stored securely. Unsecured hazardous substances represent a direct safeguarding risk -- children could access harmful chemicals.`,
       severity: "critical",
     });
   }
 
-  if (dampMouldRate >= 30 && totalCleanlinessAssessments > 0) {
+  if (meets(dampMouldRate, 30) && totalCleanlinessAssessments > 0) {
     insights.push({
       text: `Damp or mould identified in ${dampMouldRate}% of areas. Widespread damp and mould pose respiratory health risks and indicate systemic environmental management failures.`,
       severity: "critical",
@@ -1220,7 +1220,7 @@ export function computePestControlHygieneCompliance(
 
   // --- Warning insights ---
 
-  if (inspectionComplianceRate >= 50 && inspectionComplianceRate < 70 && totalInspections > 0) {
+  if (meets(inspectionComplianceRate, 50) && below(inspectionComplianceRate, 70) && totalInspections > 0) {
     insights.push({
       text: `Pest inspection compliance at ${inspectionComplianceRate}% -- improving but some inspections are not completed on schedule. Each missed inspection represents a gap in pest risk monitoring.`,
       severity: "warning",
@@ -1241,21 +1241,21 @@ export function computePestControlHygieneCompliance(
     });
   }
 
-  if (productSafetyRate >= 50 && productSafetyRate < 70 && totalProducts > 0) {
+  if (meets(productSafetyRate, 50) && below(productSafetyRate, 70) && totalProducts > 0) {
     insights.push({
       text: `Product safety rate at ${productSafetyRate}% -- a significant proportion of products are not child-safe certified. In a children's home, all products should ideally be child-safe.`,
       severity: "warning",
     });
   }
 
-  if (staffTrainingRate >= 50 && staffTrainingRate < 70 && trainingDenominator > 0) {
+  if (meets(staffTrainingRate, 50) && below(staffTrainingRate, 70) && trainingDenominator > 0) {
     insights.push({
       text: `Composite staff training rate at ${staffTrainingRate}% -- gaps in kitchen hygiene and product safety training increase the risk of hygiene failures and unsafe product use.`,
       severity: "warning",
     });
   }
 
-  if (expiredProductRate >= 10 && totalProducts > 0) {
+  if (meets(expiredProductRate, 10) && totalProducts > 0) {
     insights.push({
       text: `${expiredProductRate}% of products are expired -- expired products may be less effective or harmful. Implement stock rotation and expiry monitoring.`,
       severity: "warning",
@@ -1271,7 +1271,7 @@ export function computePestControlHygieneCompliance(
     });
   }
 
-  if (inspectionComplianceRate >= 90 && treatmentEffectivenessRate >= 90 && totalInspections > 0 && totalTreatments > 0) {
+  if (meets(inspectionComplianceRate, 90) && meets(treatmentEffectivenessRate, 90) && totalInspections > 0 && totalTreatments > 0) {
     insights.push({
       text: `${inspectionComplianceRate}% inspection compliance with ${treatmentEffectivenessRate}% treatment effectiveness -- the home operates an exemplary pest management system. Inspections are timely and treatments are effective, providing strong evidence of proactive premises management.`,
       severity: "positive",
@@ -1285,28 +1285,28 @@ export function computePestControlHygieneCompliance(
     });
   }
 
-  if (meets(cleanlinessRate, 85) && infectionControlRate >= 90 && totalCleanlinessAssessments > 0) {
+  if (meets(cleanlinessRate, 85) && meets(infectionControlRate, 90) && totalCleanlinessAssessments > 0) {
     insights.push({
       text: `Environmental cleanliness at ${cleanlinessRate}% with ${infectionControlRate}% infection control compliance -- the home maintains excellent environmental hygiene standards with robust infection prevention practices.`,
       severity: "positive",
     });
   }
 
-  if (productSafetyRate >= 90 && secureStorageRate >= 90 && totalProducts > 0) {
+  if (meets(productSafetyRate, 90) && meets(secureStorageRate, 90) && totalProducts > 0) {
     insights.push({
       text: `${productSafetyRate}% child-safe products with ${secureStorageRate}% secure storage -- the home demonstrates exemplary chemical safety management. Products are child-safe, properly stored, and staff are trained in their use.`,
       severity: "positive",
     });
   }
 
-  if (staffTrainingRate >= 90 && trainingDenominator > 0) {
+  if (meets(staffTrainingRate, 90) && trainingDenominator > 0) {
     insights.push({
       text: `Composite staff training rate at ${staffTrainingRate}% -- staff are well trained in kitchen hygiene and product safety.`,
       severity: "positive",
     });
   }
 
-  if (treatmentChildSafetyRate >= 90 && treatmentCoshhRate >= 90 && totalTreatments > 0) {
+  if (meets(treatmentChildSafetyRate, 90) && meets(treatmentCoshhRate, 90) && totalTreatments > 0) {
     insights.push({
       text: `${treatmentChildSafetyRate}% child-safe treatments with ${treatmentCoshhRate}% COSHH compliance -- pest control operations prioritise children's safety.`,
       severity: "positive",

@@ -242,27 +242,27 @@ describe("computeNutritionDietaryManagement", () => {
 
   // ── pct(0,0) = 0 ──────────────────────────────────────────────────────
 
-  describe("pct(0,0) = 0", () => {
-    it("all rates are 0 when arrays are empty (children=1, only one record type present to avoid allEmpty)", () => {
+  describe("rate(0,0) = null", () => {
+    it("all rates are null when arrays are empty (children=1, only one record type present to avoid allEmpty)", () => {
       const r = computeNutritionDietaryManagement(baseInput({
         total_children: 1,
         // provide a single food hygiene record so we aren't allEmpty
         food_hygiene_records: [makeFoodHygiene({ overall_score: 95 })],
       }));
       // rates that depend on empty arrays should be 0
-      expect(r.meal_plan_compliance_rate).toBe(0);
-      expect(r.special_diet_adherence_rate).toBe(0);
-      expect(r.child_choice_rate).toBe(0);
-      expect(r.meal_nutritional_guideline_rate).toBe(0);
-      expect(r.allergen_check_rate).toBe(0);
-      expect(r.fresh_ingredient_rate).toBe(0);
-      expect(r.cultural_needs_met_rate).toBe(0);
-      expect(r.dietary_documentation_rate).toBe(0);
-      expect(r.dietary_staff_informed_rate).toBe(0);
-      expect(r.emergency_plan_rate).toBe(0);
-      expect(r.nutrition_goals_met_rate).toBe(0);
-      expect(r.dietitian_referral_completion_rate).toBe(0);
-      expect(r.corrective_action_completion_rate).toBe(0);
+      expect(r.meal_plan_compliance_rate).toBeNull();
+      expect(r.special_diet_adherence_rate).toBeNull();
+      expect(r.child_choice_rate).toBeNull();
+      expect(r.meal_nutritional_guideline_rate).toBeNull();
+      expect(r.allergen_check_rate).toBeNull();
+      expect(r.fresh_ingredient_rate).toBeNull();
+      expect(r.cultural_needs_met_rate).toBeNull();
+      expect(r.dietary_documentation_rate).toBeNull();
+      expect(r.dietary_staff_informed_rate).toBeNull();
+      expect(r.emergency_plan_rate).toBeNull();
+      expect(r.nutrition_goals_met_rate).toBeNull();
+      expect(r.dietitian_referral_completion_rate).toBeNull();
+      expect(r.corrective_action_completion_rate).toBeNull();
     });
   });
 
@@ -751,7 +751,7 @@ describe("computeNutritionDietaryManagement", () => {
       expect(r.nutrition_score).toBe(52);
     });
 
-    it("emergencyPlanRate is 0 (pct(0,0)) when no severe/life-threatening reqs exist", () => {
+    it("emergencyPlanRate is null (rate(0,0)=null) when no severe/life-threatening reqs exist", () => {
       const reqs = [
         makeDietaryRequirement({ severity: "moderate", active: true, documented: false, all_staff_informed: false, kitchen_notified: false }),
       ];
@@ -760,7 +760,7 @@ describe("computeNutritionDietaryManagement", () => {
         dietary_requirement_records: reqs,
       }));
       // pct(0,0) = 0 for emergency_plan_rate since no severe/life_threatening
-      expect(r.emergency_plan_rate).toBe(0);
+      expect(r.emergency_plan_rate).toBeNull();
       // bonus9 needs emergencyPlanRate >= 80, it's 0 so no bonus
       expect(r.nutrition_score).toBe(52);
     });
@@ -1640,7 +1640,7 @@ describe("computeNutritionDietaryManagement", () => {
       expect(r.dietary_requirement_coverage_rate).toBe(100);
     });
 
-    it("nutrition_assessment_rate is unmeasured when total_children is 0 but assessments exist", () => {
+    it("nutrition_assessment_rate is unmeasured when total_children is null but assessments exist", () => {
       // Can't actually have 0 children + records without hitting allEmpty guard,
       // but if we have assessments with 0 children it means we have records, so not allEmpty
       // Actually: total_children = 0 + records present => not allEmpty, will compute
@@ -2865,7 +2865,7 @@ describe("computeNutritionDietaryManagement", () => {
       }));
       // No active reqs: coverage = 0, documentation = pct(0,0)=0, etc.
       expect(r.dietary_requirement_coverage_rate).toBe(0);
-      expect(r.dietary_documentation_rate).toBe(0);
+      expect(r.dietary_documentation_rate).toBeNull();
     });
 
     it("handles only inactive special diets", () => {
@@ -2877,7 +2877,7 @@ describe("computeNutritionDietaryManagement", () => {
         special_diet_records: diets,
       }));
       // Inactive: adherence = pct(0,0) = 0, but totalSpecialDietMeals=0 so no penalty
-      expect(r.special_diet_adherence_rate).toBe(0);
+      expect(r.special_diet_adherence_rate).toBeNull();
       expect(r.total_special_diets).toBe(1);
     });
 
@@ -3054,12 +3054,12 @@ describe("computeNutritionDietaryManagement", () => {
       expect(r.meal_plan_compliance_rate).toBe(67);
     });
 
-    it("handles corrective actions where required is 0 (rate=0)", () => {
+    it("handles corrective actions where required is null (rate=0)", () => {
       const r = computeNutritionDietaryManagement(baseInput({
         total_children: 1,
         food_hygiene_records: [makeFoodHygiene({ corrective_actions_required: 0, corrective_actions_completed: 0 })],
       }));
-      expect(r.corrective_action_completion_rate).toBe(0);
+      expect(r.corrective_action_completion_rate).toBeNull();
     });
 
     it("handles nutritional guideline rate concern between 50 and 70", () => {

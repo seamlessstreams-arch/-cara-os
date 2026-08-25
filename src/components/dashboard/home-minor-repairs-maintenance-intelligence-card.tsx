@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { MinorRepairsRating } from "@/lib/engines/home-minor-repairs-maintenance-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 const RATING_STYLES: Record<MinorRepairsRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -57,7 +58,7 @@ export function HomeMinorRepairsMaintenanceIntelligenceCard() {
             <Wrench className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-stone-600")} />
             <span className="text-slate-900 font-bold">Minor Repairs & Maintenance</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.maintenance_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.maintenance_score}%</span>}
+            {d.maintenance_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.maintenance_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -65,28 +66,28 @@ export function HomeMinorRepairsMaintenanceIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.maintenance_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.request_response_rate >= 90 ? "bg-green-50" : d.request_response_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.request_response_rate >= 90 ? "text-[--cs-success]" : d.request_response_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.request_response_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.request_response_rate, 90) ? "bg-green-50" : meets(d.request_response_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.request_response_rate, 90) ? "text-[--cs-success]" : meets(d.request_response_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.request_response_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Response</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.repair_completion_rate >= 90 ? "bg-green-50" : d.repair_completion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.repair_completion_rate >= 90 ? "text-[--cs-success]" : d.repair_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.repair_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.repair_completion_rate, 90) ? "bg-green-50" : meets(d.repair_completion_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.repair_completion_rate, 90) ? "text-[--cs-success]" : meets(d.repair_completion_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.repair_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Repairs</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.safety_check_rate >= 90 ? "bg-green-50" : d.safety_check_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.safety_check_rate >= 90 ? "text-[--cs-success]" : d.safety_check_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.safety_check_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.safety_check_rate, 90) ? "bg-green-50" : meets(d.safety_check_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.safety_check_rate, 90) ? "text-[--cs-success]" : meets(d.safety_check_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.safety_check_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Safety</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.condition_compliance_rate >= 90 ? "bg-green-50" : d.condition_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.condition_compliance_rate >= 90 ? "text-[--cs-success]" : d.condition_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.condition_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.condition_compliance_rate, 90) ? "bg-green-50" : meets(d.condition_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.condition_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.condition_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.condition_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Condition</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.preventative_maintenance_rate >= 90 ? "bg-green-50" : d.preventative_maintenance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.preventative_maintenance_rate >= 90 ? "text-[--cs-success]" : d.preventative_maintenance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.preventative_maintenance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.preventative_maintenance_rate, 90) ? "bg-green-50" : meets(d.preventative_maintenance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.preventative_maintenance_rate, 90) ? "text-[--cs-success]" : meets(d.preventative_maintenance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.preventative_maintenance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Prevent.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_environment_rate >= 90 ? "bg-green-50" : d.child_environment_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_environment_rate >= 90 ? "text-[--cs-success]" : d.child_environment_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_environment_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_environment_rate, 90) ? "bg-green-50" : meets(d.child_environment_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_environment_rate, 90) ? "text-[--cs-success]" : meets(d.child_environment_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_environment_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Child Env.</p>
             </div>
           </div>

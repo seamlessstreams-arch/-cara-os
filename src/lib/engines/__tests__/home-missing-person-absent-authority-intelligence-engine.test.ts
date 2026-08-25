@@ -196,12 +196,12 @@ describe("Home Missing Person & Absent Without Authority Intelligence Engine", (
 
     it("returns all rates at 0", () => {
       const r = computeMissingPersonAbsentAuthority(baseInput({ total_children: 0 }));
-      expect(r.protocol_adherence_rate).toBe(0);
-      expect(r.return_interview_rate).toBe(0);
-      expect(r.risk_update_rate).toBe(0);
-      expect(r.police_liaison_rate).toBe(0);
-      expect(r.pattern_analysis_rate).toBe(0);
-      expect(r.prevention_rate).toBe(0);
+      expect(r.protocol_adherence_rate).toBeNull();
+      expect(r.return_interview_rate).toBeNull();
+      expect(r.risk_update_rate).toBeNull();
+      expect(r.police_liaison_rate).toBeNull();
+      expect(r.pattern_analysis_rate).toBeNull();
+      expect(r.prevention_rate).toBeNull();
     });
 
     it("has no strengths, concerns, recommendations, or insights", () => {
@@ -784,12 +784,12 @@ describe("Home Missing Person & Absent Without Authority Intelligence Engine", (
       expect(r.return_interview_rate).toBe(100);
     });
 
-    it("returns 0 when no closed episodes exist", () => {
+    it("returns null when no closed episodes exist", () => {
       const episodes = makeEpisodeSet(3, { outcome: "ongoing" });
       const r = computeMissingPersonAbsentAuthority(baseInput({
         missing_protocol_records: episodes,
       }));
-      expect(r.return_interview_rate).toBe(0);
+      expect(r.return_interview_rate).toBeNull();
     });
   });
 
@@ -807,7 +807,7 @@ describe("Home Missing Person & Absent Without Authority Intelligence Engine", (
       expect(r.return_interview_quality_avg).toBe(4);
     });
 
-    it("returns 0 when no interviews exist", () => {
+    it("returns null when no interviews exist", () => {
       const r = computeMissingPersonAbsentAuthority(baseInput({
         missing_protocol_records: makeEpisodeSet(3),
       }));
@@ -826,13 +826,13 @@ describe("Home Missing Person & Absent Without Authority Intelligence Engine", (
       expect(r.risk_update_rate).toBe(60);
     });
 
-    it("returns 0 when no episodes and no updates", () => {
+    it("returns null when no episodes and no updates", () => {
       const r = computeMissingPersonAbsentAuthority(baseInput({
         missing_protocol_records: [],
         risk_assessment_update_records: [makeRiskUpdate()],
       }));
       // pct(uniqueEpisodesWithUpdate, 0) = 0
-      expect(r.risk_update_rate).toBe(0);
+      expect(r.risk_update_rate).toBeNull();
     });
   });
 
@@ -892,7 +892,7 @@ describe("Home Missing Person & Absent Without Authority Intelligence Engine", (
       expect(r.pattern_analysis_rate).toBe(50);
     });
 
-    it("returns 0 when no children have episodes", () => {
+    it("returns null when no children have episodes", () => {
       const r = computeMissingPersonAbsentAuthority(baseInput({
         missing_protocol_records: [],
         pattern_analysis_records: [makePattern()],
@@ -916,7 +916,7 @@ describe("Home Missing Person & Absent Without Authority Intelligence Engine", (
       expect(r.prevention_rate).toBe(50);
     });
 
-    it("returns 0 when no pattern analyses", () => {
+    it("returns null when no pattern analyses", () => {
       const r = computeMissingPersonAbsentAuthority(baseInput({
         missing_protocol_records: makeEpisodeSet(3),
       }));
@@ -2211,7 +2211,7 @@ describe("Home Missing Person & Absent Without Authority Intelligence Engine", (
         return_interview_records: interviews,
       }));
       // 0 closed episodes → denominator is 0 → pct returns 0
-      expect(r.return_interview_rate).toBe(0);
+      expect(r.return_interview_rate).toBeNull();
     });
 
     it("handles risk updates without matching episodes", () => {

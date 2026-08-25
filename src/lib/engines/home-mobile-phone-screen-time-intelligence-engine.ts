@@ -1,3 +1,4 @@
+import { above, below, meanOf, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME MOBILE PHONE & SCREEN TIME INTELLIGENCE ENGINE
 // Monitors how well the home manages children's screen time, age-appropriate
@@ -160,10 +161,6 @@ export interface MobilePhoneScreenTimeResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -188,12 +185,12 @@ function emptyResult(
     headline,
     total_screen_time_records: 0,
     total_content_checks: 0,
-    screen_time_management_rate: 0,
-    content_monitoring_rate: 0,
-    usage_agreement_rate: 0,
-    digital_wellbeing_rate: 0,
-    self_regulation_rate: 0,
-    child_satisfaction_rate: 0,
+    screen_time_management_rate: null,
+    content_monitoring_rate: null,
+    usage_agreement_rate: null,
+    digital_wellbeing_rate: null,
+    self_regulation_rate: null,
+    child_satisfaction_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -273,24 +270,24 @@ export function computeMobilePhoneScreenTime(
   const totalScreenTimeRecords = screen_time_records.length;
 
   const limitAdhered = screen_time_records.filter((r) => r.limit_adhered_to).length;
-  const limitAdherenceRate = pct(limitAdhered, totalScreenTimeRecords);
+  const limitAdherenceRate = rate(limitAdhered, totalScreenTimeRecords);
 
   const bedtimeHandover = screen_time_records.filter((r) => r.bedtime_device_handover).length;
-  const bedtimeHandoverRate = pct(bedtimeHandover, totalScreenTimeRecords);
+  const bedtimeHandoverRate = rate(bedtimeHandover, totalScreenTimeRecords);
 
   const childSelfManaged = screen_time_records.filter((r) => r.child_self_managed).length;
-  const selfManagedRate = pct(childSelfManaged, totalScreenTimeRecords);
+  const selfManagedRate = rate(childSelfManaged, totalScreenTimeRecords);
 
   // Over-limit records: actual > agreed by more than 15 minutes
   const overLimitRecords = screen_time_records.filter(
     (r) => r.actual_usage_minutes > r.agreed_limit_minutes + 15,
   ).length;
-  const overLimitRate = pct(overLimitRecords, totalScreenTimeRecords);
+  const overLimitRate = rate(overLimitRecords, totalScreenTimeRecords);
 
   // Screen time management composite: limit adherence + bedtime handover
   const screenTimeManagementNumerator = limitAdhered + bedtimeHandover;
   const screenTimeManagementDenominator = totalScreenTimeRecords * 2;
-  const screenTimeManagementRate = pct(screenTimeManagementNumerator, screenTimeManagementDenominator);
+  const screenTimeManagementRate = rate(screenTimeManagementNumerator, screenTimeManagementDenominator);
 
   // --- Content monitoring metrics ---
   const totalContentChecks = content_monitoring_records.length;
@@ -298,10 +295,10 @@ export function computeMobilePhoneScreenTime(
   const ageAppropriateContent = content_monitoring_records.filter((r) => r.age_appropriate_content).length;
 
   const filtersActive = content_monitoring_records.filter((r) => r.filters_active).length;
-  const filtersActiveRate = pct(filtersActive, totalContentChecks);
+  const filtersActiveRate = rate(filtersActive, totalContentChecks);
 
   const discussionWithChild = content_monitoring_records.filter((r) => r.discussion_with_child).length;
-  const discussionRate = pct(discussionWithChild, totalContentChecks);
+  const discussionRate = rate(discussionWithChild, totalContentChecks);
 
   const childInformed = content_monitoring_records.filter((r) => r.child_informed).length;
 
@@ -310,12 +307,12 @@ export function computeMobilePhoneScreenTime(
   const safeguardingMade = content_monitoring_records.filter(
     (r) => r.safeguarding_referral_needed && r.safeguarding_referral_made,
   ).length;
-  const safeguardingComplianceRate = pct(safeguardingMade, safeguardingNeeded);
+  const safeguardingComplianceRate = rate(safeguardingMade, safeguardingNeeded);
 
   // Content monitoring composite: age-appropriate + filters active + child informed
   const contentMonitoringNumerator = ageAppropriateContent + filtersActive + childInformed;
   const contentMonitoringDenominator = totalContentChecks * 3;
-  const contentMonitoringRate = pct(contentMonitoringNumerator, contentMonitoringDenominator);
+  const contentMonitoringRate = rate(contentMonitoringNumerator, contentMonitoringDenominator);
 
   // --- Usage agreement metrics ---
   const totalAgreements = usage_agreement_records.length;
@@ -324,10 +321,10 @@ export function computeMobilePhoneScreenTime(
     usage_agreement_records.filter((r) => r.agreement_active).map((r) => r.child_id),
   ).size;
   const agreementCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenWithAgreements, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenWithAgreements, total_children) : null;
 
   const childContributed = usage_agreement_records.filter((r) => r.child_contributed).length;
-  const childContributionRate = pct(childContributed, totalAgreements);
+  const childContributionRate = rate(childContributed, totalAgreements);
 
   const agreementChecks = [
     (a: UsageAgreementRecordInput) => a.covers_screen_time_limits,
@@ -344,16 +341,17 @@ export function computeMobilePhoneScreenTime(
       if (check(rec)) totalAgreementChecksPassed++;
     }
   }
-  const agreementComprehensivenessRate = pct(totalAgreementChecksPassed, totalAgreementChecksPossible);
+  const agreementComprehensivenessRate = rate(totalAgreementChecksPassed, totalAgreementChecksPossible);
 
   const socialWorkerInformed = usage_agreement_records.filter((r) => r.social_worker_informed).length;
-  const socialWorkerInformedRate = pct(socialWorkerInformed, totalAgreements);
+  const socialWorkerInformedRate = rate(socialWorkerInformed, totalAgreements);
 
   // Usage agreement composite: coverage + child contributed + comprehensive
-  const usageAgreementRate =
-    totalAgreements > 0
-      ? Math.round((agreementCoverageRate + childContributionRate + agreementComprehensivenessRate) / 3)
-      : null;
+  // coverage is per child and comprehensiveness per possible check — meanOf
+  // averages what is measured instead of fabricating unmeasured terms.
+  const usageAgreementRate = totalAgreements > 0
+    ? meanOf([agreementCoverageRate, childContributionRate, agreementComprehensivenessRate])
+    : null;
 
   // --- Digital wellbeing metrics ---
   const totalWellbeingSessions = digital_wellbeing_records.length;
@@ -361,7 +359,7 @@ export function computeMobilePhoneScreenTime(
   const childEngaged = digital_wellbeing_records.filter((r) => r.child_engaged).length;
 
   const childFeedbackPositive = digital_wellbeing_records.filter((r) => r.child_feedback_positive).length;
-  const childSatisfactionRate = pct(childFeedbackPositive, totalWellbeingSessions);
+  const childSatisfactionRate = rate(childFeedbackPositive, totalWellbeingSessions);
 
   const learningOutcomesAchieved = digital_wellbeing_records.filter((r) => r.learning_outcomes_achieved).length;
 
@@ -369,14 +367,14 @@ export function computeMobilePhoneScreenTime(
   const followUpCompleted = digital_wellbeing_records.filter(
     (r) => r.follow_up_planned && r.follow_up_completed,
   ).length;
-  const followUpCompletionRate = pct(followUpCompleted, followUpPlanned);
+  const followUpCompletionRate = rate(followUpCompleted, followUpPlanned);
 
   // Digital wellbeing composite: engaged + learning outcomes + follow-up
   const digitalWellbeingNumerator = childEngaged + learningOutcomesAchieved + followUpCompleted;
   const digitalWellbeingDenominator = totalWellbeingSessions + totalWellbeingSessions + followUpPlanned;
   const digitalWellbeingRate =
     digitalWellbeingDenominator > 0
-      ? pct(digitalWellbeingNumerator, digitalWellbeingDenominator)
+      ? rate(digitalWellbeingNumerator, digitalWellbeingDenominator)
       : null;
 
   // --- Self-regulation metrics ---
@@ -397,25 +395,25 @@ export function computeMobilePhoneScreenTime(
       if (check(rec)) totalSelfRegChecksPassed++;
     }
   }
-  const selfRegulationRate = pct(totalSelfRegChecksPassed, totalSelfRegChecksPossible);
+  const selfRegulationRate = rate(totalSelfRegChecksPassed, totalSelfRegChecksPossible);
 
   const improved = self_regulation_records.filter((r) => r.improvement_since_last === "improved").length;
-  const improvementRate = pct(improved, totalSelfRegRecords);
+  const improvementRate = rate(improved, totalSelfRegRecords);
 
   const declined = self_regulation_records.filter((r) => r.improvement_since_last === "declined").length;
-  const declinedRate = pct(declined, totalSelfRegRecords);
+  const declinedRate = rate(declined, totalSelfRegRecords);
 
   // ── Scoring: base 52, max bonuses +28, 4 guarded penalties ─────────
 
   let score = 52;
 
   // --- Bonus 1: screenTimeManagementRate (>=90: +5, >=70: +3) ---
-  if (screenTimeManagementRate >= 90) score += 5;
-  else if (screenTimeManagementRate >= 70) score += 3;
+  if (meets(screenTimeManagementRate, 90)) score += 5;
+  else if (meets(screenTimeManagementRate, 70)) score += 3;
 
   // --- Bonus 2: contentMonitoringRate (>=90: +5, >=70: +3) ---
-  if (contentMonitoringRate >= 90) score += 5;
-  else if (contentMonitoringRate >= 70) score += 3;
+  if (meets(contentMonitoringRate, 90)) score += 5;
+  else if (meets(contentMonitoringRate, 70)) score += 3;
 
   // --- Bonus 3: usageAgreementRate (>=85: +5, >=65: +2) ---
   if ((usageAgreementRate ?? 0) >= 85) score += 5;
@@ -426,26 +424,26 @@ export function computeMobilePhoneScreenTime(
   else if ((digitalWellbeingRate ?? 0) >= 65) score += 2;
 
   // --- Bonus 5: selfRegulationRate (>=85: +5, >=65: +2) ---
-  if (selfRegulationRate >= 85) score += 5;
-  else if (selfRegulationRate >= 65) score += 2;
+  if (meets(selfRegulationRate, 85)) score += 5;
+  else if (meets(selfRegulationRate, 65)) score += 2;
 
   // --- Bonus 6: childSatisfactionRate (>=90: +4, >=70: +2) ---
-  if (childSatisfactionRate >= 90) score += 4;
-  else if (childSatisfactionRate >= 70) score += 2;
+  if (meets(childSatisfactionRate, 90)) score += 4;
+  else if (meets(childSatisfactionRate, 70)) score += 2;
 
   // ── Penalties (4 guarded) ─────────────────────────────────────────
 
   // Penalty 1: screenTimeManagementRate < 40 → -5
-  if (screenTimeManagementRate < 40 && totalScreenTimeRecords > 0) score -= 5;
+  if (below(screenTimeManagementRate, 40) && totalScreenTimeRecords > 0) score -= 5;
 
   // Penalty 2: contentMonitoringRate < 40 → -5
-  if (contentMonitoringRate < 40 && totalContentChecks > 0) score -= 5;
+  if (below(contentMonitoringRate, 40) && totalContentChecks > 0) score -= 5;
 
   // Penalty 3: safeguarding referral missed → -5
-  if (safeguardingNeeded > 0 && safeguardingComplianceRate < 100) score -= 5;
+  if (safeguardingNeeded > 0 && below(safeguardingComplianceRate, 100)) score -= 5;
 
   // Penalty 4: overLimitRate > 50 → -3
-  if (overLimitRate > 50 && totalScreenTimeRecords > 0) score -= 3;
+  if (above(overLimitRate, 50) && totalScreenTimeRecords > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -455,21 +453,21 @@ export function computeMobilePhoneScreenTime(
 
   const strengths: string[] = [];
 
-  if (screenTimeManagementRate >= 90 && totalScreenTimeRecords > 0) {
+  if (meets(screenTimeManagementRate, 90) && totalScreenTimeRecords > 0) {
     strengths.push(
       `${screenTimeManagementRate}% screen time management compliance — children's screen time limits are consistently upheld and devices are managed effectively at bedtime, promoting healthy digital habits.`,
     );
-  } else if (screenTimeManagementRate >= 70 && totalScreenTimeRecords > 0) {
+  } else if (meets(screenTimeManagementRate, 70) && totalScreenTimeRecords > 0) {
     strengths.push(
       `${screenTimeManagementRate}% screen time management — the home generally maintains effective screen time boundaries for children.`,
     );
   }
 
-  if (contentMonitoringRate >= 90 && totalContentChecks > 0) {
+  if (meets(contentMonitoringRate, 90) && totalContentChecks > 0) {
     strengths.push(
       `${contentMonitoringRate}% content monitoring effectiveness — age-appropriate content is consistently ensured, filters are active, and children are informed about monitoring, demonstrating transparent safeguarding practice.`,
     );
-  } else if (contentMonitoringRate >= 70 && totalContentChecks > 0) {
+  } else if (meets(contentMonitoringRate, 70) && totalContentChecks > 0) {
     strengths.push(
       `${contentMonitoringRate}% content monitoring — the home maintains generally effective oversight of children's digital content.`,
     );
@@ -495,61 +493,61 @@ export function computeMobilePhoneScreenTime(
     );
   }
 
-  if (selfRegulationRate >= 85 && totalSelfRegRecords > 0) {
+  if (meets(selfRegulationRate, 85) && totalSelfRegRecords > 0) {
     strengths.push(
       `${selfRegulationRate}% self-regulation capability — children demonstrate strong ability to manage their own screen time, recognise overuse, take voluntary breaks, and balance online and offline activities.`,
     );
-  } else if (selfRegulationRate >= 65 && totalSelfRegRecords > 0) {
+  } else if (meets(selfRegulationRate, 65) && totalSelfRegRecords > 0) {
     strengths.push(
       `${selfRegulationRate}% self-regulation capability — most children show developing skills in managing their own screen time and digital habits.`,
     );
   }
 
-  if (childSatisfactionRate >= 90 && totalWellbeingSessions > 0) {
+  if (meets(childSatisfactionRate, 90) && totalWellbeingSessions > 0) {
     strengths.push(
       `${childSatisfactionRate}% positive child feedback on digital wellbeing support — children feel the home's approach to screen time and digital safety is fair, supportive, and helpful.`,
     );
-  } else if (childSatisfactionRate >= 70 && totalWellbeingSessions > 0) {
+  } else if (meets(childSatisfactionRate, 70) && totalWellbeingSessions > 0) {
     strengths.push(
       `${childSatisfactionRate}% positive child feedback — most children report positive experiences with the home's digital wellbeing approach.`,
     );
   }
 
-  if (limitAdherenceRate >= 90 && totalScreenTimeRecords > 0) {
+  if (meets(limitAdherenceRate, 90) && totalScreenTimeRecords > 0) {
     strengths.push(
       `${limitAdherenceRate}% screen time limit adherence — children consistently stay within agreed limits, reflecting effective boundary-setting and child cooperation.`,
     );
-  } else if (limitAdherenceRate >= 70 && totalScreenTimeRecords > 0) {
+  } else if (meets(limitAdherenceRate, 70) && totalScreenTimeRecords > 0) {
     strengths.push(
       `${limitAdherenceRate}% screen time limit adherence — the majority of children's screen time stays within agreed boundaries.`,
     );
   }
 
-  if (bedtimeHandoverRate >= 90 && totalScreenTimeRecords > 0) {
+  if (meets(bedtimeHandoverRate, 90) && totalScreenTimeRecords > 0) {
     strengths.push(
       `${bedtimeHandoverRate}% bedtime device handover compliance — devices are consistently collected before bedtime, supporting children's sleep hygiene and protecting against unsupervised nighttime use.`,
     );
-  } else if (bedtimeHandoverRate >= 70 && totalScreenTimeRecords > 0) {
+  } else if (meets(bedtimeHandoverRate, 70) && totalScreenTimeRecords > 0) {
     strengths.push(
       `${bedtimeHandoverRate}% bedtime device handover — devices are generally collected before bedtime for most children.`,
     );
   }
 
-  if (filtersActiveRate >= 90 && totalContentChecks > 0) {
+  if (meets(filtersActiveRate, 90) && totalContentChecks > 0) {
     strengths.push(
       `${filtersActiveRate}% of devices have active content filters — age-appropriate filtering is consistently maintained across children's devices, providing a strong first line of digital safeguarding.`,
     );
-  } else if (filtersActiveRate >= 70 && totalContentChecks > 0) {
+  } else if (meets(filtersActiveRate, 70) && totalContentChecks > 0) {
     strengths.push(
       `${filtersActiveRate}% of devices have active content filters — filtering is generally maintained across children's devices.`,
     );
   }
 
-  if (childContributionRate >= 90 && totalAgreements > 0) {
+  if (meets(childContributionRate, 90) && totalAgreements > 0) {
     strengths.push(
       `${childContributionRate}% child contribution to usage agreements — children are actively involved in setting their own digital boundaries, fostering ownership and self-regulation.`,
     );
-  } else if (childContributionRate >= 70 && totalAgreements > 0) {
+  } else if (meets(childContributionRate, 70) && totalAgreements > 0) {
     strengths.push(
       `${childContributionRate}% child contribution to usage agreements — most children participate in developing their device usage boundaries.`,
     );
@@ -561,31 +559,31 @@ export function computeMobilePhoneScreenTime(
     );
   }
 
-  if (selfManagedRate >= 70 && totalScreenTimeRecords > 0) {
+  if (meets(selfManagedRate, 70) && totalScreenTimeRecords > 0) {
     strengths.push(
       `${selfManagedRate}% of screen time sessions self-managed by children — children are developing independence in managing their own digital habits, reflecting the home's focus on building self-regulation skills.`,
     );
   }
 
-  if (discussionRate >= 90 && totalContentChecks > 0) {
+  if (meets(discussionRate, 90) && totalContentChecks > 0) {
     strengths.push(
       `${discussionRate}% of content checks include discussion with the child — the home uses monitoring as an educational opportunity rather than a purely restrictive measure, building trust and understanding.`,
     );
   }
 
-  if (improvementRate >= 70 && totalSelfRegRecords > 0) {
+  if (meets(improvementRate, 70) && totalSelfRegRecords > 0) {
     strengths.push(
       `${improvementRate}% of children show improvement in self-regulation — the home's approach to digital wellbeing is having a measurable positive impact on children's ability to manage their own screen time.`,
     );
   }
 
-  if (agreementComprehensivenessRate >= 90 && totalAgreements > 0) {
+  if (meets(agreementComprehensivenessRate, 90) && totalAgreements > 0) {
     strengths.push(
       `${agreementComprehensivenessRate}% agreement comprehensiveness — usage agreements thoroughly cover screen time limits, content boundaries, social media rules, online safety, device care, and consequences.`,
     );
   }
 
-  if (followUpCompletionRate >= 90 && followUpPlanned > 0) {
+  if (meets(followUpCompletionRate, 90) && followUpPlanned > 0) {
     strengths.push(
       `${followUpCompletionRate}% digital wellbeing follow-up completion — planned follow-up actions from wellbeing sessions are consistently completed, ensuring learning is reinforced over time.`,
     );
@@ -595,21 +593,21 @@ export function computeMobilePhoneScreenTime(
 
   const concerns: string[] = [];
 
-  if (screenTimeManagementRate < 40 && totalScreenTimeRecords > 0) {
+  if (below(screenTimeManagementRate, 40) && totalScreenTimeRecords > 0) {
     concerns.push(
       `Only ${screenTimeManagementRate}% screen time management compliance — screen time limits are frequently exceeded and bedtime device collection is inconsistent, leaving children exposed to unmanaged digital access and undermining sleep hygiene.`,
     );
-  } else if (screenTimeManagementRate < 70 && screenTimeManagementRate >= 40 && totalScreenTimeRecords > 0) {
+  } else if (below(screenTimeManagementRate, 70) && meets(screenTimeManagementRate, 40) && totalScreenTimeRecords > 0) {
     concerns.push(
       `Screen time management at ${screenTimeManagementRate}% — inconsistent enforcement of screen time limits and bedtime device collection may affect children's digital wellbeing and sleep patterns.`,
     );
   }
 
-  if (contentMonitoringRate < 40 && totalContentChecks > 0) {
+  if (below(contentMonitoringRate, 40) && totalContentChecks > 0) {
     concerns.push(
       `Only ${contentMonitoringRate}% content monitoring effectiveness — age-appropriate content is not being consistently ensured, filters are not maintained, and children are not informed about monitoring. This represents a significant safeguarding gap.`,
     );
-  } else if (contentMonitoringRate < 70 && contentMonitoringRate >= 40 && totalContentChecks > 0) {
+  } else if (below(contentMonitoringRate, 70) && meets(contentMonitoringRate, 40) && totalContentChecks > 0) {
     concerns.push(
       `Content monitoring at ${contentMonitoringRate}% — some areas of content oversight are inconsistent, potentially leaving children exposed to inappropriate material.`,
     );
@@ -635,70 +633,70 @@ export function computeMobilePhoneScreenTime(
     );
   }
 
-  if (selfRegulationRate < 40 && totalSelfRegRecords > 0) {
+  if (below(selfRegulationRate, 40) && totalSelfRegRecords > 0) {
     concerns.push(
       `Only ${selfRegulationRate}% self-regulation capability — children are struggling to identify overuse, take voluntary breaks, follow agreed limits, or balance screen time with offline activities. Intensive support is needed to develop healthy digital habits.`,
     );
-  } else if (selfRegulationRate < 65 && selfRegulationRate >= 40 && totalSelfRegRecords > 0) {
+  } else if (below(selfRegulationRate, 65) && meets(selfRegulationRate, 40) && totalSelfRegRecords > 0) {
     concerns.push(
       `Self-regulation at ${selfRegulationRate}% — children need additional support to develop the skills needed to manage their own screen time and digital habits independently.`,
     );
   }
 
-  if (childSatisfactionRate < 50 && totalWellbeingSessions > 0) {
+  if (below(childSatisfactionRate, 50) && totalWellbeingSessions > 0) {
     concerns.push(
       `Only ${childSatisfactionRate}% positive child feedback on digital wellbeing — children do not feel the home's approach to screen time and digital safety is fair or helpful, which may indicate overly restrictive or poorly communicated policies.`,
     );
-  } else if (childSatisfactionRate < 70 && childSatisfactionRate >= 50 && totalWellbeingSessions > 0) {
+  } else if (below(childSatisfactionRate, 70) && meets(childSatisfactionRate, 50) && totalWellbeingSessions > 0) {
     concerns.push(
       `Child satisfaction with digital wellbeing approach at ${childSatisfactionRate}% — a significant proportion of children are not reporting positive experiences.`,
     );
   }
 
-  if (safeguardingNeeded > 0 && safeguardingComplianceRate < 100) {
+  if (safeguardingNeeded > 0 && below(safeguardingComplianceRate, 100)) {
     const missed = safeguardingNeeded - safeguardingMade;
     concerns.push(
       `${missed} safeguarding referral${missed !== 1 ? "s" : ""} not made despite online safety concerns being identified — this is a serious safeguarding failure that must be addressed immediately.`,
     );
   }
 
-  if (overLimitRate > 50 && totalScreenTimeRecords > 0) {
+  if (above(overLimitRate, 50) && totalScreenTimeRecords > 0) {
     concerns.push(
       `${overLimitRate}% of screen time sessions exceed agreed limits by more than 15 minutes — children are routinely exceeding their agreed boundaries, suggesting limits are either unenforceable or not being monitored.`,
     );
-  } else if (overLimitRate > 30 && overLimitRate <= 50 && totalScreenTimeRecords > 0) {
+  } else if (above(overLimitRate, 30) && overLimitRate! <= 50 && totalScreenTimeRecords > 0) {
     concerns.push(
       `${overLimitRate}% of sessions exceed agreed limits — some children regularly exceed their screen time boundaries.`,
     );
   }
 
-  if (bedtimeHandoverRate < 50 && totalScreenTimeRecords > 0) {
+  if (below(bedtimeHandoverRate, 50) && totalScreenTimeRecords > 0) {
     concerns.push(
       `Only ${bedtimeHandoverRate}% bedtime device handover — devices are frequently not collected before bedtime, leaving children with unsupervised nighttime access that affects sleep and creates safeguarding risks.`,
     );
-  } else if (bedtimeHandoverRate < 70 && bedtimeHandoverRate >= 50 && totalScreenTimeRecords > 0) {
+  } else if (below(bedtimeHandoverRate, 70) && meets(bedtimeHandoverRate, 50) && totalScreenTimeRecords > 0) {
     concerns.push(
       `Bedtime device handover at ${bedtimeHandoverRate}% — devices are not consistently collected before bedtime for all children.`,
     );
   }
 
-  if (filtersActiveRate < 50 && totalContentChecks > 0) {
+  if (below(filtersActiveRate, 50) && totalContentChecks > 0) {
     concerns.push(
       `Only ${filtersActiveRate}% of devices have active content filters — the majority of children's devices lack age-appropriate filtering, creating significant safeguarding risks.`,
     );
-  } else if (filtersActiveRate < 70 && filtersActiveRate >= 50 && totalContentChecks > 0) {
+  } else if (below(filtersActiveRate, 70) && meets(filtersActiveRate, 50) && totalContentChecks > 0) {
     concerns.push(
       `Content filters active on ${filtersActiveRate}% of devices — not all children's devices have appropriate filtering in place.`,
     );
   }
 
-  if (agreementCoverageRate < 50 && total_children > 0 && totalAgreements > 0) {
+  if (below(agreementCoverageRate, 50) && total_children > 0 && totalAgreements > 0) {
     concerns.push(
       `Only ${agreementCoverageRate}% of children have active usage agreements — many children lack clear, documented digital boundaries.`,
     );
   }
 
-  if (declinedRate > 30 && totalSelfRegRecords > 0) {
+  if (above(declinedRate, 30) && totalSelfRegRecords > 0) {
     concerns.push(
       `${declinedRate}% of children show declining self-regulation — some children's ability to manage their own screen time is deteriorating, requiring targeted intervention.`,
     );
@@ -727,7 +725,7 @@ export function computeMobilePhoneScreenTime(
   const recommendations: ScreenTimeRecommendation[] = [];
   let rank = 0;
 
-  if (safeguardingNeeded > 0 && safeguardingComplianceRate < 100) {
+  if (safeguardingNeeded > 0 && below(safeguardingComplianceRate, 100)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -737,7 +735,7 @@ export function computeMobilePhoneScreenTime(
     });
   }
 
-  if (screenTimeManagementRate < 40 && totalScreenTimeRecords > 0) {
+  if (below(screenTimeManagementRate, 40) && totalScreenTimeRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -747,7 +745,7 @@ export function computeMobilePhoneScreenTime(
     });
   }
 
-  if (contentMonitoringRate < 40 && totalContentChecks > 0) {
+  if (below(contentMonitoringRate, 40) && totalContentChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -787,7 +785,7 @@ export function computeMobilePhoneScreenTime(
     });
   }
 
-  if (bedtimeHandoverRate < 50 && totalScreenTimeRecords > 0) {
+  if (below(bedtimeHandoverRate, 50) && totalScreenTimeRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -797,7 +795,7 @@ export function computeMobilePhoneScreenTime(
     });
   }
 
-  if (filtersActiveRate < 50 && totalContentChecks > 0) {
+  if (below(filtersActiveRate, 50) && totalContentChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -807,7 +805,7 @@ export function computeMobilePhoneScreenTime(
     });
   }
 
-  if (overLimitRate > 50 && totalScreenTimeRecords > 0) {
+  if (above(overLimitRate, 50) && totalScreenTimeRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -817,7 +815,7 @@ export function computeMobilePhoneScreenTime(
     });
   }
 
-  if (selfRegulationRate < 40 && totalSelfRegRecords > 0) {
+  if (below(selfRegulationRate, 40) && totalSelfRegRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -827,7 +825,7 @@ export function computeMobilePhoneScreenTime(
     });
   }
 
-  if (childSatisfactionRate < 50 && totalWellbeingSessions > 0) {
+  if (below(childSatisfactionRate, 50) && totalWellbeingSessions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -866,8 +864,8 @@ export function computeMobilePhoneScreenTime(
   }
 
   if (
-    screenTimeManagementRate >= 40 &&
-    screenTimeManagementRate < 70 &&
+    meets(screenTimeManagementRate, 40) &&
+    below(screenTimeManagementRate, 70) &&
     totalScreenTimeRecords > 0
   ) {
     recommendations.push({
@@ -880,8 +878,8 @@ export function computeMobilePhoneScreenTime(
   }
 
   if (
-    contentMonitoringRate >= 40 &&
-    contentMonitoringRate < 70 &&
+    meets(contentMonitoringRate, 40) &&
+    below(contentMonitoringRate, 70) &&
     totalContentChecks > 0
   ) {
     recommendations.push({
@@ -894,8 +892,8 @@ export function computeMobilePhoneScreenTime(
   }
 
   if (
-    selfRegulationRate >= 40 &&
-    selfRegulationRate < 65 &&
+    meets(selfRegulationRate, 40) &&
+    below(selfRegulationRate, 65) &&
     totalSelfRegRecords > 0
   ) {
     recommendations.push({
@@ -908,8 +906,8 @@ export function computeMobilePhoneScreenTime(
   }
 
   if (
-    childSatisfactionRate >= 50 &&
-    childSatisfactionRate < 70 &&
+    meets(childSatisfactionRate, 50) &&
+    below(childSatisfactionRate, 70) &&
     totalWellbeingSessions > 0
   ) {
     recommendations.push({
@@ -921,7 +919,7 @@ export function computeMobilePhoneScreenTime(
     });
   }
 
-  if (discussionRate < 70 && totalContentChecks > 0) {
+  if (below(discussionRate, 70) && totalContentChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -932,7 +930,7 @@ export function computeMobilePhoneScreenTime(
   }
 
   if (
-    agreementCoverageRate < 50 &&
+    below(agreementCoverageRate, 50) &&
     total_children > 0 &&
     totalAgreements > 0
   ) {
@@ -945,7 +943,7 @@ export function computeMobilePhoneScreenTime(
     });
   }
 
-  if (socialWorkerInformedRate < 70 && totalAgreements > 0) {
+  if (below(socialWorkerInformedRate, 70) && totalAgreements > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -961,35 +959,35 @@ export function computeMobilePhoneScreenTime(
 
   // -- Critical insights --
 
-  if (safeguardingNeeded > 0 && safeguardingComplianceRate < 100) {
+  if (safeguardingNeeded > 0 && below(safeguardingComplianceRate, 100)) {
     insights.push({
       text: `Safeguarding referrals were not made for all identified online safety concerns. When content monitoring reveals potential safeguarding risks, referral is mandatory under Reg 7. Failure to refer places children at continued risk and represents a serious regulatory breach.`,
       severity: "critical",
     });
   }
 
-  if (screenTimeManagementRate < 40 && totalScreenTimeRecords > 0) {
+  if (below(screenTimeManagementRate, 40) && totalScreenTimeRecords > 0) {
     insights.push({
       text: `Only ${screenTimeManagementRate}% screen time management compliance. Unmanaged screen time in residential care creates multiple risks: exposure to inappropriate content, disrupted sleep, reduced physical activity, social isolation, and vulnerability to online exploitation. Effective screen time management is a safeguarding imperative.`,
       severity: "critical",
     });
   }
 
-  if (contentMonitoringRate < 40 && totalContentChecks > 0) {
+  if (below(contentMonitoringRate, 40) && totalContentChecks > 0) {
     insights.push({
       text: `Only ${contentMonitoringRate}% content monitoring effectiveness. Children in care are disproportionately vulnerable to online risks including grooming, exploitation, and exposure to harmful content. Inadequate content monitoring leaves children unprotected and fails the home's Reg 7 obligations.`,
       severity: "critical",
     });
   }
 
-  if (overLimitRate > 50 && totalScreenTimeRecords > 0) {
+  if (above(overLimitRate, 50) && totalScreenTimeRecords > 0) {
     insights.push({
       text: `${overLimitRate}% of screen time sessions exceed agreed limits by more than 15 minutes. When children routinely exceed agreed boundaries, it suggests either the limits are unrealistic, enforcement is inconsistent, or children lack the self-regulation skills to manage their own usage. All three possibilities require urgent review.`,
       severity: "critical",
     });
   }
 
-  if (bedtimeHandoverRate < 40 && totalScreenTimeRecords > 0) {
+  if (below(bedtimeHandoverRate, 40) && totalScreenTimeRecords > 0) {
     insights.push({
       text: `Only ${bedtimeHandoverRate}% bedtime device handover. Children having unsupervised access to devices at night creates safeguarding risks including contact with unknown individuals, exposure to harmful content, sleep deprivation, and inability for staff to fulfil their duty of care during sleeping hours.`,
       severity: "critical",
@@ -1020,8 +1018,8 @@ export function computeMobilePhoneScreenTime(
   // -- Warning insights --
 
   if (
-    screenTimeManagementRate >= 40 &&
-    screenTimeManagementRate < 70 &&
+    meets(screenTimeManagementRate, 40) &&
+    below(screenTimeManagementRate, 70) &&
     totalScreenTimeRecords > 0
   ) {
     insights.push({
@@ -1031,8 +1029,8 @@ export function computeMobilePhoneScreenTime(
   }
 
   if (
-    contentMonitoringRate >= 40 &&
-    contentMonitoringRate < 70 &&
+    meets(contentMonitoringRate, 40) &&
+    below(contentMonitoringRate, 70) &&
     totalContentChecks > 0
   ) {
     insights.push({
@@ -1064,8 +1062,8 @@ export function computeMobilePhoneScreenTime(
   }
 
   if (
-    selfRegulationRate >= 40 &&
-    selfRegulationRate < 65 &&
+    meets(selfRegulationRate, 40) &&
+    below(selfRegulationRate, 65) &&
     totalSelfRegRecords > 0
   ) {
     insights.push({
@@ -1075,8 +1073,8 @@ export function computeMobilePhoneScreenTime(
   }
 
   if (
-    childSatisfactionRate >= 50 &&
-    childSatisfactionRate < 70 &&
+    meets(childSatisfactionRate, 50) &&
+    below(childSatisfactionRate, 70) &&
     totalWellbeingSessions > 0
   ) {
     insights.push({
@@ -1086,8 +1084,8 @@ export function computeMobilePhoneScreenTime(
   }
 
   if (
-    overLimitRate > 30 &&
-    overLimitRate <= 50 &&
+    above(overLimitRate, 30) &&
+    overLimitRate! <= 50 &&
     totalScreenTimeRecords > 0
   ) {
     insights.push({
@@ -1097,8 +1095,8 @@ export function computeMobilePhoneScreenTime(
   }
 
   if (
-    bedtimeHandoverRate >= 40 &&
-    bedtimeHandoverRate < 70 &&
+    meets(bedtimeHandoverRate, 40) &&
+    below(bedtimeHandoverRate, 70) &&
     totalScreenTimeRecords > 0
   ) {
     insights.push({
@@ -1107,7 +1105,7 @@ export function computeMobilePhoneScreenTime(
     });
   }
 
-  if (declinedRate > 30 && totalSelfRegRecords > 0) {
+  if (above(declinedRate, 30) && totalSelfRegRecords > 0) {
     insights.push({
       text: `${declinedRate}% of children show declining self-regulation since their last assessment. This deterioration may be linked to changes in placement, peer influence, new devices, or emerging mental health needs. Individual reviews are recommended.`,
       severity: "warning",
@@ -1115,8 +1113,8 @@ export function computeMobilePhoneScreenTime(
   }
 
   if (
-    followUpCompletionRate >= 50 &&
-    followUpCompletionRate < 70 &&
+    meets(followUpCompletionRate, 50) &&
+    below(followUpCompletionRate, 70) &&
     followUpPlanned > 0
   ) {
     insights.push({
@@ -1171,8 +1169,8 @@ export function computeMobilePhoneScreenTime(
   }
 
   if (
-    screenTimeManagementRate >= 90 &&
-    bedtimeHandoverRate >= 90 &&
+    meets(screenTimeManagementRate, 90) &&
+    meets(bedtimeHandoverRate, 90) &&
     totalScreenTimeRecords > 0
   ) {
     insights.push({
@@ -1182,8 +1180,8 @@ export function computeMobilePhoneScreenTime(
   }
 
   if (
-    contentMonitoringRate >= 90 &&
-    filtersActiveRate >= 90 &&
+    meets(contentMonitoringRate, 90) &&
+    meets(filtersActiveRate, 90) &&
     totalContentChecks > 0
   ) {
     insights.push({
@@ -1194,7 +1192,7 @@ export function computeMobilePhoneScreenTime(
 
   if (
     (usageAgreementRate ?? 0) >= 85 &&
-    childContributionRate >= 90 &&
+    meets(childContributionRate, 90) &&
     totalAgreements > 0
   ) {
     insights.push({
@@ -1205,7 +1203,7 @@ export function computeMobilePhoneScreenTime(
 
   if (
     (digitalWellbeingRate ?? 0) >= 85 &&
-    childSatisfactionRate >= 90 &&
+    meets(childSatisfactionRate, 90) &&
     totalWellbeingSessions > 0
   ) {
     insights.push({
@@ -1215,7 +1213,7 @@ export function computeMobilePhoneScreenTime(
   }
 
   if (
-    selfRegulationRate >= 85 &&
+    meets(selfRegulationRate, 85) &&
     totalSelfRegRecords > 0
   ) {
     insights.push({
@@ -1225,7 +1223,7 @@ export function computeMobilePhoneScreenTime(
   }
 
   if (
-    childSatisfactionRate >= 90 &&
+    meets(childSatisfactionRate, 90) &&
     totalWellbeingSessions > 0
   ) {
     insights.push({
@@ -1242,7 +1240,7 @@ export function computeMobilePhoneScreenTime(
   }
 
   if (
-    improvementRate >= 70 &&
+    meets(improvementRate, 70) &&
     totalSelfRegRecords > 0
   ) {
     insights.push({
@@ -1252,7 +1250,7 @@ export function computeMobilePhoneScreenTime(
   }
 
   if (
-    followUpCompletionRate >= 90 &&
+    meets(followUpCompletionRate, 90) &&
     followUpPlanned > 0
   ) {
     insights.push({
@@ -1262,8 +1260,8 @@ export function computeMobilePhoneScreenTime(
   }
 
   if (
-    limitAdherenceRate >= 90 &&
-    selfManagedRate >= 70 &&
+    meets(limitAdherenceRate, 90) &&
+    meets(selfManagedRate, 70) &&
     totalScreenTimeRecords > 0
   ) {
     insights.push({

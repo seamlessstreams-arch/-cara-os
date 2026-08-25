@@ -16,6 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { MultiAgencyRating, HomeMultiAgencyResult } from "@/lib/engines/home-multi-agency-intelligence-engine";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface HomeMultiAgencyResponse {
   data: HomeMultiAgencyResult;
@@ -104,7 +105,7 @@ export function HomeMultiAgencyIntelligenceCard() {
               {ratingStyle.label}
             </span>
             {d.multi_agency_rating !== "insufficient_data" && (
-              <span className="text-xs font-bold tabular-nums text-slate-600">{d.multi_agency_score}%</span>
+              <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.multi_agency_score)}</span>
             )}
           </CardTitle>
         </div>
@@ -138,7 +139,7 @@ export function HomeMultiAgencyIntelligenceCard() {
                   (d.meetings.action_completion_rate ?? 0) >= 90 ? "text-[--cs-success]" :
                   (d.meetings.action_completion_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.meetings.total_meetings_90d > 0 ? `${d.meetings.action_completion_rate}%` : "—"}
+                  {d.meetings.total_meetings_90d > 0 ? `${formatRate(d.meetings.action_completion_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Actions</p>
@@ -152,7 +153,7 @@ export function HomeMultiAgencyIntelligenceCard() {
                   (d.iro.response_compliance_rate ?? 0) >= 100 ? "text-[--cs-success]" :
                   (d.iro.response_compliance_rate ?? 0) >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.iro.total_correspondence > 0 ? `${d.iro.response_compliance_rate}%` : "—"}
+                  {d.iro.total_correspondence > 0 ? `${formatRate(d.iro.response_compliance_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">IRO</p>
@@ -167,7 +168,7 @@ export function HomeMultiAgencyIntelligenceCard() {
                   (d.police.protocol_compliance_rate ?? 0) >= 100 ? "text-[--cs-success]" :
                   (d.police.protocol_compliance_rate ?? 0) >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.police.total_contacts_90d > 0 ? `${d.police.protocol_compliance_rate}%` : "—"}
+                  {d.police.total_contacts_90d > 0 ? `${formatRate(d.police.protocol_compliance_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Police</p>

@@ -141,15 +141,15 @@ describe("Home Medication Safety & Compliance Intelligence Engine", () => {
     it("has zero for all metric rates", () => {
       const r = computeMedicationSafetyCompliance(baseInput());
       expect(r.total_administrations).toBe(0);
-      expect(r.administration_accuracy_rate).toBe(0);
-      expect(r.error_rate).toBe(0);
-      expect(r.audit_compliance_rate).toBe(0);
-      expect(r.storage_pass_rate).toBe(0);
-      expect(r.emergency_protocol_currency_rate).toBe(0);
-      expect(r.witness_rate).toBe(0);
-      expect(r.controlled_drug_compliance_rate).toBe(0);
-      expect(r.prn_documentation_rate).toBe(0);
-      expect(r.staff_competency_rate).toBe(0);
+      expect(r.administration_accuracy_rate).toBeNull();
+      expect(r.error_rate).toBeNull();
+      expect(r.audit_compliance_rate).toBeNull();
+      expect(r.storage_pass_rate).toBeNull();
+      expect(r.emergency_protocol_currency_rate).toBeNull();
+      expect(r.witness_rate).toBeNull();
+      expect(r.controlled_drug_compliance_rate).toBeNull();
+      expect(r.prn_documentation_rate).toBeNull();
+      expect(r.staff_competency_rate).toBeNull();
     });
 
     it("has empty strengths, concerns, recommendations, insights", () => {
@@ -204,7 +204,7 @@ describe("Home Medication Safety & Compliance Intelligence Engine", () => {
     it("still returns 0 for all metric rates", () => {
       const r = computeMedicationSafetyCompliance(baseInput({ total_children: 1 }));
       expect(r.total_administrations).toBe(0);
-      expect(r.administration_accuracy_rate).toBe(0);
+      expect(r.administration_accuracy_rate).toBeNull();
     });
   });
 
@@ -839,14 +839,14 @@ describe("Home Medication Safety & Compliance Intelligence Engine", () => {
       expect(r.safety_score).toBe(54);
     });
 
-    it("does not apply when totalAdministrations is 0 even with errors", () => {
+    it("does not apply when totalAdministrations is null even with errors", () => {
       // errorRate = pct(1,0) = 0, guard: totalAdministrations>0 is false
       const errors = [makeError()];
       const r = computeMedicationSafetyCompliance(
         baseInput({ total_children: 1, medication_errors: errors }),
       );
       // errorRate is 0 because pct(1,0)=0, and guard fails anyway
-      expect(r.error_rate).toBe(0);
+      expect(r.error_rate).toBeNull();
       // No penalty 2
       expect(r.safety_score).toBe(52);
     });
@@ -947,7 +947,7 @@ describe("Home Medication Safety & Compliance Intelligence Engine", () => {
   });
 
   // ── 6. Penalty guards ─────────────────────────────────────────────────
-  describe("Penalty guards: pct(0,0)=0 edge cases", () => {
+  describe("Penalty guards: rate(0,0)=null edge cases", () => {
     it("lockedStorageRate=0 when no storage audits does not trigger penalty 3", () => {
       const admins = [makeAdministration()];
       const r = computeMedicationSafetyCompliance(
@@ -1331,22 +1331,22 @@ describe("Home Medication Safety & Compliance Intelligence Engine", () => {
       expect(r.staff_competency_rate).toBe(50); // pct(2,4) = 50 (>=2 trained: 2 of 4)
     });
 
-    it("returns 0 for all rates when arrays are empty but not allEmpty", () => {
+    it("returns null for all rates when arrays are empty but not allEmpty", () => {
       // Only errors exist
       const errors = [makeError()];
       const r = computeMedicationSafetyCompliance(
         baseInput({ total_children: 1, medication_errors: errors }),
       );
-      expect(r.administration_accuracy_rate).toBe(0);
-      expect(r.witness_rate).toBe(0);
-      expect(r.controlled_drug_compliance_rate).toBe(0);
-      expect(r.prn_documentation_rate).toBe(0);
-      expect(r.audit_compliance_rate).toBe(0);
-      expect(r.storage_pass_rate).toBe(0);
-      expect(r.emergency_protocol_currency_rate).toBe(0);
-      expect(r.staff_competency_rate).toBe(0);
+      expect(r.administration_accuracy_rate).toBeNull();
+      expect(r.witness_rate).toBeNull();
+      expect(r.controlled_drug_compliance_rate).toBeNull();
+      expect(r.prn_documentation_rate).toBeNull();
+      expect(r.audit_compliance_rate).toBeNull();
+      expect(r.storage_pass_rate).toBeNull();
+      expect(r.emergency_protocol_currency_rate).toBeNull();
+      expect(r.staff_competency_rate).toBeNull();
       // error_rate = pct(1,0) = 0
-      expect(r.error_rate).toBe(0);
+      expect(r.error_rate).toBeNull();
     });
   });
 
@@ -2450,7 +2450,7 @@ describe("Home Medication Safety & Compliance Intelligence Engine", () => {
         baseInput({ total_children: 1, medication_administrations: admins }),
       );
       // nonRefusedAdministrations = 0, accuracy = pct(0,0) = 0
-      expect(r.administration_accuracy_rate).toBe(0);
+      expect(r.administration_accuracy_rate).toBeNull();
       expect(r.total_administrations).toBe(2);
     });
 
@@ -2552,15 +2552,15 @@ describe("Home Medication Safety & Compliance Intelligence Engine", () => {
       expect(r.safety_score).toBe(36);
     });
 
-    it("pct(0,0) returns 0", () => {
+    it("rate(0,0)=nullreturns 0", () => {
       // Verify indirectly: 0 admins → administration accuracy = pct(0,0) = 0
       const r = computeMedicationSafetyCompliance(
         baseInput({ total_children: 1, medication_errors: [makeError()] }),
       );
-      expect(r.administration_accuracy_rate).toBe(0);
-      expect(r.witness_rate).toBe(0);
-      expect(r.controlled_drug_compliance_rate).toBe(0);
-      expect(r.prn_documentation_rate).toBe(0);
+      expect(r.administration_accuracy_rate).toBeNull();
+      expect(r.witness_rate).toBeNull();
+      expect(r.controlled_drug_compliance_rate).toBeNull();
+      expect(r.prn_documentation_rate).toBeNull();
     });
 
     it("witnessed_by with whitespace-only string treated as not witnessed", () => {

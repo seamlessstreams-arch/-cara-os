@@ -1,3 +1,4 @@
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME MULTI-AGENCY INTELLIGENCE ENGINE
 // Home-level: aggregates multi-agency meetings, professional attendance,
@@ -121,10 +122,6 @@ export interface HomeMultiAgencyResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function daysBetween(a: string, b: string): number {
   return Math.round(
     (new Date(b).getTime() - new Date(a).getTime()) / 86_400_000,
@@ -166,10 +163,10 @@ export function computeHomeMultiAgency(
   const withParticipation = meetings90d.filter(m =>
     m.meeting_status === "completed" && m.child_participation !== "" && m.child_participation !== "none",
   );
-  const childParticipationRate = pct(withParticipation.length, completedMeetings);
+  const childParticipationRate = rate(withParticipation.length, completedMeetings);
   const totalActions = meetings90d.reduce((sum, m) => sum + m.action_items_count, 0);
   const completedActions = meetings90d.reduce((sum, m) => sum + m.actions_completed, 0);
-  const actionCompletionRate = pct(completedActions, totalActions);
+  const actionCompletionRate = rate(completedActions, totalActions);
 
   const byType: Record<string, number> = {};
   for (const m of meetings90d) {
@@ -191,11 +188,11 @@ export function computeHomeMultiAgency(
     return d >= 0 && d <= 90;
   });
 
-  const childAttendanceRate = pct(
+  const childAttendanceRate = rate(
     profMeetings90d.filter(m => m.child_attended).length,
     profMeetings90d.length,
   );
-  const reportSubmissionRate = pct(
+  const reportSubmissionRate = rate(
     profMeetings90d.filter(m => m.report_submitted).length,
     profMeetings90d.length,
   );
@@ -220,7 +217,7 @@ export function computeHomeMultiAgency(
   // ── IRO Correspondence ────────────────────────────────────────────────
   const iroRequiringResponse = iro_correspondence.filter(c => c.response_required);
   const iroResponseSent = iroRequiringResponse.filter(c => c.response_sent).length;
-  const responseComplianceRate = pct(iroResponseSent, iroRequiringResponse.length);
+  const responseComplianceRate = rate(iroResponseSent, iroRequiringResponse.length);
   const overdueIRO = iroRequiringResponse.filter(c =>
     !c.response_sent && daysBetween(c.response_deadline, today) > 0,
   ).length;
@@ -239,19 +236,19 @@ export function computeHomeMultiAgency(
     return d >= 0 && d <= 90;
   });
 
-  const protocolRate = pct(
+  const protocolRate = rate(
     policeContacts90d.filter(c => c.home_protocol_followed).length,
     policeContacts90d.length,
   );
-  const concordatRate = pct(
+  const concordatRate = rate(
     policeContacts90d.filter(c => c.concordat_principles_applied).length,
     policeContacts90d.length,
   );
-  const appropriateAdultRate = pct(
+  const appropriateAdultRate = rate(
     policeContacts90d.filter(c => c.appropriate_adult_present).length,
     policeContacts90d.length,
   );
-  const restorativeRate = pct(
+  const restorativeRate = rate(
     policeContacts90d.filter(c => c.restorative_opportunity).length,
     policeContacts90d.length,
   );
@@ -272,9 +269,9 @@ export function computeHomeMultiAgency(
   if (totalActions === 0) {
     score += (completedMeetings > 0 ? 2 : 0);
   } else {
-    if (actionCompletionRate >= 90) score += 5;
-    else if (actionCompletionRate >= 70) score += 3;
-    else if (actionCompletionRate >= 50) score += 0;
+    if (meets(actionCompletionRate, 90)) score += 5;
+    else if (meets(actionCompletionRate, 70)) score += 3;
+    else if (meets(actionCompletionRate, 50)) score += 0;
     else score -= 5;
   }
 
@@ -282,9 +279,9 @@ export function computeHomeMultiAgency(
   if (completedMeetings === 0) {
     score += 0;
   } else {
-    if (childParticipationRate >= 80) score += 4;
-    else if (childParticipationRate >= 60) score += 2;
-    else if (childParticipationRate >= 40) score += 0;
+    if (meets(childParticipationRate, 80)) score += 4;
+    else if (meets(childParticipationRate, 60)) score += 2;
+    else if (meets(childParticipationRate, 40)) score += 0;
     else score -= 4;
   }
 
@@ -292,9 +289,9 @@ export function computeHomeMultiAgency(
   if (iroRequiringResponse.length === 0) {
     score += 2; // No IRO correspondence requiring response = neutral-positive
   } else {
-    if (responseComplianceRate >= 100 && overdueIRO === 0) score += 4;
-    else if (responseComplianceRate >= 80) score += 2;
-    else if (responseComplianceRate >= 50) score += 0;
+    if (meets(responseComplianceRate, 100) && overdueIRO === 0) score += 4;
+    else if (meets(responseComplianceRate, 80)) score += 2;
+    else if (meets(responseComplianceRate, 50)) score += 0;
     else score -= 4;
   }
 
@@ -302,9 +299,9 @@ export function computeHomeMultiAgency(
   if (profMeetings90d.length === 0) {
     score += 1;
   } else {
-    if (reportSubmissionRate >= 90) score += 3;
-    else if (reportSubmissionRate >= 70) score += 1;
-    else if (reportSubmissionRate >= 50) score += 0;
+    if (meets(reportSubmissionRate, 90)) score += 3;
+    else if (meets(reportSubmissionRate, 70)) score += 1;
+    else if (meets(reportSubmissionRate, 50)) score += 0;
     else score -= 3;
   }
 
@@ -312,9 +309,9 @@ export function computeHomeMultiAgency(
   if (policeContacts90d.length === 0) {
     score += 2; // No police contacts = positive
   } else {
-    if (protocolRate >= 100 && concordatRate >= 80) score += 4;
-    else if (protocolRate >= 80) score += 2;
-    else if (protocolRate >= 60) score += 0;
+    if (meets(protocolRate, 100) && meets(concordatRate, 80)) score += 4;
+    else if (meets(protocolRate, 80)) score += 2;
+    else if (meets(protocolRate, 60)) score += 0;
     else score -= 4;
   }
 
@@ -328,7 +325,7 @@ export function computeHomeMultiAgency(
   if (meetings90d.length === 0) {
     score += 0;
   } else {
-    const cancellationRate = pct(cancelledMeetings, meetings90d.length);
+    const cancellationRate = rate(cancelledMeetings, meetings90d.length)!;
     if (cancellationRate === 0) score += 3;
     else if (cancellationRate <= 15) score += 1;
     else if (cancellationRate <= 30) score += 0;
@@ -358,49 +355,49 @@ export function computeHomeMultiAgency(
   let rank = 0;
 
   // Strengths
-  if (actionCompletionRate >= 90 && totalActions > 0) strengths.push(`${actionCompletionRate}% of multi-agency actions completed — the home follows through on partnership commitments.`);
-  if (childParticipationRate >= 80 && completedMeetings > 0) strengths.push(`${childParticipationRate}% child participation in multi-agency meetings — children's voices are central to planning.`);
-  if (responseComplianceRate >= 100 && iroRequiringResponse.length > 0) strengths.push("100% IRO response compliance — statutory correspondence is prompt and thorough.");
-  if (reportSubmissionRate >= 90 && profMeetings90d.length > 0) strengths.push(`${reportSubmissionRate}% report submission rate for professional meetings — strong accountability.`);
-  if (protocolRate >= 100 && policeContacts90d.length > 0) strengths.push("100% protocol compliance in police contacts — safeguarding children's rights in every interaction.");
+  if (meets(actionCompletionRate, 90) && totalActions > 0) strengths.push(`${actionCompletionRate}% of multi-agency actions completed — the home follows through on partnership commitments.`);
+  if (meets(childParticipationRate, 80) && completedMeetings > 0) strengths.push(`${childParticipationRate}% child participation in multi-agency meetings — children's voices are central to planning.`);
+  if (meets(responseComplianceRate, 100) && iroRequiringResponse.length > 0) strengths.push("100% IRO response compliance — statutory correspondence is prompt and thorough.");
+  if (meets(reportSubmissionRate, 90) && profMeetings90d.length > 0) strengths.push(`${reportSubmissionRate}% report submission rate for professional meetings — strong accountability.`);
+  if (meets(protocolRate, 100) && policeContacts90d.length > 0) strengths.push("100% protocol compliance in police contacts — safeguarding children's rights in every interaction.");
   if (allAgencies.size >= 5) strengths.push(`${allAgencies.size} unique agencies engaged — broad multi-agency network supporting children.`);
 
   // Concerns
   if (overdueIRO > 0) concerns.push(`${overdueIRO} overdue IRO response${overdueIRO > 1 ? "s" : ""} — statutory correspondence must be timely.`);
   if (formalDisputes >= 2) concerns.push(`${formalDisputes} formal IRO disputes — relationship with reviewing officers may need repair.`);
   if (cancelledMeetings >= 3) concerns.push(`${cancelledMeetings} cancelled multi-agency meetings in 90 days — partnership engagement may be faltering.`);
-  if (actionCompletionRate < 50 && totalActions > 0) concerns.push(`Only ${actionCompletionRate}% of multi-agency actions completed — the home may be seen as an unreliable partner.`);
-  if (childParticipationRate < 40 && completedMeetings > 0) concerns.push(`Only ${childParticipationRate}% child participation in meetings — Article 12 UNCRC requires their voice.`);
-  if (protocolRate < 80 && policeContacts90d.length > 0) concerns.push(`Police contact protocol compliance only ${protocolRate}% — children's rights may not be consistently protected.`);
+  if (below(actionCompletionRate, 50) && totalActions > 0) concerns.push(`Only ${actionCompletionRate}% of multi-agency actions completed — the home may be seen as an unreliable partner.`);
+  if (below(childParticipationRate, 40) && completedMeetings > 0) concerns.push(`Only ${childParticipationRate}% child participation in meetings — Article 12 UNCRC requires their voice.`);
+  if (below(protocolRate, 80) && policeContacts90d.length > 0) concerns.push(`Police contact protocol compliance only ${protocolRate}% — children's rights may not be consistently protected.`);
 
   // Recommendations
   if (overdueIRO > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Respond to all outstanding IRO correspondence immediately — overdue responses risk statutory escalation.", urgency: "immediate", regulatory_ref: "Reg 5" });
   }
-  if (actionCompletionRate < 70 && totalActions > 0) {
+  if (below(actionCompletionRate, 70) && totalActions > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Improve multi-agency action follow-through — assign named owners and track in supervision.", urgency: "soon", regulatory_ref: "WT 2023" });
   }
-  if (childParticipationRate < 60 && completedMeetings > 0) {
+  if (below(childParticipationRate, 60) && completedMeetings > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Enhance child participation in multi-agency meetings through preparation, advocacy, and accessible formats.", urgency: "soon", regulatory_ref: "Reg 7" });
   }
-  if (reportSubmissionRate < 70 && profMeetings90d.length > 0) {
+  if (below(reportSubmissionRate, 70) && profMeetings90d.length > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Submit reports for all professional meetings — this demonstrates the home's voice and professional accountability.", urgency: "planned", regulatory_ref: "Reg 22" });
   }
-  if (protocolRate < 100 && policeContacts90d.length > 0) {
+  if (below(protocolRate, 100) && policeContacts90d.length > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Ensure 100% protocol compliance in all police contacts — review Concordat principles with all staff.", urgency: "soon", regulatory_ref: "Concordat" });
   }
 
   // Cara Insights
-  if (actionCompletionRate >= 90 && childParticipationRate >= 80 && responseComplianceRate >= 100 && reportSubmissionRate >= 90) {
+  if (meets(actionCompletionRate, 90) && meets(childParticipationRate, 80) && meets(responseComplianceRate, 100) && meets(reportSubmissionRate, 90)) {
     insights.push({ text: "Multi-agency partnership is exemplary. Actions are completed, children participate, IRO correspondence is timely, and professional reports are submitted. Ofsted will recognise this as outstanding collaborative practice.", severity: "positive" });
   }
   if (formalDisputes >= 2 && overdueIRO >= 2) {
     insights.push({ text: `${formalDisputes} formal disputes and ${overdueIRO} overdue responses to IROs. The relationship with independent reviewing officers appears strained — consider requesting a professional meeting to rebuild trust.`, severity: "critical" });
   }
-  if (cancelledMeetings >= 3 && actionCompletionRate < 50) {
+  if (cancelledMeetings >= 3 && below(actionCompletionRate, 50)) {
     insights.push({ text: "High meeting cancellation rate combined with low action completion suggests the home is struggling to maintain effective multi-agency partnerships. This will concern Ofsted during inspection.", severity: "warning" });
   }
-  if (restorativeRate >= 50 && policeContacts90d.length >= 2) {
+  if (meets(restorativeRate, 50) && policeContacts90d.length >= 2) {
     insights.push({ text: `${restorativeRate}% of police contacts resulted in restorative opportunities — the home is actively diverting children from criminalisation.`, severity: "positive" });
   }
 
@@ -410,7 +407,7 @@ export function computeHomeMultiAgency(
   if (multi_agency_rating === "outstanding") {
     headline = `Outstanding multi-agency partnership — ${totalMeetings} meetings, ${allAgencies.size} agencies engaged.`;
   } else if (multi_agency_rating === "good") {
-    headline = `Good partnership working — ${actionCompletionRate}% action completion. ${concerns.length > 0 ? concerns.length + " area" + (concerns.length > 1 ? "s" : "") + " for improvement." : ""}`;
+    headline = `Good partnership working — ${formatRate(actionCompletionRate)} action completion. ${concerns.length > 0 ? concerns.length + " area" + (concerns.length > 1 ? "s" : "") + " for improvement." : ""}`;
   } else if (multi_agency_rating === "adequate") {
     headline = `Multi-agency working needs improvement — ${concerns.length} concern${concerns.length !== 1 ? "s" : ""} identified.`;
   } else {

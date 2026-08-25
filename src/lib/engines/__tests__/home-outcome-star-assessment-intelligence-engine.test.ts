@@ -2330,7 +2330,7 @@ describe("computeOutcomeStarAssessment", () => {
       expect(result.star_score).toBe(66);
       expect(result.star_rating).toBe("good");
       expect(result.repeat_assessment_rate).toBe(0);
-      expect(result.improvement_rate).toBe(0);
+      expect(result.improvement_rate).toBeNull();
     });
 
     it("home with only declining children", () => {
@@ -2448,7 +2448,7 @@ describe("computeOutcomeStarAssessment", () => {
       const result = computeOutcomeStarAssessment(
         baseInput({ total_children: 5, assessments: [] }),
       );
-      expect(result.repeat_assessment_rate).toBe(0);
+      expect(result.repeat_assessment_rate).toBeNull();
     });
 
     it("rounds percentages to nearest integer", () => {

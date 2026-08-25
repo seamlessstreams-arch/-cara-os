@@ -257,12 +257,12 @@ describe("computeMultiAgencyCollaboration", () => {
       const r = computeMultiAgencyCollaboration(
         baseInput({ total_children: 0 }),
       );
-      expect(r.lac_review_timeliness_rate).toBe(0);
-      expect(r.social_worker_visit_rate).toBe(0);
-      expect(r.therapeutic_engagement_rate).toBe(0);
-      expect(r.education_liaison_rate).toBe(0);
-      expect(r.information_sharing_rate).toBe(0);
-      expect(r.multi_agency_meeting_rate).toBe(0);
+      expect(r.lac_review_timeliness_rate).toBeNull();
+      expect(r.social_worker_visit_rate).toBeNull();
+      expect(r.therapeutic_engagement_rate).toBeNull();
+      expect(r.education_liaison_rate).toBeNull();
+      expect(r.information_sharing_rate).toBeNull();
+      expect(r.multi_agency_meeting_rate).toBeNull();
     });
 
     it("has empty strengths/concerns/recommendations/insights for insufficient_data", () => {
@@ -1284,9 +1284,9 @@ describe("computeMultiAgencyCollaboration", () => {
 
   describe("rate calculations", () => {
     describe("lac_review_timeliness_rate", () => {
-      it("returns 0 when no LAC reviews", () => {
+      it("returns null when no LAC reviews", () => {
         const r = computeMultiAgencyCollaboration(baseInput());
-        expect(r.lac_review_timeliness_rate).toBe(0);
+        expect(r.lac_review_timeliness_rate).toBeNull();
       });
 
       it("returns 100 when all on time", () => {
@@ -1328,9 +1328,9 @@ describe("computeMultiAgencyCollaboration", () => {
     });
 
     describe("social_worker_visit_rate", () => {
-      it("returns 0 when no SW visits", () => {
+      it("returns null when no SW visits", () => {
         const r = computeMultiAgencyCollaboration(baseInput());
-        expect(r.social_worker_visit_rate).toBe(0);
+        expect(r.social_worker_visit_rate).toBeNull();
       });
 
       it("returns 100 when all within timescale", () => {
@@ -1361,9 +1361,9 @@ describe("computeMultiAgencyCollaboration", () => {
     });
 
     describe("therapeutic_engagement_rate", () => {
-      it("returns 0 when no therapeutic records", () => {
+      it("returns null when no therapeutic records", () => {
         const r = computeMultiAgencyCollaboration(baseInput());
-        expect(r.therapeutic_engagement_rate).toBe(0);
+        expect(r.therapeutic_engagement_rate).toBeNull();
       });
 
       it("returns 100 when all engaged", () => {
@@ -1393,9 +1393,9 @@ describe("computeMultiAgencyCollaboration", () => {
     });
 
     describe("education_liaison_rate", () => {
-      it("returns 0 when no education liaisons", () => {
+      it("returns null when no education liaisons", () => {
         const r = computeMultiAgencyCollaboration(baseInput());
-        expect(r.education_liaison_rate).toBe(0);
+        expect(r.education_liaison_rate).toBeNull();
       });
 
       it("returns 100 when all attended by home", () => {
@@ -1426,9 +1426,9 @@ describe("computeMultiAgencyCollaboration", () => {
     });
 
     describe("information_sharing_rate", () => {
-      it("returns 0 when no info sharing records", () => {
+      it("returns null when no info sharing records", () => {
         const r = computeMultiAgencyCollaboration(baseInput());
-        expect(r.information_sharing_rate).toBe(0);
+        expect(r.information_sharing_rate).toBeNull();
       });
 
       it("returns 100 when all timely", () => {
@@ -1460,9 +1460,9 @@ describe("computeMultiAgencyCollaboration", () => {
     });
 
     describe("multi_agency_meeting_rate", () => {
-      it("returns 0 when no info sharing records", () => {
+      it("returns null when no info sharing records", () => {
         const r = computeMultiAgencyCollaboration(baseInput());
-        expect(r.multi_agency_meeting_rate).toBe(0);
+        expect(r.multi_agency_meeting_rate).toBeNull();
       });
 
       it("returns 100 when all are multi-agency meetings", () => {
@@ -2788,7 +2788,7 @@ describe("computeMultiAgencyCollaboration", () => {
       expect(r.agency_rating).toBe("insufficient_data");
     });
 
-    it("pct(0, 0) returns 0", () => {
+    it("rate(0,0)=nullreturns 0", () => {
       // Implicit test: when arrays are empty, rates should be 0
       const r = computeMultiAgencyCollaboration(
         baseInput({
@@ -2796,11 +2796,11 @@ describe("computeMultiAgencyCollaboration", () => {
           // All other arrays empty => pct(0,0) = 0 for those rates
         }),
       );
-      expect(r.social_worker_visit_rate).toBe(0);
-      expect(r.therapeutic_engagement_rate).toBe(0);
-      expect(r.education_liaison_rate).toBe(0);
-      expect(r.information_sharing_rate).toBe(0);
-      expect(r.multi_agency_meeting_rate).toBe(0);
+      expect(r.social_worker_visit_rate).toBeNull();
+      expect(r.therapeutic_engagement_rate).toBeNull();
+      expect(r.education_liaison_rate).toBeNull();
+      expect(r.information_sharing_rate).toBeNull();
+      expect(r.multi_agency_meeting_rate).toBeNull();
     });
 
     it("review types do not affect scoring", () => {

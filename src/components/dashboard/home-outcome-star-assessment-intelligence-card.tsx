@@ -6,6 +6,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Star } from "luci
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { OutcomeStarRating, OutcomeStarResult } from "@/lib/engines/home-outcome-star-assessment-intelligence-engine";
+import { formatRate } from "@/lib/metrics/rate";
 
 function useHomeOutcomeStarAssessmentIntelligence() {
   return useQuery<OutcomeStarResult>({
@@ -63,7 +64,7 @@ export function HomeOutcomeStarAssessmentIntelligenceCard() {
             <Star className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-violet-600")} />
             <span className="text-slate-900 font-bold">Outcome Star</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.star_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.star_score}%</span>}
+            {d.star_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.star_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -77,23 +78,23 @@ export function HomeOutcomeStarAssessmentIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Assessments</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.children_assessed_rate ?? 0) >= 80 ? "bg-green-50" : (d.children_assessed_rate ?? 0) >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.children_assessed_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.children_assessed_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.children_assessed_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.children_assessed_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.children_assessed_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.children_assessed_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Coverage</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.repeat_assessment_rate ?? 0) >= 70 ? "bg-green-50" : (d.repeat_assessment_rate ?? 0) >= 40 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.repeat_assessment_rate ?? 0) >= 70 ? "text-[--cs-success]" : (d.repeat_assessment_rate ?? 0) >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.repeat_assessment_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.repeat_assessment_rate ?? 0) >= 70 ? "text-[--cs-success]" : (d.repeat_assessment_rate ?? 0) >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.repeat_assessment_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Repeats</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.improvement_rate ?? 0) >= 70 ? "bg-green-50" : (d.improvement_rate ?? 0) >= 40 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.improvement_rate ?? 0) >= 70 ? "text-[--cs-success]" : (d.improvement_rate ?? 0) >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.improvement_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.improvement_rate ?? 0) >= 70 ? "text-[--cs-success]" : (d.improvement_rate ?? 0) >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.improvement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Improving</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.action_plan_rate ?? 0) >= 80 ? "bg-green-50" : (d.action_plan_rate ?? 0) >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.action_plan_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.action_plan_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.action_plan_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.action_plan_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.action_plan_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.action_plan_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Actions</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.child_voice_rate ?? 0) >= 80 ? "bg-green-50" : (d.child_voice_rate ?? 0) >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.child_voice_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.child_voice_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_voice_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.child_voice_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.child_voice_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_voice_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Voice</p>
             </div>
           </div>

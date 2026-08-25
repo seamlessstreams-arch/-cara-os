@@ -182,14 +182,14 @@ describe("insufficient_data", () => {
     expect(r.total_comfort_records).toBe(0);
   });
 
-  it("all rates are 0", () => {
+  it("all rates are null", () => {
     const r = computeNoiseSoundManagement(baseInput({ total_children: 0 }));
     expect(r.noise_monitoring_rate).toBeNull();
-    expect(r.quiet_hours_compliance_rate).toBe(0);
+    expect(r.quiet_hours_compliance_rate).toBeNull();
     expect(r.sensory_environment_rate).toBeNull();
     expect(r.sound_insulation_rate).toBeNull();
     expect(r.child_comfort_rate).toBeNull();
-    expect(r.staff_awareness_rate).toBe(0);
+    expect(r.staff_awareness_rate).toBeNull();
   });
 });
 
@@ -228,14 +228,14 @@ describe("inadequate floor — all empty with children on placement", () => {
     expect(r.headline).toContain("urgent attention");
   });
 
-  it("all rates are 0", () => {
+  it("all rates are null", () => {
     const r = computeNoiseSoundManagement(baseInput({ total_children: 3 }));
     expect(r.noise_monitoring_rate).toBeNull();
-    expect(r.quiet_hours_compliance_rate).toBe(0);
+    expect(r.quiet_hours_compliance_rate).toBeNull();
     expect(r.sensory_environment_rate).toBeNull();
     expect(r.sound_insulation_rate).toBeNull();
     expect(r.child_comfort_rate).toBeNull();
-    expect(r.staff_awareness_rate).toBe(0);
+    expect(r.staff_awareness_rate).toBeNull();
   });
 
   it("works with total_children = 1", () => {
@@ -247,7 +247,7 @@ describe("inadequate floor — all empty with children on placement", () => {
 
 // ── 3. pct(0,0) = 0 ────────────────────────────────────────────────────
 
-describe("pct(0,0) edge case", () => {
+describe("rate(0,0)=nulledge case", () => {
   it("rates are 0 when arrays are empty (pct with 0 denominator)", () => {
     const r = computeNoiseSoundManagement(
       baseInput({
@@ -255,11 +255,11 @@ describe("pct(0,0) edge case", () => {
       }),
     );
     expect(r.noise_monitoring_rate).toBeNull();
-    expect(r.quiet_hours_compliance_rate).toBe(0);
+    expect(r.quiet_hours_compliance_rate).toBeNull();
     expect(r.sensory_environment_rate).toBeNull();
     expect(r.sound_insulation_rate).toBeNull();
     expect(r.child_comfort_rate).toBeNull();
-    expect(r.staff_awareness_rate).toBe(0);
+    expect(r.staff_awareness_rate).toBeNull();
   });
 });
 
@@ -1220,7 +1220,7 @@ describe("penalty isolation", () => {
 
 describe("rate calculations", () => {
   describe("noise_monitoring_rate", () => {
-    it("is 0 when no monitoring records", () => {
+    it("is null when no monitoring records", () => {
       const r = computeNoiseSoundManagement(baseInput());
       expect(r.noise_monitoring_rate).toBeNull();
     });
@@ -1269,9 +1269,9 @@ describe("rate calculations", () => {
   });
 
   describe("quiet_hours_compliance_rate", () => {
-    it("is 0 when no quiet hours records", () => {
+    it("is null when no quiet hours records", () => {
       const r = computeNoiseSoundManagement(baseInput());
-      expect(r.quiet_hours_compliance_rate).toBe(0);
+      expect(r.quiet_hours_compliance_rate).toBeNull();
     });
 
     it("calculates correctly", () => {
@@ -1286,7 +1286,7 @@ describe("rate calculations", () => {
   });
 
   describe("sensory_environment_rate", () => {
-    it("is 0 when no sensory records", () => {
+    it("is null when no sensory records", () => {
       const r = computeNoiseSoundManagement(baseInput());
       expect(r.sensory_environment_rate).toBeNull();
     });
@@ -1313,7 +1313,7 @@ describe("rate calculations", () => {
   });
 
   describe("sound_insulation_rate", () => {
-    it("is 0 when no insulation records", () => {
+    it("is null when no insulation records", () => {
       const r = computeNoiseSoundManagement(baseInput());
       expect(r.sound_insulation_rate).toBeNull();
     });
@@ -1335,7 +1335,7 @@ describe("rate calculations", () => {
   });
 
   describe("child_comfort_rate", () => {
-    it("is 0 when no comfort records", () => {
+    it("is null when no comfort records", () => {
       const r = computeNoiseSoundManagement(baseInput());
       expect(r.child_comfort_rate).toBeNull();
     });
@@ -1359,9 +1359,9 @@ describe("rate calculations", () => {
   });
 
   describe("staff_awareness_rate", () => {
-    it("is 0 when no contributing records", () => {
+    it("is null when no contributing records", () => {
       const r = computeNoiseSoundManagement(baseInput());
-      expect(r.staff_awareness_rate).toBe(0);
+      expect(r.staff_awareness_rate).toBeNull();
     });
 
     it("combines source_identified, action_taken, staff_prompt_response, staff_responsive, reviewed_with_child", () => {

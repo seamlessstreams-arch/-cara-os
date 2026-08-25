@@ -172,15 +172,15 @@ describe("Home Night Care Quality Intelligence Engine", () => {
         night_anxiety_support: [],
       });
       expect(r.total_night_checks).toBe(0);
-      expect(r.night_check_compliance_rate).toBe(0);
-      expect(r.night_log_completion_rate).toBe(0);
-      expect(r.handover_completion_rate).toBe(0);
+      expect(r.night_check_compliance_rate).toBeNull();
+      expect(r.night_log_completion_rate).toBeNull();
+      expect(r.handover_completion_rate).toBeNull();
       expect(r.handover_quality_avg).toBe(0);
       expect(r.sleep_assessment_coverage).toBe(0);
-      expect(r.anxiety_support_response_rate).toBe(0);
-      expect(r.check_timeliness_rate).toBe(0);
-      expect(r.incident_documentation_rate).toBe(0);
-      expect(r.child_wellbeing_check_rate).toBe(0);
+      expect(r.anxiety_support_response_rate).toBeNull();
+      expect(r.check_timeliness_rate).toBeNull();
+      expect(r.incident_documentation_rate).toBeNull();
+      expect(r.child_wellbeing_check_rate).toBeNull();
     });
 
     it("returns inadequate with score 15 when all arrays empty but children > 0", () => {
@@ -257,15 +257,15 @@ describe("Home Night Care Quality Intelligence Engine", () => {
         night_anxiety_support: [],
       });
       expect(r.total_night_checks).toBe(0);
-      expect(r.night_check_compliance_rate).toBe(0);
-      expect(r.night_log_completion_rate).toBe(0);
-      expect(r.handover_completion_rate).toBe(0);
+      expect(r.night_check_compliance_rate).toBeNull();
+      expect(r.night_log_completion_rate).toBeNull();
+      expect(r.handover_completion_rate).toBeNull();
       expect(r.handover_quality_avg).toBe(0);
       expect(r.sleep_assessment_coverage).toBe(0);
-      expect(r.anxiety_support_response_rate).toBe(0);
-      expect(r.check_timeliness_rate).toBe(0);
-      expect(r.incident_documentation_rate).toBe(0);
-      expect(r.child_wellbeing_check_rate).toBe(0);
+      expect(r.anxiety_support_response_rate).toBeNull();
+      expect(r.check_timeliness_rate).toBeNull();
+      expect(r.incident_documentation_rate).toBeNull();
+      expect(r.child_wellbeing_check_rate).toBeNull();
     });
 
     it("allEmpty check requires all five arrays to be empty", () => {
@@ -1140,7 +1140,7 @@ describe("Home Night Care Quality Intelligence Engine", () => {
         expect(r.check_timeliness_rate).toBe(0);
       });
 
-      it("returns 0 (pct(0,0)) when no checks exist", () => {
+      it("returns null (rate(0,0)=null) when no checks exist", () => {
         const r = computeNightCareQuality({
           today: "2025-06-01",
           total_children: 0,
@@ -1150,7 +1150,7 @@ describe("Home Night Care Quality Intelligence Engine", () => {
           sleep_assessments: [],
           night_anxiety_support: [],
         });
-        expect(r.check_timeliness_rate).toBe(0);
+        expect(r.check_timeliness_rate).toBeNull();
       });
     });
 
@@ -1221,9 +1221,9 @@ describe("Home Night Care Quality Intelligence Engine", () => {
         expect(r.night_log_completion_rate).toBe(100);
       });
 
-      it("returns 0 (pct(0,0)) when no logs", () => {
+      it("returns null (rate(0,0)=null) when no logs", () => {
         const r = computeNightCareQuality(baseInput({ night_logs: [] }));
-        expect(r.night_log_completion_rate).toBe(0);
+        expect(r.night_log_completion_rate).toBeNull();
       });
     });
 
@@ -1239,10 +1239,10 @@ describe("Home Night Care Quality Intelligence Engine", () => {
         expect(r.incident_documentation_rate).toBe(50);
       });
 
-      it("returns 0 (pct(0,0)) when no logs have incidents", () => {
+      it("returns null (rate(0,0)=null) when no logs have incidents", () => {
         const logs = [makeNightLog("nl1", { incidents_recorded: 0, completed: true })];
         const r = computeNightCareQuality(baseInput({ night_logs: logs }));
-        expect(r.incident_documentation_rate).toBe(0);
+        expect(r.incident_documentation_rate).toBeNull();
       });
 
       it("returns 100 when all incident logs are completed", () => {
@@ -1266,9 +1266,9 @@ describe("Home Night Care Quality Intelligence Engine", () => {
         expect(r.handover_completion_rate).toBe(67);
       });
 
-      it("returns 0 (pct(0,0)) when no handovers", () => {
+      it("returns null (rate(0,0)=null) when no handovers", () => {
         const r = computeNightCareQuality(baseInput({ night_staff_handovers: [] }));
-        expect(r.handover_completion_rate).toBe(0);
+        expect(r.handover_completion_rate).toBeNull();
       });
     });
 
@@ -1304,7 +1304,7 @@ describe("Home Night Care Quality Intelligence Engine", () => {
         expect(r.handover_quality_avg).toBe(3);
       });
 
-      it("returns 0 when no handovers", () => {
+      it("returns null when no handovers", () => {
         const r = computeNightCareQuality(baseInput({ night_staff_handovers: [] }));
         expect(r.handover_quality_avg).toBeNull();;
       });
@@ -1360,9 +1360,9 @@ describe("Home Night Care Quality Intelligence Engine", () => {
         expect(r.anxiety_support_response_rate).toBe(67);
       });
 
-      it("returns 0 (pct(0,0)) when no anxiety episodes", () => {
+      it("returns null (rate(0,0)=null) when no anxiety episodes", () => {
         const r = computeNightCareQuality(baseInput({ night_anxiety_support: [] }));
-        expect(r.anxiety_support_response_rate).toBe(0);
+        expect(r.anxiety_support_response_rate).toBeNull();
       });
 
       it("returns 100 when all episodes have support", () => {
@@ -2501,7 +2501,7 @@ describe("Home Night Care Quality Intelligence Engine", () => {
         // pct(0,0) = 0 which is not >= 100. So this insight won't fire.
         const r = computeNightCareQuality(baseInput());
         // Default has no incidents in logs (incidents_recorded: 0)
-        expect(r.incident_documentation_rate).toBe(0);
+        expect(r.incident_documentation_rate).toBeNull();
         expect(r.insights.filter((i) =>
           i.text.includes("All night logs completed with 100% incident documentation"),
         )).toHaveLength(0);

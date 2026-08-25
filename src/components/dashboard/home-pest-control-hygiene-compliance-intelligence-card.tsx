@@ -70,12 +70,12 @@ export function HomePestControlHygieneComplianceIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.pest_control_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.inspection_compliance_rate >= 90 ? "bg-green-50" : d.inspection_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.inspection_compliance_rate >= 90 ? "text-[--cs-success]" : d.inspection_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.inspection_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.inspection_compliance_rate, 90) ? "bg-green-50" : meets(d.inspection_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.inspection_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.inspection_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.inspection_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Inspect.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.treatment_effectiveness_rate >= 90 ? "bg-green-50" : d.treatment_effectiveness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.treatment_effectiveness_rate >= 90 ? "text-[--cs-success]" : d.treatment_effectiveness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.treatment_effectiveness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.treatment_effectiveness_rate, 90) ? "bg-green-50" : meets(d.treatment_effectiveness_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.treatment_effectiveness_rate, 90) ? "text-[--cs-success]" : meets(d.treatment_effectiveness_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.treatment_effectiveness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Treat.</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.kitchen_hygiene_rate, 90) ? "bg-green-50" : meets(d.kitchen_hygiene_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
@@ -86,12 +86,12 @@ export function HomePestControlHygieneComplianceIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", meets(d.cleanliness_rate, 90) ? "text-[--cs-success]" : meets(d.cleanliness_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.cleanliness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Clean.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.product_safety_rate >= 90 ? "bg-green-50" : d.product_safety_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.product_safety_rate >= 90 ? "text-[--cs-success]" : d.product_safety_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.product_safety_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.product_safety_rate, 90) ? "bg-green-50" : meets(d.product_safety_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.product_safety_rate, 90) ? "text-[--cs-success]" : meets(d.product_safety_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.product_safety_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Product</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.staff_training_rate >= 90 ? "bg-green-50" : d.staff_training_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.staff_training_rate >= 90 ? "text-[--cs-success]" : d.staff_training_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.staff_training_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.staff_training_rate, 90) ? "bg-green-50" : meets(d.staff_training_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.staff_training_rate, 90) ? "text-[--cs-success]" : meets(d.staff_training_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.staff_training_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Training</p>
             </div>
           </div>

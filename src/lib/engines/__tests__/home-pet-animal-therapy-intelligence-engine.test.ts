@@ -194,12 +194,12 @@ describe("computePetAnimalTherapy", () => {
 
     it("all 6 rates are 0", () => {
       const r = computePetAnimalTherapy(baseInput({ total_children: 0 }));
-      expect(r.therapy_frequency_rate).toBe(0);
-      expect(r.pet_care_responsibility_rate).toBe(0);
-      expect(r.interaction_outcome_rate).toBe(0);
-      expect(r.welfare_compliance_rate).toBe(0);
-      expect(r.child_engagement_rate).toBe(0);
-      expect(r.child_benefit_rate).toBe(0);
+      expect(r.therapy_frequency_rate).toBeNull();
+      expect(r.pet_care_responsibility_rate).toBeNull();
+      expect(r.interaction_outcome_rate).toBeNull();
+      expect(r.welfare_compliance_rate).toBeNull();
+      expect(r.child_engagement_rate).toBeNull();
+      expect(r.child_benefit_rate).toBeNull();
     });
   });
 
@@ -241,34 +241,34 @@ describe("computePetAnimalTherapy", () => {
 
     it("all 6 rates are 0", () => {
       const r = computePetAnimalTherapy(baseInput({ total_children: 3 }));
-      expect(r.therapy_frequency_rate).toBe(0);
-      expect(r.pet_care_responsibility_rate).toBe(0);
-      expect(r.interaction_outcome_rate).toBe(0);
-      expect(r.welfare_compliance_rate).toBe(0);
-      expect(r.child_engagement_rate).toBe(0);
-      expect(r.child_benefit_rate).toBe(0);
+      expect(r.therapy_frequency_rate).toBeNull();
+      expect(r.pet_care_responsibility_rate).toBeNull();
+      expect(r.interaction_outcome_rate).toBeNull();
+      expect(r.welfare_compliance_rate).toBeNull();
+      expect(r.child_engagement_rate).toBeNull();
+      expect(r.child_benefit_rate).toBeNull();
     });
   });
 
   // ======================================================================
   // 3. pct HELPER EDGE CASES
   // ======================================================================
-  describe("pct(0,0)=0 edge case", () => {
+  describe("rate(0,0)=null edge case", () => {
     it("pct(0,0)=0 is consistent with engine behaviour", () => {
       expect(pct(0, 0)).toBe(0);
     });
 
-    it("rates are 0 when all arrays empty (pct with d=0 returns 0)", () => {
+    it("rates are 0 when all arrays empty (pct with d=0 returns null)", () => {
       // Only welfare records present but no assigned care
       const r = computePetAnimalTherapy(baseInput({
         total_children: 2,
         animal_welfare_records: [makeWelfare()],
       }));
       // pet_care_responsibility_rate uses pct(completed, assigned) -- both 0 when no care records
-      expect(r.pet_care_responsibility_rate).toBe(0);
+      expect(r.pet_care_responsibility_rate).toBeNull();
     });
 
-    it("pet_care_responsibility_rate is 0 when no responsibilities assigned", () => {
+    it("pet_care_responsibility_rate is null when no responsibilities assigned", () => {
       const r = computePetAnimalTherapy(baseInput({
         total_children: 2,
         therapy_session_records: [makeSession()],
@@ -277,7 +277,7 @@ describe("computePetAnimalTherapy", () => {
         animal_welfare_records: [makeWelfare()],
         child_engagement_records: [makeEngagement()],
       }));
-      expect(r.pet_care_responsibility_rate).toBe(0);
+      expect(r.pet_care_responsibility_rate).toBeNull();
     });
   });
 
@@ -1303,7 +1303,7 @@ describe("computePetAnimalTherapy", () => {
       expect(r.session_goal_achievement_avg).toBe(0.67);
     });
 
-    it("returns 0 when no goals set", () => {
+    it("returns null when no goals set", () => {
       const r = computePetAnimalTherapy(baseInput({
         total_children: 2,
         therapy_session_records: [
@@ -1353,7 +1353,7 @@ describe("computePetAnimalTherapy", () => {
       expect(r.mood_improvement_avg).toBe(-2);
     });
 
-    it("is 0 when no interactions have valid mood data", () => {
+    it("is null when no interactions have valid mood data", () => {
       const r = computePetAnimalTherapy(baseInput({
         total_children: 2,
         therapy_session_records: [makeSession()],
@@ -3124,10 +3124,10 @@ describe("computePetAnimalTherapy", () => {
       }));
       // Not allEmpty, so goes through normal compute
       expect(r.therapy_rating).not.toBe("insufficient_data");
-      expect(r.pet_care_responsibility_rate).toBe(0);
-      expect(r.interaction_outcome_rate).toBe(0);
-      expect(r.welfare_compliance_rate).toBe(0);
-      expect(r.child_engagement_rate).toBe(0);
+      expect(r.pet_care_responsibility_rate).toBeNull();
+      expect(r.interaction_outcome_rate).toBeNull();
+      expect(r.welfare_compliance_rate).toBeNull();
+      expect(r.child_engagement_rate).toBeNull();
     });
 
     it("result contains all expected fields", () => {
@@ -3186,7 +3186,7 @@ describe("computePetAnimalTherapy", () => {
         child_engagement_records: [makeEngagement()],
       }));
       // No assigned, so pct(0, 0) = 0
-      expect(r.pet_care_responsibility_rate).toBe(0);
+      expect(r.pet_care_responsibility_rate).toBeNull();
     });
   });
 

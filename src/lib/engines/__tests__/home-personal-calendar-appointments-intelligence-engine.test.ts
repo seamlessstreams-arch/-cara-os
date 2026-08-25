@@ -167,10 +167,10 @@ describe("Home Personal Calendar & Appointments Intelligence Engine", () => {
 
     it("returns all six rates as 0", () => {
       const r = computePersonalCalendarAppointments(baseInput({ total_children: 0 }));
-      expect(r.appointment_attendance_rate).toBe(0);
-      expect(r.calendar_accuracy_rate).toBe(0);
-      expect(r.medical_compliance_rate).toBe(0);
-      expect(r.transport_timeliness_rate).toBe(0);
+      expect(r.appointment_attendance_rate).toBeNull();
+      expect(r.calendar_accuracy_rate).toBeNull();
+      expect(r.medical_compliance_rate).toBeNull();
+      expect(r.transport_timeliness_rate).toBeNull();
       // fab-0: null (no preparation records)
       expect(r.child_preparation_rate).toBeNull();
       expect(r.child_autonomy_rate).toBeNull();
@@ -212,10 +212,10 @@ describe("Home Personal Calendar & Appointments Intelligence Engine", () => {
 
     it("all six rates are 0", () => {
       const r = computePersonalCalendarAppointments(baseInput({ total_children: 5 }));
-      expect(r.appointment_attendance_rate).toBe(0);
-      expect(r.calendar_accuracy_rate).toBe(0);
-      expect(r.medical_compliance_rate).toBe(0);
-      expect(r.transport_timeliness_rate).toBe(0);
+      expect(r.appointment_attendance_rate).toBeNull();
+      expect(r.calendar_accuracy_rate).toBeNull();
+      expect(r.medical_compliance_rate).toBeNull();
+      expect(r.transport_timeliness_rate).toBeNull();
       // fab-0: null (no preparation records)
       expect(r.child_preparation_rate).toBeNull();
       expect(r.child_autonomy_rate).toBeNull();
@@ -226,33 +226,33 @@ describe("Home Personal Calendar & Appointments Intelligence Engine", () => {
   // 2. PCT HELPER -- pct(0,0) = 0
   // ══════════════════════════════════════════════════════════════════════════
 
-  describe("pct(0,0) = 0", () => {
+  describe("rate(0,0) = null", () => {
     it("appointment_attendance_rate = 0 when no appointment records but other data exists", () => {
       const r = computePersonalCalendarAppointments(baseInput({
         calendar_management_records: [makeCalendar()],
       }));
-      expect(r.appointment_attendance_rate).toBe(0);
+      expect(r.appointment_attendance_rate).toBeNull();
     });
 
     it("calendar_accuracy_rate = 0 when no calendar records but other data exists", () => {
       const r = computePersonalCalendarAppointments(baseInput({
         appointment_records: [makeAppointment()],
       }));
-      expect(r.calendar_accuracy_rate).toBe(0);
+      expect(r.calendar_accuracy_rate).toBeNull();
     });
 
     it("medical_compliance_rate = 0 when no compliance records but other data exists", () => {
       const r = computePersonalCalendarAppointments(baseInput({
         appointment_records: [makeAppointment()],
       }));
-      expect(r.medical_compliance_rate).toBe(0);
+      expect(r.medical_compliance_rate).toBeNull();
     });
 
     it("transport_timeliness_rate = 0 when no transport records but other data exists", () => {
       const r = computePersonalCalendarAppointments(baseInput({
         appointment_records: [makeAppointment()],
       }));
-      expect(r.transport_timeliness_rate).toBe(0);
+      expect(r.transport_timeliness_rate).toBeNull();
     });
 
     it("child_preparation_rate = null when no preparation records (fab-0)", () => {
@@ -3022,7 +3022,7 @@ describe("Home Personal Calendar & Appointments Intelligence Engine", () => {
         calendar_management_records: [makeCalendar()],
       }));
       // attendance rate = pct(0,0) = 0, but totalAppointments = 0 so no penalty
-      expect(r.appointment_attendance_rate).toBe(0);
+      expect(r.appointment_attendance_rate).toBeNull();
       // Score should not have -5 penalty applied
       expect(r.calendar_score).toBe(55); // 52 + 3 (calendar accuracy)
     });
@@ -3032,14 +3032,14 @@ describe("Home Personal Calendar & Appointments Intelligence Engine", () => {
         appointment_records: [makeAppointment({ attended: true, outcome_recorded: false, follow_up_actions_identified: false, child_consented: false })],
       }));
       // compliance rate = 0 but no penalty because totalMedicalCompliance = 0
-      expect(r.medical_compliance_rate).toBe(0);
+      expect(r.medical_compliance_rate).toBeNull();
     });
 
     it("empty transport records does not trigger transport penalty", () => {
       const r = computePersonalCalendarAppointments(baseInput({
         appointment_records: [makeAppointment({ attended: true, outcome_recorded: false, follow_up_actions_identified: false, child_consented: false })],
       }));
-      expect(r.transport_timeliness_rate).toBe(0);
+      expect(r.transport_timeliness_rate).toBeNull();
     });
 
     it("empty preparation records does not trigger preparation penalty (fab-0)", () => {

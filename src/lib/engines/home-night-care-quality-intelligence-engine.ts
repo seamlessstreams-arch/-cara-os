@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME NIGHT CARE QUALITY INTELLIGENCE ENGINE
 // Monitors the quality and safety of overnight care provision. Analyzes night
@@ -120,7 +121,8 @@ export interface NightCareQualityResult {
   night_log_completion_rate: number | null;
   handover_completion_rate: number | null;
   handover_quality_avg: number | null;
-  sleep_assessment_coverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  sleep_assessment_coverage: number | null;
   anxiety_support_response_rate: number | null;
   check_timeliness_rate: number | null;
   incident_documentation_rate: number | null;
@@ -132,10 +134,6 @@ export interface NightCareQualityResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -160,15 +158,15 @@ function emptyResult(
     night_care_score: score,
     headline,
     total_night_checks: 0,
-    night_check_compliance_rate: 0,
-    night_log_completion_rate: 0,
-    handover_completion_rate: 0,
+    night_check_compliance_rate: null,
+    night_log_completion_rate: null,
+    handover_completion_rate: null,
     handover_quality_avg: 0,
     sleep_assessment_coverage: 0,
-    anxiety_support_response_rate: 0,
-    check_timeliness_rate: 0,
-    incident_documentation_rate: 0,
-    child_wellbeing_check_rate: 0,
+    anxiety_support_response_rate: null,
+    check_timeliness_rate: null,
+    incident_documentation_rate: null,
+    child_wellbeing_check_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -253,33 +251,33 @@ export function computeNightCareQuality(
   const expectedChecks = total_children > 0 && uniqueCheckDates > 0
     ? total_children * uniqueCheckDates
     : totalNightChecks > 0 ? totalNightChecks : 1;
-  const nightCheckComplianceRate = pct(totalNightChecks, expectedChecks);
+  const nightCheckComplianceRate = rate(totalNightChecks, expectedChecks);
 
   // Check timeliness: pct of checks done within expected window
   const timelyChecks = night_checks.filter((c) => c.within_schedule).length;
-  const checkTimelinessRate = pct(timelyChecks, totalNightChecks);
+  const checkTimelinessRate = rate(timelyChecks, totalNightChecks);
 
   // Child wellbeing check rate: pct of checks that note child wellbeing (child_settled or notes present)
   const wellbeingChecks = night_checks.filter(
     (c) => c.child_settled || (c.notes && c.notes.trim().length > 0),
   ).length;
-  const childWellbeingCheckRate = pct(wellbeingChecks, totalNightChecks);
+  const childWellbeingCheckRate = rate(wellbeingChecks, totalNightChecks);
 
   // --- Night log metrics ---
   const totalNightLogs = night_logs.length;
   const completedLogs = night_logs.filter((l) => l.completed).length;
   // Completion rate: completed logs vs total logs recorded
-  const nightLogCompletionRate = pct(completedLogs, totalNightLogs);
+  const nightLogCompletionRate = rate(completedLogs, totalNightLogs);
 
   // Incident documentation rate: logs with incidents_recorded > 0 that are completed
   const logsWithIncidents = night_logs.filter((l) => l.incidents_recorded > 0);
   const logsWithIncidentsCompleted = logsWithIncidents.filter((l) => l.completed).length;
-  const incidentDocumentationRate = pct(logsWithIncidentsCompleted, logsWithIncidents.length);
+  const incidentDocumentationRate = rate(logsWithIncidentsCompleted, logsWithIncidents.length);
 
   // --- Handover metrics ---
   const totalHandovers = night_staff_handovers.length;
   const completedHandovers = night_staff_handovers.filter((h) => h.completed).length;
-  const handoverCompletionRate = pct(completedHandovers, totalHandovers);
+  const handoverCompletionRate = rate(completedHandovers, totalHandovers);
 
   const handoverQualitySum = night_staff_handovers.reduce(
     (sum, h) => sum + h.quality_rating,
@@ -295,68 +293,68 @@ export function computeNightCareQuality(
   const uniqueChildrenWithAssessments = new Set(
     sleep_assessments.map((s) => s.child_id),
   ).size;
-  const sleepAssessmentCoverage = pct(uniqueChildrenWithAssessments, total_children);
+  const sleepAssessmentCoverage = rate(uniqueChildrenWithAssessments, total_children);
 
   // --- Night anxiety support metrics ---
   const totalAnxietyEpisodes = night_anxiety_support.length;
   const supportedEpisodes = night_anxiety_support.filter(
     (a) => a.support_provided,
   ).length;
-  const anxietySupportResponseRate = pct(supportedEpisodes, totalAnxietyEpisodes);
+  const anxietySupportResponseRate = rate(supportedEpisodes, totalAnxietyEpisodes);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus: nightCheckComplianceRate (>=100: +4, >=90: +2) ---
-  if (nightCheckComplianceRate >= 100) score += 4;
-  else if (nightCheckComplianceRate >= 90) score += 2;
+  if (meets(nightCheckComplianceRate, 100)) score += 4;
+  else if (meets(nightCheckComplianceRate, 90)) score += 2;
 
   // --- Bonus: nightLogCompletionRate (>=100: +3, >=90: +1) ---
-  if (nightLogCompletionRate >= 100) score += 3;
-  else if (nightLogCompletionRate >= 90) score += 1;
+  if (meets(nightLogCompletionRate, 100)) score += 3;
+  else if (meets(nightLogCompletionRate, 90)) score += 1;
 
   // --- Bonus: handoverCompletionRate (>=100: +3, >=80: +1) ---
-  if (handoverCompletionRate >= 100) score += 3;
-  else if (handoverCompletionRate >= 80) score += 1;
+  if (meets(handoverCompletionRate, 100)) score += 3;
+  else if (meets(handoverCompletionRate, 80)) score += 1;
 
   // --- Bonus: handoverQualityAvg (>=4.0: +3, >=3.0: +1) ---
   if ((handoverQualityAvg ?? 0) >= 4.0) score += 3;
   else if ((handoverQualityAvg ?? 0) >= 3.0) score += 1;
 
   // --- Bonus: sleepAssessmentCoverage (>=100: +3, >=80: +1) ---
-  if (sleepAssessmentCoverage >= 100) score += 3;
-  else if (sleepAssessmentCoverage >= 80) score += 1;
+  if (meets(sleepAssessmentCoverage, 100)) score += 3;
+  else if (meets(sleepAssessmentCoverage, 80)) score += 1;
 
   // --- Bonus: anxietySupportResponseRate (>=100: +3, >=80: +1) ---
-  if (anxietySupportResponseRate >= 100) score += 3;
-  else if (anxietySupportResponseRate >= 80) score += 1;
+  if (meets(anxietySupportResponseRate, 100)) score += 3;
+  else if (meets(anxietySupportResponseRate, 80)) score += 1;
 
   // --- Bonus: checkTimelinessRate (>=95: +3, >=80: +1) ---
-  if (checkTimelinessRate >= 95) score += 3;
-  else if (checkTimelinessRate >= 80) score += 1;
+  if (meets(checkTimelinessRate, 95)) score += 3;
+  else if (meets(checkTimelinessRate, 80)) score += 1;
 
   // --- Bonus: incidentDocumentationRate (>=100: +3, >=80: +1) ---
-  if (incidentDocumentationRate >= 100) score += 3;
-  else if (incidentDocumentationRate >= 80) score += 1;
+  if (meets(incidentDocumentationRate, 100)) score += 3;
+  else if (meets(incidentDocumentationRate, 80)) score += 1;
 
   // --- Bonus: childWellbeingCheckRate (>=90: +3, >=70: +1) ---
-  if (childWellbeingCheckRate >= 90) score += 3;
-  else if (childWellbeingCheckRate >= 70) score += 1;
+  if (meets(childWellbeingCheckRate, 90)) score += 3;
+  else if (meets(childWellbeingCheckRate, 70)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // nightCheckComplianceRate < 50 → -5
-  if (nightCheckComplianceRate < 50) score -= 5;
+  if (below(nightCheckComplianceRate, 50)) score -= 5;
 
   // nightLogCompletionRate < 50 → -5
-  if (nightLogCompletionRate < 50 && totalNightLogs > 0) score -= 5;
+  if (below(nightLogCompletionRate, 50) && totalNightLogs > 0) score -= 5;
 
   // handoverCompletionRate < 50 → -5
-  if (handoverCompletionRate < 50 && totalHandovers > 0) score -= 5;
+  if (below(handoverCompletionRate, 50) && totalHandovers > 0) score -= 5;
 
   // sleepAssessmentCoverage < 50 → -3
-  if (sleepAssessmentCoverage < 50 && total_children > 0) score -= 3;
+  if (below(sleepAssessmentCoverage, 50) && total_children > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -366,31 +364,31 @@ export function computeNightCareQuality(
 
   const strengths: string[] = [];
 
-  if (nightCheckComplianceRate >= 100 && totalNightChecks > 0) {
+  if (meets(nightCheckComplianceRate, 100) && totalNightChecks > 0) {
     strengths.push(
       "Night check compliance is at 100% — every expected night check has been completed, demonstrating thorough overnight monitoring.",
     );
-  } else if (nightCheckComplianceRate >= 90 && totalNightChecks > 0) {
+  } else if (meets(nightCheckComplianceRate, 90) && totalNightChecks > 0) {
     strengths.push(
       `Night check compliance at ${nightCheckComplianceRate}% — strong commitment to regular overnight monitoring of children.`,
     );
   }
 
-  if (nightLogCompletionRate >= 100 && totalNightLogs > 0) {
+  if (meets(nightLogCompletionRate, 100) && totalNightLogs > 0) {
     strengths.push(
       "All night logs are completed — comprehensive documentation of overnight care provision.",
     );
-  } else if (nightLogCompletionRate >= 90 && totalNightLogs > 0) {
+  } else if (meets(nightLogCompletionRate, 90) && totalNightLogs > 0) {
     strengths.push(
       `${nightLogCompletionRate}% of night logs completed — strong overnight recording practices.`,
     );
   }
 
-  if (handoverCompletionRate >= 100 && totalHandovers > 0) {
+  if (meets(handoverCompletionRate, 100) && totalHandovers > 0) {
     strengths.push(
       "Every night-to-morning handover is completed — seamless continuity of care between shifts.",
     );
-  } else if (handoverCompletionRate >= 80 && totalHandovers > 0) {
+  } else if (meets(handoverCompletionRate, 80) && totalHandovers > 0) {
     strengths.push(
       `${handoverCompletionRate}% handover completion rate — good continuity of care documentation between night and day shifts.`,
     );
@@ -402,43 +400,43 @@ export function computeNightCareQuality(
     );
   }
 
-  if (sleepAssessmentCoverage >= 100 && total_children > 0) {
+  if (meets(sleepAssessmentCoverage, 100) && total_children > 0) {
     strengths.push(
       "Every child has a sleep assessment — individualised sleep support is in place for all children.",
     );
-  } else if (sleepAssessmentCoverage >= 80 && total_children > 0) {
+  } else if (meets(sleepAssessmentCoverage, 80) && total_children > 0) {
     strengths.push(
       `Sleep assessment coverage at ${sleepAssessmentCoverage}% — strong focus on understanding and supporting children's sleep needs.`,
     );
   }
 
-  if (anxietySupportResponseRate >= 100 && totalAnxietyEpisodes > 0) {
+  if (meets(anxietySupportResponseRate, 100) && totalAnxietyEpisodes > 0) {
     strengths.push(
       "Every night anxiety episode has documented support — children experiencing anxiety overnight are consistently supported.",
     );
-  } else if (anxietySupportResponseRate >= 80 && totalAnxietyEpisodes > 0) {
+  } else if (meets(anxietySupportResponseRate, 80) && totalAnxietyEpisodes > 0) {
     strengths.push(
       `${anxietySupportResponseRate}% anxiety support response rate — strong commitment to supporting children who experience night-time anxiety.`,
     );
   }
 
-  if (checkTimelinessRate >= 95 && totalNightChecks > 0) {
+  if (meets(checkTimelinessRate, 95) && totalNightChecks > 0) {
     strengths.push(
       "Night checks are consistently on schedule — children are monitored at the expected intervals throughout the night.",
     );
-  } else if (checkTimelinessRate >= 80 && totalNightChecks > 0) {
+  } else if (meets(checkTimelinessRate, 80) && totalNightChecks > 0) {
     strengths.push(
       `${checkTimelinessRate}% of night checks completed within schedule — good adherence to overnight monitoring timings.`,
     );
   }
 
-  if (incidentDocumentationRate >= 100 && logsWithIncidents.length > 0) {
+  if (meets(incidentDocumentationRate, 100) && logsWithIncidents.length > 0) {
     strengths.push(
       "All night incidents are properly documented — comprehensive incident recording during overnight shifts.",
     );
   }
 
-  if (childWellbeingCheckRate >= 90 && totalNightChecks > 0) {
+  if (meets(childWellbeingCheckRate, 90) && totalNightChecks > 0) {
     strengths.push(
       `${childWellbeingCheckRate}% of night checks note child wellbeing — staff go beyond presence checks to assess how children are actually doing.`,
     );
@@ -447,8 +445,8 @@ export function computeNightCareQuality(
   const settledAfterSupport = night_anxiety_support.filter(
     (a) => a.child_settled_after,
   ).length;
-  const settledRate = pct(settledAfterSupport, totalAnxietyEpisodes);
-  if (settledRate >= 90 && totalAnxietyEpisodes > 0) {
+  const settledRate = rate(settledAfterSupport, totalAnxietyEpisodes);
+  if (meets(settledRate, 90) && totalAnxietyEpisodes > 0) {
     strengths.push(
       `${settledRate}% of children settled after anxiety support — effective night-time de-escalation and comfort practices.`,
     );
@@ -457,8 +455,8 @@ export function computeNightCareQuality(
   const deEscalationUsed = night_anxiety_support.filter(
     (a) => a.de_escalation_used,
   ).length;
-  const deEscalationRate = pct(deEscalationUsed, totalAnxietyEpisodes);
-  if (deEscalationRate >= 90 && totalAnxietyEpisodes > 0) {
+  const deEscalationRate = rate(deEscalationUsed, totalAnxietyEpisodes);
+  if (meets(deEscalationRate, 90) && totalAnxietyEpisodes > 0) {
     strengths.push(
       `De-escalation techniques used in ${deEscalationRate}% of night anxiety episodes — staff are skilled in calming anxious children overnight.`,
     );
@@ -467,8 +465,8 @@ export function computeNightCareQuality(
   const assessmentsWithSupportPlans = sleep_assessments.filter(
     (s) => s.support_plan_in_place,
   ).length;
-  const supportPlanRate = pct(assessmentsWithSupportPlans, totalSleepAssessments);
-  if (supportPlanRate >= 90 && totalSleepAssessments > 0) {
+  const supportPlanRate = rate(assessmentsWithSupportPlans, totalSleepAssessments);
+  if (meets(supportPlanRate, 90) && totalSleepAssessments > 0) {
     strengths.push(
       `${supportPlanRate}% of sleep assessments have support plans in place — individualised sleep support is well-evidenced.`,
     );
@@ -478,21 +476,21 @@ export function computeNightCareQuality(
 
   const concerns: string[] = [];
 
-  if (nightCheckComplianceRate < 50) {
+  if (below(nightCheckComplianceRate, 50)) {
     concerns.push(
       `Night check compliance at only ${nightCheckComplianceRate}% — the majority of expected overnight checks are not being completed, leaving children unmonitored for extended periods.`,
     );
-  } else if (nightCheckComplianceRate < 80 && nightCheckComplianceRate >= 50) {
+  } else if (below(nightCheckComplianceRate, 80) && meets(nightCheckComplianceRate, 50)) {
     concerns.push(
       `Night check compliance at ${nightCheckComplianceRate}% — some expected overnight checks are being missed, creating gaps in children's overnight monitoring.`,
     );
   }
 
-  if (nightLogCompletionRate < 50 && totalNightLogs > 0) {
+  if (below(nightLogCompletionRate, 50) && totalNightLogs > 0) {
     concerns.push(
       `Only ${nightLogCompletionRate}% of night logs completed — the majority of overnight shifts are not fully documented, preventing effective oversight of night care.`,
     );
-  } else if (nightLogCompletionRate < 80 && nightLogCompletionRate >= 50 && totalNightLogs > 0) {
+  } else if (below(nightLogCompletionRate, 80) && meets(nightLogCompletionRate, 50) && totalNightLogs > 0) {
     concerns.push(
       `Night log completion at ${nightLogCompletionRate}% — some overnight shifts lack complete documentation.`,
     );
@@ -504,11 +502,11 @@ export function computeNightCareQuality(
     );
   }
 
-  if (handoverCompletionRate < 50 && totalHandovers > 0) {
+  if (below(handoverCompletionRate, 50) && totalHandovers > 0) {
     concerns.push(
       `Only ${handoverCompletionRate}% of handovers completed — critical information may be lost between night and day shifts, risking continuity of care.`,
     );
-  } else if (handoverCompletionRate < 80 && handoverCompletionRate >= 50 && totalHandovers > 0) {
+  } else if (below(handoverCompletionRate, 80) && meets(handoverCompletionRate, 50) && totalHandovers > 0) {
     concerns.push(
       `Handover completion at ${handoverCompletionRate}% — some shift transitions lack proper documentation, risking information gaps.`,
     );
@@ -526,11 +524,11 @@ export function computeNightCareQuality(
     );
   }
 
-  if (sleepAssessmentCoverage < 50 && total_children > 0) {
+  if (below(sleepAssessmentCoverage, 50) && total_children > 0) {
     concerns.push(
       `Sleep assessment coverage at only ${sleepAssessmentCoverage}% — the majority of children do not have documented sleep assessments, meaning their individual sleep needs are not formally identified.`,
     );
-  } else if (sleepAssessmentCoverage < 80 && sleepAssessmentCoverage >= 50 && total_children > 0) {
+  } else if (below(sleepAssessmentCoverage, 80) && meets(sleepAssessmentCoverage, 50) && total_children > 0) {
     concerns.push(
       `Sleep assessment coverage at ${sleepAssessmentCoverage}% — some children still lack formal sleep assessments.`,
     );
@@ -542,47 +540,47 @@ export function computeNightCareQuality(
     );
   }
 
-  if (anxietySupportResponseRate < 50 && totalAnxietyEpisodes > 0) {
+  if (below(anxietySupportResponseRate, 50) && totalAnxietyEpisodes > 0) {
     concerns.push(
       `Only ${anxietySupportResponseRate}% of night anxiety episodes have documented support — children experiencing overnight anxiety may not be receiving adequate care.`,
     );
-  } else if (anxietySupportResponseRate < 80 && anxietySupportResponseRate >= 50 && totalAnxietyEpisodes > 0) {
+  } else if (below(anxietySupportResponseRate, 80) && meets(anxietySupportResponseRate, 50) && totalAnxietyEpisodes > 0) {
     concerns.push(
       `Anxiety support response rate at ${anxietySupportResponseRate}% — not all children experiencing night-time anxiety receive documented support.`,
     );
   }
 
-  if (checkTimelinessRate < 50 && totalNightChecks > 0) {
+  if (below(checkTimelinessRate, 50) && totalNightChecks > 0) {
     concerns.push(
       `Only ${checkTimelinessRate}% of night checks done within schedule — the majority of checks are late or irregular, undermining the purpose of overnight monitoring.`,
     );
-  } else if (checkTimelinessRate < 80 && checkTimelinessRate >= 50 && totalNightChecks > 0) {
+  } else if (below(checkTimelinessRate, 80) && meets(checkTimelinessRate, 50) && totalNightChecks > 0) {
     concerns.push(
       `Check timeliness at ${checkTimelinessRate}% — some night checks are not being completed within the expected window.`,
     );
   }
 
-  if (incidentDocumentationRate < 50 && logsWithIncidents.length > 0) {
+  if (below(incidentDocumentationRate, 50) && logsWithIncidents.length > 0) {
     concerns.push(
       `Only ${incidentDocumentationRate}% of night incidents properly documented — significant gaps in overnight incident recording.`,
     );
-  } else if (incidentDocumentationRate < 80 && incidentDocumentationRate >= 50 && logsWithIncidents.length > 0) {
+  } else if (below(incidentDocumentationRate, 80) && meets(incidentDocumentationRate, 50) && logsWithIncidents.length > 0) {
     concerns.push(
       `Incident documentation rate at ${incidentDocumentationRate}% — some night incidents lack complete documentation.`,
     );
   }
 
-  if (childWellbeingCheckRate < 50 && totalNightChecks > 0) {
+  if (below(childWellbeingCheckRate, 50) && totalNightChecks > 0) {
     concerns.push(
       `Only ${childWellbeingCheckRate}% of night checks note child wellbeing — checks may be presence-only without assessing how children are actually doing.`,
     );
-  } else if (childWellbeingCheckRate < 70 && childWellbeingCheckRate >= 50 && totalNightChecks > 0) {
+  } else if (below(childWellbeingCheckRate, 70) && meets(childWellbeingCheckRate, 50) && totalNightChecks > 0) {
     concerns.push(
       `Child wellbeing noted in ${childWellbeingCheckRate}% of night checks — more checks should include observations about children's state and comfort.`,
     );
   }
 
-  if (settledRate < 50 && totalAnxietyEpisodes > 0) {
+  if (below(settledRate, 50) && totalAnxietyEpisodes > 0) {
     concerns.push(
       `Only ${settledRate}% of children settled after anxiety support — current overnight de-escalation approaches may not be effective for all children.`,
     );
@@ -593,7 +591,7 @@ export function computeNightCareQuality(
   const recommendations: NightCareRecommendation[] = [];
   let rank = 0;
 
-  if (nightCheckComplianceRate < 50) {
+  if (below(nightCheckComplianceRate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -603,7 +601,7 @@ export function computeNightCareQuality(
     });
   }
 
-  if (nightLogCompletionRate < 50 && totalNightLogs > 0) {
+  if (below(nightLogCompletionRate, 50) && totalNightLogs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -623,7 +621,7 @@ export function computeNightCareQuality(
     });
   }
 
-  if (handoverCompletionRate < 50 && totalHandovers > 0) {
+  if (below(handoverCompletionRate, 50) && totalHandovers > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -651,7 +649,7 @@ export function computeNightCareQuality(
       urgency: "immediate",
       regulatory_ref: "SCCIF safety and wellbeing",
     });
-  } else if (sleepAssessmentCoverage < 50 && total_children > 0) {
+  } else if (below(sleepAssessmentCoverage, 50) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -661,7 +659,7 @@ export function computeNightCareQuality(
     });
   }
 
-  if (checkTimelinessRate < 50 && totalNightChecks > 0) {
+  if (below(checkTimelinessRate, 50) && totalNightChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -671,7 +669,7 @@ export function computeNightCareQuality(
     });
   }
 
-  if (anxietySupportResponseRate < 50 && totalAnxietyEpisodes > 0) {
+  if (below(anxietySupportResponseRate, 50) && totalAnxietyEpisodes > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -681,7 +679,7 @@ export function computeNightCareQuality(
     });
   }
 
-  if (incidentDocumentationRate < 50 && logsWithIncidents.length > 0) {
+  if (below(incidentDocumentationRate, 50) && logsWithIncidents.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -701,7 +699,7 @@ export function computeNightCareQuality(
     });
   }
 
-  if (childWellbeingCheckRate < 50 && totalNightChecks > 0) {
+  if (below(childWellbeingCheckRate, 50) && totalNightChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -711,7 +709,7 @@ export function computeNightCareQuality(
     });
   }
 
-  if (nightCheckComplianceRate >= 50 && nightCheckComplianceRate < 80) {
+  if (meets(nightCheckComplianceRate, 50) && below(nightCheckComplianceRate, 80)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -721,7 +719,7 @@ export function computeNightCareQuality(
     });
   }
 
-  if (nightLogCompletionRate >= 50 && nightLogCompletionRate < 80 && totalNightLogs > 0) {
+  if (meets(nightLogCompletionRate, 50) && below(nightLogCompletionRate, 80) && totalNightLogs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -731,7 +729,7 @@ export function computeNightCareQuality(
     });
   }
 
-  if (sleepAssessmentCoverage >= 50 && sleepAssessmentCoverage < 80 && total_children > 0) {
+  if (meets(sleepAssessmentCoverage, 50) && below(sleepAssessmentCoverage, 80) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -741,7 +739,7 @@ export function computeNightCareQuality(
     });
   }
 
-  if (handoverCompletionRate >= 50 && handoverCompletionRate < 80 && totalHandovers > 0) {
+  if (meets(handoverCompletionRate, 50) && below(handoverCompletionRate, 80) && totalHandovers > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -751,7 +749,7 @@ export function computeNightCareQuality(
     });
   }
 
-  if (checkTimelinessRate >= 50 && checkTimelinessRate < 80 && totalNightChecks > 0) {
+  if (meets(checkTimelinessRate, 50) && below(checkTimelinessRate, 80) && totalNightChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -761,7 +759,7 @@ export function computeNightCareQuality(
     });
   }
 
-  if (childWellbeingCheckRate >= 50 && childWellbeingCheckRate < 70 && totalNightChecks > 0) {
+  if (meets(childWellbeingCheckRate, 50) && below(childWellbeingCheckRate, 70) && totalNightChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -777,14 +775,14 @@ export function computeNightCareQuality(
 
   // -- Critical insights --
 
-  if (nightCheckComplianceRate < 50) {
+  if (below(nightCheckComplianceRate, 50)) {
     insights.push({
       text: `Night check compliance at only ${nightCheckComplianceRate}%. Ofsted expects regular overnight monitoring of all children under Reg 12. A compliance rate below 50% represents a significant safeguarding gap — children may be unsupervised for prolonged periods overnight.`,
       severity: "critical",
     });
   }
 
-  if (nightLogCompletionRate < 50 && totalNightLogs > 0) {
+  if (below(nightLogCompletionRate, 50) && totalNightLogs > 0) {
     insights.push({
       text: `Only ${nightLogCompletionRate}% of night logs completed. Without comprehensive night logs, the home cannot evidence the quality of overnight care or demonstrate that children were safe throughout the night. This is a Reg 12 compliance risk.`,
       severity: "critical",
@@ -798,7 +796,7 @@ export function computeNightCareQuality(
     });
   }
 
-  if (handoverCompletionRate < 50 && totalHandovers > 0) {
+  if (below(handoverCompletionRate, 50) && totalHandovers > 0) {
     insights.push({
       text: `Only ${handoverCompletionRate}% of handovers completed. Incomplete handovers mean critical overnight information may not reach day staff — medication changes, incidents, and concerns could be lost between shifts.`,
       severity: "critical",
@@ -812,7 +810,7 @@ export function computeNightCareQuality(
     });
   }
 
-  if (sleepAssessmentCoverage < 50 && sleepAssessmentCoverage > 0 && total_children > 0) {
+  if (below(sleepAssessmentCoverage, 50) && above(sleepAssessmentCoverage, 0) && total_children > 0) {
     insights.push({
       text: `Sleep assessment coverage at only ${sleepAssessmentCoverage}%. The majority of children lack formal sleep assessments, meaning night staff may not understand their individual sleep needs or how to support them effectively.`,
       severity: "critical",
@@ -821,21 +819,21 @@ export function computeNightCareQuality(
 
   // -- Warning insights --
 
-  if (nightCheckComplianceRate >= 50 && nightCheckComplianceRate < 80) {
+  if (meets(nightCheckComplianceRate, 50) && below(nightCheckComplianceRate, 80)) {
     insights.push({
       text: `Night check compliance at ${nightCheckComplianceRate}% — improving but gaps remain. Each missed check is a period where a child's safety and wellbeing is unmonitored.`,
       severity: "warning",
     });
   }
 
-  if (nightLogCompletionRate >= 50 && nightLogCompletionRate < 80 && totalNightLogs > 0) {
+  if (meets(nightLogCompletionRate, 50) && below(nightLogCompletionRate, 80) && totalNightLogs > 0) {
     insights.push({
       text: `Night log completion at ${nightLogCompletionRate}% — some overnight shifts lack full documentation, making it difficult to evidence the quality of care provided.`,
       severity: "warning",
     });
   }
 
-  if (handoverCompletionRate >= 50 && handoverCompletionRate < 80 && totalHandovers > 0) {
+  if (meets(handoverCompletionRate, 50) && below(handoverCompletionRate, 80) && totalHandovers > 0) {
     insights.push({
       text: `Handover completion at ${handoverCompletionRate}% — while most transitions are documented, some shift changes occur without formal information sharing.`,
       severity: "warning",
@@ -849,56 +847,56 @@ export function computeNightCareQuality(
     });
   }
 
-  if (sleepAssessmentCoverage >= 50 && sleepAssessmentCoverage < 80 && total_children > 0) {
+  if (meets(sleepAssessmentCoverage, 50) && below(sleepAssessmentCoverage, 80) && total_children > 0) {
     insights.push({
       text: `Sleep assessment coverage at ${sleepAssessmentCoverage}% — improving but some children still lack formal assessments of their sleep needs.`,
       severity: "warning",
     });
   }
 
-  if (anxietySupportResponseRate >= 50 && anxietySupportResponseRate < 80 && totalAnxietyEpisodes > 0) {
+  if (meets(anxietySupportResponseRate, 50) && below(anxietySupportResponseRate, 80) && totalAnxietyEpisodes > 0) {
     insights.push({
       text: `Anxiety support response rate at ${anxietySupportResponseRate}% — not all children experiencing night anxiety receive documented support, which may leave some feeling unsupported during vulnerable moments.`,
       severity: "warning",
     });
   }
 
-  if (anxietySupportResponseRate < 50 && totalAnxietyEpisodes > 0) {
+  if (below(anxietySupportResponseRate, 50) && totalAnxietyEpisodes > 0) {
     insights.push({
       text: `Only ${anxietySupportResponseRate}% of night anxiety episodes have documented support. Children who are anxious overnight and do not receive recorded support may feel abandoned or unsafe — this undermines the home's duty of care.`,
       severity: "warning",
     });
   }
 
-  if (checkTimelinessRate >= 50 && checkTimelinessRate < 80 && totalNightChecks > 0) {
+  if (meets(checkTimelinessRate, 50) && below(checkTimelinessRate, 80) && totalNightChecks > 0) {
     insights.push({
       text: `Check timeliness at ${checkTimelinessRate}% — some night checks are completed outside the expected window, which may mean children go unchecked for longer than intended.`,
       severity: "warning",
     });
   }
 
-  if (checkTimelinessRate < 50 && totalNightChecks > 0) {
+  if (below(checkTimelinessRate, 50) && totalNightChecks > 0) {
     insights.push({
       text: `Only ${checkTimelinessRate}% of night checks done within schedule. Irregular check timing undermines the purpose of overnight monitoring and may indicate staffing or procedural issues.`,
       severity: "warning",
     });
   }
 
-  if (childWellbeingCheckRate >= 50 && childWellbeingCheckRate < 70 && totalNightChecks > 0) {
+  if (meets(childWellbeingCheckRate, 50) && below(childWellbeingCheckRate, 70) && totalNightChecks > 0) {
     insights.push({
       text: `Child wellbeing noted in ${childWellbeingCheckRate}% of night checks — many checks confirm presence without assessing how the child is actually doing. Richer observations help build a picture of children's overnight experience.`,
       severity: "warning",
     });
   }
 
-  if (incidentDocumentationRate >= 50 && incidentDocumentationRate < 80 && logsWithIncidents.length > 0) {
+  if (meets(incidentDocumentationRate, 50) && below(incidentDocumentationRate, 80) && logsWithIncidents.length > 0) {
     insights.push({
       text: `Incident documentation rate at ${incidentDocumentationRate}% — some night incidents are recorded in logs that are not fully completed, which may mean the full picture is lost.`,
       severity: "warning",
     });
   }
 
-  if (settledRate >= 50 && settledRate < 80 && totalAnxietyEpisodes > 0) {
+  if (meets(settledRate, 50) && below(settledRate, 80) && totalAnxietyEpisodes > 0) {
     insights.push({
       text: `${settledRate}% of children settle after anxiety support — some children remain unsettled, suggesting current strategies may need review for individual children.`,
       severity: "warning",
@@ -914,49 +912,49 @@ export function computeNightCareQuality(
     });
   }
 
-  if (nightCheckComplianceRate >= 100 && checkTimelinessRate >= 95 && totalNightChecks > 0) {
+  if (meets(nightCheckComplianceRate, 100) && meets(checkTimelinessRate, 95) && totalNightChecks > 0) {
     insights.push({
       text: "Full night check compliance with 95%+ timeliness — children are consistently monitored at the right intervals throughout the night, demonstrating excellent overnight safeguarding practice.",
       severity: "positive",
     });
   }
 
-  if (handoverCompletionRate >= 100 && (handoverQualityAvg ?? 0) >= 4.0 && totalHandovers > 0) {
+  if (meets(handoverCompletionRate, 100) && (handoverQualityAvg ?? 0) >= 4.0 && totalHandovers > 0) {
     insights.push({
       text: `Every handover completed with ${handoverQualityAvg}/5 average quality — exemplary continuity of care between night and day shifts. Ofsted will view this positively under Reg 12.`,
       severity: "positive",
     });
   }
 
-  if (sleepAssessmentCoverage >= 100 && supportPlanRate >= 90 && total_children > 0) {
+  if (meets(sleepAssessmentCoverage, 100) && meets(supportPlanRate, 90) && total_children > 0) {
     insights.push({
       text: "All children have sleep assessments with support plans in place — the home demonstrates truly individualised overnight care that responds to each child's unique sleep needs.",
       severity: "positive",
     });
   }
 
-  if (anxietySupportResponseRate >= 100 && settledRate >= 90 && totalAnxietyEpisodes > 0) {
+  if (meets(anxietySupportResponseRate, 100) && meets(settledRate, 90) && totalAnxietyEpisodes > 0) {
     insights.push({
       text: `Every anxiety episode supported with ${settledRate}% of children settling afterward — night staff are highly effective at recognising and responding to children's overnight anxiety, creating a sense of safety.`,
       severity: "positive",
     });
   }
 
-  if (childWellbeingCheckRate >= 90 && totalNightChecks > 0) {
+  if (meets(childWellbeingCheckRate, 90) && totalNightChecks > 0) {
     insights.push({
       text: `${childWellbeingCheckRate}% of night checks include wellbeing observations — staff are not just checking presence but genuinely assessing how children are doing overnight, building a rich picture of each child's experience.`,
       severity: "positive",
     });
   }
 
-  if (nightLogCompletionRate >= 100 && incidentDocumentationRate >= 100 && totalNightLogs > 0) {
+  if (meets(nightLogCompletionRate, 100) && meets(incidentDocumentationRate, 100) && totalNightLogs > 0) {
     insights.push({
       text: "All night logs completed with 100% incident documentation — the home maintains a comprehensive overnight record that Ofsted can use to verify the quality and safety of night care under Reg 12.",
       severity: "positive",
     });
   }
 
-  if (deEscalationRate >= 90 && settledRate >= 90 && totalAnxietyEpisodes > 0) {
+  if (meets(deEscalationRate, 90) && meets(settledRate, 90) && totalAnxietyEpisodes > 0) {
     insights.push({
       text: `De-escalation used in ${deEscalationRate}% of anxiety episodes with ${settledRate}% of children settling — night staff demonstrate skilled, compassionate responses to children in distress.`,
       severity: "positive",

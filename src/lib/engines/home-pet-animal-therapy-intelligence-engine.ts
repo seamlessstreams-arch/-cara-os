@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // CARA -- HOME PET & ANIMAL THERAPY INTELLIGENCE ENGINE
 // Monitors animal-assisted therapy quality across the home -- therapy session
@@ -153,13 +154,19 @@ export interface PetAnimalTherapyResult {
   therapy_score: number;
   headline: string;
   total_sessions: number;
-  therapy_frequency_rate: number;
-  pet_care_responsibility_rate: number;
-  interaction_outcome_rate: number;
-  welfare_compliance_rate: number;
-  child_engagement_rate: number;
-  child_benefit_rate: number;
-  // The 6 rate fields above use pct() directly (deterministic 0 on empty).
+  /** null when the population is empty — nothing measured, not 0%. */
+  therapy_frequency_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  pet_care_responsibility_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  interaction_outcome_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  welfare_compliance_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_engagement_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_benefit_rate: number | null;
+  // The 6 rate fields above use rate() directly (deterministic 0 on empty).
   // The 2 avg fields below are null on empty: no source records ⇒ no signal.
   // Fab-0 doctrine.
   session_goal_achievement_avg: number | null;
@@ -171,10 +178,6 @@ export interface PetAnimalTherapyResult {
 }
 
 // -- Helpers -----------------------------------------------------------------
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -199,12 +202,12 @@ function emptyResult(
     therapy_score: score,
     headline,
     total_sessions: 0,
-    therapy_frequency_rate: 0,
-    pet_care_responsibility_rate: 0,
-    interaction_outcome_rate: 0,
-    welfare_compliance_rate: 0,
-    child_engagement_rate: 0,
-    child_benefit_rate: 0,
+    therapy_frequency_rate: null,
+    pet_care_responsibility_rate: null,
+    interaction_outcome_rate: null,
+    welfare_compliance_rate: null,
+    child_engagement_rate: null,
+    child_benefit_rate: null,
     session_goal_achievement_avg: null,
     mood_improvement_avg: null,
     strengths: [],
@@ -288,17 +291,17 @@ export function computePetAnimalTherapy(
     therapy_session_records.map((s) => s.child_id),
   ).size;
   const therapyFrequencyRate =
-    total_children > 0 ? pct(uniqueChildrenWithSessions, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenWithSessions, total_children) : 0;
 
   const sessionsWithGoalsSet = therapy_session_records.filter(
     (s) => s.goals_set,
   ).length;
-  const goalSettingRate = pct(sessionsWithGoalsSet, totalSessions);
+  const goalSettingRate = rate(sessionsWithGoalsSet, totalSessions);
 
   const sessionsWithGoalsMet = therapy_session_records.filter(
     (s) => s.goals_set && s.goals_met,
   ).length;
-  const goalAchievementRate = pct(sessionsWithGoalsMet, sessionsWithGoalsSet);
+  const goalAchievementRate = rate(sessionsWithGoalsMet, sessionsWithGoalsSet);
 
   const sessionsWithPositiveFeedback = therapy_session_records.filter(
     (s) => s.child_feedback_positive,
@@ -307,12 +310,12 @@ export function computePetAnimalTherapy(
   const sessionsWithRiskAssessment = therapy_session_records.filter(
     (s) => s.risk_assessment_completed,
   ).length;
-  const sessionRiskAssessmentRate = pct(sessionsWithRiskAssessment, totalSessions);
+  const sessionRiskAssessmentRate = rate(sessionsWithRiskAssessment, totalSessions);
 
   const sessionsWithNotes = therapy_session_records.filter(
     (s) => s.notes_recorded,
   ).length;
-  const sessionDocumentationRate = pct(sessionsWithNotes, totalSessions);
+  const sessionDocumentationRate = rate(sessionsWithNotes, totalSessions);
 
   const sessionGoalAchievementAvg: number | null =
     sessionsWithGoalsSet > 0
@@ -327,7 +330,7 @@ export function computePetAnimalTherapy(
   const careWithResponsibilityCompleted = pet_care_records.filter(
     (c) => c.responsibility_assigned && c.responsibility_completed,
   ).length;
-  const petCareResponsibilityRate = pct(
+  const petCareResponsibilityRate = rate(
     careWithResponsibilityCompleted,
     careWithResponsibilityAssigned,
   );
@@ -335,29 +338,29 @@ export function computePetAnimalTherapy(
   const childInitiatedCare = pet_care_records.filter(
     (c) => c.child_initiated,
   ).length;
-  const childInitiatedCareRate = pct(childInitiatedCare, totalCareRecords);
+  const childInitiatedCareRate = rate(childInitiatedCare, totalCareRecords);
 
   // --- Animal interaction outcomes ---
   const totalInteractions = animal_interaction_records.length;
   const positiveInteractions = animal_interaction_records.filter(
     (i) => i.positive_outcome,
   ).length;
-  const interactionOutcomeRate = pct(positiveInteractions, totalInteractions);
+  const interactionOutcomeRate = rate(positiveInteractions, totalInteractions);
 
   const behaviouralImprovements = animal_interaction_records.filter(
     (i) => i.behavioural_improvement,
   ).length;
-  const behaviouralImprovementRate = pct(behaviouralImprovements, totalInteractions);
+  const behaviouralImprovementRate = rate(behaviouralImprovements, totalInteractions);
 
   const emotionalRegulationObserved = animal_interaction_records.filter(
     (i) => i.emotional_regulation_observed,
   ).length;
-  const emotionalRegulationRate = pct(emotionalRegulationObserved, totalInteractions);
+  const emotionalRegulationRate = rate(emotionalRegulationObserved, totalInteractions);
 
   const interactionsWithRiskAssessment = animal_interaction_records.filter(
     (i) => i.risk_assessment_current,
   ).length;
-  const interactionRiskAssessmentRate = pct(interactionsWithRiskAssessment, totalInteractions);
+  const interactionRiskAssessmentRate = rate(interactionsWithRiskAssessment, totalInteractions);
 
   // Mood improvement
   const moodImprovementValues = animal_interaction_records
@@ -373,29 +376,29 @@ export function computePetAnimalTherapy(
       : null;
 
   const moodImprovedCount = moodImprovementValues.filter((v) => v > 0).length;
-  const moodImprovementRate = pct(moodImprovedCount, moodImprovementValues.length);
+  const moodImprovementRate = rate(moodImprovedCount, moodImprovementValues.length);
 
   // --- Animal welfare compliance ---
   const totalWelfareChecks = animal_welfare_records.length;
   const welfareStandardsMet = animal_welfare_records.filter(
     (w) => w.welfare_standards_met,
   ).length;
-  const welfareComplianceRate = pct(welfareStandardsMet, totalWelfareChecks);
+  const welfareComplianceRate = rate(welfareStandardsMet, totalWelfareChecks);
 
   const vetUpToDate = animal_welfare_records.filter(
     (w) => w.veterinary_up_to_date,
   ).length;
-  const vetComplianceRate = pct(vetUpToDate, totalWelfareChecks);
+  const vetComplianceRate = rate(vetUpToDate, totalWelfareChecks);
 
   const insuranceCurrent = animal_welfare_records.filter(
     (w) => w.insurance_current,
   ).length;
-  const insuranceRate = pct(insuranceCurrent, totalWelfareChecks);
+  const insuranceRate = rate(insuranceCurrent, totalWelfareChecks);
 
   const riskAssessmentCurrent = animal_welfare_records.filter(
     (w) => w.risk_assessment_current,
   ).length;
-  const welfareRiskAssessmentRate = pct(riskAssessmentCurrent, totalWelfareChecks);
+  const welfareRiskAssessmentRate = rate(riskAssessmentCurrent, totalWelfareChecks);
 
   const concernsIdentified = animal_welfare_records.filter(
     (w) => w.concerns_identified,
@@ -403,7 +406,7 @@ export function computePetAnimalTherapy(
   const concernsActioned = animal_welfare_records.filter(
     (w) => w.concerns_identified && w.concerns_actioned,
   ).length;
-  const concernsActionedRate = pct(concernsActioned, concernsIdentified);
+  const concernsActionedRate = rate(concernsActioned, concernsIdentified);
 
   const overdueWelfareReviews = animal_welfare_records.filter(
     (w) => w.review_overdue,
@@ -419,42 +422,42 @@ export function computePetAnimalTherapy(
   const highModerateEngagement = child_engagement_records.filter(
     (e) => e.engagement_level === "high" || e.engagement_level === "moderate",
   ).length;
-  const childEngagementRate = pct(highModerateEngagement, totalEngagementRecords);
+  const childEngagementRate = rate(highModerateEngagement, totalEngagementRecords);
 
   const empathyDemonstrated = child_engagement_records.filter(
     (e) => e.empathy_demonstrated,
   ).length;
-  const empathyRate = pct(empathyDemonstrated, totalEngagementRecords);
+  const empathyRate = rate(empathyDemonstrated, totalEngagementRecords);
 
   const responsibilitySkillsImproved = child_engagement_records.filter(
     (e) => e.responsibility_skills_improved,
   ).length;
-  const responsibilityImprovementRate = pct(responsibilitySkillsImproved, totalEngagementRecords);
+  const responsibilityImprovementRate = rate(responsibilitySkillsImproved, totalEngagementRecords);
 
   const socialSkillsImproved = child_engagement_records.filter(
     (e) => e.social_skills_improved,
   ).length;
-  const socialSkillsRate = pct(socialSkillsImproved, totalEngagementRecords);
+  const socialSkillsRate = rate(socialSkillsImproved, totalEngagementRecords);
 
   const emotionalRegulationImproved = child_engagement_records.filter(
     (e) => e.emotional_regulation_improved,
   ).length;
-  const emotionalRegulationImprovementRate = pct(emotionalRegulationImproved, totalEngagementRecords);
+  const emotionalRegulationImprovementRate = rate(emotionalRegulationImproved, totalEngagementRecords);
 
   const childSelfReportedBenefit = child_engagement_records.filter(
     (e) => e.child_self_reported_benefit,
   ).length;
-  const childSelfReportedBenefitRate = pct(childSelfReportedBenefit, totalEngagementRecords);
+  const childSelfReportedBenefitRate = rate(childSelfReportedBenefit, totalEngagementRecords);
 
   const staffReportedBenefit = child_engagement_records.filter(
     (e) => e.staff_reported_benefit,
   ).length;
-  const staffReportedBenefitRate = pct(staffReportedBenefit, totalEngagementRecords);
+  const staffReportedBenefitRate = rate(staffReportedBenefit, totalEngagementRecords);
 
   const supportPlanInPlace = child_engagement_records.filter(
     (e) => e.support_plan_in_place,
   ).length;
-  const supportPlanRate = pct(supportPlanInPlace, totalEngagementRecords);
+  const supportPlanRate = rate(supportPlanInPlace, totalEngagementRecords);
 
   const overdueEngagementReviews = child_engagement_records.filter(
     (e) => e.review_overdue,
@@ -465,57 +468,57 @@ export function computePetAnimalTherapy(
     totalSessions + totalInteractions + totalEngagementRecords;
   const totalBenefitPositive =
     sessionsWithPositiveFeedback + positiveInteractions + childSelfReportedBenefit;
-  const childBenefitRate = pct(totalBenefitPositive, totalBenefitOpportunities);
+  const childBenefitRate = rate(totalBenefitPositive, totalBenefitOpportunities);
 
   // -- Scoring: base 52 ----------------------------------------------------
 
   let score = 52;
 
   // --- Bonus 1: therapyFrequencyRate (>=90: +4, >=70: +2) ---
-  if (therapyFrequencyRate >= 90) score += 4;
-  else if (therapyFrequencyRate >= 70) score += 2;
+  if (meets(therapyFrequencyRate, 90)) score += 4;
+  else if (meets(therapyFrequencyRate, 70)) score += 2;
 
   // --- Bonus 2: petCareResponsibilityRate (>=90: +4, >=70: +2) ---
-  if (petCareResponsibilityRate >= 90) score += 4;
-  else if (petCareResponsibilityRate >= 70) score += 2;
+  if (meets(petCareResponsibilityRate, 90)) score += 4;
+  else if (meets(petCareResponsibilityRate, 70)) score += 2;
 
   // --- Bonus 3: interactionOutcomeRate (>=90: +4, >=70: +2) ---
-  if (interactionOutcomeRate >= 90) score += 4;
-  else if (interactionOutcomeRate >= 70) score += 2;
+  if (meets(interactionOutcomeRate, 90)) score += 4;
+  else if (meets(interactionOutcomeRate, 70)) score += 2;
 
   // --- Bonus 4: welfareComplianceRate (>=100: +4, >=80: +2) ---
-  if (welfareComplianceRate >= 100) score += 4;
-  else if (welfareComplianceRate >= 80) score += 2;
+  if (meets(welfareComplianceRate, 100)) score += 4;
+  else if (meets(welfareComplianceRate, 80)) score += 2;
 
   // --- Bonus 5: childEngagementRate (>=90: +4, >=70: +2) ---
-  if (childEngagementRate >= 90) score += 4;
-  else if (childEngagementRate >= 70) score += 2;
+  if (meets(childEngagementRate, 90)) score += 4;
+  else if (meets(childEngagementRate, 70)) score += 2;
 
   // --- Bonus 6: childBenefitRate (>=90: +4, >=70: +2) ---
-  if (childBenefitRate >= 90) score += 4;
-  else if (childBenefitRate >= 70) score += 2;
+  if (meets(childBenefitRate, 90)) score += 4;
+  else if (meets(childBenefitRate, 70)) score += 2;
 
   // --- Bonus 7: sessionRiskAssessmentRate (>=100: +2, >=80: +1) ---
-  if (sessionRiskAssessmentRate >= 100) score += 2;
-  else if (sessionRiskAssessmentRate >= 80) score += 1;
+  if (meets(sessionRiskAssessmentRate, 100)) score += 2;
+  else if (meets(sessionRiskAssessmentRate, 80)) score += 1;
 
   // --- Bonus 8: goalAchievementRate (>=90: +2, >=70: +1) ---
-  if (goalAchievementRate >= 90) score += 2;
-  else if (goalAchievementRate >= 70) score += 1;
+  if (meets(goalAchievementRate, 90)) score += 2;
+  else if (meets(goalAchievementRate, 70)) score += 1;
 
   // -- Penalties (guarded by array.length > 0) -----------------------------
 
   // therapyFrequencyRate < 40 -> -5
-  if (therapyFrequencyRate < 40 && therapy_session_records.length > 0) score -= 5;
+  if (below(therapyFrequencyRate, 40) && therapy_session_records.length > 0) score -= 5;
 
   // welfareComplianceRate < 50 -> -5
-  if (welfareComplianceRate < 50 && animal_welfare_records.length > 0) score -= 5;
+  if (below(welfareComplianceRate, 50) && animal_welfare_records.length > 0) score -= 5;
 
   // interactionOutcomeRate < 40 -> -4
-  if (interactionOutcomeRate < 40 && animal_interaction_records.length > 0) score -= 4;
+  if (below(interactionOutcomeRate, 40) && animal_interaction_records.length > 0) score -= 4;
 
   // childEngagementRate < 40 -> -4
-  if (childEngagementRate < 40 && child_engagement_records.length > 0) score -= 4;
+  if (below(childEngagementRate, 40) && child_engagement_records.length > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -525,139 +528,139 @@ export function computePetAnimalTherapy(
 
   const strengths: string[] = [];
 
-  if (therapyFrequencyRate >= 90 && total_children > 0) {
+  if (meets(therapyFrequencyRate, 90) && total_children > 0) {
     strengths.push(
       `${therapyFrequencyRate}% of children are accessing animal-assisted therapy sessions -- the home provides comprehensive therapeutic coverage through animal interactions.`,
     );
-  } else if (therapyFrequencyRate >= 70 && total_children > 0) {
+  } else if (meets(therapyFrequencyRate, 70) && total_children > 0) {
     strengths.push(
       `${therapyFrequencyRate}% of children are engaging in therapy sessions with animals -- strong participation in the home's animal-assisted therapy programme.`,
     );
   }
 
-  if (petCareResponsibilityRate >= 90 && careWithResponsibilityAssigned > 0) {
+  if (meets(petCareResponsibilityRate, 90) && careWithResponsibilityAssigned > 0) {
     strengths.push(
       `${petCareResponsibilityRate}% of assigned pet care responsibilities are completed -- children demonstrate excellent follow-through on their animal care duties, building responsibility and nurturing skills.`,
     );
-  } else if (petCareResponsibilityRate >= 70 && careWithResponsibilityAssigned > 0) {
+  } else if (meets(petCareResponsibilityRate, 70) && careWithResponsibilityAssigned > 0) {
     strengths.push(
       `${petCareResponsibilityRate}% pet care responsibility completion -- children are generally reliable in fulfilling their animal care duties.`,
     );
   }
 
-  if (interactionOutcomeRate >= 90 && totalInteractions > 0) {
+  if (meets(interactionOutcomeRate, 90) && totalInteractions > 0) {
     strengths.push(
       `${interactionOutcomeRate}% of animal interactions achieve positive outcomes -- interactions are highly effective in supporting children's emotional and behavioural development.`,
     );
-  } else if (interactionOutcomeRate >= 70 && totalInteractions > 0) {
+  } else if (meets(interactionOutcomeRate, 70) && totalInteractions > 0) {
     strengths.push(
       `${interactionOutcomeRate}% positive interaction outcomes -- the majority of children's animal interactions are achieving therapeutic or developmental benefit.`,
     );
   }
 
-  if (welfareComplianceRate >= 100 && totalWelfareChecks > 0) {
+  if (meets(welfareComplianceRate, 100) && totalWelfareChecks > 0) {
     strengths.push(
       "All animal welfare checks meet required standards -- the home demonstrates exemplary commitment to the wellbeing of therapy animals.",
     );
-  } else if (welfareComplianceRate >= 80 && totalWelfareChecks > 0) {
+  } else if (meets(welfareComplianceRate, 80) && totalWelfareChecks > 0) {
     strengths.push(
       `${welfareComplianceRate}% welfare compliance -- the home maintains a high standard of animal welfare across its therapy provision.`,
     );
   }
 
-  if (childEngagementRate >= 90 && totalEngagementRecords > 0) {
+  if (meets(childEngagementRate, 90) && totalEngagementRecords > 0) {
     strengths.push(
       `${childEngagementRate}% of children show high or moderate engagement with animal therapy -- children are actively invested in their animal-assisted interventions.`,
     );
-  } else if (childEngagementRate >= 70 && totalEngagementRecords > 0) {
+  } else if (meets(childEngagementRate, 70) && totalEngagementRecords > 0) {
     strengths.push(
       `${childEngagementRate}% child engagement in animal therapy -- strong levels of participation and investment from children.`,
     );
   }
 
-  if (childBenefitRate >= 90 && totalBenefitOpportunities > 0) {
+  if (meets(childBenefitRate, 90) && totalBenefitOpportunities > 0) {
     strengths.push(
       `${childBenefitRate}% of animal therapy touchpoints report positive child outcomes -- children consistently benefit from the home's animal-assisted provision.`,
     );
-  } else if (childBenefitRate >= 70 && totalBenefitOpportunities > 0) {
+  } else if (meets(childBenefitRate, 70) && totalBenefitOpportunities > 0) {
     strengths.push(
       `${childBenefitRate}% positive child benefit across animal therapy activities -- the majority of children are gaining therapeutic value from animal interactions.`,
     );
   }
 
-  if (goalAchievementRate >= 90 && sessionsWithGoalsSet > 0) {
+  if (meets(goalAchievementRate, 90) && sessionsWithGoalsSet > 0) {
     strengths.push(
       `${goalAchievementRate}% of therapy session goals are achieved -- sessions are purposeful and delivering intended therapeutic outcomes for children.`,
     );
-  } else if (goalAchievementRate >= 70 && sessionsWithGoalsSet > 0) {
+  } else if (meets(goalAchievementRate, 70) && sessionsWithGoalsSet > 0) {
     strengths.push(
       `${goalAchievementRate}% goal achievement in therapy sessions -- the majority of sessions meet their therapeutic objectives.`,
     );
   }
 
-  if (sessionRiskAssessmentRate >= 100 && totalSessions > 0) {
+  if (meets(sessionRiskAssessmentRate, 100) && totalSessions > 0) {
     strengths.push(
       "Every therapy session has a completed risk assessment -- the home prioritises child safety in all animal-assisted interactions.",
     );
-  } else if (sessionRiskAssessmentRate >= 80 && totalSessions > 0) {
+  } else if (meets(sessionRiskAssessmentRate, 80) && totalSessions > 0) {
     strengths.push(
       `${sessionRiskAssessmentRate}% of therapy sessions have completed risk assessments -- strong safety practice in animal-assisted therapy delivery.`,
     );
   }
 
-  if (moodImprovementRate >= 80 && moodImprovementValues.length > 0) {
+  if (meets(moodImprovementRate, 80) && moodImprovementValues.length > 0) {
     strengths.push(
       `${moodImprovementRate}% of animal interactions result in improved child mood -- interactions are demonstrably calming and emotionally regulating for children.`,
     );
-  } else if (moodImprovementRate >= 60 && moodImprovementValues.length > 0) {
+  } else if (meets(moodImprovementRate, 60) && moodImprovementValues.length > 0) {
     strengths.push(
       `${moodImprovementRate}% of interactions show mood improvement -- animal interactions are generally supporting children's emotional wellbeing.`,
     );
   }
 
-  if (emotionalRegulationRate >= 80 && totalInteractions > 0) {
+  if (meets(emotionalRegulationRate, 80) && totalInteractions > 0) {
     strengths.push(
       `Emotional regulation observed in ${emotionalRegulationRate}% of animal interactions -- animals are serving as effective co-regulators for children's emotional states.`,
     );
   }
 
-  if (empathyRate >= 80 && totalEngagementRecords > 0) {
+  if (meets(empathyRate, 80) && totalEngagementRecords > 0) {
     strengths.push(
       `${empathyRate}% of children demonstrate improved empathy through animal therapy -- caring for animals is developing children's capacity for compassion and understanding.`,
     );
   }
 
-  if (childInitiatedCareRate >= 50 && totalCareRecords > 0) {
+  if (meets(childInitiatedCareRate, 50) && totalCareRecords > 0) {
     strengths.push(
       `${childInitiatedCareRate}% of pet care activities are child-initiated -- children proactively seek out caring roles, showing genuine investment in animal welfare.`,
     );
   }
 
-  if (vetComplianceRate >= 100 && totalWelfareChecks > 0) {
+  if (meets(vetComplianceRate, 100) && totalWelfareChecks > 0) {
     strengths.push(
       "All therapy animals have up-to-date veterinary care -- the home ensures animals are healthy and fit for therapeutic work with children.",
     );
   }
 
-  if (sessionDocumentationRate >= 90 && totalSessions > 0) {
+  if (meets(sessionDocumentationRate, 90) && totalSessions > 0) {
     strengths.push(
       `${sessionDocumentationRate}% of therapy sessions have documented notes -- strong recording practice supporting evidence of therapeutic provision.`,
     );
   }
 
-  if (concernsActionedRate >= 100 && concernsIdentified > 0) {
+  if (meets(concernsActionedRate, 100) && concernsIdentified > 0) {
     strengths.push(
       "All identified animal welfare concerns have been actioned -- the home responds promptly and effectively to any welfare issues.",
     );
   }
 
-  if (responsibilityImprovementRate >= 80 && totalEngagementRecords > 0) {
+  if (meets(responsibilityImprovementRate, 80) && totalEngagementRecords > 0) {
     strengths.push(
       `${responsibilityImprovementRate}% of children show improved responsibility skills through animal care -- the programme effectively develops life skills alongside therapeutic benefits.`,
     );
   }
 
-  if (behaviouralImprovementRate >= 70 && totalInteractions > 0) {
+  if (meets(behaviouralImprovementRate, 70) && totalInteractions > 0) {
     strengths.push(
       `Behavioural improvement observed in ${behaviouralImprovementRate}% of animal interactions -- animal-assisted interventions are positively influencing children's behaviour.`,
     );
@@ -667,73 +670,73 @@ export function computePetAnimalTherapy(
 
   const concerns: string[] = [];
 
-  if (therapyFrequencyRate < 40 && total_children > 0 && totalSessions > 0) {
+  if (below(therapyFrequencyRate, 40) && total_children > 0 && totalSessions > 0) {
     concerns.push(
       `Only ${therapyFrequencyRate}% of children are accessing animal-assisted therapy -- the majority of children are not benefiting from the home's therapy animal provision, indicating potential barriers to access or insufficient session availability.`,
     );
-  } else if (therapyFrequencyRate < 70 && therapyFrequencyRate >= 40 && total_children > 0) {
+  } else if (below(therapyFrequencyRate, 70) && meets(therapyFrequencyRate, 40) && total_children > 0) {
     concerns.push(
       `Therapy session coverage at ${therapyFrequencyRate}% -- some children are not accessing animal-assisted therapy. Review whether all children who could benefit have been offered appropriate sessions.`,
     );
   }
 
-  if (petCareResponsibilityRate < 50 && careWithResponsibilityAssigned > 0) {
+  if (below(petCareResponsibilityRate, 50) && careWithResponsibilityAssigned > 0) {
     concerns.push(
       `Only ${petCareResponsibilityRate}% of assigned pet care responsibilities are completed -- children are not following through on their animal care duties, which may indicate insufficient support, inappropriate task allocation, or disengagement.`,
     );
-  } else if (petCareResponsibilityRate < 70 && petCareResponsibilityRate >= 50 && careWithResponsibilityAssigned > 0) {
+  } else if (below(petCareResponsibilityRate, 70) && meets(petCareResponsibilityRate, 50) && careWithResponsibilityAssigned > 0) {
     concerns.push(
       `Pet care responsibility completion at ${petCareResponsibilityRate}% -- some children are not completing their assigned animal care tasks. Consider whether tasks are age-appropriate and adequately supported.`,
     );
   }
 
-  if (interactionOutcomeRate < 40 && totalInteractions > 0) {
+  if (below(interactionOutcomeRate, 40) && totalInteractions > 0) {
     concerns.push(
       `Only ${interactionOutcomeRate}% of animal interactions achieve positive outcomes -- the majority of interactions are not delivering therapeutic benefit, suggesting a need for fundamental review of the interaction programme's design and delivery.`,
     );
-  } else if (interactionOutcomeRate < 70 && interactionOutcomeRate >= 40 && totalInteractions > 0) {
+  } else if (below(interactionOutcomeRate, 70) && meets(interactionOutcomeRate, 40) && totalInteractions > 0) {
     concerns.push(
       `Interaction outcome rate at ${interactionOutcomeRate}% -- not all animal interactions are achieving positive results. Review whether interactions are appropriately structured and matched to individual children's needs.`,
     );
   }
 
-  if (welfareComplianceRate < 50 && totalWelfareChecks > 0) {
+  if (below(welfareComplianceRate, 50) && totalWelfareChecks > 0) {
     concerns.push(
       `Only ${welfareComplianceRate}% of animal welfare checks meet required standards -- serious animal welfare deficits that must be addressed immediately. The home has a legal duty under the Animal Welfare Act 2006 to ensure the welfare of all animals in its care.`,
     );
-  } else if (welfareComplianceRate < 80 && welfareComplianceRate >= 50 && totalWelfareChecks > 0) {
+  } else if (below(welfareComplianceRate, 80) && meets(welfareComplianceRate, 50) && totalWelfareChecks > 0) {
     concerns.push(
       `Welfare compliance at ${welfareComplianceRate}% -- some animal welfare standards are not being met. All therapy animals must receive consistent welfare provision to legal standards.`,
     );
   }
 
-  if (childEngagementRate < 40 && totalEngagementRecords > 0) {
+  if (below(childEngagementRate, 40) && totalEngagementRecords > 0) {
     concerns.push(
       `Only ${childEngagementRate}% of children show adequate engagement with animal therapy -- the majority of children are disengaged, suggesting the programme may not be meeting their needs or interests.`,
     );
-  } else if (childEngagementRate < 70 && childEngagementRate >= 40 && totalEngagementRecords > 0) {
+  } else if (below(childEngagementRate, 70) && meets(childEngagementRate, 40) && totalEngagementRecords > 0) {
     concerns.push(
       `Child engagement rate at ${childEngagementRate}% -- a significant proportion of children are not fully engaged with the animal therapy programme. Individual assessments should identify barriers and adapt provision.`,
     );
   }
 
-  if (childBenefitRate < 50 && totalBenefitOpportunities > 0) {
+  if (below(childBenefitRate, 50) && totalBenefitOpportunities > 0) {
     concerns.push(
       `Only ${childBenefitRate}% positive benefit reported across animal therapy activities -- children are not consistently experiencing therapeutic value from the home's animal-assisted provision.`,
     );
-  } else if (childBenefitRate < 70 && childBenefitRate >= 50 && totalBenefitOpportunities > 0) {
+  } else if (below(childBenefitRate, 70) && meets(childBenefitRate, 50) && totalBenefitOpportunities > 0) {
     concerns.push(
       `Child benefit rate at ${childBenefitRate}% -- not all children are reporting positive outcomes from animal therapy. Individual review is needed to tailor the approach.`,
     );
   }
 
-  if (sessionRiskAssessmentRate < 80 && totalSessions > 0) {
+  if (below(sessionRiskAssessmentRate, 80) && totalSessions > 0) {
     concerns.push(
       `Only ${sessionRiskAssessmentRate}% of therapy sessions have completed risk assessments -- all sessions involving children and animals must have documented risk assessments to ensure child safety.`,
     );
   }
 
-  if (interactionRiskAssessmentRate < 80 && totalInteractions > 0) {
+  if (below(interactionRiskAssessmentRate, 80) && totalInteractions > 0) {
     concerns.push(
       `Only ${interactionRiskAssessmentRate}% of animal interactions have current risk assessments -- interactions without risk assessment expose children to unmanaged risks.`,
     );
@@ -751,37 +754,37 @@ export function computePetAnimalTherapy(
     );
   }
 
-  if (overdueEngagementReviews > 0 && totalEngagementRecords > 0) {
+  if (above(overdueEngagementReviews, 0) && totalEngagementRecords > 0) {
     concerns.push(
       `${overdueEngagementReviews} child engagement review${overdueEngagementReviews !== 1 ? "s are" : " is"} overdue -- without timely reviews, the home cannot ensure the therapy programme remains appropriately matched to each child's evolving needs.`,
     );
   }
 
-  if (vetComplianceRate < 80 && totalWelfareChecks > 0) {
+  if (below(vetComplianceRate, 80) && totalWelfareChecks > 0) {
     concerns.push(
       `Only ${vetComplianceRate}% of animals have up-to-date veterinary care -- therapy animals must have current veterinary records to ensure they are safe and healthy for interaction with children.`,
     );
   }
 
-  if (insuranceRate < 80 && totalWelfareChecks > 0) {
+  if (below(insuranceRate, 80) && totalWelfareChecks > 0) {
     concerns.push(
       `Only ${insuranceRate}% of therapy animals have current insurance -- all therapy animals should be insured to protect the home, staff, and children.`,
     );
   }
 
-  if (goalSettingRate < 50 && totalSessions > 0) {
+  if (below(goalSettingRate, 50) && totalSessions > 0) {
     concerns.push(
       `Goals set for only ${goalSettingRate}% of therapy sessions -- sessions without clear goals lack therapeutic purpose and cannot evidence targeted outcomes.`,
     );
   }
 
-  if (sessionDocumentationRate < 70 && totalSessions > 0) {
+  if (below(sessionDocumentationRate, 70) && totalSessions > 0) {
     concerns.push(
       `Session documentation at only ${sessionDocumentationRate}% -- inadequate recording makes it difficult to evidence therapeutic progress and outcomes for Ofsted.`,
     );
   }
 
-  if (concernsIdentified > 0 && concernsActionedRate < 80) {
+  if (concernsIdentified > 0 && below(concernsActionedRate, 80)) {
     concerns.push(
       `Only ${concernsActionedRate}% of identified animal welfare concerns have been actioned -- unresolved welfare concerns represent a failure in the home's duty of care to therapy animals.`,
     );
@@ -792,7 +795,7 @@ export function computePetAnimalTherapy(
   const recommendations: PetAnimalTherapyRecommendation[] = [];
   let rank = 0;
 
-  if (welfareComplianceRate < 50 && totalWelfareChecks > 0) {
+  if (below(welfareComplianceRate, 50) && totalWelfareChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -812,7 +815,7 @@ export function computePetAnimalTherapy(
     });
   }
 
-  if (sessionRiskAssessmentRate < 80 && totalSessions > 0) {
+  if (below(sessionRiskAssessmentRate, 80) && totalSessions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -822,7 +825,7 @@ export function computePetAnimalTherapy(
     });
   }
 
-  if (therapyFrequencyRate < 40 && total_children > 0 && totalSessions > 0) {
+  if (below(therapyFrequencyRate, 40) && total_children > 0 && totalSessions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -832,7 +835,7 @@ export function computePetAnimalTherapy(
     });
   }
 
-  if (interactionOutcomeRate < 40 && totalInteractions > 0) {
+  if (below(interactionOutcomeRate, 40) && totalInteractions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -842,7 +845,7 @@ export function computePetAnimalTherapy(
     });
   }
 
-  if (childEngagementRate < 40 && totalEngagementRecords > 0) {
+  if (below(childEngagementRate, 40) && totalEngagementRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -852,7 +855,7 @@ export function computePetAnimalTherapy(
     });
   }
 
-  if (interactionRiskAssessmentRate < 80 && totalInteractions > 0) {
+  if (below(interactionRiskAssessmentRate, 80) && totalInteractions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -862,7 +865,7 @@ export function computePetAnimalTherapy(
     });
   }
 
-  if (childBenefitRate < 50 && totalBenefitOpportunities > 0) {
+  if (below(childBenefitRate, 50) && totalBenefitOpportunities > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -872,7 +875,7 @@ export function computePetAnimalTherapy(
     });
   }
 
-  if (concernsIdentified > 0 && concernsActionedRate < 80) {
+  if (concernsIdentified > 0 && below(concernsActionedRate, 80)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -882,7 +885,7 @@ export function computePetAnimalTherapy(
     });
   }
 
-  if (vetComplianceRate < 80 && totalWelfareChecks > 0) {
+  if (below(vetComplianceRate, 80) && totalWelfareChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -913,8 +916,8 @@ export function computePetAnimalTherapy(
   }
 
   if (
-    therapyFrequencyRate >= 40 &&
-    therapyFrequencyRate < 70 &&
+    meets(therapyFrequencyRate, 40) &&
+    below(therapyFrequencyRate, 70) &&
     total_children > 0
   ) {
     recommendations.push({
@@ -927,8 +930,8 @@ export function computePetAnimalTherapy(
   }
 
   if (
-    interactionOutcomeRate >= 40 &&
-    interactionOutcomeRate < 70 &&
+    meets(interactionOutcomeRate, 40) &&
+    below(interactionOutcomeRate, 70) &&
     totalInteractions > 0
   ) {
     recommendations.push({
@@ -941,8 +944,8 @@ export function computePetAnimalTherapy(
   }
 
   if (
-    petCareResponsibilityRate >= 50 &&
-    petCareResponsibilityRate < 70 &&
+    meets(petCareResponsibilityRate, 50) &&
+    below(petCareResponsibilityRate, 70) &&
     careWithResponsibilityAssigned > 0
   ) {
     recommendations.push({
@@ -954,7 +957,7 @@ export function computePetAnimalTherapy(
     });
   }
 
-  if (petCareResponsibilityRate < 50 && careWithResponsibilityAssigned > 0) {
+  if (below(petCareResponsibilityRate, 50) && careWithResponsibilityAssigned > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -964,7 +967,7 @@ export function computePetAnimalTherapy(
     });
   }
 
-  if (goalSettingRate < 50 && totalSessions > 0) {
+  if (below(goalSettingRate, 50) && totalSessions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -975,8 +978,8 @@ export function computePetAnimalTherapy(
   }
 
   if (
-    welfareComplianceRate >= 50 &&
-    welfareComplianceRate < 80 &&
+    meets(welfareComplianceRate, 50) &&
+    below(welfareComplianceRate, 80) &&
     totalWelfareChecks > 0
   ) {
     recommendations.push({
@@ -989,8 +992,8 @@ export function computePetAnimalTherapy(
   }
 
   if (
-    childEngagementRate >= 40 &&
-    childEngagementRate < 70 &&
+    meets(childEngagementRate, 40) &&
+    below(childEngagementRate, 70) &&
     totalEngagementRecords > 0
   ) {
     recommendations.push({
@@ -1002,7 +1005,7 @@ export function computePetAnimalTherapy(
     });
   }
 
-  if (sessionDocumentationRate < 70 && totalSessions > 0) {
+  if (below(sessionDocumentationRate, 70) && totalSessions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1012,7 +1015,7 @@ export function computePetAnimalTherapy(
     });
   }
 
-  if (insuranceRate < 80 && totalWelfareChecks > 0) {
+  if (below(insuranceRate, 80) && totalWelfareChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1023,8 +1026,8 @@ export function computePetAnimalTherapy(
   }
 
   if (
-    childBenefitRate >= 50 &&
-    childBenefitRate < 70 &&
+    meets(childBenefitRate, 50) &&
+    below(childBenefitRate, 70) &&
     totalBenefitOpportunities > 0
   ) {
     recommendations.push({
@@ -1036,7 +1039,7 @@ export function computePetAnimalTherapy(
     });
   }
 
-  if (supportPlanRate < 70 && totalEngagementRecords > 0) {
+  if (below(supportPlanRate, 70) && totalEngagementRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1052,37 +1055,37 @@ export function computePetAnimalTherapy(
 
   // -- Critical insights --
 
-  if (welfareComplianceRate < 50 && totalWelfareChecks > 0) {
+  if (below(welfareComplianceRate, 50) && totalWelfareChecks > 0) {
     insights.push({
       text: `Only ${welfareComplianceRate}% of animal welfare checks meet required standards. The home has a legal obligation under the Animal Welfare Act 2006 to ensure the welfare of all animals in its care, and failure to meet welfare standards may constitute a criminal offence. Ofsted will view animal welfare failures as a serious safeguarding concern under Reg 5.`,
       severity: "critical",
     });
   }
 
-  if (therapyFrequencyRate < 40 && total_children > 0 && totalSessions > 0) {
+  if (below(therapyFrequencyRate, 40) && total_children > 0 && totalSessions > 0) {
     insights.push({
       text: `Only ${therapyFrequencyRate}% of children access animal-assisted therapy sessions. Where the home offers animal therapy as part of its provision, equitable access is essential. Children who could benefit but are not accessing sessions represent missed therapeutic opportunities under the SCCIF experiences and progress framework.`,
       severity: "critical",
     });
   }
 
-  if (interactionOutcomeRate < 40 && totalInteractions > 0) {
+  if (below(interactionOutcomeRate, 40) && totalInteractions > 0) {
     insights.push({
       text: `Only ${interactionOutcomeRate}% of animal interactions achieve positive outcomes. When most interactions are not delivering benefit, this indicates a systemic issue with the programme's design, delivery, or matching of animals to children's needs. A fundamental review with specialist input is needed.`,
       severity: "critical",
     });
   }
 
-  if (childEngagementRate < 40 && totalEngagementRecords > 0) {
+  if (below(childEngagementRate, 40) && totalEngagementRecords > 0) {
     insights.push({
       text: `Only ${childEngagementRate}% of children show adequate engagement with animal therapy. Low engagement across the programme suggests it may not be meeting children's needs or interests. Without meaningful engagement, the therapeutic value of animal-assisted intervention is severely diminished.`,
       severity: "critical",
     });
   }
 
-  if (poorHealthAnimals > 0 && sessionRiskAssessmentRate < 80) {
+  if (poorHealthAnimals > 0 && below(sessionRiskAssessmentRate, 80)) {
     insights.push({
-      text: `${poorHealthAnimals} animal${poorHealthAnimals !== 1 ? "s" : ""} in poor or critical health and ${100 - sessionRiskAssessmentRate}% of sessions lack risk assessments. The combination of compromised animal health and missing risk assessments creates significant risk to both children and animals during therapy interactions.`,
+      text: `${poorHealthAnimals} animal${poorHealthAnimals !== 1 ? "s" : ""} in poor or critical health and ${100 - sessionRiskAssessmentRate!}% of sessions lack risk assessments. The combination of compromised animal health and missing risk assessments creates significant risk to both children and animals during therapy interactions.`,
       severity: "critical",
     });
   }
@@ -1090,8 +1093,8 @@ export function computePetAnimalTherapy(
   // -- Warning insights --
 
   if (
-    therapyFrequencyRate >= 40 &&
-    therapyFrequencyRate < 70 &&
+    meets(therapyFrequencyRate, 40) &&
+    below(therapyFrequencyRate, 70) &&
     total_children > 0
   ) {
     insights.push({
@@ -1101,8 +1104,8 @@ export function computePetAnimalTherapy(
   }
 
   if (
-    interactionOutcomeRate >= 40 &&
-    interactionOutcomeRate < 70 &&
+    meets(interactionOutcomeRate, 40) &&
+    below(interactionOutcomeRate, 70) &&
     totalInteractions > 0
   ) {
     insights.push({
@@ -1112,8 +1115,8 @@ export function computePetAnimalTherapy(
   }
 
   if (
-    welfareComplianceRate >= 50 &&
-    welfareComplianceRate < 80 &&
+    meets(welfareComplianceRate, 50) &&
+    below(welfareComplianceRate, 80) &&
     totalWelfareChecks > 0
   ) {
     insights.push({
@@ -1123,8 +1126,8 @@ export function computePetAnimalTherapy(
   }
 
   if (
-    childEngagementRate >= 40 &&
-    childEngagementRate < 70 &&
+    meets(childEngagementRate, 40) &&
+    below(childEngagementRate, 70) &&
     totalEngagementRecords > 0
   ) {
     insights.push({
@@ -1134,8 +1137,8 @@ export function computePetAnimalTherapy(
   }
 
   if (
-    childBenefitRate >= 50 &&
-    childBenefitRate < 70 &&
+    meets(childBenefitRate, 50) &&
+    below(childBenefitRate, 70) &&
     totalBenefitOpportunities > 0
   ) {
     insights.push({
@@ -1158,7 +1161,7 @@ export function computePetAnimalTherapy(
     });
   }
 
-  if (goalSettingRate < 70 && goalSettingRate >= 50 && totalSessions > 0) {
+  if (below(goalSettingRate, 70) && meets(goalSettingRate, 50) && totalSessions > 0) {
     insights.push({
       text: `Goals set for only ${goalSettingRate}% of therapy sessions. Sessions without clear therapeutic goals are less likely to deliver purposeful outcomes and cannot evidence targeted progress for individual children.`,
       severity: "warning",
@@ -1166,8 +1169,8 @@ export function computePetAnimalTherapy(
   }
 
   if (
-    petCareResponsibilityRate >= 50 &&
-    petCareResponsibilityRate < 70 &&
+    meets(petCareResponsibilityRate, 50) &&
+    below(petCareResponsibilityRate, 70) &&
     careWithResponsibilityAssigned > 0
   ) {
     insights.push({
@@ -1176,7 +1179,7 @@ export function computePetAnimalTherapy(
     });
   }
 
-  if (sessionDocumentationRate < 70 && sessionDocumentationRate >= 50 && totalSessions > 0) {
+  if (below(sessionDocumentationRate, 70) && meets(sessionDocumentationRate, 50) && totalSessions > 0) {
     insights.push({
       text: `Session documentation at ${sessionDocumentationRate}% -- gaps in recording make it difficult to evidence the therapeutic value of the programme and track individual children's progress over time.`,
       severity: "warning",
@@ -1230,8 +1233,8 @@ export function computePetAnimalTherapy(
   }
 
   if (
-    therapyFrequencyRate >= 90 &&
-    goalAchievementRate >= 90 &&
+    meets(therapyFrequencyRate, 90) &&
+    meets(goalAchievementRate, 90) &&
     total_children > 0 &&
     sessionsWithGoalsSet > 0
   ) {
@@ -1242,8 +1245,8 @@ export function computePetAnimalTherapy(
   }
 
   if (
-    welfareComplianceRate >= 100 &&
-    vetComplianceRate >= 100 &&
+    meets(welfareComplianceRate, 100) &&
+    meets(vetComplianceRate, 100) &&
     totalWelfareChecks > 0
   ) {
     insights.push({
@@ -1253,8 +1256,8 @@ export function computePetAnimalTherapy(
   }
 
   if (
-    interactionOutcomeRate >= 90 &&
-    moodImprovementRate >= 80 &&
+    meets(interactionOutcomeRate, 90) &&
+    meets(moodImprovementRate, 80) &&
     totalInteractions > 0 &&
     moodImprovementValues.length > 0
   ) {
@@ -1265,8 +1268,8 @@ export function computePetAnimalTherapy(
   }
 
   if (
-    childEngagementRate >= 90 &&
-    childBenefitRate >= 90 &&
+    meets(childEngagementRate, 90) &&
+    meets(childBenefitRate, 90) &&
     totalEngagementRecords > 0 &&
     totalBenefitOpportunities > 0
   ) {
@@ -1277,8 +1280,8 @@ export function computePetAnimalTherapy(
   }
 
   if (
-    petCareResponsibilityRate >= 90 &&
-    responsibilityImprovementRate >= 80 &&
+    meets(petCareResponsibilityRate, 90) &&
+    meets(responsibilityImprovementRate, 80) &&
     careWithResponsibilityAssigned > 0 &&
     totalEngagementRecords > 0
   ) {
@@ -1289,8 +1292,8 @@ export function computePetAnimalTherapy(
   }
 
   if (
-    empathyRate >= 80 &&
-    socialSkillsRate >= 70 &&
+    meets(empathyRate, 80) &&
+    meets(socialSkillsRate, 70) &&
     totalEngagementRecords > 0
   ) {
     insights.push({
@@ -1300,8 +1303,8 @@ export function computePetAnimalTherapy(
   }
 
   if (
-    emotionalRegulationRate >= 80 &&
-    emotionalRegulationImprovementRate >= 70 &&
+    meets(emotionalRegulationRate, 80) &&
+    meets(emotionalRegulationImprovementRate, 70) &&
     totalInteractions > 0 &&
     totalEngagementRecords > 0
   ) {
@@ -1312,8 +1315,8 @@ export function computePetAnimalTherapy(
   }
 
   if (
-    staffReportedBenefitRate >= 80 &&
-    childSelfReportedBenefitRate >= 80 &&
+    meets(staffReportedBenefitRate, 80) &&
+    meets(childSelfReportedBenefitRate, 80) &&
     totalEngagementRecords > 0
   ) {
     insights.push({
@@ -1323,8 +1326,8 @@ export function computePetAnimalTherapy(
   }
 
   if (
-    sessionRiskAssessmentRate >= 100 &&
-    welfareRiskAssessmentRate >= 100 &&
+    meets(sessionRiskAssessmentRate, 100) &&
+    meets(welfareRiskAssessmentRate, 100) &&
     totalSessions > 0 &&
     totalWelfareChecks > 0
   ) {
@@ -1335,7 +1338,7 @@ export function computePetAnimalTherapy(
   }
 
   if (
-    concernsActionedRate >= 100 &&
+    meets(concernsActionedRate, 100) &&
     concernsIdentified > 0
   ) {
     insights.push({

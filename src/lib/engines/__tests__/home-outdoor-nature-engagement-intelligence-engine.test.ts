@@ -175,11 +175,11 @@ describe("computeOutdoorNatureEngagement", () => {
 
     it("returns all rates as 0 for insufficient_data", () => {
       const r = run({ total_children: 0 });
-      expect(r.outdoor_frequency_rate).toBe(0);
+      expect(r.outdoor_frequency_rate).toBeNull();
       expect(r.nature_learning_rate).toBeNull();
-      expect(r.garden_participation_rate).toBe(0);
+      expect(r.garden_participation_rate).toBeNull();
       expect(r.exploration_diversity_rate).toBeNull();
-      expect(r.safety_compliance_rate).toBe(0);
+      expect(r.safety_compliance_rate).toBeNull();
       expect(r.child_enjoyment_rate).toBeNull();
     });
 
@@ -225,13 +225,13 @@ describe("computeOutdoorNatureEngagement", () => {
       expect(r.insights[0].severity).toBe("critical");
     });
 
-    it("all rates are 0", () => {
+    it("all rates are null", () => {
       const r = run({ total_children: 3 });
-      expect(r.outdoor_frequency_rate).toBe(0);
+      expect(r.outdoor_frequency_rate).toBeNull();
       expect(r.nature_learning_rate).toBeNull();
-      expect(r.garden_participation_rate).toBe(0);
+      expect(r.garden_participation_rate).toBeNull();
       expect(r.exploration_diversity_rate).toBeNull();
-      expect(r.safety_compliance_rate).toBe(0);
+      expect(r.safety_compliance_rate).toBeNull();
       expect(r.child_enjoyment_rate).toBeNull();
     });
   });
@@ -1176,7 +1176,7 @@ describe("computeOutdoorNatureEngagement", () => {
         expect(r.nature_learning_rate).toBe(50);
       });
 
-      it("is 0 when no nature records", () => {
+      it("is null when no nature records", () => {
         const r = run({ total_children: 4, outdoor_activity_records: [makeActivity({ child_id: "c1", child_initiated: false, child_enjoyment: 2 })] });
         expect(r.nature_learning_rate).toBeNull();
       });
@@ -1210,7 +1210,7 @@ describe("computeOutdoorNatureEngagement", () => {
         expect(r.exploration_diversity_rate).toBe(47);
       });
 
-      it("is 0 when no exploration records", () => {
+      it("is null when no exploration records", () => {
         const r = run({ total_children: 4, outdoor_activity_records: [makeActivity({ child_id: "c1", child_initiated: false, child_enjoyment: 2 })] });
         expect(r.exploration_diversity_rate).toBeNull();
       });
@@ -1269,7 +1269,7 @@ describe("computeOutdoorNatureEngagement", () => {
         expect(r.child_enjoyment_rate).toBe(100);
       });
 
-      it("is 0 when no outdoor, exploration, or garden records", () => {
+      it("is null when no outdoor, exploration, or garden records", () => {
         const safs = [makeSafety({ compliant: true })];
         const r = run({ total_children: 4, outdoor_safety_records: safs });
         expect(r.child_enjoyment_rate).toBeNull();

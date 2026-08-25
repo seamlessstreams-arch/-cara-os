@@ -74,8 +74,8 @@ export function HomeNoiseSoundManagementIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", meets(d.noise_monitoring_rate, 90) ? "text-[--cs-success]" : meets(d.noise_monitoring_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.noise_monitoring_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Monitor</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.quiet_hours_compliance_rate >= 90 ? "bg-green-50" : d.quiet_hours_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.quiet_hours_compliance_rate >= 90 ? "text-[--cs-success]" : d.quiet_hours_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.quiet_hours_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.quiet_hours_compliance_rate, 90) ? "bg-green-50" : meets(d.quiet_hours_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.quiet_hours_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.quiet_hours_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.quiet_hours_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Quiet Hrs</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.sensory_environment_rate, 90) ? "bg-green-50" : meets(d.sensory_environment_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
@@ -90,8 +90,8 @@ export function HomeNoiseSoundManagementIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", meets(d.child_comfort_rate, 90) ? "text-[--cs-success]" : meets(d.child_comfort_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_comfort_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Comfort</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.staff_awareness_rate >= 90 ? "bg-green-50" : d.staff_awareness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.staff_awareness_rate >= 90 ? "text-[--cs-success]" : d.staff_awareness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.staff_awareness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.staff_awareness_rate, 90) ? "bg-green-50" : meets(d.staff_awareness_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.staff_awareness_rate, 90) ? "text-[--cs-success]" : meets(d.staff_awareness_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.staff_awareness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Staff</p>
             </div>
           </div>

@@ -182,12 +182,12 @@ describe("Home Pest Control & Hygiene Compliance Intelligence Engine", () => {
         kitchen_hygiene_records: [], cleanliness_rating_records: [],
         product_safety_records: [],
       });
-      expect(r.inspection_compliance_rate).toBe(0);
-      expect(r.treatment_effectiveness_rate).toBe(0);
+      expect(r.inspection_compliance_rate).toBeNull();
+      expect(r.treatment_effectiveness_rate).toBeNull();
       expect(r.kitchen_hygiene_rate).toBeNull();
       expect(r.cleanliness_rate).toBeNull();
-      expect(r.product_safety_rate).toBe(0);
-      expect(r.staff_training_rate).toBe(0);
+      expect(r.product_safety_rate).toBeNull();
+      expect(r.staff_training_rate).toBeNull();
     });
 
     it("headline mentions insufficient data", () => {
@@ -922,7 +922,7 @@ describe("Home Pest Control & Hygiene Compliance Intelligence Engine", () => {
       expect(r.staff_training_rate).toBe(50);
     });
 
-    it("returns 0% rates when no records", () => {
+    it("returns null% rates when no records", () => {
       const r = computePestControlHygieneCompliance(baseInput({
         pest_inspection_records: [],
         treatment_records: [],
@@ -931,7 +931,7 @@ describe("Home Pest Control & Hygiene Compliance Intelligence Engine", () => {
         product_safety_records: [],
       }));
       // This will hit the allEmpty+children=6 branch
-      expect(r.inspection_compliance_rate).toBe(0);
+      expect(r.inspection_compliance_rate).toBeNull();
     });
   });
 

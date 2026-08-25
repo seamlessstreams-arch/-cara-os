@@ -13,7 +13,7 @@
 //             childComfortRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { above, below, meets } from "@/lib/metrics/rate";
+import { rate, above, below, meets } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -140,18 +140,20 @@ export interface NoiseSoundResult {
   total_sensory_environment_records: number;
   total_insulation_records: number;
   total_comfort_records: number;
-  // quiet_hours_compliance_rate uses pct() directly (deterministic 0 on empty)
+  // quiet_hours_compliance_rate uses rate() directly (deterministic 0 on empty)
   // and staff_awareness_rate is a manual composite over multiple numerators.
   // The four composite rates below are null on empty: no records ⇒ no signal.
   // "0% noise monitoring / 0% sensory environment / 0% sound insulation /
   // 0% child comfort" would read as an actively hostile living environment,
   // not "unmeasured". Fab-0 doctrine.
   noise_monitoring_rate: number | null;
-  quiet_hours_compliance_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  quiet_hours_compliance_rate: number | null;
   sensory_environment_rate: number | null;
   sound_insulation_rate: number | null;
   child_comfort_rate: number | null;
-  staff_awareness_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staff_awareness_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: NoiseSoundRecommendation[];
@@ -159,10 +161,6 @@ export interface NoiseSoundResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -192,11 +190,11 @@ function emptyResult(
     total_insulation_records: 0,
     total_comfort_records: 0,
     noise_monitoring_rate: null,
-    quiet_hours_compliance_rate: 0,
+    quiet_hours_compliance_rate: null,
     sensory_environment_rate: null,
     sound_insulation_rate: null,
     child_comfort_rate: null,
-    staff_awareness_rate: 0,
+    staff_awareness_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -280,13 +278,13 @@ export function computeNoiseSoundManagement(
   const acceptableNoiseLevels = noise_monitoring_records.filter(
     (r) => r.acceptable_level,
   ).length;
-  const acceptableNoiseRate = pct(acceptableNoiseLevels, totalMonitoringRecords);
+  const acceptableNoiseRate = rate(acceptableNoiseLevels, totalMonitoringRecords);
 
   // Source identification rate
   const sourceIdentified = noise_monitoring_records.filter(
     (r) => r.source_identified,
   ).length;
-  const sourceIdentificationRate = pct(sourceIdentified, totalMonitoringRecords);
+  const sourceIdentificationRate = rate(sourceIdentified, totalMonitoringRecords);
 
   // Action taken rate (when noise was unacceptable)
   // If all noise is acceptable, no action was needed — treat as 100%
@@ -299,35 +297,35 @@ export function computeNoiseSoundManagement(
   const actionTakenRate =
     unacceptableNoise.length === 0 && totalMonitoringRecords > 0
       ? 100
-      : pct(actionTakenOnUnacceptable, unacceptableNoise.length);
+      : rate(actionTakenOnUnacceptable, unacceptableNoise.length);
 
   // Meter-based monitoring rate (professional vs observation)
   const meterBasedMonitoring = noise_monitoring_records.filter(
     (r) => r.monitoring_method === "meter",
   ).length;
-  const meterMonitoringRate = pct(meterBasedMonitoring, totalMonitoringRecords);
+  const meterMonitoringRate = rate(meterBasedMonitoring, totalMonitoringRecords);
 
   // Night-time monitoring coverage
   const nightMonitoring = noise_monitoring_records.filter(
     (r) => r.time_of_day === "night",
   ).length;
-  const nightMonitoringRate = pct(nightMonitoring, totalMonitoringRecords);
+  const nightMonitoringRate = rate(nightMonitoring, totalMonitoringRecords);
 
   // Location diversity — how many distinct locations monitored
   const monitoredLocations = new Set(
     noise_monitoring_records.map((r) => r.location),
   ).size;
-  const locationCoverage = monitoredLocations >= 5 ? 100 : pct(monitoredLocations, 5);
+  const locationCoverage = monitoredLocations >= 5 ? 100 : rate(monitoredLocations, 5);
 
   // Composite noise monitoring rate
   // Weight: 40% acceptable levels, 25% source identification, 20% action taken, 15% location coverage
   const noiseMonitoringRate: number | null =
     totalMonitoringRecords > 0
       ? Math.round(
-          acceptableNoiseRate * 0.4 +
-          sourceIdentificationRate * 0.25 +
-          actionTakenRate * 0.2 +
-          locationCoverage * 0.15,
+          acceptableNoiseRate! * 0.4 +
+          sourceIdentificationRate! * 0.25 +
+          actionTakenRate! * 0.2 + // vacuous-100 when no unacceptable noise; measured otherwise
+          locationCoverage! * 0.15,
         )
       : null;
 
@@ -341,13 +339,13 @@ export function computeNoiseSoundManagement(
   const compliantQuietHours = quiet_hours_records.filter(
     (r) => r.compliant,
   ).length;
-  const quietHoursComplianceRate = pct(compliantQuietHours, totalQuietHoursRecords);
+  const quietHoursComplianceRate = rate(compliantQuietHours, totalQuietHoursRecords);
 
   // Zero-disruption nights
   const zeroDisruptionNights = quiet_hours_records.filter(
     (r) => r.disruptions_count === 0,
   ).length;
-  const zeroDisruptionRate = pct(zeroDisruptionNights, totalQuietHoursRecords);
+  const zeroDisruptionRate = rate(zeroDisruptionNights, totalQuietHoursRecords);
 
   // Resolution effectiveness (for non-compliant records)
   const nonCompliantRecords = quiet_hours_records.filter((r) => !r.compliant);
@@ -359,7 +357,7 @@ export function computeNoiseSoundManagement(
   const disruptedQuietHours = quiet_hours_records.filter(
     (r) => r.disruptions_count > 0,
   );
-  const staffPromptResponseRate = pct(
+  const staffPromptResponseRate = rate(
     staffRespondedPromptly.length,
     disruptedQuietHours.length,
   );
@@ -384,7 +382,7 @@ export function computeNoiseSoundManagement(
   const adaptationsInPlace = sensory_environment_records.filter(
     (r) => r.adaptation_in_place,
   ).length;
-  const adaptationInPlaceRate = pct(adaptationsInPlace, totalSensoryRecords);
+  const adaptationInPlaceRate = rate(adaptationsInPlace, totalSensoryRecords);
 
   // Effectiveness rating average
   const effectivenessSum = sensory_environment_records
@@ -399,29 +397,29 @@ export function computeNoiseSoundManagement(
   const positiveFeedbackSensory = sensory_environment_records.filter(
     (r) => r.adaptation_in_place && r.child_feedback_positive,
   ).length;
-  const sensoryPositiveFeedbackRate = pct(positiveFeedbackSensory, adaptationsInPlace);
+  const sensoryPositiveFeedbackRate = rate(positiveFeedbackSensory, adaptationsInPlace);
 
   // Reviewed with child rate
   const reviewedWithChild = sensory_environment_records.filter(
     (r) => r.reviewed_with_child,
   ).length;
-  const reviewedWithChildRate = pct(reviewedWithChild, totalSensoryRecords);
+  const reviewedWithChildRate = rate(reviewedWithChild, totalSensoryRecords);
 
   // Linked to care plan rate
   const linkedToCarePlan = sensory_environment_records.filter(
     (r) => r.linked_to_care_plan,
   ).length;
-  const linkedToCarePlanRate = pct(linkedToCarePlan, totalSensoryRecords);
+  const linkedToCarePlanRate = rate(linkedToCarePlan, totalSensoryRecords);
 
   // Composite sensory environment rate
   // Weight: 30% in place, 25% child feedback, 25% reviewed with child, 20% linked to care plan
   const sensoryEnvironmentRate: number | null =
     totalSensoryRecords > 0
       ? Math.round(
-          adaptationInPlaceRate * 0.3 +
-          sensoryPositiveFeedbackRate * 0.25 +
-          reviewedWithChildRate * 0.25 +
-          linkedToCarePlanRate * 0.2,
+          adaptationInPlaceRate! * 0.3 +
+          (sensoryPositiveFeedbackRate ?? 0) * 0.25 + // feedback is per adaptation IN PLACE; none in place earns no feedback credit
+          reviewedWithChildRate! * 0.25 +
+          linkedToCarePlanRate! * 0.2,
         )
       : null;
 
@@ -435,19 +433,19 @@ export function computeNoiseSoundManagement(
   const meetsStandard = sound_insulation_records.filter(
     (r) => r.meets_standard,
   ).length;
-  const meetsStandardRate = pct(meetsStandard, totalInsulationRecords);
+  const meetsStandardRate = rate(meetsStandard, totalInsulationRecords);
 
   // Good/excellent condition rate
   const goodCondition = sound_insulation_records.filter(
     (r) => r.condition === "excellent" || r.condition === "good",
   ).length;
-  const goodConditionRate = pct(goodCondition, totalInsulationRecords);
+  const goodConditionRate = rate(goodCondition, totalInsulationRecords);
 
   // Failed/poor condition count
   const poorOrFailed = sound_insulation_records.filter(
     (r) => r.condition === "poor" || r.condition === "failed",
   ).length;
-  const poorConditionRate = pct(poorOrFailed, totalInsulationRecords);
+  const poorConditionRate = rate(poorOrFailed, totalInsulationRecords);
 
   // Maintenance needed vs scheduled
   const maintenanceNeeded = sound_insulation_records.filter(
@@ -459,8 +457,8 @@ export function computeNoiseSoundManagement(
   const maintenanceCompletedCount = sound_insulation_records.filter(
     (r) => r.maintenance_needed && r.maintenance_completed,
   ).length;
-  const maintenanceScheduledRate = pct(maintenanceScheduled, maintenanceNeeded);
-  const maintenanceCompletionRate = pct(maintenanceCompletedCount, maintenanceNeeded);
+  const maintenanceScheduledRate = rate(maintenanceScheduled, maintenanceNeeded);
+  const maintenanceCompletionRate = rate(maintenanceCompletedCount, maintenanceNeeded);
 
   // Impact on children
   const significantImpact = sound_insulation_records.filter(
@@ -469,16 +467,16 @@ export function computeNoiseSoundManagement(
   const noImpact = sound_insulation_records.filter(
     (r) => r.impact_on_children === "none",
   ).length;
-  const noImpactRate = pct(noImpact, totalInsulationRecords);
+  const noImpactRate = rate(noImpact, totalInsulationRecords);
 
   // Composite sound insulation rate
   // Weight: 40% meets standard, 30% good condition, 30% no impact
   const soundInsulationRate: number | null =
     totalInsulationRecords > 0
       ? Math.round(
-          meetsStandardRate * 0.4 +
-          goodConditionRate * 0.3 +
-          noImpactRate * 0.3,
+          meetsStandardRate! * 0.4 +
+          goodConditionRate! * 0.3 +
+          noImpactRate! * 0.3,
         )
       : null;
 
@@ -493,7 +491,7 @@ export function computeNoiseSoundManagement(
     (r) =>
       r.comfort_level === "very_comfortable" || r.comfort_level === "comfortable",
   ).length;
-  const comfortableRate = pct(comfortableChildren, totalComfortRecords);
+  const comfortableRate = rate(comfortableChildren, totalComfortRecords);
 
   // Uncomfortable / very uncomfortable rate
   const uncomfortableChildren = child_comfort_records.filter(
@@ -501,25 +499,25 @@ export function computeNoiseSoundManagement(
       r.comfort_level === "very_uncomfortable" ||
       r.comfort_level === "uncomfortable",
   ).length;
-  const uncomfortableRate = pct(uncomfortableChildren, totalComfortRecords);
+  const uncomfortableRate = rate(uncomfortableChildren, totalComfortRecords);
 
   // Sleep disrupted by noise rate
   const sleepDisrupted = child_comfort_records.filter(
     (r) => r.sleep_disrupted_by_noise,
   ).length;
-  const sleepDisruptionRate = pct(sleepDisrupted, totalComfortRecords);
+  const sleepDisruptionRate = rate(sleepDisrupted, totalComfortRecords);
 
   // Child feels heard about noise rate
   const feelsHeard = child_comfort_records.filter(
     (r) => r.feels_heard_about_noise,
   ).length;
-  const feelsHeardRate = pct(feelsHeard, totalComfortRecords);
+  const feelsHeardRate = rate(feelsHeard, totalComfortRecords);
 
   // Staff responsive to concerns rate
   const staffResponsive = child_comfort_records.filter(
     (r) => r.staff_responsive_to_concerns,
   ).length;
-  const staffResponsiveRate = pct(staffResponsive, totalComfortRecords);
+  const staffResponsiveRate = rate(staffResponsive, totalComfortRecords);
 
   // Average overall satisfaction
   const satisfactionSum = child_comfort_records.reduce(
@@ -535,29 +533,29 @@ export function computeNoiseSoundManagement(
   const highSensitivity = child_comfort_records.filter(
     (r) => r.noise_sensitivity === "high" || r.noise_sensitivity === "very_high",
   ).length;
-  const highSensitivityRate = pct(highSensitivity, totalComfortRecords);
+  const highSensitivityRate = rate(highSensitivity, totalComfortRecords);
 
   // Unique children surveyed
   const uniqueChildrenSurveyed = new Set(
     child_comfort_records.map((r) => r.child_id),
   ).size;
   const comfortSurveyCoverage =
-    total_children > 0 ? pct(uniqueChildrenSurveyed, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenSurveyed, total_children) : 0;
 
   // Composite child comfort rate
   // Weight: 35% comfortable rate, 25% feels heard, 25% staff responsive, 15% satisfaction >=4
   const highSatisfactionRecords = child_comfort_records.filter(
     (r) => r.overall_satisfaction >= 4,
   ).length;
-  const highSatisfactionRate = pct(highSatisfactionRecords, totalComfortRecords);
+  const highSatisfactionRate = rate(highSatisfactionRecords, totalComfortRecords);
 
   const childComfortRate: number | null =
     totalComfortRecords > 0
       ? Math.round(
-          comfortableRate * 0.35 +
-          feelsHeardRate * 0.25 +
-          staffResponsiveRate * 0.25 +
-          highSatisfactionRate * 0.15,
+          comfortableRate! * 0.35 +
+          feelsHeardRate! * 0.25 +
+          staffResponsiveRate! * 0.25 +
+          highSatisfactionRate! * 0.15,
         )
       : null;
 
@@ -593,7 +591,7 @@ export function computeNoiseSoundManagement(
 
   const totalStaffAwarenessNum = staffAwarenessNumerators.reduce((a, b) => a + b, 0);
   const totalStaffAwarenessDen = staffAwarenessDenominators.reduce((a, b) => a + b, 0);
-  const staffAwarenessRate = pct(totalStaffAwarenessNum, totalStaffAwarenessDen);
+  const staffAwarenessRate = rate(totalStaffAwarenessNum, totalStaffAwarenessDen);
 
   // ══════════════════════════════════════════════════════════════════════════
   // SCORING: base 52, max bonuses +28, 4 penalties
@@ -606,8 +604,8 @@ export function computeNoiseSoundManagement(
   else if (meets(noiseMonitoringRate, 70)) score += 2;
 
   // --- Bonus 2: quietHoursComplianceRate (>=95: +5, >=80: +3) ---
-  if (quietHoursComplianceRate >= 95) score += 5;
-  else if (quietHoursComplianceRate >= 80) score += 3;
+  if (meets(quietHoursComplianceRate, 95)) score += 5;
+  else if (meets(quietHoursComplianceRate, 80)) score += 3;
 
   // --- Bonus 3: sensoryEnvironmentRate (>=90: +4, >=70: +2) ---
   if (meets(sensoryEnvironmentRate, 90)) score += 4;
@@ -622,12 +620,12 @@ export function computeNoiseSoundManagement(
   else if (meets(childComfortRate, 70)) score += 2;
 
   // --- Bonus 6: staffAwarenessRate (>=90: +3, >=70: +1) ---
-  if (staffAwarenessRate >= 90) score += 3;
-  else if (staffAwarenessRate >= 70) score += 1;
+  if (meets(staffAwarenessRate, 90)) score += 3;
+  else if (meets(staffAwarenessRate, 70)) score += 1;
 
   // --- Bonus 7: comfortSurveyCoverage (>=100: +3, >=80: +1) ---
-  if (comfortSurveyCoverage >= 100) score += 3;
-  else if (comfortSurveyCoverage >= 80) score += 1;
+  if (meets(comfortSurveyCoverage, 100)) score += 3;
+  else if (meets(comfortSurveyCoverage, 80)) score += 1;
 
   // --- Bonus 8: avgSatisfaction (>=4.5: +2, >=3.5: +1) ---
   if (meets(avgSatisfaction, 4.5)) score += 2;
@@ -636,16 +634,16 @@ export function computeNoiseSoundManagement(
   // ── Penalties (guarded by array.length > 0) ──────────────────────────
 
   // Penalty 1: quiet hours compliance below 50%
-  if (quietHoursComplianceRate < 50 && totalQuietHoursRecords > 0) score -= 6;
+  if (below(quietHoursComplianceRate, 50) && totalQuietHoursRecords > 0) score -= 6;
 
   // Penalty 2: child comfort rate below 40%
   if (below(childComfortRate, 40) && totalComfortRecords > 0) score -= 5;
 
   // Penalty 3: sound insulation poor/failed rate above 30%
-  if (poorConditionRate > 30 && totalInsulationRecords > 0) score -= 4;
+  if (above(poorConditionRate, 30) && totalInsulationRecords > 0) score -= 4;
 
   // Penalty 4: sleep disruption rate above 40%
-  if (sleepDisruptionRate > 40 && totalComfortRecords > 0) score -= 3;
+  if (above(sleepDisruptionRate, 40) && totalComfortRecords > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -658,93 +656,93 @@ export function computeNoiseSoundManagement(
   const strengths: string[] = [];
 
   // Noise monitoring strengths
-  if (acceptableNoiseRate >= 90 && totalMonitoringRecords > 0) {
+  if (meets(acceptableNoiseRate, 90) && totalMonitoringRecords > 0) {
     strengths.push(
       `${acceptableNoiseRate}% of noise monitoring readings at acceptable levels — the home maintains a consistently appropriate sound environment for children.`,
     );
-  } else if (acceptableNoiseRate >= 70 && totalMonitoringRecords > 0) {
+  } else if (meets(acceptableNoiseRate, 70) && totalMonitoringRecords > 0) {
     strengths.push(
       `${acceptableNoiseRate}% of noise readings at acceptable levels — the home generally maintains a suitable sound environment.`,
     );
   }
 
-  if (sourceIdentificationRate >= 90 && totalMonitoringRecords > 0) {
+  if (meets(sourceIdentificationRate, 90) && totalMonitoringRecords > 0) {
     strengths.push(`${sourceIdentificationRate}% noise source identification rate — staff consistently identify noise sources, demonstrating strong awareness.`);
   }
 
-  if (actionTakenRate >= 90 && unacceptableNoise.length > 0) {
+  if (meets(actionTakenRate, 90) && unacceptableNoise.length > 0) {
     strengths.push(`${actionTakenRate}% action taken on unacceptable noise — staff respond effectively when noise levels are problematic.`);
   }
 
   // Quiet hours strengths
-  if (quietHoursComplianceRate >= 95 && totalQuietHoursRecords > 0) {
+  if (meets(quietHoursComplianceRate, 95) && totalQuietHoursRecords > 0) {
     strengths.push(
       `${quietHoursComplianceRate}% quiet hours compliance — the home consistently maintains appropriate quiet periods, supporting children's rest and sleep.`,
     );
-  } else if (quietHoursComplianceRate >= 80 && totalQuietHoursRecords > 0) {
+  } else if (meets(quietHoursComplianceRate, 80) && totalQuietHoursRecords > 0) {
     strengths.push(
       `${quietHoursComplianceRate}% quiet hours compliance — the home demonstrates strong commitment to protecting children's quiet time and sleep routines.`,
     );
   }
 
-  if (zeroDisruptionRate >= 80 && totalQuietHoursRecords > 0) {
+  if (meets(zeroDisruptionRate, 80) && totalQuietHoursRecords > 0) {
     strengths.push(`${zeroDisruptionRate}% of quiet hours had zero disruptions — children benefit from consistently peaceful rest periods.`);
   }
 
-  if (staffPromptResponseRate >= 90 && disruptedQuietHours.length > 0) {
+  if (meets(staffPromptResponseRate, 90) && disruptedQuietHours.length > 0) {
     strengths.push(`${staffPromptResponseRate}% prompt staff response to quiet hours disruptions — staff respond quickly to protect children's rest.`);
   }
 
   // Sensory environment strengths
-  if (adaptationInPlaceRate >= 90 && totalSensoryRecords > 0) {
+  if (meets(adaptationInPlaceRate, 90) && totalSensoryRecords > 0) {
     strengths.push(
       `${adaptationInPlaceRate}% of sensory adaptations in place — the home is thorough in implementing recommended sensory environment adjustments.`,
     );
-  } else if (adaptationInPlaceRate >= 70 && totalSensoryRecords > 0) {
+  } else if (meets(adaptationInPlaceRate, 70) && totalSensoryRecords > 0) {
     strengths.push(
       `${adaptationInPlaceRate}% of sensory adaptations in place — the home shows good commitment to meeting children's individual sensory needs.`,
     );
   }
 
-  if (sensoryPositiveFeedbackRate >= 90 && adaptationsInPlace > 0) {
+  if (meets(sensoryPositiveFeedbackRate, 90) && adaptationsInPlace > 0) {
     strengths.push(`${sensoryPositiveFeedbackRate}% positive child feedback on sensory adaptations — children confirm adaptations genuinely help their sound comfort.`);
   }
 
-  if (linkedToCarePlanRate >= 90 && totalSensoryRecords > 0) {
+  if (meets(linkedToCarePlanRate, 90) && totalSensoryRecords > 0) {
     strengths.push(`${linkedToCarePlanRate}% of sensory adaptations linked to care plans — sound adjustments are integrated into individualised care.`);
   }
 
   // Sound insulation strengths
-  if (meetsStandardRate >= 90 && totalInsulationRecords > 0) {
+  if (meets(meetsStandardRate, 90) && totalInsulationRecords > 0) {
     strengths.push(
       `${meetsStandardRate}% of sound insulation meets required standards — the home's physical environment effectively manages noise transmission between spaces.`,
     );
-  } else if (meetsStandardRate >= 70 && totalInsulationRecords > 0) {
+  } else if (meets(meetsStandardRate, 70) && totalInsulationRecords > 0) {
     strengths.push(
       `${meetsStandardRate}% of sound insulation meets standards — the majority of the home provides adequate sound separation between spaces.`,
     );
   }
 
-  if (maintenanceCompletionRate >= 90 && maintenanceNeeded > 0) {
+  if (meets(maintenanceCompletionRate, 90) && maintenanceNeeded > 0) {
     strengths.push(`${maintenanceCompletionRate}% of insulation maintenance completed — the home promptly addresses sound insulation issues.`);
   }
 
   // Child comfort strengths
-  if (comfortableRate >= 90 && totalComfortRecords > 0) {
+  if (meets(comfortableRate, 90) && totalComfortRecords > 0) {
     strengths.push(
       `${comfortableRate}% of children report being comfortable or very comfortable with noise levels — the home provides a sound environment that children experience positively.`,
     );
-  } else if (comfortableRate >= 70 && totalComfortRecords > 0) {
+  } else if (meets(comfortableRate, 70) && totalComfortRecords > 0) {
     strengths.push(
       `${comfortableRate}% of children comfortable with noise levels — the majority of children experience a suitable sound environment.`,
     );
   }
 
-  if (feelsHeardRate >= 90 && totalComfortRecords > 0) {
+  if (meets(feelsHeardRate, 90) && totalComfortRecords > 0) {
     strengths.push(
       `${feelsHeardRate}% of children feel heard about noise concerns — the home actively listens to and acts on children's views about the sound environment.`,
     );
-  } else if (feelsHeardRate >= 70 && totalComfortRecords > 0) {
+  } else if (meets(feelsHeardRate, 70) && totalComfortRecords > 0) {
     strengths.push(
       `${feelsHeardRate}% of children feel heard about noise concerns — the home generally listens to children's views on the sound environment.`,
     );
@@ -756,16 +754,16 @@ export function computeNoiseSoundManagement(
     strengths.push(`Noise comfort satisfaction averaging ${avgSatisfaction}/5 — children are generally satisfied with the sound environment.`);
   }
 
-  if (comfortSurveyCoverage >= 100 && total_children > 0) {
+  if (meets(comfortSurveyCoverage, 100) && total_children > 0) {
     strengths.push("Every child has been surveyed about noise comfort — all children's voices are captured regarding the sound environment.");
-  } else if (comfortSurveyCoverage >= 80 && total_children > 0) {
+  } else if (meets(comfortSurveyCoverage, 80) && total_children > 0) {
     strengths.push(`${comfortSurveyCoverage}% of children surveyed about noise comfort — strong coverage ensuring most children's views are heard.`);
   }
 
   // Staff awareness strengths
-  if (staffAwarenessRate >= 90 && totalStaffAwarenessDen > 0) {
+  if (meets(staffAwarenessRate, 90) && totalStaffAwarenessDen > 0) {
     strengths.push(`${staffAwarenessRate}% staff awareness composite — staff consistently identify noise issues, take action, respond to disruptions, and engage with children about sound comfort.`);
-  } else if (staffAwarenessRate >= 70 && totalStaffAwarenessDen > 0) {
+  } else if (meets(staffAwarenessRate, 70) && totalStaffAwarenessDen > 0) {
     strengths.push(`${staffAwarenessRate}% staff awareness — good awareness of noise issues and responsiveness to children's sound environment needs.`);
   }
 
@@ -780,13 +778,13 @@ export function computeNoiseSoundManagement(
   const concerns: string[] = [];
 
   // Noise monitoring concerns
-  if (acceptableNoiseRate < 40 && totalMonitoringRecords > 0) {
+  if (below(acceptableNoiseRate, 40) && totalMonitoringRecords > 0) {
     concerns.push(
       `Only ${acceptableNoiseRate}% of noise monitoring readings at acceptable levels — the home's sound environment is frequently unsuitable for children's comfort, rest, and study.`,
     );
   } else if (
-    acceptableNoiseRate >= 40 &&
-    acceptableNoiseRate < 70 &&
+    meets(acceptableNoiseRate, 40) &&
+    below(acceptableNoiseRate, 70) &&
     totalMonitoringRecords > 0
   ) {
     concerns.push(
@@ -794,26 +792,26 @@ export function computeNoiseSoundManagement(
     );
   }
 
-  if (sourceIdentificationRate < 50 && totalMonitoringRecords > 0) {
+  if (below(sourceIdentificationRate, 50) && totalMonitoringRecords > 0) {
     concerns.push(
       `Only ${sourceIdentificationRate}% of noise sources identified — staff are not consistently identifying the causes of noise, making it difficult to address recurring issues.`,
     );
   }
 
-  if (actionTakenRate < 50 && unacceptableNoise.length > 0) {
+  if (below(actionTakenRate, 50) && unacceptableNoise.length > 0) {
     concerns.push(
       `Action taken on only ${actionTakenRate}% of unacceptable noise instances — noise problems are being recorded but not addressed, exposing children to ongoing discomfort.`,
     );
   }
 
   // Quiet hours concerns
-  if (quietHoursComplianceRate < 50 && totalQuietHoursRecords > 0) {
+  if (below(quietHoursComplianceRate, 50) && totalQuietHoursRecords > 0) {
     concerns.push(
       `Only ${quietHoursComplianceRate}% quiet hours compliance — the majority of quiet periods are being disrupted, directly impacting children's rest and sleep. This is a significant welfare concern.`,
     );
   } else if (
-    quietHoursComplianceRate >= 50 &&
-    quietHoursComplianceRate < 80 &&
+    meets(quietHoursComplianceRate, 50) &&
+    below(quietHoursComplianceRate, 80) &&
     totalQuietHoursRecords > 0
   ) {
     concerns.push(
@@ -825,18 +823,18 @@ export function computeNoiseSoundManagement(
     concerns.push(`Average quiet hours disruption lasts ${avgDisruptionMinutes} minutes — prolonged disruptions significantly impact children's rest.`);
   }
 
-  if (staffPromptResponseRate < 50 && disruptedQuietHours.length > 0) {
+  if (below(staffPromptResponseRate, 50) && disruptedQuietHours.length > 0) {
     concerns.push(`Staff responded promptly to only ${staffPromptResponseRate}% of quiet hours disruptions — delayed responses prolong the impact on children's rest.`);
   }
 
   // Sensory environment concerns
-  if (adaptationInPlaceRate < 50 && totalSensoryRecords > 0) {
+  if (below(adaptationInPlaceRate, 50) && totalSensoryRecords > 0) {
     concerns.push(`Only ${adaptationInPlaceRate}% of sensory adaptations in place — children with identified sensory needs are not receiving required environmental adjustments.`);
-  } else if (adaptationInPlaceRate >= 50 && adaptationInPlaceRate < 70 && totalSensoryRecords > 0) {
+  } else if (meets(adaptationInPlaceRate, 50) && below(adaptationInPlaceRate, 70) && totalSensoryRecords > 0) {
     concerns.push(`Sensory adaptation rate at ${adaptationInPlaceRate}% — not all children's identified sensory needs are being met through environmental adjustments.`);
   }
 
-  if (reviewedWithChildRate < 50 && totalSensoryRecords > 0) {
+  if (below(reviewedWithChildRate, 50) && totalSensoryRecords > 0) {
     concerns.push(`Only ${reviewedWithChildRate}% of sensory adaptations reviewed with the child — children's views are not being consistently sought about adaptations affecting their daily experience.`);
   }
 
@@ -845,15 +843,15 @@ export function computeNoiseSoundManagement(
   }
 
   // Sound insulation concerns
-  if (meetsStandardRate < 50 && totalInsulationRecords > 0) {
+  if (below(meetsStandardRate, 50) && totalInsulationRecords > 0) {
     concerns.push(`Only ${meetsStandardRate}% of sound insulation meets standards — inadequate noise separation affects children's privacy and comfort.`);
-  } else if (meetsStandardRate >= 50 && meetsStandardRate < 70 && totalInsulationRecords > 0) {
+  } else if (meets(meetsStandardRate, 50) && below(meetsStandardRate, 70) && totalInsulationRecords > 0) {
     concerns.push(`Sound insulation at ${meetsStandardRate}% standard compliance — some areas allow excessive noise transfer, affecting children's comfort.`);
   }
 
-  if (poorConditionRate > 30 && totalInsulationRecords > 0) {
+  if (above(poorConditionRate, 30) && totalInsulationRecords > 0) {
     concerns.push(`${poorConditionRate}% of sound insulation in poor or failed condition — significant infrastructure issues contributing to noise problems.`);
-  } else if (poorConditionRate > 15 && poorConditionRate <= 30 && totalInsulationRecords > 0) {
+  } else if (above(poorConditionRate, 15) && poorConditionRate! <= 30 && totalInsulationRecords > 0) {
     concerns.push(`${poorConditionRate}% of sound insulation in poor or failed condition — some areas require maintenance.`);
   }
 
@@ -862,25 +860,25 @@ export function computeNoiseSoundManagement(
   }
 
   // Child comfort concerns
-  if (uncomfortableRate > 30 && totalComfortRecords > 0) {
+  if (above(uncomfortableRate, 30) && totalComfortRecords > 0) {
     concerns.push(`${uncomfortableRate}% of children uncomfortable or very uncomfortable with noise — a significant proportion negatively affected by the sound environment.`);
-  } else if (uncomfortableRate > 15 && uncomfortableRate <= 30 && totalComfortRecords > 0) {
+  } else if (above(uncomfortableRate, 15) && uncomfortableRate! <= 30 && totalComfortRecords > 0) {
     concerns.push(`${uncomfortableRate}% of children uncomfortable with noise levels — some children negatively affected by noise in the home.`);
   }
 
-  if (sleepDisruptionRate > 40 && totalComfortRecords > 0) {
+  if (above(sleepDisruptionRate, 40) && totalComfortRecords > 0) {
     concerns.push(`${sleepDisruptionRate}% of children report noise-disrupted sleep — directly impacting health, education, and emotional wellbeing.`);
-  } else if (sleepDisruptionRate > 20 && sleepDisruptionRate <= 40 && totalComfortRecords > 0) {
+  } else if (above(sleepDisruptionRate, 20) && sleepDisruptionRate! <= 40 && totalComfortRecords > 0) {
     concerns.push(`${sleepDisruptionRate}% of children report noise-disrupted sleep — targeted interventions may be required.`);
   }
 
-  if (feelsHeardRate < 50 && totalComfortRecords > 0) {
+  if (below(feelsHeardRate, 50) && totalComfortRecords > 0) {
     concerns.push(`Only ${feelsHeardRate}% of children feel heard about noise concerns — undermining their sense of agency and trust.`);
-  } else if (feelsHeardRate >= 50 && feelsHeardRate < 70 && totalComfortRecords > 0) {
+  } else if (meets(feelsHeardRate, 50) && below(feelsHeardRate, 70) && totalComfortRecords > 0) {
     concerns.push(`Only ${feelsHeardRate}% of children feel heard about noise concerns — not all views being taken seriously.`);
   }
 
-  if (staffResponsiveRate < 50 && totalComfortRecords > 0) {
+  if (below(staffResponsiveRate, 50) && totalComfortRecords > 0) {
     concerns.push(`Staff responsiveness to noise concerns at only ${staffResponsiveRate}% — children's noise issues are not being addressed.`);
   }
 
@@ -890,14 +888,14 @@ export function computeNoiseSoundManagement(
     concerns.push(`Noise satisfaction averaging ${avgSatisfaction}/5 — below an acceptable level.`);
   }
 
-  if (comfortSurveyCoverage < 50 && total_children > 0 && totalComfortRecords > 0) {
+  if (below(comfortSurveyCoverage, 50) && total_children > 0 && totalComfortRecords > 0) {
     concerns.push(`Only ${comfortSurveyCoverage}% of children surveyed about noise comfort — incomplete picture of children's experience.`);
   }
 
   // Staff awareness concerns
-  if (staffAwarenessRate < 40 && totalStaffAwarenessDen > 0) {
+  if (below(staffAwarenessRate, 40) && totalStaffAwarenessDen > 0) {
     concerns.push(`Staff awareness composite at only ${staffAwarenessRate}% — staff not consistently identifying noise issues, taking action, or engaging with children about sound comfort.`);
-  } else if (staffAwarenessRate >= 40 && staffAwarenessRate < 70 && totalStaffAwarenessDen > 0) {
+  } else if (meets(staffAwarenessRate, 40) && below(staffAwarenessRate, 70) && totalStaffAwarenessDen > 0) {
     concerns.push(`Staff awareness at ${staffAwarenessRate}% — inconsistency in noise identification, disruption response, and child engagement about sound comfort.`);
   }
 
@@ -923,35 +921,35 @@ export function computeNoiseSoundManagement(
 
   // Immediate recommendations
 
-  if (quietHoursComplianceRate < 50 && totalQuietHoursRecords > 0) {
+  if (below(quietHoursComplianceRate, 50) && totalQuietHoursRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Urgently review quiet hours management — establish clear protocols, ensure staff enforce boundaries, identify disruption sources, and implement strategies to protect rest periods.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 25 — Premises" });
   }
 
-  if (sleepDisruptionRate > 40 && totalComfortRecords > 0) {
+  if (above(sleepDisruptionRate, 40) && totalComfortRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Address noise-related sleep disruption immediately — identify specific noise sources, implement targeted interventions (insulation, schedule adjustments, ear defenders), and monitor improvement.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 5 — Child welfare" });
   }
 
-  if (uncomfortableRate > 30 && totalComfortRecords > 0) {
+  if (above(uncomfortableRate, 30) && totalComfortRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Address children's noise discomfort — consult individually with each uncomfortable child, understand concerns, and develop personalised sound environment plans integrated into care arrangements.", urgency: "immediate", regulatory_ref: "SCCIF — Experiences and progress" });
   }
 
-  if (poorConditionRate > 30 && totalInsulationRecords > 0) {
+  if (above(poorConditionRate, 30) && totalInsulationRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Commission urgent assessment and repair of sound insulation in poor or failed condition — inadequate soundproofing compromises children's privacy, rest, and comfort.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 25 — Premises" });
   }
 
-  if (adaptationInPlaceRate < 50 && totalSensoryRecords > 0) {
+  if (below(adaptationInPlaceRate, 50) && totalSensoryRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Implement all outstanding sensory adaptations — children with identified sound sensitivity needs must have recommended adaptations in place. Remove barriers and track progress.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 5 — Child welfare" });
   }
 
-  if (feelsHeardRate < 50 && totalComfortRecords > 0) {
+  if (below(feelsHeardRate, 50) && totalComfortRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Develop structured approach to hearing children's noise concerns — ensure regular opportunities to share views, log and action concerns, and show tangible responses.", urgency: "immediate", regulatory_ref: "SCCIF — Voice of the child" });
   }
 
-  if (actionTakenRate < 50 && unacceptableNoise.length > 0) {
+  if (below(actionTakenRate, 50) && unacceptableNoise.length > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Ensure staff act on all unacceptable noise levels — monitoring without intervention does not protect children. Every reading must trigger a documented response.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 25 — Premises" });
   }
 
-  if (staffAwarenessRate < 40 && totalStaffAwarenessDen > 0) {
+  if (below(staffAwarenessRate, 40) && totalStaffAwarenessDen > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Deliver targeted noise awareness training — covering identification, impact on wellbeing, quiet hours enforcement, sensory needs, and responsive practice.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 33 — Staff training" });
   }
 
@@ -965,49 +963,49 @@ export function computeNoiseSoundManagement(
 
   // Soon recommendations
 
-  if (quietHoursComplianceRate >= 50 && quietHoursComplianceRate < 80 && totalQuietHoursRecords > 0) {
+  if (meets(quietHoursComplianceRate, 50) && below(quietHoursComplianceRate, 80) && totalQuietHoursRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Improve quiet hours compliance towards 80% — analyse disruption patterns and implement targeted strategies to reduce non-compliance.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 25 — Premises" });
   }
 
-  if (sleepDisruptionRate > 20 && sleepDisruptionRate <= 40 && totalComfortRecords > 0) {
+  if (above(sleepDisruptionRate, 20) && sleepDisruptionRate! <= 40 && totalComfortRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Investigate noise-related sleep disruption — work with affected children to understand specific issues and develop individualised solutions.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 5 — Child welfare" });
   }
 
-  if (meetsStandardRate >= 50 && meetsStandardRate < 70 && totalInsulationRecords > 0) {
+  if (meets(meetsStandardRate, 50) && below(meetsStandardRate, 70) && totalInsulationRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Develop sound insulation improvement plan targeting areas below standard — prioritise bedrooms and study spaces.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 25 — Premises" });
   }
 
-  if (maintenanceScheduledRate < 50 && maintenanceNeeded > 0) {
+  if (below(maintenanceScheduledRate, 50) && maintenanceNeeded > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Schedule all outstanding sound insulation maintenance — delays prolong children's exposure to excessive noise transmission.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 25 — Premises" });
   }
 
-  if (adaptationInPlaceRate >= 50 && adaptationInPlaceRate < 70 && totalSensoryRecords > 0) {
+  if (meets(adaptationInPlaceRate, 50) && below(adaptationInPlaceRate, 70) && totalSensoryRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Review and implement outstanding sensory adaptations — ensure all children with sound-related needs have adaptations in place and regularly reviewed.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 5 — Child welfare" });
   }
 
-  if (staffAwarenessRate >= 40 && staffAwarenessRate < 70 && totalStaffAwarenessDen > 0) {
+  if (meets(staffAwarenessRate, 40) && below(staffAwarenessRate, 70) && totalStaffAwarenessDen > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Strengthen staff noise awareness — include in team meetings, supervision, and handovers.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 33 — Staff training" });
   }
 
   // Planned recommendations
 
-  if (acceptableNoiseRate >= 40 && acceptableNoiseRate < 70 && totalMonitoringRecords > 0) {
+  if (meets(acceptableNoiseRate, 40) && below(acceptableNoiseRate, 70) && totalMonitoringRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Develop a noise reduction plan targeting the times and locations with highest unacceptable readings.", urgency: "planned", regulatory_ref: "CHR 2015 Reg 25 — Premises" });
   }
 
-  if (meterMonitoringRate < 30 && totalMonitoringRecords > 3) {
+  if (below(meterMonitoringRate, 30) && totalMonitoringRecords > 3) {
     recommendations.push({ rank: ++rank, recommendation: "Increase decibel meter monitoring — objective measurement provides more reliable data than observation alone.", urgency: "planned", regulatory_ref: "CHR 2015 Reg 25 — Premises" });
   }
 
-  if (comfortSurveyCoverage >= 50 && comfortSurveyCoverage < 80 && total_children > 0 && totalComfortRecords > 0) {
+  if (meets(comfortSurveyCoverage, 50) && below(comfortSurveyCoverage, 80) && total_children > 0 && totalComfortRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Extend noise comfort surveys to cover all children — ensure every child can share views on the sound environment.", urgency: "planned", regulatory_ref: "SCCIF — Voice of the child" });
   }
 
-  if (highSensitivityRate > 30 && totalComfortRecords > 0 && totalSensoryRecords === 0) {
+  if (above(highSensitivityRate, 30) && totalComfortRecords > 0 && totalSensoryRecords === 0) {
     recommendations.push({ rank: ++rank, recommendation: "Children with high noise sensitivity identified but no sensory adaptations recorded — develop individual sensory plans.", urgency: "planned", regulatory_ref: "CHR 2015 Reg 5 — Child welfare" });
   }
 
-  if (nightMonitoringRate < 10 && totalMonitoringRecords > 3) {
+  if (below(nightMonitoringRate, 10) && totalMonitoringRecords > 3) {
     recommendations.push({ rank: ++rank, recommendation: "Increase night-time noise monitoring — current coverage insufficient to evidence appropriate sleep environments.", urgency: "planned", regulatory_ref: "CHR 2015 Reg 25 — Premises" });
   }
 
@@ -1019,14 +1017,14 @@ export function computeNoiseSoundManagement(
 
   // -- Critical insights --
 
-  if (quietHoursComplianceRate < 50 && totalQuietHoursRecords > 0) {
+  if (below(quietHoursComplianceRate, 50) && totalQuietHoursRecords > 0) {
     insights.push({
       text: `Only ${quietHoursComplianceRate}% quiet hours compliance. The majority of quiet periods are being disrupted, directly undermining children's ability to rest and sleep. Under CHR 2015 Reg 25, the home must ensure premises provide an environment conducive to rest — persistent quiet hours disruption represents a failure to meet this requirement.`,
       severity: "critical",
     });
   }
 
-  if (sleepDisruptionRate > 40 && totalComfortRecords > 0) {
+  if (above(sleepDisruptionRate, 40) && totalComfortRecords > 0) {
     insights.push({
       text: `${sleepDisruptionRate}% of children report noise-disrupted sleep. Sleep is fundamental to children's physical health, emotional regulation, and educational attainment. Widespread noise-related sleep disruption indicates a systemic sound management failure that directly harms children's welfare.`,
       severity: "critical",
@@ -1040,7 +1038,7 @@ export function computeNoiseSoundManagement(
     });
   }
 
-  if (poorConditionRate > 30 && totalInsulationRecords > 0) {
+  if (above(poorConditionRate, 30) && totalInsulationRecords > 0) {
     insights.push({
       text: `${poorConditionRate}% of sound insulation in poor or failed condition. Deficient soundproofing compromises children's privacy, disrupts sleep, and makes it difficult for children to study or relax. This is a premises suitability issue under CHR 2015 Reg 25.`,
       severity: "critical",
@@ -1054,7 +1052,7 @@ export function computeNoiseSoundManagement(
     });
   }
 
-  if (adaptationInPlaceRate < 50 && totalSensoryRecords > 0) {
+  if (below(adaptationInPlaceRate, 50) && totalSensoryRecords > 0) {
     insights.push({
       text: `Only ${adaptationInPlaceRate}% of sensory adaptations in place. Children with identified sound sensitivity needs are not receiving required environmental adjustments, directly impacting their comfort.`,
       severity: "critical",
@@ -1064,8 +1062,8 @@ export function computeNoiseSoundManagement(
   // -- Warning insights --
 
   if (
-    quietHoursComplianceRate >= 50 &&
-    quietHoursComplianceRate < 80 &&
+    meets(quietHoursComplianceRate, 50) &&
+    below(quietHoursComplianceRate, 80) &&
     totalQuietHoursRecords > 0
   ) {
     insights.push({
@@ -1075,8 +1073,8 @@ export function computeNoiseSoundManagement(
   }
 
   if (
-    acceptableNoiseRate >= 40 &&
-    acceptableNoiseRate < 70 &&
+    meets(acceptableNoiseRate, 40) &&
+    below(acceptableNoiseRate, 70) &&
     totalMonitoringRecords > 0
   ) {
     insights.push({
@@ -1086,8 +1084,8 @@ export function computeNoiseSoundManagement(
   }
 
   if (
-    sleepDisruptionRate > 20 &&
-    sleepDisruptionRate <= 40 &&
+    above(sleepDisruptionRate, 20) &&
+    sleepDisruptionRate! <= 40 &&
     totalComfortRecords > 0
   ) {
     insights.push({
@@ -1096,14 +1094,14 @@ export function computeNoiseSoundManagement(
     });
   }
 
-  if (staffAwarenessRate >= 40 && staffAwarenessRate < 70 && totalStaffAwarenessDen > 0) {
+  if (meets(staffAwarenessRate, 40) && below(staffAwarenessRate, 70) && totalStaffAwarenessDen > 0) {
     insights.push({
       text: `Staff awareness composite at ${staffAwarenessRate}% — gaps in consistency around noise identification, action-taking, disruption response, and engaging with children. Training and supervision focus could improve this.`,
       severity: "warning",
     });
   }
 
-  if (meetsStandardRate >= 50 && meetsStandardRate < 70 && totalInsulationRecords > 0) {
+  if (meets(meetsStandardRate, 50) && below(meetsStandardRate, 70) && totalInsulationRecords > 0) {
     insights.push({
       text: `Sound insulation at ${meetsStandardRate}% standard compliance — some areas allow noise transfer affecting children's comfort and privacy. Prioritising bedrooms and study areas would have the greatest impact.`,
       severity: "warning",
@@ -1147,8 +1145,8 @@ export function computeNoiseSoundManagement(
     (a, b) => b[1] - a[1],
   )[0];
   if (topSource && unacceptableNoise.length > 3) {
-    const topSourcePct = pct(topSource[1], unacceptableNoise.length);
-    if (topSourcePct >= 50) {
+    const topSourcePct = rate(topSource[1], unacceptableNoise.length);
+    if (meets(topSourcePct, 50)) {
       insights.push({
         text: `${topSourcePct}% of unacceptable noise comes from "${topSource[0]}" sources — this dominant noise source should be the primary focus of the home's noise reduction strategy.`,
         severity: "warning",
@@ -1166,8 +1164,8 @@ export function computeNoiseSoundManagement(
   }
 
   if (
-    quietHoursComplianceRate >= 95 &&
-    zeroDisruptionRate >= 80 &&
+    meets(quietHoursComplianceRate, 95) &&
+    meets(zeroDisruptionRate, 80) &&
     totalQuietHoursRecords > 0
   ) {
     insights.push({
@@ -1177,8 +1175,8 @@ export function computeNoiseSoundManagement(
   }
 
   if (
-    comfortableRate >= 90 &&
-    feelsHeardRate >= 90 &&
+    meets(comfortableRate, 90) &&
+    meets(feelsHeardRate, 90) &&
     totalComfortRecords > 0
   ) {
     insights.push({
@@ -1198,8 +1196,8 @@ export function computeNoiseSoundManagement(
   }
 
   if (
-    adaptationInPlaceRate >= 90 &&
-    sensoryPositiveFeedbackRate >= 90 &&
+    meets(adaptationInPlaceRate, 90) &&
+    meets(sensoryPositiveFeedbackRate, 90) &&
     totalSensoryRecords > 0 &&
     adaptationsInPlace > 0
   ) {
@@ -1210,8 +1208,8 @@ export function computeNoiseSoundManagement(
   }
 
   if (
-    meetsStandardRate >= 90 &&
-    goodConditionRate >= 90 &&
+    meets(meetsStandardRate, 90) &&
+    meets(goodConditionRate, 90) &&
     totalInsulationRecords > 0
   ) {
     insights.push({
@@ -1220,14 +1218,14 @@ export function computeNoiseSoundManagement(
     });
   }
 
-  if (staffAwarenessRate >= 90 && totalStaffAwarenessDen > 0) {
+  if (meets(staffAwarenessRate, 90) && totalStaffAwarenessDen > 0) {
     insights.push({
       text: `Staff awareness composite at ${staffAwarenessRate}% — staff demonstrate consistently strong practice in identifying noise issues, taking action, and engaging with children about sound comfort.`,
       severity: "positive",
     });
   }
 
-  if (comfortSurveyCoverage >= 100 && total_children > 0 && totalComfortRecords > 0) {
+  if (meets(comfortSurveyCoverage, 100) && total_children > 0 && totalComfortRecords > 0) {
     insights.push({
       text: "Every child has been surveyed about noise comfort — an inclusive approach ensuring no child's voice is missed regarding the sound environment.",
       severity: "positive",

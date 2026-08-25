@@ -932,8 +932,8 @@ describe("computeHomeNightCareSafety", () => {
         night_staff_handovers: [],
         total_children: 1,
       }));
-      expect(r.night_checks.room_temp_ok_rate).toBe(0);
-      expect(r.handovers.completion_rate).toBe(0);
+      expect(r.night_checks.room_temp_ok_rate).toBeNull();
+      expect(r.handovers.completion_rate).toBeNull();
     });
 
     it("checks_per_child rounds to one decimal", () => {

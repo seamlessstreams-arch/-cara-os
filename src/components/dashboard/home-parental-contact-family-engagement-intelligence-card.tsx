@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Users } from "luc
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { FamilyEngagementRating } from "@/lib/engines/home-parental-contact-family-engagement-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 function useHomeParentalContactFamilyEngagementIntelligence() {
   return useQuery({
@@ -61,7 +62,7 @@ export function HomeParentalContactFamilyEngagementIntelligenceCard() {
             <Users className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-purple-600")} />
             <span className="text-slate-900 font-bold">Parental Contact & Family Engagement</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.engagement_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.engagement_score}%</span>}
+            {d.engagement_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.engagement_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -69,28 +70,28 @@ export function HomeParentalContactFamilyEngagementIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.engagement_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.contact_compliance_rate >= 90 ? "bg-green-50" : d.contact_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.contact_compliance_rate >= 90 ? "text-[--cs-success]" : d.contact_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.contact_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.contact_compliance_rate, 90) ? "bg-green-50" : meets(d.contact_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.contact_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.contact_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.contact_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Contact</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.family_visit_quality_rate >= 90 ? "bg-green-50" : d.family_visit_quality_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.family_visit_quality_rate >= 90 ? "text-[--cs-success]" : d.family_visit_quality_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.family_visit_quality_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.family_visit_quality_rate, 90) ? "bg-green-50" : meets(d.family_visit_quality_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.family_visit_quality_rate, 90) ? "text-[--cs-success]" : meets(d.family_visit_quality_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.family_visit_quality_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Visit Qual.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.parental_engagement_rate >= 90 ? "bg-green-50" : d.parental_engagement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.parental_engagement_rate >= 90 ? "text-[--cs-success]" : d.parental_engagement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.parental_engagement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.parental_engagement_rate, 90) ? "bg-green-50" : meets(d.parental_engagement_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.parental_engagement_rate, 90) ? "text-[--cs-success]" : meets(d.parental_engagement_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.parental_engagement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Engaged</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.supervised_contact_adherence_rate >= 90 ? "bg-green-50" : d.supervised_contact_adherence_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.supervised_contact_adherence_rate >= 90 ? "text-[--cs-success]" : d.supervised_contact_adherence_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.supervised_contact_adherence_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.supervised_contact_adherence_rate, 90) ? "bg-green-50" : meets(d.supervised_contact_adherence_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.supervised_contact_adherence_rate, 90) ? "text-[--cs-success]" : meets(d.supervised_contact_adherence_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.supervised_contact_adherence_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Supervised</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.family_support_coverage_rate >= 90 ? "bg-green-50" : d.family_support_coverage_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.family_support_coverage_rate >= 90 ? "text-[--cs-success]" : d.family_support_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.family_support_coverage_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.family_support_coverage_rate, 90) ? "bg-green-50" : meets(d.family_support_coverage_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.family_support_coverage_rate, 90) ? "text-[--cs-success]" : meets(d.family_support_coverage_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.family_support_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Support</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_voice_in_contact_rate >= 90 ? "bg-green-50" : d.child_voice_in_contact_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_voice_in_contact_rate >= 90 ? "text-[--cs-success]" : d.child_voice_in_contact_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_voice_in_contact_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_voice_in_contact_rate, 90) ? "bg-green-50" : meets(d.child_voice_in_contact_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_voice_in_contact_rate, 90) ? "text-[--cs-success]" : meets(d.child_voice_in_contact_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_voice_in_contact_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Voice</p>
             </div>
           </div>

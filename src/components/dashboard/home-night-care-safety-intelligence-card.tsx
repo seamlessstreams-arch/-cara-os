@@ -159,7 +159,7 @@ export function HomeNightCareSafetyIntelligenceCard() {
                 Bedtime Routines
               </p>
               <div className="space-y-0.5 text-[10px] text-indigo-800">
-                <p>Coverage: <span className="font-bold">{d.bedtime_routines.child_coverage}%</span></p>
+                <p>Coverage: <span className="font-bold">{formatRate(d.bedtime_routines.child_coverage)}</span></p>
                 <p>Effectiveness: <span className="font-bold">{d.bedtime_routines.avg_effectiveness ?? "—"}/5</span></p>
                 <p>Child Agreed: <span className="font-bold">{formatRate(d.bedtime_routines.child_agreed_rate)}</span></p>
               </div>
@@ -170,7 +170,7 @@ export function HomeNightCareSafetyIntelligenceCard() {
                 Wake-Up Routines
               </p>
               <div className="space-y-0.5 text-[10px] text-[--cs-warning]">
-                <p>Coverage: <span className="font-bold">{d.wake_up_routines.child_coverage}%</span></p>
+                <p>Coverage: <span className="font-bold">{formatRate(d.wake_up_routines.child_coverage)}</span></p>
                 <p>Effectiveness: <span className="font-bold">{d.wake_up_routines.avg_effectiveness ?? "—"}/5</span></p>
                 <p>Child Agreed: <span className="font-bold">{formatRate(d.wake_up_routines.child_agreed_rate)}</span></p>
               </div>

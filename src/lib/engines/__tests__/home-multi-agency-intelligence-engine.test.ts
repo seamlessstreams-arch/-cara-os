@@ -505,7 +505,7 @@ describe("computeHomeMultiAgency", () => {
         multi_agency_meetings: [makeMeeting({ meeting_status: "cancelled" })],
       }));
       // completedMeetings=0 → +0 for mod2
-      expect(r.meetings.child_participation_rate).toBe(0);
+      expect(r.meetings.child_participation_rate).toBeNull();
     });
   });
 

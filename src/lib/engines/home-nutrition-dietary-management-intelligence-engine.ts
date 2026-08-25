@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME NUTRITION & DIETARY MANAGEMENT INTELLIGENCE ENGINE
 // Evaluates nutrition and dietary management: meal planning compliance,
@@ -173,10 +174,6 @@ export interface NutritionDietaryManagementResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -322,13 +319,13 @@ export function computeNutritionDietaryManagement(
   const plannedAndDelivered = meal_plan_records.filter(
     (m) => m.planned && m.delivered,
   ).length;
-  const mealPlanComplianceRate = pct(plannedAndDelivered, totalMealPlans);
+  const mealPlanComplianceRate = rate(plannedAndDelivered, totalMealPlans);
 
   // Nutritional guideline compliance
   const meetsNutritionalGuidelines = meal_plan_records.filter(
     (m) => m.meets_nutritional_guidelines,
   ).length;
-  const mealNutritionalGuidelineRate = pct(
+  const mealNutritionalGuidelineRate = rate(
     meetsNutritionalGuidelines,
     totalMealPlans,
   );
@@ -337,7 +334,7 @@ export function computeNutritionDietaryManagement(
   const childInvolvedInChoice = meal_plan_records.filter(
     (m) => m.child_involved_in_choice,
   ).length;
-  const childChoiceRate = pct(childInvolvedInChoice, totalMealPlans);
+  const childChoiceRate = rate(childInvolvedInChoice, totalMealPlans);
 
   // Positive child feedback (only among those who gave feedback)
   const feedbackGiven = meal_plan_records.filter(
@@ -346,31 +343,31 @@ export function computeNutritionDietaryManagement(
   const positiveFeedback = feedbackGiven.filter(
     (m) => m.child_feedback_positive === true,
   ).length;
-  const childFeedbackPositiveRate = pct(positiveFeedback, feedbackGiven.length);
+  const childFeedbackPositiveRate = rate(positiveFeedback, feedbackGiven.length);
 
   // Portion appropriateness
   const portionAppropriate = meal_plan_records.filter(
     (m) => m.portion_appropriate,
   ).length;
-  const portionAppropriateRate = pct(portionAppropriate, totalMealPlans);
+  const portionAppropriateRate = rate(portionAppropriate, totalMealPlans);
 
   // Fresh ingredients usage
   const freshIngredients = meal_plan_records.filter(
     (m) => m.fresh_ingredients_used,
   ).length;
-  const freshIngredientRate = pct(freshIngredients, totalMealPlans);
+  const freshIngredientRate = rate(freshIngredients, totalMealPlans);
 
   // Cultural dietary needs met
   const culturalNeedsMet = meal_plan_records.filter(
     (m) => m.cultural_dietary_needs_met,
   ).length;
-  const culturalNeedsMetRate = pct(culturalNeedsMet, totalMealPlans);
+  const culturalNeedsMetRate = rate(culturalNeedsMet, totalMealPlans);
 
   // Allergen checks completed
   const allergenChecks = meal_plan_records.filter(
     (m) => m.allergen_check_completed,
   ).length;
-  const allergenCheckRate = pct(allergenChecks, totalMealPlans);
+  const allergenCheckRate = rate(allergenChecks, totalMealPlans);
 
   // ─── Dietary Requirement Metrics ──────────────────────────────────────
 
@@ -386,14 +383,14 @@ export function computeNutritionDietaryManagement(
   ).size;
   const dietaryRequirementCoverageRate =
     total_children > 0
-      ? pct(uniqueChildrenWithDietaryReqs, total_children)
+      ? rate(uniqueChildrenWithDietaryReqs, total_children)
       : null;
 
   // Documentation completeness
   const documentedRequirements = activeDietaryRequirements.filter(
     (d) => d.documented,
   ).length;
-  const dietaryDocumentationRate = pct(
+  const dietaryDocumentationRate = rate(
     documentedRequirements,
     totalActiveDietaryReqs,
   );
@@ -402,7 +399,7 @@ export function computeNutritionDietaryManagement(
   const allStaffInformed = activeDietaryRequirements.filter(
     (d) => d.all_staff_informed,
   ).length;
-  const dietaryStaffInformedRate = pct(
+  const dietaryStaffInformedRate = rate(
     allStaffInformed,
     totalActiveDietaryReqs,
   );
@@ -411,7 +408,7 @@ export function computeNutritionDietaryManagement(
   const kitchenNotified = activeDietaryRequirements.filter(
     (d) => d.kitchen_notified,
   ).length;
-  const kitchenNotifiedRate = pct(kitchenNotified, totalActiveDietaryReqs);
+  const kitchenNotifiedRate = rate(kitchenNotified, totalActiveDietaryReqs);
 
   // Emergency plans for severe/life-threatening requirements
   const severeRequirements = activeDietaryRequirements.filter(
@@ -420,7 +417,7 @@ export function computeNutritionDietaryManagement(
   const severeWithEmergencyPlan = severeRequirements.filter(
     (d) => d.emergency_plan_in_place,
   ).length;
-  const emergencyPlanRate = pct(
+  const emergencyPlanRate = rate(
     severeWithEmergencyPlan,
     severeRequirements.length,
   );
@@ -448,7 +445,7 @@ export function computeNutritionDietaryManagement(
   ).size;
   const nutritionAssessmentRate =
     total_children > 0
-      ? pct(uniqueChildrenAssessed, total_children)
+      ? rate(uniqueChildrenAssessed, total_children)
       : null;
 
   // Goals met
@@ -458,7 +455,7 @@ export function computeNutritionDietaryManagement(
   const assessmentsWithGoals = nutrition_assessment_records.filter(
     (a) => a.nutritional_goals_set,
   ).length;
-  const nutritionGoalsMetRate = pct(goalsMet, assessmentsWithGoals);
+  const nutritionGoalsMetRate = rate(goalsMet, assessmentsWithGoals);
 
   // Dietitian referrals completed
   const referralsNeeded = nutrition_assessment_records.filter(
@@ -467,7 +464,7 @@ export function computeNutritionDietaryManagement(
   const referralsCompleted = referralsNeeded.filter(
     (a) => a.referral_completed,
   ).length;
-  const dietitianReferralCompletionRate = pct(
+  const dietitianReferralCompletionRate = rate(
     referralsCompleted,
     referralsNeeded.length,
   );
@@ -493,7 +490,7 @@ export function computeNutritionDietaryManagement(
   const staffFoodHygieneTrained = food_hygiene_records.filter(
     (f) => f.staff_food_hygiene_trained,
   ).length;
-  const staffFoodHygieneTrainingRate = pct(
+  const staffFoodHygieneTrainingRate = rate(
     staffFoodHygieneTrained,
     totalFoodHygieneInspections,
   );
@@ -507,7 +504,7 @@ export function computeNutritionDietaryManagement(
     (sum, f) => sum + f.corrective_actions_completed,
     0,
   );
-  const correctiveActionCompletionRate = pct(
+  const correctiveActionCompletionRate = rate(
     totalCorrectiveActionsCompleted,
     totalCorrectiveActionsRequired,
   );
@@ -534,7 +531,7 @@ export function computeNutritionDietaryManagement(
     (sum, s) => sum + s.meals_compliant,
     0,
   );
-  const specialDietAdherenceRate = pct(
+  const specialDietAdherenceRate = rate(
     totalSpecialDietCompliantMeals,
     totalSpecialDietMeals,
   );
@@ -543,7 +540,7 @@ export function computeNutritionDietaryManagement(
   const specialDietDocumented = activeSpecialDiets.filter(
     (s) => s.plan_documented,
   ).length;
-  const specialDietDocumentationRate = pct(
+  const specialDietDocumentationRate = rate(
     specialDietDocumented,
     totalActiveSpecialDiets,
   );
@@ -562,7 +559,7 @@ export function computeNutritionDietaryManagement(
     if (s.monitoring_frequency === "monthly") return daysSinceMonitored <= 35;
     return false;
   }).length;
-  const specialDietMonitoringRate = pct(
+  const specialDietMonitoringRate = rate(
     specialDietsMonitored,
     totalActiveSpecialDiets,
   );
@@ -572,16 +569,16 @@ export function computeNutritionDietaryManagement(
   let score = 52;
 
   // --- Bonus 1: mealPlanComplianceRate (>=95: +4, >=80: +2) ---
-  if (mealPlanComplianceRate >= 95) score += 4;
-  else if (mealPlanComplianceRate >= 80) score += 2;
+  if (meets(mealPlanComplianceRate, 95)) score += 4;
+  else if (meets(mealPlanComplianceRate, 80)) score += 2;
 
   // --- Bonus 2: mealNutritionalGuidelineRate (>=90: +3, >=70: +1) ---
-  if (mealNutritionalGuidelineRate >= 90) score += 3;
-  else if (mealNutritionalGuidelineRate >= 70) score += 1;
+  if (meets(mealNutritionalGuidelineRate, 90)) score += 3;
+  else if (meets(mealNutritionalGuidelineRate, 70)) score += 1;
 
   // --- Bonus 3: dietaryDocumentationRate (>=100: +3, >=80: +1) ---
-  if (dietaryDocumentationRate >= 100) score += 3;
-  else if (dietaryDocumentationRate >= 80) score += 1;
+  if (meets(dietaryDocumentationRate, 100)) score += 3;
+  else if (meets(dietaryDocumentationRate, 80)) score += 1;
 
   // --- Bonus 4: nutritionAssessmentRate (>=100: +4, >=80: +2) ---
   if ((nutritionAssessmentRate ?? 0) >= 100) score += 4;
@@ -592,31 +589,31 @@ export function computeNutritionDietaryManagement(
   else if (foodHygieneScore >= 70) score += 1;
 
   // --- Bonus 6: specialDietAdherenceRate (>=95: +3, >=80: +1) ---
-  if (specialDietAdherenceRate >= 95) score += 3;
-  else if (specialDietAdherenceRate >= 80) score += 1;
+  if (meets(specialDietAdherenceRate, 95)) score += 3;
+  else if (meets(specialDietAdherenceRate, 80)) score += 1;
 
   // --- Bonus 7: childChoiceRate (>=90: +3, >=70: +1) ---
-  if (childChoiceRate >= 90) score += 3;
-  else if (childChoiceRate >= 70) score += 1;
+  if (meets(childChoiceRate, 90)) score += 3;
+  else if (meets(childChoiceRate, 70)) score += 1;
 
   // --- Bonus 8: allergenCheckRate (>=100: +3, >=80: +1) ---
-  if (allergenCheckRate >= 100) score += 3;
-  else if (allergenCheckRate >= 80) score += 1;
+  if (meets(allergenCheckRate, 100)) score += 3;
+  else if (meets(allergenCheckRate, 80)) score += 1;
 
   // --- Bonus 9: emergencyPlanRate (>=100: +2, >=80: +1) ---
-  if (emergencyPlanRate >= 100) score += 2;
-  else if (emergencyPlanRate >= 80) score += 1;
+  if (meets(emergencyPlanRate, 100)) score += 2;
+  else if (meets(emergencyPlanRate, 80)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // Penalty 1: mealPlanComplianceRate < 50 → -5 (guard: totalMealPlans > 0)
-  if (mealPlanComplianceRate < 50 && totalMealPlans > 0) score -= 5;
+  if (below(mealPlanComplianceRate, 50) && totalMealPlans > 0) score -= 5;
 
   // Penalty 2: foodHygieneScore < 50 → -5 (guard: totalFoodHygieneInspections > 0)
   if (foodHygieneScore < 50 && totalFoodHygieneInspections > 0) score -= 5;
 
   // Penalty 3: specialDietAdherenceRate < 50 → -5 (guard: totalSpecialDietMeals > 0)
-  if (specialDietAdherenceRate < 50 && totalSpecialDietMeals > 0) score -= 5;
+  if (below(specialDietAdherenceRate, 50) && totalSpecialDietMeals > 0) score -= 5;
 
   // Penalty 4: lifeThreateningWithoutPlan > 0 → -3 (guard: lifeThreatening.length > 0)
   if (lifeThreateningWithoutPlan > 0 && lifeThreatening.length > 0) score -= 3;
@@ -630,99 +627,99 @@ export function computeNutritionDietaryManagement(
   const strengths: string[] = [];
 
   // Meal plan compliance strengths
-  if (mealPlanComplianceRate >= 95 && totalMealPlans > 0) {
+  if (meets(mealPlanComplianceRate, 95) && totalMealPlans > 0) {
     strengths.push(
       `${mealPlanComplianceRate}% meal plan compliance — virtually all planned meals are delivered as intended, demonstrating excellent meal planning and delivery processes.`,
     );
-  } else if (mealPlanComplianceRate >= 80 && totalMealPlans > 0) {
+  } else if (meets(mealPlanComplianceRate, 80) && totalMealPlans > 0) {
     strengths.push(
       `${mealPlanComplianceRate}% meal plan compliance — the majority of planned meals are delivered effectively.`,
     );
   }
 
   // Nutritional guideline compliance
-  if (mealNutritionalGuidelineRate >= 90 && totalMealPlans > 0) {
+  if (meets(mealNutritionalGuidelineRate, 90) && totalMealPlans > 0) {
     strengths.push(
       `${mealNutritionalGuidelineRate}% of meals meet nutritional guidelines — the home consistently provides nutritionally balanced meals for children.`,
     );
-  } else if (mealNutritionalGuidelineRate >= 70 && totalMealPlans > 0) {
+  } else if (meets(mealNutritionalGuidelineRate, 70) && totalMealPlans > 0) {
     strengths.push(
       `${mealNutritionalGuidelineRate}% of meals meet nutritional guidelines — good nutritional standards are maintained across meal provision.`,
     );
   }
 
   // Child choice and involvement
-  if (childChoiceRate >= 90 && totalMealPlans > 0) {
+  if (meets(childChoiceRate, 90) && totalMealPlans > 0) {
     strengths.push(
       `${childChoiceRate}% child involvement in meal choices — children are genuinely empowered to influence their diet and meal preferences.`,
     );
-  } else if (childChoiceRate >= 70 && totalMealPlans > 0) {
+  } else if (meets(childChoiceRate, 70) && totalMealPlans > 0) {
     strengths.push(
       `${childChoiceRate}% child involvement in meal choices — the home regularly involves children in selecting their meals.`,
     );
   }
 
   // Fresh ingredients
-  if (freshIngredientRate >= 90 && totalMealPlans > 0) {
+  if (meets(freshIngredientRate, 90) && totalMealPlans > 0) {
     strengths.push(
       `${freshIngredientRate}% of meals prepared with fresh ingredients — the home prioritises quality, fresh food for children.`,
     );
-  } else if (freshIngredientRate >= 70 && totalMealPlans > 0) {
+  } else if (meets(freshIngredientRate, 70) && totalMealPlans > 0) {
     strengths.push(
       `${freshIngredientRate}% of meals use fresh ingredients — good use of fresh produce in meal preparation.`,
     );
   }
 
   // Allergen checks
-  if (allergenCheckRate >= 100 && totalMealPlans > 0) {
+  if (meets(allergenCheckRate, 100) && totalMealPlans > 0) {
     strengths.push(
       "Allergen checks completed for every meal — the home demonstrates exemplary allergen management, ensuring children's safety at every mealtime.",
     );
-  } else if (allergenCheckRate >= 90 && totalMealPlans > 0) {
+  } else if (meets(allergenCheckRate, 90) && totalMealPlans > 0) {
     strengths.push(
       `${allergenCheckRate}% allergen check completion — strong allergen management practice protecting children with dietary requirements.`,
     );
   }
 
   // Cultural dietary needs
-  if (culturalNeedsMetRate >= 95 && totalMealPlans > 0) {
+  if (meets(culturalNeedsMetRate, 95) && totalMealPlans > 0) {
     strengths.push(
       `${culturalNeedsMetRate}% cultural dietary needs met — the home respects and accommodates children's cultural and religious dietary needs consistently.`,
     );
-  } else if (culturalNeedsMetRate >= 80 && totalMealPlans > 0) {
+  } else if (meets(culturalNeedsMetRate, 80) && totalMealPlans > 0) {
     strengths.push(
       `${culturalNeedsMetRate}% cultural dietary needs met — good practice in meeting children's cultural and religious dietary requirements.`,
     );
   }
 
   // Dietary documentation
-  if (dietaryDocumentationRate >= 100 && totalActiveDietaryReqs > 0) {
+  if (meets(dietaryDocumentationRate, 100) && totalActiveDietaryReqs > 0) {
     strengths.push(
       "All dietary requirements fully documented — the home maintains comprehensive records of every child's dietary needs.",
     );
-  } else if (dietaryDocumentationRate >= 80 && totalActiveDietaryReqs > 0) {
+  } else if (meets(dietaryDocumentationRate, 80) && totalActiveDietaryReqs > 0) {
     strengths.push(
       `${dietaryDocumentationRate}% dietary requirements documented — the majority of children's dietary needs are well-recorded.`,
     );
   }
 
   // Staff informed of dietary requirements
-  if (dietaryStaffInformedRate >= 100 && totalActiveDietaryReqs > 0) {
+  if (meets(dietaryStaffInformedRate, 100) && totalActiveDietaryReqs > 0) {
     strengths.push(
       "All staff informed of every child's dietary requirements — excellent communication ensuring consistent dietary management.",
     );
-  } else if (dietaryStaffInformedRate >= 80 && totalActiveDietaryReqs > 0) {
+  } else if (meets(dietaryStaffInformedRate, 80) && totalActiveDietaryReqs > 0) {
     strengths.push(
       `${dietaryStaffInformedRate}% staff awareness of dietary requirements — strong communication of children's dietary needs across the team.`,
     );
   }
 
   // Emergency plans for severe requirements
-  if (emergencyPlanRate >= 100 && severeRequirements.length > 0) {
+  if (meets(emergencyPlanRate, 100) && severeRequirements.length > 0) {
     strengths.push(
       "Emergency plans in place for all severe and life-threatening dietary requirements — the home is prepared to respond to allergic reactions and dietary emergencies.",
     );
-  } else if (emergencyPlanRate >= 80 && severeRequirements.length > 0) {
+  } else if (meets(emergencyPlanRate, 80) && severeRequirements.length > 0) {
     strengths.push(
       `${emergencyPlanRate}% of severe dietary requirements have emergency plans — good preparedness for dietary emergencies.`,
     );
@@ -740,22 +737,22 @@ export function computeNutritionDietaryManagement(
   }
 
   // Nutrition goals met
-  if (nutritionGoalsMetRate >= 90 && assessmentsWithGoals > 0) {
+  if (meets(nutritionGoalsMetRate, 90) && assessmentsWithGoals > 0) {
     strengths.push(
       `${nutritionGoalsMetRate}% of nutritional goals met — children's nutrition is improving in line with professional recommendations.`,
     );
-  } else if (nutritionGoalsMetRate >= 70 && assessmentsWithGoals > 0) {
+  } else if (meets(nutritionGoalsMetRate, 70) && assessmentsWithGoals > 0) {
     strengths.push(
       `${nutritionGoalsMetRate}% of nutritional goals met — good progress towards achieving children's nutritional targets.`,
     );
   }
 
   // Dietitian referral completion
-  if (dietitianReferralCompletionRate >= 100 && referralsNeeded.length > 0) {
+  if (meets(dietitianReferralCompletionRate, 100) && referralsNeeded.length > 0) {
     strengths.push(
       "All dietitian referrals completed — children requiring specialist nutritional input receive timely access to professional support.",
     );
-  } else if (dietitianReferralCompletionRate >= 80 && referralsNeeded.length > 0) {
+  } else if (meets(dietitianReferralCompletionRate, 80) && referralsNeeded.length > 0) {
     strengths.push(
       `${dietitianReferralCompletionRate}% of dietitian referrals completed — strong follow-through on specialist nutritional referrals.`,
     );
@@ -773,73 +770,73 @@ export function computeNutritionDietaryManagement(
   }
 
   // Staff food hygiene training
-  if (staffFoodHygieneTrainingRate >= 100 && totalFoodHygieneInspections > 0) {
+  if (meets(staffFoodHygieneTrainingRate, 100) && totalFoodHygieneInspections > 0) {
     strengths.push(
       "All food hygiene inspections confirm staff are trained — the home ensures everyone involved in food preparation has appropriate food hygiene qualifications.",
     );
-  } else if (staffFoodHygieneTrainingRate >= 80 && totalFoodHygieneInspections > 0) {
+  } else if (meets(staffFoodHygieneTrainingRate, 80) && totalFoodHygieneInspections > 0) {
     strengths.push(
       `${staffFoodHygieneTrainingRate}% of inspections confirm staff food hygiene training — strong staff competency in food handling and safety.`,
     );
   }
 
   // Corrective action completion
-  if (correctiveActionCompletionRate >= 100 && totalCorrectiveActionsRequired > 0) {
+  if (meets(correctiveActionCompletionRate, 100) && totalCorrectiveActionsRequired > 0) {
     strengths.push(
       "All corrective actions from food hygiene inspections completed — the home promptly addresses any food safety concerns identified.",
     );
-  } else if (correctiveActionCompletionRate >= 80 && totalCorrectiveActionsRequired > 0) {
+  } else if (meets(correctiveActionCompletionRate, 80) && totalCorrectiveActionsRequired > 0) {
     strengths.push(
       `${correctiveActionCompletionRate}% of food hygiene corrective actions completed — good responsiveness to food safety improvement requirements.`,
     );
   }
 
   // Special diet adherence
-  if (specialDietAdherenceRate >= 95 && totalSpecialDietMeals > 0) {
+  if (meets(specialDietAdherenceRate, 95) && totalSpecialDietMeals > 0) {
     strengths.push(
       `${specialDietAdherenceRate}% special diet adherence — prescribed and therapeutic diets are delivered with exceptional consistency.`,
     );
-  } else if (specialDietAdherenceRate >= 80 && totalSpecialDietMeals > 0) {
+  } else if (meets(specialDietAdherenceRate, 80) && totalSpecialDietMeals > 0) {
     strengths.push(
       `${specialDietAdherenceRate}% special diet adherence — the home generally maintains compliance with prescribed dietary plans.`,
     );
   }
 
   // Special diet documentation
-  if (specialDietDocumentationRate >= 100 && totalActiveSpecialDiets > 0) {
+  if (meets(specialDietDocumentationRate, 100) && totalActiveSpecialDiets > 0) {
     strengths.push(
       "All special diets fully documented — clear plans exist for every child's specialist dietary needs.",
     );
-  } else if (specialDietDocumentationRate >= 80 && totalActiveSpecialDiets > 0) {
+  } else if (meets(specialDietDocumentationRate, 80) && totalActiveSpecialDiets > 0) {
     strengths.push(
       `${specialDietDocumentationRate}% of special diets documented — good documentation of specialist dietary plans.`,
     );
   }
 
   // Special diet monitoring
-  if (specialDietMonitoringRate >= 90 && totalActiveSpecialDiets > 0) {
+  if (meets(specialDietMonitoringRate, 90) && totalActiveSpecialDiets > 0) {
     strengths.push(
       `${specialDietMonitoringRate}% of special diets monitored within expected frequency — strong ongoing oversight of children's specialist dietary needs.`,
     );
-  } else if (specialDietMonitoringRate >= 70 && totalActiveSpecialDiets > 0) {
+  } else if (meets(specialDietMonitoringRate, 70) && totalActiveSpecialDiets > 0) {
     strengths.push(
       `${specialDietMonitoringRate}% of special diets monitored on schedule — regular monitoring of specialist dietary plans.`,
     );
   }
 
   // Positive child feedback
-  if (childFeedbackPositiveRate >= 90 && feedbackGiven.length > 0) {
+  if (meets(childFeedbackPositiveRate, 90) && feedbackGiven.length > 0) {
     strengths.push(
       `${childFeedbackPositiveRate}% positive child feedback on meals — children are satisfied with the food they receive.`,
     );
-  } else if (childFeedbackPositiveRate >= 70 && feedbackGiven.length > 0) {
+  } else if (meets(childFeedbackPositiveRate, 70) && feedbackGiven.length > 0) {
     strengths.push(
       `${childFeedbackPositiveRate}% positive meal feedback from children — the majority of children are happy with their meals.`,
     );
   }
 
   // Portion appropriateness
-  if (portionAppropriateRate >= 95 && totalMealPlans > 0) {
+  if (meets(portionAppropriateRate, 95) && totalMealPlans > 0) {
     strengths.push(
       `${portionAppropriateRate}% portion appropriateness — meals are consistently served in age-appropriate and individually suitable portions.`,
     );
@@ -850,68 +847,68 @@ export function computeNutritionDietaryManagement(
   const concerns: string[] = [];
 
   // Meal plan compliance concerns
-  if (mealPlanComplianceRate < 50 && totalMealPlans > 0) {
+  if (below(mealPlanComplianceRate, 50) && totalMealPlans > 0) {
     concerns.push(
       `Only ${mealPlanComplianceRate}% meal plan compliance — the majority of planned meals are not being delivered as intended, meaning children may not receive adequate or consistent nutrition.`,
     );
-  } else if (mealPlanComplianceRate < 80 && mealPlanComplianceRate >= 50 && totalMealPlans > 0) {
+  } else if (below(mealPlanComplianceRate, 80) && meets(mealPlanComplianceRate, 50) && totalMealPlans > 0) {
     concerns.push(
       `Meal plan compliance at ${mealPlanComplianceRate}% — some planned meals are not being delivered, affecting consistency of children's nutrition.`,
     );
   }
 
   // Nutritional guideline concerns
-  if (mealNutritionalGuidelineRate < 50 && totalMealPlans > 0) {
+  if (below(mealNutritionalGuidelineRate, 50) && totalMealPlans > 0) {
     concerns.push(
       `Only ${mealNutritionalGuidelineRate}% of meals meet nutritional guidelines — the majority of meals do not meet recommended nutritional standards, which may impact children's health and development.`,
     );
-  } else if (mealNutritionalGuidelineRate < 70 && mealNutritionalGuidelineRate >= 50 && totalMealPlans > 0) {
+  } else if (below(mealNutritionalGuidelineRate, 70) && meets(mealNutritionalGuidelineRate, 50) && totalMealPlans > 0) {
     concerns.push(
       `Nutritional guideline compliance at ${mealNutritionalGuidelineRate}% — a significant proportion of meals do not meet recommended nutritional standards.`,
     );
   }
 
   // Child choice concerns
-  if (childChoiceRate < 50 && totalMealPlans > 0) {
+  if (below(childChoiceRate, 50) && totalMealPlans > 0) {
     concerns.push(
       `Only ${childChoiceRate}% child involvement in meal choices — children are not being given sufficient opportunity to influence their diet and meal preferences.`,
     );
-  } else if (childChoiceRate < 70 && childChoiceRate >= 50 && totalMealPlans > 0) {
+  } else if (below(childChoiceRate, 70) && meets(childChoiceRate, 50) && totalMealPlans > 0) {
     concerns.push(
       `Child meal choice involvement at ${childChoiceRate}% — not all children are regularly involved in choosing their meals.`,
     );
   }
 
   // Allergen check concerns
-  if (allergenCheckRate < 80 && totalMealPlans > 0) {
+  if (below(allergenCheckRate, 80) && totalMealPlans > 0) {
     concerns.push(
       `Allergen check completion at ${allergenCheckRate}% — incomplete allergen checks pose a direct safety risk to children with allergies and intolerances.`,
     );
   }
 
   // Cultural needs concerns
-  if (culturalNeedsMetRate < 80 && totalMealPlans > 0) {
+  if (below(culturalNeedsMetRate, 80) && totalMealPlans > 0) {
     concerns.push(
       `Cultural dietary needs met in only ${culturalNeedsMetRate}% of meals — children's cultural and religious dietary requirements are not being consistently respected.`,
     );
   }
 
   // Dietary documentation concerns
-  if (dietaryDocumentationRate < 80 && totalActiveDietaryReqs > 0) {
+  if (below(dietaryDocumentationRate, 80) && totalActiveDietaryReqs > 0) {
     concerns.push(
       `Only ${dietaryDocumentationRate}% of dietary requirements documented — incomplete documentation creates risks of dietary needs being missed or ignored.`,
     );
   }
 
   // Staff informed concerns
-  if (dietaryStaffInformedRate < 80 && totalActiveDietaryReqs > 0) {
+  if (below(dietaryStaffInformedRate, 80) && totalActiveDietaryReqs > 0) {
     concerns.push(
       `Only ${dietaryStaffInformedRate}% of dietary requirements communicated to all staff — gaps in staff awareness create direct risks of children receiving inappropriate food.`,
     );
   }
 
   // Emergency plan concerns
-  if (emergencyPlanRate < 80 && severeRequirements.length > 0) {
+  if (below(emergencyPlanRate, 80) && severeRequirements.length > 0) {
     concerns.push(
       `Only ${emergencyPlanRate}% of severe/life-threatening dietary requirements have emergency plans — this is a critical safety gap that could endanger children's lives.`,
     );
@@ -936,18 +933,18 @@ export function computeNutritionDietaryManagement(
   }
 
   // Nutrition goals met concerns
-  if (nutritionGoalsMetRate < 50 && assessmentsWithGoals > 0) {
+  if (below(nutritionGoalsMetRate, 50) && assessmentsWithGoals > 0) {
     concerns.push(
       `Only ${nutritionGoalsMetRate}% of nutritional goals met — the majority of children are not achieving their nutrition targets, suggesting interventions may be ineffective.`,
     );
-  } else if (nutritionGoalsMetRate < 70 && nutritionGoalsMetRate >= 50 && assessmentsWithGoals > 0) {
+  } else if (below(nutritionGoalsMetRate, 70) && meets(nutritionGoalsMetRate, 50) && assessmentsWithGoals > 0) {
     concerns.push(
       `Nutritional goals met at ${nutritionGoalsMetRate}% — some children are not meeting their nutritional targets.`,
     );
   }
 
   // Dietitian referral concerns
-  if (dietitianReferralCompletionRate < 80 && referralsNeeded.length > 0) {
+  if (below(dietitianReferralCompletionRate, 80) && referralsNeeded.length > 0) {
     concerns.push(
       `Only ${dietitianReferralCompletionRate}% of dietitian referrals completed — children requiring specialist nutritional input are not receiving timely access to professional support.`,
     );
@@ -965,43 +962,43 @@ export function computeNutritionDietaryManagement(
   }
 
   // Staff food hygiene training concerns
-  if (staffFoodHygieneTrainingRate < 80 && totalFoodHygieneInspections > 0) {
+  if (below(staffFoodHygieneTrainingRate, 80) && totalFoodHygieneInspections > 0) {
     concerns.push(
       `Staff food hygiene training confirmed in only ${staffFoodHygieneTrainingRate}% of inspections — untrained staff preparing food creates unacceptable food safety risks.`,
     );
   }
 
   // Corrective action completion concerns
-  if (correctiveActionCompletionRate < 80 && totalCorrectiveActionsRequired > 0) {
+  if (below(correctiveActionCompletionRate, 80) && totalCorrectiveActionsRequired > 0) {
     concerns.push(
       `Only ${correctiveActionCompletionRate}% of food hygiene corrective actions completed — outstanding corrective actions represent unresolved food safety risks.`,
     );
   }
 
   // Special diet adherence concerns
-  if (specialDietAdherenceRate < 50 && totalSpecialDietMeals > 0) {
+  if (below(specialDietAdherenceRate, 50) && totalSpecialDietMeals > 0) {
     concerns.push(
       `Only ${specialDietAdherenceRate}% special diet adherence — the majority of prescribed diet meals are not compliant, which may harm children's health.`,
     );
-  } else if (specialDietAdherenceRate < 80 && specialDietAdherenceRate >= 50 && totalSpecialDietMeals > 0) {
+  } else if (below(specialDietAdherenceRate, 80) && meets(specialDietAdherenceRate, 50) && totalSpecialDietMeals > 0) {
     concerns.push(
       `Special diet adherence at ${specialDietAdherenceRate}% — some prescribed dietary plans are not being followed consistently.`,
     );
   }
 
   // Special diet documentation concerns
-  if (specialDietDocumentationRate < 80 && totalActiveSpecialDiets > 0) {
+  if (below(specialDietDocumentationRate, 80) && totalActiveSpecialDiets > 0) {
     concerns.push(
       `Only ${specialDietDocumentationRate}% of special diets documented — incomplete documentation risks children's specialist dietary needs being missed.`,
     );
   }
 
   // Special diet monitoring concerns
-  if (specialDietMonitoringRate < 50 && totalActiveSpecialDiets > 0) {
+  if (below(specialDietMonitoringRate, 50) && totalActiveSpecialDiets > 0) {
     concerns.push(
       `Only ${specialDietMonitoringRate}% of special diets monitored within expected frequency — children on prescribed diets are not receiving adequate ongoing oversight.`,
     );
-  } else if (specialDietMonitoringRate < 70 && specialDietMonitoringRate >= 50 && totalActiveSpecialDiets > 0) {
+  } else if (below(specialDietMonitoringRate, 70) && meets(specialDietMonitoringRate, 50) && totalActiveSpecialDiets > 0) {
     concerns.push(
       `Special diet monitoring compliance at ${specialDietMonitoringRate}% — some children's specialist diets are not being monitored with sufficient regularity.`,
     );
@@ -1047,21 +1044,21 @@ export function computeNutritionDietaryManagement(
   }
 
   // Negative child feedback
-  if (childFeedbackPositiveRate < 50 && feedbackGiven.length > 0) {
+  if (below(childFeedbackPositiveRate, 50) && feedbackGiven.length > 0) {
     concerns.push(
       `Only ${childFeedbackPositiveRate}% positive child meal feedback — the majority of children are not satisfied with the food they receive.`,
     );
   }
 
   // Fresh ingredients concerns
-  if (freshIngredientRate < 50 && totalMealPlans > 0) {
+  if (below(freshIngredientRate, 50) && totalMealPlans > 0) {
     concerns.push(
       `Only ${freshIngredientRate}% of meals use fresh ingredients — heavy reliance on processed or non-fresh food may impact children's health and nutritional intake.`,
     );
   }
 
   // Kitchen notification concerns
-  if (kitchenNotifiedRate < 80 && totalActiveDietaryReqs > 0) {
+  if (below(kitchenNotifiedRate, 80) && totalActiveDietaryReqs > 0) {
     concerns.push(
       `Kitchen notified of only ${kitchenNotifiedRate}% of dietary requirements — gaps in kitchen awareness create direct risks of dietary errors during meal preparation.`,
     );
@@ -1094,7 +1091,7 @@ export function computeNutritionDietaryManagement(
     });
   }
 
-  if (mealPlanComplianceRate < 50 && totalMealPlans > 0) {
+  if (below(mealPlanComplianceRate, 50) && totalMealPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1104,7 +1101,7 @@ export function computeNutritionDietaryManagement(
     });
   }
 
-  if (allergenCheckRate < 80 && totalMealPlans > 0) {
+  if (below(allergenCheckRate, 80) && totalMealPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1114,7 +1111,7 @@ export function computeNutritionDietaryManagement(
     });
   }
 
-  if (emergencyPlanRate < 80 && severeRequirements.length > 0) {
+  if (below(emergencyPlanRate, 80) && severeRequirements.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1124,7 +1121,7 @@ export function computeNutritionDietaryManagement(
     });
   }
 
-  if (specialDietAdherenceRate < 50 && totalSpecialDietMeals > 0) {
+  if (below(specialDietAdherenceRate, 50) && totalSpecialDietMeals > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1134,7 +1131,7 @@ export function computeNutritionDietaryManagement(
     });
   }
 
-  if (dietaryStaffInformedRate < 80 && totalActiveDietaryReqs > 0) {
+  if (below(dietaryStaffInformedRate, 80) && totalActiveDietaryReqs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1144,7 +1141,7 @@ export function computeNutritionDietaryManagement(
     });
   }
 
-  if (staffFoodHygieneTrainingRate < 80 && totalFoodHygieneInspections > 0) {
+  if (below(staffFoodHygieneTrainingRate, 80) && totalFoodHygieneInspections > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1154,7 +1151,7 @@ export function computeNutritionDietaryManagement(
     });
   }
 
-  if (dietaryDocumentationRate < 80 && totalActiveDietaryReqs > 0) {
+  if (below(dietaryDocumentationRate, 80) && totalActiveDietaryReqs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1176,7 +1173,7 @@ export function computeNutritionDietaryManagement(
 
   // SOON recommendations
 
-  if (correctiveActionCompletionRate < 80 && totalCorrectiveActionsRequired > 0) {
+  if (below(correctiveActionCompletionRate, 80) && totalCorrectiveActionsRequired > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1186,7 +1183,7 @@ export function computeNutritionDietaryManagement(
     });
   }
 
-  if (mealNutritionalGuidelineRate < 70 && totalMealPlans > 0) {
+  if (below(mealNutritionalGuidelineRate, 70) && totalMealPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1196,7 +1193,7 @@ export function computeNutritionDietaryManagement(
     });
   }
 
-  if (childChoiceRate < 70 && totalMealPlans > 0) {
+  if (below(childChoiceRate, 70) && totalMealPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1206,7 +1203,7 @@ export function computeNutritionDietaryManagement(
     });
   }
 
-  if (culturalNeedsMetRate < 80 && totalMealPlans > 0) {
+  if (below(culturalNeedsMetRate, 80) && totalMealPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1216,7 +1213,7 @@ export function computeNutritionDietaryManagement(
     });
   }
 
-  if (dietitianReferralCompletionRate < 80 && referralsNeeded.length > 0) {
+  if (below(dietitianReferralCompletionRate, 80) && referralsNeeded.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1226,7 +1223,7 @@ export function computeNutritionDietaryManagement(
     });
   }
 
-  if (specialDietMonitoringRate < 70 && totalActiveSpecialDiets > 0) {
+  if (below(specialDietMonitoringRate, 70) && totalActiveSpecialDiets > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1236,7 +1233,7 @@ export function computeNutritionDietaryManagement(
     });
   }
 
-  if (nutritionGoalsMetRate < 70 && assessmentsWithGoals > 0) {
+  if (below(nutritionGoalsMetRate, 70) && assessmentsWithGoals > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1246,7 +1243,7 @@ export function computeNutritionDietaryManagement(
     });
   }
 
-  if (kitchenNotifiedRate < 80 && totalActiveDietaryReqs > 0) {
+  if (below(kitchenNotifiedRate, 80) && totalActiveDietaryReqs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1256,7 +1253,7 @@ export function computeNutritionDietaryManagement(
     });
   }
 
-  if (freshIngredientRate < 50 && totalMealPlans > 0) {
+  if (below(freshIngredientRate, 50) && totalMealPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1269,8 +1266,8 @@ export function computeNutritionDietaryManagement(
   // PLANNED recommendations
 
   if (
-    mealPlanComplianceRate >= 50 &&
-    mealPlanComplianceRate < 80 &&
+    meets(mealPlanComplianceRate, 50) &&
+    below(mealPlanComplianceRate, 80) &&
     totalMealPlans > 0
   ) {
     recommendations.push({
@@ -1311,8 +1308,8 @@ export function computeNutritionDietaryManagement(
   }
 
   if (
-    specialDietAdherenceRate >= 50 &&
-    specialDietAdherenceRate < 80 &&
+    meets(specialDietAdherenceRate, 50) &&
+    below(specialDietAdherenceRate, 80) &&
     totalSpecialDietMeals > 0
   ) {
     recommendations.push({
@@ -1325,8 +1322,8 @@ export function computeNutritionDietaryManagement(
   }
 
   if (
-    childChoiceRate >= 50 &&
-    childChoiceRate < 70 &&
+    meets(childChoiceRate, 50) &&
+    below(childChoiceRate, 70) &&
     totalMealPlans > 0
   ) {
     recommendations.push({
@@ -1398,7 +1395,7 @@ export function computeNutritionDietaryManagement(
     });
   }
 
-  if (childFeedbackPositiveRate < 50 && feedbackGiven.length > 0) {
+  if (below(childFeedbackPositiveRate, 50) && feedbackGiven.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1428,28 +1425,28 @@ export function computeNutritionDietaryManagement(
     });
   }
 
-  if (mealPlanComplianceRate < 50 && totalMealPlans > 0) {
+  if (below(mealPlanComplianceRate, 50) && totalMealPlans > 0) {
     insights.push({
       text: `Only ${mealPlanComplianceRate}% of planned meals are being delivered. Children are not consistently receiving the meals planned for them, which directly undermines the home's ability to evidence adequate nutrition under Reg 9.`,
       severity: "critical",
     });
   }
 
-  if (specialDietAdherenceRate < 50 && totalSpecialDietMeals > 0) {
+  if (below(specialDietAdherenceRate, 50) && totalSpecialDietMeals > 0) {
     insights.push({
       text: `Special diet adherence at only ${specialDietAdherenceRate}%. Prescribed diets are not being followed for the majority of meals, which may directly harm children's health and constitutes a failure to follow professional medical or dietary advice.`,
       severity: "critical",
     });
   }
 
-  if (allergenCheckRate < 50 && totalMealPlans > 0) {
+  if (below(allergenCheckRate, 50) && totalMealPlans > 0) {
     insights.push({
       text: `Allergen checks completed for only ${allergenCheckRate}% of meals. Children with allergies are being served meals without confirmed allergen safety checks, creating an immediate risk of allergic reactions including anaphylaxis.`,
       severity: "critical",
     });
   }
 
-  if (dietaryStaffInformedRate < 50 && totalActiveDietaryReqs > 0) {
+  if (below(dietaryStaffInformedRate, 50) && totalActiveDietaryReqs > 0) {
     insights.push({
       text: `Staff informed of only ${dietaryStaffInformedRate}% of dietary requirements. When staff are unaware of children's dietary needs, meals may be served that cause allergic reactions, religious offence, or health complications.`,
       severity: "critical",
@@ -1473,8 +1470,8 @@ export function computeNutritionDietaryManagement(
   // -- Warning insights --
 
   if (
-    mealPlanComplianceRate >= 50 &&
-    mealPlanComplianceRate < 80 &&
+    meets(mealPlanComplianceRate, 50) &&
+    below(mealPlanComplianceRate, 80) &&
     totalMealPlans > 0
   ) {
     insights.push({
@@ -1484,8 +1481,8 @@ export function computeNutritionDietaryManagement(
   }
 
   if (
-    mealNutritionalGuidelineRate >= 50 &&
-    mealNutritionalGuidelineRate < 70 &&
+    meets(mealNutritionalGuidelineRate, 50) &&
+    below(mealNutritionalGuidelineRate, 70) &&
     totalMealPlans > 0
   ) {
     insights.push({
@@ -1506,8 +1503,8 @@ export function computeNutritionDietaryManagement(
   }
 
   if (
-    specialDietAdherenceRate >= 50 &&
-    specialDietAdherenceRate < 80 &&
+    meets(specialDietAdherenceRate, 50) &&
+    below(specialDietAdherenceRate, 80) &&
     totalSpecialDietMeals > 0
   ) {
     insights.push({
@@ -1517,8 +1514,8 @@ export function computeNutritionDietaryManagement(
   }
 
   if (
-    childChoiceRate >= 50 &&
-    childChoiceRate < 70 &&
+    meets(childChoiceRate, 50) &&
+    below(childChoiceRate, 70) &&
     totalMealPlans > 0
   ) {
     insights.push({
@@ -1528,8 +1525,8 @@ export function computeNutritionDietaryManagement(
   }
 
   if (
-    allergenCheckRate >= 50 &&
-    allergenCheckRate < 80 &&
+    meets(allergenCheckRate, 50) &&
+    below(allergenCheckRate, 80) &&
     totalMealPlans > 0
   ) {
     insights.push({
@@ -1550,8 +1547,8 @@ export function computeNutritionDietaryManagement(
   }
 
   if (
-    nutritionGoalsMetRate >= 50 &&
-    nutritionGoalsMetRate < 70 &&
+    meets(nutritionGoalsMetRate, 50) &&
+    below(nutritionGoalsMetRate, 70) &&
     assessmentsWithGoals > 0
   ) {
     insights.push({
@@ -1561,8 +1558,8 @@ export function computeNutritionDietaryManagement(
   }
 
   if (
-    dietitianReferralCompletionRate >= 50 &&
-    dietitianReferralCompletionRate < 80 &&
+    meets(dietitianReferralCompletionRate, 50) &&
+    below(dietitianReferralCompletionRate, 80) &&
     referralsNeeded.length > 0
   ) {
     insights.push({
@@ -1572,8 +1569,8 @@ export function computeNutritionDietaryManagement(
   }
 
   if (
-    correctiveActionCompletionRate >= 50 &&
-    correctiveActionCompletionRate < 80 &&
+    meets(correctiveActionCompletionRate, 50) &&
+    below(correctiveActionCompletionRate, 80) &&
     totalCorrectiveActionsRequired > 0
   ) {
     insights.push({
@@ -1583,8 +1580,8 @@ export function computeNutritionDietaryManagement(
   }
 
   if (
-    specialDietMonitoringRate >= 50 &&
-    specialDietMonitoringRate < 70 &&
+    meets(specialDietMonitoringRate, 50) &&
+    below(specialDietMonitoringRate, 70) &&
     totalActiveSpecialDiets > 0
   ) {
     insights.push({
@@ -1620,7 +1617,7 @@ export function computeNutritionDietaryManagement(
     }
   }
 
-  if (childFeedbackPositiveRate < 50 && feedbackGiven.length >= 5) {
+  if (below(childFeedbackPositiveRate, 50) && feedbackGiven.length >= 5) {
     insights.push({
       text: `Only ${childFeedbackPositiveRate}% positive child feedback on meals — children are dissatisfied with the food they receive. This affects their daily quality of life and Ofsted would view poor meal satisfaction as a concern.`,
       severity: "warning",
@@ -1652,8 +1649,8 @@ export function computeNutritionDietaryManagement(
   }
 
   if (
-    mealPlanComplianceRate >= 95 &&
-    mealNutritionalGuidelineRate >= 90 &&
+    meets(mealPlanComplianceRate, 95) &&
+    meets(mealNutritionalGuidelineRate, 90) &&
     totalMealPlans > 0
   ) {
     insights.push({
@@ -1663,8 +1660,8 @@ export function computeNutritionDietaryManagement(
   }
 
   if (
-    allergenCheckRate >= 100 &&
-    emergencyPlanRate >= 100 &&
+    meets(allergenCheckRate, 100) &&
+    meets(emergencyPlanRate, 100) &&
     totalMealPlans > 0 &&
     severeRequirements.length > 0
   ) {
@@ -1676,7 +1673,7 @@ export function computeNutritionDietaryManagement(
 
   if (
     foodHygieneScore >= 90 &&
-    staffFoodHygieneTrainingRate >= 100 &&
+    meets(staffFoodHygieneTrainingRate, 100) &&
     totalFoodHygieneInspections > 0
   ) {
     insights.push({
@@ -1686,8 +1683,8 @@ export function computeNutritionDietaryManagement(
   }
 
   if (
-    specialDietAdherenceRate >= 95 &&
-    specialDietDocumentationRate >= 100 &&
+    meets(specialDietAdherenceRate, 95) &&
+    meets(specialDietDocumentationRate, 100) &&
     totalSpecialDietMeals > 0 &&
     totalActiveSpecialDiets > 0
   ) {
@@ -1698,8 +1695,8 @@ export function computeNutritionDietaryManagement(
   }
 
   if (
-    childChoiceRate >= 90 &&
-    childFeedbackPositiveRate >= 90 &&
+    meets(childChoiceRate, 90) &&
+    meets(childFeedbackPositiveRate, 90) &&
     totalMealPlans > 0 &&
     feedbackGiven.length > 0
   ) {
@@ -1710,8 +1707,8 @@ export function computeNutritionDietaryManagement(
   }
 
   if (
-    dietaryDocumentationRate >= 100 &&
-    dietaryStaffInformedRate >= 100 &&
+    meets(dietaryDocumentationRate, 100) &&
+    meets(dietaryStaffInformedRate, 100) &&
     totalActiveDietaryReqs > 0
   ) {
     insights.push({
@@ -1722,7 +1719,7 @@ export function computeNutritionDietaryManagement(
 
   if (
     (nutritionAssessmentRate ?? 0) >= 100 &&
-    nutritionGoalsMetRate >= 90 &&
+    meets(nutritionGoalsMetRate, 90) &&
     total_children > 0 &&
     assessmentsWithGoals > 0
   ) {
@@ -1733,7 +1730,7 @@ export function computeNutritionDietaryManagement(
   }
 
   if (
-    correctiveActionCompletionRate >= 100 &&
+    meets(correctiveActionCompletionRate, 100) &&
     totalCorrectiveActionsRequired > 0
   ) {
     insights.push({
@@ -1743,8 +1740,8 @@ export function computeNutritionDietaryManagement(
   }
 
   if (
-    freshIngredientRate >= 90 &&
-    portionAppropriateRate >= 95 &&
+    meets(freshIngredientRate, 90) &&
+    meets(portionAppropriateRate, 95) &&
     totalMealPlans > 0
   ) {
     insights.push({
@@ -1754,7 +1751,7 @@ export function computeNutritionDietaryManagement(
   }
 
   if (
-    culturalNeedsMetRate >= 95 &&
+    meets(culturalNeedsMetRate, 95) &&
     totalMealPlans > 0
   ) {
     insights.push({
@@ -1764,7 +1761,7 @@ export function computeNutritionDietaryManagement(
   }
 
   if (
-    dietitianReferralCompletionRate >= 100 &&
+    meets(dietitianReferralCompletionRate, 100) &&
     referralsNeeded.length > 0
   ) {
     insights.push({
@@ -1774,7 +1771,7 @@ export function computeNutritionDietaryManagement(
   }
 
   if (
-    specialDietMonitoringRate >= 90 &&
+    meets(specialDietMonitoringRate, 90) &&
     totalActiveSpecialDiets > 0
   ) {
     insights.push({

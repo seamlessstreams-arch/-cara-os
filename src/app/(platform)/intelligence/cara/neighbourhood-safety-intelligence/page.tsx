@@ -93,7 +93,7 @@ export default function NeighbourhoodSafetyIntelligencePage() {
               <div className="flex-1">
                 <p className="text-sm font-medium">{d.headline}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Neighbourhood score: {d.neighbourhood_score}/100 · risk assessment {formatRate(d.risk_assessment_rate)} · safety mapping {formatRate(d.safety_mapping_rate)} · route safety {formatRate(d.route_safety_rate)} · child awareness {Math.round(d.child_awareness_rate)}%
+                  Neighbourhood score: {d.neighbourhood_score}/100 · risk assessment {formatRate(d.risk_assessment_rate)} · safety mapping {formatRate(d.safety_mapping_rate)} · route safety {formatRate(d.route_safety_rate)} · child awareness {formatRate(d.child_awareness_rate)}
                 </p>
               </div>
               <div className="text-right">
@@ -104,7 +104,7 @@ export default function NeighbourhoodSafetyIntelligencePage() {
           </CardContent>
         </Card>
 
-        {(below(d.risk_assessment_rate, 80) || below(d.hazard_identification_rate, 80) || d.child_awareness_rate < 70) && (
+        {(below(d.risk_assessment_rate, 80) || below(d.hazard_identification_rate, 80) || below(d.child_awareness_rate, 70)) && (
           <div className="flex flex-col gap-2">
             {below(d.risk_assessment_rate, 80) && (
               <div className="flex items-center gap-1.5 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
@@ -118,10 +118,10 @@ export default function NeighbourhoodSafetyIntelligencePage() {
                 Hazard identification rate {formatRate(d.hazard_identification_rate)} — known hazards that have not been formally identified and recorded cannot be mitigated; children using local routes are at risk from hazards the home cannot manage if it does not know about them
               </div>
             )}
-            {d.child_awareness_rate < 70 && (
+            {below(d.child_awareness_rate, 70) && (
               <div className="flex items-center gap-1.5 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
                 <Clock className="h-3.5 w-3.5 flex-shrink-0" />
-                Child awareness rate {Math.round(d.child_awareness_rate)}% — children are the most effective safeguard for their own safety in the community if they understand the risks; safety awareness is not frightening children, it is equipping them
+                Child awareness rate {formatRate(d.child_awareness_rate)} — children are the most effective safeguard for their own safety in the community if they understand the risks; safety awareness is not frightening children, it is equipping them
               </div>
             )}
           </div>

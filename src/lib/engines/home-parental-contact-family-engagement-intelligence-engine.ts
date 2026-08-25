@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME PARENTAL CONTACT & FAMILY ENGAGEMENT INTELLIGENCE ENGINE
 // Evaluates parental contact and family engagement quality: contact schedule
@@ -172,10 +173,6 @@ export interface ParentalContactFamilyEngagementResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -297,7 +294,7 @@ export function computeParentalContactFamilyEngagement(
   // ─── 1. Contact compliance ────────────────────────────────────────────
   const totalScheduledContacts = contact_schedule_records.length;
   const contactsOccurred = contact_schedule_records.filter((c) => c.occurred).length;
-  const contactComplianceRate = pct(contactsOccurred, totalScheduledContacts);
+  const contactComplianceRate = rate(contactsOccurred, totalScheduledContacts);
 
   // ─── 2. Contact quality ───────────────────────────────────────────────
   const contactQualityRatings = contact_schedule_records
@@ -316,19 +313,19 @@ export function computeParentalContactFamilyEngagement(
   const rescheduledContacts = contact_schedule_records.filter(
     (c) => c.cancelled && c.rescheduled,
   ).length;
-  const rescheduledRate = pct(rescheduledContacts, cancelledContacts);
+  const rescheduledRate = rate(rescheduledContacts, cancelledContacts);
 
   // ─── 4. Contact notes compliance ──────────────────────────────────────
   const contactsWithNotes = contact_schedule_records.filter(
     (c) => c.occurred && c.notes_recorded,
   ).length;
-  const contactNotesRate = pct(contactsWithNotes, contactsOccurred);
+  const contactNotesRate = rate(contactsWithNotes, contactsOccurred);
 
   // ─── 5. Social worker informed rate ───────────────────────────────────
   const contactsSWInformed = contact_schedule_records.filter(
     (c) => c.occurred && c.social_worker_informed,
   ).length;
-  const swInformedRate = pct(contactsSWInformed, contactsOccurred);
+  const swInformedRate = rate(contactsSWInformed, contactsOccurred);
 
   // ─── 6. Child wanted contact rate ─────────────────────────────────────
 
@@ -339,17 +336,17 @@ export function computeParentalContactFamilyEngagement(
   const visitsWithHighQuality = family_visit_records.filter(
     (v) => v.occurred && v.quality_rating !== null && v.quality_rating >= 4,
   ).length;
-  const familyVisitQualityRate = pct(visitsWithHighQuality, visitsOccurred);
+  const familyVisitQualityRate = rate(visitsWithHighQuality, visitsOccurred);
 
   const visitsWithRiskAssessment = family_visit_records.filter(
     (v) => v.risk_assessment_completed,
   ).length;
-  const visitRiskAssessmentRate = pct(visitsWithRiskAssessment, totalFamilyVisits);
+  const visitRiskAssessmentRate = rate(visitsWithRiskAssessment, totalFamilyVisits);
 
   const visitsWithReport = family_visit_records.filter(
     (v) => v.occurred && v.report_completed,
   ).length;
-  const visitReportRate = pct(visitsWithReport, visitsOccurred);
+  const visitReportRate = rate(visitsWithReport, visitsOccurred);
 
   const visitsWithSafeguardingConcerns = family_visit_records.filter(
     (v) => v.safeguarding_concerns_raised,
@@ -357,24 +354,24 @@ export function computeParentalContactFamilyEngagement(
   const safeguardingConcernsActedOn = family_visit_records.filter(
     (v) => v.safeguarding_concerns_raised && v.safeguarding_actions_taken,
   ).length;
-  const safeguardingResponseRate = pct(safeguardingConcernsActedOn, visitsWithSafeguardingConcerns);
+  const safeguardingResponseRate = rate(safeguardingConcernsActedOn, visitsWithSafeguardingConcerns);
 
   // ─── 8. Parental engagement metrics ───────────────────────────────────
   const totalEngagementRecords = parental_engagement_records.length;
   const parentParticipated = parental_engagement_records.filter(
     (e) => e.parent_participated,
   ).length;
-  const parentalEngagementRate = pct(parentParticipated, totalEngagementRecords);
+  const parentalEngagementRate = rate(parentParticipated, totalEngagementRecords);
 
   const parentInvited = parental_engagement_records.filter(
     (e) => e.parent_invited,
   ).length;
-  const parentInvitationRate = pct(parentInvited, totalEngagementRecords);
+  const parentInvitationRate = rate(parentInvited, totalEngagementRecords);
 
   const parentViewsIncorporated = parental_engagement_records.filter(
     (e) => e.parent_participated && e.parent_views_incorporated,
   ).length;
-  const parentViewsIncorporationRate = pct(parentViewsIncorporated, parentParticipated);
+  const parentViewsIncorporationRate = rate(parentViewsIncorporated, parentParticipated);
 
   const engagementWithBarriers = parental_engagement_records.filter(
     (e) => e.barriers_identified !== null && e.barriers_identified !== "",
@@ -386,35 +383,32 @@ export function computeParentalContactFamilyEngagement(
   const supervisorPresent = supervised_contact_records.filter(
     (s) => s.supervisor_present,
   ).length;
-  const supervisorPresenceRate = pct(supervisorPresent, totalSupervisedSessions);
+  const supervisorPresenceRate = rate(supervisorPresent, totalSupervisedSessions);
 
   const contactPlanFollowed = supervised_contact_records.filter(
     (s) => s.contact_plan_followed,
   ).length;
-  const contactPlanAdherenceRate = pct(contactPlanFollowed, totalSupervisedSessions);
+  const contactPlanAdherenceRate = rate(contactPlanFollowed, totalSupervisedSessions);
 
   const boundariesMaintained = supervised_contact_records.filter(
     (s) => s.boundaries_maintained,
   ).length;
-  const supervisedBoundaryAdherenceRate = pct(boundariesMaintained, totalSupervisedSessions);
+  const supervisedBoundaryAdherenceRate = rate(boundariesMaintained, totalSupervisedSessions);
 
   // Composite: adherence = average of supervisor presence, plan followed, boundaries maintained
   const supervisedContactAdherenceRate =
-    totalSupervisedSessions > 0
-      ? Math.round(
-          (supervisorPresenceRate + contactPlanAdherenceRate + supervisedBoundaryAdherenceRate) / 3,
-        )
-      : null;
+    totalSupervisedSessions > 0 ? Math.round(
+          (supervisorPresenceRate! + contactPlanAdherenceRate! + supervisedBoundaryAdherenceRate!) / 3) : null;
 
   const childDistressed = supervised_contact_records.filter(
     (s) => s.child_distressed,
   ).length;
-  const childDistressRate = pct(childDistressed, totalSupervisedSessions);
+  const childDistressRate = rate(childDistressed, totalSupervisedSessions);
 
   const childPositiveResponse = supervised_contact_records.filter(
     (s) => s.child_positive_response,
   ).length;
-  const childPositiveResponseRate = pct(childPositiveResponse, totalSupervisedSessions);
+  const childPositiveResponseRate = rate(childPositiveResponse, totalSupervisedSessions);
 
   const supervisedIncidents = supervised_contact_records.filter(
     (s) => s.incident_occurred,
@@ -422,7 +416,7 @@ export function computeParentalContactFamilyEngagement(
   const supervisedIncidentsReported = supervised_contact_records.filter(
     (s) => s.incident_occurred && s.incident_reported,
   ).length;
-  const incidentReportingRate = pct(supervisedIncidentsReported, supervisedIncidents);
+  const incidentReportingRate = rate(supervisedIncidentsReported, supervisedIncidents);
 
   // ─── 10. Family support metrics ───────────────────────────────────────
   const totalFamilySupport = family_support_records.length;
@@ -431,7 +425,7 @@ export function computeParentalContactFamilyEngagement(
     family_support_records.filter((f) => f.active).map((f) => f.child_id),
   ).size;
   const familySupportCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenWithSupport, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenWithSupport, total_children) : 0;
 
   const totalSessionsPlanned = family_support_records.reduce(
     (sum, f) => sum + f.sessions_planned,
@@ -441,7 +435,7 @@ export function computeParentalContactFamilyEngagement(
     (sum, f) => sum + f.sessions_attended,
     0,
   );
-  const familySupportAttendanceRate = pct(totalSessionsAttended, totalSessionsPlanned);
+  const familySupportAttendanceRate = rate(totalSessionsAttended, totalSessionsPlanned);
 
   const significantProgress = family_support_records.filter(
     (f) => f.progress_rating === "significant",
@@ -449,7 +443,7 @@ export function computeParentalContactFamilyEngagement(
   const moderateProgress = family_support_records.filter(
     (f) => f.progress_rating === "moderate",
   ).length;
-  const positiveProgressRate = pct(significantProgress + moderateProgress, totalFamilySupport);
+  const positiveProgressRate = rate(significantProgress + moderateProgress, totalFamilySupport);
 
   const regressedRecords = family_support_records.filter(
     (f) => f.progress_rating === "regressed",
@@ -480,63 +474,63 @@ export function computeParentalContactFamilyEngagement(
     contactsOccurred + visitsOccurred + totalSupervisedSessions + totalFamilySupport;
   const totalChildVoiceCaptured =
     contactChildVoice + visitChildVoice + supervisedChildVoice + supportChildVoice;
-  const childVoiceInContactRate = pct(totalChildVoiceCaptured, totalChildVoiceOpportunities);
+  const childVoiceInContactRate = rate(totalChildVoiceCaptured, totalChildVoiceOpportunities);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: contactComplianceRate (>=95: +4, >=80: +2) — max 4 ---
-  if (contactComplianceRate >= 95) score += 4;
-  else if (contactComplianceRate >= 80) score += 2;
+  if (meets(contactComplianceRate, 95)) score += 4;
+  else if (meets(contactComplianceRate, 80)) score += 2;
 
   // --- Bonus 2: familyVisitQualityRate (>=90: +3, >=70: +1) — max 3 ---
-  if (familyVisitQualityRate >= 90) score += 3;
-  else if (familyVisitQualityRate >= 70) score += 1;
+  if (meets(familyVisitQualityRate, 90)) score += 3;
+  else if (meets(familyVisitQualityRate, 70)) score += 1;
 
   // --- Bonus 3: parentalEngagementRate (>=90: +3, >=70: +1) — max 3 ---
-  if (parentalEngagementRate >= 90) score += 3;
-  else if (parentalEngagementRate >= 70) score += 1;
+  if (meets(parentalEngagementRate, 90)) score += 3;
+  else if (meets(parentalEngagementRate, 70)) score += 1;
 
   // --- Bonus 4: supervisedContactAdherenceRate (>=95: +4, >=80: +2) — max 4 ---
   if ((supervisedContactAdherenceRate ?? 0) >= 95) score += 4;
   else if ((supervisedContactAdherenceRate ?? 0) >= 80) score += 2;
 
   // --- Bonus 5: familySupportCoverageRate (>=100: +3, >=80: +1) — max 3 ---
-  if (familySupportCoverageRate >= 100) score += 3;
-  else if (familySupportCoverageRate >= 80) score += 1;
+  if (meets(familySupportCoverageRate, 100)) score += 3;
+  else if (meets(familySupportCoverageRate, 80)) score += 1;
 
   // --- Bonus 6: childVoiceInContactRate (>=90: +3, >=70: +1) — max 3 ---
-  if (childVoiceInContactRate >= 90) score += 3;
-  else if (childVoiceInContactRate >= 70) score += 1;
+  if (meets(childVoiceInContactRate, 90)) score += 3;
+  else if (meets(childVoiceInContactRate, 70)) score += 1;
 
   // --- Bonus 7: visitRiskAssessmentRate (>=100: +2, >=80: +1) — max 2 ---
-  if (visitRiskAssessmentRate >= 100) score += 2;
-  else if (visitRiskAssessmentRate >= 80) score += 1;
+  if (meets(visitRiskAssessmentRate, 100)) score += 2;
+  else if (meets(visitRiskAssessmentRate, 80)) score += 1;
 
   // --- Bonus 8: parentViewsIncorporationRate (>=90: +3, >=70: +1) — max 3 ---
-  if (parentViewsIncorporationRate >= 90) score += 3;
-  else if (parentViewsIncorporationRate >= 70) score += 1;
+  if (meets(parentViewsIncorporationRate, 90)) score += 3;
+  else if (meets(parentViewsIncorporationRate, 70)) score += 1;
 
   // --- Bonus 9: familySupportAttendanceRate (>=90: +3, >=70: +1) — max 3 ---
-  if (familySupportAttendanceRate >= 90) score += 3;
-  else if (familySupportAttendanceRate >= 70) score += 1;
+  if (meets(familySupportAttendanceRate, 90)) score += 3;
+  else if (meets(familySupportAttendanceRate, 70)) score += 1;
 
   // Total possible bonus: 4+3+3+4+3+3+2+3+3 = 28, so max = 52 + 28 = 80
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // Penalty 1: contactComplianceRate < 50 → -5 (guard: totalScheduledContacts > 0)
-  if (contactComplianceRate < 50 && totalScheduledContacts > 0) score -= 5;
+  if (below(contactComplianceRate, 50) && totalScheduledContacts > 0) score -= 5;
 
   // Penalty 2: supervisedContactAdherenceRate < 50 → -5 (guard: totalSupervisedSessions > 0)
   if ((supervisedContactAdherenceRate ?? 0) < 50 && totalSupervisedSessions > 0) score -= 5;
 
   // Penalty 3: familySupportCoverageRate < 30 → -4 (guard: total_children > 0)
-  if (familySupportCoverageRate < 30 && total_children > 0) score -= 4;
+  if (below(familySupportCoverageRate, 30) && total_children > 0) score -= 4;
 
   // Penalty 4: childVoiceInContactRate < 30 → -4 (guard: totalChildVoiceOpportunities > 0)
-  if (childVoiceInContactRate < 30 && totalChildVoiceOpportunities > 0) score -= 4;
+  if (below(childVoiceInContactRate, 30) && totalChildVoiceOpportunities > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -547,11 +541,11 @@ export function computeParentalContactFamilyEngagement(
   const strengths: string[] = [];
 
   // Contact compliance strengths
-  if (contactComplianceRate >= 95 && totalScheduledContacts > 0) {
+  if (meets(contactComplianceRate, 95) && totalScheduledContacts > 0) {
     strengths.push(
       `${contactComplianceRate}% contact compliance — virtually all scheduled contacts are taking place, demonstrating the home's commitment to facilitating family relationships.`,
     );
-  } else if (contactComplianceRate >= 80 && totalScheduledContacts > 0) {
+  } else if (meets(contactComplianceRate, 80) && totalScheduledContacts > 0) {
     strengths.push(
       `${contactComplianceRate}% contact compliance — the majority of scheduled contacts occur as planned, supporting children's family connections.`,
     );
@@ -569,44 +563,44 @@ export function computeParentalContactFamilyEngagement(
   }
 
   // Family visit quality strengths
-  if (familyVisitQualityRate >= 90 && visitsOccurred > 0) {
+  if (meets(familyVisitQualityRate, 90) && visitsOccurred > 0) {
     strengths.push(
       `${familyVisitQualityRate}% of family visits rated high quality — family visits are well-managed and create positive experiences for children.`,
     );
-  } else if (familyVisitQualityRate >= 70 && visitsOccurred > 0) {
+  } else if (meets(familyVisitQualityRate, 70) && visitsOccurred > 0) {
     strengths.push(
       `${familyVisitQualityRate}% of family visits rated high quality — the majority of family visits provide meaningful contact experiences.`,
     );
   }
 
   // Risk assessment strengths
-  if (visitRiskAssessmentRate >= 100 && totalFamilyVisits > 0) {
+  if (meets(visitRiskAssessmentRate, 100) && totalFamilyVisits > 0) {
     strengths.push(
       "Risk assessments completed for every family visit — the home demonstrates rigorous safeguarding practice in managing family contact.",
     );
-  } else if (visitRiskAssessmentRate >= 80 && totalFamilyVisits > 0) {
+  } else if (meets(visitRiskAssessmentRate, 80) && totalFamilyVisits > 0) {
     strengths.push(
       `${visitRiskAssessmentRate}% of family visits have completed risk assessments — strong safeguarding practice in contact management.`,
     );
   }
 
   // Parental engagement strengths
-  if (parentalEngagementRate >= 90 && totalEngagementRecords > 0) {
+  if (meets(parentalEngagementRate, 90) && totalEngagementRecords > 0) {
     strengths.push(
       `${parentalEngagementRate}% parental engagement rate — parents are actively involved in their children's care planning, education, and health decisions.`,
     );
-  } else if (parentalEngagementRate >= 70 && totalEngagementRecords > 0) {
+  } else if (meets(parentalEngagementRate, 70) && totalEngagementRecords > 0) {
     strengths.push(
       `${parentalEngagementRate}% parental engagement rate — good levels of parental involvement in key decisions about their children's care.`,
     );
   }
 
   // Parent views incorporation strengths
-  if (parentViewsIncorporationRate >= 90 && parentParticipated > 0) {
+  if (meets(parentViewsIncorporationRate, 90) && parentParticipated > 0) {
     strengths.push(
       `${parentViewsIncorporationRate}% of parent views incorporated into decisions — parents' perspectives are genuinely influencing outcomes for their children.`,
     );
-  } else if (parentViewsIncorporationRate >= 70 && parentParticipated > 0) {
+  } else if (meets(parentViewsIncorporationRate, 70) && parentParticipated > 0) {
     strengths.push(
       `${parentViewsIncorporationRate}% of parent views incorporated — the home actively considers parental perspectives in care decisions.`,
     );
@@ -624,47 +618,47 @@ export function computeParentalContactFamilyEngagement(
   }
 
   // Child positive response in supervised contact
-  if (childPositiveResponseRate >= 80 && totalSupervisedSessions > 0) {
+  if (meets(childPositiveResponseRate, 80) && totalSupervisedSessions > 0) {
     strengths.push(
       `${childPositiveResponseRate}% of supervised contacts result in positive child response — children benefit from well-managed family contact.`,
     );
   }
 
   // Family support coverage strengths
-  if (familySupportCoverageRate >= 100 && total_children > 0) {
+  if (meets(familySupportCoverageRate, 100) && total_children > 0) {
     strengths.push(
       "Every child has access to active family support services — comprehensive provision supporting family relationships for all children.",
     );
-  } else if (familySupportCoverageRate >= 80 && total_children > 0) {
+  } else if (meets(familySupportCoverageRate, 80) && total_children > 0) {
     strengths.push(
       `${familySupportCoverageRate}% family support coverage — the majority of children are accessing family support to maintain and strengthen family relationships.`,
     );
   }
 
   // Family support attendance strengths
-  if (familySupportAttendanceRate >= 90 && totalSessionsPlanned > 0) {
+  if (meets(familySupportAttendanceRate, 90) && totalSessionsPlanned > 0) {
     strengths.push(
       `${familySupportAttendanceRate}% family support session attendance — strong engagement with family support services demonstrates commitment to family relationship building.`,
     );
-  } else if (familySupportAttendanceRate >= 70 && totalSessionsPlanned > 0) {
+  } else if (meets(familySupportAttendanceRate, 70) && totalSessionsPlanned > 0) {
     strengths.push(
       `${familySupportAttendanceRate}% family support session attendance — good engagement levels with family support programmes.`,
     );
   }
 
   // Child voice in contact strengths
-  if (childVoiceInContactRate >= 90 && totalChildVoiceOpportunities > 0) {
+  if (meets(childVoiceInContactRate, 90) && totalChildVoiceOpportunities > 0) {
     strengths.push(
       `${childVoiceInContactRate}% child voice captured in contact — children's wishes and feelings about family contact are consistently recorded and considered.`,
     );
-  } else if (childVoiceInContactRate >= 70 && totalChildVoiceOpportunities > 0) {
+  } else if (meets(childVoiceInContactRate, 70) && totalChildVoiceOpportunities > 0) {
     strengths.push(
       `${childVoiceInContactRate}% child voice captured — the home regularly records children's views about their family contact experiences.`,
     );
   }
 
   // Positive progress in family support
-  if (positiveProgressRate >= 80 && totalFamilySupport > 0) {
+  if (meets(positiveProgressRate, 80) && totalFamilySupport > 0) {
     strengths.push(
       `${positiveProgressRate}% of family support records show moderate or significant progress — family support is making a demonstrable difference to family relationships.`,
     );
@@ -685,28 +679,28 @@ export function computeParentalContactFamilyEngagement(
   }
 
   // Rescheduling of cancelled contacts
-  if (rescheduledRate >= 80 && cancelledContacts > 0) {
+  if (meets(rescheduledRate, 80) && cancelledContacts > 0) {
     strengths.push(
       `${rescheduledRate}% of cancelled contacts rescheduled — the home proactively ensures children do not lose contact opportunities when sessions are cancelled.`,
     );
   }
 
   // Social worker informed
-  if (swInformedRate >= 90 && contactsOccurred > 0) {
+  if (meets(swInformedRate, 90) && contactsOccurred > 0) {
     strengths.push(
       `${swInformedRate}% of contacts have social worker informed — excellent communication with placing authorities about contact arrangements.`,
     );
   }
 
   // Incident reporting in supervised contact
-  if (incidentReportingRate >= 100 && supervisedIncidents > 0) {
+  if (meets(incidentReportingRate, 100) && supervisedIncidents > 0) {
     strengths.push(
       "Every incident during supervised contact has been reported — robust safeguarding reporting practice.",
     );
   }
 
   // Visit report completion
-  if (visitReportRate >= 90 && visitsOccurred > 0) {
+  if (meets(visitReportRate, 90) && visitsOccurred > 0) {
     strengths.push(
       `${visitReportRate}% of family visits have completed reports — thorough documentation of contact outcomes.`,
     );
@@ -717,11 +711,11 @@ export function computeParentalContactFamilyEngagement(
   const concerns: string[] = [];
 
   // Low contact compliance
-  if (contactComplianceRate < 50 && totalScheduledContacts > 0) {
+  if (below(contactComplianceRate, 50) && totalScheduledContacts > 0) {
     concerns.push(
       `Only ${contactComplianceRate}% of scheduled contacts occurring — the majority of planned family contacts are not taking place, which directly harms children's ability to maintain family relationships.`,
     );
-  } else if (contactComplianceRate < 80 && contactComplianceRate >= 50 && totalScheduledContacts > 0) {
+  } else if (below(contactComplianceRate, 80) && meets(contactComplianceRate, 50) && totalScheduledContacts > 0) {
     concerns.push(
       `Contact compliance at ${contactComplianceRate}% — a significant number of scheduled contacts are not occurring, reducing children's family contact below planned levels.`,
     );
@@ -729,8 +723,8 @@ export function computeParentalContactFamilyEngagement(
 
   // High cancellation rate
   if (totalScheduledContacts > 0) {
-    const cancellationRate = pct(cancelledContacts, totalScheduledContacts);
-    if (cancellationRate >= 30) {
+    const cancellationRate = rate(cancelledContacts, totalScheduledContacts);
+    if (meets(cancellationRate, 30)) {
       concerns.push(
         `${cancellationRate}% contact cancellation rate — high cancellation undermines the reliability of contact arrangements and children's sense of security in family relationships.`,
       );
@@ -739,8 +733,8 @@ export function computeParentalContactFamilyEngagement(
 
   // Cancelled by home
   if (cancelledByHome > 0 && totalScheduledContacts > 0) {
-    const homeCancellationRate = pct(cancelledByHome, totalScheduledContacts);
-    if (homeCancellationRate >= 10) {
+    const homeCancellationRate = rate(cancelledByHome, totalScheduledContacts);
+    if (meets(homeCancellationRate, 10)) {
       concerns.push(
         `${homeCancellationRate}% of contacts cancelled by the home — the home should be facilitating contact, not contributing to cancellations. This requires investigation.`,
       );
@@ -748,36 +742,36 @@ export function computeParentalContactFamilyEngagement(
   }
 
   // Low visit risk assessment completion
-  if (visitRiskAssessmentRate < 80 && totalFamilyVisits > 0) {
+  if (below(visitRiskAssessmentRate, 80) && totalFamilyVisits > 0) {
     concerns.push(
       `Only ${visitRiskAssessmentRate}% of family visits have completed risk assessments — safeguarding practice around family contact is incomplete and children may be exposed to unassessed risks.`,
     );
   }
 
   // Low family visit quality
-  if (familyVisitQualityRate < 50 && visitsOccurred > 0) {
+  if (below(familyVisitQualityRate, 50) && visitsOccurred > 0) {
     concerns.push(
       `Only ${familyVisitQualityRate}% of family visits rated high quality — the majority of family visits are not providing the quality of experience children need to maintain meaningful family relationships.`,
     );
-  } else if (familyVisitQualityRate < 70 && familyVisitQualityRate >= 50 && visitsOccurred > 0) {
+  } else if (below(familyVisitQualityRate, 70) && meets(familyVisitQualityRate, 50) && visitsOccurred > 0) {
     concerns.push(
       `Family visit quality rate at ${familyVisitQualityRate}% — some visits are not meeting quality expectations, which may affect children's experiences of family contact.`,
     );
   }
 
   // Low parental engagement
-  if (parentalEngagementRate < 50 && totalEngagementRecords > 0) {
+  if (below(parentalEngagementRate, 50) && totalEngagementRecords > 0) {
     concerns.push(
       `Only ${parentalEngagementRate}% parental engagement — the majority of parents are not participating in key decisions about their children's care, education, and health.`,
     );
-  } else if (parentalEngagementRate < 70 && parentalEngagementRate >= 50 && totalEngagementRecords > 0) {
+  } else if (below(parentalEngagementRate, 70) && meets(parentalEngagementRate, 50) && totalEngagementRecords > 0) {
     concerns.push(
       `Parental engagement at ${parentalEngagementRate}% — a significant proportion of parents are not actively involved in their children's care planning and decision-making.`,
     );
   }
 
   // Low parent invitation rate
-  if (parentInvitationRate < 80 && totalEngagementRecords > 0) {
+  if (below(parentInvitationRate, 80) && totalEngagementRecords > 0) {
     concerns.push(
       `Only ${parentInvitationRate}% of engagement opportunities include parent invitation — parents cannot participate if they are not consistently invited to be involved.`,
     );
@@ -795,40 +789,40 @@ export function computeParentalContactFamilyEngagement(
   }
 
   // High child distress during supervised contact
-  if (childDistressRate >= 30 && totalSupervisedSessions > 0) {
+  if (meets(childDistressRate, 30) && totalSupervisedSessions > 0) {
     concerns.push(
       `${childDistressRate}% of supervised contacts involve child distress — a significant proportion of children are becoming distressed during family contact, requiring review of contact arrangements and support strategies.`,
     );
   }
 
   // Low family support coverage
-  if (familySupportCoverageRate < 30 && total_children > 0) {
+  if (below(familySupportCoverageRate, 30) && total_children > 0) {
     concerns.push(
       `Only ${familySupportCoverageRate}% family support coverage — the majority of children have no access to active family support services to maintain and strengthen family relationships.`,
     );
-  } else if (familySupportCoverageRate < 80 && familySupportCoverageRate >= 30 && total_children > 0) {
+  } else if (below(familySupportCoverageRate, 80) && meets(familySupportCoverageRate, 30) && total_children > 0) {
     concerns.push(
       `Family support coverage at ${familySupportCoverageRate}% — not all children have access to family support services to promote their family relationships.`,
     );
   }
 
   // Low family support attendance
-  if (familySupportAttendanceRate < 50 && totalSessionsPlanned > 0) {
+  if (below(familySupportAttendanceRate, 50) && totalSessionsPlanned > 0) {
     concerns.push(
       `Only ${familySupportAttendanceRate}% family support session attendance — planned support sessions are not being attended, undermining the effectiveness of family relationship programmes.`,
     );
-  } else if (familySupportAttendanceRate < 70 && familySupportAttendanceRate >= 50 && totalSessionsPlanned > 0) {
+  } else if (below(familySupportAttendanceRate, 70) && meets(familySupportAttendanceRate, 50) && totalSessionsPlanned > 0) {
     concerns.push(
       `Family support attendance at ${familySupportAttendanceRate}% — some planned sessions are being missed, which may slow progress in family relationship work.`,
     );
   }
 
   // Low child voice in contact
-  if (childVoiceInContactRate < 30 && totalChildVoiceOpportunities > 0) {
+  if (below(childVoiceInContactRate, 30) && totalChildVoiceOpportunities > 0) {
     concerns.push(
       `Only ${childVoiceInContactRate}% child voice captured in contact — children's wishes and feelings about their family contact are rarely being recorded, which means contact may not reflect what children want or need.`,
     );
-  } else if (childVoiceInContactRate < 70 && childVoiceInContactRate >= 30 && totalChildVoiceOpportunities > 0) {
+  } else if (below(childVoiceInContactRate, 70) && meets(childVoiceInContactRate, 30) && totalChildVoiceOpportunities > 0) {
     concerns.push(
       `Child voice in contact at ${childVoiceInContactRate}% — children's views about their family contact are not consistently captured, undermining child-centred practice.`,
     );
@@ -842,14 +836,14 @@ export function computeParentalContactFamilyEngagement(
   }
 
   // Unreported incidents in supervised contact
-  if (supervisedIncidents > 0 && incidentReportingRate < 100) {
+  if (supervisedIncidents > 0 && below(incidentReportingRate, 100)) {
     concerns.push(
-      `${pct(supervisedIncidents - supervisedIncidentsReported, supervisedIncidents)}% of incidents during supervised contact not reported — all incidents must be documented and reported for safeguarding compliance.`,
+      `${rate(supervisedIncidents - supervisedIncidentsReported, supervisedIncidents)}% of incidents during supervised contact not reported — all incidents must be documented and reported for safeguarding compliance.`,
     );
   }
 
   // Contact notes not recorded
-  if (contactNotesRate < 80 && contactsOccurred > 0) {
+  if (below(contactNotesRate, 80) && contactsOccurred > 0) {
     concerns.push(
       `Only ${contactNotesRate}% of contacts have notes recorded — documentation of contact outcomes is incomplete, which limits the home's ability to evidence and review contact quality.`,
     );
@@ -863,16 +857,16 @@ export function computeParentalContactFamilyEngagement(
   }
 
   // Low parent views incorporation
-  if (parentViewsIncorporationRate < 50 && parentParticipated > 0) {
+  if (below(parentViewsIncorporationRate, 50) && parentParticipated > 0) {
     concerns.push(
       `Only ${parentViewsIncorporationRate}% of parent views incorporated into decisions — parents may feel their involvement is tokenistic if their views do not influence outcomes.`,
     );
   }
 
   // Safeguarding concerns not acted on
-  if (visitsWithSafeguardingConcerns > 0 && safeguardingResponseRate < 100) {
+  if (visitsWithSafeguardingConcerns > 0 && below(safeguardingResponseRate, 100)) {
     concerns.push(
-      `${pct(visitsWithSafeguardingConcerns - safeguardingConcernsActedOn, visitsWithSafeguardingConcerns)}% of safeguarding concerns raised during family visits have not been acted on — every safeguarding concern must trigger documented action.`,
+      `${rate(visitsWithSafeguardingConcerns - safeguardingConcernsActedOn, visitsWithSafeguardingConcerns)}% of safeguarding concerns raised during family visits have not been acted on — every safeguarding concern must trigger documented action.`,
     );
   }
 
@@ -883,7 +877,7 @@ export function computeParentalContactFamilyEngagement(
 
   // Immediate recommendations
 
-  if (contactComplianceRate < 50 && totalScheduledContacts > 0) {
+  if (below(contactComplianceRate, 50) && totalScheduledContacts > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -903,7 +897,7 @@ export function computeParentalContactFamilyEngagement(
     });
   }
 
-  if (visitRiskAssessmentRate < 80 && totalFamilyVisits > 0) {
+  if (below(visitRiskAssessmentRate, 80) && totalFamilyVisits > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -913,7 +907,7 @@ export function computeParentalContactFamilyEngagement(
     });
   }
 
-  if (childVoiceInContactRate < 30 && totalChildVoiceOpportunities > 0) {
+  if (below(childVoiceInContactRate, 30) && totalChildVoiceOpportunities > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -923,7 +917,7 @@ export function computeParentalContactFamilyEngagement(
     });
   }
 
-  if (familySupportCoverageRate < 30 && total_children > 0) {
+  if (below(familySupportCoverageRate, 30) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -933,7 +927,7 @@ export function computeParentalContactFamilyEngagement(
     });
   }
 
-  if (childDistressRate >= 30 && totalSupervisedSessions > 0) {
+  if (meets(childDistressRate, 30) && totalSupervisedSessions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -943,7 +937,7 @@ export function computeParentalContactFamilyEngagement(
     });
   }
 
-  if (visitsWithSafeguardingConcerns > 0 && safeguardingResponseRate < 100) {
+  if (visitsWithSafeguardingConcerns > 0 && below(safeguardingResponseRate, 100)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -953,7 +947,7 @@ export function computeParentalContactFamilyEngagement(
     });
   }
 
-  if (supervisedIncidents > 0 && incidentReportingRate < 100) {
+  if (supervisedIncidents > 0 && below(incidentReportingRate, 100)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -965,7 +959,7 @@ export function computeParentalContactFamilyEngagement(
 
   // Soon recommendations
 
-  if (parentalEngagementRate < 50 && totalEngagementRecords > 0) {
+  if (below(parentalEngagementRate, 50) && totalEngagementRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -975,7 +969,7 @@ export function computeParentalContactFamilyEngagement(
     });
   }
 
-  if (parentInvitationRate < 80 && totalEngagementRecords > 0) {
+  if (below(parentInvitationRate, 80) && totalEngagementRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -985,7 +979,7 @@ export function computeParentalContactFamilyEngagement(
     });
   }
 
-  if (familySupportAttendanceRate < 50 && totalSessionsPlanned > 0) {
+  if (below(familySupportAttendanceRate, 50) && totalSessionsPlanned > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -995,7 +989,7 @@ export function computeParentalContactFamilyEngagement(
     });
   }
 
-  if (contactNotesRate < 80 && contactsOccurred > 0) {
+  if (below(contactNotesRate, 80) && contactsOccurred > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1015,7 +1009,7 @@ export function computeParentalContactFamilyEngagement(
     });
   }
 
-  if (parentViewsIncorporationRate < 50 && parentParticipated > 0) {
+  if (below(parentViewsIncorporationRate, 50) && parentParticipated > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1026,8 +1020,8 @@ export function computeParentalContactFamilyEngagement(
   }
 
   if (
-    contactComplianceRate >= 50 &&
-    contactComplianceRate < 80 &&
+    meets(contactComplianceRate, 50) &&
+    below(contactComplianceRate, 80) &&
     totalScheduledContacts > 0
   ) {
     recommendations.push({
@@ -1056,8 +1050,8 @@ export function computeParentalContactFamilyEngagement(
   }
 
   if (
-    familySupportCoverageRate >= 30 &&
-    familySupportCoverageRate < 80 &&
+    meets(familySupportCoverageRate, 30) &&
+    below(familySupportCoverageRate, 80) &&
     total_children > 0
   ) {
     recommendations.push({
@@ -1070,8 +1064,8 @@ export function computeParentalContactFamilyEngagement(
   }
 
   if (
-    childVoiceInContactRate >= 30 &&
-    childVoiceInContactRate < 70 &&
+    meets(childVoiceInContactRate, 30) &&
+    below(childVoiceInContactRate, 70) &&
     totalChildVoiceOpportunities > 0
   ) {
     recommendations.push({
@@ -1084,8 +1078,8 @@ export function computeParentalContactFamilyEngagement(
   }
 
   if (
-    parentalEngagementRate >= 50 &&
-    parentalEngagementRate < 70 &&
+    meets(parentalEngagementRate, 50) &&
+    below(parentalEngagementRate, 70) &&
     totalEngagementRecords > 0
   ) {
     recommendations.push({
@@ -1098,8 +1092,8 @@ export function computeParentalContactFamilyEngagement(
   }
 
   if (
-    familySupportAttendanceRate >= 50 &&
-    familySupportAttendanceRate < 70 &&
+    meets(familySupportAttendanceRate, 50) &&
+    below(familySupportAttendanceRate, 70) &&
     totalSessionsPlanned > 0
   ) {
     recommendations.push({
@@ -1122,8 +1116,8 @@ export function computeParentalContactFamilyEngagement(
   }
 
   if (cancelledByHome > 0 && totalScheduledContacts > 0) {
-    const homeCancelRate = pct(cancelledByHome, totalScheduledContacts);
-    if (homeCancelRate >= 10) {
+    const homeCancelRate = rate(cancelledByHome, totalScheduledContacts);
+    if (meets(homeCancelRate, 10)) {
       recommendations.push({
         rank: ++rank,
         recommendation:
@@ -1140,7 +1134,7 @@ export function computeParentalContactFamilyEngagement(
 
   // -- Critical insights --
 
-  if (contactComplianceRate < 50 && totalScheduledContacts > 0) {
+  if (below(contactComplianceRate, 50) && totalScheduledContacts > 0) {
     insights.push({
       text: `Only ${contactComplianceRate}% of scheduled contacts occurring. Ofsted will view this as a failure to promote contact as required under Reg 8. Children are being denied their right to maintain family relationships through inadequate facilitation of planned contacts.`,
       severity: "critical",
@@ -1154,35 +1148,35 @@ export function computeParentalContactFamilyEngagement(
     });
   }
 
-  if (childVoiceInContactRate < 30 && totalChildVoiceOpportunities > 0) {
+  if (below(childVoiceInContactRate, 30) && totalChildVoiceOpportunities > 0) {
     insights.push({
       text: `Child voice captured in only ${childVoiceInContactRate}% of contact interactions. Without understanding children's wishes and feelings about family contact, the home cannot demonstrate that contact arrangements are child-centred or that children's emotional wellbeing during contact is being monitored.`,
       severity: "critical",
     });
   }
 
-  if (familySupportCoverageRate < 30 && total_children > 0) {
+  if (below(familySupportCoverageRate, 30) && total_children > 0) {
     insights.push({
       text: `Only ${familySupportCoverageRate}% of children have access to family support services. The majority of children have no active family support programme, which limits the home's ability to promote, maintain, and strengthen family relationships as required under Reg 8.`,
       severity: "critical",
     });
   }
 
-  if (visitRiskAssessmentRate < 50 && totalFamilyVisits > 0) {
+  if (below(visitRiskAssessmentRate, 50) && totalFamilyVisits > 0) {
     insights.push({
       text: `Only ${visitRiskAssessmentRate}% of family visits have completed risk assessments. Allowing family visits without risk assessments exposes children to unassessed risks and represents a fundamental safeguarding failure that Ofsted will view as a serious breach of Reg 12.`,
       severity: "critical",
     });
   }
 
-  if (childDistressRate >= 50 && totalSupervisedSessions > 0) {
+  if (meets(childDistressRate, 50) && totalSupervisedSessions > 0) {
     insights.push({
       text: `${childDistressRate}% of supervised contacts involve child distress — a majority of children are becoming distressed during family contact. This requires urgent professional review of whether current contact arrangements are in children's best interests.`,
       severity: "critical",
     });
   }
 
-  if (visitsWithSafeguardingConcerns > 0 && safeguardingResponseRate < 100) {
+  if (visitsWithSafeguardingConcerns > 0 && below(safeguardingResponseRate, 100)) {
     insights.push({
       text: `Safeguarding concerns raised during family visits have not all been acted upon. Every safeguarding concern during contact must trigger documented action — failure to respond to concerns represents a direct breach of the home's safeguarding duties under Reg 12.`,
       severity: "critical",
@@ -1199,8 +1193,8 @@ export function computeParentalContactFamilyEngagement(
   // -- Warning insights --
 
   if (
-    contactComplianceRate >= 50 &&
-    contactComplianceRate < 80 &&
+    meets(contactComplianceRate, 50) &&
+    below(contactComplianceRate, 80) &&
     totalScheduledContacts > 0
   ) {
     insights.push({
@@ -1210,8 +1204,8 @@ export function computeParentalContactFamilyEngagement(
   }
 
   if (
-    familyVisitQualityRate >= 50 &&
-    familyVisitQualityRate < 70 &&
+    meets(familyVisitQualityRate, 50) &&
+    below(familyVisitQualityRate, 70) &&
     visitsOccurred > 0
   ) {
     insights.push({
@@ -1221,8 +1215,8 @@ export function computeParentalContactFamilyEngagement(
   }
 
   if (
-    parentalEngagementRate >= 50 &&
-    parentalEngagementRate < 70 &&
+    meets(parentalEngagementRate, 50) &&
+    below(parentalEngagementRate, 70) &&
     totalEngagementRecords > 0
   ) {
     insights.push({
@@ -1243,8 +1237,8 @@ export function computeParentalContactFamilyEngagement(
   }
 
   if (
-    familySupportCoverageRate >= 30 &&
-    familySupportCoverageRate < 80 &&
+    meets(familySupportCoverageRate, 30) &&
+    below(familySupportCoverageRate, 80) &&
     total_children > 0
   ) {
     insights.push({
@@ -1254,8 +1248,8 @@ export function computeParentalContactFamilyEngagement(
   }
 
   if (
-    childVoiceInContactRate >= 30 &&
-    childVoiceInContactRate < 70 &&
+    meets(childVoiceInContactRate, 30) &&
+    below(childVoiceInContactRate, 70) &&
     totalChildVoiceOpportunities > 0
   ) {
     insights.push({
@@ -1265,8 +1259,8 @@ export function computeParentalContactFamilyEngagement(
   }
 
   if (
-    childDistressRate >= 15 &&
-    childDistressRate < 30 &&
+    meets(childDistressRate, 15) &&
+    below(childDistressRate, 30) &&
     totalSupervisedSessions > 0
   ) {
     insights.push({
@@ -1276,8 +1270,8 @@ export function computeParentalContactFamilyEngagement(
   }
 
   if (engagementWithBarriers > 0 && totalEngagementRecords > 0) {
-    const barrierRate = pct(engagementWithBarriers, totalEngagementRecords);
-    if (barrierRate >= 30) {
+    const barrierRate = rate(engagementWithBarriers, totalEngagementRecords);
+    if (meets(barrierRate, 30)) {
       insights.push({
         text: `Barriers to parental engagement identified in ${barrierRate}% of records — systematic barriers are preventing parents from fully participating. The home should develop targeted strategies to address these barriers.`,
         severity: "warning",
@@ -1286,8 +1280,8 @@ export function computeParentalContactFamilyEngagement(
   }
 
   if (
-    familySupportAttendanceRate >= 50 &&
-    familySupportAttendanceRate < 70 &&
+    meets(familySupportAttendanceRate, 50) &&
+    below(familySupportAttendanceRate, 70) &&
     totalSessionsPlanned > 0
   ) {
     insights.push({
@@ -1297,8 +1291,8 @@ export function computeParentalContactFamilyEngagement(
   }
 
   if (cancelledByParent > 0 && totalScheduledContacts > 0) {
-    const parentCancelRate = pct(cancelledByParent, totalScheduledContacts);
-    if (parentCancelRate >= 20) {
+    const parentCancelRate = rate(cancelledByParent, totalScheduledContacts);
+    if (meets(parentCancelRate, 20)) {
       insights.push({
         text: `Parents cancelled ${parentCancelRate}% of scheduled contacts — frequent parental cancellations may indicate disengagement, unresolved conflict, or practical barriers that require support rather than acceptance.`,
         severity: "warning",
@@ -1307,8 +1301,8 @@ export function computeParentalContactFamilyEngagement(
   }
 
   if (
-    parentViewsIncorporationRate >= 50 &&
-    parentViewsIncorporationRate < 70 &&
+    meets(parentViewsIncorporationRate, 50) &&
+    below(parentViewsIncorporationRate, 70) &&
     parentParticipated > 0
   ) {
     insights.push({
@@ -1318,8 +1312,8 @@ export function computeParentalContactFamilyEngagement(
   }
 
   if (
-    visitRiskAssessmentRate >= 50 &&
-    visitRiskAssessmentRate < 80 &&
+    meets(visitRiskAssessmentRate, 50) &&
+    below(visitRiskAssessmentRate, 80) &&
     totalFamilyVisits > 0
   ) {
     insights.push({
@@ -1338,7 +1332,7 @@ export function computeParentalContactFamilyEngagement(
   }
 
   if (
-    contactComplianceRate >= 95 &&
+    meets(contactComplianceRate, 95) &&
     contactQualityAvg >= 4.0 &&
     totalScheduledContacts > 0 &&
     contactQualityRatings.length > 0
@@ -1351,7 +1345,7 @@ export function computeParentalContactFamilyEngagement(
 
   if (
     (supervisedContactAdherenceRate ?? 0) >= 95 &&
-    childPositiveResponseRate >= 80 &&
+    meets(childPositiveResponseRate, 80) &&
     totalSupervisedSessions > 0
   ) {
     insights.push({
@@ -1361,8 +1355,8 @@ export function computeParentalContactFamilyEngagement(
   }
 
   if (
-    parentalEngagementRate >= 90 &&
-    parentViewsIncorporationRate >= 90 &&
+    meets(parentalEngagementRate, 90) &&
+    meets(parentViewsIncorporationRate, 90) &&
     totalEngagementRecords > 0 &&
     parentParticipated > 0
   ) {
@@ -1373,8 +1367,8 @@ export function computeParentalContactFamilyEngagement(
   }
 
   if (
-    familySupportCoverageRate >= 100 &&
-    familySupportAttendanceRate >= 90 &&
+    meets(familySupportCoverageRate, 100) &&
+    meets(familySupportAttendanceRate, 90) &&
     total_children > 0 &&
     totalSessionsPlanned > 0
   ) {
@@ -1385,7 +1379,7 @@ export function computeParentalContactFamilyEngagement(
   }
 
   if (
-    childVoiceInContactRate >= 90 &&
+    meets(childVoiceInContactRate, 90) &&
     totalChildVoiceOpportunities > 0
   ) {
     insights.push({
@@ -1395,7 +1389,7 @@ export function computeParentalContactFamilyEngagement(
   }
 
   if (
-    visitRiskAssessmentRate >= 100 &&
+    meets(visitRiskAssessmentRate, 100) &&
     totalFamilyVisits > 0
   ) {
     insights.push({
@@ -1405,7 +1399,7 @@ export function computeParentalContactFamilyEngagement(
   }
 
   if (
-    rescheduledRate >= 90 &&
+    meets(rescheduledRate, 90) &&
     cancelledContacts > 0
   ) {
     insights.push({
@@ -1414,7 +1408,7 @@ export function computeParentalContactFamilyEngagement(
     });
   }
 
-  if (positiveProgressRate >= 80 && totalFamilySupport > 0) {
+  if (meets(positiveProgressRate, 80) && totalFamilySupport > 0) {
     insights.push({
       text: `${positiveProgressRate}% of family support cases showing positive progress — family support interventions are making a demonstrable difference to the quality of family relationships.`,
       severity: "positive",
@@ -1432,7 +1426,7 @@ export function computeParentalContactFamilyEngagement(
   }
 
   if (
-    incidentReportingRate >= 100 &&
+    meets(incidentReportingRate, 100) &&
     supervisedIncidents > 0
   ) {
     insights.push({
@@ -1442,7 +1436,7 @@ export function computeParentalContactFamilyEngagement(
   }
 
   if (
-    visitReportRate >= 100 &&
+    meets(visitReportRate, 100) &&
     visitsOccurred > 0
   ) {
     insights.push({
