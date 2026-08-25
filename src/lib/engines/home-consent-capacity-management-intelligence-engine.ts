@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME CONSENT & CAPACITY MANAGEMENT INTELLIGENCE ENGINE
 // Tracks consent management quality — consent form completion, Gillick
@@ -165,10 +166,6 @@ export interface ConsentCapacityResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -192,14 +189,14 @@ function emptyResult(
     consent_score: score,
     headline,
     total_consent_forms: 0,
-    consent_coverage_rate: 0,
-    gillick_assessment_rate: 0,
-    capacity_review_rate: 0,
-    informed_consent_rate: 0,
-    withdrawal_handling_rate: 0,
-    child_understanding_rate: 0,
-    consent_review_compliance_rate: 0,
-    gillick_evidence_rate: 0,
+    consent_coverage_rate: null,
+    gillick_assessment_rate: null,
+    capacity_review_rate: null,
+    informed_consent_rate: null,
+    withdrawal_handling_rate: null,
+    child_understanding_rate: null,
+    consent_review_compliance_rate: null,
+    gillick_evidence_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -287,25 +284,25 @@ export function computeConsentCapacityManagement(
   const completedConsentForms = consent_form_records.filter(
     (f) => f.completed,
   ).length;
-  const consentCompletionRate = pct(completedConsentForms, totalConsentForms);
+  const consentCompletionRate = rate(completedConsentForms, totalConsentForms);
 
   const uniqueChildrenWithConsent = new Set(
     consent_form_records.map((f) => f.child_id),
   ).size;
   const consentCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenWithConsent, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenWithConsent, total_children) : 0;
 
   const consentFormsAccessibleFormat = consent_form_records.filter(
     (f) => f.accessible_format_used,
   ).length;
-  const accessibleFormatRate = pct(consentFormsAccessibleFormat, totalConsentForms);
+  const accessibleFormatRate = rate(consentFormsAccessibleFormat, totalConsentForms);
 
   const overdueConsentReviews = consent_form_records.filter(
     (f) => f.review_overdue,
   ).length;
   const consentReviewComplianceRate =
     totalConsentForms > 0
-      ? pct(totalConsentForms - overdueConsentReviews, totalConsentForms)
+      ? rate(totalConsentForms - overdueConsentReviews, totalConsentForms)
       : null;
 
   const expiredConsents = consent_form_records.filter(
@@ -318,12 +315,12 @@ export function computeConsentCapacityManagement(
     gillick_assessment_records.map((g) => g.child_id),
   ).size;
   const gillickAssessmentRate =
-    total_children > 0 ? pct(uniqueChildrenWithGillick, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenWithGillick, total_children) : 0;
 
   const gillickEvidenceDocumented = gillick_assessment_records.filter(
     (g) => g.evidence_documented,
   ).length;
-  const gillickEvidenceRate = pct(gillickEvidenceDocumented, totalGillickAssessments);
+  const gillickEvidenceRate = rate(gillickEvidenceDocumented, totalGillickAssessments);
 
   const gillickChildUnderstandingVerified = gillick_assessment_records.filter(
     (g) => g.child_understanding_verified,
@@ -332,7 +329,7 @@ export function computeConsentCapacityManagement(
   const gillickMultiDisciplinary = gillick_assessment_records.filter(
     (g) => g.multi_disciplinary_input,
   ).length;
-  const gillickMultiDisciplinaryRate = pct(gillickMultiDisciplinary, totalGillickAssessments);
+  const gillickMultiDisciplinaryRate = rate(gillickMultiDisciplinary, totalGillickAssessments);
 
   const overdueGillickReviews = gillick_assessment_records.filter(
     (g) => g.review_overdue,
@@ -344,22 +341,22 @@ export function computeConsentCapacityManagement(
     capacity_review_records.map((c) => c.child_id),
   ).size;
   const capacityReviewRate =
-    total_children > 0 ? pct(uniqueChildrenWithCapacityReview, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenWithCapacityReview, total_children) : 0;
 
   const capacityBestInterests = capacity_review_records.filter(
     (c) => c.best_interests_considered,
   ).length;
-  const bestInterestsRate = pct(capacityBestInterests, totalCapacityReviews);
+  const bestInterestsRate = rate(capacityBestInterests, totalCapacityReviews);
 
   const capacityReasonableAdjustments = capacity_review_records.filter(
     (c) => c.reasonable_adjustments_made,
   ).length;
-  const reasonableAdjustmentsRate = pct(capacityReasonableAdjustments, totalCapacityReviews);
+  const reasonableAdjustmentsRate = rate(capacityReasonableAdjustments, totalCapacityReviews);
 
   const capacityAdvocacyOffered = capacity_review_records.filter(
     (c) => c.advocacy_offered,
   ).length;
-  const advocacyOfferedRate = pct(capacityAdvocacyOffered, totalCapacityReviews);
+  const advocacyOfferedRate = rate(capacityAdvocacyOffered, totalCapacityReviews);
 
   const overdueCapacityReviews = capacity_review_records.filter(
     (c) => c.next_review_overdue,
@@ -371,17 +368,17 @@ export function computeConsentCapacityManagement(
     informed_consent_records.map((ic) => ic.child_id),
   ).size;
   const informedConsentRate =
-    total_children > 0 ? pct(uniqueChildrenWithInformedConsent, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenWithInformedConsent, total_children) : 0;
 
   const informedConsentAgeAppropriate = informed_consent_records.filter(
     (ic) => ic.information_age_appropriate,
   ).length;
-  const infoAgeAppropriateRate = pct(informedConsentAgeAppropriate, totalInformedConsents);
+  const infoAgeAppropriateRate = rate(informedConsentAgeAppropriate, totalInformedConsents);
 
   const informedConsentRisksExplained = informed_consent_records.filter(
     (ic) => ic.risks_explained,
   ).length;
-  const risksExplainedRate = pct(informedConsentRisksExplained, totalInformedConsents);
+  const risksExplainedRate = rate(informedConsentRisksExplained, totalInformedConsents);
 
   const informedConsentUnderstandingConfirmed = informed_consent_records.filter(
     (ic) => ic.child_understanding_confirmed,
@@ -390,12 +387,12 @@ export function computeConsentCapacityManagement(
   const informedConsentTimeGiven = informed_consent_records.filter(
     (ic) => ic.time_given_to_decide,
   ).length;
-  const timeGivenRate = pct(informedConsentTimeGiven, totalInformedConsents);
+  const timeGivenRate = rate(informedConsentTimeGiven, totalInformedConsents);
 
   const informedConsentDocumented = informed_consent_records.filter(
     (ic) => ic.consent_documented,
   ).length;
-  const consentDocumentedRate = pct(informedConsentDocumented, totalInformedConsents);
+  const consentDocumentedRate = rate(informedConsentDocumented, totalInformedConsents);
 
   const interpreterNeeded = informed_consent_records.filter(
     (ic) => ic.interpreter_needed,
@@ -403,109 +400,102 @@ export function computeConsentCapacityManagement(
   const interpreterProvided = informed_consent_records.filter(
     (ic) => ic.interpreter_needed && ic.interpreter_provided,
   ).length;
-  const interpreterProvisionRate = pct(interpreterProvided, interpreterNeeded);
+  const interpreterProvisionRate = rate(interpreterProvided, interpreterNeeded);
 
   // --- Consent withdrawal handling ---
   const totalWithdrawals = consent_withdrawal_records.length;
   const withdrawalsRespected = consent_withdrawal_records.filter(
     (w) => w.withdrawal_respected,
   ).length;
-  const withdrawalRespectedRate = pct(withdrawalsRespected, totalWithdrawals);
+  const withdrawalRespectedRate = rate(withdrawalsRespected, totalWithdrawals);
 
   const withdrawalsPrompt = consent_withdrawal_records.filter(
     (w) => w.action_taken_promptly,
   ).length;
-  const withdrawalPromptRate = pct(withdrawalsPrompt, totalWithdrawals);
+  const withdrawalPromptRate = rate(withdrawalsPrompt, totalWithdrawals);
 
   const withdrawalsReasonRecorded = consent_withdrawal_records.filter(
     (w) => w.reason_recorded,
   ).length;
-  const withdrawalReasonRate = pct(withdrawalsReasonRecorded, totalWithdrawals);
+  const withdrawalReasonRate = rate(withdrawalsReasonRecorded, totalWithdrawals);
 
   const withdrawalsChildViewsSought = consent_withdrawal_records.filter(
     (w) => w.child_views_sought,
   ).length;
-  const withdrawalChildViewsRate = pct(withdrawalsChildViewsSought, totalWithdrawals);
+  const withdrawalChildViewsRate = rate(withdrawalsChildViewsSought, totalWithdrawals);
 
   const withdrawalsDocUpdated = consent_withdrawal_records.filter(
     (w) => w.documentation_updated,
   ).length;
-  const withdrawalDocRate = pct(withdrawalsDocUpdated, totalWithdrawals);
+  const withdrawalDocRate = rate(withdrawalsDocUpdated, totalWithdrawals);
 
   // --- Composite withdrawal handling rate ---
   const withdrawalHandlingRate =
-    totalWithdrawals > 0
-      ? Math.round(
-          (withdrawalRespectedRate +
-            withdrawalPromptRate +
-            withdrawalReasonRate +
-            withdrawalChildViewsRate +
-            withdrawalDocRate) / 5,
-        )
-      : null;
+    totalWithdrawals > 0 ? Math.round(
+          (withdrawalRespectedRate! + withdrawalPromptRate! + withdrawalReasonRate! + withdrawalChildViewsRate! + withdrawalDocRate!) / 5) : null;
 
   // --- Child understanding rate (composite across Gillick + informed consent) ---
   const totalUnderstandingOpportunities = totalGillickAssessments + totalInformedConsents;
   const totalUnderstandingConfirmed =
     gillickChildUnderstandingVerified + informedConsentUnderstandingConfirmed;
-  const childUnderstandingRate = pct(totalUnderstandingConfirmed, totalUnderstandingOpportunities);
+  const childUnderstandingRate = rate(totalUnderstandingConfirmed, totalUnderstandingOpportunities);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: consentCoverageRate (>=100: +4, >=80: +2) ---
-  if (consentCoverageRate >= 100) score += 4;
-  else if (consentCoverageRate >= 80) score += 2;
+  if (meets(consentCoverageRate, 100)) score += 4;
+  else if (meets(consentCoverageRate, 80)) score += 2;
 
   // --- Bonus 2: gillickAssessmentRate (>=80: +4, >=60: +2) ---
-  if (gillickAssessmentRate >= 80) score += 4;
-  else if (gillickAssessmentRate >= 60) score += 2;
+  if (meets(gillickAssessmentRate, 80)) score += 4;
+  else if (meets(gillickAssessmentRate, 60)) score += 2;
 
   // --- Bonus 3: capacityReviewRate (>=80: +3, >=60: +1) ---
-  if (capacityReviewRate >= 80) score += 3;
-  else if (capacityReviewRate >= 60) score += 1;
+  if (meets(capacityReviewRate, 80)) score += 3;
+  else if (meets(capacityReviewRate, 60)) score += 1;
 
   // --- Bonus 4: informedConsentRate (>=80: +3, >=60: +1) ---
-  if (informedConsentRate >= 80) score += 3;
-  else if (informedConsentRate >= 60) score += 1;
+  if (meets(informedConsentRate, 80)) score += 3;
+  else if (meets(informedConsentRate, 60)) score += 1;
 
   // --- Bonus 5: withdrawalHandlingRate (>=90: +3, >=70: +2) ---
   if ((withdrawalHandlingRate ?? 0) >= 90) score += 3;
   else if ((withdrawalHandlingRate ?? 0) >= 70) score += 2;
 
   // --- Bonus 6: childUnderstandingRate (>=90: +3, >=70: +1) ---
-  if (childUnderstandingRate >= 90) score += 3;
-  else if (childUnderstandingRate >= 70) score += 1;
+  if (meets(childUnderstandingRate, 90)) score += 3;
+  else if (meets(childUnderstandingRate, 70)) score += 1;
 
   // --- Bonus 7: consentReviewComplianceRate (>=100: +3, >=80: +1) ---
   if ((consentReviewComplianceRate ?? 0) >= 100) score += 3;
   else if ((consentReviewComplianceRate ?? 0) >= 80) score += 1;
 
   // --- Bonus 8: gillickEvidenceRate (>=90: +3, >=70: +1) ---
-  if (gillickEvidenceRate >= 90) score += 3;
-  else if (gillickEvidenceRate >= 70) score += 1;
+  if (meets(gillickEvidenceRate, 90)) score += 3;
+  else if (meets(gillickEvidenceRate, 70)) score += 1;
 
   // --- Bonus 9: consentDocumentedRate (>=95: +2, >=80: +1) ---
-  if (consentDocumentedRate >= 95) score += 2;
-  else if (consentDocumentedRate >= 80) score += 1;
+  if (meets(consentDocumentedRate, 95)) score += 2;
+  else if (meets(consentDocumentedRate, 80)) score += 1;
 
   // Total max bonuses: 4+4+3+3+3+3+3+3+2 = 28 → 52+28 = 80 = outstanding threshold
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // Penalty 1: consentCoverageRate < 50 → -5 (guarded by records)
-  if (consentCoverageRate < 50 && consent_form_records.length > 0 && total_children > 0) {
+  if (below(consentCoverageRate, 50) && consent_form_records.length > 0 && total_children > 0) {
     score -= 5;
   }
 
   // Penalty 2: gillickAssessmentRate < 40 → -5 (guarded by records)
-  if (gillickAssessmentRate < 40 && gillick_assessment_records.length > 0 && total_children > 0) {
+  if (below(gillickAssessmentRate, 40) && gillick_assessment_records.length > 0 && total_children > 0) {
     score -= 5;
   }
 
   // Penalty 3: childUnderstandingRate < 40 → -4 (guarded by records)
-  if (childUnderstandingRate < 40 && totalUnderstandingOpportunities > 0) {
+  if (below(childUnderstandingRate, 40) && totalUnderstandingOpportunities > 0) {
     score -= 4;
   }
 
@@ -522,71 +512,71 @@ export function computeConsentCapacityManagement(
 
   const strengths: string[] = [];
 
-  if (consentCoverageRate >= 100 && total_children > 0) {
+  if (meets(consentCoverageRate, 100) && total_children > 0) {
     strengths.push(
       "Every child has consent forms in place — the home demonstrates comprehensive consent management ensuring all children's care activities are properly authorised.",
     );
-  } else if (consentCoverageRate >= 80 && total_children > 0) {
+  } else if (meets(consentCoverageRate, 80) && total_children > 0) {
     strengths.push(
       `${consentCoverageRate}% of children have consent forms in place — strong coverage in obtaining and documenting consent for children's care.`,
     );
   }
 
-  if (consentCompletionRate >= 95 && totalConsentForms > 0) {
+  if (meets(consentCompletionRate, 95) && totalConsentForms > 0) {
     strengths.push(
       `${consentCompletionRate}% consent form completion rate — the home ensures that consent processes are followed through to completion, providing a robust evidence base for care decisions.`,
     );
-  } else if (consentCompletionRate >= 80 && totalConsentForms > 0) {
+  } else if (meets(consentCompletionRate, 80) && totalConsentForms > 0) {
     strengths.push(
       `${consentCompletionRate}% of consent forms completed — the majority of consent requests are properly processed and documented.`,
     );
   }
 
-  if (gillickAssessmentRate >= 80 && total_children > 0) {
+  if (meets(gillickAssessmentRate, 80) && total_children > 0) {
     strengths.push(
       `${gillickAssessmentRate}% of children have Gillick competence assessments — the home proactively assesses children's evolving capacity to make their own decisions, promoting autonomy and rights.`,
     );
-  } else if (gillickAssessmentRate >= 60 && total_children > 0) {
+  } else if (meets(gillickAssessmentRate, 60) && total_children > 0) {
     strengths.push(
       `${gillickAssessmentRate}% Gillick assessment coverage — the home is actively assessing children's competence to make decisions about their care.`,
     );
   }
 
-  if (gillickEvidenceRate >= 90 && totalGillickAssessments > 0) {
+  if (meets(gillickEvidenceRate, 90) && totalGillickAssessments > 0) {
     strengths.push(
       `${gillickEvidenceRate}% of Gillick assessments are evidenced with documented rationale — the home provides a strong audit trail demonstrating how competence decisions are reached.`,
     );
-  } else if (gillickEvidenceRate >= 70 && totalGillickAssessments > 0) {
+  } else if (meets(gillickEvidenceRate, 70) && totalGillickAssessments > 0) {
     strengths.push(
       `${gillickEvidenceRate}% Gillick assessment evidence documentation — most competence assessments include documented rationale.`,
     );
   }
 
-  if (capacityReviewRate >= 80 && total_children > 0) {
+  if (meets(capacityReviewRate, 80) && total_children > 0) {
     strengths.push(
       `${capacityReviewRate}% of children have capacity reviews — the home systematically assesses and reviews children's decision-making capacity across relevant areas of their lives.`,
     );
-  } else if (capacityReviewRate >= 60 && total_children > 0) {
+  } else if (meets(capacityReviewRate, 60) && total_children > 0) {
     strengths.push(
       `${capacityReviewRate}% capacity review coverage — the home regularly reviews children's capacity to participate in key decisions.`,
     );
   }
 
-  if (informedConsentRate >= 80 && total_children > 0) {
+  if (meets(informedConsentRate, 80) && total_children > 0) {
     strengths.push(
       `${informedConsentRate}% of children have informed consent documentation — the home ensures children are given sufficient information to make genuine, informed choices about their care.`,
     );
-  } else if (informedConsentRate >= 60 && total_children > 0) {
+  } else if (meets(informedConsentRate, 60) && total_children > 0) {
     strengths.push(
       `${informedConsentRate}% informed consent coverage — the home provides information to support children's decision-making for most care decisions.`,
     );
   }
 
-  if (childUnderstandingRate >= 90 && totalUnderstandingOpportunities > 0) {
+  if (meets(childUnderstandingRate, 90) && totalUnderstandingOpportunities > 0) {
     strengths.push(
       `${childUnderstandingRate}% child understanding verification rate — the home consistently checks that children genuinely understand what they are consenting to, going beyond simply obtaining a signature.`,
     );
-  } else if (childUnderstandingRate >= 70 && totalUnderstandingOpportunities > 0) {
+  } else if (meets(childUnderstandingRate, 70) && totalUnderstandingOpportunities > 0) {
     strengths.push(
       `${childUnderstandingRate}% child understanding confirmed — the home generally verifies children's comprehension before proceeding with consent.`,
     );
@@ -612,37 +602,37 @@ export function computeConsentCapacityManagement(
     );
   }
 
-  if (bestInterestsRate >= 90 && totalCapacityReviews > 0) {
+  if (meets(bestInterestsRate, 90) && totalCapacityReviews > 0) {
     strengths.push(
       `Best interests are considered in ${bestInterestsRate}% of capacity reviews — the home ensures that where a child lacks capacity, decisions are made with their best interests as the paramount concern.`,
     );
   }
 
-  if (advocacyOfferedRate >= 80 && totalCapacityReviews > 0) {
+  if (meets(advocacyOfferedRate, 80) && totalCapacityReviews > 0) {
     strengths.push(
       `Advocacy is offered in ${advocacyOfferedRate}% of capacity reviews — children are supported to have their voices heard through independent advocacy when needed.`,
     );
   }
 
-  if (accessibleFormatRate >= 80 && totalConsentForms > 0) {
+  if (meets(accessibleFormatRate, 80) && totalConsentForms > 0) {
     strengths.push(
       `${accessibleFormatRate}% of consent forms use accessible formats — the home tailors consent materials to children's individual communication needs.`,
     );
   }
 
-  if (timeGivenRate >= 90 && totalInformedConsents > 0) {
+  if (meets(timeGivenRate, 90) && totalInformedConsents > 0) {
     strengths.push(
       `${timeGivenRate}% of informed consent processes provide adequate time to decide — children are not rushed into decisions about their care.`,
     );
   }
 
-  if (gillickMultiDisciplinaryRate >= 70 && totalGillickAssessments > 0) {
+  if (meets(gillickMultiDisciplinaryRate, 70) && totalGillickAssessments > 0) {
     strengths.push(
       `${gillickMultiDisciplinaryRate}% of Gillick assessments include multi-disciplinary input — competence determinations draw on a range of professional perspectives.`,
     );
   }
 
-  if (interpreterProvisionRate >= 100 && interpreterNeeded > 0) {
+  if (meets(interpreterProvisionRate, 100) && interpreterNeeded > 0) {
     strengths.push(
       "Interpreters are provided in all cases where needed — the home ensures language is never a barrier to informed consent.",
     );
@@ -652,41 +642,41 @@ export function computeConsentCapacityManagement(
 
   const concerns: string[] = [];
 
-  if (consentCoverageRate < 50 && total_children > 0) {
+  if (below(consentCoverageRate, 50) && total_children > 0) {
     concerns.push(
       `Only ${consentCoverageRate}% of children have consent forms in place — the majority of children's care activities may be proceeding without properly documented consent, creating significant safeguarding and regulatory risk.`,
     );
-  } else if (consentCoverageRate < 80 && consentCoverageRate >= 50 && total_children > 0) {
+  } else if (below(consentCoverageRate, 80) && meets(consentCoverageRate, 50) && total_children > 0) {
     concerns.push(
       `Consent form coverage at ${consentCoverageRate}% — some children do not have all necessary consent forms in place, which may delay or complicate care delivery.`,
     );
   }
 
-  if (gillickAssessmentRate < 40 && total_children > 0 && totalGillickAssessments > 0) {
+  if (below(gillickAssessmentRate, 40) && total_children > 0 && totalGillickAssessments > 0) {
     concerns.push(
       `Only ${gillickAssessmentRate}% of children have Gillick competence assessments — the home is not systematically assessing children's evolving capacity to make their own decisions, which undermines their right to participate in care decisions.`,
     );
-  } else if (gillickAssessmentRate < 60 && gillickAssessmentRate >= 40 && total_children > 0) {
+  } else if (below(gillickAssessmentRate, 60) && meets(gillickAssessmentRate, 40) && total_children > 0) {
     concerns.push(
       `Gillick assessment coverage at ${gillickAssessmentRate}% — not all children have been assessed for their competence to make decisions, potentially limiting their autonomy.`,
     );
   }
 
-  if (capacityReviewRate < 40 && total_children > 0 && totalCapacityReviews > 0) {
+  if (below(capacityReviewRate, 40) && total_children > 0 && totalCapacityReviews > 0) {
     concerns.push(
       `Only ${capacityReviewRate}% of children have capacity reviews — decisions may be being made about children without proper assessment of their ability to participate, which undermines their rights under Reg 7.`,
     );
-  } else if (capacityReviewRate < 60 && capacityReviewRate >= 40 && total_children > 0) {
+  } else if (below(capacityReviewRate, 60) && meets(capacityReviewRate, 40) && total_children > 0) {
     concerns.push(
       `Capacity review coverage at ${capacityReviewRate}% — gaps in capacity assessment mean some children's decision-making abilities may not be properly recognised.`,
     );
   }
 
-  if (childUnderstandingRate < 40 && totalUnderstandingOpportunities > 0) {
+  if (below(childUnderstandingRate, 40) && totalUnderstandingOpportunities > 0) {
     concerns.push(
       `Child understanding verification at only ${childUnderstandingRate}% — consent may be obtained without ensuring children genuinely understand what they are agreeing to, raising questions about whether consent is truly informed.`,
     );
-  } else if (childUnderstandingRate < 70 && childUnderstandingRate >= 40 && totalUnderstandingOpportunities > 0) {
+  } else if (below(childUnderstandingRate, 70) && meets(childUnderstandingRate, 40) && totalUnderstandingOpportunities > 0) {
     concerns.push(
       `Child understanding confirmed in ${childUnderstandingRate}% of cases — the home should more consistently verify children's comprehension before accepting consent.`,
     );
@@ -703,23 +693,23 @@ export function computeConsentCapacityManagement(
   }
 
   if (overdueConsentReviews > 0 && totalConsentForms > 0) {
-    const overdueRate = pct(overdueConsentReviews, totalConsentForms);
-    if (overdueRate >= 30) {
+    const overdueRate = rate(overdueConsentReviews, totalConsentForms);
+    if (meets(overdueRate, 30)) {
       concerns.push(
         `${overdueConsentReviews} consent reviews are overdue (${overdueRate}% of all forms) — consent may no longer reflect children's current wishes or circumstances, and the home cannot demonstrate that consent remains valid.`,
       );
-    } else if (overdueRate >= 10) {
+    } else if (meets(overdueRate, 10)) {
       concerns.push(
         `${overdueConsentReviews} consent reviews are overdue — the home should ensure all consent is reviewed within scheduled timescales to maintain currency.`,
       );
     }
   }
 
-  if (gillickEvidenceRate < 50 && totalGillickAssessments > 0) {
+  if (below(gillickEvidenceRate, 50) && totalGillickAssessments > 0) {
     concerns.push(
       `Only ${gillickEvidenceRate}% of Gillick assessments have documented evidence — without clear rationale, competence decisions cannot be justified and are vulnerable to challenge.`,
     );
-  } else if (gillickEvidenceRate < 70 && gillickEvidenceRate >= 50 && totalGillickAssessments > 0) {
+  } else if (below(gillickEvidenceRate, 70) && meets(gillickEvidenceRate, 50) && totalGillickAssessments > 0) {
     concerns.push(
       `Gillick evidence documentation at ${gillickEvidenceRate}% — some competence assessments lack the documented reasoning needed to support the conclusions reached.`,
     );
@@ -731,13 +721,13 @@ export function computeConsentCapacityManagement(
     );
   }
 
-  if (infoAgeAppropriateRate < 60 && totalInformedConsents > 0) {
+  if (below(infoAgeAppropriateRate, 60) && totalInformedConsents > 0) {
     concerns.push(
       `Only ${infoAgeAppropriateRate}% of informed consent processes use age-appropriate information — children may not be receiving information in a way they can understand, undermining the quality of their consent.`,
     );
   }
 
-  if (risksExplainedRate < 60 && totalInformedConsents > 0) {
+  if (below(risksExplainedRate, 60) && totalInformedConsents > 0) {
     concerns.push(
       `Risks are explained in only ${risksExplainedRate}% of informed consent cases — children and their representatives may not have a full picture of potential consequences when giving consent.`,
     );
@@ -760,58 +750,58 @@ export function computeConsentCapacityManagement(
   const recommendations: ConsentCapacityRecommendation[] = [];
   let recRank = 0;
 
-  if (consentCoverageRate < 80 && total_children > 0) {
+  if (below(consentCoverageRate, 80) && total_children > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation:
-        consentCoverageRate < 50
+        below(consentCoverageRate, 50)
           ? "Urgently audit all children's consent records and ensure every child has the full suite of required consent forms in place — medical, dental, educational, photographic, and activity consents must be obtained and documented as a priority."
           : "Review consent form coverage and address gaps — ensure that all children have comprehensive, up-to-date consent forms across all required areas of their care.",
-      urgency: consentCoverageRate < 50 ? "immediate" : "soon",
+      urgency: below(consentCoverageRate, 50) ? "immediate" : "soon",
       regulatory_ref: "CHR 2015 Reg 5 — Quality of care",
     });
   }
 
-  if (gillickAssessmentRate < 60 && total_children > 0) {
+  if (below(gillickAssessmentRate, 60) && total_children > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation:
-        gillickAssessmentRate < 40
+        below(gillickAssessmentRate, 40)
           ? "Implement a Gillick competence assessment programme for all children under 16, ensuring their evolving capacity to make healthcare and other decisions is formally assessed, documented, and regularly reviewed."
           : "Expand Gillick competence assessments to all eligible children — regular assessment ensures that children's growing autonomy is recognised and respected in care decisions.",
-      urgency: gillickAssessmentRate < 40 ? "immediate" : "soon",
+      urgency: below(gillickAssessmentRate, 40) ? "immediate" : "soon",
       regulatory_ref: "CHR 2015 Reg 7 — Children's views",
     });
   }
 
-  if (childUnderstandingRate < 70 && totalUnderstandingOpportunities > 0) {
+  if (below(childUnderstandingRate, 70) && totalUnderstandingOpportunities > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation:
-        childUnderstandingRate < 40
+        below(childUnderstandingRate, 40)
           ? "Introduce mandatory checks on children's understanding before consent is accepted — staff should be trained to verify comprehension using age-appropriate methods and document that the child genuinely understands what they are agreeing to."
           : "Strengthen child understanding verification — ensure that in all consent and competence situations, children's comprehension is actively confirmed rather than assumed.",
-      urgency: childUnderstandingRate < 40 ? "immediate" : "soon",
+      urgency: below(childUnderstandingRate, 40) ? "immediate" : "soon",
       regulatory_ref: "SCCIF — Voice of the child",
     });
   }
 
-  if (capacityReviewRate < 60 && total_children > 0) {
+  if (below(capacityReviewRate, 60) && total_children > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation:
         "Establish a systematic capacity review schedule for all children, ensuring decision-specific capacity assessments are conducted before significant decisions affecting children's care, placement, health, or education.",
-      urgency: capacityReviewRate < 40 ? "immediate" : "soon",
+      urgency: below(capacityReviewRate, 40) ? "immediate" : "soon",
       regulatory_ref: "CHR 2015 Reg 5 — Quality of care",
     });
   }
 
-  if (informedConsentRate < 60 && total_children > 0) {
+  if (below(informedConsentRate, 60) && total_children > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation:
         "Strengthen informed consent processes — ensure all children receive age-appropriate information about risks, benefits, and alternatives before consent is sought, and that their understanding is confirmed and documented.",
-      urgency: informedConsentRate < 40 ? "immediate" : "soon",
+      urgency: below(informedConsentRate, 40) ? "immediate" : "soon",
       regulatory_ref: "CHR 2015 Reg 14 — Health care",
     });
   }
@@ -838,17 +828,17 @@ export function computeConsentCapacityManagement(
     });
   }
 
-  if (gillickEvidenceRate < 70 && totalGillickAssessments > 0) {
+  if (below(gillickEvidenceRate, 70) && totalGillickAssessments > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation:
         "Improve documentation of Gillick competence assessment evidence — assessors should record detailed rationale for competence decisions, including the factors considered, the child's responses, and the basis for the conclusion reached.",
-      urgency: gillickEvidenceRate < 50 ? "immediate" : "planned",
+      urgency: below(gillickEvidenceRate, 50) ? "immediate" : "planned",
       regulatory_ref: "CHR 2015 Reg 7 — Children's views",
     });
   }
 
-  if (accessibleFormatRate < 60 && totalConsentForms > 0) {
+  if (below(accessibleFormatRate, 60) && totalConsentForms > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation:
@@ -858,7 +848,7 @@ export function computeConsentCapacityManagement(
     });
   }
 
-  if (advocacyOfferedRate < 60 && totalCapacityReviews > 0) {
+  if (below(advocacyOfferedRate, 60) && totalCapacityReviews > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation:
@@ -868,12 +858,12 @@ export function computeConsentCapacityManagement(
     });
   }
 
-  if (risksExplainedRate < 70 && totalInformedConsents > 0) {
+  if (below(risksExplainedRate, 70) && totalInformedConsents > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation:
         "Ensure risks and benefits are consistently explained during informed consent processes — children and their representatives should receive balanced information that enables them to weigh up their options before making a decision.",
-      urgency: risksExplainedRate < 50 ? "soon" : "planned",
+      urgency: below(risksExplainedRate, 50) ? "soon" : "planned",
       regulatory_ref: "CHR 2015 Reg 14 — Health care",
     });
   }
@@ -903,21 +893,21 @@ export function computeConsentCapacityManagement(
   const insights: ConsentCapacityInsight[] = [];
 
   // Critical insights
-  if (consentCoverageRate < 50 && total_children > 0) {
+  if (below(consentCoverageRate, 50) && total_children > 0) {
     insights.push({
       text: `With consent form coverage at only ${consentCoverageRate}%, the majority of children's care activities may be proceeding without properly documented consent. This creates significant regulatory risk under Reg 5 and Reg 14, and fundamentally undermines the home's ability to evidence that care is delivered with proper authorisation. Immediate action is required to audit and complete all children's consent records.`,
       severity: "critical",
     });
   }
 
-  if (childUnderstandingRate < 40 && totalUnderstandingOpportunities > 0) {
+  if (below(childUnderstandingRate, 40) && totalUnderstandingOpportunities > 0) {
     insights.push({
       text: `Child understanding is verified in only ${childUnderstandingRate}% of consent and competence situations. Consent obtained without confirming the child's understanding cannot be considered genuinely informed. The SCCIF emphasises that children's views should be central to their care, and this requires that they truly understand the decisions being made. The home should implement structured comprehension checks as part of all consent processes.`,
       severity: "critical",
     });
   }
 
-  if (gillickAssessmentRate < 40 && total_children > 0 && totalGillickAssessments > 0) {
+  if (below(gillickAssessmentRate, 40) && total_children > 0 && totalGillickAssessments > 0) {
     insights.push({
       text: `Gillick competence assessment coverage stands at ${gillickAssessmentRate}%, meaning most children's capacity to make their own decisions has not been formally assessed. Without these assessments, the home cannot demonstrate that it recognises and respects children's evolving autonomy — a core expectation under Reg 7 and the SCCIF's focus on children's participation.`,
       severity: "critical",
@@ -932,14 +922,14 @@ export function computeConsentCapacityManagement(
   }
 
   // Warning insights
-  if (consentCoverageRate >= 50 && consentCoverageRate < 80 && total_children > 0) {
+  if (meets(consentCoverageRate, 50) && below(consentCoverageRate, 80) && total_children > 0) {
     insights.push({
       text: `Consent coverage at ${consentCoverageRate}% shows the home has established consent processes, but gaps remain. Until every child has comprehensive consent forms in place, some care activities may lack proper authorisation. Prioritise completing consent documentation for the remaining children.`,
       severity: "warning",
     });
   }
 
-  if (gillickEvidenceRate < 70 && gillickEvidenceRate >= 50 && totalGillickAssessments > 0) {
+  if (below(gillickEvidenceRate, 70) && meets(gillickEvidenceRate, 50) && totalGillickAssessments > 0) {
     insights.push({
       text: `Gillick evidence documentation at ${gillickEvidenceRate}% means some competence assessments lack the audit trail needed to justify decisions. If a competence determination is challenged — for example, by a parent or social worker — inadequate evidence could undermine the assessment. Strengthening documentation protects both the child and the home.`,
       severity: "warning",
@@ -960,14 +950,14 @@ export function computeConsentCapacityManagement(
     });
   }
 
-  if (infoAgeAppropriateRate < 70 && infoAgeAppropriateRate >= 40 && totalInformedConsents > 0) {
+  if (below(infoAgeAppropriateRate, 70) && meets(infoAgeAppropriateRate, 40) && totalInformedConsents > 0) {
     insights.push({
       text: `Age-appropriate information is provided in ${infoAgeAppropriateRate}% of informed consent cases. Children who do not receive information they can understand cannot give genuinely informed consent. The home should develop a range of age-appropriate and developmentally-appropriate information resources for different consent scenarios.`,
       severity: "warning",
     });
   }
 
-  if (advocacyOfferedRate < 50 && totalCapacityReviews > 0) {
+  if (below(advocacyOfferedRate, 50) && totalCapacityReviews > 0) {
     insights.push({
       text: `Advocacy is offered in only ${advocacyOfferedRate}% of capacity reviews. Children going through capacity assessment processes should routinely be offered advocacy to ensure they understand the process and can participate meaningfully. Low advocacy rates may indicate that children's voices are not being sufficiently prioritised.`,
       severity: "warning",
@@ -975,14 +965,14 @@ export function computeConsentCapacityManagement(
   }
 
   // Positive insights
-  if (consentCoverageRate >= 95 && gillickAssessmentRate >= 80 && total_children > 0) {
+  if (meets(consentCoverageRate, 95) && meets(gillickAssessmentRate, 80) && total_children > 0) {
     insights.push({
       text: `The combination of ${consentCoverageRate}% consent coverage and ${gillickAssessmentRate}% Gillick assessment coverage represents an exemplary approach to consent and capacity management. The home demonstrates that it takes children's consent rights seriously and actively assesses their evolving capacity — exactly the practice Ofsted looks for under Reg 7 and the SCCIF voice of the child standard.`,
       severity: "positive",
     });
   }
 
-  if (childUnderstandingRate >= 90 && totalUnderstandingOpportunities > 0) {
+  if (meets(childUnderstandingRate, 90) && totalUnderstandingOpportunities > 0) {
     insights.push({
       text: `Child understanding is verified in ${childUnderstandingRate}% of consent and competence situations — this demonstrates genuinely child-centred practice where consent goes beyond paperwork to ensure children truly understand and are empowered to make informed choices about their own care.`,
       severity: "positive",
@@ -996,7 +986,7 @@ export function computeConsentCapacityManagement(
     });
   }
 
-  if (bestInterestsRate >= 95 && reasonableAdjustmentsRate >= 80 && totalCapacityReviews > 0) {
+  if (meets(bestInterestsRate, 95) && meets(reasonableAdjustmentsRate, 80) && totalCapacityReviews > 0) {
     insights.push({
       text: `Best interests considerations at ${bestInterestsRate}% and reasonable adjustments at ${reasonableAdjustmentsRate}% in capacity reviews show the home takes a thorough, rights-based approach to capacity assessment — ensuring that where children lack capacity, their interests are protected and every effort is made to support their participation.`,
       severity: "positive",
@@ -1010,14 +1000,14 @@ export function computeConsentCapacityManagement(
     });
   }
 
-  if (interpreterProvisionRate >= 100 && interpreterNeeded > 0) {
+  if (meets(interpreterProvisionRate, 100) && interpreterNeeded > 0) {
     insights.push({
       text: "Interpreter provision stands at 100% where needed — the home ensures that language barriers never prevent children from giving or withholding genuine informed consent, demonstrating a commitment to equitable access to consent processes.",
       severity: "positive",
     });
   }
 
-  if (accessibleFormatRate >= 90 && totalConsentForms > 0) {
+  if (meets(accessibleFormatRate, 90) && totalConsentForms > 0) {
     insights.push({
       text: `${accessibleFormatRate}% of consent forms use accessible formats — the home demonstrates inclusive practice by ensuring consent materials are adapted to each child's communication needs, enabling meaningful participation in consent decisions.`,
       severity: "positive",

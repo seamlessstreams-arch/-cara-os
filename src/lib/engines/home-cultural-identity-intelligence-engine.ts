@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME CULTURAL IDENTITY & HERITAGE INTELLIGENCE ENGINE
 // Home-level: aggregates cultural identity plans, cultural visits,
@@ -78,7 +79,8 @@ export type CulturalIdentityRating =
 
 export interface IdentityPlanProfile {
   total_plans: number;
-  child_coverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_coverage: number | null;
   overdue_reviews: number;
   avg_identity_areas: number | null;
   child_contribution_rate: number | null;
@@ -93,7 +95,8 @@ export interface CulturalVisitProfile {
 
 export interface ReligiousObservanceProfile {
   total_records: number;
-  child_coverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_coverage: number | null;
   avg_practices_supported: number | null;
   child_authored_rate: number | null;
   overdue_reviews: number;
@@ -101,7 +104,8 @@ export interface ReligiousObservanceProfile {
 
 export interface HeritageLanguageProfile {
   total_records: number;
-  child_coverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_coverage: number | null;
   home_support_rate: number | null;
   child_voice_rate: number | null;
   overdue_reviews: number;
@@ -129,10 +133,6 @@ export interface HomeCulturalIdentityResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function daysBetween(a: string, b: string): number {
   return Math.round(
@@ -164,10 +164,10 @@ export function computeHomeCulturalIdentity(
       cultural_identity_rating: "insufficient_data",
       cultural_identity_score: 0,
       headline: "No cultural identity or heritage data available for analysis.",
-      identity_plans: { total_plans: 0, child_coverage: 0, overdue_reviews: 0, avg_identity_areas: 0, child_contribution_rate: null },
+      identity_plans: { total_plans: 0, child_coverage: null, overdue_reviews: 0, avg_identity_areas: 0, child_contribution_rate: null },
       cultural_visits: { total_visits_90d: 0, avg_children_per_visit: 0, learning_outcomes_rate: null, repeat_interest_rate: null },
-      religious_observance: { total_records: 0, child_coverage: 0, avg_practices_supported: 0, child_authored_rate: null, overdue_reviews: 0 },
-      heritage_language: { total_records: 0, child_coverage: 0, home_support_rate: null, child_voice_rate: null, overdue_reviews: 0 },
+      religious_observance: { total_records: 0, child_coverage: null, avg_practices_supported: 0, child_authored_rate: null, overdue_reviews: 0 },
+      heritage_language: { total_records: 0, child_coverage: null, home_support_rate: null, child_voice_rate: null, overdue_reviews: 0 },
       diversity_calendar: { total_events: 0, completed_rate: null, upcoming_count: 0 },
       strengths: [],
       concerns: [],
@@ -178,12 +178,12 @@ export function computeHomeCulturalIdentity(
 
   // ── Identity plan analysis ───────────────────────────────────────────
   const ipChildIds = new Set(cultural_identity_plans.map(p => p.child_id));
-  const ipCoverage = pct(ipChildIds.size, total_children);
+  const ipCoverage = rate(ipChildIds.size, total_children);
   const ipOverdue = cultural_identity_plans.filter(p => daysBetween(p.next_review, today) > 0).length;
   const ipAvgAreas = cultural_identity_plans.length > 0
     ? Math.round(cultural_identity_plans.reduce((s, p) => s + p.identity_areas_count, 0) / cultural_identity_plans.length)
     : null;
-  const ipContribRate = pct(
+  const ipContribRate = rate(
     cultural_identity_plans.filter(p => p.child_contributed).length,
     cultural_identity_plans.length,
   );
@@ -201,11 +201,11 @@ export function computeHomeCulturalIdentity(
   const cvAvgChildren = cv90.length > 0
     ? Math.round((cv90.reduce((s, v) => s + v.children_attended_count, 0) / cv90.length) * 10) / 10
     : null;
-  const cvLearningRate = pct(
+  const cvLearningRate = rate(
     cv90.filter(v => v.learning_outcomes_count > 0).length,
     cv90.length,
   );
-  const cvRepeatRate = pct(
+  const cvRepeatRate = rate(
     cv90.filter(v => v.repeat_visit_interest).length,
     cv90.length,
   );
@@ -219,11 +219,11 @@ export function computeHomeCulturalIdentity(
 
   // ── Religious observance analysis ────────────────────────────────────
   const roChildIds = new Set(religious_observance_records.map(r => r.child_id));
-  const roCoverage = pct(roChildIds.size, total_children);
+  const roCoverage = rate(roChildIds.size, total_children);
   const roAvgSupported = religious_observance_records.length > 0
     ? Math.round(religious_observance_records.reduce((s, r) => s + r.practices_supported_count, 0) / religious_observance_records.length)
     : null;
-  const roAuthoredRate = pct(
+  const roAuthoredRate = rate(
     religious_observance_records.filter(r => r.child_authored).length,
     religious_observance_records.length,
   );
@@ -239,12 +239,12 @@ export function computeHomeCulturalIdentity(
 
   // ── Heritage language analysis ───────────────────────────────────────
   const hlChildIds = new Set(heritage_language_records.map(r => r.child_id));
-  const hlCoverage = pct(hlChildIds.size, total_children);
-  const hlHomeRate = pct(
+  const hlCoverage = rate(hlChildIds.size, total_children);
+  const hlHomeRate = rate(
     heritage_language_records.filter(r => r.home_atmosphere_supports).length,
     heritage_language_records.length,
   );
-  const hlVoiceRate = pct(
+  const hlVoiceRate = rate(
     heritage_language_records.filter(r => r.child_voice_provided).length,
     heritage_language_records.length,
   );
@@ -260,7 +260,7 @@ export function computeHomeCulturalIdentity(
 
   // ── Diversity calendar analysis ──────────────────────────────────────
   const dcCompleted = diversity_calendar_events.filter(e => e.status === "completed").length;
-  const dcCompletedRate = pct(dcCompleted, diversity_calendar_events.length);
+  const dcCompletedRate = rate(dcCompleted, diversity_calendar_events.length);
   const dcUpcoming = diversity_calendar_events.filter(e =>
     e.status === "planned" && daysBetween(today, e.date) >= 0,
   ).length;
@@ -281,13 +281,13 @@ export function computeHomeCulturalIdentity(
   {
     let m = 0;
     if (cultural_identity_plans.length > 0) {
-      if (ipCoverage >= 90) m += 2;
-      else if (ipCoverage >= 60) m += 1;
+      if (meets(ipCoverage, 90)) m += 2;
+      else if (meets(ipCoverage, 60)) m += 1;
       else m -= 1;
 
-      if (ipContribRate >= 90) m += 2;
-      else if (ipContribRate >= 60) m += 1;
-      else if (ipContribRate < 30) m -= 2;
+      if (meets(ipContribRate, 90)) m += 2;
+      else if (meets(ipContribRate, 60)) m += 1;
+      else if (below(ipContribRate, 30)) m -= 2;
 
       if (ipOverdue === 0) m += 1;
       else if (ipOverdue >= 3) m -= 2;
@@ -305,10 +305,10 @@ export function computeHomeCulturalIdentity(
       else if (cv90.length >= 3) m += 1;
       else m -= 1;
 
-      if (cvLearningRate >= 80) m += 1;
-      else if (cvLearningRate < 30) m -= 1;
+      if (meets(cvLearningRate, 80)) m += 1;
+      else if (below(cvLearningRate, 30)) m -= 1;
 
-      if (cvRepeatRate >= 60) m += 1;
+      if (meets(cvRepeatRate, 60)) m += 1;
     } else {
       if (total_children >= 2) m -= 2;
     }
@@ -319,8 +319,8 @@ export function computeHomeCulturalIdentity(
   {
     let m = 0;
     if (religious_observance_records.length > 0) {
-      if (roAuthoredRate >= 80) m += 1;
-      else if (roAuthoredRate < 30) m -= 1;
+      if (meets(roAuthoredRate, 80)) m += 1;
+      else if (below(roAuthoredRate, 30)) m -= 1;
 
       if ((roAvgSupported ?? 0) >= 3) m += 1;
       else if ((roAvgSupported ?? 0) < 1) m -= 1;
@@ -336,12 +336,12 @@ export function computeHomeCulturalIdentity(
   {
     let m = 0;
     if (heritage_language_records.length > 0) {
-      if (hlHomeRate >= 80) m += 2;
-      else if (hlHomeRate >= 50) m += 1;
+      if (meets(hlHomeRate, 80)) m += 2;
+      else if (meets(hlHomeRate, 50)) m += 1;
       else m -= 1;
 
-      if (hlVoiceRate >= 80) m += 1;
-      else if (hlVoiceRate < 30) m -= 1;
+      if (meets(hlVoiceRate, 80)) m += 1;
+      else if (below(hlVoiceRate, 30)) m -= 1;
 
       if (hlOverdue === 0) m += 1;
       else if (hlOverdue >= 3) m -= 2;
@@ -354,9 +354,9 @@ export function computeHomeCulturalIdentity(
   {
     let m = 0;
     if (diversity_calendar_events.length > 0) {
-      if (dcCompletedRate >= 80) m += 2;
-      else if (dcCompletedRate >= 50) m += 1;
-      else if (dcCompletedRate < 20) m -= 1;
+      if (meets(dcCompletedRate, 80)) m += 2;
+      else if (meets(dcCompletedRate, 50)) m += 1;
+      else if (below(dcCompletedRate, 20)) m -= 1;
 
       if (dcUpcoming >= 2) m += 1;
     } else {
@@ -369,12 +369,12 @@ export function computeHomeCulturalIdentity(
   {
     let m = 0;
     const voiceSources: number[] = [];
-    if (cultural_identity_plans.length > 0) voiceSources.push(ipContribRate);
-    if (religious_observance_records.length > 0) voiceSources.push(roAuthoredRate);
-    if (heritage_language_records.length > 0) voiceSources.push(hlVoiceRate);
+    if (cultural_identity_plans.length > 0) voiceSources.push(ipContribRate!);
+    if (religious_observance_records.length > 0) voiceSources.push(roAuthoredRate!);
+    if (heritage_language_records.length > 0) voiceSources.push(hlVoiceRate!);
     if (cv90.length > 0) {
-      const cvCommentRate = pct(cv90.filter(v => v.child_comments_count > 0).length, cv90.length);
-      voiceSources.push(cvCommentRate);
+      const cvCommentRate = rate(cv90.filter(v => v.child_comments_count > 0).length, cv90.length);
+      voiceSources.push(cvCommentRate!);
     }
 
     if (voiceSources.length > 0) {
@@ -394,11 +394,11 @@ export function computeHomeCulturalIdentity(
     const totalReviewable = cultural_identity_plans.length + religious_observance_records.length + heritage_language_records.length;
 
     if (totalReviewable > 0) {
-      const overdueRate = pct(totalOverdue, totalReviewable);
+      const overdueRate = rate(totalOverdue, totalReviewable)!;
       if (overdueRate === 0) m += 3;
       else if (overdueRate <= 10) m += 2;
       else if (overdueRate <= 25) m += 1;
-      else if (overdueRate > 50) m -= 2;
+      else if (above(overdueRate, 50)) m -= 2;
     }
     score += Math.max(-3, Math.min(3, m));
   }
@@ -446,7 +446,7 @@ export function computeHomeCulturalIdentity(
   let rank = 0;
 
   // Identity plans
-  if (cultural_identity_plans.length > 0 && ipCoverage >= 90 && ipContribRate >= 90) {
+  if (cultural_identity_plans.length > 0 && meets(ipCoverage, 90) && meets(ipContribRate, 90)) {
     strengths.push(`Excellent cultural identity planning — ${ipCoverage}% coverage with ${ipContribRate}% child contribution.`);
   }
   if (cultural_identity_plans.length === 0 && total_children >= 2) {
@@ -459,7 +459,7 @@ export function computeHomeCulturalIdentity(
   }
 
   // Cultural visits
-  if (cv90.length >= 6 && cvLearningRate >= 80) {
+  if (cv90.length >= 6 && meets(cvLearningRate, 80)) {
     strengths.push(`Active cultural visit programme — ${cv90.length} visits in 90 days with ${cvLearningRate}% achieving learning outcomes.`);
   }
   if (cv90.length === 0 && total_children >= 2) {
@@ -468,7 +468,7 @@ export function computeHomeCulturalIdentity(
   }
 
   // Religious observance
-  if (religious_observance_records.length > 0 && roAuthoredRate >= 80) {
+  if (religious_observance_records.length > 0 && meets(roAuthoredRate, 80)) {
     strengths.push(`Strong child-authored religious observance records — ${roAuthoredRate}% child-led.`);
   }
   if (roOverdue >= 3) {
@@ -476,21 +476,21 @@ export function computeHomeCulturalIdentity(
   }
 
   // Heritage language
-  if (heritage_language_records.length > 0 && hlHomeRate >= 80 && hlVoiceRate >= 80) {
+  if (heritage_language_records.length > 0 && meets(hlHomeRate, 80) && meets(hlVoiceRate, 80)) {
     strengths.push("Excellent heritage language support — home actively supports language preservation with child voice captured.");
   }
-  if (heritage_language_records.length > 0 && hlHomeRate < 30) {
+  if (heritage_language_records.length > 0 && below(hlHomeRate, 30)) {
     concerns.push(`Low home atmosphere support for heritage languages — only ${hlHomeRate}% of records show active support.`);
     recommendations.push({ rank: ++rank, recommendation: "Review how the home environment can better support children's heritage languages.", urgency: "planned", regulatory_ref: "UNCRC Art 30" });
   }
 
   // Diversity calendar
-  if (diversity_calendar_events.length > 0 && dcCompletedRate >= 80) {
+  if (diversity_calendar_events.length > 0 && meets(dcCompletedRate, 80)) {
     strengths.push(`Strong diversity calendar engagement — ${dcCompletedRate}% of events completed.`);
   }
 
   // ── Cara Insights ────────────────────────────────────────────────────
-  if (cultural_identity_plans.length > 0 && ipCoverage < 50 && total_children >= 3) {
+  if (cultural_identity_plans.length > 0 && below(ipCoverage, 50) && total_children >= 3) {
     insights.push({ text: `Only ${ipCoverage}% of children have cultural identity plans — significant identity needs may be unmet.`, severity: "warning" });
   }
   if (heritage_language_records.length > 0) {
@@ -499,10 +499,10 @@ export function computeHomeCulturalIdentity(
       insights.push({ text: `${multiLang} children speak multiple heritage languages — ensure interpreting and community connection support.`, severity: "positive" });
     }
   }
-  if (religious_observance_records.length > 0 && roAuthoredRate >= 90) {
+  if (religious_observance_records.length > 0 && meets(roAuthoredRate, 90)) {
     insights.push({ text: "Outstanding child authorship of religious observance records — children are leading their own faith journey documentation.", severity: "positive" });
   }
-  if (cv90.length >= 4 && cvRepeatRate >= 60) {
+  if (cv90.length >= 4 && meets(cvRepeatRate, 60)) {
     insights.push({ text: "High repeat-visit interest suggests cultural visits are meaningful and valued by children.", severity: "positive" });
   }
 

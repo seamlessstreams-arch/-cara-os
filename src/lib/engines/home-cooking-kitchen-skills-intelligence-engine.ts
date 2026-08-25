@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME COOKING & KITCHEN SKILLS INTELLIGENCE ENGINE
 // Pure deterministic engine: cooking session participation, kitchen safety
@@ -169,10 +170,6 @@ export interface CookingKitchenResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -200,12 +197,12 @@ function emptyResult(
     total_meal_preparation_records: 0,
     total_nutritional_records: 0,
     total_independence_records: 0,
-    cooking_participation_rate: 0,
-    kitchen_safety_rate: 0,
-    meal_preparation_rate: 0,
-    nutritional_understanding_rate: 0,
-    independence_rate: 0,
-    child_enjoyment_rate: 0,
+    cooking_participation_rate: null,
+    kitchen_safety_rate: null,
+    meal_preparation_rate: null,
+    nutritional_understanding_rate: null,
+    independence_rate: null,
+    child_enjoyment_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -285,18 +282,18 @@ export function computeCookingKitchenSkills(
 
   const totalCookingSessions = cooking_session_records.length;
   const attendedSessions = cooking_session_records.filter((s) => s.attended).length;
-  const cookingParticipationRate = pct(attendedSessions, totalCookingSessions);
+  const cookingParticipationRate = rate(attendedSessions, totalCookingSessions);
 
   const engagedSessions = cooking_session_records.filter((s) => s.attended && s.engaged).length;
-  const cookingEngagementRate = pct(engagedSessions, totalCookingSessions);
+  const cookingEngagementRate = rate(engagedSessions, totalCookingSessions);
 
   const completedDishes = cooking_session_records.filter((s) => s.attended && s.completed_dish).length;
-  const dishCompletionRate = pct(completedDishes, totalCookingSessions);
+  const dishCompletionRate = rate(completedDishes, totalCookingSessions);
 
   const enjoyedSessions = cooking_session_records.filter((s) => s.attended && s.child_enjoyed).length;
 
   const choseRecipeSessions = cooking_session_records.filter((s) => s.attended && s.child_chose_recipe).length;
-  const recipeChoiceRate = pct(choseRecipeSessions, totalCookingSessions);
+  const recipeChoiceRate = rate(choseRecipeSessions, totalCookingSessions);
 
   // Dish category variety
   const uniqueDishCategories = new Set(
@@ -307,7 +304,7 @@ export function computeCookingKitchenSkills(
   const uniqueChildrenCooking = new Set(
     cooking_session_records.filter((s) => s.attended).map((s) => s.child_id),
   ).size;
-  const cookingChildCoverage = total_children > 0 ? pct(uniqueChildrenCooking, total_children) : 0;
+  const cookingChildCoverage = total_children > 0 ? rate(uniqueChildrenCooking, total_children) : 0;
 
   // Skills practised diversity
   const allSkillsPractised = new Set<string>();
@@ -325,25 +322,25 @@ export function computeCookingKitchenSkills(
 
   const totalKitchenSafetyRecords = kitchen_safety_records.length;
   const overallSafe = kitchen_safety_records.filter((k) => k.overall_safe).length;
-  const kitchenSafetyRate = pct(overallSafe, totalKitchenSafetyRecords);
+  const kitchenSafetyRate = rate(overallSafe, totalKitchenSafetyRecords);
 
   const foodHygiene = kitchen_safety_records.filter((k) => k.food_hygiene_compliant).length;
-  const foodHygieneRate = pct(foodHygiene, totalKitchenSafetyRecords);
+  const foodHygieneRate = rate(foodHygiene, totalKitchenSafetyRecords);
 
   const crossContamAware = kitchen_safety_records.filter((k) => k.allergies_cross_contamination_aware).length;
-  const crossContaminationRate = pct(crossContamAware, totalKitchenSafetyRecords);
+  const crossContaminationRate = rate(crossContamAware, totalKitchenSafetyRecords);
 
   const riskAssessmentDone = kitchen_safety_records.filter((k) => k.risk_assessment_completed).length;
-  const riskAssessmentRate = pct(riskAssessmentDone, totalKitchenSafetyRecords);
+  const riskAssessmentRate = rate(riskAssessmentDone, totalKitchenSafetyRecords);
 
   const incidentsReported = kitchen_safety_records.filter((k) => k.incident_reported).length;
-  const incidentRate = pct(incidentsReported, totalKitchenSafetyRecords);
+  const incidentRate = rate(incidentsReported, totalKitchenSafetyRecords);
 
   // Unique children assessed for safety
   const uniqueChildrenSafety = new Set(
     kitchen_safety_records.map((k) => k.child_id),
   ).size;
-  const safetyChildCoverage = total_children > 0 ? pct(uniqueChildrenSafety, total_children) : 0;
+  const safetyChildCoverage = total_children > 0 ? rate(uniqueChildrenSafety, total_children) : 0;
 
   // ══════════════════════════════════════════════════════════════════════════
   // MEAL PREPARATION METRICS
@@ -355,7 +352,7 @@ export function computeCookingKitchenSkills(
   const independentMealPrep = meal_preparation_records.filter(
     (m) => m.competency_level === "independent" || m.competency_level === "can_teach",
   ).length;
-  const mealPrepIndependenceRate = pct(independentMealPrep, totalMealPrepRecords);
+  const mealPrepIndependenceRate = rate(independentMealPrep, totalMealPrepRecords);
 
   const assistedOrAbove = meal_preparation_records.filter(
     (m) =>
@@ -364,13 +361,13 @@ export function computeCookingKitchenSkills(
       m.competency_level === "independent" ||
       m.competency_level === "can_teach",
   ).length;
-  const mealPreparationRate = pct(assistedOrAbove, totalMealPrepRecords);
+  const mealPreparationRate = rate(assistedOrAbove, totalMealPrepRecords);
 
   const portionAppropriate = meal_preparation_records.filter((m) => m.portion_appropriate).length;
-  const portionRate = pct(portionAppropriate, totalMealPrepRecords);
+  const portionRate = rate(portionAppropriate, totalMealPrepRecords);
 
   const wasteMinimal = meal_preparation_records.filter((m) => m.waste_minimal).length;
-  const wasteMinimalRate = pct(wasteMinimal, totalMealPrepRecords);
+  const wasteMinimalRate = rate(wasteMinimal, totalMealPrepRecords);
 
   const staffScoreSum = meal_preparation_records.reduce((sum, m) => sum + (m.staff_assessment_score ?? 0), 0);
   const avgStaffScore = totalMealPrepRecords > 0
@@ -378,7 +375,7 @@ export function computeCookingKitchenSkills(
     : null;
 
   const declined = meal_preparation_records.filter((m) => m.progression_from_last === "declined").length;
-  const declineRate = pct(declined, totalMealPrepRecords);
+  const declineRate = rate(declined, totalMealPrepRecords);
 
   // ══════════════════════════════════════════════════════════════════════════
   // NUTRITIONAL UNDERSTANDING METRICS
@@ -389,12 +386,12 @@ export function computeCookingKitchenSkills(
   const demonstratedUnderstanding = nutritional_understanding_records.filter(
     (n) => n.understanding_demonstrated,
   ).length;
-  const nutritionalUnderstandingRate = pct(demonstratedUnderstanding, totalNutritionalRecords);
+  const nutritionalUnderstandingRate = rate(demonstratedUnderstanding, totalNutritionalRecords);
 
   const canApplyKnowledge = nutritional_understanding_records.filter(
     (n) => n.understanding_demonstrated && n.can_apply_knowledge,
   ).length;
-  const applicationRate = pct(canApplyKnowledge, totalNutritionalRecords);
+  const applicationRate = rate(canApplyKnowledge, totalNutritionalRecords);
 
   const nutritionalPositive = nutritional_understanding_records.filter(
     (n) => n.engaged && n.child_feedback_positive,
@@ -403,7 +400,7 @@ export function computeCookingKitchenSkills(
   const linkedToCooking = nutritional_understanding_records.filter(
     (n) => n.linked_to_cooking_session,
   ).length;
-  const linkedToCookingRate = pct(linkedToCooking, totalNutritionalRecords);
+  const linkedToCookingRate = rate(linkedToCooking, totalNutritionalRecords);
 
   // Topic variety
   const uniqueTopics = new Set(nutritional_understanding_records.map((n) => n.topic)).size;
@@ -417,13 +414,13 @@ export function computeCookingKitchenSkills(
   const mostlyOrFullyIndependent = independence_records.filter(
     (r) => r.current_level === "mostly_independent" || r.current_level === "fully_independent",
   ).length;
-  const independenceRate = pct(mostlyOrFullyIndependent, totalIndependenceRecords);
+  const independenceRate = rate(mostlyOrFullyIndependent, totalIndependenceRecords);
 
   const goalsSet = independence_records.filter((r) => r.goal_set).length;
-  const goalSettingRate = pct(goalsSet, totalIndependenceRecords);
+  const goalSettingRate = rate(goalsSet, totalIndependenceRecords);
 
   const goalsMet = independence_records.filter((r) => r.goal_set && r.goal_met).length;
-  const goalAchievementRate = pct(goalsMet, goalsSet);
+  const goalAchievementRate = rate(goalsMet, goalsSet);
 
   const significantProgress = independence_records.filter(
     (r) => r.progress_since_last === "significant_progress",
@@ -434,21 +431,21 @@ export function computeCookingKitchenSkills(
   const indDeclined = independence_records.filter(
     (r) => r.progress_since_last === "declined",
   ).length;
-  const progressMakingRate = pct(significantProgress + someProgress, totalIndependenceRecords);
-  const indDeclineRate = pct(indDeclined, totalIndependenceRecords);
+  const progressMakingRate = rate(significantProgress + someProgress, totalIndependenceRecords);
+  const indDeclineRate = rate(indDeclined, totalIndependenceRecords);
 
   const childMotivated = independence_records.filter((r) => r.child_motivated).length;
 
   const supportPlan = independence_records.filter((r) => r.support_plan_in_place).length;
-  const supportPlanRate = pct(supportPlan, totalIndependenceRecords);
+  const supportPlanRate = rate(supportPlan, totalIndependenceRecords);
 
   const transitionRelevant = independence_records.filter((r) => r.transition_relevance).length;
-  const transitionRelevanceRate = pct(transitionRelevant, totalIndependenceRecords);
+  const transitionRelevanceRate = rate(transitionRelevant, totalIndependenceRecords);
 
   const recordsWithBarriers = independence_records.filter(
     (r) => r.barriers_identified.length > 0,
   ).length;
-  const barriersRate = pct(recordsWithBarriers, totalIndependenceRecords);
+  const barriersRate = rate(recordsWithBarriers, totalIndependenceRecords);
 
   // ══════════════════════════════════════════════════════════════════════════
   // COMPOSITE CHILD ENJOYMENT RATE
@@ -473,7 +470,7 @@ export function computeCookingKitchenSkills(
 
   const totalEnjoymentNum = enjoymentNumerators.reduce((a, b) => a + b, 0);
   const totalEnjoymentDenom = enjoymentDenominators.reduce((a, b) => a + b, 0);
-  const compositeEnjoymentRate = pct(totalEnjoymentNum, totalEnjoymentDenom);
+  const compositeEnjoymentRate = rate(totalEnjoymentNum, totalEnjoymentDenom);
 
   // ══════════════════════════════════════════════════════════════════════════
   // SCORING: base = 52, max bonuses = +28, 4 penalties guarded by length > 0
@@ -482,36 +479,36 @@ export function computeCookingKitchenSkills(
   let score = 52;
 
   // --- Bonus 1: cookingParticipationRate (>=90: +4, >=70: +2) ---
-  if (cookingParticipationRate >= 90) score += 4;
-  else if (cookingParticipationRate >= 70) score += 2;
+  if (meets(cookingParticipationRate, 90)) score += 4;
+  else if (meets(cookingParticipationRate, 70)) score += 2;
 
   // --- Bonus 2: kitchenSafetyRate (>=95: +4, >=80: +2) ---
-  if (kitchenSafetyRate >= 95) score += 4;
-  else if (kitchenSafetyRate >= 80) score += 2;
+  if (meets(kitchenSafetyRate, 95)) score += 4;
+  else if (meets(kitchenSafetyRate, 80)) score += 2;
 
   // --- Bonus 3: mealPreparationRate (>=90: +4, >=70: +2) ---
-  if (mealPreparationRate >= 90) score += 4;
-  else if (mealPreparationRate >= 70) score += 2;
+  if (meets(mealPreparationRate, 90)) score += 4;
+  else if (meets(mealPreparationRate, 70)) score += 2;
 
   // --- Bonus 4: nutritionalUnderstandingRate (>=90: +3, >=70: +1) ---
-  if (nutritionalUnderstandingRate >= 90) score += 3;
-  else if (nutritionalUnderstandingRate >= 70) score += 1;
+  if (meets(nutritionalUnderstandingRate, 90)) score += 3;
+  else if (meets(nutritionalUnderstandingRate, 70)) score += 1;
 
   // --- Bonus 5: independenceRate (>=80: +3, >=60: +1) ---
-  if (independenceRate >= 80) score += 3;
-  else if (independenceRate >= 60) score += 1;
+  if (meets(independenceRate, 80)) score += 3;
+  else if (meets(independenceRate, 60)) score += 1;
 
   // --- Bonus 6: compositeEnjoymentRate (>=90: +3, >=70: +1) ---
-  if (compositeEnjoymentRate >= 90) score += 3;
-  else if (compositeEnjoymentRate >= 70) score += 1;
+  if (meets(compositeEnjoymentRate, 90)) score += 3;
+  else if (meets(compositeEnjoymentRate, 70)) score += 1;
 
   // --- Bonus 7: progressMakingRate (>=80: +3, >=60: +1) ---
-  if (progressMakingRate >= 80) score += 3;
-  else if (progressMakingRate >= 60) score += 1;
+  if (meets(progressMakingRate, 80)) score += 3;
+  else if (meets(progressMakingRate, 60)) score += 1;
 
   // --- Bonus 8: goalAchievementRate (>=80: +2, >=60: +1) ---
-  if (goalAchievementRate >= 80) score += 2;
-  else if (goalAchievementRate >= 60) score += 1;
+  if (meets(goalAchievementRate, 80)) score += 2;
+  else if (meets(goalAchievementRate, 60)) score += 1;
 
   // --- Bonus 9: avgStaffScore (>=4.0: +2, >=3.0: +1) ---
   if ((avgStaffScore ?? 0) >= 4.0) score += 2;
@@ -520,16 +517,16 @@ export function computeCookingKitchenSkills(
   // ── Penalties (4 penalties, all guarded by array.length > 0) ──────────
 
   // Penalty 1: kitchenSafetyRate < 50 → -5 (guarded)
-  if (kitchenSafetyRate < 50 && kitchen_safety_records.length > 0) score -= 5;
+  if (below(kitchenSafetyRate, 50) && kitchen_safety_records.length > 0) score -= 5;
 
   // Penalty 2: cookingParticipationRate < 40 → -5 (guarded)
-  if (cookingParticipationRate < 40 && cooking_session_records.length > 0) score -= 5;
+  if (below(cookingParticipationRate, 40) && cooking_session_records.length > 0) score -= 5;
 
   // Penalty 3: nutritionalUnderstandingRate < 30 → -4 (guarded)
-  if (nutritionalUnderstandingRate < 30 && nutritional_understanding_records.length > 0) score -= 4;
+  if (below(nutritionalUnderstandingRate, 30) && nutritional_understanding_records.length > 0) score -= 4;
 
   // Penalty 4: independenceRate < 20 → -4 (guarded)
-  if (independenceRate < 20 && independence_records.length > 0) score -= 4;
+  if (below(independenceRate, 20) && independence_records.length > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -542,88 +539,88 @@ export function computeCookingKitchenSkills(
   const strengths: string[] = [];
 
   // Cooking participation strengths
-  if (cookingParticipationRate >= 90 && totalCookingSessions > 0) {
+  if (meets(cookingParticipationRate, 90) && totalCookingSessions > 0) {
     strengths.push(
       `${cookingParticipationRate}% cooking session participation — children are consistently attending and taking part in cooking activities, demonstrating strong engagement with kitchen skills development.`,
     );
-  } else if (cookingParticipationRate >= 70 && totalCookingSessions > 0) {
+  } else if (meets(cookingParticipationRate, 70) && totalCookingSessions > 0) {
     strengths.push(
       `${cookingParticipationRate}% cooking session participation rate — good levels of children's involvement in cooking activities across the home.`,
     );
   }
 
   // Kitchen safety strengths
-  if (kitchenSafetyRate >= 95 && totalKitchenSafetyRecords > 0) {
+  if (meets(kitchenSafetyRate, 95) && totalKitchenSafetyRecords > 0) {
     strengths.push(
       `${kitchenSafetyRate}% kitchen safety compliance — children demonstrate excellent safety awareness and competence in the kitchen environment.`,
     );
-  } else if (kitchenSafetyRate >= 80 && totalKitchenSafetyRecords > 0) {
+  } else if (meets(kitchenSafetyRate, 80) && totalKitchenSafetyRecords > 0) {
     strengths.push(
       `${kitchenSafetyRate}% kitchen safety compliance rate — strong safety standards are being maintained across kitchen activities.`,
     );
   }
 
   // Meal preparation strengths
-  if (mealPreparationRate >= 90 && totalMealPrepRecords > 0) {
+  if (meets(mealPreparationRate, 90) && totalMealPrepRecords > 0) {
     strengths.push(
       `${mealPreparationRate}% of children are at assisted level or above in meal preparation — children are actively developing practical cooking competencies.`,
     );
-  } else if (mealPreparationRate >= 70 && totalMealPrepRecords > 0) {
+  } else if (meets(mealPreparationRate, 70) && totalMealPrepRecords > 0) {
     strengths.push(
       `${mealPreparationRate}% meal preparation competency rate — the majority of children are progressing well through cooking skill levels.`,
     );
   }
 
   // Nutritional understanding strengths
-  if (nutritionalUnderstandingRate >= 90 && totalNutritionalRecords > 0) {
+  if (meets(nutritionalUnderstandingRate, 90) && totalNutritionalRecords > 0) {
     strengths.push(
       `${nutritionalUnderstandingRate}% nutritional understanding demonstrated — children have an excellent grasp of nutrition, healthy eating, and dietary awareness.`,
     );
-  } else if (nutritionalUnderstandingRate >= 70 && totalNutritionalRecords > 0) {
+  } else if (meets(nutritionalUnderstandingRate, 70) && totalNutritionalRecords > 0) {
     strengths.push(
       `${nutritionalUnderstandingRate}% nutritional understanding rate — good levels of children's knowledge about nutrition and healthy eating.`,
     );
   }
 
   // Independence strengths
-  if (independenceRate >= 80 && totalIndependenceRecords > 0) {
+  if (meets(independenceRate, 80) && totalIndependenceRecords > 0) {
     strengths.push(
       `${independenceRate}% of children are mostly or fully independent in cooking-related tasks — outstanding progress in building self-sufficiency and life skills.`,
     );
-  } else if (independenceRate >= 60 && totalIndependenceRecords > 0) {
+  } else if (meets(independenceRate, 60) && totalIndependenceRecords > 0) {
     strengths.push(
       `${independenceRate}% independence rate in cooking tasks — good progress toward children managing food preparation with minimal support.`,
     );
   }
 
   // Enjoyment strengths
-  if (compositeEnjoymentRate >= 90 && totalEnjoymentDenom > 0) {
+  if (meets(compositeEnjoymentRate, 90) && totalEnjoymentDenom > 0) {
     strengths.push(
       `${compositeEnjoymentRate}% child enjoyment across cooking activities — children genuinely enjoy their cooking experiences, supporting sustained engagement and skill development.`,
     );
-  } else if (compositeEnjoymentRate >= 70 && totalEnjoymentDenom > 0) {
+  } else if (meets(compositeEnjoymentRate, 70) && totalEnjoymentDenom > 0) {
     strengths.push(
       `${compositeEnjoymentRate}% child enjoyment rate — the majority of children find cooking activities enjoyable and motivating.`,
     );
   }
 
   // Progression strengths
-  if (progressMakingRate >= 80 && totalIndependenceRecords > 0) {
+  if (meets(progressMakingRate, 80) && totalIndependenceRecords > 0) {
     strengths.push(
       `${progressMakingRate}% of children are making progress in cooking independence — clear skill development trajectories are being supported.`,
     );
-  } else if (progressMakingRate >= 60 && totalIndependenceRecords > 0) {
+  } else if (meets(progressMakingRate, 60) && totalIndependenceRecords > 0) {
     strengths.push(
       `${progressMakingRate}% of children showing progress in cooking independence — the majority are developing their skills over time.`,
     );
   }
 
   // Goal achievement strengths
-  if (goalAchievementRate >= 80 && goalsSet > 0) {
+  if (meets(goalAchievementRate, 80) && goalsSet > 0) {
     strengths.push(
       `${goalAchievementRate}% of cooking independence goals achieved — children are meeting their personalised targets for kitchen skills development.`,
     );
-  } else if (goalAchievementRate >= 60 && goalsSet > 0) {
+  } else if (meets(goalAchievementRate, 60) && goalsSet > 0) {
     strengths.push(
       `${goalAchievementRate}% goal achievement rate — the majority of cooking independence goals are being met.`,
     );
@@ -641,39 +638,39 @@ export function computeCookingKitchenSkills(
   }
 
   // Child coverage strengths
-  if (cookingChildCoverage >= 100 && total_children > 0) {
+  if (meets(cookingChildCoverage, 100) && total_children > 0) {
     strengths.push(
       "Every child has participated in cooking sessions — cooking skills development is inclusive and accessible to all children in the home.",
     );
-  } else if (cookingChildCoverage >= 80 && total_children > 0) {
+  } else if (meets(cookingChildCoverage, 80) && total_children > 0) {
     strengths.push(
       `${cookingChildCoverage}% of children have participated in cooking sessions — strong coverage ensuring most children are developing kitchen skills.`,
     );
   }
 
   // Food hygiene strengths
-  if (foodHygieneRate >= 95 && totalKitchenSafetyRecords > 0) {
+  if (meets(foodHygieneRate, 95) && totalKitchenSafetyRecords > 0) {
     strengths.push(
       `${foodHygieneRate}% food hygiene compliance — children demonstrate excellent food hygiene practices in the kitchen.`,
     );
   }
 
   // Cross-contamination awareness strengths
-  if (crossContaminationRate >= 90 && totalKitchenSafetyRecords > 0) {
+  if (meets(crossContaminationRate, 90) && totalKitchenSafetyRecords > 0) {
     strengths.push(
       `${crossContaminationRate}% cross-contamination awareness — children understand allergen management and safe food handling to protect themselves and others.`,
     );
   }
 
   // Dish completion strengths
-  if (dishCompletionRate >= 90 && totalCookingSessions > 0) {
+  if (meets(dishCompletionRate, 90) && totalCookingSessions > 0) {
     strengths.push(
       `${dishCompletionRate}% dish completion rate — children consistently complete their cooking tasks, building confidence and a sense of achievement.`,
     );
   }
 
   // Recipe choice strengths
-  if (recipeChoiceRate >= 70 && totalCookingSessions > 0) {
+  if (meets(recipeChoiceRate, 70) && totalCookingSessions > 0) {
     strengths.push(
       `${recipeChoiceRate}% of sessions where the child chose the recipe — children's voice and choice are embedded in cooking activities.`,
     );
@@ -687,14 +684,14 @@ export function computeCookingKitchenSkills(
   }
 
   // Transition relevance strengths
-  if (transitionRelevanceRate >= 80 && totalIndependenceRecords > 0) {
+  if (meets(transitionRelevanceRate, 80) && totalIndependenceRecords > 0) {
     strengths.push(
       `${transitionRelevanceRate}% of independence assessments are transition-relevant — cooking skills development is actively supporting children's preparation for independent living.`,
     );
   }
 
   // Nutritional application strengths
-  if (applicationRate >= 80 && totalNutritionalRecords > 0) {
+  if (meets(applicationRate, 80) && totalNutritionalRecords > 0) {
     strengths.push(
       `${applicationRate}% of children can apply their nutritional knowledge practically — understanding is translating into real dietary choices and cooking decisions.`,
     );
@@ -708,14 +705,14 @@ export function computeCookingKitchenSkills(
   }
 
   // Risk assessment strengths
-  if (riskAssessmentRate >= 90 && totalKitchenSafetyRecords > 0) {
+  if (meets(riskAssessmentRate, 90) && totalKitchenSafetyRecords > 0) {
     strengths.push(
       `${riskAssessmentRate}% of kitchen safety records have completed risk assessments — robust risk management is embedded in cooking activities.`,
     );
   }
 
   // Waste minimal strengths
-  if (wasteMinimalRate >= 80 && totalMealPrepRecords > 0) {
+  if (meets(wasteMinimalRate, 80) && totalMealPrepRecords > 0) {
     strengths.push(
       `${wasteMinimalRate}% of meal preparations demonstrate minimal food waste — children are learning to cook efficiently and sustainably.`,
     );
@@ -728,125 +725,125 @@ export function computeCookingKitchenSkills(
   const concerns: string[] = [];
 
   // Cooking participation concerns
-  if (cookingParticipationRate < 40 && totalCookingSessions > 0) {
+  if (below(cookingParticipationRate, 40) && totalCookingSessions > 0) {
     concerns.push(
       `Only ${cookingParticipationRate}% cooking session participation — the majority of children are not attending cooking sessions, undermining their development of essential life skills.`,
     );
-  } else if (cookingParticipationRate < 70 && cookingParticipationRate >= 40 && totalCookingSessions > 0) {
+  } else if (below(cookingParticipationRate, 70) && meets(cookingParticipationRate, 40) && totalCookingSessions > 0) {
     concerns.push(
       `Cooking session participation at ${cookingParticipationRate}% — not all children are regularly taking part in cooking activities.`,
     );
   }
 
   // Kitchen safety concerns
-  if (kitchenSafetyRate < 50 && totalKitchenSafetyRecords > 0) {
+  if (below(kitchenSafetyRate, 50) && totalKitchenSafetyRecords > 0) {
     concerns.push(
       `Only ${kitchenSafetyRate}% kitchen safety compliance — the majority of safety assessments show non-compliance, indicating a serious risk to children's safety in the kitchen.`,
     );
-  } else if (kitchenSafetyRate < 80 && kitchenSafetyRate >= 50 && totalKitchenSafetyRecords > 0) {
+  } else if (below(kitchenSafetyRate, 80) && meets(kitchenSafetyRate, 50) && totalKitchenSafetyRecords > 0) {
     concerns.push(
       `Kitchen safety compliance at ${kitchenSafetyRate}% — inconsistent safety practices in the kitchen require attention to protect children.`,
     );
   }
 
   // Meal preparation concerns
-  if (mealPreparationRate < 40 && totalMealPrepRecords > 0) {
+  if (below(mealPreparationRate, 40) && totalMealPrepRecords > 0) {
     concerns.push(
       `Only ${mealPreparationRate}% of children at assisted level or above in meal preparation — the majority remain at observation or not-introduced level, indicating insufficient opportunity to develop practical cooking skills.`,
     );
-  } else if (mealPreparationRate < 70 && mealPreparationRate >= 40 && totalMealPrepRecords > 0) {
+  } else if (below(mealPreparationRate, 70) && meets(mealPreparationRate, 40) && totalMealPrepRecords > 0) {
     concerns.push(
       `Meal preparation competency at ${mealPreparationRate}% — not all children are progressing through cooking skill levels at the expected rate.`,
     );
   }
 
   // Nutritional understanding concerns
-  if (nutritionalUnderstandingRate < 30 && totalNutritionalRecords > 0) {
+  if (below(nutritionalUnderstandingRate, 30) && totalNutritionalRecords > 0) {
     concerns.push(
       `Only ${nutritionalUnderstandingRate}% of children demonstrate nutritional understanding — the majority lack basic knowledge about nutrition, healthy eating, and dietary awareness.`,
     );
-  } else if (nutritionalUnderstandingRate < 70 && nutritionalUnderstandingRate >= 30 && totalNutritionalRecords > 0) {
+  } else if (below(nutritionalUnderstandingRate, 70) && meets(nutritionalUnderstandingRate, 30) && totalNutritionalRecords > 0) {
     concerns.push(
       `Nutritional understanding at ${nutritionalUnderstandingRate}% — not all children are developing adequate knowledge about nutrition and healthy eating.`,
     );
   }
 
   // Independence concerns
-  if (independenceRate < 20 && totalIndependenceRecords > 0) {
+  if (below(independenceRate, 20) && totalIndependenceRecords > 0) {
     concerns.push(
       `Only ${independenceRate}% of children are mostly or fully independent in cooking tasks — the vast majority remain dependent on staff support, limiting their preparation for independent living.`,
     );
-  } else if (independenceRate < 60 && independenceRate >= 20 && totalIndependenceRecords > 0) {
+  } else if (below(independenceRate, 60) && meets(independenceRate, 20) && totalIndependenceRecords > 0) {
     concerns.push(
       `Cooking independence rate at ${independenceRate}% — many children still require significant support with cooking-related tasks.`,
     );
   }
 
   // Enjoyment concerns
-  if (compositeEnjoymentRate < 40 && totalEnjoymentDenom > 0) {
+  if (below(compositeEnjoymentRate, 40) && totalEnjoymentDenom > 0) {
     concerns.push(
       `Only ${compositeEnjoymentRate}% child enjoyment across cooking activities — the majority of children are not finding cooking activities enjoyable, which may indicate poorly designed or inaccessible sessions.`,
     );
-  } else if (compositeEnjoymentRate < 70 && compositeEnjoymentRate >= 40 && totalEnjoymentDenom > 0) {
+  } else if (below(compositeEnjoymentRate, 70) && meets(compositeEnjoymentRate, 40) && totalEnjoymentDenom > 0) {
     concerns.push(
       `Child enjoyment in cooking activities at ${compositeEnjoymentRate}% — not all children are finding cooking activities motivating or enjoyable.`,
     );
   }
 
   // Incident concern
-  if (incidentRate >= 20 && totalKitchenSafetyRecords > 0) {
+  if (meets(incidentRate, 20) && totalKitchenSafetyRecords > 0) {
     concerns.push(
       `Kitchen incidents reported in ${incidentRate}% of safety records — a high rate of incidents indicates safety protocols may be inadequate or supervision insufficient.`,
     );
-  } else if (incidentRate >= 10 && incidentRate < 20 && totalKitchenSafetyRecords > 0) {
+  } else if (meets(incidentRate, 10) && below(incidentRate, 20) && totalKitchenSafetyRecords > 0) {
     concerns.push(
       `Kitchen incidents reported in ${incidentRate}% of safety records — while not critical, the incident rate should be monitored and addressed through targeted safety training.`,
     );
   }
 
   // Decline concern
-  if (declineRate >= 20 && totalMealPrepRecords > 0) {
+  if (meets(declineRate, 20) && totalMealPrepRecords > 0) {
     concerns.push(
       `${declineRate}% of meal preparation assessments show declining skills — some children's cooking abilities are regressing, suggesting insufficient practice or changing circumstances.`,
     );
   }
 
-  if (indDeclineRate >= 20 && totalIndependenceRecords > 0) {
+  if (meets(indDeclineRate, 20) && totalIndependenceRecords > 0) {
     concerns.push(
       `${indDeclineRate}% of independence assessments show declining progress — some children are losing cooking independence, which may indicate disengagement or inadequate support.`,
     );
   }
 
   // Child coverage concerns
-  if (cookingChildCoverage < 50 && total_children > 0 && totalCookingSessions > 0) {
+  if (below(cookingChildCoverage, 50) && total_children > 0 && totalCookingSessions > 0) {
     concerns.push(
       `Only ${cookingChildCoverage}% of children have participated in cooking sessions — many children are missing out on essential kitchen skills development.`,
     );
   }
 
   // Safety coverage concerns
-  if (safetyChildCoverage < 50 && total_children > 0 && totalKitchenSafetyRecords > 0) {
+  if (below(safetyChildCoverage, 50) && total_children > 0 && totalKitchenSafetyRecords > 0) {
     concerns.push(
       `Only ${safetyChildCoverage}% of children have kitchen safety assessments — many children have not been formally assessed for kitchen safety competence.`,
     );
   }
 
   // Food hygiene concerns
-  if (foodHygieneRate < 60 && totalKitchenSafetyRecords > 0) {
+  if (below(foodHygieneRate, 60) && totalKitchenSafetyRecords > 0) {
     concerns.push(
       `Food hygiene compliance at only ${foodHygieneRate}% — poor food hygiene practices in the kitchen pose a direct risk to children's health.`,
     );
   }
 
   // Cross-contamination concerns
-  if (crossContaminationRate < 50 && totalKitchenSafetyRecords > 0) {
+  if (below(crossContaminationRate, 50) && totalKitchenSafetyRecords > 0) {
     concerns.push(
       `Only ${crossContaminationRate}% cross-contamination awareness — the majority of children do not demonstrate adequate understanding of allergen management and cross-contamination risks.`,
     );
   }
 
   // Risk assessment concerns
-  if (riskAssessmentRate < 50 && totalKitchenSafetyRecords > 0) {
+  if (below(riskAssessmentRate, 50) && totalKitchenSafetyRecords > 0) {
     concerns.push(
       `Only ${riskAssessmentRate}% of kitchen safety records have completed risk assessments — cooking activities are taking place without adequate risk management.`,
     );
@@ -881,14 +878,14 @@ export function computeCookingKitchenSkills(
   }
 
   // Goal setting concerns
-  if (goalSettingRate < 50 && totalIndependenceRecords > 0) {
+  if (below(goalSettingRate, 50) && totalIndependenceRecords > 0) {
     concerns.push(
       `Only ${goalSettingRate}% of independence records have goals set — personalised targets for cooking independence are not being established for most children.`,
     );
   }
 
   // Barriers concern
-  if (barriersRate >= 50 && totalIndependenceRecords > 0 && supportPlanRate < 50) {
+  if (meets(barriersRate, 50) && totalIndependenceRecords > 0 && below(supportPlanRate, 50)) {
     concerns.push(
       `${barriersRate}% of independence records identify barriers but only ${supportPlanRate}% have support plans in place — identified barriers to cooking independence are not being addressed with structured support.`,
     );
@@ -901,7 +898,7 @@ export function computeCookingKitchenSkills(
   const recommendations: CookingKitchenRecommendation[] = [];
   let rank = 0;
 
-  if (kitchenSafetyRate < 50 && totalKitchenSafetyRecords > 0) {
+  if (below(kitchenSafetyRate, 50) && totalKitchenSafetyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -911,7 +908,7 @@ export function computeCookingKitchenSkills(
     });
   }
 
-  if (cookingParticipationRate < 40 && totalCookingSessions > 0) {
+  if (below(cookingParticipationRate, 40) && totalCookingSessions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -921,7 +918,7 @@ export function computeCookingKitchenSkills(
     });
   }
 
-  if (nutritionalUnderstandingRate < 30 && totalNutritionalRecords > 0) {
+  if (below(nutritionalUnderstandingRate, 30) && totalNutritionalRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -931,7 +928,7 @@ export function computeCookingKitchenSkills(
     });
   }
 
-  if (independenceRate < 20 && totalIndependenceRecords > 0) {
+  if (below(independenceRate, 20) && totalIndependenceRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -961,7 +958,7 @@ export function computeCookingKitchenSkills(
     });
   }
 
-  if (foodHygieneRate < 60 && totalKitchenSafetyRecords > 0) {
+  if (below(foodHygieneRate, 60) && totalKitchenSafetyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -971,7 +968,7 @@ export function computeCookingKitchenSkills(
     });
   }
 
-  if (incidentRate >= 20 && totalKitchenSafetyRecords > 0) {
+  if (meets(incidentRate, 20) && totalKitchenSafetyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -981,7 +978,7 @@ export function computeCookingKitchenSkills(
     });
   }
 
-  if (crossContaminationRate < 50 && totalKitchenSafetyRecords > 0) {
+  if (below(crossContaminationRate, 50) && totalKitchenSafetyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -991,7 +988,7 @@ export function computeCookingKitchenSkills(
     });
   }
 
-  if (riskAssessmentRate < 50 && totalKitchenSafetyRecords > 0) {
+  if (below(riskAssessmentRate, 50) && totalKitchenSafetyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1001,7 +998,7 @@ export function computeCookingKitchenSkills(
     });
   }
 
-  if (compositeEnjoymentRate < 40 && totalEnjoymentDenom > 0) {
+  if (below(compositeEnjoymentRate, 40) && totalEnjoymentDenom > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1031,7 +1028,7 @@ export function computeCookingKitchenSkills(
     });
   }
 
-  if (goalSettingRate < 50 && totalIndependenceRecords > 0) {
+  if (below(goalSettingRate, 50) && totalIndependenceRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1041,7 +1038,7 @@ export function computeCookingKitchenSkills(
     });
   }
 
-  if (cookingChildCoverage < 50 && total_children > 0 && totalCookingSessions > 0) {
+  if (below(cookingChildCoverage, 50) && total_children > 0 && totalCookingSessions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1052,8 +1049,8 @@ export function computeCookingKitchenSkills(
   }
 
   if (
-    cookingParticipationRate >= 40 &&
-    cookingParticipationRate < 70 &&
+    meets(cookingParticipationRate, 40) &&
+    below(cookingParticipationRate, 70) &&
     totalCookingSessions > 0
   ) {
     recommendations.push({
@@ -1066,8 +1063,8 @@ export function computeCookingKitchenSkills(
   }
 
   if (
-    kitchenSafetyRate >= 50 &&
-    kitchenSafetyRate < 80 &&
+    meets(kitchenSafetyRate, 50) &&
+    below(kitchenSafetyRate, 80) &&
     totalKitchenSafetyRecords > 0
   ) {
     recommendations.push({
@@ -1080,8 +1077,8 @@ export function computeCookingKitchenSkills(
   }
 
   if (
-    nutritionalUnderstandingRate >= 30 &&
-    nutritionalUnderstandingRate < 70 &&
+    meets(nutritionalUnderstandingRate, 30) &&
+    below(nutritionalUnderstandingRate, 70) &&
     totalNutritionalRecords > 0
   ) {
     recommendations.push({
@@ -1094,8 +1091,8 @@ export function computeCookingKitchenSkills(
   }
 
   if (
-    independenceRate >= 20 &&
-    independenceRate < 60 &&
+    meets(independenceRate, 20) &&
+    below(independenceRate, 60) &&
     totalIndependenceRecords > 0
   ) {
     recommendations.push({
@@ -1108,8 +1105,8 @@ export function computeCookingKitchenSkills(
   }
 
   if (
-    compositeEnjoymentRate >= 40 &&
-    compositeEnjoymentRate < 70 &&
+    meets(compositeEnjoymentRate, 40) &&
+    below(compositeEnjoymentRate, 70) &&
     totalEnjoymentDenom > 0
   ) {
     recommendations.push({
@@ -1122,8 +1119,8 @@ export function computeCookingKitchenSkills(
   }
 
   if (
-    barriersRate >= 50 &&
-    supportPlanRate < 50 &&
+    meets(barriersRate, 50) &&
+    below(supportPlanRate, 50) &&
     totalIndependenceRecords > 0
   ) {
     recommendations.push({
@@ -1135,7 +1132,7 @@ export function computeCookingKitchenSkills(
     });
   }
 
-  if (linkedToCookingRate < 50 && totalNutritionalRecords > 0) {
+  if (below(linkedToCookingRate, 50) && totalNutritionalRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1145,7 +1142,7 @@ export function computeCookingKitchenSkills(
     });
   }
 
-  if (transitionRelevanceRate < 50 && totalIndependenceRecords > 0) {
+  if (below(transitionRelevanceRate, 50) && totalIndependenceRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1163,28 +1160,28 @@ export function computeCookingKitchenSkills(
 
   // -- Critical insights --
 
-  if (kitchenSafetyRate < 50 && totalKitchenSafetyRecords > 0) {
+  if (below(kitchenSafetyRate, 50) && totalKitchenSafetyRecords > 0) {
     insights.push({
       text: `Only ${kitchenSafetyRate}% kitchen safety compliance. Widespread safety non-compliance in the kitchen poses a direct safeguarding risk. Ofsted inspectors will expect to see that children are safe and supervised appropriately during cooking activities — this level of non-compliance could result in regulatory action.`,
       severity: "critical",
     });
   }
 
-  if (cookingParticipationRate < 40 && totalCookingSessions > 0) {
+  if (below(cookingParticipationRate, 40) && totalCookingSessions > 0) {
     insights.push({
       text: `Only ${cookingParticipationRate}% cooking session participation. Low participation means most children are not developing essential life skills in food preparation. Cooking is a fundamental independence skill — Reg 5 requires the home to promote children's development through engaging activities.`,
       severity: "critical",
     });
   }
 
-  if (nutritionalUnderstandingRate < 30 && totalNutritionalRecords > 0) {
+  if (below(nutritionalUnderstandingRate, 30) && totalNutritionalRecords > 0) {
     insights.push({
       text: `Only ${nutritionalUnderstandingRate}% nutritional understanding demonstrated. The majority of children lack basic nutritional knowledge, limiting their ability to make healthy food choices. This undermines the home's responsibility to promote children's health and wellbeing under Reg 5.`,
       severity: "critical",
     });
   }
 
-  if (independenceRate < 20 && totalIndependenceRecords > 0) {
+  if (below(independenceRate, 20) && totalIndependenceRecords > 0) {
     insights.push({
       text: `Only ${independenceRate}% cooking independence. The vast majority of children remain dependent on staff for food preparation. This represents a significant gap in preparing children for independent living and will be scrutinised in any assessment of the home's approach to developing life skills.`,
       severity: "critical",
@@ -1198,14 +1195,14 @@ export function computeCookingKitchenSkills(
     });
   }
 
-  if (foodHygieneRate < 40 && totalKitchenSafetyRecords > 0) {
+  if (below(foodHygieneRate, 40) && totalKitchenSafetyRecords > 0) {
     insights.push({
       text: `Food hygiene compliance at only ${foodHygieneRate}%. Poor food hygiene practices pose a direct health risk to children. This is a safeguarding concern that must be addressed before children continue to participate in cooking activities.`,
       severity: "critical",
     });
   }
 
-  if (incidentRate >= 30 && totalKitchenSafetyRecords > 0) {
+  if (meets(incidentRate, 30) && totalKitchenSafetyRecords > 0) {
     insights.push({
       text: `Kitchen incidents reported in ${incidentRate}% of safety records. This high incident rate suggests fundamental problems with kitchen safety management — either supervision is inadequate, safety training is ineffective, or risk assessments are not being properly completed.`,
       severity: "critical",
@@ -1215,8 +1212,8 @@ export function computeCookingKitchenSkills(
   // -- Warning insights --
 
   if (
-    cookingParticipationRate >= 40 &&
-    cookingParticipationRate < 70 &&
+    meets(cookingParticipationRate, 40) &&
+    below(cookingParticipationRate, 70) &&
     totalCookingSessions > 0
   ) {
     insights.push({
@@ -1226,8 +1223,8 @@ export function computeCookingKitchenSkills(
   }
 
   if (
-    kitchenSafetyRate >= 50 &&
-    kitchenSafetyRate < 80 &&
+    meets(kitchenSafetyRate, 50) &&
+    below(kitchenSafetyRate, 80) &&
     totalKitchenSafetyRecords > 0
   ) {
     insights.push({
@@ -1237,8 +1234,8 @@ export function computeCookingKitchenSkills(
   }
 
   if (
-    mealPreparationRate >= 40 &&
-    mealPreparationRate < 70 &&
+    meets(mealPreparationRate, 40) &&
+    below(mealPreparationRate, 70) &&
     totalMealPrepRecords > 0
   ) {
     insights.push({
@@ -1248,8 +1245,8 @@ export function computeCookingKitchenSkills(
   }
 
   if (
-    nutritionalUnderstandingRate >= 30 &&
-    nutritionalUnderstandingRate < 70 &&
+    meets(nutritionalUnderstandingRate, 30) &&
+    below(nutritionalUnderstandingRate, 70) &&
     totalNutritionalRecords > 0
   ) {
     insights.push({
@@ -1259,8 +1256,8 @@ export function computeCookingKitchenSkills(
   }
 
   if (
-    independenceRate >= 20 &&
-    independenceRate < 60 &&
+    meets(independenceRate, 20) &&
+    below(independenceRate, 60) &&
     totalIndependenceRecords > 0
   ) {
     insights.push({
@@ -1270,8 +1267,8 @@ export function computeCookingKitchenSkills(
   }
 
   if (
-    compositeEnjoymentRate >= 40 &&
-    compositeEnjoymentRate < 70 &&
+    meets(compositeEnjoymentRate, 40) &&
+    below(compositeEnjoymentRate, 70) &&
     totalEnjoymentDenom > 0
   ) {
     insights.push({
@@ -1281,8 +1278,8 @@ export function computeCookingKitchenSkills(
   }
 
   if (
-    declineRate >= 10 &&
-    declineRate < 20 &&
+    meets(declineRate, 10) &&
+    below(declineRate, 20) &&
     totalMealPrepRecords > 0
   ) {
     insights.push({
@@ -1292,8 +1289,8 @@ export function computeCookingKitchenSkills(
   }
 
   if (
-    goalAchievementRate >= 40 &&
-    goalAchievementRate < 60 &&
+    meets(goalAchievementRate, 40) &&
+    below(goalAchievementRate, 60) &&
     goalsSet > 0
   ) {
     insights.push({
@@ -1303,8 +1300,8 @@ export function computeCookingKitchenSkills(
   }
 
   if (
-    safetyChildCoverage >= 50 &&
-    safetyChildCoverage < 80 &&
+    meets(safetyChildCoverage, 50) &&
+    below(safetyChildCoverage, 80) &&
     total_children > 0 &&
     totalKitchenSafetyRecords > 0
   ) {
@@ -1315,8 +1312,8 @@ export function computeCookingKitchenSkills(
   }
 
   if (
-    linkedToCookingRate >= 30 &&
-    linkedToCookingRate < 50 &&
+    meets(linkedToCookingRate, 30) &&
+    below(linkedToCookingRate, 50) &&
     totalNutritionalRecords > 0
   ) {
     insights.push({
@@ -1378,8 +1375,8 @@ export function computeCookingKitchenSkills(
   }
 
   if (
-    cookingParticipationRate >= 90 &&
-    cookingEngagementRate >= 90 &&
+    meets(cookingParticipationRate, 90) &&
+    meets(cookingEngagementRate, 90) &&
     totalCookingSessions > 0
   ) {
     insights.push({
@@ -1389,8 +1386,8 @@ export function computeCookingKitchenSkills(
   }
 
   if (
-    kitchenSafetyRate >= 95 &&
-    foodHygieneRate >= 95 &&
+    meets(kitchenSafetyRate, 95) &&
+    meets(foodHygieneRate, 95) &&
     totalKitchenSafetyRecords > 0
   ) {
     insights.push({
@@ -1400,7 +1397,7 @@ export function computeCookingKitchenSkills(
   }
 
   if (
-    mealPrepIndependenceRate >= 60 &&
+    meets(mealPrepIndependenceRate, 60) &&
     totalMealPrepRecords > 0
   ) {
     insights.push({
@@ -1410,8 +1407,8 @@ export function computeCookingKitchenSkills(
   }
 
   if (
-    nutritionalUnderstandingRate >= 90 &&
-    applicationRate >= 80 &&
+    meets(nutritionalUnderstandingRate, 90) &&
+    meets(applicationRate, 80) &&
     totalNutritionalRecords > 0
   ) {
     insights.push({
@@ -1421,7 +1418,7 @@ export function computeCookingKitchenSkills(
   }
 
   if (
-    compositeEnjoymentRate >= 90 &&
+    meets(compositeEnjoymentRate, 90) &&
     totalEnjoymentDenom > 0
   ) {
     insights.push({
@@ -1431,8 +1428,8 @@ export function computeCookingKitchenSkills(
   }
 
   if (
-    independenceRate >= 80 &&
-    transitionRelevanceRate >= 80 &&
+    meets(independenceRate, 80) &&
+    meets(transitionRelevanceRate, 80) &&
     totalIndependenceRecords > 0
   ) {
     insights.push({
@@ -1442,8 +1439,8 @@ export function computeCookingKitchenSkills(
   }
 
   if (
-    goalAchievementRate >= 80 &&
-    progressMakingRate >= 80 &&
+    meets(goalAchievementRate, 80) &&
+    meets(progressMakingRate, 80) &&
     goalsSet > 0 &&
     totalIndependenceRecords > 0
   ) {
@@ -1454,7 +1451,7 @@ export function computeCookingKitchenSkills(
   }
 
   if (
-    cookingChildCoverage >= 100 &&
+    meets(cookingChildCoverage, 100) &&
     total_children > 0 &&
     totalCookingSessions > 0
   ) {
@@ -1466,7 +1463,7 @@ export function computeCookingKitchenSkills(
 
   if (
     uniqueDishCategories >= 6 &&
-    recipeChoiceRate >= 70 &&
+    meets(recipeChoiceRate, 70) &&
     totalCookingSessions > 0
   ) {
     insights.push({
@@ -1476,8 +1473,8 @@ export function computeCookingKitchenSkills(
   }
 
   if (
-    wasteMinimalRate >= 80 &&
-    portionRate >= 80 &&
+    meets(wasteMinimalRate, 80) &&
+    meets(portionRate, 80) &&
     totalMealPrepRecords > 0
   ) {
     insights.push({

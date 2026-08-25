@@ -70,16 +70,16 @@ export function HomeClothingLabellingStorageIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.labelling_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.labelling_compliance_rate >= 90 ? "bg-green-50" : d.labelling_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.labelling_compliance_rate >= 90 ? "text-[--cs-success]" : d.labelling_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.labelling_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.labelling_compliance_rate, 90) ? "bg-green-50" : meets(d.labelling_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.labelling_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.labelling_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.labelling_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Labelling</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.storage_adequacy_rate, 90) ? "bg-green-50" : meets(d.storage_adequacy_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
               <p className={cn("text-sm font-bold tabular-nums", meets(d.storage_adequacy_rate, 90) ? "text-[--cs-success]" : meets(d.storage_adequacy_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.storage_adequacy_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Storage</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.seasonal_rotation_rate >= 90 ? "bg-green-50" : d.seasonal_rotation_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.seasonal_rotation_rate >= 90 ? "text-[--cs-success]" : d.seasonal_rotation_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.seasonal_rotation_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.seasonal_rotation_rate, 90) ? "bg-green-50" : meets(d.seasonal_rotation_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.seasonal_rotation_rate, 90) ? "text-[--cs-success]" : meets(d.seasonal_rotation_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.seasonal_rotation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Rotation</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.ownership_respect_rate, 90) ? "bg-green-50" : meets(d.ownership_respect_rate, 70) ? "bg-amber-50" : "bg-red-50")}>

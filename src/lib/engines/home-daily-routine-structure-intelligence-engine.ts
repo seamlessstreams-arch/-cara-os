@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME DAILY ROUTINE & STRUCTURE INTELLIGENCE ENGINE
 // Tracks daily routine quality — routine consistency, activity scheduling,
@@ -153,10 +154,6 @@ export interface DailyRoutineResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -184,12 +181,12 @@ function emptyResult(
     total_meal_records: 0,
     total_bedtime_records: 0,
     total_participation_records: 0,
-    routine_consistency_rate: 0,
-    activity_completion_rate: 0,
-    meal_regularity_rate: 0,
-    bedtime_adherence_rate: 0,
-    child_participation_rate: 0,
-    flexibility_rate: 0,
+    routine_consistency_rate: null,
+    activity_completion_rate: null,
+    meal_regularity_rate: null,
+    bedtime_adherence_rate: null,
+    child_participation_rate: null,
+    flexibility_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -269,13 +266,13 @@ export function computeDailyRoutineStructure(
   const totalRoutineRecords = routine_schedule_records.length;
 
   const routineFollowed = routine_schedule_records.filter((r) => r.routine_followed).length;
-  const routineConsistencyRate = pct(routineFollowed, totalRoutineRecords);
+  const routineConsistencyRate = rate(routineFollowed, totalRoutineRecords);
 
   const flexibilityShown = routine_schedule_records.filter((r) => r.flexibility_shown).length;
-  const flexibilityRate = pct(flexibilityShown, totalRoutineRecords);
+  const flexibilityRate = rate(flexibilityShown, totalRoutineRecords);
 
   const childInformedOfPlan = routine_schedule_records.filter((r) => r.child_informed_of_plan).length;
-  const childInformedRate = pct(childInformedOfPlan, totalRoutineRecords);
+  const childInformedRate = rate(childInformedOfPlan, totalRoutineRecords);
 
   const consistencySum = routine_schedule_records.reduce((sum, r) => sum + r.consistency_rating, 0);
   const avgConsistencyRating =
@@ -287,13 +284,13 @@ export function computeDailyRoutineStructure(
   const totalActivityRecords = activity_plan_records.length;
 
   const activitiesCompleted = activity_plan_records.filter((a) => a.completed).length;
-  const activityCompletionRate = pct(activitiesCompleted, totalActivityRecords);
+  const activityCompletionRate = rate(activitiesCompleted, totalActivityRecords);
 
   const childEnjoyedActivity = activity_plan_records.filter((a) => a.child_enjoyed).length;
-  const activityEnjoymentRate = pct(childEnjoyedActivity, totalActivityRecords);
+  const activityEnjoymentRate = rate(childEnjoyedActivity, totalActivityRecords);
 
   const childChoseActivity = activity_plan_records.filter((a) => a.child_chose_activity).length;
-  const activityChoiceRate = pct(childChoseActivity, totalActivityRecords);
+  const activityChoiceRate = rate(childChoseActivity, totalActivityRecords);
 
   // Activity variety: count unique activity types
   const activityTypes = new Set(activity_plan_records.map((a) => a.activity_type));
@@ -303,37 +300,37 @@ export function computeDailyRoutineStructure(
   const totalMealRecords = meal_routine_records.length;
 
   const mealsOnTime = meal_routine_records.filter((m) => m.meal_on_time).length;
-  const mealRegularityRate = pct(mealsOnTime, totalMealRecords);
+  const mealRegularityRate = rate(mealsOnTime, totalMealRecords);
 
   const childInvolvedInPrep = meal_routine_records.filter((m) => m.child_involved_in_preparation).length;
-  const mealInvolvementRate = pct(childInvolvedInPrep, totalMealRecords);
+  const mealInvolvementRate = rate(childInvolvedInPrep, totalMealRecords);
 
   const dietaryNeedsMet = meal_routine_records.filter((m) => m.dietary_needs_met).length;
-  const dietaryComplianceRate = pct(dietaryNeedsMet, totalMealRecords);
+  const dietaryComplianceRate = rate(dietaryNeedsMet, totalMealRecords);
 
   const healthyOptions = meal_routine_records.filter((m) => m.healthy_options_provided).length;
-  const healthyOptionsRate = pct(healthyOptions, totalMealRecords);
+  const healthyOptionsRate = rate(healthyOptions, totalMealRecords);
 
   const socialDining = meal_routine_records.filter((m) => m.social_dining_environment).length;
-  const socialDiningRate = pct(socialDining, totalMealRecords);
+  const socialDiningRate = rate(socialDining, totalMealRecords);
 
   const mealFeedbackPositive = meal_routine_records.filter((m) => m.child_feedback_positive).length;
-  const mealSatisfactionRate = pct(mealFeedbackPositive, totalMealRecords);
+  const mealSatisfactionRate = rate(mealFeedbackPositive, totalMealRecords);
 
   // --- Bedtime routine metrics ---
   const totalBedtimeRecords = bedtime_routine_records.length;
 
   const bedtimeFollowed = bedtime_routine_records.filter((b) => b.bedtime_routine_followed).length;
-  const bedtimeAdherenceRate = pct(bedtimeFollowed, totalBedtimeRecords);
+  const bedtimeAdherenceRate = rate(bedtimeFollowed, totalBedtimeRecords);
 
   const windDownProvided = bedtime_routine_records.filter((b) => b.wind_down_activity_provided).length;
-  const windDownRate = pct(windDownProvided, totalBedtimeRecords);
+  const windDownRate = rate(windDownProvided, totalBedtimeRecords);
 
   const settledWithin30 = bedtime_routine_records.filter((b) => b.child_settled_within_30_min).length;
-  const settlingRate = pct(settledWithin30, totalBedtimeRecords);
+  const settlingRate = rate(settledWithin30, totalBedtimeRecords);
 
   const ageAppropriateBedtime = bedtime_routine_records.filter((b) => b.age_appropriate_bedtime).length;
-  const ageAppropriateBedtimeRate = pct(ageAppropriateBedtime, totalBedtimeRecords);
+  const ageAppropriateBedtimeRate = rate(ageAppropriateBedtime, totalBedtimeRecords);
 
   // --- Child participation metrics ---
   const totalParticipationRecords = child_participation_records.length;
@@ -343,68 +340,68 @@ export function computeDailyRoutineStructure(
   const viewsRecorded = child_participation_records.filter((p) => p.child_views_recorded).length;
 
   const viewsActioned = child_participation_records.filter((p) => p.views_actioned).length;
-  const viewsActionedRate = pct(viewsActioned, totalParticipationRecords);
+  const viewsActionedRate = rate(viewsActioned, totalParticipationRecords);
 
   const childSatisfiedOutcome = child_participation_records.filter((p) => p.child_satisfied_with_outcome).length;
 
   // Composite child participation rate: consulted + views recorded + actioned + satisfied
   const participationNumerator = childConsulted + viewsRecorded + viewsActioned + childSatisfiedOutcome;
   const participationDenominator = totalParticipationRecords * 4;
-  const childParticipationRate = pct(participationNumerator, participationDenominator);
+  const childParticipationRate = rate(participationNumerator, participationDenominator);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: routineConsistencyRate (>=90: +4, >=70: +2) ---
-  if (routineConsistencyRate >= 90) score += 4;
-  else if (routineConsistencyRate >= 70) score += 2;
+  if (meets(routineConsistencyRate, 90)) score += 4;
+  else if (meets(routineConsistencyRate, 70)) score += 2;
 
   // --- Bonus 2: activityCompletionRate (>=90: +3, >=70: +1) ---
-  if (activityCompletionRate >= 90) score += 3;
-  else if (activityCompletionRate >= 70) score += 1;
+  if (meets(activityCompletionRate, 90)) score += 3;
+  else if (meets(activityCompletionRate, 70)) score += 1;
 
   // --- Bonus 3: mealRegularityRate (>=90: +4, >=70: +2) ---
-  if (mealRegularityRate >= 90) score += 4;
-  else if (mealRegularityRate >= 70) score += 2;
+  if (meets(mealRegularityRate, 90)) score += 4;
+  else if (meets(mealRegularityRate, 70)) score += 2;
 
   // --- Bonus 4: bedtimeAdherenceRate (>=90: +3, >=70: +1) ---
-  if (bedtimeAdherenceRate >= 90) score += 3;
-  else if (bedtimeAdherenceRate >= 70) score += 1;
+  if (meets(bedtimeAdherenceRate, 90)) score += 3;
+  else if (meets(bedtimeAdherenceRate, 70)) score += 1;
 
   // --- Bonus 5: childParticipationRate (>=85: +3, >=65: +1) ---
-  if (childParticipationRate >= 85) score += 3;
-  else if (childParticipationRate >= 65) score += 1;
+  if (meets(childParticipationRate, 85)) score += 3;
+  else if (meets(childParticipationRate, 65)) score += 1;
 
   // --- Bonus 6: flexibilityRate (>=80: +3, >=50: +1) ---
-  if (flexibilityRate >= 80) score += 3;
-  else if (flexibilityRate >= 50) score += 1;
+  if (meets(flexibilityRate, 80)) score += 3;
+  else if (meets(flexibilityRate, 50)) score += 1;
 
   // --- Bonus 7: activityEnjoymentRate (>=90: +3, >=70: +1) ---
-  if (activityEnjoymentRate >= 90) score += 3;
-  else if (activityEnjoymentRate >= 70) score += 1;
+  if (meets(activityEnjoymentRate, 90)) score += 3;
+  else if (meets(activityEnjoymentRate, 70)) score += 1;
 
   // --- Bonus 8: settlingRate (>=90: +2, >=70: +1) ---
-  if (settlingRate >= 90) score += 2;
-  else if (settlingRate >= 70) score += 1;
+  if (meets(settlingRate, 90)) score += 2;
+  else if (meets(settlingRate, 70)) score += 1;
 
   // --- Bonus 9: mealSatisfactionRate (>=90: +3, >=70: +1) ---
-  if (mealSatisfactionRate >= 90) score += 3;
-  else if (mealSatisfactionRate >= 70) score += 1;
+  if (meets(mealSatisfactionRate, 90)) score += 3;
+  else if (meets(mealSatisfactionRate, 70)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // routineConsistencyRate < 50 → -5
-  if (routineConsistencyRate < 50 && totalRoutineRecords > 0) score -= 5;
+  if (below(routineConsistencyRate, 50) && totalRoutineRecords > 0) score -= 5;
 
   // mealRegularityRate < 50 → -5
-  if (mealRegularityRate < 50 && totalMealRecords > 0) score -= 5;
+  if (below(mealRegularityRate, 50) && totalMealRecords > 0) score -= 5;
 
   // bedtimeAdherenceRate < 50 → -5
-  if (bedtimeAdherenceRate < 50 && totalBedtimeRecords > 0) score -= 5;
+  if (below(bedtimeAdherenceRate, 50) && totalBedtimeRecords > 0) score -= 5;
 
   // childParticipationRate < 40 → -3
-  if (childParticipationRate < 40 && totalParticipationRecords > 0) score -= 3;
+  if (below(childParticipationRate, 40) && totalParticipationRecords > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -414,143 +411,143 @@ export function computeDailyRoutineStructure(
 
   const strengths: string[] = [];
 
-  if (routineConsistencyRate >= 90 && totalRoutineRecords > 0) {
+  if (meets(routineConsistencyRate, 90) && totalRoutineRecords > 0) {
     strengths.push(
       `${routineConsistencyRate}% routine consistency — daily routines are followed consistently, providing children with the stability and predictability they need to feel secure and settled.`,
     );
-  } else if (routineConsistencyRate >= 70 && totalRoutineRecords > 0) {
+  } else if (meets(routineConsistencyRate, 70) && totalRoutineRecords > 0) {
     strengths.push(
       `${routineConsistencyRate}% routine consistency — the home generally maintains consistent daily routines for children.`,
     );
   }
 
-  if (activityCompletionRate >= 90 && totalActivityRecords > 0) {
+  if (meets(activityCompletionRate, 90) && totalActivityRecords > 0) {
     strengths.push(
       `${activityCompletionRate}% activity completion — planned activities are consistently delivered, ensuring children benefit from a rich programme of meaningful experiences.`,
     );
-  } else if (activityCompletionRate >= 70 && totalActivityRecords > 0) {
+  } else if (meets(activityCompletionRate, 70) && totalActivityRecords > 0) {
     strengths.push(
       `${activityCompletionRate}% activity completion — the majority of planned activities are completed, giving children regular access to stimulating experiences.`,
     );
   }
 
-  if (mealRegularityRate >= 90 && totalMealRecords > 0) {
+  if (meets(mealRegularityRate, 90) && totalMealRecords > 0) {
     strengths.push(
       `${mealRegularityRate}% meal time regularity — meals are served on time consistently, providing children with the predictable structure that promotes wellbeing and healthy eating habits.`,
     );
-  } else if (mealRegularityRate >= 70 && totalMealRecords > 0) {
+  } else if (meets(mealRegularityRate, 70) && totalMealRecords > 0) {
     strengths.push(
       `${mealRegularityRate}% meal time regularity — the home generally serves meals on schedule, supporting children's routine expectations.`,
     );
   }
 
-  if (bedtimeAdherenceRate >= 90 && totalBedtimeRecords > 0) {
+  if (meets(bedtimeAdherenceRate, 90) && totalBedtimeRecords > 0) {
     strengths.push(
       `${bedtimeAdherenceRate}% bedtime routine adherence — bedtime routines are followed consistently, promoting healthy sleep patterns and emotional security at a critical time of day.`,
     );
-  } else if (bedtimeAdherenceRate >= 70 && totalBedtimeRecords > 0) {
+  } else if (meets(bedtimeAdherenceRate, 70) && totalBedtimeRecords > 0) {
     strengths.push(
       `${bedtimeAdherenceRate}% bedtime routine adherence — the home generally follows established bedtime routines for children.`,
     );
   }
 
-  if (childParticipationRate >= 85 && totalParticipationRecords > 0) {
+  if (meets(childParticipationRate, 85) && totalParticipationRecords > 0) {
     strengths.push(
       `${childParticipationRate}% child participation quality — children are actively consulted about their daily plans, their views are recorded and actioned, and they are satisfied with outcomes. This demonstrates genuinely child-centred practice.`,
     );
-  } else if (childParticipationRate >= 65 && totalParticipationRecords > 0) {
+  } else if (meets(childParticipationRate, 65) && totalParticipationRecords > 0) {
     strengths.push(
       `${childParticipationRate}% child participation quality — children are generally involved in planning their daily experiences and routines.`,
     );
   }
 
-  if (flexibilityRate >= 80 && totalRoutineRecords > 0) {
+  if (meets(flexibilityRate, 80) && totalRoutineRecords > 0) {
     strengths.push(
       `${flexibilityRate}% flexibility demonstrated — staff appropriately adapt routines to individual children's needs and circumstances, balancing structure with responsiveness.`,
     );
-  } else if (flexibilityRate >= 50 && totalRoutineRecords > 0) {
+  } else if (meets(flexibilityRate, 50) && totalRoutineRecords > 0) {
     strengths.push(
       `${flexibilityRate}% flexibility demonstrated — staff show some ability to adapt routines to children's individual needs.`,
     );
   }
 
-  if (activityEnjoymentRate >= 90 && totalActivityRecords > 0) {
+  if (meets(activityEnjoymentRate, 90) && totalActivityRecords > 0) {
     strengths.push(
       `${activityEnjoymentRate}% activity enjoyment — children consistently enjoy the activities provided, indicating that the programme is engaging, age-appropriate, and responsive to children's interests.`,
     );
-  } else if (activityEnjoymentRate >= 70 && totalActivityRecords > 0) {
+  } else if (meets(activityEnjoymentRate, 70) && totalActivityRecords > 0) {
     strengths.push(
       `${activityEnjoymentRate}% activity enjoyment — the majority of children enjoy the activities offered by the home.`,
     );
   }
 
-  if (activityChoiceRate >= 80 && totalActivityRecords > 0) {
+  if (meets(activityChoiceRate, 80) && totalActivityRecords > 0) {
     strengths.push(
       `${activityChoiceRate}% child-chosen activities — children have genuine influence over their activity choices, reflecting a commitment to promoting autonomy and personal interests.`,
     );
-  } else if (activityChoiceRate >= 60 && totalActivityRecords > 0) {
+  } else if (meets(activityChoiceRate, 60) && totalActivityRecords > 0) {
     strengths.push(
       `${activityChoiceRate}% child-chosen activities — children are given some opportunity to choose their own activities.`,
     );
   }
 
-  if (settlingRate >= 90 && totalBedtimeRecords > 0) {
+  if (meets(settlingRate, 90) && totalBedtimeRecords > 0) {
     strengths.push(
       `${settlingRate}% of children settle within 30 minutes — effective bedtime routines support timely settling, indicating children feel safe and relaxed at bedtime.`,
     );
-  } else if (settlingRate >= 70 && totalBedtimeRecords > 0) {
+  } else if (meets(settlingRate, 70) && totalBedtimeRecords > 0) {
     strengths.push(
       `${settlingRate}% of children settle within 30 minutes — the home's bedtime approach is effective for the majority of children.`,
     );
   }
 
-  if (mealSatisfactionRate >= 90 && totalMealRecords > 0) {
+  if (meets(mealSatisfactionRate, 90) && totalMealRecords > 0) {
     strengths.push(
       `${mealSatisfactionRate}% positive meal feedback — children are satisfied with their meal experiences, reflecting thoughtful menu planning, quality food, and positive dining environments.`,
     );
-  } else if (mealSatisfactionRate >= 70 && totalMealRecords > 0) {
+  } else if (meets(mealSatisfactionRate, 70) && totalMealRecords > 0) {
     strengths.push(
       `${mealSatisfactionRate}% positive meal feedback — the majority of children report positive meal experiences.`,
     );
   }
 
-  if (dietaryComplianceRate >= 90 && totalMealRecords > 0) {
+  if (meets(dietaryComplianceRate, 90) && totalMealRecords > 0) {
     strengths.push(
       `${dietaryComplianceRate}% dietary needs compliance — the home consistently meets children's individual dietary requirements, demonstrating person-centred nutrition management.`,
     );
   }
 
-  if (healthyOptionsRate >= 90 && totalMealRecords > 0) {
+  if (meets(healthyOptionsRate, 90) && totalMealRecords > 0) {
     strengths.push(
       `${healthyOptionsRate}% healthy options provided — the home consistently offers nutritious meal options, promoting children's physical health and wellbeing.`,
     );
   }
 
-  if (socialDiningRate >= 90 && totalMealRecords > 0) {
+  if (meets(socialDiningRate, 90) && totalMealRecords > 0) {
     strengths.push(
       `${socialDiningRate}% social dining environments — meal times are consistently used as opportunities for positive social interaction, building relationships, and developing social skills.`,
     );
   }
 
-  if (windDownRate >= 90 && totalBedtimeRecords > 0) {
+  if (meets(windDownRate, 90) && totalBedtimeRecords > 0) {
     strengths.push(
       `${windDownRate}% wind-down activities provided — the home consistently provides calming pre-bedtime activities to support children's transition to sleep.`,
     );
   }
 
-  if (ageAppropriateBedtimeRate >= 90 && totalBedtimeRecords > 0) {
+  if (meets(ageAppropriateBedtimeRate, 90) && totalBedtimeRecords > 0) {
     strengths.push(
       `${ageAppropriateBedtimeRate}% age-appropriate bedtimes — bedtimes are consistently set according to children's developmental needs, ensuring adequate rest.`,
     );
   }
 
-  if (childInformedRate >= 90 && totalRoutineRecords > 0) {
+  if (meets(childInformedRate, 90) && totalRoutineRecords > 0) {
     strengths.push(
       `${childInformedRate}% of children informed of daily plans — children are consistently told about the day's schedule in advance, reducing anxiety and promoting a sense of control.`,
     );
   }
 
-  if (viewsActionedRate >= 90 && totalParticipationRecords > 0) {
+  if (meets(viewsActionedRate, 90) && totalParticipationRecords > 0) {
     strengths.push(
       `${viewsActionedRate}% of children's views actioned — when children share their preferences, the home consistently acts on them, demonstrating genuine respect for the voice of the child.`,
     );
@@ -568,7 +565,7 @@ export function computeDailyRoutineStructure(
     );
   }
 
-  if (mealInvolvementRate >= 70 && totalMealRecords > 0) {
+  if (meets(mealInvolvementRate, 70) && totalMealRecords > 0) {
     strengths.push(
       `${mealInvolvementRate}% child involvement in meal preparation — children are regularly involved in cooking and food preparation, building independence and life skills.`,
     );
@@ -578,117 +575,117 @@ export function computeDailyRoutineStructure(
 
   const concerns: string[] = [];
 
-  if (routineConsistencyRate < 50 && totalRoutineRecords > 0) {
+  if (below(routineConsistencyRate, 50) && totalRoutineRecords > 0) {
     concerns.push(
       `Only ${routineConsistencyRate}% routine consistency — the majority of daily routines are not being followed, undermining children's sense of stability, predictability, and security. Children in care particularly need consistent structure.`,
     );
-  } else if (routineConsistencyRate < 70 && routineConsistencyRate >= 50 && totalRoutineRecords > 0) {
+  } else if (below(routineConsistencyRate, 70) && meets(routineConsistencyRate, 50) && totalRoutineRecords > 0) {
     concerns.push(
       `Routine consistency at ${routineConsistencyRate}% — inconsistent daily routines may leave children feeling unsettled and anxious about what to expect.`,
     );
   }
 
-  if (activityCompletionRate < 50 && totalActivityRecords > 0) {
+  if (below(activityCompletionRate, 50) && totalActivityRecords > 0) {
     concerns.push(
       `Only ${activityCompletionRate}% activity completion — the majority of planned activities are not being delivered, meaning children are missing out on enriching experiences that support their development and wellbeing.`,
     );
-  } else if (activityCompletionRate < 70 && activityCompletionRate >= 50 && totalActivityRecords > 0) {
+  } else if (below(activityCompletionRate, 70) && meets(activityCompletionRate, 50) && totalActivityRecords > 0) {
     concerns.push(
       `Activity completion at ${activityCompletionRate}% — a significant proportion of planned activities are not being completed, reducing children's access to stimulating experiences.`,
     );
   }
 
-  if (mealRegularityRate < 50 && totalMealRecords > 0) {
+  if (below(mealRegularityRate, 50) && totalMealRecords > 0) {
     concerns.push(
       `Only ${mealRegularityRate}% meal time regularity — the majority of meals are not served on time, disrupting children's daily structure and potentially affecting their nutrition, behaviour, and sense of routine.`,
     );
-  } else if (mealRegularityRate < 70 && mealRegularityRate >= 50 && totalMealRecords > 0) {
+  } else if (below(mealRegularityRate, 70) && meets(mealRegularityRate, 50) && totalMealRecords > 0) {
     concerns.push(
       `Meal time regularity at ${mealRegularityRate}% — inconsistent meal times undermine the predictable daily structure that children need.`,
     );
   }
 
-  if (bedtimeAdherenceRate < 50 && totalBedtimeRecords > 0) {
+  if (below(bedtimeAdherenceRate, 50) && totalBedtimeRecords > 0) {
     concerns.push(
       `Only ${bedtimeAdherenceRate}% bedtime routine adherence — the majority of bedtime routines are not being followed, directly impacting children's sleep quality, health, and next-day functioning.`,
     );
-  } else if (bedtimeAdherenceRate < 70 && bedtimeAdherenceRate >= 50 && totalBedtimeRecords > 0) {
+  } else if (below(bedtimeAdherenceRate, 70) && meets(bedtimeAdherenceRate, 50) && totalBedtimeRecords > 0) {
     concerns.push(
       `Bedtime routine adherence at ${bedtimeAdherenceRate}% — inconsistent bedtime routines may affect children's sleep quality and emotional regulation.`,
     );
   }
 
-  if (childParticipationRate < 40 && totalParticipationRecords > 0) {
+  if (below(childParticipationRate, 40) && totalParticipationRecords > 0) {
     concerns.push(
       `Child participation quality at only ${childParticipationRate}% — children are not being meaningfully consulted about their daily plans, their views are not being recorded or actioned, and satisfaction with outcomes is low. This undermines the voice of the child.`,
     );
-  } else if (childParticipationRate < 65 && childParticipationRate >= 40 && totalParticipationRecords > 0) {
+  } else if (below(childParticipationRate, 65) && meets(childParticipationRate, 40) && totalParticipationRecords > 0) {
     concerns.push(
       `Child participation quality at ${childParticipationRate}% — children's involvement in daily planning needs to improve to ensure their views genuinely shape their experiences.`,
     );
   }
 
-  if (activityEnjoymentRate < 50 && totalActivityRecords > 0) {
+  if (below(activityEnjoymentRate, 50) && totalActivityRecords > 0) {
     concerns.push(
       `Only ${activityEnjoymentRate}% activity enjoyment — the majority of children are not enjoying the activities provided, suggesting the programme does not align with children's interests, needs, or developmental stage.`,
     );
-  } else if (activityEnjoymentRate < 70 && activityEnjoymentRate >= 50 && totalActivityRecords > 0) {
+  } else if (below(activityEnjoymentRate, 70) && meets(activityEnjoymentRate, 50) && totalActivityRecords > 0) {
     concerns.push(
       `Activity enjoyment at ${activityEnjoymentRate}% — a significant proportion of children are not enjoying activities, indicating a need to review the programme with children's input.`,
     );
   }
 
-  if (settlingRate < 50 && totalBedtimeRecords > 0) {
+  if (below(settlingRate, 50) && totalBedtimeRecords > 0) {
     concerns.push(
       `Only ${settlingRate}% of children settle within 30 minutes — many children are experiencing difficulty getting to sleep, suggesting bedtime routines, wind-down activities, or the sleep environment need review.`,
     );
-  } else if (settlingRate < 70 && settlingRate >= 50 && totalBedtimeRecords > 0) {
+  } else if (below(settlingRate, 70) && meets(settlingRate, 50) && totalBedtimeRecords > 0) {
     concerns.push(
       `Settling rate at ${settlingRate}% — some children are taking longer than 30 minutes to settle, indicating potential issues with bedtime routines.`,
     );
   }
 
-  if (mealSatisfactionRate < 50 && totalMealRecords > 0) {
+  if (below(mealSatisfactionRate, 50) && totalMealRecords > 0) {
     concerns.push(
       `Only ${mealSatisfactionRate}% positive meal feedback — children are not satisfied with their meal experiences, which may indicate issues with food quality, choice, environment, or responsiveness to preferences.`,
     );
-  } else if (mealSatisfactionRate < 70 && mealSatisfactionRate >= 50 && totalMealRecords > 0) {
+  } else if (below(mealSatisfactionRate, 70) && meets(mealSatisfactionRate, 50) && totalMealRecords > 0) {
     concerns.push(
       `Meal satisfaction at ${mealSatisfactionRate}% — a significant proportion of children are not reporting positive meal experiences.`,
     );
   }
 
-  if (dietaryComplianceRate < 70 && totalMealRecords > 0) {
+  if (below(dietaryComplianceRate, 70) && totalMealRecords > 0) {
     concerns.push(
       `Dietary needs compliance at only ${dietaryComplianceRate}% — children's individual dietary requirements are not being consistently met, which poses a risk to their health and wellbeing.`,
     );
   }
 
-  if (activityChoiceRate < 40 && totalActivityRecords > 0) {
+  if (below(activityChoiceRate, 40) && totalActivityRecords > 0) {
     concerns.push(
       `Only ${activityChoiceRate}% child-chosen activities — children have limited influence over their activity choices, undermining their autonomy and sense of agency.`,
     );
   }
 
-  if (flexibilityRate < 30 && totalRoutineRecords > 0) {
+  if (below(flexibilityRate, 30) && totalRoutineRecords > 0) {
     concerns.push(
       `Flexibility rate at only ${flexibilityRate}% — routines are being applied rigidly without adapting to individual children's needs and circumstances. Good practice requires a balance between structure and flexibility.`,
     );
   }
 
-  if (viewsActionedRate < 50 && totalParticipationRecords > 0) {
+  if (below(viewsActionedRate, 50) && totalParticipationRecords > 0) {
     concerns.push(
       `Only ${viewsActionedRate}% of children's views actioned — children are being consulted but their views are not leading to change, which risks tokenistic participation and erodes children's trust in the process.`,
     );
   }
 
-  if (childInformedRate < 50 && totalRoutineRecords > 0) {
+  if (below(childInformedRate, 50) && totalRoutineRecords > 0) {
     concerns.push(
       `Only ${childInformedRate}% of children informed of daily plans — children are not being told about the day ahead, which can increase anxiety and undermine their sense of control.`,
     );
   }
 
-  if (windDownRate < 50 && totalBedtimeRecords > 0) {
+  if (below(windDownRate, 50) && totalBedtimeRecords > 0) {
     concerns.push(
       `Only ${windDownRate}% wind-down activities provided — calming pre-bedtime activities are not being consistently offered, which affects children's ability to transition to sleep.`,
     );
@@ -729,7 +726,7 @@ export function computeDailyRoutineStructure(
   const recommendations: DailyRoutineRecommendation[] = [];
   let rank = 0;
 
-  if (routineConsistencyRate < 50 && totalRoutineRecords > 0) {
+  if (below(routineConsistencyRate, 50) && totalRoutineRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -739,7 +736,7 @@ export function computeDailyRoutineStructure(
     });
   }
 
-  if (mealRegularityRate < 50 && totalMealRecords > 0) {
+  if (below(mealRegularityRate, 50) && totalMealRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -749,7 +746,7 @@ export function computeDailyRoutineStructure(
     });
   }
 
-  if (bedtimeAdherenceRate < 50 && totalBedtimeRecords > 0) {
+  if (below(bedtimeAdherenceRate, 50) && totalBedtimeRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -759,7 +756,7 @@ export function computeDailyRoutineStructure(
     });
   }
 
-  if (childParticipationRate < 40 && totalParticipationRecords > 0) {
+  if (below(childParticipationRate, 40) && totalParticipationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -769,7 +766,7 @@ export function computeDailyRoutineStructure(
     });
   }
 
-  if (activityCompletionRate < 50 && totalActivityRecords > 0) {
+  if (below(activityCompletionRate, 50) && totalActivityRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -779,7 +776,7 @@ export function computeDailyRoutineStructure(
     });
   }
 
-  if (activityEnjoymentRate < 50 && totalActivityRecords > 0) {
+  if (below(activityEnjoymentRate, 50) && totalActivityRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -789,7 +786,7 @@ export function computeDailyRoutineStructure(
     });
   }
 
-  if (dietaryComplianceRate < 70 && totalMealRecords > 0) {
+  if (below(dietaryComplianceRate, 70) && totalMealRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -849,7 +846,7 @@ export function computeDailyRoutineStructure(
     });
   }
 
-  if (settlingRate < 50 && totalBedtimeRecords > 0) {
+  if (below(settlingRate, 50) && totalBedtimeRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -859,7 +856,7 @@ export function computeDailyRoutineStructure(
     });
   }
 
-  if (viewsActionedRate < 50 && totalParticipationRecords > 0) {
+  if (below(viewsActionedRate, 50) && totalParticipationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -869,7 +866,7 @@ export function computeDailyRoutineStructure(
     });
   }
 
-  if (activityChoiceRate < 40 && totalActivityRecords > 0) {
+  if (below(activityChoiceRate, 40) && totalActivityRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -879,7 +876,7 @@ export function computeDailyRoutineStructure(
     });
   }
 
-  if (flexibilityRate < 30 && totalRoutineRecords > 0) {
+  if (below(flexibilityRate, 30) && totalRoutineRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -890,8 +887,8 @@ export function computeDailyRoutineStructure(
   }
 
   if (
-    routineConsistencyRate >= 50 &&
-    routineConsistencyRate < 70 &&
+    meets(routineConsistencyRate, 50) &&
+    below(routineConsistencyRate, 70) &&
     totalRoutineRecords > 0
   ) {
     recommendations.push({
@@ -904,8 +901,8 @@ export function computeDailyRoutineStructure(
   }
 
   if (
-    mealRegularityRate >= 50 &&
-    mealRegularityRate < 70 &&
+    meets(mealRegularityRate, 50) &&
+    below(mealRegularityRate, 70) &&
     totalMealRecords > 0
   ) {
     recommendations.push({
@@ -918,8 +915,8 @@ export function computeDailyRoutineStructure(
   }
 
   if (
-    bedtimeAdherenceRate >= 50 &&
-    bedtimeAdherenceRate < 70 &&
+    meets(bedtimeAdherenceRate, 50) &&
+    below(bedtimeAdherenceRate, 70) &&
     totalBedtimeRecords > 0
   ) {
     recommendations.push({
@@ -932,8 +929,8 @@ export function computeDailyRoutineStructure(
   }
 
   if (
-    activityCompletionRate >= 50 &&
-    activityCompletionRate < 70 &&
+    meets(activityCompletionRate, 50) &&
+    below(activityCompletionRate, 70) &&
     totalActivityRecords > 0
   ) {
     recommendations.push({
@@ -946,8 +943,8 @@ export function computeDailyRoutineStructure(
   }
 
   if (
-    activityEnjoymentRate >= 50 &&
-    activityEnjoymentRate < 70 &&
+    meets(activityEnjoymentRate, 50) &&
+    below(activityEnjoymentRate, 70) &&
     totalActivityRecords > 0
   ) {
     recommendations.push({
@@ -960,8 +957,8 @@ export function computeDailyRoutineStructure(
   }
 
   if (
-    mealSatisfactionRate >= 50 &&
-    mealSatisfactionRate < 70 &&
+    meets(mealSatisfactionRate, 50) &&
+    below(mealSatisfactionRate, 70) &&
     totalMealRecords > 0
   ) {
     recommendations.push({
@@ -973,7 +970,7 @@ export function computeDailyRoutineStructure(
     });
   }
 
-  if (windDownRate < 70 && totalBedtimeRecords > 0) {
+  if (below(windDownRate, 70) && totalBedtimeRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -983,7 +980,7 @@ export function computeDailyRoutineStructure(
     });
   }
 
-  if (socialDiningRate < 70 && totalMealRecords > 0) {
+  if (below(socialDiningRate, 70) && totalMealRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -993,7 +990,7 @@ export function computeDailyRoutineStructure(
     });
   }
 
-  if (mealInvolvementRate < 50 && totalMealRecords > 0) {
+  if (below(mealInvolvementRate, 50) && totalMealRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1013,7 +1010,7 @@ export function computeDailyRoutineStructure(
     });
   }
 
-  if (childInformedRate < 70 && totalRoutineRecords > 0) {
+  if (below(childInformedRate, 70) && totalRoutineRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1029,35 +1026,35 @@ export function computeDailyRoutineStructure(
 
   // -- Critical insights --
 
-  if (routineConsistencyRate < 50 && totalRoutineRecords > 0) {
+  if (below(routineConsistencyRate, 50) && totalRoutineRecords > 0) {
     insights.push({
       text: `Only ${routineConsistencyRate}% routine consistency. Ofsted expects children in residential care to experience predictable, well-structured days. Poor routine consistency directly undermines children's sense of security, their emotional regulation, and their ability to engage with education and planned activities. This is a fundamental shortfall under Reg 6.`,
       severity: "critical",
     });
   }
 
-  if (mealRegularityRate < 50 && totalMealRecords > 0) {
+  if (below(mealRegularityRate, 50) && totalMealRecords > 0) {
     insights.push({
       text: `Only ${mealRegularityRate}% meal time regularity. Irregular meals disrupt children's daily structure, affect their nutrition and energy levels, and can trigger anxiety in children who have experienced food insecurity or neglect. Consistent meal times are a cornerstone of routine-based care.`,
       severity: "critical",
     });
   }
 
-  if (bedtimeAdherenceRate < 50 && totalBedtimeRecords > 0) {
+  if (below(bedtimeAdherenceRate, 50) && totalBedtimeRecords > 0) {
     insights.push({
       text: `Only ${bedtimeAdherenceRate}% bedtime routine adherence. Inconsistent bedtimes directly impact children's sleep quality, next-day functioning, behaviour, and educational engagement. For children with trauma histories, predictable bedtime routines are particularly important for emotional regulation.`,
       severity: "critical",
     });
   }
 
-  if (childParticipationRate < 40 && totalParticipationRecords > 0) {
+  if (below(childParticipationRate, 40) && totalParticipationRecords > 0) {
     insights.push({
       text: `Child participation quality at only ${childParticipationRate}%. When children have no meaningful influence over their daily lives, it can feel institutional and disempowering. Reg 7 requires that children's views, wishes, and feelings are taken into account in daily decision-making, not just in formal reviews.`,
       severity: "critical",
     });
   }
 
-  if (activityCompletionRate < 50 && totalActivityRecords > 0) {
+  if (below(activityCompletionRate, 50) && totalActivityRecords > 0) {
     insights.push({
       text: `Only ${activityCompletionRate}% of planned activities completed. Looked-after children frequently have gaps in their experiences and development. When planned activities are consistently not delivered, children miss opportunities for enrichment, skill development, and positive experiences that the SCCIF specifically assesses.`,
       severity: "critical",
@@ -1095,8 +1092,8 @@ export function computeDailyRoutineStructure(
   // -- Warning insights --
 
   if (
-    routineConsistencyRate >= 50 &&
-    routineConsistencyRate < 70 &&
+    meets(routineConsistencyRate, 50) &&
+    below(routineConsistencyRate, 70) &&
     totalRoutineRecords > 0
   ) {
     insights.push({
@@ -1106,8 +1103,8 @@ export function computeDailyRoutineStructure(
   }
 
   if (
-    mealRegularityRate >= 50 &&
-    mealRegularityRate < 70 &&
+    meets(mealRegularityRate, 50) &&
+    below(mealRegularityRate, 70) &&
     totalMealRecords > 0
   ) {
     insights.push({
@@ -1117,8 +1114,8 @@ export function computeDailyRoutineStructure(
   }
 
   if (
-    bedtimeAdherenceRate >= 50 &&
-    bedtimeAdherenceRate < 70 &&
+    meets(bedtimeAdherenceRate, 50) &&
+    below(bedtimeAdherenceRate, 70) &&
     totalBedtimeRecords > 0
   ) {
     insights.push({
@@ -1128,8 +1125,8 @@ export function computeDailyRoutineStructure(
   }
 
   if (
-    childParticipationRate >= 40 &&
-    childParticipationRate < 65 &&
+    meets(childParticipationRate, 40) &&
+    below(childParticipationRate, 65) &&
     totalParticipationRecords > 0
   ) {
     insights.push({
@@ -1139,8 +1136,8 @@ export function computeDailyRoutineStructure(
   }
 
   if (
-    activityCompletionRate >= 50 &&
-    activityCompletionRate < 70 &&
+    meets(activityCompletionRate, 50) &&
+    below(activityCompletionRate, 70) &&
     totalActivityRecords > 0
   ) {
     insights.push({
@@ -1150,8 +1147,8 @@ export function computeDailyRoutineStructure(
   }
 
   if (
-    activityEnjoymentRate >= 50 &&
-    activityEnjoymentRate < 70 &&
+    meets(activityEnjoymentRate, 50) &&
+    below(activityEnjoymentRate, 70) &&
     totalActivityRecords > 0
   ) {
     insights.push({
@@ -1161,8 +1158,8 @@ export function computeDailyRoutineStructure(
   }
 
   if (
-    settlingRate >= 50 &&
-    settlingRate < 70 &&
+    meets(settlingRate, 50) &&
+    below(settlingRate, 70) &&
     totalBedtimeRecords > 0
   ) {
     insights.push({
@@ -1172,8 +1169,8 @@ export function computeDailyRoutineStructure(
   }
 
   if (
-    mealSatisfactionRate >= 50 &&
-    mealSatisfactionRate < 70 &&
+    meets(mealSatisfactionRate, 50) &&
+    below(mealSatisfactionRate, 70) &&
     totalMealRecords > 0
   ) {
     insights.push({
@@ -1196,7 +1193,7 @@ export function computeDailyRoutineStructure(
     });
   }
 
-  if (windDownRate >= 30 && windDownRate < 70 && totalBedtimeRecords > 0) {
+  if (meets(windDownRate, 30) && below(windDownRate, 70) && totalBedtimeRecords > 0) {
     insights.push({
       text: `Wind-down activity provision at ${windDownRate}% — calming pre-bedtime activities are not being consistently delivered. Research shows structured wind-down routines significantly improve sleep onset and quality in children.`,
       severity: "warning",
@@ -1204,8 +1201,8 @@ export function computeDailyRoutineStructure(
   }
 
   if (
-    viewsActionedRate >= 30 &&
-    viewsActionedRate < 50 &&
+    meets(viewsActionedRate, 30) &&
+    below(viewsActionedRate, 50) &&
     totalParticipationRecords > 0
   ) {
     insights.push({
@@ -1260,9 +1257,9 @@ export function computeDailyRoutineStructure(
   }
 
   if (
-    routineConsistencyRate >= 90 &&
-    mealRegularityRate >= 90 &&
-    bedtimeAdherenceRate >= 90 &&
+    meets(routineConsistencyRate, 90) &&
+    meets(mealRegularityRate, 90) &&
+    meets(bedtimeAdherenceRate, 90) &&
     totalRoutineRecords > 0 &&
     totalMealRecords > 0 &&
     totalBedtimeRecords > 0
@@ -1274,8 +1271,8 @@ export function computeDailyRoutineStructure(
   }
 
   if (
-    childParticipationRate >= 85 &&
-    viewsActionedRate >= 80 &&
+    meets(childParticipationRate, 85) &&
+    meets(viewsActionedRate, 80) &&
     totalParticipationRecords > 0
   ) {
     insights.push({
@@ -1285,8 +1282,8 @@ export function computeDailyRoutineStructure(
   }
 
   if (
-    activityCompletionRate >= 90 &&
-    activityEnjoymentRate >= 90 &&
+    meets(activityCompletionRate, 90) &&
+    meets(activityEnjoymentRate, 90) &&
     totalActivityRecords > 0
   ) {
     insights.push({
@@ -1296,8 +1293,8 @@ export function computeDailyRoutineStructure(
   }
 
   if (
-    mealRegularityRate >= 90 &&
-    mealSatisfactionRate >= 90 &&
+    meets(mealRegularityRate, 90) &&
+    meets(mealSatisfactionRate, 90) &&
     totalMealRecords > 0
   ) {
     insights.push({
@@ -1307,8 +1304,8 @@ export function computeDailyRoutineStructure(
   }
 
   if (
-    bedtimeAdherenceRate >= 90 &&
-    settlingRate >= 90 &&
+    meets(bedtimeAdherenceRate, 90) &&
+    meets(settlingRate, 90) &&
     totalBedtimeRecords > 0
   ) {
     insights.push({
@@ -1318,8 +1315,8 @@ export function computeDailyRoutineStructure(
   }
 
   if (
-    flexibilityRate >= 80 &&
-    routineConsistencyRate >= 80 &&
+    meets(flexibilityRate, 80) &&
+    meets(routineConsistencyRate, 80) &&
     totalRoutineRecords > 0
   ) {
     insights.push({
@@ -1329,8 +1326,8 @@ export function computeDailyRoutineStructure(
   }
 
   if (
-    activityChoiceRate >= 80 &&
-    activityEnjoymentRate >= 80 &&
+    meets(activityChoiceRate, 80) &&
+    meets(activityEnjoymentRate, 80) &&
     totalActivityRecords > 0
   ) {
     insights.push({

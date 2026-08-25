@@ -86,10 +86,6 @@ export interface BehaviourSupportPlanResult {
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -131,10 +127,10 @@ export function computeBehaviourSupportPlan(
   // ── Metrics ────────────────────────────────────────────────────────────
   const total = plans.length;
   const uniqueChildren = new Set(plans.map(p => p.child_id)).size;
-  const childrenWithPlanRate = pct(uniqueChildren, total_children);
+  const childrenWithPlanRate = rate(uniqueChildren, total_children);
 
   const activePlans = plans.filter(p => p.status === "active" || p.status === "under_review");
-  const activePlanRate = pct(activePlans.length, total);
+  const activePlanRate = rate(activePlans.length, total);
 
   // Review currency: an active plan whose next review_date has passed — or which
   // has no review scheduled — is overdue for review, so staff may be relying on
@@ -145,24 +141,24 @@ export function computeBehaviourSupportPlan(
 
   // Trigger analysis: plans with triggers AND early warnings
   const withTriggerAnalysis = plans.filter(p => p.known_trigger_count > 0 && p.early_warning_count > 0);
-  const triggerAnalysisRate = pct(withTriggerAnalysis.length, total);
+  const triggerAnalysisRate = rate(withTriggerAnalysis.length, total);
 
   // De-escalation: plans with all 3 stages (green/amber/red)
   const withFullDeEscalation = plans.filter(p => p.de_escalation_stage_count >= 3);
-  const deEscalationRate = pct(withFullDeEscalation.length, total);
+  const deEscalationRate = rate(withFullDeEscalation.length, total);
 
   // Positive strategies
   const withPositiveStrategies = plans.filter(p => p.positive_strategy_count > 0);
-  const positiveStrategyRate = pct(withPositiveStrategies.length, total);
+  const positiveStrategyRate = rate(withPositiveStrategies.length, total);
 
   // Strategy effectiveness
   const totalStrategies = plans.reduce((s, p) => s + p.positive_strategy_count, 0);
   const totalEffective = plans.reduce((s, p) => s + p.effective_strategy_count, 0);
-  const effectivenessRate = pct(totalEffective, totalStrategies);
+  const effectivenessRate = rate(totalEffective, totalStrategies);
 
   // Child voice
   const withChildVoice = plans.filter(p => p.has_child_views).length;
-  const childVoiceRate = pct(withChildVoice, total);
+  const childVoiceRate = rate(withChildVoice, total);
 
   // Restrictive interventions
   const totalRestrictive = plans.reduce((s, p) => s + p.restrictive_intervention_count, 0);
@@ -232,8 +228,8 @@ export function computeBehaviourSupportPlan(
   if (total === 0) {
     score -= 2;
   } else {
-    const safetyRate = pct(withSafetyPlans, total);
-    const guidanceRate = pct(withStaffGuidance, total);
+    const safetyRate = rate(withSafetyPlans, total);
+    const guidanceRate = rate(withStaffGuidance, total);
     if (meets(safetyRate, 75) && meets(guidanceRate, 75)) score += 5;
     else if (meets(safetyRate, 50) || meets(guidanceRate, 50)) score += 2;
     else if (below(safetyRate, 25) && below(guidanceRate, 25)) score -= 3;
@@ -257,7 +253,7 @@ export function computeBehaviourSupportPlan(
     strengths.push("Positive strategies are embedded and effective — the home prioritises therapeutic responses over restrictive measures");
   if (meets(childVoiceRate, 80) && total > 0)
     strengths.push("Children's views are consistently captured in BSPs — their perspective informs how behaviour is understood and supported");
-  if (meets(pct(withSafetyPlans, total), 75) && total > 0)
+  if (meets(rate(withSafetyPlans, total), 75) && total > 0)
     strengths.push("Safety plans are in place for high-risk scenarios — the home is prepared to respond safely to crisis situations");
 
   // ── Concerns ───────────────────────────────────────────────────────────
@@ -295,7 +291,7 @@ export function computeBehaviourSupportPlan(
     recommendations.push({ rank: ++rank, recommendation: "Ensure children's views about their behaviour and what helps them are captured in every BSP", urgency: "soon", regulatory_ref: "SCCIF Experiences" });
   if (below(positiveStrategyRate, 50) && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Develop and document positive behaviour strategies for each child — reduce reliance on reactive approaches", urgency: "soon", regulatory_ref: "CHR 2015 Reg 35" });
-  if (below(pct(withStaffGuidance, total), 50) && total > 0)
+  if (below(rate(withStaffGuidance, total), 50) && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Add specific staff guidance to each BSP so carers can implement consistent, therapeutic responses", urgency: "planned", regulatory_ref: "CHR 2015 Reg 13" });
 
   // ── Insights ───────────────────────────────────────────────────────────
@@ -306,11 +302,11 @@ export function computeBehaviourSupportPlan(
     insights.push({ text: "Thorough trigger analysis combined with full de-escalation pathways demonstrates proactive, trauma-informed behaviour management", severity: "positive" });
   if (totalWorsening > 3 && total > 0)
     insights.push({ text: "Multiple worsening behaviour trends suggest current strategies may need revision or additional therapeutic input", severity: "warning" });
-  if (totalRestrictive > 0 && meets(pct(totalLastResort, totalRestrictive), 100) && total > 0)
+  if (totalRestrictive > 0 && meets(rate(totalLastResort, totalRestrictive), 100) && total > 0)
     insights.push({ text: "All restrictive interventions are documented as last resort — governance of restrictive practice is robust", severity: "positive" });
   if (meets(effectivenessRate, 60) && totalStrategies > 0)
     insights.push({ text: "Positive strategies are demonstrably effective — evidence-based approaches are driving improved outcomes", severity: "positive" });
-  if (total > 0 && meets(pct(withProfessionalInput, total), 60))
+  if (total > 0 && meets(rate(withProfessionalInput, total), 60))
     insights.push({ text: "Professional input informs BSPs — multi-disciplinary perspectives strengthen behaviour understanding", severity: "positive" });
 
   // ── Headline ───────────────────────────────────────────────────────────

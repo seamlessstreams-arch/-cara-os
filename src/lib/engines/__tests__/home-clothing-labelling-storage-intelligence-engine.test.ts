@@ -185,9 +185,9 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
 
     it("returns all rates as 0 for insufficient_data", () => {
       const r = computeClothingLabellingStorage(baseInput({ total_children: 0 }));
-      expect(r.labelling_compliance_rate).toBe(0);
+      expect(r.labelling_compliance_rate).toBeNull();
       expect(r.storage_adequacy_rate).toBeNull();
-      expect(r.seasonal_rotation_rate).toBe(0);
+      expect(r.seasonal_rotation_rate).toBeNull();
       expect(r.ownership_respect_rate).toBeNull();
       expect(r.condition_monitoring_rate).toBeNull();
       expect(r.child_satisfaction_rate).toBeNull();
@@ -254,11 +254,11 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
       expect(r.insights[0].severity).toBe("critical");
     });
 
-    it("all rates are 0", () => {
+    it("all rates are null", () => {
       const r = computeClothingLabellingStorage(baseInput());
-      expect(r.labelling_compliance_rate).toBe(0);
+      expect(r.labelling_compliance_rate).toBeNull();
       expect(r.storage_adequacy_rate).toBeNull();
-      expect(r.seasonal_rotation_rate).toBe(0);
+      expect(r.seasonal_rotation_rate).toBeNull();
       expect(r.ownership_respect_rate).toBeNull();
       expect(r.condition_monitoring_rate).toBeNull();
       expect(r.child_satisfaction_rate).toBeNull();
@@ -397,11 +397,11 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
       expect(r.labelling_compliance_rate).toBe(70); // 14/20
     });
 
-    it("returns 0 when no labelling records", () => {
+    it("returns null when no labelling records", () => {
       const r = computeClothingLabellingStorage(baseInput({
         storage_records: [makeStorage()],
       }));
-      expect(r.labelling_compliance_rate).toBe(0);
+      expect(r.labelling_compliance_rate).toBeNull();
     });
 
     it("handles 100% labelling compliance", () => {
@@ -461,7 +461,7 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
       expect(r.storage_adequacy_rate).toBe(50);
     });
 
-    it("returns 0 when no storage records", () => {
+    it("returns null when no storage records", () => {
       const r = computeClothingLabellingStorage(baseInput({
         labelling_records: [makeLabelling()],
       }));
@@ -516,11 +516,11 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
       expect(r.seasonal_rotation_rate).toBe(50);
     });
 
-    it("returns 0 when no rotation records", () => {
+    it("returns null when no rotation records", () => {
       const r = computeClothingLabellingStorage(baseInput({
         labelling_records: [makeLabelling()],
       }));
-      expect(r.seasonal_rotation_rate).toBe(0);
+      expect(r.seasonal_rotation_rate).toBeNull();
     });
   });
 
@@ -561,7 +561,7 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
       expect(r.ownership_respect_rate).toBe(50);
     });
 
-    it("returns 0 when no ownership records", () => {
+    it("returns null when no ownership records", () => {
       const r = computeClothingLabellingStorage(baseInput({
         labelling_records: [makeLabelling()],
       }));
@@ -602,14 +602,14 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
       expect(r.condition_monitoring_rate).toBe(50);
     });
 
-    it("returns 0 when no condition records", () => {
+    it("returns null when no condition records", () => {
       const r = computeClothingLabellingStorage(baseInput({
         labelling_records: [makeLabelling()],
       }));
       expect(r.condition_monitoring_rate).toBeNull();
     });
 
-    it("handles 0 items needing replacement (replacement_rate = 0)", () => {
+    it("handles 0 items needing replacement (replacement_rate unmeasured)", () => {
       const r = computeClothingLabellingStorage(baseInput({
         condition_records: [makeCondition({
           total_items_checked: 20,
@@ -618,8 +618,11 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
           items_replaced: 0,
         })],
       }));
-      // good_condition_rate=100%, replacement_rate=pct(0,0)=0%, avg=50
-      expect(r.condition_monitoring_rate).toBe(50);
+      // Nothing needed replacing, so replacement_rate is unmeasured (null) and
+      // meanOf drops it: the composite reflects the one measured component
+      // (good_condition_rate = 100%) instead of averaging in a phantom 0% that
+      // used to halve the score of a perfectly maintained wardrobe.
+      expect(r.condition_monitoring_rate).toBe(100);
     });
   });
 
@@ -647,7 +650,7 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
       expect(r.child_satisfaction_rate).toBe(60);
     });
 
-    it("returns 0 when no relevant records exist", () => {
+    it("returns null when no relevant records exist", () => {
       const r = computeClothingLabellingStorage(baseInput({
         labelling_records: [makeLabelling()],
       }));
@@ -2311,7 +2314,7 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
       }));
       expect(r.labelling_compliance_rate).toBeGreaterThan(0);
       expect(r.storage_adequacy_rate).toBeNull();
-      expect(r.seasonal_rotation_rate).toBe(0);
+      expect(r.seasonal_rotation_rate).toBeNull();
       expect(r.ownership_respect_rate).toBeNull();
       expect(r.condition_monitoring_rate).toBeNull();
     });
@@ -2321,7 +2324,7 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
         storage_records: [makeStorage()],
       }));
       expect(r.storage_adequacy_rate).toBeGreaterThan(0);
-      expect(r.labelling_compliance_rate).toBe(0);
+      expect(r.labelling_compliance_rate).toBeNull();
     });
 
     it("only rotation records present", () => {
@@ -2329,7 +2332,7 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
         rotation_records: [makeRotation()],
       }));
       expect(r.seasonal_rotation_rate).toBeGreaterThan(0);
-      expect(r.labelling_compliance_rate).toBe(0);
+      expect(r.labelling_compliance_rate).toBeNull();
     });
 
     it("only ownership records present", () => {
@@ -2337,7 +2340,7 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
         ownership_records: [makeOwnership()],
       }));
       expect(r.ownership_respect_rate).toBeGreaterThan(0);
-      expect(r.labelling_compliance_rate).toBe(0);
+      expect(r.labelling_compliance_rate).toBeNull();
     });
 
     it("only condition records present", () => {
@@ -2345,7 +2348,7 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
         condition_records: [makeCondition()],
       }));
       expect(r.condition_monitoring_rate).toBeGreaterThan(0);
-      expect(r.labelling_compliance_rate).toBe(0);
+      expect(r.labelling_compliance_rate).toBeNull();
     });
 
     it("total_children=0 with records still returns insufficient_data", () => {
@@ -2426,19 +2429,19 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
       const r = computeClothingLabellingStorage(baseInput({
         total_children: 0,
       }));
-      expect(r.labelling_compliance_rate).toBe(0);
+      expect(r.labelling_compliance_rate).toBeNull();
       expect(r.storage_adequacy_rate).toBeNull();
-      expect(r.seasonal_rotation_rate).toBe(0);
+      expect(r.seasonal_rotation_rate).toBeNull();
       expect(r.ownership_respect_rate).toBeNull();
       expect(r.condition_monitoring_rate).toBeNull();
       expect(r.child_satisfaction_rate).toBeNull();
     });
 
-    it("zero items audited yields 0% labelling compliance without error", () => {
+    it("zero items audited yields null labelling compliance without error", () => {
       const r = computeClothingLabellingStorage(baseInput({
         labelling_records: [makeLabelling({ total_items_audited: 0, items_labelled: 0 })],
       }));
-      expect(r.labelling_compliance_rate).toBe(0);
+      expect(r.labelling_compliance_rate).toBeNull();
     });
 
     it("zero items checked yields 0 good condition rate", () => {
@@ -2451,7 +2454,7 @@ describe("Home Clothing Labelling & Storage Intelligence Engine", () => {
         })],
       }));
       // record exists → 0, not null
-      expect(r.condition_monitoring_rate).toBe(0);
+      expect(r.condition_monitoring_rate).toBeNull();
     });
   });
 

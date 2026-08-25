@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME COMPLAINT & ADVOCACY RESPONSIVENESS INTELLIGENCE ENGINE
 // Monitors how well the home responds to complaints, ensures children have
@@ -136,10 +137,6 @@ export interface ComplaintAdvocacyResponsivenessResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -163,14 +160,14 @@ function emptyResult(
     responsiveness_score: score,
     headline,
     total_complaints: 0,
-    complaint_resolution_rate: 0,
-    complaint_timeliness_rate: 0,
-    advocacy_access_rate: 0,
-    child_satisfaction_rate: 0,
-    feedback_loop_completion_rate: 0,
-    participation_rate: 0,
-    complaint_acknowledgement_rate: 0,
-    learning_implemented_rate: 0,
+    complaint_resolution_rate: null,
+    complaint_timeliness_rate: null,
+    advocacy_access_rate: null,
+    child_satisfaction_rate: null,
+    feedback_loop_completion_rate: null,
+    participation_rate: null,
+    complaint_acknowledgement_rate: null,
+    learning_implemented_rate: null,
     advocacy_quality_avg: 0,
     strengths: [],
     concerns: [],
@@ -251,7 +248,7 @@ export function computeComplaintAdvocacyResponsiveness(
   const totalComplaints = complaint_outcomes.length;
 
   const resolvedComplaints = complaint_outcomes.filter((c) => c.resolved).length;
-  const complaintResolutionRate = pct(resolvedComplaints, totalComplaints);
+  const complaintResolutionRate = rate(resolvedComplaints, totalComplaints);
 
   const resolvedWithinTarget = complaint_outcomes.filter(
     (c) =>
@@ -259,13 +256,13 @@ export function computeComplaintAdvocacyResponsiveness(
       c.actual_resolution_days !== null &&
       c.actual_resolution_days <= c.target_resolution_days,
   ).length;
-  const complaintTimelinessRate = pct(resolvedWithinTarget, totalComplaints);
+  const complaintTimelinessRate = rate(resolvedWithinTarget, totalComplaints);
 
   const acknowledgedComplaints = complaint_outcomes.filter((c) => c.acknowledged).length;
-  const complaintAcknowledgementRate = pct(acknowledgedComplaints, totalComplaints);
+  const complaintAcknowledgementRate = rate(acknowledgedComplaints, totalComplaints);
 
   const satisfiedChildren = complaint_outcomes.filter((c) => c.child_satisfied).length;
-  const childSatisfactionRate = pct(satisfiedChildren, totalComplaints);
+  const childSatisfactionRate = rate(satisfiedChildren, totalComplaints);
 
   const totalLearningIdentified = complaint_outcomes.reduce(
     (sum, c) => sum + c.learning_actions_identified,
@@ -275,14 +272,14 @@ export function computeComplaintAdvocacyResponsiveness(
     (sum, c) => sum + c.learning_actions_implemented,
     0,
   );
-  const learningImplementedRate = pct(totalLearningImplemented, totalLearningIdentified);
+  const learningImplementedRate = rate(totalLearningImplemented, totalLearningIdentified);
 
   // --- Advocacy metrics ---
   const uniqueChildrenWithAdvocacy = new Set(
     advocacy_records.filter((a) => a.active).map((a) => a.child_id),
   ).size;
   const advocacyAccessRate =
-    total_children > 0 ? pct(uniqueChildrenWithAdvocacy, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenWithAdvocacy, total_children) : 0;
 
   const advocacyQualitySum = advocacy_records.reduce(
     (sum, a) => sum + a.quality_rating,
@@ -296,48 +293,48 @@ export function computeComplaintAdvocacyResponsiveness(
   // --- Feedback loop metrics ---
   const totalFeedbackLoops = child_feedback_loops.length;
   const closedFeedbackLoops = child_feedback_loops.filter((f) => f.loop_closed).length;
-  const feedbackLoopCompletionRate = pct(closedFeedbackLoops, totalFeedbackLoops);
+  const feedbackLoopCompletionRate = rate(closedFeedbackLoops, totalFeedbackLoops);
 
   // --- Participation metrics ---
   const totalParticipationOpportunities = participation_entries.length;
   const attendedEntries = participation_entries.filter((p) => p.attended).length;
-  const participationRate = pct(attendedEntries, totalParticipationOpportunities);
+  const participationRate = rate(attendedEntries, totalParticipationOpportunities);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus: complaintResolutionRate (>=100: +4, >=80: +2) ---
-  if (complaintResolutionRate >= 100) score += 4;
-  else if (complaintResolutionRate >= 80) score += 2;
+  if (meets(complaintResolutionRate, 100)) score += 4;
+  else if (meets(complaintResolutionRate, 80)) score += 2;
 
   // --- Bonus: complaintTimelinessRate (>=90: +3, >=70: +1) ---
-  if (complaintTimelinessRate >= 90) score += 3;
-  else if (complaintTimelinessRate >= 70) score += 1;
+  if (meets(complaintTimelinessRate, 90)) score += 3;
+  else if (meets(complaintTimelinessRate, 70)) score += 1;
 
   // --- Bonus: advocacyAccessRate (>=100: +4, >=80: +2) ---
-  if (advocacyAccessRate >= 100) score += 4;
-  else if (advocacyAccessRate >= 80) score += 2;
+  if (meets(advocacyAccessRate, 100)) score += 4;
+  else if (meets(advocacyAccessRate, 80)) score += 2;
 
   // --- Bonus: childSatisfactionRate (>=90: +3, >=70: +1) ---
-  if (childSatisfactionRate >= 90) score += 3;
-  else if (childSatisfactionRate >= 70) score += 1;
+  if (meets(childSatisfactionRate, 90)) score += 3;
+  else if (meets(childSatisfactionRate, 70)) score += 1;
 
   // --- Bonus: feedbackLoopCompletionRate (>=100: +3, >=80: +1) ---
-  if (feedbackLoopCompletionRate >= 100) score += 3;
-  else if (feedbackLoopCompletionRate >= 80) score += 1;
+  if (meets(feedbackLoopCompletionRate, 100)) score += 3;
+  else if (meets(feedbackLoopCompletionRate, 80)) score += 1;
 
   // --- Bonus: participationRate (>=90: +3, >=70: +1) ---
-  if (participationRate >= 90) score += 3;
-  else if (participationRate >= 70) score += 1;
+  if (meets(participationRate, 90)) score += 3;
+  else if (meets(participationRate, 70)) score += 1;
 
   // --- Bonus: complaintAcknowledgementRate (>=100: +2, >=80: +1) ---
-  if (complaintAcknowledgementRate >= 100) score += 2;
-  else if (complaintAcknowledgementRate >= 80) score += 1;
+  if (meets(complaintAcknowledgementRate, 100)) score += 2;
+  else if (meets(complaintAcknowledgementRate, 80)) score += 1;
 
   // --- Bonus: learningImplementedRate (>=90: +3, >=70: +1) ---
-  if (learningImplementedRate >= 90) score += 3;
-  else if (learningImplementedRate >= 70) score += 1;
+  if (meets(learningImplementedRate, 90)) score += 3;
+  else if (meets(learningImplementedRate, 70)) score += 1;
 
   // --- Bonus: advocacyQualityAvg (>=4.0: +3, >=3.0: +1) ---
   if ((advocacyQualityAvg ?? 0) >= 4.0) score += 3;
@@ -346,16 +343,16 @@ export function computeComplaintAdvocacyResponsiveness(
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // complaintResolutionRate < 50 → -5
-  if (complaintResolutionRate < 50 && totalComplaints > 0) score -= 5;
+  if (below(complaintResolutionRate, 50) && totalComplaints > 0) score -= 5;
 
   // advocacyAccessRate < 50 → -5
-  if (advocacyAccessRate < 50 && total_children > 0) score -= 5;
+  if (below(advocacyAccessRate, 50) && total_children > 0) score -= 5;
 
   // feedbackLoopCompletionRate < 50 → -5
-  if (feedbackLoopCompletionRate < 50 && totalFeedbackLoops > 0) score -= 5;
+  if (below(feedbackLoopCompletionRate, 50) && totalFeedbackLoops > 0) score -= 5;
 
   // participationRate < 30 → -3
-  if (participationRate < 30 && totalParticipationOpportunities > 0) score -= 3;
+  if (below(participationRate, 30) && totalParticipationOpportunities > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -365,81 +362,81 @@ export function computeComplaintAdvocacyResponsiveness(
 
   const strengths: string[] = [];
 
-  if (complaintResolutionRate >= 100 && totalComplaints > 0) {
+  if (meets(complaintResolutionRate, 100) && totalComplaints > 0) {
     strengths.push(
       "Every complaint has been resolved — the home demonstrates complete commitment to addressing children's concerns.",
     );
-  } else if (complaintResolutionRate >= 80 && totalComplaints > 0) {
+  } else if (meets(complaintResolutionRate, 80) && totalComplaints > 0) {
     strengths.push(
       `${complaintResolutionRate}% complaint resolution rate — the home resolves the majority of complaints effectively.`,
     );
   }
 
-  if (complaintTimelinessRate >= 90 && totalComplaints > 0) {
+  if (meets(complaintTimelinessRate, 90) && totalComplaints > 0) {
     strengths.push(
       `${complaintTimelinessRate}% of complaints resolved within target timeframes — strong timeliness in complaint handling.`,
     );
-  } else if (complaintTimelinessRate >= 70 && totalComplaints > 0) {
+  } else if (meets(complaintTimelinessRate, 70) && totalComplaints > 0) {
     strengths.push(
       `${complaintTimelinessRate}% of complaints resolved within target — generally timely complaint resolution.`,
     );
   }
 
-  if (advocacyAccessRate >= 100 && total_children > 0) {
+  if (meets(advocacyAccessRate, 100) && total_children > 0) {
     strengths.push(
       "Every child has access to an active advocate — advocacy provision is comprehensive.",
     );
-  } else if (advocacyAccessRate >= 80 && total_children > 0) {
+  } else if (meets(advocacyAccessRate, 80) && total_children > 0) {
     strengths.push(
       `${advocacyAccessRate}% of children have advocacy access — strong advocacy provision across the home.`,
     );
   }
 
-  if (childSatisfactionRate >= 90 && totalComplaints > 0) {
+  if (meets(childSatisfactionRate, 90) && totalComplaints > 0) {
     strengths.push(
       `${childSatisfactionRate}% child satisfaction with complaint outcomes — children feel their concerns are taken seriously and resolved well.`,
     );
-  } else if (childSatisfactionRate >= 70 && totalComplaints > 0) {
+  } else if (meets(childSatisfactionRate, 70) && totalComplaints > 0) {
     strengths.push(
       `${childSatisfactionRate}% child satisfaction rate — most children are satisfied with how their complaints are handled.`,
     );
   }
 
-  if (feedbackLoopCompletionRate >= 100 && totalFeedbackLoops > 0) {
+  if (meets(feedbackLoopCompletionRate, 100) && totalFeedbackLoops > 0) {
     strengths.push(
       "All feedback loops are closed — every piece of child feedback receives a documented response and acknowledgement.",
     );
-  } else if (feedbackLoopCompletionRate >= 80 && totalFeedbackLoops > 0) {
+  } else if (meets(feedbackLoopCompletionRate, 80) && totalFeedbackLoops > 0) {
     strengths.push(
       `${feedbackLoopCompletionRate}% of feedback loops closed — strong practice in responding to and closing out child feedback.`,
     );
   }
 
-  if (participationRate >= 90 && totalParticipationOpportunities > 0) {
+  if (meets(participationRate, 90) && totalParticipationOpportunities > 0) {
     strengths.push(
       `${participationRate}% participation rate — children are actively engaged in decisions that affect their lives.`,
     );
-  } else if (participationRate >= 70 && totalParticipationOpportunities > 0) {
+  } else if (meets(participationRate, 70) && totalParticipationOpportunities > 0) {
     strengths.push(
       `${participationRate}% participation rate — good levels of child engagement in home activities and decisions.`,
     );
   }
 
-  if (complaintAcknowledgementRate >= 100 && totalComplaints > 0) {
+  if (meets(complaintAcknowledgementRate, 100) && totalComplaints > 0) {
     strengths.push(
       "Every complaint acknowledged promptly — children know their concerns are heard from the outset.",
     );
-  } else if (complaintAcknowledgementRate >= 80 && totalComplaints > 0) {
+  } else if (meets(complaintAcknowledgementRate, 80) && totalComplaints > 0) {
     strengths.push(
       `${complaintAcknowledgementRate}% complaint acknowledgement rate — most complaints are acknowledged promptly.`,
     );
   }
 
-  if (learningImplementedRate >= 90 && totalLearningIdentified > 0) {
+  if (meets(learningImplementedRate, 90) && totalLearningIdentified > 0) {
     strengths.push(
       `${learningImplementedRate}% of complaint learning actions implemented — the home translates complaints into genuine practice improvements.`,
     );
-  } else if (learningImplementedRate >= 70 && totalLearningIdentified > 0) {
+  } else if (meets(learningImplementedRate, 70) && totalLearningIdentified > 0) {
     strengths.push(
       `${learningImplementedRate}% of learning actions implemented — the home generally acts on lessons identified through complaints.`,
     );
@@ -465,14 +462,14 @@ export function computeComplaintAdvocacyResponsiveness(
   }
 
   const voiceCapturedAdvocacy = advocacy_records.filter((a) => a.child_voice_captured).length;
-  if (pct(voiceCapturedAdvocacy, advocacy_records.length) >= 90 && advocacy_records.length > 0) {
+  if (advocacy_records.length > 0 && meets(rate(voiceCapturedAdvocacy, advocacy_records.length), 90)) {
     strengths.push(
       "Child voice captured in the vast majority of advocacy sessions — advocacy is genuinely child-centred.",
     );
   }
 
   const outcomeInfluenced = participation_entries.filter((p) => p.outcome_influenced).length;
-  if (pct(outcomeInfluenced, totalParticipationOpportunities) >= 70 && totalParticipationOpportunities > 0) {
+  if (totalParticipationOpportunities > 0 && meets(rate(outcomeInfluenced, totalParticipationOpportunities), 70)) {
     strengths.push(
       "Children's participation is genuinely influencing outcomes — their voices are not just heard but acted upon.",
     );
@@ -482,73 +479,73 @@ export function computeComplaintAdvocacyResponsiveness(
 
   const concerns: string[] = [];
 
-  if (complaintResolutionRate < 50 && totalComplaints > 0) {
+  if (below(complaintResolutionRate, 50) && totalComplaints > 0) {
     concerns.push(
       `Only ${complaintResolutionRate}% of complaints resolved — the majority of children's complaints remain unaddressed, undermining trust in the complaints process.`,
     );
-  } else if (complaintResolutionRate < 80 && complaintResolutionRate >= 50 && totalComplaints > 0) {
+  } else if (below(complaintResolutionRate, 80) && meets(complaintResolutionRate, 50) && totalComplaints > 0) {
     concerns.push(
       `Complaint resolution rate at ${complaintResolutionRate}% — some complaints are not being resolved, which may leave children feeling unheard.`,
     );
   }
 
-  if (complaintTimelinessRate < 70 && totalComplaints > 0) {
+  if (below(complaintTimelinessRate, 70) && totalComplaints > 0) {
     concerns.push(
       `Only ${complaintTimelinessRate}% of complaints resolved within target timeframes — delays in complaint handling may cause frustration and erode children's confidence in the process.`,
     );
   }
 
-  if (advocacyAccessRate < 50 && total_children > 0) {
+  if (below(advocacyAccessRate, 50) && total_children > 0) {
     concerns.push(
       `Only ${advocacyAccessRate}% of children have access to advocacy — the majority of children lack an independent voice to represent their interests.`,
     );
-  } else if (advocacyAccessRate < 80 && advocacyAccessRate >= 50 && total_children > 0) {
+  } else if (below(advocacyAccessRate, 80) && meets(advocacyAccessRate, 50) && total_children > 0) {
     concerns.push(
       `Advocacy access at ${advocacyAccessRate}% — not all children have an advocate to support them in expressing their views.`,
     );
   }
 
-  if (childSatisfactionRate < 50 && totalComplaints > 0) {
+  if (below(childSatisfactionRate, 50) && totalComplaints > 0) {
     concerns.push(
       `Only ${childSatisfactionRate}% of children satisfied with complaint outcomes — the complaints process is not delivering outcomes that children find acceptable.`,
     );
-  } else if (childSatisfactionRate < 70 && childSatisfactionRate >= 50 && totalComplaints > 0) {
+  } else if (below(childSatisfactionRate, 70) && meets(childSatisfactionRate, 50) && totalComplaints > 0) {
     concerns.push(
       `Child satisfaction at ${childSatisfactionRate}% — a significant proportion of children are not satisfied with how their complaints are resolved.`,
     );
   }
 
-  if (feedbackLoopCompletionRate < 50 && totalFeedbackLoops > 0) {
+  if (below(feedbackLoopCompletionRate, 50) && totalFeedbackLoops > 0) {
     concerns.push(
       `Only ${feedbackLoopCompletionRate}% of feedback loops closed — children are giving feedback but not receiving responses, undermining the value of seeking their views.`,
     );
-  } else if (feedbackLoopCompletionRate < 80 && feedbackLoopCompletionRate >= 50 && totalFeedbackLoops > 0) {
+  } else if (below(feedbackLoopCompletionRate, 80) && meets(feedbackLoopCompletionRate, 50) && totalFeedbackLoops > 0) {
     concerns.push(
       `Feedback loop completion at ${feedbackLoopCompletionRate}% — some child feedback is not being responded to or closed out.`,
     );
   }
 
-  if (participationRate < 30 && totalParticipationOpportunities > 0) {
+  if (below(participationRate, 30) && totalParticipationOpportunities > 0) {
     concerns.push(
       `Only ${participationRate}% participation rate — children are not engaging in activities and decisions that affect their daily lives.`,
     );
-  } else if (participationRate < 70 && participationRate >= 30 && totalParticipationOpportunities > 0) {
+  } else if (below(participationRate, 70) && meets(participationRate, 30) && totalParticipationOpportunities > 0) {
     concerns.push(
       `Participation rate at ${participationRate}% — not all children are actively involved in the home's decision-making processes.`,
     );
   }
 
-  if (complaintAcknowledgementRate < 80 && totalComplaints > 0) {
+  if (below(complaintAcknowledgementRate, 80) && totalComplaints > 0) {
     concerns.push(
       `Complaint acknowledgement rate at ${complaintAcknowledgementRate}% — some children are not receiving prompt acknowledgement when they raise concerns.`,
     );
   }
 
-  if (learningImplementedRate < 50 && totalLearningIdentified > 0) {
+  if (below(learningImplementedRate, 50) && totalLearningIdentified > 0) {
     concerns.push(
       `Only ${learningImplementedRate}% of complaint learning actions implemented — identified improvements are not being followed through, meaning complaints are not driving genuine change.`,
     );
-  } else if (learningImplementedRate < 70 && learningImplementedRate >= 50 && totalLearningIdentified > 0) {
+  } else if (below(learningImplementedRate, 70) && meets(learningImplementedRate, 50) && totalLearningIdentified > 0) {
     concerns.push(
       `Learning implementation rate at ${learningImplementedRate}% — some complaint-driven improvements are not being acted upon.`,
     );
@@ -568,8 +565,8 @@ export function computeComplaintAdvocacyResponsiveness(
 
   if (participation_entries.length > 0) {
     const voiceHeard = participation_entries.filter((p) => p.voice_heard).length;
-    const voiceHeardRate = pct(voiceHeard, totalParticipationOpportunities);
-    if (voiceHeardRate < 50) {
+    const voiceHeardRate = rate(voiceHeard, totalParticipationOpportunities);
+    if (below(voiceHeardRate, 50)) {
       concerns.push(
         `Children's voices heard in only ${voiceHeardRate}% of participation opportunities — attendance alone is insufficient if children do not feel listened to.`,
       );
@@ -581,7 +578,7 @@ export function computeComplaintAdvocacyResponsiveness(
   const recommendations: ComplaintAdvocacyRecommendation[] = [];
   let rank = 0;
 
-  if (complaintResolutionRate < 50 && totalComplaints > 0) {
+  if (below(complaintResolutionRate, 50) && totalComplaints > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -591,7 +588,7 @@ export function computeComplaintAdvocacyResponsiveness(
     });
   }
 
-  if (advocacyAccessRate < 50 && total_children > 0) {
+  if (below(advocacyAccessRate, 50) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -601,7 +598,7 @@ export function computeComplaintAdvocacyResponsiveness(
     });
   }
 
-  if (feedbackLoopCompletionRate < 50 && totalFeedbackLoops > 0) {
+  if (below(feedbackLoopCompletionRate, 50) && totalFeedbackLoops > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -611,7 +608,7 @@ export function computeComplaintAdvocacyResponsiveness(
     });
   }
 
-  if (complaintAcknowledgementRate < 80 && totalComplaints > 0) {
+  if (below(complaintAcknowledgementRate, 80) && totalComplaints > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -621,7 +618,7 @@ export function computeComplaintAdvocacyResponsiveness(
     });
   }
 
-  if (participationRate < 30 && totalParticipationOpportunities > 0) {
+  if (below(participationRate, 30) && totalParticipationOpportunities > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -631,7 +628,7 @@ export function computeComplaintAdvocacyResponsiveness(
     });
   }
 
-  if (childSatisfactionRate < 50 && totalComplaints > 0) {
+  if (below(childSatisfactionRate, 50) && totalComplaints > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -641,7 +638,7 @@ export function computeComplaintAdvocacyResponsiveness(
     });
   }
 
-  if (learningImplementedRate < 50 && totalLearningIdentified > 0) {
+  if (below(learningImplementedRate, 50) && totalLearningIdentified > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -651,7 +648,7 @@ export function computeComplaintAdvocacyResponsiveness(
     });
   }
 
-  if (complaintTimelinessRate < 70 && totalComplaints > 0) {
+  if (below(complaintTimelinessRate, 70) && totalComplaints > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -672,8 +669,8 @@ export function computeComplaintAdvocacyResponsiveness(
   }
 
   if (
-    advocacyAccessRate >= 50 &&
-    advocacyAccessRate < 80 &&
+    meets(advocacyAccessRate, 50) &&
+    below(advocacyAccessRate, 80) &&
     total_children > 0
   ) {
     recommendations.push({
@@ -686,8 +683,8 @@ export function computeComplaintAdvocacyResponsiveness(
   }
 
   if (
-    complaintResolutionRate >= 50 &&
-    complaintResolutionRate < 80 &&
+    meets(complaintResolutionRate, 50) &&
+    below(complaintResolutionRate, 80) &&
     totalComplaints > 0
   ) {
     recommendations.push({
@@ -700,8 +697,8 @@ export function computeComplaintAdvocacyResponsiveness(
   }
 
   if (
-    feedbackLoopCompletionRate >= 50 &&
-    feedbackLoopCompletionRate < 80 &&
+    meets(feedbackLoopCompletionRate, 50) &&
+    below(feedbackLoopCompletionRate, 80) &&
     totalFeedbackLoops > 0
   ) {
     recommendations.push({
@@ -714,8 +711,8 @@ export function computeComplaintAdvocacyResponsiveness(
   }
 
   if (
-    participationRate >= 30 &&
-    participationRate < 70 &&
+    meets(participationRate, 30) &&
+    below(participationRate, 70) &&
     totalParticipationOpportunities > 0
   ) {
     recommendations.push({
@@ -728,8 +725,8 @@ export function computeComplaintAdvocacyResponsiveness(
   }
 
   if (
-    childSatisfactionRate >= 50 &&
-    childSatisfactionRate < 70 &&
+    meets(childSatisfactionRate, 50) &&
+    below(childSatisfactionRate, 70) &&
     totalComplaints > 0
   ) {
     recommendations.push({
@@ -757,28 +754,28 @@ export function computeComplaintAdvocacyResponsiveness(
 
   // -- Critical insights --
 
-  if (complaintResolutionRate < 50 && totalComplaints > 0) {
+  if (below(complaintResolutionRate, 50) && totalComplaints > 0) {
     insights.push({
       text: `Only ${complaintResolutionRate}% of complaints resolved. Ofsted will view unresolved complaints as evidence that children's concerns are not taken seriously, which directly undermines Reg 39 compliance and the home's ability to demonstrate responsive care.`,
       severity: "critical",
     });
   }
 
-  if (advocacyAccessRate < 50 && total_children > 0) {
+  if (below(advocacyAccessRate, 50) && total_children > 0) {
     insights.push({
       text: `Only ${advocacyAccessRate}% of children have advocacy access. Without an independent voice, children cannot effectively challenge decisions or raise concerns about their care. This is a fundamental gap in the home's voice of the child framework.`,
       severity: "critical",
     });
   }
 
-  if (feedbackLoopCompletionRate < 50 && totalFeedbackLoops > 0) {
+  if (below(feedbackLoopCompletionRate, 50) && totalFeedbackLoops > 0) {
     insights.push({
       text: `Only ${feedbackLoopCompletionRate}% of feedback loops closed. When children share their views but receive no response, it teaches them that their voice does not matter — the opposite of what Ofsted expects under the voice of the child framework.`,
       severity: "critical",
     });
   }
 
-  if (participationRate < 30 && totalParticipationOpportunities > 0) {
+  if (below(participationRate, 30) && totalParticipationOpportunities > 0) {
     insights.push({
       text: `Participation rate at only ${participationRate}%. Children are not engaged in decisions about their daily lives, which Ofsted views as a failure to promote the voice of the child. Low participation may indicate children feel disempowered or disengaged.`,
       severity: "critical",
@@ -795,8 +792,8 @@ export function computeComplaintAdvocacyResponsiveness(
   // -- Warning insights --
 
   if (
-    complaintResolutionRate >= 50 &&
-    complaintResolutionRate < 80 &&
+    meets(complaintResolutionRate, 50) &&
+    below(complaintResolutionRate, 80) &&
     totalComplaints > 0
   ) {
     insights.push({
@@ -805,7 +802,7 @@ export function computeComplaintAdvocacyResponsiveness(
     });
   }
 
-  if (complaintTimelinessRate < 70 && complaintTimelinessRate > 0 && totalComplaints > 0) {
+  if (below(complaintTimelinessRate, 70) && above(complaintTimelinessRate, 0) && totalComplaints > 0) {
     insights.push({
       text: `Only ${complaintTimelinessRate}% of complaints resolved within target timeframes — delays in resolving complaints may cause children to lose confidence in the process and stop raising concerns.`,
       severity: "warning",
@@ -813,8 +810,8 @@ export function computeComplaintAdvocacyResponsiveness(
   }
 
   if (
-    advocacyAccessRate >= 50 &&
-    advocacyAccessRate < 80 &&
+    meets(advocacyAccessRate, 50) &&
+    below(advocacyAccessRate, 80) &&
     total_children > 0
   ) {
     insights.push({
@@ -824,8 +821,8 @@ export function computeComplaintAdvocacyResponsiveness(
   }
 
   if (
-    childSatisfactionRate >= 50 &&
-    childSatisfactionRate < 70 &&
+    meets(childSatisfactionRate, 50) &&
+    below(childSatisfactionRate, 70) &&
     totalComplaints > 0
   ) {
     insights.push({
@@ -835,8 +832,8 @@ export function computeComplaintAdvocacyResponsiveness(
   }
 
   if (
-    feedbackLoopCompletionRate >= 50 &&
-    feedbackLoopCompletionRate < 80 &&
+    meets(feedbackLoopCompletionRate, 50) &&
+    below(feedbackLoopCompletionRate, 80) &&
     totalFeedbackLoops > 0
   ) {
     insights.push({
@@ -846,8 +843,8 @@ export function computeComplaintAdvocacyResponsiveness(
   }
 
   if (
-    participationRate >= 30 &&
-    participationRate < 70 &&
+    meets(participationRate, 30) &&
+    below(participationRate, 70) &&
     totalParticipationOpportunities > 0
   ) {
     insights.push({
@@ -856,7 +853,7 @@ export function computeComplaintAdvocacyResponsiveness(
     });
   }
 
-  if (learningImplementedRate < 70 && learningImplementedRate >= 50 && totalLearningIdentified > 0) {
+  if (below(learningImplementedRate, 70) && meets(learningImplementedRate, 50) && totalLearningIdentified > 0) {
     insights.push({
       text: `Learning implementation rate at ${learningImplementedRate}% — identified improvements from complaints are not consistently followed through, reducing the value of the complaints process as a driver of change.`,
       severity: "warning",
@@ -900,8 +897,8 @@ export function computeComplaintAdvocacyResponsiveness(
   }
 
   if (
-    complaintResolutionRate >= 100 &&
-    complaintAcknowledgementRate >= 100 &&
+    meets(complaintResolutionRate, 100) &&
+    meets(complaintAcknowledgementRate, 100) &&
     totalComplaints > 0
   ) {
     insights.push({
@@ -911,7 +908,7 @@ export function computeComplaintAdvocacyResponsiveness(
   }
 
   if (
-    advocacyAccessRate >= 100 &&
+    meets(advocacyAccessRate, 100) &&
     (advocacyQualityAvg ?? 0) >= 4.0 &&
     total_children > 0 &&
     advocacy_records.length > 0
@@ -923,7 +920,7 @@ export function computeComplaintAdvocacyResponsiveness(
   }
 
   if (
-    feedbackLoopCompletionRate >= 100 &&
+    meets(feedbackLoopCompletionRate, 100) &&
     totalFeedbackLoops > 0
   ) {
     insights.push({
@@ -933,11 +930,11 @@ export function computeComplaintAdvocacyResponsiveness(
   }
 
   if (
-    participationRate >= 90 &&
+    meets(participationRate, 90) &&
     totalParticipationOpportunities > 0
   ) {
-    const influenceRate = pct(outcomeInfluenced, totalParticipationOpportunities);
-    if (influenceRate >= 70) {
+    const influenceRate = rate(outcomeInfluenced, totalParticipationOpportunities);
+    if (meets(influenceRate, 70)) {
       insights.push({
         text: `${participationRate}% participation with ${influenceRate}% of outcomes influenced by children's input — participation is genuinely empowering and child-centred, not tokenistic.`,
         severity: "positive",
@@ -951,7 +948,7 @@ export function computeComplaintAdvocacyResponsiveness(
   }
 
   if (
-    childSatisfactionRate >= 90 &&
+    meets(childSatisfactionRate, 90) &&
     totalComplaints > 0
   ) {
     insights.push({
@@ -961,7 +958,7 @@ export function computeComplaintAdvocacyResponsiveness(
   }
 
   if (
-    learningImplementedRate >= 90 &&
+    meets(learningImplementedRate, 90) &&
     totalLearningIdentified > 0
   ) {
     insights.push({

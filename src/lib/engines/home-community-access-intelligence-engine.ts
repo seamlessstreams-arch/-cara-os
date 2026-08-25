@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME COMMUNITY ACCESS INTELLIGENCE ENGINE
 // Home-level engine aggregating transport safety, transport risk assessments,
@@ -105,7 +106,8 @@ export interface TransportRASummary {
 
 export interface IndependentTravelSummary {
   total_records: number;
-  child_coverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_coverage: number | null;
   solo_or_independent_rate: number | null;
   avg_routes_mastered: number | null;
   confident_or_highly_rate: number | null;
@@ -125,7 +127,8 @@ export interface TripPlanningSummary {
 export interface CommunityEngagementSummary {
   total_engagements_90d: number;
   unique_children_90d: number;
-  child_coverage_90d: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_coverage_90d: number | null;
   builds_connections_rate: number | null;
   ongoing_commitment_rate: number | null;
   unique_activity_types: number;
@@ -147,10 +150,6 @@ export interface HomeCommunityAccessResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function daysBetween(a: string, b: string): number {
   return Math.round(
@@ -183,7 +182,7 @@ export function computeHomeCommunityAccess(
       headline: "No community access data available for analysis.",
       transport_safety: { total_logs: 0, licence_checked_rate: null, vehicle_checked_rate: null, incident_rate: null, excellent_behaviour_rate: null },
       transport_ra: { total_ras: 0, active_ras: 0, signed_off_rate: null, avg_hazards_documented: 0, emergency_procedure_rate: null, breakdown_procedure_rate: null, overdue_reviews: 0 },
-      independent_travel: { total_records: 0, child_coverage: 0, solo_or_independent_rate: null, avg_routes_mastered: 0, confident_or_highly_rate: null, overdue_reviews: 0 },
+      independent_travel: { total_records: 0, child_coverage: null, solo_or_independent_rate: null, avg_routes_mastered: 0, confident_or_highly_rate: null, overdue_reviews: 0 },
       trip_planning: { total_trips: 0, completed_trips: 0, manager_approval_rate: null, sw_approval_rate: null, risk_assessment_rate: null, children_views_rate: null, post_trip_evaluation_rate: null },
       community_engagement: { total_engagements_90d: 0, unique_children_90d: 0, child_coverage_90d: 0, builds_connections_rate: null, ongoing_commitment_rate: null, unique_activity_types: 0 },
       strengths: [],
@@ -199,14 +198,14 @@ export function computeHomeCommunityAccess(
 
   // ── Transport Safety ─────────────────────────────────────────────────
   const tlLicenceChecked = transport_logs.filter(l => l.driver_licence_checked).length;
-  const tlLicenceRate = pct(tlLicenceChecked, transport_logs.length);
+  const tlLicenceRate = rate(tlLicenceChecked, transport_logs.length);
   const tlVehicleChecked = transport_logs.filter(l => l.vehicle_checked).length;
-  const tlVehicleRate = pct(tlVehicleChecked, transport_logs.length);
+  const tlVehicleRate = rate(tlVehicleChecked, transport_logs.length);
   const tlIncidents = transport_logs.filter(l => l.incident_during_journey).length;
-  const tlIncidentRate = pct(tlIncidents, transport_logs.length);
+  const tlIncidentRate = rate(tlIncidents, transport_logs.length);
   const tlExcellent = transport_logs.filter(l => l.behaviour_during_journey === "excellent").length;
   const tlGood = transport_logs.filter(l => l.behaviour_during_journey === "good").length;
-  const tlExcellentRate = pct(tlExcellent + tlGood, transport_logs.length);
+  const tlExcellentRate = rate(tlExcellent + tlGood, transport_logs.length);
 
   const transport_safety: TransportSafetySummary = {
     total_logs: transport_logs.length,
@@ -219,14 +218,14 @@ export function computeHomeCommunityAccess(
   // ── Transport Risk Assessments ───────────────────────────────────────
   const activeRAs = transport_ras.filter(ra => ra.inUseStatus);
   const raSignedOff = transport_ras.filter(ra => ra.signedOffByRM).length;
-  const raSignedOffRate = pct(raSignedOff, transport_ras.length);
+  const raSignedOffRate = rate(raSignedOff, transport_ras.length);
   const raAvgHazards = transport_ras.length > 0
     ? Math.round((transport_ras.reduce((s, ra) => s + ra.hazards.length, 0) / transport_ras.length) * 10) / 10
     : null;
   const raEmergency = transport_ras.filter(ra => ra.emergencyProcedure && ra.emergencyProcedure.trim().length > 0).length;
-  const raEmergencyRate = pct(raEmergency, transport_ras.length);
+  const raEmergencyRate = rate(raEmergency, transport_ras.length);
   const raBreakdown = transport_ras.filter(ra => ra.breakdownProcedure && ra.breakdownProcedure.trim().length > 0).length;
-  const raBreakdownRate = pct(raBreakdown, transport_ras.length);
+  const raBreakdownRate = rate(raBreakdown, transport_ras.length);
   const raOverdue = transport_ras.filter(ra => daysBetween(ra.nextReviewDate, today) > 0).length;
 
   const transport_ra: TransportRASummary = {
@@ -241,16 +240,16 @@ export function computeHomeCommunityAccess(
 
   // ── Independent Travel ───────────────────────────────────────────────
   const itChildIds = new Set(independent_travel_records.map(r => r.child_id));
-  const itCoverage = pct(itChildIds.size, total_children);
+  const itCoverage = rate(itChildIds.size, total_children);
   const soloStages = ["stage_3_solo_familiar", "stage_4_solo_new", "independent_traveller"];
   const itSoloIndep = independent_travel_records.filter(r => soloStages.includes(r.current_stage)).length;
-  const itSoloIndepRate = pct(itSoloIndep, independent_travel_records.length);
+  const itSoloIndepRate = rate(itSoloIndep, independent_travel_records.length);
   const itAvgRoutes = independent_travel_records.length > 0
     ? Math.round((independent_travel_records.reduce((s, r) => s + r.routes_mastered.length, 0) / independent_travel_records.length) * 10) / 10
     : null;
   const confidentStages = ["confident", "highly_confident"];
   const itConfident = independent_travel_records.filter(r => confidentStages.includes(r.child_confidence)).length;
-  const itConfidentRate = pct(itConfident, independent_travel_records.length);
+  const itConfidentRate = rate(itConfident, independent_travel_records.length);
   const itOverdue = independent_travel_records.filter(r => daysBetween(r.review_date, today) > 0).length;
 
   const independent_travel: IndependentTravelSummary = {
@@ -266,18 +265,18 @@ export function computeHomeCommunityAccess(
   const completedTrips = trip_plans.filter(t => t.status === "completed");
   const nonCancelledTrips = trip_plans.filter(t => t.status !== "cancelled");
   const tpManagerApproved = nonCancelledTrips.filter(t => t.manager_approval).length;
-  const tpManagerRate = pct(tpManagerApproved, nonCancelledTrips.length);
+  const tpManagerRate = rate(tpManagerApproved, nonCancelledTrips.length);
   const tpSwApproved = nonCancelledTrips.filter(t =>
     t.social_worker_approval.length > 0 &&
     t.social_worker_approval.every(sw => sw.approved),
   ).length;
-  const tpSwRate = pct(tpSwApproved, nonCancelledTrips.length);
+  const tpSwRate = rate(tpSwApproved, nonCancelledTrips.length);
   const tpRA = nonCancelledTrips.filter(t => t.risk_assessment && t.risk_assessment.completed).length;
-  const tpRARate = pct(tpRA, nonCancelledTrips.length);
+  const tpRARate = rate(tpRA, nonCancelledTrips.length);
   const tpChildViews = nonCancelledTrips.filter(t => t.children_views && t.children_views.trim().length > 0).length;
-  const tpChildViewsRate = pct(tpChildViews, nonCancelledTrips.length);
+  const tpChildViewsRate = rate(tpChildViews, nonCancelledTrips.length);
   const tpPostEval = completedTrips.filter(t => t.post_trip_evaluation && t.post_trip_evaluation.completed).length;
-  const tpPostEvalRate = pct(tpPostEval, completedTrips.length);
+  const tpPostEvalRate = rate(tpPostEval, completedTrips.length);
 
   const trip_planning: TripPlanningSummary = {
     total_trips: trip_plans.length,
@@ -295,11 +294,11 @@ export function computeHomeCommunityAccess(
     return d >= 0 && d <= 90;
   });
   const ceAllChildren = new Set(ce90d.flatMap(e => e.young_people));
-  const ceCoverage90d = pct(ceAllChildren.size, total_children);
+  const ceCoverage90d = rate(ceAllChildren.size, total_children);
   const ceBuildsConn = ce90d.filter(e => e.builds_connections).length;
-  const ceBuildsConnRate = pct(ceBuildsConn, ce90d.length);
+  const ceBuildsConnRate = rate(ceBuildsConn, ce90d.length);
   const ceOngoing = ce90d.filter(e => e.ongoing_commitment).length;
-  const ceOngoingRate = pct(ceOngoing, ce90d.length);
+  const ceOngoingRate = rate(ceOngoing, ce90d.length);
   const ceTypes = new Set(ce90d.map(e => e.activity_type));
 
   const community_engagement: CommunityEngagementSummary = {
@@ -322,22 +321,22 @@ export function computeHomeCommunityAccess(
     let m = 0;
     if (transport_logs.length > 0) {
       // Licence check rate
-      if (tlLicenceRate >= 90) m += 1;
-      else if (tlLicenceRate < 50) m -= 1;
+      if (meets(tlLicenceRate, 90)) m += 1;
+      else if (below(tlLicenceRate, 50)) m -= 1;
 
       // Vehicle check rate
-      if (tlVehicleRate >= 90) m += 1;
-      else if (tlVehicleRate < 50) m -= 1;
+      if (meets(tlVehicleRate, 90)) m += 1;
+      else if (below(tlVehicleRate, 50)) m -= 1;
 
       // Incident rate (low = good)
       if (tlIncidentRate === 0) m += 1;
-      else if (tlIncidentRate > 20) m -= 2;
-      else if (tlIncidentRate > 10) m -= 1;
+      else if (above(tlIncidentRate, 20)) m -= 2;
+      else if (above(tlIncidentRate, 10)) m -= 1;
 
       // Behaviour quality
-      if (tlExcellentRate >= 80) m += 2;
-      else if (tlExcellentRate >= 60) m += 1;
-      else if (tlExcellentRate < 30) m -= 1;
+      if (meets(tlExcellentRate, 80)) m += 2;
+      else if (meets(tlExcellentRate, 60)) m += 1;
+      else if (below(tlExcellentRate, 30)) m -= 1;
     } else {
       if (total_children >= 2) m -= 2;
     }
@@ -349,16 +348,16 @@ export function computeHomeCommunityAccess(
     let m = 0;
     if (transport_ras.length > 0) {
       // Signed off by RM
-      if (raSignedOffRate >= 80) m += 1;
-      else if (raSignedOffRate < 40) m -= 1;
+      if (meets(raSignedOffRate, 80)) m += 1;
+      else if (below(raSignedOffRate, 40)) m -= 1;
 
       // Hazard documentation
       if ((raAvgHazards ?? 0) >= 2) m += 1;
       else if ((raAvgHazards ?? 0) < 1 && transport_ras.length > 0) m -= 1;
 
       // Emergency + breakdown procedures
-      if (raEmergencyRate >= 90 && raBreakdownRate >= 90) m += 1;
-      else if (raEmergencyRate < 50 || raBreakdownRate < 50) m -= 1;
+      if (meets(raEmergencyRate, 90) && meets(raBreakdownRate, 90)) m += 1;
+      else if (below(raEmergencyRate, 50) || below(raBreakdownRate, 50)) m -= 1;
 
       // Review compliance
       if (raOverdue === 0) m += 1;
@@ -375,16 +374,16 @@ export function computeHomeCommunityAccess(
     let m = 0;
     if (independent_travel_records.length > 0) {
       // Child coverage
-      if (itCoverage >= 80) m += 1;
-      else if (itCoverage < 40) m -= 1;
+      if (meets(itCoverage, 80)) m += 1;
+      else if (below(itCoverage, 40)) m -= 1;
 
       // Solo/independent rate
-      if (itSoloIndepRate >= 60) m += 1;
-      else if (itSoloIndepRate < 20) m -= 1;
+      if (meets(itSoloIndepRate, 60)) m += 1;
+      else if (below(itSoloIndepRate, 20)) m -= 1;
 
       // Confidence levels
-      if (itConfidentRate >= 60) m += 1;
-      else if (itConfidentRate < 20) m -= 1;
+      if (meets(itConfidentRate, 60)) m += 1;
+      else if (below(itConfidentRate, 20)) m -= 1;
     } else {
       if (total_children >= 2) m -= 1;
     }
@@ -396,21 +395,21 @@ export function computeHomeCommunityAccess(
     let m = 0;
     if (nonCancelledTrips.length > 0) {
       // Manager approval
-      if (tpManagerRate >= 80) m += 1;
-      else if (tpManagerRate < 40) m -= 1;
+      if (meets(tpManagerRate, 80)) m += 1;
+      else if (below(tpManagerRate, 40)) m -= 1;
 
       // Risk assessment presence
-      if (tpRARate >= 80) m += 1;
-      else if (tpRARate < 40) m -= 1;
+      if (meets(tpRARate, 80)) m += 1;
+      else if (below(tpRARate, 40)) m -= 1;
 
       // Children's views
-      if (tpChildViewsRate >= 80) m += 1;
-      else if (tpChildViewsRate < 40) m -= 1;
+      if (meets(tpChildViewsRate, 80)) m += 1;
+      else if (below(tpChildViewsRate, 40)) m -= 1;
 
       // Post-trip evaluation
       if (completedTrips.length > 0) {
-        if (tpPostEvalRate >= 80) m += 1;
-        else if (tpPostEvalRate < 30) m -= 1;
+        if (meets(tpPostEvalRate, 80)) m += 1;
+        else if (below(tpPostEvalRate, 30)) m -= 1;
       }
     } else {
       if (total_children >= 2) m -= 2;
@@ -427,12 +426,12 @@ export function computeHomeCommunityAccess(
       else if (ce90d.length < 3) m -= 1;
 
       // Builds connections rate
-      if (ceBuildsConnRate >= 70) m += 1;
-      else if (ceBuildsConnRate < 30) m -= 1;
+      if (meets(ceBuildsConnRate, 70)) m += 1;
+      else if (below(ceBuildsConnRate, 30)) m -= 1;
 
       // Ongoing commitment
-      if (ceOngoingRate >= 50) m += 1;
-      else if (ceOngoingRate < 20) m -= 1;
+      if (meets(ceOngoingRate, 50)) m += 1;
+      else if (below(ceOngoingRate, 20)) m -= 1;
     } else {
       if (total_children >= 2) m -= 2;
     }
@@ -447,18 +446,18 @@ export function computeHomeCommunityAccess(
     // Child voice in travel records
     if (independent_travel_records.length > 0) {
       const itVoice = independent_travel_records.filter(r => r.child_voice && r.child_voice.trim().length > 0).length;
-      voiceSources.push(pct(itVoice, independent_travel_records.length));
+      voiceSources.push(rate(itVoice, independent_travel_records.length)!);
     }
 
     // Children's views in trips
     if (nonCancelledTrips.length > 0) {
-      voiceSources.push(tpChildViewsRate);
+      voiceSources.push(tpChildViewsRate!);
     }
 
     // Child feedback in community engagement
     if (ce90d.length > 0) {
       const ceFeedback = ce90d.filter(e => e.child_feedback && e.child_feedback.trim().length > 0).length;
-      voiceSources.push(pct(ceFeedback, ce90d.length));
+      voiceSources.push(rate(ceFeedback, ce90d.length)!);
     }
 
     if (voiceSources.length > 0) {
@@ -494,18 +493,18 @@ export function computeHomeCommunityAccess(
     // Outcomes in community engagements
     if (ce90d.length > 0) {
       const ceWithOutcomes = ce90d.filter(e => e.outcomes && e.outcomes.length > 0).length;
-      docSources.push(pct(ceWithOutcomes, ce90d.length));
+      docSources.push(rate(ceWithOutcomes, ce90d.length)!);
     }
 
     // Post-trip evaluation completion
     if (completedTrips.length > 0) {
-      docSources.push(tpPostEvalRate);
+      docSources.push(tpPostEvalRate!);
     }
 
     // Routes mastered documentation
     if (independent_travel_records.length > 0) {
       const withRoutes = independent_travel_records.filter(r => r.routes_mastered.length > 0).length;
-      docSources.push(pct(withRoutes, independent_travel_records.length));
+      docSources.push(rate(withRoutes, independent_travel_records.length)!);
     }
 
     if (docSources.length > 0) {
@@ -539,7 +538,7 @@ export function computeHomeCommunityAccess(
   let rank = 0;
 
   // Transport safety strengths
-  if (transport_logs.length > 0 && tlLicenceRate >= 90 && tlVehicleRate >= 90) {
+  if (transport_logs.length > 0 && meets(tlLicenceRate, 90) && meets(tlVehicleRate, 90)) {
     strengths.push(`Excellent transport compliance — ${tlLicenceRate}% licence checks and ${tlVehicleRate}% vehicle checks completed.`);
   }
   if (transport_logs.length > 0 && tlIncidentRate === 0) {
@@ -547,31 +546,31 @@ export function computeHomeCommunityAccess(
   }
 
   // Transport RA strengths
-  if (transport_ras.length > 0 && raSignedOffRate >= 80 && raOverdue === 0) {
+  if (transport_ras.length > 0 && meets(raSignedOffRate, 80) && raOverdue === 0) {
     strengths.push(`Transport risk assessments are well-maintained — ${raSignedOffRate}% signed off by RM with no overdue reviews.`);
   }
 
   // Independent travel strengths
-  if (independent_travel_records.length > 0 && itSoloIndepRate >= 60 && itConfidentRate >= 60) {
+  if (independent_travel_records.length > 0 && meets(itSoloIndepRate, 60) && meets(itConfidentRate, 60)) {
     strengths.push(`Strong independent travel development — ${itSoloIndepRate}% at solo or independent stage with ${itConfidentRate}% reporting confidence.`);
   }
 
   // Trip planning strengths
-  if (nonCancelledTrips.length > 0 && tpManagerRate >= 80 && tpRARate >= 80) {
+  if (nonCancelledTrips.length > 0 && meets(tpManagerRate, 80) && meets(tpRARate, 80)) {
     strengths.push(`Robust trip planning — ${tpManagerRate}% manager-approved with ${tpRARate}% risk assessments completed.`);
   }
 
   // Community engagement strengths
-  if (ce90d.length >= 10 && ceBuildsConnRate >= 70) {
+  if (ce90d.length >= 10 && meets(ceBuildsConnRate, 70)) {
     strengths.push(`Active community engagement programme — ${ce90d.length} engagements in 90 days with ${ceBuildsConnRate}% building lasting connections.`);
   }
 
   // Transport safety concerns
-  if (transport_logs.length > 0 && tlLicenceRate < 50) {
+  if (transport_logs.length > 0 && below(tlLicenceRate, 50)) {
     concerns.push(`Low driver licence check rate — only ${tlLicenceRate}%. Every journey must have a verified licence check.`);
     recommendations.push({ rank: ++rank, recommendation: "Implement mandatory licence checks before every journey. Add this to pre-departure checklists.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 12" });
   }
-  if (transport_logs.length > 0 && tlIncidentRate > 20) {
+  if (transport_logs.length > 0 && above(tlIncidentRate, 20)) {
     concerns.push(`High incident rate during transport — ${tlIncidentRate}% of journeys involved incidents. Review transport safety practices urgently.`);
     recommendations.push({ rank: ++rank, recommendation: "Review all transport incidents and implement additional safeguards for journeys.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 12" });
   }
@@ -596,7 +595,7 @@ export function computeHomeCommunityAccess(
   }
 
   // Trip planning concerns
-  if (nonCancelledTrips.length > 0 && tpManagerRate < 40) {
+  if (nonCancelledTrips.length > 0 && below(tpManagerRate, 40)) {
     concerns.push(`Low manager approval rate on trips — only ${tpManagerRate}%. Trips should be formally approved.`);
   }
   if (nonCancelledTrips.length === 0 && total_children >= 2) {
@@ -609,7 +608,7 @@ export function computeHomeCommunityAccess(
     concerns.push("No community engagements recorded in 90 days — children may be isolated from their communities.");
     recommendations.push({ rank: ++rank, recommendation: "Establish regular community engagement opportunities — clubs, volunteering, local groups.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 9" });
   }
-  if (ce90d.length > 0 && ceBuildsConnRate < 30) {
+  if (ce90d.length > 0 && below(ceBuildsConnRate, 30)) {
     concerns.push(`Low connection-building rate in community engagements — only ${ceBuildsConnRate}%. Activities should foster lasting community ties.`);
   }
 
@@ -620,13 +619,13 @@ export function computeHomeCommunityAccess(
   if (community_access_rating === "inadequate") {
     insights.push({ text: `Community access is inadequate (${score}%). Significant gaps in transport safety, travel development, or community engagement. This is a potential regulatory concern under CHR 2015 Reg 9/12.`, severity: "critical" });
   }
-  if (transport_logs.length > 0 && tlIncidentRate === 0 && tlLicenceRate >= 90 && tlVehicleRate >= 90) {
+  if (transport_logs.length > 0 && tlIncidentRate === 0 && meets(tlLicenceRate, 90) && meets(tlVehicleRate, 90)) {
     insights.push({ text: "Transport operations demonstrate exemplary safety practice — zero incidents with consistent compliance checks. This would be viewed very favourably at inspection.", severity: "positive" });
   }
-  if (independent_travel_records.length > 0 && itSoloIndepRate >= 60 && (itAvgRoutes ?? 0) >= 3) {
+  if (independent_travel_records.length > 0 && meets(itSoloIndepRate, 60) && (itAvgRoutes ?? 0) >= 3) {
     insights.push({ text: `Children are developing strong independent travel skills — ${itSoloIndepRate}% at solo/independent stage with an average of ${itAvgRoutes} routes mastered. This demonstrates effective independence promotion under Reg 12.`, severity: "positive" });
   }
-  if (ce90d.length > 0 && ceOngoingRate >= 50 && ceBuildsConnRate >= 70) {
+  if (ce90d.length > 0 && meets(ceOngoingRate, 50) && meets(ceBuildsConnRate, 70)) {
     insights.push({ text: "Community engagements are building sustained connections — children are developing lasting ties to their communities, supporting long-term outcomes.", severity: "positive" });
   }
 

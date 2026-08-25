@@ -305,20 +305,20 @@ describe("Home Child Voice & Participation Intelligence Engine", () => {
       expect(r.headline.toLowerCase()).toContain("insufficient data");
     });
 
-    it("all totals and rates are 0", () => {
+    it("all totals are 0 and rates are null", () => {
       const r = computeChildVoiceParticipation(baseInput({ total_children: 0 }));
       expect(r.total_meeting_records).toBe(0);
       expect(r.total_consultation_records).toBe(0);
       expect(r.total_feedback_records).toBe(0);
       expect(r.total_council_records).toBe(0);
       expect(r.total_feeling_heard_records).toBe(0);
-      expect(r.meeting_attendance_rate).toBe(0);
+      expect(r.meeting_attendance_rate).toBeNull();
       // Fab-0 fix: no records ⇒ null (unmeasured), not 0% ("we consulted / heard /
       // asked children and they all rated it 0"). feedback_action_rate stays a
       // plain number because pct(0, 0) returns 0 and its widening is a separate
       // cascade (pct helper stays baselined).
       expect(r.consultation_rate).toBeNull();
-      expect(r.feedback_action_rate).toBe(0);
+      expect(r.feedback_action_rate).toBeNull();
       expect(r.council_engagement_rate).toBeNull();
       expect(r.feeling_heard_rate).toBeNull();
       expect(r.child_satisfaction_rate).toBeNull();
@@ -951,9 +951,9 @@ describe("Home Child Voice & Participation Intelligence Engine", () => {
         expect(r.meeting_attendance_rate).toBe(50);
       });
 
-      it("returns 0 when no meetings", () => {
+      it("returns null when no meetings", () => {
         const r = computeChildVoiceParticipation(baseInput({ total_children: 0 }));
-        expect(r.meeting_attendance_rate).toBe(0);
+        expect(r.meeting_attendance_rate).toBeNull();
       });
     });
 
@@ -972,7 +972,7 @@ describe("Home Child Voice & Participation Intelligence Engine", () => {
         expect(r.consultation_rate).toBe(60);
       });
 
-      it("returns 0 when no consultations", () => {
+      it("returns null when no consultations", () => {
         const r = computeChildVoiceParticipation(baseInput());
         expect(r.consultation_rate).toBeNull();
       });
@@ -999,7 +999,7 @@ describe("Home Child Voice & Participation Intelligence Engine", () => {
         const r = computeChildVoiceParticipation(
           baseInput({ feedback_action_records: feedbacks }),
         );
-        expect(r.feedback_action_rate).toBe(0);
+        expect(r.feedback_action_rate).toBeNull();
       });
     });
 
@@ -1018,7 +1018,7 @@ describe("Home Child Voice & Participation Intelligence Engine", () => {
         expect(r.council_engagement_rate).toBe(68);
       });
 
-      it("returns 0 when no council records", () => {
+      it("returns null when no council records", () => {
         const r = computeChildVoiceParticipation(baseInput());
         expect(r.council_engagement_rate).toBeNull();
       });
@@ -1039,7 +1039,7 @@ describe("Home Child Voice & Participation Intelligence Engine", () => {
         expect(r.feeling_heard_rate).toBe(70);
       });
 
-      it("returns 0 when no feeling heard records", () => {
+      it("returns null when no feeling heard records", () => {
         const r = computeChildVoiceParticipation(baseInput());
         expect(r.feeling_heard_rate).toBeNull();
       });
@@ -2158,15 +2158,19 @@ describe("Home Child Voice & Participation Intelligence Engine", () => {
       expect(r.feeling_heard_rate).toBe(100);
     });
 
-    it("all feedback_received false => feedbackActionRate 0 and penalty applied", () => {
+    it("all feedback_received false => feedbackActionRate null and no penalty", () => {
       const feedbacks = Array.from({ length: 5 }, () =>
         makeFeedback({ feedback_received: false, action_taken: false }),
       );
       const r = computeChildVoiceParticipation(
         baseInput({ feedback_action_records: feedbacks }),
       );
-      expect(r.feedback_action_rate).toBe(0);
-      expect(r.voice_score).toBe(52 - 5);
+      // No feedback was received, so there was nothing to action: the rate is
+      // unmeasured (null), and the -5 "poor action rate" penalty no longer
+      // fires off a fabricated 0% (below(null) is false). Score stays at the
+      // base 52.
+      expect(r.feedback_action_rate).toBeNull();
+      expect(r.voice_score).toBe(52);
     });
 
     it("no attended meetings => meetingAttendanceRate = 0", () => {
@@ -2192,11 +2196,11 @@ describe("Home Child Voice & Participation Intelligence Engine", () => {
       expect(r.council_engagement_rate).toBe(0);
     });
 
-    it("pct returns 0 when denominator is 0", () => {
+    it("rate returns null when denominator is 0", () => {
       const r = computeChildVoiceParticipation(baseInput({ total_children: 0 }));
-      expect(r.meeting_attendance_rate).toBe(0);
+      expect(r.meeting_attendance_rate).toBeNull();
       expect(r.consultation_rate).toBeNull();
-      expect(r.feedback_action_rate).toBe(0);
+      expect(r.feedback_action_rate).toBeNull();
       expect(r.council_engagement_rate).toBeNull();
       expect(r.feeling_heard_rate).toBeNull();
     });
@@ -2206,7 +2210,7 @@ describe("Home Child Voice & Participation Intelligence Engine", () => {
       const r = computeChildVoiceParticipation(
         baseInput({ meeting_attendance_records: meetings }),
       );
-      // totalMeetingActions = 0, pct(0, 0) = 0 => no bonus
+      // totalMeetingActions = 0, rate(0, 0) = null => meets() is false, no bonus
       expect(r.voice_score).toBeLessThanOrEqual(52 + 4 + 3); // at most attendance + satisfaction bonuses
     });
 

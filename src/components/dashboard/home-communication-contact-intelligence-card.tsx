@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
   Loader2, AlertCircle, AlertTriangle,
@@ -104,7 +105,7 @@ export function HomeCommunicationContactIntelligenceCard() {
               {ratingStyle.label}
             </span>
             {d.communication_rating !== "insufficient_data" && (
-              <span className="text-xs font-bold tabular-nums text-slate-600">{d.communication_score}%</span>
+              <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.communication_score)}</span>
             )}
           </CardTitle>
         </div>
@@ -124,7 +125,7 @@ export function HomeCommunicationContactIntelligenceCard() {
                   (d.comm_book.action_completion_rate ?? 0) >= 90 ? "text-[--cs-success]" :
                   (d.comm_book.action_completion_rate ?? 0) >= 70 ? "text-blue-600" : "text-[--cs-risk]"
                 )}>
-                  {d.comm_book.action_required_count > 0 ? `${d.comm_book.action_completion_rate}%` : "—"}
+                  {d.comm_book.action_required_count > 0 ? `${formatRate(d.comm_book.action_completion_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Actions</p>
@@ -135,10 +136,10 @@ export function HomeCommunicationContactIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <ClipboardCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.contact_plans.child_coverage >= 90 ? "text-[--cs-success]" :
-                  d.contact_plans.child_coverage >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.contact_plans.child_coverage, 90) ? "text-[--cs-success]" :
+                  meets(d.contact_plans.child_coverage, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.contact_plans.total_plans > 0 ? `${d.contact_plans.child_coverage}%` : "—"}
+                  {d.contact_plans.total_plans > 0 ? `${formatRate(d.contact_plans.child_coverage)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Contact</p>
@@ -149,10 +150,10 @@ export function HomeCommunicationContactIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Users className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.comm_profiles.child_coverage >= 90 ? "text-[--cs-success]" :
-                  d.comm_profiles.child_coverage >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.comm_profiles.child_coverage, 90) ? "text-[--cs-success]" :
+                  meets(d.comm_profiles.child_coverage, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.comm_profiles.total_profiles > 0 ? `${d.comm_profiles.child_coverage}%` : "—"}
+                  {d.comm_profiles.total_profiles > 0 ? `${formatRate(d.comm_profiles.child_coverage)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Profiles</p>
@@ -166,7 +167,7 @@ export function HomeCommunicationContactIntelligenceCard() {
                   (d.comm_profiles.child_views_rate ?? 0) >= 90 ? "text-[--cs-success]" :
                   (d.comm_profiles.child_views_rate ?? 0) >= 70 ? "text-blue-600" : "text-[--cs-warning]"
                 )}>
-                  {d.comm_profiles.total_profiles > 0 ? `${d.comm_profiles.child_views_rate}%` : "—"}
+                  {d.comm_profiles.total_profiles > 0 ? `${formatRate(d.comm_profiles.child_views_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Voice</p>

@@ -167,7 +167,7 @@ export interface BoilerHeatingSystemServicingResult {
   // no source records ⇒ no signal. "0% radiator maintenance / 0% energy
   // efficiency / 0% child comfort / 0 boiler condition" would read as a home
   // actively failing Reg 25 (Premises) with freezing children, not
-  // "unmeasured". Fab-0 doctrine. Other rates use pct() directly.
+  // "unmeasured". Fab-0 doctrine. Other rates use rate() directly.
   /** null when the population is empty — nothing measured, not 0%. */
   boiler_servicing_rate: number | null;
   /** null when the population is empty — nothing measured, not 0%. */
@@ -193,10 +193,6 @@ export interface BoilerHeatingSystemServicingResult {
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -224,15 +220,15 @@ function emptyResult(
     total_radiators: 0,
     total_thermostats: 0,
     total_energy_records: 0,
-    boiler_servicing_rate: 0,
-    heating_check_rate: 0,
+    boiler_servicing_rate: null,
+    heating_check_rate: null,
     radiator_maintenance_rate: null,
-    thermostat_calibration_rate: 0,
+    thermostat_calibration_rate: null,
     energy_efficiency_rate: null,
     child_comfort_rate: null,
-    gas_safety_compliance_rate: 0,
-    carbon_monoxide_safety_rate: 0,
-    fault_resolution_rate: 0,
+    gas_safety_compliance_rate: null,
+    carbon_monoxide_safety_rate: null,
+    fault_resolution_rate: null,
     boiler_condition_score: null,
     strengths: [],
     concerns: [],
@@ -320,31 +316,31 @@ export function computeBoilerHeatingSystemServicing(
   const currentBoilerServices = boiler_service_records.filter(
     (s) => !s.service_overdue,
   ).length;
-  const boilerServicingRate = pct(currentBoilerServices, totalBoilerServices);
+  const boilerServicingRate = rate(currentBoilerServices, totalBoilerServices);
 
   // Gas safety compliance: CP12 certificates valid
   const cp12Valid = boiler_service_records.filter(
     (s) => s.cp12_certificate_valid,
   ).length;
-  const gasSafetyComplianceRate = pct(cp12Valid, totalBoilerServices);
+  const gasSafetyComplianceRate = rate(cp12Valid, totalBoilerServices);
 
   // Gas Safe registered engineers
   const gasSafeEngineers = boiler_service_records.filter(
     (s) => s.engineer_gas_safe_registered,
   ).length;
-  const gasSafeEngineerRate = pct(gasSafeEngineers, totalBoilerServices);
+  const gasSafeEngineerRate = rate(gasSafeEngineers, totalBoilerServices);
 
   // Carbon monoxide safety
   const coTestsPassed = boiler_service_records.filter(
     (s) => s.carbon_monoxide_test_passed,
   ).length;
-  const carbonMonoxideSafetyRate = pct(coTestsPassed, totalBoilerServices);
+  const carbonMonoxideSafetyRate = rate(coTestsPassed, totalBoilerServices);
 
   // Flue inspection pass rate
   const fluesPassed = boiler_service_records.filter(
     (s) => s.flue_inspection_passed,
   ).length;
-  const flueInspectionRate = pct(fluesPassed, totalBoilerServices);
+  const flueInspectionRate = rate(fluesPassed, totalBoilerServices);
 
   // Fault resolution
   const totalFaultsFound = boiler_service_records.reduce(
@@ -355,7 +351,7 @@ export function computeBoilerHeatingSystemServicing(
     (sum, s) => sum + s.faults_resolved,
     0,
   );
-  const faultResolutionRate = pct(totalFaultsResolved, totalFaultsFound);
+  const faultResolutionRate = rate(totalFaultsResolved, totalFaultsFound);
 
   // Boiler condition scoring
   const conditionMap: Record<string, number> = {
@@ -377,7 +373,7 @@ export function computeBoilerHeatingSystemServicing(
   const boilerServicesWithNotes = boiler_service_records.filter(
     (s) => s.notes_recorded,
   ).length;
-  const boilerDocumentationRate = pct(boilerServicesWithNotes, totalBoilerServices);
+  const boilerDocumentationRate = rate(boilerServicesWithNotes, totalBoilerServices);
 
   // Overdue services count
   const overdueBoilerServices = boiler_service_records.filter(
@@ -404,25 +400,25 @@ export function computeBoilerHeatingSystemServicing(
   const currentHeatingChecks = heating_check_records.filter(
     (c) => !c.check_overdue,
   ).length;
-  const heatingCheckRate = pct(currentHeatingChecks, totalHeatingChecks);
+  const heatingCheckRate = rate(currentHeatingChecks, totalHeatingChecks);
 
   // All zones heating properly
   const allZonesHeating = heating_check_records.filter(
     (c) => c.all_zones_heating,
   ).length;
-  const zoneHeatingRate = pct(allZonesHeating, totalHeatingChecks);
+  const zoneHeatingRate = rate(allZonesHeating, totalHeatingChecks);
 
   // Hot water functional
   const hotWaterFunctional = heating_check_records.filter(
     (c) => c.hot_water_functional,
   ).length;
-  const hotWaterRate = pct(hotWaterFunctional, totalHeatingChecks);
+  const hotWaterRate = rate(hotWaterFunctional, totalHeatingChecks);
 
   // Leaks detected
   const checksWithLeaks = heating_check_records.filter(
     (c) => c.leaks_detected,
   ).length;
-  const leakFreeRate = pct(totalHeatingChecks - checksWithLeaks, totalHeatingChecks);
+  const leakFreeRate = rate(totalHeatingChecks - checksWithLeaks, totalHeatingChecks);
 
   // Overdue heating checks
   const overdueHeatingChecks = heating_check_records.filter(
@@ -433,19 +429,19 @@ export function computeBoilerHeatingSystemServicing(
   const pipeInsulationAdequate = heating_check_records.filter(
     (c) => c.pipe_insulation_adequate,
   ).length;
-  const pipeInsulationRate = pct(pipeInsulationAdequate, totalHeatingChecks);
+  const pipeInsulationRate = rate(pipeInsulationAdequate, totalHeatingChecks);
 
   // Pump functional
   const pumpsFunctional = heating_check_records.filter(
     (c) => c.pump_functional,
   ).length;
-  const pumpFunctionalRate = pct(pumpsFunctional, totalHeatingChecks);
+  const pumpFunctionalRate = rate(pumpsFunctional, totalHeatingChecks);
 
   // Water pressure normal
   const waterPressureNormal = heating_check_records.filter(
     (c) => c.water_pressure_normal,
   ).length;
-  const waterPressureRate = pct(waterPressureNormal, totalHeatingChecks);
+  const waterPressureRate = rate(waterPressureNormal, totalHeatingChecks);
 
   // ─── Radiator maintenance rate ────────────────────────────────────────
   // Measures: proportion of radiators not overdue for bleeding/inspection
@@ -455,8 +451,8 @@ export function computeBoilerHeatingSystemServicing(
   const radiatorsNotOverdueInspection = radiator_records.filter(
     (r) => !r.inspection_overdue,
   ).length;
-  const radiatorBleedRate = pct(radiatorsNotOverdueBleed, totalRadiators);
-  const radiatorInspectionRate = pct(radiatorsNotOverdueInspection, totalRadiators);
+  const radiatorBleedRate = rate(radiatorsNotOverdueBleed, totalRadiators);
+  const radiatorInspectionRate = rate(radiatorsNotOverdueInspection, totalRadiators);
   const radiatorMaintenanceRate: number | null =
     totalRadiators > 0
       ? meanOf([radiatorBleedRate, radiatorInspectionRate])
@@ -466,7 +462,7 @@ export function computeBoilerHeatingSystemServicing(
   const radiatorsHeatingEvenly = radiator_records.filter(
     (r) => r.heating_evenly,
   ).length;
-  const evenHeatingRate = pct(radiatorsHeatingEvenly, totalRadiators);
+  const evenHeatingRate = rate(radiatorsHeatingEvenly, totalRadiators);
 
   // Child safety covers in child areas
   const radiatorsInChildAreas = radiator_records.filter(
@@ -475,13 +471,13 @@ export function computeBoilerHeatingSystemServicing(
   const childAreaRadiatorsWithCovers = radiator_records.filter(
     (r) => r.in_child_area && r.child_safety_cover_fitted,
   ).length;
-  const childSafetyCoverRate = pct(childAreaRadiatorsWithCovers, radiatorsInChildAreas);
+  const childSafetyCoverRate = rate(childAreaRadiatorsWithCovers, radiatorsInChildAreas);
 
   // Temperature appropriate
   const radiatorsTemperatureOk = radiator_records.filter(
     (r) => r.temperature_appropriate,
   ).length;
-  const radiatorTemperatureRate = pct(radiatorsTemperatureOk, totalRadiators);
+  const radiatorTemperatureRate = rate(radiatorsTemperatureOk, totalRadiators);
 
   // Radiator condition
   const poorConditionRadiators = radiator_records.filter(
@@ -498,13 +494,13 @@ export function computeBoilerHeatingSystemServicing(
   const thermostatsNotOverdueCalibration = thermostat_records.filter(
     (t) => !t.calibration_overdue,
   ).length;
-  const thermostatCalibrationRate = pct(thermostatsNotOverdueCalibration, totalThermostats);
+  const thermostatCalibrationRate = rate(thermostatsNotOverdueCalibration, totalThermostats);
 
   // Reading accuracy
   const thermostatsAccurate = thermostat_records.filter(
     (t) => t.reading_accurate,
   ).length;
-  const thermostatAccuracyRate = pct(thermostatsAccurate, totalThermostats);
+  const thermostatAccuracyRate = rate(thermostatsAccurate, totalThermostats);
 
   // Temperature variance analysis
   const varianceValues = thermostat_records.map(
@@ -523,7 +519,7 @@ export function computeBoilerHeatingSystemServicing(
   const thermostatsBatteryOk = thermostat_records.filter(
     (t) => t.battery_status === "good" || t.battery_status === "mains_powered",
   ).length;
-  const batteryHealthRate = pct(thermostatsBatteryOk, totalThermostats);
+  const batteryHealthRate = rate(thermostatsBatteryOk, totalThermostats);
 
   // Dead batteries
   const deadBatteryThermostats = thermostat_records.filter(
@@ -542,13 +538,13 @@ export function computeBoilerHeatingSystemServicing(
   const tamperProofChildAccessible = thermostat_records.filter(
     (t) => t.child_accessible && t.tamper_proof,
   ).length;
-  const tamperProofRate = pct(tamperProofChildAccessible, childAccessibleThermostats);
+  const tamperProofRate = rate(tamperProofChildAccessible, childAccessibleThermostats);
 
   // Programming correct
   const programmingCorrect = thermostat_records.filter(
     (t) => t.programming_correct,
   ).length;
-  const programmingCorrectRate = pct(programmingCorrect, totalThermostats);
+  const programmingCorrectRate = rate(programmingCorrect, totalThermostats);
 
   // Overdue calibrations
   const overdueCalibrations = thermostat_records.filter(
@@ -579,19 +575,19 @@ export function computeBoilerHeatingSystemServicing(
   const insulationAdequateCount = recordsWithInsulation.filter(
     (e) => e.insulation_adequate,
   ).length;
-  const insulationRate = pct(insulationAdequateCount, recordsWithInsulation.length);
+  const insulationRate = rate(insulationAdequateCount, recordsWithInsulation.length);
 
   // Draught proofing adequacy
   const draughtProofingAdequateCount = recordsWithInsulation.filter(
     (e) => e.draught_proofing_adequate,
   ).length;
-  const draughtProofingRate = pct(draughtProofingAdequateCount, recordsWithInsulation.length);
+  const draughtProofingRate = rate(draughtProofingAdequateCount, recordsWithInsulation.length);
 
   // Heating controls optimised
   const controlsOptimised = energy_records.filter(
     (e) => e.heating_controls_optimised,
   ).length;
-  const controlsOptimisedRate = pct(controlsOptimised, totalEnergyRecords);
+  const controlsOptimisedRate = rate(controlsOptimised, totalEnergyRecords);
 
   // Composite energy efficiency rate
   // Components are pushed only when their source has records, so this is a

@@ -14,7 +14,7 @@
 //             feelingHeardRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { above, below, meets } from "@/lib/metrics/rate";
+import { above, below, meanOf, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -147,13 +147,15 @@ export interface ChildVoiceResult {
   total_feedback_records: number;
   total_council_records: number;
   total_feeling_heard_records: number;
-  meeting_attendance_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  meeting_attendance_rate: number | null;
   // Null when the underlying record collection is empty — "0% consultation /
   // 0% council engagement / 0% feeling heard / 0% satisfaction" reads as
   // "children were consulted / engaged / asked / rated and it all failed",
   // when in fact no data exists to measure. Same fab-0 doctrine as elsewhere.
   consultation_rate: number | null;
-  feedback_action_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feedback_action_rate: number | null;
   council_engagement_rate: number | null;
   feeling_heard_rate: number | null;
   child_satisfaction_rate: number | null;
@@ -164,10 +166,6 @@ export interface ChildVoiceResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -196,9 +194,9 @@ function emptyResult(
     total_feedback_records: 0,
     total_council_records: 0,
     total_feeling_heard_records: 0,
-    meeting_attendance_rate: 0,
+    meeting_attendance_rate: null,
     consultation_rate: null,
-    feedback_action_rate: 0,
+    feedback_action_rate: null,
     council_engagement_rate: null,
     feeling_heard_rate: null,
     child_satisfaction_rate: null,
@@ -281,16 +279,16 @@ export function computeChildVoiceParticipation(
   const totalMeetingRecords = meeting_attendance_records.length;
   const invitedToMeeting = meeting_attendance_records.filter((m) => m.invited).length;
   const attendedMeeting = meeting_attendance_records.filter((m) => m.attended).length;
-  const meetingAttendanceRate = pct(attendedMeeting, invitedToMeeting > 0 ? invitedToMeeting : totalMeetingRecords);
+  const meetingAttendanceRate = rate(attendedMeeting, invitedToMeeting > 0 ? invitedToMeeting : totalMeetingRecords);
 
   const contributedInMeeting = meeting_attendance_records.filter((m) => m.attended && m.contributed).length;
-  const meetingContributionRate = pct(contributedInMeeting, attendedMeeting);
+  const meetingContributionRate = rate(contributedInMeeting, attendedMeeting);
 
   const chairedByChild = meeting_attendance_records.filter((m) => m.chaired_by_child).length;
-  const childChairRate = pct(chairedByChild, totalMeetingRecords);
+  const childChairRate = rate(chairedByChild, totalMeetingRecords);
 
   const minutesRecorded = meeting_attendance_records.filter((m) => m.minutes_recorded).length;
-  const minutesRecordedRate = pct(minutesRecorded, totalMeetingRecords);
+  const minutesRecordedRate = rate(minutesRecorded, totalMeetingRecords);
 
   const totalMeetingActions = meeting_attendance_records.reduce(
     (sum, m) => sum + m.actions_from_meeting,
@@ -300,7 +298,7 @@ export function computeChildVoiceParticipation(
     (sum, m) => sum + m.actions_completed,
     0,
   );
-  const meetingActionCompletionRate = pct(totalMeetingActionsCompleted, totalMeetingActions);
+  const meetingActionCompletionRate = rate(totalMeetingActionsCompleted, totalMeetingActions);
 
   const positiveMeetingFeedback = meeting_attendance_records.filter(
     (m) => m.attended && m.child_feedback_positive,
@@ -309,40 +307,37 @@ export function computeChildVoiceParticipation(
   const uniqueChildrenInMeetings = new Set(
     meeting_attendance_records.filter((m) => m.attended).map((m) => m.child_id),
   ).size;
-  const meetingChildCoverage = total_children > 0 ? pct(uniqueChildrenInMeetings, total_children) : 0;
+  const meetingChildCoverage = total_children > 0 ? rate(uniqueChildrenInMeetings, total_children) : 0;
 
   // --- Consultation metrics ---
   const totalConsultationRecords = consultation_records.length;
   const engagedConsultations = consultation_records.filter((c) => c.child_engaged).length;
-  const consultationEngagementRate = pct(engagedConsultations, totalConsultationRecords);
+  const consultationEngagementRate = rate(engagedConsultations, totalConsultationRecords);
 
   const viewsRecorded = consultation_records.filter((c) => c.child_views_recorded).length;
-  const viewsRecordedRate = pct(viewsRecorded, totalConsultationRecords);
+  const viewsRecordedRate = rate(viewsRecorded, totalConsultationRecords);
 
   const outcomeCommunicated = consultation_records.filter(
     (c) => c.outcome_communicated_to_child,
   ).length;
-  const outcomeCommunicatedRate = pct(outcomeCommunicated, totalConsultationRecords);
+  const outcomeCommunicatedRate = rate(outcomeCommunicated, totalConsultationRecords);
 
   const satisfiedWithProcess = consultation_records.filter(
     (c) => c.child_satisfied_with_process,
   ).length;
-  const consultationSatisfactionRate = pct(satisfiedWithProcess, totalConsultationRecords);
+  const consultationSatisfactionRate = rate(satisfiedWithProcess, totalConsultationRecords);
 
   const followUpRequired = consultation_records.filter((c) => c.follow_up_required).length;
   const followUpCompleted = consultation_records.filter(
     (c) => c.follow_up_required && c.follow_up_completed,
   ).length;
-  const followUpCompletionRate = pct(followUpCompleted, followUpRequired);
+  const followUpCompletionRate = rate(followUpCompleted, followUpRequired);
 
   // Composite consultation rate: engagement + views recorded + outcome communicated.
   // Null on empty — no consultations ⇒ nothing to measure engagement across.
   const consultationRate: number | null =
-    totalConsultationRecords > 0
-      ? Math.round(
-          (consultationEngagementRate + viewsRecordedRate + outcomeCommunicatedRate) / 3,
-        )
-      : null;
+    totalConsultationRecords > 0 ? Math.round(
+          (consultationEngagementRate! + viewsRecordedRate! + outcomeCommunicatedRate!) / 3) : null;
 
   // --- Feedback action metrics ---
   const totalFeedbackRecords = feedback_action_records.length;
@@ -350,17 +345,17 @@ export function computeChildVoiceParticipation(
   const feedbackAcknowledged = feedback_action_records.filter(
     (f) => f.feedback_received && f.acknowledged,
   ).length;
-  const feedbackAcknowledgedRate = pct(feedbackAcknowledged, feedbackReceived);
+  const feedbackAcknowledgedRate = rate(feedbackAcknowledged, feedbackReceived);
 
   const actionTaken = feedback_action_records.filter(
     (f) => f.feedback_received && f.action_taken,
   ).length;
-  const feedbackActionRate = pct(actionTaken, feedbackReceived);
+  const feedbackActionRate = rate(actionTaken, feedbackReceived);
 
   const outcomeCommunicatedFeedback = feedback_action_records.filter(
     (f) => f.feedback_received && f.outcome_communicated,
   ).length;
-  const feedbackOutcomeCommunicatedRate = pct(outcomeCommunicatedFeedback, feedbackReceived);
+  const feedbackOutcomeCommunicatedRate = rate(outcomeCommunicatedFeedback, feedbackReceived);
 
   const childSatisfiedWithOutcome = feedback_action_records.filter(
     (f) => f.feedback_received && f.child_satisfied_with_outcome,
@@ -379,17 +374,17 @@ export function computeChildVoiceParticipation(
   // --- Council engagement metrics ---
   const totalCouncilRecords = council_engagement_records.length;
   const attendedCouncil = council_engagement_records.filter((c) => c.attended).length;
-  const councilAttendanceRate = pct(attendedCouncil, totalCouncilRecords);
+  const councilAttendanceRate = rate(attendedCouncil, totalCouncilRecords);
 
   const contributedCouncil = council_engagement_records.filter(
     (c) => c.attended && c.contributed,
   ).length;
-  const councilContributionRate = pct(contributedCouncil, attendedCouncil);
+  const councilContributionRate = rate(contributedCouncil, attendedCouncil);
 
   const feltListenedTo = council_engagement_records.filter(
     (c) => c.attended && c.child_felt_listened_to,
   ).length;
-  const councilFeltListenedRate = pct(feltListenedTo, attendedCouncil);
+  const councilFeltListenedRate = rate(feltListenedTo, attendedCouncil);
 
   const totalDecisionsInfluenced = council_engagement_records.reduce(
     (sum, c) => sum + c.decisions_influenced,
@@ -397,35 +392,36 @@ export function computeChildVoiceParticipation(
   );
 
   // Composite council engagement rate — null on empty (no council meetings ⇒ nothing to engage with).
-  const councilEngagementRate: number | null =
-    totalCouncilRecords > 0
-      ? Math.round(
-          (councilAttendanceRate + councilContributionRate + councilFeltListenedRate) / 3,
-        )
-      : null;
+  // Mean of what is measured: contribution/felt-listened only exist for attended
+  // sessions, so an unattended term no longer drags the composite with phantom 0s.
+  const councilEngagementRate: number | null = meanOf([
+    councilAttendanceRate,
+    councilContributionRate,
+    councilFeltListenedRate,
+  ]);
 
   // Leadership roles
   const leadershipRoles = council_engagement_records.filter(
     (c) => c.role === "chair" || c.role === "secretary",
   ).length;
-  const leadershipRate = pct(leadershipRoles, totalCouncilRecords);
+  const leadershipRate = rate(leadershipRoles, totalCouncilRecords);
 
   // --- Feeling heard metrics ---
   const totalFeelingHeardRecords = feeling_heard_records.length;
   const feelsListenedTo = feeling_heard_records.filter((f) => f.feels_listened_to).length;
-  const feelsListenedToRate = pct(feelsListenedTo, totalFeelingHeardRecords);
+  const feelsListenedToRate = rate(feelsListenedTo, totalFeelingHeardRecords);
 
   const feelsViewsMatter = feeling_heard_records.filter((f) => f.feels_views_matter).length;
-  const feelsViewsMatterRate = pct(feelsViewsMatter, totalFeelingHeardRecords);
+  const feelsViewsMatterRate = rate(feelsViewsMatter, totalFeelingHeardRecords);
 
   const feelsChangesHappen = feeling_heard_records.filter((f) => f.feels_changes_happen).length;
-  const feelsChangesHappenRate = pct(feelsChangesHappen, totalFeelingHeardRecords);
+  const feelsChangesHappenRate = rate(feelsChangesHappen, totalFeelingHeardRecords);
 
   const knowsHowToComplain = feeling_heard_records.filter((f) => f.knows_how_to_complain).length;
-  const knowsComplainRate = pct(knowsHowToComplain, totalFeelingHeardRecords);
+  const knowsComplainRate = rate(knowsHowToComplain, totalFeelingHeardRecords);
 
   const knowsAdvocate = feeling_heard_records.filter((f) => f.knows_advocate).length;
-  const knowsAdvocateRate = pct(knowsAdvocate, totalFeelingHeardRecords);
+  const knowsAdvocateRate = rate(knowsAdvocate, totalFeelingHeardRecords);
 
   // Null on empty — no feeling-heard records ⇒ no satisfaction to average.
   const avgSatisfaction: number | null =
@@ -443,15 +439,12 @@ export function computeChildVoiceParticipation(
   const concernsAddressed = feeling_heard_records.filter(
     (f) => f.specific_concern && f.specific_concern.length > 0 && f.concern_addressed,
   ).length;
-  const concernAddressedRate = pct(concernsAddressed, specificConcerns);
+  const concernAddressedRate = rate(concernsAddressed, specificConcerns);
 
   // Composite feeling heard rate — null on empty (no feeling-heard records ⇒ nothing to score).
   const feelingHeardRate: number | null =
-    totalFeelingHeardRecords > 0
-      ? Math.round(
-          (feelsListenedToRate + feelsViewsMatterRate + feelsChangesHappenRate) / 3,
-        )
-      : null;
+    totalFeelingHeardRecords > 0 ? Math.round(
+          (feelsListenedToRate! + feelsViewsMatterRate! + feelsChangesHappenRate!) / 3) : null;
 
   // --- Child satisfaction composite ---
   // Across meeting feedback, consultation satisfaction, feedback satisfaction, council felt listened, feeling heard
@@ -481,23 +474,23 @@ export function computeChildVoiceParticipation(
 
   const totalSatisNum = satisfactionNumerators.reduce((a, b) => a + b, 0);
   const totalSatisDenom = satisfactionDenominators.reduce((a, b) => a + b, 0);
-  const childSatisfactionRate = pct(totalSatisNum, totalSatisDenom);
+  const childSatisfactionRate = rate(totalSatisNum, totalSatisDenom);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: meetingAttendanceRate (>=90: +4, >=70: +2) ---
-  if (meetingAttendanceRate >= 90) score += 4;
-  else if (meetingAttendanceRate >= 70) score += 2;
+  if (meets(meetingAttendanceRate, 90)) score += 4;
+  else if (meets(meetingAttendanceRate, 70)) score += 2;
 
   // --- Bonus 2: consultationRate (>=90: +4, >=70: +2) ---
   if (meets(consultationRate, 90)) score += 4;
   else if (meets(consultationRate, 70)) score += 2;
 
   // --- Bonus 3: feedbackActionRate (>=90: +4, >=70: +2) ---
-  if (feedbackActionRate >= 90) score += 4;
-  else if (feedbackActionRate >= 70) score += 2;
+  if (meets(feedbackActionRate, 90)) score += 4;
+  else if (meets(feedbackActionRate, 70)) score += 2;
 
   // --- Bonus 4: councilEngagementRate (>=90: +3, >=70: +1) ---
   if (meets(councilEngagementRate, 90)) score += 3;
@@ -508,26 +501,26 @@ export function computeChildVoiceParticipation(
   else if (meets(feelingHeardRate, 70)) score += 2;
 
   // --- Bonus 6: childSatisfactionRate (>=90: +3, >=70: +1) ---
-  if (childSatisfactionRate >= 90) score += 3;
-  else if (childSatisfactionRate >= 70) score += 1;
+  if (meets(childSatisfactionRate, 90)) score += 3;
+  else if (meets(childSatisfactionRate, 70)) score += 1;
 
   // --- Bonus 7: meetingActionCompletionRate (>=90: +3, >=70: +1) ---
-  if (meetingActionCompletionRate >= 90) score += 3;
-  else if (meetingActionCompletionRate >= 70) score += 1;
+  if (meets(meetingActionCompletionRate, 90)) score += 3;
+  else if (meets(meetingActionCompletionRate, 70)) score += 1;
 
   // --- Bonus 8: concernAddressedRate (>=90: +3, >=70: +1) ---
-  if (concernAddressedRate >= 90) score += 3;
-  else if (concernAddressedRate >= 70) score += 1;
+  if (meets(concernAddressedRate, 90)) score += 3;
+  else if (meets(concernAddressedRate, 70)) score += 1;
 
   // max bonuses = 4+4+4+3+4+3+3+3 = 28
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // meetingAttendanceRate < 40 → -5 (guarded)
-  if (meetingAttendanceRate < 40 && meeting_attendance_records.length > 0) score -= 5;
+  if (below(meetingAttendanceRate, 40) && meeting_attendance_records.length > 0) score -= 5;
 
   // feedbackActionRate < 40 → -5 (guarded)
-  if (feedbackActionRate < 40 && feedback_action_records.length > 0) score -= 5;
+  if (below(feedbackActionRate, 40) && feedback_action_records.length > 0) score -= 5;
 
   // below(feelingHeardRate, 40) → -5 (guarded)
   if (below(feelingHeardRate, 40) && feeling_heard_records.length > 0) score -= 5;
@@ -543,11 +536,11 @@ export function computeChildVoiceParticipation(
 
   const strengths: string[] = [];
 
-  if (meetingAttendanceRate >= 90 && totalMeetingRecords > 0) {
+  if (meets(meetingAttendanceRate, 90) && totalMeetingRecords > 0) {
     strengths.push(
       `${meetingAttendanceRate}% meeting attendance rate — children consistently attend and engage with meetings, demonstrating that the home creates a culture where children's participation is valued and expected.`,
     );
-  } else if (meetingAttendanceRate >= 70 && totalMeetingRecords > 0) {
+  } else if (meets(meetingAttendanceRate, 70) && totalMeetingRecords > 0) {
     strengths.push(
       `${meetingAttendanceRate}% meeting attendance — good levels of children attending meetings, indicating children feel their attendance matters and that meetings are accessible.`,
     );
@@ -563,11 +556,11 @@ export function computeChildVoiceParticipation(
     );
   }
 
-  if (feedbackActionRate >= 90 && feedbackReceived > 0) {
+  if (meets(feedbackActionRate, 90) && feedbackReceived > 0) {
     strengths.push(
       `${feedbackActionRate}% of children's feedback acted upon — the home demonstrates outstanding responsiveness to children's views, taking action on virtually all feedback received. Children can see that speaking up leads to real change.`,
     );
-  } else if (feedbackActionRate >= 70 && feedbackReceived > 0) {
+  } else if (meets(feedbackActionRate, 70) && feedbackReceived > 0) {
     strengths.push(
       `${feedbackActionRate}% of feedback acted upon — good evidence that children's feedback leads to action, reinforcing the value of sharing their views.`,
     );
@@ -593,81 +586,81 @@ export function computeChildVoiceParticipation(
     );
   }
 
-  if (childSatisfactionRate >= 90 && totalSatisDenom > 0) {
+  if (meets(childSatisfactionRate, 90) && totalSatisDenom > 0) {
     strengths.push(
       `${childSatisfactionRate}% child satisfaction across voice and participation activities — children are consistently positive about how their views are sought, heard, and acted upon.`,
     );
-  } else if (childSatisfactionRate >= 70 && totalSatisDenom > 0) {
+  } else if (meets(childSatisfactionRate, 70) && totalSatisDenom > 0) {
     strengths.push(
       `${childSatisfactionRate}% child satisfaction rate — children generally feel positive about how the home listens to and responds to their views.`,
     );
   }
 
-  if (meetingActionCompletionRate >= 90 && totalMeetingActions > 0) {
+  if (meets(meetingActionCompletionRate, 90) && totalMeetingActions > 0) {
     strengths.push(
       `${meetingActionCompletionRate}% of meeting actions completed — the home follows through on commitments made in children's meetings, demonstrating that meetings lead to tangible outcomes.`,
     );
-  } else if (meetingActionCompletionRate >= 70 && totalMeetingActions > 0) {
+  } else if (meets(meetingActionCompletionRate, 70) && totalMeetingActions > 0) {
     strengths.push(
       `${meetingActionCompletionRate}% meeting action completion — good follow-through on actions arising from children's meetings.`,
     );
   }
 
-  if (meetingContributionRate >= 90 && attendedMeeting > 0) {
+  if (meets(meetingContributionRate, 90) && attendedMeeting > 0) {
     strengths.push(
       `${meetingContributionRate}% of children who attend meetings actively contribute — meetings are structured to enable genuine participation, not passive attendance.`,
     );
-  } else if (meetingContributionRate >= 70 && attendedMeeting > 0) {
+  } else if (meets(meetingContributionRate, 70) && attendedMeeting > 0) {
     strengths.push(
       `${meetingContributionRate}% meeting contribution rate — the majority of attending children actively contribute to discussions.`,
     );
   }
 
-  if (concernAddressedRate >= 90 && specificConcerns > 0) {
+  if (meets(concernAddressedRate, 90) && specificConcerns > 0) {
     strengths.push(
       `${concernAddressedRate}% of specific concerns raised by children have been addressed — the home demonstrates exceptional responsiveness to individual children's worries and issues.`,
     );
-  } else if (concernAddressedRate >= 70 && specificConcerns > 0) {
+  } else if (meets(concernAddressedRate, 70) && specificConcerns > 0) {
     strengths.push(
       `${concernAddressedRate}% of children's specific concerns addressed — good evidence that the home responds to individual children's worries.`,
     );
   }
 
-  if (followUpCompletionRate >= 90 && followUpRequired > 0) {
+  if (meets(followUpCompletionRate, 90) && followUpRequired > 0) {
     strengths.push(
       `${followUpCompletionRate}% of consultation follow-ups completed — the home consistently follows through after consulting children, closing the feedback loop.`,
     );
   }
 
-  if (childChairRate >= 30 && totalMeetingRecords > 0) {
+  if (meets(childChairRate, 30) && totalMeetingRecords > 0) {
     strengths.push(
       `${childChairRate}% of meetings chaired by children — children are given real leadership opportunities in meetings, promoting agency and ownership of the participation process.`,
     );
   }
 
-  if (leadershipRate >= 20 && totalCouncilRecords > 0) {
+  if (meets(leadershipRate, 20) && totalCouncilRecords > 0) {
     strengths.push(
       `${leadershipRate}% of council records involve children in leadership roles (chair/secretary) — the home actively develops children's leadership skills through participation structures.`,
     );
   }
 
-  if (knowsComplainRate >= 90 && totalFeelingHeardRecords > 0) {
+  if (meets(knowsComplainRate, 90) && totalFeelingHeardRecords > 0) {
     strengths.push(
       `${knowsComplainRate}% of children know how to make a complaint — children are well-informed about their rights and the complaints process, supporting Reg 7 compliance.`,
     );
   }
 
-  if (knowsAdvocateRate >= 90 && totalFeelingHeardRecords > 0) {
+  if (meets(knowsAdvocateRate, 90) && totalFeelingHeardRecords > 0) {
     strengths.push(
       `${knowsAdvocateRate}% of children know their advocate — strong awareness of independent advocacy supports children's ability to have their voice heard outside the home.`,
     );
   }
 
-  if (meetingChildCoverage >= 100 && total_children > 0) {
+  if (meets(meetingChildCoverage, 100) && total_children > 0) {
     strengths.push(
       "Every child has attended at least one meeting — participation is genuinely inclusive and no child is left without a voice in the home's decision-making.",
     );
-  } else if (meetingChildCoverage >= 80 && total_children > 0) {
+  } else if (meets(meetingChildCoverage, 80) && total_children > 0) {
     strengths.push(
       `${meetingChildCoverage}% of children have attended meetings — strong coverage ensuring most children have opportunities to participate.`,
     );
@@ -693,11 +686,11 @@ export function computeChildVoiceParticipation(
 
   const concerns: string[] = [];
 
-  if (meetingAttendanceRate < 40 && totalMeetingRecords > 0) {
+  if (below(meetingAttendanceRate, 40) && totalMeetingRecords > 0) {
     concerns.push(
       `Only ${meetingAttendanceRate}% meeting attendance — the majority of children are not attending meetings, indicating significant barriers to participation or a lack of engagement with the meeting process.`,
     );
-  } else if (meetingAttendanceRate >= 40 && meetingAttendanceRate < 70 && totalMeetingRecords > 0) {
+  } else if (meets(meetingAttendanceRate, 40) && below(meetingAttendanceRate, 70) && totalMeetingRecords > 0) {
     concerns.push(
       `Meeting attendance at ${meetingAttendanceRate}% — not all children are attending meetings, suggesting some barriers or lack of motivation to participate.`,
     );
@@ -713,11 +706,11 @@ export function computeChildVoiceParticipation(
     );
   }
 
-  if (feedbackActionRate < 40 && feedbackReceived > 0) {
+  if (below(feedbackActionRate, 40) && feedbackReceived > 0) {
     concerns.push(
       `Only ${feedbackActionRate}% of children's feedback is acted upon — the home is failing to respond to children's views, which undermines children's trust in the participation process and breaches the principle that children's voices should lead to change.`,
     );
-  } else if (feedbackActionRate >= 40 && feedbackActionRate < 70 && feedbackReceived > 0) {
+  } else if (meets(feedbackActionRate, 40) && below(feedbackActionRate, 70) && feedbackReceived > 0) {
     concerns.push(
       `Feedback action rate at ${feedbackActionRate}% — not all children's feedback is being acted upon, risking children feeling their views do not matter.`,
     );
@@ -743,33 +736,33 @@ export function computeChildVoiceParticipation(
     );
   }
 
-  if (childSatisfactionRate < 40 && totalSatisDenom > 0) {
+  if (below(childSatisfactionRate, 40) && totalSatisDenom > 0) {
     concerns.push(
       `Child satisfaction with voice and participation at only ${childSatisfactionRate}% — children are not positive about how their views are sought and responded to across the home's participation activities.`,
     );
-  } else if (childSatisfactionRate >= 40 && childSatisfactionRate < 70 && totalSatisDenom > 0) {
+  } else if (meets(childSatisfactionRate, 40) && below(childSatisfactionRate, 70) && totalSatisDenom > 0) {
     concerns.push(
       `Child satisfaction at ${childSatisfactionRate}% — some children are not satisfied with how the home listens to and responds to their views.`,
     );
   }
 
-  if (meetingActionCompletionRate < 50 && totalMeetingActions > 0) {
+  if (below(meetingActionCompletionRate, 50) && totalMeetingActions > 0) {
     concerns.push(
       `Only ${meetingActionCompletionRate}% of meeting actions completed — the home is not following through on commitments made in children's meetings, undermining the purpose and credibility of the meeting process.`,
     );
-  } else if (meetingActionCompletionRate >= 50 && meetingActionCompletionRate < 70 && totalMeetingActions > 0) {
+  } else if (meets(meetingActionCompletionRate, 50) && below(meetingActionCompletionRate, 70) && totalMeetingActions > 0) {
     concerns.push(
       `Meeting action completion at ${meetingActionCompletionRate}% — some actions from children's meetings are not being completed, which may erode children's trust in the process.`,
     );
   }
 
-  if (feedbackAcknowledgedRate < 50 && feedbackReceived > 0) {
+  if (below(feedbackAcknowledgedRate, 50) && feedbackReceived > 0) {
     concerns.push(
       `Only ${feedbackAcknowledgedRate}% of children's feedback acknowledged — failure to acknowledge receipt of feedback signals to children that their views are not valued.`,
     );
   }
 
-  if (feedbackOutcomeCommunicatedRate < 50 && feedbackReceived > 0) {
+  if (below(feedbackOutcomeCommunicatedRate, 50) && feedbackReceived > 0) {
     concerns.push(
       `Only ${feedbackOutcomeCommunicatedRate}% of feedback outcomes communicated back to children — without closing the loop, children cannot see that their feedback makes a difference.`,
     );
@@ -781,31 +774,31 @@ export function computeChildVoiceParticipation(
     );
   }
 
-  if (concernAddressedRate < 50 && specificConcerns > 0) {
+  if (below(concernAddressedRate, 50) && specificConcerns > 0) {
     concerns.push(
       `Only ${concernAddressedRate}% of children's specific concerns have been addressed — individual children's worries and issues are not being resolved, which directly impacts their sense of being heard and cared for.`,
     );
   }
 
-  if (knowsComplainRate < 50 && totalFeelingHeardRecords > 0) {
+  if (below(knowsComplainRate, 50) && totalFeelingHeardRecords > 0) {
     concerns.push(
       `Only ${knowsComplainRate}% of children know how to make a complaint — children must be informed of their right to complain and how to do so (Reg 7).`,
     );
   }
 
-  if (knowsAdvocateRate < 50 && totalFeelingHeardRecords > 0) {
+  if (below(knowsAdvocateRate, 50) && totalFeelingHeardRecords > 0) {
     concerns.push(
       `Only ${knowsAdvocateRate}% of children know their advocate — children should know how to access independent advocacy support.`,
     );
   }
 
-  if (meetingChildCoverage < 50 && total_children > 0 && totalMeetingRecords > 0) {
+  if (below(meetingChildCoverage, 50) && total_children > 0 && totalMeetingRecords > 0) {
     concerns.push(
       `Only ${meetingChildCoverage}% of children have attended any meeting — many children are not accessing participation opportunities, suggesting exclusion or disengagement.`,
     );
   }
 
-  if (followUpCompletionRate < 50 && followUpRequired > 0) {
+  if (below(followUpCompletionRate, 50) && followUpRequired > 0) {
     concerns.push(
       `Only ${followUpCompletionRate}% of consultation follow-ups completed — the home is not following through after consulting children, breaking the consultation-action cycle.`,
     );
@@ -828,7 +821,7 @@ export function computeChildVoiceParticipation(
   const recommendations: ChildVoiceRecommendation[] = [];
   let rank = 0;
 
-  if (meetingAttendanceRate < 40 && totalMeetingRecords > 0) {
+  if (below(meetingAttendanceRate, 40) && totalMeetingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -838,7 +831,7 @@ export function computeChildVoiceParticipation(
     });
   }
 
-  if (feedbackActionRate < 40 && feedbackReceived > 0) {
+  if (below(feedbackActionRate, 40) && feedbackReceived > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -898,7 +891,7 @@ export function computeChildVoiceParticipation(
     });
   }
 
-  if (knowsComplainRate < 50 && totalFeelingHeardRecords > 0) {
+  if (below(knowsComplainRate, 50) && totalFeelingHeardRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -908,7 +901,7 @@ export function computeChildVoiceParticipation(
     });
   }
 
-  if (knowsAdvocateRate < 50 && totalFeelingHeardRecords > 0) {
+  if (below(knowsAdvocateRate, 50) && totalFeelingHeardRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -918,7 +911,7 @@ export function computeChildVoiceParticipation(
     });
   }
 
-  if (meetingActionCompletionRate < 50 && totalMeetingActions > 0) {
+  if (below(meetingActionCompletionRate, 50) && totalMeetingActions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -928,7 +921,7 @@ export function computeChildVoiceParticipation(
     });
   }
 
-  if (feedbackOutcomeCommunicatedRate < 50 && feedbackReceived > 0) {
+  if (below(feedbackOutcomeCommunicatedRate, 50) && feedbackReceived > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -949,8 +942,8 @@ export function computeChildVoiceParticipation(
   }
 
   if (
-    meetingAttendanceRate >= 40 &&
-    meetingAttendanceRate < 70 &&
+    meets(meetingAttendanceRate, 40) &&
+    below(meetingAttendanceRate, 70) &&
     totalMeetingRecords > 0
   ) {
     recommendations.push({
@@ -963,8 +956,8 @@ export function computeChildVoiceParticipation(
   }
 
   if (
-    feedbackActionRate >= 40 &&
-    feedbackActionRate < 70 &&
+    meets(feedbackActionRate, 40) &&
+    below(feedbackActionRate, 70) &&
     feedbackReceived > 0
   ) {
     recommendations.push({
@@ -1019,8 +1012,8 @@ export function computeChildVoiceParticipation(
   }
 
   if (
-    meetingChildCoverage < 80 &&
-    meetingChildCoverage >= 50 &&
+    below(meetingChildCoverage, 80) &&
+    meets(meetingChildCoverage, 50) &&
     total_children > 0 &&
     totalMeetingRecords > 0
   ) {
@@ -1034,8 +1027,8 @@ export function computeChildVoiceParticipation(
   }
 
   if (
-    concernAddressedRate >= 50 &&
-    concernAddressedRate < 70 &&
+    meets(concernAddressedRate, 50) &&
+    below(concernAddressedRate, 70) &&
     specificConcerns > 0
   ) {
     recommendations.push({
@@ -1053,14 +1046,14 @@ export function computeChildVoiceParticipation(
 
   // -- Critical insights --
 
-  if (meetingAttendanceRate < 40 && totalMeetingRecords > 0) {
+  if (below(meetingAttendanceRate, 40) && totalMeetingRecords > 0) {
     insights.push({
       text: `Only ${meetingAttendanceRate}% meeting attendance. Low attendance at children's meetings indicates that the home's participation structures are not working — children may not see the point of meetings, feel unsafe to speak, or face practical barriers. Ofsted will look for evidence that meetings are meaningful and well-attended.`,
       severity: "critical",
     });
   }
 
-  if (feedbackActionRate < 40 && feedbackReceived > 0) {
+  if (below(feedbackActionRate, 40) && feedbackReceived > 0) {
     insights.push({
       text: `Only ${feedbackActionRate}% of children's feedback acted upon. When children share their views and nothing changes, they learn that speaking up is pointless. This fundamentally undermines the voice of the child and creates a culture where children disengage from participation. Reg 7 requires that children's views shape the care they receive.`,
       severity: "critical",
@@ -1095,7 +1088,7 @@ export function computeChildVoiceParticipation(
     });
   }
 
-  if (knowsComplainRate < 50 && totalFeelingHeardRecords > 0) {
+  if (below(knowsComplainRate, 50) && totalFeelingHeardRecords > 0) {
     insights.push({
       text: `Only ${knowsComplainRate}% of children know how to make a complaint. This is a specific Reg 7 requirement — every child must understand their right to complain and know the process. Without this knowledge, children cannot effectively use complaints as a voice mechanism.`,
       severity: "critical",
@@ -1105,8 +1098,8 @@ export function computeChildVoiceParticipation(
   // -- Warning insights --
 
   if (
-    meetingAttendanceRate >= 40 &&
-    meetingAttendanceRate < 70 &&
+    meets(meetingAttendanceRate, 40) &&
+    below(meetingAttendanceRate, 70) &&
     totalMeetingRecords > 0
   ) {
     insights.push({
@@ -1127,8 +1120,8 @@ export function computeChildVoiceParticipation(
   }
 
   if (
-    feedbackActionRate >= 40 &&
-    feedbackActionRate < 70 &&
+    meets(feedbackActionRate, 40) &&
+    below(feedbackActionRate, 70) &&
     feedbackReceived > 0
   ) {
     insights.push({
@@ -1160,8 +1153,8 @@ export function computeChildVoiceParticipation(
   }
 
   if (
-    childSatisfactionRate >= 40 &&
-    childSatisfactionRate < 70 &&
+    meets(childSatisfactionRate, 40) &&
+    below(childSatisfactionRate, 70) &&
     totalSatisDenom > 0
   ) {
     insights.push({
@@ -1171,8 +1164,8 @@ export function computeChildVoiceParticipation(
   }
 
   if (
-    meetingActionCompletionRate >= 50 &&
-    meetingActionCompletionRate < 70 &&
+    meets(meetingActionCompletionRate, 50) &&
+    below(meetingActionCompletionRate, 70) &&
     totalMeetingActions > 0
   ) {
     insights.push({
@@ -1189,7 +1182,7 @@ export function computeChildVoiceParticipation(
   }
 
   if (
-    minutesRecordedRate < 70 &&
+    below(minutesRecordedRate, 70) &&
     totalMeetingRecords > 0
   ) {
     insights.push({
@@ -1219,8 +1212,8 @@ export function computeChildVoiceParticipation(
   }
 
   if (
-    meetingAttendanceRate >= 90 &&
-    meetingContributionRate >= 90 &&
+    meets(meetingAttendanceRate, 90) &&
+    meets(meetingContributionRate, 90) &&
     totalMeetingRecords > 0 &&
     attendedMeeting > 0
   ) {
@@ -1231,8 +1224,8 @@ export function computeChildVoiceParticipation(
   }
 
   if (
-    feedbackActionRate >= 90 &&
-    feedbackOutcomeCommunicatedRate >= 90 &&
+    meets(feedbackActionRate, 90) &&
+    meets(feedbackOutcomeCommunicatedRate, 90) &&
     feedbackReceived > 0
   ) {
     insights.push({
@@ -1263,7 +1256,7 @@ export function computeChildVoiceParticipation(
 
   if (
     meets(consultationRate, 90) &&
-    consultationSatisfactionRate >= 90 &&
+    meets(consultationSatisfactionRate, 90) &&
     totalConsultationRecords > 0
   ) {
     insights.push({
@@ -1273,7 +1266,7 @@ export function computeChildVoiceParticipation(
   }
 
   if (
-    meetingActionCompletionRate >= 90 &&
+    meets(meetingActionCompletionRate, 90) &&
     totalMeetingActions > 0
   ) {
     insights.push({
@@ -1283,7 +1276,7 @@ export function computeChildVoiceParticipation(
   }
 
   if (
-    concernAddressedRate >= 90 &&
+    meets(concernAddressedRate, 90) &&
     specificConcerns > 0
   ) {
     insights.push({
@@ -1303,8 +1296,8 @@ export function computeChildVoiceParticipation(
   }
 
   if (
-    knowsComplainRate >= 90 &&
-    knowsAdvocateRate >= 90 &&
+    meets(knowsComplainRate, 90) &&
+    meets(knowsAdvocateRate, 90) &&
     totalFeelingHeardRecords > 0
   ) {
     insights.push({
@@ -1344,7 +1337,7 @@ export function computeChildVoiceParticipation(
     feedback_action_rate: feedbackActionRate,
     council_engagement_rate: councilEngagementRate,
     feeling_heard_rate: feelingHeardRate,
-    // Preserve null-on-empty semantic: pct() returns 0 for empty denominator,
+    // Preserve null-on-empty semantic: rate() returns 0 for empty denominator,
     // but the field promises null-on-unmeasured. Gate on totalSatisDenom.
     child_satisfaction_rate: totalSatisDenom > 0 ? childSatisfactionRate : null,
     strengths,

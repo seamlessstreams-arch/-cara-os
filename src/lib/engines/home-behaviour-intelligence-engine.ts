@@ -8,7 +8,7 @@
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
-import { below, meets, rate } from "@/lib/metrics/rate";
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
 
 export interface BehaviourLogInput {
   id: string;
@@ -146,10 +146,6 @@ function daysBetween(a: string, b: string): number {
 }
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 // ── Main Compute ────────────────────────────────────────────────────────────
 
 export function computeHomeBehaviour(
@@ -180,15 +176,15 @@ export function computeHomeBehaviour(
   // ── Behaviour Profile ───────────────────────────────────────────────
   const positiveLogs = logs90d.filter(l => l.direction === "positive").length;
   const concernLogs = logs90d.filter(l => l.direction === "concern").length;
-  const positiveRatio = pct(positiveLogs, logs90d.length);
+  const positiveRatio = rate(positiveLogs, logs90d.length);
 
   const highCritical = logs90d.filter(l => l.intensity === "high" || l.intensity === "critical").length;
 
   const abcDocs = logs90d.filter(l => l.has_antecedent && l.has_strategy && l.has_outcome).length;
-  const abcRate = pct(abcDocs, logs90d.length);
+  const abcRate = rate(abcDocs, logs90d.length);
 
   const withStrategy = logs90d.filter(l => l.has_strategy).length;
-  const strategyRate = pct(withStrategy, logs90d.length);
+  const strategyRate = rate(withStrategy, logs90d.length);
 
   const concernChildren = [...new Set(logs90d.filter(l => l.direction === "concern").map(l => l.child_id))];
   const childConcernCounts: Record<string, number> = {};
@@ -212,17 +208,17 @@ export function computeHomeBehaviour(
   // ── Reinforcement Profile ───────────────────────────────────────────
   const rewards = sr90d.filter(s => s.direction === "reward").length;
   const sanctions = sr90d.filter(s => s.direction === "sanction").length;
-  const rewardRatio = pct(rewards, sr90d.length);
+  const rewardRatio = rate(rewards, sr90d.length);
 
   const sanctionEntries = sr90d.filter(s => s.direction === "sanction");
   const proportionate = sanctionEntries.filter(s => s.proportionate).length;
-  const proportionalityRate = pct(proportionate, sanctionEntries.length);
+  const proportionalityRate = rate(proportionate, sanctionEntries.length);
 
   const withChildResponse = sr90d.filter(s => s.has_child_response).length;
-  const childResponseRate = pct(withChildResponse, sr90d.length);
+  const childResponseRate = rate(withChildResponse, sr90d.length);
 
   const withOutcome = sr90d.filter(s => s.has_outcome).length;
-  const outcomeRate = pct(withOutcome, sr90d.length);
+  const outcomeRate = rate(withOutcome, sr90d.length);
 
   const reinforcementProfile: ReinforcementProfile = {
     total_entries_90d: sr90d.length,
@@ -236,16 +232,16 @@ export function computeHomeBehaviour(
 
   // ── Restorative Profile ─────────────────────────────────────────────
   const withChildVoice = cons90d.filter(c => c.has_child_voice).length;
-  const childVoiceRate = pct(withChildVoice, cons90d.length);
+  const childVoiceRate = rate(withChildVoice, cons90d.length);
 
   const withRepair = cons90d.filter(c => c.relationship_repaired).length;
-  const repairRate = pct(withRepair, cons90d.length);
+  const repairRate = rate(withRepair, cons90d.length);
 
   const bspLinked = cons90d.filter(c => c.linked_behaviour_plan).length;
-  const bspLinkedRate = pct(bspLinked, cons90d.length);
+  const bspLinkedRate = rate(bspLinked, cons90d.length);
 
   const withRestQuestions = cons90d.filter(c => c.has_restorative_questions).length;
-  const restQuestionRate = pct(withRestQuestions, cons90d.length);
+  const restQuestionRate = rate(withRestQuestions, cons90d.length);
 
   const restorativeProfile: RestorativeProfile = {
     total_consequences_90d: cons90d.length,
@@ -397,9 +393,9 @@ export function computeHomeBehaviour(
   // ── Headline ──────────────────────────────────────────────────────────
   let headline: string;
   if (rating === "outstanding") {
-    headline = `Outstanding behaviour management — ${positiveRatio}% positive behaviour ratio with effective restorative practice and proportionate consequences.`;
+    headline = `Outstanding behaviour management — ${formatRate(positiveRatio)} positive behaviour ratio with effective restorative practice and proportionate consequences.`;
   } else if (rating === "good") {
-    headline = `Good behaviour management — therapeutic approaches evident with ${rewardRatio}% reward-led reinforcement.`;
+    headline = `Good behaviour management — therapeutic approaches evident with ${formatRate(rewardRatio)} reward-led reinforcement.`;
   } else if (rating === "adequate") {
     headline = "Adequate behaviour management — improvements needed in positive reinforcement, documentation, or restorative practice.";
   } else {
@@ -425,8 +421,8 @@ export function computeHomeBehaviour(
 function emptyBehavProfile(): BehaviourProfile {
   return {
     total_logs_90d: 0, positive_count: 0, concern_count: 0,
-    positive_ratio: 0, high_critical_count: 0,
-    abc_documentation_rate: 0, strategy_use_rate: 0,
+    positive_ratio: null, high_critical_count: 0,
+    abc_documentation_rate: null, strategy_use_rate: null,
     children_with_concerns: [], repeat_concern_children: [],
   };
 }
@@ -434,15 +430,15 @@ function emptyBehavProfile(): BehaviourProfile {
 function emptyReinfProfile(): ReinforcementProfile {
   return {
     total_entries_90d: 0, reward_count: 0, sanction_count: 0,
-    reward_ratio: 0, proportionality_rate: 0,
-    child_response_rate: 0, outcome_rate: 0,
+    reward_ratio: null, proportionality_rate: null,
+    child_response_rate: null, outcome_rate: null,
   };
 }
 
 function emptyRestProfile(): RestorativeProfile {
   return {
-    total_consequences_90d: 0, child_voice_rate: 0,
-    relationship_repair_rate: 0, bsp_linked_rate: 0,
-    restorative_question_rate: 0,
+    total_consequences_90d: 0, child_voice_rate: null,
+    relationship_repair_rate: null, bsp_linked_rate: null,
+    restorative_question_rate: null,
   };
 }

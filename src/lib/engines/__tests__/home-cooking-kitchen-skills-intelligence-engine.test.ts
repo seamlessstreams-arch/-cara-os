@@ -250,12 +250,12 @@ describe("Home Cooking & Kitchen Skills Intelligence Engine", () => {
 
     it("returns zero rates for insufficient_data", () => {
       const r = computeCookingKitchenSkills(baseInput({ total_children: 0 }));
-      expect(r.cooking_participation_rate).toBe(0);
-      expect(r.kitchen_safety_rate).toBe(0);
-      expect(r.meal_preparation_rate).toBe(0);
-      expect(r.nutritional_understanding_rate).toBe(0);
-      expect(r.independence_rate).toBe(0);
-      expect(r.child_enjoyment_rate).toBe(0);
+      expect(r.cooking_participation_rate).toBeNull();
+      expect(r.kitchen_safety_rate).toBeNull();
+      expect(r.meal_preparation_rate).toBeNull();
+      expect(r.nutritional_understanding_rate).toBeNull();
+      expect(r.independence_rate).toBeNull();
+      expect(r.child_enjoyment_rate).toBeNull();
     });
   });
 
@@ -1079,7 +1079,7 @@ describe("Home Cooking & Kitchen Skills Intelligence Engine", () => {
           kitchen_safety_records: [makeKitchenSafety()],
         }),
       );
-      expect(r.child_enjoyment_rate).toBe(0);
+      expect(r.child_enjoyment_rate).toBeNull();
     });
 
     it("rates are 0 for empty arrays", () => {
@@ -1089,10 +1089,10 @@ describe("Home Cooking & Kitchen Skills Intelligence Engine", () => {
           // All others empty
         }),
       );
-      expect(r.kitchen_safety_rate).toBe(0);
-      expect(r.meal_preparation_rate).toBe(0);
-      expect(r.nutritional_understanding_rate).toBe(0);
-      expect(r.independence_rate).toBe(0);
+      expect(r.kitchen_safety_rate).toBeNull();
+      expect(r.meal_preparation_rate).toBeNull();
+      expect(r.nutritional_understanding_rate).toBeNull();
+      expect(r.independence_rate).toBeNull();
     });
   });
 
@@ -2482,14 +2482,14 @@ describe("Home Cooking & Kitchen Skills Intelligence Engine", () => {
       expect(r.total_cooking_sessions).toBe(1);
     });
 
-    it("pct returns 0 when denominator is 0", () => {
+    it("rate returns null when denominator is 0", () => {
       const r = computeCookingKitchenSkills(
         baseInput({
           kitchen_safety_records: [makeKitchenSafety()],
         }),
       );
       // No cooking sessions → pct(0, 0) = 0
-      expect(r.cooking_participation_rate).toBe(0);
+      expect(r.cooking_participation_rate).toBeNull();
     });
 
     it("compositeEnjoymentRate only includes sources with records", () => {

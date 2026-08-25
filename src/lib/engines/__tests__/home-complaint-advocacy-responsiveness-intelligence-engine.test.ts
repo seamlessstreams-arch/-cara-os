@@ -180,14 +180,14 @@ describe("Home Complaint & Advocacy Responsiveness Intelligence Engine", () => {
         participation_entries: [],
       });
       expect(r.total_complaints).toBe(0);
-      expect(r.complaint_resolution_rate).toBe(0);
-      expect(r.complaint_timeliness_rate).toBe(0);
-      expect(r.advocacy_access_rate).toBe(0);
-      expect(r.child_satisfaction_rate).toBe(0);
-      expect(r.feedback_loop_completion_rate).toBe(0);
-      expect(r.participation_rate).toBe(0);
-      expect(r.complaint_acknowledgement_rate).toBe(0);
-      expect(r.learning_implemented_rate).toBe(0);
+      expect(r.complaint_resolution_rate).toBeNull();
+      expect(r.complaint_timeliness_rate).toBeNull();
+      expect(r.advocacy_access_rate).toBeNull();
+      expect(r.child_satisfaction_rate).toBeNull();
+      expect(r.feedback_loop_completion_rate).toBeNull();
+      expect(r.participation_rate).toBeNull();
+      expect(r.complaint_acknowledgement_rate).toBeNull();
+      expect(r.learning_implemented_rate).toBeNull();
       expect(r.advocacy_quality_avg).toBe(0);
     });
 
@@ -277,8 +277,8 @@ describe("Home Complaint & Advocacy Responsiveness Intelligence Engine", () => {
         participation_entries: [],
       });
       expect(r.total_complaints).toBe(0);
-      expect(r.complaint_resolution_rate).toBe(0);
-      expect(r.advocacy_access_rate).toBe(0);
+      expect(r.complaint_resolution_rate).toBeNull();
+      expect(r.advocacy_access_rate).toBeNull();
       expect(r.advocacy_quality_avg).toBe(0);
     });
 
@@ -785,7 +785,7 @@ describe("Home Complaint & Advocacy Responsiveness Intelligence Engine", () => {
       expect(r.learning_implemented_rate).toBe(30);
     });
 
-    it("pct(0,0) = 0 when no learning actions identified", () => {
+    it("rate(0,0)=null when no learning actions identified", () => {
       const r = computeComplaintAdvocacyResponsiveness(
         baseInput({
           complaint_outcomes: [
@@ -796,7 +796,7 @@ describe("Home Complaint & Advocacy Responsiveness Intelligence Engine", () => {
           ],
         }),
       );
-      expect(r.learning_implemented_rate).toBe(0);
+      expect(r.learning_implemented_rate).toBeNull();
     });
   });
 
@@ -1181,7 +1181,7 @@ describe("Home Complaint & Advocacy Responsiveness Intelligence Engine", () => {
         }),
       );
       // pct(0,0)=0 but guard totalComplaints > 0 is false → no penalty
-      expect(r.complaint_resolution_rate).toBe(0);
+      expect(r.complaint_resolution_rate).toBeNull();
     });
 
     it("advocacyAccessRate < 50 with children > 0 applies -5", () => {
@@ -1228,7 +1228,7 @@ describe("Home Complaint & Advocacy Responsiveness Intelligence Engine", () => {
         baseInput({ child_feedback_loops: [] }),
       );
       // pct(0,0)=0 but totalFeedbackLoops=0 → no penalty
-      expect(r.feedback_loop_completion_rate).toBe(0);
+      expect(r.feedback_loop_completion_rate).toBeNull();
     });
 
     it("participationRate < 30 with entries > 0 applies -3", () => {
@@ -1251,7 +1251,7 @@ describe("Home Complaint & Advocacy Responsiveness Intelligence Engine", () => {
       const r = computeComplaintAdvocacyResponsiveness(
         baseInput({ participation_entries: [] }),
       );
-      expect(r.participation_rate).toBe(0);
+      expect(r.participation_rate).toBeNull();
     });
 
     it("multiple penalties stack", () => {
@@ -1433,7 +1433,7 @@ describe("Home Complaint & Advocacy Responsiveness Intelligence Engine", () => {
       expect(r.learning_implemented_rate).toBe(70);
     });
 
-    it("learning_implemented_rate is 0 when no learning identified (pct(0,0)=0)", () => {
+    it("learning_implemented_rate is null when no learning identified (rate(0,0)=null)", () => {
       const r = computeComplaintAdvocacyResponsiveness(
         baseInput({
           complaint_outcomes: [
@@ -1441,7 +1441,7 @@ describe("Home Complaint & Advocacy Responsiveness Intelligence Engine", () => {
           ],
         }),
       );
-      expect(r.learning_implemented_rate).toBe(0);
+      expect(r.learning_implemented_rate).toBeNull();
     });
 
     it("advocacy_access_rate uses unique active child IDs / total_children", () => {
@@ -1474,7 +1474,7 @@ describe("Home Complaint & Advocacy Responsiveness Intelligence Engine", () => {
       expect(r.advocacy_quality_avg).toBe(2);
     });
 
-    it("advocacy_quality_avg is 0 when no records", () => {
+    it("advocacy_quality_avg is null when no records", () => {
       const r = computeComplaintAdvocacyResponsiveness(
         baseInput({
           total_children: 0,

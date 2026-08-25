@@ -70,20 +70,20 @@ export function HomeBoilerHeatingSystemServicingIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.boiler_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.boiler_servicing_rate >= 90 ? "bg-green-50" : d.boiler_servicing_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.boiler_servicing_rate >= 90 ? "text-[--cs-success]" : d.boiler_servicing_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.boiler_servicing_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.boiler_servicing_rate, 90) ? "bg-green-50" : meets(d.boiler_servicing_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.boiler_servicing_rate, 90) ? "text-[--cs-success]" : meets(d.boiler_servicing_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.boiler_servicing_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Servicing</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.heating_check_rate >= 90 ? "bg-green-50" : d.heating_check_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.heating_check_rate >= 90 ? "text-[--cs-success]" : d.heating_check_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.heating_check_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.heating_check_rate, 90) ? "bg-green-50" : meets(d.heating_check_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.heating_check_rate, 90) ? "text-[--cs-success]" : meets(d.heating_check_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.heating_check_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Heating</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.radiator_maintenance_rate, 90) ? "bg-green-50" : meets(d.radiator_maintenance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
               <p className={cn("text-sm font-bold tabular-nums", meets(d.radiator_maintenance_rate, 90) ? "text-[--cs-success]" : meets(d.radiator_maintenance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.radiator_maintenance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Radiators</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.thermostat_calibration_rate >= 90 ? "bg-green-50" : d.thermostat_calibration_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.thermostat_calibration_rate >= 90 ? "text-[--cs-success]" : d.thermostat_calibration_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.thermostat_calibration_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.thermostat_calibration_rate, 90) ? "bg-green-50" : meets(d.thermostat_calibration_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.thermostat_calibration_rate, 90) ? "text-[--cs-success]" : meets(d.thermostat_calibration_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.thermostat_calibration_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Thermo.</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.energy_efficiency_rate, 90) ? "bg-green-50" : meets(d.energy_efficiency_rate, 70) ? "bg-amber-50" : "bg-red-50")}>

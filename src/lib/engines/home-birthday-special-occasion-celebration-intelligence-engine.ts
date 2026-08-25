@@ -187,10 +187,6 @@ export interface BirthdayCelebrationResult {
 // -- Helpers ------------------------------------------------------------------
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -213,12 +209,12 @@ function emptyResult(
     celebration_rating: rating,
     celebration_score: score,
     headline,
-    birthday_planning_rate: 0,
-    celebration_execution_rate: 0,
-    gift_provision_rate: 0,
-    memory_making_rate: 0,
-    child_satisfaction_rate: 0,
-    child_choice_rate: 0,
+    birthday_planning_rate: null,
+    celebration_execution_rate: null,
+    gift_provision_rate: null,
+    memory_making_rate: null,
+    child_satisfaction_rate: null,
+    child_choice_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -297,10 +293,10 @@ export function computeBirthdaySpecialOccasionCelebration(
   // --- Birthday planning personalisation ---
   const totalBirthdayPlans = birthday_plan_records.length;
   const plansCreated = birthday_plan_records.filter((r) => r.plan_created).length;
-  const birthdayPlanningRate = pct(plansCreated, totalBirthdayPlans);
+  const birthdayPlanningRate = rate(plansCreated, totalBirthdayPlans);
 
   const childConsulted = birthday_plan_records.filter((r) => r.child_consulted).length;
-  const childConsultationRate = pct(childConsulted, totalBirthdayPlans);
+  const childConsultationRate = rate(childConsulted, totalBirthdayPlans);
 
   const childChoseTheme = birthday_plan_records.filter((r) => r.child_chose_theme).length;
   const childChoseGuests = birthday_plan_records.filter((r) => r.child_chose_guests).length;
@@ -308,16 +304,16 @@ export function computeBirthdaySpecialOccasionCelebration(
   const childChoseActivity = birthday_plan_records.filter((r) => r.child_chose_activity).length;
   const totalChoiceOpportunities = totalBirthdayPlans * 4;
   const totalChoicesMade = childChoseTheme + childChoseGuests + childChoseFood + childChoseActivity;
-  const childChoiceRate = pct(totalChoicesMade, totalChoiceOpportunities);
+  const childChoiceRate = rate(totalChoicesMade, totalChoiceOpportunities);
 
   const culturalConsiderations = birthday_plan_records.filter((r) => r.cultural_considerations_documented).length;
-  const culturalConsiderationRate = pct(culturalConsiderations, totalBirthdayPlans);
+  const culturalConsiderationRate = rate(culturalConsiderations, totalBirthdayPlans);
 
   const advancePlanned = birthday_plan_records.filter((r) => r.days_advance_planned >= 14).length;
-  const advancePlanningRate = pct(advancePlanned, totalBirthdayPlans);
+  const advancePlanningRate = rate(advancePlanned, totalBirthdayPlans);
 
   const familyContactArranged = birthday_plan_records.filter((r) => r.family_contact_arranged).length;
-  const familyContactRate = pct(familyContactArranged, totalBirthdayPlans);
+  const familyContactRate = rate(familyContactArranged, totalBirthdayPlans);
 
   const totalSpecialRequests = birthday_plan_records.reduce(
     (sum, r) => sum + r.special_requests_noted.length, 0,
@@ -325,18 +321,18 @@ export function computeBirthdaySpecialOccasionCelebration(
   const totalSpecialRequestsFulfilled = birthday_plan_records.reduce(
     (sum, r) => sum + r.special_requests_fulfilled.length, 0,
   );
-  const specialRequestFulfilmentRate = pct(totalSpecialRequestsFulfilled, totalSpecialRequests);
+  const specialRequestFulfilmentRate = rate(totalSpecialRequestsFulfilled, totalSpecialRequests);
 
   // --- Celebration execution quality ---
   const totalCelebrations = celebration_execution_records.length;
   const celebrationsHeld = celebration_execution_records.filter((r) => r.celebration_held).length;
-  const celebrationExecutionRate = pct(celebrationsHeld, totalCelebrations);
+  const celebrationExecutionRate = rate(celebrationsHeld, totalCelebrations);
 
   const heldOnDate = celebration_execution_records.filter((r) => r.held_on_actual_date).length;
-  const onDateRate = pct(heldOnDate, totalCelebrations);
+  const onDateRate = rate(heldOnDate, totalCelebrations);
 
   const personalised = celebration_execution_records.filter((r) => r.personalised_to_child).length;
-  const personalisationRate = pct(personalised, totalCelebrations);
+  const personalisationRate = rate(personalised, totalCelebrations);
 
   const staffEnthusiasmSum = celebration_execution_records.reduce(
     (sum, r) => sum + r.staff_enthusiasm_rating, 0,
@@ -347,16 +343,16 @@ export function computeBirthdaySpecialOccasionCelebration(
       : null;
 
   const peersParticipated = celebration_execution_records.filter((r) => r.peers_participated).length;
-  const peerParticipationRate = pct(peersParticipated, totalCelebrations);
+  const peerParticipationRate = rate(peersParticipated, totalCelebrations);
 
   const familyAttended = celebration_execution_records.filter((r) => r.family_attended).length;
-  const familyAttendanceRate = pct(familyAttended, totalCelebrations);
+  const familyAttendanceRate = rate(familyAttended, totalCelebrations);
 
   const decorationsProvided = celebration_execution_records.filter((r) => r.decorations_provided).length;
-  const decorationsRate = pct(decorationsProvided, totalCelebrations);
+  const decorationsRate = rate(decorationsProvided, totalCelebrations);
 
   const cakeProvided = celebration_execution_records.filter((r) => r.cake_or_treat_provided).length;
-  const cakeRate = pct(cakeProvided, totalCelebrations);
+  const cakeRate = rate(cakeProvided, totalCelebrations);
 
   const atmosphereSum = celebration_execution_records.reduce(
     (sum, r) => sum + r.atmosphere_rating, 0,
@@ -367,44 +363,44 @@ export function computeBirthdaySpecialOccasionCelebration(
       : null;
 
   const safeguardingConsidered = celebration_execution_records.filter((r) => r.safeguarding_considered).length;
-  const safeguardingRate = pct(safeguardingConsidered, totalCelebrations);
+  const safeguardingRate = rate(safeguardingConsidered, totalCelebrations);
 
   // --- Gift provision adequacy ---
   const totalGiftRecords = gift_provision_records.length;
   const giftsProvided = gift_provision_records.filter((r) => r.gift_provided).length;
-  const giftProvisionRate = pct(giftsProvided, totalGiftRecords);
+  const giftProvisionRate = rate(giftsProvided, totalGiftRecords);
 
   const giftsPersonalised = gift_provision_records.filter((r) => r.gift_personalised).length;
-  const giftPersonalisationRate = pct(giftsPersonalised, totalGiftRecords);
+  const giftPersonalisationRate = rate(giftsPersonalised, totalGiftRecords);
 
   const budgetAdequate = gift_provision_records.filter((r) => r.budget_adequate).length;
-  const budgetAdequacyRate = pct(budgetAdequate, totalGiftRecords);
+  const budgetAdequacyRate = rate(budgetAdequate, totalGiftRecords);
 
   const presentedThoughtfully = gift_provision_records.filter((r) => r.presented_thoughtfully).length;
-  const thoughtfulPresentationRate = pct(presentedThoughtfully, totalGiftRecords);
+  const thoughtfulPresentationRate = rate(presentedThoughtfully, totalGiftRecords);
 
   const positiveReaction = gift_provision_records.filter((r) => r.child_reaction_positive).length;
-  const positiveReactionRate = pct(positiveReaction, totalGiftRecords);
+  const positiveReactionRate = rate(positiveReaction, totalGiftRecords);
 
   const equitableGifts = gift_provision_records.filter((r) => r.equitable_with_peers).length;
-  const equityRate = pct(equitableGifts, totalGiftRecords);
+  const equityRate = rate(equitableGifts, totalGiftRecords);
 
   // --- Memory-making activity quality ---
   const totalMemoryRecords = memory_making_records.length;
   const memoriesCompleted = memory_making_records.filter((r) => r.activity_completed).length;
-  const memoryMakingRate = pct(memoriesCompleted, totalMemoryRecords);
+  const memoryMakingRate = rate(memoriesCompleted, totalMemoryRecords);
 
   const childConsentedMemory = memory_making_records.filter((r) => r.child_consented).length;
-  const childConsentRate = pct(childConsentedMemory, totalMemoryRecords);
+  const childConsentRate = rate(childConsentedMemory, totalMemoryRecords);
 
   const storedSecurely = memory_making_records.filter((r) => r.memory_stored_securely).length;
-  const secureStorageRate = pct(storedSecurely, totalMemoryRecords);
+  const secureStorageRate = rate(storedSecurely, totalMemoryRecords);
 
   const addedToLifeStory = memory_making_records.filter((r) => r.added_to_life_story).length;
-  const lifeStoryRate = pct(addedToLifeStory, totalMemoryRecords);
+  const lifeStoryRate = rate(addedToLifeStory, totalMemoryRecords);
 
   const childHasCopy = memory_making_records.filter((r) => r.child_has_copy).length;
-  const childCopyRate = pct(childHasCopy, totalMemoryRecords);
+  const childCopyRate = rate(childHasCopy, totalMemoryRecords);
 
   const qualitySum = memory_making_records.reduce(
     (sum, r) => sum + r.quality_rating, 0,
@@ -418,32 +414,32 @@ export function computeBirthdaySpecialOccasionCelebration(
   const totalSatisfactionRecords = child_satisfaction_records.length;
   const childSatisfactionRate =
     totalSatisfactionRecords > 0
-      ? pct(
+      ? rate(
           child_satisfaction_records.filter((r) => r.overall_satisfaction >= 4).length,
           totalSatisfactionRecords,
         )
       : 0;
 
   const feltSpecial = child_satisfaction_records.filter((r) => r.felt_special).length;
-  const feltSpecialRate = pct(feltSpecial, totalSatisfactionRecords);
+  const feltSpecialRate = rate(feltSpecial, totalSatisfactionRecords);
 
   const feltListenedTo = child_satisfaction_records.filter((r) => r.felt_listened_to).length;
-  const feltListenedToRate = pct(feltListenedTo, totalSatisfactionRecords);
+  const feltListenedToRate = rate(feltListenedTo, totalSatisfactionRecords);
 
   const feltEqualToPeers = child_satisfaction_records.filter((r) => r.felt_equal_to_peers).length;
-  const feltEqualRate = pct(feltEqualToPeers, totalSatisfactionRecords);
+  const feltEqualRate = rate(feltEqualToPeers, totalSatisfactionRecords);
 
   const celebrationMatchedWishes = child_satisfaction_records.filter((r) => r.celebration_matched_wishes).length;
-  const wishMatchRate = pct(celebrationMatchedWishes, totalSatisfactionRecords);
+  const wishMatchRate = rate(celebrationMatchedWishes, totalSatisfactionRecords);
 
   const feedbackActedUpon = child_satisfaction_records.filter((r) => r.feedback_acted_upon).length;
-  const feedbackActionRate = pct(feedbackActedUpon, totalSatisfactionRecords);
+  const feedbackActionRate = rate(feedbackActedUpon, totalSatisfactionRecords);
 
   const followUpCompleted = child_satisfaction_records.filter((r) => r.follow_up_completed).length;
-  const followUpRate = pct(followUpCompleted, totalSatisfactionRecords);
+  const followUpRate = rate(followUpCompleted, totalSatisfactionRecords);
 
   const wouldChangeAnything = child_satisfaction_records.filter((r) => r.would_change_anything).length;
-  const wouldChangeRate = pct(wouldChangeAnything, totalSatisfactionRecords);
+  const wouldChangeRate = rate(wouldChangeAnything, totalSatisfactionRecords);
 
   // -- Scoring: base 52 ----------------------------------------------------
 

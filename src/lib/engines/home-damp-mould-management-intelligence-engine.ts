@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME DAMP & MOULD MANAGEMENT INTELLIGENCE ENGINE
 // Monitors the home's damp survey completion, mould inspection frequency,
@@ -184,12 +185,18 @@ export interface DampMouldManagementResult {
   total_remediations: number;
   total_ventilation_assessments: number;
   total_health_impacts: number;
-  damp_survey_rate: number;
-  mould_inspection_rate: number;
-  remediation_rate: number;
-  ventilation_rate: number;
-  health_impact_rate: number;
-  child_awareness_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  damp_survey_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  mould_inspection_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  remediation_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  ventilation_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  health_impact_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_awareness_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: DampMouldRecommendation[];
@@ -197,10 +204,6 @@ export interface DampMouldManagementResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -229,12 +232,12 @@ function emptyResult(
     total_remediations: 0,
     total_ventilation_assessments: 0,
     total_health_impacts: 0,
-    damp_survey_rate: 0,
-    mould_inspection_rate: 0,
-    remediation_rate: 0,
-    ventilation_rate: 0,
-    health_impact_rate: 0,
-    child_awareness_rate: 0,
+    damp_survey_rate: null,
+    mould_inspection_rate: null,
+    remediation_rate: null,
+    ventilation_rate: null,
+    health_impact_rate: null,
+    child_awareness_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -315,13 +318,13 @@ export function computeDampMouldManagement(
   const surveysWithinRange = damp_survey_records.filter(
     (s) => s.within_acceptable_range,
   ).length;
-  const dampSurveyRate = pct(surveysWithinRange, totalDampSurveys);
+  const dampSurveyRate = rate(surveysWithinRange, totalDampSurveys);
 
   const actionsRequired = damp_survey_records.filter((s) => s.action_required).length;
   const actionsTaken = damp_survey_records.filter(
     (s) => s.action_required && s.action_taken,
   ).length;
-  const actionCompletionRate = pct(actionsTaken, actionsRequired);
+  const actionCompletionRate = rate(actionsTaken, actionsRequired);
 
   const followUpsRequired = damp_survey_records.filter(
     (s) => s.follow_up_date !== null,
@@ -329,27 +332,27 @@ export function computeDampMouldManagement(
   const followUpsCompleted = damp_survey_records.filter(
     (s) => s.follow_up_date !== null && s.follow_up_completed,
   ).length;
-  const followUpCompletionRate = pct(followUpsCompleted, followUpsRequired);
+  const followUpCompletionRate = rate(followUpsCompleted, followUpsRequired);
 
   // --- Mould inspection metrics ---
   const totalMouldInspections = mould_inspection_records.length;
   const mouldFound = mould_inspection_records.filter((m) => m.mould_found).length;
-  const mouldDetectionRate = pct(mouldFound, totalMouldInspections);
+  const mouldDetectionRate = rate(mouldFound, totalMouldInspections);
 
   const inspectionsWithNoMould = totalMouldInspections - mouldFound;
-  const mouldFreeRate = pct(inspectionsWithNoMould, totalMouldInspections);
+  const mouldFreeRate = rate(inspectionsWithNoMould, totalMouldInspections);
   // mould_inspection_rate: percentage of inspections where no mould was found (i.e. clean inspection rate)
   const mouldInspectionRate = mouldFreeRate;
 
   const childBedroomAffected = mould_inspection_records.filter(
     (m) => m.child_bedroom_affected,
   ).length;
-  const childBedroomMouldRate = pct(childBedroomAffected, totalMouldInspections);
+  const childBedroomMouldRate = rate(childBedroomAffected, totalMouldInspections);
 
   const immediateActionOnMould = mould_inspection_records.filter(
     (m) => m.mould_found && m.immediate_action_taken,
   ).length;
-  const immediateActionRate = pct(immediateActionOnMould, mouldFound);
+  const immediateActionRate = rate(immediateActionOnMould, mouldFound);
 
   const reportedToManagement = mould_inspection_records.filter(
     (m) => m.mould_found && m.reported_to_management,
@@ -360,17 +363,17 @@ export function computeDampMouldManagement(
   const completedRemediations = remediation_records.filter(
     (r) => r.completed,
   ).length;
-  const remediationRate = pct(completedRemediations, totalRemediations);
+  const remediationRate = rate(completedRemediations, totalRemediations);
 
   const completedWithinTarget = remediation_records.filter(
     (r) => r.completed && r.completed_within_target,
   ).length;
-  const withinTargetRate = pct(completedWithinTarget, completedRemediations);
+  const withinTargetRate = rate(completedWithinTarget, completedRemediations);
 
   const recurrenceDetected = remediation_records.filter(
     (r) => r.completed && r.recurrence_detected,
   ).length;
-  const recurrenceRate = pct(recurrenceDetected, completedRemediations);
+  const recurrenceRate = rate(recurrenceDetected, completedRemediations);
 
   const childRoomRemediation = remediation_records.filter(
     (r) => r.child_room_involved,
@@ -389,17 +392,17 @@ export function computeDampMouldManagement(
   const adequateVentilation = ventilation_assessment_records.filter(
     (v) => v.ventilation_adequate,
   ).length;
-  const ventilationRate = pct(adequateVentilation, totalVentilationAssessments);
+  const ventilationRate = rate(adequateVentilation, totalVentilationAssessments);
 
   const meetsBuildingRegs = ventilation_assessment_records.filter(
     (v) => v.meets_building_regs,
   ).length;
-  const buildingRegsRate = pct(meetsBuildingRegs, totalVentilationAssessments);
+  const buildingRegsRate = rate(meetsBuildingRegs, totalVentilationAssessments);
 
   const condensationObserved = ventilation_assessment_records.filter(
     (v) => v.condensation_observed,
   ).length;
-  const condensationRate = pct(condensationObserved, totalVentilationAssessments);
+  const condensationRate = rate(condensationObserved, totalVentilationAssessments);
 
   const childBedroomVentilation = ventilation_assessment_records.filter(
     (v) => v.child_bedroom && v.ventilation_adequate,
@@ -407,7 +410,7 @@ export function computeDampMouldManagement(
   const childBedroomVentilationTotal = ventilation_assessment_records.filter(
     (v) => v.child_bedroom,
   ).length;
-  const childBedroomVentilationRate = pct(
+  const childBedroomVentilationRate = rate(
     childBedroomVentilation,
     childBedroomVentilationTotal,
   );
@@ -418,7 +421,7 @@ export function computeDampMouldManagement(
   const maintenanceCompleted = ventilation_assessment_records.filter(
     (v) => v.maintenance_required && v.maintenance_completed,
   ).length;
-  const maintenanceCompletionRate = pct(maintenanceCompleted, maintenanceRequired);
+  const maintenanceCompletionRate = rate(maintenanceCompleted, maintenanceRequired);
 
   // --- Health impact metrics ---
   const totalHealthImpacts = health_impact_records.length;
@@ -429,7 +432,7 @@ export function computeDampMouldManagement(
   const treatmentProvidedHealth = health_impact_records.filter(
     (h) => h.treatment_required && h.treatment_provided,
   ).length;
-  const treatmentProvisionRate = pct(
+  const treatmentProvisionRate = rate(
     treatmentProvidedHealth,
     treatmentRequiredHealth,
   );
@@ -441,27 +444,27 @@ export function computeDampMouldManagement(
   const socialWorkerInformed = health_impact_records.filter(
     (h) => h.social_worker_informed,
   ).length;
-  const socialWorkerInformedRate = pct(socialWorkerInformed, totalHealthImpacts);
+  const socialWorkerInformedRate = rate(socialWorkerInformed, totalHealthImpacts);
 
   const severeHealthImpacts = health_impact_records.filter(
     (h) => h.severity === "severe",
   ).length;
-  const severeHealthRate = pct(severeHealthImpacts, totalHealthImpacts);
+  const severeHealthRate = rate(severeHealthImpacts, totalHealthImpacts);
 
   const resolvedOutcomes = health_impact_records.filter(
     (h) => h.outcome === "resolved",
   ).length;
-  const resolvedRate = pct(resolvedOutcomes, totalHealthImpacts);
+  const resolvedRate = rate(resolvedOutcomes, totalHealthImpacts);
 
   const recurringOutcomes = health_impact_records.filter(
     (h) => h.outcome === "recurring",
   ).length;
-  const recurringRate = pct(recurringOutcomes, totalHealthImpacts);
+  const recurringRate = rate(recurringOutcomes, totalHealthImpacts);
 
   const schoolAbsences = health_impact_records.filter(
     (h) => h.school_absence,
   ).length;
-  const schoolAbsenceRate = pct(schoolAbsences, totalHealthImpacts);
+  const schoolAbsenceRate = rate(schoolAbsences, totalHealthImpacts);
 
   const totalSchoolAbsenceDays = health_impact_records.reduce(
     (sum, h) => sum + h.school_absence_days,
@@ -497,61 +500,61 @@ export function computeDampMouldManagement(
 
   const totalAwarenessNum = awarenessNumerators.reduce((a, b) => a + b, 0);
   const totalAwarenessDenom = awarenessDenominators.reduce((a, b) => a + b, 0);
-  const childAwarenessRate = pct(totalAwarenessNum, totalAwarenessDenom);
+  const childAwarenessRate = rate(totalAwarenessNum, totalAwarenessDenom);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: dampSurveyRate (>=90: +4, >=70: +2) ---
-  if (dampSurveyRate >= 90) score += 4;
-  else if (dampSurveyRate >= 70) score += 2;
+  if (meets(dampSurveyRate, 90)) score += 4;
+  else if (meets(dampSurveyRate, 70)) score += 2;
 
   // --- Bonus 2: mouldInspectionRate (>=90: +4, >=70: +2) ---
-  if (mouldInspectionRate >= 90) score += 4;
-  else if (mouldInspectionRate >= 70) score += 2;
+  if (meets(mouldInspectionRate, 90)) score += 4;
+  else if (meets(mouldInspectionRate, 70)) score += 2;
 
   // --- Bonus 3: remediationRate (>=95: +4, >=80: +2) ---
-  if (remediationRate >= 95) score += 4;
-  else if (remediationRate >= 80) score += 2;
+  if (meets(remediationRate, 95)) score += 4;
+  else if (meets(remediationRate, 80)) score += 2;
 
   // --- Bonus 4: ventilationRate (>=90: +3, >=70: +1) ---
-  if (ventilationRate >= 90) score += 3;
-  else if (ventilationRate >= 70) score += 1;
+  if (meets(ventilationRate, 90)) score += 3;
+  else if (meets(ventilationRate, 70)) score += 1;
 
   // --- Bonus 5: healthImpactRate (>=95: +3, >=80: +1) ---
-  if (healthImpactRate >= 95) score += 3;
-  else if (healthImpactRate >= 80) score += 1;
+  if (meets(healthImpactRate, 95)) score += 3;
+  else if (meets(healthImpactRate, 80)) score += 1;
 
   // --- Bonus 6: childAwarenessRate (>=90: +3, >=70: +1) ---
-  if (childAwarenessRate >= 90) score += 3;
-  else if (childAwarenessRate >= 70) score += 1;
+  if (meets(childAwarenessRate, 90)) score += 3;
+  else if (meets(childAwarenessRate, 70)) score += 1;
 
   // --- Bonus 7: actionCompletionRate (>=90: +3, >=70: +1) ---
-  if (actionCompletionRate >= 90) score += 3;
-  else if (actionCompletionRate >= 70) score += 1;
+  if (meets(actionCompletionRate, 90)) score += 3;
+  else if (meets(actionCompletionRate, 70)) score += 1;
 
   // --- Bonus 8: followUpCompletionRate (>=90: +2, >=70: +1) ---
-  if (followUpCompletionRate >= 90) score += 2;
-  else if (followUpCompletionRate >= 70) score += 1;
+  if (meets(followUpCompletionRate, 90)) score += 2;
+  else if (meets(followUpCompletionRate, 70)) score += 1;
 
   // --- Bonus 9: buildingRegsRate (>=90: +2, >=70: +1) ---
-  if (buildingRegsRate >= 90) score += 2;
-  else if (buildingRegsRate >= 70) score += 1;
+  if (meets(buildingRegsRate, 90)) score += 2;
+  else if (meets(buildingRegsRate, 70)) score += 1;
 
   // ── Penalties (4 guarded) ─────────────────────────────────────────────
 
   // dampSurveyRate < 40 → -5 (guarded)
-  if (dampSurveyRate < 40 && totalDampSurveys > 0) score -= 5;
+  if (below(dampSurveyRate, 40) && totalDampSurveys > 0) score -= 5;
 
   // remediationRate < 50 → -5 (guarded)
-  if (remediationRate < 50 && totalRemediations > 0) score -= 5;
+  if (below(remediationRate, 50) && totalRemediations > 0) score -= 5;
 
   // ventilationRate < 40 → -5 (guarded)
-  if (ventilationRate < 40 && totalVentilationAssessments > 0) score -= 5;
+  if (below(ventilationRate, 40) && totalVentilationAssessments > 0) score -= 5;
 
   // childAwarenessRate < 30 → -3 (guarded)
-  if (childAwarenessRate < 30 && totalAwarenessDenom > 0) score -= 3;
+  if (below(childAwarenessRate, 30) && totalAwarenessDenom > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -561,91 +564,91 @@ export function computeDampMouldManagement(
 
   const strengths: string[] = [];
 
-  if (dampSurveyRate >= 90 && totalDampSurveys > 0) {
+  if (meets(dampSurveyRate, 90) && totalDampSurveys > 0) {
     strengths.push(
       `${dampSurveyRate}% of damp surveys within acceptable moisture range — the home demonstrates excellent damp monitoring and moisture management across its premises.`,
     );
-  } else if (dampSurveyRate >= 70 && totalDampSurveys > 0) {
+  } else if (meets(dampSurveyRate, 70) && totalDampSurveys > 0) {
     strengths.push(
       `${dampSurveyRate}% of damp surveys within acceptable range — the home is managing moisture levels effectively with consistent survey monitoring.`,
     );
   }
 
-  if (mouldInspectionRate >= 90 && totalMouldInspections > 0) {
+  if (meets(mouldInspectionRate, 90) && totalMouldInspections > 0) {
     strengths.push(
       `${mouldInspectionRate}% of mould inspections found no mould — the home maintains an excellent standard of premises cleanliness and mould prevention.`,
     );
-  } else if (mouldInspectionRate >= 70 && totalMouldInspections > 0) {
+  } else if (meets(mouldInspectionRate, 70) && totalMouldInspections > 0) {
     strengths.push(
       `${mouldInspectionRate}% of mould inspections clear — good levels of mould prevention across the home's premises.`,
     );
   }
 
-  if (remediationRate >= 95 && totalRemediations > 0) {
+  if (meets(remediationRate, 95) && totalRemediations > 0) {
     strengths.push(
       `${remediationRate}% of damp and mould remediations completed — the home demonstrates outstanding follow-through on addressing damp and mould issues.`,
     );
-  } else if (remediationRate >= 80 && totalRemediations > 0) {
+  } else if (meets(remediationRate, 80) && totalRemediations > 0) {
     strengths.push(
       `${remediationRate}% remediation completion rate — strong commitment to resolving damp and mould issues identified through surveys and inspections.`,
     );
   }
 
-  if (ventilationRate >= 90 && totalVentilationAssessments > 0) {
+  if (meets(ventilationRate, 90) && totalVentilationAssessments > 0) {
     strengths.push(
       `${ventilationRate}% of ventilation assessments rated adequate — the home ensures excellent air circulation and ventilation standards across all areas.`,
     );
-  } else if (ventilationRate >= 70 && totalVentilationAssessments > 0) {
+  } else if (meets(ventilationRate, 70) && totalVentilationAssessments > 0) {
     strengths.push(
       `${ventilationRate}% ventilation adequacy — good ventilation management helping to prevent condensation and mould growth.`,
     );
   }
 
-  if (healthImpactRate >= 95 && treatmentRequiredHealth > 0) {
+  if (meets(healthImpactRate, 95) && treatmentRequiredHealth > 0) {
     strengths.push(
       `${healthImpactRate}% of children's health impacts received appropriate treatment — the home responds effectively to health concerns linked to damp and mould.`,
     );
-  } else if (healthImpactRate >= 80 && treatmentRequiredHealth > 0) {
+  } else if (meets(healthImpactRate, 80) && treatmentRequiredHealth > 0) {
     strengths.push(
       `${healthImpactRate}% treatment provision rate for health impacts — good responsiveness to children's health concerns related to damp and mould exposure.`,
     );
   }
 
-  if (childAwarenessRate >= 90 && totalAwarenessDenom > 0) {
+  if (meets(childAwarenessRate, 90) && totalAwarenessDenom > 0) {
     strengths.push(
       `${childAwarenessRate}% child awareness and involvement — children are well-informed about damp and mould management, with their views recorded and bedrooms adequately ventilated.`,
     );
-  } else if (childAwarenessRate >= 70 && totalAwarenessDenom > 0) {
+  } else if (meets(childAwarenessRate, 70) && totalAwarenessDenom > 0) {
     strengths.push(
       `${childAwarenessRate}% child awareness rate — good levels of communication with children about damp and mould issues affecting their living environment.`,
     );
   }
 
-  if (actionCompletionRate >= 90 && actionsRequired > 0) {
+  if (meets(actionCompletionRate, 90) && actionsRequired > 0) {
     strengths.push(
       `${actionCompletionRate}% of damp survey actions completed — the home consistently follows through on identified damp issues requiring attention.`,
     );
-  } else if (actionCompletionRate >= 70 && actionsRequired > 0) {
+  } else if (meets(actionCompletionRate, 70) && actionsRequired > 0) {
     strengths.push(
       `${actionCompletionRate}% of damp survey actions actioned — the home generally addresses issues identified during damp surveys.`,
     );
   }
 
-  if (followUpCompletionRate >= 90 && followUpsRequired > 0) {
+  if (meets(followUpCompletionRate, 90) && followUpsRequired > 0) {
     strengths.push(
       `${followUpCompletionRate}% of damp survey follow-ups completed — excellent tracking and completion of follow-up activities ensures issues do not deteriorate.`,
     );
-  } else if (followUpCompletionRate >= 70 && followUpsRequired > 0) {
+  } else if (meets(followUpCompletionRate, 70) && followUpsRequired > 0) {
     strengths.push(
       `${followUpCompletionRate}% of follow-ups completed — good follow-up practices helping to prevent damp issues from worsening.`,
     );
   }
 
-  if (buildingRegsRate >= 90 && totalVentilationAssessments > 0) {
+  if (meets(buildingRegsRate, 90) && totalVentilationAssessments > 0) {
     strengths.push(
       `${buildingRegsRate}% of ventilation assessments meet building regulations — the home ensures compliance with ventilation standards that protect children's health.`,
     );
-  } else if (buildingRegsRate >= 70 && totalVentilationAssessments > 0) {
+  } else if (meets(buildingRegsRate, 70) && totalVentilationAssessments > 0) {
     strengths.push(
       `${buildingRegsRate}% of ventilation meeting building regulations — good compliance with statutory ventilation requirements.`,
     );
@@ -657,7 +660,7 @@ export function computeDampMouldManagement(
     );
   }
 
-  if (immediateActionRate >= 90 && mouldFound > 0) {
+  if (meets(immediateActionRate, 90) && mouldFound > 0) {
     strengths.push(
       `${immediateActionRate}% immediate action taken when mould found — the home responds swiftly to mould discoveries, protecting children from prolonged exposure.`,
     );
@@ -669,13 +672,13 @@ export function computeDampMouldManagement(
     );
   }
 
-  if (childBedroomVentilationRate >= 100 && childBedroomVentilationTotal > 0) {
+  if (meets(childBedroomVentilationRate, 100) && childBedroomVentilationTotal > 0) {
     strengths.push(
       "All children's bedrooms assessed as having adequate ventilation — children's sleeping environments meet appropriate air quality standards.",
     );
   }
 
-  if (resolvedRate >= 90 && totalHealthImpacts > 0) {
+  if (meets(resolvedRate, 90) && totalHealthImpacts > 0) {
     strengths.push(
       `${resolvedRate}% of health impacts resolved — the home effectively addresses and resolves children's health concerns linked to damp and mould.`,
     );
@@ -685,119 +688,119 @@ export function computeDampMouldManagement(
 
   const concerns: string[] = [];
 
-  if (dampSurveyRate < 40 && totalDampSurveys > 0) {
+  if (below(dampSurveyRate, 40) && totalDampSurveys > 0) {
     concerns.push(
       `Only ${dampSurveyRate}% of damp surveys within acceptable moisture range — the majority of the premises show excessive moisture levels, indicating a fundamental failure in damp management that directly risks children's health.`,
     );
-  } else if (dampSurveyRate < 70 && dampSurveyRate >= 40 && totalDampSurveys > 0) {
+  } else if (below(dampSurveyRate, 70) && meets(dampSurveyRate, 40) && totalDampSurveys > 0) {
     concerns.push(
       `Damp survey compliance at ${dampSurveyRate}% — the home is not consistently maintaining acceptable moisture levels across its premises, increasing the risk of mould growth and health impacts.`,
     );
   }
 
-  if (mouldInspectionRate < 50 && totalMouldInspections > 0) {
+  if (below(mouldInspectionRate, 50) && totalMouldInspections > 0) {
     concerns.push(
       `Mould found in ${mouldDetectionRate}% of inspections — widespread mould presence indicates a significant premises safety concern requiring urgent remediation and investigation of root causes.`,
     );
-  } else if (mouldInspectionRate < 70 && mouldInspectionRate >= 50 && totalMouldInspections > 0) {
+  } else if (below(mouldInspectionRate, 70) && meets(mouldInspectionRate, 50) && totalMouldInspections > 0) {
     concerns.push(
       `Mould found in ${mouldDetectionRate}% of inspections — mould presence in a significant minority of inspections suggests inadequate prevention measures.`,
     );
   }
 
-  if (remediationRate < 50 && totalRemediations > 0) {
+  if (below(remediationRate, 50) && totalRemediations > 0) {
     concerns.push(
       `Only ${remediationRate}% of remediations completed — the majority of identified damp and mould issues remain unresolved, leaving children exposed to ongoing health risks and demonstrating a failure in premises management.`,
     );
-  } else if (remediationRate < 80 && remediationRate >= 50 && totalRemediations > 0) {
+  } else if (below(remediationRate, 80) && meets(remediationRate, 50) && totalRemediations > 0) {
     concerns.push(
       `Remediation completion at ${remediationRate}% — a number of damp and mould issues remain outstanding, prolonging children's exposure to potentially harmful living conditions.`,
     );
   }
 
-  if (ventilationRate < 40 && totalVentilationAssessments > 0) {
+  if (below(ventilationRate, 40) && totalVentilationAssessments > 0) {
     concerns.push(
       `Only ${ventilationRate}% of ventilation assessments rated adequate — the majority of assessed areas have inadequate ventilation, directly contributing to condensation, damp, and mould growth that threatens children's respiratory health.`,
     );
-  } else if (ventilationRate < 70 && ventilationRate >= 40 && totalVentilationAssessments > 0) {
+  } else if (below(ventilationRate, 70) && meets(ventilationRate, 40) && totalVentilationAssessments > 0) {
     concerns.push(
       `Ventilation adequacy at ${ventilationRate}% — insufficient ventilation in a number of areas increases the risk of condensation and mould, potentially affecting children's health and comfort.`,
     );
   }
 
-  if (healthImpactRate < 50 && treatmentRequiredHealth > 0) {
+  if (below(healthImpactRate, 50) && treatmentRequiredHealth > 0) {
     concerns.push(
       `Only ${healthImpactRate}% of children's health impacts received required treatment — children's health needs linked to damp and mould exposure are not being adequately addressed.`,
     );
-  } else if (healthImpactRate < 80 && healthImpactRate >= 50 && treatmentRequiredHealth > 0) {
+  } else if (below(healthImpactRate, 80) && meets(healthImpactRate, 50) && treatmentRequiredHealth > 0) {
     concerns.push(
       `Treatment provision at ${healthImpactRate}% for damp and mould related health impacts — some children are not receiving timely treatment for health conditions linked to their living environment.`,
     );
   }
 
-  if (childAwarenessRate < 30 && totalAwarenessDenom > 0) {
+  if (below(childAwarenessRate, 30) && totalAwarenessDenom > 0) {
     concerns.push(
       `Only ${childAwarenessRate}% child awareness across damp and mould management — children are not being informed about works affecting their rooms, their views are not recorded, and awareness of ventilation in their bedrooms is low.`,
     );
-  } else if (childAwarenessRate < 70 && childAwarenessRate >= 30 && totalAwarenessDenom > 0) {
+  } else if (below(childAwarenessRate, 70) && meets(childAwarenessRate, 30) && totalAwarenessDenom > 0) {
     concerns.push(
       `Child awareness at ${childAwarenessRate}% — children are not consistently informed about or involved in damp and mould management decisions that affect their living environment.`,
     );
   }
 
-  if (childBedroomMouldRate >= 20 && totalMouldInspections > 0) {
+  if (meets(childBedroomMouldRate, 20) && totalMouldInspections > 0) {
     concerns.push(
       `Mould found in children's bedrooms in ${childBedroomMouldRate}% of inspections — children are being exposed to mould in their sleeping environment, posing a direct risk to their respiratory health.`,
     );
   }
 
-  if (recurrenceRate >= 20 && completedRemediations > 0) {
+  if (meets(recurrenceRate, 20) && completedRemediations > 0) {
     concerns.push(
       `${recurrenceRate}% recurrence rate following completed remediations — issues are returning after treatment, indicating underlying causes are not being adequately addressed or remediation quality is insufficient.`,
     );
   }
 
-  if (outstandingRemediations >= 3) {
+  if (meets(outstandingRemediations, 3)) {
     concerns.push(
       `${outstandingRemediations} remediations remain outstanding — a backlog of unresolved damp and mould issues indicates the home is not keeping pace with premises maintenance needs.`,
     );
   }
 
-  if (condensationRate >= 30 && totalVentilationAssessments > 0) {
+  if (meets(condensationRate, 30) && totalVentilationAssessments > 0) {
     concerns.push(
       `Condensation observed in ${condensationRate}% of ventilation assessments — widespread condensation is a precursor to mould growth and indicates systemic ventilation inadequacy.`,
     );
-  } else if (condensationRate >= 15 && condensationRate < 30 && totalVentilationAssessments > 0) {
+  } else if (meets(condensationRate, 15) && below(condensationRate, 30) && totalVentilationAssessments > 0) {
     concerns.push(
       `Condensation present in ${condensationRate}% of assessments — moderate condensation levels suggest some areas require improved ventilation to prevent mould growth.`,
     );
   }
 
-  if (schoolAbsenceRate >= 20 && totalHealthImpacts > 0) {
+  if (meets(schoolAbsenceRate, 20) && totalHealthImpacts > 0) {
     concerns.push(
       `${schoolAbsenceRate}% of damp and mould health impacts have caused school absences totalling ${totalSchoolAbsenceDays} days — children's education is being disrupted by health conditions linked to their living environment.`,
     );
   }
 
-  if (recurringRate >= 20 && totalHealthImpacts > 0) {
+  if (meets(recurringRate, 20) && totalHealthImpacts > 0) {
     concerns.push(
       `${recurringRate}% of health impacts are recurring — children continue to experience health problems linked to damp and mould, indicating the environmental cause has not been effectively resolved.`,
     );
   }
 
-  if (immediateActionRate < 50 && mouldFound > 0) {
+  if (below(immediateActionRate, 50) && mouldFound > 0) {
     concerns.push(
       `Only ${immediateActionRate}% immediate action taken when mould discovered — delayed response to mould findings exposes children to prolonged health risks.`,
     );
   }
 
-  if (childBedroomVentilationRate < 70 && childBedroomVentilationTotal > 0) {
+  if (below(childBedroomVentilationRate, 70) && childBedroomVentilationTotal > 0) {
     concerns.push(
       `Only ${childBedroomVentilationRate}% of children's bedrooms have adequate ventilation — children are sleeping in rooms with insufficient air circulation, increasing their risk of respiratory issues.`,
     );
   }
 
-  if (socialWorkerInformedRate < 50 && totalHealthImpacts > 0) {
+  if (below(socialWorkerInformedRate, 50) && totalHealthImpacts > 0) {
     concerns.push(
       `Only ${socialWorkerInformedRate}% of health impacts reported to social workers — the home is failing to keep placing authorities informed about environmental health risks affecting children in their care.`,
     );
@@ -808,7 +811,7 @@ export function computeDampMouldManagement(
   const recommendations: DampMouldRecommendation[] = [];
   let rank = 0;
 
-  if (dampSurveyRate < 40 && totalDampSurveys > 0) {
+  if (below(dampSurveyRate, 40) && totalDampSurveys > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -818,7 +821,7 @@ export function computeDampMouldManagement(
     });
   }
 
-  if (remediationRate < 50 && totalRemediations > 0) {
+  if (below(remediationRate, 50) && totalRemediations > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -828,7 +831,7 @@ export function computeDampMouldManagement(
     });
   }
 
-  if (ventilationRate < 40 && totalVentilationAssessments > 0) {
+  if (below(ventilationRate, 40) && totalVentilationAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -838,7 +841,7 @@ export function computeDampMouldManagement(
     });
   }
 
-  if (childAwarenessRate < 30 && totalAwarenessDenom > 0) {
+  if (below(childAwarenessRate, 30) && totalAwarenessDenom > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -848,7 +851,7 @@ export function computeDampMouldManagement(
     });
   }
 
-  if (healthImpactRate < 50 && treatmentRequiredHealth > 0) {
+  if (below(healthImpactRate, 50) && treatmentRequiredHealth > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -858,7 +861,7 @@ export function computeDampMouldManagement(
     });
   }
 
-  if (childBedroomMouldRate >= 20 && totalMouldInspections > 0) {
+  if (meets(childBedroomMouldRate, 20) && totalMouldInspections > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -868,7 +871,7 @@ export function computeDampMouldManagement(
     });
   }
 
-  if (immediateActionRate < 50 && mouldFound > 0) {
+  if (below(immediateActionRate, 50) && mouldFound > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -878,7 +881,7 @@ export function computeDampMouldManagement(
     });
   }
 
-  if (recurrenceRate >= 20 && completedRemediations > 0) {
+  if (meets(recurrenceRate, 20) && completedRemediations > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -888,7 +891,7 @@ export function computeDampMouldManagement(
     });
   }
 
-  if (socialWorkerInformedRate < 50 && totalHealthImpacts > 0) {
+  if (below(socialWorkerInformedRate, 50) && totalHealthImpacts > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -898,7 +901,7 @@ export function computeDampMouldManagement(
     });
   }
 
-  if (condensationRate >= 30 && totalVentilationAssessments > 0) {
+  if (meets(condensationRate, 30) && totalVentilationAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -908,7 +911,7 @@ export function computeDampMouldManagement(
     });
   }
 
-  if (maintenanceCompletionRate < 50 && maintenanceRequired > 0) {
+  if (below(maintenanceCompletionRate, 50) && maintenanceRequired > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -919,8 +922,8 @@ export function computeDampMouldManagement(
   }
 
   if (
-    dampSurveyRate >= 40 &&
-    dampSurveyRate < 70 &&
+    meets(dampSurveyRate, 40) &&
+    below(dampSurveyRate, 70) &&
     totalDampSurveys > 0
   ) {
     recommendations.push({
@@ -933,8 +936,8 @@ export function computeDampMouldManagement(
   }
 
   if (
-    remediationRate >= 50 &&
-    remediationRate < 80 &&
+    meets(remediationRate, 50) &&
+    below(remediationRate, 80) &&
     totalRemediations > 0
   ) {
     recommendations.push({
@@ -947,8 +950,8 @@ export function computeDampMouldManagement(
   }
 
   if (
-    ventilationRate >= 40 &&
-    ventilationRate < 70 &&
+    meets(ventilationRate, 40) &&
+    below(ventilationRate, 70) &&
     totalVentilationAssessments > 0
   ) {
     recommendations.push({
@@ -961,8 +964,8 @@ export function computeDampMouldManagement(
   }
 
   if (
-    childAwarenessRate >= 30 &&
-    childAwarenessRate < 70 &&
+    meets(childAwarenessRate, 30) &&
+    below(childAwarenessRate, 70) &&
     totalAwarenessDenom > 0
   ) {
     recommendations.push({
@@ -975,7 +978,7 @@ export function computeDampMouldManagement(
   }
 
   if (
-    followUpCompletionRate < 70 &&
+    below(followUpCompletionRate, 70) &&
     followUpsRequired > 0
   ) {
     recommendations.push({
@@ -1023,35 +1026,35 @@ export function computeDampMouldManagement(
 
   // -- Critical insights --
 
-  if (dampSurveyRate < 40 && totalDampSurveys > 0) {
+  if (below(dampSurveyRate, 40) && totalDampSurveys > 0) {
     insights.push({
       text: `Only ${dampSurveyRate}% of damp surveys within acceptable range. Excessive moisture levels across the premises create conditions for mould growth that directly threatens children's respiratory health. Under Reg 25, the registered person must ensure the premises are maintained to a standard that supports children's health and safety — widespread damp fails this requirement.`,
       severity: "critical",
     });
   }
 
-  if (mouldInspectionRate < 50 && totalMouldInspections > 0) {
+  if (below(mouldInspectionRate, 50) && totalMouldInspections > 0) {
     insights.push({
       text: `Mould found in ${mouldDetectionRate}% of inspections. Widespread mould contamination represents a significant premises safety concern. Mould spores cause respiratory illness, exacerbate asthma, and trigger allergic reactions — particularly dangerous for children who may already have compromised health. This requires immediate specialist intervention.`,
       severity: "critical",
     });
   }
 
-  if (remediationRate < 50 && totalRemediations > 0) {
+  if (below(remediationRate, 50) && totalRemediations > 0) {
     insights.push({
       text: `Only ${remediationRate}% of damp and mould remediations completed. Unresolved remediation works mean children continue to live with known damp and mould hazards. The home cannot demonstrate it is taking reasonable steps to protect children's health when the majority of identified issues remain unaddressed.`,
       severity: "critical",
     });
   }
 
-  if (ventilationRate < 40 && totalVentilationAssessments > 0) {
+  if (below(ventilationRate, 40) && totalVentilationAssessments > 0) {
     insights.push({
       text: `Only ${ventilationRate}% of ventilation assessments rated adequate. Inadequate ventilation is the primary driver of condensation-related damp and mould in residential properties. Without adequate airflow, moisture from bathing, cooking, and breathing accumulates and creates conditions for mould growth — this is a systemic issue requiring investment in ventilation infrastructure.`,
       severity: "critical",
     });
   }
 
-  if (childBedroomMouldRate >= 20 && totalMouldInspections > 0) {
+  if (meets(childBedroomMouldRate, 20) && totalMouldInspections > 0) {
     insights.push({
       text: `Mould affecting children's bedrooms in ${childBedroomMouldRate}% of inspections. Children spend extended periods in their bedrooms including sleeping with increased breathing rate — mould exposure during sleep is particularly harmful. Every child's bedroom should be mould-free as an absolute minimum standard under Reg 25.`,
       severity: "critical",
@@ -1072,14 +1075,14 @@ export function computeDampMouldManagement(
     });
   }
 
-  if (severeHealthRate >= 20 && totalHealthImpacts > 0) {
+  if (meets(severeHealthRate, 20) && totalHealthImpacts > 0) {
     insights.push({
       text: `${severeHealthRate}% of health impacts classified as severe. Severe health impacts from damp and mould exposure indicate the home's environment is causing serious harm to children. This may require notification to Ofsted under Reg 40 as a significant event and urgent environmental remediation.`,
       severity: "critical",
     });
   }
 
-  if (childAwarenessRate < 30 && totalAwarenessDenom > 0) {
+  if (below(childAwarenessRate, 30) && totalAwarenessDenom > 0) {
     insights.push({
       text: `Child awareness and involvement at only ${childAwarenessRate}%. Children are not being meaningfully included in decisions about damp and mould management that affects their daily lives. Recording children's views on their living environment is essential to demonstrate child-centred care and compliance with SCCIF expectations around voice of the child.`,
       severity: "critical",
@@ -1089,8 +1092,8 @@ export function computeDampMouldManagement(
   // -- Warning insights --
 
   if (
-    dampSurveyRate >= 40 &&
-    dampSurveyRate < 70 &&
+    meets(dampSurveyRate, 40) &&
+    below(dampSurveyRate, 70) &&
     totalDampSurveys > 0
   ) {
     insights.push({
@@ -1100,8 +1103,8 @@ export function computeDampMouldManagement(
   }
 
   if (
-    mouldInspectionRate >= 50 &&
-    mouldInspectionRate < 70 &&
+    meets(mouldInspectionRate, 50) &&
+    below(mouldInspectionRate, 70) &&
     totalMouldInspections > 0
   ) {
     insights.push({
@@ -1111,8 +1114,8 @@ export function computeDampMouldManagement(
   }
 
   if (
-    remediationRate >= 50 &&
-    remediationRate < 80 &&
+    meets(remediationRate, 50) &&
+    below(remediationRate, 80) &&
     totalRemediations > 0
   ) {
     insights.push({
@@ -1122,8 +1125,8 @@ export function computeDampMouldManagement(
   }
 
   if (
-    ventilationRate >= 40 &&
-    ventilationRate < 70 &&
+    meets(ventilationRate, 40) &&
+    below(ventilationRate, 70) &&
     totalVentilationAssessments > 0
   ) {
     insights.push({
@@ -1133,8 +1136,8 @@ export function computeDampMouldManagement(
   }
 
   if (
-    condensationRate >= 15 &&
-    condensationRate < 30 &&
+    meets(condensationRate, 15) &&
+    below(condensationRate, 30) &&
     totalVentilationAssessments > 0
   ) {
     insights.push({
@@ -1184,8 +1187,8 @@ export function computeDampMouldManagement(
   }
 
   if (
-    dampSurveyRate >= 90 &&
-    actionCompletionRate >= 90 &&
+    meets(dampSurveyRate, 90) &&
+    meets(actionCompletionRate, 90) &&
     totalDampSurveys > 0 &&
     actionsRequired > 0
   ) {
@@ -1196,8 +1199,8 @@ export function computeDampMouldManagement(
   }
 
   if (
-    mouldInspectionRate >= 90 &&
-    immediateActionRate >= 90 &&
+    meets(mouldInspectionRate, 90) &&
+    meets(immediateActionRate, 90) &&
     totalMouldInspections > 0 &&
     mouldFound > 0
   ) {
@@ -1208,8 +1211,8 @@ export function computeDampMouldManagement(
   }
 
   if (
-    remediationRate >= 95 &&
-    withinTargetRate >= 90 &&
+    meets(remediationRate, 95) &&
+    meets(withinTargetRate, 90) &&
     totalRemediations > 0 &&
     completedRemediations > 0
   ) {
@@ -1220,7 +1223,7 @@ export function computeDampMouldManagement(
   }
 
   if (
-    ventilationRate >= 90 &&
+    meets(ventilationRate, 90) &&
     condensationRate === 0 &&
     totalVentilationAssessments > 0
   ) {
@@ -1231,7 +1234,7 @@ export function computeDampMouldManagement(
   }
 
   if (
-    childAwarenessRate >= 90 &&
+    meets(childAwarenessRate, 90) &&
     totalAwarenessDenom > 0
   ) {
     insights.push({
@@ -1241,8 +1244,8 @@ export function computeDampMouldManagement(
   }
 
   if (
-    resolvedRate >= 90 &&
-    treatmentProvisionRate >= 90 &&
+    meets(resolvedRate, 90) &&
+    meets(treatmentProvisionRate, 90) &&
     totalHealthImpacts > 0 &&
     treatmentRequiredHealth > 0
   ) {

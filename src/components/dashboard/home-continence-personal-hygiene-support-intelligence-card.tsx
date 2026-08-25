@@ -86,8 +86,8 @@ export function HomeContinencePersonalHygieneSupportIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", meets(d.product_provision_rate, 90) ? "text-[--cs-success]" : meets(d.product_provision_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.product_provision_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Products</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_independence_rate >= 90 ? "bg-green-50" : d.child_independence_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_independence_rate >= 90 ? "text-[--cs-success]" : d.child_independence_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_independence_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_independence_rate, 90) ? "bg-green-50" : meets(d.child_independence_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_independence_rate, 90) ? "text-[--cs-success]" : meets(d.child_independence_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_independence_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Independ.</p>
             </div>
           </div>

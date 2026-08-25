@@ -948,7 +948,7 @@ describe("computeHomeCommunityAccess", () => {
         makeTripPlan({ id: "tp2", status: "cancelled" }),
       ];
       const r = computeHomeCommunityAccess(baseInput({ trip_plans: trips }));
-      expect(r.trip_planning.manager_approval_rate).toBe(0);
+      expect(r.trip_planning.manager_approval_rate).toBeNull();
     });
   });
 });

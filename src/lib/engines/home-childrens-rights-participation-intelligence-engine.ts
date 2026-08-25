@@ -6,7 +6,7 @@
 // UNCRC Articles: Children's rights, participation, and voice.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { above, meets } from "@/lib/metrics/rate";
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input types ─────────────────────────────────────────────────────────────
 
@@ -145,7 +145,8 @@ export interface ParticipationProfile {
 export interface AdvocacyProfile {
   total_records: number;
   active_count: number;
-  child_coverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_coverage: number | null;
   avg_visits: number | null;
   /** null when the population is empty — nothing measured, not 0%. */
   child_view_rate: number | null;
@@ -169,10 +170,6 @@ export interface HomeChildrensRightsResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function daysBetween(a: string, b: string): number {
   return Math.round(
@@ -209,7 +206,7 @@ export function computeHomeChildrensRightsParticipation(
       feedback_loops: { total_loops_90d: 0, acceptance_rate: null, child_accepts_rate: null, avg_closure_days: null, visible_change_rate: null },
       pledges: { total_pledges: 0, met_rate: null, active_in_progress_rate: null, avg_evidence: null, child_feedback_rate: null, overdue_reviews: 0 },
       participation: { total_entries_90d: 0, child_influence_rate: null, feedback_given_rate: null, avg_children_involved: null },
-      advocacy: { total_records: 0, active_count: 0, child_coverage: 0, avg_visits: null, child_view_rate: null, overdue_reviews: 0 },
+      advocacy: { total_records: 0, active_count: 0, child_coverage: null, avg_visits: null, child_view_rate: null, overdue_reviews: 0 },
       strengths: [],
       concerns: ["No children's rights or participation data — compliance with Reg 7 and UNCRC cannot be assessed."],
       recommendations: [],
@@ -222,11 +219,11 @@ export function computeHomeChildrensRightsParticipation(
   const partiallyMet = rights_entries.filter(r => r.compliance_level === "partially_met");
   const notMet = rights_entries.filter(r => r.compliance_level === "not_met");
   const underReview = rights_entries.filter(r => r.compliance_level === "under_review");
-  const fullyMetRate = pct(fullyMet.length, rights_entries.length);
+  const fullyMetRate = rate(fullyMet.length, rights_entries.length);
   const rightsEvidenceAvg: number | null = rights_entries.length > 0
     ? Math.round((rights_entries.reduce((s, r) => s + r.evidence_count, 0) / rights_entries.length) * 10) / 10
     : null;
-  const rightsChildFeedbackRate = pct(
+  const rightsChildFeedbackRate = rate(
     rights_entries.filter(r => r.child_feedback_provided).length,
     rights_entries.length,
   );
@@ -254,7 +251,7 @@ export function computeHomeChildrensRightsParticipation(
   const avgChildAgenda: number | null = meetings90d.length > 0
     ? Math.round((meetings90d.reduce((s, m) => s + m.child_agenda_count, 0) / meetings90d.length) * 10) / 10
     : null;
-  const meetingVisibleChangeRate = pct(
+  const meetingVisibleChangeRate = rate(
     meetings90d.filter(m => m.visible_change_provided).length,
     meetings90d.length,
   );
@@ -275,15 +272,15 @@ export function computeHomeChildrensRightsParticipation(
   const acceptedLoops = loops90d.filter(f =>
     f.decision_made === "accepted" || f.decision_made === "partially_accepted",
   );
-  const acceptanceRate = pct(acceptedLoops.length, loops90d.length);
-  const childAcceptsRate = pct(
+  const acceptanceRate = rate(acceptedLoops.length, loops90d.length);
+  const childAcceptsRate = rate(
     loops90d.filter(f => f.child_accepts).length,
     loops90d.length,
   );
   const avgClosureDays: number | null = loops90d.length > 0
     ? Math.round(loops90d.reduce((s, f) => s + f.duration_days_to_close, 0) / loops90d.length)
     : null;
-  const loopVisibleChangeRate = pct(
+  const loopVisibleChangeRate = rate(
     loops90d.filter(f => f.visible_change_provided).length,
     loops90d.length,
   );
@@ -301,12 +298,12 @@ export function computeHomeChildrensRightsParticipation(
   const activeInProgressPledges = pledges.filter(p =>
     p.status === "active" || p.status === "in_progress",
   );
-  const metRate = pct(metPledges.length, pledges.length);
-  const activeInProgressRate = pct(activeInProgressPledges.length, pledges.length);
+  const metRate = rate(metPledges.length, pledges.length);
+  const activeInProgressRate = rate(activeInProgressPledges.length, pledges.length);
   const avgEvidence: number | null = pledges.length > 0
     ? Math.round((pledges.reduce((s, p) => s + p.evidence_of_delivery_count, 0) / pledges.length) * 10) / 10
     : null;
-  const pledgeChildFeedbackRate = pct(
+  const pledgeChildFeedbackRate = rate(
     pledges.filter(p => p.child_feedback_provided).length,
     pledges.length,
   );
@@ -328,11 +325,11 @@ export function computeHomeChildrensRightsParticipation(
     const d = daysBetween(p.date, today);
     return d >= 0 && d <= 90;
   });
-  const childInfluenceRate = pct(
+  const childInfluenceRate = rate(
     participation90d.filter(p => p.child_influenced).length,
     participation90d.length,
   );
-  const feedbackGivenRate = pct(
+  const feedbackGivenRate = rate(
     participation90d.filter(p => p.feedback_given_provided).length,
     participation90d.length,
   );
@@ -352,11 +349,11 @@ export function computeHomeChildrensRightsParticipation(
     a.status === "active" || a.status === "completed",
   );
   const advocacyUniqueChildren = new Set(advocacy_records.map(a => a.child_id));
-  const advocacyCoverage = pct(advocacyUniqueChildren.size, total_children);
+  const advocacyCoverage = rate(advocacyUniqueChildren.size, total_children);
   const avgVisits: number | null = advocacy_records.length > 0
     ? Math.round((advocacy_records.reduce((s, a) => s + a.visits_count, 0) / advocacy_records.length) * 10) / 10
     : null;
-  const advocacyChildViewRate = pct(
+  const advocacyChildViewRate = rate(
     advocacy_records.filter(a => a.child_view_provided).length,
     advocacy_records.length,
   );
@@ -381,9 +378,9 @@ export function computeHomeChildrensRightsParticipation(
   if (rights_entries.length === 0) {
     score += 0;
   } else {
-    if (fullyMetRate >= 90) score += 5;
-    else if (fullyMetRate >= 70) score += 3;
-    else if (fullyMetRate >= 50) score += 0;
+    if (meets(fullyMetRate, 90)) score += 5;
+    else if (meets(fullyMetRate, 70)) score += 3;
+    else if (meets(fullyMetRate, 50)) score += 0;
     else if (notMet.length > 0) score -= 5;
     else score -= 2;
   }
@@ -392,9 +389,9 @@ export function computeHomeChildrensRightsParticipation(
   if (loops90d.length === 0) {
     score += 0;
   } else {
-    if (childAcceptsRate >= 85 && (typeof avgClosureDays === "number" && avgClosureDays <= 14)) score += 4;
-    else if (childAcceptsRate >= 70 && (typeof avgClosureDays === "number" && avgClosureDays <= 21)) score += 2;
-    else if (childAcceptsRate >= 50) score += 0;
+    if (meets(childAcceptsRate, 85) && (typeof avgClosureDays === "number" && avgClosureDays <= 14)) score += 4;
+    else if (meets(childAcceptsRate, 70) && (typeof avgClosureDays === "number" && avgClosureDays <= 21)) score += 2;
+    else if (meets(childAcceptsRate, 50)) score += 0;
     else score -= 4;
   }
 
@@ -412,10 +409,10 @@ export function computeHomeChildrensRightsParticipation(
   if (pledges.length === 0) {
     score += 0;
   } else {
-    const healthyPledgeRate = pct(metPledges.length + activeInProgressPledges.length, pledges.length);
-    if (healthyPledgeRate >= 90 && meets(avgEvidence, 2)) score += 4;
-    else if (healthyPledgeRate >= 70 && meets(avgEvidence, 1)) score += 2;
-    else if (healthyPledgeRate >= 50) score += 0;
+    const healthyPledgeRate = rate(metPledges.length + activeInProgressPledges.length, pledges.length);
+    if (meets(healthyPledgeRate, 90) && meets(avgEvidence, 2)) score += 4;
+    else if (meets(healthyPledgeRate, 70) && meets(avgEvidence, 1)) score += 2;
+    else if (meets(healthyPledgeRate, 50)) score += 0;
     else score -= 4;
   }
 
@@ -423,9 +420,9 @@ export function computeHomeChildrensRightsParticipation(
   if (participation90d.length === 0) {
     score += 0;
   } else {
-    if (childInfluenceRate >= 80) score += 3;
-    else if (childInfluenceRate >= 60) score += 1;
-    else if (childInfluenceRate >= 40) score += 0;
+    if (meets(childInfluenceRate, 80)) score += 3;
+    else if (meets(childInfluenceRate, 60)) score += 1;
+    else if (meets(childInfluenceRate, 40)) score += 0;
     else score -= 3;
   }
 
@@ -433,21 +430,21 @@ export function computeHomeChildrensRightsParticipation(
   if (advocacy_records.length === 0) {
     score += (total_children > 0 ? -1 : 0);
   } else {
-    if (advocacyCoverage >= 60 && meets(avgVisits, 2)) score += 3;
-    else if (advocacyCoverage >= 40 && meets(avgVisits, 1)) score += 1;
-    else if (advocacyCoverage >= 20) score += 0;
+    if (meets(advocacyCoverage, 60) && meets(avgVisits, 2)) score += 3;
+    else if (meets(advocacyCoverage, 40) && meets(avgVisits, 1)) score += 1;
+    else if (meets(advocacyCoverage, 20)) score += 0;
     else score -= 3;
   }
 
   // mod7: Child voice diversity (±3) — voice captured across multiple domains
   // Domains: rights feedback, meeting voice, feedback loops, pledge feedback, participation feedback, advocacy views
   let voiceDomains = 0;
-  if (rightsChildFeedbackRate >= 50) voiceDomains++;
-  if (meetings90d.length > 0 && meetingVisibleChangeRate >= 50) voiceDomains++;
-  if (loops90d.length > 0 && childAcceptsRate >= 50) voiceDomains++;
-  if (pledges.length > 0 && pledgeChildFeedbackRate >= 50) voiceDomains++;
-  if (participation90d.length > 0 && feedbackGivenRate >= 50) voiceDomains++;
-  if (advocacy_records.length > 0 && advocacyChildViewRate >= 50) voiceDomains++;
+  if (meets(rightsChildFeedbackRate, 50)) voiceDomains++;
+  if (meetings90d.length > 0 && meets(meetingVisibleChangeRate, 50)) voiceDomains++;
+  if (loops90d.length > 0 && meets(childAcceptsRate, 50)) voiceDomains++;
+  if (pledges.length > 0 && meets(pledgeChildFeedbackRate, 50)) voiceDomains++;
+  if (participation90d.length > 0 && meets(feedbackGivenRate, 50)) voiceDomains++;
+  if (advocacy_records.length > 0 && meets(advocacyChildViewRate, 50)) voiceDomains++;
 
   if (voiceDomains >= 5) score += 3;
   else if (voiceDomains >= 3) score += 1;
@@ -487,17 +484,17 @@ export function computeHomeChildrensRightsParticipation(
   // ── Strengths ────────────────────────────────────────────────────────
   const strengths: string[] = [];
 
-  if (fullyMetRate >= 90 && rights_entries.length > 0)
+  if (meets(fullyMetRate, 90) && rights_entries.length > 0)
     strengths.push(`Outstanding rights compliance — ${fullyMetRate}% of rights fully met.`);
-  if (childAcceptsRate >= 85 && loops90d.length > 0)
+  if (meets(childAcceptsRate, 85) && loops90d.length > 0)
     strengths.push(`Excellent feedback responsiveness — ${childAcceptsRate}% of children accept outcomes.`);
   if (meets(avgDecisions, 2) && meetings90d.length > 0)
     strengths.push(`Productive child-led meetings — averaging ${avgDecisions} decisions per meeting.`);
-  if (metRate >= 50 && pledges.length > 0)
+  if (meets(metRate, 50) && pledges.length > 0)
     strengths.push(`Strong pledge delivery — ${metRate}% of pledges met.`);
-  if (childInfluenceRate >= 80 && participation90d.length > 0)
+  if (meets(childInfluenceRate, 80) && participation90d.length > 0)
     strengths.push(`Children actively influencing decisions — ${childInfluenceRate}% influence rate.`);
-  if (advocacyCoverage >= 60 && advocacy_records.length > 0)
+  if (meets(advocacyCoverage, 60) && advocacy_records.length > 0)
     strengths.push(`Good advocacy access — ${advocacyCoverage}% of children have advocacy support.`);
   if (voiceDomains >= 5)
     strengths.push(`Diverse child voice — captured across ${voiceDomains} participation domains.`);
@@ -509,13 +506,13 @@ export function computeHomeChildrensRightsParticipation(
 
   if (notMet.length > 0)
     concerns.push(`${notMet.length} children's right${notMet.length > 1 ? "s" : ""} not met — compliance action required.`);
-  if (childAcceptsRate < 50 && loops90d.length > 0)
+  if (below(childAcceptsRate, 50) && loops90d.length > 0)
     concerns.push(`Only ${childAcceptsRate}% of children accept feedback outcomes — voice not being heard.`);
   if (meetings90d.length === 0 && total_children > 0)
     concerns.push("No child-led meetings in 90 days — children's participation in governance absent.");
   if (pledgeOverdueReviews > 0)
     concerns.push(`${pledgeOverdueReviews} pledge review${pledgeOverdueReviews > 1 ? "s" : ""} overdue — commitment tracking lapsed.`);
-  if (childInfluenceRate < 40 && participation90d.length > 0)
+  if (below(childInfluenceRate, 40) && participation90d.length > 0)
     concerns.push(`Only ${childInfluenceRate}% of participation entries show child influence — tokenistic engagement.`);
   if (advocacy_records.length === 0 && total_children > 0)
     concerns.push("No advocacy records — children may lack independent representation.");
@@ -555,7 +552,7 @@ export function computeHomeChildrensRightsParticipation(
     });
   }
 
-  if (childAcceptsRate < 50 && loops90d.length > 0) {
+  if (below(childAcceptsRate, 50) && loops90d.length > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation: "Review feedback processes — low child acceptance suggests outcomes are not meeting expectations.",
@@ -585,7 +582,7 @@ export function computeHomeChildrensRightsParticipation(
   // ── Insights ─────────────────────────────────────────────────────────
   const insights: { text: string; severity: string }[] = [];
 
-  if (fullyMetRate >= 90 && childAcceptsRate >= 85 && childInfluenceRate >= 80)
+  if (meets(fullyMetRate, 90) && meets(childAcceptsRate, 85) && meets(childInfluenceRate, 80))
     insights.push({ text: "Cara recognises a rights-respecting culture — children's views, wishes and feelings are central to home governance.", severity: "positive" });
 
   if (notMet.length >= 3)

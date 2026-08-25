@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Shield } from "lu
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { BehaviourSupportRating } from "@/lib/engines/home-behaviour-support-plan-effectiveness-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 function useHomeBehaviourSupportPlanEffectivenessIntelligence() {
   return useQuery({
@@ -61,7 +62,7 @@ export function HomeBehaviourSupportPlanEffectivenessIntelligenceCard() {
             <Shield className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-orange-600")} />
             <span className="text-slate-900 font-bold">BSP Effectiveness</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.behaviour_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.behaviour_score}%</span>}
+            {d.behaviour_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.behaviour_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -69,28 +70,28 @@ export function HomeBehaviourSupportPlanEffectivenessIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.behaviour_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.bsp_coverage_rate >= 90 ? "bg-green-50" : d.bsp_coverage_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.bsp_coverage_rate >= 90 ? "text-[--cs-success]" : d.bsp_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.bsp_coverage_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.bsp_coverage_rate, 90) ? "bg-green-50" : meets(d.bsp_coverage_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.bsp_coverage_rate, 90) ? "text-[--cs-success]" : meets(d.bsp_coverage_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.bsp_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Coverage</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.intervention_success_rate >= 90 ? "bg-green-50" : d.intervention_success_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.intervention_success_rate >= 90 ? "text-[--cs-success]" : d.intervention_success_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.intervention_success_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.intervention_success_rate, 90) ? "bg-green-50" : meets(d.intervention_success_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.intervention_success_rate, 90) ? "text-[--cs-success]" : meets(d.intervention_success_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.intervention_success_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Intervene</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.deescalation_effectiveness_rate >= 90 ? "bg-green-50" : d.deescalation_effectiveness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.deescalation_effectiveness_rate >= 90 ? "text-[--cs-success]" : d.deescalation_effectiveness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.deescalation_effectiveness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.deescalation_effectiveness_rate, 90) ? "bg-green-50" : meets(d.deescalation_effectiveness_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.deescalation_effectiveness_rate, 90) ? "text-[--cs-success]" : meets(d.deescalation_effectiveness_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.deescalation_effectiveness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">De-escal.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.positive_reinforcement_rate >= 90 ? "bg-green-50" : d.positive_reinforcement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.positive_reinforcement_rate >= 90 ? "text-[--cs-success]" : d.positive_reinforcement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.positive_reinforcement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.positive_reinforcement_rate, 90) ? "bg-green-50" : meets(d.positive_reinforcement_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.positive_reinforcement_rate, 90) ? "text-[--cs-success]" : meets(d.positive_reinforcement_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.positive_reinforcement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Positive</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.restrictive_practice_reduction_rate >= 90 ? "bg-green-50" : d.restrictive_practice_reduction_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.restrictive_practice_reduction_rate >= 90 ? "text-[--cs-success]" : d.restrictive_practice_reduction_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.restrictive_practice_reduction_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.restrictive_practice_reduction_rate, 90) ? "bg-green-50" : meets(d.restrictive_practice_reduction_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.restrictive_practice_reduction_rate, 90) ? "text-[--cs-success]" : meets(d.restrictive_practice_reduction_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.restrictive_practice_reduction_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Reduce RP</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_involvement_rate >= 90 ? "bg-green-50" : d.child_involvement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_involvement_rate >= 90 ? "text-[--cs-success]" : d.child_involvement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_involvement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_involvement_rate, 90) ? "bg-green-50" : meets(d.child_involvement_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_involvement_rate, 90) ? "text-[--cs-success]" : meets(d.child_involvement_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_involvement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Child Inv.</p>
             </div>
           </div>

@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME COMMUNICATION & CONTACT INTELLIGENCE ENGINE
 // Home-level: aggregates communication book entries, correspondence,
@@ -88,7 +89,8 @@ export interface CorrespondenceProfile {
 export interface ContactPlanProfile {
   total_plans: number;
   active_count: number;
-  child_coverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_coverage: number | null;
   overdue_reviews: number;
   child_wishes_rate: number | null;
   upcoming_contacts_count: number;
@@ -96,7 +98,8 @@ export interface ContactPlanProfile {
 
 export interface CommProfileSummary {
   total_profiles: number;
-  child_coverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_coverage: number | null;
   interpreter_needed_count: number;
   salt_involved_count: number;
   child_views_rate: number | null;
@@ -118,10 +121,6 @@ export interface HomeCommunicationContactResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function daysBetween(a: string, b: string): number {
   return Math.round(
@@ -154,8 +153,8 @@ export function computeHomeCommunicationContact(
       headline: "No communication or contact data available for analysis.",
       comm_book: { total_entries_30d: 0, urgent_count: 0, action_required_count: 0, action_completion_rate: null, child_related_rate: null },
       correspondence: { total_entries_30d: 0, incoming_count: 0, outgoing_count: 0, overdue_actions: 0, actioned_rate: null },
-      contact_plans: { total_plans: 0, active_count: 0, child_coverage: 0, overdue_reviews: 0, child_wishes_rate: null, upcoming_contacts_count: 0 },
-      comm_profiles: { total_profiles: 0, child_coverage: 0, interpreter_needed_count: 0, salt_involved_count: 0, child_views_rate: null, avg_strategies: 0 },
+      contact_plans: { total_plans: 0, active_count: 0, child_coverage: null, overdue_reviews: 0, child_wishes_rate: null, upcoming_contacts_count: 0 },
+      comm_profiles: { total_profiles: 0, child_coverage: null, interpreter_needed_count: 0, salt_involved_count: 0, child_views_rate: null, avg_strategies: 0 },
       strengths: [],
       concerns: ["No communication or contact data — professional communication and contact governance cannot be assessed."],
       recommendations: [],
@@ -172,8 +171,8 @@ export function computeHomeCommunicationContact(
   const urgentCommBook = commBook30d.filter(e => e.priority === "urgent" || e.priority === "high");
   const commActionRequired = commBook30d.filter(e => e.action_required);
   const commActionCompleted = commActionRequired.filter(e => e.action_completed);
-  const commActionRate = pct(commActionCompleted.length, commActionRequired.length);
-  const commChildRelatedRate = pct(
+  const commActionRate = rate(commActionCompleted.length, commActionRequired.length);
+  const commChildRelatedRate = rate(
     commBook30d.filter(e => e.related_yp_present).length,
     commBook30d.length,
   );
@@ -199,7 +198,7 @@ export function computeHomeCommunicationContact(
     e.action_due && daysBetween(e.action_due, today) > 0 && e.status !== "actioned",
   );
   const actionedCorr = corr30d.filter(e => e.status === "actioned" || e.status === "filed");
-  const corrActionedRate = pct(actionedCorr.length, corr30d.length);
+  const corrActionedRate = rate(actionedCorr.length, corr30d.length);
 
   const correspondenceProfile: CorrespondenceProfile = {
     total_entries_30d: corr30d.length,
@@ -212,11 +211,11 @@ export function computeHomeCommunicationContact(
   // ── Contact Plans ────────────────────────────────────────────────────
   const activePlans = contact_plans.filter(p => p.status === "active" || p.status === "under_review");
   const uniquePlanChildren = new Set(contact_plans.map(p => p.child_id));
-  const contactPlanCoverage = pct(uniquePlanChildren.size, total_children);
+  const contactPlanCoverage = rate(uniquePlanChildren.size, total_children);
   const overdueContactReviews = contact_plans.filter(p =>
     daysBetween(p.review_date, today) > 0,
   ).length;
-  const childWishesRate = pct(
+  const childWishesRate = rate(
     contact_plans.filter(p => p.child_wishes_provided).length,
     contact_plans.length,
   );
@@ -236,10 +235,10 @@ export function computeHomeCommunicationContact(
 
   // ── Communication Profiles ───────────────────────────────────────────
   const uniqueProfileChildren = new Set(communication_profiles.map(p => p.child_id));
-  const profileCoverage = pct(uniqueProfileChildren.size, total_children);
+  const profileCoverage = rate(uniqueProfileChildren.size, total_children);
   const interpreterNeeded = communication_profiles.filter(p => p.interpreter_required).length;
   const saltInvolved = communication_profiles.filter(p => p.salt_involved).length;
-  const profileChildViewsRate = pct(
+  const profileChildViewsRate = rate(
     communication_profiles.filter(p => p.child_views_provided).length,
     communication_profiles.length,
   );
@@ -264,9 +263,9 @@ export function computeHomeCommunicationContact(
   if (commActionRequired.length === 0) {
     score += (commBook30d.length > 0 ? 2 : 0); // active book but no actions = healthy
   } else {
-    if (commActionRate >= 95) score += 5;
-    else if (commActionRate >= 80) score += 3;
-    else if (commActionRate >= 60) score += 0;
+    if (meets(commActionRate, 95)) score += 5;
+    else if (meets(commActionRate, 80)) score += 3;
+    else if (meets(commActionRate, 60)) score += 0;
     else score -= 5;
   }
 
@@ -276,9 +275,9 @@ export function computeHomeCommunicationContact(
   } else if (contact_plans.length === 0) {
     score -= 4;
   } else {
-    if (contactPlanCoverage >= 90) score += 4;
-    else if (contactPlanCoverage >= 70) score += 2;
-    else if (contactPlanCoverage >= 50) score += 0;
+    if (meets(contactPlanCoverage, 90)) score += 4;
+    else if (meets(contactPlanCoverage, 70)) score += 2;
+    else if (meets(contactPlanCoverage, 50)) score += 0;
     else score -= 4;
   }
 
@@ -286,13 +285,13 @@ export function computeHomeCommunicationContact(
   if (contact_plans.length === 0) {
     score += 0;
   } else {
-    const reviewOnTimeRate = pct(
+    const reviewOnTimeRate = rate(
       contact_plans.length - overdueContactReviews,
       contact_plans.length,
     );
-    if (reviewOnTimeRate >= 95) score += 3;
-    else if (reviewOnTimeRate >= 80) score += 1;
-    else if (reviewOnTimeRate >= 60) score += 0;
+    if (meets(reviewOnTimeRate, 95)) score += 3;
+    else if (meets(reviewOnTimeRate, 80)) score += 1;
+    else if (meets(reviewOnTimeRate, 60)) score += 0;
     else score -= 3;
   }
 
@@ -302,9 +301,9 @@ export function computeHomeCommunicationContact(
   } else if (communication_profiles.length === 0) {
     score -= 4;
   } else {
-    if (profileCoverage >= 90) score += 4;
-    else if (profileCoverage >= 70) score += 2;
-    else if (profileCoverage >= 50) score += 0;
+    if (meets(profileCoverage, 90)) score += 4;
+    else if (meets(profileCoverage, 70)) score += 2;
+    else if (meets(profileCoverage, 50)) score += 0;
     else score -= 4;
   }
 
@@ -315,10 +314,10 @@ export function computeHomeCommunicationContact(
   } else {
     const voiceProvided = contact_plans.filter(p => p.child_wishes_provided).length +
       communication_profiles.filter(p => p.child_views_provided).length;
-    const voiceRate = pct(voiceProvided, totalVoiceApplicable);
-    if (voiceRate >= 90) score += 3;
-    else if (voiceRate >= 70) score += 1;
-    else if (voiceRate >= 50) score += 0;
+    const voiceRate = rate(voiceProvided, totalVoiceApplicable);
+    if (meets(voiceRate, 90)) score += 3;
+    else if (meets(voiceRate, 70)) score += 1;
+    else if (meets(voiceRate, 50)) score += 0;
     else score -= 3;
   }
 
@@ -337,10 +336,10 @@ export function computeHomeCommunicationContact(
     score += 0;
   } else {
     const expectedEntries = Math.max(total_staff, 1) * 4; // ~4 entries per staff per 30d
-    const activityRate = pct(commBook30d.length, expectedEntries);
-    if (activityRate >= 80) score += 3;
-    else if (activityRate >= 50) score += 1;
-    else if (activityRate >= 20) score += 0;
+    const activityRate = rate(commBook30d.length, expectedEntries);
+    if (meets(activityRate, 80)) score += 3;
+    else if (meets(activityRate, 50)) score += 1;
+    else if (meets(activityRate, 20)) score += 0;
     else score -= 3;
   }
 
@@ -358,10 +357,10 @@ export function computeHomeCommunicationContact(
       const hasSupport = needsSpecialist.filter(p =>
         p.strategies_count > 0 || p.aac_tools_count > 0,
       ).length;
-      const supportRate = pct(hasSupport, needsSpecialist.length);
-      if (supportRate >= 100) score += 3;
-      else if (supportRate >= 80) score += 1;
-      else if (supportRate >= 50) score += 0;
+      const supportRate = rate(hasSupport, needsSpecialist.length);
+      if (meets(supportRate, 100)) score += 3;
+      else if (meets(supportRate, 80)) score += 1;
+      else if (meets(supportRate, 50)) score += 0;
       else score -= 3;
     }
   }
@@ -389,15 +388,15 @@ export function computeHomeCommunicationContact(
   // ── Strengths ────────────────────────────────────────────────────────
   const strengths: string[] = [];
 
-  if (commActionRate >= 95 && commActionRequired.length > 0)
+  if (meets(commActionRate, 95) && commActionRequired.length > 0)
     strengths.push(`Excellent communication book follow-through — ${commActionRate}% of actions completed.`);
-  if (contactPlanCoverage >= 90 && total_children > 0)
+  if (meets(contactPlanCoverage, 90) && total_children > 0)
     strengths.push(`Outstanding contact plan coverage — ${contactPlanCoverage}% of children have current plans.`);
-  if (profileCoverage >= 90 && total_children > 0)
+  if (meets(profileCoverage, 90) && total_children > 0)
     strengths.push(`Comprehensive communication profiles — ${profileCoverage}% of children assessed.`);
   if (overdueActions.length === 0 && corr30d.length > 0)
     strengths.push("No overdue correspondence actions — responsive professional communication.");
-  if (childWishesRate >= 90 && contact_plans.length > 0)
+  if (meets(childWishesRate, 90) && contact_plans.length > 0)
     strengths.push(`Strong child voice — ${childWishesRate}% of contact plans include child's wishes.`);
   if (overdueContactReviews === 0 && contact_plans.length > 0)
     strengths.push("All contact plan reviews up to date — excellent review discipline.");
@@ -407,19 +406,19 @@ export function computeHomeCommunicationContact(
 
   if (overdueContactReviews > 0)
     concerns.push(`${overdueContactReviews} contact plan review${overdueContactReviews > 1 ? "s" : ""} overdue.`);
-  if (contactPlanCoverage < 50 && total_children > 0 && contact_plans.length > 0)
+  if (below(contactPlanCoverage, 50) && total_children > 0 && contact_plans.length > 0)
     concerns.push(`Only ${contactPlanCoverage}% of children have contact plans — significant coverage gap.`);
   if (contact_plans.length === 0 && total_children > 0)
     concerns.push("No contact plans in place — Reg 14 requires documented contact arrangements.");
-  if (profileCoverage < 50 && total_children > 0 && communication_profiles.length > 0)
+  if (below(profileCoverage, 50) && total_children > 0 && communication_profiles.length > 0)
     concerns.push(`Only ${profileCoverage}% of children have communication profiles — many needs undocumented.`);
   if (communication_profiles.length === 0 && total_children > 0)
     concerns.push("No communication profiles — children's communication needs not assessed.");
   if (overdueActions.length >= 3)
     concerns.push(`${overdueActions.length} overdue correspondence actions — professional responsiveness at risk.`);
-  if (commActionRate < 50 && commActionRequired.length > 0)
+  if (below(commActionRate, 50) && commActionRequired.length > 0)
     concerns.push(`Communication book action completion only ${commActionRate}% — handover effectiveness compromised.`);
-  if (childWishesRate < 50 && contact_plans.length > 0)
+  if (below(childWishesRate, 50) && contact_plans.length > 0)
     concerns.push(`Child wishes only captured in ${childWishesRate}% of contact plans — children's voices underrepresented.`);
 
   // ── Recommendations ──────────────────────────────────────────────────
@@ -453,7 +452,7 @@ export function computeHomeCommunicationContact(
     });
   }
 
-  if (childWishesRate < 70 && contact_plans.length > 0) {
+  if (below(childWishesRate, 70) && contact_plans.length > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation: "Capture child wishes in all contact plans — Reg 7 requires children's views to inform contact.",
@@ -462,7 +461,7 @@ export function computeHomeCommunicationContact(
     });
   }
 
-  if (commActionRate < 70 && commActionRequired.length > 0) {
+  if (below(commActionRate, 70) && commActionRequired.length > 0) {
     recommendations.push({
       rank: ++recRank,
       recommendation: "Improve communication book action follow-through — incomplete handovers risk information loss.",
@@ -480,7 +479,7 @@ export function computeHomeCommunicationContact(
   if (overdueActions.length >= 5)
     insights.push({ text: `Cara flags ${overdueActions.length} overdue correspondence actions — risk of professional communication breakdown.`, severity: "critical" });
 
-  if (contactPlanCoverage >= 90 && profileCoverage >= 90 && commActionRate >= 90)
+  if (meets(contactPlanCoverage, 90) && meets(profileCoverage, 90) && meets(commActionRate, 90))
     insights.push({ text: "Cara recognises comprehensive communication governance — evidence of proactive information-sharing culture.", severity: "positive" });
 
   if (interpreterNeeded > 0)

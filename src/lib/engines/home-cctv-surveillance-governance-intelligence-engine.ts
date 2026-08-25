@@ -13,7 +13,7 @@
 //             childAwarenessRecords, dataProtectionRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { below, meets } from "@/lib/metrics/rate";
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -179,10 +179,6 @@ export interface CctvGovernanceResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -294,180 +290,163 @@ export function computeCctvSurveillanceGovernance(
   // --- CCTV policy compliance metrics ---
   const totalPolicyRecords = cctv_policy_records.length;
   const approvedPolicies = cctv_policy_records.filter((p) => p.approved).length;
-  const policyApprovalRate = pct(approvedPolicies, totalPolicyRecords);
+  const policyApprovalRate = rate(approvedPolicies, totalPolicyRecords);
 
   const icoCompliantPolicies = cctv_policy_records.filter((p) => p.approved && p.compliant_with_ico).length;
-  const icoComplianceRate = pct(icoCompliantPolicies, totalPolicyRecords);
+  const icoComplianceRate = rate(icoCompliantPolicies, totalPolicyRecords);
 
   const policiesCoveringChildrenRights = cctv_policy_records.filter((p) => p.approved && p.covers_children_rights).length;
-  const childrenRightsCoverageRate = pct(policiesCoveringChildrenRights, totalPolicyRecords);
+  const childrenRightsCoverageRate = rate(policiesCoveringChildrenRights, totalPolicyRecords);
 
   const rmSignedPolicies = cctv_policy_records.filter((p) => p.approved && p.registered_manager_signed).length;
-  const rmSignedRate = pct(rmSignedPolicies, totalPolicyRecords);
+  const rmSignedRate = rate(rmSignedPolicies, totalPolicyRecords);
 
   const sharedWithPlacingAuth = cctv_policy_records.filter((p) => p.approved && p.shared_with_placing_authorities).length;
-  const sharedWithPlacingAuthRate = pct(sharedWithPlacingAuth, totalPolicyRecords);
+  const sharedWithPlacingAuthRate = rate(sharedWithPlacingAuth, totalPolicyRecords);
 
   const overdueReviews = cctv_policy_records.filter((p) => p.review_overdue).length;
-  const reviewOverdueRate = pct(overdueReviews, totalPolicyRecords);
+  const reviewOverdueRate = rate(overdueReviews, totalPolicyRecords);
 
   // Composite policy compliance rate: average of approval, ICO compliance, children rights coverage, RM signed
   const policyComplianceRate: number | null =
-    totalPolicyRecords > 0
-      ? Math.round(
-          (policyApprovalRate + icoComplianceRate + childrenRightsCoverageRate + rmSignedRate) / 4,
-        )
-      : null;
+    totalPolicyRecords > 0 ? Math.round(
+          (policyApprovalRate! + icoComplianceRate! + childrenRightsCoverageRate! + rmSignedRate!) / 4) : null;
 
   // --- Privacy impact assessment metrics ---
   const totalPrivacyImpactRecords = privacy_impact_records.length;
   const justifiedAssessments = privacy_impact_records.filter((p) => p.justified).length;
-  const justificationRate = pct(justifiedAssessments, totalPrivacyImpactRecords);
+  const justificationRate = rate(justifiedAssessments, totalPrivacyImpactRecords);
 
   const proportionateAssessments = privacy_impact_records.filter((p) => p.proportionate).length;
-  const proportionalityRate = pct(proportionateAssessments, totalPrivacyImpactRecords);
+  const proportionalityRate = rate(proportionateAssessments, totalPrivacyImpactRecords);
 
   const alternativesConsidered = privacy_impact_records.filter((p) => p.less_intrusive_alternatives_considered).length;
-  const alternativesConsideredRate = pct(alternativesConsidered, totalPrivacyImpactRecords);
+  const alternativesConsideredRate = rate(alternativesConsidered, totalPrivacyImpactRecords);
 
   const childrenConsulted = privacy_impact_records.filter((p) => p.children_consulted).length;
-  const childrenConsultedRate = pct(childrenConsulted, totalPrivacyImpactRecords);
+  const childrenConsultedRate = rate(childrenConsulted, totalPrivacyImpactRecords);
 
   const riskMitigationsDocumented = privacy_impact_records.filter((p) => p.risk_mitigations_documented).length;
-  const riskMitigationRate = pct(riskMitigationsDocumented, totalPrivacyImpactRecords);
+  const riskMitigationRate = rate(riskMitigationsDocumented, totalPrivacyImpactRecords);
 
   const dpoApproved = privacy_impact_records.filter((p) => p.approved_by_dpo).length;
-  const dpoApprovalRate = pct(dpoApproved, totalPrivacyImpactRecords);
+  const dpoApprovalRate = rate(dpoApproved, totalPrivacyImpactRecords);
 
   const piaOverdue = privacy_impact_records.filter((p) => p.review_overdue).length;
-  const piaOverdueRate = pct(piaOverdue, totalPrivacyImpactRecords);
+  const piaOverdueRate = rate(piaOverdue, totalPrivacyImpactRecords);
 
   // Composite privacy impact rate: average of justification, proportionality, alternatives, risk mitigation, DPO approval
   const privacyImpactRate: number | null =
-    totalPrivacyImpactRecords > 0
-      ? Math.round(
-          (justificationRate + proportionalityRate + alternativesConsideredRate + riskMitigationRate + dpoApprovalRate) / 5,
-        )
-      : null;
+    totalPrivacyImpactRecords > 0 ? Math.round(
+          (justificationRate! + proportionalityRate! + alternativesConsideredRate! + riskMitigationRate! + dpoApprovalRate!) / 5) : null;
 
   // --- Footage retention compliance metrics ---
   const totalRetentionRecords = footage_retention_records.length;
   const withinRetentionPolicy = footage_retention_records.filter((r) => r.within_retention_policy).length;
-  const retentionPolicyRate = pct(withinRetentionPolicy, totalRetentionRecords);
+  const retentionPolicyRate = rate(withinRetentionPolicy, totalRetentionRecords);
 
   const autoDeleteEnabled = footage_retention_records.filter((r) => r.auto_delete_enabled).length;
-  const autoDeleteRate = pct(autoDeleteEnabled, totalRetentionRecords);
+  const autoDeleteRate = rate(autoDeleteEnabled, totalRetentionRecords);
 
   const deletionLogMaintained = footage_retention_records.filter((r) => r.deletion_log_maintained).length;
-  const deletionLogRate = pct(deletionLogMaintained, totalRetentionRecords);
+  const deletionLogRate = rate(deletionLogMaintained, totalRetentionRecords);
 
   const accessLogMaintained = footage_retention_records.filter((r) => r.access_log_maintained).length;
-  const accessLogRate = pct(accessLogMaintained, totalRetentionRecords);
+  const accessLogRate = rate(accessLogMaintained, totalRetentionRecords);
 
   const footageEncrypted = footage_retention_records.filter((r) => r.footage_encrypted).length;
-  const encryptionRate = pct(footageEncrypted, totalRetentionRecords);
+  const encryptionRate = rate(footageEncrypted, totalRetentionRecords);
 
   const totalAccessCount = footage_retention_records.reduce((sum, r) => sum + r.footage_accessed_count, 0);
   const totalAccessAuthorised = footage_retention_records.reduce((sum, r) => sum + r.footage_accessed_authorised, 0);
-  const authorisedAccessRate = pct(totalAccessAuthorised, totalAccessCount);
+  const authorisedAccessRate = rate(totalAccessAuthorised, totalAccessCount);
 
   const totalSarRequests = footage_retention_records.reduce((sum, r) => sum + r.subject_access_requests, 0);
   const totalSarFulfilled = footage_retention_records.reduce((sum, r) => sum + r.subject_access_fulfilled, 0);
-  const sarFulfilmentRate = pct(totalSarFulfilled, totalSarRequests);
+  const sarFulfilmentRate = rate(totalSarFulfilled, totalSarRequests);
 
   const auditOverdue = footage_retention_records.filter((r) => r.audit_overdue).length;
-  const auditOverdueRate = pct(auditOverdue, totalRetentionRecords);
+  const auditOverdueRate = rate(auditOverdue, totalRetentionRecords);
 
   // Composite retention compliance rate: average of retention policy, auto-delete, deletion log, access log, encryption
   const retentionComplianceRate: number | null =
-    totalRetentionRecords > 0
-      ? Math.round(
-          (retentionPolicyRate + autoDeleteRate + deletionLogRate + accessLogRate + encryptionRate) / 5,
-        )
-      : null;
+    totalRetentionRecords > 0 ? Math.round(
+          (retentionPolicyRate! + autoDeleteRate! + deletionLogRate! + accessLogRate! + encryptionRate!) / 5) : null;
 
   // --- Child awareness metrics ---
   const totalChildAwarenessRecords = child_awareness_records.length;
   const informedOfLocations = child_awareness_records.filter((c) => c.child_informed_of_camera_locations).length;
-  const locationAwarenessRate = pct(informedOfLocations, totalChildAwarenessRecords);
+  const locationAwarenessRate = rate(informedOfLocations, totalChildAwarenessRecords);
 
   const informedOfPurpose = child_awareness_records.filter((c) => c.child_informed_of_purpose).length;
-  const purposeAwarenessRate = pct(informedOfPurpose, totalChildAwarenessRecords);
+  const purposeAwarenessRate = rate(informedOfPurpose, totalChildAwarenessRecords);
 
   const informedOfRights = child_awareness_records.filter((c) => c.child_informed_of_rights).length;
-  const rightsAwarenessRate = pct(informedOfRights, totalChildAwarenessRecords);
+  const rightsAwarenessRate = rate(informedOfRights, totalChildAwarenessRecords);
 
   const viewsPositive = child_awareness_records.filter((c) => c.child_views_recorded && c.child_views_positive).length;
-  const positiveViewsRate = pct(viewsPositive, totalChildAwarenessRecords);
+  const positiveViewsRate = rate(viewsPositive, totalChildAwarenessRecords);
 
   const objectionsRaised = child_awareness_records.filter((c) => c.child_objections_raised).length;
   const objectionsAddressed = child_awareness_records.filter((c) => c.child_objections_raised && c.child_objections_addressed).length;
-  const objectionsAddressedRate = pct(objectionsAddressed, objectionsRaised);
+  const objectionsAddressedRate = rate(objectionsAddressed, objectionsRaised);
 
   const ageAppropriate = child_awareness_records.filter((c) => c.age_appropriate_explanation).length;
-  const ageAppropriateRate = pct(ageAppropriate, totalChildAwarenessRecords);
+  const ageAppropriateRate = rate(ageAppropriate, totalChildAwarenessRecords);
 
   const documented = child_awareness_records.filter((c) => c.documented).length;
-  const documentedRate = pct(documented, totalChildAwarenessRecords);
+  const documentedRate = rate(documented, totalChildAwarenessRecords);
 
   const uniqueChildrenAware = new Set(
     child_awareness_records.filter(
       (c) => c.child_informed_of_camera_locations && c.child_informed_of_rights,
     ).map((c) => c.child_id),
   ).size;
-  const childAwarenessCoverage = total_children > 0 ? pct(uniqueChildrenAware, total_children) : 0;
+  const childAwarenessCoverage = total_children > 0 ? rate(uniqueChildrenAware, total_children) : 0;
 
   // Composite child awareness rate: average of location awareness, purpose, rights, age-appropriate, documented
   const childAwarenessRate: number | null =
-    totalChildAwarenessRecords > 0
-      ? Math.round(
-          (locationAwarenessRate + purposeAwarenessRate + rightsAwarenessRate + ageAppropriateRate + documentedRate) / 5,
-        )
-      : null;
+    totalChildAwarenessRecords > 0 ? Math.round(
+          (locationAwarenessRate! + purposeAwarenessRate! + rightsAwarenessRate! + ageAppropriateRate! + documentedRate!) / 5) : null;
 
   // --- Data protection compliance metrics ---
   const totalDataProtectionRecords = data_protection_records.length;
   const compliantRecords = data_protection_records.filter((d) => d.compliant).length;
-  const complianceRate = pct(compliantRecords, totalDataProtectionRecords);
+  const complianceRate = rate(compliantRecords, totalDataProtectionRecords);
 
   const breachRecords = data_protection_records.filter((d) => d.breach_occurred).length;
-  const breachRate = pct(breachRecords, totalDataProtectionRecords);
+  const breachRate = rate(breachRecords, totalDataProtectionRecords);
 
   const criticalBreaches = data_protection_records.filter(
     (d) => d.breach_occurred && (d.breach_severity === "critical" || d.breach_severity === "high"),
   ).length;
 
   const staffTrained = data_protection_records.filter((d) => d.staff_trained).length;
-  const staffTrainedRate = pct(staffTrained, totalDataProtectionRecords);
+  const staffTrainedRate = rate(staffTrained, totalDataProtectionRecords);
 
   const trainingUpToDate = data_protection_records.filter((d) => d.staff_trained && d.training_up_to_date).length;
-  const trainingCurrentRate = pct(trainingUpToDate, totalDataProtectionRecords);
+  const trainingCurrentRate = rate(trainingUpToDate, totalDataProtectionRecords);
 
   const icoRegistrationCurrent = data_protection_records.filter((d) => d.ico_registration_current).length;
-  const icoRegistrationRate = pct(icoRegistrationCurrent, totalDataProtectionRecords);
+  const icoRegistrationRate = rate(icoRegistrationCurrent, totalDataProtectionRecords);
 
   const dataSharingAgreementsCurrent = data_protection_records.filter((d) => d.data_sharing_agreements_current).length;
-  const dataSharingRate = pct(dataSharingAgreementsCurrent, totalDataProtectionRecords);
+  const dataSharingRate = rate(dataSharingAgreementsCurrent, totalDataProtectionRecords);
 
   const encryptionInPlace = data_protection_records.filter((d) => d.encryption_in_place).length;
-  const dpEncryptionRate = pct(encryptionInPlace, totalDataProtectionRecords);
+  const dpEncryptionRate = rate(encryptionInPlace, totalDataProtectionRecords);
 
   const accessControlsAdequate = data_protection_records.filter((d) => d.access_controls_adequate).length;
-  const accessControlRate = pct(accessControlsAdequate, totalDataProtectionRecords);
+  const accessControlRate = rate(accessControlsAdequate, totalDataProtectionRecords);
 
   // Composite data protection rate: average of compliance, encryption, access controls, ICO registration, data sharing
   const dataProtectionRate: number | null =
-    totalDataProtectionRecords > 0
-      ? Math.round(
-          (complianceRate + dpEncryptionRate + accessControlRate + icoRegistrationRate + dataSharingRate) / 5,
-        )
-      : null;
+    totalDataProtectionRecords > 0 ? Math.round(
+          (complianceRate! + dpEncryptionRate! + accessControlRate! + icoRegistrationRate! + dataSharingRate!) / 5) : null;
 
   // Staff training rate composite — combined from data protection staff training and policy coverage
   const staffTrainingRate: number | null =
-    totalDataProtectionRecords > 0
-      ? Math.round((staffTrainedRate + trainingCurrentRate) / 2)
-      : null;
+    totalDataProtectionRecords > 0 ? Math.round((staffTrainedRate! + trainingCurrentRate!) / 2) : null;
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
@@ -498,12 +477,12 @@ export function computeCctvSurveillanceGovernance(
   else if (meets(staffTrainingRate, 70)) score += 1;
 
   // --- Bonus 7: authorisedAccessRate (>=95: +3, >=80: +1) ---
-  if (authorisedAccessRate >= 95) score += 3;
-  else if (authorisedAccessRate >= 80) score += 1;
+  if (meets(authorisedAccessRate, 95)) score += 3;
+  else if (meets(authorisedAccessRate, 80)) score += 1;
 
   // --- Bonus 8: childAwarenessCoverage (>=100: +2, >=80: +1) ---
-  if (childAwarenessCoverage >= 100 && total_children > 0) score += 2;
-  else if (childAwarenessCoverage >= 80 && total_children > 0) score += 1;
+  if (meets(childAwarenessCoverage, 100) && total_children > 0) score += 2;
+  else if (meets(childAwarenessCoverage, 80) && total_children > 0) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
@@ -587,59 +566,59 @@ export function computeCctvSurveillanceGovernance(
     );
   }
 
-  if (authorisedAccessRate >= 95 && totalAccessCount > 0) {
+  if (meets(authorisedAccessRate, 95) && totalAccessCount > 0) {
     strengths.push(
       `${authorisedAccessRate}% of footage access is authorised — strong access controls ensure CCTV footage is only viewed with proper authorisation.`,
     );
-  } else if (authorisedAccessRate >= 80 && totalAccessCount > 0) {
+  } else if (meets(authorisedAccessRate, 80) && totalAccessCount > 0) {
     strengths.push(
       `${authorisedAccessRate}% authorised footage access — the home generally maintains good access control over CCTV recordings.`,
     );
   }
 
-  if (childAwarenessCoverage >= 100 && total_children > 0) {
+  if (meets(childAwarenessCoverage, 100) && total_children > 0) {
     strengths.push(
       "Every child has been informed about CCTV camera locations and their rights — surveillance awareness is embedded in the placement induction and ongoing care approach.",
     );
-  } else if (childAwarenessCoverage >= 80 && total_children > 0) {
+  } else if (meets(childAwarenessCoverage, 80) && total_children > 0) {
     strengths.push(
       `${childAwarenessCoverage}% of children have been informed about CCTV locations and rights — strong coverage ensuring most children understand surveillance arrangements.`,
     );
   }
 
-  if (objectionsAddressedRate >= 100 && objectionsRaised > 0) {
+  if (meets(objectionsAddressedRate, 100) && objectionsRaised > 0) {
     strengths.push(
       "All child objections to surveillance have been addressed — the home demonstrates genuine respect for children's views and privacy concerns.",
     );
-  } else if (objectionsAddressedRate >= 80 && objectionsRaised > 0) {
+  } else if (meets(objectionsAddressedRate, 80) && objectionsRaised > 0) {
     strengths.push(
       `${objectionsAddressedRate}% of child objections to surveillance addressed — the home takes children's privacy concerns seriously and acts on them.`,
     );
   }
 
-  if (sarFulfilmentRate >= 100 && totalSarRequests > 0) {
+  if (meets(sarFulfilmentRate, 100) && totalSarRequests > 0) {
     strengths.push(
       "All subject access requests for CCTV footage have been fulfilled — the home meets its legal obligations under data protection law.",
     );
-  } else if (sarFulfilmentRate >= 80 && totalSarRequests > 0) {
+  } else if (meets(sarFulfilmentRate, 80) && totalSarRequests > 0) {
     strengths.push(
       `${sarFulfilmentRate}% of subject access requests fulfilled — the home generally meets its obligations regarding footage access requests.`,
     );
   }
 
-  if (encryptionRate >= 100 && totalRetentionRecords > 0) {
+  if (meets(encryptionRate, 100) && totalRetentionRecords > 0) {
     strengths.push(
       "All CCTV footage is encrypted — robust technical measures protect recorded data from unauthorised access.",
     );
   }
 
-  if (icoComplianceRate >= 100 && totalPolicyRecords > 0) {
+  if (meets(icoComplianceRate, 100) && totalPolicyRecords > 0) {
     strengths.push(
       "All CCTV policies are ICO-compliant — the home's surveillance framework fully aligns with Information Commissioner's Office requirements.",
     );
   }
 
-  if (alternativesConsideredRate >= 100 && totalPrivacyImpactRecords > 0) {
+  if (meets(alternativesConsideredRate, 100) && totalPrivacyImpactRecords > 0) {
     strengths.push(
       "Less intrusive alternatives have been considered for every camera placement — the home demonstrates that surveillance is a last resort and proportionate to identified risks.",
     );
@@ -657,7 +636,7 @@ export function computeCctvSurveillanceGovernance(
     );
   }
 
-  if (positiveViewsRate >= 80 && totalChildAwarenessRecords > 0) {
+  if (meets(positiveViewsRate, 80) && totalChildAwarenessRecords > 0) {
     strengths.push(
       `${positiveViewsRate}% of children hold positive views about CCTV arrangements — surveillance is perceived as protective rather than intrusive, reflecting good communication and proportionate use.`,
     );
@@ -733,45 +712,45 @@ export function computeCctvSurveillanceGovernance(
     );
   }
 
-  if (reviewOverdueRate >= 30 && totalPolicyRecords > 0) {
+  if (meets(reviewOverdueRate, 30) && totalPolicyRecords > 0) {
     concerns.push(
       `${reviewOverdueRate}% of CCTV policies have overdue reviews — out-of-date policies may not reflect current surveillance arrangements, camera placements, or regulatory requirements.`,
     );
-  } else if (reviewOverdueRate >= 15 && reviewOverdueRate < 30 && totalPolicyRecords > 0) {
+  } else if (meets(reviewOverdueRate, 15) && below(reviewOverdueRate, 30) && totalPolicyRecords > 0) {
     concerns.push(
       `${reviewOverdueRate}% of CCTV policy reviews are overdue — some policies may not reflect current surveillance practice.`,
     );
   }
 
-  if (piaOverdueRate >= 30 && totalPrivacyImpactRecords > 0) {
+  if (meets(piaOverdueRate, 30) && totalPrivacyImpactRecords > 0) {
     concerns.push(
       `${piaOverdueRate}% of privacy impact assessments have overdue reviews — camera placements may no longer be justified or proportionate without regular reassessment.`,
     );
-  } else if (piaOverdueRate >= 15 && piaOverdueRate < 30 && totalPrivacyImpactRecords > 0) {
+  } else if (meets(piaOverdueRate, 15) && below(piaOverdueRate, 30) && totalPrivacyImpactRecords > 0) {
     concerns.push(
       `${piaOverdueRate}% of privacy impact assessment reviews are overdue — some camera placements may need reassessment.`,
     );
   }
 
-  if (auditOverdueRate >= 30 && totalRetentionRecords > 0) {
+  if (meets(auditOverdueRate, 30) && totalRetentionRecords > 0) {
     concerns.push(
       `${auditOverdueRate}% of footage retention audits are overdue — without regular auditing, the home cannot be confident that footage is being managed within policy.`,
     );
   }
 
-  if (childAwarenessCoverage < 50 && total_children > 0 && totalChildAwarenessRecords > 0) {
+  if (below(childAwarenessCoverage, 50) && total_children > 0 && totalChildAwarenessRecords > 0) {
     concerns.push(
       `Only ${childAwarenessCoverage}% of children have been fully informed about CCTV locations and rights — many children may be unaware of surveillance in their living environment.`,
     );
   }
 
-  if (authorisedAccessRate < 80 && totalAccessCount > 0) {
+  if (below(authorisedAccessRate, 80) && totalAccessCount > 0) {
     concerns.push(
       `Only ${authorisedAccessRate}% of footage access events were authorised — unauthorised access to CCTV recordings is a serious data protection concern.`,
     );
   }
 
-  if (objectionsRaised > 0 && objectionsAddressedRate < 50) {
+  if (objectionsRaised > 0 && below(objectionsAddressedRate, 50)) {
     concerns.push(
       `Only ${objectionsAddressedRate}% of child objections to surveillance have been addressed — children's concerns about privacy are not being taken seriously.`,
     );
@@ -789,13 +768,13 @@ export function computeCctvSurveillanceGovernance(
     );
   }
 
-  if (sharedWithPlacingAuthRate < 50 && totalPolicyRecords > 0) {
+  if (below(sharedWithPlacingAuthRate, 50) && totalPolicyRecords > 0) {
     concerns.push(
       `Only ${sharedWithPlacingAuthRate}% of CCTV policies shared with placing authorities — placing authorities may be unaware of the surveillance arrangements affecting the children they have placed.`,
     );
   }
 
-  if (childrenConsultedRate < 50 && totalPrivacyImpactRecords > 0) {
+  if (below(childrenConsultedRate, 50) && totalPrivacyImpactRecords > 0) {
     concerns.push(
       `Children consulted in only ${childrenConsultedRate}% of privacy impact assessments — the voice of the child is not being adequately captured in decisions about surveillance that directly affects them.`,
     );
@@ -876,7 +855,7 @@ export function computeCctvSurveillanceGovernance(
     });
   }
 
-  if (authorisedAccessRate < 80 && totalAccessCount > 0) {
+  if (below(authorisedAccessRate, 80) && totalAccessCount > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -962,7 +941,7 @@ export function computeCctvSurveillanceGovernance(
     });
   }
 
-  if (childrenConsultedRate < 50 && totalPrivacyImpactRecords > 0) {
+  if (below(childrenConsultedRate, 50) && totalPrivacyImpactRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -972,7 +951,7 @@ export function computeCctvSurveillanceGovernance(
     });
   }
 
-  if (reviewOverdueRate >= 15 && totalPolicyRecords > 0) {
+  if (meets(reviewOverdueRate, 15) && totalPolicyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -982,7 +961,7 @@ export function computeCctvSurveillanceGovernance(
     });
   }
 
-  if (piaOverdueRate >= 15 && totalPrivacyImpactRecords > 0) {
+  if (meets(piaOverdueRate, 15) && totalPrivacyImpactRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -992,7 +971,7 @@ export function computeCctvSurveillanceGovernance(
     });
   }
 
-  if (sharedWithPlacingAuthRate < 50 && totalPolicyRecords > 0) {
+  if (below(sharedWithPlacingAuthRate, 50) && totalPolicyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1003,8 +982,8 @@ export function computeCctvSurveillanceGovernance(
   }
 
   if (
-    childAwarenessCoverage < 80 &&
-    childAwarenessCoverage >= 50 &&
+    below(childAwarenessCoverage, 80) &&
+    meets(childAwarenessCoverage, 50) &&
     total_children > 0 &&
     totalChildAwarenessRecords > 0
   ) {
@@ -1079,7 +1058,7 @@ export function computeCctvSurveillanceGovernance(
     });
   }
 
-  if (authorisedAccessRate < 70 && totalAccessCount > 0) {
+  if (below(authorisedAccessRate, 70) && totalAccessCount > 0) {
     insights.push({
       text: `Only ${authorisedAccessRate}% of footage access was authorised. Unauthorised access to CCTV recordings of children is a serious data protection breach and potential safeguarding concern. Immediate action is needed to secure access controls.`,
       severity: "critical",
@@ -1162,8 +1141,8 @@ export function computeCctvSurveillanceGovernance(
   }
 
   if (
-    reviewOverdueRate >= 15 &&
-    reviewOverdueRate < 30 &&
+    meets(reviewOverdueRate, 15) &&
+    below(reviewOverdueRate, 30) &&
     totalPolicyRecords > 0
   ) {
     insights.push({
@@ -1173,8 +1152,8 @@ export function computeCctvSurveillanceGovernance(
   }
 
   if (
-    piaOverdueRate >= 15 &&
-    piaOverdueRate < 30 &&
+    meets(piaOverdueRate, 15) &&
+    below(piaOverdueRate, 30) &&
     totalPrivacyImpactRecords > 0
   ) {
     insights.push({
@@ -1184,8 +1163,8 @@ export function computeCctvSurveillanceGovernance(
   }
 
   if (
-    childrenConsultedRate >= 30 &&
-    childrenConsultedRate < 50 &&
+    meets(childrenConsultedRate, 30) &&
+    below(childrenConsultedRate, 50) &&
     totalPrivacyImpactRecords > 0
   ) {
     insights.push({
@@ -1195,8 +1174,8 @@ export function computeCctvSurveillanceGovernance(
   }
 
   if (
-    authorisedAccessRate >= 70 &&
-    authorisedAccessRate < 95 &&
+    meets(authorisedAccessRate, 70) &&
+    below(authorisedAccessRate, 95) &&
     totalAccessCount > 0
   ) {
     insights.push({
@@ -1205,7 +1184,7 @@ export function computeCctvSurveillanceGovernance(
     });
   }
 
-  if (breachRate > 0 && criticalBreaches === 0 && breachRecords > 0) {
+  if (above(breachRate, 0) && criticalBreaches === 0 && breachRecords > 0) {
     insights.push({
       text: `${breachRate}% of data protection records involve breaches. While none are high or critical severity, any data breach involving children's surveillance footage requires thorough investigation and remediation to prevent escalation.`,
       severity: "warning",
@@ -1237,7 +1216,7 @@ export function computeCctvSurveillanceGovernance(
 
   if (
     meets(policyComplianceRate, 90) &&
-    icoComplianceRate >= 100 &&
+    meets(icoComplianceRate, 100) &&
     totalPolicyRecords > 0
   ) {
     insights.push({
@@ -1248,7 +1227,7 @@ export function computeCctvSurveillanceGovernance(
 
   if (
     meets(privacyImpactRate, 90) &&
-    alternativesConsideredRate >= 100 &&
+    meets(alternativesConsideredRate, 100) &&
     totalPrivacyImpactRecords > 0
   ) {
     insights.push({
@@ -1259,7 +1238,7 @@ export function computeCctvSurveillanceGovernance(
 
   if (
     meets(retentionComplianceRate, 90) &&
-    encryptionRate >= 100 &&
+    meets(encryptionRate, 100) &&
     totalRetentionRecords > 0
   ) {
     insights.push({
@@ -1279,7 +1258,7 @@ export function computeCctvSurveillanceGovernance(
   }
 
   if (
-    childAwarenessCoverage >= 100 &&
+    meets(childAwarenessCoverage, 100) &&
     total_children > 0 &&
     totalChildAwarenessRecords > 0
   ) {
@@ -1312,7 +1291,7 @@ export function computeCctvSurveillanceGovernance(
 
   if (
     objectionsRaised > 0 &&
-    objectionsAddressedRate >= 100
+    meets(objectionsAddressedRate, 100)
   ) {
     insights.push({
       text: "All child objections to surveillance have been addressed — this demonstrates that the home genuinely respects children's agency and privacy concerns, taking their views seriously when making decisions about CCTV in their living environment.",
@@ -1321,7 +1300,7 @@ export function computeCctvSurveillanceGovernance(
   }
 
   if (
-    sarFulfilmentRate >= 100 &&
+    meets(sarFulfilmentRate, 100) &&
     totalSarRequests > 0
   ) {
     insights.push({

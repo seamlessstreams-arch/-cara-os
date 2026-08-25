@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
   Loader2, AlertCircle, AlertTriangle,
@@ -102,7 +103,7 @@ export function HomeCulturalIdentityIntelligenceCard() {
               {ratingStyle.label}
             </span>
             {d.cultural_identity_rating !== "insufficient_data" && (
-              <span className="text-xs font-bold tabular-nums text-slate-600">{d.cultural_identity_score}%</span>
+              <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.cultural_identity_score)}</span>
             )}
           </CardTitle>
         </div>
@@ -119,10 +120,10 @@ export function HomeCulturalIdentityIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <BookOpen className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.identity_plans.child_coverage >= 90 ? "text-[--cs-success]" :
-                  d.identity_plans.child_coverage >= 70 ? "text-blue-600" : "text-[--cs-risk]"
+                  meets(d.identity_plans.child_coverage, 90) ? "text-[--cs-success]" :
+                  meets(d.identity_plans.child_coverage, 70) ? "text-blue-600" : "text-[--cs-risk]"
                 )}>
-                  {d.identity_plans.total_plans > 0 ? `${d.identity_plans.child_coverage}%` : "—"}
+                  {d.identity_plans.total_plans > 0 ? `${formatRate(d.identity_plans.child_coverage)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Plan Coverage</p>
@@ -147,10 +148,10 @@ export function HomeCulturalIdentityIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Church className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.religious_observance.child_coverage >= 80 ? "text-[--cs-success]" :
-                  d.religious_observance.child_coverage >= 50 ? "text-[--cs-warning]" : "text-slate-500"
+                  meets(d.religious_observance.child_coverage, 80) ? "text-[--cs-success]" :
+                  meets(d.religious_observance.child_coverage, 50) ? "text-[--cs-warning]" : "text-slate-500"
                 )}>
-                  {d.religious_observance.total_records > 0 ? `${d.religious_observance.child_coverage}%` : "—"}
+                  {d.religious_observance.total_records > 0 ? `${formatRate(d.religious_observance.child_coverage)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Faith Support</p>
@@ -164,7 +165,7 @@ export function HomeCulturalIdentityIntelligenceCard() {
                   (d.heritage_language.home_support_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.heritage_language.home_support_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-slate-500"
                 )}>
-                  {d.heritage_language.total_records > 0 ? `${d.heritage_language.home_support_rate}%` : "—"}
+                  {d.heritage_language.total_records > 0 ? `${formatRate(d.heritage_language.home_support_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Language</p>

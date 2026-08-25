@@ -1363,7 +1363,7 @@ describe("computeCulturalEventsCelebrations", () => {
       expect(r.child_satisfaction_rate).toBe(50);
     });
 
-    it("diversity_celebration_rate is unmeasured when total_children is 0", () => {
+    it("diversity_celebration_rate is unmeasured when total_children is null", () => {
       const r = computeCulturalEventsCelebrations({
         today: "2025-06-01",
         total_children: 0,
@@ -1376,7 +1376,7 @@ describe("computeCulturalEventsCelebrations", () => {
       expect(r.diversity_celebration_rate).toBeNull();
     });
 
-    it("festival_inclusion_rate is unmeasured when total_children is 0", () => {
+    it("festival_inclusion_rate is unmeasured when total_children is null", () => {
       const r = computeCulturalEventsCelebrations({
         today: "2025-06-01",
         total_children: 0,
@@ -1389,7 +1389,7 @@ describe("computeCulturalEventsCelebrations", () => {
       expect(r.festival_inclusion_rate).toBeNull();
     });
 
-    it("child_led_rate is unmeasured when total_children is 0", () => {
+    it("child_led_rate is unmeasured when total_children is null", () => {
       const r = computeCulturalEventsCelebrations({
         today: "2025-06-01",
         total_children: 0,
