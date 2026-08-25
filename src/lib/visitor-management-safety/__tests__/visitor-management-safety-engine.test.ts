@@ -147,12 +147,12 @@ describe("evaluateVisitorCompliance", () => {
     const result = evaluateVisitorCompliance([]);
     expect(result.totalRecords).toBe(0);
     expect(result.visitorComplianceScore).toBe(0);
-    expect(result.signInRate).toBe(0);
-    expect(result.signOutRate).toBe(0);
-    expect(result.idCheckRate).toBe(0);
-    expect(result.dbsVerifiedRate).toBe(0);
-    expect(result.safeguardingBriefRate).toBe(0);
-    expect(result.supervisedRate).toBe(0);
+    expect(result.signInRate).toBeNull();
+    expect(result.signOutRate).toBeNull();
+    expect(result.idCheckRate).toBeNull();
+    expect(result.dbsVerifiedRate).toBeNull();
+    expect(result.safeguardingBriefRate).toBeNull();
+    expect(result.supervisedRate).toBeNull();
   });
 
   it("returns empty breakdown objects for empty array", () => {
@@ -345,12 +345,12 @@ describe("evaluatePolicyAdherence", () => {
     const result = evaluatePolicyAdherence([]);
     expect(result.totalPolicies).toBe(0);
     expect(result.policyAdherenceScore).toBe(0);
-    expect(result.signInSystemRate).toBe(0);
-    expect(result.idCheckMandatoryRate).toBe(0);
-    expect(result.dbsCheckRequiredRate).toBe(0);
-    expect(result.safeguardingBriefRequiredRate).toBe(0);
-    expect(result.visitorGuideRate).toBe(0);
-    expect(result.restrictedListRate).toBe(0);
+    expect(result.signInSystemRate).toBeNull();
+    expect(result.idCheckMandatoryRate).toBeNull();
+    expect(result.dbsCheckRequiredRate).toBeNull();
+    expect(result.safeguardingBriefRequiredRate).toBeNull();
+    expect(result.visitorGuideRate).toBeNull();
+    expect(result.restrictedListRate).toBeNull();
   });
 
   it("scores 25/25 when all policies are fully compliant", () => {
@@ -484,8 +484,8 @@ describe("evaluateIncidentManagement", () => {
 
   it("returns zeroed rates for empty incidents", () => {
     const result = evaluateIncidentManagement([]);
-    expect(result.resolvedRate).toBe(0);
-    expect(result.reportedRate).toBe(0);
+    expect(result.resolvedRate).toBeNull();
+    expect(result.reportedRate).toBeNull();
     expect(result.unauthorisedAccessCount).toBe(0);
     expect(result.safeguardingConcernCount).toBe(0);
   });
@@ -655,12 +655,12 @@ describe("evaluateStaffVisitorReadiness", () => {
     const result = evaluateStaffVisitorReadiness([]);
     expect(result.totalStaff).toBe(0);
     expect(result.staffVisitorReadinessScore).toBe(0);
-    expect(result.visitorPolicyTrainedRate).toBe(0);
-    expect(result.safeguardingVisitorsRate).toBe(0);
-    expect(result.signInProceduresRate).toBe(0);
-    expect(result.dbsCheckProcessRate).toBe(0);
-    expect(result.incidentReportingRate).toBe(0);
-    expect(result.restrictedVisitorAwarenessRate).toBe(0);
+    expect(result.visitorPolicyTrainedRate).toBeNull();
+    expect(result.safeguardingVisitorsRate).toBeNull();
+    expect(result.signInProceduresRate).toBeNull();
+    expect(result.dbsCheckProcessRate).toBeNull();
+    expect(result.incidentReportingRate).toBeNull();
+    expect(result.restrictedVisitorAwarenessRate).toBeNull();
   });
 
   it("scores 25/25 when all staff are fully trained", () => {

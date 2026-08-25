@@ -685,7 +685,7 @@ describe("Secure Accommodation Intelligence Engine", () => {
         makeReview({ id: "r1", recommendationsMade: 0, recommendationsActioned: 0 }),
       ];
       const result = evaluateWelfareReviewQuality(reviews);
-      expect(result.recommendationsActionedRate).toBe(0);
+      expect(result.recommendationsActionedRate).toBeNull();
     });
 
     it("awards +3 when average participant types >= 4", () => {

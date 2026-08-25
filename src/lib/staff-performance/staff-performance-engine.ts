@@ -16,7 +16,7 @@
 //   Working Together 2023 Ch2 — organisational responsibilities
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { meets } from "@/lib/metrics/rate";
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -144,49 +144,62 @@ export interface CompetencyAssessment {
 export interface QualificationComplianceResult {
   totalRequired: number;
   totalAchieved: number;
-  achievedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  achievedRate: number | null;
   expiredCount: number;
   renewalRate: number | null;   // null when no qualification is due for renewal
-  mandatoryComplianceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  mandatoryComplianceRate: number | null;
   overallScore: number; // 0-25
 }
 
 export interface ReviewQualityResult {
   totalReviews: number;
-  completionRate: number;
-  objectivesMetRate: number;
-  staffViewsRate: number;
-  actionPlanRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  objectivesMetRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffViewsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionPlanRate: number | null;
   negativeRatingCount: number;
-  positiveRatingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveRatingRate: number | null;
   overallScore: number; // 0-25
 }
 
 export interface PDPProgressResult {
   totalGoals: number;
-  achievementRate: number;
-  linkedToTrainingRate: number;
-  missedGoalRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  achievementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  linkedToTrainingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  missedGoalRate: number | null;
   staffWithMinGoals: boolean;
   overallScore: number; // 0-25
 }
 
 export interface CompetencyDevelopmentResult {
   totalAssessments: number;
-  staffCoverageRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffCoverageRate: number | null;
   averageCompetencyScore: number;
-  improvementRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  improvementRate: number | null;
   criticalAreasCovered: boolean;
-  highCompetencyRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  highCompetencyRate: number | null;
   overallScore: number; // 0-25
 }
 
 export interface StaffProfile {
   staffId: string;
   staffName: string;
-  qualificationComplianceRate: number;
+  qualificationComplianceRate: number | null;
   currentPerformanceRating: PerformanceRating | undefined;
-  pdpGoalAchievementRate: number;
+  pdpGoalAchievementRate: number | null;
   averageCompetencyLevel: number | null;
   overallScore: number; // 0-10
 }
@@ -209,11 +222,6 @@ export interface StaffPerformanceIntelligence {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 1000) / 10;
-}
 
 function clamp(v: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, v));
@@ -348,10 +356,10 @@ export function evaluateQualificationCompliance(
     return {
       totalRequired: 0,
       totalAchieved: 0,
-      achievedRate: 0,
+      achievedRate: null,
       expiredCount: 0,
       renewalRate: null,
-      mandatoryComplianceRate: 0,
+      mandatoryComplianceRate: null,
       overallScore: 0,
     };
   }
@@ -370,7 +378,7 @@ export function evaluateQualificationCompliance(
     }
   }
 
-  const achievedRate = pct(totalAchieved, totalRequired);
+  const achievedRate = rate(totalAchieved, totalRequired);
 
   // Expired qualifications
   const expiredCount = qualifications.filter(
@@ -384,7 +392,7 @@ export function evaluateQualificationCompliance(
   ).length;
   // Null when nothing is up for renewal — there is no renewal practice to rate.
   const renewalRate = qualsWithRenewal.length > 0
-    ? pct(renewedCount, qualsWithRenewal.length)
+    ? rate(renewedCount, qualsWithRenewal.length)
     : null;
 
   // Mandatory compliance: level_3_diploma, first_aid, safeguarding achieved by all active staff
@@ -399,13 +407,13 @@ export function evaluateQualificationCompliance(
       if (qual) mandatoryAchieved++;
     }
   }
-  const mandatoryComplianceRate = pct(mandatoryAchieved, mandatoryTotal);
+  const mandatoryComplianceRate = rate(mandatoryAchieved, mandatoryTotal);
 
   // Scoring: 0-25
   let score = 0;
 
   // % of required qualifications achieved: score = percentage * 0.15 (max ~15)
-  score += (achievedRate / 100) * 15;
+  score += ((achievedRate ?? 0) / 100) * 15;
 
   // +3 if no expired qualifications
   if (expiredCount === 0) score += 3;
@@ -442,12 +450,12 @@ export function evaluateReviewQuality(
   if (reviews.length === 0) {
     return {
       totalReviews: 0,
-      completionRate: 0,
-      objectivesMetRate: 0,
-      staffViewsRate: 0,
-      actionPlanRate: 0,
+      completionRate: null,
+      objectivesMetRate: null,
+      staffViewsRate: null,
+      actionPlanRate: null,
       negativeRatingCount: 0,
-      positiveRatingRate: 0,
+      positiveRatingRate: null,
       overallScore: 0,
     };
   }
@@ -459,12 +467,12 @@ export function evaluateReviewQuality(
   if (relevantReviews.length === 0) {
     return {
       totalReviews: 0,
-      completionRate: 0,
-      objectivesMetRate: 0,
-      staffViewsRate: 0,
-      actionPlanRate: 0,
+      completionRate: null,
+      objectivesMetRate: null,
+      staffViewsRate: null,
+      actionPlanRate: null,
       negativeRatingCount: 0,
-      positiveRatingRate: 0,
+      positiveRatingRate: null,
       overallScore: 0,
     };
   }
@@ -473,20 +481,20 @@ export function evaluateReviewQuality(
   const completedCount = relevantReviews.filter(
     (r) => r.status === "completed_on_time" || r.status === "completed_late",
   ).length;
-  const completionRate = pct(completedCount, relevantReviews.length);
+  const completionRate = rate(completedCount, relevantReviews.length);
 
   // Objectives met rate
   const totalObjectivesSet = relevantReviews.reduce((sum, r) => sum + r.objectivesSet, 0);
   const totalObjectivesMet = relevantReviews.reduce((sum, r) => sum + r.objectivesMet, 0);
-  const objectivesMetRate = pct(totalObjectivesMet, totalObjectivesSet);
+  const objectivesMetRate = rate(totalObjectivesMet, totalObjectivesSet);
 
   // Staff views recorded rate
   const viewsCount = relevantReviews.filter((r) => r.staffViewsRecorded).length;
-  const staffViewsRate = pct(viewsCount, relevantReviews.length);
+  const staffViewsRate = rate(viewsCount, relevantReviews.length);
 
   // Action plan rate
   const actionPlanCount = relevantReviews.filter((r) => r.actionPlanCreated).length;
-  const actionPlanRate = pct(actionPlanCount, relevantReviews.length);
+  const actionPlanRate = rate(actionPlanCount, relevantReviews.length);
 
   // Negative ratings
   const negativeRatingCount = relevantReviews.filter(
@@ -497,28 +505,28 @@ export function evaluateReviewQuality(
   const positiveCount = relevantReviews.filter(
     (r) => r.rating === "exceptional" || r.rating === "effective",
   ).length;
-  const positiveRatingRate = pct(positiveCount, relevantReviews.length);
+  const positiveRatingRate = rate(positiveCount, relevantReviews.length);
 
   // Scoring: 0-25
   let score = 0;
 
   // +8 for review completion rate >= 90%
-  if (completionRate >= 90) score += 8;
+  if (meets(completionRate, 90)) score += 8;
 
   // +4 for objectives met rate >= 75%
-  if (objectivesMetRate >= 75) score += 4;
+  if (meets(objectivesMetRate, 75)) score += 4;
 
   // +4 if staff views recorded in >= 90% reviews
-  if (staffViewsRate >= 90) score += 4;
+  if (meets(staffViewsRate, 90)) score += 4;
 
   // +4 if action plans in >= 90% reviews
-  if (actionPlanRate >= 90) score += 4;
+  if (meets(actionPlanRate, 90)) score += 4;
 
   // +3 if no underperforming/capability_concern ratings
   if (negativeRatingCount === 0) score += 3;
 
   // +2 bonus if >= 50% rated exceptional/effective
-  if (positiveRatingRate >= 50) score += 2;
+  if (meets(positiveRatingRate, 50)) score += 2;
 
   return {
     totalReviews: relevantReviews.length,
@@ -546,9 +554,9 @@ export function evaluatePDPProgress(
   if (goals.length === 0) {
     return {
       totalGoals: 0,
-      achievementRate: 0,
-      linkedToTrainingRate: 0,
-      missedGoalRate: 0,
+      achievementRate: null,
+      linkedToTrainingRate: null,
+      missedGoalRate: null,
       staffWithMinGoals: false,
       overallScore: 0,
     };
@@ -560,9 +568,9 @@ export function evaluatePDPProgress(
   if (relevantGoals.length === 0) {
     return {
       totalGoals: 0,
-      achievementRate: 0,
-      linkedToTrainingRate: 0,
-      missedGoalRate: 0,
+      achievementRate: null,
+      linkedToTrainingRate: null,
+      missedGoalRate: null,
       staffWithMinGoals: false,
       overallScore: 0,
     };
@@ -571,15 +579,15 @@ export function evaluatePDPProgress(
   // Achievement rate: achieved / total (excluding deferred)
   const nonDeferredGoals = relevantGoals.filter((g) => g.status !== "deferred");
   const achievedCount = nonDeferredGoals.filter((g) => g.status === "achieved").length;
-  const achievementRate = pct(achievedCount, nonDeferredGoals.length);
+  const achievementRate = rate(achievedCount, nonDeferredGoals.length);
 
   // Linked to training rate
   const linkedCount = relevantGoals.filter((g) => g.linkedToTraining).length;
-  const linkedToTrainingRate = pct(linkedCount, relevantGoals.length);
+  const linkedToTrainingRate = rate(linkedCount, relevantGoals.length);
 
   // Missed goal rate
   const missedCount = relevantGoals.filter((g) => g.status === "missed").length;
-  const missedGoalRate = pct(missedCount, relevantGoals.length);
+  const missedGoalRate = rate(missedCount, relevantGoals.length);
 
   // All staff have at least 2 goals
   const goalCountByStaff = new Map<string, number>();
@@ -594,19 +602,19 @@ export function evaluatePDPProgress(
   let score = 0;
 
   // +8 for goal achievement rate >= 70%
-  if (achievementRate >= 70) score += 8;
+  if (meets(achievementRate, 70)) score += 8;
 
   // +5 for linked to training rate * 0.05 (max 5)
-  score += Math.min((linkedToTrainingRate / 100) * 5, 5);
+  score += Math.min(((linkedToTrainingRate ?? 0) / 100) * 5, 5);
 
   // +4 if missed goals <= 10%
-  if (missedGoalRate <= 10) score += 4;
+  if (missedGoalRate !== null && missedGoalRate <= 10) score += 4;
 
   // +4 if all staff have at least 2 goals
   if (staffWithMinGoals) score += 4;
 
   // +4 bonus if achievement rate >= 90%
-  if (achievementRate >= 90) score += 4;
+  if (meets(achievementRate, 90)) score += 4;
 
   return {
     totalGoals: relevantGoals.length,
@@ -632,11 +640,11 @@ export function evaluateCompetencyDevelopment(
   if (assessments.length === 0) {
     return {
       totalAssessments: 0,
-      staffCoverageRate: 0,
+      staffCoverageRate: null,
       averageCompetencyScore: 0,
-      improvementRate: 0,
+      improvementRate: null,
       criticalAreasCovered: false,
-      highCompetencyRate: 0,
+      highCompetencyRate: null,
       overallScore: 0,
     };
   }
@@ -647,11 +655,11 @@ export function evaluateCompetencyDevelopment(
   if (relevantAssessments.length === 0) {
     return {
       totalAssessments: 0,
-      staffCoverageRate: 0,
+      staffCoverageRate: null,
       averageCompetencyScore: 0,
-      improvementRate: 0,
+      improvementRate: null,
       criticalAreasCovered: false,
-      highCompetencyRate: 0,
+      highCompetencyRate: null,
       overallScore: 0,
     };
   }
@@ -668,7 +676,7 @@ export function evaluateCompetencyDevelopment(
   const staffWith5Plus = activeStaff.filter(
     (s) => (areasByStaff.get(s.id)?.size || 0) >= 5,
   ).length;
-  const staffCoverageRate = pct(staffWith5Plus, activeStaff.length);
+  const staffCoverageRate = rate(staffWith5Plus, activeStaff.length);
 
   // Average competency level score
   const totalLevelScore = relevantAssessments.reduce(
@@ -685,7 +693,7 @@ export function evaluateCompetencyDevelopment(
   const improvedCount = assessmentsWithPrevious.filter(
     (a) => COMPETENCY_LEVEL_SCORES[a.level] > COMPETENCY_LEVEL_SCORES[a.previousLevel!],
   ).length;
-  const improvementRate = pct(improvedCount, assessmentsWithPrevious.length);
+  const improvementRate = rate(improvedCount, assessmentsWithPrevious.length);
 
   // Critical areas: no staff have "not_assessed" in safeguarding or child_centred_practice
   // For each active staff, get the latest assessment in safeguarding and child_centred_practice
@@ -717,25 +725,25 @@ export function evaluateCompetencyDevelopment(
   const highCount = relevantAssessments.filter(
     (a) => a.level === "competent" || a.level === "expert",
   ).length;
-  const highCompetencyRate = pct(highCount, relevantAssessments.length);
+  const highCompetencyRate = rate(highCount, relevantAssessments.length);
 
   // Scoring: 0-25
   let score = 0;
 
   // +8 for % of staff assessed in >= 5 competency areas (percentage * 0.08)
-  score += (staffCoverageRate / 100) * 8;
+  score += ((staffCoverageRate ?? 0) / 100) * 8;
 
   // +5 for average competency level score (avg/4 * 5)
   score += (averageCompetencyScore / 4) * 5;
 
   // +4 for improvement rate (% with level increase vs previous, * 0.04)
-  score += (improvementRate / 100) * 4;
+  score += ((improvementRate ?? 0) / 100) * 4;
 
   // +4 if no staff have "not_assessed" in safeguarding or child_centred_practice
   if (criticalAreasCovered) score += 4;
 
   // +4 bonus if >= 70% at competent or above
-  if (highCompetencyRate >= 70) score += 4;
+  if (meets(highCompetencyRate, 70)) score += 4;
 
   return {
     totalAssessments: relevantAssessments.length,
@@ -767,7 +775,7 @@ function buildStaffProfiles(
         (q) => q.staffId === s.id && q.type === reqType && q.status === "achieved",
       ),
     ).length;
-    const qualificationComplianceRate = pct(achievedCount, requiredCount);
+    const qualificationComplianceRate = rate(achievedCount, requiredCount);
 
     // Most recent performance review rating
     const staffReviews = reviews
@@ -779,7 +787,7 @@ function buildStaffProfiles(
     const staffGoals = pdpGoals.filter((g) => g.staffId === s.id);
     const nonDeferredGoals = staffGoals.filter((g) => g.status !== "deferred");
     const achievedGoals = nonDeferredGoals.filter((g) => g.status === "achieved").length;
-    const pdpGoalAchievementRate = pct(achievedGoals, nonDeferredGoals.length);
+    const pdpGoalAchievementRate = rate(achievedGoals, nonDeferredGoals.length);
 
     // Average competency level
     const staffAssessments = competencyAssessments.filter((a) => a.staffId === s.id);
@@ -794,14 +802,14 @@ function buildStaffProfiles(
     // Overall score: 0-10 based on above metrics
     let overallScore = 0;
     // Qualification compliance: up to 2.5 pts
-    overallScore += (qualificationComplianceRate / 100) * 2.5;
+    overallScore += ((qualificationComplianceRate ?? 0) / 100) * 2.5;
     // Performance rating: up to 2.5 pts
     if (currentPerformanceRating === "exceptional") overallScore += 2.5;
     else if (currentPerformanceRating === "effective") overallScore += 2;
     else if (currentPerformanceRating === "developing") overallScore += 1;
     else if (currentPerformanceRating === "underperforming") overallScore += 0.5;
     // PDP goal achievement: up to 2.5 pts
-    overallScore += (pdpGoalAchievementRate / 100) * 2.5;
+    overallScore += ((pdpGoalAchievementRate ?? 0) / 100) * 2.5;
     // Competency level: up to 2.5 pts (avg/4 * 2.5)
     overallScore += ((averageCompetencyLevel ?? 0) / 4) * 2.5;
 
@@ -850,28 +858,28 @@ export function generateStaffPerformanceIntelligence(
   // ── Strengths ──
   const strengths: string[] = [];
 
-  if (qualificationCompliance.achievedRate >= 90) {
+  if (meets(qualificationCompliance.achievedRate, 90)) {
     strengths.push("Qualification compliance is strong with over 90% of required qualifications achieved across the staff team");
   }
   if (qualificationCompliance.expiredCount === 0 && qualificationCompliance.totalRequired > 0) {
     strengths.push("No expired qualifications — all certifications are current and maintained");
   }
-  if (qualificationCompliance.mandatoryComplianceRate >= 100) {
+  if (meets(qualificationCompliance.mandatoryComplianceRate, 100)) {
     strengths.push("All staff hold mandatory qualifications (Level 3, First Aid, Safeguarding)");
   }
-  if (reviewQuality.completionRate >= 90) {
+  if (meets(reviewQuality.completionRate, 90)) {
     strengths.push("Performance reviews are consistently completed, demonstrating effective supervision");
   }
-  if (reviewQuality.staffViewsRate >= 90) {
+  if (meets(reviewQuality.staffViewsRate, 90)) {
     strengths.push("Staff views are routinely recorded in performance reviews, promoting reflective practice");
   }
-  if (reviewQuality.actionPlanRate >= 90) {
+  if (meets(reviewQuality.actionPlanRate, 90)) {
     strengths.push("Action plans are created in the vast majority of performance reviews");
   }
   if (reviewQuality.negativeRatingCount === 0 && reviewQuality.totalReviews > 0) {
     strengths.push("No staff rated as underperforming or requiring capability procedures");
   }
-  if (pdpProgress.achievementRate >= 70) {
+  if (meets(pdpProgress.achievementRate, 70)) {
     strengths.push("Professional development goals are being achieved at a good rate across the team");
   }
   if (pdpProgress.staffWithMinGoals && pdpProgress.totalGoals > 0) {
@@ -880,47 +888,47 @@ export function generateStaffPerformanceIntelligence(
   if (competencyDevelopment.criticalAreasCovered) {
     strengths.push("All staff are assessed in critical competency areas of safeguarding and child-centred practice");
   }
-  if (competencyDevelopment.highCompetencyRate >= 70) {
+  if (meets(competencyDevelopment.highCompetencyRate, 70)) {
     strengths.push("Over 70% of competency assessments are rated at competent or expert level");
   }
-  if (competencyDevelopment.improvementRate >= 50) {
+  if (meets(competencyDevelopment.improvementRate, 50)) {
     strengths.push("Strong evidence of competency improvement with over 50% of re-assessments showing increased levels");
   }
 
   // ── Areas for Improvement ──
   const areasForImprovement: string[] = [];
 
-  if (qualificationCompliance.achievedRate < 80 && qualificationCompliance.totalRequired > 0) {
+  if (below(qualificationCompliance.achievedRate, 80) && qualificationCompliance.totalRequired > 0) {
     areasForImprovement.push("Qualification compliance is below 80% — staff are missing required qualifications");
   }
   if (qualificationCompliance.expiredCount > 0) {
     areasForImprovement.push(`${qualificationCompliance.expiredCount} qualification(s) have expired and require renewal`);
   }
-  if (qualificationCompliance.mandatoryComplianceRate < 100 && qualificationCompliance.totalRequired > 0) {
+  if (below(qualificationCompliance.mandatoryComplianceRate, 100) && qualificationCompliance.totalRequired > 0) {
     areasForImprovement.push("Not all staff hold mandatory qualifications — this is a regulatory concern under Reg 32");
   }
-  if (reviewQuality.completionRate < 80 && reviewQuality.totalReviews > 0) {
+  if (below(reviewQuality.completionRate, 80) && reviewQuality.totalReviews > 0) {
     areasForImprovement.push("Performance review completion rate is below 80% — regular supervision is not consistently evidenced");
   }
-  if (reviewQuality.objectivesMetRate < 60 && reviewQuality.totalReviews > 0) {
+  if (below(reviewQuality.objectivesMetRate, 60) && reviewQuality.totalReviews > 0) {
     areasForImprovement.push("Objectives met rate is below 60% — objectives may not be realistic or adequately supported");
   }
-  if (reviewQuality.staffViewsRate < 80 && reviewQuality.totalReviews > 0) {
+  if (below(reviewQuality.staffViewsRate, 80) && reviewQuality.totalReviews > 0) {
     areasForImprovement.push("Staff views are not consistently recorded in reviews, limiting reflective practice");
   }
   if (reviewQuality.negativeRatingCount > 0) {
     areasForImprovement.push(`${reviewQuality.negativeRatingCount} staff member(s) rated as underperforming or capability concern — formal support plans needed`);
   }
-  if (pdpProgress.achievementRate < 50 && pdpProgress.totalGoals > 0) {
+  if (below(pdpProgress.achievementRate, 50) && pdpProgress.totalGoals > 0) {
     areasForImprovement.push("PDP goal achievement rate is below 50% — professional development is not progressing effectively");
   }
-  if (pdpProgress.missedGoalRate > 20 && pdpProgress.totalGoals > 0) {
+  if (above(pdpProgress.missedGoalRate, 20) && pdpProgress.totalGoals > 0) {
     areasForImprovement.push("Over 20% of PDP goals have been missed — review goal-setting and support mechanisms");
   }
   if (!pdpProgress.staffWithMinGoals && pdpProgress.totalGoals > 0) {
     areasForImprovement.push("Not all staff have at least 2 professional development goals — PDPs need strengthening");
   }
-  if (competencyDevelopment.staffCoverageRate < 70 && competencyDevelopment.totalAssessments > 0) {
+  if (below(competencyDevelopment.staffCoverageRate, 70) && competencyDevelopment.totalAssessments > 0) {
     areasForImprovement.push("Less than 70% of staff have been assessed in 5 or more competency areas — widen assessment coverage");
   }
   if (!competencyDevelopment.criticalAreasCovered && competencyDevelopment.totalAssessments > 0) {
@@ -930,7 +938,7 @@ export function generateStaffPerformanceIntelligence(
   // ── Actions ──
   const actions: string[] = [];
 
-  if (qualificationCompliance.mandatoryComplianceRate < 100 && qualificationCompliance.totalRequired > 0) {
+  if (below(qualificationCompliance.mandatoryComplianceRate, 100) && qualificationCompliance.totalRequired > 0) {
     actions.push("URGENT: Ensure all staff achieve mandatory qualifications (Level 3 Diploma, First Aid, Safeguarding) as required by Reg 32");
   }
   if (qualificationCompliance.expiredCount > 0) {
@@ -939,19 +947,19 @@ export function generateStaffPerformanceIntelligence(
   if (reviewQuality.negativeRatingCount > 0) {
     actions.push("HIGH: Implement formal support plans for staff with underperforming or capability concern ratings");
   }
-  if (reviewQuality.completionRate < 80 && reviewQuality.totalReviews > 0) {
+  if (below(reviewQuality.completionRate, 80) && reviewQuality.totalReviews > 0) {
     actions.push("HIGH: Establish a structured supervision and review schedule to ensure all reviews are completed on time");
   }
   if (!competencyDevelopment.criticalAreasCovered && competencyDevelopment.totalAssessments > 0) {
     actions.push("HIGH: Complete competency assessments in safeguarding and child-centred practice for all staff");
   }
-  if (pdpProgress.achievementRate < 50 && pdpProgress.totalGoals > 0) {
+  if (below(pdpProgress.achievementRate, 50) && pdpProgress.totalGoals > 0) {
     actions.push("MEDIUM: Review PDP goals for achievability and provide additional support for professional development");
   }
-  if (competencyDevelopment.staffCoverageRate < 70 && competencyDevelopment.totalAssessments > 0) {
+  if (below(competencyDevelopment.staffCoverageRate, 70) && competencyDevelopment.totalAssessments > 0) {
     actions.push("MEDIUM: Expand competency assessment programme to cover all staff in at least 5 areas");
   }
-  if (pdpProgress.linkedToTrainingRate < 50 && pdpProgress.totalGoals > 0) {
+  if (below(pdpProgress.linkedToTrainingRate, 50) && pdpProgress.totalGoals > 0) {
     actions.push("LOW: Strengthen links between PDP goals and formal training opportunities");
   }
 

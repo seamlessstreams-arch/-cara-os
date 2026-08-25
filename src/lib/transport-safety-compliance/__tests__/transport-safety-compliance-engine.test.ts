@@ -145,7 +145,7 @@ describe("evaluateVehicleSafety", () => {
     const result = evaluateVehicleSafety([], REFERENCE_DATE);
     expect(result.totalVehicles).toBe(0);
     expect(result.vehicleSafetyScore).toBe(0);
-    expect(result.checkPassedRate).toBe(0);
+    expect(result.checkPassedRate).toBeNull();
     expect(result.failedCount).toBe(0);
   });
 
@@ -301,7 +301,7 @@ describe("evaluateJourneyCompliance", () => {
     const result = evaluateJourneyCompliance([], PERIOD_START, PERIOD_END);
     expect(result.totalJourneys).toBe(0);
     expect(result.journeyComplianceScore).toBe(0);
-    expect(result.riskAssessmentRate).toBe(0);
+    expect(result.riskAssessmentRate).toBeNull();
   });
 
   it("filters journeys to period only", () => {
@@ -466,7 +466,7 @@ describe("evaluateDriverCompetence", () => {
     const result = evaluateDriverCompetence([], REFERENCE_DATE);
     expect(result.totalDrivers).toBe(0);
     expect(result.driverCompetenceScore).toBe(0);
-    expect(result.licenceValidRate).toBe(0);
+    expect(result.licenceValidRate).toBeNull();
   });
 
   it("calculates licence valid rate — all valid", () => {

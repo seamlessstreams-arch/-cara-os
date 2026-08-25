@@ -237,8 +237,8 @@ describe("evaluateMorningRoutine", () => {
   it("handles no records", () => {
     const result = evaluateMorningRoutine(children, [], PERIOD_START, PERIOD_END);
     expect(result.totalRecords).toBe(0);
-    expect(result.onTimeRate).toBe(0);
-    expect(result.qualityRate).toBe(0);
+    expect(result.onTimeRate).toBeNull();
+    expect(result.qualityRate).toBeNull();
   });
 });
 
@@ -274,7 +274,7 @@ describe("evaluateEveningRoutine", () => {
   it("handles no records", () => {
     const result = evaluateEveningRoutine(children, [], PERIOD_START, PERIOD_END);
     expect(result.totalRecords).toBe(0);
-    expect(result.bedtimeComplianceRate).toBe(0);
+    expect(result.bedtimeComplianceRate).toBeNull();
   });
 });
 
@@ -369,8 +369,8 @@ describe("evaluateStaffConsistency", () => {
 
   it("handles no shifts", () => {
     const result = evaluateStaffConsistency([], records, PERIOD_START, PERIOD_END);
-    expect(result.regularStaffRate).toBe(0);
-    expect(result.handoverCompletionRate).toBe(0);
+    expect(result.regularStaffRate).toBeNull();
+    expect(result.handoverCompletionRate).toBeNull();
   });
 });
 

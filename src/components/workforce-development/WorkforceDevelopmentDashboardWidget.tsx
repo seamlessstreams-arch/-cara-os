@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import type {
   WorkforceDevelopmentResult,
   CPDCategory,
@@ -66,17 +67,18 @@ function ProgressBar({
   max,
   color,
 }: {
-  value: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  value: number | null;
   max: number;
   color: string;
 }) {
-  const pctVal = max > 0 ? Math.round((value / max) * 100) : 0;
+  const pctVal = value !== null && max > 0 ? Math.round((value / max) * 100) : null;
   return (
     <div className="flex items-center gap-2 w-full">
       <div className="flex-1 h-2 rounded-full bg-gray-200 overflow-hidden">
         <div
           className={`h-full rounded-full ${color}`}
-          style={{ width: `${pctVal}%` }}
+          style={{ width: `${pctVal ?? 0}%` }}
         />
       </div>
       <span className="text-xs font-medium text-gray-600 w-10 text-right">
@@ -222,60 +224,55 @@ export function WorkforceDevelopmentDashboardWidget() {
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-5">
         <MetricCard
           label="Mandatory Qual Compliance"
-          value={data.qualifications.mandatoryComplianceRate}
-          suffix="%"
+          value={formatRate(data.qualifications.mandatoryComplianceRate)}
           color={
-            data.qualifications.mandatoryComplianceRate >= 90
+            meets(data.qualifications.mandatoryComplianceRate, 90)
               ? "text-green-600"
-              : data.qualifications.mandatoryComplianceRate >= 70
+              : meets(data.qualifications.mandatoryComplianceRate, 70)
                 ? "text-amber-600"
                 : "text-red-600"
           }
         />
         <MetricCard
           label="Level 3+ Rate"
-          value={data.qualifications.level3PlusRate}
-          suffix="%"
+          value={formatRate(data.qualifications.level3PlusRate)}
           color={
-            data.qualifications.level3PlusRate >= 90
+            meets(data.qualifications.level3PlusRate, 90)
               ? "text-green-600"
-              : data.qualifications.level3PlusRate >= 70
+              : meets(data.qualifications.level3PlusRate, 70)
                 ? "text-amber-600"
                 : "text-red-600"
           }
         />
         <MetricCard
           label="CPD Hours Target Met"
-          value={data.cpd.hoursTargetMetRate}
-          suffix="%"
+          value={formatRate(data.cpd.hoursTargetMetRate)}
           color={
-            data.cpd.hoursTargetMetRate >= 80
+            meets(data.cpd.hoursTargetMetRate, 80)
               ? "text-green-600"
-              : data.cpd.hoursTargetMetRate >= 50
+              : meets(data.cpd.hoursTargetMetRate, 50)
                 ? "text-amber-600"
                 : "text-red-600"
           }
         />
         <MetricCard
           label="Dev Plan Coverage"
-          value={data.developmentPlanning.planCoverageRate}
-          suffix="%"
+          value={formatRate(data.developmentPlanning.planCoverageRate)}
           color={
-            data.developmentPlanning.planCoverageRate >= 100
+            meets(data.developmentPlanning.planCoverageRate, 100)
               ? "text-green-600"
-              : data.developmentPlanning.planCoverageRate >= 80
+              : meets(data.developmentPlanning.planCoverageRate, 80)
                 ? "text-amber-600"
                 : "text-red-600"
           }
         />
         <MetricCard
           label="Good+ Practice"
-          value={data.practiceQuality.goodOrBetterRate}
-          suffix="%"
+          value={formatRate(data.practiceQuality.goodOrBetterRate)}
           color={
-            data.practiceQuality.goodOrBetterRate >= 80
+            meets(data.practiceQuality.goodOrBetterRate, 80)
               ? "text-green-600"
-              : data.practiceQuality.goodOrBetterRate >= 60
+              : meets(data.practiceQuality.goodOrBetterRate, 60)
                 ? "text-amber-600"
                 : "text-red-600"
           }
@@ -295,13 +292,11 @@ export function WorkforceDevelopmentDashboardWidget() {
         />
         <MetricCard
           label="CPD Reflection Rate"
-          value={data.cpd.overallReflectionRate}
-          suffix="%"
+          value={formatRate(data.cpd.overallReflectionRate)}
         />
         <MetricCard
           label="Competency Progression"
-          value={data.competency.progressionRate}
-          suffix="%"
+          value={formatRate(data.competency.progressionRate)}
         />
         <MetricCard
           label="Goals Achieved"

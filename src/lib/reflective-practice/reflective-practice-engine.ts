@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — Professional Development & Reflective Practice Intelligence Engine
 //
@@ -126,16 +127,22 @@ export interface EngagementResult {
   practiceAreaDistribution: Record<string, number>;
   totalHours: number;
   avgHoursPerStaff: number;
-  engagementRate: number;             // % of staff with >= 1 activity per month avg
+  /** null when the population is empty — nothing measured, not 0%. */
+  engagementRate: number | null;             // % of staff with >= 1 activity per month avg
 }
 
 export interface LearningOutcomeResult {
   totalOutcomes: number;
-  practiceChangeRate: number;
-  skillDevelopmentRate: number;
-  sharedWithTeamRate: number;
-  linkedToChildOutcomeRate: number;
-  noOutcomeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  practiceChangeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  skillDevelopmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  sharedWithTeamRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  linkedToChildOutcomeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  noOutcomeRate: number | null;
 }
 
 export interface TeamLearningResult {
@@ -143,7 +150,8 @@ export interface TeamLearningResult {
   totalTeamSessions: number;
   avgAttendance: number;
   topTeamTopics: { practiceArea: string; count: number }[];
-  sharedLearningRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  sharedLearningRate: number | null;
 }
 
 export interface GoalProgressResult {
@@ -151,7 +159,8 @@ export interface GoalProgressResult {
   achieved: number;
   inProgress: number;
   overdue: number;
-  achievementRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  achievementRate: number | null;
   overdueGoals: { staffName: string; goalDescription: string; targetDate: string; daysPastDue: number }[];
   practiceAreaDistribution: Record<string, number>;
 }
@@ -242,10 +251,6 @@ export function getTeamActivityTypes(): ReflectiveActivityType[] {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function inPeriod(date: string, start: string, end: string): boolean {
   return date.slice(0, 10) >= start.slice(0, 10) && date.slice(0, 10) <= end.slice(0, 10);
 }
@@ -307,7 +312,7 @@ export function evaluateReflectiveEngagement(
     const staffActivities = periodActivities.filter((a) => a.staffId === s.staffId);
     return staffActivities.length >= months;
   }).length;
-  const engagementRate = pct(staffEngaged, totalStaff);
+  const engagementRate = rate(staffEngaged, totalStaff);
 
   return {
     totalActivities,
@@ -351,11 +356,11 @@ export function evaluateLearningOutcomes(
 
   return {
     totalOutcomes,
-    practiceChangeRate: pct(practiceChangeCount, total),
-    skillDevelopmentRate: pct(skillDevCount, total),
-    sharedWithTeamRate: pct(sharedCount, total),
-    linkedToChildOutcomeRate: pct(linkedCount, total),
-    noOutcomeRate: pct(noOutcomeCount, total),
+    practiceChangeRate: rate(practiceChangeCount, total),
+    skillDevelopmentRate: rate(skillDevCount, total),
+    sharedWithTeamRate: rate(sharedCount, total),
+    linkedToChildOutcomeRate: rate(linkedCount, total),
+    noOutcomeRate: rate(noOutcomeCount, total),
   };
 }
 
@@ -400,7 +405,7 @@ export function evaluateTeamLearning(
 
   // Shared learning rate: % of all activities where learning was shared
   const sharedCount = periodActivities.filter((a) => a.sharedWithTeam).length;
-  const sharedLearningRate = pct(sharedCount, periodActivities.length);
+  const sharedLearningRate = rate(sharedCount, periodActivities.length);
 
   return {
     teamActivities,
@@ -435,7 +440,7 @@ export function evaluateGoalProgress(
     .sort((a, b) => b.daysPastDue - a.daysPastDue);
 
   const overdue = overdueGoals.length;
-  const achievementRate = pct(achieved, totalGoals);
+  const achievementRate = rate(achieved, totalGoals);
 
   // Practice area distribution
   const practiceAreaDistribution: Record<string, number> = {};
@@ -501,24 +506,24 @@ export function buildStaffDevelopmentProfiles(
     // Outcomes quality (30)
     let outcomeScore = 0;
     if (totalActivities > 0) {
-      const pcRate = pct(practiceChangeCount, totalActivities);
-      const shareRate = pct(sharedCount, totalActivities);
-      if (pcRate >= 40) outcomeScore += 15;
-      else if (pcRate >= 20) outcomeScore += 10;
-      else if (pcRate >= 10) outcomeScore += 5;
-      if (shareRate >= 50) outcomeScore += 15;
-      else if (shareRate >= 30) outcomeScore += 10;
-      else if (shareRate >= 10) outcomeScore += 5;
+      const pcRate = rate(practiceChangeCount, totalActivities);
+      const shareRate = rate(sharedCount, totalActivities);
+      if (meets(pcRate, 40)) outcomeScore += 15;
+      else if (meets(pcRate, 20)) outcomeScore += 10;
+      else if (meets(pcRate, 10)) outcomeScore += 5;
+      if (meets(shareRate, 50)) outcomeScore += 15;
+      else if (meets(shareRate, 30)) outcomeScore += 10;
+      else if (meets(shareRate, 10)) outcomeScore += 5;
     }
 
     // Goal progress (20)
     let goalScore = 0;
     const totalStaffGoals = staffGoals.length;
     if (totalStaffGoals > 0) {
-      const achieveRate = pct(goalsAchieved, totalStaffGoals);
-      if (achieveRate >= 60) goalScore = 20;
-      else if (achieveRate >= 40) goalScore = 14;
-      else if (achieveRate >= 20) goalScore = 8;
+      const achieveRate = rate(goalsAchieved, totalStaffGoals);
+      if (meets(achieveRate, 60)) goalScore = 20;
+      else if (meets(achieveRate, 40)) goalScore = 14;
+      else if (meets(achieveRate, 20)) goalScore = 8;
     } else {
       // No goals set = no score
       goalScore = 0;
@@ -588,17 +593,17 @@ export function generateReflectivePracticeIntelligence(
 
   // 2. Learning outcomes (30): practice change + sharing + child link
   let learningScore = 0;
-  if (learningOutcomes.practiceChangeRate >= 40) learningScore += 15;
-  else if (learningOutcomes.practiceChangeRate >= 20) learningScore += 10;
-  else if (learningOutcomes.practiceChangeRate >= 10) learningScore += 5;
+  if (meets(learningOutcomes.practiceChangeRate, 40)) learningScore += 15;
+  else if (meets(learningOutcomes.practiceChangeRate, 20)) learningScore += 10;
+  else if (meets(learningOutcomes.practiceChangeRate, 10)) learningScore += 5;
 
-  if (learningOutcomes.sharedWithTeamRate >= 50) learningScore += 8;
-  else if (learningOutcomes.sharedWithTeamRate >= 30) learningScore += 5;
-  else if (learningOutcomes.sharedWithTeamRate >= 10) learningScore += 2;
+  if (meets(learningOutcomes.sharedWithTeamRate, 50)) learningScore += 8;
+  else if (meets(learningOutcomes.sharedWithTeamRate, 30)) learningScore += 5;
+  else if (meets(learningOutcomes.sharedWithTeamRate, 10)) learningScore += 2;
 
-  if (learningOutcomes.linkedToChildOutcomeRate >= 30) learningScore += 7;
-  else if (learningOutcomes.linkedToChildOutcomeRate >= 15) learningScore += 4;
-  else if (learningOutcomes.linkedToChildOutcomeRate >= 5) learningScore += 2;
+  if (meets(learningOutcomes.linkedToChildOutcomeRate, 30)) learningScore += 7;
+  else if (meets(learningOutcomes.linkedToChildOutcomeRate, 15)) learningScore += 4;
+  else if (meets(learningOutcomes.linkedToChildOutcomeRate, 5)) learningScore += 2;
 
   // 3. Team learning (25): team sessions + shared rate + diverse areas
   let teamScore = 0;
@@ -607,9 +612,9 @@ export function generateReflectivePracticeIntelligence(
   else if (teamSessionsPerMonth >= 1) teamScore += 8;
   else if (teamSessionsPerMonth >= 0.5) teamScore += 4;
 
-  if (teamLearning.sharedLearningRate >= 60) teamScore += 8;
-  else if (teamLearning.sharedLearningRate >= 40) teamScore += 5;
-  else if (teamLearning.sharedLearningRate >= 20) teamScore += 2;
+  if (meets(teamLearning.sharedLearningRate, 60)) teamScore += 8;
+  else if (meets(teamLearning.sharedLearningRate, 40)) teamScore += 5;
+  else if (meets(teamLearning.sharedLearningRate, 20)) teamScore += 2;
 
   // Diverse practice areas: count unique areas in activities
   const uniqueAreas = Object.keys(engagement.practiceAreaDistribution).length;
@@ -619,9 +624,9 @@ export function generateReflectivePracticeIntelligence(
 
   // 4. Goal progress (20): achievement + coverage + timeliness
   let goalScore = 0;
-  if (goalProgress.achievementRate >= 60) goalScore += 12;
-  else if (goalProgress.achievementRate >= 40) goalScore += 8;
-  else if (goalProgress.achievementRate >= 20) goalScore += 4;
+  if (meets(goalProgress.achievementRate, 60)) goalScore += 12;
+  else if (meets(goalProgress.achievementRate, 40)) goalScore += 8;
+  else if (meets(goalProgress.achievementRate, 20)) goalScore += 4;
 
   // All staff have goals
   const staffWithGoals = new Set(goals.map((g) => g.staffId));
@@ -654,15 +659,15 @@ export function generateReflectivePracticeIntelligence(
     strengths.push("Good reflective engagement — staff averaging 2+ activities per month");
   }
 
-  if (learningOutcomes.practiceChangeRate >= 40) {
+  if (meets(learningOutcomes.practiceChangeRate, 40)) {
     strengths.push(`Strong practice change culture — ${learningOutcomes.practiceChangeRate}% of activities leading to practice changes`);
   }
 
-  if (learningOutcomes.sharedWithTeamRate >= 50) {
+  if (meets(learningOutcomes.sharedWithTeamRate, 50)) {
     strengths.push(`Learning regularly shared across team — ${learningOutcomes.sharedWithTeamRate}% shared with team`);
   }
 
-  if (learningOutcomes.linkedToChildOutcomeRate >= 30) {
+  if (meets(learningOutcomes.linkedToChildOutcomeRate, 30)) {
     strengths.push(`Reflective practice linked to children's outcomes — ${learningOutcomes.linkedToChildOutcomeRate}% connected to child outcomes`);
   }
 
@@ -670,7 +675,7 @@ export function generateReflectivePracticeIntelligence(
     strengths.push("Regular team learning sessions embedded in practice");
   }
 
-  if (goalProgress.achievementRate >= 60 && goalProgress.totalGoals > 0) {
+  if (meets(goalProgress.achievementRate, 60) && goalProgress.totalGoals > 0) {
     strengths.push(`Strong goal achievement — ${goalProgress.achievementRate}% of development goals achieved`);
   }
 
@@ -693,13 +698,13 @@ export function generateReflectivePracticeIntelligence(
     );
   }
 
-  if (learningOutcomes.practiceChangeRate < 20 && engagement.totalActivities > 0) {
+  if (below(learningOutcomes.practiceChangeRate, 20) && engagement.totalActivities > 0) {
     areasForImprovement.push(
       `Low practice change rate at ${learningOutcomes.practiceChangeRate}% — reflective activities not translating into practice improvements`,
     );
   }
 
-  if (learningOutcomes.sharedWithTeamRate < 30 && engagement.totalActivities > 0) {
+  if (below(learningOutcomes.sharedWithTeamRate, 30) && engagement.totalActivities > 0) {
     areasForImprovement.push(
       `Only ${learningOutcomes.sharedWithTeamRate}% of learning shared with team — increase peer learning opportunities`,
     );
@@ -724,7 +729,7 @@ export function generateReflectivePracticeIntelligence(
     );
   }
 
-  if (learningOutcomes.noOutcomeRate > 30 && engagement.totalActivities > 0) {
+  if (above(learningOutcomes.noOutcomeRate, 30) && engagement.totalActivities > 0) {
     areasForImprovement.push(
       `${learningOutcomes.noOutcomeRate}% of activities recording no clear outcome — improve quality of reflection`,
     );
@@ -753,7 +758,7 @@ export function generateReflectivePracticeIntelligence(
     );
   }
 
-  if (learningOutcomes.linkedToChildOutcomeRate < 15 && engagement.totalActivities > 0) {
+  if (below(learningOutcomes.linkedToChildOutcomeRate, 15) && engagement.totalActivities > 0) {
     actions.push(
       "Encourage staff to link reflective activities to specific children's outcomes",
     );

@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { rate } from "@/lib/metrics/rate";
 import {
   evaluateDomainQuality,
   evaluateModuleCoverage,
@@ -6,7 +7,7 @@ import {
   evaluateRiskProfile,
   buildDomainSummaries,
   generateHomeIntelligenceSummary,
-  pct,
+  
   getRating,
   getDomainLabel,
   getRatingLabel,
@@ -75,26 +76,26 @@ function mixedModuleSet(): ModuleIntelligenceScore[] {
 
 // ── pct helper ──────────────────────────────────────────────────────────────
 
-describe("pct", () => {
+describe("rate (shared helper, replacing the old local pct)", () => {
   it("computes correct percentage", () => {
-    expect(pct(3, 4)).toBe(75);
+    expect(rate(3, 4)).toBe(75);
   });
 
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
+  it("returns null when denominator is 0 — unmeasured, not 0%", () => {
+    expect(rate(5, 0)).toBeNull();
   });
 
   it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
+    expect(rate(1, 3)).toBe(33);
+    expect(rate(2, 3)).toBe(67);
   });
 
   it("handles 100%", () => {
-    expect(pct(10, 10)).toBe(100);
+    expect(rate(10, 10)).toBe(100);
   });
 
-  it("handles 0 numerator", () => {
-    expect(pct(0, 10)).toBe(0);
+  it("handles 0 numerator as a measured 0%", () => {
+    expect(rate(0, 10)).toBe(0);
   });
 });
 
@@ -243,10 +244,10 @@ describe("evaluateModuleCoverage", () => {
     const result = evaluateModuleCoverage([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalModules).toBe(0);
-    expect(result.moduleCoverageRate).toBe(0);
-    expect(result.highPerformanceModuleRate).toBe(0);
+    expect(result.moduleCoverageRate).toBeNull();
+    expect(result.highPerformanceModuleRate).toBeNull();
     expect(result.domainsCovered).toBe(0);
-    expect(result.domainCoverageRate).toBe(0);
+    expect(result.domainCoverageRate).toBeNull();
     expect(result.consistencyScore).toBe(0);
   });
 
@@ -264,7 +265,7 @@ describe("evaluateModuleCoverage", () => {
       mod({ domain: "safety_protection", overallScore: 80 }),
     ];
     const result = evaluateModuleCoverage(modules, 17);
-    expect(result.moduleCoverageRate).toBe(pct(2, 17));
+    expect(result.moduleCoverageRate).toBe(rate(2, 17));
     expect(result.domainsCovered).toBe(2);
     expect(result.domainCoverageRate).toBe(50);
   });

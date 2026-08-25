@@ -21,6 +21,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -109,13 +110,17 @@ export interface StaffDigitalTraining {
 export interface ConsentManagementResult {
   totalConsents: number;
   activeDecisionCount: number;
-  activeDecisionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  activeDecisionRate: number | null;
   childConsultedCount: number;
-  childConsultedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childConsultedRate: number | null;
   parentConsultedCount: number;
-  parentConsultedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  parentConsultedRate: number | null;
   reviewCurrentCount: number;
-  reviewCurrentRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reviewCurrentRate: number | null;
   statusBreakdown: Record<ConsentStatus, number>;
   typeBreakdown: Record<ConsentType, number>;
   score: number; // 0-25
@@ -126,13 +131,17 @@ export interface ConsentManagementResult {
 export interface DigitalIncidentResponseResult {
   totalIncidents: number;
   timelyReportingCount: number;
-  timelyReportingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyReportingRate: number | null;
   actionTakenCount: number;
-  actionTakenRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionTakenRate: number | null;
   lessonLearnedCount: number;
-  lessonLearnedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  lessonLearnedRate: number | null;
   preventionMeasuresCount: number;
-  preventionMeasuresRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  preventionMeasuresRate: number | null;
   severityBreakdown: Record<IncidentSeverity, number>;
   categoryBreakdown: Record<RiskCategory, number>;
   score: number; // 0-25
@@ -157,19 +166,26 @@ export interface DigitalPolicyResult {
 export interface StaffDigitalReadinessResult {
   totalStaff: number;
   digitalSafeguardingCount: number;
-  digitalSafeguardingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  digitalSafeguardingRate: number | null;
   imageConsentProcessCount: number;
-  imageConsentProcessRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  imageConsentProcessRate: number | null;
   socialMediaRisksCount: number;
-  socialMediaRisksRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  socialMediaRisksRate: number | null;
   cyberbullyingResponseCount: number;
-  cyberbullyingResponseRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  cyberbullyingResponseRate: number | null;
   dataProtectionCount: number;
-  dataProtectionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dataProtectionRate: number | null;
   onlineGroomingAwarenessCount: number;
-  onlineGroomingAwarenessRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  onlineGroomingAwarenessRate: number | null;
   overallTrainedCount: number;
-  overallTrainedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  overallTrainedRate: number | null;
   score: number; // 0-25
   strengths: string[];
   concerns: string[];
@@ -212,11 +228,6 @@ export interface SocialMediaDigitalFootprintIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
@@ -240,13 +251,13 @@ export function evaluateConsentManagement(
     return {
       totalConsents: 0,
       activeDecisionCount: 0,
-      activeDecisionRate: 0,
+      activeDecisionRate: null,
       childConsultedCount: 0,
-      childConsultedRate: 0,
+      childConsultedRate: null,
       parentConsultedCount: 0,
-      parentConsultedRate: 0,
+      parentConsultedRate: null,
       reviewCurrentCount: 0,
-      reviewCurrentRate: 0,
+      reviewCurrentRate: null,
       statusBreakdown: {
         granted: 0, refused: 0, withdrawn: 0, not_requested: 0, pending: 0,
       },
@@ -264,15 +275,15 @@ export function evaluateConsentManagement(
   const activeDecisionCount = consents.filter(
     (c) => c.consentStatus === "granted" || c.consentStatus === "refused",
   ).length;
-  const activeDecisionRate = pct(activeDecisionCount, totalConsents);
+  const activeDecisionRate = rate(activeDecisionCount, totalConsents);
 
   // Child consulted
   const childConsultedCount = consents.filter((c) => c.childConsulted).length;
-  const childConsultedRate = pct(childConsultedCount, totalConsents);
+  const childConsultedRate = rate(childConsultedCount, totalConsents);
 
   // Parent/carer consulted
   const parentConsultedCount = consents.filter((c) => c.parentCarerConsulted).length;
-  const parentConsultedRate = pct(parentConsultedCount, totalConsents);
+  const parentConsultedRate = rate(parentConsultedCount, totalConsents);
 
   // Review currency: review date within last 12 months from today
   const now = new Date();
@@ -282,7 +293,7 @@ export function evaluateConsentManagement(
   const reviewCurrentCount = consents.filter(
     (c) => c.reviewDate >= reviewCutoff,
   ).length;
-  const reviewCurrentRate = pct(reviewCurrentCount, totalConsents);
+  const reviewCurrentRate = rate(reviewCurrentCount, totalConsents);
 
   // Status breakdown
   const statusBreakdown: Record<ConsentStatus, number> = {
@@ -304,13 +315,13 @@ export function evaluateConsentManagement(
   // Score (out of 25)
   let score = 0;
   // Active decision rate: max 7
-  score += (activeDecisionRate / 100) * 7;
+  score += ((activeDecisionRate ?? 0) / 100) * 7;
   // Child consulted rate: max 6
-  score += (childConsultedRate / 100) * 6;
+  score += ((childConsultedRate ?? 0) / 100) * 6;
   // Parent consulted rate: max 6
-  score += (parentConsultedRate / 100) * 6;
+  score += ((parentConsultedRate ?? 0) / 100) * 6;
   // Review currency rate: max 6
-  score += (reviewCurrentRate / 100) * 6;
+  score += ((reviewCurrentRate ?? 0) / 100) * 6;
 
   score = clamp(Math.round(score * 10) / 10, 0, 25);
 
@@ -318,27 +329,27 @@ export function evaluateConsentManagement(
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (activeDecisionRate >= 90) {
+  if (meets(activeDecisionRate, 90)) {
     strengths.push("Excellent consent decision rate: " + activeDecisionRate + "% of image consents have an active decision");
-  } else if (activeDecisionRate < 70) {
+  } else if (below(activeDecisionRate, 70)) {
     concerns.push("Only " + activeDecisionRate + "% of consents have an active decision — " + (totalConsents - activeDecisionCount) + " consent(s) still pending or not requested");
   }
 
-  if (childConsultedRate >= 90) {
+  if (meets(childConsultedRate, 90)) {
     strengths.push("Children consulted in " + childConsultedRate + "% of consent decisions — strong participation per UNCRC Article 16");
-  } else if (childConsultedRate < 70) {
+  } else if (below(childConsultedRate, 70)) {
     concerns.push("Children consulted in only " + childConsultedRate + "% of consent decisions — their views must be sought per UNCRC Article 16");
   }
 
-  if (parentConsultedRate >= 90) {
+  if (meets(parentConsultedRate, 90)) {
     strengths.push("Parents/carers consulted in " + parentConsultedRate + "% of consent decisions");
-  } else if (parentConsultedRate < 70) {
+  } else if (below(parentConsultedRate, 70)) {
     concerns.push("Parents/carers consulted in only " + parentConsultedRate + "% of consent decisions — parental involvement is essential");
   }
 
-  if (reviewCurrentRate >= 90) {
+  if (meets(reviewCurrentRate, 90)) {
     strengths.push("Consent reviews current: " + reviewCurrentRate + "% reviewed within the last 12 months");
-  } else if (reviewCurrentRate < 70) {
+  } else if (below(reviewCurrentRate, 70)) {
     concerns.push("Only " + reviewCurrentRate + "% of consent records reviewed within 12 months — consents may be outdated");
   }
 
@@ -376,13 +387,13 @@ export function evaluateDigitalIncidentResponse(
     return {
       totalIncidents: 0,
       timelyReportingCount: 0,
-      timelyReportingRate: 0,
+      timelyReportingRate: null,
       actionTakenCount: 0,
-      actionTakenRate: 0,
+      actionTakenRate: null,
       lessonLearnedCount: 0,
-      lessonLearnedRate: 0,
+      lessonLearnedRate: null,
       preventionMeasuresCount: 0,
-      preventionMeasuresRate: 0,
+      preventionMeasuresRate: null,
       severityBreakdown: { low: 0, medium: 0, high: 0, critical: 0 },
       categoryBreakdown: {
         identity_exposure: 0, location_disclosure: 0, cyberbullying: 0,
@@ -396,19 +407,19 @@ export function evaluateDigitalIncidentResponse(
 
   // Timely reporting
   const timelyReportingCount = incidents.filter((i) => i.reportedTimely).length;
-  const timelyReportingRate = pct(timelyReportingCount, totalIncidents);
+  const timelyReportingRate = rate(timelyReportingCount, totalIncidents);
 
   // Action taken
   const actionTakenCount = incidents.filter((i) => i.actionTaken).length;
-  const actionTakenRate = pct(actionTakenCount, totalIncidents);
+  const actionTakenRate = rate(actionTakenCount, totalIncidents);
 
   // Lessons learned
   const lessonLearnedCount = incidents.filter((i) => i.lessonLearned).length;
-  const lessonLearnedRate = pct(lessonLearnedCount, totalIncidents);
+  const lessonLearnedRate = rate(lessonLearnedCount, totalIncidents);
 
   // Prevention measures
   const preventionMeasuresCount = incidents.filter((i) => i.preventionMeasures).length;
-  const preventionMeasuresRate = pct(preventionMeasuresCount, totalIncidents);
+  const preventionMeasuresRate = rate(preventionMeasuresCount, totalIncidents);
 
   // Severity breakdown
   const severityBreakdown: Record<IncidentSeverity, number> = {
@@ -430,13 +441,13 @@ export function evaluateDigitalIncidentResponse(
   // Score (out of 25)
   let score = 0;
   // Timely reporting rate: max 7
-  score += (timelyReportingRate / 100) * 7;
+  score += ((timelyReportingRate ?? 0) / 100) * 7;
   // Action taken rate: max 6
-  score += (actionTakenRate / 100) * 6;
+  score += ((actionTakenRate ?? 0) / 100) * 6;
   // Lessons learned rate: max 6
-  score += (lessonLearnedRate / 100) * 6;
+  score += ((lessonLearnedRate ?? 0) / 100) * 6;
   // Prevention measures rate: max 6
-  score += (preventionMeasuresRate / 100) * 6;
+  score += ((preventionMeasuresRate ?? 0) / 100) * 6;
 
   score = clamp(Math.round(score * 10) / 10, 0, 25);
 
@@ -444,27 +455,27 @@ export function evaluateDigitalIncidentResponse(
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (timelyReportingRate >= 90) {
+  if (meets(timelyReportingRate, 90)) {
     strengths.push("Excellent timely reporting: " + timelyReportingRate + "% of digital incidents reported promptly");
-  } else if (timelyReportingRate < 70) {
+  } else if (below(timelyReportingRate, 70)) {
     concerns.push("Timely reporting at " + timelyReportingRate + "% — delayed reporting increases risk to children");
   }
 
-  if (actionTakenRate >= 90) {
+  if (meets(actionTakenRate, 90)) {
     strengths.push("Action taken in " + actionTakenRate + "% of digital incidents — strong response culture");
-  } else if (actionTakenRate < 70) {
+  } else if (below(actionTakenRate, 70)) {
     concerns.push("Action taken in only " + actionTakenRate + "% of incidents — some digital safety concerns left unaddressed");
   }
 
-  if (lessonLearnedRate >= 80) {
+  if (meets(lessonLearnedRate, 80)) {
     strengths.push("Lessons learned documented in " + lessonLearnedRate + "% of incidents — promoting continuous improvement");
-  } else if (lessonLearnedRate < 50) {
+  } else if (below(lessonLearnedRate, 50)) {
     concerns.push("Lessons learned documented in only " + lessonLearnedRate + "% of incidents — missed opportunity for improvement");
   }
 
-  if (preventionMeasuresRate >= 80) {
+  if (meets(preventionMeasuresRate, 80)) {
     strengths.push("Prevention measures implemented in " + preventionMeasuresRate + "% of incidents");
-  } else if (preventionMeasuresRate < 50) {
+  } else if (below(preventionMeasuresRate, 50)) {
     concerns.push("Prevention measures in only " + preventionMeasuresRate + "% of incidents — risk of recurrence");
   }
 
@@ -615,19 +626,19 @@ export function evaluateStaffDigitalReadiness(
     return {
       totalStaff: 0,
       digitalSafeguardingCount: 0,
-      digitalSafeguardingRate: 0,
+      digitalSafeguardingRate: null,
       imageConsentProcessCount: 0,
-      imageConsentProcessRate: 0,
+      imageConsentProcessRate: null,
       socialMediaRisksCount: 0,
-      socialMediaRisksRate: 0,
+      socialMediaRisksRate: null,
       cyberbullyingResponseCount: 0,
-      cyberbullyingResponseRate: 0,
+      cyberbullyingResponseRate: null,
       dataProtectionCount: 0,
-      dataProtectionRate: 0,
+      dataProtectionRate: null,
       onlineGroomingAwarenessCount: 0,
-      onlineGroomingAwarenessRate: 0,
+      onlineGroomingAwarenessRate: null,
       overallTrainedCount: 0,
-      overallTrainedRate: 0,
+      overallTrainedRate: null,
       score: 0,
       strengths: [],
       concerns: ["No staff digital training records — staff readiness for digital safeguarding cannot be assessed"],
@@ -636,27 +647,27 @@ export function evaluateStaffDigitalReadiness(
 
   // Digital safeguarding: max 6
   const digitalSafeguardingCount = training.filter((t) => t.digitalSafeguarding).length;
-  const digitalSafeguardingRate = pct(digitalSafeguardingCount, totalStaff);
+  const digitalSafeguardingRate = rate(digitalSafeguardingCount, totalStaff);
 
   // Image consent process: max 5
   const imageConsentProcessCount = training.filter((t) => t.imageConsentProcess).length;
-  const imageConsentProcessRate = pct(imageConsentProcessCount, totalStaff);
+  const imageConsentProcessRate = rate(imageConsentProcessCount, totalStaff);
 
   // Social media risks: max 4
   const socialMediaRisksCount = training.filter((t) => t.socialMediaRisks).length;
-  const socialMediaRisksRate = pct(socialMediaRisksCount, totalStaff);
+  const socialMediaRisksRate = rate(socialMediaRisksCount, totalStaff);
 
   // Cyberbullying response: max 4
   const cyberbullyingResponseCount = training.filter((t) => t.cyberbullyingResponse).length;
-  const cyberbullyingResponseRate = pct(cyberbullyingResponseCount, totalStaff);
+  const cyberbullyingResponseRate = rate(cyberbullyingResponseCount, totalStaff);
 
   // Data protection: max 3
   const dataProtectionCount = training.filter((t) => t.dataProtection).length;
-  const dataProtectionRate = pct(dataProtectionCount, totalStaff);
+  const dataProtectionRate = rate(dataProtectionCount, totalStaff);
 
   // Online grooming awareness: max 3
   const onlineGroomingAwarenessCount = training.filter((t) => t.onlineGroomingAwareness).length;
-  const onlineGroomingAwarenessRate = pct(onlineGroomingAwarenessCount, totalStaff);
+  const onlineGroomingAwarenessRate = rate(onlineGroomingAwarenessCount, totalStaff);
 
   // Overall trained (all 6 competencies)
   const overallTrainedCount = training.filter(
@@ -668,22 +679,22 @@ export function evaluateStaffDigitalReadiness(
       t.dataProtection &&
       t.onlineGroomingAwareness,
   ).length;
-  const overallTrainedRate = pct(overallTrainedCount, totalStaff);
+  const overallTrainedRate = rate(overallTrainedCount, totalStaff);
 
   // Score (out of 25)
   let score = 0;
   // Digital safeguarding: max 6
-  score += (digitalSafeguardingRate / 100) * 6;
+  score += ((digitalSafeguardingRate ?? 0) / 100) * 6;
   // Image consent process: max 5
-  score += (imageConsentProcessRate / 100) * 5;
+  score += ((imageConsentProcessRate ?? 0) / 100) * 5;
   // Social media risks: max 4
-  score += (socialMediaRisksRate / 100) * 4;
+  score += ((socialMediaRisksRate ?? 0) / 100) * 4;
   // Cyberbullying response: max 4
-  score += (cyberbullyingResponseRate / 100) * 4;
+  score += ((cyberbullyingResponseRate ?? 0) / 100) * 4;
   // Data protection: max 3
-  score += (dataProtectionRate / 100) * 3;
+  score += ((dataProtectionRate ?? 0) / 100) * 3;
   // Online grooming awareness: max 3
-  score += (onlineGroomingAwarenessRate / 100) * 3;
+  score += ((onlineGroomingAwarenessRate ?? 0) / 100) * 3;
 
   score = clamp(Math.round(score * 10) / 10, 0, 25);
 
@@ -691,39 +702,39 @@ export function evaluateStaffDigitalReadiness(
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (digitalSafeguardingRate >= 90) {
+  if (meets(digitalSafeguardingRate, 90)) {
     strengths.push("Excellent digital safeguarding training: " + digitalSafeguardingRate + "% of staff trained");
-  } else if (digitalSafeguardingRate < 70) {
+  } else if (below(digitalSafeguardingRate, 70)) {
     concerns.push("Digital safeguarding training at " + digitalSafeguardingRate + "% — staff may not recognise online risks");
   }
 
-  if (imageConsentProcessRate >= 90) {
+  if (meets(imageConsentProcessRate, 90)) {
     strengths.push("Image consent process training at " + imageConsentProcessRate + "% — staff understand consent requirements");
-  } else if (imageConsentProcessRate < 70) {
+  } else if (below(imageConsentProcessRate, 70)) {
     concerns.push("Image consent process training at " + imageConsentProcessRate + "% — risk of non-compliant image sharing");
   }
 
-  if (socialMediaRisksRate >= 90) {
+  if (meets(socialMediaRisksRate, 90)) {
     strengths.push("Social media risk awareness at " + socialMediaRisksRate + "% — staff can identify online dangers");
-  } else if (socialMediaRisksRate < 70) {
+  } else if (below(socialMediaRisksRate, 70)) {
     concerns.push("Social media risk training at " + socialMediaRisksRate + "% — gaps in identifying online dangers");
   }
 
-  if (cyberbullyingResponseRate >= 90) {
+  if (meets(cyberbullyingResponseRate, 90)) {
     strengths.push("Cyberbullying response training at " + cyberbullyingResponseRate + "% — staff prepared to intervene");
-  } else if (cyberbullyingResponseRate < 70) {
+  } else if (below(cyberbullyingResponseRate, 70)) {
     concerns.push("Cyberbullying response training at " + cyberbullyingResponseRate + "% — staff may not respond effectively");
   }
 
-  if (onlineGroomingAwarenessRate >= 90) {
+  if (meets(onlineGroomingAwarenessRate, 90)) {
     strengths.push("Online grooming awareness at " + onlineGroomingAwarenessRate + "% — critical safeguarding knowledge in place");
-  } else if (onlineGroomingAwarenessRate < 70) {
+  } else if (below(onlineGroomingAwarenessRate, 70)) {
     concerns.push("Online grooming awareness at " + onlineGroomingAwarenessRate + "% — staff may miss grooming indicators");
   }
 
   if (overallTrainedRate === 100) {
     strengths.push("100% of staff fully trained across all digital safeguarding competencies");
-  } else if (overallTrainedRate < 50) {
+  } else if (below(overallTrainedRate, 50)) {
     concerns.push("Only " + overallTrainedRate + "% of staff have complete digital training — significant training gap");
   }
 
@@ -987,17 +998,17 @@ function generateActions(
   }
 
   // Low staff training
-  if (staff.overallTrainedRate < 50 && staff.totalStaff > 0) {
+  if (below(staff.overallTrainedRate, 50) && staff.totalStaff > 0) {
     actions.push("HIGH: Only " + staff.overallTrainedRate + "% of staff fully trained in digital safeguarding — schedule comprehensive training programme");
   }
 
   // Low consent decision rate
-  if (consent.activeDecisionRate < 70 && consent.totalConsents > 0) {
+  if (below(consent.activeDecisionRate, 70) && consent.totalConsents > 0) {
     actions.push("HIGH: Only " + consent.activeDecisionRate + "% of consents have an active decision — review and complete outstanding consent requests");
   }
 
   // Low timely reporting
-  if (incident.timelyReportingRate < 70 && incident.totalIncidents > 0) {
+  if (below(incident.timelyReportingRate, 70) && incident.totalIncidents > 0) {
     actions.push("MEDIUM: Timely reporting at " + incident.timelyReportingRate + "% — review incident reporting procedures");
   }
 

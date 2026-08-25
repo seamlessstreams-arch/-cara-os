@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { above, formatRate, meets } from "@/lib/metrics/rate";
 import type { StaffPerformanceIntelligence } from "@/lib/staff-performance";
 
 const ratingColors: Record<string, string> = {
@@ -152,8 +153,8 @@ export function StaffPerformanceDashboardWidget() {
                     <span className="text-sm text-gray-500">{profile.overallScore}/10</span>
                   </div>
                   <div className="flex flex-wrap gap-1.5 mb-2">
-                    <StatusBadge ok={profile.qualificationComplianceRate >= 90} label={`Quals ${profile.qualificationComplianceRate}%`} />
-                    <StatusBadge ok={profile.pdpGoalAchievementRate >= 60} label={`PDP ${profile.pdpGoalAchievementRate}%`} />
+                    <StatusBadge ok={meets(profile.qualificationComplianceRate, 90)} label={`Quals ${formatRate(profile.qualificationComplianceRate)}`} />
+                    <StatusBadge ok={meets(profile.pdpGoalAchievementRate, 60)} label={`PDP ${formatRate(profile.pdpGoalAchievementRate)}`} />
                     <StatusBadge ok={(profile.averageCompetencyLevel ?? 0) >= 2.5} label={`Comp ${profile.averageCompetencyLevel}`} />
                     {profile.currentPerformanceRating && (
                       <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700">
@@ -194,7 +195,7 @@ export function StaffPerformanceDashboardWidget() {
             <div><span className="text-gray-500">Total Goals:</span> <span className="font-medium">{data.pdpProgress.totalGoals}</span></div>
             <div><span className="text-gray-500">Achievement:</span> <span className="font-medium">{data.pdpProgress.achievementRate}%</span></div>
             <div><span className="text-gray-500">Linked to Training:</span> <span className="font-medium">{data.pdpProgress.linkedToTrainingRate}%</span></div>
-            <div><span className="text-gray-500">Missed Goals:</span> <span className={`font-medium ${data.pdpProgress.missedGoalRate > 10 ? "text-amber-600" : "text-green-600"}`}>{data.pdpProgress.missedGoalRate}%</span></div>
+            <div><span className="text-gray-500">Missed Goals:</span> <span className={`font-medium ${above(data.pdpProgress.missedGoalRate, 10) ? "text-amber-600" : "text-green-600"}`}>{data.pdpProgress.missedGoalRate}%</span></div>
             <div><span className="text-gray-500">Min 2 Goals Each:</span> <span className="font-medium">{data.pdpProgress.staffWithMinGoals ? "Yes" : "No"}</span></div>
           </div>
         </Section>

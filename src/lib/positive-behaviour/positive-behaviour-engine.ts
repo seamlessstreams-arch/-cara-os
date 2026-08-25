@@ -1,4 +1,5 @@
 import { todayStr } from "@/lib/utils";
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — Positive Behaviour Support (PBS) Intelligence Engine
 //
@@ -149,31 +150,41 @@ export interface BSPEvaluationResult {
   totalPlans: number;
   activePlans: number;
   uniqueChildrenWithActivePlans: number;
-  planCoverageRate: number;       // pct of children with active plan
+  /** null when the population is empty — nothing measured, not 0%. */
+  planCoverageRate: number | null;       // pct of children with active plan
   plansReviewedOnTime: number;
-  planCurrencyRate: number;       // pct reviewed within schedule
-  childInvolvementRate: number;
-  familyInvolvementRate: number;
-  strategyComprehensivenessRate: number; // pct with all 3 strategy types
-  riskAssessmentAttachmentRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  planCurrencyRate: number | null;       // pct reviewed within schedule
+  /** null when the population is empty — nothing measured, not 0%. */
+  childInvolvementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  familyInvolvementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  strategyComprehensivenessRate: number | null; // pct with all 3 strategy types
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessmentAttachmentRate: number | null;
   childrenWithoutPlans: string[]; // childIds
 }
 
 export interface DeEscalationResult {
   totalRecords: number;
-  successRate: number;
-  partialSuccessRate: number;
-  unsuccessRate: number;
-  physicalInterventionAvoidanceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  successRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  partialSuccessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  unsuccessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  physicalInterventionAvoidanceRate: number | null;
   averageDurationMinutes: number;
   strategyVariety: number;       // count of unique strategies used
   perChildPatterns: {
     childId: string;
     childName: string;
     totalAttempts: number;
-    successRate: number;
+    successRate: number | null;
     avgDuration: number;
-    piAvoidanceRate: number;
+    piAvoidanceRate: number | null;
   }[];
 }
 
@@ -183,10 +194,14 @@ export interface RewardSanctionResult {
   rewardSanctionRatio: number;   // recognitions / sanctions
   ratioMeetsTarget: boolean;     // >=3:1
   recognitionTypeVariety: number; // count of distinct types used
-  sanctionProportionalityRate: number;
-  childVoiceInSanctionsRate: number;
-  parentNotificationRate: number;
-  restorationPlanningRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  sanctionProportionalityRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childVoiceInSanctionsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  parentNotificationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  restorationPlanningRate: number | null;
 }
 
 export interface IncidentPatternResult {
@@ -194,9 +209,12 @@ export interface IncidentPatternResult {
   severityBreakdown: Record<string, number>;
   timeOfDayPatterns: Record<string, number>; // morning/afternoon/evening/night
   antecedentAnalysis: { antecedent: string; count: number }[];
-  debriefCompletionRate: number;
-  physicalInterventionRate: number;
-  deEscalationAttemptedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  debriefCompletionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  physicalInterventionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  deEscalationAttemptedRate: number | null;
   frequencyTrend: "increasing" | "stable" | "decreasing";
   monthlyBreakdown: { month: string; count: number }[];
 }
@@ -206,7 +224,8 @@ export interface ChildBehaviourProfile {
   childName: string;
   planStatus: BehaviourSupportPlanStatus | "no_plan";
   planCurrent: boolean;
-  deEscalationSuccessRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  deEscalationSuccessRate: number | null;
   rewardSanctionRatio: number;
   incidentCount: number;
   incidentSeverityBreakdown: Record<string, number>;
@@ -233,10 +252,6 @@ export interface PositiveBehaviourResult {
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function round1(n: number): number {
   return Math.round(n * 10) / 10;
@@ -269,7 +284,7 @@ export function evaluateBehaviourSupportPlans(
   );
   const allChildIds = new Set(plans.map((p) => p.childId));
   const uniqueChildrenWithActivePlans = activeChildIds.size;
-  const planCoverageRate = pct(activeChildIds.size, allChildIds.size);
+  const planCoverageRate = rate(activeChildIds.size, allChildIds.size);
 
   // Currency: active plans where nextReviewDate >= referenceDate (not overdue)
   const activePlansList = plans.filter((p) => p.status === "active");
@@ -277,16 +292,16 @@ export function evaluateBehaviourSupportPlans(
     (p) => p.nextReviewDate >= referenceDate,
   ).length;
   const plansReviewedOnTime = onTime;
-  const planCurrencyRate = pct(onTime, activePlansList.length);
+  const planCurrencyRate = rate(onTime, activePlansList.length);
 
   // Child involvement in creation
-  const childInvolvementRate = pct(
+  const childInvolvementRate = rate(
     plans.filter((p) => p.childInvolvedInCreation).length,
     totalPlans,
   );
 
   // Family involvement in creation
-  const familyInvolvementRate = pct(
+  const familyInvolvementRate = rate(
     plans.filter((p) => p.familyInvolvedInCreation).length,
     totalPlans,
   );
@@ -298,10 +313,10 @@ export function evaluateBehaviourSupportPlans(
       p.activeStrategies.length > 0 &&
       p.reactiveStrategies.length > 0,
   ).length;
-  const strategyComprehensivenessRate = pct(comprehensive, totalPlans);
+  const strategyComprehensivenessRate = rate(comprehensive, totalPlans);
 
   // Risk assessment attachment
-  const riskAssessmentAttachmentRate = pct(
+  const riskAssessmentAttachmentRate = rate(
     plans.filter((p) => p.attachedRiskAssessment).length,
     totalPlans,
   );
@@ -336,10 +351,10 @@ export function evaluateDeEscalation(
   if (totalRecords === 0) {
     return {
       totalRecords: 0,
-      successRate: 0,
-      partialSuccessRate: 0,
-      unsuccessRate: 0,
-      physicalInterventionAvoidanceRate: 0,
+      successRate: null,
+      partialSuccessRate: null,
+      unsuccessRate: null,
+      physicalInterventionAvoidanceRate: null,
       averageDurationMinutes: 0,
       strategyVariety: 0,
       perChildPatterns: [],
@@ -354,11 +369,11 @@ export function evaluateDeEscalation(
     (r) => r.outcome === "unsuccessful",
   ).length;
 
-  const successRate = pct(successful, totalRecords);
-  const partialSuccessRate = pct(partial, totalRecords);
-  const unsuccessRate = pct(unsuccessful, totalRecords);
+  const successRate = rate(successful, totalRecords);
+  const partialSuccessRate = rate(partial, totalRecords);
+  const unsuccessRate = rate(unsuccessful, totalRecords);
 
-  const physicalInterventionAvoidanceRate = pct(
+  const physicalInterventionAvoidanceRate = rate(
     records.filter((r) => r.physicalInterventionAvoided).length,
     totalRecords,
   );
@@ -393,7 +408,7 @@ export function evaluateDeEscalation(
       const childSuccessful = childRecords.filter(
         (r) => r.outcome === "successful",
       ).length;
-      const childSuccessRate = pct(childSuccessful, totalAttempts);
+      const childSuccessRate = rate(childSuccessful, totalAttempts);
       const childDuration = childRecords.reduce(
         (sum, r) => sum + r.durationMinutes,
         0,
@@ -402,7 +417,7 @@ export function evaluateDeEscalation(
       const piAvoided = childRecords.filter(
         (r) => r.physicalInterventionAvoided,
       ).length;
-      const piAvoidanceRate = pct(piAvoided, totalAttempts);
+      const piAvoidanceRate = rate(piAvoided, totalAttempts);
 
       return {
         childId,
@@ -456,22 +471,22 @@ export function evaluateRewardSanctionBalance(
   const recognitionTypeVariety = recognitionTypes.size;
 
   // Sanction quality indicators
-  const sanctionProportionalityRate = pct(
+  const sanctionProportionalityRate = rate(
     sanctions.filter((s) => s.proportionate).length,
     totalSanctions,
   );
 
-  const childVoiceInSanctionsRate = pct(
+  const childVoiceInSanctionsRate = rate(
     sanctions.filter((s) => s.childViewRecorded).length,
     totalSanctions,
   );
 
-  const parentNotificationRate = pct(
+  const parentNotificationRate = rate(
     sanctions.filter((s) => s.parentNotified).length,
     totalSanctions,
   );
 
-  const restorationPlanningRate = pct(
+  const restorationPlanningRate = rate(
     sanctions.filter((s) => s.restorationPlanned).length,
     totalSanctions,
   );
@@ -502,9 +517,9 @@ export function evaluateIncidentPatterns(
       severityBreakdown: { low: 0, medium: 0, high: 0, critical: 0 },
       timeOfDayPatterns: { morning: 0, afternoon: 0, evening: 0, night: 0 },
       antecedentAnalysis: [],
-      debriefCompletionRate: 0,
-      physicalInterventionRate: 0,
-      deEscalationAttemptedRate: 0,
+      debriefCompletionRate: null,
+      physicalInterventionRate: null,
+      deEscalationAttemptedRate: null,
       frequencyTrend: "stable",
       monthlyBreakdown: [],
     };
@@ -547,17 +562,17 @@ export function evaluateIncidentPatterns(
     .sort((a, b) => b.count - a.count);
 
   // Rates
-  const debriefCompletionRate = pct(
+  const debriefCompletionRate = rate(
     incidents.filter((i) => i.debriefCompleted).length,
     totalIncidents,
   );
 
-  const physicalInterventionRate = pct(
+  const physicalInterventionRate = rate(
     incidents.filter((i) => i.physicalInterventionUsed).length,
     totalIncidents,
   );
 
-  const deEscalationAttemptedRate = pct(
+  const deEscalationAttemptedRate = rate(
     incidents.filter((i) => i.deEscalationAttempted).length,
     totalIncidents,
   );
@@ -641,7 +656,7 @@ export function buildChildBehaviourProfiles(
     const deSuccessful = childDe.filter(
       (d) => d.outcome === "successful",
     ).length;
-    const deEscalationSuccessRate = pct(deSuccessful, childDe.length);
+    const deEscalationSuccessRate = rate(deSuccessful, childDe.length);
 
     // Reward:sanction ratio
     const childRecognitions = recognitions.filter(
@@ -707,7 +722,7 @@ export function buildChildBehaviourProfiles(
     const strengths: string[] = [];
     const concerns: string[] = [];
 
-    if (deEscalationSuccessRate >= 70 && childDe.length > 0) {
+    if (meets(deEscalationSuccessRate, 70) && childDe.length > 0) {
       strengths.push("Responds well to de-escalation strategies");
     }
     if (rewardSanctionRatio >= 3) {
@@ -720,7 +735,7 @@ export function buildChildBehaviourProfiles(
       strengths.push("Has an active behaviour support plan");
     }
 
-    if (deEscalationSuccessRate < 50 && childDe.length > 0) {
+    if (below(deEscalationSuccessRate, 50) && childDe.length > 0) {
       concerns.push("Low de-escalation success rate");
     }
     if (rewardSanctionRatio < 3 && childSanctions > 0) {
@@ -797,28 +812,28 @@ export function generatePositiveBehaviourIntelligence(
   // 1. Behaviour support plans (25 pts)
   let bspScore = 0;
   // Coverage (8 pts)
-  if (bspEvaluation.planCoverageRate >= 100) bspScore += 8;
-  else if (bspEvaluation.planCoverageRate >= 75) bspScore += 6;
-  else if (bspEvaluation.planCoverageRate >= 50) bspScore += 4;
-  else if (bspEvaluation.planCoverageRate > 0) bspScore += 2;
+  if (meets(bspEvaluation.planCoverageRate, 100)) bspScore += 8;
+  else if (meets(bspEvaluation.planCoverageRate, 75)) bspScore += 6;
+  else if (meets(bspEvaluation.planCoverageRate, 50)) bspScore += 4;
+  else if (above(bspEvaluation.planCoverageRate, 0)) bspScore += 2;
 
   // Currency (6 pts)
-  if (bspEvaluation.planCurrencyRate >= 100) bspScore += 6;
-  else if (bspEvaluation.planCurrencyRate >= 75) bspScore += 4;
-  else if (bspEvaluation.planCurrencyRate >= 50) bspScore += 2;
-  else if (bspEvaluation.planCurrencyRate > 0) bspScore += 1;
+  if (meets(bspEvaluation.planCurrencyRate, 100)) bspScore += 6;
+  else if (meets(bspEvaluation.planCurrencyRate, 75)) bspScore += 4;
+  else if (meets(bspEvaluation.planCurrencyRate, 50)) bspScore += 2;
+  else if (above(bspEvaluation.planCurrencyRate, 0)) bspScore += 1;
 
   // Child involvement (5 pts)
-  if (bspEvaluation.childInvolvementRate >= 80) bspScore += 5;
-  else if (bspEvaluation.childInvolvementRate >= 60) bspScore += 3;
-  else if (bspEvaluation.childInvolvementRate >= 40) bspScore += 2;
-  else if (bspEvaluation.childInvolvementRate > 0) bspScore += 1;
+  if (meets(bspEvaluation.childInvolvementRate, 80)) bspScore += 5;
+  else if (meets(bspEvaluation.childInvolvementRate, 60)) bspScore += 3;
+  else if (meets(bspEvaluation.childInvolvementRate, 40)) bspScore += 2;
+  else if (above(bspEvaluation.childInvolvementRate, 0)) bspScore += 1;
 
   // Strategy comprehensiveness (6 pts)
-  if (bspEvaluation.strategyComprehensivenessRate >= 80) bspScore += 6;
-  else if (bspEvaluation.strategyComprehensivenessRate >= 60) bspScore += 4;
-  else if (bspEvaluation.strategyComprehensivenessRate >= 40) bspScore += 2;
-  else if (bspEvaluation.strategyComprehensivenessRate > 0) bspScore += 1;
+  if (meets(bspEvaluation.strategyComprehensivenessRate, 80)) bspScore += 6;
+  else if (meets(bspEvaluation.strategyComprehensivenessRate, 60)) bspScore += 4;
+  else if (meets(bspEvaluation.strategyComprehensivenessRate, 40)) bspScore += 2;
+  else if (above(bspEvaluation.strategyComprehensivenessRate, 0)) bspScore += 1;
 
   // 2. De-escalation effectiveness (25 pts)
   let deScore = 0;
@@ -826,15 +841,15 @@ export function generatePositiveBehaviourIntelligence(
     deScore = 0;
   } else {
     // Success rate (10 pts)
-    if (deEscalation.successRate >= 80) deScore += 10;
-    else if (deEscalation.successRate >= 60) deScore += 7;
-    else if (deEscalation.successRate >= 40) deScore += 4;
-    else if (deEscalation.successRate > 0) deScore += 2;
+    if (meets(deEscalation.successRate, 80)) deScore += 10;
+    else if (meets(deEscalation.successRate, 60)) deScore += 7;
+    else if (meets(deEscalation.successRate, 40)) deScore += 4;
+    else if (above(deEscalation.successRate, 0)) deScore += 2;
 
     // PI avoidance (10 pts)
-    if (deEscalation.physicalInterventionAvoidanceRate >= 90) deScore += 10;
-    else if (deEscalation.physicalInterventionAvoidanceRate >= 75) deScore += 7;
-    else if (deEscalation.physicalInterventionAvoidanceRate >= 50) deScore += 4;
+    if (meets(deEscalation.physicalInterventionAvoidanceRate, 90)) deScore += 10;
+    else if (meets(deEscalation.physicalInterventionAvoidanceRate, 75)) deScore += 7;
+    else if (meets(deEscalation.physicalInterventionAvoidanceRate, 50)) deScore += 4;
     else deScore += 2;
 
     // Strategy variety (5 pts)
@@ -865,20 +880,20 @@ export function generatePositiveBehaviourIntelligence(
 
     // Child voice in sanctions (5 pts) — only if sanctions exist
     if (rewardSanctionBalance.totalSanctions > 0) {
-      if (rewardSanctionBalance.childVoiceInSanctionsRate >= 80) rsScore += 5;
-      else if (rewardSanctionBalance.childVoiceInSanctionsRate >= 60) rsScore += 3;
-      else if (rewardSanctionBalance.childVoiceInSanctionsRate >= 40) rsScore += 2;
-      else if (rewardSanctionBalance.childVoiceInSanctionsRate > 0) rsScore += 1;
+      if (meets(rewardSanctionBalance.childVoiceInSanctionsRate, 80)) rsScore += 5;
+      else if (meets(rewardSanctionBalance.childVoiceInSanctionsRate, 60)) rsScore += 3;
+      else if (meets(rewardSanctionBalance.childVoiceInSanctionsRate, 40)) rsScore += 2;
+      else if (above(rewardSanctionBalance.childVoiceInSanctionsRate, 0)) rsScore += 1;
     } else {
       rsScore += 5; // No sanctions is positive
     }
 
     // Restoration planning (5 pts) — only if sanctions exist
     if (rewardSanctionBalance.totalSanctions > 0) {
-      if (rewardSanctionBalance.restorationPlanningRate >= 80) rsScore += 5;
-      else if (rewardSanctionBalance.restorationPlanningRate >= 60) rsScore += 3;
-      else if (rewardSanctionBalance.restorationPlanningRate >= 40) rsScore += 2;
-      else if (rewardSanctionBalance.restorationPlanningRate > 0) rsScore += 1;
+      if (meets(rewardSanctionBalance.restorationPlanningRate, 80)) rsScore += 5;
+      else if (meets(rewardSanctionBalance.restorationPlanningRate, 60)) rsScore += 3;
+      else if (meets(rewardSanctionBalance.restorationPlanningRate, 40)) rsScore += 2;
+      else if (above(rewardSanctionBalance.restorationPlanningRate, 0)) rsScore += 1;
     } else {
       rsScore += 5; // No sanctions is positive
     }
@@ -895,16 +910,16 @@ export function generatePositiveBehaviourIntelligence(
     else incScore += 2; // increasing
 
     // Debrief completion (8 pts)
-    if (incidentPatterns.debriefCompletionRate >= 90) incScore += 8;
-    else if (incidentPatterns.debriefCompletionRate >= 70) incScore += 6;
-    else if (incidentPatterns.debriefCompletionRate >= 50) incScore += 3;
-    else if (incidentPatterns.debriefCompletionRate > 0) incScore += 1;
+    if (meets(incidentPatterns.debriefCompletionRate, 90)) incScore += 8;
+    else if (meets(incidentPatterns.debriefCompletionRate, 70)) incScore += 6;
+    else if (meets(incidentPatterns.debriefCompletionRate, 50)) incScore += 3;
+    else if (above(incidentPatterns.debriefCompletionRate, 0)) incScore += 1;
 
     // De-escalation attempted rate (9 pts)
-    if (incidentPatterns.deEscalationAttemptedRate >= 90) incScore += 9;
-    else if (incidentPatterns.deEscalationAttemptedRate >= 70) incScore += 6;
-    else if (incidentPatterns.deEscalationAttemptedRate >= 50) incScore += 3;
-    else if (incidentPatterns.deEscalationAttemptedRate > 0) incScore += 1;
+    if (meets(incidentPatterns.deEscalationAttemptedRate, 90)) incScore += 9;
+    else if (meets(incidentPatterns.deEscalationAttemptedRate, 70)) incScore += 6;
+    else if (meets(incidentPatterns.deEscalationAttemptedRate, 50)) incScore += 3;
+    else if (above(incidentPatterns.deEscalationAttemptedRate, 0)) incScore += 1;
   }
 
   const overallScore = Math.min(
@@ -933,32 +948,32 @@ export function generatePositiveBehaviourIntelligence(
     strengths.push(
       "All children have active behaviour support plans — person-centred care is evidenced",
     );
-  } else if (bspEvaluation.planCoverageRate >= 75) {
+  } else if (meets(bspEvaluation.planCoverageRate, 75)) {
     strengths.push(
       "Good coverage of behaviour support plans across the home",
     );
   }
 
-  if (bspEvaluation.childInvolvementRate >= 80 && bspEvaluation.totalPlans > 0) {
+  if (meets(bspEvaluation.childInvolvementRate, 80) && bspEvaluation.totalPlans > 0) {
     strengths.push(
       "Children are consistently involved in creating their own BSPs — strong child voice",
     );
   }
 
-  if (bspEvaluation.strategyComprehensivenessRate >= 80 && bspEvaluation.totalPlans > 0) {
+  if (meets(bspEvaluation.strategyComprehensivenessRate, 80) && bspEvaluation.totalPlans > 0) {
     strengths.push(
       "BSPs contain proactive, active and reactive strategies — aligned with BILD PBS framework",
     );
   }
 
-  if (deEscalation.successRate >= 70 && deEscalation.totalRecords > 0) {
+  if (meets(deEscalation.successRate, 70) && deEscalation.totalRecords > 0) {
     strengths.push(
       "De-escalation is effective — staff demonstrate skilled, relational approaches",
     );
   }
 
   if (
-    deEscalation.physicalInterventionAvoidanceRate >= 90 &&
+    meets(deEscalation.physicalInterventionAvoidanceRate, 90) &&
     deEscalation.totalRecords > 0
   ) {
     strengths.push(
@@ -988,7 +1003,7 @@ export function generatePositiveBehaviourIntelligence(
   }
 
   if (
-    incidentPatterns.debriefCompletionRate >= 90 &&
+    meets(incidentPatterns.debriefCompletionRate, 90) &&
     incidentPatterns.totalIncidents > 0
   ) {
     strengths.push(
@@ -997,7 +1012,7 @@ export function generatePositiveBehaviourIntelligence(
   }
 
   if (
-    incidentPatterns.deEscalationAttemptedRate >= 90 &&
+    meets(incidentPatterns.deEscalationAttemptedRate, 90) &&
     incidentPatterns.totalIncidents > 0
   ) {
     strengths.push(
@@ -1013,7 +1028,7 @@ export function generatePositiveBehaviourIntelligence(
 
   // --- Areas for improvement ---
   if (
-    bspEvaluation.planCoverageRate < 100 &&
+    below(bspEvaluation.planCoverageRate, 100) &&
     bspEvaluation.childrenWithoutPlans.length > 0
   ) {
     areasForImprovement.push(
@@ -1021,20 +1036,20 @@ export function generatePositiveBehaviourIntelligence(
     );
   }
 
-  if (bspEvaluation.planCurrencyRate < 100 && bspEvaluation.activePlans > 0) {
+  if (below(bspEvaluation.planCurrencyRate, 100) && bspEvaluation.activePlans > 0) {
     areasForImprovement.push(
       `Plan currency at ${bspEvaluation.planCurrencyRate}% — some plans are overdue for review`,
     );
   }
 
-  if (bspEvaluation.childInvolvementRate < 80 && bspEvaluation.totalPlans > 0) {
+  if (below(bspEvaluation.childInvolvementRate, 80) && bspEvaluation.totalPlans > 0) {
     areasForImprovement.push(
       `Child involvement in BSP creation at ${bspEvaluation.childInvolvementRate}% — children should co-produce their plans`,
     );
   }
 
   if (
-    deEscalation.successRate < 60 &&
+    below(deEscalation.successRate, 60) &&
     deEscalation.totalRecords > 0
   ) {
     areasForImprovement.push(
@@ -1043,7 +1058,7 @@ export function generatePositiveBehaviourIntelligence(
   }
 
   if (
-    deEscalation.physicalInterventionAvoidanceRate < 80 &&
+    below(deEscalation.physicalInterventionAvoidanceRate, 80) &&
     deEscalation.totalRecords > 0
   ) {
     areasForImprovement.push(
@@ -1058,7 +1073,7 @@ export function generatePositiveBehaviourIntelligence(
   }
 
   if (
-    rewardSanctionBalance.childVoiceInSanctionsRate < 80 &&
+    below(rewardSanctionBalance.childVoiceInSanctionsRate, 80) &&
     rewardSanctionBalance.totalSanctions > 0
   ) {
     areasForImprovement.push(
@@ -1073,7 +1088,7 @@ export function generatePositiveBehaviourIntelligence(
   }
 
   if (
-    incidentPatterns.debriefCompletionRate < 80 &&
+    below(incidentPatterns.debriefCompletionRate, 80) &&
     incidentPatterns.totalIncidents > 0
   ) {
     areasForImprovement.push(
@@ -1103,7 +1118,7 @@ export function generatePositiveBehaviourIntelligence(
     );
   }
 
-  if (bspEvaluation.planCurrencyRate < 50 && bspEvaluation.activePlans > 0) {
+  if (below(bspEvaluation.planCurrencyRate, 50) && bspEvaluation.activePlans > 0) {
     actions.push(
       "HIGH: Schedule BSP reviews for overdue plans — plans must be current to be effective",
     );
@@ -1116,7 +1131,7 @@ export function generatePositiveBehaviourIntelligence(
   }
 
   if (
-    deEscalation.physicalInterventionAvoidanceRate < 75 &&
+    below(deEscalation.physicalInterventionAvoidanceRate, 75) &&
     deEscalation.totalRecords > 0
   ) {
     actions.push(
@@ -1131,7 +1146,7 @@ export function generatePositiveBehaviourIntelligence(
   }
 
   if (
-    rewardSanctionBalance.restorationPlanningRate < 50 &&
+    below(rewardSanctionBalance.restorationPlanningRate, 50) &&
     rewardSanctionBalance.totalSanctions > 0
   ) {
     actions.push(
@@ -1140,7 +1155,7 @@ export function generatePositiveBehaviourIntelligence(
   }
 
   if (
-    incidentPatterns.physicalInterventionRate > 20 &&
+    above(incidentPatterns.physicalInterventionRate, 20) &&
     incidentPatterns.totalIncidents > 0
   ) {
     actions.push(
@@ -1149,7 +1164,7 @@ export function generatePositiveBehaviourIntelligence(
   }
 
   if (
-    incidentPatterns.deEscalationAttemptedRate < 70 &&
+    below(incidentPatterns.deEscalationAttemptedRate, 70) &&
     incidentPatterns.totalIncidents > 0
   ) {
     actions.push(

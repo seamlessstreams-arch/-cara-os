@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { above, formatRate, meets } from "@/lib/metrics/rate";
 import type { ReflectivePracticeResult, StaffDevelopmentProfile } from "@/lib/reflective-practice/reflective-practice-engine";
 import { getActivityTypeLabel, getPracticeAreaLabel } from "@/lib/reflective-practice/reflective-practice-engine";
 
@@ -41,14 +42,14 @@ function MetricCard({ label, value, suffix, color }: { label: string; value: num
 
 // ── Progress Bar ─────────────────────────────────────────────────────────────
 
-function ProgressBar({ value, max, color }: { value: number; max: number; color: string }) {
-  const pctVal = max > 0 ? Math.round((value / max) * 100) : 0;
+function ProgressBar({ value, max, color }: { value: number | null; max: number; color: string }) {
+  const pctVal = value !== null && max > 0 ? Math.round((value / max) * 100) : null;
   return (
     <div className="flex items-center gap-2 w-full">
       <div className="flex-1 h-2 rounded-full bg-gray-200 overflow-hidden">
-        <div className={`h-full rounded-full ${color}`} style={{ width: `${pctVal}%` }} />
+        <div className={`h-full rounded-full ${color}`} style={{ width: `${pctVal ?? 0}%` }} />
       </div>
-      <span className="text-xs font-medium text-gray-600 w-10 text-right">{pctVal}%</span>
+      <span className="text-xs font-medium text-gray-600 w-10 text-right">{pctVal !== null ? `${pctVal}%` : "—"}</span>
     </div>
   );
 }
@@ -196,9 +197,8 @@ export function ReflectivePracticeDashboardWidget() {
         />
         <MetricCard
           label="Practice Change Rate"
-          value={data.learningOutcomes.practiceChangeRate}
-          suffix="%"
-          color={data.learningOutcomes.practiceChangeRate >= 40 ? "text-green-600" : data.learningOutcomes.practiceChangeRate >= 20 ? "text-amber-600" : "text-red-600"}
+          value={formatRate(data.learningOutcomes.practiceChangeRate)}
+          color={meets(data.learningOutcomes.practiceChangeRate, 40) ? "text-green-600" : meets(data.learningOutcomes.practiceChangeRate, 20) ? "text-amber-600" : "text-red-600"}
         />
         <MetricCard
           label="Team Sessions"
@@ -207,9 +207,8 @@ export function ReflectivePracticeDashboardWidget() {
         />
         <MetricCard
           label="Goal Achievement"
-          value={data.goalProgress.achievementRate}
-          suffix="%"
-          color={data.goalProgress.achievementRate >= 60 ? "text-green-600" : data.goalProgress.achievementRate >= 40 ? "text-amber-600" : "text-red-600"}
+          value={formatRate(data.goalProgress.achievementRate)}
+          color={meets(data.goalProgress.achievementRate, 60) ? "text-green-600" : meets(data.goalProgress.achievementRate, 40) ? "text-amber-600" : "text-red-600"}
         />
       </div>
 
@@ -219,15 +218,13 @@ export function ReflectivePracticeDashboardWidget() {
         <MetricCard label="Avg Hours/Staff" value={data.engagement.avgHoursPerStaff} suffix="h" />
         <MetricCard
           label="Shared with Team"
-          value={data.learningOutcomes.sharedWithTeamRate}
-          suffix="%"
-          color={data.learningOutcomes.sharedWithTeamRate >= 50 ? "text-green-600" : "text-amber-600"}
+          value={formatRate(data.learningOutcomes.sharedWithTeamRate)}
+          color={meets(data.learningOutcomes.sharedWithTeamRate, 50) ? "text-green-600" : "text-amber-600"}
         />
         <MetricCard
           label="Linked to Children"
-          value={data.learningOutcomes.linkedToChildOutcomeRate}
-          suffix="%"
-          color={data.learningOutcomes.linkedToChildOutcomeRate >= 30 ? "text-green-600" : "text-amber-600"}
+          value={formatRate(data.learningOutcomes.linkedToChildOutcomeRate)}
+          color={meets(data.learningOutcomes.linkedToChildOutcomeRate, 30) ? "text-green-600" : "text-amber-600"}
         />
       </div>
 
@@ -243,12 +240,12 @@ export function ReflectivePracticeDashboardWidget() {
             {data.goalProgress.overdue} OVERDUE GOAL{data.goalProgress.overdue !== 1 ? "S" : ""}
           </span>
         )}
-        {data.engagement.engagementRate >= 75 && (
+        {meets(data.engagement.engagementRate, 75) && (
           <span className="rounded-full bg-green-100 text-green-700 px-3 py-1 text-xs font-medium border border-green-200">
             STRONG ENGAGEMENT
           </span>
         )}
-        {data.learningOutcomes.practiceChangeRate >= 40 && (
+        {meets(data.learningOutcomes.practiceChangeRate, 40) && (
           <span className="rounded-full bg-green-100 text-green-700 px-3 py-1 text-xs font-medium border border-green-200">
             STRONG PRACTICE CHANGE CULTURE
           </span>
@@ -358,7 +355,7 @@ export function ReflectivePracticeDashboardWidget() {
               </div>
               <ProgressBar value={data.learningOutcomes.linkedToChildOutcomeRate} max={100} color="bg-green-500" />
             </div>
-            {data.learningOutcomes.noOutcomeRate > 0 && (
+            {above(data.learningOutcomes.noOutcomeRate, 0) && (
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-700">No Clear Outcome</span>

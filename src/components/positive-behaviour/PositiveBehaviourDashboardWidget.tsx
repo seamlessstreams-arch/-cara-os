@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import type {
   PositiveBehaviourResult,
   ChildBehaviourProfile,
@@ -61,17 +62,18 @@ function ProgressBar({
   max,
   color,
 }: {
-  value: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  value: number | null;
   max: number;
   color: string;
 }) {
-  const pctVal = max > 0 ? Math.round((value / max) * 100) : 0;
+  const pctVal = value !== null && max > 0 ? Math.round((value / max) * 100) : null;
   return (
     <div className="flex items-center gap-2 w-full">
       <div className="flex-1 h-2 rounded-full bg-gray-200 overflow-hidden">
         <div
           className={`h-full rounded-full ${color}`}
-          style={{ width: `${pctVal}%` }}
+          style={{ width: `${pctVal ?? 0}%` }}
         />
       </div>
       <span className="text-xs font-medium text-gray-600 w-10 text-right">
@@ -206,7 +208,7 @@ function DistributionRow({
       <div className="flex-1 h-2 rounded-full bg-gray-200 overflow-hidden">
         <div
           className={`h-full rounded-full ${color}`}
-          style={{ width: `${pctVal}%` }}
+          style={{ width: `${pctVal ?? 0}%` }}
         />
       </div>
       <span className="text-xs font-medium text-gray-500 w-16 text-right">
@@ -323,24 +325,22 @@ export function PositiveBehaviourDashboardWidget() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
         <MetricCard
           label="Plan Coverage"
-          value={data.bspEvaluation.planCoverageRate}
-          suffix="%"
+          value={formatRate(data.bspEvaluation.planCoverageRate)}
           color={
-            data.bspEvaluation.planCoverageRate >= 100
+            meets(data.bspEvaluation.planCoverageRate, 100)
               ? "text-green-600"
-              : data.bspEvaluation.planCoverageRate >= 75
+              : meets(data.bspEvaluation.planCoverageRate, 75)
                 ? "text-amber-600"
                 : "text-red-600"
           }
         />
         <MetricCard
           label="De-escalation Success"
-          value={data.deEscalation.successRate}
-          suffix="%"
+          value={formatRate(data.deEscalation.successRate)}
           color={
-            data.deEscalation.successRate >= 70
+            meets(data.deEscalation.successRate, 70)
               ? "text-green-600"
-              : data.deEscalation.successRate >= 50
+              : meets(data.deEscalation.successRate, 50)
                 ? "text-amber-600"
                 : "text-red-600"
           }
@@ -390,23 +390,20 @@ export function PositiveBehaviourDashboardWidget() {
               />
               <MetricCard
                 label="Plan Currency"
-                value={data.bspEvaluation.planCurrencyRate}
-                suffix="%"
+                value={formatRate(data.bspEvaluation.planCurrencyRate)}
                 color={
-                  data.bspEvaluation.planCurrencyRate >= 100
+                  meets(data.bspEvaluation.planCurrencyRate, 100)
                     ? "text-green-600"
                     : "text-amber-600"
                 }
               />
               <MetricCard
                 label="Child Involved"
-                value={data.bspEvaluation.childInvolvementRate}
-                suffix="%"
+                value={formatRate(data.bspEvaluation.childInvolvementRate)}
               />
               <MetricCard
                 label="Strategy Complete"
-                value={data.bspEvaluation.strategyComprehensivenessRate}
-                suffix="%"
+                value={formatRate(data.bspEvaluation.strategyComprehensivenessRate)}
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -456,20 +453,18 @@ export function PositiveBehaviourDashboardWidget() {
               />
               <MetricCard
                 label="Success Rate"
-                value={data.deEscalation.successRate}
-                suffix="%"
+                value={formatRate(data.deEscalation.successRate)}
                 color={
-                  data.deEscalation.successRate >= 70
+                  meets(data.deEscalation.successRate, 70)
                     ? "text-green-600"
                     : "text-amber-600"
                 }
               />
               <MetricCard
                 label="PI Avoidance"
-                value={data.deEscalation.physicalInterventionAvoidanceRate}
-                suffix="%"
+                value={formatRate(data.deEscalation.physicalInterventionAvoidanceRate)}
                 color={
-                  data.deEscalation.physicalInterventionAvoidanceRate >= 90
+                  meets(data.deEscalation.physicalInterventionAvoidanceRate, 90)
                     ? "text-green-600"
                     : "text-amber-600"
                 }
@@ -626,27 +621,26 @@ export function PositiveBehaviourDashboardWidget() {
               />
               <MetricCard
                 label="Debrief Rate"
-                value={data.incidentPatterns.debriefCompletionRate}
-                suffix="%"
+                value={formatRate(data.incidentPatterns.debriefCompletionRate)}
                 color={
-                  data.incidentPatterns.debriefCompletionRate >= 90
+                  meets(data.incidentPatterns.debriefCompletionRate, 90)
                     ? "text-green-600"
                     : "text-amber-600"
                 }
               />
               <MetricCard
                 label="De-escalation Attempted"
-                value={data.incidentPatterns.deEscalationAttemptedRate}
-                suffix="%"
+                value={formatRate(data.incidentPatterns.deEscalationAttemptedRate)}
               />
               <MetricCard
                 label="PI Rate"
-                value={data.incidentPatterns.physicalInterventionRate}
-                suffix="%"
+                value={formatRate(data.incidentPatterns.physicalInterventionRate)}
                 color={
-                  data.incidentPatterns.physicalInterventionRate <= 10
-                    ? "text-green-600"
-                    : "text-red-600"
+                  data.incidentPatterns.physicalInterventionRate === null
+                    ? "text-slate-500"
+                    : data.incidentPatterns.physicalInterventionRate <= 10
+                      ? "text-green-600"
+                      : "text-red-600"
                 }
               />
             </div>

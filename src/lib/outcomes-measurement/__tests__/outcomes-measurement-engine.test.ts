@@ -419,7 +419,7 @@ describe("evaluateTargetAchievement", () => {
   it("returns empty results for nonexistent children", () => {
     const result = evaluateTargetAchievement(demoTargets, ["nonexistent"], REFERENCE_DATE);
     expect(result.totalTargets).toBe(0);
-    expect(result.achievedRate).toBe(0);
+    expect(result.achievedRate).toBeNull();
   });
 
   it("Jordan has 4 achieved targets", () => {
@@ -627,7 +627,7 @@ describe("evaluateMeasurementQuality", () => {
     expect(result.baselineCoverageRate).toBe(0);
     expect(result.methodDiversityScore).toBe(0);
     expect(result.measurementRegularity).toBeNull();
-    expect(result.childVoiceInclusion).toBe(0);
+    expect(result.childVoiceInclusion).toBeNull();
   });
 
   it("detects methods used per child", () => {

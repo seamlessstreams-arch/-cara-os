@@ -184,7 +184,7 @@ describe("Reflective Practice — evaluateReflectiveEngagement", () => {
     const result = evaluateReflectiveEngagement(demoActivities, [], PERIOD_START, PERIOD_END);
     expect(result.activitiesPerStaff).toBe(0);
     expect(result.avgHoursPerStaff).toBe(0);
-    expect(result.engagementRate).toBe(0);
+    expect(result.engagementRate).toBeNull();
   });
 
   it("excludes activities outside period", () => {
@@ -244,8 +244,8 @@ describe("Reflective Practice — evaluateLearningOutcomes", () => {
   it("handles empty activities", () => {
     const result = evaluateLearningOutcomes([], PERIOD_START, PERIOD_END);
     expect(result.totalOutcomes).toBe(0);
-    expect(result.practiceChangeRate).toBe(0);
-    expect(result.sharedWithTeamRate).toBe(0);
+    expect(result.practiceChangeRate).toBeNull();
+    expect(result.sharedWithTeamRate).toBeNull();
   });
 
   it("correctly handles no_clear_outcome", () => {
@@ -309,7 +309,7 @@ describe("Reflective Practice — evaluateTeamLearning", () => {
   it("handles empty activities", () => {
     const result = evaluateTeamLearning([], PERIOD_START, PERIOD_END);
     expect(result.totalTeamSessions).toBe(0);
-    expect(result.sharedLearningRate).toBe(0);
+    expect(result.sharedLearningRate).toBeNull();
   });
 });
 
@@ -363,7 +363,7 @@ describe("Reflective Practice — evaluateGoalProgress", () => {
     const result = evaluateGoalProgress([], REFERENCE_DATE);
     expect(result.totalGoals).toBe(0);
     expect(result.achieved).toBe(0);
-    expect(result.achievementRate).toBe(0);
+    expect(result.achievementRate).toBeNull();
   });
 
   it("handles all achieved goals", () => {

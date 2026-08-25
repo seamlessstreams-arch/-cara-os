@@ -280,10 +280,6 @@ function daysBetween(a: string, b: string): number {
 // Was `d === 0 ? 0 : …`: a home with nothing recorded yet read 0% on every
 // rate here — not "nothing recorded" but "nothing done". rate() answers
 // null, and meets()/below() are false for null in both directions.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 function inPeriod(date: string, start: string, end: string): boolean {
   return date.slice(0, 10) >= start.slice(0, 10) && date.slice(0, 10) <= end.slice(0, 10);
 }
@@ -326,13 +322,13 @@ export function evaluateVisitCompliance(
     inPeriod(v.visitDate, periodStart, periodEnd),
   );
   const totalVisitsCompleted = periodVisits.length;
-  const visitCompletionRate = pct(totalVisitsCompleted, totalVisitsExpected);
+  const visitCompletionRate = rate(totalVisitsCompleted, totalVisitsExpected);
 
   // Independence
   const independentCount = periodVisits.filter(
     (v) => v.visitorIndependent,
   ).length;
-  const independentVisitorRate = pct(independentCount, totalVisitsCompleted);
+  const independentVisitorRate = rate(independentCount, totalVisitsCompleted);
   const nonIndependentVisits = periodVisits
     .filter((v) => !v.visitorIndependent)
     .map((v) => v.id);
@@ -360,12 +356,12 @@ export function evaluateVisitCompliance(
   const recordsReviewedCount = periodVisits.filter(
     (v) => v.recordsReviewed,
   ).length;
-  const recordsReviewedRate = pct(recordsReviewedCount, totalVisitsCompleted);
+  const recordsReviewedRate = rate(recordsReviewedCount, totalVisitsCompleted);
 
   const environmentInspectedCount = periodVisits.filter(
     (v) => v.environmentInspected,
   ).length;
-  const environmentInspectedRate = pct(
+  const environmentInspectedRate = rate(
     environmentInspectedCount,
     totalVisitsCompleted,
   );
@@ -374,13 +370,13 @@ export function evaluateVisitCompliance(
   const onTimeCount = periodVisits.filter(
     (v) => v.reportSubmittedOnTime,
   ).length;
-  const reportOnTimeRate = pct(onTimeCount, totalVisitsCompleted);
+  const reportOnTimeRate = rate(onTimeCount, totalVisitsCompleted);
 
   // Ofsted sharing
   const ofstedSharedCount = periodVisits.filter(
     (v) => v.sharedWithOfsted,
   ).length;
-  const ofstedSharedRate = pct(ofstedSharedCount, totalVisitsCompleted);
+  const ofstedSharedRate = rate(ofstedSharedCount, totalVisitsCompleted);
 
   // Rating breakdown
   const ratingCounts = new Map<string, number>();
@@ -488,7 +484,7 @@ export function evaluateRecommendations(
   const completedCount = withEffectiveStatus.filter(
     (r) => r.effectiveStatus === "completed",
   ).length;
-  const completionRate = pct(completedCount, totalRecommendations);
+  const completionRate = rate(completedCount, totalRecommendations);
 
   const openCount = withEffectiveStatus.filter(
     (r) => r.effectiveStatus === "open",
@@ -502,7 +498,7 @@ export function evaluateRecommendations(
   const rejectedCount = withEffectiveStatus.filter(
     (r) => r.effectiveStatus === "rejected",
   ).length;
-  const overdueRate = pct(overdueCount, totalRecommendations);
+  const overdueRate = rate(overdueCount, totalRecommendations);
 
   // Priority breakdown
   const priorities: RecommendationPriority[] = ["immediate", "high", "medium", "low"];
@@ -534,13 +530,13 @@ export function evaluateRecommendations(
   const impactAssessedCount = completedRecs.filter(
     (r) => r.impactAssessed,
   ).length;
-  const impactAssessedRate = pct(impactAssessedCount, completedRecs.length);
+  const impactAssessedRate = rate(impactAssessedCount, completedRecs.length);
 
   // Evidence rate (of completed)
   const withEvidenceCount = completedRecs.filter(
     (r) => r.evidenceOfCompletion && r.evidenceOfCompletion.length > 0,
   ).length;
-  const withEvidenceRate = pct(withEvidenceCount, completedRecs.length);
+  const withEvidenceRate = rate(withEvidenceCount, completedRecs.length);
 
   // Overdue recommendations detail
   const overdueRecommendations = withEffectiveStatus
@@ -583,20 +579,20 @@ export function evaluateChildParticipation(
 
   // Spoken to rate
   const spokenToCount = participation.filter((p) => p.spokenTo).length;
-  const childrenSpokenToRate = pct(spokenToCount, totalRecords);
+  const childrenSpokenToRate = rate(spokenToCount, totalRecords);
 
   // Views captured rate
   const viewsCapturedCount = participation.filter(
     (p) => p.viewsCaptured,
   ).length;
-  const viewsCapturedRate = pct(viewsCapturedCount, totalRecords);
+  const viewsCapturedRate = rate(viewsCapturedCount, totalRecords);
 
   // Positive feedback rate (of those who provided views)
   const withViews = participation.filter((p) => p.viewsCaptured);
   const positiveFeedbackCount = withViews.filter(
     (p) => p.feedbackPositive,
   ).length;
-  const positiveFeedbackRate = pct(positiveFeedbackCount, withViews.length);
+  const positiveFeedbackRate = rate(positiveFeedbackCount, withViews.length);
 
   // Issues
   const totalIssuesRaised = participation.reduce(
@@ -607,7 +603,7 @@ export function evaluateChildParticipation(
     (p) => p.issuesRaised.length > 0,
   );
   const actionedCount = withIssues.filter((p) => p.issuesActioned).length;
-  const issuesActionedRate = pct(actionedCount, withIssues.length);
+  const issuesActionedRate = rate(actionedCount, withIssues.length);
 
   // Per-child coverage
   const childMap = new Map<
@@ -648,7 +644,7 @@ export function evaluateChildParticipation(
     });
 
   // Child coverage: proportion of registered children spoken to at least once
-  const childCoverage = pct(spokenChildIds.size, childIds.length);
+  const childCoverage = rate(spokenChildIds.size, childIds.length);
 
   return {
     totalRecords,
@@ -677,7 +673,7 @@ export function evaluateManagementResponse(
 
   // Timeliness
   const onTimeCount = responses.filter((r) => r.respondedOnTime).length;
-  const respondedOnTimeRate = pct(onTimeCount, totalResponses);
+  const respondedOnTimeRate = rate(onTimeCount, totalResponses);
 
   // Acceptance/rejection rates
   const totalAccepted = responses.reduce(
@@ -689,20 +685,20 @@ export function evaluateManagementResponse(
     0,
   );
   const totalDecisions = totalAccepted + totalRejected;
-  const averageAcceptanceRate = pct(totalAccepted, totalDecisions);
-  const averageRejectionRate = pct(totalRejected, totalDecisions);
+  const averageAcceptanceRate = rate(totalAccepted, totalDecisions);
+  const averageRejectionRate = rate(totalRejected, totalDecisions);
 
   // Action plans
   const actionPlanCount = responses.filter(
     (r) => r.actionPlanCreated,
   ).length;
-  const actionPlanCreatedRate = pct(actionPlanCount, totalResponses);
+  const actionPlanCreatedRate = rate(actionPlanCount, totalResponses);
 
   // RI sharing
   const sharedWithRICount = responses.filter(
     (r) => r.sharedWithRI,
   ).length;
-  const sharedWithRIRate = pct(sharedWithRICount, totalResponses);
+  const sharedWithRIRate = rate(sharedWithRICount, totalResponses);
 
   // All rejection reasons
   const totalRejectionReasons = responses.flatMap(
@@ -833,7 +829,7 @@ export function generateReg44ComplianceIntelligence(
   const outstandingOrGood = visitCompliance.ratingBreakdown
     .filter((r) => r.rating === "outstanding" || r.rating === "good")
     .reduce((sum, r) => sum + r.count, 0);
-  const qualityRate = pct(outstandingOrGood, visitCompliance.totalVisitsCompleted);
+  const qualityRate = rate(outstandingOrGood, visitCompliance.totalVisitsCompleted);
   if (qualityRate === 100) visitScore += 6;
   else if (meets(qualityRate, 80)) visitScore += 4;
   else if (meets(qualityRate, 60)) visitScore += 2;

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import type {
   RestorativePracticeResult,
   StaffFacilitatorProfile,
@@ -51,14 +52,14 @@ function MetricCard({ label, value, suffix, color }: { label: string; value: num
 
 // ── Progress Bar ─────────────────────────────────────────────────────────────
 
-function ProgressBar({ value, max, color }: { value: number; max: number; color: string }) {
-  const pctVal = max > 0 ? Math.round((value / max) * 100) : 0;
+function ProgressBar({ value, max, color }: { value: number | null; max: number; color: string }) {
+  const pctVal = value !== null && max > 0 ? Math.round((value / max) * 100) : null;
   return (
     <div className="flex items-center gap-2 w-full">
       <div className="flex-1 h-2 rounded-full bg-gray-200 overflow-hidden">
-        <div className={`h-full rounded-full ${color}`} style={{ width: `${pctVal}%` }} />
+        <div className={`h-full rounded-full ${color}`} style={{ width: `${pctVal ?? 0}%` }} />
       </div>
-      <span className="text-xs font-medium text-gray-600 w-10 text-right">{pctVal}%</span>
+      <span className="text-xs font-medium text-gray-600 w-10 text-right">{pctVal !== null ? `${pctVal}%` : "—"}</span>
     </div>
   );
 }
@@ -104,7 +105,7 @@ function DistributionRow({ label, count, total, color }: { label: string; count:
     <div className="flex items-center gap-2 py-1">
       <span className="text-xs text-gray-600 w-40 truncate">{label}</span>
       <div className="flex-1 h-2 rounded-full bg-gray-200 overflow-hidden">
-        <div className={`h-full rounded-full ${color}`} style={{ width: `${pctVal}%` }} />
+        <div className={`h-full rounded-full ${color}`} style={{ width: `${pctVal ?? 0}%` }} />
       </div>
       <span className="text-xs font-medium text-gray-500 w-16 text-right">{count} ({pctVal}%)</span>
     </div>
@@ -185,23 +186,21 @@ export function RestorativePracticeDashboardWidget() {
         />
         <MetricCard
           label="Repair Rate"
-          value={data.outcomes.repairRate}
-          suffix="%"
-          color={data.outcomes.repairRate >= 75 ? "text-green-600" : data.outcomes.repairRate >= 50 ? "text-amber-600" : "text-red-600"}
+          value={formatRate(data.outcomes.repairRate)}
+          color={meets(data.outcomes.repairRate, 75) ? "text-green-600" : meets(data.outcomes.repairRate, 50) ? "text-amber-600" : "text-red-600"}
         />
         <MetricCard
           label="Incident Conversion"
-          value={data.incidentConversion.conversionRate}
-          suffix="%"
-          color={data.incidentConversion.conversionRate >= 60 ? "text-green-600" : data.incidentConversion.conversionRate >= 40 ? "text-amber-600" : "text-red-600"}
+          value={formatRate(data.incidentConversion.conversionRate)}
+          color={meets(data.incidentConversion.conversionRate, 60) ? "text-green-600" : meets(data.incidentConversion.conversionRate, 40) ? "text-amber-600" : "text-red-600"}
         />
       </div>
 
       {/* Secondary Metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
         <MetricCard label="Per Week" value={data.usage.conversationsPerWeek} />
-        <MetricCard label="Child Voice" value={data.quality.childVoiceRate} suffix="%" />
-        <MetricCard label="Follow-Up Rate" value={data.outcomes.followUpRate} suffix="%" />
+        <MetricCard label="Child Voice" value={formatRate(data.quality.childVoiceRate)} />
+        <MetricCard label="Follow-Up Rate" value={formatRate(data.outcomes.followUpRate)} />
         <MetricCard label="Avg Duration" value={data.usage.avgDuration} suffix="m" />
       </div>
 
@@ -222,12 +221,12 @@ export function RestorativePracticeDashboardWidget() {
             {data.usage.scheduledCount} SCHEDULED
           </span>
         )}
-        {data.quality.childLedRate >= 30 && (
+        {meets(data.quality.childLedRate, 30) && (
           <span className="rounded-full bg-green-100 text-green-700 px-3 py-1 text-xs font-medium border border-green-200">
             {data.quality.childLedRate}% CHILD-LED
           </span>
         )}
-        {data.outcomes.repairRate >= 75 && (
+        {meets(data.outcomes.repairRate, 75) && (
           <span className="rounded-full bg-green-100 text-green-700 px-3 py-1 text-xs font-medium border border-green-200">
             STRONG REPAIR RATE
           </span>

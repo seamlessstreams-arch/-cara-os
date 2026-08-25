@@ -558,7 +558,7 @@ describe("Restorative Practice — evaluateRestorativeUsage", () => {
   it("handles empty conversations", () => {
     const result = evaluateRestorativeUsage([], PERIOD_START, PERIOD_END);
     expect(result.totalConversations).toBe(0);
-    expect(result.completionRate).toBe(0);
+    expect(result.completionRate).toBeNull();
     expect(result.avgDuration).toBe(0);
     expect(result.conversationsPerWeek).toBe(0);
   });
@@ -640,7 +640,7 @@ describe("Restorative Practice — evaluateRestorativeQuality", () => {
   it("handles empty conversations", () => {
     const result = evaluateRestorativeQuality([], PERIOD_START, PERIOD_END);
     expect(result.avgQualityScore).toBe(0);
-    expect(result.childVoiceRate).toBe(0);
+    expect(result.childVoiceRate).toBeNull();
     expect(result.conversationsAssessed).toBe(0);
   });
 
@@ -722,8 +722,8 @@ describe("Restorative Practice — evaluateOutcomes", () => {
   it("handles empty conversations", () => {
     const result = evaluateOutcomes([], PERIOD_START, PERIOD_END);
     expect(result.totalResolved).toBe(0);
-    expect(result.repairRate).toBe(0);
-    expect(result.followUpRate).toBe(0);
+    expect(result.repairRate).toBeNull();
+    expect(result.followUpRate).toBeNull();
     expect(result.averageAgreementsPerConversation).toBe(0);
   });
 
@@ -767,7 +767,7 @@ describe("Restorative Practice — evaluateIncidentConversion", () => {
   it("handles empty incident links", () => {
     const result = evaluateIncidentConversion(demoConversations, [], PERIOD_START, PERIOD_END);
     expect(result.totalLinkedIncidents).toBe(0);
-    expect(result.conversionRate).toBe(0);
+    expect(result.conversionRate).toBeNull();
     expect(result.avgDaysToRestorative).toBe(0);
   });
 

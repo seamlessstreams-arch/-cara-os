@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara Outcomes Measurement — Intelligence Engine
 //
@@ -149,7 +150,8 @@ export interface ProgressFromBaselineResult {
   domainsAssessed: number;
   domainProgress: DomainProgress[];
   overallAverageChange: number | null;
-  overallImprovementRate: number;      // % of children improving in at least 1 domain
+  /** null when the population is empty — nothing measured, not 0%. */
+  overallImprovementRate: number | null;      // % of children improving in at least 1 domain
   regressionAlerts: {
     childId: string;
     childName: string;
@@ -169,9 +171,12 @@ export interface TargetAchievementResult {
   atRiskCount: number;
   notAchievedCount: number;
   reviewedCount: number;
-  achievedRate: number;
-  onTrackRate: number;
-  atRiskRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  achievedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  onTrackRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  atRiskRate: number | null;
   domainAchievement: {
     domain: OutcomeDomain;
     domainLabel: string;
@@ -179,7 +184,8 @@ export interface TargetAchievementResult {
     achieved: number;
     onTrack: number;
     atRisk: number;
-    achievementRate: number;
+    /** null when the population is empty — nothing measured, not 0%. */
+    achievementRate: number | null;
   }[];
   atRiskDetails: {
     childId: string;
@@ -197,16 +203,22 @@ export interface TargetAchievementResult {
 export interface OutcomePlanningResult {
   totalChildren: number;
   childrenWithPlans: number;
-  planCoverageRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  planCoverageRate: number | null;
   currentPlans: number;           // plans where nextReviewDate >= referenceDate
   overduePlans: number;           // plans where nextReviewDate < referenceDate
-  planCurrencyRate: number;
-  childInvolvementRate: number;
-  familyInvolvementRate: number;
-  professionalInvolvementRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  planCurrencyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childInvolvementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  familyInvolvementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  professionalInvolvementRate: number | null;
   averageMeasurableIndicators: number | null;
   plansWithMeasurableIndicators: number;
-  measurabilityRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  measurabilityRate: number | null;
   planDetails: {
     childId: string;
     childName: string;
@@ -222,11 +234,14 @@ export interface MeasurementQualityResult {
   totalChildren: number;
   domainsWithBaselines: number;
   totalPossibleDomains: number;
-  baselineCoverageRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  baselineCoverageRate: number | null;
   methodsUsed: MeasurementMethod[];
-  methodDiversityScore: number;    // 0-100
+  /** null when the population is empty — nothing measured, not 0%. */
+  methodDiversityScore: number | null;    // 0-100
   measurementRegularity: number | null;   // average measurements per child per domain
-  childVoiceInclusion: number;     // % of measurements with childView
+  /** null when the population is empty — nothing measured, not 0%. */
+  childVoiceInclusion: number | null;     // % of measurements with childView
   qualityDetails: {
     childId: string;
     childName: string;
@@ -314,10 +329,6 @@ const DOMAIN_LABELS: Record<OutcomeDomain, string> = {
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function daysBetween(earlier: string, later: string): number {
   return Math.round(
@@ -430,7 +441,7 @@ export function evaluateProgressFromBaseline(
 
   // Overall improvement rate: % of children improving in at least 1 domain
   const childrenImproving = Array.from(childImprovementMap.values()).filter(Boolean).length;
-  const overallImprovementRate = pct(childrenImproving, childIds.length);
+  const overallImprovementRate = rate(childrenImproving, childIds.length);
 
   // Overall average change across all domain progress entries
   const overallAverageChange =
@@ -479,9 +490,9 @@ export function evaluateTargetAchievement(
   const reviewedCount = relevantTargets.filter((t) => t.status === "reviewed").length;
 
   const totalTargets = relevantTargets.length;
-  const achievedRate = pct(achievedCount, totalTargets);
-  const onTrackRate = pct(onTrackCount, totalTargets);
-  const atRiskRate = pct(atRiskCount, totalTargets);
+  const achievedRate = rate(achievedCount, totalTargets);
+  const onTrackRate = rate(onTrackCount, totalTargets);
+  const atRiskRate = rate(atRiskCount, totalTargets);
 
   // Domain-level achievement
   const domainAchievement: TargetAchievementResult["domainAchievement"] = [];
@@ -500,7 +511,7 @@ export function evaluateTargetAchievement(
       achieved,
       onTrack,
       atRisk,
-      achievementRate: pct(achieved, domainTargets.length),
+      achievementRate: rate(achieved, domainTargets.length),
     });
   }
 
@@ -553,21 +564,21 @@ export function evaluateOutcomePlanning(
   }
 
   const childrenWithPlans = latestPlanByChild.size;
-  const planCoverageRate = pct(childrenWithPlans, childIds.length);
+  const planCoverageRate = rate(childrenWithPlans, childIds.length);
 
   // Currency: nextReviewDate >= referenceDate means current
   const latestPlans = Array.from(latestPlanByChild.values());
   const currentPlans = latestPlans.filter((p) => p.nextReviewDate >= referenceDate).length;
   const overduePlans = latestPlans.length - currentPlans;
-  const planCurrencyRate = pct(currentPlans, latestPlans.length);
+  const planCurrencyRate = rate(currentPlans, latestPlans.length);
 
   // Involvement
   const childInvolved = latestPlans.filter((p) => p.childInvolved).length;
   const familyInvolved = latestPlans.filter((p) => p.familyInvolved).length;
   const professionalInvolved = latestPlans.filter((p) => p.professionalInvolved).length;
-  const childInvolvementRate = pct(childInvolved, latestPlans.length);
-  const familyInvolvementRate = pct(familyInvolved, latestPlans.length);
-  const professionalInvolvementRate = pct(professionalInvolved, latestPlans.length);
+  const childInvolvementRate = rate(childInvolved, latestPlans.length);
+  const familyInvolvementRate = rate(familyInvolved, latestPlans.length);
+  const professionalInvolvementRate = rate(professionalInvolved, latestPlans.length);
 
   // Measurability
   const totalIndicators = latestPlans.reduce((s, p) => s + p.measurableIndicators.length, 0);
@@ -578,7 +589,7 @@ export function evaluateOutcomePlanning(
   const plansWithMeasurableIndicators = latestPlans.filter(
     (p) => p.measurableIndicators.length > 0,
   ).length;
-  const measurabilityRate = pct(plansWithMeasurableIndicators, latestPlans.length);
+  const measurabilityRate = rate(plansWithMeasurableIndicators, latestPlans.length);
 
   // Per-child details
   const planDetails: OutcomePlanningResult["planDetails"] = childIds.map((cid) => {
@@ -628,14 +639,14 @@ export function evaluateMeasurementQuality(
   }
   const totalPossibleDomains = childIds.length * ALL_DOMAINS.length;
   const domainsWithBaselines = baselinedDomainPairs.size;
-  const baselineCoverageRate = pct(domainsWithBaselines, totalPossibleDomains);
+  const baselineCoverageRate = rate(domainsWithBaselines, totalPossibleDomains);
 
   // Method diversity
   const allMethodsUsed = new Set<MeasurementMethod>();
   for (const b of relevantBaselines) allMethodsUsed.add(b.method);
   for (const m of relevantMeasurements) allMethodsUsed.add(m.method);
   const methodsUsed = Array.from(allMethodsUsed);
-  const methodDiversityScore = pct(methodsUsed.length, ALL_METHODS.length);
+  const methodDiversityScore = rate(methodsUsed.length, ALL_METHODS.length);
 
   // Measurement regularity: average measurements per child per domain that has a baseline
   const domainMeasurementCounts = new Map<string, number>();
@@ -657,7 +668,7 @@ export function evaluateMeasurementQuality(
   const measurementsWithVoice = relevantMeasurements.filter(
     (m) => m.childView && m.childView.trim().length > 0,
   ).length;
-  const childVoiceInclusion = pct(measurementsWithVoice, relevantMeasurements.length);
+  const childVoiceInclusion = rate(measurementsWithVoice, relevantMeasurements.length);
 
   // Per-child quality details
   const qualityDetails: MeasurementQualityResult["qualityDetails"] = childIds.map((cid) => {
@@ -845,11 +856,11 @@ export function generateOutcomesMeasurementIntelligence(
 
   // 1. Progress from baseline (30)
   let progressScore = 0;
-  if (progressFromBaseline.overallImprovementRate >= 90) progressScore = 30;
-  else if (progressFromBaseline.overallImprovementRate >= 75) progressScore = 25;
-  else if (progressFromBaseline.overallImprovementRate >= 60) progressScore = 20;
-  else if (progressFromBaseline.overallImprovementRate >= 40) progressScore = 12;
-  else if (progressFromBaseline.overallImprovementRate >= 20) progressScore = 5;
+  if (meets(progressFromBaseline.overallImprovementRate, 90)) progressScore = 30;
+  else if (meets(progressFromBaseline.overallImprovementRate, 75)) progressScore = 25;
+  else if (meets(progressFromBaseline.overallImprovementRate, 60)) progressScore = 20;
+  else if (meets(progressFromBaseline.overallImprovementRate, 40)) progressScore = 12;
+  else if (meets(progressFromBaseline.overallImprovementRate, 20)) progressScore = 5;
 
   // Regression penalty
   if (progressFromBaseline.regressionAlerts.length > 0) {
@@ -859,7 +870,7 @@ export function generateOutcomesMeasurementIntelligence(
   // 2. Target achievement (25)
   let targetScore = 0;
   if (targetAchievement.totalTargets > 0) {
-    const effectiveRate = targetAchievement.achievedRate + targetAchievement.onTrackRate;
+    const effectiveRate = targetAchievement.achievedRate! + targetAchievement.onTrackRate!;
     if (effectiveRate >= 90) targetScore = 25;
     else if (effectiveRate >= 75) targetScore = 20;
     else if (effectiveRate >= 60) targetScore = 15;
@@ -870,42 +881,42 @@ export function generateOutcomesMeasurementIntelligence(
   // 3. Outcome planning (20)
   let planningScore = 0;
   // Coverage sub-score (8)
-  if (outcomePlanning.planCoverageRate >= 100) planningScore += 8;
-  else if (outcomePlanning.planCoverageRate >= 80) planningScore += 6;
-  else if (outcomePlanning.planCoverageRate >= 60) planningScore += 4;
-  else if (outcomePlanning.planCoverageRate >= 40) planningScore += 2;
+  if (meets(outcomePlanning.planCoverageRate, 100)) planningScore += 8;
+  else if (meets(outcomePlanning.planCoverageRate, 80)) planningScore += 6;
+  else if (meets(outcomePlanning.planCoverageRate, 60)) planningScore += 4;
+  else if (meets(outcomePlanning.planCoverageRate, 40)) planningScore += 2;
 
   // Currency sub-score (4)
-  if (outcomePlanning.planCurrencyRate >= 100) planningScore += 4;
-  else if (outcomePlanning.planCurrencyRate >= 80) planningScore += 3;
-  else if (outcomePlanning.planCurrencyRate >= 60) planningScore += 2;
-  else if (outcomePlanning.planCurrencyRate >= 40) planningScore += 1;
+  if (meets(outcomePlanning.planCurrencyRate, 100)) planningScore += 4;
+  else if (meets(outcomePlanning.planCurrencyRate, 80)) planningScore += 3;
+  else if (meets(outcomePlanning.planCurrencyRate, 60)) planningScore += 2;
+  else if (meets(outcomePlanning.planCurrencyRate, 40)) planningScore += 1;
 
   // Child involvement sub-score (4)
-  if (outcomePlanning.childInvolvementRate >= 100) planningScore += 4;
-  else if (outcomePlanning.childInvolvementRate >= 80) planningScore += 3;
-  else if (outcomePlanning.childInvolvementRate >= 60) planningScore += 2;
-  else if (outcomePlanning.childInvolvementRate >= 40) planningScore += 1;
+  if (meets(outcomePlanning.childInvolvementRate, 100)) planningScore += 4;
+  else if (meets(outcomePlanning.childInvolvementRate, 80)) planningScore += 3;
+  else if (meets(outcomePlanning.childInvolvementRate, 60)) planningScore += 2;
+  else if (meets(outcomePlanning.childInvolvementRate, 40)) planningScore += 1;
 
   // Measurability sub-score (4)
-  if (outcomePlanning.measurabilityRate >= 100) planningScore += 4;
-  else if (outcomePlanning.measurabilityRate >= 80) planningScore += 3;
-  else if (outcomePlanning.measurabilityRate >= 60) planningScore += 2;
-  else if (outcomePlanning.measurabilityRate >= 40) planningScore += 1;
+  if (meets(outcomePlanning.measurabilityRate, 100)) planningScore += 4;
+  else if (meets(outcomePlanning.measurabilityRate, 80)) planningScore += 3;
+  else if (meets(outcomePlanning.measurabilityRate, 60)) planningScore += 2;
+  else if (meets(outcomePlanning.measurabilityRate, 40)) planningScore += 1;
 
   // 4. Measurement quality (25)
   let qualityScore = 0;
   // Baseline coverage (8)
-  if (measurementQuality.baselineCoverageRate >= 90) qualityScore += 8;
-  else if (measurementQuality.baselineCoverageRate >= 70) qualityScore += 6;
-  else if (measurementQuality.baselineCoverageRate >= 50) qualityScore += 4;
-  else if (measurementQuality.baselineCoverageRate >= 30) qualityScore += 2;
+  if (meets(measurementQuality.baselineCoverageRate, 90)) qualityScore += 8;
+  else if (meets(measurementQuality.baselineCoverageRate, 70)) qualityScore += 6;
+  else if (meets(measurementQuality.baselineCoverageRate, 50)) qualityScore += 4;
+  else if (meets(measurementQuality.baselineCoverageRate, 30)) qualityScore += 2;
 
   // Method diversity (6)
-  if (measurementQuality.methodDiversityScore >= 80) qualityScore += 6;
-  else if (measurementQuality.methodDiversityScore >= 60) qualityScore += 4;
-  else if (measurementQuality.methodDiversityScore >= 40) qualityScore += 2;
-  else if (measurementQuality.methodDiversityScore >= 20) qualityScore += 1;
+  if (meets(measurementQuality.methodDiversityScore, 80)) qualityScore += 6;
+  else if (meets(measurementQuality.methodDiversityScore, 60)) qualityScore += 4;
+  else if (meets(measurementQuality.methodDiversityScore, 40)) qualityScore += 2;
+  else if (meets(measurementQuality.methodDiversityScore, 20)) qualityScore += 1;
 
   // Regularity (5)
   if ((measurementQuality.measurementRegularity ?? 0) >= 3) qualityScore += 5;
@@ -915,10 +926,10 @@ export function generateOutcomesMeasurementIntelligence(
   else if ((measurementQuality.measurementRegularity ?? 0) > 0) qualityScore += 1;
 
   // Child voice (6)
-  if (measurementQuality.childVoiceInclusion >= 80) qualityScore += 6;
-  else if (measurementQuality.childVoiceInclusion >= 60) qualityScore += 4;
-  else if (measurementQuality.childVoiceInclusion >= 40) qualityScore += 3;
-  else if (measurementQuality.childVoiceInclusion >= 20) qualityScore += 1;
+  if (meets(measurementQuality.childVoiceInclusion, 80)) qualityScore += 6;
+  else if (meets(measurementQuality.childVoiceInclusion, 60)) qualityScore += 4;
+  else if (meets(measurementQuality.childVoiceInclusion, 40)) qualityScore += 3;
+  else if (meets(measurementQuality.childVoiceInclusion, 20)) qualityScore += 1;
 
   const overallScore = Math.min(100, Math.max(0, progressScore + targetScore + planningScore + qualityScore));
 
@@ -938,47 +949,47 @@ export function generateOutcomesMeasurementIntelligence(
   const immediateActions: string[] = [];
 
   // Strengths
-  if (progressFromBaseline.overallImprovementRate >= 90) {
+  if (meets(progressFromBaseline.overallImprovementRate, 90)) {
     strengths.push(
       "Excellent progress — 90%+ of children improving from their starting points",
     );
-  } else if (progressFromBaseline.overallImprovementRate >= 75) {
+  } else if (meets(progressFromBaseline.overallImprovementRate, 75)) {
     strengths.push(
       "Good progress — 75%+ of children demonstrating improvement from baseline",
     );
   }
 
-  if (targetAchievement.totalTargets > 0 && targetAchievement.achievedRate >= 50) {
+  if (targetAchievement.totalTargets > 0 && meets(targetAchievement.achievedRate, 50)) {
     strengths.push(
       `Strong target achievement — ${targetAchievement.achievedRate}% of targets achieved`,
     );
   }
 
-  if (outcomePlanning.planCoverageRate >= 100 && outcomePlanning.planCurrencyRate >= 100) {
+  if (meets(outcomePlanning.planCoverageRate, 100) && meets(outcomePlanning.planCurrencyRate, 100)) {
     strengths.push(
       "All children have current outcome plans — excellent planning coverage",
     );
   }
 
-  if (outcomePlanning.childInvolvementRate >= 100 && outcomePlanning.totalChildren > 0) {
+  if (meets(outcomePlanning.childInvolvementRate, 100) && outcomePlanning.totalChildren > 0) {
     strengths.push(
       "Every child involved in their own outcome planning — strong participation",
     );
   }
 
-  if (measurementQuality.childVoiceInclusion >= 80) {
+  if (meets(measurementQuality.childVoiceInclusion, 80)) {
     strengths.push(
       "Child voice consistently captured in outcome measurements",
     );
   }
 
-  if (measurementQuality.baselineCoverageRate >= 90) {
+  if (meets(measurementQuality.baselineCoverageRate, 90)) {
     strengths.push(
       "Comprehensive baseline coverage across outcome domains",
     );
   }
 
-  if (measurementQuality.methodDiversityScore >= 80) {
+  if (meets(measurementQuality.methodDiversityScore, 80)) {
     strengths.push(
       "Diverse measurement methods used — multiple evidence sources triangulated",
     );
@@ -991,19 +1002,19 @@ export function generateOutcomesMeasurementIntelligence(
   }
 
   // Areas for development
-  if (progressFromBaseline.overallImprovementRate < 60 && progressFromBaseline.totalChildren > 0) {
+  if (below(progressFromBaseline.overallImprovementRate, 60) && progressFromBaseline.totalChildren > 0) {
     areasForDevelopment.push(
       `Only ${progressFromBaseline.overallImprovementRate}% of children showing improvement — review intervention strategies`,
     );
   }
 
-  if (targetAchievement.atRiskRate > 30 && targetAchievement.totalTargets > 0) {
+  if (above(targetAchievement.atRiskRate, 30) && targetAchievement.totalTargets > 0) {
     areasForDevelopment.push(
       `${targetAchievement.atRiskRate}% of targets at risk — review target-setting and support`,
     );
   }
 
-  if (outcomePlanning.planCoverageRate < 100 && outcomePlanning.totalChildren > 0) {
+  if (below(outcomePlanning.planCoverageRate, 100) && outcomePlanning.totalChildren > 0) {
     areasForDevelopment.push(
       `Outcome plan coverage at ${outcomePlanning.planCoverageRate}% — all children need individual outcome plans`,
     );
@@ -1015,19 +1026,19 @@ export function generateOutcomesMeasurementIntelligence(
     );
   }
 
-  if (outcomePlanning.childInvolvementRate < 80 && outcomePlanning.childrenWithPlans > 0) {
+  if (below(outcomePlanning.childInvolvementRate, 80) && outcomePlanning.childrenWithPlans > 0) {
     areasForDevelopment.push(
       `Child involvement in planning at ${outcomePlanning.childInvolvementRate}% — ensure all children participate in their own outcome planning`,
     );
   }
 
-  if (measurementQuality.baselineCoverageRate < 60) {
+  if (below(measurementQuality.baselineCoverageRate, 60)) {
     areasForDevelopment.push(
       `Baseline coverage only ${measurementQuality.baselineCoverageRate}% — complete baseline assessments across all domains`,
     );
   }
 
-  if (measurementQuality.childVoiceInclusion < 50 && measurements.length > 0) {
+  if (below(measurementQuality.childVoiceInclusion, 50) && measurements.length > 0) {
     areasForDevelopment.push(
       `Child voice captured in only ${measurementQuality.childVoiceInclusion}% of measurements — increase child participation`,
     );

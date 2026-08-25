@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 /* ──────────────────────────────────────────────────────────────
    Home Intelligence Summary Engine
 
@@ -95,10 +96,13 @@ export interface ModuleCoverageResult {
   overallScore: number;
   totalModules: number;
   expectedModules: number;
-  moduleCoverageRate: number;
-  highPerformanceModuleRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  moduleCoverageRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  highPerformanceModuleRate: number | null;
   domainsCovered: number;
-  domainCoverageRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  domainCoverageRate: number | null;
   consistencyScore: number;
 }
 
@@ -144,11 +148,6 @@ export interface HomeIntelligenceSummary {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -235,21 +234,21 @@ export function evaluateModuleCoverage(
       overallScore: 0,
       totalModules: 0,
       expectedModules: expectedModuleCount,
-      moduleCoverageRate: 0,
-      highPerformanceModuleRate: 0,
+      moduleCoverageRate: null,
+      highPerformanceModuleRate: null,
       domainsCovered: 0,
-      domainCoverageRate: 0,
+      domainCoverageRate: null,
       consistencyScore: 0,
     };
   }
 
-  const moduleCoverageRate = pct(Math.min(totalModules, expectedModuleCount), expectedModuleCount);
+  const moduleCoverageRate = rate(Math.min(totalModules, expectedModuleCount), expectedModuleCount);
   const highPerformanceCount = modules.filter((m) => m.overallScore >= 60).length;
-  const highPerformanceModuleRate = pct(highPerformanceCount, totalModules);
+  const highPerformanceModuleRate = rate(highPerformanceCount, totalModules);
 
   const grouped = groupByDomain(modules);
   const domainsCovered = grouped.size;
-  const domainCoverageRate = pct(domainsCovered, 4);
+  const domainCoverageRate = rate(domainsCovered, 4);
 
   // Consistency: inverse of coefficient of variation (lower spread = higher score)
   const scores = modules.map((m) => m.overallScore);
@@ -265,9 +264,9 @@ export function evaluateModuleCoverage(
 
   // Weighted: coverage(8) + highPerf(7) + domainCoverage(5) + consistency(5) = 25
   let score = 0;
-  score += (moduleCoverageRate / 100) * 8;
-  score += (highPerformanceModuleRate / 100) * 7;
-  score += (domainCoverageRate / 100) * 5;
+  score += ((moduleCoverageRate ?? 0) / 100) * 8;
+  score += ((highPerformanceModuleRate ?? 0) / 100) * 7;
+  score += ((domainCoverageRate ?? 0) / 100) * 5;
   score += (consistencyPct / 100) * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -517,7 +516,7 @@ export function generateHomeIntelligenceSummary(
   if (moduleCoverage.overallScore >= 20) strengths.push("Module coverage is comprehensive (" + moduleCoverage.overallScore + "/25)");
   if (ofstedAlignment.overallScore >= 20) strengths.push("Strong Ofsted alignment across domains (" + ofstedAlignment.overallScore + "/25)");
   if (riskProfile.overallScore >= 20) strengths.push("Low risk profile across all areas (" + riskProfile.overallScore + "/25)");
-  if (moduleCoverage.highPerformanceModuleRate >= 90) strengths.push(moduleCoverage.highPerformanceModuleRate + "% of modules rated Good or Outstanding");
+  if (meets(moduleCoverage.highPerformanceModuleRate, 90)) strengths.push(moduleCoverage.highPerformanceModuleRate + "% of modules rated Good or Outstanding");
   if (ofstedAlignment.crossDomainConsistency) strengths.push("Good cross-domain consistency — no significant gaps between SCCIF judgement areas");
 
   const strongDomains = domainSummaries.filter((d) => d.averageScore >= 80 && d.moduleCount > 0);
@@ -530,7 +529,7 @@ export function generateHomeIntelligenceSummary(
   if (overallScore < 40) areasForImprovement.push("Home intelligence rated Inadequate (" + overallScore + "/100) — urgent comprehensive review required");
   else if (overallScore < 60) areasForImprovement.push("Home intelligence Requires Improvement (" + overallScore + "/100)");
   if (domainQuality.overallScore < 15) areasForImprovement.push("Domain quality scores need improvement (" + domainQuality.overallScore + "/25)");
-  if (moduleCoverage.moduleCoverageRate < 80) areasForImprovement.push("Module coverage at " + moduleCoverage.moduleCoverageRate + "% — intelligence gaps exist");
+  if (below(moduleCoverage.moduleCoverageRate, 80)) areasForImprovement.push("Module coverage at " + moduleCoverage.moduleCoverageRate + "% — intelligence gaps exist");
   if (riskProfile.inadequateModulesCount > 0) areasForImprovement.push(riskProfile.inadequateModulesCount + " module(s) rated Inadequate — immediate intervention required");
   if (riskProfile.requiresImprovementModulesCount > 0) areasForImprovement.push(riskProfile.requiresImprovementModulesCount + " module(s) Require Improvement");
   if (!ofstedAlignment.crossDomainConsistency && moduleScores.length > 0) areasForImprovement.push("Cross-domain spread of " + Math.round(riskProfile.domainSpread) + " points — significant inconsistency across judgement areas");
@@ -571,7 +570,7 @@ export function generateHomeIntelligenceSummary(
       actions.push("MEDIUM: " + riskProfile.requiresImprovementModulesCount + " modules Require Improvement — develop targeted action plans");
     }
 
-    if (moduleCoverage.moduleCoverageRate < 60) {
+    if (below(moduleCoverage.moduleCoverageRate, 60)) {
       actions.push("MEDIUM: Only " + moduleCoverage.moduleCoverageRate + "% module coverage — expand intelligence engine adoption");
     }
   }

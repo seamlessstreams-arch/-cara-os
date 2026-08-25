@@ -312,15 +312,15 @@ describe("evaluateQualifications", () => {
   it("handles empty qualification list", () => {
     const result = evaluateQualifications([], STAFF_IDS);
     expect(result.totalQualifications).toBe(0);
-    expect(result.mandatoryComplianceRate).toBe(0);
+    expect(result.mandatoryComplianceRate).toBeNull();
     expect(result.level3PlusRate).toBe(0);
-    expect(result.evidenceRecordedRate).toBe(0);
+    expect(result.evidenceRecordedRate).toBeNull();
   });
 
   it("handles empty staff list", () => {
     const result = evaluateQualifications(demoQualifications, []);
     expect(result.totalStaff).toBe(0);
-    expect(result.level3PlusRate).toBe(0);
+    expect(result.level3PlusRate).toBeNull();
     expect(result.staffBreakdown.length).toBe(0);
   });
 
@@ -467,9 +467,9 @@ describe("evaluateCPD", () => {
     expect(result.totalRecords).toBe(0);
     expect(result.totalHours).toBe(0);
     expect(result.averageHoursPerStaff).toBe(0);
-    expect(result.overallReflectionRate).toBe(0);
-    expect(result.overallSignOffRate).toBe(0);
-    expect(result.overallImpactDocumentedRate).toBe(0);
+    expect(result.overallReflectionRate).toBeNull();
+    expect(result.overallSignOffRate).toBeNull();
+    expect(result.overallImpactDocumentedRate).toBeNull();
     expect(result.hoursTargetMetRate).toBe(0);
   });
 
@@ -477,7 +477,7 @@ describe("evaluateCPD", () => {
     const result = evaluateCPD(demoCPD, [], PERIOD_START, PERIOD_END);
     expect(result.staffCPD.length).toBe(0);
     expect(result.averageHoursPerStaff).toBe(0);
-    expect(result.hoursTargetMetRate).toBe(0);
+    expect(result.hoursTargetMetRate).toBeNull();
   });
 });
 
@@ -567,7 +567,7 @@ describe("evaluateCompetency", () => {
     expect(result.competencyDistribution.competent).toBe(0);
     expect(result.competencyDistribution.proficient).toBe(0);
     expect(result.competencyDistribution.expert).toBe(0);
-    expect(result.progressionRate).toBe(0);
+    expect(result.progressionRate).toBeNull();
     expect(result.areasNeedingDevelopment.length).toBe(0);
   });
 
@@ -704,13 +704,13 @@ describe("evaluateDevelopmentPlanning", () => {
     expect(result.staffWithPlans).toBe(0);
     expect(result.planCoverageRate).toBe(0);
     expect(result.totalGoals).toBe(0);
-    expect(result.goalAchievementRate).toBe(0);
+    expect(result.goalAchievementRate).toBeNull();
   });
 
   it("handles empty staff list", () => {
     const result = evaluateDevelopmentPlanning(demoDevelopmentPlans, [], REFERENCE_DATE);
     expect(result.totalStaff).toBe(0);
-    expect(result.planCoverageRate).toBe(0);
+    expect(result.planCoverageRate).toBeNull();
     expect(result.staffBreakdown.length).toBe(0);
   });
 
@@ -723,7 +723,7 @@ describe("evaluateDevelopmentPlanning", () => {
     }];
     const result = evaluateDevelopmentPlanning(emptyGoalPlan, ["staff-sarah"], REFERENCE_DATE);
     expect(result.totalGoals).toBe(0);
-    expect(result.goalAchievementRate).toBe(0);
+    expect(result.goalAchievementRate).toBeNull();
   });
 });
 
@@ -823,7 +823,7 @@ describe("evaluatePracticeQuality", () => {
     const result = evaluatePracticeQuality([]);
     expect(result.totalObservations).toBe(0);
     expect(result.ratingDistribution.outstanding).toBe(0);
-    expect(result.goodOrBetterRate).toBe(0);
+    expect(result.goodOrBetterRate).toBeNull();
     expect(result.followUpRequired).toBe(0);
     expect(result.improvementTrajectory).toBe("insufficient_data");
     expect(result.staffObservations.length).toBe(0);
@@ -1129,7 +1129,7 @@ describe("generateWorkforceDevelopmentIntelligence", () => {
     );
     // With no qualifications, mandatory compliance is 0 (no mandatory quals exist, rate = 0)
     // Actually with empty quals, mandatoryTotal = 0, so mandatoryComplianceRate = 0
-    expect(r.qualifications.mandatoryComplianceRate).toBe(0);
+    expect(r.qualifications.mandatoryComplianceRate).toBeNull();
   });
 
   it("handles completely empty data", () => {
@@ -1273,7 +1273,7 @@ describe("Edge cases", () => {
     const result = evaluatePracticeQuality(noFollowUp);
     expect(result.followUpRequired).toBe(0);
     expect(result.followUpCompleted).toBe(0);
-    expect(result.followUpCompletionRate).toBe(0);
+    expect(result.followUpCompletionRate).toBeNull();
   });
 
   it("large data set does not crash", () => {

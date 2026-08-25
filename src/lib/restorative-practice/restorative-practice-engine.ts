@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — Restorative Practice Intelligence Engine
 //
@@ -121,7 +122,8 @@ export interface UsageResult {
   totalConversations: number;
   byType: Record<ConversationType, number>;
   byTrigger: Record<TriggerType, number>;
-  completionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completionRate: number | null;
   avgDuration: number;
   scheduledCount: number;
   declinedCount: number;
@@ -130,23 +132,34 @@ export interface UsageResult {
 
 export interface QualityResult {
   avgQualityScore: number;
-  childVoiceRate: number;
-  childLedRate: number;
-  allPartiesHeardRate: number;
-  harmAcknowledgedRate: number;
-  repairPlanRate: number;
-  emotionsExploredRate: number;
-  needsIdentifiedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childVoiceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childLedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  allPartiesHeardRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  harmAcknowledgedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  repairPlanRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  emotionsExploredRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  needsIdentifiedRate: number | null;
   conversationsAssessed: number;
 }
 
 export interface OutcomeResult {
   totalResolved: number;
-  repairRate: number;
-  noResolutionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  repairRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  noResolutionRate: number | null;
   escalatedCount: number;
-  followUpRate: number;
-  followUpCompletedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  followUpRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  followUpCompletedRate: number | null;
   averageAgreementsPerConversation: number;
   outcomeDistribution: Record<OutcomeType, number>;
 }
@@ -154,7 +167,8 @@ export interface OutcomeResult {
 export interface IncidentConversionResult {
   incidentsWithRestorative: number;
   totalLinkedIncidents: number;
-  conversionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  conversionRate: number | null;
   avgDaysToRestorative: number;
 }
 
@@ -162,8 +176,10 @@ export interface StaffFacilitatorProfile {
   staffName: string;
   totalFacilitated: number;
   avgQualityScore: number;
-  repairRate: number;
-  childVoiceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  repairRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childVoiceRate: number | null;
 }
 
 export interface RestorativePracticeResult {
@@ -254,10 +270,6 @@ export function getStatusLabel(s: ConversationStatus): string {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function inPeriod(date: string, start: string, end: string): boolean {
   return date.slice(0, 10) >= start.slice(0, 10) && date.slice(0, 10) <= end.slice(0, 10);
 }
@@ -313,7 +325,7 @@ export function evaluateRestorativeUsage(
   }
 
   const completed = inRange.filter((c) => c.status === "completed");
-  const completionRate = pct(completed.length, totalConversations);
+  const completionRate = rate(completed.length, totalConversations);
 
   const avgDuration =
     completed.length === 0
@@ -353,13 +365,13 @@ export function evaluateRestorativeQuality(
   if (count === 0) {
     return {
       avgQualityScore: 0,
-      childVoiceRate: 0,
-      childLedRate: 0,
-      allPartiesHeardRate: 0,
-      harmAcknowledgedRate: 0,
-      repairPlanRate: 0,
-      emotionsExploredRate: 0,
-      needsIdentifiedRate: 0,
+      childVoiceRate: null,
+      childLedRate: null,
+      allPartiesHeardRate: null,
+      harmAcknowledgedRate: null,
+      repairPlanRate: null,
+      emotionsExploredRate: null,
+      needsIdentifiedRate: null,
       conversationsAssessed: 0,
     };
   }
@@ -367,25 +379,25 @@ export function evaluateRestorativeQuality(
   const totalQuality = completed.reduce((sum, c) => sum + qualityScore(c.qualityIndicators), 0);
   const avgQualityScore = Math.round(totalQuality / count);
 
-  const childVoiceRate = pct(completed.filter((c) => c.childVoiceHeard).length, count);
-  const childLedRate = pct(completed.filter((c) => c.childLedResolution).length, count);
-  const allPartiesHeardRate = pct(
+  const childVoiceRate = rate(completed.filter((c) => c.childVoiceHeard).length, count);
+  const childLedRate = rate(completed.filter((c) => c.childLedResolution).length, count);
+  const allPartiesHeardRate = rate(
     completed.filter((c) => c.qualityIndicators.allPartiesHeard).length,
     count,
   );
-  const harmAcknowledgedRate = pct(
+  const harmAcknowledgedRate = rate(
     completed.filter((c) => c.qualityIndicators.harmAcknowledged).length,
     count,
   );
-  const repairPlanRate = pct(
+  const repairPlanRate = rate(
     completed.filter((c) => c.qualityIndicators.repairPlanAgreed).length,
     count,
   );
-  const emotionsExploredRate = pct(
+  const emotionsExploredRate = rate(
     completed.filter((c) => c.qualityIndicators.emotionsExplored).length,
     count,
   );
-  const needsIdentifiedRate = pct(
+  const needsIdentifiedRate = rate(
     completed.filter((c) => c.qualityIndicators.needsIdentified).length,
     count,
   );
@@ -424,18 +436,18 @@ export function evaluateOutcomes(
 
   const positiveCount = completed.filter((c) => POSITIVE_OUTCOMES.includes(c.outcome)).length;
   const totalResolved = positiveCount;
-  const repairRate = pct(positiveCount, count);
+  const repairRate = rate(positiveCount, count);
 
   const noResolutionCount = completed.filter((c) => c.outcome === "no_resolution").length;
-  const noResolutionRate = pct(noResolutionCount, count);
+  const noResolutionRate = rate(noResolutionCount, count);
 
   const escalatedCount = completed.filter((c) => c.outcome === "escalated").length;
 
   // Follow-up tracking
   const withFollowUp = completed.filter((c) => c.followUpDate);
-  const followUpRate = pct(withFollowUp.length, count);
+  const followUpRate = rate(withFollowUp.length, count);
   const followUpCompleted = withFollowUp.filter((c) => c.followUpCompleted).length;
-  const followUpCompletedRate = pct(followUpCompleted, withFollowUp.length);
+  const followUpCompletedRate = rate(followUpCompleted, withFollowUp.length);
 
   // Average agreements
   const totalAgreements = completed.reduce((sum, c) => sum + c.agreementsMade.length, 0);
@@ -488,7 +500,7 @@ export function evaluateIncidentConversion(
   const incidentsWithRestorative = incidentIdsWithRestorative.size;
   // Unique incidents from links
   const uniqueIncidents = new Set(linksInRange.map((l) => l.incidentId)).size;
-  const conversionRate = pct(incidentsWithRestorative, uniqueIncidents);
+  const conversionRate = rate(incidentsWithRestorative, uniqueIncidents);
 
   const avgDaysToRestorative =
     daysCount === 0 ? 0 : Math.round((totalDays / daysCount) * 10) / 10;
@@ -530,10 +542,10 @@ export function buildStaffProfiles(
     const positiveCount = convos.filter((c) =>
       POSITIVE_OUTCOMES.includes(c.outcome),
     ).length;
-    const repairRate = pct(positiveCount, totalFacilitated);
+    const repairRate = rate(positiveCount, totalFacilitated);
 
     const childVoiceCount = convos.filter((c) => c.childVoiceHeard).length;
-    const childVoiceRate = pct(childVoiceCount, totalFacilitated);
+    const childVoiceRate = rate(childVoiceCount, totalFacilitated);
 
     profiles.push({
       staffName,
@@ -599,17 +611,17 @@ export function generateRestorativePracticeIntelligence(
   let outcomesScore = 0;
   if (outcomes.totalResolved === 0 && quality.conversationsAssessed === 0) {
     outcomesScore = 0;
-  } else if (outcomes.repairRate >= 75) {
+  } else if (meets(outcomes.repairRate, 75)) {
     outcomesScore = 25;
-  } else if (outcomes.repairRate >= 50) {
+  } else if (meets(outcomes.repairRate, 50)) {
     outcomesScore = 18;
-  } else if (outcomes.repairRate >= 30) {
+  } else if (meets(outcomes.repairRate, 30)) {
     outcomesScore = 10;
   } else {
     outcomesScore = 5;
   }
   // Deduct for low follow-up completed rate (if follow-ups exist)
-  if (outcomes.followUpRate > 0 && outcomes.followUpCompletedRate < 50) {
+  if (above(outcomes.followUpRate, 0) && below(outcomes.followUpCompletedRate, 50)) {
     outcomesScore = Math.max(0, outcomesScore - 5);
   }
 
@@ -617,11 +629,11 @@ export function generateRestorativePracticeIntelligence(
   let conversionScore = 0;
   if (incidentConversion.totalLinkedIncidents === 0) {
     conversionScore = 0;
-  } else if (incidentConversion.conversionRate >= 60) {
+  } else if (meets(incidentConversion.conversionRate, 60)) {
     conversionScore = 20;
-  } else if (incidentConversion.conversionRate >= 40) {
+  } else if (meets(incidentConversion.conversionRate, 40)) {
     conversionScore = 14;
-  } else if (incidentConversion.conversionRate >= 20) {
+  } else if (meets(incidentConversion.conversionRate, 20)) {
     conversionScore = 8;
   } else {
     conversionScore = 3;
@@ -662,22 +674,22 @@ export function generateRestorativePracticeIntelligence(
     );
   }
 
-  if (quality.childVoiceRate >= 80 && quality.conversationsAssessed > 0) {
+  if (meets(quality.childVoiceRate, 80) && quality.conversationsAssessed > 0) {
     strengths.push("Children's voices consistently heard in restorative processes");
   }
 
-  if (quality.childLedRate >= 40 && quality.conversationsAssessed > 0) {
+  if (meets(quality.childLedRate, 40) && quality.conversationsAssessed > 0) {
     strengths.push("Evidence of child-led resolution in restorative conversations");
   }
 
-  if (outcomes.repairRate >= 75 && quality.conversationsAssessed > 0) {
+  if (meets(outcomes.repairRate, 75) && quality.conversationsAssessed > 0) {
     strengths.push(
       "Excellent repair rate — most conversations achieve positive outcomes",
     );
   }
 
   if (
-    incidentConversion.conversionRate >= 60 &&
+    meets(incidentConversion.conversionRate, 60) &&
     incidentConversion.totalLinkedIncidents > 0
   ) {
     strengths.push(
@@ -685,7 +697,7 @@ export function generateRestorativePracticeIntelligence(
     );
   }
 
-  if (outcomes.followUpCompletedRate >= 80 && outcomes.followUpRate > 0) {
+  if (meets(outcomes.followUpCompletedRate, 80) && above(outcomes.followUpRate, 0)) {
     strengths.push("Follow-up actions are consistently completed after agreements");
   }
 
@@ -712,19 +724,19 @@ export function generateRestorativePracticeIntelligence(
     );
   }
 
-  if (quality.childVoiceRate < 70 && quality.conversationsAssessed > 0) {
+  if (below(quality.childVoiceRate, 70) && quality.conversationsAssessed > 0) {
     areasForImprovement.push(
       `Child voice heard in only ${quality.childVoiceRate}% of conversations — should be embedded in all`,
     );
   }
 
-  if (outcomes.repairRate < 50 && quality.conversationsAssessed > 0) {
+  if (below(outcomes.repairRate, 50) && quality.conversationsAssessed > 0) {
     areasForImprovement.push(
       `Repair rate at ${outcomes.repairRate}% — review facilitator skills and approach`,
     );
   }
 
-  if (outcomes.followUpCompletedRate < 50 && outcomes.followUpRate > 0) {
+  if (below(outcomes.followUpCompletedRate, 50) && above(outcomes.followUpRate, 0)) {
     areasForImprovement.push(
       `Follow-up completion at ${outcomes.followUpCompletedRate}% — agreements require better tracking`,
     );
@@ -737,7 +749,7 @@ export function generateRestorativePracticeIntelligence(
   }
 
   if (
-    incidentConversion.conversionRate < 40 &&
+    below(incidentConversion.conversionRate, 40) &&
     incidentConversion.totalLinkedIncidents > 0
   ) {
     areasForImprovement.push(
@@ -756,7 +768,7 @@ export function generateRestorativePracticeIntelligence(
     );
   }
 
-  if (quality.childVoiceRate < 50 && quality.conversationsAssessed > 0) {
+  if (below(quality.childVoiceRate, 50) && quality.conversationsAssessed > 0) {
     actions.push(
       "HIGH: Embed child voice in every restorative conversation — review staff training in restorative questioning",
     );
@@ -774,7 +786,7 @@ export function generateRestorativePracticeIntelligence(
     );
   }
 
-  if (outcomes.noResolutionRate > 30 && quality.conversationsAssessed > 0) {
+  if (above(outcomes.noResolutionRate, 30) && quality.conversationsAssessed > 0) {
     actions.push(
       `REVIEW: ${outcomes.noResolutionRate}% no-resolution rate — consider additional facilitator support or external mediation`,
     );

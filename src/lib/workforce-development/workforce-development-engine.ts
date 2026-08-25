@@ -1,4 +1,5 @@
 import { todayStr } from "@/lib/utils";
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — Workforce Development Intelligence Engine
 //
@@ -164,14 +165,17 @@ export interface PracticeObservation {
 export interface QualificationEvaluationResult {
   totalStaff: number;
   totalQualifications: number;
-  mandatoryComplianceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  mandatoryComplianceRate: number | null;
   mandatoryAchieved: number;
   mandatoryTotal: number;
   inProgressCount: number;
   overdueCount: number;
-  level3PlusRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  level3PlusRate: number | null;
   level3PlusCount: number;
-  evidenceRecordedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  evidenceRecordedRate: number | null;
   staffBreakdown: {
     staffId: string;
     staffName: string;
@@ -196,26 +200,31 @@ export interface CPDEvaluationResult {
     hoursCompleted: number;
     recordCount: number;
     categoriesCovered: CPDCategory[];
-    reflectionRate: number;
-    signOffRate: number;
-    impactDocumentedRate: number;
+    reflectionRate: number | null;
+    signOffRate: number | null;
+    impactDocumentedRate: number | null;
   }[];
   categoryCoverage: {
     category: CPDCategory;
     count: number;
     totalHours: number;
   }[];
-  overallReflectionRate: number;
-  overallSignOffRate: number;
-  overallImpactDocumentedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  overallReflectionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  overallSignOffRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  overallImpactDocumentedRate: number | null;
   staffMeetingHoursTarget: number;
-  hoursTargetMetRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  hoursTargetMetRate: number | null;
 }
 
 export interface CompetencyEvaluationResult {
   totalAssessments: number;
   competencyDistribution: Record<CompetencyLevel, number>;
-  progressionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  progressionRate: number | null;
   progressionCount: number;
   regressionCount: number;
   staticCount: number;
@@ -229,7 +238,8 @@ export interface CompetencyEvaluationResult {
   assessmentCurrency: {
     current: number;
     overdue: number;
-    currencyRate: number;
+    /** null when the population is empty — nothing measured, not 0%. */
+    currencyRate: number | null;
   };
   staffCompetencies: {
     staffId: string;
@@ -243,22 +253,28 @@ export interface CompetencyEvaluationResult {
 export interface DevelopmentPlanningResult {
   totalStaff: number;
   staffWithPlans: number;
-  planCoverageRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  planCoverageRate: number | null;
   totalGoals: number;
   goalsAchieved: number;
   goalsInProgress: number;
   goalsOverdue: number;
   goalsNotStarted: number;
-  goalAchievementRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  goalAchievementRate: number | null;
   currentPlans: number;
   overduePlans: number;
-  planCurrencyRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  planCurrencyRate: number | null;
   alignedToHomeNeeds: number;
   alignedToRegulatory: number;
   staffInputRecorded: number;
-  homeNeedsAlignmentRate: number;
-  regulatoryAlignmentRate: number;
-  staffInputRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  homeNeedsAlignmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  regulatoryAlignmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffInputRate: number | null;
   staffBreakdown: {
     staffId: string;
     staffName: string;
@@ -273,12 +289,16 @@ export interface DevelopmentPlanningResult {
 export interface PracticeQualityResult {
   totalObservations: number;
   ratingDistribution: Record<PracticeObservation["rating"], number>;
-  outstandingRate: number;
-  goodOrBetterRate: number;
-  requiresImprovementOrWorseRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  outstandingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  goodOrBetterRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  requiresImprovementOrWorseRate: number | null;
   followUpRequired: number;
   followUpCompleted: number;
-  followUpCompletionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  followUpCompletionRate: number | null;
   improvementTrajectory: "improving" | "stable" | "declining" | "insufficient_data";
   observationsByType: Record<PracticeObservation["observationType"], number>;
   staffObservations: {
@@ -289,7 +309,8 @@ export interface PracticeQualityResult {
     observationCount: number;
   }[];
   actionPlansCreated: number;
-  actionPlanRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionPlanRate: number | null;
 }
 
 export interface WorkforceDevelopmentResult {
@@ -402,10 +423,6 @@ export function getCompetencyLevelLabel(l: CompetencyLevel): string {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function inPeriod(date: string, start: string, end: string): boolean {
   return date.slice(0, 10) >= start.slice(0, 10) && date.slice(0, 10) <= end.slice(0, 10);
 }
@@ -427,7 +444,7 @@ export function evaluateQualifications(
   const mandatoryQuals = quals.filter((q) => q.mandatoryForRole);
   const mandatoryAchieved = mandatoryQuals.filter((q) => q.status === "achieved").length;
   const mandatoryTotal = mandatoryQuals.length;
-  const mandatoryComplianceRate = pct(mandatoryAchieved, mandatoryTotal);
+  const mandatoryComplianceRate = rate(mandatoryAchieved, mandatoryTotal);
 
   // In-progress and overdue counts
   const inProgressCount = quals.filter((q) => q.status === "in_progress").length;
@@ -443,11 +460,11 @@ export function evaluateQualifications(
     );
   });
   const level3PlusCount = staffWithLevel3Plus.length;
-  const level3PlusRate = pct(level3PlusCount, totalStaff);
+  const level3PlusRate = rate(level3PlusCount, totalStaff);
 
   // Evidence recorded rate
   const evidenceRecordedCount = quals.filter((q) => q.evidenceRecorded).length;
-  const evidenceRecordedRate = pct(evidenceRecordedCount, totalQualifications);
+  const evidenceRecordedRate = rate(evidenceRecordedCount, totalQualifications);
 
   // Staff breakdown
   const staffBreakdown = staffIds.map((sid) => {
@@ -517,15 +534,15 @@ export function evaluateCPD(
     const staffName = staffRecords.length > 0 ? staffRecords[0].staffName : sid;
     const hoursCompleted = Math.round(staffRecords.reduce((sum, r) => sum + r.hoursCompleted, 0) * 10) / 10;
     const categoriesCovered = [...new Set(staffRecords.map((r) => r.category))];
-    const reflectionRate = pct(
+    const reflectionRate = rate(
       staffRecords.filter((r) => r.reflectionRecorded).length,
       staffRecords.length,
     );
-    const signOffRate = pct(
+    const signOffRate = rate(
       staffRecords.filter((r) => r.supervisorSignOff).length,
       staffRecords.length,
     );
-    const impactDocumentedRate = pct(
+    const impactDocumentedRate = rate(
       staffRecords.filter((r) => r.impactOnPractice.trim().length > 0).length,
       staffRecords.length,
     );
@@ -553,22 +570,22 @@ export function evaluateCPD(
   }).filter((c) => c.count > 0);
 
   // Overall rates
-  const overallReflectionRate = pct(
+  const overallReflectionRate = rate(
     periodRecords.filter((r) => r.reflectionRecorded).length,
     totalRecords,
   );
-  const overallSignOffRate = pct(
+  const overallSignOffRate = rate(
     periodRecords.filter((r) => r.supervisorSignOff).length,
     totalRecords,
   );
-  const overallImpactDocumentedRate = pct(
+  const overallImpactDocumentedRate = rate(
     periodRecords.filter((r) => r.impactOnPractice.trim().length > 0).length,
     totalRecords,
   );
 
   // Hours target
   const staffMeetingHoursTarget = staffCPD.filter((s) => s.hoursCompleted >= CPD_HOURS_TARGET).length;
-  const hoursTargetMetRate = pct(staffMeetingHoursTarget, staffIds.length);
+  const hoursTargetMetRate = rate(staffMeetingHoursTarget, staffIds.length);
 
   return {
     totalRecords,
@@ -620,7 +637,7 @@ export function evaluateCompetency(
     }
   }
   const assessmentsWithBaseline = totalAssessments - noBaselineCount;
-  const progressionRate = pct(progressionCount, assessmentsWithBaseline);
+  const progressionRate = rate(progressionCount, assessmentsWithBaseline);
 
   // Areas needing development (developing level)
   const areasNeedingDevelopment = assessments
@@ -637,7 +654,7 @@ export function evaluateCompetency(
   const now = todayStr();
   const current = assessments.filter((a) => a.nextAssessmentDate >= now).length;
   const overdue = assessments.filter((a) => a.nextAssessmentDate < now).length;
-  const currencyRate = pct(current, totalAssessments);
+  const currencyRate = rate(current, totalAssessments);
 
   // Staff competencies
   const staffCompetencies = staffIds.map((sid) => {
@@ -694,7 +711,7 @@ export function evaluateDevelopmentPlanning(
   const totalStaff = staffIds.length;
   const staffWithPlanIds = [...new Set(plans.map((p) => p.staffId))];
   const staffWithPlans = staffWithPlanIds.filter((sid) => staffIds.includes(sid)).length;
-  const planCoverageRate = pct(staffWithPlans, totalStaff);
+  const planCoverageRate = rate(staffWithPlans, totalStaff);
 
   // Goals
   const allGoals = plans.flatMap((p) => p.goals);
@@ -703,20 +720,20 @@ export function evaluateDevelopmentPlanning(
   const goalsInProgress = allGoals.filter((g) => g.status === "in_progress").length;
   const goalsOverdue = allGoals.filter((g) => g.status === "overdue").length;
   const goalsNotStarted = allGoals.filter((g) => g.status === "not_started").length;
-  const goalAchievementRate = pct(goalsAchieved, totalGoals);
+  const goalAchievementRate = rate(goalsAchieved, totalGoals);
 
   // Plan currency: nextReviewDate >= referenceDate means current
   const currentPlans = plans.filter((p) => p.nextReviewDate >= referenceDate).length;
   const overduePlans = plans.filter((p) => p.nextReviewDate < referenceDate).length;
-  const planCurrencyRate = pct(currentPlans, plans.length);
+  const planCurrencyRate = rate(currentPlans, plans.length);
 
   // Alignment
   const alignedToHomeNeeds = plans.filter((p) => p.alignedToHomeNeeds).length;
   const alignedToRegulatory = plans.filter((p) => p.alignedToRegulatory).length;
   const staffInputRecorded = plans.filter((p) => p.staffInputRecorded).length;
-  const homeNeedsAlignmentRate = pct(alignedToHomeNeeds, plans.length);
-  const regulatoryAlignmentRate = pct(alignedToRegulatory, plans.length);
-  const staffInputRate = pct(staffInputRecorded, plans.length);
+  const homeNeedsAlignmentRate = rate(alignedToHomeNeeds, plans.length);
+  const regulatoryAlignmentRate = rate(alignedToRegulatory, plans.length);
+  const staffInputRate = rate(staffInputRecorded, plans.length);
 
   // Staff breakdown
   const staffBreakdown = staffIds.map((sid) => {
@@ -787,18 +804,18 @@ export function evaluatePracticeQuality(
     ratingDistribution[o.rating]++;
   }
 
-  const outstandingRate = pct(ratingDistribution.outstanding, totalObservations);
+  const outstandingRate = rate(ratingDistribution.outstanding, totalObservations);
   const goodOrBetterCount = ratingDistribution.outstanding + ratingDistribution.good;
-  const goodOrBetterRate = pct(goodOrBetterCount, totalObservations);
+  const goodOrBetterRate = rate(goodOrBetterCount, totalObservations);
   const requiresImprovementOrWorseCount =
     ratingDistribution.requires_improvement + ratingDistribution.inadequate;
-  const requiresImprovementOrWorseRate = pct(requiresImprovementOrWorseCount, totalObservations);
+  const requiresImprovementOrWorseRate = rate(requiresImprovementOrWorseCount, totalObservations);
 
   // Follow-up
   const observationsWithFollowUp = observations.filter((o) => o.followUpDate);
   const followUpRequired = observationsWithFollowUp.length;
   const followUpCompleted = observationsWithFollowUp.filter((o) => o.followUpCompleted === true).length;
-  const followUpCompletionRate = pct(followUpCompleted, followUpRequired);
+  const followUpCompletionRate = rate(followUpCompleted, followUpRequired);
 
   // Improvement trajectory: compare first half vs second half of observations sorted by date
   let improvementTrajectory: PracticeQualityResult["improvementTrajectory"] = "insufficient_data";
@@ -849,7 +866,7 @@ export function evaluatePracticeQuality(
 
   // Action plans
   const actionPlansCreated = observations.filter((o) => o.actionPlanCreated).length;
-  const actionPlanRate = pct(actionPlansCreated, totalObservations);
+  const actionPlanRate = rate(actionPlansCreated, totalObservations);
 
   return {
     totalObservations,
@@ -895,28 +912,28 @@ export function generateWorkforceDevelopmentIntelligence(
   let qualScore = 0;
 
   // Mandatory compliance portion (12 points)
-  if (qualifications.mandatoryComplianceRate >= 100) qualScore += 12;
-  else if (qualifications.mandatoryComplianceRate >= 90) qualScore += 10;
-  else if (qualifications.mandatoryComplianceRate >= 75) qualScore += 7;
-  else if (qualifications.mandatoryComplianceRate >= 50) qualScore += 4;
-  else if (qualifications.mandatoryComplianceRate > 0) qualScore += 2;
+  if (meets(qualifications.mandatoryComplianceRate, 100)) qualScore += 12;
+  else if (meets(qualifications.mandatoryComplianceRate, 90)) qualScore += 10;
+  else if (meets(qualifications.mandatoryComplianceRate, 75)) qualScore += 7;
+  else if (meets(qualifications.mandatoryComplianceRate, 50)) qualScore += 4;
+  else if (above(qualifications.mandatoryComplianceRate, 0)) qualScore += 2;
 
   // Level 3+ portion (8 points)
-  if (qualifications.level3PlusRate >= 100) qualScore += 8;
-  else if (qualifications.level3PlusRate >= 80) qualScore += 6;
-  else if (qualifications.level3PlusRate >= 60) qualScore += 4;
-  else if (qualifications.level3PlusRate >= 40) qualScore += 2;
-  else if (qualifications.level3PlusRate > 0) qualScore += 1;
+  if (meets(qualifications.level3PlusRate, 100)) qualScore += 8;
+  else if (meets(qualifications.level3PlusRate, 80)) qualScore += 6;
+  else if (meets(qualifications.level3PlusRate, 60)) qualScore += 4;
+  else if (meets(qualifications.level3PlusRate, 40)) qualScore += 2;
+  else if (above(qualifications.level3PlusRate, 0)) qualScore += 1;
 
   // 2. CPD (20 points)
   // Split: 6 for hours, 5 for coverage, 5 for reflection, 4 for impact
   let cpdScore = 0;
 
   // Hours portion (6 points)
-  if (cpdResult.hoursTargetMetRate >= 100) cpdScore += 6;
-  else if (cpdResult.hoursTargetMetRate >= 75) cpdScore += 5;
-  else if (cpdResult.hoursTargetMetRate >= 50) cpdScore += 3;
-  else if (cpdResult.hoursTargetMetRate > 0) cpdScore += 1;
+  if (meets(cpdResult.hoursTargetMetRate, 100)) cpdScore += 6;
+  else if (meets(cpdResult.hoursTargetMetRate, 75)) cpdScore += 5;
+  else if (meets(cpdResult.hoursTargetMetRate, 50)) cpdScore += 3;
+  else if (above(cpdResult.hoursTargetMetRate, 0)) cpdScore += 1;
 
   // Coverage portion (5 points) — how many categories are represented
   const categoriesCoveredCount = cpdResult.categoryCoverage.length;
@@ -926,16 +943,16 @@ export function generateWorkforceDevelopmentIntelligence(
   else if (categoriesCoveredCount >= 2) cpdScore += 1;
 
   // Reflection portion (5 points)
-  if (cpdResult.overallReflectionRate >= 90) cpdScore += 5;
-  else if (cpdResult.overallReflectionRate >= 75) cpdScore += 4;
-  else if (cpdResult.overallReflectionRate >= 50) cpdScore += 2;
-  else if (cpdResult.overallReflectionRate > 0) cpdScore += 1;
+  if (meets(cpdResult.overallReflectionRate, 90)) cpdScore += 5;
+  else if (meets(cpdResult.overallReflectionRate, 75)) cpdScore += 4;
+  else if (meets(cpdResult.overallReflectionRate, 50)) cpdScore += 2;
+  else if (above(cpdResult.overallReflectionRate, 0)) cpdScore += 1;
 
   // Impact documented portion (4 points)
-  if (cpdResult.overallImpactDocumentedRate >= 90) cpdScore += 4;
-  else if (cpdResult.overallImpactDocumentedRate >= 75) cpdScore += 3;
-  else if (cpdResult.overallImpactDocumentedRate >= 50) cpdScore += 2;
-  else if (cpdResult.overallImpactDocumentedRate > 0) cpdScore += 1;
+  if (meets(cpdResult.overallImpactDocumentedRate, 90)) cpdScore += 4;
+  else if (meets(cpdResult.overallImpactDocumentedRate, 75)) cpdScore += 3;
+  else if (meets(cpdResult.overallImpactDocumentedRate, 50)) cpdScore += 2;
+  else if (above(cpdResult.overallImpactDocumentedRate, 0)) cpdScore += 1;
 
   // 3. Competency (20 points)
   // Split: 8 for distribution, 6 for progression, 6 for currency
@@ -947,49 +964,49 @@ export function generateWorkforceDevelopmentIntelligence(
     const proficientOrExpert =
       competency.competencyDistribution.proficient +
       competency.competencyDistribution.expert;
-    const proficientExpertRate = pct(proficientOrExpert, totalAssessments);
-    if (proficientExpertRate >= 75) compScore += 8;
-    else if (proficientExpertRate >= 50) compScore += 6;
-    else if (proficientExpertRate >= 25) compScore += 4;
+    const proficientExpertRate = rate(proficientOrExpert, totalAssessments);
+    if (meets(proficientExpertRate, 75)) compScore += 8;
+    else if (meets(proficientExpertRate, 50)) compScore += 6;
+    else if (meets(proficientExpertRate, 25)) compScore += 4;
     else compScore += 2;
   }
 
   // Progression portion (6 points)
-  if (competency.progressionRate >= 60) compScore += 6;
-  else if (competency.progressionRate >= 40) compScore += 4;
-  else if (competency.progressionRate >= 20) compScore += 2;
+  if (meets(competency.progressionRate, 60)) compScore += 6;
+  else if (meets(competency.progressionRate, 40)) compScore += 4;
+  else if (meets(competency.progressionRate, 20)) compScore += 2;
   else if (competency.progressionCount > 0) compScore += 1;
 
   // Currency portion (6 points)
-  if (competency.assessmentCurrency.currencyRate >= 90) compScore += 6;
-  else if (competency.assessmentCurrency.currencyRate >= 75) compScore += 4;
-  else if (competency.assessmentCurrency.currencyRate >= 50) compScore += 2;
-  else if (competency.assessmentCurrency.currencyRate > 0) compScore += 1;
+  if (meets(competency.assessmentCurrency.currencyRate, 90)) compScore += 6;
+  else if (meets(competency.assessmentCurrency.currencyRate, 75)) compScore += 4;
+  else if (meets(competency.assessmentCurrency.currencyRate, 50)) compScore += 2;
+  else if (above(competency.assessmentCurrency.currencyRate, 0)) compScore += 1;
 
   // 4. Development planning (20 points)
   // Split: 6 for coverage, 6 for achievement, 4 for currency, 4 for alignment
   let devScore = 0;
 
   // Coverage portion (6 points)
-  if (developmentPlanning.planCoverageRate >= 100) devScore += 6;
-  else if (developmentPlanning.planCoverageRate >= 80) devScore += 5;
-  else if (developmentPlanning.planCoverageRate >= 60) devScore += 3;
-  else if (developmentPlanning.planCoverageRate > 0) devScore += 1;
+  if (meets(developmentPlanning.planCoverageRate, 100)) devScore += 6;
+  else if (meets(developmentPlanning.planCoverageRate, 80)) devScore += 5;
+  else if (meets(developmentPlanning.planCoverageRate, 60)) devScore += 3;
+  else if (above(developmentPlanning.planCoverageRate, 0)) devScore += 1;
 
   // Achievement portion (6 points)
-  if (developmentPlanning.goalAchievementRate >= 80) devScore += 6;
-  else if (developmentPlanning.goalAchievementRate >= 60) devScore += 4;
-  else if (developmentPlanning.goalAchievementRate >= 40) devScore += 3;
-  else if (developmentPlanning.goalAchievementRate > 0) devScore += 1;
+  if (meets(developmentPlanning.goalAchievementRate, 80)) devScore += 6;
+  else if (meets(developmentPlanning.goalAchievementRate, 60)) devScore += 4;
+  else if (meets(developmentPlanning.goalAchievementRate, 40)) devScore += 3;
+  else if (above(developmentPlanning.goalAchievementRate, 0)) devScore += 1;
 
   // Currency portion (4 points)
-  if (developmentPlanning.planCurrencyRate >= 90) devScore += 4;
-  else if (developmentPlanning.planCurrencyRate >= 75) devScore += 3;
-  else if (developmentPlanning.planCurrencyRate >= 50) devScore += 2;
-  else if (developmentPlanning.planCurrencyRate > 0) devScore += 1;
+  if (meets(developmentPlanning.planCurrencyRate, 90)) devScore += 4;
+  else if (meets(developmentPlanning.planCurrencyRate, 75)) devScore += 3;
+  else if (meets(developmentPlanning.planCurrencyRate, 50)) devScore += 2;
+  else if (above(developmentPlanning.planCurrencyRate, 0)) devScore += 1;
 
   // Alignment portion (4 points) — average of home needs + regulatory alignment
-  const avgAlignment = (developmentPlanning.homeNeedsAlignmentRate + developmentPlanning.regulatoryAlignmentRate) / 2;
+  const avgAlignment = ((developmentPlanning.homeNeedsAlignmentRate ?? 0) + (developmentPlanning.regulatoryAlignmentRate ?? 0)) / 2;
   if (avgAlignment >= 90) devScore += 4;
   else if (avgAlignment >= 75) devScore += 3;
   else if (avgAlignment >= 50) devScore += 2;
@@ -1000,20 +1017,20 @@ export function generateWorkforceDevelopmentIntelligence(
   let practiceScore = 0;
 
   // Ratings portion (8 points)
-  if (practiceQuality.goodOrBetterRate >= 90) practiceScore += 8;
-  else if (practiceQuality.goodOrBetterRate >= 75) practiceScore += 6;
-  else if (practiceQuality.goodOrBetterRate >= 50) practiceScore += 4;
-  else if (practiceQuality.goodOrBetterRate > 0) practiceScore += 2;
+  if (meets(practiceQuality.goodOrBetterRate, 90)) practiceScore += 8;
+  else if (meets(practiceQuality.goodOrBetterRate, 75)) practiceScore += 6;
+  else if (meets(practiceQuality.goodOrBetterRate, 50)) practiceScore += 4;
+  else if (above(practiceQuality.goodOrBetterRate, 0)) practiceScore += 2;
 
   // Follow-up portion (6 points)
-  if (practiceQuality.followUpCompletionRate >= 90) practiceScore += 6;
-  else if (practiceQuality.followUpCompletionRate >= 75) practiceScore += 4;
-  else if (practiceQuality.followUpCompletionRate >= 50) practiceScore += 2;
+  if (meets(practiceQuality.followUpCompletionRate, 90)) practiceScore += 6;
+  else if (meets(practiceQuality.followUpCompletionRate, 75)) practiceScore += 4;
+  else if (meets(practiceQuality.followUpCompletionRate, 50)) practiceScore += 2;
   else if (practiceQuality.followUpRequired > 0 && practiceQuality.followUpCompleted > 0) practiceScore += 1;
 
   // Improvement portion (6 points)
   if (practiceQuality.improvementTrajectory === "improving") practiceScore += 6;
-  else if (practiceQuality.improvementTrajectory === "stable" && practiceQuality.goodOrBetterRate >= 75) practiceScore += 5;
+  else if (practiceQuality.improvementTrajectory === "stable" && meets(practiceQuality.goodOrBetterRate, 75)) practiceScore += 5;
   else if (practiceQuality.improvementTrajectory === "stable") practiceScore += 3;
   else if (practiceQuality.improvementTrajectory === "declining") practiceScore += 1;
   else practiceScore += 2; // insufficient_data — neutral
@@ -1036,33 +1053,33 @@ export function generateWorkforceDevelopmentIntelligence(
   const immediateActions: string[] = [];
 
   // Strengths
-  if (qualifications.mandatoryComplianceRate >= 100) {
+  if (meets(qualifications.mandatoryComplianceRate, 100)) {
     strengths.push("All mandatory qualifications achieved — full regulatory compliance");
-  } else if (qualifications.mandatoryComplianceRate >= 90) {
+  } else if (meets(qualifications.mandatoryComplianceRate, 90)) {
     strengths.push("Strong mandatory qualification compliance above 90%");
   }
 
-  if (qualifications.level3PlusRate >= 100) {
+  if (meets(qualifications.level3PlusRate, 100)) {
     strengths.push("All staff hold Level 3+ qualifications — exceeds sector expectations");
   }
 
-  if (cpdResult.hoursTargetMetRate >= 80) {
+  if (meets(cpdResult.hoursTargetMetRate, 80)) {
     strengths.push(`Strong CPD engagement — ${cpdResult.hoursTargetMetRate}% of staff meeting hours target`);
   }
 
-  if (cpdResult.overallReflectionRate >= 80) {
+  if (meets(cpdResult.overallReflectionRate, 80)) {
     strengths.push("High-quality reflective CPD culture — reflections recorded across workforce");
   }
 
-  if (competency.progressionRate >= 50) {
+  if (meets(competency.progressionRate, 50)) {
     strengths.push("Positive competency progression — staff demonstrating professional growth");
   }
 
-  if (developmentPlanning.planCoverageRate >= 100) {
+  if (meets(developmentPlanning.planCoverageRate, 100)) {
     strengths.push("All staff have development plans — strong investment in workforce growth");
   }
 
-  if (practiceQuality.goodOrBetterRate >= 80) {
+  if (meets(practiceQuality.goodOrBetterRate, 80)) {
     strengths.push("High-quality practice observed across the team");
   }
 
@@ -1070,7 +1087,7 @@ export function generateWorkforceDevelopmentIntelligence(
     strengths.push("Positive practice improvement trajectory identified");
   }
 
-  if (developmentPlanning.staffInputRate >= 80) {
+  if (meets(developmentPlanning.staffInputRate, 80)) {
     strengths.push("Development plans co-produced with staff — evidence of participative leadership");
   }
 
@@ -1079,7 +1096,7 @@ export function generateWorkforceDevelopmentIntelligence(
   }
 
   // Areas for development
-  if (qualifications.mandatoryComplianceRate < 80) {
+  if (below(qualifications.mandatoryComplianceRate, 80)) {
     areasForDevelopment.push(
       `Mandatory qualification compliance at ${qualifications.mandatoryComplianceRate}% — target 100%`,
     );
@@ -1091,13 +1108,13 @@ export function generateWorkforceDevelopmentIntelligence(
     );
   }
 
-  if (cpdResult.hoursTargetMetRate < 60) {
+  if (below(cpdResult.hoursTargetMetRate, 60)) {
     areasForDevelopment.push(
       `Only ${cpdResult.hoursTargetMetRate}% of staff meeting CPD hours target — plan additional development opportunities`,
     );
   }
 
-  if (cpdResult.overallReflectionRate < 60) {
+  if (below(cpdResult.overallReflectionRate, 60)) {
     areasForDevelopment.push(
       `CPD reflection rate at ${cpdResult.overallReflectionRate}% — embed reflective practice into supervision`,
     );
@@ -1109,13 +1126,13 @@ export function generateWorkforceDevelopmentIntelligence(
     );
   }
 
-  if (developmentPlanning.planCoverageRate < 100) {
+  if (below(developmentPlanning.planCoverageRate, 100)) {
     areasForDevelopment.push(
       `${developmentPlanning.totalStaff - developmentPlanning.staffWithPlans} staff member${(developmentPlanning.totalStaff - developmentPlanning.staffWithPlans) !== 1 ? "s" : ""} without development plans — create and agree plans`,
     );
   }
 
-  if (practiceQuality.followUpCompletionRate < 75 && practiceQuality.followUpRequired > 0) {
+  if (below(practiceQuality.followUpCompletionRate, 75) && practiceQuality.followUpRequired > 0) {
     areasForDevelopment.push(
       `Practice observation follow-up completion at ${practiceQuality.followUpCompletionRate}% — ensure all actions are progressed`,
     );
@@ -1133,7 +1150,7 @@ export function generateWorkforceDevelopmentIntelligence(
     );
   }
 
-  if (qualifications.mandatoryComplianceRate < 50) {
+  if (below(qualifications.mandatoryComplianceRate, 50)) {
     immediateActions.push(
       "URGENT: Mandatory qualification compliance below 50% — significant Reg 32 breach risk",
     );

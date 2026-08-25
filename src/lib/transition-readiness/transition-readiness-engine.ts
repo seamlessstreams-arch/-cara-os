@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara Transition Readiness Intelligence Engine
 //
@@ -154,46 +155,71 @@ export interface PostTransitionSupport {
 export interface TransitionPlanningResult {
   overallScore: number; // 0-30
   totalTransitions: number;
-  plannedTransitionRate: number;
-  childInvolvementRate: number;
-  childViewsRate: number;
-  parentInvolvementRate: number;
-  visitCompletedRate: number;
-  riskAssessmentRate: number;
-  infoTransferRate: number;
-  goodbyesCelebratedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  plannedTransitionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childInvolvementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  parentInvolvementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  visitCompletedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  infoTransferRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  goodbyesCelebratedRate: number | null;
 }
 
 export interface HandoverResult {
   overallScore: number; // 0-25
   totalHandovers: number;
-  comprehensiveRate: number;
-  documentTransferRate: number;
-  carePlanSharedRate: number;
-  healthInfoRate: number;
-  triggersSharedRate: number;
-  childPreferencesRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  comprehensiveRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentTransferRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  carePlanSharedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  healthInfoRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  triggersSharedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childPreferencesRate: number | null;
 }
 
 export interface ReadinessResult {
   overallScore: number; // 0-25
   totalAssessments: number;
-  fullyReadyRate: number;
-  supportPlanRate: number;
-  contingencyRate: number;
-  professionalBriefedRate: number;
-  emotionalReadinessGoodRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  fullyReadyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  supportPlanRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  contingencyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  professionalBriefedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  emotionalReadinessGoodRate: number | null;
 }
 
 export interface PostTransitionResult {
   overallScore: number; // 0-20
   totalFollowUps: number;
-  followUpCompletedRate: number;
-  within7DaysRate: number;
-  settlingInReviewRate: number;
-  previousKeyWorkerContactRate: number;
-  childFeedbackRate: number;
-  issueResolutionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  followUpCompletedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  within7DaysRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  settlingInReviewRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  previousKeyWorkerContactRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childFeedbackRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  issueResolutionRate: number | null;
 }
 
 export interface ChildTransitionProfile {
@@ -305,11 +331,6 @@ export function getChildFeelingLabel(f: ChildFeelingAboutMove): string {
 
 // ── Utility ──────────────────────────────────────────────────────────────────
 
-function pct(numerator: number, denominator: number): number {
-  if (denominator === 0) return 0;
-  return Math.round((numerator / denominator) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -344,49 +365,49 @@ export function evaluateTransitionPlanning(
   const planned = plans.filter(
     (p) => p.status !== "emergency",
   ).length;
-  const plannedTransitionRate = pct(planned, total);
-  if (plannedTransitionRate >= 90) score += 5;
-  else if (plannedTransitionRate >= 70) score += 3;
+  const plannedTransitionRate = rate(planned, total);
+  if (meets(plannedTransitionRate, 90)) score += 5;
+  else if (meets(plannedTransitionRate, 70)) score += 3;
 
   // Child involvement
   const childInvolved = plans.filter(
     (p) => p.childInvolvedInPlanning,
   ).length;
-  const childInvolvementRate = pct(childInvolved, total);
-  if (childInvolvementRate >= 90) score += 5;
-  else if (childInvolvementRate >= 70) score += 3;
+  const childInvolvementRate = rate(childInvolved, total);
+  if (meets(childInvolvementRate, 90)) score += 5;
+  else if (meets(childInvolvementRate, 70)) score += 3;
 
   // Child views recorded
   const viewsRecorded = plans.filter(
     (p) => p.childViewsRecorded,
   ).length;
-  const childViewsRate = pct(viewsRecorded, total);
-  if (childViewsRate >= 90) score += 4;
-  else if (childViewsRate >= 70) score += 2;
+  const childViewsRate = rate(viewsRecorded, total);
+  if (meets(childViewsRate, 90)) score += 4;
+  else if (meets(childViewsRate, 70)) score += 2;
 
   // Parent/carer involvement
   const parentInvolved = plans.filter(
     (p) => p.parentCarerInvolved,
   ).length;
-  const parentInvolvementRate = pct(parentInvolved, total);
-  if (parentInvolvementRate >= 80) score += 3;
-  else if (parentInvolvementRate >= 60) score += 2;
+  const parentInvolvementRate = rate(parentInvolved, total);
+  if (meets(parentInvolvementRate, 80)) score += 3;
+  else if (meets(parentInvolvementRate, 60)) score += 2;
 
   // Visit to new placement
   const visitCompleted = plans.filter(
     (p) => p.visitToNewPlacementCompleted,
   ).length;
-  const visitCompletedRate = pct(visitCompleted, total);
-  if (visitCompletedRate >= 80) score += 3;
-  else if (visitCompletedRate >= 60) score += 2;
+  const visitCompletedRate = rate(visitCompleted, total);
+  if (meets(visitCompletedRate, 80)) score += 3;
+  else if (meets(visitCompletedRate, 60)) score += 2;
 
   // Risk assessment updated
   const riskUpdated = plans.filter(
     (p) => p.riskAssessmentUpdated,
   ).length;
-  const riskAssessmentRate = pct(riskUpdated, total);
-  if (riskAssessmentRate >= 90) score += 3;
-  else if (riskAssessmentRate >= 70) score += 2;
+  const riskAssessmentRate = rate(riskUpdated, total);
+  if (meets(riskAssessmentRate, 90)) score += 3;
+  else if (meets(riskAssessmentRate, 70)) score += 2;
 
   // Info transfer (health + education)
   const healthTransferred = plans.filter(
@@ -395,20 +416,20 @@ export function evaluateTransitionPlanning(
   const eduTransferred = plans.filter(
     (p) => p.educationInfoTransferred,
   ).length;
-  const infoTransferRate = pct(
+  const infoTransferRate = rate(
     healthTransferred + eduTransferred,
     total * 2,
   );
-  if (infoTransferRate >= 90) score += 4;
-  else if (infoTransferRate >= 70) score += 2;
+  if (meets(infoTransferRate, 90)) score += 4;
+  else if (meets(infoTransferRate, 70)) score += 2;
 
   // Goodbyes celebrated
   const goodbyes = plans.filter(
     (p) => p.goodbyesCelebrated,
   ).length;
-  const goodbyesCelebratedRate = pct(goodbyes, total);
-  if (goodbyesCelebratedRate >= 80) score += 3;
-  else if (goodbyesCelebratedRate >= 50) score += 1;
+  const goodbyesCelebratedRate = rate(goodbyes, total);
+  if (meets(goodbyesCelebratedRate, 80)) score += 3;
+  else if (meets(goodbyesCelebratedRate, 50)) score += 1;
 
   return {
     overallScore: Math.min(score, 30),
@@ -446,43 +467,43 @@ export function evaluateHandover(
   const comprehensive = handovers.filter(
     (h) => h.quality === "comprehensive" || h.quality === "adequate",
   ).length;
-  const comprehensiveRate = pct(comprehensive, total);
-  if (comprehensiveRate >= 90) score += 6;
-  else if (comprehensiveRate >= 70) score += 4;
-  else if (comprehensiveRate >= 50) score += 2;
+  const comprehensiveRate = rate(comprehensive, total);
+  if (meets(comprehensiveRate, 90)) score += 6;
+  else if (meets(comprehensiveRate, 70)) score += 4;
+  else if (meets(comprehensiveRate, 50)) score += 2;
 
   const docsTransferred = handovers.filter(
     (h) => h.allDocumentsTransferred,
   ).length;
-  const documentTransferRate = pct(docsTransferred, total);
-  if (documentTransferRate >= 90) score += 4;
-  else if (documentTransferRate >= 70) score += 2;
+  const documentTransferRate = rate(docsTransferred, total);
+  if (meets(documentTransferRate, 90)) score += 4;
+  else if (meets(documentTransferRate, 70)) score += 2;
 
   const carePlan = handovers.filter((h) => h.carePlanShared).length;
-  const carePlanSharedRate = pct(carePlan, total);
-  if (carePlanSharedRate >= 95) score += 4;
-  else if (carePlanSharedRate >= 80) score += 2;
+  const carePlanSharedRate = rate(carePlan, total);
+  if (meets(carePlanSharedRate, 95)) score += 4;
+  else if (meets(carePlanSharedRate, 80)) score += 2;
 
   const healthInfo = handovers.filter(
     (h) => h.healthPassportShared && h.medicationInfoTransferred,
   ).length;
-  const healthInfoRate = pct(healthInfo, total);
-  if (healthInfoRate >= 90) score += 4;
-  else if (healthInfoRate >= 70) score += 2;
+  const healthInfoRate = rate(healthInfo, total);
+  if (meets(healthInfoRate, 90)) score += 4;
+  else if (meets(healthInfoRate, 70)) score += 2;
 
   const triggers = handovers.filter(
     (h) => h.triggersAndStrategiesShared,
   ).length;
-  const triggersSharedRate = pct(triggers, total);
-  if (triggersSharedRate >= 90) score += 4;
-  else if (triggersSharedRate >= 70) score += 2;
+  const triggersSharedRate = rate(triggers, total);
+  if (meets(triggersSharedRate, 90)) score += 4;
+  else if (meets(triggersSharedRate, 70)) score += 2;
 
   const prefs = handovers.filter(
     (h) => h.childPreferencesShared,
   ).length;
-  const childPreferencesRate = pct(prefs, total);
-  if (childPreferencesRate >= 90) score += 3;
-  else if (childPreferencesRate >= 70) score += 2;
+  const childPreferencesRate = rate(prefs, total);
+  if (meets(childPreferencesRate, 90)) score += 3;
+  else if (meets(childPreferencesRate, 70)) score += 2;
 
   return {
     overallScore: Math.min(score, 25),
@@ -519,43 +540,43 @@ export function evaluateReadiness(
       a.overallReadiness === "fully_ready" ||
       a.overallReadiness === "mostly_ready",
   ).length;
-  const fullyReadyRate = pct(fullyReady, total);
-  if (fullyReadyRate >= 80) score += 6;
-  else if (fullyReadyRate >= 60) score += 4;
-  else if (fullyReadyRate >= 40) score += 2;
+  const fullyReadyRate = rate(fullyReady, total);
+  if (meets(fullyReadyRate, 80)) score += 6;
+  else if (meets(fullyReadyRate, 60)) score += 4;
+  else if (meets(fullyReadyRate, 40)) score += 2;
 
   const supportPlan = assessments.filter(
     (a) =>
       a.supportPlanStatus === "in_place" ||
       a.supportPlanStatus === "not_required",
   ).length;
-  const supportPlanRate = pct(supportPlan, total);
-  if (supportPlanRate >= 90) score += 5;
-  else if (supportPlanRate >= 70) score += 3;
+  const supportPlanRate = rate(supportPlan, total);
+  if (meets(supportPlanRate, 90)) score += 5;
+  else if (meets(supportPlanRate, 70)) score += 3;
 
   const contingency = assessments.filter(
     (a) => a.contingencyPlanInPlace,
   ).length;
-  const contingencyRate = pct(contingency, total);
-  if (contingencyRate >= 90) score += 4;
-  else if (contingencyRate >= 70) score += 2;
+  const contingencyRate = rate(contingency, total);
+  if (meets(contingencyRate, 90)) score += 4;
+  else if (meets(contingencyRate, 70)) score += 2;
 
   const profBriefed = assessments.filter(
     (a) => a.professionalNetworkBriefed,
   ).length;
-  const professionalBriefedRate = pct(profBriefed, total);
-  if (professionalBriefedRate >= 90) score += 5;
-  else if (professionalBriefedRate >= 70) score += 3;
+  const professionalBriefedRate = rate(profBriefed, total);
+  if (meets(professionalBriefedRate, 90)) score += 5;
+  else if (meets(professionalBriefedRate, 70)) score += 3;
 
   const emotionalGood = assessments.filter(
     (a) =>
       a.emotionalReadiness === "fully_ready" ||
       a.emotionalReadiness === "mostly_ready",
   ).length;
-  const emotionalReadinessGoodRate = pct(emotionalGood, total);
-  if (emotionalReadinessGoodRate >= 80) score += 5;
-  else if (emotionalReadinessGoodRate >= 60) score += 3;
-  else if (emotionalReadinessGoodRate >= 40) score += 1;
+  const emotionalReadinessGoodRate = rate(emotionalGood, total);
+  if (meets(emotionalReadinessGoodRate, 80)) score += 5;
+  else if (meets(emotionalReadinessGoodRate, 60)) score += 3;
+  else if (meets(emotionalReadinessGoodRate, 40)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -590,37 +611,37 @@ export function evaluatePostTransition(
   const followUpDone = supports.filter(
     (s) => s.followUpVisitCompleted,
   ).length;
-  const followUpCompletedRate = pct(followUpDone, total);
-  if (followUpCompletedRate >= 90) score += 5;
-  else if (followUpCompletedRate >= 70) score += 3;
+  const followUpCompletedRate = rate(followUpDone, total);
+  if (meets(followUpCompletedRate, 90)) score += 5;
+  else if (meets(followUpCompletedRate, 70)) score += 3;
 
   const within7 = supports.filter(
     (s) => s.followUpWithin7Days,
   ).length;
-  const within7DaysRate = pct(within7, total);
-  if (within7DaysRate >= 90) score += 4;
-  else if (within7DaysRate >= 70) score += 2;
+  const within7DaysRate = rate(within7, total);
+  if (meets(within7DaysRate, 90)) score += 4;
+  else if (meets(within7DaysRate, 70)) score += 2;
 
   const settlingIn = supports.filter(
     (s) => s.settlingInReviewCompleted,
   ).length;
-  const settlingInReviewRate = pct(settlingIn, total);
-  if (settlingInReviewRate >= 90) score += 3;
-  else if (settlingInReviewRate >= 70) score += 2;
+  const settlingInReviewRate = rate(settlingIn, total);
+  if (meets(settlingInReviewRate, 90)) score += 3;
+  else if (meets(settlingInReviewRate, 70)) score += 2;
 
   const keyWorkerContact = supports.filter(
     (s) => s.previousKeyWorkerContactMaintained,
   ).length;
-  const previousKeyWorkerContactRate = pct(keyWorkerContact, total);
-  if (previousKeyWorkerContactRate >= 80) score += 3;
-  else if (previousKeyWorkerContactRate >= 60) score += 2;
+  const previousKeyWorkerContactRate = rate(keyWorkerContact, total);
+  if (meets(previousKeyWorkerContactRate, 80)) score += 3;
+  else if (meets(previousKeyWorkerContactRate, 60)) score += 2;
 
   const childFeedback = supports.filter(
     (s) => s.feedbackFromChild,
   ).length;
-  const childFeedbackRate = pct(childFeedback, total);
-  if (childFeedbackRate >= 90) score += 3;
-  else if (childFeedbackRate >= 70) score += 2;
+  const childFeedbackRate = rate(childFeedback, total);
+  if (meets(childFeedbackRate, 90)) score += 3;
+  else if (meets(childFeedbackRate, 70)) score += 2;
 
   const totalIssues = supports.reduce(
     (s, p) => s + p.issuesIdentified,
@@ -630,9 +651,9 @@ export function evaluatePostTransition(
     (s, p) => s + p.issuesResolved,
     0,
   );
-  const issueResolutionRate = pct(totalResolved, totalIssues);
-  if (totalIssues === 0 || issueResolutionRate >= 90) score += 2;
-  else if (issueResolutionRate >= 70) score += 1;
+  const issueResolutionRate = rate(totalResolved, totalIssues);
+  if (totalIssues === 0 || meets(issueResolutionRate, 90)) score += 2;
+  else if (meets(issueResolutionRate, 70)) score += 1;
 
   return {
     overallScore: Math.min(score, 20),
@@ -706,35 +727,35 @@ function generateStrengths(
     strengths.push("No transitions in period — placement stability maintained");
   }
 
-  if (tp.childInvolvementRate >= 90 && tp.totalTransitions > 0) {
+  if (meets(tp.childInvolvementRate, 90) && tp.totalTransitions > 0) {
     strengths.push("Excellent child participation — children involved in all transition planning");
   }
 
-  if (tp.childViewsRate >= 90 && tp.totalTransitions > 0) {
+  if (meets(tp.childViewsRate, 90) && tp.totalTransitions > 0) {
     strengths.push("Child views consistently recorded in transition planning — strong UNCRC Art 12 compliance");
   }
 
-  if (tp.goodbyesCelebratedRate >= 80 && tp.totalTransitions > 0) {
+  if (meets(tp.goodbyesCelebratedRate, 80) && tp.totalTransitions > 0) {
     strengths.push("Goodbyes and celebrations arranged — showing emotional sensitivity in transitions");
   }
 
-  if (ho.comprehensiveRate >= 90 && ho.totalHandovers > 0) {
+  if (meets(ho.comprehensiveRate, 90) && ho.totalHandovers > 0) {
     strengths.push("Comprehensive handovers completed — ensuring continuity of care");
   }
 
-  if (ho.triggersSharedRate >= 90 && ho.totalHandovers > 0) {
+  if (meets(ho.triggersSharedRate, 90) && ho.totalHandovers > 0) {
     strengths.push("Triggers and strategies consistently shared — protecting child safety through transitions");
   }
 
-  if (rd.fullyReadyRate >= 80 && rd.totalAssessments > 0) {
+  if (meets(rd.fullyReadyRate, 80) && rd.totalAssessments > 0) {
     strengths.push("Strong readiness assessment practice — children well-prepared for transitions");
   }
 
-  if (pt.followUpCompletedRate >= 90 && pt.totalFollowUps > 0) {
+  if (meets(pt.followUpCompletedRate, 90) && pt.totalFollowUps > 0) {
     strengths.push("Excellent post-transition follow-up — maintaining care beyond placement");
   }
 
-  if (pt.previousKeyWorkerContactRate >= 80 && pt.totalFollowUps > 0) {
+  if (meets(pt.previousKeyWorkerContactRate, 80) && pt.totalFollowUps > 0) {
     strengths.push("Key worker relationships maintained after transition — supporting emotional continuity");
   }
 
@@ -749,39 +770,39 @@ function generateAreasForImprovement(
 ): string[] {
   const areas: string[] = [];
 
-  if (tp.childInvolvementRate < 80 && tp.totalTransitions > 0) {
+  if (below(tp.childInvolvementRate, 80) && tp.totalTransitions > 0) {
     areas.push(`Child involvement in transition planning at ${tp.childInvolvementRate}% — all children should participate`);
   }
 
-  if (tp.visitCompletedRate < 70 && tp.totalTransitions > 0) {
+  if (below(tp.visitCompletedRate, 70) && tp.totalTransitions > 0) {
     areas.push(`Only ${tp.visitCompletedRate}% of children visited new placements before moving`);
   }
 
-  if (tp.plannedTransitionRate < 80 && tp.totalTransitions > 0) {
-    areas.push(`${100 - tp.plannedTransitionRate}% of transitions were emergency moves — planned transitions should be the norm`);
+  if (below(tp.plannedTransitionRate, 80) && tp.totalTransitions > 0) {
+    areas.push(`${100 - tp.plannedTransitionRate!}% of transitions were emergency moves — planned transitions should be the norm`);
   }
 
-  if (ho.comprehensiveRate < 80 && ho.totalHandovers > 0) {
+  if (below(ho.comprehensiveRate, 80) && ho.totalHandovers > 0) {
     areas.push(`Only ${ho.comprehensiveRate}% of handovers rated comprehensive or adequate`);
   }
 
-  if (ho.triggersSharedRate < 80 && ho.totalHandovers > 0) {
+  if (below(ho.triggersSharedRate, 80) && ho.totalHandovers > 0) {
     areas.push(`Triggers and strategies shared in only ${ho.triggersSharedRate}% of handovers — critical safety information`);
   }
 
-  if (rd.fullyReadyRate < 60 && rd.totalAssessments > 0) {
+  if (below(rd.fullyReadyRate, 60) && rd.totalAssessments > 0) {
     areas.push(`Only ${rd.fullyReadyRate}% of children assessed as fully or mostly ready for transition`);
   }
 
-  if (rd.contingencyRate < 80 && rd.totalAssessments > 0) {
+  if (below(rd.contingencyRate, 80) && rd.totalAssessments > 0) {
     areas.push(`Contingency plans in place for only ${rd.contingencyRate}% of transitions`);
   }
 
-  if (pt.followUpCompletedRate < 80 && pt.totalFollowUps > 0) {
+  if (below(pt.followUpCompletedRate, 80) && pt.totalFollowUps > 0) {
     areas.push(`Post-transition follow-up completed for only ${pt.followUpCompletedRate}% of transitions`);
   }
 
-  if (pt.childFeedbackRate < 80 && pt.totalFollowUps > 0) {
+  if (below(pt.childFeedbackRate, 80) && pt.totalFollowUps > 0) {
     areas.push(`Child feedback obtained in only ${pt.childFeedbackRate}% of transitions`);
   }
 
@@ -796,35 +817,35 @@ function generateActions(
 ): string[] {
   const actions: string[] = [];
 
-  if (tp.plannedTransitionRate < 70 && tp.totalTransitions > 0) {
+  if (below(tp.plannedTransitionRate, 70) && tp.totalTransitions > 0) {
     actions.push("URGENT: Reduce emergency moves — implement advance transition planning for all anticipated moves");
   }
 
-  if (tp.childViewsRate < 80 && tp.totalTransitions > 0) {
+  if (below(tp.childViewsRate, 80) && tp.totalTransitions > 0) {
     actions.push("Ensure child views are recorded for every transition — use age-appropriate tools where needed");
   }
 
-  if (tp.riskAssessmentRate < 90 && tp.totalTransitions > 0) {
+  if (below(tp.riskAssessmentRate, 90) && tp.totalTransitions > 0) {
     actions.push("Update risk assessments for all transitions — receiving placements need current risk information");
   }
 
-  if (ho.triggersSharedRate < 90 && ho.totalHandovers > 0) {
+  if (below(ho.triggersSharedRate, 90) && ho.totalHandovers > 0) {
     actions.push("Include triggers and de-escalation strategies in every handover — critical for child safety");
   }
 
-  if (ho.healthInfoRate < 90 && ho.totalHandovers > 0) {
+  if (below(ho.healthInfoRate, 90) && ho.totalHandovers > 0) {
     actions.push("Ensure health passports and medication information transferred for every transition");
   }
 
-  if (rd.supportPlanRate < 80 && rd.totalAssessments > 0) {
+  if (below(rd.supportPlanRate, 80) && rd.totalAssessments > 0) {
     actions.push("Develop transition support plans for all children — identify needs before the move");
   }
 
-  if (pt.within7DaysRate < 80 && pt.totalFollowUps > 0) {
+  if (below(pt.within7DaysRate, 80) && pt.totalFollowUps > 0) {
     actions.push("Complete follow-up visits within 7 days of transition — early identification of settling-in issues");
   }
 
-  if (tp.goodbyesCelebratedRate < 50 && tp.totalTransitions > 0) {
+  if (below(tp.goodbyesCelebratedRate, 50) && tp.totalTransitions > 0) {
     actions.push("Celebrate goodbyes for every planned transition — therapeutic significance of endings");
   }
 
