@@ -9,7 +9,6 @@ export {
   evaluateOfstedAlignment,
   evaluateRiskProfile,
   buildDomainSummaries,
-  pct,
   getRating,
   getDomainLabel,
   getRatingLabel,

@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — Restraint Analysis Intelligence Engine
 //
@@ -115,10 +116,14 @@ export interface ChildRestraintProfile {
   childName: string;
   totalRestraints: number;
   averageDurationMinutes: number;
-  deEscalationAttemptedRate: number;
-  childViewsRecordedRate: number;
-  postIncidentCompletionRate: number;
-  injuryRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  deEscalationAttemptedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewsRecordedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  postIncidentCompletionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  injuryRate: number | null;
   reductionPlanInPlace: boolean;
   mostCommonReason: string;
   mostCommonType: string;
@@ -129,19 +134,25 @@ export interface ChildRestraintProfile {
 
 export interface ProportionalityResult {
   totalRestraints: number;
-  proportionalityAssessedRate: number;
-  approvedTechniqueRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  proportionalityAssessedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  approvedTechniqueRate: number | null;
   averageDurationMinutes: number;
   longDurationCount: number; // >10 minutes
-  injuryToChildRate: number;
-  injuryToStaffRate: number;
-  managerNotifiedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  injuryToChildRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  injuryToStaffRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  managerNotifiedRate: number | null;
   overallScore: number; // 0–30
 }
 
 export interface DeEscalationResult {
   totalRestraints: number;
-  deEscalationAttemptedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  deEscalationAttemptedRate: number | null;
   averageTechniquesPerIncident: number;
   techniquesUsed: Record<string, number>;
   overallScore: number; // 0–25
@@ -149,26 +160,39 @@ export interface DeEscalationResult {
 
 export interface PostIncidentResult {
   totalRestraints: number;
-  childDebriefRate: number;
-  medicalCheckRate: number;
-  bodyMapRate: number;
-  writtenRecordRate: number;
-  parentNotifiedRate: number;
-  socialWorkerNotifiedRate: number;
-  ofstedNotifiedRate: number;
-  managerReviewRate: number;
-  childViewsRecordedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childDebriefRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  medicalCheckRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  bodyMapRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  writtenRecordRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  parentNotifiedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  socialWorkerNotifiedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  ofstedNotifiedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  managerReviewRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewsRecordedRate: number | null;
   overallScore: number; // 0–25
 }
 
 export interface ReductionResult {
   childrenWithRestraints: number;
   reductionPlansInPlace: number;
-  reductionPlanRate: number;
-  triggerAwarenessRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reductionPlanRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  triggerAwarenessRate: number | null;
   alternativeStrategiesAverage: number | null;
-  sensoryProfileRate: number;
-  staffTrainingCompliance: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  sensoryProfileRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffTrainingCompliance: number | null;
   overallScore: number; // 0–20
 }
 
@@ -191,11 +215,6 @@ export interface RestraintAnalysisIntelligence {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 1000) / 10;
-}
 
 function clamp(v: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, v));
@@ -292,10 +311,10 @@ export function evaluateProportionality(
   }
 
   const assessedCount = period.filter((r) => r.proportionalityAssessed).length;
-  const assessedRate = pct(assessedCount, period.length);
+  const assessedRate = rate(assessedCount, period.length);
 
   const approvedCount = period.filter((r) => r.approvedTechniqueUsed).length;
-  const approvedRate = pct(approvedCount, period.length);
+  const approvedRate = rate(approvedCount, period.length);
 
   const totalDuration = period.reduce((sum, r) => sum + r.durationMinutes, 0);
   const avgDuration = Math.round((totalDuration / period.length) * 10) / 10;
@@ -303,19 +322,19 @@ export function evaluateProportionality(
   const longCount = period.filter((r) => r.durationMinutes > 10).length;
 
   const childInjury = period.filter((r) => r.childInjured).length;
-  const childInjuryRate = pct(childInjury, period.length);
+  const childInjuryRate = rate(childInjury, period.length);
 
   const staffInjury = period.filter((r) => r.staffInjured).length;
-  const staffInjuryRate = pct(staffInjury, period.length);
+  const staffInjuryRate = rate(staffInjury, period.length);
 
   const managerNotified = period.filter((r) => r.managerNotifiedImmediately).length;
-  const managerRate = pct(managerNotified, period.length);
+  const managerRate = rate(managerNotified, period.length);
 
   // Scoring — 30 points max
   let score = 0;
-  score += (assessedRate / 100) * 8;     // Proportionality assessed: 8 pts
-  score += (approvedRate / 100) * 8;     // Approved technique: 8 pts
-  score += (managerRate / 100) * 4;      // Manager notification: 4 pts
+  score += ((assessedRate ?? 0) / 100) * 8;     // Proportionality assessed: 8 pts
+  score += ((approvedRate ?? 0) / 100) * 8;     // Approved technique: 8 pts
+  score += ((managerRate ?? 0) / 100) * 4;      // Manager notification: 4 pts
 
   // Duration bonus: lower is better (up to 5 pts)
   if (avgDuration <= 3) score += 5;
@@ -359,7 +378,7 @@ export function evaluateDeEscalation(
   }
 
   const attemptedCount = period.filter((r) => r.deEscalationAttempted).length;
-  const attemptedRate = pct(attemptedCount, period.length);
+  const attemptedRate = rate(attemptedCount, period.length);
 
   const totalTechniques = period.reduce((sum, r) => sum + r.deEscalationTechniques.length, 0);
   const avgTechniques = Math.round((totalTechniques / period.length) * 10) / 10;
@@ -374,7 +393,7 @@ export function evaluateDeEscalation(
 
   // Scoring — 25 points max
   let score = 0;
-  score += (attemptedRate / 100) * 15; // De-escalation attempted: 15 pts
+  score += ((attemptedRate ?? 0) / 100) * 15; // De-escalation attempted: 15 pts
 
   // Variety of techniques: up to 5 pts
   const uniqueTechniques = Object.keys(techniques).length;
@@ -416,7 +435,7 @@ export function evaluatePostIncident(
   }
 
   const has = (action: PostIncidentAction) =>
-    pct(period.filter((r) => r.postIncidentActions.includes(action)).length, period.length);
+    rate(period.filter((r) => r.postIncidentActions.includes(action)).length, period.length);
 
   const childDebrief = has("child_debrief");
   const medicalCheck = has("medical_check");
@@ -426,17 +445,17 @@ export function evaluatePostIncident(
   const swNotified = has("social_worker_notified");
   const ofstedNotified = has("ofsted_notified");
   const managerReview = has("manager_review");
-  const childViews = pct(period.filter((r) => r.childViewsRecorded).length, period.length);
+  const childViews = rate(period.filter((r) => r.childViewsRecorded).length, period.length);
 
   // Scoring — 25 points max
   let score = 0;
-  score += (childDebrief / 100) * 5;    // Child debrief: 5 pts
-  score += (childViews / 100) * 4;      // Child views recorded: 4 pts
-  score += (writtenRecord / 100) * 4;   // Written record: 4 pts
-  score += (bodyMap / 100) * 3;         // Body map: 3 pts
-  score += (medicalCheck / 100) * 3;    // Medical check: 3 pts
-  score += (managerReview / 100) * 3;   // Manager review: 3 pts
-  score += (ofstedNotified / 100) * 3;  // Ofsted notification: 3 pts
+  score += ((childDebrief ?? 0) / 100) * 5;    // Child debrief: 5 pts
+  score += ((childViews ?? 0) / 100) * 4;      // Child views recorded: 4 pts
+  score += ((writtenRecord ?? 0) / 100) * 4;   // Written record: 4 pts
+  score += ((bodyMap ?? 0) / 100) * 3;         // Body map: 3 pts
+  score += ((medicalCheck ?? 0) / 100) * 3;    // Medical check: 3 pts
+  score += ((managerReview ?? 0) / 100) * 3;   // Manager review: 3 pts
+  score += ((ofstedNotified ?? 0) / 100) * 3;  // Ofsted notification: 3 pts
 
   return {
     totalRestraints: period.length,
@@ -474,23 +493,23 @@ export function evaluateReduction(
   if (childrenWithRestraints.size === 0) {
     // Check training compliance even without restraints
     const validTraining = training.filter((t) => t.expiryDate >= referenceDate).length;
-    const trainingRate = pct(validTraining, training.length);
+    const trainingRate = rate(validTraining, training.length);
     return {
       childrenWithRestraints: 0, reductionPlansInPlace: 0,
       reductionPlanRate: 0, triggerAwarenessRate: 0,
       alternativeStrategiesAverage: 0, sensoryProfileRate: 0,
       staffTrainingCompliance: trainingRate,
-      overallScore: training.length > 0 ? Math.round((trainingRate / 100) * 20 * 10) / 10 : 20,
+      overallScore: training.length > 0 ? Math.round(((trainingRate ?? 0) / 100) * 20 * 10) / 10 : 20,
     };
   }
 
   // Check reduction plans for children with restraints
   const plansForChildren = reductions.filter((r) => childrenWithRestraints.has(r.childId));
   const withPlan = plansForChildren.filter((r) => r.planInPlace).length;
-  const planRate = pct(withPlan, childrenWithRestraints.size);
+  const planRate = rate(withPlan, childrenWithRestraints.size);
 
   const triggerAware = plansForChildren.filter((r) => r.triggerAwarenessDocumented).length;
-  const triggerRate = pct(triggerAware, plansForChildren.length);
+  const triggerRate = rate(triggerAware, plansForChildren.length);
 
   const totalAlternatives = plansForChildren.reduce(
     (sum, r) => sum + r.alternativeStrategiesIdentified, 0,
@@ -500,18 +519,18 @@ export function evaluateReduction(
     : null;
 
   const sensory = plansForChildren.filter((r) => r.sensoryProfileCompleted).length;
-  const sensoryRate = pct(sensory, plansForChildren.length);
+  const sensoryRate = rate(sensory, plansForChildren.length);
 
   // Training compliance
   const validTraining = training.filter((t) => t.expiryDate >= referenceDate).length;
-  const trainingCompliance = pct(validTraining, training.length);
+  const trainingCompliance = rate(validTraining, training.length);
 
   // Scoring — 20 points max
   let score = 0;
-  score += (planRate / 100) * 6;             // Reduction plans: 6 pts
-  score += (triggerRate / 100) * 4;          // Trigger awareness: 4 pts
-  score += (trainingCompliance / 100) * 5;   // Training: 5 pts
-  score += (sensoryRate / 100) * 2;          // Sensory profiles: 2 pts
+  score += ((planRate ?? 0) / 100) * 6;             // Reduction plans: 6 pts
+  score += ((triggerRate ?? 0) / 100) * 4;          // Trigger awareness: 4 pts
+  score += ((trainingCompliance ?? 0) / 100) * 5;   // Training: 5 pts
+  score += ((sensoryRate ?? 0) / 100) * 2;          // Sensory profiles: 2 pts
 
   // Alternative strategies: up to 3 pts
   if ((avgAlternatives ?? 0) >= 5) score += 3;
@@ -590,25 +609,25 @@ export function buildChildRestraintProfiles(
 
     // Score out of 10
     let score = 5; // Start at midpoint
-    if (pct(deEscAttempted, total) >= 90) score += 1;
-    if (pct(viewsRecorded, total) >= 80) score += 1;
-    if (pct(postCompleted, postTotal) >= 80) score += 1;
+    if (meets(rate(deEscAttempted, total), 90)) score += 1;
+    if (meets(rate(viewsRecorded, total), 80)) score += 1;
+    if (meets(rate(postCompleted, postTotal), 80)) score += 1;
     if (injuries === 0) score += 1;
     if (reduction?.planInPlace) score += 1;
     // Penalties
-    if (total > 5) score -= 1;
+    if (above(total, 5)) score -= 1;
     if (avgDuration > 10) score -= 1;
-    if (pct(deEscAttempted, total) < 50) score -= 1;
+    if (below(rate(deEscAttempted, total), 50)) score -= 1;
 
     profiles.push({
       childId,
       childName: childRecords[0].childName,
       totalRestraints: total,
       averageDurationMinutes: avgDuration,
-      deEscalationAttemptedRate: pct(deEscAttempted, total),
-      childViewsRecordedRate: pct(viewsRecorded, total),
-      postIncidentCompletionRate: pct(postCompleted, postTotal),
-      injuryRate: pct(injuries, total),
+      deEscalationAttemptedRate: rate(deEscAttempted, total),
+      childViewsRecordedRate: rate(viewsRecorded, total),
+      postIncidentCompletionRate: rate(postCompleted, postTotal),
+      injuryRate: rate(injuries, total),
       reductionPlanInPlace: reduction?.planInPlace || false,
       mostCommonReason,
       mostCommonType,
@@ -647,10 +666,10 @@ export function generateRestraintAnalysisIntelligence(
   if (proportionality.totalRestraints === 0) {
     strengths.push("No restraints used in the period — a positive indicator of de-escalation practice");
   } else {
-    if (proportionality.proportionalityAssessedRate >= 90) {
+    if (meets(proportionality.proportionalityAssessedRate, 90)) {
       strengths.push("Proportionality is consistently assessed for all restraints");
     }
-    if (proportionality.approvedTechniqueRate >= 95) {
+    if (meets(proportionality.approvedTechniqueRate, 95)) {
       strengths.push("Approved restraint techniques are consistently used");
     }
     if (proportionality.averageDurationMinutes <= 3) {
@@ -659,22 +678,22 @@ export function generateRestraintAnalysisIntelligence(
     if (proportionality.injuryToChildRate === 0 && proportionality.totalRestraints > 0) {
       strengths.push("No children injured during restraints — techniques are being applied safely");
     }
-    if (deEscalation.deEscalationAttemptedRate >= 95) {
+    if (meets(deEscalation.deEscalationAttemptedRate, 95)) {
       strengths.push("De-escalation is attempted before every restraint, evidencing restraint as a genuine last resort");
     }
     if (deEscalation.averageTechniquesPerIncident >= 3) {
       strengths.push("Multiple de-escalation techniques are tried before resorting to physical intervention");
     }
-    if (postIncident.childDebriefRate >= 90) {
+    if (meets(postIncident.childDebriefRate, 90)) {
       strengths.push("Children are consistently debriefed after restraints, supporting emotional recovery");
     }
-    if (postIncident.childViewsRecordedRate >= 85) {
+    if (meets(postIncident.childViewsRecordedRate, 85)) {
       strengths.push("Children's views about restraints are routinely recorded, respecting their voice");
     }
-    if (reduction.reductionPlanRate >= 90 && reduction.childrenWithRestraints > 0) {
+    if (meets(reduction.reductionPlanRate, 90) && reduction.childrenWithRestraints > 0) {
       strengths.push("All children who experience restraint have reduction plans in place");
     }
-    if (reduction.staffTrainingCompliance >= 95) {
+    if (meets(reduction.staffTrainingCompliance, 95)) {
       strengths.push("Staff training in physical intervention is current and compliant");
     }
   }
@@ -682,59 +701,59 @@ export function generateRestraintAnalysisIntelligence(
   // ── Areas for Improvement ──
   const areasForImprovement: string[] = [];
   if (proportionality.totalRestraints > 0) {
-    if (proportionality.proportionalityAssessedRate < 80) {
+    if (below(proportionality.proportionalityAssessedRate, 80)) {
       areasForImprovement.push("Proportionality assessment is not consistently completed for all restraints");
     }
     if (proportionality.longDurationCount > 0) {
       areasForImprovement.push(`${proportionality.longDurationCount} restraint(s) exceeded 10 minutes — review necessity of prolonged interventions`);
     }
-    if (proportionality.injuryToChildRate > 0) {
+    if (above(proportionality.injuryToChildRate, 0)) {
       areasForImprovement.push("Children have sustained injuries during restraints — review technique application");
     }
-    if (deEscalation.deEscalationAttemptedRate < 80) {
+    if (below(deEscalation.deEscalationAttemptedRate, 80)) {
       areasForImprovement.push("De-escalation is not consistently attempted before physical intervention");
     }
-    if (postIncident.childDebriefRate < 70) {
+    if (below(postIncident.childDebriefRate, 70)) {
       areasForImprovement.push("Children are not consistently debriefed after restraints");
     }
-    if (postIncident.bodyMapRate < 80) {
+    if (below(postIncident.bodyMapRate, 80)) {
       areasForImprovement.push("Body maps are not consistently completed after restraints");
     }
-    if (postIncident.childViewsRecordedRate < 70) {
+    if (below(postIncident.childViewsRecordedRate, 70)) {
       areasForImprovement.push("Children's views about restraint are not consistently recorded");
     }
-    if (reduction.reductionPlanRate < 80 && reduction.childrenWithRestraints > 0) {
+    if (below(reduction.reductionPlanRate, 80) && reduction.childrenWithRestraints > 0) {
       areasForImprovement.push("Not all children who experience restraint have reduction plans in place");
     }
-    if (reduction.staffTrainingCompliance < 80) {
+    if (below(reduction.staffTrainingCompliance, 80)) {
       areasForImprovement.push("Staff physical intervention training compliance is below acceptable threshold");
     }
   }
 
   // ── Actions ──
   const actions: string[] = [];
-  if (proportionality.injuryToChildRate > 0) {
+  if (above(proportionality.injuryToChildRate, 0)) {
     actions.push("URGENT: Review all restraints where children sustained injuries and implement corrective action");
   }
-  if (proportionality.totalRestraints > 0 && proportionality.approvedTechniqueRate < 100) {
+  if (proportionality.totalRestraints > 0 && below(proportionality.approvedTechniqueRate, 100)) {
     actions.push("URGENT: Ensure all staff use only approved restraint techniques — review incidents where unapproved methods were used");
   }
-  if (deEscalation.deEscalationAttemptedRate < 80 && proportionality.totalRestraints > 0) {
+  if (below(deEscalation.deEscalationAttemptedRate, 80) && proportionality.totalRestraints > 0) {
     actions.push("HIGH: Provide refresher training on de-escalation as a mandatory first response");
   }
-  if (postIncident.childDebriefRate < 70 && proportionality.totalRestraints > 0) {
+  if (below(postIncident.childDebriefRate, 70) && proportionality.totalRestraints > 0) {
     actions.push("HIGH: Implement mandatory child debrief within 24 hours of every restraint");
   }
-  if (reduction.reductionPlanRate < 80 && reduction.childrenWithRestraints > 0) {
+  if (below(reduction.reductionPlanRate, 80) && reduction.childrenWithRestraints > 0) {
     actions.push("HIGH: Create restraint reduction plans for all children who experience restraint");
   }
-  if (reduction.staffTrainingCompliance < 80) {
+  if (below(reduction.staffTrainingCompliance, 80)) {
     actions.push("MEDIUM: Schedule training refreshers for staff with expired physical intervention certification");
   }
-  if (postIncident.bodyMapRate < 80 && proportionality.totalRestraints > 0) {
+  if (below(postIncident.bodyMapRate, 80) && proportionality.totalRestraints > 0) {
     actions.push("MEDIUM: Ensure body maps are completed after every restraint as standard practice");
   }
-  if (postIncident.childViewsRecordedRate < 70 && proportionality.totalRestraints > 0) {
+  if (below(postIncident.childViewsRecordedRate, 70) && proportionality.totalRestraints > 0) {
     actions.push("LOW: Develop child-friendly tools to support young people expressing their views after restraint");
   }
 

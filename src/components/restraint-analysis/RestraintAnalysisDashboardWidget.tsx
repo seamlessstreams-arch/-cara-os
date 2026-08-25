@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { above, meets } from "@/lib/metrics/rate";
 import type { RestraintAnalysisIntelligence } from "@/lib/restraint-analysis";
 
 const ratingColors: Record<string, string> = {
@@ -150,8 +151,8 @@ export function RestraintAnalysisDashboardWidget() {
                     <span className="text-sm text-gray-500">{child.overallScore}/10</span>
                   </div>
                   <div className="flex flex-wrap gap-1.5 mb-2">
-                    <StatusBadge ok={child.deEscalationAttemptedRate >= 90} label={`De-esc ${child.deEscalationAttemptedRate}%`} />
-                    <StatusBadge ok={child.childViewsRecordedRate >= 80} label={`Views ${child.childViewsRecordedRate}%`} />
+                    <StatusBadge ok={meets(child.deEscalationAttemptedRate, 90)} label={`De-esc ${child.deEscalationAttemptedRate}%`} />
+                    <StatusBadge ok={meets(child.childViewsRecordedRate, 80)} label={`Views ${child.childViewsRecordedRate}%`} />
                     <StatusBadge ok={child.injuryRate === 0} label={`Injuries ${child.injuryRate}%`} />
                     <StatusBadge ok={child.reductionPlanInPlace} label="Reduction Plan" />
                   </div>
@@ -174,8 +175,8 @@ export function RestraintAnalysisDashboardWidget() {
             <div><span className="text-gray-500">Approved Technique:</span> <span className="font-medium">{data.proportionality.approvedTechniqueRate}%</span></div>
             <div><span className="text-gray-500">Avg Duration:</span> <span className="font-medium">{data.proportionality.averageDurationMinutes}m</span></div>
             <div><span className="text-gray-500">Long ({">"}10m):</span> <span className={`font-medium ${data.proportionality.longDurationCount > 0 ? "text-red-600" : "text-gray-900"}`}>{data.proportionality.longDurationCount}</span></div>
-            <div><span className="text-gray-500">Child Injury:</span> <span className={`font-medium ${data.proportionality.injuryToChildRate > 0 ? "text-red-600" : "text-green-600"}`}>{data.proportionality.injuryToChildRate}%</span></div>
-            <div><span className="text-gray-500">Staff Injury:</span> <span className={`font-medium ${data.proportionality.injuryToStaffRate > 0 ? "text-amber-600" : "text-green-600"}`}>{data.proportionality.injuryToStaffRate}%</span></div>
+            <div><span className="text-gray-500">Child Injury:</span> <span className={`font-medium ${above(data.proportionality.injuryToChildRate, 0) ? "text-red-600" : "text-green-600"}`}>{data.proportionality.injuryToChildRate}%</span></div>
+            <div><span className="text-gray-500">Staff Injury:</span> <span className={`font-medium ${above(data.proportionality.injuryToStaffRate, 0) ? "text-amber-600" : "text-green-600"}`}>{data.proportionality.injuryToStaffRate}%</span></div>
             <div><span className="text-gray-500">Manager Notified:</span> <span className="font-medium">{data.proportionality.managerNotifiedRate}%</span></div>
           </div>
         </Section>

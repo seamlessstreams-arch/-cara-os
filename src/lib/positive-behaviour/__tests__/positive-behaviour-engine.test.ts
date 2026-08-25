@@ -560,9 +560,9 @@ describe("evaluateBehaviourSupportPlans", () => {
     const result = evaluateBehaviourSupportPlans([], REFERENCE_DATE);
     expect(result.totalPlans).toBe(0);
     expect(result.activePlans).toBe(0);
-    expect(result.planCoverageRate).toBe(0);
-    expect(result.childInvolvementRate).toBe(0);
-    expect(result.strategyComprehensivenessRate).toBe(0);
+    expect(result.planCoverageRate).toBeNull();
+    expect(result.childInvolvementRate).toBeNull();
+    expect(result.strategyComprehensivenessRate).toBeNull();
   });
 
   it("handles plans all in draft status", () => {
@@ -662,8 +662,8 @@ describe("evaluateDeEscalation", () => {
   it("returns zero values for empty records", () => {
     const result = evaluateDeEscalation([]);
     expect(result.totalRecords).toBe(0);
-    expect(result.successRate).toBe(0);
-    expect(result.physicalInterventionAvoidanceRate).toBe(0);
+    expect(result.successRate).toBeNull();
+    expect(result.physicalInterventionAvoidanceRate).toBeNull();
     expect(result.averageDurationMinutes).toBe(0);
     expect(result.strategyVariety).toBe(0);
     expect(result.perChildPatterns).toEqual([]);
@@ -914,7 +914,7 @@ describe("evaluateIncidentPatterns", () => {
     const result = evaluateIncidentPatterns([]);
     expect(result.totalIncidents).toBe(0);
     expect(result.severityBreakdown).toEqual({ low: 0, medium: 0, high: 0, critical: 0 });
-    expect(result.debriefCompletionRate).toBe(0);
+    expect(result.debriefCompletionRate).toBeNull();
     expect(result.frequencyTrend).toBe("stable");
     expect(result.monthlyBreakdown).toEqual([]);
   });

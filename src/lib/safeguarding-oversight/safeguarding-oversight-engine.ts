@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // Cara Safeguarding Oversight Intelligence Engine
 //
@@ -153,10 +154,14 @@ export interface DSLOversight {
 export interface WorkforceSafetyResult {
   overallScore: number; // 0-25
   totalStaff: number;
-  enhancedDBSRate: number; // %
-  currentTrainingRate: number; // %
-  saferRecruitmentRate: number; // %
-  preventTrainedRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  enhancedDBSRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  currentTrainingRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  saferRecruitmentRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  preventTrainedRate: number | null; // %
   expiredDBSCount: number;
   expiredTrainingCount: number;
   hasDSL: boolean;
@@ -166,10 +171,14 @@ export interface WorkforceSafetyResult {
 export interface ReferralQualityResult {
   overallScore: number; // 0-25
   totalReferrals: number;
-  timelyReferralRate: number; // %
-  managementInformedRate: number; // %
-  recordedAppropriatelyRate: number; // %
-  actionTakenRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyReferralRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  managementInformedRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  recordedAppropriatelyRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionTakenRate: number | null; // %
   immediateHighCount: number;
   awaitingOutcomeCount: number;
 }
@@ -177,21 +186,31 @@ export interface ReferralQualityResult {
 export interface AuditComplianceResult {
   overallScore: number; // 0-25
   totalAudits: number;
-  overallCompliantRate: number; // %
-  policiesUpToDateRate: number; // %
-  riskAssessmentsCurrentRate: number; // %
-  childrenKnowComplainRate: number; // %
-  visitorSignInRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  overallCompliantRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  policiesUpToDateRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessmentsCurrentRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  childrenKnowComplainRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  visitorSignInRate: number | null; // %
 }
 
 export interface DSLOversightResult {
   overallScore: number; // 0-25
   totalReviews: number;
-  caseReviewRate: number; // %
-  supervisionRate: number; // %
-  multiAgencyRate: number; // %
-  trainingDeliveredRate: number; // %
-  policyReviewRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  caseReviewRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  supervisionRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  multiAgencyRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  trainingDeliveredRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  policyReviewRate: number | null; // %
 }
 
 export interface StaffSafeguardingProfile {
@@ -223,11 +242,6 @@ export interface SafeguardingOversightIntelligence {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 function cap(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
@@ -348,10 +362,10 @@ export function evaluateWorkforceSafety(
     return {
       overallScore: 0,
       totalStaff: 0,
-      enhancedDBSRate: 0,
-      currentTrainingRate: 0,
-      saferRecruitmentRate: 0,
-      preventTrainedRate: 0,
+      enhancedDBSRate: null,
+      currentTrainingRate: null,
+      saferRecruitmentRate: null,
+      preventTrainedRate: null,
       expiredDBSCount: 0,
       expiredTrainingCount: 0,
       hasDSL: false,
@@ -362,7 +376,7 @@ export function evaluateWorkforceSafety(
   const enhancedDBS = staff.filter(
     (s) => s.dbsStatus === "enhanced_current" || s.dbsStatus === "update_service",
   ).length;
-  const enhancedDBSRate = pct(enhancedDBS, staff.length);
+  const enhancedDBSRate = rate(enhancedDBS, staff.length);
 
   const currentTraining = staff.filter(
     (s) =>
@@ -370,13 +384,13 @@ export function evaluateWorkforceSafety(
       s.trainingLevel === "level_2_current" ||
       s.trainingLevel === "level_1_current",
   ).length;
-  const currentTrainingRate = pct(currentTraining, staff.length);
+  const currentTrainingRate = rate(currentTraining, staff.length);
 
   const saferRecruitment = staff.filter((s) => s.saferRecruitmentTrained).length;
-  const saferRecruitmentRate = pct(saferRecruitment, staff.length);
+  const saferRecruitmentRate = rate(saferRecruitment, staff.length);
 
   const preventTrained = staff.filter((s) => s.preventTrained).length;
-  const preventTrainedRate = pct(preventTrained, staff.length);
+  const preventTrainedRate = rate(preventTrained, staff.length);
 
   const expiredDBSCount = staff.filter(
     (s) => s.dbsStatus === "enhanced_expired" || s.dbsStatus === "not_completed",
@@ -391,13 +405,13 @@ export function evaluateWorkforceSafety(
   // Score calculation
   let score = 0;
   // Enhanced DBS rate (0-7)
-  score += Math.round((enhancedDBSRate / 100) * 7);
+  score += Math.round(((enhancedDBSRate ?? 0) / 100) * 7);
   // Current training rate (0-6)
-  score += Math.round((currentTrainingRate / 100) * 6);
+  score += Math.round(((currentTrainingRate ?? 0) / 100) * 6);
   // Safer recruitment (0-4)
-  score += Math.round((saferRecruitmentRate / 100) * 4);
+  score += Math.round(((saferRecruitmentRate ?? 0) / 100) * 4);
   // Prevent training (0-3)
-  score += Math.round((preventTrainedRate / 100) * 3);
+  score += Math.round(((preventTrainedRate ?? 0) / 100) * 3);
   // DSL in place (0-3)
   if (hasDSL) score += 2;
   if (hasDeputyDSL) score += 1;
@@ -432,27 +446,27 @@ export function evaluateReferralQuality(
     return {
       overallScore: 25,
       totalReferrals: 0,
-      timelyReferralRate: 0,
-      managementInformedRate: 0,
-      recordedAppropriatelyRate: 0,
-      actionTakenRate: 0,
+      timelyReferralRate: null,
+      managementInformedRate: null,
+      recordedAppropriatelyRate: null,
+      actionTakenRate: null,
       immediateHighCount: 0,
       awaitingOutcomeCount: 0,
     };
   }
 
   const timely = referrals.filter((r) => r.timelyReferral).length;
-  const timelyReferralRate = pct(timely, referrals.length);
+  const timelyReferralRate = rate(timely, referrals.length);
 
   const managementInformed = referrals.filter((r) => r.managementInformed).length;
-  const managementInformedRate = pct(managementInformed, referrals.length);
+  const managementInformedRate = rate(managementInformed, referrals.length);
 
   const recorded = referrals.filter((r) => r.recordedAppropriately).length;
-  const recordedAppropriatelyRate = pct(recorded, referrals.length);
+  const recordedAppropriatelyRate = rate(recorded, referrals.length);
 
   const withOutcome = referrals.filter((r) => r.outcome !== "awaiting_outcome");
   const actionTaken = withOutcome.filter((r) => r.outcome === "action_taken" || r.outcome === "referred_on").length;
-  const actionTakenRate = pct(actionTaken, withOutcome.length);
+  const actionTakenRate = rate(actionTaken, withOutcome.length);
 
   const immediateHighCount = referrals.filter(
     (r) => r.concernPriority === "immediate" || r.concernPriority === "high",
@@ -462,16 +476,16 @@ export function evaluateReferralQuality(
   // Score calculation
   let score = 0;
   // Timely referral rate (0-8)
-  score += Math.round((timelyReferralRate / 100) * 8);
+  score += Math.round(((timelyReferralRate ?? 0) / 100) * 8);
   // Management informed (0-5)
-  score += Math.round((managementInformedRate / 100) * 5);
+  score += Math.round(((managementInformedRate ?? 0) / 100) * 5);
   // Recorded appropriately (0-5)
-  score += Math.round((recordedAppropriatelyRate / 100) * 5);
+  score += Math.round(((recordedAppropriatelyRate ?? 0) / 100) * 5);
   // Action taken rate (0-4)
-  score += Math.round((actionTakenRate / 100) * 4);
+  score += Math.round(((actionTakenRate ?? 0) / 100) * 4);
   // Child informed bonus (0-3)
   const childInformed = referrals.filter((r) => r.childInformed).length;
-  score += Math.round((pct(childInformed, referrals.length) / 100) * 3);
+  score += Math.round(((rate(childInformed, referrals.length) ?? 0) / 100) * 3);
 
   // Penalty for late immediate/high referrals
   const lateUrgent = referrals.filter(
@@ -498,41 +512,41 @@ export function evaluateAuditCompliance(
     return {
       overallScore: 0,
       totalAudits: 0,
-      overallCompliantRate: 0,
-      policiesUpToDateRate: 0,
-      riskAssessmentsCurrentRate: 0,
-      childrenKnowComplainRate: 0,
-      visitorSignInRate: 0,
+      overallCompliantRate: null,
+      policiesUpToDateRate: null,
+      riskAssessmentsCurrentRate: null,
+      childrenKnowComplainRate: null,
+      visitorSignInRate: null,
     };
   }
 
   const compliant = audits.filter((a) => a.overallCompliant).length;
-  const overallCompliantRate = pct(compliant, audits.length);
+  const overallCompliantRate = rate(compliant, audits.length);
 
   const policiesUpToDate = audits.filter((a) => a.policiesUpToDate).length;
-  const policiesUpToDateRate = pct(policiesUpToDate, audits.length);
+  const policiesUpToDateRate = rate(policiesUpToDate, audits.length);
 
   const riskCurrent = audits.filter((a) => a.riskAssessmentsCurrentForAllChildren).length;
-  const riskAssessmentsCurrentRate = pct(riskCurrent, audits.length);
+  const riskAssessmentsCurrentRate = rate(riskCurrent, audits.length);
 
   const childrenKnow = audits.filter((a) => a.childrenKnowHowToComplain).length;
-  const childrenKnowComplainRate = pct(childrenKnow, audits.length);
+  const childrenKnowComplainRate = rate(childrenKnow, audits.length);
 
   const visitorSign = audits.filter((a) => a.visitorsSignedIn).length;
-  const visitorSignInRate = pct(visitorSign, audits.length);
+  const visitorSignInRate = rate(visitorSign, audits.length);
 
   // Score calculation
   let score = 0;
   // Overall compliance (0-8)
-  score += Math.round((overallCompliantRate / 100) * 8);
+  score += Math.round(((overallCompliantRate ?? 0) / 100) * 8);
   // Policies (0-5)
-  score += Math.round((policiesUpToDateRate / 100) * 5);
+  score += Math.round(((policiesUpToDateRate ?? 0) / 100) * 5);
   // Risk assessments (0-5)
-  score += Math.round((riskAssessmentsCurrentRate / 100) * 5);
+  score += Math.round(((riskAssessmentsCurrentRate ?? 0) / 100) * 5);
   // Children know how to complain (0-4)
-  score += Math.round((childrenKnowComplainRate / 100) * 4);
+  score += Math.round(((childrenKnowComplainRate ?? 0) / 100) * 4);
   // Visitor sign-in (0-3)
-  score += Math.round((visitorSignInRate / 100) * 3);
+  score += Math.round(((visitorSignInRate ?? 0) / 100) * 3);
 
   return {
     overallScore: cap(score, 0, 25),
@@ -552,42 +566,42 @@ export function evaluateDSLOversight(
     return {
       overallScore: 0,
       totalReviews: 0,
-      caseReviewRate: 0,
-      supervisionRate: 0,
-      multiAgencyRate: 0,
-      trainingDeliveredRate: 0,
-      policyReviewRate: 0,
+      caseReviewRate: null,
+      supervisionRate: null,
+      multiAgencyRate: null,
+      trainingDeliveredRate: null,
+      policyReviewRate: null,
     };
   }
 
   const totalOpenCases = reviews.reduce((s, r) => s + r.openCasesTotal, 0);
   const totalReviewed = reviews.reduce((s, r) => s + r.openCasesReviewed, 0);
-  const caseReviewRate = pct(totalReviewed, totalOpenCases);
+  const caseReviewRate = rate(totalReviewed, totalOpenCases);
 
   const supervision = reviews.filter((r) => r.supervisionOfConcerns).length;
-  const supervisionRate = pct(supervision, reviews.length);
+  const supervisionRate = rate(supervision, reviews.length);
 
   const multiAgency = reviews.filter((r) => r.multiAgencyAttendance).length;
-  const multiAgencyRate = pct(multiAgency, reviews.length);
+  const multiAgencyRate = rate(multiAgency, reviews.length);
 
   const trainingDelivered = reviews.filter((r) => r.trainingDelivered).length;
-  const trainingDeliveredRate = pct(trainingDelivered, reviews.length);
+  const trainingDeliveredRate = rate(trainingDelivered, reviews.length);
 
   const policyReview = reviews.filter((r) => r.policyReviewCompleted).length;
-  const policyReviewRate = pct(policyReview, reviews.length);
+  const policyReviewRate = rate(policyReview, reviews.length);
 
   // Score calculation
   let score = 0;
   // Case review rate (0-7)
-  score += Math.round((caseReviewRate / 100) * 7);
+  score += Math.round(((caseReviewRate ?? 0) / 100) * 7);
   // Supervision (0-5)
-  score += Math.round((supervisionRate / 100) * 5);
+  score += Math.round(((supervisionRate ?? 0) / 100) * 5);
   // Multi-agency (0-5)
-  score += Math.round((multiAgencyRate / 100) * 5);
+  score += Math.round(((multiAgencyRate ?? 0) / 100) * 5);
   // Training delivered (0-4)
-  score += Math.round((trainingDeliveredRate / 100) * 4);
+  score += Math.round(((trainingDeliveredRate ?? 0) / 100) * 4);
   // Policy review (0-4)
-  score += Math.round((policyReviewRate / 100) * 4);
+  score += Math.round(((policyReviewRate ?? 0) / 100) * 4);
 
   return {
     overallScore: cap(score, 0, 25),
@@ -635,37 +649,37 @@ function generateStrengths(
 ): string[] {
   const strengths: string[] = [];
 
-  if (workforce.enhancedDBSRate >= 100) {
+  if (meets(workforce.enhancedDBSRate, 100)) {
     strengths.push("All staff have current enhanced DBS checks in place");
   }
-  if (workforce.currentTrainingRate >= 100) {
+  if (meets(workforce.currentTrainingRate, 100)) {
     strengths.push("100% of staff have current safeguarding training");
   }
   if (workforce.hasDSL && workforce.hasDeputyDSL) {
     strengths.push("Designated Safeguarding Lead and Deputy DSL both in post");
   }
-  if (workforce.saferRecruitmentRate >= 80) {
+  if (meets(workforce.saferRecruitmentRate, 80)) {
     strengths.push(`${workforce.saferRecruitmentRate}% of staff trained in safer recruitment`);
   }
-  if (workforce.preventTrainedRate >= 80) {
+  if (meets(workforce.preventTrainedRate, 80)) {
     strengths.push(`Prevent training completed by ${workforce.preventTrainedRate}% of staff`);
   }
-  if (referral.totalReferrals > 0 && referral.timelyReferralRate >= 90) {
+  if (referral.totalReferrals > 0 && meets(referral.timelyReferralRate, 90)) {
     strengths.push(`Excellent referral timeliness at ${referral.timelyReferralRate}%`);
   }
-  if (referral.totalReferrals > 0 && referral.recordedAppropriatelyRate >= 90) {
+  if (referral.totalReferrals > 0 && meets(referral.recordedAppropriatelyRate, 90)) {
     strengths.push(`Safeguarding referrals consistently recorded appropriately (${referral.recordedAppropriatelyRate}%)`);
   }
   if (referral.totalReferrals === 0) {
     strengths.push("No safeguarding referrals required during this period — proactive preventive approach");
   }
-  if (audit.totalAudits > 0 && audit.overallCompliantRate >= 90) {
+  if (audit.totalAudits > 0 && meets(audit.overallCompliantRate, 90)) {
     strengths.push(`Safeguarding audits show ${audit.overallCompliantRate}% overall compliance`);
   }
-  if (dsl.totalReviews > 0 && dsl.caseReviewRate >= 90) {
+  if (dsl.totalReviews > 0 && meets(dsl.caseReviewRate, 90)) {
     strengths.push(`DSL reviewed ${dsl.caseReviewRate}% of open cases — strong oversight`);
   }
-  if (dsl.totalReviews > 0 && dsl.multiAgencyRate >= 80) {
+  if (dsl.totalReviews > 0 && meets(dsl.multiAgencyRate, 80)) {
     strengths.push(`Active multi-agency engagement at ${dsl.multiAgencyRate}%`);
   }
 
@@ -695,10 +709,10 @@ function generateAreasForImprovement(
   if (workforce.hasDSL && !workforce.hasDeputyDSL) {
     areas.push("No Deputy DSL in place — cover arrangements needed for DSL absence");
   }
-  if (workforce.saferRecruitmentRate < 50 && workforce.totalStaff > 0) {
+  if (below(workforce.saferRecruitmentRate, 50) && workforce.totalStaff > 0) {
     areas.push(`Only ${workforce.saferRecruitmentRate}% of staff trained in safer recruitment`);
   }
-  if (referral.totalReferrals > 0 && referral.timelyReferralRate < 80) {
+  if (referral.totalReferrals > 0 && below(referral.timelyReferralRate, 80)) {
     areas.push(`Referral timeliness at ${referral.timelyReferralRate}% — needs improvement`);
   }
   if (referral.awaitingOutcomeCount > 2) {
@@ -707,16 +721,16 @@ function generateAreasForImprovement(
   if (audit.totalAudits === 0) {
     areas.push("No safeguarding audits completed — regular auditing is essential");
   }
-  if (audit.totalAudits > 0 && audit.overallCompliantRate < 80) {
+  if (audit.totalAudits > 0 && below(audit.overallCompliantRate, 80)) {
     areas.push(`Safeguarding audit compliance at ${audit.overallCompliantRate}% — action plan required`);
   }
-  if (audit.totalAudits > 0 && audit.riskAssessmentsCurrentRate < 100) {
+  if (audit.totalAudits > 0 && below(audit.riskAssessmentsCurrentRate, 100)) {
     areas.push(`Risk assessments not current for all children (${audit.riskAssessmentsCurrentRate}%)`);
   }
   if (dsl.totalReviews === 0) {
     areas.push("No DSL oversight reviews recorded — DSL must demonstrate active case oversight");
   }
-  if (dsl.totalReviews > 0 && dsl.caseReviewRate < 80) {
+  if (dsl.totalReviews > 0 && below(dsl.caseReviewRate, 80)) {
     areas.push(`DSL case review coverage at ${dsl.caseReviewRate}% — all open cases should be reviewed`);
   }
 
@@ -751,13 +765,13 @@ function generateActions(
   if (!workforce.hasDeputyDSL && workforce.hasDSL) {
     actions.push("Appoint a Deputy DSL to provide cover during DSL absence");
   }
-  if (workforce.saferRecruitmentRate < 100 && workforce.totalStaff > 0) {
+  if (below(workforce.saferRecruitmentRate, 100) && workforce.totalStaff > 0) {
     actions.push("Ensure all staff involved in recruitment complete safer recruitment training");
   }
-  if (workforce.preventTrainedRate < 100 && workforce.totalStaff > 0) {
+  if (below(workforce.preventTrainedRate, 100) && workforce.totalStaff > 0) {
     actions.push("Roll out Prevent training to all staff members");
   }
-  if (referral.totalReferrals > 0 && referral.timelyReferralRate < 100) {
+  if (referral.totalReferrals > 0 && below(referral.timelyReferralRate, 100)) {
     actions.push("Review referral processes to ensure all concerns are referred within required timescales");
   }
   if (referral.awaitingOutcomeCount > 0) {
@@ -766,7 +780,7 @@ function generateActions(
   if (audit.totalAudits === 0) {
     actions.push("Schedule quarterly safeguarding audits with documented findings and action plans");
   }
-  if (audit.totalAudits > 0 && audit.riskAssessmentsCurrentRate < 100) {
+  if (audit.totalAudits > 0 && below(audit.riskAssessmentsCurrentRate, 100)) {
     actions.push("Update risk assessments for all children to ensure they are current");
   }
   if (dsl.totalReviews === 0) {

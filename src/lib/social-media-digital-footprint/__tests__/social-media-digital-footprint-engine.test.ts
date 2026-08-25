@@ -96,10 +96,10 @@ describe("evaluateConsentManagement", () => {
 
   it("returns zero rates for empty consents", () => {
     const result = evaluateConsentManagement([]);
-    expect(result.activeDecisionRate).toBe(0);
-    expect(result.childConsultedRate).toBe(0);
-    expect(result.parentConsultedRate).toBe(0);
-    expect(result.reviewCurrentRate).toBe(0);
+    expect(result.activeDecisionRate).toBeNull();
+    expect(result.childConsultedRate).toBeNull();
+    expect(result.parentConsultedRate).toBeNull();
+    expect(result.reviewCurrentRate).toBeNull();
   });
 
   it("adds concern about no consent records when empty", () => {

@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara Therapeutic Care Intelligence Engine
 //
@@ -134,19 +135,26 @@ export interface TherapeuticEnvironment {
 export interface SessionQualityResult {
   overallScore: number; // 0-25
   totalSessions: number;
-  attendanceRate: number;
-  positiveOutcomeRate: number;
-  childEngagementRate: number;
-  consentRate: number;
-  keyWorkerBriefingRate: number;
-  goalsAddressedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  attendanceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveOutcomeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childEngagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  consentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  keyWorkerBriefingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  goalsAddressedRate: number | null;
 }
 
 export interface ReferralEfficiencyResult {
   overallScore: number; // 0-25
   totalReferrals: number;
   averageWaitTimeDays: number;
-  acceptanceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  acceptanceRate: number | null;
   activeReferrals: number;
   waitlistedCount: number;
 }
@@ -154,10 +162,14 @@ export interface ReferralEfficiencyResult {
 export interface TherapyPlanningResult {
   overallScore: number; // 0-25
   totalPlans: number;
-  planReviewRate: number;
-  coProducedRate: number;
-  childViewsIncludedRate: number;
-  goalsAchievedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  planReviewRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  coProducedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewsIncludedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  goalsAchievedRate: number | null;
 }
 
 export interface TherapeuticEnvironmentResult {
@@ -262,11 +274,6 @@ export function getReferralStatusLabel(s: ReferralStatus): string {
 
 // ── Utility ──────────────────────────────────────────────────────────────────
 
-function pct(numerator: number, denominator: number): number {
-  if (denominator === 0) return 0;
-  return Math.round((numerator / denominator) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -288,12 +295,12 @@ export function evaluateSessionQuality(
     return {
       overallScore: 0,
       totalSessions: 0,
-      attendanceRate: 0,
-      positiveOutcomeRate: 0,
-      childEngagementRate: 0,
-      consentRate: 0,
-      keyWorkerBriefingRate: 0,
-      goalsAddressedRate: 0,
+      attendanceRate: null,
+      positiveOutcomeRate: null,
+      childEngagementRate: null,
+      consentRate: null,
+      keyWorkerBriefingRate: null,
+      goalsAddressedRate: null,
     };
   }
 
@@ -303,50 +310,50 @@ export function evaluateSessionQuality(
   const attended = sessions.filter(
     (s) => s.outcome !== "did_not_attend",
   ).length;
-  const attendanceRate = pct(attended, sessions.length);
+  const attendanceRate = rate(attended, sessions.length);
   // +5 for >= 90%, +3 for >= 75%, +1 for >= 60%
-  if (attendanceRate >= 90) score += 5;
-  else if (attendanceRate >= 75) score += 3;
-  else if (attendanceRate >= 60) score += 1;
+  if (meets(attendanceRate, 90)) score += 5;
+  else if (meets(attendanceRate, 75)) score += 3;
+  else if (meets(attendanceRate, 60)) score += 1;
 
   // Positive outcome rate (positive or good_progress)
   const positiveOutcomes = sessions.filter(
     (s) => s.outcome === "positive" || s.outcome === "good_progress",
   ).length;
-  const positiveOutcomeRate = pct(positiveOutcomes, sessions.length);
+  const positiveOutcomeRate = rate(positiveOutcomes, sessions.length);
   // +5 for >= 70%, +3 for >= 50%, +1 for >= 30%
-  if (positiveOutcomeRate >= 70) score += 5;
-  else if (positiveOutcomeRate >= 50) score += 3;
-  else if (positiveOutcomeRate >= 30) score += 1;
+  if (meets(positiveOutcomeRate, 70)) score += 5;
+  else if (meets(positiveOutcomeRate, 50)) score += 3;
+  else if (meets(positiveOutcomeRate, 30)) score += 1;
 
   // Child engagement rate
   const engaged = sessions.filter((s) => s.childEngaged).length;
-  const childEngagementRate = pct(engaged, sessions.length);
+  const childEngagementRate = rate(engaged, sessions.length);
   // +4 for >= 85%, +2 for >= 65%
-  if (childEngagementRate >= 85) score += 4;
-  else if (childEngagementRate >= 65) score += 2;
+  if (meets(childEngagementRate, 85)) score += 4;
+  else if (meets(childEngagementRate, 65)) score += 2;
 
   // Consent rate
   const consented = sessions.filter((s) => s.childConsented).length;
-  const consentRate = pct(consented, sessions.length);
+  const consentRate = rate(consented, sessions.length);
   // +4 for >= 95%, +2 for >= 80%
-  if (consentRate >= 95) score += 4;
-  else if (consentRate >= 80) score += 2;
+  if (meets(consentRate, 95)) score += 4;
+  else if (meets(consentRate, 80)) score += 2;
 
   // Key worker briefing rate
   const briefed = sessions.filter((s) => s.keyWorkerBriefed).length;
-  const keyWorkerBriefingRate = pct(briefed, sessions.length);
+  const keyWorkerBriefingRate = rate(briefed, sessions.length);
   // +4 for >= 90%, +2 for >= 70%
-  if (keyWorkerBriefingRate >= 90) score += 4;
-  else if (keyWorkerBriefingRate >= 70) score += 2;
+  if (meets(keyWorkerBriefingRate, 90)) score += 4;
+  else if (meets(keyWorkerBriefingRate, 70)) score += 2;
 
   // Goals addressed rate
   const goalsAddressed = sessions.filter((s) => s.goalsAddressed).length;
-  const goalsAddressedRate = pct(goalsAddressed, sessions.length);
+  const goalsAddressedRate = rate(goalsAddressed, sessions.length);
   // +3 for >= 85%, +2 for >= 65%, +1 for >= 45%
-  if (goalsAddressedRate >= 85) score += 3;
-  else if (goalsAddressedRate >= 65) score += 2;
-  else if (goalsAddressedRate >= 45) score += 1;
+  if (meets(goalsAddressedRate, 85)) score += 3;
+  else if (meets(goalsAddressedRate, 65)) score += 2;
+  else if (meets(goalsAddressedRate, 45)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -373,7 +380,7 @@ export function evaluateReferralEfficiency(
       overallScore: 25,
       totalReferrals: 0,
       averageWaitTimeDays: 0,
-      acceptanceRate: 0,
+      acceptanceRate: null,
       activeReferrals: 0,
       waitlistedCount: 0,
     };
@@ -398,11 +405,11 @@ export function evaluateReferralEfficiency(
       r.status === "completed" ||
       r.status === "discharged",
   ).length;
-  const acceptanceRate = pct(accepted, referrals.length);
+  const acceptanceRate = rate(accepted, referrals.length);
   // +7 for >= 90%, +5 for >= 70%, +3 for >= 50%
-  if (acceptanceRate >= 90) score += 7;
-  else if (acceptanceRate >= 70) score += 5;
-  else if (acceptanceRate >= 50) score += 3;
+  if (meets(acceptanceRate, 90)) score += 7;
+  else if (meets(acceptanceRate, 70)) score += 5;
+  else if (meets(acceptanceRate, 50)) score += 3;
 
   // Active referrals (positive that children are actively in therapy)
   const activeReferrals = referrals.filter(
@@ -443,10 +450,10 @@ export function evaluateTherapyPlanning(
     return {
       overallScore: 0,
       totalPlans: 0,
-      planReviewRate: 0,
-      coProducedRate: 0,
-      childViewsIncludedRate: 0,
-      goalsAchievedRate: 0,
+      planReviewRate: null,
+      coProducedRate: null,
+      childViewsIncludedRate: null,
+      goalsAchievedRate: null,
     };
   }
 
@@ -457,36 +464,36 @@ export function evaluateTherapyPlanning(
   const reviewed = plans.filter(
     (p) => new Date(p.planReviewDate) >= now || new Date(p.lastUpdated) >= new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
   ).length;
-  const planReviewRate = pct(reviewed, plans.length);
+  const planReviewRate = rate(reviewed, plans.length);
   // +7 for >= 90%, +5 for >= 70%, +3 for >= 50%
-  if (planReviewRate >= 90) score += 7;
-  else if (planReviewRate >= 70) score += 5;
-  else if (planReviewRate >= 50) score += 3;
+  if (meets(planReviewRate, 90)) score += 7;
+  else if (meets(planReviewRate, 70)) score += 5;
+  else if (meets(planReviewRate, 50)) score += 3;
 
   // Co-produced rate
   const coProduced = plans.filter((p) => p.planIsCoProduced).length;
-  const coProducedRate = pct(coProduced, plans.length);
+  const coProducedRate = rate(coProduced, plans.length);
   // +6 for >= 90%, +4 for >= 70%, +2 for >= 50%
-  if (coProducedRate >= 90) score += 6;
-  else if (coProducedRate >= 70) score += 4;
-  else if (coProducedRate >= 50) score += 2;
+  if (meets(coProducedRate, 90)) score += 6;
+  else if (meets(coProducedRate, 70)) score += 4;
+  else if (meets(coProducedRate, 50)) score += 2;
 
   // Child views included rate
   const childViews = plans.filter((p) => p.childViewsIncluded).length;
-  const childViewsIncludedRate = pct(childViews, plans.length);
+  const childViewsIncludedRate = rate(childViews, plans.length);
   // +6 for >= 90%, +4 for >= 70%, +2 for >= 50%
-  if (childViewsIncludedRate >= 90) score += 6;
-  else if (childViewsIncludedRate >= 70) score += 4;
-  else if (childViewsIncludedRate >= 50) score += 2;
+  if (meets(childViewsIncludedRate, 90)) score += 6;
+  else if (meets(childViewsIncludedRate, 70)) score += 4;
+  else if (meets(childViewsIncludedRate, 50)) score += 2;
 
   // Goals achieved rate
   const totalGoals = plans.reduce((sum, p) => sum + p.goals.length, 0);
   const totalAchieved = plans.reduce((sum, p) => sum + p.goalsAchieved, 0);
-  const goalsAchievedRate = pct(totalAchieved, totalGoals);
+  const goalsAchievedRate = rate(totalAchieved, totalGoals);
   // +6 for >= 75%, +4 for >= 50%, +2 for >= 30%
-  if (goalsAchievedRate >= 75) score += 6;
-  else if (goalsAchievedRate >= 50) score += 4;
-  else if (goalsAchievedRate >= 30) score += 2;
+  if (meets(goalsAchievedRate, 75)) score += 6;
+  else if (meets(goalsAchievedRate, 50)) score += 4;
+  else if (meets(goalsAchievedRate, 30)) score += 2;
 
   return {
     overallScore: Math.min(score, 25),
@@ -561,31 +568,31 @@ function generateStrengths(
 ): string[] {
   const strengths: string[] = [];
 
-  if (session.attendanceRate >= 90 && session.totalSessions > 0) {
+  if (meets(session.attendanceRate, 90) && session.totalSessions > 0) {
     strengths.push(
       "Excellent therapy attendance rate — children consistently attending scheduled sessions",
     );
   }
 
-  if (session.positiveOutcomeRate >= 70 && session.totalSessions > 0) {
+  if (meets(session.positiveOutcomeRate, 70) && session.totalSessions > 0) {
     strengths.push(
       "Strong positive outcome rate — therapy interventions showing measurable impact",
     );
   }
 
-  if (session.childEngagementRate >= 85 && session.totalSessions > 0) {
+  if (meets(session.childEngagementRate, 85) && session.totalSessions > 0) {
     strengths.push(
       "High child engagement in therapy sessions — children actively participating in their therapeutic journey",
     );
   }
 
-  if (session.consentRate >= 95 && session.totalSessions > 0) {
+  if (meets(session.consentRate, 95) && session.totalSessions > 0) {
     strengths.push(
       "Outstanding consent practice — children's right to consent consistently upheld",
     );
   }
 
-  if (session.keyWorkerBriefingRate >= 90 && session.totalSessions > 0) {
+  if (meets(session.keyWorkerBriefingRate, 90) && session.totalSessions > 0) {
     strengths.push(
       "Key workers consistently briefed following therapy sessions — strong communication between therapists and care team",
     );
@@ -597,25 +604,25 @@ function generateStrengths(
     );
   }
 
-  if (referral.acceptanceRate >= 90 && referral.totalReferrals > 0) {
+  if (meets(referral.acceptanceRate, 90) && referral.totalReferrals > 0) {
     strengths.push(
       "High referral acceptance rate — appropriate referrals being made with strong supporting evidence",
     );
   }
 
-  if (planning.coProducedRate >= 90 && planning.totalPlans > 0) {
+  if (meets(planning.coProducedRate, 90) && planning.totalPlans > 0) {
     strengths.push(
       "Therapy plans consistently co-produced — children and professionals collaborating on treatment goals",
     );
   }
 
-  if (planning.childViewsIncludedRate >= 90 && planning.totalPlans > 0) {
+  if (meets(planning.childViewsIncludedRate, 90) && planning.totalPlans > 0) {
     strengths.push(
       "Children's views consistently included in therapy planning — voice of the child embedded in practice",
     );
   }
 
-  if (planning.goalsAchievedRate >= 75 && planning.totalPlans > 0) {
+  if (meets(planning.goalsAchievedRate, 75) && planning.totalPlans > 0) {
     strengths.push(
       "Strong goal achievement rate — therapeutic interventions effectively meeting planned objectives",
     );
@@ -656,31 +663,31 @@ function generateAreasForImprovement(
     );
   }
 
-  if (session.attendanceRate < 75 && session.totalSessions > 0) {
+  if (below(session.attendanceRate, 75) && session.totalSessions > 0) {
     areas.push(
       `Therapy attendance rate at ${session.attendanceRate}% — missed sessions reduce therapeutic effectiveness`,
     );
   }
 
-  if (session.positiveOutcomeRate < 50 && session.totalSessions > 0) {
+  if (below(session.positiveOutcomeRate, 50) && session.totalSessions > 0) {
     areas.push(
       `Only ${session.positiveOutcomeRate}% of sessions have positive outcomes — review therapeutic approach and appropriateness`,
     );
   }
 
-  if (session.childEngagementRate < 65 && session.totalSessions > 0) {
+  if (below(session.childEngagementRate, 65) && session.totalSessions > 0) {
     areas.push(
       `Child engagement at ${session.childEngagementRate}% — consider whether therapy modality suits individual children`,
     );
   }
 
-  if (session.consentRate < 80 && session.totalSessions > 0) {
+  if (below(session.consentRate, 80) && session.totalSessions > 0) {
     areas.push(
       `Consent rate at ${session.consentRate}% — all children must be supported to understand and consent to therapy`,
     );
   }
 
-  if (session.keyWorkerBriefingRate < 70 && session.totalSessions > 0) {
+  if (below(session.keyWorkerBriefingRate, 70) && session.totalSessions > 0) {
     areas.push(
       `Key worker briefing rate at ${session.keyWorkerBriefingRate}% — care team must be kept informed following sessions`,
     );
@@ -704,19 +711,19 @@ function generateAreasForImprovement(
     );
   }
 
-  if (planning.coProducedRate < 70 && planning.totalPlans > 0) {
+  if (below(planning.coProducedRate, 70) && planning.totalPlans > 0) {
     areas.push(
       `Only ${planning.coProducedRate}% of therapy plans co-produced — plans should be developed collaboratively`,
     );
   }
 
-  if (planning.childViewsIncludedRate < 70 && planning.totalPlans > 0) {
+  if (below(planning.childViewsIncludedRate, 70) && planning.totalPlans > 0) {
     areas.push(
       `Children's views included in only ${planning.childViewsIncludedRate}% of plans — voice of the child must be central`,
     );
   }
 
-  if (planning.goalsAchievedRate < 30 && planning.totalPlans > 0) {
+  if (below(planning.goalsAchievedRate, 30) && planning.totalPlans > 0) {
     areas.push(
       `Goals achieved rate at ${planning.goalsAchievedRate}% — review whether goals are realistic and therapy approach is effective`,
     );
@@ -763,19 +770,19 @@ function generateActions(
     );
   }
 
-  if (session.attendanceRate < 75 && session.totalSessions > 0) {
+  if (below(session.attendanceRate, 75) && session.totalSessions > 0) {
     actions.push(
       "Review reasons for missed therapy sessions with each child — develop strategies to support attendance",
     );
   }
 
-  if (session.positiveOutcomeRate < 50 && session.totalSessions > 0) {
+  if (below(session.positiveOutcomeRate, 50) && session.totalSessions > 0) {
     actions.push(
       "Arrange clinical review of therapy approaches — consider whether alternative modalities would better meet children's needs",
     );
   }
 
-  if (session.keyWorkerBriefingRate < 70 && session.totalSessions > 0) {
+  if (below(session.keyWorkerBriefingRate, 70) && session.totalSessions > 0) {
     actions.push(
       "Establish protocol for post-session key worker briefings — ensure care continuity between therapy and daily care",
     );
@@ -799,19 +806,19 @@ function generateActions(
     );
   }
 
-  if (planning.coProducedRate < 70 && planning.totalPlans > 0) {
+  if (below(planning.coProducedRate, 70) && planning.totalPlans > 0) {
     actions.push(
       "Embed co-production in therapy planning — involve children and their key workers in goal-setting",
     );
   }
 
-  if (planning.childViewsIncludedRate < 70 && planning.totalPlans > 0) {
+  if (below(planning.childViewsIncludedRate, 70) && planning.totalPlans > 0) {
     actions.push(
       "Develop child-friendly tools for capturing children's views on their therapy — UNCRC Article 12 participation right",
     );
   }
 
-  if (planning.goalsAchievedRate < 30 && planning.totalPlans > 0) {
+  if (below(planning.goalsAchievedRate, 30) && planning.totalPlans > 0) {
     actions.push(
       "Review therapeutic goals with clinical supervision — ensure goals are SMART and achievable within timeframes",
     );

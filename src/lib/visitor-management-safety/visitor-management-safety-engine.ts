@@ -1,3 +1,4 @@
+import { below, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // VISITOR MANAGEMENT SAFETY INTELLIGENCE ENGINE
 //
@@ -118,12 +119,18 @@ export interface StaffVisitorTraining {
 
 export interface VisitorComplianceEvaluation {
   totalRecords: number;
-  signInRate: number;
-  signOutRate: number;
-  idCheckRate: number;
-  dbsVerifiedRate: number;
-  safeguardingBriefRate: number;
-  supervisedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  signInRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  signOutRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  idCheckRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dbsVerifiedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingBriefRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  supervisedRate: number | null;
   visitsByType: Record<string, number>;
   visitsByPurpose: Record<string, number>;
   visitsByOutcome: Record<string, number>;
@@ -132,19 +139,27 @@ export interface VisitorComplianceEvaluation {
 
 export interface PolicyAdherenceEvaluation {
   totalPolicies: number;
-  signInSystemRate: number;
-  idCheckMandatoryRate: number;
-  dbsCheckRequiredRate: number;
-  safeguardingBriefRequiredRate: number;
-  visitorGuideRate: number;
-  restrictedListRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  signInSystemRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  idCheckMandatoryRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dbsCheckRequiredRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingBriefRequiredRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  visitorGuideRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  restrictedListRate: number | null;
   policyAdherenceScore: number;
 }
 
 export interface IncidentManagementEvaluation {
   totalIncidents: number;
-  resolvedRate: number;
-  reportedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  resolvedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reportedRate: number | null;
   byType: Record<string, number>;
   unauthorisedAccessCount: number;
   safeguardingConcernCount: number;
@@ -153,12 +168,18 @@ export interface IncidentManagementEvaluation {
 
 export interface StaffVisitorReadinessEvaluation {
   totalStaff: number;
-  visitorPolicyTrainedRate: number;
-  safeguardingVisitorsRate: number;
-  signInProceduresRate: number;
-  dbsCheckProcessRate: number;
-  incidentReportingRate: number;
-  restrictedVisitorAwarenessRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  visitorPolicyTrainedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingVisitorsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  signInProceduresRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dbsCheckProcessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  incidentReportingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  restrictedVisitorAwarenessRate: number | null;
   staffVisitorReadinessScore: number;
 }
 
@@ -168,11 +189,11 @@ export interface ChildVisitorProfile {
   totalVisits: number;
   visitorTypes: string[];
   visitPurposes: string[];
-  signedInRate: number;
-  idCheckedRate: number;
-  dbsVerifiedRate: number;
-  safeguardingBriefRate: number;
-  supervisedRate: number;
+  signedInRate: number | null;
+  idCheckedRate: number | null;
+  dbsVerifiedRate: number | null;
+  safeguardingBriefRate: number | null;
+  supervisedRate: number | null;
   safetyScore: number;
 }
 
@@ -195,11 +216,6 @@ export interface VisitorManagementSafetyIntelligence {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
@@ -297,12 +313,12 @@ export function evaluateVisitorCompliance(
   if (records.length === 0) {
     return {
       totalRecords: 0,
-      signInRate: 0,
-      signOutRate: 0,
-      idCheckRate: 0,
-      dbsVerifiedRate: 0,
-      safeguardingBriefRate: 0,
-      supervisedRate: 0,
+      signInRate: null,
+      signOutRate: null,
+      idCheckRate: null,
+      dbsVerifiedRate: null,
+      safeguardingBriefRate: null,
+      supervisedRate: null,
       visitsByType: {},
       visitsByPurpose: {},
       visitsByOutcome: {},
@@ -314,29 +330,29 @@ export function evaluateVisitorCompliance(
 
   // Sign-in rate
   const signedIn = records.filter((r) => r.signedIn).length;
-  const signInRate = pct(signedIn, total);
+  const signInRate = rate(signedIn, total);
 
   // Sign-out rate
   const signedOut = records.filter((r) => r.signedOut).length;
-  const signOutRate = pct(signedOut, total);
+  const signOutRate = rate(signedOut, total);
 
   // ID check rate
   const idChecked = records.filter((r) => r.idChecked).length;
-  const idCheckRate = pct(idChecked, total);
+  const idCheckRate = rate(idChecked, total);
 
   // DBS verified rate (count "verified" and "not_required" as compliant)
   const dbsCompliant = records.filter(
     (r) => r.dbsVerified === "verified" || r.dbsVerified === "not_required",
   ).length;
-  const dbsVerifiedRate = pct(dbsCompliant, total);
+  const dbsVerifiedRate = rate(dbsCompliant, total);
 
   // Safeguarding brief rate
   const briefGiven = records.filter((r) => r.safeguardingBriefGiven).length;
-  const safeguardingBriefRate = pct(briefGiven, total);
+  const safeguardingBriefRate = rate(briefGiven, total);
 
   // Supervised visit rate
   const supervised = records.filter((r) => r.supervisedVisit).length;
-  const supervisedRate = pct(supervised, total);
+  const supervisedRate = rate(supervised, total);
 
   // Breakdowns
   const visitsByType: Record<string, number> = {};
@@ -356,17 +372,17 @@ export function evaluateVisitorCompliance(
 
   // Scoring: 25 points
   // Sign-in/out combined rate: 0-8 points
-  const signInOutAvg = (signInRate + signOutRate) / 2;
+  const signInOutAvg = ((signInRate ?? 0) + (signOutRate ?? 0)) / 2;
   const signInOutScore = Math.round((signInOutAvg / 100) * 8);
 
   // ID check rate: 0-7 points
-  const idScore = Math.round((idCheckRate / 100) * 7);
+  const idScore = Math.round(((idCheckRate ?? 0) / 100) * 7);
 
   // DBS verified rate: 0-6 points
-  const dbsScore = Math.round((dbsVerifiedRate / 100) * 6);
+  const dbsScore = Math.round(((dbsVerifiedRate ?? 0) / 100) * 6);
 
   // Safeguarding brief rate: 0-4 points
-  const briefScore = Math.round((safeguardingBriefRate / 100) * 4);
+  const briefScore = Math.round(((safeguardingBriefRate ?? 0) / 100) * 4);
 
   const visitorComplianceScore = clamp(
     signInOutScore + idScore + dbsScore + briefScore,
@@ -397,12 +413,12 @@ export function evaluatePolicyAdherence(
   if (policies.length === 0) {
     return {
       totalPolicies: 0,
-      signInSystemRate: 0,
-      idCheckMandatoryRate: 0,
-      dbsCheckRequiredRate: 0,
-      safeguardingBriefRequiredRate: 0,
-      visitorGuideRate: 0,
-      restrictedListRate: 0,
+      signInSystemRate: null,
+      idCheckMandatoryRate: null,
+      dbsCheckRequiredRate: null,
+      safeguardingBriefRequiredRate: null,
+      visitorGuideRate: null,
+      restrictedListRate: null,
       policyAdherenceScore: 0,
     };
   }
@@ -411,50 +427,50 @@ export function evaluatePolicyAdherence(
 
   // Sign-in system in place
   const signInSystem = policies.filter((p) => p.signInSystemInPlace).length;
-  const signInSystemRate = pct(signInSystem, total);
+  const signInSystemRate = rate(signInSystem, total);
 
   // ID check mandatory
   const idCheckMandatory = policies.filter((p) => p.idCheckMandatory).length;
-  const idCheckMandatoryRate = pct(idCheckMandatory, total);
+  const idCheckMandatoryRate = rate(idCheckMandatory, total);
 
   // DBS check required
   const dbsCheckRequired = policies.filter((p) => p.dbsCheckRequired).length;
-  const dbsCheckRequiredRate = pct(dbsCheckRequired, total);
+  const dbsCheckRequiredRate = rate(dbsCheckRequired, total);
 
   // Safeguarding brief required
   const safeguardingBriefRequired = policies.filter(
     (p) => p.safeguardingBriefRequired,
   ).length;
-  const safeguardingBriefRequiredRate = pct(safeguardingBriefRequired, total);
+  const safeguardingBriefRequiredRate = rate(safeguardingBriefRequired, total);
 
   // Visitor guide available
   const visitorGuide = policies.filter((p) => p.visitorGuideAvailable).length;
-  const visitorGuideRate = pct(visitorGuide, total);
+  const visitorGuideRate = rate(visitorGuide, total);
 
   // Restricted visitor list maintained
   const restrictedList = policies.filter(
     (p) => p.restrictedVisitorListMaintained,
   ).length;
-  const restrictedListRate = pct(restrictedList, total);
+  const restrictedListRate = rate(restrictedList, total);
 
   // Scoring: 25 points
   // Sign-in system: 0-5 points
-  const signInScore = Math.round((signInSystemRate / 100) * 5);
+  const signInScore = Math.round(((signInSystemRate ?? 0) / 100) * 5);
 
   // ID check mandatory: 0-5 points
-  const idScore = Math.round((idCheckMandatoryRate / 100) * 5);
+  const idScore = Math.round(((idCheckMandatoryRate ?? 0) / 100) * 5);
 
   // DBS check required: 0-5 points
-  const dbsScore = Math.round((dbsCheckRequiredRate / 100) * 5);
+  const dbsScore = Math.round(((dbsCheckRequiredRate ?? 0) / 100) * 5);
 
   // Safeguarding brief required: 0-4 points
-  const briefScore = Math.round((safeguardingBriefRequiredRate / 100) * 4);
+  const briefScore = Math.round(((safeguardingBriefRequiredRate ?? 0) / 100) * 4);
 
   // Visitor guide available: 0-3 points
-  const guideScore = Math.round((visitorGuideRate / 100) * 3);
+  const guideScore = Math.round(((visitorGuideRate ?? 0) / 100) * 3);
 
   // Restricted list maintained: 0-3 points
-  const restrictedScore = Math.round((restrictedListRate / 100) * 3);
+  const restrictedScore = Math.round(((restrictedListRate ?? 0) / 100) * 3);
 
   const policyAdherenceScore = clamp(
     signInScore + idScore + dbsScore + briefScore + guideScore + restrictedScore,
@@ -483,8 +499,8 @@ export function evaluateIncidentManagement(
   if (incidents.length === 0) {
     return {
       totalIncidents: 0,
-      resolvedRate: 0,
-      reportedRate: 0,
+      resolvedRate: null,
+      reportedRate: null,
       byType: {},
       unauthorisedAccessCount: 0,
       safeguardingConcernCount: 0,
@@ -502,13 +518,13 @@ export function evaluateIncidentManagement(
 
   // Resolution rate
   const resolved = incidents.filter((i) => i.resolved).length;
-  const resolvedRate = pct(resolved, total);
+  const resolvedRate = rate(resolved, total);
 
   // Reported rate (has reportedTo filled)
   const reported = incidents.filter(
     (i) => i.reportedTo.trim().length > 0,
   ).length;
-  const reportedRate = pct(reported, total);
+  const reportedRate = rate(reported, total);
 
   // Severity counts
   const unauthorisedAccessCount = incidents.filter(
@@ -520,10 +536,10 @@ export function evaluateIncidentManagement(
 
   // Scoring: 25 points (incidents exist = start from base, earn by response quality)
   // Resolution rate: 0-10 points
-  const resolvedScore = Math.round((resolvedRate / 100) * 10);
+  const resolvedScore = Math.round(((resolvedRate ?? 0) / 100) * 10);
 
   // Reported rate: 0-8 points
-  const reportedScore = Math.round((reportedRate / 100) * 8);
+  const reportedScore = Math.round(((reportedRate ?? 0) / 100) * 8);
 
   // No unauthorised access bonus: 0-4 points
   const noUnauthorisedBonus = unauthorisedAccessCount === 0 ? 4 : 0;
@@ -556,12 +572,12 @@ export function evaluateStaffVisitorReadiness(
   if (training.length === 0) {
     return {
       totalStaff: 0,
-      visitorPolicyTrainedRate: 0,
-      safeguardingVisitorsRate: 0,
-      signInProceduresRate: 0,
-      dbsCheckProcessRate: 0,
-      incidentReportingRate: 0,
-      restrictedVisitorAwarenessRate: 0,
+      visitorPolicyTrainedRate: null,
+      safeguardingVisitorsRate: null,
+      signInProceduresRate: null,
+      dbsCheckProcessRate: null,
+      incidentReportingRate: null,
+      restrictedVisitorAwarenessRate: null,
       staffVisitorReadinessScore: 0,
     };
   }
@@ -570,49 +586,49 @@ export function evaluateStaffVisitorReadiness(
 
   // Visitor policy trained
   const policyTrained = training.filter((t) => t.visitorPolicyTrained).length;
-  const visitorPolicyTrainedRate = pct(policyTrained, total);
+  const visitorPolicyTrainedRate = rate(policyTrained, total);
 
   // Safeguarding visitors
   const safeguarding = training.filter((t) => t.safeguardingVisitors).length;
-  const safeguardingVisitorsRate = pct(safeguarding, total);
+  const safeguardingVisitorsRate = rate(safeguarding, total);
 
   // Sign-in procedures
   const signIn = training.filter((t) => t.signInProcedures).length;
-  const signInProceduresRate = pct(signIn, total);
+  const signInProceduresRate = rate(signIn, total);
 
   // DBS check process
   const dbs = training.filter((t) => t.dbsCheckProcess).length;
-  const dbsCheckProcessRate = pct(dbs, total);
+  const dbsCheckProcessRate = rate(dbs, total);
 
   // Incident reporting
   const incident = training.filter((t) => t.incidentReporting).length;
-  const incidentReportingRate = pct(incident, total);
+  const incidentReportingRate = rate(incident, total);
 
   // Restricted visitor awareness
   const restricted = training.filter(
     (t) => t.restrictedVisitorAwareness,
   ).length;
-  const restrictedVisitorAwarenessRate = pct(restricted, total);
+  const restrictedVisitorAwarenessRate = rate(restricted, total);
 
   // Scoring: 25 points
   // Visitor policy trained: 0-5 points
-  const policyScore = Math.round((visitorPolicyTrainedRate / 100) * 5);
+  const policyScore = Math.round(((visitorPolicyTrainedRate ?? 0) / 100) * 5);
 
   // Safeguarding visitors: 0-5 points
-  const safeguardingScore = Math.round((safeguardingVisitorsRate / 100) * 5);
+  const safeguardingScore = Math.round(((safeguardingVisitorsRate ?? 0) / 100) * 5);
 
   // Sign-in procedures: 0-4 points
-  const signInScore = Math.round((signInProceduresRate / 100) * 4);
+  const signInScore = Math.round(((signInProceduresRate ?? 0) / 100) * 4);
 
   // DBS check process: 0-4 points
-  const dbsScore = Math.round((dbsCheckProcessRate / 100) * 4);
+  const dbsScore = Math.round(((dbsCheckProcessRate ?? 0) / 100) * 4);
 
   // Incident reporting: 0-4 points
-  const incidentScore = Math.round((incidentReportingRate / 100) * 4);
+  const incidentScore = Math.round(((incidentReportingRate ?? 0) / 100) * 4);
 
   // Restricted visitor awareness: 0-3 points
   const restrictedScore = Math.round(
-    (restrictedVisitorAwarenessRate / 100) * 3,
+    ((restrictedVisitorAwarenessRate ?? 0) / 100) * 3,
   );
 
   const staffVisitorReadinessScore = clamp(
@@ -658,35 +674,35 @@ export function buildChildVisitorProfiles(
     );
 
     const signedInCount = childRecords.filter((r) => r.signedIn).length;
-    const signedInRate = pct(signedInCount, totalVisits);
+    const signedInRate = rate(signedInCount, totalVisits);
 
     const idCheckedCount = childRecords.filter((r) => r.idChecked).length;
-    const idCheckedRate = pct(idCheckedCount, totalVisits);
+    const idCheckedRate = rate(idCheckedCount, totalVisits);
 
     const dbsVerifiedCount = childRecords.filter(
       (r) => r.dbsVerified === "verified" || r.dbsVerified === "not_required",
     ).length;
-    const dbsVerifiedRate = pct(dbsVerifiedCount, totalVisits);
+    const dbsVerifiedRate = rate(dbsVerifiedCount, totalVisits);
 
     const briefGivenCount = childRecords.filter(
       (r) => r.safeguardingBriefGiven,
     ).length;
-    const safeguardingBriefRate = pct(briefGivenCount, totalVisits);
+    const safeguardingBriefRate = rate(briefGivenCount, totalVisits);
 
     const supervisedCount = childRecords.filter(
       (r) => r.supervisedVisit,
     ).length;
-    const supervisedRate = pct(supervisedCount, totalVisits);
+    const supervisedRate = rate(supervisedCount, totalVisits);
 
     // Safety score: 0-10
     // Sign-in (0-2), ID check (0-2), DBS verified (0-2), safeguarding brief (0-2), supervised (0-2)
     let safetyScore = 0;
     if (totalVisits > 0) {
-      safetyScore += Math.round((signedInRate / 100) * 2);
-      safetyScore += Math.round((idCheckedRate / 100) * 2);
-      safetyScore += Math.round((dbsVerifiedRate / 100) * 2);
-      safetyScore += Math.round((safeguardingBriefRate / 100) * 2);
-      safetyScore += Math.round((supervisedRate / 100) * 2);
+      safetyScore += Math.round(((signedInRate ?? 0) / 100) * 2);
+      safetyScore += Math.round(((idCheckedRate ?? 0) / 100) * 2);
+      safetyScore += Math.round(((dbsVerifiedRate ?? 0) / 100) * 2);
+      safetyScore += Math.round(((safeguardingBriefRate ?? 0) / 100) * 2);
+      safetyScore += Math.round(((supervisedRate ?? 0) / 100) * 2);
     }
     safetyScore = clamp(safetyScore, 0, 10);
 
@@ -794,33 +810,33 @@ export function generateVisitorManagementSafetyIntelligence(
 
   if (visitorCompliance.totalRecords === 0)
     areasForImprovement.push("No visitor records on file — visitor management must be documented");
-  if (visitorCompliance.signInRate < 100 && visitorCompliance.totalRecords > 0)
+  if (below(visitorCompliance.signInRate, 100) && visitorCompliance.totalRecords > 0)
     areasForImprovement.push("Not all visitors signed in on arrival — access control gaps identified");
-  if (visitorCompliance.signOutRate < 100 && visitorCompliance.totalRecords > 0)
+  if (below(visitorCompliance.signOutRate, 100) && visitorCompliance.totalRecords > 0)
     areasForImprovement.push("Not all visitors signed out on departure — tracking is incomplete");
-  if (visitorCompliance.idCheckRate < 100 && visitorCompliance.totalRecords > 0)
+  if (below(visitorCompliance.idCheckRate, 100) && visitorCompliance.totalRecords > 0)
     areasForImprovement.push("ID checks not completed for all visitors — identity verification must improve");
-  if (visitorCompliance.dbsVerifiedRate < 100 && visitorCompliance.totalRecords > 0)
+  if (below(visitorCompliance.dbsVerifiedRate, 100) && visitorCompliance.totalRecords > 0)
     areasForImprovement.push("DBS verification not compliant for all visitors — safeguarding risk");
-  if (visitorCompliance.safeguardingBriefRate < 100 && visitorCompliance.totalRecords > 0)
+  if (below(visitorCompliance.safeguardingBriefRate, 100) && visitorCompliance.totalRecords > 0)
     areasForImprovement.push("Safeguarding brief not given to all visitors — this is a safeguarding concern");
 
   if (policyAdherence.totalPolicies === 0)
     areasForImprovement.push("No visitor policies on file — a visitor management policy is required");
-  if (policyAdherence.signInSystemRate < 100 && policyAdherence.totalPolicies > 0)
+  if (below(policyAdherence.signInSystemRate, 100) && policyAdherence.totalPolicies > 0)
     areasForImprovement.push("Sign-in system not in place for all policies — access control must be standardised");
-  if (policyAdherence.idCheckMandatoryRate < 100 && policyAdherence.totalPolicies > 0)
+  if (below(policyAdherence.idCheckMandatoryRate, 100) && policyAdherence.totalPolicies > 0)
     areasForImprovement.push("ID checks not mandatory under all policies — this is a safeguarding gap");
-  if (policyAdherence.dbsCheckRequiredRate < 100 && policyAdherence.totalPolicies > 0)
+  if (below(policyAdherence.dbsCheckRequiredRate, 100) && policyAdherence.totalPolicies > 0)
     areasForImprovement.push("DBS checks not required by all policies — regulatory non-compliance risk");
-  if (policyAdherence.visitorGuideRate < 100 && policyAdherence.totalPolicies > 0)
+  if (below(policyAdherence.visitorGuideRate, 100) && policyAdherence.totalPolicies > 0)
     areasForImprovement.push("Visitor guide not available under all policies — visitors may be uninformed of expectations");
-  if (policyAdherence.restrictedListRate < 100 && policyAdherence.totalPolicies > 0)
+  if (below(policyAdherence.restrictedListRate, 100) && policyAdherence.totalPolicies > 0)
     areasForImprovement.push("Restricted visitor list not maintained under all policies — risk management gap");
 
-  if (incidentManagement.totalIncidents > 0 && incidentManagement.resolvedRate < 100)
+  if (incidentManagement.totalIncidents > 0 && below(incidentManagement.resolvedRate, 100))
     areasForImprovement.push("Not all visitor incidents have been resolved — outstanding incidents require action");
-  if (incidentManagement.totalIncidents > 0 && incidentManagement.reportedRate < 100)
+  if (incidentManagement.totalIncidents > 0 && below(incidentManagement.reportedRate, 100))
     areasForImprovement.push("Not all visitor incidents reported appropriately — reporting must improve");
   if (incidentManagement.unauthorisedAccessCount > 0)
     areasForImprovement.push(`${incidentManagement.unauthorisedAccessCount} unauthorised access incident(s) recorded — urgent review of access control needed`);
@@ -829,17 +845,17 @@ export function generateVisitorManagementSafetyIntelligence(
 
   if (staffVisitorReadiness.totalStaff === 0)
     areasForImprovement.push("No staff visitor training records on file — training must be documented");
-  if (staffVisitorReadiness.visitorPolicyTrainedRate < 100 && staffVisitorReadiness.totalStaff > 0)
+  if (below(staffVisitorReadiness.visitorPolicyTrainedRate, 100) && staffVisitorReadiness.totalStaff > 0)
     areasForImprovement.push("Not all staff trained on visitor policy — policy awareness must improve");
-  if (staffVisitorReadiness.safeguardingVisitorsRate < 100 && staffVisitorReadiness.totalStaff > 0)
+  if (below(staffVisitorReadiness.safeguardingVisitorsRate, 100) && staffVisitorReadiness.totalStaff > 0)
     areasForImprovement.push("Not all staff trained on safeguarding in relation to visitors — training gap");
-  if (staffVisitorReadiness.signInProceduresRate < 100 && staffVisitorReadiness.totalStaff > 0)
+  if (below(staffVisitorReadiness.signInProceduresRate, 100) && staffVisitorReadiness.totalStaff > 0)
     areasForImprovement.push("Not all staff know sign-in procedures — procedures training needed");
-  if (staffVisitorReadiness.dbsCheckProcessRate < 100 && staffVisitorReadiness.totalStaff > 0)
+  if (below(staffVisitorReadiness.dbsCheckProcessRate, 100) && staffVisitorReadiness.totalStaff > 0)
     areasForImprovement.push("Not all staff understand the DBS check process — training required");
-  if (staffVisitorReadiness.incidentReportingRate < 100 && staffVisitorReadiness.totalStaff > 0)
+  if (below(staffVisitorReadiness.incidentReportingRate, 100) && staffVisitorReadiness.totalStaff > 0)
     areasForImprovement.push("Not all staff trained on visitor incident reporting — training gap");
-  if (staffVisitorReadiness.restrictedVisitorAwarenessRate < 100 && staffVisitorReadiness.totalStaff > 0)
+  if (below(staffVisitorReadiness.restrictedVisitorAwarenessRate, 100) && staffVisitorReadiness.totalStaff > 0)
     areasForImprovement.push("Not all staff aware of restricted visitor protocols — awareness training needed");
 
   // ── Actions ───────────────────────────────────────────────────────────
@@ -847,33 +863,33 @@ export function generateVisitorManagementSafetyIntelligence(
 
   if (visitorCompliance.totalRecords === 0)
     actions.push("Establish a visitor log and begin recording all visits immediately");
-  if (visitorCompliance.signInRate < 100 && visitorCompliance.totalRecords > 0)
+  if (below(visitorCompliance.signInRate, 100) && visitorCompliance.totalRecords > 0)
     actions.push("Ensure all visitors sign in on arrival without exception");
-  if (visitorCompliance.signOutRate < 100 && visitorCompliance.totalRecords > 0)
+  if (below(visitorCompliance.signOutRate, 100) && visitorCompliance.totalRecords > 0)
     actions.push("Ensure all visitors sign out on departure to maintain accurate records");
-  if (visitorCompliance.idCheckRate < 100 && visitorCompliance.totalRecords > 0)
+  if (below(visitorCompliance.idCheckRate, 100) && visitorCompliance.totalRecords > 0)
     actions.push("Implement mandatory ID checks for all visitors before entry");
-  if (visitorCompliance.dbsVerifiedRate < 100 && visitorCompliance.totalRecords > 0)
+  if (below(visitorCompliance.dbsVerifiedRate, 100) && visitorCompliance.totalRecords > 0)
     actions.push("Verify DBS status for all visitors who require it before unsupervised access");
-  if (visitorCompliance.safeguardingBriefRate < 100 && visitorCompliance.totalRecords > 0)
+  if (below(visitorCompliance.safeguardingBriefRate, 100) && visitorCompliance.totalRecords > 0)
     actions.push("Ensure all visitors receive a safeguarding brief upon arrival");
 
   if (policyAdherence.totalPolicies === 0)
     actions.push("Develop and implement a comprehensive visitor management policy");
-  if (policyAdherence.signInSystemRate < 100 && policyAdherence.totalPolicies > 0)
+  if (below(policyAdherence.signInSystemRate, 100) && policyAdherence.totalPolicies > 0)
     actions.push("Install a sign-in system at all entry points");
-  if (policyAdherence.idCheckMandatoryRate < 100 && policyAdherence.totalPolicies > 0)
+  if (below(policyAdherence.idCheckMandatoryRate, 100) && policyAdherence.totalPolicies > 0)
     actions.push("Update policies to mandate ID checks for all visitors");
-  if (policyAdherence.dbsCheckRequiredRate < 100 && policyAdherence.totalPolicies > 0)
+  if (below(policyAdherence.dbsCheckRequiredRate, 100) && policyAdherence.totalPolicies > 0)
     actions.push("Update policies to require DBS checks where applicable");
-  if (policyAdherence.visitorGuideRate < 100 && policyAdherence.totalPolicies > 0)
+  if (below(policyAdherence.visitorGuideRate, 100) && policyAdherence.totalPolicies > 0)
     actions.push("Create and distribute a visitor guide outlining expectations and procedures");
-  if (policyAdherence.restrictedListRate < 100 && policyAdherence.totalPolicies > 0)
+  if (below(policyAdherence.restrictedListRate, 100) && policyAdherence.totalPolicies > 0)
     actions.push("Establish and maintain a restricted visitor list with regular reviews");
 
-  if (incidentManagement.totalIncidents > 0 && incidentManagement.resolvedRate < 100)
+  if (incidentManagement.totalIncidents > 0 && below(incidentManagement.resolvedRate, 100))
     actions.push("Resolve all outstanding visitor-related incidents without delay");
-  if (incidentManagement.totalIncidents > 0 && incidentManagement.reportedRate < 100)
+  if (incidentManagement.totalIncidents > 0 && below(incidentManagement.reportedRate, 100))
     actions.push("Ensure all visitor incidents are reported to the appropriate person");
   if (incidentManagement.unauthorisedAccessCount > 0)
     actions.push("Conduct an urgent review of access control measures following unauthorised access");
@@ -882,17 +898,17 @@ export function generateVisitorManagementSafetyIntelligence(
 
   if (staffVisitorReadiness.totalStaff === 0)
     actions.push("Create staff training records for visitor management procedures");
-  if (staffVisitorReadiness.visitorPolicyTrainedRate < 100 && staffVisitorReadiness.totalStaff > 0)
+  if (below(staffVisitorReadiness.visitorPolicyTrainedRate, 100) && staffVisitorReadiness.totalStaff > 0)
     actions.push("Deliver visitor policy training to all untrained staff");
-  if (staffVisitorReadiness.safeguardingVisitorsRate < 100 && staffVisitorReadiness.totalStaff > 0)
+  if (below(staffVisitorReadiness.safeguardingVisitorsRate, 100) && staffVisitorReadiness.totalStaff > 0)
     actions.push("Arrange safeguarding-visitors training for all staff who have not completed it");
-  if (staffVisitorReadiness.signInProceduresRate < 100 && staffVisitorReadiness.totalStaff > 0)
+  if (below(staffVisitorReadiness.signInProceduresRate, 100) && staffVisitorReadiness.totalStaff > 0)
     actions.push("Train all staff on sign-in procedures for visitors");
-  if (staffVisitorReadiness.dbsCheckProcessRate < 100 && staffVisitorReadiness.totalStaff > 0)
+  if (below(staffVisitorReadiness.dbsCheckProcessRate, 100) && staffVisitorReadiness.totalStaff > 0)
     actions.push("Train all staff on the DBS check process for visitors");
-  if (staffVisitorReadiness.incidentReportingRate < 100 && staffVisitorReadiness.totalStaff > 0)
+  if (below(staffVisitorReadiness.incidentReportingRate, 100) && staffVisitorReadiness.totalStaff > 0)
     actions.push("Train all staff on reporting visitor-related incidents");
-  if (staffVisitorReadiness.restrictedVisitorAwarenessRate < 100 && staffVisitorReadiness.totalStaff > 0)
+  if (below(staffVisitorReadiness.restrictedVisitorAwarenessRate, 100) && staffVisitorReadiness.totalStaff > 0)
     actions.push("Brief all staff on restricted visitor protocols and how to respond");
 
   // ── Regulatory Links ──────────────────────────────────────────────────

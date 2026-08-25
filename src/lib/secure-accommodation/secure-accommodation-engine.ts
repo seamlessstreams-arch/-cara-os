@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara Secure Accommodation Intelligence Engine
 //
@@ -140,45 +141,66 @@ export interface OrderComplianceResult {
   overallScore: number; // 0-30
   totalOrders: number;
   activeOrders: number;
-  s25CriteriaRate: number;
-  leastRestrictiveRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  s25CriteriaRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  leastRestrictiveRate: number | null;
   expiredWithoutRenewal: number;
-  justificationsDocumentedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  justificationsDocumentedRate: number | null;
   refusedOrders: number;
 }
 
 export interface WelfareReviewQualityResult {
   overallScore: number; // 0-25
   totalReviews: number;
-  timelinessRate: number;
-  childViewsRate: number;
-  childAttendanceRate: number;
-  alternativesConsideredRate: number;
-  recommendationsActionedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelinessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childAttendanceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  alternativesConsideredRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  recommendationsActionedRate: number | null;
   averageParticipantTypes: number;
 }
 
 export interface ChildWelfareResult {
   overallScore: number; // 0-25
   totalChildren: number;
-  educationRate: number;
-  educationHoursAdequateRate: number;
-  therapeuticSupportRate: number;
-  familyContactRate: number;
-  healthNeedsRate: number;
-  outsideTimeAdequateRate: number;
-  privacyRate: number;
-  complaintsAvailableRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  educationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  educationHoursAdequateRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  therapeuticSupportRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  familyContactRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  healthNeedsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  outsideTimeAdequateRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  privacyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  complaintsAvailableRate: number | null;
 }
 
 export interface DischargePreparednessResult {
   overallScore: number; // 0-20
   totalAssessments: number;
-  transitionPlanRate: number;
-  receivingPlacementRate: number;
-  supportNetworkRate: number;
-  riskManagementRate: number;
-  childViewsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  transitionPlanRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  receivingPlacementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  supportNetworkRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskManagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewsRate: number | null;
 }
 
 export interface ChildSecureProfile {
@@ -285,11 +307,6 @@ export function getDischargeReadinessLabel(r: DischargeReadiness): string {
 
 // ── Utility ──────────────────────────────────────────────────────────────────
 
-function pct(numerator: number, denominator: number): number {
-  if (denominator === 0) return 0;
-  return Math.round((numerator / denominator) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -333,13 +350,13 @@ export function evaluateOrderCompliance(
 
   // s25 criteria documented rate
   const s25Documented = orders.filter((o) => o.s25CriteriaDocumented);
-  const s25Rate = pct(s25Documented.length, total);
+  const s25Rate = rate(s25Documented.length, total);
   // +10 for all documented
   if (s25Rate === 100) score += 10;
 
   // Least restrictive considered rate
   const leastRestrictive = orders.filter((o) => o.leastRestrictiveConsidered);
-  const leastRestrictiveRate = pct(leastRestrictive.length, total);
+  const leastRestrictiveRate = rate(leastRestrictive.length, total);
   // +8 for all considered
   if (leastRestrictiveRate === 100) score += 8;
 
@@ -353,7 +370,7 @@ export function evaluateOrderCompliance(
   const justificationsDocumented = orders.filter(
     (o) => o.justification.length > 0,
   );
-  const justificationsDocumentedRate = pct(justificationsDocumented.length, total);
+  const justificationsDocumentedRate = rate(justificationsDocumented.length, total);
   // +4 for all documented
   if (justificationsDocumentedRate === 100) score += 4;
 
@@ -409,27 +426,27 @@ export function evaluateWelfareReviewQuality(
   const timely = reviews.filter(
     (r) => r.status === "completed_on_time" || r.status === "not_due",
   );
-  const timelinessRate = pct(timely.length, total);
+  const timelinessRate = rate(timely.length, total);
   // +6 for >= 90%
-  if (timelinessRate >= 90) score += 6;
+  if (meets(timelinessRate, 90)) score += 6;
 
   // Child views recorded rate
   const childViews = reviews.filter((r) => r.childViewsRecorded);
-  const childViewsRate = pct(childViews.length, total);
+  const childViewsRate = rate(childViews.length, total);
   // +4 for >= 90%
-  if (childViewsRate >= 90) score += 4;
+  if (meets(childViewsRate, 90)) score += 4;
 
   // Child attendance rate
   const childAttended = reviews.filter((r) => r.childAttended);
-  const childAttendanceRate = pct(childAttended.length, total);
+  const childAttendanceRate = rate(childAttended.length, total);
   // +4 for >= 80%
-  if (childAttendanceRate >= 80) score += 4;
+  if (meets(childAttendanceRate, 80)) score += 4;
 
   // Alternatives considered rate
   const alternativesConsidered = reviews.filter((r) => r.alternativesConsidered);
-  const alternativesConsideredRate = pct(alternativesConsidered.length, total);
+  const alternativesConsideredRate = rate(alternativesConsidered.length, total);
   // +4 for >= 90%  (using 90% as threshold for full marks, 0 otherwise)
-  if (alternativesConsideredRate >= 90) score += 4;
+  if (meets(alternativesConsideredRate, 90)) score += 4;
 
   // Recommendations actioned rate
   const totalRecommendationsMade = reviews.reduce(
@@ -440,12 +457,12 @@ export function evaluateWelfareReviewQuality(
     (sum, r) => sum + r.recommendationsActioned,
     0,
   );
-  const recommendationsActionedRate = pct(
+  const recommendationsActionedRate = rate(
     totalRecommendationsActioned,
     totalRecommendationsMade,
   );
   // +4 for >= 80%
-  if (recommendationsActionedRate >= 80) score += 4;
+  if (meets(recommendationsActionedRate, 80)) score += 4;
 
   // Participant variety
   const totalParticipantTypes = reviews.reduce(
@@ -505,7 +522,7 @@ export function evaluateChildWelfare(
 
   // Education provided rate
   const educationProvided = welfare.filter((w) => w.educationProvided);
-  const educationRate = pct(educationProvided.length, total);
+  const educationRate = rate(educationProvided.length, total);
   // +4 for 100%
   if (educationRate === 100) score += 4;
 
@@ -513,25 +530,25 @@ export function evaluateChildWelfare(
   const educationHoursAdequate = welfare.filter(
     (w) => w.educationHoursPerWeek >= 15,
   );
-  const educationHoursAdequateRate = pct(educationHoursAdequate.length, total);
+  const educationHoursAdequateRate = rate(educationHoursAdequate.length, total);
   // +3 for 100%  (match spec: "+3 education hours >= 15/week" — means all meet threshold)
   if (educationHoursAdequateRate === 100) score += 3;
 
   // Therapeutic support
   const therapeuticSupport = welfare.filter((w) => w.therapeuticSupportInPlace);
-  const therapeuticSupportRate = pct(therapeuticSupport.length, total);
+  const therapeuticSupportRate = rate(therapeuticSupport.length, total);
   // +4 for 100%
   if (therapeuticSupportRate === 100) score += 4;
 
   // Family contact maintained
   const familyContact = welfare.filter((w) => w.familyContactMaintained);
-  const familyContactRate = pct(familyContact.length, total);
+  const familyContactRate = rate(familyContact.length, total);
   // +3 for 100%
   if (familyContactRate === 100) score += 3;
 
   // Health needs met
   const healthNeeds = welfare.filter((w) => w.healthNeedsMet);
-  const healthNeedsRate = pct(healthNeeds.length, total);
+  const healthNeedsRate = rate(healthNeeds.length, total);
   // +3 for 100%
   if (healthNeedsRate === 100) score += 3;
 
@@ -539,13 +556,13 @@ export function evaluateChildWelfare(
   const outsideTimeAdequate = welfare.filter(
     (w) => w.outsideTimeMinutesPerDay >= 60,
   );
-  const outsideTimeAdequateRate = pct(outsideTimeAdequate.length, total);
+  const outsideTimeAdequateRate = rate(outsideTimeAdequate.length, total);
   // +3 for 100%
   if (outsideTimeAdequateRate === 100) score += 3;
 
   // Privacy respected
   const privacyRespected = welfare.filter((w) => w.privacyRespected);
-  const privacyRate = pct(privacyRespected.length, total);
+  const privacyRate = rate(privacyRespected.length, total);
   // +3 for 100%
   if (privacyRate === 100) score += 3;
 
@@ -553,7 +570,7 @@ export function evaluateChildWelfare(
   const complaintsAvailable = welfare.filter(
     (w) => w.complaintsMechanismAvailable,
   );
-  const complaintsAvailableRate = pct(complaintsAvailable.length, total);
+  const complaintsAvailableRate = rate(complaintsAvailable.length, total);
   // +2 for 100%
   if (complaintsAvailableRate === 100) score += 2;
 
@@ -601,7 +618,7 @@ export function evaluateDischargePreparedness(
 
   // Transition plan rate
   const transitionPlans = assessments.filter((a) => a.transitionPlanInPlace);
-  const transitionPlanRate = pct(transitionPlans.length, total);
+  const transitionPlanRate = rate(transitionPlans.length, total);
   // +5 for 100%
   if (transitionPlanRate === 100) score += 5;
 
@@ -609,13 +626,13 @@ export function evaluateDischargePreparedness(
   const receivingPlacements = assessments.filter(
     (a) => a.receivingPlacementIdentified,
   );
-  const receivingPlacementRate = pct(receivingPlacements.length, total);
+  const receivingPlacementRate = rate(receivingPlacements.length, total);
   // +4 for 100%
   if (receivingPlacementRate === 100) score += 4;
 
   // Support network mapped rate
   const supportNetworks = assessments.filter((a) => a.supportNetworkMapped);
-  const supportNetworkRate = pct(supportNetworks.length, total);
+  const supportNetworkRate = rate(supportNetworks.length, total);
   // +4 for 100%
   if (supportNetworkRate === 100) score += 4;
 
@@ -623,13 +640,13 @@ export function evaluateDischargePreparedness(
   const riskManagement = assessments.filter(
     (a) => a.riskManagementPlanUpdated,
   );
-  const riskManagementRate = pct(riskManagement.length, total);
+  const riskManagementRate = rate(riskManagement.length, total);
   // +4 for 100%
   if (riskManagementRate === 100) score += 4;
 
   // Child views on discharge rate
   const childViews = assessments.filter((a) => a.childViewsOnDischarge);
-  const childViewsRate = pct(childViews.length, total);
+  const childViewsRate = rate(childViews.length, total);
   // +3 for 100%
   if (childViewsRate === 100) score += 3;
 
@@ -752,25 +769,25 @@ function generateStrengths(
     );
   }
 
-  if (review.timelinessRate >= 90 && review.totalReviews > 0) {
+  if (meets(review.timelinessRate, 90) && review.totalReviews > 0) {
     strengths.push(
       "Excellent welfare review timeliness — reviews consistently completed on schedule",
     );
   }
 
-  if (review.childViewsRate >= 90 && review.totalReviews > 0) {
+  if (meets(review.childViewsRate, 90) && review.totalReviews > 0) {
     strengths.push(
       "Strong child participation — views recorded in the majority of welfare reviews",
     );
   }
 
-  if (review.childAttendanceRate >= 80 && review.totalReviews > 0) {
+  if (meets(review.childAttendanceRate, 80) && review.totalReviews > 0) {
     strengths.push(
       "Good child attendance at welfare reviews — young people actively involved in decisions",
     );
   }
 
-  if (review.recommendationsActionedRate >= 80 && review.totalReviews > 0) {
+  if (meets(review.recommendationsActionedRate, 80) && review.totalReviews > 0) {
     strengths.push(
       "High rate of review recommendations actioned — demonstrating responsive care",
     );
@@ -811,13 +828,13 @@ function generateAreasForImprovement(
     );
   }
 
-  if (order.s25CriteriaRate < 100 && order.totalOrders > 0) {
+  if (below(order.s25CriteriaRate, 100) && order.totalOrders > 0) {
     areas.push(
       `s25 criteria documented for only ${order.s25CriteriaRate}% of orders — full documentation required`,
     );
   }
 
-  if (order.leastRestrictiveRate < 100 && order.totalOrders > 0) {
+  if (below(order.leastRestrictiveRate, 100) && order.totalOrders > 0) {
     areas.push(
       `Least restrictive alternatives considered for only ${order.leastRestrictiveRate}% of orders`,
     );
@@ -829,37 +846,37 @@ function generateAreasForImprovement(
     );
   }
 
-  if (review.timelinessRate < 90 && review.totalReviews > 0) {
+  if (below(review.timelinessRate, 90) && review.totalReviews > 0) {
     areas.push(
       `Welfare review timeliness at ${review.timelinessRate}% — below 90% target`,
     );
   }
 
-  if (review.childViewsRate < 90 && review.totalReviews > 0) {
+  if (below(review.childViewsRate, 90) && review.totalReviews > 0) {
     areas.push(
       `Child views recorded in only ${review.childViewsRate}% of reviews — UNCRC Art 12 requires participation`,
     );
   }
 
-  if (review.alternativesConsideredRate < 90 && review.totalReviews > 0) {
+  if (below(review.alternativesConsideredRate, 90) && review.totalReviews > 0) {
     areas.push(
       `Alternatives to secure accommodation considered in only ${review.alternativesConsideredRate}% of reviews`,
     );
   }
 
-  if (welfare.educationRate < 100 && welfare.totalChildren > 0) {
+  if (below(welfare.educationRate, 100) && welfare.totalChildren > 0) {
     areas.push(
       `Education not provided to all children — ${welfare.educationRate}% receiving education`,
     );
   }
 
-  if (welfare.outsideTimeAdequateRate < 100 && welfare.totalChildren > 0) {
+  if (below(welfare.outsideTimeAdequateRate, 100) && welfare.totalChildren > 0) {
     areas.push(
       `Outside time below 60 minutes/day for some children — ${welfare.outsideTimeAdequateRate}% meeting threshold`,
     );
   }
 
-  if (discharge.transitionPlanRate < 100 && discharge.totalAssessments > 0) {
+  if (below(discharge.transitionPlanRate, 100) && discharge.totalAssessments > 0) {
     areas.push(
       `Transition plans in place for only ${discharge.transitionPlanRate}% of discharge assessments`,
     );
@@ -882,61 +899,61 @@ function generateActions(
     );
   }
 
-  if (order.s25CriteriaRate < 100 && order.totalOrders > 0) {
+  if (below(order.s25CriteriaRate, 100) && order.totalOrders > 0) {
     actions.push(
       "Complete s25 criteria documentation for all current secure accommodation orders",
     );
   }
 
-  if (order.leastRestrictiveRate < 100 && order.totalOrders > 0) {
+  if (below(order.leastRestrictiveRate, 100) && order.totalOrders > 0) {
     actions.push(
       "Document least restrictive alternative considerations for all orders as required by ECHR Art 5",
     );
   }
 
-  if (review.timelinessRate < 90 && review.totalReviews > 0) {
+  if (below(review.timelinessRate, 90) && review.totalReviews > 0) {
     actions.push(
       "Implement welfare review scheduling system to ensure timely completion of all statutory reviews",
     );
   }
 
-  if (review.childViewsRate < 90 && review.totalReviews > 0) {
+  if (below(review.childViewsRate, 90) && review.totalReviews > 0) {
     actions.push(
       "Develop child participation strategy for welfare reviews — ensure views are routinely sought and recorded",
     );
   }
 
-  if (review.recommendationsActionedRate < 80 && review.totalReviews > 0) {
+  if (below(review.recommendationsActionedRate, 80) && review.totalReviews > 0) {
     actions.push(
       "Establish tracking system for welfare review recommendations to improve actioning rate",
     );
   }
 
-  if (welfare.educationRate < 100 && welfare.totalChildren > 0) {
+  if (below(welfare.educationRate, 100) && welfare.totalChildren > 0) {
     actions.push(
       "Ensure education provision for all children in secure accommodation — statutory requirement",
     );
   }
 
-  if (welfare.therapeuticSupportRate < 100 && welfare.totalChildren > 0) {
+  if (below(welfare.therapeuticSupportRate, 100) && welfare.totalChildren > 0) {
     actions.push(
       "Arrange therapeutic support for all children — secure accommodation should address underlying needs",
     );
   }
 
-  if (welfare.outsideTimeAdequateRate < 100 && welfare.totalChildren > 0) {
+  if (below(welfare.outsideTimeAdequateRate, 100) && welfare.totalChildren > 0) {
     actions.push(
       "Review daily routines to ensure all children receive minimum 60 minutes outside time",
     );
   }
 
-  if (discharge.transitionPlanRate < 100 && discharge.totalAssessments > 0) {
+  if (below(discharge.transitionPlanRate, 100) && discharge.totalAssessments > 0) {
     actions.push(
       "Develop transition plans for all children approaching discharge from secure accommodation",
     );
   }
 
-  if (discharge.childViewsRate < 100 && discharge.totalAssessments > 0) {
+  if (below(discharge.childViewsRate, 100) && discharge.totalAssessments > 0) {
     actions.push(
       "Ensure all children have opportunity to express views on their discharge and transition planning",
     );

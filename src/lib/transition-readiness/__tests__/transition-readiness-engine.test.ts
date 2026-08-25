@@ -653,7 +653,7 @@ describe("evaluatePostTransition", () => {
       issuesResolved: 0,
     };
     const result = evaluatePostTransition([noIssues]);
-    expect(result.issueResolutionRate).toBe(0); // pct(0, 0) = 0 but scoring uses totalIssues === 0 check
+    expect(result.issueResolutionRate).toBeNull(); // pct(0, 0) = 0 but scoring uses totalIssues === 0 check
     expect(result.overallScore).toBe(20);
   });
 

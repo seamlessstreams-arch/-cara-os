@@ -18,6 +18,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { withinPeriod } from "@/lib/date-period";
+import { above, below, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -109,10 +110,14 @@ export interface TransportIncident {
 
 export interface VehicleSafetyEvaluation {
   totalVehicles: number;
-  checkPassedRate: number;
-  serviceCurrentRate: number;
-  motValidRate: number;
-  insuranceValidRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  checkPassedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  serviceCurrentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  motValidRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  insuranceValidRate: number | null;
   failedCount: number;
   overdueCount: number;
   vehicleSafetyScore: number;
@@ -120,30 +125,43 @@ export interface VehicleSafetyEvaluation {
 
 export interface JourneyComplianceEvaluation {
   totalJourneys: number;
-  riskAssessmentRate: number;
-  seatbeltCheckRate: number;
-  journeyLogRate: number;
-  incidentRate: number;
-  completionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  seatbeltCheckRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  journeyLogRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  incidentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completionRate: number | null;
   journeysByPurpose: Record<string, number>;
   journeyComplianceScore: number;
 }
 
 export interface DriverCompetenceEvaluation {
   totalDrivers: number;
-  licenceValidRate: number;
-  dbsCheckedRate: number;
-  trainingCompletedRate: number;
-  firstAidRate: number;
-  assessmentCurrentRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  licenceValidRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dbsCheckedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  trainingCompletedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  firstAidRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  assessmentCurrentRate: number | null;
   driverCompetenceScore: number;
 }
 
 export interface IncidentResponseEvaluation {
   totalIncidents: number;
-  reportedTimelyRate: number;
-  investigationCompletedRate: number;
-  preventiveMeasuresRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reportedTimelyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  investigationCompletedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  preventiveMeasuresRate: number | null;
   seriousIncidentCount: number;
   bySeverity: Record<string, number>;
   incidentResponseScore: number;
@@ -179,11 +197,6 @@ export interface TransportSafetyComplianceIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
@@ -197,10 +210,10 @@ export function evaluateVehicleSafety(
   if (vehicles.length === 0) {
     return {
       totalVehicles: 0,
-      checkPassedRate: 0,
-      serviceCurrentRate: 0,
-      motValidRate: 0,
-      insuranceValidRate: 0,
+      checkPassedRate: null,
+      serviceCurrentRate: null,
+      motValidRate: null,
+      insuranceValidRate: null,
       failedCount: 0,
       overdueCount: 0,
       vehicleSafetyScore: 0,
@@ -211,19 +224,19 @@ export function evaluateVehicleSafety(
 
   // Check passed rate
   const passed = vehicles.filter((v) => v.checkStatus === "passed").length;
-  const checkPassedRate = pct(passed, total);
+  const checkPassedRate = rate(passed, total);
 
   // Service current: nextServiceDue is on or after referenceDate
   const serviceCurrent = vehicles.filter((v) => v.nextServiceDue >= referenceDate).length;
-  const serviceCurrentRate = pct(serviceCurrent, total);
+  const serviceCurrentRate = rate(serviceCurrent, total);
 
   // MOT valid: motExpiryDate is on or after referenceDate
   const motValid = vehicles.filter((v) => v.motExpiryDate >= referenceDate).length;
-  const motValidRate = pct(motValid, total);
+  const motValidRate = rate(motValid, total);
 
   // Insurance valid: insuranceExpiryDate is on or after referenceDate
   const insuranceValid = vehicles.filter((v) => v.insuranceExpiryDate >= referenceDate).length;
-  const insuranceValidRate = pct(insuranceValid, total);
+  const insuranceValidRate = rate(insuranceValid, total);
 
   // Failed and overdue counts
   const failedCount = vehicles.filter((v) => v.checkStatus === "failed").length;
@@ -231,16 +244,16 @@ export function evaluateVehicleSafety(
 
   // Scoring: 25 points
   // Check passed rate: 0-7 points
-  const checkScore = Math.round((checkPassedRate / 100) * 7);
+  const checkScore = Math.round(((checkPassedRate ?? 0) / 100) * 7);
 
   // Service current: 0-6 points
-  const serviceScore = Math.round((serviceCurrentRate / 100) * 6);
+  const serviceScore = Math.round(((serviceCurrentRate ?? 0) / 100) * 6);
 
   // MOT valid: 0-5 points
-  const motScore = Math.round((motValidRate / 100) * 5);
+  const motScore = Math.round(((motValidRate ?? 0) / 100) * 5);
 
   // Insurance valid: 0-4 points
-  const insuranceScore = Math.round((insuranceValidRate / 100) * 4);
+  const insuranceScore = Math.round(((insuranceValidRate ?? 0) / 100) * 4);
 
   // No failed vehicles bonus: 0-3 points
   const noFailedBonus = failedCount === 0 ? 3 : 0;
@@ -273,11 +286,11 @@ export function evaluateJourneyCompliance(
   if (journeys.length === 0) {
     return {
       totalJourneys: 0,
-      riskAssessmentRate: 0,
-      seatbeltCheckRate: 0,
-      journeyLogRate: 0,
-      incidentRate: 0,
-      completionRate: 0,
+      riskAssessmentRate: null,
+      seatbeltCheckRate: null,
+      journeyLogRate: null,
+      incidentRate: null,
+      completionRate: null,
       journeysByPurpose: {},
       journeyComplianceScore: 0,
     };
@@ -292,11 +305,11 @@ export function evaluateJourneyCompliance(
   if (total === 0) {
     return {
       totalJourneys: 0,
-      riskAssessmentRate: 0,
-      seatbeltCheckRate: 0,
-      journeyLogRate: 0,
-      incidentRate: 0,
-      completionRate: 0,
+      riskAssessmentRate: null,
+      seatbeltCheckRate: null,
+      journeyLogRate: null,
+      incidentRate: null,
+      completionRate: null,
       journeysByPurpose: {},
       journeyComplianceScore: 0,
     };
@@ -310,41 +323,43 @@ export function evaluateJourneyCompliance(
 
   // Rates
   const riskAssessed = periodJourneys.filter((j) => j.riskAssessmentCompleted).length;
-  const riskAssessmentRate = pct(riskAssessed, total);
+  const riskAssessmentRate = rate(riskAssessed, total);
 
   const seatbeltChecked = periodJourneys.filter((j) => j.seatbeltChecked).length;
-  const seatbeltCheckRate = pct(seatbeltChecked, total);
+  const seatbeltCheckRate = rate(seatbeltChecked, total);
 
   const journeyLogged = periodJourneys.filter((j) => j.journeyLogCompleted).length;
-  const journeyLogRate = pct(journeyLogged, total);
+  const journeyLogRate = rate(journeyLogged, total);
 
   const incidents = periodJourneys.filter((j) => j.incidentOccurred).length;
-  const incidentRate = pct(incidents, total);
+  const incidentRate = rate(incidents, total);
 
   // Completion rate: all three checks done (risk assessment + seatbelt + journey log)
   const fullyCompliant = periodJourneys.filter(
     (j) => j.riskAssessmentCompleted && j.seatbeltChecked && j.journeyLogCompleted,
   ).length;
-  const completionRate = pct(fullyCompliant, total);
+  const completionRate = rate(fullyCompliant, total);
 
   // Scoring: 25 points
   // Risk assessment rate: 0-7 points
-  const riskScore = Math.round((riskAssessmentRate / 100) * 7);
+  const riskScore = Math.round(((riskAssessmentRate ?? 0) / 100) * 7);
 
   // Seatbelt checked: 0-6 points
-  const seatbeltScore = Math.round((seatbeltCheckRate / 100) * 6);
+  const seatbeltScore = Math.round(((seatbeltCheckRate ?? 0) / 100) * 6);
 
   // Journey log: 0-5 points
-  const logScore = Math.round((journeyLogRate / 100) * 5);
+  const logScore = Math.round(((journeyLogRate ?? 0) / 100) * 5);
 
   // Low incident rate bonus: 0-4 points (0% incidents = 4, <10% = 2, else 0)
+  // unmeasured (no journeys) earns no incident bonus
   const incidentBonus =
-    incidentRate === 0 ? 4
-      : incidentRate <= 10 ? 2
-        : 0;
+    incidentRate === null ? 0
+      : incidentRate === 0 ? 4
+        : incidentRate <= 10 ? 2
+          : 0;
 
   // Completion rate: 0-3 points
-  const completionScore = Math.round((completionRate / 100) * 3);
+  const completionScore = Math.round(((completionRate ?? 0) / 100) * 3);
 
   const journeyComplianceScore = clamp(
     riskScore + seatbeltScore + logScore + incidentBonus + completionScore,
@@ -373,11 +388,11 @@ export function evaluateDriverCompetence(
   if (drivers.length === 0) {
     return {
       totalDrivers: 0,
-      licenceValidRate: 0,
-      dbsCheckedRate: 0,
-      trainingCompletedRate: 0,
-      firstAidRate: 0,
-      assessmentCurrentRate: 0,
+      licenceValidRate: null,
+      dbsCheckedRate: null,
+      trainingCompletedRate: null,
+      firstAidRate: null,
+      assessmentCurrentRate: null,
       driverCompetenceScore: 0,
     };
   }
@@ -386,19 +401,19 @@ export function evaluateDriverCompetence(
 
   // Licence valid
   const licenceValid = drivers.filter((d) => d.licenceValid && d.licenceExpiryDate >= referenceDate).length;
-  const licenceValidRate = pct(licenceValid, total);
+  const licenceValidRate = rate(licenceValid, total);
 
   // DBS checked
   const dbsChecked = drivers.filter((d) => d.dbsChecked).length;
-  const dbsCheckedRate = pct(dbsChecked, total);
+  const dbsCheckedRate = rate(dbsChecked, total);
 
   // Training completed
   const trainingCompleted = drivers.filter((d) => d.driverTrainingCompleted).length;
-  const trainingCompletedRate = pct(trainingCompleted, total);
+  const trainingCompletedRate = rate(trainingCompleted, total);
 
   // First aid trained
   const firstAidTrained = drivers.filter((d) => d.firstAidTrained).length;
-  const firstAidRate = pct(firstAidTrained, total);
+  const firstAidRate = rate(firstAidTrained, total);
 
   // Assessment current: lastAssessmentDate within 12 months of referenceDate
   const assessmentThresholdMs = 365 * 24 * 60 * 60 * 1000;
@@ -407,23 +422,23 @@ export function evaluateDriverCompetence(
     const assessTime = new Date(d.lastAssessmentDate).getTime();
     return refTime - assessTime <= assessmentThresholdMs;
   }).length;
-  const assessmentCurrentRate = pct(assessmentCurrent, total);
+  const assessmentCurrentRate = rate(assessmentCurrent, total);
 
   // Scoring: 25 points
   // Licence valid: 0-7 points
-  const licenceScore = Math.round((licenceValidRate / 100) * 7);
+  const licenceScore = Math.round(((licenceValidRate ?? 0) / 100) * 7);
 
   // DBS checked: 0-6 points
-  const dbsScore = Math.round((dbsCheckedRate / 100) * 6);
+  const dbsScore = Math.round(((dbsCheckedRate ?? 0) / 100) * 6);
 
   // Training completed: 0-5 points
-  const trainingScore = Math.round((trainingCompletedRate / 100) * 5);
+  const trainingScore = Math.round(((trainingCompletedRate ?? 0) / 100) * 5);
 
   // First aid: 0-4 points
-  const firstAidScore = Math.round((firstAidRate / 100) * 4);
+  const firstAidScore = Math.round(((firstAidRate ?? 0) / 100) * 4);
 
   // Assessment current: 0-3 points
-  const assessmentScore = Math.round((assessmentCurrentRate / 100) * 3);
+  const assessmentScore = Math.round(((assessmentCurrentRate ?? 0) / 100) * 3);
 
   const driverCompetenceScore = clamp(
     licenceScore + dbsScore + trainingScore + firstAidScore + assessmentScore,
@@ -450,9 +465,9 @@ export function evaluateIncidentResponse(
   if (incidents.length === 0) {
     return {
       totalIncidents: 0,
-      reportedTimelyRate: 0,
-      investigationCompletedRate: 0,
-      preventiveMeasuresRate: 0,
+      reportedTimelyRate: null,
+      investigationCompletedRate: null,
+      preventiveMeasuresRate: null,
       seriousIncidentCount: 0,
       bySeverity: {},
       incidentResponseScore: 25,
@@ -469,25 +484,25 @@ export function evaluateIncidentResponse(
 
   // Rates
   const reportedTimely = incidents.filter((i) => i.reportedTimely).length;
-  const reportedTimelyRate = pct(reportedTimely, total);
+  const reportedTimelyRate = rate(reportedTimely, total);
 
   const investigationCompleted = incidents.filter((i) => i.investigationCompleted).length;
-  const investigationCompletedRate = pct(investigationCompleted, total);
+  const investigationCompletedRate = rate(investigationCompleted, total);
 
   const preventiveMeasures = incidents.filter((i) => i.preventiveMeasures).length;
-  const preventiveMeasuresRate = pct(preventiveMeasures, total);
+  const preventiveMeasuresRate = rate(preventiveMeasures, total);
 
   const seriousIncidentCount = incidents.filter((i) => i.severity === "serious").length;
 
   // Scoring: 25 points
   // Reported timely: 0-8 points
-  const timelyScore = Math.round((reportedTimelyRate / 100) * 8);
+  const timelyScore = Math.round(((reportedTimelyRate ?? 0) / 100) * 8);
 
   // Investigation completed: 0-7 points
-  const investigationScore = Math.round((investigationCompletedRate / 100) * 7);
+  const investigationScore = Math.round(((investigationCompletedRate ?? 0) / 100) * 7);
 
   // Preventive measures: 0-5 points
-  const preventiveScore = Math.round((preventiveMeasuresRate / 100) * 5);
+  const preventiveScore = Math.round(((preventiveMeasuresRate ?? 0) / 100) * 5);
 
   // No serious incidents bonus: 0-5 points
   const seriousBonus = seriousIncidentCount === 0 ? 5 : 0;
@@ -536,15 +551,15 @@ export function buildChildTransportProfiles(
     // Based on: risk assessments done (0-3), seatbelt checks (0-3), no incidents bonus (0-2), journey logs (0-2)
     let safetyScore = 0;
     if (totalJourneys > 0) {
-      const raRate = pct(riskAssessmentsCompleted, totalJourneys);
-      const sbRate = pct(seatbeltChecks, totalJourneys);
+      const raRate = rate(riskAssessmentsCompleted, totalJourneys);
+      const sbRate = rate(seatbeltChecks, totalJourneys);
       const logCompleted = childJourneys.filter((j) => j.journeyLogCompleted).length;
-      const logRate = pct(logCompleted, totalJourneys);
+      const logRate = rate(logCompleted, totalJourneys);
 
-      safetyScore += Math.round((raRate / 100) * 3);
-      safetyScore += Math.round((sbRate / 100) * 3);
+      safetyScore += Math.round(((raRate ?? 0) / 100) * 3);
+      safetyScore += Math.round(((sbRate ?? 0) / 100) * 3);
       safetyScore += incidentsInvolved === 0 ? 2 : 0;
-      safetyScore += Math.round((logRate / 100) * 2);
+      safetyScore += Math.round(((logRate ?? 0) / 100) * 2);
     }
 
     safetyScore = clamp(safetyScore, 0, 10);
@@ -650,39 +665,39 @@ export function generateTransportSafetyComplianceIntelligence(
     areasForImprovement.push(`${vehicleEval.failedCount} vehicle(s) have failed safety checks — immediate action required`);
   if (vehicleEval.overdueCount > 0)
     areasForImprovement.push(`${vehicleEval.overdueCount} vehicle check(s) are overdue`);
-  if (vehicleEval.serviceCurrentRate < 100 && vehicleEval.totalVehicles > 0)
+  if (below(vehicleEval.serviceCurrentRate, 100) && vehicleEval.totalVehicles > 0)
     areasForImprovement.push("Not all vehicles are within their service schedule");
-  if (vehicleEval.motValidRate < 100 && vehicleEval.totalVehicles > 0)
+  if (below(vehicleEval.motValidRate, 100) && vehicleEval.totalVehicles > 0)
     areasForImprovement.push("Not all vehicles have valid MOT certificates — potential legal compliance issue");
-  if (vehicleEval.insuranceValidRate < 100 && vehicleEval.totalVehicles > 0)
+  if (below(vehicleEval.insuranceValidRate, 100) && vehicleEval.totalVehicles > 0)
     areasForImprovement.push("Not all vehicles have current insurance — this must be resolved immediately");
   if (journeyEval.totalJourneys === 0)
     areasForImprovement.push("No journey records found — transport activities must be logged");
-  if (journeyEval.riskAssessmentRate < 100 && journeyEval.totalJourneys > 0)
+  if (below(journeyEval.riskAssessmentRate, 100) && journeyEval.totalJourneys > 0)
     areasForImprovement.push("Risk assessments not completed for all journeys — this is a safeguarding concern");
-  if (journeyEval.seatbeltCheckRate < 100 && journeyEval.totalJourneys > 0)
+  if (below(journeyEval.seatbeltCheckRate, 100) && journeyEval.totalJourneys > 0)
     areasForImprovement.push("Seatbelt checks not recorded for all journeys");
-  if (journeyEval.journeyLogRate < 100 && journeyEval.totalJourneys > 0)
+  if (below(journeyEval.journeyLogRate, 100) && journeyEval.totalJourneys > 0)
     areasForImprovement.push("Journey logs not completed for all trips — record-keeping must improve");
-  if (journeyEval.incidentRate > 10 && journeyEval.totalJourneys > 0)
+  if (above(journeyEval.incidentRate, 10) && journeyEval.totalJourneys > 0)
     areasForImprovement.push("Transport incident rate is above acceptable threshold — review safety procedures");
   if (driverEval.totalDrivers === 0)
     areasForImprovement.push("No driver records on file — all staff who drive must have documented records");
-  if (driverEval.licenceValidRate < 100 && driverEval.totalDrivers > 0)
+  if (below(driverEval.licenceValidRate, 100) && driverEval.totalDrivers > 0)
     areasForImprovement.push("Not all drivers have valid licences — drivers without valid licences must not transport children");
-  if (driverEval.dbsCheckedRate < 100 && driverEval.totalDrivers > 0)
+  if (below(driverEval.dbsCheckedRate, 100) && driverEval.totalDrivers > 0)
     areasForImprovement.push("DBS checks not completed for all drivers — this is a safeguarding requirement");
-  if (driverEval.trainingCompletedRate < 100 && driverEval.totalDrivers > 0)
+  if (below(driverEval.trainingCompletedRate, 100) && driverEval.totalDrivers > 0)
     areasForImprovement.push("Not all drivers have completed transport safety training");
-  if (driverEval.firstAidRate < 100 && driverEval.totalDrivers > 0)
+  if (below(driverEval.firstAidRate, 100) && driverEval.totalDrivers > 0)
     areasForImprovement.push("Not all drivers are first aid trained");
-  if (driverEval.assessmentCurrentRate < 100 && driverEval.totalDrivers > 0)
+  if (below(driverEval.assessmentCurrentRate, 100) && driverEval.totalDrivers > 0)
     areasForImprovement.push("Not all driver assessments are current — reviews must be conducted annually");
-  if (incidentEval.totalIncidents > 0 && incidentEval.reportedTimelyRate < 100)
+  if (incidentEval.totalIncidents > 0 && below(incidentEval.reportedTimelyRate, 100))
     areasForImprovement.push("Not all transport incidents were reported in a timely manner");
-  if (incidentEval.totalIncidents > 0 && incidentEval.investigationCompletedRate < 100)
+  if (incidentEval.totalIncidents > 0 && below(incidentEval.investigationCompletedRate, 100))
     areasForImprovement.push("Not all transport incidents have been fully investigated");
-  if (incidentEval.totalIncidents > 0 && incidentEval.preventiveMeasuresRate < 100)
+  if (incidentEval.totalIncidents > 0 && below(incidentEval.preventiveMeasuresRate, 100))
     areasForImprovement.push("Preventive measures not implemented for all transport incidents");
   if (incidentEval.seriousIncidentCount > 0)
     areasForImprovement.push(`${incidentEval.seriousIncidentCount} serious transport incident(s) recorded — urgent review required`);
@@ -694,31 +709,31 @@ export function generateTransportSafetyComplianceIntelligence(
     actions.push("Remove failed vehicles from service and arrange immediate repair or replacement");
   if (vehicleEval.overdueCount > 0)
     actions.push("Complete overdue vehicle safety checks immediately");
-  if (vehicleEval.serviceCurrentRate < 100 && vehicleEval.totalVehicles > 0)
+  if (below(vehicleEval.serviceCurrentRate, 100) && vehicleEval.totalVehicles > 0)
     actions.push("Schedule overdue vehicle services without delay");
-  if (vehicleEval.motValidRate < 100 && vehicleEval.totalVehicles > 0)
+  if (below(vehicleEval.motValidRate, 100) && vehicleEval.totalVehicles > 0)
     actions.push("Arrange MOT tests for vehicles with expired certificates");
-  if (vehicleEval.insuranceValidRate < 100 && vehicleEval.totalVehicles > 0)
+  if (below(vehicleEval.insuranceValidRate, 100) && vehicleEval.totalVehicles > 0)
     actions.push("Renew expired vehicle insurance immediately — vehicles without insurance must not be used");
-  if (journeyEval.riskAssessmentRate < 100 && journeyEval.totalJourneys > 0)
+  if (below(journeyEval.riskAssessmentRate, 100) && journeyEval.totalJourneys > 0)
     actions.push("Ensure risk assessments are completed before every journey");
-  if (journeyEval.seatbeltCheckRate < 100 && journeyEval.totalJourneys > 0)
+  if (below(journeyEval.seatbeltCheckRate, 100) && journeyEval.totalJourneys > 0)
     actions.push("Implement mandatory seatbelt checks for all journeys");
-  if (journeyEval.journeyLogRate < 100 && journeyEval.totalJourneys > 0)
+  if (below(journeyEval.journeyLogRate, 100) && journeyEval.totalJourneys > 0)
     actions.push("Ensure journey logs are completed for every trip");
-  if (driverEval.licenceValidRate < 100 && driverEval.totalDrivers > 0)
+  if (below(driverEval.licenceValidRate, 100) && driverEval.totalDrivers > 0)
     actions.push("Verify and renew expired driving licences for all staff drivers");
-  if (driverEval.dbsCheckedRate < 100 && driverEval.totalDrivers > 0)
+  if (below(driverEval.dbsCheckedRate, 100) && driverEval.totalDrivers > 0)
     actions.push("Complete DBS checks for all drivers without delay");
-  if (driverEval.trainingCompletedRate < 100 && driverEval.totalDrivers > 0)
+  if (below(driverEval.trainingCompletedRate, 100) && driverEval.totalDrivers > 0)
     actions.push("Arrange transport safety training for untrained drivers");
-  if (driverEval.firstAidRate < 100 && driverEval.totalDrivers > 0)
+  if (below(driverEval.firstAidRate, 100) && driverEval.totalDrivers > 0)
     actions.push("Arrange first aid training for drivers who have not completed it");
-  if (driverEval.assessmentCurrentRate < 100 && driverEval.totalDrivers > 0)
+  if (below(driverEval.assessmentCurrentRate, 100) && driverEval.totalDrivers > 0)
     actions.push("Schedule driver assessments for staff whose reviews are overdue");
-  if (incidentEval.totalIncidents > 0 && incidentEval.investigationCompletedRate < 100)
+  if (incidentEval.totalIncidents > 0 && below(incidentEval.investigationCompletedRate, 100))
     actions.push("Complete outstanding transport incident investigations");
-  if (incidentEval.totalIncidents > 0 && incidentEval.preventiveMeasuresRate < 100)
+  if (incidentEval.totalIncidents > 0 && below(incidentEval.preventiveMeasuresRate, 100))
     actions.push("Implement preventive measures for all transport incidents");
   if (incidentEval.seriousIncidentCount > 0)
     actions.push("Conduct urgent review of serious transport incidents and report to relevant authorities");

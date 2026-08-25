@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — Property Damage Assessment Intelligence Engine
 //
@@ -121,19 +122,25 @@ export interface DamagePreventionMeasure {
 
 export interface IncidentManagementResult {
   totalIncidents: number;
-  therapeuticResponseRate: number;
-  timelyRepairRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  therapeuticResponseRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRepairRate: number | null;
   insuranceClaimedForSignificant: number;
   severeCount: number;
-  contextDocumentedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  contextDocumentedRate: number | null;
   overallScore: number; // 0–25
 }
 
 export interface PropertyConditionResult {
   totalInspections: number;
-  excellentOrGoodRate: number;
-  issuesResolvedRate: number;
-  maintenanceFollowedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  excellentOrGoodRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  issuesResolvedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  maintenanceFollowedRate: number | null;
   regularInspections: boolean;
   overallScore: number; // 0–25
 }
@@ -142,15 +149,18 @@ export interface RepairEffectivenessResult {
   totalRepairs: number;
   timelinessScore: number;
   qualityScore: number;
-  safetyRestoredRate: number;
-  completionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safetyRestoredRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completionRate: number | null;
   overallScore: number; // 0–25
 }
 
 export interface PreventionStrategyResult {
   totalMeasures: number;
   activeMeasures: number;
-  effectivenessRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  effectivenessRate: number | null;
   repeatChildrenCovered: number;
   environmentalAdaptations: number;
   reviewCurrent: number;
@@ -163,7 +173,7 @@ export interface ChildDamageProfile {
   incidentCount: number;
   totalEstimatedCost: number;
   primaryContext: DamageContext | null;
-  therapeuticResponseRate: number;
+  therapeuticResponseRate: number | null;
   preventionMeasuresActive: number;
   score: number; // 0–10
 }
@@ -187,10 +197,6 @@ export interface PropertyDamageAssessmentIntelligence {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(num: number, den: number): number {
-  return den === 0 ? 0 : Math.round((num / den) * 100);
-}
 
 function clamp(v: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, v));
@@ -292,11 +298,11 @@ export function evaluateIncidentManagement(
   if (periodIncidents.length === 0) {
     return {
       totalIncidents: 0,
-      therapeuticResponseRate: 0,
-      timelyRepairRate: 0,
+      therapeuticResponseRate: null,
+      timelyRepairRate: null,
       insuranceClaimedForSignificant: 0,
       severeCount: 0,
-      contextDocumentedRate: 0,
+      contextDocumentedRate: null,
       overallScore: 25,
     };
   }
@@ -304,7 +310,7 @@ export function evaluateIncidentManagement(
   // Therapeutic response rate (for child-involved incidents)
   const childInvolved = periodIncidents.filter((i) => i.childInvolved);
   const therapeuticProvided = childInvolved.filter((i) => i.therapeuticResponseProvided).length;
-  const therapeuticRate = pct(therapeuticProvided, childInvolved.length);
+  const therapeuticRate = rate(therapeuticProvided, childInvolved.length);
 
   // Timely repair rate
   const repairMap = new Map<string, RepairRecord>();
@@ -315,7 +321,7 @@ export function evaluateIncidentManagement(
     const repair = repairMap.get(i.id);
     return repair && (repair.timeliness === "within_24h" || repair.timeliness === "within_week");
   }).length;
-  const timelyRepairRate = pct(timelyRepairs, periodIncidents.length);
+  const timelyRepairRate = rate(timelyRepairs, periodIncidents.length);
 
   // Insurance claimed for significant+
   const significantPlus = periodIncidents.filter(
@@ -328,20 +334,20 @@ export function evaluateIncidentManagement(
 
   // Context documented (not "unknown")
   const contextDocumented = periodIncidents.filter((i) => i.context !== "unknown").length;
-  const contextDocumentedRate = pct(contextDocumented, periodIncidents.length);
+  const contextDocumentedRate = rate(contextDocumented, periodIncidents.length);
 
   // Scoring — 25 points max
   let score = 0;
 
   // Therapeutic response provided: 0–7
-  score += (therapeuticRate / 100) * 7;
+  score += ((therapeuticRate ?? 0) / 100) * 7;
 
   // Timely repair: 0–6
-  score += (timelyRepairRate / 100) * 6;
+  score += ((timelyRepairRate ?? 0) / 100) * 6;
 
   // Insurance claimed for significant+: 0–5
   if (significantPlus.length > 0) {
-    score += (pct(insuranceClaimed, significantPlus.length) / 100) * 5;
+    score += (rate(insuranceClaimed, significantPlus.length)! / 100) * 5;
   } else {
     score += 5; // No significant damage is good
   }
@@ -356,7 +362,7 @@ export function evaluateIncidentManagement(
   }
 
   // Context documented: 0–3
-  score += (contextDocumentedRate / 100) * 3;
+  score += ((contextDocumentedRate ?? 0) / 100) * 3;
 
   return {
     totalIncidents: periodIncidents.length,
@@ -386,9 +392,9 @@ export function evaluatePropertyCondition(
   if (periodInspections.length === 0) {
     return {
       totalInspections: 0,
-      excellentOrGoodRate: 0,
-      issuesResolvedRate: 0,
-      maintenanceFollowedRate: 0,
+      excellentOrGoodRate: null,
+      issuesResolvedRate: null,
+      maintenanceFollowedRate: null,
       regularInspections: false,
       overallScore: 0,
     };
@@ -398,18 +404,18 @@ export function evaluatePropertyCondition(
   const excellentOrGood = periodInspections.filter(
     (i) => i.overallCondition === "excellent" || i.overallCondition === "good",
   ).length;
-  const excellentOrGoodRate = pct(excellentOrGood, periodInspections.length);
+  const excellentOrGoodRate = rate(excellentOrGood, periodInspections.length);
 
   // Issues resolved rate
   const totalFound = periodInspections.reduce((sum, i) => sum + i.issuesFound, 0);
   const totalResolved = periodInspections.reduce((sum, i) => sum + i.issuesResolved, 0);
-  const issuesResolvedRate = pct(totalResolved, totalFound);
+  const issuesResolvedRate = rate(totalResolved, totalFound);
 
   // Maintenance schedule followed
   const maintenanceFollowed = periodInspections.filter(
     (i) => i.maintenanceScheduleFollowed,
   ).length;
-  const maintenanceFollowedRate = pct(maintenanceFollowed, periodInspections.length);
+  const maintenanceFollowedRate = rate(maintenanceFollowed, periodInspections.length);
 
   // Regular inspections bonus (2+ in period)
   const regularInspections = periodInspections.length >= 2;
@@ -418,13 +424,13 @@ export function evaluatePropertyCondition(
   let score = 0;
 
   // Overall condition ratings: 0–8
-  score += (excellentOrGoodRate / 100) * 8;
+  score += ((excellentOrGoodRate ?? 0) / 100) * 8;
 
   // Issues resolved rate: 0–6
-  score += (issuesResolvedRate / 100) * 6;
+  score += ((issuesResolvedRate ?? 0) / 100) * 6;
 
   // Maintenance schedule followed: 0–6
-  score += (maintenanceFollowedRate / 100) * 6;
+  score += ((maintenanceFollowedRate ?? 0) / 100) * 6;
 
   // Regular inspections bonus: 0–5
   if (regularInspections) {
@@ -459,8 +465,8 @@ export function evaluateRepairEffectiveness(
       totalRepairs: 0,
       timelinessScore: 0,
       qualityScore: 0,
-      safetyRestoredRate: 0,
-      completionRate: 0,
+      safetyRestoredRate: null,
+      completionRate: null,
       overallScore: 25,
     };
   }
@@ -474,8 +480,8 @@ export function evaluateRepairEffectiveness(
       totalRepairs: 0,
       timelinessScore: 0,
       qualityScore: 0,
-      safetyRestoredRate: 0,
-      completionRate: 0,
+      safetyRestoredRate: null,
+      completionRate: null,
       overallScore: 0,
     };
   }
@@ -506,12 +512,12 @@ export function evaluateRepairEffectiveness(
 
   // Safety restored rate: 0–5
   const safetyRestored = periodRepairs.filter((r) => r.safetyRestored).length;
-  const safetyRestoredRate = pct(safetyRestored, periodRepairs.length);
-  const safetyScore = Math.round(((safetyRestoredRate / 100) * 5) * 10) / 10;
+  const safetyRestoredRate = rate(safetyRestored, periodRepairs.length);
+  const safetyScore = Math.round((((safetyRestoredRate ?? 0) / 100) * 5) * 10) / 10;
 
   // Completion rate: 0–5
-  const completionRate = pct(periodRepairs.length, periodIncidents.length);
-  const completionScore = Math.round(((completionRate / 100) * 5) * 10) / 10;
+  const completionRate = rate(periodRepairs.length, periodIncidents.length);
+  const completionScore = Math.round((((completionRate ?? 0) / 100) * 5) * 10) / 10;
 
   const overallScore = Math.round(
     clamp(timelinessScore + qualityScore + safetyScore + completionScore, 0, 25) * 10,
@@ -548,7 +554,7 @@ export function evaluatePreventionStrategy(
     return {
       totalMeasures: 0,
       activeMeasures: 0,
-      effectivenessRate: 0,
+      effectivenessRate: null,
       repeatChildrenCovered: 0,
       environmentalAdaptations: 0,
       reviewCurrent: 0,
@@ -563,7 +569,7 @@ export function evaluatePreventionStrategy(
   const effective = periodMeasures.filter(
     (m) => m.effectiveness === "highly_effective" || m.effectiveness === "effective",
   ).length;
-  const effectivenessRate = pct(effective, periodMeasures.length);
+  const effectivenessRate = rate(effective, periodMeasures.length);
 
   // Coverage for repeat children: 0–5
   const periodIncidents = incidents.filter((i) => isInPeriod(i.date, periodStart, periodEnd));
@@ -599,11 +605,11 @@ export function evaluatePreventionStrategy(
   score += Math.min(activeMeasures, 5) * 1.4;
 
   // Effectiveness rate: 0–6
-  score += (effectivenessRate / 100) * 6;
+  score += ((effectivenessRate ?? 0) / 100) * 6;
 
   // Coverage for repeat children: 0–5
   if (repeatChildren.length > 0) {
-    score += (pct(coveredRepeatChildren, repeatChildren.length) / 100) * 5;
+    score += (rate(coveredRepeatChildren, repeatChildren.length)! / 100) * 5;
   } else {
     score += 5; // No repeat children is positive
   }
@@ -613,7 +619,7 @@ export function evaluatePreventionStrategy(
 
   // Review currency: 0–3
   if (periodMeasures.length > 0) {
-    score += (pct(reviewCurrent, periodMeasures.length) / 100) * 3;
+    score += (rate(reviewCurrent, periodMeasures.length)! / 100) * 3;
   }
 
   return {
@@ -670,7 +676,7 @@ export function buildChildDamageProfiles(
     const therapeuticProvided = childIncidents.filter(
       (i) => i.therapeuticResponseProvided,
     ).length;
-    const therapeuticResponseRate = pct(therapeuticProvided, childIncidents.length);
+    const therapeuticResponseRate = rate(therapeuticProvided, childIncidents.length);
 
     // Active prevention measures
     const preventionMeasuresActive = measures.filter(
@@ -684,7 +690,7 @@ export function buildChildDamageProfiles(
     score -= Math.min(incidentCount, 4);
 
     // Deduct if no therapeutic response: -2
-    if (incidentCount > 0 && therapeuticResponseRate < 50) {
+    if (incidentCount > 0 && below(therapeuticResponseRate, 50)) {
       score -= 2;
     }
 
@@ -755,39 +761,39 @@ export function generatePropertyDamageAssessmentIntelligence(
   if (incidentMgmt.totalIncidents === 0) {
     strengths.push("No property damage incidents in the period — excellent environmental care");
   }
-  if (incidentMgmt.therapeuticResponseRate >= 90 && incidentMgmt.totalIncidents > 0) {
+  if (meets(incidentMgmt.therapeuticResponseRate, 90) && incidentMgmt.totalIncidents > 0) {
     strengths.push(
       "Therapeutic responses are consistently provided when children are involved in damage incidents, understanding behaviour as communication",
     );
   }
-  if (incidentMgmt.contextDocumentedRate >= 90 && incidentMgmt.totalIncidents > 0) {
+  if (meets(incidentMgmt.contextDocumentedRate, 90) && incidentMgmt.totalIncidents > 0) {
     strengths.push("Context is well-documented for damage incidents, enabling pattern analysis and tailored support");
   }
-  if (condition.excellentOrGoodRate >= 80 && condition.totalInspections > 0) {
+  if (meets(condition.excellentOrGoodRate, 80) && condition.totalInspections > 0) {
     strengths.push("Property inspections consistently show excellent or good condition");
   }
-  if (condition.issuesResolvedRate >= 90 && condition.totalInspections > 0) {
+  if (meets(condition.issuesResolvedRate, 90) && condition.totalInspections > 0) {
     strengths.push("Issues identified in inspections are promptly resolved");
   }
   if (condition.regularInspections) {
     strengths.push("Regular property inspections are being conducted, demonstrating proactive maintenance");
   }
-  if (repairEff.completionRate >= 90 && repairEff.totalRepairs > 0) {
+  if (meets(repairEff.completionRate, 90) && repairEff.totalRepairs > 0) {
     strengths.push("High repair completion rate ensures the environment is maintained to a good standard");
   }
-  if (repairEff.safetyRestoredRate >= 90 && repairEff.totalRepairs > 0) {
+  if (meets(repairEff.safetyRestoredRate, 90) && repairEff.totalRepairs > 0) {
     strengths.push("Safety is consistently restored following damage, prioritising children's wellbeing");
   }
   if (prevention.activeMeasures >= 3) {
     strengths.push("Multiple active prevention measures demonstrate a proactive approach to reducing damage");
   }
-  if (prevention.effectivenessRate >= 80 && prevention.totalMeasures > 0) {
+  if (meets(prevention.effectivenessRate, 80) && prevention.totalMeasures > 0) {
     strengths.push("Prevention measures are demonstrably effective in reducing property damage");
   }
 
   // ── Areas for Improvement ──
   const areasForImprovement: string[] = [];
-  if (incidentMgmt.therapeuticResponseRate < 70 && incidentMgmt.totalIncidents > 0) {
+  if (below(incidentMgmt.therapeuticResponseRate, 70) && incidentMgmt.totalIncidents > 0) {
     const childInvolved = periodIncidents.filter((i) => i.childInvolved).length;
     if (childInvolved > 0) {
       areasForImprovement.push(
@@ -803,16 +809,16 @@ export function generatePropertyDamageAssessmentIntelligence(
   if (condition.totalInspections === 0) {
     areasForImprovement.push("No property inspections recorded — regular inspections are essential for Reg 19 compliance");
   }
-  if (condition.maintenanceFollowedRate < 80 && condition.totalInspections > 0) {
+  if (below(condition.maintenanceFollowedRate, 80) && condition.totalInspections > 0) {
     areasForImprovement.push("Maintenance schedule adherence needs improvement to prevent deterioration");
   }
-  if (repairEff.completionRate < 70 && incidentMgmt.totalIncidents > 0) {
+  if (below(repairEff.completionRate, 70) && incidentMgmt.totalIncidents > 0) {
     areasForImprovement.push("Repair completion rate is below expected standard — outstanding repairs should be prioritised");
   }
   if (prevention.totalMeasures === 0) {
     areasForImprovement.push("No prevention measures are in place — proactive strategies are needed to reduce damage");
   }
-  if (prevention.effectivenessRate < 60 && prevention.totalMeasures > 0) {
+  if (below(prevention.effectivenessRate, 60) && prevention.totalMeasures > 0) {
     areasForImprovement.push("Prevention measures are not demonstrating sufficient effectiveness — review and adapt strategies");
   }
 
@@ -830,7 +836,7 @@ export function generatePropertyDamageAssessmentIntelligence(
     actions.push("URGENT: Action repairs for outstanding damage incidents");
   }
   if (
-    incidentMgmt.therapeuticResponseRate < 70 &&
+    below(incidentMgmt.therapeuticResponseRate, 70) &&
     periodIncidents.filter((i) => i.childInvolved).length > 0
   ) {
     actions.push(
@@ -840,13 +846,13 @@ export function generatePropertyDamageAssessmentIntelligence(
   if (prevention.totalMeasures === 0 && incidentMgmt.totalIncidents > 0) {
     actions.push("URGENT: Develop prevention strategy based on incident patterns and child needs");
   }
-  if (condition.maintenanceFollowedRate < 80 && condition.totalInspections > 0) {
+  if (below(condition.maintenanceFollowedRate, 80) && condition.totalInspections > 0) {
     actions.push("HIGH: Review and reinforce maintenance schedule compliance");
   }
-  if (repairEff.completionRate < 70 && incidentMgmt.totalIncidents > 0) {
+  if (below(repairEff.completionRate, 70) && incidentMgmt.totalIncidents > 0) {
     actions.push("HIGH: Prioritise completion of outstanding repairs");
   }
-  if (prevention.effectivenessRate < 60 && prevention.totalMeasures > 0) {
+  if (below(prevention.effectivenessRate, 60) && prevention.totalMeasures > 0) {
     actions.push("MEDIUM: Review prevention measures and adapt those not demonstrating effectiveness");
   }
 

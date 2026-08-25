@@ -793,13 +793,13 @@ describe("evaluateCompetencyDevelopment", () => {
     expect(result.improvementRate).toBe(50);
   });
 
-  it("improvement rate is 0 when no assessments have previous levels", () => {
+  it("improvement rate is null when no assessments have previous levels", () => {
     const staff = [makeStaff({ id: "s1" })];
     const assessments: CompetencyAssessment[] = [
       makeCompetencyAssessment({ id: "c1", staffId: "s1" }),
     ];
     const result = evaluateCompetencyDevelopment(assessments, staff);
-    expect(result.improvementRate).toBe(0);
+    expect(result.improvementRate).toBeNull();
   });
 
   it("detects critical areas covered when all staff assessed in safeguarding and child_centred_practice", () => {
@@ -845,7 +845,7 @@ describe("evaluateCompetencyDevelopment", () => {
       makeCompetencyAssessment({ id: "c3", staffId: "s1", area: "teamwork", level: "developing" }),
     ];
     const result = evaluateCompetencyDevelopment(assessments, staff);
-    expect(result.highCompetencyRate).toBe(66.7);
+    expect(result.highCompetencyRate).toBe(67); // house rate() rounds whole (2 of 3)
   });
 
   it("awards high competency bonus when >= 70%", () => {
@@ -1105,14 +1105,14 @@ describe("Edge Cases", () => {
     const staff = [makeStaff({ id: "s1", requiredQualifications: [] })];
     const result = evaluateQualificationCompliance(staff, [], PERIOD_END);
     expect(result.totalRequired).toBe(0);
-    expect(result.achievedRate).toBe(0);
+    expect(result.achievedRate).toBeNull();
   });
 
   it("handles reviews with zero objectives set", () => {
     const staff = [makeStaff({ id: "s1" })];
     const reviews = [makeReview({ id: "r1", staffId: "s1", objectivesSet: 0, objectivesMet: 0 })];
     const result = evaluateReviewQuality(reviews, staff);
-    expect(result.objectivesMetRate).toBe(0);
+    expect(result.objectivesMetRate).toBeNull();
   });
 
   it("handles single staff member single goal scenario", () => {
@@ -1131,7 +1131,7 @@ describe("Edge Cases", () => {
       makePDPGoal({ id: "g2", staffId: "s1", status: "deferred" }),
     ];
     const result = evaluatePDPProgress(goals, staff);
-    expect(result.achievementRate).toBe(0); // 0 achieved / 0 non-deferred
+    expect(result.achievementRate).toBeNull(); // 0 achieved / 0 non-deferred
     expect(result.totalGoals).toBe(2);
   });
 
@@ -1156,7 +1156,7 @@ describe("Edge Cases", () => {
     expect(result.staffProfiles).toHaveLength(0);
   });
 
-  it("staff profile defaults to 0 competency level when no assessments exist", () => {
+  it("staff profile defaults to null competency level when no assessments exist", () => {
     const staff = [makeStaff({ id: "s1" })];
     const quals = [
       makeQualification({ id: "q1", staffId: "s1", type: "level_3_diploma", status: "achieved" }),

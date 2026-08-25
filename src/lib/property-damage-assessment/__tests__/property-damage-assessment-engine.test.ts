@@ -193,7 +193,7 @@ describe("evaluateIncidentManagement", () => {
     const repairs = [makeRepair()];
     const result = evaluateIncidentManagement(incidents, repairs, PERIOD_START, PERIOD_END);
     // When no child involved, therapeuticRate = pct(0, 0) = 0 but no child means 0 denominator
-    expect(result.therapeuticResponseRate).toBe(0);
+    expect(result.therapeuticResponseRate).toBeNull();
   });
 
   it("penalises lack of timely repairs", () => {
@@ -357,7 +357,7 @@ describe("evaluatePropertyCondition", () => {
       [makeInspection({ issuesFound: 0, issuesResolved: 0 })],
       PERIOD_START, PERIOD_END,
     );
-    expect(result.issuesResolvedRate).toBe(0); // pct(0,0) = 0
+    expect(result.issuesResolvedRate).toBeNull(); // pct(0,0) = 0
   });
 
   it("penalises maintenance schedule not followed", () => {

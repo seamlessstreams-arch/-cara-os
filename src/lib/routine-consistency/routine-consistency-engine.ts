@@ -1,3 +1,4 @@
+import { below, meanOf, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — Routine & Consistency Intelligence Engine
 //
@@ -134,36 +135,50 @@ export interface PhaseConsistencyResult {
   phase: RoutinePhase;
   phaseLabel: string;
   totalRecords: number;
-  excellentOrGoodRate: number;
-  onTimeRate: number;
-  cooperationRate: number;
-  disruptionRate: number;
+  excellentOrGoodRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  onTimeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  cooperationRate: number | null;
+  disruptionRate: number | null;
   averageMood: number;            // 1-5 mapped from mood
 }
 
 export interface MorningRoutineResult {
   totalRecords: number;
-  onTimeRate: number;
-  qualityRate: number;            // excellent + good %
-  cooperationRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  onTimeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  qualityRate: number | null;            // excellent + good %
+  /** null when the population is empty — nothing measured, not 0%. */
+  cooperationRate: number | null;
   commonDisruptions: { type: DisruptionType; count: number }[];
-  schoolReadinessRate: number;    // % of school mornings started on time
+  /** null when the population is empty — nothing measured, not 0%. */
+  schoolReadinessRate: number | null;    // % of school mornings started on time
 }
 
 export interface EveningRoutineResult {
   totalRecords: number;
-  onTimeRate: number;
-  qualityRate: number;
-  cooperationRate: number;
-  bedtimeComplianceRate: number;  // % within 15min of agreed bedtime
-  windDownQuality: number;        // % of evenings rated excellent/good
+  /** null when the population is empty — nothing measured, not 0%. */
+  onTimeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  qualityRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  cooperationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  bedtimeComplianceRate: number | null;  // % within 15min of agreed bedtime
+  /** null when the population is empty — nothing measured, not 0%. */
+  windDownQuality: number | null;        // % of evenings rated excellent/good
   commonDisruptions: { type: DisruptionType; count: number }[];
 }
 
 export interface StaffConsistencyResult {
-  regularStaffRate: number;       // % of shifts covered by regular staff
-  handoverCompletionRate: number;
-  handoverQualityRate: number;    // thorough or adequate %
+  /** null when the population is empty — nothing measured, not 0%. */
+  regularStaffRate: number | null;       // % of shifts covered by regular staff
+  /** null when the population is empty — nothing measured, not 0%. */
+  handoverCompletionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  handoverQualityRate: number | null;    // thorough or adequate %
   averageStaffPerShift: number;
   staffTurnoverImpact: number;    // count of disruptions from staff_change
 }
@@ -171,9 +186,9 @@ export interface StaffConsistencyResult {
 export interface ChildRoutineProfile {
   childId: string;
   childName: string;
-  morningQualityRate: number;
-  eveningQualityRate: number;
-  overallCooperationRate: number;
+  morningQualityRate: number | null;
+  eveningQualityRate: number | null;
+  overallCooperationRate: number | null;
   disruptionCount: number;
   adaptationsUsed: AdaptationType[];
   preferencesImplemented: number;
@@ -248,10 +263,6 @@ export function getAdaptationLabel(a: AdaptationType): string {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function inPeriod(date: string, start: string, end: string): boolean {
   return date.slice(0, 10) >= start.slice(0, 10) && date.slice(0, 10) <= end.slice(0, 10);
 }
@@ -298,11 +309,11 @@ export function evaluateMorningRoutine(
 
   const totalRecords = morningRecords.length;
   const onTime = morningRecords.filter((r) => r.startedOnTime).length;
-  const onTimeRate = pct(onTime, totalRecords);
+  const onTimeRate = rate(onTime, totalRecords);
   const good = morningRecords.filter((r) => isGoodQuality(r.quality)).length;
-  const qualityRate = pct(good, totalRecords);
+  const qualityRate = rate(good, totalRecords);
   const cooperative = morningRecords.filter((r) => r.childCooperated).length;
-  const cooperationRate = pct(cooperative, totalRecords);
+  const cooperationRate = rate(cooperative, totalRecords);
 
   const disruptions = countDisruptions(morningRecords);
   const commonDisruptions = Array.from(disruptions.entries())
@@ -312,7 +323,7 @@ export function evaluateMorningRoutine(
   // School readiness: school_run records that started on time
   const schoolRuns = morningRecords.filter((r) => r.phase === "school_run");
   const schoolOnTime = schoolRuns.filter((r) => r.startedOnTime).length;
-  const schoolReadinessRate = pct(schoolOnTime, schoolRuns.length);
+  const schoolReadinessRate = rate(schoolOnTime, schoolRuns.length);
 
   return {
     totalRecords,
@@ -340,21 +351,21 @@ export function evaluateEveningRoutine(
 
   const totalRecords = eveningRecords.length;
   const onTime = eveningRecords.filter((r) => r.completedOnTime).length;
-  const onTimeRate = pct(onTime, totalRecords);
+  const onTimeRate = rate(onTime, totalRecords);
   const good = eveningRecords.filter((r) => isGoodQuality(r.quality)).length;
-  const qualityRate = pct(good, totalRecords);
+  const qualityRate = rate(good, totalRecords);
   const cooperative = eveningRecords.filter((r) => r.childCooperated).length;
-  const cooperationRate = pct(cooperative, totalRecords);
+  const cooperationRate = rate(cooperative, totalRecords);
 
   // Bedtime compliance — bedtime records completed on time
   const bedtimeRecords = eveningRecords.filter((r) => r.phase === "bedtime");
   const bedtimeOnTime = bedtimeRecords.filter((r) => r.completedOnTime).length;
-  const bedtimeComplianceRate = pct(bedtimeOnTime, bedtimeRecords.length);
+  const bedtimeComplianceRate = rate(bedtimeOnTime, bedtimeRecords.length);
 
   // Wind-down quality — evening (not bedtime) records
   const windDownRecords = eveningRecords.filter((r) => r.phase === "evening");
   const windDownGood = windDownRecords.filter((r) => isGoodQuality(r.quality)).length;
-  const windDownQuality = pct(windDownGood, windDownRecords.length);
+  const windDownQuality = rate(windDownGood, windDownRecords.length);
 
   const disruptions = countDisruptions(eveningRecords);
   const commonDisruptions = Array.from(disruptions.entries())
@@ -403,10 +414,10 @@ export function evaluatePhaseBreakdown(
       phase,
       phaseLabel: getPhaseLabel(phase),
       totalRecords,
-      excellentOrGoodRate: pct(good, totalRecords),
-      onTimeRate: pct(onTime, totalRecords),
-      cooperationRate: pct(cooperative, totalRecords),
-      disruptionRate: pct(disrupted, totalRecords),
+      excellentOrGoodRate: rate(good, totalRecords),
+      onTimeRate: rate(onTime, totalRecords),
+      cooperationRate: rate(cooperative, totalRecords),
+      disruptionRate: rate(disrupted, totalRecords),
       averageMood: totalRecords === 0 ? 0 : Math.round((moodTotal / totalRecords) * 10) / 10,
     };
   }).filter((p) => p.totalRecords > 0);
@@ -423,17 +434,17 @@ export function evaluateStaffConsistency(
 
   const totalShifts = periodShifts.length;
   const regularShifts = periodShifts.filter((s) => s.isRegularStaff).length;
-  const regularStaffRate = pct(regularShifts, totalShifts);
+  const regularStaffRate = rate(regularShifts, totalShifts);
 
   const handoversExpected = periodShifts.length;
   const handoversCompleted = periodShifts.filter((s) => s.handoverCompleted).length;
-  const handoverCompletionRate = pct(handoversCompleted, handoversExpected);
+  const handoverCompletionRate = rate(handoversCompleted, handoversExpected);
 
   const handoversWithQuality = periodShifts.filter((s) => s.handoverQuality);
   const goodHandovers = handoversWithQuality.filter(
     (s) => s.handoverQuality === "thorough" || s.handoverQuality === "adequate",
   ).length;
-  const handoverQualityRate = pct(goodHandovers, handoversWithQuality.length);
+  const handoverQualityRate = rate(goodHandovers, handoversWithQuality.length);
 
   // Average unique staff per day
   const dayStaffMap = new Map<string, Set<string>>();
@@ -485,13 +496,13 @@ export function buildChildRoutineProfiles(
     );
 
     const morningGood = morningRecords.filter((r) => isGoodQuality(r.quality)).length;
-    const morningQualityRate = pct(morningGood, morningRecords.length);
+    const morningQualityRate = rate(morningGood, morningRecords.length);
 
     const eveningGood = eveningRecords.filter((r) => isGoodQuality(r.quality)).length;
-    const eveningQualityRate = pct(eveningGood, eveningRecords.length);
+    const eveningQualityRate = rate(eveningGood, eveningRecords.length);
 
     const cooperative = childRecords.filter((r) => r.childCooperated).length;
-    const overallCooperationRate = pct(cooperative, childRecords.length);
+    const overallCooperationRate = rate(cooperative, childRecords.length);
 
     const disruptionCount = childRecords.filter(
       (r) => r.disruptions.length > 0,
@@ -509,11 +520,11 @@ export function buildChildRoutineProfiles(
 
     // Primary concern
     let primaryConcern: string | undefined;
-    if (morningQualityRate < 50 && morningRecords.length > 0) {
+    if (below(morningQualityRate, 50) && morningRecords.length > 0) {
       primaryConcern = "Morning routine quality below 50% — review support strategies";
-    } else if (eveningQualityRate < 50 && eveningRecords.length > 0) {
+    } else if (below(eveningQualityRate, 50) && eveningRecords.length > 0) {
       primaryConcern = "Evening routine quality below 50% — review bedtime support";
-    } else if (overallCooperationRate < 40 && childRecords.length > 0) {
+    } else if (below(overallCooperationRate, 40) && childRecords.length > 0) {
       primaryConcern = "Low cooperation rate — consider therapeutic approach review";
     } else if (
       childRecords.length > 0 &&
@@ -561,33 +572,33 @@ export function generateRoutineConsistencyIntelligence(
 
   // 1. Morning routine consistency (20)
   let morningScore = 0;
-  if (morningRoutine.qualityRate >= 80) morningScore += 8;
-  else if (morningRoutine.qualityRate >= 60) morningScore += 5;
-  else if (morningRoutine.qualityRate >= 40) morningScore += 2;
+  if (meets(morningRoutine.qualityRate, 80)) morningScore += 8;
+  else if (meets(morningRoutine.qualityRate, 60)) morningScore += 5;
+  else if (meets(morningRoutine.qualityRate, 40)) morningScore += 2;
 
-  if (morningRoutine.onTimeRate >= 85) morningScore += 6;
-  else if (morningRoutine.onTimeRate >= 70) morningScore += 4;
-  else if (morningRoutine.onTimeRate >= 50) morningScore += 2;
+  if (meets(morningRoutine.onTimeRate, 85)) morningScore += 6;
+  else if (meets(morningRoutine.onTimeRate, 70)) morningScore += 4;
+  else if (meets(morningRoutine.onTimeRate, 50)) morningScore += 2;
 
-  if (morningRoutine.schoolReadinessRate >= 90) morningScore += 6;
-  else if (morningRoutine.schoolReadinessRate >= 75) morningScore += 4;
-  else if (morningRoutine.schoolReadinessRate >= 50) morningScore += 2;
+  if (meets(morningRoutine.schoolReadinessRate, 90)) morningScore += 6;
+  else if (meets(morningRoutine.schoolReadinessRate, 75)) morningScore += 4;
+  else if (meets(morningRoutine.schoolReadinessRate, 50)) morningScore += 2;
 
   morningScore = Math.min(morningScore, 20);
 
   // 2. Evening routine consistency (20)
   let eveningScore = 0;
-  if (eveningRoutine.qualityRate >= 80) eveningScore += 7;
-  else if (eveningRoutine.qualityRate >= 60) eveningScore += 4;
-  else if (eveningRoutine.qualityRate >= 40) eveningScore += 2;
+  if (meets(eveningRoutine.qualityRate, 80)) eveningScore += 7;
+  else if (meets(eveningRoutine.qualityRate, 60)) eveningScore += 4;
+  else if (meets(eveningRoutine.qualityRate, 40)) eveningScore += 2;
 
-  if (eveningRoutine.bedtimeComplianceRate >= 85) eveningScore += 7;
-  else if (eveningRoutine.bedtimeComplianceRate >= 70) eveningScore += 4;
-  else if (eveningRoutine.bedtimeComplianceRate >= 50) eveningScore += 2;
+  if (meets(eveningRoutine.bedtimeComplianceRate, 85)) eveningScore += 7;
+  else if (meets(eveningRoutine.bedtimeComplianceRate, 70)) eveningScore += 4;
+  else if (meets(eveningRoutine.bedtimeComplianceRate, 50)) eveningScore += 2;
 
-  if (eveningRoutine.windDownQuality >= 80) eveningScore += 6;
-  else if (eveningRoutine.windDownQuality >= 60) eveningScore += 3;
-  else if (eveningRoutine.windDownQuality >= 40) eveningScore += 1;
+  if (meets(eveningRoutine.windDownQuality, 80)) eveningScore += 6;
+  else if (meets(eveningRoutine.windDownQuality, 60)) eveningScore += 3;
+  else if (meets(eveningRoutine.windDownQuality, 40)) eveningScore += 1;
 
   eveningScore = Math.min(eveningScore, 20);
 
@@ -598,9 +609,8 @@ export function generateRoutineConsistencyIntelligence(
   const mealtimePhases = allPhaseRecords.filter(
     (p) => p.phase === "morning" || p.phase === "evening" || p.phase === "weekend_morning" || p.phase === "weekend_evening",
   );
-  const avgMealtimeOnTime = mealtimePhases.length > 0
-    ? mealtimePhases.reduce((sum, p) => sum + p.onTimeRate, 0) / mealtimePhases.length
-    : 0;
+  // meanOf drops phases with no records instead of coercing null into the sum
+  const avgMealtimeOnTime = meanOf(mealtimePhases.map((p) => p.onTimeRate)) ?? 0;
   if (avgMealtimeOnTime >= 85) mealtimeScore += 8;
   else if (avgMealtimeOnTime >= 70) mealtimeScore += 5;
   else if (avgMealtimeOnTime >= 50) mealtimeScore += 2;
@@ -619,16 +629,12 @@ export function generateRoutineConsistencyIntelligence(
   const activityPhases = allPhaseRecords.filter(
     (p) => p.phase === "after_school" || p.phase === "weekend_afternoon",
   );
-  const avgActivityQuality = activityPhases.length > 0
-    ? activityPhases.reduce((sum, p) => sum + p.excellentOrGoodRate, 0) / activityPhases.length
-    : 0;
+  const avgActivityQuality = meanOf(activityPhases.map((p) => p.excellentOrGoodRate)) ?? 0;
   if (avgActivityQuality >= 80) activityScore += 8;
   else if (avgActivityQuality >= 60) activityScore += 5;
   else if (avgActivityQuality >= 40) activityScore += 2;
 
-  const avgActivityCooperation = activityPhases.length > 0
-    ? activityPhases.reduce((sum, p) => sum + p.cooperationRate, 0) / activityPhases.length
-    : 0;
+  const avgActivityCooperation = meanOf(activityPhases.map((p) => p.cooperationRate)) ?? 0;
   if (avgActivityCooperation >= 80) activityScore += 7;
   else if (avgActivityCooperation >= 60) activityScore += 4;
   else if (avgActivityCooperation >= 40) activityScore += 2;
@@ -637,17 +643,17 @@ export function generateRoutineConsistencyIntelligence(
 
   // 5. Staff consistency (15)
   let staffScore = 0;
-  if (staffConsistency.regularStaffRate >= 85) staffScore += 5;
-  else if (staffConsistency.regularStaffRate >= 70) staffScore += 3;
-  else if (staffConsistency.regularStaffRate >= 50) staffScore += 1;
+  if (meets(staffConsistency.regularStaffRate, 85)) staffScore += 5;
+  else if (meets(staffConsistency.regularStaffRate, 70)) staffScore += 3;
+  else if (meets(staffConsistency.regularStaffRate, 50)) staffScore += 1;
 
-  if (staffConsistency.handoverCompletionRate >= 95) staffScore += 5;
-  else if (staffConsistency.handoverCompletionRate >= 80) staffScore += 3;
-  else if (staffConsistency.handoverCompletionRate >= 60) staffScore += 1;
+  if (meets(staffConsistency.handoverCompletionRate, 95)) staffScore += 5;
+  else if (meets(staffConsistency.handoverCompletionRate, 80)) staffScore += 3;
+  else if (meets(staffConsistency.handoverCompletionRate, 60)) staffScore += 1;
 
-  if (staffConsistency.handoverQualityRate >= 80) staffScore += 5;
-  else if (staffConsistency.handoverQualityRate >= 60) staffScore += 3;
-  else if (staffConsistency.handoverQualityRate >= 40) staffScore += 1;
+  if (meets(staffConsistency.handoverQualityRate, 80)) staffScore += 5;
+  else if (meets(staffConsistency.handoverQualityRate, 60)) staffScore += 3;
+  else if (meets(staffConsistency.handoverQualityRate, 40)) staffScore += 1;
 
   staffScore = Math.min(staffScore, 15);
 
@@ -655,10 +661,10 @@ export function generateRoutineConsistencyIntelligence(
   let voiceScore = 0;
   const totalPrefs = childProfiles.reduce((sum, p) => sum + p.preferencesTotal, 0);
   const totalImplemented = childProfiles.reduce((sum, p) => sum + p.preferencesImplemented, 0);
-  const implementationRate = pct(totalImplemented, totalPrefs);
-  if (implementationRate >= 80) voiceScore += 8;
-  else if (implementationRate >= 60) voiceScore += 5;
-  else if (implementationRate >= 40) voiceScore += 2;
+  const implementationRate = rate(totalImplemented, totalPrefs);
+  if (meets(implementationRate, 80)) voiceScore += 8;
+  else if (meets(implementationRate, 60)) voiceScore += 5;
+  else if (meets(implementationRate, 40)) voiceScore += 2;
 
   // Adaptations in use
   const placed = children.filter((c) => c.currentPlacement);
@@ -666,10 +672,10 @@ export function generateRoutineConsistencyIntelligence(
   const childrenUsingAdaptations = childProfiles.filter(
     (p) => p.adaptationsUsed.length > 0,
   ).length;
-  const adaptationRate = pct(childrenUsingAdaptations, childrenWithAdaptations);
-  if (childrenWithAdaptations === 0 || adaptationRate >= 80) voiceScore += 7;
-  else if (adaptationRate >= 60) voiceScore += 4;
-  else if (adaptationRate >= 40) voiceScore += 2;
+  const adaptationRate = rate(childrenUsingAdaptations, childrenWithAdaptations);
+  if (childrenWithAdaptations === 0 || meets(adaptationRate, 80)) voiceScore += 7;
+  else if (meets(adaptationRate, 60)) voiceScore += 4;
+  else if (meets(adaptationRate, 40)) voiceScore += 2;
 
   voiceScore = Math.min(voiceScore, 15);
 
@@ -695,47 +701,47 @@ export function generateRoutineConsistencyIntelligence(
   const areasForDevelopment: string[] = [];
   const immediateActions: string[] = [];
 
-  if (morningRoutine.qualityRate >= 80) {
+  if (meets(morningRoutine.qualityRate, 80)) {
     strengths.push("Consistently high-quality morning routines support school readiness");
   }
-  if (eveningRoutine.bedtimeComplianceRate >= 85) {
+  if (meets(eveningRoutine.bedtimeComplianceRate, 85)) {
     strengths.push("Bedtime routines well-established — children settling consistently");
   }
-  if (staffConsistency.regularStaffRate >= 85) {
+  if (meets(staffConsistency.regularStaffRate, 85)) {
     strengths.push("High staff consistency — children experience predictable care");
   }
-  if (implementationRate >= 80) {
+  if (meets(implementationRate, 80)) {
     strengths.push("Children's routine preferences actively implemented");
   }
-  if (morningRoutine.schoolReadinessRate >= 90) {
+  if (meets(morningRoutine.schoolReadinessRate, 90)) {
     strengths.push("Excellent school readiness — children leaving on time consistently");
   }
-  if (eveningRoutine.windDownQuality >= 80) {
+  if (meets(eveningRoutine.windDownQuality, 80)) {
     strengths.push("Effective wind-down routines support emotional regulation before bed");
   }
   if (strengths.length === 0) {
     strengths.push("No significant strengths identified — routine consistency needs review");
   }
 
-  if (morningRoutine.qualityRate < 60) {
+  if (below(morningRoutine.qualityRate, 60)) {
     areasForDevelopment.push(
       `Morning routine quality at ${morningRoutine.qualityRate}% — review transition support`,
     );
   }
-  if (eveningRoutine.bedtimeComplianceRate < 70) {
+  if (below(eveningRoutine.bedtimeComplianceRate, 70)) {
     areasForDevelopment.push(
       `Bedtime compliance at ${eveningRoutine.bedtimeComplianceRate}% — review bedtime strategies`,
     );
   }
-  if (staffConsistency.regularStaffRate < 70) {
+  if (below(staffConsistency.regularStaffRate, 70)) {
     areasForDevelopment.push(
       `Regular staff rate at ${staffConsistency.regularStaffRate}% — reduce reliance on agency/cover`,
     );
   }
-  if (staffConsistency.handoverCompletionRate < 80) {
+  if (below(staffConsistency.handoverCompletionRate, 80)) {
     areasForDevelopment.push("Handover completion rate needs improvement for routine continuity");
   }
-  if (implementationRate < 60 && totalPrefs > 0) {
+  if (below(implementationRate, 60) && totalPrefs > 0) {
     areasForDevelopment.push("Children's routine preferences not consistently implemented");
   }
   if (areasForDevelopment.length === 0) {
@@ -757,12 +763,12 @@ export function generateRoutineConsistencyIntelligence(
       }
     }
   }
-  if (morningRoutine.schoolReadinessRate < 70) {
+  if (below(morningRoutine.schoolReadinessRate, 70)) {
     immediateActions.push(
       "HIGH: School readiness below 70% — review morning routine structure and staffing",
     );
   }
-  if (staffConsistency.handoverCompletionRate < 60) {
+  if (below(staffConsistency.handoverCompletionRate, 60)) {
     immediateActions.push(
       "HIGH: Handover completion below 60% — critical for routine continuity",
     );

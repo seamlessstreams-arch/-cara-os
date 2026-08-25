@@ -240,12 +240,12 @@ describe("evaluateSessionQuality", () => {
     const result = evaluateSessionQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalSessions).toBe(0);
-    expect(result.attendanceRate).toBe(0);
-    expect(result.positiveOutcomeRate).toBe(0);
-    expect(result.childEngagementRate).toBe(0);
-    expect(result.consentRate).toBe(0);
-    expect(result.keyWorkerBriefingRate).toBe(0);
-    expect(result.goalsAddressedRate).toBe(0);
+    expect(result.attendanceRate).toBeNull();
+    expect(result.positiveOutcomeRate).toBeNull();
+    expect(result.childEngagementRate).toBeNull();
+    expect(result.consentRate).toBeNull();
+    expect(result.keyWorkerBriefingRate).toBeNull();
+    expect(result.goalsAddressedRate).toBeNull();
   });
 
   it("returns max score for perfect sessions", () => {
@@ -408,7 +408,7 @@ describe("evaluateReferralEfficiency", () => {
     expect(result.overallScore).toBe(25);
     expect(result.totalReferrals).toBe(0);
     expect(result.averageWaitTimeDays).toBe(0);
-    expect(result.acceptanceRate).toBe(0);
+    expect(result.acceptanceRate).toBeNull();
     expect(result.activeReferrals).toBe(0);
     expect(result.waitlistedCount).toBe(0);
   });
@@ -540,10 +540,10 @@ describe("evaluateTherapyPlanning", () => {
     const result = evaluateTherapyPlanning([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalPlans).toBe(0);
-    expect(result.planReviewRate).toBe(0);
-    expect(result.coProducedRate).toBe(0);
-    expect(result.childViewsIncludedRate).toBe(0);
-    expect(result.goalsAchievedRate).toBe(0);
+    expect(result.planReviewRate).toBeNull();
+    expect(result.coProducedRate).toBeNull();
+    expect(result.childViewsIncludedRate).toBeNull();
+    expect(result.goalsAchievedRate).toBeNull();
   });
 
   it("returns high score for well-managed plans", () => {
@@ -592,7 +592,7 @@ describe("evaluateTherapyPlanning", () => {
       makePlan({ id: "p1", goals: [], goalsAchieved: 0 }),
     ];
     const result = evaluateTherapyPlanning(plans);
-    expect(result.goalsAchievedRate).toBe(0);
+    expect(result.goalsAchievedRate).toBeNull();
   });
 
   it("never exceeds 25", () => {
