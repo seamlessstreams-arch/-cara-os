@@ -17,6 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { CommunityAccessRating, HomeCommunityAccessResult } from "@/lib/engines/home-community-access-intelligence-engine";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface HomeCommunityAccessResponse {
   data: HomeCommunityAccessResult;
@@ -109,7 +110,7 @@ export function HomeCommunityAccessIntelligenceCard() {
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>
               {ratingStyle.label}
             </span>
-            <span className="text-xs font-bold tabular-nums text-slate-600">{d.community_access_score}%</span>
+            <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.community_access_score)}</span>
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -175,16 +176,16 @@ export function HomeCommunityAccessIntelligenceCard() {
             </p>
             <div className="flex flex-wrap gap-2 text-[10px]">
               <span className="bg-white/60 rounded px-1.5 py-0.5 border border-emerald-200">
-                Licence: <span className="font-bold">{d.transport_safety.licence_checked_rate}%</span>
+                Licence: <span className="font-bold">{formatRate(d.transport_safety.licence_checked_rate)}</span>
               </span>
               <span className="bg-white/60 rounded px-1.5 py-0.5 border border-emerald-200">
-                Vehicle: <span className="font-bold">{d.transport_safety.vehicle_checked_rate}%</span>
+                Vehicle: <span className="font-bold">{formatRate(d.transport_safety.vehicle_checked_rate)}</span>
               </span>
               <span className="bg-white/60 rounded px-1.5 py-0.5 border border-emerald-200">
-                Incidents: <span className="font-bold">{d.transport_safety.incident_rate}%</span>
+                Incidents: <span className="font-bold">{formatRate(d.transport_safety.incident_rate)}</span>
               </span>
               <span className="bg-white/60 rounded px-1.5 py-0.5 border border-emerald-200">
-                Good Behaviour: <span className="font-bold">{d.transport_safety.excellent_behaviour_rate}%</span>
+                Good Behaviour: <span className="font-bold">{formatRate(d.transport_safety.excellent_behaviour_rate)}</span>
               </span>
             </div>
           </div>
@@ -199,16 +200,16 @@ export function HomeCommunityAccessIntelligenceCard() {
             </p>
             <div className="flex flex-wrap gap-2 text-[10px]">
               <span className="bg-white/60 rounded px-1.5 py-0.5 border border-purple-200">
-                Coverage: <span className="font-bold">{d.independent_travel.child_coverage}%</span>
+                Coverage: <span className="font-bold">{formatRate(d.independent_travel.child_coverage)}</span>
               </span>
               <span className="bg-white/60 rounded px-1.5 py-0.5 border border-purple-200">
-                Solo/Independent: <span className="font-bold">{d.independent_travel.solo_or_independent_rate}%</span>
+                Solo/Independent: <span className="font-bold">{formatRate(d.independent_travel.solo_or_independent_rate)}</span>
               </span>
               <span className="bg-white/60 rounded px-1.5 py-0.5 border border-purple-200">
                 Avg Routes: <span className="font-bold">{d.independent_travel.avg_routes_mastered}</span>
               </span>
               <span className="bg-white/60 rounded px-1.5 py-0.5 border border-purple-200">
-                Confident: <span className="font-bold">{d.independent_travel.confident_or_highly_rate}%</span>
+                Confident: <span className="font-bold">{formatRate(d.independent_travel.confident_or_highly_rate)}</span>
               </span>
             </div>
           </div>

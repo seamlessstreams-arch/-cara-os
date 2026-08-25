@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME COMMUNITY INTEGRATION & VOLUNTEERING INTELLIGENCE ENGINE
 // Home-level engine measuring community integration quality — community
@@ -220,10 +221,6 @@ export interface CommunityIntegrationResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -257,12 +254,12 @@ function emptyResult(
     total_social_inclusion_records: 0,
     total_neighbourhood_records: 0,
     total_local_service_records: 0,
-    community_participation_rate: 0,
-    volunteering_rate: 0,
-    social_inclusion_rate: 0,
-    neighbourhood_relation_rate: 0,
-    local_service_rate: 0,
-    child_satisfaction_rate: 0,
+    community_participation_rate: null,
+    volunteering_rate: null,
+    social_inclusion_rate: null,
+    neighbourhood_relation_rate: null,
+    local_service_rate: null,
+    child_satisfaction_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -352,25 +349,25 @@ export function computeCommunityIntegrationVolunteering(
   const caAttended = ca90d.filter((r) => r.attended).length;
 
   const caChildIds = new Set(ca90d.filter((r) => r.attended).map((r) => r.child_id));
-  const communityParticipationRate = pct(caChildIds.size, total_children);
+  const communityParticipationRate = rate(caChildIds.size, total_children);
 
   const caEnjoyed = ca90d.filter((r) => r.attended && r.child_enjoyed).length;
-  const caEnjoymentRate = pct(caEnjoyed, caAttended);
+  const caEnjoymentRate = rate(caEnjoyed, caAttended);
 
   const caFriendships = ca90d.filter((r) => r.attended && r.builds_friendships).length;
-  const caFriendshipRate = pct(caFriendships, caAttended);
+  const caFriendshipRate = rate(caFriendships, caAttended);
 
   const caOngoing = ca90d.filter((r) => r.attended && r.ongoing_regular).length;
-  const caOngoingRate = pct(caOngoing, caAttended);
+  const caOngoingRate = rate(caOngoing, caAttended);
 
   const caRiskAssessed = ca90d.filter((r) => r.risk_assessment_completed).length;
-  const caRiskAssessmentRate = pct(caRiskAssessed, ca90d.length);
+  const caRiskAssessmentRate = rate(caRiskAssessed, ca90d.length);
 
   const caConsent = ca90d.filter((r) => r.consent_obtained).length;
-  const caConsentRate = pct(caConsent, ca90d.length);
+  const caConsentRate = rate(caConsent, ca90d.length);
 
   const caOutcomes = ca90d.filter((r) => r.attended && r.outcomes_documented).length;
-  const caOutcomesRate = pct(caOutcomes, caAttended);
+  const caOutcomesRate = rate(caOutcomes, caAttended);
 
   const caUniqueTypes = new Set(ca90d.filter((r) => r.attended).map((r) => r.activity_type));
   const caTypeVariety = caUniqueTypes.size;
@@ -384,28 +381,28 @@ export function computeCommunityIntegrationVolunteering(
 
   const totalVolunteeringRecords = volunteering_records.length;
   const volChildIds = new Set(vol90d.map((r) => r.child_id));
-  const volunteeringRate = pct(volChildIds.size, total_children);
+  const volunteeringRate = rate(volChildIds.size, total_children);
 
   const volEnjoyed = vol90d.filter((r) => r.child_enjoyed).length;
-  const volEnjoymentRate = pct(volEnjoyed, vol90d.length);
+  const volEnjoymentRate = rate(volEnjoyed, vol90d.length);
 
   const volChildInitiated = vol90d.filter((r) => r.child_initiated).length;
-  const volChildInitiatedRate = pct(volChildInitiated, vol90d.length);
+  const volChildInitiatedRate = rate(volChildInitiated, vol90d.length);
 
   const volOngoing = vol90d.filter((r) => r.ongoing_commitment).length;
-  const volOngoingRate = pct(volOngoing, vol90d.length);
+  const volOngoingRate = rate(volOngoing, vol90d.length);
 
   const volSafeguarding = vol90d.filter((r) => r.safeguarding_check_completed).length;
-  const volSafeguardingRate = pct(volSafeguarding, vol90d.length);
+  const volSafeguardingRate = rate(volSafeguarding, vol90d.length);
 
   const volRiskAssessed = vol90d.filter((r) => r.risk_assessment_completed).length;
-  const volRiskAssessmentRate = pct(volRiskAssessed, vol90d.length);
+  const volRiskAssessmentRate = rate(volRiskAssessed, vol90d.length);
 
   const volRecognition = vol90d.filter((r) => r.recognition_received).length;
-  const volRecognitionRate = pct(volRecognition, vol90d.length);
+  const volRecognitionRate = rate(volRecognition, vol90d.length);
 
   const volSkills = vol90d.filter((r) => r.skills_developed && r.skills_developed.length > 0).length;
-  const volSkillsRate = pct(volSkills, vol90d.length);
+  const volSkillsRate = rate(volSkills, vol90d.length);
 
   const volUniqueTypes = new Set(vol90d.map((r) => r.volunteering_type));
 
@@ -418,19 +415,19 @@ export function computeCommunityIntegrationVolunteering(
 
   const totalSocialInclusionRecords = social_inclusion_records.length;
   const siChildIds = new Set(si90d.map((r) => r.child_id));
-  const socialInclusionRate = pct(siChildIds.size, total_children);
+  const socialInclusionRate = rate(siChildIds.size, total_children);
 
   const siEngaged = si90d.filter((r) => r.child_engaged).length;
-  const siEngagementRate = pct(siEngaged, si90d.length);
+  const siEngagementRate = rate(siEngaged, si90d.length);
 
   const siOutcomes = si90d.filter((r) => r.outcomes_achieved && r.outcomes_achieved.length > 0).length;
-  const siOutcomesRate = pct(siOutcomes, si90d.length);
+  const siOutcomesRate = rate(siOutcomes, si90d.length);
 
   const siBarriersIdentified = si90d.filter((r) => r.barriers_identified && r.barriers_identified.length > 0).length;
   const siBarriersAddressed = si90d.filter(
     (r) => r.barriers_identified && r.barriers_identified.length > 0 && r.barriers_addressed,
   ).length;
-  const siBarrierAddressedRate = pct(siBarriersAddressed, siBarriersIdentified);
+  const siBarrierAddressedRate = rate(siBarriersAddressed, siBarriersIdentified);
 
   const siReviewDue = social_inclusion_records.filter(
     (r) => r.review_date && daysBetween(r.review_date, today) > 0 && !r.reviewed,
@@ -446,15 +443,15 @@ export function computeCommunityIntegrationVolunteering(
   const totalNeighbourhoodRecords = neighbourhood_records.length;
 
   const nrPositive = nr90d.filter((r) => r.positive_outcome).length;
-  const neighbourhoodRelationRate = pct(nrPositive, nr90d.length);
+  const neighbourhoodRelationRate = rate(nrPositive, nr90d.length);
 
   const nrComplaints = nr90d.filter((r) => r.complaint).length;
   const nrComplaintsResolved = nr90d.filter((r) => r.complaint && r.complaint_resolved).length;
-  const nrComplaintResolutionRate = pct(nrComplaintsResolved, nrComplaints);
+  const nrComplaintResolutionRate = rate(nrComplaintsResolved, nrComplaints);
 
   const nrFollowUpNeeded = nr90d.filter((r) => r.follow_up_needed).length;
   const nrFollowUpCompleted = nr90d.filter((r) => r.follow_up_needed && r.follow_up_completed).length;
-  const nrFollowUpRate = pct(nrFollowUpCompleted, nrFollowUpNeeded);
+  const nrFollowUpRate = rate(nrFollowUpCompleted, nrFollowUpNeeded);
 
   const nrPositiveFeedback = nr90d.filter((r) => r.interaction_type === "positive_feedback").length;
   const nrJointActivities = nr90d.filter((r) => r.interaction_type === "joint_activity").length;
@@ -473,24 +470,24 @@ export function computeCommunityIntegrationVolunteering(
   const totalLocalServiceRecords = local_service_records.length;
 
   const lsChildIds = new Set(ls90d.flatMap((r) => r.children_accessing));
-  const localServiceRate = pct(lsChildIds.size, total_children);
+  const localServiceRate = rate(lsChildIds.size, total_children);
 
   const lsExcellentGood = ls90d.filter(
     (r) => r.engagement_quality === "excellent" || r.engagement_quality === "good",
   ).length;
-  const lsQualityRate = pct(lsExcellentGood, ls90d.length);
+  const lsQualityRate = rate(lsExcellentGood, ls90d.length);
 
   const lsResponsive = ls90d.filter((r) => r.service_responsive).length;
-  const lsResponsivenessRate = pct(lsResponsive, ls90d.length);
+  const lsResponsivenessRate = rate(lsResponsive, ls90d.length);
 
   const lsRelationship = ls90d.filter((r) => r.relationship_established).length;
-  const lsRelationshipRate = pct(lsRelationship, ls90d.length);
+  const lsRelationshipRate = rate(lsRelationship, ls90d.length);
 
   const lsRegular = ls90d.filter((r) => r.regular_contact).length;
-  const lsRegularRate = pct(lsRegular, ls90d.length);
+  const lsRegularRate = rate(lsRegular, ls90d.length);
 
   const lsChildSatisfied = ls90d.filter((r) => r.child_satisfaction).length;
-  const lsChildSatisfactionRate = pct(lsChildSatisfied, ls90d.length);
+  const lsChildSatisfactionRate = rate(lsChildSatisfied, ls90d.length);
 
   const lsUniqueTypes = new Set(ls90d.map((r) => r.service_type));
 
@@ -498,10 +495,10 @@ export function computeCommunityIntegrationVolunteering(
   // Average of satisfaction signals across all domains
 
   const satisfactionSources: number[] = [];
-  if (caAttended > 0) satisfactionSources.push(caEnjoymentRate);
-  if (vol90d.length > 0) satisfactionSources.push(volEnjoymentRate);
-  if (si90d.length > 0) satisfactionSources.push(siEngagementRate);
-  if (ls90d.length > 0) satisfactionSources.push(lsChildSatisfactionRate);
+  if (caAttended > 0) satisfactionSources.push(caEnjoymentRate!);
+  if (vol90d.length > 0) satisfactionSources.push(volEnjoymentRate!);
+  if (si90d.length > 0) satisfactionSources.push(siEngagementRate!);
+  if (ls90d.length > 0) satisfactionSources.push(lsChildSatisfactionRate!);
 
   const childSatisfactionRate =
     satisfactionSources.length > 0
@@ -515,51 +512,51 @@ export function computeCommunityIntegrationVolunteering(
   let score = 52;
 
   // --- Bonus 1: communityParticipationRate (>=80: +4, >=60: +2) ---
-  if (communityParticipationRate >= 80) score += 4;
-  else if (communityParticipationRate >= 60) score += 2;
+  if (meets(communityParticipationRate, 80)) score += 4;
+  else if (meets(communityParticipationRate, 60)) score += 2;
 
   // --- Bonus 2: volunteeringRate (>=60: +4, >=30: +2) ---
-  if (volunteeringRate >= 60) score += 4;
-  else if (volunteeringRate >= 30) score += 2;
+  if (meets(volunteeringRate, 60)) score += 4;
+  else if (meets(volunteeringRate, 30)) score += 2;
 
   // --- Bonus 3: socialInclusionRate (>=70: +4, >=40: +2) ---
-  if (socialInclusionRate >= 70) score += 4;
-  else if (socialInclusionRate >= 40) score += 2;
+  if (meets(socialInclusionRate, 70)) score += 4;
+  else if (meets(socialInclusionRate, 40)) score += 2;
 
   // --- Bonus 4: neighbourhoodRelationRate (>=80: +3, >=60: +1) ---
-  if (neighbourhoodRelationRate >= 80) score += 3;
-  else if (neighbourhoodRelationRate >= 60) score += 1;
+  if (meets(neighbourhoodRelationRate, 80)) score += 3;
+  else if (meets(neighbourhoodRelationRate, 60)) score += 1;
 
   // --- Bonus 5: localServiceRate (>=80: +3, >=50: +1) ---
-  if (localServiceRate >= 80) score += 3;
-  else if (localServiceRate >= 50) score += 1;
+  if (meets(localServiceRate, 80)) score += 3;
+  else if (meets(localServiceRate, 50)) score += 1;
 
   // --- Bonus 6: childSatisfactionRate (>=90: +3, >=70: +1) ---
   if ((childSatisfactionRate ?? 0) >= 90) score += 3;
   else if ((childSatisfactionRate ?? 0) >= 70) score += 1;
 
   // --- Bonus 7: caFriendshipRate (>=70: +3, >=50: +1) ---
-  if (caAttended > 0 && caFriendshipRate >= 70) score += 3;
-  else if (caAttended > 0 && caFriendshipRate >= 50) score += 1;
+  if (caAttended > 0 && meets(caFriendshipRate, 70)) score += 3;
+  else if (caAttended > 0 && meets(caFriendshipRate, 50)) score += 1;
 
   // --- Bonus 8: volOngoingRate (>=60: +2, >=30: +1) ---
-  if (vol90d.length > 0 && volOngoingRate >= 60) score += 2;
-  else if (vol90d.length > 0 && volOngoingRate >= 30) score += 1;
+  if (vol90d.length > 0 && meets(volOngoingRate, 60)) score += 2;
+  else if (vol90d.length > 0 && meets(volOngoingRate, 30)) score += 1;
 
   // --- Bonus 9: siBarrierAddressedRate (>=80: +2, >=50: +1) ---
-  if (siBarriersIdentified > 0 && siBarrierAddressedRate >= 80) score += 2;
-  else if (siBarriersIdentified > 0 && siBarrierAddressedRate >= 50) score += 1;
+  if (siBarriersIdentified > 0 && meets(siBarrierAddressedRate, 80)) score += 2;
+  else if (siBarriersIdentified > 0 && meets(siBarrierAddressedRate, 50)) score += 1;
 
   // ── Penalties (guarded by array.length > 0) ──────────────────────────
 
   // Penalty 1: communityParticipationRate < 30 -> -5
-  if (communityParticipationRate < 30 && ca90d.length > 0) score -= 5;
+  if (below(communityParticipationRate, 30) && ca90d.length > 0) score -= 5;
 
   // Penalty 2: volunteeringRate < 10 with children -> -4
-  if (volunteeringRate < 10 && vol90d.length > 0) score -= 4;
+  if (below(volunteeringRate, 10) && vol90d.length > 0) score -= 4;
 
   // Penalty 3: neighbourhoodRelationRate < 40 -> -5
-  if (neighbourhoodRelationRate < 40 && nr90d.length > 0) score -= 5;
+  if (below(neighbourhoodRelationRate, 40) && nr90d.length > 0) score -= 5;
 
   // Penalty 4: childSatisfactionRate < 40 -> -4
   if ((childSatisfactionRate ?? 0) < 40 && satisfactionSources.length > 0) score -= 4;
@@ -575,27 +572,27 @@ export function computeCommunityIntegrationVolunteering(
   const strengths: string[] = [];
 
   // Community activities strengths
-  if (communityParticipationRate >= 80 && ca90d.length > 0) {
+  if (meets(communityParticipationRate, 80) && ca90d.length > 0) {
     strengths.push(
       `${communityParticipationRate}% community participation rate — the vast majority of children are actively engaged in community activities, demonstrating excellent integration into local life.`,
     );
-  } else if (communityParticipationRate >= 60 && ca90d.length > 0) {
+  } else if (meets(communityParticipationRate, 60) && ca90d.length > 0) {
     strengths.push(
       `${communityParticipationRate}% community participation — most children are regularly accessing community activities and building connections beyond the home.`,
     );
   }
 
-  if (caAttended > 0 && caEnjoymentRate >= 90) {
+  if (caAttended > 0 && meets(caEnjoymentRate, 90)) {
     strengths.push(
       `${caEnjoymentRate}% of children report enjoying community activities — children feel positive about their community engagement, reflecting well-matched activities that meet their interests.`,
     );
-  } else if (caAttended > 0 && caEnjoymentRate >= 70) {
+  } else if (caAttended > 0 && meets(caEnjoymentRate, 70)) {
     strengths.push(
       `${caEnjoymentRate}% child enjoyment rate in community activities — most children have positive experiences when participating in community life.`,
     );
   }
 
-  if (caAttended > 0 && caFriendshipRate >= 70) {
+  if (caAttended > 0 && meets(caFriendshipRate, 70)) {
     strengths.push(
       `${caFriendshipRate}% of community activities build friendships — children are developing meaningful social connections through their community engagement.`,
     );
@@ -607,88 +604,88 @@ export function computeCommunityIntegrationVolunteering(
     );
   }
 
-  if (caAttended > 0 && caOngoingRate >= 70) {
+  if (caAttended > 0 && meets(caOngoingRate, 70)) {
     strengths.push(
       `${caOngoingRate}% of community activities are ongoing regular commitments — children have stable, sustained engagement rather than isolated one-off experiences.`,
     );
   }
 
   // Volunteering strengths
-  if (volunteeringRate >= 60 && vol90d.length > 0) {
+  if (meets(volunteeringRate, 60) && vol90d.length > 0) {
     strengths.push(
       `${volunteeringRate}% of children engaged in volunteering — the home actively supports children to give back to their communities and develop new skills.`,
     );
-  } else if (volunteeringRate >= 30 && vol90d.length > 0) {
+  } else if (meets(volunteeringRate, 30) && vol90d.length > 0) {
     strengths.push(
       `${volunteeringRate}% volunteering engagement — a good proportion of children are accessing volunteering opportunities.`,
     );
   }
 
-  if (vol90d.length > 0 && volChildInitiatedRate >= 60) {
+  if (vol90d.length > 0 && meets(volChildInitiatedRate, 60)) {
     strengths.push(
       `${volChildInitiatedRate}% of volunteering is child-initiated — children are self-motivated to contribute to their communities, reflecting genuine ownership and agency.`,
     );
   }
 
-  if (vol90d.length > 0 && volSkillsRate >= 80) {
+  if (vol90d.length > 0 && meets(volSkillsRate, 80)) {
     strengths.push(
       `${volSkillsRate}% of volunteering activities develop new skills — volunteering is delivering tangible personal development benefits for children.`,
     );
   }
 
-  if (vol90d.length > 0 && volRecognitionRate >= 70) {
+  if (vol90d.length > 0 && meets(volRecognitionRate, 70)) {
     strengths.push(
       `${volRecognitionRate}% of volunteering recognised — children's voluntary contributions are celebrated, boosting self-esteem and reinforcing positive behaviour.`,
     );
   }
 
-  if (vol90d.length > 0 && volOngoingRate >= 60) {
+  if (vol90d.length > 0 && meets(volOngoingRate, 60)) {
     strengths.push(
       `${volOngoingRate}% of volunteering involves ongoing commitment — children sustain their voluntary roles, building reliability and a sense of purpose.`,
     );
   }
 
   // Social inclusion strengths
-  if (socialInclusionRate >= 70 && si90d.length > 0) {
+  if (meets(socialInclusionRate, 70) && si90d.length > 0) {
     strengths.push(
       `${socialInclusionRate}% social inclusion programme coverage — the home ensures the majority of children access targeted inclusion programmes that address barriers to participation.`,
     );
-  } else if (socialInclusionRate >= 40 && si90d.length > 0) {
+  } else if (meets(socialInclusionRate, 40) && si90d.length > 0) {
     strengths.push(
       `${socialInclusionRate}% of children participate in social inclusion programmes — the home is working to address social barriers for a significant number of children.`,
     );
   }
 
-  if (si90d.length > 0 && siEngagementRate >= 90) {
+  if (si90d.length > 0 && meets(siEngagementRate, 90)) {
     strengths.push(
       `${siEngagementRate}% child engagement in inclusion programmes — children are actively participating in and benefiting from social inclusion initiatives.`,
     );
   }
 
-  if (siBarriersIdentified > 0 && siBarrierAddressedRate >= 80) {
+  if (siBarriersIdentified > 0 && meets(siBarrierAddressedRate, 80)) {
     strengths.push(
       `${siBarrierAddressedRate}% of identified inclusion barriers addressed — the home actively removes obstacles to children's social participation.`,
     );
   }
 
-  if (si90d.length > 0 && siOutcomesRate >= 80) {
+  if (si90d.length > 0 && meets(siOutcomesRate, 80)) {
     strengths.push(
       `${siOutcomesRate}% of inclusion programmes achieve documented outcomes — social inclusion work is producing measurable positive results for children.`,
     );
   }
 
   // Neighbourhood strengths
-  if (nr90d.length > 0 && neighbourhoodRelationRate >= 80) {
+  if (nr90d.length > 0 && meets(neighbourhoodRelationRate, 80)) {
     strengths.push(
       `${neighbourhoodRelationRate}% positive neighbourhood interactions — the home maintains excellent relations with the local community, supporting children's sense of belonging.`,
     );
-  } else if (nr90d.length > 0 && neighbourhoodRelationRate >= 60) {
+  } else if (nr90d.length > 0 && meets(neighbourhoodRelationRate, 60)) {
     strengths.push(
       `${neighbourhoodRelationRate}% positive neighbourhood outcomes — the home generally maintains good community relations.`,
     );
   }
 
-  if (nrComplaints > 0 && nrComplaintResolutionRate >= 90) {
+  if (nrComplaints > 0 && meets(nrComplaintResolutionRate, 90)) {
     strengths.push(
       `${nrComplaintResolutionRate}% neighbourhood complaint resolution — the home responds effectively to community concerns, maintaining positive relationships.`,
     );
@@ -707,23 +704,23 @@ export function computeCommunityIntegrationVolunteering(
   }
 
   // Local service strengths
-  if (localServiceRate >= 80 && ls90d.length > 0) {
+  if (meets(localServiceRate, 80) && ls90d.length > 0) {
     strengths.push(
       `${localServiceRate}% of children accessing local services — children are well connected to the services and support available in their community.`,
     );
-  } else if (localServiceRate >= 50 && ls90d.length > 0) {
+  } else if (meets(localServiceRate, 50) && ls90d.length > 0) {
     strengths.push(
       `${localServiceRate}% local service engagement — a good proportion of children are connected to relevant local services.`,
     );
   }
 
-  if (ls90d.length > 0 && lsQualityRate >= 80) {
+  if (ls90d.length > 0 && meets(lsQualityRate, 80)) {
     strengths.push(
       `${lsQualityRate}% of local service engagements rated good or excellent — the home has strong, productive relationships with local services.`,
     );
   }
 
-  if (ls90d.length > 0 && lsRelationshipRate >= 80) {
+  if (ls90d.length > 0 && meets(lsRelationshipRate, 80)) {
     strengths.push(
       `${lsRelationshipRate}% established relationships with local services — the home has built a strong network of local support for children.`,
     );
@@ -753,11 +750,11 @@ export function computeCommunityIntegrationVolunteering(
   const concerns: string[] = [];
 
   // Community activity concerns
-  if (communityParticipationRate < 30 && ca90d.length > 0) {
+  if (below(communityParticipationRate, 30) && ca90d.length > 0) {
     concerns.push(
       `Only ${communityParticipationRate}% community participation rate — the majority of children are not accessing community activities, risking social isolation and limited experiences beyond the home.`,
     );
-  } else if (communityParticipationRate < 60 && communityParticipationRate >= 30 && ca90d.length > 0) {
+  } else if (below(communityParticipationRate, 60) && meets(communityParticipationRate, 30) && ca90d.length > 0) {
     concerns.push(
       `Community participation at ${communityParticipationRate}% — a significant number of children are not regularly engaged in community activities.`,
     );
@@ -769,25 +766,25 @@ export function computeCommunityIntegrationVolunteering(
     );
   }
 
-  if (caAttended > 0 && caEnjoymentRate < 50) {
+  if (caAttended > 0 && below(caEnjoymentRate, 50)) {
     concerns.push(
       `Only ${caEnjoymentRate}% of children report enjoying community activities — activities may not be well matched to children's interests and preferences.`,
     );
   }
 
-  if (caAttended > 0 && caFriendshipRate < 30) {
+  if (caAttended > 0 && below(caFriendshipRate, 30)) {
     concerns.push(
       `Only ${caFriendshipRate}% of activities build friendships — community engagement is not translating into meaningful social connections for children.`,
     );
   }
 
-  if (ca90d.length > 0 && caRiskAssessmentRate < 50) {
+  if (ca90d.length > 0 && below(caRiskAssessmentRate, 50)) {
     concerns.push(
       `Only ${caRiskAssessmentRate}% of community activities have risk assessments completed — children may be attending activities without proper safeguarding measures.`,
     );
   }
 
-  if (ca90d.length > 0 && caConsentRate < 50) {
+  if (ca90d.length > 0 && below(caConsentRate, 50)) {
     concerns.push(
       `Only ${caConsentRate}% of community activities have consent obtained — consent processes are not being followed consistently for community participation.`,
     );
@@ -800,19 +797,19 @@ export function computeCommunityIntegrationVolunteering(
     );
   }
 
-  if (volunteeringRate < 10 && vol90d.length > 0) {
+  if (below(volunteeringRate, 10) && vol90d.length > 0) {
     concerns.push(
       `Only ${volunteeringRate}% volunteering participation — very few children have access to volunteering opportunities that develop skills and community connection.`,
     );
   }
 
-  if (vol90d.length > 0 && volSafeguardingRate < 50) {
+  if (vol90d.length > 0 && below(volSafeguardingRate, 50)) {
     concerns.push(
       `Only ${volSafeguardingRate}% of volunteering placements have safeguarding checks completed — children may be placed in voluntary roles without adequate safeguarding verification.`,
     );
   }
 
-  if (vol90d.length > 0 && volRiskAssessmentRate < 50) {
+  if (vol90d.length > 0 && below(volRiskAssessmentRate, 50)) {
     concerns.push(
       `Only ${volRiskAssessmentRate}% of volunteering placements have risk assessments — volunteering risks are not being formally assessed.`,
     );
@@ -825,19 +822,19 @@ export function computeCommunityIntegrationVolunteering(
     );
   }
 
-  if (socialInclusionRate < 20 && si90d.length > 0) {
+  if (below(socialInclusionRate, 20) && si90d.length > 0) {
     concerns.push(
       `Only ${socialInclusionRate}% social inclusion coverage — very few children are accessing targeted inclusion programmes that could address barriers to community participation.`,
     );
   }
 
-  if (si90d.length > 0 && siEngagementRate < 50) {
+  if (si90d.length > 0 && below(siEngagementRate, 50)) {
     concerns.push(
       `Only ${siEngagementRate}% child engagement in inclusion programmes — children are not actively participating in social inclusion initiatives.`,
     );
   }
 
-  if (siBarriersIdentified > 0 && siBarrierAddressedRate < 40) {
+  if (siBarriersIdentified > 0 && below(siBarrierAddressedRate, 40)) {
     concerns.push(
       `Only ${siBarrierAddressedRate}% of identified inclusion barriers addressed — known obstacles to children's social participation are not being resolved.`,
     );
@@ -856,19 +853,19 @@ export function computeCommunityIntegrationVolunteering(
     );
   }
 
-  if (nr90d.length > 0 && neighbourhoodRelationRate < 40) {
+  if (nr90d.length > 0 && below(neighbourhoodRelationRate, 40)) {
     concerns.push(
       `Only ${neighbourhoodRelationRate}% positive neighbourhood interactions — the home has poor relations with the local community, which may affect children's sense of belonging and safety.`,
     );
   }
 
-  if (nrComplaints > 0 && nrComplaintResolutionRate < 50) {
+  if (nrComplaints > 0 && below(nrComplaintResolutionRate, 50)) {
     concerns.push(
       `Only ${nrComplaintResolutionRate}% of neighbourhood complaints resolved — unresolved complaints may escalate and damage the home's community standing.`,
     );
   }
 
-  if (nrFollowUpNeeded > 0 && nrFollowUpRate < 50) {
+  if (nrFollowUpNeeded > 0 && below(nrFollowUpRate, 50)) {
     concerns.push(
       `Only ${nrFollowUpRate}% of neighbourhood follow-up actions completed — identified actions to maintain community relations are not being followed through.`,
     );
@@ -887,19 +884,19 @@ export function computeCommunityIntegrationVolunteering(
     );
   }
 
-  if (localServiceRate < 30 && ls90d.length > 0) {
+  if (below(localServiceRate, 30) && ls90d.length > 0) {
     concerns.push(
       `Only ${localServiceRate}% of children accessing local services — the majority of children are not connected to relevant community services.`,
     );
   }
 
-  if (ls90d.length > 0 && lsQualityRate < 40) {
+  if (ls90d.length > 0 && below(lsQualityRate, 40)) {
     concerns.push(
       `Only ${lsQualityRate}% of local service engagements rated good or excellent — the quality of service relationships requires improvement.`,
     );
   }
 
-  if (ls90d.length > 0 && lsResponsivenessRate < 50) {
+  if (ls90d.length > 0 && below(lsResponsivenessRate, 50)) {
     concerns.push(
       `Only ${lsResponsivenessRate}% of local services rated as responsive — services are not meeting children's needs in a timely manner.`,
     );
@@ -923,7 +920,7 @@ export function computeCommunityIntegrationVolunteering(
   const recommendations: CommunityIntegrationRecommendation[] = [];
   let rank = 0;
 
-  if (communityParticipationRate < 30 && ca90d.length > 0) {
+  if (below(communityParticipationRate, 30) && ca90d.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -943,7 +940,7 @@ export function computeCommunityIntegrationVolunteering(
     });
   }
 
-  if (ca90d.length > 0 && caRiskAssessmentRate < 50) {
+  if (ca90d.length > 0 && below(caRiskAssessmentRate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -963,7 +960,7 @@ export function computeCommunityIntegrationVolunteering(
     });
   }
 
-  if (vol90d.length > 0 && volSafeguardingRate < 50) {
+  if (vol90d.length > 0 && below(volSafeguardingRate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -983,7 +980,7 @@ export function computeCommunityIntegrationVolunteering(
     });
   }
 
-  if (siBarriersIdentified > 0 && siBarrierAddressedRate < 40) {
+  if (siBarriersIdentified > 0 && below(siBarrierAddressedRate, 40)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -993,7 +990,7 @@ export function computeCommunityIntegrationVolunteering(
     });
   }
 
-  if (nr90d.length > 0 && neighbourhoodRelationRate < 40) {
+  if (nr90d.length > 0 && below(neighbourhoodRelationRate, 40)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1003,7 +1000,7 @@ export function computeCommunityIntegrationVolunteering(
     });
   }
 
-  if (nrComplaints > 0 && nrComplaintResolutionRate < 50) {
+  if (nrComplaints > 0 && below(nrComplaintResolutionRate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1023,7 +1020,7 @@ export function computeCommunityIntegrationVolunteering(
     });
   }
 
-  if (localServiceRate < 30 && ls90d.length > 0) {
+  if (below(localServiceRate, 30) && ls90d.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1043,7 +1040,7 @@ export function computeCommunityIntegrationVolunteering(
     });
   }
 
-  if (caAttended > 0 && caFriendshipRate < 30) {
+  if (caAttended > 0 && below(caFriendshipRate, 30)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1053,7 +1050,7 @@ export function computeCommunityIntegrationVolunteering(
     });
   }
 
-  if (communityParticipationRate >= 30 && communityParticipationRate < 60 && ca90d.length > 0) {
+  if (meets(communityParticipationRate, 30) && below(communityParticipationRate, 60) && ca90d.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1063,7 +1060,7 @@ export function computeCommunityIntegrationVolunteering(
     });
   }
 
-  if (vol90d.length > 0 && volunteeringRate < 30 && volunteeringRate >= 10) {
+  if (vol90d.length > 0 && below(volunteeringRate, 30) && meets(volunteeringRate, 10)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1073,7 +1070,7 @@ export function computeCommunityIntegrationVolunteering(
     });
   }
 
-  if (si90d.length > 0 && socialInclusionRate < 40 && socialInclusionRate >= 20) {
+  if (si90d.length > 0 && below(socialInclusionRate, 40) && meets(socialInclusionRate, 20)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1083,7 +1080,7 @@ export function computeCommunityIntegrationVolunteering(
     });
   }
 
-  if (ls90d.length > 0 && lsQualityRate < 40) {
+  if (ls90d.length > 0 && below(lsQualityRate, 40)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1113,7 +1110,7 @@ export function computeCommunityIntegrationVolunteering(
     });
   }
 
-  if (caAttended > 0 && caOutcomesRate < 50) {
+  if (caAttended > 0 && below(caOutcomesRate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1131,7 +1128,7 @@ export function computeCommunityIntegrationVolunteering(
 
   // -- Critical insights --
 
-  if (communityParticipationRate < 30 && ca90d.length > 0) {
+  if (below(communityParticipationRate, 30) && ca90d.length > 0) {
     insights.push({
       text: `Only ${communityParticipationRate}% community participation. Ofsted expects children in residential care to have meaningful, regular access to community activities that promote socialisation, skill development, and a sense of belonging. Low participation suggests children may be socially isolated.`,
       severity: "critical",
@@ -1145,7 +1142,7 @@ export function computeCommunityIntegrationVolunteering(
     });
   }
 
-  if (neighbourhoodRelationRate < 40 && nr90d.length > 0) {
+  if (below(neighbourhoodRelationRate, 40) && nr90d.length > 0) {
     insights.push({
       text: `Only ${neighbourhoodRelationRate}% positive neighbourhood interactions. Poor community relations can lead to stigmatisation of looked-after children, complaints to Ofsted, and an environment where children feel unwelcome in their own neighbourhood. This undermines Reg 11 compliance.`,
       severity: "critical",
@@ -1159,7 +1156,7 @@ export function computeCommunityIntegrationVolunteering(
     });
   }
 
-  if (vol90d.length > 0 && volSafeguardingRate < 30) {
+  if (vol90d.length > 0 && below(volSafeguardingRate, 30)) {
     insights.push({
       text: `Only ${volSafeguardingRate}% of volunteering placements have safeguarding checks. Children in care are placed in voluntary roles with organisations that may not have been vetted. This is a significant safeguarding risk that requires immediate attention.`,
       severity: "critical",
@@ -1175,35 +1172,35 @@ export function computeCommunityIntegrationVolunteering(
 
   // -- Warning insights --
 
-  if (communityParticipationRate >= 30 && communityParticipationRate < 60 && ca90d.length > 0) {
+  if (meets(communityParticipationRate, 30) && below(communityParticipationRate, 60) && ca90d.length > 0) {
     insights.push({
       text: `Community participation at ${communityParticipationRate}% — improving but still below the level expected for good practice. Some children remain disengaged from community life. Review individual barriers and create targeted participation plans.`,
       severity: "warning",
     });
   }
 
-  if (volunteeringRate < 30 && volunteeringRate >= 10 && vol90d.length > 0) {
+  if (below(volunteeringRate, 30) && meets(volunteeringRate, 10) && vol90d.length > 0) {
     insights.push({
       text: `Volunteering engagement at ${volunteeringRate}% — while some children are accessing volunteering, the majority are not. Volunteering builds self-esteem, skills, and community connections that are particularly valuable for looked-after children.`,
       severity: "warning",
     });
   }
 
-  if (socialInclusionRate < 40 && socialInclusionRate >= 20 && si90d.length > 0) {
+  if (below(socialInclusionRate, 40) && meets(socialInclusionRate, 20) && si90d.length > 0) {
     insights.push({
       text: `Social inclusion coverage at ${socialInclusionRate}% — targeted inclusion work is reaching only a minority of children. Many looked-after children face social barriers that require proactive support to overcome.`,
       severity: "warning",
     });
   }
 
-  if (nr90d.length > 0 && neighbourhoodRelationRate >= 40 && neighbourhoodRelationRate < 60) {
+  if (nr90d.length > 0 && meets(neighbourhoodRelationRate, 40) && below(neighbourhoodRelationRate, 60)) {
     insights.push({
       text: `Neighbourhood relation quality at ${neighbourhoodRelationRate}% — some interactions are negative. Community perception of the home affects children's daily experiences and sense of acceptance in their local area.`,
       severity: "warning",
     });
   }
 
-  if (ls90d.length > 0 && lsQualityRate >= 40 && lsQualityRate < 60) {
+  if (ls90d.length > 0 && meets(lsQualityRate, 40) && below(lsQualityRate, 60)) {
     insights.push({
       text: `Local service engagement quality at ${lsQualityRate}% — relationships with some services are only adequate or poor. Strong service partnerships are essential for meeting children's complex needs.`,
       severity: "warning",
@@ -1217,28 +1214,28 @@ export function computeCommunityIntegrationVolunteering(
     });
   }
 
-  if (caAttended > 0 && caFriendshipRate >= 30 && caFriendshipRate < 50) {
+  if (caAttended > 0 && meets(caFriendshipRate, 30) && below(caFriendshipRate, 50)) {
     insights.push({
       text: `Only ${caFriendshipRate}% of activities build friendships — while children are attending community activities, many are not translating into lasting social bonds. Consider whether activities offer enough regular contact for relationships to develop.`,
       severity: "warning",
     });
   }
 
-  if (si90d.length > 0 && siBarriersIdentified > 0 && siBarrierAddressedRate >= 40 && siBarrierAddressedRate < 60) {
+  if (si90d.length > 0 && siBarriersIdentified > 0 && meets(siBarrierAddressedRate, 40) && below(siBarrierAddressedRate, 60)) {
     insights.push({
       text: `Barrier resolution rate at ${siBarrierAddressedRate}% — some identified obstacles to children's social participation remain unresolved. Persistent barriers can entrench exclusion and limit children's progress.`,
       severity: "warning",
     });
   }
 
-  if (vol90d.length > 0 && volEnjoymentRate >= 50 && volEnjoymentRate < 70) {
+  if (vol90d.length > 0 && meets(volEnjoymentRate, 50) && below(volEnjoymentRate, 70)) {
     insights.push({
       text: `Volunteering enjoyment at ${volEnjoymentRate}% — some children are not finding their voluntary roles enjoyable. Ensuring children are matched to roles that align with their interests is essential for sustained engagement.`,
       severity: "warning",
     });
   }
 
-  if (ls90d.length > 0 && lsResponsivenessRate >= 50 && lsResponsivenessRate < 70) {
+  if (ls90d.length > 0 && meets(lsResponsivenessRate, 50) && below(lsResponsivenessRate, 70)) {
     insights.push({
       text: `Service responsiveness at ${lsResponsivenessRate}% — some local services are slow to respond to children's needs. The home should advocate more strongly for timely service delivery.`,
       severity: "warning",
@@ -1261,42 +1258,42 @@ export function computeCommunityIntegrationVolunteering(
     });
   }
 
-  if (communityParticipationRate >= 80 && caEnjoymentRate >= 90 && caAttended > 0) {
+  if (meets(communityParticipationRate, 80) && meets(caEnjoymentRate, 90) && caAttended > 0) {
     insights.push({
       text: `${communityParticipationRate}% community participation with ${caEnjoymentRate}% enjoyment — the overwhelming majority of children are actively and happily engaged in community life. This demonstrates that the home is genuinely promoting social integration.`,
       severity: "positive",
     });
   }
 
-  if (volunteeringRate >= 60 && volOngoingRate >= 60 && vol90d.length > 0) {
+  if (meets(volunteeringRate, 60) && meets(volOngoingRate, 60) && vol90d.length > 0) {
     insights.push({
       text: `${volunteeringRate}% volunteering participation with ${volOngoingRate}% sustaining ongoing commitments — children are developing a sense of civic responsibility and building skills through sustained voluntary contributions.`,
       severity: "positive",
     });
   }
 
-  if (vol90d.length > 0 && volChildInitiatedRate >= 60 && volSkillsRate >= 80) {
+  if (vol90d.length > 0 && meets(volChildInitiatedRate, 60) && meets(volSkillsRate, 80)) {
     insights.push({
       text: `${volChildInitiatedRate}% child-initiated volunteering with ${volSkillsRate}% skill development — children are self-motivated to give back and are gaining tangible personal development benefits, demonstrating excellent promotion of independence and agency.`,
       severity: "positive",
     });
   }
 
-  if (socialInclusionRate >= 70 && siEngagementRate >= 90 && si90d.length > 0) {
+  if (meets(socialInclusionRate, 70) && meets(siEngagementRate, 90) && si90d.length > 0) {
     insights.push({
       text: `${socialInclusionRate}% social inclusion coverage with ${siEngagementRate}% child engagement — the home effectively identifies and addresses barriers to social participation, ensuring children can fully integrate into community life.`,
       severity: "positive",
     });
   }
 
-  if (siBarriersIdentified > 0 && siBarrierAddressedRate >= 80 && siOutcomesRate >= 80) {
+  if (siBarriersIdentified > 0 && meets(siBarrierAddressedRate, 80) && meets(siOutcomesRate, 80)) {
     insights.push({
       text: `${siBarrierAddressedRate}% barrier resolution with ${siOutcomesRate}% documented outcomes — the home proactively removes obstacles to children's social participation and can evidence the positive impact of inclusion work.`,
       severity: "positive",
     });
   }
 
-  if (neighbourhoodRelationRate >= 80 && nr90d.length > 0) {
+  if (meets(neighbourhoodRelationRate, 80) && nr90d.length > 0) {
     insights.push({
       text: `${neighbourhoodRelationRate}% positive neighbourhood interactions — the home maintains excellent community relations. Positive neighbourhood perceptions help children feel welcome, safe, and accepted in their local area.`,
       severity: "positive",
@@ -1310,14 +1307,14 @@ export function computeCommunityIntegrationVolunteering(
     });
   }
 
-  if (localServiceRate >= 80 && lsQualityRate >= 80 && ls90d.length > 0) {
+  if (meets(localServiceRate, 80) && meets(lsQualityRate, 80) && ls90d.length > 0) {
     insights.push({
       text: `${localServiceRate}% local service access with ${lsQualityRate}% quality engagement — children are well connected to a strong network of community services. This comprehensive support promotes their health, education, and social development.`,
       severity: "positive",
     });
   }
 
-  if (ls90d.length > 0 && lsRelationshipRate >= 80 && lsRegularRate >= 70) {
+  if (ls90d.length > 0 && meets(lsRelationshipRate, 80) && meets(lsRegularRate, 70)) {
     insights.push({
       text: `${lsRelationshipRate}% established service relationships with ${lsRegularRate}% regular contact — the home has built durable partnerships with local services that provide consistent, reliable support for children.`,
       severity: "positive",

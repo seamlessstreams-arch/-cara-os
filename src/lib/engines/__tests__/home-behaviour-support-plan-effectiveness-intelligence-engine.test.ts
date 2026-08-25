@@ -230,15 +230,15 @@ describe("Home Behaviour Support Plan Effectiveness Intelligence Engine", () => 
 
     it("returns all metric rates as 0 for insufficient_data", () => {
       const r = computeBehaviourSupportPlanEffectiveness(baseInput({ total_children: 0 }));
-      expect(r.bsp_coverage_rate).toBe(0);
-      expect(r.intervention_success_rate).toBe(0);
-      expect(r.deescalation_effectiveness_rate).toBe(0);
-      expect(r.positive_reinforcement_rate).toBe(0);
-      expect(r.restrictive_practice_reduction_rate).toBe(0);
-      expect(r.child_involvement_rate).toBe(0);
-      expect(r.bsp_review_compliance_rate).toBe(0);
-      expect(r.staff_training_rate).toBe(0);
-      expect(r.child_debrief_rate).toBe(0);
+      expect(r.bsp_coverage_rate).toBeNull();
+      expect(r.intervention_success_rate).toBeNull();
+      expect(r.deescalation_effectiveness_rate).toBeNull();
+      expect(r.positive_reinforcement_rate).toBeNull();
+      expect(r.restrictive_practice_reduction_rate).toBeNull();
+      expect(r.child_involvement_rate).toBeNull();
+      expect(r.bsp_review_compliance_rate).toBeNull();
+      expect(r.staff_training_rate).toBeNull();
+      expect(r.child_debrief_rate).toBeNull();
     });
   });
 
@@ -279,12 +279,12 @@ describe("Home Behaviour Support Plan Effectiveness Intelligence Engine", () => 
 
     it("returns all zero rates for allEmpty + children", () => {
       const r = computeBehaviourSupportPlanEffectiveness(baseInput({ total_children: 4 }));
-      expect(r.bsp_coverage_rate).toBe(0);
-      expect(r.intervention_success_rate).toBe(0);
-      expect(r.deescalation_effectiveness_rate).toBe(0);
-      expect(r.positive_reinforcement_rate).toBe(0);
-      expect(r.restrictive_practice_reduction_rate).toBe(0);
-      expect(r.child_involvement_rate).toBe(0);
+      expect(r.bsp_coverage_rate).toBeNull();
+      expect(r.intervention_success_rate).toBeNull();
+      expect(r.deescalation_effectiveness_rate).toBeNull();
+      expect(r.positive_reinforcement_rate).toBeNull();
+      expect(r.restrictive_practice_reduction_rate).toBeNull();
+      expect(r.child_involvement_rate).toBeNull();
     });
   });
 
@@ -1388,7 +1388,7 @@ describe("Home Behaviour Support Plan Effectiveness Intelligence Engine", () => 
         expect(r.intervention_success_rate).toBe(67);
       });
 
-      it("returns 0 when no interventions", () => {
+      it("returns null when no interventions", () => {
         const r = computeBehaviourSupportPlanEffectiveness(baseInput({
           behaviour_support_plans: [makeBSP({ id: "b1", child_id: "c1", status: "active" })],
           positive_reinforcement_records: [makePositiveReinforcement({ child_response: "negative" })],
@@ -1425,7 +1425,7 @@ describe("Home Behaviour Support Plan Effectiveness Intelligence Engine", () => 
         expect(r.deescalation_effectiveness_rate).toBe(60);
       });
 
-      it("returns 0 when no de-escalations", () => {
+      it("returns null when no de-escalations", () => {
         const r = computeBehaviourSupportPlanEffectiveness(baseInput({
           behaviour_support_plans: [makeBSP({ id: "b1", child_id: "c1", status: "active" })],
           intervention_records: [makeIntervention({ outcome: "unsuccessful" })],

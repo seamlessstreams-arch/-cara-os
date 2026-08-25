@@ -221,17 +221,17 @@ describe("Special cases and empty data", () => {
     expect(r.total_energy_records).toBe(0);
   });
 
-  it("9 — empty+children sets all rates to 0", () => {
+  it("9 — empty+children sets all rates to null", () => {
     const r = run({ total_children: 2 });
-    expect(r.boiler_servicing_rate).toBe(0);
-    expect(r.heating_check_rate).toBe(0);
+    expect(r.boiler_servicing_rate).toBeNull();
+    expect(r.heating_check_rate).toBeNull();
     expect(r.radiator_maintenance_rate).toBeNull();
-    expect(r.thermostat_calibration_rate).toBe(0);
+    expect(r.thermostat_calibration_rate).toBeNull();
     expect(r.energy_efficiency_rate).toBeNull();
     expect(r.child_comfort_rate).toBeNull();
-    expect(r.gas_safety_compliance_rate).toBe(0);
-    expect(r.carbon_monoxide_safety_rate).toBe(0);
-    expect(r.fault_resolution_rate).toBe(0);
+    expect(r.gas_safety_compliance_rate).toBeNull();
+    expect(r.carbon_monoxide_safety_rate).toBeNull();
+    expect(r.fault_resolution_rate).toBeNull();
     expect(r.boiler_condition_score).toBeNull();
   });
 
@@ -547,7 +547,7 @@ describe("Energy efficiency rate", () => {
     expect(r.energy_efficiency_rate).toBe(59);
   });
 
-  it("49 — 0% when no energy records at all", () => {
+  it("49 — null when no energy records at all", () => {
     const r = run({ energy_records: [] });
     expect(r.energy_efficiency_rate).toBeNull();
   });
@@ -593,7 +593,7 @@ describe("Child comfort rate", () => {
     expect(r.child_comfort_rate).toBe(0);
   });
 
-  it("54 — 0% when no relevant records exist", () => {
+  it("54 — null when no relevant records exist", () => {
     const r = run({});
     expect(r.child_comfort_rate).toBeNull();
   });

@@ -281,7 +281,7 @@ function minimalPoorInput(
 describe("computeCommunityIntegrationVolunteering", () => {
   // ── pct helper edge case ─────────────────────────────────────────────
   describe("pct(0,0) => 0 implicit", () => {
-    it("returns 0 rates when arrays are empty but total_children > 0 with allEmpty path", () => {
+    it("returns null rates when arrays are empty but total_children > 0 with allEmpty path", () => {
       // All arrays empty + children > 0 => special case, but rates are 0 in the result
       const r = computeCommunityIntegrationVolunteering({
         today: TODAY,
@@ -292,12 +292,12 @@ describe("computeCommunityIntegrationVolunteering", () => {
         neighbourhood_records: [],
         local_service_records: [],
       });
-      expect(r.community_participation_rate).toBe(0);
-      expect(r.volunteering_rate).toBe(0);
-      expect(r.social_inclusion_rate).toBe(0);
-      expect(r.neighbourhood_relation_rate).toBe(0);
-      expect(r.local_service_rate).toBe(0);
-      expect(r.child_satisfaction_rate).toBe(0);
+      expect(r.community_participation_rate).toBeNull();
+      expect(r.volunteering_rate).toBeNull();
+      expect(r.social_inclusion_rate).toBeNull();
+      expect(r.neighbourhood_relation_rate).toBeNull();
+      expect(r.local_service_rate).toBeNull();
+      expect(r.child_satisfaction_rate).toBeNull();
     });
   });
 
@@ -1488,7 +1488,7 @@ describe("computeCommunityIntegrationVolunteering", () => {
       expect(r.child_satisfaction_rate).toBe(100); // avg(100, 100)
     });
 
-    it("child_satisfaction_rate is 0 when no satisfaction sources", () => {
+    it("child_satisfaction_rate is null when no satisfaction sources", () => {
       const r = computeCommunityIntegrationVolunteering({
         today: TODAY,
         total_children: 5,

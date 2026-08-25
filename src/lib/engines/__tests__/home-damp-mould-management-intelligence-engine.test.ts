@@ -6,6 +6,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { below, meets } from "@/lib/metrics/rate";
 import {
   computeDampMouldManagement,
   type DampMouldManagementInput,
@@ -272,7 +273,7 @@ describe("insufficient_data — all empty + 0 children", () => {
     expect(r.total_health_impacts).toBe(0);
   });
 
-  it("all rates are 0", () => {
+  it("all rates are null", () => {
     const r = computeDampMouldManagement({
       today: "2026-05-30",
       total_children: 0,
@@ -282,12 +283,12 @@ describe("insufficient_data — all empty + 0 children", () => {
       ventilation_assessment_records: [],
       health_impact_records: [],
     });
-    expect(r.damp_survey_rate).toBe(0);
-    expect(r.mould_inspection_rate).toBe(0);
-    expect(r.remediation_rate).toBe(0);
-    expect(r.ventilation_rate).toBe(0);
-    expect(r.health_impact_rate).toBe(0);
-    expect(r.child_awareness_rate).toBe(0);
+    expect(r.damp_survey_rate).toBeNull();
+    expect(r.mould_inspection_rate).toBeNull();
+    expect(r.remediation_rate).toBeNull();
+    expect(r.ventilation_rate).toBeNull();
+    expect(r.health_impact_rate).toBeNull();
+    expect(r.child_awareness_rate).toBeNull();
   });
 });
 
@@ -825,7 +826,7 @@ describe("Penalty 1 — dampSurveyRate < 40 (guarded)", () => {
     // But allEmpty would need to be false — so we need other records
     const r = computeDampMouldManagement(baseInput({ damp_survey_records: [] }));
     // dampSurveyRate = 0, totalDampSurveys = 0 → guarded, no penalty
-    expect(r.damp_survey_rate).toBe(0);
+    expect(r.damp_survey_rate).toBeNull();
   });
 });
 
@@ -842,7 +843,7 @@ describe("Penalty 2 — remediationRate < 50 (guarded)", () => {
 
   it("no penalty when totalRemediations === 0", () => {
     const r = computeDampMouldManagement(baseInput({ remediation_records: [] }));
-    expect(r.remediation_rate).toBe(0);
+    expect(r.remediation_rate).toBeNull();
   });
 });
 
@@ -859,7 +860,7 @@ describe("Penalty 3 — ventilationRate < 40 (guarded)", () => {
 
   it("no penalty when totalVentilationAssessments === 0", () => {
     const r = computeDampMouldManagement(baseInput({ ventilation_assessment_records: [] }));
-    expect(r.ventilation_rate).toBe(0);
+    expect(r.ventilation_rate).toBeNull();
   });
 });
 
@@ -902,7 +903,7 @@ describe("Penalty 4 — childAwarenessRate < 30 (guarded)", () => {
       remediation_records: [makeRemediation({ id: "r1", child_room_involved: false })],
       ventilation_assessment_records: [makeVentilation({ id: "v1", child_bedroom: false })],
     }));
-    expect(r.child_awareness_rate).toBe(0);
+    expect(r.child_awareness_rate).toBeNull();
   });
 });
 
@@ -1001,7 +1002,7 @@ describe("rate computations", () => {
       makeHealthImpact({ id: "h1", treatment_required: false, treatment_provided: false }),
     ];
     const r = computeDampMouldManagement(baseInput({ health_impact_records: his }));
-    expect(r.health_impact_rate).toBe(0);
+    expect(r.health_impact_rate).toBeNull();
   });
 
   it("childAwarenessRate is composite of views + child informed + bedroom ventilation + reported to mgmt", () => {
@@ -1054,7 +1055,7 @@ describe("rate computations", () => {
       ventilation_assessment_records: [makeVentilation({ id: "v1", child_bedroom: false })],
       mould_inspection_records: [makeMouldInspection({ id: "mi_1", mould_found: false })],
     }));
-    expect(r.child_awareness_rate).toBe(0);
+    expect(r.child_awareness_rate).toBeNull();
   });
 });
 
@@ -1194,8 +1195,8 @@ describe("strengths", () => {
       remediation_records: rems,
       mould_inspection_records: [],
     }));
-    const rate = r.child_awareness_rate;
-    if (rate >= 70 && rate < 90) {
+    const awareness = r.child_awareness_rate;
+    if (meets(awareness, 70) && below(awareness, 90)) {
       expect(r.strengths.some((s) => s.includes("child awareness rate"))).toBe(true);
     }
   });
@@ -1585,7 +1586,7 @@ describe("recommendations", () => {
       ventilation_assessment_records: vents,
       mould_inspection_records: inspections,
     }));
-    if (r.child_awareness_rate < 30) {
+    if (below(r.child_awareness_rate, 30)) {
       expect(r.recommendations.some((rec) => rec.recommendation.includes("involving and informing children"))).toBe(true);
     }
   });
@@ -1699,7 +1700,7 @@ describe("recommendations", () => {
       mould_inspection_records: [],
       ventilation_assessment_records: [makeVentilation({ id: "v1", child_bedroom: false })],
     }));
-    if (r.child_awareness_rate >= 30 && r.child_awareness_rate < 70) {
+    if (meets(r.child_awareness_rate, 30) && below(r.child_awareness_rate, 70)) {
       expect(r.recommendations.some((rec) => rec.recommendation.includes("Strengthen child involvement"))).toBe(true);
     }
   });
@@ -1874,7 +1875,7 @@ describe("insights", () => {
       ventilation_assessment_records: vents,
       mould_inspection_records: inspections,
     }));
-    if (r.child_awareness_rate < 30) {
+    if (below(r.child_awareness_rate, 30)) {
       expect(r.insights.some((ins) => ins.severity === "critical" && ins.text.includes("Child awareness"))).toBe(true);
     }
   });
@@ -2209,7 +2210,7 @@ describe("edge cases", () => {
       ventilation_assessment_records: [makeVentilation({ id: "v1", child_bedroom: false })],
     }));
     // No child room remediation → not included in awareness composite
-    expect(r.child_awareness_rate).toBe(0);
+    expect(r.child_awareness_rate).toBeNull();
   });
 
   it("mould_found: false does not count toward spore/immediate/reporting metrics", () => {
@@ -2251,7 +2252,7 @@ describe("edge cases", () => {
     ];
     const r = computeDampMouldManagement(baseInput({ health_impact_records: his }));
     // treatmentRequiredHealth = 0, so treatmentProvisionRate = 0 (pct(0, 0) = 0)
-    expect(r.health_impact_rate).toBe(0);
+    expect(r.health_impact_rate).toBeNull();
   });
 
   it("large number of records processes correctly", () => {

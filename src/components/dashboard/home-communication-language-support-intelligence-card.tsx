@@ -70,24 +70,24 @@ export function HomeCommunicationLanguageSupportIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.communication_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.assessment_coverage_rate >= 90 ? "bg-green-50" : d.assessment_coverage_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.assessment_coverage_rate >= 90 ? "text-[--cs-success]" : d.assessment_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.assessment_coverage_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.assessment_coverage_rate, 90) ? "bg-green-50" : meets(d.assessment_coverage_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.assessment_coverage_rate, 90) ? "text-[--cs-success]" : meets(d.assessment_coverage_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.assessment_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Assess.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.therapy_engagement_rate >= 90 ? "bg-green-50" : d.therapy_engagement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.therapy_engagement_rate >= 90 ? "text-[--cs-success]" : d.therapy_engagement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.therapy_engagement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.therapy_engagement_rate, 90) ? "bg-green-50" : meets(d.therapy_engagement_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.therapy_engagement_rate, 90) ? "text-[--cs-success]" : meets(d.therapy_engagement_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.therapy_engagement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Therapy</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.aid_provision_rate >= 90 ? "bg-green-50" : d.aid_provision_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.aid_provision_rate >= 90 ? "text-[--cs-success]" : d.aid_provision_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.aid_provision_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.aid_provision_rate, 90) ? "bg-green-50" : meets(d.aid_provision_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.aid_provision_rate, 90) ? "text-[--cs-success]" : meets(d.aid_provision_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.aid_provision_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Aids</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.inclusive_practice_rate >= 90 ? "bg-green-50" : d.inclusive_practice_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.inclusive_practice_rate >= 90 ? "text-[--cs-success]" : d.inclusive_practice_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.inclusive_practice_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.inclusive_practice_rate, 90) ? "bg-green-50" : meets(d.inclusive_practice_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.inclusive_practice_rate, 90) ? "text-[--cs-success]" : meets(d.inclusive_practice_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.inclusive_practice_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Inclusive</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.staff_training_rate >= 90 ? "bg-green-50" : d.staff_training_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.staff_training_rate >= 90 ? "text-[--cs-success]" : d.staff_training_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.staff_training_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.staff_training_rate, 90) ? "bg-green-50" : meets(d.staff_training_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.staff_training_rate, 90) ? "text-[--cs-success]" : meets(d.staff_training_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.staff_training_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Training</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.child_progress_rate, 90) ? "bg-green-50" : meets(d.child_progress_rate, 70) ? "bg-amber-50" : d.child_progress_rate === null ? "bg-muted" : "bg-red-50")}>

@@ -188,12 +188,12 @@ describe("Home Clothing & Personal Possessions Intelligence Engine", () => {
 
     it("returns all rates as 0 for insufficient_data", () => {
       const r = computeClothingPersonalPossessions(baseInput({ total_children: 0 }));
-      expect(r.allowance_utilisation_rate).toBe(0);
-      expect(r.wardrobe_adequacy_rate).toBe(0);
-      expect(r.inventory_completeness_rate).toBe(0);
-      expect(r.request_fulfilment_rate).toBe(0);
-      expect(r.possession_safeguarding_rate).toBe(0);
-      expect(r.child_choice_rate).toBe(0);
+      expect(r.allowance_utilisation_rate).toBeNull();
+      expect(r.wardrobe_adequacy_rate).toBeNull();
+      expect(r.inventory_completeness_rate).toBeNull();
+      expect(r.request_fulfilment_rate).toBeNull();
+      expect(r.possession_safeguarding_rate).toBeNull();
+      expect(r.child_choice_rate).toBeNull();
     });
 
     it("returns empty arrays for insufficient_data", () => {
@@ -1663,7 +1663,7 @@ describe("Home Clothing & Personal Possessions Intelligence Engine", () => {
       expect(r.allowance_utilisation_rate).toBe(67);
     });
 
-    it("allowance_utilisation_rate is 0 when allowance = 0", () => {
+    it("allowance_utilisation_rate is null when allowance = 0", () => {
       const r = computeClothingPersonalPossessions(
         baseInput({
           clothing_allowance_records: [
@@ -1671,7 +1671,7 @@ describe("Home Clothing & Personal Possessions Intelligence Engine", () => {
           ],
         }),
       );
-      expect(r.allowance_utilisation_rate).toBe(0);
+      expect(r.allowance_utilisation_rate).toBeNull();
     });
 
     it("wardrobe_adequacy_rate = pct(adequate, total)", () => {
@@ -1779,7 +1779,7 @@ describe("Home Clothing & Personal Possessions Intelligence Engine", () => {
       expect(r.child_choice_rate).toBe(100);
     });
 
-    it("child_choice_rate is 0 when denom is 0", () => {
+    it("child_choice_rate is null when denom is null", () => {
       // Safeguarding records don't contribute to child choice
       const r = computeClothingPersonalPossessions(
         baseInput({
@@ -1788,7 +1788,7 @@ describe("Home Clothing & Personal Possessions Intelligence Engine", () => {
           ],
         }),
       );
-      expect(r.child_choice_rate).toBe(0);
+      expect(r.child_choice_rate).toBeNull();
     });
 
     it("pct rounds to nearest integer", () => {
@@ -3688,7 +3688,7 @@ describe("Home Clothing & Personal Possessions Intelligence Engine", () => {
           ],
         }),
       );
-      expect(r.allowance_utilisation_rate).toBe(0);
+      expect(r.allowance_utilisation_rate).toBeNull();
     });
 
     it("zero items in inventory does not cause division by zero", () => {
@@ -3702,7 +3702,7 @@ describe("Home Clothing & Personal Possessions Intelligence Engine", () => {
           ],
         }),
       );
-      expect(r.inventory_completeness_rate).toBe(0);
+      expect(r.inventory_completeness_rate).toBeNull();
     });
 
     it("only safeguarding records (no other data)", () => {

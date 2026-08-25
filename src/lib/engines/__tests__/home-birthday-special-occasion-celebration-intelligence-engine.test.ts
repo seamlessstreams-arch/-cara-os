@@ -207,12 +207,12 @@ describe("insufficient_data", () => {
     expect(r.celebration_rating).toBe("insufficient_data");
     expect(r.celebration_score).toBe(0);
     expect(r.headline).toContain("insufficient data");
-    expect(r.birthday_planning_rate).toBe(0);
-    expect(r.celebration_execution_rate).toBe(0);
-    expect(r.gift_provision_rate).toBe(0);
-    expect(r.memory_making_rate).toBe(0);
-    expect(r.child_satisfaction_rate).toBe(0);
-    expect(r.child_choice_rate).toBe(0);
+    expect(r.birthday_planning_rate).toBeNull();
+    expect(r.celebration_execution_rate).toBeNull();
+    expect(r.gift_provision_rate).toBeNull();
+    expect(r.memory_making_rate).toBeNull();
+    expect(r.child_satisfaction_rate).toBeNull();
+    expect(r.child_choice_rate).toBeNull();
     expect(r.strengths).toHaveLength(0);
     expect(r.concerns).toHaveLength(0);
     expect(r.recommendations).toHaveLength(0);
@@ -258,14 +258,14 @@ describe("inadequate floor (children present, no records)", () => {
     expect(r.insights[0].text).toContain("complete absence");
   });
 
-  it("all rates are 0", () => {
+  it("all rates are null", () => {
     const r = run({ total_children: 5 });
-    expect(r.birthday_planning_rate).toBe(0);
-    expect(r.celebration_execution_rate).toBe(0);
-    expect(r.gift_provision_rate).toBe(0);
-    expect(r.memory_making_rate).toBe(0);
-    expect(r.child_satisfaction_rate).toBe(0);
-    expect(r.child_choice_rate).toBe(0);
+    expect(r.birthday_planning_rate).toBeNull();
+    expect(r.celebration_execution_rate).toBeNull();
+    expect(r.gift_provision_rate).toBeNull();
+    expect(r.memory_making_rate).toBeNull();
+    expect(r.child_satisfaction_rate).toBeNull();
+    expect(r.child_choice_rate).toBeNull();
   });
 });
 
@@ -533,7 +533,7 @@ describe("inadequate scenario (low rates)", () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("pct(0,0) = 0 contract", () => {
-  it("birthday_planning_rate is 0 when no plan records", () => {
+  it("birthday_planning_rate is null when no plan records", () => {
     const r = run({
       total_children: 3,
       celebration_execution_records: [makeCelebration()],
@@ -543,7 +543,7 @@ describe("pct(0,0) = 0 contract", () => {
     expect(r.birthday_planning_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
-  it("celebration_execution_rate is 0 when no celebration records", () => {
+  it("celebration_execution_rate is null when no celebration records", () => {
     const r = run({
       total_children: 3,
       birthday_plan_records: [makeBirthdayPlan()],
@@ -553,7 +553,7 @@ describe("pct(0,0) = 0 contract", () => {
     expect(r.celebration_execution_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
-  it("gift_provision_rate is 0 when no gift records", () => {
+  it("gift_provision_rate is null when no gift records", () => {
     const r = run({
       total_children: 3,
       birthday_plan_records: [makeBirthdayPlan()],
@@ -563,7 +563,7 @@ describe("pct(0,0) = 0 contract", () => {
     expect(r.gift_provision_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
-  it("memory_making_rate is 0 when no memory records", () => {
+  it("memory_making_rate is null when no memory records", () => {
     const r = run({
       total_children: 3,
       birthday_plan_records: [makeBirthdayPlan()],
@@ -581,7 +581,7 @@ describe("pct(0,0) = 0 contract", () => {
     expect(r.child_satisfaction_rate).toBe(0);
   });
 
-  it("child_choice_rate is 0 when no plan records", () => {
+  it("child_choice_rate is null when no plan records", () => {
     const r = run({
       total_children: 3,
       celebration_execution_records: [makeCelebration()],

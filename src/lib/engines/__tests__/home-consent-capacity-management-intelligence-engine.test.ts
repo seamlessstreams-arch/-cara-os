@@ -189,16 +189,16 @@ function informedConsentForChildren(n: number, overrides: Partial<InformedConsen
 describe("computeConsentCapacityManagement", () => {
   // ── pct(0,0) = 0 ───────────────────────────────────────────────────────
   describe("pct(0,0) = 0", () => {
-    it("returns 0 for all rates when no records and insufficient_data", () => {
+    it("returns null for all rates when no records and insufficient_data", () => {
       const r = run({ total_children: 0 });
-      expect(r.consent_coverage_rate).toBe(0);
-      expect(r.gillick_assessment_rate).toBe(0);
-      expect(r.capacity_review_rate).toBe(0);
-      expect(r.informed_consent_rate).toBe(0);
-      expect(r.withdrawal_handling_rate).toBe(0);
-      expect(r.child_understanding_rate).toBe(0);
-      expect(r.consent_review_compliance_rate).toBe(0);
-      expect(r.gillick_evidence_rate).toBe(0);
+      expect(r.consent_coverage_rate).toBeNull();
+      expect(r.gillick_assessment_rate).toBeNull();
+      expect(r.capacity_review_rate).toBeNull();
+      expect(r.informed_consent_rate).toBeNull();
+      expect(r.withdrawal_handling_rate).toBeNull();
+      expect(r.child_understanding_rate).toBeNull();
+      expect(r.consent_review_compliance_rate).toBeNull();
+      expect(r.gillick_evidence_rate).toBeNull();
     });
   });
 
@@ -265,14 +265,14 @@ describe("computeConsentCapacityManagement", () => {
       expect(r.insights[0].severity).toBe("critical");
     });
 
-    it("all rates are 0", () => {
+    it("all rates are null", () => {
       const r = run({ total_children: 3 });
-      expect(r.consent_coverage_rate).toBe(0);
-      expect(r.gillick_assessment_rate).toBe(0);
-      expect(r.capacity_review_rate).toBe(0);
-      expect(r.informed_consent_rate).toBe(0);
-      expect(r.withdrawal_handling_rate).toBe(0);
-      expect(r.child_understanding_rate).toBe(0);
+      expect(r.consent_coverage_rate).toBeNull();
+      expect(r.gillick_assessment_rate).toBeNull();
+      expect(r.capacity_review_rate).toBeNull();
+      expect(r.informed_consent_rate).toBeNull();
+      expect(r.withdrawal_handling_rate).toBeNull();
+      expect(r.child_understanding_rate).toBeNull();
     });
 
     it("works with 1 child", () => {
@@ -1383,9 +1383,9 @@ describe("computeConsentCapacityManagement", () => {
         expect(r.consent_coverage_rate).toBe(67);
       });
 
-      it("returns 0 when total_children is 0 (handled by insufficient_data)", () => {
+      it("returns null when total_children is null (handled by insufficient_data)", () => {
         const r = run({ total_children: 0 });
-        expect(r.consent_coverage_rate).toBe(0);
+        expect(r.consent_coverage_rate).toBeNull();
       });
     });
 
@@ -1467,7 +1467,7 @@ describe("computeConsentCapacityManagement", () => {
         expect(r.withdrawal_handling_rate).toBe(60);
       });
 
-      it("returns 0 when no withdrawal records", () => {
+      it("returns null when no withdrawal records", () => {
         const r = run({
           total_children: 2,
           consent_form_records: consentFormsForChildren(2),
@@ -1500,12 +1500,12 @@ describe("computeConsentCapacityManagement", () => {
         expect(r.child_understanding_rate).toBe(50);
       });
 
-      it("returns 0 when no gillick or informed consent records", () => {
+      it("returns null when no gillick or informed consent records", () => {
         const r = run({
           total_children: 2,
           consent_form_records: consentFormsForChildren(2),
         });
-        expect(r.child_understanding_rate).toBe(0);
+        expect(r.child_understanding_rate).toBeNull();
       });
     });
   });

@@ -1582,7 +1582,7 @@ describe("Home Children's Rights & Participation Intelligence Engine", () => {
   // ── Advocacy coverage edge ────────────────────────────────────────────
 
   describe("advocacy coverage", () => {
-    it("returns 0 coverage when total_children is 0", () => {
+    it("returns null coverage when total_children is null", () => {
       const result = computeHomeChildrensRightsParticipation({
         today: TODAY,
         rights_entries: [makeRight()],
@@ -1593,7 +1593,7 @@ describe("Home Children's Rights & Participation Intelligence Engine", () => {
         advocacy_records: [makeAdvocacy()],
         total_children: 0,
       });
-      expect(result.advocacy.child_coverage).toBe(0);
+      expect(result.advocacy.child_coverage).toBeNull();
     });
 
     it("100% coverage when all children have advocacy", () => {

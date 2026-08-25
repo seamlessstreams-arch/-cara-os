@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, PartyPopper } fro
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { CulturalEventsRating } from "@/lib/engines/home-cultural-events-celebrations-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 const RATING_STYLES: Record<CulturalEventsRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -57,7 +58,7 @@ export function HomeCulturalEventsCelebrationsIntelligenceCard() {
             <PartyPopper className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-fuchsia-600")} />
             <span className="text-slate-900 font-bold">Cultural Events & Celebrations</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.cultural_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.cultural_score}%</span>}
+            {d.cultural_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.cultural_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -65,28 +66,28 @@ export function HomeCulturalEventsCelebrationsIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.cultural_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.event_participation_rate >= 90 ? "bg-green-50" : d.event_participation_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.event_participation_rate >= 90 ? "text-[--cs-success]" : d.event_participation_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.event_participation_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.event_participation_rate, 90) ? "bg-green-50" : meets(d.event_participation_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.event_participation_rate, 90) ? "text-[--cs-success]" : meets(d.event_participation_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.event_participation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Events</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.diversity_celebration_rate >= 90 ? "bg-green-50" : d.diversity_celebration_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.diversity_celebration_rate >= 90 ? "text-[--cs-success]" : d.diversity_celebration_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.diversity_celebration_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.diversity_celebration_rate, 90) ? "bg-green-50" : meets(d.diversity_celebration_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.diversity_celebration_rate, 90) ? "text-[--cs-success]" : meets(d.diversity_celebration_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.diversity_celebration_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Diversity</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.heritage_acknowledgement_rate >= 90 ? "bg-green-50" : d.heritage_acknowledgement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.heritage_acknowledgement_rate >= 90 ? "text-[--cs-success]" : d.heritage_acknowledgement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.heritage_acknowledgement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.heritage_acknowledgement_rate, 90) ? "bg-green-50" : meets(d.heritage_acknowledgement_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.heritage_acknowledgement_rate, 90) ? "text-[--cs-success]" : meets(d.heritage_acknowledgement_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.heritage_acknowledgement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Heritage</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.festival_inclusion_rate >= 90 ? "bg-green-50" : d.festival_inclusion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.festival_inclusion_rate >= 90 ? "text-[--cs-success]" : d.festival_inclusion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.festival_inclusion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.festival_inclusion_rate, 90) ? "bg-green-50" : meets(d.festival_inclusion_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.festival_inclusion_rate, 90) ? "text-[--cs-success]" : meets(d.festival_inclusion_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.festival_inclusion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Festivals</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_led_rate >= 60 ? "bg-green-50" : d.child_led_rate >= 30 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_led_rate >= 60 ? "text-[--cs-success]" : d.child_led_rate >= 30 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_led_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_led_rate, 60) ? "bg-green-50" : meets(d.child_led_rate, 30) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_led_rate, 60) ? "text-[--cs-success]" : meets(d.child_led_rate, 30) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_led_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Child-Led</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_satisfaction_rate >= 90 ? "bg-green-50" : d.child_satisfaction_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_satisfaction_rate >= 90 ? "text-[--cs-success]" : d.child_satisfaction_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_satisfaction_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_satisfaction_rate, 90) ? "bg-green-50" : meets(d.child_satisfaction_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_satisfaction_rate, 90) ? "text-[--cs-success]" : meets(d.child_satisfaction_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_satisfaction_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Satisfaction</p>
             </div>
           </div>

@@ -282,11 +282,11 @@ describe("insufficient_data — 0 children + all arrays empty", () => {
     );
     expect(r.total_assessments).toBe(0);
     expect(r.total_therapy_sessions).toBe(0);
-    expect(r.assessment_coverage_rate).toBe(0);
-    expect(r.therapy_engagement_rate).toBe(0);
-    expect(r.aid_provision_rate).toBe(0);
-    expect(r.inclusive_practice_rate).toBe(0);
-    expect(r.staff_training_rate).toBe(0);
+    expect(r.assessment_coverage_rate).toBeNull();
+    expect(r.therapy_engagement_rate).toBeNull();
+    expect(r.aid_provision_rate).toBeNull();
+    expect(r.inclusive_practice_rate).toBeNull();
+    expect(r.staff_training_rate).toBeNull();
     // fab-0: null (no progress ratings)
     expect(r.child_progress_rate).toBeNull();
   });
@@ -339,11 +339,11 @@ describe("inadequate floor — children present, no records", () => {
 
   it("has zero for all rates", () => {
     const r = computeCommunicationLanguageSupport(baseInput());
-    expect(r.assessment_coverage_rate).toBe(0);
-    expect(r.therapy_engagement_rate).toBe(0);
-    expect(r.aid_provision_rate).toBe(0);
-    expect(r.inclusive_practice_rate).toBe(0);
-    expect(r.staff_training_rate).toBe(0);
+    expect(r.assessment_coverage_rate).toBeNull();
+    expect(r.therapy_engagement_rate).toBeNull();
+    expect(r.aid_provision_rate).toBeNull();
+    expect(r.inclusive_practice_rate).toBeNull();
+    expect(r.staff_training_rate).toBeNull();
     // fab-0: null (no progress ratings)
     expect(r.child_progress_rate).toBeNull();
   });

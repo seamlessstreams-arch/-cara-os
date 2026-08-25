@@ -152,10 +152,6 @@ export interface BehaviourSupportPlanEffectivenessResult {
 // -- Helpers -----------------------------------------------------------------
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -179,15 +175,15 @@ function emptyResult(
     behaviour_score: score,
     headline,
     total_bsps: 0,
-    bsp_coverage_rate: 0,
-    intervention_success_rate: 0,
-    deescalation_effectiveness_rate: 0,
-    positive_reinforcement_rate: 0,
-    restrictive_practice_reduction_rate: 0,
-    child_involvement_rate: 0,
-    bsp_review_compliance_rate: 0,
-    staff_training_rate: 0,
-    child_debrief_rate: 0,
+    bsp_coverage_rate: null,
+    intervention_success_rate: null,
+    deescalation_effectiveness_rate: null,
+    positive_reinforcement_rate: null,
+    restrictive_practice_reduction_rate: null,
+    child_involvement_rate: null,
+    bsp_review_compliance_rate: null,
+    staff_training_rate: null,
+    child_debrief_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -268,7 +264,7 @@ export function computeBehaviourSupportPlanEffectiveness(
   const activeBSPs = behaviour_support_plans.filter((b) => b.status === "active");
   const totalBSPs = behaviour_support_plans.length;
   const uniqueChildrenWithActiveBSP = new Set(activeBSPs.map((b) => b.child_id)).size;
-  const bspCoverageRate = total_children > 0 ? pct(uniqueChildrenWithActiveBSP, total_children) : 0;
+  const bspCoverageRate = total_children > 0 ? rate(uniqueChildrenWithActiveBSP, total_children) : 0;
 
   // --- BSP review compliance: active BSPs reviewed within schedule ---
   const activeBSPsWithReviewDue = activeBSPs.filter(
@@ -278,13 +274,13 @@ export function computeBehaviourSupportPlanEffectiveness(
     (b) => b.review_due_date !== null && b.review_due_date <= today && (!b.last_reviewed_date || b.last_reviewed_date < b.review_due_date),
   ).length;
   const bspReviewCompliant = activeBSPsWithReviewDue.length - bspsOverdue;
-  const bspReviewComplianceRate = pct(bspReviewCompliant, activeBSPsWithReviewDue.length > 0 ? activeBSPsWithReviewDue.length : activeBSPs.length > 0 ? activeBSPs.length : 1);
+  const bspReviewComplianceRate = rate(bspReviewCompliant, activeBSPsWithReviewDue.length > 0 ? activeBSPsWithReviewDue.length : activeBSPs.length > 0 ? activeBSPs.length : 1);
 
   const bspsWithChildInvolvement = activeBSPs.filter((b) => b.child_involved_in_creation).length;
   const bspsWithStaffTrained = activeBSPs.filter((b) => b.staff_trained_on_plan).length;
 
-  const childInvolvementRate = pct(bspsWithChildInvolvement, activeBSPs.length);
-  const staffTrainingRate = pct(bspsWithStaffTrained, activeBSPs.length);
+  const childInvolvementRate = rate(bspsWithChildInvolvement, activeBSPs.length);
+  const staffTrainingRate = rate(bspsWithStaffTrained, activeBSPs.length);
 
   // --- Intervention success rate ---
   const totalInterventions = intervention_records.length;
@@ -330,7 +326,7 @@ export function computeBehaviourSupportPlanEffectiveness(
   const deescalationsAvoidingRestraint = deescalation_records.filter(
     (d) => d.restrictive_practice_avoided,
   ).length;
-  const deescalationRestraintAvoidanceRate = pct(deescalationsAvoidingRestraint, totalDeescalations);
+  const deescalationRestraintAvoidanceRate = rate(deescalationsAvoidingRestraint, totalDeescalations);
 
   const deescalationsWithChildDebrief = deescalation_records.filter(
     (d) => d.child_debriefed,
@@ -341,12 +337,12 @@ export function computeBehaviourSupportPlanEffectiveness(
   const positiveResponseRecords = positive_reinforcement_records.filter(
     (p) => p.child_response === "positive",
   ).length;
-  const positiveReinforcementRate = pct(positiveResponseRecords, totalPositiveRecords);
+  const positiveReinforcementRate = rate(positiveResponseRecords, totalPositiveRecords);
 
   const consistentWithBSP = positive_reinforcement_records.filter(
     (p) => p.consistent_with_bsp,
   ).length;
-  const consistencyRate = pct(consistentWithBSP, totalPositiveRecords);
+  const consistencyRate = rate(consistentWithBSP, totalPositiveRecords);
 
   // --- Restrictive practice minimisation ---
   const totalRestrictive = restrictive_practice_records.length;
@@ -376,11 +372,11 @@ export function computeBehaviourSupportPlanEffectiveness(
   ).length;
 
   // Restrictive practice reduction rate: proportion with reduction plans in place
-  const restrictivePracticeReductionRate = pct(restrictiveWithReductionPlan, totalRestrictive);
+  const restrictivePracticeReductionRate = rate(restrictiveWithReductionPlan, totalRestrictive);
 
   // Compliance composite for restrictive practices
   const restrictiveComplianceItems = totalRestrictive > 0
-    ? meanOf([pct(justifiedRestrictive, totalRestrictive), pct(proportionateRestrictive, totalRestrictive), pct(lastResortRestrictive, totalRestrictive), pct(restrictiveWithPostIncident, totalRestrictive), pct(restrictiveWithBodyMap, totalRestrictive)])
+    ? meanOf([rate(justifiedRestrictive, totalRestrictive), rate(proportionateRestrictive, totalRestrictive), rate(lastResortRestrictive, totalRestrictive), rate(restrictiveWithPostIncident, totalRestrictive), rate(restrictiveWithBodyMap, totalRestrictive)])
     : 100; // no restrictive practices is ideal
 
   // --- Child debrief rate across all record types ---
@@ -388,7 +384,7 @@ export function computeBehaviourSupportPlanEffectiveness(
     totalInterventions + totalDeescalations + totalRestrictive;
   const totalDebriefsDone =
     interventionsWithDebrief + deescalationsWithChildDebrief + restrictiveWithChildDebrief;
-  const childDebriefRate = pct(totalDebriefsDone, totalDebriefOpportunities);
+  const childDebriefRate = rate(totalDebriefsDone, totalDebriefOpportunities);
 
   // -- Scoring: base 52 ---------------------------------------------------
 
@@ -569,9 +565,9 @@ export function computeBehaviourSupportPlanEffectiveness(
     );
   }
 
-  if (meets(pct(incidentsPrevented, totalInterventions), 70) && totalInterventions > 0) {
+  if (meets(rate(incidentsPrevented, totalInterventions), 70) && totalInterventions > 0) {
     strengths.push(
-      `${pct(incidentsPrevented, totalInterventions)}% of interventions prevented escalation to a formal incident -- proactive strategies are effective at maintaining safety.`,
+      `${rate(incidentsPrevented, totalInterventions)}% of interventions prevented escalation to a formal incident -- proactive strategies are effective at maintaining safety.`,
     );
   }
 
@@ -681,9 +677,9 @@ export function computeBehaviourSupportPlanEffectiveness(
     );
   }
 
-  if (totalRestrictive > 0 && below(pct(restrictiveWithBSPReview, totalRestrictive), 50)) {
+  if (totalRestrictive > 0 && below(rate(restrictiveWithBSPReview, totalRestrictive), 50)) {
     concerns.push(
-      `Only ${pct(restrictiveWithBSPReview, totalRestrictive)}% of restrictive practices triggered a BSP review -- the home is missing opportunities to update behaviour support strategies after significant incidents.`,
+      `Only ${rate(restrictiveWithBSPReview, totalRestrictive)}% of restrictive practices triggered a BSP review -- the home is missing opportunities to update behaviour support strategies after significant incidents.`,
     );
   }
 
@@ -903,7 +899,7 @@ export function computeBehaviourSupportPlanEffectiveness(
     });
   }
 
-  if (totalRestrictive > 5 && below(pct(lastResortRestrictive, totalRestrictive), 50)) {
+  if (totalRestrictive > 5 && below(rate(lastResortRestrictive, totalRestrictive), 50)) {
     insights.push({
       text: `Fewer than half of restrictive practices documented as a last resort. This raises serious questions about whether the home is exhausting all other options before using restriction, as required by Reg 20.`,
       severity: "critical",

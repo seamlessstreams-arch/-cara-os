@@ -78,19 +78,19 @@ export function HomeBehaviourSupportPlanIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Plans</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.active_plan_rate, 85) ? "bg-green-50" : meets(d.active_plan_rate, 60) ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", meets(d.active_plan_rate, 85) ? "text-[--cs-success]" : meets(d.active_plan_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.active_plan_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.active_plan_rate, 85) ? "text-[--cs-success]" : meets(d.active_plan_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.active_plan_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Active</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.trigger_analysis_rate, 80) ? "bg-green-50" : meets(d.trigger_analysis_rate, 50) ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", meets(d.trigger_analysis_rate, 80) ? "text-[--cs-success]" : meets(d.trigger_analysis_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.trigger_analysis_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.trigger_analysis_rate, 80) ? "text-[--cs-success]" : meets(d.trigger_analysis_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.trigger_analysis_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Triggers</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.de_escalation_rate, 75) ? "bg-green-50" : meets(d.de_escalation_rate, 40) ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", meets(d.de_escalation_rate, 75) ? "text-[--cs-success]" : meets(d.de_escalation_rate, 40) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.de_escalation_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.de_escalation_rate, 75) ? "text-[--cs-success]" : meets(d.de_escalation_rate, 40) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.de_escalation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">De-Esc</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.positive_strategy_rate, 80) ? "bg-green-50" : meets(d.positive_strategy_rate, 50) ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", meets(d.positive_strategy_rate, 80) ? "text-[--cs-success]" : meets(d.positive_strategy_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.positive_strategy_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.positive_strategy_rate, 80) ? "text-[--cs-success]" : meets(d.positive_strategy_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.positive_strategy_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Positive</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.child_voice_rate, 80) ? "bg-green-50" : meets(d.child_voice_rate, 50) ? "bg-amber-50" : "bg-red-50")}>

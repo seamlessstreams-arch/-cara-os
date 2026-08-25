@@ -278,12 +278,12 @@ describe("insufficient data", () => {
       bedtime_routine_records: [],
       child_participation_records: [],
     });
-    expect(r.routine_consistency_rate).toBe(0);
-    expect(r.activity_completion_rate).toBe(0);
-    expect(r.meal_regularity_rate).toBe(0);
-    expect(r.bedtime_adherence_rate).toBe(0);
-    expect(r.child_participation_rate).toBe(0);
-    expect(r.flexibility_rate).toBe(0);
+    expect(r.routine_consistency_rate).toBeNull();
+    expect(r.activity_completion_rate).toBeNull();
+    expect(r.meal_regularity_rate).toBeNull();
+    expect(r.bedtime_adherence_rate).toBeNull();
+    expect(r.child_participation_rate).toBeNull();
+    expect(r.flexibility_rate).toBeNull();
   });
 });
 
@@ -1070,7 +1070,7 @@ describe("six output rates", () => {
     expect(r.flexibility_rate).toBe(50);
   });
 
-  it("pct(0,0) = 0 for all rates when no records", () => {
+  it("rate(0,0)=null for all rates when no records", () => {
     const r = computeDailyRoutineStructure({
       today: "2026-05-27",
       total_children: 0,
@@ -1080,12 +1080,12 @@ describe("six output rates", () => {
       bedtime_routine_records: [],
       child_participation_records: [],
     });
-    expect(r.routine_consistency_rate).toBe(0);
-    expect(r.activity_completion_rate).toBe(0);
-    expect(r.meal_regularity_rate).toBe(0);
-    expect(r.bedtime_adherence_rate).toBe(0);
-    expect(r.child_participation_rate).toBe(0);
-    expect(r.flexibility_rate).toBe(0);
+    expect(r.routine_consistency_rate).toBeNull();
+    expect(r.activity_completion_rate).toBeNull();
+    expect(r.meal_regularity_rate).toBeNull();
+    expect(r.bedtime_adherence_rate).toBeNull();
+    expect(r.child_participation_rate).toBeNull();
+    expect(r.flexibility_rate).toBeNull();
   });
 
   it("rates round to integer", () => {
@@ -1948,7 +1948,7 @@ describe("edge cases", () => {
     expect(r.flexibility_rate).toBe(0);
   });
 
-  it("pct(0,0)=0 in participation rate computation", () => {
+  it("rate(0,0)=null in participation rate computation", () => {
     const r = computeDailyRoutineStructure({
       today: "2026-05-27",
       total_children: 0,
@@ -1958,7 +1958,7 @@ describe("edge cases", () => {
       bedtime_routine_records: [],
       child_participation_records: [],
     });
-    expect(r.child_participation_rate).toBe(0);
+    expect(r.child_participation_rate).toBeNull();
   });
 
   it("only routine records present → no allEmpty concerns trigger", () => {

@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ClipboardCheck } 
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import type { ConsentCapacityRating } from "@/lib/engines/home-consent-capacity-management-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 const RATING_STYLES: Record<ConsentCapacityRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -57,7 +58,7 @@ export function HomeConsentCapacityManagementIntelligenceCard() {
             <ClipboardCheck className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-emerald-600")} />
             <span className="text-slate-900 font-bold">Consent & Capacity Management</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.consent_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.consent_score}%</span>}
+            {d.consent_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.consent_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -65,28 +66,28 @@ export function HomeConsentCapacityManagementIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.consent_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.consent_coverage_rate >= 90 ? "bg-green-50" : d.consent_coverage_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.consent_coverage_rate >= 90 ? "text-[--cs-success]" : d.consent_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.consent_coverage_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.consent_coverage_rate, 90) ? "bg-green-50" : meets(d.consent_coverage_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.consent_coverage_rate, 90) ? "text-[--cs-success]" : meets(d.consent_coverage_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.consent_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Coverage</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.gillick_assessment_rate >= 90 ? "bg-green-50" : d.gillick_assessment_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.gillick_assessment_rate >= 90 ? "text-[--cs-success]" : d.gillick_assessment_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.gillick_assessment_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.gillick_assessment_rate, 90) ? "bg-green-50" : meets(d.gillick_assessment_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.gillick_assessment_rate, 90) ? "text-[--cs-success]" : meets(d.gillick_assessment_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.gillick_assessment_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Gillick</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.capacity_review_rate >= 90 ? "bg-green-50" : d.capacity_review_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.capacity_review_rate >= 90 ? "text-[--cs-success]" : d.capacity_review_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.capacity_review_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.capacity_review_rate, 90) ? "bg-green-50" : meets(d.capacity_review_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.capacity_review_rate, 90) ? "text-[--cs-success]" : meets(d.capacity_review_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.capacity_review_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Capacity</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.informed_consent_rate >= 90 ? "bg-green-50" : d.informed_consent_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.informed_consent_rate >= 90 ? "text-[--cs-success]" : d.informed_consent_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.informed_consent_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.informed_consent_rate, 90) ? "bg-green-50" : meets(d.informed_consent_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.informed_consent_rate, 90) ? "text-[--cs-success]" : meets(d.informed_consent_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.informed_consent_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Informed</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.withdrawal_handling_rate >= 90 ? "bg-green-50" : d.withdrawal_handling_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.withdrawal_handling_rate >= 90 ? "text-[--cs-success]" : d.withdrawal_handling_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.withdrawal_handling_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.withdrawal_handling_rate, 90) ? "bg-green-50" : meets(d.withdrawal_handling_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.withdrawal_handling_rate, 90) ? "text-[--cs-success]" : meets(d.withdrawal_handling_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.withdrawal_handling_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Withdraw</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_understanding_rate >= 90 ? "bg-green-50" : d.child_understanding_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_understanding_rate >= 90 ? "text-[--cs-success]" : d.child_understanding_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_understanding_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_understanding_rate, 90) ? "bg-green-50" : meets(d.child_understanding_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_understanding_rate, 90) ? "text-[--cs-success]" : meets(d.child_understanding_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_understanding_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Understood</p>
             </div>
           </div>

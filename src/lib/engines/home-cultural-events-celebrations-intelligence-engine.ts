@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME CULTURAL EVENTS & CELEBRATIONS INTELLIGENCE ENGINE
 // Home-level engine tracking cultural celebration quality — cultural event
@@ -171,10 +172,6 @@ export interface CulturalEventsResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -307,13 +304,13 @@ export function computeCulturalEventsCelebrations(
   const eventsParticipated = cultural_event_records.filter(
     (e) => e.participated,
   ).length;
-  const eventParticipationRate = pct(eventsParticipated, totalCulturalEvents);
+  const eventParticipationRate = rate(eventsParticipated, totalCulturalEvents);
 
   // --- Event engagement analysis ---
   const enthusiasticEvents = cultural_event_records.filter(
     (e) => e.engagement_level === "enthusiastic" || e.engagement_level === "led_by_child",
   ).length;
-  const eventEnthusiasmRate = pct(enthusiasticEvents, totalCulturalEvents);
+  const eventEnthusiasmRate = rate(enthusiasticEvents, totalCulturalEvents);
 
   const eventPositiveFeedback = cultural_event_records.filter(
     (e) => e.child_feedback_positive,
@@ -332,12 +329,12 @@ export function computeCulturalEventsCelebrations(
   const celebrationsPlannedInAdvance = diversity_celebration_records.filter(
     (c) => c.planned_in_advance,
   ).length;
-  const celebrationPlanningRate = pct(celebrationsPlannedInAdvance, totalDiversityCelebrations);
+  const celebrationPlanningRate = rate(celebrationsPlannedInAdvance, totalDiversityCelebrations);
 
   const celebrationsWithChildPlanning = diversity_celebration_records.filter(
     (c) => c.children_involved_in_planning,
   ).length;
-  const childPlanningRate = pct(celebrationsWithChildPlanning, totalDiversityCelebrations);
+  const childPlanningRate = rate(celebrationsWithChildPlanning, totalDiversityCelebrations);
 
   const celebrationsWithEducation = diversity_celebration_records.filter(
     (c) => c.educational_component,
@@ -346,7 +343,7 @@ export function computeCulturalEventsCelebrations(
   const celebrationsWithFeedback = diversity_celebration_records.filter(
     (c) => c.child_feedback_collected,
   ).length;
-  const celebrationFeedbackRate = pct(celebrationsWithFeedback, totalDiversityCelebrations);
+  const celebrationFeedbackRate = rate(celebrationsWithFeedback, totalDiversityCelebrations);
 
   const celebrationQualityRatings = diversity_celebration_records.map((c) => c.quality_rating);
   const avgCelebrationQuality = avgRating(celebrationQualityRatings);
@@ -356,29 +353,29 @@ export function computeCulturalEventsCelebrations(
     diversity_celebration_records.flatMap((c) => c.children_participated),
   ).size;
   const diversityCelebrationRate = total_children > 0
-    ? pct(childrenInCelebrations, total_children)
+    ? rate(childrenInCelebrations, total_children)
     : null;
 
   // --- Heritage day metrics ---
   const heritageDaysAcknowledged = heritage_day_records.filter(
     (h) => h.acknowledged,
   ).length;
-  const heritageAcknowledgementRate = pct(heritageDaysAcknowledged, totalHeritageDays);
+  const heritageAcknowledgementRate = rate(heritageDaysAcknowledged, totalHeritageDays);
 
   const heritageChildInvolvement = heritage_day_records.filter(
     (h) => h.child_involved_in_planning,
   ).length;
-  const heritageChildInvolvementRate = pct(heritageChildInvolvement, totalHeritageDays);
+  const heritageChildInvolvementRate = rate(heritageChildInvolvement, totalHeritageDays);
 
   const heritageFamilyConnections = heritage_day_records.filter(
     (h) => h.family_connection_facilitated,
   ).length;
-  const heritageFamilyConnectionRate = pct(heritageFamilyConnections, totalHeritageDays);
+  const heritageFamilyConnectionRate = rate(heritageFamilyConnections, totalHeritageDays);
 
   const heritagePositiveFeedback = heritage_day_records.filter(
     (h) => h.child_feedback_positive,
   ).length;
-  const heritageFeedbackPositiveRate = pct(heritagePositiveFeedback, totalHeritageDays);
+  const heritageFeedbackPositiveRate = rate(heritagePositiveFeedback, totalHeritageDays);
 
   // Unique heritage types represented
   const uniqueHeritageTypes = new Set(
@@ -396,7 +393,7 @@ export function computeCulturalEventsCelebrations(
   const festivalsReligiousSensitivity = festival_inclusion_records.filter(
     (f) => f.religious_sensitivity_observed,
   ).length;
-  const festivalSensitivityRate = pct(festivalsReligiousSensitivity, totalFestivalInclusions);
+  const festivalSensitivityRate = rate(festivalsReligiousSensitivity, totalFestivalInclusions);
 
   const festivalsWithEducation = festival_inclusion_records.filter(
     (f) => f.educational_element,
@@ -405,7 +402,7 @@ export function computeCulturalEventsCelebrations(
   const festivalsFeedbackCollected = festival_inclusion_records.filter(
     (f) => f.child_feedback_collected,
   ).length;
-  const festivalFeedbackRate = pct(festivalsFeedbackCollected, totalFestivalInclusions);
+  const festivalFeedbackRate = rate(festivalsFeedbackCollected, totalFestivalInclusions);
 
   const festivalQualityRatings = festival_inclusion_records.map((f) => f.quality_rating);
   const avgFestivalQuality = avgRating(festivalQualityRatings);
@@ -420,28 +417,28 @@ export function computeCulturalEventsCelebrations(
     festival_inclusion_records.flatMap((f) => f.children_participated),
   ).size;
   const festivalInclusionRate = total_children > 0
-    ? pct(childrenInFestivals, total_children)
+    ? rate(childrenInFestivals, total_children)
     : null;
 
   const childLedWithPeerParticipation = child_led_activity_records.filter(
     (a) => a.peers_participated,
   ).length;
-  const peerParticipationRate = pct(childLedWithPeerParticipation, totalChildLedActivities);
+  const peerParticipationRate = rate(childLedWithPeerParticipation, totalChildLedActivities);
 
   const childLedWithPeerPositiveFeedback = child_led_activity_records.filter(
     (a) => a.peer_feedback_positive,
   ).length;
-  const peerFeedbackPositiveRate = pct(childLedWithPeerPositiveFeedback, totalChildLedActivities);
+  const peerFeedbackPositiveRate = rate(childLedWithPeerPositiveFeedback, totalChildLedActivities);
 
   const childLedConfidenceImproved = child_led_activity_records.filter(
     (a) => a.child_confidence_improved,
   ).length;
-  const confidenceImprovementRate = pct(childLedConfidenceImproved, totalChildLedActivities);
+  const confidenceImprovementRate = rate(childLedConfidenceImproved, totalChildLedActivities);
 
   const childLedStaffSupported = child_led_activity_records.filter(
     (a) => a.staff_supported,
   ).length;
-  const staffSupportRate = pct(childLedStaffSupported, totalChildLedActivities);
+  const staffSupportRate = rate(childLedStaffSupported, totalChildLedActivities);
 
   // Children leading at least one activity
   const childrenLeadingActivities = new Set(
@@ -450,7 +447,7 @@ export function computeCulturalEventsCelebrations(
 
   // Child-led rate: proportion of children who have led at least one cultural activity
   const childLedRate = total_children > 0
-    ? pct(childrenLeadingActivities, total_children)
+    ? rate(childrenLeadingActivities, total_children)
     : null;
 
   // --- Child satisfaction rate (composite) ---
@@ -461,7 +458,7 @@ export function computeCulturalEventsCelebrations(
     child_led_activity_records.filter((a) => a.child_satisfaction_rating >= 4).length;
   const satisfactionDenominator =
     totalCulturalEvents + totalHeritageDays + totalChildLedActivities;
-  const childSatisfactionRate = pct(satisfactionNumerator, satisfactionDenominator);
+  const childSatisfactionRate = rate(satisfactionNumerator, satisfactionDenominator);
 
   // --- Educational component count (composite) ---
   const educationalComponentCount =
@@ -472,16 +469,16 @@ export function computeCulturalEventsCelebrations(
   let score = 52;
 
   // --- Bonus 1: eventParticipationRate (>=90: +4, >=70: +2) ---
-  if (eventParticipationRate >= 90) score += 4;
-  else if (eventParticipationRate >= 70) score += 2;
+  if (meets(eventParticipationRate, 90)) score += 4;
+  else if (meets(eventParticipationRate, 70)) score += 2;
 
   // --- Bonus 2: diversityCelebrationRate (>=90: +4, >=70: +2) ---
   if ((diversityCelebrationRate ?? 0) >= 90) score += 4;
   else if ((diversityCelebrationRate ?? 0) >= 70) score += 2;
 
   // --- Bonus 3: heritageAcknowledgementRate (>=90: +3, >=70: +1) ---
-  if (heritageAcknowledgementRate >= 90) score += 3;
-  else if (heritageAcknowledgementRate >= 70) score += 1;
+  if (meets(heritageAcknowledgementRate, 90)) score += 3;
+  else if (meets(heritageAcknowledgementRate, 70)) score += 1;
 
   // --- Bonus 4: festivalInclusionRate (>=90: +3, >=70: +1) ---
   if ((festivalInclusionRate ?? 0) >= 90) score += 3;
@@ -492,8 +489,8 @@ export function computeCulturalEventsCelebrations(
   else if ((childLedRate ?? 0) >= 30) score += 2;
 
   // --- Bonus 6: childSatisfactionRate (>=90: +3, >=70: +1) ---
-  if (childSatisfactionRate >= 90) score += 3;
-  else if (childSatisfactionRate >= 70) score += 1;
+  if (meets(childSatisfactionRate, 90)) score += 3;
+  else if (meets(childSatisfactionRate, 70)) score += 1;
 
   // --- Bonus 7: avgCelebrationQuality (>=4.0: +3, >=3.0: +1) ---
   if (avgCelebrationQuality >= 4.0) score += 3;
@@ -504,22 +501,22 @@ export function computeCulturalEventsCelebrations(
   else if (uniqueFaithsRepresented >= 2) score += 1;
 
   // --- Bonus 9: confidenceImprovementRate (>=80: +2, >=50: +1) ---
-  if (confidenceImprovementRate >= 80) score += 2;
-  else if (confidenceImprovementRate >= 50) score += 1;
+  if (meets(confidenceImprovementRate, 80)) score += 2;
+  else if (meets(confidenceImprovementRate, 50)) score += 1;
 
   // ── Penalties (guarded by array.length > 0) ───────────────────────────
 
   // Penalty 1: Low event participation
-  if (eventParticipationRate < 50 && cultural_event_records.length > 0) score -= 5;
+  if (below(eventParticipationRate, 50) && cultural_event_records.length > 0) score -= 5;
 
   // Penalty 2: Low heritage acknowledgement
-  if (heritageAcknowledgementRate < 50 && heritage_day_records.length > 0) score -= 5;
+  if (below(heritageAcknowledgementRate, 50) && heritage_day_records.length > 0) score -= 5;
 
   // Penalty 3: Low festival inclusion
   if ((festivalInclusionRate ?? 0) < 40 && festival_inclusion_records.length > 0) score -= 4;
 
   // Penalty 4: Low child satisfaction
-  if (childSatisfactionRate < 40 && satisfactionDenominator > 0) score -= 4;
+  if (below(childSatisfactionRate, 40) && satisfactionDenominator > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -529,11 +526,11 @@ export function computeCulturalEventsCelebrations(
 
   const strengths: string[] = [];
 
-  if (eventParticipationRate >= 90 && totalCulturalEvents > 0) {
+  if (meets(eventParticipationRate, 90) && totalCulturalEvents > 0) {
     strengths.push(
       `${eventParticipationRate}% participation across ${totalCulturalEvents} cultural events — children are actively engaged in cultural experiences, demonstrating the home provides meaningful cultural opportunities that children want to take part in.`,
     );
-  } else if (eventParticipationRate >= 70 && totalCulturalEvents > 0) {
+  } else if (meets(eventParticipationRate, 70) && totalCulturalEvents > 0) {
     strengths.push(
       `${eventParticipationRate}% cultural event participation — good levels of engagement show children are accessing and enjoying cultural activities.`,
     );
@@ -549,11 +546,11 @@ export function computeCulturalEventsCelebrations(
     );
   }
 
-  if (heritageAcknowledgementRate >= 90 && totalHeritageDays > 0) {
+  if (meets(heritageAcknowledgementRate, 90) && totalHeritageDays > 0) {
     strengths.push(
       `${heritageAcknowledgementRate}% of heritage days acknowledged — the home actively recognises and celebrates children's individual heritage and cultural background. This is powerful evidence of identity-affirming care under Reg 5.`,
     );
-  } else if (heritageAcknowledgementRate >= 70 && totalHeritageDays > 0) {
+  } else if (meets(heritageAcknowledgementRate, 70) && totalHeritageDays > 0) {
     strengths.push(
       `${heritageAcknowledgementRate}% heritage acknowledgement — the home recognises the majority of children's heritage days, supporting positive cultural identity.`,
     );
@@ -579,11 +576,11 @@ export function computeCulturalEventsCelebrations(
     );
   }
 
-  if (childSatisfactionRate >= 90 && satisfactionDenominator > 0) {
+  if (meets(childSatisfactionRate, 90) && satisfactionDenominator > 0) {
     strengths.push(
       `${childSatisfactionRate}% child satisfaction with cultural provision — children report overwhelmingly positive experiences of cultural activities and celebrations. This child-centred evidence is compelling for Ofsted.`,
     );
-  } else if (childSatisfactionRate >= 70 && satisfactionDenominator > 0) {
+  } else if (meets(childSatisfactionRate, 70) && satisfactionDenominator > 0) {
     strengths.push(
       `${childSatisfactionRate}% child satisfaction — most children report positive experiences of cultural activities and celebrations.`,
     );
@@ -609,11 +606,11 @@ export function computeCulturalEventsCelebrations(
     );
   }
 
-  if (confidenceImprovementRate >= 80 && totalChildLedActivities > 0) {
+  if (meets(confidenceImprovementRate, 80) && totalChildLedActivities > 0) {
     strengths.push(
       `${confidenceImprovementRate}% of child-led cultural activities improved the child's confidence — leading cultural activities is building children's self-esteem and sense of cultural pride.`,
     );
-  } else if (confidenceImprovementRate >= 50 && totalChildLedActivities > 0) {
+  } else if (meets(confidenceImprovementRate, 50) && totalChildLedActivities > 0) {
     strengths.push(
       `${confidenceImprovementRate}% of child-led activities report confidence improvement — cultural expression is contributing to positive self-identity.`,
     );
@@ -625,31 +622,31 @@ export function computeCulturalEventsCelebrations(
     );
   }
 
-  if (heritageFamilyConnectionRate >= 70 && totalHeritageDays > 0) {
+  if (meets(heritageFamilyConnectionRate, 70) && totalHeritageDays > 0) {
     strengths.push(
       `${heritageFamilyConnectionRate}% of heritage days facilitated family connection — linking heritage celebration to family contact supports children's sense of belonging and continuity.`,
     );
   }
 
-  if (celebrationPlanningRate >= 90 && totalDiversityCelebrations > 0) {
+  if (meets(celebrationPlanningRate, 90) && totalDiversityCelebrations > 0) {
     strengths.push(
       `${celebrationPlanningRate}% of diversity celebrations planned in advance — proactive cultural planning demonstrates a thoughtful, intentional approach to diversity.`,
     );
   }
 
-  if (childPlanningRate >= 60 && totalDiversityCelebrations > 0) {
+  if (meets(childPlanningRate, 60) && totalDiversityCelebrations > 0) {
     strengths.push(
       `${childPlanningRate}% of diversity celebrations involved children in planning — children's agency in shaping cultural events demonstrates genuine respect for their views under Reg 7.`,
     );
   }
 
-  if (eventEnthusiasmRate >= 70 && totalCulturalEvents > 0) {
+  if (meets(eventEnthusiasmRate, 70) && totalCulturalEvents > 0) {
     strengths.push(
       `${eventEnthusiasmRate}% of cultural events saw enthusiastic or child-led engagement — children are genuinely excited about cultural activities, not just passively attending.`,
     );
   }
 
-  if (festivalSensitivityRate >= 90 && totalFestivalInclusions > 0) {
+  if (meets(festivalSensitivityRate, 90) && totalFestivalInclusions > 0) {
     strengths.push(
       `${festivalSensitivityRate}% of festivals observed religious sensitivity — the home demonstrates thoughtful, respectful practice when engaging with faith-based celebrations.`,
     );
@@ -667,13 +664,13 @@ export function computeCulturalEventsCelebrations(
     );
   }
 
-  if (staffSupportRate >= 90 && totalChildLedActivities > 0) {
+  if (meets(staffSupportRate, 90) && totalChildLedActivities > 0) {
     strengths.push(
       `${staffSupportRate}% of child-led activities had staff support — staff are enabling children's cultural expression without taking over, providing scaffolding rather than direction.`,
     );
   }
 
-  if (peerParticipationRate >= 70 && totalChildLedActivities > 0) {
+  if (meets(peerParticipationRate, 70) && totalChildLedActivities > 0) {
     strengths.push(
       `${peerParticipationRate}% of child-led activities had peer participation — children learn from each other's cultures, building mutual respect and understanding within the home.`,
     );
@@ -683,11 +680,11 @@ export function computeCulturalEventsCelebrations(
 
   const concerns: string[] = [];
 
-  if (eventParticipationRate < 50 && totalCulturalEvents > 0) {
+  if (below(eventParticipationRate, 50) && totalCulturalEvents > 0) {
     concerns.push(
       `Only ${eventParticipationRate}% cultural event participation — the majority of children are not participating in cultural events. This suggests cultural activities may not be well-matched to children's interests, or barriers to participation exist. Under Reg 5, the home must ensure all children can access cultural experiences.`,
     );
-  } else if (eventParticipationRate < 70 && eventParticipationRate >= 50 && totalCulturalEvents > 0) {
+  } else if (below(eventParticipationRate, 70) && meets(eventParticipationRate, 50) && totalCulturalEvents > 0) {
     concerns.push(
       `Cultural event participation at ${eventParticipationRate}% — some children are not engaging with cultural events. Review whether activities reflect children's own cultural backgrounds and interests.`,
     );
@@ -703,11 +700,11 @@ export function computeCulturalEventsCelebrations(
     );
   }
 
-  if (heritageAcknowledgementRate < 50 && totalHeritageDays > 0) {
+  if (below(heritageAcknowledgementRate, 50) && totalHeritageDays > 0) {
     concerns.push(
       `Only ${heritageAcknowledgementRate}% of heritage days acknowledged — the majority of children's heritage occasions are not being recognised. Failing to acknowledge a child's cultural heritage undermines their sense of identity and belonging. This is a significant concern under Reg 5.`,
     );
-  } else if (heritageAcknowledgementRate < 70 && heritageAcknowledgementRate >= 50 && totalHeritageDays > 0) {
+  } else if (below(heritageAcknowledgementRate, 70) && meets(heritageAcknowledgementRate, 50) && totalHeritageDays > 0) {
     concerns.push(
       `Heritage acknowledgement at ${heritageAcknowledgementRate}% — some children's heritage days are not being recognised. Every child's cultural background should be actively celebrated.`,
     );
@@ -733,11 +730,11 @@ export function computeCulturalEventsCelebrations(
     );
   }
 
-  if (childSatisfactionRate < 40 && satisfactionDenominator > 0) {
+  if (below(childSatisfactionRate, 40) && satisfactionDenominator > 0) {
     concerns.push(
       `Only ${childSatisfactionRate}% child satisfaction with cultural provision — most children are not reporting positive experiences. Cultural activities must be genuinely meaningful to children, not tokenistic. Consult with children about what cultural celebrations would be meaningful to them.`,
     );
-  } else if (childSatisfactionRate < 70 && childSatisfactionRate >= 40 && satisfactionDenominator > 0) {
+  } else if (below(childSatisfactionRate, 70) && meets(childSatisfactionRate, 40) && satisfactionDenominator > 0) {
     concerns.push(
       `Child satisfaction at ${childSatisfactionRate}% — a notable proportion of children do not report positive cultural experiences. Review whether cultural activities are well-matched to children's interests and identities.`,
     );
@@ -755,25 +752,25 @@ export function computeCulturalEventsCelebrations(
     );
   }
 
-  if (heritageChildInvolvementRate < 50 && totalHeritageDays > 0) {
+  if (below(heritageChildInvolvementRate, 50) && totalHeritageDays > 0) {
     concerns.push(
       `Only ${heritageChildInvolvementRate}% of heritage days involved the child in planning — heritage celebrations should be shaped by the child whose heritage is being acknowledged, not planned for them without their input.`,
     );
   }
 
-  if (celebrationFeedbackRate < 50 && totalDiversityCelebrations > 0) {
+  if (below(celebrationFeedbackRate, 50) && totalDiversityCelebrations > 0) {
     concerns.push(
       `Child feedback collected for only ${celebrationFeedbackRate}% of diversity celebrations — without children's views on cultural events, the home cannot demonstrate that celebrations are meaningful to them.`,
     );
   }
 
-  if (festivalFeedbackRate < 50 && totalFestivalInclusions > 0) {
+  if (below(festivalFeedbackRate, 50) && totalFestivalInclusions > 0) {
     concerns.push(
       `Child feedback collected for only ${festivalFeedbackRate}% of festivals — children's voices on festival experiences must be sought and recorded to evidence child-centred practice.`,
     );
   }
 
-  if (heritageFamilyConnectionRate < 30 && totalHeritageDays > 0) {
+  if (below(heritageFamilyConnectionRate, 30) && totalHeritageDays > 0) {
     concerns.push(
       `Only ${heritageFamilyConnectionRate}% of heritage days facilitated family connection — where safe and appropriate, heritage celebrations should connect children with their family heritage to support continuity of identity.`,
     );
@@ -791,7 +788,7 @@ export function computeCulturalEventsCelebrations(
     );
   }
 
-  if (festivalSensitivityRate < 70 && totalFestivalInclusions > 0) {
+  if (below(festivalSensitivityRate, 70) && totalFestivalInclusions > 0) {
     concerns.push(
       `Religious sensitivity observed in only ${festivalSensitivityRate}% of festivals — faith-based festivals require careful, respectful handling to avoid causing offence or distress to children of different backgrounds.`,
     );
@@ -802,7 +799,7 @@ export function computeCulturalEventsCelebrations(
   const recommendations: CulturalEventsRecommendation[] = [];
   let rank = 0;
 
-  if (eventParticipationRate < 50 && totalCulturalEvents > 0) {
+  if (below(eventParticipationRate, 50) && totalCulturalEvents > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -812,7 +809,7 @@ export function computeCulturalEventsCelebrations(
     });
   }
 
-  if (heritageAcknowledgementRate < 50 && totalHeritageDays > 0) {
+  if (below(heritageAcknowledgementRate, 50) && totalHeritageDays > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -842,7 +839,7 @@ export function computeCulturalEventsCelebrations(
     });
   }
 
-  if (childSatisfactionRate < 40 && satisfactionDenominator > 0) {
+  if (below(childSatisfactionRate, 40) && satisfactionDenominator > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -900,7 +897,7 @@ export function computeCulturalEventsCelebrations(
     });
   }
 
-  if (heritageChildInvolvementRate < 50 && totalHeritageDays > 0) {
+  if (below(heritageChildInvolvementRate, 50) && totalHeritageDays > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -910,7 +907,7 @@ export function computeCulturalEventsCelebrations(
     });
   }
 
-  if (eventParticipationRate >= 50 && eventParticipationRate < 70 && totalCulturalEvents > 0) {
+  if (meets(eventParticipationRate, 50) && below(eventParticipationRate, 70) && totalCulturalEvents > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -920,7 +917,7 @@ export function computeCulturalEventsCelebrations(
     });
   }
 
-  if (heritageAcknowledgementRate >= 50 && heritageAcknowledgementRate < 70 && totalHeritageDays > 0) {
+  if (meets(heritageAcknowledgementRate, 50) && below(heritageAcknowledgementRate, 70) && totalHeritageDays > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -940,7 +937,7 @@ export function computeCulturalEventsCelebrations(
     });
   }
 
-  if (celebrationFeedbackRate < 50 && totalDiversityCelebrations > 0) {
+  if (below(celebrationFeedbackRate, 50) && totalDiversityCelebrations > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -950,7 +947,7 @@ export function computeCulturalEventsCelebrations(
     });
   }
 
-  if (festivalFeedbackRate < 50 && totalFestivalInclusions > 0) {
+  if (below(festivalFeedbackRate, 50) && totalFestivalInclusions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -960,7 +957,7 @@ export function computeCulturalEventsCelebrations(
     });
   }
 
-  if (heritageFamilyConnectionRate < 30 && totalHeritageDays > 0) {
+  if (below(heritageFamilyConnectionRate, 30) && totalHeritageDays > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -970,7 +967,7 @@ export function computeCulturalEventsCelebrations(
     });
   }
 
-  if (festivalSensitivityRate < 70 && totalFestivalInclusions > 0) {
+  if (below(festivalSensitivityRate, 70) && totalFestivalInclusions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1006,21 +1003,21 @@ export function computeCulturalEventsCelebrations(
 
   // -- Critical insights --
 
-  if (eventParticipationRate < 50 && totalCulturalEvents > 0) {
+  if (below(eventParticipationRate, 50) && totalCulturalEvents > 0) {
     insights.push({
       text: `Only ${eventParticipationRate}% cultural event participation. When the majority of children are not participating in cultural events, the home cannot demonstrate that it provides culturally enriching care. Ofsted will look for evidence under SCCIF experiences and progress that children enjoy a range of cultural experiences — current participation levels fall short of this expectation.`,
       severity: "critical",
     });
   }
 
-  if (heritageAcknowledgementRate < 50 && totalHeritageDays > 0) {
+  if (below(heritageAcknowledgementRate, 50) && totalHeritageDays > 0) {
     insights.push({
       text: `Only ${heritageAcknowledgementRate}% of heritage days acknowledged. A child's cultural heritage is fundamental to their identity. When the home fails to acknowledge the majority of heritage occasions, it signals a lack of awareness or prioritisation of children's cultural identities. This directly undermines Reg 5 quality of care.`,
       severity: "critical",
     });
   }
 
-  if (childSatisfactionRate < 40 && satisfactionDenominator > 0) {
+  if (below(childSatisfactionRate, 40) && satisfactionDenominator > 0) {
     insights.push({
       text: `Only ${childSatisfactionRate}% child satisfaction with cultural provision. When most children do not report positive experiences of cultural activities, the provision is likely tokenistic rather than genuinely meaningful. Ofsted will explore whether children feel their cultural identity is respected and celebrated — this evidence suggests otherwise.`,
       severity: "critical",
@@ -1043,7 +1040,7 @@ export function computeCulturalEventsCelebrations(
 
   // -- Warning insights --
 
-  if (eventParticipationRate >= 50 && eventParticipationRate < 70 && totalCulturalEvents > 0) {
+  if (meets(eventParticipationRate, 50) && below(eventParticipationRate, 70) && totalCulturalEvents > 0) {
     insights.push({
       text: `Cultural event participation at ${eventParticipationRate}% — improving but some children remain disengaged. Consider whether the cultural programme reflects the backgrounds and interests of all children in placement, not just the majority.`,
       severity: "warning",
@@ -1057,7 +1054,7 @@ export function computeCulturalEventsCelebrations(
     });
   }
 
-  if (heritageAcknowledgementRate >= 50 && heritageAcknowledgementRate < 70 && totalHeritageDays > 0) {
+  if (meets(heritageAcknowledgementRate, 50) && below(heritageAcknowledgementRate, 70) && totalHeritageDays > 0) {
     insights.push({
       text: `Heritage acknowledgement at ${heritageAcknowledgementRate}% — some children's heritage is not being consistently recognised. Each missed heritage celebration is a missed opportunity to affirm a child's cultural identity and sense of belonging.`,
       severity: "warning",
@@ -1071,7 +1068,7 @@ export function computeCulturalEventsCelebrations(
     });
   }
 
-  if (childSatisfactionRate >= 40 && childSatisfactionRate < 70 && satisfactionDenominator > 0) {
+  if (meets(childSatisfactionRate, 40) && below(childSatisfactionRate, 70) && satisfactionDenominator > 0) {
     insights.push({
       text: `Child satisfaction at ${childSatisfactionRate}% — a notable proportion of children do not report positive cultural experiences. Children's subjective experience is the strongest indicator of whether cultural provision is genuinely meaningful or merely procedural.`,
       severity: "warning",
@@ -1099,21 +1096,21 @@ export function computeCulturalEventsCelebrations(
     });
   }
 
-  if (heritageChildInvolvementRate < 50 && totalHeritageDays > 0) {
+  if (below(heritageChildInvolvementRate, 50) && totalHeritageDays > 0) {
     insights.push({
       text: `Children involved in planning only ${heritageChildInvolvementRate}% of heritage days. Heritage celebrations planned without the child's input may not reflect how they wish their culture to be acknowledged. This risks well-intentioned but misguided practice.`,
       severity: "warning",
     });
   }
 
-  if (celebrationFeedbackRate < 50 && totalDiversityCelebrations > 0) {
+  if (below(celebrationFeedbackRate, 50) && totalDiversityCelebrations > 0) {
     insights.push({
       text: `Feedback collected from only ${celebrationFeedbackRate}% of diversity celebrations. Without consistently gathering children's views, the home cannot evidence that its cultural provision is child-centred or demonstrate responsiveness to children's experiences.`,
       severity: "warning",
     });
   }
 
-  if (heritageFamilyConnectionRate < 30 && totalHeritageDays > 0 && heritageFamilyConnectionRate >= 0) {
+  if (below(heritageFamilyConnectionRate, 30) && totalHeritageDays > 0 && meets(heritageFamilyConnectionRate, 0)) {
     insights.push({
       text: `Family connection facilitated in only ${heritageFamilyConnectionRate}% of heritage celebrations. Where safe and appropriate, connecting heritage celebrations to family relationships reinforces children's sense of continuity, identity, and belonging.`,
       severity: "warning",
@@ -1166,8 +1163,8 @@ export function computeCulturalEventsCelebrations(
   }
 
   if (
-    eventParticipationRate >= 90 &&
-    childSatisfactionRate >= 90 &&
+    meets(eventParticipationRate, 90) &&
+    meets(childSatisfactionRate, 90) &&
     totalCulturalEvents > 0 &&
     satisfactionDenominator > 0
   ) {
@@ -1178,8 +1175,8 @@ export function computeCulturalEventsCelebrations(
   }
 
   if (
-    heritageAcknowledgementRate >= 90 &&
-    heritageChildInvolvementRate >= 70 &&
+    meets(heritageAcknowledgementRate, 90) &&
+    meets(heritageChildInvolvementRate, 70) &&
     totalHeritageDays > 0
   ) {
     insights.push({
@@ -1201,7 +1198,7 @@ export function computeCulturalEventsCelebrations(
 
   if (
     (childLedRate ?? 0) >= 60 &&
-    confidenceImprovementRate >= 70 &&
+    meets(confidenceImprovementRate, 70) &&
     totalChildLedActivities > 0
   ) {
     insights.push({
@@ -1223,7 +1220,7 @@ export function computeCulturalEventsCelebrations(
 
   if (
     externalCommunityEvents >= 3 &&
-    eventEnthusiasmRate >= 70 &&
+    meets(eventEnthusiasmRate, 70) &&
     totalCulturalEvents > 0
   ) {
     insights.push({
@@ -1233,8 +1230,8 @@ export function computeCulturalEventsCelebrations(
   }
 
   if (
-    heritageFamilyConnectionRate >= 70 &&
-    heritageFeedbackPositiveRate >= 80 &&
+    meets(heritageFamilyConnectionRate, 70) &&
+    meets(heritageFeedbackPositiveRate, 80) &&
     totalHeritageDays > 0
   ) {
     insights.push({
@@ -1244,8 +1241,8 @@ export function computeCulturalEventsCelebrations(
   }
 
   if (
-    celebrationPlanningRate >= 90 &&
-    childPlanningRate >= 60 &&
+    meets(celebrationPlanningRate, 90) &&
+    meets(childPlanningRate, 60) &&
     totalDiversityCelebrations > 0
   ) {
     insights.push({
@@ -1255,8 +1252,8 @@ export function computeCulturalEventsCelebrations(
   }
 
   if (
-    peerParticipationRate >= 70 &&
-    peerFeedbackPositiveRate >= 70 &&
+    meets(peerParticipationRate, 70) &&
+    meets(peerFeedbackPositiveRate, 70) &&
     totalChildLedActivities > 0
   ) {
     insights.push({

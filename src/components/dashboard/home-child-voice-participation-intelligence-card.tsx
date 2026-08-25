@@ -70,16 +70,16 @@ export function HomeChildVoiceParticipationIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.voice_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.meeting_attendance_rate >= 90 ? "bg-green-50" : d.meeting_attendance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.meeting_attendance_rate >= 90 ? "text-[--cs-success]" : d.meeting_attendance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.meeting_attendance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.meeting_attendance_rate, 90) ? "bg-green-50" : meets(d.meeting_attendance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.meeting_attendance_rate, 90) ? "text-[--cs-success]" : meets(d.meeting_attendance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.meeting_attendance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Meetings</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.consultation_rate, 90) ? "bg-green-50" : meets(d.consultation_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
               <p className={cn("text-sm font-bold tabular-nums", meets(d.consultation_rate, 90) ? "text-[--cs-success]" : meets(d.consultation_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.consultation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Consult</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.feedback_action_rate >= 90 ? "bg-green-50" : d.feedback_action_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.feedback_action_rate >= 90 ? "text-[--cs-success]" : d.feedback_action_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.feedback_action_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.feedback_action_rate, 90) ? "bg-green-50" : meets(d.feedback_action_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.feedback_action_rate, 90) ? "text-[--cs-success]" : meets(d.feedback_action_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.feedback_action_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Feedback</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.council_engagement_rate, 90) ? "bg-green-50" : meets(d.council_engagement_rate, 70) ? "bg-amber-50" : "bg-red-50")}>

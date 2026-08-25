@@ -261,7 +261,7 @@ describe("insufficient_data", () => {
     expect(r.total_product_provision_records).toBe(0);
   });
 
-  it("all rates are 0 on insufficient_data", () => {
+  it("all rates are null on insufficient_data", () => {
     const r = computeContinencePersonalHygieneSupport({
       today: "2026-05-29",
       total_children: 0,
@@ -276,7 +276,7 @@ describe("insufficient_data", () => {
     expect(r.dignity_compliance_rate).toBeNull();
     expect(r.age_appropriate_rate).toBeNull();
     expect(r.product_provision_rate).toBeNull();
-    expect(r.child_independence_rate).toBe(0);
+    expect(r.child_independence_rate).toBeNull();
   });
 
   it("no strengths, concerns, recommendations, or insights on insufficient_data", () => {
@@ -348,7 +348,7 @@ describe("inadequate floor (all empty + children > 0)", () => {
     expect(result.dignity_compliance_rate).toBeNull();
     expect(result.age_appropriate_rate).toBeNull();
     expect(result.product_provision_rate).toBeNull();
-    expect(result.child_independence_rate).toBe(0);
+    expect(result.child_independence_rate).toBeNull();
   });
 
   it("works for 1 child", () => {
@@ -1025,7 +1025,7 @@ describe("six composite rates", () => {
       expect(r.continence_plan_rate).toBe(75);
     });
 
-    it("returns 0 when no continence plans", () => {
+    it("returns null when no continence plans", () => {
       const r = computeContinencePersonalHygieneSupport(baseInput({
         continence_plan_records: [],
       }));
@@ -1047,7 +1047,7 @@ describe("six composite rates", () => {
       expect(r.hygiene_routine_rate).toBe(90);
     });
 
-    it("returns 0 when no hygiene routines", () => {
+    it("returns null when no hygiene routines", () => {
       const r = computeContinencePersonalHygieneSupport(baseInput({
         hygiene_routine_records: [],
       }));
@@ -1069,7 +1069,7 @@ describe("six composite rates", () => {
       expect(r.dignity_compliance_rate).toBe(92);
     });
 
-    it("returns 0 when no dignity care records", () => {
+    it("returns null when no dignity care records", () => {
       const r = computeContinencePersonalHygieneSupport(baseInput({
         dignity_care_records: [],
       }));
@@ -1091,7 +1091,7 @@ describe("six composite rates", () => {
       expect(r.age_appropriate_rate).toBe(88);
     });
 
-    it("returns 0 when no age guidance records", () => {
+    it("returns null when no age guidance records", () => {
       const r = computeContinencePersonalHygieneSupport(baseInput({
         age_guidance_records: [],
       }));
@@ -1113,7 +1113,7 @@ describe("six composite rates", () => {
       expect(r.product_provision_rate).toBe(90);
     });
 
-    it("returns 0 when no product provision records", () => {
+    it("returns null when no product provision records", () => {
       const r = computeContinencePersonalHygieneSupport(baseInput({
         product_provision_records: [],
       }));

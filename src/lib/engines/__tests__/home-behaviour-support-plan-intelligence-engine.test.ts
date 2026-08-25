@@ -65,7 +65,7 @@ describe("insufficient data guard", () => {
     expect(r.bsp_score).toBe(0);
   });
 
-  it("leaves every rate unmeasured when total_children is 0", () => {
+  it("leaves every rate unmeasured when total_children is null", () => {
     const r = computeBehaviourSupportPlan(baseInput({ total_children: 0 }));
     expect(r.children_with_plan_rate).toBeNull();
     expect(r.active_plan_rate).toBeNull();

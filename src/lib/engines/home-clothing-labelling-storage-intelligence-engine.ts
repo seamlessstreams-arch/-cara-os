@@ -11,7 +11,7 @@
 //             clothingConditionRecords
 // ==============================================================================
 
-import { below, meets } from "@/lib/metrics/rate";
+import { above, below, meanOf, meets, rate } from "@/lib/metrics/rate";
 
 // -- Input Types --------------------------------------------------------------
 
@@ -143,15 +143,17 @@ export interface ClothingLabellingStorageResult {
   labelling_rating: ClothingLabellingRating;
   labelling_score: number;
   headline: string;
-  // labelling_compliance_rate + seasonal_rotation_rate use pct() directly
+  // labelling_compliance_rate + seasonal_rotation_rate use rate() directly
   // (deterministic 0 on empty). The 4 composite rates below are null on
   // empty: no source records ⇒ no signal. "0% storage / 0% ownership /
   // 0% condition monitoring / 0% child satisfaction" would read as a
   // home where children have no ownership of their clothes, not
   // "unmeasured". Fab-0 doctrine.
-  labelling_compliance_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  labelling_compliance_rate: number | null;
   storage_adequacy_rate: number | null;
-  seasonal_rotation_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  seasonal_rotation_rate: number | null;
   ownership_respect_rate: number | null;
   condition_monitoring_rate: number | null;
   child_satisfaction_rate: number | null;
@@ -167,10 +169,6 @@ export interface ClothingLabellingStorageResult {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -194,9 +192,9 @@ function emptyResult(
     labelling_rating: rating,
     labelling_score: score,
     headline,
-    labelling_compliance_rate: 0,
+    labelling_compliance_rate: null,
     storage_adequacy_rate: null,
-    seasonal_rotation_rate: 0,
+    seasonal_rotation_rate: null,
     ownership_respect_rate: null,
     condition_monitoring_rate: null,
     child_satisfaction_rate: null,
@@ -288,21 +286,21 @@ export function computeClothingLabellingStorage(
   const totalItemsLabelled = labelling_records.reduce(
     (sum, r) => sum + r.items_labelled, 0,
   );
-  const labellingComplianceRate = pct(totalItemsLabelled, totalItemsAudited);
+  const labellingComplianceRate = rate(totalItemsLabelled, totalItemsAudited);
 
   const discreetLabels = labelling_records.filter((r) => r.labels_discreet).length;
-  const discreetRate = pct(discreetLabels, totalLabellingRecords);
+  const discreetRate = rate(discreetLabels, totalLabellingRecords);
 
   const durableLabels = labelling_records.filter((r) => r.labels_durable).length;
-  const durableRate = pct(durableLabels, totalLabellingRecords);
+  const durableRate = rate(durableLabels, totalLabellingRecords);
 
   const postWashChecks = labelling_records.filter((r) => r.labels_checked_after_wash).length;
-  const postWashCheckRate = pct(postWashChecks, totalLabellingRecords);
+  const postWashCheckRate = rate(postWashChecks, totalLabellingRecords);
 
   const childConsultedLabelling = labelling_records.filter(
     (r) => r.child_consulted_on_method,
   ).length;
-  const childConsultedLabellingRate = pct(childConsultedLabelling, totalLabellingRecords);
+  const childConsultedLabellingRate = rate(childConsultedLabelling, totalLabellingRecords);
 
   const totalItemsLost = labelling_records.reduce(
     (sum, r) => sum + r.items_lost_since_last_audit, 0,
@@ -310,7 +308,7 @@ export function computeClothingLabellingStorage(
   const totalItemsReturnedViaLabel = labelling_records.reduce(
     (sum, r) => sum + r.items_returned_via_label, 0,
   );
-  const labelRecoveryRate = pct(totalItemsReturnedViaLabel, totalItemsLost);
+  const labelRecoveryRate = rate(totalItemsReturnedViaLabel, totalItemsLost);
 
   // --- Storage adequacy ---
   const totalStorageRecords = storage_records.length;
@@ -330,25 +328,23 @@ export function computeClothingLabellingStorage(
   // Composite storage adequacy: wardrobe + drawers + shoe + clean + adequate size
   const storageComponents = totalStorageRecords > 0
     ? [
-        pct(wardrobeAvailable, totalStorageRecords),
-        pct(wardrobeAdequate, totalStorageRecords),
-        pct(drawersAvailable, totalStorageRecords),
-        pct(drawersAdequate, totalStorageRecords),
-        pct(shoeStorageAvailable, totalStorageRecords),
-        pct(storageClean, totalStorageRecords),
+        rate(wardrobeAvailable, totalStorageRecords),
+        rate(wardrobeAdequate, totalStorageRecords),
+        rate(drawersAvailable, totalStorageRecords),
+        rate(drawersAdequate, totalStorageRecords),
+        rate(shoeStorageAvailable, totalStorageRecords),
+        rate(storageClean, totalStorageRecords),
       ]
     : [];
-  const storageAdequacyRate: number | null = storageComponents.length > 0
-    ? Math.round(storageComponents.reduce((a, b) => a + b, 0) / storageComponents.length)
-      : null;
+  const storageAdequacyRate: number | null = meanOf(storageComponents);
 
   const storageSatisfied = storage_records.filter(
     (r) => r.child_satisfied_with_storage,
   ).length;
-  const storageSatisfactionRate = pct(storageSatisfied, totalStorageRecords);
+  const storageSatisfactionRate = rate(storageSatisfied, totalStorageRecords);
 
-  const lockableRate = pct(storageLockable, totalStorageRecords);
-  const personalisedRate = pct(storagePersonalised, totalStorageRecords);
+  const lockableRate = rate(storageLockable, totalStorageRecords);
+  const personalisedRate = rate(storagePersonalised, totalStorageRecords);
 
   const totalOverflowItems = storage_records.reduce(
     (sum, r) => sum + r.overflow_items_count, 0,
@@ -359,7 +355,7 @@ export function computeClothingLabellingStorage(
   const rotationsCompleted = rotation_records.filter(
     (r) => r.rotation_completed,
   ).length;
-  const seasonalRotationRate = pct(rotationsCompleted, totalRotationRecords);
+  const seasonalRotationRate = rate(rotationsCompleted, totalRotationRecords);
 
   const outgrownIdentified = rotation_records.reduce(
     (sum, r) => sum + r.outgrown_items_identified, 0,
@@ -367,22 +363,22 @@ export function computeClothingLabellingStorage(
   const outgrownReplaced = rotation_records.reduce(
     (sum, r) => sum + r.outgrown_items_replaced, 0,
   );
-  const outgrownReplacementRate = pct(outgrownReplaced, outgrownIdentified);
+  const outgrownReplacementRate = rate(outgrownReplaced, outgrownIdentified);
 
   const weatherAppropriate = rotation_records.filter(
     (r) => r.weather_appropriate_clothing,
   ).length;
-  const weatherAppropriateRate = pct(weatherAppropriate, totalRotationRecords);
+  const weatherAppropriateRate = rate(weatherAppropriate, totalRotationRecords);
 
   const childInvolvedRotation = rotation_records.filter(
     (r) => r.child_involved_in_choices,
   ).length;
-  const childInvolvedRotationRate = pct(childInvolvedRotation, totalRotationRecords);
+  const childInvolvedRotationRate = rate(childInvolvedRotation, totalRotationRecords);
 
   const shoppingTripOffered = rotation_records.filter(
     (r) => r.shopping_trip_offered,
   ).length;
-  const shoppingTripRate = pct(shoppingTripOffered, totalRotationRecords);
+  const shoppingTripRate = rate(shoppingTripOffered, totalRotationRecords);
 
   const rotationSatisfactionSum = rotation_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
@@ -397,42 +393,42 @@ export function computeClothingLabellingStorage(
   const clothingBelongsToChild = ownership_records.filter(
     (r) => r.clothing_belongs_to_child,
   ).length;
-  const belongsToChildRate = pct(clothingBelongsToChild, totalOwnershipRecords);
+  const belongsToChildRate = rate(clothingBelongsToChild, totalOwnershipRecords);
 
   const takesOnMoves = ownership_records.filter(
     (r) => r.child_takes_clothing_on_moves,
   ).length;
-  const takesOnMovesRate = pct(takesOnMoves, totalOwnershipRecords);
+  const takesOnMovesRate = rate(takesOnMoves, totalOwnershipRecords);
 
   const choosesOwn = ownership_records.filter(
     (r) => r.child_chooses_own_clothing,
   ).length;
-  const choosesOwnRate = pct(choosesOwn, totalOwnershipRecords);
+  const choosesOwnRate = rate(choosesOwn, totalOwnershipRecords);
 
   const reflectsIdentity = ownership_records.filter(
     (r) => r.clothing_reflects_identity,
   ).length;
-  const reflectsIdentityRate = pct(reflectsIdentity, totalOwnershipRecords);
+  const reflectsIdentityRate = rate(reflectsIdentity, totalOwnershipRecords);
 
   const culturalProvided = ownership_records.filter(
     (r) => r.cultural_clothing_provided,
   ).length;
-  const culturalProvidedRate = pct(culturalProvided, totalOwnershipRecords);
+  const culturalProvidedRate = rate(culturalProvided, totalOwnershipRecords);
 
   const religiousProvided = ownership_records.filter(
     (r) => r.religious_clothing_provided,
   ).length;
-  const religiousProvidedRate = pct(religiousProvided, totalOwnershipRecords);
+  const religiousProvidedRate = rate(religiousProvided, totalOwnershipRecords);
 
   const occasionWear = ownership_records.filter(
     (r) => r.child_has_occasion_wear,
   ).length;
-  const occasionWearRate = pct(occasionWear, totalOwnershipRecords);
+  const occasionWearRate = rate(occasionWear, totalOwnershipRecords);
 
   const ownershipSatisfied = ownership_records.filter(
     (r) => r.child_satisfied_with_wardrobe,
   ).length;
-  const ownershipSatisfactionRate = pct(ownershipSatisfied, totalOwnershipRecords);
+  const ownershipSatisfactionRate = rate(ownershipSatisfied, totalOwnershipRecords);
 
   // Composite ownership respect rate
   const ownershipComponents = totalOwnershipRecords > 0
@@ -443,9 +439,7 @@ export function computeClothingLabellingStorage(
         reflectsIdentityRate,
       ]
     : [];
-  const ownershipRespectRate: number | null = ownershipComponents.length > 0
-    ? Math.round(ownershipComponents.reduce((a, b) => a + b, 0) / ownershipComponents.length)
-      : null;
+  const ownershipRespectRate: number | null = meanOf(ownershipComponents);
 
   // --- Condition monitoring ---
   const totalConditionRecords = condition_records.length;
@@ -465,44 +459,44 @@ export function computeClothingLabellingStorage(
     (sum, r) => sum + r.items_replaced, 0,
   );
 
-  const goodConditionRate = pct(totalItemsGood, totalItemsChecked);
-  const poorConditionRate = pct(totalItemsPoor, totalItemsChecked);
-  const replacementRate = pct(totalItemsReplaced, totalItemsNeedingReplacement);
-  const conditionMonitoringRate: number | null = totalConditionRecords > 0
-    ? Math.round((goodConditionRate + replacementRate) / 2)
-      : null;
+  const goodConditionRate = rate(totalItemsGood, totalItemsChecked);
+  const poorConditionRate = rate(totalItemsPoor, totalItemsChecked);
+  const replacementRate = rate(totalItemsReplaced, totalItemsNeedingReplacement);
+  // replacementRate is unmeasured when nothing needed replacing — meanOf drops it
+  // instead of punishing a well-maintained wardrobe with a phantom 0%.
+  const conditionMonitoringRate: number | null = meanOf([goodConditionRate, replacementRate]);
 
   const underwearAdequate = condition_records.filter(
     (r) => r.underwear_adequate,
   ).length;
-  const underwearAdequateRate = pct(underwearAdequate, totalConditionRecords);
+  const underwearAdequateRate = rate(underwearAdequate, totalConditionRecords);
 
   const footwearAdequate = condition_records.filter(
     (r) => r.footwear_adequate,
   ).length;
-  const footwearAdequateRate = pct(footwearAdequate, totalConditionRecords);
+  const footwearAdequateRate = rate(footwearAdequate, totalConditionRecords);
 
   const schoolUniformAdequate = condition_records.filter(
     (r) => r.school_uniform_adequate,
   ).length;
-  const schoolUniformRate = pct(schoolUniformAdequate, totalConditionRecords);
+  const schoolUniformRate = rate(schoolUniformAdequate, totalConditionRecords);
 
   const childEmbarrassed = condition_records.filter(
     (r) => r.child_embarrassed_by_clothing,
   ).length;
-  const childEmbarrassedRate = pct(childEmbarrassed, totalConditionRecords);
+  const childEmbarrassedRate = rate(childEmbarrassed, totalConditionRecords);
 
   const stainsDamage = condition_records.filter(
     (r) => r.stains_or_damage_noted,
   ).length;
-  const stainsDamageRate = pct(stainsDamage, totalConditionRecords);
+  const stainsDamageRate = rate(stainsDamage, totalConditionRecords);
 
   // --- Child satisfaction composite ---
   // Combine satisfaction from storage, rotation, ownership
   const satisfactionSources: number[] = [];
-  if (totalStorageRecords > 0) satisfactionSources.push(storageSatisfactionRate);
+  if (totalStorageRecords > 0) satisfactionSources.push(storageSatisfactionRate!);
   if (totalRotationRecords > 0) satisfactionSources.push(Math.round(rotationSatisfactionAvg! * 20)); // scale 1-5 to 0-100
-  if (totalOwnershipRecords > 0) satisfactionSources.push(ownershipSatisfactionRate);
+  if (totalOwnershipRecords > 0) satisfactionSources.push(ownershipSatisfactionRate!);
   const childSatisfactionRate: number | null = satisfactionSources.length > 0
     ? Math.round(satisfactionSources.reduce((a, b) => a + b, 0) / satisfactionSources.length)
       : null;
@@ -512,16 +506,16 @@ export function computeClothingLabellingStorage(
   let score = 52;
 
   // --- Bonus 1: labellingComplianceRate (>=90: +5, >=70: +2) ---
-  if (labellingComplianceRate >= 90) score += 5;
-  else if (labellingComplianceRate >= 70) score += 2;
+  if (meets(labellingComplianceRate, 90)) score += 5;
+  else if (meets(labellingComplianceRate, 70)) score += 2;
 
   // --- Bonus 2: storageAdequacyRate (>=90: +5, >=70: +2) ---
   if (meets(storageAdequacyRate, 90)) score += 5;
   else if (meets(storageAdequacyRate, 70)) score += 2;
 
   // --- Bonus 3: seasonalRotationRate (>=90: +4, >=70: +2) ---
-  if (seasonalRotationRate >= 90) score += 4;
-  else if (seasonalRotationRate >= 70) score += 2;
+  if (meets(seasonalRotationRate, 90)) score += 4;
+  else if (meets(seasonalRotationRate, 70)) score += 2;
 
   // --- Bonus 4: ownershipRespectRate (>=90: +4, >=70: +2) ---
   if (meets(ownershipRespectRate, 90)) score += 4;
@@ -536,15 +530,15 @@ export function computeClothingLabellingStorage(
   else if (meets(childSatisfactionRate, 60)) score += 1;
 
   // --- Bonus 7: weatherAppropriateRate (>=90: +3, >=70: +1) ---
-  if (weatherAppropriateRate >= 90) score += 3;
-  else if (weatherAppropriateRate >= 70) score += 1;
+  if (meets(weatherAppropriateRate, 90)) score += 3;
+  else if (meets(weatherAppropriateRate, 70)) score += 1;
 
   // max bonuses = 5+5+4+4+4+3+3 = 28
 
   // -- Penalties (4 with guards) -------------------------------------------
 
   // labellingComplianceRate < 50 -> -5
-  if (labellingComplianceRate < 50 && totalItemsAudited > 0) score -= 5;
+  if (below(labellingComplianceRate, 50) && totalItemsAudited > 0) score -= 5;
 
   // below(storageAdequacyRate, 50) -> -5
   if (below(storageAdequacyRate, 50) && totalStorageRecords > 0) score -= 5;
@@ -553,7 +547,7 @@ export function computeClothingLabellingStorage(
   if (below(conditionMonitoringRate, 40) && totalConditionRecords > 0) score -= 4;
 
   // childEmbarrassedRate >= 30 -> -4
-  if (childEmbarrassedRate >= 30 && totalConditionRecords > 0) score -= 4;
+  if (meets(childEmbarrassedRate, 30) && totalConditionRecords > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -563,41 +557,41 @@ export function computeClothingLabellingStorage(
 
   const strengths: string[] = [];
 
-  if (labellingComplianceRate >= 90 && totalItemsAudited > 0) {
+  if (meets(labellingComplianceRate, 90) && totalItemsAudited > 0) {
     strengths.push(
       `${labellingComplianceRate}% of clothing items labelled -- the home demonstrates excellent labelling compliance, reducing the risk of clothing loss and supporting children's sense of ownership.`,
     );
-  } else if (labellingComplianceRate >= 70 && totalItemsAudited > 0) {
+  } else if (meets(labellingComplianceRate, 70) && totalItemsAudited > 0) {
     strengths.push(
       `${labellingComplianceRate}% clothing labelling rate -- most children's clothing is identifiable, reducing loss during shared laundry processes.`,
     );
   }
 
-  if (discreetRate >= 80 && totalLabellingRecords > 0) {
+  if (meets(discreetRate, 80) && totalLabellingRecords > 0) {
     strengths.push(
       `Labels are discreet in ${discreetRate}% of audits -- the home ensures labelling does not draw unwanted attention or stigmatise children in care.`,
     );
   }
 
-  if (durableRate >= 80 && totalLabellingRecords > 0) {
+  if (meets(durableRate, 80) && totalLabellingRecords > 0) {
     strengths.push(
       `${durableRate}% of labels are durable and withstand washing -- consistent labelling quality reduces re-labelling burden and clothing misidentification.`,
     );
   }
 
-  if (postWashCheckRate >= 80 && totalLabellingRecords > 0) {
+  if (meets(postWashCheckRate, 80) && totalLabellingRecords > 0) {
     strengths.push(
       `Post-wash label checks conducted in ${postWashCheckRate}% of audits -- proactive monitoring ensures labels remain legible and intact.`,
     );
   }
 
-  if (childConsultedLabellingRate >= 70 && totalLabellingRecords > 0) {
+  if (meets(childConsultedLabellingRate, 70) && totalLabellingRecords > 0) {
     strengths.push(
       `Children consulted on labelling method in ${childConsultedLabellingRate}% of cases -- respecting children's preferences about how their clothing is marked demonstrates dignity and autonomy.`,
     );
   }
 
-  if (labelRecoveryRate >= 80 && totalItemsLost > 0) {
+  if (meets(labelRecoveryRate, 80) && totalItemsLost > 0) {
     strengths.push(
       `${labelRecoveryRate}% of lost items recovered via labelling -- effective labelling directly reduces clothing loss and associated distress for children.`,
     );
@@ -613,53 +607,53 @@ export function computeClothingLabellingStorage(
     );
   }
 
-  if (lockableRate >= 80 && totalStorageRecords > 0) {
+  if (meets(lockableRate, 80) && totalStorageRecords > 0) {
     strengths.push(
       `${lockableRate}% of storage is lockable -- children's clothing and personal items are secure, supporting their sense of privacy and ownership.`,
     );
   }
 
-  if (personalisedRate >= 70 && totalStorageRecords > 0) {
+  if (meets(personalisedRate, 70) && totalStorageRecords > 0) {
     strengths.push(
       `${personalisedRate}% of storage areas personalised by children -- the home encourages children to make their wardrobe space their own.`,
     );
   }
 
-  if (storageSatisfactionRate >= 80 && totalStorageRecords > 0) {
+  if (meets(storageSatisfactionRate, 80) && totalStorageRecords > 0) {
     strengths.push(
       `${storageSatisfactionRate}% of children satisfied with their clothing storage -- children feel they have enough space and it works for them.`,
     );
   }
 
-  if (seasonalRotationRate >= 90 && totalRotationRecords > 0) {
+  if (meets(seasonalRotationRate, 90) && totalRotationRecords > 0) {
     strengths.push(
       `${seasonalRotationRate}% seasonal rotation completion rate -- the home proactively ensures children have weather-appropriate clothing for each season.`,
     );
-  } else if (seasonalRotationRate >= 70 && totalRotationRecords > 0) {
+  } else if (meets(seasonalRotationRate, 70) && totalRotationRecords > 0) {
     strengths.push(
       `${seasonalRotationRate}% seasonal rotation rate -- good practice in managing seasonal clothing transitions.`,
     );
   }
 
-  if (outgrownReplacementRate >= 90 && outgrownIdentified > 0) {
+  if (meets(outgrownReplacementRate, 90) && outgrownIdentified > 0) {
     strengths.push(
       `${outgrownReplacementRate}% of outgrown items replaced -- the home responds promptly when children's clothing no longer fits, preventing discomfort and embarrassment.`,
     );
   }
 
-  if (weatherAppropriateRate >= 90 && totalRotationRecords > 0) {
+  if (meets(weatherAppropriateRate, 90) && totalRotationRecords > 0) {
     strengths.push(
       `${weatherAppropriateRate}% of children have weather-appropriate clothing -- every child is adequately dressed for the current season.`,
     );
   }
 
-  if (childInvolvedRotationRate >= 70 && totalRotationRecords > 0) {
+  if (meets(childInvolvedRotationRate, 70) && totalRotationRecords > 0) {
     strengths.push(
       `Children involved in clothing choices during ${childInvolvedRotationRate}% of rotations -- the home values children's voice in decisions about their own appearance and comfort.`,
     );
   }
 
-  if (shoppingTripRate >= 70 && totalRotationRecords > 0) {
+  if (meets(shoppingTripRate, 70) && totalRotationRecords > 0) {
     strengths.push(
       `Shopping trips offered during ${shoppingTripRate}% of seasonal rotations -- children have the normalising experience of choosing their own new clothing.`,
     );
@@ -671,75 +665,75 @@ export function computeClothingLabellingStorage(
     );
   }
 
-  if (belongsToChildRate >= 90 && totalOwnershipRecords > 0) {
+  if (meets(belongsToChildRate, 90) && totalOwnershipRecords > 0) {
     strengths.push(
       `${belongsToChildRate}% of clothing belongs to the individual child -- strong ownership practice ensures children's clothing is truly theirs.`,
     );
-  } else if (belongsToChildRate >= 70 && totalOwnershipRecords > 0) {
+  } else if (meets(belongsToChildRate, 70) && totalOwnershipRecords > 0) {
     strengths.push(
       `${belongsToChildRate}% clothing ownership rate -- most children have their own clothing rather than shared or communal items.`,
     );
   }
 
-  if (takesOnMovesRate >= 90 && totalOwnershipRecords > 0) {
+  if (meets(takesOnMovesRate, 90) && totalOwnershipRecords > 0) {
     strengths.push(
       `${takesOnMovesRate}% of children take their clothing when moving placements -- the home respects that clothing belongs to the child and travels with them.`,
     );
   }
 
-  if (choosesOwnRate >= 80 && totalOwnershipRecords > 0) {
+  if (meets(choosesOwnRate, 80) && totalOwnershipRecords > 0) {
     strengths.push(
       `${choosesOwnRate}% of children choose their own clothing -- the home promotes autonomy and self-expression through clothing choices.`,
     );
   }
 
-  if (reflectsIdentityRate >= 80 && totalOwnershipRecords > 0) {
+  if (meets(reflectsIdentityRate, 80) && totalOwnershipRecords > 0) {
     strengths.push(
       `${reflectsIdentityRate}% of children's clothing reflects their identity -- the home ensures clothing supports cultural, religious, and personal expression.`,
     );
   }
 
-  if (occasionWearRate >= 80 && totalOwnershipRecords > 0) {
+  if (meets(occasionWearRate, 80) && totalOwnershipRecords > 0) {
     strengths.push(
       `${occasionWearRate}% of children have occasion wear -- children can attend events, celebrations, and special occasions in appropriate clothing, just like their non-looked-after peers.`,
     );
   }
 
-  if (ownershipSatisfactionRate >= 80 && totalOwnershipRecords > 0) {
+  if (meets(ownershipSatisfactionRate, 80) && totalOwnershipRecords > 0) {
     strengths.push(
       `${ownershipSatisfactionRate}% of children satisfied with their overall wardrobe -- children feel their clothing needs, preferences, and identity are respected.`,
     );
   }
 
-  if (goodConditionRate >= 90 && totalItemsChecked > 0) {
+  if (meets(goodConditionRate, 90) && totalItemsChecked > 0) {
     strengths.push(
       `${goodConditionRate}% of clothing in good condition -- the home maintains children's clothing to a high standard, preserving dignity and comfort.`,
     );
-  } else if (goodConditionRate >= 70 && totalItemsChecked > 0) {
+  } else if (meets(goodConditionRate, 70) && totalItemsChecked > 0) {
     strengths.push(
       `${goodConditionRate}% of clothing in good condition -- most children's clothing is well maintained.`,
     );
   }
 
-  if (replacementRate >= 90 && totalItemsNeedingReplacement > 0) {
+  if (meets(replacementRate, 90) && totalItemsNeedingReplacement > 0) {
     strengths.push(
       `${replacementRate}% of items needing replacement have been replaced -- the home is responsive to clothing wear and tear.`,
     );
   }
 
-  if (underwearAdequateRate >= 95 && totalConditionRecords > 0) {
+  if (meets(underwearAdequateRate, 95) && totalConditionRecords > 0) {
     strengths.push(
       `Underwear adequate for ${underwearAdequateRate}% of children -- a fundamental dignity requirement is consistently met.`,
     );
   }
 
-  if (footwearAdequateRate >= 90 && totalConditionRecords > 0) {
+  if (meets(footwearAdequateRate, 90) && totalConditionRecords > 0) {
     strengths.push(
       `Footwear adequate for ${footwearAdequateRate}% of children -- children have appropriate shoes and footwear for daily activities.`,
     );
   }
 
-  if (schoolUniformRate >= 90 && totalConditionRecords > 0) {
+  if (meets(schoolUniformRate, 90) && totalConditionRecords > 0) {
     strengths.push(
       `School uniform adequate for ${schoolUniformRate}% of children -- children attend school in proper uniform, supporting their sense of belonging and avoiding stigma.`,
     );
@@ -755,29 +749,29 @@ export function computeClothingLabellingStorage(
 
   const concerns: string[] = [];
 
-  if (labellingComplianceRate < 50 && totalItemsAudited > 0) {
+  if (below(labellingComplianceRate, 50) && totalItemsAudited > 0) {
     concerns.push(
       `Only ${labellingComplianceRate}% of clothing items labelled -- the majority of children's clothing is not identifiable, increasing the risk of loss and conflict during shared laundry processes.`,
     );
-  } else if (labellingComplianceRate < 70 && labellingComplianceRate >= 50 && totalItemsAudited > 0) {
+  } else if (below(labellingComplianceRate, 70) && meets(labellingComplianceRate, 50) && totalItemsAudited > 0) {
     concerns.push(
       `Clothing labelling at ${labellingComplianceRate}% -- significant gaps in labelling compliance increase the risk of clothing misidentification and loss.`,
     );
   }
 
-  if (discreetRate < 50 && totalLabellingRecords > 0) {
+  if (below(discreetRate, 50) && totalLabellingRecords > 0) {
     concerns.push(
       `Only ${discreetRate}% of labels are discreet -- visible or prominent labelling can stigmatise children in care and undermine their dignity.`,
     );
   }
 
-  if (durableRate < 50 && totalLabellingRecords > 0) {
+  if (below(durableRate, 50) && totalLabellingRecords > 0) {
     concerns.push(
       `Only ${durableRate}% of labels are durable -- labels that fade or detach after washing render the labelling effort ineffective.`,
     );
   }
 
-  if (totalItemsLost > 10 && labelRecoveryRate < 50) {
+  if (totalItemsLost > 10 && below(labelRecoveryRate, 50)) {
     concerns.push(
       `${totalItemsLost} items lost with only ${labelRecoveryRate}% recovery rate -- children are losing clothing at a concerning rate and labelling is not effectively preventing this.`,
     );
@@ -793,7 +787,7 @@ export function computeClothingLabellingStorage(
     );
   }
 
-  if (storageSatisfactionRate < 50 && totalStorageRecords > 0) {
+  if (below(storageSatisfactionRate, 50) && totalStorageRecords > 0) {
     concerns.push(
       `Only ${storageSatisfactionRate}% of children satisfied with clothing storage -- children feel their storage is insufficient, which impacts their sense of home and belonging.`,
     );
@@ -805,53 +799,53 @@ export function computeClothingLabellingStorage(
     );
   }
 
-  if (seasonalRotationRate < 50 && totalRotationRecords > 0) {
+  if (below(seasonalRotationRate, 50) && totalRotationRecords > 0) {
     concerns.push(
       `Only ${seasonalRotationRate}% of seasonal rotations completed -- children may be wearing weather-inappropriate clothing due to incomplete seasonal wardrobe management.`,
     );
-  } else if (seasonalRotationRate < 70 && seasonalRotationRate >= 50 && totalRotationRecords > 0) {
+  } else if (below(seasonalRotationRate, 70) && meets(seasonalRotationRate, 50) && totalRotationRecords > 0) {
     concerns.push(
       `Seasonal rotation at ${seasonalRotationRate}% -- some children's wardrobes have not been properly transitioned for the current season.`,
     );
   }
 
-  if (weatherAppropriateRate < 70 && totalRotationRecords > 0) {
+  if (below(weatherAppropriateRate, 70) && totalRotationRecords > 0) {
     concerns.push(
       `Only ${weatherAppropriateRate}% of children have weather-appropriate clothing -- some children may be uncomfortable or at risk due to clothing not suited to current conditions.`,
     );
   }
 
-  if (outgrownReplacementRate < 50 && outgrownIdentified > 0) {
+  if (below(outgrownReplacementRate, 50) && outgrownIdentified > 0) {
     concerns.push(
       `Only ${outgrownReplacementRate}% of outgrown items replaced -- children may be wearing clothing that no longer fits properly, causing discomfort and potential embarrassment.`,
     );
   }
 
-  if (childInvolvedRotationRate < 50 && totalRotationRecords > 0) {
+  if (below(childInvolvedRotationRate, 50) && totalRotationRecords > 0) {
     concerns.push(
       `Children involved in clothing choices during only ${childInvolvedRotationRate}% of rotations -- decisions about children's clothing are being made without their input, undermining autonomy.`,
     );
   }
 
-  if (belongsToChildRate < 70 && totalOwnershipRecords > 0) {
+  if (below(belongsToChildRate, 70) && totalOwnershipRecords > 0) {
     concerns.push(
       `Only ${belongsToChildRate}% of clothing belongs to the individual child -- shared or communal clothing arrangements undermine children's sense of ownership and identity.`,
     );
   }
 
-  if (takesOnMovesRate < 70 && totalOwnershipRecords > 0) {
+  if (below(takesOnMovesRate, 70) && totalOwnershipRecords > 0) {
     concerns.push(
       `Only ${takesOnMovesRate}% of children take their clothing when moving placements -- clothing that stays at the home when children move sends a damaging message about ownership and belonging.`,
     );
   }
 
-  if (choosesOwnRate < 50 && totalOwnershipRecords > 0) {
+  if (below(choosesOwnRate, 50) && totalOwnershipRecords > 0) {
     concerns.push(
       `Only ${choosesOwnRate}% of children choose their own clothing -- limited choice undermines children's developing autonomy and self-expression.`,
     );
   }
 
-  if (reflectsIdentityRate < 50 && totalOwnershipRecords > 0) {
+  if (below(reflectsIdentityRate, 50) && totalOwnershipRecords > 0) {
     concerns.push(
       `Only ${reflectsIdentityRate}% of children's clothing reflects their identity -- the home may not be considering cultural, religious, or personal preferences when providing clothing.`,
     );
@@ -867,41 +861,41 @@ export function computeClothingLabellingStorage(
     );
   }
 
-  if (poorConditionRate >= 20 && totalItemsChecked > 0) {
+  if (meets(poorConditionRate, 20) && totalItemsChecked > 0) {
     concerns.push(
       `${poorConditionRate}% of clothing in poor condition -- a significant proportion of children's clothing is worn, damaged, or inappropriate, impacting dignity and self-esteem.`,
     );
   }
 
-  if (replacementRate < 50 && totalItemsNeedingReplacement > 0) {
+  if (below(replacementRate, 50) && totalItemsNeedingReplacement > 0) {
     concerns.push(
       `Only ${replacementRate}% of items needing replacement have been replaced -- children are continuing to wear clothing that has been identified as needing replacement.`,
     );
   }
 
-  if (underwearAdequateRate < 80 && totalConditionRecords > 0) {
+  if (below(underwearAdequateRate, 80) && totalConditionRecords > 0) {
     concerns.push(
       `Underwear adequate for only ${underwearAdequateRate}% of children -- this is a fundamental dignity requirement that must be met for every child without exception.`,
     );
   }
 
-  if (footwearAdequateRate < 70 && totalConditionRecords > 0) {
+  if (below(footwearAdequateRate, 70) && totalConditionRecords > 0) {
     concerns.push(
       `Footwear adequate for only ${footwearAdequateRate}% of children -- some children lack appropriate shoes, affecting their daily activities and comfort.`,
     );
   }
 
-  if (schoolUniformRate < 80 && totalConditionRecords > 0) {
+  if (below(schoolUniformRate, 80) && totalConditionRecords > 0) {
     concerns.push(
       `School uniform adequate for only ${schoolUniformRate}% of children -- children attending school without proper uniform may feel singled out or stigmatised.`,
     );
   }
 
-  if (childEmbarrassedRate >= 30 && totalConditionRecords > 0) {
+  if (meets(childEmbarrassedRate, 30) && totalConditionRecords > 0) {
     concerns.push(
       `${childEmbarrassedRate}% of children report embarrassment about their clothing -- this is a significant indicator that clothing provision is failing to meet children's needs and is impacting their self-esteem and dignity.`,
     );
-  } else if (childEmbarrassedRate > 0 && childEmbarrassedRate < 30 && totalConditionRecords > 0) {
+  } else if (above(childEmbarrassedRate, 0) && below(childEmbarrassedRate, 30) && totalConditionRecords > 0) {
     concerns.push(
       `${childEmbarrassedRate}% of children report embarrassment about their clothing -- even one child feeling embarrassed by their clothing is unacceptable and requires immediate attention.`,
     );
@@ -924,7 +918,7 @@ export function computeClothingLabellingStorage(
   const recommendations: ClothingLabellingRecommendation[] = [];
   let rank = 0;
 
-  if (labellingComplianceRate < 50 && totalItemsAudited > 0) {
+  if (below(labellingComplianceRate, 50) && totalItemsAudited > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -944,7 +938,7 @@ export function computeClothingLabellingStorage(
     });
   }
 
-  if (childEmbarrassedRate >= 30 && totalConditionRecords > 0) {
+  if (meets(childEmbarrassedRate, 30) && totalConditionRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -964,7 +958,7 @@ export function computeClothingLabellingStorage(
     });
   }
 
-  if (underwearAdequateRate < 80 && totalConditionRecords > 0) {
+  if (below(underwearAdequateRate, 80) && totalConditionRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -974,7 +968,7 @@ export function computeClothingLabellingStorage(
     });
   }
 
-  if (belongsToChildRate < 70 && totalOwnershipRecords > 0) {
+  if (below(belongsToChildRate, 70) && totalOwnershipRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -984,7 +978,7 @@ export function computeClothingLabellingStorage(
     });
   }
 
-  if (seasonalRotationRate < 50 && totalRotationRecords > 0) {
+  if (below(seasonalRotationRate, 50) && totalRotationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -994,7 +988,7 @@ export function computeClothingLabellingStorage(
     });
   }
 
-  if (weatherAppropriateRate < 70 && totalRotationRecords > 0) {
+  if (below(weatherAppropriateRate, 70) && totalRotationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1004,7 +998,7 @@ export function computeClothingLabellingStorage(
     });
   }
 
-  if (schoolUniformRate < 80 && totalConditionRecords > 0) {
+  if (below(schoolUniformRate, 80) && totalConditionRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1014,7 +1008,7 @@ export function computeClothingLabellingStorage(
     });
   }
 
-  if (choosesOwnRate < 50 && totalOwnershipRecords > 0) {
+  if (below(choosesOwnRate, 50) && totalOwnershipRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1024,7 +1018,7 @@ export function computeClothingLabellingStorage(
     });
   }
 
-  if (reflectsIdentityRate < 50 && totalOwnershipRecords > 0) {
+  if (below(reflectsIdentityRate, 50) && totalOwnershipRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1034,7 +1028,7 @@ export function computeClothingLabellingStorage(
     });
   }
 
-  if (labellingComplianceRate >= 50 && labellingComplianceRate < 70 && totalItemsAudited > 0) {
+  if (meets(labellingComplianceRate, 50) && below(labellingComplianceRate, 70) && totalItemsAudited > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1054,7 +1048,7 @@ export function computeClothingLabellingStorage(
     });
   }
 
-  if (outgrownReplacementRate < 50 && outgrownIdentified > 0) {
+  if (below(outgrownReplacementRate, 50) && outgrownIdentified > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1064,7 +1058,7 @@ export function computeClothingLabellingStorage(
     });
   }
 
-  if (seasonalRotationRate >= 50 && seasonalRotationRate < 70 && totalRotationRecords > 0) {
+  if (meets(seasonalRotationRate, 50) && below(seasonalRotationRate, 70) && totalRotationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1074,7 +1068,7 @@ export function computeClothingLabellingStorage(
     });
   }
 
-  if (footwearAdequateRate < 70 && totalConditionRecords > 0) {
+  if (below(footwearAdequateRate, 70) && totalConditionRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1104,7 +1098,7 @@ export function computeClothingLabellingStorage(
     });
   }
 
-  if (lockableRate < 50 && totalStorageRecords > 0) {
+  if (below(lockableRate, 50) && totalStorageRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1114,7 +1108,7 @@ export function computeClothingLabellingStorage(
     });
   }
 
-  if (occasionWearRate < 60 && totalOwnershipRecords > 0) {
+  if (below(occasionWearRate, 60) && totalOwnershipRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1130,7 +1124,7 @@ export function computeClothingLabellingStorage(
 
   // --- Critical insights ---
 
-  if (labellingComplianceRate < 50 && totalItemsAudited > 0) {
+  if (below(labellingComplianceRate, 50) && totalItemsAudited > 0) {
     insights.push({
       text: `Only ${labellingComplianceRate}% of clothing items labelled. Ofsted will view the failure to maintain adequate clothing labelling as evidence that children's personal property is not being respected or safeguarded -- a concern under Reg 5 and Reg 25.`,
       severity: "critical",
@@ -1144,7 +1138,7 @@ export function computeClothingLabellingStorage(
     });
   }
 
-  if (childEmbarrassedRate >= 30 && totalConditionRecords > 0) {
+  if (meets(childEmbarrassedRate, 30) && totalConditionRecords > 0) {
     insights.push({
       text: `${childEmbarrassedRate}% of children report embarrassment about their clothing. This is a deeply concerning indicator that Ofsted will treat as evidence of inadequate clothing provision. No child in care should feel embarrassed by what they wear -- this undermines self-esteem, social confidence, and the home's duty of care.`,
       severity: "critical",
@@ -1158,14 +1152,14 @@ export function computeClothingLabellingStorage(
     });
   }
 
-  if (underwearAdequateRate < 80 && totalConditionRecords > 0) {
+  if (below(underwearAdequateRate, 80) && totalConditionRecords > 0) {
     insights.push({
       text: `Underwear adequate for only ${underwearAdequateRate}% of children. Inadequate underwear provision is a fundamental care failure that Ofsted will treat as a serious concern -- every child must have sufficient clean, well-fitting underwear as a basic dignity requirement.`,
       severity: "critical",
     });
   }
 
-  if (belongsToChildRate < 50 && totalOwnershipRecords > 0) {
+  if (below(belongsToChildRate, 50) && totalOwnershipRecords > 0) {
     insights.push({
       text: `Only ${belongsToChildRate}% of clothing belongs to the individual child. Communal or shared clothing arrangements undermine children's sense of identity and ownership. Reg 25 requires that children's personal possessions are respected -- clothing that does not belong to the child fails this standard.`,
       severity: "critical",
@@ -1181,7 +1175,7 @@ export function computeClothingLabellingStorage(
 
   // --- Warning insights ---
 
-  if (labellingComplianceRate >= 50 && labellingComplianceRate < 70 && totalItemsAudited > 0) {
+  if (meets(labellingComplianceRate, 50) && below(labellingComplianceRate, 70) && totalItemsAudited > 0) {
     insights.push({
       text: `Labelling compliance at ${labellingComplianceRate}% -- improving but a significant proportion of children's clothing remains unidentifiable. Each unlabelled item increases the risk of loss and conflict during shared laundry.`,
       severity: "warning",
@@ -1195,7 +1189,7 @@ export function computeClothingLabellingStorage(
     });
   }
 
-  if (seasonalRotationRate >= 50 && seasonalRotationRate < 80 && totalRotationRecords > 0) {
+  if (meets(seasonalRotationRate, 50) && below(seasonalRotationRate, 80) && totalRotationRecords > 0) {
     insights.push({
       text: `Seasonal rotation at ${seasonalRotationRate}% -- some children's wardrobes have not been fully transitioned for the season. Incomplete rotation may leave children without weather-appropriate clothing.`,
       severity: "warning",
@@ -1223,28 +1217,28 @@ export function computeClothingLabellingStorage(
     });
   }
 
-  if (poorConditionRate >= 10 && poorConditionRate < 20 && totalItemsChecked > 0) {
+  if (meets(poorConditionRate, 10) && below(poorConditionRate, 20) && totalItemsChecked > 0) {
     insights.push({
       text: `${poorConditionRate}% of clothing in poor condition -- while not at critical levels, any clothing in poor condition risks undermining children's dignity and self-esteem.`,
       severity: "warning",
     });
   }
 
-  if (outgrownReplacementRate >= 50 && outgrownReplacementRate < 80 && outgrownIdentified > 0) {
+  if (meets(outgrownReplacementRate, 50) && below(outgrownReplacementRate, 80) && outgrownIdentified > 0) {
     insights.push({
       text: `Outgrown replacement rate at ${outgrownReplacementRate}% -- some children are still wearing outgrown items while replacements are pending. Children grow quickly and replacement needs to keep pace.`,
       severity: "warning",
     });
   }
 
-  if (stainsDamageRate >= 30 && totalConditionRecords > 0) {
+  if (meets(stainsDamageRate, 30) && totalConditionRecords > 0) {
     insights.push({
       text: `Stains or damage noted in ${stainsDamageRate}% of condition checks -- persistent staining or damage may indicate laundry process issues or insufficient clothing stock for rotation during cleaning.`,
       severity: "warning",
     });
   }
 
-  if (childConsultedLabellingRate < 50 && totalLabellingRecords > 0) {
+  if (below(childConsultedLabellingRate, 50) && totalLabellingRecords > 0) {
     insights.push({
       text: `Children consulted on labelling method in only ${childConsultedLabellingRate}% of cases -- labelling decisions are being made without children's input. Some children may find certain labelling methods stigmatising or prefer specific approaches.`,
       severity: "warning",
@@ -1260,14 +1254,14 @@ export function computeClothingLabellingStorage(
     });
   }
 
-  if (labellingComplianceRate >= 90 && meets(storageAdequacyRate, 90) && totalItemsAudited > 0 && totalStorageRecords > 0) {
+  if (meets(labellingComplianceRate, 90) && meets(storageAdequacyRate, 90) && totalItemsAudited > 0 && totalStorageRecords > 0) {
     insights.push({
       text: `Labelling compliance at ${labellingComplianceRate}% with storage adequacy at ${storageAdequacyRate}% -- the home provides comprehensive clothing management infrastructure. Children's clothing is identifiable and properly stored, reducing loss and supporting dignity.`,
       severity: "positive",
     });
   }
 
-  if (seasonalRotationRate >= 90 && weatherAppropriateRate >= 90 && totalRotationRecords > 0) {
+  if (meets(seasonalRotationRate, 90) && meets(weatherAppropriateRate, 90) && totalRotationRecords > 0) {
     insights.push({
       text: `${seasonalRotationRate}% seasonal rotation with ${weatherAppropriateRate}% weather-appropriate clothing -- children are consistently dressed for the season with proactive wardrobe management ensuring comfort and wellbeing.`,
       severity: "positive",
@@ -1288,28 +1282,28 @@ export function computeClothingLabellingStorage(
     });
   }
 
-  if (goodConditionRate >= 90 && replacementRate >= 90 && totalItemsChecked > 0 && totalItemsNeedingReplacement > 0) {
+  if (meets(goodConditionRate, 90) && meets(replacementRate, 90) && totalItemsChecked > 0 && totalItemsNeedingReplacement > 0) {
     insights.push({
       text: `${goodConditionRate}% of clothing in good condition with ${replacementRate}% replacement rate -- the home invests in maintaining children's clothing to a high standard and responds promptly when items need replacing.`,
       severity: "positive",
     });
   }
 
-  if (childEmbarrassedRate === 0 && totalConditionRecords > 0 && schoolUniformRate >= 90 && footwearAdequateRate >= 90) {
+  if (childEmbarrassedRate === 0 && totalConditionRecords > 0 && meets(schoolUniformRate, 90) && meets(footwearAdequateRate, 90)) {
     insights.push({
       text: "No children report clothing embarrassment, school uniform is adequate, and footwear provision is strong. Children can attend school and social activities feeling confident and no different from their non-looked-after peers.",
       severity: "positive",
     });
   }
 
-  if (choosesOwnRate >= 80 && shoppingTripRate >= 70 && totalOwnershipRecords > 0 && totalRotationRecords > 0) {
+  if (meets(choosesOwnRate, 80) && meets(shoppingTripRate, 70) && totalOwnershipRecords > 0 && totalRotationRecords > 0) {
     insights.push({
       text: `${choosesOwnRate}% of children choose their own clothing with shopping trips offered during ${shoppingTripRate}% of rotations -- the home provides normalising experiences where children can express their style and preferences.`,
       severity: "positive",
     });
   }
 
-  if (culturalProvidedRate >= 80 && religiousProvidedRate >= 80 && totalOwnershipRecords > 0) {
+  if (meets(culturalProvidedRate, 80) && meets(religiousProvidedRate, 80) && totalOwnershipRecords > 0) {
     insights.push({
       text: `Cultural clothing provided for ${culturalProvidedRate}% and religious clothing for ${religiousProvidedRate}% of children assessed -- the home respects and supports children's cultural and religious identity through appropriate clothing provision.`,
       severity: "positive",

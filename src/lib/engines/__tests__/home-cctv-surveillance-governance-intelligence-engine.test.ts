@@ -312,7 +312,7 @@ describe("Home CCTV & Surveillance Governance Intelligence Engine", () => {
       expect(result.total_data_protection_records).toBe(0);
     });
 
-    it("sets all rates to 0", () => {
+    it("sets all rates to null", () => {
       const result = computeCctvSurveillanceGovernance(
         baseInput({ total_children: 0 }),
       );
@@ -1043,7 +1043,7 @@ describe("Home CCTV & Surveillance Governance Intelligence Engine", () => {
         expect(result.policy_compliance_rate).toBe(63);
       });
 
-      it("returns 0 when no policy records", () => {
+      it("returns null when no policy records", () => {
         const result = computeCctvSurveillanceGovernance(
           baseInput({ total_children: 0, data_protection_records: [makeDataProtection()] }),
         );
@@ -1084,7 +1084,7 @@ describe("Home CCTV & Surveillance Governance Intelligence Engine", () => {
         expect(result.privacy_impact_rate).toBe(80);
       });
 
-      it("returns 0 when no privacy impact records", () => {
+      it("returns null when no privacy impact records", () => {
         const result = computeCctvSurveillanceGovernance(
           baseInput({ total_children: 0, cctv_policy_records: [makePolicy()] }),
         );
@@ -1108,7 +1108,7 @@ describe("Home CCTV & Surveillance Governance Intelligence Engine", () => {
         expect(result.retention_compliance_rate).toBe(80);
       });
 
-      it("returns 0 when no retention records", () => {
+      it("returns null when no retention records", () => {
         const result = computeCctvSurveillanceGovernance(
           baseInput({ total_children: 0, cctv_policy_records: [makePolicy()] }),
         );
@@ -1132,7 +1132,7 @@ describe("Home CCTV & Surveillance Governance Intelligence Engine", () => {
         expect(result.child_awareness_rate).toBe(80);
       });
 
-      it("returns 0 when no child awareness records", () => {
+      it("returns null when no child awareness records", () => {
         const result = computeCctvSurveillanceGovernance(
           baseInput({ total_children: 0, cctv_policy_records: [makePolicy()] }),
         );
@@ -1156,7 +1156,7 @@ describe("Home CCTV & Surveillance Governance Intelligence Engine", () => {
         expect(result.data_protection_rate).toBe(80);
       });
 
-      it("returns 0 when no data protection records", () => {
+      it("returns null when no data protection records", () => {
         const result = computeCctvSurveillanceGovernance(
           baseInput({ total_children: 0, cctv_policy_records: [makePolicy()] }),
         );
@@ -1180,7 +1180,7 @@ describe("Home CCTV & Surveillance Governance Intelligence Engine", () => {
         expect(result.staff_training_rate).toBe(75);
       });
 
-      it("returns 0 when no data protection records", () => {
+      it("returns null when no data protection records", () => {
         const result = computeCctvSurveillanceGovernance(
           baseInput({ total_children: 0, cctv_policy_records: [makePolicy()] }),
         );

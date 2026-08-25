@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Droplet } from "l
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { DampMouldRating } from "@/lib/engines/home-damp-mould-management-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 const RATING_STYLES: Record<DampMouldRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -65,28 +66,28 @@ export function HomeDampMouldManagementIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.damp_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.damp_survey_rate >= 90 ? "bg-green-50" : d.damp_survey_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.damp_survey_rate >= 90 ? "text-[--cs-success]" : d.damp_survey_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.damp_survey_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.damp_survey_rate, 90) ? "bg-green-50" : meets(d.damp_survey_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.damp_survey_rate, 90) ? "text-[--cs-success]" : meets(d.damp_survey_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.damp_survey_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Survey</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.mould_inspection_rate >= 90 ? "bg-green-50" : d.mould_inspection_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.mould_inspection_rate >= 90 ? "text-[--cs-success]" : d.mould_inspection_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.mould_inspection_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.mould_inspection_rate, 90) ? "bg-green-50" : meets(d.mould_inspection_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.mould_inspection_rate, 90) ? "text-[--cs-success]" : meets(d.mould_inspection_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.mould_inspection_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Inspect</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.remediation_rate >= 90 ? "bg-green-50" : d.remediation_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.remediation_rate >= 90 ? "text-[--cs-success]" : d.remediation_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.remediation_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.remediation_rate, 90) ? "bg-green-50" : meets(d.remediation_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.remediation_rate, 90) ? "text-[--cs-success]" : meets(d.remediation_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.remediation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Remediate</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.ventilation_rate >= 90 ? "bg-green-50" : d.ventilation_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.ventilation_rate >= 90 ? "text-[--cs-success]" : d.ventilation_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.ventilation_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.ventilation_rate, 90) ? "bg-green-50" : meets(d.ventilation_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.ventilation_rate, 90) ? "text-[--cs-success]" : meets(d.ventilation_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.ventilation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Ventilate</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.health_impact_rate >= 90 ? "bg-green-50" : d.health_impact_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.health_impact_rate >= 90 ? "text-[--cs-success]" : d.health_impact_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.health_impact_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.health_impact_rate, 90) ? "bg-green-50" : meets(d.health_impact_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.health_impact_rate, 90) ? "text-[--cs-success]" : meets(d.health_impact_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.health_impact_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Health</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_awareness_rate >= 90 ? "bg-green-50" : d.child_awareness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_awareness_rate >= 90 ? "text-[--cs-success]" : d.child_awareness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_awareness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_awareness_rate, 90) ? "bg-green-50" : meets(d.child_awareness_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_awareness_rate, 90) ? "text-[--cs-success]" : meets(d.child_awareness_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_awareness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Awareness</p>
             </div>
           </div>

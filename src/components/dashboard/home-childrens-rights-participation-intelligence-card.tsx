@@ -165,10 +165,10 @@ export function HomeChildrensRightsParticipationIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Scale className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.advocacy.child_coverage >= 60 ? "text-[--cs-success]" :
-                  d.advocacy.child_coverage >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.advocacy.child_coverage, 60) ? "text-[--cs-success]" :
+                  meets(d.advocacy.child_coverage, 40) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.advocacy.total_records > 0 ? `${d.advocacy.child_coverage}%` : "—"}
+                  {d.advocacy.total_records > 0 ? `${formatRate(d.advocacy.child_coverage)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Advocacy</p>
