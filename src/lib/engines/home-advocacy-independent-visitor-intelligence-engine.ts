@@ -175,10 +175,6 @@ export interface AdvocacyVisitorResult {
 // -- Helpers ------------------------------------------------------------------
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -201,11 +197,11 @@ function emptyResult(
     advocacy_rating: rating,
     advocacy_score: score,
     headline,
-    visitor_allocation_rate: 0,
-    advocacy_access_rate: 0,
-    representation_quality_rate: 0,
-    visit_compliance_rate: 0,
-    child_voice_rate: 0,
+    visitor_allocation_rate: null,
+    advocacy_access_rate: null,
+    representation_quality_rate: null,
+    visit_compliance_rate: null,
+    child_voice_rate: null,
     child_satisfaction_rate: null,
     strengths: [],
     concerns: [],
@@ -285,17 +281,17 @@ export function computeAdvocacyIndependentVisitor(
   // --- Independent visitor allocation ---
   const totalIVRecords = independent_visitor_records.length;
   const allocatedIV = independent_visitor_records.filter((r) => r.allocated).length;
-  const visitorAllocationRate = pct(allocatedIV, totalIVRecords);
+  const visitorAllocationRate = rate(allocatedIV, totalIVRecords);
 
   const matchQualityGood = independent_visitor_records.filter(
     (r) => r.matching_quality === "excellent" || r.matching_quality === "good",
   ).length;
-  const matchQualityRate = pct(matchQualityGood, totalIVRecords);
+  const matchQualityRate = rate(matchQualityGood, totalIVRecords);
 
   const relationshipEstablished = independent_visitor_records.filter(
     (r) => r.relationship_established,
   ).length;
-  const relationshipRate = pct(relationshipEstablished, totalIVRecords);
+  const relationshipRate = rate(relationshipEstablished, totalIVRecords);
 
   const totalIVVisitsPlanned = independent_visitor_records.reduce(
     (sum, r) => sum + r.visits_planned_per_quarter, 0,
@@ -303,12 +299,12 @@ export function computeAdvocacyIndependentVisitor(
   const totalIVVisitsCompleted = independent_visitor_records.reduce(
     (sum, r) => sum + r.visits_completed_per_quarter, 0,
   );
-  const ivVisitCompletionRate = pct(totalIVVisitsCompleted, totalIVVisitsPlanned);
+  const ivVisitCompletionRate = rate(totalIVVisitsCompleted, totalIVVisitsPlanned);
 
   const ivEngaged = independent_visitor_records.filter(
     (r) => r.child_engaged_during_visit,
   ).length;
-  const ivEngagementRate = pct(ivEngaged, totalIVRecords);
+  const ivEngagementRate = rate(ivEngaged, totalIVRecords);
 
   const totalIVIssuesRaised = independent_visitor_records.reduce(
     (sum, r) => sum + r.issues_raised_by_visitor, 0,
@@ -316,7 +312,7 @@ export function computeAdvocacyIndependentVisitor(
   const totalIVIssuesResolved = independent_visitor_records.reduce(
     (sum, r) => sum + r.issues_resolved, 0,
   );
-  const ivIssueResolutionRate = pct(totalIVIssuesResolved, totalIVIssuesRaised);
+  const ivIssueResolutionRate = rate(totalIVIssuesResolved, totalIVIssuesRaised);
 
   const ivWishesRecorded = independent_visitor_records.filter(
     (r) => r.child_wishes_recorded,
@@ -327,12 +323,12 @@ export function computeAdvocacyIndependentVisitor(
   const advocateAllocated = advocacy_service_records.filter(
     (r) => r.advocate_allocated,
   ).length;
-  const advocacyAccessRate = pct(advocateAllocated, totalAdvocacyRecords);
+  const advocacyAccessRate = rate(advocateAllocated, totalAdvocacyRecords);
 
   const childInformedOfRights = advocacy_service_records.filter(
     (r) => r.child_informed_of_rights,
   ).length;
-  const rightsInformedRate = pct(childInformedOfRights, totalAdvocacyRecords);
+  const rightsInformedRate = rate(childInformedOfRights, totalAdvocacyRecords);
 
   const totalAdvocacyMeetingsAttended = advocacy_service_records.reduce(
     (sum, r) => sum + r.meetings_attended_by_advocate, 0,
@@ -340,12 +336,12 @@ export function computeAdvocacyIndependentVisitor(
   const totalAdvocacyMeetings = advocacy_service_records.reduce(
     (sum, r) => sum + r.meetings_total, 0,
   );
-  const advocacyMeetingAttendanceRate = pct(totalAdvocacyMeetingsAttended, totalAdvocacyMeetings);
+  const advocacyMeetingAttendanceRate = rate(totalAdvocacyMeetingsAttended, totalAdvocacyMeetings);
 
   const outcomeAchieved = advocacy_service_records.filter(
     (r) => r.outcome_achieved,
   ).length;
-  const outcomeRate = pct(outcomeAchieved, totalAdvocacyRecords);
+  const outcomeRate = rate(outcomeAchieved, totalAdvocacyRecords);
 
   const advocacySatisfactionSum = advocacy_service_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
@@ -359,12 +355,12 @@ export function computeAdvocacyIndependentVisitor(
   const advocacyIndependent = advocacy_service_records.filter(
     (r) => r.advocacy_independent_of_home,
   ).length;
-  const independenceRate = pct(advocacyIndependent, totalAdvocacyRecords);
+  const independenceRate = rate(advocacyIndependent, totalAdvocacyRecords);
 
   const timeliness = advocacy_service_records.filter(
     (r) => r.days_to_first_contact <= 5,
   ).length;
-  const timelinessRate = pct(timeliness, totalAdvocacyRecords);
+  const timelinessRate = rate(timeliness, totalAdvocacyRecords);
 
   // --- Representation quality ---
   const totalRepRecords = representation_records.length;
@@ -375,39 +371,39 @@ export function computeAdvocacyIndependentVisitor(
   const childFeltHeard = representation_records.filter(
     (r) => r.child_felt_heard,
   ).length;
-  const feltHeardRate = pct(childFeltHeard, totalRepRecords);
+  const feltHeardRate = rate(childFeltHeard, totalRepRecords);
 
   const decisionReflectedViews = representation_records.filter(
     (r) => r.decision_reflected_views,
   ).length;
-  const decisionReflectionRate = pct(decisionReflectedViews, totalRepRecords);
+  const decisionReflectionRate = rate(decisionReflectedViews, totalRepRecords);
 
   const feedbackGiven = representation_records.filter(
     (r) => r.feedback_given_to_child,
   ).length;
-  const feedbackRate = pct(feedbackGiven, totalRepRecords);
+  const feedbackRate = rate(feedbackGiven, totalRepRecords);
 
   const repQualityGood = representation_records.filter(
     (r) => r.representation_quality === "excellent" || r.representation_quality === "good",
   ).length;
-  const representationQualityRate = pct(repQualityGood, totalRepRecords);
+  const representationQualityRate = rate(repQualityGood, totalRepRecords);
 
   const repBarriersTotal = representation_records.filter(
     (r) => r.barriers_to_participation.length > 0,
   ).length;
-  const repBarrierRate = pct(repBarriersTotal, totalRepRecords);
+  const repBarrierRate = rate(repBarriersTotal, totalRepRecords);
 
   // --- Visit compliance ---
   const totalVisitRecords = visit_compliance_records.length;
   const visitsCompleted = visit_compliance_records.filter(
     (r) => r.visit_completed,
   ).length;
-  const visitComplianceRate = pct(visitsCompleted, totalVisitRecords);
+  const visitComplianceRate = rate(visitsCompleted, totalVisitRecords);
 
   const seenAlone = visit_compliance_records.filter(
     (r) => r.child_seen_alone,
   ).length;
-  const seenAloneRate = pct(seenAlone, totalVisitRecords);
+  const seenAloneRate = rate(seenAlone, totalVisitRecords);
 
   const visitViewsRecorded = visit_compliance_records.filter(
     (r) => r.child_views_recorded,
@@ -419,49 +415,49 @@ export function computeAdvocacyIndependentVisitor(
   const totalFollowUpCompleted = visit_compliance_records.reduce(
     (sum, r) => sum + r.follow_up_completed, 0,
   );
-  const followUpCompletionRate = pct(totalFollowUpCompleted, totalFollowUp);
+  const followUpCompletionRate = rate(totalFollowUpCompleted, totalFollowUp);
 
   const reportFiled = visit_compliance_records.filter(
     (r) => r.report_filed,
   ).length;
-  const reportFiledRate = pct(reportFiled, totalVisitRecords);
+  const reportFiledRate = rate(reportFiled, totalVisitRecords);
 
   const reportOnTime = visit_compliance_records.filter(
     (r) => r.report_filed_on_time,
   ).length;
-  const reportTimelinessRate = pct(reportOnTime, totalVisitRecords);
+  const reportTimelinessRate = rate(reportOnTime, totalVisitRecords);
 
   // --- Child satisfaction composite ---
   const totalSatRecords = child_satisfaction_records.length;
   const knowsIV = child_satisfaction_records.filter(
     (r) => r.knows_independent_visitor,
   ).length;
-  const knowsIVRate = pct(knowsIV, totalSatRecords);
+  const knowsIVRate = rate(knowsIV, totalSatRecords);
 
   const feelsListened = child_satisfaction_records.filter(
     (r) => r.feels_listened_to,
   ).length;
-  const feelsListenedRate = pct(feelsListened, totalSatRecords);
+  const feelsListenedRate = rate(feelsListened, totalSatRecords);
 
   const trustsAdvocate = child_satisfaction_records.filter(
     (r) => r.trusts_advocate,
   ).length;
-  const trustRate = pct(trustsAdvocate, totalSatRecords);
+  const trustRate = rate(trustsAdvocate, totalSatRecords);
 
   const understandsComplaints = child_satisfaction_records.filter(
     (r) => r.understands_complaints_process,
   ).length;
-  const complaintsUnderstandingRate = pct(understandsComplaints, totalSatRecords);
+  const complaintsUnderstandingRate = rate(understandsComplaints, totalSatRecords);
 
   const wouldUseAgain = child_satisfaction_records.filter(
     (r) => r.would_use_advocacy_again,
   ).length;
-  const wouldUseAgainRate = pct(wouldUseAgain, totalSatRecords);
+  const wouldUseAgainRate = rate(wouldUseAgain, totalSatRecords);
 
   const feelsViewsMakeDifference = child_satisfaction_records.filter(
     (r) => r.feels_views_make_difference,
   ).length;
-  const viewsMakeDifferenceRate = pct(feelsViewsMakeDifference, totalSatRecords);
+  const viewsMakeDifferenceRate = rate(feelsViewsMakeDifference, totalSatRecords);
 
   const satIVSum = child_satisfaction_records.reduce(
     (sum, r) => sum + r.satisfaction_with_iv, 0,
@@ -496,7 +492,7 @@ export function computeAdvocacyIndependentVisitor(
   // --- Child voice composite ---
   const voiceNumerator = ivWishesRecorded + viewsSought + visitViewsRecorded;
   const voiceDenominator = totalIVRecords + totalRepRecords + totalVisitRecords;
-  const childVoiceRate = pct(voiceNumerator, voiceDenominator);
+  const childVoiceRate = rate(voiceNumerator, voiceDenominator);
 
   // --- Child satisfaction composite rate ---
   // A hand-rolled mean over the components that have records behind them,

@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Wind } from "luci
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { AsthmaRespiratoryRating } from "@/lib/engines/home-asthma-respiratory-management-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 function useHomeAsthmaRespiratoryManagementIntelligence() {
   return useQuery({
@@ -61,7 +62,7 @@ export function HomeAsthmaRespiratoryManagementIntelligenceCard() {
             <Wind className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-teal-600")} />
             <span className="text-slate-900 font-bold">Asthma & Respiratory Management</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.respiratory_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.respiratory_score}%</span>}
+            {d.respiratory_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.respiratory_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -69,28 +70,28 @@ export function HomeAsthmaRespiratoryManagementIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.respiratory_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.action_plan_coverage_rate >= 90 ? "bg-green-50" : d.action_plan_coverage_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.action_plan_coverage_rate >= 90 ? "text-[--cs-success]" : d.action_plan_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.action_plan_coverage_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.action_plan_coverage_rate, 90) ? "bg-green-50" : meets(d.action_plan_coverage_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.action_plan_coverage_rate, 90) ? "text-[--cs-success]" : meets(d.action_plan_coverage_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.action_plan_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Plans</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.inhaler_technique_rate >= 90 ? "bg-green-50" : d.inhaler_technique_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.inhaler_technique_rate >= 90 ? "text-[--cs-success]" : d.inhaler_technique_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.inhaler_technique_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.inhaler_technique_rate, 90) ? "bg-green-50" : meets(d.inhaler_technique_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.inhaler_technique_rate, 90) ? "text-[--cs-success]" : meets(d.inhaler_technique_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.inhaler_technique_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Inhaler</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.trigger_management_rate >= 90 ? "bg-green-50" : d.trigger_management_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.trigger_management_rate >= 90 ? "text-[--cs-success]" : d.trigger_management_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.trigger_management_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.trigger_management_rate, 90) ? "bg-green-50" : meets(d.trigger_management_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.trigger_management_rate, 90) ? "text-[--cs-success]" : meets(d.trigger_management_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.trigger_management_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Triggers</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.peak_flow_monitoring_rate >= 90 ? "bg-green-50" : d.peak_flow_monitoring_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.peak_flow_monitoring_rate >= 90 ? "text-[--cs-success]" : d.peak_flow_monitoring_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.peak_flow_monitoring_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.peak_flow_monitoring_rate, 90) ? "bg-green-50" : meets(d.peak_flow_monitoring_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.peak_flow_monitoring_rate, 90) ? "text-[--cs-success]" : meets(d.peak_flow_monitoring_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.peak_flow_monitoring_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Peak Flow</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.emergency_preparedness_rate >= 90 ? "bg-green-50" : d.emergency_preparedness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.emergency_preparedness_rate >= 90 ? "text-[--cs-success]" : d.emergency_preparedness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.emergency_preparedness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.emergency_preparedness_rate, 90) ? "bg-green-50" : meets(d.emergency_preparedness_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.emergency_preparedness_rate, 90) ? "text-[--cs-success]" : meets(d.emergency_preparedness_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.emergency_preparedness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Emergency</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_self_management_rate >= 90 ? "bg-green-50" : d.child_self_management_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_self_management_rate >= 90 ? "text-[--cs-success]" : d.child_self_management_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_self_management_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_self_management_rate, 90) ? "bg-green-50" : meets(d.child_self_management_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_self_management_rate, 90) ? "text-[--cs-success]" : meets(d.child_self_management_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_self_management_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Self-Mgmt</p>
             </div>
           </div>

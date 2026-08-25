@@ -438,14 +438,14 @@ describe("Education Achievement Intelligence Engine", () => {
   // ── evaluateAttendance ────────────────────────────────────────────────
 
   describe("evaluateAttendance", () => {
-    it("returns 0 for no attendance records", () => {
+    it("returns null rates and zero score for no attendance records", () => {
       const result = evaluateAttendance([]);
       expect(result.overallScore).toBe(0);
       expect(result.totalRecords).toBe(0);
-      expect(result.attendanceRate).toBe(0);
-      expect(result.unauthorisedAbsenceRate).toBe(0);
+      expect(result.attendanceRate).toBeNull();
+      expect(result.unauthorisedAbsenceRate).toBeNull();
       expect(result.persistentAbsenceChildren).toBe(0);
-      expect(result.lateRate).toBe(0);
+      expect(result.lateRate).toBeNull();
       expect(result.exclusionDays).toBe(0);
     });
 
@@ -573,15 +573,15 @@ describe("Education Achievement Intelligence Engine", () => {
   // ── evaluatePEPQuality ────────────────────────────────────────────────
 
   describe("evaluatePEPQuality", () => {
-    it("returns 0 for no PEP records", () => {
+    it("returns null rates and zero score for no PEP records", () => {
       const result = evaluatePEPQuality([]);
       expect(result.overallScore).toBe(0);
       expect(result.totalPEPs).toBe(0);
-      expect(result.currentRate).toBe(0);
-      expect(result.childViewsRate).toBe(0);
-      expect(result.smartTargetsRate).toBe(0);
-      expect(result.virtualSchoolInvolvedRate).toBe(0);
-      expect(result.ppFundingUsedRate).toBe(0);
+      expect(result.currentRate).toBeNull();
+      expect(result.childViewsRate).toBeNull();
+      expect(result.smartTargetsRate).toBeNull();
+      expect(result.virtualSchoolInvolvedRate).toBeNull();
+      expect(result.ppFundingUsedRate).toBeNull();
     });
 
     it("scores well for demo data", () => {
@@ -676,12 +676,12 @@ describe("Education Achievement Intelligence Engine", () => {
   // ── evaluateAcademicProgress ──────────────────────────────────────────
 
   describe("evaluateAcademicProgress", () => {
-    it("returns 0 for no outcomes", () => {
+    it("returns null rates and zero score for no outcomes", () => {
       const result = evaluateAcademicProgress([]);
       expect(result.overallScore).toBe(0);
       expect(result.totalOutcomes).toBe(0);
-      expect(result.exceedingExpectedRate).toBe(0);
-      expect(result.belowExpectedRate).toBe(0);
+      expect(result.exceedingExpectedRate).toBeNull();
+      expect(result.belowExpectedRate).toBeNull();
       expect(result.subjectCoverage).toBe(0);
       expect(result.uniqueSubjects).toEqual([]);
     });
@@ -754,7 +754,7 @@ describe("Education Achievement Intelligence Engine", () => {
         makeOutcome({ id: "o2", progress: "not_assessed" }),
       ];
       const result = evaluateAcademicProgress(outcomes);
-      expect(result.exceedingExpectedRate).toBe(0);
+      expect(result.exceedingExpectedRate).toBeNull();
       expect(result.totalOutcomes).toBe(2);
     });
 

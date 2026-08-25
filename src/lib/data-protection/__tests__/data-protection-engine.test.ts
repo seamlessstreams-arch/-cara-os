@@ -247,14 +247,14 @@ describe("evaluateBreachManagement", () => {
     expect(result.overallScore).toBeGreaterThanOrEqual(0);
   });
 
-  it("no breaches sets all rates to 0", () => {
+  it("no breaches leaves all rates null — nothing to measure", () => {
     const result = evaluateBreachManagement([]);
-    expect(result.icoNotificationRate).toBe(0);
-    expect(result.icoNotificationWithin72HoursRate).toBe(0);
-    expect(result.containmentRate).toBe(0);
-    expect(result.rootCauseRate).toBe(0);
-    expect(result.lessonsLearnedRate).toBe(0);
-    expect(result.resolutionRate).toBe(0);
+    expect(result.icoNotificationRate).toBeNull();
+    expect(result.icoNotificationWithin72HoursRate).toBeNull();
+    expect(result.containmentRate).toBeNull();
+    expect(result.rootCauseRate).toBeNull();
+    expect(result.lessonsLearnedRate).toBeNull();
+    expect(result.resolutionRate).toBeNull();
   });
 
   it("handles a single perfectly managed breach", () => {

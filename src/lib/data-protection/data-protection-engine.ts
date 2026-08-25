@@ -1,4 +1,5 @@
 import { todayStr } from "@/lib/utils";
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — Data Protection & GDPR Intelligence Engine
 //
@@ -124,12 +125,18 @@ export interface BreachManagementResult {
   highBreaches: number;
   mediumBreaches: number;
   lowBreaches: number;
-  icoNotificationRate: number;
-  icoNotificationWithin72HoursRate: number;
-  containmentRate: number;
-  rootCauseRate: number;
-  lessonsLearnedRate: number;
-  resolutionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  icoNotificationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  icoNotificationWithin72HoursRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  containmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  rootCauseRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  lessonsLearnedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  resolutionRate: number | null;
   childrenAffectedTotal: number;
   staffAffectedTotal: number;
   overallScore: number; // 0-25
@@ -138,9 +145,12 @@ export interface BreachManagementResult {
 export interface ConsentComplianceResult {
   totalRecords: number;
   uniqueChildren: number;
-  consentObtainedRate: number;
-  ageAppropriateExplainedRate: number;
-  reviewDateCurrentRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  consentObtainedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  ageAppropriateExplainedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reviewDateCurrentRate: number | null;
   expiredConsentCount: number;
   averageTypesPerChild: number | null;
   consentByType: Record<string, { given: number; refused: number; withdrawn: number; notSought: number; expired: number }>;
@@ -149,10 +159,14 @@ export interface ConsentComplianceResult {
 
 export interface SARComplianceResult {
   totalRequests: number;
-  acknowledgedWithin5DaysRate: number;
-  completedWithin30DaysRate: number;
-  redactionCompletedRate: number;
-  qualityCheckedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  acknowledgedWithin5DaysRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completedWithin30DaysRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  redactionCompletedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  qualityCheckedRate: number | null;
   overdueCount: number;
   byStatus: Record<string, number>;
   overallScore: number; // 0-25
@@ -187,11 +201,6 @@ export interface DataProtectionIntelligence {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 1000) / 10;
-}
 
 function clamp(v: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, v));
@@ -231,12 +240,12 @@ export function evaluateBreachManagement(breaches: DataBreach[]): BreachManageme
       highBreaches: 0,
       mediumBreaches: 0,
       lowBreaches: 0,
-      icoNotificationRate: 0,
-      icoNotificationWithin72HoursRate: 0,
-      containmentRate: 0,
-      rootCauseRate: 0,
-      lessonsLearnedRate: 0,
-      resolutionRate: 0,
+      icoNotificationRate: null,
+      icoNotificationWithin72HoursRate: null,
+      containmentRate: null,
+      rootCauseRate: null,
+      lessonsLearnedRate: null,
+      resolutionRate: null,
       childrenAffectedTotal: 0,
       staffAffectedTotal: 0,
       overallScore: 25,
@@ -254,12 +263,12 @@ export function evaluateBreachManagement(breaches: DataBreach[]): BreachManageme
     (b) => b.status === "resolved" || b.status === "closed"
   ).length;
 
-  const icoNotificationRate = pct(icoNotified, total);
-  const icoNotificationWithin72HoursRate = pct(icoNotifiedWithin72h, total);
-  const containmentRate = pct(containmentCount, total);
-  const rootCauseRate = pct(rootCauseCount, total);
-  const lessonsLearnedRate = pct(lessonsLearnedCount, total);
-  const resolutionRate = pct(resolvedCount, total);
+  const icoNotificationRate = rate(icoNotified, total)!;
+  const icoNotificationWithin72HoursRate = rate(icoNotifiedWithin72h, total)!;
+  const containmentRate = rate(containmentCount, total)!;
+  const rootCauseRate = rate(rootCauseCount, total)!;
+  const lessonsLearnedRate = rate(lessonsLearnedCount, total)!;
+  const resolutionRate = rate(resolvedCount, total)!;
 
   // Scoring: +7 all reported to ICO within 72h, +5 containment, +5 root cause,
   //          +4 lessons learned, +4 resolution
@@ -315,9 +324,9 @@ export function evaluateConsentCompliance(records: ConsentRecord[]): ConsentComp
     return {
       totalRecords: 0,
       uniqueChildren: 0,
-      consentObtainedRate: 0,
-      ageAppropriateExplainedRate: 0,
-      reviewDateCurrentRate: 0,
+      consentObtainedRate: null,
+      ageAppropriateExplainedRate: null,
+      reviewDateCurrentRate: null,
       expiredConsentCount: 0,
       averageTypesPerChild: 0,
       consentByType,
@@ -329,17 +338,17 @@ export function evaluateConsentCompliance(records: ConsentRecord[]): ConsentComp
   const consentObtained = records.filter(
     (r) => r.status === "given" || r.status === "refused"
   ).length;
-  const consentObtainedRate = pct(consentObtained, total);
+  const consentObtainedRate = rate(consentObtained, total)!;
 
   const ageAppropriateExplained = records.filter((r) => r.ageAppropriateExplained).length;
-  const ageAppropriateExplainedRate = pct(ageAppropriateExplained, total);
+  const ageAppropriateExplainedRate = rate(ageAppropriateExplained, total)!;
 
   const today = todayStr();
   const reviewDateCurrent = records.filter(
     (r) => r.reviewDate && r.reviewDate >= today
   ).length;
   const recordsWithReviewDate = records.filter((r) => r.reviewDate).length;
-  const reviewDateCurrentRate = pct(reviewDateCurrent, recordsWithReviewDate);
+  const reviewDateCurrentRate = rate(reviewDateCurrent, recordsWithReviewDate);
 
   const expiredConsentCount = records.filter((r) => r.status === "expired").length;
 
@@ -361,14 +370,14 @@ export function evaluateConsentCompliance(records: ConsentRecord[]): ConsentComp
   let score = 0;
 
   // +8 consent obtained rate (full marks at 95%+)
-  if (consentObtainedRate >= 95) score += 8;
+  if (meets(consentObtainedRate, 95)) score += 8;
   else score += (consentObtainedRate / 95) * 8;
 
   // +5 age-appropriate explained rate
   score += (ageAppropriateExplainedRate / 100) * 5;
 
   // +4 review date current
-  score += (reviewDateCurrentRate / 100) * 4;
+  score += ((reviewDateCurrentRate ?? 0) / 100) * 4; // no review dates on file = unevidenced, no marks
 
   // +4 no expired consents
   if (expiredConsentCount === 0) score += 4;
@@ -405,10 +414,10 @@ export function evaluateSARCompliance(requests: SubjectAccessRequest[]): SARComp
     // No SARs = decent baseline of 20 + 3 bonus
     return {
       totalRequests: 0,
-      acknowledgedWithin5DaysRate: 0,
-      completedWithin30DaysRate: 0,
-      redactionCompletedRate: 0,
-      qualityCheckedRate: 0,
+      acknowledgedWithin5DaysRate: null,
+      completedWithin30DaysRate: null,
+      redactionCompletedRate: null,
+      qualityCheckedRate: null,
       overdueCount: 0,
       byStatus,
       overallScore: 23,
@@ -421,10 +430,10 @@ export function evaluateSARCompliance(requests: SubjectAccessRequest[]): SARComp
   const qualityChecked = requests.filter((r) => r.qualityChecked).length;
   const overdueCount = requests.filter((r) => r.status === "overdue").length;
 
-  const acknowledgedWithin5DaysRate = pct(acknowledgedWithin5Days, total);
-  const completedWithin30DaysRate = pct(completedWithin30Days, total);
-  const redactionCompletedRate = pct(redactionCompleted, total);
-  const qualityCheckedRate = pct(qualityChecked, total);
+  const acknowledgedWithin5DaysRate = rate(acknowledgedWithin5Days, total)!;
+  const completedWithin30DaysRate = rate(completedWithin30Days, total)!;
+  const redactionCompletedRate = rate(redactionCompleted, total)!;
+  const qualityCheckedRate = rate(qualityChecked, total)!;
 
   // Scoring: +8 acknowledged within 5 days, +6 completed within 30 days,
   //          +4 redaction, +4 quality checked, +3 no overdue
@@ -526,10 +535,10 @@ function generateStrengths(
     }
   }
 
-  if (consent.consentObtainedRate >= 95) {
+  if (meets(consent.consentObtainedRate, 95)) {
     strengths.push("Consent obtained or actively recorded for 95%+ of applicable areas");
   }
-  if (consent.ageAppropriateExplainedRate >= 90) {
+  if (meets(consent.ageAppropriateExplainedRate, 90)) {
     strengths.push("Age-appropriate explanations provided for consent decisions at a high rate");
   }
   if (consent.expiredConsentCount === 0) {
@@ -569,21 +578,21 @@ function generateAreasForImprovement(
   const areas: string[] = [];
 
   if (breach.totalBreaches > 0) {
-    if (breach.icoNotificationWithin72HoursRate < 100) {
+    if (below(breach.icoNotificationWithin72HoursRate, 100)) {
       areas.push("Not all breaches reported to ICO within 72 hours — risk of regulatory action");
     }
-    if (breach.rootCauseRate < 100) {
+    if (below(breach.rootCauseRate, 100)) {
       areas.push("Root cause analysis not completed for all breaches — repeat incidents may occur");
     }
-    if (breach.lessonsLearnedRate < 100) {
+    if (below(breach.lessonsLearnedRate, 100)) {
       areas.push("Lessons learned not documented for all breaches — organisational learning gap");
     }
   }
 
-  if (consent.consentObtainedRate < 95) {
+  if (below(consent.consentObtainedRate, 95)) {
     areas.push("Consent not actively obtained or recorded for all applicable areas");
   }
-  if (consent.ageAppropriateExplainedRate < 80) {
+  if (below(consent.ageAppropriateExplainedRate, 80)) {
     areas.push("Age-appropriate consent explanations below 80% — children may not understand their data rights");
   }
   if (consent.expiredConsentCount > 0) {
@@ -596,7 +605,7 @@ function generateAreasForImprovement(
   if (sar.overdueCount > 0) {
     areas.push(`${sar.overdueCount} overdue subject access request(s) — statutory breach risk`);
   }
-  if (sar.totalRequests > 0 && sar.redactionCompletedRate < 100) {
+  if (sar.totalRequests > 0 && below(sar.redactionCompletedRate, 100)) {
     areas.push("Redaction not completed for all SARs — risk of inappropriate disclosure");
   }
 
@@ -639,29 +648,29 @@ function generateActions(
   }
 
   // Breach actions
-  if (breach.totalBreaches > 0 && breach.icoNotificationWithin72HoursRate < 100) {
+  if (breach.totalBreaches > 0 && below(breach.icoNotificationWithin72HoursRate, 100)) {
     actions.push("Review breach response procedures to ensure ICO notification within 72 hours");
   }
-  if (breach.totalBreaches > 0 && breach.lessonsLearnedRate < 100) {
+  if (breach.totalBreaches > 0 && below(breach.lessonsLearnedRate, 100)) {
     actions.push("Complete lessons-learned reviews for all outstanding breach investigations");
   }
 
   // Consent actions
-  if (consent.consentObtainedRate < 95) {
+  if (below(consent.consentObtainedRate, 95)) {
     actions.push("Conduct consent audit across all children to close gaps in consent records");
   }
   if (consent.expiredConsentCount > 0) {
     actions.push("Review and renew all expired consent records as a priority");
   }
-  if (consent.ageAppropriateExplainedRate < 80) {
+  if (below(consent.ageAppropriateExplainedRate, 80)) {
     actions.push("Develop age-appropriate data rights materials for use during consent conversations");
   }
 
   // SAR actions
-  if (sar.totalRequests > 0 && sar.redactionCompletedRate < 100) {
+  if (sar.totalRequests > 0 && below(sar.redactionCompletedRate, 100)) {
     actions.push("Ensure redaction processes are applied to all SAR disclosures before release");
   }
-  if (sar.totalRequests > 0 && sar.qualityCheckedRate < 100) {
+  if (sar.totalRequests > 0 && below(sar.qualityCheckedRate, 100)) {
     actions.push("Implement quality-check step for all SAR responses prior to disclosure");
   }
 

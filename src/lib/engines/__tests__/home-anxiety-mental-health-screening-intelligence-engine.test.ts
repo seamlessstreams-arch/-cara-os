@@ -233,12 +233,12 @@ describe("Home Anxiety & Mental Health Screening Intelligence Engine", () => {
 
     it("all rates are 0 for insufficient_data", () => {
       const r = computeAnxietyMentalHealthScreening(baseInput());
-      expect(r.screening_completion_rate).toBe(0);
-      expect(r.anxiety_assessment_rate).toBe(0);
-      expect(r.camhs_referral_rate).toBe(0);
-      expect(r.wellbeing_checkin_rate).toBe(0);
-      expect(r.early_intervention_rate).toBe(0);
-      expect(r.child_engagement_rate).toBe(0);
+      expect(r.screening_completion_rate).toBeNull();
+      expect(r.anxiety_assessment_rate).toBeNull();
+      expect(r.camhs_referral_rate).toBeNull();
+      expect(r.wellbeing_checkin_rate).toBeNull();
+      expect(r.early_intervention_rate).toBeNull();
+      expect(r.child_engagement_rate).toBeNull();
       expect(r.assessment_improvement_avg).toBeNull();
       expect(r.intervention_progress_avg).toBeNull();
     });
@@ -284,7 +284,7 @@ describe("Home Anxiety & Mental Health Screening Intelligence Engine", () => {
     it("all rates are 0", () => {
       const r = computeAnxietyMentalHealthScreening(baseInput({ total_children: 4 }));
       expect(r.total_screenings).toBe(0);
-      expect(r.screening_completion_rate).toBe(0);
+      expect(r.screening_completion_rate).toBeNull();
     });
   });
 

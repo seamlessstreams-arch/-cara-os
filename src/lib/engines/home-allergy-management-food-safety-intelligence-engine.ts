@@ -180,10 +180,6 @@ export interface AllergyManagementFoodSafetyResult {
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -208,14 +204,14 @@ function emptyResult(
     headline,
     total_plans: 0,
     children_with_allergies: 0,
-    allergy_plan_rate: 0,
-    allergen_awareness_rate: 0,
-    epipen_check_rate: 0,
-    food_labelling_rate: 0,
+    allergy_plan_rate: null,
+    allergen_awareness_rate: null,
+    epipen_check_rate: null,
+    food_labelling_rate: null,
     emergency_response_rate: null,
-    child_awareness_rate: 0,
+    child_awareness_rate: null,
     plan_quality_avg: null,
-    training_currency_rate: 0,
+    training_currency_rate: null,
     allergy_plan_records: [],
     allergen_awareness_records: [],
     epipen_check_records: [],
@@ -310,7 +306,7 @@ export function computeAllergyManagementFoodSafety(
   ).size;
   const allergyPlanRate =
     children_with_allergies > 0
-      ? pct(uniqueChildrenWithPlans, children_with_allergies)
+      ? rate(uniqueChildrenWithPlans, children_with_allergies)
       : (allergy_plan_records.length > 0 ? 100 : 0);
 
   const totalPlans = allergy_plan_records.length;
@@ -319,38 +315,38 @@ export function computeAllergyManagementFoodSafety(
   const plansSharedWithStaff = allergy_plan_records.filter(
     (p) => p.plan_shared_with_staff,
   ).length;
-  const planStaffShareRate = pct(plansSharedWithStaff, totalPlans);
+  const planStaffShareRate = rate(plansSharedWithStaff, totalPlans);
 
   const plansSharedWithChild = allergy_plan_records.filter(
     (p) => p.plan_shared_with_child,
   ).length;
-  const childAwarenessRate = pct(plansSharedWithChild, totalPlans);
+  const childAwarenessRate = rate(plansSharedWithChild, totalPlans);
 
   const plansWithCrossContam = allergy_plan_records.filter(
     (p) => p.cross_contamination_measures,
   ).length;
-  const crossContamRate = pct(plansWithCrossContam, totalPlans);
+  const crossContamRate = rate(plansWithCrossContam, totalPlans);
 
   const plansWithRiskAssessment = allergy_plan_records.filter(
     (p) => p.risk_assessment_completed,
   ).length;
-  const riskAssessmentRate = pct(plansWithRiskAssessment, totalPlans);
+  const riskAssessmentRate = rate(plansWithRiskAssessment, totalPlans);
 
   const plansWithPhoto = allergy_plan_records.filter(
     (p) => p.photo_on_plan,
   ).length;
-  const photoOnPlanRate = pct(plansWithPhoto, totalPlans);
+  const photoOnPlanRate = rate(plansWithPhoto, totalPlans);
 
   const plansAccessibleInKitchen = allergy_plan_records.filter(
     (p) => p.plan_accessible_in_kitchen,
   ).length;
-  const kitchenAccessRate = pct(plansAccessibleInKitchen, totalPlans);
+  const kitchenAccessRate = rate(plansAccessibleInKitchen, totalPlans);
 
   const overdueplanReviews = allergy_plan_records.filter(
     (p) => p.plan_review_overdue,
   ).length;
   const planReviewComplianceRate = totalPlans > 0
-    ? pct(totalPlans - overdueplanReviews, totalPlans)
+    ? rate(totalPlans - overdueplanReviews, totalPlans)
     : 0;
 
   // Plan quality: average of key quality indicators per plan. `checks` is a
@@ -404,12 +400,12 @@ export function computeAllergyManagementFoodSafety(
     allergen_awareness_records.map((a) => a.staff_id),
   ).size;
   const allergenAwarenessRate =
-    total_staff > 0 ? pct(uniqueStaffTrained, total_staff) : 0;
+    total_staff > 0 ? rate(uniqueStaffTrained, total_staff) : 0;
 
   const currentTraining = allergen_awareness_records.filter(
     (a) => !a.training_expired,
   ).length;
-  const trainingCurrencyRate = pct(currentTraining, totalTrainingRecords);
+  const trainingCurrencyRate = rate(currentTraining, totalTrainingRecords);
 
   const expiredTraining = allergen_awareness_records.filter(
     (a) => a.training_expired,
@@ -418,17 +414,17 @@ export function computeAllergyManagementFoodSafety(
   const trainingAssessmentPassed = allergen_awareness_records.filter(
     (a) => a.assessment_passed,
   ).length;
-  const assessmentPassRate = pct(trainingAssessmentPassed, totalTrainingRecords);
+  const assessmentPassRate = rate(trainingAssessmentPassed, totalTrainingRecords);
 
   const trainingCoversAll14 = allergen_awareness_records.filter(
     (a) => a.covers_all_14_allergens,
   ).length;
-  const covers14Rate = pct(trainingCoversAll14, totalTrainingRecords);
+  const covers14Rate = rate(trainingCoversAll14, totalTrainingRecords);
 
   const practicalCompleted = allergen_awareness_records.filter(
     (a) => a.practical_component_completed,
   ).length;
-  const practicalRate = pct(practicalCompleted, totalTrainingRecords);
+  const practicalRate = rate(practicalCompleted, totalTrainingRecords);
 
   // --- Epipen checks ---
   const totalEpipenChecks = epipen_check_records.length;
@@ -447,10 +443,10 @@ export function computeAllergyManagementFoodSafety(
   const epipensCompliant = epipen_check_records.filter(
     (e) => e.epipen_in_date && e.epipen_accessible && e.staff_aware_of_location,
   ).length;
-  const epipenCheckRate = pct(epipensCompliant, totalEpipenChecks);
+  const epipenCheckRate = rate(epipensCompliant, totalEpipenChecks);
 
-  const spareAvailableRate = pct(epipensWithSpare, totalEpipenChecks);
-  const travelKitRate = pct(travelKitAvailable, totalEpipenChecks);
+  const spareAvailableRate = rate(epipensWithSpare, totalEpipenChecks);
+  const travelKitRate = rate(travelKitAvailable, totalEpipenChecks);
 
   // --- Food labelling compliance ---
   const totalFoodAudits = food_labelling_records.length;
@@ -462,22 +458,22 @@ export function computeAllergyManagementFoodSafety(
     (sum, f) => sum + f.items_correctly_labelled,
     0,
   );
-  const foodLabellingRate = pct(totalItemsCorrect, totalItemsChecked);
+  const foodLabellingRate = rate(totalItemsCorrect, totalItemsChecked);
 
   const auditsWithCrossContamControls = food_labelling_records.filter(
     (f) => f.cross_contamination_controls,
   ).length;
-  const crossContamControlRate = pct(auditsWithCrossContamControls, totalFoodAudits);
+  const crossContamControlRate = rate(auditsWithCrossContamControls, totalFoodAudits);
 
   const auditsWithSeparateStorage = food_labelling_records.filter(
     (f) => f.separate_storage_for_allergens,
   ).length;
-  const separateStorageRate = pct(auditsWithSeparateStorage, totalFoodAudits);
+  const separateStorageRate = rate(auditsWithSeparateStorage, totalFoodAudits);
 
   const auditsWithMenuInfo = food_labelling_records.filter(
     (f) => f.menu_allergen_info_available,
   ).length;
-  const menuAllergenRate = pct(auditsWithMenuInfo, totalFoodAudits);
+  const menuAllergenRate = rate(auditsWithMenuInfo, totalFoodAudits);
 
   const totalCorrectiveRequired = food_labelling_records.reduce(
     (sum, f) => sum + f.corrective_actions_required,
@@ -487,34 +483,34 @@ export function computeAllergyManagementFoodSafety(
     (sum, f) => sum + f.corrective_actions_completed,
     0,
   );
-  const correctiveActionRate = pct(totalCorrectiveCompleted, totalCorrectiveRequired);
+  const correctiveActionRate = rate(totalCorrectiveCompleted, totalCorrectiveRequired);
 
   // --- Emergency response preparedness ---
   const totalDrills = emergency_response_records.length;
   const drillsWithCorrectProcedure = emergency_response_records.filter(
     (e) => e.correct_procedure_followed,
   ).length;
-  const correctProcedureRate = pct(drillsWithCorrectProcedure, totalDrills);
+  const correctProcedureRate = rate(drillsWithCorrectProcedure, totalDrills);
 
   const drillsWithCorrectEpipen = emergency_response_records.filter(
     (e) => e.epipen_administered_correctly,
   ).length;
-  const epipenAdminRate = pct(drillsWithCorrectEpipen, totalDrills);
+  const epipenAdminRate = rate(drillsWithCorrectEpipen, totalDrills);
 
   const drillsWithCorrectEmergencyCall = emergency_response_records.filter(
     (e) => e.emergency_services_called_correctly,
   ).length;
-  const emergencyCallRate = pct(drillsWithCorrectEmergencyCall, totalDrills);
+  const emergencyCallRate = rate(drillsWithCorrectEmergencyCall, totalDrills);
 
   const drillsDebriefed = emergency_response_records.filter(
     (e) => e.debrief_completed,
   ).length;
-  const debriefRate = pct(drillsDebriefed, totalDrills);
+  const debriefRate = rate(drillsDebriefed, totalDrills);
 
   const drillsWithLessons = emergency_response_records.filter(
     (e) => e.lessons_learned_documented,
   ).length;
-  const lessonsDocRate = pct(drillsWithLessons, totalDrills);
+  const lessonsDocRate = rate(drillsWithLessons, totalDrills);
 
   const totalParticipantsExpected = emergency_response_records.reduce(
     (sum, e) => sum + e.participants_expected,
@@ -524,7 +520,7 @@ export function computeAllergyManagementFoodSafety(
     (sum, e) => sum + e.participants_attended,
     0,
   );
-  const drillAttendanceRate = pct(totalParticipantsAttended, totalParticipantsExpected);
+  const drillAttendanceRate = rate(totalParticipantsAttended, totalParticipantsExpected);
 
   const totalImprovementsIdentified = emergency_response_records.reduce(
     (sum, e) => sum + e.improvements_identified,
@@ -534,7 +530,7 @@ export function computeAllergyManagementFoodSafety(
     (sum, e) => sum + e.improvements_actioned,
     0,
   );
-  const improvementActionRate = pct(totalImprovementsActioned, totalImprovementsIdentified);
+  const improvementActionRate = rate(totalImprovementsActioned, totalImprovementsIdentified);
 
   // Emergency response composite rate — null when no drills recorded.
   const emergencyResponseRate: number | null = totalDrills > 0
@@ -1324,7 +1320,7 @@ export function computeAllergyManagementFoodSafety(
 
   // Severity distribution analysis
   if (highRiskPlans > 0 && totalPlans > 0) {
-    const highRiskPct = pct(highRiskPlans, totalPlans);
+    const highRiskPct = rate(highRiskPlans, totalPlans);
     if (meets(highRiskPct, 50)) {
       insights.push({
         text: `${highRiskPct}% of allergy plans relate to severe or life-threatening allergies (${lifeThreatPlans} life-threatening, ${severePlans} severe). The high proportion of serious allergies demands exceptional vigilance in plan quality, epipen readiness, and staff training. Any failure in management could have catastrophic consequences.`,

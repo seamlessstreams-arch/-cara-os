@@ -8,7 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { meets } from "@/lib/metrics/rate";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import {
   AlertTriangle, Brain, Loader2, AlertCircle,
   Sparkles, Pill, ShieldCheck, Clock,
@@ -120,7 +120,7 @@ export function ChildMedicationIntelligenceCard({ childId }: { childId: string }
               <div className="flex items-center justify-center gap-1">
                 <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums", meets(d.adherence.adherence_rate_30d, 95) ? "text-green-600" : meets(d.adherence.adherence_rate_30d, 80) ? "text-amber-600" : "text-red-600")}>
-                  {d.adherence.adherence_rate_30d}%
+                  {formatRate(d.adherence.adherence_rate_30d)}
                 </p>
                 {d.adherence.adherence_trend !== "insufficient_data" && (
                   <TrendIcon className={cn("h-3 w-3", TREND_COLOR[d.adherence.adherence_trend])} />
@@ -132,7 +132,7 @@ export function ChildMedicationIntelligenceCard({ childId }: { childId: string }
               <div className="flex items-center justify-center gap-1">
                 <Eye className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums", meets(d.witnessing.witnessing_rate_30d, 95) ? "text-green-600" : meets(d.witnessing.witnessing_rate_30d, 80) ? "text-amber-600" : "text-red-600")}>
-                  {d.witnessing.witnessing_rate_30d}%
+                  {formatRate(d.witnessing.witnessing_rate_30d)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Witnessed</p>
@@ -141,7 +141,7 @@ export function ChildMedicationIntelligenceCard({ childId }: { childId: string }
               <div className="flex items-center justify-center gap-1">
                 <Clock className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums", meets(d.timeliness.on_time_rate_30d, 90) ? "text-green-600" : meets(d.timeliness.on_time_rate_30d, 70) ? "text-amber-600" : "text-red-600")}>
-                  {d.timeliness.on_time_rate_30d}%
+                  {formatRate(d.timeliness.on_time_rate_30d)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">On Time</p>
@@ -161,8 +161,8 @@ export function ChildMedicationIntelligenceCard({ childId }: { childId: string }
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Adherence</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>30d: <span className={cn("font-medium", meets(d.adherence.adherence_rate_30d, 90) ? "text-green-600" : "text-amber-600")}>{d.adherence.adherence_rate_30d}%</span></p>
-                <p>7d: <span className="font-medium text-slate-600">{d.adherence.adherence_rate_7d}%</span></p>
+                <p>30d: <span className={cn("font-medium", meets(d.adherence.adherence_rate_30d, 90) ? "text-green-600" : "text-amber-600")}>{formatRate(d.adherence.adherence_rate_30d)}</span></p>
+                <p>7d: <span className="font-medium text-slate-600">{formatRate(d.adherence.adherence_rate_7d)}</span></p>
                 <p>Total admins: <span className="font-medium text-slate-600">{d.adherence.total_administrations_30d}</span></p>
                 {d.adherence.missed_count_30d > 0 && (
                   <p className="text-red-600 font-medium">{d.adherence.missed_count_30d} missed dose(s)</p>
@@ -175,9 +175,9 @@ export function ChildMedicationIntelligenceCard({ childId }: { childId: string }
             <div className="rounded border p-2 text-xs">
               <p className="font-medium text-slate-700 mb-1">Safety</p>
               <div className="space-y-0.5 text-[10px] text-muted-foreground">
-                <p>Witnessing: <span className={meets(d.witnessing.witnessing_rate_30d, 95) ? "text-green-600 font-medium" : "text-amber-600 font-medium"}>{d.witnessing.witnessing_rate_30d}%</span></p>
+                <p>Witnessing: <span className={meets(d.witnessing.witnessing_rate_30d, 95) ? "text-green-600 font-medium" : "text-amber-600 font-medium"}>{formatRate(d.witnessing.witnessing_rate_30d)}</span></p>
                 {d.has_controlled_drugs && (
-                  <p>Controlled: <span className={d.witnessing.controlled_drug_witnessing_rate === 100 ? "text-green-600 font-medium" : "text-red-600 font-medium"}>{d.witnessing.controlled_drug_witnessing_rate}%</span></p>
+                  <p>Controlled: <span className={d.witnessing.controlled_drug_witnessing_rate === null ? "text-slate-500 font-medium" : d.witnessing.controlled_drug_witnessing_rate === 100 ? "text-green-600 font-medium" : "text-red-600 font-medium"}>{formatRate(d.witnessing.controlled_drug_witnessing_rate)}</span></p>
                 )}
                 <p>Errors (90d): <span className={cn("font-medium", d.errors.total_errors_90d === 0 ? "text-green-600" : "text-red-600")}>{d.errors.total_errors_90d}</span></p>
                 {d.errors.open_errors > 0 && (

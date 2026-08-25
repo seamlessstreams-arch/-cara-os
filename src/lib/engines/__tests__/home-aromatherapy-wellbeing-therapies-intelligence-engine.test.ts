@@ -389,16 +389,16 @@ describe("Home Aromatherapy & Wellbeing Therapies Intelligence Engine", () => {
       expect(r.headline).toContain("urgent attention");
     });
 
-    it("16 — all rates zero when all empty + children > 0", () => {
+    it("16 — all rates null when all empty + children > 0", () => {
       const r = computeAromatherapyWellbeingTherapies(
         baseInput({ total_children: 3 }),
       );
-      expect(r.aromatherapy_access_rate).toBe(0);
-      expect(r.therapy_quality_rate).toBe(0);
-      expect(r.relaxation_effectiveness_rate).toBe(0);
-      expect(r.calming_technique_rate).toBe(0);
-      expect(r.child_benefit_rate).toBe(0);
-      expect(r.child_engagement_rate).toBe(0);
+      expect(r.aromatherapy_access_rate).toBeNull();
+      expect(r.therapy_quality_rate).toBeNull();
+      expect(r.relaxation_effectiveness_rate).toBeNull();
+      expect(r.calming_technique_rate).toBeNull();
+      expect(r.child_benefit_rate).toBeNull();
+      expect(r.child_engagement_rate).toBeNull();
     });
   });
 
@@ -476,7 +476,7 @@ describe("Home Aromatherapy & Wellbeing Therapies Intelligence Engine", () => {
       expect(r.aromatherapy_access_rate).toBe(50); // 2/4
     });
 
-    it("24 — 0% when total_children is 0", () => {
+    it("24 — null when total_children is 0", () => {
       const r = computeAromatherapyWellbeingTherapies(
         baseInput({
           total_children: 0,
@@ -560,7 +560,7 @@ describe("Home Aromatherapy & Wellbeing Therapies Intelligence Engine", () => {
       expect(r.therapy_quality_rate).toBe(50);
     });
 
-    it("29 — 0% when no aroma or wellbeing records", () => {
+    it("29 — null when no aroma or wellbeing records", () => {
       const r = computeAromatherapyWellbeingTherapies(
         baseInput({ calming_technique_records: nCalming(3) }),
       );
@@ -625,9 +625,9 @@ describe("Home Aromatherapy & Wellbeing Therapies Intelligence Engine", () => {
       expect(r.relaxation_effectiveness_rate).toBe(0);
     });
 
-    it("33 — 0% with no relaxation records", () => {
+    it("33 — null with no relaxation records", () => {
       const r = computeAromatherapyWellbeingTherapies(baseInput());
-      expect(r.relaxation_effectiveness_rate).toBe(0);
+      expect(r.relaxation_effectiveness_rate).toBeNull();
     });
   });
 
@@ -687,9 +687,9 @@ describe("Home Aromatherapy & Wellbeing Therapies Intelligence Engine", () => {
       expect(r.calming_technique_rate).toBe(88);
     });
 
-    it("37 — 0% with no calming records", () => {
+    it("37 — null with no calming records", () => {
       const r = computeAromatherapyWellbeingTherapies(baseInput());
-      expect(r.calming_technique_rate).toBe(0);
+      expect(r.calming_technique_rate).toBeNull();
     });
   });
 
@@ -742,9 +742,9 @@ describe("Home Aromatherapy & Wellbeing Therapies Intelligence Engine", () => {
       expect(r.child_benefit_rate).toBe(50);
     });
 
-    it("41 — 0% with no benefit records", () => {
+    it("41 — null with no benefit records", () => {
       const r = computeAromatherapyWellbeingTherapies(baseInput());
-      expect(r.child_benefit_rate).toBe(0);
+      expect(r.child_benefit_rate).toBeNull();
     });
   });
 
@@ -777,9 +777,9 @@ describe("Home Aromatherapy & Wellbeing Therapies Intelligence Engine", () => {
       expect(r.child_engagement_rate).toBe(0);
     });
 
-    it("44 — 0% with no records of any type", () => {
+    it("44 — null with no records of any type", () => {
       const r = computeAromatherapyWellbeingTherapies(baseInput());
-      expect(r.child_engagement_rate).toBe(0);
+      expect(r.child_engagement_rate).toBeNull();
     });
 
     it("45 — mixed feedback gives proportional rate", () => {

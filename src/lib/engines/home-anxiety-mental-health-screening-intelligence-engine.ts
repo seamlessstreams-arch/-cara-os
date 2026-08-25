@@ -172,10 +172,6 @@ export interface AnxietyMentalHealthResult {
 // -- Helpers -----------------------------------------------------------------
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -199,12 +195,12 @@ function emptyResult(
     mental_health_score: score,
     headline,
     total_screenings: 0,
-    screening_completion_rate: 0,
-    anxiety_assessment_rate: 0,
-    camhs_referral_rate: 0,
-    wellbeing_checkin_rate: 0,
-    early_intervention_rate: 0,
-    child_engagement_rate: 0,
+    screening_completion_rate: null,
+    anxiety_assessment_rate: null,
+    camhs_referral_rate: null,
+    wellbeing_checkin_rate: null,
+    early_intervention_rate: null,
+    child_engagement_rate: null,
     assessment_improvement_avg: null,
     intervention_progress_avg: null,
     strengths: [],
@@ -289,13 +285,13 @@ export function computeAnxietyMentalHealthScreening(
   const completedScreenings = screening_records.filter(
     (s) => s.completed,
   ).length;
-  const screeningCompletionRate = pct(completedScreenings, totalScreenings);
+  const screeningCompletionRate = rate(completedScreenings, totalScreenings);
 
   const uniqueChildrenScreened = new Set(
     screening_records.filter((s) => s.completed).map((s) => s.child_id),
   ).size;
   const screeningCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenScreened, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenScreened, total_children) : 0;
 
   const screeningsWithConsent = screening_records.filter(
     (s) => s.child_consented,
@@ -307,7 +303,7 @@ export function computeAnxietyMentalHealthScreening(
   const screeningsWithFollowUpCompleted = screening_records.filter(
     (s) => s.follow_up_required && s.follow_up_completed,
   ).length;
-  const followUpCompletionRate = pct(
+  const followUpCompletionRate = rate(
     screeningsWithFollowUpCompleted,
     screeningsRequiringFollowUp,
   );
@@ -317,7 +313,7 @@ export function computeAnxietyMentalHealthScreening(
   ).length;
   const screeningReviewComplianceRate =
     totalScreenings > 0
-      ? pct(totalScreenings - overdueScreeningReviews, totalScreenings)
+      ? rate(totalScreenings - overdueScreeningReviews, totalScreenings)
       : 0;
 
   // --- Anxiety assessments ---
@@ -326,12 +322,12 @@ export function computeAnxietyMentalHealthScreening(
     anxiety_assessment_records.map((a) => a.child_id),
   ).size;
   const anxietyAssessmentRate =
-    total_children > 0 ? pct(uniqueChildrenAssessed, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenAssessed, total_children) : 0;
 
   const assessmentsShowingImprovement = anxiety_assessment_records.filter(
     (a) => a.improvement_noted,
   ).length;
-  const assessmentImprovementRate = pct(
+  const assessmentImprovementRate = rate(
     assessmentsShowingImprovement,
     totalAssessments,
   );
@@ -339,7 +335,7 @@ export function computeAnxietyMentalHealthScreening(
   const assessmentsWithChildInvolvement = anxiety_assessment_records.filter(
     (a) => a.child_involved,
   ).length;
-  const assessmentChildInvolvementRate = pct(
+  const assessmentChildInvolvementRate = rate(
     assessmentsWithChildInvolvement,
     totalAssessments,
   );
@@ -347,7 +343,7 @@ export function computeAnxietyMentalHealthScreening(
   const assessmentsWithActionPlan = anxiety_assessment_records.filter(
     (a) => a.action_plan_created,
   ).length;
-  const actionPlanRate = pct(assessmentsWithActionPlan, totalAssessments);
+  const actionPlanRate = rate(assessmentsWithActionPlan, totalAssessments);
 
   const overdueAssessmentReviews = anxiety_assessment_records.filter(
     (a) => a.review_overdue,
@@ -385,12 +381,12 @@ export function computeAnxietyMentalHealthScreening(
     camhs_referral_records.map((r) => r.child_id),
   ).size;
   const camhsReferralRate =
-    total_children > 0 ? pct(uniqueChildrenReferred, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenReferred, total_children) : 0;
 
   const acceptedReferrals = camhs_referral_records.filter(
     (r) => r.accepted,
   ).length;
-  const referralAcceptanceRate = pct(acceptedReferrals, totalReferrals);
+  const referralAcceptanceRate = rate(acceptedReferrals, totalReferrals);
 
   const referralDaysToAppt = camhs_referral_records
     .filter((r) => r.days_to_first_appointment !== null && r.days_to_first_appointment! > 0)
@@ -407,17 +403,17 @@ export function computeAnxietyMentalHealthScreening(
   const childEngagedWithCamhs = camhs_referral_records.filter(
     (r) => r.child_engaged,
   ).length;
-  const camhsChildEngagementRate = pct(childEngagedWithCamhs, totalReferrals);
+  const camhsChildEngagementRate = rate(childEngagedWithCamhs, totalReferrals);
 
   const homeSupportedAttendance = camhs_referral_records.filter(
     (r) => r.home_supported_attendance,
   ).length;
-  const attendanceSupportRate = pct(homeSupportedAttendance, totalReferrals);
+  const attendanceSupportRate = rate(homeSupportedAttendance, totalReferrals);
 
   const positiveOutcomeReferrals = camhs_referral_records.filter(
     (r) => r.outcome_positive,
   ).length;
-  const referralOutcomeRate = pct(positiveOutcomeReferrals, totalReferrals);
+  const referralOutcomeRate = rate(positiveOutcomeReferrals, totalReferrals);
 
   const overdueReferralReviews = camhs_referral_records.filter(
     (r) => r.review_overdue,
@@ -429,7 +425,7 @@ export function computeAnxietyMentalHealthScreening(
     wellbeing_checkin_records.map((w) => w.child_id),
   ).size;
   const wellbeingCheckinRate =
-    total_children > 0 ? pct(uniqueChildrenCheckedIn, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenCheckedIn, total_children) : 0;
 
   const engagedCheckins = wellbeing_checkin_records.filter(
     (w) => w.child_engaged,
@@ -441,12 +437,12 @@ export function computeAnxietyMentalHealthScreening(
   const concernsActionedCount = wellbeing_checkin_records.filter(
     (w) => w.concerns_raised && w.concerns_actioned,
   ).length;
-  const concernsActionedRate = pct(concernsActionedCount, checkinsWithConcerns);
+  const concernsActionedRate = rate(concernsActionedCount, checkinsWithConcerns);
 
   const checkinsWithNotes = wellbeing_checkin_records.filter(
     (w) => w.notes_recorded,
   ).length;
-  const checkinDocumentationRate = pct(checkinsWithNotes, totalCheckins);
+  const checkinDocumentationRate = rate(checkinsWithNotes, totalCheckins);
 
   const moodRatingSum = wellbeing_checkin_records.reduce(
     (sum, w) => sum + w.mood_rating,
@@ -468,12 +464,12 @@ export function computeAnxietyMentalHealthScreening(
     early_intervention_records.map((i) => i.child_id),
   ).size;
   const earlyInterventionRate =
-    total_children > 0 ? pct(uniqueChildrenWithIntervention, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenWithIntervention, total_children) : 0;
 
   const interventionsShowingImprovement = early_intervention_records.filter(
     (i) => i.current_score > i.baseline_score,
   ).length;
-  const interventionEffectivenessRate = pct(
+  const interventionEffectivenessRate = rate(
     interventionsShowingImprovement,
     totalInterventions,
   );
@@ -497,12 +493,12 @@ export function computeAnxietyMentalHealthScreening(
   const childReportedImprovement = early_intervention_records.filter(
     (i) => i.child_reported_improvement,
   ).length;
-  const childReportedImprovementRate = pct(childReportedImprovement, totalInterventions);
+  const childReportedImprovementRate = rate(childReportedImprovement, totalInterventions);
 
   const staffReportedImprovement = early_intervention_records.filter(
     (i) => i.staff_reported_improvement,
   ).length;
-  const staffReportedImprovementRate = pct(staffReportedImprovement, totalInterventions);
+  const staffReportedImprovementRate = rate(staffReportedImprovement, totalInterventions);
 
   const sessionsCompletedTotal = early_intervention_records.reduce(
     (sum, i) => sum + i.sessions_completed,
@@ -512,7 +508,7 @@ export function computeAnxietyMentalHealthScreening(
     (sum, i) => sum + i.sessions_planned,
     0,
   );
-  const sessionCompletionRate = pct(sessionsCompletedTotal, sessionsPlannedTotal);
+  const sessionCompletionRate = rate(sessionsCompletedTotal, sessionsPlannedTotal);
 
   const overdueInterventionReviews = early_intervention_records.filter(
     (i) => i.review_overdue && i.active,
@@ -521,7 +517,7 @@ export function computeAnxietyMentalHealthScreening(
   const professionalInvolved = early_intervention_records.filter(
     (i) => i.professional_involved,
   ).length;
-  const professionalInvolvementRate = pct(professionalInvolved, totalInterventions);
+  const professionalInvolvementRate = rate(professionalInvolved, totalInterventions);
 
   // --- Child engagement rate (composite) ---
   const totalEngagementOpportunities =
@@ -532,7 +528,7 @@ export function computeAnxietyMentalHealthScreening(
     childEngagedWithCamhs +
     engagedCheckins +
     childReportedImprovement;
-  const childEngagementRate = pct(totalEngaged, totalEngagementOpportunities);
+  const childEngagementRate = rate(totalEngaged, totalEngagementOpportunities);
 
   // ========================================================================
   // SCORING: base 52, max bonuses +28, 4 penalties
@@ -1215,7 +1211,7 @@ export function computeAnxietyMentalHealthScreening(
   }
 
   if (severeAssessments > 0 && totalAssessments > 0) {
-    const severePct = pct(severeAssessments, totalAssessments);
+    const severePct = rate(severeAssessments, totalAssessments);
     insights.push({
       text: `${severeAssessments} child${severeAssessments !== 1 ? "ren" : ""} assessed with severe anxiety (${severePct}% of assessments). Children with severe anxiety are at significant risk of self-harm, disengagement, and placement breakdown. These children require intensive, clinically-informed support with regular specialist review.`,
       severity: "critical",
@@ -1315,7 +1311,7 @@ export function computeAnxietyMentalHealthScreening(
   }
 
   if (moderateAssessments > 0 && totalAssessments > 0) {
-    const moderatePct = pct(moderateAssessments, totalAssessments);
+    const moderatePct = rate(moderateAssessments, totalAssessments);
     if (meets(moderatePct, 30)) {
       insights.push({
         text: `${moderateAssessments} child${moderateAssessments !== 1 ? "ren" : ""} assessed with moderate anxiety (${moderatePct}% of assessments). Moderate anxiety can escalate to severe without appropriate intervention. Ensure these children have active support plans and regular monitoring.`,

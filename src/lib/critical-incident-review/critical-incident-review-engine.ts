@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — Critical Incident Review Intelligence Engine
 //
@@ -135,10 +136,14 @@ export interface DebriefQualityResult {
   debriefedOnTime: number;
   debriefedLate: number;
   notDebriefed: number;
-  debriefCompletionRate: number;    // %
-  timelyDebriefRate: number;        // %
-  childIncludedRate: number;        // %
-  rootCauseIdentifiedRate: number;  // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  debriefCompletionRate: number | null;    // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyDebriefRate: number | null;        // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  childIncludedRate: number | null;        // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  rootCauseIdentifiedRate: number | null;  // %
   overallScore: number;             // 0–30
 }
 
@@ -149,18 +154,24 @@ export interface LearningIdentificationResult {
   implemented: number;
   embedded: number;
   notIdentified: number;
-  implementationRate: number;       // %
-  sharedWithTeamRate: number;       // %
-  sharedInSupervisionRate: number;  // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  implementationRate: number | null;       // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  sharedWithTeamRate: number | null;       // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  sharedInSupervisionRate: number | null;  // %
   overallScore: number;             // 0–25
 }
 
 export interface PracticeChangeResult {
   totalChanges: number;
   changesByType: Record<string, number>;
-  impactAssessedRate: number;       // %
-  positiveImpactRate: number;       // %
-  sustainabilityReviewedRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  impactAssessedRate: number | null;       // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveImpactRate: number | null;       // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  sustainabilityReviewedRate: number | null; // %
   overallScore: number;             // 0–25
 }
 
@@ -171,7 +182,8 @@ export interface TrendAnalysisResult {
   overallTrend: "increasing" | "stable" | "decreasing";
   highSeverityCount: number;
   criticalSeverityCount: number;
-  repeatIncidentRate: number;       // % of children with >1 incident
+  /** null when the population is empty — nothing measured, not 0%. */
+  repeatIncidentRate: number | null;       // % of children with >1 incident
   overallScore: number;             // 0–20
 }
 
@@ -193,11 +205,6 @@ export interface CriticalIncidentReviewIntelligence {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 1000) / 10;
-}
 
 function clamp(v: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, v));
@@ -292,8 +299,8 @@ export function evaluateDebriefQuality(
   if (periodIncidents.length === 0) {
     return {
       totalIncidents: 0, debriefRequired: 0, debriefedOnTime: 0,
-      debriefedLate: 0, notDebriefed: 0, debriefCompletionRate: 0,
-      timelyDebriefRate: 0, childIncludedRate: 0, rootCauseIdentifiedRate: 0,
+      debriefedLate: 0, notDebriefed: 0, debriefCompletionRate: null,
+      timelyDebriefRate: null, childIncludedRate: null, rootCauseIdentifiedRate: null,
       overallScore: 0,
     };
   }
@@ -338,20 +345,20 @@ export function evaluateDebriefQuality(
     if (debrief.rootCauseIdentified) rootCause++;
   }
 
-  const completionRate = pct(onTime + late, debriefRequired);
-  const timelyRate = pct(onTime, debriefRequired);
+  const completionRate = rate(onTime + late, debriefRequired);
+  const timelyRate = rate(onTime, debriefRequired);
   const completedDebriefs = debriefs.filter(
     (d) => d.status === "completed_on_time" || d.status === "completed_late",
   );
-  const childRate = pct(childIncluded, completedDebriefs.length);
-  const rootCauseRate = pct(rootCause, completedDebriefs.length);
+  const childRate = rate(childIncluded, completedDebriefs.length);
+  const rootCauseRate = rate(rootCause, completedDebriefs.length);
 
   // Scoring — 30 points max
   let score = 0;
-  score += (completionRate / 100) * 10;     // Completion: 10 pts
-  score += (timelyRate / 100) * 8;          // Timeliness: 8 pts
-  score += (childRate / 100) * 6;           // Child inclusion: 6 pts
-  score += (rootCauseRate / 100) * 6;       // Root cause: 6 pts
+  score += ((completionRate ?? 0) / 100) * 10;     // Completion: 10 pts
+  score += ((timelyRate ?? 0) / 100) * 8;          // Timeliness: 8 pts
+  score += ((childRate ?? 0) / 100) * 6;           // Child inclusion: 6 pts
+  score += ((rootCauseRate ?? 0) / 100) * 6;       // Root cause: 6 pts
 
   return {
     totalIncidents: periodIncidents.length,
@@ -383,8 +390,8 @@ export function evaluateLearningIdentification(
   if (periodLearnings.length === 0) {
     return {
       totalLearnings: 0, identified: 0, actionPlanned: 0, implemented: 0,
-      embedded: 0, notIdentified: 0, implementationRate: 0,
-      sharedWithTeamRate: 0, sharedInSupervisionRate: 0, overallScore: 0,
+      embedded: 0, notIdentified: 0, implementationRate: null,
+      sharedWithTeamRate: null, sharedInSupervisionRate: null, overallScore: 0,
     };
   }
 
@@ -394,11 +401,11 @@ export function evaluateLearningIdentification(
   const embedded = periodLearnings.filter((l) => l.status === "embedded").length;
   const notIdentified = periodLearnings.filter((l) => l.status === "not_identified").length;
 
-  const implementationRate = pct(implemented + embedded, periodLearnings.length);
+  const implementationRate = rate(implemented + embedded, periodLearnings.length)!;
   const sharedTeam = periodLearnings.filter((l) => l.sharedWithTeam).length;
-  const sharedTeamRate = pct(sharedTeam, periodLearnings.length);
+  const sharedTeamRate = rate(sharedTeam, periodLearnings.length)!;
   const sharedSupervision = periodLearnings.filter((l) => l.sharedInSupervision).length;
-  const sharedSupervisionRate = pct(sharedSupervision, periodLearnings.length);
+  const sharedSupervisionRate = rate(sharedSupervision, periodLearnings.length)!;
 
   // Scoring — 25 points max
   let score = 0;
@@ -408,7 +415,7 @@ export function evaluateLearningIdentification(
 
   // Bonus for embedded learnings: up to 4 pts
   if (periodLearnings.length > 0) {
-    const embeddedRate = pct(embedded, periodLearnings.length);
+    const embeddedRate = rate(embedded, periodLearnings.length)!;
     score += (embeddedRate / 100) * 4;
   }
 
@@ -439,8 +446,8 @@ export function evaluatePracticeChanges(
 
   if (periodChanges.length === 0) {
     return {
-      totalChanges: 0, changesByType: {}, impactAssessedRate: 0,
-      positiveImpactRate: 0, sustainabilityReviewedRate: 0, overallScore: 0,
+      totalChanges: 0, changesByType: {}, impactAssessedRate: null,
+      positiveImpactRate: null, sustainabilityReviewedRate: null, overallScore: 0,
     };
   }
 
@@ -451,13 +458,13 @@ export function evaluatePracticeChanges(
   }
 
   const impactAssessed = periodChanges.filter((c) => c.impactAssessed).length;
-  const impactRate = pct(impactAssessed, periodChanges.length);
+  const impactRate = rate(impactAssessed, periodChanges.length)!;
 
   const withPositive = periodChanges.filter((c) => c.impactAssessed && c.impactPositive === true).length;
-  const positiveRate = pct(withPositive, impactAssessed);
+  const positiveRate = rate(withPositive, impactAssessed);
 
   const withSustainability = periodChanges.filter((c) => c.sustainabilityReviewDate).length;
-  const sustainabilityRate = pct(withSustainability, periodChanges.length);
+  const sustainabilityRate = rate(withSustainability, periodChanges.length)!;
 
   // Scoring — 25 points max
   let score = 0;
@@ -471,7 +478,7 @@ export function evaluatePracticeChanges(
 
   // Positive impact: up to 5 pts
   if (impactAssessed > 0) {
-    score += (positiveRate / 100) * 5;
+    score += (positiveRate! / 100) * 5;
   }
 
   // Sustainability review: up to 4 pts
@@ -503,7 +510,7 @@ export function evaluateTrendAnalysis(
     return {
       trends: [], totalIncidents: 0, previousPeriodTotal: 0,
       overallTrend: "stable", highSeverityCount: 0, criticalSeverityCount: 0,
-      repeatIncidentRate: 0, overallScore: 10, // Neutral — no incidents is positive
+      repeatIncidentRate: null, overallScore: 10, // Neutral — no incidents is positive
     };
   }
 
@@ -546,7 +553,7 @@ export function evaluateTrendAnalysis(
   }
   const uniqueChildren = childIncidents.size;
   const repeatChildren = [...childIncidents.values()].filter((c) => c > 1).length;
-  const repeatRate = pct(repeatChildren, uniqueChildren);
+  const repeatRate = rate(repeatChildren, uniqueChildren);
 
   // Scoring — 20 points max
   let score = 10; // Start at midpoint
@@ -561,8 +568,8 @@ export function evaluateTrendAnalysis(
   if (highSeverity === 0) score += 3;
 
   // High repeat rate penalty: -3
-  if (repeatRate > 50) score -= 3;
-  else if (repeatRate > 25) score -= 1;
+  if (above(repeatRate, 50)) score -= 3;
+  else if (above(repeatRate, 25)) score -= 1;
 
   return {
     trends,
@@ -601,25 +608,25 @@ export function generateCriticalIncidentReviewIntelligence(
 
   // ── Strengths ──
   const strengths: string[] = [];
-  if (debrief.debriefCompletionRate >= 90 && debrief.debriefRequired > 0) {
+  if (meets(debrief.debriefCompletionRate, 90) && debrief.debriefRequired > 0) {
     strengths.push("Excellent debrief completion rate — incidents are consistently reviewed");
   }
-  if (debrief.timelyDebriefRate >= 85 && debrief.debriefRequired > 0) {
+  if (meets(debrief.timelyDebriefRate, 85) && debrief.debriefRequired > 0) {
     strengths.push("Debriefs are conducted promptly after incidents, supporting timely learning");
   }
-  if (debrief.childIncludedRate >= 80 && debrief.debriefRequired > 0) {
+  if (meets(debrief.childIncludedRate, 80) && debrief.debriefRequired > 0) {
     strengths.push("Children are meaningfully included in incident debriefs, respecting their right to be heard");
   }
-  if (debrief.rootCauseIdentifiedRate >= 80 && debrief.debriefRequired > 0) {
+  if (meets(debrief.rootCauseIdentifiedRate, 80) && debrief.debriefRequired > 0) {
     strengths.push("Root cause analysis is consistently conducted, enabling deeper understanding");
   }
-  if (learning.implementationRate >= 80 && learning.totalLearnings > 0) {
+  if (meets(learning.implementationRate, 80) && learning.totalLearnings > 0) {
     strengths.push("Strong follow-through from learning to implementation — changes are actioned");
   }
-  if (learning.sharedWithTeamRate >= 85 && learning.totalLearnings > 0) {
+  if (meets(learning.sharedWithTeamRate, 85) && learning.totalLearnings > 0) {
     strengths.push("Learning is consistently shared across the team, building a collective learning culture");
   }
-  if (practice.totalChanges > 0 && practice.impactAssessedRate >= 80) {
+  if (practice.totalChanges > 0 && meets(practice.impactAssessedRate, 80)) {
     strengths.push("Practice changes are assessed for impact, ensuring evidence-based improvements");
   }
   if (trend.overallTrend === "decreasing") {
@@ -634,16 +641,16 @@ export function generateCriticalIncidentReviewIntelligence(
   if (debrief.notDebriefed > 0) {
     areasForImprovement.push(`${debrief.notDebriefed} incident(s) have not been debriefed — all significant incidents require review`);
   }
-  if (debrief.timelyDebriefRate < 75 && debrief.debriefRequired > 0) {
+  if (below(debrief.timelyDebriefRate, 75) && debrief.debriefRequired > 0) {
     areasForImprovement.push("Debriefs need to be conducted more promptly after incidents");
   }
-  if (debrief.childIncludedRate < 60 && debrief.debriefRequired > 0) {
+  if (below(debrief.childIncludedRate, 60) && debrief.debriefRequired > 0) {
     areasForImprovement.push("Children should be more routinely included in incident debriefs");
   }
-  if (learning.implementationRate < 60 && learning.totalLearnings > 0) {
+  if (below(learning.implementationRate, 60) && learning.totalLearnings > 0) {
     areasForImprovement.push("Learning from incidents is identified but not consistently implemented");
   }
-  if (learning.sharedWithTeamRate < 70 && learning.totalLearnings > 0) {
+  if (below(learning.sharedWithTeamRate, 70) && learning.totalLearnings > 0) {
     areasForImprovement.push("Learning needs to be shared more widely across the team");
   }
   if (practice.totalChanges === 0 && learning.totalLearnings > 0) {
@@ -652,7 +659,7 @@ export function generateCriticalIncidentReviewIntelligence(
   if (trend.overallTrend === "increasing") {
     areasForImprovement.push("Incident numbers are increasing — review preventative strategies");
   }
-  if (trend.repeatIncidentRate > 30) {
+  if (above(trend.repeatIncidentRate, 30)) {
     areasForImprovement.push("High repeat incident rate — patterns need deeper analysis and intervention");
   }
 
@@ -664,19 +671,19 @@ export function generateCriticalIncidentReviewIntelligence(
   if (trend.criticalSeverityCount > 0) {
     actions.push(`URGENT: Review all ${trend.criticalSeverityCount} critical severity incident(s) for immediate learning`);
   }
-  if (learning.totalLearnings > 0 && learning.implementationRate < 60) {
+  if (learning.totalLearnings > 0 && below(learning.implementationRate, 60)) {
     actions.push("HIGH: Develop implementation plans for identified learning outcomes");
   }
   if (trend.overallTrend === "increasing") {
     actions.push("HIGH: Conduct a strategic review of incident patterns and prevention strategies");
   }
-  if (debrief.childIncludedRate < 60 && debrief.debriefRequired > 0) {
+  if (below(debrief.childIncludedRate, 60) && debrief.debriefRequired > 0) {
     actions.push("MEDIUM: Review debrief processes to ensure children are supported to participate");
   }
-  if (practice.totalChanges > 0 && practice.impactAssessedRate < 50) {
+  if (practice.totalChanges > 0 && below(practice.impactAssessedRate, 50)) {
     actions.push("MEDIUM: Assess the impact of practice changes to ensure they are effective");
   }
-  if (learning.sharedWithTeamRate < 70 && learning.totalLearnings > 0) {
+  if (below(learning.sharedWithTeamRate, 70) && learning.totalLearnings > 0) {
     actions.push("LOW: Include incident learning as a standing agenda item in team meetings");
   }
 

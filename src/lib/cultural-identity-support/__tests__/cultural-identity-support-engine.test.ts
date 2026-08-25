@@ -417,10 +417,10 @@ describe("evaluateNeedsAssessment", () => {
     const result = evaluateNeedsAssessment([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalAssessments).toBe(0);
-    expect(result.fullyMetRate).toBe(0);
-    expect(result.reviewCurrentRate).toBe(0);
-    expect(result.childConsultedRate).toBe(0);
-    expect(result.familyConsultedRate).toBe(0);
+    expect(result.fullyMetRate).toBeNull();
+    expect(result.reviewCurrentRate).toBeNull();
+    expect(result.childConsultedRate).toBeNull();
+    expect(result.familyConsultedRate).toBeNull();
     expect(result.needTypeCoverage).toBe(0);
   });
 
@@ -596,10 +596,10 @@ describe("evaluateCulturalActivities", () => {
     const result = evaluateCulturalActivities([], 3);
     expect(result.overallScore).toBe(0);
     expect(result.totalActivities).toBe(0);
-    expect(result.engagementRate).toBe(0);
-    expect(result.resourcesRate).toBe(0);
-    expect(result.positiveFeedbackRate).toBe(0);
-    expect(result.childrenReachedRate).toBe(0);
+    expect(result.engagementRate).toBeNull();
+    expect(result.resourcesRate).toBeNull();
+    expect(result.positiveFeedbackRate).toBeNull();
+    expect(result.childrenReachedRate).toBeNull();
     expect(result.activityVariety).toBe(0);
   });
 
@@ -792,11 +792,11 @@ describe("evaluateIdentityPlanning", () => {
     const result = evaluateIdentityPlanning([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalPlans).toBe(0);
-    expect(result.planInPlaceRate).toBe(0);
-    expect(result.identityDocumentedRate).toBe(0);
-    expect(result.lifeStoryRate).toBe(0);
-    expect(result.mentorRate).toBe(0);
-    expect(result.communityLinksRate).toBe(0);
+    expect(result.planInPlaceRate).toBeNull();
+    expect(result.identityDocumentedRate).toBeNull();
+    expect(result.lifeStoryRate).toBeNull();
+    expect(result.mentorRate).toBeNull();
+    expect(result.communityLinksRate).toBeNull();
   });
 
   it("scores maximum for perfect plans", () => {
@@ -944,12 +944,12 @@ describe("evaluateStaffCulturalReadiness", () => {
     const result = evaluateStaffCulturalReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.awarenessRate).toBe(0);
-    expect(result.antiRacismRate).toBe(0);
-    expect(result.religiousLiteracyRate).toBe(0);
-    expect(result.identitySupportRate).toBe(0);
-    expect(result.lgbtqAwarenessRate).toBe(0);
-    expect(result.communicationDiversityRate).toBe(0);
+    expect(result.awarenessRate).toBeNull();
+    expect(result.antiRacismRate).toBeNull();
+    expect(result.religiousLiteracyRate).toBeNull();
+    expect(result.identitySupportRate).toBeNull();
+    expect(result.lgbtqAwarenessRate).toBeNull();
+    expect(result.communicationDiversityRate).toBeNull();
   });
 
   it("scores maximum for perfect training", () => {

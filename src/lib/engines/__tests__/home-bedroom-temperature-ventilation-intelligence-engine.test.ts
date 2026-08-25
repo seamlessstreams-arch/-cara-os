@@ -186,14 +186,14 @@ describe("insufficient_data", () => {
     expect(r.temperature_score).toBe(0);
   });
 
-  it("returns 0 for all rate fields when insufficient_data", () => {
+  it("returns null for all rate fields when insufficient_data", () => {
     const r = computeBedroomTemperatureVentilation({ ...baseInput, total_children: 0 });
-    expect(r.temperature_monitoring_rate).toBe(0);
-    expect(r.ventilation_rate).toBe(0);
-    expect(r.heating_check_rate).toBe(0);
-    expect(r.window_compliance_rate).toBe(0);
-    expect(r.child_comfort_rate).toBe(0);
-    expect(r.action_response_rate).toBe(0);
+    expect(r.temperature_monitoring_rate).toBeNull();
+    expect(r.ventilation_rate).toBeNull();
+    expect(r.heating_check_rate).toBeNull();
+    expect(r.window_compliance_rate).toBeNull();
+    expect(r.child_comfort_rate).toBeNull();
+    expect(r.action_response_rate).toBeNull();
   });
 
   it("returns empty arrays for strengths, concerns, recommendations, insights", () => {
@@ -249,14 +249,14 @@ describe("inadequate floor (children but no records)", () => {
     expect(r.insights[0].severity).toBe("critical");
   });
 
-  it("returns 0 for all rate fields at the inadequate floor", () => {
+  it("returns null for all rate fields at the inadequate floor", () => {
     const r = computeBedroomTemperatureVentilation({ ...baseInput, total_children: 3 });
-    expect(r.temperature_monitoring_rate).toBe(0);
-    expect(r.ventilation_rate).toBe(0);
-    expect(r.heating_check_rate).toBe(0);
-    expect(r.window_compliance_rate).toBe(0);
-    expect(r.child_comfort_rate).toBe(0);
-    expect(r.action_response_rate).toBe(0);
+    expect(r.temperature_monitoring_rate).toBeNull();
+    expect(r.ventilation_rate).toBeNull();
+    expect(r.heating_check_rate).toBeNull();
+    expect(r.window_compliance_rate).toBeNull();
+    expect(r.child_comfort_rate).toBeNull();
+    expect(r.action_response_rate).toBeNull();
   });
 
   it("headline mentions urgent attention", () => {
@@ -268,7 +268,7 @@ describe("inadequate floor (children but no records)", () => {
 // ── pct(0,0) = 0 ────────────────────────────────────────────────────────────
 
 describe("pct(0,0) = 0 edge case", () => {
-  it("action_response_rate is 0 when no actions required", () => {
+  it("action_response_rate is null when no actions required", () => {
     const r = computeBedroomTemperatureVentilation({
       ...baseInput,
       temperature_monitoring_records: manyTemp(5),

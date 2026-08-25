@@ -207,14 +207,14 @@ describe("insufficient_data — no children, all empty", () => {
     expect(r.total_emergency_preparedness_records).toBe(0);
   });
 
-  it("all rates are 0", () => {
+  it("all rates are null", () => {
     const r = run({ total_children: 0 });
-    expect(r.action_plan_coverage_rate).toBe(0);
-    expect(r.inhaler_technique_rate).toBe(0);
-    expect(r.trigger_management_rate).toBe(0);
-    expect(r.peak_flow_monitoring_rate).toBe(0);
-    expect(r.emergency_preparedness_rate).toBe(0);
-    expect(r.child_self_management_rate).toBe(0);
+    expect(r.action_plan_coverage_rate).toBeNull();
+    expect(r.inhaler_technique_rate).toBeNull();
+    expect(r.trigger_management_rate).toBeNull();
+    expect(r.peak_flow_monitoring_rate).toBeNull();
+    expect(r.emergency_preparedness_rate).toBeNull();
+    expect(r.child_self_management_rate).toBeNull();
   });
 
   it("has no strengths, concerns, recommendations, insights", () => {
@@ -263,14 +263,14 @@ describe("inadequate floor — children present, no records", () => {
     expect(r.insights[0].severity).toBe("critical");
   });
 
-  it("all rates are 0 when no records exist", () => {
+  it("all rates are null when no records exist", () => {
     const r = run({ total_children: 3 });
-    expect(r.action_plan_coverage_rate).toBe(0);
-    expect(r.inhaler_technique_rate).toBe(0);
-    expect(r.trigger_management_rate).toBe(0);
-    expect(r.peak_flow_monitoring_rate).toBe(0);
-    expect(r.emergency_preparedness_rate).toBe(0);
-    expect(r.child_self_management_rate).toBe(0);
+    expect(r.action_plan_coverage_rate).toBeNull();
+    expect(r.inhaler_technique_rate).toBeNull();
+    expect(r.trigger_management_rate).toBeNull();
+    expect(r.peak_flow_monitoring_rate).toBeNull();
+    expect(r.emergency_preparedness_rate).toBeNull();
+    expect(r.child_self_management_rate).toBeNull();
   });
 });
 
@@ -288,7 +288,7 @@ describe("pct(0,0) = 0 — empty denominators produce 0", () => {
     expect(r.action_plan_coverage_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
-  it("inhaler technique rate is 0 when no inhaler records", () => {
+  it("inhaler technique rate is null when no inhaler records", () => {
     const r = run({
       action_plan_records: [makeActionPlan()],
     });
@@ -297,7 +297,7 @@ describe("pct(0,0) = 0 — empty denominators produce 0", () => {
     expect(r.inhaler_technique_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
-  it("trigger management rate is 0 when no trigger records", () => {
+  it("trigger management rate is null when no trigger records", () => {
     const r = run({
       action_plan_records: [makeActionPlan()],
     });
@@ -306,14 +306,14 @@ describe("pct(0,0) = 0 — empty denominators produce 0", () => {
     expect(r.trigger_management_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
-  it("peak flow monitoring rate is 0 when no peak flow records", () => {
+  it("peak flow monitoring rate is null when no peak flow records", () => {
     const r = run({
       action_plan_records: [makeActionPlan()],
     });
     expect(r.peak_flow_monitoring_rate).toBeNull();;
   });
 
-  it("emergency preparedness rate is 0 when no emergency records", () => {
+  it("emergency preparedness rate is null when no emergency records", () => {
     const r = run({
       action_plan_records: [makeActionPlan()],
     });
@@ -322,9 +322,9 @@ describe("pct(0,0) = 0 — empty denominators produce 0", () => {
     expect(r.emergency_preparedness_rate).not.toBe(0); // 0% is a claim; nothing was measured
   });
 
-  it("child self-management rate is 0 when no self-management-relevant records", () => {
+  it("child self-management rate is null when no self-management-relevant records", () => {
     const r = run({ total_children: 0 });
-    expect(r.child_self_management_rate).toBe(0);
+    expect(r.child_self_management_rate).toBeNull();
   });
 });
 
@@ -1886,7 +1886,7 @@ describe("peak_flow_monitoring_rate composite", () => {
     expect(r.peak_flow_monitoring_rate).toBe(50);
   });
 
-  it("actionTakenRate is 0 when no action required (pct(0,0)=0)", () => {
+  it("actionTakenRate is null when no action required (rate(0,0)=null)", () => {
     const r = run({
       peak_flow_records: [
         makePeakFlow({ zone: "green", technique_correct: true, recorded_in_diary: true, action_required: false }),

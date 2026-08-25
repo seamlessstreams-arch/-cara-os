@@ -18,6 +18,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { withinPeriod } from "@/lib/date-period";
+import { meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -196,11 +197,6 @@ export interface EducationAttainmentProgressIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
@@ -216,10 +212,10 @@ export function evaluateEducationQuality(
   if (totalRecords === 0) {
     return {
       totalRecords: 0,
-      progressRate: 0,
-      pepUpdatedRate: 0,
-      attendanceRate: 0,
-      childViewsRate: 0,
+      progressRate: null,
+      pepUpdatedRate: null,
+      attendanceRate: null,
+      childViewsRate: null,
       score: 0,
     };
   }
@@ -228,19 +224,19 @@ export function evaluateEducationQuality(
   const progressCount = records.filter(
     (r) => r.progressLevel === "exceeding" || r.progressLevel === "expected",
   ).length;
-  const progressRate = pct(progressCount, totalRecords);
+  const progressRate = rate(progressCount, totalRecords)!;
 
   // PEP updated rate
   const pepUpdatedCount = records.filter((r) => r.pepUpdated).length;
-  const pepUpdatedRate = pct(pepUpdatedCount, totalRecords);
+  const pepUpdatedRate = rate(pepUpdatedCount, totalRecords)!;
 
   // Attendance rate
   const attendanceCount = records.filter((r) => r.schoolAttendanceGood).length;
-  const attendanceRate = pct(attendanceCount, totalRecords);
+  const attendanceRate = rate(attendanceCount, totalRecords)!;
 
   // Child views captured rate
   const childViewsCount = records.filter((r) => r.childViewsCaptured).length;
-  const childViewsRate = pct(childViewsCount, totalRecords);
+  const childViewsRate = rate(childViewsCount, totalRecords)!;
 
   // Score (out of 25)
   let score = 0;
@@ -276,9 +272,9 @@ export function evaluateEducationCompliance(
   if (totalRecords === 0) {
     return {
       totalRecords: 0,
-      staffAdvocacyRate: 0,
-      documentedRate: 0,
-      virtualSchoolRate: 0,
+      staffAdvocacyRate: null,
+      documentedRate: null,
+      virtualSchoolRate: null,
       areaDiversity: 0,
       score: 0,
     };
@@ -286,15 +282,15 @@ export function evaluateEducationCompliance(
 
   // Staff advocacy rate
   const staffAdvocacyCount = records.filter((r) => r.staffAdvocacyProvided).length;
-  const staffAdvocacyRate = pct(staffAdvocacyCount, totalRecords);
+  const staffAdvocacyRate = rate(staffAdvocacyCount, totalRecords)!;
 
   // Documented in plan rate
   const documentedCount = records.filter((r) => r.documentedInPlan).length;
-  const documentedRate = pct(documentedCount, totalRecords);
+  const documentedRate = rate(documentedCount, totalRecords)!;
 
   // Virtual school linked rate
   const virtualSchoolCount = records.filter((r) => r.virtualSchoolLinked).length;
-  const virtualSchoolRate = pct(virtualSchoolCount, totalRecords);
+  const virtualSchoolRate = rate(virtualSchoolCount, totalRecords)!;
 
   // Area diversity: unique areas / 8
   const uniqueAreas = new Set(records.map((r) => r.educationArea)).size;
@@ -377,34 +373,34 @@ export function evaluateStaffEducationReadiness(
   if (totalStaff === 0) {
     return {
       totalStaff: 0,
-      educationSupportRate: 0,
-      pepProcessRate: 0,
-      attendanceImportanceRate: 0,
-      senAwarenessRate: 0,
-      homeworkStrategiesRate: 0,
-      virtualSchoolProtocolRate: 0,
+      educationSupportRate: null,
+      pepProcessRate: null,
+      attendanceImportanceRate: null,
+      senAwarenessRate: null,
+      homeworkStrategiesRate: null,
+      virtualSchoolProtocolRate: null,
       score: 0,
     };
   }
 
   // 6 skills
   const educationSupportCount = training.filter((t) => t.educationSupport).length;
-  const educationSupportRate = pct(educationSupportCount, totalStaff);
+  const educationSupportRate = rate(educationSupportCount, totalStaff)!;
 
   const pepProcessCount = training.filter((t) => t.pepProcess).length;
-  const pepProcessRate = pct(pepProcessCount, totalStaff);
+  const pepProcessRate = rate(pepProcessCount, totalStaff)!;
 
   const attendanceImportanceCount = training.filter((t) => t.attendanceImportance).length;
-  const attendanceImportanceRate = pct(attendanceImportanceCount, totalStaff);
+  const attendanceImportanceRate = rate(attendanceImportanceCount, totalStaff)!;
 
   const senAwarenessCount = training.filter((t) => t.senAwareness).length;
-  const senAwarenessRate = pct(senAwarenessCount, totalStaff);
+  const senAwarenessRate = rate(senAwarenessCount, totalStaff)!;
 
   const homeworkStrategiesCount = training.filter((t) => t.homeworkStrategies).length;
-  const homeworkStrategiesRate = pct(homeworkStrategiesCount, totalStaff);
+  const homeworkStrategiesRate = rate(homeworkStrategiesCount, totalStaff)!;
 
   const virtualSchoolProtocolCount = training.filter((t) => t.virtualSchoolProtocol).length;
-  const virtualSchoolProtocolRate = pct(virtualSchoolProtocolCount, totalStaff);
+  const virtualSchoolProtocolRate = rate(virtualSchoolProtocolCount, totalStaff)!;
 
   // Weighted: 6+5+5+4+3+2 = 25
   let score = 0;
@@ -450,11 +446,11 @@ export function buildChildEducationProfiles(
     const progressCount = childRecords.filter(
       (r) => r.progressLevel === "exceeding" || r.progressLevel === "expected",
     ).length;
-    const progressRate = pct(progressCount, totalRecords);
+    const progressRate = rate(progressCount, totalRecords)!;
 
     // PEP updated rate
     const pepUpdatedCount = childRecords.filter((r) => r.pepUpdated).length;
-    const pepUpdatedRate = pct(pepUpdatedCount, totalRecords);
+    const pepUpdatedRate = rate(pepUpdatedCount, totalRecords)!;
 
     // Unique areas
     const uniqueAreas = new Set(childRecords.map((r) => r.educationArea)).size;
@@ -467,14 +463,14 @@ export function buildChildEducationProfiles(
     else if (totalRecords >= 5) overallScore += 1;
 
     // progressRate: 0-3 (>=80 → 3, >=60 → 2, >=40 → 1, else 0)
-    if (progressRate >= 80) overallScore += 3;
-    else if (progressRate >= 60) overallScore += 2;
-    else if (progressRate >= 40) overallScore += 1;
+    if (meets(progressRate, 80)) overallScore += 3;
+    else if (meets(progressRate, 60)) overallScore += 2;
+    else if (meets(progressRate, 40)) overallScore += 1;
 
     // pepUpdatedRate: 0-3 (>=80 → 3, >=60 → 2, >=40 → 1, else 0)
-    if (pepUpdatedRate >= 80) overallScore += 3;
-    else if (pepUpdatedRate >= 60) overallScore += 2;
-    else if (pepUpdatedRate >= 40) overallScore += 1;
+    if (meets(pepUpdatedRate, 80)) overallScore += 3;
+    else if (meets(pepUpdatedRate, 60)) overallScore += 2;
+    else if (meets(pepUpdatedRate, 40)) overallScore += 1;
 
     // diversity: 0-2 (>=4 → 2, >=2 → 1, else 0)
     if (uniqueAreas >= 4) overallScore += 2;

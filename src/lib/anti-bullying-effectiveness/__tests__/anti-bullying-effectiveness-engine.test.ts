@@ -526,7 +526,7 @@ describe("evaluateInterventionQuality", () => {
     ];
     const result = evaluateInterventionQuality(incidents);
     // No high/critical, so safety plan rate is 0 for the stat but full score
-    expect(result.safetyPlanRateHighCritical).toBe(0);
+    expect(result.safetyPlanRateHighCritical).toBeNull();
   });
 
   it("calculates restorative practice rate correctly", () => {
@@ -1226,21 +1226,21 @@ describe("pct helper edge cases (via evaluators)", () => {
   it("handles zero denominator gracefully in incident management", () => {
     const result = evaluateIncidentManagement([]);
     // All rates should be 0 when no incidents (empty path returns 25)
-    expect(result.timelyResponseRate).toBe(0);
-    expect(result.fullyResolvedRate).toBe(0);
+    expect(result.timelyResponseRate).toBeNull();
+    expect(result.fullyResolvedRate).toBeNull();
   });
 
   it("handles zero denominator in prevention culture", () => {
     const result = evaluatePreventionCulture([], null);
-    expect(result.feelsSafeRate).toBe(0);
-    expect(result.bulliedRecentlyRate).toBe(0);
-    expect(result.highConfidenceRate).toBe(0);
+    expect(result.feelsSafeRate).toBeNull();
+    expect(result.bulliedRecentlyRate).toBeNull();
+    expect(result.highConfidenceRate).toBeNull();
   });
 
   it("handles zero denominator in staff readiness", () => {
     const result = evaluateStaffReadiness([]);
-    expect(result.recognitionSkillsRate).toBe(0);
-    expect(result.interventionSkillsRate).toBe(0);
+    expect(result.recognitionSkillsRate).toBeNull();
+    expect(result.interventionSkillsRate).toBeNull();
   });
 
   it("rounds percentages correctly", () => {

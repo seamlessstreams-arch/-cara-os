@@ -285,12 +285,12 @@ describe("insufficient data", () => {
       privacy_records: [],
       accessibility_records: [],
     });
-    expect(r.cleanliness_rate).toBe(0);
-    expect(r.shower_availability_rate).toBe(0);
-    expect(r.hot_water_safety_rate).toBe(0);
-    expect(r.privacy_rate).toBe(0);
-    expect(r.accessibility_rate).toBe(0);
-    expect(r.child_satisfaction_rate).toBe(0);
+    expect(r.cleanliness_rate).toBeNull();
+    expect(r.shower_availability_rate).toBeNull();
+    expect(r.hot_water_safety_rate).toBeNull();
+    expect(r.privacy_rate).toBeNull();
+    expect(r.accessibility_rate).toBeNull();
+    expect(r.child_satisfaction_rate).toBeNull();
   });
 });
 

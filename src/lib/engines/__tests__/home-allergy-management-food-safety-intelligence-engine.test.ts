@@ -175,7 +175,7 @@ describe("insufficient data", () => {
     expect(r.allergy_score).toBe(0);
   });
 
-  it("sets all rates to 0 on insufficient_data", () => {
+  it("sets all rates to null on insufficient_data", () => {
     const r = computeAllergyManagementFoodSafety({
       today: "2026-05-30",
       total_children: 0,
@@ -187,16 +187,16 @@ describe("insufficient data", () => {
       food_labelling_records: [],
       emergency_response_records: [],
     });
-    expect(r.allergy_plan_rate).toBe(0);
-    expect(r.allergen_awareness_rate).toBe(0);
-    expect(r.epipen_check_rate).toBe(0);
-    expect(r.food_labelling_rate).toBe(0);
+    expect(r.allergy_plan_rate).toBeNull();
+    expect(r.allergen_awareness_rate).toBeNull();
+    expect(r.epipen_check_rate).toBeNull();
+    expect(r.food_labelling_rate).toBeNull();
     // fab-0: null (no records) — see engine header + check-fabricated-scores.js
     expect(r.emergency_response_rate).toBeNull();
-    expect(r.child_awareness_rate).toBe(0);
+    expect(r.child_awareness_rate).toBeNull();
     // fab-0: null (no records)
     expect(r.plan_quality_avg).toBeNull();
-    expect(r.training_currency_rate).toBe(0);
+    expect(r.training_currency_rate).toBeNull();
   });
 
   it("returns empty arrays for strengths, concerns, recommendations, insights on insufficient_data", () => {
@@ -1179,7 +1179,7 @@ describe("rates", () => {
     expect(r.allergy_plan_rate).toBe(100);
   });
 
-  it("allergyPlanRate is 0 when no plans and children_with_allergies = 0", () => {
+  it("allergyPlanRate is null when no plans and children_with_allergies = 0", () => {
     const r = computeAllergyManagementFoodSafety(baseInput({
       children_with_allergies: 0,
       allergy_plan_records: [],
@@ -1199,7 +1199,7 @@ describe("rates", () => {
     expect(r.allergen_awareness_rate).toBe(50);
   });
 
-  it("allergenAwarenessRate is 0 when total_staff = 0", () => {
+  it("allergenAwarenessRate is null when total_staff = 0", () => {
     const r = computeAllergyManagementFoodSafety(baseInput({
       total_staff: 0,
       allergen_awareness_records: [],
@@ -1219,7 +1219,7 @@ describe("rates", () => {
     expect(r.epipen_check_rate).toBe(67);
   });
 
-  it("epipenCheckRate is 0 with no epipen records", () => {
+  it("epipenCheckRate is null with no epipen records", () => {
     const r = computeAllergyManagementFoodSafety(baseInput({
       epipen_check_records: [],
     }));
@@ -1239,7 +1239,7 @@ describe("rates", () => {
     expect(r.food_labelling_rate).toBe(70);
   });
 
-  it("foodLabellingRate is 0 with no food records", () => {
+  it("foodLabellingRate is null with no food records", () => {
     const r = computeAllergyManagementFoodSafety(baseInput({
       food_labelling_records: [],
     }));

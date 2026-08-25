@@ -205,10 +205,6 @@ export interface AromatherapyWellbeingResult {
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -236,12 +232,12 @@ function emptyResult(
     total_relaxation_programmes: 0,
     total_calming_techniques: 0,
     total_child_benefit_assessments: 0,
-    aromatherapy_access_rate: 0,
-    therapy_quality_rate: 0,
-    relaxation_effectiveness_rate: 0,
-    calming_technique_rate: 0,
-    child_benefit_rate: 0,
-    child_engagement_rate: 0,
+    aromatherapy_access_rate: null,
+    therapy_quality_rate: null,
+    relaxation_effectiveness_rate: null,
+    calming_technique_rate: null,
+    child_benefit_rate: null,
+    child_engagement_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -343,7 +339,7 @@ export function computeAromatherapyWellbeingTherapies(
   const aromaGoalsMet = aromatherapy_session_records.filter(
     (r) => r.session_goals_set && r.session_goals_met,
   ).length;
-  const aromaGoalsMetRate = pct(aromaGoalsMet, aromaGoalsSet);
+  const aromaGoalsMetRate = rate(aromaGoalsMet, aromaGoalsSet);
 
   const aromaChildPositive = aromatherapy_session_records.filter(
     (r) => r.child_feedback_positive,
@@ -352,7 +348,7 @@ export function computeAromatherapyWellbeingTherapies(
   const aromaAdverseReactions = aromatherapy_session_records.filter(
     (r) => r.adverse_reaction,
   ).length;
-  const aromaAdverseRate = pct(aromaAdverseReactions, totalAromaSessions);
+  const aromaAdverseRate = rate(aromaAdverseReactions, totalAromaSessions);
 
   const aromaRiskAssessmentCurrent = aromatherapy_session_records.filter(
     (r) => r.risk_assessment_current,
@@ -365,20 +361,20 @@ export function computeAromatherapyWellbeingTherapies(
   const aromaMoodImproved = aromatherapy_session_records.filter(
     (r) => r.child_mood_after > r.child_mood_before,
   ).length;
-  const aromaMoodImprovedRate = pct(aromaMoodImproved, totalAromaSessions);
+  const aromaMoodImprovedRate = rate(aromaMoodImproved, totalAromaSessions);
 
   // Unique children accessing aromatherapy
   const uniqueChildrenAroma = new Set(
     aromatherapy_session_records.map((r) => r.child_id),
   ).size;
   const aromatherapyAccessRate =
-    total_children > 0 ? pct(uniqueChildrenAroma, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenAroma, total_children) : 0;
 
   // Aromatherapy safety composite: consent + allergy + contra + risk assessment
   const aromaSafetyNumerator =
     aromaConsentObtained + aromaAllergyChecked + aromaContraChecked + aromaRiskAssessmentCurrent;
   const aromaSafetyDenominator = totalAromaSessions * 4;
-  const aromaSafetyRate = pct(aromaSafetyNumerator, aromaSafetyDenominator);
+  const aromaSafetyRate = rate(aromaSafetyNumerator, aromaSafetyDenominator);
 
   // --- Wellbeing therapy metrics ---
   const totalWellbeingTherapies = wellbeing_therapy_records.length;
@@ -390,7 +386,7 @@ export function computeAromatherapyWellbeingTherapies(
   const wellbeingQualifiedTherapist = wellbeing_therapy_records.filter(
     (r) => r.therapist_qualified,
   ).length;
-  const wellbeingQualifiedRate = pct(wellbeingQualifiedTherapist, totalWellbeingTherapies);
+  const wellbeingQualifiedRate = rate(wellbeingQualifiedTherapist, totalWellbeingTherapies);
 
   const wellbeingChildPositive = wellbeing_therapy_records.filter(
     (r) => r.child_feedback_positive,
@@ -399,12 +395,12 @@ export function computeAromatherapyWellbeingTherapies(
   const wellbeingMoodImproved = wellbeing_therapy_records.filter(
     (r) => r.mood_improvement_observed,
   ).length;
-  const wellbeingMoodImprovedRate = pct(wellbeingMoodImproved, totalWellbeingTherapies);
+  const wellbeingMoodImprovedRate = rate(wellbeingMoodImproved, totalWellbeingTherapies);
 
   const wellbeingAnxietyReduced = wellbeing_therapy_records.filter(
     (r) => r.anxiety_reduction_observed,
   ).length;
-  const wellbeingAnxietyReducedRate = pct(wellbeingAnxietyReduced, totalWellbeingTherapies);
+  const wellbeingAnxietyReducedRate = rate(wellbeingAnxietyReduced, totalWellbeingTherapies);
 
   const wellbeingNotesRecorded = wellbeing_therapy_records.filter(
     (r) => r.notes_recorded,
@@ -419,7 +415,7 @@ export function computeAromatherapyWellbeingTherapies(
     wellbeingConsentObtained +
     wellbeingNotesRecorded;
   const therapyQualityDenominator = (totalAromaSessions + totalWellbeingTherapies) * 3;
-  const therapyQualityRate = pct(therapyQualityNumerator, therapyQualityDenominator);
+  const therapyQualityRate = rate(therapyQualityNumerator, therapyQualityDenominator);
 
   // --- Relaxation programme metrics ---
   const totalRelaxationProgrammes = relaxation_programme_records.length;
@@ -431,12 +427,12 @@ export function computeAromatherapyWellbeingTherapies(
   const relaxationChildPositive = relaxation_programme_records.filter(
     (r) => r.child_feedback_positive,
   ).length;
-  const relaxationChildPositiveRate = pct(relaxationChildPositive, totalRelaxationProgrammes);
+  const relaxationChildPositiveRate = rate(relaxationChildPositive, totalRelaxationProgrammes);
 
   const relaxationChildInvolved = relaxation_programme_records.filter(
     (r) => r.child_involved_in_planning,
   ).length;
-  const relaxationChildInvolvedRate = pct(relaxationChildInvolved, totalRelaxationProgrammes);
+  const relaxationChildInvolvedRate = rate(relaxationChildInvolved, totalRelaxationProgrammes);
 
   const relaxationOutcomesAchieved = relaxation_programme_records.filter(
     (r) => r.measurable_outcomes_set && r.measurable_outcomes_achieved,
@@ -445,18 +441,18 @@ export function computeAromatherapyWellbeingTherapies(
   const relaxationStaffTrained = relaxation_programme_records.filter(
     (r) => r.staff_trained,
   ).length;
-  const relaxationStaffTrainedRate = pct(relaxationStaffTrained, totalRelaxationProgrammes);
+  const relaxationStaffTrainedRate = rate(relaxationStaffTrained, totalRelaxationProgrammes);
 
   const relaxationAnxietyReduced = relaxation_programme_records.filter(
     (r) => r.anxiety_level_after < r.anxiety_level_before,
   ).length;
-  const relaxationAnxietyReducedRate = pct(relaxationAnxietyReduced, totalRelaxationProgrammes);
+  const relaxationAnxietyReducedRate = rate(relaxationAnxietyReduced, totalRelaxationProgrammes);
 
   // Relaxation effectiveness composite: outcomes achieved + anxiety reduced + child positive + reviewed
   const relaxEffNumerator =
     relaxationOutcomesAchieved + relaxationAnxietyReduced + relaxationChildPositive + relaxationReviewed;
   const relaxEffDenominator = totalRelaxationProgrammes * 4;
-  const relaxationEffectivenessRate = pct(relaxEffNumerator, relaxEffDenominator);
+  const relaxationEffectivenessRate = rate(relaxEffNumerator, relaxEffDenominator);
 
   // --- Calming technique metrics ---
   const totalCalmingTechniques = calming_technique_records.length;
@@ -472,12 +468,12 @@ export function computeAromatherapyWellbeingTherapies(
   const calmingChildInitiated = calming_technique_records.filter(
     (r) => r.child_initiated,
   ).length;
-  const calmingChildInitiatedRate = pct(calmingChildInitiated, totalCalmingTechniques);
+  const calmingChildInitiatedRate = rate(calmingChildInitiated, totalCalmingTechniques);
 
   const calmingDeEscalated = calming_technique_records.filter(
     (r) => r.de_escalation_achieved,
   ).length;
-  const calmingDeEscalationRate = pct(calmingDeEscalated, totalCalmingTechniques);
+  const calmingDeEscalationRate = rate(calmingDeEscalated, totalCalmingTechniques);
 
   const calmingSensoryConsidered = calming_technique_records.filter(
     (r) => r.sensory_profile_considered,
@@ -491,7 +487,7 @@ export function computeAromatherapyWellbeingTherapies(
   const calmingCompositeNumerator =
     calmingEffective + calmingAppropriate + calmingSensoryConsidered + calmingDeEscalated;
   const calmingCompositeDenominator = totalCalmingTechniques * 4;
-  const calmingTechniqueRate = pct(calmingCompositeNumerator, calmingCompositeDenominator);
+  const calmingTechniqueRate = rate(calmingCompositeNumerator, calmingCompositeDenominator);
 
   // --- Child benefit metrics ---
   const totalBenefitAssessments = child_benefit_records.length;
@@ -503,7 +499,7 @@ export function computeAromatherapyWellbeingTherapies(
   const benefitChildSelfReport = child_benefit_records.filter(
     (r) => r.child_self_reported_benefit,
   ).length;
-  const benefitChildSelfReportRate = pct(benefitChildSelfReport, totalBenefitAssessments);
+  const benefitChildSelfReportRate = rate(benefitChildSelfReport, totalBenefitAssessments);
 
   const benefitStaffReport = child_benefit_records.filter(
     (r) => r.staff_reported_benefit,
@@ -512,12 +508,12 @@ export function computeAromatherapyWellbeingTherapies(
   const benefitChildVoice = child_benefit_records.filter(
     (r) => r.child_voice_captured,
   ).length;
-  const benefitChildVoiceRate = pct(benefitChildVoice, totalBenefitAssessments);
+  const benefitChildVoiceRate = rate(benefitChildVoice, totalBenefitAssessments);
 
   const benefitWantsContinue = child_benefit_records.filter(
     (r) => r.child_wants_to_continue,
   ).length;
-  const benefitWantsContinueRate = pct(benefitWantsContinue, totalBenefitAssessments);
+  const benefitWantsContinueRate = rate(benefitWantsContinue, totalBenefitAssessments);
 
   const benefitProgressSum = child_benefit_records.reduce(
     (sum, r) => sum + r.overall_progress_rating,
@@ -531,13 +527,13 @@ export function computeAromatherapyWellbeingTherapies(
   const benefitReviewOverdue = child_benefit_records.filter(
     (r) => r.review_overdue,
   ).length;
-  const benefitReviewOverdueRate = pct(benefitReviewOverdue, totalBenefitAssessments);
+  const benefitReviewOverdueRate = rate(benefitReviewOverdue, totalBenefitAssessments);
 
   // Child benefit composite: overall improvement + child self report + staff report + child voice
   const childBenefitNumerator =
     benefitOverallImproved + benefitChildSelfReport + benefitStaffReport + benefitChildVoice;
   const childBenefitDenominator = totalBenefitAssessments * 4;
-  const childBenefitRate = pct(childBenefitNumerator, childBenefitDenominator);
+  const childBenefitRate = rate(childBenefitNumerator, childBenefitDenominator);
 
   // --- Global engagement composite ---
   // Across aromatherapy + wellbeing + calming (engagement ratings + positive feedback)
@@ -548,7 +544,7 @@ export function computeAromatherapyWellbeingTherapies(
     relaxationChildPositive;
   const engagementPositiveDenominator =
     totalAromaSessions + totalWellbeingTherapies + totalCalmingTechniques + totalRelaxationProgrammes;
-  const childEngagementRate = pct(engagementPositiveNumerator, engagementPositiveDenominator);
+  const childEngagementRate = rate(engagementPositiveNumerator, engagementPositiveDenominator);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 

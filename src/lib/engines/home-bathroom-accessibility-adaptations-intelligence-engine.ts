@@ -178,10 +178,6 @@ export interface BathroomAccessibilityAdaptationsResult {
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -293,41 +289,41 @@ export function computeBathroomAccessibilityAdaptations(
   // --- Adaptation adequacy metrics ---
   const totalAdaptationRecords = adaptation_records.length;
   const installedAdaptations = adaptation_records.filter((a) => a.installed).length;
-  const installedRate = pct(installedAdaptations, totalAdaptationRecords);
+  const installedRate = rate(installedAdaptations, totalAdaptationRecords);
 
   const adaptationsMeetingNeeds = adaptation_records.filter(
     (a) => a.installed && a.meets_child_needs,
   ).length;
-  const adaptationMeetNeedsRate = pct(adaptationsMeetingNeeds, totalAdaptationRecords);
+  const adaptationMeetNeedsRate = rate(adaptationsMeetingNeeds, totalAdaptationRecords);
 
   const adaptationsInspectionPassed = adaptation_records.filter(
     (a) => a.installed && a.inspection_passed,
   ).length;
-  const adaptationInspectionRate = pct(adaptationsInspectionPassed, totalAdaptationRecords);
+  const adaptationInspectionRate = rate(adaptationsInspectionPassed, totalAdaptationRecords);
 
   const adaptationsRiskAssessed = adaptation_records.filter(
     (a) => a.installed && a.risk_assessed,
   ).length;
-  const adaptationRiskAssessedRate = pct(adaptationsRiskAssessed, totalAdaptationRecords);
+  const adaptationRiskAssessedRate = rate(adaptationsRiskAssessed, totalAdaptationRecords);
 
   const adaptationsDocumented = adaptation_records.filter(
     (a) => a.installed && a.documented,
   ).length;
-  const adaptationDocumentedRate = pct(adaptationsDocumented, totalAdaptationRecords);
+  const adaptationDocumentedRate = rate(adaptationsDocumented, totalAdaptationRecords);
 
   const adaptationsGoodCondition = adaptation_records.filter(
     (a) =>
       a.installed &&
       (a.condition === "excellent" || a.condition === "good"),
   ).length;
-  const adaptationConditionRate = pct(adaptationsGoodCondition, totalAdaptationRecords);
+  const adaptationConditionRate = rate(adaptationsGoodCondition, totalAdaptationRecords);
 
   const adaptationsPoorCondition = adaptation_records.filter(
     (a) =>
       a.installed &&
       (a.condition === "poor" || a.condition === "unusable"),
   ).length;
-  const adaptationPoorConditionRate = pct(adaptationsPoorCondition, totalAdaptationRecords);
+  const adaptationPoorConditionRate = rate(adaptationsPoorCondition, totalAdaptationRecords);
 
   // Composite adaptation_adequacy_rate: installed + meets needs + inspection passed + documented
   const adaptationAdequacyRate: number | null =
@@ -338,46 +334,46 @@ export function computeBathroomAccessibilityAdaptations(
   // --- Grab rail metrics ---
   const totalGrabRailRecords = grab_rail_records.length;
   const installedGrabRails = grab_rail_records.filter((g) => g.installed).length;
-  const grabRailInstalledRate = pct(installedGrabRails, totalGrabRailRecords);
+  const grabRailInstalledRate = rate(installedGrabRails, totalGrabRailRecords);
 
   const securelyFixedGrabRails = grab_rail_records.filter(
     (g) => g.installed && g.securely_fixed,
   ).length;
-  const securelyFixedRate = pct(securelyFixedGrabRails, totalGrabRailRecords);
+  const securelyFixedRate = rate(securelyFixedGrabRails, totalGrabRailRecords);
 
   const correctHeightGrabRails = grab_rail_records.filter(
     (g) => g.installed && g.correct_height,
   ).length;
-  const correctHeightRate = pct(correctHeightGrabRails, totalGrabRailRecords);
+  const correctHeightRate = rate(correctHeightGrabRails, totalGrabRailRecords);
 
   const weightTestedGrabRails = grab_rail_records.filter(
     (g) => g.installed && g.weight_tested,
   ).length;
-  const weightTestedRate = pct(weightTestedGrabRails, totalGrabRailRecords);
+  const weightTestedRate = rate(weightTestedGrabRails, totalGrabRailRecords);
 
   const grabRailInspectionPassed = grab_rail_records.filter(
     (g) => g.installed && g.inspection_passed,
   ).length;
-  const grabRailInspectionRate = pct(grabRailInspectionPassed, totalGrabRailRecords);
+  const grabRailInspectionRate = rate(grabRailInspectionPassed, totalGrabRailRecords);
 
   const compliantGrabRails = grab_rail_records.filter(
     (g) => g.installed && g.compliant_with_standard,
   ).length;
-  const grabRailComplianceRate = pct(compliantGrabRails, totalGrabRailRecords);
+  const grabRailComplianceRate = rate(compliantGrabRails, totalGrabRailRecords);
 
   const grabRailsGoodCondition = grab_rail_records.filter(
     (g) =>
       g.installed &&
       (g.condition === "excellent" || g.condition === "good"),
   ).length;
-  const grabRailConditionRate = pct(grabRailsGoodCondition, totalGrabRailRecords);
+  const grabRailConditionRate = rate(grabRailsGoodCondition, totalGrabRailRecords);
 
   const grabRailsPoorCondition = grab_rail_records.filter(
     (g) =>
       g.installed &&
       (g.condition === "poor" || g.condition === "unusable"),
   ).length;
-  const grabRailPoorConditionRate = pct(grabRailsPoorCondition, totalGrabRailRecords);
+  const grabRailPoorConditionRate = rate(grabRailsPoorCondition, totalGrabRailRecords);
 
   // Composite grab_rail_rate: installed + securely fixed + correct height + inspection passed
   const grabRailRate: number | null =
@@ -388,34 +384,34 @@ export function computeBathroomAccessibilityAdaptations(
   // --- Non-slip surface metrics ---
   const totalNonSlipRecords = non_slip_records.length;
   const installedNonSlip = non_slip_records.filter((n) => n.installed).length;
-  const nonSlipInstalledRate = pct(installedNonSlip, totalNonSlipRecords);
+  const nonSlipInstalledRate = rate(installedNonSlip, totalNonSlipRecords);
 
   const nonSlipInspectionPassed = non_slip_records.filter(
     (n) => n.installed && n.inspection_passed,
   ).length;
-  const nonSlipInspectionRate = pct(nonSlipInspectionPassed, totalNonSlipRecords);
+  const nonSlipInspectionRate = rate(nonSlipInspectionPassed, totalNonSlipRecords);
 
   const slipResistanceTested = non_slip_records.filter(
     (n) => n.installed && n.slip_resistance_tested,
   ).length;
-  const slipResistanceTestedRate = pct(slipResistanceTested, totalNonSlipRecords);
+  const slipResistanceTestedRate = rate(slipResistanceTested, totalNonSlipRecords);
 
   const nonSlipMeetsStandard = non_slip_records.filter(
     (n) => n.installed && n.meets_standard,
   ).length;
-  const nonSlipStandardRate = pct(nonSlipMeetsStandard, totalNonSlipRecords);
+  const nonSlipStandardRate = rate(nonSlipMeetsStandard, totalNonSlipRecords);
 
   const nonSlipPoorCondition = non_slip_records.filter(
     (n) =>
       n.installed &&
       (n.condition === "poor" || n.condition === "unusable"),
   ).length;
-  const nonSlipPoorConditionRate = pct(nonSlipPoorCondition, totalNonSlipRecords);
+  const nonSlipPoorConditionRate = rate(nonSlipPoorCondition, totalNonSlipRecords);
 
   const nonSlipReplacementDue = non_slip_records.filter(
     (n) => n.installed && n.replacement_due,
   ).length;
-  const nonSlipReplacementDueRate = pct(nonSlipReplacementDue, totalNonSlipRecords);
+  const nonSlipReplacementDueRate = rate(nonSlipReplacementDue, totalNonSlipRecords);
 
   // Composite non_slip_rate: installed + inspection passed + meets standard + resistance tested
   const nonSlipRate: number | null =
@@ -428,32 +424,32 @@ export function computeBathroomAccessibilityAdaptations(
   const wheelchairDoorwayMeetsStandard = wheelchair_records.filter(
     (w) => w.doorway_meets_standard,
   ).length;
-  const wheelchairDoorwayRate = pct(wheelchairDoorwayMeetsStandard, totalWheelchairRecords);
+  const wheelchairDoorwayRate = rate(wheelchairDoorwayMeetsStandard, totalWheelchairRecords);
 
   const wheelchairTurningCircle = wheelchair_records.filter(
     (w) => w.turning_circle_adequate,
   ).length;
-  const turningCircleRate = pct(wheelchairTurningCircle, totalWheelchairRecords);
+  const turningCircleRate = rate(wheelchairTurningCircle, totalWheelchairRecords);
 
   const wheelchairTransferSpace = wheelchair_records.filter(
     (w) => w.transfer_space_available,
   ).length;
-  const transferSpaceRate = pct(wheelchairTransferSpace, totalWheelchairRecords);
+  const transferSpaceRate = rate(wheelchairTransferSpace, totalWheelchairRecords);
 
   const wheelchairEmergencyPullCord = wheelchair_records.filter(
     (w) => w.emergency_pull_cord,
   ).length;
-  const emergencyPullCordRate = pct(wheelchairEmergencyPullCord, totalWheelchairRecords);
+  const emergencyPullCordRate = rate(wheelchairEmergencyPullCord, totalWheelchairRecords);
 
   const wheelchairFloorLevel = wheelchair_records.filter(
     (w) => w.floor_level_access,
   ).length;
-  const floorLevelRate = pct(wheelchairFloorLevel, totalWheelchairRecords);
+  const floorLevelRate = rate(wheelchairFloorLevel, totalWheelchairRecords);
 
   const wheelchairAssessmentPassed = wheelchair_records.filter(
     (w) => w.assessment_passed,
   ).length;
-  const wheelchairAssessmentRate = pct(wheelchairAssessmentPassed, totalWheelchairRecords);
+  const wheelchairAssessmentRate = rate(wheelchairAssessmentPassed, totalWheelchairRecords);
 
   // Composite wheelchair_access_rate: doorway + turning circle + transfer space + assessment passed
   const wheelchairAccessRate: number | null =
@@ -464,29 +460,29 @@ export function computeBathroomAccessibilityAdaptations(
   // --- Child modification metrics ---
   const totalModificationRecords = modification_records.length;
   const installedModifications = modification_records.filter((m) => m.installed).length;
-  const modificationInstalledRate = pct(installedModifications, totalModificationRecords);
+  const modificationInstalledRate = rate(installedModifications, totalModificationRecords);
 
   const modificationsMeetingNeeds = modification_records.filter(
     (m) => m.installed && m.meets_child_needs,
   ).length;
-  const modificationMeetNeedsRate = pct(modificationsMeetingNeeds, totalModificationRecords);
+  const modificationMeetNeedsRate = rate(modificationsMeetingNeeds, totalModificationRecords);
 
   const modificationsChildConsulted = modification_records.filter(
     (m) => m.installed && m.child_consulted,
   ).length;
-  const modificationChildConsultedRate = pct(modificationsChildConsulted, totalModificationRecords);
+  const modificationChildConsultedRate = rate(modificationsChildConsulted, totalModificationRecords);
 
   const modificationsCarePlanLinked = modification_records.filter(
     (m) => m.installed && m.care_plan_linked,
   ).length;
-  const modificationCarePlanRate = pct(modificationsCarePlanLinked, totalModificationRecords);
+  const modificationCarePlanRate = rate(modificationsCarePlanLinked, totalModificationRecords);
 
   const modificationsPoorCondition = modification_records.filter(
     (m) =>
       m.installed &&
       (m.condition === "poor" || m.condition === "unusable"),
   ).length;
-  const modificationPoorConditionRate = pct(modificationsPoorCondition, totalModificationRecords);
+  const modificationPoorConditionRate = rate(modificationsPoorCondition, totalModificationRecords);
 
   // Composite child_modification_rate: installed + meets needs + child consulted + care plan linked
   const childModificationRate: number | null =
@@ -516,7 +512,7 @@ export function computeBathroomAccessibilityAdaptations(
     modification_records.filter((m) => m.installed).map((m) => m.child_id),
   ).size;
   const childModificationCoverage =
-    total_children > 0 ? pct(uniqueChildrenModified, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenModified, total_children) : 0;
 
   // --- Unique bathrooms ---
   const allBathroomIds = new Set<string>();

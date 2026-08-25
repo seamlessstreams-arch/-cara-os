@@ -179,10 +179,6 @@ export interface AsthmaRespiratoryInput {
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -210,12 +206,12 @@ function emptyResult(
     total_trigger_management_records: 0,
     total_peak_flow_records: 0,
     total_emergency_preparedness_records: 0,
-    action_plan_coverage_rate: 0,
-    inhaler_technique_rate: 0,
-    trigger_management_rate: 0,
-    peak_flow_monitoring_rate: 0,
-    emergency_preparedness_rate: 0,
-    child_self_management_rate: 0,
+    action_plan_coverage_rate: null,
+    inhaler_technique_rate: null,
+    trigger_management_rate: null,
+    peak_flow_monitoring_rate: null,
+    emergency_preparedness_rate: null,
+    child_self_management_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -311,27 +307,27 @@ export function computeAsthmaRespiratoryManagement(
 
   // Action plan coverage: composite of plan_in_place, plan_current, gp_approved, plan_accessible
   const actionPlanCoverageRate = meanOf([
-    pct(plansInPlace, totalActionPlanRecords),
-    pct(plansCurrent, totalActionPlanRecords),
-    pct(plansGpApproved, totalActionPlanRecords),
-    pct(plansAccessible, totalActionPlanRecords),
+    rate(plansInPlace, totalActionPlanRecords),
+    rate(plansCurrent, totalActionPlanRecords),
+    rate(plansGpApproved, totalActionPlanRecords),
+    rate(plansAccessible, totalActionPlanRecords),
   ]);
 
-  const gpApprovalRate = pct(plansGpApproved, totalActionPlanRecords);
-  const triggersDocumentedRate = pct(plansTriggersDocumented, totalActionPlanRecords);
+  const gpApprovalRate = rate(plansGpApproved, totalActionPlanRecords);
+  const triggersDocumentedRate = rate(plansTriggersDocumented, totalActionPlanRecords);
 
   // Identify overdue plan reviews
   const overdueReviews = action_plan_records.filter((a) => {
     if (!a.review_due_date) return false;
     return a.review_due_date < today && a.plan_in_place;
   }).length;
-  const overdueReviewRate = pct(overdueReviews, totalActionPlanRecords);
+  const overdueReviewRate = rate(overdueReviews, totalActionPlanRecords);
 
   // --- Inhaler technique metrics ---
   const totalInhalerRecords = inhaler_technique_records.length;
 
   const techniqueCorrect = inhaler_technique_records.filter((i) => i.technique_correct).length;
-  const inhalerTechniqueRate = pct(techniqueCorrect, totalInhalerRecords);
+  const inhalerTechniqueRate = rate(techniqueCorrect, totalInhalerRecords);
 
   const totalStepsCorrect = inhaler_technique_records.reduce(
     (sum, i) => sum + i.steps_completed_correctly,
@@ -341,7 +337,7 @@ export function computeAsthmaRespiratoryManagement(
     (sum, i) => sum + i.steps_total,
     0,
   );
-  const stepCompletionRate = pct(totalStepsCorrect, totalStepsTotal);
+  const stepCompletionRate = rate(totalStepsCorrect, totalStepsTotal);
 
   const canSelfAdminister = inhaler_technique_records.filter(
     (i) => i.child_can_self_administer,
@@ -354,12 +350,12 @@ export function computeAsthmaRespiratoryManagement(
   const retrainingNeeded = inhaler_technique_records.filter(
     (i) => i.retraining_needed,
   ).length;
-  const retrainingNeededRate = pct(retrainingNeeded, totalInhalerRecords);
+  const retrainingNeededRate = rate(retrainingNeeded, totalInhalerRecords);
 
   const retrainingProvided = inhaler_technique_records.filter(
     (i) => i.retraining_needed && i.retraining_provided,
   ).length;
-  const retrainingProvidedRate = pct(retrainingProvided, retrainingNeeded);
+  const retrainingProvidedRate = rate(retrainingProvided, retrainingNeeded);
 
   // Assessor quality — specialist/nurse/pharmacist vs staff
   const specialistAssessments = inhaler_technique_records.filter(
@@ -368,14 +364,14 @@ export function computeAsthmaRespiratoryManagement(
       i.assessor_role === "pharmacist" ||
       i.assessor_role === "respiratory_specialist",
   ).length;
-  const specialistAssessmentRate = pct(specialistAssessments, totalInhalerRecords);
+  const specialistAssessmentRate = rate(specialistAssessments, totalInhalerRecords);
 
   // Overdue technique checks
   const overdueInhalerChecks = inhaler_technique_records.filter((i) => {
     if (!i.next_check_due) return false;
     return i.next_check_due < today;
   }).length;
-  const overdueInhalerCheckRate = pct(overdueInhalerChecks, totalInhalerRecords);
+  const overdueInhalerCheckRate = rate(overdueInhalerChecks, totalInhalerRecords);
 
   // --- Trigger management metrics ---
   const totalTriggerRecords = trigger_management_records.length;
@@ -383,17 +379,17 @@ export function computeAsthmaRespiratoryManagement(
   const triggersIdentified = trigger_management_records.filter(
     (t) => t.trigger_identified,
   ).length;
-  const triggerIdentificationRate = pct(triggersIdentified, totalTriggerRecords);
+  const triggerIdentificationRate = rate(triggersIdentified, totalTriggerRecords);
 
   const avoidancePlanInPlace = trigger_management_records.filter(
     (t) => t.trigger_identified && t.avoidance_plan_in_place,
   ).length;
-  const avoidancePlanRate = pct(avoidancePlanInPlace, triggersIdentified);
+  const avoidancePlanRate = rate(avoidancePlanInPlace, triggersIdentified);
 
   const envControlsImplemented = trigger_management_records.filter(
     (t) => t.environmental_controls_implemented,
   ).length;
-  const envControlRate = pct(envControlsImplemented, totalTriggerRecords);
+  const envControlRate = rate(envControlsImplemented, totalTriggerRecords);
 
   const childCanIdentify = trigger_management_records.filter(
     (t) => t.child_can_identify_trigger,
@@ -406,12 +402,12 @@ export function computeAsthmaRespiratoryManagement(
   const staffAwareOfTrigger = trigger_management_records.filter(
     (t) => t.staff_aware_of_trigger,
   ).length;
-  const staffTriggerAwarenessRate = pct(staffAwareOfTrigger, totalTriggerRecords);
+  const staffTriggerAwarenessRate = rate(staffAwareOfTrigger, totalTriggerRecords);
 
   const documentedInCarePlan = trigger_management_records.filter(
     (t) => t.documented_in_care_plan,
   ).length;
-  const triggerDocumentedRate = pct(documentedInCarePlan, totalTriggerRecords);
+  const triggerDocumentedRate = rate(documentedInCarePlan, totalTriggerRecords);
 
   const episodesOccurred = trigger_management_records.filter(
     (t) => t.episode_occurred,
@@ -422,12 +418,12 @@ export function computeAsthmaRespiratoryManagement(
       t.episode_occurred &&
       (t.episode_severity === "severe" || t.episode_severity === "emergency"),
   ).length;
-  const severeEpisodeRate = pct(severeEpisodes, totalTriggerRecords);
+  const severeEpisodeRate = rate(severeEpisodes, totalTriggerRecords);
 
   const appropriateActions = trigger_management_records.filter(
     (t) => t.episode_occurred && t.action_taken_appropriate,
   ).length;
-  const appropriateActionRate = pct(appropriateActions, episodesOccurred);
+  const appropriateActionRate = rate(appropriateActions, episodesOccurred);
 
   // Composite trigger management rate
   // meanOf already answers null when every component is unmeasured, so the
@@ -450,27 +446,27 @@ export function computeAsthmaRespiratoryManagement(
   const peakFlowTechniqueCorrect = peak_flow_records.filter(
     (p) => p.technique_correct,
   ).length;
-  const peakFlowTechniqueRate = pct(peakFlowTechniqueCorrect, totalPeakFlowRecords);
+  const peakFlowTechniqueRate = rate(peakFlowTechniqueCorrect, totalPeakFlowRecords);
 
   const peakFlowRecordedInDiary = peak_flow_records.filter(
     (p) => p.recorded_in_diary,
   ).length;
-  const diaryRecordingRate = pct(peakFlowRecordedInDiary, totalPeakFlowRecords);
+  const diaryRecordingRate = rate(peakFlowRecordedInDiary, totalPeakFlowRecords);
 
   const peakFlowGreenZone = peak_flow_records.filter(
     (p) => p.zone === "green",
   ).length;
-  const greenZoneRate = pct(peakFlowGreenZone, totalPeakFlowRecords);
+  const greenZoneRate = rate(peakFlowGreenZone, totalPeakFlowRecords);
 
   const peakFlowAmberZone = peak_flow_records.filter(
     (p) => p.zone === "amber",
   ).length;
-  const amberZoneRate = pct(peakFlowAmberZone, totalPeakFlowRecords);
+  const amberZoneRate = rate(peakFlowAmberZone, totalPeakFlowRecords);
 
   const peakFlowRedZone = peak_flow_records.filter(
     (p) => p.zone === "red",
   ).length;
-  const redZoneRate = pct(peakFlowRedZone, totalPeakFlowRecords);
+  const redZoneRate = rate(peakFlowRedZone, totalPeakFlowRecords);
 
   const peakFlowIndependent = peak_flow_records.filter(
     (p) => p.child_performed_independently,
@@ -482,17 +478,17 @@ export function computeAsthmaRespiratoryManagement(
   const actionTaken = peak_flow_records.filter(
     (p) => p.action_required && p.action_taken,
   ).length;
-  const actionTakenRate = pct(actionTaken, actionRequired);
+  const actionTakenRate = rate(actionTaken, actionRequired);
 
   const decliningTrend = peak_flow_records.filter(
     (p) => p.trend_direction === "declining",
   ).length;
-  const decliningRate = pct(decliningTrend, totalPeakFlowRecords);
+  const decliningRate = rate(decliningTrend, totalPeakFlowRecords);
 
   const improvingTrend = peak_flow_records.filter(
     (p) => p.trend_direction === "improving",
   ).length;
-  const improvingRate = pct(improvingTrend, totalPeakFlowRecords);
+  const improvingRate = rate(improvingTrend, totalPeakFlowRecords);
 
   // Peak flow monitoring composite
   const peakFlowMonitoringRate =
@@ -506,17 +502,17 @@ export function computeAsthmaRespiratoryManagement(
   const inhalerAccessible = emergency_preparedness_records.filter(
     (e) => e.emergency_inhaler_accessible,
   ).length;
-  const inhalerAccessibleRate = pct(inhalerAccessible, totalEmergencyRecords);
+  const inhalerAccessibleRate = rate(inhalerAccessible, totalEmergencyRecords);
 
   const protocolDisplayed = emergency_preparedness_records.filter(
     (e) => e.emergency_protocol_displayed,
   ).length;
-  const protocolDisplayedRate = pct(protocolDisplayed, totalEmergencyRecords);
+  const protocolDisplayedRate = rate(protocolDisplayed, totalEmergencyRecords);
 
   const staffTrainedEmergency = emergency_preparedness_records.filter(
     (e) => e.staff_trained_in_emergency,
   ).length;
-  const staffTrainedEmergencyRate = pct(staffTrainedEmergency, totalEmergencyRecords);
+  const staffTrainedEmergencyRate = rate(staffTrainedEmergency, totalEmergencyRecords);
 
   const totalStaffTrained = emergency_preparedness_records.reduce(
     (sum, e) => sum + e.staff_count_trained,
@@ -526,17 +522,17 @@ export function computeAsthmaRespiratoryManagement(
     (sum, e) => sum + e.staff_count_total,
     0,
   );
-  const staffTrainingCoverageRate = pct(totalStaffTrained, totalStaffCount);
+  const staffTrainingCoverageRate = rate(totalStaffTrained, totalStaffCount);
 
   const ambulanceProcedureKnown = emergency_preparedness_records.filter(
     (e) => e.ambulance_procedure_known,
   ).length;
-  const ambulanceProcedureRate = pct(ambulanceProcedureKnown, totalEmergencyRecords);
+  const ambulanceProcedureRate = rate(ambulanceProcedureKnown, totalEmergencyRecords);
 
   const emergencyContactsCurrent = emergency_preparedness_records.filter(
     (e) => e.emergency_contacts_current,
   ).length;
-  const emergencyContactsRate = pct(emergencyContactsCurrent, totalEmergencyRecords);
+  const emergencyContactsRate = rate(emergencyContactsCurrent, totalEmergencyRecords);
 
   const drillsCompleted = emergency_preparedness_records.filter(
     (e) => e.assessment_type === "drill",
@@ -544,7 +540,7 @@ export function computeAsthmaRespiratoryManagement(
   const drillsSuccessful = emergency_preparedness_records.filter(
     (e) => e.assessment_type === "drill" && e.drill_completed_successfully,
   ).length;
-  const drillSuccessRate = pct(drillsSuccessful, drillsCompleted);
+  const drillSuccessRate = rate(drillsSuccessful, drillsCompleted);
 
   // Emergency preparedness composite
   // meanOf already answers null when every component is unmeasured, so the
@@ -585,7 +581,7 @@ export function computeAsthmaRespiratoryManagement(
 
   const totalSelfMgmtNum = selfMgmtNumerators.reduce((a, b) => a + b, 0);
   const totalSelfMgmtDenom = selfMgmtDenominators.reduce((a, b) => a + b, 0);
-  const childSelfManagementRate = pct(totalSelfMgmtNum, totalSelfMgmtDenom);
+  const childSelfManagementRate = rate(totalSelfMgmtNum, totalSelfMgmtDenom);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
