@@ -113,10 +113,6 @@ function toRating(score: number): AdmissionRating {
 }
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 // ── Main Compute ────────────────────────────────────────────────────────────
 
 export function computeHomeAdmission(
@@ -150,7 +146,7 @@ export function computeHomeAdmission(
 
   const decided = referrals.filter(r => ["accepted", "declined", "placed"].includes(r.status));
   const acceptedOrPlaced = decided.filter(r => r.status === "accepted" || r.status === "placed").length;
-  const acceptanceRate = pct(acceptedOrPlaced, decided.length);
+  const acceptanceRate = rate(acceptedOrPlaced, decided.length);
 
   const refProfile: ReferralProfile = {
     total_referrals: referrals.length,
@@ -167,13 +163,13 @@ export function computeHomeAdmission(
   // Impact assessments should be done for all non-withdrawn referrals
   const nonWithdrawn = referrals.filter(r => r.status !== "withdrawn");
   const withImpact = nonWithdrawn.filter(r => r.impact_assessment_complete).length;
-  const impactRate = pct(withImpact, nonWithdrawn.length);
+  const impactRate = rate(withImpact, nonWithdrawn.length);
 
   const withMatching = nonWithdrawn.filter(r => r.has_matching_considerations).length;
-  const matchingRate = pct(withMatching, nonWithdrawn.length);
+  const matchingRate = rate(withMatching, nonWithdrawn.length);
 
   const withDecisionReason = decided.filter(r => r.has_decision_reason).length;
-  const decisionDocRate = pct(withDecisionReason, decided.length);
+  const decisionDocRate = rate(withDecisionReason, decided.length);
 
   // Average days to decision for decided referrals
   const decisionDays = decided.filter(r => r.days_to_decision >= 0).map(r => r.days_to_decision);
@@ -211,9 +207,9 @@ export function computeHomeAdmission(
     : null;
 
   const declinedWithReason = referrals.filter(r => r.status === "declined" && r.has_decision_reason).length;
-  const declinedReasonRate = pct(declinedWithReason, declined);
+  const declinedReasonRate = rate(declinedWithReason, declined);
 
-  const occupancyRate = registered_beds > 0 ? pct(total_children, registered_beds) : 0;
+  const occupancyRate = registered_beds > 0 ? rate(total_children, registered_beds) : 0;
 
   const qualProfile: QualityProfile = {
     avg_needs_per_referral: avgNeeds,
@@ -263,7 +259,7 @@ export function computeHomeAdmission(
   }
 
   // 7. Emergency referrals proportion (±2)
-  const emergencyPct = pct(emergency, referrals.length);
+  const emergencyPct = rate(emergency, referrals.length);
   if ((emergencyPct !== null && emergencyPct <= 20)) score += 2;
   else if ((emergencyPct !== null && emergencyPct <= 40)) score += 0;
   else score -= 2;
@@ -377,6 +373,6 @@ function emptyQualProfile(totalChildren: number, beds: number): QualityProfile {
   return {
     avg_needs_per_referral: null, avg_risk_factors_per_referral: null,
     declined_with_reason_rate: 0,
-    occupancy_rate: beds > 0 ? pct(totalChildren, beds) : 0,
+    occupancy_rate: beds > 0 ? rate(totalChildren, beds) : 0,
   };
 }

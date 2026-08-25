@@ -5,6 +5,8 @@
 // Pure deterministic engine. CHR 2015 Reg 9/40.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input types ─────────────────────────────────────────────────────────────
 
 export interface DailyRoutineInput {
@@ -91,10 +93,6 @@ export interface DailyRoutineResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 // ── Engine ──────────────────────────────────────────────────────────────────
 
 export function computeDailyRoutineCare(
@@ -128,52 +126,52 @@ export function computeDailyRoutineCare(
       .filter(r => r.is_current && r.personalised)
       .map(r => r.child_id),
   ).size;
-  const routineRate = pct(childrenWithRoutine, total_children);
+  const routineRate = rate(childrenWithRoutine, total_children);
 
   // Duty log completeness
   const completedLogs = duty_logs.filter(l => l.completed).length;
-  const completionRate = pct(completedLogs, duty_logs.length);
+  const completionRate = rate(completedLogs, duty_logs.length);
   const handoverLogs = duty_logs.filter(l => l.handover_completed).length;
-  const handoverRate = pct(handoverLogs, duty_logs.length);
+  const handoverRate = rate(handoverLogs, duty_logs.length);
 
   // Shift note quality
   const qualityNotes = shift_notes.filter(n => n.quality_adequate).length;
-  const qualityRate = pct(qualityNotes, shift_notes.length);
+  const qualityRate = rate(qualityNotes, shift_notes.length);
   const obsNotes = shift_notes.filter(n => n.child_observations_included).length;
-  const obsRate = pct(obsNotes, shift_notes.length);
+  const obsRate = rate(obsNotes, shift_notes.length);
 
   // Cleaning standards
   const metChecks = cleaning_checks.filter(c => c.standard_met).length;
-  const standardRate = pct(metChecks, cleaning_checks.length);
+  const standardRate = rate(metChecks, cleaning_checks.length);
 
   // Sleep-in quality
   const adequateSleepIns = sleep_ins.filter(s => s.response_adequate).length;
-  const responseRate = pct(adequateSleepIns, sleep_ins.length);
+  const responseRate = rate(adequateSleepIns, sleep_ins.length);
   const sleepHandovers = sleep_ins.filter(s => s.handover_completed).length;
-  const sleepHandoverRate = pct(sleepHandovers, sleep_ins.length);
+  const sleepHandoverRate = rate(sleepHandovers, sleep_ins.length);
 
   // Issue resolution
   const totalIssues = cleaning_checks.reduce((sum, c) => sum + c.issues_found, 0);
   const totalResolved = cleaning_checks.reduce((sum, c) => sum + c.issues_resolved, 0);
-  const resolveRate = pct(totalResolved, totalIssues);
+  const resolveRate = rate(totalResolved, totalIssues);
 
   // ── Scoring ───────────────────────────────────────────────────────────
   let score = 52;
 
   // Mod 1: Daily routine coverage (±5)
-  if (routineRate >= 90) score += 5;
-  else if (routineRate >= 75) score += 3;
-  else if (routineRate >= 50) score += 0;
+  if (meets(routineRate, 90)) score += 5;
+  else if (meets(routineRate, 75)) score += 3;
+  else if (meets(routineRate, 50)) score += 0;
   else score -= 5;
 
   // Mod 2: Duty log completeness (±6)
   if (duty_logs.length === 0) {
     score -= 3;
-  } else if (completionRate >= 95 && handoverRate >= 95) {
+  } else if (meets(completionRate, 95) && meets(handoverRate, 95)) {
     score += 6;
-  } else if (completionRate >= 80 && handoverRate >= 80) {
+  } else if (meets(completionRate, 80) && meets(handoverRate, 80)) {
     score += 3;
-  } else if (completionRate >= 60 && handoverRate >= 60) {
+  } else if (meets(completionRate, 60) && meets(handoverRate, 60)) {
     score += 0;
   } else {
     score -= 6;
@@ -182,11 +180,11 @@ export function computeDailyRoutineCare(
   // Mod 3: Shift note quality (±5)
   if (shift_notes.length === 0) {
     score -= 2;
-  } else if (qualityRate >= 90 && obsRate >= 90) {
+  } else if (meets(qualityRate, 90) && meets(obsRate, 90)) {
     score += 5;
-  } else if (qualityRate >= 75 && obsRate >= 75) {
+  } else if (meets(qualityRate, 75) && meets(obsRate, 75)) {
     score += 3;
-  } else if (qualityRate >= 50 && obsRate >= 50) {
+  } else if (meets(qualityRate, 50) && meets(obsRate, 50)) {
     score += 0;
   } else {
     score -= 5;
@@ -195,11 +193,11 @@ export function computeDailyRoutineCare(
   // Mod 4: Cleaning standards (±5)
   if (cleaning_checks.length === 0) {
     score -= 1;
-  } else if (standardRate >= 95) {
+  } else if (meets(standardRate, 95)) {
     score += 5;
-  } else if (standardRate >= 80) {
+  } else if (meets(standardRate, 80)) {
     score += 3;
-  } else if (standardRate >= 60) {
+  } else if (meets(standardRate, 60)) {
     score += 0;
   } else {
     score -= 5;
@@ -208,11 +206,11 @@ export function computeDailyRoutineCare(
   // Mod 5: Sleep-in quality (±4)
   if (sleep_ins.length === 0) {
     score += 1;
-  } else if (responseRate >= 95 && sleepHandoverRate >= 95) {
+  } else if (meets(responseRate, 95) && meets(sleepHandoverRate, 95)) {
     score += 4;
-  } else if (responseRate >= 80 && sleepHandoverRate >= 80) {
+  } else if (meets(responseRate, 80) && meets(sleepHandoverRate, 80)) {
     score += 2;
-  } else if (responseRate >= 60 && sleepHandoverRate >= 60) {
+  } else if (meets(responseRate, 60) && meets(sleepHandoverRate, 60)) {
     score += 0;
   } else {
     score -= 4;
@@ -221,11 +219,11 @@ export function computeDailyRoutineCare(
   // Mod 6: Issue resolution in cleaning (±4)
   if (totalIssues === 0) {
     score += 4;
-  } else if (resolveRate >= 90) {
+  } else if (meets(resolveRate, 90)) {
     score += 4;
-  } else if (resolveRate >= 70) {
+  } else if (meets(resolveRate, 70)) {
     score += 2;
-  } else if (resolveRate >= 50) {
+  } else if (meets(resolveRate, 50)) {
     score += 0;
   } else {
     score -= 4;
@@ -249,44 +247,44 @@ export function computeDailyRoutineCare(
   let rank = 0;
 
   // Strengths
-  if (routineRate >= 90) {
+  if (meets(routineRate, 90)) {
     strengths.push("Personalised daily routines in place for over 90% of children — care is structured and individual.");
   }
-  if (completionRate >= 95 && duty_logs.length > 0) {
+  if (meets(completionRate, 95) && duty_logs.length > 0) {
     strengths.push("Duty logs completed at over 95% — operational accountability is strong.");
   }
-  if (qualityRate >= 90 && shift_notes.length > 0) {
+  if (meets(qualityRate, 90) && shift_notes.length > 0) {
     strengths.push("Shift note quality over 90% — care continuity is assured.");
   }
-  if (standardRate >= 95 && cleaning_checks.length > 0) {
+  if (meets(standardRate, 95) && cleaning_checks.length > 0) {
     strengths.push("Cleaning standards met at over 95% — home environment is well maintained.");
   }
-  if (responseRate >= 95 && sleep_ins.length > 0) {
+  if (meets(responseRate, 95) && sleep_ins.length > 0) {
     strengths.push("Sleep-in response quality over 95% — night care is reliable.");
   }
 
   // Concerns
-  if (routineRate < 50) {
+  if (below(routineRate, 50)) {
     concerns.push("Under 50% of children have current personalised routines — care may lack structure.");
   }
-  if (completionRate < 70 && duty_logs.length > 0) {
+  if (below(completionRate, 70) && duty_logs.length > 0) {
     concerns.push(`Duty log completion at ${completionRate}% — gaps in operational recording.`);
   }
-  if (qualityRate < 60 && shift_notes.length > 0) {
+  if (below(qualityRate, 60) && shift_notes.length > 0) {
     concerns.push(`Shift note quality at ${qualityRate}% — care continuity may be compromised.`);
   }
-  if (standardRate < 60 && cleaning_checks.length > 0) {
+  if (below(standardRate, 60) && cleaning_checks.length > 0) {
     concerns.push(`Cleaning standards met at only ${standardRate}% — home environment concerns.`);
   }
 
   // Recommendations
-  if (routineRate < 70) {
+  if (below(routineRate, 70)) {
     recommendations.push({ rank: ++rank, recommendation: "Establish personalised daily routines for all children to ensure structured, individualised care.", urgency: "soon", regulatory_ref: "Reg 9" });
   }
-  if (completionRate < 80) {
+  if (below(completionRate, 80)) {
     recommendations.push({ rank: ++rank, recommendation: "Improve duty log completion rate to ensure full operational accountability across all shifts.", urgency: "immediate", regulatory_ref: "Reg 40" });
   }
-  if (qualityRate < 75) {
+  if (below(qualityRate, 75)) {
     recommendations.push({ rank: ++rank, recommendation: "Provide shift note writing training to improve detail and ensure care continuity between shifts.", urgency: "soon", regulatory_ref: "Reg 40" });
   }
   if (score < 65) {
@@ -300,10 +298,10 @@ export function computeDailyRoutineCare(
   if (routine_rating === "inadequate") {
     insights.push({ text: "Care continuity is critically compromised. Gaps in routines, recording, and handovers mean children may experience inconsistent care — this is a regulatory concern.", severity: "critical" });
   }
-  if (completionRate >= 95 && qualityRate >= 90 && handoverRate >= 95) {
+  if (meets(completionRate, 95) && meets(qualityRate, 90) && meets(handoverRate, 95)) {
     insights.push({ text: "Seamless care transitions demonstrated — duty logs, shift notes, and handovers are all at high standard, ensuring no child falls through the gaps between shifts.", severity: "positive" });
   }
-  if (completionRate < 70 && qualityRate < 60) {
+  if (below(completionRate, 70) && below(qualityRate, 60)) {
     insights.push({ text: "Both duty log completion and shift note quality are below acceptable thresholds — potential for significant care gaps between shifts.", severity: "warning" });
   }
 
@@ -314,7 +312,7 @@ export function computeDailyRoutineCare(
   } else if (routine_rating === "good") {
     headline = `Good daily care — ${concerns.length > 0 ? `${concerns.length} area(s) to address` : "consistent practice"}.`;
   } else if (routine_rating === "adequate") {
-    headline = `Adequate daily care — ${routineRate < 70 ? "routine coverage" : "recording quality"} needs improvement.`;
+    headline = `Adequate daily care — ${below(routineRate, 70) ? "routine coverage" : "recording quality"} needs improvement.`;
   } else {
     headline = "Daily care & continuity inadequate — significant gaps in routines, recording, and standards.";
   }

@@ -319,7 +319,7 @@ describe("computeRecruitmentAuditTrail", () => {
       expect(r.offers_with_conditions_rate).toBe(pct(2, 3)); // 67
     });
 
-    it("returns 0 offers_with_conditions_rate when no offers", () => {
+    it("offers_with_conditions_rate is unmeasured when there are no offers", () => {
       const r = computeRecruitmentAuditTrail(
         baseInput({
           audit_entries: [makeAuditEntry()],
@@ -327,7 +327,7 @@ describe("computeRecruitmentAuditTrail", () => {
           offers: [],
         }),
       );
-      expect(r.offers_with_conditions_rate).toBe(0);
+      expect(r.offers_with_conditions_rate).toBeNull();
     });
 
     it("calculates exceptional_start_compliance", () => {
@@ -344,7 +344,7 @@ describe("computeRecruitmentAuditTrail", () => {
       expect(r.exceptional_start_compliance).toBe(50);
     });
 
-    it("returns 0 exceptional_start_compliance when no exceptional starts", () => {
+    it("exceptional_start_compliance is unmeasured when there are no exceptional starts", () => {
       const r = computeRecruitmentAuditTrail(
         baseInput({
           audit_entries: [makeAuditEntry()],
@@ -352,7 +352,7 @@ describe("computeRecruitmentAuditTrail", () => {
           offers: [makeOffer({ exceptional_start: false })],
         }),
       );
-      expect(r.exceptional_start_compliance).toBe(0);
+      expect(r.exceptional_start_compliance).toBeNull();
     });
 
     it("calculates average_audit_depth per candidate", () => {
@@ -405,14 +405,14 @@ describe("computeRecruitmentAuditTrail", () => {
       expect(r.vacancy_fill_rate).toBe(pct(2, 4)); // 50
     });
 
-    it("returns 0 vacancy_fill_rate when no vacancies", () => {
+    it("vacancy_fill_rate is unmeasured when there are no vacancies", () => {
       const r = computeRecruitmentAuditTrail(
         baseInput({
           audit_entries: [makeAuditEntry()],
           candidates: [makeCandidate()],
         }),
       );
-      expect(r.vacancy_fill_rate).toBe(0);
+      expect(r.vacancy_fill_rate).toBeNull();
     });
 
     it("100% metrics when all entries are fully complete", () => {
@@ -2642,14 +2642,14 @@ describe("computeRecruitmentAuditTrail", () => {
   // ── pct helper behavior ────────────────────────────────────────────────
 
   describe("pct helper behavior (via metrics)", () => {
-    it("pct(0, 0) returns 0 for notes_coverage_rate with 0 entries", () => {
+    it("notes_coverage_rate is unmeasured for a zero denominator (0 entries)", () => {
       // This scenario is handled by special case, but let's verify through offer-only path
       const r = computeRecruitmentAuditTrail(
         baseInput({
           offers: [makeOffer()],
         }),
       );
-      expect(r.notes_coverage_rate).toBe(0);
+      expect(r.notes_coverage_rate).toBeNull();
     });
 
     it("pct returns rounded integer", () => {
@@ -2954,8 +2954,9 @@ describe("computeRecruitmentAuditTrail", () => {
       expect(r.state_tracking_rate).toBeLessThanOrEqual(100);
       expect(r.offers_with_conditions_rate).toBeGreaterThanOrEqual(0);
       expect(r.offers_with_conditions_rate).toBeLessThanOrEqual(100);
-      expect(r.exceptional_start_compliance).toBeGreaterThanOrEqual(0);
-      expect(r.exceptional_start_compliance).toBeLessThanOrEqual(100);
+      // makeOffer() defaults exceptional_start to false, so there are 0
+      // exceptional starts here — unmeasured, not a rate between 0 and 100.
+      expect(r.exceptional_start_compliance).toBeNull();
       expect(r.vacancy_fill_rate).toBeGreaterThanOrEqual(0);
       expect(r.vacancy_fill_rate).toBeLessThanOrEqual(100);
     });
@@ -3006,17 +3007,21 @@ describe("computeRecruitmentAuditTrail", () => {
       expect(r.offers_with_conditions_rate).toBe(100);
     });
 
-    it("scores offers-only scenario with penalties for missing audit trail", () => {
+    it("scores offers-only scenario without penalising unmeasured notes/state coverage", () => {
       const r = computeRecruitmentAuditTrail(
         baseInput({
           offers: [makeOffer({ has_conditions: false })],
         }),
       );
-      // No audit entries, no candidates. notes pct(0,0)=0 < 50 → -5. state pct(0,0)=0 < 40 → -5.
+      // No audit entries, no candidates, so notes_coverage_rate and
+      // state_tracking_rate are both unmeasured (0 audit entries, not a
+      // measured 0%) — below() is false for null, so neither -5 penalty
+      // fires. This used to read as two measured failures on a home that
+      // had nothing to measure in the first place.
       // offers: 0% conditions → no bonus. depth 0 → 0. completeness 0 → 0.
       // No candidates → no "zero entries" penalty.
-      // 52 + 0 + 0 + 0 + 0 + 0 - 5 - 5 = 42
-      expect(r.audit_score).toBe(42);
+      // 52 + 0 + 0 + 0 + 0 + 0 = 52
+      expect(r.audit_score).toBe(52);
     });
 
     it("offers-only with exceptional starts", () => {
@@ -3032,8 +3037,11 @@ describe("computeRecruitmentAuditTrail", () => {
           ],
         }),
       );
-      // 52 + 0 + 0 + 0 + 0 + 4 (offers 100%) + 4 (exceptional 100%) - 5 (notes) - 5 (state) = 50
-      expect(r.audit_score).toBe(50);
+      // notes_coverage_rate and state_tracking_rate are unmeasured (0 audit
+      // entries), so below() is false for both and neither -5 penalty
+      // fires — see the offers-only penalty test above for the same fix.
+      // 52 + 0 + 0 + 0 + 0 + 4 (offers 100%) + 4 (exceptional 100%) = 60
+      expect(r.audit_score).toBe(60);
     });
   });
 
@@ -3585,7 +3593,7 @@ describe("computeRecruitmentAuditTrail", () => {
           ],
         }),
       );
-      expect(r.exceptional_start_compliance).toBe(0);
+      expect(r.exceptional_start_compliance).toBeNull();
     });
 
     it("zero vacancy fill rate when all vacancies are open", () => {

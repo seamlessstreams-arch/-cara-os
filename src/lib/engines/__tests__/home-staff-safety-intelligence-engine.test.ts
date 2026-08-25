@@ -393,7 +393,7 @@ describe("grievance profile", () => {
   it("handles no grievances", () => {
     const r = computeHomeStaffSafety(baseInput({ grievances: [] }));
     expect(r.grievance_profile.total).toBe(0);
-    expect(r.grievance_profile.resolution_rate).toBe(0);
+    expect(r.grievance_profile.resolution_rate).toBeNull();
   });
 });
 
@@ -435,7 +435,7 @@ describe("lwra profile", () => {
   it("handles no risk assessments", () => {
     const r = computeHomeStaffSafety(baseInput({ risk_assessments: [] }));
     expect(r.lwra.total).toBe(0);
-    expect(r.lwra.approval_rate).toBe(0);
+    expect(r.lwra.approval_rate).toBeNull();
   });
 });
 

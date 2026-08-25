@@ -307,10 +307,6 @@ export function getMandatoryCategories(): TrainingCategory[] {
 // Was `d === 0 ? 0 : …`: a home with nothing recorded yet read 0% on every
 // rate here — not "nothing recorded" but "nothing done". rate() answers
 // null, and meets()/below() are false for null in both directions.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 function inPeriod(date: string, start: string, end: string): boolean {
   return date.slice(0, 10) >= start.slice(0, 10) && date.slice(0, 10) <= end.slice(0, 10);
 }
@@ -355,7 +351,7 @@ export function evaluateMandatoryCompliance(
       staffName: s.name,
       completedCategories,
       missingCategories,
-      complianceRate: pct(completedCategories.length, MANDATORY_TRAINING.length),
+      complianceRate: rate(completedCategories.length, MANDATORY_TRAINING.length),
     };
   });
 
@@ -364,7 +360,7 @@ export function evaluateMandatoryCompliance(
     0,
   );
   const totalRequired = totalStaff * MANDATORY_TRAINING.length;
-  const overallComplianceRate = pct(totalCompleted, totalRequired);
+  const overallComplianceRate = rate(totalCompleted, totalRequired);
 
   return {
     totalStaff,
@@ -414,7 +410,7 @@ export function evaluateCertifications(
     }
   }
 
-  const validityRate = pct(valid, totalCertifications);
+  const validityRate = rate(valid, totalCertifications);
 
   return {
     totalCertifications,
@@ -454,7 +450,7 @@ export function evaluateCpd(
     activeStaff.length === 0 ? 0 : Math.round((totalHours / activeStaff.length) * 10) / 10;
 
   const staffMeetingTarget = staffCpd.filter((s) => s.targetMet).length;
-  const targetMetRate = pct(staffMeetingTarget, activeStaff.length);
+  const targetMetRate = rate(staffMeetingTarget, activeStaff.length);
 
   return {
     targetHoursPerYear: CPD_HOURS_TARGET,
@@ -492,7 +488,7 @@ export function evaluateQualifications(
   });
 
   const meetingRequirements = staffQualifications.filter((s) => s.meetsRoleRequirement).length;
-  const qualificationComplianceRate = pct(meetingRequirements, totalStaff);
+  const qualificationComplianceRate = rate(meetingRequirements, totalStaff);
 
   return {
     totalStaff,
@@ -529,7 +525,7 @@ export function evaluateSpecialistTraining(
 
   const coveredNeeds = needsCoverage.filter((n) => n.isCovered).length;
   const uncoveredNeeds = needsCoverage.filter((n) => !n.isCovered).length;
-  const coverageRate = pct(coveredNeeds, totalChildNeeds);
+  const coverageRate = rate(coveredNeeds, totalChildNeeds);
 
   return {
     totalChildNeeds,
@@ -559,7 +555,7 @@ export function buildStaffProfiles(
     const mandatoryCompleted = MANDATORY_TRAINING.filter((cat) =>
       allStaffRecords.some((r) => r.category === cat && r.completedDate <= periodEnd),
     ).length;
-    const mandatoryComplianceRate = pct(mandatoryCompleted, MANDATORY_TRAINING.length);
+    const mandatoryComplianceRate = rate(mandatoryCompleted, MANDATORY_TRAINING.length);
 
     // Certifications
     const certRecords = allStaffRecords.filter((r) => r.expiryDate);

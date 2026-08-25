@@ -9,6 +9,8 @@
 // Pure deterministic engine — no imports, no LLM, no external deps.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meanOf, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface AppraisalInput {
@@ -97,10 +99,6 @@ export interface StaffPerformanceCompositeResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -184,7 +182,7 @@ export function computeStaffPerformanceComposite(
   // Appraisal metrics
   const totalAppraisals = appraisals.length;
   const completedAppraisals = appraisals.filter(a => a.status === "completed");
-  const appraisalCompletionRate = pct(completedAppraisals.length, totalAppraisals);
+  const appraisalCompletionRate = rate(completedAppraisals.length, totalAppraisals);
 
   const competencyScores = completedAppraisals
     .map(a => a.average_competency_score)
@@ -194,23 +192,23 @@ export function computeStaffPerformanceComposite(
     : null;
 
   const devPlanCount = completedAppraisals.filter(a => a.has_development_plan).length;
-  const devPlanRate = pct(devPlanCount, completedAppraisals.length);
+  const devPlanRate = rate(devPlanCount, completedAppraisals.length);
 
   // Supervision metrics
   const totalSupervisions = supervisions.length;
   const completedSupervisions = supervisions.filter(s => s.status === "completed");
   const nonScheduledSupervisions = supervisions.filter(s => s.status !== "scheduled");
-  const supervisionCompletionRate = pct(completedSupervisions.length, nonScheduledSupervisions.length);
+  const supervisionCompletionRate = rate(completedSupervisions.length, nonScheduledSupervisions.length);
 
   const safeguardingDiscussed = completedSupervisions.filter(s => s.safeguarding_discussed).length;
-  const safeguardingDiscussionRate = pct(safeguardingDiscussed, completedSupervisions.length);
+  const safeguardingDiscussionRate = rate(safeguardingDiscussed, completedSupervisions.length);
 
   const totalActionsAgreed = supervisions.reduce((sum, s) => sum + s.actions_agreed, 0);
   const totalActionsCompleted = supervisions.reduce((sum, s) => sum + s.actions_completed, 0);
-  const actionCompletionRate = pct(totalActionsCompleted, totalActionsAgreed);
+  const actionCompletionRate = rate(totalActionsCompleted, totalActionsAgreed);
 
   const wellbeingChecks = completedSupervisions.filter(s => s.wellbeing_check).length;
-  const wellbeingCheckRate = pct(wellbeingChecks, completedSupervisions.length);
+  const wellbeingCheckRate = rate(wellbeingChecks, completedSupervisions.length);
 
   // Training metrics
   const totalTraining = training.length;
@@ -218,12 +216,12 @@ export function computeStaffPerformanceComposite(
   const mandatoryTraining = training.filter(t => t.is_mandatory);
   const expiredMandatory = mandatoryTraining.filter(t => t.is_expired);
   const expiredMandatoryCount = expiredMandatory.length;
-  const trainingComplianceRate = pct(completedTraining.length, totalTraining);
+  const trainingComplianceRate = rate(completedTraining.length, totalTraining);
 
   // Objective metrics
   const totalObjSet = appraisals.reduce((sum, a) => sum + a.objectives_set, 0);
   const totalObjMet = appraisals.reduce((sum, a) => sum + a.objectives_met, 0);
-  const objectiveAchievementRate = pct(totalObjMet, totalObjSet);
+  const objectiveAchievementRate = rate(totalObjMet, totalObjSet);
 
   // ── Scoring (base 52, 6 modifiers) ───────────────────────────────────
   let score = 52;
@@ -233,11 +231,11 @@ export function computeStaffPerformanceComposite(
     score -= 3;
   } else {
     const appraisalExcellent =
-      appraisalCompletionRate >= 90 &&
+      meets(appraisalCompletionRate, 90) &&
       (averageCompetencyScore ?? 0) >= 3.5 &&
-      devPlanRate >= 90;
+      meets(devPlanRate, 90);
     const appraisalGood =
-      appraisalCompletionRate >= 70 &&
+      meets(appraisalCompletionRate, 70) &&
       (averageCompetencyScore ?? 0) >= 3.0;
 
     if (appraisalExcellent) {
@@ -248,7 +246,7 @@ export function computeStaffPerformanceComposite(
       score -= 5;
     }
 
-    if (appraisalCompletionRate < 50) {
+    if (below(appraisalCompletionRate, 50)) {
       score -= 3;
     }
   }
@@ -257,11 +255,11 @@ export function computeStaffPerformanceComposite(
   if (totalSupervisions === 0) {
     score -= 1;
   } else {
-    if (supervisionCompletionRate >= 95) {
+    if (meets(supervisionCompletionRate, 95)) {
       score += 5;
-    } else if (supervisionCompletionRate >= 80) {
+    } else if (meets(supervisionCompletionRate, 80)) {
       score += 2;
-    } else if (supervisionCompletionRate >= 60) {
+    } else if (meets(supervisionCompletionRate, 60)) {
       score += 0;
     } else {
       score -= 5;
@@ -272,11 +270,11 @@ export function computeStaffPerformanceComposite(
   if (completedSupervisions.length === 0) {
     score -= 1;
   } else {
-    if (safeguardingDiscussionRate >= 95) {
+    if (meets(safeguardingDiscussionRate, 95)) {
       score += 5;
-    } else if (safeguardingDiscussionRate >= 80) {
+    } else if (meets(safeguardingDiscussionRate, 80)) {
       score += 2;
-    } else if (safeguardingDiscussionRate >= 60) {
+    } else if (meets(safeguardingDiscussionRate, 60)) {
       score += 0;
     } else {
       score -= 4;
@@ -287,7 +285,7 @@ export function computeStaffPerformanceComposite(
   if (totalTraining === 0) {
     score -= 1;
   } else {
-    if (expiredMandatoryCount === 0 && trainingComplianceRate >= 90) {
+    if (expiredMandatoryCount === 0 && meets(trainingComplianceRate, 90)) {
       score += 5;
     } else if (expiredMandatoryCount <= 2) {
       score += 2;
@@ -302,11 +300,11 @@ export function computeStaffPerformanceComposite(
   if (totalActionsAgreed === 0) {
     score -= 1;
   } else {
-    if (actionCompletionRate >= 90) {
+    if (meets(actionCompletionRate, 90)) {
       score += 4;
-    } else if (actionCompletionRate >= 70) {
+    } else if (meets(actionCompletionRate, 70)) {
       score += 2;
-    } else if (actionCompletionRate >= 50) {
+    } else if (meets(actionCompletionRate, 50)) {
       score += 0;
     } else {
       score -= 4;
@@ -319,10 +317,13 @@ export function computeStaffPerformanceComposite(
   if (!hasWellbeingData && !hasObjData) {
     score -= 2;
   } else {
-    const wbMet = hasWellbeingData ? wellbeingCheckRate : 0;
-    const objMet = hasObjData ? objectiveAchievementRate : 0;
-    const dataPoints = (hasWellbeingData ? 1 : 0) + (hasObjData ? 1 : 0);
-    const combinedRate = Math.round((wbMet + objMet) / dataPoints);
+    // meanOf drops whichever side is absent from the denominator, which is
+    // the same thing the old dataPoints/0-fallback arithmetic was doing by
+    // hand — the outer guard above already proves at least one is present.
+    const combinedRate = meanOf([
+      hasWellbeingData ? wellbeingCheckRate : null,
+      hasObjData ? objectiveAchievementRate : null,
+    ])!;
 
     if (combinedRate >= 80) {
       score += 5;
@@ -341,47 +342,47 @@ export function computeStaffPerformanceComposite(
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
 
-  if (appraisalCompletionRate >= 90 && totalAppraisals > 0) {
+  if (meets(appraisalCompletionRate, 90) && totalAppraisals > 0) {
     strengths.push(`Appraisal completion rate at ${appraisalCompletionRate}% — strong staff review cycle.`);
   }
   if ((averageCompetencyScore ?? 0) >= 4.0 && competencyScores.length > 0) {
     strengths.push(`Average competency score of ${averageCompetencyScore} out of 5 — staff demonstrate high capability.`);
   }
-  if (supervisionCompletionRate >= 95 && nonScheduledSupervisions.length > 0) {
+  if (meets(supervisionCompletionRate, 95) && nonScheduledSupervisions.length > 0) {
     strengths.push(`Supervision completion rate at ${supervisionCompletionRate}% — consistent management oversight.`);
   }
-  if (safeguardingDiscussionRate >= 95 && completedSupervisions.length > 0) {
+  if (meets(safeguardingDiscussionRate, 95) && completedSupervisions.length > 0) {
     strengths.push(`Safeguarding discussed in ${safeguardingDiscussionRate}% of supervisions — embedded safeguarding culture.`);
   }
-  if (actionCompletionRate >= 90 && totalActionsAgreed > 0) {
+  if (meets(actionCompletionRate, 90) && totalActionsAgreed > 0) {
     strengths.push(`Action follow-through at ${actionCompletionRate}% — agreed actions are consistently completed.`);
   }
   if (expiredMandatoryCount === 0 && mandatoryTraining.length > 0) {
     strengths.push("No expired mandatory training — all staff are compliant with training requirements.");
   }
-  if (trainingComplianceRate >= 90 && totalTraining > 0) {
+  if (meets(trainingComplianceRate, 90) && totalTraining > 0) {
     strengths.push(`Training compliance at ${trainingComplianceRate}% — staff development programme is effective.`);
   }
-  if (wellbeingCheckRate >= 90 && completedSupervisions.length > 0) {
+  if (meets(wellbeingCheckRate, 90) && completedSupervisions.length > 0) {
     strengths.push(`Wellbeing checks in ${wellbeingCheckRate}% of supervisions — staff welfare is prioritised.`);
   }
-  if (objectiveAchievementRate >= 90 && totalObjSet > 0) {
+  if (meets(objectiveAchievementRate, 90) && totalObjSet > 0) {
     strengths.push(`Objective achievement at ${objectiveAchievementRate}% — staff are meeting development goals.`);
   }
-  if (devPlanRate >= 90 && completedAppraisals.length > 0) {
+  if (meets(devPlanRate, 90) && completedAppraisals.length > 0) {
     strengths.push(`${devPlanRate}% of completed appraisals include development plans — proactive CPD culture.`);
   }
 
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
 
-  if (appraisalCompletionRate < 50 && totalAppraisals > 0) {
+  if (below(appraisalCompletionRate, 50) && totalAppraisals > 0) {
     concerns.push(`Appraisal completion at only ${appraisalCompletionRate}% — staff review process is failing.`);
   }
-  if (supervisionCompletionRate < 60 && nonScheduledSupervisions.length > 0) {
+  if (below(supervisionCompletionRate, 60) && nonScheduledSupervisions.length > 0) {
     concerns.push(`Supervision completion at ${supervisionCompletionRate}% — management oversight is inadequate.`);
   }
-  if (safeguardingDiscussionRate < 60 && completedSupervisions.length > 0) {
+  if (below(safeguardingDiscussionRate, 60) && completedSupervisions.length > 0) {
     concerns.push(`Safeguarding discussed in only ${safeguardingDiscussionRate}% of supervisions — safeguarding is not embedded.`);
   }
   if (expiredMandatoryCount > 5) {
@@ -389,13 +390,13 @@ export function computeStaffPerformanceComposite(
   } else if (expiredMandatoryCount > 0) {
     concerns.push(`${expiredMandatoryCount} mandatory training record${expiredMandatoryCount > 1 ? "s have" : " has"} expired — renewal required.`);
   }
-  if (actionCompletionRate < 50 && totalActionsAgreed > 0) {
+  if (below(actionCompletionRate, 50) && totalActionsAgreed > 0) {
     concerns.push(`Action follow-through at only ${actionCompletionRate}% — agreed supervision actions are not being completed.`);
   }
-  if (wellbeingCheckRate < 40 && completedSupervisions.length > 0) {
+  if (below(wellbeingCheckRate, 40) && completedSupervisions.length > 0) {
     concerns.push(`Wellbeing checks in only ${wellbeingCheckRate}% of supervisions — staff welfare monitoring is insufficient.`);
   }
-  if (objectiveAchievementRate < 40 && totalObjSet > 0) {
+  if (below(objectiveAchievementRate, 40) && totalObjSet > 0) {
     concerns.push(`Objective achievement at ${objectiveAchievementRate}% — staff are not meeting development targets.`);
   }
   if ((averageCompetencyScore ?? 0) < 2.5 && competencyScores.length > 0) {
@@ -418,37 +419,37 @@ export function computeStaffPerformanceComposite(
   if (expiredMandatoryCount > 0) {
     recommendations.push({ rank: rank++, recommendation: `Arrange immediate renewal for ${expiredMandatoryCount} expired mandatory training record${expiredMandatoryCount > 1 ? "s" : ""} to restore compliance.`, urgency: "immediate", regulatory_ref: "CHR 2015 Reg 32" });
   }
-  if (appraisalCompletionRate < 50 && totalAppraisals > 0) {
+  if (below(appraisalCompletionRate, 50) && totalAppraisals > 0) {
     recommendations.push({ rank: rank++, recommendation: `Urgently improve appraisal completion from ${appraisalCompletionRate}% — Reg 33 requires regular performance review.`, urgency: "immediate", regulatory_ref: "CHR 2015 Reg 33" });
   }
   if (totalAppraisals === 0 && total_staff > 0) {
     recommendations.push({ rank: rank++, recommendation: "Implement an appraisal programme for all staff as required by Reg 33.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 33" });
   }
-  if (supervisionCompletionRate < 60 && nonScheduledSupervisions.length > 0) {
+  if (below(supervisionCompletionRate, 60) && nonScheduledSupervisions.length > 0) {
     recommendations.push({ rank: rank++, recommendation: `Improve supervision completion from ${supervisionCompletionRate}% — regular supervision is a Reg 33 requirement.`, urgency: "immediate", regulatory_ref: "CHR 2015 Reg 33" });
   }
   if (totalSupervisions === 0 && total_staff > 0) {
     recommendations.push({ rank: rank++, recommendation: "Establish a regular supervision cycle for all staff per NMS 19.2.", urgency: "immediate", regulatory_ref: "NMS 19.2" });
   }
-  if (safeguardingDiscussionRate < 60 && completedSupervisions.length > 0) {
+  if (below(safeguardingDiscussionRate, 60) && completedSupervisions.length > 0) {
     recommendations.push({ rank: rank++, recommendation: `Ensure safeguarding is a standing agenda item in supervision — currently discussed in only ${safeguardingDiscussionRate}% of sessions.`, urgency: "soon", regulatory_ref: "NMS 19.3" });
   }
-  if (actionCompletionRate < 50 && totalActionsAgreed > 0) {
+  if (below(actionCompletionRate, 50) && totalActionsAgreed > 0) {
     recommendations.push({ rank: rank++, recommendation: `Improve action follow-through from ${actionCompletionRate}% — track and review agreed actions in each supervision.`, urgency: "soon", regulatory_ref: "NMS 19.4" });
   }
   if (totalTraining === 0 && total_staff > 0) {
     recommendations.push({ rank: rank++, recommendation: "Implement a mandatory training programme for all staff per Reg 32.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 32" });
   }
-  if (wellbeingCheckRate < 40 && completedSupervisions.length > 0) {
+  if (below(wellbeingCheckRate, 40) && completedSupervisions.length > 0) {
     recommendations.push({ rank: rank++, recommendation: `Include wellbeing checks in all supervisions — currently only ${wellbeingCheckRate}% include a wellbeing discussion.`, urgency: "soon", regulatory_ref: "SCCIF Well-led" });
   }
-  if (objectiveAchievementRate < 40 && totalObjSet > 0) {
+  if (below(objectiveAchievementRate, 40) && totalObjSet > 0) {
     recommendations.push({ rank: rank++, recommendation: `Review and support staff in meeting development objectives — currently at ${objectiveAchievementRate}% achievement.`, urgency: "planned", regulatory_ref: "CHR 2015 Reg 34" });
   }
   if ((averageCompetencyScore ?? 0) < 3.0 && competencyScores.length > 0) {
     recommendations.push({ rank: rank++, recommendation: `Address competency gaps — average score is ${averageCompetencyScore} and needs targeted development.`, urgency: "soon", regulatory_ref: "CHR 2015 Reg 32" });
   }
-  if (devPlanRate < 50 && completedAppraisals.length > 0) {
+  if (below(devPlanRate, 50) && completedAppraisals.length > 0) {
     recommendations.push({ rank: rank++, recommendation: `Ensure all appraisals include a development plan — currently only ${devPlanRate}% do.`, urgency: "planned", regulatory_ref: "CHR 2015 Reg 34" });
   }
 
@@ -475,23 +476,23 @@ export function computeStaffPerformanceComposite(
     insights.push({ text: `${expiredMandatoryCount} mandatory training record${expiredMandatoryCount > 1 ? "s have" : " has"} expired — prioritise renewal to maintain Reg 32 compliance.`, severity: "warning" });
   }
 
-  if (safeguardingDiscussionRate < 60 && completedSupervisions.length > 0) {
+  if (below(safeguardingDiscussionRate, 60) && completedSupervisions.length > 0) {
     insights.push({ text: `Safeguarding discussed in only ${safeguardingDiscussionRate}% of supervisions. This gap in safeguarding oversight could be flagged during Ofsted inspection under SCCIF quality of care.`, severity: "critical" });
   }
 
-  if (supervisionCompletionRate >= 95 && actionCompletionRate < 50 && totalActionsAgreed > 0 && nonScheduledSupervisions.length > 0) {
+  if (meets(supervisionCompletionRate, 95) && below(actionCompletionRate, 50) && totalActionsAgreed > 0 && nonScheduledSupervisions.length > 0) {
     insights.push({ text: "Supervision sessions are regular but action follow-through is poor — the value of supervision is undermined when agreed actions are not completed.", severity: "warning" });
   }
 
-  if (appraisalCompletionRate >= 90 && (averageCompetencyScore ?? 0) >= 3.5 && devPlanRate >= 90 && totalAppraisals > 0) {
+  if (meets(appraisalCompletionRate, 90) && (averageCompetencyScore ?? 0) >= 3.5 && meets(devPlanRate, 90) && totalAppraisals > 0) {
     insights.push({ text: "Appraisal programme is strong — high completion, good competency scores, and development plans in place. Evidence of effective staff performance management.", severity: "positive" });
   }
 
-  if (wellbeingCheckRate >= 90 && completedSupervisions.length > 0 && objectiveAchievementRate >= 80 && totalObjSet > 0) {
+  if (meets(wellbeingCheckRate, 90) && completedSupervisions.length > 0 && meets(objectiveAchievementRate, 80) && totalObjSet > 0) {
     insights.push({ text: "Wellbeing and development indicators are strong — staff feel supported and are meeting their objectives.", severity: "positive" });
   }
 
-  if (wellbeingCheckRate < 40 && completedSupervisions.length > 0 && objectiveAchievementRate < 40 && totalObjSet > 0) {
+  if (below(wellbeingCheckRate, 40) && completedSupervisions.length > 0 && below(objectiveAchievementRate, 40) && totalObjSet > 0) {
     insights.push({ text: "Both wellbeing checks and objective achievement are poor — staff may be unsupported and disengaged from their development.", severity: "critical" });
   }
 
@@ -502,8 +503,8 @@ export function computeStaffPerformanceComposite(
   } else if (rating === "good") {
     const issues: string[] = [];
     if (expiredMandatoryCount > 0) issues.push(`${expiredMandatoryCount} expired training`);
-    if (actionCompletionRate < 70 && totalActionsAgreed > 0) issues.push(`${actionCompletionRate}% action follow-through`);
-    if (safeguardingDiscussionRate < 80 && completedSupervisions.length > 0) issues.push(`${safeguardingDiscussionRate}% safeguarding discussion`);
+    if (below(actionCompletionRate, 70) && totalActionsAgreed > 0) issues.push(`${actionCompletionRate}% action follow-through`);
+    if (below(safeguardingDiscussionRate, 80) && completedSupervisions.length > 0) issues.push(`${safeguardingDiscussionRate}% safeguarding discussion`);
     headline = issues.length > 0
       ? `Good staff performance — attention needed on ${issues.join(", ")}.`
       : "Good staff performance — appraisals, supervisions, and training are well-managed.";

@@ -6,6 +6,8 @@
 // CHR 2015 Reg 12, 22. SCCIF: "Safe."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface VisitorInput {
@@ -38,10 +40,14 @@ export type VisitorRating =
 
 export interface AccessComplianceProfile {
   total_visitors_90d: number;
-  dbs_check_rate: number;
-  id_verification_rate: number;
-  sign_out_completion_rate: number;
-  documentation_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dbs_check_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  id_verification_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  sign_out_completion_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentation_rate: number | null;
 }
 
 export interface CategoryBreakdown {
@@ -54,17 +60,21 @@ export interface CategoryBreakdown {
 }
 
 export interface SafeguardingProfile {
-  tradesperson_dbs_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  tradesperson_dbs_rate: number | null;
   tradesperson_count: number;
-  family_id_verification_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  family_id_verification_rate: number | null;
   family_count: number;
   visitors_with_child_contact: number;
-  child_contact_dbs_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_contact_dbs_rate: number | null;
 }
 
 export interface EngagementProfile {
   avg_visitors_per_month: number;
-  professional_visit_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  professional_visit_rate: number | null;
   inspector_visits: number;
   multi_agency_engagement: boolean;
 }
@@ -108,10 +118,6 @@ function toRating(score: number): VisitorRating {
   return "inadequate";
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 // ── Main Compute ────────────────────────────────────────────────────────────
 
 export function computeHomeVisitor(
@@ -144,16 +150,16 @@ export function computeHomeVisitor(
 
   // ── Access Compliance Profile ──────────────────────────────────────
   const dbsChecked = recent.filter(v => v.dbs_checked).length;
-  const dbsCheckRate = pct(dbsChecked, recent.length);
+  const dbsCheckRate = rate(dbsChecked, recent.length);
 
   const idVerified = recent.filter(v => v.id_verified).length;
-  const idVerificationRate = pct(idVerified, recent.length);
+  const idVerificationRate = rate(idVerified, recent.length);
 
   const signedOut = recent.filter(v => v.has_sign_out).length;
-  const signOutRate = pct(signedOut, recent.length);
+  const signOutRate = rate(signedOut, recent.length);
 
   const documented = recent.filter(v => v.has_notes).length;
-  const docRate = pct(documented, recent.length);
+  const docRate = rate(documented, recent.length);
 
   const complianceProfile: AccessComplianceProfile = {
     total_visitors_90d: recent.length,
@@ -178,15 +184,15 @@ export function computeHomeVisitor(
   // ── Safeguarding Profile ───────────────────────────────────────────
   const tradespeople = recent.filter(v => v.category === "tradesperson");
   const tradespersonDbs = tradespeople.filter(v => v.dbs_checked).length;
-  const tradespersonDbsRate = pct(tradespersonDbs, tradespeople.length);
+  const tradespersonDbsRate = rate(tradespersonDbs, tradespeople.length);
 
   const familyVisitors = recent.filter(v => v.category === "family");
   const familyIdVerified = familyVisitors.filter(v => v.id_verified).length;
-  const familyIdRate = pct(familyIdVerified, familyVisitors.length);
+  const familyIdRate = rate(familyIdVerified, familyVisitors.length);
 
   const withChildContact = recent.filter(v => v.children_seen_count > 0);
   const childContactDbs = withChildContact.filter(v => v.dbs_checked).length;
-  const childContactDbsRate = pct(childContactDbs, withChildContact.length);
+  const childContactDbsRate = rate(childContactDbs, withChildContact.length);
 
   const safeguardingProfile: SafeguardingProfile = {
     tradesperson_dbs_rate: tradespersonDbsRate,
@@ -199,7 +205,7 @@ export function computeHomeVisitor(
 
   // ── Engagement Profile ─────────────────────────────────────────────
   const avgPerMonth = Math.round((recent.length / 3) * 10) / 10; // 90d = ~3 months
-  const profRate = pct(professional, recent.length);
+  const profRate = rate(professional, recent.length);
   const uniqueOrgs = new Set(recent.filter(v => v.category === "professional").map(v => v.host_staff_id));
   const multiAgency = uniqueOrgs.size >= 2 || professional >= 3;
 
@@ -215,29 +221,29 @@ export function computeHomeVisitor(
   let score = 52;
 
   // 1. DBS check rate (±5) — professionals & visitors with child contact must be checked
-  if (dbsCheckRate >= 90) score += 5;
-  else if (dbsCheckRate >= 70) score += 2;
+  if (meets(dbsCheckRate, 90)) score += 5;
+  else if (meets(dbsCheckRate, 70)) score += 2;
   else score -= 4;
 
   // 2. ID verification rate (±4)
-  if (idVerificationRate >= 90) score += 4;
-  else if (idVerificationRate >= 70) score += 2;
+  if (meets(idVerificationRate, 90)) score += 4;
+  else if (meets(idVerificationRate, 70)) score += 2;
   else score -= 3;
 
   // 3. Sign-out completion (±3)
-  if (signOutRate >= 90) score += 3;
-  else if (signOutRate >= 70) score += 1;
+  if (meets(signOutRate, 90)) score += 3;
+  else if (meets(signOutRate, 70)) score += 1;
   else score -= 2;
 
   // 4. Documentation rate (±3)
-  if (docRate >= 70) score += 3;
-  else if (docRate >= 50) score += 1;
+  if (meets(docRate, 70)) score += 3;
+  else if (meets(docRate, 50)) score += 1;
   else score -= 2;
 
   // 5. Tradesperson DBS/supervision (±4)
   if (tradespeople.length > 0) {
-    if (tradespersonDbsRate >= 80) score += 4;
-    else if (tradespersonDbsRate >= 50) score += 1;
+    if (meets(tradespersonDbsRate, 80)) score += 4;
+    else if (meets(tradespersonDbsRate, 50)) score += 1;
     else score -= 3;
   } else {
     score += 2; // no tradespeople to worry about
@@ -245,8 +251,8 @@ export function computeHomeVisitor(
 
   // 6. Child contact DBS compliance (±4)
   if (withChildContact.length > 0) {
-    if (childContactDbsRate >= 90) score += 4;
-    else if (childContactDbsRate >= 70) score += 1;
+    if (meets(childContactDbsRate, 90)) score += 4;
+    else if (meets(childContactDbsRate, 70)) score += 1;
     else score -= 4;
   } else {
     score += 2; // no child contact visitors
@@ -271,21 +277,21 @@ export function computeHomeVisitor(
 
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (dbsCheckRate >= 90) strengths.push(`DBS checks completed for ${dbsCheckRate}% of visitors — robust safeguarding at the door.`);
-  if (idVerificationRate >= 90) strengths.push(`ID verified for ${idVerificationRate}% of visitors — consistent identity verification practice.`);
-  if (signOutRate >= 90) strengths.push(`${signOutRate}% sign-out completion — accurate record of who is on premises at all times.`);
-  if (childContactDbsRate >= 90 && withChildContact.length > 0) strengths.push(`All visitors with child contact are DBS-checked — safeguarding perimeter is secure.`);
+  if (meets(dbsCheckRate, 90)) strengths.push(`DBS checks completed for ${dbsCheckRate}% of visitors — robust safeguarding at the door.`);
+  if (meets(idVerificationRate, 90)) strengths.push(`ID verified for ${idVerificationRate}% of visitors — consistent identity verification practice.`);
+  if (meets(signOutRate, 90)) strengths.push(`${signOutRate}% sign-out completion — accurate record of who is on premises at all times.`);
+  if (meets(childContactDbsRate, 90) && withChildContact.length > 0) strengths.push(`All visitors with child contact are DBS-checked — safeguarding perimeter is secure.`);
   if (inspector > 0) strengths.push(`${inspector} inspector visit${inspector > 1 ? "s" : ""} in 90 days — home demonstrates openness to scrutiny.`);
   if (multiAgency && professional >= 3) strengths.push(`Strong multi-agency engagement with ${professional} professional visits — children benefit from coordinated support.`);
   if (family >= 2) strengths.push(`${family} family visits recorded — children's family connections are actively supported.`);
 
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
-  if (dbsCheckRate < 70) concerns.push(`DBS checks completed for only ${dbsCheckRate}% of visitors — unsupervised access without DBS is a safeguarding risk.`);
-  if (idVerificationRate < 70) concerns.push(`ID verification at only ${idVerificationRate}% — all visitors must be positively identified.`);
-  if (signOutRate < 70) concerns.push(`Only ${signOutRate}% of visitors signed out — incomplete records mean the home cannot confirm who was on premises.`);
-  if (tradespersonDbsRate < 50 && tradespeople.length > 0) concerns.push(`Only ${tradespersonDbsRate}% of tradespeople had DBS checks — tradespeople must be checked or escorted.`);
-  if (childContactDbsRate < 70 && withChildContact.length > 0) concerns.push(`Only ${childContactDbsRate}% of visitors with child contact had DBS checks — direct safeguarding concern.`);
+  if (below(dbsCheckRate, 70)) concerns.push(`DBS checks completed for only ${dbsCheckRate}% of visitors — unsupervised access without DBS is a safeguarding risk.`);
+  if (below(idVerificationRate, 70)) concerns.push(`ID verification at only ${idVerificationRate}% — all visitors must be positively identified.`);
+  if (below(signOutRate, 70)) concerns.push(`Only ${signOutRate}% of visitors signed out — incomplete records mean the home cannot confirm who was on premises.`);
+  if (below(tradespersonDbsRate, 50) && tradespeople.length > 0) concerns.push(`Only ${tradespersonDbsRate}% of tradespeople had DBS checks — tradespeople must be checked or escorted.`);
+  if (below(childContactDbsRate, 70) && withChildContact.length > 0) concerns.push(`Only ${childContactDbsRate}% of visitors with child contact had DBS checks — direct safeguarding concern.`);
   if (professional === 0) concerns.push("No professional visits in 90 days — children may lack multi-agency support.");
   if (family === 0 && total_children > 0) concerns.push("No family visits recorded — children's family relationships need active promotion.");
 
@@ -293,35 +299,35 @@ export function computeHomeVisitor(
   const recs: VisitorRecommendation[] = [];
   let rank = 1;
 
-  if (childContactDbsRate < 70 && withChildContact.length > 0) {
+  if (below(childContactDbsRate, 70) && withChildContact.length > 0) {
     recs.push({ rank: rank++, recommendation: "Ensure all visitors with direct child contact have completed DBS checks before unsupervised access.", urgency: "immediate", regulatory_ref: "Reg 12" });
   }
-  if (dbsCheckRate < 70) {
+  if (below(dbsCheckRate, 70)) {
     recs.push({ rank: rank++, recommendation: "Improve DBS verification for all visitors — implement a check at point of entry.", urgency: "immediate", regulatory_ref: "Reg 22" });
   }
-  if (signOutRate < 70) {
+  if (below(signOutRate, 70)) {
     recs.push({ rank: rank++, recommendation: "Ensure all visitors sign out on departure — complete records are a regulatory requirement.", urgency: "soon", regulatory_ref: "Reg 22" });
   }
-  if (idVerificationRate < 70) {
+  if (below(idVerificationRate, 70)) {
     recs.push({ rank: rank++, recommendation: "Verify ID for all visitors at point of entry — do not admit unverified individuals.", urgency: "soon", regulatory_ref: "Reg 12" });
   }
-  if (tradespersonDbsRate < 50 && tradespeople.length > 0) {
+  if (below(tradespersonDbsRate, 50) && tradespeople.length > 0) {
     recs.push({ rank: rank++, recommendation: "Require DBS for tradespeople or ensure continuous escort supervision — document this in the visitor log.", urgency: "soon", regulatory_ref: "Reg 12" });
   }
 
   // ── Insights ──────────────────────────────────────────────────────────
   const insights: VisitorInsight[] = [];
 
-  if (childContactDbsRate < 70 && withChildContact.length > 0) {
+  if (below(childContactDbsRate, 70) && withChildContact.length > 0) {
     insights.push({ text: `Only ${childContactDbsRate}% of visitors who had contact with children were DBS-checked. This is a direct safeguarding concern — Ofsted expects every adult with unsupervised child contact to be vetted. Implement a zero-tolerance policy for unvetted contact.`, severity: "critical" });
   }
-  if (dbsCheckRate >= 90 && idVerificationRate >= 90 && signOutRate >= 90) {
+  if (meets(dbsCheckRate, 90) && meets(idVerificationRate, 90) && meets(signOutRate, 90)) {
     insights.push({ text: `${dbsCheckRate}% DBS, ${idVerificationRate}% ID verification, and ${signOutRate}% sign-out completion demonstrate outstanding access control — evidence of a robust safeguarding culture that protects children and satisfies Ofsted requirements.`, severity: "positive" });
   }
-  if (inspector > 0 && dbsCheckRate >= 80) {
+  if (inspector > 0 && meets(dbsCheckRate, 80)) {
     insights.push({ text: `Inspector visits recorded alongside strong compliance rates suggest a home that is both transparent and well-managed — two key indicators Ofsted looks for during full inspections.`, severity: "positive" });
   }
-  if (tradespeople.length > 0 && tradespersonDbsRate < 50) {
+  if (tradespeople.length > 0 && below(tradespersonDbsRate, 50)) {
     insights.push({ text: `${tradespeople.length} tradesperson visit${tradespeople.length > 1 ? "s" : ""} with only ${tradespersonDbsRate}% DBS-checked. Tradespeople without DBS must be escorted at all times — Ofsted will ask about supervision arrangements for non-DBS-checked adults.`, severity: "warning" });
   }
 

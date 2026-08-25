@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -70,15 +71,15 @@ export function HomeDeprivationOfLibertyIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Active</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.proportionality_rate >= 98 ? "bg-green-50" : d.proportionality_rate >= 85 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.proportionality_rate >= 98 ? "text-[--cs-success]" : d.proportionality_rate >= 85 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.proportionality_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.proportionality_rate >= 98 ? "text-[--cs-success]" : d.proportionality_rate >= 85 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.proportionality_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Proport.</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.child_consultation_rate >= 95 ? "bg-green-50" : d.child_consultation_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_consultation_rate >= 95 ? "text-[--cs-success]" : d.child_consultation_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_consultation_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.child_consultation_rate >= 95 ? "text-[--cs-success]" : d.child_consultation_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_consultation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Consulted</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.sw_consultation_rate >= 95 ? "bg-green-50" : d.sw_consultation_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.sw_consultation_rate >= 95 ? "text-[--cs-success]" : d.sw_consultation_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.sw_consultation_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.sw_consultation_rate >= 95 ? "text-[--cs-success]" : d.sw_consultation_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.sw_consultation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">SW</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.overdue_review_count === 0 ? "bg-green-50" : "bg-red-50")}>
@@ -86,7 +87,7 @@ export function HomeDeprivationOfLibertyIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Overdue</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.impact_assessment_rate >= 90 ? "bg-green-50" : d.impact_assessment_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.impact_assessment_rate >= 90 ? "text-[--cs-success]" : d.impact_assessment_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.impact_assessment_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.impact_assessment_rate >= 90 ? "text-[--cs-success]" : d.impact_assessment_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.impact_assessment_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Impact</p>
             </div>
           </div>

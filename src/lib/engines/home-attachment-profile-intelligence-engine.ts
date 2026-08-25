@@ -83,10 +83,6 @@ export interface AttachmentProfileResult {
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -128,30 +124,30 @@ export function computeAttachmentProfile(
   // ── Metrics ────────────────────────────────────────────────────────────
   const total = profiles.length;
   const uniqueChildren = new Set(profiles.map(p => p.child_id)).size;
-  const childrenWithProfileRate = pct(uniqueChildren, total_children);
+  const childrenWithProfileRate = rate(uniqueChildren, total_children);
 
   const activeProfiles = profiles.filter(p => p.status === "active" || p.status === "under_review");
-  const activeProfileRate = pct(activeProfiles.length, total);
+  const activeProfileRate = rate(activeProfiles.length, total);
 
   // Behaviour analysis: profiles where behaviours have underlying_need AND recommended_response
   const profilesWithBehaviours = profiles.filter(p => p.behaviour_count > 0);
   const profilesWithFullAnalysis = profilesWithBehaviours.filter(
     p => p.behaviours_with_need_count > 0 && p.behaviours_with_response_count > 0,
   );
-  const behaviourAnalysisRate = pct(profilesWithFullAnalysis.length, profilesWithBehaviours.length);
+  const behaviourAnalysisRate = rate(profilesWithFullAnalysis.length, profilesWithBehaviours.length);
 
   // Relationship quality
   const totalRelationships = profiles.reduce((s, p) => s + p.key_relationship_count, 0);
   const totalStrong = profiles.reduce((s, p) => s + p.strong_relationship_count, 0);
-  const strongRelationshipRate = pct(totalStrong, totalRelationships);
+  const strongRelationshipRate = rate(totalStrong, totalRelationships);
 
   // Child voice
   const withChildVoice = profiles.filter(p => p.has_child_views).length;
-  const childVoiceRate = pct(withChildVoice, total);
+  const childVoiceRate = rate(withChildVoice, total);
 
   // Staff guidance
   const withStaffGuidance = profiles.filter(p => p.staff_guidance_count > 0).length;
-  const staffGuidanceRate = pct(withStaffGuidance, total);
+  const staffGuidanceRate = rate(withStaffGuidance, total);
 
   const withTherapeuticApproach = profiles.filter(p => p.therapeutic_approach_count > 0).length;
   const withProtectiveFactors = profiles.filter(p => p.protective_factor_count > 0).length;
@@ -209,8 +205,8 @@ export function computeAttachmentProfile(
   if (total === 0) {
     score -= 2;
   } else {
-    const therapeuticRate = pct(withTherapeuticApproach, total);
-    const protectiveRate = pct(withProtectiveFactors, total);
+    const therapeuticRate = rate(withTherapeuticApproach, total);
+    const protectiveRate = rate(withProtectiveFactors, total);
     if (meets(therapeuticRate, 75) && meets(protectiveRate, 75)) score += 5;
     else if (meets(therapeuticRate, 50) || meets(protectiveRate, 50)) score += 2;
     else if (below(therapeuticRate, 25) && below(protectiveRate, 25)) score -= 3;
@@ -266,7 +262,7 @@ export function computeAttachmentProfile(
     recommendations.push({ rank: ++rank, recommendation: "Ensure each child's views about their relationships and attachment experiences are recorded in their profile", urgency: "soon", regulatory_ref: "SCCIF Experiences" });
   if (below(staffGuidanceRate, 50) && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Add specific staff guidance to profiles so carers can implement attachment-informed responses consistently", urgency: "soon", regulatory_ref: "CHR 2015 Reg 9" });
-  if (below(pct(withTherapeuticApproach, total), 50) && total > 0)
+  if (below(rate(withTherapeuticApproach, total), 50) && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Identify and document therapeutic approaches aligned to each child's attachment style", urgency: "planned", regulatory_ref: "CHR 2015 Reg 10" });
 
   // ── Insights ───────────────────────────────────────────────────────────

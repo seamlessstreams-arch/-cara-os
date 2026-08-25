@@ -6,6 +6,8 @@
 // recruitment practices. CHR 2015 Reg 32. SCCIF: "Well-Led."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface AuditEntryInput {
@@ -81,7 +83,8 @@ export interface RecruitmentAuditTrailResult {
   notes_coverage_rate: number | null;
   state_tracking_rate: number | null;
   offers_with_conditions_rate: number | null;
-  exceptional_start_compliance: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  exceptional_start_compliance: number | null;
   average_audit_depth: number | null;
   vacancy_fill_rate: number | null;
   strengths: string[];
@@ -99,10 +102,6 @@ export interface RecruitmentAuditTrailResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -128,7 +127,7 @@ function emptyResult(): RecruitmentAuditTrailResult {
     notes_coverage_rate: null,
     state_tracking_rate: null,
     offers_with_conditions_rate: null,
-    exceptional_start_compliance: 0,
+    exceptional_start_compliance: null,
     average_audit_depth: 0,
     vacancy_fill_rate: null,
     strengths: [],
@@ -181,13 +180,13 @@ export function computeRecruitmentAuditTrail(
       audit_completeness_rate: null,
       notes_coverage_rate: null,
       state_tracking_rate: null,
-      offers_with_conditions_rate: pct(
+      offers_with_conditions_rate: rate(
         offers.filter((o) => o.has_conditions).length,
         offers.length,
       ),
       exceptional_start_compliance: computeExceptionalStartCompliance(offers),
       average_audit_depth: 0,
-      vacancy_fill_rate: pct(
+      vacancy_fill_rate: rate(
         vacancies.filter((v) => v.status === "filled").length,
         vacancies.length,
       ),
@@ -233,21 +232,21 @@ export function computeRecruitmentAuditTrail(
   const completeEntries = audit_entries.filter(
     (e) => e.has_before_state && e.has_after_state && e.has_notes,
   );
-  const auditCompletenessRate = pct(completeEntries.length, totalAuditEntries);
+  const auditCompletenessRate = rate(completeEntries.length, totalAuditEntries);
 
   // Notes coverage: entries with notes
   const entriesWithNotes = audit_entries.filter((e) => e.has_notes);
-  const notesCoverageRate = pct(entriesWithNotes.length, totalAuditEntries);
+  const notesCoverageRate = rate(entriesWithNotes.length, totalAuditEntries);
 
   // State tracking: entries with BOTH before and after state
   const entriesWithState = audit_entries.filter(
     (e) => e.has_before_state && e.has_after_state,
   );
-  const stateTrackingRate = pct(entriesWithState.length, totalAuditEntries);
+  const stateTrackingRate = rate(entriesWithState.length, totalAuditEntries);
 
   // Offers with conditions documented
   const offersWithConditions = offers.filter((o) => o.has_conditions);
-  const offersWithConditionsRate = pct(
+  const offersWithConditionsRate = rate(
     offersWithConditions.length,
     offers.length,
   );
@@ -265,23 +264,23 @@ export function computeRecruitmentAuditTrail(
 
   // Vacancy fill rate
   const filledVacancies = vacancies.filter((v) => v.status === "filled");
-  const vacancyFillRate = pct(filledVacancies.length, vacancies.length);
+  const vacancyFillRate = rate(filledVacancies.length, vacancies.length);
 
   // ── Scoring ────────────────────────────────────────────────────────
 
   let score = 52;
 
   // Bonus: notes coverage
-  if (notesCoverageRate >= 90) score += 5;
-  else if (notesCoverageRate >= 80) score += 3;
+  if (meets(notesCoverageRate, 90)) score += 5;
+  else if (meets(notesCoverageRate, 80)) score += 3;
 
   // Bonus: state tracking
-  if (stateTrackingRate >= 80) score += 5;
-  else if (stateTrackingRate >= 60) score += 3;
+  if (meets(stateTrackingRate, 80)) score += 5;
+  else if (meets(stateTrackingRate, 60)) score += 3;
 
   // Bonus: audit completeness
-  if (auditCompletenessRate >= 90) score += 6;
-  else if (auditCompletenessRate >= 70) score += 3;
+  if (meets(auditCompletenessRate, 90)) score += 6;
+  else if (meets(auditCompletenessRate, 70)) score += 3;
 
   // Bonus: average audit depth
   if ((averageAuditDepth ?? 0) >= 4) score += 4;
@@ -289,14 +288,14 @@ export function computeRecruitmentAuditTrail(
 
   // Bonus: offers with conditions
   if (offers.length > 0) {
-    if (offersWithConditionsRate >= 100) score += 4;
-    else if (offersWithConditionsRate >= 80) score += 2;
+    if (meets(offersWithConditionsRate, 100)) score += 4;
+    else if (meets(offersWithConditionsRate, 80)) score += 2;
   }
 
   // Bonus: exceptional start compliance (skip if no exceptional starts)
   const exceptionalStarts = offers.filter((o) => o.exceptional_start);
   if (exceptionalStarts.length > 0) {
-    if (exceptionalStartCompliance >= 100) score += 4;
+    if (meets(exceptionalStartCompliance, 100)) score += 4;
   }
 
   // Penalty: any candidate with 0 audit entries
@@ -309,12 +308,12 @@ export function computeRecruitmentAuditTrail(
   }
 
   // Penalty: notes coverage < 50%
-  if (notesCoverageRate < 50) {
+  if (below(notesCoverageRate, 50)) {
     score -= 5;
   }
 
   // Penalty: state tracking < 40%
-  if (stateTrackingRate < 40) {
+  if (below(stateTrackingRate, 40)) {
     score -= 5;
   }
 
@@ -337,33 +336,33 @@ export function computeRecruitmentAuditTrail(
 
   const strengths: string[] = [];
 
-  if (notesCoverageRate >= 90) {
+  if (meets(notesCoverageRate, 90)) {
     strengths.push(
-      `Excellent audit trail documentation — ${notesCoverageRate}% of entries include notes, demonstrating thorough record-keeping.`,
+      `Excellent audit trail documentation — ${formatRate(notesCoverageRate)} of entries include notes, demonstrating thorough record-keeping.`,
     );
-  } else if (notesCoverageRate >= 80) {
+  } else if (meets(notesCoverageRate, 80)) {
     strengths.push(
-      `Good notes coverage at ${notesCoverageRate}% — most recruitment decisions are documented with supporting notes.`,
-    );
-  }
-
-  if (stateTrackingRate >= 80) {
-    strengths.push(
-      `Strong state tracking at ${stateTrackingRate}% — before/after states are recorded consistently, providing clear audit evidence.`,
-    );
-  } else if (stateTrackingRate >= 60) {
-    strengths.push(
-      `Reasonable state tracking at ${stateTrackingRate}% — the majority of entries capture before/after changes.`,
+      `Good notes coverage at ${formatRate(notesCoverageRate)} — most recruitment decisions are documented with supporting notes.`,
     );
   }
 
-  if (auditCompletenessRate >= 90) {
+  if (meets(stateTrackingRate, 80)) {
     strengths.push(
-      `Outstanding audit completeness at ${auditCompletenessRate}% — nearly all entries have full state tracking and notes.`,
+      `Strong state tracking at ${formatRate(stateTrackingRate)} — before/after states are recorded consistently, providing clear audit evidence.`,
     );
-  } else if (auditCompletenessRate >= 70) {
+  } else if (meets(stateTrackingRate, 60)) {
     strengths.push(
-      `Good audit completeness at ${auditCompletenessRate}% — most entries include both state changes and supporting notes.`,
+      `Reasonable state tracking at ${formatRate(stateTrackingRate)} — the majority of entries capture before/after changes.`,
+    );
+  }
+
+  if (meets(auditCompletenessRate, 90)) {
+    strengths.push(
+      `Outstanding audit completeness at ${formatRate(auditCompletenessRate)} — nearly all entries have full state tracking and notes.`,
+    );
+  } else if (meets(auditCompletenessRate, 70)) {
+    strengths.push(
+      `Good audit completeness at ${formatRate(auditCompletenessRate)} — most entries include both state changes and supporting notes.`,
     );
   }
 
@@ -373,25 +372,25 @@ export function computeRecruitmentAuditTrail(
     );
   }
 
-  if (offers.length > 0 && offersWithConditionsRate >= 100) {
+  if (offers.length > 0 && meets(offersWithConditionsRate, 100)) {
     strengths.push(
       "All conditional offers have documented conditions — demonstrating robust conditional offer governance.",
     );
-  } else if (offers.length > 0 && offersWithConditionsRate >= 80) {
+  } else if (offers.length > 0 && meets(offersWithConditionsRate, 80)) {
     strengths.push(
-      `${offersWithConditionsRate}% of conditional offers have documented conditions — good offer governance.`,
+      `${formatRate(offersWithConditionsRate)} of conditional offers have documented conditions — good offer governance.`,
     );
   }
 
-  if (exceptionalStarts.length > 0 && exceptionalStartCompliance >= 100) {
+  if (exceptionalStarts.length > 0 && meets(exceptionalStartCompliance, 100)) {
     strengths.push(
       "All exceptional starts have risk mitigation documented — compliant with safer recruitment requirements.",
     );
   }
 
-  if (vacancyFillRate >= 80) {
+  if (meets(vacancyFillRate, 80)) {
     strengths.push(
-      `Strong vacancy fill rate at ${vacancyFillRate}% — recruitment is effective at filling positions.`,
+      `Strong vacancy fill rate at ${formatRate(vacancyFillRate)} — recruitment is effective at filling positions.`,
     );
   }
 
@@ -411,44 +410,44 @@ export function computeRecruitmentAuditTrail(
     );
   }
 
-  if (notesCoverageRate < 50) {
+  if (below(notesCoverageRate, 50)) {
     concerns.push(
-      `Notes coverage is critically low at ${notesCoverageRate}% — most recruitment decisions lack supporting documentation.`,
+      `Notes coverage is critically low at ${formatRate(notesCoverageRate)} — most recruitment decisions lack supporting documentation.`,
     );
-  } else if (notesCoverageRate < 80) {
+  } else if (below(notesCoverageRate, 80)) {
     concerns.push(
-      `Notes coverage at ${notesCoverageRate}% is below expected standards — recruitment decisions should be documented with notes.`,
-    );
-  }
-
-  if (stateTrackingRate < 40) {
-    concerns.push(
-      `State tracking is critically low at ${stateTrackingRate}% — before/after changes are not being captured for most recruitment events.`,
-    );
-  } else if (stateTrackingRate < 60) {
-    concerns.push(
-      `State tracking at ${stateTrackingRate}% needs improvement — a higher proportion of entries should capture before/after states.`,
+      `Notes coverage at ${formatRate(notesCoverageRate)} is below expected standards — recruitment decisions should be documented with notes.`,
     );
   }
 
-  if (auditCompletenessRate < 50) {
+  if (below(stateTrackingRate, 40)) {
     concerns.push(
-      `Only ${auditCompletenessRate}% of audit entries are fully complete (notes + state tracking) — the audit trail lacks depth.`,
+      `State tracking is critically low at ${formatRate(stateTrackingRate)} — before/after changes are not being captured for most recruitment events.`,
+    );
+  } else if (below(stateTrackingRate, 60)) {
+    concerns.push(
+      `State tracking at ${formatRate(stateTrackingRate)} needs improvement — a higher proportion of entries should capture before/after states.`,
     );
   }
 
-  if (offers.length > 0 && offersWithConditionsRate < 80) {
+  if (below(auditCompletenessRate, 50)) {
     concerns.push(
-      `Only ${offersWithConditionsRate}% of conditional offers have conditions documented — offer governance needs strengthening.`,
+      `Only ${formatRate(auditCompletenessRate)} of audit entries are fully complete (notes + state tracking) — the audit trail lacks depth.`,
+    );
+  }
+
+  if (offers.length > 0 && below(offersWithConditionsRate, 80)) {
+    concerns.push(
+      `Only ${formatRate(offersWithConditionsRate)} of conditional offers have conditions documented — offer governance needs strengthening.`,
     );
   }
 
   if (
     exceptionalStarts.length > 0 &&
-    exceptionalStartCompliance < 100
+    below(exceptionalStartCompliance, 100)
   ) {
     concerns.push(
-      `Not all exceptional starts have risk mitigation documented — ${100 - exceptionalStartCompliance}% lack required safeguards.`,
+      `Not all exceptional starts have risk mitigation documented — ${100 - exceptionalStartCompliance!}% lack required safeguards.`,
     );
   }
 
@@ -477,7 +476,7 @@ export function computeRecruitmentAuditTrail(
     });
   }
 
-  if (notesCoverageRate < 50) {
+  if (below(notesCoverageRate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -485,7 +484,7 @@ export function computeRecruitmentAuditTrail(
       urgency: "immediate",
       regulatory_ref: "Reg 32",
     });
-  } else if (notesCoverageRate < 80) {
+  } else if (below(notesCoverageRate, 80)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -495,7 +494,7 @@ export function computeRecruitmentAuditTrail(
     });
   }
 
-  if (stateTrackingRate < 40) {
+  if (below(stateTrackingRate, 40)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -503,7 +502,7 @@ export function computeRecruitmentAuditTrail(
       urgency: "immediate",
       regulatory_ref: "Reg 32",
     });
-  } else if (stateTrackingRate < 60) {
+  } else if (below(stateTrackingRate, 60)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -514,7 +513,7 @@ export function computeRecruitmentAuditTrail(
 
   if (
     exceptionalStarts.length > 0 &&
-    exceptionalStartCompliance < 100
+    below(exceptionalStartCompliance, 100)
   ) {
     recommendations.push({
       rank: ++rank,
@@ -525,7 +524,7 @@ export function computeRecruitmentAuditTrail(
     });
   }
 
-  if (offers.length > 0 && offersWithConditionsRate < 80) {
+  if (offers.length > 0 && below(offersWithConditionsRate, 80)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -535,7 +534,7 @@ export function computeRecruitmentAuditTrail(
     });
   }
 
-  if (auditCompletenessRate < 70) {
+  if (below(auditCompletenessRate, 70)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -553,7 +552,7 @@ export function computeRecruitmentAuditTrail(
     });
   }
 
-  if (vacancyFillRate < 50 && vacancies.length > 0) {
+  if (below(vacancyFillRate, 50) && vacancies.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -573,43 +572,43 @@ export function computeRecruitmentAuditTrail(
     });
   }
 
-  if (notesCoverageRate < 50) {
+  if (below(notesCoverageRate, 50)) {
     insights.push({
-      text: `Only ${notesCoverageRate}% of audit entries include notes. Without contemporaneous notes, the home cannot demonstrate the rationale behind recruitment decisions during inspection.`,
+      text: `Only ${formatRate(notesCoverageRate)} of audit entries include notes. Without contemporaneous notes, the home cannot demonstrate the rationale behind recruitment decisions during inspection.`,
       severity: "critical",
     });
-  } else if (notesCoverageRate < 80) {
+  } else if (below(notesCoverageRate, 80)) {
     insights.push({
-      text: `Notes coverage at ${notesCoverageRate}% means some recruitment decisions lack documented rationale. Improving this will strengthen the audit trail for inspection.`,
+      text: `Notes coverage at ${formatRate(notesCoverageRate)} means some recruitment decisions lack documented rationale. Improving this will strengthen the audit trail for inspection.`,
       severity: "warning",
     });
-  } else if (notesCoverageRate >= 90) {
+  } else if (meets(notesCoverageRate, 90)) {
     insights.push({
-      text: `${notesCoverageRate}% notes coverage demonstrates a disciplined approach to documenting recruitment decisions — this will stand up well to Ofsted scrutiny.`,
+      text: `${formatRate(notesCoverageRate)} notes coverage demonstrates a disciplined approach to documenting recruitment decisions — this will stand up well to Ofsted scrutiny.`,
       severity: "positive",
     });
   }
 
-  if (stateTrackingRate < 40) {
+  if (below(stateTrackingRate, 40)) {
     insights.push({
-      text: `State tracking at ${stateTrackingRate}% is critically low. Without before/after states, the audit trail cannot evidence what changed and when — a key Ofsted expectation.`,
+      text: `State tracking at ${formatRate(stateTrackingRate)} is critically low. Without before/after states, the audit trail cannot evidence what changed and when — a key Ofsted expectation.`,
       severity: "critical",
     });
-  } else if (stateTrackingRate < 60) {
+  } else if (below(stateTrackingRate, 60)) {
     insights.push({
-      text: `State tracking at ${stateTrackingRate}% needs improvement. Capturing before/after states for all events creates an unambiguous record of the recruitment journey.`,
+      text: `State tracking at ${formatRate(stateTrackingRate)} needs improvement. Capturing before/after states for all events creates an unambiguous record of the recruitment journey.`,
       severity: "warning",
     });
-  } else if (stateTrackingRate >= 80) {
+  } else if (meets(stateTrackingRate, 80)) {
     insights.push({
-      text: `${stateTrackingRate}% state tracking rate provides a strong evidence base showing exactly what changed at each step of the recruitment process.`,
+      text: `${formatRate(stateTrackingRate)} state tracking rate provides a strong evidence base showing exactly what changed at each step of the recruitment process.`,
       severity: "positive",
     });
   }
 
   if (
     exceptionalStarts.length > 0 &&
-    exceptionalStartCompliance < 100
+    below(exceptionalStartCompliance, 100)
   ) {
     const nonCompliantCount = exceptionalStarts.filter(
       (o) => !o.has_risk_mitigation,
@@ -620,7 +619,7 @@ export function computeRecruitmentAuditTrail(
     });
   } else if (
     exceptionalStarts.length > 0 &&
-    exceptionalStartCompliance >= 100
+    meets(exceptionalStartCompliance, 100)
   ) {
     insights.push({
       text: `All ${exceptionalStarts.length} exceptional start(s) have risk mitigation properly documented, demonstrating compliant management of early starts.`,
@@ -628,14 +627,14 @@ export function computeRecruitmentAuditTrail(
     });
   }
 
-  if (auditCompletenessRate >= 90) {
+  if (meets(auditCompletenessRate, 90)) {
     insights.push({
-      text: `${auditCompletenessRate}% audit completeness shows the home maintains a thorough, inspection-ready recruitment audit trail.`,
+      text: `${formatRate(auditCompletenessRate)} audit completeness shows the home maintains a thorough, inspection-ready recruitment audit trail.`,
       severity: "positive",
     });
-  } else if (auditCompletenessRate < 50) {
+  } else if (below(auditCompletenessRate, 50)) {
     insights.push({
-      text: `Only ${auditCompletenessRate}% of audit entries are fully complete. Most entries lack either notes or state tracking, weakening the overall audit trail.`,
+      text: `Only ${formatRate(auditCompletenessRate)} of audit entries are fully complete. Most entries lack either notes or state tracking, weakening the overall audit trail.`,
       severity: "warning",
     });
   }
@@ -676,11 +675,10 @@ export function computeRecruitmentAuditTrail(
 
 function computeExceptionalStartCompliance(
   offers: ConditionalOfferInput[],
-): number {
+): number | null {
   const exceptional = offers.filter((o) => o.exceptional_start);
-  if (exceptional.length === 0) return 0;
   const compliant = exceptional.filter((o) => o.has_risk_mitigation);
-  return pct(compliant.length, exceptional.length);
+  return rate(compliant.length, exceptional.length);
 }
 
 function buildHeadline(
@@ -688,12 +686,12 @@ function buildHeadline(
   _score: number,
   totalEntries: number,
   uniqueCandidates: number,
-  completenessRate: number,
-  notesCoverage: number,
+  completenessRate: number | null,
+  notesCoverage: number | null,
 ): string {
   switch (rating) {
     case "outstanding":
-      return `Outstanding recruitment audit trail — ${totalEntries} entries across ${uniqueCandidates} candidate(s) with ${completenessRate}% completeness and ${notesCoverage}% notes coverage.`;
+      return `Outstanding recruitment audit trail — ${totalEntries} entries across ${uniqueCandidates} candidate(s) with ${formatRate(completenessRate)} completeness and ${formatRate(notesCoverage)} notes coverage.`;
     case "good":
       return `Good recruitment audit trail — ${totalEntries} entries across ${uniqueCandidates} candidate(s) demonstrate solid safer recruitment record-keeping.`;
     case "adequate":

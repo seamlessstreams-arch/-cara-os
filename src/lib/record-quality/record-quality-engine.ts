@@ -229,10 +229,6 @@ export function getTimescaleHours(t: RecordType): number {
 // Was `d === 0 ? 0 : …`: a home with nothing recorded yet read 0% on every
 // rate here — not "nothing recorded" but "nothing done". rate() answers
 // null, and meets()/below() are false for null in both directions.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 function inPeriod(date: string, start: string, end: string): boolean {
   return date.slice(0, 10) >= start.slice(0, 10) && date.slice(0, 10) <= end.slice(0, 10);
 }
@@ -254,7 +250,7 @@ export function evaluateCompletion(
   );
   const totalExpected = periodExpectations.length;
   const totalFulfilled = periodExpectations.filter((e) => e.fulfilled).length;
-  const completionRate = pct(totalFulfilled, totalExpected);
+  const completionRate = rate(totalFulfilled, totalExpected);
 
   // Missing by type
   const typeMap = new Map<RecordType, { expected: number; missing: number }>();
@@ -298,7 +294,7 @@ export function evaluateTimeliness(
     totalDelayHours += delay;
   }
 
-  const timelinessRate = pct(withinTimescale, totalRecords);
+  const timelinessRate = rate(withinTimescale, totalRecords);
   const averageDelayHours =
     totalRecords === 0
       ? 0
@@ -392,7 +388,7 @@ export function evaluateSignOff(
   const signedOff = periodRecords.filter(
     (r) => r.status === "signed_off",
   ).length;
-  const signOffRate = pct(signedOff, totalRecords);
+  const signOffRate = rate(signedOff, totalRecords);
   const pendingSignOff = periodRecords.filter(
     (r) => r.status === "completed",
   ).length;
@@ -436,7 +432,7 @@ export function evaluateCrossReferencing(
   const withCrossReferences = periodRecords.filter(
     (r) => r.crossReferencedRecords.length > 0,
   ).length;
-  const crossReferenceRate = pct(withCrossReferences, totalRecords);
+  const crossReferenceRate = rate(withCrossReferences, totalRecords);
 
   // Incidents should have a daily log cross-reference
   const incidents = periodRecords.filter((r) => r.recordType === "incident");
@@ -523,9 +519,9 @@ export function buildStaffProfiles(
       completionRate: 100, // all records here exist = 100% for their authored records
       averageTimeliness: totalRecords === 0 ? 0 : Math.round((totalDelay / totalRecords) * 10) / 10,
       averageFieldCompletion: totalRecords === 0 ? 0 : Math.round(totalFieldPct / totalRecords),
-      signOffRate: pct(signedOff, totalRecords),
+      signOffRate: rate(signedOff, totalRecords),
       averageWordCount: totalRecords === 0 ? 0 : Math.round(totalWords / totalRecords),
-      crossReferenceRate: pct(withCrossRef, totalRecords),
+      crossReferenceRate: rate(withCrossRef, totalRecords),
     };
   }).sort((a, b) => b.totalRecords - a.totalRecords);
 }
@@ -570,7 +566,7 @@ export function generateRecordQualityIntelligence(
   else if (quality.averageFieldCompletion >= 85) qualityScore += 7;
   else if (quality.averageFieldCompletion >= 70) qualityScore += 4;
 
-  const belowMinRate = pct(quality.recordsBelowMinWords, quality.totalRecords);
+  const belowMinRate = rate(quality.recordsBelowMinWords, quality.totalRecords);
   if (quality.totalRecords > 0 && (belowMinRate !== null && belowMinRate <= 5)) qualityScore += 10;
   else if (quality.totalRecords > 0 && (belowMinRate !== null && belowMinRate <= 15)) qualityScore += 7;
   else if (quality.totalRecords > 0 && (belowMinRate !== null && belowMinRate <= 30)) qualityScore += 3;

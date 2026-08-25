@@ -81,7 +81,6 @@ export interface HomeBuildingOpsSafetyResult {
 }
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null { return rate(n, d); }
 function daysBetween(a: string, b: string): number { return Math.round((new Date(b).getTime() - new Date(a).getTime()) / 86_400_000); }
 
 export function computeHomeBuildingOpsSafety(input: HomeBuildingOpsSafetyInput): HomeBuildingOpsSafetyResult {
@@ -107,14 +106,14 @@ export function computeHomeBuildingOpsSafety(input: HomeBuildingOpsSafetyInput):
   const foApproved = evacuation_plans.filter(e => e.approved_by_fire_officer).length;
   const evacuation: EvacuationSummary = {
     total: evacuation_plans.length, drills_current: drillsCurrent,
-    fire_officer_approved_rate: pct(foApproved, evacuation_plans.length),
+    fire_officer_approved_rate: rate(foApproved, evacuation_plans.length),
     overdue_drills: overdueDrills,
   };
 
   const gbComplete = grab_bags.filter(g => g.overall_status === "complete").length;
   const gbOverdue = grab_bags.filter(g => g.next_check_due && daysBetween(today, g.next_check_due) < 0).length;
   const grabBagSummary: GrabBagSummary = {
-    total: grab_bags.length, complete_rate: pct(gbComplete, grab_bags.length), overdue_checks: gbOverdue,
+    total: grab_bags.length, complete_rate: rate(gbComplete, grab_bags.length), overdue_checks: gbOverdue,
   };
 
   const acmPresent = asbestos_records.filter(a => a.acm_identified).length;
@@ -129,7 +128,7 @@ export function computeHomeBuildingOpsSafety(input: HomeBuildingOpsSafetyInput):
   const ssOverdue = secure_storage.filter(s => s.next_check_due && daysBetween(today, s.next_check_due) < 0).length;
   const ssFlagged = secure_storage.filter(s => s.status === "flagged").length;
   const secureStorageSummary: SecureStorageSummary = {
-    total: secure_storage.length, verified_rate: pct(ssVerified, secure_storage.length),
+    total: secure_storage.length, verified_rate: rate(ssVerified, secure_storage.length),
     overdue_checks: ssOverdue, flagged_count: ssFlagged,
   };
 
@@ -139,8 +138,8 @@ export function computeHomeBuildingOpsSafety(input: HomeBuildingOpsSafetyInput):
   const rsHighDistress = room_searches.filter(r => r.child_distress_level === "severe" || r.child_distress_level === "moderate").length;
   const roomSearchSummary: RoomSearchSummary = {
     total: room_searches.length,
-    child_informed_rate: pct(rsInformed, room_searches.length),
-    follow_up_completion_rate: pct(rsFollowDone, rsNeedFollow.length),
+    child_informed_rate: rate(rsInformed, room_searches.length),
+    follow_up_completion_rate: rate(rsFollowDone, rsNeedFollow.length),
     high_distress_count: rsHighDistress,
   };
 
@@ -149,7 +148,7 @@ export function computeHomeBuildingOpsSafety(input: HomeBuildingOpsSafetyInput):
   const frCompleted = fire_risk_items.filter(f => f.status === "completed").length;
   const fireRiskSummary: FireRiskSummary = {
     total: fire_risk_items.length, high_risk_count: frHigh,
-    overdue_actions: frOverdue, completed_rate: pct(frCompleted, fire_risk_items.length),
+    overdue_actions: frOverdue, completed_rate: rate(frCompleted, fire_risk_items.length),
   };
 
   // ── Score: base 52 + 8 modifiers (max ±28) ──────────────────────────────
@@ -230,7 +229,7 @@ export function computeHomeBuildingOpsSafety(input: HomeBuildingOpsSafetyInput):
   // Mod 7: Child welfare in building ops (±3)
   let mod7 = 0;
   const childConsiderations = evacuation_plans.filter(e => e.child_considerations_count > 0).length;
-  const childConsidRate = pct(childConsiderations, evacuation_plans.length);
+  const childConsidRate = rate(childConsiderations, evacuation_plans.length);
   if (evacuation_plans.length > 0 && room_searches.length > 0) {
     if (meets(childConsidRate, 80) && rsHighDistress === 0) mod7 = 3;
     else if (meets(childConsidRate, 60)) mod7 = 1;
@@ -249,7 +248,7 @@ export function computeHomeBuildingOpsSafety(input: HomeBuildingOpsSafetyInput):
   const totalOverdue = overdueDrills + gbOverdue + asbestosOverdue + ssOverdue + frOverdue;
   const totalCheckable = evacuation_plans.length + grab_bags.length + asbestos_records.length + secure_storage.length + fire_risk_items.length;
   if (totalCheckable > 0) {
-    const overdueRate = pct(totalOverdue, totalCheckable);
+    const overdueRate = rate(totalOverdue, totalCheckable);
     if (overdueRate === 0) mod8 = 3;
     else if ((overdueRate !== null && overdueRate <= 15)) mod8 = 1;
     else if (meets(overdueRate, 50)) mod8 = -3;

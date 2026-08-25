@@ -5,6 +5,8 @@
 // CHR 2015 Reg 12: "The protection of children standard." SCCIF: Safeguarding.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface SubstanceScreeningRecordInput {
@@ -68,10 +70,6 @@ export interface SubstanceMisuseResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -114,22 +112,22 @@ export function computeSubstanceMisuseScreening(
   const total = screenings.length;
 
   const uniqueChildren = new Set(screenings.map(s => s.child_id)).size;
-  const childrenScreenedRate = pct(uniqueChildren, total_children);
+  const childrenScreenedRate = rate(uniqueChildren, total_children);
 
   const highRisk = screenings.filter(s => s.risk_level === "high_risk" || s.risk_level === "active_concern").length;
-  const highRiskRate = pct(highRisk, total);
+  const highRiskRate = rate(highRisk, total);
 
   const withHarmReduction = screenings.filter(s => s.has_harm_reduction).length;
-  const harmReductionRate = pct(withHarmReduction, total);
+  const harmReductionRate = rate(withHarmReduction, total);
 
   const withProfessionalSupport = screenings.filter(s => s.professional_support_count > 0).length;
-  const professionalSupportRate = pct(withProfessionalSupport, total);
+  const professionalSupportRate = rate(withProfessionalSupport, total);
 
   const withChildInsight = screenings.filter(s => s.has_child_insight).length;
-  const childInsightRate = pct(withChildInsight, total);
+  const childInsightRate = rate(withChildInsight, total);
 
   const sharedEither = screenings.filter(s => s.shared_with_social_worker || s.shared_with_camhs).length;
-  const informationSharingRate = pct(sharedEither, total);
+  const informationSharingRate = rate(sharedEither, total);
 
   // ── Scoring ────────────────────────────────────────────────────────────
   let score = 52;
@@ -138,45 +136,45 @@ export function computeSubstanceMisuseScreening(
   if (total === 0) {
     score -= 3;
   } else {
-    if (childrenScreenedRate >= 80) score += 5;
-    else if (childrenScreenedRate >= 50) score += 2;
-    else if (childrenScreenedRate < 30) score -= 5;
+    if (meets(childrenScreenedRate, 80)) score += 5;
+    else if (meets(childrenScreenedRate, 50)) score += 2;
+    else if (below(childrenScreenedRate, 30)) score -= 5;
   }
 
   // Modifier 2: Harm reduction documented
   if (total === 0) {
     // no adjustment
   } else {
-    if (harmReductionRate >= 80) score += 6;
-    else if (harmReductionRate >= 50) score += 2;
-    else if (harmReductionRate < 30) score -= 5;
+    if (meets(harmReductionRate, 80)) score += 6;
+    else if (meets(harmReductionRate, 50)) score += 2;
+    else if (below(harmReductionRate, 30)) score -= 5;
   }
 
   // Modifier 3: Professional support in place
   if (total === 0) {
     score -= 1;
   } else {
-    if (professionalSupportRate >= 70) score += 5;
-    else if (professionalSupportRate >= 40) score += 2;
-    else if (professionalSupportRate < 20) score -= 4;
+    if (meets(professionalSupportRate, 70)) score += 5;
+    else if (meets(professionalSupportRate, 40)) score += 2;
+    else if (below(professionalSupportRate, 20)) score -= 4;
   }
 
   // Modifier 4: Child insight/voice captured
   if (total === 0) {
     // no adjustment
   } else {
-    if (childInsightRate >= 90) score += 5;
-    else if (childInsightRate >= 60) score += 2;
-    else if (childInsightRate < 30) score -= 4;
+    if (meets(childInsightRate, 90)) score += 5;
+    else if (meets(childInsightRate, 60)) score += 2;
+    else if (below(childInsightRate, 30)) score -= 4;
   }
 
   // Modifier 5: Information sharing (SW/CAMHS)
   if (total === 0) {
     score -= 1;
   } else {
-    if (informationSharingRate >= 80) score += 4;
-    else if (informationSharingRate >= 50) score += 1;
-    else if (informationSharingRate < 30) score -= 4;
+    if (meets(informationSharingRate, 80)) score += 4;
+    else if (meets(informationSharingRate, 50)) score += 1;
+    else if (below(informationSharingRate, 30)) score -= 4;
   }
 
   // Modifier 6: Risk identification quality (high risk managed)
@@ -191,10 +189,10 @@ export function computeSubstanceMisuseScreening(
       const highRiskWithSupport = screenings.filter(s =>
         (s.risk_level === "high_risk" || s.risk_level === "active_concern") && s.professional_support_count > 0
       ).length;
-      const highRiskSupportRate = pct(highRiskWithSupport, highRisk);
-      if (highRiskSupportRate >= 80) score += 5;
-      else if (highRiskSupportRate >= 50) score += 2;
-      else if (highRiskSupportRate < 30) score -= 3;
+      const highRiskSupportRate = rate(highRiskWithSupport, highRisk);
+      if (meets(highRiskSupportRate, 80)) score += 5;
+      else if (meets(highRiskSupportRate, 50)) score += 2;
+      else if (below(highRiskSupportRate, 30)) score -= 3;
     }
   }
 
@@ -222,21 +220,21 @@ export function computeSubstanceMisuseScreening(
 
   // ── Strengths ──────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (childrenScreenedRate >= 80 && total > 0) strengths.push("Most children have been screened — proactive approach to substance misuse awareness");
-  if (harmReductionRate >= 80 && total > 0) strengths.push("Harm reduction approaches are consistently documented and applied");
-  if (professionalSupportRate >= 70 && total > 0) strengths.push("Professional support is well-coordinated for children identified with substance concerns");
-  if (childInsightRate >= 90 && total > 0) strengths.push("Children's own insights and motivation are captured in screening records");
-  if (informationSharingRate >= 80 && total > 0) strengths.push("Information is shared effectively with social workers and CAMHS when appropriate");
+  if (meets(childrenScreenedRate, 80) && total > 0) strengths.push("Most children have been screened — proactive approach to substance misuse awareness");
+  if (meets(harmReductionRate, 80) && total > 0) strengths.push("Harm reduction approaches are consistently documented and applied");
+  if (meets(professionalSupportRate, 70) && total > 0) strengths.push("Professional support is well-coordinated for children identified with substance concerns");
+  if (meets(childInsightRate, 90) && total > 0) strengths.push("Children's own insights and motivation are captured in screening records");
+  if (meets(informationSharingRate, 80) && total > 0) strengths.push("Information is shared effectively with social workers and CAMHS when appropriate");
   if (highRisk === 0 && total > 0) strengths.push("No high-risk substance concerns identified — preventative screening is working effectively");
 
   // ── Concerns ───────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (total === 0) concerns.push("No substance misuse screenings recorded — risks may be going unidentified");
-  if (childrenScreenedRate < 30 && total > 0) concerns.push("Very few children have been screened — substance misuse risks may be undetected");
-  if (harmReductionRate < 30 && total > 0) concerns.push("Harm reduction approaches are rarely documented despite identified risks");
-  if (professionalSupportRate < 20 && total > 0) concerns.push("Professional support is lacking — children with substance concerns are not being connected to services");
-  if (childInsightRate < 30 && total > 0) concerns.push("Children's own perspectives are missing from screening records");
-  if (informationSharingRate < 30 && total > 0) concerns.push("Information is not being shared with social workers or CAMHS — safeguarding oversight is weak");
+  if (below(childrenScreenedRate, 30) && total > 0) concerns.push("Very few children have been screened — substance misuse risks may be undetected");
+  if (below(harmReductionRate, 30) && total > 0) concerns.push("Harm reduction approaches are rarely documented despite identified risks");
+  if (below(professionalSupportRate, 20) && total > 0) concerns.push("Professional support is lacking — children with substance concerns are not being connected to services");
+  if (below(childInsightRate, 30) && total > 0) concerns.push("Children's own perspectives are missing from screening records");
+  if (below(informationSharingRate, 30) && total > 0) concerns.push("Information is not being shared with social workers or CAMHS — safeguarding oversight is weak");
 
   // ── Recommendations ────────────────────────────────────────────────────
   const recs: SubstanceMisuseResult["recommendations"] = [];
@@ -244,19 +242,19 @@ export function computeSubstanceMisuseScreening(
   if (total === 0) {
     recs.push({ rank: 1, recommendation: "Implement routine substance misuse screening for all children using validated tools", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 12" });
   }
-  if (childrenScreenedRate < 50 && total > 0) {
+  if (below(childrenScreenedRate, 50) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Extend screening to all children as part of routine health and safeguarding assessments", urgency: "soon", regulatory_ref: "SCCIF Safeguarding" });
   }
-  if (harmReductionRate < 50 && total > 0) {
+  if (below(harmReductionRate, 50) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Ensure harm reduction strategies are documented for every child with identified substance concerns", urgency: "soon", regulatory_ref: "CHR 2015 Reg 12" });
   }
-  if (informationSharingRate < 50 && total > 0) {
+  if (below(informationSharingRate, 50) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Share screening outcomes with social workers and CAMHS as standard practice", urgency: "immediate", regulatory_ref: "SCCIF Safeguarding" });
   }
-  if (childInsightRate < 60 && total > 0) {
+  if (below(childInsightRate, 60) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Record each child's own understanding, views and motivation alongside screening results", urgency: "planned", regulatory_ref: "CHR 2015 Reg 7" });
   }
-  if (professionalSupportRate < 40 && total > 0) {
+  if (below(professionalSupportRate, 40) && total > 0) {
     recs.push({ rank: recs.length + 1, recommendation: "Connect children with substance concerns to specialist professional support services", urgency: "soon", regulatory_ref: "SCCIF Health" });
   }
 
@@ -265,16 +263,16 @@ export function computeSubstanceMisuseScreening(
   // ── Insights ───────────────────────────────────────────────────────────
   const insights: SubstanceMisuseResult["insights"] = [];
 
-  if (childrenScreenedRate >= 80 && harmReductionRate >= 80 && informationSharingRate >= 80 && total >= 10) {
+  if (meets(childrenScreenedRate, 80) && meets(harmReductionRate, 80) && meets(informationSharingRate, 80) && total >= 10) {
     insights.push({ text: "Substance misuse screening is exemplary — proactive identification, child-centred support and strong multi-agency coordination", severity: "positive" });
   }
   if (total === 0) {
     insights.push({ text: "No screening records means Ofsted cannot verify how substance misuse risks are identified and managed", severity: "critical" });
   }
-  if (highRiskRate >= 30 && total > 0) {
+  if (meets(highRiskRate, 30) && total > 0) {
     insights.push({ text: "High proportion of children flagged as high risk or active concern — intensive monitoring and support required", severity: "warning" });
   }
-  if (childrenScreenedRate >= 80 && total > 0) {
+  if (meets(childrenScreenedRate, 80) && total > 0) {
     insights.push({ text: "Comprehensive screening coverage shows the home takes substance misuse awareness seriously", severity: "positive" });
   }
   if (highRisk === 0 && total > 0) {

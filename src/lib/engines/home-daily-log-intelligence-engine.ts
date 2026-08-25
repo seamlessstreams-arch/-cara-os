@@ -6,6 +6,8 @@
 // SCCIF: "Records are clear, up to date, and stored safely."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input types ─────────────────────────────────────────────────────────────
 
 export const ALL_ENTRY_TYPES = [
@@ -104,10 +106,6 @@ export interface HomeDailyLogResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function daysBetween(a: string, b: string): number {
   return Math.round(
     (new Date(b).getTime() - new Date(a).getTime()) / 86_400_000,
@@ -177,7 +175,7 @@ export function computeHomeDailyLog(
   }
   const typesUsed = Object.keys(byType);
   const typesMissing = ALL_ENTRY_TYPES.filter(t => !typesUsed.includes(t));
-  const typeDiversityRate = pct(typesUsed.length, ALL_ENTRY_TYPES.length);
+  const typeDiversityRate = rate(typesUsed.length, ALL_ENTRY_TYPES.length);
 
   const entry_types: EntryTypeProfile = {
     by_type: byType,
@@ -188,7 +186,7 @@ export function computeHomeDailyLog(
 
   // ── Mood Tracking ─────────────────────────────────────────────────────
   const withMood = logs14d.filter(l => l.mood_score !== null && l.mood_score !== undefined);
-  const moodTrackingRate = pct(withMood.length, logs14d.length);
+  const moodTrackingRate = rate(withMood.length, logs14d.length);
   const avgMood = withMood.length > 0
     ? Math.round((withMood.reduce((sum, l) => sum + (l.mood_score ?? 0), 0) / withMood.length) * 10) / 10
     : null;
@@ -209,7 +207,7 @@ export function computeHomeDailyLog(
     staffEntries[l.staff_id] = (staffEntries[l.staff_id] ?? 0) + 1;
   }
   const uniqueStaff = Object.keys(staffEntries).length;
-  const staffParticipationRate = pct(uniqueStaff, total_staff);
+  const staffParticipationRate = rate(uniqueStaff, total_staff);
   const entryCounts = Object.values(staffEntries);
   const mostActive = entryCounts.length > 0 ? Math.max(...entryCounts) : null;
   const leastActive = entryCounts.length > 0 ? Math.min(...entryCounts) : null;
@@ -227,7 +225,7 @@ export function computeHomeDailyLog(
     childEntries[l.child_id] = (childEntries[l.child_id] ?? 0) + 1;
   }
   const childrenWithEntries = Object.keys(childEntries).length;
-  const childCoverageRate = pct(childrenWithEntries, total_children);
+  const childCoverageRate = rate(childrenWithEntries, total_children);
 
   const child_coverage: ChildCoverageProfile = {
     children_with_entries_14d: childrenWithEntries,
@@ -238,7 +236,7 @@ export function computeHomeDailyLog(
 
   // ── Content Quality ───────────────────────────────────────────────────
   const significantEntries = logs14d.filter(l => l.is_significant).length;
-  const significantRate = pct(significantEntries, logs14d.length);
+  const significantRate = rate(significantEntries, logs14d.length);
   const avgContentLength = logs14d.length > 0
     ? Math.round(logs14d.reduce((sum, l) => sum + l.content.length, 0) / logs14d.length)
     : null;
@@ -256,36 +254,36 @@ export function computeHomeDailyLog(
   let score = 52;
 
   // mod1: Recording frequency (±5) — days with entries out of 14
-  const frequencyRate = pct(daysWithEntries, WINDOW_DAYS);
-  if (frequencyRate >= 90) score += 5;
-  else if (frequencyRate >= 75) score += 3;
-  else if (frequencyRate >= 50) score += 0;
-  else if (frequencyRate >= 30) score -= 2;
+  const frequencyRate = rate(daysWithEntries, WINDOW_DAYS);
+  if (meets(frequencyRate, 90)) score += 5;
+  else if (meets(frequencyRate, 75)) score += 3;
+  else if (meets(frequencyRate, 50)) score += 0;
+  else if (meets(frequencyRate, 30)) score -= 2;
   else score -= 5;
 
   // mod2: Child coverage (±4) — all children have entries
-  if (childCoverageRate >= 100) score += 4;
-  else if (childCoverageRate >= 75) score += 2;
-  else if (childCoverageRate >= 50) score += 0;
+  if (meets(childCoverageRate, 100)) score += 4;
+  else if (meets(childCoverageRate, 75)) score += 2;
+  else if (meets(childCoverageRate, 50)) score += 0;
   else score -= 4;
 
   // mod3: Entry type diversity (±4) — breadth of recording
-  if (typeDiversityRate >= 70) score += 4;
-  else if (typeDiversityRate >= 50) score += 2;
-  else if (typeDiversityRate >= 30) score += 0;
+  if (meets(typeDiversityRate, 70)) score += 4;
+  else if (meets(typeDiversityRate, 50)) score += 2;
+  else if (meets(typeDiversityRate, 30)) score += 0;
   else score -= 4;
 
   // mod4: Mood tracking (±3) — entries with mood scores
-  if (moodTrackingRate >= 80) score += 3;
-  else if (moodTrackingRate >= 60) score += 1;
-  else if (moodTrackingRate >= 40) score += 0;
-  else if (moodTrackingRate >= 20) score -= 1;
+  if (meets(moodTrackingRate, 80)) score += 3;
+  else if (meets(moodTrackingRate, 60)) score += 1;
+  else if (meets(moodTrackingRate, 40)) score += 0;
+  else if (meets(moodTrackingRate, 20)) score -= 1;
   else score -= 3;
 
   // mod5: Staff participation (±4) — diverse staff logging
-  if (staffParticipationRate >= 70) score += 4;
-  else if (staffParticipationRate >= 50) score += 2;
-  else if (staffParticipationRate >= 30) score += 0;
+  if (meets(staffParticipationRate, 70)) score += 4;
+  else if (meets(staffParticipationRate, 50)) score += 2;
+  else if (meets(staffParticipationRate, 30)) score += 0;
   else score -= 4;
 
   // mod6: Content quality (±3) — average content length
@@ -301,7 +299,7 @@ export function computeHomeDailyLog(
   else score -= 3;
 
   // mod8: Significant event flagging (±2) — appropriate use of significance
-  if (significantEntries > 0 && significantRate >= 10 && significantRate <= 40) score += 2;
+  if (significantEntries > 0 && meets(significantRate, 10) && (significantRate !== null && significantRate <= 40)) score += 2;
   else if (significantEntries > 0) score += 1;
   else score -= 2;
 
@@ -323,46 +321,47 @@ export function computeHomeDailyLog(
   let rank = 0;
 
   // Strengths
-  if (frequencyRate >= 90) strengths.push(`Recording on ${daysWithEntries} of 14 days — consistent daily logging demonstrates embedded practice.`);
-  if (childCoverageRate >= 100) strengths.push("Every child has daily log entries — no child is invisible in the recording system.");
-  if (typeDiversityRate >= 70) strengths.push(`${typesUsed.length} of ${ALL_ENTRY_TYPES.length} entry types used — holistic recording across all life domains.`);
-  if (moodTrackingRate >= 80) strengths.push(`Mood tracked in ${moodTrackingRate}% of entries — strong emotional monitoring.`);
-  if (staffParticipationRate >= 70) strengths.push(`${uniqueStaff} staff contributing — shared recording responsibility across the team.`);
+  if (meets(frequencyRate, 90)) strengths.push(`Recording on ${daysWithEntries} of 14 days — consistent daily logging demonstrates embedded practice.`);
+  if (meets(childCoverageRate, 100)) strengths.push("Every child has daily log entries — no child is invisible in the recording system.");
+  if (meets(typeDiversityRate, 70)) strengths.push(`${typesUsed.length} of ${ALL_ENTRY_TYPES.length} entry types used — holistic recording across all life domains.`);
+  if (meets(moodTrackingRate, 80)) strengths.push(`Mood tracked in ${moodTrackingRate}% of entries — strong emotional monitoring.`);
+  if (meets(staffParticipationRate, 70)) strengths.push(`${uniqueStaff} staff contributing — shared recording responsibility across the team.`);
   if ((avgContentLength ?? 0) >= 100) strengths.push("Detailed entries averaging " + (avgContentLength ?? 0) + " characters — rich, meaningful recording.");
 
   // Concerns
   if (daysWithNoEntries >= 5) concerns.push(`${daysWithNoEntries} days with no entries in the last 14 days — recording gaps could hide safeguarding concerns.`);
-  if (childCoverageRate < 100 && total_children > childrenWithEntries) {
+  if (below(childCoverageRate, 100) && total_children > childrenWithEntries) {
     concerns.push(`${total_children - childrenWithEntries} child${(total_children - childrenWithEntries) > 1 ? "ren" : ""} with no daily log entries in 14 days.`);
   }
-  if (moodTrackingRate < 40) concerns.push(`Mood tracking at only ${moodTrackingRate}% — emotional wellbeing may not be monitored effectively.`);
+  if (below(moodTrackingRate, 40)) concerns.push(`Mood tracking at only ${moodTrackingRate}% — emotional wellbeing may not be monitored effectively.`);
   if ((avgContentLength ?? 0) < 30) concerns.push("Very brief log entries — insufficient detail for safeguarding oversight.");
-  if (staffParticipationRate < 30) concerns.push(`Only ${uniqueStaff} of ${total_staff} staff contributing to daily logs — recording may not reflect all shifts.`);
+  if (below(staffParticipationRate, 30)) concerns.push(`Only ${uniqueStaff} of ${total_staff} staff contributing to daily logs — recording may not reflect all shifts.`);
   if (lowMood >= 5) concerns.push(`${lowMood} entries with low mood scores (≤4) in 14 days — patterns of distress should be explored.`);
 
   // Recommendations
   if (daysWithNoEntries >= 3) {
     recommendations.push({ rank: ++rank, recommendation: "Embed daily recording into shift routines — every shift must produce at least one entry per child.", urgency: daysWithNoEntries >= 7 ? "immediate" : "soon", regulatory_ref: "Reg 36" });
   }
-  if (childCoverageRate < 100) {
+  if (below(childCoverageRate, 100)) {
     recommendations.push({ rank: ++rank, recommendation: "Ensure all children have daily log entries — use handover checklists to verify coverage.", urgency: "soon", regulatory_ref: "Reg 36" });
   }
-  if (moodTrackingRate < 60) {
+  if (below(moodTrackingRate, 60)) {
     recommendations.push({ rank: ++rank, recommendation: "Include mood scores in all daily log entries to build emotional wellbeing patterns.", urgency: "planned", regulatory_ref: "Reg 36" });
   }
   if (typesMissing.length > 3) {
     recommendations.push({ rank: ++rank, recommendation: `Record across all life domains — missing types: ${typesMissing.slice(0, 3).join(", ")}.`, urgency: "planned", regulatory_ref: "Reg 36" });
   }
-  if (staffParticipationRate < 50) {
+  if (below(staffParticipationRate, 50)) {
     recommendations.push({ rank: ++rank, recommendation: "All staff should contribute to daily logs — discuss recording expectations in supervision.", urgency: "soon", regulatory_ref: "Reg 36" });
   }
 
   // Cara Insights
-  if (frequencyRate >= 90 && childCoverageRate >= 100 && typeDiversityRate >= 70 && moodTrackingRate >= 80) {
+  if (meets(frequencyRate, 90) && meets(childCoverageRate, 100) && meets(typeDiversityRate, 70) && meets(moodTrackingRate, 80)) {
     insights.push({ text: "Daily log recording is exemplary. Consistent, comprehensive, and emotionally attuned recording across all children and life domains. Ofsted will recognise this as outstanding practice.", severity: "positive" });
   }
-  if (lowMood >= 3 && pct(lowMood, withMood.length) >= 20) {
-    insights.push({ text: `${lowMood} low mood entries detected (${pct(lowMood, withMood.length)}% of mood-tracked entries). Consider whether therapeutic interventions are needed — persistent low mood may indicate unmet emotional needs.`, severity: "warning" });
+  const lowMoodRate = rate(lowMood, withMood.length);
+  if (lowMood >= 3 && meets(lowMoodRate, 20)) {
+    insights.push({ text: `${lowMood} low mood entries detected (${formatRate(lowMoodRate)} of mood-tracked entries). Consider whether therapeutic interventions are needed — persistent low mood may indicate unmet emotional needs.`, severity: "warning" });
   }
   if (daysWithNoEntries >= 7) {
     insights.push({ text: `${daysWithNoEntries} days without any recording in the last 14 days. This is a significant governance concern — Ofsted will view recording gaps as a leadership and management failure.`, severity: "critical" });
