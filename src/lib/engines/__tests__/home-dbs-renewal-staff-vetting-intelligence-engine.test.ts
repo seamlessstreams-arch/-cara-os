@@ -767,7 +767,7 @@ describe("Home DBS Renewal & Staff Vetting Intelligence Engine", () => {
 
     it("empty overseas records → rate = 0, no bonus or penalty", () => {
       const r = computeDbsRenewalStaffVetting(baseInput({ overseas_check_records: [] }));
-      expect(r.overseas_check_rate).toBe(0);
+      expect(r.overseas_check_rate).toBeNull();
       expect(r.overseas_checks_total).toBe(0);
     });
 
@@ -901,7 +901,7 @@ describe("Home DBS Renewal & Staff Vetting Intelligence Engine", () => {
 
     it("empty barred list records → rate = 0", () => {
       const r = computeDbsRenewalStaffVetting(baseInput({ barred_list_records: [] }));
-      expect(r.barred_list_rate).toBe(0);
+      expect(r.barred_list_rate).toBeNull();
       expect(r.barred_list_total).toBe(0);
     });
   });
@@ -1039,7 +1039,7 @@ describe("Home DBS Renewal & Staff Vetting Intelligence Engine", () => {
 
     it("empty reference records → rate = 0", () => {
       const r = computeDbsRenewalStaffVetting(baseInput({ reference_verification_records: [] }));
-      expect(r.reference_verification_rate).toBe(0);
+      expect(r.reference_verification_rate).toBeNull();
       expect(r.references_total).toBe(0);
     });
 
@@ -1064,7 +1064,7 @@ describe("Home DBS Renewal & Staff Vetting Intelligence Engine", () => {
       expect(r.renewal_timeliness_rate).toBeGreaterThanOrEqual(85);
     });
 
-    it("timeliness rate is 0 when no data present for any component", () => {
+    it("timeliness rate is null when no data present for any component", () => {
       const r = computeDbsRenewalStaffVetting(baseInput({
         dbs_check_records: [makeDbsCheck({ id: "d1", staff_id: "s1", status: "pending", is_valid: false })],
         enhanced_dbs_records: [],
@@ -2297,9 +2297,9 @@ describe("Home DBS Renewal & Staff Vetting Intelligence Engine", () => {
         reference_verification_records: [],
       });
       expect(r.dbs_currency_rate).toBe(100);
-      expect(r.enhanced_dbs_rate).toBe(0);
-      expect(r.barred_list_rate).toBe(0);
-      expect(r.reference_verification_rate).toBe(0);
+      expect(r.enhanced_dbs_rate).toBeNull();
+      expect(r.barred_list_rate).toBeNull();
+      expect(r.reference_verification_rate).toBeNull();
     });
 
     it("duplicate staff IDs across record types are handled correctly", () => {

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { EmergencyContactRating } from "@/lib/engines/home-emergency-contact-next-of-kin-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 const RATING_STYLES: Record<EmergencyContactRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -65,28 +66,28 @@ export function HomeEmergencyContactNextOfKinIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.contact_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.contact_currency_rate >= 90 ? "bg-green-50" : d.contact_currency_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.contact_currency_rate >= 90 ? "text-[--cs-success]" : d.contact_currency_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.contact_currency_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.contact_currency_rate, 90) ? "bg-green-50" : meets(d.contact_currency_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.contact_currency_rate, 90) ? "text-[--cs-success]" : meets(d.contact_currency_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.contact_currency_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Currency</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.accessibility_rate >= 90 ? "bg-green-50" : d.accessibility_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.accessibility_rate >= 90 ? "text-[--cs-success]" : d.accessibility_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.accessibility_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.accessibility_rate, 90) ? "bg-green-50" : meets(d.accessibility_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.accessibility_rate, 90) ? "text-[--cs-success]" : meets(d.accessibility_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.accessibility_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Access.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.update_frequency_rate >= 90 ? "bg-green-50" : d.update_frequency_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.update_frequency_rate >= 90 ? "text-[--cs-success]" : d.update_frequency_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.update_frequency_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.update_frequency_rate, 90) ? "bg-green-50" : meets(d.update_frequency_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.update_frequency_rate, 90) ? "text-[--cs-success]" : meets(d.update_frequency_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.update_frequency_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Updates</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.multi_contact_rate >= 90 ? "bg-green-50" : d.multi_contact_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.multi_contact_rate >= 90 ? "text-[--cs-success]" : d.multi_contact_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.multi_contact_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.multi_contact_rate, 90) ? "bg-green-50" : meets(d.multi_contact_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.multi_contact_rate, 90) ? "text-[--cs-success]" : meets(d.multi_contact_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.multi_contact_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Multi-C.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.out_of_hours_rate >= 90 ? "bg-green-50" : d.out_of_hours_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.out_of_hours_rate >= 90 ? "text-[--cs-success]" : d.out_of_hours_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.out_of_hours_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.out_of_hours_rate, 90) ? "bg-green-50" : meets(d.out_of_hours_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.out_of_hours_rate, 90) ? "text-[--cs-success]" : meets(d.out_of_hours_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.out_of_hours_rate)}</p>
               <p className="text-[9px] text-muted-foreground">OOH</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.verification_rate >= 90 ? "bg-green-50" : d.verification_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.verification_rate >= 90 ? "text-[--cs-success]" : d.verification_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.verification_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.verification_rate, 90) ? "bg-green-50" : meets(d.verification_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.verification_rate, 90) ? "text-[--cs-success]" : meets(d.verification_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.verification_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Verified</p>
             </div>
           </div>

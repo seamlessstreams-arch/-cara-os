@@ -221,10 +221,10 @@ describe("insufficient_data", () => {
     // fab-0: null (no records) — see engine header
     expect(r.policy_compliance_rate).toBeNull();
     expect(r.sar_handling_rate).toBeNull();
-    expect(r.breach_management_rate).toBe(0);
+    expect(r.breach_management_rate).toBeNull();
     expect(r.privacy_notice_rate).toBeNull();
     expect(r.staff_training_rate).toBeNull();
-    expect(r.record_security_rate).toBe(0);
+    expect(r.record_security_rate).toBeNull();
   });
 
   it("returns empty strengths, concerns, recommendations, insights for insufficient_data", () => {
@@ -845,7 +845,7 @@ describe("penalties", () => {
       expect(r.policy_compliance_rate).toBe(20);
     });
 
-    it("does not apply penalty when totalPolicies is 0", () => {
+    it("does not apply penalty when totalPolicies is null", () => {
       const r = run({
         policy_compliance_records: [],
       });
@@ -1164,13 +1164,13 @@ describe("composite rates", () => {
       expect(r.record_security_rate).toBe(88);
     });
 
-    it("returns 0 when no policies and no training records", () => {
+    it("returns null when no policies and no training records", () => {
       const r = run({
         policy_compliance_records: [],
         training_records: [],
       });
       // totalPolicies=0 and totalTrainingRecords=0 -> 0
-      expect(r.record_security_rate).toBe(0);
+      expect(r.record_security_rate).toBeNull();
     });
   });
 });

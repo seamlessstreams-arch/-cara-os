@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Heart } from "luc
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { FriendshipSocialRating } from "@/lib/engines/home-friendship-social-network-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 function useHomeFriendshipSocialNetworkIntelligence() {
   return useQuery({
@@ -69,28 +70,28 @@ export function HomeFriendshipSocialNetworkIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.friendship_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.friendship_mapping_rate >= 90 ? "bg-green-50" : d.friendship_mapping_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.friendship_mapping_rate >= 90 ? "text-[--cs-success]" : d.friendship_mapping_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.friendship_mapping_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.friendship_mapping_rate, 90) ? "bg-green-50" : meets(d.friendship_mapping_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.friendship_mapping_rate, 90) ? "text-[--cs-success]" : meets(d.friendship_mapping_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.friendship_mapping_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Mapped</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.social_network_rate >= 90 ? "bg-green-50" : d.social_network_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.social_network_rate >= 90 ? "text-[--cs-success]" : d.social_network_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.social_network_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.social_network_rate, 90) ? "bg-green-50" : meets(d.social_network_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.social_network_rate, 90) ? "text-[--cs-success]" : meets(d.social_network_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.social_network_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Networks</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.peer_support_rate >= 90 ? "bg-green-50" : d.peer_support_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.peer_support_rate >= 90 ? "text-[--cs-success]" : d.peer_support_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.peer_support_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.peer_support_rate, 90) ? "bg-green-50" : meets(d.peer_support_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.peer_support_rate, 90) ? "text-[--cs-success]" : meets(d.peer_support_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.peer_support_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Peer Sup.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.isolation_prevention_rate >= 90 ? "bg-green-50" : d.isolation_prevention_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.isolation_prevention_rate >= 90 ? "text-[--cs-success]" : d.isolation_prevention_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.isolation_prevention_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.isolation_prevention_rate, 90) ? "bg-green-50" : meets(d.isolation_prevention_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.isolation_prevention_rate, 90) ? "text-[--cs-success]" : meets(d.isolation_prevention_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.isolation_prevention_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Isolation</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_satisfaction_rate >= 90 ? "bg-green-50" : d.child_satisfaction_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_satisfaction_rate >= 90 ? "text-[--cs-success]" : d.child_satisfaction_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_satisfaction_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_satisfaction_rate, 90) ? "bg-green-50" : meets(d.child_satisfaction_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_satisfaction_rate, 90) ? "text-[--cs-success]" : meets(d.child_satisfaction_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_satisfaction_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Satisfied</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_confidence_rate >= 90 ? "bg-green-50" : d.child_confidence_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_confidence_rate >= 90 ? "text-[--cs-success]" : d.child_confidence_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_confidence_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_confidence_rate, 90) ? "bg-green-50" : meets(d.child_confidence_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_confidence_rate, 90) ? "text-[--cs-success]" : meets(d.child_confidence_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_confidence_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Confident</p>
             </div>
           </div>

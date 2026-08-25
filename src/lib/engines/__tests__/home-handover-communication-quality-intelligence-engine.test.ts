@@ -165,14 +165,14 @@ describe("computeHandoverCommunicationQuality", () => {
       expect(r.total_critical_info_transfers).toBe(0);
     });
 
-    it("returns 0 for all rate metrics", () => {
+    it("returns null for all rate metrics", () => {
       const r = computeHandoverCommunicationQuality(baseInput({ total_staff: 0 }));
-      expect(r.handover_quality_rate).toBe(0);
-      expect(r.communication_log_rate).toBe(0);
-      expect(r.critical_info_rate).toBe(0);
-      expect(r.handover_timeliness_rate).toBe(0);
-      expect(r.staff_satisfaction_rate).toBe(0);
-      expect(r.action_completion_rate).toBe(0);
+      expect(r.handover_quality_rate).toBeNull();
+      expect(r.communication_log_rate).toBeNull();
+      expect(r.critical_info_rate).toBeNull();
+      expect(r.handover_timeliness_rate).toBeNull();
+      expect(r.staff_satisfaction_rate).toBeNull();
+      expect(r.action_completion_rate).toBeNull();
     });
 
     it("returns empty arrays for strengths, concerns, recommendations, insights", () => {
@@ -208,14 +208,14 @@ describe("computeHandoverCommunicationQuality", () => {
       expect(r.total_critical_info_transfers).toBe(0);
     });
 
-    it("returns 0 for all rates", () => {
+    it("returns null for all rates", () => {
       const r = computeHandoverCommunicationQuality(baseInput());
-      expect(r.handover_quality_rate).toBe(0);
-      expect(r.communication_log_rate).toBe(0);
-      expect(r.critical_info_rate).toBe(0);
-      expect(r.handover_timeliness_rate).toBe(0);
-      expect(r.staff_satisfaction_rate).toBe(0);
-      expect(r.action_completion_rate).toBe(0);
+      expect(r.handover_quality_rate).toBeNull();
+      expect(r.communication_log_rate).toBeNull();
+      expect(r.critical_info_rate).toBeNull();
+      expect(r.handover_timeliness_rate).toBeNull();
+      expect(r.staff_satisfaction_rate).toBeNull();
+      expect(r.action_completion_rate).toBeNull();
     });
 
     it("returns exactly 1 concern", () => {

@@ -14,7 +14,7 @@
 //             childSatisfactionRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { below, meets } from "@/lib/metrics/rate";
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -144,22 +144,30 @@ export interface FriendshipSocialResult {
   friendship_score: number;
   headline: string;
   total_mappings: number;
-  friendship_mapping_rate: number;
-  social_network_rate: number;
-  peer_support_rate: number;
-  isolation_prevention_rate: number;
-  child_satisfaction_rate: number;
-  child_confidence_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  friendship_mapping_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  social_network_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  peer_support_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  isolation_prevention_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_satisfaction_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_confidence_rate: number | null;
   // Null on empty — no mappings ⇒ no friends count / quality to average.
   // "0 friends / 0/5 quality" would read as "children are isolated and
   // dislike everyone", not "unmeasured".
   avg_friends_per_child: number | null;
   avg_friendship_quality: number | null;
-  network_positivity_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  network_positivity_rate: number | null;
   // Null on empty — no peer activities ⇒ no engagement signal.
   peer_engagement_avg: number | null;
   isolation_high_risk_count: number;
-  loneliness_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  loneliness_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: FriendshipSocialRecommendation[];
@@ -167,10 +175,6 @@ export interface FriendshipSocialResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -195,18 +199,18 @@ function emptyResult(
     friendship_score: score,
     headline,
     total_mappings: 0,
-    friendship_mapping_rate: 0,
-    social_network_rate: 0,
-    peer_support_rate: 0,
-    isolation_prevention_rate: 0,
-    child_satisfaction_rate: 0,
-    child_confidence_rate: 0,
+    friendship_mapping_rate: null,
+    social_network_rate: null,
+    peer_support_rate: null,
+    isolation_prevention_rate: null,
+    child_satisfaction_rate: null,
+    child_confidence_rate: null,
     avg_friends_per_child: null,
     avg_friendship_quality: null,
-    network_positivity_rate: 0,
+    network_positivity_rate: null,
     peer_engagement_avg: null,
     isolation_high_risk_count: 0,
-    loneliness_rate: 0,
+    loneliness_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -288,19 +292,19 @@ export function computeFriendshipSocialNetwork(
     friendship_mapping_records.map((m) => m.child_id),
   ).size;
   const friendshipMappingRate =
-    total_children > 0 ? pct(uniqueChildrenMapped, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenMapped, total_children) : 0;
 
   // --- Friendship quality metrics ---
   const childInvolvedInMapping = friendship_mapping_records.filter(
     (m) => m.child_involved_in_mapping,
   ).length;
-  const childInvolvementRate = pct(childInvolvedInMapping, totalMappings);
+  const childInvolvementRate = rate(childInvolvedInMapping, totalMappings);
 
   const overdueMappingReviews = friendship_mapping_records.filter(
     (m) => m.review_overdue,
   ).length;
   const mappingReviewComplianceRate: number | null = totalMappings > 0
-    ? pct(totalMappings - overdueMappingReviews, totalMappings)
+    ? rate(totalMappings - overdueMappingReviews, totalMappings)
     : null;
 
   // --- Average friends per child ---
@@ -327,13 +331,13 @@ export function computeFriendshipSocialNetwork(
   const childrenWithOutsideFriends = friendship_mapping_records.filter(
     (m) => m.friends_outside_home > 0 || m.friends_from_school > 0 || m.friends_from_community > 0,
   ).length;
-  const outsideFriendshipRate = pct(childrenWithOutsideFriends, totalMappings);
+  const outsideFriendshipRate = rate(childrenWithOutsideFriends, totalMappings);
 
   // --- Children with zero friends ---
   const childrenWithNoFriends = friendship_mapping_records.filter(
     (m) => m.total_friends_identified === 0,
   ).length;
-  const noFriendsRate = pct(childrenWithNoFriends, totalMappings);
+  const noFriendsRate = rate(childrenWithNoFriends, totalMappings);
 
   // --- Social network breadth ---
   const totalNetworks = social_network_records.length;
@@ -341,7 +345,7 @@ export function computeFriendshipSocialNetwork(
     social_network_records.map((n) => n.child_id),
   ).size;
   const socialNetworkRate =
-    total_children > 0 ? pct(uniqueChildrenWithNetworks, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenWithNetworks, total_children) : 0;
 
   // --- Network positivity ---
   const totalPositiveContacts = social_network_records.reduce(
@@ -352,30 +356,30 @@ export function computeFriendshipSocialNetwork(
     (sum, n) => sum + n.contacts_count,
     0,
   );
-  const networkPositivityRate = pct(totalPositiveContacts, totalAllContacts);
+  const networkPositivityRate = rate(totalPositiveContacts, totalAllContacts);
 
   // --- Network stability ---
   const stableOrGrowingNetworks = social_network_records.filter(
     (n) => n.network_stability === "stable" || n.network_stability === "growing",
   ).length;
-  const networkStabilityRate = pct(stableOrGrowingNetworks, totalNetworks);
+  const networkStabilityRate = rate(stableOrGrowingNetworks, totalNetworks);
 
   const decliningNetworks = social_network_records.filter(
     (n) => n.network_stability === "declining" || n.network_stability === "volatile",
   ).length;
-  const decliningNetworkRate = pct(decliningNetworks, totalNetworks);
+  const decliningNetworkRate = rate(decliningNetworks, totalNetworks);
 
   // --- Network barriers ---
   const networksWithBarriers = social_network_records.filter(
     (n) => n.barriers_identified,
   ).length;
-  const barrierRate = pct(networksWithBarriers, totalNetworks);
+  const barrierRate = rate(networksWithBarriers, totalNetworks);
 
   const networksWithSupport = social_network_records.filter(
     (n) => n.barriers_identified && n.support_provided,
   ).length;
   const barrierSupportRate: number | null = networksWithBarriers > 0
-    ? pct(networksWithSupport, networksWithBarriers)
+    ? rate(networksWithSupport, networksWithBarriers)
     : null;
 
   const overdueNetworkReviews = social_network_records.filter(
@@ -388,7 +392,7 @@ export function computeFriendshipSocialNetwork(
     peer_support_records.map((p) => p.child_id),
   ).size;
   const peerSupportRate =
-    total_children > 0 ? pct(uniqueChildrenInPeerSupport, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenInPeerSupport, total_children) : 0;
 
   const peerEngagementSum = peer_support_records.reduce(
     (sum, p) => sum + p.child_engagement_rating,
@@ -402,17 +406,17 @@ export function computeFriendshipSocialNetwork(
   const positiveOutcomeActivities = peer_support_records.filter(
     (p) => p.outcome_positive,
   ).length;
-  const peerOutcomeRate = pct(positiveOutcomeActivities, totalPeerActivities);
+  const peerOutcomeRate = rate(positiveOutcomeActivities, totalPeerActivities);
 
   const childEnjoyedActivities = peer_support_records.filter(
     (p) => p.child_reported_enjoyment,
   ).length;
-  const peerEnjoymentRate = pct(childEnjoyedActivities, totalPeerActivities);
+  const peerEnjoymentRate = rate(childEnjoyedActivities, totalPeerActivities);
 
   const peerActivitiesWithNotes = peer_support_records.filter(
     (p) => p.notes_recorded,
   ).length;
-  const peerDocumentationRate = pct(peerActivitiesWithNotes, totalPeerActivities);
+  const peerDocumentationRate = rate(peerActivitiesWithNotes, totalPeerActivities);
 
   // --- Isolation prevention ---
   const totalIsolationRecords = isolation_prevention_records.length;
@@ -427,7 +431,7 @@ export function computeFriendshipSocialNetwork(
   const isolationImproved = isolation_prevention_records.filter(
     (i) => i.outcome_improved,
   ).length;
-  const isolationPreventionRate = pct(isolationImproved, totalIsolationRecords);
+  const isolationPreventionRate = rate(isolationImproved, totalIsolationRecords);
 
   const overdueIsolationReviews = isolation_prevention_records.filter(
     (i) => i.review_overdue && i.intervention_active,
@@ -439,7 +443,7 @@ export function computeFriendshipSocialNetwork(
   const highRiskTotal = isolation_prevention_records.filter(
     (i) => i.risk_level === "high",
   ).length;
-  const highRiskEscalationRate = pct(highRiskWithEscalation, highRiskTotal);
+  const highRiskEscalationRate = rate(highRiskWithEscalation, highRiskTotal);
 
   // --- Child satisfaction ---
   const totalSurveys = child_satisfaction_records.length;
@@ -447,65 +451,65 @@ export function computeFriendshipSocialNetwork(
   const satisfiedChildren = child_satisfaction_records.filter(
     (s) => s.satisfaction_with_friendships >= 4,
   ).length;
-  const childSatisfactionRate = pct(satisfiedChildren, totalSurveys);
+  const childSatisfactionRate = rate(satisfiedChildren, totalSurveys);
 
   const confidentChildren = child_satisfaction_records.filter(
     (s) => s.confidence_in_social_situations >= 4,
   ).length;
-  const childConfidenceRate = pct(confidentChildren, totalSurveys);
+  const childConfidenceRate = rate(confidentChildren, totalSurveys);
 
   const childrenFeelIncluded = child_satisfaction_records.filter(
     (s) => s.feels_included,
   ).length;
-  const inclusionRate = pct(childrenFeelIncluded, totalSurveys);
+  const inclusionRate = rate(childrenFeelIncluded, totalSurveys);
 
   const childrenFeelSupported = child_satisfaction_records.filter(
     (s) => s.feels_supported_by_staff,
   ).length;
-  const staffSupportRate = pct(childrenFeelSupported, totalSurveys);
+  const staffSupportRate = rate(childrenFeelSupported, totalSurveys);
 
   const childrenWithBestFriend = child_satisfaction_records.filter(
     (s) => s.has_best_friend,
   ).length;
-  const bestFriendRate = pct(childrenWithBestFriend, totalSurveys);
+  const bestFriendRate = rate(childrenWithBestFriend, totalSurveys);
 
   const childrenFeelingLonely = child_satisfaction_records.filter(
     (s) => s.feels_lonely,
   ).length;
-  const lonelinessRate = pct(childrenFeelingLonely, totalSurveys);
+  const lonelinessRate = rate(childrenFeelingLonely, totalSurveys);
 
   const childrenWantingMoreSocial = child_satisfaction_records.filter(
     (s) => s.wants_more_social_opportunities,
   ).length;
-  const wantMoreSocialRate = pct(childrenWantingMoreSocial, totalSurveys);
+  const wantMoreSocialRate = rate(childrenWantingMoreSocial, totalSurveys);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: friendshipMappingRate (>=100: +4, >=80: +2) ---
-  if (friendshipMappingRate >= 100) score += 4;
-  else if (friendshipMappingRate >= 80) score += 2;
+  if (meets(friendshipMappingRate, 100)) score += 4;
+  else if (meets(friendshipMappingRate, 80)) score += 2;
 
   // --- Bonus 2: socialNetworkRate (>=100: +4, >=80: +2) ---
-  if (socialNetworkRate >= 100) score += 4;
-  else if (socialNetworkRate >= 80) score += 2;
+  if (meets(socialNetworkRate, 100)) score += 4;
+  else if (meets(socialNetworkRate, 80)) score += 2;
 
   // --- Bonus 3: peerSupportRate (>=80: +3, >=60: +1) ---
-  if (peerSupportRate >= 80) score += 3;
-  else if (peerSupportRate >= 60) score += 1;
+  if (meets(peerSupportRate, 80)) score += 3;
+  else if (meets(peerSupportRate, 60)) score += 1;
 
   // --- Bonus 4: isolationPreventionRate (>=90: +4, >=70: +2) ---
-  if (isolationPreventionRate >= 90) score += 4;
-  else if (isolationPreventionRate >= 70) score += 2;
+  if (meets(isolationPreventionRate, 90)) score += 4;
+  else if (meets(isolationPreventionRate, 70)) score += 2;
 
   // --- Bonus 5: childSatisfactionRate (>=90: +4, >=70: +2) ---
-  if (childSatisfactionRate >= 90) score += 4;
-  else if (childSatisfactionRate >= 70) score += 2;
+  if (meets(childSatisfactionRate, 90)) score += 4;
+  else if (meets(childSatisfactionRate, 70)) score += 2;
 
   // --- Bonus 6: childConfidenceRate (>=90: +3, >=70: +1) ---
-  if (childConfidenceRate >= 90) score += 3;
-  else if (childConfidenceRate >= 70) score += 1;
+  if (meets(childConfidenceRate, 90)) score += 3;
+  else if (meets(childConfidenceRate, 70)) score += 1;
 
   // --- Bonus 7: avgFriendshipQuality (>=4.0: +3, >=3.0: +1) ---
   if (meets(avgFriendshipQuality, 4.0)) score += 3;
@@ -516,21 +520,21 @@ export function computeFriendshipSocialNetwork(
   else if (meets(mappingReviewComplianceRate, 80)) score += 1;
 
   // --- Bonus 9: networkPositivityRate (>=90: +1) ---
-  if (networkPositivityRate >= 90) score += 1;
+  if (meets(networkPositivityRate, 90)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // friendshipMappingRate < 50 → -5
-  if (friendshipMappingRate < 50 && total_children > 0) score -= 5;
+  if (below(friendshipMappingRate, 50) && total_children > 0) score -= 5;
 
   // socialNetworkRate < 50 → -5
-  if (socialNetworkRate < 50 && social_network_records.length > 0) score -= 5;
+  if (below(socialNetworkRate, 50) && social_network_records.length > 0) score -= 5;
 
   // isolationPreventionRate < 40 → -4
-  if (isolationPreventionRate < 40 && totalIsolationRecords > 0) score -= 4;
+  if (below(isolationPreventionRate, 40) && totalIsolationRecords > 0) score -= 4;
 
   // lonelinessRate > 50 → -4
-  if (lonelinessRate > 50 && totalSurveys > 0) score -= 4;
+  if (above(lonelinessRate, 50) && totalSurveys > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -540,61 +544,61 @@ export function computeFriendshipSocialNetwork(
 
   const strengths: string[] = [];
 
-  if (friendshipMappingRate >= 100 && total_children > 0) {
+  if (meets(friendshipMappingRate, 100) && total_children > 0) {
     strengths.push(
       "Every child has a friendship mapping assessment — the home demonstrates comprehensive identification of each child's social connections and friendship quality.",
     );
-  } else if (friendshipMappingRate >= 80 && total_children > 0) {
+  } else if (meets(friendshipMappingRate, 80) && total_children > 0) {
     strengths.push(
       `${friendshipMappingRate}% of children have friendship mappings — strong coverage in understanding children's friendship networks and social connections.`,
     );
   }
 
-  if (socialNetworkRate >= 100 && total_children > 0) {
+  if (meets(socialNetworkRate, 100) && total_children > 0) {
     strengths.push(
       "Every child has a social network assessment — the home maintains a thorough understanding of each child's broader social connections and support systems.",
     );
-  } else if (socialNetworkRate >= 80 && total_children > 0) {
+  } else if (meets(socialNetworkRate, 80) && total_children > 0) {
     strengths.push(
       `${socialNetworkRate}% of children have social network assessments — good coverage in mapping children's wider social connections.`,
     );
   }
 
-  if (peerSupportRate >= 80 && total_children > 0) {
+  if (meets(peerSupportRate, 80) && total_children > 0) {
     strengths.push(
       `${peerSupportRate}% of children are participating in peer support activities — strong engagement in structured social opportunities.`,
     );
-  } else if (peerSupportRate >= 60 && total_children > 0) {
+  } else if (meets(peerSupportRate, 60) && total_children > 0) {
     strengths.push(
       `${peerSupportRate}% of children engaged in peer support activities — the home provides reasonable social opportunities for most children.`,
     );
   }
 
-  if (isolationPreventionRate >= 90 && totalIsolationRecords > 0) {
+  if (meets(isolationPreventionRate, 90) && totalIsolationRecords > 0) {
     strengths.push(
       `${isolationPreventionRate}% of isolation prevention interventions showing improvement — the home is highly effective at identifying and addressing social isolation risks.`,
     );
-  } else if (isolationPreventionRate >= 70 && totalIsolationRecords > 0) {
+  } else if (meets(isolationPreventionRate, 70) && totalIsolationRecords > 0) {
     strengths.push(
       `${isolationPreventionRate}% of isolation prevention interventions showing improvement — the majority of at-risk children are benefiting from targeted support.`,
     );
   }
 
-  if (childSatisfactionRate >= 90 && totalSurveys > 0) {
+  if (meets(childSatisfactionRate, 90) && totalSurveys > 0) {
     strengths.push(
       `${childSatisfactionRate}% of children report high satisfaction with their friendships — children overwhelmingly feel the home supports them in maintaining meaningful social connections.`,
     );
-  } else if (childSatisfactionRate >= 70 && totalSurveys > 0) {
+  } else if (meets(childSatisfactionRate, 70) && totalSurveys > 0) {
     strengths.push(
       `${childSatisfactionRate}% of children are satisfied with their friendships — most children report positive experiences with social relationships.`,
     );
   }
 
-  if (childConfidenceRate >= 90 && totalSurveys > 0) {
+  if (meets(childConfidenceRate, 90) && totalSurveys > 0) {
     strengths.push(
       `${childConfidenceRate}% of children report high confidence in social situations — children feel empowered and capable in their social interactions.`,
     );
-  } else if (childConfidenceRate >= 70 && totalSurveys > 0) {
+  } else if (meets(childConfidenceRate, 70) && totalSurveys > 0) {
     strengths.push(
       `${childConfidenceRate}% of children report social confidence — most children feel comfortable in social situations.`,
     );
@@ -610,57 +614,57 @@ export function computeFriendshipSocialNetwork(
     );
   }
 
-  if (networkPositivityRate >= 90 && totalAllContacts > 0) {
+  if (meets(networkPositivityRate, 90) && totalAllContacts > 0) {
     strengths.push(
       `${networkPositivityRate}% of social network contacts are positive — children are predominantly surrounded by supportive, constructive relationships.`,
     );
-  } else if (networkPositivityRate >= 70 && totalAllContacts > 0) {
+  } else if (meets(networkPositivityRate, 70) && totalAllContacts > 0) {
     strengths.push(
       `${networkPositivityRate}% positive social contacts — the majority of children's social networks are beneficial.`,
     );
   }
 
-  if (outsideFriendshipRate >= 80 && totalMappings > 0) {
+  if (meets(outsideFriendshipRate, 80) && totalMappings > 0) {
     strengths.push(
       `${outsideFriendshipRate}% of children have friendships outside the home — the home effectively supports children in maintaining connections with the wider community.`,
     );
-  } else if (outsideFriendshipRate >= 60 && totalMappings > 0) {
+  } else if (meets(outsideFriendshipRate, 60) && totalMappings > 0) {
     strengths.push(
       `${outsideFriendshipRate}% of children have friendships outside the home — most children have social connections beyond the care setting.`,
     );
   }
 
-  if (inclusionRate >= 90 && totalSurveys > 0) {
+  if (meets(inclusionRate, 90) && totalSurveys > 0) {
     strengths.push(
       `${inclusionRate}% of children feel included — the home fosters a welcoming social environment where children feel they belong.`,
     );
   }
 
-  if (staffSupportRate >= 90 && totalSurveys > 0) {
+  if (meets(staffSupportRate, 90) && totalSurveys > 0) {
     strengths.push(
       `${staffSupportRate}% of children feel supported by staff in their friendships — staff play an active, valued role in facilitating children's social development.`,
     );
   }
 
-  if (bestFriendRate >= 80 && totalSurveys > 0) {
+  if (meets(bestFriendRate, 80) && totalSurveys > 0) {
     strengths.push(
       `${bestFriendRate}% of children report having a best friend — a strong indicator that children are forming deep, meaningful attachments.`,
     );
   }
 
-  if (peerEnjoymentRate >= 90 && totalPeerActivities > 0) {
+  if (meets(peerEnjoymentRate, 90) && totalPeerActivities > 0) {
     strengths.push(
       `${peerEnjoymentRate}% of children report enjoying peer support activities — activities are well-matched to children's interests and social needs.`,
     );
   }
 
-  if (peerOutcomeRate >= 90 && totalPeerActivities > 0) {
+  if (meets(peerOutcomeRate, 90) && totalPeerActivities > 0) {
     strengths.push(
       `${peerOutcomeRate}% of peer support activities achieved positive outcomes — structured social activities are making a genuine difference to children's social skills and relationships.`,
     );
   }
 
-  if (networkStabilityRate >= 80 && totalNetworks > 0) {
+  if (meets(networkStabilityRate, 80) && totalNetworks > 0) {
     strengths.push(
       `${networkStabilityRate}% of social networks are stable or growing — children's social connections are being maintained and developing positively over time.`,
     );
@@ -672,7 +676,7 @@ export function computeFriendshipSocialNetwork(
     );
   }
 
-  if (childInvolvementRate >= 90 && totalMappings > 0) {
+  if (meets(childInvolvementRate, 90) && totalMappings > 0) {
     strengths.push(
       "Children are actively involved in the vast majority of friendship mapping assessments — assessments are genuinely child-centred and participatory.",
     );
@@ -688,7 +692,7 @@ export function computeFriendshipSocialNetwork(
     );
   }
 
-  if (peerDocumentationRate >= 90 && totalPeerActivities > 0) {
+  if (meets(peerDocumentationRate, 90) && totalPeerActivities > 0) {
     strengths.push(
       `${peerDocumentationRate}% of peer support activities have documented notes — strong recording practice supporting evidence of social development work.`,
     );
@@ -700,7 +704,7 @@ export function computeFriendshipSocialNetwork(
     );
   }
 
-  if (highRiskEscalationRate >= 100 && highRiskTotal > 0) {
+  if (meets(highRiskEscalationRate, 100) && highRiskTotal > 0) {
     strengths.push(
       "All high-risk isolation cases have been escalated to professionals — the home ensures the most vulnerable children receive specialist social support.",
     );
@@ -710,85 +714,85 @@ export function computeFriendshipSocialNetwork(
 
   const concerns: string[] = [];
 
-  if (friendshipMappingRate < 50 && total_children > 0) {
+  if (below(friendshipMappingRate, 50) && total_children > 0) {
     concerns.push(
       `Only ${friendshipMappingRate}% of children have friendship mappings — the majority of children's friendship networks have not been formally assessed, preventing the home from understanding or supporting their social connections.`,
     );
-  } else if (friendshipMappingRate < 80 && friendshipMappingRate >= 50 && total_children > 0) {
+  } else if (below(friendshipMappingRate, 80) && meets(friendshipMappingRate, 50) && total_children > 0) {
     concerns.push(
       `Friendship mapping coverage at ${friendshipMappingRate}% — some children's friendship networks remain unassessed, which may result in unidentified social needs and missed opportunities for support.`,
     );
   }
 
-  if (socialNetworkRate < 50 && social_network_records.length > 0) {
+  if (below(socialNetworkRate, 50) && social_network_records.length > 0) {
     concerns.push(
       `Only ${socialNetworkRate}% of children have social network assessments — the majority of children's broader social connections are not being formally evaluated.`,
     );
-  } else if (socialNetworkRate < 80 && socialNetworkRate >= 50 && social_network_records.length > 0) {
+  } else if (below(socialNetworkRate, 80) && meets(socialNetworkRate, 50) && social_network_records.length > 0) {
     concerns.push(
       `Social network assessment coverage at ${socialNetworkRate}% — some children lack a formal assessment of their wider social connections and support systems.`,
     );
   }
 
-  if (peerSupportRate < 40 && total_children > 0 && totalPeerActivities > 0) {
+  if (below(peerSupportRate, 40) && total_children > 0 && totalPeerActivities > 0) {
     concerns.push(
       `Only ${peerSupportRate}% of children are engaging in peer support activities — most children are not accessing structured social development opportunities.`,
     );
-  } else if (peerSupportRate < 60 && peerSupportRate >= 40 && total_children > 0 && totalPeerActivities > 0) {
+  } else if (below(peerSupportRate, 60) && meets(peerSupportRate, 40) && total_children > 0 && totalPeerActivities > 0) {
     concerns.push(
       `Peer support participation at ${peerSupportRate}% — not all children are engaging in structured social activities, which may leave some without adequate social skill development support.`,
     );
   }
 
-  if (isolationPreventionRate < 40 && totalIsolationRecords > 0) {
+  if (below(isolationPreventionRate, 40) && totalIsolationRecords > 0) {
     concerns.push(
       `Only ${isolationPreventionRate}% of isolation prevention interventions showing improvement — the majority of at-risk children are not benefiting from the support provided, suggesting interventions need fundamental review.`,
     );
-  } else if (isolationPreventionRate < 70 && isolationPreventionRate >= 40 && totalIsolationRecords > 0) {
+  } else if (below(isolationPreventionRate, 70) && meets(isolationPreventionRate, 40) && totalIsolationRecords > 0) {
     concerns.push(
       `Isolation prevention effectiveness at ${isolationPreventionRate}% — not all interventions are achieving positive outcomes for at-risk children. Review is needed to ensure approaches match individual needs.`,
     );
   }
 
-  if (childSatisfactionRate < 50 && totalSurveys > 0) {
+  if (below(childSatisfactionRate, 50) && totalSurveys > 0) {
     concerns.push(
       `Only ${childSatisfactionRate}% of children report satisfaction with their friendships — most children are unhappy with their social connections, indicating significant unmet social needs.`,
     );
-  } else if (childSatisfactionRate < 70 && childSatisfactionRate >= 50 && totalSurveys > 0) {
+  } else if (below(childSatisfactionRate, 70) && meets(childSatisfactionRate, 50) && totalSurveys > 0) {
     concerns.push(
       `Child satisfaction with friendships at ${childSatisfactionRate}% — a notable proportion of children are not satisfied with the quality of their friendships.`,
     );
   }
 
-  if (lonelinessRate > 50 && totalSurveys > 0) {
+  if (above(lonelinessRate, 50) && totalSurveys > 0) {
     concerns.push(
       `${lonelinessRate}% of children report feeling lonely — the majority of children feel socially isolated, representing a critical failure in the home's duty to foster positive social relationships.`,
     );
-  } else if (lonelinessRate > 25 && lonelinessRate <= 50 && totalSurveys > 0) {
+  } else if (above(lonelinessRate, 25) && lonelinessRate! <= 50 && totalSurveys > 0) {
     concerns.push(
       `${lonelinessRate}% of children report feeling lonely — a significant minority of children feel socially isolated and require urgent attention.`,
     );
-  } else if (lonelinessRate > 10 && lonelinessRate <= 25 && totalSurveys > 0) {
+  } else if (above(lonelinessRate, 10) && lonelinessRate! <= 25 && totalSurveys > 0) {
     concerns.push(
       `${lonelinessRate}% of children report feeling lonely — some children feel socially isolated and their wellbeing may be affected.`,
     );
   }
 
-  if (childConfidenceRate < 50 && totalSurveys > 0) {
+  if (below(childConfidenceRate, 50) && totalSurveys > 0) {
     concerns.push(
       `Only ${childConfidenceRate}% of children report confidence in social situations — most children lack social confidence, which may impede their ability to form and maintain friendships.`,
     );
-  } else if (childConfidenceRate < 70 && childConfidenceRate >= 50 && totalSurveys > 0) {
+  } else if (below(childConfidenceRate, 70) && meets(childConfidenceRate, 50) && totalSurveys > 0) {
     concerns.push(
       `Social confidence at ${childConfidenceRate}% — a significant proportion of children do not feel confident in social situations.`,
     );
   }
 
-  if (noFriendsRate > 20 && totalMappings > 0) {
+  if (above(noFriendsRate, 20) && totalMappings > 0) {
     concerns.push(
       `${noFriendsRate}% of children have no identified friends — children without any friends are at high risk of social isolation and poor emotional wellbeing.`,
     );
-  } else if (noFriendsRate > 0 && noFriendsRate <= 20 && totalMappings > 0) {
+  } else if (above(noFriendsRate, 0) && noFriendsRate! <= 20 && totalMappings > 0) {
     concerns.push(
       `${childrenWithNoFriends} child${childrenWithNoFriends !== 1 ? "ren have" : " has"} no identified friends — any child without friends requires targeted friendship facilitation support.`,
     );
@@ -804,7 +808,7 @@ export function computeFriendshipSocialNetwork(
     );
   }
 
-  if (decliningNetworkRate > 30 && totalNetworks > 0) {
+  if (above(decliningNetworkRate, 30) && totalNetworks > 0) {
     concerns.push(
       `${decliningNetworkRate}% of children's social networks are declining or volatile — a significant proportion of children are losing social connections, which may indicate placement-related disruption.`,
     );
@@ -834,13 +838,13 @@ export function computeFriendshipSocialNetwork(
     );
   }
 
-  if (outsideFriendshipRate < 40 && totalMappings > 0) {
+  if (below(outsideFriendshipRate, 40) && totalMappings > 0) {
     concerns.push(
       `Only ${outsideFriendshipRate}% of children have friendships outside the home — limited external social connections suggest the home may not be adequately supporting community engagement.`,
     );
   }
 
-  if (wantMoreSocialRate > 50 && totalSurveys > 0) {
+  if (above(wantMoreSocialRate, 50) && totalSurveys > 0) {
     concerns.push(
       `${wantMoreSocialRate}% of children want more social opportunities — children are telling the home they need more chances to socialise, and this feedback should drive changes to provision.`,
     );
@@ -852,13 +856,13 @@ export function computeFriendshipSocialNetwork(
     );
   }
 
-  if (peerDocumentationRate < 70 && totalPeerActivities > 0) {
+  if (below(peerDocumentationRate, 70) && totalPeerActivities > 0) {
     concerns.push(
       `Peer activity documentation at only ${peerDocumentationRate}% — poor recording makes it difficult to evidence the purpose and outcomes of social development work.`,
     );
   }
 
-  if (highRiskEscalationRate < 50 && highRiskTotal > 0) {
+  if (below(highRiskEscalationRate, 50) && highRiskTotal > 0) {
     concerns.push(
       `Only ${highRiskEscalationRate}% of high-risk isolation cases escalated to professionals — children at high risk of social isolation require specialist input to ensure adequate support.`,
     );
@@ -869,7 +873,7 @@ export function computeFriendshipSocialNetwork(
   const recommendations: FriendshipSocialRecommendation[] = [];
   let rank = 0;
 
-  if (friendshipMappingRate < 50 && total_children > 0) {
+  if (below(friendshipMappingRate, 50) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -879,7 +883,7 @@ export function computeFriendshipSocialNetwork(
     });
   }
 
-  if (lonelinessRate > 50 && totalSurveys > 0) {
+  if (above(lonelinessRate, 50) && totalSurveys > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -889,7 +893,7 @@ export function computeFriendshipSocialNetwork(
     });
   }
 
-  if (isolationPreventionRate < 40 && totalIsolationRecords > 0) {
+  if (below(isolationPreventionRate, 40) && totalIsolationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -899,7 +903,7 @@ export function computeFriendshipSocialNetwork(
     });
   }
 
-  if (socialNetworkRate < 50 && social_network_records.length > 0) {
+  if (below(socialNetworkRate, 50) && social_network_records.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -909,7 +913,7 @@ export function computeFriendshipSocialNetwork(
     });
   }
 
-  if (childSatisfactionRate < 50 && totalSurveys > 0) {
+  if (below(childSatisfactionRate, 50) && totalSurveys > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -919,7 +923,7 @@ export function computeFriendshipSocialNetwork(
     });
   }
 
-  if (highRiskEscalationRate < 50 && highRiskTotal > 0) {
+  if (below(highRiskEscalationRate, 50) && highRiskTotal > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -929,7 +933,7 @@ export function computeFriendshipSocialNetwork(
     });
   }
 
-  if (noFriendsRate > 20 && totalMappings > 0) {
+  if (above(noFriendsRate, 20) && totalMappings > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -949,7 +953,7 @@ export function computeFriendshipSocialNetwork(
     });
   }
 
-  if (lonelinessRate > 25 && lonelinessRate <= 50 && totalSurveys > 0) {
+  if (above(lonelinessRate, 25) && lonelinessRate! <= 50 && totalSurveys > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -980,8 +984,8 @@ export function computeFriendshipSocialNetwork(
   }
 
   if (
-    friendshipMappingRate >= 50 &&
-    friendshipMappingRate < 80 &&
+    meets(friendshipMappingRate, 50) &&
+    below(friendshipMappingRate, 80) &&
     total_children > 0
   ) {
     recommendations.push({
@@ -994,8 +998,8 @@ export function computeFriendshipSocialNetwork(
   }
 
   if (
-    socialNetworkRate >= 50 &&
-    socialNetworkRate < 80 &&
+    meets(socialNetworkRate, 50) &&
+    below(socialNetworkRate, 80) &&
     social_network_records.length > 0
   ) {
     recommendations.push({
@@ -1008,8 +1012,8 @@ export function computeFriendshipSocialNetwork(
   }
 
   if (
-    isolationPreventionRate >= 40 &&
-    isolationPreventionRate < 70 &&
+    meets(isolationPreventionRate, 40) &&
+    below(isolationPreventionRate, 70) &&
     totalIsolationRecords > 0
   ) {
     recommendations.push({
@@ -1021,7 +1025,7 @@ export function computeFriendshipSocialNetwork(
     });
   }
 
-  if (outsideFriendshipRate < 60 && outsideFriendshipRate >= 40 && totalMappings > 0) {
+  if (below(outsideFriendshipRate, 60) && meets(outsideFriendshipRate, 40) && totalMappings > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1031,7 +1035,7 @@ export function computeFriendshipSocialNetwork(
     });
   }
 
-  if (wantMoreSocialRate > 50 && totalSurveys > 0) {
+  if (above(wantMoreSocialRate, 50) && totalSurveys > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1041,7 +1045,7 @@ export function computeFriendshipSocialNetwork(
     });
   }
 
-  if (childConfidenceRate < 70 && totalSurveys > 0) {
+  if (below(childConfidenceRate, 70) && totalSurveys > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1051,7 +1055,7 @@ export function computeFriendshipSocialNetwork(
     });
   }
 
-  if (childInvolvementRate < 70 && totalMappings > 0) {
+  if (below(childInvolvementRate, 70) && totalMappings > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1061,7 +1065,7 @@ export function computeFriendshipSocialNetwork(
     });
   }
 
-  if (peerDocumentationRate < 70 && totalPeerActivities > 0) {
+  if (below(peerDocumentationRate, 70) && totalPeerActivities > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1072,8 +1076,8 @@ export function computeFriendshipSocialNetwork(
   }
 
   if (
-    peerSupportRate >= 40 &&
-    peerSupportRate < 60 &&
+    meets(peerSupportRate, 40) &&
+    below(peerSupportRate, 60) &&
     total_children > 0
   ) {
     recommendations.push({
@@ -1086,8 +1090,8 @@ export function computeFriendshipSocialNetwork(
   }
 
   if (
-    childSatisfactionRate >= 50 &&
-    childSatisfactionRate < 70 &&
+    meets(childSatisfactionRate, 50) &&
+    below(childSatisfactionRate, 70) &&
     totalSurveys > 0
   ) {
     recommendations.push({
@@ -1099,7 +1103,7 @@ export function computeFriendshipSocialNetwork(
     });
   }
 
-  if (decliningNetworkRate > 30 && totalNetworks > 0) {
+  if (above(decliningNetworkRate, 30) && totalNetworks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1115,42 +1119,42 @@ export function computeFriendshipSocialNetwork(
 
   // -- Critical insights --
 
-  if (friendshipMappingRate < 50 && total_children > 0) {
+  if (below(friendshipMappingRate, 50) && total_children > 0) {
     insights.push({
       text: `Only ${friendshipMappingRate}% of children have friendship mappings. Without formal assessment of each child's friendships, the home cannot demonstrate it understands or actively supports children's social connections. Ofsted expects evidence that children are helped to develop positive relationships under Reg 11.`,
       severity: "critical",
     });
   }
 
-  if (lonelinessRate > 50 && totalSurveys > 0) {
+  if (above(lonelinessRate, 50) && totalSurveys > 0) {
     insights.push({
       text: `${lonelinessRate}% of children report feeling lonely. When the majority of children feel socially isolated, this represents a fundamental failure in the home's social environment. Loneliness in care significantly impacts children's emotional wellbeing, mental health, and placement stability. This requires immediate, systemic intervention.`,
       severity: "critical",
     });
   }
 
-  if (isolationPreventionRate < 40 && totalIsolationRecords > 0) {
+  if (below(isolationPreventionRate, 40) && totalIsolationRecords > 0) {
     insights.push({
       text: `Only ${isolationPreventionRate}% of isolation prevention interventions showing improvement. When most interventions for at-risk children are not working, this indicates a systemic failure in the home's approach to social isolation — interventions may be poorly designed, inconsistently delivered, or mismatched to individual needs.`,
       severity: "critical",
     });
   }
 
-  if (socialNetworkRate < 50 && social_network_records.length > 0) {
+  if (below(socialNetworkRate, 50) && social_network_records.length > 0) {
     insights.push({
       text: `Only ${socialNetworkRate}% of children have social network assessments. Without understanding each child's broader social support system, the home cannot identify isolated children or take proactive steps to strengthen weak networks. This undermines the home's ability to evidence compliance with Reg 5.`,
       severity: "critical",
     });
   }
 
-  if (noFriendsRate > 20 && totalMappings > 0) {
+  if (above(noFriendsRate, 20) && totalMappings > 0) {
     insights.push({
       text: `${noFriendsRate}% of children have no identified friends. Children without any friendships are at severe risk of social isolation, poor emotional wellbeing, and placement breakdown. Each of these children needs an individual friendship facilitation plan with professional input.`,
       severity: "critical",
     });
   }
 
-  if (childSatisfactionRate < 50 && totalSurveys > 0) {
+  if (below(childSatisfactionRate, 50) && totalSurveys > 0) {
     insights.push({
       text: `Only ${childSatisfactionRate}% of children are satisfied with their friendships. When most children are unhappy with their social connections, the home must treat this as a priority safeguarding and wellbeing concern. Children's own assessment of their friendships is the most authentic measure of social support quality.`,
       severity: "critical",
@@ -1160,8 +1164,8 @@ export function computeFriendshipSocialNetwork(
   // -- Warning insights --
 
   if (
-    friendshipMappingRate >= 50 &&
-    friendshipMappingRate < 80 &&
+    meets(friendshipMappingRate, 50) &&
+    below(friendshipMappingRate, 80) &&
     total_children > 0
   ) {
     insights.push({
@@ -1171,8 +1175,8 @@ export function computeFriendshipSocialNetwork(
   }
 
   if (
-    socialNetworkRate >= 50 &&
-    socialNetworkRate < 80 &&
+    meets(socialNetworkRate, 50) &&
+    below(socialNetworkRate, 80) &&
     social_network_records.length > 0
   ) {
     insights.push({
@@ -1182,8 +1186,8 @@ export function computeFriendshipSocialNetwork(
   }
 
   if (
-    isolationPreventionRate >= 40 &&
-    isolationPreventionRate < 70 &&
+    meets(isolationPreventionRate, 40) &&
+    below(isolationPreventionRate, 70) &&
     totalIsolationRecords > 0
   ) {
     insights.push({
@@ -1193,8 +1197,8 @@ export function computeFriendshipSocialNetwork(
   }
 
   if (
-    childSatisfactionRate >= 50 &&
-    childSatisfactionRate < 70 &&
+    meets(childSatisfactionRate, 50) &&
+    below(childSatisfactionRate, 70) &&
     totalSurveys > 0
   ) {
     insights.push({
@@ -1203,7 +1207,7 @@ export function computeFriendshipSocialNetwork(
     });
   }
 
-  if (lonelinessRate > 10 && lonelinessRate <= 50 && totalSurveys > 0) {
+  if (above(lonelinessRate, 10) && lonelinessRate! <= 50 && totalSurveys > 0) {
     insights.push({
       text: `${lonelinessRate}% of children report feeling lonely. Any level of loneliness among looked-after children is concerning. Loneliness correlates strongly with poor mental health outcomes and should be treated as an early warning indicator requiring proactive intervention.`,
       severity: "warning",
@@ -1211,8 +1215,8 @@ export function computeFriendshipSocialNetwork(
   }
 
   if (
-    childConfidenceRate >= 50 &&
-    childConfidenceRate < 70 &&
+    meets(childConfidenceRate, 50) &&
+    below(childConfidenceRate, 70) &&
     totalSurveys > 0
   ) {
     insights.push({
@@ -1221,7 +1225,7 @@ export function computeFriendshipSocialNetwork(
     });
   }
 
-  if (decliningNetworkRate > 30 && totalNetworks > 0) {
+  if (above(decliningNetworkRate, 30) && totalNetworks > 0) {
     insights.push({
       text: `${decliningNetworkRate}% of children's social networks are declining or volatile. Losing social connections can be deeply destabilising for looked-after children, who may have already experienced significant relationship loss. This trend warrants investigation.`,
       severity: "warning",
@@ -1242,14 +1246,14 @@ export function computeFriendshipSocialNetwork(
     });
   }
 
-  if (wantMoreSocialRate > 50 && totalSurveys > 0) {
+  if (above(wantMoreSocialRate, 50) && totalSurveys > 0) {
     insights.push({
       text: `${wantMoreSocialRate}% of children want more social opportunities. When children themselves are requesting more chances to socialise, the home has a clear mandate to increase provision. Acting on this feedback demonstrates genuine child-centred care.`,
       severity: "warning",
     });
   }
 
-  if (outsideFriendshipRate < 40 && totalMappings > 0) {
+  if (below(outsideFriendshipRate, 40) && totalMappings > 0) {
     insights.push({
       text: `Only ${outsideFriendshipRate}% of children have friendships outside the home. Limited external connections may indicate the home is not adequately supporting children's engagement with the wider community, school peers, and neighbourhood social networks as expected under Reg 5.`,
       severity: "warning",
@@ -1268,7 +1272,7 @@ export function computeFriendshipSocialNetwork(
   }
 
   if (
-    barrierRate > 30 &&
+    above(barrierRate, 30) &&
     totalNetworks > 0
   ) {
     insights.push({
@@ -1341,8 +1345,8 @@ export function computeFriendshipSocialNetwork(
   }
 
   if (
-    friendshipMappingRate >= 100 &&
-    childInvolvementRate >= 90 &&
+    meets(friendshipMappingRate, 100) &&
+    meets(childInvolvementRate, 90) &&
     total_children > 0 &&
     totalMappings > 0
   ) {
@@ -1353,7 +1357,7 @@ export function computeFriendshipSocialNetwork(
   }
 
   if (
-    childSatisfactionRate >= 90 &&
+    meets(childSatisfactionRate, 90) &&
     lonelinessRate === 0 &&
     totalSurveys > 0
   ) {
@@ -1364,8 +1368,8 @@ export function computeFriendshipSocialNetwork(
   }
 
   if (
-    isolationPreventionRate >= 90 &&
-    highRiskEscalationRate >= 100 &&
+    meets(isolationPreventionRate, 90) &&
+    meets(highRiskEscalationRate, 100) &&
     totalIsolationRecords > 0 &&
     highRiskTotal > 0
   ) {
@@ -1376,8 +1380,8 @@ export function computeFriendshipSocialNetwork(
   }
 
   if (
-    networkPositivityRate >= 90 &&
-    networkStabilityRate >= 80 &&
+    meets(networkPositivityRate, 90) &&
+    meets(networkStabilityRate, 80) &&
     totalNetworks > 0
   ) {
     insights.push({
@@ -1387,8 +1391,8 @@ export function computeFriendshipSocialNetwork(
   }
 
   if (
-    peerSupportRate >= 80 &&
-    peerEnjoymentRate >= 90 &&
+    meets(peerSupportRate, 80) &&
+    meets(peerEnjoymentRate, 90) &&
     total_children > 0 &&
     totalPeerActivities > 0
   ) {
@@ -1399,7 +1403,7 @@ export function computeFriendshipSocialNetwork(
   }
 
   if (
-    outsideFriendshipRate >= 80 &&
+    meets(outsideFriendshipRate, 80) &&
     totalMappings > 0
   ) {
     insights.push({
@@ -1409,7 +1413,7 @@ export function computeFriendshipSocialNetwork(
   }
 
   if (
-    bestFriendRate >= 80 &&
+    meets(bestFriendRate, 80) &&
     meets(avgFriendshipQuality, 4.0) &&
     totalSurveys > 0 &&
     totalMappings > 0
@@ -1421,8 +1425,8 @@ export function computeFriendshipSocialNetwork(
   }
 
   if (
-    staffSupportRate >= 90 &&
-    inclusionRate >= 90 &&
+    meets(staffSupportRate, 90) &&
+    meets(inclusionRate, 90) &&
     totalSurveys > 0
   ) {
     insights.push({
@@ -1442,7 +1446,7 @@ export function computeFriendshipSocialNetwork(
   }
 
   if (
-    childConfidenceRate >= 90 &&
+    meets(childConfidenceRate, 90) &&
     totalSurveys > 0
   ) {
     insights.push({

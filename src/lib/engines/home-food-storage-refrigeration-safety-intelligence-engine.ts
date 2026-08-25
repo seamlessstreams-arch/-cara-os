@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME FOOD STORAGE & REFRIGERATION SAFETY INTELLIGENCE ENGINE
 // Monitors fridge/freezer temperature logging, food storage compliance,
@@ -177,10 +178,6 @@ export interface FoodStorageRefrigerationSafetyResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -208,12 +205,12 @@ function emptyResult(
     total_date_checks: 0,
     total_hygiene_assessments: 0,
     total_cross_contamination_checks: 0,
-    temperature_logging_rate: 0,
-    storage_compliance_rate: 0,
-    date_checking_rate: 0,
-    hygiene_rating_rate: 0,
-    cross_contamination_rate: 0,
-    staff_training_rate: 0,
+    temperature_logging_rate: null,
+    storage_compliance_rate: null,
+    date_checking_rate: null,
+    hygiene_rating_rate: null,
+    cross_contamination_rate: null,
+    staff_training_rate: null,
     temperature_log_records: [],
     storage_compliance_records: [],
     date_check_records: [],
@@ -298,21 +295,21 @@ export function computeFoodStorageRefrigerationSafety(
   const totalTempLogs = temperature_log_records.length;
 
   const tempsInRange = temperature_log_records.filter((r) => r.in_range).length;
-  const temperatureComplianceRate = pct(tempsInRange, totalTempLogs);
+  const temperatureComplianceRate = rate(tempsInRange, totalTempLogs);
 
   const tempsWithCorrectiveAction = temperature_log_records.filter(
     (r) => !r.in_range && r.corrective_action_taken,
   ).length;
   const tempsOutOfRange = temperature_log_records.filter((r) => !r.in_range).length;
-  const correctiveActionRate = pct(tempsWithCorrectiveAction, tempsOutOfRange);
+  const correctiveActionRate = rate(tempsWithCorrectiveAction, tempsOutOfRange);
 
   const thermometerCalibrated = temperature_log_records.filter((r) => r.thermometer_calibrated).length;
-  const calibrationRate = pct(thermometerCalibrated, totalTempLogs);
+  const calibrationRate = rate(thermometerCalibrated, totalTempLogs);
 
   // Composite temperature logging rate: in_range + calibrated + (corrective if out of range)
   const tempNumerator = tempsInRange + thermometerCalibrated;
   const tempDenominator = totalTempLogs * 2;
-  const temperatureLoggingRate = pct(tempNumerator, tempDenominator);
+  const temperatureLoggingRate = rate(tempNumerator, tempDenominator);
 
   // Unique appliances checked
   const uniqueAppliances = new Set(temperature_log_records.map((r) => r.appliance_id)).size;
@@ -339,7 +336,7 @@ export function computeFoodStorageRefrigerationSafety(
       if (check(rec)) totalStorageChecksPassed++;
     }
   }
-  const storageComplianceRate = pct(totalStorageChecksPassed, totalStorageChecksPossible);
+  const storageComplianceRate = rate(totalStorageChecksPassed, totalStorageChecksPossible);
 
   const storageIssuesIdentified = storage_compliance_records.filter(
     (s) => s.issues_found.length > 0,
@@ -347,13 +344,13 @@ export function computeFoodStorageRefrigerationSafety(
   const storageIssuesResolved = storage_compliance_records.filter(
     (s) => s.issues_found.length > 0 && s.issues_resolved,
   ).length;
-  const storageIssueResolutionRate = pct(storageIssuesResolved, storageIssuesIdentified);
+  const storageIssueResolutionRate = rate(storageIssuesResolved, storageIssuesIdentified);
 
   const rawSeparationCompliant = storage_compliance_records.filter((s) => s.raw_separated_from_cooked).length;
-  const rawSeparationRate = pct(rawSeparationCompliant, totalStorageChecks);
+  const rawSeparationRate = rate(rawSeparationCompliant, totalStorageChecks);
 
   const allergenSegregationCompliant = storage_compliance_records.filter((s) => s.allergen_items_segregated).length;
-  const allergenSegregationRate = pct(allergenSegregationCompliant, totalStorageChecks);
+  const allergenSegregationRate = rate(allergenSegregationCompliant, totalStorageChecks);
 
   // --- Date checking metrics ---
   const totalDateChecks = date_check_records.length;
@@ -364,19 +361,19 @@ export function computeFoodStorageRefrigerationSafety(
   const totalItemsRemoved = date_check_records.reduce((sum, d) => sum + d.items_removed, 0);
   const totalItemsApproachingExpiry = date_check_records.reduce((sum, d) => sum + d.items_approaching_expiry, 0);
 
-  const dateComplianceRate = pct(totalItemsInDate, totalItemsChecked);
+  const dateComplianceRate = rate(totalItemsInDate, totalItemsChecked);
 
-  const outOfDateRemovalRate = pct(totalItemsRemoved, totalItemsOutOfDate);
+  const outOfDateRemovalRate = rate(totalItemsRemoved, totalItemsOutOfDate);
 
   const useByVisibleRecords = date_check_records.filter((d) => d.use_by_dates_visible).length;
 
   const fifoFollowedRecords = date_check_records.filter((d) => d.fifo_rotation_followed).length;
-  const fifoRate = pct(fifoFollowedRecords, totalDateChecks);
+  const fifoRate = rate(fifoFollowedRecords, totalDateChecks);
 
   // Composite date checking rate: compliance + visibility + FIFO
   const dateCheckNumerator = totalItemsInDate + useByVisibleRecords + fifoFollowedRecords;
   const dateCheckDenominator = totalItemsChecked + totalDateChecks + totalDateChecks;
-  const dateCheckingRate = pct(dateCheckNumerator, dateCheckDenominator);
+  const dateCheckingRate = rate(dateCheckNumerator, dateCheckDenominator);
 
   // --- Hygiene rating metrics ---
   const totalHygieneAssessments = hygiene_rating_records.length;
@@ -388,13 +385,13 @@ export function computeFoodStorageRefrigerationSafety(
       : null;
 
   const handWashingCompliant = hygiene_rating_records.filter((h) => h.hand_washing_compliance).length;
-  const handWashingRate = pct(handWashingCompliant, totalHygieneAssessments);
+  const handWashingRate = rate(handWashingCompliant, totalHygieneAssessments);
 
   const cleaningScheduleFollowed = hygiene_rating_records.filter((h) => h.cleaning_schedule_followed).length;
-  const cleaningScheduleRate = pct(cleaningScheduleFollowed, totalHygieneAssessments);
+  const cleaningScheduleRate = rate(cleaningScheduleFollowed, totalHygieneAssessments);
 
   const wasteDisposalCorrect = hygiene_rating_records.filter((h) => h.waste_disposal_correct).length;
-  const wasteDisposalRate = pct(wasteDisposalCorrect, totalHygieneAssessments);
+  const wasteDisposalRate = rate(wasteDisposalCorrect, totalHygieneAssessments);
 
   const hygieneIssuesIdentified = hygiene_rating_records.filter(
     (h) => h.issues_identified.length > 0,
@@ -402,7 +399,7 @@ export function computeFoodStorageRefrigerationSafety(
   const hygieneIssuesResolved = hygiene_rating_records.filter(
     (h) => h.issues_identified.length > 0 && h.issues_resolved,
   ).length;
-  const hygieneIssueResolutionRate = pct(hygieneIssuesResolved, hygieneIssuesIdentified);
+  const hygieneIssueResolutionRate = rate(hygieneIssuesResolved, hygieneIssuesIdentified);
 
   // Composite hygiene rating rate: avg score scaled to percent
   const hygieneRatingRate = totalHygieneAssessments > 0 ? Math.round((avgHygieneScore ?? 0) * 20) : null;
@@ -434,9 +431,9 @@ export function computeFoodStorageRefrigerationSafety(
       if (check(rec)) totalCrossContamChecksPassed++;
     }
   }
-  const crossContaminationRate = pct(totalCrossContamChecksPassed, totalCrossContamChecksPossible);
+  const crossContaminationRate = rate(totalCrossContamChecksPassed, totalCrossContamChecksPossible);
 
-  const handWashingBetweenTasksRate = pct(
+  const handWashingBetweenTasksRate = rate(
     cross_contamination_records.filter((c) => c.hand_washing_between_tasks).length,
     totalCrossContamChecks,
   );
@@ -456,7 +453,7 @@ export function computeFoodStorageRefrigerationSafety(
   }
   const staffTrainingRate =
     trainingChecksPossible > 0
-      ? pct(trainingChecksPassed, trainingChecksPossible)
+      ? rate(trainingChecksPassed, trainingChecksPossible)
       : (totalCrossContamChecks > 0 ? crossContaminationRate : 0);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
@@ -464,18 +461,18 @@ export function computeFoodStorageRefrigerationSafety(
   let score = 52;
 
   // --- Bonus 1: temperatureComplianceRate (>=95: +5, >=80: +3, >=70: +1) ---
-  if (temperatureComplianceRate >= 95 && totalTempLogs > 0) score += 5;
-  else if (temperatureComplianceRate >= 80 && totalTempLogs > 0) score += 3;
-  else if (temperatureComplianceRate >= 70 && totalTempLogs > 0) score += 1;
+  if (meets(temperatureComplianceRate, 95) && totalTempLogs > 0) score += 5;
+  else if (meets(temperatureComplianceRate, 80) && totalTempLogs > 0) score += 3;
+  else if (meets(temperatureComplianceRate, 70) && totalTempLogs > 0) score += 1;
 
   // --- Bonus 2: storageComplianceRate (>=90: +5, >=75: +3, >=60: +1) ---
-  if (storageComplianceRate >= 90 && totalStorageChecks > 0) score += 5;
-  else if (storageComplianceRate >= 75 && totalStorageChecks > 0) score += 3;
-  else if (storageComplianceRate >= 60 && totalStorageChecks > 0) score += 1;
+  if (meets(storageComplianceRate, 90) && totalStorageChecks > 0) score += 5;
+  else if (meets(storageComplianceRate, 75) && totalStorageChecks > 0) score += 3;
+  else if (meets(storageComplianceRate, 60) && totalStorageChecks > 0) score += 1;
 
   // --- Bonus 3: dateCheckingRate (>=90: +4, >=70: +2) ---
-  if (dateCheckingRate >= 90 && totalDateChecks > 0) score += 4;
-  else if (dateCheckingRate >= 70 && totalDateChecks > 0) score += 2;
+  if (meets(dateCheckingRate, 90) && totalDateChecks > 0) score += 4;
+  else if (meets(dateCheckingRate, 70) && totalDateChecks > 0) score += 2;
 
   // --- Bonus 4: hygieneRatingRate (>=90: +5, >=70: +3, >=50: +1) ---
   if ((hygieneRatingRate ?? 0) >= 90 && totalHygieneAssessments > 0) score += 5;
@@ -483,13 +480,13 @@ export function computeFoodStorageRefrigerationSafety(
   else if ((hygieneRatingRate ?? 0) >= 50 && totalHygieneAssessments > 0) score += 1;
 
   // --- Bonus 5: crossContaminationRate (>=90: +5, >=75: +3, >=60: +1) ---
-  if (crossContaminationRate >= 90 && totalCrossContamChecks > 0) score += 5;
-  else if (crossContaminationRate >= 75 && totalCrossContamChecks > 0) score += 3;
-  else if (crossContaminationRate >= 60 && totalCrossContamChecks > 0) score += 1;
+  if (meets(crossContaminationRate, 90) && totalCrossContamChecks > 0) score += 5;
+  else if (meets(crossContaminationRate, 75) && totalCrossContamChecks > 0) score += 3;
+  else if (meets(crossContaminationRate, 60) && totalCrossContamChecks > 0) score += 1;
 
   // --- Bonus 6: calibrationRate (>=90: +2, >=70: +1) ---
-  if (calibrationRate >= 90 && totalTempLogs > 0) score += 2;
-  else if (calibrationRate >= 70 && totalTempLogs > 0) score += 1;
+  if (meets(calibrationRate, 90) && totalTempLogs > 0) score += 2;
+  else if (meets(calibrationRate, 70) && totalTempLogs > 0) score += 1;
 
   // --- Bonus 7: EHO rating (5: +2, 4: +1) ---
   if (latestEhoRating !== null && latestEhoRating >= 5) score += 2;
@@ -500,16 +497,16 @@ export function computeFoodStorageRefrigerationSafety(
   // ── Penalties (4 guarded) ─────────────────────────────────────────────
 
   // temperatureComplianceRate < 50 → -5 (guarded)
-  if (temperatureComplianceRate < 50 && totalTempLogs > 0) score -= 5;
+  if (below(temperatureComplianceRate, 50) && totalTempLogs > 0) score -= 5;
 
   // storageComplianceRate < 50 → -5 (guarded)
-  if (storageComplianceRate < 50 && totalStorageChecks > 0) score -= 5;
+  if (below(storageComplianceRate, 50) && totalStorageChecks > 0) score -= 5;
 
   // crossContaminationRate < 50 → -5 (guarded)
-  if (crossContaminationRate < 50 && totalCrossContamChecks > 0) score -= 5;
+  if (below(crossContaminationRate, 50) && totalCrossContamChecks > 0) score -= 5;
 
   // dateComplianceRate < 70 (high proportion out of date) → -3 (guarded)
-  if (dateComplianceRate < 70 && totalItemsChecked > 0) score -= 3;
+  if (below(dateComplianceRate, 70) && totalItemsChecked > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -519,41 +516,41 @@ export function computeFoodStorageRefrigerationSafety(
 
   const strengths: string[] = [];
 
-  if (temperatureComplianceRate >= 95 && totalTempLogs > 0) {
+  if (meets(temperatureComplianceRate, 95) && totalTempLogs > 0) {
     strengths.push(
       `${temperatureComplianceRate}% temperature compliance across ${uniqueAppliances} appliance${uniqueAppliances !== 1 ? "s" : ""} — fridge and freezer temperatures are consistently maintained within safe ranges, demonstrating robust temperature monitoring.`,
     );
-  } else if (temperatureComplianceRate >= 80 && totalTempLogs > 0) {
+  } else if (meets(temperatureComplianceRate, 80) && totalTempLogs > 0) {
     strengths.push(
       `${temperatureComplianceRate}% temperature compliance — the home maintains good temperature control across refrigeration equipment.`,
     );
   }
 
-  if (storageComplianceRate >= 90 && totalStorageChecks > 0) {
+  if (meets(storageComplianceRate, 90) && totalStorageChecks > 0) {
     strengths.push(
       `${storageComplianceRate}% food storage compliance — items are correctly stored, labelled, dated, and separated, with raw/cooked segregation and allergen management consistently maintained.`,
     );
-  } else if (storageComplianceRate >= 75 && totalStorageChecks > 0) {
+  } else if (meets(storageComplianceRate, 75) && totalStorageChecks > 0) {
     strengths.push(
       `${storageComplianceRate}% food storage compliance — the home generally maintains good storage practices with appropriate separation and labelling.`,
     );
   }
 
-  if (dateComplianceRate >= 95 && totalItemsChecked > 0) {
+  if (meets(dateComplianceRate, 95) && totalItemsChecked > 0) {
     strengths.push(
       `${dateComplianceRate}% of food items within use-by date — the home maintains excellent date management, ensuring children are never served expired food.`,
     );
-  } else if (dateComplianceRate >= 85 && totalItemsChecked > 0) {
+  } else if (meets(dateComplianceRate, 85) && totalItemsChecked > 0) {
     strengths.push(
       `${dateComplianceRate}% of food items within use-by date — good date management with effective stock rotation.`,
     );
   }
 
-  if (crossContaminationRate >= 90 && totalCrossContamChecks > 0) {
+  if (meets(crossContaminationRate, 90) && totalCrossContamChecks > 0) {
     strengths.push(
       `${crossContaminationRate}% cross-contamination prevention compliance — colour-coded boards, separate utensils, allergen separation, and hygiene practices are consistently followed, protecting children from food-borne illness.`,
     );
-  } else if (crossContaminationRate >= 75 && totalCrossContamChecks > 0) {
+  } else if (meets(crossContaminationRate, 75) && totalCrossContamChecks > 0) {
     strengths.push(
       `${crossContaminationRate}% cross-contamination prevention compliance — the home generally maintains effective separation and hygiene practices during food preparation.`,
     );
@@ -569,41 +566,41 @@ export function computeFoodStorageRefrigerationSafety(
     );
   }
 
-  if (calibrationRate >= 90 && totalTempLogs > 0) {
+  if (meets(calibrationRate, 90) && totalTempLogs > 0) {
     strengths.push(
       `${calibrationRate}% thermometer calibration rate — temperature monitoring equipment is regularly calibrated, ensuring accurate readings that can be relied upon for food safety compliance.`,
     );
-  } else if (calibrationRate >= 70 && totalTempLogs > 0) {
+  } else if (meets(calibrationRate, 70) && totalTempLogs > 0) {
     strengths.push(
       `${calibrationRate}% thermometer calibration — the home generally maintains calibrated temperature monitoring equipment.`,
     );
   }
 
-  if (correctiveActionRate >= 90 && tempsOutOfRange > 0) {
+  if (meets(correctiveActionRate, 90) && tempsOutOfRange > 0) {
     strengths.push(
       `${correctiveActionRate}% corrective action taken when temperatures out of range — staff respond promptly and appropriately when refrigeration temperatures exceed safe limits.`,
     );
-  } else if (correctiveActionRate >= 70 && tempsOutOfRange > 0) {
+  } else if (meets(correctiveActionRate, 70) && tempsOutOfRange > 0) {
     strengths.push(
       `${correctiveActionRate}% corrective action rate for out-of-range temperatures — the home generally responds to temperature deviations.`,
     );
   }
 
-  if (fifoRate >= 90 && totalDateChecks > 0) {
+  if (meets(fifoRate, 90) && totalDateChecks > 0) {
     strengths.push(
       `${fifoRate}% FIFO (first in, first out) rotation compliance — stock rotation is consistently followed, minimising waste and ensuring children eat the freshest food available.`,
     );
-  } else if (fifoRate >= 70 && totalDateChecks > 0) {
+  } else if (meets(fifoRate, 70) && totalDateChecks > 0) {
     strengths.push(
       `${fifoRate}% FIFO rotation compliance — the home generally follows stock rotation principles.`,
     );
   }
 
-  if (outOfDateRemovalRate >= 95 && totalItemsOutOfDate > 0) {
+  if (meets(outOfDateRemovalRate, 95) && totalItemsOutOfDate > 0) {
     strengths.push(
       `${outOfDateRemovalRate}% of out-of-date items removed — expired food is promptly identified and removed from storage, eliminating the risk of children consuming unsafe food.`,
     );
-  } else if (outOfDateRemovalRate >= 80 && totalItemsOutOfDate > 0) {
+  } else if (meets(outOfDateRemovalRate, 80) && totalItemsOutOfDate > 0) {
     strengths.push(
       `${outOfDateRemovalRate}% of out-of-date items removed — the home generally removes expired food promptly.`,
     );
@@ -619,41 +616,41 @@ export function computeFoodStorageRefrigerationSafety(
     );
   }
 
-  if (handWashingRate >= 90 && totalHygieneAssessments > 0) {
+  if (meets(handWashingRate, 90) && totalHygieneAssessments > 0) {
     strengths.push(
       `${handWashingRate}% hand washing compliance — staff consistently follow hand hygiene protocols during food handling.`,
     );
   }
 
-  if (cleaningScheduleRate >= 90 && totalHygieneAssessments > 0) {
+  if (meets(cleaningScheduleRate, 90) && totalHygieneAssessments > 0) {
     strengths.push(
       `${cleaningScheduleRate}% cleaning schedule adherence — kitchen and food storage cleaning schedules are consistently followed.`,
     );
   }
 
-  if (allergenSegregationRate >= 90 && totalStorageChecks > 0) {
+  if (meets(allergenSegregationRate, 90) && totalStorageChecks > 0) {
     strengths.push(
       `${allergenSegregationRate}% allergen segregation compliance — allergen-containing items are consistently separated and clearly identified, protecting children with allergies.`,
     );
-  } else if (allergenSegregationRate >= 75 && totalStorageChecks > 0) {
+  } else if (meets(allergenSegregationRate, 75) && totalStorageChecks > 0) {
     strengths.push(
       `${allergenSegregationRate}% allergen segregation — the home generally maintains appropriate allergen separation in food storage.`,
     );
   }
 
-  if (rawSeparationRate >= 95 && totalStorageChecks > 0) {
+  if (meets(rawSeparationRate, 95) && totalStorageChecks > 0) {
     strengths.push(
       `${rawSeparationRate}% raw/cooked separation compliance — raw and cooked foods are consistently separated in storage, eliminating a key cross-contamination risk.`,
     );
   }
 
-  if (storageIssueResolutionRate >= 90 && storageIssuesIdentified > 0) {
+  if (meets(storageIssueResolutionRate, 90) && storageIssuesIdentified > 0) {
     strengths.push(
       `${storageIssueResolutionRate}% of storage issues resolved — identified food storage problems are addressed promptly.`,
     );
   }
 
-  if (hygieneIssueResolutionRate >= 90 && hygieneIssuesIdentified > 0) {
+  if (meets(hygieneIssueResolutionRate, 90) && hygieneIssuesIdentified > 0) {
     strengths.push(
       `${hygieneIssueResolutionRate}% of hygiene issues resolved — identified hygiene concerns are addressed and rectified promptly.`,
     );
@@ -663,45 +660,45 @@ export function computeFoodStorageRefrigerationSafety(
 
   const concerns: string[] = [];
 
-  if (temperatureComplianceRate < 50 && totalTempLogs > 0) {
+  if (below(temperatureComplianceRate, 50) && totalTempLogs > 0) {
     concerns.push(
       `Only ${temperatureComplianceRate}% of temperature readings are within safe range — the majority of fridge/freezer temperatures are outside safe limits, creating a serious food safety risk for children.`,
     );
-  } else if (temperatureComplianceRate < 70 && temperatureComplianceRate >= 50 && totalTempLogs > 0) {
+  } else if (below(temperatureComplianceRate, 70) && meets(temperatureComplianceRate, 50) && totalTempLogs > 0) {
     concerns.push(
       `Temperature compliance at ${temperatureComplianceRate}% — a significant proportion of temperature readings fall outside safe ranges, increasing the risk of bacterial growth and food spoilage.`,
     );
-  } else if (temperatureComplianceRate < 80 && temperatureComplianceRate >= 70 && totalTempLogs > 0) {
+  } else if (below(temperatureComplianceRate, 80) && meets(temperatureComplianceRate, 70) && totalTempLogs > 0) {
     concerns.push(
       `Temperature compliance at ${temperatureComplianceRate}% — some temperature readings are outside acceptable ranges and require attention.`,
     );
   }
 
-  if (storageComplianceRate < 50 && totalStorageChecks > 0) {
+  if (below(storageComplianceRate, 50) && totalStorageChecks > 0) {
     concerns.push(
       `Only ${storageComplianceRate}% food storage compliance — the majority of storage checks fail to meet required standards for separation, labelling, dating, and positioning, creating significant food safety risks.`,
     );
-  } else if (storageComplianceRate < 70 && storageComplianceRate >= 50 && totalStorageChecks > 0) {
+  } else if (below(storageComplianceRate, 70) && meets(storageComplianceRate, 50) && totalStorageChecks > 0) {
     concerns.push(
       `Food storage compliance at ${storageComplianceRate}% — inconsistent compliance with storage standards may expose children to food safety risks.`,
     );
   }
 
-  if (dateComplianceRate < 70 && totalItemsChecked > 0) {
+  if (below(dateComplianceRate, 70) && totalItemsChecked > 0) {
     concerns.push(
       `Only ${dateComplianceRate}% of food items within use-by date — a high proportion of food is out of date, creating a direct risk that children may consume expired and potentially unsafe food.`,
     );
-  } else if (dateComplianceRate < 85 && dateComplianceRate >= 70 && totalItemsChecked > 0) {
+  } else if (below(dateComplianceRate, 85) && meets(dateComplianceRate, 70) && totalItemsChecked > 0) {
     concerns.push(
       `Date compliance at ${dateComplianceRate}% — some food items are past their use-by date, requiring improved stock rotation and date management.`,
     );
   }
 
-  if (crossContaminationRate < 50 && totalCrossContamChecks > 0) {
+  if (below(crossContaminationRate, 50) && totalCrossContamChecks > 0) {
     concerns.push(
       `Only ${crossContaminationRate}% cross-contamination prevention compliance — fundamental food safety practices including colour-coded board use, utensil separation, and hygiene measures are not being followed, placing children at risk of food-borne illness.`,
     );
-  } else if (crossContaminationRate < 70 && crossContaminationRate >= 50 && totalCrossContamChecks > 0) {
+  } else if (below(crossContaminationRate, 70) && meets(crossContaminationRate, 50) && totalCrossContamChecks > 0) {
     concerns.push(
       `Cross-contamination prevention at ${crossContaminationRate}% — inconsistent adherence to separation and hygiene practices during food preparation increases contamination risk.`,
     );
@@ -717,51 +714,51 @@ export function computeFoodStorageRefrigerationSafety(
     );
   }
 
-  if (correctiveActionRate < 50 && tempsOutOfRange > 0) {
+  if (below(correctiveActionRate, 50) && tempsOutOfRange > 0) {
     concerns.push(
       `Only ${correctiveActionRate}% corrective action rate when temperatures are out of range — staff are not consistently responding to temperature deviations, allowing food to remain at unsafe temperatures.`,
     );
-  } else if (correctiveActionRate < 70 && correctiveActionRate >= 50 && tempsOutOfRange > 0) {
+  } else if (below(correctiveActionRate, 70) && meets(correctiveActionRate, 50) && tempsOutOfRange > 0) {
     concerns.push(
       `Corrective action rate at ${correctiveActionRate}% for out-of-range temperatures — not all temperature deviations are being addressed promptly.`,
     );
   }
 
-  if (outOfDateRemovalRate < 70 && totalItemsOutOfDate > 0) {
+  if (below(outOfDateRemovalRate, 70) && totalItemsOutOfDate > 0) {
     concerns.push(
       `Only ${outOfDateRemovalRate}% of expired food items removed — out-of-date food remains in storage, creating a direct risk that children may consume unsafe food.`,
     );
-  } else if (outOfDateRemovalRate < 90 && outOfDateRemovalRate >= 70 && totalItemsOutOfDate > 0) {
+  } else if (below(outOfDateRemovalRate, 90) && meets(outOfDateRemovalRate, 70) && totalItemsOutOfDate > 0) {
     concerns.push(
       `Out-of-date removal rate at ${outOfDateRemovalRate}% — some expired items are not being promptly removed from storage.`,
     );
   }
 
-  if (rawSeparationRate < 70 && totalStorageChecks > 0) {
+  if (below(rawSeparationRate, 70) && totalStorageChecks > 0) {
     concerns.push(
       `Raw/cooked separation compliance at only ${rawSeparationRate}% — raw and cooked foods are not consistently separated, creating a serious cross-contamination risk under Food Safety Act 1990.`,
     );
   }
 
-  if (allergenSegregationRate < 70 && totalStorageChecks > 0) {
+  if (below(allergenSegregationRate, 70) && totalStorageChecks > 0) {
     concerns.push(
       `Allergen segregation at only ${allergenSegregationRate}% — allergen-containing items are not consistently separated, creating a risk to children with food allergies.`,
     );
   }
 
-  if (handWashingRate < 70 && totalHygieneAssessments > 0) {
+  if (below(handWashingRate, 70) && totalHygieneAssessments > 0) {
     concerns.push(
       `Hand washing compliance at only ${handWashingRate}% — staff are not consistently following hand hygiene protocols during food handling.`,
     );
   }
 
-  if (calibrationRate < 50 && totalTempLogs > 0) {
+  if (below(calibrationRate, 50) && totalTempLogs > 0) {
     concerns.push(
       `Only ${calibrationRate}% thermometer calibration rate — uncalibrated thermometers may produce inaccurate readings, undermining the reliability of temperature monitoring.`,
     );
   }
 
-  if (fifoRate < 50 && totalDateChecks > 0) {
+  if (below(fifoRate, 50) && totalDateChecks > 0) {
     concerns.push(
       `Only ${fifoRate}% FIFO rotation compliance — stock is not being rotated correctly, increasing the risk of food expiring before use.`,
     );
@@ -801,13 +798,13 @@ export function computeFoodStorageRefrigerationSafety(
     );
   }
 
-  if (cleaningScheduleRate < 70 && totalHygieneAssessments > 0) {
+  if (below(cleaningScheduleRate, 70) && totalHygieneAssessments > 0) {
     concerns.push(
       `Cleaning schedule adherence at only ${cleaningScheduleRate}% — kitchen and food storage area cleaning schedules are not being followed consistently.`,
     );
   }
 
-  if (wasteDisposalRate < 70 && totalHygieneAssessments > 0) {
+  if (below(wasteDisposalRate, 70) && totalHygieneAssessments > 0) {
     concerns.push(
       `Waste disposal compliance at only ${wasteDisposalRate}% — food waste is not being disposed of correctly, which may attract pests and compromise hygiene.`,
     );
@@ -818,7 +815,7 @@ export function computeFoodStorageRefrigerationSafety(
   const recommendations: FoodStorageRecommendation[] = [];
   let rank = 0;
 
-  if (temperatureComplianceRate < 50 && totalTempLogs > 0) {
+  if (below(temperatureComplianceRate, 50) && totalTempLogs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -828,7 +825,7 @@ export function computeFoodStorageRefrigerationSafety(
     });
   }
 
-  if (crossContaminationRate < 50 && totalCrossContamChecks > 0) {
+  if (below(crossContaminationRate, 50) && totalCrossContamChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -838,7 +835,7 @@ export function computeFoodStorageRefrigerationSafety(
     });
   }
 
-  if (storageComplianceRate < 50 && totalStorageChecks > 0) {
+  if (below(storageComplianceRate, 50) && totalStorageChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -848,7 +845,7 @@ export function computeFoodStorageRefrigerationSafety(
     });
   }
 
-  if (dateComplianceRate < 70 && totalItemsChecked > 0) {
+  if (below(dateComplianceRate, 70) && totalItemsChecked > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -858,7 +855,7 @@ export function computeFoodStorageRefrigerationSafety(
     });
   }
 
-  if (rawSeparationRate < 70 && totalStorageChecks > 0) {
+  if (below(rawSeparationRate, 70) && totalStorageChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -878,7 +875,7 @@ export function computeFoodStorageRefrigerationSafety(
     });
   }
 
-  if (allergenSegregationRate < 70 && totalStorageChecks > 0) {
+  if (below(allergenSegregationRate, 70) && totalStorageChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -918,7 +915,7 @@ export function computeFoodStorageRefrigerationSafety(
     });
   }
 
-  if (correctiveActionRate < 50 && tempsOutOfRange > 0) {
+  if (below(correctiveActionRate, 50) && tempsOutOfRange > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -928,7 +925,7 @@ export function computeFoodStorageRefrigerationSafety(
     });
   }
 
-  if (handWashingRate < 70 && totalHygieneAssessments > 0) {
+  if (below(handWashingRate, 70) && totalHygieneAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -938,7 +935,7 @@ export function computeFoodStorageRefrigerationSafety(
     });
   }
 
-  if (calibrationRate < 50 && totalTempLogs > 0) {
+  if (below(calibrationRate, 50) && totalTempLogs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -948,7 +945,7 @@ export function computeFoodStorageRefrigerationSafety(
     });
   }
 
-  if (fifoRate < 50 && totalDateChecks > 0) {
+  if (below(fifoRate, 50) && totalDateChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -959,8 +956,8 @@ export function computeFoodStorageRefrigerationSafety(
   }
 
   if (
-    temperatureComplianceRate >= 50 &&
-    temperatureComplianceRate < 80 &&
+    meets(temperatureComplianceRate, 50) &&
+    below(temperatureComplianceRate, 80) &&
     totalTempLogs > 0
   ) {
     recommendations.push({
@@ -973,8 +970,8 @@ export function computeFoodStorageRefrigerationSafety(
   }
 
   if (
-    storageComplianceRate >= 50 &&
-    storageComplianceRate < 75 &&
+    meets(storageComplianceRate, 50) &&
+    below(storageComplianceRate, 75) &&
     totalStorageChecks > 0
   ) {
     recommendations.push({
@@ -987,8 +984,8 @@ export function computeFoodStorageRefrigerationSafety(
   }
 
   if (
-    crossContaminationRate >= 50 &&
-    crossContaminationRate < 75 &&
+    meets(crossContaminationRate, 50) &&
+    below(crossContaminationRate, 75) &&
     totalCrossContamChecks > 0
   ) {
     recommendations.push({
@@ -1014,7 +1011,7 @@ export function computeFoodStorageRefrigerationSafety(
     });
   }
 
-  if (cleaningScheduleRate < 70 && totalHygieneAssessments > 0) {
+  if (below(cleaningScheduleRate, 70) && totalHygieneAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1025,8 +1022,8 @@ export function computeFoodStorageRefrigerationSafety(
   }
 
   if (
-    outOfDateRemovalRate >= 70 &&
-    outOfDateRemovalRate < 95 &&
+    meets(outOfDateRemovalRate, 70) &&
+    below(outOfDateRemovalRate, 95) &&
     totalItemsOutOfDate > 0
   ) {
     recommendations.push({
@@ -1044,35 +1041,35 @@ export function computeFoodStorageRefrigerationSafety(
 
   // -- Critical insights --
 
-  if (temperatureComplianceRate < 50 && totalTempLogs > 0) {
+  if (below(temperatureComplianceRate, 50) && totalTempLogs > 0) {
     insights.push({
       text: `Only ${temperatureComplianceRate}% of temperature readings within safe range. Under the Food Safety Act 1990, food must be stored at temperatures that prevent bacterial growth — fridge temperatures must be between 0-5°C and freezers at -18°C or below. Persistent temperature failures create a direct risk of food-borne illness for children.`,
       severity: "critical",
     });
   }
 
-  if (crossContaminationRate < 50 && totalCrossContamChecks > 0) {
+  if (below(crossContaminationRate, 50) && totalCrossContamChecks > 0) {
     insights.push({
       text: `Only ${crossContaminationRate}% cross-contamination prevention compliance. Cross-contamination is one of the leading causes of food-borne illness. When colour-coded boards, utensil separation, and hygiene practices are not followed, children are at direct risk of bacterial contamination — this is a fundamental food safety failure.`,
       severity: "critical",
     });
   }
 
-  if (storageComplianceRate < 50 && totalStorageChecks > 0) {
+  if (below(storageComplianceRate, 50) && totalStorageChecks > 0) {
     insights.push({
       text: `Only ${storageComplianceRate}% food storage compliance. Incorrect food storage — including inadequate separation of raw and cooked foods, missing labels, and overcrowded storage — creates conditions for bacterial contamination and makes it impossible to trace food safety issues. This represents a Reg 25 compliance failure.`,
       severity: "critical",
     });
   }
 
-  if (dateComplianceRate < 70 && totalItemsChecked > 0) {
+  if (below(dateComplianceRate, 70) && totalItemsChecked > 0) {
     insights.push({
       text: `Only ${dateComplianceRate}% of food items within use-by date with ${totalItemsOutOfDate} expired items found. Serving food past its use-by date is a criminal offence under the Food Safety Act 1990. The home must implement daily date checks with immediate removal and destruction of expired items.`,
       severity: "critical",
     });
   }
 
-  if (rawSeparationRate < 70 && totalStorageChecks > 0) {
+  if (below(rawSeparationRate, 70) && totalStorageChecks > 0) {
     insights.push({
       text: `Raw/cooked separation compliance at only ${rawSeparationRate}%. Raw meat, poultry, and fish must always be stored below and separate from ready-to-eat food to prevent pathogenic bacteria from contaminating food that will not undergo further cooking. This is a fundamental food safety requirement.`,
       severity: "critical",
@@ -1110,8 +1107,8 @@ export function computeFoodStorageRefrigerationSafety(
   // -- Warning insights --
 
   if (
-    temperatureComplianceRate >= 50 &&
-    temperatureComplianceRate < 80 &&
+    meets(temperatureComplianceRate, 50) &&
+    below(temperatureComplianceRate, 80) &&
     totalTempLogs > 0
   ) {
     insights.push({
@@ -1121,8 +1118,8 @@ export function computeFoodStorageRefrigerationSafety(
   }
 
   if (
-    storageComplianceRate >= 50 &&
-    storageComplianceRate < 75 &&
+    meets(storageComplianceRate, 50) &&
+    below(storageComplianceRate, 75) &&
     totalStorageChecks > 0
   ) {
     insights.push({
@@ -1132,8 +1129,8 @@ export function computeFoodStorageRefrigerationSafety(
   }
 
   if (
-    crossContaminationRate >= 50 &&
-    crossContaminationRate < 75 &&
+    meets(crossContaminationRate, 50) &&
+    below(crossContaminationRate, 75) &&
     totalCrossContamChecks > 0
   ) {
     insights.push({
@@ -1154,8 +1151,8 @@ export function computeFoodStorageRefrigerationSafety(
   }
 
   if (
-    correctiveActionRate >= 50 &&
-    correctiveActionRate < 70 &&
+    meets(correctiveActionRate, 50) &&
+    below(correctiveActionRate, 70) &&
     tempsOutOfRange > 0
   ) {
     insights.push({
@@ -1165,8 +1162,8 @@ export function computeFoodStorageRefrigerationSafety(
   }
 
   if (
-    dateComplianceRate >= 70 &&
-    dateComplianceRate < 85 &&
+    meets(dateComplianceRate, 70) &&
+    below(dateComplianceRate, 85) &&
     totalItemsChecked > 0
   ) {
     insights.push({
@@ -1176,8 +1173,8 @@ export function computeFoodStorageRefrigerationSafety(
   }
 
   if (
-    fifoRate >= 50 &&
-    fifoRate < 70 &&
+    meets(fifoRate, 50) &&
+    below(fifoRate, 70) &&
     totalDateChecks > 0
   ) {
     insights.push({
@@ -1187,8 +1184,8 @@ export function computeFoodStorageRefrigerationSafety(
   }
 
   if (
-    allergenSegregationRate >= 50 &&
-    allergenSegregationRate < 75 &&
+    meets(allergenSegregationRate, 50) &&
+    below(allergenSegregationRate, 75) &&
     totalStorageChecks > 0
   ) {
     insights.push({
@@ -1198,8 +1195,8 @@ export function computeFoodStorageRefrigerationSafety(
   }
 
   if (
-    calibrationRate >= 50 &&
-    calibrationRate < 70 &&
+    meets(calibrationRate, 50) &&
+    below(calibrationRate, 70) &&
     totalTempLogs > 0
   ) {
     insights.push({
@@ -1209,8 +1206,8 @@ export function computeFoodStorageRefrigerationSafety(
   }
 
   if (totalItemsApproachingExpiry > 0 && totalDateChecks > 0) {
-    const approachingPct = pct(totalItemsApproachingExpiry, totalItemsChecked);
-    if (approachingPct > 20) {
+    const approachingPct = rate(totalItemsApproachingExpiry, totalItemsChecked);
+    if (above(approachingPct, 20)) {
       insights.push({
         text: `${totalItemsApproachingExpiry} items (${approachingPct}%) approaching expiry dates. While these items are still safe, a high proportion of stock nearing its use-by date suggests purchasing or menu planning could be improved to reduce waste and ensure freshness.`,
         severity: "warning",
@@ -1235,12 +1232,12 @@ export function computeFoodStorageRefrigerationSafety(
   }
 
   const problematicAppliances = Object.entries(applianceTypeIssues)
-    .filter(([, v]) => v.total >= 3 && pct(v.outOfRange, v.total) > 30)
-    .sort((a, b) => pct(b[1].outOfRange, b[1].total) - pct(a[1].outOfRange, a[1].total));
+    .filter(([, v]) => v.total >= 3 && above(rate(v.outOfRange, v.total), 30))
+    .sort((a, b) => rate(b[1].outOfRange, b[1].total)! - rate(a[1].outOfRange, a[1].total)!);
 
   if (problematicAppliances.length > 0) {
     const formatted = problematicAppliances
-      .map(([type, v]) => `${type.replace(/_/g, " ")} (${pct(v.outOfRange, v.total)}% out of range)`)
+      .map(([type, v]) => `${type.replace(/_/g, " ")} (${rate(v.outOfRange, v.total)}% out of range)`)
       .join(", ");
     insights.push({
       text: `Temperature issues by appliance type: ${formatted}. Identifying which appliances have recurring temperature problems enables targeted maintenance or replacement decisions.`,
@@ -1258,8 +1255,8 @@ export function computeFoodStorageRefrigerationSafety(
   }
 
   if (
-    temperatureComplianceRate >= 95 &&
-    calibrationRate >= 90 &&
+    meets(temperatureComplianceRate, 95) &&
+    meets(calibrationRate, 90) &&
     totalTempLogs > 0
   ) {
     insights.push({
@@ -1269,8 +1266,8 @@ export function computeFoodStorageRefrigerationSafety(
   }
 
   if (
-    storageComplianceRate >= 90 &&
-    rawSeparationRate >= 95 &&
+    meets(storageComplianceRate, 90) &&
+    meets(rawSeparationRate, 95) &&
     totalStorageChecks > 0
   ) {
     insights.push({
@@ -1280,8 +1277,8 @@ export function computeFoodStorageRefrigerationSafety(
   }
 
   if (
-    crossContaminationRate >= 90 &&
-    handWashingBetweenTasksRate >= 90 &&
+    meets(crossContaminationRate, 90) &&
+    meets(handWashingBetweenTasksRate, 90) &&
     totalCrossContamChecks > 0
   ) {
     insights.push({
@@ -1291,8 +1288,8 @@ export function computeFoodStorageRefrigerationSafety(
   }
 
   if (
-    dateComplianceRate >= 95 &&
-    fifoRate >= 90 &&
+    meets(dateComplianceRate, 95) &&
+    meets(fifoRate, 90) &&
     totalDateChecks > 0
   ) {
     insights.push({
@@ -1303,7 +1300,7 @@ export function computeFoodStorageRefrigerationSafety(
 
   if (
     (hygieneRatingRate ?? 0) >= 90 &&
-    cleaningScheduleRate >= 90 &&
+    meets(cleaningScheduleRate, 90) &&
     totalHygieneAssessments > 0
   ) {
     insights.push({
@@ -1320,7 +1317,7 @@ export function computeFoodStorageRefrigerationSafety(
   }
 
   if (
-    correctiveActionRate >= 90 &&
+    meets(correctiveActionRate, 90) &&
     tempsOutOfRange > 0
   ) {
     insights.push({
@@ -1330,8 +1327,8 @@ export function computeFoodStorageRefrigerationSafety(
   }
 
   if (
-    storageIssueResolutionRate >= 90 &&
-    hygieneIssueResolutionRate >= 90 &&
+    meets(storageIssueResolutionRate, 90) &&
+    meets(hygieneIssueResolutionRate, 90) &&
     storageIssuesIdentified > 0 &&
     hygieneIssuesIdentified > 0
   ) {
@@ -1342,7 +1339,7 @@ export function computeFoodStorageRefrigerationSafety(
   }
 
   if (
-    allergenSegregationRate >= 90 &&
+    meets(allergenSegregationRate, 90) &&
     totalStorageChecks > 0
   ) {
     insights.push({
@@ -1352,7 +1349,7 @@ export function computeFoodStorageRefrigerationSafety(
   }
 
   if (
-    outOfDateRemovalRate >= 95 &&
+    meets(outOfDateRemovalRate, 95) &&
     totalItemsOutOfDate > 0
   ) {
     insights.push({

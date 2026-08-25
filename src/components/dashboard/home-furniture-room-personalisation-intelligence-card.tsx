@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Armchair } from "
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { FurnitureRoomRating } from "@/lib/engines/home-furniture-room-personalisation-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 function useHomeFurnitureRoomPersonalisationIntelligence() {
   return useQuery({
@@ -61,7 +62,7 @@ export function HomeFurnitureRoomPersonalisationIntelligenceCard() {
             <Armchair className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-orange-600")} />
             <span className="text-slate-900 font-bold">Furniture & Room Personalisation</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.room_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.room_score}%</span>}
+            {d.room_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.room_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -69,28 +70,28 @@ export function HomeFurnitureRoomPersonalisationIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.room_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.furniture_adequacy_rate >= 90 ? "bg-green-50" : d.furniture_adequacy_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.furniture_adequacy_rate >= 90 ? "text-[--cs-success]" : d.furniture_adequacy_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.furniture_adequacy_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.furniture_adequacy_rate, 90) ? "bg-green-50" : meets(d.furniture_adequacy_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.furniture_adequacy_rate, 90) ? "text-[--cs-success]" : meets(d.furniture_adequacy_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.furniture_adequacy_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Furniture</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.personalisation_rate >= 90 ? "bg-green-50" : d.personalisation_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.personalisation_rate >= 90 ? "text-[--cs-success]" : d.personalisation_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.personalisation_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.personalisation_rate, 90) ? "bg-green-50" : meets(d.personalisation_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.personalisation_rate, 90) ? "text-[--cs-success]" : meets(d.personalisation_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.personalisation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Personal.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_choice_rate >= 90 ? "bg-green-50" : d.child_choice_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_choice_rate >= 90 ? "text-[--cs-success]" : d.child_choice_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_choice_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_choice_rate, 90) ? "bg-green-50" : meets(d.child_choice_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_choice_rate, 90) ? "text-[--cs-success]" : meets(d.child_choice_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_choice_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Choice</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.comfort_rate >= 90 ? "bg-green-50" : d.comfort_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.comfort_rate >= 90 ? "text-[--cs-success]" : d.comfort_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.comfort_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.comfort_rate, 90) ? "bg-green-50" : meets(d.comfort_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.comfort_rate, 90) ? "text-[--cs-success]" : meets(d.comfort_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.comfort_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Comfort</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.dignity_rate >= 90 ? "bg-green-50" : d.dignity_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.dignity_rate >= 90 ? "text-[--cs-success]" : d.dignity_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.dignity_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.dignity_rate, 90) ? "bg-green-50" : meets(d.dignity_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.dignity_rate, 90) ? "text-[--cs-success]" : meets(d.dignity_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.dignity_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Dignity</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_satisfaction_rate >= 90 ? "bg-green-50" : d.child_satisfaction_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_satisfaction_rate >= 90 ? "text-[--cs-success]" : d.child_satisfaction_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_satisfaction_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_satisfaction_rate, 90) ? "bg-green-50" : meets(d.child_satisfaction_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_satisfaction_rate, 90) ? "text-[--cs-success]" : meets(d.child_satisfaction_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_satisfaction_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Satisf.</p>
             </div>
           </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { below } from "@/lib/metrics/rate";
 import { PageShell } from "@/components/ui/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -100,7 +101,7 @@ export default function EmergencyContactNokIntelligencePage() {
         </Card>
 
         {/* Critical gaps banner */}
-        {(d.contact_currency_rate < 80 || d.accessibility_rate < 80 || d.out_of_hours_rate < 80) && (
+        {(below(d.contact_currency_rate, 80) || below(d.accessibility_rate, 80) || below(d.out_of_hours_rate, 80)) && (
           <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3">
             <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
             <div className="text-sm text-red-800">

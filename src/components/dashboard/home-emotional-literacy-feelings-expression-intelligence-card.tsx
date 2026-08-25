@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, SmilePlus } from 
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { EmotionalLiteracyRating } from "@/lib/engines/home-emotional-literacy-feelings-expression-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 function useHomeEmotionalLiteracyFeelingsExpressionIntelligence() {
   return useQuery({
@@ -61,7 +62,7 @@ export function HomeEmotionalLiteracyFeelingsExpressionIntelligenceCard() {
             <SmilePlus className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-rose-600")} />
             <span className="text-slate-900 font-bold">Emotional Literacy & Feelings Expression</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.emotional_literacy_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.emotional_literacy_score}%</span>}
+            {d.emotional_literacy_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.emotional_literacy_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -69,28 +70,28 @@ export function HomeEmotionalLiteracyFeelingsExpressionIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.emotional_literacy_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.emotion_identification_rate >= 90 ? "bg-green-50" : d.emotion_identification_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.emotion_identification_rate >= 90 ? "text-[--cs-success]" : d.emotion_identification_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.emotion_identification_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.emotion_identification_rate, 90) ? "bg-green-50" : meets(d.emotion_identification_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.emotion_identification_rate, 90) ? "text-[--cs-success]" : meets(d.emotion_identification_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.emotion_identification_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Identify</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.vocabulary_breadth_rate >= 90 ? "bg-green-50" : d.vocabulary_breadth_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.vocabulary_breadth_rate >= 90 ? "text-[--cs-success]" : d.vocabulary_breadth_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.vocabulary_breadth_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.vocabulary_breadth_rate, 90) ? "bg-green-50" : meets(d.vocabulary_breadth_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.vocabulary_breadth_rate, 90) ? "text-[--cs-success]" : meets(d.vocabulary_breadth_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.vocabulary_breadth_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Vocab</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.expression_tool_rate >= 90 ? "bg-green-50" : d.expression_tool_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.expression_tool_rate >= 90 ? "text-[--cs-success]" : d.expression_tool_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.expression_tool_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.expression_tool_rate, 90) ? "bg-green-50" : meets(d.expression_tool_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.expression_tool_rate, 90) ? "text-[--cs-success]" : meets(d.expression_tool_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.expression_tool_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Tools</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.journal_engagement_rate >= 90 ? "bg-green-50" : d.journal_engagement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.journal_engagement_rate >= 90 ? "text-[--cs-success]" : d.journal_engagement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.journal_engagement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.journal_engagement_rate, 90) ? "bg-green-50" : meets(d.journal_engagement_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.journal_engagement_rate, 90) ? "text-[--cs-success]" : meets(d.journal_engagement_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.journal_engagement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Journal</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.staff_attunement_rate >= 90 ? "bg-green-50" : d.staff_attunement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.staff_attunement_rate >= 90 ? "text-[--cs-success]" : d.staff_attunement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.staff_attunement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.staff_attunement_rate, 90) ? "bg-green-50" : meets(d.staff_attunement_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.staff_attunement_rate, 90) ? "text-[--cs-success]" : meets(d.staff_attunement_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.staff_attunement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Attune</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_progress_rate >= 90 ? "bg-green-50" : d.child_progress_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_progress_rate >= 90 ? "text-[--cs-success]" : d.child_progress_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_progress_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_progress_rate, 90) ? "bg-green-50" : meets(d.child_progress_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_progress_rate, 90) ? "text-[--cs-success]" : meets(d.child_progress_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_progress_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Progress</p>
             </div>
           </div>

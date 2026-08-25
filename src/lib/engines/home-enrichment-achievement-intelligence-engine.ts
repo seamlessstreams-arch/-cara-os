@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME ENRICHMENT & ACHIEVEMENT INTELLIGENCE ENGINE
 // Home-level: aggregates creative projects, extracurricular clubs,
@@ -77,27 +78,31 @@ export type EnrichmentRating =
 
 export interface CreativeProjectProfile {
   total_projects: number;
-  child_coverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_coverage: number | null;
   active_rate: number | null;
   showcase_count: number;
 }
 
 export interface ClubProfile {
   total_clubs: number;
-  child_coverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_coverage: number | null;
   avg_attendance: number | null;
   child_initiated_rate: number | null;
 }
 
 export interface AchievementProfile {
   total_achievements_90d: number;
-  child_coverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_coverage: number | null;
   celebration_rate: number | null;
 }
 
 export interface RewardSanctionProfile {
   total_90d: number;
-  reward_ratio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reward_ratio: number | null;
   proportionate_rate: number | null;
 }
 
@@ -116,10 +121,6 @@ export interface HomeEnrichmentAchievementResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function daysBetween(a: string, b: string): number {
   return Math.round(
@@ -151,10 +152,10 @@ export function computeHomeEnrichmentAchievement(
       enrichment_rating: "insufficient_data",
       enrichment_score: 0,
       headline: "No enrichment or achievement data available for analysis.",
-      creative_projects: { total_projects: 0, child_coverage: 0, active_rate: null, showcase_count: 0 },
-      clubs: { total_clubs: 0, child_coverage: 0, avg_attendance: 0, child_initiated_rate: null },
-      achievements: { total_achievements_90d: 0, child_coverage: 0, celebration_rate: null },
-      reward_sanctions: { total_90d: 0, reward_ratio: 0, proportionate_rate: null },
+      creative_projects: { total_projects: 0, child_coverage: null, active_rate: null, showcase_count: 0 },
+      clubs: { total_clubs: 0, child_coverage: null, avg_attendance: 0, child_initiated_rate: null },
+      achievements: { total_achievements_90d: 0, child_coverage: null, celebration_rate: null },
+      reward_sanctions: { total_90d: 0, reward_ratio: null, proportionate_rate: null },
       strengths: [],
       concerns: [],
       recommendations: [],
@@ -164,9 +165,9 @@ export function computeHomeEnrichmentAchievement(
 
   // ── Creative Projects analysis ───────────────────────────────────────
   const cpChildIds = new Set(creative_projects.map(p => p.child_id));
-  const cpCoverage = pct(cpChildIds.size, total_children);
+  const cpCoverage = rate(cpChildIds.size, total_children);
   const cpActive = creative_projects.filter(p => p.status === "in_progress" || p.status === "completed" || p.status === "exhibited");
-  const cpActiveRate = pct(cpActive.length, creative_projects.length);
+  const cpActiveRate = rate(cpActive.length, creative_projects.length);
   const cpShowcase = creative_projects.filter(p => p.external_showcase_present).length;
   const cpOverdue = creative_projects.filter(p => daysBetween(p.review_date, today) > 0).length;
 
@@ -181,7 +182,7 @@ export function computeHomeEnrichmentAchievement(
   const ecChildIds = new Set(extracurricular_clubs.map(c => c.child_id));
   const crChildIds = new Set(club_records.map(c => c.child_id));
   const allClubChildIds = new Set([...ecChildIds, ...crChildIds]);
-  const clubCoverage = pct(allClubChildIds.size, total_children);
+  const clubCoverage = rate(allClubChildIds.size, total_children);
 
   const ecOngoing = extracurricular_clubs.filter(c => c.ongoing);
   const ecAvgAttendance = ecOngoing.length > 0
@@ -193,7 +194,7 @@ export function computeHomeEnrichmentAchievement(
     ? Math.round((crActive.reduce((s, c) => s + c.child_enjoyment_rating, 0) / crActive.length) * 10) / 10
     : null;
 
-  const ecInitiatedRate = pct(
+  const ecInitiatedRate = rate(
     extracurricular_clubs.filter(c => c.child_initiated).length,
     extracurricular_clubs.length,
   );
@@ -211,9 +212,9 @@ export function computeHomeEnrichmentAchievement(
     return d >= 0 && d <= 90;
   });
   const achChildIds = new Set(ach90.map(a => a.child_id));
-  const achCoverage = pct(achChildIds.size, total_children);
+  const achCoverage = rate(achChildIds.size, total_children);
   const achCelebrated = ach90.filter(a => a.celebrated_how_provided);
-  const achCelebrationRate = pct(achCelebrated.length, ach90.length);
+  const achCelebrationRate = rate(achCelebrated.length, ach90.length);
 
   const achievements_profile: AchievementProfile = {
     total_achievements_90d: ach90.length,
@@ -227,8 +228,8 @@ export function computeHomeEnrichmentAchievement(
     return d >= 0 && d <= 90;
   });
   const srRewards = sr90.filter(sr => sr.direction === "reward");
-  const srRewardRatio = pct(srRewards.length, sr90.length);
-  const srProportionateRate = pct(sr90.filter(sr => sr.proportionate).length, sr90.length);
+  const srRewardRatio = rate(srRewards.length, sr90.length);
+  const srProportionateRate = rate(sr90.filter(sr => sr.proportionate).length, sr90.length);
 
   const reward_sanctions_profile: RewardSanctionProfile = {
     total_90d: sr90.length,
@@ -239,9 +240,9 @@ export function computeHomeEnrichmentAchievement(
   // ── Modifier 1: Creative Project Engagement (±5) ─────────────────────
   let mod1 = 0;
   if (creative_projects.length > 0) {
-    if (cpCoverage >= 80 && cpActiveRate >= 70) mod1 += 3;
-    else if (cpCoverage >= 50 && cpActiveRate >= 50) mod1 += 1;
-    else if (cpCoverage < 30) mod1 -= 3;
+    if (meets(cpCoverage, 80) && meets(cpActiveRate, 70)) mod1 += 3;
+    else if (meets(cpCoverage, 50) && meets(cpActiveRate, 50)) mod1 += 1;
+    else if (below(cpCoverage, 30)) mod1 -= 3;
     // Showcase bonus
     if (cpShowcase >= 2) mod1 += 2;
     else if (cpShowcase >= 1) mod1 += 1;
@@ -253,11 +254,11 @@ export function computeHomeEnrichmentAchievement(
   // ── Modifier 2: Club & Extracurricular Engagement (±4) ──────────────
   let mod2 = 0;
   if (extracurricular_clubs.length + club_records.length > 0) {
-    if (clubCoverage >= 80 && (ecAvgAttendance ?? 0) >= 80) mod2 += 3;
-    else if (clubCoverage >= 60 && (ecAvgAttendance ?? 0) >= 60) mod2 += 1;
-    else if (clubCoverage < 30) mod2 -= 2;
+    if (meets(clubCoverage, 80) && (ecAvgAttendance ?? 0) >= 80) mod2 += 3;
+    else if (meets(clubCoverage, 60) && (ecAvgAttendance ?? 0) >= 60) mod2 += 1;
+    else if (below(clubCoverage, 30)) mod2 -= 2;
     // Child-initiated bonus
-    if (ecInitiatedRate >= 60) mod2 += 1;
+    if (meets(ecInitiatedRate, 60)) mod2 += 1;
   } else if (total_children > 0) {
     mod2 = -2;
   }
@@ -266,9 +267,9 @@ export function computeHomeEnrichmentAchievement(
   // ── Modifier 3: Achievement Recognition (±4) ────────────────────────
   let mod3 = 0;
   if (ach90.length > 0) {
-    if (achCoverage >= 80 && achCelebrationRate >= 80) mod3 += 3;
-    else if (achCoverage >= 50 && achCelebrationRate >= 60) mod3 += 1;
-    else if (achCoverage < 30) mod3 -= 2;
+    if (meets(achCoverage, 80) && meets(achCelebrationRate, 80)) mod3 += 3;
+    else if (meets(achCoverage, 50) && meets(achCelebrationRate, 60)) mod3 += 1;
+    else if (below(achCoverage, 30)) mod3 -= 2;
     // Volume bonus — are achievements being regularly recorded?
     const achPerChild = total_children > 0 ? ach90.length / total_children : 0;
     if (achPerChild >= 2) mod3 += 1;
@@ -280,10 +281,10 @@ export function computeHomeEnrichmentAchievement(
   // ── Modifier 4: Reward/Sanction Balance (±3) ────────────────────────
   let mod4 = 0;
   if (sr90.length > 0) {
-    if (srRewardRatio >= 70 && srProportionateRate >= 90) mod4 += 3;
-    else if (srRewardRatio >= 50 && srProportionateRate >= 70) mod4 += 1;
-    else if (srRewardRatio < 30) mod4 -= 2;
-    else if (srProportionateRate < 50) mod4 -= 1;
+    if (meets(srRewardRatio, 70) && meets(srProportionateRate, 90)) mod4 += 3;
+    else if (meets(srRewardRatio, 50) && meets(srProportionateRate, 70)) mod4 += 1;
+    else if (below(srRewardRatio, 30)) mod4 -= 2;
+    else if (below(srProportionateRate, 50)) mod4 -= 1;
   }
   // Neutral when no sanctions/rewards — not all homes use formal systems
   mod4 = Math.max(-3, Math.min(3, mod4));
@@ -295,14 +296,14 @@ export function computeHomeEnrichmentAchievement(
   extracurricular_clubs.forEach(c => { voiceTotal++; if (c.child_voice_provided) voiceCount++; });
   club_records.forEach(c => { voiceTotal++; if (c.child_comments_provided) voiceCount++; });
   sanction_rewards.forEach(sr => { voiceTotal++; if (sr.child_response_provided) voiceCount++; });
-  const voiceRate = pct(voiceCount, voiceTotal);
+  const voiceRate = rate(voiceCount, voiceTotal);
 
   let mod5 = 0;
   if (voiceTotal > 0) {
-    if (voiceRate >= 80) mod5 = 3;
-    else if (voiceRate >= 60) mod5 = 2;
-    else if (voiceRate >= 40) mod5 = 1;
-    else if (voiceRate < 20) mod5 = -2;
+    if (meets(voiceRate, 80)) mod5 = 3;
+    else if (meets(voiceRate, 60)) mod5 = 2;
+    else if (meets(voiceRate, 40)) mod5 = 1;
+    else if (below(voiceRate, 20)) mod5 = -2;
   }
   mod5 = Math.max(-3, Math.min(3, mod5));
 
@@ -311,15 +312,16 @@ export function computeHomeEnrichmentAchievement(
   overdueCount += extracurricular_clubs.filter(c => daysBetween(c.review_date, today) > 0).length;
   overdueCount += club_records.filter(c => daysBetween(c.reviewed_date, today) > 0).length;
   const totalReviewable = creative_projects.length + extracurricular_clubs.length + club_records.length;
-  const overdueRate = pct(overdueCount, totalReviewable);
+  const overdueRate = rate(overdueCount, totalReviewable);
 
   let mod6 = 0;
   if (totalReviewable > 0) {
+    // measured inside this `totalReviewable > 0` block
     if (overdueRate === 0) mod6 = 3;
-    else if (overdueRate <= 10) mod6 = 2;
-    else if (overdueRate <= 25) mod6 = 1;
-    else if (overdueRate > 50) mod6 = -3;
-    else if (overdueRate > 30) mod6 = -1;
+    else if (overdueRate! <= 10) mod6 = 2;
+    else if (overdueRate! <= 25) mod6 = 1;
+    else if (above(overdueRate, 50)) mod6 = -3;
+    else if (above(overdueRate, 30)) mod6 = -1;
   }
   mod6 = Math.max(-3, Math.min(3, mod6));
 
@@ -340,13 +342,13 @@ export function computeHomeEnrichmentAchievement(
   // ── Modifier 8: Achievement Sharing & Community (±3) ─────────────────
   let mod8 = 0;
   const sharedAch = ach90.filter(a => a.shared_with_count >= 2);
-  const sharedRate = pct(sharedAch.length, ach90.length);
+  const sharedRate = rate(sharedAch.length, ach90.length);
   const contestsEntered = creative_projects.reduce((s, p) => s + p.contests_entered_count, 0);
 
-  if (sharedRate >= 70 && contestsEntered >= 2) mod8 = 3;
-  else if (sharedRate >= 50 || contestsEntered >= 1) mod8 = 2;
-  else if (sharedRate >= 30) mod8 = 1;
-  else if (ach90.length > 0 && sharedRate < 10) mod8 = -1;
+  if (meets(sharedRate, 70) && contestsEntered >= 2) mod8 = 3;
+  else if (meets(sharedRate, 50) || meets(contestsEntered, 1)) mod8 = 2;
+  else if (meets(sharedRate, 30)) mod8 = 1;
+  else if (ach90.length > 0 && below(sharedRate, 10)) mod8 = -1;
   mod8 = Math.max(-3, Math.min(3, mod8));
 
   // ── Score ────────────────────────────────────────────────────────────
@@ -361,40 +363,40 @@ export function computeHomeEnrichmentAchievement(
 
   // ── Strengths ────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (cpCoverage >= 80) strengths.push(`Strong creative engagement — ${cpCoverage}% of children have active projects.`);
-  if (clubCoverage >= 80) strengths.push(`Excellent club participation — ${clubCoverage}% of children involved in clubs.`);
-  if (achCelebrationRate >= 80 && ach90.length > 0) strengths.push(`Achievements are consistently celebrated (${achCelebrationRate}% celebration rate).`);
-  if (srRewardRatio >= 70 && sr90.length > 0) strengths.push(`Positive reward culture — ${srRewardRatio}% reward-to-sanction ratio.`);
-  if (voiceRate >= 80) strengths.push(`Strong child voice across enrichment activities (${voiceRate}%).`);
-  if (cpShowcase >= 2) strengths.push(`${cpShowcase} creative projects showcased externally — real-world recognition.`);
-  if (ecInitiatedRate >= 60) strengths.push(`${ecInitiatedRate}% of extracurricular activities are child-initiated.`);
+  if (meets(cpCoverage, 80)) strengths.push(`Strong creative engagement — ${cpCoverage}% of children have active projects.`);
+  if (meets(clubCoverage, 80)) strengths.push(`Excellent club participation — ${clubCoverage}% of children involved in clubs.`);
+  if (meets(achCelebrationRate, 80) && ach90.length > 0) strengths.push(`Achievements are consistently celebrated (${achCelebrationRate}% celebration rate).`);
+  if (meets(srRewardRatio, 70) && sr90.length > 0) strengths.push(`Positive reward culture — ${srRewardRatio}% reward-to-sanction ratio.`);
+  if (meets(voiceRate, 80)) strengths.push(`Strong child voice across enrichment activities (${voiceRate}%).`);
+  if (meets(cpShowcase, 2)) strengths.push(`${cpShowcase} creative projects showcased externally — real-world recognition.`);
+  if (meets(ecInitiatedRate, 60)) strengths.push(`${ecInitiatedRate}% of extracurricular activities are child-initiated.`);
 
   // ── Concerns ─────────────────────────────────────────────────────────
   const concerns: string[] = [];
-  if (cpCoverage < 30 && total_children > 0) concerns.push(`Low creative project coverage — only ${cpCoverage}% of children have projects.`);
-  if (clubCoverage < 30 && total_children > 0) concerns.push(`Low club participation — only ${clubCoverage}% of children in clubs.`);
-  if (achCoverage < 30 && total_children > 0) concerns.push(`Achievements not being recorded for most children — only ${achCoverage}% coverage.`);
-  if (srRewardRatio < 30 && sr90.length > 0) concerns.push(`Sanction-heavy approach — only ${srRewardRatio}% rewards vs sanctions.`);
-  if (voiceRate < 20 && voiceTotal > 0) concerns.push(`Very low child voice across enrichment — only ${voiceRate}%.`);
-  if (overdueRate > 50) concerns.push(`${overdueCount} overdue reviews across enrichment records.`);
-  if (srProportionateRate < 50 && sr90.length > 0) concerns.push(`Only ${srProportionateRate}% of sanctions rated as proportionate.`);
+  if (below(cpCoverage, 30) && total_children > 0) concerns.push(`Low creative project coverage — only ${cpCoverage}% of children have projects.`);
+  if (below(clubCoverage, 30) && total_children > 0) concerns.push(`Low club participation — only ${clubCoverage}% of children in clubs.`);
+  if (below(achCoverage, 30) && total_children > 0) concerns.push(`Achievements not being recorded for most children — only ${achCoverage}% coverage.`);
+  if (below(srRewardRatio, 30) && sr90.length > 0) concerns.push(`Sanction-heavy approach — only ${srRewardRatio}% rewards vs sanctions.`);
+  if (below(voiceRate, 20) && voiceTotal > 0) concerns.push(`Very low child voice across enrichment — only ${voiceRate}%.`);
+  if (above(overdueRate, 50)) concerns.push(`${overdueCount} overdue reviews across enrichment records.`);
+  if (below(srProportionateRate, 50) && sr90.length > 0) concerns.push(`Only ${srProportionateRate}% of sanctions rated as proportionate.`);
 
   // ── Recommendations ──────────────────────────────────────────────────
   const recommendations: { rank: number; recommendation: string; urgency: string; regulatory_ref: string | null }[] = [];
   let rank = 0;
-  if (cpCoverage < 50 && total_children > 0) {
+  if (below(cpCoverage, 50) && total_children > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Expand creative project opportunities to ensure every child has access to arts and crafts.", urgency: "soon", regulatory_ref: "Reg 9" });
   }
-  if (clubCoverage < 50 && total_children > 0) {
+  if (below(clubCoverage, 50) && total_children > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Increase extracurricular club access — identify child interests and explore local opportunities.", urgency: "soon", regulatory_ref: "Reg 9" });
   }
-  if (srRewardRatio < 50 && sr90.length > 0) {
+  if (below(srRewardRatio, 50) && sr90.length > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Review sanctions approach — consider more reward-based strategies to promote positive behaviour.", urgency: "immediate", regulatory_ref: "Reg 9" });
   }
-  if (overdueRate > 30) {
+  if (above(overdueRate, 30)) {
     recommendations.push({ rank: ++rank, recommendation: "Bring enrichment reviews up to date to maintain oversight of each child's engagement.", urgency: "soon", regulatory_ref: null });
   }
-  if (voiceRate < 40 && voiceTotal > 0) {
+  if (below(voiceRate, 40) && voiceTotal > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Strengthen child voice capture across creative, club, and reward records.", urgency: "planned", regulatory_ref: "Reg 7" });
   }
 
@@ -403,13 +405,13 @@ export function computeHomeEnrichmentAchievement(
   if (enrichment_score >= 80) {
     insights.push({ text: "Enrichment provision is outstanding — children have diverse opportunities and their achievements are celebrated consistently.", severity: "positive" });
   }
-  if (ach90.length > 0 && achCelebrationRate < 50) {
+  if (ach90.length > 0 && below(achCelebrationRate, 50)) {
     insights.push({ text: `Only ${achCelebrationRate}% of recent achievements were celebrated. LAC children benefit from consistent recognition and celebration.`, severity: "warning" });
   }
-  if (creative_projects.length > 0 && cpActiveRate < 30) {
+  if (creative_projects.length > 0 && below(cpActiveRate, 30)) {
     insights.push({ text: `Only ${cpActiveRate}% of creative projects are active. Consider reinvigorating stalled projects or starting fresh ones.`, severity: "warning" });
   }
-  if (sr90.length > 0 && srRewardRatio < 30) {
+  if (sr90.length > 0 && below(srRewardRatio, 30)) {
     insights.push({ text: "Sanctions significantly outweigh rewards. Trauma-informed practice suggests a minimum 4:1 positive-to-corrective ratio.", severity: "critical" });
   }
   if ((ecAvgAttendance ?? 0) >= 85) {

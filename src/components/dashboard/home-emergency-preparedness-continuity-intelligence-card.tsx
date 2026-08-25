@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { EmergencyRating } from "@/lib/engines/home-emergency-preparedness-continuity-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 const RATING_STYLES: Record<EmergencyRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -57,7 +58,7 @@ export function HomeEmergencyPreparednessContinuityIntelligenceCard() {
             <ShieldAlert className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-orange-600")} />
             <span className="text-slate-900 font-bold">Emergency Preparedness & Continuity</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.emergency_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.emergency_score}%</span>}
+            {d.emergency_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.emergency_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -65,28 +66,28 @@ export function HomeEmergencyPreparednessContinuityIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.emergency_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.fire_drill_compliance_rate >= 90 ? "bg-green-50" : d.fire_drill_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.fire_drill_compliance_rate >= 90 ? "text-[--cs-success]" : d.fire_drill_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.fire_drill_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.fire_drill_compliance_rate, 90) ? "bg-green-50" : meets(d.fire_drill_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.fire_drill_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.fire_drill_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.fire_drill_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Fire Drills</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.evacuation_plan_currency_rate >= 90 ? "bg-green-50" : d.evacuation_plan_currency_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.evacuation_plan_currency_rate >= 90 ? "text-[--cs-success]" : d.evacuation_plan_currency_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.evacuation_plan_currency_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.evacuation_plan_currency_rate, 90) ? "bg-green-50" : meets(d.evacuation_plan_currency_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.evacuation_plan_currency_rate, 90) ? "text-[--cs-success]" : meets(d.evacuation_plan_currency_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.evacuation_plan_currency_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Evac Plans</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.emergency_contact_accuracy_rate >= 90 ? "bg-green-50" : d.emergency_contact_accuracy_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.emergency_contact_accuracy_rate >= 90 ? "text-[--cs-success]" : d.emergency_contact_accuracy_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.emergency_contact_accuracy_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.emergency_contact_accuracy_rate, 90) ? "bg-green-50" : meets(d.emergency_contact_accuracy_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.emergency_contact_accuracy_rate, 90) ? "text-[--cs-success]" : meets(d.emergency_contact_accuracy_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.emergency_contact_accuracy_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Contacts</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.business_continuity_score >= 90 ? "bg-green-50" : d.business_continuity_score >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.business_continuity_score >= 90 ? "text-[--cs-success]" : d.business_continuity_score >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.business_continuity_score}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.business_continuity_score, 90) ? "bg-green-50" : meets(d.business_continuity_score, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.business_continuity_score, 90) ? "text-[--cs-success]" : meets(d.business_continuity_score, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.business_continuity_score)}</p>
               <p className="text-[9px] text-muted-foreground">Continuity</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.first_aid_coverage_rate >= 90 ? "bg-green-50" : d.first_aid_coverage_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.first_aid_coverage_rate >= 90 ? "text-[--cs-success]" : d.first_aid_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.first_aid_coverage_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.first_aid_coverage_rate, 90) ? "bg-green-50" : meets(d.first_aid_coverage_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.first_aid_coverage_rate, 90) ? "text-[--cs-success]" : meets(d.first_aid_coverage_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.first_aid_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">First Aid</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.equipment_maintenance_rate >= 90 ? "bg-green-50" : d.equipment_maintenance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.equipment_maintenance_rate >= 90 ? "text-[--cs-success]" : d.equipment_maintenance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.equipment_maintenance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.equipment_maintenance_rate, 90) ? "bg-green-50" : meets(d.equipment_maintenance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.equipment_maintenance_rate, 90) ? "text-[--cs-success]" : meets(d.equipment_maintenance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.equipment_maintenance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Equipment</p>
             </div>
           </div>

@@ -273,7 +273,7 @@ describe("Home Emotional Literacy & Feelings Expression Intelligence Engine", ()
   // ════════════════════════════════════════════════════════════════════════
 
   describe("pct(0,0) = 0", () => {
-    it("emotion_identification_rate is 0 when total_children = 0 but records exist", () => {
+    it("emotion_identification_rate is null when total_children = 0 but records exist", () => {
       // Not the allEmpty path since we have records, but total_children=0
       // doesn't actually hit allEmpty guard if some records exist
       const r = computeEmotionalLiteracyFeelingsExpression(baseInput({
@@ -281,7 +281,7 @@ describe("Home Emotional Literacy & Feelings Expression Intelligence Engine", ()
         emotion_identification_records: [makeIdentification()],
       }));
       // pct(1, 0) = 0 since denominator=0
-      expect(r.emotion_identification_rate).toBe(0);
+      expect(r.emotion_identification_rate).toBeNull();
     });
   });
 
@@ -1401,12 +1401,12 @@ describe("Home Emotional Literacy & Feelings Expression Intelligence Engine", ()
       expect(r.staff_attunement_rate).toBe(60);
     });
 
-    it("staff_attunement_rate is 0 when no records", () => {
+    it("staff_attunement_rate is null when no records", () => {
       const r = computeEmotionalLiteracyFeelingsExpression(baseInput({
         total_children: 4,
         emotion_identification_records: [makeIdentification()],
       }));
-      expect(r.staff_attunement_rate).toBe(0);
+      expect(r.staff_attunement_rate).toBeNull();
     });
 
     it("child_progress_rate averages progress indicators", () => {
@@ -3284,7 +3284,7 @@ describe("Home Emotional Literacy & Feelings Expression Intelligence Engine", ()
           makeExpressionTool({ times_used: 0, child_initiated_use: 0 }),
         ],
       }));
-      expect(r.child_initiated_tool_use_rate).toBe(0);
+      expect(r.child_initiated_tool_use_rate).toBeNull();
     });
 
     it("handles empty emotions_expressed arrays in journals", () => {

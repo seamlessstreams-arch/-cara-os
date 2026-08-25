@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, HeartHandshake } 
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import type { EmotionalSafetyRating } from "@/lib/engines/home-emotional-safety-climate-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 const RATING_STYLES: Record<EmotionalSafetyRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -57,7 +58,7 @@ export function HomeEmotionalSafetyClimateIntelligenceCard() {
             <HeartHandshake className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-blue-600")} />
             <span className="text-slate-900 font-bold">Emotional Safety Climate</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.safety_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.safety_score}%</span>}
+            {d.safety_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.safety_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -69,24 +70,24 @@ export function HomeEmotionalSafetyClimateIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.total_restraints === 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.total_restraints}</p>
               <p className="text-[9px] text-muted-foreground">Restraints</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_debrief_rate >= 90 ? "bg-green-50" : d.child_debrief_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_debrief_rate >= 90 ? "text-[--cs-success]" : d.child_debrief_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_debrief_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_debrief_rate, 90) ? "bg-green-50" : meets(d.child_debrief_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_debrief_rate, 90) ? "text-[--cs-success]" : meets(d.child_debrief_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_debrief_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Child Deb</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.reward_to_sanction_ratio >= 3 ? "bg-green-50" : d.reward_to_sanction_ratio >= 1 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.reward_to_sanction_ratio >= 3 ? "text-[--cs-success]" : d.reward_to_sanction_ratio >= 1 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.reward_to_sanction_ratio}:1</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.reward_to_sanction_ratio, 3) ? "bg-green-50" : meets(d.reward_to_sanction_ratio, 1) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.reward_to_sanction_ratio, 3) ? "text-[--cs-success]" : meets(d.reward_to_sanction_ratio, 1) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.reward_to_sanction_ratio}:1</p>
               <p className="text-[9px] text-muted-foreground">R:S Ratio</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.de_escalation_attempt_rate >= 100 ? "bg-green-50" : d.de_escalation_attempt_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.de_escalation_attempt_rate >= 100 ? "text-[--cs-success]" : d.de_escalation_attempt_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.de_escalation_attempt_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.de_escalation_attempt_rate, 100) ? "bg-green-50" : meets(d.de_escalation_attempt_rate, 80) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.de_escalation_attempt_rate, 100) ? "text-[--cs-success]" : meets(d.de_escalation_attempt_rate, 80) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.de_escalation_attempt_rate)}</p>
               <p className="text-[9px] text-muted-foreground">De-esc</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.positive_achievement_count > 0 ? "bg-green-50" : "bg-slate-50")}>
               <p className={cn("text-sm font-bold tabular-nums", d.positive_achievement_count > 0 ? "text-[--cs-success]" : "text-slate-600")}>{d.positive_achievement_count}</p>
               <p className="text-[9px] text-muted-foreground">Achieve</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.body_map_completion_rate >= 100 ? "bg-green-50" : d.body_map_completion_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.body_map_completion_rate >= 100 ? "text-[--cs-success]" : d.body_map_completion_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.body_map_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.body_map_completion_rate, 100) ? "bg-green-50" : meets(d.body_map_completion_rate, 80) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.body_map_completion_rate, 100) ? "text-[--cs-success]" : meets(d.body_map_completion_rate, 80) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.body_map_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Body Map</p>
             </div>
           </div>

@@ -1,3 +1,4 @@
+import { below, meanOf, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME DBS RENEWAL & STAFF VETTING INTELLIGENCE ENGINE
 // Home-level: evaluates DBS and vetting compliance including DBS check currency,
@@ -256,13 +257,8 @@ function clamp(v: number, lo: number, hi: number): number {
 }
 
 /**
- * CRITICAL: pct(0, 0) = 0. Always guard the denominator.
+ * CRITICAL: rate(0, 0) = 0. Always guard the denominator.
  */
-function pct(numerator: number, denominator: number): number {
-  if (denominator === 0) return 0;
-  return Math.round((numerator / denominator) * 100);
-}
-
 function toRating(score: number): DbsVettingRating {
   if (score >= 80) return "outstanding";
   if (score >= 65) return "good";
@@ -334,12 +330,12 @@ export function computeDbsRenewalStaffVetting(
     vetting_rating: "insufficient_data",
     vetting_score: 0,
     headline: "",
-    dbs_currency_rate: 0,
-    enhanced_dbs_rate: 0,
-    overseas_check_rate: 0,
-    barred_list_rate: 0,
-    reference_verification_rate: 0,
-    renewal_timeliness_rate: 0,
+    dbs_currency_rate: null,
+    enhanced_dbs_rate: null,
+    overseas_check_rate: null,
+    barred_list_rate: null,
+    reference_verification_rate: null,
+    renewal_timeliness_rate: null,
     dbs_total_records: 0,
     dbs_valid_count: 0,
     dbs_expired_count: 0,
@@ -512,7 +508,7 @@ export function computeDbsRenewalStaffVetting(
   ).length;
 
   // Currency rate = valid DBS / total DBS records
-  const dbsCurrencyRate = pct(dbsValidCount, totalDbs);
+  const dbsCurrencyRate = rate(dbsValidCount, totalDbs);
 
   // Expiring within 30 days
   const dbsExpiringSoon = dbs_check_records.filter(r =>
@@ -527,23 +523,23 @@ export function computeDbsRenewalStaffVetting(
   const dbsExpiring90DaysCount = dbsExpiring90Days.length;
 
   // Certificate verification rate
-  const dbsCertVerificationRate = pct(dbsCertificateVerifiedCount, totalDbs > 0 ? dbs_check_records.filter(r => r.status === "completed").length : 0);
+  const dbsCertVerificationRate = rate(dbsCertificateVerifiedCount, totalDbs > 0 ? dbs_check_records.filter(r => r.status === "completed").length : 0);
 
   // Update service enrolment rate
-  const dbsUpdateServiceRate = pct(dbsOnUpdateServiceCount, totalDbs > 0 ? dbs_check_records.filter(r => r.status === "completed").length : 0);
+  const dbsUpdateServiceRate = rate(dbsOnUpdateServiceCount, totalDbs > 0 ? dbs_check_records.filter(r => r.status === "completed").length : 0);
 
   // Staff coverage — unique staff with ANY DBS record
   const staffWithDbs = uniqueStaffCount(dbs_check_records);
 
   // Risk assessment completion rate for those with disclosures
-  const disclosureRiskAssessmentRate = pct(dbsRiskAssessmentsCompleted, dbsWithDisclosuresCount);
+  const disclosureRiskAssessmentRate = rate(dbsRiskAssessmentsCompleted, dbsWithDisclosuresCount);
 
   // Processed within timeframe
   const dbsProcessedOnTime = dbs_check_records.filter(r =>
     r.status === "completed" && r.processed_within_timeframe
   ).length;
   const completedDbsCount = dbs_check_records.filter(r => r.status === "completed").length;
-  const dbsProcessingTimelinessRate = pct(dbsProcessedOnTime, completedDbsCount);
+  const dbsProcessingTimelinessRate = rate(dbsProcessedOnTime, completedDbsCount);
 
   // ══════════════════════════════════════════════════════════════════════
   // METRIC 2: ENHANCED DBS RATE
@@ -587,10 +583,10 @@ export function computeDbsRenewalStaffVetting(
   const regulatedActivityCompleted = regulatedActivityRecords.filter(r =>
     r.status === "completed" && r.is_enhanced && r.includes_barred_list_check
   ).length;
-  const regulatedActivityRate = pct(regulatedActivityCompleted, regulatedActivityRecords.length);
+  const regulatedActivityRate = rate(regulatedActivityCompleted, regulatedActivityRecords.length);
 
   // Enhanced DBS rate = valid enhanced / total enhanced
-  const enhancedDbsRate = pct(enhancedValidCount, totalEnhanced);
+  const enhancedDbsRate = rate(enhancedValidCount, totalEnhanced);
 
   // Expiring enhanced DBS
   const enhancedExpiringSoon = enhanced_dbs_records.filter(r =>
@@ -647,7 +643,7 @@ export function computeDbsRenewalStaffVetting(
 
   // Overseas check rate — completed or appropriately handled / total
   const overseasHandled = overseasCompletedCount + letterOfGoodStandingCount + overseasWaivedCount;
-  const overseasCheckRate = pct(overseasHandled, totalOverseas);
+  const overseasCheckRate = rate(overseasHandled, totalOverseas);
 
   // Countries covered
   const countriesCovered = new Set<string>();
@@ -718,7 +714,7 @@ export function computeDbsRenewalStaffVetting(
   const barredBothListsCheckedCount = barredBothListsChecked.length;
 
   // Barred list rate = completed & clear & current / total
-  const barredListRate = pct(barredCurrentCount, totalBarred);
+  const barredListRate = rate(barredCurrentCount, totalBarred);
 
   // ══════════════════════════════════════════════════════════════════════
   // METRIC 5: REFERENCE VERIFICATION RATE
@@ -794,22 +790,22 @@ export function computeDbsRenewalStaffVetting(
   const refsDeclinedCount = refsDeclined.length;
 
   // Reference verification rate = verified & satisfactory / total refs
-  const referenceVerificationRate = pct(refsVerifiedCount, totalRefs);
+  const referenceVerificationRate = rate(refsVerifiedCount, totalRefs);
 
   // Child suitability rate
-  const childSuitabilityRate = pct(refsChildSuitabilityCount, refsCompletedCount);
+  const childSuitabilityRate = rate(refsChildSuitabilityCount, refsCompletedCount);
 
   // Gaps exploration rate
-  const gapsExplorationRate = pct(refsGapsExploredCount, refsCompletedCount);
+  const gapsExplorationRate = rate(refsGapsExploredCount, refsCompletedCount);
 
   // Before start rate
-  const beforeStartRate = pct(refsBeforeStartCount, totalRefs);
+  const beforeStartRate = rate(refsBeforeStartCount, totalRefs);
 
   // Direct contact rate
-  const directContactRate = pct(refsDirectContactCount, refsCompletedCount);
+  const directContactRate = rate(refsDirectContactCount, refsCompletedCount);
 
   // Concern follow-up rate
-  const concernFollowUpRate = pct(refsConcernsFollowedUpCount, refsWithConcernsCount);
+  const concernFollowUpRate = rate(refsConcernsFollowedUpCount, refsWithConcernsCount);
 
   // Reference type diversity
   const refTypes = new Set<string>();
@@ -830,25 +826,25 @@ export function computeDbsRenewalStaffVetting(
   // - Overseas checks being current
   // - References obtained before start date
 
-  const timelinessComponents: number[] = [];
+  // barredCurrencyRate is measured over COMPLETED barred checks, which can be
+  // zero even when barred checks exist — meanOf drops the unmeasured component.
+  const timelinessComponents: (number | null)[] = [];
   if (completedDbsCount > 0) timelinessComponents.push(dbsProcessingTimelinessRate);
   if (enhancedOnUpdateService > 0) {
-    const updateCheckRate = pct(enhancedUpdateChecked, enhancedOnUpdateService);
+    const updateCheckRate = rate(enhancedUpdateChecked, enhancedOnUpdateService);
     timelinessComponents.push(updateCheckRate);
   }
   if (totalBarred > 0) {
-    const barredCurrencyRate = pct(barredCurrentCount, barredCompletedCount);
+    const barredCurrencyRate = rate(barredCurrentCount, barredCompletedCount);
     timelinessComponents.push(barredCurrencyRate);
   }
   if (totalOverseas > 0) {
-    const overseasCurrencyRate = pct(overseasCurrent, totalOverseas);
+    const overseasCurrencyRate = rate(overseasCurrent, totalOverseas);
     timelinessComponents.push(overseasCurrencyRate);
   }
   if (totalRefs > 0) timelinessComponents.push(beforeStartRate);
 
-  const renewalTimelinessRate = timelinessComponents.length > 0
-    ? Math.round(timelinessComponents.reduce((s, v) => s + v, 0) / timelinessComponents.length)
-    : null;
+  const renewalTimelinessRate = meanOf(timelinessComponents);
 
   // ══════════════════════════════════════════════════════════════════════
   // FULLY VETTED STAFF COUNT
@@ -893,7 +889,7 @@ export function computeDbsRenewalStaffVetting(
     }
   });
 
-  const fullyVettedRate = pct(staffFullyVettedCount, total_staff > 0 ? total_staff : allStaffIds.size);
+  const fullyVettedRate = rate(staffFullyVettedCount, total_staff > 0 ? total_staff : allStaffIds.size);
 
   // ══════════════════════════════════════════════════════════════════════
   // SCORING — Base 52 + 9 bonus categories (max 28) = max 80
@@ -903,67 +899,67 @@ export function computeDbsRenewalStaffVetting(
 
   // ── Bonus 1: DBS currency (0–4) ─────────────────────────────────────
   if (totalDbs > 0) {
-    if (dbsCurrencyRate >= 95) score += 4;
-    else if (dbsCurrencyRate >= 85) score += 3;
-    else if (dbsCurrencyRate >= 70) score += 2;
-    else if (dbsCurrencyRate >= 50) score += 1;
+    if (meets(dbsCurrencyRate, 95)) score += 4;
+    else if (meets(dbsCurrencyRate, 85)) score += 3;
+    else if (meets(dbsCurrencyRate, 70)) score += 2;
+    else if (meets(dbsCurrencyRate, 50)) score += 1;
     // else +0
   }
 
   // ── Bonus 2: Enhanced DBS coverage (0–4) ────────────────────────────
   if (totalEnhanced > 0) {
-    if (enhancedDbsRate >= 95) score += 4;
-    else if (enhancedDbsRate >= 85) score += 3;
-    else if (enhancedDbsRate >= 70) score += 2;
-    else if (enhancedDbsRate >= 50) score += 1;
+    if (meets(enhancedDbsRate, 95)) score += 4;
+    else if (meets(enhancedDbsRate, 85)) score += 3;
+    else if (meets(enhancedDbsRate, 70)) score += 2;
+    else if (meets(enhancedDbsRate, 50)) score += 1;
     // else +0
   }
 
   // ── Bonus 3: Barred list verification (0–4) ─────────────────────────
   if (totalBarred > 0) {
-    if (barredListRate >= 95) score += 4;
-    else if (barredListRate >= 85) score += 3;
-    else if (barredListRate >= 70) score += 2;
-    else if (barredListRate >= 50) score += 1;
+    if (meets(barredListRate, 95)) score += 4;
+    else if (meets(barredListRate, 85)) score += 3;
+    else if (meets(barredListRate, 70)) score += 2;
+    else if (meets(barredListRate, 50)) score += 1;
     // else +0
   }
 
   // ── Bonus 4: Reference verification quality (0–3) ──────────────────
   if (totalRefs > 0) {
-    if (referenceVerificationRate >= 90) score += 3;
-    else if (referenceVerificationRate >= 75) score += 2;
-    else if (referenceVerificationRate >= 55) score += 1;
+    if (meets(referenceVerificationRate, 90)) score += 3;
+    else if (meets(referenceVerificationRate, 75)) score += 2;
+    else if (meets(referenceVerificationRate, 55)) score += 1;
     // else +0
   }
 
   // ── Bonus 5: Overseas check handling (0–3) ──────────────────────────
   if (totalOverseas > 0) {
-    if (overseasCheckRate >= 90) score += 3;
-    else if (overseasCheckRate >= 75) score += 2;
-    else if (overseasCheckRate >= 55) score += 1;
+    if (meets(overseasCheckRate, 90)) score += 3;
+    else if (meets(overseasCheckRate, 75)) score += 2;
+    else if (meets(overseasCheckRate, 55)) score += 1;
     // else +0
   }
 
   // ── Bonus 6: DBS certificate verification (0–3) ────────────────────
   if (completedDbsCount > 0) {
-    if (dbsCertVerificationRate >= 95) score += 3;
-    else if (dbsCertVerificationRate >= 80) score += 2;
-    else if (dbsCertVerificationRate >= 60) score += 1;
+    if (meets(dbsCertVerificationRate, 95)) score += 3;
+    else if (meets(dbsCertVerificationRate, 80)) score += 2;
+    else if (meets(dbsCertVerificationRate, 60)) score += 1;
     // else +0
   }
 
   // ── Bonus 7: Reference child suitability coverage (0–3) ────────────
   if (refsCompletedCount > 0) {
-    if (childSuitabilityRate >= 90) score += 3;
-    else if (childSuitabilityRate >= 70) score += 2;
-    else if (childSuitabilityRate >= 50) score += 1;
+    if (meets(childSuitabilityRate, 90)) score += 3;
+    else if (meets(childSuitabilityRate, 70)) score += 2;
+    else if (meets(childSuitabilityRate, 50)) score += 1;
     // else +0
   }
 
   // ── Bonus 8: Staff fully vetted coverage (0–2) ─────────────────────
   if (total_staff > 0 || allStaffIds.size > 0) {
-    if (fullyVettedRate >= 90) score += 2;
-    else if (fullyVettedRate >= 70) score += 1;
+    if (meets(fullyVettedRate, 90)) score += 2;
+    else if (meets(fullyVettedRate, 70)) score += 1;
     // else +0
   }
 
@@ -982,18 +978,18 @@ export function computeDbsRenewalStaffVetting(
 
   // ── Penalty 1: Expired DBS checks ──────────────────────────────────
   if (dbs_check_records.length > 0) {
-    const expiredPct = pct(dbsExpiredCount, totalDbs);
-    if (expiredPct >= 30) score -= 10;
-    else if (expiredPct >= 15) score -= 6;
-    else if (expiredPct >= 5) score -= 3;
+    const expiredPct = rate(dbsExpiredCount, totalDbs);
+    if (meets(expiredPct, 30)) score -= 10;
+    else if (meets(expiredPct, 15)) score -= 6;
+    else if (meets(expiredPct, 5)) score -= 3;
   }
 
   // ── Penalty 2: Expired enhanced DBS ────────────────────────────────
   if (enhanced_dbs_records.length > 0) {
-    const enhExpiredPct = pct(enhancedExpiredCount, totalEnhanced);
-    if (enhExpiredPct >= 25) score -= 8;
-    else if (enhExpiredPct >= 10) score -= 5;
-    else if (enhExpiredPct >= 5) score -= 2;
+    const enhExpiredPct = rate(enhancedExpiredCount, totalEnhanced);
+    if (meets(enhExpiredPct, 25)) score -= 8;
+    else if (meets(enhExpiredPct, 10)) score -= 5;
+    else if (meets(enhExpiredPct, 5)) score -= 2;
   }
 
   // ── Penalty 3: Unresolved reference concerns ──────────────────────
@@ -1006,10 +1002,10 @@ export function computeDbsRenewalStaffVetting(
 
   // ── Penalty 4: Missing barred list checks ─────────────────────────
   if (barred_list_records.length > 0) {
-    const barredIncompletePct = pct(barredNotStartedCount + barredPendingCount, totalBarred);
-    if (barredIncompletePct >= 30) score -= 8;
-    else if (barredIncompletePct >= 15) score -= 4;
-    else if (barredIncompletePct >= 5) score -= 2;
+    const barredIncompletePct = rate(barredNotStartedCount + barredPendingCount, totalBarred);
+    if (meets(barredIncompletePct, 30)) score -= 8;
+    else if (meets(barredIncompletePct, 15)) score -= 4;
+    else if (meets(barredIncompletePct, 5)) score -= 2;
   }
 
   // ── Clamp and rate ──────────────────────────────────────────────────
@@ -1022,79 +1018,79 @@ export function computeDbsRenewalStaffVetting(
 
   const strengths: string[] = [];
 
-  if (dbsCurrencyRate >= 95 && totalDbs > 0) {
+  if (meets(dbsCurrencyRate, 95) && totalDbs > 0) {
     strengths.push(
       `DBS currency rate at ${dbsCurrencyRate}% — ${dbsValidCount} of ${totalDbs} DBS checks are current and valid. Strong compliance with Reg 32.`
     );
   }
 
-  if (enhancedDbsRate >= 95 && totalEnhanced > 0) {
+  if (meets(enhancedDbsRate, 95) && totalEnhanced > 0) {
     strengths.push(
       `Enhanced DBS coverage at ${enhancedDbsRate}% — ${enhancedValidCount} of ${totalEnhanced} enhanced checks are current, meeting safer recruitment requirements.`
     );
   }
 
   if (enhancedWithBarredListCount > 0 && totalEnhanced > 0) {
-    const barredCovPct = pct(enhancedWithBarredListCount, totalEnhanced);
-    if (barredCovPct >= 95) {
+    const barredCovPct = rate(enhancedWithBarredListCount, totalEnhanced);
+    if (meets(barredCovPct, 95)) {
       strengths.push(
         `${barredCovPct}% of enhanced DBS checks include barred list verification — comprehensive safeguarding coverage.`
       );
     }
   }
 
-  if (barredListRate >= 95 && totalBarred > 0) {
+  if (meets(barredListRate, 95) && totalBarred > 0) {
     strengths.push(
       `Barred list verification at ${barredListRate}% — ${barredCurrentCount} of ${totalBarred} checks are current and clear. Children are protected from unsuitable adults.`
     );
   }
 
   if (barredBothListsCheckedCount > 0 && barredCompletedCount > 0) {
-    const bothListsPct = pct(barredBothListsCheckedCount, barredCompletedCount);
-    if (bothListsPct >= 90) {
+    const bothListsPct = rate(barredBothListsCheckedCount, barredCompletedCount);
+    if (meets(bothListsPct, 90)) {
       strengths.push(
         `${bothListsPct}% of barred list checks cover both children's and adults' lists — thorough dual verification.`
       );
     }
   }
 
-  if (referenceVerificationRate >= 90 && totalRefs > 0) {
+  if (meets(referenceVerificationRate, 90) && totalRefs > 0) {
     strengths.push(
       `Reference verification rate at ${referenceVerificationRate}% — ${refsVerifiedCount} of ${totalRefs} references verified as authentic.`
     );
   }
 
-  if (childSuitabilityRate >= 90 && refsCompletedCount > 0) {
+  if (meets(childSuitabilityRate, 90) && refsCompletedCount > 0) {
     strengths.push(
       `${childSuitabilityRate}% of completed references cover suitability for working with children — meeting SCCIF safety requirements.`
     );
   }
 
-  if (beforeStartRate >= 90 && totalRefs > 0) {
+  if (meets(beforeStartRate, 90) && totalRefs > 0) {
     strengths.push(
       `${beforeStartRate}% of references obtained before start date — safer recruitment timeline fully met.`
     );
   }
 
-  if (directContactRate >= 85 && refsCompletedCount > 0) {
+  if (meets(directContactRate, 85) && refsCompletedCount > 0) {
     strengths.push(
       `${directContactRate}% of references involved direct contact with the referee — rigorous verification practice.`
     );
   }
 
-  if (overseasCheckRate >= 90 && totalOverseas > 0) {
+  if (meets(overseasCheckRate, 90) && totalOverseas > 0) {
     strengths.push(
       `Overseas police check handling at ${overseasCheckRate}% — ${overseasHandled} of ${totalOverseas} checks completed or appropriately managed.`
     );
   }
 
-  if (dbsOnUpdateServiceCount > 0 && completedDbsCount > 0 && dbsUpdateServiceRate >= 80) {
+  if (dbsOnUpdateServiceCount > 0 && completedDbsCount > 0 && meets(dbsUpdateServiceRate, 80)) {
     strengths.push(
       `${dbsUpdateServiceRate}% of staff with completed DBS are enrolled on the update service — enabling real-time status monitoring.`
     );
   }
 
-  if (dbsCertVerificationRate >= 95 && completedDbsCount > 0) {
+  if (meets(dbsCertVerificationRate, 95) && completedDbsCount > 0) {
     strengths.push(
       `${dbsCertVerificationRate}% of DBS certificates have been verified — excellent evidence management for inspection.`
     );
@@ -1112,13 +1108,13 @@ export function computeDbsRenewalStaffVetting(
     );
   }
 
-  if (fullyVettedRate >= 90 && (total_staff > 0 || allStaffIds.size > 0)) {
+  if (meets(fullyVettedRate, 90) && (total_staff > 0 || allStaffIds.size > 0)) {
     strengths.push(
       `${fullyVettedRate}% of staff are fully vetted (DBS + enhanced + barred list + references) — comprehensive safer recruitment compliance.`
     );
   }
 
-  if (disclosureRiskAssessmentRate >= 100 && dbsWithDisclosuresCount > 0) {
+  if (meets(disclosureRiskAssessmentRate, 100) && dbsWithDisclosuresCount > 0) {
     strengths.push(
       `All ${dbsWithDisclosuresCount} DBS disclosure${dbsWithDisclosuresCount > 1 ? "s have" : " has"} a completed risk assessment — appropriate safeguarding response to disclosures.`
     );
@@ -1130,19 +1126,19 @@ export function computeDbsRenewalStaffVetting(
     );
   }
 
-  if (gapsExplorationRate >= 85 && refsCompletedCount > 0) {
+  if (meets(gapsExplorationRate, 85) && refsCompletedCount > 0) {
     strengths.push(
       `${gapsExplorationRate}% of completed references include employment gap exploration — thorough safer recruitment practice.`
     );
   }
 
-  if (concernFollowUpRate >= 100 && refsWithConcernsCount > 0) {
+  if (meets(concernFollowUpRate, 100) && refsWithConcernsCount > 0) {
     strengths.push(
       `All reference concerns have been followed up — robust response to potential recruitment risks.`
     );
   }
 
-  if (regulatedActivityRate >= 95 && regulatedActivityRecords.length > 0) {
+  if (meets(regulatedActivityRate, 95) && regulatedActivityRecords.length > 0) {
     strengths.push(
       `${regulatedActivityRate}% of staff in regulated activity have enhanced DBS with barred list — full compliance with statutory requirements.`
     );
@@ -1154,7 +1150,7 @@ export function computeDbsRenewalStaffVetting(
 
   const concerns: string[] = [];
 
-  if (dbsCurrencyRate < 70 && totalDbs > 0) {
+  if (below(dbsCurrencyRate, 70) && totalDbs > 0) {
     concerns.push(
       `DBS currency rate is only ${dbsCurrencyRate}% — Reg 32 requires current DBS checks for all staff. ${totalDbs - dbsValidCount} check${totalDbs - dbsValidCount !== 1 ? "s are" : " is"} non-compliant.`
     );
@@ -1167,8 +1163,8 @@ export function computeDbsRenewalStaffVetting(
   }
 
   if (dbsPendingCount > 0 && totalDbs > 0) {
-    const pendingPct = pct(dbsPendingCount, totalDbs);
-    if (pendingPct >= 15) {
+    const pendingPct = rate(dbsPendingCount, totalDbs);
+    if (meets(pendingPct, 15)) {
       concerns.push(
         `${dbsPendingCount} DBS check${dbsPendingCount > 1 ? "s are" : " is"} pending (${pendingPct}%) — staff may be working without cleared vetting status.`
       );
@@ -1181,7 +1177,7 @@ export function computeDbsRenewalStaffVetting(
     );
   }
 
-  if (enhancedDbsRate < 70 && totalEnhanced > 0) {
+  if (below(enhancedDbsRate, 70) && totalEnhanced > 0) {
     concerns.push(
       `Enhanced DBS coverage is only ${enhancedDbsRate}% — staff in regulated activity must have enhanced checks with barred list verification.`
     );
@@ -1202,8 +1198,8 @@ export function computeDbsRenewalStaffVetting(
   if (enhancedWithBarredListCount < totalEnhanced && totalEnhanced > 0) {
     const missingBarred = totalEnhanced - enhancedWithBarredListCount;
     if (missingBarred > 0) {
-      const barredMissingPct = pct(missingBarred, totalEnhanced);
-      if (barredMissingPct >= 10) {
+      const barredMissingPct = rate(missingBarred, totalEnhanced);
+      if (meets(barredMissingPct, 10)) {
         concerns.push(
           `${missingBarred} enhanced DBS check${missingBarred > 1 ? "s do" : " does"} not include barred list verification — this is required for staff in regulated activity.`
         );
@@ -1211,7 +1207,7 @@ export function computeDbsRenewalStaffVetting(
     }
   }
 
-  if (barredListRate < 70 && totalBarred > 0) {
+  if (below(barredListRate, 70) && totalBarred > 0) {
     concerns.push(
       `Barred list verification rate is only ${barredListRate}% — children may be at risk from staff whose barred list status is unconfirmed.`
     );
@@ -1229,7 +1225,7 @@ export function computeDbsRenewalStaffVetting(
     );
   }
 
-  if (referenceVerificationRate < 60 && totalRefs > 0) {
+  if (below(referenceVerificationRate, 60) && totalRefs > 0) {
     concerns.push(
       `Reference verification rate is only ${referenceVerificationRate}% — many references have not been verified for authenticity. Safer recruitment is compromised.`
     );
@@ -1242,13 +1238,13 @@ export function computeDbsRenewalStaffVetting(
     );
   }
 
-  if (beforeStartRate < 60 && totalRefs > 0) {
+  if (below(beforeStartRate, 60) && totalRefs > 0) {
     concerns.push(
       `Only ${beforeStartRate}% of references were obtained before staff start date — safer recruitment timeline is not being followed.`
     );
   }
 
-  if (childSuitabilityRate < 50 && refsCompletedCount > 0) {
+  if (below(childSuitabilityRate, 50) && refsCompletedCount > 0) {
     concerns.push(
       `Only ${childSuitabilityRate}% of references cover suitability for working with children — this is a fundamental safer recruitment requirement.`
     );
@@ -1294,13 +1290,13 @@ export function computeDbsRenewalStaffVetting(
     );
   }
 
-  if (gapsExplorationRate < 50 && refsCompletedCount > 0) {
+  if (below(gapsExplorationRate, 50) && refsCompletedCount > 0) {
     concerns.push(
       `Only ${gapsExplorationRate}% of completed references include employment gap exploration — gaps in employment must be explored under safer recruitment guidance.`
     );
   }
 
-  if (fullyVettedRate < 50 && (total_staff > 0 || allStaffIds.size > 0)) {
+  if (below(fullyVettedRate, 50) && (total_staff > 0 || allStaffIds.size > 0)) {
     concerns.push(
       `Only ${fullyVettedRate}% of staff are fully vetted across all categories — significant gaps in the vetting process exist.`
     );
@@ -1366,7 +1362,7 @@ export function computeDbsRenewalStaffVetting(
     });
   }
 
-  if (dbsCurrencyRate < 70 && totalDbs > 0) {
+  if (below(dbsCurrencyRate, 70) && totalDbs > 0) {
     recs.push({
       rank: rank++,
       recommendation: `DBS currency is at ${dbsCurrencyRate}% — urgently review and renew all non-current checks to achieve minimum 90% compliance under Reg 32.`,
@@ -1430,7 +1426,7 @@ export function computeDbsRenewalStaffVetting(
     });
   }
 
-  if (referenceVerificationRate < 75 && totalRefs > 0) {
+  if (below(referenceVerificationRate, 75) && totalRefs > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Improve reference verification rate from ${referenceVerificationRate}% — contact referees directly to confirm authenticity of all unverified references.`,
@@ -1439,7 +1435,7 @@ export function computeDbsRenewalStaffVetting(
     });
   }
 
-  if (childSuitabilityRate < 70 && refsCompletedCount > 0) {
+  if (below(childSuitabilityRate, 70) && refsCompletedCount > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Ensure references specifically address suitability for working with children — currently only ${childSuitabilityRate}%. Revise reference request templates.`,
@@ -1448,7 +1444,7 @@ export function computeDbsRenewalStaffVetting(
     });
   }
 
-  if (beforeStartRate < 70 && totalRefs > 0) {
+  if (below(beforeStartRate, 70) && totalRefs > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Strengthen safer recruitment timelines — only ${beforeStartRate}% of references obtained before start date. References must be received and verified before employment begins.`,
@@ -1457,7 +1453,7 @@ export function computeDbsRenewalStaffVetting(
     });
   }
 
-  if (gapsExplorationRate < 60 && refsCompletedCount > 0) {
+  if (below(gapsExplorationRate, 60) && refsCompletedCount > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Improve employment gap exploration in references — only ${gapsExplorationRate}% of references address gaps. Embed gap questions into reference request forms.`,
@@ -1467,7 +1463,7 @@ export function computeDbsRenewalStaffVetting(
   }
 
   // Planned urgency recommendations
-  if (dbsOnUpdateServiceCount > 0 && dbsUpdateServiceRate < 70 && completedDbsCount > 0) {
+  if (dbsOnUpdateServiceCount > 0 && below(dbsUpdateServiceRate, 70) && completedDbsCount > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Increase DBS update service enrolment — currently at ${dbsUpdateServiceRate}%. Update service enables real-time status checks and reduces renewal burden.`,
@@ -1485,7 +1481,7 @@ export function computeDbsRenewalStaffVetting(
     });
   }
 
-  if (dbsCertVerificationRate < 80 && completedDbsCount > 0) {
+  if (below(dbsCertVerificationRate, 80) && completedDbsCount > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Improve DBS certificate verification — currently at ${dbsCertVerificationRate}%. All DBS certificates should be physically seen, verified, and recorded.`,
@@ -1494,7 +1490,7 @@ export function computeDbsRenewalStaffVetting(
     });
   }
 
-  if (directContactRate < 70 && refsCompletedCount > 0) {
+  if (below(directContactRate, 70) && refsCompletedCount > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Increase direct referee contact rate from ${directContactRate}% — telephone or in-person contact with referees provides stronger verification than written references alone.`,
@@ -1624,21 +1620,21 @@ export function computeDbsRenewalStaffVetting(
     }
   }
 
-  if (fullyVettedRate < 30 && (total_staff > 0 || allStaffIds.size > 0)) {
+  if (below(fullyVettedRate, 30) && (total_staff > 0 || allStaffIds.size > 0)) {
     insights.push({
       text: `Only ${fullyVettedRate}% of staff are fully vetted across all categories. This indicates systemic weaknesses in safer recruitment that Ofsted will flag as a serious concern.`,
       severity: "critical",
     });
   }
 
-  if (dbsCurrencyRate < 50 && totalDbs > 0) {
+  if (below(dbsCurrencyRate, 50) && totalDbs > 0) {
     insights.push({
       text: `DBS currency rate is at ${dbsCurrencyRate}% — more than half of DBS checks are not current. This is below any acceptable compliance threshold and will be flagged as inadequate.`,
       severity: "critical",
     });
   }
 
-  if (regulatedActivityRate < 70 && regulatedActivityRecords.length >= 3) {
+  if (below(regulatedActivityRate, 70) && regulatedActivityRecords.length >= 3) {
     insights.push({
       text: `Only ${regulatedActivityRate}% of staff in regulated activity have compliant enhanced DBS with barred list checks. This is a statutory requirement — non-compliance is a safeguarding risk.`,
       severity: "critical",
@@ -1666,7 +1662,7 @@ export function computeDbsRenewalStaffVetting(
     });
   }
 
-  if (dbsUpdateServiceRate < 50 && completedDbsCount >= 5) {
+  if (below(dbsUpdateServiceRate, 50) && completedDbsCount >= 5) {
     insights.push({
       text: `Only ${dbsUpdateServiceRate}% of staff with completed DBS are on the update service. Enrolling on the update service allows real-time portability checks and reduces renewal admin.`,
       severity: "warning",
@@ -1680,14 +1676,14 @@ export function computeDbsRenewalStaffVetting(
     });
   }
 
-  if (referenceVerificationRate >= 50 && referenceVerificationRate < 75 && totalRefs > 0) {
+  if (meets(referenceVerificationRate, 50) && below(referenceVerificationRate, 75) && totalRefs > 0) {
     insights.push({
       text: `Reference verification rate is ${referenceVerificationRate}%. While some verification is occurring, strengthening direct referee contact would improve confidence in safer recruitment.`,
       severity: "warning",
     });
   }
 
-  if (beforeStartRate < 70 && beforeStartRate >= 40 && totalRefs > 0) {
+  if (below(beforeStartRate, 70) && meets(beforeStartRate, 40) && totalRefs > 0) {
     insights.push({
       text: `Only ${beforeStartRate}% of references were obtained before start date. References obtained after employment begins weaken the safer recruitment process — review your timeline procedures.`,
       severity: "warning",
@@ -1718,7 +1714,7 @@ export function computeDbsRenewalStaffVetting(
     });
   }
 
-  if (childSuitabilityRate >= 50 && childSuitabilityRate < 70 && refsCompletedCount > 0) {
+  if (meets(childSuitabilityRate, 50) && below(childSuitabilityRate, 70) && refsCompletedCount > 0) {
     insights.push({
       text: `Only ${childSuitabilityRate}% of references specifically cover suitability for working with children. Reference request templates should explicitly ask about child suitability.`,
       severity: "warning",
@@ -1728,10 +1724,10 @@ export function computeDbsRenewalStaffVetting(
   // ── Positive insights ────────────────────────────────────────────────
 
   if (
-    dbsCurrencyRate >= 95 &&
-    enhancedDbsRate >= 95 &&
-    barredListRate >= 95 &&
-    referenceVerificationRate >= 90 &&
+    meets(dbsCurrencyRate, 95) &&
+    meets(enhancedDbsRate, 95) &&
+    meets(barredListRate, 95) &&
+    meets(referenceVerificationRate, 90) &&
     totalDbs > 0 &&
     totalEnhanced > 0 &&
     totalBarred > 0 &&
@@ -1743,7 +1739,7 @@ export function computeDbsRenewalStaffVetting(
     });
   }
 
-  if (fullyVettedRate >= 90 && (total_staff > 0 || allStaffIds.size > 0)) {
+  if (meets(fullyVettedRate, 90) && (total_staff > 0 || allStaffIds.size > 0)) {
     insights.push({
       text: `${fullyVettedRate}% of staff are fully vetted across all categories (DBS, enhanced DBS, barred list, references). This demonstrates a robust safer recruitment process.`,
       severity: "positive",
@@ -1757,42 +1753,42 @@ export function computeDbsRenewalStaffVetting(
     });
   }
 
-  if (disclosureRiskAssessmentRate >= 100 && dbsWithDisclosuresCount >= 2) {
+  if (meets(disclosureRiskAssessmentRate, 100) && dbsWithDisclosuresCount >= 2) {
     insights.push({
       text: `All ${dbsWithDisclosuresCount} DBS disclosures have completed risk assessments. The home demonstrates robust processes for managing disclosures and making informed decisions about staff suitability.`,
       severity: "positive",
     });
   }
 
-  if (dbsOnUpdateServiceCount > 0 && dbsUpdateServiceRate >= 80 && completedDbsCount >= 5) {
+  if (dbsOnUpdateServiceCount > 0 && meets(dbsUpdateServiceRate, 80) && completedDbsCount >= 5) {
     insights.push({
       text: `${dbsUpdateServiceRate}% of staff are enrolled on the DBS update service — this enables real-time status checks and demonstrates forward-thinking vetting governance.`,
       severity: "positive",
     });
   }
 
-  if (beforeStartRate >= 95 && totalRefs >= 5) {
+  if (meets(beforeStartRate, 95) && totalRefs >= 5) {
     insights.push({
       text: `${beforeStartRate}% of references obtained before start date across ${totalRefs} references — exemplary safer recruitment timeline compliance.`,
       severity: "positive",
     });
   }
 
-  if (directContactRate >= 90 && refsCompletedCount >= 5) {
+  if (meets(directContactRate, 90) && refsCompletedCount >= 5) {
     insights.push({
       text: `${directContactRate}% of references involved direct referee contact — the home goes beyond written references to verify applicant suitability through personal engagement.`,
       severity: "positive",
     });
   }
 
-  if (childSuitabilityRate >= 95 && refsCompletedCount >= 5) {
+  if (meets(childSuitabilityRate, 95) && refsCompletedCount >= 5) {
     insights.push({
       text: `${childSuitabilityRate}% of references specifically address suitability for working with children — thorough alignment with SCCIF safety expectations.`,
       severity: "positive",
     });
   }
 
-  if (gapsExplorationRate >= 90 && refsCompletedCount >= 5) {
+  if (meets(gapsExplorationRate, 90) && refsCompletedCount >= 5) {
     insights.push({
       text: `${gapsExplorationRate}% of references include employment gap exploration across ${refsCompletedCount} references — comprehensive approach to understanding applicant history.`,
       severity: "positive",
@@ -1813,14 +1809,14 @@ export function computeDbsRenewalStaffVetting(
     });
   }
 
-  if (overseasCheckRate >= 95 && totalOverseas >= 3) {
+  if (meets(overseasCheckRate, 95) && totalOverseas >= 3) {
     insights.push({
       text: `Overseas police check handling at ${overseasCheckRate}% across ${totalOverseas} checks covering ${countryCount} countr${countryCount > 1 ? "ies" : "y"} — thorough international vetting practice.`,
       severity: "positive",
     });
   }
 
-  if (concernFollowUpRate >= 100 && refsWithConcernsCount >= 2) {
+  if (meets(concernFollowUpRate, 100) && refsWithConcernsCount >= 2) {
     insights.push({
       text: `All ${refsWithConcernsCount} reference concerns have been followed up and documented. The home demonstrates a diligent approach to managing recruitment risk.`,
       severity: "positive",
@@ -1846,11 +1842,11 @@ export function computeDbsRenewalStaffVetting(
       : "Good DBS renewal and staff vetting compliance — safer recruitment practices are maintained across key areas.";
   } else if (rating === "adequate") {
     const gaps: string[] = [];
-    if (dbsCurrencyRate < 70 && totalDbs > 0) gaps.push("DBS currency");
-    if (enhancedDbsRate < 70 && totalEnhanced > 0) gaps.push("enhanced DBS coverage");
-    if (barredListRate < 70 && totalBarred > 0) gaps.push("barred list verification");
-    if (referenceVerificationRate < 60 && totalRefs > 0) gaps.push("reference verification");
-    if (overseasCheckRate < 60 && totalOverseas > 0) gaps.push("overseas checks");
+    if (below(dbsCurrencyRate, 70) && totalDbs > 0) gaps.push("DBS currency");
+    if (below(enhancedDbsRate, 70) && totalEnhanced > 0) gaps.push("enhanced DBS coverage");
+    if (below(barredListRate, 70) && totalBarred > 0) gaps.push("barred list verification");
+    if (below(referenceVerificationRate, 60) && totalRefs > 0) gaps.push("reference verification");
+    if (below(overseasCheckRate, 60) && totalOverseas > 0) gaps.push("overseas checks");
     headline = gaps.length > 0
       ? `Adequate DBS and vetting compliance — gaps in ${gaps.join(", ")} require focused attention to meet safer recruitment expectations.`
       : "Adequate DBS renewal and staff vetting compliance — improvements needed across multiple areas to reach good or outstanding.";

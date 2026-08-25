@@ -278,14 +278,14 @@ describe("Home Furniture & Room Personalisation Intelligence Engine", () => {
       expect(r.insights[0].severity).toBe("critical");
     });
 
-    it("all rates are 0 when arrays are empty but children > 0", () => {
+    it("all rates are null when arrays are empty but children > 0", () => {
       const r = computeFurnitureRoomPersonalisation(baseInput({ total_children: 2 }));
-      expect(r.furniture_adequacy_rate).toBe(0);
-      expect(r.personalisation_rate).toBe(0);
-      expect(r.child_choice_rate).toBe(0);
-      expect(r.comfort_rate).toBe(0);
-      expect(r.dignity_rate).toBe(0);
-      expect(r.child_satisfaction_rate).toBe(0);
+      expect(r.furniture_adequacy_rate).toBeNull();
+      expect(r.personalisation_rate).toBeNull();
+      expect(r.child_choice_rate).toBeNull();
+      expect(r.comfort_rate).toBeNull();
+      expect(r.dignity_rate).toBeNull();
+      expect(r.child_satisfaction_rate).toBeNull();
     });
 
     it("all totals are 0 when arrays are empty but children > 0", () => {
@@ -415,11 +415,11 @@ describe("Home Furniture & Room Personalisation Intelligence Engine", () => {
       expect(r.furniture_adequacy_rate).toBe(78);
     });
 
-    it("returns 0 when furniture_adequacy_records is empty", () => {
+    it("returns null when furniture_adequacy_records is empty", () => {
       const r = computeFurnitureRoomPersonalisation(baseInput({
         comfort_assessment_records: [makeComfort()],
       }));
-      expect(r.furniture_adequacy_rate).toBe(0);
+      expect(r.furniture_adequacy_rate).toBeNull();
     });
 
     it("handles single item adequate out of 9", () => {
@@ -516,7 +516,7 @@ describe("Home Furniture & Room Personalisation Intelligence Engine", () => {
       expect(r.furniture_condition_avg).toBe(2.5); // (4+1)/2
     });
 
-    it("returns 0 when no furniture records", () => {
+    it("returns null when no furniture records", () => {
       const r = computeFurnitureRoomPersonalisation(baseInput({
         comfort_assessment_records: [makeComfort()],
       }));
@@ -580,11 +580,11 @@ describe("Home Furniture & Room Personalisation Intelligence Engine", () => {
       expect(r.personalisation_rate).toBe(75);
     });
 
-    it("returns 0 when no personalisation records", () => {
+    it("returns null when no personalisation records", () => {
       const r = computeFurnitureRoomPersonalisation(baseInput({
         furniture_adequacy_records: [makeFurniture()],
       }));
-      expect(r.personalisation_rate).toBe(0);
+      expect(r.personalisation_rate).toBeNull();
     });
 
     it("counts has_personal_photos correctly", () => {
@@ -723,9 +723,9 @@ describe("Home Furniture & Room Personalisation Intelligence Engine", () => {
       expect(r.choice_fulfilment_rate).toBe(50);
     });
 
-    it("returns 0 when no choice records", () => {
+    it("returns null when no choice records", () => {
       const r = computeFurnitureRoomPersonalisation(baseInput());
-      expect(r.choice_fulfilment_rate).toBe(0);
+      expect(r.choice_fulfilment_rate).toBeNull();
     });
 
     it("returns 75% for 3 of 4 fulfilled", () => {
@@ -797,11 +797,11 @@ describe("Home Furniture & Room Personalisation Intelligence Engine", () => {
       expect(r.comfort_rate).toBe(50);
     });
 
-    it("returns 0 when no comfort records", () => {
+    it("returns null when no comfort records", () => {
       const r = computeFurnitureRoomPersonalisation(baseInput({
         furniture_adequacy_records: [makeFurniture()],
       }));
-      expect(r.comfort_rate).toBe(0);
+      expect(r.comfort_rate).toBeNull();
     });
 
     it("counts feels_safe_in_room correctly", () => {
@@ -929,11 +929,11 @@ describe("Home Furniture & Room Personalisation Intelligence Engine", () => {
       expect(r.dignity_rate).toBe(90);
     });
 
-    it("returns 0 when no dignity records", () => {
+    it("returns null when no dignity records", () => {
       const r = computeFurnitureRoomPersonalisation(baseInput({
         furniture_adequacy_records: [makeFurniture()],
       }));
-      expect(r.dignity_rate).toBe(0);
+      expect(r.dignity_rate).toBeNull();
     });
 
     it("counts has_working_lock correctly", () => {
@@ -993,12 +993,12 @@ describe("Home Furniture & Room Personalisation Intelligence Engine", () => {
       expect(r.child_satisfaction_rate).toBe(100);
     });
 
-    it("returns 0 when no satisfaction opportunities exist", () => {
+    it("returns null when no satisfaction opportunities exist", () => {
       const r = computeFurnitureRoomPersonalisation(baseInput({
         furniture_adequacy_records: [makeFurniture()],
         dignity_space_records: [makeDignity()],
       }));
-      expect(r.child_satisfaction_rate).toBe(0);
+      expect(r.child_satisfaction_rate).toBeNull();
     });
 
     it("calculates composite across personalisation, choice, and comfort", () => {
@@ -1028,7 +1028,7 @@ describe("Home Furniture & Room Personalisation Intelligence Engine", () => {
         ],
       }));
       // 0 fulfilled => denominator is 0 => rate 0
-      expect(r.child_satisfaction_rate).toBe(0);
+      expect(r.child_satisfaction_rate).toBeNull();
     });
 
     it("returns 50% with mixed satisfaction", () => {
@@ -1069,9 +1069,9 @@ describe("Home Furniture & Room Personalisation Intelligence Engine", () => {
       expect(r.personalisation_budget_utilisation_rate).toBe(0);
     });
 
-    it("returns 0 when no personalisation records", () => {
+    it("returns null when no personalisation records", () => {
       const r = computeFurnitureRoomPersonalisation(baseInput());
-      expect(r.personalisation_budget_utilisation_rate).toBe(0);
+      expect(r.personalisation_budget_utilisation_rate).toBeNull();
     });
 
     it("aggregates across multiple records", () => {
@@ -2632,7 +2632,7 @@ describe("Home Furniture & Room Personalisation Intelligence Engine", () => {
       const r = computeFurnitureRoomPersonalisation(baseInput({
         room_personalisation_records: [p],
       }));
-      expect(r.personalisation_budget_utilisation_rate).toBe(0);
+      expect(r.personalisation_budget_utilisation_rate).toBeNull();
     });
 
     it("only some arrays populated — does not crash", () => {
@@ -2641,8 +2641,8 @@ describe("Home Furniture & Room Personalisation Intelligence Engine", () => {
         dignity_space_records: [makeDignity()],
       }));
       expect(r.room_score).toBeGreaterThan(0);
-      expect(r.personalisation_rate).toBe(0);
-      expect(r.comfort_rate).toBe(0);
+      expect(r.personalisation_rate).toBeNull();
+      expect(r.comfort_rate).toBeNull();
     });
 
     it("handles comfort rating at boundary values", () => {

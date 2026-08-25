@@ -201,14 +201,14 @@ describe("computeDentalOralHealth", () => {
       expect(r.headline).toContain("insufficient data");
     });
 
-    it("all rates are 0", () => {
+    it("all rates are null", () => {
       const r = computeDentalOralHealth(baseInput({ total_children: 0 }));
-      expect(r.checkup_compliance_rate).toBe(0);
-      expect(r.oral_hygiene_rate).toBe(0);
-      expect(r.treatment_completion_rate).toBe(0);
-      expect(r.orthodontic_compliance_rate).toBe(0);
-      expect(r.anxiety_support_rate).toBe(0);
-      expect(r.child_engagement_rate).toBe(0);
+      expect(r.checkup_compliance_rate).toBeNull();
+      expect(r.oral_hygiene_rate).toBeNull();
+      expect(r.treatment_completion_rate).toBeNull();
+      expect(r.orthodontic_compliance_rate).toBeNull();
+      expect(r.anxiety_support_rate).toBeNull();
+      expect(r.child_engagement_rate).toBeNull();
     });
 
     it("no strengths, concerns, recommendations, or insights", () => {
@@ -259,46 +259,46 @@ describe("computeDentalOralHealth", () => {
       expect(r.insights[0].severity).toBe("critical");
     });
 
-    it("all rates are 0 in the floor case", () => {
+    it("all rates are null in the floor case", () => {
       const r = computeDentalOralHealth(baseInput({ total_children: 2 }));
-      expect(r.checkup_compliance_rate).toBe(0);
-      expect(r.oral_hygiene_rate).toBe(0);
-      expect(r.treatment_completion_rate).toBe(0);
-      expect(r.orthodontic_compliance_rate).toBe(0);
-      expect(r.anxiety_support_rate).toBe(0);
-      expect(r.child_engagement_rate).toBe(0);
+      expect(r.checkup_compliance_rate).toBeNull();
+      expect(r.oral_hygiene_rate).toBeNull();
+      expect(r.treatment_completion_rate).toBeNull();
+      expect(r.orthodontic_compliance_rate).toBeNull();
+      expect(r.anxiety_support_rate).toBeNull();
+      expect(r.child_engagement_rate).toBeNull();
     });
   });
 
   // ── pct helper edge case ─────────────────────────────────────────────
 
   describe("pct(0,0) = 0 behaviour", () => {
-    it("no orthodontic records yields 0% orthodontic compliance", () => {
+    it("no orthodontic records yields null orthodontic compliance", () => {
       const r = computeDentalOralHealth(
         baseInput({ dental_checkup_records: [makeCheckup()] }),
       );
-      expect(r.orthodontic_compliance_rate).toBe(0);
+      expect(r.orthodontic_compliance_rate).toBeNull();
     });
 
-    it("no anxiety records yields 0% anxiety support", () => {
+    it("no anxiety records yields null anxiety support", () => {
       const r = computeDentalOralHealth(
         baseInput({ dental_checkup_records: [makeCheckup()] }),
       );
-      expect(r.anxiety_support_rate).toBe(0);
+      expect(r.anxiety_support_rate).toBeNull();
     });
 
-    it("no treatment records yields 0% treatment completion", () => {
+    it("no treatment records yields null treatment completion", () => {
       const r = computeDentalOralHealth(
         baseInput({ dental_checkup_records: [makeCheckup()] }),
       );
-      expect(r.treatment_completion_rate).toBe(0);
+      expect(r.treatment_completion_rate).toBeNull();
     });
 
-    it("no hygiene records yields 0% oral hygiene", () => {
+    it("no hygiene records yields null oral hygiene", () => {
       const r = computeDentalOralHealth(
         baseInput({ dental_checkup_records: [makeCheckup()] }),
       );
-      expect(r.oral_hygiene_rate).toBe(0);
+      expect(r.oral_hygiene_rate).toBeNull();
     });
   });
 
@@ -1681,11 +1681,11 @@ describe("computeDentalOralHealth", () => {
       expect(r.child_engagement_rate).toBe(0);
     });
 
-    it("0% when no records at all (pct 0,0)", () => {
+    it("null when no records at all (pct 0,0)", () => {
       const r = computeDentalOralHealth(
         baseInput({ total_children: 0 }),
       );
-      expect(r.child_engagement_rate).toBe(0);
+      expect(r.child_engagement_rate).toBeNull();
     });
   });
 

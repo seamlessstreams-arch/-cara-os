@@ -97,7 +97,7 @@ export function HomeEducationEngagementIntelligenceCard() {
               {ratingStyle.label}
             </span>
             {d.education_rating !== "insufficient_data" && (
-              <span className="text-xs font-bold tabular-nums text-slate-600">{d.education_score}%</span>
+              <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.education_score)}</span>
             )}
           </CardTitle>
         </div>
@@ -117,7 +117,7 @@ export function HomeEducationEngagementIntelligenceCard() {
                   (d.attendance.attendance_rate ?? 0) >= 95 ? "text-[--cs-success]" :
                   (d.attendance.attendance_rate ?? 0) >= 80 ? "text-blue-600" : "text-[--cs-risk]"
                 )}>
-                  {d.attendance.total_sessions_30d > 0 ? `${d.attendance.attendance_rate}%` : "—"}
+                  {d.attendance.total_sessions_30d > 0 ? `${formatRate(d.attendance.attendance_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Attendance</p>

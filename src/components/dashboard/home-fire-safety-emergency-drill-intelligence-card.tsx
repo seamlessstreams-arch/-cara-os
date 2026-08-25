@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Flame } from "luc
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { FireSafetyRating } from "@/lib/engines/home-fire-safety-emergency-drill-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 function useHomeFireSafetyEmergencyDrillIntelligence() {
   return useQuery({
@@ -61,7 +62,7 @@ export function HomeFireSafetyEmergencyDrillIntelligenceCard() {
             <Flame className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-[--cs-risk]")} />
             <span className="text-slate-900 font-bold">Fire Safety & Emergency Drill</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.fire_safety_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.fire_safety_score}%</span>}
+            {d.fire_safety_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.fire_safety_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -69,28 +70,28 @@ export function HomeFireSafetyEmergencyDrillIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.fire_safety_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.drill_compliance_rate >= 90 ? "bg-green-50" : d.drill_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.drill_compliance_rate >= 90 ? "text-[--cs-success]" : d.drill_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.drill_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.drill_compliance_rate, 90) ? "bg-green-50" : meets(d.drill_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.drill_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.drill_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.drill_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Drills</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.evacuation_time_rate >= 90 ? "bg-green-50" : d.evacuation_time_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.evacuation_time_rate >= 90 ? "text-[--cs-success]" : d.evacuation_time_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.evacuation_time_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.evacuation_time_rate, 90) ? "bg-green-50" : meets(d.evacuation_time_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.evacuation_time_rate, 90) ? "text-[--cs-success]" : meets(d.evacuation_time_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.evacuation_time_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Evac Time</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.risk_assessment_currency_rate >= 90 ? "bg-green-50" : d.risk_assessment_currency_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.risk_assessment_currency_rate >= 90 ? "text-[--cs-success]" : d.risk_assessment_currency_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.risk_assessment_currency_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.risk_assessment_currency_rate, 90) ? "bg-green-50" : meets(d.risk_assessment_currency_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.risk_assessment_currency_rate, 90) ? "text-[--cs-success]" : meets(d.risk_assessment_currency_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.risk_assessment_currency_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Risk Asmt</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.equipment_check_rate >= 90 ? "bg-green-50" : d.equipment_check_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.equipment_check_rate >= 90 ? "text-[--cs-success]" : d.equipment_check_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.equipment_check_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.equipment_check_rate, 90) ? "bg-green-50" : meets(d.equipment_check_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.equipment_check_rate, 90) ? "text-[--cs-success]" : meets(d.equipment_check_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.equipment_check_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Equipment</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.staff_training_rate >= 90 ? "bg-green-50" : d.staff_training_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.staff_training_rate >= 90 ? "text-[--cs-success]" : d.staff_training_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.staff_training_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.staff_training_rate, 90) ? "bg-green-50" : meets(d.staff_training_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.staff_training_rate, 90) ? "text-[--cs-success]" : meets(d.staff_training_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.staff_training_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Training</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.documentation_compliance_rate >= 90 ? "bg-green-50" : d.documentation_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.documentation_compliance_rate >= 90 ? "text-[--cs-success]" : d.documentation_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.documentation_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.documentation_compliance_rate, 90) ? "bg-green-50" : meets(d.documentation_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.documentation_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.documentation_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.documentation_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Docs</p>
             </div>
           </div>

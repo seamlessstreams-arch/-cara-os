@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { DbsVettingRating } from "@/lib/engines/home-dbs-renewal-staff-vetting-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 const RATING_STYLES: Record<DbsVettingRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -57,7 +58,7 @@ export function HomeDbsRenewalStaffVettingIntelligenceCard() {
             <ShieldCheck className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-slate-600")} />
             <span className="text-slate-900 font-bold">DBS Renewal &amp; Staff Vetting</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.vetting_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.vetting_score}%</span>}
+            {d.vetting_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.vetting_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -65,28 +66,28 @@ export function HomeDbsRenewalStaffVettingIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.vetting_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.dbs_currency_rate >= 90 ? "bg-green-50" : d.dbs_currency_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.dbs_currency_rate >= 90 ? "text-[--cs-success]" : d.dbs_currency_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.dbs_currency_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.dbs_currency_rate, 90) ? "bg-green-50" : meets(d.dbs_currency_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.dbs_currency_rate, 90) ? "text-[--cs-success]" : meets(d.dbs_currency_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.dbs_currency_rate)}</p>
               <p className="text-[9px] text-muted-foreground">DBS Current</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.enhanced_dbs_rate >= 90 ? "bg-green-50" : d.enhanced_dbs_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.enhanced_dbs_rate >= 90 ? "text-[--cs-success]" : d.enhanced_dbs_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.enhanced_dbs_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.enhanced_dbs_rate, 90) ? "bg-green-50" : meets(d.enhanced_dbs_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.enhanced_dbs_rate, 90) ? "text-[--cs-success]" : meets(d.enhanced_dbs_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.enhanced_dbs_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Enhanced</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.overseas_check_rate >= 90 ? "bg-green-50" : d.overseas_check_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.overseas_check_rate >= 90 ? "text-[--cs-success]" : d.overseas_check_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.overseas_check_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.overseas_check_rate, 90) ? "bg-green-50" : meets(d.overseas_check_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.overseas_check_rate, 90) ? "text-[--cs-success]" : meets(d.overseas_check_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.overseas_check_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Overseas</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.barred_list_rate >= 90 ? "bg-green-50" : d.barred_list_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.barred_list_rate >= 90 ? "text-[--cs-success]" : d.barred_list_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.barred_list_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.barred_list_rate, 90) ? "bg-green-50" : meets(d.barred_list_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.barred_list_rate, 90) ? "text-[--cs-success]" : meets(d.barred_list_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.barred_list_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Barred List</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.reference_verification_rate >= 90 ? "bg-green-50" : d.reference_verification_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.reference_verification_rate >= 90 ? "text-[--cs-success]" : d.reference_verification_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.reference_verification_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.reference_verification_rate, 90) ? "bg-green-50" : meets(d.reference_verification_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.reference_verification_rate, 90) ? "text-[--cs-success]" : meets(d.reference_verification_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.reference_verification_rate)}</p>
               <p className="text-[9px] text-muted-foreground">References</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.renewal_timeliness_rate >= 90 ? "bg-green-50" : d.renewal_timeliness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.renewal_timeliness_rate >= 90 ? "text-[--cs-success]" : d.renewal_timeliness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.renewal_timeliness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.renewal_timeliness_rate, 90) ? "bg-green-50" : meets(d.renewal_timeliness_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.renewal_timeliness_rate, 90) ? "text-[--cs-success]" : meets(d.renewal_timeliness_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.renewal_timeliness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Timeliness</p>
             </div>
           </div>

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Smile } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { DentalOralHealthRating } from "@/lib/engines/home-dental-oral-health-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 const RATING_STYLES: Record<DentalOralHealthRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -57,7 +58,7 @@ export function HomeDentalOralHealthIntelligenceCard() {
             <Smile className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-cyan-600")} />
             <span className="text-slate-900 font-bold">Dental & Oral Health</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.dental_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.dental_score}%</span>}
+            {d.dental_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.dental_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -65,28 +66,28 @@ export function HomeDentalOralHealthIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.dental_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.checkup_compliance_rate >= 90 ? "bg-green-50" : d.checkup_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.checkup_compliance_rate >= 90 ? "text-[--cs-success]" : d.checkup_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.checkup_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.checkup_compliance_rate, 90) ? "bg-green-50" : meets(d.checkup_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.checkup_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.checkup_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.checkup_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Check-ups</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.oral_hygiene_rate >= 90 ? "bg-green-50" : d.oral_hygiene_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.oral_hygiene_rate >= 90 ? "text-[--cs-success]" : d.oral_hygiene_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.oral_hygiene_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.oral_hygiene_rate, 90) ? "bg-green-50" : meets(d.oral_hygiene_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.oral_hygiene_rate, 90) ? "text-[--cs-success]" : meets(d.oral_hygiene_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.oral_hygiene_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Hygiene</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.treatment_completion_rate >= 90 ? "bg-green-50" : d.treatment_completion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.treatment_completion_rate >= 90 ? "text-[--cs-success]" : d.treatment_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.treatment_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.treatment_completion_rate, 90) ? "bg-green-50" : meets(d.treatment_completion_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.treatment_completion_rate, 90) ? "text-[--cs-success]" : meets(d.treatment_completion_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.treatment_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Treatment</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.orthodontic_compliance_rate >= 90 ? "bg-green-50" : d.orthodontic_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.orthodontic_compliance_rate >= 90 ? "text-[--cs-success]" : d.orthodontic_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.orthodontic_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.orthodontic_compliance_rate, 90) ? "bg-green-50" : meets(d.orthodontic_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.orthodontic_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.orthodontic_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.orthodontic_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Ortho.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.anxiety_support_rate >= 90 ? "bg-green-50" : d.anxiety_support_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.anxiety_support_rate >= 90 ? "text-[--cs-success]" : d.anxiety_support_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.anxiety_support_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.anxiety_support_rate, 90) ? "bg-green-50" : meets(d.anxiety_support_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.anxiety_support_rate, 90) ? "text-[--cs-success]" : meets(d.anxiety_support_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.anxiety_support_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Anxiety</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_engagement_rate >= 90 ? "bg-green-50" : d.child_engagement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_engagement_rate >= 90 ? "text-[--cs-success]" : d.child_engagement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_engagement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_engagement_rate, 90) ? "bg-green-50" : meets(d.child_engagement_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_engagement_rate, 90) ? "text-[--cs-success]" : meets(d.child_engagement_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_engagement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Engage.</p>
             </div>
           </div>

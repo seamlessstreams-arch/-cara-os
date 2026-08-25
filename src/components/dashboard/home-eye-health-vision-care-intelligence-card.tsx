@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { EyeHealthRating } from "@/lib/engines/home-eye-health-vision-care-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 function useHomeEyeHealthVisionCareIntelligence() {
   return useQuery({
@@ -61,7 +62,7 @@ export function HomeEyeHealthVisionCareIntelligenceCard() {
             <Eye className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-sky-600")} />
             <span className="text-slate-900 font-bold">Eye Health & Vision Care</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.eye_health_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.eye_health_score}%</span>}
+            {d.eye_health_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.eye_health_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -69,28 +70,28 @@ export function HomeEyeHealthVisionCareIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.eye_health_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.eye_test_compliance_rate >= 90 ? "bg-green-50" : d.eye_test_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.eye_test_compliance_rate >= 90 ? "text-[--cs-success]" : d.eye_test_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.eye_test_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.eye_test_compliance_rate, 90) ? "bg-green-50" : meets(d.eye_test_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.eye_test_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.eye_test_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.eye_test_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Eye Tests</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.prescription_management_rate >= 90 ? "bg-green-50" : d.prescription_management_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.prescription_management_rate >= 90 ? "text-[--cs-success]" : d.prescription_management_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.prescription_management_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.prescription_management_rate, 90) ? "bg-green-50" : meets(d.prescription_management_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.prescription_management_rate, 90) ? "text-[--cs-success]" : meets(d.prescription_management_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.prescription_management_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Prescriptions</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.optician_referral_rate >= 90 ? "bg-green-50" : d.optician_referral_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.optician_referral_rate >= 90 ? "text-[--cs-success]" : d.optician_referral_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.optician_referral_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.optician_referral_rate, 90) ? "bg-green-50" : meets(d.optician_referral_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.optician_referral_rate, 90) ? "text-[--cs-success]" : meets(d.optician_referral_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.optician_referral_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Referrals</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.visual_aid_rate >= 90 ? "bg-green-50" : d.visual_aid_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.visual_aid_rate >= 90 ? "text-[--cs-success]" : d.visual_aid_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.visual_aid_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.visual_aid_rate, 90) ? "bg-green-50" : meets(d.visual_aid_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.visual_aid_rate, 90) ? "text-[--cs-success]" : meets(d.visual_aid_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.visual_aid_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Visual Aids</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_engagement_rate >= 90 ? "bg-green-50" : d.child_engagement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_engagement_rate >= 90 ? "text-[--cs-success]" : d.child_engagement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_engagement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_engagement_rate, 90) ? "bg-green-50" : meets(d.child_engagement_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_engagement_rate, 90) ? "text-[--cs-success]" : meets(d.child_engagement_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_engagement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Engagement</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.follow_up_rate >= 90 ? "bg-green-50" : d.follow_up_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.follow_up_rate >= 90 ? "text-[--cs-success]" : d.follow_up_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.follow_up_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.follow_up_rate, 90) ? "bg-green-50" : meets(d.follow_up_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.follow_up_rate, 90) ? "text-[--cs-success]" : meets(d.follow_up_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.follow_up_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Follow-up</p>
             </div>
           </div>

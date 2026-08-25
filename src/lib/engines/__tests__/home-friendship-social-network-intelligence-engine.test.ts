@@ -183,18 +183,18 @@ describe("insufficient data", () => {
       child_satisfaction_records: [],
     }));
     expect(r.total_mappings).toBe(0);
-    expect(r.friendship_mapping_rate).toBe(0);
-    expect(r.social_network_rate).toBe(0);
-    expect(r.peer_support_rate).toBe(0);
-    expect(r.isolation_prevention_rate).toBe(0);
-    expect(r.child_satisfaction_rate).toBe(0);
-    expect(r.child_confidence_rate).toBe(0);
+    expect(r.friendship_mapping_rate).toBeNull();
+    expect(r.social_network_rate).toBeNull();
+    expect(r.peer_support_rate).toBeNull();
+    expect(r.isolation_prevention_rate).toBeNull();
+    expect(r.child_satisfaction_rate).toBeNull();
+    expect(r.child_confidence_rate).toBeNull();
     expect(r.avg_friends_per_child).toBeNull();
     expect(r.avg_friendship_quality).toBeNull();
-    expect(r.network_positivity_rate).toBe(0);
+    expect(r.network_positivity_rate).toBeNull();
     expect(r.peer_engagement_avg).toBeNull();
     expect(r.isolation_high_risk_count).toBe(0);
-    expect(r.loneliness_rate).toBe(0);
+    expect(r.loneliness_rate).toBeNull();
   });
 
   it("returns empty strengths, concerns, recommendations, insights on insufficient_data", () => {
@@ -399,13 +399,13 @@ describe("social network metrics", () => {
     expect(r.network_positivity_rate).toBe(85);
   });
 
-  it("returns 0 network_positivity when no contacts", () => {
+  it("returns null network_positivity when no contacts", () => {
     const r = computeFriendshipSocialNetwork(baseInput({
       social_network_records: [
         makeNetwork({ id: "sn_1", contacts_count: 0, positive_contacts: 0, negative_contacts: 0, neutral_contacts: 0 }),
       ],
     }));
-    expect(r.network_positivity_rate).toBe(0);
+    expect(r.network_positivity_rate).toBeNull();
   });
 
   it("returns 100% social_network_rate when all children assessed", () => {
@@ -443,7 +443,7 @@ describe("peer support metrics", () => {
     expect(r.peer_engagement_avg).toBe(4);
   });
 
-  it("returns 0 peer_engagement_avg when no peer records", () => {
+  it("returns null peer_engagement_avg when no peer records", () => {
     const r = computeFriendshipSocialNetwork(baseInput({
       peer_support_records: [],
     }));
@@ -488,7 +488,7 @@ describe("isolation prevention metrics", () => {
     const r = computeFriendshipSocialNetwork(baseInput({
       isolation_prevention_records: [],
     }));
-    expect(r.isolation_prevention_rate).toBe(0);
+    expect(r.isolation_prevention_rate).toBeNull();
     expect(r.isolation_high_risk_count).toBe(0);
   });
 
@@ -549,13 +549,13 @@ describe("child satisfaction metrics", () => {
     expect(r.loneliness_rate).toBe(0);
   });
 
-  it("returns 0 for satisfaction metrics when no surveys", () => {
+  it("returns null for satisfaction metrics when no surveys", () => {
     const r = computeFriendshipSocialNetwork(baseInput({
       child_satisfaction_records: [],
     }));
-    expect(r.child_satisfaction_rate).toBe(0);
-    expect(r.child_confidence_rate).toBe(0);
-    expect(r.loneliness_rate).toBe(0);
+    expect(r.child_satisfaction_rate).toBeNull();
+    expect(r.child_confidence_rate).toBeNull();
+    expect(r.loneliness_rate).toBeNull();
   });
 });
 
@@ -2665,14 +2665,14 @@ describe("edge cases", () => {
     const r = computeFriendshipSocialNetwork(baseInput({
       isolation_prevention_records: [],
     }));
-    expect(r.isolation_prevention_rate).toBe(0);
+    expect(r.isolation_prevention_rate).toBeNull();
   });
 
   it("no loneliness penalty when no surveys exist", () => {
     const r = computeFriendshipSocialNetwork(baseInput({
       child_satisfaction_records: [],
     }));
-    expect(r.loneliness_rate).toBe(0);
+    expect(r.loneliness_rate).toBeNull();
   });
 });
 

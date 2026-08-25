@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Monitor } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { DigitalSafetyRating } from "@/lib/engines/home-digital-safety-online-protection-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 const RATING_STYLES: Record<DigitalSafetyRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -57,7 +58,7 @@ export function HomeDigitalSafetyOnlineProtectionIntelligenceCard() {
             <Monitor className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-sky-600")} />
             <span className="text-slate-900 font-bold">Digital Safety & Online Protection</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.digital_safety_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.digital_safety_score}%</span>}
+            {d.digital_safety_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.digital_safety_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -65,28 +66,28 @@ export function HomeDigitalSafetyOnlineProtectionIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.digital_safety_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.esafety_training_compliance_rate >= 90 ? "bg-green-50" : d.esafety_training_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.esafety_training_compliance_rate >= 90 ? "text-[--cs-success]" : d.esafety_training_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.esafety_training_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.esafety_training_compliance_rate, 90) ? "bg-green-50" : meets(d.esafety_training_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.esafety_training_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.esafety_training_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.esafety_training_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">E-Safety</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.usage_monitoring_rate >= 90 ? "bg-green-50" : d.usage_monitoring_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.usage_monitoring_rate >= 90 ? "text-[--cs-success]" : d.usage_monitoring_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.usage_monitoring_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.usage_monitoring_rate, 90) ? "bg-green-50" : meets(d.usage_monitoring_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.usage_monitoring_rate, 90) ? "text-[--cs-success]" : meets(d.usage_monitoring_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.usage_monitoring_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Monitoring</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.social_media_risk_assessment_rate >= 90 ? "bg-green-50" : d.social_media_risk_assessment_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.social_media_risk_assessment_rate >= 90 ? "text-[--cs-success]" : d.social_media_risk_assessment_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.social_media_risk_assessment_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.social_media_risk_assessment_rate, 90) ? "bg-green-50" : meets(d.social_media_risk_assessment_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.social_media_risk_assessment_rate, 90) ? "text-[--cs-success]" : meets(d.social_media_risk_assessment_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.social_media_risk_assessment_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Social Media</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.access_agreement_coverage_rate >= 90 ? "bg-green-50" : d.access_agreement_coverage_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.access_agreement_coverage_rate >= 90 ? "text-[--cs-success]" : d.access_agreement_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.access_agreement_coverage_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.access_agreement_coverage_rate, 90) ? "bg-green-50" : meets(d.access_agreement_coverage_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.access_agreement_coverage_rate, 90) ? "text-[--cs-success]" : meets(d.access_agreement_coverage_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.access_agreement_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Agreements</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.digital_literacy_engagement_rate >= 90 ? "bg-green-50" : d.digital_literacy_engagement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.digital_literacy_engagement_rate >= 90 ? "text-[--cs-success]" : d.digital_literacy_engagement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.digital_literacy_engagement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.digital_literacy_engagement_rate, 90) ? "bg-green-50" : meets(d.digital_literacy_engagement_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.digital_literacy_engagement_rate, 90) ? "text-[--cs-success]" : meets(d.digital_literacy_engagement_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.digital_literacy_engagement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Literacy</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.incident_response_rate >= 90 ? "bg-green-50" : d.incident_response_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.incident_response_rate >= 90 ? "text-[--cs-success]" : d.incident_response_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.incident_response_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.incident_response_rate, 90) ? "bg-green-50" : meets(d.incident_response_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.incident_response_rate, 90) ? "text-[--cs-success]" : meets(d.incident_response_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.incident_response_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Response</p>
             </div>
           </div>

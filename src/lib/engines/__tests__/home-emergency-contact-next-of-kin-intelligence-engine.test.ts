@@ -4,6 +4,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import { below, meets } from "@/lib/metrics/rate";
 import {
   computeEmergencyContactNextOfKin,
   type EmergencyContactInput,
@@ -190,14 +191,14 @@ describe("insufficient data", () => {
     expect(r.total_accessibility_tests).toBe(0);
   });
 
-  it("all rates are 0", () => {
+  it("all rates are null", () => {
     const r = computeEmergencyContactNextOfKin(emptyInput());
-    expect(r.contact_currency_rate).toBe(0);
-    expect(r.accessibility_rate).toBe(0);
-    expect(r.update_frequency_rate).toBe(0);
-    expect(r.multi_contact_rate).toBe(0);
-    expect(r.out_of_hours_rate).toBe(0);
-    expect(r.verification_rate).toBe(0);
+    expect(r.contact_currency_rate).toBeNull();
+    expect(r.accessibility_rate).toBeNull();
+    expect(r.update_frequency_rate).toBeNull();
+    expect(r.multi_contact_rate).toBeNull();
+    expect(r.out_of_hours_rate).toBeNull();
+    expect(r.verification_rate).toBeNull();
   });
 
   it("empty strengths, concerns, recommendations, insights", () => {
@@ -584,7 +585,7 @@ describe("accessibility rate", () => {
     const r = computeEmergencyContactNextOfKin(baseInput({
       accessibility_records: [],
     }));
-    expect(r.accessibility_rate).toBe(0);
+    expect(r.accessibility_rate).toBeNull();
   });
 });
 
@@ -630,7 +631,7 @@ describe("update frequency rate", () => {
     const r = computeEmergencyContactNextOfKin(baseInput({
       update_frequency_records: [],
     }));
-    expect(r.update_frequency_rate).toBe(0);
+    expect(r.update_frequency_rate).toBeNull();
   });
 });
 
@@ -676,7 +677,7 @@ describe("multi-contact rate", () => {
     const r = computeEmergencyContactNextOfKin(baseInput({
       multi_contact_records: [],
     }));
-    expect(r.multi_contact_rate).toBe(0);
+    expect(r.multi_contact_rate).toBeNull();
   });
 });
 
@@ -721,7 +722,7 @@ describe("out-of-hours rate", () => {
     const r = computeEmergencyContactNextOfKin(baseInput({
       out_of_hours_records: [],
     }));
-    expect(r.out_of_hours_rate).toBe(0);
+    expect(r.out_of_hours_rate).toBeNull();
   });
 });
 
@@ -853,21 +854,21 @@ describe("score penalties", () => {
     expect(r.multi_contact_rate).toBeLessThan(40);
   });
 
-  it("no penalty when contact_information_records is empty even if rate is 0", () => {
+  it("no penalty when contact_information_records is empty even if rate is null", () => {
     const r = computeEmergencyContactNextOfKin(baseInput({
       contact_information_records: [],
     }));
     // contact_currency_rate is 0, but no penalty since records empty
-    expect(r.contact_currency_rate).toBe(0);
+    expect(r.contact_currency_rate).toBeNull();
     // Score should still benefit from other bonuses
     expect(r.contact_score).toBeGreaterThanOrEqual(52);
   });
 
-  it("no penalty when accessibility_records is empty even if rate is 0", () => {
+  it("no penalty when accessibility_records is empty even if rate is null", () => {
     const r = computeEmergencyContactNextOfKin(baseInput({
       accessibility_records: [],
     }));
-    expect(r.accessibility_rate).toBe(0);
+    expect(r.accessibility_rate).toBeNull();
     expect(r.contact_score).toBeGreaterThanOrEqual(52);
   });
 });
@@ -893,7 +894,7 @@ describe("strengths — contact currency", () => {
       ],
     }));
     const s = r.strengths.find((s) => s.includes("contact currency"));
-    if (r.contact_currency_rate >= 70 && r.contact_currency_rate < 90) {
+    if (meets(r.contact_currency_rate, 70) && below(r.contact_currency_rate, 90)) {
       expect(s).toBeDefined();
       expect(s).toContain("generally maintains");
     }
@@ -1146,7 +1147,7 @@ describe("concerns — contact currency", () => {
         makeContact({ id: "c2", is_current: false, consent_to_contact: false, last_verified_date: null }),
       ],
     }));
-    if (r.contact_currency_rate >= 50 && r.contact_currency_rate < 70) {
+    if (meets(r.contact_currency_rate, 50) && below(r.contact_currency_rate, 70)) {
       const c = r.concerns.find((c) => c.includes("Contact currency"));
       expect(c).toBeDefined();
     }
@@ -1181,7 +1182,7 @@ describe("concerns — accessibility", () => {
       ],
     }));
     // 1+1+0 / 3 = 67%
-    if (r.accessibility_rate >= 50 && r.accessibility_rate < 70) {
+    if (meets(r.accessibility_rate, 50) && below(r.accessibility_rate, 70)) {
       const c = r.concerns.find((c) => c.includes("Accessibility rate"));
       expect(c).toBeDefined();
     }
@@ -1238,7 +1239,7 @@ describe("concerns — multi-contact", () => {
       ],
     }));
     // 1+1+0+0 / 4 = 50%
-    if (r.multi_contact_rate >= 40 && r.multi_contact_rate < 70) {
+    if (meets(r.multi_contact_rate, 40) && below(r.multi_contact_rate, 70)) {
       const c = r.concerns.find((c) => c.includes("Multi-contact coverage"));
       expect(c).toBeDefined();
     }
@@ -1305,7 +1306,7 @@ describe("concerns — verification", () => {
       ],
     }));
     // 50%
-    if (r.verification_rate >= 50 && r.verification_rate < 70) {
+    if (meets(r.verification_rate, 50) && below(r.verification_rate, 70)) {
       const c = r.concerns.find((c) => c.includes("Contact verification rate"));
       expect(c).toBeDefined();
     }
@@ -1684,7 +1685,7 @@ describe("recommendations — soon urgency", () => {
         makeContact({ id: "c2", is_current: false, consent_to_contact: false, last_verified_date: null }),
       ],
     }));
-    if (r.contact_currency_rate >= 50 && r.contact_currency_rate < 70) {
+    if (meets(r.contact_currency_rate, 50) && below(r.contact_currency_rate, 70)) {
       const rec = r.recommendations.find((r) => r.recommendation.includes("Improve contact currency"));
       expect(rec).toBeDefined();
       expect(rec!.urgency).toBe("soon");
@@ -1697,7 +1698,7 @@ describe("recommendations — soon urgency", () => {
         makeAccessibility({ id: "a1", phone_reachable: true, answered_within_3_rings: true, voicemail_available: false }),
       ],
     }));
-    if (r.accessibility_rate >= 50 && r.accessibility_rate < 70) {
+    if (meets(r.accessibility_rate, 50) && below(r.accessibility_rate, 70)) {
       const rec = r.recommendations.find((r) => r.recommendation.includes("Enhance contact accessibility testing"));
       expect(rec).toBeDefined();
       expect(rec!.urgency).toBe("soon");
@@ -1711,7 +1712,7 @@ describe("recommendations — soon urgency", () => {
       ],
     }));
     // 50%
-    if (r.multi_contact_rate >= 40 && r.multi_contact_rate < 70) {
+    if (meets(r.multi_contact_rate, 40) && below(r.multi_contact_rate, 70)) {
       const rec = r.recommendations.find((r) => r.recommendation.includes("Strengthen multi-contact arrangements"));
       expect(rec).toBeDefined();
       expect(rec!.urgency).toBe("soon");
@@ -1783,7 +1784,7 @@ describe("recommendations — planned urgency", () => {
         makeUpdateFrequency({ id: "u2", verified_accurate: false, review_overdue: true, update_type: "incident_triggered" }),
       ],
     }));
-    if (r.update_frequency_rate >= 50 && r.update_frequency_rate < 70) {
+    if (meets(r.update_frequency_rate, 50) && below(r.update_frequency_rate, 70)) {
       const rec = r.recommendations.find((r) => r.recommendation.includes("Improve the consistency and timeliness"));
       expect(rec).toBeDefined();
       expect(rec!.urgency).toBe("planned");
@@ -1917,7 +1918,7 @@ describe("insights — warning", () => {
         makeContact({ id: "c2", is_current: false, consent_to_contact: false, last_verified_date: null }),
       ],
     }));
-    if (r.contact_currency_rate >= 50 && r.contact_currency_rate < 70) {
+    if (meets(r.contact_currency_rate, 50) && below(r.contact_currency_rate, 70)) {
       const i = r.insights.find((i) => i.severity === "warning" && i.text.includes("Contact currency"));
       expect(i).toBeDefined();
     }
@@ -1929,7 +1930,7 @@ describe("insights — warning", () => {
         makeAccessibility({ id: "a1", phone_reachable: true, answered_within_3_rings: true, voicemail_available: false }),
       ],
     }));
-    if (r.accessibility_rate >= 50 && r.accessibility_rate < 70) {
+    if (meets(r.accessibility_rate, 50) && below(r.accessibility_rate, 70)) {
       const i = r.insights.find((i) => i.severity === "warning" && i.text.includes("Accessibility rate"));
       expect(i).toBeDefined();
     }
@@ -2284,7 +2285,7 @@ describe("edge cases — mixed data quality", () => {
     const r = computeEmergencyContactNextOfKin(baseInput({
       accessibility_records: [],
     }));
-    expect(r.accessibility_rate).toBe(0);
+    expect(r.accessibility_rate).toBeNull();
     expect(r.total_accessibility_tests).toBe(0);
     // Other rates should still be 100
     expect(r.contact_currency_rate).toBe(100);
@@ -2295,7 +2296,7 @@ describe("edge cases — mixed data quality", () => {
     const r = computeEmergencyContactNextOfKin(baseInput({
       update_frequency_records: [],
     }));
-    expect(r.update_frequency_rate).toBe(0);
+    expect(r.update_frequency_rate).toBeNull();
     expect(r.contact_currency_rate).toBe(100);
   });
 
@@ -2303,7 +2304,7 @@ describe("edge cases — mixed data quality", () => {
     const r = computeEmergencyContactNextOfKin(baseInput({
       multi_contact_records: [],
     }));
-    expect(r.multi_contact_rate).toBe(0);
+    expect(r.multi_contact_rate).toBeNull();
     expect(r.contact_currency_rate).toBe(100);
   });
 
@@ -2311,7 +2312,7 @@ describe("edge cases — mixed data quality", () => {
     const r = computeEmergencyContactNextOfKin(baseInput({
       out_of_hours_records: [],
     }));
-    expect(r.out_of_hours_rate).toBe(0);
+    expect(r.out_of_hours_rate).toBeNull();
     expect(r.contact_currency_rate).toBe(100);
   });
 });
@@ -2809,7 +2810,7 @@ describe("bonus tier 2 — 70-89% range", () => {
       ],
     }));
     // Check that it's in the 70-89 range for this composite
-    if (r.contact_currency_rate >= 70 && r.contact_currency_rate < 90) {
+    if (meets(r.contact_currency_rate, 70) && below(r.contact_currency_rate, 90)) {
       // Should have the moderate strength
       const s = r.strengths.find((s) => s.includes("contact currency") && s.includes("generally maintains"));
       expect(s).toBeDefined();

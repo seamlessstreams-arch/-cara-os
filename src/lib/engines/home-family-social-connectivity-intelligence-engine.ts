@@ -1,3 +1,4 @@
+import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME FAMILY & SOCIAL CONNECTIVITY INTELLIGENCE ENGINE
 // Cross-domain composite engine: analyses family contact, social connections,
@@ -96,10 +97,12 @@ export interface FamilySocialConnectivityResult {
   total_sessions: number;
   sessions_per_child: number | null;
   session_quality_avg: number | null;
-  contact_plan_coverage: number; // % of children with active plan
+  /** null when the population is empty — nothing measured, not 0%. */
+  contact_plan_coverage: number | null; // % of children with active plan
   parent_engagement_rate: number | null; // % with high/medium engagement
   social_worker_contact_rate: number | null; // % of children seen by SW recently
-  sibling_contact_compliance: number; // % where contact maintained
+  /** null when the population is empty — nothing measured, not 0%. */
+  sibling_contact_compliance: number | null; // % where contact maintained
   child_voice_capture_rate: number | null;
   post_contact_distress_rate: number | null;
   strengths: string[];
@@ -109,10 +112,6 @@ export interface FamilySocialConnectivityResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -250,10 +249,10 @@ export function computeFamilySocialConnectivity(
     : null;
 
   const childVoiceCaptured = family_time_sessions.filter((s) => s.child_voice_captured).length;
-  const childVoiceCaptureRate = pct(childVoiceCaptured, totalSessions);
+  const childVoiceCaptureRate = rate(childVoiceCaptured, totalSessions);
 
   const postDistressSessions = family_time_sessions.filter((s) => s.post_contact_distress).length;
-  const postContactDistressRate = pct(postDistressSessions, totalSessions);
+  const postContactDistressRate = rate(postDistressSessions, totalSessions);
 
   const distinctSessionTypes = new Set(family_time_sessions.map((s) => s.session_type));
   const diverseSessionTypes = distinctSessionTypes.size;
@@ -261,7 +260,7 @@ export function computeFamilySocialConnectivity(
   // ── Core metrics: Contact Plans ───────────────────────────────────────
   const activePlans = contact_plans.filter((p) => p.status === "active");
   const childrenWithActivePlan = new Set(activePlans.map((p) => p.child_id));
-  const contactPlanCoverage = pct(childrenWithActivePlan.size, total_children);
+  const contactPlanCoverage = rate(childrenWithActivePlan.size, total_children);
 
   const stalePlans = activePlans.filter((p) => {
     if (!p.last_reviewed) return true;
@@ -274,7 +273,7 @@ export function computeFamilySocialConnectivity(
   const highMediumEngagement = parent_partnership_records.filter(
     (p) => p.engagement_level === "high" || p.engagement_level === "medium",
   );
-  const parentEngagementRate = pct(highMediumEngagement.length, totalPartnerships);
+  const parentEngagementRate = rate(highMediumEngagement.length, totalPartnerships);
 
   const hostileOrChallenging = parent_partnership_records.filter(
     (p) => p.partnership_quality === "hostile" || p.partnership_quality === "challenging",
@@ -297,21 +296,21 @@ export function computeFamilySocialConnectivity(
       childrenSeenBySw.add(sw.child_id);
     }
   }
-  const socialWorkerContactRate = pct(childrenSeenBySw.size, total_children);
+  const socialWorkerContactRate = rate(childrenSeenBySw.size, total_children);
 
   const totalSwContacts = social_worker_contacts.length;
   const swWithOutcomes = social_worker_contacts.filter((sw) => sw.outcome_recorded).length;
-  const swOutcomeRate = pct(swWithOutcomes, totalSwContacts);
+  const swOutcomeRate = rate(swWithOutcomes, totalSwContacts);
 
   const swChildNotSeen = social_worker_contacts.filter((sw) => !sw.child_seen).length;
-  const swChildNotSeenRate = pct(swChildNotSeen, totalSwContacts);
+  const swChildNotSeenRate = rate(swChildNotSeen, totalSwContacts);
 
   // ── Core metrics: Sibling Contact ─────────────────────────────────────
   const activeProtocols = sibling_contact_protocols.filter(
     (p) => p.protocol_status === "active",
   );
   const maintainedContact = activeProtocols.filter((p) => p.contact_maintained);
-  const siblingContactCompliance = pct(maintainedContact.length, activeProtocols.length);
+  const siblingContactCompliance = rate(maintainedContact.length, activeProtocols.length);
 
   const suspendedProtocols = sibling_contact_protocols.filter(
     (p) => p.protocol_status === "suspended",
@@ -330,42 +329,43 @@ export function computeFamilySocialConnectivity(
   else if ((sessionQualityAvg ?? 0) >= 3.0) score += 2;
 
   // Contact plan coverage bonus
-  if (contactPlanCoverage >= 95) score += 4;
-  else if (contactPlanCoverage >= 80) score += 2;
+  if (meets(contactPlanCoverage, 95)) score += 4;
+  else if (meets(contactPlanCoverage, 80)) score += 2;
 
   // Parent engagement bonus
-  if (parentEngagementRate >= 80) score += 4;
-  else if (parentEngagementRate >= 60) score += 2;
+  if (meets(parentEngagementRate, 80)) score += 4;
+  else if (meets(parentEngagementRate, 60)) score += 2;
 
   // Social worker contact rate bonus
-  if (socialWorkerContactRate >= 100) score += 3;
-  else if (socialWorkerContactRate >= 80) score += 1;
+  if (meets(socialWorkerContactRate, 100)) score += 3;
+  else if (meets(socialWorkerContactRate, 80)) score += 1;
 
   // Sibling compliance bonus
-  if (siblingContactCompliance >= 90) score += 3;
-  else if (siblingContactCompliance >= 70) score += 1;
+  if (meets(siblingContactCompliance, 90)) score += 3;
+  else if (meets(siblingContactCompliance, 70)) score += 1;
 
   // Child voice capture rate bonus
-  if (childVoiceCaptureRate >= 90) score += 3;
-  else if (childVoiceCaptureRate >= 70) score += 1;
+  if (meets(childVoiceCaptureRate, 90)) score += 3;
+  else if (meets(childVoiceCaptureRate, 70)) score += 1;
 
   // Sessions per child bonus
   if ((sessionsPerChild ?? 0) >= 4) score += 3;
   else if ((sessionsPerChild ?? 0) >= 2) score += 1;
 
   // Post-contact distress (lower is better)
-  if (postContactDistressRate <= 10) score += 2;
-  else if (postContactDistressRate <= 25) score += 1;
+  // unmeasured distress (no sessions) earns neither low-distress bonus
+  if (postContactDistressRate !== null && postContactDistressRate <= 10) score += 2;
+  else if (postContactDistressRate !== null && postContactDistressRate <= 25) score += 1;
 
   // Diverse session types bonus
   if (diverseSessionTypes >= 3) score += 2;
   else if (diverseSessionTypes >= 2) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
-  if (contactPlanCoverage < 50) score -= 5;
-  if (parentEngagementRate < 30) score -= 5;
-  if (postContactDistressRate > 50) score -= 5;
-  if (socialWorkerContactRate < 50) score -= 3;
+  if (below(contactPlanCoverage, 50)) score -= 5;
+  if (below(parentEngagementRate, 30)) score -= 5;
+  if (above(postContactDistressRate, 50)) score -= 5;
+  if (below(socialWorkerContactRate, 50)) score -= 3;
 
   score = clamp(score, 0, 100);
   const rating = toRating(score);
@@ -379,33 +379,33 @@ export function computeFamilySocialConnectivity(
     strengths.push(`Average family time quality rating of ${sessionQualityAvg}/5 — sessions are generally positive.`);
   }
 
-  if (contactPlanCoverage >= 95) {
+  if (meets(contactPlanCoverage, 95)) {
     strengths.push(`${contactPlanCoverage}% of children have an active contact plan — comprehensive coverage demonstrates proactive planning.`);
-  } else if (contactPlanCoverage >= 80) {
+  } else if (meets(contactPlanCoverage, 80)) {
     strengths.push(`${contactPlanCoverage}% contact plan coverage — the majority of children have active, documented contact arrangements.`);
   }
 
-  if (parentEngagementRate >= 80 && totalPartnerships > 0) {
+  if (meets(parentEngagementRate, 80) && totalPartnerships > 0) {
     strengths.push(`${parentEngagementRate}% of parent partnerships show high or medium engagement — strong collaborative working with birth families.`);
-  } else if (parentEngagementRate >= 60 && totalPartnerships > 0) {
+  } else if (meets(parentEngagementRate, 60) && totalPartnerships > 0) {
     strengths.push(`${parentEngagementRate}% parent engagement rate — positive partnership working with the majority of families.`);
   }
 
-  if (socialWorkerContactRate >= 100 && total_children > 0) {
+  if (meets(socialWorkerContactRate, 100) && total_children > 0) {
     strengths.push("Every child has been seen by their social worker within the last 6 weeks — statutory visiting compliance is excellent.");
-  } else if (socialWorkerContactRate >= 80 && total_children > 0) {
+  } else if (meets(socialWorkerContactRate, 80) && total_children > 0) {
     strengths.push(`${socialWorkerContactRate}% of children seen by their social worker recently — strong multi-agency engagement.`);
   }
 
-  if (siblingContactCompliance >= 90 && activeProtocols.length > 0) {
+  if (meets(siblingContactCompliance, 90) && activeProtocols.length > 0) {
     strengths.push(`${siblingContactCompliance}% sibling contact compliance — sibling relationships are being actively maintained.`);
-  } else if (siblingContactCompliance >= 70 && activeProtocols.length > 0) {
+  } else if (meets(siblingContactCompliance, 70) && activeProtocols.length > 0) {
     strengths.push(`${siblingContactCompliance}% sibling contact compliance — the majority of sibling contact arrangements are being upheld.`);
   }
 
-  if (childVoiceCaptureRate >= 90 && totalSessions > 0) {
+  if (meets(childVoiceCaptureRate, 90) && totalSessions > 0) {
     strengths.push(`Child's voice captured in ${childVoiceCaptureRate}% of sessions — children's views on family contact are being recorded consistently.`);
-  } else if (childVoiceCaptureRate >= 70 && totalSessions > 0) {
+  } else if (meets(childVoiceCaptureRate, 70) && totalSessions > 0) {
     strengths.push(`Child's voice captured in ${childVoiceCaptureRate}% of sessions — good practice in recording children's views.`);
   }
 
@@ -415,7 +415,7 @@ export function computeFamilySocialConnectivity(
     strengths.push(`${sessionsPerChild} sessions per child on average — reasonable family contact frequency.`);
   }
 
-  if (postContactDistressRate <= 10 && totalSessions > 0) {
+  if (totalSessions > 0 && postContactDistressRate! <= 10) {
     strengths.push(`Post-contact distress rate is only ${postContactDistressRate}% — children are coping well with family contact.`);
   }
 
@@ -424,50 +424,50 @@ export function computeFamilySocialConnectivity(
   }
 
   if (positivePartnerships.length > 0 && totalPartnerships > 0) {
-    const posRate = pct(positivePartnerships.length, totalPartnerships);
-    if (posRate >= 70) {
+    const posRate = rate(positivePartnerships.length, totalPartnerships);
+    if (meets(posRate, 70)) {
       strengths.push(`${posRate}% of parent partnerships rated as positive — constructive relationships with birth families.`);
     }
   }
 
-  if (swOutcomeRate >= 90 && totalSwContacts > 0) {
+  if (meets(swOutcomeRate, 90) && totalSwContacts > 0) {
     strengths.push(`${swOutcomeRate}% of social worker contacts have recorded outcomes — excellent documentation of professional engagement.`);
   }
 
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
 
-  if (contactPlanCoverage < 50 && total_children > 0) {
+  if (below(contactPlanCoverage, 50) && total_children > 0) {
     concerns.push(`Only ${contactPlanCoverage}% of children have an active contact plan — more than half lack documented arrangements for maintaining family relationships.`);
-  } else if (contactPlanCoverage < 80 && total_children > 0) {
+  } else if (below(contactPlanCoverage, 80) && total_children > 0) {
     concerns.push(`${contactPlanCoverage}% contact plan coverage — some children do not have active, documented contact arrangements.`);
   }
 
-  if (parentEngagementRate < 30 && totalPartnerships > 0) {
+  if (below(parentEngagementRate, 30) && totalPartnerships > 0) {
     concerns.push(`Only ${parentEngagementRate}% of parent partnerships show meaningful engagement — the home is not evidencing sufficient work with birth families.`);
-  } else if (parentEngagementRate < 60 && totalPartnerships > 0) {
+  } else if (below(parentEngagementRate, 60) && totalPartnerships > 0) {
     concerns.push(`${parentEngagementRate}% parent engagement rate — fewer than expected families are actively engaged.`);
   }
 
-  if (postContactDistressRate > 50 && totalSessions > 0) {
+  if (above(postContactDistressRate, 50) && totalSessions > 0) {
     concerns.push(`${postContactDistressRate}% of family time sessions result in post-contact distress — this pattern requires urgent clinical review.`);
-  } else if (postContactDistressRate > 25 && totalSessions > 0) {
+  } else if (above(postContactDistressRate, 25) && totalSessions > 0) {
     concerns.push(`${postContactDistressRate}% post-contact distress rate — a significant proportion of children are experiencing distress following family contact.`);
   }
 
-  if (socialWorkerContactRate < 50 && total_children > 0) {
+  if (below(socialWorkerContactRate, 50) && total_children > 0) {
     concerns.push(`Only ${socialWorkerContactRate}% of children have been seen by their social worker in the last 6 weeks — statutory visiting may not be taking place as required.`);
-  } else if (socialWorkerContactRate < 80 && total_children > 0) {
+  } else if (below(socialWorkerContactRate, 80) && total_children > 0) {
     concerns.push(`${socialWorkerContactRate}% social worker contact rate — some children have not been seen by their social worker within the expected 6-week window.`);
   }
 
-  if (siblingContactCompliance < 50 && activeProtocols.length > 0) {
+  if (below(siblingContactCompliance, 50) && activeProtocols.length > 0) {
     concerns.push(`Only ${siblingContactCompliance}% of sibling contact protocols are being maintained — sibling relationships are at significant risk of breakdown.`);
-  } else if (siblingContactCompliance < 70 && activeProtocols.length > 0) {
+  } else if (below(siblingContactCompliance, 70) && activeProtocols.length > 0) {
     concerns.push(`${siblingContactCompliance}% sibling contact compliance — some sibling relationships are not being maintained as agreed.`);
   }
 
-  if (childVoiceCaptureRate < 50 && totalSessions > 0) {
+  if (below(childVoiceCaptureRate, 50) && totalSessions > 0) {
     concerns.push(`Child's voice captured in only ${childVoiceCaptureRate}% of sessions — children's views on family contact are not being recorded consistently.`);
   }
 
@@ -476,8 +476,8 @@ export function computeFamilySocialConnectivity(
   }
 
   if (hostileChallenging > 0 && totalPartnerships > 0) {
-    const hcRate = pct(hostileChallenging, totalPartnerships);
-    if (hcRate >= 50) {
+    const hcRate = rate(hostileChallenging, totalPartnerships);
+    if (meets(hcRate, 50)) {
       concerns.push(`${hcRate}% of parent partnerships are rated as challenging or hostile — this impacts the home's ability to facilitate positive family contact.`);
     }
   }
@@ -490,7 +490,7 @@ export function computeFamilySocialConnectivity(
     concerns.push(`${staleProtocols.length} active sibling contact protocol${staleProtocols.length > 1 ? "s have" : " has"} had no recorded contact in over 60 days.`);
   }
 
-  if (swChildNotSeenRate > 30 && totalSwContacts > 0) {
+  if (above(swChildNotSeenRate, 30) && totalSwContacts > 0) {
     concerns.push(`In ${swChildNotSeenRate}% of social worker contacts, the child was not seen — this undermines the purpose of statutory visiting.`);
   }
 
@@ -506,14 +506,14 @@ export function computeFamilySocialConnectivity(
   const recs: FamilySocialConnectivityResult["recommendations"] = [];
   let rank = 1;
 
-  if (contactPlanCoverage < 50 && total_children > 0) {
+  if (below(contactPlanCoverage, 50) && total_children > 0) {
     recs.push({
       rank: rank++,
       recommendation: "Establish active contact plans for every child — fewer than half currently have documented contact arrangements. Each child's plan should detail who they have contact with, how often, and in what format.",
       urgency: "immediate",
       regulatory_ref: "Reg 45",
     });
-  } else if (contactPlanCoverage < 80 && total_children > 0) {
+  } else if (below(contactPlanCoverage, 80) && total_children > 0) {
     recs.push({
       rank: rank++,
       recommendation: "Increase contact plan coverage to at least 95% — ensure every child has a documented, active plan for maintaining family relationships.",
@@ -522,14 +522,14 @@ export function computeFamilySocialConnectivity(
     });
   }
 
-  if (postContactDistressRate > 50 && totalSessions > 0) {
+  if (above(postContactDistressRate, 50) && totalSessions > 0) {
     recs.push({
       rank: rank++,
       recommendation: "Conduct an urgent review of family contact arrangements — over half of sessions are causing post-contact distress. Consider clinical consultation and safeguarding review for affected children.",
       urgency: "immediate",
       regulatory_ref: "Reg 45",
     });
-  } else if (postContactDistressRate > 25 && totalSessions > 0) {
+  } else if (above(postContactDistressRate, 25) && totalSessions > 0) {
     recs.push({
       rank: rank++,
       recommendation: "Review contact arrangements for children experiencing post-contact distress — consider adjusting session formats, supervision levels, or involving therapeutic support.",
@@ -538,14 +538,14 @@ export function computeFamilySocialConnectivity(
     });
   }
 
-  if (parentEngagementRate < 30 && totalPartnerships > 0) {
+  if (below(parentEngagementRate, 30) && totalPartnerships > 0) {
     recs.push({
       rank: rank++,
       recommendation: "Develop a parent engagement strategy to improve partnership working with birth families — the current engagement level is insufficient for supporting children's family relationships.",
       urgency: "immediate",
       regulatory_ref: "Reg 45",
     });
-  } else if (parentEngagementRate < 60 && totalPartnerships > 0) {
+  } else if (below(parentEngagementRate, 60) && totalPartnerships > 0) {
     recs.push({
       rank: rank++,
       recommendation: "Increase efforts to engage birth parents — use varied communication methods and consider whether barriers to engagement can be addressed.",
@@ -554,14 +554,14 @@ export function computeFamilySocialConnectivity(
     });
   }
 
-  if (socialWorkerContactRate < 50 && total_children > 0) {
+  if (below(socialWorkerContactRate, 50) && total_children > 0) {
     recs.push({
       rank: rank++,
       recommendation: "Escalate to placing authorities — fewer than half of children have been seen by their social worker in the last 6 weeks. Record and report non-compliance with statutory visiting requirements.",
       urgency: "immediate",
       regulatory_ref: "Reg 40",
     });
-  } else if (socialWorkerContactRate < 80 && total_children > 0) {
+  } else if (below(socialWorkerContactRate, 80) && total_children > 0) {
     recs.push({
       rank: rank++,
       recommendation: "Follow up with placing authorities for children whose social worker has not visited within the 6-week statutory window.",
@@ -570,14 +570,14 @@ export function computeFamilySocialConnectivity(
     });
   }
 
-  if (siblingContactCompliance < 50 && activeProtocols.length > 0) {
+  if (below(siblingContactCompliance, 50) && activeProtocols.length > 0) {
     recs.push({
       rank: rank++,
       recommendation: "Urgently review sibling contact arrangements — fewer than half of active protocols are being maintained. Assess barriers and consider escalation to placing authorities.",
       urgency: "immediate",
       regulatory_ref: "Reg 45",
     });
-  } else if (siblingContactCompliance < 70 && activeProtocols.length > 0) {
+  } else if (below(siblingContactCompliance, 70) && activeProtocols.length > 0) {
     recs.push({
       rank: rank++,
       recommendation: "Improve sibling contact compliance to at least 90% — ensure protocols are realistic, resourced, and reviewed regularly.",
@@ -586,14 +586,14 @@ export function computeFamilySocialConnectivity(
     });
   }
 
-  if (childVoiceCaptureRate < 50 && totalSessions > 0) {
+  if (below(childVoiceCaptureRate, 50) && totalSessions > 0) {
     recs.push({
       rank: rank++,
       recommendation: "Ensure children's views are captured after every family time session — staff should record how the child felt before, during, and after contact.",
       urgency: "soon",
       regulatory_ref: "Reg 7",
     });
-  } else if (childVoiceCaptureRate < 70 && totalSessions > 0) {
+  } else if (below(childVoiceCaptureRate, 70) && totalSessions > 0) {
     recs.push({
       rank: rank++,
       recommendation: "Improve child voice capture to at least 90% of sessions — children's wishes and feelings about family contact should be documented routinely.",
@@ -630,8 +630,8 @@ export function computeFamilySocialConnectivity(
   }
 
   if (hostileChallenging > 0) {
-    const hcRate = pct(hostileChallenging, totalPartnerships);
-    if (hcRate >= 50) {
+    const hcRate = rate(hostileChallenging, totalPartnerships);
+    if (meets(hcRate, 50)) {
       recs.push({
         rank: rank++,
         recommendation: "Seek professional mediation or specialist support for challenging parent partnerships — over half are rated as hostile or challenging, which may impact children's wellbeing.",
@@ -641,7 +641,7 @@ export function computeFamilySocialConnectivity(
     }
   }
 
-  if (swChildNotSeenRate > 30 && totalSwContacts > 0) {
+  if (above(swChildNotSeenRate, 30) && totalSwContacts > 0) {
     recs.push({
       rank: rank++,
       recommendation: "Raise concerns with placing authorities where social workers are not seeing children during visits — the child must be observed and spoken with during statutory visits.",
@@ -676,7 +676,7 @@ export function computeFamilySocialConnectivity(
     });
   }
 
-  if (swOutcomeRate < 70 && totalSwContacts > 0) {
+  if (below(swOutcomeRate, 70) && totalSwContacts > 0) {
     recs.push({
       rank: rank++,
       recommendation: "Ensure outcomes are recorded for all social worker contacts — this evidences that visits are purposeful and that agreed actions are being tracked.",
@@ -688,35 +688,35 @@ export function computeFamilySocialConnectivity(
   // ── Insights ──────────────────────────────────────────────────────────
   const insights: FamilySocialConnectivityResult["insights"] = [];
 
-  if (contactPlanCoverage < 50 && total_children > 0) {
+  if (below(contactPlanCoverage, 50) && total_children > 0) {
     insights.push({
       text: `Only ${contactPlanCoverage}% of children have an active contact plan. Ofsted inspectors will expect every child to have a clear, documented plan for maintaining family relationships as part of their care planning.`,
       severity: "critical",
     });
   }
 
-  if (postContactDistressRate > 50 && totalSessions > 0) {
+  if (above(postContactDistressRate, 50) && totalSessions > 0) {
     insights.push({
       text: `${postContactDistressRate}% of family time sessions result in post-contact distress. This pattern suggests contact arrangements may be causing harm and should be reviewed urgently with the child's social worker and any therapeutic professionals involved.`,
       severity: "critical",
     });
   }
 
-  if (parentEngagementRate < 30 && totalPartnerships > 0) {
+  if (below(parentEngagementRate, 30) && totalPartnerships > 0) {
     insights.push({
       text: `Parent engagement is at ${parentEngagementRate}%. Low partnership working with birth families can undermine placement stability and children's sense of identity. Ofsted will assess whether the home actively promotes family relationships.`,
       severity: "critical",
     });
   }
 
-  if (socialWorkerContactRate < 50 && total_children > 0) {
+  if (below(socialWorkerContactRate, 50) && total_children > 0) {
     insights.push({
       text: `Only ${socialWorkerContactRate}% of children have been seen by their social worker recently. This is a regulatory concern — the home should be escalating non-compliance with statutory visiting to the relevant placing authority.`,
       severity: "critical",
     });
   }
 
-  if (siblingContactCompliance < 50 && activeProtocols.length > 0) {
+  if (below(siblingContactCompliance, 50) && activeProtocols.length > 0) {
     insights.push({
       text: `Sibling contact compliance is at ${siblingContactCompliance}%. Children's right to maintain sibling relationships is a key Ofsted consideration. Where protocols have broken down, the reasons must be documented and escalated.`,
       severity: "critical",
@@ -730,54 +730,54 @@ export function computeFamilySocialConnectivity(
     });
   }
 
-  if (contactPlanCoverage >= 95 && total_children > 0) {
+  if (meets(contactPlanCoverage, 95) && total_children > 0) {
     insights.push({
       text: `${contactPlanCoverage}% contact plan coverage demonstrates that the home takes a proactive and structured approach to maintaining children's family relationships.`,
       severity: "positive",
     });
   }
 
-  if (parentEngagementRate >= 80 && totalPartnerships > 0) {
+  if (meets(parentEngagementRate, 80) && totalPartnerships > 0) {
     insights.push({
       text: `${parentEngagementRate}% parent engagement rate is evidence of strong collaborative working with birth families. This supports children's sense of identity, belonging, and placement stability.`,
       severity: "positive",
     });
   }
 
-  if (socialWorkerContactRate >= 100 && total_children > 0) {
+  if (meets(socialWorkerContactRate, 100) && total_children > 0) {
     insights.push({
       text: "All children have been seen by their social worker within the last 6 weeks. This demonstrates excellent multi-agency partnership and compliance with statutory visiting requirements.",
       severity: "positive",
     });
-  } else if (socialWorkerContactRate >= 80 && total_children > 0) {
+  } else if (meets(socialWorkerContactRate, 80) && total_children > 0) {
     insights.push({
       text: `${socialWorkerContactRate}% of children have been seen by their social worker recently. This indicates strong multi-agency engagement, though follow-up is needed for the remaining children.`,
       severity: "positive",
     });
   }
 
-  if (siblingContactCompliance >= 90 && activeProtocols.length > 0) {
+  if (meets(siblingContactCompliance, 90) && activeProtocols.length > 0) {
     insights.push({
       text: `${siblingContactCompliance}% sibling contact compliance demonstrates the home's commitment to maintaining sibling relationships — a key indicator of quality care.`,
       severity: "positive",
     });
   }
 
-  if (childVoiceCaptureRate >= 90 && totalSessions > 0) {
+  if (meets(childVoiceCaptureRate, 90) && totalSessions > 0) {
     insights.push({
       text: `Child's voice is captured in ${childVoiceCaptureRate}% of family time sessions. This evidences that children's wishes and feelings about contact are being heard and recorded, supporting child-centred practice.`,
       severity: "positive",
     });
   }
 
-  if (childVoiceCaptureRate < 50 && totalSessions > 0) {
+  if (below(childVoiceCaptureRate, 50) && totalSessions > 0) {
     insights.push({
       text: `Child's voice is captured in only ${childVoiceCaptureRate}% of sessions. Ofsted will expect to see that children's views are routinely recorded as part of contact arrangements.`,
       severity: "warning",
     });
   }
 
-  if (postContactDistressRate > 25 && postContactDistressRate <= 50 && totalSessions > 0) {
+  if (above(postContactDistressRate, 25) && postContactDistressRate! <= 50 && totalSessions > 0) {
     insights.push({
       text: `${postContactDistressRate}% of sessions result in post-contact distress. While some distress is expected, this rate warrants monitoring and may indicate a need to review supervision levels or therapeutic support.`,
       severity: "warning",
@@ -812,12 +812,12 @@ export function computeFamilySocialConnectivity(
     });
   }
 
-  if (swOutcomeRate >= 90 && totalSwContacts > 0) {
+  if (meets(swOutcomeRate, 90) && totalSwContacts > 0) {
     insights.push({
       text: `${swOutcomeRate}% of social worker contacts have recorded outcomes — this demonstrates purposeful, well-documented multi-agency working.`,
       severity: "positive",
     });
-  } else if (swOutcomeRate < 70 && totalSwContacts > 0) {
+  } else if (below(swOutcomeRate, 70) && totalSwContacts > 0) {
     insights.push({
       text: `Only ${swOutcomeRate}% of social worker contacts have recorded outcomes. Without documented outcomes, it is difficult to evidence that visits are purposeful and leading to agreed actions.`,
       severity: "warning",
@@ -834,9 +834,9 @@ export function computeFamilySocialConnectivity(
   // ── Headline ──────────────────────────────────────────────────────────
   let headline: string;
   if (rating === "outstanding") {
-    headline = `Outstanding family and social connectivity — ${contactPlanCoverage}% contact plan coverage, ${parentEngagementRate}% parent engagement, ${sessionQualityAvg}/5 session quality.`;
+    headline = `Outstanding family and social connectivity — ${formatRate(contactPlanCoverage)} contact plan coverage, ${formatRate(parentEngagementRate)} parent engagement, ${sessionQualityAvg}/5 session quality.`;
   } else if (rating === "good") {
-    headline = `Good family and social connectivity — ${totalSessions} sessions across ${total_children} child${total_children !== 1 ? "ren" : ""} with ${contactPlanCoverage}% contact plan coverage.`;
+    headline = `Good family and social connectivity — ${totalSessions} sessions across ${total_children} child${total_children !== 1 ? "ren" : ""} with ${formatRate(contactPlanCoverage)} contact plan coverage.`;
   } else if (rating === "adequate") {
     headline = `Adequate family and social connectivity — improvements needed in contact planning, parent engagement, or social worker involvement.`;
   } else {

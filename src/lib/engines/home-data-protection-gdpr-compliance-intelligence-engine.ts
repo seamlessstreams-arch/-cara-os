@@ -10,7 +10,7 @@
 //             dataBreachRecords, privacyNoticeRecords, gdprTrainingRecords
 // ==============================================================================
 
-import { meets, below } from "@/lib/metrics/rate";
+import { above, below, meanOf, meets, rate } from "@/lib/metrics/rate";
 
 // -- Input Types --------------------------------------------------------------
 
@@ -157,12 +157,14 @@ export interface DataProtectionGdprComplianceResult {
   policy_compliance_rate: number | null;
   // fab-0: null when no SARs recorded.
   sar_handling_rate: number | null;
-  breach_management_rate: number;
+  /** null only on the all-empty builder; measured path is always a number (no breaches = 100 by design). */
+  breach_management_rate: number | null;
   // fab-0: null when no privacy notices published.
   privacy_notice_rate: number | null;
   // fab-0: null when no training records logged.
   staff_training_rate: number | null;
-  record_security_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  record_security_rate: number | null;
   policy_compliance_records: DataProtectionPolicyRecordInput[];
   sar_records: SubjectAccessRequestRecordInput[];
   breach_records: DataBreachRecordInput[];
@@ -175,10 +177,6 @@ export interface DataProtectionGdprComplianceResult {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -222,10 +220,10 @@ function emptyResult(
     headline,
     policy_compliance_rate: null,
     sar_handling_rate: null,
-    breach_management_rate: 0,
+    breach_management_rate: null,
     privacy_notice_rate: null,
     staff_training_rate: null,
-    record_security_rate: 0,
+    record_security_rate: null,
     policy_compliance_records: [],
     sar_records: [],
     breach_records: [],
@@ -326,25 +324,24 @@ export function computeDataProtectionGdprCompliance(
 
   const totalPolicyGaps = policy_compliance_records.reduce((sum, r) => sum + r.gaps_identified, 0);
   const totalPolicyGapsResolved = policy_compliance_records.reduce((sum, r) => sum + r.gaps_resolved, 0);
-  const policyGapResolutionRate = pct(totalPolicyGapsResolved, totalPolicyGaps);
+  const policyGapResolutionRate = rate(totalPolicyGapsResolved, totalPolicyGaps);
 
   const totalStaffAcknowledged = policy_compliance_records.reduce((sum, r) => sum + r.staff_acknowledged, 0);
   const totalStaffForAcknowledgement = policy_compliance_records.reduce((sum, r) => sum + r.staff_total, 0);
-  const staffAcknowledgementRate = pct(totalStaffAcknowledged, totalStaffForAcknowledgement);
+  const staffAcknowledgementRate = rate(totalStaffAcknowledged, totalStaffForAcknowledgement);
 
-  const gdprComplianceRate = pct(gdprCompliantPolicies, totalPolicies);
-  const chr2015ComplianceRate = pct(chr2015CompliantPolicies, totalPolicies);
-  const dpoSignOffRate = pct(dpoSignedOffPolicies, totalPolicies);
-  const policyAccessibilityRate = pct(accessiblePolicies, totalPolicies);
-  const policyReviewRate = pct(policiesReviewedOnTime, totalPolicies);
+  const gdprComplianceRate = rate(gdprCompliantPolicies, totalPolicies);
+  const chr2015ComplianceRate = rate(chr2015CompliantPolicies, totalPolicies);
+  const dpoSignOffRate = rate(dpoSignedOffPolicies, totalPolicies);
+  const policyAccessibilityRate = rate(accessiblePolicies, totalPolicies);
+  const policyReviewRate = rate(policiesReviewedOnTime, totalPolicies);
 
   // Composite policy compliance rate
-  const policyComplianceRate: number | null =
-    totalPolicies > 0
-      ? Math.round(
-          (gdprComplianceRate + chr2015ComplianceRate + policyReviewRate + staffAcknowledgementRate + dpoSignOffRate) / 5,
-        )
-      : null;
+  // staffAcknowledgementRate is measured over staff, not policies — meanOf
+  // averages what is measured instead of fabricating an unmeasured term.
+  const policyComplianceRate: number | null = meanOf([
+    gdprComplianceRate, chr2015ComplianceRate, policyReviewRate, staffAcknowledgementRate, dpoSignOffRate,
+  ]);
 
   // === 2. Subject Access Request handling ===
   const totalSars = sar_records.length;
@@ -359,11 +356,11 @@ export function computeDataProtectionGdprCompliance(
     return ackDays >= 0 && ackDays <= 2; // acknowledged within 2 working days
   }).length;
 
-  const sarCompletionRate = pct(completedSars, totalSars);
-  const sarDeadlineRate = pct(sarsWithinDeadline, totalSars);
-  const sarQualityRate = pct(sarsQualityChecked, totalSars);
-  const sarSatisfactionRate = pct(sarsSatisfied, totalSars);
-  const sarAcknowledgementRate = pct(sarsAcknowledgedTimely, totalSars);
+  const sarCompletionRate = rate(completedSars, totalSars);
+  const sarDeadlineRate = rate(sarsWithinDeadline, totalSars);
+  const sarQualityRate = rate(sarsQualityChecked, totalSars);
+  const sarSatisfactionRate = rate(sarsSatisfied, totalSars);
+  const sarAcknowledgementRate = rate(sarsAcknowledgedTimely, totalSars);
 
   const sarPendingCount = sar_records.filter((r) => r.outcome === "pending").length;
   const sarOverdueCount = sar_records.filter((r) => {
@@ -372,11 +369,8 @@ export function computeDataProtectionGdprCompliance(
 
   // Composite SAR handling rate
   const sarHandlingRate: number | null =
-    totalSars > 0
-      ? Math.round(
-          (sarCompletionRate + sarDeadlineRate + sarQualityRate + sarAcknowledgementRate) / 4,
-        )
-      : null;
+    totalSars > 0 ? Math.round(
+          (sarCompletionRate! + sarDeadlineRate! + sarQualityRate! + sarAcknowledgementRate!) / 4) : null;
 
   // === 3. Data breach management ===
   const totalBreaches = breach_records.length;
@@ -391,23 +385,23 @@ export function computeDataProtectionGdprCompliance(
 
   const icoReportableBreaches = breach_records.filter((r) => r.reported_to_ico).length;
   const icoWithin72h = breach_records.filter((r) => r.reported_to_ico && r.reported_to_ico_within_72h).length;
-  const icoTimelinessRate = pct(icoWithin72h, icoReportableBreaches);
+  const icoTimelinessRate = rate(icoWithin72h, icoReportableBreaches);
 
   const childrenDataBreaches = breach_records.filter((r) => r.children_data_involved).length;
 
-  const rootCauseRate = pct(breachesWithRootCause, totalBreaches);
-  const correctiveActionRate = pct(breachesWithCorrectiveAction, totalBreaches);
-  const actionsCompletedRate = pct(breachesActionsCompleted, totalBreaches);
-  const lessonsLearnedRate = pct(breachesLessonsLearned, totalBreaches);
-  const recurrencePreventionRate = pct(breachesRecurrencePrevented, totalBreaches);
-  const dpoNotificationRate = pct(breachesDpoNotified, totalBreaches);
-  const riskAssessmentRate = pct(breachesRiskAssessed, totalBreaches);
+  const rootCauseRate = rate(breachesWithRootCause, totalBreaches);
+  const correctiveActionRate = rate(breachesWithCorrectiveAction, totalBreaches);
+  const actionsCompletedRate = rate(breachesActionsCompleted, totalBreaches);
+  const lessonsLearnedRate = rate(breachesLessonsLearned, totalBreaches);
+  const recurrencePreventionRate = rate(breachesRecurrencePrevented, totalBreaches);
+  const dpoNotificationRate = rate(breachesDpoNotified, totalBreaches);
+  const riskAssessmentRate = rate(breachesRiskAssessed, totalBreaches);
 
   // Composite breach management rate
   const breachManagementRate =
     totalBreaches > 0
       ? Math.round(
-          (rootCauseRate + correctiveActionRate + actionsCompletedRate + lessonsLearnedRate + dpoNotificationRate) / 5,
+          (rootCauseRate! + correctiveActionRate! + actionsCompletedRate! + lessonsLearnedRate! + dpoNotificationRate!) / 5,
         )
       : 100; // no breaches is perfect
 
@@ -432,24 +426,21 @@ export function computeDataProtectionGdprCompliance(
 
   const totalNoticeAcknowledged = privacy_notice_records.reduce((sum, r) => sum + r.acknowledged_count, 0);
   const totalNoticeAudience = privacy_notice_records.reduce((sum, r) => sum + r.target_audience_count, 0);
-  const noticeAcknowledgementRate = pct(totalNoticeAcknowledged, totalNoticeAudience);
+  const noticeAcknowledgementRate = rate(totalNoticeAcknowledged, totalNoticeAudience);
 
-  const noticeGdprRate = pct(gdprCompliantNotices, totalNotices);
-  const noticePlainLanguageRate = pct(plainLanguageNotices, totalNotices);
-  const noticeAgeAppropriateRate = pct(ageAppropriateNotices, totalNotices);
-  const noticeProcessingRate = pct(allProcessingCovered, totalNotices);
-  const noticeLawfulBasisRate = pct(lawfulBasisStated, totalNotices);
-  const noticeRightsRate = pct(dataRightsExplained, totalNotices);
-  const noticeRetentionRate = pct(retentionStated, totalNotices);
-  const noticePublishedRate = pct(publishedNotices, totalNotices);
+  const noticeGdprRate = rate(gdprCompliantNotices, totalNotices);
+  const noticePlainLanguageRate = rate(plainLanguageNotices, totalNotices);
+  const noticeAgeAppropriateRate = rate(ageAppropriateNotices, totalNotices);
+  const noticeProcessingRate = rate(allProcessingCovered, totalNotices);
+  const noticeLawfulBasisRate = rate(lawfulBasisStated, totalNotices);
+  const noticeRightsRate = rate(dataRightsExplained, totalNotices);
+  const noticeRetentionRate = rate(retentionStated, totalNotices);
+  const noticePublishedRate = rate(publishedNotices, totalNotices);
 
   // Composite privacy notice rate
   const privacyNoticeRate: number | null =
-    totalNotices > 0
-      ? Math.round(
-          (noticeGdprRate + noticePlainLanguageRate + noticeProcessingRate + noticeLawfulBasisRate + noticeRightsRate + noticePublishedRate) / 6,
-        )
-      : null;
+    totalNotices > 0 ? Math.round(
+          (noticeGdprRate! + noticePlainLanguageRate! + noticeProcessingRate! + noticeLawfulBasisRate! + noticeRightsRate! + noticePublishedRate!) / 6) : null;
 
   // === 5. Staff GDPR training ===
   const totalTrainingRecords = training_records.length;
@@ -457,7 +448,7 @@ export function computeDataProtectionGdprCompliance(
   const certificateHeld = training_records.filter((r) => r.certificate_held).length;
 
   const uniqueStaffTrained = new Set(training_records.filter((r) => r.passed).map((r) => r.staff_id)).size;
-  const staffTrainingCoverage = pct(uniqueStaffTrained, total_staff);
+  const staffTrainingCoverage = rate(uniqueStaffTrained, total_staff);
 
   const trainingCurrent = training_records.filter((r) => {
     if (!r.expiry_date) return true; // no expiry = still valid
@@ -474,28 +465,33 @@ export function computeDataProtectionGdprCompliance(
 
   const refreshersCompleted = training_records.filter((r) => r.refresher_completed).length;
   const refreshersDueTotal = training_records.filter((r) => r.refresher_due_date !== null).length;
-  const refresherCompletionRate = pct(refreshersCompleted, refreshersDueTotal);
+  const refresherCompletionRate = rate(refreshersCompleted, refreshersDueTotal);
 
-  const trainingPassRate = pct(passedTraining, totalTrainingRecords);
-  const trainingCurrentRate = pct(trainingCurrent, totalTrainingRecords);
-  const certificateRate = pct(certificateHeld, totalTrainingRecords);
+  const trainingPassRate = rate(passedTraining, totalTrainingRecords);
+  const trainingCurrentRate = rate(trainingCurrent, totalTrainingRecords);
+  const certificateRate = rate(certificateHeld, totalTrainingRecords);
 
   // Composite staff training rate
+  // Gated on training records existing at all (the engine's documented fab-0
+  // contract); within that, staffTrainingCoverage (per staff) and
+  // refresherCompletionRate (per due refresher) have their own denominators —
+  // meanOf averages what is measured.
   const staffTrainingRate: number | null =
     totalTrainingRecords > 0
-      ? Math.round(
-          (trainingPassRate + staffTrainingCoverage + trainingCurrentRate + refresherCompletionRate) / 4,
-        )
+      ? meanOf([trainingPassRate, staffTrainingCoverage, trainingCurrentRate, refresherCompletionRate])
       : null;
 
   // === 6. Record security composite ===
   // Derived from policy accessibility, DPO oversight, breach response quality, and training coverage
   const recordSecurityRate =
     totalPolicies > 0 || totalTrainingRecords > 0
-      ? Math.round(
-          (policyAccessibilityRate + dpoSignOffRate + (totalBreaches > 0 ? riskAssessmentRate : 100) + staffTrainingCoverage) / 4,
-        )
-      : 0;
+      ? meanOf([
+          policyAccessibilityRate,
+          dpoSignOffRate,
+          totalBreaches > 0 ? riskAssessmentRate : 100, // no breaches = full marks, by design
+          staffTrainingCoverage,
+        ])
+      : null;
 
   // -- Scoring: base 52 ----------------------------------------------------
 
@@ -522,8 +518,8 @@ export function computeDataProtectionGdprCompliance(
   else if (meets(staffTrainingRate, 70)) score += 2;
 
   // --- Bonus 6: recordSecurityRate (>=90: +4, >=70: +2) ---
-  if (recordSecurityRate >= 90) score += 4;
-  else if (recordSecurityRate >= 70) score += 2;
+  if (meets(recordSecurityRate, 90)) score += 4;
+  else if (meets(recordSecurityRate, 70)) score += 2;
 
   // -- Penalties (4 with guards) -------------------------------------------
 
@@ -547,77 +543,77 @@ export function computeDataProtectionGdprCompliance(
 
   const strengths: string[] = [];
 
-  if (gdprComplianceRate >= 90 && totalPolicies > 0) {
+  if (meets(gdprComplianceRate, 90) && totalPolicies > 0) {
     strengths.push(
       `${gdprComplianceRate}% of data protection policies are GDPR-compliant -- the home demonstrates a strong commitment to lawful data processing and regulatory compliance.`,
     );
-  } else if (gdprComplianceRate >= 70 && totalPolicies > 0) {
+  } else if (meets(gdprComplianceRate, 70) && totalPolicies > 0) {
     strengths.push(
       `${gdprComplianceRate}% of policies meet GDPR requirements -- good overall policy alignment with data protection legislation.`,
     );
   }
 
-  if (chr2015ComplianceRate >= 90 && totalPolicies > 0) {
+  if (meets(chr2015ComplianceRate, 90) && totalPolicies > 0) {
     strengths.push(
       `${chr2015ComplianceRate}% of policies compliant with CHR 2015 -- the home's data protection framework is well aligned with children's home regulatory requirements.`,
     );
   }
 
-  if (policyReviewRate >= 90 && totalPolicies > 0) {
+  if (meets(policyReviewRate, 90) && totalPolicies > 0) {
     strengths.push(
       `${policyReviewRate}% of policies reviewed within schedule -- the home maintains current and relevant data protection documentation.`,
     );
-  } else if (policyReviewRate >= 70 && totalPolicies > 0) {
+  } else if (meets(policyReviewRate, 70) && totalPolicies > 0) {
     strengths.push(
       `${policyReviewRate}% of policies reviewed on time -- most data protection policies are kept current.`,
     );
   }
 
-  if (dpoSignOffRate >= 90 && totalPolicies > 0) {
+  if (meets(dpoSignOffRate, 90) && totalPolicies > 0) {
     strengths.push(
       `DPO has signed off ${dpoSignOffRate}% of policies -- strong data protection governance with appropriate oversight.`,
     );
   }
 
-  if (staffAcknowledgementRate >= 90 && totalStaffForAcknowledgement > 0) {
+  if (meets(staffAcknowledgementRate, 90) && totalStaffForAcknowledgement > 0) {
     strengths.push(
       `${staffAcknowledgementRate}% staff acknowledgement of data protection policies -- staff are aware of and committed to data protection obligations.`,
     );
-  } else if (staffAcknowledgementRate >= 70 && totalStaffForAcknowledgement > 0) {
+  } else if (meets(staffAcknowledgementRate, 70) && totalStaffForAcknowledgement > 0) {
     strengths.push(
       `${staffAcknowledgementRate}% staff policy acknowledgement rate -- most staff have confirmed awareness of data protection policies.`,
     );
   }
 
-  if (policyGapResolutionRate >= 90 && totalPolicyGaps > 0) {
+  if (meets(policyGapResolutionRate, 90) && totalPolicyGaps > 0) {
     strengths.push(
       `${policyGapResolutionRate}% of identified policy gaps resolved -- the home demonstrates effective remediation of data protection weaknesses.`,
     );
   }
 
-  if (sarDeadlineRate >= 90 && totalSars > 0) {
+  if (meets(sarDeadlineRate, 90) && totalSars > 0) {
     strengths.push(
       `${sarDeadlineRate}% of subject access requests completed within statutory deadline -- the home handles SARs efficiently and within legal timescales.`,
     );
-  } else if (sarDeadlineRate >= 70 && totalSars > 0) {
+  } else if (meets(sarDeadlineRate, 70) && totalSars > 0) {
     strengths.push(
       `${sarDeadlineRate}% of SARs completed within deadline -- most subject access requests are processed on time.`,
     );
   }
 
-  if (sarQualityRate >= 90 && totalSars > 0) {
+  if (meets(sarQualityRate, 90) && totalSars > 0) {
     strengths.push(
       `${sarQualityRate}% of SAR responses quality-checked -- strong quality assurance in subject access request handling.`,
     );
   }
 
-  if (sarSatisfactionRate >= 80 && totalSars > 0) {
+  if (meets(sarSatisfactionRate, 80) && totalSars > 0) {
     strengths.push(
       `${sarSatisfactionRate}% requester satisfaction with SAR responses -- the home handles data access requests with care and professionalism.`,
     );
   }
 
-  if (sarAcknowledgementRate >= 90 && totalSars > 0) {
+  if (meets(sarAcknowledgementRate, 90) && totalSars > 0) {
     strengths.push(
       `${sarAcknowledgementRate}% of SARs acknowledged within 2 working days -- prompt acknowledgement demonstrates respect for data subject rights.`,
     );
@@ -629,121 +625,121 @@ export function computeDataProtectionGdprCompliance(
     );
   }
 
-  if (rootCauseRate >= 90 && totalBreaches > 0) {
+  if (meets(rootCauseRate, 90) && totalBreaches > 0) {
     strengths.push(
       `Root cause identified in ${rootCauseRate}% of breaches -- the home investigates breaches thoroughly to understand why they occurred.`,
     );
   }
 
-  if (actionsCompletedRate >= 90 && totalBreaches > 0) {
+  if (meets(actionsCompletedRate, 90) && totalBreaches > 0) {
     strengths.push(
       `${actionsCompletedRate}% of breach corrective actions completed -- the home follows through on remediation to prevent recurrence.`,
     );
   }
 
-  if (lessonsLearnedRate >= 90 && totalBreaches > 0) {
+  if (meets(lessonsLearnedRate, 90) && totalBreaches > 0) {
     strengths.push(
       `Lessons learned documented for ${lessonsLearnedRate}% of breaches -- the home demonstrates a mature learning culture around data security incidents.`,
     );
   }
 
-  if (icoTimelinessRate >= 100 && icoReportableBreaches > 0) {
+  if (meets(icoTimelinessRate, 100) && icoReportableBreaches > 0) {
     strengths.push(
       "All ICO-reportable breaches reported within 72 hours -- the home meets its statutory notification obligations promptly.",
     );
   }
 
-  if (recurrencePreventionRate >= 90 && totalBreaches > 0) {
+  if (meets(recurrencePreventionRate, 90) && totalBreaches > 0) {
     strengths.push(
       `Recurrence prevention measures in place for ${recurrencePreventionRate}% of breaches -- effective systemic responses to data security incidents.`,
     );
   }
 
-  if (noticeGdprRate >= 90 && totalNotices > 0) {
+  if (meets(noticeGdprRate, 90) && totalNotices > 0) {
     strengths.push(
       `${noticeGdprRate}% of privacy notices are GDPR-compliant -- comprehensive and legally sound transparency information for data subjects.`,
     );
-  } else if (noticeGdprRate >= 70 && totalNotices > 0) {
+  } else if (meets(noticeGdprRate, 70) && totalNotices > 0) {
     strengths.push(
       `${noticeGdprRate}% of privacy notices meet GDPR standards -- most transparency information is legally compliant.`,
     );
   }
 
-  if (noticePlainLanguageRate >= 90 && totalNotices > 0) {
+  if (meets(noticePlainLanguageRate, 90) && totalNotices > 0) {
     strengths.push(
       `${noticePlainLanguageRate}% of privacy notices written in plain language -- data subjects can genuinely understand how their data is used.`,
     );
   }
 
-  if (noticeAgeAppropriateRate >= 90 && totalNotices > 0) {
+  if (meets(noticeAgeAppropriateRate, 90) && totalNotices > 0) {
     strengths.push(
       `${noticeAgeAppropriateRate}% of privacy notices are age-appropriate -- children can understand their data rights in a way that is meaningful to them.`,
     );
   }
 
-  if (noticeAcknowledgementRate >= 90 && totalNoticeAudience > 0) {
+  if (meets(noticeAcknowledgementRate, 90) && totalNoticeAudience > 0) {
     strengths.push(
       `${noticeAcknowledgementRate}% privacy notice acknowledgement rate -- data subjects have confirmed receipt and understanding of how their data is processed.`,
     );
   }
 
-  if (noticePublishedRate >= 100 && totalNotices > 0) {
+  if (meets(noticePublishedRate, 100) && totalNotices > 0) {
     strengths.push(
       "All privacy notices are published and accessible -- full transparency with all data subject groups.",
     );
   }
 
-  if (noticeLawfulBasisRate >= 90 && totalNotices > 0) {
+  if (meets(noticeLawfulBasisRate, 90) && totalNotices > 0) {
     strengths.push(
       `${noticeLawfulBasisRate}% of notices state the lawful basis for processing -- strong legal foundation for all data processing activities.`,
     );
   }
 
-  if (noticeRightsRate >= 90 && totalNotices > 0) {
+  if (meets(noticeRightsRate, 90) && totalNotices > 0) {
     strengths.push(
       `${noticeRightsRate}% of notices explain data subject rights -- individuals are informed about their rights under GDPR.`,
     );
   }
 
-  if (staffTrainingCoverage >= 90 && total_staff > 0) {
+  if (meets(staffTrainingCoverage, 90) && total_staff > 0) {
     strengths.push(
       `${staffTrainingCoverage}% of staff have completed GDPR training -- near-universal workforce awareness of data protection obligations.`,
     );
-  } else if (staffTrainingCoverage >= 70 && total_staff > 0) {
+  } else if (meets(staffTrainingCoverage, 70) && total_staff > 0) {
     strengths.push(
       `${staffTrainingCoverage}% staff GDPR training coverage -- most staff have received data protection training.`,
     );
   }
 
-  if (trainingPassRate >= 95 && totalTrainingRecords > 0) {
+  if (meets(trainingPassRate, 95) && totalTrainingRecords > 0) {
     strengths.push(
       `${trainingPassRate}% training pass rate -- staff demonstrate strong understanding of GDPR requirements.`,
     );
-  } else if (trainingPassRate >= 80 && totalTrainingRecords > 0) {
+  } else if (meets(trainingPassRate, 80) && totalTrainingRecords > 0) {
     strengths.push(
       `${trainingPassRate}% training pass rate -- staff generally demonstrate good GDPR knowledge.`,
     );
   }
 
-  if (trainingCurrentRate >= 90 && totalTrainingRecords > 0) {
+  if (meets(trainingCurrentRate, 90) && totalTrainingRecords > 0) {
     strengths.push(
       `${trainingCurrentRate}% of training certifications are current -- the home maintains up-to-date GDPR competency across the workforce.`,
     );
   }
 
-  if (refresherCompletionRate >= 90 && refreshersDueTotal > 0) {
+  if (meets(refresherCompletionRate, 90) && refreshersDueTotal > 0) {
     strengths.push(
       `${refresherCompletionRate}% of GDPR refresher training completed -- the home ensures ongoing competency rather than one-off training.`,
     );
   }
 
-  if (certificateRate >= 90 && totalTrainingRecords > 0) {
+  if (meets(certificateRate, 90) && totalTrainingRecords > 0) {
     strengths.push(
       `${certificateRate}% of training records backed by certificates -- strong evidence base for staff GDPR competency.`,
     );
   }
 
-  if (policyAccessibilityRate >= 100 && totalPolicies > 0) {
+  if (meets(policyAccessibilityRate, 100) && totalPolicies > 0) {
     strengths.push(
       "All data protection policies accessible to staff -- staff can reference guidance whenever needed.",
     );
@@ -753,11 +749,11 @@ export function computeDataProtectionGdprCompliance(
 
   const concerns: string[] = [];
 
-  if (gdprComplianceRate < 50 && totalPolicies > 0) {
+  if (below(gdprComplianceRate, 50) && totalPolicies > 0) {
     concerns.push(
       `Only ${gdprComplianceRate}% of data protection policies are GDPR-compliant -- the majority of the home's data protection framework does not meet legal requirements, exposing the organisation to regulatory action.`,
     );
-  } else if (gdprComplianceRate < 70 && gdprComplianceRate >= 50 && totalPolicies > 0) {
+  } else if (below(gdprComplianceRate, 70) && meets(gdprComplianceRate, 50) && totalPolicies > 0) {
     concerns.push(
       `${gdprComplianceRate}% GDPR policy compliance -- several data protection policies need updating to meet current legal standards.`,
     );
@@ -769,23 +765,23 @@ export function computeDataProtectionGdprCompliance(
     );
   }
 
-  if (staffAcknowledgementRate < 50 && totalStaffForAcknowledgement > 0) {
+  if (below(staffAcknowledgementRate, 50) && totalStaffForAcknowledgement > 0) {
     concerns.push(
       `Only ${staffAcknowledgementRate}% of staff have acknowledged data protection policies -- the majority of the workforce may be unaware of their data handling obligations.`,
     );
-  } else if (staffAcknowledgementRate < 70 && staffAcknowledgementRate >= 50 && totalStaffForAcknowledgement > 0) {
+  } else if (below(staffAcknowledgementRate, 70) && meets(staffAcknowledgementRate, 50) && totalStaffForAcknowledgement > 0) {
     concerns.push(
       `Staff policy acknowledgement at ${staffAcknowledgementRate}% -- a significant proportion of staff have not confirmed awareness of data protection policies.`,
     );
   }
 
-  if (policyGapResolutionRate < 50 && totalPolicyGaps > 0) {
+  if (below(policyGapResolutionRate, 50) && totalPolicyGaps > 0) {
     concerns.push(
       `Only ${policyGapResolutionRate}% of identified policy gaps resolved -- known weaknesses in data protection governance remain unaddressed.`,
     );
   }
 
-  if (dpoSignOffRate < 50 && totalPolicies > 0) {
+  if (below(dpoSignOffRate, 50) && totalPolicies > 0) {
     concerns.push(
       `DPO has signed off only ${dpoSignOffRate}% of policies -- insufficient DPO oversight of data protection governance.`,
     );
@@ -803,23 +799,23 @@ export function computeDataProtectionGdprCompliance(
     );
   }
 
-  if (sarDeadlineRate < 50 && totalSars > 0) {
+  if (below(sarDeadlineRate, 50) && totalSars > 0) {
     concerns.push(
       `Only ${sarDeadlineRate}% of SARs completed within statutory deadline -- the home is routinely failing to meet its legal obligation to respond within 30 days.`,
     );
-  } else if (sarDeadlineRate < 70 && sarDeadlineRate >= 50 && totalSars > 0) {
+  } else if (below(sarDeadlineRate, 70) && meets(sarDeadlineRate, 50) && totalSars > 0) {
     concerns.push(
       `SAR deadline compliance at ${sarDeadlineRate}% -- some subject access requests are not being completed within the statutory 30-day timeframe.`,
     );
   }
 
-  if (sarQualityRate < 50 && totalSars > 0) {
+  if (below(sarQualityRate, 50) && totalSars > 0) {
     concerns.push(
       `Only ${sarQualityRate}% of SAR responses quality-checked -- inadequate quality assurance risks incomplete or inaccurate disclosure.`,
     );
   }
 
-  if (sarSatisfactionRate < 50 && totalSars > 0) {
+  if (below(sarSatisfactionRate, 50) && totalSars > 0) {
     concerns.push(
       `Requester satisfaction with SAR responses at only ${sarSatisfactionRate}% -- data subjects are not satisfied with how the home handles their access requests.`,
     );
@@ -837,35 +833,35 @@ export function computeDataProtectionGdprCompliance(
     );
   }
 
-  if (rootCauseRate < 50 && totalBreaches > 0) {
+  if (below(rootCauseRate, 50) && totalBreaches > 0) {
     concerns.push(
       `Root cause identified in only ${rootCauseRate}% of breaches -- without understanding why breaches occur, the home cannot prevent recurrence.`,
     );
   }
 
-  if (actionsCompletedRate < 50 && totalBreaches > 0) {
+  if (below(actionsCompletedRate, 50) && totalBreaches > 0) {
     concerns.push(
       `Only ${actionsCompletedRate}% of breach corrective actions completed -- known vulnerabilities remain unaddressed, leaving children's data at continued risk.`,
     );
   }
 
-  if (icoReportableBreaches > 0 && icoTimelinessRate < 100) {
+  if (icoReportableBreaches > 0 && below(icoTimelinessRate, 100)) {
     concerns.push(
-      `${100 - icoTimelinessRate}% of ICO-reportable breaches were not reported within 72 hours -- late reporting is itself a regulatory breach and may result in ICO enforcement action.`,
+      `${100 - icoTimelinessRate!}% of ICO-reportable breaches were not reported within 72 hours -- late reporting is itself a regulatory breach and may result in ICO enforcement action.`,
     );
   }
 
-  if (lessonsLearnedRate < 50 && totalBreaches > 0) {
+  if (below(lessonsLearnedRate, 50) && totalBreaches > 0) {
     concerns.push(
       `Lessons learned documented for only ${lessonsLearnedRate}% of breaches -- the home is not systematically learning from data security incidents.`,
     );
   }
 
-  if (noticeGdprRate < 50 && totalNotices > 0) {
+  if (below(noticeGdprRate, 50) && totalNotices > 0) {
     concerns.push(
       `Only ${noticeGdprRate}% of privacy notices are GDPR-compliant -- data subjects are not receiving legally required transparency information about how their data is processed.`,
     );
-  } else if (noticeGdprRate < 70 && noticeGdprRate >= 50 && totalNotices > 0) {
+  } else if (below(noticeGdprRate, 70) && meets(noticeGdprRate, 50) && totalNotices > 0) {
     concerns.push(
       `${noticeGdprRate}% privacy notice GDPR compliance -- some notices need updating to meet legal transparency requirements.`,
     );
@@ -877,19 +873,19 @@ export function computeDataProtectionGdprCompliance(
     );
   }
 
-  if (noticePlainLanguageRate < 50 && totalNotices > 0) {
+  if (below(noticePlainLanguageRate, 50) && totalNotices > 0) {
     concerns.push(
       `Only ${noticePlainLanguageRate}% of privacy notices written in plain language -- data subjects, particularly children, cannot meaningfully understand how their data is used.`,
     );
   }
 
-  if (noticeAgeAppropriateRate < 50 && totalNotices > 0) {
+  if (below(noticeAgeAppropriateRate, 50) && totalNotices > 0) {
     concerns.push(
       `Only ${noticeAgeAppropriateRate}% of privacy notices are age-appropriate -- children cannot understand their data rights, undermining the home's transparency obligations.`,
     );
   }
 
-  if (noticeLawfulBasisRate < 50 && totalNotices > 0) {
+  if (below(noticeLawfulBasisRate, 50) && totalNotices > 0) {
     concerns.push(
       `Lawful basis stated in only ${noticeLawfulBasisRate}% of notices -- failing to communicate the legal basis for processing is a GDPR Article 13/14 breach.`,
     );
@@ -901,11 +897,11 @@ export function computeDataProtectionGdprCompliance(
     );
   }
 
-  if (staffTrainingCoverage < 50 && total_staff > 0) {
+  if (below(staffTrainingCoverage, 50) && total_staff > 0) {
     concerns.push(
       `Only ${staffTrainingCoverage}% of staff have completed GDPR training -- the majority of the workforce may not understand their data protection obligations, creating significant compliance risk.`,
     );
-  } else if (staffTrainingCoverage < 70 && staffTrainingCoverage >= 50 && total_staff > 0) {
+  } else if (below(staffTrainingCoverage, 70) && meets(staffTrainingCoverage, 50) && total_staff > 0) {
     concerns.push(
       `GDPR training coverage at ${staffTrainingCoverage}% -- a significant proportion of staff have not received data protection training.`,
     );
@@ -923,7 +919,7 @@ export function computeDataProtectionGdprCompliance(
     );
   }
 
-  if (trainingPassRate < 70 && totalTrainingRecords > 0) {
+  if (below(trainingPassRate, 70) && totalTrainingRecords > 0) {
     concerns.push(
       `GDPR training pass rate at only ${trainingPassRate}% -- a significant proportion of staff are not demonstrating adequate understanding of data protection requirements.`,
     );
@@ -935,7 +931,7 @@ export function computeDataProtectionGdprCompliance(
     );
   }
 
-  if (policyAccessibilityRate < 50 && totalPolicies > 0) {
+  if (below(policyAccessibilityRate, 50) && totalPolicies > 0) {
     concerns.push(
       `Only ${policyAccessibilityRate}% of policies accessible to staff -- data protection guidance is not readily available to the workforce.`,
     );
@@ -946,7 +942,7 @@ export function computeDataProtectionGdprCompliance(
   const recommendations: DataProtectionRecommendation[] = [];
   let rank = 0;
 
-  if (gdprComplianceRate < 50 && totalPolicies > 0) {
+  if (below(gdprComplianceRate, 50) && totalPolicies > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -976,7 +972,7 @@ export function computeDataProtectionGdprCompliance(
     });
   }
 
-  if (highSeverityBreaches > 0 && actionsCompletedRate < 50) {
+  if (highSeverityBreaches > 0 && below(actionsCompletedRate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -986,7 +982,7 @@ export function computeDataProtectionGdprCompliance(
     });
   }
 
-  if (icoReportableBreaches > 0 && icoTimelinessRate < 100) {
+  if (icoReportableBreaches > 0 && below(icoTimelinessRate, 100)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -996,7 +992,7 @@ export function computeDataProtectionGdprCompliance(
     });
   }
 
-  if (staffTrainingCoverage < 50 && total_staff > 0) {
+  if (below(staffTrainingCoverage, 50) && total_staff > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1026,7 +1022,7 @@ export function computeDataProtectionGdprCompliance(
     });
   }
 
-  if (noticeGdprRate < 50 && totalNotices > 0) {
+  if (below(noticeGdprRate, 50) && totalNotices > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1036,7 +1032,7 @@ export function computeDataProtectionGdprCompliance(
     });
   }
 
-  if (noticePlainLanguageRate < 50 && totalNotices > 0) {
+  if (below(noticePlainLanguageRate, 50) && totalNotices > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1046,7 +1042,7 @@ export function computeDataProtectionGdprCompliance(
     });
   }
 
-  if (noticeAgeAppropriateRate < 50 && totalNotices > 0) {
+  if (below(noticeAgeAppropriateRate, 50) && totalNotices > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1056,7 +1052,7 @@ export function computeDataProtectionGdprCompliance(
     });
   }
 
-  if (sarDeadlineRate < 50 && sarDeadlineRate > 0 && totalSars > 0) {
+  if (below(sarDeadlineRate, 50) && above(sarDeadlineRate, 0) && totalSars > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1064,7 +1060,7 @@ export function computeDataProtectionGdprCompliance(
       urgency: "soon",
       regulatory_ref: "UK GDPR 2018 Art 12, 15",
     });
-  } else if (sarDeadlineRate >= 50 && sarDeadlineRate < 70 && totalSars > 0) {
+  } else if (meets(sarDeadlineRate, 50) && below(sarDeadlineRate, 70) && totalSars > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1074,7 +1070,7 @@ export function computeDataProtectionGdprCompliance(
     });
   }
 
-  if (sarQualityRate < 50 && totalSars > 0) {
+  if (below(sarQualityRate, 50) && totalSars > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1084,7 +1080,7 @@ export function computeDataProtectionGdprCompliance(
     });
   }
 
-  if (rootCauseRate < 50 && totalBreaches > 0) {
+  if (below(rootCauseRate, 50) && totalBreaches > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1094,7 +1090,7 @@ export function computeDataProtectionGdprCompliance(
     });
   }
 
-  if (lessonsLearnedRate < 50 && totalBreaches > 0) {
+  if (below(lessonsLearnedRate, 50) && totalBreaches > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1114,7 +1110,7 @@ export function computeDataProtectionGdprCompliance(
     });
   }
 
-  if (staffAcknowledgementRate < 50 && totalStaffForAcknowledgement > 0) {
+  if (below(staffAcknowledgementRate, 50) && totalStaffForAcknowledgement > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1144,7 +1140,7 @@ export function computeDataProtectionGdprCompliance(
     });
   }
 
-  if (staffTrainingCoverage >= 50 && staffTrainingCoverage < 70 && total_staff > 0) {
+  if (meets(staffTrainingCoverage, 50) && below(staffTrainingCoverage, 70) && total_staff > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1164,7 +1160,7 @@ export function computeDataProtectionGdprCompliance(
     });
   }
 
-  if (noticeAcknowledgementRate < 70 && totalNoticeAudience > 0) {
+  if (below(noticeAcknowledgementRate, 70) && totalNoticeAudience > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1174,7 +1170,7 @@ export function computeDataProtectionGdprCompliance(
     });
   }
 
-  if (gdprComplianceRate >= 50 && gdprComplianceRate < 70 && totalPolicies > 0) {
+  if (meets(gdprComplianceRate, 50) && below(gdprComplianceRate, 70) && totalPolicies > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1184,7 +1180,7 @@ export function computeDataProtectionGdprCompliance(
     });
   }
 
-  if (policyAccessibilityRate < 70 && totalPolicies > 0) {
+  if (below(policyAccessibilityRate, 70) && totalPolicies > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1194,7 +1190,7 @@ export function computeDataProtectionGdprCompliance(
     });
   }
 
-  if (noticeLawfulBasisRate < 70 && noticeLawfulBasisRate >= 50 && totalNotices > 0) {
+  if (below(noticeLawfulBasisRate, 70) && meets(noticeLawfulBasisRate, 50) && totalNotices > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1204,7 +1200,7 @@ export function computeDataProtectionGdprCompliance(
     });
   }
 
-  if (noticeRetentionRate < 70 && totalNotices > 0) {
+  if (below(noticeRetentionRate, 70) && totalNotices > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1220,7 +1216,7 @@ export function computeDataProtectionGdprCompliance(
 
   // --- Critical insights ---
 
-  if (gdprComplianceRate < 50 && totalPolicies > 0) {
+  if (below(gdprComplianceRate, 50) && totalPolicies > 0) {
     insights.push({
       text: `Only ${gdprComplianceRate}% of data protection policies are GDPR-compliant. The ICO and Ofsted will view this as evidence that the home has not established the minimum legal framework for protecting children's personal data -- this exposes the organisation to enforcement action and undermines trust.`,
       severity: "critical",
@@ -1234,7 +1230,7 @@ export function computeDataProtectionGdprCompliance(
     });
   }
 
-  if (highSeverityBreaches > 0 && actionsCompletedRate < 50) {
+  if (highSeverityBreaches > 0 && below(actionsCompletedRate, 50)) {
     insights.push({
       text: `${highSeverityBreaches} high-severity ${highSeverityBreaches === 1 ? "breach" : "breaches"} with only ${actionsCompletedRate}% corrective actions completed. Children's personal data remains at significant risk -- Ofsted will view incomplete breach remediation as evidence of inadequate leadership and management under SCCIF.`,
       severity: "critical",
@@ -1248,7 +1244,7 @@ export function computeDataProtectionGdprCompliance(
     });
   }
 
-  if (staffTrainingCoverage < 40 && total_staff > 0) {
+  if (below(staffTrainingCoverage, 40) && total_staff > 0) {
     insights.push({
       text: `Only ${staffTrainingCoverage}% of staff have GDPR training. Staff handling children's sensitive personal data without adequate training creates a systemic risk of breaches, inappropriate disclosure, and non-compliant data handling -- the ICO expects controllers to train all staff.`,
       severity: "critical",
@@ -1262,7 +1258,7 @@ export function computeDataProtectionGdprCompliance(
     });
   }
 
-  if (icoReportableBreaches > 0 && icoTimelinessRate < 100) {
+  if (icoReportableBreaches > 0 && below(icoTimelinessRate, 100)) {
     insights.push({
       text: `Not all ICO-reportable breaches were reported within 72 hours. Late notification is itself a regulatory breach under UK GDPR Article 33 -- the ICO has the power to impose fines for failure to notify within the statutory timeframe.`,
       severity: "critical",
@@ -1271,7 +1267,7 @@ export function computeDataProtectionGdprCompliance(
 
   // --- Warning insights ---
 
-  if (gdprComplianceRate >= 50 && gdprComplianceRate < 70 && totalPolicies > 0) {
+  if (meets(gdprComplianceRate, 50) && below(gdprComplianceRate, 70) && totalPolicies > 0) {
     insights.push({
       text: `GDPR policy compliance at ${gdprComplianceRate}% -- improving but not yet at the level needed to satisfy ICO expectations. Each non-compliant policy represents a gap in the home's data protection framework.`,
       severity: "warning",
@@ -1285,7 +1281,7 @@ export function computeDataProtectionGdprCompliance(
     });
   }
 
-  if (sarDeadlineRate >= 50 && sarDeadlineRate < 70 && totalSars > 0) {
+  if (meets(sarDeadlineRate, 50) && below(sarDeadlineRate, 70) && totalSars > 0) {
     insights.push({
       text: `SAR deadline compliance at ${sarDeadlineRate}% -- while most requests are handled, inconsistent timeliness suggests the SAR process may lack structure, resourcing, or management oversight.`,
       severity: "warning",
@@ -1299,14 +1295,14 @@ export function computeDataProtectionGdprCompliance(
     });
   }
 
-  if (rootCauseRate >= 50 && rootCauseRate < 80 && totalBreaches > 0) {
+  if (meets(rootCauseRate, 50) && below(rootCauseRate, 80) && totalBreaches > 0) {
     insights.push({
       text: `Root cause analysis completed for ${rootCauseRate}% of breaches -- some breaches lack thorough investigation, which may allow systemic weaknesses to persist and recurrence to go unaddressed.`,
       severity: "warning",
     });
   }
 
-  if (recurrencePreventionRate < 70 && totalBreaches > 0) {
+  if (below(recurrencePreventionRate, 70) && totalBreaches > 0) {
     insights.push({
       text: `Recurrence prevention measures in place for only ${recurrencePreventionRate}% of breaches -- without systemic changes following incidents, the home remains vulnerable to repeat breaches.`,
       severity: "warning",
@@ -1327,14 +1323,14 @@ export function computeDataProtectionGdprCompliance(
     });
   }
 
-  if (noticeAgeAppropriateRate >= 50 && noticeAgeAppropriateRate < 90 && totalNotices > 0) {
+  if (meets(noticeAgeAppropriateRate, 50) && below(noticeAgeAppropriateRate, 90) && totalNotices > 0) {
     insights.push({
       text: `Age-appropriate notices at ${noticeAgeAppropriateRate}% -- some notices may not be accessible to children. The ICO Children's Code emphasises that transparency information must be understandable by the children it is intended for.`,
       severity: "warning",
     });
   }
 
-  if (staffTrainingCoverage >= 50 && staffTrainingCoverage < 70 && total_staff > 0) {
+  if (meets(staffTrainingCoverage, 50) && below(staffTrainingCoverage, 70) && total_staff > 0) {
     insights.push({
       text: `GDPR training coverage at ${staffTrainingCoverage}% -- a notable proportion of staff have not received data protection training. Every staff member who accesses personal data should have demonstrable GDPR competency.`,
       severity: "warning",
@@ -1355,7 +1351,7 @@ export function computeDataProtectionGdprCompliance(
     });
   }
 
-  if (policyAccessibilityRate >= 50 && policyAccessibilityRate < 80 && totalPolicies > 0) {
+  if (meets(policyAccessibilityRate, 50) && below(policyAccessibilityRate, 80) && totalPolicies > 0) {
     insights.push({
       text: `${policyAccessibilityRate}% of policies accessible to staff -- some data protection guidance is not readily available to those who need it. Inaccessible policies undermine their purpose and increase the risk of non-compliant data handling.`,
       severity: "warning",
@@ -1371,14 +1367,14 @@ export function computeDataProtectionGdprCompliance(
     });
   }
 
-  if (gdprComplianceRate >= 90 && policyReviewRate >= 90 && totalPolicies > 0) {
+  if (meets(gdprComplianceRate, 90) && meets(policyReviewRate, 90) && totalPolicies > 0) {
     insights.push({
       text: `${gdprComplianceRate}% GDPR-compliant policies with ${policyReviewRate}% reviewed on schedule -- the home maintains a robust, current data protection framework. Ofsted and the ICO will recognise this as evidence of strong governance and accountability.`,
       severity: "positive",
     });
   }
 
-  if (sarDeadlineRate >= 90 && sarQualityRate >= 90 && totalSars > 0) {
+  if (meets(sarDeadlineRate, 90) && meets(sarQualityRate, 90) && totalSars > 0) {
     insights.push({
       text: `${sarDeadlineRate}% SAR deadline compliance with ${sarQualityRate}% quality-checked -- the home handles subject access requests efficiently, accurately, and within statutory timescales. This demonstrates respect for data subject rights.`,
       severity: "positive",
@@ -1392,49 +1388,49 @@ export function computeDataProtectionGdprCompliance(
     });
   }
 
-  if (totalBreaches > 0 && rootCauseRate >= 90 && actionsCompletedRate >= 90 && lessonsLearnedRate >= 90) {
+  if (totalBreaches > 0 && meets(rootCauseRate, 90) && meets(actionsCompletedRate, 90) && meets(lessonsLearnedRate, 90)) {
     insights.push({
       text: `Despite ${totalBreaches} ${totalBreaches === 1 ? "breach" : "breaches"}, root cause analysis (${rootCauseRate}%), corrective actions (${actionsCompletedRate}%), and lessons learned (${lessonsLearnedRate}%) all demonstrate a mature incident response culture. The home learns from breaches and takes systematic action to prevent recurrence.`,
       severity: "positive",
     });
   }
 
-  if (noticeGdprRate >= 90 && noticePlainLanguageRate >= 90 && totalNotices > 0) {
+  if (meets(noticeGdprRate, 90) && meets(noticePlainLanguageRate, 90) && totalNotices > 0) {
     insights.push({
       text: `${noticeGdprRate}% GDPR-compliant privacy notices, ${noticePlainLanguageRate}% in plain language -- data subjects receive clear, legally compliant transparency information. This is exemplary practice in GDPR transparency obligations.`,
       severity: "positive",
     });
   }
 
-  if (noticeAgeAppropriateRate >= 90 && totalNotices > 0) {
+  if (meets(noticeAgeAppropriateRate, 90) && totalNotices > 0) {
     insights.push({
       text: `${noticeAgeAppropriateRate}% of privacy notices are age-appropriate -- children can genuinely understand their data rights. This exceeds the ICO Children's Code expectations and demonstrates child-centred data protection practice.`,
       severity: "positive",
     });
   }
 
-  if (staffTrainingCoverage >= 90 && trainingPassRate >= 90 && total_staff > 0) {
+  if (meets(staffTrainingCoverage, 90) && meets(trainingPassRate, 90) && total_staff > 0) {
     insights.push({
       text: `${staffTrainingCoverage}% staff training coverage with ${trainingPassRate}% pass rate -- near-universal GDPR competency across the workforce. This provides strong assurance that children's personal data is handled by staff who understand their legal obligations.`,
       severity: "positive",
     });
   }
 
-  if (refresherCompletionRate >= 90 && refreshersDueTotal > 0) {
+  if (meets(refresherCompletionRate, 90) && refreshersDueTotal > 0) {
     insights.push({
       text: `${refresherCompletionRate}% GDPR refresher completion -- the home invests in maintaining ongoing data protection competency rather than treating training as a one-off exercise. This demonstrates a commitment to continuous improvement.`,
       severity: "positive",
     });
   }
 
-  if (dpoSignOffRate >= 90 && staffAcknowledgementRate >= 90 && totalPolicies > 0) {
+  if (meets(dpoSignOffRate, 90) && meets(staffAcknowledgementRate, 90) && totalPolicies > 0) {
     insights.push({
       text: `DPO sign-off at ${dpoSignOffRate}% and staff acknowledgement at ${staffAcknowledgementRate}% -- strong governance chain from policy approval to workforce awareness. This evidences a well-embedded data protection culture.`,
       severity: "positive",
     });
   }
 
-  if (policyGapResolutionRate >= 90 && totalPolicyGaps > 0) {
+  if (meets(policyGapResolutionRate, 90) && totalPolicyGaps > 0) {
     insights.push({
       text: `${policyGapResolutionRate}% of identified policy gaps resolved -- the home demonstrates accountability by identifying and addressing weaknesses in its data protection framework. This proactive approach is valued by both Ofsted and the ICO.`,
       severity: "positive",

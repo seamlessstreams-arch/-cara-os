@@ -86,12 +86,12 @@ export function HomeEthnicHairSkincareIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", meets(d.specialist_access_rate, 90) ? "text-[--cs-success]" : meets(d.specialist_access_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.specialist_access_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Specialist</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.staff_training_rate >= 90 ? "bg-green-50" : d.staff_training_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.staff_training_rate >= 90 ? "text-[--cs-success]" : d.staff_training_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.staff_training_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.staff_training_rate, 90) ? "bg-green-50" : meets(d.staff_training_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.staff_training_rate, 90) ? "text-[--cs-success]" : meets(d.staff_training_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.staff_training_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Training</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_satisfaction_rate >= 90 ? "bg-green-50" : d.child_satisfaction_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_satisfaction_rate >= 90 ? "text-[--cs-success]" : d.child_satisfaction_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_satisfaction_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_satisfaction_rate, 90) ? "bg-green-50" : meets(d.child_satisfaction_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_satisfaction_rate, 90) ? "text-[--cs-success]" : meets(d.child_satisfaction_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_satisfaction_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Satisf.</p>
             </div>
           </div>

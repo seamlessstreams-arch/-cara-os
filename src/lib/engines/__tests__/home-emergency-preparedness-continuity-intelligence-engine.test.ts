@@ -242,12 +242,12 @@ describe("Home Emergency Preparedness & Continuity Intelligence Engine", () => {
 
     it("insufficient_data has all metrics at 0", () => {
       const r = computeEmergencyPreparednessContinuity(baseInput());
-      expect(r.fire_drill_compliance_rate).toBe(0);
-      expect(r.evacuation_plan_currency_rate).toBe(0);
-      expect(r.emergency_contact_accuracy_rate).toBe(0);
+      expect(r.fire_drill_compliance_rate).toBeNull();
+      expect(r.evacuation_plan_currency_rate).toBeNull();
+      expect(r.emergency_contact_accuracy_rate).toBeNull();
       expect(r.business_continuity_score).toBe(0);
-      expect(r.first_aid_coverage_rate).toBe(0);
-      expect(r.equipment_maintenance_rate).toBe(0);
+      expect(r.first_aid_coverage_rate).toBeNull();
+      expect(r.equipment_maintenance_rate).toBeNull();
       expect(r.total_drills).toBe(0);
       expect(r.total_evacuation_plans).toBe(0);
       expect(r.total_emergency_contacts).toBe(0);
@@ -969,7 +969,7 @@ describe("Home Emergency Preparedness & Continuity Intelligence Engine", () => {
         }),
       );
       // No drills → pct(0,0)=0 but guard prevents penalty. Only contact bonus applies.
-      expect(r.fire_drill_compliance_rate).toBe(0);
+      expect(r.fire_drill_compliance_rate).toBeNull();
       expect(r.emergency_score).toBe(52 + 3); // +3 from contact accuracy 100%
     });
 
@@ -980,7 +980,7 @@ describe("Home Emergency Preparedness & Continuity Intelligence Engine", () => {
           emergency_contacts: [makeContact({ contact_type: "other", verified: true, is_current: true, last_verified_date: "2025-01-01", verification_due: null })],
         }),
       );
-      expect(r.evacuation_plan_currency_rate).toBe(0);
+      expect(r.evacuation_plan_currency_rate).toBeNull();
       expect(r.emergency_score).toBe(52 + 3);
     });
 
@@ -993,7 +993,7 @@ describe("Home Emergency Preparedness & Continuity Intelligence Engine", () => {
           ],
         }),
       );
-      expect(r.emergency_contact_accuracy_rate).toBe(0);
+      expect(r.emergency_contact_accuracy_rate).toBeNull();
       // +4 (compliance) +2 (debrief) = 58, no contact penalty
       expect(r.emergency_score).toBe(52 + 4 + 2);
     });
@@ -1007,7 +1007,7 @@ describe("Home Emergency Preparedness & Continuity Intelligence Engine", () => {
           ],
         }),
       );
-      expect(r.equipment_maintenance_rate).toBe(0);
+      expect(r.equipment_maintenance_rate).toBeNull();
       // +3 from first aid coverage 100%, no equipment penalty
       expect(r.emergency_score).toBe(52 + 3);
     });
@@ -1299,7 +1299,7 @@ describe("Home Emergency Preparedness & Continuity Intelligence Engine", () => {
       expect(r.total_first_aid_records).toBe(4);
     });
 
-    it("pct(0, 0) = 0", () => {
+    it("rate(0,0)=null", () => {
       // No drills → fireDrillComplianceRate = pct(0,0) = 0
       const r = computeEmergencyPreparednessContinuity(
         baseInput({
@@ -1307,7 +1307,7 @@ describe("Home Emergency Preparedness & Continuity Intelligence Engine", () => {
           emergency_contacts: [makeContact({ contact_type: "other", verified: true, is_current: true, last_verified_date: "2025-01-01", verification_due: null })],
         }),
       );
-      expect(r.fire_drill_compliance_rate).toBe(0);
+      expect(r.fire_drill_compliance_rate).toBeNull();
     });
   });
 
@@ -3499,54 +3499,54 @@ describe("Home Emergency Preparedness & Continuity Intelligence Engine", () => {
   // 15. pct(0,0) BEHAVIOR
   // ====================================================================
   describe("pct(0,0) = 0 behavior", () => {
-    it("pct(0,0) = 0 for fire drill compliance when no drills", () => {
+    it("rate(0,0)=null for fire drill compliance when no drills", () => {
       const r = computeEmergencyPreparednessContinuity(
         baseInput({
           total_children: 1,
           emergency_contacts: [makeContact({ contact_type: "other" })],
         }),
       );
-      expect(r.fire_drill_compliance_rate).toBe(0);
+      expect(r.fire_drill_compliance_rate).toBeNull();
     });
 
-    it("pct(0,0) = 0 for evacuation plan currency when no plans", () => {
+    it("rate(0,0)=null for evacuation plan currency when no plans", () => {
       const r = computeEmergencyPreparednessContinuity(
         baseInput({
           total_children: 1,
           fire_drill_records: [makeDrill()],
         }),
       );
-      expect(r.evacuation_plan_currency_rate).toBe(0);
+      expect(r.evacuation_plan_currency_rate).toBeNull();
     });
 
-    it("pct(0,0) = 0 for emergency contact accuracy when no contacts", () => {
+    it("rate(0,0)=null for emergency contact accuracy when no contacts", () => {
       const r = computeEmergencyPreparednessContinuity(
         baseInput({
           total_children: 1,
           fire_drill_records: [makeDrill()],
         }),
       );
-      expect(r.emergency_contact_accuracy_rate).toBe(0);
+      expect(r.emergency_contact_accuracy_rate).toBeNull();
     });
 
-    it("pct(0,0) = 0 for first aid coverage when no cert records", () => {
+    it("rate(0,0)=null for first aid coverage when no cert records", () => {
       const r = computeEmergencyPreparednessContinuity(
         baseInput({
           total_children: 1,
           fire_drill_records: [makeDrill()],
         }),
       );
-      expect(r.first_aid_coverage_rate).toBe(0);
+      expect(r.first_aid_coverage_rate).toBeNull();
     });
 
-    it("pct(0,0) = 0 for equipment maintenance when no equipment records", () => {
+    it("rate(0,0)=null for equipment maintenance when no equipment records", () => {
       const r = computeEmergencyPreparednessContinuity(
         baseInput({
           total_children: 1,
           fire_drill_records: [makeDrill()],
         }),
       );
-      expect(r.equipment_maintenance_rate).toBe(0);
+      expect(r.equipment_maintenance_rate).toBeNull();
     });
 
     it("business continuity score = 0 when no BCP records", () => {

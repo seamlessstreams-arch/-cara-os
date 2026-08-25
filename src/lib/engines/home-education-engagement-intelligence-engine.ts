@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME EDUCATION ENGAGEMENT INTELLIGENCE ENGINE
 // Home-level: aggregates attendance, PEP compliance, EHCP reviews,
@@ -102,7 +103,8 @@ export interface PepComplianceProfile {
   total_peps: number;
   current_count: number;
   overdue_count: number;
-  child_coverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_coverage: number | null;
   avg_attendance_from_pep: number | null;
 }
 
@@ -152,10 +154,6 @@ export interface HomeEducationEngagementResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function daysBetween(a: string, b: string): number {
   return Math.round(
     (new Date(b).getTime() - new Date(a).getTime()) / 86_400_000,
@@ -187,7 +185,7 @@ export function computeHomeEducationEngagement(
       education_score: 0,
       headline: "No education engagement data available for analysis.",
       attendance: { total_sessions_30d: 0, present_count: 0, late_count: 0, absent_count: 0, attendance_rate: null, unauthorised_absences: 0 },
-      pep_compliance: { total_peps: 0, current_count: 0, overdue_count: 0, child_coverage: 0, avg_attendance_from_pep: 0 },
+      pep_compliance: { total_peps: 0, current_count: 0, overdue_count: 0, child_coverage: null, avg_attendance_from_pep: 0 },
       ehcp: { total_ehcps: 0, on_time_reviews: 0, overdue_reviews: 0, child_contribution_rate: null },
       school_engagement: { total_events_90d: 0, unique_children_engaged: 0, sw_attendance_rate: null, achievements_count: 0 },
       tutoring: { active_tutors: 0, children_with_tutor: 0, high_motivation_rate: null, dbs_compliance_rate: null },
@@ -209,7 +207,7 @@ export function computeHomeEducationEngagement(
   const presentCount = attendance30d.filter(r => PRESENT_CODES.includes(r.attendance_code)).length;
   const lateCount = attendance30d.filter(r => r.attendance_code === "L").length;
   const absentCount = attendance30d.length - presentCount;
-  const attendanceRate = pct(presentCount, attendance30d.length);
+  const attendanceRate = rate(presentCount, attendance30d.length);
   const unauthorisedAbsences = attendance30d.filter(r =>
     !PRESENT_CODES.includes(r.attendance_code) && !r.authorised_absence,
   ).length;
@@ -230,7 +228,7 @@ export function computeHomeEducationEngagement(
   // nor overdue and silently vanishes from the overdue concern/recommendation.
   const overduePeps = pep_records.filter(p => p.status === "overdue" || p.status === "review_due").length;
   const uniquePepChildren = new Set(pep_records.map(p => p.child_id));
-  const pepCoverage = pct(uniquePepChildren.size, total_children);
+  const pepCoverage = rate(uniquePepChildren.size, total_children);
   const avgPepAttendance = pep_records.length > 0
     ? Math.round(pep_records.reduce((s, p) => s + p.attendance, 0) / pep_records.length)
     : null;
@@ -252,7 +250,7 @@ export function computeHomeEducationEngagement(
     !!e.next_annual_review_due && daysBetween(e.next_annual_review_due, today) > 0,
   ).length;
   const ehcpOnTime = ehcp_records.length - ehcpOverdue;
-  const ehcpContributionRate = pct(
+  const ehcpContributionRate = rate(
     ehcp_records.filter(e => e.child_contribution_provided).length,
     ehcp_records.length,
   );
@@ -271,7 +269,7 @@ export function computeHomeEducationEngagement(
   });
 
   const uniqueEngagedChildren = new Set(events90d.map(e => e.child_id));
-  const swAttendanceRate = pct(
+  const swAttendanceRate = rate(
     events90d.filter(e => e.social_worker_attended).length,
     events90d.length,
   );
@@ -287,11 +285,11 @@ export function computeHomeEducationEngagement(
   // ── Tutoring ──────────────────────────────────────────────────────────
   const activeTutors = tutoring_records.filter(t => t.ongoing);
   const uniqueTutoredChildren = new Set(activeTutors.map(t => t.child_id));
-  const highMotivationRate = pct(
+  const highMotivationRate = rate(
     activeTutors.filter(t => t.child_motivation === "high").length,
     activeTutors.length,
   );
-  const dbsComplianceRate = pct(
+  const dbsComplianceRate = rate(
     activeTutors.filter(t => t.dbs_current).length,
     activeTutors.length,
   );
@@ -309,15 +307,15 @@ export function computeHomeEducationEngagement(
     return d >= 0 && d <= 30;
   });
 
-  const completionRate = pct(
+  const completionRate = rate(
     homework30d.filter(h => h.work_completed).length,
     homework30d.length,
   );
-  const selfStartedRate = pct(
+  const selfStartedRate = rate(
     homework30d.filter(h => h.child_initiation === "self_started").length,
     homework30d.length,
   );
-  const strongEffortRate = pct(
+  const strongEffortRate = rate(
     homework30d.filter(h => h.quality_of_work === "strong_effort").length,
     homework30d.length,
   );
@@ -337,9 +335,9 @@ export function computeHomeEducationEngagement(
   if (attendance30d.length === 0) {
     score += 0;
   } else {
-    if (attendanceRate >= 95) score += 5;
-    else if (attendanceRate >= 90) score += 3;
-    else if (attendanceRate >= 80) score += 0;
+    if (meets(attendanceRate, 95)) score += 5;
+    else if (meets(attendanceRate, 90)) score += 3;
+    else if (meets(attendanceRate, 80)) score += 0;
     else score -= 5;
   }
 
@@ -347,10 +345,10 @@ export function computeHomeEducationEngagement(
   if (total_children === 0) {
     score += 0;
   } else {
-    const pepCurrentRate = pct(currentPeps, total_children);
-    if (pepCurrentRate >= 90) score += 4;
-    else if (pepCurrentRate >= 70) score += 2;
-    else if (pepCurrentRate >= 50) score += 0;
+    const pepCurrentRate = rate(currentPeps, total_children);
+    if (meets(pepCurrentRate, 90)) score += 4;
+    else if (meets(pepCurrentRate, 70)) score += 2;
+    else if (meets(pepCurrentRate, 50)) score += 0;
     else score -= 4;
   }
 
@@ -358,10 +356,10 @@ export function computeHomeEducationEngagement(
   if (ehcp_records.length === 0) {
     score += 1; // neutral bonus
   } else {
-    const ehcpOnTimeRate = pct(ehcpOnTime, ehcp_records.length);
-    if (ehcpOnTimeRate >= 100) score += 3;
-    else if (ehcpOnTimeRate >= 80) score += 1;
-    else if (ehcpOnTimeRate >= 60) score += 0;
+    const ehcpOnTimeRate = rate(ehcpOnTime, ehcp_records.length);
+    if (meets(ehcpOnTimeRate, 100)) score += 3;
+    else if (meets(ehcpOnTimeRate, 80)) score += 1;
+    else if (meets(ehcpOnTimeRate, 60)) score += 0;
     else score -= 3;
   }
 
@@ -383,9 +381,9 @@ export function computeHomeEducationEngagement(
   } else if (activeTutors.length === 0) {
     score -= 3;
   } else {
-    const tutoringCoverage = pct(uniqueTutoredChildren.size, total_children);
-    if (tutoringCoverage >= 50) score += 3;
-    else if (tutoringCoverage >= 25) score += 1;
+    const tutoringCoverage = rate(uniqueTutoredChildren.size, total_children);
+    if (meets(tutoringCoverage, 50)) score += 3;
+    else if (meets(tutoringCoverage, 25)) score += 1;
     else score += 0;
   }
 
@@ -393,9 +391,9 @@ export function computeHomeEducationEngagement(
   if (homework30d.length === 0) {
     score += 0;
   } else {
-    if (completionRate >= 90) score += 4;
-    else if (completionRate >= 75) score += 2;
-    else if (completionRate >= 50) score += 0;
+    if (meets(completionRate, 90)) score += 4;
+    else if (meets(completionRate, 75)) score += 2;
+    else if (meets(completionRate, 50)) score += 0;
     else score -= 4;
   }
 
@@ -405,10 +403,10 @@ export function computeHomeEducationEngagement(
   if (totalTargets === 0) {
     score += 0;
   } else {
-    const targetAchievementRate = pct(totalMet, totalTargets);
-    if (targetAchievementRate >= 80) score += 3;
-    else if (targetAchievementRate >= 60) score += 1;
-    else if (targetAchievementRate >= 40) score += 0;
+    const targetAchievementRate = rate(totalMet, totalTargets);
+    if (meets(targetAchievementRate, 80)) score += 3;
+    else if (meets(targetAchievementRate, 60)) score += 1;
+    else if (meets(targetAchievementRate, 40)) score += 0;
     else score -= 3;
   }
 
@@ -441,23 +439,23 @@ export function computeHomeEducationEngagement(
   let rank = 0;
 
   // Strengths
-  if (attendanceRate >= 95 && attendance30d.length > 0) strengths.push(`Excellent attendance rate of ${attendanceRate}% across all sessions.`);
-  if (currentPeps > 0 && pct(currentPeps, total_children) >= 90 && total_children > 0) strengths.push(`${pct(currentPeps, total_children)}% PEP compliance — all children have current education plans.`);
+  if (meets(attendanceRate, 95) && attendance30d.length > 0) strengths.push(`Excellent attendance rate of ${attendanceRate}% across all sessions.`);
+  if (total_children > 0 && currentPeps > 0 && meets(rate(currentPeps, total_children), 90)) strengths.push(`${rate(currentPeps, total_children)}% PEP compliance — all children have current education plans.`);
   if (ehcp_records.length > 0 && ehcpOverdue === 0) strengths.push("All EHCP annual reviews are on time — strong SEND governance.");
   if (events90d.length > 0 && total_children > 0 && events90d.length / total_children >= 1) strengths.push(`${events90d.length} school engagement events in 90 days — active educational participation.`);
-  if (activeTutors.length > 0 && total_children > 0 && pct(uniqueTutoredChildren.size, total_children) >= 50) strengths.push(`${pct(uniqueTutoredChildren.size, total_children)}% of children have active tutoring support.`);
-  if (completionRate >= 90 && homework30d.length > 0) strengths.push(`${completionRate}% homework completion rate — children are engaging well with learning.`);
-  if (totalTargets > 0 && pct(totalMet, totalTargets) >= 80) strengths.push(`${pct(totalMet, totalTargets)}% of PEP targets achieved — strong educational progress.`);
+  if (activeTutors.length > 0 && total_children > 0 && meets(rate(uniqueTutoredChildren.size, total_children), 50)) strengths.push(`${rate(uniqueTutoredChildren.size, total_children)}% of children have active tutoring support.`);
+  if (meets(completionRate, 90) && homework30d.length > 0) strengths.push(`${completionRate}% homework completion rate — children are engaging well with learning.`);
+  if (totalTargets > 0 && meets(rate(totalMet, totalTargets), 80)) strengths.push(`${rate(totalMet, totalTargets)}% of PEP targets achieved — strong educational progress.`);
   if (totalExclusionDays === 0 && pep_records.length > 0) strengths.push("Zero exclusion days — excellent behavioural engagement at school.");
 
   // Concerns
-  if (attendanceRate < 80 && attendance30d.length > 0) concerns.push(`Attendance rate is only ${attendanceRate}% — persistent absence may impact educational outcomes.`);
+  if (below(attendanceRate, 80) && attendance30d.length > 0) concerns.push(`Attendance rate is only ${attendanceRate}% — persistent absence may impact educational outcomes.`);
   if (unauthorisedAbsences >= 3) concerns.push(`${unauthorisedAbsences} unauthorised absences in 30 days — requires investigation.`);
   if (overduePeps > 0) concerns.push(`${overduePeps} PEP${overduePeps > 1 ? "s are" : " is"} overdue for review.`);
   if (ehcpOverdue > 0) concerns.push(`${ehcpOverdue} EHCP annual review${ehcpOverdue > 1 ? "s are" : " is"} overdue.`);
   if (events90d.length === 0 && total_children > 0) concerns.push("No school engagement events in 90 days — home involvement with schools needs attention.");
-  if (total_children > 0 && activeTutors.length === 0) concerns.push("No children have active tutoring support — consider whether additional learning support is needed.");
-  if (completionRate < 50 && homework30d.length > 0) concerns.push(`Only ${completionRate}% homework completion — children may need more support with learning at home.`);
+  if (above(total_children, 0) && activeTutors.length === 0) concerns.push("No children have active tutoring support — consider whether additional learning support is needed.");
+  if (below(completionRate, 50) && homework30d.length > 0) concerns.push(`Only ${completionRate}% homework completion — children may need more support with learning at home.`);
   if (totalExclusionDays > 10) concerns.push(`${totalExclusionDays} total exclusion days — significant disruption to educational continuity.`);
 
   // Recommendations
@@ -467,7 +465,7 @@ export function computeHomeEducationEngagement(
   if (ehcpOverdue > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Schedule overdue EHCP annual reviews — statutory deadlines must be met for SEND compliance.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 8" });
   }
-  if (attendanceRate < 80 && attendance30d.length > 0) {
+  if (below(attendanceRate, 80) && attendance30d.length > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Investigate low attendance — persistent absence below 80% requires an attendance improvement plan.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 8" });
   }
   if (unauthorisedAbsences >= 3) {
@@ -476,7 +474,7 @@ export function computeHomeEducationEngagement(
   if (events90d.length === 0 && total_children > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Increase school engagement — attend parents' evenings, school events, and build relationships with educational settings.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 8" });
   }
-  if (completionRate < 50 && homework30d.length > 0) {
+  if (below(completionRate, 50) && homework30d.length > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Develop homework support strategies — consider dedicated quiet time, additional resources, or tutor support.", urgency: "planned", regulatory_ref: "CHR 2015 Reg 8" });
   }
   if (total_children > 0 && activeTutors.length === 0) {
@@ -484,23 +482,23 @@ export function computeHomeEducationEngagement(
   }
 
   // Cara Insights
-  if (attendanceRate >= 95 && completionRate >= 90 && currentPeps > 0 && pct(currentPeps, total_children) >= 90 && total_children > 0 && ehcpOverdue === 0) {
+  if (meets(attendanceRate, 95) && meets(completionRate, 90) && total_children > 0 && currentPeps > 0 && meets(rate(currentPeps, total_children), 90) && ehcpOverdue === 0) {
     insights.push({ text: "Educational engagement is exemplary. Attendance, homework completion, PEP compliance, and EHCP governance all exceed thresholds. Ofsted will recognise this as outstanding educational support.", severity: "positive" });
   }
-  if (attendanceRate < 80 && completionRate < 50 && attendance30d.length > 0 && homework30d.length > 0) {
+  if (below(attendanceRate, 80) && below(completionRate, 50) && attendance30d.length > 0 && homework30d.length > 0) {
     insights.push({ text: `Attendance at ${attendanceRate}% combined with ${completionRate}% homework completion suggests systemic educational disengagement. This would be a serious concern during inspection.`, severity: "critical" });
   }
   if (totalExclusionDays > 10 && overduePeps > 0) {
     insights.push({ text: `${totalExclusionDays} exclusion days alongside ${overduePeps} overdue PEPs indicates educational support may not be keeping pace with children's needs.`, severity: "critical" });
   }
-  if (selfStartedRate >= 70 && homework30d.length > 0) {
+  if (meets(selfStartedRate, 70) && homework30d.length > 0) {
     insights.push({ text: `${selfStartedRate}% of homework sessions are self-initiated — children are developing positive independent learning habits.`, severity: "positive" });
   }
-  if (highMotivationRate >= 80 && activeTutors.length > 0) {
+  if (meets(highMotivationRate, 80) && activeTutors.length > 0) {
     insights.push({ text: `${highMotivationRate}% high motivation rate among tutored children — tutoring arrangements are well-matched and effective.`, severity: "positive" });
   }
-  if (activeTutors.length > 0 && dbsComplianceRate < 100) {
-    insights.push({ text: `Cara detects DBS compliance gap — ${100 - dbsComplianceRate}% of active tutors may have lapsed DBS checks. This is a safeguarding priority.`, severity: "critical" });
+  if (activeTutors.length > 0 && below(dbsComplianceRate, 100)) {
+    insights.push({ text: `Cara detects DBS compliance gap — ${100 - dbsComplianceRate!}% of active tutors may have lapsed DBS checks. This is a safeguarding priority.`, severity: "critical" });
   }
 
   // ── Headline ──────────────────────────────────────────────────────────

@@ -1,3 +1,4 @@
+import { above, below, meanOf, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME EMERGENCY PREPAREDNESS & BUSINESS CONTINUITY ENGINE
 // Evaluates the home's readiness for emergencies and business continuity:
@@ -154,10 +155,6 @@ export interface EmergencyPreparednessContinuityResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -186,12 +183,12 @@ function emptyResult(
     emergency_rating: rating,
     emergency_score: score,
     headline,
-    fire_drill_compliance_rate: 0,
-    evacuation_plan_currency_rate: 0,
-    emergency_contact_accuracy_rate: 0,
+    fire_drill_compliance_rate: null,
+    evacuation_plan_currency_rate: null,
+    emergency_contact_accuracy_rate: null,
     business_continuity_score: 0,
-    first_aid_coverage_rate: 0,
-    equipment_maintenance_rate: 0,
+    first_aid_coverage_rate: null,
+    equipment_maintenance_rate: null,
     total_drills: 0,
     total_evacuation_plans: 0,
     total_emergency_contacts: 0,
@@ -282,18 +279,18 @@ export function computeEmergencyPreparednessContinuity(
       d.all_children_participated &&
       d.evacuation_time_seconds <= d.target_evacuation_time_seconds,
   ).length;
-  const fireDrillComplianceRate = pct(compliantDrills, totalDrills);
+  const fireDrillComplianceRate = rate(compliantDrills, totalDrills);
 
   // Drill type coverage: how many of the 4 types have been covered
   const drillTypesCovered = new Set(fire_drill_records.map((d) => d.drill_type)).size;
 
   // Drills with debrief completed
   const drillsWithDebrief = fire_drill_records.filter((d) => d.debrief_completed).length;
-  const drillDebriefRate = pct(drillsWithDebrief, totalDrills);
+  const drillDebriefRate = rate(drillsWithDebrief, totalDrills);
 
   // Drills with all staff participation
   const drillsAllStaff = fire_drill_records.filter((d) => d.all_staff_participated).length;
-  const staffDrillParticipationRate = pct(drillsAllStaff, totalDrills);
+  const staffDrillParticipationRate = rate(drillsAllStaff, totalDrills);
 
   // Drills with issues that were subsequently resolved
   const drillsWithIssues = fire_drill_records.filter(
@@ -302,7 +299,7 @@ export function computeEmergencyPreparednessContinuity(
   const drillsWithIssuesResolved = fire_drill_records.filter(
     (d) => d.issues_identified.length > 0 && d.issues_resolved,
   ).length;
-  const drillIssueResolutionRate = pct(drillsWithIssuesResolved, drillsWithIssues);
+  const drillIssueResolutionRate = rate(drillsWithIssuesResolved, drillsWithIssues);
 
   // Check if most recent drill is overdue (> 30 days ago)
   const sortedDrills = [...fire_drill_records].sort(
@@ -332,7 +329,7 @@ export function computeEmergencyPreparednessContinuity(
   const currentPlans = evacuation_plans.filter(
     (p) => p.is_current && p.review_due >= today,
   ).length;
-  const evacuationPlanCurrencyRate = pct(currentPlans, totalEvacPlans);
+  const evacuationPlanCurrencyRate = rate(currentPlans, totalEvacPlans);
 
   // Plans covering all critical elements
   const comprehensivePlans = evacuation_plans.filter(
@@ -342,30 +339,30 @@ export function computeEmergencyPreparednessContinuity(
       p.includes_roll_call_procedure &&
       p.includes_vulnerable_children_provisions,
   ).length;
-  const planComprehensivenessRate = pct(comprehensivePlans, totalEvacPlans);
+  const planComprehensivenessRate = rate(comprehensivePlans, totalEvacPlans);
 
   // Plans displayed in home
   const displayedPlans = evacuation_plans.filter((p) => p.displayed_in_home).length;
-  const planDisplayRate = pct(displayedPlans, totalEvacPlans);
+  const planDisplayRate = rate(displayedPlans, totalEvacPlans);
 
   // Staff trained on plans
   const staffTrainedPlans = evacuation_plans.filter((p) => p.staff_trained_on_plan).length;
-  const staffTrainedOnPlansRate = pct(staffTrainedPlans, totalEvacPlans);
+  const staffTrainedOnPlansRate = rate(staffTrainedPlans, totalEvacPlans);
 
   // Children briefed on plans
   const childrenBriefedPlans = evacuation_plans.filter((p) => p.children_briefed).length;
-  const childrenBriefedRate = pct(childrenBriefedPlans, totalEvacPlans);
+  const childrenBriefedRate = rate(childrenBriefedPlans, totalEvacPlans);
 
   // Plan type coverage
   const planTypesCovered = new Set(evacuation_plans.map((p) => p.plan_type)).size;
   const planTypesTotal = 6; // fire, flood, gas_leak, intruder, chemical, general
-  const planTypeCoverageRate = pct(planTypesCovered, planTypesTotal);
+  const planTypeCoverageRate = rate(planTypesCovered, planTypesTotal);
 
   // Plans overdue for review
   const plansOverdue = evacuation_plans.filter(
     (p) => p.review_due < today,
   ).length;
-  const plansOverdueRate = pct(plansOverdue, totalEvacPlans);
+  const plansOverdueRate = rate(plansOverdue, totalEvacPlans);
 
   // --- Emergency contact metrics ---
   const totalContacts = emergency_contacts.length;
@@ -374,20 +371,20 @@ export function computeEmergencyPreparednessContinuity(
   const verifiedCurrentContacts = emergency_contacts.filter(
     (c) => c.verified && c.is_current,
   ).length;
-  const emergencyContactAccuracyRate = pct(verifiedCurrentContacts, totalContacts);
+  const emergencyContactAccuracyRate = rate(verifiedCurrentContacts, totalContacts);
 
   // Contacts overdue for verification
   const contactsOverdue = emergency_contacts.filter(
     (c) => c.verification_due !== null && c.verification_due < today,
   ).length;
-  const contactsOverdueRate = pct(contactsOverdue, totalContacts);
+  const contactsOverdueRate = rate(contactsOverdue, totalContacts);
 
   // Essential contact types coverage
   const essentialTypes = ["police", "fire_service", "ambulance", "hospital", "social_worker", "ofsted", "on_call_manager", "registered_manager"];
   const coveredEssentialTypes = essentialTypes.filter((type) =>
     emergency_contacts.some((c) => c.contact_type === type && c.is_current),
   ).length;
-  const essentialCoverageRate = pct(coveredEssentialTypes, essentialTypes.length);
+  const essentialCoverageRate = rate(coveredEssentialTypes, essentialTypes.length);
 
   // Recently verified contacts (within 90 days)
   const ninetyDaysAgo = new Date(today);
@@ -397,7 +394,7 @@ export function computeEmergencyPreparednessContinuity(
     (c) =>
       c.last_verified_date !== null && c.last_verified_date >= ninetyDaysAgoStr,
   ).length;
-  const recentVerificationRate = pct(recentlyVerified, totalContacts);
+  const recentVerificationRate = rate(recentlyVerified, totalContacts);
 
   // --- Business continuity metrics ---
   const totalContinuityPlans = business_continuity_plans.length;
@@ -406,60 +403,58 @@ export function computeEmergencyPreparednessContinuity(
   const currentContinuityPlans = business_continuity_plans.filter(
     (p) => p.is_current && p.review_due >= today,
   ).length;
-  const continuityPlanCurrencyRate = pct(currentContinuityPlans, totalContinuityPlans);
+  const continuityPlanCurrencyRate = rate(currentContinuityPlans, totalContinuityPlans);
 
   // Tested plans
   const testedPlans = business_continuity_plans.filter((p) => p.tested).length;
-  const planTestingRate = pct(testedPlans, totalContinuityPlans);
+  const planTestingRate = rate(testedPlans, totalContinuityPlans);
 
   // Plans with communication plan
   const plansWithComms = business_continuity_plans.filter(
     (p) => p.includes_communication_plan,
   ).length;
-  const commsPlanRate = pct(plansWithComms, totalContinuityPlans);
+  const commsPlanRate = rate(plansWithComms, totalContinuityPlans);
 
   // Plans with alternative accommodation
   const plansWithAccomm = business_continuity_plans.filter(
     (p) => p.includes_alternative_accommodation,
   ).length;
-  const altAccommRate = pct(plansWithAccomm, totalContinuityPlans);
+  const altAccommRate = rate(plansWithAccomm, totalContinuityPlans);
 
   // Plans with data backup
   const plansWithBackup = business_continuity_plans.filter(
     (p) => p.includes_data_backup,
   ).length;
-  const dataBackupRate = pct(plansWithBackup, totalContinuityPlans);
+  const dataBackupRate = rate(plansWithBackup, totalContinuityPlans);
 
   // Plans with staffing contingency
   const plansWithStaffing = business_continuity_plans.filter(
     (p) => p.includes_staffing_contingency,
   ).length;
-  const staffingContingencyRate = pct(plansWithStaffing, totalContinuityPlans);
+  const staffingContingencyRate = rate(plansWithStaffing, totalContinuityPlans);
 
   // Staff awareness
   const staffAwarePlans = business_continuity_plans.filter(
     (p) => p.staff_aware,
   ).length;
-  const staffAwarenessRate = pct(staffAwarePlans, totalContinuityPlans);
+  const staffAwarenessRate = rate(staffAwarePlans, totalContinuityPlans);
 
   // Business continuity composite score (average of key components)
-  const bcpComponents = totalContinuityPlans > 0
-    ? [continuityPlanCurrencyRate, planTestingRate, commsPlanRate, altAccommRate, dataBackupRate, staffingContingencyRate, staffAwarenessRate]
-    : [];
-  const businessContinuityScore = bcpComponents.length > 0
-    ? Math.round(bcpComponents.reduce((s, v) => s + v, 0) / bcpComponents.length)
-    : null;
+  const businessContinuityScore = meanOf([
+    continuityPlanCurrencyRate, planTestingRate, commsPlanRate, altAccommRate,
+    dataBackupRate, staffingContingencyRate, staffAwarenessRate,
+  ]);
 
   // Scenario coverage
   const scenariosCovered = new Set(business_continuity_plans.map((p) => p.scenario)).size;
   const scenariosTotal = 8; // pandemic, staff_shortage, building_damage, utility_failure, cyber_attack, extreme_weather, regulatory_action, other
-  const scenarioCoverageRate = pct(scenariosCovered, scenariosTotal);
+  const scenarioCoverageRate = rate(scenariosCovered, scenariosTotal);
 
   // Continuity plans overdue for review
   const continuityPlansOverdue = business_continuity_plans.filter(
     (p) => p.review_due < today,
   ).length;
-  const continuityOverdueRate = pct(continuityPlansOverdue, totalContinuityPlans);
+  const continuityOverdueRate = rate(continuityPlansOverdue, totalContinuityPlans);
 
   // --- First aid metrics ---
   const totalFirstAidRecords = first_aid_records.length;
@@ -482,7 +477,7 @@ export function computeEmergencyPreparednessContinuity(
   ).size;
 
   // First aid coverage rate (certificates that are current)
-  const firstAidCoverageRate = pct(currentCertificates, certificateRecords.length > 0 ? certificateRecords.length : 0);
+  const firstAidCoverageRate = rate(currentCertificates, certificateRecords.length > 0 ? certificateRecords.length : 0);
 
   // Expiring soon (within 30 days)
   const thirtyDaysFromNow = new Date(today);
@@ -502,14 +497,14 @@ export function computeEmergencyPreparednessContinuity(
   const checkedEquipment = equipmentRecords.filter(
     (r) => r.equipment_checked && r.equipment_in_date,
   ).length;
-  const equipmentMaintenanceRate = pct(checkedEquipment, equipmentRecords.length);
+  const equipmentMaintenanceRate = rate(checkedEquipment, equipmentRecords.length);
 
   // Equipment overdue for check
   const equipmentOverdue = equipmentRecords.filter(
     (r) =>
       r.equipment_next_check_due !== null && r.equipment_next_check_due < today,
   ).length;
-  const equipmentOverdueRate = pct(equipmentOverdue, equipmentRecords.length);
+  const equipmentOverdueRate = rate(equipmentOverdue, equipmentRecords.length);
 
   // Training records
   const trainingRecords = first_aid_records.filter(
@@ -521,7 +516,7 @@ export function computeEmergencyPreparednessContinuity(
     twelveMonthsAgo.setFullYear(twelveMonthsAgo.getFullYear() - 1);
     return r.training_date >= twelveMonthsAgo.toISOString().slice(0, 10);
   }).length;
-  const trainingCurrencyRate = pct(recentTraining, trainingRecords.length);
+  const trainingCurrencyRate = rate(recentTraining, trainingRecords.length);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
   // 9 bonus categories summing to exactly 28 (max 80 = outstanding)
@@ -529,40 +524,40 @@ export function computeEmergencyPreparednessContinuity(
   let score = 52;
 
   // --- Bonus 1: fireDrillComplianceRate (>=90: +4, >=70: +2) --- [max 4]
-  if (fireDrillComplianceRate >= 90) score += 4;
-  else if (fireDrillComplianceRate >= 70) score += 2;
+  if (meets(fireDrillComplianceRate, 90)) score += 4;
+  else if (meets(fireDrillComplianceRate, 70)) score += 2;
 
   // --- Bonus 2: evacuationPlanCurrencyRate (>=100: +4, >=80: +2) --- [max 4]
-  if (evacuationPlanCurrencyRate >= 100) score += 4;
-  else if (evacuationPlanCurrencyRate >= 80) score += 2;
+  if (meets(evacuationPlanCurrencyRate, 100)) score += 4;
+  else if (meets(evacuationPlanCurrencyRate, 80)) score += 2;
 
   // --- Bonus 3: emergencyContactAccuracyRate (>=100: +3, >=80: +1) --- [max 3]
-  if (emergencyContactAccuracyRate >= 100) score += 3;
-  else if (emergencyContactAccuracyRate >= 80) score += 1;
+  if (meets(emergencyContactAccuracyRate, 100)) score += 3;
+  else if (meets(emergencyContactAccuracyRate, 80)) score += 1;
 
   // --- Bonus 4: businessContinuityScore (>=80: +3, >=60: +1) --- [max 3]
   if ((businessContinuityScore ?? 0) >= 80) score += 3;
   else if ((businessContinuityScore ?? 0) >= 60) score += 1;
 
   // --- Bonus 5: firstAidCoverageRate (>=100: +3, >=80: +1) --- [max 3]
-  if (firstAidCoverageRate >= 100) score += 3;
-  else if (firstAidCoverageRate >= 80) score += 1;
+  if (meets(firstAidCoverageRate, 100)) score += 3;
+  else if (meets(firstAidCoverageRate, 80)) score += 1;
 
   // --- Bonus 6: equipmentMaintenanceRate (>=100: +3, >=80: +1) --- [max 3]
-  if (equipmentMaintenanceRate >= 100) score += 3;
-  else if (equipmentMaintenanceRate >= 80) score += 1;
+  if (meets(equipmentMaintenanceRate, 100)) score += 3;
+  else if (meets(equipmentMaintenanceRate, 80)) score += 1;
 
   // --- Bonus 7: drillDebriefRate (>=90: +2, >=70: +1) --- [max 2]
-  if (drillDebriefRate >= 90) score += 2;
-  else if (drillDebriefRate >= 70) score += 1;
+  if (meets(drillDebriefRate, 90)) score += 2;
+  else if (meets(drillDebriefRate, 70)) score += 1;
 
   // --- Bonus 8: planComprehensivenessRate (>=90: +3, >=70: +1) --- [max 3]
-  if (planComprehensivenessRate >= 90) score += 3;
-  else if (planComprehensivenessRate >= 70) score += 1;
+  if (meets(planComprehensivenessRate, 90)) score += 3;
+  else if (meets(planComprehensivenessRate, 70)) score += 1;
 
   // --- Bonus 9: essentialCoverageRate (>=100: +3, >=75: +1) --- [max 3]
-  if (essentialCoverageRate >= 100) score += 3;
-  else if (essentialCoverageRate >= 75) score += 1;
+  if (meets(essentialCoverageRate, 100)) score += 3;
+  else if (meets(essentialCoverageRate, 75)) score += 1;
 
   // Total max bonuses: 4+4+3+3+3+3+2+3+3 = 28
   // Max score: 52 + 28 = 80
@@ -570,16 +565,16 @@ export function computeEmergencyPreparednessContinuity(
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // fireDrillComplianceRate < 50 → -5 (guard: totalDrills > 0)
-  if (fireDrillComplianceRate < 50 && totalDrills > 0) score -= 5;
+  if (below(fireDrillComplianceRate, 50) && totalDrills > 0) score -= 5;
 
   // evacuationPlanCurrencyRate < 50 → -5 (guard: totalEvacPlans > 0)
-  if (evacuationPlanCurrencyRate < 50 && totalEvacPlans > 0) score -= 5;
+  if (below(evacuationPlanCurrencyRate, 50) && totalEvacPlans > 0) score -= 5;
 
   // emergencyContactAccuracyRate < 50 → -4 (guard: totalContacts > 0)
-  if (emergencyContactAccuracyRate < 50 && totalContacts > 0) score -= 4;
+  if (below(emergencyContactAccuracyRate, 50) && totalContacts > 0) score -= 4;
 
   // equipmentMaintenanceRate < 50 → -4 (guard: equipmentRecords.length > 0)
-  if (equipmentMaintenanceRate < 50 && equipmentRecords.length > 0) score -= 4;
+  if (below(equipmentMaintenanceRate, 50) && equipmentRecords.length > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -590,11 +585,11 @@ export function computeEmergencyPreparednessContinuity(
   const strengths: string[] = [];
 
   // Fire drill compliance strengths
-  if (fireDrillComplianceRate >= 100 && totalDrills > 0) {
+  if (meets(fireDrillComplianceRate, 100) && totalDrills > 0) {
     strengths.push(
       "Every fire drill fully compliant — all children participated and evacuation completed within target times, demonstrating excellent fire safety practice.",
     );
-  } else if (fireDrillComplianceRate >= 80 && totalDrills > 0) {
+  } else if (meets(fireDrillComplianceRate, 80) && totalDrills > 0) {
     strengths.push(
       `${fireDrillComplianceRate}% fire drill compliance — the majority of drills meet full participation and target evacuation time requirements.`,
     );
@@ -612,33 +607,33 @@ export function computeEmergencyPreparednessContinuity(
   }
 
   // Drill debrief
-  if (drillDebriefRate >= 100 && totalDrills > 0) {
+  if (meets(drillDebriefRate, 100) && totalDrills > 0) {
     strengths.push(
       "Debrief completed after every fire drill — the home consistently reviews drill outcomes to identify and address issues.",
     );
-  } else if (drillDebriefRate >= 80 && totalDrills > 0) {
+  } else if (meets(drillDebriefRate, 80) && totalDrills > 0) {
     strengths.push(
       `${drillDebriefRate}% debrief completion rate — the home regularly reviews drill outcomes for continuous improvement.`,
     );
   }
 
   // Staff drill participation
-  if (staffDrillParticipationRate >= 100 && totalDrills > 0) {
+  if (meets(staffDrillParticipationRate, 100) && totalDrills > 0) {
     strengths.push(
       "All staff participated in every fire drill — the entire team is practised in evacuation procedures.",
     );
-  } else if (staffDrillParticipationRate >= 80 && totalDrills > 0) {
+  } else if (meets(staffDrillParticipationRate, 80) && totalDrills > 0) {
     strengths.push(
       `${staffDrillParticipationRate}% staff participation rate in fire drills — strong staff engagement in emergency preparedness.`,
     );
   }
 
   // Drill issue resolution
-  if (drillIssueResolutionRate >= 100 && drillsWithIssues > 0) {
+  if (meets(drillIssueResolutionRate, 100) && drillsWithIssues > 0) {
     strengths.push(
       "All issues identified during fire drills have been resolved — the home acts on drill findings to improve safety.",
     );
-  } else if (drillIssueResolutionRate >= 80 && drillsWithIssues > 0) {
+  } else if (meets(drillIssueResolutionRate, 80) && drillsWithIssues > 0) {
     strengths.push(
       `${drillIssueResolutionRate}% of drill issues resolved — the home generally addresses safety concerns identified during drills.`,
     );
@@ -652,91 +647,91 @@ export function computeEmergencyPreparednessContinuity(
   }
 
   // Evacuation plan currency
-  if (evacuationPlanCurrencyRate >= 100 && totalEvacPlans > 0) {
+  if (meets(evacuationPlanCurrencyRate, 100) && totalEvacPlans > 0) {
     strengths.push(
       "All evacuation plans are current and within review date — comprehensive, up-to-date emergency documentation.",
     );
-  } else if (evacuationPlanCurrencyRate >= 80 && totalEvacPlans > 0) {
+  } else if (meets(evacuationPlanCurrencyRate, 80) && totalEvacPlans > 0) {
     strengths.push(
       `${evacuationPlanCurrencyRate}% of evacuation plans are current — strong plan maintenance.`,
     );
   }
 
   // Plan comprehensiveness
-  if (planComprehensivenessRate >= 100 && totalEvacPlans > 0) {
+  if (meets(planComprehensivenessRate, 100) && totalEvacPlans > 0) {
     strengths.push(
       "Every evacuation plan covers all exits, assembly points, roll call procedures, and vulnerable children provisions — plans are fully comprehensive.",
     );
-  } else if (planComprehensivenessRate >= 80 && totalEvacPlans > 0) {
+  } else if (meets(planComprehensivenessRate, 80) && totalEvacPlans > 0) {
     strengths.push(
       `${planComprehensivenessRate}% of evacuation plans include all critical elements — strong plan comprehensiveness.`,
     );
   }
 
   // Plans displayed
-  if (planDisplayRate >= 100 && totalEvacPlans > 0) {
+  if (meets(planDisplayRate, 100) && totalEvacPlans > 0) {
     strengths.push(
       "All evacuation plans displayed in the home — children and staff can reference them immediately in an emergency.",
     );
-  } else if (planDisplayRate >= 80 && totalEvacPlans > 0) {
+  } else if (meets(planDisplayRate, 80) && totalEvacPlans > 0) {
     strengths.push(
       `${planDisplayRate}% of evacuation plans displayed — good visibility of emergency procedures.`,
     );
   }
 
   // Staff trained on plans
-  if (staffTrainedOnPlansRate >= 100 && totalEvacPlans > 0) {
+  if (meets(staffTrainedOnPlansRate, 100) && totalEvacPlans > 0) {
     strengths.push(
       "Staff trained on every evacuation plan — the team is fully prepared to implement emergency procedures.",
     );
-  } else if (staffTrainedOnPlansRate >= 80 && totalEvacPlans > 0) {
+  } else if (meets(staffTrainedOnPlansRate, 80) && totalEvacPlans > 0) {
     strengths.push(
       `${staffTrainedOnPlansRate}% staff training coverage on evacuation plans — strong staff preparedness.`,
     );
   }
 
   // Children briefed
-  if (childrenBriefedRate >= 100 && totalEvacPlans > 0) {
+  if (meets(childrenBriefedRate, 100) && totalEvacPlans > 0) {
     strengths.push(
       "Children briefed on every evacuation plan — children know what to do in an emergency, supporting their safety and reducing anxiety.",
     );
-  } else if (childrenBriefedRate >= 80 && totalEvacPlans > 0) {
+  } else if (meets(childrenBriefedRate, 80) && totalEvacPlans > 0) {
     strengths.push(
       `${childrenBriefedRate}% of plans have been briefed to children — good communication of emergency procedures.`,
     );
   }
 
   // Plan type coverage
-  if (planTypeCoverageRate >= 80 && totalEvacPlans > 0) {
+  if (meets(planTypeCoverageRate, 80) && totalEvacPlans > 0) {
     strengths.push(
       `Evacuation plans cover ${planTypesCovered} of ${planTypesTotal} emergency scenarios — broad risk coverage.`,
     );
   }
 
   // Emergency contact accuracy
-  if (emergencyContactAccuracyRate >= 100 && totalContacts > 0) {
+  if (meets(emergencyContactAccuracyRate, 100) && totalContacts > 0) {
     strengths.push(
       "All emergency contacts are verified and current — the home can reach every critical contact immediately.",
     );
-  } else if (emergencyContactAccuracyRate >= 80 && totalContacts > 0) {
+  } else if (meets(emergencyContactAccuracyRate, 80) && totalContacts > 0) {
     strengths.push(
       `${emergencyContactAccuracyRate}% emergency contact accuracy — most contacts are verified and current.`,
     );
   }
 
   // Essential contact coverage
-  if (essentialCoverageRate >= 100 && totalContacts > 0) {
+  if (meets(essentialCoverageRate, 100) && totalContacts > 0) {
     strengths.push(
       "All essential emergency contact types covered (police, fire, ambulance, hospital, social worker, Ofsted, on-call manager, registered manager) — complete emergency contact coverage.",
     );
-  } else if (essentialCoverageRate >= 75 && totalContacts > 0) {
+  } else if (meets(essentialCoverageRate, 75) && totalContacts > 0) {
     strengths.push(
       `${essentialCoverageRate}% essential contact type coverage — most critical contacts are in place.`,
     );
   }
 
   // Recent verification
-  if (recentVerificationRate >= 90 && totalContacts > 0) {
+  if (meets(recentVerificationRate, 90) && totalContacts > 0) {
     strengths.push(
       `${recentVerificationRate}% of contacts verified within the last 90 days — proactive contact verification.`,
     );
@@ -754,62 +749,62 @@ export function computeEmergencyPreparednessContinuity(
   }
 
   // Plan testing
-  if (planTestingRate >= 100 && totalContinuityPlans > 0) {
+  if (meets(planTestingRate, 100) && totalContinuityPlans > 0) {
     strengths.push(
       "All business continuity plans have been tested — the home validates its contingency arrangements, not just documents them.",
     );
-  } else if (planTestingRate >= 80 && totalContinuityPlans > 0) {
+  } else if (meets(planTestingRate, 80) && totalContinuityPlans > 0) {
     strengths.push(
       `${planTestingRate}% of continuity plans tested — good validation of contingency arrangements.`,
     );
   }
 
   // Staff awareness of continuity plans
-  if (staffAwarenessRate >= 100 && totalContinuityPlans > 0) {
+  if (meets(staffAwarenessRate, 100) && totalContinuityPlans > 0) {
     strengths.push(
       "All staff are aware of business continuity plans — the team knows what to do if the home faces a disruption.",
     );
-  } else if (staffAwarenessRate >= 80 && totalContinuityPlans > 0) {
+  } else if (meets(staffAwarenessRate, 80) && totalContinuityPlans > 0) {
     strengths.push(
       `${staffAwarenessRate}% staff awareness of continuity plans — good team knowledge of contingency arrangements.`,
     );
   }
 
   // Scenario coverage
-  if (scenarioCoverageRate >= 75 && totalContinuityPlans > 0) {
+  if (meets(scenarioCoverageRate, 75) && totalContinuityPlans > 0) {
     strengths.push(
       `Business continuity plans cover ${scenariosCovered} of ${scenariosTotal} potential disruption scenarios — broad risk mitigation.`,
     );
   }
 
   // First aid coverage
-  if (firstAidCoverageRate >= 100 && certificateRecords.length > 0) {
+  if (meets(firstAidCoverageRate, 100) && certificateRecords.length > 0) {
     strengths.push(
       "All first aid certificates are current — full first aid coverage with no gaps.",
     );
-  } else if (firstAidCoverageRate >= 80 && certificateRecords.length > 0) {
+  } else if (meets(firstAidCoverageRate, 80) && certificateRecords.length > 0) {
     strengths.push(
       `${firstAidCoverageRate}% first aid certificate currency — strong first aid coverage across the team.`,
     );
   }
 
   // Equipment maintenance
-  if (equipmentMaintenanceRate >= 100 && equipmentRecords.length > 0) {
+  if (meets(equipmentMaintenanceRate, 100) && equipmentRecords.length > 0) {
     strengths.push(
       "All first aid equipment checked and in date — equipment is maintained and ready for use.",
     );
-  } else if (equipmentMaintenanceRate >= 80 && equipmentRecords.length > 0) {
+  } else if (meets(equipmentMaintenanceRate, 80) && equipmentRecords.length > 0) {
     strengths.push(
       `${equipmentMaintenanceRate}% equipment maintenance rate — most first aid equipment is checked and in date.`,
     );
   }
 
   // Training currency
-  if (trainingCurrencyRate >= 90 && trainingRecords.length > 0) {
+  if (meets(trainingCurrencyRate, 90) && trainingRecords.length > 0) {
     strengths.push(
       `${trainingCurrencyRate}% of first aid training is within the last 12 months — staff skills are current and well-maintained.`,
     );
-  } else if (trainingCurrencyRate >= 70 && trainingRecords.length > 0) {
+  } else if (meets(trainingCurrencyRate, 70) && trainingRecords.length > 0) {
     strengths.push(
       `${trainingCurrencyRate}% first aid training currency — good ongoing training provision.`,
     );
@@ -831,11 +826,11 @@ export function computeEmergencyPreparednessContinuity(
   const concerns: string[] = [];
 
   // Fire drill concerns
-  if (fireDrillComplianceRate < 50 && totalDrills > 0) {
+  if (below(fireDrillComplianceRate, 50) && totalDrills > 0) {
     concerns.push(
       `Only ${fireDrillComplianceRate}% fire drill compliance — the majority of drills fail to achieve full participation or meet target evacuation times, raising serious fire safety concerns.`,
     );
-  } else if (fireDrillComplianceRate >= 50 && fireDrillComplianceRate < 80 && totalDrills > 0) {
+  } else if (meets(fireDrillComplianceRate, 50) && below(fireDrillComplianceRate, 80) && totalDrills > 0) {
     concerns.push(
       `Fire drill compliance at ${fireDrillComplianceRate}% — some drills fail to meet participation or evacuation time targets.`,
     );
@@ -875,34 +870,34 @@ export function computeEmergencyPreparednessContinuity(
     );
   }
 
-  if (drillDebriefRate < 50 && totalDrills > 0) {
+  if (below(drillDebriefRate, 50) && totalDrills > 0) {
     concerns.push(
       `Only ${drillDebriefRate}% of fire drills include a debrief — without post-drill review, the home cannot identify and address issues to improve emergency response.`,
     );
-  } else if (drillDebriefRate >= 50 && drillDebriefRate < 80 && totalDrills > 0) {
+  } else if (meets(drillDebriefRate, 50) && below(drillDebriefRate, 80) && totalDrills > 0) {
     concerns.push(
       `Drill debrief rate at ${drillDebriefRate}% — not all drills are followed by a review to capture learning and improvements.`,
     );
   }
 
-  if (drillIssueResolutionRate < 50 && drillsWithIssues > 0) {
+  if (below(drillIssueResolutionRate, 50) && drillsWithIssues > 0) {
     concerns.push(
       `Only ${drillIssueResolutionRate}% of issues identified during fire drills have been resolved — unresolved drill issues represent ongoing safety risks.`,
     );
   }
 
-  if (staffDrillParticipationRate < 70 && totalDrills > 0) {
+  if (below(staffDrillParticipationRate, 70) && totalDrills > 0) {
     concerns.push(
       `Staff drill participation at only ${staffDrillParticipationRate}% — not all staff are practised in evacuation procedures, which could compromise safety in a real emergency.`,
     );
   }
 
   // Evacuation plan concerns
-  if (evacuationPlanCurrencyRate < 50 && totalEvacPlans > 0) {
+  if (below(evacuationPlanCurrencyRate, 50) && totalEvacPlans > 0) {
     concerns.push(
       `Only ${evacuationPlanCurrencyRate}% of evacuation plans are current — out-of-date plans may contain incorrect information and could endanger children in an emergency.`,
     );
-  } else if (evacuationPlanCurrencyRate >= 50 && evacuationPlanCurrencyRate < 80 && totalEvacPlans > 0) {
+  } else if (meets(evacuationPlanCurrencyRate, 50) && below(evacuationPlanCurrencyRate, 80) && totalEvacPlans > 0) {
     concerns.push(
       `Evacuation plan currency at ${evacuationPlanCurrencyRate}% — some plans are overdue for review and may not reflect current arrangements.`,
     );
@@ -914,42 +909,42 @@ export function computeEmergencyPreparednessContinuity(
     );
   }
 
-  if (planComprehensivenessRate < 50 && totalEvacPlans > 0) {
+  if (below(planComprehensivenessRate, 50) && totalEvacPlans > 0) {
     concerns.push(
       `Only ${planComprehensivenessRate}% of evacuation plans include all critical elements (exits, assembly points, roll call, vulnerable children) — incomplete plans risk confusion during emergencies.`,
     );
   }
 
-  if (planDisplayRate < 80 && totalEvacPlans > 0) {
+  if (below(planDisplayRate, 80) && totalEvacPlans > 0) {
     concerns.push(
       `Only ${planDisplayRate}% of evacuation plans displayed in the home — plans must be visibly displayed so everyone knows what to do in an emergency.`,
     );
   }
 
-  if (staffTrainedOnPlansRate < 70 && totalEvacPlans > 0) {
+  if (below(staffTrainedOnPlansRate, 70) && totalEvacPlans > 0) {
     concerns.push(
       `Only ${staffTrainedOnPlansRate}% of plans have associated staff training — untrained staff cannot safely implement evacuation procedures.`,
     );
   }
 
-  if (childrenBriefedRate < 70 && totalEvacPlans > 0) {
+  if (below(childrenBriefedRate, 70) && totalEvacPlans > 0) {
     concerns.push(
       `Only ${childrenBriefedRate}% of evacuation plans have been briefed to children — children must understand evacuation procedures to keep themselves safe.`,
     );
   }
 
-  if (plansOverdueRate > 30 && totalEvacPlans > 0) {
+  if (above(plansOverdueRate, 30) && totalEvacPlans > 0) {
     concerns.push(
       `${plansOverdueRate}% of evacuation plans are overdue for review — plans must be reviewed within scheduled timeframes to remain reliable.`,
     );
   }
 
   // Emergency contact concerns
-  if (emergencyContactAccuracyRate < 50 && totalContacts > 0) {
+  if (below(emergencyContactAccuracyRate, 50) && totalContacts > 0) {
     concerns.push(
       `Only ${emergencyContactAccuracyRate}% of emergency contacts are verified and current — inaccurate contacts could prevent the home from reaching critical services during emergencies.`,
     );
-  } else if (emergencyContactAccuracyRate >= 50 && emergencyContactAccuracyRate < 80 && totalContacts > 0) {
+  } else if (meets(emergencyContactAccuracyRate, 50) && below(emergencyContactAccuracyRate, 80) && totalContacts > 0) {
     concerns.push(
       `Emergency contact accuracy at ${emergencyContactAccuracyRate}% — some contacts may be out of date and unreliable.`,
     );
@@ -961,13 +956,13 @@ export function computeEmergencyPreparednessContinuity(
     );
   }
 
-  if (essentialCoverageRate < 75 && totalContacts > 0) {
+  if (below(essentialCoverageRate, 75) && totalContacts > 0) {
     concerns.push(
       `Only ${essentialCoverageRate}% of essential contact types covered — missing contacts for critical services could delay emergency response.`,
     );
   }
 
-  if (contactsOverdueRate > 20 && totalContacts > 0) {
+  if (above(contactsOverdueRate, 20) && totalContacts > 0) {
     concerns.push(
       `${contactsOverdueRate}% of emergency contacts are overdue for verification — unverified contacts may no longer be accurate.`,
     );
@@ -990,30 +985,30 @@ export function computeEmergencyPreparednessContinuity(
     );
   }
 
-  if (planTestingRate < 50 && totalContinuityPlans > 0) {
+  if (below(planTestingRate, 50) && totalContinuityPlans > 0) {
     concerns.push(
       `Only ${planTestingRate}% of continuity plans have been tested — untested plans cannot be relied upon in a real disruption.`,
     );
   }
 
-  if (staffAwarenessRate < 70 && totalContinuityPlans > 0) {
+  if (below(staffAwarenessRate, 70) && totalContinuityPlans > 0) {
     concerns.push(
       `Only ${staffAwarenessRate}% staff awareness of continuity plans — staff who do not know the plans cannot implement them effectively.`,
     );
   }
 
-  if (continuityOverdueRate > 30 && totalContinuityPlans > 0) {
+  if (above(continuityOverdueRate, 30) && totalContinuityPlans > 0) {
     concerns.push(
       `${continuityOverdueRate}% of business continuity plans overdue for review — plans must be regularly reviewed to remain relevant and effective.`,
     );
   }
 
   // First aid concerns
-  if (firstAidCoverageRate < 50 && certificateRecords.length > 0) {
+  if (below(firstAidCoverageRate, 50) && certificateRecords.length > 0) {
     concerns.push(
       `Only ${firstAidCoverageRate}% of first aid certificates are current — the home may not have adequate first aid coverage to respond to injuries or medical emergencies.`,
     );
-  } else if (firstAidCoverageRate >= 50 && firstAidCoverageRate < 80 && certificateRecords.length > 0) {
+  } else if (meets(firstAidCoverageRate, 50) && below(firstAidCoverageRate, 80) && certificateRecords.length > 0) {
     concerns.push(
       `First aid certificate currency at ${firstAidCoverageRate}% — some certificates have expired, reducing first aid capacity.`,
     );
@@ -1031,17 +1026,17 @@ export function computeEmergencyPreparednessContinuity(
     );
   }
 
-  if (equipmentMaintenanceRate < 50 && equipmentRecords.length > 0) {
+  if (below(equipmentMaintenanceRate, 50) && equipmentRecords.length > 0) {
     concerns.push(
       `Only ${equipmentMaintenanceRate}% of first aid equipment is checked and in date — poorly maintained equipment may fail when needed most.`,
     );
-  } else if (equipmentMaintenanceRate >= 50 && equipmentMaintenanceRate < 80 && equipmentRecords.length > 0) {
+  } else if (meets(equipmentMaintenanceRate, 50) && below(equipmentMaintenanceRate, 80) && equipmentRecords.length > 0) {
     concerns.push(
       `Equipment maintenance at ${equipmentMaintenanceRate}% — some first aid equipment may be out of date or not properly checked.`,
     );
   }
 
-  if (equipmentOverdueRate > 20 && equipmentRecords.length > 0) {
+  if (above(equipmentOverdueRate, 20) && equipmentRecords.length > 0) {
     concerns.push(
       `${equipmentOverdueRate}% of first aid equipment is overdue for checking — equipment must be checked within scheduled timeframes.`,
     );
@@ -1057,7 +1052,7 @@ export function computeEmergencyPreparednessContinuity(
     );
   }
 
-  if (trainingCurrencyRate < 50 && trainingRecords.length > 0) {
+  if (below(trainingCurrencyRate, 50) && trainingRecords.length > 0) {
     concerns.push(
       `Only ${trainingCurrencyRate}% of first aid training is within the last 12 months — staff skills may be out of date.`,
     );
@@ -1080,7 +1075,7 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (fireDrillComplianceRate < 50 && totalDrills > 0) {
+  if (below(fireDrillComplianceRate, 50) && totalDrills > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1110,7 +1105,7 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (evacuationPlanCurrencyRate < 50 && totalEvacPlans > 0) {
+  if (below(evacuationPlanCurrencyRate, 50) && totalEvacPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1120,7 +1115,7 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (emergencyContactAccuracyRate < 50 && totalContacts > 0) {
+  if (below(emergencyContactAccuracyRate, 50) && totalContacts > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1150,7 +1145,7 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (equipmentMaintenanceRate < 50 && equipmentRecords.length > 0) {
+  if (below(equipmentMaintenanceRate, 50) && equipmentRecords.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1160,7 +1155,7 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (firstAidCoverageRate < 50 && certificateRecords.length > 0) {
+  if (below(firstAidCoverageRate, 50) && certificateRecords.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1172,7 +1167,7 @@ export function computeEmergencyPreparednessContinuity(
 
   // Soon recommendations (improvement areas)
 
-  if (fireDrillComplianceRate >= 50 && fireDrillComplianceRate < 80 && totalDrills > 0) {
+  if (meets(fireDrillComplianceRate, 50) && below(fireDrillComplianceRate, 80) && totalDrills > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1202,7 +1197,7 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (drillDebriefRate < 80 && totalDrills > 0) {
+  if (below(drillDebriefRate, 80) && totalDrills > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1212,7 +1207,7 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (drillIssueResolutionRate < 80 && drillsWithIssues > 0) {
+  if (below(drillIssueResolutionRate, 80) && drillsWithIssues > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1222,7 +1217,7 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (evacuationPlanCurrencyRate >= 50 && evacuationPlanCurrencyRate < 80 && totalEvacPlans > 0) {
+  if (meets(evacuationPlanCurrencyRate, 50) && below(evacuationPlanCurrencyRate, 80) && totalEvacPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1232,7 +1227,7 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (planComprehensivenessRate < 80 && totalEvacPlans > 0) {
+  if (below(planComprehensivenessRate, 80) && totalEvacPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1242,7 +1237,7 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (childrenBriefedRate < 80 && totalEvacPlans > 0) {
+  if (below(childrenBriefedRate, 80) && totalEvacPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1252,7 +1247,7 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (emergencyContactAccuracyRate >= 50 && emergencyContactAccuracyRate < 80 && totalContacts > 0) {
+  if (meets(emergencyContactAccuracyRate, 50) && below(emergencyContactAccuracyRate, 80) && totalContacts > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1262,7 +1257,7 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (essentialCoverageRate < 100 && totalContacts > 0) {
+  if (below(essentialCoverageRate, 100) && totalContacts > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1282,7 +1277,7 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (planTestingRate < 50 && totalContinuityPlans > 0) {
+  if (below(planTestingRate, 50) && totalContinuityPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1292,7 +1287,7 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (staffAwarenessRate < 80 && totalContinuityPlans > 0) {
+  if (below(staffAwarenessRate, 80) && totalContinuityPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1314,7 +1309,7 @@ export function computeEmergencyPreparednessContinuity(
 
   // Planned recommendations (enhancement)
 
-  if (firstAidCoverageRate >= 50 && firstAidCoverageRate < 80 && certificateRecords.length > 0) {
+  if (meets(firstAidCoverageRate, 50) && below(firstAidCoverageRate, 80) && certificateRecords.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1324,7 +1319,7 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (equipmentMaintenanceRate >= 50 && equipmentMaintenanceRate < 80 && equipmentRecords.length > 0) {
+  if (meets(equipmentMaintenanceRate, 50) && below(equipmentMaintenanceRate, 80) && equipmentRecords.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1344,7 +1339,7 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (scenarioCoverageRate < 50 && totalContinuityPlans > 0) {
+  if (below(scenarioCoverageRate, 50) && totalContinuityPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1354,7 +1349,7 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (planTypeCoverageRate < 50 && totalEvacPlans > 0) {
+  if (below(planTypeCoverageRate, 50) && totalEvacPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1364,7 +1359,7 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (trainingCurrencyRate < 70 && trainingRecords.length > 0) {
+  if (below(trainingCurrencyRate, 70) && trainingRecords.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1390,7 +1385,7 @@ export function computeEmergencyPreparednessContinuity(
 
   // -- Critical insights --
 
-  if (fireDrillComplianceRate < 50 && totalDrills > 0) {
+  if (below(fireDrillComplianceRate, 50) && totalDrills > 0) {
     insights.push({
       text: `Only ${fireDrillComplianceRate}% fire drill compliance. Ofsted will view this as evidence that children may not be safely evacuated in a real fire. Reg 25 requires the home to demonstrate that effective fire precautions are in place, and consistent drill failure undermines this entirely.`,
       severity: "critical",
@@ -1404,7 +1399,7 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (evacuationPlanCurrencyRate < 50 && totalEvacPlans > 0) {
+  if (below(evacuationPlanCurrencyRate, 50) && totalEvacPlans > 0) {
     insights.push({
       text: `Only ${evacuationPlanCurrencyRate}% of evacuation plans are current. Out-of-date plans may reference former staff, changed building layouts, or children who have moved on. In an actual emergency, outdated plans could cause dangerous confusion.`,
       severity: "critical",
@@ -1418,7 +1413,7 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (emergencyContactAccuracyRate < 50 && totalContacts > 0) {
+  if (below(emergencyContactAccuracyRate, 50) && totalContacts > 0) {
     insights.push({
       text: `Only ${emergencyContactAccuracyRate}% of emergency contacts are verified and current. In a real emergency, the home may be unable to reach critical services, social workers, or management. This undermines the home's ability to respond effectively under Reg 40.`,
       severity: "critical",
@@ -1432,7 +1427,7 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (equipmentMaintenanceRate < 50 && equipmentRecords.length > 0) {
+  if (below(equipmentMaintenanceRate, 50) && equipmentRecords.length > 0) {
     insights.push({
       text: `Only ${equipmentMaintenanceRate}% of first aid equipment is maintained. Out-of-date or unchecked equipment — such as expired medications, depleted bandages, or non-functional defibrillators — cannot be relied upon in a medical emergency.`,
       severity: "critical",
@@ -1441,7 +1436,7 @@ export function computeEmergencyPreparednessContinuity(
 
   // -- Warning insights --
 
-  if (fireDrillComplianceRate >= 50 && fireDrillComplianceRate < 80 && totalDrills > 0) {
+  if (meets(fireDrillComplianceRate, 50) && below(fireDrillComplianceRate, 80) && totalDrills > 0) {
     insights.push({
       text: `Fire drill compliance at ${fireDrillComplianceRate}% — while improving, some drills still fail to achieve full participation or meet target evacuation times. Each failed drill represents a scenario where children may not reach safety in time.`,
       severity: "warning",
@@ -1462,35 +1457,35 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (evacuationPlanCurrencyRate >= 50 && evacuationPlanCurrencyRate < 80 && totalEvacPlans > 0) {
+  if (meets(evacuationPlanCurrencyRate, 50) && below(evacuationPlanCurrencyRate, 80) && totalEvacPlans > 0) {
     insights.push({
       text: `Evacuation plan currency at ${evacuationPlanCurrencyRate}% — some plans are overdue for review. Plans that are not regularly reviewed may contain outdated information about exits, assembly points, or children's specific needs.`,
       severity: "warning",
     });
   }
 
-  if (planComprehensivenessRate < 80 && totalEvacPlans > 0) {
+  if (below(planComprehensivenessRate, 80) && totalEvacPlans > 0) {
     insights.push({
       text: `Only ${planComprehensivenessRate}% of evacuation plans include all critical elements. Plans missing exit routes, assembly points, roll call procedures, or vulnerable children provisions may leave gaps that become dangerous during an actual emergency.`,
       severity: "warning",
     });
   }
 
-  if (childrenBriefedRate < 80 && totalEvacPlans > 0) {
+  if (below(childrenBriefedRate, 80) && totalEvacPlans > 0) {
     insights.push({
       text: `Only ${childrenBriefedRate}% of plans have been briefed to children. Children who do not understand evacuation procedures may panic, freeze, or take incorrect actions during an emergency. Regular briefings, adapted to each child's age and understanding, are essential.`,
       severity: "warning",
     });
   }
 
-  if (emergencyContactAccuracyRate >= 50 && emergencyContactAccuracyRate < 80 && totalContacts > 0) {
+  if (meets(emergencyContactAccuracyRate, 50) && below(emergencyContactAccuracyRate, 80) && totalContacts > 0) {
     insights.push({
       text: `Emergency contact accuracy at ${emergencyContactAccuracyRate}% — some contacts may be unreliable. Regular verification ensures the home can reach every critical service when needed. Even one incorrect number could cause dangerous delays.`,
       severity: "warning",
     });
   }
 
-  if (essentialCoverageRate < 100 && essentialCoverageRate >= 50 && totalContacts > 0) {
+  if (below(essentialCoverageRate, 100) && meets(essentialCoverageRate, 50) && totalContacts > 0) {
     insights.push({
       text: `Essential contact type coverage at ${essentialCoverageRate}% — gaps in coverage for police, fire, ambulance, hospital, social workers, Ofsted, or management contacts could compromise emergency response. All essential contacts should be documented and readily accessible.`,
       severity: "warning",
@@ -1511,14 +1506,14 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (planTestingRate < 50 && totalContinuityPlans > 0) {
+  if (below(planTestingRate, 50) && totalContinuityPlans > 0) {
     insights.push({
       text: `Only ${planTestingRate}% of continuity plans tested. Plans that exist only on paper may contain assumptions that do not work in practice — regular testing through tabletop exercises or simulations is essential to validate arrangements.`,
       severity: "warning",
     });
   }
 
-  if (firstAidCoverageRate >= 50 && firstAidCoverageRate < 80 && certificateRecords.length > 0) {
+  if (meets(firstAidCoverageRate, 50) && below(firstAidCoverageRate, 80) && certificateRecords.length > 0) {
     insights.push({
       text: `First aid coverage at ${firstAidCoverageRate}% — some certificates have expired. Gaps in first aid qualification mean the home may not always have a competent first aider on shift, particularly during nights and weekends.`,
       severity: "warning",
@@ -1532,14 +1527,14 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (equipmentMaintenanceRate >= 50 && equipmentMaintenanceRate < 80 && equipmentRecords.length > 0) {
+  if (meets(equipmentMaintenanceRate, 50) && below(equipmentMaintenanceRate, 80) && equipmentRecords.length > 0) {
     insights.push({
       text: `Equipment maintenance at ${equipmentMaintenanceRate}% — some equipment may be out of date or inadequately checked. First aid kits, fire extinguishers, and emergency lighting all require regular maintenance to remain effective.`,
       severity: "warning",
     });
   }
 
-  if (trainingCurrencyRate < 70 && trainingRecords.length > 0) {
+  if (below(trainingCurrencyRate, 70) && trainingRecords.length > 0) {
     insights.push({
       text: `Only ${trainingCurrencyRate}% of first aid training is within the last 12 months. First aid skills degrade without regular refreshment — the Resuscitation Council recommends annual updates to maintain competence.`,
       severity: "warning",
@@ -1555,7 +1550,7 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (fireDrillComplianceRate >= 90 && totalDrills > 0) {
+  if (meets(fireDrillComplianceRate, 90) && totalDrills > 0) {
     insights.push({
       text: `${fireDrillComplianceRate}% fire drill compliance — the home consistently achieves full participation and meets target evacuation times. This demonstrates that children and staff are well-prepared for fire emergencies, which Ofsted will view as strong evidence of Reg 25 compliance.`,
       severity: "positive",
@@ -1569,14 +1564,14 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (evacuationPlanCurrencyRate >= 100 && totalEvacPlans > 0 && planComprehensivenessRate >= 100) {
+  if (meets(evacuationPlanCurrencyRate, 100) && totalEvacPlans > 0 && meets(planComprehensivenessRate, 100)) {
     insights.push({
       text: "All evacuation plans are current, comprehensive, and cover all critical elements. This means the home has clear, up-to-date guidance for every foreseeable emergency scenario, giving staff and children confidence in their safety.",
       severity: "positive",
     });
   }
 
-  if (emergencyContactAccuracyRate >= 100 && totalContacts > 0 && essentialCoverageRate >= 100) {
+  if (meets(emergencyContactAccuracyRate, 100) && totalContacts > 0 && meets(essentialCoverageRate, 100)) {
     insights.push({
       text: "Every emergency contact is verified and current, with all essential service types covered. The home can reach any critical contact immediately in an emergency, demonstrating thorough preparation under Reg 40.",
       severity: "positive",
@@ -1590,7 +1585,7 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (firstAidCoverageRate >= 100 && certificateRecords.length > 0 && equipmentMaintenanceRate >= 100 && equipmentRecords.length > 0) {
+  if (meets(firstAidCoverageRate, 100) && certificateRecords.length > 0 && meets(equipmentMaintenanceRate, 100) && equipmentRecords.length > 0) {
     insights.push({
       text: "All first aid certificates are current and all equipment is checked and in date — the home is fully prepared to respond to medical emergencies with qualified staff and properly maintained equipment.",
       severity: "positive",
@@ -1604,7 +1599,7 @@ export function computeEmergencyPreparednessContinuity(
     });
   }
 
-  if (drillIssueResolutionRate >= 100 && drillsWithIssues > 0) {
+  if (meets(drillIssueResolutionRate, 100) && drillsWithIssues > 0) {
     insights.push({
       text: "Every issue identified during fire drills has been resolved — the home treats drill findings as actionable safety improvements, not just paperwork exercises. This demonstrates a genuine safety culture.",
       severity: "positive",

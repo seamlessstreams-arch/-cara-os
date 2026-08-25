@@ -226,8 +226,12 @@ describe("output shape", () => {
       "pat_pass_rate", "gas_satisfactory_rate", "electrical_satisfactory_rate",
       "co_functioning_rate", "defect_resolution_rate",
     ] as const) {
-      expect(r[key]).toBeGreaterThanOrEqual(0);
-      expect(r[key]).toBeLessThanOrEqual(100);
+      // a rate is either unmeasured (null) or a percentage in [0, 100]
+      const v = r[key];
+      if (v !== null) {
+        expect(v).toBeGreaterThanOrEqual(0);
+        expect(v).toBeLessThanOrEqual(100);
+      }
     }
   });
 
@@ -263,12 +267,12 @@ describe("insufficient data", () => {
 
   it("returns zero for all rate fields on insufficient_data", () => {
     const r = computeElectricityGasSafety(baseInput({ total_children: 0 }));
-    expect(r.pat_testing_rate).toBe(0);
-    expect(r.gas_certificate_rate).toBe(0);
-    expect(r.electrical_inspection_rate).toBe(0);
-    expect(r.co_detector_rate).toBe(0);
-    expect(r.child_safety_rate).toBe(0);
-    expect(r.staff_training_rate).toBe(0);
+    expect(r.pat_testing_rate).toBeNull();
+    expect(r.gas_certificate_rate).toBeNull();
+    expect(r.electrical_inspection_rate).toBeNull();
+    expect(r.co_detector_rate).toBeNull();
+    expect(r.child_safety_rate).toBeNull();
+    expect(r.staff_training_rate).toBeNull();
   });
 
   it("total_appliances_tested is 0 on insufficient_data", () => {
@@ -674,12 +678,12 @@ describe("child safety rate", () => {
     expect(r.child_safety_rate).toBe(50);
   });
 
-  it("0% when no children assessed", () => {
+  it("null when no children assessed", () => {
     const r = computeElectricityGasSafety(baseInput({
       total_children: 3,
       child_safety_records: [],
     }));
-    expect(r.child_safety_rate).toBe(0);
+    expect(r.child_safety_rate).toBeNull();
   });
 
   it("counts unique children, not total records", () => {
@@ -735,13 +739,13 @@ describe("staff training rate", () => {
     expect(r.staff_training_rate).toBe(100);
   });
 
-  it("returns 0 when total_staff is 0", () => {
+  it("returns null when total_staff is null", () => {
     const r = computeElectricityGasSafety(baseInput({
       total_staff: 0,
       pat_testing_records: [makePat()],
       child_safety_records: [makeChildSafety()],
     }));
-    expect(r.staff_training_rate).toBe(0);
+    expect(r.staff_training_rate).toBeNull();
   });
 
   it("counts unique assessors, not total records", () => {
@@ -799,11 +803,11 @@ describe("defect resolution rate", () => {
     expect(r.defect_resolution_rate).toBe(50);
   });
 
-  it("0% when no defects at all (0/0)", () => {
+  it("null when no defects at all (0/0)", () => {
     const r = computeElectricityGasSafety(baseInput({
       pat_testing_records: [makePat()],
     }));
-    expect(r.defect_resolution_rate).toBe(0);
+    expect(r.defect_resolution_rate).toBeNull();
   });
 });
 

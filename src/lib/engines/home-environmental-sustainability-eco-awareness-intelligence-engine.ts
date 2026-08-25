@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME ENVIRONMENTAL SUSTAINABILITY & ECO-AWARENESS INTELLIGENCE ENGINE
 // Monitors the home's environmental sustainability practices including energy
@@ -149,10 +150,6 @@ export interface EnvironmentalSustainabilityEcoAwarenessResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -180,12 +177,12 @@ function emptyResult(
     total_eco_education_records: 0,
     total_sustainability_practices: 0,
     total_carbon_records: 0,
-    energy_efficiency_rate: 0,
-    recycling_compliance_rate: 0,
-    eco_education_engagement_rate: 0,
+    energy_efficiency_rate: null,
+    recycling_compliance_rate: null,
+    eco_education_engagement_rate: null,
     sustainability_practice_score: 0,
-    carbon_awareness_rate: 0,
-    child_participation_rate: 0,
+    carbon_awareness_rate: null,
+    child_participation_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -264,10 +261,10 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   // --- Energy efficiency metrics ---
   const totalEnergyRecords = energy_usage_records.length;
   const withinTargetEnergy = energy_usage_records.filter((e) => e.within_target).length;
-  const energyEfficiencyRate = pct(withinTargetEnergy, totalEnergyRecords);
+  const energyEfficiencyRate = rate(withinTargetEnergy, totalEnergyRecords);
 
   const smartMeterCount = energy_usage_records.filter((e) => e.smart_meter_installed).length;
-  const smartMeterRate = pct(smartMeterCount, totalEnergyRecords);
+  const smartMeterRate = rate(smartMeterCount, totalEnergyRecords);
 
   const totalSavingMeasuresActive = energy_usage_records.reduce(
     (sum, e) => sum + e.energy_saving_measures_active,
@@ -277,18 +274,18 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
     (sum, e) => sum + e.energy_saving_measures_total,
     0,
   );
-  const savingMeasuresRate = pct(totalSavingMeasuresActive, totalSavingMeasuresTotal);
+  const savingMeasuresRate = rate(totalSavingMeasuresActive, totalSavingMeasuresTotal);
 
   // --- Recycling compliance metrics ---
   const totalRecyclingRecords = recycling_records.length;
   const compliantRecycling = recycling_records.filter((r) => r.compliant).length;
-  const recyclingComplianceRate = pct(compliantRecycling, totalRecyclingRecords);
+  const recyclingComplianceRate = rate(compliantRecycling, totalRecyclingRecords);
 
   const contaminatedRecycling = recycling_records.filter((r) => r.contamination_found).length;
-  const contaminationRate = pct(contaminatedRecycling, totalRecyclingRecords);
+  const contaminationRate = rate(contaminatedRecycling, totalRecyclingRecords);
 
   const missedCollections = recycling_records.filter((r) => r.collection_missed).length;
-  const missedCollectionRate = pct(missedCollections, totalRecyclingRecords);
+  const missedCollectionRate = rate(missedCollections, totalRecyclingRecords);
 
   const childRecyclingParticipation = recycling_records.filter((r) => r.child_participated).length;
 
@@ -297,37 +294,37 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   const attendedEcoEducation = eco_education_records.filter((e) => e.attended).length;
 
   const engagedEcoEducation = eco_education_records.filter((e) => e.attended && e.engaged).length;
-  const ecoEducationEngagementRate = pct(engagedEcoEducation, totalEcoEducationRecords);
+  const ecoEducationEngagementRate = rate(engagedEcoEducation, totalEcoEducationRecords);
 
   const learningOutcomeMet = eco_education_records.filter(
     (e) => e.attended && e.learning_outcome_met,
   ).length;
-  const learningOutcomeRate = pct(learningOutcomeMet, totalEcoEducationRecords);
+  const learningOutcomeRate = rate(learningOutcomeMet, totalEcoEducationRecords);
 
   const uniqueChildrenInEcoEd = new Set(
     eco_education_records.filter((e) => e.attended).map((e) => e.child_id),
   ).size;
-  const ecoEdChildCoverage = total_children > 0 ? pct(uniqueChildrenInEcoEd, total_children) : 0;
+  const ecoEdChildCoverage = total_children > 0 ? rate(uniqueChildrenInEcoEd, total_children) : 0;
 
   // --- Sustainability practice metrics ---
   const totalSustainabilityPractices = sustainability_practice_records.length;
   const implementedPractices = sustainability_practice_records.filter((p) => p.implemented).length;
-  const practiceImplementationRate = pct(implementedPractices, totalSustainabilityPractices);
+  const practiceImplementationRate = rate(implementedPractices, totalSustainabilityPractices);
 
   const documentedPractices = sustainability_practice_records.filter(
     (p) => p.implemented && p.documented,
   ).length;
-  const documentedRate = pct(documentedPractices, totalSustainabilityPractices);
+  const documentedRate = rate(documentedPractices, totalSustainabilityPractices);
 
   const childrenInvolved = sustainability_practice_records.filter(
     (p) => p.implemented && p.children_involved,
   ).length;
-  const childrenInvolvedRate = pct(childrenInvolved, totalSustainabilityPractices);
+  const childrenInvolvedRate = rate(childrenInvolved, totalSustainabilityPractices);
 
   const staffTrained = sustainability_practice_records.filter(
     (p) => p.implemented && p.staff_trained,
   ).length;
-  const staffTrainedRate = pct(staffTrained, totalSustainabilityPractices);
+  const staffTrainedRate = rate(staffTrained, totalSustainabilityPractices);
 
   const effectivenessSum = sustainability_practice_records
     .filter((p) => p.implemented)
@@ -340,19 +337,16 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   // Compute composite sustainability_practice_score
   // Average of implementation rate, documentation rate, children involvement, staff training
   const sustainabilityPracticeScore =
-    totalSustainabilityPractices > 0
-      ? Math.round(
-          (practiceImplementationRate + documentedRate + childrenInvolvedRate + staffTrainedRate) / 4,
-        )
-      : null;
+    totalSustainabilityPractices > 0 ? Math.round(
+          (practiceImplementationRate! + documentedRate! + childrenInvolvedRate! + staffTrainedRate!) / 4) : null;
 
   // --- Carbon footprint metrics ---
   const totalCarbonRecords = carbon_footprint_records.length;
   const withinTargetCarbon = carbon_footprint_records.filter((c) => c.within_target).length;
-  const carbonTargetRate = pct(withinTargetCarbon, totalCarbonRecords);
+  const carbonTargetRate = rate(withinTargetCarbon, totalCarbonRecords);
 
   const childrenAwareCarbon = carbon_footprint_records.filter((c) => c.children_aware).length;
-  const carbonAwarenessRate = pct(childrenAwareCarbon, totalCarbonRecords);
+  const carbonAwarenessRate = rate(childrenAwareCarbon, totalCarbonRecords);
 
   const totalReductionPlanned = carbon_footprint_records.reduce(
     (sum, c) => sum + c.reduction_actions_planned,
@@ -362,7 +356,7 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
     (sum, c) => sum + c.reduction_actions_completed,
     0,
   );
-  const reductionCompletionRate = pct(totalReductionCompleted, totalReductionPlanned);
+  const reductionCompletionRate = rate(totalReductionCompleted, totalReductionPlanned);
 
   // --- Child participation composite ---
   // Composite across recycling participation, eco-education attendance, and sustainability involvement
@@ -388,43 +382,43 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
 
   const totalChildParticNum = childParticipationNumerators.reduce((a, b) => a + b, 0);
   const totalChildParticDenom = childParticipationDenominators.reduce((a, b) => a + b, 0);
-  const childParticipationRate = pct(totalChildParticNum, totalChildParticDenom);
+  const childParticipationRate = rate(totalChildParticNum, totalChildParticDenom);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: energyEfficiencyRate (>=90: +4, >=70: +2) ---
-  if (energyEfficiencyRate >= 90) score += 4;
-  else if (energyEfficiencyRate >= 70) score += 2;
+  if (meets(energyEfficiencyRate, 90)) score += 4;
+  else if (meets(energyEfficiencyRate, 70)) score += 2;
 
   // --- Bonus 2: recyclingComplianceRate (>=95: +4, >=80: +2) ---
-  if (recyclingComplianceRate >= 95) score += 4;
-  else if (recyclingComplianceRate >= 80) score += 2;
+  if (meets(recyclingComplianceRate, 95)) score += 4;
+  else if (meets(recyclingComplianceRate, 80)) score += 2;
 
   // --- Bonus 3: ecoEducationEngagementRate (>=90: +3, >=70: +1) ---
-  if (ecoEducationEngagementRate >= 90) score += 3;
-  else if (ecoEducationEngagementRate >= 70) score += 1;
+  if (meets(ecoEducationEngagementRate, 90)) score += 3;
+  else if (meets(ecoEducationEngagementRate, 70)) score += 1;
 
   // --- Bonus 4: sustainabilityPracticeScore (>=80: +3, >=60: +1) ---
   if ((sustainabilityPracticeScore ?? 0) >= 80) score += 3;
   else if ((sustainabilityPracticeScore ?? 0) >= 60) score += 1;
 
   // --- Bonus 5: carbonAwarenessRate (>=90: +3, >=70: +1) ---
-  if (carbonAwarenessRate >= 90) score += 3;
-  else if (carbonAwarenessRate >= 70) score += 1;
+  if (meets(carbonAwarenessRate, 90)) score += 3;
+  else if (meets(carbonAwarenessRate, 70)) score += 1;
 
   // --- Bonus 6: childParticipationRate (>=90: +3, >=70: +1) ---
-  if (childParticipationRate >= 90) score += 3;
-  else if (childParticipationRate >= 70) score += 1;
+  if (meets(childParticipationRate, 90)) score += 3;
+  else if (meets(childParticipationRate, 70)) score += 1;
 
   // --- Bonus 7: reductionCompletionRate (>=90: +3, >=70: +1) ---
-  if (reductionCompletionRate >= 90) score += 3;
-  else if (reductionCompletionRate >= 70) score += 1;
+  if (meets(reductionCompletionRate, 90)) score += 3;
+  else if (meets(reductionCompletionRate, 70)) score += 1;
 
   // --- Bonus 8: savingMeasuresRate (>=90: +3, >=70: +1) ---
-  if (savingMeasuresRate >= 90) score += 3;
-  else if (savingMeasuresRate >= 70) score += 1;
+  if (meets(savingMeasuresRate, 90)) score += 3;
+  else if (meets(savingMeasuresRate, 70)) score += 1;
 
   // --- Bonus 9: avgEffectiveness (>=4.0: +2, >=3.0: +1) ---
   if ((avgEffectiveness ?? 0) >= 4.0) score += 2;
@@ -433,16 +427,16 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // energyEfficiencyRate < 40 → -5 (guarded)
-  if (energyEfficiencyRate < 40 && totalEnergyRecords > 0) score -= 5;
+  if (below(energyEfficiencyRate, 40) && totalEnergyRecords > 0) score -= 5;
 
   // recyclingComplianceRate < 50 → -5 (guarded)
-  if (recyclingComplianceRate < 50 && totalRecyclingRecords > 0) score -= 5;
+  if (below(recyclingComplianceRate, 50) && totalRecyclingRecords > 0) score -= 5;
 
   // ecoEducationEngagementRate < 40 → -5 (guarded)
-  if (ecoEducationEngagementRate < 40 && totalEcoEducationRecords > 0) score -= 5;
+  if (below(ecoEducationEngagementRate, 40) && totalEcoEducationRecords > 0) score -= 5;
 
   // childParticipationRate < 30 → -3 (guarded)
-  if (childParticipationRate < 30 && totalChildParticDenom > 0) score -= 3;
+  if (below(childParticipationRate, 30) && totalChildParticDenom > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -452,31 +446,31 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
 
   const strengths: string[] = [];
 
-  if (energyEfficiencyRate >= 90 && totalEnergyRecords > 0) {
+  if (meets(energyEfficiencyRate, 90) && totalEnergyRecords > 0) {
     strengths.push(
       `${energyEfficiencyRate}% of energy usage within target — the home demonstrates excellent energy management and conservation.`,
     );
-  } else if (energyEfficiencyRate >= 70 && totalEnergyRecords > 0) {
+  } else if (meets(energyEfficiencyRate, 70) && totalEnergyRecords > 0) {
     strengths.push(
       `${energyEfficiencyRate}% energy efficiency rate — the home is managing energy consumption well against its targets.`,
     );
   }
 
-  if (recyclingComplianceRate >= 95 && totalRecyclingRecords > 0) {
+  if (meets(recyclingComplianceRate, 95) && totalRecyclingRecords > 0) {
     strengths.push(
       `${recyclingComplianceRate}% recycling compliance — the home demonstrates exemplary waste management and recycling practices.`,
     );
-  } else if (recyclingComplianceRate >= 80 && totalRecyclingRecords > 0) {
+  } else if (meets(recyclingComplianceRate, 80) && totalRecyclingRecords > 0) {
     strengths.push(
       `${recyclingComplianceRate}% recycling compliance rate — strong commitment to recycling and waste reduction across the home.`,
     );
   }
 
-  if (ecoEducationEngagementRate >= 90 && totalEcoEducationRecords > 0) {
+  if (meets(ecoEducationEngagementRate, 90) && totalEcoEducationRecords > 0) {
     strengths.push(
       `${ecoEducationEngagementRate}% eco-education engagement — children are actively participating in and benefiting from environmental education programmes.`,
     );
-  } else if (ecoEducationEngagementRate >= 70 && totalEcoEducationRecords > 0) {
+  } else if (meets(ecoEducationEngagementRate, 70) && totalEcoEducationRecords > 0) {
     strengths.push(
       `${ecoEducationEngagementRate}% eco-education engagement rate — good levels of children's involvement in environmental awareness activities.`,
     );
@@ -492,41 +486,41 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
     );
   }
 
-  if (carbonAwarenessRate >= 90 && totalCarbonRecords > 0) {
+  if (meets(carbonAwarenessRate, 90) && totalCarbonRecords > 0) {
     strengths.push(
       `${carbonAwarenessRate}% carbon awareness rate — children are well-informed about the home's carbon footprint and reduction efforts.`,
     );
-  } else if (carbonAwarenessRate >= 70 && totalCarbonRecords > 0) {
+  } else if (meets(carbonAwarenessRate, 70) && totalCarbonRecords > 0) {
     strengths.push(
       `${carbonAwarenessRate}% carbon awareness — good levels of children's awareness of carbon footprint monitoring and reduction.`,
     );
   }
 
-  if (childParticipationRate >= 90 && totalChildParticDenom > 0) {
+  if (meets(childParticipationRate, 90) && totalChildParticDenom > 0) {
     strengths.push(
       `${childParticipationRate}% child participation across sustainability activities — children are genuinely engaged in the home's environmental efforts.`,
     );
-  } else if (childParticipationRate >= 70 && totalChildParticDenom > 0) {
+  } else if (meets(childParticipationRate, 70) && totalChildParticDenom > 0) {
     strengths.push(
       `${childParticipationRate}% child participation in environmental activities — good engagement across recycling, eco-education, and sustainability practices.`,
     );
   }
 
-  if (reductionCompletionRate >= 90 && totalReductionPlanned > 0) {
+  if (meets(reductionCompletionRate, 90) && totalReductionPlanned > 0) {
     strengths.push(
       `${reductionCompletionRate}% of carbon reduction actions completed — the home follows through on its environmental commitments.`,
     );
-  } else if (reductionCompletionRate >= 70 && totalReductionPlanned > 0) {
+  } else if (meets(reductionCompletionRate, 70) && totalReductionPlanned > 0) {
     strengths.push(
       `${reductionCompletionRate}% of planned carbon reduction actions completed — the home generally delivers on its environmental improvement plans.`,
     );
   }
 
-  if (savingMeasuresRate >= 90 && totalSavingMeasuresTotal > 0) {
+  if (meets(savingMeasuresRate, 90) && totalSavingMeasuresTotal > 0) {
     strengths.push(
       `${savingMeasuresRate}% of energy saving measures active — comprehensive implementation of conservation technology and practices.`,
     );
-  } else if (savingMeasuresRate >= 70 && totalSavingMeasuresTotal > 0) {
+  } else if (meets(savingMeasuresRate, 70) && totalSavingMeasuresTotal > 0) {
     strengths.push(
       `${savingMeasuresRate}% of energy saving measures active — good adoption of energy conservation measures across the home.`,
     );
@@ -542,7 +536,7 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
     );
   }
 
-  if (smartMeterRate >= 90 && totalEnergyRecords > 0) {
+  if (meets(smartMeterRate, 90) && totalEnergyRecords > 0) {
     strengths.push(
       "Smart meters installed across virtually all energy monitoring points — enabling real-time tracking and data-driven energy management.",
     );
@@ -554,23 +548,23 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
     );
   }
 
-  if (learningOutcomeRate >= 90 && totalEcoEducationRecords > 0) {
+  if (meets(learningOutcomeRate, 90) && totalEcoEducationRecords > 0) {
     strengths.push(
       `${learningOutcomeRate}% of eco-education sessions achieving learning outcomes — children are genuinely developing environmental knowledge and skills.`,
     );
   }
 
-  if (ecoEdChildCoverage >= 100 && total_children > 0) {
+  if (meets(ecoEdChildCoverage, 100) && total_children > 0) {
     strengths.push(
       "Every child has participated in eco-education activities — environmental awareness is embedded in the home's approach to personal development.",
     );
-  } else if (ecoEdChildCoverage >= 80 && total_children > 0) {
+  } else if (meets(ecoEdChildCoverage, 80) && total_children > 0) {
     strengths.push(
       `${ecoEdChildCoverage}% of children have participated in eco-education — strong coverage ensuring most children develop environmental awareness.`,
     );
   }
 
-  if (carbonTargetRate >= 90 && totalCarbonRecords > 0) {
+  if (meets(carbonTargetRate, 90) && totalCarbonRecords > 0) {
     strengths.push(
       `${carbonTargetRate}% of carbon records within target — the home is successfully managing and reducing its carbon footprint.`,
     );
@@ -590,31 +584,31 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
 
   const concerns: string[] = [];
 
-  if (energyEfficiencyRate < 40 && totalEnergyRecords > 0) {
+  if (below(energyEfficiencyRate, 40) && totalEnergyRecords > 0) {
     concerns.push(
       `Only ${energyEfficiencyRate}% of energy usage within target — the home is significantly exceeding energy consumption targets, indicating poor energy management.`,
     );
-  } else if (energyEfficiencyRate < 70 && energyEfficiencyRate >= 40 && totalEnergyRecords > 0) {
+  } else if (below(energyEfficiencyRate, 70) && meets(energyEfficiencyRate, 40) && totalEnergyRecords > 0) {
     concerns.push(
       `Energy efficiency at ${energyEfficiencyRate}% — the home is not consistently meeting energy usage targets, suggesting scope for improved conservation.`,
     );
   }
 
-  if (recyclingComplianceRate < 50 && totalRecyclingRecords > 0) {
+  if (below(recyclingComplianceRate, 50) && totalRecyclingRecords > 0) {
     concerns.push(
       `Only ${recyclingComplianceRate}% recycling compliance — the majority of recycling records show non-compliance, indicating a fundamental failure in waste management.`,
     );
-  } else if (recyclingComplianceRate < 80 && recyclingComplianceRate >= 50 && totalRecyclingRecords > 0) {
+  } else if (below(recyclingComplianceRate, 80) && meets(recyclingComplianceRate, 50) && totalRecyclingRecords > 0) {
     concerns.push(
       `Recycling compliance at ${recyclingComplianceRate}% — inconsistent recycling practices require attention to improve waste management across the home.`,
     );
   }
 
-  if (ecoEducationEngagementRate < 40 && totalEcoEducationRecords > 0) {
+  if (below(ecoEducationEngagementRate, 40) && totalEcoEducationRecords > 0) {
     concerns.push(
       `Only ${ecoEducationEngagementRate}% eco-education engagement — children are not meaningfully participating in environmental education, missing opportunities for personal development.`,
     );
-  } else if (ecoEducationEngagementRate < 70 && ecoEducationEngagementRate >= 40 && totalEcoEducationRecords > 0) {
+  } else if (below(ecoEducationEngagementRate, 70) && meets(ecoEducationEngagementRate, 40) && totalEcoEducationRecords > 0) {
     concerns.push(
       `Eco-education engagement at ${ecoEducationEngagementRate}% — not all children are engaging with environmental education programmes.`,
     );
@@ -630,65 +624,65 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
     );
   }
 
-  if (carbonAwarenessRate < 50 && totalCarbonRecords > 0) {
+  if (below(carbonAwarenessRate, 50) && totalCarbonRecords > 0) {
     concerns.push(
       `Only ${carbonAwarenessRate}% carbon awareness — the majority of children are not being informed about the home's carbon footprint, missing an important educational opportunity.`,
     );
-  } else if (carbonAwarenessRate < 70 && carbonAwarenessRate >= 50 && totalCarbonRecords > 0) {
+  } else if (below(carbonAwarenessRate, 70) && meets(carbonAwarenessRate, 50) && totalCarbonRecords > 0) {
     concerns.push(
       `Carbon awareness at ${carbonAwarenessRate}% — not all children are engaged in understanding the home's environmental impact and reduction efforts.`,
     );
   }
 
-  if (childParticipationRate < 30 && totalChildParticDenom > 0) {
+  if (below(childParticipationRate, 30) && totalChildParticDenom > 0) {
     concerns.push(
       `Only ${childParticipationRate}% child participation in environmental activities — children are not engaged in the home's sustainability efforts, undermining both environmental practice and personal development.`,
     );
-  } else if (childParticipationRate < 70 && childParticipationRate >= 30 && totalChildParticDenom > 0) {
+  } else if (below(childParticipationRate, 70) && meets(childParticipationRate, 30) && totalChildParticDenom > 0) {
     concerns.push(
       `Child participation in environmental activities at ${childParticipationRate}% — not all children are involved in recycling, eco-education, or sustainability initiatives.`,
     );
   }
 
-  if (contaminationRate >= 30 && totalRecyclingRecords > 0) {
+  if (meets(contaminationRate, 30) && totalRecyclingRecords > 0) {
     concerns.push(
       `Recycling contamination found in ${contaminationRate}% of records — high contamination rates indicate poor sorting practices and inadequate waste management training.`,
     );
-  } else if (contaminationRate >= 15 && contaminationRate < 30 && totalRecyclingRecords > 0) {
+  } else if (meets(contaminationRate, 15) && below(contaminationRate, 30) && totalRecyclingRecords > 0) {
     concerns.push(
       `Recycling contamination at ${contaminationRate}% — some contamination in recycling streams suggests sorting practices need reinforcement.`,
     );
   }
 
-  if (missedCollectionRate >= 20 && totalRecyclingRecords > 0) {
+  if (meets(missedCollectionRate, 20) && totalRecyclingRecords > 0) {
     concerns.push(
       `${missedCollectionRate}% of waste collections missed — missed collections may indicate poor scheduling or communication about collection arrangements.`,
     );
   }
 
-  if (reductionCompletionRate < 50 && totalReductionPlanned > 0) {
+  if (below(reductionCompletionRate, 50) && totalReductionPlanned > 0) {
     concerns.push(
       `Only ${reductionCompletionRate}% of carbon reduction actions completed — planned environmental improvements are not being followed through.`,
     );
-  } else if (reductionCompletionRate < 70 && reductionCompletionRate >= 50 && totalReductionPlanned > 0) {
+  } else if (below(reductionCompletionRate, 70) && meets(reductionCompletionRate, 50) && totalReductionPlanned > 0) {
     concerns.push(
       `Carbon reduction action completion at ${reductionCompletionRate}% — some planned environmental improvements are not being delivered.`,
     );
   }
 
-  if (ecoEdChildCoverage < 50 && total_children > 0 && totalEcoEducationRecords > 0) {
+  if (below(ecoEdChildCoverage, 50) && total_children > 0 && totalEcoEducationRecords > 0) {
     concerns.push(
       `Only ${ecoEdChildCoverage}% of children have participated in eco-education — many children are missing out on environmental awareness development.`,
     );
   }
 
-  if (staffTrainedRate < 50 && totalSustainabilityPractices > 0) {
+  if (below(staffTrainedRate, 50) && totalSustainabilityPractices > 0) {
     concerns.push(
       `Only ${staffTrainedRate}% of sustainability practices have associated staff training — staff may not be equipped to model and promote environmental responsibility.`,
     );
   }
 
-  if (savingMeasuresRate < 50 && totalSavingMeasuresTotal > 0) {
+  if (below(savingMeasuresRate, 50) && totalSavingMeasuresTotal > 0) {
     concerns.push(
       `Only ${savingMeasuresRate}% of energy saving measures are active — the home is not utilising available conservation technology and practices.`,
     );
@@ -699,7 +693,7 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   const recommendations: SustainabilityRecommendation[] = [];
   let rank = 0;
 
-  if (energyEfficiencyRate < 40 && totalEnergyRecords > 0) {
+  if (below(energyEfficiencyRate, 40) && totalEnergyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -709,7 +703,7 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
     });
   }
 
-  if (recyclingComplianceRate < 50 && totalRecyclingRecords > 0) {
+  if (below(recyclingComplianceRate, 50) && totalRecyclingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -719,7 +713,7 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
     });
   }
 
-  if (ecoEducationEngagementRate < 40 && totalEcoEducationRecords > 0) {
+  if (below(ecoEducationEngagementRate, 40) && totalEcoEducationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -729,7 +723,7 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
     });
   }
 
-  if (childParticipationRate < 30 && totalChildParticDenom > 0) {
+  if (below(childParticipationRate, 30) && totalChildParticDenom > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -739,7 +733,7 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
     });
   }
 
-  if (carbonAwarenessRate < 50 && totalCarbonRecords > 0) {
+  if (below(carbonAwarenessRate, 50) && totalCarbonRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -749,7 +743,7 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
     });
   }
 
-  if (contaminationRate >= 30 && totalRecyclingRecords > 0) {
+  if (meets(contaminationRate, 30) && totalRecyclingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -759,7 +753,7 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
     });
   }
 
-  if (reductionCompletionRate < 50 && totalReductionPlanned > 0) {
+  if (below(reductionCompletionRate, 50) && totalReductionPlanned > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -769,7 +763,7 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
     });
   }
 
-  if (staffTrainedRate < 50 && totalSustainabilityPractices > 0) {
+  if (below(staffTrainedRate, 50) && totalSustainabilityPractices > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -779,7 +773,7 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
     });
   }
 
-  if (savingMeasuresRate < 50 && totalSavingMeasuresTotal > 0) {
+  if (below(savingMeasuresRate, 50) && totalSavingMeasuresTotal > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -790,8 +784,8 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   }
 
   if (
-    energyEfficiencyRate >= 40 &&
-    energyEfficiencyRate < 70 &&
+    meets(energyEfficiencyRate, 40) &&
+    below(energyEfficiencyRate, 70) &&
     totalEnergyRecords > 0
   ) {
     recommendations.push({
@@ -804,8 +798,8 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   }
 
   if (
-    recyclingComplianceRate >= 50 &&
-    recyclingComplianceRate < 80 &&
+    meets(recyclingComplianceRate, 50) &&
+    below(recyclingComplianceRate, 80) &&
     totalRecyclingRecords > 0
   ) {
     recommendations.push({
@@ -818,8 +812,8 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   }
 
   if (
-    ecoEducationEngagementRate >= 40 &&
-    ecoEducationEngagementRate < 70 &&
+    meets(ecoEducationEngagementRate, 40) &&
+    below(ecoEducationEngagementRate, 70) &&
     totalEcoEducationRecords > 0
   ) {
     recommendations.push({
@@ -832,8 +826,8 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   }
 
   if (
-    ecoEdChildCoverage < 80 &&
-    ecoEdChildCoverage >= 50 &&
+    below(ecoEdChildCoverage, 80) &&
+    meets(ecoEdChildCoverage, 50) &&
     total_children > 0 &&
     totalEcoEducationRecords > 0
   ) {
@@ -847,8 +841,8 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   }
 
   if (
-    childParticipationRate >= 30 &&
-    childParticipationRate < 70 &&
+    meets(childParticipationRate, 30) &&
+    below(childParticipationRate, 70) &&
     totalChildParticDenom > 0
   ) {
     recommendations.push({
@@ -861,8 +855,8 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   }
 
   if (
-    carbonAwarenessRate >= 50 &&
-    carbonAwarenessRate < 70 &&
+    meets(carbonAwarenessRate, 50) &&
+    below(carbonAwarenessRate, 70) &&
     totalCarbonRecords > 0
   ) {
     recommendations.push({
@@ -880,28 +874,28 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
 
   // -- Critical insights --
 
-  if (energyEfficiencyRate < 40 && totalEnergyRecords > 0) {
+  if (below(energyEfficiencyRate, 40) && totalEnergyRecords > 0) {
     insights.push({
       text: `Only ${energyEfficiencyRate}% of energy usage within target. Excessive energy consumption not only increases costs but signals a lack of environmental responsibility. Ofsted considers the living environment as part of quality of care — poor energy management reflects on the home's overall governance.`,
       severity: "critical",
     });
   }
 
-  if (recyclingComplianceRate < 50 && totalRecyclingRecords > 0) {
+  if (below(recyclingComplianceRate, 50) && totalRecyclingRecords > 0) {
     insights.push({
       text: `Only ${recyclingComplianceRate}% recycling compliance. Widespread non-compliance with recycling indicates a failure in environmental practices that affects the quality of the living environment and misses opportunities to educate children about environmental responsibility.`,
       severity: "critical",
     });
   }
 
-  if (ecoEducationEngagementRate < 40 && totalEcoEducationRecords > 0) {
+  if (below(ecoEducationEngagementRate, 40) && totalEcoEducationRecords > 0) {
     insights.push({
       text: `Only ${ecoEducationEngagementRate}% eco-education engagement. Low engagement in environmental education means children are not developing the awareness and skills needed to understand their environmental responsibilities — this is a missed opportunity in their personal development.`,
       severity: "critical",
     });
   }
 
-  if (childParticipationRate < 30 && totalChildParticDenom > 0) {
+  if (below(childParticipationRate, 30) && totalChildParticDenom > 0) {
     insights.push({
       text: `Child participation in environmental activities at only ${childParticipationRate}%. Children are not meaningfully involved in the home's sustainability efforts, missing valuable learning experiences and the chance to develop responsibility and life skills around environmental care.`,
       severity: "critical",
@@ -918,8 +912,8 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   // -- Warning insights --
 
   if (
-    energyEfficiencyRate >= 40 &&
-    energyEfficiencyRate < 70 &&
+    meets(energyEfficiencyRate, 40) &&
+    below(energyEfficiencyRate, 70) &&
     totalEnergyRecords > 0
   ) {
     insights.push({
@@ -929,8 +923,8 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   }
 
   if (
-    recyclingComplianceRate >= 50 &&
-    recyclingComplianceRate < 80 &&
+    meets(recyclingComplianceRate, 50) &&
+    below(recyclingComplianceRate, 80) &&
     totalRecyclingRecords > 0
   ) {
     insights.push({
@@ -940,8 +934,8 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   }
 
   if (
-    ecoEducationEngagementRate >= 40 &&
-    ecoEducationEngagementRate < 70 &&
+    meets(ecoEducationEngagementRate, 40) &&
+    below(ecoEducationEngagementRate, 70) &&
     totalEcoEducationRecords > 0
   ) {
     insights.push({
@@ -962,8 +956,8 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   }
 
   if (
-    carbonAwarenessRate >= 50 &&
-    carbonAwarenessRate < 70 &&
+    meets(carbonAwarenessRate, 50) &&
+    below(carbonAwarenessRate, 70) &&
     totalCarbonRecords > 0
   ) {
     insights.push({
@@ -973,8 +967,8 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   }
 
   if (
-    childParticipationRate >= 30 &&
-    childParticipationRate < 70 &&
+    meets(childParticipationRate, 30) &&
+    below(childParticipationRate, 70) &&
     totalChildParticDenom > 0
   ) {
     insights.push({
@@ -984,8 +978,8 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   }
 
   if (
-    reductionCompletionRate >= 50 &&
-    reductionCompletionRate < 70 &&
+    meets(reductionCompletionRate, 50) &&
+    below(reductionCompletionRate, 70) &&
     totalReductionPlanned > 0
   ) {
     insights.push({
@@ -995,8 +989,8 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   }
 
   if (
-    contaminationRate >= 15 &&
-    contaminationRate < 30 &&
+    meets(contaminationRate, 15) &&
+    below(contaminationRate, 30) &&
     totalRecyclingRecords > 0
   ) {
     insights.push({
@@ -1047,8 +1041,8 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   }
 
   if (
-    energyEfficiencyRate >= 90 &&
-    savingMeasuresRate >= 90 &&
+    meets(energyEfficiencyRate, 90) &&
+    meets(savingMeasuresRate, 90) &&
     totalEnergyRecords > 0 &&
     totalSavingMeasuresTotal > 0
   ) {
@@ -1059,7 +1053,7 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   }
 
   if (
-    recyclingComplianceRate >= 95 &&
+    meets(recyclingComplianceRate, 95) &&
     contaminationRate === 0 &&
     totalRecyclingRecords > 0
   ) {
@@ -1070,8 +1064,8 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   }
 
   if (
-    ecoEducationEngagementRate >= 90 &&
-    learningOutcomeRate >= 90 &&
+    meets(ecoEducationEngagementRate, 90) &&
+    meets(learningOutcomeRate, 90) &&
     totalEcoEducationRecords > 0
   ) {
     insights.push({
@@ -1081,7 +1075,7 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   }
 
   if (
-    childParticipationRate >= 90 &&
+    meets(childParticipationRate, 90) &&
     totalChildParticDenom > 0
   ) {
     insights.push({
@@ -1091,8 +1085,8 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   }
 
   if (
-    carbonTargetRate >= 90 &&
-    reductionCompletionRate >= 90 &&
+    meets(carbonTargetRate, 90) &&
+    meets(reductionCompletionRate, 90) &&
     totalCarbonRecords > 0 &&
     totalReductionPlanned > 0
   ) {
@@ -1103,7 +1097,7 @@ export function computeEnvironmentalSustainabilityEcoAwareness(
   }
 
   if (
-    ecoEdChildCoverage >= 100 &&
+    meets(ecoEdChildCoverage, 100) &&
     total_children > 0 &&
     totalEcoEducationRecords > 0
   ) {
