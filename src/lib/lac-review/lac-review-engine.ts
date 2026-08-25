@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — LAC Review Intelligence Engine
 //
@@ -120,16 +121,18 @@ export interface ChildReviewProfile {
   childName: string;
   totalReviews: number;
   reviewsOnTime: number;
-  timelinessRate: number;
-  participationRate: number;          // % of reviews where child participated meaningfully
-  childViewsCapturedRate: number;
-  carePlanUpdatedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelinessRate: number | null;
+  participationRate: number | null;   // % of reviews where child participated meaningfully
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewsCapturedRate: number | null;
+  carePlanUpdatedRate: number | null;
   totalRecommendations: number;
   completedRecommendations: number;
   overdueRecommendations: number;
-  recommendationCompletionRate: number;
+  recommendationCompletionRate: number | null;
   iroMidPointChecks: number;
-  iroChildSpokenToRate: number;
+  iroChildSpokenToRate: number | null;
   lastReviewDate: string | null;
   nextReviewDue: string | null;
   overallScore: number;               // 0–10
@@ -141,12 +144,16 @@ export interface ReviewTimelinessResult {
   totalReviews: number;
   reviewsOnTime: number;
   reviewsLate: number;
-  timelinessRate: number;             // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelinessRate: number | null;             // %
   averageDelayDays: number | null;           // For late reviews only
-  initialReviewTimeliness: number;    // % of initial reviews on time
-  subsequentReviewTimeliness: number; // % of subsequent reviews on time
+  /** null when the population is empty — nothing measured, not 0%. */
+  initialReviewTimeliness: number | null;    // % of initial reviews on time
+  /** null when the population is empty — nothing measured, not 0%. */
+  subsequentReviewTimeliness: number | null; // % of subsequent reviews on time
   emergencyReviewsHeld: number;
-  minutesDistributedOnTimeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  minutesDistributedOnTimeRate: number | null;
   overallScore: number;               // 0–30
 }
 
@@ -158,12 +165,18 @@ export interface ChildParticipationResult {
   viewsConveyedByWorker: number;
   refused: number;
   notInvited: number;
-  meaningfulParticipationRate: number; // % (attended + written + advocate)
-  childViewsCapturedRate: number;
-  parentInvitedRate: number;
-  parentAttendedRate: number;
-  carerAttendedRate: number;
-  socialWorkerAttendedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  meaningfulParticipationRate: number | null; // % (attended + written + advocate)
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewsCapturedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  parentInvitedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  parentAttendedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  carerAttendedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  socialWorkerAttendedRate: number | null;
   overallScore: number;               // 0–25
 }
 
@@ -174,9 +187,12 @@ export interface RecommendationTrackingResult {
   overdue: number;
   notStarted: number;
   noLongerApplicable: number;
-  completionRate: number;             // %
-  overdueRate: number;                // %
-  urgentCompletionRate: number;       // % of urgent completed on time
+  /** null when the population is empty — nothing measured, not 0%. */
+  completionRate: number | null;             // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  overdueRate: number | null;                // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  urgentCompletionRate: number | null;       // % of urgent completed on time
   averageCompletionDays: number | null;
   overallScore: number;               // 0–25
 }
@@ -188,9 +204,11 @@ export interface IROEffectivenessResult {
   consultations: number;
   disputeResolutions: number;
   escalations: number;
-  childSpokenToRate: number;          // % of activities where child was spoken to
+  /** null when the population is empty — nothing measured, not 0%. */
+  childSpokenToRate: number | null;          // % of activities where child was spoken to
   issuesIdentifiedCount: number;
-  iroIndependenceRate: number;        // % of reviews where IRO was independent
+  /** null when the population is empty — nothing measured, not 0%. */
+  iroIndependenceRate: number | null;        // % of reviews where IRO was independent
   overallScore: number;               // 0–20
 }
 
@@ -225,11 +243,6 @@ function daysBetween(a: string, b: string): number {
 function isInPeriod(date: string | undefined, start: string, end: string): boolean {
   if (!date) return false;
   return date.slice(0, 10) >= start.slice(0, 10) && date.slice(0, 10) <= end.slice(0, 10);
-}
-
-function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 1000) / 10;
 }
 
 function clamp(v: number, min: number, max: number): number {
@@ -326,36 +339,36 @@ export function evaluateReviewTimeliness(
   // Initial review timeliness
   const initials = periodReviews.filter((r) => r.reviewType === "initial");
   const initialsOnTime = initials.filter((r) => r.wasTimely).length;
-  const initialRate = pct(initialsOnTime, initials.length);
+  const initialRate = rate(initialsOnTime, initials.length);
 
   // Subsequent review timeliness (includes "second" and "subsequent")
   const subsequents = periodReviews.filter((r) => r.reviewType === "second" || r.reviewType === "subsequent");
   const subsequentsOnTime = subsequents.filter((r) => r.wasTimely).length;
-  const subsequentRate = pct(subsequentsOnTime, subsequents.length);
+  const subsequentRate = rate(subsequentsOnTime, subsequents.length);
 
   // Emergency reviews
   const emergencyCount = periodReviews.filter((r) => r.reviewType === "emergency" || r.reviewType === "disruption").length;
 
   // Minutes distribution
   const minutesOnTime = periodReviews.filter((r) => r.minutesDistributedWithin5Days).length;
-  const minutesRate = pct(minutesOnTime, periodReviews.length);
+  const minutesRate = rate(minutesOnTime, periodReviews.length);
 
   // Scoring — 30 points max
-  const timelinessRate = pct(onTime, periodReviews.length);
+  const timelinessRate = rate(onTime, periodReviews.length);
   let score = 0;
 
   // Timeliness rate: up to 18 points
-  score += (timelinessRate / 100) * 18;
+  score += ((timelinessRate ?? 0) / 100) * 18;
 
   // Minutes distribution: up to 6 points
-  score += (minutesRate / 100) * 6;
+  score += ((minutesRate ?? 0) / 100) * 6;
 
   // Initial review timeliness bonus: up to 3 points (critical statutory requirement)
   if (initials.length > 0) {
-    score += (initialRate / 100) * 3;
+    score += ((initialRate ?? 0) / 100) * 3;
   } else {
     // No initial reviews in period — redistribute to timeliness
-    score += (timelinessRate / 100) * 3;
+    score += ((timelinessRate ?? 0) / 100) * 3;
   }
 
   // Low average delay bonus: up to 3 points
@@ -415,10 +428,10 @@ export function evaluateChildParticipation(
 
   // Meaningful participation = attended + written + advocate
   const meaningful = attended + written + advocate;
-  const meaningfulRate = pct(meaningful, periodReviews.length);
+  const meaningfulRate = rate(meaningful, periodReviews.length);
 
   const viewsCaptured = periodReviews.filter((r) => r.childViewsCaptured).length;
-  const viewsRate = pct(viewsCaptured, periodReviews.length);
+  const viewsRate = rate(viewsCaptured, periodReviews.length);
 
   const parentInvited = periodReviews.filter((r) => r.parentInvited).length;
   const parentAttended = periodReviews.filter((r) => r.parentAttended).length;
@@ -429,19 +442,19 @@ export function evaluateChildParticipation(
   let score = 0;
 
   // Meaningful participation rate: up to 12 points
-  score += (meaningfulRate / 100) * 12;
+  score += ((meaningfulRate ?? 0) / 100) * 12;
 
   // Child views captured: up to 6 points
-  score += (viewsRate / 100) * 6;
+  score += ((viewsRate ?? 0) / 100) * 6;
 
   // Not-invited penalty: -2 points per "not_invited" (harsh — this should never happen)
   score -= notInvited * 2;
 
   // Multi-agency attendance bonus: up to 4 points
-  const swRate = pct(swAttended, periodReviews.length);
-  const carerRate = pct(carerAttended, periodReviews.length);
-  score += (swRate / 100) * 2;
-  score += (carerRate / 100) * 2;
+  const swRate = rate(swAttended, periodReviews.length);
+  const carerRate = rate(carerAttended, periodReviews.length);
+  score += ((swRate ?? 0) / 100) * 2;
+  score += ((carerRate ?? 0) / 100) * 2;
 
   // Advocacy support bonus: up to 1 point
   if (advocate > 0) {
@@ -458,10 +471,10 @@ export function evaluateChildParticipation(
     notInvited,
     meaningfulParticipationRate: meaningfulRate,
     childViewsCapturedRate: viewsRate,
-    parentInvitedRate: pct(parentInvited, periodReviews.length),
-    parentAttendedRate: pct(parentAttended, periodReviews.length),
-    carerAttendedRate: pct(carerAttended, periodReviews.length),
-    socialWorkerAttendedRate: pct(swAttended, periodReviews.length),
+    parentInvitedRate: rate(parentInvited, periodReviews.length),
+    parentAttendedRate: rate(parentAttended, periodReviews.length),
+    carerAttendedRate: rate(carerAttended, periodReviews.length),
+    socialWorkerAttendedRate: rate(swAttended, periodReviews.length),
     overallScore: Math.round(clamp(score, 0, 25) * 10) / 10,
   };
 }
@@ -496,13 +509,13 @@ export function evaluateRecommendationTracking(
   const noLongerApplicable = periodRecs.filter((r) => r.status === "no_longer_applicable").length;
 
   const actionable = periodRecs.length - noLongerApplicable;
-  const completionRate = pct(completed, actionable);
-  const overdueRate = pct(overdue, actionable);
+  const completionRate = rate(completed, actionable);
+  const overdueRate = rate(overdue, actionable);
 
   // Urgent recommendation completion
   const urgent = periodRecs.filter((r) => r.priority === "urgent");
   const urgentCompleted = urgent.filter((r) => r.status === "completed").length;
-  const urgentRate = pct(urgentCompleted, urgent.length);
+  const urgentRate = rate(urgentCompleted, urgent.length);
 
   // Average completion time
   const completedWithDates = periodRecs.filter((r) => r.status === "completed" && r.completedDate);
@@ -520,22 +533,22 @@ export function evaluateRecommendationTracking(
   let score = 0;
 
   // Completion rate: up to 12 points
-  score += (completionRate / 100) * 12;
+  score += ((completionRate ?? 0) / 100) * 12;
 
   // Low overdue rate: up to 6 points (inverted — high overdue = low score)
-  score += ((100 - overdueRate) / 100) * 6;
+  score += ((100 - (overdueRate ?? 0)) / 100) * 6;
 
   // Urgent completion: up to 4 points
   if (urgent.length > 0) {
-    score += (urgentRate / 100) * 4;
+    score += ((urgentRate ?? 0) / 100) * 4;
   } else {
     // No urgent recommendations — redistribute
-    score += (completionRate / 100) * 4;
+    score += ((completionRate ?? 0) / 100) * 4;
   }
 
   // In-progress credit: up to 3 points (shows active engagement)
-  const activeRate = pct(completed + inProgress, actionable);
-  score += (activeRate / 100) * 3;
+  const activeRate = rate(completed + inProgress, actionable);
+  score += ((activeRate ?? 0) / 100) * 3;
 
   return {
     totalRecommendations: periodRecs.length,
@@ -584,21 +597,21 @@ export function evaluateIROEffectiveness(
 
   // Child spoken to rate across all IRO activities
   const spokenTo = periodActivities.filter((a) => a.childSpokenTo).length;
-  const spokenToRate = pct(spokenTo, periodActivities.length);
+  const spokenToRate = rate(spokenTo, periodActivities.length);
 
   // Issues identified
   const issuesCount = periodActivities.reduce((sum, a) => sum + a.issuesIdentified.length, 0);
 
   // IRO independence across reviews
   const independentReviews = periodReviews.filter((r) => r.iroIndependent).length;
-  const independenceRate = pct(independentReviews, periodReviews.length);
+  const independenceRate = rate(independentReviews, periodReviews.length);
 
   // Scoring — 20 points max
   let score = 0;
 
   // IRO independence: up to 6 points (critical requirement)
   if (periodReviews.length > 0) {
-    score += (independenceRate / 100) * 6;
+    score += ((independenceRate ?? 0) / 100) * 6;
   } else {
     score += 0;
   }
@@ -612,7 +625,7 @@ export function evaluateIROEffectiveness(
 
   // Child spoken to: up to 5 points
   if (periodActivities.length > 0) {
-    score += (spokenToRate / 100) * 5;
+    score += ((spokenToRate ?? 0) / 100) * 5;
   }
 
   // Active IRO engagement (monitoring, consultation, escalation): up to 4 points
@@ -659,7 +672,7 @@ export function buildChildReviewProfiles(
     const childName = childReviews[0]?.childName || childRecs[0]?.childName || childIRO[0]?.childName || childId;
 
     const onTime = childReviews.filter((r) => r.wasTimely).length;
-    const timelinessRate = pct(onTime, childReviews.length);
+    const timelinessRate = rate(onTime, childReviews.length);
 
     const meaningful = childReviews.filter((r) =>
       r.participationMethod === "attended_in_person" ||
@@ -667,22 +680,22 @@ export function buildChildReviewProfiles(
       r.participationMethod === "written_views" ||
       r.participationMethod === "advocate_attended",
     ).length;
-    const participationRate = pct(meaningful, childReviews.length);
+    const participationRate = rate(meaningful, childReviews.length);
 
     const viewsCaptured = childReviews.filter((r) => r.childViewsCaptured).length;
-    const viewsRate = pct(viewsCaptured, childReviews.length);
+    const viewsRate = rate(viewsCaptured, childReviews.length);
 
     const carePlanUpdated = childReviews.filter((r) => r.carePlanUpdated).length;
-    const carePlanRate = pct(carePlanUpdated, childReviews.length);
+    const carePlanRate = rate(carePlanUpdated, childReviews.length);
 
     const completedRecs = childRecs.filter((r) => r.status === "completed").length;
     const overdueRecs = childRecs.filter((r) => r.status === "overdue").length;
     const actionableRecs = childRecs.filter((r) => r.status !== "no_longer_applicable").length;
-    const recCompletionRate = pct(completedRecs, actionableRecs);
+    const recCompletionRate = rate(completedRecs, actionableRecs);
 
     const midPoints = childIRO.filter((a) => a.activityType === "mid_point_check").length;
     const spokenTo = childIRO.filter((a) => a.childSpokenTo).length;
-    const spokenToRate = pct(spokenTo, childIRO.length);
+    const spokenToRate = rate(spokenTo, childIRO.length);
 
     // Sort reviews by date to find last and next
     const sortedReviews = [...childReviews].sort((a, b) => {
@@ -697,10 +710,10 @@ export function buildChildReviewProfiles(
     // Overall child score: 0–10
     let score = 0;
     if (childReviews.length > 0) {
-      score += (timelinessRate / 100) * 3;    // Timeliness: 3 pts
-      score += (participationRate / 100) * 3;  // Participation: 3 pts
-      score += (viewsRate / 100) * 1;          // Views captured: 1 pt
-      score += (recCompletionRate / 100) * 2;  // Recommendations: 2 pts
+      score += ((timelinessRate ?? 0) / 100) * 3;    // Timeliness: 3 pts
+      score += ((participationRate ?? 0) / 100) * 3;  // Participation: 3 pts
+      score += ((viewsRate ?? 0) / 100) * 1;          // Views captured: 1 pt
+      score += ((recCompletionRate ?? 0) / 100) * 2;  // Recommendations: 2 pts
       if (midPoints > 0) score += 1;           // Mid-point check: 1 pt
     }
 
@@ -754,28 +767,28 @@ export function generateLACReviewIntelligence(
 
   // ── Strengths ──
   const strengths: string[] = [];
-  if (timeliness.timelinessRate >= 90) {
+  if (meets(timeliness.timelinessRate, 90)) {
     strengths.push("Excellent review timeliness — over 90% of reviews held on or before the statutory due date");
   }
-  if (timeliness.minutesDistributedOnTimeRate >= 90) {
+  if (meets(timeliness.minutesDistributedOnTimeRate, 90)) {
     strengths.push("Review minutes consistently distributed within 5 working days");
   }
-  if (participation.meaningfulParticipationRate >= 85) {
+  if (meets(participation.meaningfulParticipationRate, 85)) {
     strengths.push("High rate of meaningful child participation in reviews, supporting their right to be heard");
   }
-  if (participation.childViewsCapturedRate >= 90) {
+  if (meets(participation.childViewsCapturedRate, 90)) {
     strengths.push("Children's views are consistently captured and recorded in reviews");
   }
-  if (recTracking.completionRate >= 80) {
+  if (meets(recTracking.completionRate, 80)) {
     strengths.push("Strong follow-through on review recommendations with high completion rate");
   }
-  if (recTracking.overdueRate <= 10 && recTracking.totalRecommendations > 0) {
+  if (recTracking.totalRecommendations > 0 && recTracking.overdueRate! <= 10) {
     strengths.push("Very low overdue rate for review recommendations, indicating effective monitoring");
   }
-  if (iro.iroIndependenceRate >= 95 && timeliness.totalReviews > 0) {
+  if (meets(iro.iroIndependenceRate, 95) && timeliness.totalReviews > 0) {
     strengths.push("IRO independence maintained across all reviews, ensuring objectivity");
   }
-  if (iro.midPointChecks > 0 && iro.childSpokenToRate >= 80) {
+  if (iro.midPointChecks > 0 && meets(iro.childSpokenToRate, 80)) {
     strengths.push("IRO actively engages with children between reviews through mid-point checks");
   }
   if (participation.advocateAttended > 0) {
@@ -784,22 +797,22 @@ export function generateLACReviewIntelligence(
 
   // ── Areas for Improvement ──
   const areasForImprovement: string[] = [];
-  if (timeliness.timelinessRate < 80 && timeliness.totalReviews > 0) {
+  if (below(timeliness.timelinessRate, 80) && timeliness.totalReviews > 0) {
     areasForImprovement.push("Review timeliness needs improvement — some reviews are not being held within statutory timescales");
   }
-  if (timeliness.minutesDistributedOnTimeRate < 80 && timeliness.totalReviews > 0) {
+  if (below(timeliness.minutesDistributedOnTimeRate, 80) && timeliness.totalReviews > 0) {
     areasForImprovement.push("Minutes distribution needs to be more timely — should be within 5 working days of the review");
   }
-  if (participation.meaningfulParticipationRate < 75 && participation.totalReviews > 0) {
+  if (below(participation.meaningfulParticipationRate, 75) && participation.totalReviews > 0) {
     areasForImprovement.push("Child participation in reviews could be strengthened — consider varied approaches to encourage engagement");
   }
   if (participation.notInvited > 0) {
     areasForImprovement.push(`${participation.notInvited} review(s) where the child was not invited — this must be addressed immediately`);
   }
-  if (recTracking.overdueRate > 20 && recTracking.totalRecommendations > 0) {
+  if (above(recTracking.overdueRate, 20) && recTracking.totalRecommendations > 0) {
     areasForImprovement.push("High proportion of overdue recommendations — monitoring and tracking systems need strengthening");
   }
-  if (iro.iroIndependenceRate < 100 && timeliness.totalReviews > 0) {
+  if (below(iro.iroIndependenceRate, 100) && timeliness.totalReviews > 0) {
     areasForImprovement.push("IRO independence should be maintained for all reviews to ensure objectivity and challenge");
   }
   if (iro.midPointChecks === 0 && timeliness.totalReviews > 0) {
@@ -820,10 +833,10 @@ export function generateLACReviewIntelligence(
   if (iro.midPointChecks === 0 && timeliness.totalReviews > 0) {
     actions.push("MEDIUM: Request IRO mid-point checks between reviews for all children");
   }
-  if (participation.meaningfulParticipationRate < 75 && participation.totalReviews > 0) {
+  if (below(participation.meaningfulParticipationRate, 75) && participation.totalReviews > 0) {
     actions.push("MEDIUM: Develop child-friendly approaches to increase meaningful participation in reviews");
   }
-  if (timeliness.minutesDistributedOnTimeRate < 80 && timeliness.totalReviews > 0) {
+  if (below(timeliness.minutesDistributedOnTimeRate, 80) && timeliness.totalReviews > 0) {
     actions.push("LOW: Implement a system to ensure review minutes are distributed within 5 working days");
   }
 

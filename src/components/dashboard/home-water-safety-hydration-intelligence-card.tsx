@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Droplets } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { WaterSafetyRating } from "@/lib/engines/home-water-safety-hydration-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 const RATING_STYLES: Record<WaterSafetyRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -57,7 +58,7 @@ export function HomeWaterSafetyHydrationIntelligenceCard() {
             <Droplets className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-sky-600")} />
             <span className="text-slate-900 font-bold">Water Safety & Hydration</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.water_safety_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.water_safety_score}%</span>}
+            {d.water_safety_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.water_safety_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -65,28 +66,28 @@ export function HomeWaterSafetyHydrationIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.water_safety_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.temperature_check_rate >= 90 ? "bg-green-50" : d.temperature_check_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.temperature_check_rate >= 90 ? "text-[--cs-success]" : d.temperature_check_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.temperature_check_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.temperature_check_rate, 90) ? "bg-green-50" : meets(d.temperature_check_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.temperature_check_rate, 90) ? "text-[--cs-success]" : meets(d.temperature_check_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.temperature_check_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Temp</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.legionella_compliance_rate >= 90 ? "bg-green-50" : d.legionella_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.legionella_compliance_rate >= 90 ? "text-[--cs-success]" : d.legionella_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.legionella_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.legionella_compliance_rate, 90) ? "bg-green-50" : meets(d.legionella_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.legionella_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.legionella_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.legionella_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Legionella</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.hydration_monitoring_rate >= 90 ? "bg-green-50" : d.hydration_monitoring_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.hydration_monitoring_rate >= 90 ? "text-[--cs-success]" : d.hydration_monitoring_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.hydration_monitoring_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.hydration_monitoring_rate, 90) ? "bg-green-50" : meets(d.hydration_monitoring_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.hydration_monitoring_rate, 90) ? "text-[--cs-success]" : meets(d.hydration_monitoring_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.hydration_monitoring_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Hydration</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.swimming_competency_rate >= 90 ? "bg-green-50" : d.swimming_competency_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.swimming_competency_rate >= 90 ? "text-[--cs-success]" : d.swimming_competency_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.swimming_competency_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.swimming_competency_rate, 90) ? "bg-green-50" : meets(d.swimming_competency_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.swimming_competency_rate, 90) ? "text-[--cs-success]" : meets(d.swimming_competency_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.swimming_competency_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Swimming</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.water_activity_safety_rate >= 90 ? "bg-green-50" : d.water_activity_safety_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.water_activity_safety_rate >= 90 ? "text-[--cs-success]" : d.water_activity_safety_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.water_activity_safety_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.water_activity_safety_rate, 90) ? "bg-green-50" : meets(d.water_activity_safety_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.water_activity_safety_rate, 90) ? "text-[--cs-success]" : meets(d.water_activity_safety_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.water_activity_safety_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Activity</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_awareness_rate >= 90 ? "bg-green-50" : d.child_awareness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_awareness_rate >= 90 ? "text-[--cs-success]" : d.child_awareness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_awareness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_awareness_rate, 90) ? "bg-green-50" : meets(d.child_awareness_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_awareness_rate, 90) ? "text-[--cs-success]" : meets(d.child_awareness_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_awareness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Awareness</p>
             </div>
           </div>

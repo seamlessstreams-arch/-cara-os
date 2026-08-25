@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME TRANSPORT & VEHICLE SAFETY INTELLIGENCE ENGINE
 // Monitors transport safety for children across the home — vehicle maintenance
@@ -110,15 +111,24 @@ export interface TransportVehicleSafetyResult {
   transport_score: number;
   headline: string;
   total_transport_logs: number;
-  vehicle_check_compliance_rate: number;
-  pre_use_check_completion_rate: number;
-  driver_qualification_currency_rate: number;
-  risk_assessment_completion_rate: number;
-  journey_log_completion_rate: number;
-  seatbelt_compliance_rate: number;
-  insurance_currency_rate: number;
-  mot_service_currency_rate: number;
-  defect_resolution_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  vehicle_check_compliance_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  pre_use_check_completion_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  driver_qualification_currency_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  risk_assessment_completion_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  journey_log_completion_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  seatbelt_compliance_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  insurance_currency_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  mot_service_currency_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  defect_resolution_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: TransportSafetyRecommendation[];
@@ -126,10 +136,6 @@ export interface TransportVehicleSafetyResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -154,15 +160,15 @@ function emptyResult(
     transport_score: score,
     headline,
     total_transport_logs: 0,
-    vehicle_check_compliance_rate: 0,
-    pre_use_check_completion_rate: 0,
-    driver_qualification_currency_rate: 0,
-    risk_assessment_completion_rate: 0,
-    journey_log_completion_rate: 0,
-    seatbelt_compliance_rate: 0,
-    insurance_currency_rate: 0,
-    mot_service_currency_rate: 0,
-    defect_resolution_rate: 0,
+    vehicle_check_compliance_rate: null,
+    pre_use_check_completion_rate: null,
+    driver_qualification_currency_rate: null,
+    risk_assessment_completion_rate: null,
+    journey_log_completion_rate: null,
+    seatbelt_compliance_rate: null,
+    insurance_currency_rate: null,
+    mot_service_currency_rate: null,
+    defect_resolution_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -247,21 +253,21 @@ export function computeTransportVehicleSafety(
 
   // --- Vehicle check compliance: checks that passed ---
   const vehicleChecksPassed = vehicle_checks.filter((c) => c.passed).length;
-  const vehicleCheckComplianceRate = pct(vehicleChecksPassed, totalVehicleChecks);
+  const vehicleCheckComplianceRate = rate(vehicleChecksPassed, totalVehicleChecks);
 
   // --- Pre-use check completion: checks with overall_pass ---
   const preUseChecksPassed = vehicle_pre_use_checks.filter((c) => c.overall_pass).length;
-  const preUseCheckCompletionRate = pct(preUseChecksPassed, totalPreUseChecks);
+  const preUseCheckCompletionRate = rate(preUseChecksPassed, totalPreUseChecks);
 
   // --- Driver qualification currency: licence verified + not expired ---
   const driversQualified = driving_records.filter(
     (d) => d.licence_verified && d.licence_expiry >= today,
   ).length;
-  const driverQualificationCurrencyRate = pct(driversQualified, totalDrivingRecords);
+  const driverQualificationCurrencyRate = rate(driversQualified, totalDrivingRecords);
 
   // --- Risk assessment completion: RAs with controls identified ---
   const rasWithControls = transport_ras.filter((r) => r.controls_identified).length;
-  const riskAssessmentCompletionRate = pct(rasWithControls, totalTransportRAs);
+  const riskAssessmentCompletionRate = rate(rasWithControls, totalTransportRAs);
 
   // --- Journey log completion: logs with valid mileage + purpose ---
   const completeLogs = transport_logs.filter(
@@ -270,21 +276,21 @@ export function computeTransportVehicleSafety(
       l.journey_purpose.trim() !== "" &&
       l.end_mileage > l.start_mileage,
   ).length;
-  const journeyLogCompletionRate = pct(completeLogs, totalTransportLogs);
+  const journeyLogCompletionRate = rate(completeLogs, totalTransportLogs);
 
   // --- Seatbelt compliance: logs where seatbelts were checked ---
   const seatbeltsChecked = transport_logs.filter((l) => l.seatbelts_checked).length;
-  const seatbeltComplianceRate = pct(seatbeltsChecked, totalTransportLogs);
+  const seatbeltComplianceRate = rate(seatbeltsChecked, totalTransportLogs);
 
   // --- Insurance currency: checks with current insurance ---
   const insuranceCurrent = vehicle_checks.filter((c) => c.insurance_current).length;
-  const insuranceCurrencyRate = pct(insuranceCurrent, totalVehicleChecks);
+  const insuranceCurrencyRate = rate(insuranceCurrent, totalVehicleChecks);
 
   // --- MOT/Service currency: checks with current MOT + service not overdue ---
   const motServiceCurrent = vehicle_checks.filter(
     (c) => c.mot_current && c.service_due_date >= today,
   ).length;
-  const motServiceCurrencyRate = pct(motServiceCurrent, totalVehicleChecks);
+  const motServiceCurrencyRate = rate(motServiceCurrent, totalVehicleChecks);
 
   // --- Defect resolution: defects resolved vs defects found ---
   const totalDefectsFound = vehicle_checks.reduce(
@@ -295,18 +301,18 @@ export function computeTransportVehicleSafety(
     (sum, c) => sum + c.defects_resolved,
     0,
   );
-  const defectResolutionRate = pct(totalDefectsResolved, totalDefectsFound);
+  const defectResolutionRate = rate(totalDefectsResolved, totalDefectsFound);
 
   // --- Additional metrics for insights ---
   const driversWithBusinessInsurance = driving_records.filter(
     (d) => d.business_insurance,
   ).length;
-  const businessInsuranceRate = pct(driversWithBusinessInsurance, totalDrivingRecords);
+  const businessInsuranceRate = rate(driversWithBusinessInsurance, totalDrivingRecords);
 
   const driversWithAdvancedTraining = driving_records.filter(
     (d) => d.advanced_training,
   ).length;
-  const advancedTrainingRate = pct(driversWithAdvancedTraining, totalDrivingRecords);
+  const advancedTrainingRate = rate(driversWithAdvancedTraining, totalDrivingRecords);
 
   const highRiskRAs = transport_ras.filter((r) => r.risk_level === "high").length;
   const highRiskWithControls = transport_ras.filter(
@@ -333,54 +339,54 @@ export function computeTransportVehicleSafety(
   let score = 52;
 
   // --- Bonus 1: vehicleCheckComplianceRate (>=95: +4, >=80: +2) ---
-  if (vehicleCheckComplianceRate >= 95) score += 4;
-  else if (vehicleCheckComplianceRate >= 80) score += 2;
+  if (meets(vehicleCheckComplianceRate, 95)) score += 4;
+  else if (meets(vehicleCheckComplianceRate, 80)) score += 2;
 
   // --- Bonus 2: preUseCheckCompletionRate (>=95: +4, >=80: +2) ---
-  if (preUseCheckCompletionRate >= 95) score += 4;
-  else if (preUseCheckCompletionRate >= 80) score += 2;
+  if (meets(preUseCheckCompletionRate, 95)) score += 4;
+  else if (meets(preUseCheckCompletionRate, 80)) score += 2;
 
   // --- Bonus 3: driverQualificationCurrencyRate (>=95: +3, >=80: +1) ---
-  if (driverQualificationCurrencyRate >= 95) score += 3;
-  else if (driverQualificationCurrencyRate >= 80) score += 1;
+  if (meets(driverQualificationCurrencyRate, 95)) score += 3;
+  else if (meets(driverQualificationCurrencyRate, 80)) score += 1;
 
   // --- Bonus 4: riskAssessmentCompletionRate (>=90: +3, >=70: +1) ---
-  if (riskAssessmentCompletionRate >= 90) score += 3;
-  else if (riskAssessmentCompletionRate >= 70) score += 1;
+  if (meets(riskAssessmentCompletionRate, 90)) score += 3;
+  else if (meets(riskAssessmentCompletionRate, 70)) score += 1;
 
   // --- Bonus 5: journeyLogCompletionRate (>=95: +3, >=80: +1) ---
-  if (journeyLogCompletionRate >= 95) score += 3;
-  else if (journeyLogCompletionRate >= 80) score += 1;
+  if (meets(journeyLogCompletionRate, 95)) score += 3;
+  else if (meets(journeyLogCompletionRate, 80)) score += 1;
 
   // --- Bonus 6: seatbeltComplianceRate (>=100: +3, >=90: +1) ---
-  if (seatbeltComplianceRate >= 100) score += 3;
-  else if (seatbeltComplianceRate >= 90) score += 1;
+  if (meets(seatbeltComplianceRate, 100)) score += 3;
+  else if (meets(seatbeltComplianceRate, 90)) score += 1;
 
   // --- Bonus 7: insuranceCurrencyRate (>=100: +3, >=80: +1) ---
-  if (insuranceCurrencyRate >= 100) score += 3;
-  else if (insuranceCurrencyRate >= 80) score += 1;
+  if (meets(insuranceCurrencyRate, 100)) score += 3;
+  else if (meets(insuranceCurrencyRate, 80)) score += 1;
 
   // --- Bonus 8: motServiceCurrencyRate (>=100: +3, >=80: +1) ---
-  if (motServiceCurrencyRate >= 100) score += 3;
-  else if (motServiceCurrencyRate >= 80) score += 1;
+  if (meets(motServiceCurrencyRate, 100)) score += 3;
+  else if (meets(motServiceCurrencyRate, 80)) score += 1;
 
   // --- Bonus 9: defectResolutionRate (>=90: +2, >=70: +1) ---
-  if (defectResolutionRate >= 90) score += 2;
-  else if (defectResolutionRate >= 70) score += 1;
+  if (meets(defectResolutionRate, 90)) score += 2;
+  else if (meets(defectResolutionRate, 70)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // vehicleCheckComplianceRate < 50 → -5
-  if (vehicleCheckComplianceRate < 50 && totalVehicleChecks > 0) score -= 5;
+  if (below(vehicleCheckComplianceRate, 50) && totalVehicleChecks > 0) score -= 5;
 
   // driverQualificationCurrencyRate < 50 → -5
-  if (driverQualificationCurrencyRate < 50 && totalDrivingRecords > 0) score -= 5;
+  if (below(driverQualificationCurrencyRate, 50) && totalDrivingRecords > 0) score -= 5;
 
   // seatbeltComplianceRate < 50 → -5
-  if (seatbeltComplianceRate < 50 && totalTransportLogs > 0) score -= 5;
+  if (below(seatbeltComplianceRate, 50) && totalTransportLogs > 0) score -= 5;
 
   // motServiceCurrencyRate < 50 → -3
-  if (motServiceCurrencyRate < 50 && totalVehicleChecks > 0) score -= 3;
+  if (below(motServiceCurrencyRate, 50) && totalVehicleChecks > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -390,103 +396,103 @@ export function computeTransportVehicleSafety(
 
   const strengths: string[] = [];
 
-  if (vehicleCheckComplianceRate >= 95 && totalVehicleChecks > 0) {
+  if (meets(vehicleCheckComplianceRate, 95) && totalVehicleChecks > 0) {
     strengths.push(
       `${vehicleCheckComplianceRate}% of vehicle checks passed — the home demonstrates excellent vehicle maintenance compliance ensuring children travel in safe, roadworthy vehicles.`,
     );
-  } else if (vehicleCheckComplianceRate >= 80 && totalVehicleChecks > 0) {
+  } else if (meets(vehicleCheckComplianceRate, 80) && totalVehicleChecks > 0) {
     strengths.push(
       `${vehicleCheckComplianceRate}% vehicle check compliance — strong commitment to maintaining vehicles to a safe standard.`,
     );
   }
 
-  if (preUseCheckCompletionRate >= 95 && totalPreUseChecks > 0) {
+  if (meets(preUseCheckCompletionRate, 95) && totalPreUseChecks > 0) {
     strengths.push(
       `${preUseCheckCompletionRate}% of pre-use checks passed — staff consistently verify vehicle safety before each journey, demonstrating embedded safe practice.`,
     );
-  } else if (preUseCheckCompletionRate >= 80 && totalPreUseChecks > 0) {
+  } else if (meets(preUseCheckCompletionRate, 80) && totalPreUseChecks > 0) {
     strengths.push(
       `${preUseCheckCompletionRate}% pre-use check completion — good practice in verifying vehicle safety before journeys.`,
     );
   }
 
-  if (driverQualificationCurrencyRate >= 95 && totalDrivingRecords > 0) {
+  if (meets(driverQualificationCurrencyRate, 95) && totalDrivingRecords > 0) {
     strengths.push(
       `${driverQualificationCurrencyRate}% of drivers have current, verified qualifications — the home ensures only appropriately qualified staff transport children.`,
     );
-  } else if (driverQualificationCurrencyRate >= 80 && totalDrivingRecords > 0) {
+  } else if (meets(driverQualificationCurrencyRate, 80) && totalDrivingRecords > 0) {
     strengths.push(
       `${driverQualificationCurrencyRate}% driver qualification currency — strong compliance with driver verification requirements.`,
     );
   }
 
-  if (riskAssessmentCompletionRate >= 90 && totalTransportRAs > 0) {
+  if (meets(riskAssessmentCompletionRate, 90) && totalTransportRAs > 0) {
     strengths.push(
       `${riskAssessmentCompletionRate}% of transport risk assessments have controls identified — journey risks are systematically assessed and mitigated.`,
     );
-  } else if (riskAssessmentCompletionRate >= 70 && totalTransportRAs > 0) {
+  } else if (meets(riskAssessmentCompletionRate, 70) && totalTransportRAs > 0) {
     strengths.push(
       `${riskAssessmentCompletionRate}% risk assessment completion — good practice in identifying and managing transport risks.`,
     );
   }
 
-  if (journeyLogCompletionRate >= 95 && totalTransportLogs > 0) {
+  if (meets(journeyLogCompletionRate, 95) && totalTransportLogs > 0) {
     strengths.push(
       `${journeyLogCompletionRate}% of journey logs are fully completed — comprehensive transport record-keeping supports accountability and safety oversight.`,
     );
-  } else if (journeyLogCompletionRate >= 80 && totalTransportLogs > 0) {
+  } else if (meets(journeyLogCompletionRate, 80) && totalTransportLogs > 0) {
     strengths.push(
       `${journeyLogCompletionRate}% journey log completion — transport records are generally well maintained.`,
     );
   }
 
-  if (seatbeltComplianceRate >= 100 && totalTransportLogs > 0) {
+  if (meets(seatbeltComplianceRate, 100) && totalTransportLogs > 0) {
     strengths.push(
       "Seatbelt checks recorded on every journey — the home prioritises passenger safety on every trip.",
     );
-  } else if (seatbeltComplianceRate >= 90 && totalTransportLogs > 0) {
+  } else if (meets(seatbeltComplianceRate, 90) && totalTransportLogs > 0) {
     strengths.push(
       `${seatbeltComplianceRate}% seatbelt compliance rate — seatbelt checks are consistently completed.`,
     );
   }
 
-  if (insuranceCurrencyRate >= 100 && totalVehicleChecks > 0) {
+  if (meets(insuranceCurrencyRate, 100) && totalVehicleChecks > 0) {
     strengths.push(
       "All vehicles have current insurance — the home ensures full insurance compliance across its fleet.",
     );
-  } else if (insuranceCurrencyRate >= 80 && totalVehicleChecks > 0) {
+  } else if (meets(insuranceCurrencyRate, 80) && totalVehicleChecks > 0) {
     strengths.push(
       `${insuranceCurrencyRate}% insurance currency — the majority of vehicles have valid insurance in place.`,
     );
   }
 
-  if (motServiceCurrencyRate >= 100 && totalVehicleChecks > 0) {
+  if (meets(motServiceCurrencyRate, 100) && totalVehicleChecks > 0) {
     strengths.push(
       "All vehicles have current MOT and are within service schedule — vehicle roadworthiness and maintenance is fully compliant.",
     );
-  } else if (motServiceCurrencyRate >= 80 && totalVehicleChecks > 0) {
+  } else if (meets(motServiceCurrencyRate, 80) && totalVehicleChecks > 0) {
     strengths.push(
       `${motServiceCurrencyRate}% MOT and service currency — the majority of vehicles are within their MOT and service schedules.`,
     );
   }
 
-  if (defectResolutionRate >= 90 && totalDefectsFound > 0) {
+  if (meets(defectResolutionRate, 90) && totalDefectsFound > 0) {
     strengths.push(
       `${defectResolutionRate}% of identified vehicle defects resolved — the home responds effectively to maintenance issues ensuring vehicles remain safe.`,
     );
-  } else if (defectResolutionRate >= 70 && totalDefectsFound > 0) {
+  } else if (meets(defectResolutionRate, 70) && totalDefectsFound > 0) {
     strengths.push(
       `${defectResolutionRate}% defect resolution rate — good progress in addressing identified vehicle maintenance issues.`,
     );
   }
 
-  if (businessInsuranceRate >= 95 && totalDrivingRecords > 0) {
+  if (meets(businessInsuranceRate, 95) && totalDrivingRecords > 0) {
     strengths.push(
       `${businessInsuranceRate}% of drivers have business insurance — the home ensures appropriate insurance coverage for staff transporting children.`,
     );
   }
 
-  if (advancedTrainingRate >= 80 && totalDrivingRecords > 0) {
+  if (meets(advancedTrainingRate, 80) && totalDrivingRecords > 0) {
     strengths.push(
       `${advancedTrainingRate}% of drivers have advanced driving training — the home invests in enhanced driver competence beyond minimum requirements.`,
     );
@@ -496,91 +502,91 @@ export function computeTransportVehicleSafety(
 
   const concerns: string[] = [];
 
-  if (vehicleCheckComplianceRate < 50 && totalVehicleChecks > 0) {
+  if (below(vehicleCheckComplianceRate, 50) && totalVehicleChecks > 0) {
     concerns.push(
       `Only ${vehicleCheckComplianceRate}% of vehicle checks passed — the majority of vehicles are failing safety inspections, representing a serious risk to children being transported.`,
     );
-  } else if (vehicleCheckComplianceRate < 80 && vehicleCheckComplianceRate >= 50 && totalVehicleChecks > 0) {
+  } else if (below(vehicleCheckComplianceRate, 80) && meets(vehicleCheckComplianceRate, 50) && totalVehicleChecks > 0) {
     concerns.push(
       `Vehicle check compliance at ${vehicleCheckComplianceRate}% — not all vehicles consistently pass safety inspections, which may indicate maintenance gaps.`,
     );
   }
 
-  if (preUseCheckCompletionRate < 50 && totalPreUseChecks > 0) {
+  if (below(preUseCheckCompletionRate, 50) && totalPreUseChecks > 0) {
     concerns.push(
       `Only ${preUseCheckCompletionRate}% of pre-use checks passed — the majority of pre-journey safety checks are identifying issues, suggesting vehicles may not be safe for use.`,
     );
-  } else if (preUseCheckCompletionRate < 80 && preUseCheckCompletionRate >= 50 && totalPreUseChecks > 0) {
+  } else if (below(preUseCheckCompletionRate, 80) && meets(preUseCheckCompletionRate, 50) && totalPreUseChecks > 0) {
     concerns.push(
       `Pre-use check pass rate at ${preUseCheckCompletionRate}% — some vehicles are not passing pre-journey safety checks.`,
     );
   }
 
-  if (driverQualificationCurrencyRate < 50 && totalDrivingRecords > 0) {
+  if (below(driverQualificationCurrencyRate, 50) && totalDrivingRecords > 0) {
     concerns.push(
       `Only ${driverQualificationCurrencyRate}% of drivers have current, verified qualifications — the majority of staff driving children may not have valid driving credentials.`,
     );
-  } else if (driverQualificationCurrencyRate < 80 && driverQualificationCurrencyRate >= 50 && totalDrivingRecords > 0) {
+  } else if (below(driverQualificationCurrencyRate, 80) && meets(driverQualificationCurrencyRate, 50) && totalDrivingRecords > 0) {
     concerns.push(
       `Driver qualification currency at ${driverQualificationCurrencyRate}% — some staff transporting children do not have verified, current driving qualifications.`,
     );
   }
 
-  if (riskAssessmentCompletionRate < 50 && totalTransportRAs > 0) {
+  if (below(riskAssessmentCompletionRate, 50) && totalTransportRAs > 0) {
     concerns.push(
       `Only ${riskAssessmentCompletionRate}% of transport risk assessments have controls identified — the majority of journeys lack documented risk controls.`,
     );
-  } else if (riskAssessmentCompletionRate < 70 && riskAssessmentCompletionRate >= 50 && totalTransportRAs > 0) {
+  } else if (below(riskAssessmentCompletionRate, 70) && meets(riskAssessmentCompletionRate, 50) && totalTransportRAs > 0) {
     concerns.push(
       `Risk assessment completion at ${riskAssessmentCompletionRate}% — not all transport risk assessments identify appropriate control measures.`,
     );
   }
 
-  if (seatbeltComplianceRate < 50 && totalTransportLogs > 0) {
+  if (below(seatbeltComplianceRate, 50) && totalTransportLogs > 0) {
     concerns.push(
       `Only ${seatbeltComplianceRate}% of journeys have documented seatbelt checks — children's basic passenger safety is not being consistently assured.`,
     );
-  } else if (seatbeltComplianceRate < 90 && seatbeltComplianceRate >= 50 && totalTransportLogs > 0) {
+  } else if (below(seatbeltComplianceRate, 90) && meets(seatbeltComplianceRate, 50) && totalTransportLogs > 0) {
     concerns.push(
       `Seatbelt compliance at ${seatbeltComplianceRate}% — not all journeys include documented seatbelt checks, which is a fundamental safety measure.`,
     );
   }
 
-  if (insuranceCurrencyRate < 50 && totalVehicleChecks > 0) {
+  if (below(insuranceCurrencyRate, 50) && totalVehicleChecks > 0) {
     concerns.push(
       `Only ${insuranceCurrencyRate}% of vehicles have current insurance — the majority of vehicles may be uninsured, which is a legal and safeguarding failure.`,
     );
-  } else if (insuranceCurrencyRate < 80 && insuranceCurrencyRate >= 50 && totalVehicleChecks > 0) {
+  } else if (below(insuranceCurrencyRate, 80) && meets(insuranceCurrencyRate, 50) && totalVehicleChecks > 0) {
     concerns.push(
       `Insurance currency at ${insuranceCurrencyRate}% — some vehicles lack current insurance documentation.`,
     );
   }
 
-  if (motServiceCurrencyRate < 50 && totalVehicleChecks > 0) {
+  if (below(motServiceCurrencyRate, 50) && totalVehicleChecks > 0) {
     concerns.push(
       `Only ${motServiceCurrencyRate}% of vehicles have current MOT and are within service schedule — the majority of vehicles may not be roadworthy.`,
     );
-  } else if (motServiceCurrencyRate < 80 && motServiceCurrencyRate >= 50 && totalVehicleChecks > 0) {
+  } else if (below(motServiceCurrencyRate, 80) && meets(motServiceCurrencyRate, 50) && totalVehicleChecks > 0) {
     concerns.push(
       `MOT and service currency at ${motServiceCurrencyRate}% — some vehicles are overdue for MOT or servicing.`,
     );
   }
 
-  if (defectResolutionRate < 50 && totalDefectsFound > 0) {
+  if (below(defectResolutionRate, 50) && totalDefectsFound > 0) {
     concerns.push(
       `Only ${defectResolutionRate}% of vehicle defects resolved — the majority of identified maintenance issues remain unaddressed, leaving vehicles in a potentially unsafe condition.`,
     );
-  } else if (defectResolutionRate < 70 && defectResolutionRate >= 50 && totalDefectsFound > 0) {
+  } else if (below(defectResolutionRate, 70) && meets(defectResolutionRate, 50) && totalDefectsFound > 0) {
     concerns.push(
       `Defect resolution rate at ${defectResolutionRate}% — a significant proportion of identified vehicle defects remain unresolved.`,
     );
   }
 
-  if (journeyLogCompletionRate < 50 && totalTransportLogs > 0) {
+  if (below(journeyLogCompletionRate, 50) && totalTransportLogs > 0) {
     concerns.push(
       `Only ${journeyLogCompletionRate}% of journey logs are fully completed — the home lacks comprehensive transport records, undermining accountability and safety oversight.`,
     );
-  } else if (journeyLogCompletionRate < 80 && journeyLogCompletionRate >= 50 && totalTransportLogs > 0) {
+  } else if (below(journeyLogCompletionRate, 80) && meets(journeyLogCompletionRate, 50) && totalTransportLogs > 0) {
     concerns.push(
       `Journey log completion at ${journeyLogCompletionRate}% — not all transport logs contain complete journey details.`,
     );
@@ -621,7 +627,7 @@ export function computeTransportVehicleSafety(
   const recommendations: TransportSafetyRecommendation[] = [];
   let rank = 0;
 
-  if (driverQualificationCurrencyRate < 50 && totalDrivingRecords > 0) {
+  if (below(driverQualificationCurrencyRate, 50) && totalDrivingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -631,7 +637,7 @@ export function computeTransportVehicleSafety(
     });
   }
 
-  if (vehicleCheckComplianceRate < 50 && totalVehicleChecks > 0) {
+  if (below(vehicleCheckComplianceRate, 50) && totalVehicleChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -641,7 +647,7 @@ export function computeTransportVehicleSafety(
     });
   }
 
-  if (insuranceCurrencyRate < 50 && totalVehicleChecks > 0) {
+  if (below(insuranceCurrencyRate, 50) && totalVehicleChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -651,7 +657,7 @@ export function computeTransportVehicleSafety(
     });
   }
 
-  if (seatbeltComplianceRate < 50 && totalTransportLogs > 0) {
+  if (below(seatbeltComplianceRate, 50) && totalTransportLogs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -661,7 +667,7 @@ export function computeTransportVehicleSafety(
     });
   }
 
-  if (motServiceCurrencyRate < 50 && totalVehicleChecks > 0) {
+  if (below(motServiceCurrencyRate, 50) && totalVehicleChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -691,7 +697,7 @@ export function computeTransportVehicleSafety(
     });
   }
 
-  if (defectResolutionRate < 50 && totalDefectsFound > 0) {
+  if (below(defectResolutionRate, 50) && totalDefectsFound > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -701,7 +707,7 @@ export function computeTransportVehicleSafety(
     });
   }
 
-  if (preUseCheckCompletionRate < 50 && totalPreUseChecks > 0) {
+  if (below(preUseCheckCompletionRate, 50) && totalPreUseChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -711,7 +717,7 @@ export function computeTransportVehicleSafety(
     });
   }
 
-  if (riskAssessmentCompletionRate < 50 && totalTransportRAs > 0) {
+  if (below(riskAssessmentCompletionRate, 50) && totalTransportRAs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -731,7 +737,7 @@ export function computeTransportVehicleSafety(
     });
   }
 
-  if (driverQualificationCurrencyRate >= 50 && driverQualificationCurrencyRate < 80 && totalDrivingRecords > 0) {
+  if (meets(driverQualificationCurrencyRate, 50) && below(driverQualificationCurrencyRate, 80) && totalDrivingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -741,7 +747,7 @@ export function computeTransportVehicleSafety(
     });
   }
 
-  if (vehicleCheckComplianceRate >= 50 && vehicleCheckComplianceRate < 80 && totalVehicleChecks > 0) {
+  if (meets(vehicleCheckComplianceRate, 50) && below(vehicleCheckComplianceRate, 80) && totalVehicleChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -751,7 +757,7 @@ export function computeTransportVehicleSafety(
     });
   }
 
-  if (journeyLogCompletionRate < 80 && journeyLogCompletionRate >= 50 && totalTransportLogs > 0) {
+  if (below(journeyLogCompletionRate, 80) && meets(journeyLogCompletionRate, 50) && totalTransportLogs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -761,7 +767,7 @@ export function computeTransportVehicleSafety(
     });
   }
 
-  if (seatbeltComplianceRate >= 50 && seatbeltComplianceRate < 90 && totalTransportLogs > 0) {
+  if (meets(seatbeltComplianceRate, 50) && below(seatbeltComplianceRate, 90) && totalTransportLogs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -781,7 +787,7 @@ export function computeTransportVehicleSafety(
     });
   }
 
-  if (businessInsuranceRate < 80 && totalDrivingRecords > 0) {
+  if (below(businessInsuranceRate, 80) && totalDrivingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -797,28 +803,28 @@ export function computeTransportVehicleSafety(
 
   // -- Critical insights --
 
-  if (vehicleCheckComplianceRate < 50 && totalVehicleChecks > 0) {
+  if (below(vehicleCheckComplianceRate, 50) && totalVehicleChecks > 0) {
     insights.push({
       text: `Only ${vehicleCheckComplianceRate}% of vehicle checks passed. Ofsted will view this as a failure to ensure children are transported in safe, roadworthy vehicles under Reg 25. Vehicles failing checks must be taken out of service immediately.`,
       severity: "critical",
     });
   }
 
-  if (driverQualificationCurrencyRate < 50 && totalDrivingRecords > 0) {
+  if (below(driverQualificationCurrencyRate, 50) && totalDrivingRecords > 0) {
     insights.push({
       text: `Only ${driverQualificationCurrencyRate}% of drivers have current, verified qualifications. Children may be transported by unqualified drivers, which is a serious safeguarding and legal risk. This requires immediate action.`,
       severity: "critical",
     });
   }
 
-  if (insuranceCurrencyRate < 50 && totalVehicleChecks > 0) {
+  if (below(insuranceCurrencyRate, 50) && totalVehicleChecks > 0) {
     insights.push({
       text: `Only ${insuranceCurrencyRate}% of vehicles have current insurance. Transporting children in uninsured vehicles is illegal and exposes both the children and the organisation to significant risk.`,
       severity: "critical",
     });
   }
 
-  if (seatbeltComplianceRate < 50 && totalTransportLogs > 0) {
+  if (below(seatbeltComplianceRate, 50) && totalTransportLogs > 0) {
     insights.push({
       text: `Only ${seatbeltComplianceRate}% of journeys have documented seatbelt checks. This fundamental passenger safety measure is not being consistently applied, placing children at risk of injury in the event of a collision.`,
       severity: "critical",
@@ -839,7 +845,7 @@ export function computeTransportVehicleSafety(
     });
   }
 
-  if (motServiceCurrencyRate < 50 && totalVehicleChecks > 0) {
+  if (below(motServiceCurrencyRate, 50) && totalVehicleChecks > 0) {
     insights.push({
       text: `Only ${motServiceCurrencyRate}% of vehicles have current MOT and are within service schedule. Vehicles without valid MOT are not legal to drive on public roads and must not be used to transport children.`,
       severity: "critical",
@@ -848,42 +854,42 @@ export function computeTransportVehicleSafety(
 
   // -- Warning insights --
 
-  if (vehicleCheckComplianceRate >= 50 && vehicleCheckComplianceRate < 80 && totalVehicleChecks > 0) {
+  if (meets(vehicleCheckComplianceRate, 50) && below(vehicleCheckComplianceRate, 80) && totalVehicleChecks > 0) {
     insights.push({
       text: `Vehicle check compliance at ${vehicleCheckComplianceRate}% — improving but not yet meeting the expected standard. Investigate recurring failure points and establish a proactive maintenance schedule.`,
       severity: "warning",
     });
   }
 
-  if (driverQualificationCurrencyRate >= 50 && driverQualificationCurrencyRate < 80 && totalDrivingRecords > 0) {
+  if (meets(driverQualificationCurrencyRate, 50) && below(driverQualificationCurrencyRate, 80) && totalDrivingRecords > 0) {
     insights.push({
       text: `Driver qualification currency at ${driverQualificationCurrencyRate}% — some staff lack verified, current driving credentials. Set up licence expiry tracking to prevent lapses.`,
       severity: "warning",
     });
   }
 
-  if (preUseCheckCompletionRate >= 50 && preUseCheckCompletionRate < 80 && totalPreUseChecks > 0) {
+  if (meets(preUseCheckCompletionRate, 50) && below(preUseCheckCompletionRate, 80) && totalPreUseChecks > 0) {
     insights.push({
       text: `Pre-use check pass rate at ${preUseCheckCompletionRate}% — some vehicles are not passing daily safety checks. This may indicate recurring maintenance issues that need systematic attention.`,
       severity: "warning",
     });
   }
 
-  if (riskAssessmentCompletionRate >= 50 && riskAssessmentCompletionRate < 70 && totalTransportRAs > 0) {
+  if (meets(riskAssessmentCompletionRate, 50) && below(riskAssessmentCompletionRate, 70) && totalTransportRAs > 0) {
     insights.push({
       text: `Risk assessment completion at ${riskAssessmentCompletionRate}% — not all transport risk assessments identify appropriate controls. Without controls, risk assessments are procedural rather than protective.`,
       severity: "warning",
     });
   }
 
-  if (defectResolutionRate >= 50 && defectResolutionRate < 70 && totalDefectsFound > 0) {
+  if (meets(defectResolutionRate, 50) && below(defectResolutionRate, 70) && totalDefectsFound > 0) {
     insights.push({
       text: `Defect resolution at ${defectResolutionRate}% — a significant number of identified vehicle defects remain unresolved. Unresolved defects accumulate risk over time.`,
       severity: "warning",
     });
   }
 
-  if (journeyLogCompletionRate >= 50 && journeyLogCompletionRate < 80 && totalTransportLogs > 0) {
+  if (meets(journeyLogCompletionRate, 50) && below(journeyLogCompletionRate, 80) && totalTransportLogs > 0) {
     insights.push({
       text: `Journey log completion at ${journeyLogCompletionRate}% — incomplete logs limit the home's ability to account for all transport activity and could be an issue during regulatory inspection.`,
       severity: "warning",
@@ -912,8 +918,8 @@ export function computeTransportVehicleSafety(
   }
 
   if (preUseIssues > 0 && totalPreUseChecks > 0) {
-    const preUseIssueRate = pct(preUseIssues, totalPreUseChecks);
-    if (preUseIssueRate >= 30 && preUseIssueRate < 50) {
+    const preUseIssueRate = rate(preUseIssues, totalPreUseChecks);
+    if (meets(preUseIssueRate, 30) && below(preUseIssueRate, 50)) {
       insights.push({
         text: `${preUseIssueRate}% of pre-use checks flagged at least one issue (lights, tyres, brakes, or fluids) — this rate suggests vehicles require more frequent maintenance attention.`,
         severity: "warning",
@@ -937,49 +943,49 @@ export function computeTransportVehicleSafety(
     });
   }
 
-  if (vehicleCheckComplianceRate >= 95 && preUseCheckCompletionRate >= 95 && totalVehicleChecks > 0 && totalPreUseChecks > 0) {
+  if (meets(vehicleCheckComplianceRate, 95) && meets(preUseCheckCompletionRate, 95) && totalVehicleChecks > 0 && totalPreUseChecks > 0) {
     insights.push({
       text: "Vehicle checks and pre-use inspections are both at excellent levels — the home has embedded a comprehensive vehicle safety culture covering both periodic and daily checks.",
       severity: "positive",
     });
   }
 
-  if (driverQualificationCurrencyRate >= 95 && businessInsuranceRate >= 95 && totalDrivingRecords > 0) {
+  if (meets(driverQualificationCurrencyRate, 95) && meets(businessInsuranceRate, 95) && totalDrivingRecords > 0) {
     insights.push({
       text: "Driver qualifications and business insurance are both at excellent levels — the home ensures staff are legally and professionally qualified to transport children.",
       severity: "positive",
     });
   }
 
-  if (insuranceCurrencyRate >= 100 && motServiceCurrencyRate >= 100 && totalVehicleChecks > 0) {
+  if (meets(insuranceCurrencyRate, 100) && meets(motServiceCurrencyRate, 100) && totalVehicleChecks > 0) {
     insights.push({
       text: "All vehicles have current insurance, MOT, and are within service schedules — the home maintains full legal and mechanical compliance for its entire fleet.",
       severity: "positive",
     });
   }
 
-  if (seatbeltComplianceRate >= 100 && journeyLogCompletionRate >= 95 && totalTransportLogs > 0) {
+  if (meets(seatbeltComplianceRate, 100) && meets(journeyLogCompletionRate, 95) && totalTransportLogs > 0) {
     insights.push({
       text: "Seatbelt checks and journey logging are both at excellent levels — every journey is properly documented with passenger safety verified, demonstrating embedded safe transport practice.",
       severity: "positive",
     });
   }
 
-  if (defectResolutionRate >= 90 && totalDefectsFound > 0) {
+  if (meets(defectResolutionRate, 90) && totalDefectsFound > 0) {
     insights.push({
       text: `${defectResolutionRate}% of vehicle defects resolved — the home responds promptly and effectively to maintenance issues, ensuring vehicles are kept in safe condition.`,
       severity: "positive",
     });
   }
 
-  if (riskAssessmentCompletionRate >= 90 && totalTransportRAs > 0 && overdueRAs === 0) {
+  if (meets(riskAssessmentCompletionRate, 90) && totalTransportRAs > 0 && overdueRAs === 0) {
     insights.push({
       text: "Transport risk assessments are comprehensive and current — journey risks are systematically assessed with controls identified and reviews up to date.",
       severity: "positive",
     });
   }
 
-  if (advancedTrainingRate >= 80 && totalDrivingRecords > 0) {
+  if (meets(advancedTrainingRate, 80) && totalDrivingRecords > 0) {
     insights.push({
       text: `${advancedTrainingRate}% of drivers have completed advanced driving training — the home invests beyond minimum requirements to enhance driver competence and children's safety during transport.`,
       severity: "positive",

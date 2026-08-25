@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — Governance & Leadership Intelligence Engine
 //
@@ -201,7 +202,8 @@ export interface SoPComplianceResult {
     staffDetails: boolean;
     serviceDescription: boolean;
   };
-  accuracyRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  accuracyRate: number | null;
   childrenGuide: {
     available: boolean;
     accessibleFormats: number;
@@ -212,14 +214,19 @@ export interface SoPComplianceResult {
 export interface Reg45ComplianceResult {
   totalExpected: number;
   completed: number;
-  completionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completionRate: number | null;
   submittedToOfsted: number;
-  ofstedSubmissionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  ofstedSubmissionRate: number | null;
   averageActionsIdentified: number;
   averageActionsCompleted: number;
-  actionCompletionRate: number;
-  childrenConsultedRate: number;
-  staffConsultedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionCompletionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childrenConsultedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffConsultedRate: number | null;
   overdueReports: string[];
 }
 
@@ -227,7 +234,8 @@ export interface PolicyComplianceResult {
   totalPolicies: number;
   upToDate: number;
   overdue: number;
-  complianceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  complianceRate: number | null;
   averageStaffAcknowledgementRate: number;
   overdueByCategory: { category: PolicyCategory; count: number }[];
   policiesNearingReview: { policyName: string; nextReviewDue: string }[];
@@ -237,7 +245,8 @@ export interface NotificationComplianceResult {
   totalNotifications: number;
   withinTimescale: number;
   outsideTimescale: number;
-  timelinesRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelinesRate: number | null;
   typeBreakdown: { notificationType: NotificationType; count: number }[];
   averageResponseHours: number;
   ofstedNotifications: number;
@@ -249,8 +258,10 @@ export interface DevelopmentPlanResult {
   inProgress: number;
   overdue: number;
   notStarted: number;
-  completionRate: number;
-  overdueRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  overdueRate: number | null;
   averageProgress: number;
   categories: { category: string; count: number; avgProgress: number }[];
 }
@@ -259,15 +270,18 @@ export interface MeetingComplianceResult {
   totalMeetings: number;
   staffMeetings: number;
   averageAttendanceRate: number;
-  minutesRecordedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  minutesRecordedRate: number | null;
   averageActionsPerMeeting: number;
-  actionCompletionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionCompletionRate: number | null;
   meetingsPerMonth: number;
 }
 
 export interface ManagementPresenceResult {
   averageRmHoursInHome: number;
-  averageRmPresenceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  averageRmPresenceRate: number | null;
   averageDrmHoursInHome: number;
   averageChildInteractions: number;
   weeksWithLowPresence: number;
@@ -361,10 +375,6 @@ function daysBetween(a: string, b: string): number {
   );
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function inPeriod(date: string, start: string, end: string): boolean {
   return date.slice(0, 10) >= start.slice(0, 10) && date.slice(0, 10) <= end.slice(0, 10);
 }
@@ -388,7 +398,7 @@ export function evaluateSoPCompliance(
     sop.accurateServiceDescription,
   ];
   const accurateCount = accuracyChecks.filter(Boolean).length;
-  const accuracyRate = pct(accurateCount, accuracyChecks.length);
+  const accuracyRate = rate(accurateCount, accuracyChecks.length);
 
   return {
     isReviewed,
@@ -434,12 +444,12 @@ export function evaluateReg45Compliance(
     (r) => r.completedDate && expectedMonths.includes(r.monthCovered),
   );
   const completed = completedReports.length;
-  const completionRate = pct(completed, totalExpected);
+  const completionRate = rate(completed, totalExpected);
 
   const submittedToOfsted = completedReports.filter(
     (r) => r.submittedToOfsted,
   ).length;
-  const ofstedSubmissionRate = pct(submittedToOfsted, completed);
+  const ofstedSubmissionRate = rate(submittedToOfsted, completed);
 
   const totalActionsIdentified = completedReports.reduce(
     (sum, r) => sum + r.actionsIdentified,
@@ -457,7 +467,7 @@ export function evaluateReg45Compliance(
     completed === 0
       ? 0
       : Math.round((totalActionsCompleted / completed) * 10) / 10;
-  const actionCompletionRate = pct(
+  const actionCompletionRate = rate(
     totalActionsCompleted,
     totalActionsIdentified,
   );
@@ -465,11 +475,11 @@ export function evaluateReg45Compliance(
   const childrenConsulted = completedReports.filter(
     (r) => r.childrenConsulted,
   ).length;
-  const childrenConsultedRate = pct(childrenConsulted, completed);
+  const childrenConsultedRate = rate(childrenConsulted, completed);
   const staffConsulted = completedReports.filter(
     (r) => r.staffConsulted,
   ).length;
-  const staffConsultedRate = pct(staffConsulted, completed);
+  const staffConsultedRate = rate(staffConsulted, completed);
 
   // Overdue reports (expected but not completed)
   const completedMonths = new Set(
@@ -506,7 +516,7 @@ export function evaluatePolicyCompliance(
     (p) => p.nextReviewDue >= currentDate,
   ).length;
   const overdue = totalPolicies - upToDate;
-  const complianceRate = pct(upToDate, totalPolicies);
+  const complianceRate = rate(upToDate, totalPolicies);
 
   // Average staff acknowledgement rate
   const totalAckRate =
@@ -570,7 +580,7 @@ export function evaluateNotificationCompliance(
     (n) => n.notifiedWithinTimescale,
   ).length;
   const outsideTimescale = totalNotifications - withinTimescale;
-  const timelinesRate = pct(withinTimescale, totalNotifications);
+  const timelinesRate = rate(withinTimescale, totalNotifications);
 
   // Type breakdown
   const typeCounts = new Map<NotificationType, number>();
@@ -641,8 +651,8 @@ export function evaluateDevelopmentPlan(
   const notStarted = effectiveStatus.filter(
     (s) => s === "not_started",
   ).length;
-  const completionRate = pct(completed, totalObjectives);
-  const overdueRate = pct(overdue, totalObjectives);
+  const completionRate = rate(completed, totalObjectives);
+  const overdueRate = rate(overdue, totalObjectives);
 
   const averageProgress =
     totalObjectives === 0
@@ -718,7 +728,7 @@ export function evaluateMeetingCompliance(
   const minutesRecorded = periodMeetings.filter(
     (m) => m.minutesRecorded,
   ).length;
-  const minutesRecordedRate = pct(minutesRecorded, totalMeetings);
+  const minutesRecordedRate = rate(minutesRecorded, totalMeetings);
 
   // Actions
   const totalActions = periodMeetings.reduce(
@@ -733,7 +743,7 @@ export function evaluateMeetingCompliance(
     totalMeetings === 0
       ? 0
       : Math.round((totalActions / totalMeetings) * 10) / 10;
-  const actionCompletionRate = pct(completedActions, totalActions);
+  const actionCompletionRate = rate(completedActions, totalActions);
 
   // Meetings per month
   const periodDays = daysBetween(periodStart, periodEnd);
@@ -763,7 +773,7 @@ export function evaluateManagementPresence(
   if (totalWeeksTracked === 0) {
     return {
       averageRmHoursInHome: 0,
-      averageRmPresenceRate: 0,
+      averageRmPresenceRate: null,
       averageDrmHoursInHome: 0,
       averageChildInteractions: 0,
       weeksWithLowPresence: 0,
@@ -790,7 +800,7 @@ export function evaluateManagementPresence(
 
   const averageRmHoursInHome =
     Math.round((totalRmInHome / totalWeeksTracked) * 10) / 10;
-  const averageRmPresenceRate = pct(totalRmInHome, totalRmHours);
+  const averageRmPresenceRate = rate(totalRmInHome, totalRmHours);
   const averageDrmHoursInHome =
     Math.round((totalDrmInHome / totalWeeksTracked) * 10) / 10;
   const averageChildInteractions =
@@ -854,7 +864,7 @@ export function generateGovernanceIntelligence(
   if (sopCompliance.isReviewed && !sopCompliance.isOverdue) sopScore += 5;
   if (sopCompliance.sharedWithOfsted) sopScore += 3;
   if (sopCompliance.accuracyRate === 100) sopScore += 4;
-  else if (sopCompliance.accuracyRate >= 67) sopScore += 2;
+  else if (meets(sopCompliance.accuracyRate, 67)) sopScore += 2;
   if (sopCompliance.childrenGuide.available) sopScore += 2;
   if (sopCompliance.childrenGuide.accessibleFormats >= 2) sopScore += 1;
   sopScore = Math.min(sopScore, 15);
@@ -862,25 +872,25 @@ export function generateGovernanceIntelligence(
   // 2. Reg 45 monitoring (20)
   let reg45Score = 0;
   if (reg45Compliance.completionRate === 100) reg45Score += 8;
-  else if (reg45Compliance.completionRate >= 80) reg45Score += 5;
-  else if (reg45Compliance.completionRate >= 60) reg45Score += 3;
+  else if (meets(reg45Compliance.completionRate, 80)) reg45Score += 5;
+  else if (meets(reg45Compliance.completionRate, 60)) reg45Score += 3;
 
   if (reg45Compliance.ofstedSubmissionRate === 100) reg45Score += 4;
-  else if (reg45Compliance.ofstedSubmissionRate >= 80) reg45Score += 2;
+  else if (meets(reg45Compliance.ofstedSubmissionRate, 80)) reg45Score += 2;
 
-  if (reg45Compliance.actionCompletionRate >= 80) reg45Score += 4;
-  else if (reg45Compliance.actionCompletionRate >= 60) reg45Score += 2;
+  if (meets(reg45Compliance.actionCompletionRate, 80)) reg45Score += 4;
+  else if (meets(reg45Compliance.actionCompletionRate, 60)) reg45Score += 2;
 
-  if (reg45Compliance.childrenConsultedRate >= 80) reg45Score += 2;
-  if (reg45Compliance.staffConsultedRate >= 80) reg45Score += 2;
+  if (meets(reg45Compliance.childrenConsultedRate, 80)) reg45Score += 2;
+  if (meets(reg45Compliance.staffConsultedRate, 80)) reg45Score += 2;
   reg45Score = Math.min(reg45Score, 20);
 
   // 3. Policy compliance (15)
   let policyScore = 0;
   if (policyCompliance.complianceRate === 100) policyScore += 8;
-  else if (policyCompliance.complianceRate >= 90) policyScore += 6;
-  else if (policyCompliance.complianceRate >= 75) policyScore += 4;
-  else if (policyCompliance.complianceRate >= 50) policyScore += 2;
+  else if (meets(policyCompliance.complianceRate, 90)) policyScore += 6;
+  else if (meets(policyCompliance.complianceRate, 75)) policyScore += 4;
+  else if (meets(policyCompliance.complianceRate, 50)) policyScore += 2;
 
   if (policyCompliance.averageStaffAcknowledgementRate >= 90) policyScore += 5;
   else if (policyCompliance.averageStaffAcknowledgementRate >= 75)
@@ -904,12 +914,12 @@ export function generateGovernanceIntelligence(
 
   // 4. Development plan (15)
   let devPlanScore = 0;
-  if (developmentPlan.completionRate >= 80) devPlanScore += 6;
-  else if (developmentPlan.completionRate >= 60) devPlanScore += 4;
-  else if (developmentPlan.completionRate >= 40) devPlanScore += 2;
+  if (meets(developmentPlan.completionRate, 80)) devPlanScore += 6;
+  else if (meets(developmentPlan.completionRate, 60)) devPlanScore += 4;
+  else if (meets(developmentPlan.completionRate, 40)) devPlanScore += 2;
 
   if (developmentPlan.overdueRate === 0) devPlanScore += 4;
-  else if (developmentPlan.overdueRate <= 10) devPlanScore += 2;
+  else if (developmentPlan.overdueRate !== null && developmentPlan.overdueRate <= 10) devPlanScore += 2;
 
   if (developmentPlan.averageProgress >= 70) devPlanScore += 3;
   else if (developmentPlan.averageProgress >= 50) devPlanScore += 2;
@@ -921,7 +931,7 @@ export function generateGovernanceIntelligence(
   // 5. Notifications (10)
   let notificationScore = 10;
   if (notificationCompliance.totalNotifications > 0) {
-    if (notificationCompliance.timelinesRate < 100) {
+    if (below(notificationCompliance.timelinesRate, 100)) {
       const missedCount = notificationCompliance.outsideTimescale;
       notificationScore -= Math.min(missedCount * 3, 8);
     }
@@ -939,19 +949,19 @@ export function generateGovernanceIntelligence(
   if (meetingCompliance.averageAttendanceRate >= 80) meetingScore += 3;
   else if (meetingCompliance.averageAttendanceRate >= 60) meetingScore += 2;
 
-  if (meetingCompliance.minutesRecordedRate >= 90) meetingScore += 2;
+  if (meets(meetingCompliance.minutesRecordedRate, 90)) meetingScore += 2;
 
-  if (meetingCompliance.actionCompletionRate >= 80) meetingScore += 2;
-  else if (meetingCompliance.actionCompletionRate >= 60) meetingScore += 1;
+  if (meets(meetingCompliance.actionCompletionRate, 80)) meetingScore += 2;
+  else if (meets(meetingCompliance.actionCompletionRate, 60)) meetingScore += 1;
 
   meetingScore = Math.min(meetingScore, 10);
 
   // 7. Management presence (5) + Children's guide (contributed above in SoP)
   let presenceScore = 0;
   if (managementPresence.totalWeeksTracked > 0) {
-    if (managementPresence.averageRmPresenceRate >= 60) presenceScore += 3;
-    else if (managementPresence.averageRmPresenceRate >= 40) presenceScore += 2;
-    else if (managementPresence.averageRmPresenceRate >= 20) presenceScore += 1;
+    if (meets(managementPresence.averageRmPresenceRate, 60)) presenceScore += 3;
+    else if (meets(managementPresence.averageRmPresenceRate, 40)) presenceScore += 2;
+    else if (meets(managementPresence.averageRmPresenceRate, 20)) presenceScore += 1;
 
     if (managementPresence.averageChildInteractions >= 5) presenceScore += 2;
     else if (managementPresence.averageChildInteractions >= 3)
@@ -1007,7 +1017,7 @@ export function generateGovernanceIntelligence(
   ) {
     strengths.push("All statutory notifications made within required timescales");
   }
-  if (developmentPlan.completionRate >= 80) {
+  if (meets(developmentPlan.completionRate, 80)) {
     strengths.push(
       `Strong development plan progress — ${developmentPlan.completionRate}% of objectives completed`,
     );
@@ -1017,7 +1027,7 @@ export function generateGovernanceIntelligence(
   }
   if (
     managementPresence.totalWeeksTracked > 0 &&
-    managementPresence.averageRmPresenceRate >= 60
+    meets(managementPresence.averageRmPresenceRate, 60)
   ) {
     strengths.push("Registered Manager maintains strong visible presence in the home");
   }
@@ -1069,7 +1079,7 @@ export function generateGovernanceIntelligence(
   }
   if (
     notificationCompliance.totalNotifications > 0 &&
-    notificationCompliance.timelinesRate < 100
+    below(notificationCompliance.timelinesRate, 100)
   ) {
     immediateActions.push(
       `URGENT: ${notificationCompliance.outsideTimescale} notification${notificationCompliance.outsideTimescale !== 1 ? "s" : ""} made outside required timescale — Reg 39/40 breach`,

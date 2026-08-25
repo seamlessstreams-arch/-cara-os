@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Receipt } from "l
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { UtilityBillsRating } from "@/lib/engines/home-utility-bills-cost-management-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 function useHomeUtilityBillsCostManagementIntelligence() {
   return useQuery({
@@ -61,7 +62,7 @@ export function HomeUtilityBillsCostManagementIntelligenceCard() {
             <Receipt className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-teal-600")} />
             <span className="text-slate-900 font-bold">Utility Bills & Cost Management</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.utility_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.utility_score}%</span>}
+            {d.utility_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.utility_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -69,28 +70,28 @@ export function HomeUtilityBillsCostManagementIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.utility_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.cost_monitoring_rate >= 90 ? "bg-green-50" : d.cost_monitoring_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.cost_monitoring_rate >= 90 ? "text-[--cs-success]" : d.cost_monitoring_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.cost_monitoring_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.cost_monitoring_rate, 90) ? "bg-green-50" : meets(d.cost_monitoring_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.cost_monitoring_rate, 90) ? "text-[--cs-success]" : meets(d.cost_monitoring_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.cost_monitoring_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Monitoring</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.energy_efficiency_rate >= 90 ? "bg-green-50" : d.energy_efficiency_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.energy_efficiency_rate >= 90 ? "text-[--cs-success]" : d.energy_efficiency_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.energy_efficiency_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.energy_efficiency_rate, 90) ? "bg-green-50" : meets(d.energy_efficiency_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.energy_efficiency_rate, 90) ? "text-[--cs-success]" : meets(d.energy_efficiency_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.energy_efficiency_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Efficiency</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.bill_payment_rate >= 90 ? "bg-green-50" : d.bill_payment_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.bill_payment_rate >= 90 ? "text-[--cs-success]" : d.bill_payment_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.bill_payment_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.bill_payment_rate, 90) ? "bg-green-50" : meets(d.bill_payment_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.bill_payment_rate, 90) ? "text-[--cs-success]" : meets(d.bill_payment_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.bill_payment_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Payment</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.budget_adherence_rate >= 90 ? "bg-green-50" : d.budget_adherence_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.budget_adherence_rate >= 90 ? "text-[--cs-success]" : d.budget_adherence_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.budget_adherence_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.budget_adherence_rate, 90) ? "bg-green-50" : meets(d.budget_adherence_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.budget_adherence_rate, 90) ? "text-[--cs-success]" : meets(d.budget_adherence_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.budget_adherence_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Budget</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.sustainability_rate >= 90 ? "bg-green-50" : d.sustainability_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.sustainability_rate >= 90 ? "text-[--cs-success]" : d.sustainability_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.sustainability_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.sustainability_rate, 90) ? "bg-green-50" : meets(d.sustainability_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.sustainability_rate, 90) ? "text-[--cs-success]" : meets(d.sustainability_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.sustainability_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Sustain.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_awareness_rate >= 90 ? "bg-green-50" : d.child_awareness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_awareness_rate >= 90 ? "text-[--cs-success]" : d.child_awareness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_awareness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_awareness_rate, 90) ? "bg-green-50" : meets(d.child_awareness_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_awareness_rate, 90) ? "text-[--cs-success]" : meets(d.child_awareness_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_awareness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Awareness</p>
             </div>
           </div>

@@ -965,7 +965,7 @@ describe("evaluateAccessibilityInclusion", () => {
       improvementsCompleted: 0,
     })];
     const result = evaluateAccessibilityInclusion(audits);
-    expect(result.improvementRate).toBe(0);
+    expect(result.improvementRate).toBeNull();
   });
 });
 
@@ -1428,7 +1428,7 @@ describe("edge cases", () => {
   it("handles single audit with zero improvements", () => {
     const audits = [makeAudit({ improvementsIdentified: 0, improvementsCompleted: 0 })];
     const result = evaluateAccessibilityInclusion(audits);
-    expect(result.improvementRate).toBe(0);
+    expect(result.improvementRate).toBeNull();
     expect(result.totalAudits).toBe(1);
   });
 

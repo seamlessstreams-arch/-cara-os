@@ -203,12 +203,12 @@ describe("insufficient data", () => {
 
   it("returns zeroed rates", () => {
     const r = computeYouthJusticeOffending(emptyArraysInput({ total_children: 0 }));
-    expect(r.yot_engagement_rate).toBe(0);
-    expect(r.behaviour_plan_compliance_rate).toBe(0);
-    expect(r.restorative_justice_rate).toBe(0);
-    expect(r.court_order_adherence_rate).toBe(0);
-    expect(r.prevention_effectiveness_rate).toBe(0);
-    expect(r.child_engagement_rate).toBe(0);
+    expect(r.yot_engagement_rate).toBeNull();
+    expect(r.behaviour_plan_compliance_rate).toBeNull();
+    expect(r.restorative_justice_rate).toBeNull();
+    expect(r.court_order_adherence_rate).toBeNull();
+    expect(r.prevention_effectiveness_rate).toBeNull();
+    expect(r.child_engagement_rate).toBeNull();
   });
 
   it("returns empty arrays for strengths/concerns/recommendations/insights", () => {
@@ -1064,7 +1064,7 @@ describe("Penalty: courtOrderAdherenceRate < 50", () => {
       total_children: 3,
       yot_liaison_records: [makeYotLiaison({ id: "yot_1" })],
     }));
-    expect(r.court_order_adherence_rate).toBe(0);
+    expect(r.court_order_adherence_rate).toBeNull();
     // No penalty because court_order_records.length === 0
     // 52 + 4(yotEng) + 3(yotAction) + 3(childEng) = 62
     expect(r.justice_score).toBe(62);
@@ -1245,7 +1245,7 @@ describe("rate calculations", () => {
   describe("yot_engagement_rate", () => {
     it("0 when no YOT records", () => {
       const r = computeYouthJusticeOffending(emptyArraysInput({ total_children: 3 }));
-      expect(r.yot_engagement_rate).toBe(0);
+      expect(r.yot_engagement_rate).toBeNull();
     });
 
     it("100 when all 4 flags true on every record", () => {
@@ -1269,7 +1269,7 @@ describe("rate calculations", () => {
   describe("behaviour_plan_compliance_rate", () => {
     it("0 when no behaviour plans", () => {
       const r = computeYouthJusticeOffending(emptyArraysInput({ total_children: 3 }));
-      expect(r.behaviour_plan_compliance_rate).toBe(0);
+      expect(r.behaviour_plan_compliance_rate).toBeNull();
     });
 
     it("100 when all targets met, all reviewed, all engaged, all evidence", () => {
@@ -1293,7 +1293,7 @@ describe("rate calculations", () => {
   describe("restorative_justice_rate", () => {
     it("0 when no RJ records", () => {
       const r = computeYouthJusticeOffending(emptyArraysInput({ total_children: 3 }));
-      expect(r.restorative_justice_rate).toBe(0);
+      expect(r.restorative_justice_rate).toBeNull();
     });
 
     it("100 when all 4 composite flags true", () => {
@@ -1319,7 +1319,7 @@ describe("rate calculations", () => {
   describe("court_order_adherence_rate", () => {
     it("0 when no court orders", () => {
       const r = computeYouthJusticeOffending(emptyArraysInput({ total_children: 3 }));
-      expect(r.court_order_adherence_rate).toBe(0);
+      expect(r.court_order_adherence_rate).toBeNull();
     });
 
     it("100 when fully compliant with support and monitoring", () => {
@@ -1343,7 +1343,7 @@ describe("rate calculations", () => {
   describe("prevention_effectiveness_rate", () => {
     it("0 when no prevention programmes", () => {
       const r = computeYouthJusticeOffending(emptyArraysInput({ total_children: 3 }));
-      expect(r.prevention_effectiveness_rate).toBe(0);
+      expect(r.prevention_effectiveness_rate).toBeNull();
     });
 
     it("100 when all sessions attended, engaged, progress positive, no reoffending", () => {
@@ -1367,7 +1367,7 @@ describe("rate calculations", () => {
   describe("child_engagement_rate", () => {
     it("0 when all arrays empty (denom 0)", () => {
       const r = computeYouthJusticeOffending(emptyArraysInput({ total_children: 0 }));
-      expect(r.child_engagement_rate).toBe(0);
+      expect(r.child_engagement_rate).toBeNull();
     });
 
     it("100 when all children engaged in all processes", () => {
@@ -1408,51 +1408,51 @@ describe("rate calculations", () => {
 // 10. pct(0,0) = 0
 // ═══════════════════════════════════════════════════════════════════════════
 
-describe("pct(0,0) = 0 edge case", () => {
-  it("yotEngagementRate is 0 when no YOT records (pct(0,0)=0)", () => {
+describe("rate(0,0)=null edge case", () => {
+  it("yotEngagementRate is null when no YOT records (rate(0,0)=null)", () => {
     const r = computeYouthJusticeOffending(emptyArraysInput({
       total_children: 3,
       behaviour_plan_records: [makeBehaviourPlan({ id: "bp_1" })],
     }));
-    expect(r.yot_engagement_rate).toBe(0);
+    expect(r.yot_engagement_rate).toBeNull();
   });
 
-  it("behaviourPlanComplianceRate is 0 when no bp records (pct(0,0)=0)", () => {
+  it("behaviourPlanComplianceRate is null when no bp records (rate(0,0)=null)", () => {
     const r = computeYouthJusticeOffending(emptyArraysInput({
       total_children: 3,
       yot_liaison_records: [makeYotLiaison({ id: "yot_1" })],
     }));
-    expect(r.behaviour_plan_compliance_rate).toBe(0);
+    expect(r.behaviour_plan_compliance_rate).toBeNull();
   });
 
-  it("restorativeJusticeRate is 0 when no RJ records (pct(0,0)=0)", () => {
+  it("restorativeJusticeRate is null when no RJ records (rate(0,0)=null)", () => {
     const r = computeYouthJusticeOffending(emptyArraysInput({
       total_children: 3,
       yot_liaison_records: [makeYotLiaison({ id: "yot_1" })],
     }));
-    expect(r.restorative_justice_rate).toBe(0);
+    expect(r.restorative_justice_rate).toBeNull();
   });
 
-  it("courtOrderAdherenceRate is 0 when no court order records (pct(0,0)=0)", () => {
+  it("courtOrderAdherenceRate is null when no court order records (rate(0,0)=null)", () => {
     const r = computeYouthJusticeOffending(emptyArraysInput({
       total_children: 3,
       yot_liaison_records: [makeYotLiaison({ id: "yot_1" })],
     }));
-    expect(r.court_order_adherence_rate).toBe(0);
+    expect(r.court_order_adherence_rate).toBeNull();
   });
 
-  it("preventionEffectivenessRate is 0 when no prevention records (pct(0,0)=0)", () => {
+  it("preventionEffectivenessRate is null when no prevention records (rate(0,0)=null)", () => {
     const r = computeYouthJusticeOffending(emptyArraysInput({
       total_children: 3,
       yot_liaison_records: [makeYotLiaison({ id: "yot_1" })],
     }));
-    expect(r.prevention_effectiveness_rate).toBe(0);
+    expect(r.prevention_effectiveness_rate).toBeNull();
   });
 
-  it("childEngagementRate is 0 when all arrays empty but total_children > 0", () => {
+  it("childEngagementRate is null when all arrays empty but total_children > 0", () => {
     const r = computeYouthJusticeOffending(emptyArraysInput({ total_children: 1 }));
     // This triggers the allEmpty+children>0 floor path, which returns 0 rates
-    expect(r.child_engagement_rate).toBe(0);
+    expect(r.child_engagement_rate).toBeNull();
   });
 });
 

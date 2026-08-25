@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import type {
   EnvironmentalQualityIntelligence,
 } from "@/lib/environmental-quality/environmental-quality-engine";
@@ -45,14 +46,14 @@ function MetricCard({ label, value, suffix, color }: { label: string; value: num
 
 // ── Progress Bar ─────────────────────────────────────────────────────────────
 
-function ProgressBar({ value, max, color }: { value: number; max: number; color: string }) {
-  const pctVal = max > 0 ? Math.round((value / max) * 100) : 0;
+function ProgressBar({ value, max, color }: { value: number | null; max: number; color: string }) {
+  const pctVal = value !== null && max > 0 ? Math.round((value / max) * 100) : null;
   return (
     <div className="flex items-center gap-2 w-full">
       <div className="flex-1 h-2 rounded-full bg-gray-200 overflow-hidden">
-        <div className={`h-full rounded-full ${color}`} style={{ width: `${pctVal}%` }} />
+        <div className={`h-full rounded-full ${color}`} style={{ width: `${pctVal ?? 0}%` }} />
       </div>
-      <span className="text-xs font-medium text-gray-600 w-10 text-right">{pctVal}%</span>
+      <span className="text-xs font-medium text-gray-600 w-10 text-right">{pctVal !== null ? `${pctVal}%` : "—"}</span>
     </div>
   );
 }
@@ -132,9 +133,8 @@ export function EnvironmentalQualityDashboardWidget() {
         />
         <MetricCard
           label="Maintenance Completion"
-          value={data.maintenanceResponsiveness.completionRate}
-          suffix="%"
-          color={data.maintenanceResponsiveness.completionRate >= 80 ? "text-green-600" : data.maintenanceResponsiveness.completionRate >= 60 ? "text-amber-600" : "text-red-600"}
+          value={formatRate(data.maintenanceResponsiveness.completionRate)}
+          color={meets(data.maintenanceResponsiveness.completionRate, 80) ? "text-green-600" : meets(data.maintenanceResponsiveness.completionRate, 60) ? "text-amber-600" : "text-red-600"}
         />
         <MetricCard
           label="Child Satisfaction"
@@ -149,8 +149,7 @@ export function EnvironmentalQualityDashboardWidget() {
         <MetricCard label="Inspections" value={data.inspectionQuality.inspectionCount} />
         <MetricCard
           label="Bedroom Personalised"
-          value={data.personalisation.bedroomPersonalisedRate}
-          suffix="%"
+          value={formatRate(data.personalisation.bedroomPersonalisedRate)}
           color={data.personalisation.bedroomPersonalisedRate === 100 ? "text-green-600" : "text-amber-600"}
         />
         <MetricCard
@@ -160,9 +159,8 @@ export function EnvironmentalQualityDashboardWidget() {
         />
         <MetricCard
           label="Feels Safe"
-          value={data.childSatisfaction.feelsSafeRate}
-          suffix="%"
-          color={data.childSatisfaction.feelsSafeRate === 100 ? "text-green-600" : data.childSatisfaction.feelsSafeRate >= 80 ? "text-blue-600" : "text-red-600"}
+          value={formatRate(data.childSatisfaction.feelsSafeRate)}
+          color={data.childSatisfaction.feelsSafeRate === 100 ? "text-green-600" : meets(data.childSatisfaction.feelsSafeRate, 80) ? "text-blue-600" : "text-red-600"}
         />
       </div>
 
@@ -292,7 +290,7 @@ export function EnvironmentalQualityDashboardWidget() {
                 <span className="text-gray-700">Completion Rate</span>
                 <span className="font-medium">{data.maintenanceResponsiveness.completionRate}%</span>
               </div>
-              <ProgressBar value={data.maintenanceResponsiveness.completionRate} max={100} color={data.maintenanceResponsiveness.completionRate >= 80 ? "bg-green-500" : "bg-amber-500"} />
+              <ProgressBar value={data.maintenanceResponsiveness.completionRate} max={100} color={meets(data.maintenanceResponsiveness.completionRate, 80) ? "bg-green-500" : "bg-amber-500"} />
             </div>
             {data.maintenanceResponsiveness.completedCount > 0 && (
               <div className="flex justify-between text-sm pt-2 border-t border-gray-100">
@@ -356,7 +354,7 @@ export function EnvironmentalQualityDashboardWidget() {
                 <span className="text-gray-700">Review Currency</span>
                 <span className="font-medium">{data.personalisation.reviewCurrency}%</span>
               </div>
-              <ProgressBar value={data.personalisation.reviewCurrency} max={100} color={data.personalisation.reviewCurrency >= 80 ? "bg-green-500" : "bg-amber-500"} />
+              <ProgressBar value={data.personalisation.reviewCurrency} max={100} color={meets(data.personalisation.reviewCurrency, 80) ? "bg-green-500" : "bg-amber-500"} />
             </div>
           </div>
         )}
@@ -381,13 +379,13 @@ export function EnvironmentalQualityDashboardWidget() {
                 <p className="text-xs text-gray-500">Avg Satisfaction</p>
               </div>
               <div>
-                <span className={`text-lg font-bold ${data.childSatisfaction.feelsHomelyRate >= 80 ? "text-green-600" : "text-amber-600"}`}>
+                <span className={`text-lg font-bold ${meets(data.childSatisfaction.feelsHomelyRate, 80) ? "text-green-600" : "text-amber-600"}`}>
                   {data.childSatisfaction.feelsHomelyRate}%
                 </span>
                 <p className="text-xs text-gray-500">Feels Homely</p>
               </div>
               <div>
-                <span className={`text-lg font-bold ${data.childSatisfaction.feelsPrivateRate >= 80 ? "text-green-600" : "text-amber-600"}`}>
+                <span className={`text-lg font-bold ${meets(data.childSatisfaction.feelsPrivateRate, 80) ? "text-green-600" : "text-amber-600"}`}>
                   {data.childSatisfaction.feelsPrivateRate}%
                 </span>
                 <p className="text-xs text-gray-500">Feels Private</p>

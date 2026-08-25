@@ -193,8 +193,8 @@ describe("evaluateSkillDevelopment", () => {
     const result = evaluateSkillDevelopment([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalAssessments).toBe(0);
-    expect(result.independentMostlyRate).toBe(0);
-    expect(result.improvementRate).toBe(0);
+    expect(result.independentMostlyRate).toBeNull();
+    expect(result.improvementRate).toBeNull();
     expect(result.domainsAssessed).toBe(0);
     expect(result.averageDomainsPerChild).toBe(0);
     expect(result.notYetStartedCount).toBe(0);
@@ -275,11 +275,11 @@ describe("evaluateGoalProgress", () => {
     const result = evaluateGoalProgress([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalGoals).toBe(0);
-    expect(result.achievedOnTrackRate).toBe(0);
+    expect(result.achievedOnTrackRate).toBeNull();
     expect(result.behindCount).toBe(0);
     expect(result.abandonedCount).toBe(0);
-    expect(result.childInvolvementRate).toBe(0);
-    expect(result.ageAppropriateRate).toBe(0);
+    expect(result.childInvolvementRate).toBeNull();
+    expect(result.ageAppropriateRate).toBeNull();
   });
 
   it("scores high for all achieved goals with child involvement", () => {
@@ -343,9 +343,9 @@ describe("evaluatePracticalLearning", () => {
     const result = evaluatePracticalLearning([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalSessions).toBe(0);
-    expect(result.engagementRate).toBe(0);
-    expect(result.progressRate).toBe(0);
-    expect(result.communityBasedRate).toBe(0);
+    expect(result.engagementRate).toBeNull();
+    expect(result.progressRate).toBeNull();
+    expect(result.communityBasedRate).toBeNull();
     expect(result.averageDurationMinutes).toBe(0);
     expect(result.teachingMethodVariety).toBe(0);
     expect(result.domainsActive).toBe(0);
@@ -412,12 +412,12 @@ describe("evaluatePathwayPreparation", () => {
     const result = evaluatePathwayPreparation([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalChildren).toBe(0);
-    expect(result.pathwayPlanRate).toBe(0);
-    expect(result.independenceSectionRate).toBe(0);
-    expect(result.accommodationPlannedRate).toBe(0);
-    expect(result.financialLiteracyRate).toBe(0);
-    expect(result.healthPassportRate).toBe(0);
-    expect(result.childContributionRate).toBe(0);
+    expect(result.pathwayPlanRate).toBeNull();
+    expect(result.independenceSectionRate).toBeNull();
+    expect(result.accommodationPlannedRate).toBeNull();
+    expect(result.financialLiteracyRate).toBeNull();
+    expect(result.healthPassportRate).toBeNull();
+    expect(result.childContributionRate).toBeNull();
   });
 
   it("scores high for complete pathways", () => {
@@ -802,7 +802,7 @@ describe("edge cases", () => {
     ];
     const result = evaluateSkillDevelopment(assessments);
     // No previous level = no improvement tracked
-    expect(result.improvementRate).toBe(0);
+    expect(result.improvementRate).toBeNull();
   });
 
   it("same level as previous is not improvement", () => {

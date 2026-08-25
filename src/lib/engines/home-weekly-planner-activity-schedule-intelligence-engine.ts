@@ -14,7 +14,7 @@
 //             childInputRecords, communicationRecords, adherenceRecords
 // ==============================================================================
 
-import { below, meets } from "@/lib/metrics/rate";
+import { rate, below, meets } from "@/lib/metrics/rate";
 
 // -- Input Types --------------------------------------------------------------
 
@@ -139,12 +139,13 @@ export interface WeeklyPlannerResult {
   planner_rating: WeeklyPlannerRating;
   planner_score: number;
   headline: string;
-  // schedule_timeliness_rate uses pct() directly (deterministic 0 on empty).
+  // schedule_timeliness_rate uses rate() directly (deterministic 0 on empty).
   // The 5 composite rates below are null on empty: no source records ⇒ no
   // signal. "0% variety / 0% input / 0% communication / 0% adherence /
   // 0% satisfaction" would read as an actively chaotic weekly programme,
   // not "unmeasured". Fab-0 doctrine.
-  schedule_timeliness_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  schedule_timeliness_rate: number | null;
   activity_variety_rate: number | null;
   child_input_rate: number | null;
   communication_rate: number | null;
@@ -157,10 +158,6 @@ export interface WeeklyPlannerResult {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -184,7 +181,7 @@ function emptyResult(
     planner_rating: rating,
     planner_score: score,
     headline,
-    schedule_timeliness_rate: 0,
+    schedule_timeliness_rate: null,
     activity_variety_rate: null,
     child_input_rate: null,
     communication_rate: null,
@@ -270,32 +267,32 @@ export function computeWeeklyPlannerActivitySchedule(
   const timelySchedules = schedule_creation_records.filter(
     (r) => r.days_before_week_start >= 2,
   ).length;
-  const scheduleTimelinessRate = pct(timelySchedules, totalSchedules);
+  const scheduleTimelinessRate = rate(timelySchedules, totalSchedules);
 
   const schedulesIncludingAllChildren = schedule_creation_records.filter(
     (r) => r.includes_all_children,
   ).length;
-  const allChildrenInclusionRate = pct(schedulesIncludingAllChildren, totalSchedules);
+  const allChildrenInclusionRate = rate(schedulesIncludingAllChildren, totalSchedules);
 
   const fullCoverageSchedules = schedule_creation_records.filter(
     (r) => r.includes_morning && r.includes_afternoon && r.includes_evening,
   ).length;
-  const fullCoverageRate = pct(fullCoverageSchedules, totalSchedules);
+  const fullCoverageRate = rate(fullCoverageSchedules, totalSchedules);
 
   const weekendSchedules = schedule_creation_records.filter(
     (r) => r.includes_weekend,
   ).length;
-  const weekendCoverageRate = pct(weekendSchedules, totalSchedules);
+  const weekendCoverageRate = rate(weekendSchedules, totalSchedules);
 
   const approvedSchedules = schedule_creation_records.filter(
     (r) => r.approved_by_manager,
   ).length;
-  const managerApprovalRate = pct(approvedSchedules, totalSchedules);
+  const managerApprovalRate = rate(approvedSchedules, totalSchedules);
 
   const highRevisionSchedules = schedule_creation_records.filter(
     (r) => r.revision_count >= 3,
   ).length;
-  const highRevisionRate = pct(highRevisionSchedules, totalSchedules);
+  const highRevisionRate = rate(highRevisionSchedules, totalSchedules);
 
   // --- Activity variety ---
   const totalVarietyRecords = activity_variety_records.length;
@@ -329,10 +326,10 @@ export function computeWeeklyPlannerActivitySchedule(
   const communityActivities = activity_variety_records.filter((r) => r.is_community).length;
 
   const ageAppropriateActivities = activity_variety_records.filter((r) => r.age_appropriate).length;
-  const ageAppropriateRate = pct(ageAppropriateActivities, totalVarietyRecords);
+  const ageAppropriateRate = rate(ageAppropriateActivities, totalVarietyRecords);
 
   const newActivities = activity_variety_records.filter((r) => r.new_activity).length;
-  const newActivityRate = pct(newActivities, totalVarietyRecords);
+  const newActivityRate = rate(newActivities, totalVarietyRecords);
 
   // Count how many distinct "type flags" are represented
   const typeFlags = [
@@ -370,12 +367,12 @@ export function computeWeeklyPlannerActivitySchedule(
   const consultedBeforePlanning = child_input_records.filter(
     (r) => r.consulted_before_planning,
   ).length;
-  const consultationRate = pct(consultedBeforePlanning, totalChildInputRecords);
+  const consultationRate = rate(consultedBeforePlanning, totalChildInputRecords);
 
   const preferencesRecorded = child_input_records.filter(
     (r) => r.preferences_recorded,
   ).length;
-  const preferencesRate = pct(preferencesRecorded, totalChildInputRecords);
+  const preferencesRate = rate(preferencesRecorded, totalChildInputRecords);
 
   const totalSuggestions = child_input_records.reduce(
     (sum, r) => sum + r.suggestions_included, 0,
@@ -383,22 +380,22 @@ export function computeWeeklyPlannerActivitySchedule(
   const totalSuggestionsActedOn = child_input_records.reduce(
     (sum, r) => sum + r.suggestions_acted_on, 0,
   );
-  const suggestionActedRate = pct(totalSuggestionsActedOn, totalSuggestions);
+  const suggestionActedRate = rate(totalSuggestionsActedOn, totalSuggestions);
 
   const attendedPlanningSession = child_input_records.filter(
     (r) => r.attended_planning_session,
   ).length;
-  const planningSessionAttendanceRate = pct(attendedPlanningSession, totalChildInputRecords);
+  const planningSessionAttendanceRate = rate(attendedPlanningSession, totalChildInputRecords);
 
   const feedbackGivenAfter = child_input_records.filter(
     (r) => r.feedback_given_after,
   ).length;
-  const feedbackRate = pct(feedbackGivenAfter, totalChildInputRecords);
+  const feedbackRate = rate(feedbackGivenAfter, totalChildInputRecords);
 
   const feltListenedTo = child_input_records.filter(
     (r) => r.felt_listened_to,
   ).length;
-  const feltListenedToRate = pct(feltListenedTo, totalChildInputRecords);
+  const feltListenedToRate = rate(feltListenedTo, totalChildInputRecords);
 
   const childInputSatisfactionSum = child_input_records.reduce(
     (sum, r) => sum + r.satisfaction_score, 0,
@@ -410,59 +407,55 @@ export function computeWeeklyPlannerActivitySchedule(
 
   // Composite child input rate
   const childInputRate: number | null =
-    totalChildInputRecords > 0
-      ? Math.round((consultationRate + preferencesRate + feltListenedToRate) / 3)
-      : null;
+    totalChildInputRecords > 0 ? Math.round((consultationRate! + preferencesRate! + feltListenedToRate!) / 3) : null;
 
   // --- Communication effectiveness ---
   const totalCommunicationRecords = communication_records.length;
   const schedulesDisplayed = communication_records.filter(
     (r) => r.schedule_displayed,
   ).length;
-  const displayRate = pct(schedulesDisplayed, totalCommunicationRecords);
+  const displayRate = rate(schedulesDisplayed, totalCommunicationRecords);
 
   const sharedWithChildren = communication_records.filter(
     (r) => r.shared_with_children,
   ).length;
-  const childShareRate = pct(sharedWithChildren, totalCommunicationRecords);
+  const childShareRate = rate(sharedWithChildren, totalCommunicationRecords);
 
   const sharedWithStaff = communication_records.filter(
     (r) => r.shared_with_staff,
   ).length;
-  const staffShareRate = pct(sharedWithStaff, totalCommunicationRecords);
+  const staffShareRate = rate(sharedWithStaff, totalCommunicationRecords);
 
   const sharedBeforeWeek = communication_records.filter(
     (r) => r.shared_before_week_start,
   ).length;
-  const earlyShareRate = pct(sharedBeforeWeek, totalCommunicationRecords);
+  const earlyShareRate = rate(sharedBeforeWeek, totalCommunicationRecords);
 
   const changesCommunicated = communication_records.filter(
     (r) => r.changes_communicated,
   ).length;
-  const changeCommunicationRate = pct(changesCommunicated, totalCommunicationRecords);
+  const changeCommunicationRate = rate(changesCommunicated, totalCommunicationRecords);
 
   const childFriendlyFormat = communication_records.filter(
     (r) => r.child_friendly_format,
   ).length;
-  const childFriendlyRate = pct(childFriendlyFormat, totalCommunicationRecords);
+  const childFriendlyRate = rate(childFriendlyFormat, totalCommunicationRecords);
 
   // Composite communication rate
   const communicationRate: number | null =
-    totalCommunicationRecords > 0
-      ? Math.round((displayRate + childShareRate + staffShareRate + earlyShareRate) / 4)
-      : null;
+    totalCommunicationRecords > 0 ? Math.round((displayRate! + childShareRate! + staffShareRate! + earlyShareRate!) / 4) : null;
 
   // --- Adherence to planned activities ---
   const totalAdherenceRecords = adherence_records.length;
   const deliveredActivities = adherence_records.filter(
     (r) => r.was_delivered,
   ).length;
-  const deliveryRate = pct(deliveredActivities, totalAdherenceRecords);
+  const deliveryRate = rate(deliveredActivities, totalAdherenceRecords);
 
   const deliveredAsPlanned = adherence_records.filter(
     (r) => r.delivered_as_planned,
   ).length;
-  const asPlannedRate = pct(deliveredAsPlanned, totalAdherenceRecords);
+  const asPlannedRate = rate(deliveredAsPlanned, totalAdherenceRecords);
 
   const notDelivered = adherence_records.filter(
     (r) => r.was_planned && !r.was_delivered,
@@ -471,7 +464,7 @@ export function computeWeeklyPlannerActivitySchedule(
   const alternativeProvided = adherence_records.filter(
     (r) => r.was_planned && !r.was_delivered && r.alternative_provided,
   ).length;
-  const alternativeRate = pct(alternativeProvided, notDelivered);
+  const alternativeRate = rate(alternativeProvided, notDelivered);
 
   const childInformedOfChange = adherence_records.filter(
     (r) => r.was_planned && !r.delivered_as_planned && r.child_informed_of_change,
@@ -479,7 +472,7 @@ export function computeWeeklyPlannerActivitySchedule(
   const changesNotAsPlanned = adherence_records.filter(
     (r) => r.was_planned && !r.delivered_as_planned,
   ).length;
-  const childInformedRate = pct(childInformedOfChange, changesNotAsPlanned);
+  const childInformedRate = rate(childInformedOfChange, changesNotAsPlanned);
 
   const adherenceSatisfactionSum = adherence_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
@@ -491,17 +484,15 @@ export function computeWeeklyPlannerActivitySchedule(
 
   // Composite adherence rate
   const adherenceRate: number | null =
-    totalAdherenceRecords > 0
-      ? Math.round((deliveryRate + asPlannedRate) / 2)
-      : null;
+    totalAdherenceRecords > 0 ? Math.round((deliveryRate! + asPlannedRate!) / 2) : null;
 
   // --- Child satisfaction composite ---
   // Average of the present sub-satisfaction averages (variety / child-input /
   // adherence). Null when no source records exist.
   const satisfactionComponents: number[] = [];
-  if (totalVarietyRecords > 0) satisfactionComponents.push(pct(Math.round(varietySatisfactionAvg!), 5));
-  if (totalChildInputRecords > 0) satisfactionComponents.push(pct(Math.round(childInputSatisfactionAvg!), 5));
-  if (totalAdherenceRecords > 0) satisfactionComponents.push(pct(Math.round(adherenceSatisfactionAvg!), 5));
+  if (totalVarietyRecords > 0) satisfactionComponents.push(rate(Math.round(varietySatisfactionAvg!), 5)!);
+  if (totalChildInputRecords > 0) satisfactionComponents.push(rate(Math.round(childInputSatisfactionAvg!), 5)!);
+  if (totalAdherenceRecords > 0) satisfactionComponents.push(rate(Math.round(adherenceSatisfactionAvg!), 5)!);
   const satisfactionDenominator = satisfactionComponents.length;
 
   const childSatisfactionRate: number | null =
@@ -514,8 +505,8 @@ export function computeWeeklyPlannerActivitySchedule(
   let score = 52;
 
   // --- Bonus 1: scheduleTimelinessRate (>=90: +5, >=70: +3) ---
-  if (scheduleTimelinessRate >= 90) score += 5;
-  else if (scheduleTimelinessRate >= 70) score += 3;
+  if (meets(scheduleTimelinessRate, 90)) score += 5;
+  else if (meets(scheduleTimelinessRate, 70)) score += 3;
 
   // --- Bonus 2: activityVarietyRate (>=80: +4, >=60: +2) ---
   if (meets(activityVarietyRate, 80)) score += 4;
@@ -538,21 +529,21 @@ export function computeWeeklyPlannerActivitySchedule(
   else if (meets(childSatisfactionRate, 60)) score += 1;
 
   // --- Bonus 7: fullCoverageRate (>=90: +3, >=70: +1) ---
-  if (fullCoverageRate >= 90) score += 3;
-  else if (fullCoverageRate >= 70) score += 1;
+  if (meets(fullCoverageRate, 90)) score += 3;
+  else if (meets(fullCoverageRate, 70)) score += 1;
 
   // --- Bonus 8: managerApprovalRate (>=90: +2, >=70: +1) ---
-  if (managerApprovalRate >= 90) score += 2;
-  else if (managerApprovalRate >= 70) score += 1;
+  if (meets(managerApprovalRate, 90)) score += 2;
+  else if (meets(managerApprovalRate, 70)) score += 1;
 
   // --- Bonus 9: weekendCoverageRate (>=90: +2, >=70: +1) ---
-  if (weekendCoverageRate >= 90) score += 2;
-  else if (weekendCoverageRate >= 70) score += 1;
+  if (meets(weekendCoverageRate, 90)) score += 2;
+  else if (meets(weekendCoverageRate, 70)) score += 1;
 
   // -- Penalties (4 with guards) -------------------------------------------
 
   // scheduleTimelinessRate < 50 -> -5
-  if (scheduleTimelinessRate < 50 && schedule_creation_records.length > 0) score -= 5;
+  if (below(scheduleTimelinessRate, 50) && schedule_creation_records.length > 0) score -= 5;
 
   // below(childInputRate, 40) -> -5
   if (below(childInputRate, 40) && child_input_records.length > 0) score -= 5;
@@ -571,35 +562,35 @@ export function computeWeeklyPlannerActivitySchedule(
 
   const strengths: string[] = [];
 
-  if (scheduleTimelinessRate >= 90 && totalSchedules > 0) {
+  if (meets(scheduleTimelinessRate, 90) && totalSchedules > 0) {
     strengths.push(
       `${scheduleTimelinessRate}% of weekly schedules created at least 2 days before the week begins -- excellent forward planning ensures staff and children know what to expect and can prepare accordingly.`,
     );
-  } else if (scheduleTimelinessRate >= 70 && totalSchedules > 0) {
+  } else if (meets(scheduleTimelinessRate, 70) && totalSchedules > 0) {
     strengths.push(
       `${scheduleTimelinessRate}% schedule timeliness rate -- most weekly schedules are created in advance, demonstrating good planning practice.`,
     );
   }
 
-  if (fullCoverageRate >= 90 && totalSchedules > 0) {
+  if (meets(fullCoverageRate, 90) && totalSchedules > 0) {
     strengths.push(
       `${fullCoverageRate}% of schedules cover morning, afternoon, and evening periods -- children have a structured programme throughout the day with clear expectations and varied opportunities.`,
     );
   }
 
-  if (weekendCoverageRate >= 90 && totalSchedules > 0) {
+  if (meets(weekendCoverageRate, 90) && totalSchedules > 0) {
     strengths.push(
       `${weekendCoverageRate}% of schedules include weekend planning -- weekends are not left unstructured, ensuring children have activities and experiences throughout the entire week.`,
     );
   }
 
-  if (allChildrenInclusionRate >= 90 && totalSchedules > 0) {
+  if (meets(allChildrenInclusionRate, 90) && totalSchedules > 0) {
     strengths.push(
       `${allChildrenInclusionRate}% of schedules include all children -- inclusive planning ensures every child has access to a personalised programme of activities.`,
     );
   }
 
-  if (managerApprovalRate >= 90 && totalSchedules > 0) {
+  if (meets(managerApprovalRate, 90) && totalSchedules > 0) {
     strengths.push(
       `${managerApprovalRate}% of schedules approved by the manager -- management oversight of weekly planning ensures quality assurance and accountability.`,
     );
@@ -621,99 +612,99 @@ export function computeWeeklyPlannerActivitySchedule(
     );
   }
 
-  if (newActivityRate >= 20 && totalVarietyRecords > 0) {
+  if (meets(newActivityRate, 20) && totalVarietyRecords > 0) {
     strengths.push(
       `${newActivityRate}% of activities are new experiences -- the home regularly introduces fresh activities that broaden children's horizons and build confidence.`,
     );
   }
 
-  if (ageAppropriateRate >= 95 && totalVarietyRecords > 0) {
+  if (meets(ageAppropriateRate, 95) && totalVarietyRecords > 0) {
     strengths.push(
       `${ageAppropriateRate}% of activities are age-appropriate -- careful matching of activities to children's developmental stages demonstrates thoughtful, child-centred planning.`,
     );
   }
 
-  if (consultationRate >= 90 && totalChildInputRecords > 0) {
+  if (meets(consultationRate, 90) && totalChildInputRecords > 0) {
     strengths.push(
       `${consultationRate}% of children consulted before weekly planning -- children's voices genuinely shape the activity programme, demonstrating person-centred care.`,
     );
-  } else if (consultationRate >= 70 && totalChildInputRecords > 0) {
+  } else if (meets(consultationRate, 70) && totalChildInputRecords > 0) {
     strengths.push(
       `${consultationRate}% child consultation rate -- most children are consulted about what they want to do, which is good practice under Reg 7.`,
     );
   }
 
-  if (feltListenedToRate >= 90 && totalChildInputRecords > 0) {
+  if (meets(feltListenedToRate, 90) && totalChildInputRecords > 0) {
     strengths.push(
       `${feltListenedToRate}% of children feel listened to in the planning process -- children perceive that their input matters and is acted upon, building trust and engagement.`,
     );
   }
 
-  if (suggestionActedRate >= 80 && totalSuggestions > 0) {
+  if (meets(suggestionActedRate, 80) && totalSuggestions > 0) {
     strengths.push(
       `${suggestionActedRate}% of children's suggestions acted upon -- the home demonstrates genuine responsiveness to children's preferences and ideas.`,
     );
   }
 
-  if (planningSessionAttendanceRate >= 80 && totalChildInputRecords > 0) {
+  if (meets(planningSessionAttendanceRate, 80) && totalChildInputRecords > 0) {
     strengths.push(
       `${planningSessionAttendanceRate}% attendance at planning sessions -- children actively participate in shaping their own weekly programme.`,
     );
   }
 
-  if (displayRate >= 90 && totalCommunicationRecords > 0) {
+  if (meets(displayRate, 90) && totalCommunicationRecords > 0) {
     strengths.push(
       `${displayRate}% of schedules displayed in the home -- children and staff can see the planned programme at a glance, promoting predictability and routine.`,
     );
   }
 
-  if (childShareRate >= 90 && totalCommunicationRecords > 0) {
+  if (meets(childShareRate, 90) && totalCommunicationRecords > 0) {
     strengths.push(
       `${childShareRate}% of schedules shared directly with children -- children are kept informed about what is planned for them, respecting their right to know and participate.`,
     );
   }
 
-  if (earlyShareRate >= 90 && totalCommunicationRecords > 0) {
+  if (meets(earlyShareRate, 90) && totalCommunicationRecords > 0) {
     strengths.push(
       `${earlyShareRate}% of schedules shared before the week starts -- advance communication allows children and staff to prepare and builds a sense of anticipation.`,
     );
   }
 
-  if (childFriendlyRate >= 90 && totalCommunicationRecords > 0) {
+  if (meets(childFriendlyRate, 90) && totalCommunicationRecords > 0) {
     strengths.push(
       `${childFriendlyRate}% of schedules presented in a child-friendly format -- accessible communication ensures all children can understand and engage with the planned programme.`,
     );
   }
 
-  if (changeCommunicationRate >= 90 && totalCommunicationRecords > 0) {
+  if (meets(changeCommunicationRate, 90) && totalCommunicationRecords > 0) {
     strengths.push(
       `${changeCommunicationRate}% of schedule changes communicated effectively -- when plans change, children and staff are kept informed, maintaining trust and transparency.`,
     );
   }
 
-  if (deliveryRate >= 90 && totalAdherenceRecords > 0) {
+  if (meets(deliveryRate, 90) && totalAdherenceRecords > 0) {
     strengths.push(
       `${deliveryRate}% of planned activities delivered -- the home follows through on its planned programme, demonstrating reliability and commitment to children's experiences.`,
     );
-  } else if (deliveryRate >= 70 && totalAdherenceRecords > 0) {
+  } else if (meets(deliveryRate, 70) && totalAdherenceRecords > 0) {
     strengths.push(
       `${deliveryRate}% activity delivery rate -- most planned activities are carried out as intended.`,
     );
   }
 
-  if (asPlannedRate >= 90 && totalAdherenceRecords > 0) {
+  if (meets(asPlannedRate, 90) && totalAdherenceRecords > 0) {
     strengths.push(
       `${asPlannedRate}% of activities delivered exactly as planned -- excellent adherence to the weekly schedule demonstrates strong organisational discipline and reliability.`,
     );
   }
 
-  if (alternativeRate >= 80 && notDelivered > 0) {
+  if (meets(alternativeRate, 80) && notDelivered > 0) {
     strengths.push(
       `${alternativeRate}% of cancelled activities had alternatives provided -- when plans change, the home ensures children still receive meaningful experiences.`,
     );
   }
 
-  if (childInformedRate >= 90 && changesNotAsPlanned > 0) {
+  if (meets(childInformedRate, 90) && changesNotAsPlanned > 0) {
     strengths.push(
       `${childInformedRate}% of changes communicated to children -- children are kept informed when plans change, respecting their autonomy and reducing anxiety.`,
     );
@@ -725,7 +716,7 @@ export function computeWeeklyPlannerActivitySchedule(
     );
   }
 
-  if (feedbackRate >= 80 && totalChildInputRecords > 0) {
+  if (meets(feedbackRate, 80) && totalChildInputRecords > 0) {
     strengths.push(
       `${feedbackRate}% of children provide feedback after activities -- post-activity feedback is systematically captured, informing future planning and continuous improvement.`,
     );
@@ -735,35 +726,35 @@ export function computeWeeklyPlannerActivitySchedule(
 
   const concerns: string[] = [];
 
-  if (scheduleTimelinessRate < 50 && totalSchedules > 0) {
+  if (below(scheduleTimelinessRate, 50) && totalSchedules > 0) {
     concerns.push(
       `Only ${scheduleTimelinessRate}% of weekly schedules created on time -- schedules are frequently produced late, leaving staff and children uncertain about what is planned. Ofsted expects proactive, forward-looking planning under Reg 5.`,
     );
-  } else if (scheduleTimelinessRate < 70 && scheduleTimelinessRate >= 50 && totalSchedules > 0) {
+  } else if (below(scheduleTimelinessRate, 70) && meets(scheduleTimelinessRate, 50) && totalSchedules > 0) {
     concerns.push(
       `Schedule timeliness at ${scheduleTimelinessRate}% -- some schedules are not created far enough in advance for effective preparation.`,
     );
   }
 
-  if (fullCoverageRate < 50 && totalSchedules > 0) {
+  if (below(fullCoverageRate, 50) && totalSchedules > 0) {
     concerns.push(
       `Only ${fullCoverageRate}% of schedules cover morning, afternoon, and evening periods -- significant gaps in the daily programme mean children may have unstructured time without meaningful activities.`,
     );
   }
 
-  if (weekendCoverageRate < 50 && totalSchedules > 0) {
+  if (below(weekendCoverageRate, 50) && totalSchedules > 0) {
     concerns.push(
       `Only ${weekendCoverageRate}% of schedules include weekend activities -- weekends are frequently unplanned, which can lead to boredom, unstructured time, and missed enrichment opportunities.`,
     );
   }
 
-  if (allChildrenInclusionRate < 70 && totalSchedules > 0) {
+  if (below(allChildrenInclusionRate, 70) && totalSchedules > 0) {
     concerns.push(
       `Only ${allChildrenInclusionRate}% of schedules include all children -- some children are not accounted for in weekly planning, risking exclusion from the activity programme.`,
     );
   }
 
-  if (managerApprovalRate < 50 && totalSchedules > 0) {
+  if (below(managerApprovalRate, 50) && totalSchedules > 0) {
     concerns.push(
       `Only ${managerApprovalRate}% of schedules approved by the manager -- lack of management oversight reduces quality assurance and accountability in weekly planning.`,
     );
@@ -781,7 +772,7 @@ export function computeWeeklyPlannerActivitySchedule(
     );
   }
 
-  if (ageAppropriateRate < 70 && totalVarietyRecords > 0) {
+  if (below(ageAppropriateRate, 70) && totalVarietyRecords > 0) {
     concerns.push(
       `Only ${ageAppropriateRate}% of activities are age-appropriate -- activities that do not match children's developmental stages risk disengagement or harm.`,
     );
@@ -793,75 +784,75 @@ export function computeWeeklyPlannerActivitySchedule(
     );
   }
 
-  if (consultationRate < 50 && totalChildInputRecords > 0) {
+  if (below(consultationRate, 50) && totalChildInputRecords > 0) {
     concerns.push(
       `Only ${consultationRate}% of children consulted before planning -- the majority of children's preferences are not captured, undermining the child-centred approach required by Reg 7.`,
     );
-  } else if (consultationRate < 70 && consultationRate >= 50 && totalChildInputRecords > 0) {
+  } else if (below(consultationRate, 70) && meets(consultationRate, 50) && totalChildInputRecords > 0) {
     concerns.push(
       `Child consultation rate at ${consultationRate}% -- some children are not being asked about their preferences for the weekly programme.`,
     );
   }
 
-  if (feltListenedToRate < 50 && totalChildInputRecords > 0) {
+  if (below(feltListenedToRate, 50) && totalChildInputRecords > 0) {
     concerns.push(
       `Only ${feltListenedToRate}% of children feel listened to in planning -- children do not perceive that their input shapes the activity programme. This is a significant concern under Reg 7 (child's voice).`,
     );
   }
 
-  if (suggestionActedRate < 50 && totalSuggestions > 0) {
+  if (below(suggestionActedRate, 50) && totalSuggestions > 0) {
     concerns.push(
       `Only ${suggestionActedRate}% of children's suggestions acted upon -- children may feel their contributions are tokenistic if suggestions are consistently ignored.`,
     );
   }
 
-  if (displayRate < 50 && totalCommunicationRecords > 0) {
+  if (below(displayRate, 50) && totalCommunicationRecords > 0) {
     concerns.push(
       `Only ${displayRate}% of schedules displayed in the home -- children and staff cannot easily see what is planned, reducing predictability and routine.`,
     );
   }
 
-  if (childShareRate < 50 && totalCommunicationRecords > 0) {
+  if (below(childShareRate, 50) && totalCommunicationRecords > 0) {
     concerns.push(
       `Only ${childShareRate}% of schedules shared with children -- children have a right to know what activities are available to them. Poor communication undermines engagement.`,
     );
   }
 
-  if (earlyShareRate < 50 && totalCommunicationRecords > 0) {
+  if (below(earlyShareRate, 50) && totalCommunicationRecords > 0) {
     concerns.push(
       `Only ${earlyShareRate}% of schedules shared before the week starts -- late communication prevents children and staff from preparing and reduces the schedule's effectiveness.`,
     );
   }
 
-  if (childFriendlyRate < 50 && totalCommunicationRecords > 0) {
+  if (below(childFriendlyRate, 50) && totalCommunicationRecords > 0) {
     concerns.push(
       `Only ${childFriendlyRate}% of schedules in child-friendly format -- inaccessible communication means some children may not understand or engage with the planned programme.`,
     );
   }
 
-  if (deliveryRate < 50 && totalAdherenceRecords > 0) {
+  if (below(deliveryRate, 50) && totalAdherenceRecords > 0) {
     concerns.push(
       `Only ${deliveryRate}% of planned activities delivered -- the majority of planned activities do not take place, rendering the weekly schedule ineffective and eroding children's trust in the planning process.`,
     );
-  } else if (deliveryRate < 70 && deliveryRate >= 50 && totalAdherenceRecords > 0) {
+  } else if (below(deliveryRate, 70) && meets(deliveryRate, 50) && totalAdherenceRecords > 0) {
     concerns.push(
       `Activity delivery rate at ${deliveryRate}% -- a significant proportion of planned activities are not carried out, which undermines the purpose of weekly planning.`,
     );
   }
 
-  if (asPlannedRate < 50 && totalAdherenceRecords > 0) {
+  if (below(asPlannedRate, 50) && totalAdherenceRecords > 0) {
     concerns.push(
       `Only ${asPlannedRate}% of activities delivered as planned -- frequent deviations from the schedule suggest planning is aspirational rather than realistic, or that staffing and resources are insufficient.`,
     );
   }
 
-  if (alternativeRate < 50 && notDelivered >= 2) {
+  if (below(alternativeRate, 50) && notDelivered >= 2) {
     concerns.push(
       `Only ${alternativeRate}% of cancelled activities had alternatives provided -- when plans change, children should still receive meaningful experiences. Failing to provide alternatives leaves children without activities.`,
     );
   }
 
-  if (childInformedRate < 50 && changesNotAsPlanned >= 2) {
+  if (below(childInformedRate, 50) && changesNotAsPlanned >= 2) {
     concerns.push(
       `Only ${childInformedRate}% of schedule changes communicated to children -- children are not being told when plans change, which can cause confusion, disappointment, and anxiety.`,
     );
@@ -897,13 +888,13 @@ export function computeWeeklyPlannerActivitySchedule(
     );
   }
 
-  if (highRevisionRate >= 50 && totalSchedules >= 3) {
+  if (meets(highRevisionRate, 50) && totalSchedules >= 3) {
     concerns.push(
       `${highRevisionRate}% of schedules revised 3 or more times -- excessive revisions suggest poor initial planning or chronic resource issues that undermine schedule stability.`,
     );
   }
 
-  if (feedbackRate < 30 && totalChildInputRecords > 0) {
+  if (below(feedbackRate, 30) && totalChildInputRecords > 0) {
     concerns.push(
       `Only ${feedbackRate}% of children provide feedback after activities -- without post-activity feedback, the home cannot learn from children's experiences or improve future planning.`,
     );
@@ -924,7 +915,7 @@ export function computeWeeklyPlannerActivitySchedule(
     });
   }
 
-  if (scheduleTimelinessRate < 50 && totalSchedules > 0) {
+  if (below(scheduleTimelinessRate, 50) && totalSchedules > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -944,7 +935,7 @@ export function computeWeeklyPlannerActivitySchedule(
     });
   }
 
-  if (consultationRate < 50 && totalChildInputRecords > 0) {
+  if (below(consultationRate, 50) && totalChildInputRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -954,7 +945,7 @@ export function computeWeeklyPlannerActivitySchedule(
     });
   }
 
-  if (feltListenedToRate < 50 && totalChildInputRecords > 0) {
+  if (below(feltListenedToRate, 50) && totalChildInputRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -964,7 +955,7 @@ export function computeWeeklyPlannerActivitySchedule(
     });
   }
 
-  if (deliveryRate < 50 && totalAdherenceRecords > 0) {
+  if (below(deliveryRate, 50) && totalAdherenceRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -994,7 +985,7 @@ export function computeWeeklyPlannerActivitySchedule(
     });
   }
 
-  if (displayRate < 50 && totalCommunicationRecords > 0) {
+  if (below(displayRate, 50) && totalCommunicationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1004,7 +995,7 @@ export function computeWeeklyPlannerActivitySchedule(
     });
   }
 
-  if (childShareRate < 50 && totalCommunicationRecords > 0) {
+  if (below(childShareRate, 50) && totalCommunicationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1014,7 +1005,7 @@ export function computeWeeklyPlannerActivitySchedule(
     });
   }
 
-  if (childFriendlyRate < 50 && totalCommunicationRecords > 0) {
+  if (below(childFriendlyRate, 50) && totalCommunicationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1024,7 +1015,7 @@ export function computeWeeklyPlannerActivitySchedule(
     });
   }
 
-  if (alternativeRate < 50 && notDelivered >= 2) {
+  if (below(alternativeRate, 50) && notDelivered >= 2) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1034,7 +1025,7 @@ export function computeWeeklyPlannerActivitySchedule(
     });
   }
 
-  if (childInformedRate < 50 && changesNotAsPlanned >= 2) {
+  if (below(childInformedRate, 50) && changesNotAsPlanned >= 2) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1054,7 +1045,7 @@ export function computeWeeklyPlannerActivitySchedule(
     });
   }
 
-  if (fullCoverageRate < 50 && totalSchedules > 0) {
+  if (below(fullCoverageRate, 50) && totalSchedules > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1064,7 +1055,7 @@ export function computeWeeklyPlannerActivitySchedule(
     });
   }
 
-  if (weekendCoverageRate < 50 && totalSchedules > 0) {
+  if (below(weekendCoverageRate, 50) && totalSchedules > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1074,7 +1065,7 @@ export function computeWeeklyPlannerActivitySchedule(
     });
   }
 
-  if (managerApprovalRate < 50 && totalSchedules > 0) {
+  if (below(managerApprovalRate, 50) && totalSchedules > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1084,7 +1075,7 @@ export function computeWeeklyPlannerActivitySchedule(
     });
   }
 
-  if (suggestionActedRate < 50 && totalSuggestions > 0) {
+  if (below(suggestionActedRate, 50) && totalSuggestions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1104,7 +1095,7 @@ export function computeWeeklyPlannerActivitySchedule(
     });
   }
 
-  if (feedbackRate < 30 && totalChildInputRecords > 0) {
+  if (below(feedbackRate, 30) && totalChildInputRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1114,7 +1105,7 @@ export function computeWeeklyPlannerActivitySchedule(
     });
   }
 
-  if (scheduleTimelinessRate >= 50 && scheduleTimelinessRate < 70 && totalSchedules > 0) {
+  if (meets(scheduleTimelinessRate, 50) && below(scheduleTimelinessRate, 70) && totalSchedules > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1124,7 +1115,7 @@ export function computeWeeklyPlannerActivitySchedule(
     });
   }
 
-  if (deliveryRate >= 50 && deliveryRate < 70 && totalAdherenceRecords > 0) {
+  if (meets(deliveryRate, 50) && below(deliveryRate, 70) && totalAdherenceRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1134,7 +1125,7 @@ export function computeWeeklyPlannerActivitySchedule(
     });
   }
 
-  if (ageAppropriateRate < 70 && totalVarietyRecords > 0) {
+  if (below(ageAppropriateRate, 70) && totalVarietyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1150,28 +1141,28 @@ export function computeWeeklyPlannerActivitySchedule(
 
   // --- Critical insights ---
 
-  if (scheduleTimelinessRate < 50 && totalSchedules > 0) {
+  if (below(scheduleTimelinessRate, 50) && totalSchedules > 0) {
     insights.push({
       text: `Only ${scheduleTimelinessRate}% of weekly schedules created on time. Ofsted expects evidence of proactive, forward-looking planning that gives children structure and predictability. Consistently late schedule creation suggests reactive rather than planned care, which would be flagged under Reg 5.`,
       severity: "critical",
     });
   }
 
-  if (deliveryRate < 50 && totalAdherenceRecords > 0) {
+  if (below(deliveryRate, 50) && totalAdherenceRecords > 0) {
     insights.push({
       text: `Only ${deliveryRate}% of planned activities actually delivered. A weekly schedule that is routinely not followed is worse than no schedule at all -- it erodes children's trust and creates disappointment. Ofsted will view this as evidence that the home's planning is not translating into meaningful experiences for children.`,
       severity: "critical",
     });
   }
 
-  if (consultationRate < 50 && totalChildInputRecords > 0) {
+  if (below(consultationRate, 50) && totalChildInputRecords > 0) {
     insights.push({
       text: `Only ${consultationRate}% of children consulted before planning. CHR 2015 Reg 7 requires that children's wishes and feelings are sought and acted upon. A planning process that does not routinely consult children is not child-centred and would be criticised by Ofsted.`,
       severity: "critical",
     });
   }
 
-  if (feltListenedToRate < 50 && totalChildInputRecords > 0) {
+  if (below(feltListenedToRate, 50) && totalChildInputRecords > 0) {
     insights.push({
       text: `Only ${feltListenedToRate}% of children feel listened to in planning. Even where consultation occurs, children perceive that their views are not valued. This undermines the child's voice requirement under Reg 7 and SCCIF and suggests tokenistic engagement.`,
       severity: "critical",
@@ -1194,21 +1185,21 @@ export function computeWeeklyPlannerActivitySchedule(
 
   // --- Warning insights ---
 
-  if (scheduleTimelinessRate >= 50 && scheduleTimelinessRate < 70 && totalSchedules > 0) {
+  if (meets(scheduleTimelinessRate, 50) && below(scheduleTimelinessRate, 70) && totalSchedules > 0) {
     insights.push({
       text: `Schedule timeliness at ${scheduleTimelinessRate}% -- improving but some schedules are still created too late for effective preparation. Aim for at least 70% to ensure staff and children can plan ahead.`,
       severity: "warning",
     });
   }
 
-  if (fullCoverageRate >= 50 && fullCoverageRate < 90 && totalSchedules > 0) {
+  if (meets(fullCoverageRate, 50) && below(fullCoverageRate, 90) && totalSchedules > 0) {
     insights.push({
       text: `Full-day coverage at ${fullCoverageRate}% -- some schedules do not cover all periods of the day. Gaps in the daily programme can lead to unstructured time and missed opportunities.`,
       severity: "warning",
     });
   }
 
-  if (weekendCoverageRate >= 50 && weekendCoverageRate < 90 && totalSchedules > 0) {
+  if (meets(weekendCoverageRate, 50) && below(weekendCoverageRate, 90) && totalSchedules > 0) {
     insights.push({
       text: `Weekend coverage at ${weekendCoverageRate}% -- some schedules do not include weekend planning. Weekends are important for leisure, community engagement, and enrichment activities.`,
       severity: "warning",
@@ -1222,21 +1213,21 @@ export function computeWeeklyPlannerActivitySchedule(
     });
   }
 
-  if (consultationRate >= 50 && consultationRate < 70 && totalChildInputRecords > 0) {
+  if (meets(consultationRate, 50) && below(consultationRate, 70) && totalChildInputRecords > 0) {
     insights.push({
       text: `Child consultation at ${consultationRate}% -- some children are being consulted but the process needs to become more consistent to meet Reg 7 expectations.`,
       severity: "warning",
     });
   }
 
-  if (deliveryRate >= 50 && deliveryRate < 70 && totalAdherenceRecords > 0) {
+  if (meets(deliveryRate, 50) && below(deliveryRate, 70) && totalAdherenceRecords > 0) {
     insights.push({
       text: `Activity delivery rate at ${deliveryRate}% -- a notable proportion of planned activities are not taking place. Review resource availability and plan realistically to improve follow-through.`,
       severity: "warning",
     });
   }
 
-  if (asPlannedRate >= 50 && asPlannedRate < 70 && totalAdherenceRecords > 0) {
+  if (meets(asPlannedRate, 50) && below(asPlannedRate, 70) && totalAdherenceRecords > 0) {
     insights.push({
       text: `${asPlannedRate}% of activities delivered as planned -- frequent modifications suggest either over-ambitious planning or resource constraints that need addressing.`,
       severity: "warning",
@@ -1250,28 +1241,28 @@ export function computeWeeklyPlannerActivitySchedule(
     });
   }
 
-  if (childShareRate >= 50 && childShareRate < 90 && totalCommunicationRecords > 0) {
+  if (meets(childShareRate, 50) && below(childShareRate, 90) && totalCommunicationRecords > 0) {
     insights.push({
       text: `Schedule sharing with children at ${childShareRate}% -- not all children are consistently receiving advance information about the weekly programme. Every child should know what is planned for them.`,
       severity: "warning",
     });
   }
 
-  if (suggestionActedRate >= 50 && suggestionActedRate < 80 && totalSuggestions > 0) {
+  if (meets(suggestionActedRate, 50) && below(suggestionActedRate, 80) && totalSuggestions > 0) {
     insights.push({
       text: `${suggestionActedRate}% of children's suggestions acted upon -- while some input is incorporated, children need to see more of their ideas reflected in the schedule to feel genuinely involved.`,
       severity: "warning",
     });
   }
 
-  if (ageAppropriateRate >= 70 && ageAppropriateRate < 95 && totalVarietyRecords > 0) {
+  if (meets(ageAppropriateRate, 70) && below(ageAppropriateRate, 95) && totalVarietyRecords > 0) {
     insights.push({
       text: `Age appropriateness at ${ageAppropriateRate}% -- most activities are well-matched but some may not suit all children's developmental stages. Review activities for each child's individual needs.`,
       severity: "warning",
     });
   }
 
-  if (highRevisionRate >= 30 && highRevisionRate < 50 && totalSchedules >= 3) {
+  if (meets(highRevisionRate, 30) && below(highRevisionRate, 50) && totalSchedules >= 3) {
     insights.push({
       text: `${highRevisionRate}% of schedules revised 3 or more times -- frequent revisions may indicate that initial planning is not robust or that external factors are disrupting the programme.`,
       severity: "warning",
@@ -1287,14 +1278,14 @@ export function computeWeeklyPlannerActivitySchedule(
     });
   }
 
-  if (scheduleTimelinessRate >= 90 && meets(adherenceRate, 90) && totalSchedules > 0 && totalAdherenceRecords > 0) {
+  if (meets(scheduleTimelinessRate, 90) && meets(adherenceRate, 90) && totalSchedules > 0 && totalAdherenceRecords > 0) {
     insights.push({
       text: `${scheduleTimelinessRate}% schedule timeliness with ${adherenceRate}% adherence -- the home plans ahead and follows through. Children experience a reliable, predictable programme of activities. This demonstrates the kind of proactive, organised care that Ofsted expects under Reg 5.`,
       severity: "positive",
     });
   }
 
-  if (consultationRate >= 90 && feltListenedToRate >= 90 && totalChildInputRecords > 0) {
+  if (meets(consultationRate, 90) && meets(feltListenedToRate, 90) && totalChildInputRecords > 0) {
     insights.push({
       text: `${consultationRate}% consultation with ${feltListenedToRate}% of children feeling listened to -- the planning process is genuinely child-centred. Children's voices shape the activity programme and they perceive that their input matters. This is exemplary Reg 7 practice.`,
       severity: "positive",
@@ -1308,7 +1299,7 @@ export function computeWeeklyPlannerActivitySchedule(
     });
   }
 
-  if (deliveryRate >= 90 && asPlannedRate >= 90 && totalAdherenceRecords > 0) {
+  if (meets(deliveryRate, 90) && meets(asPlannedRate, 90) && totalAdherenceRecords > 0) {
     insights.push({
       text: `${deliveryRate}% delivery rate with ${asPlannedRate}% delivered as planned -- exceptional adherence to the weekly schedule. Children can trust that promised activities will happen, building reliability and positive expectations.`,
       severity: "positive",
@@ -1329,21 +1320,21 @@ export function computeWeeklyPlannerActivitySchedule(
     });
   }
 
-  if (suggestionActedRate >= 80 && planningSessionAttendanceRate >= 80 && totalChildInputRecords > 0 && totalSuggestions > 0) {
+  if (meets(suggestionActedRate, 80) && meets(planningSessionAttendanceRate, 80) && totalChildInputRecords > 0 && totalSuggestions > 0) {
     insights.push({
       text: `${suggestionActedRate}% of suggestions acted upon with ${planningSessionAttendanceRate}% planning session attendance -- children are empowered to co-create their weekly programme. This level of participation demonstrates outstanding child-centred practice.`,
       severity: "positive",
     });
   }
 
-  if (alternativeRate >= 80 && childInformedRate >= 90 && notDelivered > 0 && changesNotAsPlanned > 0) {
+  if (meets(alternativeRate, 80) && meets(childInformedRate, 90) && notDelivered > 0 && changesNotAsPlanned > 0) {
     insights.push({
       text: `${alternativeRate}% alternatives provided with ${childInformedRate}% of changes communicated to children -- even when plans change, the home ensures children still receive meaningful experiences and are kept informed. This demonstrates resilient, responsive planning.`,
       severity: "positive",
     });
   }
 
-  if (feedbackRate >= 80 && totalChildInputRecords > 0) {
+  if (meets(feedbackRate, 80) && totalChildInputRecords > 0) {
     insights.push({
       text: `${feedbackRate}% post-activity feedback capture -- the home systematically learns from children's experiences to improve future planning. This continuous improvement cycle is evidence of reflective practice valued by Ofsted.`,
       severity: "positive",

@@ -66,8 +66,8 @@ export function HomeWeightManagementHealthyEatingIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.weight_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.weight_monitoring_rate >= 90 ? "bg-green-50" : d.weight_monitoring_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.weight_monitoring_rate >= 90 ? "text-[--cs-success]" : d.weight_monitoring_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.weight_monitoring_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.weight_monitoring_rate, 90) ? "bg-green-50" : meets(d.weight_monitoring_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.weight_monitoring_rate, 90) ? "text-[--cs-success]" : meets(d.weight_monitoring_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.weight_monitoring_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Weight</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.bmi_tracking_rate, 90) ? "bg-green-50" : meets(d.bmi_tracking_rate, 70) ? "bg-amber-50" : d.bmi_tracking_rate === null ? "bg-muted" : "bg-red-50")}>
@@ -86,8 +86,8 @@ export function HomeWeightManagementHealthyEatingIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", meets(d.body_positivity_rate, 90) ? "text-[--cs-success]" : meets(d.body_positivity_rate, 70) ? "text-[--cs-warning]" : d.body_positivity_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.body_positivity_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Body +</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_engagement_rate >= 90 ? "bg-green-50" : d.child_engagement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_engagement_rate >= 90 ? "text-[--cs-success]" : d.child_engagement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_engagement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_engagement_rate, 90) ? "bg-green-50" : meets(d.child_engagement_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_engagement_rate, 90) ? "text-[--cs-success]" : meets(d.child_engagement_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_engagement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Engage</p>
             </div>
           </div>

@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, GraduationCap } f
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { TransitionReadinessRating } from "@/lib/engines/home-transition-leaving-care-readiness-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 function useHomeTransitionLeavingCareReadinessIntelligence() {
   return useQuery({
@@ -61,7 +62,7 @@ export function HomeTransitionLeavingCareReadinessIntelligenceCard() {
             <GraduationCap className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-emerald-600")} />
             <span className="text-slate-900 font-bold">Transition & Leaving Care Readiness</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.readiness_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.readiness_score}%</span>}
+            {d.readiness_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.readiness_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -69,28 +70,28 @@ export function HomeTransitionLeavingCareReadinessIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.readiness_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.transition_plan_coverage_rate >= 90 ? "bg-green-50" : d.transition_plan_coverage_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.transition_plan_coverage_rate >= 90 ? "text-[--cs-success]" : d.transition_plan_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.transition_plan_coverage_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.transition_plan_coverage_rate, 90) ? "bg-green-50" : meets(d.transition_plan_coverage_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.transition_plan_coverage_rate, 90) ? "text-[--cs-success]" : meets(d.transition_plan_coverage_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.transition_plan_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Plans</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.pathway_plan_currency_rate >= 90 ? "bg-green-50" : d.pathway_plan_currency_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.pathway_plan_currency_rate >= 90 ? "text-[--cs-success]" : d.pathway_plan_currency_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.pathway_plan_currency_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.pathway_plan_currency_rate, 90) ? "bg-green-50" : meets(d.pathway_plan_currency_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.pathway_plan_currency_rate, 90) ? "text-[--cs-success]" : meets(d.pathway_plan_currency_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.pathway_plan_currency_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Pathways</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.leaving_care_completion_rate >= 90 ? "bg-green-50" : d.leaving_care_completion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.leaving_care_completion_rate >= 90 ? "text-[--cs-success]" : d.leaving_care_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.leaving_care_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.leaving_care_completion_rate, 90) ? "bg-green-50" : meets(d.leaving_care_completion_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.leaving_care_completion_rate, 90) ? "text-[--cs-success]" : meets(d.leaving_care_completion_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.leaving_care_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Leaving</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.independence_assessment_rate >= 90 ? "bg-green-50" : d.independence_assessment_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.independence_assessment_rate >= 90 ? "text-[--cs-success]" : d.independence_assessment_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.independence_assessment_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.independence_assessment_rate, 90) ? "bg-green-50" : meets(d.independence_assessment_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.independence_assessment_rate, 90) ? "text-[--cs-success]" : meets(d.independence_assessment_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.independence_assessment_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Indepen.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.aftercare_contact_rate >= 90 ? "bg-green-50" : d.aftercare_contact_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.aftercare_contact_rate >= 90 ? "text-[--cs-success]" : d.aftercare_contact_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.aftercare_contact_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.aftercare_contact_rate, 90) ? "bg-green-50" : meets(d.aftercare_contact_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.aftercare_contact_rate, 90) ? "text-[--cs-success]" : meets(d.aftercare_contact_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.aftercare_contact_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Aftercare</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_voice_in_transition_rate >= 90 ? "bg-green-50" : d.child_voice_in_transition_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_voice_in_transition_rate >= 90 ? "text-[--cs-success]" : d.child_voice_in_transition_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_voice_in_transition_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_voice_in_transition_rate, 90) ? "bg-green-50" : meets(d.child_voice_in_transition_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_voice_in_transition_rate, 90) ? "text-[--cs-success]" : meets(d.child_voice_in_transition_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_voice_in_transition_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Voice</p>
             </div>
           </div>

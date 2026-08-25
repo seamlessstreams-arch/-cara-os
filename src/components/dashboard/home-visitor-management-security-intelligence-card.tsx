@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { VisitorSecurityRating } from "@/lib/engines/home-visitor-management-security-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 function useHomeVisitorManagementSecurityIntelligence() {
   return useQuery({
@@ -69,28 +70,28 @@ export function HomeVisitorManagementSecurityIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.visitor_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.registration_compliance_rate >= 90 ? "bg-green-50" : d.registration_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.registration_compliance_rate >= 90 ? "text-[--cs-success]" : d.registration_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.registration_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.registration_compliance_rate, 90) ? "bg-green-50" : meets(d.registration_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.registration_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.registration_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.registration_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Registration</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.dbs_verification_rate >= 90 ? "bg-green-50" : d.dbs_verification_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.dbs_verification_rate >= 90 ? "text-[--cs-success]" : d.dbs_verification_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.dbs_verification_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.dbs_verification_rate, 90) ? "bg-green-50" : meets(d.dbs_verification_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.dbs_verification_rate, 90) ? "text-[--cs-success]" : meets(d.dbs_verification_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.dbs_verification_rate)}</p>
               <p className="text-[9px] text-muted-foreground">DBS Verified</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.id_check_rate >= 90 ? "bg-green-50" : d.id_check_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.id_check_rate >= 90 ? "text-[--cs-success]" : d.id_check_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.id_check_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.id_check_rate, 90) ? "bg-green-50" : meets(d.id_check_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.id_check_rate, 90) ? "text-[--cs-success]" : meets(d.id_check_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.id_check_rate)}</p>
               <p className="text-[9px] text-muted-foreground">ID Check</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.safeguarding_adherence_rate >= 90 ? "bg-green-50" : d.safeguarding_adherence_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.safeguarding_adherence_rate >= 90 ? "text-[--cs-success]" : d.safeguarding_adherence_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.safeguarding_adherence_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.safeguarding_adherence_rate, 90) ? "bg-green-50" : meets(d.safeguarding_adherence_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.safeguarding_adherence_rate, 90) ? "text-[--cs-success]" : meets(d.safeguarding_adherence_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.safeguarding_adherence_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Safeguarding</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.log_completeness_rate >= 90 ? "bg-green-50" : d.log_completeness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.log_completeness_rate >= 90 ? "text-[--cs-success]" : d.log_completeness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.log_completeness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.log_completeness_rate, 90) ? "bg-green-50" : meets(d.log_completeness_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.log_completeness_rate, 90) ? "text-[--cs-success]" : meets(d.log_completeness_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.log_completeness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Log Complete</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.escort_compliance_rate >= 90 ? "bg-green-50" : d.escort_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.escort_compliance_rate >= 90 ? "text-[--cs-success]" : d.escort_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.escort_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.escort_compliance_rate, 90) ? "bg-green-50" : meets(d.escort_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.escort_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.escort_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.escort_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Escort</p>
             </div>
           </div>

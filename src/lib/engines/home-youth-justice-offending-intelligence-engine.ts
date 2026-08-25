@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME YOUTH JUSTICE & OFFENDING INTELLIGENCE ENGINE
 // Tracks youth justice engagement quality — YOT (Youth Offending Team) liaison,
@@ -166,10 +167,6 @@ export interface YouthJusticeResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -195,12 +192,12 @@ function emptyResult(
     total_yot_records: 0,
     total_court_orders: 0,
     total_prevention_programmes: 0,
-    yot_engagement_rate: 0,
-    behaviour_plan_compliance_rate: 0,
-    restorative_justice_rate: 0,
-    court_order_adherence_rate: 0,
-    prevention_effectiveness_rate: 0,
-    child_engagement_rate: 0,
+    yot_engagement_rate: null,
+    behaviour_plan_compliance_rate: null,
+    restorative_justice_rate: null,
+    court_order_adherence_rate: null,
+    prevention_effectiveness_rate: null,
+    child_engagement_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -284,12 +281,12 @@ export function computeYouthJusticeOffending(
   const childAttendedYot = yot_liaison_records.filter((r) => r.child_attended).length;
 
   const yotActionsCompleted = yot_liaison_records.filter((r) => r.actions_completed).length;
-  const yotActionCompletionRate = pct(yotActionsCompleted, totalYotRecords);
+  const yotActionCompletionRate = rate(yotActionsCompleted, totalYotRecords);
 
   const yotInfoShared = yot_liaison_records.filter((r) => r.information_shared_with_team).length;
 
   const yotChildViewsCaptured = yot_liaison_records.filter((r) => r.child_views_captured).length;
-  const yotChildViewsRate = pct(yotChildViewsCaptured, totalYotRecords);
+  const yotChildViewsRate = rate(yotChildViewsCaptured, totalYotRecords);
 
   const yotQualitySum = yot_liaison_records.reduce((sum, r) => sum + r.quality_rating, 0);
   const avgYotQualityRating =
@@ -300,7 +297,7 @@ export function computeYouthJusticeOffending(
   // YOT engagement composite: attended + actions completed + info shared + child views
   const yotEngagementNumerator = yotMeetingsAttended + yotActionsCompleted + yotInfoShared + yotChildViewsCaptured;
   const yotEngagementDenominator = totalYotRecords * 4;
-  const yotEngagementRate = pct(yotEngagementNumerator, yotEngagementDenominator);
+  const yotEngagementRate = rate(yotEngagementNumerator, yotEngagementDenominator);
 
   // --- Behaviour plan metrics ---
   const totalBehaviourPlans = behaviour_plan_records.length;
@@ -309,15 +306,15 @@ export function computeYouthJusticeOffending(
   const totalTargetsMet = behaviour_plan_records.reduce((sum, p) => sum + p.targets_met, 0);
 
   const plansReviewed = behaviour_plan_records.filter((p) => p.plan_reviewed).length;
-  const planReviewRate = pct(plansReviewed, totalBehaviourPlans);
+  const planReviewRate = rate(plansReviewed, totalBehaviourPlans);
 
   const childInvolvedInPlanning = behaviour_plan_records.filter((p) => p.child_involved_in_planning).length;
-  const childPlanInvolvementRate = pct(childInvolvedInPlanning, totalBehaviourPlans);
+  const childPlanInvolvementRate = rate(childInvolvedInPlanning, totalBehaviourPlans);
 
   const childEngagedWithPlan = behaviour_plan_records.filter((p) => p.child_engaged_with_plan).length;
 
   const evidenceOfChange = behaviour_plan_records.filter((p) => p.evidence_of_change).length;
-  const evidenceOfChangeRate = pct(evidenceOfChange, totalBehaviourPlans);
+  const evidenceOfChangeRate = rate(evidenceOfChange, totalBehaviourPlans);
 
   const progressSum = behaviour_plan_records.reduce((sum, p) => sum + p.progress_rating, 0);
   const avgProgressRating =
@@ -328,7 +325,7 @@ export function computeYouthJusticeOffending(
   // Behaviour plan compliance composite: targets met rate + reviewed + child engaged + evidence of change
   const bpComplianceNumerator = totalTargetsMet + plansReviewed + childEngagedWithPlan + evidenceOfChange;
   const bpComplianceDenominator = totalTargetsSet + totalBehaviourPlans + totalBehaviourPlans + totalBehaviourPlans;
-  const behaviourPlanComplianceRate = pct(bpComplianceNumerator, bpComplianceDenominator);
+  const behaviourPlanComplianceRate = rate(bpComplianceNumerator, bpComplianceDenominator);
 
   // --- Restorative justice metrics ---
   const totalRjRecords = restorative_justice_records.length;
@@ -338,30 +335,30 @@ export function computeYouthJusticeOffending(
   const rjEngaged = restorative_justice_records.filter((r) => r.child_engaged).length;
 
   const rjEmpathy = restorative_justice_records.filter((r) => r.child_showed_empathy).length;
-  const rjEmpathyRate = pct(rjEmpathy, totalRjRecords);
+  const rjEmpathyRate = rate(rjEmpathy, totalRjRecords);
 
   const rjOutcomeAchieved = restorative_justice_records.filter((r) => r.outcome_achieved).length;
 
   const rjFollowUpRequired = restorative_justice_records.filter((r) => r.follow_up_required).length;
   const rjFollowUpCompleted = restorative_justice_records.filter((r) => r.follow_up_required && r.follow_up_completed).length;
-  const rjFollowUpCompletionRate = pct(rjFollowUpCompleted, rjFollowUpRequired);
+  const rjFollowUpCompletionRate = rate(rjFollowUpCompleted, rjFollowUpRequired);
 
   const rjReflectionDocumented = restorative_justice_records.filter((r) => r.child_reflection_documented).length;
 
   // RJ composite: participated + engaged + outcome achieved + reflection documented
   const rjCompositeNumerator = rjParticipated + rjEngaged + rjOutcomeAchieved + rjReflectionDocumented;
   const rjCompositeDenominator = totalRjRecords * 4;
-  const restorativeJusticeRate = pct(rjCompositeNumerator, rjCompositeDenominator);
+  const restorativeJusticeRate = rate(rjCompositeNumerator, rjCompositeDenominator);
 
   // --- Court order metrics ---
   const totalCourtOrders = court_order_records.length;
 
   const totalConditionsCount = court_order_records.reduce((sum, o) => sum + o.total_conditions, 0);
   const totalConditionsComplied = court_order_records.reduce((sum, o) => sum + o.conditions_complied_with, 0);
-  const conditionComplianceRate = pct(totalConditionsComplied, totalConditionsCount);
+  const conditionComplianceRate = rate(totalConditionsComplied, totalConditionsCount);
 
   const breachOccurred = court_order_records.filter((o) => o.breach_occurred).length;
-  const breachRate = pct(breachOccurred, totalCourtOrders);
+  const breachRate = rate(breachOccurred, totalCourtOrders);
 
   const homeSupportedCompliance = court_order_records.filter((o) => o.home_supported_compliance).length;
 
@@ -370,29 +367,29 @@ export function computeYouthJusticeOffending(
   // Court order adherence composite: conditions complied + home supported + monitoring
   const courtAdherenceNumerator = totalConditionsComplied + homeSupportedCompliance + monitoringInPlace;
   const courtAdherenceDenominator = totalConditionsCount + totalCourtOrders + totalCourtOrders;
-  const courtOrderAdherenceRate = pct(courtAdherenceNumerator, courtAdherenceDenominator);
+  const courtOrderAdherenceRate = rate(courtAdherenceNumerator, courtAdherenceDenominator);
 
   // --- Prevention programme metrics ---
   const totalPreventionProgrammes = prevention_programme_records.length;
 
   const totalSessionsPlanned = prevention_programme_records.reduce((sum, p) => sum + p.sessions_planned, 0);
   const totalSessionsAttended = prevention_programme_records.reduce((sum, p) => sum + p.sessions_attended, 0);
-  const sessionAttendanceRate = pct(totalSessionsAttended, totalSessionsPlanned);
+  const sessionAttendanceRate = rate(totalSessionsAttended, totalSessionsPlanned);
 
   const preventionEngaged = prevention_programme_records.filter((p) => p.child_engaged).length;
 
   const preventionProgressPositive = prevention_programme_records.filter((p) => p.child_progress_positive).length;
 
   const measurableOutcomes = prevention_programme_records.filter((p) => p.measurable_outcomes_documented).length;
-  const measurableOutcomesRate = pct(measurableOutcomes, totalPreventionProgrammes);
+  const measurableOutcomesRate = rate(measurableOutcomes, totalPreventionProgrammes);
 
   const noReoffending = prevention_programme_records.filter((p) => !p.reoffending_since_start).length;
-  const noReoffendingRate = pct(noReoffending, totalPreventionProgrammes);
+  const noReoffendingRate = rate(noReoffending, totalPreventionProgrammes);
 
   // Prevention effectiveness composite: attended sessions + engaged + progress + no reoffending
   const prevEffNumerator = totalSessionsAttended + preventionEngaged + preventionProgressPositive + noReoffending;
   const prevEffDenominator = totalSessionsPlanned + totalPreventionProgrammes + totalPreventionProgrammes + totalPreventionProgrammes;
-  const preventionEffectivenessRate = pct(prevEffNumerator, prevEffDenominator);
+  const preventionEffectivenessRate = rate(prevEffNumerator, prevEffDenominator);
 
   // --- Overall child engagement rate ---
   // Composite across: child YOT attendance + child plan engagement + RJ participation + prevention engagement
@@ -400,61 +397,61 @@ export function computeYouthJusticeOffending(
     childAttendedYot + childEngagedWithPlan + rjParticipated + preventionEngaged;
   const childEngDenom =
     totalYotRecords + totalBehaviourPlans + totalRjRecords + totalPreventionProgrammes;
-  const childEngagementRate = pct(childEngTotal, childEngDenom);
+  const childEngagementRate = rate(childEngTotal, childEngDenom);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: yotEngagementRate (>=90: +4, >=70: +2) ---
-  if (yotEngagementRate >= 90) score += 4;
-  else if (yotEngagementRate >= 70) score += 2;
+  if (meets(yotEngagementRate, 90)) score += 4;
+  else if (meets(yotEngagementRate, 70)) score += 2;
 
   // --- Bonus 2: behaviourPlanComplianceRate (>=85: +3, >=65: +1) ---
-  if (behaviourPlanComplianceRate >= 85) score += 3;
-  else if (behaviourPlanComplianceRate >= 65) score += 1;
+  if (meets(behaviourPlanComplianceRate, 85)) score += 3;
+  else if (meets(behaviourPlanComplianceRate, 65)) score += 1;
 
   // --- Bonus 3: restorativeJusticeRate (>=90: +3, >=70: +1) ---
-  if (restorativeJusticeRate >= 90) score += 3;
-  else if (restorativeJusticeRate >= 70) score += 1;
+  if (meets(restorativeJusticeRate, 90)) score += 3;
+  else if (meets(restorativeJusticeRate, 70)) score += 1;
 
   // --- Bonus 4: courtOrderAdherenceRate (>=90: +4, >=70: +2) ---
-  if (courtOrderAdherenceRate >= 90) score += 4;
-  else if (courtOrderAdherenceRate >= 70) score += 2;
+  if (meets(courtOrderAdherenceRate, 90)) score += 4;
+  else if (meets(courtOrderAdherenceRate, 70)) score += 2;
 
   // --- Bonus 5: preventionEffectivenessRate (>=85: +3, >=65: +1) ---
-  if (preventionEffectivenessRate >= 85) score += 3;
-  else if (preventionEffectivenessRate >= 65) score += 1;
+  if (meets(preventionEffectivenessRate, 85)) score += 3;
+  else if (meets(preventionEffectivenessRate, 65)) score += 1;
 
   // --- Bonus 6: childEngagementRate (>=90: +3, >=70: +1) ---
-  if (childEngagementRate >= 90) score += 3;
-  else if (childEngagementRate >= 70) score += 1;
+  if (meets(childEngagementRate, 90)) score += 3;
+  else if (meets(childEngagementRate, 70)) score += 1;
 
   // --- Bonus 7: noReoffendingRate (>=90: +3, >=70: +1) ---
-  if (noReoffendingRate >= 90) score += 3;
-  else if (noReoffendingRate >= 70) score += 1;
+  if (meets(noReoffendingRate, 90)) score += 3;
+  else if (meets(noReoffendingRate, 70)) score += 1;
 
   // --- Bonus 8: yotActionCompletionRate (>=90: +3, >=70: +1) ---
-  if (yotActionCompletionRate >= 90) score += 3;
-  else if (yotActionCompletionRate >= 70) score += 1;
+  if (meets(yotActionCompletionRate, 90)) score += 3;
+  else if (meets(yotActionCompletionRate, 70)) score += 1;
 
   // --- Bonus 9: rjFollowUpCompletionRate (>=90: +2, >=70: +1) ---
-  if (rjFollowUpCompletionRate >= 90) score += 2;
-  else if (rjFollowUpCompletionRate >= 70) score += 1;
+  if (meets(rjFollowUpCompletionRate, 90)) score += 2;
+  else if (meets(rjFollowUpCompletionRate, 70)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // courtOrderAdherenceRate < 50 → -5
-  if (courtOrderAdherenceRate < 50 && court_order_records.length > 0) score -= 5;
+  if (below(courtOrderAdherenceRate, 50) && court_order_records.length > 0) score -= 5;
 
   // behaviourPlanComplianceRate < 40 → -5
-  if (behaviourPlanComplianceRate < 40 && behaviour_plan_records.length > 0) score -= 5;
+  if (below(behaviourPlanComplianceRate, 40) && behaviour_plan_records.length > 0) score -= 5;
 
   // breachRate > 50 → -5
-  if (breachRate > 50 && court_order_records.length > 0) score -= 5;
+  if (above(breachRate, 50) && court_order_records.length > 0) score -= 5;
 
   // yotEngagementRate < 40 → -3
-  if (yotEngagementRate < 40 && yot_liaison_records.length > 0) score -= 3;
+  if (below(yotEngagementRate, 40) && yot_liaison_records.length > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -464,125 +461,125 @@ export function computeYouthJusticeOffending(
 
   const strengths: string[] = [];
 
-  if (yotEngagementRate >= 90 && totalYotRecords > 0) {
+  if (meets(yotEngagementRate, 90) && totalYotRecords > 0) {
     strengths.push(
       `${yotEngagementRate}% YOT engagement rate — the home demonstrates excellent liaison with Youth Offending Team professionals, ensuring meetings are attended, actions are completed, information is shared, and children's views are captured consistently.`,
     );
-  } else if (yotEngagementRate >= 70 && totalYotRecords > 0) {
+  } else if (meets(yotEngagementRate, 70) && totalYotRecords > 0) {
     strengths.push(
       `${yotEngagementRate}% YOT engagement rate — the home maintains good liaison with Youth Offending Team professionals across attendance, action completion, and information sharing.`,
     );
   }
 
-  if (behaviourPlanComplianceRate >= 85 && totalBehaviourPlans > 0) {
+  if (meets(behaviourPlanComplianceRate, 85) && totalBehaviourPlans > 0) {
     strengths.push(
       `${behaviourPlanComplianceRate}% behaviour plan compliance — offending behaviour plans are well-reviewed, children are engaged, targets are being met, and evidence of positive behavioural change is documented.`,
     );
-  } else if (behaviourPlanComplianceRate >= 65 && totalBehaviourPlans > 0) {
+  } else if (meets(behaviourPlanComplianceRate, 65) && totalBehaviourPlans > 0) {
     strengths.push(
       `${behaviourPlanComplianceRate}% behaviour plan compliance — the home generally maintains effective offending behaviour plans with reasonable target achievement and child engagement.`,
     );
   }
 
-  if (restorativeJusticeRate >= 90 && totalRjRecords > 0) {
+  if (meets(restorativeJusticeRate, 90) && totalRjRecords > 0) {
     strengths.push(
       `${restorativeJusticeRate}% restorative justice engagement — children participate actively in restorative processes, demonstrate empathy, achieve outcomes, and their reflections are documented, showing genuine developmental progress.`,
     );
-  } else if (restorativeJusticeRate >= 70 && totalRjRecords > 0) {
+  } else if (meets(restorativeJusticeRate, 70) && totalRjRecords > 0) {
     strengths.push(
       `${restorativeJusticeRate}% restorative justice engagement — children generally participate in and benefit from restorative justice processes.`,
     );
   }
 
-  if (courtOrderAdherenceRate >= 90 && totalCourtOrders > 0) {
+  if (meets(courtOrderAdherenceRate, 90) && totalCourtOrders > 0) {
     strengths.push(
       `${courtOrderAdherenceRate}% court order adherence — the home proactively supports children to comply with court order conditions, with effective monitoring systems and staff accountability in place.`,
     );
-  } else if (courtOrderAdherenceRate >= 70 && totalCourtOrders > 0) {
+  } else if (meets(courtOrderAdherenceRate, 70) && totalCourtOrders > 0) {
     strengths.push(
       `${courtOrderAdherenceRate}% court order adherence — the home supports children to comply with most court order conditions with monitoring in place.`,
     );
   }
 
-  if (preventionEffectivenessRate >= 85 && totalPreventionProgrammes > 0) {
+  if (meets(preventionEffectivenessRate, 85) && totalPreventionProgrammes > 0) {
     strengths.push(
       `${preventionEffectivenessRate}% prevention programme effectiveness — children attend sessions, engage meaningfully, make positive progress, and reoffending rates remain low, demonstrating the home's commitment to diversion and rehabilitation.`,
     );
-  } else if (preventionEffectivenessRate >= 65 && totalPreventionProgrammes > 0) {
+  } else if (meets(preventionEffectivenessRate, 65) && totalPreventionProgrammes > 0) {
     strengths.push(
       `${preventionEffectivenessRate}% prevention programme effectiveness — prevention programmes are generally effective with reasonable attendance and engagement.`,
     );
   }
 
-  if (childEngagementRate >= 90 && childEngDenom > 0) {
+  if (meets(childEngagementRate, 90) && childEngDenom > 0) {
     strengths.push(
       `${childEngagementRate}% overall child engagement across youth justice processes — children are actively involved in YOT meetings, behaviour planning, restorative justice, and prevention programmes, reflecting a child-centred approach.`,
     );
-  } else if (childEngagementRate >= 70 && childEngDenom > 0) {
+  } else if (meets(childEngagementRate, 70) && childEngDenom > 0) {
     strengths.push(
       `${childEngagementRate}% overall child engagement — children are generally involved in youth justice processes across the home.`,
     );
   }
 
-  if (noReoffendingRate >= 90 && totalPreventionProgrammes > 0) {
+  if (meets(noReoffendingRate, 90) && totalPreventionProgrammes > 0) {
     strengths.push(
       `${noReoffendingRate}% of children on prevention programmes have not reoffended — the home's interventions are successfully diverting children from further offending and supporting positive change.`,
     );
-  } else if (noReoffendingRate >= 70 && totalPreventionProgrammes > 0) {
+  } else if (meets(noReoffendingRate, 70) && totalPreventionProgrammes > 0) {
     strengths.push(
       `${noReoffendingRate}% of children on prevention programmes have not reoffended — programmes are contributing to reduced reoffending.`,
     );
   }
 
-  if (yotActionCompletionRate >= 90 && totalYotRecords > 0) {
+  if (meets(yotActionCompletionRate, 90) && totalYotRecords > 0) {
     strengths.push(
       `${yotActionCompletionRate}% YOT action completion rate — agreed actions from YOT meetings are consistently completed, demonstrating reliable follow-through and professional partnership.`,
     );
-  } else if (yotActionCompletionRate >= 70 && totalYotRecords > 0) {
+  } else if (meets(yotActionCompletionRate, 70) && totalYotRecords > 0) {
     strengths.push(
       `${yotActionCompletionRate}% YOT action completion — the home generally completes agreed actions from YOT meetings.`,
     );
   }
 
-  if (rjFollowUpCompletionRate >= 90 && rjFollowUpRequired > 0) {
+  if (meets(rjFollowUpCompletionRate, 90) && rjFollowUpRequired > 0) {
     strengths.push(
       `${rjFollowUpCompletionRate}% restorative justice follow-up completion — actions identified during restorative processes are consistently followed through, reinforcing the therapeutic value of the intervention.`,
     );
-  } else if (rjFollowUpCompletionRate >= 70 && rjFollowUpRequired > 0) {
+  } else if (meets(rjFollowUpCompletionRate, 70) && rjFollowUpRequired > 0) {
     strengths.push(
       `${rjFollowUpCompletionRate}% restorative justice follow-up completion — the home generally completes follow-up actions from restorative justice processes.`,
     );
   }
 
-  if (rjEmpathyRate >= 90 && totalRjRecords > 0) {
+  if (meets(rjEmpathyRate, 90) && totalRjRecords > 0) {
     strengths.push(
       `${rjEmpathyRate}% of children demonstrated empathy during restorative justice — children are developing victim awareness and understanding the impact of their behaviour, a key indicator of reduced reoffending risk.`,
     );
-  } else if (rjEmpathyRate >= 70 && totalRjRecords > 0) {
+  } else if (meets(rjEmpathyRate, 70) && totalRjRecords > 0) {
     strengths.push(
       `${rjEmpathyRate}% of children demonstrated empathy during restorative justice — the majority of children are showing developing awareness of the impact of their offending.`,
     );
   }
 
-  if (conditionComplianceRate >= 90 && totalConditionsCount > 0) {
+  if (meets(conditionComplianceRate, 90) && totalConditionsCount > 0) {
     strengths.push(
       `${conditionComplianceRate}% court order condition compliance — children are meeting the specific conditions of their orders, supported by proactive monitoring and staff engagement.`,
     );
   }
 
-  if (yotChildViewsRate >= 90 && totalYotRecords > 0) {
+  if (meets(yotChildViewsRate, 90) && totalYotRecords > 0) {
     strengths.push(
       `${yotChildViewsRate}% of YOT meetings captured children's views — children's voices are consistently heard in youth justice processes, supporting their participation rights under SCCIF.`,
     );
   }
 
-  if (evidenceOfChangeRate >= 80 && totalBehaviourPlans > 0) {
+  if (meets(evidenceOfChangeRate, 80) && totalBehaviourPlans > 0) {
     strengths.push(
       `${evidenceOfChangeRate}% of behaviour plans show evidence of positive change — the home's interventions are demonstrably helping children modify their offending behaviour and make better choices.`,
     );
   }
 
-  if (sessionAttendanceRate >= 90 && totalSessionsPlanned > 0) {
+  if (meets(sessionAttendanceRate, 90) && totalSessionsPlanned > 0) {
     strengths.push(
       `${sessionAttendanceRate}% prevention programme session attendance — children are consistently attending planned sessions, demonstrating commitment to their programmes and effective staff support.`,
     );
@@ -598,97 +595,97 @@ export function computeYouthJusticeOffending(
 
   const concerns: string[] = [];
 
-  if (yotEngagementRate < 40 && totalYotRecords > 0) {
+  if (below(yotEngagementRate, 40) && totalYotRecords > 0) {
     concerns.push(
       `Only ${yotEngagementRate}% YOT engagement rate — the home is failing to maintain adequate liaison with Youth Offending Team professionals, undermining multi-agency working and children's access to specialist support.`,
     );
-  } else if (yotEngagementRate < 70 && yotEngagementRate >= 40 && totalYotRecords > 0) {
+  } else if (below(yotEngagementRate, 70) && meets(yotEngagementRate, 40) && totalYotRecords > 0) {
     concerns.push(
       `YOT engagement rate at ${yotEngagementRate}% — liaison with Youth Offending Team professionals is inconsistent, with gaps in meeting attendance, action completion, or information sharing.`,
     );
   }
 
-  if (behaviourPlanComplianceRate < 40 && totalBehaviourPlans > 0) {
+  if (below(behaviourPlanComplianceRate, 40) && totalBehaviourPlans > 0) {
     concerns.push(
       `Only ${behaviourPlanComplianceRate}% behaviour plan compliance — offending behaviour plans are not being effectively implemented, targets are not being met, and children are not demonstrating positive change. This undermines the home's ability to address offending behaviour.`,
     );
-  } else if (behaviourPlanComplianceRate < 65 && behaviourPlanComplianceRate >= 40 && totalBehaviourPlans > 0) {
+  } else if (below(behaviourPlanComplianceRate, 65) && meets(behaviourPlanComplianceRate, 40) && totalBehaviourPlans > 0) {
     concerns.push(
       `Behaviour plan compliance at ${behaviourPlanComplianceRate}% — some offending behaviour plans lack effective review, child engagement, or evidence of progress toward targets.`,
     );
   }
 
-  if (restorativeJusticeRate < 50 && totalRjRecords > 0) {
+  if (below(restorativeJusticeRate, 50) && totalRjRecords > 0) {
     concerns.push(
       `Only ${restorativeJusticeRate}% restorative justice engagement — children are not participating meaningfully in restorative processes, limiting opportunities for victim empathy development, accountability, and conflict resolution skills.`,
     );
-  } else if (restorativeJusticeRate < 70 && restorativeJusticeRate >= 50 && totalRjRecords > 0) {
+  } else if (below(restorativeJusticeRate, 70) && meets(restorativeJusticeRate, 50) && totalRjRecords > 0) {
     concerns.push(
       `Restorative justice engagement at ${restorativeJusticeRate}% — some children are not fully participating in or benefiting from restorative justice processes.`,
     );
   }
 
-  if (courtOrderAdherenceRate < 50 && totalCourtOrders > 0) {
+  if (below(courtOrderAdherenceRate, 50) && totalCourtOrders > 0) {
     concerns.push(
       `Only ${courtOrderAdherenceRate}% court order adherence — the home is not adequately supporting children to comply with court-imposed conditions, with insufficient monitoring and support systems. Non-compliance puts children at risk of further legal consequences.`,
     );
-  } else if (courtOrderAdherenceRate < 70 && courtOrderAdherenceRate >= 50 && totalCourtOrders > 0) {
+  } else if (below(courtOrderAdherenceRate, 70) && meets(courtOrderAdherenceRate, 50) && totalCourtOrders > 0) {
     concerns.push(
       `Court order adherence at ${courtOrderAdherenceRate}% — some children are not fully complying with court order conditions, and the home's monitoring and support needs strengthening.`,
     );
   }
 
-  if (preventionEffectivenessRate < 50 && totalPreventionProgrammes > 0) {
+  if (below(preventionEffectivenessRate, 50) && totalPreventionProgrammes > 0) {
     concerns.push(
       `Only ${preventionEffectivenessRate}% prevention programme effectiveness — children are not attending sessions, engaging with programmes, or making progress, undermining the home's reoffending prevention strategy.`,
     );
-  } else if (preventionEffectivenessRate < 65 && preventionEffectivenessRate >= 50 && totalPreventionProgrammes > 0) {
+  } else if (below(preventionEffectivenessRate, 65) && meets(preventionEffectivenessRate, 50) && totalPreventionProgrammes > 0) {
     concerns.push(
       `Prevention programme effectiveness at ${preventionEffectivenessRate}% — attendance, engagement, or progress in prevention programmes needs improvement.`,
     );
   }
 
-  if (breachRate > 50 && totalCourtOrders > 0) {
+  if (above(breachRate, 50) && totalCourtOrders > 0) {
     concerns.push(
       `${breachRate}% of court orders have experienced breaches — a majority of children with court orders are breaching conditions, indicating that the home's compliance support and monitoring systems are failing. This has serious consequences for children's legal status and welfare.`,
     );
-  } else if (breachRate > 25 && breachRate <= 50 && totalCourtOrders > 0) {
+  } else if (above(breachRate, 25) && breachRate! <= 50 && totalCourtOrders > 0) {
     concerns.push(
       `${breachRate}% of court orders have experienced breaches — a notable proportion of children are breaching court order conditions, requiring review of compliance support approaches.`,
     );
   }
 
-  if (childEngagementRate < 50 && childEngDenom > 0) {
+  if (below(childEngagementRate, 50) && childEngDenom > 0) {
     concerns.push(
       `Only ${childEngagementRate}% overall child engagement across youth justice processes — children are not actively participating in the processes designed to support them, undermining the child-centred approach required by SCCIF.`,
     );
-  } else if (childEngagementRate < 70 && childEngagementRate >= 50 && childEngDenom > 0) {
+  } else if (below(childEngagementRate, 70) && meets(childEngagementRate, 50) && childEngDenom > 0) {
     concerns.push(
       `Overall child engagement at ${childEngagementRate}% — some children are not fully engaging with youth justice processes across the home.`,
     );
   }
 
-  if (noReoffendingRate < 50 && totalPreventionProgrammes > 0) {
+  if (below(noReoffendingRate, 50) && totalPreventionProgrammes > 0) {
     concerns.push(
       `Only ${noReoffendingRate}% of children on prevention programmes have not reoffended — a majority of children are reoffending despite intervention, requiring urgent review of programme suitability and intensity.`,
     );
-  } else if (noReoffendingRate < 70 && noReoffendingRate >= 50 && totalPreventionProgrammes > 0) {
+  } else if (below(noReoffendingRate, 70) && meets(noReoffendingRate, 50) && totalPreventionProgrammes > 0) {
     concerns.push(
-      `${100 - noReoffendingRate}% reoffending rate among children on prevention programmes — some children are reoffending despite intervention, suggesting programmes may need to be adapted or intensified.`,
+      `${100 - noReoffendingRate!}% reoffending rate among children on prevention programmes — some children are reoffending despite intervention, suggesting programmes may need to be adapted or intensified.`,
     );
   }
 
-  if (yotActionCompletionRate < 50 && totalYotRecords > 0) {
+  if (below(yotActionCompletionRate, 50) && totalYotRecords > 0) {
     concerns.push(
       `Only ${yotActionCompletionRate}% of YOT meeting actions completed — agreed actions are not being followed through, damaging the home's professional credibility and potentially leaving children without needed support.`,
     );
-  } else if (yotActionCompletionRate < 70 && yotActionCompletionRate >= 50 && totalYotRecords > 0) {
+  } else if (below(yotActionCompletionRate, 70) && meets(yotActionCompletionRate, 50) && totalYotRecords > 0) {
     concerns.push(
       `YOT action completion rate at ${yotActionCompletionRate}% — some agreed actions from YOT meetings are not being followed through.`,
     );
   }
 
-  if (rjFollowUpCompletionRate < 50 && rjFollowUpRequired > 0) {
+  if (below(rjFollowUpCompletionRate, 50) && rjFollowUpRequired > 0) {
     concerns.push(
       `Only ${rjFollowUpCompletionRate}% of restorative justice follow-up actions completed — the therapeutic value of restorative processes is being undermined by failure to follow through on identified actions.`,
     );
@@ -707,17 +704,17 @@ export function computeYouthJusticeOffending(
     );
   }
 
-  if (planReviewRate < 50 && totalBehaviourPlans > 0) {
+  if (below(planReviewRate, 50) && totalBehaviourPlans > 0) {
     concerns.push(
       `Only ${planReviewRate}% of behaviour plans reviewed — plans exist but are not being monitored for effectiveness, meaning the home cannot evidence whether interventions are reducing offending behaviour.`,
     );
-  } else if (planReviewRate < 70 && planReviewRate >= 50 && totalBehaviourPlans > 0) {
+  } else if (below(planReviewRate, 70) && meets(planReviewRate, 50) && totalBehaviourPlans > 0) {
     concerns.push(
       `Behaviour plan review rate at ${planReviewRate}% — not all offending behaviour plans are being reviewed regularly to assess progress and effectiveness.`,
     );
   }
 
-  if (childPlanInvolvementRate < 50 && totalBehaviourPlans > 0) {
+  if (below(childPlanInvolvementRate, 50) && totalBehaviourPlans > 0) {
     concerns.push(
       `Only ${childPlanInvolvementRate}% child involvement in behaviour plan creation — children's views about their offending behaviour and what might help them change are not being sought, undermining the voice of the child.`,
     );
@@ -734,7 +731,7 @@ export function computeYouthJusticeOffending(
   const recommendations: YouthJusticeRecommendation[] = [];
   let rank = 0;
 
-  if (courtOrderAdherenceRate < 50 && totalCourtOrders > 0) {
+  if (below(courtOrderAdherenceRate, 50) && totalCourtOrders > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -744,7 +741,7 @@ export function computeYouthJusticeOffending(
     });
   }
 
-  if (breachRate > 50 && totalCourtOrders > 0) {
+  if (above(breachRate, 50) && totalCourtOrders > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -754,7 +751,7 @@ export function computeYouthJusticeOffending(
     });
   }
 
-  if (behaviourPlanComplianceRate < 40 && totalBehaviourPlans > 0) {
+  if (below(behaviourPlanComplianceRate, 40) && totalBehaviourPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -764,7 +761,7 @@ export function computeYouthJusticeOffending(
     });
   }
 
-  if (yotEngagementRate < 40 && totalYotRecords > 0) {
+  if (below(yotEngagementRate, 40) && totalYotRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -774,7 +771,7 @@ export function computeYouthJusticeOffending(
     });
   }
 
-  if (noReoffendingRate < 50 && totalPreventionProgrammes > 0) {
+  if (below(noReoffendingRate, 50) && totalPreventionProgrammes > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -784,7 +781,7 @@ export function computeYouthJusticeOffending(
     });
   }
 
-  if (childEngagementRate < 50 && childEngDenom > 0) {
+  if (below(childEngagementRate, 50) && childEngDenom > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -804,7 +801,7 @@ export function computeYouthJusticeOffending(
     });
   }
 
-  if (restorativeJusticeRate < 50 && totalRjRecords > 0) {
+  if (below(restorativeJusticeRate, 50) && totalRjRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -814,7 +811,7 @@ export function computeYouthJusticeOffending(
     });
   }
 
-  if (yotActionCompletionRate < 50 && totalYotRecords > 0) {
+  if (below(yotActionCompletionRate, 50) && totalYotRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -824,7 +821,7 @@ export function computeYouthJusticeOffending(
     });
   }
 
-  if (rjFollowUpCompletionRate < 50 && rjFollowUpRequired > 0) {
+  if (below(rjFollowUpCompletionRate, 50) && rjFollowUpRequired > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -834,7 +831,7 @@ export function computeYouthJusticeOffending(
     });
   }
 
-  if (planReviewRate < 50 && totalBehaviourPlans > 0) {
+  if (below(planReviewRate, 50) && totalBehaviourPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -844,7 +841,7 @@ export function computeYouthJusticeOffending(
     });
   }
 
-  if (childPlanInvolvementRate < 50 && totalBehaviourPlans > 0) {
+  if (below(childPlanInvolvementRate, 50) && totalBehaviourPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -855,8 +852,8 @@ export function computeYouthJusticeOffending(
   }
 
   if (
-    preventionEffectivenessRate >= 50 &&
-    preventionEffectivenessRate < 65 &&
+    meets(preventionEffectivenessRate, 50) &&
+    below(preventionEffectivenessRate, 65) &&
     totalPreventionProgrammes > 0
   ) {
     recommendations.push({
@@ -869,8 +866,8 @@ export function computeYouthJusticeOffending(
   }
 
   if (
-    courtOrderAdherenceRate >= 50 &&
-    courtOrderAdherenceRate < 70 &&
+    meets(courtOrderAdherenceRate, 50) &&
+    below(courtOrderAdherenceRate, 70) &&
     totalCourtOrders > 0
   ) {
     recommendations.push({
@@ -883,8 +880,8 @@ export function computeYouthJusticeOffending(
   }
 
   if (
-    yotEngagementRate >= 40 &&
-    yotEngagementRate < 70 &&
+    meets(yotEngagementRate, 40) &&
+    below(yotEngagementRate, 70) &&
     totalYotRecords > 0
   ) {
     recommendations.push({
@@ -897,8 +894,8 @@ export function computeYouthJusticeOffending(
   }
 
   if (
-    behaviourPlanComplianceRate >= 40 &&
-    behaviourPlanComplianceRate < 65 &&
+    meets(behaviourPlanComplianceRate, 40) &&
+    below(behaviourPlanComplianceRate, 65) &&
     totalBehaviourPlans > 0
   ) {
     recommendations.push({
@@ -911,8 +908,8 @@ export function computeYouthJusticeOffending(
   }
 
   if (
-    restorativeJusticeRate >= 50 &&
-    restorativeJusticeRate < 70 &&
+    meets(restorativeJusticeRate, 50) &&
+    below(restorativeJusticeRate, 70) &&
     totalRjRecords > 0
   ) {
     recommendations.push({
@@ -925,8 +922,8 @@ export function computeYouthJusticeOffending(
   }
 
   if (
-    childEngagementRate >= 50 &&
-    childEngagementRate < 70 &&
+    meets(childEngagementRate, 50) &&
+    below(childEngagementRate, 70) &&
     childEngDenom > 0
   ) {
     recommendations.push({
@@ -938,7 +935,7 @@ export function computeYouthJusticeOffending(
     });
   }
 
-  if (measurableOutcomesRate < 70 && totalPreventionProgrammes > 0) {
+  if (below(measurableOutcomesRate, 70) && totalPreventionProgrammes > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -948,7 +945,7 @@ export function computeYouthJusticeOffending(
     });
   }
 
-  if (sessionAttendanceRate < 70 && totalSessionsPlanned > 0) {
+  if (below(sessionAttendanceRate, 70) && totalSessionsPlanned > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -964,42 +961,42 @@ export function computeYouthJusticeOffending(
 
   // -- Critical insights --
 
-  if (courtOrderAdherenceRate < 50 && totalCourtOrders > 0) {
+  if (below(courtOrderAdherenceRate, 50) && totalCourtOrders > 0) {
     insights.push({
       text: `Only ${courtOrderAdherenceRate}% court order adherence. Ofsted expects children's homes to actively support children in complying with court-imposed conditions. Failure to do so puts children at risk of escalating legal consequences, including custodial sentences, and raises serious questions about the home's capacity to meet Reg 5 requirements.`,
       severity: "critical",
     });
   }
 
-  if (breachRate > 50 && totalCourtOrders > 0) {
+  if (above(breachRate, 50) && totalCourtOrders > 0) {
     insights.push({
       text: `${breachRate}% of court orders have experienced breaches. Frequent breaches indicate systemic failure in compliance support — children are being set up to fail rather than supported to succeed. Each breach carries serious consequences for the child's legal status, future prospects, and emotional wellbeing.`,
       severity: "critical",
     });
   }
 
-  if (behaviourPlanComplianceRate < 40 && totalBehaviourPlans > 0) {
+  if (below(behaviourPlanComplianceRate, 40) && totalBehaviourPlans > 0) {
     insights.push({
       text: `Only ${behaviourPlanComplianceRate}% behaviour plan compliance. When offending behaviour plans are not effectively implemented, children miss the opportunity for structured support to understand and change their behaviour. This represents a missed therapeutic window and increases reoffending risk.`,
       severity: "critical",
     });
   }
 
-  if (yotEngagementRate < 40 && totalYotRecords > 0) {
+  if (below(yotEngagementRate, 40) && totalYotRecords > 0) {
     insights.push({
       text: `Only ${yotEngagementRate}% YOT engagement. Effective multi-agency working with Youth Offending Teams is essential for managing children's justice involvement. Poor engagement means actions go uncompleted, information is not shared, and children do not benefit from specialist YOT expertise.`,
       severity: "critical",
     });
   }
 
-  if (noReoffendingRate < 50 && totalPreventionProgrammes > 0) {
+  if (below(noReoffendingRate, 50) && totalPreventionProgrammes > 0) {
     insights.push({
       text: `More than half of children on prevention programmes have reoffended. When prevention efforts fail at this scale, it suggests programmes may be poorly matched to children's needs, insufficiently intensive, or that underlying factors driving offending behaviour have not been addressed.`,
       severity: "critical",
     });
   }
 
-  if (childEngagementRate < 50 && childEngDenom > 0) {
+  if (below(childEngagementRate, 50) && childEngDenom > 0) {
     insights.push({
       text: `Only ${childEngagementRate}% overall child engagement in youth justice processes. When children are not participating in the processes designed to help them, those processes become performative rather than therapeutic. Ofsted views child engagement as fundamental to effective care under SCCIF.`,
       severity: "critical",
@@ -1016,8 +1013,8 @@ export function computeYouthJusticeOffending(
   // -- Warning insights --
 
   if (
-    yotEngagementRate >= 40 &&
-    yotEngagementRate < 70 &&
+    meets(yotEngagementRate, 40) &&
+    below(yotEngagementRate, 70) &&
     totalYotRecords > 0
   ) {
     insights.push({
@@ -1027,8 +1024,8 @@ export function computeYouthJusticeOffending(
   }
 
   if (
-    behaviourPlanComplianceRate >= 40 &&
-    behaviourPlanComplianceRate < 65 &&
+    meets(behaviourPlanComplianceRate, 40) &&
+    below(behaviourPlanComplianceRate, 65) &&
     totalBehaviourPlans > 0
   ) {
     insights.push({
@@ -1038,8 +1035,8 @@ export function computeYouthJusticeOffending(
   }
 
   if (
-    restorativeJusticeRate >= 50 &&
-    restorativeJusticeRate < 70 &&
+    meets(restorativeJusticeRate, 50) &&
+    below(restorativeJusticeRate, 70) &&
     totalRjRecords > 0
   ) {
     insights.push({
@@ -1049,8 +1046,8 @@ export function computeYouthJusticeOffending(
   }
 
   if (
-    courtOrderAdherenceRate >= 50 &&
-    courtOrderAdherenceRate < 70 &&
+    meets(courtOrderAdherenceRate, 50) &&
+    below(courtOrderAdherenceRate, 70) &&
     totalCourtOrders > 0
   ) {
     insights.push({
@@ -1060,8 +1057,8 @@ export function computeYouthJusticeOffending(
   }
 
   if (
-    preventionEffectivenessRate >= 50 &&
-    preventionEffectivenessRate < 65 &&
+    meets(preventionEffectivenessRate, 50) &&
+    below(preventionEffectivenessRate, 65) &&
     totalPreventionProgrammes > 0
   ) {
     insights.push({
@@ -1071,8 +1068,8 @@ export function computeYouthJusticeOffending(
   }
 
   if (
-    childEngagementRate >= 50 &&
-    childEngagementRate < 70 &&
+    meets(childEngagementRate, 50) &&
+    below(childEngagementRate, 70) &&
     childEngDenom > 0
   ) {
     insights.push({
@@ -1081,7 +1078,7 @@ export function computeYouthJusticeOffending(
     });
   }
 
-  if (breachRate > 25 && breachRate <= 50 && totalCourtOrders > 0) {
+  if (above(breachRate, 25) && breachRate! <= 50 && totalCourtOrders > 0) {
     insights.push({
       text: `${breachRate}% breach rate across court orders — while not a majority, this indicates that some children are struggling to comply with conditions. Proactive daily compliance checks and individual support plans can help prevent escalation.`,
       severity: "warning",
@@ -1089,19 +1086,19 @@ export function computeYouthJusticeOffending(
   }
 
   if (
-    noReoffendingRate >= 50 &&
-    noReoffendingRate < 70 &&
+    meets(noReoffendingRate, 50) &&
+    below(noReoffendingRate, 70) &&
     totalPreventionProgrammes > 0
   ) {
     insights.push({
-      text: `${100 - noReoffendingRate}% reoffending rate despite prevention programmes — a significant minority of children are reoffending. Consider whether programme intensity, duration, or type needs adjustment for these children.`,
+      text: `${100 - noReoffendingRate!}% reoffending rate despite prevention programmes — a significant minority of children are reoffending. Consider whether programme intensity, duration, or type needs adjustment for these children.`,
       severity: "warning",
     });
   }
 
   if (
-    yotActionCompletionRate >= 50 &&
-    yotActionCompletionRate < 70 &&
+    meets(yotActionCompletionRate, 50) &&
+    below(yotActionCompletionRate, 70) &&
     totalYotRecords > 0
   ) {
     insights.push({
@@ -1111,8 +1108,8 @@ export function computeYouthJusticeOffending(
   }
 
   if (
-    planReviewRate >= 50 &&
-    planReviewRate < 70 &&
+    meets(planReviewRate, 50) &&
+    below(planReviewRate, 70) &&
     totalBehaviourPlans > 0
   ) {
     insights.push({
@@ -1133,8 +1130,8 @@ export function computeYouthJusticeOffending(
   }
 
   if (
-    sessionAttendanceRate >= 50 &&
-    sessionAttendanceRate < 70 &&
+    meets(sessionAttendanceRate, 50) &&
+    below(sessionAttendanceRate, 70) &&
     totalSessionsPlanned > 0
   ) {
     insights.push({
@@ -1189,8 +1186,8 @@ export function computeYouthJusticeOffending(
   }
 
   if (
-    yotEngagementRate >= 90 &&
-    yotActionCompletionRate >= 90 &&
+    meets(yotEngagementRate, 90) &&
+    meets(yotActionCompletionRate, 90) &&
     totalYotRecords > 0
   ) {
     insights.push({
@@ -1200,7 +1197,7 @@ export function computeYouthJusticeOffending(
   }
 
   if (
-    courtOrderAdherenceRate >= 90 &&
+    meets(courtOrderAdherenceRate, 90) &&
     breachRate === 0 &&
     totalCourtOrders > 0
   ) {
@@ -1211,8 +1208,8 @@ export function computeYouthJusticeOffending(
   }
 
   if (
-    behaviourPlanComplianceRate >= 85 &&
-    evidenceOfChangeRate >= 80 &&
+    meets(behaviourPlanComplianceRate, 85) &&
+    meets(evidenceOfChangeRate, 80) &&
     totalBehaviourPlans > 0
   ) {
     insights.push({
@@ -1222,8 +1219,8 @@ export function computeYouthJusticeOffending(
   }
 
   if (
-    restorativeJusticeRate >= 90 &&
-    rjEmpathyRate >= 80 &&
+    meets(restorativeJusticeRate, 90) &&
+    meets(rjEmpathyRate, 80) &&
     totalRjRecords > 0
   ) {
     insights.push({
@@ -1233,8 +1230,8 @@ export function computeYouthJusticeOffending(
   }
 
   if (
-    preventionEffectivenessRate >= 85 &&
-    noReoffendingRate >= 90 &&
+    meets(preventionEffectivenessRate, 85) &&
+    meets(noReoffendingRate, 90) &&
     totalPreventionProgrammes > 0
   ) {
     insights.push({
@@ -1244,7 +1241,7 @@ export function computeYouthJusticeOffending(
   }
 
   if (
-    childEngagementRate >= 90 &&
+    meets(childEngagementRate, 90) &&
     childEngDenom > 0
   ) {
     insights.push({
@@ -1254,7 +1251,7 @@ export function computeYouthJusticeOffending(
   }
 
   if (
-    noReoffendingRate >= 90 &&
+    meets(noReoffendingRate, 90) &&
     totalPreventionProgrammes > 0
   ) {
     insights.push({
@@ -1264,8 +1261,8 @@ export function computeYouthJusticeOffending(
   }
 
   if (
-    yotChildViewsRate >= 90 &&
-    childPlanInvolvementRate >= 90 &&
+    meets(yotChildViewsRate, 90) &&
+    meets(childPlanInvolvementRate, 90) &&
     totalYotRecords > 0 &&
     totalBehaviourPlans > 0
   ) {
@@ -1276,7 +1273,7 @@ export function computeYouthJusticeOffending(
   }
 
   if (
-    rjFollowUpCompletionRate >= 90 &&
+    meets(rjFollowUpCompletionRate, 90) &&
     rjFollowUpRequired > 0
   ) {
     insights.push({

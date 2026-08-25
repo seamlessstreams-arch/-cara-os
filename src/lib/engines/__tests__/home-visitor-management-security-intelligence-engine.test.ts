@@ -261,12 +261,12 @@ describe("Insufficient data", () => {
 
   it("returns zero for all metric rates", () => {
     const r = computeVisitorManagementSecurity(baseInput({ total_children: 0 }));
-    expect(r.registration_compliance_rate).toBe(0);
-    expect(r.dbs_verification_rate).toBe(0);
-    expect(r.id_check_rate).toBe(0);
-    expect(r.safeguarding_adherence_rate).toBe(0);
-    expect(r.log_completeness_rate).toBe(0);
-    expect(r.escort_compliance_rate).toBe(0);
+    expect(r.registration_compliance_rate).toBeNull();
+    expect(r.dbs_verification_rate).toBeNull();
+    expect(r.id_check_rate).toBeNull();
+    expect(r.safeguarding_adherence_rate).toBeNull();
+    expect(r.log_completeness_rate).toBeNull();
+    expect(r.escort_compliance_rate).toBeNull();
   });
 
   it("returns total_visits=0", () => {
@@ -306,12 +306,12 @@ describe("Inadequate floor (empty arrays, children > 0)", () => {
 
   it("returns zero metric rates", () => {
     const r = computeVisitorManagementSecurity(baseInput());
-    expect(r.registration_compliance_rate).toBe(0);
-    expect(r.dbs_verification_rate).toBe(0);
-    expect(r.id_check_rate).toBe(0);
-    expect(r.safeguarding_adherence_rate).toBe(0);
-    expect(r.log_completeness_rate).toBe(0);
-    expect(r.escort_compliance_rate).toBe(0);
+    expect(r.registration_compliance_rate).toBeNull();
+    expect(r.dbs_verification_rate).toBeNull();
+    expect(r.id_check_rate).toBeNull();
+    expect(r.safeguarding_adherence_rate).toBeNull();
+    expect(r.log_completeness_rate).toBeNull();
+    expect(r.escort_compliance_rate).toBeNull();
   });
 
   it("has exactly 1 concern", () => {
@@ -744,7 +744,7 @@ describe("Bonus 2: DBS verification rate", () => {
     const r = computeVisitorManagementSecurity(baseInput({
       dbs_check_records: repeat(5, makeDbs),
     }));
-    expect(r.dbs_verification_rate).toBe(0);
+    expect(r.dbs_verification_rate).toBeNull();
     expect(r.visitor_score).toBe(52);
   });
 });
@@ -883,7 +883,7 @@ describe("Bonus 6: Escort compliance rate", () => {
     const r = computeVisitorManagementSecurity(baseInput({
       safeguarding_protocol_records: repeat(5, makeSafeguardingGood),
     }));
-    expect(r.escort_compliance_rate).toBe(0);
+    expect(r.escort_compliance_rate).toBeNull();
     // safeguardingAdherenceRate = 100% -> +4
     expect(r.visitor_score).toBe(52 + 4);
   });
@@ -1033,7 +1033,7 @@ describe("Penalty 1: DBS verification rate < 50 (-6)", () => {
     const r = computeVisitorManagementSecurity(baseInput({
       dbs_check_records: repeat(5, makeDbs), // all dbs_required=false
     }));
-    expect(r.dbs_verification_rate).toBe(0);
+    expect(r.dbs_verification_rate).toBeNull();
     expect(r.visitor_score).toBe(52); // no penalty
   });
 
@@ -1142,7 +1142,7 @@ describe("Penalty 4: Escort compliance rate < 50 (-4)", () => {
     const r = computeVisitorManagementSecurity(baseInput({
       safeguarding_protocol_records: repeat(5, makeSafeguardingGood),
     }));
-    expect(r.escort_compliance_rate).toBe(0);
+    expect(r.escort_compliance_rate).toBeNull();
     // No penalty (guard: totalEscortRequired > 0)
     expect(r.visitor_score).toBe(52 + 4); // safeguarding bonus
   });
@@ -1181,9 +1181,9 @@ describe("All penalties combined", () => {
 
 describe("Rate calculations", () => {
   describe("registration_compliance_rate", () => {
-    it("returns 0 when no registration records", () => {
+    it("returns null when no registration records", () => {
       const r = computeVisitorManagementSecurity(baseInput());
-      expect(r.registration_compliance_rate).toBe(0);
+      expect(r.registration_compliance_rate).toBeNull();
     });
 
     it("counts only fully compliant registrations (complete + purpose + host)", () => {
@@ -1207,11 +1207,11 @@ describe("Rate calculations", () => {
   });
 
   describe("dbs_verification_rate", () => {
-    it("returns 0 when no dbs_required records", () => {
+    it("returns null when no dbs_required records", () => {
       const r = computeVisitorManagementSecurity(baseInput({
         dbs_check_records: repeat(5, makeDbs),
       }));
-      expect(r.dbs_verification_rate).toBe(0);
+      expect(r.dbs_verification_rate).toBeNull();
     });
 
     it("counts only verified + non-expired where dbs_required", () => {
@@ -1236,9 +1236,9 @@ describe("Rate calculations", () => {
   });
 
   describe("id_check_rate", () => {
-    it("returns 0 when no id verification records", () => {
+    it("returns null when no id verification records", () => {
       const r = computeVisitorManagementSecurity(baseInput());
-      expect(r.id_check_rate).toBe(0);
+      expect(r.id_check_rate).toBeNull();
     });
 
     it("counts only requested + provided + verified", () => {
@@ -1256,9 +1256,9 @@ describe("Rate calculations", () => {
   });
 
   describe("safeguarding_adherence_rate", () => {
-    it("returns 0 when no safeguarding records", () => {
+    it("returns null when no safeguarding records", () => {
       const r = computeVisitorManagementSecurity(baseInput());
-      expect(r.safeguarding_adherence_rate).toBe(0);
+      expect(r.safeguarding_adherence_rate).toBeNull();
     });
 
     it("counts only briefing + confidentiality + child_protection", () => {
@@ -1275,9 +1275,9 @@ describe("Rate calculations", () => {
   });
 
   describe("log_completeness_rate", () => {
-    it("returns 0 when no log records", () => {
+    it("returns null when no log records", () => {
       const r = computeVisitorManagementSecurity(baseInput());
-      expect(r.log_completeness_rate).toBe(0);
+      expect(r.log_completeness_rate).toBeNull();
     });
 
     it("counts only sign_in + sign_out + badge_issued + departure_confirmed", () => {
@@ -1294,11 +1294,11 @@ describe("Rate calculations", () => {
   });
 
   describe("escort_compliance_rate", () => {
-    it("returns 0 when no escort required", () => {
+    it("returns null when no escort required", () => {
       const r = computeVisitorManagementSecurity(baseInput({
         safeguarding_protocol_records: repeat(5, makeSafeguardingGood),
       }));
-      expect(r.escort_compliance_rate).toBe(0);
+      expect(r.escort_compliance_rate).toBeNull();
     });
 
     it("counts only escort_provided where escort_required", () => {
@@ -2505,11 +2505,11 @@ describe("Edge cases", () => {
     expect(r.id_check_rate).toBe(100);
   });
 
-  it("all dbs not required -> rate is 0 but no penalty", () => {
+  it("all dbs not required -> rate is null but no penalty", () => {
     const r = computeVisitorManagementSecurity(baseInput({
       dbs_check_records: repeat(10, makeDbs, { dbs_required: false }),
     }));
-    expect(r.dbs_verification_rate).toBe(0);
+    expect(r.dbs_verification_rate).toBeNull();
     // No penalty since totalDbsRequired=0
     expect(r.visitor_score).toBe(52);
   });

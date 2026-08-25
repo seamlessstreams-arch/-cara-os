@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME WINDOW, BLIND & CURTAIN SAFETY INTELLIGENCE ENGINE
 // Monitors window restrictor checks, blind cord safety, curtain condition,
@@ -179,10 +180,6 @@ export interface WindowBlindCurtainSafetyResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -210,12 +207,12 @@ function emptyResult(
     total_curtain_records: 0,
     total_blackout_records: 0,
     total_inspection_records: 0,
-    window_restrictor_rate: 0,
-    blind_cord_safety_rate: 0,
-    curtain_condition_rate: 0,
-    blackout_provision_rate: 0,
-    child_safety_rate: 0,
-    inspection_compliance_rate: 0,
+    window_restrictor_rate: null,
+    blind_cord_safety_rate: null,
+    curtain_condition_rate: null,
+    blackout_provision_rate: null,
+    child_safety_rate: null,
+    inspection_compliance_rate: null,
     window_restrictor_records: [],
     blind_cord_records: [],
     curtain_condition_records: [],
@@ -308,14 +305,14 @@ export function computeWindowBlindCurtainSafety(
   const restrictorCompliant = window_restrictor_records.filter(
     (r) => r.restrictor_fitted && r.restrictor_functional && r.opening_within_100mm,
   ).length;
-  const windowRestrictorRate = pct(restrictorCompliant, totalRestrictorRecords);
+  const windowRestrictorRate = rate(restrictorCompliant, totalRestrictorRecords);
 
   const restrictorsFitted = window_restrictor_records.filter((r) => r.restrictor_fitted).length;
 
   const keysSecure = window_restrictor_records.filter(
     (r) => r.restrictor_fitted && r.key_accessible_to_staff_only,
   ).length;
-  const keySecurityRate = pct(keysSecure, restrictorsFitted || 1);
+  const keySecurityRate = rate(keysSecure, restrictorsFitted || 1);
 
   const restrictorIssues = window_restrictor_records.filter((r) => r.issue_identified).length;
   const restrictorIssuesResolved = window_restrictor_records.filter(
@@ -327,14 +324,14 @@ export function computeWindowBlindCurtainSafety(
   const upperFloorCompliant = upperFloorRecords.filter(
     (r) => r.restrictor_fitted && r.restrictor_functional && r.opening_within_100mm,
   ).length;
-  const upperFloorComplianceRate = pct(upperFloorCompliant, upperFloorRecords.length);
+  const upperFloorComplianceRate = rate(upperFloorCompliant, upperFloorRecords.length);
 
   // --- Blind cord safety metrics ---
   const blindsCompliant = blind_cord_records.filter((r) => r.compliant).length;
-  const blindCordSafetyRate = pct(blindsCompliant, totalBlindRecords);
+  const blindCordSafetyRate = rate(blindsCompliant, totalBlindRecords);
 
   const cordFreeCount = blind_cord_records.filter((r) => r.cord_free_alternative).length;
-  const cordFreeRate = pct(cordFreeCount, totalBlindRecords);
+  const cordFreeRate = rate(cordFreeCount, totalBlindRecords);
 
   const childAccessibleCords = blind_cord_records.filter(
     (r) => r.cord_present && r.child_accessible,
@@ -363,7 +360,7 @@ export function computeWindowBlindCurtainSafety(
       if (check(rec)) totalCurtainChecksPassed++;
     }
   }
-  const curtainConditionRate = pct(totalCurtainChecksPassed, totalCurtainChecksPossible);
+  const curtainConditionRate = rate(totalCurtainChecksPassed, totalCurtainChecksPossible);
 
   const curtainsPoorCondition = curtain_condition_records.filter(
     (c) => c.overall_condition === "poor",
@@ -373,10 +370,10 @@ export function computeWindowBlindCurtainSafety(
   ).length;
 
   const fireRetardantCount = curtainsPresent.filter((c) => c.fire_retardant).length;
-  const fireRetardantRate = pct(fireRetardantCount, curtainsPresent.length);
+  const fireRetardantRate = rate(fireRetardantCount, curtainsPresent.length);
 
   const childSafeRailCount = curtainsPresent.filter((c) => c.child_safe_rail).length;
-  const childSafeRailRate = pct(childSafeRailCount, curtainsPresent.length);
+  const childSafeRailRate = rate(childSafeRailCount, curtainsPresent.length);
 
   const curtainIssues = curtain_condition_records.filter((c) => c.issue_identified).length;
   const curtainIssuesResolved = curtain_condition_records.filter(
@@ -385,21 +382,21 @@ export function computeWindowBlindCurtainSafety(
 
   // --- Blackout provision metrics ---
   const blackoutProvided = blackout_records.filter((r) => r.blackout_provided).length;
-  const blackoutProvisionRate = pct(blackoutProvided, totalBlackoutRecords);
+  const blackoutProvisionRate = rate(blackoutProvided, totalBlackoutRecords);
 
   const blackoutEffective = blackout_records.filter(
     (r) => r.blackout_provided && r.blackout_effective,
   ).length;
-  const blackoutEffectivenessRate = pct(blackoutEffective, blackoutProvided || 1);
+  const blackoutEffectivenessRate = rate(blackoutEffective, blackoutProvided || 1);
 
   const childSpecificNeeds = blackout_records.filter((r) => r.child_specific_need);
   const childNeedsMet = childSpecificNeeds.filter((r) => r.need_met).length;
-  const childNeedMetRate = pct(childNeedsMet, childSpecificNeeds.length);
+  const childNeedMetRate = rate(childNeedsMet, childSpecificNeeds.length);
 
   const seasonalReviews = blackout_records.filter(
     (r) => r.seasonal_review_completed,
   ).length;
-  const seasonalReviewRate = pct(seasonalReviews, totalBlackoutRecords);
+  const seasonalReviewRate = rate(seasonalReviews, totalBlackoutRecords);
 
   const blackoutIssues = blackout_records.filter((r) => r.issue_identified).length;
   const blackoutIssuesResolved = blackout_records.filter(
@@ -414,21 +411,21 @@ export function computeWindowBlindCurtainSafety(
   let childSafetyDenominator = 0;
 
   if (upperFloorRecords.length > 0) {
-    childSafetyNumerator += upperFloorComplianceRate;
+    childSafetyNumerator += upperFloorComplianceRate!;
     childSafetyDenominator++;
   }
   if (totalBlindRecords > 0) {
     // Penalise if child-accessible cords exist
-    const blindChildSafety = childAccessibleCords === 0 ? 100 : pct(totalBlindRecords - childAccessibleCords, totalBlindRecords);
+    const blindChildSafety = childAccessibleCords === 0 ? 100 : rate(totalBlindRecords - childAccessibleCords, totalBlindRecords)!;
     childSafetyNumerator += blindChildSafety;
     childSafetyDenominator++;
   }
   if (curtainsPresent.length > 0) {
-    childSafetyNumerator += childSafeRailRate;
+    childSafetyNumerator += childSafeRailRate!;
     childSafetyDenominator++;
   }
   if (childSpecificNeeds.length > 0) {
-    childSafetyNumerator += childNeedMetRate;
+    childSafetyNumerator += childNeedMetRate!;
     childSafetyDenominator++;
   }
 
@@ -438,7 +435,7 @@ export function computeWindowBlindCurtainSafety(
 
   // --- Inspection compliance metrics ---
   const inspectionsPassed = inspection_records.filter((r) => r.overall_pass).length;
-  const inspectionPassRate = pct(inspectionsPassed, totalInspectionRecords);
+  const inspectionPassRate = rate(inspectionsPassed, totalInspectionRecords);
 
   const inspectionActionsRequired = inspection_records.reduce(
     (sum, r) => sum + r.actions_required, 0,
@@ -446,7 +443,7 @@ export function computeWindowBlindCurtainSafety(
   const inspectionActionsCompleted = inspection_records.reduce(
     (sum, r) => sum + r.actions_completed, 0,
   );
-  const inspectionActionCompletionRate = pct(
+  const inspectionActionCompletionRate = rate(
     inspectionActionsCompleted, inspectionActionsRequired,
   );
 
@@ -456,67 +453,69 @@ export function computeWindowBlindCurtainSafety(
     return r.next_inspection_due < today;
   }).length;
 
-  const inspectionComplianceRate = totalInspectionRecords > 0
-    ? Math.round(
-        (inspectionPassRate * 0.5 +
-          inspectionActionCompletionRate * 0.3 +
-          (overdueInspections === 0 ? 100 : pct(totalInspectionRecords - overdueInspections, totalInspectionRecords)) * 0.2),
-      )
-    : 0;
+  const inspectionComplianceRate =
+    totalInspectionRecords > 0
+      ? Math.round(
+          (inspectionPassRate! * 0.5 +
+            // no actions required = vacuously complete, matching the overdue term's design
+            (inspectionActionCompletionRate ?? 100) * 0.3 +
+            (overdueInspections === 0 ? 100 : rate(totalInspectionRecords - overdueInspections, totalInspectionRecords)!) * 0.2),
+        )
+      : null;
 
   // ── Overall issue resolution across all domains ───────────────────────
   const totalIssues = restrictorIssues + blindIssues + curtainIssues + blackoutIssues;
   const totalIssuesResolved = restrictorIssuesResolved + blindIssuesResolved +
     curtainIssuesResolved + blackoutIssuesResolved;
-  const overallIssueResolutionRate = pct(totalIssuesResolved, totalIssues);
+  const overallIssueResolutionRate = rate(totalIssuesResolved, totalIssues);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: windowRestrictorRate (>=90: +5, >=70: +2) ---
-  if (windowRestrictorRate >= 90) score += 5;
-  else if (windowRestrictorRate >= 70) score += 2;
+  if (meets(windowRestrictorRate, 90)) score += 5;
+  else if (meets(windowRestrictorRate, 70)) score += 2;
 
   // --- Bonus 2: blindCordSafetyRate (>=90: +5, >=70: +2) ---
-  if (blindCordSafetyRate >= 90) score += 5;
-  else if (blindCordSafetyRate >= 70) score += 2;
+  if (meets(blindCordSafetyRate, 90)) score += 5;
+  else if (meets(blindCordSafetyRate, 70)) score += 2;
 
   // --- Bonus 3: curtainConditionRate (>=90: +4, >=70: +2) ---
-  if (curtainConditionRate >= 90) score += 4;
-  else if (curtainConditionRate >= 70) score += 2;
+  if (meets(curtainConditionRate, 90)) score += 4;
+  else if (meets(curtainConditionRate, 70)) score += 2;
 
   // --- Bonus 4: blackoutProvisionRate (>=90: +3, >=70: +1) ---
-  if (blackoutProvisionRate >= 90) score += 3;
-  else if (blackoutProvisionRate >= 70) score += 1;
+  if (meets(blackoutProvisionRate, 90)) score += 3;
+  else if (meets(blackoutProvisionRate, 70)) score += 1;
 
   // --- Bonus 5: childSafetyRate (>=90: +4, >=70: +2) ---
   if ((childSafetyRate ?? 0) >= 90) score += 4;
   else if ((childSafetyRate ?? 0) >= 70) score += 2;
 
   // --- Bonus 6: inspectionComplianceRate (>=90: +4, >=70: +2) ---
-  if (inspectionComplianceRate >= 90) score += 4;
-  else if (inspectionComplianceRate >= 70) score += 2;
+  if (meets(inspectionComplianceRate, 90)) score += 4;
+  else if (meets(inspectionComplianceRate, 70)) score += 2;
 
   // --- Bonus 7: overallIssueResolutionRate (>=90: +3, >=70: +1) ---
-  if (overallIssueResolutionRate >= 90 && totalIssues > 0) score += 3;
-  else if (overallIssueResolutionRate >= 70 && totalIssues > 0) score += 1;
+  if (meets(overallIssueResolutionRate, 90) && totalIssues > 0) score += 3;
+  else if (meets(overallIssueResolutionRate, 70) && totalIssues > 0) score += 1;
 
   // Max bonuses = 5+5+4+3+4+4+3 = 28
 
   // ── Penalties (4 guarded) ─────────────────────────────────────────────
 
   // windowRestrictorRate < 50 → -8
-  if (windowRestrictorRate < 50 && totalRestrictorRecords > 0) score -= 8;
+  if (below(windowRestrictorRate, 50) && totalRestrictorRecords > 0) score -= 8;
 
   // blindCordSafetyRate < 50 → -8
-  if (blindCordSafetyRate < 50 && totalBlindRecords > 0) score -= 8;
+  if (below(blindCordSafetyRate, 50) && totalBlindRecords > 0) score -= 8;
 
   // childAccessibleCords present → -6
   if (childAccessibleCords > 0 && totalBlindRecords > 0) score -= 6;
 
   // inspectionComplianceRate < 50 → -5
-  if (inspectionComplianceRate < 50 && totalInspectionRecords > 0) score -= 5;
+  if (below(inspectionComplianceRate, 50) && totalInspectionRecords > 0) score -= 5;
 
   score = clamp(score, 0, 100);
 
@@ -526,111 +525,111 @@ export function computeWindowBlindCurtainSafety(
 
   const strengths: string[] = [];
 
-  if (windowRestrictorRate >= 90 && totalRestrictorRecords > 0) {
+  if (meets(windowRestrictorRate, 90) && totalRestrictorRecords > 0) {
     strengths.push(
       `${windowRestrictorRate}% window restrictor compliance — all checked windows have fitted, functional restrictors limiting openings to 100mm or less, demonstrating robust physical safety measures.`,
     );
-  } else if (windowRestrictorRate >= 70 && totalRestrictorRecords > 0) {
+  } else if (meets(windowRestrictorRate, 70) && totalRestrictorRecords > 0) {
     strengths.push(
       `${windowRestrictorRate}% window restrictor compliance — the majority of windows have compliant restrictors in place.`,
     );
   }
 
-  if (upperFloorComplianceRate >= 90 && upperFloorRecords.length > 0) {
+  if (meets(upperFloorComplianceRate, 90) && upperFloorRecords.length > 0) {
     strengths.push(
       `${upperFloorComplianceRate}% upper-floor window compliance — all upper-floor windows have functional restrictors, addressing the highest-risk fall locations.`,
     );
-  } else if (upperFloorComplianceRate >= 70 && upperFloorRecords.length > 0) {
+  } else if (meets(upperFloorComplianceRate, 70) && upperFloorRecords.length > 0) {
     strengths.push(
       `${upperFloorComplianceRate}% of upper-floor windows are fully compliant with restrictor requirements.`,
     );
   }
 
-  if (blindCordSafetyRate >= 90 && totalBlindRecords > 0) {
+  if (meets(blindCordSafetyRate, 90) && totalBlindRecords > 0) {
     strengths.push(
       `${blindCordSafetyRate}% blind cord safety compliance — blinds across the home meet safety standards with cords eliminated or secured, mitigating strangulation risk.`,
     );
-  } else if (blindCordSafetyRate >= 70 && totalBlindRecords > 0) {
+  } else if (meets(blindCordSafetyRate, 70) && totalBlindRecords > 0) {
     strengths.push(
       `${blindCordSafetyRate}% blind cord safety compliance — the majority of blinds meet cord safety requirements.`,
     );
   }
 
-  if (cordFreeRate >= 90 && totalBlindRecords > 0) {
+  if (meets(cordFreeRate, 90) && totalBlindRecords > 0) {
     strengths.push(
       `${cordFreeRate}% of blinds are cordless alternatives — the home has proactively eliminated cord strangulation risk by adopting cord-free designs.`,
     );
-  } else if (cordFreeRate >= 70 && totalBlindRecords > 0) {
+  } else if (meets(cordFreeRate, 70) && totalBlindRecords > 0) {
     strengths.push(
       `${cordFreeRate}% of blinds use cord-free alternatives — good progress towards eliminating cord strangulation risk.`,
     );
   }
 
-  if (curtainConditionRate >= 90 && curtainsPresent.length > 0) {
+  if (meets(curtainConditionRate, 90) && curtainsPresent.length > 0) {
     strengths.push(
       `${curtainConditionRate}% curtain condition compliance — curtains are clean, intact, fire retardant, and safely fitted with secure rails and appropriate lengths.`,
     );
-  } else if (curtainConditionRate >= 70 && curtainsPresent.length > 0) {
+  } else if (meets(curtainConditionRate, 70) && curtainsPresent.length > 0) {
     strengths.push(
       `${curtainConditionRate}% curtain condition compliance — the majority of curtains meet safety and condition standards.`,
     );
   }
 
-  if (fireRetardantRate >= 90 && curtainsPresent.length > 0) {
+  if (meets(fireRetardantRate, 90) && curtainsPresent.length > 0) {
     strengths.push(
       `${fireRetardantRate}% of curtains are fire retardant — the home meets fire safety requirements for soft furnishings.`,
     );
-  } else if (fireRetardantRate >= 70 && curtainsPresent.length > 0) {
+  } else if (meets(fireRetardantRate, 70) && curtainsPresent.length > 0) {
     strengths.push(
       `${fireRetardantRate}% of curtains are fire retardant — good compliance with fire safety standards for window coverings.`,
     );
   }
 
-  if (childSafeRailRate >= 90 && curtainsPresent.length > 0) {
+  if (meets(childSafeRailRate, 90) && curtainsPresent.length > 0) {
     strengths.push(
       `${childSafeRailRate}% of curtain rails are child-safe — breakaway or anti-ligature rails fitted where appropriate, demonstrating awareness of ligature risk.`,
     );
-  } else if (childSafeRailRate >= 70 && curtainsPresent.length > 0) {
+  } else if (meets(childSafeRailRate, 70) && curtainsPresent.length > 0) {
     strengths.push(
       `${childSafeRailRate}% of curtain rails meet child safety standards — good coverage of anti-ligature provisions.`,
     );
   }
 
-  if (blackoutProvisionRate >= 90 && totalBlackoutRecords > 0) {
+  if (meets(blackoutProvisionRate, 90) && totalBlackoutRecords > 0) {
     strengths.push(
       `${blackoutProvisionRate}% blackout provision — children's bedrooms have effective blackout measures supporting sleep quality and wellbeing.`,
     );
-  } else if (blackoutProvisionRate >= 70 && totalBlackoutRecords > 0) {
+  } else if (meets(blackoutProvisionRate, 70) && totalBlackoutRecords > 0) {
     strengths.push(
       `${blackoutProvisionRate}% blackout provision — the majority of children's rooms have appropriate blackout measures in place.`,
     );
   }
 
-  if (childNeedMetRate >= 90 && childSpecificNeeds.length > 0) {
+  if (meets(childNeedMetRate, 90) && childSpecificNeeds.length > 0) {
     strengths.push(
       `${childNeedMetRate}% of children with documented blackout needs have those needs met — the home responds to individual sleep requirements effectively.`,
     );
-  } else if (childNeedMetRate >= 70 && childSpecificNeeds.length > 0) {
+  } else if (meets(childNeedMetRate, 70) && childSpecificNeeds.length > 0) {
     strengths.push(
       `${childNeedMetRate}% of child-specific blackout needs are being met — generally responsive to individual sleep requirements.`,
     );
   }
 
-  if (inspectionComplianceRate >= 90 && totalInspectionRecords > 0) {
+  if (meets(inspectionComplianceRate, 90) && totalInspectionRecords > 0) {
     strengths.push(
       `${inspectionComplianceRate}% inspection compliance — scheduled safety inspections are completed, passed, and actions are followed through, evidencing a systematic approach to premises safety.`,
     );
-  } else if (inspectionComplianceRate >= 70 && totalInspectionRecords > 0) {
+  } else if (meets(inspectionComplianceRate, 70) && totalInspectionRecords > 0) {
     strengths.push(
       `${inspectionComplianceRate}% inspection compliance — the home maintains a generally effective inspection regime.`,
     );
   }
 
-  if (overallIssueResolutionRate >= 90 && totalIssues > 0) {
+  if (meets(overallIssueResolutionRate, 90) && totalIssues > 0) {
     strengths.push(
       `${overallIssueResolutionRate}% of identified safety issues resolved — the home demonstrates responsive maintenance and prompt remediation of window, blind and curtain defects.`,
     );
-  } else if (overallIssueResolutionRate >= 70 && totalIssues > 0) {
+  } else if (meets(overallIssueResolutionRate, 70) && totalIssues > 0) {
     strengths.push(
       `${overallIssueResolutionRate}% of identified safety issues resolved — the majority of defects are being addressed.`,
     );
@@ -642,13 +641,13 @@ export function computeWindowBlindCurtainSafety(
     );
   }
 
-  if (keySecurityRate >= 90 && restrictorsFitted > 0) {
+  if (meets(keySecurityRate, 90) && restrictorsFitted > 0) {
     strengths.push(
       `${keySecurityRate}% of restrictor keys are accessible to staff only — children cannot override window safety measures, maintaining the integrity of fall prevention.`,
     );
   }
 
-  if (seasonalReviewRate >= 90 && totalBlackoutRecords > 0) {
+  if (meets(seasonalReviewRate, 90) && totalBlackoutRecords > 0) {
     strengths.push(
       `${seasonalReviewRate}% seasonal blackout reviews completed — the home adapts blackout provision to seasonal light changes, supporting children's sleep throughout the year.`,
     );
@@ -664,31 +663,31 @@ export function computeWindowBlindCurtainSafety(
 
   const concerns: string[] = [];
 
-  if (windowRestrictorRate < 50 && totalRestrictorRecords > 0) {
+  if (below(windowRestrictorRate, 50) && totalRestrictorRecords > 0) {
     concerns.push(
       `Only ${windowRestrictorRate}% window restrictor compliance — the majority of checked windows do not have fully compliant restrictors. This represents a significant fall risk, particularly for upper-floor windows, and is a direct breach of Reg 25 premises safety requirements.`,
     );
-  } else if (windowRestrictorRate < 70 && windowRestrictorRate >= 50 && totalRestrictorRecords > 0) {
+  } else if (below(windowRestrictorRate, 70) && meets(windowRestrictorRate, 50) && totalRestrictorRecords > 0) {
     concerns.push(
       `Window restrictor compliance at ${windowRestrictorRate}% — a notable proportion of windows do not have fully compliant restrictors, creating avoidable fall risk.`,
     );
   }
 
-  if (upperFloorComplianceRate < 50 && upperFloorRecords.length > 0) {
+  if (below(upperFloorComplianceRate, 50) && upperFloorRecords.length > 0) {
     concerns.push(
       `Only ${upperFloorComplianceRate}% of upper-floor windows are fully compliant — upper-floor windows present the greatest fall risk and must be prioritised for immediate remediation.`,
     );
-  } else if (upperFloorComplianceRate < 70 && upperFloorComplianceRate >= 50 && upperFloorRecords.length > 0) {
+  } else if (below(upperFloorComplianceRate, 70) && meets(upperFloorComplianceRate, 50) && upperFloorRecords.length > 0) {
     concerns.push(
       `Upper-floor window compliance at ${upperFloorComplianceRate}% — some upper-floor windows lack fully functional restrictors, which is unacceptable given the severity of potential falls.`,
     );
   }
 
-  if (blindCordSafetyRate < 50 && totalBlindRecords > 0) {
+  if (below(blindCordSafetyRate, 50) && totalBlindRecords > 0) {
     concerns.push(
       `Only ${blindCordSafetyRate}% blind cord safety compliance — the majority of blinds do not meet safety standards. Blind cords are a known strangulation hazard and this represents a serious child safety failure.`,
     );
-  } else if (blindCordSafetyRate < 70 && blindCordSafetyRate >= 50 && totalBlindRecords > 0) {
+  } else if (below(blindCordSafetyRate, 70) && meets(blindCordSafetyRate, 50) && totalBlindRecords > 0) {
     concerns.push(
       `Blind cord safety compliance at ${blindCordSafetyRate}% — a significant number of blinds do not meet cord safety requirements, creating foreseeable strangulation risk.`,
     );
@@ -700,11 +699,11 @@ export function computeWindowBlindCurtainSafety(
     );
   }
 
-  if (curtainConditionRate < 50 && curtainsPresent.length > 0) {
+  if (below(curtainConditionRate, 50) && curtainsPresent.length > 0) {
     concerns.push(
       `Only ${curtainConditionRate}% curtain condition compliance — curtains across the home have significant safety and condition issues including insecure rails, missing fire retardancy, or trailing lengths creating trip hazards.`,
     );
-  } else if (curtainConditionRate < 70 && curtainConditionRate >= 50 && curtainsPresent.length > 0) {
+  } else if (below(curtainConditionRate, 70) && meets(curtainConditionRate, 50) && curtainsPresent.length > 0) {
     concerns.push(
       `Curtain condition compliance at ${curtainConditionRate}% — some curtains have safety or condition issues requiring attention.`,
     );
@@ -722,51 +721,51 @@ export function computeWindowBlindCurtainSafety(
     );
   }
 
-  if (fireRetardantRate < 50 && curtainsPresent.length > 0) {
+  if (below(fireRetardantRate, 50) && curtainsPresent.length > 0) {
     concerns.push(
       `Only ${fireRetardantRate}% of curtains are fire retardant — a majority of curtains do not meet fire safety requirements, increasing fire spread risk in children's bedrooms and living areas.`,
     );
-  } else if (fireRetardantRate < 70 && fireRetardantRate >= 50 && curtainsPresent.length > 0) {
+  } else if (below(fireRetardantRate, 70) && meets(fireRetardantRate, 50) && curtainsPresent.length > 0) {
     concerns.push(
       `Fire retardant compliance at ${fireRetardantRate}% — a notable proportion of curtains do not meet fire safety standards.`,
     );
   }
 
-  if (childSafeRailRate < 50 && curtainsPresent.length > 0) {
+  if (below(childSafeRailRate, 50) && curtainsPresent.length > 0) {
     concerns.push(
       `Only ${childSafeRailRate}% of curtain rails are child-safe — inadequate anti-ligature provision on curtain rails creates foreseeable risk, particularly in bedrooms and private spaces.`,
     );
-  } else if (childSafeRailRate < 70 && childSafeRailRate >= 50 && curtainsPresent.length > 0) {
+  } else if (below(childSafeRailRate, 70) && meets(childSafeRailRate, 50) && curtainsPresent.length > 0) {
     concerns.push(
       `Child-safe rail coverage at ${childSafeRailRate}% — some curtain rails lack anti-ligature or breakaway features.`,
     );
   }
 
-  if (blackoutProvisionRate < 50 && totalBlackoutRecords > 0) {
+  if (below(blackoutProvisionRate, 50) && totalBlackoutRecords > 0) {
     concerns.push(
       `Only ${blackoutProvisionRate}% blackout provision — the majority of children's rooms lack adequate blackout measures, potentially affecting sleep quality, health and wellbeing.`,
     );
-  } else if (blackoutProvisionRate < 70 && blackoutProvisionRate >= 50 && totalBlackoutRecords > 0) {
+  } else if (below(blackoutProvisionRate, 70) && meets(blackoutProvisionRate, 50) && totalBlackoutRecords > 0) {
     concerns.push(
       `Blackout provision at ${blackoutProvisionRate}% — some children's rooms lack adequate blackout measures.`,
     );
   }
 
-  if (childNeedMetRate < 50 && childSpecificNeeds.length > 0) {
+  if (below(childNeedMetRate, 50) && childSpecificNeeds.length > 0) {
     concerns.push(
       `Only ${childNeedMetRate}% of children with documented blackout needs have those needs met — failing to meet individualised sleep requirements directly impacts children's health and wellbeing.`,
     );
-  } else if (childNeedMetRate < 70 && childNeedMetRate >= 50 && childSpecificNeeds.length > 0) {
+  } else if (below(childNeedMetRate, 70) && meets(childNeedMetRate, 50) && childSpecificNeeds.length > 0) {
     concerns.push(
       `Only ${childNeedMetRate}% of child-specific blackout needs met — some children's documented sleep environment requirements are not being fulfilled.`,
     );
   }
 
-  if (inspectionComplianceRate < 50 && totalInspectionRecords > 0) {
+  if (below(inspectionComplianceRate, 50) && totalInspectionRecords > 0) {
     concerns.push(
       `Inspection compliance at only ${inspectionComplianceRate}% — safety inspections are failing, actions are not being completed, or inspections are overdue. The home cannot evidence systematic premises safety management.`,
     );
-  } else if (inspectionComplianceRate < 70 && inspectionComplianceRate >= 50 && totalInspectionRecords > 0) {
+  } else if (below(inspectionComplianceRate, 70) && meets(inspectionComplianceRate, 50) && totalInspectionRecords > 0) {
     concerns.push(
       `Inspection compliance at ${inspectionComplianceRate}% — some inspections are not fully meeting standards or actions are outstanding.`,
     );
@@ -778,11 +777,11 @@ export function computeWindowBlindCurtainSafety(
     );
   }
 
-  if (overallIssueResolutionRate < 50 && totalIssues > 0) {
+  if (below(overallIssueResolutionRate, 50) && totalIssues > 0) {
     concerns.push(
       `Only ${overallIssueResolutionRate}% of identified safety issues resolved — the majority of known defects across windows, blinds and curtains remain unresolved, creating persistent safety risks.`,
     );
-  } else if (overallIssueResolutionRate < 70 && overallIssueResolutionRate >= 50 && totalIssues > 0) {
+  } else if (below(overallIssueResolutionRate, 70) && meets(overallIssueResolutionRate, 50) && totalIssues > 0) {
     concerns.push(
       `Issue resolution rate at ${overallIssueResolutionRate}% — a significant number of known defects remain unresolved.`,
     );
@@ -821,7 +820,7 @@ export function computeWindowBlindCurtainSafety(
     });
   }
 
-  if (windowRestrictorRate < 50 && totalRestrictorRecords > 0) {
+  if (below(windowRestrictorRate, 50) && totalRestrictorRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -831,7 +830,7 @@ export function computeWindowBlindCurtainSafety(
     });
   }
 
-  if (upperFloorComplianceRate < 50 && upperFloorRecords.length > 0) {
+  if (below(upperFloorComplianceRate, 50) && upperFloorRecords.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -841,7 +840,7 @@ export function computeWindowBlindCurtainSafety(
     });
   }
 
-  if (blindCordSafetyRate < 50 && totalBlindRecords > 0) {
+  if (below(blindCordSafetyRate, 50) && totalBlindRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -861,7 +860,7 @@ export function computeWindowBlindCurtainSafety(
     });
   }
 
-  if (fireRetardantRate < 50 && curtainsPresent.length > 0) {
+  if (below(fireRetardantRate, 50) && curtainsPresent.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -891,7 +890,7 @@ export function computeWindowBlindCurtainSafety(
     });
   }
 
-  if (childSafeRailRate < 50 && curtainsPresent.length > 0) {
+  if (below(childSafeRailRate, 50) && curtainsPresent.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -901,7 +900,7 @@ export function computeWindowBlindCurtainSafety(
     });
   }
 
-  if (overallIssueResolutionRate < 50 && totalIssues > 0) {
+  if (below(overallIssueResolutionRate, 50) && totalIssues > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -911,7 +910,7 @@ export function computeWindowBlindCurtainSafety(
     });
   }
 
-  if (windowRestrictorRate >= 50 && windowRestrictorRate < 70 && totalRestrictorRecords > 0) {
+  if (meets(windowRestrictorRate, 50) && below(windowRestrictorRate, 70) && totalRestrictorRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -921,7 +920,7 @@ export function computeWindowBlindCurtainSafety(
     });
   }
 
-  if (blindCordSafetyRate >= 50 && blindCordSafetyRate < 70 && totalBlindRecords > 0) {
+  if (meets(blindCordSafetyRate, 50) && below(blindCordSafetyRate, 70) && totalBlindRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -931,7 +930,7 @@ export function computeWindowBlindCurtainSafety(
     });
   }
 
-  if (curtainConditionRate < 50 && curtainsPresent.length > 0) {
+  if (below(curtainConditionRate, 50) && curtainsPresent.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -941,7 +940,7 @@ export function computeWindowBlindCurtainSafety(
     });
   }
 
-  if (blackoutProvisionRate < 50 && totalBlackoutRecords > 0) {
+  if (below(blackoutProvisionRate, 50) && totalBlackoutRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -951,7 +950,7 @@ export function computeWindowBlindCurtainSafety(
     });
   }
 
-  if (childNeedMetRate < 50 && childSpecificNeeds.length > 0) {
+  if (below(childNeedMetRate, 50) && childSpecificNeeds.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -961,7 +960,7 @@ export function computeWindowBlindCurtainSafety(
     });
   }
 
-  if (inspectionComplianceRate < 50 && totalInspectionRecords > 0) {
+  if (below(inspectionComplianceRate, 50) && totalInspectionRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -991,7 +990,7 @@ export function computeWindowBlindCurtainSafety(
     });
   }
 
-  if (curtainConditionRate >= 50 && curtainConditionRate < 70 && curtainsPresent.length > 0) {
+  if (meets(curtainConditionRate, 50) && below(curtainConditionRate, 70) && curtainsPresent.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1001,7 +1000,7 @@ export function computeWindowBlindCurtainSafety(
     });
   }
 
-  if (blackoutProvisionRate >= 50 && blackoutProvisionRate < 70 && totalBlackoutRecords > 0) {
+  if (meets(blackoutProvisionRate, 50) && below(blackoutProvisionRate, 70) && totalBlackoutRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1011,7 +1010,7 @@ export function computeWindowBlindCurtainSafety(
     });
   }
 
-  if (seasonalReviewRate < 70 && totalBlackoutRecords > 0) {
+  if (below(seasonalReviewRate, 70) && totalBlackoutRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1021,7 +1020,7 @@ export function computeWindowBlindCurtainSafety(
     });
   }
 
-  if (fireRetardantRate >= 50 && fireRetardantRate < 70 && curtainsPresent.length > 0) {
+  if (meets(fireRetardantRate, 50) && below(fireRetardantRate, 70) && curtainsPresent.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1031,7 +1030,7 @@ export function computeWindowBlindCurtainSafety(
     });
   }
 
-  if (keySecurityRate < 70 && restrictorsFitted > 0) {
+  if (below(keySecurityRate, 70) && restrictorsFitted > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1054,35 +1053,35 @@ export function computeWindowBlindCurtainSafety(
     });
   }
 
-  if (windowRestrictorRate < 50 && totalRestrictorRecords > 0) {
+  if (below(windowRestrictorRate, 50) && totalRestrictorRecords > 0) {
     insights.push({
       text: `Only ${windowRestrictorRate}% window restrictor compliance. Window falls are a significant cause of serious injury to children. Non-functional or absent restrictors on windows accessible to children represent a direct breach of the home's duty to maintain safe premises under Reg 25.`,
       severity: "critical",
     });
   }
 
-  if (upperFloorComplianceRate < 50 && upperFloorRecords.length > 0) {
+  if (below(upperFloorComplianceRate, 50) && upperFloorRecords.length > 0) {
     insights.push({
       text: `Only ${upperFloorComplianceRate}% of upper-floor windows are compliant. Falls from upper-floor windows can result in fatal or life-changing injuries. This is the highest-priority physical safety deficiency in the home and requires immediate rectification before any child has unsupervised access.`,
       severity: "critical",
     });
   }
 
-  if (blindCordSafetyRate < 50 && totalBlindRecords > 0) {
+  if (below(blindCordSafetyRate, 50) && totalBlindRecords > 0) {
     insights.push({
       text: `Only ${blindCordSafetyRate}% blind cord safety compliance. The majority of blinds in the home do not meet cord safety standards. Given that blind cord strangulation can occur in seconds, this pattern of non-compliance represents a systemic premises safety failure.`,
       severity: "critical",
     });
   }
 
-  if (fireRetardantRate < 50 && curtainsPresent.length > 0) {
+  if (below(fireRetardantRate, 50) && curtainsPresent.length > 0) {
     insights.push({
       text: `Only ${fireRetardantRate}% of curtains are fire retardant. Non-fire-retardant curtains accelerate fire spread and increase the time available for safe evacuation. In a children's home where children may need additional support to evacuate, this is a critical fire safety deficiency.`,
       severity: "critical",
     });
   }
 
-  if (childSafeRailRate < 50 && curtainsPresent.length > 0) {
+  if (below(childSafeRailRate, 50) && curtainsPresent.length > 0) {
     insights.push({
       text: `Only ${childSafeRailRate}% of curtain rails are child-safe. Standard curtain rails and poles can be used as ligature points. In residential childcare settings where some children may be at risk of self-harm, anti-ligature provisions are essential safety measures.`,
       severity: "critical",
@@ -1103,7 +1102,7 @@ export function computeWindowBlindCurtainSafety(
     });
   }
 
-  if (overallIssueResolutionRate < 50 && totalIssues > 0) {
+  if (below(overallIssueResolutionRate, 50) && totalIssues > 0) {
     insights.push({
       text: `Only ${overallIssueResolutionRate}% of identified safety issues resolved. When known safety defects are left unresolved, the home is knowingly allowing children to be exposed to hazards. Ofsted will view unresolved safety issues as evidence of inadequate premises management.`,
       severity: "critical",
@@ -1112,56 +1111,56 @@ export function computeWindowBlindCurtainSafety(
 
   // -- Warning insights --
 
-  if (windowRestrictorRate >= 50 && windowRestrictorRate < 70 && totalRestrictorRecords > 0) {
+  if (meets(windowRestrictorRate, 50) && below(windowRestrictorRate, 70) && totalRestrictorRecords > 0) {
     insights.push({
       text: `Window restrictor compliance at ${windowRestrictorRate}% — improving but not yet at the level expected. Some windows remain non-compliant, creating avoidable risk. Review which rooms require priority attention and track compliance improvements.`,
       severity: "warning",
     });
   }
 
-  if (blindCordSafetyRate >= 50 && blindCordSafetyRate < 70 && totalBlindRecords > 0) {
+  if (meets(blindCordSafetyRate, 50) && below(blindCordSafetyRate, 70) && totalBlindRecords > 0) {
     insights.push({
       text: `Blind cord safety compliance at ${blindCordSafetyRate}% — progress is being made but a significant proportion of blinds still present cord safety concerns. Accelerate the transition to cord-free alternatives where possible.`,
       severity: "warning",
     });
   }
 
-  if (curtainConditionRate >= 50 && curtainConditionRate < 70 && curtainsPresent.length > 0) {
+  if (meets(curtainConditionRate, 50) && below(curtainConditionRate, 70) && curtainsPresent.length > 0) {
     insights.push({
       text: `Curtain condition compliance at ${curtainConditionRate}% — some curtains have condition or safety issues. Regular condition checks and timely replacement of worn curtains maintain both safety standards and living environment quality.`,
       severity: "warning",
     });
   }
 
-  if (blackoutProvisionRate >= 50 && blackoutProvisionRate < 70 && totalBlackoutRecords > 0) {
+  if (meets(blackoutProvisionRate, 50) && below(blackoutProvisionRate, 70) && totalBlackoutRecords > 0) {
     insights.push({
       text: `Blackout provision at ${blackoutProvisionRate}% — some children's rooms lack adequate blackout measures. Sleep quality research demonstrates that blackout provision significantly improves sleep onset, duration, and quality in children.`,
       severity: "warning",
     });
   }
 
-  if (inspectionComplianceRate >= 50 && inspectionComplianceRate < 70 && totalInspectionRecords > 0) {
+  if (meets(inspectionComplianceRate, 50) && below(inspectionComplianceRate, 70) && totalInspectionRecords > 0) {
     insights.push({
       text: `Inspection compliance at ${inspectionComplianceRate}% — the inspection regime is partially effective but actions are not fully completed or inspections are not consistently achieving pass status. Strengthen the inspection-to-action loop.`,
       severity: "warning",
     });
   }
 
-  if (overallIssueResolutionRate >= 50 && overallIssueResolutionRate < 70 && totalIssues > 0) {
+  if (meets(overallIssueResolutionRate, 50) && below(overallIssueResolutionRate, 70) && totalIssues > 0) {
     insights.push({
       text: `Issue resolution rate at ${overallIssueResolutionRate}% — some identified defects persist. Implement a formal maintenance request system with escalation paths for unresolved safety items.`,
       severity: "warning",
     });
   }
 
-  if (childNeedMetRate >= 50 && childNeedMetRate < 70 && childSpecificNeeds.length > 0) {
+  if (meets(childNeedMetRate, 50) && below(childNeedMetRate, 70) && childSpecificNeeds.length > 0) {
     insights.push({
       text: `Only ${childNeedMetRate}% of child-specific blackout needs met — when a child's care plan identifies a need for blackout provision, failing to meet it represents a gap between documented need and delivered care.`,
       severity: "warning",
     });
   }
 
-  if (seasonalReviewRate < 50 && totalBlackoutRecords > 0) {
+  if (below(seasonalReviewRate, 50) && totalBlackoutRecords > 0) {
     insights.push({
       text: `Only ${seasonalReviewRate}% of blackout provision has been seasonally reviewed. Light levels change dramatically between winter and summer, affecting whether existing blackout measures remain effective.`,
       severity: "warning",
@@ -1175,14 +1174,14 @@ export function computeWindowBlindCurtainSafety(
     });
   }
 
-  if (fireRetardantRate >= 50 && fireRetardantRate < 70 && curtainsPresent.length > 0) {
+  if (meets(fireRetardantRate, 50) && below(fireRetardantRate, 70) && curtainsPresent.length > 0) {
     insights.push({
       text: `Fire retardant compliance at ${fireRetardantRate}% — while improving, a proportion of curtains still do not meet fire safety requirements. Prioritise replacement during refurbishment or when curtains reach end of life.`,
       severity: "warning",
     });
   }
 
-  if (keySecurityRate < 70 && restrictorsFitted > 0) {
+  if (below(keySecurityRate, 70) && restrictorsFitted > 0) {
     insights.push({
       text: `Key security rate at ${keySecurityRate}% — some restrictor keys may be accessible to children, potentially allowing them to override window safety measures. Review key storage procedures and staff awareness.`,
       severity: "warning",
@@ -1217,35 +1216,35 @@ export function computeWindowBlindCurtainSafety(
     });
   }
 
-  if (windowRestrictorRate >= 90 && totalRestrictorRecords > 0) {
+  if (meets(windowRestrictorRate, 90) && totalRestrictorRecords > 0) {
     insights.push({
       text: `${windowRestrictorRate}% window restrictor compliance — the home maintains excellent fall prevention measures. Functional, tested restrictors on all windows demonstrate that children's physical safety is prioritised and premises are maintained to the required standard.`,
       severity: "positive",
     });
   }
 
-  if (blindCordSafetyRate >= 90 && totalBlindRecords > 0) {
+  if (meets(blindCordSafetyRate, 90) && totalBlindRecords > 0) {
     insights.push({
       text: `${blindCordSafetyRate}% blind cord safety compliance — the home has effectively eliminated or mitigated blind cord strangulation risk. This reflects proactive, child-centred premises management that Ofsted expects under Reg 25.`,
       severity: "positive",
     });
   }
 
-  if (childAccessibleCords === 0 && cordFreeRate >= 90 && totalBlindRecords > 0) {
+  if (childAccessibleCords === 0 && meets(cordFreeRate, 90) && totalBlindRecords > 0) {
     insights.push({
       text: `Zero child-accessible cords with ${cordFreeRate}% cord-free blinds — the home has taken the best-practice approach of eliminating cords entirely rather than relying on secondary safety devices. This represents exemplary child safety practice.`,
       severity: "positive",
     });
   }
 
-  if (curtainConditionRate >= 90 && curtainsPresent.length > 0) {
+  if (meets(curtainConditionRate, 90) && curtainsPresent.length > 0) {
     insights.push({
       text: `${curtainConditionRate}% curtain condition compliance — curtains throughout the home are clean, intact, safely fitted, fire retardant, and maintained to a high standard. This contributes to both safety and a homely, well-maintained living environment.`,
       severity: "positive",
     });
   }
 
-  if (inspectionComplianceRate >= 90 && totalInspectionRecords > 0) {
+  if (meets(inspectionComplianceRate, 90) && totalInspectionRecords > 0) {
     insights.push({
       text: `${inspectionComplianceRate}% inspection compliance — the home's systematic inspection programme evidences proactive premises safety management. Regular inspections with completed actions demonstrate continuous monitoring and improvement.`,
       severity: "positive",
@@ -1259,21 +1258,21 @@ export function computeWindowBlindCurtainSafety(
     });
   }
 
-  if (overallIssueResolutionRate >= 90 && totalIssues > 0) {
+  if (meets(overallIssueResolutionRate, 90) && totalIssues > 0) {
     insights.push({
       text: `${overallIssueResolutionRate}% of identified safety issues resolved — the home responds promptly and effectively to safety defects, demonstrating that premises maintenance supports children's safety rather than allowing risks to persist.`,
       severity: "positive",
     });
   }
 
-  if (blackoutProvisionRate >= 90 && blackoutEffectivenessRate >= 90 && totalBlackoutRecords > 0) {
+  if (meets(blackoutProvisionRate, 90) && meets(blackoutEffectivenessRate, 90) && totalBlackoutRecords > 0) {
     insights.push({
       text: `${blackoutProvisionRate}% blackout provision with ${blackoutEffectivenessRate}% effectiveness — children's bedrooms are well-equipped to support quality sleep through effective light management, contributing to health and wellbeing outcomes.`,
       severity: "positive",
     });
   }
 
-  if (childNeedMetRate >= 90 && childSpecificNeeds.length > 0) {
+  if (meets(childNeedMetRate, 90) && childSpecificNeeds.length > 0) {
     insights.push({
       text: `${childNeedMetRate}% of child-specific blackout needs met — the home delivers individualised environmental adjustments that respond to each child's documented requirements, evidencing personalised care delivery.`,
       severity: "positive",
@@ -1282,7 +1281,7 @@ export function computeWindowBlindCurtainSafety(
 
   if (
     overdueInspections === 0 &&
-    inspectionPassRate >= 90 &&
+    meets(inspectionPassRate, 90) &&
     totalInspectionRecords > 0
   ) {
     insights.push({

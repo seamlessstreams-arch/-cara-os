@@ -1541,7 +1541,7 @@ describe("All penalties stack", () => {
 
 describe("Rate computations", () => {
   describe("policy_awareness_rate", () => {
-    it("is 0 when no awareness records", () => {
+    it("is null when no awareness records", () => {
       const r = computeWhistleblowingSafeguardingCulture(
         baseInput({ whistleblowing_awareness_records: [] }),
       );
@@ -1572,7 +1572,7 @@ describe("Rate computations", () => {
   });
 
   describe("reporting_confidence_rate", () => {
-    it("is 0 when no confidence records", () => {
+    it("is null when no confidence records", () => {
       const r = computeWhistleblowingSafeguardingCulture(
         baseInput({ reporting_confidence_records: [] }),
       );
@@ -1602,7 +1602,7 @@ describe("Rate computations", () => {
   });
 
   describe("training_currency_rate", () => {
-    it("is 0 when no training records", () => {
+    it("is null when no training records", () => {
       const r = computeWhistleblowingSafeguardingCulture(
         baseInput({ safeguarding_training_records: [] }),
       );
@@ -1637,7 +1637,7 @@ describe("Rate computations", () => {
   });
 
   describe("culture_audit_rate", () => {
-    it("is 0 when no audit records", () => {
+    it("is null when no audit records", () => {
       const r = computeWhistleblowingSafeguardingCulture(
         baseInput({ culture_audit_records: [] }),
       );
@@ -1666,7 +1666,7 @@ describe("Rate computations", () => {
   });
 
   describe("child_protection_rate", () => {
-    it("is 0 when no protection records", () => {
+    it("is null when no protection records", () => {
       const r = computeWhistleblowingSafeguardingCulture(
         baseInput({ child_protection_records: [] }),
       );
@@ -1698,7 +1698,7 @@ describe("Rate computations", () => {
   });
 
   describe("staff_confidence_rate", () => {
-    it("is 0 when no confidence records", () => {
+    it("is null when no confidence records", () => {
       const r = computeWhistleblowingSafeguardingCulture(
         baseInput({ reporting_confidence_records: [] }),
       );
@@ -2943,7 +2943,7 @@ describe("Insights", () => {
 // ==============================================================================
 
 describe("Edge cases", () => {
-  it("pct(0, 0) returns 0", () => {
+  it("rate(0,0)=nullreturns 0", () => {
     // When no records, all rates should be 0
     const r = computeWhistleblowingSafeguardingCulture({
       today: TODAY,

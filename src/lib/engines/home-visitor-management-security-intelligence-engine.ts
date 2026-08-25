@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME VISITOR MANAGEMENT & SECURITY INTELLIGENCE ENGINE
 // Monitors visitor registration compliance, DBS check verification,
@@ -136,12 +137,18 @@ export interface VisitorManagementSecurityResult {
   visitor_score: number;
   headline: string;
   total_visits: number;
-  registration_compliance_rate: number;
-  dbs_verification_rate: number;
-  id_check_rate: number;
-  safeguarding_adherence_rate: number;
-  log_completeness_rate: number;
-  escort_compliance_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  registration_compliance_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dbs_verification_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  id_check_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguarding_adherence_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  log_completeness_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  escort_compliance_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: VisitorSecurityRecommendation[];
@@ -149,10 +156,6 @@ export interface VisitorManagementSecurityResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -177,12 +180,12 @@ function emptyResult(
     visitor_score: score,
     headline,
     total_visits: 0,
-    registration_compliance_rate: 0,
-    dbs_verification_rate: 0,
-    id_check_rate: 0,
-    safeguarding_adherence_rate: 0,
-    log_completeness_rate: 0,
-    escort_compliance_rate: 0,
+    registration_compliance_rate: null,
+    dbs_verification_rate: null,
+    id_check_rate: null,
+    safeguarding_adherence_rate: null,
+    log_completeness_rate: null,
+    escort_compliance_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -267,24 +270,24 @@ export function computeVisitorManagementSecurity(
       r.purpose_recorded &&
       r.host_staff_assigned,
   ).length;
-  const registrationComplianceRate = pct(compliantRegistrations, totalRegistrations);
+  const registrationComplianceRate = rate(compliantRegistrations, totalRegistrations);
 
   const preRegisteredVisitors = visitor_registration_records.filter(
     (r) => r.pre_registered,
   ).length;
-  const preRegistrationRate = pct(preRegisteredVisitors, totalRegistrations);
+  const preRegistrationRate = rate(preRegisteredVisitors, totalRegistrations);
 
   // --- DBS verification ---
   const dbsRequired = dbs_check_records.filter((d) => d.dbs_required);
   const totalDbsRequired = dbsRequired.length;
 
   const dbsVerified = dbsRequired.filter((d) => d.dbs_verified && !d.dbs_expired).length;
-  const dbsVerificationRate = pct(dbsVerified, totalDbsRequired);
+  const dbsVerificationRate = rate(dbsVerified, totalDbsRequired);
 
   const dbsExpired = dbs_check_records.filter(
     (d) => d.dbs_required && d.dbs_expired,
   ).length;
-  const dbsExpiredRate = pct(dbsExpired, totalDbsRequired);
+  const dbsExpiredRate = rate(dbsExpired, totalDbsRequired);
 
   // --- ID verification ---
   const totalIdChecks = id_verification_records.length;
@@ -292,12 +295,12 @@ export function computeVisitorManagementSecurity(
   const idVerified = id_verification_records.filter(
     (v) => v.id_requested && v.id_provided && v.id_verified,
   ).length;
-  const idCheckRate = pct(idVerified, totalIdChecks);
+  const idCheckRate = rate(idVerified, totalIdChecks);
 
   const photoMatchConfirmed = id_verification_records.filter(
     (v) => v.photo_match_confirmed,
   ).length;
-  const photoMatchRate = pct(photoMatchConfirmed, totalIdChecks);
+  const photoMatchRate = rate(photoMatchConfirmed, totalIdChecks);
 
   const idRefusals = id_verification_records.filter(
     (v) => v.id_requested && !v.id_provided,
@@ -320,17 +323,17 @@ export function computeVisitorManagementSecurity(
       s.confidentiality_agreement_signed &&
       s.child_protection_policy_acknowledged,
   ).length;
-  const safeguardingAdherenceRate = pct(safeguardingCompliant, totalSafeguardingRecords);
+  const safeguardingAdherenceRate = rate(safeguardingCompliant, totalSafeguardingRecords);
 
   const emergencyProceduresShared = safeguarding_protocol_records.filter(
     (s) => s.emergency_procedures_shared,
   ).length;
-  const emergencyProceduresRate = pct(emergencyProceduresShared, totalSafeguardingRecords);
+  const emergencyProceduresRate = rate(emergencyProceduresShared, totalSafeguardingRecords);
 
   const prohibitedAreasCommunicated = safeguarding_protocol_records.filter(
     (s) => s.prohibited_areas_communicated,
   ).length;
-  const prohibitedAreasRate = pct(prohibitedAreasCommunicated, totalSafeguardingRecords);
+  const prohibitedAreasRate = rate(prohibitedAreasCommunicated, totalSafeguardingRecords);
 
   const loneAccessVisits = safeguarding_protocol_records.filter(
     (s) => s.lone_access_permitted,
@@ -338,7 +341,7 @@ export function computeVisitorManagementSecurity(
   const loneAccessRiskAssessed = loneAccessVisits.filter(
     (s) => s.lone_access_risk_assessed,
   ).length;
-  const loneAccessAssessmentRate = pct(loneAccessRiskAssessed, loneAccessVisits.length);
+  const loneAccessAssessmentRate = rate(loneAccessRiskAssessed, loneAccessVisits.length);
 
   const incidentsDuringVisits = safeguarding_protocol_records.filter(
     (s) => s.incident_during_visit,
@@ -353,7 +356,7 @@ export function computeVisitorManagementSecurity(
   const escortProvided = escortRequired.filter(
     (s) => s.escort_provided,
   ).length;
-  const escortComplianceRate = pct(escortProvided, totalEscortRequired);
+  const escortComplianceRate = rate(escortProvided, totalEscortRequired);
 
   // --- Visitor log completeness ---
   const totalLogRecords = visitor_log_records.length;
@@ -365,30 +368,30 @@ export function computeVisitorManagementSecurity(
       l.badge_issued &&
       l.departure_confirmed,
   ).length;
-  const logCompletenessRate = pct(completeLogEntries, totalLogRecords);
+  const logCompletenessRate = rate(completeLogEntries, totalLogRecords);
 
   const signInRecorded = visitor_log_records.filter((l) => l.sign_in_recorded).length;
   const signOutRecorded = visitor_log_records.filter((l) => l.sign_out_recorded).length;
-  const signInRate = pct(signInRecorded, totalLogRecords);
-  const signOutRate = pct(signOutRecorded, totalLogRecords);
+  const signInRate = rate(signInRecorded, totalLogRecords);
+  const signOutRate = rate(signOutRecorded, totalLogRecords);
 
   const badgesIssued = visitor_log_records.filter((l) => l.badge_issued).length;
-  const badgeIssuedRate = pct(badgesIssued, totalLogRecords);
+  const badgeIssuedRate = rate(badgesIssued, totalLogRecords);
 
   const badgesReturned = visitor_log_records.filter(
     (l) => l.badge_issued && l.badge_returned,
   ).length;
-  const badgeReturnRate = pct(badgesReturned, badgesIssued);
+  const badgeReturnRate = rate(badgesReturned, badgesIssued);
 
   const logsReviewed = visitor_log_records.filter(
     (l) => l.log_reviewed_by !== null && l.log_reviewed_by !== "",
   ).length;
-  const logReviewRate = pct(logsReviewed, totalLogRecords);
+  const logReviewRate = rate(logsReviewed, totalLogRecords);
 
   const departureConfirmed = visitor_log_records.filter(
     (l) => l.departure_confirmed,
   ).length;
-  const departureConfirmationRate = pct(departureConfirmed, totalLogRecords);
+  const departureConfirmationRate = rate(departureConfirmed, totalLogRecords);
 
   // Total visits is the maximum count across all record types
   const totalVisits = Math.max(
@@ -403,54 +406,54 @@ export function computeVisitorManagementSecurity(
   let score = 52;
 
   // --- Bonus 1: registrationComplianceRate (>=95: +4, >=80: +2) ---
-  if (registrationComplianceRate >= 95) score += 4;
-  else if (registrationComplianceRate >= 80) score += 2;
+  if (meets(registrationComplianceRate, 95)) score += 4;
+  else if (meets(registrationComplianceRate, 80)) score += 2;
 
   // --- Bonus 2: dbsVerificationRate (>=100: +4, >=85: +2) ---
-  if (dbsVerificationRate >= 100) score += 4;
-  else if (dbsVerificationRate >= 85) score += 2;
+  if (meets(dbsVerificationRate, 100)) score += 4;
+  else if (meets(dbsVerificationRate, 85)) score += 2;
 
   // --- Bonus 3: idCheckRate (>=95: +3, >=80: +1) ---
-  if (idCheckRate >= 95) score += 3;
-  else if (idCheckRate >= 80) score += 1;
+  if (meets(idCheckRate, 95)) score += 3;
+  else if (meets(idCheckRate, 80)) score += 1;
 
   // --- Bonus 4: safeguardingAdherenceRate (>=95: +4, >=80: +2) ---
-  if (safeguardingAdherenceRate >= 95) score += 4;
-  else if (safeguardingAdherenceRate >= 80) score += 2;
+  if (meets(safeguardingAdherenceRate, 95)) score += 4;
+  else if (meets(safeguardingAdherenceRate, 80)) score += 2;
 
   // --- Bonus 5: logCompletenessRate (>=95: +3, >=80: +1) ---
-  if (logCompletenessRate >= 95) score += 3;
-  else if (logCompletenessRate >= 80) score += 1;
+  if (meets(logCompletenessRate, 95)) score += 3;
+  else if (meets(logCompletenessRate, 80)) score += 1;
 
   // --- Bonus 6: escortComplianceRate (>=100: +3, >=85: +1) ---
-  if (escortComplianceRate >= 100 && totalEscortRequired > 0) score += 3;
-  else if (escortComplianceRate >= 85 && totalEscortRequired > 0) score += 1;
+  if (meets(escortComplianceRate, 100) && totalEscortRequired > 0) score += 3;
+  else if (meets(escortComplianceRate, 85) && totalEscortRequired > 0) score += 1;
 
   // --- Bonus 7: preRegistrationRate (>=90: +2, >=70: +1) ---
-  if (preRegistrationRate >= 90 && totalRegistrations > 0) score += 2;
-  else if (preRegistrationRate >= 70 && totalRegistrations > 0) score += 1;
+  if (meets(preRegistrationRate, 90) && totalRegistrations > 0) score += 2;
+  else if (meets(preRegistrationRate, 70) && totalRegistrations > 0) score += 1;
 
   // --- Bonus 8: logReviewRate (>=90: +3, >=70: +1) ---
-  if (logReviewRate >= 90 && totalLogRecords > 0) score += 3;
-  else if (logReviewRate >= 70 && totalLogRecords > 0) score += 1;
+  if (meets(logReviewRate, 90) && totalLogRecords > 0) score += 3;
+  else if (meets(logReviewRate, 70) && totalLogRecords > 0) score += 1;
 
   // --- Bonus 9: loneAccessAssessmentRate (>=100: +2, >=80: +1) ---
-  if (loneAccessAssessmentRate >= 100 && loneAccessVisits.length > 0) score += 2;
-  else if (loneAccessAssessmentRate >= 80 && loneAccessVisits.length > 0) score += 1;
+  if (meets(loneAccessAssessmentRate, 100) && loneAccessVisits.length > 0) score += 2;
+  else if (meets(loneAccessAssessmentRate, 80) && loneAccessVisits.length > 0) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // Penalty 1: dbsVerificationRate < 50 -> -6 (guarded)
-  if (dbsVerificationRate < 50 && totalDbsRequired > 0) score -= 6;
+  if (below(dbsVerificationRate, 50) && totalDbsRequired > 0) score -= 6;
 
   // Penalty 2: registrationComplianceRate < 50 -> -5 (guarded)
-  if (registrationComplianceRate < 50 && totalRegistrations > 0) score -= 5;
+  if (below(registrationComplianceRate, 50) && totalRegistrations > 0) score -= 5;
 
   // Penalty 3: safeguardingAdherenceRate < 50 -> -5 (guarded)
-  if (safeguardingAdherenceRate < 50 && totalSafeguardingRecords > 0) score -= 5;
+  if (below(safeguardingAdherenceRate, 50) && totalSafeguardingRecords > 0) score -= 5;
 
   // Penalty 4: escortComplianceRate < 50 -> -4 (guarded)
-  if (escortComplianceRate < 50 && totalEscortRequired > 0) score -= 4;
+  if (below(escortComplianceRate, 50) && totalEscortRequired > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -460,109 +463,109 @@ export function computeVisitorManagementSecurity(
 
   const strengths: string[] = [];
 
-  if (registrationComplianceRate >= 95 && totalRegistrations > 0) {
+  if (meets(registrationComplianceRate, 95) && totalRegistrations > 0) {
     strengths.push(
       "Visitor registration compliance is exemplary -- virtually all visitors are fully registered with purpose recorded and host staff assigned before access is granted.",
     );
-  } else if (registrationComplianceRate >= 80 && totalRegistrations > 0) {
+  } else if (meets(registrationComplianceRate, 80) && totalRegistrations > 0) {
     strengths.push(
       `${registrationComplianceRate}% registration compliance rate -- the home maintains strong visitor registration practices with purpose and host staff consistently documented.`,
     );
   }
 
-  if (dbsVerificationRate >= 100 && totalDbsRequired > 0) {
+  if (meets(dbsVerificationRate, 100) && totalDbsRequired > 0) {
     strengths.push(
       "Every visitor requiring a DBS check has been verified with a current, valid certificate -- the home maintains robust safeguarding checks for all relevant visitors.",
     );
-  } else if (dbsVerificationRate >= 85 && totalDbsRequired > 0) {
+  } else if (meets(dbsVerificationRate, 85) && totalDbsRequired > 0) {
     strengths.push(
       `${dbsVerificationRate}% DBS verification rate -- the home ensures the vast majority of visitors requiring DBS checks are properly verified before access.`,
     );
   }
 
-  if (idCheckRate >= 95 && totalIdChecks > 0) {
+  if (meets(idCheckRate, 95) && totalIdChecks > 0) {
     strengths.push(
       "ID verification is near-comprehensive -- virtually every visitor has their identity confirmed before entering the home, providing robust security for children.",
     );
-  } else if (idCheckRate >= 80 && totalIdChecks > 0) {
+  } else if (meets(idCheckRate, 80) && totalIdChecks > 0) {
     strengths.push(
       `${idCheckRate}% ID verification rate -- the home consistently verifies visitor identity, supporting a secure environment for children.`,
     );
   }
 
-  if (safeguardingAdherenceRate >= 95 && totalSafeguardingRecords > 0) {
+  if (meets(safeguardingAdherenceRate, 95) && totalSafeguardingRecords > 0) {
     strengths.push(
       "Safeguarding protocol adherence is exemplary -- virtually all visitors receive safeguarding briefings, sign confidentiality agreements, and acknowledge child protection policies.",
     );
-  } else if (safeguardingAdherenceRate >= 80 && totalSafeguardingRecords > 0) {
+  } else if (meets(safeguardingAdherenceRate, 80) && totalSafeguardingRecords > 0) {
     strengths.push(
       `${safeguardingAdherenceRate}% safeguarding protocol adherence -- the home consistently briefs visitors on safeguarding responsibilities.`,
     );
   }
 
-  if (logCompletenessRate >= 95 && totalLogRecords > 0) {
+  if (meets(logCompletenessRate, 95) && totalLogRecords > 0) {
     strengths.push(
       "Visitor log completeness is exemplary -- sign-in, sign-out, badge issuance, and departure confirmation are recorded for virtually every visit.",
     );
-  } else if (logCompletenessRate >= 80 && totalLogRecords > 0) {
+  } else if (meets(logCompletenessRate, 80) && totalLogRecords > 0) {
     strengths.push(
       `${logCompletenessRate}% visitor log completeness -- the home maintains detailed records of visitor movements, supporting accountability and audit readiness.`,
     );
   }
 
-  if (escortComplianceRate >= 100 && totalEscortRequired > 0) {
+  if (meets(escortComplianceRate, 100) && totalEscortRequired > 0) {
     strengths.push(
       "Every visitor requiring an escort has been escorted -- the home ensures no unaccompanied access where escort protocols apply.",
     );
-  } else if (escortComplianceRate >= 85 && totalEscortRequired > 0) {
+  } else if (meets(escortComplianceRate, 85) && totalEscortRequired > 0) {
     strengths.push(
       `${escortComplianceRate}% escort compliance rate -- visitors requiring escorts are consistently accompanied by designated staff.`,
     );
   }
 
-  if (preRegistrationRate >= 90 && totalRegistrations > 0) {
+  if (meets(preRegistrationRate, 90) && totalRegistrations > 0) {
     strengths.push(
       `${preRegistrationRate}% of visitors are pre-registered -- the home proactively manages visitor access by ensuring visits are planned and approved in advance.`,
     );
-  } else if (preRegistrationRate >= 70 && totalRegistrations > 0) {
+  } else if (meets(preRegistrationRate, 70) && totalRegistrations > 0) {
     strengths.push(
       `${preRegistrationRate}% pre-registration rate -- the majority of visitors are registered in advance, supporting planned and safe access.`,
     );
   }
 
-  if (logReviewRate >= 90 && totalLogRecords > 0) {
+  if (meets(logReviewRate, 90) && totalLogRecords > 0) {
     strengths.push(
       `${logReviewRate}% of visitor logs reviewed by management -- strong oversight of visitor activity supporting accountability and safeguarding governance.`,
     );
-  } else if (logReviewRate >= 70 && totalLogRecords > 0) {
+  } else if (meets(logReviewRate, 70) && totalLogRecords > 0) {
     strengths.push(
       `${logReviewRate}% log review rate -- the majority of visitor logs receive management review, supporting oversight of visitor access.`,
     );
   }
 
-  if (loneAccessAssessmentRate >= 100 && loneAccessVisits.length > 0) {
+  if (meets(loneAccessAssessmentRate, 100) && loneAccessVisits.length > 0) {
     strengths.push(
       "Every instance of lone visitor access has been risk assessed -- the home ensures no unsupervised contact without documented risk assessment.",
     );
-  } else if (loneAccessAssessmentRate >= 80 && loneAccessVisits.length > 0) {
+  } else if (meets(loneAccessAssessmentRate, 80) && loneAccessVisits.length > 0) {
     strengths.push(
       `${loneAccessAssessmentRate}% of lone access visits risk assessed -- the home generally ensures unsupervised visitor contact is preceded by risk assessment.`,
     );
   }
 
-  if (photoMatchRate >= 90 && totalIdChecks > 0) {
+  if (meets(photoMatchRate, 90) && totalIdChecks > 0) {
     strengths.push(
       `${photoMatchRate}% photo match confirmation rate -- the home goes beyond basic ID checks to verify visitors match their photographic identification.`,
     );
   }
 
-  if (emergencyProceduresRate >= 90 && totalSafeguardingRecords > 0) {
+  if (meets(emergencyProceduresRate, 90) && totalSafeguardingRecords > 0) {
     strengths.push(
       `${emergencyProceduresRate}% of visitors briefed on emergency procedures -- the home ensures visitors know how to respond in an emergency, supporting children's safety.`,
     );
   }
 
-  if (badgeIssuedRate >= 95 && totalLogRecords > 0) {
+  if (meets(badgeIssuedRate, 95) && totalLogRecords > 0) {
     strengths.push(
       `${badgeIssuedRate}% badge issuance rate -- visitors are clearly identifiable within the home, supporting children's ability to distinguish authorised visitors from strangers.`,
     );
@@ -574,7 +577,7 @@ export function computeVisitorManagementSecurity(
     );
   }
 
-  if (departureConfirmationRate >= 95 && totalLogRecords > 0) {
+  if (meets(departureConfirmationRate, 95) && totalLogRecords > 0) {
     strengths.push(
       `${departureConfirmationRate}% departure confirmation rate -- the home verifies that all visitors leave the premises, eliminating the risk of unaccounted visitors remaining on site.`,
     );
@@ -584,79 +587,79 @@ export function computeVisitorManagementSecurity(
 
   const concerns: string[] = [];
 
-  if (dbsVerificationRate < 50 && totalDbsRequired > 0) {
+  if (below(dbsVerificationRate, 50) && totalDbsRequired > 0) {
     concerns.push(
       `Only ${dbsVerificationRate}% of visitors requiring DBS checks have been verified -- the majority of visitors who should have DBS clearance are accessing the home without confirmed safeguarding checks. This is a critical safeguarding failure.`,
     );
-  } else if (dbsVerificationRate < 85 && dbsVerificationRate >= 50 && totalDbsRequired > 0) {
+  } else if (below(dbsVerificationRate, 85) && meets(dbsVerificationRate, 50) && totalDbsRequired > 0) {
     concerns.push(
       `DBS verification rate at ${dbsVerificationRate}% -- some visitors requiring DBS checks are accessing the home without verified clearance, which represents a safeguarding risk.`,
     );
   }
 
-  if (registrationComplianceRate < 50 && totalRegistrations > 0) {
+  if (below(registrationComplianceRate, 50) && totalRegistrations > 0) {
     concerns.push(
       `Only ${registrationComplianceRate}% of visitor registrations are complete -- the majority of visitors are not fully registered with purpose, host staff assignment, and completion confirmed.`,
     );
-  } else if (registrationComplianceRate < 80 && registrationComplianceRate >= 50 && totalRegistrations > 0) {
+  } else if (below(registrationComplianceRate, 80) && meets(registrationComplianceRate, 50) && totalRegistrations > 0) {
     concerns.push(
       `Registration compliance at ${registrationComplianceRate}% -- some visitors are not fully registered before accessing the home, weakening accountability and traceability.`,
     );
   }
 
-  if (idCheckRate < 50 && totalIdChecks > 0) {
+  if (below(idCheckRate, 50) && totalIdChecks > 0) {
     concerns.push(
       `Only ${idCheckRate}% of visitors have verified ID -- the home cannot confirm the identity of the majority of visitors, which represents a significant security risk.`,
     );
-  } else if (idCheckRate < 80 && idCheckRate >= 50 && totalIdChecks > 0) {
+  } else if (below(idCheckRate, 80) && meets(idCheckRate, 50) && totalIdChecks > 0) {
     concerns.push(
       `ID verification rate at ${idCheckRate}% -- some visitors enter the home without confirmed identity, which may compromise children's safety.`,
     );
   }
 
-  if (safeguardingAdherenceRate < 50 && totalSafeguardingRecords > 0) {
+  if (below(safeguardingAdherenceRate, 50) && totalSafeguardingRecords > 0) {
     concerns.push(
       `Only ${safeguardingAdherenceRate}% safeguarding protocol adherence -- the majority of visitors are not receiving safeguarding briefings, signing confidentiality agreements, or acknowledging child protection policies before access.`,
     );
-  } else if (safeguardingAdherenceRate < 80 && safeguardingAdherenceRate >= 50 && totalSafeguardingRecords > 0) {
+  } else if (below(safeguardingAdherenceRate, 80) && meets(safeguardingAdherenceRate, 50) && totalSafeguardingRecords > 0) {
     concerns.push(
       `Safeguarding protocol adherence at ${safeguardingAdherenceRate}% -- some visitors are not fully briefed on safeguarding responsibilities before entering the home.`,
     );
   }
 
-  if (logCompletenessRate < 50 && totalLogRecords > 0) {
+  if (below(logCompletenessRate, 50) && totalLogRecords > 0) {
     concerns.push(
       `Only ${logCompletenessRate}% of visitor logs are complete -- the home cannot account for visitor movements, creating gaps in the audit trail for Ofsted inspection.`,
     );
-  } else if (logCompletenessRate < 80 && logCompletenessRate >= 50 && totalLogRecords > 0) {
+  } else if (below(logCompletenessRate, 80) && meets(logCompletenessRate, 50) && totalLogRecords > 0) {
     concerns.push(
       `Visitor log completeness at ${logCompletenessRate}% -- gaps in sign-in, sign-out, or badge records mean the home cannot fully account for all visitor activity.`,
     );
   }
 
-  if (escortComplianceRate < 50 && totalEscortRequired > 0) {
+  if (below(escortComplianceRate, 50) && totalEscortRequired > 0) {
     concerns.push(
       `Only ${escortComplianceRate}% escort compliance -- the majority of visitors requiring escorts are accessing the home unaccompanied, which is a direct safeguarding risk.`,
     );
-  } else if (escortComplianceRate < 85 && escortComplianceRate >= 50 && totalEscortRequired > 0) {
+  } else if (below(escortComplianceRate, 85) && meets(escortComplianceRate, 50) && totalEscortRequired > 0) {
     concerns.push(
       `Escort compliance at ${escortComplianceRate}% -- some visitors requiring escorts are not being accompanied, which may compromise children's safety.`,
     );
   }
 
-  if (dbsExpiredRate > 0 && totalDbsRequired > 0) {
+  if (above(dbsExpiredRate, 0) && totalDbsRequired > 0) {
     concerns.push(
       `${dbsExpiredRate}% of DBS checks have expired -- visitors with expired DBS certificates are accessing the home, which undermines safeguarding assurance.`,
     );
   }
 
-  if (signOutRate < 80 && totalLogRecords > 0) {
+  if (below(signOutRate, 80) && totalLogRecords > 0) {
     concerns.push(
       `Sign-out recording rate at ${signOutRate}% -- the home cannot confirm when all visitors have left the premises, creating accountability gaps.`,
     );
   }
 
-  if (loneAccessAssessmentRate < 80 && loneAccessVisits.length > 0) {
+  if (below(loneAccessAssessmentRate, 80) && loneAccessVisits.length > 0) {
     concerns.push(
       `Only ${loneAccessAssessmentRate}% of lone access visits risk assessed -- visitors with unsupervised contact with children are not consistently subject to documented risk assessment.`,
     );
@@ -675,7 +678,7 @@ export function computeVisitorManagementSecurity(
     );
   }
 
-  if (prohibitedAreasRate < 70 && totalSafeguardingRecords > 0) {
+  if (below(prohibitedAreasRate, 70) && totalSafeguardingRecords > 0) {
     concerns.push(
       `Only ${prohibitedAreasRate}% of visitors informed about prohibited areas -- visitors may inadvertently access sensitive areas of the home without awareness of restrictions.`,
     );
@@ -686,7 +689,7 @@ export function computeVisitorManagementSecurity(
   const recommendations: VisitorSecurityRecommendation[] = [];
   let rank = 0;
 
-  if (dbsVerificationRate < 50 && totalDbsRequired > 0) {
+  if (below(dbsVerificationRate, 50) && totalDbsRequired > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -696,7 +699,7 @@ export function computeVisitorManagementSecurity(
     });
   }
 
-  if (registrationComplianceRate < 50 && totalRegistrations > 0) {
+  if (below(registrationComplianceRate, 50) && totalRegistrations > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -706,7 +709,7 @@ export function computeVisitorManagementSecurity(
     });
   }
 
-  if (safeguardingAdherenceRate < 50 && totalSafeguardingRecords > 0) {
+  if (below(safeguardingAdherenceRate, 50) && totalSafeguardingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -716,7 +719,7 @@ export function computeVisitorManagementSecurity(
     });
   }
 
-  if (escortComplianceRate < 50 && totalEscortRequired > 0) {
+  if (below(escortComplianceRate, 50) && totalEscortRequired > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -726,7 +729,7 @@ export function computeVisitorManagementSecurity(
     });
   }
 
-  if (idCheckRate < 50 && totalIdChecks > 0) {
+  if (below(idCheckRate, 50) && totalIdChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -736,7 +739,7 @@ export function computeVisitorManagementSecurity(
     });
   }
 
-  if (logCompletenessRate < 50 && totalLogRecords > 0) {
+  if (below(logCompletenessRate, 50) && totalLogRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -746,7 +749,7 @@ export function computeVisitorManagementSecurity(
     });
   }
 
-  if (dbsExpiredRate > 0 && totalDbsRequired > 0) {
+  if (above(dbsExpiredRate, 0) && totalDbsRequired > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -756,7 +759,7 @@ export function computeVisitorManagementSecurity(
     });
   }
 
-  if (loneAccessAssessmentRate < 80 && loneAccessVisits.length > 0) {
+  if (below(loneAccessAssessmentRate, 80) && loneAccessVisits.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -767,8 +770,8 @@ export function computeVisitorManagementSecurity(
   }
 
   if (
-    dbsVerificationRate >= 50 &&
-    dbsVerificationRate < 85 &&
+    meets(dbsVerificationRate, 50) &&
+    below(dbsVerificationRate, 85) &&
     totalDbsRequired > 0
   ) {
     recommendations.push({
@@ -781,8 +784,8 @@ export function computeVisitorManagementSecurity(
   }
 
   if (
-    registrationComplianceRate >= 50 &&
-    registrationComplianceRate < 80 &&
+    meets(registrationComplianceRate, 50) &&
+    below(registrationComplianceRate, 80) &&
     totalRegistrations > 0
   ) {
     recommendations.push({
@@ -795,8 +798,8 @@ export function computeVisitorManagementSecurity(
   }
 
   if (
-    safeguardingAdherenceRate >= 50 &&
-    safeguardingAdherenceRate < 80 &&
+    meets(safeguardingAdherenceRate, 50) &&
+    below(safeguardingAdherenceRate, 80) &&
     totalSafeguardingRecords > 0
   ) {
     recommendations.push({
@@ -809,8 +812,8 @@ export function computeVisitorManagementSecurity(
   }
 
   if (
-    idCheckRate >= 50 &&
-    idCheckRate < 80 &&
+    meets(idCheckRate, 50) &&
+    below(idCheckRate, 80) &&
     totalIdChecks > 0
   ) {
     recommendations.push({
@@ -823,8 +826,8 @@ export function computeVisitorManagementSecurity(
   }
 
   if (
-    logCompletenessRate >= 50 &&
-    logCompletenessRate < 80 &&
+    meets(logCompletenessRate, 50) &&
+    below(logCompletenessRate, 80) &&
     totalLogRecords > 0
   ) {
     recommendations.push({
@@ -837,8 +840,8 @@ export function computeVisitorManagementSecurity(
   }
 
   if (
-    escortComplianceRate >= 50 &&
-    escortComplianceRate < 85 &&
+    meets(escortComplianceRate, 50) &&
+    below(escortComplianceRate, 85) &&
     totalEscortRequired > 0
   ) {
     recommendations.push({
@@ -850,7 +853,7 @@ export function computeVisitorManagementSecurity(
     });
   }
 
-  if (logReviewRate < 70 && totalLogRecords > 0) {
+  if (below(logReviewRate, 70) && totalLogRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -860,7 +863,7 @@ export function computeVisitorManagementSecurity(
     });
   }
 
-  if (preRegistrationRate < 70 && totalRegistrations > 0) {
+  if (below(preRegistrationRate, 70) && totalRegistrations > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -886,42 +889,42 @@ export function computeVisitorManagementSecurity(
 
   // -- Critical insights --
 
-  if (dbsVerificationRate < 50 && totalDbsRequired > 0) {
+  if (below(dbsVerificationRate, 50) && totalDbsRequired > 0) {
     insights.push({
       text: `Only ${dbsVerificationRate}% of visitors requiring DBS checks have been verified. Ofsted will view unverified DBS status as evidence that the home is failing to protect children from potentially unsuitable adults. This is a critical breach of Reg 34 safeguarding requirements.`,
       severity: "critical",
     });
   }
 
-  if (registrationComplianceRate < 50 && totalRegistrations > 0) {
+  if (below(registrationComplianceRate, 50) && totalRegistrations > 0) {
     insights.push({
       text: `Only ${registrationComplianceRate}% of visitor registrations are complete. Without full registration records, the home cannot evidence who visited, why, or who was responsible for their supervision. This fundamentally undermines audit readiness and accountability.`,
       severity: "critical",
     });
   }
 
-  if (safeguardingAdherenceRate < 50 && totalSafeguardingRecords > 0) {
+  if (below(safeguardingAdherenceRate, 50) && totalSafeguardingRecords > 0) {
     insights.push({
       text: `Only ${safeguardingAdherenceRate}% safeguarding protocol adherence. Visitors entering the home without safeguarding briefings, confidentiality agreements, or child protection acknowledgements represent a direct risk to children. Ofsted expects every visitor to understand their safeguarding responsibilities.`,
       severity: "critical",
     });
   }
 
-  if (escortComplianceRate < 50 && totalEscortRequired > 0) {
+  if (below(escortComplianceRate, 50) && totalEscortRequired > 0) {
     insights.push({
       text: `Only ${escortComplianceRate}% escort compliance where escorts are required. Unescorted visitors in a children's home where escort protocols exist represents a fundamental safeguarding failure. Children may be exposed to unsupervised contact with adults who should be accompanied.`,
       severity: "critical",
     });
   }
 
-  if (logCompletenessRate < 50 && totalLogRecords > 0) {
+  if (below(logCompletenessRate, 50) && totalLogRecords > 0) {
     insights.push({
       text: `Only ${logCompletenessRate}% of visitor logs are complete. An incomplete visitor log means the home cannot account for who was on the premises at any given time. In a safeguarding incident, gaps in the visitor log could compromise the investigation and evidence trail.`,
       severity: "critical",
     });
   }
 
-  if (loneAccessAssessmentRate < 50 && loneAccessVisits.length > 0) {
+  if (below(loneAccessAssessmentRate, 50) && loneAccessVisits.length > 0) {
     insights.push({
       text: `Only ${loneAccessAssessmentRate}% of lone access visits are risk assessed. Visitors with unsupervised contact with children without documented risk assessment represent a direct and unmitigated safeguarding risk.`,
       severity: "critical",
@@ -931,8 +934,8 @@ export function computeVisitorManagementSecurity(
   // -- Warning insights --
 
   if (
-    dbsVerificationRate >= 50 &&
-    dbsVerificationRate < 85 &&
+    meets(dbsVerificationRate, 50) &&
+    below(dbsVerificationRate, 85) &&
     totalDbsRequired > 0
   ) {
     insights.push({
@@ -942,8 +945,8 @@ export function computeVisitorManagementSecurity(
   }
 
   if (
-    registrationComplianceRate >= 50 &&
-    registrationComplianceRate < 80 &&
+    meets(registrationComplianceRate, 50) &&
+    below(registrationComplianceRate, 80) &&
     totalRegistrations > 0
   ) {
     insights.push({
@@ -953,8 +956,8 @@ export function computeVisitorManagementSecurity(
   }
 
   if (
-    idCheckRate >= 50 &&
-    idCheckRate < 80 &&
+    meets(idCheckRate, 50) &&
+    below(idCheckRate, 80) &&
     totalIdChecks > 0
   ) {
     insights.push({
@@ -964,8 +967,8 @@ export function computeVisitorManagementSecurity(
   }
 
   if (
-    safeguardingAdherenceRate >= 50 &&
-    safeguardingAdherenceRate < 80 &&
+    meets(safeguardingAdherenceRate, 50) &&
+    below(safeguardingAdherenceRate, 80) &&
     totalSafeguardingRecords > 0
   ) {
     insights.push({
@@ -975,8 +978,8 @@ export function computeVisitorManagementSecurity(
   }
 
   if (
-    logCompletenessRate >= 50 &&
-    logCompletenessRate < 80 &&
+    meets(logCompletenessRate, 50) &&
+    below(logCompletenessRate, 80) &&
     totalLogRecords > 0
   ) {
     insights.push({
@@ -986,8 +989,8 @@ export function computeVisitorManagementSecurity(
   }
 
   if (
-    escortComplianceRate >= 50 &&
-    escortComplianceRate < 85 &&
+    meets(escortComplianceRate, 50) &&
+    below(escortComplianceRate, 85) &&
     totalEscortRequired > 0
   ) {
     insights.push({
@@ -996,14 +999,14 @@ export function computeVisitorManagementSecurity(
     });
   }
 
-  if (dbsExpiredRate > 0 && totalDbsRequired > 0) {
+  if (above(dbsExpiredRate, 0) && totalDbsRequired > 0) {
     insights.push({
       text: `${dbsExpiredRate}% of DBS checks have expired. Expired DBS certificates provide no current safeguarding assurance. The home must treat expired DBS status the same as no DBS check at all until renewed.`,
       severity: "warning",
     });
   }
 
-  if (signOutRate < 80 && signOutRate >= 50 && totalLogRecords > 0) {
+  if (below(signOutRate, 80) && meets(signOutRate, 50) && totalLogRecords > 0) {
     insights.push({
       text: `Sign-out rate at ${signOutRate}% -- the home cannot confirm departure for a significant proportion of visitors. In a safeguarding context, knowing who has left the premises is as important as knowing who entered.`,
       severity: "warning",
@@ -1028,8 +1031,8 @@ export function computeVisitorManagementSecurity(
   ).length;
 
   if (contractorVisits > 0 && totalRegistrations > 0) {
-    const contractorRate = pct(contractorVisits, totalRegistrations);
-    if (contractorRate > 30) {
+    const contractorRate = rate(contractorVisits, totalRegistrations);
+    if (above(contractorRate, 30)) {
       insights.push({
         text: `Contractors account for ${contractorRate}% of all visits. High contractor traffic requires particular attention to DBS checks, escort compliance, and restricted area management to protect children from exposure to transient adult visitors.`,
         severity: "warning",
@@ -1047,7 +1050,7 @@ export function computeVisitorManagementSecurity(
   }
 
   if (
-    dbsVerificationRate >= 100 &&
+    meets(dbsVerificationRate, 100) &&
     totalDbsRequired > 0
   ) {
     insights.push({
@@ -1057,8 +1060,8 @@ export function computeVisitorManagementSecurity(
   }
 
   if (
-    registrationComplianceRate >= 95 &&
-    safeguardingAdherenceRate >= 95 &&
+    meets(registrationComplianceRate, 95) &&
+    meets(safeguardingAdherenceRate, 95) &&
     totalRegistrations > 0 &&
     totalSafeguardingRecords > 0
   ) {
@@ -1069,8 +1072,8 @@ export function computeVisitorManagementSecurity(
   }
 
   if (
-    logCompletenessRate >= 95 &&
-    logReviewRate >= 90 &&
+    meets(logCompletenessRate, 95) &&
+    meets(logReviewRate, 90) &&
     totalLogRecords > 0
   ) {
     insights.push({
@@ -1080,9 +1083,9 @@ export function computeVisitorManagementSecurity(
   }
 
   if (
-    escortComplianceRate >= 100 &&
+    meets(escortComplianceRate, 100) &&
     totalEscortRequired > 0 &&
-    loneAccessAssessmentRate >= 100 &&
+    meets(loneAccessAssessmentRate, 100) &&
     loneAccessVisits.length > 0
   ) {
     insights.push({
@@ -1092,8 +1095,8 @@ export function computeVisitorManagementSecurity(
   }
 
   if (
-    idCheckRate >= 95 &&
-    photoMatchRate >= 90 &&
+    meets(idCheckRate, 95) &&
+    meets(photoMatchRate, 90) &&
     totalIdChecks > 0
   ) {
     insights.push({
@@ -1103,9 +1106,9 @@ export function computeVisitorManagementSecurity(
   }
 
   if (
-    departureConfirmationRate >= 95 &&
-    signInRate >= 95 &&
-    signOutRate >= 95 &&
+    meets(departureConfirmationRate, 95) &&
+    meets(signInRate, 95) &&
+    meets(signOutRate, 95) &&
     totalLogRecords > 0
   ) {
     insights.push({
@@ -1115,8 +1118,8 @@ export function computeVisitorManagementSecurity(
   }
 
   if (
-    badgeIssuedRate >= 95 &&
-    badgeReturnRate >= 95 &&
+    meets(badgeIssuedRate, 95) &&
+    meets(badgeReturnRate, 95) &&
     totalLogRecords > 0
   ) {
     insights.push({

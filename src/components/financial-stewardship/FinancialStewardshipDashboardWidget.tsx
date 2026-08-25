@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { FinancialStewardshipIntelligence } from "@/lib/financial-stewardship";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -156,7 +157,7 @@ export function FinancialStewardshipDashboardWidget() {
                   <div className="flex flex-wrap gap-1.5 mb-2">
                     <StatusBadge ok={child.savingsAccountInPlace} label="Savings Account" />
                     <StatusBadge ok={child.budgetPlanInPlace} label="Budget Plan" />
-                    <StatusBadge ok={child.consentRate >= 90} label={`Consent ${child.consentRate}%`} />
+                    <StatusBadge ok={meets(child.consentRate, 90)} label={`Consent ${formatRate(child.consentRate)}`} />
                     <StatusBadge ok={child.currentBalance > 0} label={`Balance: ${child.currentBalance.toFixed(2)}`} />
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">

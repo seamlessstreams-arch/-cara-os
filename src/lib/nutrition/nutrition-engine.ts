@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — Nutrition & Dietary Compliance Intelligence Engine
 //
@@ -153,40 +154,54 @@ export interface DietaryAccommodationResult {
   childrenWithRequirements: number;
   requirementsMet: number;
   requirementsNotMet: number;
-  metRate: number;
-  allergyManagementRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  metRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  allergyManagementRate: number | null;
   requirementBreakdown: { type: DietaryRequirementType; count: number }[];
 }
 
 export interface MealQualityResult {
   totalMeals: number;
   mealsPerDay: number;
-  freshFruitVegRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  freshFruitVegRate: number | null;
   averageFoodGroupsCovered: number;
-  varietyScore: number; // unique dishes / total meals × 100
-  culturalMealRate: number;
-  freshCookingRate: number;
-  qualityFactorFrequency: { factor: MealtimeQualityFactor; count: number; rate: number }[];
+  /** null when the population is empty — nothing measured, not 0%. */
+  varietyScore: number | null; // unique dishes / total meals × 100
+  /** null when the population is empty — nothing measured, not 0%. */
+  culturalMealRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  freshCookingRate: number | null;
+  qualityFactorFrequency: { factor: MealtimeQualityFactor; count: number; rate: number | null }[];
 }
 
 export interface ChildInvolvementResult {
-  menuContributionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  menuContributionRate: number | null;
   cookingSessionsTotal: number;
   cookingSessionsPerChild: number;
-  childInitiatedRate: number;
-  engagementRate: number;
-  staffAteWithChildrenRate: number;
-  childrenHelpedCookRate: number;
-  childrenChoseMenuRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childInitiatedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  engagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffAteWithChildrenRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childrenHelpedCookRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childrenChoseMenuRate: number | null;
 }
 
 export interface FoodSafetyResult {
   totalChecks: number;
   compliantChecks: number;
-  complianceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  complianceRate: number | null;
   correctionsNeeded: number;
   correctionsMade: number;
-  correctionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  correctionRate: number | null;
   checkTypeBreakdown: { checkType: string; total: number; compliant: number }[];
 }
 
@@ -263,10 +278,6 @@ export function getQualityFactorLabel(f: MealtimeQualityFactor): string {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function inPeriod(date: string, start: string, end: string): boolean {
   return date.slice(0, 10) >= start.slice(0, 10) && date.slice(0, 10) <= end.slice(0, 10);
 }
@@ -299,7 +310,7 @@ export function evaluateDietaryAccommodation(
     (m) => m.dietaryRequirementsMet,
   ).length;
   const requirementsNotMet = mealsWithRequirements.length - requirementsMet;
-  const metRate = pct(requirementsMet, mealsWithRequirements.length);
+  const metRate = rate(requirementsMet, mealsWithRequirements.length);
 
   // Allergen management
   const mealsWithAllergens = periodMeals.filter(
@@ -312,7 +323,7 @@ export function evaluateDietaryAccommodation(
   const allergenSafe = mealsWithAllergens.filter(
     (m) => m.allergensSafelyManaged,
   ).length;
-  const allergyManagementRate = pct(allergenSafe, mealsWithAllergens.length);
+  const allergyManagementRate = rate(allergenSafe, mealsWithAllergens.length);
 
   // Requirement breakdown
   const reqCounts = new Map<DietaryRequirementType, number>();
@@ -357,7 +368,7 @@ export function evaluateMealQuality(
   const freshFruitVeg = periodMeals.filter(
     (m) => m.freshFruitVegIncluded,
   ).length;
-  const freshFruitVegRate = pct(freshFruitVeg, totalMeals);
+  const freshFruitVegRate = rate(freshFruitVeg, totalMeals);
 
   const totalFoodGroups = periodMeals.reduce(
     (sum, m) => sum + m.foodGroupsCovered.length,
@@ -372,7 +383,7 @@ export function evaluateMealQuality(
   const uniqueDescriptions = new Set(
     periodMeals.map((m) => m.description.toLowerCase().trim()),
   );
-  const varietyScore = pct(uniqueDescriptions.size, totalMeals);
+  const varietyScore = rate(uniqueDescriptions.size, totalMeals);
 
   // Menu plans: cultural meals and fresh cooking
   const periodPlans = menuPlans.filter((p) =>
@@ -386,7 +397,7 @@ export function evaluateMealQuality(
     (sum, p) => sum + p.mealsPlanned,
     0,
   );
-  const culturalMealRate = pct(totalCulturalMeals, totalPlannedMeals);
+  const culturalMealRate = rate(totalCulturalMeals, totalPlannedMeals);
 
   const totalFreshDays = periodPlans.reduce(
     (sum, p) => sum + p.freshCookingDays,
@@ -396,7 +407,7 @@ export function evaluateMealQuality(
     (sum, p) => sum + p.totalDays,
     0,
   );
-  const freshCookingRate = pct(totalFreshDays, totalPlanDays);
+  const freshCookingRate = rate(totalFreshDays, totalPlanDays);
 
   // Quality factor frequency
   const factorCounts = new Map<MealtimeQualityFactor, number>();
@@ -409,7 +420,7 @@ export function evaluateMealQuality(
     .map(([factor, count]) => ({
       factor,
       count,
-      rate: pct(count, totalMeals),
+      rate: rate(count, totalMeals),
     }))
     .sort((a, b) => b.count - a.count);
 
@@ -448,7 +459,7 @@ export function evaluateChildInvolvement(
   const plansWithContribution = periodPlans.filter(
     (p) => p.childrenContributed,
   ).length;
-  const menuContributionRate = pct(plansWithContribution, periodPlans.length);
+  const menuContributionRate = rate(plansWithContribution, periodPlans.length);
 
   // Cooking sessions
   const cookingSessionsTotal = periodSessions.length;
@@ -459,15 +470,15 @@ export function evaluateChildInvolvement(
   const childInitiated = periodSessions.filter(
     (s) => s.childInitiated,
   ).length;
-  const childInitiatedRate = pct(childInitiated, cookingSessionsTotal);
+  const childInitiatedRate = rate(childInitiated, cookingSessionsTotal);
   const engaged = periodSessions.filter((s) => s.childEngaged).length;
-  const engagementRate = pct(engaged, cookingSessionsTotal);
+  const engagementRate = rate(engaged, cookingSessionsTotal);
 
   // Staff ate with children
   const staffAteWithChildren = periodMeals.filter((m) =>
     m.qualityFactors.includes("staff_ate_with_children"),
   ).length;
-  const staffAteWithChildrenRate = pct(
+  const staffAteWithChildrenRate = rate(
     staffAteWithChildren,
     periodMeals.length,
   );
@@ -476,13 +487,13 @@ export function evaluateChildInvolvement(
   const childrenHelpedCook = periodMeals.filter((m) =>
     m.qualityFactors.includes("children_helped_cook"),
   ).length;
-  const childrenHelpedCookRate = pct(childrenHelpedCook, periodMeals.length);
+  const childrenHelpedCookRate = rate(childrenHelpedCook, periodMeals.length);
 
   // Children chose menu
   const childrenChoseMenu = periodMeals.filter((m) =>
     m.qualityFactors.includes("children_chose_menu"),
   ).length;
-  const childrenChoseMenuRate = pct(childrenChoseMenu, periodMeals.length);
+  const childrenChoseMenuRate = rate(childrenChoseMenu, periodMeals.length);
 
   return {
     menuContributionRate,
@@ -506,7 +517,7 @@ export function evaluateFoodSafety(
   );
   const totalChecks = periodChecks.length;
   const compliantChecks = periodChecks.filter((c) => c.compliant).length;
-  const complianceRate = pct(compliantChecks, totalChecks);
+  const complianceRate = rate(compliantChecks, totalChecks);
 
   const correctionsNeeded = periodChecks.filter(
     (c) => !c.compliant,
@@ -514,7 +525,7 @@ export function evaluateFoodSafety(
   const correctionsMade = periodChecks.filter(
     (c) => !c.compliant && c.correctedDate,
   ).length;
-  const correctionRate = pct(correctionsMade, correctionsNeeded);
+  const correctionRate = rate(correctionsMade, correctionsNeeded);
 
   // Check type breakdown
   const typeMap = new Map<string, { total: number; compliant: number }>();
@@ -660,62 +671,62 @@ export function generateNutritionIntelligence(
   // 1. Dietary needs accommodation (25)
   let dietaryScore = 0;
   if (dietaryAccommodation.metRate === 100) dietaryScore += 15;
-  else if (dietaryAccommodation.metRate >= 90) dietaryScore += 12;
-  else if (dietaryAccommodation.metRate >= 75) dietaryScore += 8;
-  else if (dietaryAccommodation.metRate >= 50) dietaryScore += 4;
+  else if (meets(dietaryAccommodation.metRate, 90)) dietaryScore += 12;
+  else if (meets(dietaryAccommodation.metRate, 75)) dietaryScore += 8;
+  else if (meets(dietaryAccommodation.metRate, 50)) dietaryScore += 4;
 
   if (dietaryAccommodation.allergyManagementRate === 100) dietaryScore += 10;
-  else if (dietaryAccommodation.allergyManagementRate >= 90) dietaryScore += 7;
-  else if (dietaryAccommodation.allergyManagementRate >= 75) dietaryScore += 4;
+  else if (meets(dietaryAccommodation.allergyManagementRate, 90)) dietaryScore += 7;
+  else if (meets(dietaryAccommodation.allergyManagementRate, 75)) dietaryScore += 4;
   dietaryScore = Math.min(dietaryScore, 25);
 
   // 2. Meal quality (20)
   let qualityScore = 0;
-  if (mealQuality.freshFruitVegRate >= 80) qualityScore += 5;
-  else if (mealQuality.freshFruitVegRate >= 60) qualityScore += 3;
+  if (meets(mealQuality.freshFruitVegRate, 80)) qualityScore += 5;
+  else if (meets(mealQuality.freshFruitVegRate, 60)) qualityScore += 3;
 
   if (mealQuality.averageFoodGroupsCovered >= 3.5) qualityScore += 5;
   else if (mealQuality.averageFoodGroupsCovered >= 2.5) qualityScore += 3;
 
-  if (mealQuality.varietyScore >= 60) qualityScore += 4;
-  else if (mealQuality.varietyScore >= 40) qualityScore += 2;
+  if (meets(mealQuality.varietyScore, 60)) qualityScore += 4;
+  else if (meets(mealQuality.varietyScore, 40)) qualityScore += 2;
 
-  if (mealQuality.freshCookingRate >= 80) qualityScore += 3;
-  else if (mealQuality.freshCookingRate >= 60) qualityScore += 2;
+  if (meets(mealQuality.freshCookingRate, 80)) qualityScore += 3;
+  else if (meets(mealQuality.freshCookingRate, 60)) qualityScore += 2;
 
-  if (mealQuality.culturalMealRate >= 10) qualityScore += 3;
-  else if (mealQuality.culturalMealRate >= 5) qualityScore += 1;
+  if (meets(mealQuality.culturalMealRate, 10)) qualityScore += 3;
+  else if (meets(mealQuality.culturalMealRate, 5)) qualityScore += 1;
 
   qualityScore = Math.min(qualityScore, 20);
 
   // 3. Child involvement (20)
   let involvementScore = 0;
-  if (childInvolvement.menuContributionRate >= 80) involvementScore += 5;
-  else if (childInvolvement.menuContributionRate >= 50) involvementScore += 3;
+  if (meets(childInvolvement.menuContributionRate, 80)) involvementScore += 5;
+  else if (meets(childInvolvement.menuContributionRate, 50)) involvementScore += 3;
 
-  if (childInvolvement.staffAteWithChildrenRate >= 60) involvementScore += 4;
-  else if (childInvolvement.staffAteWithChildrenRate >= 30) involvementScore += 2;
+  if (meets(childInvolvement.staffAteWithChildrenRate, 60)) involvementScore += 4;
+  else if (meets(childInvolvement.staffAteWithChildrenRate, 30)) involvementScore += 2;
 
-  if (childInvolvement.childrenHelpedCookRate >= 20) involvementScore += 3;
-  else if (childInvolvement.childrenHelpedCookRate >= 10) involvementScore += 1;
+  if (meets(childInvolvement.childrenHelpedCookRate, 20)) involvementScore += 3;
+  else if (meets(childInvolvement.childrenHelpedCookRate, 10)) involvementScore += 1;
 
   if (childInvolvement.cookingSessionsPerChild >= 3) involvementScore += 4;
   else if (childInvolvement.cookingSessionsPerChild >= 1) involvementScore += 2;
 
-  if (childInvolvement.engagementRate >= 80) involvementScore += 4;
-  else if (childInvolvement.engagementRate >= 60) involvementScore += 2;
+  if (meets(childInvolvement.engagementRate, 80)) involvementScore += 4;
+  else if (meets(childInvolvement.engagementRate, 60)) involvementScore += 2;
 
   involvementScore = Math.min(involvementScore, 20);
 
   // 4. Food safety (15)
   let safetyScore = 0;
   if (foodSafety.complianceRate === 100) safetyScore += 10;
-  else if (foodSafety.complianceRate >= 90) safetyScore += 7;
-  else if (foodSafety.complianceRate >= 75) safetyScore += 4;
+  else if (meets(foodSafety.complianceRate, 90)) safetyScore += 7;
+  else if (meets(foodSafety.complianceRate, 75)) safetyScore += 4;
 
   if (foodSafety.correctionRate === 100 || foodSafety.correctionsNeeded === 0)
     safetyScore += 5;
-  else if (foodSafety.correctionRate >= 80) safetyScore += 3;
+  else if (meets(foodSafety.correctionRate, 80)) safetyScore += 3;
 
   safetyScore = Math.min(safetyScore, 15);
 
@@ -792,19 +803,19 @@ export function generateNutritionIntelligence(
   if (dietaryAccommodation.allergyManagementRate === 100) {
     strengths.push("Excellent allergen management — 100% compliance");
   }
-  if (mealQuality.freshFruitVegRate >= 80) {
+  if (meets(mealQuality.freshFruitVegRate, 80)) {
     strengths.push("Fresh fruit and vegetables included in majority of meals");
   }
-  if (childInvolvement.menuContributionRate >= 80) {
+  if (meets(childInvolvement.menuContributionRate, 80)) {
     strengths.push("Children regularly contribute to menu planning");
   }
-  if (childInvolvement.staffAteWithChildrenRate >= 60) {
+  if (meets(childInvolvement.staffAteWithChildrenRate, 60)) {
     strengths.push("Staff regularly eat meals with children — positive social model");
   }
   if (foodSafety.complianceRate === 100) {
     strengths.push("Perfect food safety compliance record");
   }
-  if (mealQuality.culturalMealRate >= 10) {
+  if (meets(mealQuality.culturalMealRate, 10)) {
     strengths.push("Cultural meals regularly included in menu");
   }
   if (strengths.length === 0) {
@@ -816,7 +827,7 @@ export function generateNutritionIntelligence(
       `${dietaryAccommodation.requirementsNotMet} meal${dietaryAccommodation.requirementsNotMet !== 1 ? "s" : ""} did not meet dietary requirements`,
     );
   }
-  if (mealQuality.freshFruitVegRate < 60) {
+  if (below(mealQuality.freshFruitVegRate, 60)) {
     areasForDevelopment.push(
       `Fresh fruit/veg included in only ${mealQuality.freshFruitVegRate}% of meals (target: 80%+)`,
     );
@@ -824,12 +835,12 @@ export function generateNutritionIntelligence(
   if (childInvolvement.cookingSessionsPerChild < 2) {
     areasForDevelopment.push("Increase cooking skills sessions for independence development");
   }
-  if (foodSafety.complianceRate < 90) {
+  if (below(foodSafety.complianceRate, 90)) {
     areasForDevelopment.push(
       `Food safety compliance at ${foodSafety.complianceRate}% — target 100%`,
     );
   }
-  if (childInvolvement.menuContributionRate < 50) {
+  if (below(childInvolvement.menuContributionRate, 50)) {
     areasForDevelopment.push("Increase children's involvement in menu planning");
   }
   if (areasForDevelopment.length === 0) {
@@ -845,12 +856,12 @@ export function generateNutritionIntelligence(
       `URGENT: Allergen management failure for ${allergenFailures.map((p) => p.childName).join(", ")} — review allergen protocols immediately`,
     );
   }
-  if (dietaryAccommodation.metRate < 80) {
+  if (below(dietaryAccommodation.metRate, 80)) {
     immediateActions.push(
       "HIGH: Dietary requirements not consistently met — review meal planning processes",
     );
   }
-  if (foodSafety.complianceRate < 80) {
+  if (below(foodSafety.complianceRate, 80)) {
     immediateActions.push(
       "HIGH: Food safety compliance below acceptable threshold — conduct full kitchen audit",
     );

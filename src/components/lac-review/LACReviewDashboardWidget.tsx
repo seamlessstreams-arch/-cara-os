@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import type { LACReviewIntelligence } from "@/lib/lac-review";
 
 const ratingColors: Record<string, string> = {
@@ -149,8 +150,8 @@ export function LACReviewDashboardWidget() {
                   <span className="text-sm text-gray-500">{child.overallScore}/10</span>
                 </div>
                 <div className="flex flex-wrap gap-1.5 mb-2">
-                  <StatusBadge ok={child.timelinessRate >= 80} label={`Timely ${child.timelinessRate}%`} />
-                  <StatusBadge ok={child.participationRate >= 75} label={`Participation ${child.participationRate}%`} />
+                  <StatusBadge ok={meets(child.timelinessRate, 80)} label={`Timely ${formatRate(child.timelinessRate)}`} />
+                  <StatusBadge ok={meets(child.participationRate, 75)} label={`Participation ${formatRate(child.participationRate)}`} />
                   <StatusBadge ok={child.overdueRecommendations === 0} label={`${child.overdueRecommendations} Overdue`} />
                   <StatusBadge ok={child.iroMidPointChecks > 0} label={`${child.iroMidPointChecks} Mid-point Checks`} />
                 </div>

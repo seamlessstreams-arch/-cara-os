@@ -437,14 +437,15 @@ describe("evaluateRecommendationTracking", () => {
 
   it("calculates completion rate excluding N/A", () => {
     const r = evaluateRecommendationTracking(demoRecommendations, PERIOD_START, PERIOD_END, REFERENCE_DATE);
-    // 5 completed out of 8 actionable = 62.5%
-    expect(r.completionRate).toBe(62.5);
+    // 5 completed out of 8 actionable — the house rate() helper rounds to a
+    // whole percentage (62.5 -> 63), matching every other engine.
+    expect(r.completionRate).toBe(63);
   });
 
   it("calculates overdue rate", () => {
     const r = evaluateRecommendationTracking(demoRecommendations, PERIOD_START, PERIOD_END, REFERENCE_DATE);
     // 1 overdue out of 8 actionable = 12.5%
-    expect(r.overdueRate).toBe(12.5);
+    expect(r.overdueRate).toBe(13); // 1 of 8, house integer rounding
   });
 
   it("calculates urgent completion rate", () => {

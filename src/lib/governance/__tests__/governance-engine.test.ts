@@ -645,7 +645,7 @@ describe("evaluateNotificationCompliance", () => {
       PERIOD_END,
     );
     expect(result.totalNotifications).toBe(0);
-    expect(result.timelinesRate).toBe(0);
+    expect(result.timelinesRate).toBeNull();
   });
 });
 
@@ -696,7 +696,7 @@ describe("evaluateDevelopmentPlan", () => {
   it("handles no objectives", () => {
     const result = evaluateDevelopmentPlan([], CURRENT_DATE);
     expect(result.totalObjectives).toBe(0);
-    expect(result.completionRate).toBe(0);
+    expect(result.completionRate).toBeNull();
     expect(result.averageProgress).toBe(0);
   });
 });

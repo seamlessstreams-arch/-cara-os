@@ -161,8 +161,8 @@ describe("evaluateAllowanceManagement", () => {
   it("returns zero scores for empty profiles", () => {
     const result = evaluateAllowanceManagement([], [], PERIOD_START, PERIOD_END);
     expect(result.overallScore).toBe(0);
-    expect(result.regularPocketMoneyRate).toBe(0);
-    expect(result.ageAppropriateRate).toBe(0);
+    expect(result.regularPocketMoneyRate).toBeNull();
+    expect(result.ageAppropriateRate).toBeNull();
   });
 
   it("scores full marks when all conditions are perfect", () => {
@@ -307,7 +307,7 @@ describe("evaluateSavingsInvestment", () => {
   it("returns zero scores for empty profiles", () => {
     const result = evaluateSavingsInvestment([], [], PERIOD_START, PERIOD_END);
     expect(result.overallScore).toBe(0);
-    expect(result.savingsAccountRate).toBe(0);
+    expect(result.savingsAccountRate).toBeNull();
   });
 
   it("scores full marks when all conditions are perfect", () => {
@@ -425,7 +425,7 @@ describe("evaluateFinancialLiteracy", () => {
   it("returns zero scores for empty profiles", () => {
     const result = evaluateFinancialLiteracy([]);
     expect(result.overallScore).toBe(0);
-    expect(result.assessmentRate).toBe(0);
+    expect(result.assessmentRate).toBeNull();
   });
 
   it("scores full marks when all conditions are perfect", () => {
@@ -605,7 +605,7 @@ describe("evaluateAuditCompliance", () => {
     const audits = [makeAudit({ discrepanciesFound: 0, discrepanciesResolved: 0 })];
     const result = evaluateAuditCompliance(audits, null, PERIOD_START, PERIOD_END);
     // 0 discrepancies = ideal = full 4 points for that component
-    expect(result.discrepancyResolutionRate).toBe(0); // pct(0,0) = 0
+    expect(result.discrepancyResolutionRate).toBeNull(); // pct(0,0) = 0
   });
 
   it("calculates recommendations actioned rate", () => {

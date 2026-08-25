@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // Cara Independence & Life Skills Intelligence Engine
 //
@@ -151,9 +152,12 @@ export interface GoalProgressResult {
 export interface PracticalLearningResult {
   overallScore: number; // 0-25
   totalSessions: number;
-  engagementRate: number; // %
-  progressRate: number; // %
-  communityBasedRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  engagementRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  progressRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  communityBasedRate: number | null; // %
   averageDurationMinutes: number;
   teachingMethodVariety: number; // unique methods used
   domainsActive: number; // unique domains with sessions
@@ -162,12 +166,18 @@ export interface PracticalLearningResult {
 export interface PathwayPreparationResult {
   overallScore: number; // 0-25
   totalChildren: number;
-  pathwayPlanRate: number; // %
-  independenceSectionRate: number; // %
-  accommodationPlannedRate: number; // %
-  financialLiteracyRate: number; // %
-  healthPassportRate: number; // %
-  childContributionRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  pathwayPlanRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  independenceSectionRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  accommodationPlannedRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  financialLiteracyRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  healthPassportRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  childContributionRate: number | null; // %
 }
 
 export interface ChildIndependenceProfile {
@@ -200,11 +210,6 @@ export interface IndependenceLifeSkillsIntelligence {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 function cap(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
@@ -322,8 +327,8 @@ export function evaluateSkillDevelopment(
     return {
       overallScore: 0,
       totalAssessments: 0,
-      independentMostlyRate: 0,
-      improvementRate: 0,
+      independentMostlyRate: null,
+      improvementRate: null,
       domainsAssessed: 0,
       averageDomainsPerChild: 0,
       notYetStartedCount: 0,
@@ -333,11 +338,11 @@ export function evaluateSkillDevelopment(
   const independentOrMostly = assessments.filter(
     (a) => a.competenceLevel === "independent" || a.competenceLevel === "mostly_independent",
   ).length;
-  const independentMostlyRate = pct(independentOrMostly, assessments.length);
+  const independentMostlyRate = rate(independentOrMostly, assessments.length);
 
   const withPrevious = assessments.filter((a) => a.previousLevel !== null);
   const improved = withPrevious.filter((a) => levelImproved(a.previousLevel, a.competenceLevel)).length;
-  const improvementRate = pct(improved, withPrevious.length);
+  const improvementRate = rate(improved, withPrevious.length);
 
   const uniqueDomains = new Set(assessments.map((a) => a.domain));
   const domainsAssessed = uniqueDomains.size;
@@ -383,27 +388,27 @@ export function evaluateGoalProgress(
     return {
       overallScore: 0,
       totalGoals: 0,
-      achievedOnTrackRate: 0,
+      achievedOnTrackRate: null,
       behindCount: 0,
       abandonedCount: 0,
-      childInvolvementRate: 0,
-      ageAppropriateRate: 0,
+      childInvolvementRate: null,
+      ageAppropriateRate: null,
     };
   }
 
   const achievedOrOnTrack = goals.filter(
     (g) => g.status === "achieved" || g.status === "on_track",
   ).length;
-  const achievedOnTrackRate = pct(achievedOrOnTrack, goals.length);
+  const achievedOnTrackRate = rate(achievedOrOnTrack, goals.length);
 
   const behindCount = goals.filter((g) => g.status === "behind").length;
   const abandonedCount = goals.filter((g) => g.status === "abandoned").length;
 
   const childInvolved = goals.filter((g) => g.childInvolved).length;
-  const childInvolvementRate = pct(childInvolved, goals.length);
+  const childInvolvementRate = rate(childInvolved, goals.length);
 
   const ageAppropriate = goals.filter((g) => g.ageAppropriate).length;
-  const ageAppropriateRate = pct(ageAppropriate, goals.length);
+  const ageAppropriateRate = rate(ageAppropriate, goals.length);
 
   // Score calculation
   let score = 0;
@@ -415,7 +420,7 @@ export function evaluateGoalProgress(
   score += Math.round(((ageAppropriateRate ?? 0) / 100) * 5);
   // Review coverage (0-4): goals with review dates
   const reviewed = goals.filter((g) => g.reviewDate !== null).length;
-  score += Math.round((pct(reviewed, goals.length) / 100) * 4);
+  score += Math.round(((rate(reviewed, goals.length) ?? 0) / 100) * 4);
 
   // Penalties
   score -= Math.min(behindCount, 3);
@@ -439,9 +444,9 @@ export function evaluatePracticalLearning(
     return {
       overallScore: 0,
       totalSessions: 0,
-      engagementRate: 0,
-      progressRate: 0,
-      communityBasedRate: 0,
+      engagementRate: null,
+      progressRate: null,
+      communityBasedRate: null,
       averageDurationMinutes: 0,
       teachingMethodVariety: 0,
       domainsActive: 0,
@@ -449,13 +454,13 @@ export function evaluatePracticalLearning(
   }
 
   const engaged = sessions.filter((s) => s.childEngaged).length;
-  const engagementRate = pct(engaged, sessions.length);
+  const engagementRate = rate(engaged, sessions.length);
 
   const progress = sessions.filter((s) => s.progressMade).length;
-  const progressRate = pct(progress, sessions.length);
+  const progressRate = rate(progress, sessions.length);
 
   const communityBased = sessions.filter((s) => s.communityBased).length;
-  const communityBasedRate = pct(communityBased, sessions.length);
+  const communityBasedRate = rate(communityBased, sessions.length);
 
   const totalDuration = sessions.reduce((sum, s) => sum + s.durationMinutes, 0);
   const averageDurationMinutes = Math.round(totalDuration / sessions.length);
@@ -469,11 +474,11 @@ export function evaluatePracticalLearning(
   // Score calculation
   let score = 0;
   // Engagement rate (0-7)
-  score += Math.round((engagementRate / 100) * 7);
+  score += Math.round(((engagementRate ?? 0) / 100) * 7);
   // Progress rate (0-7)
-  score += Math.round((progressRate / 100) * 7);
+  score += Math.round(((progressRate ?? 0) / 100) * 7);
   // Community based rate (0-4)
-  score += Math.round((communityBasedRate / 100) * 4);
+  score += Math.round(((communityBasedRate ?? 0) / 100) * 4);
   // Teaching variety (0-4): target ≥4 methods
   score += Math.min(teachingMethodVariety, 4);
   // Domain coverage (0-3): target ≥6 domains
@@ -498,47 +503,47 @@ export function evaluatePathwayPreparation(
     return {
       overallScore: 0,
       totalChildren: 0,
-      pathwayPlanRate: 0,
-      independenceSectionRate: 0,
-      accommodationPlannedRate: 0,
-      financialLiteracyRate: 0,
-      healthPassportRate: 0,
-      childContributionRate: 0,
+      pathwayPlanRate: null,
+      independenceSectionRate: null,
+      accommodationPlannedRate: null,
+      financialLiteracyRate: null,
+      healthPassportRate: null,
+      childContributionRate: null,
     };
   }
 
   const withPlan = pathways.filter((p) => p.hasPathwayPlan).length;
-  const pathwayPlanRate = pct(withPlan, pathways.length);
+  const pathwayPlanRate = rate(withPlan, pathways.length);
 
   const withSection = pathways.filter((p) => p.independenceSectionComplete).length;
-  const independenceSectionRate = pct(withSection, pathways.length);
+  const independenceSectionRate = rate(withSection, pathways.length);
 
   const withAccomm = pathways.filter((p) => p.accommodationPlanned).length;
-  const accommodationPlannedRate = pct(withAccomm, pathways.length);
+  const accommodationPlannedRate = rate(withAccomm, pathways.length);
 
   const withFinance = pathways.filter((p) => p.financialLiteracyIncluded).length;
-  const financialLiteracyRate = pct(withFinance, pathways.length);
+  const financialLiteracyRate = rate(withFinance, pathways.length);
 
   const withHealth = pathways.filter((p) => p.healthPassportComplete).length;
-  const healthPassportRate = pct(withHealth, pathways.length);
+  const healthPassportRate = rate(withHealth, pathways.length);
 
   const withChild = pathways.filter((p) => p.childContributed).length;
-  const childContributionRate = pct(withChild, pathways.length);
+  const childContributionRate = rate(withChild, pathways.length);
 
   // Score calculation
   let score = 0;
   // Pathway plan rate (0-5)
-  score += Math.round((pathwayPlanRate / 100) * 5);
+  score += Math.round(((pathwayPlanRate ?? 0) / 100) * 5);
   // Independence section (0-5)
-  score += Math.round((independenceSectionRate / 100) * 5);
+  score += Math.round(((independenceSectionRate ?? 0) / 100) * 5);
   // Accommodation planned (0-4)
-  score += Math.round((accommodationPlannedRate / 100) * 4);
+  score += Math.round(((accommodationPlannedRate ?? 0) / 100) * 4);
   // Financial literacy (0-4)
-  score += Math.round((financialLiteracyRate / 100) * 4);
+  score += Math.round(((financialLiteracyRate ?? 0) / 100) * 4);
   // Health passport (0-3)
-  score += Math.round((healthPassportRate / 100) * 3);
+  score += Math.round(((healthPassportRate ?? 0) / 100) * 3);
   // Child contribution (0-4)
-  score += Math.round((childContributionRate / 100) * 4);
+  score += Math.round(((childContributionRate ?? 0) / 100) * 4);
 
   return {
     overallScore: cap(score, 0, 25),
@@ -641,22 +646,22 @@ function generateStrengths(
   if ((goalProgress.childInvolvementRate ?? 0) >= 80) {
     strengths.push(`Excellent child involvement in goal setting at ${goalProgress.childInvolvementRate}%`);
   }
-  if (practical.engagementRate >= 80) {
+  if (meets(practical.engagementRate, 80)) {
     strengths.push(`High engagement in practical learning sessions at ${practical.engagementRate}%`);
   }
-  if (practical.communityBasedRate >= 50) {
+  if (meets(practical.communityBasedRate, 50)) {
     strengths.push(`Good use of community-based learning opportunities (${practical.communityBasedRate}%)`);
   }
   if (practical.teachingMethodVariety >= 4) {
     strengths.push(`Diverse teaching methods employed (${practical.teachingMethodVariety} different approaches)`);
   }
-  if (pathway.pathwayPlanRate >= 80) {
+  if (meets(pathway.pathwayPlanRate, 80)) {
     strengths.push(`${pathway.pathwayPlanRate}% of children have pathway plans in place`);
   }
-  if (pathway.childContributionRate >= 80) {
+  if (meets(pathway.childContributionRate, 80)) {
     strengths.push(`Children meaningfully contribute to their pathway plans (${pathway.childContributionRate}%)`);
   }
-  if (pathway.healthPassportRate >= 80) {
+  if (meets(pathway.healthPassportRate, 80)) {
     strengths.push(`Health passports completed for ${pathway.healthPassportRate}% of children`);
   }
 
@@ -694,24 +699,24 @@ function generateAreasForImprovement(
       `Child involvement in goal setting is low at ${goalProgress.childInvolvementRate}% — children must be central to their independence planning`,
     );
   }
-  if (practical.totalSessions > 0 && practical.engagementRate < 60) {
+  if (practical.totalSessions > 0 && below(practical.engagementRate, 60)) {
     areas.push(`Engagement in practical sessions is low at ${practical.engagementRate}% — review approaches`);
   }
   if (practical.totalSessions === 0) {
     areas.push("No practical learning sessions recorded — active skills teaching programme required");
   }
-  if (practical.communityBasedRate < 30 && practical.totalSessions > 0) {
+  if (below(practical.communityBasedRate, 30) && practical.totalSessions > 0) {
     areas.push(`Only ${practical.communityBasedRate}% of sessions are community-based — increase real-world learning`);
   }
-  if (pathway.totalChildren > 0 && pathway.pathwayPlanRate < 50) {
+  if (pathway.totalChildren > 0 && below(pathway.pathwayPlanRate, 50)) {
     areas.push(`Only ${pathway.pathwayPlanRate}% of children have pathway plans — immediate action needed`);
   }
-  if (pathway.totalChildren > 0 && pathway.financialLiteracyRate < 50) {
+  if (pathway.totalChildren > 0 && below(pathway.financialLiteracyRate, 50)) {
     areas.push(
       `Financial literacy included for only ${pathway.financialLiteracyRate}% of pathway plans — essential for independence`,
     );
   }
-  if (pathway.totalChildren > 0 && pathway.healthPassportRate < 50) {
+  if (pathway.totalChildren > 0 && below(pathway.healthPassportRate, 50)) {
     areas.push(`Health passports complete for only ${pathway.healthPassportRate}% — priority for transition readiness`);
   }
 
@@ -733,7 +738,7 @@ function generateActions(
   if (practical.totalSessions === 0) {
     actions.push("URGENT: Establish practical life skills teaching programme with dedicated sessions");
   }
-  if (pathway.totalChildren > 0 && pathway.pathwayPlanRate < 50) {
+  if (pathway.totalChildren > 0 && below(pathway.pathwayPlanRate, 50)) {
     actions.push("URGENT: Ensure all children aged 14+ have comprehensive pathway plans");
   }
 
@@ -752,7 +757,7 @@ function generateActions(
     actions.push(`Expand skill assessment to cover additional domains (currently ${skill.domainsAssessed} of 12)`);
   }
 
-  if (practical.communityBasedRate < 40 && practical.totalSessions > 0) {
+  if (below(practical.communityBasedRate, 40) && practical.totalSessions > 0) {
     actions.push("Increase community-based learning opportunities for practical real-world experience");
   }
 
@@ -760,11 +765,11 @@ function generateActions(
     actions.push("Ensure children are actively involved in setting their own independence goals");
   }
 
-  if (pathway.totalChildren > 0 && pathway.financialLiteracyRate < 60) {
+  if (pathway.totalChildren > 0 && below(pathway.financialLiteracyRate, 60)) {
     actions.push("Include financial literacy components in all pathway plans");
   }
 
-  if (pathway.totalChildren > 0 && pathway.healthPassportRate < 60) {
+  if (pathway.totalChildren > 0 && below(pathway.healthPassportRate, 60)) {
     actions.push("Complete health passports for all children approaching transition age");
   }
 

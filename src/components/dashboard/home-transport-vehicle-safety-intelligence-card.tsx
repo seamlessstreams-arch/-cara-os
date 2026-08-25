@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Car } from "lucid
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { TransportSafetyRating } from "@/lib/engines/home-transport-vehicle-safety-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 function useHomeTransportVehicleSafetyIntelligence() {
   return useQuery({
@@ -69,28 +70,28 @@ export function HomeTransportVehicleSafetyIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.transport_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.vehicle_check_compliance_rate >= 90 ? "bg-green-50" : d.vehicle_check_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.vehicle_check_compliance_rate >= 90 ? "text-[--cs-success]" : d.vehicle_check_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.vehicle_check_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.vehicle_check_compliance_rate, 90) ? "bg-green-50" : meets(d.vehicle_check_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.vehicle_check_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.vehicle_check_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.vehicle_check_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Veh. Checks</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.pre_use_check_completion_rate >= 90 ? "bg-green-50" : d.pre_use_check_completion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.pre_use_check_completion_rate >= 90 ? "text-[--cs-success]" : d.pre_use_check_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.pre_use_check_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.pre_use_check_completion_rate, 90) ? "bg-green-50" : meets(d.pre_use_check_completion_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.pre_use_check_completion_rate, 90) ? "text-[--cs-success]" : meets(d.pre_use_check_completion_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.pre_use_check_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Pre-Use</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.driver_qualification_currency_rate >= 90 ? "bg-green-50" : d.driver_qualification_currency_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.driver_qualification_currency_rate >= 90 ? "text-[--cs-success]" : d.driver_qualification_currency_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.driver_qualification_currency_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.driver_qualification_currency_rate, 90) ? "bg-green-50" : meets(d.driver_qualification_currency_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.driver_qualification_currency_rate, 90) ? "text-[--cs-success]" : meets(d.driver_qualification_currency_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.driver_qualification_currency_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Drivers</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.seatbelt_compliance_rate >= 90 ? "bg-green-50" : d.seatbelt_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.seatbelt_compliance_rate >= 90 ? "text-[--cs-success]" : d.seatbelt_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.seatbelt_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.seatbelt_compliance_rate, 90) ? "bg-green-50" : meets(d.seatbelt_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.seatbelt_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.seatbelt_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.seatbelt_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Seatbelts</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.mot_service_currency_rate >= 90 ? "bg-green-50" : d.mot_service_currency_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.mot_service_currency_rate >= 90 ? "text-[--cs-success]" : d.mot_service_currency_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.mot_service_currency_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.mot_service_currency_rate, 90) ? "bg-green-50" : meets(d.mot_service_currency_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.mot_service_currency_rate, 90) ? "text-[--cs-success]" : meets(d.mot_service_currency_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.mot_service_currency_rate)}</p>
               <p className="text-[9px] text-muted-foreground">MOT/Service</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.defect_resolution_rate >= 90 ? "bg-green-50" : d.defect_resolution_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.defect_resolution_rate >= 90 ? "text-[--cs-success]" : d.defect_resolution_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.defect_resolution_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.defect_resolution_rate, 90) ? "bg-green-50" : meets(d.defect_resolution_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.defect_resolution_rate, 90) ? "text-[--cs-success]" : meets(d.defect_resolution_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.defect_resolution_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Defects</p>
             </div>
           </div>
