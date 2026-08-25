@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { QualityOfCareRating, QualityOfCareResult } from "@/lib/engines/home-quality-of-care-composite-engine";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface HomeQualityOfCareCompositeResponse { data: QualityOfCareResult; }
 
@@ -52,7 +53,7 @@ export function HomeQualityOfCareCompositeCard() {
             <Star className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-cyan-600")} />
             <span className="text-slate-900 font-bold">Quality of Care</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.quality_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.quality_score}%</span>}
+            {d.quality_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.quality_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>

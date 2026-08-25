@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -104,7 +105,7 @@ export function HomePlacementStabilityDepthIntelligenceCard() {
               {ratingStyle.label}
             </span>
             {d.depth_rating !== "insufficient_data" && (
-              <span className="text-xs font-bold tabular-nums text-slate-600">{d.depth_score}%</span>
+              <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.depth_score)}</span>
             )}
           </CardTitle>
         </div>
@@ -124,7 +125,7 @@ export function HomePlacementStabilityDepthIntelligenceCard() {
                   (d.stability_risk_profile.low_risk_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.stability_risk_profile.low_risk_rate ?? 0) >= 50 ? "text-blue-600" : "text-[--cs-risk]"
                 )}>
-                  {d.stability_risk_profile.total_records > 0 ? `${d.stability_risk_profile.low_risk_rate}%` : "—"}
+                  {d.stability_risk_profile.total_records > 0 ? `${formatRate(d.stability_risk_profile.low_risk_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Low Risk</p>
@@ -135,10 +136,10 @@ export function HomePlacementStabilityDepthIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <ClipboardCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.disruption_plan_profile.child_coverage >= 80 ? "text-[--cs-success]" :
-                  d.disruption_plan_profile.child_coverage >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.disruption_plan_profile.child_coverage, 80) ? "text-[--cs-success]" :
+                  meets(d.disruption_plan_profile.child_coverage, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.disruption_plan_profile.total_plans > 0 ? `${d.disruption_plan_profile.child_coverage}%` : "—"}
+                  {d.disruption_plan_profile.total_plans > 0 ? `${formatRate(d.disruption_plan_profile.child_coverage)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Plans</p>
@@ -152,7 +153,7 @@ export function HomePlacementStabilityDepthIntelligenceCard() {
                   (d.meeting_profile.child_view_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.meeting_profile.child_view_rate ?? 0) >= 50 ? "text-blue-600" : "text-[--cs-warning]"
                 )}>
-                  {d.meeting_profile.total_meetings > 0 ? `${d.meeting_profile.child_view_rate}%` : "—"}
+                  {d.meeting_profile.total_meetings > 0 ? `${formatRate(d.meeting_profile.child_view_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Voice</p>
@@ -166,7 +167,7 @@ export function HomePlacementStabilityDepthIntelligenceCard() {
                   (d.placement_end_profile.planned_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.placement_end_profile.planned_rate ?? 0) >= 50 ? "text-blue-600" : "text-[--cs-risk]"
                 )}>
-                  {d.placement_end_profile.total_ends > 0 ? `${d.placement_end_profile.planned_rate}%` : "—"}
+                  {d.placement_end_profile.total_ends > 0 ? `${formatRate(d.placement_end_profile.planned_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Planned</p>

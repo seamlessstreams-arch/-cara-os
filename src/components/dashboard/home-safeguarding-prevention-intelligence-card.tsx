@@ -146,10 +146,10 @@ export function HomeSafeguardingPreventionIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Eye className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.prevent.child_coverage >= 90 ? "text-[--cs-success]" :
-                  d.prevent.child_coverage >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.prevent.child_coverage, 90) ? "text-[--cs-success]" :
+                  meets(d.prevent.child_coverage, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.prevent.total_screenings > 0 ? `${d.prevent.child_coverage}%` : "--"}
+                  {d.prevent.total_screenings > 0 ? `${formatRate(d.prevent.child_coverage)}` : "--"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Prevent</p>

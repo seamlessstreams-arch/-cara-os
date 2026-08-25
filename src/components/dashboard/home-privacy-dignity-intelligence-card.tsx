@@ -70,28 +70,28 @@ export function HomePrivacyDignityIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.privacy_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.privacy_audit_compliance_rate >= 90 ? "bg-green-50" : d.privacy_audit_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.privacy_audit_compliance_rate >= 90 ? "text-[--cs-success]" : d.privacy_audit_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.privacy_audit_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.privacy_audit_compliance_rate, 90) ? "bg-green-50" : meets(d.privacy_audit_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.privacy_audit_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.privacy_audit_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.privacy_audit_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Privacy</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.knock_entry_rate >= 90 ? "bg-green-50" : d.knock_entry_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.knock_entry_rate >= 90 ? "text-[--cs-success]" : d.knock_entry_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.knock_entry_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.knock_entry_rate, 90) ? "bg-green-50" : meets(d.knock_entry_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.knock_entry_rate, 90) ? "text-[--cs-success]" : meets(d.knock_entry_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.knock_entry_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Knock</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.boundary_respect_rate >= 90 ? "bg-green-50" : d.boundary_respect_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.boundary_respect_rate >= 90 ? "text-[--cs-success]" : d.boundary_respect_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.boundary_respect_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.boundary_respect_rate, 90) ? "bg-green-50" : meets(d.boundary_respect_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.boundary_respect_rate, 90) ? "text-[--cs-success]" : meets(d.boundary_respect_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.boundary_respect_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Boundary</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.confidentiality_rate, 90) ? "bg-green-50" : meets(d.confidentiality_rate, 70) ? "bg-amber-50" : d.confidentiality_rate === null ? "bg-muted" : "bg-red-50")}>
               <p className={cn("text-sm font-bold tabular-nums", meets(d.confidentiality_rate, 90) ? "text-[--cs-success]" : meets(d.confidentiality_rate, 70) ? "text-[--cs-warning]" : d.confidentiality_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.confidentiality_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Confid.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.dignity_practice_rate >= 90 ? "bg-green-50" : d.dignity_practice_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.dignity_practice_rate >= 90 ? "text-[--cs-success]" : d.dignity_practice_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.dignity_practice_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.dignity_practice_rate, 90) ? "bg-green-50" : meets(d.dignity_practice_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.dignity_practice_rate, 90) ? "text-[--cs-success]" : meets(d.dignity_practice_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.dignity_practice_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Dignity</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_satisfaction_rate >= 90 ? "bg-green-50" : d.child_satisfaction_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_satisfaction_rate >= 90 ? "text-[--cs-success]" : d.child_satisfaction_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_satisfaction_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_satisfaction_rate, 90) ? "bg-green-50" : meets(d.child_satisfaction_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_satisfaction_rate, 90) ? "text-[--cs-success]" : meets(d.child_satisfaction_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_satisfaction_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Satisf.</p>
             </div>
           </div>

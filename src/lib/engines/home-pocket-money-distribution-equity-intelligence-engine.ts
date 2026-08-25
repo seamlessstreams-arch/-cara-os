@@ -11,7 +11,7 @@
 //             transparencyRecords
 // ==============================================================================
 
-import { meets, below } from "@/lib/metrics/rate";
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 
 // -- Input Types --------------------------------------------------------------
 
@@ -137,9 +137,12 @@ export interface PocketMoneyDistributionEquityResult {
   equity_rating: PocketMoneyEquityRating;
   equity_score: number;
   headline: string;
-  equitable_distribution_rate: number;
-  age_appropriate_rate: number;
-  timely_payment_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  equitable_distribution_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  age_appropriate_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timely_payment_rate: number | null;
   // fab-0: null when no records / no satisfaction components.
   child_understanding_rate: number | null;
   transparency_rate: number | null;
@@ -151,10 +154,6 @@ export interface PocketMoneyDistributionEquityResult {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -178,9 +177,9 @@ function emptyResult(
     equity_rating: rating,
     equity_score: score,
     headline,
-    equitable_distribution_rate: 0,
-    age_appropriate_rate: 0,
-    timely_payment_rate: 0,
+    equitable_distribution_rate: null,
+    age_appropriate_rate: null,
+    timely_payment_rate: null,
     child_understanding_rate: null,
     transparency_rate: null,
     child_satisfaction_rate: null,
@@ -264,18 +263,18 @@ export function computePocketMoneyDistributionEquity(
   const equitablyPaid = distribution_records.filter(
     (r) => r.amount_paid >= r.amount_due,
   ).length;
-  const equitableDistributionRate = pct(equitablyPaid, totalDistRecords);
+  const equitableDistributionRate = rate(equitablyPaid, totalDistRecords);
 
   const uniqueChildrenWithDist = new Set(
     distribution_records.map((r) => r.child_id),
   ).size;
 
-  const childDistCoverage = pct(uniqueChildrenWithDist, total_children);
+  const childDistCoverage = rate(uniqueChildrenWithDist, total_children);
 
   const childSigned = distribution_records.filter((r) => r.child_signed).length;
-  const childSignedRate = pct(childSigned, totalDistRecords);
+  const childSignedRate = rate(childSigned, totalDistRecords);
 
-  const dualSignedRate = pct(
+  const dualSignedRate = rate(
     distribution_records.filter((r) => r.child_signed && r.staff_signed).length,
     totalDistRecords,
   );
@@ -312,29 +311,29 @@ export function computePocketMoneyDistributionEquity(
   const underpaidChildren = Object.values(childTotals).filter(
     (t) => t.due > 0 && t.paid / t.due < 0.9,
   ).length;
-  const underpaidRate = pct(underpaidChildren, Object.keys(childTotals).length || 1);
+  const underpaidRate = rate(underpaidChildren, Object.keys(childTotals).length || 1);
 
   // --- Age-appropriateness ---
   const totalAgeRecords = age_appropriateness_records.length;
   const meetsGuidance = age_appropriateness_records.filter(
     (r) => r.amount_meets_guidance,
   ).length;
-  const ageAppropriateRate = pct(meetsGuidance, totalAgeRecords);
+  const ageAppropriateRate = rate(meetsGuidance, totalAgeRecords);
 
   const ageReviewed = age_appropriateness_records.filter(
     (r) => r.amount_reviewed,
   ).length;
-  const ageReviewedRate = pct(ageReviewed, totalAgeRecords);
+  const ageReviewedRate = rate(ageReviewed, totalAgeRecords);
 
   const reviewIncludedChild = age_appropriateness_records.filter(
     (r) => r.review_included_child,
   ).length;
-  const childInvolvementInReviewRate = pct(reviewIncludedChild, totalAgeRecords);
+  const childInvolvementInReviewRate = rate(reviewIncludedChild, totalAgeRecords);
 
   const ageSatisfied = age_appropriateness_records.filter(
     (r) => r.child_satisfied_with_amount,
   ).length;
-  const ageSatisfactionRate = pct(ageSatisfied, totalAgeRecords);
+  const ageSatisfactionRate = rate(ageSatisfied, totalAgeRecords);
 
   // Check for age-band diversity
   const ageBands = new Set(
@@ -347,12 +346,12 @@ export function computePocketMoneyDistributionEquity(
   const paidOnTime = payment_timeliness_records.filter(
     (r) => r.payment_made && r.days_late <= 0,
   ).length;
-  const timelyPaymentRate = pct(paidOnTime, totalTimelinessRecords);
+  const timelyPaymentRate = rate(paidOnTime, totalTimelinessRecords);
 
   const totalPaymentsMade = payment_timeliness_records.filter(
     (r) => r.payment_made,
   ).length;
-  const paymentCompletionRate = pct(totalPaymentsMade, totalTimelinessRecords);
+  const paymentCompletionRate = rate(totalPaymentsMade, totalTimelinessRecords);
 
   const latePayments = payment_timeliness_records.filter(
     (r) => r.days_late > 0,
@@ -368,34 +367,34 @@ export function computePocketMoneyDistributionEquity(
   const childInformedOfDelay = latePayments.filter(
     (r) => r.child_informed_of_delay,
   ).length;
-  const delayInformedRate = pct(childInformedOfDelay, latePayments.length);
+  const delayInformedRate = rate(childInformedOfDelay, latePayments.length);
 
   const missedPayments = payment_timeliness_records.filter(
     (r) => !r.payment_made,
   ).length;
-  const missedPaymentRate = pct(missedPayments, totalTimelinessRecords);
+  const missedPaymentRate = rate(missedPayments, totalTimelinessRecords);
 
   // --- Child understanding ---
   const totalUnderstandingRecords = child_understanding_records.length;
   const understandsAmount = child_understanding_records.filter(
     (r) => r.understands_amount,
   ).length;
-  const understandsAmountRate = pct(understandsAmount, totalUnderstandingRecords);
+  const understandsAmountRate = rate(understandsAmount, totalUnderstandingRecords);
 
   const understandsFrequency = child_understanding_records.filter(
     (r) => r.understands_frequency,
   ).length;
-  const understandsFrequencyRate = pct(understandsFrequency, totalUnderstandingRecords);
+  const understandsFrequencyRate = rate(understandsFrequency, totalUnderstandingRecords);
 
   const understandsSavings = child_understanding_records.filter(
     (r) => r.understands_savings_option,
   ).length;
-  const understandsSavingsRate = pct(understandsSavings, totalUnderstandingRecords);
+  const understandsSavingsRate = rate(understandsSavings, totalUnderstandingRecords);
 
   const ageAppropriateExplanation = child_understanding_records.filter(
     (r) => r.age_appropriate_explanation,
   ).length;
-  const ageAppropriateExplanationRate = pct(
+  const ageAppropriateExplanationRate = rate(
     ageAppropriateExplanation,
     totalUnderstandingRecords,
   );
@@ -403,12 +402,12 @@ export function computePocketMoneyDistributionEquity(
   const childFeelsFair = child_understanding_records.filter(
     (r) => r.child_feels_fairly_treated,
   ).length;
-  const fairnessFeelingRate = pct(childFeelsFair, totalUnderstandingRecords);
+  const fairnessFeelingRate = rate(childFeelsFair, totalUnderstandingRecords);
 
   const knowsComplaintProcess = child_understanding_records.filter(
     (r) => r.child_knows_complaint_process,
   ).length;
-  const complaintAwarenessRate = pct(knowsComplaintProcess, totalUnderstandingRecords);
+  const complaintAwarenessRate = rate(knowsComplaintProcess, totalUnderstandingRecords);
 
   const questionsRaised = child_understanding_records.filter(
     (r) => r.child_has_questions,
@@ -416,17 +415,17 @@ export function computePocketMoneyDistributionEquity(
   const questionsAddressed = child_understanding_records.filter(
     (r) => r.child_has_questions && r.questions_addressed,
   ).length;
-  const questionResolutionRate = pct(questionsAddressed, questionsRaised);
+  const questionResolutionRate = rate(questionsAddressed, questionsRaised);
 
   // Composite child understanding rate
   // fab-0: null when no understanding records.
   const childUnderstandingRate: number | null =
     totalUnderstandingRecords > 0
       ? Math.round(
-          (understandsAmountRate +
-            understandsFrequencyRate +
-            understandsSavingsRate +
-            ageAppropriateExplanationRate) /
+          (understandsAmountRate! +
+            understandsFrequencyRate! +
+            understandsSavingsRate! +
+            ageAppropriateExplanationRate!) /
             4,
         )
       : null;
@@ -436,12 +435,12 @@ export function computePocketMoneyDistributionEquity(
   const accessibleToChild = transparency_records.filter(
     (r) => r.record_accessible_to_child,
   ).length;
-  const accessibilityRate = pct(accessibleToChild, totalTransparencyRecords);
+  const accessibilityRate = rate(accessibleToChild, totalTransparencyRecords);
 
   const explainedToChild = transparency_records.filter(
     (r) => r.record_explained_to_child,
   ).length;
-  const explanationRate = pct(explainedToChild, totalTransparencyRecords);
+  const explanationRate = rate(explainedToChild, totalTransparencyRecords);
 
   const discrepanciesFound = transparency_records.filter(
     (r) => r.discrepancy_found,
@@ -449,38 +448,35 @@ export function computePocketMoneyDistributionEquity(
   const discrepanciesResolved = transparency_records.filter(
     (r) => r.discrepancy_found && r.discrepancy_resolved,
   ).length;
-  const discrepancyResolutionRate = pct(discrepanciesResolved, discrepanciesFound);
+  const discrepancyResolutionRate = rate(discrepanciesResolved, discrepanciesFound);
 
   const auditsCompleted = transparency_records.filter(
     (r) => r.independent_audit_completed,
   ).length;
-  const auditCompletionRate = pct(auditsCompleted, totalTransparencyRecords);
+  const auditCompletionRate = rate(auditsCompleted, totalTransparencyRecords);
 
   const auditsPassed = transparency_records.filter(
     (r) => r.independent_audit_completed && r.audit_passed,
   ).length;
-  const auditPassRate = pct(auditsPassed, auditsCompleted);
+  const auditPassRate = rate(auditsPassed, auditsCompleted);
 
   const childCanViewBalance = transparency_records.filter(
     (r) => r.child_can_view_balance,
   ).length;
-  const balanceViewRate = pct(childCanViewBalance, totalTransparencyRecords);
+  const balanceViewRate = rate(childCanViewBalance, totalTransparencyRecords);
 
   // Composite transparency rate
   // fab-0: null when no transparency records.
   const transparencyRate: number | null =
-    totalTransparencyRecords > 0
-      ? Math.round(
-          (accessibilityRate + explanationRate + balanceViewRate) / 3,
-        )
-      : null;
+    totalTransparencyRecords > 0 ? Math.round(
+          (accessibilityRate! + explanationRate! + balanceViewRate!) / 3) : null;
 
   // --- Child satisfaction composite ---
   // Derived from distribution child signing, age satisfaction, and fairness feeling
   const satisfactionComponents: number[] = [];
-  if (totalDistRecords > 0) satisfactionComponents.push(childSignedRate);
-  if (totalAgeRecords > 0) satisfactionComponents.push(ageSatisfactionRate);
-  if (totalUnderstandingRecords > 0) satisfactionComponents.push(fairnessFeelingRate);
+  if (totalDistRecords > 0) satisfactionComponents.push(childSignedRate!);
+  if (totalAgeRecords > 0) satisfactionComponents.push(ageSatisfactionRate!);
+  if (totalUnderstandingRecords > 0) satisfactionComponents.push(fairnessFeelingRate!);
   // fab-0: null when no satisfaction components observable.
   const childSatisfactionRate: number | null =
     satisfactionComponents.length > 0
@@ -495,16 +491,16 @@ export function computePocketMoneyDistributionEquity(
   let score = 52;
 
   // --- Bonus 1: equitableDistributionRate (>=90: +5, >=70: +2) ---
-  if (equitableDistributionRate >= 90) score += 5;
-  else if (equitableDistributionRate >= 70) score += 2;
+  if (meets(equitableDistributionRate, 90)) score += 5;
+  else if (meets(equitableDistributionRate, 70)) score += 2;
 
   // --- Bonus 2: ageAppropriateRate (>=90: +5, >=70: +2) ---
-  if (ageAppropriateRate >= 90) score += 5;
-  else if (ageAppropriateRate >= 70) score += 2;
+  if (meets(ageAppropriateRate, 90)) score += 5;
+  else if (meets(ageAppropriateRate, 70)) score += 2;
 
   // --- Bonus 3: timelyPaymentRate (>=90: +4, >=70: +2) ---
-  if (timelyPaymentRate >= 90) score += 4;
-  else if (timelyPaymentRate >= 70) score += 2;
+  if (meets(timelyPaymentRate, 90)) score += 4;
+  else if (meets(timelyPaymentRate, 70)) score += 2;
 
   // --- Bonus 4: childUnderstandingRate (>=80: +4, >=60: +2) ---
   if (meets(childUnderstandingRate, 80)) score += 4;
@@ -519,21 +515,21 @@ export function computePocketMoneyDistributionEquity(
   else if (meets(childSatisfactionRate, 65)) score += 1;
 
   // --- Bonus 7: dualSignedRate (>=90: +3, >=70: +1) ---
-  if (dualSignedRate >= 90) score += 3;
-  else if (dualSignedRate >= 70) score += 1;
+  if (meets(dualSignedRate, 90)) score += 3;
+  else if (meets(dualSignedRate, 70)) score += 1;
 
   // max bonuses = 5+5+4+4+4+3+3 = 28
 
   // -- Penalties (4 with guards) -------------------------------------------
 
   // equitableDistributionRate < 50 -> -5
-  if (equitableDistributionRate < 50 && totalDistRecords > 0) score -= 5;
+  if (below(equitableDistributionRate, 50) && totalDistRecords > 0) score -= 5;
 
   // ageAppropriateRate < 50 -> -5
-  if (ageAppropriateRate < 50 && totalAgeRecords > 0) score -= 5;
+  if (below(ageAppropriateRate, 50) && totalAgeRecords > 0) score -= 5;
 
   // timelyPaymentRate < 50 -> -4
-  if (timelyPaymentRate < 50 && totalTimelinessRecords > 0) score -= 4;
+  if (below(timelyPaymentRate, 50) && totalTimelinessRecords > 0) score -= 4;
 
   // transparencyRate < 40 -> -4
   if (below(transparencyRate, 40) && totalTransparencyRecords > 0) score -= 4;
@@ -546,27 +542,27 @@ export function computePocketMoneyDistributionEquity(
 
   const strengths: string[] = [];
 
-  if (equitableDistributionRate >= 90 && totalDistRecords > 0) {
+  if (meets(equitableDistributionRate, 90) && totalDistRecords > 0) {
     strengths.push(
       `${equitableDistributionRate}% of pocket money payments are equitable -- all children receive their full entitlement, demonstrating the home's commitment to fair financial treatment.`,
     );
-  } else if (equitableDistributionRate >= 70 && totalDistRecords > 0) {
+  } else if (meets(equitableDistributionRate, 70) && totalDistRecords > 0) {
     strengths.push(
       `${equitableDistributionRate}% equitable distribution rate -- most children receive their correct pocket money entitlement.`,
     );
   }
 
-  if (childDistCoverage >= 90 && total_children > 0 && totalDistRecords > 0) {
+  if (meets(childDistCoverage, 90) && total_children > 0 && totalDistRecords > 0) {
     strengths.push(
       `Pocket money distribution records cover ${childDistCoverage}% of children on placement -- comprehensive coverage ensures no child is overlooked.`,
     );
   }
 
-  if (dualSignedRate >= 90 && totalDistRecords > 0) {
+  if (meets(dualSignedRate, 90) && totalDistRecords > 0) {
     strengths.push(
       `${dualSignedRate}% of payments are dual-signed by child and staff -- strong verification practice ensures accountability and child involvement.`,
     );
-  } else if (dualSignedRate >= 70 && totalDistRecords > 0) {
+  } else if (meets(dualSignedRate, 70) && totalDistRecords > 0) {
     strengths.push(
       `${dualSignedRate}% dual-signing rate -- good practice in verifying pocket money payments with children.`,
     );
@@ -578,51 +574,51 @@ export function computePocketMoneyDistributionEquity(
     );
   }
 
-  if (ageAppropriateRate >= 90 && totalAgeRecords > 0) {
+  if (meets(ageAppropriateRate, 90) && totalAgeRecords > 0) {
     strengths.push(
       `${ageAppropriateRate}% of pocket money amounts meet local authority age-appropriate guidance -- the home ensures all children receive amounts suited to their age and developmental stage.`,
     );
-  } else if (ageAppropriateRate >= 70 && totalAgeRecords > 0) {
+  } else if (meets(ageAppropriateRate, 70) && totalAgeRecords > 0) {
     strengths.push(
       `${ageAppropriateRate}% age-appropriate rate -- most children's pocket money amounts align with local authority guidance.`,
     );
   }
 
-  if (childInvolvementInReviewRate >= 80 && totalAgeRecords > 0) {
+  if (meets(childInvolvementInReviewRate, 80) && totalAgeRecords > 0) {
     strengths.push(
       `Children involved in ${childInvolvementInReviewRate}% of pocket money amount reviews -- the home actively consults children about their financial entitlements.`,
     );
   }
 
-  if (ageSatisfactionRate >= 85 && totalAgeRecords > 0) {
+  if (meets(ageSatisfactionRate, 85) && totalAgeRecords > 0) {
     strengths.push(
       `${ageSatisfactionRate}% of children satisfied with their pocket money amount -- children feel their financial entitlements are fair and appropriate.`,
     );
   }
 
-  if (ageReviewedRate >= 90 && totalAgeRecords > 0) {
+  if (meets(ageReviewedRate, 90) && totalAgeRecords > 0) {
     strengths.push(
       `${ageReviewedRate}% of pocket money amounts have been reviewed -- regular reviews ensure amounts remain appropriate as children grow.`,
     );
   }
 
-  if (timelyPaymentRate >= 90 && totalTimelinessRecords > 0) {
+  if (meets(timelyPaymentRate, 90) && totalTimelinessRecords > 0) {
     strengths.push(
       `${timelyPaymentRate}% of pocket money payments made on time -- children can rely on receiving their money when expected, supporting trust and routine.`,
     );
-  } else if (timelyPaymentRate >= 70 && totalTimelinessRecords > 0) {
+  } else if (meets(timelyPaymentRate, 70) && totalTimelinessRecords > 0) {
     strengths.push(
       `${timelyPaymentRate}% timely payment rate -- most pocket money payments are made on schedule.`,
     );
   }
 
-  if (paymentCompletionRate >= 95 && totalTimelinessRecords > 0) {
+  if (meets(paymentCompletionRate, 95) && totalTimelinessRecords > 0) {
     strengths.push(
       `${paymentCompletionRate}% payment completion rate -- virtually all scheduled pocket money payments are made, with very few missed.`,
     );
   }
 
-  if (delayInformedRate >= 90 && latePayments.length > 0) {
+  if (meets(delayInformedRate, 90) && latePayments.length > 0) {
     strengths.push(
       `Children informed of ${delayInformedRate}% of late payments -- the home communicates transparently with children when delays occur.`,
     );
@@ -638,25 +634,25 @@ export function computePocketMoneyDistributionEquity(
     );
   }
 
-  if (fairnessFeelingRate >= 85 && totalUnderstandingRecords > 0) {
+  if (meets(fairnessFeelingRate, 85) && totalUnderstandingRecords > 0) {
     strengths.push(
       `${fairnessFeelingRate}% of children feel fairly treated in pocket money matters -- children perceive the system as equitable and just.`,
     );
   }
 
-  if (complaintAwarenessRate >= 80 && totalUnderstandingRecords > 0) {
+  if (meets(complaintAwarenessRate, 80) && totalUnderstandingRecords > 0) {
     strengths.push(
       `${complaintAwarenessRate}% of children know how to raise a complaint about pocket money -- the home empowers children to advocate for their financial rights.`,
     );
   }
 
-  if (ageAppropriateExplanationRate >= 90 && totalUnderstandingRecords > 0) {
+  if (meets(ageAppropriateExplanationRate, 90) && totalUnderstandingRecords > 0) {
     strengths.push(
       `${ageAppropriateExplanationRate}% of pocket money explanations are age-appropriate -- staff tailor financial discussions to each child's developmental level.`,
     );
   }
 
-  if (questionResolutionRate >= 90 && questionsRaised > 0) {
+  if (meets(questionResolutionRate, 90) && questionsRaised > 0) {
     strengths.push(
       `${questionResolutionRate}% of children's pocket money questions addressed -- staff respond effectively when children seek clarification about their finances.`,
     );
@@ -672,19 +668,19 @@ export function computePocketMoneyDistributionEquity(
     );
   }
 
-  if (discrepancyResolutionRate >= 90 && discrepanciesFound > 0) {
+  if (meets(discrepancyResolutionRate, 90) && discrepanciesFound > 0) {
     strengths.push(
       `${discrepancyResolutionRate}% of pocket money discrepancies resolved -- the home addresses financial irregularities promptly and effectively.`,
     );
   }
 
-  if (auditPassRate >= 90 && auditsCompleted > 0) {
+  if (meets(auditPassRate, 90) && auditsCompleted > 0) {
     strengths.push(
       `${auditPassRate}% of independent pocket money audits passed -- external scrutiny confirms the home's financial management is sound.`,
     );
   }
 
-  if (balanceViewRate >= 90 && totalTransparencyRecords > 0) {
+  if (meets(balanceViewRate, 90) && totalTransparencyRecords > 0) {
     strengths.push(
       `${balanceViewRate}% of children can view their pocket money balance -- children have direct access to their financial information, promoting independence and trust.`,
     );
@@ -700,11 +696,11 @@ export function computePocketMoneyDistributionEquity(
 
   const concerns: string[] = [];
 
-  if (equitableDistributionRate < 50 && totalDistRecords > 0) {
+  if (below(equitableDistributionRate, 50) && totalDistRecords > 0) {
     concerns.push(
       `Only ${equitableDistributionRate}% of pocket money payments are equitable -- the majority of children are not receiving their full entitlement, which is a fundamental failure in the home's duty to provide for children's financial needs.`,
     );
-  } else if (equitableDistributionRate < 70 && equitableDistributionRate >= 50 && totalDistRecords > 0) {
+  } else if (below(equitableDistributionRate, 70) && meets(equitableDistributionRate, 50) && totalDistRecords > 0) {
     concerns.push(
       `Equitable distribution rate at ${equitableDistributionRate}% -- some children are not receiving their full pocket money entitlement.`,
     );
@@ -716,63 +712,63 @@ export function computePocketMoneyDistributionEquity(
     );
   }
 
-  if (underpaidRate > 30 && totalDistRecords > 0) {
+  if (above(underpaidRate, 30) && totalDistRecords > 0) {
     concerns.push(
       `${underpaidRate}% of children received less than 90% of their pocket money entitlement -- a significant proportion of children are being financially shortchanged.`,
     );
   }
 
-  if (childDistCoverage < 70 && total_children > 0 && totalDistRecords > 0) {
+  if (below(childDistCoverage, 70) && total_children > 0 && totalDistRecords > 0) {
     concerns.push(
       `Pocket money distribution records only cover ${childDistCoverage}% of children -- some children may not be receiving pocket money or their payments are not being recorded.`,
     );
   }
 
-  if (childSignedRate < 50 && totalDistRecords > 0) {
+  if (below(childSignedRate, 50) && totalDistRecords > 0) {
     concerns.push(
       `Only ${childSignedRate}% of payments signed by the child -- without child verification, the home cannot demonstrate that children actually received their pocket money.`,
     );
   }
 
-  if (ageAppropriateRate < 50 && totalAgeRecords > 0) {
+  if (below(ageAppropriateRate, 50) && totalAgeRecords > 0) {
     concerns.push(
       `Only ${ageAppropriateRate}% of pocket money amounts meet local authority age-appropriate guidance -- the majority of children are receiving amounts that do not reflect their age and needs.`,
     );
-  } else if (ageAppropriateRate < 70 && ageAppropriateRate >= 50 && totalAgeRecords > 0) {
+  } else if (below(ageAppropriateRate, 70) && meets(ageAppropriateRate, 50) && totalAgeRecords > 0) {
     concerns.push(
       `Age-appropriate rate at ${ageAppropriateRate}% -- some children's pocket money amounts do not meet local authority guidance for their age band.`,
     );
   }
 
-  if (ageReviewedRate < 50 && totalAgeRecords > 0) {
+  if (below(ageReviewedRate, 50) && totalAgeRecords > 0) {
     concerns.push(
       `Only ${ageReviewedRate}% of pocket money amounts have been reviewed -- without regular reviews, amounts may become outdated as children grow and their needs change.`,
     );
   }
 
-  if (childInvolvementInReviewRate < 50 && totalAgeRecords > 0) {
+  if (below(childInvolvementInReviewRate, 50) && totalAgeRecords > 0) {
     concerns.push(
       `Children involved in only ${childInvolvementInReviewRate}% of amount reviews -- children's views are not being sought when setting their financial entitlements.`,
     );
   }
 
-  if (ageSatisfactionRate < 50 && totalAgeRecords > 0) {
+  if (below(ageSatisfactionRate, 50) && totalAgeRecords > 0) {
     concerns.push(
       `Only ${ageSatisfactionRate}% of children satisfied with their pocket money amount -- the majority of children feel their financial entitlement is inadequate.`,
     );
   }
 
-  if (timelyPaymentRate < 50 && totalTimelinessRecords > 0) {
+  if (below(timelyPaymentRate, 50) && totalTimelinessRecords > 0) {
     concerns.push(
       `Only ${timelyPaymentRate}% of pocket money payments made on time -- the majority of children cannot rely on receiving their money when expected, undermining trust and routine.`,
     );
-  } else if (timelyPaymentRate < 70 && timelyPaymentRate >= 50 && totalTimelinessRecords > 0) {
+  } else if (below(timelyPaymentRate, 70) && meets(timelyPaymentRate, 50) && totalTimelinessRecords > 0) {
     concerns.push(
       `Timely payment rate at ${timelyPaymentRate}% -- some children are not receiving their pocket money on schedule.`,
     );
   }
 
-  if (missedPaymentRate > 20 && totalTimelinessRecords > 0) {
+  if (above(missedPaymentRate, 20) && totalTimelinessRecords > 0) {
     concerns.push(
       `${missedPaymentRate}% of scheduled pocket money payments missed entirely -- children are being denied their financial entitlements.`,
     );
@@ -784,7 +780,7 @@ export function computePocketMoneyDistributionEquity(
     );
   }
 
-  if (delayInformedRate < 50 && latePayments.length > 0) {
+  if (below(delayInformedRate, 50) && latePayments.length > 0) {
     concerns.push(
       `Children informed of only ${delayInformedRate}% of delayed payments -- children are not being told when their pocket money will be late, which is disrespectful and undermines trust.`,
     );
@@ -800,13 +796,13 @@ export function computePocketMoneyDistributionEquity(
     );
   }
 
-  if (fairnessFeelingRate < 50 && totalUnderstandingRecords > 0) {
+  if (below(fairnessFeelingRate, 50) && totalUnderstandingRecords > 0) {
     concerns.push(
       `Only ${fairnessFeelingRate}% of children feel fairly treated in pocket money matters -- the majority of children perceive the system as inequitable.`,
     );
   }
 
-  if (complaintAwarenessRate < 50 && totalUnderstandingRecords > 0) {
+  if (below(complaintAwarenessRate, 50) && totalUnderstandingRecords > 0) {
     concerns.push(
       `Only ${complaintAwarenessRate}% of children know how to raise a complaint about pocket money -- children are not empowered to advocate for their financial rights.`,
     );
@@ -822,25 +818,25 @@ export function computePocketMoneyDistributionEquity(
     );
   }
 
-  if (discrepanciesFound > 0 && discrepancyResolutionRate < 50) {
+  if (discrepanciesFound > 0 && below(discrepancyResolutionRate, 50)) {
     concerns.push(
       `Only ${discrepancyResolutionRate}% of pocket money discrepancies resolved -- unresolved financial irregularities undermine confidence in the home's pocket money management.`,
     );
   }
 
-  if (auditCompletionRate < 30 && totalTransparencyRecords > 0) {
+  if (below(auditCompletionRate, 30) && totalTransparencyRecords > 0) {
     concerns.push(
       `Independent audits completed for only ${auditCompletionRate}% of pocket money records -- insufficient external scrutiny of the home's financial management of children's money.`,
     );
   }
 
-  if (auditsCompleted > 0 && auditPassRate < 70) {
+  if (auditsCompleted > 0 && below(auditPassRate, 70)) {
     concerns.push(
       `Only ${auditPassRate}% of independent audits passed -- external scrutiny has identified failings in the home's pocket money financial management.`,
     );
   }
 
-  if (balanceViewRate < 50 && totalTransparencyRecords > 0) {
+  if (below(balanceViewRate, 50) && totalTransparencyRecords > 0) {
     concerns.push(
       `Only ${balanceViewRate}% of children can view their pocket money balance -- children are denied access to their own financial information.`,
     );
@@ -869,7 +865,7 @@ export function computePocketMoneyDistributionEquity(
   const recommendations: PocketMoneyEquityRecommendation[] = [];
   let rank = 0;
 
-  if (equitableDistributionRate < 50 && totalDistRecords > 0) {
+  if (below(equitableDistributionRate, 50) && totalDistRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -879,7 +875,7 @@ export function computePocketMoneyDistributionEquity(
     });
   }
 
-  if (ageAppropriateRate < 50 && totalAgeRecords > 0) {
+  if (below(ageAppropriateRate, 50) && totalAgeRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -889,7 +885,7 @@ export function computePocketMoneyDistributionEquity(
     });
   }
 
-  if (timelyPaymentRate < 50 && totalTimelinessRecords > 0) {
+  if (below(timelyPaymentRate, 50) && totalTimelinessRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -919,7 +915,7 @@ export function computePocketMoneyDistributionEquity(
     });
   }
 
-  if (missedPaymentRate > 20 && totalTimelinessRecords > 0) {
+  if (above(missedPaymentRate, 20) && totalTimelinessRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -939,7 +935,7 @@ export function computePocketMoneyDistributionEquity(
     });
   }
 
-  if (fairnessFeelingRate < 50 && totalUnderstandingRecords > 0) {
+  if (below(fairnessFeelingRate, 50) && totalUnderstandingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -949,7 +945,7 @@ export function computePocketMoneyDistributionEquity(
     });
   }
 
-  if (childSignedRate < 50 && totalDistRecords > 0) {
+  if (below(childSignedRate, 50) && totalDistRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -959,7 +955,7 @@ export function computePocketMoneyDistributionEquity(
     });
   }
 
-  if (ageReviewedRate < 50 && totalAgeRecords > 0) {
+  if (below(ageReviewedRate, 50) && totalAgeRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -969,7 +965,7 @@ export function computePocketMoneyDistributionEquity(
     });
   }
 
-  if (complaintAwarenessRate < 50 && totalUnderstandingRecords > 0) {
+  if (below(complaintAwarenessRate, 50) && totalUnderstandingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -979,7 +975,7 @@ export function computePocketMoneyDistributionEquity(
     });
   }
 
-  if (delayInformedRate < 50 && latePayments.length > 0) {
+  if (below(delayInformedRate, 50) && latePayments.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -989,7 +985,7 @@ export function computePocketMoneyDistributionEquity(
     });
   }
 
-  if (balanceViewRate < 50 && totalTransparencyRecords > 0) {
+  if (below(balanceViewRate, 50) && totalTransparencyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -999,7 +995,7 @@ export function computePocketMoneyDistributionEquity(
     });
   }
 
-  if (auditCompletionRate < 30 && totalTransparencyRecords > 0) {
+  if (below(auditCompletionRate, 30) && totalTransparencyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1009,7 +1005,7 @@ export function computePocketMoneyDistributionEquity(
     });
   }
 
-  if (equitableDistributionRate >= 50 && equitableDistributionRate < 70 && totalDistRecords > 0) {
+  if (meets(equitableDistributionRate, 50) && below(equitableDistributionRate, 70) && totalDistRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1019,7 +1015,7 @@ export function computePocketMoneyDistributionEquity(
     });
   }
 
-  if (childInvolvementInReviewRate < 50 && totalAgeRecords > 0) {
+  if (below(childInvolvementInReviewRate, 50) && totalAgeRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1029,7 +1025,7 @@ export function computePocketMoneyDistributionEquity(
     });
   }
 
-  if (ageAppropriateRate >= 50 && ageAppropriateRate < 70 && totalAgeRecords > 0) {
+  if (meets(ageAppropriateRate, 50) && below(ageAppropriateRate, 70) && totalAgeRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1039,7 +1035,7 @@ export function computePocketMoneyDistributionEquity(
     });
   }
 
-  if (timelyPaymentRate >= 50 && timelyPaymentRate < 70 && totalTimelinessRecords > 0) {
+  if (meets(timelyPaymentRate, 50) && below(timelyPaymentRate, 70) && totalTimelinessRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1079,7 +1075,7 @@ export function computePocketMoneyDistributionEquity(
     });
   }
 
-  if (discrepanciesFound > 0 && discrepancyResolutionRate < 50) {
+  if (discrepanciesFound > 0 && below(discrepancyResolutionRate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1095,28 +1091,28 @@ export function computePocketMoneyDistributionEquity(
 
   // --- Critical insights ---
 
-  if (equitableDistributionRate < 50 && totalDistRecords > 0) {
+  if (below(equitableDistributionRate, 50) && totalDistRecords > 0) {
     insights.push({
       text: `Only ${equitableDistributionRate}% of pocket money payments are equitable. Ofsted will view the failure to pay children their full entitlement as evidence that the home does not treat children fairly or prepare them for independence -- a direct failure under Reg 5.`,
       severity: "critical",
     });
   }
 
-  if (ageAppropriateRate < 50 && totalAgeRecords > 0) {
+  if (below(ageAppropriateRate, 50) && totalAgeRecords > 0) {
     insights.push({
       text: `Only ${ageAppropriateRate}% of pocket money amounts meet local authority age-appropriate guidance. Paying children less than recommended amounts suggests the home is not adequately providing for children's needs as required under Reg 7.`,
       severity: "critical",
     });
   }
 
-  if (timelyPaymentRate < 50 && totalTimelinessRecords > 0) {
+  if (below(timelyPaymentRate, 50) && totalTimelinessRecords > 0) {
     insights.push({
       text: `Only ${timelyPaymentRate}% of payments made on time. Persistent late payment of pocket money undermines children's trust in the home and sends a message that their financial entitlements are not a priority.`,
       severity: "critical",
     });
   }
 
-  if (missedPaymentRate > 30 && totalTimelinessRecords > 0) {
+  if (above(missedPaymentRate, 30) && totalTimelinessRecords > 0) {
     insights.push({
       text: `${missedPaymentRate}% of scheduled pocket money payments missed entirely. Children are being denied their financial entitlements. Ofsted will view this as a significant failure to provide for children's basic needs under Reg 5.`,
       severity: "critical",
@@ -1130,7 +1126,7 @@ export function computePocketMoneyDistributionEquity(
     });
   }
 
-  if (highVariance && underpaidRate > 30 && totalDistRecords > 0) {
+  if (highVariance && above(underpaidRate, 30) && totalDistRecords > 0) {
     insights.push({
       text: `High distribution variance with ${underpaidRate}% of children underpaid. This pattern suggests inequitable treatment across children, which Ofsted will view as discriminatory and contrary to the home's duty to treat all children fairly.`,
       severity: "critical",
@@ -1146,21 +1142,21 @@ export function computePocketMoneyDistributionEquity(
 
   // --- Warning insights ---
 
-  if (equitableDistributionRate >= 50 && equitableDistributionRate < 70 && totalDistRecords > 0) {
+  if (meets(equitableDistributionRate, 50) && below(equitableDistributionRate, 70) && totalDistRecords > 0) {
     insights.push({
       text: `Equitable distribution at ${equitableDistributionRate}% -- improving but some children are still not receiving their full pocket money entitlement. Each underpayment represents a child whose financial needs are not being fully met.`,
       severity: "warning",
     });
   }
 
-  if (ageAppropriateRate >= 50 && ageAppropriateRate < 70 && totalAgeRecords > 0) {
+  if (meets(ageAppropriateRate, 50) && below(ageAppropriateRate, 70) && totalAgeRecords > 0) {
     insights.push({
       text: `Age-appropriate rate at ${ageAppropriateRate}% -- some children's amounts fall below guidance. This may disadvantage children compared to peers in other placements.`,
       severity: "warning",
     });
   }
 
-  if (timelyPaymentRate >= 50 && timelyPaymentRate < 70 && totalTimelinessRecords > 0) {
+  if (meets(timelyPaymentRate, 50) && below(timelyPaymentRate, 70) && totalTimelinessRecords > 0) {
     insights.push({
       text: `Timely payment rate at ${timelyPaymentRate}% -- while some payments are on time, the level of late payment is high enough to erode children's confidence in the system.`,
       severity: "warning",
@@ -1195,21 +1191,21 @@ export function computePocketMoneyDistributionEquity(
     });
   }
 
-  if (childDistCoverage >= 50 && childDistCoverage < 70 && total_children > 0 && totalDistRecords > 0) {
+  if (meets(childDistCoverage, 50) && below(childDistCoverage, 70) && total_children > 0 && totalDistRecords > 0) {
     insights.push({
       text: `Distribution records cover only ${childDistCoverage}% of children on placement -- some children may be falling through the gaps in pocket money provision.`,
       severity: "warning",
     });
   }
 
-  if (dualSignedRate >= 50 && dualSignedRate < 70 && totalDistRecords > 0) {
+  if (meets(dualSignedRate, 50) && below(dualSignedRate, 70) && totalDistRecords > 0) {
     insights.push({
       text: `Dual-signing rate at ${dualSignedRate}% -- without consistent verification by both child and staff, the integrity of pocket money payment records is weakened.`,
       severity: "warning",
     });
   }
 
-  if (fairnessFeelingRate >= 50 && fairnessFeelingRate < 70 && totalUnderstandingRecords > 0) {
+  if (meets(fairnessFeelingRate, 50) && below(fairnessFeelingRate, 70) && totalUnderstandingRecords > 0) {
     insights.push({
       text: `${fairnessFeelingRate}% of children feel fairly treated -- while most perceive the system as equitable, a notable minority feel unfairly treated, warranting investigation.`,
       severity: "warning",
@@ -1232,21 +1228,21 @@ export function computePocketMoneyDistributionEquity(
     });
   }
 
-  if (equitableDistributionRate >= 90 && ageAppropriateRate >= 90 && totalDistRecords > 0 && totalAgeRecords > 0) {
+  if (meets(equitableDistributionRate, 90) && meets(ageAppropriateRate, 90) && totalDistRecords > 0 && totalAgeRecords > 0) {
     insights.push({
       text: `Equitable distribution at ${equitableDistributionRate}% and age-appropriate amounts at ${ageAppropriateRate}% -- the home provides comprehensive, fair financial provision for every child. Ofsted will recognise this as evidence of genuinely child-centred financial management.`,
       severity: "positive",
     });
   }
 
-  if (timelyPaymentRate >= 90 && paymentCompletionRate >= 95 && totalTimelinessRecords > 0) {
+  if (meets(timelyPaymentRate, 90) && meets(paymentCompletionRate, 95) && totalTimelinessRecords > 0) {
     insights.push({
       text: `${timelyPaymentRate}% timely payment with ${paymentCompletionRate}% completion rate -- children can rely on receiving their pocket money on time, every time. This consistency builds trust and supports children's developing independence.`,
       severity: "positive",
     });
   }
 
-  if (totalUnderstandingRecords > 0 && meets(childUnderstandingRate, 80) && fairnessFeelingRate >= 85) {
+  if (totalUnderstandingRecords > 0 && meets(childUnderstandingRate, 80) && meets(fairnessFeelingRate, 85)) {
     insights.push({
       text: `Child understanding at ${childUnderstandingRate}% with ${fairnessFeelingRate}% feeling fairly treated -- children genuinely understand and accept their pocket money arrangements. This demonstrates the home's commitment to consulting children and ensuring they feel valued.`,
       severity: "positive",
@@ -1260,21 +1256,21 @@ export function computePocketMoneyDistributionEquity(
     });
   }
 
-  if (dualSignedRate >= 90 && totalDistRecords > 0) {
+  if (meets(dualSignedRate, 90) && totalDistRecords > 0) {
     insights.push({
       text: `${dualSignedRate}% dual-signing rate -- every pocket money payment is verified by both child and staff. This rigorous approach protects children's finances and provides a clear audit trail for regulatory scrutiny.`,
       severity: "positive",
     });
   }
 
-  if (discrepancyResolutionRate >= 90 && discrepanciesFound > 0) {
+  if (meets(discrepancyResolutionRate, 90) && discrepanciesFound > 0) {
     insights.push({
       text: `${discrepancyResolutionRate}% of discrepancies resolved -- the home responds promptly and effectively to financial irregularities, demonstrating strong financial governance and accountability.`,
       severity: "positive",
     });
   }
 
-  if (auditPassRate >= 90 && auditsCompleted >= 3) {
+  if (meets(auditPassRate, 90) && auditsCompleted >= 3) {
     insights.push({
       text: `${auditPassRate}% of independent audits passed across ${auditsCompleted} audits -- sustained external scrutiny confirms the home's pocket money management is consistently sound.`,
       severity: "positive",
@@ -1288,7 +1284,7 @@ export function computePocketMoneyDistributionEquity(
     });
   }
 
-  if (questionResolutionRate >= 90 && questionsRaised >= 3) {
+  if (meets(questionResolutionRate, 90) && questionsRaised >= 3) {
     insights.push({
       text: `${questionResolutionRate}% of children's pocket money questions addressed across ${questionsRaised} queries -- staff respond effectively to financial queries, fostering an environment where children feel comfortable asking about their money.`,
       severity: "positive",

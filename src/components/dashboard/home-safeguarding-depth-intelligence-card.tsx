@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -95,7 +96,7 @@ export function HomeSafeguardingDepthIntelligenceCard() {
               {ratingStyle.label}
             </span>
             {d.safeguarding_depth_rating !== "insufficient_data" && (
-              <span className="text-xs font-bold tabular-nums text-slate-600">{d.safeguarding_depth_score}%</span>
+              <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.safeguarding_depth_score)}</span>
             )}
           </CardTitle>
         </div>
@@ -111,7 +112,7 @@ export function HomeSafeguardingDepthIntelligenceCard() {
                 (d.body_maps.manager_reviewed_rate ?? 0) >= 90 ? "text-[--cs-success]" :
                 (d.body_maps.manager_reviewed_rate ?? 0) >= 50 ? "text-blue-600" : "text-[--cs-risk]"
               )}>
-                {d.body_maps.total > 0 ? `${d.body_maps.manager_reviewed_rate}%` : "—"}
+                {d.body_maps.total > 0 ? `${formatRate(d.body_maps.manager_reviewed_rate)}` : "—"}
               </p>
               <p className="text-[10px] text-muted-foreground">Body Maps</p>
             </div>
@@ -120,7 +121,7 @@ export function HomeSafeguardingDepthIntelligenceCard() {
                 (d.disclosures.response_within_1h_rate ?? 0) >= 90 ? "text-[--cs-success]" :
                 (d.disclosures.response_within_1h_rate ?? 0) >= 50 ? "text-blue-600" : "text-[--cs-risk]"
               )}>
-                {d.disclosures.total > 0 ? `${d.disclosures.response_within_1h_rate}%` : "—"}
+                {d.disclosures.total > 0 ? `${formatRate(d.disclosures.response_within_1h_rate)}` : "—"}
               </p>
               <p className="text-[10px] text-muted-foreground">Disclosures</p>
             </div>
@@ -129,16 +130,16 @@ export function HomeSafeguardingDepthIntelligenceCard() {
                 (d.lado.referred_timely_rate ?? 0) >= 90 ? "text-[--cs-success]" :
                 (d.lado.referred_timely_rate ?? 0) >= 50 ? "text-blue-600" : "text-[--cs-risk]"
               )}>
-                {d.lado.total > 0 ? `${d.lado.referred_timely_rate}%` : "—"}
+                {d.lado.total > 0 ? `${formatRate(d.lado.referred_timely_rate)}` : "—"}
               </p>
               <p className="text-[10px] text-muted-foreground">LADO</p>
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <p className={cn("text-lg font-bold tabular-nums",
-                d.supervision.staff_coverage >= 80 ? "text-[--cs-success]" :
-                d.supervision.staff_coverage >= 50 ? "text-blue-600" : "text-[--cs-risk]"
+                meets(d.supervision.staff_coverage, 80) ? "text-[--cs-success]" :
+                meets(d.supervision.staff_coverage, 50) ? "text-blue-600" : "text-[--cs-risk]"
               )}>
-                {d.supervision.total_sessions > 0 ? `${d.supervision.staff_coverage}%` : "—"}
+                {d.supervision.total_sessions > 0 ? `${formatRate(d.supervision.staff_coverage)}` : "—"}
               </p>
               <p className="text-[10px] text-muted-foreground">Supervision</p>
             </div>

@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME REGULATORY COMPLIANCE COMPOSITE ENGINE
 // Aggregates regulatory evidence across Reg 44/45/46 visits, policy reviews,
@@ -66,7 +67,8 @@ export interface RegDomainScore {
 
 export interface RegulatoryComplianceResult {
   compliance_rating: RegulatoryComplianceRating;
-  compliance_score: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  compliance_score: number | null;
   headline: string;
   domain_scores: RegDomainScore[];
   strengths: string[];
@@ -76,8 +78,6 @@ export interface RegulatoryComplianceResult {
 }
 
 /* ── helpers ─────────────────────────────────────────────────────────────── */
-
-function pct(n: number, d: number): number { return d === 0 ? 0 : Math.round((n / d) * 100); }
 
 export function computeRegulatoryCompliance(input: RegulatoryComplianceInput): RegulatoryComplianceResult {
   const {
@@ -94,59 +94,59 @@ export function computeRegulatoryCompliance(input: RegulatoryComplianceInput): R
 
   // ── Domain: Reg 44 Compliance (0–20) ────────────────────────────────────
   let reg44Score = 0;
-  const visitRate = pct(reg44_visits_completed, reg44_visits_due);
+  const visitRate = rate(reg44_visits_completed, reg44_visits_due);
   if (reg44_visits_due === 0) {
     reg44Score += 5; // neutral — no visits due yet
   } else {
-    if (visitRate >= 100) reg44Score += 10;
-    else if (visitRate >= 80) reg44Score += 7;
-    else if (visitRate >= 60) reg44Score += 4;
+    if (meets(visitRate, 100)) reg44Score += 10;
+    else if (meets(visitRate, 80)) reg44Score += 7;
+    else if (meets(visitRate, 60)) reg44Score += 4;
     else reg44Score += 1;
   }
-  const actionRate = pct(reg44_actions_resolved, reg44_actions_total);
+  const actionRate = rate(reg44_actions_resolved, reg44_actions_total);
   if (reg44_actions_total === 0) {
     reg44Score += 10; // no actions outstanding
   } else {
-    if (actionRate >= 90) reg44Score += 10;
-    else if (actionRate >= 70) reg44Score += 7;
-    else if (actionRate >= 50) reg44Score += 4;
+    if (meets(actionRate, 90)) reg44Score += 10;
+    else if (meets(actionRate, 70)) reg44Score += 7;
+    else if (meets(actionRate, 50)) reg44Score += 4;
     else reg44Score += 1;
   }
   reg44Score = Math.min(reg44Score, 20);
-  const reg44Compliant = visitRate >= 80 || reg44_visits_due === 0;
+  const reg44Compliant = meets(visitRate, 80) || reg44_visits_due === 0;
 
   // ── Domain: Reg 45/46 Evidence (0–15) ───────────────────────────────────
   let reg4546Score = 0;
-  const evRate = pct(reg45_domains_with_evidence, reg45_domains_total);
+  const evRate = rate(reg45_domains_with_evidence, reg45_domains_total);
   if (reg45_domains_total === 0) {
     reg4546Score += 5;
   } else {
-    if (evRate >= 95) reg4546Score += 8;
-    else if (evRate >= 80) reg4546Score += 5;
-    else if (evRate >= 60) reg4546Score += 3;
+    if (meets(evRate, 95)) reg4546Score += 8;
+    else if (meets(evRate, 80)) reg4546Score += 5;
+    else if (meets(evRate, 60)) reg4546Score += 3;
     else reg4546Score += 1;
   }
-  const revRate = pct(reg46_reviews_completed, reg46_reviews_due);
+  const revRate = rate(reg46_reviews_completed, reg46_reviews_due);
   if (reg46_reviews_due === 0) {
     reg4546Score += 4;
   } else {
-    if (revRate >= 100) reg4546Score += 7;
-    else if (revRate >= 80) reg4546Score += 5;
-    else if (revRate >= 60) reg4546Score += 3;
+    if (meets(revRate, 100)) reg4546Score += 7;
+    else if (meets(revRate, 80)) reg4546Score += 5;
+    else if (meets(revRate, 60)) reg4546Score += 3;
     else reg4546Score += 1;
   }
   reg4546Score = Math.min(reg4546Score, 15);
-  const reg4546Compliant = (evRate >= 80 || reg45_domains_total === 0) && (revRate >= 80 || reg46_reviews_due === 0);
+  const reg4546Compliant = (meets(evRate, 80) || reg45_domains_total === 0) && (meets(revRate, 80) || reg46_reviews_due === 0);
 
   // ── Domain: Policy Compliance (0–15) ────────────────────────────────────
   let polScore = 0;
-  const polRate = pct(policies_current, policies_total);
+  const polRate = rate(policies_current, policies_total);
   if (policies_total === 0) {
     polScore += 8;
   } else {
-    if (polRate >= 95) polScore += 10;
-    else if (polRate >= 85) polScore += 7;
-    else if (polRate >= 70) polScore += 4;
+    if (meets(polRate, 95)) polScore += 10;
+    else if (meets(polRate, 85)) polScore += 7;
+    else if (meets(polRate, 70)) polScore += 4;
     else polScore += 1;
   }
   if (policies_overdue_review === 0) polScore += 5;
@@ -154,24 +154,24 @@ export function computeRegulatoryCompliance(input: RegulatoryComplianceInput): R
   else if (policies_overdue_review <= 5) polScore += 1;
   else polScore += 0;
   polScore = Math.min(polScore, 15);
-  const polCompliant = polRate >= 85 || policies_total === 0;
+  const polCompliant = meets(polRate, 85) || policies_total === 0;
 
   // ── Domain: Data Governance (0–15) ──────────────────────────────────────
   let dgScore = 0;
   if (data_breaches === 0) {
     dgScore += 6;
   } else {
-    const brResolveRate = pct(data_breaches_resolved, data_breaches);
-    if (brResolveRate >= 100) dgScore += 3;
-    else if (brResolveRate >= 80) dgScore += 2;
+    const brResolveRate = rate(data_breaches_resolved, data_breaches);
+    if (meets(brResolveRate, 100)) dgScore += 3;
+    else if (meets(brResolveRate, 80)) dgScore += 2;
     else dgScore += 0;
   }
-  const sarRate = pct(subject_access_requests_completed_on_time, subject_access_requests_total);
+  const sarRate = rate(subject_access_requests_completed_on_time, subject_access_requests_total);
   if (subject_access_requests_total === 0) {
     dgScore += 4;
   } else {
-    if (sarRate >= 100) dgScore += 5;
-    else if (sarRate >= 80) dgScore += 3;
+    if (meets(sarRate, 100)) dgScore += 5;
+    else if (meets(sarRate, 80)) dgScore += 3;
     else dgScore += 1;
   }
   if (dpia_completed) dgScore += 4;
@@ -180,70 +180,70 @@ export function computeRegulatoryCompliance(input: RegulatoryComplianceInput): R
 
   // ── Domain: Quality Assurance (0–15) ────────────────────────────────────
   let qaScore = 0;
-  const qaRate = pct(qa_audits_completed, qa_audits_due);
+  const qaRate = rate(qa_audits_completed, qa_audits_due);
   if (qa_audits_due === 0) {
     qaScore += 5;
   } else {
-    if (qaRate >= 95) qaScore += 8;
-    else if (qaRate >= 80) qaScore += 6;
-    else if (qaRate >= 60) qaScore += 3;
+    if (meets(qaRate, 95)) qaScore += 8;
+    else if (meets(qaRate, 80)) qaScore += 6;
+    else if (meets(qaRate, 60)) qaScore += 3;
     else qaScore += 1;
   }
-  const qaActionRate = pct(qa_actions_resolved, qa_actions_total);
+  const qaActionRate = rate(qa_actions_resolved, qa_actions_total);
   if (qa_actions_total === 0) {
     qaScore += 7;
   } else {
-    if (qaActionRate >= 90) qaScore += 7;
-    else if (qaActionRate >= 70) qaScore += 5;
-    else if (qaActionRate >= 50) qaScore += 3;
+    if (meets(qaActionRate, 90)) qaScore += 7;
+    else if (meets(qaActionRate, 70)) qaScore += 5;
+    else if (meets(qaActionRate, 50)) qaScore += 3;
     else qaScore += 1;
   }
   qaScore = Math.min(qaScore, 15);
-  const qaCompliant = (qaRate >= 80 || qa_audits_due === 0) && (qaActionRate >= 70 || qa_actions_total === 0);
+  const qaCompliant = (meets(qaRate, 80) || qa_audits_due === 0) && (meets(qaActionRate, 70) || qa_actions_total === 0);
 
   // ── Domain: Notifiable Events (0–10) ────────────────────────────────────
   let neScore = 0;
-  const neRate = pct(notifiable_events_timely, notifiable_events_total);
+  const neRate = rate(notifiable_events_timely, notifiable_events_total);
   if (notifiable_events_total === 0) {
     neScore += 10;
   } else {
-    if (neRate >= 100) neScore += 10;
-    else if (neRate >= 80) neScore += 7;
-    else if (neRate >= 60) neScore += 4;
+    if (meets(neRate, 100)) neScore += 10;
+    else if (meets(neRate, 80)) neScore += 7;
+    else if (meets(neRate, 60)) neScore += 4;
     else neScore += 1;
   }
   neScore = Math.min(neScore, 10);
-  const neCompliant = neRate >= 80 || notifiable_events_total === 0;
+  const neCompliant = meets(neRate, 80) || notifiable_events_total === 0;
 
   // ── Domain: Document Governance (0–10) ──────────────────────────────────
   let docScore = 0;
-  const vcRate = pct(documents_version_controlled, documents_total);
+  const vcRate = rate(documents_version_controlled, documents_total);
   if (documents_total === 0) {
     docScore += 5;
   } else {
-    if (vcRate >= 95) docScore += 5;
-    else if (vcRate >= 80) docScore += 3;
+    if (meets(vcRate, 95)) docScore += 5;
+    else if (meets(vcRate, 80)) docScore += 3;
     else docScore += 1;
   }
-  const rrRate = pct(read_receipts_obtained, read_receipts_required);
+  const rrRate = rate(read_receipts_obtained, read_receipts_required);
   if (read_receipts_required === 0) {
     docScore += 5;
   } else {
-    if (rrRate >= 90) docScore += 5;
-    else if (rrRate >= 70) docScore += 3;
+    if (meets(rrRate, 90)) docScore += 5;
+    else if (meets(rrRate, 70)) docScore += 3;
     else docScore += 1;
   }
   docScore = Math.min(docScore, 10);
-  const docCompliant = (vcRate >= 80 || documents_total === 0);
+  const docCompliant = (meets(vcRate, 80) || documents_total === 0);
 
   // ── Totals ──────────────────────────────────────────────────────────────
   const totalScore = reg44Score + reg4546Score + polScore + dgScore + qaScore + neScore + docScore;
   const maxScore = 20 + 15 + 15 + 15 + 15 + 10 + 10; // = 100
-  const compliance_score = pct(totalScore, maxScore);
+  const compliance_score = rate(totalScore, maxScore);
   const compliance_rating: RegulatoryComplianceRating =
-    compliance_score >= 80 ? "outstanding" :
-    compliance_score >= 65 ? "good" :
-    compliance_score >= 45 ? "adequate" : "inadequate";
+    meets(compliance_score, 80) ? "outstanding" :
+    meets(compliance_score, 65) ? "good" :
+    meets(compliance_score, 45) ? "adequate" : "inadequate";
 
   // ── Domain scores ───────────────────────────────────────────────────────
   const domain_scores: RegDomainScore[] = [
@@ -272,27 +272,27 @@ export function computeRegulatoryCompliance(input: RegulatoryComplianceInput): R
   const concerns: string[] = [];
   if (nonCompliant.length >= 4) concerns.push(`${nonCompliant.length} of 7 regulatory domains non-compliant — systemic governance failure.`);
   else if (nonCompliant.length >= 2) concerns.push(`${nonCompliant.length} regulatory domains non-compliant — targeted improvement needed.`);
-  if (reg44_visits_due > 0 && visitRate < 80) concerns.push(`Reg 44 visit compliance at ${visitRate}% — independent monitoring gaps.`);
+  if (reg44_visits_due > 0 && below(visitRate, 80)) concerns.push(`Reg 44 visit compliance at ${visitRate}% — independent monitoring gaps.`);
   if (policies_overdue_review >= 5) concerns.push(`${policies_overdue_review} policies overdue for review — outdated policies create safeguarding risk.`);
   if (data_breaches >= 3) concerns.push(`${data_breaches} data breaches — serious information governance failures.`);
-  if (reg44_actions_total > 0 && actionRate < 50) concerns.push(`Only ${actionRate}% of Reg 44 actions resolved — audit trail shows poor follow-through.`);
+  if (reg44_actions_total > 0 && below(actionRate, 50)) concerns.push(`Only ${actionRate}% of Reg 44 actions resolved — audit trail shows poor follow-through.`);
 
   // ── Recommendations ─────────────────────────────────────────────────────
   const recommendations: { rank: number; recommendation: string; urgency: string; regulatory_ref: string | null }[] = [];
   let rank = 0;
-  if (reg44_visits_due > 0 && visitRate < 80) recommendations.push({ rank: ++rank, recommendation: "Restore Reg 44 visit schedule — missed visits weaken independent oversight.", urgency: "immediate", regulatory_ref: "Reg 44" });
+  if (reg44_visits_due > 0 && below(visitRate, 80)) recommendations.push({ rank: ++rank, recommendation: "Restore Reg 44 visit schedule — missed visits weaken independent oversight.", urgency: "immediate", regulatory_ref: "Reg 44" });
   if (data_breaches >= 2) recommendations.push({ rank: ++rank, recommendation: `Address ${data_breaches} data breaches and strengthen information governance.`, urgency: "immediate", regulatory_ref: "Data Protection Act 2018" });
   if (policies_overdue_review >= 3) recommendations.push({ rank: ++rank, recommendation: `Bring ${policies_overdue_review} overdue policies back into review cycle.`, urgency: "soon", regulatory_ref: "Reg 46" });
-  if (qa_audits_due > 0 && qaRate < 80) recommendations.push({ rank: ++rank, recommendation: "Increase QA audit completion rate to ensure systematic quality oversight.", urgency: "soon", regulatory_ref: "Reg 45" });
+  if (qa_audits_due > 0 && below(qaRate, 80)) recommendations.push({ rank: ++rank, recommendation: "Increase QA audit completion rate to ensure systematic quality oversight.", urgency: "soon", regulatory_ref: "Reg 45" });
   if (!dpia_completed) recommendations.push({ rank: ++rank, recommendation: "Complete Data Protection Impact Assessment — statutory requirement.", urgency: "soon", regulatory_ref: "GDPR Art 35" });
-  if (compliance_score < 65) recommendations.push({ rank: ++rank, recommendation: "Develop regulatory compliance improvement plan covering all non-compliant domains.", urgency: "planned", regulatory_ref: "Schedule 7" });
+  if (below(compliance_score, 65)) recommendations.push({ rank: ++rank, recommendation: "Develop regulatory compliance improvement plan covering all non-compliant domains.", urgency: "planned", regulatory_ref: "Schedule 7" });
 
   // ── Insights ────────────────────────────────────────────────────────────
   const insights: { text: string; severity: string }[] = [];
   if (compliance_rating === "outstanding") insights.push({ text: "Regulatory compliance is outstanding — the home maintains exemplary governance across all domains.", severity: "positive" });
   if (compliance_rating === "inadequate") insights.push({ text: "Regulatory compliance is inadequate — multiple governance failures create significant inspection risk.", severity: "critical" });
-  if (last_inspection_rating === "outstanding" && compliance_score < 65) insights.push({ text: "Compliance has deteriorated since the last outstanding inspection — risk of downgrade at next visit.", severity: "warning" });
-  if (last_inspection_rating === "requires_improvement" && compliance_score >= 80) insights.push({ text: "Compliance has improved significantly since last inspection — strong trajectory towards upgraded rating.", severity: "positive" });
+  if (last_inspection_rating === "outstanding" && below(compliance_score, 65)) insights.push({ text: "Compliance has deteriorated since the last outstanding inspection — risk of downgrade at next visit.", severity: "warning" });
+  if (last_inspection_rating === "requires_improvement" && meets(compliance_score, 80)) insights.push({ text: "Compliance has improved significantly since last inspection — strong trajectory towards upgraded rating.", severity: "positive" });
   if (data_breaches >= 1 && !dpia_completed) insights.push({ text: "Data breaches occurring without DPIA in place — this is a serious regulatory vulnerability.", severity: "critical" });
 
   // ── Headline ────────────────────────────────────────────────────────────

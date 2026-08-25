@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // CARA -- HOME SAFEGUARDING PREVENTION INTELLIGENCE ENGINE
 // Home-level: bullying incidents, hate incidents, Prevent duty compliance,
@@ -102,7 +103,8 @@ export interface HomeSafeguardingPreventionResult {
   };
   prevent: {
     total_screenings: number;
-    child_coverage: number;
+    /** null when the population is empty — nothing measured, not 0%. */
+    child_coverage: number | null;
     /** null when the population is empty — nothing measured, not 0%. */
     training_compliance_rate: number | null;
     high_risk_count: number;
@@ -123,10 +125,6 @@ export interface HomeSafeguardingPreventionResult {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function daysBetween(a: string, b: string): number {
   return Math.round(
@@ -159,7 +157,7 @@ export function computeHomeSafeguardingPrevention(
       headline: "No safeguarding prevention data available for analysis.",
       bullying: { total_incidents_90d: 0, resolved_count: 0, open_count: 0, restorative_rate: null, school_notification_rate: null },
       hate_incidents: { total_incidents_90d: 0, reporting_compliance_rate: null, prevention_measures_total: 0 },
-      prevent: { total_screenings: 0, child_coverage: 0, training_compliance_rate: null, high_risk_count: 0 },
+      prevent: { total_screenings: 0, child_coverage: null, training_compliance_rate: null, high_risk_count: 0 },
       court: { total_records: 0, risk_assessment_rate: null, prep_rate: null, support_rate: null },
       strengths: [],
       concerns: ["No safeguarding prevention data -- protection of children cannot be assessed."],
@@ -176,11 +174,11 @@ export function computeHomeSafeguardingPrevention(
 
   const bullyingResolved = bullying90d.filter(b => b.status === "resolved").length;
   const bullyingOpen = bullying90d.filter(b => b.status === "open" || b.status === "investigating").length;
-  const bullyingResolutionRate = pct(bullyingResolved, bullying90d.length);
+  const bullyingResolutionRate = rate(bullyingResolved, bullying90d.length);
   const bullyingRestorativeCount = bullying90d.filter(b => b.restorative_attempted).length;
-  const bullyingRestorativeRate = pct(bullyingRestorativeCount, bullying90d.length);
+  const bullyingRestorativeRate = rate(bullyingRestorativeCount, bullying90d.length);
   const bullyingSchoolNotified = bullying90d.filter(b => b.school_notified).length;
-  const bullyingSchoolRate = pct(bullyingSchoolNotified, bullying90d.length);
+  const bullyingSchoolRate = rate(bullyingSchoolNotified, bullying90d.length);
 
   // -- Hate Incidents (90d) ---------------------------------------------------
   const hate90d = hate_incidents.filter(h => {
@@ -191,29 +189,29 @@ export function computeHomeSafeguardingPrevention(
   const hateProperlyReported = hate90d.filter(
     h => h.reported_to_police && h.reported_to_ofsted && h.reported_to_la,
   ).length;
-  const hateReportingRate = pct(hateProperlyReported, hate90d.length);
+  const hateReportingRate = rate(hateProperlyReported, hate90d.length);
   const preventionMeasuresTotal = hate90d.reduce((s, h) => s + h.prevention_measures_count, 0);
 
   // -- Prevent Screenings -----------------------------------------------------
   const uniqueScreenedChildren = new Set(prevent_screenings.map(p => p.child_id));
-  const preventChildCoverage = pct(uniqueScreenedChildren.size, total_children);
+  const preventChildCoverage = rate(uniqueScreenedChildren.size, total_children);
 
   // -- Prevent Records --------------------------------------------------------
   const preventTrainedCount = prevent_records.filter(p => p.training_completed).length;
-  const preventTrainingRate = pct(preventTrainedCount, prevent_records.length);
+  const preventTrainingRate = rate(preventTrainedCount, prevent_records.length);
   const highRiskCount = prevent_records.filter(p => p.risk_level === "high").length;
 
   // -- Court Attendance -------------------------------------------------------
   const courtRiskAssessed = court_attendance_records.filter(c => c.risk_assessment_done).length;
-  const courtRiskRate = pct(courtRiskAssessed, court_attendance_records.length);
+  const courtRiskRate = rate(courtRiskAssessed, court_attendance_records.length);
   const courtPrepared = court_attendance_records.filter(
     c => c.risk_assessment_done && c.pre_hearing_prep_count > 0,
   ).length;
-  const courtPrepRate = pct(courtPrepared, court_attendance_records.length);
+  const courtPrepRate = rate(courtPrepared, court_attendance_records.length);
   const courtWithSupport = court_attendance_records.filter(
     c => c.post_hearing_support_count > 0,
   ).length;
-  const courtSupportRate = pct(courtWithSupport, court_attendance_records.length);
+  const courtSupportRate = rate(courtWithSupport, court_attendance_records.length);
 
   // -- Scoring ----------------------------------------------------------------
   // Base 52 + max bonuses 28 = 80
@@ -224,8 +222,8 @@ export function computeHomeSafeguardingPrevention(
     score += 2; // positive indicator - no bullying
   } else {
     if (bullyingResolutionRate === 100) score += 5;
-    else if (bullyingResolutionRate >= 80) score += 3;
-    else if (bullyingResolutionRate >= 50) score += 0;
+    else if (meets(bullyingResolutionRate, 80)) score += 3;
+    else if (meets(bullyingResolutionRate, 50)) score += 0;
     else score -= 5;
   }
 
@@ -234,8 +232,8 @@ export function computeHomeSafeguardingPrevention(
     score += 2; // no hate incidents
   } else {
     if (hateReportingRate === 100) score += 4;
-    else if (hateReportingRate >= 80) score += 2;
-    else if (hateReportingRate >= 50) score += 0;
+    else if (meets(hateReportingRate, 80)) score += 2;
+    else if (meets(hateReportingRate, 50)) score += 0;
     else score -= 4;
   }
 
@@ -243,9 +241,9 @@ export function computeHomeSafeguardingPrevention(
   if (total_children === 0) {
     score += 0;
   } else {
-    if (preventChildCoverage >= 90) score += 4;
-    else if (preventChildCoverage >= 70) score += 2;
-    else if (preventChildCoverage >= 50) score += 0;
+    if (meets(preventChildCoverage, 90)) score += 4;
+    else if (meets(preventChildCoverage, 70)) score += 2;
+    else if (meets(preventChildCoverage, 50)) score += 0;
     else score -= 4;
   }
 
@@ -253,9 +251,9 @@ export function computeHomeSafeguardingPrevention(
   if (prevent_records.length === 0) {
     score += 0;
   } else {
-    if (preventTrainingRate >= 90) score += 3;
-    else if (preventTrainingRate >= 70) score += 1;
-    else if (preventTrainingRate >= 50) score += 0;
+    if (meets(preventTrainingRate, 90)) score += 3;
+    else if (meets(preventTrainingRate, 70)) score += 1;
+    else if (meets(preventTrainingRate, 50)) score += 0;
     else score -= 3;
   }
 
@@ -263,10 +261,10 @@ export function computeHomeSafeguardingPrevention(
   if (court_attendance_records.length === 0) {
     score += 1; // neutral positive
   } else {
-    const courtFullyPrepRate = pct(courtPrepared, court_attendance_records.length);
-    if (courtFullyPrepRate >= 90) score += 3;
-    else if (courtFullyPrepRate >= 70) score += 1;
-    else if (courtFullyPrepRate >= 50) score += 0;
+    const courtFullyPrepRate = rate(courtPrepared, court_attendance_records.length);
+    if (meets(courtFullyPrepRate, 90)) score += 3;
+    else if (meets(courtFullyPrepRate, 70)) score += 1;
+    else if (meets(courtFullyPrepRate, 50)) score += 0;
     else score -= 3;
   }
 
@@ -274,9 +272,9 @@ export function computeHomeSafeguardingPrevention(
   if (bullying90d.length === 0) {
     score += 1; // no incidents
   } else {
-    if (bullyingRestorativeRate >= 80) score += 3;
-    else if (bullyingRestorativeRate >= 60) score += 1;
-    else if (bullyingRestorativeRate >= 40) score += 0;
+    if (meets(bullyingRestorativeRate, 80)) score += 3;
+    else if (meets(bullyingRestorativeRate, 60)) score += 1;
+    else if (meets(bullyingRestorativeRate, 40)) score += 0;
     else score -= 3;
   }
 
@@ -288,10 +286,10 @@ export function computeHomeSafeguardingPrevention(
   if (supportIncidents.length === 0) {
     score += 1; // no incidents
   } else {
-    const supportRate = pct(supportIncidents.filter(Boolean).length, supportIncidents.length);
-    if (supportRate >= 90) score += 3;
-    else if (supportRate >= 70) score += 1;
-    else if (supportRate >= 50) score += 0;
+    const supportRate = rate(supportIncidents.filter(Boolean).length, supportIncidents.length);
+    if (meets(supportRate, 90)) score += 3;
+    else if (meets(supportRate, 70)) score += 1;
+    else if (meets(supportRate, 50)) score += 0;
     else score -= 3;
   }
 
@@ -303,10 +301,10 @@ export function computeHomeSafeguardingPrevention(
   if (voiceRecords.length === 0) {
     score += 0;
   } else {
-    const voiceRate = pct(voiceRecords.filter(Boolean).length, voiceRecords.length);
-    if (voiceRate >= 90) score += 3;
-    else if (voiceRate >= 70) score += 1;
-    else if (voiceRate >= 50) score += 0;
+    const voiceRate = rate(voiceRecords.filter(Boolean).length, voiceRecords.length);
+    if (meets(voiceRate, 90)) score += 3;
+    else if (meets(voiceRate, 70)) score += 1;
+    else if (meets(voiceRate, 50)) score += 0;
     else score -= 3;
   }
 
@@ -340,16 +338,16 @@ export function computeHomeSafeguardingPrevention(
   if (hate90d.length === 0 && total_children > 0) {
     strengths.push("No hate incidents recorded in 90 days -- inclusive environment maintained.");
   }
-  if (preventChildCoverage >= 90 && total_children > 0) {
+  if (meets(preventChildCoverage, 90) && total_children > 0) {
     strengths.push(`${preventChildCoverage}% Prevent screening coverage -- comprehensive radicalisation vigilance.`);
   }
-  if (preventTrainingRate >= 90 && prevent_records.length > 0) {
+  if (meets(preventTrainingRate, 90) && prevent_records.length > 0) {
     strengths.push(`${preventTrainingRate}% Prevent training compliance -- staff well-prepared.`);
   }
-  if (courtPrepRate >= 90 && court_attendance_records.length > 0) {
+  if (meets(courtPrepRate, 90) && court_attendance_records.length > 0) {
     strengths.push(`${courtPrepRate}% court attendance preparation rate -- children properly supported.`);
   }
-  if (bullyingRestorativeRate >= 80 && bullying90d.length > 0) {
+  if (meets(bullyingRestorativeRate, 80) && bullying90d.length > 0) {
     strengths.push(`${bullyingRestorativeRate}% restorative practice rate -- trauma-informed bullying response.`);
   }
 
@@ -357,25 +355,25 @@ export function computeHomeSafeguardingPrevention(
   if (bullyingOpen > 0) {
     concerns.push(`${bullyingOpen} bullying incident${bullyingOpen > 1 ? "s" : ""} remain unresolved -- children may still be at risk.`);
   }
-  if (hateReportingRate < 100 && hate90d.length > 0) {
+  if (below(hateReportingRate, 100) && hate90d.length > 0) {
     const incomplete = hate90d.length - hateProperlyReported;
     concerns.push(`${incomplete} hate incident${incomplete > 1 ? "s" : ""} have incomplete statutory reporting.`);
   }
-  if (preventChildCoverage < 50 && total_children > 0) {
+  if (below(preventChildCoverage, 50) && total_children > 0) {
     concerns.push(`Only ${preventChildCoverage}% of children have Prevent screenings -- significant coverage gap.`);
   }
-  if (preventTrainingRate < 50 && prevent_records.length > 0) {
+  if (below(preventTrainingRate, 50) && prevent_records.length > 0) {
     concerns.push(`Only ${preventTrainingRate}% Prevent training compliance -- staff may lack critical knowledge.`);
   }
   if (highRiskCount > 0) {
     concerns.push(`${highRiskCount} high-risk Prevent record${highRiskCount > 1 ? "s" : ""} requiring active monitoring.`);
   }
-  if (courtPrepRate < 50 && court_attendance_records.length > 0) {
+  if (below(courtPrepRate, 50) && court_attendance_records.length > 0) {
     concerns.push(`Only ${courtPrepRate}% of court attendances have proper preparation -- children may be unsupported.`);
   }
 
   // Recommendations
-  if (preventChildCoverage < 70 && total_children > 0) {
+  if (below(preventChildCoverage, 70) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Complete mandatory Prevent screening for all children -- Reg 12 requires vigilance against radicalisation.",
@@ -383,7 +381,7 @@ export function computeHomeSafeguardingPrevention(
       regulatory_ref: "CHR 2015 Reg 12",
     });
   }
-  if (hateReportingRate < 80 && hate90d.length > 0) {
+  if (below(hateReportingRate, 80) && hate90d.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Ensure all hate incidents are reported to police, Ofsted, and local authority as required by statutory guidance.",
@@ -391,7 +389,7 @@ export function computeHomeSafeguardingPrevention(
       regulatory_ref: "CHR 2015 Reg 13",
     });
   }
-  if (bullyingResolutionRate < 80 && bullying90d.length > 0) {
+  if (below(bullyingResolutionRate, 80) && bullying90d.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Prioritise resolution of outstanding bullying incidents -- unresolved cases risk escalation and harm.",
@@ -399,7 +397,7 @@ export function computeHomeSafeguardingPrevention(
       regulatory_ref: "CHR 2015 Reg 12",
     });
   }
-  if (preventTrainingRate < 70 && prevent_records.length > 0) {
+  if (below(preventTrainingRate, 70) && prevent_records.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Ensure all staff complete Prevent training -- this is a statutory duty under the Counter-Terrorism and Security Act 2015.",
@@ -407,7 +405,7 @@ export function computeHomeSafeguardingPrevention(
       regulatory_ref: "CHR 2015 Reg 12",
     });
   }
-  if (courtPrepRate < 70 && court_attendance_records.length > 0) {
+  if (below(courtPrepRate, 70) && court_attendance_records.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Improve court attendance preparation including risk assessments and pre-hearing support for all children.",
@@ -415,7 +413,7 @@ export function computeHomeSafeguardingPrevention(
       regulatory_ref: "CHR 2015 Reg 12",
     });
   }
-  if (bullyingRestorativeRate < 60 && bullying90d.length > 0) {
+  if (below(bullyingRestorativeRate, 60) && bullying90d.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Increase use of restorative approaches for bullying incidents to promote healing and understanding.",
@@ -428,26 +426,26 @@ export function computeHomeSafeguardingPrevention(
   if (
     bullyingResolutionRate === 100 && bullying90d.length > 0 &&
     hateReportingRate === 100 && hate90d.length > 0 &&
-    preventChildCoverage >= 90 && preventTrainingRate >= 90
+    meets(preventChildCoverage, 90) && meets(preventTrainingRate, 90)
   ) {
     insights.push({
       text: "Safeguarding prevention governance is exemplary across all domains. Bullying resolution, hate incident reporting, Prevent compliance, and training all exceed thresholds. Ofsted will recognise this as outstanding protection.",
       severity: "positive",
     });
   }
-  if (bullyingResolutionRate < 50 && bullying90d.length >= 3) {
+  if (below(bullyingResolutionRate, 50) && bullying90d.length >= 3) {
     insights.push({
       text: `Cara detects pattern of unresolved bullying incidents -- risk of institutional harm. ${bullyingOpen} cases remain open with resolution rate of only ${bullyingResolutionRate}%.`,
       severity: "critical",
     });
   }
-  if (hateReportingRate < 50 && hate90d.length >= 2) {
+  if (below(hateReportingRate, 50) && hate90d.length >= 2) {
     insights.push({
       text: `Hate incident reporting compliance is critically low at ${hateReportingRate}%. Failure to notify statutory bodies breaches regulatory requirements and exposes the home to enforcement action.`,
       severity: "critical",
     });
   }
-  if (preventChildCoverage >= 90 && preventTrainingRate >= 90 && highRiskCount === 0) {
+  if (meets(preventChildCoverage, 90) && meets(preventTrainingRate, 90) && highRiskCount === 0) {
     insights.push({
       text: "Prevent duty compliance is comprehensive with high screening coverage and training rates. No high-risk cases detected -- proportionate approach is working effectively.",
       severity: "positive",

@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME QUALITY OF CARE COMPOSITE ENGINE
 // Merges child voice, participation, key-working quality, cultural identity,
@@ -61,7 +62,8 @@ export interface QoCDomainScore {
 
 export interface QualityOfCareResult {
   quality_rating: QualityOfCareRating;
-  quality_score: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  quality_score: number | null;
   headline: string;
   domain_scores: QoCDomainScore[];
   strengths: string[];
@@ -71,8 +73,6 @@ export interface QualityOfCareResult {
 }
 
 /* ── helpers ─────────────────────────────────────────────────────────────── */
-
-function pct(n: number, d: number): number { return d === 0 ? 0 : Math.round((n / d) * 100); }
 
 export function computeQualityOfCare(input: QualityOfCareInput): QualityOfCareResult {
   const tc = input.total_children;
@@ -87,164 +87,164 @@ export function computeQualityOfCare(input: QualityOfCareInput): QualityOfCareRe
 
   // ── Domain: Child Voice (0–20) ──────────────────────────────────────────
   let voiceScore = 0;
-  const feedbackActRate = pct(input.feedback_entries_acted_on, input.feedback_entries_total);
+  const feedbackActRate = rate(input.feedback_entries_acted_on, input.feedback_entries_total);
   if (input.feedback_entries_total === 0) {
     voiceScore += 3; // low — no feedback captured
   } else {
-    if (feedbackActRate >= 90) voiceScore += 8;
-    else if (feedbackActRate >= 70) voiceScore += 5;
-    else if (feedbackActRate >= 50) voiceScore += 3;
+    if (meets(feedbackActRate, 90)) voiceScore += 8;
+    else if (meets(feedbackActRate, 70)) voiceScore += 5;
+    else if (meets(feedbackActRate, 50)) voiceScore += 3;
     else voiceScore += 1;
   }
-  const meetRate = pct(input.house_meetings_held, input.house_meetings_due);
+  const meetRate = rate(input.house_meetings_held, input.house_meetings_due);
   if (input.house_meetings_due === 0) {
     voiceScore += 3;
   } else {
-    if (meetRate >= 90) voiceScore += 6;
-    else if (meetRate >= 75) voiceScore += 4;
-    else if (meetRate >= 50) voiceScore += 2;
+    if (meets(meetRate, 90)) voiceScore += 6;
+    else if (meets(meetRate, 75)) voiceScore += 4;
+    else if (meets(meetRate, 50)) voiceScore += 2;
     else voiceScore += 1;
   }
-  const voiceCoverage = pct(input.children_with_voice_captured, tc);
-  if (voiceCoverage >= 90) voiceScore += 6;
-  else if (voiceCoverage >= 70) voiceScore += 4;
-  else if (voiceCoverage >= 50) voiceScore += 2;
+  const voiceCoverage = rate(input.children_with_voice_captured, tc);
+  if (meets(voiceCoverage, 90)) voiceScore += 6;
+  else if (meets(voiceCoverage, 70)) voiceScore += 4;
+  else if (meets(voiceCoverage, 50)) voiceScore += 2;
   else voiceScore += 0;
   voiceScore = Math.min(voiceScore, 20);
-  const voiceMet = voiceCoverage >= 70 && feedbackActRate >= 70;
+  const voiceMet = meets(voiceCoverage, 70) && meets(feedbackActRate, 70);
 
   // ── Domain: Participation (0–10) ────────────────────────────────────────
   let partScore = 0;
-  const councilRate = pct(input.children_on_council_or_forum, tc);
-  if (councilRate >= 50) partScore += 5;
-  else if (councilRate >= 25) partScore += 3;
-  else if (councilRate > 0) partScore += 1;
+  const councilRate = rate(input.children_on_council_or_forum, tc);
+  if (meets(councilRate, 50)) partScore += 5;
+  else if (meets(councilRate, 25)) partScore += 3;
+  else if (above(councilRate, 0)) partScore += 1;
   else partScore += 0;
-  const advRate = pct(input.advocacy_referrals_accepted, input.advocacy_referrals_offered);
+  const advRate = rate(input.advocacy_referrals_accepted, input.advocacy_referrals_offered);
   if (input.advocacy_referrals_offered === 0) {
     partScore += 2; // neutral
   } else {
-    if (advRate >= 80) partScore += 5;
-    else if (advRate >= 50) partScore += 3;
+    if (meets(advRate, 80)) partScore += 5;
+    else if (meets(advRate, 50)) partScore += 3;
     else partScore += 1;
   }
   partScore = Math.min(partScore, 10);
-  const partMet = councilRate >= 25;
+  const partMet = meets(councilRate, 25);
 
   // ── Domain: Key Working (0–20) ──────────────────────────────────────────
   let kwScore = 0;
-  const kwRate = pct(input.keywork_sessions_completed, input.keywork_sessions_due);
+  const kwRate = rate(input.keywork_sessions_completed, input.keywork_sessions_due);
   if (input.keywork_sessions_due === 0) {
     kwScore += 8;
   } else {
-    if (kwRate >= 90) kwScore += 12;
-    else if (kwRate >= 75) kwScore += 8;
-    else if (kwRate >= 50) kwScore += 4;
+    if (meets(kwRate, 90)) kwScore += 12;
+    else if (meets(kwRate, 75)) kwScore += 8;
+    else if (meets(kwRate, 50)) kwScore += 4;
     else kwScore += 1;
   }
-  const kwAlloc = pct(input.children_with_keyworker_allocated, tc);
-  if (kwAlloc >= 100) kwScore += 8;
-  else if (kwAlloc >= 80) kwScore += 5;
-  else if (kwAlloc >= 60) kwScore += 2;
+  const kwAlloc = rate(input.children_with_keyworker_allocated, tc);
+  if (meets(kwAlloc, 100)) kwScore += 8;
+  else if (meets(kwAlloc, 80)) kwScore += 5;
+  else if (meets(kwAlloc, 60)) kwScore += 2;
   else kwScore += 0;
   kwScore = Math.min(kwScore, 20);
-  const kwMet = kwAlloc >= 80 && kwRate >= 75;
+  const kwMet = meets(kwAlloc, 80) && meets(kwRate, 75);
 
   // ── Domain: Cultural Identity (0–15) ────────────────────────────────────
   let culScore = 0;
-  const culPlanRate = pct(input.children_with_cultural_plan, tc);
-  if (culPlanRate >= 90) culScore += 5;
-  else if (culPlanRate >= 70) culScore += 3;
-  else if (culPlanRate >= 50) culScore += 1;
+  const culPlanRate = rate(input.children_with_cultural_plan, tc);
+  if (meets(culPlanRate, 90)) culScore += 5;
+  else if (meets(culPlanRate, 70)) culScore += 3;
+  else if (meets(culPlanRate, 50)) culScore += 1;
   else culScore += 0;
-  const culVisitRate = pct(input.cultural_visits_completed, input.cultural_visits_planned);
+  const culVisitRate = rate(input.cultural_visits_completed, input.cultural_visits_planned);
   if (input.cultural_visits_planned === 0) {
     culScore += 3;
   } else {
-    if (culVisitRate >= 80) culScore += 4;
-    else if (culVisitRate >= 60) culScore += 2;
+    if (meets(culVisitRate, 80)) culScore += 4;
+    else if (meets(culVisitRate, 60)) culScore += 2;
     else culScore += 1;
   }
   if (input.diversity_events_held >= 4) culScore += 3;
   else if (input.diversity_events_held >= 2) culScore += 2;
   else if (input.diversity_events_held >= 1) culScore += 1;
-  const herRate = pct(input.heritage_language_supported, tc);
-  if (herRate >= 80) culScore += 3;
-  else if (herRate >= 50) culScore += 2;
-  else if (herRate > 0) culScore += 1;
+  const herRate = rate(input.heritage_language_supported, tc);
+  if (meets(herRate, 80)) culScore += 3;
+  else if (meets(herRate, 50)) culScore += 2;
+  else if (above(herRate, 0)) culScore += 1;
   else culScore += 0;
   culScore = Math.min(culScore, 15);
-  const culMet = culPlanRate >= 70;
+  const culMet = meets(culPlanRate, 70);
 
   // ── Domain: Life Story (0–15) ───────────────────────────────────────────
   let lsScore = 0;
-  const lsRate = pct(input.children_with_life_story, tc);
-  if (lsRate >= 90) lsScore += 6;
-  else if (lsRate >= 70) lsScore += 4;
-  else if (lsRate >= 50) lsScore += 2;
+  const lsRate = rate(input.children_with_life_story, tc);
+  if (meets(lsRate, 90)) lsScore += 6;
+  else if (meets(lsRate, 70)) lsScore += 4;
+  else if (meets(lsRate, 50)) lsScore += 2;
   else lsScore += 0;
-  const lsUpToDate = pct(input.life_stories_up_to_date, input.children_with_life_story);
+  const lsUpToDate = rate(input.life_stories_up_to_date, input.children_with_life_story);
   if (input.children_with_life_story === 0) {
     lsScore += 0;
   } else {
-    if (lsUpToDate >= 90) lsScore += 5;
-    else if (lsUpToDate >= 70) lsScore += 3;
-    else if (lsUpToDate >= 50) lsScore += 1;
+    if (meets(lsUpToDate, 90)) lsScore += 5;
+    else if (meets(lsUpToDate, 70)) lsScore += 3;
+    else if (meets(lsUpToDate, 50)) lsScore += 1;
     else lsScore += 0;
   }
-  const ppRate = pct(input.children_with_personal_passport, tc);
-  if (ppRate >= 90) ppRate >= 90 && (lsScore += 4);
-  else if (ppRate >= 70) lsScore += 2;
-  else if (ppRate >= 50) lsScore += 1;
+  const ppRate = rate(input.children_with_personal_passport, tc);
+  if (meets(ppRate, 90)) meets(ppRate, 90) && (lsScore += 4);
+  else if (meets(ppRate, 70)) lsScore += 2;
+  else if (meets(ppRate, 50)) lsScore += 1;
   else lsScore += 0;
   lsScore = Math.min(lsScore, 15);
-  const lsMet = lsRate >= 70;
+  const lsMet = meets(lsRate, 70);
 
   // ── Domain: Therapeutic Climate (0–15) ──────────────────────────────────
   let thScore = 0;
-  const attachRate = pct(input.children_with_attachment_profile, tc);
-  if (attachRate >= 90) thScore += 4;
-  else if (attachRate >= 70) thScore += 2;
+  const attachRate = rate(input.children_with_attachment_profile, tc);
+  if (meets(attachRate, 90)) thScore += 4;
+  else if (meets(attachRate, 70)) thScore += 2;
   else thScore += 0;
-  const thAttendRate = pct(input.therapeutic_sessions_attended, input.therapeutic_sessions_offered);
+  const thAttendRate = rate(input.therapeutic_sessions_attended, input.therapeutic_sessions_offered);
   if (input.therapeutic_sessions_offered === 0) {
     thScore += 3;
   } else {
-    if (thAttendRate >= 80) thScore += 4;
-    else if (thAttendRate >= 60) thScore += 2;
+    if (meets(thAttendRate, 80)) thScore += 4;
+    else if (meets(thAttendRate, 60)) thScore += 2;
     else thScore += 1;
   }
-  const sensRate = pct(input.children_with_sensory_profile, tc);
-  if (sensRate >= 80) thScore += 3;
-  else if (sensRate >= 50) thScore += 2;
+  const sensRate = rate(input.children_with_sensory_profile, tc);
+  if (meets(sensRate, 80)) thScore += 3;
+  else if (meets(sensRate, 50)) thScore += 2;
   else thScore += 1;
   if (input.emotional_vocab_sessions >= 8) thScore += 4;
   else if (input.emotional_vocab_sessions >= 4) thScore += 2;
   else if (input.emotional_vocab_sessions >= 1) thScore += 1;
   else thScore += 0;
   thScore = Math.min(thScore, 15);
-  const thMet = attachRate >= 70 && (thAttendRate >= 60 || input.therapeutic_sessions_offered === 0);
+  const thMet = meets(attachRate, 70) && (meets(thAttendRate, 60) || input.therapeutic_sessions_offered === 0);
 
   // ── Domain: Social Connectedness (0–5) ──────────────────────────────────
   let socScore = 0;
-  const fmRate = pct(input.children_with_friendship_map, tc);
-  if (fmRate >= 80) socScore += 3;
-  else if (fmRate >= 50) socScore += 2;
-  else if (fmRate > 0) socScore += 1;
-  const aspRate = pct(input.children_with_aspiration_record, tc);
-  if (aspRate >= 80) socScore += 2;
-  else if (aspRate >= 50) socScore += 1;
+  const fmRate = rate(input.children_with_friendship_map, tc);
+  if (meets(fmRate, 80)) socScore += 3;
+  else if (meets(fmRate, 50)) socScore += 2;
+  else if (above(fmRate, 0)) socScore += 1;
+  const aspRate = rate(input.children_with_aspiration_record, tc);
+  if (meets(aspRate, 80)) socScore += 2;
+  else if (meets(aspRate, 50)) socScore += 1;
   socScore = Math.min(socScore, 5);
-  const socMet = fmRate >= 50;
+  const socMet = meets(fmRate, 50);
 
   // ── Totals ──────────────────────────────────────────────────────────────
   const totalScore = voiceScore + partScore + kwScore + culScore + lsScore + thScore + socScore;
   const maxScore = 20 + 10 + 20 + 15 + 15 + 15 + 5; // = 100
-  const quality_score = pct(totalScore, maxScore);
+  const quality_score = rate(totalScore, maxScore);
   const quality_rating: QualityOfCareRating =
-    quality_score >= 80 ? "outstanding" :
-    quality_score >= 65 ? "good" :
-    quality_score >= 45 ? "adequate" : "inadequate";
+    meets(quality_score, 80) ? "outstanding" :
+    meets(quality_score, 65) ? "good" :
+    meets(quality_score, 45) ? "adequate" : "inadequate";
 
   // ── Domain scores ───────────────────────────────────────────────────────
   const domain_scores: QoCDomainScore[] = [
@@ -264,29 +264,29 @@ export function computeQualityOfCare(input: QualityOfCareInput): QualityOfCareRe
   const strengths: string[] = [];
   if (qualityMetDomains.length === 7) strengths.push("Quality thresholds met across all 7 domains — exceptional holistic care.");
   else if (qualityMetDomains.length >= 5) strengths.push(`Quality met in ${qualityMetDomains.length} of 7 domains — strong care foundations.`);
-  if (voiceCoverage >= 90) strengths.push("Over 90% of children have their voice captured — child-centred practice embedded.");
-  if (kwAlloc >= 100) strengths.push("Every child has an allocated keyworker — relational care is prioritised.");
-  if (lsRate >= 90) strengths.push("Life story work established for over 90% of children — identity needs actively supported.");
+  if (meets(voiceCoverage, 90)) strengths.push("Over 90% of children have their voice captured — child-centred practice embedded.");
+  if (meets(kwAlloc, 100)) strengths.push("Every child has an allocated keyworker — relational care is prioritised.");
+  if (meets(lsRate, 90)) strengths.push("Life story work established for over 90% of children — identity needs actively supported.");
   if (input.diversity_events_held >= 4) strengths.push("Regular diversity events demonstrate proactive cultural awareness.");
 
   // ── Concerns ────────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (qualityGaps.length >= 4) concerns.push(`${qualityGaps.length} of 7 quality domains below threshold — systemic quality of care issues.`);
   else if (qualityGaps.length >= 2) concerns.push(`${qualityGaps.length} quality domains below threshold — targeted improvement needed.`);
-  if (voiceCoverage < 50) concerns.push(`Only ${voiceCoverage}% of children's voices captured — children are not being heard.`);
-  if (kwAlloc < 80) concerns.push(`Only ${kwAlloc}% of children have keyworkers — relational gaps undermine attachment.`);
-  if (lsRate < 50) concerns.push(`Less than half of children have life story work — identity needs are unmet.`);
-  if (culPlanRate < 50) concerns.push(`Only ${culPlanRate}% of children have cultural identity plans — diversity needs neglected.`);
+  if (below(voiceCoverage, 50)) concerns.push(`Only ${voiceCoverage}% of children's voices captured — children are not being heard.`);
+  if (below(kwAlloc, 80)) concerns.push(`Only ${kwAlloc}% of children have keyworkers — relational gaps undermine attachment.`);
+  if (below(lsRate, 50)) concerns.push(`Less than half of children have life story work — identity needs are unmet.`);
+  if (below(culPlanRate, 50)) concerns.push(`Only ${culPlanRate}% of children have cultural identity plans — diversity needs neglected.`);
 
   // ── Recommendations ─────────────────────────────────────────────────────
   const recommendations: { rank: number; recommendation: string; urgency: string; regulatory_ref: string | null }[] = [];
   let rank = 0;
-  if (kwAlloc < 80) recommendations.push({ rank: ++rank, recommendation: "Urgently allocate keyworkers to all children — relational care is a fundamental requirement.", urgency: "immediate", regulatory_ref: "Reg 5" });
-  if (voiceCoverage < 60) recommendations.push({ rank: ++rank, recommendation: "Implement child voice capture for all children — current coverage is insufficient.", urgency: "immediate", regulatory_ref: "Reg 7" });
-  if (lsRate < 70) recommendations.push({ rank: ++rank, recommendation: "Establish life story work for all children — supports identity and belonging.", urgency: "soon", regulatory_ref: "Reg 9" });
-  if (culPlanRate < 70) recommendations.push({ rank: ++rank, recommendation: "Develop cultural identity plans for all children — celebrates and sustains heritage.", urgency: "soon", regulatory_ref: "Reg 10" });
-  if (input.keywork_sessions_due > 0 && kwRate < 75) recommendations.push({ rank: ++rank, recommendation: `Improve keywork session completion from ${kwRate}% — consistent key working builds trust.`, urgency: "soon", regulatory_ref: "Reg 5" });
-  if (quality_score < 65) recommendations.push({ rank: ++rank, recommendation: "Develop whole-home quality of care improvement plan targeting weakest domains.", urgency: "planned", regulatory_ref: "Reg 6" });
+  if (below(kwAlloc, 80)) recommendations.push({ rank: ++rank, recommendation: "Urgently allocate keyworkers to all children — relational care is a fundamental requirement.", urgency: "immediate", regulatory_ref: "Reg 5" });
+  if (below(voiceCoverage, 60)) recommendations.push({ rank: ++rank, recommendation: "Implement child voice capture for all children — current coverage is insufficient.", urgency: "immediate", regulatory_ref: "Reg 7" });
+  if (below(lsRate, 70)) recommendations.push({ rank: ++rank, recommendation: "Establish life story work for all children — supports identity and belonging.", urgency: "soon", regulatory_ref: "Reg 9" });
+  if (below(culPlanRate, 70)) recommendations.push({ rank: ++rank, recommendation: "Develop cultural identity plans for all children — celebrates and sustains heritage.", urgency: "soon", regulatory_ref: "Reg 10" });
+  if (above(input.keywork_sessions_due, 0) && below(kwRate, 75)) recommendations.push({ rank: ++rank, recommendation: `Improve keywork session completion from ${kwRate}% — consistent key working builds trust.`, urgency: "soon", regulatory_ref: "Reg 5" });
+  if (below(quality_score, 65)) recommendations.push({ rank: ++rank, recommendation: "Develop whole-home quality of care improvement plan targeting weakest domains.", urgency: "planned", regulatory_ref: "Reg 6" });
 
   // ── Insights ────────────────────────────────────────────────────────────
   const insights: { text: string; severity: string }[] = [];

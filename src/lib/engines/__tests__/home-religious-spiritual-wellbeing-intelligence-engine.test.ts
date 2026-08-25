@@ -168,12 +168,12 @@ describe("insufficient data", () => {
 
   it("returns all metric rates as 0", () => {
     const result = run();
-    expect(result.faith_support_coverage_rate).toBe(0);
+    expect(result.faith_support_coverage_rate).toBeNull();
     expect(result.spiritual_development_rate).toBeNull();
-    expect(result.dietary_accommodation_rate).toBe(0);
-    expect(result.worship_access_rate).toBe(0);
-    expect(result.celebration_participation_rate).toBe(0);
-    expect(result.child_voice_rate).toBe(0);
+    expect(result.dietary_accommodation_rate).toBeNull();
+    expect(result.worship_access_rate).toBeNull();
+    expect(result.celebration_participation_rate).toBeNull();
+    expect(result.child_voice_rate).toBeNull();
   });
 });
 
@@ -215,12 +215,12 @@ describe("inadequate baseline (all empty, children > 0)", () => {
 
   it("returns all metric rates as 0", () => {
     const result = run({ total_children: 3 });
-    expect(result.faith_support_coverage_rate).toBe(0);
+    expect(result.faith_support_coverage_rate).toBeNull();
     expect(result.spiritual_development_rate).toBeNull();
-    expect(result.dietary_accommodation_rate).toBe(0);
-    expect(result.worship_access_rate).toBe(0);
-    expect(result.celebration_participation_rate).toBe(0);
-    expect(result.child_voice_rate).toBe(0);
+    expect(result.dietary_accommodation_rate).toBeNull();
+    expect(result.worship_access_rate).toBeNull();
+    expect(result.celebration_participation_rate).toBeNull();
+    expect(result.child_voice_rate).toBeNull();
   });
 
   it("returns inadequate for total_children 1 (edge)", () => {
@@ -232,8 +232,8 @@ describe("inadequate baseline (all empty, children > 0)", () => {
 
 // -- 3. pct(0,0) = 0 ---------------------------------------------------------
 
-describe("pct(0,0) = 0", () => {
-  it("returns 0 for all rates when arrays have zero-denominator metrics", () => {
+describe("rate(0,0)=null", () => {
+  it("returns null for all rates when arrays have zero-denominator metrics", () => {
     // One faith record with supported=false, no spiritual/dietary/worship/celebration
     // This tests that pct(0,0) returns 0 for metrics with no denominator
     const result = run({
@@ -243,11 +243,11 @@ describe("pct(0,0) = 0", () => {
     // spiritual_development_rate = 0 (no spiritual records)
     expect(result.spiritual_development_rate).toBeNull();
     // dietary_accommodation_rate = 0 (no dietary records)
-    expect(result.dietary_accommodation_rate).toBe(0);
+    expect(result.dietary_accommodation_rate).toBeNull();
     // worship_access_rate = 0 (no worship records)
-    expect(result.worship_access_rate).toBe(0);
+    expect(result.worship_access_rate).toBeNull();
     // celebration_participation_rate = 0 (no celebration records)
-    expect(result.celebration_participation_rate).toBe(0);
+    expect(result.celebration_participation_rate).toBeNull();
   });
 });
 
@@ -1254,7 +1254,7 @@ describe("metric calculations", () => {
       expect(result.spiritual_development_rate).toBe(61);
     });
 
-    it("returns 0 when no spiritual development records", () => {
+    it("returns null when no spiritual development records", () => {
       const result = run({
         total_children: 1,
         faith_observance_records: [makeFaithObservance({ supported: true })],
@@ -1328,12 +1328,12 @@ describe("metric calculations", () => {
       expect(result.child_voice_rate).toBe(60);
     });
 
-    it("returns 0 when both faith and spiritual arrays empty", () => {
+    it("returns null when both faith and spiritual arrays empty", () => {
       const result = run({
         total_children: 1,
         religious_dietary_records: [makeReligiousDietary({ accommodation_provided: true })],
       });
-      expect(result.child_voice_rate).toBe(0);
+      expect(result.child_voice_rate).toBeNull();
     });
   });
 });
@@ -2729,18 +2729,18 @@ describe("edge cases", () => {
     expect(result.worship_access_rate).toBe(100);
   });
 
-  it("spiritual development rate uses three-part average correctly with zero denominators", () => {
-    // goals_set = 0 -> goalProgressRate = pct(0,0) = 0
-    // sessions_planned = 0 -> sessionAttendanceRate = pct(0,0) = 0
-    // plan_in_place = true -> planRate = 100%
+  it("spiritual development rate averages only the measured parts when denominators are zero", () => {
+    // goals_set = 0 and sessions_planned = 0 leave those two rates unmeasured
+    // (rate(0,0) = null); plan_in_place = true -> planRate = 100%
     const result = run({
       total_children: 1,
       spiritual_development_records: [
         makeSpiritualDevelopment({ plan_in_place: true, goals_set: 0, sessions_planned: 0 }),
       ],
     });
-    // avg = Math.round((100 + 0 + 0) / 3) = 33
-    expect(result.spiritual_development_rate).toBe(33);
+    // meanOf drops the unmeasured parts: mean(100) = 100 — the two phantom 0s
+    // no longer drag a fully-planned record to 33.
+    expect(result.spiritual_development_rate).toBe(100);
   });
 
   it("meal compliance rate uses sum across records", () => {

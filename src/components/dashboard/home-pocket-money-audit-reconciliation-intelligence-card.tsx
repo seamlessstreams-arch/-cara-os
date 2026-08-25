@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Calculator } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { PocketMoneyAuditRating } from "@/lib/engines/home-pocket-money-audit-reconciliation-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 function useHomePocketMoneyAuditReconciliationIntelligence() {
   return useQuery({
@@ -61,7 +62,7 @@ export function HomePocketMoneyAuditReconciliationIntelligenceCard() {
             <Calculator className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-[--cs-warning]")} />
             <span className="text-slate-900 font-bold">Pocket Money Audit & Reconciliation</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.audit_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.audit_score}%</span>}
+            {d.audit_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.audit_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -69,28 +70,28 @@ export function HomePocketMoneyAuditReconciliationIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.audit_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.audit_compliance_rate >= 90 ? "bg-green-50" : d.audit_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.audit_compliance_rate >= 90 ? "text-[--cs-success]" : d.audit_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.audit_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.audit_compliance_rate, 90) ? "bg-green-50" : meets(d.audit_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.audit_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.audit_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.audit_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Audit</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.reconciliation_accuracy_rate >= 90 ? "bg-green-50" : d.reconciliation_accuracy_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.reconciliation_accuracy_rate >= 90 ? "text-[--cs-success]" : d.reconciliation_accuracy_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.reconciliation_accuracy_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.reconciliation_accuracy_rate, 90) ? "bg-green-50" : meets(d.reconciliation_accuracy_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.reconciliation_accuracy_rate, 90) ? "text-[--cs-success]" : meets(d.reconciliation_accuracy_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.reconciliation_accuracy_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Recon.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.discrepancy_resolution_rate >= 90 ? "bg-green-50" : d.discrepancy_resolution_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.discrepancy_resolution_rate >= 90 ? "text-[--cs-success]" : d.discrepancy_resolution_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.discrepancy_resolution_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.discrepancy_resolution_rate, 90) ? "bg-green-50" : meets(d.discrepancy_resolution_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.discrepancy_resolution_rate, 90) ? "text-[--cs-success]" : meets(d.discrepancy_resolution_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.discrepancy_resolution_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Resolved</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.transparency_rate >= 90 ? "bg-green-50" : d.transparency_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.transparency_rate >= 90 ? "text-[--cs-success]" : d.transparency_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.transparency_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.transparency_rate, 90) ? "bg-green-50" : meets(d.transparency_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.transparency_rate, 90) ? "text-[--cs-success]" : meets(d.transparency_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.transparency_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Transp.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_awareness_rate >= 90 ? "bg-green-50" : d.child_awareness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_awareness_rate >= 90 ? "text-[--cs-success]" : d.child_awareness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_awareness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_awareness_rate, 90) ? "bg-green-50" : meets(d.child_awareness_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_awareness_rate, 90) ? "text-[--cs-success]" : meets(d.child_awareness_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_awareness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Aware.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.timeliness_rate >= 90 ? "bg-green-50" : d.timeliness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.timeliness_rate >= 90 ? "text-[--cs-success]" : d.timeliness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.timeliness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.timeliness_rate, 90) ? "bg-green-50" : meets(d.timeliness_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.timeliness_rate, 90) ? "text-[--cs-success]" : meets(d.timeliness_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.timeliness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Timely</p>
             </div>
           </div>

@@ -11,7 +11,7 @@
 //             celebrationParticipationRecords
 // ==============================================================================
 
-import { meets, below } from "@/lib/metrics/rate";
+import { below, meanOf, meets, rate } from "@/lib/metrics/rate";
 
 // -- Input Types --------------------------------------------------------------
 
@@ -129,13 +129,18 @@ export interface ReligiousSpiritualWellbeingResult {
   spiritual_rating: SpiritualWellbeingRating;
   spiritual_score: number;
   headline: string;
-  faith_support_coverage_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  faith_support_coverage_rate: number | null;
   // fab-0: null when no spiritual records.
   spiritual_development_rate: number | null;
-  dietary_accommodation_rate: number;
-  worship_access_rate: number;
-  celebration_participation_rate: number;
-  child_voice_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dietary_accommodation_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  worship_access_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  celebration_participation_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_voice_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: SpiritualWellbeingRecommendation[];
@@ -143,10 +148,6 @@ export interface ReligiousSpiritualWellbeingResult {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -170,12 +171,12 @@ function emptyResult(
     spiritual_rating: rating,
     spiritual_score: score,
     headline,
-    faith_support_coverage_rate: 0,
+    faith_support_coverage_rate: null,
     spiritual_development_rate: null,
-    dietary_accommodation_rate: 0,
-    worship_access_rate: 0,
-    celebration_participation_rate: 0,
-    child_voice_rate: 0,
+    dietary_accommodation_rate: null,
+    worship_access_rate: null,
+    celebration_participation_rate: null,
+    child_voice_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -254,10 +255,10 @@ export function computeReligiousSpiritualWellbeing(
   // --- Faith observance support coverage ---
   const totalFaithRecords = faith_observance_records.length;
   const supportedFaithRecords = faith_observance_records.filter((r) => r.supported).length;
-  const faithSupportCoverageRate = pct(supportedFaithRecords, totalFaithRecords);
+  const faithSupportCoverageRate = rate(supportedFaithRecords, totalFaithRecords);
 
   const staffFacilitated = faith_observance_records.filter((r) => r.staff_facilitated).length;
-  const staffFacilitationRate = pct(staffFacilitated, totalFaithRecords);
+  const staffFacilitationRate = rate(staffFacilitated, totalFaithRecords);
 
   const faithSatisfactionSum = faith_observance_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
@@ -271,12 +272,12 @@ export function computeReligiousSpiritualWellbeing(
   const faithBarriersTotal = faith_observance_records.filter(
     (r) => r.barriers_encountered.length > 0,
   ).length;
-  const faithBarrierRate = pct(faithBarriersTotal, totalFaithRecords);
+  const faithBarrierRate = rate(faithBarriersTotal, totalFaithRecords);
 
   // --- Spiritual development planning ---
   const totalSpiritualRecords = spiritual_development_records.length;
   const withPlan = spiritual_development_records.filter((r) => r.plan_in_place).length;
-  const planRate = pct(withPlan, totalSpiritualRecords);
+  const planRate = rate(withPlan, totalSpiritualRecords);
 
   const totalGoalsSet = spiritual_development_records.reduce(
     (sum, r) => sum + r.goals_set, 0,
@@ -284,7 +285,7 @@ export function computeReligiousSpiritualWellbeing(
   const totalGoalsProgressed = spiritual_development_records.reduce(
     (sum, r) => sum + r.goals_progressed, 0,
   );
-  const goalProgressRate = pct(totalGoalsProgressed, totalGoalsSet);
+  const goalProgressRate = rate(totalGoalsProgressed, totalGoalsSet);
 
   const totalSessionsPlanned = spiritual_development_records.reduce(
     (sum, r) => sum + r.sessions_planned, 0,
@@ -292,16 +293,16 @@ export function computeReligiousSpiritualWellbeing(
   const totalSessionsAttended = spiritual_development_records.reduce(
     (sum, r) => sum + r.sessions_attended, 0,
   );
-  const sessionAttendanceRate = pct(totalSessionsAttended, totalSessionsPlanned);
+  const sessionAttendanceRate = rate(totalSessionsAttended, totalSessionsPlanned);
 
   // fab-0: null when no spiritual records.
   const spiritualDevelopmentRate: number | null =
     totalSpiritualRecords > 0
-      ? Math.round((planRate + goalProgressRate + sessionAttendanceRate) / 3)
+      ? meanOf([planRate, goalProgressRate, sessionAttendanceRate])
       : null;
 
   const mentorAssigned = spiritual_development_records.filter((r) => r.mentor_assigned).length;
-  const mentorRate = pct(mentorAssigned, totalSpiritualRecords);
+  const mentorRate = rate(mentorAssigned, totalSpiritualRecords);
 
   const spiritualVoiceCaptured = spiritual_development_records.filter(
     (r) => r.child_voice_captured,
@@ -312,7 +313,7 @@ export function computeReligiousSpiritualWellbeing(
   const accommodated = religious_dietary_records.filter(
     (r) => r.accommodation_provided,
   ).length;
-  const dietaryAccommodationRate = pct(accommodated, totalDietaryRecords);
+  const dietaryAccommodationRate = rate(accommodated, totalDietaryRecords);
 
   const totalMealsCompliant = religious_dietary_records.reduce(
     (sum, r) => sum + r.meals_compliant, 0,
@@ -320,17 +321,17 @@ export function computeReligiousSpiritualWellbeing(
   const totalMeals = religious_dietary_records.reduce(
     (sum, r) => sum + r.meals_total, 0,
   );
-  const mealComplianceRate = pct(totalMealsCompliant, totalMeals);
+  const mealComplianceRate = rate(totalMealsCompliant, totalMeals);
 
   const dietarySatisfied = religious_dietary_records.filter(
     (r) => r.child_satisfied,
   ).length;
-  const dietarySatisfactionRate = pct(dietarySatisfied, totalDietaryRecords);
+  const dietarySatisfactionRate = rate(dietarySatisfied, totalDietaryRecords);
 
   const kitchenTrained = religious_dietary_records.filter(
     (r) => r.kitchen_staff_trained,
   ).length;
-  const kitchenTrainingRate = pct(kitchenTrained, totalDietaryRecords);
+  const kitchenTrainingRate = rate(kitchenTrained, totalDietaryRecords);
 
   const totalDietaryIssues = religious_dietary_records.reduce(
     (sum, r) => sum + r.issues_reported, 0,
@@ -338,19 +339,19 @@ export function computeReligiousSpiritualWellbeing(
   const totalDietaryIssuesResolved = religious_dietary_records.reduce(
     (sum, r) => sum + r.issues_resolved, 0,
   );
-  const dietaryIssueResolutionRate = pct(totalDietaryIssuesResolved, totalDietaryIssues);
+  const dietaryIssueResolutionRate = rate(totalDietaryIssuesResolved, totalDietaryIssues);
 
   // --- Worship access facilitation ---
   const totalWorshipRecords = worship_access_records.length;
   const facilitated = worship_access_records.filter(
     (r) => r.access_facilitated || r.child_chose_not_to_attend,
   ).length;
-  const worshipAccessRate = pct(facilitated, totalWorshipRecords);
+  const worshipAccessRate = rate(facilitated, totalWorshipRecords);
 
   const worshipFrequencyMet = worship_access_records.filter(
     (r) => r.frequency_met,
   ).length;
-  const worshipFrequencyRate = pct(worshipFrequencyMet, totalWorshipRecords);
+  const worshipFrequencyRate = rate(worshipFrequencyMet, totalWorshipRecords);
 
   const worshipSatisfactionSum = worship_access_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
@@ -364,39 +365,39 @@ export function computeReligiousSpiritualWellbeing(
   const worshipBarriersTotal = worship_access_records.filter(
     (r) => r.barriers_encountered.length > 0,
   ).length;
-  const worshipBarrierRate = pct(worshipBarriersTotal, totalWorshipRecords);
+  const worshipBarrierRate = rate(worshipBarriersTotal, totalWorshipRecords);
 
   // --- Celebration participation ---
   const totalCelebrationRecords = celebration_participation_records.length;
   const participated = celebration_participation_records.filter(
     (r) => r.participated,
   ).length;
-  const celebrationParticipationRate = pct(participated, totalCelebrationRecords);
+  const celebrationParticipationRate = rate(participated, totalCelebrationRecords);
 
   const homeAcknowledged = celebration_participation_records.filter(
     (r) => r.home_acknowledged,
   ).length;
-  const homeAcknowledgementRate = pct(homeAcknowledged, totalCelebrationRecords);
+  const homeAcknowledgementRate = rate(homeAcknowledged, totalCelebrationRecords);
 
   const resourcesProvided = celebration_participation_records.filter(
     (r) => r.resources_provided,
   ).length;
-  const resourceRate = pct(resourcesProvided, totalCelebrationRecords);
+  const resourceRate = rate(resourcesProvided, totalCelebrationRecords);
 
   const childLed = celebration_participation_records.filter(
     (r) => r.child_led,
   ).length;
-  const childLedRate = pct(childLed, totalCelebrationRecords);
+  const childLedRate = rate(childLed, totalCelebrationRecords);
 
   const educationalCelebrations = celebration_participation_records.filter(
     (r) => r.educational_component,
   ).length;
-  const educationalRate = pct(educationalCelebrations, totalCelebrationRecords);
+  const educationalRate = rate(educationalCelebrations, totalCelebrationRecords);
 
   const peersInvolved = celebration_participation_records.filter(
     (r) => r.peers_involved,
   ).length;
-  const peerInclusionRate = pct(peersInvolved, totalCelebrationRecords);
+  const peerInclusionRate = rate(peersInvolved, totalCelebrationRecords);
 
   // --- Child voice composite ---
   const childInitiatedFaith = faith_observance_records.filter(
@@ -406,61 +407,61 @@ export function computeReligiousSpiritualWellbeing(
     totalFaithRecords + totalSpiritualRecords;
   const voiceNumerator =
     childInitiatedFaith + spiritualVoiceCaptured;
-  const childVoiceRate = pct(voiceNumerator, voiceDenominator);
+  const childVoiceRate = rate(voiceNumerator, voiceDenominator);
 
   // -- Scoring: base 52 ----------------------------------------------------
 
   let score = 52;
 
   // --- Bonus 1: faithSupportCoverageRate (>=90: +4, >=70: +2) ---
-  if (faithSupportCoverageRate >= 90) score += 4;
-  else if (faithSupportCoverageRate >= 70) score += 2;
+  if (meets(faithSupportCoverageRate, 90)) score += 4;
+  else if (meets(faithSupportCoverageRate, 70)) score += 2;
 
   // --- Bonus 2: spiritualDevelopmentRate (>=80: +3, >=60: +1) ---
   if (meets(spiritualDevelopmentRate, 80)) score += 3;
   else if (meets(spiritualDevelopmentRate, 60)) score += 1;
 
   // --- Bonus 3: dietaryAccommodationRate (>=100: +4, >=80: +2) ---
-  if (dietaryAccommodationRate >= 100) score += 4;
-  else if (dietaryAccommodationRate >= 80) score += 2;
+  if (meets(dietaryAccommodationRate, 100)) score += 4;
+  else if (meets(dietaryAccommodationRate, 80)) score += 2;
 
   // --- Bonus 4: worshipAccessRate (>=90: +3, >=70: +1) ---
-  if (worshipAccessRate >= 90) score += 3;
-  else if (worshipAccessRate >= 70) score += 1;
+  if (meets(worshipAccessRate, 90)) score += 3;
+  else if (meets(worshipAccessRate, 70)) score += 1;
 
   // --- Bonus 5: celebrationParticipationRate (>=90: +3, >=70: +1) ---
-  if (celebrationParticipationRate >= 90) score += 3;
-  else if (celebrationParticipationRate >= 70) score += 1;
+  if (meets(celebrationParticipationRate, 90)) score += 3;
+  else if (meets(celebrationParticipationRate, 70)) score += 1;
 
   // --- Bonus 6: childVoiceRate (>=80: +3, >=60: +1) ---
-  if (childVoiceRate >= 80) score += 3;
-  else if (childVoiceRate >= 60) score += 1;
+  if (meets(childVoiceRate, 80)) score += 3;
+  else if (meets(childVoiceRate, 60)) score += 1;
 
   // --- Bonus 7: mealComplianceRate (>=95: +3, >=80: +1) ---
-  if (mealComplianceRate >= 95) score += 3;
-  else if (mealComplianceRate >= 80) score += 1;
+  if (meets(mealComplianceRate, 95)) score += 3;
+  else if (meets(mealComplianceRate, 80)) score += 1;
 
   // --- Bonus 8: homeAcknowledgementRate (>=90: +3, >=70: +1) ---
-  if (homeAcknowledgementRate >= 90) score += 3;
-  else if (homeAcknowledgementRate >= 70) score += 1;
+  if (meets(homeAcknowledgementRate, 90)) score += 3;
+  else if (meets(homeAcknowledgementRate, 70)) score += 1;
 
   // --- Bonus 9: mentorRate (>=80: +2, >=50: +1) ---
-  if (mentorRate >= 80) score += 2;
-  else if (mentorRate >= 50) score += 1;
+  if (meets(mentorRate, 80)) score += 2;
+  else if (meets(mentorRate, 50)) score += 1;
 
   // -- Penalties (4 with guards) -------------------------------------------
 
   // faithSupportCoverageRate < 50 -> -5
-  if (faithSupportCoverageRate < 50 && totalFaithRecords > 0) score -= 5;
+  if (below(faithSupportCoverageRate, 50) && totalFaithRecords > 0) score -= 5;
 
   // dietaryAccommodationRate < 50 -> -5
-  if (dietaryAccommodationRate < 50 && totalDietaryRecords > 0) score -= 5;
+  if (below(dietaryAccommodationRate, 50) && totalDietaryRecords > 0) score -= 5;
 
   // worshipAccessRate < 50 -> -4
-  if (worshipAccessRate < 50 && totalWorshipRecords > 0) score -= 4;
+  if (below(worshipAccessRate, 50) && totalWorshipRecords > 0) score -= 4;
 
   // celebrationParticipationRate < 30 -> -4
-  if (celebrationParticipationRate < 30 && totalCelebrationRecords > 0) score -= 4;
+  if (below(celebrationParticipationRate, 30) && totalCelebrationRecords > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -470,17 +471,17 @@ export function computeReligiousSpiritualWellbeing(
 
   const strengths: string[] = [];
 
-  if (faithSupportCoverageRate >= 90 && totalFaithRecords > 0) {
+  if (meets(faithSupportCoverageRate, 90) && totalFaithRecords > 0) {
     strengths.push(
       `${faithSupportCoverageRate}% of faith observance requests supported -- the home demonstrates consistent commitment to facilitating children's religious practices.`,
     );
-  } else if (faithSupportCoverageRate >= 70 && totalFaithRecords > 0) {
+  } else if (meets(faithSupportCoverageRate, 70) && totalFaithRecords > 0) {
     strengths.push(
       `${faithSupportCoverageRate}% faith observance support rate -- most children's faith practices are being actively facilitated.`,
     );
   }
 
-  if (staffFacilitationRate >= 80 && totalFaithRecords > 0) {
+  if (meets(staffFacilitationRate, 80) && totalFaithRecords > 0) {
     strengths.push(
       `Staff actively facilitate ${staffFacilitationRate}% of faith observance activities -- staff engagement with children's spiritual needs is strong.`,
     );
@@ -502,55 +503,55 @@ export function computeReligiousSpiritualWellbeing(
     );
   }
 
-  if (goalProgressRate >= 80 && totalGoalsSet > 0) {
+  if (meets(goalProgressRate, 80) && totalGoalsSet > 0) {
     strengths.push(
       `${goalProgressRate}% of spiritual development goals progressed -- children are making meaningful progress in their spiritual growth.`,
     );
   }
 
-  if (mentorRate >= 80 && totalSpiritualRecords > 0) {
+  if (meets(mentorRate, 80) && totalSpiritualRecords > 0) {
     strengths.push(
       `${mentorRate}% of children have an assigned spiritual mentor -- strong mentoring provision supporting children's spiritual journeys.`,
     );
   }
 
-  if (dietaryAccommodationRate >= 100 && totalDietaryRecords > 0) {
+  if (meets(dietaryAccommodationRate, 100) && totalDietaryRecords > 0) {
     strengths.push(
       "Every child's religious dietary requirement is accommodated -- the home demonstrates full commitment to meeting children's faith-based nutritional needs.",
     );
-  } else if (dietaryAccommodationRate >= 80 && totalDietaryRecords > 0) {
+  } else if (meets(dietaryAccommodationRate, 80) && totalDietaryRecords > 0) {
     strengths.push(
       `${dietaryAccommodationRate}% dietary accommodation rate -- the vast majority of religious dietary needs are being met.`,
     );
   }
 
-  if (mealComplianceRate >= 95 && totalMeals > 0) {
+  if (meets(mealComplianceRate, 95) && totalMeals > 0) {
     strengths.push(
       `${mealComplianceRate}% of meals are compliant with religious dietary requirements -- excellent kitchen compliance.`,
     );
-  } else if (mealComplianceRate >= 80 && totalMeals > 0) {
+  } else if (meets(mealComplianceRate, 80) && totalMeals > 0) {
     strengths.push(
       `${mealComplianceRate}% meal compliance rate -- good adherence to religious dietary standards.`,
     );
   }
 
-  if (kitchenTrainingRate >= 90 && totalDietaryRecords > 0) {
+  if (meets(kitchenTrainingRate, 90) && totalDietaryRecords > 0) {
     strengths.push(
       `Kitchen staff trained in ${kitchenTrainingRate}% of religious dietary cases -- staff are equipped to meet children's faith-based nutritional needs.`,
     );
   }
 
-  if (worshipAccessRate >= 90 && totalWorshipRecords > 0) {
+  if (meets(worshipAccessRate, 90) && totalWorshipRecords > 0) {
     strengths.push(
       `${worshipAccessRate}% worship access facilitation rate -- children can attend their place of worship or choose not to attend, with both choices respected.`,
     );
-  } else if (worshipAccessRate >= 70 && totalWorshipRecords > 0) {
+  } else if (meets(worshipAccessRate, 70) && totalWorshipRecords > 0) {
     strengths.push(
       `${worshipAccessRate}% worship access rate -- most children's worship needs are facilitated.`,
     );
   }
 
-  if (worshipFrequencyRate >= 90 && totalWorshipRecords > 0) {
+  if (meets(worshipFrequencyRate, 90) && totalWorshipRecords > 0) {
     strengths.push(
       `Worship frequency expectations met in ${worshipFrequencyRate}% of cases -- children can worship as often as their faith requires.`,
     );
@@ -562,51 +563,51 @@ export function computeReligiousSpiritualWellbeing(
     );
   }
 
-  if (celebrationParticipationRate >= 90 && totalCelebrationRecords > 0) {
+  if (meets(celebrationParticipationRate, 90) && totalCelebrationRecords > 0) {
     strengths.push(
       `${celebrationParticipationRate}% celebration participation rate -- children are actively involved in cultural-religious celebrations.`,
     );
-  } else if (celebrationParticipationRate >= 70 && totalCelebrationRecords > 0) {
+  } else if (meets(celebrationParticipationRate, 70) && totalCelebrationRecords > 0) {
     strengths.push(
       `${celebrationParticipationRate}% celebration participation rate -- good levels of engagement with cultural-religious celebrations.`,
     );
   }
 
-  if (homeAcknowledgementRate >= 90 && totalCelebrationRecords > 0) {
+  if (meets(homeAcknowledgementRate, 90) && totalCelebrationRecords > 0) {
     strengths.push(
       `The home acknowledges ${homeAcknowledgementRate}% of cultural-religious celebrations -- children's faith traditions are visibly respected and honoured.`,
     );
   }
 
-  if (childLedRate >= 50 && totalCelebrationRecords > 0) {
+  if (meets(childLedRate, 50) && totalCelebrationRecords > 0) {
     strengths.push(
       `${childLedRate}% of celebrations are child-led -- children are empowered to share and lead their own faith traditions.`,
     );
   }
 
-  if (peerInclusionRate >= 70 && totalCelebrationRecords > 0) {
+  if (meets(peerInclusionRate, 70) && totalCelebrationRecords > 0) {
     strengths.push(
       `Peers involved in ${peerInclusionRate}% of celebrations -- the home fosters mutual respect and understanding between children of different faith backgrounds.`,
     );
   }
 
-  if (educationalRate >= 60 && totalCelebrationRecords > 0) {
+  if (meets(educationalRate, 60) && totalCelebrationRecords > 0) {
     strengths.push(
       `${educationalRate}% of celebrations include an educational component -- the home uses celebrations as opportunities for learning and cultural awareness.`,
     );
   }
 
-  if (childVoiceRate >= 80 && voiceDenominator > 0) {
+  if (meets(childVoiceRate, 80) && voiceDenominator > 0) {
     strengths.push(
       `Child voice captured in ${childVoiceRate}% of spiritual and faith contexts -- children's views genuinely shape their religious and spiritual care.`,
     );
-  } else if (childVoiceRate >= 60 && voiceDenominator > 0) {
+  } else if (meets(childVoiceRate, 60) && voiceDenominator > 0) {
     strengths.push(
       `Child voice captured in ${childVoiceRate}% of spiritual and faith contexts -- good practice in consulting children about their spiritual needs.`,
     );
   }
 
-  if (dietaryIssueResolutionRate >= 90 && totalDietaryIssues > 0) {
+  if (meets(dietaryIssueResolutionRate, 90) && totalDietaryIssues > 0) {
     strengths.push(
       `${dietaryIssueResolutionRate}% of dietary issues resolved -- the home responds effectively when religious dietary needs are not met.`,
     );
@@ -616,17 +617,17 @@ export function computeReligiousSpiritualWellbeing(
 
   const concerns: string[] = [];
 
-  if (faithSupportCoverageRate < 50 && totalFaithRecords > 0) {
+  if (below(faithSupportCoverageRate, 50) && totalFaithRecords > 0) {
     concerns.push(
       `Only ${faithSupportCoverageRate}% of faith observance requests supported -- the majority of children's religious practices are not being facilitated, denying them a fundamental aspect of their identity.`,
     );
-  } else if (faithSupportCoverageRate < 70 && faithSupportCoverageRate >= 50 && totalFaithRecords > 0) {
+  } else if (below(faithSupportCoverageRate, 70) && meets(faithSupportCoverageRate, 50) && totalFaithRecords > 0) {
     concerns.push(
       `Faith observance support at ${faithSupportCoverageRate}% -- some children's religious practices are not being adequately facilitated.`,
     );
   }
 
-  if (faithBarrierRate >= 30 && totalFaithRecords > 0) {
+  if (meets(faithBarrierRate, 30) && totalFaithRecords > 0) {
     concerns.push(
       `Barriers encountered in ${faithBarrierRate}% of faith observance activities -- persistent obstacles are preventing children from practising their faith freely.`,
     );
@@ -648,57 +649,57 @@ export function computeReligiousSpiritualWellbeing(
     );
   }
 
-  if (goalProgressRate < 50 && totalGoalsSet > 0) {
+  if (below(goalProgressRate, 50) && totalGoalsSet > 0) {
     concerns.push(
       `Only ${goalProgressRate}% of spiritual development goals progressed -- children are not making sufficient progress in their spiritual growth.`,
     );
   }
 
-  if (planRate < 50 && totalSpiritualRecords > 0) {
+  if (below(planRate, 50) && totalSpiritualRecords > 0) {
     concerns.push(
       `Only ${planRate}% of children have a spiritual development plan in place -- spiritual needs are not being formally assessed and planned for.`,
     );
   }
 
-  if (dietaryAccommodationRate < 50 && totalDietaryRecords > 0) {
+  if (below(dietaryAccommodationRate, 50) && totalDietaryRecords > 0) {
     concerns.push(
       `Only ${dietaryAccommodationRate}% of religious dietary requirements accommodated -- the majority of children's faith-based nutritional needs are not being met, which is a fundamental failure of care.`,
     );
-  } else if (dietaryAccommodationRate < 80 && dietaryAccommodationRate >= 50 && totalDietaryRecords > 0) {
+  } else if (below(dietaryAccommodationRate, 80) && meets(dietaryAccommodationRate, 50) && totalDietaryRecords > 0) {
     concerns.push(
       `Dietary accommodation rate at ${dietaryAccommodationRate}% -- some children's religious dietary needs are not being met.`,
     );
   }
 
-  if (mealComplianceRate < 80 && totalMeals > 0) {
+  if (below(mealComplianceRate, 80) && totalMeals > 0) {
     concerns.push(
       `Only ${mealComplianceRate}% of meals compliant with religious dietary requirements -- children are being served food that does not meet their faith-based needs.`,
     );
   }
 
-  if (kitchenTrainingRate < 70 && totalDietaryRecords > 0) {
+  if (below(kitchenTrainingRate, 70) && totalDietaryRecords > 0) {
     concerns.push(
       `Kitchen staff trained in only ${kitchenTrainingRate}% of religious dietary cases -- insufficient training increases the risk of dietary non-compliance.`,
     );
   }
 
-  if (dietarySatisfactionRate < 50 && totalDietaryRecords > 0) {
+  if (below(dietarySatisfactionRate, 50) && totalDietaryRecords > 0) {
     concerns.push(
       `Only ${dietarySatisfactionRate}% of children satisfied with dietary accommodation -- children feel their religious dietary needs are not adequately met.`,
     );
   }
 
-  if (worshipAccessRate < 50 && totalWorshipRecords > 0) {
+  if (below(worshipAccessRate, 50) && totalWorshipRecords > 0) {
     concerns.push(
       `Only ${worshipAccessRate}% worship access facilitation rate -- the majority of children are being denied access to their place of worship.`,
     );
-  } else if (worshipAccessRate < 70 && worshipAccessRate >= 50 && totalWorshipRecords > 0) {
+  } else if (below(worshipAccessRate, 70) && meets(worshipAccessRate, 50) && totalWorshipRecords > 0) {
     concerns.push(
       `Worship access at ${worshipAccessRate}% -- not all children can attend their place of worship as their faith requires.`,
     );
   }
 
-  if (worshipBarrierRate >= 30 && totalWorshipRecords > 0) {
+  if (meets(worshipBarrierRate, 30) && totalWorshipRecords > 0) {
     concerns.push(
       `Barriers encountered in ${worshipBarrierRate}% of worship access attempts -- transport, staffing, or other obstacles are preventing children from worshipping.`,
     );
@@ -710,33 +711,33 @@ export function computeReligiousSpiritualWellbeing(
     );
   }
 
-  if (celebrationParticipationRate < 30 && totalCelebrationRecords > 0) {
+  if (below(celebrationParticipationRate, 30) && totalCelebrationRecords > 0) {
     concerns.push(
       `Only ${celebrationParticipationRate}% celebration participation -- children are largely excluded from cultural-religious celebrations, denying them connection to their heritage.`,
     );
-  } else if (celebrationParticipationRate < 70 && celebrationParticipationRate >= 30 && totalCelebrationRecords > 0) {
+  } else if (below(celebrationParticipationRate, 70) && meets(celebrationParticipationRate, 30) && totalCelebrationRecords > 0) {
     concerns.push(
       `Celebration participation at ${celebrationParticipationRate}% -- not all children are engaging in cultural-religious celebrations relevant to their identity.`,
     );
   }
 
-  if (homeAcknowledgementRate < 50 && totalCelebrationRecords > 0) {
+  if (below(homeAcknowledgementRate, 50) && totalCelebrationRecords > 0) {
     concerns.push(
       `The home acknowledges only ${homeAcknowledgementRate}% of cultural-religious celebrations -- children's faith traditions are not being visibly respected.`,
     );
   }
 
-  if (resourceRate < 50 && totalCelebrationRecords > 0) {
+  if (below(resourceRate, 50) && totalCelebrationRecords > 0) {
     concerns.push(
       `Resources provided for only ${resourceRate}% of celebrations -- the home is not investing in enabling children to celebrate their faith traditions properly.`,
     );
   }
 
-  if (childVoiceRate < 50 && voiceDenominator > 0) {
+  if (below(childVoiceRate, 50) && voiceDenominator > 0) {
     concerns.push(
       `Child voice captured in only ${childVoiceRate}% of spiritual and faith contexts -- children's views are not sufficiently shaping their religious and spiritual care.`,
     );
-  } else if (childVoiceRate < 60 && childVoiceRate >= 50 && voiceDenominator > 0) {
+  } else if (below(childVoiceRate, 60) && meets(childVoiceRate, 50) && voiceDenominator > 0) {
     concerns.push(
       `Child voice rate at ${childVoiceRate}% -- children's spiritual views need to be more consistently captured and acted upon.`,
     );
@@ -759,7 +760,7 @@ export function computeReligiousSpiritualWellbeing(
   const recommendations: SpiritualWellbeingRecommendation[] = [];
   let rank = 0;
 
-  if (faithSupportCoverageRate < 50 && totalFaithRecords > 0) {
+  if (below(faithSupportCoverageRate, 50) && totalFaithRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -769,7 +770,7 @@ export function computeReligiousSpiritualWellbeing(
     });
   }
 
-  if (dietaryAccommodationRate < 50 && totalDietaryRecords > 0) {
+  if (below(dietaryAccommodationRate, 50) && totalDietaryRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -779,7 +780,7 @@ export function computeReligiousSpiritualWellbeing(
     });
   }
 
-  if (worshipAccessRate < 50 && totalWorshipRecords > 0) {
+  if (below(worshipAccessRate, 50) && totalWorshipRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -789,7 +790,7 @@ export function computeReligiousSpiritualWellbeing(
     });
   }
 
-  if (celebrationParticipationRate < 30 && totalCelebrationRecords > 0) {
+  if (below(celebrationParticipationRate, 30) && totalCelebrationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -799,7 +800,7 @@ export function computeReligiousSpiritualWellbeing(
     });
   }
 
-  if (childVoiceRate < 50 && voiceDenominator > 0) {
+  if (below(childVoiceRate, 50) && voiceDenominator > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -809,7 +810,7 @@ export function computeReligiousSpiritualWellbeing(
     });
   }
 
-  if (planRate < 50 && totalSpiritualRecords > 0) {
+  if (below(planRate, 50) && totalSpiritualRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -819,7 +820,7 @@ export function computeReligiousSpiritualWellbeing(
     });
   }
 
-  if (mealComplianceRate < 80 && totalMeals > 0) {
+  if (below(mealComplianceRate, 80) && totalMeals > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -829,7 +830,7 @@ export function computeReligiousSpiritualWellbeing(
     });
   }
 
-  if (kitchenTrainingRate < 70 && totalDietaryRecords > 0) {
+  if (below(kitchenTrainingRate, 70) && totalDietaryRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -839,7 +840,7 @@ export function computeReligiousSpiritualWellbeing(
     });
   }
 
-  if (mentorRate < 50 && totalSpiritualRecords > 0) {
+  if (below(mentorRate, 50) && totalSpiritualRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -849,7 +850,7 @@ export function computeReligiousSpiritualWellbeing(
     });
   }
 
-  if (worshipBarrierRate >= 30 && totalWorshipRecords > 0) {
+  if (meets(worshipBarrierRate, 30) && totalWorshipRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -859,7 +860,7 @@ export function computeReligiousSpiritualWellbeing(
     });
   }
 
-  if (faithSupportCoverageRate >= 50 && faithSupportCoverageRate < 70 && totalFaithRecords > 0) {
+  if (meets(faithSupportCoverageRate, 50) && below(faithSupportCoverageRate, 70) && totalFaithRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -869,7 +870,7 @@ export function computeReligiousSpiritualWellbeing(
     });
   }
 
-  if (homeAcknowledgementRate < 50 && totalCelebrationRecords > 0) {
+  if (below(homeAcknowledgementRate, 50) && totalCelebrationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -879,7 +880,7 @@ export function computeReligiousSpiritualWellbeing(
     });
   }
 
-  if (dietaryAccommodationRate >= 50 && dietaryAccommodationRate < 80 && totalDietaryRecords > 0) {
+  if (meets(dietaryAccommodationRate, 50) && below(dietaryAccommodationRate, 80) && totalDietaryRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -889,7 +890,7 @@ export function computeReligiousSpiritualWellbeing(
     });
   }
 
-  if (worshipAccessRate >= 50 && worshipAccessRate < 70 && totalWorshipRecords > 0) {
+  if (meets(worshipAccessRate, 50) && below(worshipAccessRate, 70) && totalWorshipRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -899,7 +900,7 @@ export function computeReligiousSpiritualWellbeing(
     });
   }
 
-  if (celebrationParticipationRate >= 30 && celebrationParticipationRate < 70 && totalCelebrationRecords > 0) {
+  if (meets(celebrationParticipationRate, 30) && below(celebrationParticipationRate, 70) && totalCelebrationRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -935,28 +936,28 @@ export function computeReligiousSpiritualWellbeing(
 
   // --- Critical insights ---
 
-  if (faithSupportCoverageRate < 50 && totalFaithRecords > 0) {
+  if (below(faithSupportCoverageRate, 50) && totalFaithRecords > 0) {
     insights.push({
       text: `Only ${faithSupportCoverageRate}% of faith observance requests supported. Ofsted will view the failure to facilitate children's religious practices as evidence that the home does not respect or nurture children's identities -- a direct failure under Reg 6.`,
       severity: "critical",
     });
   }
 
-  if (dietaryAccommodationRate < 50 && totalDietaryRecords > 0) {
+  if (below(dietaryAccommodationRate, 50) && totalDietaryRecords > 0) {
     insights.push({
       text: `Only ${dietaryAccommodationRate}% of religious dietary requirements accommodated. Failing to provide food that meets children's faith-based needs is a fundamental care failure that Ofsted will view as both a Reg 6 breach and a safeguarding concern.`,
       severity: "critical",
     });
   }
 
-  if (worshipAccessRate < 50 && totalWorshipRecords > 0) {
+  if (below(worshipAccessRate, 50) && totalWorshipRecords > 0) {
     insights.push({
       text: `Only ${worshipAccessRate}% worship access facilitation rate. Denying children access to their place of worship undermines their religious identity and contravenes the home's duty under Reg 6 to support children's cultural, linguistic, and religious needs.`,
       severity: "critical",
     });
   }
 
-  if (celebrationParticipationRate < 30 && totalCelebrationRecords > 0) {
+  if (below(celebrationParticipationRate, 30) && totalCelebrationRecords > 0) {
     insights.push({
       text: `Celebration participation at only ${celebrationParticipationRate}%. Children are largely excluded from cultural-religious celebrations, which denies them connection to their heritage and identity. Ofsted expects homes to actively celebrate and respect diverse faith traditions.`,
       severity: "critical",
@@ -972,7 +973,7 @@ export function computeReligiousSpiritualWellbeing(
 
   // --- Warning insights ---
 
-  if (faithSupportCoverageRate >= 50 && faithSupportCoverageRate < 70 && totalFaithRecords > 0) {
+  if (meets(faithSupportCoverageRate, 50) && below(faithSupportCoverageRate, 70) && totalFaithRecords > 0) {
     insights.push({
       text: `Faith observance support at ${faithSupportCoverageRate}% -- improving but some children's religious practices are not being facilitated. Each unsupported request represents a missed opportunity to nurture a child's identity.`,
       severity: "warning",
@@ -986,49 +987,49 @@ export function computeReligiousSpiritualWellbeing(
     });
   }
 
-  if (dietaryAccommodationRate >= 50 && dietaryAccommodationRate < 80 && totalDietaryRecords > 0) {
+  if (meets(dietaryAccommodationRate, 50) && below(dietaryAccommodationRate, 80) && totalDietaryRecords > 0) {
     insights.push({
       text: `Dietary accommodation at ${dietaryAccommodationRate}% -- while improving, some children's faith-based nutritional needs are not being met. Every unaccommodated requirement risks harm to a child's wellbeing and identity.`,
       severity: "warning",
     });
   }
 
-  if (worshipAccessRate >= 50 && worshipAccessRate < 70 && totalWorshipRecords > 0) {
+  if (meets(worshipAccessRate, 50) && below(worshipAccessRate, 70) && totalWorshipRecords > 0) {
     insights.push({
       text: `Worship access at ${worshipAccessRate}% -- some children cannot attend their place of worship as often as their faith requires. The home should review transport and staffing to remove barriers.`,
       severity: "warning",
     });
   }
 
-  if (celebrationParticipationRate >= 30 && celebrationParticipationRate < 70 && totalCelebrationRecords > 0) {
+  if (meets(celebrationParticipationRate, 30) && below(celebrationParticipationRate, 70) && totalCelebrationRecords > 0) {
     insights.push({
       text: `Celebration participation at ${celebrationParticipationRate}% -- some children are missing out on cultural-religious celebrations. Consider whether the home's approach to celebrations is sufficiently inclusive and child-centred.`,
       severity: "warning",
     });
   }
 
-  if (childVoiceRate >= 50 && childVoiceRate < 80 && voiceDenominator > 0) {
+  if (meets(childVoiceRate, 50) && below(childVoiceRate, 80) && voiceDenominator > 0) {
     insights.push({
       text: `Child voice captured in ${childVoiceRate}% of spiritual and faith contexts -- while some consultation is happening, children's views need to be more consistently shaping their religious and spiritual care.`,
       severity: "warning",
     });
   }
 
-  if (mealComplianceRate >= 80 && mealComplianceRate < 95 && totalMeals > 0) {
+  if (meets(mealComplianceRate, 80) && below(mealComplianceRate, 95) && totalMeals > 0) {
     insights.push({
       text: `Meal compliance at ${mealComplianceRate}% -- generally good but some meals do not meet religious dietary requirements. Even occasional non-compliance can undermine a child's trust and sense of being respected.`,
       severity: "warning",
     });
   }
 
-  if (worshipBarrierRate >= 30 && totalWorshipRecords > 0) {
+  if (meets(worshipBarrierRate, 30) && totalWorshipRecords > 0) {
     insights.push({
       text: `Barriers encountered in ${worshipBarrierRate}% of worship access attempts -- persistent barriers suggest systemic issues with transport, staffing, or scheduling that need targeted resolution.`,
       severity: "warning",
     });
   }
 
-  if (faithBarrierRate >= 30 && totalFaithRecords > 0) {
+  if (meets(faithBarrierRate, 30) && totalFaithRecords > 0) {
     insights.push({
       text: `Barriers encountered in ${faithBarrierRate}% of faith observance activities -- recurring obstacles to religious practice need to be identified and systematically addressed.`,
       severity: "warning",
@@ -1059,49 +1060,49 @@ export function computeReligiousSpiritualWellbeing(
     });
   }
 
-  if (faithSupportCoverageRate >= 90 && dietaryAccommodationRate >= 90 && totalFaithRecords > 0 && totalDietaryRecords > 0) {
+  if (meets(faithSupportCoverageRate, 90) && meets(dietaryAccommodationRate, 90) && totalFaithRecords > 0 && totalDietaryRecords > 0) {
     insights.push({
       text: `Faith observance support at ${faithSupportCoverageRate}% and dietary accommodation at ${dietaryAccommodationRate}% -- the home provides comprehensive support for children's religious practices and faith-based dietary needs. Ofsted will recognise this as evidence of genuinely personalised care.`,
       severity: "positive",
     });
   }
 
-  if (totalWorshipRecords > 0 && worshipSatisfactionAvg !== null && worshipAccessRate >= 90 && worshipSatisfactionAvg >= 4.0) {
+  if (totalWorshipRecords > 0 && worshipSatisfactionAvg !== null && meets(worshipAccessRate, 90) && worshipSatisfactionAvg >= 4.0) {
     insights.push({
       text: `${worshipAccessRate}% worship access with child satisfaction averaging ${worshipSatisfactionAvg}/5 -- children can worship freely and feel well supported in doing so. This demonstrates the home's commitment to religious freedom and Reg 6 compliance.`,
       severity: "positive",
     });
   }
 
-  if (celebrationParticipationRate >= 90 && homeAcknowledgementRate >= 90 && totalCelebrationRecords > 0) {
+  if (meets(celebrationParticipationRate, 90) && meets(homeAcknowledgementRate, 90) && totalCelebrationRecords > 0) {
     insights.push({
       text: `${celebrationParticipationRate}% celebration participation with ${homeAcknowledgementRate}% home acknowledgement -- cultural-religious celebrations are embraced as a valued part of home life. This fosters belonging, identity, and mutual respect.`,
       severity: "positive",
     });
   }
 
-  if (childVoiceRate >= 80 && voiceDenominator > 0) {
+  if (meets(childVoiceRate, 80) && voiceDenominator > 0) {
     insights.push({
       text: `Child voice captured in ${childVoiceRate}% of spiritual and faith contexts -- children's religious and spiritual care is genuinely shaped by their own wishes and preferences. This is exemplary practice in respecting children's autonomy.`,
       severity: "positive",
     });
   }
 
-  if (goalProgressRate >= 80 && mentorRate >= 80 && totalSpiritualRecords > 0 && totalGoalsSet > 0) {
+  if (meets(goalProgressRate, 80) && meets(mentorRate, 80) && totalSpiritualRecords > 0 && totalGoalsSet > 0) {
     insights.push({
       text: `${goalProgressRate}% spiritual goal progress with ${mentorRate}% mentor coverage -- the home invests in structured spiritual development with dedicated mentoring. Children are making meaningful progress in their spiritual journeys.`,
       severity: "positive",
     });
   }
 
-  if (dietaryIssueResolutionRate >= 90 && totalDietaryIssues > 0) {
+  if (meets(dietaryIssueResolutionRate, 90) && totalDietaryIssues > 0) {
     insights.push({
       text: `${dietaryIssueResolutionRate}% of religious dietary issues resolved -- the home responds promptly and effectively when dietary accommodation falls short. This demonstrates accountability and continuous improvement.`,
       severity: "positive",
     });
   }
 
-  if (educationalRate >= 60 && peerInclusionRate >= 70 && totalCelebrationRecords > 0) {
+  if (meets(educationalRate, 60) && meets(peerInclusionRate, 70) && totalCelebrationRecords > 0) {
     insights.push({
       text: `${educationalRate}% of celebrations include educational components with ${peerInclusionRate}% peer involvement -- celebrations are used as opportunities for learning, cultural exchange, and building mutual understanding between children of different faith backgrounds.`,
       severity: "positive",

@@ -216,8 +216,8 @@ function perfectInput(): SavingsBankingInput {
 
 describe("computeSavingsBankingSkills", () => {
   // ── pct(0, 0) === 0 ──────────────────────────────────────────────────────
-  describe("pct(0,0) = 0 guard", () => {
-    it("returns 0 for all rates when all arrays are empty and total_children = 0", () => {
+  describe("rate(0,0)=null guard", () => {
+    it("returns null for all rates when all arrays are empty and total_children = 0", () => {
       const r = computeSavingsBankingSkills(
         baseInput({ total_children: 0 }),
       );
@@ -226,7 +226,7 @@ describe("computeSavingsBankingSkills", () => {
       expect(r.financial_goal_rate).toBeNull();
       expect(r.money_confidence_rate).toBeNull();
       expect(r.financial_independence_rate).toBeNull();
-      expect(r.child_engagement_rate).toBe(0);
+      expect(r.child_engagement_rate).toBeNull();
     });
   });
 
@@ -298,14 +298,14 @@ describe("computeSavingsBankingSkills", () => {
       expect(r.insights[0].severity).toBe("critical");
     });
 
-    it("returns 0 for all rates", () => {
+    it("returns null for all rates", () => {
       const r = computeSavingsBankingSkills(baseInput());
       expect(r.savings_account_rate).toBeNull();
       expect(r.banking_skills_rate).toBeNull();
       expect(r.financial_goal_rate).toBeNull();
       expect(r.money_confidence_rate).toBeNull();
       expect(r.financial_independence_rate).toBeNull();
-      expect(r.child_engagement_rate).toBe(0);
+      expect(r.child_engagement_rate).toBeNull();
     });
   });
 
@@ -1143,7 +1143,7 @@ describe("computeSavingsBankingSkills", () => {
   // ── All 6 Rates ──────────────────────────────────────────────────────────
   describe("all 6 composite rates", () => {
     describe("savings_account_rate", () => {
-      it("is 0 when no savings records", () => {
+      it("is null when no savings records", () => {
         const r = computeSavingsBankingSkills(
           baseInput({ banking_skills_records: [makeBankingSkill()] }),
         );
@@ -1170,7 +1170,7 @@ describe("computeSavingsBankingSkills", () => {
     });
 
     describe("banking_skills_rate", () => {
-      it("is 0 when no banking records", () => {
+      it("is null when no banking records", () => {
         const r = computeSavingsBankingSkills(
           baseInput({ savings_account_records: [makeSavingsAccount()] }),
         );
@@ -1190,7 +1190,7 @@ describe("computeSavingsBankingSkills", () => {
     });
 
     describe("financial_goal_rate", () => {
-      it("is 0 when no goal records", () => {
+      it("is null when no goal records", () => {
         const r = computeSavingsBankingSkills(
           baseInput({ savings_account_records: [makeSavingsAccount()] }),
         );
@@ -1210,7 +1210,7 @@ describe("computeSavingsBankingSkills", () => {
     });
 
     describe("money_confidence_rate", () => {
-      it("is 0 when no confidence records", () => {
+      it("is null when no confidence records", () => {
         const r = computeSavingsBankingSkills(
           baseInput({ savings_account_records: [makeSavingsAccount()] }),
         );
@@ -1232,7 +1232,7 @@ describe("computeSavingsBankingSkills", () => {
     });
 
     describe("financial_independence_rate", () => {
-      it("is 0 when no independence records", () => {
+      it("is null when no independence records", () => {
         const r = computeSavingsBankingSkills(
           baseInput({ savings_account_records: [makeSavingsAccount()] }),
         );
@@ -1254,9 +1254,9 @@ describe("computeSavingsBankingSkills", () => {
     });
 
     describe("child_engagement_rate", () => {
-      it("is 0 when no engagement domains have records", () => {
+      it("is null when no engagement domains have records", () => {
         const r = computeSavingsBankingSkills(baseInput({ total_children: 0 }));
-        expect(r.child_engagement_rate).toBe(0);
+        expect(r.child_engagement_rate).toBeNull();
       });
 
       it("aggregates numerators/denominators across all 5 domains", () => {

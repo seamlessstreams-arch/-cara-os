@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { FinancialLiteracyRating } from "@/lib/engines/home-pocket-money-financial-literacy-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 function useHomePocketMoneyFinancialLiteracyIntelligence() {
   return useQuery({
@@ -61,7 +62,7 @@ export function HomePocketMoneyFinancialLiteracyIntelligenceCard() {
             <Wallet className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-emerald-600")} />
             <span className="text-slate-900 font-bold">Pocket Money & Financial Literacy</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.financial_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.financial_score}%</span>}
+            {d.financial_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.financial_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -69,28 +70,28 @@ export function HomePocketMoneyFinancialLiteracyIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.financial_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.pocket_money_compliance_rate >= 90 ? "bg-green-50" : d.pocket_money_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.pocket_money_compliance_rate >= 90 ? "text-[--cs-success]" : d.pocket_money_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.pocket_money_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.pocket_money_compliance_rate, 90) ? "bg-green-50" : meets(d.pocket_money_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.pocket_money_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.pocket_money_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.pocket_money_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Pocket Money</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.savings_engagement_rate >= 90 ? "bg-green-50" : d.savings_engagement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.savings_engagement_rate >= 90 ? "text-[--cs-success]" : d.savings_engagement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.savings_engagement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.savings_engagement_rate, 90) ? "bg-green-50" : meets(d.savings_engagement_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.savings_engagement_rate, 90) ? "text-[--cs-success]" : meets(d.savings_engagement_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.savings_engagement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Savings</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.financial_education_rate >= 90 ? "bg-green-50" : d.financial_education_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.financial_education_rate >= 90 ? "text-[--cs-success]" : d.financial_education_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.financial_education_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.financial_education_rate, 90) ? "bg-green-50" : meets(d.financial_education_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.financial_education_rate, 90) ? "text-[--cs-success]" : meets(d.financial_education_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.financial_education_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Education</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.budgeting_coverage_rate >= 90 ? "bg-green-50" : d.budgeting_coverage_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.budgeting_coverage_rate >= 90 ? "text-[--cs-success]" : d.budgeting_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.budgeting_coverage_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.budgeting_coverage_rate, 90) ? "bg-green-50" : meets(d.budgeting_coverage_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.budgeting_coverage_rate, 90) ? "text-[--cs-success]" : meets(d.budgeting_coverage_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.budgeting_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Budgeting</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.money_handling_accuracy_rate >= 90 ? "bg-green-50" : d.money_handling_accuracy_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.money_handling_accuracy_rate >= 90 ? "text-[--cs-success]" : d.money_handling_accuracy_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.money_handling_accuracy_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.money_handling_accuracy_rate, 90) ? "bg-green-50" : meets(d.money_handling_accuracy_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.money_handling_accuracy_rate, 90) ? "text-[--cs-success]" : meets(d.money_handling_accuracy_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.money_handling_accuracy_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Accuracy</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_autonomy_rate >= 90 ? "bg-green-50" : d.child_autonomy_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_autonomy_rate >= 90 ? "text-[--cs-success]" : d.child_autonomy_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_autonomy_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_autonomy_rate, 90) ? "bg-green-50" : meets(d.child_autonomy_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_autonomy_rate, 90) ? "text-[--cs-success]" : meets(d.child_autonomy_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_autonomy_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Autonomy</p>
             </div>
           </div>

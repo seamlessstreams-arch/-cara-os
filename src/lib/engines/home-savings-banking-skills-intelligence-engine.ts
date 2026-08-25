@@ -10,7 +10,7 @@
 //             moneyConfidenceRecords, financialIndependenceRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { below, meets } from "@/lib/metrics/rate";
+import { below, meanOf, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -153,7 +153,8 @@ export interface SavingsBankingResult {
   financial_goal_rate: number | null;
   money_confidence_rate: number | null;
   financial_independence_rate: number | null;
-  child_engagement_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_engagement_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: SavingsBankingRecommendation[];
@@ -161,10 +162,6 @@ export interface SavingsBankingResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -198,7 +195,7 @@ function emptyResult(
     financial_goal_rate: null,
     money_confidence_rate: null,
     financial_independence_rate: null,
-    child_engagement_rate: 0,
+    child_engagement_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -283,31 +280,31 @@ export function computeSavingsBankingSkills(
   const childrenWithAccounts = new Set(
     savings_account_records.map((r) => r.child_id),
   ).size;
-  const savingsAccountCoverage = pct(childrenWithAccounts, total_children);
+  const savingsAccountCoverage = rate(childrenWithAccounts, total_children);
 
   // Children who are named holders
   const namedHolders = savings_account_records.filter(
     (r) => r.child_is_named_holder,
   ).length;
-  const namedHolderRate = pct(namedHolders, totalSavingsAccounts);
+  const namedHolderRate = rate(namedHolders, totalSavingsAccounts);
 
   // Children who have access to their account
   const childHasAccess = savings_account_records.filter(
     (r) => r.child_has_access,
   ).length;
-  const childAccessRate = pct(childHasAccess, totalSavingsAccounts);
+  const childAccessRate = rate(childHasAccess, totalSavingsAccounts);
 
   // Accounts where child understands the account
   const childUnderstands = savings_account_records.filter(
     (r) => r.child_understands_account,
   ).length;
-  const childUnderstandsRate = pct(childUnderstands, totalSavingsAccounts);
+  const childUnderstandsRate = rate(childUnderstands, totalSavingsAccounts);
 
   // Statements reviewed with child
   const statementsReviewed = savings_account_records.filter(
     (r) => r.statements_reviewed_with_child,
   ).length;
-  const statementsReviewedRate = pct(statementsReviewed, totalSavingsAccounts);
+  const statementsReviewedRate = rate(statementsReviewed, totalSavingsAccounts);
 
   // Deposit target compliance (deposits_made vs deposits_target this quarter)
   const totalDepositsMade = savings_account_records.reduce(
@@ -318,20 +315,18 @@ export function computeSavingsBankingSkills(
     (sum, r) => sum + r.deposits_target_this_quarter,
     0,
   );
-  const depositComplianceRate = pct(totalDepositsMade, totalDepositsTarget);
+  const depositComplianceRate = rate(totalDepositsMade, totalDepositsTarget);
 
   // Dormant accounts
   const dormantAccounts = savings_account_records.filter(
     (r) => r.dormant,
   ).length;
-  const dormantRate = pct(dormantAccounts, totalSavingsAccounts);
+  const dormantRate = rate(dormantAccounts, totalSavingsAccounts);
 
   // Composite savings_account_rate: average of coverage, named holder rate, child access, child understands
   const savingsAccountRate: number | null =
     totalSavingsAccounts > 0
-      ? Math.round(
-          (savingsAccountCoverage + namedHolderRate + childAccessRate + childUnderstandsRate) / 4,
-        )
+      ? meanOf([savingsAccountCoverage, namedHolderRate, childAccessRate, childUnderstandsRate])
       : null;
 
   // ── 2. Banking skills metrics ─────────────────────────────────────────
@@ -341,37 +336,35 @@ export function computeSavingsBankingSkills(
   const childrenWithBankingSkills = new Set(
     banking_skills_records.map((r) => r.child_id),
   ).size;
-  const bankingSkillsCoverage = pct(childrenWithBankingSkills, total_children);
+  const bankingSkillsCoverage = rate(childrenWithBankingSkills, total_children);
 
   const competenceDemonstrated = banking_skills_records.filter(
     (r) => r.taught && r.demonstrated_competence,
   ).length;
-  const competenceRate = pct(competenceDemonstrated, totalBankingSkills);
+  const competenceRate = rate(competenceDemonstrated, totalBankingSkills);
 
   // Child confident
   const childConfidentSkills = banking_skills_records.filter(
     (r) => r.taught && r.child_confident,
   ).length;
-  const childConfidentRate = pct(childConfidentSkills, totalBankingSkills);
+  const childConfidentRate = rate(childConfidentSkills, totalBankingSkills);
 
   // Practice opportunities given
   const practiceGiven = banking_skills_records.filter(
     (r) => r.practice_opportunity_given,
   ).length;
-  const practiceGivenRate = pct(practiceGiven, totalBankingSkills);
+  const practiceGivenRate = rate(practiceGiven, totalBankingSkills);
 
   // Linked to independence plan
   const linkedToIndPlan = banking_skills_records.filter(
     (r) => r.linked_to_independence_plan,
   ).length;
-  const linkedToIndPlanRate = pct(linkedToIndPlan, totalBankingSkills);
+  const linkedToIndPlanRate = rate(linkedToIndPlan, totalBankingSkills);
 
   // Composite banking_skills_rate: average of coverage, competence, confidence, practice given
   const bankingSkillsRate: number | null =
     totalBankingSkills > 0
-      ? Math.round(
-          (bankingSkillsCoverage + competenceRate + childConfidentRate + practiceGivenRate) / 4,
-        )
+      ? meanOf([bankingSkillsCoverage, competenceRate, childConfidentRate, practiceGivenRate])
       : null;
 
   // Unique skill types per child (breadth)
@@ -399,31 +392,31 @@ export function computeSavingsBankingSkills(
   const childrenWithGoals = new Set(
     financial_goal_records.map((r) => r.child_id),
   ).size;
-  const goalCoverage = pct(childrenWithGoals, total_children);
+  const goalCoverage = rate(childrenWithGoals, total_children);
 
   // Achieved goals
   const achievedGoals = financial_goal_records.filter(
     (r) => r.status === "achieved",
   ).length;
-  const achievedGoalRate = pct(achievedGoals, totalFinancialGoals);
+  const achievedGoalRate = rate(achievedGoals, totalFinancialGoals);
 
   // Abandoned goals
   const abandonedGoals = financial_goal_records.filter(
     (r) => r.status === "abandoned",
   ).length;
-  const abandonedGoalRate = pct(abandonedGoals, totalFinancialGoals);
+  const abandonedGoalRate = rate(abandonedGoals, totalFinancialGoals);
 
   // Child set the goal themselves
   const childSetGoal = financial_goal_records.filter(
     (r) => r.child_set_goal,
   ).length;
-  const childSetGoalRate = pct(childSetGoal, totalFinancialGoals);
+  const childSetGoalRate = rate(childSetGoal, totalFinancialGoals);
 
   // Child tracking progress
   const childTrackingProgress = financial_goal_records.filter(
     (r) => r.child_tracking_progress && (r.status === "active" || r.status === "achieved"),
   ).length;
-  const childTrackingRate = pct(
+  const childTrackingRate = rate(
     childTrackingProgress,
     financial_goal_records.filter((r) => r.status === "active" || r.status === "achieved").length,
   );
@@ -432,20 +425,18 @@ export function computeSavingsBankingSkills(
   const reviewedInKeywork = financial_goal_records.filter(
     (r) => r.reviewed_in_keywork,
   ).length;
-  const reviewedInKeyworkRate = pct(reviewedInKeywork, totalFinancialGoals);
+  const reviewedInKeyworkRate = rate(reviewedInKeywork, totalFinancialGoals);
 
   // Celebrations on achievement
   const celebrationsHeld = financial_goal_records.filter(
     (r) => r.status === "achieved" && r.celebration_on_achievement,
   ).length;
-  const celebrationRate = pct(celebrationsHeld, achievedGoals);
+  const celebrationRate = rate(celebrationsHeld, achievedGoals);
 
   // Composite financial_goal_rate: average of coverage, child set goal rate, child tracking rate, reviewed in keywork
   const financialGoalRate: number | null =
     totalFinancialGoals > 0
-      ? Math.round(
-          (goalCoverage + childSetGoalRate + childTrackingRate + reviewedInKeyworkRate) / 4,
-        )
+      ? meanOf([goalCoverage, childSetGoalRate, childTrackingRate, reviewedInKeyworkRate])
       : null;
 
   // ── 4. Money confidence metrics ───────────────────────────────────────
@@ -455,7 +446,7 @@ export function computeSavingsBankingSkills(
   const childrenWithConfidence = new Set(
     money_confidence_records.map((r) => r.child_id),
   ).size;
-  const confidenceCoverage = pct(childrenWithConfidence, total_children);
+  const confidenceCoverage = rate(childrenWithConfidence, total_children);
 
   // Average confidence level (1-5)
   const avgConfidenceLevel: number | null =
@@ -471,51 +462,49 @@ export function computeSavingsBankingSkills(
   const understandsValue = money_confidence_records.filter(
     (r) => r.understands_value_of_money,
   ).length;
-  const understandsValueRate = pct(understandsValue, totalConfidenceAssessments);
+  const understandsValueRate = rate(understandsValue, totalConfidenceAssessments);
 
   // Can make purchases independently
   const canPurchase = money_confidence_records.filter(
     (r) => r.can_make_purchases_independently,
   ).length;
-  const canPurchaseRate = pct(canPurchase, totalConfidenceAssessments);
+  const canPurchaseRate = rate(canPurchase, totalConfidenceAssessments);
 
   // Can budget pocket money
   const canBudget = money_confidence_records.filter(
     (r) => r.can_budget_pocket_money,
   ).length;
-  const canBudgetRate = pct(canBudget, totalConfidenceAssessments);
+  const canBudgetRate = rate(canBudget, totalConfidenceAssessments);
 
   // Can identify needs vs wants
   const canIdentifyNeeds = money_confidence_records.filter(
     (r) => r.can_identify_needs_vs_wants,
   ).length;
-  const canIdentifyNeedsRate = pct(canIdentifyNeeds, totalConfidenceAssessments);
+  const canIdentifyNeedsRate = rate(canIdentifyNeeds, totalConfidenceAssessments);
 
   // Anxiety around money
   const anxietyPresent = money_confidence_records.filter(
     (r) => r.anxiety_around_money,
   ).length;
-  const anxietyRate = pct(anxietyPresent, totalConfidenceAssessments);
+  const anxietyRate = rate(anxietyPresent, totalConfidenceAssessments);
 
   // Improvement noted
   const improvementNoted = money_confidence_records.filter(
     (r) => r.improvement_noted,
   ).length;
-  const improvementRate = pct(improvementNoted, totalConfidenceAssessments);
+  const improvementRate = rate(improvementNoted, totalConfidenceAssessments);
 
   // Support plan where needed (for those with anxiety or low confidence)
   const needsSupport = money_confidence_records.filter(
     (r) => r.anxiety_around_money || r.confidence_level <= 2,
   );
   const hasSupportPlan = needsSupport.filter((r) => r.support_plan_in_place).length;
-  const supportPlanRate = pct(hasSupportPlan, needsSupport.length);
+  const supportPlanRate = rate(hasSupportPlan, needsSupport.length);
 
   // Composite money_confidence_rate: avg of coverage, understandsValue, canBudget, canPurchase
   const moneyConfidenceRate: number | null =
     totalConfidenceAssessments > 0
-      ? Math.round(
-          (confidenceCoverage + understandsValueRate + canBudgetRate + canPurchaseRate) / 4,
-        )
+      ? meanOf([confidenceCoverage, understandsValueRate, canBudgetRate, canPurchaseRate])
       : null;
 
   // ── 5. Financial independence metrics ─────────────────────────────────
@@ -525,43 +514,43 @@ export function computeSavingsBankingSkills(
   const childrenWithIndependence = new Set(
     financial_independence_records.map((r) => r.child_id),
   ).size;
-  const independenceCoverage = pct(childrenWithIndependence, total_children);
+  const independenceCoverage = rate(childrenWithIndependence, total_children);
 
   // Achieved milestones
   const achievedMilestones = financial_independence_records.filter(
     (r) => r.achieved,
   ).length;
-  const achievedMilestoneRate = pct(achievedMilestones, totalIndependenceMilestones);
+  const achievedMilestoneRate = rate(achievedMilestones, totalIndependenceMilestones);
 
   // Child initiated
   const childInitiated = financial_independence_records.filter(
     (r) => r.child_initiated,
   ).length;
-  const childInitiatedRate = pct(childInitiated, totalIndependenceMilestones);
+  const childInitiatedRate = rate(childInitiated, totalIndependenceMilestones);
 
   // Documented in pathway plan
   const documentedInPathway = financial_independence_records.filter(
     (r) => r.documented_in_pathway_plan,
   ).length;
-  const documentedInPathwayRate = pct(documentedInPathway, totalIndependenceMilestones);
+  const documentedInPathwayRate = rate(documentedInPathway, totalIndependenceMilestones);
 
   // Linked to leaving care
   const linkedToLeavingCare = financial_independence_records.filter(
     (r) => r.linked_to_leaving_care,
   ).length;
-  const linkedToLeavingCareRate = pct(linkedToLeavingCare, totalIndependenceMilestones);
+  const linkedToLeavingCareRate = rate(linkedToLeavingCare, totalIndependenceMilestones);
 
   // Child proud
   const childProud = financial_independence_records.filter(
     (r) => r.achieved && r.child_proud_of_achievement,
   ).length;
-  const childProudRate = pct(childProud, achievedMilestones);
+  const childProudRate = rate(childProud, achievedMilestones);
 
   // Next milestone identified
   const nextMilestoneIdentified = financial_independence_records.filter(
     (r) => r.next_milestone_identified,
   ).length;
-  const nextMilestoneRate = pct(nextMilestoneIdentified, totalIndependenceMilestones);
+  const nextMilestoneRate = rate(nextMilestoneIdentified, totalIndependenceMilestones);
 
   // Unique milestone types per child (breadth)
   const milestoneTypesPerChild: Record<string, Set<string>> = {};
@@ -584,9 +573,7 @@ export function computeSavingsBankingSkills(
   // Composite financial_independence_rate: avg of coverage, achieved rate, child initiated, documented in pathway
   const financialIndependenceRate: number | null =
     totalIndependenceMilestones > 0
-      ? Math.round(
-          (independenceCoverage + achievedMilestoneRate + childInitiatedRate + documentedInPathwayRate) / 4,
-        )
+      ? meanOf([independenceCoverage, achievedMilestoneRate, childInitiatedRate, documentedInPathwayRate])
       : null;
 
   // ── 6. Child engagement composite ─────────────────────────────────────
@@ -617,7 +604,7 @@ export function computeSavingsBankingSkills(
 
   const totalEngagementNum = engagementNumerators.reduce((a, b) => a + b, 0);
   const totalEngagementDenom = engagementDenominators.reduce((a, b) => a + b, 0);
-  const childEngagementRate = pct(totalEngagementNum, totalEngagementDenom);
+  const childEngagementRate = rate(totalEngagementNum, totalEngagementDenom);
 
   // ══════════════════════════════════════════════════════════════════════════
   // ── SCORING: base 52, max bonuses +28, 4 guarded penalties ────────────
@@ -651,13 +638,13 @@ export function computeSavingsBankingSkills(
   else if (meets(financialIndependenceRate, 40)) score += 1;
 
   // --- Bonus 6: childEngagementRate (>=90: +3, >=70: +2, >=50: +1) ---
-  if (childEngagementRate >= 90) score += 3;
-  else if (childEngagementRate >= 70) score += 2;
-  else if (childEngagementRate >= 50) score += 1;
+  if (meets(childEngagementRate, 90)) score += 3;
+  else if (meets(childEngagementRate, 70)) score += 2;
+  else if (meets(childEngagementRate, 50)) score += 1;
 
   // --- Bonus 7: depositComplianceRate (>=90: +2, >=70: +1) ---
-  if (depositComplianceRate >= 90) score += 2;
-  else if (depositComplianceRate >= 70) score += 1;
+  if (meets(depositComplianceRate, 90)) score += 2;
+  else if (meets(depositComplianceRate, 70)) score += 1;
 
   // ── Penalties (guarded by array.length > 0) ───────────────────────────
 
@@ -671,7 +658,7 @@ export function computeSavingsBankingSkills(
   if (below(moneyConfidenceRate, 30) && money_confidence_records.length > 0) score -= 4;
 
   // Penalty 4: childEngagementRate < 25 → -4 (guarded)
-  if (childEngagementRate < 25 && totalEngagementDenom > 0) score -= 4;
+  if (below(childEngagementRate, 25) && totalEngagementDenom > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -684,35 +671,35 @@ export function computeSavingsBankingSkills(
   const strengths: string[] = [];
 
   // Savings account strengths
-  if (savingsAccountCoverage >= 90 && totalSavingsAccounts > 0) {
+  if (meets(savingsAccountCoverage, 90) && totalSavingsAccounts > 0) {
     strengths.push(
       `${childrenWithAccounts} of ${total_children} children have savings accounts — excellent coverage ensuring all children are developing savings habits.`,
     );
-  } else if (savingsAccountCoverage >= 70 && totalSavingsAccounts > 0) {
+  } else if (meets(savingsAccountCoverage, 70) && totalSavingsAccounts > 0) {
     strengths.push(
       `${savingsAccountCoverage}% of children have savings accounts — good foundation for building financial responsibility.`,
     );
   }
 
-  if (namedHolderRate >= 90 && totalSavingsAccounts > 0) {
+  if (meets(namedHolderRate, 90) && totalSavingsAccounts > 0) {
     strengths.push(
       `${namedHolderRate}% of savings accounts have the child as named holder — children have genuine ownership of their financial assets.`,
     );
   }
 
-  if (childAccessRate >= 90 && totalSavingsAccounts > 0) {
+  if (meets(childAccessRate, 90) && totalSavingsAccounts > 0) {
     strengths.push(
       `${childAccessRate}% of children have access to their savings accounts — promoting financial autonomy and real-world money management.`,
     );
   }
 
-  if (statementsReviewedRate >= 85 && totalSavingsAccounts > 0) {
+  if (meets(statementsReviewedRate, 85) && totalSavingsAccounts > 0) {
     strengths.push(
       `${statementsReviewedRate}% of account statements reviewed with children — proactive financial education integrated into savings management.`,
     );
   }
 
-  if (depositComplianceRate >= 90 && totalDepositsTarget > 0) {
+  if (meets(depositComplianceRate, 90) && totalDepositsTarget > 0) {
     strengths.push(
       `${depositComplianceRate}% deposit target compliance — children are consistently meeting their savings deposit goals.`,
     );
@@ -735,13 +722,13 @@ export function computeSavingsBankingSkills(
     );
   }
 
-  if (competenceRate >= 85 && totalBankingSkills > 0) {
+  if (meets(competenceRate, 85) && totalBankingSkills > 0) {
     strengths.push(
       `${competenceRate}% of banking skills taught have been demonstrated competently — children are not just learning but proving they can apply their skills.`,
     );
   }
 
-  if (practiceGivenRate >= 90 && totalBankingSkills > 0) {
+  if (meets(practiceGivenRate, 90) && totalBankingSkills > 0) {
     strengths.push(
       `${practiceGivenRate}% of banking skills supported with real practice opportunities — learning is reinforced through genuine experience.`,
     );
@@ -753,42 +740,42 @@ export function computeSavingsBankingSkills(
     );
   }
 
-  if (linkedToIndPlanRate >= 80 && totalBankingSkills > 0) {
+  if (meets(linkedToIndPlanRate, 80) && totalBankingSkills > 0) {
     strengths.push(
       `${linkedToIndPlanRate}% of banking skills linked to independence plans — financial skills development is well-integrated with pathway planning.`,
     );
   }
 
   // Financial goal strengths
-  if (goalCoverage >= 80 && totalFinancialGoals > 0) {
+  if (meets(goalCoverage, 80) && totalFinancialGoals > 0) {
     strengths.push(
       `${childrenWithGoals} of ${total_children} children have financial goals — strong culture of goal-setting and aspiration in financial development.`,
     );
-  } else if (goalCoverage >= 60 && totalFinancialGoals > 0) {
+  } else if (meets(goalCoverage, 60) && totalFinancialGoals > 0) {
     strengths.push(
       `${goalCoverage}% of children have financial goals — a solid foundation for developing savings motivation and financial planning.`,
     );
   }
 
-  if (achievedGoalRate >= 50 && achievedGoals > 0) {
+  if (meets(achievedGoalRate, 50) && achievedGoals > 0) {
     strengths.push(
       `${achievedGoals} financial goals achieved (${achievedGoalRate}%) — children are experiencing the reward of reaching their savings targets.`,
     );
   }
 
-  if (childSetGoalRate >= 80 && totalFinancialGoals > 0) {
+  if (meets(childSetGoalRate, 80) && totalFinancialGoals > 0) {
     strengths.push(
       `${childSetGoalRate}% of financial goals set by the children themselves — genuine child agency in their financial development.`,
     );
   }
 
-  if (celebrationRate >= 80 && achievedGoals > 0) {
+  if (meets(celebrationRate, 80) && achievedGoals > 0) {
     strengths.push(
       `${celebrationRate}% of achieved goals celebrated with the child — positive reinforcement is supporting continued savings motivation.`,
     );
   }
 
-  if (reviewedInKeyworkRate >= 85 && totalFinancialGoals > 0) {
+  if (meets(reviewedInKeyworkRate, 85) && totalFinancialGoals > 0) {
     strengths.push(
       `${reviewedInKeyworkRate}% of financial goals reviewed in keywork sessions — financial development is embedded in the keyworking relationship.`,
     );
@@ -811,19 +798,19 @@ export function computeSavingsBankingSkills(
     );
   }
 
-  if (canBudgetRate >= 85 && totalConfidenceAssessments > 0) {
+  if (meets(canBudgetRate, 85) && totalConfidenceAssessments > 0) {
     strengths.push(
       `${canBudgetRate}% of children can budget their pocket money — a fundamental life skill being well-developed across the home.`,
     );
   }
 
-  if (canIdentifyNeedsRate >= 85 && totalConfidenceAssessments > 0) {
+  if (meets(canIdentifyNeedsRate, 85) && totalConfidenceAssessments > 0) {
     strengths.push(
       `${canIdentifyNeedsRate}% of children can distinguish needs from wants — demonstrating mature financial reasoning.`,
     );
   }
 
-  if (improvementRate >= 70 && totalConfidenceAssessments > 0) {
+  if (meets(improvementRate, 70) && totalConfidenceAssessments > 0) {
     strengths.push(
       `${improvementRate}% of assessments show improvement in money confidence — clear evidence of progress in children's financial self-efficacy.`,
     );
@@ -835,7 +822,7 @@ export function computeSavingsBankingSkills(
     );
   }
 
-  if (supportPlanRate >= 90 && needsSupport.length > 0) {
+  if (meets(supportPlanRate, 90) && needsSupport.length > 0) {
     strengths.push(
       `${supportPlanRate}% of children needing money confidence support have a plan in place — responsive support for children who find money difficult.`,
     );
@@ -852,25 +839,25 @@ export function computeSavingsBankingSkills(
     );
   }
 
-  if (achievedMilestoneRate >= 80 && totalIndependenceMilestones > 0) {
+  if (meets(achievedMilestoneRate, 80) && totalIndependenceMilestones > 0) {
     strengths.push(
       `${achievedMilestoneRate}% of financial independence milestones achieved — children are demonstrating real-world financial capability.`,
     );
   }
 
-  if (childInitiatedRate >= 70 && totalIndependenceMilestones > 0) {
+  if (meets(childInitiatedRate, 70) && totalIndependenceMilestones > 0) {
     strengths.push(
       `${childInitiatedRate}% of milestones were child-initiated — children are taking ownership of their financial development journey.`,
     );
   }
 
-  if (linkedToLeavingCareRate >= 80 && totalIndependenceMilestones > 0) {
+  if (meets(linkedToLeavingCareRate, 80) && totalIndependenceMilestones > 0) {
     strengths.push(
       `${linkedToLeavingCareRate}% of milestones linked to leaving care preparation — financial independence is purposefully connected to transition planning.`,
     );
   }
 
-  if (childProudRate >= 80 && achievedMilestones > 0) {
+  if (meets(childProudRate, 80) && achievedMilestones > 0) {
     strengths.push(
       `${childProudRate}% of children expressed pride in their financial achievements — positive emotional connection to financial competence.`,
     );
@@ -883,11 +870,11 @@ export function computeSavingsBankingSkills(
   }
 
   // Child engagement composite strength
-  if (childEngagementRate >= 90 && totalEngagementDenom > 0) {
+  if (meets(childEngagementRate, 90) && totalEngagementDenom > 0) {
     strengths.push(
       `${childEngagementRate}% child engagement across all savings and banking domains — children are genuinely involved in their own financial development.`,
     );
-  } else if (childEngagementRate >= 70 && totalEngagementDenom > 0) {
+  } else if (meets(childEngagementRate, 70) && totalEngagementDenom > 0) {
     strengths.push(
       `${childEngagementRate}% child engagement across savings and banking activities — good levels of children's active participation in financial learning.`,
     );
@@ -900,11 +887,11 @@ export function computeSavingsBankingSkills(
   const concerns: string[] = [];
 
   // Savings account concerns
-  if (savingsAccountCoverage < 40 && totalSavingsAccounts > 0) {
+  if (below(savingsAccountCoverage, 40) && totalSavingsAccounts > 0) {
     concerns.push(
       `Only ${savingsAccountCoverage}% of children have savings accounts — most children are without access to formal savings, limiting their ability to develop financial habits.`,
     );
-  } else if (savingsAccountCoverage >= 40 && savingsAccountCoverage < 70 && totalSavingsAccounts > 0) {
+  } else if (meets(savingsAccountCoverage, 40) && below(savingsAccountCoverage, 70) && totalSavingsAccounts > 0) {
     concerns.push(
       `Savings account coverage at ${savingsAccountCoverage}% — not all children have access to a savings account, creating an inequality in financial skill development.`,
     );
@@ -916,23 +903,23 @@ export function computeSavingsBankingSkills(
     );
   }
 
-  if (childAccessRate < 50 && totalSavingsAccounts > 0) {
+  if (below(childAccessRate, 50) && totalSavingsAccounts > 0) {
     concerns.push(
       `Only ${childAccessRate}% of children have access to their savings accounts — accounts exist but children cannot independently engage with their money.`,
     );
   }
 
-  if (dormantRate >= 30 && totalSavingsAccounts > 0) {
+  if (meets(dormantRate, 30) && totalSavingsAccounts > 0) {
     concerns.push(
       `${dormantRate}% of savings accounts are dormant — savings accounts are not being actively used, undermining the purpose of having them.`,
     );
-  } else if (dormantRate >= 15 && dormantRate < 30 && totalSavingsAccounts > 0) {
+  } else if (meets(dormantRate, 15) && below(dormantRate, 30) && totalSavingsAccounts > 0) {
     concerns.push(
       `${dormantRate}% of savings accounts are dormant — some accounts need reactivation to ensure children maintain their savings engagement.`,
     );
   }
 
-  if (depositComplianceRate < 50 && totalDepositsTarget > 0) {
+  if (below(depositComplianceRate, 50) && totalDepositsTarget > 0) {
     concerns.push(
       `Deposit target compliance at only ${depositComplianceRate}% — children are not meeting their savings deposit goals, suggesting targets may be unrealistic or support is insufficient.`,
     );
@@ -955,24 +942,24 @@ export function computeSavingsBankingSkills(
     );
   }
 
-  if (competenceRate < 40 && totalBankingSkills > 0) {
+  if (below(competenceRate, 40) && totalBankingSkills > 0) {
     concerns.push(
       `Only ${competenceRate}% of banking skills showing demonstrated competence — children are being taught but not retaining or applying what they learn.`,
     );
   }
 
-  if (practiceGivenRate < 50 && totalBankingSkills > 0) {
+  if (below(practiceGivenRate, 50) && totalBankingSkills > 0) {
     concerns.push(
       `Only ${practiceGivenRate}% of banking skills supported with practice opportunities — without real-world practice, theoretical banking knowledge has limited value.`,
     );
   }
 
   // Financial goal concerns
-  if (goalCoverage < 30 && totalFinancialGoals > 0) {
+  if (below(goalCoverage, 30) && totalFinancialGoals > 0) {
     concerns.push(
       `Only ${goalCoverage}% of children have financial goals — most children are without savings targets, limiting their motivation to save.`,
     );
-  } else if (goalCoverage >= 30 && goalCoverage < 60 && totalFinancialGoals > 0) {
+  } else if (meets(goalCoverage, 30) && below(goalCoverage, 60) && totalFinancialGoals > 0) {
     concerns.push(
       `Financial goal coverage at ${goalCoverage}% — not all children have been supported to set savings goals.`,
     );
@@ -984,13 +971,13 @@ export function computeSavingsBankingSkills(
     );
   }
 
-  if (abandonedGoalRate >= 30 && totalFinancialGoals > 0) {
+  if (meets(abandonedGoalRate, 30) && totalFinancialGoals > 0) {
     concerns.push(
       `${abandonedGoalRate}% of financial goals have been abandoned — a high abandonment rate suggests goals may be poorly set, poorly supported, or unrealistic.`,
     );
   }
 
-  if (childTrackingRate < 40 && totalFinancialGoals > 0) {
+  if (below(childTrackingRate, 40) && totalFinancialGoals > 0) {
     concerns.push(
       `Only ${childTrackingRate}% of children tracking their financial goal progress — without active tracking, children lose connection with their savings journey.`,
     );
@@ -1013,11 +1000,11 @@ export function computeSavingsBankingSkills(
     );
   }
 
-  if (anxietyRate >= 30 && totalConfidenceAssessments > 0) {
+  if (meets(anxietyRate, 30) && totalConfidenceAssessments > 0) {
     concerns.push(
       `${anxietyRate}% of children report anxiety around money — significant financial anxiety requires targeted therapeutic support and sensitive handling.`,
     );
-  } else if (anxietyRate >= 15 && anxietyRate < 30 && totalConfidenceAssessments > 0) {
+  } else if (meets(anxietyRate, 15) && below(anxietyRate, 30) && totalConfidenceAssessments > 0) {
     concerns.push(
       `${anxietyRate}% of children report anxiety around money — some children need additional emotional support around financial matters.`,
     );
@@ -1029,7 +1016,7 @@ export function computeSavingsBankingSkills(
     );
   }
 
-  if (supportPlanRate < 50 && needsSupport.length > 0) {
+  if (below(supportPlanRate, 50) && needsSupport.length > 0) {
     concerns.push(
       `Only ${supportPlanRate}% of children needing money confidence support have a plan in place — vulnerable children are not receiving structured financial support.`,
     );
@@ -1052,24 +1039,24 @@ export function computeSavingsBankingSkills(
     );
   }
 
-  if (documentedInPathwayRate < 50 && totalIndependenceMilestones > 0) {
+  if (below(documentedInPathwayRate, 50) && totalIndependenceMilestones > 0) {
     concerns.push(
       `Only ${documentedInPathwayRate}% of financial milestones documented in pathway plans — financial independence is not well-integrated with overall transition planning.`,
     );
   }
 
-  if (nextMilestoneRate < 50 && totalIndependenceMilestones > 0) {
+  if (below(nextMilestoneRate, 50) && totalIndependenceMilestones > 0) {
     concerns.push(
       `Only ${nextMilestoneRate}% of records identify the next financial milestone — without forward planning, children's financial development lacks direction.`,
     );
   }
 
   // Child engagement concerns
-  if (childEngagementRate < 25 && totalEngagementDenom > 0) {
+  if (below(childEngagementRate, 25) && totalEngagementDenom > 0) {
     concerns.push(
       `Child engagement across savings and banking at only ${childEngagementRate}% — children are not meaningfully involved in their own financial development.`,
     );
-  } else if (childEngagementRate >= 25 && childEngagementRate < 50 && totalEngagementDenom > 0) {
+  } else if (meets(childEngagementRate, 25) && below(childEngagementRate, 50) && totalEngagementDenom > 0) {
     concerns.push(
       `Child engagement across savings and banking at ${childEngagementRate}% — many children are passive rather than active participants in their financial learning.`,
     );
@@ -1094,7 +1081,7 @@ export function computeSavingsBankingSkills(
   }
 
   // Low savings coverage
-  if (savingsAccountCoverage < 40 && totalSavingsAccounts > 0) {
+  if (below(savingsAccountCoverage, 40) && totalSavingsAccounts > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1102,7 +1089,7 @@ export function computeSavingsBankingSkills(
       urgency: "immediate",
       regulatory_ref: "CHR 2015 Reg 5 — Engaging with the wider community",
     });
-  } else if (savingsAccountCoverage >= 40 && savingsAccountCoverage < 70 && totalSavingsAccounts > 0) {
+  } else if (meets(savingsAccountCoverage, 40) && below(savingsAccountCoverage, 70) && totalSavingsAccounts > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1143,7 +1130,7 @@ export function computeSavingsBankingSkills(
   }
 
   // Low competence rate
-  if (competenceRate < 40 && totalBankingSkills > 0) {
+  if (below(competenceRate, 40) && totalBankingSkills > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1165,7 +1152,7 @@ export function computeSavingsBankingSkills(
   }
 
   // Low goal coverage
-  if (goalCoverage < 30 && totalFinancialGoals > 0) {
+  if (below(goalCoverage, 30) && totalFinancialGoals > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1173,7 +1160,7 @@ export function computeSavingsBankingSkills(
       urgency: "immediate",
       regulatory_ref: "SCCIF — Experiences and progress",
     });
-  } else if (goalCoverage >= 30 && goalCoverage < 60 && totalFinancialGoals > 0) {
+  } else if (meets(goalCoverage, 30) && below(goalCoverage, 60) && totalFinancialGoals > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1184,7 +1171,7 @@ export function computeSavingsBankingSkills(
   }
 
   // High goal abandonment
-  if (abandonedGoalRate >= 30 && totalFinancialGoals > 0) {
+  if (meets(abandonedGoalRate, 30) && totalFinancialGoals > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1225,7 +1212,7 @@ export function computeSavingsBankingSkills(
   }
 
   // Money anxiety
-  if (anxietyRate >= 30 && totalConfidenceAssessments > 0) {
+  if (meets(anxietyRate, 30) && totalConfidenceAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1236,7 +1223,7 @@ export function computeSavingsBankingSkills(
   }
 
   // Missing support plans
-  if (supportPlanRate < 50 && needsSupport.length > 0) {
+  if (below(supportPlanRate, 50) && needsSupport.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1277,7 +1264,7 @@ export function computeSavingsBankingSkills(
   }
 
   // Low pathway plan documentation
-  if (documentedInPathwayRate < 50 && totalIndependenceMilestones > 0) {
+  if (below(documentedInPathwayRate, 50) && totalIndependenceMilestones > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1288,7 +1275,7 @@ export function computeSavingsBankingSkills(
   }
 
   // Low child engagement
-  if (childEngagementRate < 25 && totalEngagementDenom > 0) {
+  if (below(childEngagementRate, 25) && totalEngagementDenom > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1296,7 +1283,7 @@ export function computeSavingsBankingSkills(
       urgency: "immediate",
       regulatory_ref: "SCCIF — Voice of the child",
     });
-  } else if (childEngagementRate >= 25 && childEngagementRate < 50 && totalEngagementDenom > 0) {
+  } else if (meets(childEngagementRate, 25) && below(childEngagementRate, 50) && totalEngagementDenom > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1307,7 +1294,7 @@ export function computeSavingsBankingSkills(
   }
 
   // Practice opportunity gaps
-  if (practiceGivenRate < 50 && totalBankingSkills > 0) {
+  if (below(practiceGivenRate, 50) && totalBankingSkills > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1318,7 +1305,7 @@ export function computeSavingsBankingSkills(
   }
 
   // Low deposit compliance
-  if (depositComplianceRate >= 50 && depositComplianceRate < 70 && totalDepositsTarget > 0) {
+  if (meets(depositComplianceRate, 50) && below(depositComplianceRate, 70) && totalDepositsTarget > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1329,7 +1316,7 @@ export function computeSavingsBankingSkills(
   }
 
   // Dormant accounts
-  if (dormantRate >= 15 && totalSavingsAccounts > 0) {
+  if (meets(dormantRate, 15) && totalSavingsAccounts > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1368,14 +1355,14 @@ export function computeSavingsBankingSkills(
     });
   }
 
-  if (childEngagementRate < 25 && totalEngagementDenom > 0) {
+  if (below(childEngagementRate, 25) && totalEngagementDenom > 0) {
     insights.push({
       text: `Child engagement across savings and banking at only ${childEngagementRate}%. Financial education is being done to children rather than with them. Without genuine participation, children will not internalise the skills and habits needed for financial independence.`,
       severity: "critical",
     });
   }
 
-  if (anxietyRate >= 30 && totalConfidenceAssessments > 0) {
+  if (meets(anxietyRate, 30) && totalConfidenceAssessments > 0) {
     insights.push({
       text: `${anxietyRate}% of children report anxiety around money. For children in care, financial anxiety can be rooted in past experiences of deprivation or instability. A purely educational approach to financial skills may be insufficient — therapeutic support addressing the emotional dimension of money is needed.`,
       severity: "critical",
@@ -1433,35 +1420,35 @@ export function computeSavingsBankingSkills(
     });
   }
 
-  if (childEngagementRate >= 25 && childEngagementRate < 50 && totalEngagementDenom > 0) {
+  if (meets(childEngagementRate, 25) && below(childEngagementRate, 50) && totalEngagementDenom > 0) {
     insights.push({
       text: `Child engagement at ${childEngagementRate}% — while some children are participating actively, many remain passive recipients of financial education. Consider whether activities are engaging, relevant, and genuinely child-centred.`,
       severity: "warning",
     });
   }
 
-  if (dormantRate >= 15 && dormantRate < 30 && totalSavingsAccounts > 0) {
+  if (meets(dormantRate, 15) && below(dormantRate, 30) && totalSavingsAccounts > 0) {
     insights.push({
       text: `${dormantRate}% of savings accounts are dormant. Dormant accounts represent disengagement from savings — the initial effort of opening accounts is wasted if they are not actively maintained. Each dormant account is a child who has stopped saving.`,
       severity: "warning",
     });
   }
 
-  if (abandonedGoalRate >= 20 && abandonedGoalRate < 30 && totalFinancialGoals > 0) {
+  if (meets(abandonedGoalRate, 20) && below(abandonedGoalRate, 30) && totalFinancialGoals > 0) {
     insights.push({
       text: `${abandonedGoalRate}% of financial goals abandoned. Some goal abandonment is normal, but approaching ${abandonedGoalRate}% suggests that initial goals may not have been well-matched to children's circumstances, or that ongoing support and motivation is lacking.`,
       severity: "warning",
     });
   }
 
-  if (anxietyRate >= 15 && anxietyRate < 30 && totalConfidenceAssessments > 0) {
+  if (meets(anxietyRate, 15) && below(anxietyRate, 30) && totalConfidenceAssessments > 0) {
     insights.push({
       text: `${anxietyRate}% of children report some anxiety around money. While not at crisis level, financial anxiety in looked-after children can undermine engagement with savings, banking, and independence activities. Sensitive, individualised approaches are needed.`,
       severity: "warning",
     });
   }
 
-  if (depositComplianceRate >= 50 && depositComplianceRate < 70 && totalDepositsTarget > 0) {
+  if (meets(depositComplianceRate, 50) && below(depositComplianceRate, 70) && totalDepositsTarget > 0) {
     insights.push({
       text: `Deposit compliance at ${depositComplianceRate}% — children are meeting some savings targets but not consistently. Review whether targets are achievable and whether children have the support they need to maintain regular deposits.`,
       severity: "warning",
@@ -1541,21 +1528,21 @@ export function computeSavingsBankingSkills(
     });
   }
 
-  if (childEngagementRate >= 90 && totalEngagementDenom > 0) {
+  if (meets(childEngagementRate, 90) && totalEngagementDenom > 0) {
     insights.push({
       text: `${childEngagementRate}% child engagement across all savings and banking domains — children are genuine partners in their own financial development, not passive recipients. This child-centred approach is exactly what Ofsted looks for when assessing experiences and progress.`,
       severity: "positive",
     });
   }
 
-  if (improvementRate >= 80 && totalConfidenceAssessments > 0) {
+  if (meets(improvementRate, 80) && totalConfidenceAssessments > 0) {
     insights.push({
       text: `${improvementRate}% of money confidence assessments show improvement — clear evidence that the home's financial education approach is working and children are making measurable progress in their relationship with money.`,
       severity: "positive",
     });
   }
 
-  if (achievedGoalRate >= 60 && achievedGoals >= 3) {
+  if (meets(achievedGoalRate, 60) && achievedGoals >= 3) {
     insights.push({
       text: `${achievedGoals} financial goals achieved (${achievedGoalRate}%) — children are experiencing genuine financial success and learning that saving and planning pays off. This builds the habits and motivation needed for lifelong financial wellbeing.`,
       severity: "positive",
@@ -1574,7 +1561,7 @@ export function computeSavingsBankingSkills(
     });
   }
 
-  if (celebrationRate >= 90 && achievedGoals >= 2) {
+  if (meets(celebrationRate, 90) && achievedGoals >= 2) {
     insights.push({
       text: `${celebrationRate}% of achieved financial goals celebrated with the child — positive reinforcement of financial achievements builds confidence, motivation, and a healthy relationship with money.`,
       severity: "positive",
@@ -1582,8 +1569,8 @@ export function computeSavingsBankingSkills(
   }
 
   if (
-    linkedToLeavingCareRate >= 80 &&
-    documentedInPathwayRate >= 80 &&
+    meets(linkedToLeavingCareRate, 80) &&
+    meets(documentedInPathwayRate, 80) &&
     totalIndependenceMilestones > 0
   ) {
     insights.push({

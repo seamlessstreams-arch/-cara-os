@@ -210,12 +210,12 @@ describe("insufficient_data — no children, all arrays empty", () => {
 
   it("returns all zero rates", () => {
     const r = run({ total_children: 0 });
-    expect(r.reward_fairness_rate).toBe(0);
-    expect(r.reinforcement_consistency_rate).toBe(0);
-    expect(r.programme_effectiveness_rate).toBe(0);
-    expect(r.child_participation_rate).toBe(0);
-    expect(r.equity_rate).toBe(0);
-    expect(r.child_satisfaction_rate).toBe(0);
+    expect(r.reward_fairness_rate).toBeNull();
+    expect(r.reinforcement_consistency_rate).toBeNull();
+    expect(r.programme_effectiveness_rate).toBeNull();
+    expect(r.child_participation_rate).toBeNull();
+    expect(r.equity_rate).toBeNull();
+    expect(r.child_satisfaction_rate).toBeNull();
   });
 
   it("returns empty arrays for strengths, concerns, recommendations, insights", () => {
@@ -1337,9 +1337,9 @@ describe("reward_fairness_rate calculation", () => {
     expect(r.reward_fairness_rate).toBe(50);
   });
 
-  it("0% when no scheme records", () => {
+  it("null when no scheme records", () => {
     const r = run({ reward_scheme_records: [] });
-    expect(r.reward_fairness_rate).toBe(0);
+    expect(r.reward_fairness_rate).toBeNull();
   });
 });
 
@@ -1360,9 +1360,9 @@ describe("reinforcement_consistency_rate calculation", () => {
     expect(r.reinforcement_consistency_rate).toBe(50);
   });
 
-  it("0% when 0 records", () => {
+  it("null when 0 records", () => {
     const r = run({ reinforcement_records: [] });
-    expect(r.reinforcement_consistency_rate).toBe(0);
+    expect(r.reinforcement_consistency_rate).toBeNull();
   });
 });
 
@@ -1386,9 +1386,9 @@ describe("programme_effectiveness_rate calculation", () => {
     expect(r.programme_effectiveness_rate).toBe(50);
   });
 
-  it("0% when 0 records", () => {
+  it("null when 0 records", () => {
     const r = run({ incentive_programme_records: [] });
-    expect(r.programme_effectiveness_rate).toBe(0);
+    expect(r.programme_effectiveness_rate).toBeNull();
   });
 });
 
@@ -1412,9 +1412,9 @@ describe("child_participation_rate calculation", () => {
     expect(r.child_participation_rate).toBe(50);
   });
 
-  it("0% when 0 records", () => {
+  it("null when 0 records", () => {
     const r = run({ child_participation_records: [] });
-    expect(r.child_participation_rate).toBe(0);
+    expect(r.child_participation_rate).toBeNull();
   });
 });
 
@@ -1439,9 +1439,9 @@ describe("equity_rate calculation", () => {
     expect(r.equity_rate).toBe(57);
   });
 
-  it("0% when 0 records", () => {
+  it("null when 0 records", () => {
     const r = run({ equity_review_records: [] });
-    expect(r.equity_rate).toBe(0);
+    expect(r.equity_rate).toBeNull();
   });
 });
 
@@ -1462,9 +1462,9 @@ describe("child_satisfaction_rate calculation", () => {
     expect(r.child_satisfaction_rate).toBe(0);
   });
 
-  it("0% when 0 records", () => {
+  it("null when 0 records", () => {
     const r = run({ child_participation_records: [] });
-    expect(r.child_satisfaction_rate).toBe(0);
+    expect(r.child_satisfaction_rate).toBeNull();
   });
 });
 
@@ -1472,35 +1472,35 @@ describe("child_satisfaction_rate calculation", () => {
 // 10 — pct(0, 0) = 0
 // ═══════════════════════════════════════════════════════════════════════════
 
-describe("pct(0,0) = 0 behaviour", () => {
+describe("rate(0,0)=null behaviour", () => {
   it("reward_fairness_rate=0 when no schemes", () => {
     const r = run({ reward_scheme_records: [] });
-    expect(r.reward_fairness_rate).toBe(0);
+    expect(r.reward_fairness_rate).toBeNull();
   });
 
   it("reinforcement_consistency_rate=0 when no reinforcements", () => {
     const r = run({ reinforcement_records: [] });
-    expect(r.reinforcement_consistency_rate).toBe(0);
+    expect(r.reinforcement_consistency_rate).toBeNull();
   });
 
   it("programme_effectiveness_rate=0 when no programmes", () => {
     const r = run({ incentive_programme_records: [] });
-    expect(r.programme_effectiveness_rate).toBe(0);
+    expect(r.programme_effectiveness_rate).toBeNull();
   });
 
   it("child_participation_rate=0 when no participation records", () => {
     const r = run({ child_participation_records: [] });
-    expect(r.child_participation_rate).toBe(0);
+    expect(r.child_participation_rate).toBeNull();
   });
 
   it("equity_rate=0 when no equity reviews", () => {
     const r = run({ equity_review_records: [] });
-    expect(r.equity_rate).toBe(0);
+    expect(r.equity_rate).toBeNull();
   });
 
   it("child_satisfaction_rate=0 when no participation records", () => {
     const r = run({ child_participation_records: [] });
-    expect(r.child_satisfaction_rate).toBe(0);
+    expect(r.child_satisfaction_rate).toBeNull();
   });
 });
 

@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Scale } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { RegulatoryComplianceRating, RegulatoryComplianceResult } from "@/lib/engines/home-regulatory-compliance-composite-engine";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface RegulatoryComplianceCompositeResponse { data: RegulatoryComplianceResult; }
 
@@ -52,7 +53,7 @@ export function HomeRegulatoryComplianceCompositeCard() {
             <Scale className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-violet-600")} />
             <span className="text-slate-900 font-bold">Regulatory Compliance</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.compliance_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.compliance_score}%</span>}
+            {d.compliance_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.compliance_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>

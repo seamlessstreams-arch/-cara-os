@@ -70,28 +70,28 @@ export function HomeReligiousSpiritualWellbeingIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.spiritual_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.faith_support_coverage_rate >= 90 ? "bg-green-50" : d.faith_support_coverage_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.faith_support_coverage_rate >= 90 ? "text-[--cs-success]" : d.faith_support_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.faith_support_coverage_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.faith_support_coverage_rate, 90) ? "bg-green-50" : meets(d.faith_support_coverage_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.faith_support_coverage_rate, 90) ? "text-[--cs-success]" : meets(d.faith_support_coverage_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.faith_support_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Faith</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.spiritual_development_rate, 90) ? "bg-green-50" : meets(d.spiritual_development_rate, 70) ? "bg-amber-50" : d.spiritual_development_rate === null ? "bg-muted" : "bg-red-50")}>
               <p className={cn("text-sm font-bold tabular-nums", meets(d.spiritual_development_rate, 90) ? "text-[--cs-success]" : meets(d.spiritual_development_rate, 70) ? "text-[--cs-warning]" : d.spiritual_development_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.spiritual_development_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Develop.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.dietary_accommodation_rate >= 90 ? "bg-green-50" : d.dietary_accommodation_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.dietary_accommodation_rate >= 90 ? "text-[--cs-success]" : d.dietary_accommodation_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.dietary_accommodation_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.dietary_accommodation_rate, 90) ? "bg-green-50" : meets(d.dietary_accommodation_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.dietary_accommodation_rate, 90) ? "text-[--cs-success]" : meets(d.dietary_accommodation_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.dietary_accommodation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Dietary</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.worship_access_rate >= 90 ? "bg-green-50" : d.worship_access_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.worship_access_rate >= 90 ? "text-[--cs-success]" : d.worship_access_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.worship_access_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.worship_access_rate, 90) ? "bg-green-50" : meets(d.worship_access_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.worship_access_rate, 90) ? "text-[--cs-success]" : meets(d.worship_access_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.worship_access_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Worship</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.celebration_participation_rate >= 90 ? "bg-green-50" : d.celebration_participation_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.celebration_participation_rate >= 90 ? "text-[--cs-success]" : d.celebration_participation_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.celebration_participation_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.celebration_participation_rate, 90) ? "bg-green-50" : meets(d.celebration_participation_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.celebration_participation_rate, 90) ? "text-[--cs-success]" : meets(d.celebration_participation_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.celebration_participation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Celebr.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_voice_rate >= 90 ? "bg-green-50" : d.child_voice_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_voice_rate >= 90 ? "text-[--cs-success]" : d.child_voice_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_voice_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_voice_rate, 90) ? "bg-green-50" : meets(d.child_voice_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_voice_rate, 90) ? "text-[--cs-success]" : meets(d.child_voice_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_voice_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Voice</p>
             </div>
           </div>

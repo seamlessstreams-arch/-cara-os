@@ -19,6 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { RiskLandscapeRating, HomeRiskLandscapeResult } from "@/lib/engines/home-risk-landscape-intelligence-engine";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface HomeRiskLandscapeResponse {
   data: HomeRiskLandscapeResult;
@@ -108,7 +109,7 @@ export function HomeRiskLandscapeIntelligenceCard() {
               {ratingStyle.label}
             </span>
             {d.risk_rating !== "insufficient_data" && (
-              <span className="text-xs font-bold tabular-nums text-slate-600">{d.risk_score}%</span>
+              <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.risk_score)}</span>
             )}
           </CardTitle>
         </div>
@@ -128,7 +129,7 @@ export function HomeRiskLandscapeIntelligenceCard() {
                   (d.trend_profile.decreasing_rate ?? 0) >= 50 ? "text-[--cs-success]" :
                   (d.trend_profile.decreasing_rate ?? 0) >= 30 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.trend_profile.decreasing_rate}%
+                  {formatRate(d.trend_profile.decreasing_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Decreasing</p>
@@ -155,7 +156,7 @@ export function HomeRiskLandscapeIntelligenceCard() {
                   (d.mitigation_profile.effectiveness_rate ?? 0) >= 70 ? "text-[--cs-success]" :
                   (d.mitigation_profile.effectiveness_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.mitigation_profile.effectiveness_rate}%
+                  {formatRate(d.mitigation_profile.effectiveness_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Effective</p>
@@ -169,7 +170,7 @@ export function HomeRiskLandscapeIntelligenceCard() {
                   (d.coverage_profile.child_voice_rate ?? 0) >= 90 ? "text-[--cs-success]" :
                   (d.coverage_profile.child_voice_rate ?? 0) >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.coverage_profile.child_voice_rate}%
+                  {formatRate(d.coverage_profile.child_voice_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Child Voice</p>
@@ -203,7 +204,7 @@ export function HomeRiskLandscapeIntelligenceCard() {
                 <p>Avg age: <span className="font-medium text-slate-600">{d.currency_profile.avg_days_since_assessment}d</span></p>
                 <p>Contingency: <span className={cn("font-medium",
                   (d.coverage_profile.contingency_rate ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]"
-                )}>{d.coverage_profile.contingency_rate}%</span></p>
+                )}>{formatRate(d.coverage_profile.contingency_rate)}</span></p>
               </div>
             </div>
           </div>

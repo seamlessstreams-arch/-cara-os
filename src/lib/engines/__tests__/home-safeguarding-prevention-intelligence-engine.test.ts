@@ -1640,9 +1640,9 @@ describe("computeHomeSafeguardingPrevention", () => {
         court_attendance_records: [],
       }));
       // No bullying => restorative_rate should be 0 (not NaN)
-      expect(r.bullying.restorative_rate).toBe(0);
-      expect(r.bullying.school_notification_rate).toBe(0);
-      expect(r.hate_incidents.reporting_compliance_rate).toBe(0);
+      expect(r.bullying.restorative_rate).toBeNull();
+      expect(r.bullying.school_notification_rate).toBeNull();
+      expect(r.hate_incidents.reporting_compliance_rate).toBeNull();
     });
   });
 

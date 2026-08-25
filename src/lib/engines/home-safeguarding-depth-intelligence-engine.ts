@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME SAFEGUARDING DEPTH INTELLIGENCE ENGINE
 // Aggregates body maps, disclosures, escalations, LADO referrals,
@@ -133,14 +134,16 @@ export interface LADOSummary {
 
 export interface SupervisionSummary {
   total_sessions: number;
-  staff_coverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staff_coverage: number | null;
   avg_actions_completion_rate: number | null;
   reflective_practice_rate: number | null;
 }
 
 export interface SafeTouchSummary {
   total: number;
-  child_coverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_coverage: number | null;
   consent_rate: number | null;
   child_voice_rate: number | null;
   overdue_reviews: number;
@@ -171,10 +174,6 @@ export interface HomeSafeguardingDepthResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function daysBetween(a: string, b: string): number {
   return Math.round(
@@ -222,7 +221,7 @@ export function computeHomeSafeguardingDepth(
       escalations: { total: 0, multi_agency_rate: null, resolved_rate: null, learning_captured_rate: null, avg_resolution_days: 0 },
       lado: { total: 0, referred_timely_rate: null, outcome_recorded_rate: null, learning_shared_rate: null, overdue_reviews: 0 },
       supervision: { total_sessions: 0, staff_coverage: 0, avg_actions_completion_rate: null, reflective_practice_rate: null },
-      safe_touch: { total: 0, child_coverage: 0, consent_rate: null, child_voice_rate: null, overdue_reviews: 0 },
+      safe_touch: { total: 0, child_coverage: null, consent_rate: null, child_voice_rate: null, overdue_reviews: 0 },
       substance_screening: { total_90d: 0, positive_rate: null, follow_up_rate: null, child_supported_rate: null },
       strengths: [],
       concerns: [],
@@ -237,11 +236,11 @@ export function computeHomeSafeguardingDepth(
 
   // ── Body Maps ───────────────────────────────────────────────────────
   const bmPhoto = body_maps.filter(b => b.photo_evidence).length;
-  const bmPhotoRate = pct(bmPhoto, body_maps.length);
+  const bmPhotoRate = rate(bmPhoto, body_maps.length);
   const bmManagerReviewed = body_maps.filter(b => b.manager_reviewed).length;
-  const bmManagerRate = pct(bmManagerReviewed, body_maps.length);
+  const bmManagerRate = rate(bmManagerReviewed, body_maps.length);
   const bmChildExpl = body_maps.filter(b => b.child_explanation_recorded).length;
-  const bmChildRate = pct(bmChildExpl, body_maps.length);
+  const bmChildRate = rate(bmChildExpl, body_maps.length);
 
   const body_map_summary: BodyMapSummary = {
     total: body_maps.length,
@@ -252,13 +251,13 @@ export function computeHomeSafeguardingDepth(
 
   // ── Disclosures ─────────────────────────────────────────────────────
   const dResp = disclosures.filter(d => d.response_within_1h).length;
-  const dRespRate = pct(dResp, disclosures.length);
+  const dRespRate = rate(dResp, disclosures.length);
   const dEscal = disclosures.filter(d => d.escalated_appropriately).length;
-  const dEscalRate = pct(dEscal, disclosures.length);
+  const dEscalRate = rate(dEscal, disclosures.length);
   const dInformed = disclosures.filter(d => d.child_informed_of_process).length;
-  const dInformedRate = pct(dInformed, disclosures.length);
+  const dInformedRate = rate(dInformed, disclosures.length);
   const dWritten = disclosures.filter(d => d.written_up_within_24h).length;
-  const dWrittenRate = pct(dWritten, disclosures.length);
+  const dWrittenRate = rate(dWritten, disclosures.length);
 
   const disclosure_summary: DisclosureSummary = {
     total: disclosures.length,
@@ -270,11 +269,11 @@ export function computeHomeSafeguardingDepth(
 
   // ── Escalations ─────────────────────────────────────────────────────
   const eMulti = escalations.filter(e => e.multi_agency_engaged).length;
-  const eMultiRate = pct(eMulti, escalations.length);
+  const eMultiRate = rate(eMulti, escalations.length);
   const eResolved = escalations.filter(e => e.resolution_date && e.resolution_date.length > 0).length;
-  const eResolvedRate = pct(eResolved, escalations.length);
+  const eResolvedRate = rate(eResolved, escalations.length);
   const eLearning = escalations.filter(e => e.learning_captured).length;
-  const eLearningRate = pct(eLearning, escalations.length);
+  const eLearningRate = rate(eLearning, escalations.length);
   const resolvedWithDates = escalations.filter(e => e.resolution_date && e.resolution_date.length > 0);
   const avgResDays = resolvedWithDates.length > 0
     ? Math.round((resolvedWithDates.reduce((s, e) => s + Math.max(0, daysBetween(e.date, e.resolution_date)), 0) / resolvedWithDates.length) * 10) / 10
@@ -290,11 +289,11 @@ export function computeHomeSafeguardingDepth(
 
   // ── LADO Referrals ──────────────────────────────────────────────────
   const lTimely = lado_referrals.filter(l => l.referred_within_1_business_day).length;
-  const lTimelyRate = pct(lTimely, lado_referrals.length);
+  const lTimelyRate = rate(lTimely, lado_referrals.length);
   const lOutcome = lado_referrals.filter(l => l.outcome_recorded).length;
-  const lOutcomeRate = pct(lOutcome, lado_referrals.length);
+  const lOutcomeRate = rate(lOutcome, lado_referrals.length);
   const lLearning = lado_referrals.filter(l => l.learning_shared).length;
-  const lLearningRate = pct(lLearning, lado_referrals.length);
+  const lLearningRate = rate(lLearning, lado_referrals.length);
   const lOverdue = lado_referrals.filter(l => reviewOverdue(l.review_date, today)).length;
 
   const lado_summary: LADOSummary = {
@@ -307,15 +306,15 @@ export function computeHomeSafeguardingDepth(
 
   // ── Safeguarding Supervision ────────────────────────────────────────
   const ssStaffIds = new Set(safeguarding_supervisions.map(s => s.staff_id));
-  const ssCoverage = pct(ssStaffIds.size, total_staff);
+  const ssCoverage = rate(ssStaffIds.size, total_staff);
   const ssActionsComp = safeguarding_supervisions.map(s =>
-    s.actions_set > 0 ? pct(s.actions_completed, s.actions_set) : 100,
+    s.actions_set > 0 ? rate(s.actions_completed, s.actions_set)! : 100,
   );
   const ssAvgActComp = ssActionsComp.length > 0
     ? Math.round(ssActionsComp.reduce((s, v) => s + v, 0) / ssActionsComp.length)
     : null;
   const ssReflective = safeguarding_supervisions.filter(s => s.reflective_practice).length;
-  const ssReflectiveRate = pct(ssReflective, safeguarding_supervisions.length);
+  const ssReflectiveRate = rate(ssReflective, safeguarding_supervisions.length);
 
   const supervision_summary: SupervisionSummary = {
     total_sessions: safeguarding_supervisions.length,
@@ -326,11 +325,11 @@ export function computeHomeSafeguardingDepth(
 
   // ── Safe Touch Protocols ────────────────────────────────────────────
   const stChildIds = new Set(safe_touch_protocols.map(p => p.child_id));
-  const stCoverage = pct(stChildIds.size, total_children);
+  const stCoverage = rate(stChildIds.size, total_children);
   const stConsent = safe_touch_protocols.filter(p => p.consent_obtained).length;
-  const stConsentRate = pct(stConsent, safe_touch_protocols.length);
+  const stConsentRate = rate(stConsent, safe_touch_protocols.length);
   const stVoice = safe_touch_protocols.filter(p => p.child_voice_captured).length;
-  const stVoiceRate = pct(stVoice, safe_touch_protocols.length);
+  const stVoiceRate = rate(stVoice, safe_touch_protocols.length);
   const stOverdue = safe_touch_protocols.filter(p => reviewOverdue(p.review_date, today)).length;
 
   const safe_touch_summary: SafeTouchSummary = {
@@ -347,11 +346,11 @@ export function computeHomeSafeguardingDepth(
     return d >= 0 && d <= 90;
   });
   const ssPositive = ss90d.filter(s => s.result === "positive").length;
-  const ssPositiveRate = pct(ssPositive, ss90d.length);
+  const ssPositiveRate = rate(ssPositive, ss90d.length);
   const ssFollowUp = ss90d.filter(s => s.follow_up_actioned).length;
-  const ssFollowUpRate = pct(ssFollowUp, ss90d.length);
+  const ssFollowUpRate = rate(ssFollowUp, ss90d.length);
   const ssSupported = ss90d.filter(s => s.child_supported).length;
-  const ssSupportedRate = pct(ssSupported, ss90d.length);
+  const ssSupportedRate = rate(ssSupported, ss90d.length);
 
   const substance_summary: SubstanceScreeningSummary = {
     total_90d: ss90d.length,
@@ -370,11 +369,11 @@ export function computeHomeSafeguardingDepth(
   {
     let m = 0;
     if (body_maps.length > 0) {
-      if (bmPhotoRate >= 80) m += 1; else if (bmPhotoRate < 40) m -= 1;
-      if (bmManagerRate >= 90) m += 2; else if (bmManagerRate < 50) m -= 2;
-      if (bmChildRate >= 80) m += 1; else if (bmChildRate < 40) m -= 1;
-      const bmStaffSigned = pct(body_maps.filter(b => b.staff_signed).length, body_maps.length);
-      if (bmStaffSigned >= 90) m += 1; else if (bmStaffSigned < 50) m -= 1;
+      if (meets(bmPhotoRate, 80)) m += 1; else if (below(bmPhotoRate, 40)) m -= 1;
+      if (meets(bmManagerRate, 90)) m += 2; else if (below(bmManagerRate, 50)) m -= 2;
+      if (meets(bmChildRate, 80)) m += 1; else if (below(bmChildRate, 40)) m -= 1;
+      const bmStaffSigned = rate(body_maps.filter(b => b.staff_signed).length, body_maps.length);
+      if (meets(bmStaffSigned, 90)) m += 1; else if (below(bmStaffSigned, 50)) m -= 1;
     } else {
       if (total_children >= 2) m -= 2;
     }
@@ -385,10 +384,10 @@ export function computeHomeSafeguardingDepth(
   {
     let m = 0;
     if (disclosures.length > 0) {
-      if (dRespRate >= 90) m += 1; else if (dRespRate < 50) m -= 1;
-      if (dEscalRate >= 90) m += 1; else if (dEscalRate < 50) m -= 1;
-      if (dInformedRate >= 80) m += 1; else if (dInformedRate < 40) m -= 1;
-      if (dWrittenRate >= 90) m += 1; else if (dWrittenRate < 50) m -= 1;
+      if (meets(dRespRate, 90)) m += 1; else if (below(dRespRate, 50)) m -= 1;
+      if (meets(dEscalRate, 90)) m += 1; else if (below(dEscalRate, 50)) m -= 1;
+      if (meets(dInformedRate, 80)) m += 1; else if (below(dInformedRate, 40)) m -= 1;
+      if (meets(dWrittenRate, 90)) m += 1; else if (below(dWrittenRate, 50)) m -= 1;
     }
     // No disclosures is not necessarily bad — neutral
     score += Math.max(-4, Math.min(4, m));
@@ -398,9 +397,9 @@ export function computeHomeSafeguardingDepth(
   {
     let m = 0;
     if (escalations.length > 0) {
-      if (eMultiRate >= 80) m += 1; else if (eMultiRate < 40) m -= 1;
-      if (eResolvedRate >= 80) m += 1; else if (eResolvedRate < 40) m -= 1;
-      if (eLearningRate >= 70) m += 1; else if (eLearningRate < 30) m -= 1;
+      if (meets(eMultiRate, 80)) m += 1; else if (below(eMultiRate, 40)) m -= 1;
+      if (meets(eResolvedRate, 80)) m += 1; else if (below(eResolvedRate, 40)) m -= 1;
+      if (meets(eLearningRate, 70)) m += 1; else if (below(eLearningRate, 30)) m -= 1;
     }
     score += Math.max(-3, Math.min(3, m));
   }
@@ -409,9 +408,9 @@ export function computeHomeSafeguardingDepth(
   {
     let m = 0;
     if (lado_referrals.length > 0) {
-      if (lTimelyRate >= 90) m += 1; else if (lTimelyRate < 50) m -= 1;
-      if (lOutcomeRate >= 80) m += 1; else if (lOutcomeRate < 40) m -= 1;
-      if (lLearningRate >= 70) m += 1; else if (lLearningRate < 30) m -= 1;
+      if (meets(lTimelyRate, 90)) m += 1; else if (below(lTimelyRate, 50)) m -= 1;
+      if (meets(lOutcomeRate, 80)) m += 1; else if (below(lOutcomeRate, 40)) m -= 1;
+      if (meets(lLearningRate, 70)) m += 1; else if (below(lLearningRate, 30)) m -= 1;
       if (lOverdue === 0) m += 1; else if (lOverdue >= 3) m -= 2; else m -= 1;
     }
     score += Math.max(-4, Math.min(4, m));
@@ -421,9 +420,9 @@ export function computeHomeSafeguardingDepth(
   {
     let m = 0;
     if (safeguarding_supervisions.length > 0) {
-      if (ssCoverage >= 80) m += 1; else if (ssCoverage < 40) m -= 1;
+      if (meets(ssCoverage, 80)) m += 1; else if (below(ssCoverage, 40)) m -= 1;
       if ((ssAvgActComp ?? 0) >= 80) m += 1; else if ((ssAvgActComp ?? 0) < 40) m -= 1;
-      if (ssReflectiveRate >= 70) m += 1; else if (ssReflectiveRate < 30) m -= 1;
+      if (meets(ssReflectiveRate, 70)) m += 1; else if (below(ssReflectiveRate, 30)) m -= 1;
     } else {
       if (total_staff >= 3) m -= 2;
     }
@@ -434,8 +433,8 @@ export function computeHomeSafeguardingDepth(
   {
     let m = 0;
     if (safe_touch_protocols.length > 0) {
-      if (stCoverage >= 80) m += 1; else if (stCoverage < 40) m -= 1;
-      if (stConsentRate >= 90) m += 1; else if (stConsentRate < 50) m -= 1;
+      if (meets(stCoverage, 80)) m += 1; else if (below(stCoverage, 40)) m -= 1;
+      if (meets(stConsentRate, 90)) m += 1; else if (below(stConsentRate, 50)) m -= 1;
       if (stOverdue === 0) m += 1; else if (stOverdue >= 3) m -= 2; else m -= 1;
     } else {
       if (total_children >= 2) m -= 1;
@@ -447,9 +446,9 @@ export function computeHomeSafeguardingDepth(
   {
     let m = 0;
     if (ss90d.length > 0) {
-      if (ssFollowUpRate >= 90) m += 1; else if (ssFollowUpRate < 50) m -= 1;
-      if (ssSupportedRate >= 80) m += 1; else if (ssSupportedRate < 40) m -= 1;
-      if (ssPositiveRate <= 10) m += 1; else if (ssPositiveRate > 40) m -= 1;
+      if (meets(ssFollowUpRate, 90)) m += 1; else if (below(ssFollowUpRate, 50)) m -= 1;
+      if (meets(ssSupportedRate, 80)) m += 1; else if (below(ssSupportedRate, 40)) m -= 1;
+      if (ssPositiveRate! <= 10) m += 1; else if (ssPositiveRate! > 40) m -= 1;
     }
     // No screenings is neutral — not all homes need them
     score += Math.max(-3, Math.min(3, m));
@@ -459,9 +458,9 @@ export function computeHomeSafeguardingDepth(
   {
     let m = 0;
     const voiceSources: number[] = [];
-    if (body_maps.length > 0) voiceSources.push(bmChildRate);
-    if (disclosures.length > 0) voiceSources.push(dInformedRate);
-    if (safe_touch_protocols.length > 0) voiceSources.push(stVoiceRate);
+    if (body_maps.length > 0) voiceSources.push(bmChildRate!);
+    if (disclosures.length > 0) voiceSources.push(dInformedRate!);
+    if (safe_touch_protocols.length > 0) voiceSources.push(stVoiceRate!);
 
     if (voiceSources.length > 0) {
       const avg = Math.round(voiceSources.reduce((s, v) => s + v, 0) / voiceSources.length);
@@ -494,40 +493,40 @@ export function computeHomeSafeguardingDepth(
   let rank = 0;
 
   // Body map strengths/concerns
-  if (body_maps.length > 0 && bmManagerRate >= 90 && bmPhotoRate >= 80) {
+  if (body_maps.length > 0 && meets(bmManagerRate, 90) && meets(bmPhotoRate, 80)) {
     strengths.push(`Excellent body map documentation — ${bmManagerRate}% manager-reviewed with ${bmPhotoRate}% photographic evidence.`);
   }
-  if (body_maps.length > 0 && bmManagerRate < 50) {
+  if (body_maps.length > 0 && below(bmManagerRate, 50)) {
     concerns.push(`Low manager review rate for body maps — only ${bmManagerRate}%. All body maps must be reviewed by management.`);
     recommendations.push({ rank: ++rank, recommendation: "Ensure all body maps are reviewed by a manager within 24 hours of completion.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 12" });
   }
 
   // Disclosure strengths/concerns
-  if (disclosures.length > 0 && dRespRate >= 90 && dEscalRate >= 90) {
+  if (disclosures.length > 0 && meets(dRespRate, 90) && meets(dEscalRate, 90)) {
     strengths.push(`Strong disclosure handling — ${dRespRate}% responded within 1 hour with ${dEscalRate}% appropriately escalated.`);
   }
-  if (disclosures.length > 0 && dRespRate < 50) {
+  if (disclosures.length > 0 && below(dRespRate, 50)) {
     concerns.push(`Poor disclosure response time — only ${dRespRate}% responded within 1 hour. Immediate response is critical.`);
     recommendations.push({ rank: ++rank, recommendation: "Reinforce disclosure response procedures — all disclosures must be acted on within 1 hour.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 12" });
   }
-  if (disclosures.length > 0 && dEscalRate < 50) {
+  if (disclosures.length > 0 && below(dEscalRate, 50)) {
     concerns.push(`Only ${dEscalRate}% of disclosures appropriately escalated — disclosures indicating harm must be escalated to the DSL/MASH.`);
     recommendations.push({ rank: ++rank, recommendation: "Reinforce escalation thresholds — every disclosure indicating risk must be escalated to the designated safeguarding lead and, where appropriate, MASH/LADO.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 12" });
   }
 
   // Escalation strengths/concerns
-  if (escalations.length > 0 && eMultiRate >= 80 && eLearningRate >= 70) {
+  if (escalations.length > 0 && meets(eMultiRate, 80) && meets(eLearningRate, 70)) {
     strengths.push(`Effective escalation practice — ${eMultiRate}% multi-agency engagement with ${eLearningRate}% learning captured.`);
   }
-  if (escalations.length > 0 && eResolvedRate < 40) {
+  if (escalations.length > 0 && below(eResolvedRate, 40)) {
     concerns.push(`Low escalation resolution rate — only ${eResolvedRate}%. Escalations are not being resolved effectively.`);
   }
 
   // LADO strengths/concerns
-  if (lado_referrals.length > 0 && lTimelyRate >= 90 && lOverdue === 0) {
+  if (lado_referrals.length > 0 && meets(lTimelyRate, 90) && lOverdue === 0) {
     strengths.push(`LADO referrals are timely and well-tracked — ${lTimelyRate}% referred within 1 business day with no overdue reviews.`);
   }
-  if (lado_referrals.length > 0 && lTimelyRate < 50) {
+  if (lado_referrals.length > 0 && below(lTimelyRate, 50)) {
     concerns.push(`LADO referrals not timely — only ${lTimelyRate}% referred within 1 business day. This is a serious compliance risk.`);
     recommendations.push({ rank: ++rank, recommendation: "LADO referrals must be made within 1 business day of becoming aware of an allegation.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 13" });
   }
@@ -551,10 +550,10 @@ export function computeHomeSafeguardingDepth(
   if (safeguarding_depth_rating === "inadequate") {
     insights.push({ text: `Safeguarding depth is inadequate (${score}%). Significant gaps in safeguarding practice. This is a serious regulatory concern under CHR 2015 Reg 12/13.`, severity: "critical" });
   }
-  if (disclosures.length > 0 && dRespRate >= 90 && dWrittenRate >= 90) {
+  if (disclosures.length > 0 && meets(dRespRate, 90) && meets(dWrittenRate, 90)) {
     insights.push({ text: "Disclosure handling demonstrates exemplary practice — rapid response combined with thorough documentation supports child protection outcomes.", severity: "positive" });
   }
-  if (lado_referrals.length > 0 && lTimelyRate >= 90 && lLearningRate >= 70) {
+  if (lado_referrals.length > 0 && meets(lTimelyRate, 90) && meets(lLearningRate, 70)) {
     insights.push({ text: "LADO referral practice is strong — timely referrals combined with organisational learning demonstrate a culture of accountability.", severity: "positive" });
   }
 

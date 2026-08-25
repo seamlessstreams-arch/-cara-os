@@ -345,9 +345,9 @@ describe("insufficient data", () => {
       child_understanding_records: [],
       transparency_records: [],
     });
-    expect(r.equitable_distribution_rate).toBe(0);
-    expect(r.age_appropriate_rate).toBe(0);
-    expect(r.timely_payment_rate).toBe(0);
+    expect(r.equitable_distribution_rate).toBeNull();
+    expect(r.age_appropriate_rate).toBeNull();
+    expect(r.timely_payment_rate).toBeNull();
     // fab-0: null (no records)
     expect(r.child_understanding_rate).toBeNull();
     expect(r.transparency_rate).toBeNull();
@@ -458,9 +458,9 @@ describe("inadequate floor (all empty with children)", () => {
       child_understanding_records: [],
       transparency_records: [],
     });
-    expect(r.equitable_distribution_rate).toBe(0);
-    expect(r.age_appropriate_rate).toBe(0);
-    expect(r.timely_payment_rate).toBe(0);
+    expect(r.equitable_distribution_rate).toBeNull();
+    expect(r.age_appropriate_rate).toBeNull();
+    expect(r.timely_payment_rate).toBeNull();
     // fab-0: null (no records)
     expect(r.child_understanding_rate).toBeNull();
     expect(r.transparency_rate).toBeNull();
@@ -1095,7 +1095,7 @@ describe("penalty 1: equitable distribution rate < 50", () => {
     const r = computePocketMoneyDistributionEquity(
       baseInput({ distribution_records: [] }),
     );
-    expect(r.equitable_distribution_rate).toBe(0);
+    expect(r.equitable_distribution_rate).toBeNull();
     // No concern about low distribution rate (there's a different concern about missing records)
     expect(r.concerns.some((c) => c.includes("equitable"))).toBe(false);
   });
@@ -1124,7 +1124,7 @@ describe("penalty 2: age appropriate rate < 50", () => {
     const r = computePocketMoneyDistributionEquity(
       baseInput({ age_appropriateness_records: [] }),
     );
-    expect(r.age_appropriate_rate).toBe(0);
+    expect(r.age_appropriate_rate).toBeNull();
   });
 });
 
@@ -1151,7 +1151,7 @@ describe("penalty 3: timely payment rate < 50", () => {
     const r = computePocketMoneyDistributionEquity(
       baseInput({ payment_timeliness_records: [] }),
     );
-    expect(r.timely_payment_rate).toBe(0);
+    expect(r.timely_payment_rate).toBeNull();
   });
 });
 
@@ -2804,7 +2804,7 @@ describe("edge cases", () => {
     const r = computePocketMoneyDistributionEquity(
       baseInput({ distribution_records: [] }),
     );
-    expect(r.equitable_distribution_rate).toBe(0);
+    expect(r.equitable_distribution_rate).toBeNull();
     expect(r.equity_rating).not.toBe("insufficient_data");
   });
 
@@ -2890,9 +2890,9 @@ describe("edge cases", () => {
         transparency_records: [makeTransparency("tr1", "child_1")],
       }),
     );
-    expect(r.equitable_distribution_rate).toBe(0);
-    expect(r.age_appropriate_rate).toBe(0);
-    expect(r.timely_payment_rate).toBe(0);
+    expect(r.equitable_distribution_rate).toBeNull();
+    expect(r.age_appropriate_rate).toBeNull();
+    expect(r.timely_payment_rate).toBeNull();
     // fab-0: null (no understanding records)
     expect(r.child_understanding_rate).toBeNull();
   });

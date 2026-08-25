@@ -70,24 +70,24 @@ export function HomeRestorativePracticeConflictResolutionIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.restorative_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.conference_completion_rate >= 90 ? "bg-green-50" : d.conference_completion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.conference_completion_rate >= 90 ? "text-[--cs-success]" : d.conference_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.conference_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.conference_completion_rate, 90) ? "bg-green-50" : meets(d.conference_completion_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.conference_completion_rate, 90) ? "text-[--cs-success]" : meets(d.conference_completion_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.conference_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Conf.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.conflict_resolution_rate >= 90 ? "bg-green-50" : d.conflict_resolution_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.conflict_resolution_rate >= 90 ? "text-[--cs-success]" : d.conflict_resolution_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.conflict_resolution_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.conflict_resolution_rate, 90) ? "bg-green-50" : meets(d.conflict_resolution_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.conflict_resolution_rate, 90) ? "text-[--cs-success]" : meets(d.conflict_resolution_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.conflict_resolution_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Resolv.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.relationship_repair_rate >= 90 ? "bg-green-50" : d.relationship_repair_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.relationship_repair_rate >= 90 ? "text-[--cs-success]" : d.relationship_repair_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.relationship_repair_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.relationship_repair_rate, 90) ? "bg-green-50" : meets(d.relationship_repair_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.relationship_repair_rate, 90) ? "text-[--cs-success]" : meets(d.relationship_repair_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.relationship_repair_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Repair</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.mediation_quality_rate, 90) ? "bg-green-50" : meets(d.mediation_quality_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
               <p className={cn("text-sm font-bold tabular-nums", meets(d.mediation_quality_rate, 90) ? "text-[--cs-success]" : meets(d.mediation_quality_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.mediation_quality_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Mediat.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_voice_rate >= 90 ? "bg-green-50" : d.child_voice_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_voice_rate >= 90 ? "text-[--cs-success]" : d.child_voice_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_voice_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_voice_rate, 90) ? "bg-green-50" : meets(d.child_voice_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_voice_rate, 90) ? "text-[--cs-success]" : meets(d.child_voice_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_voice_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Voice</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.satisfaction_rate, 90) ? "bg-green-50" : meets(d.satisfaction_rate, 70) ? "bg-amber-50" : "bg-red-50")}>

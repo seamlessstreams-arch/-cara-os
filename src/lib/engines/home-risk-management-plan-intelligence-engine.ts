@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME RISK MANAGEMENT PLAN INTELLIGENCE ENGINE
 // Pure deterministic engine: risk plan coverage, risk level governance,
@@ -80,10 +81,6 @@ export interface RiskManagementPlanResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -126,31 +123,31 @@ export function computeRiskManagementPlan(
   // ── Metrics ────────────────────────────────────────────────────────────
   const total = plans.length;
   const uniqueChildren = new Set(plans.map(p => p.child_id)).size;
-  const childrenWithPlanRate = pct(uniqueChildren, total_children);
+  const childrenWithPlanRate = rate(uniqueChildren, total_children);
 
   const activePlans = plans.filter(p => p.status === "active" || p.status === "under_review");
-  const activePlanRate = pct(activePlans.length, total);
+  const activePlanRate = rate(activePlans.length, total);
 
   // Trigger identification: plans with triggers AND warning signals
   const withTriggerIdentification = plans.filter(p => p.trigger_count > 0 && p.warning_signal_count > 0);
-  const triggerIdentificationRate = pct(withTriggerIdentification.length, total);
+  const triggerIdentificationRate = rate(withTriggerIdentification.length, total);
 
   // Strategy effectiveness
   const totalStrategies = plans.reduce((s, p) => s + p.strategy_count, 0);
   const totalEffective = plans.reduce((s, p) => s + p.effective_strategy_count, 0);
-  const strategyEffectivenessRate = pct(totalEffective, totalStrategies);
+  const strategyEffectivenessRate = rate(totalEffective, totalStrategies);
 
   // Emergency plans
   const withEmergencyPlan = plans.filter(p => p.has_emergency_plan).length;
-  const emergencyPlanRate = pct(withEmergencyPlan, total);
+  const emergencyPlanRate = rate(withEmergencyPlan, total);
 
   // Child voice
   const withChildVoice = plans.filter(p => p.has_child_views).length;
-  const childVoiceRate = pct(withChildVoice, total);
+  const childVoiceRate = rate(withChildVoice, total);
 
   // Approval governance
   const withApproval = plans.filter(p => p.has_approved_by).length;
-  const approvalRate = pct(withApproval, total);
+  const approvalRate = rate(withApproval, total);
 
   // Multi-agency input
   const withMultiAgency = plans.filter(p => p.multi_agency_input_count > 0).length;
@@ -185,9 +182,9 @@ export function computeRiskManagementPlan(
   if (total === 0) {
     score -= 3;
   } else {
-    if (triggerIdentificationRate >= 80) score += 6;
-    else if (triggerIdentificationRate >= 50) score += 2;
-    else if (triggerIdentificationRate < 25) score -= 5;
+    if (meets(triggerIdentificationRate, 80)) score += 6;
+    else if (meets(triggerIdentificationRate, 50)) score += 2;
+    else if (below(triggerIdentificationRate, 25)) score -= 5;
   }
 
   // Modifier 2: Strategy effectiveness
@@ -195,48 +192,48 @@ export function computeRiskManagementPlan(
     score -= 1;
   } else {
     if (totalStrategies === 0) score -= 1;
-    else if (strategyEffectivenessRate >= 70) score += 5;
-    else if (strategyEffectivenessRate >= 40) score += 2;
-    else if (strategyEffectivenessRate < 20) score -= 5;
+    else if (meets(strategyEffectivenessRate, 70)) score += 5;
+    else if (meets(strategyEffectivenessRate, 40)) score += 2;
+    else if (below(strategyEffectivenessRate, 20)) score -= 5;
   }
 
   // Modifier 3: Emergency planning and escalation procedures
   if (total === 0) {
     score -= 1;
   } else {
-    const escalationRate = pct(withEscalationProcedure, total);
-    if (emergencyPlanRate >= 80 && escalationRate >= 75) score += 5;
-    else if (emergencyPlanRate >= 50 || escalationRate >= 50) score += 2;
-    else if (emergencyPlanRate < 25 && escalationRate < 25) score -= 4;
+    const escalationRate = rate(withEscalationProcedure, total);
+    if (meets(emergencyPlanRate, 80) && meets(escalationRate, 75)) score += 5;
+    else if (meets(emergencyPlanRate, 50) || meets(escalationRate, 50)) score += 2;
+    else if (below(emergencyPlanRate, 25) && below(escalationRate, 25)) score -= 4;
   }
 
   // Modifier 4: Child voice
   if (total === 0) {
     // no adjustment
   } else {
-    if (childVoiceRate >= 80) score += 5;
-    else if (childVoiceRate >= 50) score += 2;
-    else if (childVoiceRate < 20) score -= 4;
+    if (meets(childVoiceRate, 80)) score += 5;
+    else if (meets(childVoiceRate, 50)) score += 2;
+    else if (below(childVoiceRate, 20)) score -= 4;
   }
 
   // Modifier 5: Approval governance
   if (total === 0) {
     score -= 1;
   } else {
-    if (approvalRate >= 85) score += 4;
-    else if (approvalRate >= 50) score += 1;
-    else if (approvalRate < 25) score -= 4;
+    if (meets(approvalRate, 85)) score += 4;
+    else if (meets(approvalRate, 50)) score += 1;
+    else if (below(approvalRate, 25)) score -= 4;
   }
 
   // Modifier 6: Multi-agency input and protective factors
   if (total === 0) {
     score -= 2;
   } else {
-    const multiAgencyRate = pct(withMultiAgency, total);
-    const protectiveRate = pct(withProtectiveFactors, total);
-    if (multiAgencyRate >= 70 && protectiveRate >= 70) score += 5;
-    else if (multiAgencyRate >= 40 || protectiveRate >= 40) score += 2;
-    else if (multiAgencyRate < 20 && protectiveRate < 20) score -= 3;
+    const multiAgencyRate = rate(withMultiAgency, total);
+    const protectiveRate = rate(withProtectiveFactors, total);
+    if (meets(multiAgencyRate, 70) && meets(protectiveRate, 70)) score += 5;
+    else if (meets(multiAgencyRate, 40) || meets(protectiveRate, 40)) score += 2;
+    else if (below(multiAgencyRate, 20) && below(protectiveRate, 20)) score -= 3;
   }
 
   score = clamp(score, 0, 100);
@@ -247,15 +244,15 @@ export function computeRiskManagementPlan(
 
   // ── Strengths ──────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (triggerIdentificationRate >= 80 && total > 0)
+  if (meets(triggerIdentificationRate, 80) && total > 0)
     strengths.push("Triggers and warning signals are thoroughly identified — staff can anticipate and prevent risk escalation");
-  if (strategyEffectivenessRate >= 70 && totalStrategies > 0)
+  if (meets(strategyEffectivenessRate, 70) && totalStrategies > 0)
     strengths.push("Management strategies are demonstrably effective — evidence-based approaches are reducing risk");
-  if (emergencyPlanRate >= 80 && total > 0)
+  if (meets(emergencyPlanRate, 80) && total > 0)
     strengths.push("Emergency plans are in place for high-risk scenarios — the home is prepared to respond to crisis situations");
-  if (childVoiceRate >= 80 && total > 0)
+  if (meets(childVoiceRate, 80) && total > 0)
     strengths.push("Children's views inform risk management — their perspective shapes how risks are understood and managed");
-  if (approvalRate >= 85 && total > 0)
+  if (meets(approvalRate, 85) && total > 0)
     strengths.push("Risk plans are formally approved — governance and accountability structures are strong");
   if (deEscalatedRisks.length > 0 && total > 0)
     strengths.push("Risk de-escalation is evident — management strategies are successfully reducing risk levels over time");
@@ -264,15 +261,15 @@ export function computeRiskManagementPlan(
   const concerns: string[] = [];
   if (total === 0 && total_children > 0)
     concerns.push("No risk management plans — the home cannot demonstrate systematic risk identification and mitigation");
-  if (triggerIdentificationRate < 25 && total > 0)
+  if (below(triggerIdentificationRate, 25) && total > 0)
     concerns.push("Triggers and warning signals are poorly identified — staff cannot anticipate risk escalation");
-  if (strategyEffectivenessRate < 20 && totalStrategies > 0)
+  if (below(strategyEffectivenessRate, 20) && totalStrategies > 0)
     concerns.push("Management strategies are largely ineffective — current approaches are not reducing risk");
-  if (emergencyPlanRate < 25 && total > 0)
+  if (below(emergencyPlanRate, 25) && total > 0)
     concerns.push("Emergency plans are absent from most risk plans — the home is unprepared for crisis scenarios");
-  if (childVoiceRate < 20 && total > 0)
+  if (below(childVoiceRate, 20) && total > 0)
     concerns.push("Children's views are absent from risk planning — risks are being managed without the child's input");
-  if (approvalRate < 25 && total > 0)
+  if (below(approvalRate, 25) && total > 0)
     concerns.push("Risk plans lack formal approval — governance oversight is insufficient");
   if (escalatedRisks.length > 3)
     concerns.push("Multiple risks have escalated — current management strategies may be failing to contain identified risks");
@@ -283,22 +280,22 @@ export function computeRiskManagementPlan(
 
   if (total === 0 && total_children > 0)
     recommendations.push({ rank: ++rank, recommendation: "Conduct risk assessments for all children and create formal risk management plans for identified risks", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 12" });
-  if (triggerIdentificationRate < 50 && total > 0)
+  if (below(triggerIdentificationRate, 50) && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Complete trigger analysis for all risk plans — identify triggers, likelihood and warning signals", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 13" });
-  if (emergencyPlanRate < 50 && total > 0)
+  if (below(emergencyPlanRate, 50) && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Develop emergency response plans for all high-risk scenarios including escalation procedures", urgency: "soon", regulatory_ref: "CHR 2015 Reg 12" });
-  if (childVoiceRate < 50 && total > 0)
+  if (below(childVoiceRate, 50) && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Ensure children's views about their own risks are captured and used to shape management strategies", urgency: "soon", regulatory_ref: "SCCIF Helped & Protected" });
-  if (approvalRate < 50 && total > 0)
+  if (below(approvalRate, 50) && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Establish formal approval processes for all risk management plans to ensure governance oversight", urgency: "soon", regulatory_ref: "SCCIF Leaders" });
-  if (pct(withMultiAgency, total) < 40 && total > 0)
+  if (total > 0 && below(rate(withMultiAgency, total), 40))
     recommendations.push({ rank: ++rank, recommendation: "Seek multi-agency input for risk plans — specialist perspectives strengthen risk understanding and management", urgency: "planned", regulatory_ref: "CHR 2015 Reg 12" });
 
   // ── Insights ───────────────────────────────────────────────────────────
   const insights: RiskManagementPlanResult["insights"] = [];
   if (total === 0 && total_children > 0)
     insights.push({ text: "No risk management plans means Ofsted cannot verify the home has systematic risk governance", severity: "critical" });
-  if (total > 0 && triggerIdentificationRate >= 80 && strategyEffectivenessRate >= 70)
+  if (total > 0 && meets(triggerIdentificationRate, 80) && meets(strategyEffectivenessRate, 70))
     insights.push({ text: "Thorough trigger identification combined with effective strategies demonstrates proactive, evidence-based risk management", severity: "positive" });
   if (escalatedRisks.length > 3)
     insights.push({ text: "Escalating risk levels across multiple plans suggest systemic issues requiring strategic review of risk management approach", severity: "warning" });
@@ -306,7 +303,7 @@ export function computeRiskManagementPlan(
     insights.push({ text: "Multiple risk de-escalations demonstrate that management strategies are successfully reducing risk over time", severity: "positive" });
   if (uniqueCategories >= 5 && total > 0)
     insights.push({ text: "Diverse risk categories show the home takes a comprehensive approach to identifying the full spectrum of risks children face", severity: "positive" });
-  if (highRiskPlans.length > 0 && pct(highRiskPlans.filter(p => p.has_emergency_plan).length, highRiskPlans.length) < 50)
+  if (highRiskPlans.length > 0 && below(rate(highRiskPlans.filter(p => p.has_emergency_plan).length, highRiskPlans.length), 50))
     insights.push({ text: "High-risk plans without emergency plans leave the home exposed — crisis preparedness for the highest risks is essential", severity: "warning" });
 
   // ── Headline ───────────────────────────────────────────────────────────

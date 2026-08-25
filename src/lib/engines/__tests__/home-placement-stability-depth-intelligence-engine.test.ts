@@ -1807,7 +1807,7 @@ describe("Home Placement Stability Depth Intelligence Engine", () => {
         total_children: 0,
       });
       // coverage = pct(1, 0) = 0% < 40 → -4
-      expect(result.disruption_plan_profile.child_coverage).toBe(0);
+      expect(result.disruption_plan_profile.child_coverage).toBeNull();
     });
 
     it("handles large dataset", () => {
@@ -1944,7 +1944,7 @@ describe("Home Placement Stability Depth Intelligence Engine", () => {
         matching_referrals: [],
         total_children: 0,
       });
-      expect(result.disruption_plan_profile.child_coverage).toBe(0);
+      expect(result.disruption_plan_profile.child_coverage).toBeNull();
     });
   });
 });

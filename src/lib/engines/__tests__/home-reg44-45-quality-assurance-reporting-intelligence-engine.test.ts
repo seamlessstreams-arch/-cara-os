@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { below, meets } from "@/lib/metrics/rate";
 import {
   computeReg4445QualityAssuranceReporting,
   type Reg4445QualityAssuranceReportingInput,
@@ -823,7 +824,7 @@ describe("computeReg4445QualityAssuranceReporting", () => {
       expect(r.reg44_quality_avg).toBe(4);
     });
 
-    it("reg44_quality_avg is 0 when no submitted reports", () => {
+    it("reg44_quality_avg is null when no submitted reports", () => {
       const r44 = [makeReg44({ id: "r44_0", report_submitted: false })];
       const r = computeReg4445QualityAssuranceReporting(baseInput({ reg44_report_records: r44 }));
       expect(r.reg44_quality_avg).toBeNull();
@@ -853,7 +854,7 @@ describe("computeReg4445QualityAssuranceReporting", () => {
       expect(r.reg45_quality_avg).toBe(4);
     });
 
-    it("reg45_quality_avg is 0 when no reviews", () => {
+    it("reg45_quality_avg is null when no reviews", () => {
       const r = computeReg4445QualityAssuranceReporting(baseInput({ reg45_review_records: [] }));
       expect(r.reg45_quality_avg).toBeNull();
     });
@@ -907,9 +908,9 @@ describe("computeReg4445QualityAssuranceReporting", () => {
       expect(r.quality_improvement_rate).toBe(50);
     });
 
-    it("rate is 0 with no cycles", () => {
+    it("rate is null with no cycles", () => {
       const r = computeReg4445QualityAssuranceReporting(baseInput({ quality_improvement_records: [] }));
-      expect(r.quality_improvement_rate).toBe(0);
+      expect(r.quality_improvement_rate).toBeNull();
     });
   });
 
@@ -924,7 +925,7 @@ describe("computeReg4445QualityAssuranceReporting", () => {
       expect(r.notification_compliance_rate).toBe(100);
     });
 
-    it("notification_compliance_rate is 0 when no notifications", () => {
+    it("notification_compliance_rate is null when no notifications", () => {
       const r = computeReg4445QualityAssuranceReporting(baseInput({ notification_records: [] }));
       expect(r.notification_compliance_rate).toBeNull();
     });
@@ -946,9 +947,9 @@ describe("computeReg4445QualityAssuranceReporting", () => {
   // ═══════════════════════════════════════════════════════════════════════
 
   describe("stakeholder engagement", () => {
-    it("stakeholder_engagement_rate is 0 when no reg45 reviews", () => {
+    it("stakeholder_engagement_rate is null when no reg45 reviews", () => {
       const r = computeReg4445QualityAssuranceReporting(baseInput({ reg45_review_records: [] }));
-      expect(r.stakeholder_engagement_rate).toBe(0);
+      expect(r.stakeholder_engagement_rate).toBeNull();
     });
 
     it("calculates composite stakeholder engagement", () => {
@@ -1941,7 +1942,7 @@ describe("computeReg4445QualityAssuranceReporting", () => {
         makeAction({ id: `ap_${i}`, status: "cancelled", actual_completion_date: null }),
       );
       const r = computeReg4445QualityAssuranceReporting(baseInput({ action_plan_records: actions }));
-      expect(r.action_plan_rate).toBe(0);
+      expect(r.action_plan_rate).toBeNull();
       // No penalty because actionable = 0
     });
 
@@ -2007,7 +2008,7 @@ describe("computeReg4445QualityAssuranceReporting", () => {
         parents_carers_consulted: 0, professionals_consulted: 0,
       })];
       const r = computeReg4445QualityAssuranceReporting(baseInput({ reg45_review_records: r45 }));
-      if (r.stakeholder_engagement_rate >= 40 && r.stakeholder_engagement_rate < 60) {
+      if (meets(r.stakeholder_engagement_rate, 40) && below(r.stakeholder_engagement_rate, 60)) {
         expect(r.concerns.some(c => c.includes("Stakeholder engagement"))).toBe(true);
       }
     });

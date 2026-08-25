@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // CARA -- HOME RECORD KEEPING & DOCUMENTATION QUALITY INTELLIGENCE ENGINE
 // Tracks the quality, completeness, and timeliness of care records -- daily logs,
@@ -151,12 +152,18 @@ export interface RecordKeepingResult {
   documentation_rating: RecordKeepingRating;
   documentation_score: number;
   headline: string;
-  daily_log_completion_rate: number;
-  care_plan_currency_rate: number;
-  risk_assessment_review_rate: number;
-  incident_report_timeliness_rate: number;
-  regulatory_compliance_rate: number;
-  record_accuracy_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  daily_log_completion_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  care_plan_currency_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  risk_assessment_review_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  incident_report_timeliness_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  regulatory_compliance_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  record_accuracy_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: RecordKeepingRecommendation[];
@@ -164,10 +171,6 @@ export interface RecordKeepingResult {
 }
 
 // -- Helpers -------------------------------------------------------------------
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -191,12 +194,12 @@ function emptyResult(
     documentation_rating: rating,
     documentation_score: score,
     headline,
-    daily_log_completion_rate: 0,
-    care_plan_currency_rate: 0,
-    risk_assessment_review_rate: 0,
-    incident_report_timeliness_rate: 0,
-    regulatory_compliance_rate: 0,
-    record_accuracy_rate: 0,
+    daily_log_completion_rate: null,
+    care_plan_currency_rate: null,
+    risk_assessment_review_rate: null,
+    incident_report_timeliness_rate: null,
+    regulatory_compliance_rate: null,
+    record_accuracy_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -283,7 +286,7 @@ export function computeRecordKeepingDocumentationQuality(
   const logsCompletedOnTime = daily_log_records.filter(
     (l) => l.completed_on_time,
   ).length;
-  const dailyLogCompletionRate = pct(logsCompletedOnTime, totalLogs);
+  const dailyLogCompletionRate = rate(logsCompletedOnTime, totalLogs);
 
   const comprehensiveLogs = daily_log_records.filter(
     (l) =>
@@ -293,17 +296,17 @@ export function computeRecordKeepingDocumentationQuality(
       l.covers_interactions &&
       l.covers_meals,
   ).length;
-  const comprehensiveLogRate = pct(comprehensiveLogs, totalLogs);
+  const comprehensiveLogRate = rate(comprehensiveLogs, totalLogs);
 
   const logsManagerReviewed = daily_log_records.filter(
     (l) => l.manager_reviewed,
   ).length;
-  const managerReviewRate = pct(logsManagerReviewed, totalLogs);
+  const managerReviewRate = rate(logsManagerReviewed, totalLogs);
 
   const logsSigned = daily_log_records.filter(
     (l) => l.signed_by_author,
   ).length;
-  const logSigningRate = pct(logsSigned, totalLogs);
+  const logSigningRate = rate(logsSigned, totalLogs);
 
   const logsFactualObjective = daily_log_records.filter(
     (l) => l.factual_and_objective,
@@ -314,7 +317,7 @@ export function computeRecordKeepingDocumentationQuality(
     daily_log_records.map((l) => l.child_id),
   ).size;
   const logChildCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenWithLogs, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenWithLogs, total_children) : 0;
 
   // --- 2. Care Plan Currency Rate ---------------------------------------------
   // Measures: proportion of care plans that are current and not overdue for review
@@ -328,14 +331,14 @@ export function computeRecordKeepingDocumentationQuality(
   ).length;
   const carePlanCurrencyRate =
     currentCarePlans > 0
-      ? pct(currentCarePlans - overdueCarePlanReviews, currentCarePlans)
+      ? rate(currentCarePlans - overdueCarePlanReviews, currentCarePlans)
       : 0;
 
   // Care plan quality sub-metrics
   const carePlansChildParticipated = care_plan_records.filter(
     (cp) => cp.child_participated && cp.is_current,
   ).length;
-  const childParticipationRate = pct(carePlansChildParticipated, currentCarePlans);
+  const childParticipationRate = rate(carePlansChildParticipated, currentCarePlans);
 
   // Objectives met rate across current care plans
   const totalObjectives = care_plan_records
@@ -344,14 +347,14 @@ export function computeRecordKeepingDocumentationQuality(
   const totalObjectivesMet = care_plan_records
     .filter((cp) => cp.is_current)
     .reduce((sum, cp) => sum + cp.objectives_met, 0);
-  const objectivesMetRate = pct(totalObjectivesMet, totalObjectives);
+  const objectivesMetRate = rate(totalObjectivesMet, totalObjectives);
 
   // Unique children with current care plans
   const uniqueChildrenWithPlans = new Set(
     care_plan_records.filter((cp) => cp.is_current).map((cp) => cp.child_id),
   ).size;
   const carePlanChildCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenWithPlans, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenWithPlans, total_children) : 0;
 
   // --- 3. Risk Assessment Review Rate -----------------------------------------
   // Measures: proportion of current risk assessments with up-to-date reviews
@@ -365,24 +368,24 @@ export function computeRecordKeepingDocumentationQuality(
   ).length;
   const riskAssessmentReviewRate =
     currentRiskAssessments > 0
-      ? pct(currentRiskAssessments - overdueRiskReviews, currentRiskAssessments)
+      ? rate(currentRiskAssessments - overdueRiskReviews, currentRiskAssessments)
       : 0;
 
   // Risk assessment quality sub-metrics
   const riskMultiAgency = risk_assessment_records.filter(
     (ra) => ra.multi_agency_input && ra.is_current,
   ).length;
-  const riskMultiAgencyRate = pct(riskMultiAgency, currentRiskAssessments);
+  const riskMultiAgencyRate = rate(riskMultiAgency, currentRiskAssessments);
 
   const riskDynamicFactors = risk_assessment_records.filter(
     (ra) => ra.dynamic_risk_factors_recorded && ra.is_current,
   ).length;
-  const dynamicFactorsRate = pct(riskDynamicFactors, currentRiskAssessments);
+  const dynamicFactorsRate = rate(riskDynamicFactors, currentRiskAssessments);
 
   const riskLinkedToCarePlan = risk_assessment_records.filter(
     (ra) => ra.linked_to_care_plan && ra.is_current,
   ).length;
-  const linkedToCarePlanRate = pct(riskLinkedToCarePlan, currentRiskAssessments);
+  const linkedToCarePlanRate = rate(riskLinkedToCarePlan, currentRiskAssessments);
 
   // Mitigation implementation rate
   const totalMitigations = risk_assessment_records
@@ -391,7 +394,7 @@ export function computeRecordKeepingDocumentationQuality(
   const mitigationsImplemented = risk_assessment_records
     .filter((ra) => ra.is_current)
     .reduce((sum, ra) => sum + ra.mitigations_implemented, 0);
-  const mitigationImplementationRate = pct(mitigationsImplemented, totalMitigations);
+  const mitigationImplementationRate = rate(mitigationsImplemented, totalMitigations);
 
   const highRiskOverdue = risk_assessment_records.filter(
     (ra) =>
@@ -405,7 +408,7 @@ export function computeRecordKeepingDocumentationQuality(
     risk_assessment_records.filter((ra) => ra.is_current).map((ra) => ra.child_id),
   ).size;
   const riskAssessmentChildCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenWithRiskAssessments, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenWithRiskAssessments, total_children) : 0;
 
   // --- 4. Incident Report Timeliness Rate -------------------------------------
   // Measures: proportion of incident reports completed within 24 hours
@@ -414,7 +417,7 @@ export function computeRecordKeepingDocumentationQuality(
   const incidentsCompletedWithin24h = incident_report_records.filter(
     (ir) => ir.completed_within_24h,
   ).length;
-  const incidentReportTimelinessRate = pct(incidentsCompletedWithin24h, totalIncidents);
+  const incidentReportTimelinessRate = rate(incidentsCompletedWithin24h, totalIncidents);
 
   // Incident report quality sub-metrics
   const incidentsManagerSignedOff = incident_report_records.filter(
@@ -428,7 +431,7 @@ export function computeRecordKeepingDocumentationQuality(
   const ofstedNotified = incident_report_records.filter(
     (ir) => ir.ofsted_notification_required && ir.ofsted_notified,
   ).length;
-  const ofstedNotificationRate = pct(ofstedNotified, ofstedNotificationRequired);
+  const ofstedNotificationRate = rate(ofstedNotified, ofstedNotificationRequired);
 
   // Local authority notification compliance
   const laNotificationRequired = incident_report_records.filter(
@@ -437,7 +440,7 @@ export function computeRecordKeepingDocumentationQuality(
   const laNotified = incident_report_records.filter(
     (ir) => ir.local_authority_notification_required && ir.local_authority_notified,
   ).length;
-  const laNotificationRate = pct(laNotified, laNotificationRequired);
+  const laNotificationRate = rate(laNotified, laNotificationRequired);
 
   // Follow-up action completion
   const totalFollowUps = incident_report_records.reduce(
@@ -448,13 +451,13 @@ export function computeRecordKeepingDocumentationQuality(
     (sum, ir) => sum + ir.follow_up_actions_completed,
     0,
   );
-  const followUpCompletionRate = pct(completedFollowUps, totalFollowUps);
+  const followUpCompletionRate = rate(completedFollowUps, totalFollowUps);
 
   // Lessons learned
   const incidentsWithLessonsLearned = incident_report_records.filter(
     (ir) => ir.lessons_learned_recorded,
   ).length;
-  const lessonsLearnedRate = pct(incidentsWithLessonsLearned, totalIncidents);
+  const lessonsLearnedRate = rate(incidentsWithLessonsLearned, totalIncidents);
 
   const criticalIncidentsLateReported = incident_report_records.filter(
     (ir) =>
@@ -476,13 +479,13 @@ export function computeRecordKeepingDocumentationQuality(
     (rd) => rd.meets_statutory_requirements && rd.is_current,
   ).length;
   const regulatoryComplianceRate =
-    totalRegDocs > 0 ? pct(meetsStatutoryReqs, totalRegDocs) : 0;
+    totalRegDocs > 0 ? rate(meetsStatutoryReqs, totalRegDocs) : 0;
 
   // Regulatory document quality sub-metrics
   const regDocsManagerReviewed = regulatory_document_records.filter(
     (rd) => rd.reviewed_by_manager && rd.is_current,
   ).length;
-  const regDocManagerReviewRate = pct(regDocsManagerReviewed, currentRegDocs);
+  const regDocManagerReviewRate = rate(regDocsManagerReviewed, currentRegDocs);
 
   // Stale documents (not updated beyond their update frequency)
   const staleRegDocs = regulatory_document_records.filter(
@@ -507,7 +510,7 @@ export function computeRecordKeepingDocumentationQuality(
     totalLogs +   // manager reviewed
     totalIncidents + // manager signed off
     currentRegDocs;  // manager reviewed
-  const recordAccuracyRate = pct(accuracyNumerator, accuracyDenominator);
+  const recordAccuracyRate = rate(accuracyNumerator, accuracyDenominator);
 
   // ============================================================================
   // SCORING: base 52, max bonuses = +28, total potential = 80 for outstanding
@@ -516,49 +519,49 @@ export function computeRecordKeepingDocumentationQuality(
   let score = 52;
 
   // --- Bonus 1: dailyLogCompletionRate (>=95: +4, >=80: +2) ---
-  if (dailyLogCompletionRate >= 95) score += 4;
-  else if (dailyLogCompletionRate >= 80) score += 2;
+  if (meets(dailyLogCompletionRate, 95)) score += 4;
+  else if (meets(dailyLogCompletionRate, 80)) score += 2;
 
   // --- Bonus 2: carePlanCurrencyRate (>=95: +4, >=80: +2) ---
-  if (carePlanCurrencyRate >= 95) score += 4;
-  else if (carePlanCurrencyRate >= 80) score += 2;
+  if (meets(carePlanCurrencyRate, 95)) score += 4;
+  else if (meets(carePlanCurrencyRate, 80)) score += 2;
 
   // --- Bonus 3: riskAssessmentReviewRate (>=95: +3, >=80: +1) ---
-  if (riskAssessmentReviewRate >= 95) score += 3;
-  else if (riskAssessmentReviewRate >= 80) score += 1;
+  if (meets(riskAssessmentReviewRate, 95)) score += 3;
+  else if (meets(riskAssessmentReviewRate, 80)) score += 1;
 
   // --- Bonus 4: incidentReportTimelinessRate (>=95: +3, >=80: +1) ---
-  if (incidentReportTimelinessRate >= 95) score += 3;
-  else if (incidentReportTimelinessRate >= 80) score += 1;
+  if (meets(incidentReportTimelinessRate, 95)) score += 3;
+  else if (meets(incidentReportTimelinessRate, 80)) score += 1;
 
   // --- Bonus 5: regulatoryComplianceRate (>=95: +4, >=80: +2) ---
-  if (regulatoryComplianceRate >= 95) score += 4;
-  else if (regulatoryComplianceRate >= 80) score += 2;
+  if (meets(regulatoryComplianceRate, 95)) score += 4;
+  else if (meets(regulatoryComplianceRate, 80)) score += 2;
 
   // --- Bonus 6: recordAccuracyRate (>=90: +3, >=75: +1) ---
-  if (recordAccuracyRate >= 90) score += 3;
-  else if (recordAccuracyRate >= 75) score += 1;
+  if (meets(recordAccuracyRate, 90)) score += 3;
+  else if (meets(recordAccuracyRate, 75)) score += 1;
 
   // --- Bonus 7: comprehensiveLogRate (>=90: +3, >=70: +1) ---
-  if (comprehensiveLogRate >= 90) score += 3;
-  else if (comprehensiveLogRate >= 70) score += 1;
+  if (meets(comprehensiveLogRate, 90)) score += 3;
+  else if (meets(comprehensiveLogRate, 70)) score += 1;
 
   // --- Bonus 8: ofstedNotificationRate + laNotificationRate (both >=100: +2, both >=80: +1) ---
   if (
-    (ofstedNotificationRate >= 100 || ofstedNotificationRequired === 0) &&
-    (laNotificationRate >= 100 || laNotificationRequired === 0)
+    (meets(ofstedNotificationRate, 100) || ofstedNotificationRequired === 0) &&
+    (meets(laNotificationRate, 100) || laNotificationRequired === 0)
   ) {
     score += 2;
   } else if (
-    (ofstedNotificationRate >= 80 || ofstedNotificationRequired === 0) &&
-    (laNotificationRate >= 80 || laNotificationRequired === 0)
+    (meets(ofstedNotificationRate, 80) || ofstedNotificationRequired === 0) &&
+    (meets(laNotificationRate, 80) || laNotificationRequired === 0)
   ) {
     score += 1;
   }
 
   // --- Bonus 9: mitigationImplementationRate (>=95: +2, >=80: +1) ---
-  if (mitigationImplementationRate >= 95) score += 2;
-  else if (mitigationImplementationRate >= 80) score += 1;
+  if (meets(mitigationImplementationRate, 95)) score += 2;
+  else if (meets(mitigationImplementationRate, 80)) score += 1;
 
   // Total max bonuses: 4+4+3+3+4+3+3+2+2 = 28 => 52+28 = 80
 
@@ -567,16 +570,16 @@ export function computeRecordKeepingDocumentationQuality(
   // ============================================================================
 
   // Penalty 1: dailyLogCompletionRate < 50 -> -5
-  if (dailyLogCompletionRate < 50 && totalLogs > 0) score -= 5;
+  if (below(dailyLogCompletionRate, 50) && totalLogs > 0) score -= 5;
 
   // Penalty 2: carePlanCurrencyRate < 50 -> -6
-  if (carePlanCurrencyRate < 50 && currentCarePlans > 0) score -= 6;
+  if (below(carePlanCurrencyRate, 50) && currentCarePlans > 0) score -= 6;
 
   // Penalty 3: incidentReportTimelinessRate < 50 -> -5
-  if (incidentReportTimelinessRate < 50 && totalIncidents > 0) score -= 5;
+  if (below(incidentReportTimelinessRate, 50) && totalIncidents > 0) score -= 5;
 
   // Penalty 4: regulatoryComplianceRate < 50 -> -3
-  if (regulatoryComplianceRate < 50 && totalRegDocs > 0) score -= 3;
+  if (below(regulatoryComplianceRate, 50) && totalRegDocs > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -589,144 +592,144 @@ export function computeRecordKeepingDocumentationQuality(
   const strengths: string[] = [];
 
   // Daily log strengths
-  if (dailyLogCompletionRate >= 95 && totalLogs > 0) {
+  if (meets(dailyLogCompletionRate, 95) && totalLogs > 0) {
     strengths.push(
       `${dailyLogCompletionRate}% of daily logs completed on time -- the home demonstrates excellent timeliness in recording children's daily experiences, providing a reliable and up-to-date evidence base for quality of care.`,
     );
-  } else if (dailyLogCompletionRate >= 80 && totalLogs > 0) {
+  } else if (meets(dailyLogCompletionRate, 80) && totalLogs > 0) {
     strengths.push(
       `${dailyLogCompletionRate}% daily log completion rate -- strong timeliness in day-to-day recording, ensuring children's experiences are captured while events are fresh.`,
     );
   }
 
-  if (comprehensiveLogRate >= 90 && totalLogs > 0) {
+  if (meets(comprehensiveLogRate, 90) && totalLogs > 0) {
     strengths.push(
       `${comprehensiveLogRate}% of daily logs cover all five core areas (wellbeing, activities, mood, interactions, meals) -- the home produces rich, holistic records that paint a complete picture of each child's day.`,
     );
-  } else if (comprehensiveLogRate >= 70 && totalLogs > 0) {
+  } else if (meets(comprehensiveLogRate, 70) && totalLogs > 0) {
     strengths.push(
       `${comprehensiveLogRate}% of logs are comprehensive across all core areas -- recording generally captures the full breadth of children's daily experiences.`,
     );
   }
 
-  if (managerReviewRate >= 90 && totalLogs > 0) {
+  if (meets(managerReviewRate, 90) && totalLogs > 0) {
     strengths.push(
       `${managerReviewRate}% of daily logs reviewed by management -- strong oversight ensures recording quality is maintained.`,
     );
   }
 
   // Care plan strengths
-  if (carePlanCurrencyRate >= 95 && currentCarePlans > 0) {
+  if (meets(carePlanCurrencyRate, 95) && currentCarePlans > 0) {
     strengths.push(
       `${carePlanCurrencyRate}% of care plans are current with up-to-date reviews -- the home ensures care planning remains responsive to children's evolving needs.`,
     );
-  } else if (carePlanCurrencyRate >= 80 && currentCarePlans > 0) {
+  } else if (meets(carePlanCurrencyRate, 80) && currentCarePlans > 0) {
     strengths.push(
       `${carePlanCurrencyRate}% care plan currency rate -- the majority of care plans are reviewed on schedule, supporting effective care delivery.`,
     );
   }
 
-  if (childParticipationRate >= 90 && currentCarePlans > 0) {
+  if (meets(childParticipationRate, 90) && currentCarePlans > 0) {
     strengths.push(
       `Children participate in ${childParticipationRate}% of their care plans -- the home demonstrates strong practice in ensuring children are central to their own care planning.`,
     );
-  } else if (childParticipationRate >= 70 && currentCarePlans > 0) {
+  } else if (meets(childParticipationRate, 70) && currentCarePlans > 0) {
     strengths.push(
       `${childParticipationRate}% child participation in care planning -- good levels of child involvement in shaping their own care arrangements.`,
     );
   }
 
-  if (objectivesMetRate >= 80 && totalObjectives > 0) {
+  if (meets(objectivesMetRate, 80) && totalObjectives > 0) {
     strengths.push(
       `${objectivesMetRate}% of care plan objectives being met -- care plans are driving real outcomes for children.`,
     );
   }
 
   // Risk assessment strengths
-  if (riskAssessmentReviewRate >= 95 && currentRiskAssessments > 0) {
+  if (meets(riskAssessmentReviewRate, 95) && currentRiskAssessments > 0) {
     strengths.push(
       `${riskAssessmentReviewRate}% of risk assessments have up-to-date reviews -- the home keeps risk management current and responsive to changing circumstances.`,
     );
-  } else if (riskAssessmentReviewRate >= 80 && currentRiskAssessments > 0) {
+  } else if (meets(riskAssessmentReviewRate, 80) && currentRiskAssessments > 0) {
     strengths.push(
       `${riskAssessmentReviewRate}% risk assessment review compliance -- strong oversight of risk documentation ensures assessments remain relevant.`,
     );
   }
 
-  if (mitigationImplementationRate >= 95 && totalMitigations > 0) {
+  if (meets(mitigationImplementationRate, 95) && totalMitigations > 0) {
     strengths.push(
       `${mitigationImplementationRate}% of identified risk mitigations implemented -- the home follows through on protective measures, ensuring risk management translates into practical safeguards for children.`,
     );
-  } else if (mitigationImplementationRate >= 80 && totalMitigations > 0) {
+  } else if (meets(mitigationImplementationRate, 80) && totalMitigations > 0) {
     strengths.push(
       `${mitigationImplementationRate}% mitigation implementation -- the majority of identified risk controls are in place.`,
     );
   }
 
-  if (riskMultiAgencyRate >= 80 && currentRiskAssessments > 0) {
+  if (meets(riskMultiAgencyRate, 80) && currentRiskAssessments > 0) {
     strengths.push(
       `${riskMultiAgencyRate}% of risk assessments include multi-agency input -- collaborative risk assessment ensures a complete picture of each child's risks.`,
     );
   }
 
   // Incident report strengths
-  if (incidentReportTimelinessRate >= 95 && totalIncidents > 0) {
+  if (meets(incidentReportTimelinessRate, 95) && totalIncidents > 0) {
     strengths.push(
       `${incidentReportTimelinessRate}% of incident reports completed within 24 hours -- the home responds quickly to document incidents, ensuring details are accurate and follow-up is prompt.`,
     );
-  } else if (incidentReportTimelinessRate >= 80 && totalIncidents > 0) {
+  } else if (meets(incidentReportTimelinessRate, 80) && totalIncidents > 0) {
     strengths.push(
       `${incidentReportTimelinessRate}% incident report timeliness -- strong reporting culture with incidents documented promptly after occurrence.`,
     );
   }
 
-  if (ofstedNotificationRate >= 100 && ofstedNotificationRequired > 0) {
+  if (meets(ofstedNotificationRate, 100) && ofstedNotificationRequired > 0) {
     strengths.push(
       "All required Ofsted notifications have been made -- the home maintains full compliance with statutory notification obligations under Reg 40.",
     );
   }
 
-  if (laNotificationRate >= 100 && laNotificationRequired > 0) {
+  if (meets(laNotificationRate, 100) && laNotificationRequired > 0) {
     strengths.push(
       "All required local authority notifications have been made -- the home fulfils its duty to keep placing authorities informed of significant events.",
     );
   }
 
-  if (followUpCompletionRate >= 90 && totalFollowUps > 0) {
+  if (meets(followUpCompletionRate, 90) && totalFollowUps > 0) {
     strengths.push(
       `${followUpCompletionRate}% of incident follow-up actions completed -- the home ensures incidents lead to meaningful action, not just paperwork.`,
     );
   }
 
-  if (lessonsLearnedRate >= 80 && totalIncidents > 0) {
+  if (meets(lessonsLearnedRate, 80) && totalIncidents > 0) {
     strengths.push(
       `Lessons learned recorded for ${lessonsLearnedRate}% of incidents -- the home uses incidents for organisational learning.`,
     );
   }
 
   // Regulatory compliance strengths
-  if (regulatoryComplianceRate >= 95 && totalRegDocs > 0) {
+  if (meets(regulatoryComplianceRate, 95) && totalRegDocs > 0) {
     strengths.push(
       `${regulatoryComplianceRate}% regulatory document compliance -- the home maintains all statutory documentation to the required standard, evidencing strong leadership and management.`,
     );
-  } else if (regulatoryComplianceRate >= 80 && totalRegDocs > 0) {
+  } else if (meets(regulatoryComplianceRate, 80) && totalRegDocs > 0) {
     strengths.push(
       `${regulatoryComplianceRate}% regulatory compliance rate -- the majority of statutory documentation meets requirements.`,
     );
   }
 
   // Record accuracy strengths
-  if (recordAccuracyRate >= 90) {
+  if (meets(recordAccuracyRate, 90)) {
     strengths.push(
       `${recordAccuracyRate}% record accuracy rate -- the home maintains consistently high standards of record quality with proper signing, factual recording, and management oversight.`,
     );
-  } else if (recordAccuracyRate >= 75) {
+  } else if (meets(recordAccuracyRate, 75)) {
     strengths.push(
       `${recordAccuracyRate}% record accuracy -- good overall standard of record quality with appropriate checks and balances.`,
     );
   }
 
-  if (logChildCoverageRate >= 100 && carePlanChildCoverageRate >= 100 && riskAssessmentChildCoverageRate >= 100 && total_children > 0) {
+  if (meets(logChildCoverageRate, 100) && meets(carePlanChildCoverageRate, 100) && meets(riskAssessmentChildCoverageRate, 100) && total_children > 0) {
     strengths.push(
       "Every child on placement has daily logs, current care plans, and risk assessments -- complete documentation coverage.",
     );
@@ -739,113 +742,113 @@ export function computeRecordKeepingDocumentationQuality(
   const concerns: string[] = [];
 
   // Daily log concerns
-  if (dailyLogCompletionRate < 50 && totalLogs > 0) {
+  if (below(dailyLogCompletionRate, 50) && totalLogs > 0) {
     concerns.push(
       `Only ${dailyLogCompletionRate}% of daily logs completed on time -- the majority of records are late, undermining their accuracy and the home's ability to evidence timely care under Reg 36.`,
     );
-  } else if (dailyLogCompletionRate < 80 && dailyLogCompletionRate >= 50 && totalLogs > 0) {
+  } else if (below(dailyLogCompletionRate, 80) && meets(dailyLogCompletionRate, 50) && totalLogs > 0) {
     concerns.push(
       `Daily log completion rate at ${dailyLogCompletionRate}% -- a significant proportion of logs are not completed on time, risking inaccurate recording and gaps in the evidence base.`,
     );
   }
 
-  if (comprehensiveLogRate < 50 && totalLogs > 0) {
+  if (below(comprehensiveLogRate, 50) && totalLogs > 0) {
     concerns.push(
       `Only ${comprehensiveLogRate}% of daily logs cover all five core areas -- most records are incomplete, failing to capture the full picture of children's daily experiences.`,
     );
-  } else if (comprehensiveLogRate < 70 && comprehensiveLogRate >= 50 && totalLogs > 0) {
+  } else if (below(comprehensiveLogRate, 70) && meets(comprehensiveLogRate, 50) && totalLogs > 0) {
     concerns.push(
       `Comprehensive log rate at ${comprehensiveLogRate}% -- some daily records lack coverage of key areas such as wellbeing, mood, or interactions, creating an incomplete picture of children's experiences.`,
     );
   }
 
-  if (managerReviewRate < 50 && totalLogs > 0) {
+  if (below(managerReviewRate, 50) && totalLogs > 0) {
     concerns.push(
       `Only ${managerReviewRate}% of daily logs reviewed by management -- insufficient oversight of recording quality, meaning errors or inappropriate content may go unchecked.`,
     );
   }
 
-  if (logChildCoverageRate < 80 && total_children > 0 && totalLogs > 0) {
+  if (below(logChildCoverageRate, 80) && total_children > 0 && totalLogs > 0) {
     concerns.push(
       `Daily logs cover only ${logChildCoverageRate}% of children -- some children's daily experiences are not being recorded at all, a fundamental gap in care documentation.`,
     );
   }
 
   // Care plan concerns
-  if (carePlanCurrencyRate < 50 && currentCarePlans > 0) {
+  if (below(carePlanCurrencyRate, 50) && currentCarePlans > 0) {
     concerns.push(
       `Only ${carePlanCurrencyRate}% of care plans have current reviews -- the majority of care plans are out of date, meaning children's care may not reflect their current needs.`,
     );
-  } else if (carePlanCurrencyRate < 80 && carePlanCurrencyRate >= 50 && currentCarePlans > 0) {
+  } else if (below(carePlanCurrencyRate, 80) && meets(carePlanCurrencyRate, 50) && currentCarePlans > 0) {
     concerns.push(
       `Care plan currency rate at ${carePlanCurrencyRate}% -- a notable proportion of care plans are overdue for review, which may result in care that does not reflect children's current circumstances.`,
     );
   }
 
-  if (overdueCarePlanReviews > 0 && currentCarePlans > 0) {
+  if (above(overdueCarePlanReviews, 0) && currentCarePlans > 0) {
     concerns.push(
       `${overdueCarePlanReviews} care plan review${overdueCarePlanReviews !== 1 ? "s are" : " is"} overdue -- without timely reviews, care plans cannot be relied upon as accurate guides for staff delivering care.`,
     );
   }
 
-  if (childParticipationRate < 50 && currentCarePlans > 0) {
+  if (below(childParticipationRate, 50) && currentCarePlans > 0) {
     concerns.push(
       `Children participate in only ${childParticipationRate}% of care plans -- the majority of care plans are written about children rather than with them, undermining the child-centred approach required by SCCIF.`,
     );
   }
 
   // Risk assessment concerns
-  if (riskAssessmentReviewRate < 50 && currentRiskAssessments > 0) {
+  if (below(riskAssessmentReviewRate, 50) && currentRiskAssessments > 0) {
     concerns.push(
       `Only ${riskAssessmentReviewRate}% of risk assessments have current reviews -- the majority of risk assessments are out of date, meaning the home's understanding of children's risks may be inaccurate.`,
     );
-  } else if (riskAssessmentReviewRate < 80 && riskAssessmentReviewRate >= 50 && currentRiskAssessments > 0) {
+  } else if (below(riskAssessmentReviewRate, 80) && meets(riskAssessmentReviewRate, 50) && currentRiskAssessments > 0) {
     concerns.push(
       `Risk assessment review rate at ${riskAssessmentReviewRate}% -- some risk assessments are overdue for review, which may mean staff are working with outdated risk information.`,
     );
   }
 
-  if (highRiskOverdue > 0) {
+  if (above(highRiskOverdue, 0)) {
     concerns.push(
       `${highRiskOverdue} high/very-high risk assessment${highRiskOverdue !== 1 ? "s are" : " is"} overdue for review -- overdue reviews of high-risk assessments represent a serious safeguarding concern as risk management may be based on outdated information.`,
     );
   }
 
-  if (mitigationImplementationRate < 50 && totalMitigations > 0) {
+  if (below(mitigationImplementationRate, 50) && totalMitigations > 0) {
     concerns.push(
       `Only ${mitigationImplementationRate}% of identified risk mitigations have been implemented -- the home identifies risks but fails to follow through on protective measures, leaving children exposed to known risks.`,
     );
-  } else if (mitigationImplementationRate < 80 && mitigationImplementationRate >= 50 && totalMitigations > 0) {
+  } else if (below(mitigationImplementationRate, 80) && meets(mitigationImplementationRate, 50) && totalMitigations > 0) {
     concerns.push(
       `Mitigation implementation at ${mitigationImplementationRate}% -- some identified risk controls are not yet in place, potentially leaving gaps in children's protection.`,
     );
   }
 
   // Incident report concerns
-  if (incidentReportTimelinessRate < 50 && totalIncidents > 0) {
+  if (below(incidentReportTimelinessRate, 50) && totalIncidents > 0) {
     concerns.push(
       `Only ${incidentReportTimelinessRate}% of incident reports completed within 24 hours -- the majority of incidents are reported late, reducing accuracy and delaying necessary follow-up actions.`,
     );
-  } else if (incidentReportTimelinessRate < 80 && incidentReportTimelinessRate >= 50 && totalIncidents > 0) {
+  } else if (below(incidentReportTimelinessRate, 80) && meets(incidentReportTimelinessRate, 50) && totalIncidents > 0) {
     concerns.push(
       `Incident report timeliness at ${incidentReportTimelinessRate}% -- a notable proportion of incidents are not reported promptly, which may affect the quality and reliability of the record.`,
     );
   }
 
-  if (criticalIncidentsLateReported > 0) {
+  if (above(criticalIncidentsLateReported, 0)) {
     concerns.push(
       `${criticalIncidentsLateReported} critical/high-severity incident${criticalIncidentsLateReported !== 1 ? "s were" : " was"} not reported within 24 hours -- late reporting of serious incidents is a significant concern, potentially delaying safeguarding responses and statutory notifications.`,
     );
   }
 
-  if (ofstedNotificationRate < 100 && ofstedNotificationRequired > 0) {
+  if (below(ofstedNotificationRate, 100) && ofstedNotificationRequired > 0) {
     const missed = ofstedNotificationRequired - ofstedNotified;
     concerns.push(
       `${missed} required Ofsted notification${missed !== 1 ? "s have" : " has"} not been made -- failure to notify Ofsted of notifiable events is a serious regulatory breach under Reg 40.`,
     );
   }
 
-  if (laNotificationRate < 100 && laNotificationRequired > 0) {
+  if (below(laNotificationRate, 100) && laNotificationRequired > 0) {
     const missed = laNotificationRequired - laNotified;
     concerns.push(
       `${missed} required local authority notification${missed !== 1 ? "s have" : " has"} not been made -- the home must notify placing authorities of significant events affecting the children they are responsible for.`,
@@ -853,11 +856,11 @@ export function computeRecordKeepingDocumentationQuality(
   }
 
   // Regulatory compliance concerns
-  if (regulatoryComplianceRate < 50 && totalRegDocs > 0) {
+  if (below(regulatoryComplianceRate, 50) && totalRegDocs > 0) {
     concerns.push(
       `Only ${regulatoryComplianceRate}% of regulatory documents meet statutory requirements -- the home is not maintaining the minimum documentation standard required by the regulations.`,
     );
-  } else if (regulatoryComplianceRate < 80 && regulatoryComplianceRate >= 50 && totalRegDocs > 0) {
+  } else if (below(regulatoryComplianceRate, 80) && meets(regulatoryComplianceRate, 50) && totalRegDocs > 0) {
     concerns.push(
       `Regulatory compliance rate at ${regulatoryComplianceRate}% -- some statutory documents do not meet the required standard, which Ofsted will view as a shortfall in leadership and management.`,
     );
@@ -883,7 +886,7 @@ export function computeRecordKeepingDocumentationQuality(
   let rank = 0;
 
   // Immediate recommendations
-  if (dailyLogCompletionRate < 50 && totalLogs > 0) {
+  if (below(dailyLogCompletionRate, 50) && totalLogs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -893,7 +896,7 @@ export function computeRecordKeepingDocumentationQuality(
     });
   }
 
-  if (carePlanCurrencyRate < 50 && currentCarePlans > 0) {
+  if (below(carePlanCurrencyRate, 50) && currentCarePlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -913,7 +916,7 @@ export function computeRecordKeepingDocumentationQuality(
     });
   }
 
-  if (ofstedNotificationRate < 100 && ofstedNotificationRequired > 0) {
+  if (below(ofstedNotificationRate, 100) && ofstedNotificationRequired > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -923,7 +926,7 @@ export function computeRecordKeepingDocumentationQuality(
     });
   }
 
-  if (laNotificationRate < 100 && laNotificationRequired > 0) {
+  if (below(laNotificationRate, 100) && laNotificationRequired > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -933,7 +936,7 @@ export function computeRecordKeepingDocumentationQuality(
     });
   }
 
-  if (incidentReportTimelinessRate < 50 && totalIncidents > 0) {
+  if (below(incidentReportTimelinessRate, 50) && totalIncidents > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -943,7 +946,7 @@ export function computeRecordKeepingDocumentationQuality(
     });
   }
 
-  if (regulatoryComplianceRate < 50 && totalRegDocs > 0) {
+  if (below(regulatoryComplianceRate, 50) && totalRegDocs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -953,7 +956,7 @@ export function computeRecordKeepingDocumentationQuality(
     });
   }
 
-  if (mitigationImplementationRate < 50 && totalMitigations > 0) {
+  if (below(mitigationImplementationRate, 50) && totalMitigations > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -974,7 +977,7 @@ export function computeRecordKeepingDocumentationQuality(
   }
 
   // Soon recommendations
-  if (dailyLogCompletionRate >= 50 && dailyLogCompletionRate < 80 && totalLogs > 0) {
+  if (meets(dailyLogCompletionRate, 50) && below(dailyLogCompletionRate, 80) && totalLogs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -984,7 +987,7 @@ export function computeRecordKeepingDocumentationQuality(
     });
   }
 
-  if (comprehensiveLogRate < 70 && totalLogs > 0) {
+  if (below(comprehensiveLogRate, 70) && totalLogs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -994,7 +997,7 @@ export function computeRecordKeepingDocumentationQuality(
     });
   }
 
-  if (overdueCarePlanReviews > 0 && currentCarePlans > 0 && carePlanCurrencyRate >= 50) {
+  if (overdueCarePlanReviews > 0 && currentCarePlans > 0 && meets(carePlanCurrencyRate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1004,7 +1007,7 @@ export function computeRecordKeepingDocumentationQuality(
     });
   }
 
-  if (riskAssessmentReviewRate >= 50 && riskAssessmentReviewRate < 80 && currentRiskAssessments > 0) {
+  if (meets(riskAssessmentReviewRate, 50) && below(riskAssessmentReviewRate, 80) && currentRiskAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1014,7 +1017,7 @@ export function computeRecordKeepingDocumentationQuality(
     });
   }
 
-  if (incidentReportTimelinessRate >= 50 && incidentReportTimelinessRate < 80 && totalIncidents > 0) {
+  if (meets(incidentReportTimelinessRate, 50) && below(incidentReportTimelinessRate, 80) && totalIncidents > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1024,7 +1027,7 @@ export function computeRecordKeepingDocumentationQuality(
     });
   }
 
-  if (mitigationImplementationRate >= 50 && mitigationImplementationRate < 80 && totalMitigations > 0) {
+  if (meets(mitigationImplementationRate, 50) && below(mitigationImplementationRate, 80) && totalMitigations > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1034,7 +1037,7 @@ export function computeRecordKeepingDocumentationQuality(
     });
   }
 
-  if (regulatoryComplianceRate >= 50 && regulatoryComplianceRate < 80 && totalRegDocs > 0) {
+  if (meets(regulatoryComplianceRate, 50) && below(regulatoryComplianceRate, 80) && totalRegDocs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1045,7 +1048,7 @@ export function computeRecordKeepingDocumentationQuality(
   }
 
   // Planned recommendations
-  if (childParticipationRate < 70 && currentCarePlans > 0) {
+  if (below(childParticipationRate, 70) && currentCarePlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1055,7 +1058,7 @@ export function computeRecordKeepingDocumentationQuality(
     });
   }
 
-  if (managerReviewRate < 70 && totalLogs > 0) {
+  if (below(managerReviewRate, 70) && totalLogs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1065,7 +1068,7 @@ export function computeRecordKeepingDocumentationQuality(
     });
   }
 
-  if (lessonsLearnedRate < 70 && totalIncidents > 0) {
+  if (below(lessonsLearnedRate, 70) && totalIncidents > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1075,7 +1078,7 @@ export function computeRecordKeepingDocumentationQuality(
     });
   }
 
-  if (dynamicFactorsRate < 70 && currentRiskAssessments > 0) {
+  if (below(dynamicFactorsRate, 70) && currentRiskAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1085,7 +1088,7 @@ export function computeRecordKeepingDocumentationQuality(
     });
   }
 
-  if (linkedToCarePlanRate < 70 && currentRiskAssessments > 0) {
+  if (below(linkedToCarePlanRate, 70) && currentRiskAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1095,7 +1098,7 @@ export function computeRecordKeepingDocumentationQuality(
     });
   }
 
-  if (logSigningRate < 80 && totalLogs > 0) {
+  if (below(logSigningRate, 80) && totalLogs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1113,21 +1116,21 @@ export function computeRecordKeepingDocumentationQuality(
 
   // -- Critical insights --
 
-  if (dailyLogCompletionRate < 50 && totalLogs > 0) {
+  if (below(dailyLogCompletionRate, 50) && totalLogs > 0) {
     insights.push({
       text: `Only ${dailyLogCompletionRate}% of daily logs completed on time. Daily records are the backbone of evidencing quality of care under Reg 36. When the majority of logs are late, the home cannot demonstrate that it has a reliable, contemporaneous record of children's experiences. Ofsted inspectors will examine recording timeliness as a core indicator of the home's care standards.`,
       severity: "critical",
     });
   }
 
-  if (carePlanCurrencyRate < 50 && currentCarePlans > 0) {
+  if (below(carePlanCurrencyRate, 50) && currentCarePlans > 0) {
     insights.push({
       text: `Only ${carePlanCurrencyRate}% of care plans have current reviews. Out-of-date care plans mean staff may be delivering care based on information that no longer reflects children's needs. Under SCCIF, Ofsted expects care plans to be living documents that are regularly reviewed and updated -- a currency rate below 50% suggests care planning has become a paper exercise rather than a dynamic tool for delivering individualised care.`,
       severity: "critical",
     });
   }
 
-  if (ofstedNotificationRate < 100 && ofstedNotificationRequired > 0) {
+  if (below(ofstedNotificationRate, 100) && ofstedNotificationRequired > 0) {
     const missed = ofstedNotificationRequired - ofstedNotified;
     insights.push({
       text: `${missed} required Ofsted notification${missed !== 1 ? "s" : ""} not made. Failure to notify Ofsted of notifiable events under Reg 40 is one of the most serious regulatory breaches a children's home can commit. This directly undermines the regulatory framework designed to protect children and will be viewed as a significant failing in leadership and management.`,
@@ -1142,21 +1145,21 @@ export function computeRecordKeepingDocumentationQuality(
     });
   }
 
-  if (regulatoryComplianceRate < 50 && totalRegDocs > 0) {
+  if (below(regulatoryComplianceRate, 50) && totalRegDocs > 0) {
     insights.push({
       text: `Only ${regulatoryComplianceRate}% of regulatory documents meet statutory requirements. The home's regulatory documentation falls below the minimum standard. Under SCCIF, leadership and management is assessed partly on the basis of record keeping -- a compliance rate below 50% would likely contribute to an inadequate judgement in this area.`,
       severity: "critical",
     });
   }
 
-  if (incidentReportTimelinessRate < 50 && totalIncidents > 0) {
+  if (below(incidentReportTimelinessRate, 50) && totalIncidents > 0) {
     insights.push({
       text: `Only ${incidentReportTimelinessRate}% of incident reports completed within 24 hours. Late incident reporting means details may be lost or inaccurate, follow-up is delayed, and statutory notifications may be missed. Ofsted expects a culture of prompt, accurate incident recording as evidence of effective safeguarding practice.`,
       severity: "critical",
     });
   }
 
-  if (mitigationImplementationRate < 50 && totalMitigations > 0) {
+  if (below(mitigationImplementationRate, 50) && totalMitigations > 0) {
     insights.push({
       text: `Only ${mitigationImplementationRate}% of identified risk mitigations implemented. The home is identifying risks but not following through on the protective measures needed to manage them. This is arguably worse than not assessing risk at all, as it demonstrates awareness of danger without action to protect children.`,
       severity: "critical",
@@ -1165,42 +1168,42 @@ export function computeRecordKeepingDocumentationQuality(
 
   // -- Warning insights --
 
-  if (dailyLogCompletionRate >= 50 && dailyLogCompletionRate < 80 && totalLogs > 0) {
+  if (meets(dailyLogCompletionRate, 50) && below(dailyLogCompletionRate, 80) && totalLogs > 0) {
     insights.push({
       text: `Daily log completion at ${dailyLogCompletionRate}% -- improving but a significant proportion of records are still late. Each late log reduces the accuracy of the record and creates a gap in the contemporaneous evidence of care. Aim for 95%+ to demonstrate reliable recording practice.`,
       severity: "warning",
     });
   }
 
-  if (carePlanCurrencyRate >= 50 && carePlanCurrencyRate < 80 && currentCarePlans > 0) {
+  if (meets(carePlanCurrencyRate, 50) && below(carePlanCurrencyRate, 80) && currentCarePlans > 0) {
     insights.push({
       text: `Care plan currency at ${carePlanCurrencyRate}% -- some plans are overdue for review. Care plans that are not regularly reviewed may not reflect children's current needs, meaning staff could be working from outdated guidance. Regular review cycles are essential for Reg 36 compliance.`,
       severity: "warning",
     });
   }
 
-  if (riskAssessmentReviewRate >= 50 && riskAssessmentReviewRate < 80 && currentRiskAssessments > 0) {
+  if (meets(riskAssessmentReviewRate, 50) && below(riskAssessmentReviewRate, 80) && currentRiskAssessments > 0) {
     insights.push({
       text: `Risk assessment review rate at ${riskAssessmentReviewRate}% -- some assessments are not being reviewed on schedule. Out-of-date risk assessments may not reflect current risks, leaving staff without accurate information to keep children safe.`,
       severity: "warning",
     });
   }
 
-  if (incidentReportTimelinessRate >= 50 && incidentReportTimelinessRate < 80 && totalIncidents > 0) {
+  if (meets(incidentReportTimelinessRate, 50) && below(incidentReportTimelinessRate, 80) && totalIncidents > 0) {
     insights.push({
       text: `Incident report timeliness at ${incidentReportTimelinessRate}% -- some incidents are not being documented promptly. Delayed reporting reduces accuracy and may delay necessary safeguarding responses and statutory notifications.`,
       severity: "warning",
     });
   }
 
-  if (regulatoryComplianceRate >= 50 && regulatoryComplianceRate < 80 && totalRegDocs > 0) {
+  if (meets(regulatoryComplianceRate, 50) && below(regulatoryComplianceRate, 80) && totalRegDocs > 0) {
     insights.push({
       text: `Regulatory compliance at ${regulatoryComplianceRate}% -- some statutory documents do not meet the required standard. Under SCCIF, the quality of record keeping is a key indicator of leadership and management effectiveness. Aim for full compliance.`,
       severity: "warning",
     });
   }
 
-  if (mitigationImplementationRate >= 50 && mitigationImplementationRate < 80 && totalMitigations > 0) {
+  if (meets(mitigationImplementationRate, 50) && below(mitigationImplementationRate, 80) && totalMitigations > 0) {
     insights.push({
       text: `Mitigation implementation at ${mitigationImplementationRate}% -- some identified risk controls are not in place. Each unimplemented mitigation represents a gap between known risk and action taken.`,
       severity: "warning",
@@ -1235,9 +1238,9 @@ export function computeRecordKeepingDocumentationQuality(
   }
 
   if (
-    dailyLogCompletionRate >= 95 &&
-    comprehensiveLogRate >= 90 &&
-    managerReviewRate >= 90 &&
+    meets(dailyLogCompletionRate, 95) &&
+    meets(comprehensiveLogRate, 90) &&
+    meets(managerReviewRate, 90) &&
     totalLogs > 0
   ) {
     insights.push({
@@ -1247,8 +1250,8 @@ export function computeRecordKeepingDocumentationQuality(
   }
 
   if (
-    carePlanCurrencyRate >= 95 &&
-    childParticipationRate >= 90 &&
+    meets(carePlanCurrencyRate, 95) &&
+    meets(childParticipationRate, 90) &&
     currentCarePlans > 0
   ) {
     insights.push({
@@ -1258,8 +1261,8 @@ export function computeRecordKeepingDocumentationQuality(
   }
 
   if (
-    riskAssessmentReviewRate >= 95 &&
-    mitigationImplementationRate >= 95 &&
+    meets(riskAssessmentReviewRate, 95) &&
+    meets(mitigationImplementationRate, 95) &&
     currentRiskAssessments > 0 &&
     totalMitigations > 0
   ) {
@@ -1270,9 +1273,9 @@ export function computeRecordKeepingDocumentationQuality(
   }
 
   if (
-    incidentReportTimelinessRate >= 95 &&
-    followUpCompletionRate >= 90 &&
-    lessonsLearnedRate >= 80 &&
+    meets(incidentReportTimelinessRate, 95) &&
+    meets(followUpCompletionRate, 90) &&
+    meets(lessonsLearnedRate, 80) &&
     totalIncidents > 0
   ) {
     insights.push({
@@ -1282,8 +1285,8 @@ export function computeRecordKeepingDocumentationQuality(
   }
 
   if (
-    ofstedNotificationRate >= 100 &&
-    laNotificationRate >= 100 &&
+    meets(ofstedNotificationRate, 100) &&
+    meets(laNotificationRate, 100) &&
     ofstedNotificationRequired > 0 &&
     laNotificationRequired > 0
   ) {
@@ -1294,8 +1297,8 @@ export function computeRecordKeepingDocumentationQuality(
   }
 
   if (
-    regulatoryComplianceRate >= 95 &&
-    regDocManagerReviewRate >= 95 &&
+    meets(regulatoryComplianceRate, 95) &&
+    meets(regDocManagerReviewRate, 95) &&
     totalRegDocs > 0
   ) {
     insights.push({
@@ -1305,9 +1308,9 @@ export function computeRecordKeepingDocumentationQuality(
   }
 
   if (
-    logChildCoverageRate >= 100 &&
-    carePlanChildCoverageRate >= 100 &&
-    riskAssessmentChildCoverageRate >= 100 &&
+    meets(logChildCoverageRate, 100) &&
+    meets(carePlanChildCoverageRate, 100) &&
+    meets(riskAssessmentChildCoverageRate, 100) &&
     total_children > 0 &&
     totalLogs > 0 &&
     totalCarePlans > 0 &&

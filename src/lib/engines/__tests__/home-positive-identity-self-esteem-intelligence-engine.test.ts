@@ -306,12 +306,12 @@ describe("computePositiveIdentitySelfEsteem", () => {
         achievement_records: [],
         positive_image_records: [],
       });
-      expect(r.identity_work_rate).toBe(0);
+      expect(r.identity_work_rate).toBeNull();
       expect(r.life_story_engagement_rate).toBeNull();
       expect(r.self_esteem_programme_rate).toBeNull();
-      expect(r.achievement_celebration_rate).toBe(0);
+      expect(r.achievement_celebration_rate).toBeNull();
       expect(r.positive_image_rate).toBeNull();
-      expect(r.child_confidence_rate).toBe(0);
+      expect(r.child_confidence_rate).toBeNull();
     });
 
     it("NOT insufficient_data when total_children > 0 and all empty", () => {
@@ -426,12 +426,12 @@ describe("computePositiveIdentitySelfEsteem", () => {
         achievement_records: [],
         positive_image_records: [],
       });
-      expect(r.identity_work_rate).toBe(0);
+      expect(r.identity_work_rate).toBeNull();
       expect(r.life_story_engagement_rate).toBeNull();
       expect(r.self_esteem_programme_rate).toBeNull();
-      expect(r.achievement_celebration_rate).toBe(0);
+      expect(r.achievement_celebration_rate).toBeNull();
       expect(r.positive_image_rate).toBeNull();
-      expect(r.child_confidence_rate).toBe(0);
+      expect(r.child_confidence_rate).toBeNull();
     });
   });
 
@@ -750,7 +750,7 @@ describe("computePositiveIdentitySelfEsteem", () => {
       const r = computePositiveIdentitySelfEsteem(
         lifeStoryOnly(),
       );
-      expect(r.identity_work_rate).toBe(0);
+      expect(r.identity_work_rate).toBeNull();
     });
 
     it("life_story_engagement_rate is composite of 4 sub-rates", () => {
@@ -831,7 +831,7 @@ describe("computePositiveIdentitySelfEsteem", () => {
 
     it("achievement_celebration_rate = 0 when no achievement records", () => {
       const r = computePositiveIdentitySelfEsteem(identityOnly());
-      expect(r.achievement_celebration_rate).toBe(0);
+      expect(r.achievement_celebration_rate).toBeNull();
     });
 
     it("positive_image_rate is composite of 3 sub-rates", () => {
@@ -890,21 +890,21 @@ describe("computePositiveIdentitySelfEsteem", () => {
         achievement_records: [],
         positive_image_records: [],
       });
-      expect(r.child_confidence_rate).toBe(0);
+      expect(r.child_confidence_rate).toBeNull();
     });
   });
 
   // ── pct(0,0) = 0 ──────────────────────────────────────────────────────
 
-  describe("pct(0,0) = 0", () => {
-    it("identity_work_rate is 0 with empty array", () => {
+  describe("rate(0,0)=null", () => {
+    it("identity_work_rate is null with empty array", () => {
       const r = computePositiveIdentitySelfEsteem(lifeStoryOnly());
-      expect(r.identity_work_rate).toBe(0);
+      expect(r.identity_work_rate).toBeNull();
     });
 
-    it("achievement_celebration_rate is 0 with empty array", () => {
+    it("achievement_celebration_rate is null with empty array", () => {
       const r = computePositiveIdentitySelfEsteem(identityOnly());
-      expect(r.achievement_celebration_rate).toBe(0);
+      expect(r.achievement_celebration_rate).toBeNull();
     });
 
     it("child_confidence_rate is 0 when denominator is 0", () => {
@@ -917,7 +917,7 @@ describe("computePositiveIdentitySelfEsteem", () => {
         achievement_records: [],
         positive_image_records: [],
       });
-      expect(r.child_confidence_rate).toBe(0);
+      expect(r.child_confidence_rate).toBeNull();
     });
   });
 
@@ -2900,7 +2900,7 @@ describe("computePositiveIdentitySelfEsteem", () => {
       expect(r.identity_work_rate).toBe(100);
     });
 
-    it("sessions_planned = 0 for life story -> pct(0,0) = 0 for session rate", () => {
+    it("sessions_planned = 0 for life story -> session rate unmeasured (rate(0,0)=null)", () => {
       const r = computePositiveIdentitySelfEsteem(
         lifeStoryOnly({
           life_story_records: [
@@ -2908,12 +2908,12 @@ describe("computePositiveIdentitySelfEsteem", () => {
           ],
         }),
       );
-      // sessionRate = pct(0,0) = 0
-      // bookRate=100, activeRate=100, engagementRateRaw=100 -> composite=round((100+100+0+100)/4)=75
-      expect(r.life_story_engagement_rate).toBe(75);
+      // sessionRate is unmeasured (no sessions planned) and meanOf drops it:
+      // mean(100 book, 100 active, 100 engagement) = 100.
+      expect(r.life_story_engagement_rate).toBe(100);
     });
 
-    it("sessions_planned = 0 for self-esteem -> pct(0,0) = 0 for attendance", () => {
+    it("sessions_planned = 0 for self-esteem -> attendance unmeasured (rate(0,0)=null)", () => {
       const r = computePositiveIdentitySelfEsteem(
         selfEsteemOnly({
           self_esteem_programme_records: [
@@ -2921,9 +2921,9 @@ describe("computePositiveIdentitySelfEsteem", () => {
           ],
         }),
       );
-      // attendanceRate = pct(0,0) = 0
-      // engagementRate=100, progressRate=100 -> composite=round((0+100+100)/3)=67
-      expect(r.self_esteem_programme_rate).toBe(67);
+      // attendanceRate is unmeasured (no sessions planned) and meanOf drops it:
+      // mean(100 engagement, 100 progress) = 100.
+      expect(r.self_esteem_programme_rate).toBe(100);
     });
 
     it("child_satisfaction = 0 (edge of numeric input)", () => {

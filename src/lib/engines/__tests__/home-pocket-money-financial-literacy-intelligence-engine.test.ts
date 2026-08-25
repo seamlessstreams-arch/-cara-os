@@ -323,12 +323,12 @@ describe("insufficient data", () => {
       budgeting_records: [],
       money_handling_records: [],
     });
-    expect(r.pocket_money_compliance_rate).toBe(0);
-    expect(r.savings_engagement_rate).toBe(0);
-    expect(r.financial_education_rate).toBe(0);
-    expect(r.budgeting_coverage_rate).toBe(0);
-    expect(r.money_handling_accuracy_rate).toBe(0);
-    expect(r.child_autonomy_rate).toBe(0);
+    expect(r.pocket_money_compliance_rate).toBeNull();
+    expect(r.savings_engagement_rate).toBeNull();
+    expect(r.financial_education_rate).toBeNull();
+    expect(r.budgeting_coverage_rate).toBeNull();
+    expect(r.money_handling_accuracy_rate).toBeNull();
+    expect(r.child_autonomy_rate).toBeNull();
   });
 
   it("returns zero totals", () => {
@@ -452,12 +452,12 @@ describe("inadequate floor (all empty with children)", () => {
       budgeting_records: [],
       money_handling_records: [],
     });
-    expect(r.pocket_money_compliance_rate).toBe(0);
-    expect(r.savings_engagement_rate).toBe(0);
-    expect(r.financial_education_rate).toBe(0);
-    expect(r.budgeting_coverage_rate).toBe(0);
-    expect(r.money_handling_accuracy_rate).toBe(0);
-    expect(r.child_autonomy_rate).toBe(0);
+    expect(r.pocket_money_compliance_rate).toBeNull();
+    expect(r.savings_engagement_rate).toBeNull();
+    expect(r.financial_education_rate).toBeNull();
+    expect(r.budgeting_coverage_rate).toBeNull();
+    expect(r.money_handling_accuracy_rate).toBeNull();
+    expect(r.child_autonomy_rate).toBeNull();
   });
 
   it("works with 1 child just as well as with multiple", () => {
@@ -1891,7 +1891,7 @@ describe("rate calculations", () => {
       const r = computePocketMoneyFinancialLiteracy(
         baseInput({ pocket_money_records: [] }),
       );
-      expect(r.pocket_money_compliance_rate).toBe(0);
+      expect(r.pocket_money_compliance_rate).toBeNull();
     });
   });
 
@@ -2064,7 +2064,7 @@ describe("rate calculations", () => {
       const r = computePocketMoneyFinancialLiteracy(
         baseInput({ money_handling_records: [] }),
       );
-      expect(r.money_handling_accuracy_rate).toBe(0);
+      expect(r.money_handling_accuracy_rate).toBeNull();
     });
   });
 

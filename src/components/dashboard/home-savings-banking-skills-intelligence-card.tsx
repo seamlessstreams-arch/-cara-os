@@ -86,8 +86,8 @@ export function HomeSavingsBankingSkillsIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", meets(d.financial_independence_rate, 90) ? "text-[--cs-success]" : meets(d.financial_independence_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.financial_independence_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Independ.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_engagement_rate >= 90 ? "bg-green-50" : d.child_engagement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_engagement_rate >= 90 ? "text-[--cs-success]" : d.child_engagement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_engagement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_engagement_rate, 90) ? "bg-green-50" : meets(d.child_engagement_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_engagement_rate, 90) ? "text-[--cs-success]" : meets(d.child_engagement_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_engagement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Engage.</p>
             </div>
           </div>

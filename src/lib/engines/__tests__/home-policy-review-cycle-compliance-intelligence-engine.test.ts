@@ -257,12 +257,12 @@ describe("computePolicyReviewCycleCompliance", () => {
 
     it("returns all zero rates", () => {
       const r = computePolicyReviewCycleCompliance(baseInput({ total_policies: 0, review_schedule_records: [], version_control_records: [], acknowledgement_records: [], alignment_records: [], accessibility_records: [] }));
-      expect(r.review_schedule_rate).toBe(0);
-      expect(r.version_control_rate).toBe(0);
-      expect(r.staff_acknowledgement_rate).toBe(0);
-      expect(r.regulatory_alignment_rate).toBe(0);
-      expect(r.accessibility_rate).toBe(0);
-      expect(r.update_timeliness_rate).toBe(0);
+      expect(r.review_schedule_rate).toBeNull();
+      expect(r.version_control_rate).toBeNull();
+      expect(r.staff_acknowledgement_rate).toBeNull();
+      expect(r.regulatory_alignment_rate).toBeNull();
+      expect(r.accessibility_rate).toBeNull();
+      expect(r.update_timeliness_rate).toBeNull();
     });
 
     it("returns empty arrays", () => {
@@ -711,7 +711,7 @@ describe("computePolicyReviewCycleCompliance", () => {
 
     it("0 review records → review_schedule_rate = 0", () => {
       const r = computePolicyReviewCycleCompliance(baseInput({ review_schedule_records: [] }));
-      expect(r.review_schedule_rate).toBe(0);
+      expect(r.review_schedule_rate).toBeNull();
     });
 
     it("100% review completion → rate 100", () => {
@@ -730,7 +730,7 @@ describe("computePolicyReviewCycleCompliance", () => {
 
     it("0 version records → 0%", () => {
       const r = computePolicyReviewCycleCompliance(baseInput({ version_control_records: [] }));
-      expect(r.version_control_rate).toBe(0);
+      expect(r.version_control_rate).toBeNull();
     });
 
     it("composite considers approved, archived, changeLog, rationale", () => {
@@ -793,9 +793,9 @@ describe("computePolicyReviewCycleCompliance", () => {
       expect(r.total_acknowledgement_records).toBe(8);
     });
 
-    it("0 acknowledgement records → 0% rate", () => {
+    it("0 acknowledgement records → null rate", () => {
       const r = computePolicyReviewCycleCompliance(baseInput({ acknowledgement_records: [] }));
-      expect(r.staff_acknowledgement_rate).toBe(0);
+      expect(r.staff_acknowledgement_rate).toBeNull();
     });
   });
 
@@ -877,7 +877,7 @@ describe("computePolicyReviewCycleCompliance", () => {
 
     it("0 accessibility records → 0%", () => {
       const r = computePolicyReviewCycleCompliance(baseInput({ accessibility_records: [] }));
-      expect(r.accessibility_rate).toBe(0);
+      expect(r.accessibility_rate).toBeNull();
     });
   });
 

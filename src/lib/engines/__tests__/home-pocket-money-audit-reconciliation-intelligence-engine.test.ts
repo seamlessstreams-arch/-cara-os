@@ -351,14 +351,14 @@ describe("empty / special states", () => {
     expect(r.recommendations[1].regulatory_ref).toContain("Reg 5");
   });
 
-  it("11: all rates are 0 with no data and children", () => {
+  it("11: all rates are null with no data and children", () => {
     const r = run({ total_children: 3 });
-    expect(r.audit_compliance_rate).toBe(0);
-    expect(r.reconciliation_accuracy_rate).toBe(0);
-    expect(r.discrepancy_resolution_rate).toBe(0);
-    expect(r.transparency_rate).toBe(0);
-    expect(r.child_awareness_rate).toBe(0);
-    expect(r.timeliness_rate).toBe(0);
+    expect(r.audit_compliance_rate).toBeNull();
+    expect(r.reconciliation_accuracy_rate).toBeNull();
+    expect(r.discrepancy_resolution_rate).toBeNull();
+    expect(r.transparency_rate).toBeNull();
+    expect(r.child_awareness_rate).toBeNull();
+    expect(r.timeliness_rate).toBeNull();
   });
 });
 
@@ -2042,6 +2042,6 @@ describe("edge cases", () => {
     expect(r.discrepancy_resolution_rate).toBe(100);
     // timeliness denominator won't include this discrepancy since resolvedDiscrepancies
     // filters for days_to_resolve !== null
-    expect(r.timeliness_rate).toBe(0); // 0/0 = 0
+    expect(r.timeliness_rate).toBeNull(); // 0/0 = 0
   });
 });
