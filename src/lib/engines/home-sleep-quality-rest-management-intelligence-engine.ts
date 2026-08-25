@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME SLEEP QUALITY & REST MANAGEMENT INTELLIGENCE ENGINE
 // Monitors how well the home supports children's sleep routines, environment
@@ -151,10 +152,6 @@ export interface SleepQualityRestManagementResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -179,12 +176,12 @@ function emptyResult(
     headline,
     total_routine_records: 0,
     total_disturbances: 0,
-    routine_adherence_rate: 0,
-    environment_quality_rate: 0,
-    disturbance_resolution_rate: 0,
-    bedtime_support_quality_rate: 0,
-    improvement_plan_coverage_rate: 0,
-    child_satisfaction_rate: 0,
+    routine_adherence_rate: null,
+    environment_quality_rate: null,
+    disturbance_resolution_rate: null,
+    bedtime_support_quality_rate: null,
+    improvement_plan_coverage_rate: null,
+    child_satisfaction_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -264,13 +261,13 @@ export function computeSleepQualityRestManagement(
   const totalRoutineRecords = sleep_routine_records.length;
 
   const routineFollowed = sleep_routine_records.filter((r) => r.routine_followed).length;
-  const routineAdherenceRate = pct(routineFollowed, totalRoutineRecords);
+  const routineAdherenceRate = rate(routineFollowed, totalRoutineRecords);
 
   const settledWithin30 = sleep_routine_records.filter((r) => r.child_settled_within_30_min).length;
-  const settlingRate = pct(settledWithin30, totalRoutineRecords);
+  const settlingRate = rate(settledWithin30, totalRoutineRecords);
 
   const windDownCompleted = sleep_routine_records.filter((r) => r.wind_down_activity_completed).length;
-  const windDownRate = pct(windDownCompleted, totalRoutineRecords);
+  const windDownRate = rate(windDownCompleted, totalRoutineRecords);
 
   const sleepQualitySum = sleep_routine_records.reduce((sum, r) => sum + r.sleep_quality_rating, 0);
   const avgSleepQualityRating =
@@ -297,7 +294,7 @@ export function computeSleepQualityRestManagement(
       if (check(rec)) totalEnvChecksPassed++;
     }
   }
-  const environmentQualityRate = pct(totalEnvChecksPassed, totalEnvChecksPossible);
+  const environmentQualityRate = rate(totalEnvChecksPassed, totalEnvChecksPossible);
 
   const envIssuesIdentified = sleep_environment_records.filter(
     (e) => e.issues_identified.length > 0,
@@ -305,13 +302,13 @@ export function computeSleepQualityRestManagement(
   const envIssuesResolved = sleep_environment_records.filter(
     (e) => e.issues_identified.length > 0 && e.issues_resolved,
   ).length;
-  const envIssueResolutionRate = pct(envIssuesResolved, envIssuesIdentified);
+  const envIssueResolutionRate = rate(envIssuesResolved, envIssuesIdentified);
 
   // --- Disturbance metrics ---
   const totalDisturbances = sleep_disturbance_records.length;
 
   const disturbancesResettled = sleep_disturbance_records.filter((d) => d.child_resettled).length;
-  const disturbanceResolutionRate = pct(disturbancesResettled, totalDisturbances);
+  const disturbanceResolutionRate = rate(disturbancesResettled, totalDisturbances);
 
   const followUpRequired = sleep_disturbance_records.filter(
     (d) => d.follow_up_actions !== null && d.follow_up_actions !== "",
@@ -319,17 +316,17 @@ export function computeSleepQualityRestManagement(
   const followUpCompleted = sleep_disturbance_records.filter(
     (d) => d.follow_up_actions !== null && d.follow_up_actions !== "" && d.follow_up_completed,
   ).length;
-  const followUpCompletionRate = pct(followUpCompleted, followUpRequired);
+  const followUpCompletionRate = rate(followUpCompleted, followUpRequired);
 
   const rapidResponse = sleep_disturbance_records.filter(
     (d) => d.staff_response_time_minutes !== null && d.staff_response_time_minutes <= 5,
   ).length;
-  const rapidResponseRate = pct(rapidResponse, totalDisturbances);
+  const rapidResponseRate = rate(rapidResponse, totalDisturbances);
 
   const severeImpactDisturbances = sleep_disturbance_records.filter(
     (d) => d.impact_on_next_day === "severe" || d.impact_on_next_day === "moderate",
   ).length;
-  const highImpactRate = pct(severeImpactDisturbances, totalDisturbances);
+  const highImpactRate = rate(severeImpactDisturbances, totalDisturbances);
 
   // --- Bedtime support metrics ---
   const totalBedtimeSupport = bedtime_support_records.length;
@@ -339,14 +336,14 @@ export function computeSleepQualityRestManagement(
   const childEngaged = bedtime_support_records.filter((b) => b.child_engaged).length;
 
   const childFeedbackPositive = bedtime_support_records.filter((b) => b.child_feedback_positive).length;
-  const childSatisfactionRate = pct(childFeedbackPositive, totalBedtimeSupport);
+  const childSatisfactionRate = rate(childFeedbackPositive, totalBedtimeSupport);
 
   const consistentWithPlan = bedtime_support_records.filter((b) => b.consistency_with_plan).length;
 
   // Bedtime support quality is composite: provided + engaged + positive + consistent
   const bedtimeSupportQualityNumerator = supportProvided + childEngaged + childFeedbackPositive + consistentWithPlan;
   const bedtimeSupportQualityDenominator = totalBedtimeSupport * 4;
-  const bedtimeSupportQualityRate = pct(bedtimeSupportQualityNumerator, bedtimeSupportQualityDenominator);
+  const bedtimeSupportQualityRate = rate(bedtimeSupportQualityNumerator, bedtimeSupportQualityDenominator);
 
   // --- Improvement plan metrics ---
   const totalImprovementPlans = sleep_improvement_records.length;
@@ -355,20 +352,20 @@ export function computeSleepQualityRestManagement(
     sleep_improvement_records.filter((p) => p.plan_active).map((p) => p.child_id),
   ).size;
   const improvementPlanCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenWithPlans, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenWithPlans, total_children) : 0;
 
   const reviewedPlans = sleep_improvement_records.filter((p) => p.reviewed).length;
-  const planReviewRate = pct(reviewedPlans, totalImprovementPlans);
+  const planReviewRate = rate(reviewedPlans, totalImprovementPlans);
 
   const childInvolvedInPlanning = sleep_improvement_records.filter(
     (p) => p.child_involved_in_planning,
   ).length;
-  const childInvolvementRate = pct(childInvolvedInPlanning, totalImprovementPlans);
+  const childInvolvementRate = rate(childInvolvedInPlanning, totalImprovementPlans);
 
   const professionalInputReceived = sleep_improvement_records.filter(
     (p) => p.professional_input_received,
   ).length;
-  const professionalInputRate = pct(professionalInputReceived, totalImprovementPlans);
+  const professionalInputRate = rate(professionalInputReceived, totalImprovementPlans);
 
   const progressSum = sleep_improvement_records.reduce((sum, p) => sum + p.progress_rating, 0);
   const avgProgressRating =
@@ -381,54 +378,54 @@ export function computeSleepQualityRestManagement(
   let score = 52;
 
   // --- Bonus 1: routineAdherenceRate (>=90: +4, >=70: +2) ---
-  if (routineAdherenceRate >= 90) score += 4;
-  else if (routineAdherenceRate >= 70) score += 2;
+  if (meets(routineAdherenceRate, 90)) score += 4;
+  else if (meets(routineAdherenceRate, 70)) score += 2;
 
   // --- Bonus 2: environmentQualityRate (>=90: +3, >=70: +1) ---
-  if (environmentQualityRate >= 90) score += 3;
-  else if (environmentQualityRate >= 70) score += 1;
+  if (meets(environmentQualityRate, 90)) score += 3;
+  else if (meets(environmentQualityRate, 70)) score += 1;
 
   // --- Bonus 3: disturbanceResolutionRate (>=90: +4, >=70: +2) ---
-  if (disturbanceResolutionRate >= 90) score += 4;
-  else if (disturbanceResolutionRate >= 70) score += 2;
+  if (meets(disturbanceResolutionRate, 90)) score += 4;
+  else if (meets(disturbanceResolutionRate, 70)) score += 2;
 
   // --- Bonus 4: bedtimeSupportQualityRate (>=85: +3, >=65: +1) ---
-  if (bedtimeSupportQualityRate >= 85) score += 3;
-  else if (bedtimeSupportQualityRate >= 65) score += 1;
+  if (meets(bedtimeSupportQualityRate, 85)) score += 3;
+  else if (meets(bedtimeSupportQualityRate, 65)) score += 1;
 
   // --- Bonus 5: childSatisfactionRate (>=90: +3, >=70: +1) ---
-  if (childSatisfactionRate >= 90) score += 3;
-  else if (childSatisfactionRate >= 70) score += 1;
+  if (meets(childSatisfactionRate, 90)) score += 3;
+  else if (meets(childSatisfactionRate, 70)) score += 1;
 
   // --- Bonus 6: improvementPlanCoverageRate (>=80: +3, >=50: +1) ---
-  if (improvementPlanCoverageRate >= 80) score += 3;
-  else if (improvementPlanCoverageRate >= 50) score += 1;
+  if (meets(improvementPlanCoverageRate, 80)) score += 3;
+  else if (meets(improvementPlanCoverageRate, 50)) score += 1;
 
   // --- Bonus 7: followUpCompletionRate (>=90: +3, >=70: +1) ---
-  if (followUpCompletionRate >= 90) score += 3;
-  else if (followUpCompletionRate >= 70) score += 1;
+  if (meets(followUpCompletionRate, 90)) score += 3;
+  else if (meets(followUpCompletionRate, 70)) score += 1;
 
   // --- Bonus 8: settlingRate (>=90: +2, >=70: +1) ---
-  if (settlingRate >= 90) score += 2;
-  else if (settlingRate >= 70) score += 1;
+  if (meets(settlingRate, 90)) score += 2;
+  else if (meets(settlingRate, 70)) score += 1;
 
   // --- Bonus 9: planReviewRate (>=90: +3, >=70: +1) ---
-  if (planReviewRate >= 90) score += 3;
-  else if (planReviewRate >= 70) score += 1;
+  if (meets(planReviewRate, 90)) score += 3;
+  else if (meets(planReviewRate, 70)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // routineAdherenceRate < 50 → -5
-  if (routineAdherenceRate < 50 && totalRoutineRecords > 0) score -= 5;
+  if (below(routineAdherenceRate, 50) && totalRoutineRecords > 0) score -= 5;
 
   // disturbanceResolutionRate < 50 → -5
-  if (disturbanceResolutionRate < 50 && totalDisturbances > 0) score -= 5;
+  if (below(disturbanceResolutionRate, 50) && totalDisturbances > 0) score -= 5;
 
   // bedtimeSupportQualityRate < 40 → -5
-  if (bedtimeSupportQualityRate < 40 && totalBedtimeSupport > 0) score -= 5;
+  if (below(bedtimeSupportQualityRate, 40) && totalBedtimeSupport > 0) score -= 5;
 
   // highImpactRate > 50 → -3
-  if (highImpactRate > 50 && totalDisturbances > 0) score -= 3;
+  if (above(highImpactRate, 50) && totalDisturbances > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -438,113 +435,113 @@ export function computeSleepQualityRestManagement(
 
   const strengths: string[] = [];
 
-  if (routineAdherenceRate >= 90 && totalRoutineRecords > 0) {
+  if (meets(routineAdherenceRate, 90) && totalRoutineRecords > 0) {
     strengths.push(
       `${routineAdherenceRate}% sleep routine adherence — children's bedtime routines are followed consistently, promoting stability and predictability in their rest patterns.`,
     );
-  } else if (routineAdherenceRate >= 70 && totalRoutineRecords > 0) {
+  } else if (meets(routineAdherenceRate, 70) && totalRoutineRecords > 0) {
     strengths.push(
       `${routineAdherenceRate}% sleep routine adherence — the home generally maintains consistent bedtime routines for children.`,
     );
   }
 
-  if (environmentQualityRate >= 90 && totalEnvironmentRecords > 0) {
+  if (meets(environmentQualityRate, 90) && totalEnvironmentRecords > 0) {
     strengths.push(
       `${environmentQualityRate}% sleep environment quality — bedrooms consistently meet high standards for temperature, lighting, noise, bedding, and personalisation.`,
     );
-  } else if (environmentQualityRate >= 70 && totalEnvironmentRecords > 0) {
+  } else if (meets(environmentQualityRate, 70) && totalEnvironmentRecords > 0) {
     strengths.push(
       `${environmentQualityRate}% sleep environment quality — the majority of environment checks are met across children's bedrooms.`,
     );
   }
 
-  if (disturbanceResolutionRate >= 90 && totalDisturbances > 0) {
+  if (meets(disturbanceResolutionRate, 90) && totalDisturbances > 0) {
     strengths.push(
       `${disturbanceResolutionRate}% disturbance resolution rate — staff effectively resettle children after sleep disturbances, demonstrating skilled night care.`,
     );
-  } else if (disturbanceResolutionRate >= 70 && totalDisturbances > 0) {
+  } else if (meets(disturbanceResolutionRate, 70) && totalDisturbances > 0) {
     strengths.push(
       `${disturbanceResolutionRate}% of sleep disturbances resolved with child resettled — generally effective disturbance management.`,
     );
   }
 
-  if (bedtimeSupportQualityRate >= 85 && totalBedtimeSupport > 0) {
+  if (meets(bedtimeSupportQualityRate, 85) && totalBedtimeSupport > 0) {
     strengths.push(
       `${bedtimeSupportQualityRate}% bedtime support quality — staff consistently provide high-quality, child-centred bedtime support aligned with individual plans.`,
     );
-  } else if (bedtimeSupportQualityRate >= 65 && totalBedtimeSupport > 0) {
+  } else if (meets(bedtimeSupportQualityRate, 65) && totalBedtimeSupport > 0) {
     strengths.push(
       `${bedtimeSupportQualityRate}% bedtime support quality — the home provides generally effective bedtime support to children.`,
     );
   }
 
-  if (childSatisfactionRate >= 90 && totalBedtimeSupport > 0) {
+  if (meets(childSatisfactionRate, 90) && totalBedtimeSupport > 0) {
     strengths.push(
       `${childSatisfactionRate}% positive child feedback on bedtime support — children feel well supported at bedtime, reflecting sensitive and responsive staff practice.`,
     );
-  } else if (childSatisfactionRate >= 70 && totalBedtimeSupport > 0) {
+  } else if (meets(childSatisfactionRate, 70) && totalBedtimeSupport > 0) {
     strengths.push(
       `${childSatisfactionRate}% positive child feedback — most children report positive experiences with bedtime support.`,
     );
   }
 
-  if (settlingRate >= 90 && totalRoutineRecords > 0) {
+  if (meets(settlingRate, 90) && totalRoutineRecords > 0) {
     strengths.push(
       `${settlingRate}% of children settle within 30 minutes — effective wind-down routines and bedtime support promote timely settling.`,
     );
-  } else if (settlingRate >= 70 && totalRoutineRecords > 0) {
+  } else if (meets(settlingRate, 70) && totalRoutineRecords > 0) {
     strengths.push(
       `${settlingRate}% of children settle within 30 minutes — the home's approach to settling is effective for the majority of children.`,
     );
   }
 
-  if (followUpCompletionRate >= 90 && followUpRequired > 0) {
+  if (meets(followUpCompletionRate, 90) && followUpRequired > 0) {
     strengths.push(
       `${followUpCompletionRate}% of disturbance follow-up actions completed — staff consistently follow through on actions identified after sleep disturbances.`,
     );
-  } else if (followUpCompletionRate >= 70 && followUpRequired > 0) {
+  } else if (meets(followUpCompletionRate, 70) && followUpRequired > 0) {
     strengths.push(
       `${followUpCompletionRate}% of follow-up actions completed — the home generally follows through on disturbance-related actions.`,
     );
   }
 
-  if (rapidResponseRate >= 90 && totalDisturbances > 0) {
+  if (meets(rapidResponseRate, 90) && totalDisturbances > 0) {
     strengths.push(
       `${rapidResponseRate}% of disturbances responded to within 5 minutes — staff respond rapidly to children's sleep disturbances, providing timely reassurance and support.`,
     );
-  } else if (rapidResponseRate >= 70 && totalDisturbances > 0) {
+  } else if (meets(rapidResponseRate, 70) && totalDisturbances > 0) {
     strengths.push(
       `${rapidResponseRate}% of disturbances responded to within 5 minutes — generally prompt response to sleep disturbances.`,
     );
   }
 
-  if (planReviewRate >= 90 && totalImprovementPlans > 0) {
+  if (meets(planReviewRate, 90) && totalImprovementPlans > 0) {
     strengths.push(
       `${planReviewRate}% of sleep improvement plans reviewed — the home actively monitors the effectiveness of sleep interventions and adapts approaches accordingly.`,
     );
-  } else if (planReviewRate >= 70 && totalImprovementPlans > 0) {
+  } else if (meets(planReviewRate, 70) && totalImprovementPlans > 0) {
     strengths.push(
       `${planReviewRate}% of improvement plans reviewed — the home generally reviews the effectiveness of sleep interventions.`,
     );
   }
 
-  if (childInvolvementRate >= 90 && totalImprovementPlans > 0) {
+  if (meets(childInvolvementRate, 90) && totalImprovementPlans > 0) {
     strengths.push(
       `${childInvolvementRate}% child involvement in sleep improvement planning — children are actively consulted about their sleep needs and preferences.`,
     );
-  } else if (childInvolvementRate >= 70 && totalImprovementPlans > 0) {
+  } else if (meets(childInvolvementRate, 70) && totalImprovementPlans > 0) {
     strengths.push(
       `${childInvolvementRate}% child involvement in planning — most children are consulted about their sleep improvement plans.`,
     );
   }
 
-  if (windDownRate >= 90 && totalRoutineRecords > 0) {
+  if (meets(windDownRate, 90) && totalRoutineRecords > 0) {
     strengths.push(
       `${windDownRate}% wind-down activity completion — the home consistently provides calming pre-bedtime activities to support children's transition to sleep.`,
     );
   }
 
-  if (envIssueResolutionRate >= 90 && envIssuesIdentified > 0) {
+  if (meets(envIssueResolutionRate, 90) && envIssuesIdentified > 0) {
     strengths.push(
       `${envIssueResolutionRate}% of environment issues resolved — identified problems with sleep environments are addressed promptly, ensuring children have appropriate rest conditions.`,
     );
@@ -560,7 +557,7 @@ export function computeSleepQualityRestManagement(
     );
   }
 
-  if (professionalInputRate >= 80 && totalImprovementPlans > 0) {
+  if (meets(professionalInputRate, 80) && totalImprovementPlans > 0) {
     strengths.push(
       `${professionalInputRate}% of sleep improvement plans include professional input — the home engages health professionals and specialists to support children's sleep needs.`,
     );
@@ -570,103 +567,103 @@ export function computeSleepQualityRestManagement(
 
   const concerns: string[] = [];
 
-  if (routineAdherenceRate < 50 && totalRoutineRecords > 0) {
+  if (below(routineAdherenceRate, 50) && totalRoutineRecords > 0) {
     concerns.push(
       `Only ${routineAdherenceRate}% sleep routine adherence — the majority of children's bedtime routines are not being followed, undermining stability and potentially impacting children's health and wellbeing.`,
     );
-  } else if (routineAdherenceRate < 70 && routineAdherenceRate >= 50 && totalRoutineRecords > 0) {
+  } else if (below(routineAdherenceRate, 70) && meets(routineAdherenceRate, 50) && totalRoutineRecords > 0) {
     concerns.push(
       `Sleep routine adherence at ${routineAdherenceRate}% — inconsistent bedtime routines may leave children feeling unsettled and affect their rest quality.`,
     );
   }
 
-  if (environmentQualityRate < 50 && totalEnvironmentRecords > 0) {
+  if (below(environmentQualityRate, 50) && totalEnvironmentRecords > 0) {
     concerns.push(
       `Only ${environmentQualityRate}% sleep environment quality — a significant proportion of environment standards are not being met, which directly affects children's ability to achieve restful sleep.`,
     );
-  } else if (environmentQualityRate < 70 && environmentQualityRate >= 50 && totalEnvironmentRecords > 0) {
+  } else if (below(environmentQualityRate, 70) && meets(environmentQualityRate, 50) && totalEnvironmentRecords > 0) {
     concerns.push(
       `Sleep environment quality at ${environmentQualityRate}% — some environment standards are not consistently met across children's bedrooms.`,
     );
   }
 
-  if (disturbanceResolutionRate < 50 && totalDisturbances > 0) {
+  if (below(disturbanceResolutionRate, 50) && totalDisturbances > 0) {
     concerns.push(
       `Only ${disturbanceResolutionRate}% disturbance resolution — the majority of children are not being successfully resettled after sleep disturbances, indicating staff require additional training or support in night care practices.`,
     );
-  } else if (disturbanceResolutionRate < 70 && disturbanceResolutionRate >= 50 && totalDisturbances > 0) {
+  } else if (below(disturbanceResolutionRate, 70) && meets(disturbanceResolutionRate, 50) && totalDisturbances > 0) {
     concerns.push(
       `Disturbance resolution rate at ${disturbanceResolutionRate}% — some children are not being successfully resettled after sleep disturbances.`,
     );
   }
 
-  if (bedtimeSupportQualityRate < 40 && totalBedtimeSupport > 0) {
+  if (below(bedtimeSupportQualityRate, 40) && totalBedtimeSupport > 0) {
     concerns.push(
       `Bedtime support quality at only ${bedtimeSupportQualityRate}% — bedtime support is inconsistent, children are not engaging, and support is not aligned with individual plans. This undermines the home's ability to promote healthy sleep.`,
     );
-  } else if (bedtimeSupportQualityRate < 65 && bedtimeSupportQualityRate >= 40 && totalBedtimeSupport > 0) {
+  } else if (below(bedtimeSupportQualityRate, 65) && meets(bedtimeSupportQualityRate, 40) && totalBedtimeSupport > 0) {
     concerns.push(
       `Bedtime support quality at ${bedtimeSupportQualityRate}% — staff need to improve the consistency, engagement, and child-centredness of bedtime support.`,
     );
   }
 
-  if (childSatisfactionRate < 50 && totalBedtimeSupport > 0) {
+  if (below(childSatisfactionRate, 50) && totalBedtimeSupport > 0) {
     concerns.push(
       `Only ${childSatisfactionRate}% positive child feedback on bedtime support — children are not satisfied with the support they receive at bedtime, which may indicate a lack of sensitivity to individual needs.`,
     );
-  } else if (childSatisfactionRate < 70 && childSatisfactionRate >= 50 && totalBedtimeSupport > 0) {
+  } else if (below(childSatisfactionRate, 70) && meets(childSatisfactionRate, 50) && totalBedtimeSupport > 0) {
     concerns.push(
       `Child satisfaction with bedtime support at ${childSatisfactionRate}% — a significant proportion of children are not reporting positive experiences at bedtime.`,
     );
   }
 
-  if (highImpactRate > 50 && totalDisturbances > 0) {
+  if (above(highImpactRate, 50) && totalDisturbances > 0) {
     concerns.push(
       `${highImpactRate}% of sleep disturbances have moderate or severe next-day impact — persistent poor sleep is affecting children's daytime functioning, behaviour, and wellbeing.`,
     );
-  } else if (highImpactRate > 30 && highImpactRate <= 50 && totalDisturbances > 0) {
+  } else if (above(highImpactRate, 30) && highImpactRate! <= 50 && totalDisturbances > 0) {
     concerns.push(
       `${highImpactRate}% of disturbances have moderate or severe next-day impact — some children's daytime functioning is being affected by disrupted sleep.`,
     );
   }
 
-  if (settlingRate < 50 && totalRoutineRecords > 0) {
+  if (below(settlingRate, 50) && totalRoutineRecords > 0) {
     concerns.push(
       `Only ${settlingRate}% of children settle within 30 minutes — many children are experiencing difficulty getting to sleep, suggesting wind-down routines or bedtime support need review.`,
     );
-  } else if (settlingRate < 70 && settlingRate >= 50 && totalRoutineRecords > 0) {
+  } else if (below(settlingRate, 70) && meets(settlingRate, 50) && totalRoutineRecords > 0) {
     concerns.push(
       `Settling rate at ${settlingRate}% — some children are taking longer than 30 minutes to settle, indicating potential issues with routines or environment.`,
     );
   }
 
-  if (followUpCompletionRate < 50 && followUpRequired > 0) {
+  if (below(followUpCompletionRate, 50) && followUpRequired > 0) {
     concerns.push(
       `Only ${followUpCompletionRate}% of disturbance follow-up actions completed — identified actions to prevent recurrence of sleep problems are not being followed through.`,
     );
-  } else if (followUpCompletionRate < 70 && followUpCompletionRate >= 50 && followUpRequired > 0) {
+  } else if (below(followUpCompletionRate, 70) && meets(followUpCompletionRate, 50) && followUpRequired > 0) {
     concerns.push(
       `Follow-up completion rate at ${followUpCompletionRate}% — some post-disturbance actions are not being followed through.`,
     );
   }
 
-  if (planReviewRate < 50 && totalImprovementPlans > 0) {
+  if (below(planReviewRate, 50) && totalImprovementPlans > 0) {
     concerns.push(
       `Only ${planReviewRate}% of sleep improvement plans reviewed — plans exist but are not being monitored, meaning the home cannot evidence whether interventions are working.`,
     );
-  } else if (planReviewRate < 70 && planReviewRate >= 50 && totalImprovementPlans > 0) {
+  } else if (below(planReviewRate, 70) && meets(planReviewRate, 50) && totalImprovementPlans > 0) {
     concerns.push(
       `Plan review rate at ${planReviewRate}% — not all sleep improvement plans are being reviewed regularly to assess progress.`,
     );
   }
 
-  if (childInvolvementRate < 50 && totalImprovementPlans > 0) {
+  if (below(childInvolvementRate, 50) && totalImprovementPlans > 0) {
     concerns.push(
       `Only ${childInvolvementRate}% child involvement in sleep improvement planning — children's views and preferences about their sleep are not being sought, undermining the voice of the child.`,
     );
   }
 
-  if (envIssueResolutionRate < 50 && envIssuesIdentified > 0) {
+  if (below(envIssueResolutionRate, 50) && envIssuesIdentified > 0) {
     concerns.push(
       `Only ${envIssueResolutionRate}% of identified environment issues resolved — problems with children's sleep environments persist without remediation.`,
     );
@@ -699,7 +696,7 @@ export function computeSleepQualityRestManagement(
   const recommendations: SleepQualityRecommendation[] = [];
   let rank = 0;
 
-  if (routineAdherenceRate < 50 && totalRoutineRecords > 0) {
+  if (below(routineAdherenceRate, 50) && totalRoutineRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -709,7 +706,7 @@ export function computeSleepQualityRestManagement(
     });
   }
 
-  if (disturbanceResolutionRate < 50 && totalDisturbances > 0) {
+  if (below(disturbanceResolutionRate, 50) && totalDisturbances > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -719,7 +716,7 @@ export function computeSleepQualityRestManagement(
     });
   }
 
-  if (bedtimeSupportQualityRate < 40 && totalBedtimeSupport > 0) {
+  if (below(bedtimeSupportQualityRate, 40) && totalBedtimeSupport > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -729,7 +726,7 @@ export function computeSleepQualityRestManagement(
     });
   }
 
-  if (highImpactRate > 50 && totalDisturbances > 0) {
+  if (above(highImpactRate, 50) && totalDisturbances > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -739,7 +736,7 @@ export function computeSleepQualityRestManagement(
     });
   }
 
-  if (environmentQualityRate < 50 && totalEnvironmentRecords > 0) {
+  if (below(environmentQualityRate, 50) && totalEnvironmentRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -749,7 +746,7 @@ export function computeSleepQualityRestManagement(
     });
   }
 
-  if (childSatisfactionRate < 50 && totalBedtimeSupport > 0) {
+  if (below(childSatisfactionRate, 50) && totalBedtimeSupport > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -779,7 +776,7 @@ export function computeSleepQualityRestManagement(
     });
   }
 
-  if (followUpCompletionRate < 50 && followUpRequired > 0) {
+  if (below(followUpCompletionRate, 50) && followUpRequired > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -789,7 +786,7 @@ export function computeSleepQualityRestManagement(
     });
   }
 
-  if (planReviewRate < 50 && totalImprovementPlans > 0) {
+  if (below(planReviewRate, 50) && totalImprovementPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -799,7 +796,7 @@ export function computeSleepQualityRestManagement(
     });
   }
 
-  if (childInvolvementRate < 50 && totalImprovementPlans > 0) {
+  if (below(childInvolvementRate, 50) && totalImprovementPlans > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -810,8 +807,8 @@ export function computeSleepQualityRestManagement(
   }
 
   if (
-    routineAdherenceRate >= 50 &&
-    routineAdherenceRate < 70 &&
+    meets(routineAdherenceRate, 50) &&
+    below(routineAdherenceRate, 70) &&
     totalRoutineRecords > 0
   ) {
     recommendations.push({
@@ -824,8 +821,8 @@ export function computeSleepQualityRestManagement(
   }
 
   if (
-    disturbanceResolutionRate >= 50 &&
-    disturbanceResolutionRate < 70 &&
+    meets(disturbanceResolutionRate, 50) &&
+    below(disturbanceResolutionRate, 70) &&
     totalDisturbances > 0
   ) {
     recommendations.push({
@@ -838,8 +835,8 @@ export function computeSleepQualityRestManagement(
   }
 
   if (
-    environmentQualityRate >= 50 &&
-    environmentQualityRate < 70 &&
+    meets(environmentQualityRate, 50) &&
+    below(environmentQualityRate, 70) &&
     totalEnvironmentRecords > 0
   ) {
     recommendations.push({
@@ -852,8 +849,8 @@ export function computeSleepQualityRestManagement(
   }
 
   if (
-    bedtimeSupportQualityRate >= 40 &&
-    bedtimeSupportQualityRate < 65 &&
+    meets(bedtimeSupportQualityRate, 40) &&
+    below(bedtimeSupportQualityRate, 65) &&
     totalBedtimeSupport > 0
   ) {
     recommendations.push({
@@ -866,8 +863,8 @@ export function computeSleepQualityRestManagement(
   }
 
   if (
-    childSatisfactionRate >= 50 &&
-    childSatisfactionRate < 70 &&
+    meets(childSatisfactionRate, 50) &&
+    below(childSatisfactionRate, 70) &&
     totalBedtimeSupport > 0
   ) {
     recommendations.push({
@@ -879,7 +876,7 @@ export function computeSleepQualityRestManagement(
     });
   }
 
-  if (windDownRate < 70 && totalRoutineRecords > 0) {
+  if (below(windDownRate, 70) && totalRoutineRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -890,7 +887,7 @@ export function computeSleepQualityRestManagement(
   }
 
   if (
-    improvementPlanCoverageRate < 50 &&
+    below(improvementPlanCoverageRate, 50) &&
     total_children > 0 &&
     totalImprovementPlans > 0
   ) {
@@ -909,35 +906,35 @@ export function computeSleepQualityRestManagement(
 
   // -- Critical insights --
 
-  if (routineAdherenceRate < 50 && totalRoutineRecords > 0) {
+  if (below(routineAdherenceRate, 50) && totalRoutineRecords > 0) {
     insights.push({
       text: `Only ${routineAdherenceRate}% sleep routine adherence. Ofsted expects children in residential care to have consistent, predictable routines. Poor routine adherence directly undermines children's sense of security, their physical health, and their ability to engage with education and activities.`,
       severity: "critical",
     });
   }
 
-  if (disturbanceResolutionRate < 50 && totalDisturbances > 0) {
+  if (below(disturbanceResolutionRate, 50) && totalDisturbances > 0) {
     insights.push({
       text: `Only ${disturbanceResolutionRate}% disturbance resolution. When children are not resettled after sleep disturbances, the cumulative impact on their emotional wellbeing, behaviour, and development can be profound. Staff require training in therapeutic night care approaches.`,
       severity: "critical",
     });
   }
 
-  if (bedtimeSupportQualityRate < 40 && totalBedtimeSupport > 0) {
+  if (below(bedtimeSupportQualityRate, 40) && totalBedtimeSupport > 0) {
     insights.push({
       text: `Bedtime support quality at only ${bedtimeSupportQualityRate}%. Bedtime is a critical therapeutic moment — children in care often experience heightened anxiety, fear, or emotional dysregulation at night. Poor-quality bedtime support represents a missed opportunity to build attachment and provide emotional containment.`,
       severity: "critical",
     });
   }
 
-  if (highImpactRate > 50 && totalDisturbances > 0) {
+  if (above(highImpactRate, 50) && totalDisturbances > 0) {
     insights.push({
       text: `${highImpactRate}% of disturbances have moderate or severe next-day impact. Chronic sleep deprivation in looked-after children is associated with increased behavioural incidents, reduced educational engagement, and poorer mental health outcomes. This requires specialist intervention.`,
       severity: "critical",
     });
   }
 
-  if (environmentQualityRate < 50 && totalEnvironmentRecords > 0) {
+  if (below(environmentQualityRate, 50) && totalEnvironmentRecords > 0) {
     insights.push({
       text: `Only ${environmentQualityRate}% sleep environment quality. A child's bedroom is their personal space — when it fails to meet basic standards for temperature, lighting, noise, and comfort, it signals that the home is not prioritising children's fundamental need for restful sleep.`,
       severity: "critical",
@@ -961,8 +958,8 @@ export function computeSleepQualityRestManagement(
   // -- Warning insights --
 
   if (
-    routineAdherenceRate >= 50 &&
-    routineAdherenceRate < 70 &&
+    meets(routineAdherenceRate, 50) &&
+    below(routineAdherenceRate, 70) &&
     totalRoutineRecords > 0
   ) {
     insights.push({
@@ -972,8 +969,8 @@ export function computeSleepQualityRestManagement(
   }
 
   if (
-    environmentQualityRate >= 50 &&
-    environmentQualityRate < 70 &&
+    meets(environmentQualityRate, 50) &&
+    below(environmentQualityRate, 70) &&
     totalEnvironmentRecords > 0
   ) {
     insights.push({
@@ -983,8 +980,8 @@ export function computeSleepQualityRestManagement(
   }
 
   if (
-    disturbanceResolutionRate >= 50 &&
-    disturbanceResolutionRate < 70 &&
+    meets(disturbanceResolutionRate, 50) &&
+    below(disturbanceResolutionRate, 70) &&
     totalDisturbances > 0
   ) {
     insights.push({
@@ -994,8 +991,8 @@ export function computeSleepQualityRestManagement(
   }
 
   if (
-    childSatisfactionRate >= 50 &&
-    childSatisfactionRate < 70 &&
+    meets(childSatisfactionRate, 50) &&
+    below(childSatisfactionRate, 70) &&
     totalBedtimeSupport > 0
   ) {
     insights.push({
@@ -1005,8 +1002,8 @@ export function computeSleepQualityRestManagement(
   }
 
   if (
-    settlingRate >= 50 &&
-    settlingRate < 70 &&
+    meets(settlingRate, 50) &&
+    below(settlingRate, 70) &&
     totalRoutineRecords > 0
   ) {
     insights.push({
@@ -1016,8 +1013,8 @@ export function computeSleepQualityRestManagement(
   }
 
   if (
-    followUpCompletionRate >= 50 &&
-    followUpCompletionRate < 70 &&
+    meets(followUpCompletionRate, 50) &&
+    below(followUpCompletionRate, 70) &&
     followUpRequired > 0
   ) {
     insights.push({
@@ -1027,8 +1024,8 @@ export function computeSleepQualityRestManagement(
   }
 
   if (
-    planReviewRate >= 50 &&
-    planReviewRate < 70 &&
+    meets(planReviewRate, 50) &&
+    below(planReviewRate, 70) &&
     totalImprovementPlans > 0
   ) {
     insights.push({
@@ -1048,7 +1045,7 @@ export function computeSleepQualityRestManagement(
     });
   }
 
-  if (windDownRate < 70 && windDownRate > 0 && totalRoutineRecords > 0) {
+  if (below(windDownRate, 70) && above(windDownRate, 0) && totalRoutineRecords > 0) {
     insights.push({
       text: `Wind-down activity completion at only ${windDownRate}% — calming pre-bedtime activities are not being consistently delivered. Research shows structured wind-down routines significantly improve sleep onset and quality in children.`,
       severity: "warning",
@@ -1083,8 +1080,8 @@ export function computeSleepQualityRestManagement(
   }
 
   if (
-    routineAdherenceRate >= 90 &&
-    settlingRate >= 90 &&
+    meets(routineAdherenceRate, 90) &&
+    meets(settlingRate, 90) &&
     totalRoutineRecords > 0
   ) {
     insights.push({
@@ -1094,8 +1091,8 @@ export function computeSleepQualityRestManagement(
   }
 
   if (
-    disturbanceResolutionRate >= 90 &&
-    rapidResponseRate >= 90 &&
+    meets(disturbanceResolutionRate, 90) &&
+    meets(rapidResponseRate, 90) &&
     totalDisturbances > 0
   ) {
     insights.push({
@@ -1105,7 +1102,7 @@ export function computeSleepQualityRestManagement(
   }
 
   if (
-    environmentQualityRate >= 90 &&
+    meets(environmentQualityRate, 90) &&
     totalEnvironmentRecords > 0
   ) {
     insights.push({
@@ -1115,8 +1112,8 @@ export function computeSleepQualityRestManagement(
   }
 
   if (
-    bedtimeSupportQualityRate >= 85 &&
-    childSatisfactionRate >= 90 &&
+    meets(bedtimeSupportQualityRate, 85) &&
+    meets(childSatisfactionRate, 90) &&
     totalBedtimeSupport > 0
   ) {
     insights.push({
@@ -1126,7 +1123,7 @@ export function computeSleepQualityRestManagement(
   }
 
   if (
-    childSatisfactionRate >= 90 &&
+    meets(childSatisfactionRate, 90) &&
     totalBedtimeSupport > 0
   ) {
     insights.push({
@@ -1136,7 +1133,7 @@ export function computeSleepQualityRestManagement(
   }
 
   if (
-    planReviewRate >= 90 &&
+    meets(planReviewRate, 90) &&
     (avgProgressRating ?? 0) >= 4.0 &&
     totalImprovementPlans > 0
   ) {
@@ -1147,7 +1144,7 @@ export function computeSleepQualityRestManagement(
   }
 
   if (
-    childInvolvementRate >= 90 &&
+    meets(childInvolvementRate, 90) &&
     totalImprovementPlans > 0
   ) {
     insights.push({
@@ -1157,7 +1154,7 @@ export function computeSleepQualityRestManagement(
   }
 
   if (
-    followUpCompletionRate >= 90 &&
+    meets(followUpCompletionRate, 90) &&
     followUpRequired > 0
   ) {
     insights.push({

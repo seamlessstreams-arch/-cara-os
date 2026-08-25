@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, BedDouble } from 
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { SleepQualityRating } from "@/lib/engines/home-sleep-quality-rest-management-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 function useHomeSleepQualityRestManagementIntelligence() {
   return useQuery({
@@ -61,7 +62,7 @@ export function HomeSleepQualityRestManagementIntelligenceCard() {
             <BedDouble className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-indigo-600")} />
             <span className="text-slate-900 font-bold">Sleep Quality & Rest Management</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.sleep_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.sleep_score}%</span>}
+            {d.sleep_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.sleep_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -69,28 +70,28 @@ export function HomeSleepQualityRestManagementIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.sleep_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.routine_adherence_rate >= 90 ? "bg-green-50" : d.routine_adherence_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.routine_adherence_rate >= 90 ? "text-[--cs-success]" : d.routine_adherence_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.routine_adherence_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.routine_adherence_rate, 90) ? "bg-green-50" : meets(d.routine_adherence_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.routine_adherence_rate, 90) ? "text-[--cs-success]" : meets(d.routine_adherence_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.routine_adherence_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Routine</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.environment_quality_rate >= 90 ? "bg-green-50" : d.environment_quality_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.environment_quality_rate >= 90 ? "text-[--cs-success]" : d.environment_quality_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.environment_quality_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.environment_quality_rate, 90) ? "bg-green-50" : meets(d.environment_quality_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.environment_quality_rate, 90) ? "text-[--cs-success]" : meets(d.environment_quality_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.environment_quality_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Environ.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.disturbance_resolution_rate >= 90 ? "bg-green-50" : d.disturbance_resolution_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.disturbance_resolution_rate >= 90 ? "text-[--cs-success]" : d.disturbance_resolution_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.disturbance_resolution_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.disturbance_resolution_rate, 90) ? "bg-green-50" : meets(d.disturbance_resolution_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.disturbance_resolution_rate, 90) ? "text-[--cs-success]" : meets(d.disturbance_resolution_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.disturbance_resolution_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Resolved</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.bedtime_support_quality_rate >= 90 ? "bg-green-50" : d.bedtime_support_quality_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.bedtime_support_quality_rate >= 90 ? "text-[--cs-success]" : d.bedtime_support_quality_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.bedtime_support_quality_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.bedtime_support_quality_rate, 90) ? "bg-green-50" : meets(d.bedtime_support_quality_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.bedtime_support_quality_rate, 90) ? "text-[--cs-success]" : meets(d.bedtime_support_quality_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.bedtime_support_quality_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Support</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.improvement_plan_coverage_rate >= 90 ? "bg-green-50" : d.improvement_plan_coverage_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.improvement_plan_coverage_rate >= 90 ? "text-[--cs-success]" : d.improvement_plan_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.improvement_plan_coverage_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.improvement_plan_coverage_rate, 90) ? "bg-green-50" : meets(d.improvement_plan_coverage_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.improvement_plan_coverage_rate, 90) ? "text-[--cs-success]" : meets(d.improvement_plan_coverage_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.improvement_plan_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Plans</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_satisfaction_rate >= 90 ? "bg-green-50" : d.child_satisfaction_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_satisfaction_rate >= 90 ? "text-[--cs-success]" : d.child_satisfaction_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_satisfaction_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_satisfaction_rate, 90) ? "bg-green-50" : meets(d.child_satisfaction_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_satisfaction_rate, 90) ? "text-[--cs-success]" : meets(d.child_satisfaction_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_satisfaction_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Satisf.</p>
             </div>
           </div>

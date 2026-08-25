@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME STAFF ROTA & ADEQUATE STAFFING INTELLIGENCE ENGINE
 // Monitors staffing adequacy — shift coverage completeness, staff-to-child
@@ -148,12 +149,18 @@ export interface StaffRotaResult {
   total_overtime_records: number;
   total_agency_records: number;
   total_rota_records: number;
-  shift_coverage_rate: number;
-  ratio_compliance_rate: number;
-  overtime_rate: number;
-  agency_usage_rate: number;
-  rota_planning_rate: number;
-  staff_satisfaction_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  shift_coverage_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  ratio_compliance_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  overtime_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  agency_usage_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  rota_planning_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staff_satisfaction_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: StaffRotaRecommendation[];
@@ -161,10 +168,6 @@ export interface StaffRotaResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -193,12 +196,12 @@ function emptyResult(
     total_overtime_records: 0,
     total_agency_records: 0,
     total_rota_records: 0,
-    shift_coverage_rate: 0,
-    ratio_compliance_rate: 0,
-    overtime_rate: 0,
-    agency_usage_rate: 0,
-    rota_planning_rate: 0,
-    staff_satisfaction_rate: 0,
+    shift_coverage_rate: null,
+    ratio_compliance_rate: null,
+    overtime_rate: null,
+    agency_usage_rate: null,
+    rota_planning_rate: null,
+    staff_satisfaction_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -278,10 +281,10 @@ export function computeStaffRotaAdequateStaffing(
   const totalShiftRecords = shift_coverage_records.length;
 
   const shiftsCovered = shift_coverage_records.filter((r) => r.shift_fully_covered).length;
-  const shiftCoverageRate = pct(shiftsCovered, totalShiftRecords);
+  const shiftCoverageRate = rate(shiftsCovered, totalShiftRecords);
 
   const handoversCompleted = shift_coverage_records.filter((r) => r.handover_completed).length;
-  const handoverRate = pct(handoversCompleted, totalShiftRecords);
+  const handoverRate = rate(handoversCompleted, totalShiftRecords);
 
   const handoverQualitySum = shift_coverage_records.reduce(
     (sum, r) => sum + r.handover_quality_rating,
@@ -294,18 +297,18 @@ export function computeStaffRotaAdequateStaffing(
       : null;
 
   const loneWorkingShifts = shift_coverage_records.filter((r) => r.lone_working_occurred).length;
-  const loneWorkingRate = pct(loneWorkingShifts, totalShiftRecords);
+  const loneWorkingRate = rate(loneWorkingShifts, totalShiftRecords);
 
   const loneWorkingAssessed = shift_coverage_records.filter(
     (r) => r.lone_working_occurred && r.lone_working_risk_assessed,
   ).length;
-  const loneWorkingAssessmentRate = pct(loneWorkingAssessed, loneWorkingShifts);
+  const loneWorkingAssessmentRate = rate(loneWorkingAssessed, loneWorkingShifts);
 
   const coverArrangedWhenNeeded = shift_coverage_records.filter(
     (r) => !r.shift_fully_covered && r.cover_arranged,
   ).length;
   const uncoveredShifts = shift_coverage_records.filter((r) => !r.shift_fully_covered).length;
-  const coverArrangementRate = pct(coverArrangedWhenNeeded, uncoveredShifts);
+  const coverArrangementRate = rate(coverArrangedWhenNeeded, uncoveredShifts);
 
   // Vacancy reasons analysis
   const vacancyReasons: Record<string, number> = {};
@@ -319,73 +322,73 @@ export function computeStaffRotaAdequateStaffing(
   const totalRatioRecords = ratio_compliance_records.length;
 
   const ratiosMet = ratio_compliance_records.filter((r) => r.ratio_met).length;
-  const ratioComplianceRate = pct(ratiosMet, totalRatioRecords);
+  const ratioComplianceRate = rate(ratiosMet, totalRatioRecords);
 
   const seniorOnDuty = ratio_compliance_records.filter((r) => r.senior_staff_on_duty).length;
-  const seniorCoverRate = pct(seniorOnDuty, totalRatioRecords);
+  const seniorCoverRate = rate(seniorOnDuty, totalRatioRecords);
 
   // --- Overtime metrics (inverted: lower overtime = better) ---
   const totalOvertimeRecords = overtime_records.length;
 
   const overtimeApproved = overtime_records.filter((r) => r.overtime_approved).length;
-  const overtimeApprovalRate = pct(overtimeApproved, totalOvertimeRecords);
+  const overtimeApprovalRate = rate(overtimeApproved, totalOvertimeRecords);
 
   const restCompliant = overtime_records.filter((r) => r.rest_period_compliant).length;
-  const restComplianceRate = pct(restCompliant, totalOvertimeRecords);
+  const restComplianceRate = rate(restCompliant, totalOvertimeRecords);
 
   const wtdCompliant = overtime_records.filter(
     (r) => r.working_time_directive_compliant,
   ).length;
-  const wtdComplianceRate = pct(wtdCompliant, totalOvertimeRecords);
+  const wtdComplianceRate = rate(wtdCompliant, totalOvertimeRecords);
 
   // Staff with consecutive days > 6
   const highConsecutiveDays = overtime_records.filter(
     (r) => r.consecutive_days_worked > 6,
   ).length;
-  const highConsecutiveRate = pct(highConsecutiveDays, totalOvertimeRecords);
+  const highConsecutiveRate = rate(highConsecutiveDays, totalOvertimeRecords);
 
   // Staff exceeding 48 hours weekly
   const excessiveWeeklyHours = overtime_records.filter(
     (r) => r.total_weekly_hours > 48,
   ).length;
-  const excessiveHoursRate = pct(excessiveWeeklyHours, totalOvertimeRecords);
+  const excessiveHoursRate = rate(excessiveWeeklyHours, totalOvertimeRecords);
 
   // Overtime rate: percentage of shifts that required overtime (inverted — lower is better)
   const overtimeRate =
     total_staff > 0
-      ? pct(totalOvertimeRecords, total_staff)
+      ? rate(totalOvertimeRecords, total_staff)
       : 0;
 
   // --- Agency usage metrics (inverted: lower agency = better) ---
   const totalAgencyRecords = agency_usage_records.length;
 
   const agencyInducted = agency_usage_records.filter((r) => r.agency_staff_inducted).length;
-  const agencyInductionRate = pct(agencyInducted, totalAgencyRecords);
+  const agencyInductionRate = rate(agencyInducted, totalAgencyRecords);
 
   const agencyDbsVerified = agency_usage_records.filter((r) => r.dbs_verified).length;
-  const agencyDbsRate = pct(agencyDbsVerified, totalAgencyRecords);
+  const agencyDbsRate = rate(agencyDbsVerified, totalAgencyRecords);
 
   const agencyKnownToHome = agency_usage_records.filter(
     (r) => r.agency_staff_known_to_home,
   ).length;
-  const agencyFamiliarityRate = pct(agencyKnownToHome, totalAgencyRecords);
+  const agencyFamiliarityRate = rate(agencyKnownToHome, totalAgencyRecords);
 
   const childrenBriefedForAgency = agency_usage_records.filter(
     (r) => r.children_briefed,
   ).length;
-  const childrenBriefedRate = pct(childrenBriefedForAgency, totalAgencyRecords);
+  const childrenBriefedRate = rate(childrenBriefedForAgency, totalAgencyRecords);
 
   const agencyFeedbackCollected = agency_usage_records.filter(
     (r) => r.feedback_collected,
   ).length;
-  const agencyFeedbackRate = pct(agencyFeedbackCollected, totalAgencyRecords);
+  const agencyFeedbackRate = rate(agencyFeedbackCollected, totalAgencyRecords);
 
   const totalAgencyCost = agency_usage_records.reduce((sum, r) => sum + r.cost, 0);
 
   // Agency usage rate: proportion of agency shifts among total establishment (inverted — lower is better)
   const agencyUsageRate =
     total_staff > 0
-      ? pct(totalAgencyRecords, total_staff)
+      ? rate(totalAgencyRecords, total_staff)
       : 0;
 
   // --- Rota planning metrics ---
@@ -394,14 +397,14 @@ export function computeStaffRotaAdequateStaffing(
   const rotasPublishedOnTime = rota_planning_records.filter(
     (r) => r.days_advance_published >= 7,
   ).length;
-  const rotaPublicationRate = pct(rotasPublishedOnTime, totalRotaRecords);
+  const rotaPublicationRate = rate(rotasPublishedOnTime, totalRotaRecords);
 
   const allShiftsFilled = rota_planning_records.filter((r) => r.all_shifts_filled).length;
 
   const skillMixAdequate = rota_planning_records.filter(
     (r) => r.skill_mix_adequate,
   ).length;
-  const skillMixRate = pct(skillMixAdequate, totalRotaRecords);
+  const skillMixRate = rate(skillMixAdequate, totalRotaRecords);
 
   const seniorCoverEveryShift = rota_planning_records.filter(
     (r) => r.senior_cover_every_shift,
@@ -414,7 +417,7 @@ export function computeStaffRotaAdequateStaffing(
   const contingencyInPlace = rota_planning_records.filter(
     (r) => r.contingency_plan_in_place,
   ).length;
-  const contingencyRate = pct(contingencyInPlace, totalRotaRecords);
+  const contingencyRate = rate(contingencyInPlace, totalRotaRecords);
 
   const rotaApproved = rota_planning_records.filter(
     (r) => r.rota_approved_by_manager,
@@ -446,66 +449,66 @@ export function computeStaffRotaAdequateStaffing(
   const rotaPlanningNumerator =
     rotasPublishedOnTime + allShiftsFilled + skillMixAdequate + seniorCoverEveryShift + rotaApproved;
   const rotaPlanningDenominator = totalRotaRecords * 5;
-  const rotaPlanningRate = pct(rotaPlanningNumerator, rotaPlanningDenominator);
+  const rotaPlanningRate = rate(rotaPlanningNumerator, rotaPlanningDenominator);
 
   // --- Staff satisfaction rate (composite from preferences, consultation, fairness) ---
   const staffSatisfactionNumerator = preferencesConsidered + staffConsulted;
   const staffSatisfactionDenominator = totalRotaRecords * 2;
-  const staffSatisfactionRate = pct(staffSatisfactionNumerator, staffSatisfactionDenominator);
+  const staffSatisfactionRate = rate(staffSatisfactionNumerator, staffSatisfactionDenominator);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: shiftCoverageRate (>=95: +4, >=80: +2) ---
-  if (shiftCoverageRate >= 95) score += 4;
-  else if (shiftCoverageRate >= 80) score += 2;
+  if (meets(shiftCoverageRate, 95)) score += 4;
+  else if (meets(shiftCoverageRate, 80)) score += 2;
 
   // --- Bonus 2: ratioComplianceRate (>=95: +4, >=80: +2) ---
-  if (ratioComplianceRate >= 95) score += 4;
-  else if (ratioComplianceRate >= 80) score += 2;
+  if (meets(ratioComplianceRate, 95)) score += 4;
+  else if (meets(ratioComplianceRate, 80)) score += 2;
 
   // --- Bonus 3: rotaPlanningRate (>=90: +4, >=70: +2) ---
-  if (rotaPlanningRate >= 90) score += 4;
-  else if (rotaPlanningRate >= 70) score += 2;
+  if (meets(rotaPlanningRate, 90)) score += 4;
+  else if (meets(rotaPlanningRate, 70)) score += 2;
 
   // --- Bonus 4: handoverRate (>=95: +3, >=80: +1) ---
-  if (handoverRate >= 95) score += 3;
-  else if (handoverRate >= 80) score += 1;
+  if (meets(handoverRate, 95)) score += 3;
+  else if (meets(handoverRate, 80)) score += 1;
 
   // --- Bonus 5: wtdComplianceRate (>=95: +3, >=80: +1) ---
-  if (wtdComplianceRate >= 95) score += 3;
-  else if (wtdComplianceRate >= 80) score += 1;
+  if (meets(wtdComplianceRate, 95)) score += 3;
+  else if (meets(wtdComplianceRate, 80)) score += 1;
 
   // --- Bonus 6: agencyInductionRate (>=95: +3, >=75: +1) ---
-  if (agencyInductionRate >= 95) score += 3;
-  else if (agencyInductionRate >= 75) score += 1;
+  if (meets(agencyInductionRate, 95)) score += 3;
+  else if (meets(agencyInductionRate, 75)) score += 1;
 
   // --- Bonus 7: seniorCoverRate (>=90: +3, >=70: +1) ---
-  if (seniorCoverRate >= 90) score += 3;
-  else if (seniorCoverRate >= 70) score += 1;
+  if (meets(seniorCoverRate, 90)) score += 3;
+  else if (meets(seniorCoverRate, 70)) score += 1;
 
   // --- Bonus 8: staffSatisfactionRate (>=90: +2, >=70: +1) ---
-  if (staffSatisfactionRate >= 90) score += 2;
-  else if (staffSatisfactionRate >= 70) score += 1;
+  if (meets(staffSatisfactionRate, 90)) score += 2;
+  else if (meets(staffSatisfactionRate, 70)) score += 1;
 
   // --- Bonus 9: contingencyRate (>=90: +2, >=70: +1) ---
-  if (contingencyRate >= 90) score += 2;
-  else if (contingencyRate >= 70) score += 1;
+  if (meets(contingencyRate, 90)) score += 2;
+  else if (meets(contingencyRate, 70)) score += 1;
 
   // ── Penalties (guarded by array.length > 0) ───────────────────────────
 
   // Penalty 1: shiftCoverageRate < 60 → -5
-  if (shiftCoverageRate < 60 && shift_coverage_records.length > 0) score -= 5;
+  if (below(shiftCoverageRate, 60) && shift_coverage_records.length > 0) score -= 5;
 
   // Penalty 2: ratioComplianceRate < 60 → -5
-  if (ratioComplianceRate < 60 && ratio_compliance_records.length > 0) score -= 5;
+  if (below(ratioComplianceRate, 60) && ratio_compliance_records.length > 0) score -= 5;
 
   // Penalty 3: excessiveHoursRate > 30 → -4
-  if (excessiveHoursRate > 30 && overtime_records.length > 0) score -= 4;
+  if (above(excessiveHoursRate, 30) && overtime_records.length > 0) score -= 4;
 
   // Penalty 4: rotaPlanningRate < 40 → -4
-  if (rotaPlanningRate < 40 && rota_planning_records.length > 0) score -= 4;
+  if (below(rotaPlanningRate, 40) && rota_planning_records.length > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -515,149 +518,149 @@ export function computeStaffRotaAdequateStaffing(
 
   const strengths: string[] = [];
 
-  if (shiftCoverageRate >= 95 && totalShiftRecords > 0) {
+  if (meets(shiftCoverageRate, 95) && totalShiftRecords > 0) {
     strengths.push(
       `${shiftCoverageRate}% shift coverage — virtually all shifts are fully staffed, ensuring children are cared for by sufficient staff at all times. This demonstrates excellent workforce planning and management.`,
     );
-  } else if (shiftCoverageRate >= 80 && totalShiftRecords > 0) {
+  } else if (meets(shiftCoverageRate, 80) && totalShiftRecords > 0) {
     strengths.push(
       `${shiftCoverageRate}% shift coverage — the home maintains good staffing levels across the majority of shifts, with effective cover arrangements in place.`,
     );
   }
 
-  if (ratioComplianceRate >= 95 && totalRatioRecords > 0) {
+  if (meets(ratioComplianceRate, 95) && totalRatioRecords > 0) {
     strengths.push(
       `${ratioComplianceRate}% ratio compliance — staff-to-child ratios are consistently met, ensuring children receive adequate supervision and individualised attention at all times.`,
     );
-  } else if (ratioComplianceRate >= 80 && totalRatioRecords > 0) {
+  } else if (meets(ratioComplianceRate, 80) && totalRatioRecords > 0) {
     strengths.push(
       `${ratioComplianceRate}% ratio compliance — the home generally maintains safe staff-to-child ratios across shifts and time periods.`,
     );
   }
 
-  if (handoverRate >= 95 && totalShiftRecords > 0) {
+  if (meets(handoverRate, 95) && totalShiftRecords > 0) {
     strengths.push(
       `${handoverRate}% handover completion — shift handovers are consistently completed, ensuring continuity of care and seamless information transfer between staff teams.`,
     );
-  } else if (handoverRate >= 80 && totalShiftRecords > 0) {
+  } else if (meets(handoverRate, 80) && totalShiftRecords > 0) {
     strengths.push(
       `${handoverRate}% handover completion — the majority of shift handovers are completed, supporting good continuity of care.`,
     );
   }
 
-  if (rotaPlanningRate >= 90 && totalRotaRecords > 0) {
+  if (meets(rotaPlanningRate, 90) && totalRotaRecords > 0) {
     strengths.push(
       `${rotaPlanningRate}% rota planning quality — rotas are published on time with adequate skill mix, senior cover, and manager approval. Staff can plan their lives with confidence, reducing turnover risk.`,
     );
-  } else if (rotaPlanningRate >= 70 && totalRotaRecords > 0) {
+  } else if (meets(rotaPlanningRate, 70) && totalRotaRecords > 0) {
     strengths.push(
       `${rotaPlanningRate}% rota planning quality — the home generally plans rotas effectively with good advance notice and skill mix consideration.`,
     );
   }
 
-  if (wtdComplianceRate >= 95 && totalOvertimeRecords > 0) {
+  if (meets(wtdComplianceRate, 95) && totalOvertimeRecords > 0) {
     strengths.push(
       `${wtdComplianceRate}% Working Time Directive compliance — staff are consistently working within legal limits, protecting their wellbeing and ensuring they are not fatigued when caring for children.`,
     );
-  } else if (wtdComplianceRate >= 80 && totalOvertimeRecords > 0) {
+  } else if (meets(wtdComplianceRate, 80) && totalOvertimeRecords > 0) {
     strengths.push(
       `${wtdComplianceRate}% Working Time Directive compliance — the home generally manages staff hours within legal requirements.`,
     );
   }
 
-  if (restComplianceRate >= 95 && totalOvertimeRecords > 0) {
+  if (meets(restComplianceRate, 95) && totalOvertimeRecords > 0) {
     strengths.push(
       `${restComplianceRate}% rest period compliance — staff consistently receive adequate rest between shifts, reducing fatigue risk and maintaining care quality.`,
     );
-  } else if (restComplianceRate >= 80 && totalOvertimeRecords > 0) {
+  } else if (meets(restComplianceRate, 80) && totalOvertimeRecords > 0) {
     strengths.push(
       `${restComplianceRate}% rest period compliance — rest periods are generally maintained between shifts.`,
     );
   }
 
-  if (agencyInductionRate >= 95 && totalAgencyRecords > 0) {
+  if (meets(agencyInductionRate, 95) && totalAgencyRecords > 0) {
     strengths.push(
       `${agencyInductionRate}% agency staff induction rate — all agency workers are fully inducted before working with children, ensuring they understand the home's policies, procedures, and individual children's needs.`,
     );
-  } else if (agencyInductionRate >= 75 && totalAgencyRecords > 0) {
+  } else if (meets(agencyInductionRate, 75) && totalAgencyRecords > 0) {
     strengths.push(
       `${agencyInductionRate}% agency staff induction rate — most agency staff receive appropriate induction before working with children.`,
     );
   }
 
-  if (agencyDbsRate >= 95 && totalAgencyRecords > 0) {
+  if (meets(agencyDbsRate, 95) && totalAgencyRecords > 0) {
     strengths.push(
       `${agencyDbsRate}% agency DBS verification — the home consistently verifies enhanced DBS checks for all agency staff before they have contact with children.`,
     );
   }
 
-  if (seniorCoverRate >= 90 && totalRatioRecords > 0) {
+  if (meets(seniorCoverRate, 90) && totalRatioRecords > 0) {
     strengths.push(
       `${seniorCoverRate}% senior staff presence on shift — experienced staff are consistently available to provide leadership, oversight, and support during shifts.`,
     );
-  } else if (seniorCoverRate >= 70 && totalRatioRecords > 0) {
+  } else if (meets(seniorCoverRate, 70) && totalRatioRecords > 0) {
     strengths.push(
       `${seniorCoverRate}% senior staff presence — the home generally ensures senior or experienced staff are available across shifts.`,
     );
   }
 
-  if (staffSatisfactionRate >= 90 && totalRotaRecords > 0) {
+  if (meets(staffSatisfactionRate, 90) && totalRotaRecords > 0) {
     strengths.push(
       `${staffSatisfactionRate}% staff satisfaction indicators — staff preferences are considered and staff are consulted about rota planning, promoting workforce wellbeing, retention, and engagement.`,
     );
-  } else if (staffSatisfactionRate >= 70 && totalRotaRecords > 0) {
+  } else if (meets(staffSatisfactionRate, 70) && totalRotaRecords > 0) {
     strengths.push(
       `${staffSatisfactionRate}% staff satisfaction indicators — the home generally considers staff preferences and consults on rota arrangements.`,
     );
   }
 
-  if (contingencyRate >= 90 && totalRotaRecords > 0) {
+  if (meets(contingencyRate, 90) && totalRotaRecords > 0) {
     strengths.push(
       `${contingencyRate}% contingency planning in rotas — the home proactively plans for staffing emergencies, ensuring children's care is not compromised by unplanned absences.`,
     );
-  } else if (contingencyRate >= 70 && totalRotaRecords > 0) {
+  } else if (meets(contingencyRate, 70) && totalRotaRecords > 0) {
     strengths.push(
       `${contingencyRate}% contingency planning — most rota periods have contingency arrangements in place for unexpected staffing shortfalls.`,
     );
   }
 
-  if (coverArrangementRate >= 90 && uncoveredShifts > 0) {
+  if (meets(coverArrangementRate, 90) && uncoveredShifts > 0) {
     strengths.push(
       `${coverArrangementRate}% of uncovered shifts had alternative cover arranged — the home is effective at responding to staffing gaps and maintaining safe staffing levels.`,
     );
   }
 
-  if (overtimeApprovalRate >= 95 && totalOvertimeRecords > 0) {
+  if (meets(overtimeApprovalRate, 95) && totalOvertimeRecords > 0) {
     strengths.push(
       `${overtimeApprovalRate}% overtime approval rate — all overtime is properly authorised, demonstrating good governance and management oversight of additional working hours.`,
     );
   }
 
-  if (agencyFamiliarityRate >= 80 && totalAgencyRecords > 0) {
+  if (meets(agencyFamiliarityRate, 80) && totalAgencyRecords > 0) {
     strengths.push(
       `${agencyFamiliarityRate}% of agency staff are known to the home — using familiar agency workers provides children with greater consistency and reduces the disruption of unfamiliar adults entering their living space.`,
     );
   }
 
-  if (childrenBriefedRate >= 90 && totalAgencyRecords > 0) {
+  if (meets(childrenBriefedRate, 90) && totalAgencyRecords > 0) {
     strengths.push(
       `${childrenBriefedRate}% of agency placements had children briefed — children are consistently informed when agency staff will be working, respecting their right to know who is in their home.`,
     );
   }
 
-  if (totalRotaRecords > 0 && avgFairnessScore !== null && avgFairnessScore >= 4.0) {
+  if (above(totalRotaRecords, 0) && avgFairnessScore !== null && avgFairnessScore >= 4.0) {
     strengths.push(
       `Average fairness score of ${avgFairnessScore}/5 — unsocial hours and demanding shifts are distributed equitably among staff, promoting workforce morale and reducing burnout risk.`,
     );
   }
 
-  if (skillMixRate >= 90 && totalRotaRecords > 0) {
+  if (meets(skillMixRate, 90) && totalRotaRecords > 0) {
     strengths.push(
       `${skillMixRate}% of rotas have adequate skill mix — the home ensures each shift has the right combination of skills, experience, and qualifications to meet children's assessed needs.`,
     );
   }
 
-  if (rotaPublicationRate >= 90 && totalRotaRecords > 0) {
+  if (meets(rotaPublicationRate, 90) && totalRotaRecords > 0) {
     strengths.push(
       `${rotaPublicationRate}% of rotas published at least 7 days in advance — staff have adequate notice to plan their personal lives, contributing to work-life balance and staff retention.`,
     );
@@ -673,125 +676,125 @@ export function computeStaffRotaAdequateStaffing(
 
   const concerns: string[] = [];
 
-  if (shiftCoverageRate < 60 && totalShiftRecords > 0) {
+  if (below(shiftCoverageRate, 60) && totalShiftRecords > 0) {
     concerns.push(
       `Only ${shiftCoverageRate}% shift coverage — a significant proportion of shifts are not fully staffed. This places children at risk of inadequate supervision and reduces the quality of individualised care they receive.`,
     );
-  } else if (shiftCoverageRate < 80 && shiftCoverageRate >= 60 && totalShiftRecords > 0) {
+  } else if (below(shiftCoverageRate, 80) && meets(shiftCoverageRate, 60) && totalShiftRecords > 0) {
     concerns.push(
       `Shift coverage at ${shiftCoverageRate}% — some shifts are not fully staffed, potentially compromising the home's ability to meet children's assessed needs and maintain safe ratios.`,
     );
   }
 
-  if (ratioComplianceRate < 60 && totalRatioRecords > 0) {
+  if (below(ratioComplianceRate, 60) && totalRatioRecords > 0) {
     concerns.push(
       `Only ${ratioComplianceRate}% ratio compliance — staff-to-child ratios are frequently breached. Children are not receiving the level of supervision and attention required by their assessed needs and the home's statement of purpose.`,
     );
-  } else if (ratioComplianceRate < 80 && ratioComplianceRate >= 60 && totalRatioRecords > 0) {
+  } else if (below(ratioComplianceRate, 80) && meets(ratioComplianceRate, 60) && totalRatioRecords > 0) {
     concerns.push(
       `Ratio compliance at ${ratioComplianceRate}% — staff-to-child ratios are not consistently maintained across all time periods, creating periods where children may not receive adequate attention.`,
     );
   }
 
-  if (excessiveHoursRate > 30 && totalOvertimeRecords > 0) {
+  if (above(excessiveHoursRate, 30) && totalOvertimeRecords > 0) {
     concerns.push(
       `${excessiveHoursRate}% of overtime records show staff exceeding 48 hours per week — excessive working hours increase fatigue risk, impair professional judgement, and compromise the quality of care provided to children.`,
     );
-  } else if (excessiveHoursRate > 15 && excessiveHoursRate <= 30 && totalOvertimeRecords > 0) {
+  } else if (above(excessiveHoursRate, 15) && excessiveHoursRate! <= 30 && totalOvertimeRecords > 0) {
     concerns.push(
       `${excessiveHoursRate}% of overtime records show weekly hours exceeding 48 — some staff are working beyond recommended limits, which may impact their ability to provide consistent, high-quality care.`,
     );
   }
 
-  if (highConsecutiveRate > 30 && totalOvertimeRecords > 0) {
+  if (above(highConsecutiveRate, 30) && totalOvertimeRecords > 0) {
     concerns.push(
       `${highConsecutiveRate}% of overtime records show staff working more than 6 consecutive days — extended work periods without adequate rest compromise staff wellbeing and the quality of care children receive.`,
     );
-  } else if (highConsecutiveRate > 15 && highConsecutiveRate <= 30 && totalOvertimeRecords > 0) {
+  } else if (above(highConsecutiveRate, 15) && highConsecutiveRate! <= 30 && totalOvertimeRecords > 0) {
     concerns.push(
       `${highConsecutiveRate}% of overtime records show more than 6 consecutive days worked — some staff are not receiving adequate rest periods between working stretches.`,
     );
   }
 
-  if (rotaPlanningRate < 40 && totalRotaRecords > 0) {
+  if (below(rotaPlanningRate, 40) && totalRotaRecords > 0) {
     concerns.push(
       `Rota planning quality at only ${rotaPlanningRate}% — rotas are not published on time, shifts are left unfilled, skill mix is inadequate, and manager oversight is insufficient. This undermines workforce stability and children's experience of consistent care.`,
     );
-  } else if (rotaPlanningRate < 70 && rotaPlanningRate >= 40 && totalRotaRecords > 0) {
+  } else if (below(rotaPlanningRate, 70) && meets(rotaPlanningRate, 40) && totalRotaRecords > 0) {
     concerns.push(
       `Rota planning quality at ${rotaPlanningRate}% — there are gaps in rota management including issues with publication timing, shift filling, skill mix, or managerial approval.`,
     );
   }
 
-  if (handoverRate < 60 && totalShiftRecords > 0) {
+  if (below(handoverRate, 60) && totalShiftRecords > 0) {
     concerns.push(
       `Only ${handoverRate}% handover completion — incomplete handovers risk critical information being lost between shifts, potentially compromising children's safety and care continuity.`,
     );
-  } else if (handoverRate < 80 && handoverRate >= 60 && totalShiftRecords > 0) {
+  } else if (below(handoverRate, 80) && meets(handoverRate, 60) && totalShiftRecords > 0) {
     concerns.push(
       `Handover completion at ${handoverRate}% — some shift handovers are not completed, creating risks to continuity of care and information transfer.`,
     );
   }
 
-  if (restComplianceRate < 60 && totalOvertimeRecords > 0) {
+  if (below(restComplianceRate, 60) && totalOvertimeRecords > 0) {
     concerns.push(
       `Only ${restComplianceRate}% rest period compliance — staff are frequently not receiving adequate rest between shifts. Fatigued staff pose a risk to children's safety and their own wellbeing.`,
     );
-  } else if (restComplianceRate < 80 && restComplianceRate >= 60 && totalOvertimeRecords > 0) {
+  } else if (below(restComplianceRate, 80) && meets(restComplianceRate, 60) && totalOvertimeRecords > 0) {
     concerns.push(
       `Rest period compliance at ${restComplianceRate}% — some staff are not receiving sufficient rest between shifts, which may impact their alertness and care quality.`,
     );
   }
 
-  if (agencyInductionRate < 60 && totalAgencyRecords > 0) {
+  if (below(agencyInductionRate, 60) && totalAgencyRecords > 0) {
     concerns.push(
       `Only ${agencyInductionRate}% agency staff induction rate — agency workers are entering the home without proper induction, meaning they may not understand children's individual needs, behaviour plans, or the home's safeguarding procedures.`,
     );
-  } else if (agencyInductionRate < 75 && agencyInductionRate >= 60 && totalAgencyRecords > 0) {
+  } else if (below(agencyInductionRate, 75) && meets(agencyInductionRate, 60) && totalAgencyRecords > 0) {
     concerns.push(
       `Agency induction rate at ${agencyInductionRate}% — not all agency staff receive adequate induction before working with children.`,
     );
   }
 
-  if (agencyDbsRate < 80 && totalAgencyRecords > 0) {
+  if (below(agencyDbsRate, 80) && totalAgencyRecords > 0) {
     concerns.push(
       `Only ${agencyDbsRate}% agency DBS verification — some agency staff are working with children without verified enhanced DBS checks. This is a serious safeguarding concern under Reg 32.`,
     );
   }
 
-  if (seniorCoverRate < 50 && totalRatioRecords > 0) {
+  if (below(seniorCoverRate, 50) && totalRatioRecords > 0) {
     concerns.push(
       `Only ${seniorCoverRate}% senior staff presence on shift — many shifts lack experienced leadership, leaving less experienced staff without adequate support and guidance.`,
     );
-  } else if (seniorCoverRate < 70 && seniorCoverRate >= 50 && totalRatioRecords > 0) {
+  } else if (below(seniorCoverRate, 70) && meets(seniorCoverRate, 50) && totalRatioRecords > 0) {
     concerns.push(
       `Senior staff presence at ${seniorCoverRate}% — some shifts lack senior cover, which may reduce the quality of decision-making and staff support.`,
     );
   }
 
-  if (loneWorkingRate > 20 && totalShiftRecords > 0) {
+  if (above(loneWorkingRate, 20) && totalShiftRecords > 0) {
     concerns.push(
       `Lone working occurring on ${loneWorkingRate}% of shifts — frequent lone working increases risk to both staff and children and may indicate systemic staffing shortfalls.`,
     );
   }
 
-  if (loneWorkingAssessmentRate < 80 && loneWorkingShifts > 0) {
+  if (below(loneWorkingAssessmentRate, 80) && loneWorkingShifts > 0) {
     concerns.push(
       `Only ${loneWorkingAssessmentRate}% of lone working instances risk assessed — when lone working occurs, it must be formally risk assessed to protect both staff and children.`,
     );
   }
 
-  if (staffSatisfactionRate < 50 && totalRotaRecords > 0) {
+  if (below(staffSatisfactionRate, 50) && totalRotaRecords > 0) {
     concerns.push(
       `Staff satisfaction indicators at only ${staffSatisfactionRate}% — staff preferences are not being considered and staff are not consulted about rota arrangements, which may contribute to low morale, disengagement, and higher turnover.`,
     );
-  } else if (staffSatisfactionRate < 70 && staffSatisfactionRate >= 50 && totalRotaRecords > 0) {
+  } else if (below(staffSatisfactionRate, 70) && meets(staffSatisfactionRate, 50) && totalRotaRecords > 0) {
     concerns.push(
       `Staff satisfaction indicators at ${staffSatisfactionRate}% — rota arrangements do not consistently consider staff preferences or consultation.`,
     );
   }
 
-  if (childrenBriefedRate < 60 && totalAgencyRecords > 0) {
+  if (below(childrenBriefedRate, 60) && totalAgencyRecords > 0) {
     concerns.push(
       `Only ${childrenBriefedRate}% of agency placements had children briefed — children have a right to know who is working in their home. Not informing them undermines their sense of security and control.`,
     );
@@ -832,7 +835,7 @@ export function computeStaffRotaAdequateStaffing(
   const recommendations: StaffRotaRecommendation[] = [];
   let rank = 0;
 
-  if (shiftCoverageRate < 60 && totalShiftRecords > 0) {
+  if (below(shiftCoverageRate, 60) && totalShiftRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -842,7 +845,7 @@ export function computeStaffRotaAdequateStaffing(
     });
   }
 
-  if (ratioComplianceRate < 60 && totalRatioRecords > 0) {
+  if (below(ratioComplianceRate, 60) && totalRatioRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -852,7 +855,7 @@ export function computeStaffRotaAdequateStaffing(
     });
   }
 
-  if (excessiveHoursRate > 30 && totalOvertimeRecords > 0) {
+  if (above(excessiveHoursRate, 30) && totalOvertimeRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -862,7 +865,7 @@ export function computeStaffRotaAdequateStaffing(
     });
   }
 
-  if (rotaPlanningRate < 40 && totalRotaRecords > 0) {
+  if (below(rotaPlanningRate, 40) && totalRotaRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -872,7 +875,7 @@ export function computeStaffRotaAdequateStaffing(
     });
   }
 
-  if (agencyDbsRate < 80 && totalAgencyRecords > 0) {
+  if (below(agencyDbsRate, 80) && totalAgencyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -882,7 +885,7 @@ export function computeStaffRotaAdequateStaffing(
     });
   }
 
-  if (handoverRate < 60 && totalShiftRecords > 0) {
+  if (below(handoverRate, 60) && totalShiftRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -892,7 +895,7 @@ export function computeStaffRotaAdequateStaffing(
     });
   }
 
-  if (restComplianceRate < 60 && totalOvertimeRecords > 0) {
+  if (below(restComplianceRate, 60) && totalOvertimeRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -902,7 +905,7 @@ export function computeStaffRotaAdequateStaffing(
     });
   }
 
-  if (agencyInductionRate < 60 && totalAgencyRecords > 0) {
+  if (below(agencyInductionRate, 60) && totalAgencyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -942,7 +945,7 @@ export function computeStaffRotaAdequateStaffing(
     });
   }
 
-  if (seniorCoverRate < 50 && totalRatioRecords > 0) {
+  if (below(seniorCoverRate, 50) && totalRatioRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -952,7 +955,7 @@ export function computeStaffRotaAdequateStaffing(
     });
   }
 
-  if (loneWorkingRate > 20 && totalShiftRecords > 0) {
+  if (above(loneWorkingRate, 20) && totalShiftRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -962,7 +965,7 @@ export function computeStaffRotaAdequateStaffing(
     });
   }
 
-  if (childrenBriefedRate < 60 && totalAgencyRecords > 0) {
+  if (below(childrenBriefedRate, 60) && totalAgencyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -973,8 +976,8 @@ export function computeStaffRotaAdequateStaffing(
   }
 
   if (
-    shiftCoverageRate >= 60 &&
-    shiftCoverageRate < 80 &&
+    meets(shiftCoverageRate, 60) &&
+    below(shiftCoverageRate, 80) &&
     totalShiftRecords > 0
   ) {
     recommendations.push({
@@ -987,8 +990,8 @@ export function computeStaffRotaAdequateStaffing(
   }
 
   if (
-    ratioComplianceRate >= 60 &&
-    ratioComplianceRate < 80 &&
+    meets(ratioComplianceRate, 60) &&
+    below(ratioComplianceRate, 80) &&
     totalRatioRecords > 0
   ) {
     recommendations.push({
@@ -1001,8 +1004,8 @@ export function computeStaffRotaAdequateStaffing(
   }
 
   if (
-    rotaPlanningRate >= 40 &&
-    rotaPlanningRate < 70 &&
+    meets(rotaPlanningRate, 40) &&
+    below(rotaPlanningRate, 70) &&
     totalRotaRecords > 0
   ) {
     recommendations.push({
@@ -1015,8 +1018,8 @@ export function computeStaffRotaAdequateStaffing(
   }
 
   if (
-    handoverRate >= 60 &&
-    handoverRate < 80 &&
+    meets(handoverRate, 60) &&
+    below(handoverRate, 80) &&
     totalShiftRecords > 0
   ) {
     recommendations.push({
@@ -1029,8 +1032,8 @@ export function computeStaffRotaAdequateStaffing(
   }
 
   if (
-    staffSatisfactionRate >= 50 &&
-    staffSatisfactionRate < 70 &&
+    meets(staffSatisfactionRate, 50) &&
+    below(staffSatisfactionRate, 70) &&
     totalRotaRecords > 0
   ) {
     recommendations.push({
@@ -1043,8 +1046,8 @@ export function computeStaffRotaAdequateStaffing(
   }
 
   if (
-    agencyInductionRate >= 60 &&
-    agencyInductionRate < 75 &&
+    meets(agencyInductionRate, 60) &&
+    below(agencyInductionRate, 75) &&
     totalAgencyRecords > 0
   ) {
     recommendations.push({
@@ -1056,7 +1059,7 @@ export function computeStaffRotaAdequateStaffing(
     });
   }
 
-  if (agencyFeedbackRate < 70 && totalAgencyRecords > 0) {
+  if (below(agencyFeedbackRate, 70) && totalAgencyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1066,7 +1069,7 @@ export function computeStaffRotaAdequateStaffing(
     });
   }
 
-  if (contingencyRate < 70 && totalRotaRecords > 0) {
+  if (below(contingencyRate, 70) && totalRotaRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1102,35 +1105,35 @@ export function computeStaffRotaAdequateStaffing(
 
   // -- Critical insights --
 
-  if (shiftCoverageRate < 60 && totalShiftRecords > 0) {
+  if (below(shiftCoverageRate, 60) && totalShiftRecords > 0) {
     insights.push({
       text: `Only ${shiftCoverageRate}% shift coverage. Ofsted expects children's homes to be adequately staffed at all times. When shifts are frequently under-staffed, children's supervision, individualised care, and engagement in activities are all compromised. This is a fundamental Reg 16 concern.`,
       severity: "critical",
     });
   }
 
-  if (ratioComplianceRate < 60 && totalRatioRecords > 0) {
+  if (below(ratioComplianceRate, 60) && totalRatioRecords > 0) {
     insights.push({
       text: `Only ${ratioComplianceRate}% ratio compliance. Persistent ratio breaches mean children are not receiving the level of adult attention and supervision required by their assessed needs. In a Reg 44 or Reg 45 inspection, this would be identified as a significant shortfall in Reg 16 compliance.`,
       severity: "critical",
     });
   }
 
-  if (excessiveHoursRate > 30 && totalOvertimeRecords > 0) {
+  if (above(excessiveHoursRate, 30) && totalOvertimeRecords > 0) {
     insights.push({
       text: `${excessiveHoursRate}% of overtime records show staff exceeding 48 weekly hours. Chronic overwork leads to fatigue, reduced attentiveness, impaired decision-making, and increased risk of incidents. The Working Time Regulations exist to protect both staff and the children they care for.`,
       severity: "critical",
     });
   }
 
-  if (rotaPlanningRate < 40 && totalRotaRecords > 0) {
+  if (below(rotaPlanningRate, 40) && totalRotaRecords > 0) {
     insights.push({
       text: `Rota planning quality at only ${rotaPlanningRate}%. Poor rota management is frequently a root cause of staffing shortfalls. When rotas are not published on time, shifts remain unfilled, skill mix is not considered, and managers do not approve the final plan — the entire staffing infrastructure is compromised.`,
       severity: "critical",
     });
   }
 
-  if (agencyDbsRate < 80 && totalAgencyRecords > 0) {
+  if (below(agencyDbsRate, 80) && totalAgencyRecords > 0) {
     insights.push({
       text: `Only ${agencyDbsRate}% agency DBS verification. Allowing agency staff to work with looked-after children without verified enhanced DBS checks is a serious safeguarding failure. Reg 32 requires that all workers are fit to work with children — unverified DBS status is unacceptable.`,
       severity: "critical",
@@ -1151,7 +1154,7 @@ export function computeStaffRotaAdequateStaffing(
     });
   }
 
-  if (highConsecutiveRate > 30 && totalOvertimeRecords > 0) {
+  if (above(highConsecutiveRate, 30) && totalOvertimeRecords > 0) {
     insights.push({
       text: `${highConsecutiveRate}% of overtime records show staff working more than 6 consecutive days. Extended work periods without breaks contribute to staff burnout, increase sick leave, and undermine the quality of therapeutic care. This pattern often indicates chronic understaffing.`,
       severity: "critical",
@@ -1161,8 +1164,8 @@ export function computeStaffRotaAdequateStaffing(
   // -- Warning insights --
 
   if (
-    shiftCoverageRate >= 60 &&
-    shiftCoverageRate < 80 &&
+    meets(shiftCoverageRate, 60) &&
+    below(shiftCoverageRate, 80) &&
     totalShiftRecords > 0
   ) {
     insights.push({
@@ -1172,8 +1175,8 @@ export function computeStaffRotaAdequateStaffing(
   }
 
   if (
-    ratioComplianceRate >= 60 &&
-    ratioComplianceRate < 80 &&
+    meets(ratioComplianceRate, 60) &&
+    below(ratioComplianceRate, 80) &&
     totalRatioRecords > 0
   ) {
     insights.push({
@@ -1183,8 +1186,8 @@ export function computeStaffRotaAdequateStaffing(
   }
 
   if (
-    rotaPlanningRate >= 40 &&
-    rotaPlanningRate < 70 &&
+    meets(rotaPlanningRate, 40) &&
+    below(rotaPlanningRate, 70) &&
     totalRotaRecords > 0
   ) {
     insights.push({
@@ -1194,8 +1197,8 @@ export function computeStaffRotaAdequateStaffing(
   }
 
   if (
-    handoverRate >= 60 &&
-    handoverRate < 80 &&
+    meets(handoverRate, 60) &&
+    below(handoverRate, 80) &&
     totalShiftRecords > 0
   ) {
     insights.push({
@@ -1205,8 +1208,8 @@ export function computeStaffRotaAdequateStaffing(
   }
 
   if (
-    restComplianceRate >= 60 &&
-    restComplianceRate < 80 &&
+    meets(restComplianceRate, 60) &&
+    below(restComplianceRate, 80) &&
     totalOvertimeRecords > 0
   ) {
     insights.push({
@@ -1216,8 +1219,8 @@ export function computeStaffRotaAdequateStaffing(
   }
 
   if (
-    seniorCoverRate >= 50 &&
-    seniorCoverRate < 70 &&
+    meets(seniorCoverRate, 50) &&
+    below(seniorCoverRate, 70) &&
     totalRatioRecords > 0
   ) {
     insights.push({
@@ -1227,8 +1230,8 @@ export function computeStaffRotaAdequateStaffing(
   }
 
   if (
-    staffSatisfactionRate >= 50 &&
-    staffSatisfactionRate < 70 &&
+    meets(staffSatisfactionRate, 50) &&
+    below(staffSatisfactionRate, 70) &&
     totalRotaRecords > 0
   ) {
     insights.push({
@@ -1237,7 +1240,7 @@ export function computeStaffRotaAdequateStaffing(
     });
   }
 
-  if (loneWorkingRate > 10 && loneWorkingRate <= 20 && totalShiftRecords > 0) {
+  if (above(loneWorkingRate, 10) && loneWorkingRate! <= 20 && totalShiftRecords > 0) {
     insights.push({
       text: `Lone working occurring on ${loneWorkingRate}% of shifts — while occasional lone working may be unavoidable, the frequency should be minimised. Each instance requires a risk assessment and clear escalation procedures.`,
       severity: "warning",
@@ -1245,8 +1248,8 @@ export function computeStaffRotaAdequateStaffing(
   }
 
   if (
-    agencyInductionRate >= 60 &&
-    agencyInductionRate < 75 &&
+    meets(agencyInductionRate, 60) &&
+    below(agencyInductionRate, 75) &&
     totalAgencyRecords > 0
   ) {
     insights.push({
@@ -1255,7 +1258,7 @@ export function computeStaffRotaAdequateStaffing(
     });
   }
 
-  if (agencyFeedbackRate < 70 && agencyFeedbackRate > 0 && totalAgencyRecords > 0) {
+  if (below(agencyFeedbackRate, 70) && above(agencyFeedbackRate, 0) && totalAgencyRecords > 0) {
     insights.push({
       text: `Agency feedback collection at only ${agencyFeedbackRate}% — without systematic feedback, the home cannot build a reliable pool of trusted agency workers or identify those who are unsuitable.`,
       severity: "warning",
@@ -1297,8 +1300,8 @@ export function computeStaffRotaAdequateStaffing(
 
   // Agency usage pattern analysis
   if (totalAgencyRecords > 0 && total_staff > 0) {
-    const agencyProportion = pct(totalAgencyRecords, totalAgencyRecords + totalShiftRecords);
-    if (agencyProportion > 30) {
+    const agencyProportion = rate(totalAgencyRecords, totalAgencyRecords + totalShiftRecords);
+    if (above(agencyProportion, 30)) {
       insights.push({
         text: `Agency usage represents ${agencyProportion}% of recorded staffing activity — high agency dependency undermines children's experience of consistent, relational care. Children need to build trusted relationships with familiar staff, not adjust to a rotating cast of agency workers.`,
         severity: "warning",
@@ -1325,8 +1328,8 @@ export function computeStaffRotaAdequateStaffing(
   }
 
   if (
-    shiftCoverageRate >= 95 &&
-    ratioComplianceRate >= 95 &&
+    meets(shiftCoverageRate, 95) &&
+    meets(ratioComplianceRate, 95) &&
     totalShiftRecords > 0 &&
     totalRatioRecords > 0
   ) {
@@ -1339,7 +1342,7 @@ export function computeStaffRotaAdequateStaffing(
   if (
     totalShiftRecords > 0 &&
     avgHandoverQuality !== null &&
-    handoverRate >= 95 &&
+    meets(handoverRate, 95) &&
     avgHandoverQuality >= 4.0
   ) {
     insights.push({
@@ -1349,7 +1352,7 @@ export function computeStaffRotaAdequateStaffing(
   }
 
   if (
-    rotaPlanningRate >= 90 &&
+    meets(rotaPlanningRate, 90) &&
     totalRotaRecords > 0
   ) {
     insights.push({
@@ -1359,8 +1362,8 @@ export function computeStaffRotaAdequateStaffing(
   }
 
   if (
-    wtdComplianceRate >= 95 &&
-    restComplianceRate >= 95 &&
+    meets(wtdComplianceRate, 95) &&
+    meets(restComplianceRate, 95) &&
     totalOvertimeRecords > 0
   ) {
     insights.push({
@@ -1372,7 +1375,7 @@ export function computeStaffRotaAdequateStaffing(
   if (
     totalRotaRecords > 0 &&
     avgFairnessScore !== null &&
-    staffSatisfactionRate >= 90 &&
+    meets(staffSatisfactionRate, 90) &&
     avgFairnessScore >= 4.0
   ) {
     insights.push({
@@ -1382,8 +1385,8 @@ export function computeStaffRotaAdequateStaffing(
   }
 
   if (
-    agencyInductionRate >= 95 &&
-    agencyDbsRate >= 95 &&
+    meets(agencyInductionRate, 95) &&
+    meets(agencyDbsRate, 95) &&
     totalAgencyRecords > 0
   ) {
     insights.push({
@@ -1393,7 +1396,7 @@ export function computeStaffRotaAdequateStaffing(
   }
 
   if (
-    seniorCoverRate >= 90 &&
+    meets(seniorCoverRate, 90) &&
     totalRatioRecords > 0
   ) {
     insights.push({
@@ -1403,7 +1406,7 @@ export function computeStaffRotaAdequateStaffing(
   }
 
   if (
-    contingencyRate >= 90 &&
+    meets(contingencyRate, 90) &&
     totalRotaRecords > 0
   ) {
     insights.push({
@@ -1413,7 +1416,7 @@ export function computeStaffRotaAdequateStaffing(
   }
 
   if (
-    overtimeApprovalRate >= 95 &&
+    meets(overtimeApprovalRate, 95) &&
     totalOvertimeRecords > 0
   ) {
     insights.push({
@@ -1423,7 +1426,7 @@ export function computeStaffRotaAdequateStaffing(
   }
 
   if (
-    coverArrangementRate >= 90 &&
+    meets(coverArrangementRate, 90) &&
     uncoveredShifts > 0
   ) {
     insights.push({
@@ -1433,7 +1436,7 @@ export function computeStaffRotaAdequateStaffing(
   }
 
   if (
-    childrenBriefedRate >= 90 &&
+    meets(childrenBriefedRate, 90) &&
     totalAgencyRecords > 0
   ) {
     insights.push({
@@ -1443,7 +1446,7 @@ export function computeStaffRotaAdequateStaffing(
   }
 
   if (
-    skillMixRate >= 90 &&
+    meets(skillMixRate, 90) &&
     totalRotaRecords > 0
   ) {
     insights.push({
@@ -1453,7 +1456,7 @@ export function computeStaffRotaAdequateStaffing(
   }
 
   if (
-    agencyFamiliarityRate >= 80 &&
+    meets(agencyFamiliarityRate, 80) &&
     totalAgencyRecords > 0
   ) {
     insights.push({

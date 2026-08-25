@@ -175,12 +175,12 @@ describe("insufficient data — allEmpty + 0 staff", () => {
 
   it("all key metrics are 0", () => {
     const r = run();
-    expect(r.mandatory_training_compliance_rate).toBe(0);
-    expect(r.cpd_completion_rate).toBe(0);
-    expect(r.training_needs_coverage_rate).toBe(0);
-    expect(r.qualification_currency_rate).toBe(0);
-    expect(r.development_plan_coverage_rate).toBe(0);
-    expect(r.training_effectiveness_rate).toBe(0);
+    expect(r.mandatory_training_compliance_rate).toBeNull();
+    expect(r.cpd_completion_rate).toBeNull();
+    expect(r.training_needs_coverage_rate).toBeNull();
+    expect(r.qualification_currency_rate).toBeNull();
+    expect(r.development_plan_coverage_rate).toBeNull();
+    expect(r.training_effectiveness_rate).toBeNull();
   });
 
   it("all detailed metrics are 0", () => {
@@ -201,7 +201,7 @@ describe("insufficient data — allEmpty + 0 staff", () => {
     expect(r.qualifications_expired_count).toBe(0);
     expect(r.development_plans_active_count).toBe(0);
     expect(r.development_plans_current_count).toBe(0);
-    expect(r.development_objectives_achievement_rate).toBe(0);
+    expect(r.development_objectives_achievement_rate).toBeNull();
   });
 
   it("has no strengths or concerns", () => {
@@ -1976,7 +1976,7 @@ describe("metric calculations", () => {
     expect(r.training_effectiveness_rate).toBe(100);
   });
 
-  it("training_effectiveness_rate is 0 when no components available", () => {
+  it("training_effectiveness_rate is null when no components available", () => {
     const r = run({
       total_staff: 5,
       mandatory_training_records: [
@@ -1990,7 +1990,7 @@ describe("metric calculations", () => {
     expect(r.training_effectiveness_rate).toBeNull();;
   });
 
-  it("pct(0, 0) = 0", () => {
+  it("rate(0,0)=null", () => {
     const r = run({
       total_staff: 0,
       mandatory_training_records: [
@@ -1998,10 +1998,10 @@ describe("metric calculations", () => {
       ],
     });
     // All rates based on empty denominators should be 0
-    expect(r.mandatory_training_compliance_rate).toBe(0);
-    expect(r.cpd_completion_rate).toBe(0);
-    expect(r.qualification_currency_rate).toBe(0);
-    expect(r.development_objectives_achievement_rate).toBe(0);
+    expect(r.mandatory_training_compliance_rate).toBeNull();
+    expect(r.cpd_completion_rate).toBeNull();
+    expect(r.qualification_currency_rate).toBeNull();
+    expect(r.development_objectives_achievement_rate).toBeNull();
   });
 });
 

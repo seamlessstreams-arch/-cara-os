@@ -178,9 +178,9 @@ describe("insufficient data", () => {
       internet_safety_records: [],
       technology_learning_records: [],
     }));
-    expect(r.device_access_rate).toBe(0);
+    expect(r.device_access_rate).toBeNull();
     expect(r.digital_skills_rate).toBeNull();
-    expect(r.assistive_technology_rate).toBe(0);
+    expect(r.assistive_technology_rate).toBeNull();
     expect(r.internet_safety_rate).toBeNull();
     expect(r.technology_learning_rate).toBeNull();
     expect(r.child_confidence_rate).toBeNull();
@@ -281,9 +281,9 @@ describe("inadequate floor (all empty, children > 0)", () => {
       internet_safety_records: [],
       technology_learning_records: [],
     }));
-    expect(r.device_access_rate).toBe(0);
+    expect(r.device_access_rate).toBeNull();
     expect(r.digital_skills_rate).toBeNull();
-    expect(r.assistive_technology_rate).toBe(0);
+    expect(r.assistive_technology_rate).toBeNull();
     expect(r.internet_safety_rate).toBeNull();
     expect(r.technology_learning_rate).toBeNull();
     expect(r.child_confidence_rate).toBeNull();
@@ -525,17 +525,17 @@ describe("inadequate scenario (with data)", () => {
 // 7. pct() EDGE CASES
 // ═══════════════════════════════════════════════════════════════════════════
 
-describe("pct(0,0) = 0", () => {
-  it("device_access_rate is 0 when no device records", () => {
+describe("rate(0,0)=null", () => {
+  it("device_access_rate is null when no device records", () => {
     const r = computeTechnologyDigitalInclusion(baseInput({
       device_access_records: [],
       // keep at least one other array populated so we don't hit allEmpty
       digital_skills_records: [makeSkills()],
     }));
-    expect(r.device_access_rate).toBe(0);
+    expect(r.device_access_rate).toBeNull();
   });
 
-  it("digital_skills_rate is 0 when no skills records", () => {
+  it("digital_skills_rate is null when no skills records", () => {
     const r = computeTechnologyDigitalInclusion(baseInput({
       digital_skills_records: [],
       device_access_records: [makeDevice()],
@@ -543,15 +543,15 @@ describe("pct(0,0) = 0", () => {
     expect(r.digital_skills_rate).toBeNull();
   });
 
-  it("assistive_technology_rate is 0 when no assistive records", () => {
+  it("assistive_technology_rate is null when no assistive records", () => {
     const r = computeTechnologyDigitalInclusion(baseInput({
       assistive_technology_records: [],
       device_access_records: [makeDevice()],
     }));
-    expect(r.assistive_technology_rate).toBe(0);
+    expect(r.assistive_technology_rate).toBeNull();
   });
 
-  it("internet_safety_rate is 0 when no safety records", () => {
+  it("internet_safety_rate is null when no safety records", () => {
     const r = computeTechnologyDigitalInclusion(baseInput({
       internet_safety_records: [],
       device_access_records: [makeDevice()],
@@ -559,7 +559,7 @@ describe("pct(0,0) = 0", () => {
     expect(r.internet_safety_rate).toBeNull();
   });
 
-  it("technology_learning_rate is 0 when no learning records", () => {
+  it("technology_learning_rate is null when no learning records", () => {
     const r = computeTechnologyDigitalInclusion(baseInput({
       technology_learning_records: [],
       device_access_records: [makeDevice()],
@@ -567,7 +567,7 @@ describe("pct(0,0) = 0", () => {
     expect(r.technology_learning_rate).toBeNull();
   });
 
-  it("child_confidence_rate is 0 when no skills or safety records", () => {
+  it("child_confidence_rate is null when no skills or safety records", () => {
     const r = computeTechnologyDigitalInclusion(baseInput({
       digital_skills_records: [],
       internet_safety_records: [],
@@ -677,14 +677,14 @@ describe("assistive_technology_rate computation", () => {
     expect(r.assistive_technology_rate).toBe(0);
   });
 
-  it("0% when need_type is none (no real need)", () => {
+  it("null when need_type is none (no real need)", () => {
     const r = computeTechnologyDigitalInclusion(baseInput({
       assistive_technology_records: [
         makeAssistive({ need_identified: true, need_type: "none", provided: false }),
       ],
     }));
     // needsIdentified filters need_type!="none" => 0, so pct(0,0)=0
-    expect(r.assistive_technology_rate).toBe(0);
+    expect(r.assistive_technology_rate).toBeNull();
   });
 
   it("50% when half of needs met", () => {
@@ -1317,7 +1317,7 @@ describe("penalty: deviceAccessRate < 50", () => {
       digital_skills_records: [makeSkills()],
     }));
     // pct(0,0)=0 but guard: totalDeviceRecords=0 => no penalty
-    expect(r.device_access_rate).toBe(0);
+    expect(r.device_access_rate).toBeNull();
   });
 });
 
@@ -1358,7 +1358,7 @@ describe("penalty: assistiveTechnologyRate < 50", () => {
       ],
     }));
     // needsIdentified=0 (because need_type=none), so pct(0,0)=0 but guard blocks penalty
-    expect(r.assistive_technology_rate).toBe(0);
+    expect(r.assistive_technology_rate).toBeNull();
   });
 
   it("does NOT apply when need_identified=false", () => {
@@ -1367,7 +1367,7 @@ describe("penalty: assistiveTechnologyRate < 50", () => {
         makeAssistive({ need_identified: false, need_type: "visual", provided: false }),
       ],
     }));
-    expect(r.assistive_technology_rate).toBe(0);
+    expect(r.assistive_technology_rate).toBeNull();
   });
 });
 
@@ -2679,7 +2679,7 @@ describe("edge cases", () => {
       ],
     }));
     // needsIdentified=0, so no penalty, no bonus
-    expect(r.assistive_technology_rate).toBe(0);
+    expect(r.assistive_technology_rate).toBeNull();
   });
 
   it("sessions_planned=0, sessions_completed=0 => pct=0 (no div-by-zero)", () => {

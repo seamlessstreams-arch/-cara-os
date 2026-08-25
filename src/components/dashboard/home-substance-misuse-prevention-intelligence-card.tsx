@@ -66,8 +66,8 @@ export function HomeSubstanceMisusePreventionIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.substance_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.education_coverage_rate >= 90 ? "bg-green-50" : d.education_coverage_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.education_coverage_rate >= 90 ? "text-[--cs-success]" : d.education_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.education_coverage_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.education_coverage_rate, 90) ? "bg-green-50" : meets(d.education_coverage_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.education_coverage_rate, 90) ? "text-[--cs-success]" : meets(d.education_coverage_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.education_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Education</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.risk_assessment_rate, 90) ? "bg-green-50" : meets(d.risk_assessment_rate, 70) ? "bg-amber-50" : d.risk_assessment_rate === null ? "bg-muted" : "bg-red-50")}>
@@ -86,8 +86,8 @@ export function HomeSubstanceMisusePreventionIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", meets(d.harm_reduction_rate, 90) ? "text-[--cs-success]" : meets(d.harm_reduction_rate, 70) ? "text-[--cs-warning]" : d.harm_reduction_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.harm_reduction_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Harm Red.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_awareness_rate >= 90 ? "bg-green-50" : d.child_awareness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_awareness_rate >= 90 ? "text-[--cs-success]" : d.child_awareness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_awareness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_awareness_rate, 90) ? "bg-green-50" : meets(d.child_awareness_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_awareness_rate, 90) ? "text-[--cs-success]" : meets(d.child_awareness_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_awareness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Awareness</p>
             </div>
           </div>

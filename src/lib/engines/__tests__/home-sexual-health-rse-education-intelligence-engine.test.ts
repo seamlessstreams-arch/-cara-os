@@ -295,14 +295,14 @@ describe("insufficient_data", () => {
     expect(r.rse_score).toBe(0);
   });
 
-  it("sets all rates to 0 for insufficient_data", () => {
+  it("sets all rates to null for insufficient_data", () => {
     const r = run(baseInput());
-    expect(r.rse_delivery_rate).toBe(0);
-    expect(r.health_screening_rate).toBe(0);
-    expect(r.age_appropriate_rate).toBe(0);
-    expect(r.consent_education_rate).toBe(0);
-    expect(r.safeguarding_awareness_rate).toBe(0);
-    expect(r.child_confidence_rate).toBe(0);
+    expect(r.rse_delivery_rate).toBeNull();
+    expect(r.health_screening_rate).toBeNull();
+    expect(r.age_appropriate_rate).toBeNull();
+    expect(r.consent_education_rate).toBeNull();
+    expect(r.safeguarding_awareness_rate).toBeNull();
+    expect(r.child_confidence_rate).toBeNull();
     expect(r.screening_compliance_avg).toBe(0);
     expect(r.consent_understanding_avg).toBe(0);
   });
@@ -359,27 +359,27 @@ describe("inadequate floor (children, no records)", () => {
     expect(r.headline).toContain("urgent attention");
   });
 
-  it("all rates are 0", () => {
+  it("all rates are null", () => {
     const r = run(baseInput({ total_children: 3 }));
-    expect(r.rse_delivery_rate).toBe(0);
-    expect(r.health_screening_rate).toBe(0);
-    expect(r.consent_education_rate).toBe(0);
-    expect(r.safeguarding_awareness_rate).toBe(0);
-    expect(r.child_confidence_rate).toBe(0);
+    expect(r.rse_delivery_rate).toBeNull();
+    expect(r.health_screening_rate).toBeNull();
+    expect(r.consent_education_rate).toBeNull();
+    expect(r.safeguarding_awareness_rate).toBeNull();
+    expect(r.child_confidence_rate).toBeNull();
   });
 });
 
 // ── pct(0,0) = 0 ──────────────────────────────────────────────────────────
 
 describe("pct edge cases", () => {
-  it("pct(0,0)=0 — rates are 0 when no records and no children", () => {
+  it("rate(0,0)=null — rates are 0 when no records and no children", () => {
     const r = run(baseInput());
-    expect(r.rse_delivery_rate).toBe(0);
-    expect(r.health_screening_rate).toBe(0);
-    expect(r.age_appropriate_rate).toBe(0);
-    expect(r.consent_education_rate).toBe(0);
-    expect(r.safeguarding_awareness_rate).toBe(0);
-    expect(r.child_confidence_rate).toBe(0);
+    expect(r.rse_delivery_rate).toBeNull();
+    expect(r.health_screening_rate).toBeNull();
+    expect(r.age_appropriate_rate).toBeNull();
+    expect(r.consent_education_rate).toBeNull();
+    expect(r.safeguarding_awareness_rate).toBeNull();
+    expect(r.child_confidence_rate).toBeNull();
   });
 
   it("rates are 0 when children>0 but no records of that type (delivery)", () => {
@@ -1355,7 +1355,7 @@ describe("six core rates", () => {
 // ── screening_compliance_avg ─────────────────────────────────────────────
 
 describe("screening_compliance_avg", () => {
-  it("is 0 when no screenings", () => {
+  it("is null when no screenings", () => {
     const r = run(baseInput({ total_children: 2, rse_education_records: [makeRseRecord({ child_id: "yp_1" })], consent_education_records: [makeConsentRecord({ child_id: "yp_1" })], safeguarding_awareness_records: [makeSafeguardingRecord({ child_id: "yp_1" })] }));
     expect(r.screening_compliance_avg).toBeNull();;
   });
@@ -1383,7 +1383,7 @@ describe("screening_compliance_avg", () => {
 // ── consent_understanding_avg ────────────────────────────────────────────
 
 describe("consent_understanding_avg", () => {
-  it("is 0 when no consent sessions", () => {
+  it("is null when no consent sessions", () => {
     const r = run(baseInput({ total_children: 2, rse_education_records: [makeRseRecord({ child_id: "yp_1" })], safeguarding_awareness_records: [makeSafeguardingRecord({ child_id: "yp_1" })] }));
     expect(r.consent_understanding_avg).toBeNull();;
   });

@@ -168,12 +168,12 @@ describe("insufficient data", () => {
     const r = computeSleepQualityRestManagement(baseInput());
     expect(r.total_routine_records).toBe(0);
     expect(r.total_disturbances).toBe(0);
-    expect(r.routine_adherence_rate).toBe(0);
-    expect(r.environment_quality_rate).toBe(0);
-    expect(r.disturbance_resolution_rate).toBe(0);
-    expect(r.bedtime_support_quality_rate).toBe(0);
-    expect(r.improvement_plan_coverage_rate).toBe(0);
-    expect(r.child_satisfaction_rate).toBe(0);
+    expect(r.routine_adherence_rate).toBeNull();
+    expect(r.environment_quality_rate).toBeNull();
+    expect(r.disturbance_resolution_rate).toBeNull();
+    expect(r.bedtime_support_quality_rate).toBeNull();
+    expect(r.improvement_plan_coverage_rate).toBeNull();
+    expect(r.child_satisfaction_rate).toBeNull();
   });
 
   it("has empty strengths, concerns, recommendations, insights for insufficient_data", () => {
@@ -227,12 +227,12 @@ describe("inadequate baseline (all empty + children > 0)", () => {
     const r = computeSleepQualityRestManagement(baseInput({ total_children: 3 }));
     expect(r.total_routine_records).toBe(0);
     expect(r.total_disturbances).toBe(0);
-    expect(r.routine_adherence_rate).toBe(0);
-    expect(r.environment_quality_rate).toBe(0);
-    expect(r.disturbance_resolution_rate).toBe(0);
-    expect(r.bedtime_support_quality_rate).toBe(0);
-    expect(r.improvement_plan_coverage_rate).toBe(0);
-    expect(r.child_satisfaction_rate).toBe(0);
+    expect(r.routine_adherence_rate).toBeNull();
+    expect(r.environment_quality_rate).toBeNull();
+    expect(r.disturbance_resolution_rate).toBeNull();
+    expect(r.bedtime_support_quality_rate).toBeNull();
+    expect(r.improvement_plan_coverage_rate).toBeNull();
+    expect(r.child_satisfaction_rate).toBeNull();
   });
 
   it("returns inadequate for total_children=1", () => {
@@ -246,7 +246,7 @@ describe("inadequate baseline (all empty + children > 0)", () => {
 // 3. pct(0, 0) = 0
 // ═══════════════════════════════════════════════════════════════════════════
 
-describe("pct(0,0) edge case", () => {
+describe("rate(0,0)=nulledge case", () => {
   it("returns 0 for rates when only non-matching records exist", () => {
     // Provide one routine record with routine_followed=false to enter normal path
     // but no environment, disturbance, bedtime, improvement records
@@ -257,13 +257,13 @@ describe("pct(0,0) edge case", () => {
       }),
     );
     // disturbance_resolution_rate = pct(0, 0) = 0
-    expect(r.disturbance_resolution_rate).toBe(0);
+    expect(r.disturbance_resolution_rate).toBeNull();
     // bedtime_support_quality_rate = pct(0, 0) = 0
-    expect(r.bedtime_support_quality_rate).toBe(0);
+    expect(r.bedtime_support_quality_rate).toBeNull();
     // improvement_plan_coverage_rate = 0 (no improvement records)
     expect(r.improvement_plan_coverage_rate).toBe(0);
     // child_satisfaction_rate = pct(0, 0) = 0
-    expect(r.child_satisfaction_rate).toBe(0);
+    expect(r.child_satisfaction_rate).toBeNull();
   });
 });
 
@@ -3015,12 +3015,14 @@ describe("edge cases", () => {
     expect(typeof r.headline).toBe("string");
     expect(typeof r.total_routine_records).toBe("number");
     expect(typeof r.total_disturbances).toBe("number");
-    expect(typeof r.routine_adherence_rate).toBe("number");
-    expect(typeof r.environment_quality_rate).toBe("number");
-    expect(typeof r.disturbance_resolution_rate).toBe("number");
-    expect(typeof r.bedtime_support_quality_rate).toBe("number");
-    expect(typeof r.improvement_plan_coverage_rate).toBe("number");
-    expect(typeof r.child_satisfaction_rate).toBe("number");
+    // Rates are number | null — unmeasured populations yield an honest null.
+    for (const v of [
+      r.routine_adherence_rate, r.environment_quality_rate,
+      r.disturbance_resolution_rate, r.bedtime_support_quality_rate,
+      r.improvement_plan_coverage_rate, r.child_satisfaction_rate,
+    ]) {
+      expect(typeof v === "number" || v === null).toBe(true);
+    }
     expect(Array.isArray(r.strengths)).toBe(true);
     expect(Array.isArray(r.concerns)).toBe(true);
     expect(Array.isArray(r.recommendations)).toBe(true);

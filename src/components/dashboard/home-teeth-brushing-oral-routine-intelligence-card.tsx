@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain } from "lucide-rea
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { TeethBrushingRating } from "@/lib/engines/home-teeth-brushing-oral-routine-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 const RATING_STYLES: Record<TeethBrushingRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -65,28 +66,28 @@ export function HomeTeethBrushingOralRoutineIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.brushing_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.brushing_adherence_rate >= 90 ? "bg-green-50" : d.brushing_adherence_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.brushing_adherence_rate >= 90 ? "text-[--cs-success]" : d.brushing_adherence_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.brushing_adherence_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.brushing_adherence_rate, 90) ? "bg-green-50" : meets(d.brushing_adherence_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.brushing_adherence_rate, 90) ? "text-[--cs-success]" : meets(d.brushing_adherence_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.brushing_adherence_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Adherence</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.fluoride_use_rate >= 90 ? "bg-green-50" : d.fluoride_use_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.fluoride_use_rate >= 90 ? "text-[--cs-success]" : d.fluoride_use_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.fluoride_use_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.fluoride_use_rate, 90) ? "bg-green-50" : meets(d.fluoride_use_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.fluoride_use_rate, 90) ? "text-[--cs-success]" : meets(d.fluoride_use_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.fluoride_use_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Fluoride</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.supervision_rate >= 90 ? "bg-green-50" : d.supervision_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.supervision_rate >= 90 ? "text-[--cs-success]" : d.supervision_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.supervision_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.supervision_rate, 90) ? "bg-green-50" : meets(d.supervision_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.supervision_rate, 90) ? "text-[--cs-success]" : meets(d.supervision_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.supervision_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Supervision</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.toothbrush_replacement_rate >= 90 ? "bg-green-50" : d.toothbrush_replacement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.toothbrush_replacement_rate >= 90 ? "text-[--cs-success]" : d.toothbrush_replacement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.toothbrush_replacement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.toothbrush_replacement_rate, 90) ? "bg-green-50" : meets(d.toothbrush_replacement_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.toothbrush_replacement_rate, 90) ? "text-[--cs-success]" : meets(d.toothbrush_replacement_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.toothbrush_replacement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Replaced</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.independence_rate >= 90 ? "bg-green-50" : d.independence_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.independence_rate >= 90 ? "text-[--cs-success]" : d.independence_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.independence_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.independence_rate, 90) ? "bg-green-50" : meets(d.independence_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.independence_rate, 90) ? "text-[--cs-success]" : meets(d.independence_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.independence_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Independ.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_engagement_rate >= 90 ? "bg-green-50" : d.child_engagement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_engagement_rate >= 90 ? "text-[--cs-success]" : d.child_engagement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_engagement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_engagement_rate, 90) ? "bg-green-50" : meets(d.child_engagement_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_engagement_rate, 90) ? "text-[--cs-success]" : meets(d.child_engagement_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_engagement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Engaged</p>
             </div>
           </div>

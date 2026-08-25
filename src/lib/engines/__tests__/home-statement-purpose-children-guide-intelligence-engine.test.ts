@@ -249,7 +249,7 @@ describe("Empty and edge-case inputs", () => {
 
   it("10 — all rates 0 for insufficient_data", () => {
     const r = run({ total_children: 0 });
-    expect(r.statement_currency_rate).toBe(0);
+    expect(r.statement_currency_rate).toBeNull();
     expect(r.guide_accessibility_rate).toBeNull();
     expect(r.review_cycle_rate).toBeNull();
     expect(r.young_person_involvement_rate).toBeNull();

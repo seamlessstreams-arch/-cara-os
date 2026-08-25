@@ -943,7 +943,7 @@ describe("Home Staff Wellbeing & Retention Intelligence Engine", () => {
       expect(r.wellbeing_support_uptake_rate).toBe(40);
     });
 
-    it("pct(0,0) = 0 when no support offered", () => {
+    it("rate(0,0)=null when no support offered", () => {
       const r = computeStaffWellbeingRetention(baseInput({
         total_staff: 8,
         wellbeing_support_records: [
@@ -953,7 +953,7 @@ describe("Home Staff Wellbeing & Retention Intelligence Engine", () => {
           makeRetention({ id: "r1", staff_id: "s1", event_type: "joined" }),
         ],
       }));
-      expect(r.wellbeing_support_uptake_rate).toBe(0);
+      expect(r.wellbeing_support_uptake_rate).toBeNull();
     });
   });
 
@@ -1083,7 +1083,7 @@ describe("Home Staff Wellbeing & Retention Intelligence Engine", () => {
           makeRetention({ id: "r1", staff_id: "s1", event_type: "joined" }),
         ],
       }));
-      expect(r.staff_satisfaction_rate).toBe(0);
+      expect(r.staff_satisfaction_rate).toBeNull();
     });
   });
 
@@ -1538,7 +1538,7 @@ describe("Home Staff Wellbeing & Retention Intelligence Engine", () => {
         expect(r.retention_rate).toBe(0);
       });
 
-      it("retention_rate is unmeasured when total_staff is 0", () => {
+      it("retention_rate is unmeasured when total_staff is null", () => {
         // total_staff=0 with data → goes through main path (not allEmpty)
         const r = computeStaffWellbeingRetention(baseInput({
           total_staff: 0,
@@ -1564,7 +1564,7 @@ describe("Home Staff Wellbeing & Retention Intelligence Engine", () => {
     });
 
     describe("wellbeing_support_uptake_rate", () => {
-      it("is 0 when no support offered (pct(0,0)=0)", () => {
+      it("is null when no support offered (rate(0,0)=null)", () => {
         const r = computeStaffWellbeingRetention(baseInput({
           total_staff: 8,
           wellbeing_support_records: [
@@ -1572,7 +1572,7 @@ describe("Home Staff Wellbeing & Retention Intelligence Engine", () => {
           ],
           staff_retention_records: [makeRetention({ id: "r1", staff_id: "s1", event_type: "joined" })],
         }));
-        expect(r.wellbeing_support_uptake_rate).toBe(0);
+        expect(r.wellbeing_support_uptake_rate).toBeNull();
       });
 
       it("only counts accepted where offered is true", () => {
@@ -1651,12 +1651,12 @@ describe("Home Staff Wellbeing & Retention Intelligence Engine", () => {
         expect(r.staff_satisfaction_rate).toBe(67);
       });
 
-      it("is 0 when no surveys (pct(0,0)=0)", () => {
+      it("is null when no surveys (rate(0,0)=null)", () => {
         const r = computeStaffWellbeingRetention(baseInput({
           total_staff: 8,
           staff_retention_records: [makeRetention({ id: "r1", staff_id: "s1", event_type: "joined" })],
         }));
-        expect(r.staff_satisfaction_rate).toBe(0);
+        expect(r.staff_satisfaction_rate).toBeNull();
       });
 
       it("job_satisfaction_score boundary: 7 counts, 6 does not", () => {

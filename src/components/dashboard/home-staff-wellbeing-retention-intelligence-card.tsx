@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, HeartHandshake } 
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { StaffWellbeingRating } from "@/lib/engines/home-staff-wellbeing-retention-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 function useHomeStaffWellbeingRetentionIntelligence() {
   return useQuery({
@@ -61,7 +62,7 @@ export function HomeStaffWellbeingRetentionIntelligenceCard() {
             <HeartHandshake className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-pink-600")} />
             <span className="text-slate-900 font-bold">Staff Wellbeing & Retention</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.wellbeing_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.wellbeing_score}%</span>}
+            {d.wellbeing_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.wellbeing_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -69,28 +70,28 @@ export function HomeStaffWellbeingRetentionIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.wellbeing_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.sickness_absence_rate <= 10 ? "bg-green-50" : d.sickness_absence_rate <= 30 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.sickness_absence_rate <= 10 ? "text-[--cs-success]" : d.sickness_absence_rate <= 30 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.sickness_absence_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.sickness_absence_rate === null ? "bg-slate-50" : d.sickness_absence_rate <= 10 ? "bg-green-50" : d.sickness_absence_rate <= 30 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.sickness_absence_rate === null ? "text-slate-500" : d.sickness_absence_rate <= 10 ? "text-[--cs-success]" : d.sickness_absence_rate <= 30 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.sickness_absence_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Sickness</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.wellbeing_survey_completion_rate >= 90 ? "bg-green-50" : d.wellbeing_survey_completion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.wellbeing_survey_completion_rate >= 90 ? "text-[--cs-success]" : d.wellbeing_survey_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.wellbeing_survey_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.wellbeing_survey_completion_rate, 90) ? "bg-green-50" : meets(d.wellbeing_survey_completion_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.wellbeing_survey_completion_rate, 90) ? "text-[--cs-success]" : meets(d.wellbeing_survey_completion_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.wellbeing_survey_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Surveys</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.retention_rate >= 90 ? "bg-green-50" : d.retention_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.retention_rate >= 90 ? "text-[--cs-success]" : d.retention_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.retention_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.retention_rate, 90) ? "bg-green-50" : meets(d.retention_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.retention_rate, 90) ? "text-[--cs-success]" : meets(d.retention_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.retention_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Retention</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.wellbeing_support_uptake_rate >= 90 ? "bg-green-50" : d.wellbeing_support_uptake_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.wellbeing_support_uptake_rate >= 90 ? "text-[--cs-success]" : d.wellbeing_support_uptake_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.wellbeing_support_uptake_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.wellbeing_support_uptake_rate, 90) ? "bg-green-50" : meets(d.wellbeing_support_uptake_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.wellbeing_support_uptake_rate, 90) ? "text-[--cs-success]" : meets(d.wellbeing_support_uptake_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.wellbeing_support_uptake_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Support</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.exit_interview_completion_rate >= 90 ? "bg-green-50" : d.exit_interview_completion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.exit_interview_completion_rate >= 90 ? "text-[--cs-success]" : d.exit_interview_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.exit_interview_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.exit_interview_completion_rate, 90) ? "bg-green-50" : meets(d.exit_interview_completion_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.exit_interview_completion_rate, 90) ? "text-[--cs-success]" : meets(d.exit_interview_completion_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.exit_interview_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Exit Int.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.staff_satisfaction_rate >= 90 ? "bg-green-50" : d.staff_satisfaction_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.staff_satisfaction_rate >= 90 ? "text-[--cs-success]" : d.staff_satisfaction_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.staff_satisfaction_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.staff_satisfaction_rate, 90) ? "bg-green-50" : meets(d.staff_satisfaction_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.staff_satisfaction_rate, 90) ? "text-[--cs-success]" : meets(d.staff_satisfaction_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.staff_satisfaction_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Satisf.</p>
             </div>
           </div>

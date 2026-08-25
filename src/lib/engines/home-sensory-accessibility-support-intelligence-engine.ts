@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME SENSORY & ACCESSIBILITY SUPPORT INTELLIGENCE ENGINE
 // Monitors how well the home identifies, assesses, and responds to children's
@@ -152,10 +153,6 @@ export interface SensoryAccessibilitySupportResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -179,12 +176,12 @@ function emptyResult(
     sensory_score: score,
     headline,
     total_profiles: 0,
-    sensory_profile_coverage_rate: 0,
-    accessibility_adaptation_rate: 0,
-    sensory_room_utilisation_rate: 0,
-    equipment_maintenance_rate: 0,
-    intervention_effectiveness_rate: 0,
-    child_feedback_rate: 0,
+    sensory_profile_coverage_rate: null,
+    accessibility_adaptation_rate: null,
+    sensory_room_utilisation_rate: null,
+    equipment_maintenance_rate: null,
+    intervention_effectiveness_rate: null,
+    child_feedback_rate: null,
     adaptation_effectiveness_avg: 0,
     intervention_progress_avg: 0,
     strengths: [],
@@ -267,7 +264,7 @@ export function computeSensoryAccessibilitySupport(
     sensory_profile_records.map((p) => p.child_id),
   ).size;
   const sensoryProfileCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenWithProfiles, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenWithProfiles, total_children) : 0;
 
   const totalProfiles = sensory_profile_records.length;
 
@@ -275,13 +272,13 @@ export function computeSensoryAccessibilitySupport(
   const profilesWithChildInvolvement = sensory_profile_records.filter(
     (p) => p.child_involved_in_assessment,
   ).length;
-  const childInvolvementRate = pct(profilesWithChildInvolvement, totalProfiles);
+  const childInvolvementRate = rate(profilesWithChildInvolvement, totalProfiles);
 
   const overdueProfileReviews = sensory_profile_records.filter(
     (p) => p.review_overdue,
   ).length;
   const profileReviewComplianceRate = totalProfiles > 0
-    ? pct(totalProfiles - overdueProfileReviews, totalProfiles)
+    ? rate(totalProfiles - overdueProfileReviews, totalProfiles)
     : null;
 
   // --- Accessibility adaptations ---
@@ -289,7 +286,7 @@ export function computeSensoryAccessibilitySupport(
   const implementedAdaptations = accessibility_adaptation_records.filter(
     (a) => a.implemented,
   ).length;
-  const accessibilityAdaptationRate = pct(implementedAdaptations, totalAdaptations);
+  const accessibilityAdaptationRate = rate(implementedAdaptations, totalAdaptations);
 
   const adaptationEffectivenessSum = accessibility_adaptation_records
     .filter((a) => a.implemented)
@@ -313,22 +310,22 @@ export function computeSensoryAccessibilitySupport(
     sensory_room_records.map((s) => s.child_id),
   ).size;
   const sensoryRoomUtilisationRate =
-    total_children > 0 ? pct(uniqueChildrenUsingSensoryRoom, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenUsingSensoryRoom, total_children) : 0;
 
   const sessionsWithGoalsMet = sensory_room_records.filter(
     (s) => s.goals_met,
   ).length;
-  const goalsMetRate = pct(sessionsWithGoalsMet, totalSessions);
+  const goalsMetRate = rate(sessionsWithGoalsMet, totalSessions);
 
   const sessionsWithNotes = sensory_room_records.filter(
     (s) => s.notes_recorded,
   ).length;
-  const sessionDocumentationRate = pct(sessionsWithNotes, totalSessions);
+  const sessionDocumentationRate = rate(sessionsWithNotes, totalSessions);
 
   const childRequestedSessions = sensory_room_records.filter(
     (s) => s.child_requested,
   ).length;
-  const childInitiatedRate = pct(childRequestedSessions, totalSessions);
+  const childInitiatedRate = rate(childRequestedSessions, totalSessions);
 
   const activeEquipment = sensory_equipment_records.filter(
     (e) => e.in_use,
@@ -338,13 +335,13 @@ export function computeSensoryAccessibilitySupport(
   ).length;
   const equipmentMaintenanceRate =
     activeEquipment > 0
-      ? pct(activeEquipment - overdueMaintenanceEquipment, activeEquipment)
+      ? rate(activeEquipment - overdueMaintenanceEquipment, activeEquipment)
       : null;
 
   const safetyCheckedEquipment = sensory_equipment_records.filter(
     (e) => e.safety_checked && e.in_use,
   ).length;
-  const safetyCheckRate = pct(safetyCheckedEquipment, activeEquipment);
+  const safetyCheckRate = rate(safetyCheckedEquipment, activeEquipment);
 
   const poorConditionEquipment = sensory_equipment_records.filter(
     (e) => e.condition === "poor" && e.in_use,
@@ -359,7 +356,7 @@ export function computeSensoryAccessibilitySupport(
   const interventionsShowingImprovement = sensory_intervention_records.filter(
     (i) => (i.current_score ?? 0) > (i.baseline_score ?? 0),
   ).length;
-  const interventionEffectivenessRate = pct(
+  const interventionEffectivenessRate = rate(
     interventionsShowingImprovement,
     totalInterventions,
   );
@@ -382,12 +379,12 @@ export function computeSensoryAccessibilitySupport(
   const childReportedImprovement = sensory_intervention_records.filter(
     (i) => i.child_reported_improvement,
   ).length;
-  const childReportedImprovementRate = pct(childReportedImprovement, totalInterventions);
+  const childReportedImprovementRate = rate(childReportedImprovement, totalInterventions);
 
   const staffReportedImprovement = sensory_intervention_records.filter(
     (i) => i.staff_reported_improvement,
   ).length;
-  const staffReportedImprovementRate = pct(staffReportedImprovement, totalInterventions);
+  const staffReportedImprovementRate = rate(staffReportedImprovement, totalInterventions);
 
   const sessionsCompletedTotal = sensory_intervention_records.reduce(
     (sum, i) => sum + i.sessions_completed,
@@ -397,7 +394,7 @@ export function computeSensoryAccessibilitySupport(
     (sum, i) => sum + i.sessions_planned,
     0,
   );
-  const sessionCompletionRate = pct(sessionsCompletedTotal, sessionsPlannedTotal);
+  const sessionCompletionRate = rate(sessionsCompletedTotal, sessionsPlannedTotal);
 
   const overdueInterventionReviews = sensory_intervention_records.filter(
     (i) => i.review_overdue && i.active,
@@ -406,40 +403,40 @@ export function computeSensoryAccessibilitySupport(
   const professionalInvolved = sensory_intervention_records.filter(
     (i) => i.professional_involved,
   ).length;
-  const professionalInvolvementRate = pct(professionalInvolved, totalInterventions);
+  const professionalInvolvementRate = rate(professionalInvolved, totalInterventions);
 
   // --- Child feedback rate (composite across adaptations and interventions) ---
   const totalFeedbackOpportunities = implementedAdaptations + totalInterventions;
   const totalPositiveFeedback = adaptationChildFeedbackPositive + childReportedImprovement;
-  const childFeedbackRate = pct(totalPositiveFeedback, totalFeedbackOpportunities);
+  const childFeedbackRate = rate(totalPositiveFeedback, totalFeedbackOpportunities);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: sensoryProfileCoverageRate (>=100: +4, >=80: +2) ---
-  if (sensoryProfileCoverageRate >= 100) score += 4;
-  else if (sensoryProfileCoverageRate >= 80) score += 2;
+  if (meets(sensoryProfileCoverageRate, 100)) score += 4;
+  else if (meets(sensoryProfileCoverageRate, 80)) score += 2;
 
   // --- Bonus 2: accessibilityAdaptationRate (>=100: +4, >=80: +2) ---
-  if (accessibilityAdaptationRate >= 100) score += 4;
-  else if (accessibilityAdaptationRate >= 80) score += 2;
+  if (meets(accessibilityAdaptationRate, 100)) score += 4;
+  else if (meets(accessibilityAdaptationRate, 80)) score += 2;
 
   // --- Bonus 3: sensoryRoomUtilisationRate (>=80: +3, >=60: +1) ---
-  if (sensoryRoomUtilisationRate >= 80) score += 3;
-  else if (sensoryRoomUtilisationRate >= 60) score += 1;
+  if (meets(sensoryRoomUtilisationRate, 80)) score += 3;
+  else if (meets(sensoryRoomUtilisationRate, 60)) score += 1;
 
   // --- Bonus 4: equipmentMaintenanceRate (>=100: +3, >=80: +1) ---
   if ((equipmentMaintenanceRate ?? 0) >= 100) score += 3;
   else if ((equipmentMaintenanceRate ?? 0) >= 80) score += 1;
 
   // --- Bonus 5: interventionEffectivenessRate (>=90: +4, >=70: +2) ---
-  if (interventionEffectivenessRate >= 90) score += 4;
-  else if (interventionEffectivenessRate >= 70) score += 2;
+  if (meets(interventionEffectivenessRate, 90)) score += 4;
+  else if (meets(interventionEffectivenessRate, 70)) score += 2;
 
   // --- Bonus 6: childFeedbackRate (>=90: +3, >=70: +1) ---
-  if (childFeedbackRate >= 90) score += 3;
-  else if (childFeedbackRate >= 70) score += 1;
+  if (meets(childFeedbackRate, 90)) score += 3;
+  else if (meets(childFeedbackRate, 70)) score += 1;
 
   // --- Bonus 7: adaptationEffectivenessAvg (>=4.0: +3, >=3.0: +1) ---
   if ((adaptationEffectivenessAvg ?? 0) >= 4.0) score += 3;
@@ -450,22 +447,22 @@ export function computeSensoryAccessibilitySupport(
   else if ((profileReviewComplianceRate ?? 0) >= 80) score += 1;
 
   // --- Bonus 9: sessionCompletionRate (>=90: +2, >=70: +1) ---
-  if (sessionCompletionRate >= 90) score += 2;
-  else if (sessionCompletionRate >= 70) score += 1;
+  if (meets(sessionCompletionRate, 90)) score += 2;
+  else if (meets(sessionCompletionRate, 70)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // sensoryProfileCoverageRate < 50 → -5
-  if (sensoryProfileCoverageRate < 50 && total_children > 0) score -= 5;
+  if (below(sensoryProfileCoverageRate, 50) && total_children > 0) score -= 5;
 
   // accessibilityAdaptationRate < 50 → -5
-  if (accessibilityAdaptationRate < 50 && totalAdaptations > 0) score -= 5;
+  if (below(accessibilityAdaptationRate, 50) && totalAdaptations > 0) score -= 5;
 
   // equipmentMaintenanceRate < 50 → -4
   if ((equipmentMaintenanceRate ?? 0) < 50 && activeEquipment > 0) score -= 4;
 
   // interventionEffectivenessRate < 40 → -4
-  if (interventionEffectivenessRate < 40 && totalInterventions > 0) score -= 4;
+  if (below(interventionEffectivenessRate, 40) && totalInterventions > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -475,31 +472,31 @@ export function computeSensoryAccessibilitySupport(
 
   const strengths: string[] = [];
 
-  if (sensoryProfileCoverageRate >= 100 && total_children > 0) {
+  if (meets(sensoryProfileCoverageRate, 100) && total_children > 0) {
     strengths.push(
       "Every child has a sensory profile assessment — the home demonstrates comprehensive identification of individual sensory needs.",
     );
-  } else if (sensoryProfileCoverageRate >= 80 && total_children > 0) {
+  } else if (meets(sensoryProfileCoverageRate, 80) && total_children > 0) {
     strengths.push(
       `${sensoryProfileCoverageRate}% of children have sensory profiles — strong coverage in identifying children's individual sensory needs.`,
     );
   }
 
-  if (accessibilityAdaptationRate >= 100 && totalAdaptations > 0) {
+  if (meets(accessibilityAdaptationRate, 100) && totalAdaptations > 0) {
     strengths.push(
       "Every requested accessibility adaptation has been implemented — the home responds comprehensively to identified sensory and accessibility needs.",
     );
-  } else if (accessibilityAdaptationRate >= 80 && totalAdaptations > 0) {
+  } else if (meets(accessibilityAdaptationRate, 80) && totalAdaptations > 0) {
     strengths.push(
       `${accessibilityAdaptationRate}% of accessibility adaptations implemented — the home delivers the majority of requested adaptations.`,
     );
   }
 
-  if (sensoryRoomUtilisationRate >= 80 && total_children > 0) {
+  if (meets(sensoryRoomUtilisationRate, 80) && total_children > 0) {
     strengths.push(
       `${sensoryRoomUtilisationRate}% of children are using the sensory room — strong utilisation indicates children find the sensory environment beneficial.`,
     );
-  } else if (sensoryRoomUtilisationRate >= 60 && total_children > 0) {
+  } else if (meets(sensoryRoomUtilisationRate, 60) && total_children > 0) {
     strengths.push(
       `${sensoryRoomUtilisationRate}% sensory room utilisation — good levels of access to sensory spaces for children.`,
     );
@@ -515,21 +512,21 @@ export function computeSensoryAccessibilitySupport(
     );
   }
 
-  if (interventionEffectivenessRate >= 90 && totalInterventions > 0) {
+  if (meets(interventionEffectivenessRate, 90) && totalInterventions > 0) {
     strengths.push(
       `${interventionEffectivenessRate}% of sensory interventions showing improvement — interventions are highly effective in supporting children's sensory needs.`,
     );
-  } else if (interventionEffectivenessRate >= 70 && totalInterventions > 0) {
+  } else if (meets(interventionEffectivenessRate, 70) && totalInterventions > 0) {
     strengths.push(
       `${interventionEffectivenessRate}% of interventions showing improvement — the majority of sensory interventions are achieving positive outcomes.`,
     );
   }
 
-  if (childFeedbackRate >= 90 && totalFeedbackOpportunities > 0) {
+  if (meets(childFeedbackRate, 90) && totalFeedbackOpportunities > 0) {
     strengths.push(
       `${childFeedbackRate}% positive child feedback on sensory support — children report that adaptations and interventions are genuinely helping them.`,
     );
-  } else if (childFeedbackRate >= 70 && totalFeedbackOpportunities > 0) {
+  } else if (meets(childFeedbackRate, 70) && totalFeedbackOpportunities > 0) {
     strengths.push(
       `${childFeedbackRate}% positive child feedback — most children report benefit from their sensory support arrangements.`,
     );
@@ -545,11 +542,11 @@ export function computeSensoryAccessibilitySupport(
     );
   }
 
-  if (childInvolvementRate >= 90 && totalProfiles > 0) {
+  if (meets(childInvolvementRate, 90) && totalProfiles > 0) {
     strengths.push(
       "Children are involved in the vast majority of their sensory assessments — assessments are genuinely child-centred and participatory.",
     );
-  } else if (childInvolvementRate >= 70 && totalProfiles > 0) {
+  } else if (meets(childInvolvementRate, 70) && totalProfiles > 0) {
     strengths.push(
       `${childInvolvementRate}% child involvement in sensory assessments — good practice in including children in understanding their own sensory needs.`,
     );
@@ -565,41 +562,41 @@ export function computeSensoryAccessibilitySupport(
     );
   }
 
-  if (sessionCompletionRate >= 90 && sessionsPlannedTotal > 0) {
+  if (meets(sessionCompletionRate, 90) && sessionsPlannedTotal > 0) {
     strengths.push(
       `${sessionCompletionRate}% of planned intervention sessions completed — the home delivers sensory interventions reliably and consistently.`,
     );
-  } else if (sessionCompletionRate >= 70 && sessionsPlannedTotal > 0) {
+  } else if (meets(sessionCompletionRate, 70) && sessionsPlannedTotal > 0) {
     strengths.push(
       `${sessionCompletionRate}% intervention session completion — the home generally follows through on planned sensory support.`,
     );
   }
 
-  if (safetyCheckRate >= 100 && activeEquipment > 0) {
+  if (meets(safetyCheckRate, 100) && activeEquipment > 0) {
     strengths.push(
       "All active sensory equipment has been safety-checked — the home prioritises children's safety when using sensory resources.",
     );
   }
 
-  if (professionalInvolvementRate >= 80 && totalInterventions > 0) {
+  if (meets(professionalInvolvementRate, 80) && totalInterventions > 0) {
     strengths.push(
       `${professionalInvolvementRate}% of interventions involve professional input — the home draws on specialist expertise to support children's sensory needs.`,
     );
   }
 
-  if (childInitiatedRate >= 50 && totalSessions > 0) {
+  if (meets(childInitiatedRate, 50) && totalSessions > 0) {
     strengths.push(
       `${childInitiatedRate}% of sensory room sessions are child-initiated — children feel empowered to request sensory support when they need it.`,
     );
   }
 
-  if (sessionDocumentationRate >= 90 && totalSessions > 0) {
+  if (meets(sessionDocumentationRate, 90) && totalSessions > 0) {
     strengths.push(
       `${sessionDocumentationRate}% of sensory room sessions have documented notes — strong recording practice supporting evidence of sensory provision.`,
     );
   }
 
-  if (goalsMetRate >= 80 && totalSessions > 0) {
+  if (meets(goalsMetRate, 80) && totalSessions > 0) {
     strengths.push(
       `${goalsMetRate}% of sensory room sessions meet their goals — sessions are purposeful and achieving intended outcomes.`,
     );
@@ -609,27 +606,27 @@ export function computeSensoryAccessibilitySupport(
 
   const concerns: string[] = [];
 
-  if (sensoryProfileCoverageRate < 50 && total_children > 0) {
+  if (below(sensoryProfileCoverageRate, 50) && total_children > 0) {
     concerns.push(
       `Only ${sensoryProfileCoverageRate}% of children have sensory profiles — the majority of children's sensory needs have not been formally assessed, preventing the home from delivering tailored support.`,
     );
-  } else if (sensoryProfileCoverageRate < 80 && sensoryProfileCoverageRate >= 50 && total_children > 0) {
+  } else if (below(sensoryProfileCoverageRate, 80) && meets(sensoryProfileCoverageRate, 50) && total_children > 0) {
     concerns.push(
       `Sensory profile coverage at ${sensoryProfileCoverageRate}% — some children's sensory needs remain unassessed, which may result in unmet needs and inappropriate care responses.`,
     );
   }
 
-  if (accessibilityAdaptationRate < 50 && totalAdaptations > 0) {
+  if (below(accessibilityAdaptationRate, 50) && totalAdaptations > 0) {
     concerns.push(
       `Only ${accessibilityAdaptationRate}% of requested accessibility adaptations have been implemented — the majority of identified needs are not being met, leaving children without necessary support.`,
     );
-  } else if (accessibilityAdaptationRate < 80 && accessibilityAdaptationRate >= 50 && totalAdaptations > 0) {
+  } else if (below(accessibilityAdaptationRate, 80) && meets(accessibilityAdaptationRate, 50) && totalAdaptations > 0) {
     concerns.push(
       `Accessibility adaptation rate at ${accessibilityAdaptationRate}% — not all identified adaptations are in place, which may leave some children's needs unmet.`,
     );
   }
 
-  if (sensoryRoomUtilisationRate < 40 && total_children > 0 && totalSessions > 0) {
+  if (below(sensoryRoomUtilisationRate, 40) && total_children > 0 && totalSessions > 0) {
     concerns.push(
       `Sensory room utilisation at only ${sensoryRoomUtilisationRate}% — the sensory room is available but most children are not accessing it, potentially indicating barriers to use or lack of awareness.`,
     );
@@ -645,21 +642,21 @@ export function computeSensoryAccessibilitySupport(
     );
   }
 
-  if (interventionEffectivenessRate < 40 && totalInterventions > 0) {
+  if (below(interventionEffectivenessRate, 40) && totalInterventions > 0) {
     concerns.push(
       `Only ${interventionEffectivenessRate}% of sensory interventions showing improvement — the majority of interventions are not achieving their intended outcomes, suggesting a need for fundamental review of approach.`,
     );
-  } else if (interventionEffectivenessRate < 70 && interventionEffectivenessRate >= 40 && totalInterventions > 0) {
+  } else if (below(interventionEffectivenessRate, 70) && meets(interventionEffectivenessRate, 40) && totalInterventions > 0) {
     concerns.push(
       `Intervention effectiveness at ${interventionEffectivenessRate}% — not all sensory interventions are achieving positive outcomes. Review is needed to ensure interventions are appropriately matched to individual needs.`,
     );
   }
 
-  if (childFeedbackRate < 50 && totalFeedbackOpportunities > 0) {
+  if (below(childFeedbackRate, 50) && totalFeedbackOpportunities > 0) {
     concerns.push(
       `Only ${childFeedbackRate}% positive child feedback on sensory support — most children are not reporting benefit from their adaptations and interventions, raising questions about whether support is truly meeting their needs.`,
     );
-  } else if (childFeedbackRate < 70 && childFeedbackRate >= 50 && totalFeedbackOpportunities > 0) {
+  } else if (below(childFeedbackRate, 70) && meets(childFeedbackRate, 50) && totalFeedbackOpportunities > 0) {
     concerns.push(
       `Child feedback rate at ${childFeedbackRate}% — a significant proportion of children do not report positive outcomes from their sensory support.`,
     );
@@ -689,25 +686,25 @@ export function computeSensoryAccessibilitySupport(
     );
   }
 
-  if (safetyCheckRate < 80 && activeEquipment > 0) {
+  if (below(safetyCheckRate, 80) && activeEquipment > 0) {
     concerns.push(
       `Only ${safetyCheckRate}% of active sensory equipment has been safety-checked — equipment used by children must have documented safety checks to prevent harm.`,
     );
   }
 
-  if (childInvolvementRate < 50 && totalProfiles > 0) {
+  if (below(childInvolvementRate, 50) && totalProfiles > 0) {
     concerns.push(
       `Children involved in only ${childInvolvementRate}% of sensory assessments — assessments conducted without the child's meaningful participation may not accurately reflect their sensory experience.`,
     );
   }
 
-  if (sessionCompletionRate < 50 && sessionsPlannedTotal > 0) {
+  if (below(sessionCompletionRate, 50) && sessionsPlannedTotal > 0) {
     concerns.push(
       `Only ${sessionCompletionRate}% of planned intervention sessions completed — the home is not delivering the sensory support it has committed to, potentially leaving children's needs unmet.`,
     );
   }
 
-  if (sessionDocumentationRate < 70 && totalSessions > 0) {
+  if (below(sessionDocumentationRate, 70) && totalSessions > 0) {
     concerns.push(
       `Sensory room session documentation at only ${sessionDocumentationRate}% — poor recording makes it difficult to evidence the purpose and outcomes of sensory room use.`,
     );
@@ -718,7 +715,7 @@ export function computeSensoryAccessibilitySupport(
   const recommendations: SensoryAccessibilityRecommendation[] = [];
   let rank = 0;
 
-  if (sensoryProfileCoverageRate < 50 && total_children > 0) {
+  if (below(sensoryProfileCoverageRate, 50) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -728,7 +725,7 @@ export function computeSensoryAccessibilitySupport(
     });
   }
 
-  if (accessibilityAdaptationRate < 50 && totalAdaptations > 0) {
+  if (below(accessibilityAdaptationRate, 50) && totalAdaptations > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -748,7 +745,7 @@ export function computeSensoryAccessibilitySupport(
     });
   }
 
-  if (interventionEffectivenessRate < 40 && totalInterventions > 0) {
+  if (below(interventionEffectivenessRate, 40) && totalInterventions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -758,7 +755,7 @@ export function computeSensoryAccessibilitySupport(
     });
   }
 
-  if (safetyCheckRate < 80 && activeEquipment > 0) {
+  if (below(safetyCheckRate, 80) && activeEquipment > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -778,7 +775,7 @@ export function computeSensoryAccessibilitySupport(
     });
   }
 
-  if (childFeedbackRate < 50 && totalFeedbackOpportunities > 0) {
+  if (below(childFeedbackRate, 50) && totalFeedbackOpportunities > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -809,8 +806,8 @@ export function computeSensoryAccessibilitySupport(
   }
 
   if (
-    sensoryProfileCoverageRate >= 50 &&
-    sensoryProfileCoverageRate < 80 &&
+    meets(sensoryProfileCoverageRate, 50) &&
+    below(sensoryProfileCoverageRate, 80) &&
     total_children > 0
   ) {
     recommendations.push({
@@ -823,8 +820,8 @@ export function computeSensoryAccessibilitySupport(
   }
 
   if (
-    accessibilityAdaptationRate >= 50 &&
-    accessibilityAdaptationRate < 80 &&
+    meets(accessibilityAdaptationRate, 50) &&
+    below(accessibilityAdaptationRate, 80) &&
     totalAdaptations > 0
   ) {
     recommendations.push({
@@ -837,8 +834,8 @@ export function computeSensoryAccessibilitySupport(
   }
 
   if (
-    interventionEffectivenessRate >= 40 &&
-    interventionEffectivenessRate < 70 &&
+    meets(interventionEffectivenessRate, 40) &&
+    below(interventionEffectivenessRate, 70) &&
     totalInterventions > 0
   ) {
     recommendations.push({
@@ -850,7 +847,7 @@ export function computeSensoryAccessibilitySupport(
     });
   }
 
-  if (sessionCompletionRate < 70 && sessionsPlannedTotal > 0) {
+  if (below(sessionCompletionRate, 70) && sessionsPlannedTotal > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -860,7 +857,7 @@ export function computeSensoryAccessibilitySupport(
     });
   }
 
-  if (childInvolvementRate < 70 && totalProfiles > 0) {
+  if (below(childInvolvementRate, 70) && totalProfiles > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -870,7 +867,7 @@ export function computeSensoryAccessibilitySupport(
     });
   }
 
-  if (sessionDocumentationRate < 70 && totalSessions > 0) {
+  if (below(sessionDocumentationRate, 70) && totalSessions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -895,8 +892,8 @@ export function computeSensoryAccessibilitySupport(
   }
 
   if (
-    childFeedbackRate >= 50 &&
-    childFeedbackRate < 70 &&
+    meets(childFeedbackRate, 50) &&
+    below(childFeedbackRate, 70) &&
     totalFeedbackOpportunities > 0
   ) {
     recommendations.push({
@@ -908,7 +905,7 @@ export function computeSensoryAccessibilitySupport(
     });
   }
 
-  if (professionalInvolvementRate < 50 && totalInterventions > 0) {
+  if (below(professionalInvolvementRate, 50) && totalInterventions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -924,14 +921,14 @@ export function computeSensoryAccessibilitySupport(
 
   // -- Critical insights --
 
-  if (sensoryProfileCoverageRate < 50 && total_children > 0) {
+  if (below(sensoryProfileCoverageRate, 50) && total_children > 0) {
     insights.push({
       text: `Only ${sensoryProfileCoverageRate}% of children have sensory profiles. Without formal assessment of each child's sensory needs, the home cannot demonstrate that care is tailored to individual requirements. Ofsted expects evidence that the home understands and responds to each child's sensory profile as part of meeting Reg 6.`,
       severity: "critical",
     });
   }
 
-  if (accessibilityAdaptationRate < 50 && totalAdaptations > 0) {
+  if (below(accessibilityAdaptationRate, 50) && totalAdaptations > 0) {
     insights.push({
       text: `Only ${accessibilityAdaptationRate}% of requested adaptations implemented. Where the home has identified a child needs accessibility support but has not provided it, this represents a failure to meet known needs. This directly undermines the home's ability to evidence individualised care under Reg 10.`,
       severity: "critical",
@@ -945,16 +942,16 @@ export function computeSensoryAccessibilitySupport(
     });
   }
 
-  if (interventionEffectivenessRate < 40 && totalInterventions > 0) {
+  if (below(interventionEffectivenessRate, 40) && totalInterventions > 0) {
     insights.push({
       text: `Only ${interventionEffectivenessRate}% of sensory interventions showing improvement. When most interventions are not working, this indicates a systemic issue — interventions may not be appropriately matched to children's needs, professionally informed, or consistently delivered. A fundamental review with specialist input is needed.`,
       severity: "critical",
     });
   }
 
-  if (poorConditionEquipment > 0 && safetyCheckRate < 80) {
+  if (poorConditionEquipment > 0 && below(safetyCheckRate, 80)) {
     insights.push({
-      text: `${poorConditionEquipment} equipment item${poorConditionEquipment !== 1 ? "s" : ""} in poor condition and ${100 - safetyCheckRate}% of equipment not safety-checked. The combination of poor condition and missing safety checks creates a significant risk to children's physical safety during sensory activities.`,
+      text: `${poorConditionEquipment} equipment item${poorConditionEquipment !== 1 ? "s" : ""} in poor condition and ${100 - safetyCheckRate!}% of equipment not safety-checked. The combination of poor condition and missing safety checks creates a significant risk to children's physical safety during sensory activities.`,
       severity: "critical",
     });
   }
@@ -962,8 +959,8 @@ export function computeSensoryAccessibilitySupport(
   // -- Warning insights --
 
   if (
-    sensoryProfileCoverageRate >= 50 &&
-    sensoryProfileCoverageRate < 80 &&
+    meets(sensoryProfileCoverageRate, 50) &&
+    below(sensoryProfileCoverageRate, 80) &&
     total_children > 0
   ) {
     insights.push({
@@ -973,8 +970,8 @@ export function computeSensoryAccessibilitySupport(
   }
 
   if (
-    accessibilityAdaptationRate >= 50 &&
-    accessibilityAdaptationRate < 80 &&
+    meets(accessibilityAdaptationRate, 50) &&
+    below(accessibilityAdaptationRate, 80) &&
     totalAdaptations > 0
   ) {
     insights.push({
@@ -984,8 +981,8 @@ export function computeSensoryAccessibilitySupport(
   }
 
   if (
-    interventionEffectivenessRate >= 40 &&
-    interventionEffectivenessRate < 70 &&
+    meets(interventionEffectivenessRate, 40) &&
+    below(interventionEffectivenessRate, 70) &&
     totalInterventions > 0
   ) {
     insights.push({
@@ -995,8 +992,8 @@ export function computeSensoryAccessibilitySupport(
   }
 
   if (
-    childFeedbackRate >= 50 &&
-    childFeedbackRate < 70 &&
+    meets(childFeedbackRate, 50) &&
+    below(childFeedbackRate, 70) &&
     totalFeedbackOpportunities > 0
   ) {
     insights.push({
@@ -1030,14 +1027,14 @@ export function computeSensoryAccessibilitySupport(
     });
   }
 
-  if (sessionCompletionRate < 70 && sessionCompletionRate >= 50 && sessionsPlannedTotal > 0) {
+  if (below(sessionCompletionRate, 70) && meets(sessionCompletionRate, 50) && sessionsPlannedTotal > 0) {
     insights.push({
       text: `Session completion at ${sessionCompletionRate}% — planned sessions are not being consistently delivered. Gaps in planned support may reduce the cumulative benefit of sensory interventions for children.`,
       severity: "warning",
     });
   }
 
-  if (childInvolvementRate < 70 && childInvolvementRate >= 50 && totalProfiles > 0) {
+  if (below(childInvolvementRate, 70) && meets(childInvolvementRate, 50) && totalProfiles > 0) {
     insights.push({
       text: `Child involvement in assessments at ${childInvolvementRate}% — some children are not actively participating in their sensory assessments. Assessments without the child's perspective may not capture the full picture of their sensory experience.`,
       severity: "warning",
@@ -1090,8 +1087,8 @@ export function computeSensoryAccessibilitySupport(
   }
 
   if (
-    sensoryProfileCoverageRate >= 100 &&
-    childInvolvementRate >= 90 &&
+    meets(sensoryProfileCoverageRate, 100) &&
+    meets(childInvolvementRate, 90) &&
     total_children > 0 &&
     totalProfiles > 0
   ) {
@@ -1102,7 +1099,7 @@ export function computeSensoryAccessibilitySupport(
   }
 
   if (
-    accessibilityAdaptationRate >= 100 &&
+    meets(accessibilityAdaptationRate, 100) &&
     (adaptationEffectivenessAvg ?? 0) >= 4.0 &&
     totalAdaptations > 0
   ) {
@@ -1113,8 +1110,8 @@ export function computeSensoryAccessibilitySupport(
   }
 
   if (
-    interventionEffectivenessRate >= 90 &&
-    childReportedImprovementRate >= 80 &&
+    meets(interventionEffectivenessRate, 90) &&
+    meets(childReportedImprovementRate, 80) &&
     totalInterventions > 0
   ) {
     insights.push({
@@ -1125,7 +1122,7 @@ export function computeSensoryAccessibilitySupport(
 
   if (
     (equipmentMaintenanceRate ?? 0) >= 100 &&
-    safetyCheckRate >= 100 &&
+    meets(safetyCheckRate, 100) &&
     activeEquipment > 0
   ) {
     insights.push({
@@ -1135,8 +1132,8 @@ export function computeSensoryAccessibilitySupport(
   }
 
   if (
-    sensoryRoomUtilisationRate >= 80 &&
-    goalsMetRate >= 80 &&
+    meets(sensoryRoomUtilisationRate, 80) &&
+    meets(goalsMetRate, 80) &&
     total_children > 0 &&
     totalSessions > 0
   ) {
@@ -1147,7 +1144,7 @@ export function computeSensoryAccessibilitySupport(
   }
 
   if (
-    childFeedbackRate >= 90 &&
+    meets(childFeedbackRate, 90) &&
     totalFeedbackOpportunities > 0
   ) {
     insights.push({
@@ -1157,8 +1154,8 @@ export function computeSensoryAccessibilitySupport(
   }
 
   if (
-    sessionCompletionRate >= 90 &&
-    professionalInvolvementRate >= 80 &&
+    meets(sessionCompletionRate, 90) &&
+    meets(professionalInvolvementRate, 80) &&
     sessionsPlannedTotal > 0 &&
     totalInterventions > 0
   ) {
@@ -1169,8 +1166,8 @@ export function computeSensoryAccessibilitySupport(
   }
 
   if (
-    staffReportedImprovementRate >= 80 &&
-    childReportedImprovementRate >= 80 &&
+    meets(staffReportedImprovementRate, 80) &&
+    meets(childReportedImprovementRate, 80) &&
     totalInterventions > 0
   ) {
     insights.push({

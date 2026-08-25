@@ -1,3 +1,4 @@
+import { above, below, meanOf, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME STAFF PERFORMANCE APPRAISAL INTELLIGENCE ENGINE
 // Home-level: assesses appraisal completion rates, performance target tracking,
@@ -100,11 +101,16 @@ export interface StaffPerformanceResult {
   appraisal_rating: StaffPerformanceRating;
   appraisal_score: number;
   headline: string;
-  appraisal_completion_rate: number;
-  target_achievement_rate: number;
-  competency_rate: number;
-  development_progress_rate: number;
-  feedback_quality_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  appraisal_completion_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  target_achievement_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  competency_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  development_progress_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feedback_quality_rate: number | null;
   // fab-0: null when no satisfaction components observable.
   staff_satisfaction_rate: number | null;
   appraisal_profile: AppraisalProfile;
@@ -129,10 +135,14 @@ export interface AppraisalProfile {
   scheduled_count: number;
   overdue_count: number;
   cancelled_count: number;
-  completion_rate: number;
-  dual_signature_rate: number;
-  objectives_set_rate: number;
-  development_plan_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completion_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dual_signature_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  objectives_set_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  development_plan_rate: number | null;
   avg_quality_score: number | null;
   rating_distribution: { exceptional: number; effective: number; developing: number; underperforming: number; not_rated: number };
   staff_with_no_appraisal: number;
@@ -145,11 +155,14 @@ export interface TargetProfile {
   at_risk_count: number;
   not_met_count: number;
   not_started_count: number;
-  achievement_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  achievement_rate: number | null;
   // fab-0: null when no records to average.
   avg_progress: number | null;
-  reviewed_rate: number;
-  evidence_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reviewed_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  evidence_rate: number | null;
   category_breakdown: { category: string; total: number; achieved: number }[];
   overdue_targets: number;
 }
@@ -159,7 +172,8 @@ export interface CompetencyProfile {
   assessed_count: number;
   not_assessed_count: number;
   competent_or_above_count: number;
-  competency_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  competency_rate: number | null;
   gap_count: number;
   gap_with_action_plan_count: number;
   area_breakdown: { area: string; total: number; competent_or_above: number }[];
@@ -172,11 +186,14 @@ export interface DevelopmentProfile {
   not_started_count: number;
   overdue_count: number;
   cancelled_count: number;
-  completion_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completion_rate: number | null;
   // fab-0: null when no goals to average.
   avg_progress: number | null;
-  support_provided_rate: number;
-  resource_allocated_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  support_provided_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  resource_allocated_rate: number | null;
   category_breakdown: { category: string; total: number; completed: number }[];
 }
 
@@ -187,8 +204,10 @@ export interface FeedbackProfile {
   three_sixty_count: number;
   peer_count: number;
   avg_quality_rating: number | null;
-  actionable_rate: number;
-  follow_up_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionable_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  follow_up_rate: number | null;
   sentiment_distribution: { positive: number; constructive: number; negative: number; mixed: number };
   // fab-0: null when total_staff is 0.
   feedback_per_staff: number | null;
@@ -198,11 +217,6 @@ export interface FeedbackProfile {
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
-}
-
-function pct(numerator: number, denominator: number): number {
-  if (denominator === 0) return 0;
-  return Math.round((numerator / denominator) * 100);
 }
 
 function toRating(score: number): StaffPerformanceRating {
@@ -293,19 +307,19 @@ export function computeStaffPerformanceAppraisal(
   const cancelledAppraisals = appraisal_records.filter(a => a.status === "cancelled").length;
 
   const appraisalCompletionRate = totalAppraisals > 0
-    ? pct(completedAppraisals, totalAppraisals)
+    ? rate(completedAppraisals, totalAppraisals)
     : 0;
 
   // Completed appraisals deeper metrics
   const completedRecords = appraisal_records.filter(a => a.status === "completed");
   const dualSignedCount = completedRecords.filter(a => a.staff_signed && a.manager_signed).length;
-  const dualSignatureRate = pct(dualSignedCount, completedRecords.length);
+  const dualSignatureRate = rate(dualSignedCount, completedRecords.length);
 
   const objectivesSetCount = completedRecords.filter(a => a.objectives_set).length;
-  const objectivesSetRate = pct(objectivesSetCount, completedRecords.length);
+  const objectivesSetRate = rate(objectivesSetCount, completedRecords.length);
 
   const devPlanAgreedCount = completedRecords.filter(a => a.development_plan_agreed).length;
-  const developmentPlanRate = pct(devPlanAgreedCount, completedRecords.length);
+  const developmentPlanRate = rate(devPlanAgreedCount, completedRecords.length);
 
   const qualityScores = completedRecords
     .map(a => a.quality_score)
@@ -354,7 +368,7 @@ export function computeStaffPerformanceAppraisal(
   // Achievement rate: achieved out of total non-not_started
   const activeTargets = totalTargets - notStartedTargets;
   const targetAchievementRate = activeTargets > 0
-    ? pct(achievedTargets, activeTargets)
+    ? rate(achievedTargets, activeTargets)
     : 0;
 
   const targetProgressValues = performance_target_records.map(t => t.progress_percentage);
@@ -364,10 +378,10 @@ export function computeStaffPerformanceAppraisal(
     : null;
 
   const reviewedTargets = performance_target_records.filter(t => t.reviewed).length;
-  const reviewedRate = pct(reviewedTargets, totalTargets);
+  const reviewedRate = rate(reviewedTargets, totalTargets);
 
   const evidenceTargets = performance_target_records.filter(t => t.evidence_attached).length;
-  const evidenceRate = pct(evidenceTargets, totalTargets);
+  const evidenceRate = rate(evidenceTargets, totalTargets);
 
   // Overdue targets: past target_date and not achieved
   const overdueTargets = performance_target_records.filter(t => {
@@ -420,7 +434,7 @@ export function computeStaffPerformanceAppraisal(
     COMPETENT_LEVELS.includes(c.current_level)
   ).length;
   const competencyRate = totalCompetencyAssessments > 0
-    ? pct(competentOrAboveCount, totalCompetencyAssessments)
+    ? rate(competentOrAboveCount, totalCompetencyAssessments)
     : 0;
 
   // Gap analysis
@@ -467,7 +481,7 @@ export function computeStaffPerformanceAppraisal(
 
   const activeGoals = totalGoals - cancelledGoals;
   const developmentProgressRate = activeGoals > 0
-    ? pct(completedGoals, activeGoals)
+    ? rate(completedGoals, activeGoals)
     : 0;
 
   const goalProgressValues = development_goal_records
@@ -479,10 +493,10 @@ export function computeStaffPerformanceAppraisal(
     : null;
 
   const supportProvidedCount = development_goal_records.filter(g => g.support_provided).length;
-  const supportProvidedRate = pct(supportProvidedCount, totalGoals);
+  const supportProvidedRate = rate(supportProvidedCount, totalGoals);
 
   const resourceAllocatedCount = development_goal_records.filter(g => g.resource_allocated).length;
-  const resourceAllocatedRate = pct(resourceAllocatedCount, totalGoals);
+  const resourceAllocatedRate = rate(resourceAllocatedCount, totalGoals);
 
   // Category breakdown for goals
   const goalCategories = new Map<string, { total: number; completed: number }>();
@@ -529,20 +543,21 @@ export function computeStaffPerformanceAppraisal(
   const avgFeedbackQuality = avg(feedbackQualityScores);
 
   const actionableFeedback = feedback_records.filter(f => f.actionable).length;
-  const actionableRate = pct(actionableFeedback, totalFeedback);
+  const actionableRate = rate(actionableFeedback, totalFeedback);
 
   const followUpCompleted = feedback_records.filter(f => f.follow_up_completed).length;
-  const followUpRate = pct(followUpCompleted, totalFeedback);
+  const followUpRate = rate(followUpCompleted, totalFeedback);
 
   // Feedback quality rate: combines actionability and quality score
   // Use actionable rate as primary measure, weighted by quality
-  let feedbackQualityRate: number;
+  // fab-0: null when no feedback exists — 0 claimed "measured awful" quality.
+  let feedbackQualityRate: number | null;
   if (totalFeedback === 0) {
-    feedbackQualityRate = 0;
+    feedbackQualityRate = null;
   } else if (avgFeedbackQuality !== null) {
     // Quality rating is 1-10, convert to 0-100 scale and blend with actionable rate
     const qualityPct = Math.round(avgFeedbackQuality * 10);
-    feedbackQualityRate = Math.round((actionableRate * 0.6 + qualityPct * 0.4));
+    feedbackQualityRate = Math.round((actionableRate! * 0.6 + qualityPct * 0.4));
   } else {
     feedbackQualityRate = actionableRate;
   }
@@ -578,7 +593,7 @@ export function computeStaffPerformanceAppraisal(
   // Synthesised from: dual signatures (staff engagement), quality scores,
   // positive sentiment, follow-up completion, and support provision.
 
-  const satisfactionComponents: number[] = [];
+  const satisfactionComponents: (number | null)[] = [];
 
   if (completedRecords.length > 0) {
     satisfactionComponents.push(dualSignatureRate);
@@ -587,7 +602,7 @@ export function computeStaffPerformanceAppraisal(
     satisfactionComponents.push(Math.round(avgAppraisalQuality * 10));
   }
   if (totalFeedback > 0) {
-    const positivePct = pct(sentimentDistribution.positive, totalFeedback);
+    const positivePct = rate(sentimentDistribution.positive, totalFeedback);
     satisfactionComponents.push(positivePct);
     satisfactionComponents.push(followUpRate);
   }
@@ -596,9 +611,7 @@ export function computeStaffPerformanceAppraisal(
   }
 
   // fab-0: null when no satisfaction components observable.
-  const staffSatisfactionRate: number | null = satisfactionComponents.length > 0
-    ? Math.round(satisfactionComponents.reduce((s, v) => s + v, 0) / satisfactionComponents.length)
-    : null;
+  const staffSatisfactionRate: number | null = meanOf(satisfactionComponents);
 
   // ════════════════════════════════════════════════════════════════════════
   // SCORING — base 52, max bonuses +28, 4 penalties guarded by length>0
@@ -608,63 +621,63 @@ export function computeStaffPerformanceAppraisal(
 
   // ── Bonus 1: Appraisal completion (max +7) ────────────────────────────
   if (appraisal_records.length > 0) {
-    if (appraisalCompletionRate >= 95) score += 7;
-    else if (appraisalCompletionRate >= 85) score += 5;
-    else if (appraisalCompletionRate >= 70) score += 3;
-    else if (appraisalCompletionRate >= 50) score += 1;
+    if (meets(appraisalCompletionRate, 95)) score += 7;
+    else if (meets(appraisalCompletionRate, 85)) score += 5;
+    else if (meets(appraisalCompletionRate, 70)) score += 3;
+    else if (meets(appraisalCompletionRate, 50)) score += 1;
     else score += 0;
   }
 
   // ── Bonus 2: Target achievement (max +6) ──────────────────────────────
   if (performance_target_records.length > 0) {
-    if (targetAchievementRate >= 85) score += 6;
-    else if (targetAchievementRate >= 70) score += 4;
-    else if (targetAchievementRate >= 50) score += 2;
-    else if (targetAchievementRate >= 30) score += 1;
+    if (meets(targetAchievementRate, 85)) score += 6;
+    else if (meets(targetAchievementRate, 70)) score += 4;
+    else if (meets(targetAchievementRate, 50)) score += 2;
+    else if (meets(targetAchievementRate, 30)) score += 1;
     else score += 0;
   }
 
   // ── Bonus 3: Competency coverage (max +5) ─────────────────────────────
   if (competency_assessment_records.length > 0) {
-    if (competencyRate >= 85) score += 5;
-    else if (competencyRate >= 70) score += 3;
-    else if (competencyRate >= 50) score += 1;
+    if (meets(competencyRate, 85)) score += 5;
+    else if (meets(competencyRate, 70)) score += 3;
+    else if (meets(competencyRate, 50)) score += 1;
     else score += 0;
   }
 
   // ── Bonus 4: Development progress (max +5) ────────────────────────────
   if (development_goal_records.length > 0) {
-    if (developmentProgressRate >= 80) score += 5;
-    else if (developmentProgressRate >= 60) score += 3;
-    else if (developmentProgressRate >= 40) score += 1;
+    if (meets(developmentProgressRate, 80)) score += 5;
+    else if (meets(developmentProgressRate, 60)) score += 3;
+    else if (meets(developmentProgressRate, 40)) score += 1;
     else score += 0;
   }
 
   // ── Bonus 5: Feedback quality (max +5) ────────────────────────────────
   if (feedback_records.length > 0) {
-    if (feedbackQualityRate >= 85) score += 5;
-    else if (feedbackQualityRate >= 70) score += 3;
-    else if (feedbackQualityRate >= 50) score += 1;
+    if (meets(feedbackQualityRate, 85)) score += 5;
+    else if (meets(feedbackQualityRate, 70)) score += 3;
+    else if (meets(feedbackQualityRate, 50)) score += 1;
     else score += 0;
   }
 
   // ── Penalty 1: Overdue appraisals (guarded by length>0) ──────────────
   if (appraisal_records.length > 0 && overdueAppraisals > 0) {
-    const overduePct = pct(overdueAppraisals, totalAppraisals);
-    if (overduePct >= 40) score -= 8;
-    else if (overduePct >= 25) score -= 5;
-    else if (overduePct >= 10) score -= 3;
+    const overduePct = rate(overdueAppraisals, totalAppraisals);
+    if (meets(overduePct, 40)) score -= 8;
+    else if (meets(overduePct, 25)) score -= 5;
+    else if (meets(overduePct, 10)) score -= 3;
     else score -= 1;
   }
 
   // ── Penalty 2: At-risk/not-met targets (guarded by length>0) ─────────
   if (performance_target_records.length > 0) {
     const problemTargets = atRiskTargets + notMetTargets;
-    const problemPct = pct(problemTargets, totalTargets);
-    if (problemPct >= 50) score -= 7;
-    else if (problemPct >= 30) score -= 4;
-    else if (problemPct >= 15) score -= 2;
-    else if (problemPct > 0) score -= 1;
+    const problemPct = rate(problemTargets, totalTargets);
+    if (meets(problemPct, 50)) score -= 7;
+    else if (meets(problemPct, 30)) score -= 4;
+    else if (meets(problemPct, 15)) score -= 2;
+    else if (above(problemPct, 0)) score -= 1;
   }
 
   // ── Penalty 3: Competency gaps without action plans (guarded by length>0)
@@ -677,19 +690,19 @@ export function computeStaffPerformanceAppraisal(
 
   // ── Penalty 4: Overdue development goals (guarded by length>0) ───────
   if (development_goal_records.length > 0 && overdueGoals > 0) {
-    const overdueGoalPct = pct(overdueGoals, activeGoals);
-    if (overdueGoalPct >= 40) score -= 6;
-    else if (overdueGoalPct >= 25) score -= 4;
-    else if (overdueGoalPct >= 10) score -= 2;
+    const overdueGoalPct = rate(overdueGoals, activeGoals);
+    if (meets(overdueGoalPct, 40)) score -= 6;
+    else if (meets(overdueGoalPct, 25)) score -= 4;
+    else if (meets(overdueGoalPct, 10)) score -= 2;
     else score -= 1;
   }
 
   // ── Staff without any appraisal penalty ──────────────────────────────
   if (total_staff > 0 && staffWithNoAppraisal > 0) {
-    const noAppraisalPct = pct(staffWithNoAppraisal, total_staff);
-    if (noAppraisalPct >= 50) score -= 5;
-    else if (noAppraisalPct >= 25) score -= 3;
-    else if (noAppraisalPct >= 10) score -= 1;
+    const noAppraisalPct = rate(staffWithNoAppraisal, total_staff);
+    if (meets(noAppraisalPct, 50)) score -= 5;
+    else if (meets(noAppraisalPct, 25)) score -= 3;
+    else if (meets(noAppraisalPct, 10)) score -= 1;
   }
 
   score = clamp(score, 0, 100);
@@ -701,32 +714,32 @@ export function computeStaffPerformanceAppraisal(
 
   const strengths: string[] = [];
 
-  if (appraisalCompletionRate >= 90 && totalAppraisals > 0) {
+  if (meets(appraisalCompletionRate, 90) && totalAppraisals > 0) {
     strengths.push(
       `Appraisal completion rate is ${appraisalCompletionRate}% — staff are regularly appraised and performance is formally reviewed.`,
     );
   }
-  if (dualSignatureRate >= 90 && completedRecords.length > 0) {
+  if (meets(dualSignatureRate, 90) && completedRecords.length > 0) {
     strengths.push(
       `${dualSignatureRate}% of completed appraisals have dual signatures — strong evidence of staff engagement and agreement.`,
     );
   }
-  if (objectivesSetRate >= 90 && completedRecords.length > 0) {
+  if (meets(objectivesSetRate, 90) && completedRecords.length > 0) {
     strengths.push(
       `Objectives set in ${objectivesSetRate}% of appraisals — staff have clear direction and measurable goals.`,
     );
   }
-  if (developmentPlanRate >= 90 && completedRecords.length > 0) {
+  if (meets(developmentPlanRate, 90) && completedRecords.length > 0) {
     strengths.push(
       `Development plans agreed in ${developmentPlanRate}% of appraisals — commitment to continuous staff improvement.`,
     );
   }
-  if (targetAchievementRate >= 80 && activeTargets > 0) {
+  if (meets(targetAchievementRate, 80) && activeTargets > 0) {
     strengths.push(
       `${targetAchievementRate}% of performance targets achieved — staff are meeting their objectives consistently.`,
     );
   }
-  if (competencyRate >= 85 && totalCompetencyAssessments > 0) {
+  if (meets(competencyRate, 85) && totalCompetencyAssessments > 0) {
     strengths.push(
       `${competencyRate}% of staff assessed as competent or above — strong workforce capability across assessed areas.`,
     );
@@ -736,22 +749,22 @@ export function computeStaffPerformanceAppraisal(
       `All ${gapCount} identified competency gaps have action plans in place — proactive approach to skills development.`,
     );
   }
-  if (developmentProgressRate >= 75 && activeGoals > 0) {
+  if (meets(developmentProgressRate, 75) && activeGoals > 0) {
     strengths.push(
       `${developmentProgressRate}% of development goals completed — staff are progressing well in their professional growth.`,
     );
   }
-  if (supportProvidedRate >= 85 && totalGoals > 0) {
+  if (meets(supportProvidedRate, 85) && totalGoals > 0) {
     strengths.push(
       `Support provided for ${supportProvidedRate}% of development goals — home is investing in staff success.`,
     );
   }
-  if (feedbackQualityRate >= 80 && totalFeedback > 0) {
+  if (meets(feedbackQualityRate, 80) && totalFeedback > 0) {
     strengths.push(
       `Feedback quality rate is ${feedbackQualityRate}% — feedback is meaningful, actionable, and well-documented.`,
     );
   }
-  if (followUpRate >= 85 && totalFeedback > 0) {
+  if (meets(followUpRate, 85) && totalFeedback > 0) {
     strengths.push(
       `Follow-up completed on ${followUpRate}% of feedback — demonstrates commitment to acting on insights.`,
     );
@@ -772,19 +785,19 @@ export function computeStaffPerformanceAppraisal(
     );
   }
   if (ratingDistribution.exceptional > 0) {
-    const exceptionalPct = pct(ratingDistribution.exceptional, totalAppraisals);
-    if (exceptionalPct >= 30) {
+    const exceptionalPct = rate(ratingDistribution.exceptional, totalAppraisals);
+    if (meets(exceptionalPct, 30)) {
       strengths.push(
         `${exceptionalPct}% of appraisals rated exceptional — evidence of high-performing staff.`,
       );
     }
   }
-  if (reviewedRate >= 90 && totalTargets > 0) {
+  if (meets(reviewedRate, 90) && totalTargets > 0) {
     strengths.push(
       `${reviewedRate}% of performance targets have been reviewed — active monitoring of staff progress.`,
     );
   }
-  if (evidenceRate >= 80 && totalTargets > 0) {
+  if (meets(evidenceRate, 80) && totalTargets > 0) {
     strengths.push(
       `Evidence attached to ${evidenceRate}% of targets — strong documentation of achievement.`,
     );
@@ -796,12 +809,12 @@ export function computeStaffPerformanceAppraisal(
 
   const concerns: string[] = [];
 
-  if (appraisalCompletionRate < 50 && totalAppraisals > 0) {
+  if (below(appraisalCompletionRate, 50) && totalAppraisals > 0) {
     concerns.push(
       `Only ${appraisalCompletionRate}% of appraisals completed — Reg 16 requires a robust workforce development system.`,
     );
   }
-  if (overdueAppraisals > 0) {
+  if (above(overdueAppraisals, 0)) {
     concerns.push(
       `${overdueAppraisals} appraisal${overdueAppraisals > 1 ? "s are" : " is"} overdue — timely performance review is essential under Reg 33.`,
     );
@@ -811,17 +824,17 @@ export function computeStaffPerformanceAppraisal(
       `${staffWithNoAppraisal} of ${total_staff} staff have no appraisal on record — workforce performance management has gaps.`,
     );
   }
-  if (dualSignatureRate < 50 && completedRecords.length > 0) {
+  if (below(dualSignatureRate, 50) && completedRecords.length > 0) {
     concerns.push(
       `Only ${dualSignatureRate}% of completed appraisals have dual signatures — staff engagement with the appraisal process is low.`,
     );
   }
-  if (objectivesSetRate < 60 && completedRecords.length > 0) {
+  if (below(objectivesSetRate, 60) && completedRecords.length > 0) {
     concerns.push(
       `Objectives set in only ${objectivesSetRate}% of appraisals — staff lack clear performance direction.`,
     );
   }
-  if (notMetTargets > 0) {
+  if (above(notMetTargets, 0)) {
     concerns.push(
       `${notMetTargets} performance target${notMetTargets > 1 ? "s" : ""} not met — review whether targets are realistic and support is adequate.`,
     );
@@ -836,7 +849,7 @@ export function computeStaffPerformanceAppraisal(
       `${overdueTargets} performance target${overdueTargets > 1 ? "s are" : " is"} past their target date — timely review and adjustment needed.`,
     );
   }
-  if (competencyRate < 50 && totalCompetencyAssessments > 0) {
+  if (below(competencyRate, 50) && totalCompetencyAssessments > 0) {
     concerns.push(
       `Only ${competencyRate}% of competency assessments at competent level or above — significant skills gap across the workforce.`,
     );
@@ -848,8 +861,8 @@ export function computeStaffPerformanceAppraisal(
     );
   }
   if (notAssessedCompetencies > 0 && totalCompetencyAssessments > 0) {
-    const notAssessedPct = pct(notAssessedCompetencies, totalCompetencyAssessments);
-    if (notAssessedPct >= 30) {
+    const notAssessedPct = rate(notAssessedCompetencies, totalCompetencyAssessments);
+    if (meets(notAssessedPct, 30)) {
       concerns.push(
         `${notAssessedPct}% of competency areas remain unassessed — assessment coverage needs improvement.`,
       );
@@ -860,22 +873,22 @@ export function computeStaffPerformanceAppraisal(
       `${overdueGoals} development goal${overdueGoals > 1 ? "s are" : " is"} overdue — staff professional growth is falling behind.`,
     );
   }
-  if (developmentProgressRate < 40 && activeGoals > 0) {
+  if (below(developmentProgressRate, 40) && activeGoals > 0) {
     concerns.push(
       `Only ${developmentProgressRate}% of development goals completed — staff development programme needs strengthening.`,
     );
   }
-  if (supportProvidedRate < 50 && totalGoals > 0) {
+  if (below(supportProvidedRate, 50) && totalGoals > 0) {
     concerns.push(
       `Support provided for only ${supportProvidedRate}% of development goals — staff may lack resources to achieve their goals.`,
     );
   }
-  if (feedbackQualityRate < 50 && totalFeedback > 0) {
+  if (below(feedbackQualityRate, 50) && totalFeedback > 0) {
     concerns.push(
       `Feedback quality rate is only ${feedbackQualityRate}% — feedback may lack substance or actionability.`,
     );
   }
-  if (followUpRate < 40 && totalFeedback > 0) {
+  if (below(followUpRate, 40) && totalFeedback > 0) {
     concerns.push(
       `Only ${followUpRate}% of feedback has been followed up — feedback loop is not closing effectively.`,
     );
@@ -886,14 +899,14 @@ export function computeStaffPerformanceAppraisal(
     );
   }
   if (ratingDistribution.underperforming > 0) {
-    const upPct = pct(ratingDistribution.underperforming, totalAppraisals);
+    const upPct = rate(ratingDistribution.underperforming, totalAppraisals)!;
     concerns.push(
       `${ratingDistribution.underperforming} staff rated as underperforming (${upPct}%) — capability or performance management plans required.`,
     );
   }
   if (cancelledAppraisals > 0) {
-    const cancelPct = pct(cancelledAppraisals, totalAppraisals);
-    if (cancelPct >= 15) {
+    const cancelPct = rate(cancelledAppraisals, totalAppraisals);
+    if (meets(cancelPct, 15)) {
       concerns.push(
         `${cancelPct}% of appraisals cancelled — investigate reasons and ensure rescheduling.`,
       );
@@ -961,7 +974,7 @@ export function computeStaffPerformanceAppraisal(
       regulatory_ref: "CHR 2015 Reg 33",
     });
   }
-  if (dualSignatureRate < 70 && completedRecords.length > 0) {
+  if (below(dualSignatureRate, 70) && completedRecords.length > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Improve dual signature rate from ${dualSignatureRate}% — ensure both staff and managers sign appraisals to evidence engagement and agreement.`,
@@ -969,7 +982,7 @@ export function computeStaffPerformanceAppraisal(
       regulatory_ref: "CHR 2015 Reg 33",
     });
   }
-  if (objectivesSetRate < 70 && completedRecords.length > 0) {
+  if (below(objectivesSetRate, 70) && completedRecords.length > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Increase objectives-setting rate from ${objectivesSetRate}% — every appraisal should result in clear, measurable objectives.`,
@@ -977,7 +990,7 @@ export function computeStaffPerformanceAppraisal(
       regulatory_ref: "CHR 2015 Reg 16",
     });
   }
-  if (followUpRate < 60 && totalFeedback > 0) {
+  if (below(followUpRate, 60) && totalFeedback > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Improve feedback follow-up rate from ${followUpRate}% — feedback without follow-through undermines the performance management cycle.`,
@@ -993,7 +1006,7 @@ export function computeStaffPerformanceAppraisal(
       regulatory_ref: "CHR 2015 Reg 16",
     });
   }
-  if (supportProvidedRate < 60 && totalGoals > 0) {
+  if (below(supportProvidedRate, 60) && totalGoals > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Provide support for more development goals — currently only ${supportProvidedRate}%. Staff need resources and guidance to achieve their development objectives.`,
@@ -1001,7 +1014,7 @@ export function computeStaffPerformanceAppraisal(
       regulatory_ref: "CHR 2015 Reg 16",
     });
   }
-  if (competencyRate < 65 && totalCompetencyAssessments > 0) {
+  if (below(competencyRate, 65) && totalCompetencyAssessments > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Implement targeted training to improve competency rate from ${competencyRate}% — ensure staff meet required levels in key competency areas.`,
@@ -1009,7 +1022,7 @@ export function computeStaffPerformanceAppraisal(
       regulatory_ref: "CHR 2015 Reg 16",
     });
   }
-  if (reviewedRate < 70 && totalTargets > 0) {
+  if (below(reviewedRate, 70) && totalTargets > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Improve target review rate from ${reviewedRate}% — regular progress reviews keep staff on track and allow early intervention.`,
@@ -1025,7 +1038,7 @@ export function computeStaffPerformanceAppraisal(
       regulatory_ref: "CHR 2015 Reg 33",
     });
   }
-  if (developmentPlanRate < 70 && completedRecords.length > 0) {
+  if (below(developmentPlanRate, 70) && completedRecords.length > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Increase development plan agreement rate from ${developmentPlanRate}% — every appraisal should include an agreed development plan.`,
@@ -1055,13 +1068,13 @@ export function computeStaffPerformanceAppraisal(
 
   // Critical: Staff without appraisals
   if (staffWithNoAppraisal > 0 && total_staff > 0) {
-    const noAppraisalPct = pct(staffWithNoAppraisal, total_staff);
-    if (noAppraisalPct >= 40) {
+    const noAppraisalPct = rate(staffWithNoAppraisal, total_staff);
+    if (meets(noAppraisalPct, 40)) {
       insights.push({
         text: `${noAppraisalPct}% of staff (${staffWithNoAppraisal} of ${total_staff}) have never been appraised. This is a fundamental gap in workforce governance under Reg 16 and Reg 33.`,
         severity: "critical",
       });
-    } else if (noAppraisalPct >= 15) {
+    } else if (meets(noAppraisalPct, 15)) {
       insights.push({
         text: `${staffWithNoAppraisal} staff member${staffWithNoAppraisal > 1 ? "s have" : " has"} no appraisal record — ensure all staff are included in the performance cycle.`,
         severity: "warning",
@@ -1112,7 +1125,7 @@ export function computeStaffPerformanceAppraisal(
   }
 
   // Positive: Outstanding performance management
-  if (appraisalCompletionRate >= 90 && targetAchievementRate >= 80 && competencyRate >= 85 && developmentProgressRate >= 75) {
+  if (meets(appraisalCompletionRate, 90) && meets(targetAchievementRate, 80) && meets(competencyRate, 85) && meets(developmentProgressRate, 75)) {
     insights.push({
       text: `Performance management is strong: ${appraisalCompletionRate}% appraisal completion, ${targetAchievementRate}% target achievement, ${competencyRate}% competency rate, ${developmentProgressRate}% development progress. Well-placed for Ofsted inspection.`,
       severity: "positive",
@@ -1120,7 +1133,7 @@ export function computeStaffPerformanceAppraisal(
   }
 
   // Positive: Rich feedback culture
-  if (feedbackPerStaff !== null && feedbackPerStaff >= 3 && feedbackQualityRate >= 75) {
+  if (feedbackPerStaff !== null && feedbackPerStaff >= 3 && meets(feedbackQualityRate, 75)) {
     insights.push({
       text: `Rich feedback culture with ${feedbackPerStaff} entries per staff member and ${feedbackQualityRate}% quality rate. Evidence of reflective, learning-oriented workforce management.`,
       severity: "positive",
@@ -1128,7 +1141,7 @@ export function computeStaffPerformanceAppraisal(
   }
 
   // Warning: Low feedback quality
-  if (feedbackQualityRate < 40 && totalFeedback > 0) {
+  if (below(feedbackQualityRate, 40) && totalFeedback > 0) {
     insights.push({
       text: `Feedback quality rate is only ${feedbackQualityRate}%. Low-quality feedback undermines the performance management cycle and fails to drive improvement.`,
       severity: "warning",
@@ -1137,7 +1150,7 @@ export function computeStaffPerformanceAppraisal(
 
   // Warning: Underperforming staff pattern
   if (ratingDistribution.underperforming >= 2) {
-    const upPct = pct(ratingDistribution.underperforming, totalAppraisals);
+    const upPct = rate(ratingDistribution.underperforming, totalAppraisals)!;
     insights.push({
       text: `${ratingDistribution.underperforming} staff members (${upPct}%) rated underperforming. Ensure performance improvement plans are in place and being actively managed.`,
       severity: "critical",
@@ -1153,7 +1166,7 @@ export function computeStaffPerformanceAppraisal(
   }
 
   // Warning: Low dual signature rate
-  if (dualSignatureRate < 50 && completedRecords.length > 0) {
+  if (below(dualSignatureRate, 50) && completedRecords.length > 0) {
     insights.push({
       text: `Only ${dualSignatureRate}% of appraisals have dual signatures. This may indicate staff are not fully engaged with the appraisal process or feel it lacks value.`,
       severity: "warning",
@@ -1161,7 +1174,7 @@ export function computeStaffPerformanceAppraisal(
   }
 
   // Positive: Comprehensive support
-  if (supportProvidedRate >= 85 && resourceAllocatedRate >= 80 && totalGoals > 0) {
+  if (meets(supportProvidedRate, 85) && meets(resourceAllocatedRate, 80) && totalGoals > 0) {
     insights.push({
       text: `Strong development support: ${supportProvidedRate}% of goals have support provided and ${resourceAllocatedRate}% have resources allocated. Evidence of investment in staff growth.`,
       severity: "positive",
@@ -1170,8 +1183,8 @@ export function computeStaffPerformanceAppraisal(
 
   // Warning: Assessment coverage gaps
   if (totalCompetencyAssessments > 0) {
-    const assessedPct = pct(assessedCompetencies, totalCompetencyAssessments);
-    if (assessedPct < 60) {
+    const assessedPct = rate(assessedCompetencies, totalCompetencyAssessments);
+    if (below(assessedPct, 60)) {
       insights.push({
         text: `Only ${assessedPct}% of competency assessments have been completed. Incomplete assessment limits the home's understanding of workforce capability.`,
         severity: "warning",
@@ -1260,10 +1273,10 @@ function emptyResult(
     scheduled_count: 0,
     overdue_count: 0,
     cancelled_count: 0,
-    completion_rate: 0,
-    dual_signature_rate: 0,
-    objectives_set_rate: 0,
-    development_plan_rate: 0,
+    completion_rate: null,
+    dual_signature_rate: null,
+    objectives_set_rate: null,
+    development_plan_rate: null,
     avg_quality_score: null,
     rating_distribution: { exceptional: 0, effective: 0, developing: 0, underperforming: 0, not_rated: 0 },
     staff_with_no_appraisal: 0,
@@ -1275,10 +1288,10 @@ function emptyResult(
     at_risk_count: 0,
     not_met_count: 0,
     not_started_count: 0,
-    achievement_rate: 0,
+    achievement_rate: null,
     avg_progress: 0,
-    reviewed_rate: 0,
-    evidence_rate: 0,
+    reviewed_rate: null,
+    evidence_rate: null,
     category_breakdown: [],
     overdue_targets: 0,
   };
@@ -1287,7 +1300,7 @@ function emptyResult(
     assessed_count: 0,
     not_assessed_count: 0,
     competent_or_above_count: 0,
-    competency_rate: 0,
+    competency_rate: null,
     gap_count: 0,
     gap_with_action_plan_count: 0,
     area_breakdown: [],
@@ -1299,10 +1312,10 @@ function emptyResult(
     not_started_count: 0,
     overdue_count: 0,
     cancelled_count: 0,
-    completion_rate: 0,
+    completion_rate: null,
     avg_progress: 0,
-    support_provided_rate: 0,
-    resource_allocated_rate: 0,
+    support_provided_rate: null,
+    resource_allocated_rate: null,
     category_breakdown: [],
   };
   const emptyFeedbackProfile: FeedbackProfile = {
@@ -1312,8 +1325,8 @@ function emptyResult(
     three_sixty_count: 0,
     peer_count: 0,
     avg_quality_rating: null,
-    actionable_rate: 0,
-    follow_up_rate: 0,
+    actionable_rate: null,
+    follow_up_rate: null,
     sentiment_distribution: { positive: 0, constructive: 0, negative: 0, mixed: 0 },
     feedback_per_staff: null,
   };
@@ -1322,11 +1335,11 @@ function emptyResult(
     appraisal_rating: rating,
     appraisal_score: score,
     headline,
-    appraisal_completion_rate: 0,
-    target_achievement_rate: 0,
-    competency_rate: 0,
-    development_progress_rate: 0,
-    feedback_quality_rate: 0,
+    appraisal_completion_rate: null,
+    target_achievement_rate: null,
+    competency_rate: null,
+    development_progress_rate: null,
+    feedback_quality_rate: null,
     staff_satisfaction_rate: null,
     appraisal_profile: emptyAppraisalProfile,
     target_profile: emptyTargetProfile,

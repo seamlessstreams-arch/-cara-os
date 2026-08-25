@@ -13,7 +13,7 @@
 //             technologyLearningRecords
 // ==============================================================================
 
-import { below, meets } from "@/lib/metrics/rate";
+import { below, meanOf, meets, rate } from "@/lib/metrics/rate";
 
 // -- Input Types --------------------------------------------------------------
 
@@ -139,14 +139,16 @@ export interface TechnologyDigitalInclusionResult {
   digital_inclusion_rating: DigitalInclusionRating;
   digital_inclusion_score: number;
   headline: string;
-  // device_access_rate + assistive_technology_rate use pct() directly (deterministic
+  // device_access_rate + assistive_technology_rate use rate() directly (deterministic
   // 0 on empty denominator) and are unaffected by fab-0. The composite rates below
   // are null on empty: no records ⇒ no signal. "0% digital skills / 0% safety
   // engagement / 0% learning effectiveness / 0% child confidence" would read as
   // "the home actively fails digital inclusion", not "unmeasured". Fab-0 doctrine.
-  device_access_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  device_access_rate: number | null;
   digital_skills_rate: number | null;
-  assistive_technology_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  assistive_technology_rate: number | null;
   internet_safety_rate: number | null;
   technology_learning_rate: number | null;
   child_confidence_rate: number | null;
@@ -157,10 +159,6 @@ export interface TechnologyDigitalInclusionResult {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -184,9 +182,9 @@ function emptyResult(
     digital_inclusion_rating: rating,
     digital_inclusion_score: score,
     headline,
-    device_access_rate: 0,
+    device_access_rate: null,
     digital_skills_rate: null,
-    assistive_technology_rate: 0,
+    assistive_technology_rate: null,
     internet_safety_rate: null,
     technology_learning_rate: null,
     child_confidence_rate: null,
@@ -268,21 +266,21 @@ export function computeTechnologyDigitalInclusion(
   // --- Device access ---
   const totalDeviceRecords = device_access_records.length;
   const accessibleDevices = device_access_records.filter((r) => r.accessible_when_needed).length;
-  const deviceAccessRate = pct(accessibleDevices, totalDeviceRecords);
+  const deviceAccessRate = rate(accessibleDevices, totalDeviceRecords);
 
   const internetEnabled = device_access_records.filter((r) => r.internet_enabled).length;
-  const internetEnabledRate = pct(internetEnabled, totalDeviceRecords);
+  const internetEnabledRate = rate(internetEnabled, totalDeviceRecords);
 
   const ageFiltered = device_access_records.filter((r) => r.age_appropriate_filters).length;
-  const filterRate = pct(ageFiltered, totalDeviceRecords);
+  const filterRate = rate(ageFiltered, totalDeviceRecords);
 
   const privateUseAvailable = device_access_records.filter((r) => r.private_use_available).length;
-  const privateUseRate = pct(privateUseAvailable, totalDeviceRecords);
+  const privateUseRate = rate(privateUseAvailable, totalDeviceRecords);
 
   const goodConditionDevices = device_access_records.filter(
     (r) => r.condition === "excellent" || r.condition === "good",
   ).length;
-  const deviceConditionRate = pct(goodConditionDevices, totalDeviceRecords);
+  const deviceConditionRate = rate(goodConditionDevices, totalDeviceRecords);
 
   const deviceSatisfactionSum = device_access_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
@@ -295,12 +293,12 @@ export function computeTechnologyDigitalInclusion(
   const devicesWithIssues = device_access_records.filter(
     (r) => r.issues_reported.length > 0,
   ).length;
-  const deviceIssueRate = pct(devicesWithIssues, totalDeviceRecords);
+  const deviceIssueRate = rate(devicesWithIssues, totalDeviceRecords);
 
   // --- Digital skills ---
   const totalSkillsRecords = digital_skills_records.length;
   const withPlan = digital_skills_records.filter((r) => r.plan_in_place).length;
-  const skillsPlanRate = pct(withPlan, totalSkillsRecords);
+  const skillsPlanRate = rate(withPlan, totalSkillsRecords);
 
   const totalSessionsPlanned = digital_skills_records.reduce(
     (sum, r) => sum + r.sessions_planned, 0,
@@ -308,27 +306,27 @@ export function computeTechnologyDigitalInclusion(
   const totalSessionsCompleted = digital_skills_records.reduce(
     (sum, r) => sum + r.sessions_completed, 0,
   );
-  const sessionCompletionRate = pct(totalSessionsCompleted, totalSessionsPlanned);
+  const sessionCompletionRate = rate(totalSessionsCompleted, totalSessionsPlanned);
 
   const progressEvidenced = digital_skills_records.filter((r) => r.progress_evidenced).length;
-  const progressRate = pct(progressEvidenced, totalSkillsRecords);
+  const progressRate = rate(progressEvidenced, totalSkillsRecords);
 
   const childEngagedSkills = digital_skills_records.filter((r) => r.child_engaged).length;
-  const skillsEngagementRate = pct(childEngagedSkills, totalSkillsRecords);
+  const skillsEngagementRate = rate(childEngagedSkills, totalSkillsRecords);
 
   const staffSupportedSkills = digital_skills_records.filter((r) => r.staff_supported).length;
-  const staffSupportRate = pct(staffSupportedSkills, totalSkillsRecords);
+  const staffSupportRate = rate(staffSupportedSkills, totalSkillsRecords);
 
   // Level progression: count how many improved from baseline
   const levelMap: Record<string, number> = { none: 0, beginner: 1, intermediate: 2, advanced: 3 };
   const improved = digital_skills_records.filter(
     (r) => (levelMap[r.current_level] ?? 0) > (levelMap[r.baseline_level] ?? 0),
   ).length;
-  const improvementRate = pct(improved, totalSkillsRecords);
+  const improvementRate = rate(improved, totalSkillsRecords);
 
   const digitalSkillsRate: number | null =
     totalSkillsRecords > 0
-      ? Math.round((skillsPlanRate + sessionCompletionRate + progressRate) / 3)
+      ? meanOf([skillsPlanRate, sessionCompletionRate, progressRate])
       : null;
 
   // --- Assistive technology ---
@@ -339,22 +337,22 @@ export function computeTechnologyDigitalInclusion(
   const needsWithProvision = assistive_technology_records.filter(
     (r) => r.need_identified && r.need_type !== "none" && r.provided,
   ).length;
-  const assistiveTechnologyRate = pct(needsWithProvision, needsIdentified);
+  const assistiveTechnologyRate = rate(needsWithProvision, needsIdentified);
 
   const trainingGiven = assistive_technology_records.filter(
     (r) => r.need_identified && r.need_type !== "none" && r.training_given,
   ).length;
-  const assistiveTrainingRate = pct(trainingGiven, needsIdentified);
+  const assistiveTrainingRate = rate(trainingGiven, needsIdentified);
 
   const staffTrainedAssistive = assistive_technology_records.filter(
     (r) => r.need_identified && r.need_type !== "none" && r.staff_trained,
   ).length;
-  const staffAssistiveTrainingRate = pct(staffTrainedAssistive, needsIdentified);
+  const staffAssistiveTrainingRate = rate(staffTrainedAssistive, needsIdentified);
 
   const usesIndependently = assistive_technology_records.filter(
     (r) => r.need_identified && r.need_type !== "none" && r.child_uses_independently,
   ).length;
-  const independentUseRate = pct(usesIndependently, needsIdentified);
+  const independentUseRate = rate(usesIndependently, needsIdentified);
 
   const effectivenessSum = assistive_technology_records
     .filter((r) => r.need_identified && r.need_type !== "none")
@@ -367,65 +365,63 @@ export function computeTechnologyDigitalInclusion(
   const assistiveBarriersTotal = assistive_technology_records.filter(
     (r) => r.barriers_encountered.length > 0,
   ).length;
-  const assistiveBarrierRate = pct(assistiveBarriersTotal, totalAssistiveRecords);
+  const assistiveBarrierRate = rate(assistiveBarriersTotal, totalAssistiveRecords);
 
   // --- Internet safety ---
   const totalSafetyRecords = internet_safety_records.length;
   const completedSafety = internet_safety_records.filter((r) => r.completed).length;
-  const safetyCompletionRate = pct(completedSafety, totalSafetyRecords);
+  const safetyCompletionRate = rate(completedSafety, totalSafetyRecords);
 
   const engagedSafety = internet_safety_records.filter((r) => r.child_engaged).length;
-  const safetyEngagementRate = pct(engagedSafety, totalSafetyRecords);
+  const safetyEngagementRate = rate(engagedSafety, totalSafetyRecords);
 
   const demonstratedUnderstanding = internet_safety_records.filter(
     (r) => r.child_demonstrated_understanding,
   ).length;
-  const understandingRate = pct(demonstratedUnderstanding, totalSafetyRecords);
+  const understandingRate = rate(demonstratedUnderstanding, totalSafetyRecords);
 
   const followUpNeeded = internet_safety_records.filter((r) => r.follow_up_needed).length;
   const followUpCompleted = internet_safety_records.filter(
     (r) => r.follow_up_needed && r.follow_up_completed,
   ).length;
-  const followUpRate = pct(followUpCompleted, followUpNeeded);
+  const followUpRate = rate(followUpCompleted, followUpNeeded);
 
   const uniqueTopics = new Set(
     internet_safety_records.map((r) => r.topic),
   ).size;
 
   const internetSafetyRate: number | null =
-    totalSafetyRecords > 0
-      ? Math.round((safetyCompletionRate + safetyEngagementRate + understandingRate) / 3)
-      : null;
+    totalSafetyRecords > 0 ? Math.round((safetyCompletionRate! + safetyEngagementRate! + understandingRate!) / 3) : null;
 
   // --- Technology-supported learning ---
   const totalLearningRecords = technology_learning_records.length;
   const effectiveLearning = technology_learning_records.filter((r) => r.effective).length;
-  const learningEffectivenessRate = pct(effectiveLearning, totalLearningRecords);
+  const learningEffectivenessRate = rate(effectiveLearning, totalLearningRecords);
 
   const childSupportedLearning = technology_learning_records.filter(
     (r) => r.child_supported,
   ).length;
-  const learningSupportRate = pct(childSupportedLearning, totalLearningRecords);
+  const learningSupportRate = rate(childSupportedLearning, totalLearningRecords);
 
   const staffFacilitatedLearning = technology_learning_records.filter(
     (r) => r.staff_facilitated,
   ).length;
-  const learningFacilitationRate = pct(staffFacilitatedLearning, totalLearningRecords);
+  const learningFacilitationRate = rate(staffFacilitatedLearning, totalLearningRecords);
 
   const outcomesDocumented = technology_learning_records.filter(
     (r) => r.educational_outcome_documented,
   ).length;
-  const outcomeDocumentationRate = pct(outcomesDocumented, totalLearningRecords);
+  const outcomeDocumentationRate = rate(outcomesDocumented, totalLearningRecords);
 
   const accessibilityMet = technology_learning_records.filter(
     (r) => r.accessibility_needs_met,
   ).length;
-  const learningAccessibilityRate = pct(accessibilityMet, totalLearningRecords);
+  const learningAccessibilityRate = rate(accessibilityMet, totalLearningRecords);
 
   const learningBarriersTotal = technology_learning_records.filter(
     (r) => r.barriers_encountered.length > 0,
   ).length;
-  const learningBarrierRate = pct(learningBarriersTotal, totalLearningRecords);
+  const learningBarrierRate = rate(learningBarriersTotal, totalLearningRecords);
 
   const learningSatisfactionSum = technology_learning_records.reduce(
     (sum, r) => sum + r.child_satisfaction, 0,
@@ -436,9 +432,7 @@ export function computeTechnologyDigitalInclusion(
       : null;
 
   const technologyLearningRate: number | null =
-    totalLearningRecords > 0
-      ? Math.round((learningEffectivenessRate + learningSupportRate + outcomeDocumentationRate) / 3)
-      : null;
+    totalLearningRecords > 0 ? Math.round((learningEffectivenessRate! + learningSupportRate! + outcomeDocumentationRate!) / 3) : null;
 
   // --- Child confidence composite ---
   const skillsConfidenceSum = digital_skills_records.reduce(
@@ -464,16 +458,16 @@ export function computeTechnologyDigitalInclusion(
   let score = 52;
 
   // --- Bonus 1: deviceAccessRate (>=90: +4, >=70: +2) ---
-  if (deviceAccessRate >= 90) score += 4;
-  else if (deviceAccessRate >= 70) score += 2;
+  if (meets(deviceAccessRate, 90)) score += 4;
+  else if (meets(deviceAccessRate, 70)) score += 2;
 
   // --- Bonus 2: digitalSkillsRate (>=80: +3, >=60: +1) ---
   if (meets(digitalSkillsRate, 80)) score += 3;
   else if (meets(digitalSkillsRate, 60)) score += 1;
 
   // --- Bonus 3: assistiveTechnologyRate (>=100: +4, >=80: +2) ---
-  if (assistiveTechnologyRate >= 100) score += 4;
-  else if (assistiveTechnologyRate >= 80) score += 2;
+  if (meets(assistiveTechnologyRate, 100)) score += 4;
+  else if (meets(assistiveTechnologyRate, 80)) score += 2;
 
   // --- Bonus 4: internetSafetyRate (>=90: +3, >=70: +1) ---
   if (meets(internetSafetyRate, 90)) score += 3;
@@ -488,27 +482,27 @@ export function computeTechnologyDigitalInclusion(
   else if (meets(childConfidenceRate, 60)) score += 1;
 
   // --- Bonus 7: filterRate (>=95: +3, >=80: +1) ---
-  if (filterRate >= 95) score += 3;
-  else if (filterRate >= 80) score += 1;
+  if (meets(filterRate, 95)) score += 3;
+  else if (meets(filterRate, 80)) score += 1;
 
   // --- Bonus 8: staffSupportRate (>=90: +3, >=70: +1) ---
-  if (staffSupportRate >= 90) score += 3;
-  else if (staffSupportRate >= 70) score += 1;
+  if (meets(staffSupportRate, 90)) score += 3;
+  else if (meets(staffSupportRate, 70)) score += 1;
 
   // --- Bonus 9: improvementRate (>=80: +2, >=50: +1) ---
-  if (improvementRate >= 80) score += 2;
-  else if (improvementRate >= 50) score += 1;
+  if (meets(improvementRate, 80)) score += 2;
+  else if (meets(improvementRate, 50)) score += 1;
 
   // -- Penalties (4 with guards) -------------------------------------------
 
   // deviceAccessRate < 50 -> -5
-  if (deviceAccessRate < 50 && totalDeviceRecords > 0) score -= 5;
+  if (below(deviceAccessRate, 50) && totalDeviceRecords > 0) score -= 5;
 
   // below(internetSafetyRate, 50) -> -5
   if (below(internetSafetyRate, 50) && totalSafetyRecords > 0) score -= 5;
 
   // assistiveTechnologyRate < 50 -> -4
-  if (assistiveTechnologyRate < 50 && needsIdentified > 0) score -= 4;
+  if (below(assistiveTechnologyRate, 50) && needsIdentified > 0) score -= 4;
 
   // below(technologyLearningRate, 30) -> -4
   if (below(technologyLearningRate, 30) && totalLearningRecords > 0) score -= 4;
@@ -521,33 +515,33 @@ export function computeTechnologyDigitalInclusion(
 
   const strengths: string[] = [];
 
-  if (deviceAccessRate >= 90 && totalDeviceRecords > 0) {
+  if (meets(deviceAccessRate, 90) && totalDeviceRecords > 0) {
     strengths.push(
       `${deviceAccessRate}% of devices accessible when needed -- the home demonstrates equitable device access ensuring all children can engage digitally when required.`,
     );
-  } else if (deviceAccessRate >= 70 && totalDeviceRecords > 0) {
+  } else if (meets(deviceAccessRate, 70) && totalDeviceRecords > 0) {
     strengths.push(
       `${deviceAccessRate}% device accessibility rate -- most children have reliable access to appropriate technology when they need it.`,
     );
   }
 
-  if (internetEnabledRate >= 90 && totalDeviceRecords > 0) {
+  if (meets(internetEnabledRate, 90) && totalDeviceRecords > 0) {
     strengths.push(
       `${internetEnabledRate}% of devices are internet-enabled -- children are not digitally excluded from online resources and communication.`,
     );
   }
 
-  if (filterRate >= 95 && totalDeviceRecords > 0) {
+  if (meets(filterRate, 95) && totalDeviceRecords > 0) {
     strengths.push(
       `${filterRate}% of devices have age-appropriate filters -- the home maintains robust online safeguarding across all digital devices.`,
     );
-  } else if (filterRate >= 80 && totalDeviceRecords > 0) {
+  } else if (meets(filterRate, 80) && totalDeviceRecords > 0) {
     strengths.push(
       `${filterRate}% of devices filtered appropriately -- good safeguarding coverage across most digital devices.`,
     );
   }
 
-  if (deviceConditionRate >= 90 && totalDeviceRecords > 0) {
+  if (meets(deviceConditionRate, 90) && totalDeviceRecords > 0) {
     strengths.push(
       `${deviceConditionRate}% of devices in good or excellent condition -- the home maintains its technology estate to a high standard.`,
     );
@@ -559,7 +553,7 @@ export function computeTechnologyDigitalInclusion(
     );
   }
 
-  if (privateUseRate >= 80 && totalDeviceRecords > 0) {
+  if (meets(privateUseRate, 80) && totalDeviceRecords > 0) {
     strengths.push(
       `${privateUseRate}% of devices available for private use -- children's right to age-appropriate digital privacy is respected.`,
     );
@@ -575,45 +569,45 @@ export function computeTechnologyDigitalInclusion(
     );
   }
 
-  if (improvementRate >= 80 && totalSkillsRecords > 0) {
+  if (meets(improvementRate, 80) && totalSkillsRecords > 0) {
     strengths.push(
       `${improvementRate}% of children have improved their digital skill level from baseline -- meaningful progression in digital competence.`,
     );
-  } else if (improvementRate >= 50 && totalSkillsRecords > 0) {
+  } else if (meets(improvementRate, 50) && totalSkillsRecords > 0) {
     strengths.push(
       `${improvementRate}% of children showing digital skill improvement -- evidence of developing digital competence.`,
     );
   }
 
-  if (skillsEngagementRate >= 90 && totalSkillsRecords > 0) {
+  if (meets(skillsEngagementRate, 90) && totalSkillsRecords > 0) {
     strengths.push(
       `${skillsEngagementRate}% engagement in digital skills sessions -- children are actively involved in their own digital development.`,
     );
   }
 
-  if (staffSupportRate >= 90 && totalSkillsRecords > 0) {
+  if (meets(staffSupportRate, 90) && totalSkillsRecords > 0) {
     strengths.push(
       `Staff support ${staffSupportRate}% of digital skills development -- strong staff engagement with children's digital learning.`,
     );
   }
 
-  if (assistiveTechnologyRate >= 100 && needsIdentified > 0) {
+  if (meets(assistiveTechnologyRate, 100) && needsIdentified > 0) {
     strengths.push(
       "Every identified assistive technology need has been met -- the home ensures no child is digitally excluded due to additional needs.",
     );
-  } else if (assistiveTechnologyRate >= 80 && needsIdentified > 0) {
+  } else if (meets(assistiveTechnologyRate, 80) && needsIdentified > 0) {
     strengths.push(
       `${assistiveTechnologyRate}% of assistive technology needs met -- the vast majority of children with additional needs have appropriate technology provision.`,
     );
   }
 
-  if (assistiveTrainingRate >= 80 && needsIdentified > 0) {
+  if (meets(assistiveTrainingRate, 80) && needsIdentified > 0) {
     strengths.push(
       `${assistiveTrainingRate}% of children trained on their assistive technology -- children are equipped to use their assistive devices effectively.`,
     );
   }
 
-  if (independentUseRate >= 70 && needsIdentified > 0) {
+  if (meets(independentUseRate, 70) && needsIdentified > 0) {
     strengths.push(
       `${independentUseRate}% of children using assistive technology independently -- children are developing autonomy with their assistive devices.`,
     );
@@ -635,7 +629,7 @@ export function computeTechnologyDigitalInclusion(
     );
   }
 
-  if (understandingRate >= 90 && totalSafetyRecords > 0) {
+  if (meets(understandingRate, 90) && totalSafetyRecords > 0) {
     strengths.push(
       `${understandingRate}% of children demonstrate understanding of internet safety topics -- online safety education is translating into genuine awareness.`,
     );
@@ -647,7 +641,7 @@ export function computeTechnologyDigitalInclusion(
     );
   }
 
-  if (followUpRate >= 90 && followUpNeeded > 0) {
+  if (meets(followUpRate, 90) && followUpNeeded > 0) {
     strengths.push(
       `${followUpRate}% of internet safety follow-ups completed -- the home is responsive to identified gaps in online safety understanding.`,
     );
@@ -663,13 +657,13 @@ export function computeTechnologyDigitalInclusion(
     );
   }
 
-  if (learningEffectivenessRate >= 90 && totalLearningRecords > 0) {
+  if (meets(learningEffectivenessRate, 90) && totalLearningRecords > 0) {
     strengths.push(
       `${learningEffectivenessRate}% of technology-supported learning sessions rated effective -- technology is genuinely enhancing educational engagement and outcomes.`,
     );
   }
 
-  if (learningAccessibilityRate >= 90 && totalLearningRecords > 0) {
+  if (meets(learningAccessibilityRate, 90) && totalLearningRecords > 0) {
     strengths.push(
       `Accessibility needs met in ${learningAccessibilityRate}% of technology-supported learning sessions -- no child is excluded from digital learning due to accessibility barriers.`,
     );
@@ -691,7 +685,7 @@ export function computeTechnologyDigitalInclusion(
     );
   }
 
-  if (outcomeDocumentationRate >= 80 && totalLearningRecords > 0) {
+  if (meets(outcomeDocumentationRate, 80) && totalLearningRecords > 0) {
     strengths.push(
       `Educational outcomes documented in ${outcomeDocumentationRate}% of technology-supported learning sessions -- strong evidence base for Ofsted demonstrating technology's impact on learning.`,
     );
@@ -701,23 +695,23 @@ export function computeTechnologyDigitalInclusion(
 
   const concerns: string[] = [];
 
-  if (deviceAccessRate < 50 && totalDeviceRecords > 0) {
+  if (below(deviceAccessRate, 50) && totalDeviceRecords > 0) {
     concerns.push(
       `Only ${deviceAccessRate}% of devices accessible when needed -- the majority of children cannot reliably access technology, creating significant digital exclusion.`,
     );
-  } else if (deviceAccessRate < 70 && deviceAccessRate >= 50 && totalDeviceRecords > 0) {
+  } else if (below(deviceAccessRate, 70) && meets(deviceAccessRate, 50) && totalDeviceRecords > 0) {
     concerns.push(
       `Device accessibility at ${deviceAccessRate}% -- some children cannot access technology when they need it for education, communication, or personal development.`,
     );
   }
 
-  if (filterRate < 80 && totalDeviceRecords > 0) {
+  if (below(filterRate, 80) && totalDeviceRecords > 0) {
     concerns.push(
       `Only ${filterRate}% of devices have age-appropriate filters -- children may be exposed to harmful online content through insufficiently filtered devices.`,
     );
   }
 
-  if (deviceConditionRate < 60 && totalDeviceRecords > 0) {
+  if (below(deviceConditionRate, 60) && totalDeviceRecords > 0) {
     concerns.push(
       `Only ${deviceConditionRate}% of devices in good or excellent condition -- poorly maintained technology undermines children's ability to engage digitally.`,
     );
@@ -729,7 +723,7 @@ export function computeTechnologyDigitalInclusion(
     );
   }
 
-  if (deviceIssueRate >= 30 && totalDeviceRecords > 0) {
+  if (meets(deviceIssueRate, 30) && totalDeviceRecords > 0) {
     concerns.push(
       `Issues reported with ${deviceIssueRate}% of devices -- persistent technology problems are impacting children's digital access and experience.`,
     );
@@ -745,47 +739,47 @@ export function computeTechnologyDigitalInclusion(
     );
   }
 
-  if (skillsPlanRate < 50 && totalSkillsRecords > 0) {
+  if (below(skillsPlanRate, 50) && totalSkillsRecords > 0) {
     concerns.push(
       `Only ${skillsPlanRate}% of children have a digital skills development plan -- digital skills needs are not being formally assessed and planned for.`,
     );
   }
 
-  if (progressRate < 50 && totalSkillsRecords > 0) {
+  if (below(progressRate, 50) && totalSkillsRecords > 0) {
     concerns.push(
       `Progress evidenced in only ${progressRate}% of digital skills assessments -- children are not making demonstrable progress in their digital competence.`,
     );
   }
 
-  if (improvementRate < 30 && totalSkillsRecords > 0) {
+  if (below(improvementRate, 30) && totalSkillsRecords > 0) {
     concerns.push(
       `Only ${improvementRate}% of children have improved their digital skill level -- current approaches to digital skills development are not delivering meaningful progression.`,
     );
   }
 
-  if (assistiveTechnologyRate < 50 && needsIdentified > 0) {
+  if (below(assistiveTechnologyRate, 50) && needsIdentified > 0) {
     concerns.push(
       `Only ${assistiveTechnologyRate}% of identified assistive technology needs met -- the majority of children with additional needs are being digitally excluded due to lack of appropriate technology.`,
     );
-  } else if (assistiveTechnologyRate < 80 && assistiveTechnologyRate >= 50 && needsIdentified > 0) {
+  } else if (below(assistiveTechnologyRate, 80) && meets(assistiveTechnologyRate, 50) && needsIdentified > 0) {
     concerns.push(
       `Assistive technology provision at ${assistiveTechnologyRate}% -- some children with additional needs do not have the technology they require for equitable digital access.`,
     );
   }
 
-  if (assistiveTrainingRate < 50 && needsIdentified > 0) {
+  if (below(assistiveTrainingRate, 50) && needsIdentified > 0) {
     concerns.push(
       `Only ${assistiveTrainingRate}% of children trained on their assistive technology -- children cannot use technology effectively without proper training.`,
     );
   }
 
-  if (staffAssistiveTrainingRate < 50 && needsIdentified > 0) {
+  if (below(staffAssistiveTrainingRate, 50) && needsIdentified > 0) {
     concerns.push(
       `Staff trained on assistive technology in only ${staffAssistiveTrainingRate}% of cases -- staff cannot support children's assistive technology use without adequate training.`,
     );
   }
 
-  if (assistiveBarrierRate >= 30 && totalAssistiveRecords > 0) {
+  if (meets(assistiveBarrierRate, 30) && totalAssistiveRecords > 0) {
     concerns.push(
       `Barriers encountered in ${assistiveBarrierRate}% of assistive technology records -- persistent obstacles are preventing children from accessing the technology they need.`,
     );
@@ -801,13 +795,13 @@ export function computeTechnologyDigitalInclusion(
     );
   }
 
-  if (understandingRate < 50 && totalSafetyRecords > 0) {
+  if (below(understandingRate, 50) && totalSafetyRecords > 0) {
     concerns.push(
       `Only ${understandingRate}% of children demonstrate understanding of internet safety topics -- online safety education is not translating into genuine awareness, leaving children vulnerable online.`,
     );
   }
 
-  if (followUpRate < 50 && followUpNeeded > 0) {
+  if (below(followUpRate, 50) && followUpNeeded > 0) {
     concerns.push(
       `Only ${followUpRate}% of internet safety follow-ups completed -- identified gaps in children's online safety understanding are not being addressed.`,
     );
@@ -823,13 +817,13 @@ export function computeTechnologyDigitalInclusion(
     );
   }
 
-  if (learningBarrierRate >= 30 && totalLearningRecords > 0) {
+  if (meets(learningBarrierRate, 30) && totalLearningRecords > 0) {
     concerns.push(
       `Barriers encountered in ${learningBarrierRate}% of technology-supported learning sessions -- obstacles are preventing children from benefiting fully from digital learning.`,
     );
   }
 
-  if (learningAccessibilityRate < 70 && totalLearningRecords > 0) {
+  if (below(learningAccessibilityRate, 70) && totalLearningRecords > 0) {
     concerns.push(
       `Accessibility needs met in only ${learningAccessibilityRate}% of technology learning sessions -- some children are excluded from digital learning due to unmet accessibility requirements.`,
     );
@@ -874,7 +868,7 @@ export function computeTechnologyDigitalInclusion(
   const recommendations: DigitalInclusionRecommendation[] = [];
   let rank = 0;
 
-  if (deviceAccessRate < 50 && totalDeviceRecords > 0) {
+  if (below(deviceAccessRate, 50) && totalDeviceRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -894,7 +888,7 @@ export function computeTechnologyDigitalInclusion(
     });
   }
 
-  if (assistiveTechnologyRate < 50 && needsIdentified > 0) {
+  if (below(assistiveTechnologyRate, 50) && needsIdentified > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -914,7 +908,7 @@ export function computeTechnologyDigitalInclusion(
     });
   }
 
-  if (filterRate < 80 && totalDeviceRecords > 0) {
+  if (below(filterRate, 80) && totalDeviceRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -934,7 +928,7 @@ export function computeTechnologyDigitalInclusion(
     });
   }
 
-  if (skillsPlanRate < 50 && totalSkillsRecords > 0) {
+  if (below(skillsPlanRate, 50) && totalSkillsRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -944,7 +938,7 @@ export function computeTechnologyDigitalInclusion(
     });
   }
 
-  if (understandingRate < 50 && totalSafetyRecords > 0) {
+  if (below(understandingRate, 50) && totalSafetyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -954,7 +948,7 @@ export function computeTechnologyDigitalInclusion(
     });
   }
 
-  if (staffAssistiveTrainingRate < 50 && needsIdentified > 0) {
+  if (below(staffAssistiveTrainingRate, 50) && needsIdentified > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -964,7 +958,7 @@ export function computeTechnologyDigitalInclusion(
     });
   }
 
-  if (followUpRate < 50 && followUpNeeded > 0) {
+  if (below(followUpRate, 50) && followUpNeeded > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -974,7 +968,7 @@ export function computeTechnologyDigitalInclusion(
     });
   }
 
-  if (deviceAccessRate >= 50 && deviceAccessRate < 70 && totalDeviceRecords > 0) {
+  if (meets(deviceAccessRate, 50) && below(deviceAccessRate, 70) && totalDeviceRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -984,7 +978,7 @@ export function computeTechnologyDigitalInclusion(
     });
   }
 
-  if (outcomeDocumentationRate < 50 && totalLearningRecords > 0) {
+  if (below(outcomeDocumentationRate, 50) && totalLearningRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -994,7 +988,7 @@ export function computeTechnologyDigitalInclusion(
     });
   }
 
-  if (learningAccessibilityRate < 70 && totalLearningRecords > 0) {
+  if (below(learningAccessibilityRate, 70) && totalLearningRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1070,7 +1064,7 @@ export function computeTechnologyDigitalInclusion(
 
   // --- Critical insights ---
 
-  if (deviceAccessRate < 50 && totalDeviceRecords > 0) {
+  if (below(deviceAccessRate, 50) && totalDeviceRecords > 0) {
     insights.push({
       text: `Only ${deviceAccessRate}% of devices accessible when needed. Ofsted will view widespread device inaccessibility as evidence of digital exclusion -- children cannot participate fully in education, communication, or personal development without reliable technology access. This is a direct failure under Reg 5.`,
       severity: "critical",
@@ -1084,7 +1078,7 @@ export function computeTechnologyDigitalInclusion(
     });
   }
 
-  if (assistiveTechnologyRate < 50 && needsIdentified > 0) {
+  if (below(assistiveTechnologyRate, 50) && needsIdentified > 0) {
     insights.push({
       text: `Only ${assistiveTechnologyRate}% of identified assistive technology needs met. Children with additional needs are being digitally excluded -- failing to provide necessary assistive technology undermines their access to education, communication, and independence. Ofsted will view this as a failure of both Reg 5 and equalities duties.`,
       severity: "critical",
@@ -1098,7 +1092,7 @@ export function computeTechnologyDigitalInclusion(
     });
   }
 
-  if (filterRate < 60 && totalDeviceRecords > 0) {
+  if (below(filterRate, 60) && totalDeviceRecords > 0) {
     insights.push({
       text: `Only ${filterRate}% of devices have age-appropriate filters. Significant numbers of devices lack basic online safeguarding controls -- children may be exposed to harmful content including pornography, extremist material, or online predators. This is a serious safeguarding concern.`,
       severity: "critical",
@@ -1114,7 +1108,7 @@ export function computeTechnologyDigitalInclusion(
 
   // --- Warning insights ---
 
-  if (deviceAccessRate >= 50 && deviceAccessRate < 70 && totalDeviceRecords > 0) {
+  if (meets(deviceAccessRate, 50) && below(deviceAccessRate, 70) && totalDeviceRecords > 0) {
     insights.push({
       text: `Device accessibility at ${deviceAccessRate}% -- improving but some children cannot reliably access technology when they need it. Each access gap represents a missed opportunity for education, communication, or personal development.`,
       severity: "warning",
@@ -1128,7 +1122,7 @@ export function computeTechnologyDigitalInclusion(
     });
   }
 
-  if (assistiveTechnologyRate >= 50 && assistiveTechnologyRate < 80 && needsIdentified > 0) {
+  if (meets(assistiveTechnologyRate, 50) && below(assistiveTechnologyRate, 80) && needsIdentified > 0) {
     insights.push({
       text: `Assistive technology provision at ${assistiveTechnologyRate}% -- while improving, some children with additional needs still lack the technology they require for equitable digital access.`,
       severity: "warning",
@@ -1156,21 +1150,21 @@ export function computeTechnologyDigitalInclusion(
     });
   }
 
-  if (filterRate >= 60 && filterRate < 80 && totalDeviceRecords > 0) {
+  if (meets(filterRate, 60) && below(filterRate, 80) && totalDeviceRecords > 0) {
     insights.push({
       text: `${filterRate}% of devices have age-appropriate filters -- some devices lack safeguarding controls. Even a small proportion of unfiltered devices creates online safety risk.`,
       severity: "warning",
     });
   }
 
-  if (learningBarrierRate >= 30 && totalLearningRecords > 0) {
+  if (meets(learningBarrierRate, 30) && totalLearningRecords > 0) {
     insights.push({
       text: `Barriers encountered in ${learningBarrierRate}% of technology-supported learning sessions -- recurring obstacles suggest systemic issues with connectivity, device quality, or staff support that need targeted resolution.`,
       severity: "warning",
     });
   }
 
-  if (deviceIssueRate >= 30 && totalDeviceRecords > 0) {
+  if (meets(deviceIssueRate, 30) && totalDeviceRecords > 0) {
     insights.push({
       text: `Issues reported with ${deviceIssueRate}% of devices -- persistent technology problems undermine children's trust in the home's commitment to their digital inclusion.`,
       severity: "warning",
@@ -1197,28 +1191,28 @@ export function computeTechnologyDigitalInclusion(
     });
   }
 
-  if (deviceAccessRate >= 90 && filterRate >= 90 && totalDeviceRecords > 0) {
+  if (meets(deviceAccessRate, 90) && meets(filterRate, 90) && totalDeviceRecords > 0) {
     insights.push({
       text: `Device accessibility at ${deviceAccessRate}% with ${filterRate}% age-appropriate filtering -- the home provides comprehensive, safe technology access. Ofsted will recognise this as evidence of genuine digital inclusion combined with robust online safeguarding.`,
       severity: "positive",
     });
   }
 
-  if (meets(internetSafetyRate, 90) && understandingRate >= 90 && totalSafetyRecords > 0) {
+  if (meets(internetSafetyRate, 90) && meets(understandingRate, 90) && totalSafetyRecords > 0) {
     insights.push({
       text: `${internetSafetyRate}% internet safety rate with ${understandingRate}% demonstrated understanding -- children are not only receiving online safety education but genuinely internalising it. This demonstrates the home's commitment to empowering children to keep themselves safe online.`,
       severity: "positive",
     });
   }
 
-  if (meets(digitalSkillsRate, 80) && improvementRate >= 80 && totalSkillsRecords > 0) {
+  if (meets(digitalSkillsRate, 80) && meets(improvementRate, 80) && totalSkillsRecords > 0) {
     insights.push({
       text: `Digital skills development at ${digitalSkillsRate}% with ${improvementRate}% showing skill improvement -- children are making genuine, measurable progress in their digital competence. This evidences the home's investment in preparing children for a digital world.`,
       severity: "positive",
     });
   }
 
-  if (assistiveTechnologyRate >= 90 && meets(effectivenessAvg, 4.0) && needsIdentified > 0) {
+  if (meets(assistiveTechnologyRate, 90) && meets(effectivenessAvg, 4.0) && needsIdentified > 0) {
     insights.push({
       text: `${assistiveTechnologyRate}% assistive technology provision with effectiveness averaging ${effectivenessAvg}/5 -- children with additional needs have the technology they require and it is working well. This is exemplary inclusive practice.`,
       severity: "positive",
@@ -1239,7 +1233,7 @@ export function computeTechnologyDigitalInclusion(
     });
   }
 
-  if (staffSupportRate >= 90 && learningFacilitationRate >= 90 && totalSkillsRecords > 0 && totalLearningRecords > 0) {
+  if (meets(staffSupportRate, 90) && meets(learningFacilitationRate, 90) && totalSkillsRecords > 0 && totalLearningRecords > 0) {
     insights.push({
       text: `Staff support digital skills at ${staffSupportRate}% and facilitate technology learning at ${learningFacilitationRate}% -- the workforce is actively engaged in children's digital development. This demonstrates a whole-home commitment to digital inclusion.`,
       severity: "positive",

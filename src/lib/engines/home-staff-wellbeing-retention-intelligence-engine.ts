@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME STAFF WELLBEING & RETENTION INTELLIGENCE ENGINE
 // Tracks staff wellbeing, morale, sickness absence patterns, turnover rates,
@@ -154,10 +155,6 @@ export interface StaffWellbeingRetentionResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -281,17 +278,17 @@ export function computeStaffWellbeingRetention(
   const uniqueStaffWithSickness = new Set(
     staff_sickness_records.map((r) => r.staff_id),
   ).size;
-  const sicknessAbsenceRate = pct(uniqueStaffWithSickness, total_staff);
+  const sicknessAbsenceRate = rate(uniqueStaffWithSickness, total_staff);
 
   const returnToWorkCompleted = staff_sickness_records.filter(
     (r) => r.return_to_work_interview_completed,
   ).length;
-  const returnToWorkRate = pct(returnToWorkCompleted, totalSicknessRecords);
+  const returnToWorkRate = rate(returnToWorkCompleted, totalSicknessRecords);
 
   const stressRelatedAbsence = staff_sickness_records.filter(
     (r) => r.reason === "stress_related" || r.reason === "mental_health",
   ).length;
-  const stressRelatedRate = pct(stressRelatedAbsence, totalSicknessRecords);
+  const stressRelatedRate = rate(stressRelatedAbsence, totalSicknessRecords);
 
   // --- Wellbeing survey metrics ---
   const totalSurveyRecords = staff_wellbeing_survey_records.length;
@@ -299,7 +296,7 @@ export function computeStaffWellbeingRetention(
   const uniqueStaffSurveyed = new Set(
     staff_wellbeing_survey_records.map((r) => r.staff_id),
   ).size;
-  const wellbeingSurveyCompletionRate = pct(uniqueStaffSurveyed, total_staff);
+  const wellbeingSurveyCompletionRate = rate(uniqueStaffSurveyed, total_staff);
 
   const overallWellbeingScores = staff_wellbeing_survey_records.map(
     (r) => r.overall_wellbeing_score,
@@ -309,7 +306,7 @@ export function computeStaffWellbeingRetention(
   const feelsValued = staff_wellbeing_survey_records.filter(
     (r) => r.feels_valued,
   ).length;
-  const feelsValuedRate = pct(feelsValued, totalSurveyRecords);
+  const feelsValuedRate = rate(feelsValued, totalSurveyRecords);
 
   const wouldRecommend = staff_wellbeing_survey_records.filter(
     (r) => r.would_recommend_employer,
@@ -321,17 +318,17 @@ export function computeStaffWellbeingRetention(
   ).length;
   const satisfiedCount = feelsValued + wouldRecommend + highJobSatisfaction;
   const satisfiedDenominator = totalSurveyRecords * 3;
-  const staffSatisfactionRate = pct(satisfiedCount, satisfiedDenominator);
+  const staffSatisfactionRate = rate(satisfiedCount, satisfiedDenominator);
 
   const lowMoraleStaff = staff_wellbeing_survey_records.filter(
     (r) => (r.overall_wellbeing_score ?? 0) <= 4,
   ).length;
-  const lowMoraleRate = pct(lowMoraleStaff, totalSurveyRecords);
+  const lowMoraleRate = rate(lowMoraleStaff, totalSurveyRecords);
 
   const highMoraleStaff = staff_wellbeing_survey_records.filter(
     (r) => (r.overall_wellbeing_score ?? 0) >= 7,
   ).length;
-  const highMoraleRate = pct(highMoraleStaff, totalSurveyRecords);
+  const highMoraleRate = rate(highMoraleStaff, totalSurveyRecords);
 
   // --- Retention metrics ---
   const totalRetentionEvents = staff_retention_records.length;
@@ -343,7 +340,7 @@ export function computeStaffWellbeingRetention(
   // Retention rate: staff who have NOT left as % of total_staff
   // If no "left" events, retention = 100%
   const retentionRate = total_staff > 0
-    ? pct(Math.max(0, total_staff - leftEvents), total_staff)
+    ? rate(Math.max(0, total_staff - leftEvents), total_staff)
     : null;
 
   const promotions = staff_retention_records.filter(
@@ -353,7 +350,7 @@ export function computeStaffWellbeingRetention(
   const earlyLeavers = staff_retention_records.filter(
     (r) => r.event_type === "left" && r.length_of_service_months < 12,
   ).length;
-  const earlyLeaverRate = pct(earlyLeavers, leftEvents);
+  const earlyLeaverRate = rate(earlyLeavers, leftEvents);
 
   // --- Wellbeing support metrics ---
   const totalSupportRecords = wellbeing_support_records.length;
@@ -365,12 +362,12 @@ export function computeStaffWellbeingRetention(
   const supportAccepted = wellbeing_support_records.filter(
     (r) => r.support_offered && r.support_accepted,
   ).length;
-  const wellbeingSupportUptakeRate = pct(supportAccepted, supportOffered);
+  const wellbeingSupportUptakeRate = rate(supportAccepted, supportOffered);
 
   const highOutcomeSupport = wellbeing_support_records.filter(
     (r) => r.outcome_rating >= 4,
   ).length;
-  const supportEffectivenessRate = pct(highOutcomeSupport, totalSupportRecords);
+  const supportEffectivenessRate = rate(highOutcomeSupport, totalSupportRecords);
 
   const followUpNeeded = wellbeing_support_records.filter(
     (r) => r.follow_up_needed,
@@ -378,7 +375,7 @@ export function computeStaffWellbeingRetention(
   const followUpCompleted = wellbeing_support_records.filter(
     (r) => r.follow_up_needed && r.follow_up_completed,
   ).length;
-  const supportFollowUpRate = pct(followUpCompleted, followUpNeeded);
+  const supportFollowUpRate = rate(followUpCompleted, followUpNeeded);
 
   // --- Exit interview metrics ---
   const totalExitInterviews = exit_interview_records.length;
@@ -386,17 +383,17 @@ export function computeStaffWellbeingRetention(
   const exitInterviewsConducted = exit_interview_records.filter(
     (r) => r.conducted,
   ).length;
-  const exitInterviewCompletionRate = pct(exitInterviewsConducted, leftEvents > 0 ? leftEvents : totalExitInterviews > 0 ? totalExitInterviews : 1);
+  const exitInterviewCompletionRate = rate(exitInterviewsConducted, leftEvents > 0 ? leftEvents : totalExitInterviews > 0 ? totalExitInterviews : 1);
 
   const wouldReturnCount = exit_interview_records.filter(
     (r) => r.conducted && r.would_return,
   ).length;
-  const wouldReturnRate = pct(wouldReturnCount, exitInterviewsConducted);
+  const wouldReturnRate = rate(wouldReturnCount, exitInterviewsConducted);
 
   const wouldRecommendExit = exit_interview_records.filter(
     (r) => r.conducted && r.would_recommend,
   ).length;
-  const wouldRecommendExitRate = pct(wouldRecommendExit, exitInterviewsConducted);
+  const wouldRecommendExitRate = rate(wouldRecommendExit, exitInterviewsConducted);
 
   // Aggregate exit themes
   const exitThemes: Record<string, number> = {};
@@ -439,54 +436,55 @@ export function computeStaffWellbeingRetention(
 
   // --- Bonus 1: Low sickness absence (inverted — lower is better) ---
   // sicknessAbsenceRate <= 10% → +4, <= 25% → +2
-  if (sicknessAbsenceRate <= 10 && totalSicknessRecords >= 0) score += 4;
-  else if (sicknessAbsenceRate <= 25) score += 2;
+  // unmeasured (no staff roster) earns neither low-sickness bonus
+  if (sicknessAbsenceRate !== null && sicknessAbsenceRate <= 10) score += 4;
+  else if (sicknessAbsenceRate !== null && sicknessAbsenceRate <= 25) score += 2;
 
   // --- Bonus 2: High wellbeing survey completion (>=80: +3, >=60: +1) ---
-  if (wellbeingSurveyCompletionRate >= 80) score += 3;
-  else if (wellbeingSurveyCompletionRate >= 60) score += 1;
+  if (meets(wellbeingSurveyCompletionRate, 80)) score += 3;
+  else if (meets(wellbeingSurveyCompletionRate, 60)) score += 1;
 
   // --- Bonus 3: Strong retention rate (>=90: +5, >=75: +2) ---
   if ((retentionRate ?? 0) >= 90) score += 5;
   else if ((retentionRate ?? 0) >= 75) score += 2;
 
   // --- Bonus 4: High wellbeing support uptake (>=80: +3, >=60: +1) ---
-  if (wellbeingSupportUptakeRate >= 80) score += 3;
-  else if (wellbeingSupportUptakeRate >= 60) score += 1;
+  if (meets(wellbeingSupportUptakeRate, 80)) score += 3;
+  else if (meets(wellbeingSupportUptakeRate, 60)) score += 1;
 
   // --- Bonus 5: Exit interview completion (>=90: +3, >=70: +1) ---
-  if (exitInterviewCompletionRate >= 90 && (leftEvents > 0 || totalExitInterviews > 0)) score += 3;
-  else if (exitInterviewCompletionRate >= 70 && (leftEvents > 0 || totalExitInterviews > 0)) score += 1;
+  if (meets(exitInterviewCompletionRate, 90) && (leftEvents > 0 || totalExitInterviews > 0)) score += 3;
+  else if (meets(exitInterviewCompletionRate, 70) && (leftEvents > 0 || totalExitInterviews > 0)) score += 1;
 
   // --- Bonus 6: High staff satisfaction (>=80: +3, >=60: +1) ---
-  if (staffSatisfactionRate >= 80 && totalSurveyRecords > 0) score += 3;
-  else if (staffSatisfactionRate >= 60 && totalSurveyRecords > 0) score += 1;
+  if (meets(staffSatisfactionRate, 80) && totalSurveyRecords > 0) score += 3;
+  else if (meets(staffSatisfactionRate, 60) && totalSurveyRecords > 0) score += 1;
 
   // --- Bonus 7: Return to work interviews completed (>=90: +3, >=70: +1) ---
-  if (returnToWorkRate >= 90 && totalSicknessRecords > 0) score += 3;
-  else if (returnToWorkRate >= 70 && totalSicknessRecords > 0) score += 1;
+  if (meets(returnToWorkRate, 90) && totalSicknessRecords > 0) score += 3;
+  else if (meets(returnToWorkRate, 70) && totalSicknessRecords > 0) score += 1;
 
   // --- Bonus 8: Support follow-up completion (>=90: +2, >=70: +1) ---
-  if (supportFollowUpRate >= 90 && followUpNeeded > 0) score += 2;
-  else if (supportFollowUpRate >= 70 && followUpNeeded > 0) score += 1;
+  if (meets(supportFollowUpRate, 90) && followUpNeeded > 0) score += 2;
+  else if (meets(supportFollowUpRate, 70) && followUpNeeded > 0) score += 1;
 
   // --- Bonus 9: Feels valued rate (>=90: +2, >=70: +1) ---
-  if (feelsValuedRate >= 90 && totalSurveyRecords > 0) score += 2;
-  else if (feelsValuedRate >= 70 && totalSurveyRecords > 0) score += 1;
+  if (meets(feelsValuedRate, 90) && totalSurveyRecords > 0) score += 2;
+  else if (meets(feelsValuedRate, 70) && totalSurveyRecords > 0) score += 1;
 
   // ── Penalties (guarded by array length > 0) ───────────────────────────
 
   // High sickness absence rate → -6
-  if (sicknessAbsenceRate > 50 && totalSicknessRecords > 0) score -= 6;
+  if (above(sicknessAbsenceRate, 50) && totalSicknessRecords > 0) score -= 6;
 
   // Poor retention rate → -5
   if ((retentionRate ?? 0) < 60 && totalRetentionEvents > 0) score -= 5;
 
   // Low staff satisfaction → -4
-  if (staffSatisfactionRate < 30 && totalSurveyRecords > 0) score -= 4;
+  if (below(staffSatisfactionRate, 30) && totalSurveyRecords > 0) score -= 4;
 
   // High stress-related absence → -3
-  if (stressRelatedRate > 40 && totalSicknessRecords > 0) score -= 3;
+  if (above(stressRelatedRate, 40) && totalSicknessRecords > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -497,58 +495,58 @@ export function computeStaffWellbeingRetention(
   const strengths: string[] = [];
 
   // Sickness absence strengths (inverted — low is good)
-  if (sicknessAbsenceRate <= 10 && total_staff > 0) {
+  if (total_staff > 0 && sicknessAbsenceRate! <= 10) {
     strengths.push(
       `Only ${sicknessAbsenceRate}% sickness absence rate — staff sickness levels are very low, indicating a healthy, well-supported workforce and effective absence management practices.`,
     );
-  } else if (sicknessAbsenceRate <= 25 && sicknessAbsenceRate > 10 && total_staff > 0) {
+  } else if (total_staff > 0 && sicknessAbsenceRate! <= 25 && sicknessAbsenceRate! > 10) {
     strengths.push(
       `${sicknessAbsenceRate}% sickness absence rate — sickness levels are within acceptable parameters for a residential children's home setting.`,
     );
   }
 
-  if (returnToWorkRate >= 90 && totalSicknessRecords > 0) {
+  if (meets(returnToWorkRate, 90) && totalSicknessRecords > 0) {
     strengths.push(
       `${returnToWorkRate}% return-to-work interview completion — the home consistently conducts return-to-work conversations, demonstrating proactive management of staff returning from absence.`,
     );
-  } else if (returnToWorkRate >= 70 && totalSicknessRecords > 0) {
+  } else if (meets(returnToWorkRate, 70) && totalSicknessRecords > 0) {
     strengths.push(
       `${returnToWorkRate}% return-to-work interviews completed — the home generally ensures staff receive a supported return-to-work process.`,
     );
   }
 
   // Survey / wellbeing strengths
-  if (wellbeingSurveyCompletionRate >= 80 && totalSurveyRecords > 0) {
+  if (meets(wellbeingSurveyCompletionRate, 80) && totalSurveyRecords > 0) {
     strengths.push(
       `${wellbeingSurveyCompletionRate}% wellbeing survey completion — the home achieves high participation in wellbeing surveys, providing a comprehensive picture of staff wellbeing and enabling data-driven improvements.`,
     );
-  } else if (wellbeingSurveyCompletionRate >= 60 && totalSurveyRecords > 0) {
+  } else if (meets(wellbeingSurveyCompletionRate, 60) && totalSurveyRecords > 0) {
     strengths.push(
       `${wellbeingSurveyCompletionRate}% wellbeing survey participation — the majority of staff engage with wellbeing surveys, providing useful insight into workforce health.`,
     );
   }
 
-  if (staffSatisfactionRate >= 80 && totalSurveyRecords > 0) {
+  if (meets(staffSatisfactionRate, 80) && totalSurveyRecords > 0) {
     strengths.push(
       `${staffSatisfactionRate}% staff satisfaction rate — staff feel valued, would recommend the home as an employer, and report high job satisfaction, reflecting strong leadership and a positive workplace culture.`,
     );
-  } else if (staffSatisfactionRate >= 60 && totalSurveyRecords > 0) {
+  } else if (meets(staffSatisfactionRate, 60) && totalSurveyRecords > 0) {
     strengths.push(
       `${staffSatisfactionRate}% staff satisfaction — the majority of staff report positive experiences and feel supported in their roles.`,
     );
   }
 
-  if (feelsValuedRate >= 90 && totalSurveyRecords > 0) {
+  if (meets(feelsValuedRate, 90) && totalSurveyRecords > 0) {
     strengths.push(
       `${feelsValuedRate}% of staff feel valued — an overwhelming majority of staff feel recognised and appreciated for their contribution, which is a key driver of retention and quality care.`,
     );
-  } else if (feelsValuedRate >= 70 && totalSurveyRecords > 0) {
+  } else if (meets(feelsValuedRate, 70) && totalSurveyRecords > 0) {
     strengths.push(
       `${feelsValuedRate}% of staff feel valued — most staff feel appreciated for their contribution to the home.`,
     );
   }
 
-  if (highMoraleRate >= 70 && totalSurveyRecords > 0) {
+  if (meets(highMoraleRate, 70) && totalSurveyRecords > 0) {
     strengths.push(
       `${highMoraleRate}% of staff report high morale (score 7+/10) — staff morale is strong across the team, supporting consistent quality of care delivery.`,
     );
@@ -582,54 +580,54 @@ export function computeStaffWellbeingRetention(
   }
 
   // Support strengths
-  if (wellbeingSupportUptakeRate >= 80 && supportOffered > 0) {
+  if (meets(wellbeingSupportUptakeRate, 80) && supportOffered > 0) {
     strengths.push(
       `${wellbeingSupportUptakeRate}% wellbeing support uptake — when support is offered, the vast majority of staff accept it, indicating trust in the home's support provision and a culture that normalises help-seeking.`,
     );
-  } else if (wellbeingSupportUptakeRate >= 60 && supportOffered > 0) {
+  } else if (meets(wellbeingSupportUptakeRate, 60) && supportOffered > 0) {
     strengths.push(
       `${wellbeingSupportUptakeRate}% wellbeing support uptake — the majority of staff accept offered wellbeing support, reflecting a positive help-seeking culture.`,
     );
   }
 
-  if (supportEffectivenessRate >= 80 && totalSupportRecords > 0) {
+  if (meets(supportEffectivenessRate, 80) && totalSupportRecords > 0) {
     strengths.push(
       `${supportEffectivenessRate}% of wellbeing support rated as effective (4+/5) — the support provided to staff achieves positive outcomes, demonstrating that the home's wellbeing interventions are well-targeted and meaningful.`,
     );
-  } else if (supportEffectivenessRate >= 60 && totalSupportRecords > 0) {
+  } else if (meets(supportEffectivenessRate, 60) && totalSupportRecords > 0) {
     strengths.push(
       `${supportEffectivenessRate}% wellbeing support effectiveness — the majority of support interventions achieve positive outcomes for staff.`,
     );
   }
 
-  if (supportFollowUpRate >= 90 && followUpNeeded > 0) {
+  if (meets(supportFollowUpRate, 90) && followUpNeeded > 0) {
     strengths.push(
       `${supportFollowUpRate}% of support follow-ups completed — the home consistently follows through on wellbeing support actions, ensuring staff receive ongoing care and attention.`,
     );
-  } else if (supportFollowUpRate >= 70 && followUpNeeded > 0) {
+  } else if (meets(supportFollowUpRate, 70) && followUpNeeded > 0) {
     strengths.push(
       `${supportFollowUpRate}% of support follow-ups completed — the home generally follows through on wellbeing actions identified during support interactions.`,
     );
   }
 
   // Exit interview strengths
-  if (exitInterviewCompletionRate >= 90 && (leftEvents > 0 || totalExitInterviews > 0)) {
+  if (meets(exitInterviewCompletionRate, 90) && (leftEvents > 0 || totalExitInterviews > 0)) {
     strengths.push(
       `${exitInterviewCompletionRate}% exit interview completion — the home consistently conducts exit interviews with departing staff, gathering valuable intelligence to inform retention strategies and improve the working environment.`,
     );
-  } else if (exitInterviewCompletionRate >= 70 && (leftEvents > 0 || totalExitInterviews > 0)) {
+  } else if (meets(exitInterviewCompletionRate, 70) && (leftEvents > 0 || totalExitInterviews > 0)) {
     strengths.push(
       `${exitInterviewCompletionRate}% exit interview completion — the home generally conducts exit interviews with leavers, supporting organisational learning.`,
     );
   }
 
-  if (wouldReturnRate >= 80 && exitInterviewsConducted > 0) {
+  if (meets(wouldReturnRate, 80) && exitInterviewsConducted > 0) {
     strengths.push(
       `${wouldReturnRate}% of leavers would return — departing staff speak positively about their experience and would consider returning, indicating a healthy workplace culture despite the decision to leave.`,
     );
   }
 
-  if (wouldRecommendExitRate >= 80 && exitInterviewsConducted > 0) {
+  if (meets(wouldRecommendExitRate, 80) && exitInterviewsConducted > 0) {
     strengths.push(
       `${wouldRecommendExitRate}% of leavers would recommend the home as an employer — even departing staff endorse the home as a good place to work, reflecting well on the overall working environment.`,
     );
@@ -640,72 +638,72 @@ export function computeStaffWellbeingRetention(
   const concerns: string[] = [];
 
   // Sickness concerns (inverted — high is bad)
-  if (sicknessAbsenceRate > 50 && totalSicknessRecords > 0) {
+  if (above(sicknessAbsenceRate, 50) && totalSicknessRecords > 0) {
     concerns.push(
       `${sicknessAbsenceRate}% sickness absence rate — more than half of staff have sickness records, indicating a serious workforce health issue that directly impacts staffing levels, care continuity, and the wellbeing of remaining staff who must cover absences.`,
     );
-  } else if (sicknessAbsenceRate > 30 && sicknessAbsenceRate <= 50 && totalSicknessRecords > 0) {
+  } else if (above(sicknessAbsenceRate, 30) && sicknessAbsenceRate! <= 50 && totalSicknessRecords > 0) {
     concerns.push(
       `${sicknessAbsenceRate}% sickness absence rate — sickness levels are elevated and may be indicating systemic issues with staff wellbeing, workload, or working conditions that require management attention.`,
     );
   }
 
-  if (stressRelatedRate > 40 && totalSicknessRecords > 0) {
+  if (above(stressRelatedRate, 40) && totalSicknessRecords > 0) {
     concerns.push(
       `${stressRelatedRate}% of sickness absence is stress or mental health related — a high proportion of absence is attributable to workplace stress or mental health, suggesting the home must urgently review workload, support provision, and working conditions.`,
     );
-  } else if (stressRelatedRate > 25 && stressRelatedRate <= 40 && totalSicknessRecords > 0) {
+  } else if (above(stressRelatedRate, 25) && stressRelatedRate! <= 40 && totalSicknessRecords > 0) {
     concerns.push(
       `${stressRelatedRate}% of absence is stress or mental health related — stress-related absence is notable and should be addressed through proactive wellbeing initiatives.`,
     );
   }
 
-  if (returnToWorkRate < 50 && totalSicknessRecords > 0) {
+  if (below(returnToWorkRate, 50) && totalSicknessRecords > 0) {
     concerns.push(
       `Only ${returnToWorkRate}% return-to-work interviews completed — the majority of staff returning from absence are not receiving a structured return-to-work conversation, undermining the home's duty of care and absence management processes.`,
     );
-  } else if (returnToWorkRate < 70 && returnToWorkRate >= 50 && totalSicknessRecords > 0) {
+  } else if (below(returnToWorkRate, 70) && meets(returnToWorkRate, 50) && totalSicknessRecords > 0) {
     concerns.push(
       `Return-to-work interview completion at ${returnToWorkRate}% — not all staff are receiving appropriate support when returning from sickness absence.`,
     );
   }
 
   // Survey / satisfaction concerns
-  if (wellbeingSurveyCompletionRate < 40 && total_staff > 0 && totalSurveyRecords > 0) {
+  if (below(wellbeingSurveyCompletionRate, 40) && total_staff > 0 && totalSurveyRecords > 0) {
     concerns.push(
       `Only ${wellbeingSurveyCompletionRate}% wellbeing survey completion — the home cannot claim to understand staff wellbeing when the majority of staff have not participated in surveys.`,
     );
-  } else if (wellbeingSurveyCompletionRate < 60 && wellbeingSurveyCompletionRate >= 40 && total_staff > 0 && totalSurveyRecords > 0) {
+  } else if (below(wellbeingSurveyCompletionRate, 60) && meets(wellbeingSurveyCompletionRate, 40) && total_staff > 0 && totalSurveyRecords > 0) {
     concerns.push(
       `Wellbeing survey completion at ${wellbeingSurveyCompletionRate}% — survey participation needs improvement to provide a representative picture of staff wellbeing.`,
     );
   }
 
-  if (staffSatisfactionRate < 30 && totalSurveyRecords > 0) {
+  if (below(staffSatisfactionRate, 30) && totalSurveyRecords > 0) {
     concerns.push(
       `Only ${staffSatisfactionRate}% staff satisfaction — the majority of staff do not feel valued, would not recommend the home, or report low job satisfaction. This has direct implications for care quality, as dissatisfied staff cannot consistently provide nurturing, therapeutic care.`,
     );
-  } else if (staffSatisfactionRate < 50 && staffSatisfactionRate >= 30 && totalSurveyRecords > 0) {
+  } else if (below(staffSatisfactionRate, 50) && meets(staffSatisfactionRate, 30) && totalSurveyRecords > 0) {
     concerns.push(
       `Staff satisfaction at ${staffSatisfactionRate}% — a significant proportion of staff report dissatisfaction, which undermines workforce stability and care quality.`,
     );
   }
 
-  if (lowMoraleRate > 40 && totalSurveyRecords > 0) {
+  if (above(lowMoraleRate, 40) && totalSurveyRecords > 0) {
     concerns.push(
       `${lowMoraleRate}% of staff report low morale (score 4 or below) — widespread low morale is a serious concern that requires immediate leadership attention, as it affects team cohesion, care quality, and retention.`,
     );
-  } else if (lowMoraleRate > 25 && lowMoraleRate <= 40 && totalSurveyRecords > 0) {
+  } else if (above(lowMoraleRate, 25) && lowMoraleRate! <= 40 && totalSurveyRecords > 0) {
     concerns.push(
       `${lowMoraleRate}% of staff report low morale — a notable proportion of the workforce has poor morale, which may be impacting care delivery and team dynamics.`,
     );
   }
 
-  if (feelsValuedRate < 50 && totalSurveyRecords > 0) {
+  if (below(feelsValuedRate, 50) && totalSurveyRecords > 0) {
     concerns.push(
       `Only ${feelsValuedRate}% of staff feel valued — the majority of staff do not feel recognised for their contribution. This is a critical leadership and management failing that drives turnover and disengagement.`,
     );
-  } else if (feelsValuedRate < 70 && feelsValuedRate >= 50 && totalSurveyRecords > 0) {
+  } else if (below(feelsValuedRate, 70) && meets(feelsValuedRate, 50) && totalSurveyRecords > 0) {
     concerns.push(
       `Only ${feelsValuedRate}% of staff feel valued — a significant proportion of staff do not feel appreciated, which may contribute to retention challenges.`,
     );
@@ -722,43 +720,43 @@ export function computeStaffWellbeingRetention(
     );
   }
 
-  if (earlyLeaverRate > 40 && leftEvents > 0) {
+  if (above(earlyLeaverRate, 40) && leftEvents > 0) {
     concerns.push(
       `${earlyLeaverRate}% of leavers left within 12 months — early attrition suggests issues with induction, onboarding, or mismatch between expectations and reality. This wastes recruitment investment and disrupts team development.`,
     );
-  } else if (earlyLeaverRate > 25 && earlyLeaverRate <= 40 && leftEvents > 0) {
+  } else if (above(earlyLeaverRate, 25) && earlyLeaverRate! <= 40 && leftEvents > 0) {
     concerns.push(
       `${earlyLeaverRate}% of leavers departed within 12 months — early attrition is notable and may indicate issues with induction or role expectations.`,
     );
   }
 
   // Support concerns
-  if (wellbeingSupportUptakeRate < 40 && supportOffered > 0) {
+  if (below(wellbeingSupportUptakeRate, 40) && supportOffered > 0) {
     concerns.push(
       `Only ${wellbeingSupportUptakeRate}% wellbeing support uptake — the majority of staff decline offered support, which may indicate a culture where seeking help is stigmatised, or that the support offered does not meet staff needs.`,
     );
-  } else if (wellbeingSupportUptakeRate < 60 && wellbeingSupportUptakeRate >= 40 && supportOffered > 0) {
+  } else if (below(wellbeingSupportUptakeRate, 60) && meets(wellbeingSupportUptakeRate, 40) && supportOffered > 0) {
     concerns.push(
       `Wellbeing support uptake at ${wellbeingSupportUptakeRate}% — a notable proportion of staff decline offered support, suggesting barriers to engagement.`,
     );
   }
 
-  if (supportFollowUpRate < 50 && followUpNeeded > 0) {
+  if (below(supportFollowUpRate, 50) && followUpNeeded > 0) {
     concerns.push(
       `Only ${supportFollowUpRate}% of wellbeing support follow-ups completed — identified support needs are not being followed through, meaning staff who sought help may feel abandoned or unsupported.`,
     );
-  } else if (supportFollowUpRate < 70 && supportFollowUpRate >= 50 && followUpNeeded > 0) {
+  } else if (below(supportFollowUpRate, 70) && meets(supportFollowUpRate, 50) && followUpNeeded > 0) {
     concerns.push(
       `Support follow-up completion at ${supportFollowUpRate}% — some wellbeing actions are not being followed through, which undermines trust in the support process.`,
     );
   }
 
   // Exit interview concerns
-  if (exitInterviewCompletionRate < 50 && leftEvents > 0) {
+  if (below(exitInterviewCompletionRate, 50) && leftEvents > 0) {
     concerns.push(
       `Only ${exitInterviewCompletionRate}% exit interview completion — the home is missing critical intelligence from departing staff about why they leave and what could be improved. Without this data, retention strategies are flying blind.`,
     );
-  } else if (exitInterviewCompletionRate < 70 && exitInterviewCompletionRate >= 50 && leftEvents > 0) {
+  } else if (below(exitInterviewCompletionRate, 70) && meets(exitInterviewCompletionRate, 50) && leftEvents > 0) {
     concerns.push(
       `Exit interview completion at ${exitInterviewCompletionRate}% — not all departing staff are being interviewed, meaning some retention intelligence is being lost.`,
     );
@@ -782,7 +780,7 @@ export function computeStaffWellbeingRetention(
   const recommendations: StaffWellbeingRetentionRecommendation[] = [];
   let rank = 0;
 
-  if (sicknessAbsenceRate > 50 && totalSicknessRecords > 0) {
+  if (above(sicknessAbsenceRate, 50) && totalSicknessRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -802,7 +800,7 @@ export function computeStaffWellbeingRetention(
     });
   }
 
-  if (staffSatisfactionRate < 30 && totalSurveyRecords > 0) {
+  if (below(staffSatisfactionRate, 30) && totalSurveyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -812,7 +810,7 @@ export function computeStaffWellbeingRetention(
     });
   }
 
-  if (stressRelatedRate > 40 && totalSicknessRecords > 0) {
+  if (above(stressRelatedRate, 40) && totalSicknessRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -822,7 +820,7 @@ export function computeStaffWellbeingRetention(
     });
   }
 
-  if (returnToWorkRate < 50 && totalSicknessRecords > 0) {
+  if (below(returnToWorkRate, 50) && totalSicknessRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -832,7 +830,7 @@ export function computeStaffWellbeingRetention(
     });
   }
 
-  if (exitInterviewCompletionRate < 50 && leftEvents > 0) {
+  if (below(exitInterviewCompletionRate, 50) && leftEvents > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -842,7 +840,7 @@ export function computeStaffWellbeingRetention(
     });
   }
 
-  if (wellbeingSurveyCompletionRate < 40 && total_staff > 0) {
+  if (below(wellbeingSurveyCompletionRate, 40) && total_staff > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -852,7 +850,7 @@ export function computeStaffWellbeingRetention(
     });
   }
 
-  if (wellbeingSupportUptakeRate < 40 && supportOffered > 0) {
+  if (below(wellbeingSupportUptakeRate, 40) && supportOffered > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -862,7 +860,7 @@ export function computeStaffWellbeingRetention(
     });
   }
 
-  if (feelsValuedRate < 50 && totalSurveyRecords > 0) {
+  if (below(feelsValuedRate, 50) && totalSurveyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -872,7 +870,7 @@ export function computeStaffWellbeingRetention(
     });
   }
 
-  if (earlyLeaverRate > 40 && leftEvents > 0) {
+  if (above(earlyLeaverRate, 40) && leftEvents > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -882,7 +880,7 @@ export function computeStaffWellbeingRetention(
     });
   }
 
-  if (supportFollowUpRate < 50 && followUpNeeded > 0) {
+  if (below(supportFollowUpRate, 50) && followUpNeeded > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -907,8 +905,8 @@ export function computeStaffWellbeingRetention(
   }
 
   if (
-    sicknessAbsenceRate > 25 &&
-    sicknessAbsenceRate <= 50 &&
+    above(sicknessAbsenceRate, 25) &&
+    sicknessAbsenceRate! <= 50 &&
     totalSicknessRecords > 0
   ) {
     recommendations.push({
@@ -921,8 +919,8 @@ export function computeStaffWellbeingRetention(
   }
 
   if (
-    staffSatisfactionRate >= 30 &&
-    staffSatisfactionRate < 60 &&
+    meets(staffSatisfactionRate, 30) &&
+    below(staffSatisfactionRate, 60) &&
     totalSurveyRecords > 0
   ) {
     recommendations.push({
@@ -935,8 +933,8 @@ export function computeStaffWellbeingRetention(
   }
 
   if (
-    wellbeingSurveyCompletionRate >= 40 &&
-    wellbeingSurveyCompletionRate < 60 &&
+    meets(wellbeingSurveyCompletionRate, 40) &&
+    below(wellbeingSurveyCompletionRate, 60) &&
     totalSurveyRecords > 0
   ) {
     recommendations.push({
@@ -949,8 +947,8 @@ export function computeStaffWellbeingRetention(
   }
 
   if (
-    wellbeingSupportUptakeRate >= 40 &&
-    wellbeingSupportUptakeRate < 60 &&
+    meets(wellbeingSupportUptakeRate, 40) &&
+    below(wellbeingSupportUptakeRate, 60) &&
     supportOffered > 0
   ) {
     recommendations.push({
@@ -988,7 +986,7 @@ export function computeStaffWellbeingRetention(
 
   // -- Critical insights --
 
-  if (sicknessAbsenceRate > 50 && totalSicknessRecords > 0) {
+  if (above(sicknessAbsenceRate, 50) && totalSicknessRecords > 0) {
     insights.push({
       text: `${sicknessAbsenceRate}% sickness absence rate. High absence levels compromise the home's ability to maintain consistent staffing, forcing reliance on agency workers who lack relationship continuity with children. Ofsted expects homes to demonstrate effective workforce management under Reg 16, and this level of absence suggests a systemic wellbeing or working conditions issue requiring urgent intervention.`,
       severity: "critical",
@@ -1002,21 +1000,21 @@ export function computeStaffWellbeingRetention(
     });
   }
 
-  if (staffSatisfactionRate < 30 && totalSurveyRecords > 0) {
+  if (below(staffSatisfactionRate, 30) && totalSurveyRecords > 0) {
     insights.push({
       text: `Only ${staffSatisfactionRate}% staff satisfaction. Profoundly low satisfaction is a leading indicator of imminent turnover, reduced care quality, and potential safeguarding risks. Dissatisfied staff are more likely to make errors, disengage from children, and leave without notice. Leadership must treat this as an urgent organisational risk.`,
       severity: "critical",
     });
   }
 
-  if (stressRelatedRate > 40 && totalSicknessRecords > 0) {
+  if (above(stressRelatedRate, 40) && totalSicknessRecords > 0) {
     insights.push({
       text: `${stressRelatedRate}% of absence is stress or mental health related. Working in children's residential care is inherently demanding, but when stress-related absence exceeds 40%, it indicates that the home's support systems, workload management, or culture are failing to protect staff. Reg 32 requires that the home ensures workers remain fit for their role.`,
       severity: "critical",
     });
   }
 
-  if (lowMoraleRate > 40 && totalSurveyRecords > 0) {
+  if (above(lowMoraleRate, 40) && totalSurveyRecords > 0) {
     insights.push({
       text: `${lowMoraleRate}% of staff report low morale. Widespread poor morale creates a negative cycle — remaining staff absorb additional pressure, quality of interactions with children deteriorates, and the home's therapeutic culture is undermined. This requires immediate leadership intervention to understand and address root causes.`,
       severity: "critical",
@@ -1040,8 +1038,8 @@ export function computeStaffWellbeingRetention(
   // -- Warning insights --
 
   if (
-    sicknessAbsenceRate > 25 &&
-    sicknessAbsenceRate <= 50 &&
+    above(sicknessAbsenceRate, 25) &&
+    sicknessAbsenceRate! <= 50 &&
     totalSicknessRecords > 0
   ) {
     insights.push({
@@ -1062,8 +1060,8 @@ export function computeStaffWellbeingRetention(
   }
 
   if (
-    staffSatisfactionRate >= 30 &&
-    staffSatisfactionRate < 60 &&
+    meets(staffSatisfactionRate, 30) &&
+    below(staffSatisfactionRate, 60) &&
     totalSurveyRecords > 0
   ) {
     insights.push({
@@ -1073,8 +1071,8 @@ export function computeStaffWellbeingRetention(
   }
 
   if (
-    wellbeingSurveyCompletionRate >= 40 &&
-    wellbeingSurveyCompletionRate < 60 &&
+    meets(wellbeingSurveyCompletionRate, 40) &&
+    below(wellbeingSurveyCompletionRate, 60) &&
     totalSurveyRecords > 0
   ) {
     insights.push({
@@ -1084,8 +1082,8 @@ export function computeStaffWellbeingRetention(
   }
 
   if (
-    wellbeingSupportUptakeRate >= 40 &&
-    wellbeingSupportUptakeRate < 60 &&
+    meets(wellbeingSupportUptakeRate, 40) &&
+    below(wellbeingSupportUptakeRate, 60) &&
     supportOffered > 0
   ) {
     insights.push({
@@ -1095,8 +1093,8 @@ export function computeStaffWellbeingRetention(
   }
 
   if (
-    stressRelatedRate > 25 &&
-    stressRelatedRate <= 40 &&
+    above(stressRelatedRate, 25) &&
+    stressRelatedRate! <= 40 &&
     totalSicknessRecords > 0
   ) {
     insights.push({
@@ -1106,8 +1104,8 @@ export function computeStaffWellbeingRetention(
   }
 
   if (
-    earlyLeaverRate > 25 &&
-    earlyLeaverRate <= 40 &&
+    above(earlyLeaverRate, 25) &&
+    earlyLeaverRate! <= 40 &&
     leftEvents > 0
   ) {
     insights.push({
@@ -1117,8 +1115,8 @@ export function computeStaffWellbeingRetention(
   }
 
   if (
-    returnToWorkRate >= 50 &&
-    returnToWorkRate < 70 &&
+    meets(returnToWorkRate, 50) &&
+    below(returnToWorkRate, 70) &&
     totalSicknessRecords > 0
   ) {
     insights.push({
@@ -1128,8 +1126,8 @@ export function computeStaffWellbeingRetention(
   }
 
   if (
-    exitInterviewCompletionRate >= 50 &&
-    exitInterviewCompletionRate < 70 &&
+    meets(exitInterviewCompletionRate, 50) &&
+    below(exitInterviewCompletionRate, 70) &&
     leftEvents > 0
   ) {
     insights.push({
@@ -1181,8 +1179,8 @@ export function computeStaffWellbeingRetention(
   }
 
   if (
-    sicknessAbsenceRate <= 10 &&
-    returnToWorkRate >= 90 &&
+    sicknessAbsenceRate! <= 10 &&
+    meets(returnToWorkRate, 90) &&
     total_staff > 0 &&
     totalSicknessRecords > 0
   ) {
@@ -1194,7 +1192,7 @@ export function computeStaffWellbeingRetention(
 
   if (
     (retentionRate ?? 0) >= 90 &&
-    staffSatisfactionRate >= 80 &&
+    meets(staffSatisfactionRate, 80) &&
     total_staff > 0 &&
     totalSurveyRecords > 0
   ) {
@@ -1205,8 +1203,8 @@ export function computeStaffWellbeingRetention(
   }
 
   if (
-    wellbeingSupportUptakeRate >= 80 &&
-    supportEffectivenessRate >= 80 &&
+    meets(wellbeingSupportUptakeRate, 80) &&
+    meets(supportEffectivenessRate, 80) &&
     supportOffered > 0 &&
     totalSupportRecords > 0
   ) {
@@ -1217,8 +1215,8 @@ export function computeStaffWellbeingRetention(
   }
 
   if (
-    feelsValuedRate >= 90 &&
-    highMoraleRate >= 70 &&
+    meets(feelsValuedRate, 90) &&
+    meets(highMoraleRate, 70) &&
     totalSurveyRecords > 0
   ) {
     insights.push({
@@ -1228,8 +1226,8 @@ export function computeStaffWellbeingRetention(
   }
 
   if (
-    exitInterviewCompletionRate >= 90 &&
-    wouldReturnRate >= 80 &&
+    meets(exitInterviewCompletionRate, 90) &&
+    meets(wouldReturnRate, 80) &&
     exitInterviewsConducted > 0
   ) {
     insights.push({
@@ -1239,7 +1237,7 @@ export function computeStaffWellbeingRetention(
   }
 
   if (
-    wellbeingSurveyCompletionRate >= 80 &&
+    meets(wellbeingSurveyCompletionRate, 80) &&
     avgOverallWellbeing >= 7.5 &&
     totalSurveyRecords > 0
   ) {
@@ -1250,7 +1248,7 @@ export function computeStaffWellbeingRetention(
   }
 
   if (
-    supportFollowUpRate >= 90 &&
+    meets(supportFollowUpRate, 90) &&
     followUpNeeded > 0
   ) {
     insights.push({

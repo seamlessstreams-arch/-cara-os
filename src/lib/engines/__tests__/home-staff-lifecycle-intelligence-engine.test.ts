@@ -316,7 +316,7 @@ describe("exit interview profile", () => {
     expect(r.exit_interviews.would_recommend_rate).toBe(67);
   });
 
-  it("returns 0 for avg_rating when no completed exits have ratings", () => {
+  it("returns null for avg_rating when no completed exits have ratings", () => {
     const r = computeHomeStaffLifecycle(baseInput({
       exit_interview_records: [
         makeExit({ id: "e1", status: "scheduled", overall_rating: 5 }),
@@ -380,7 +380,7 @@ describe("recognition profile", () => {
     expect(r.recognition.public_celebration_rate).toBe(50);
   });
 
-  it("returns 0 events_per_staff when total_staff is 0", () => {
+  it("returns null events_per_staff when total_staff is null", () => {
     const r = computeHomeStaffLifecycle(baseInput({
       total_staff: 0,
       recognition_records: [makeRecognition({ date: "2026-05-10" })],

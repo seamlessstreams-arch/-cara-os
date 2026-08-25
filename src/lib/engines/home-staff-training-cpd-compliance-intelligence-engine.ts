@@ -1,3 +1,4 @@
+import { below, meanOf, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME STAFF TRAINING & CPD COMPLIANCE INTELLIGENCE ENGINE
 // Home-level: evaluates staff training and CPD compliance including mandatory
@@ -241,13 +242,8 @@ function clamp(v: number, lo: number, hi: number): number {
 }
 
 /**
- * CRITICAL: pct(0, 0) = 0. Always guard the denominator.
+ * CRITICAL: rate(0, 0) = 0. Always guard the denominator.
  */
-function pct(numerator: number, denominator: number): number {
-  if (denominator === 0) return 0;
-  return Math.round((numerator / denominator) * 100);
-}
-
 function toRating(score: number): TrainingComplianceRating {
   if (score >= 80) return "outstanding";
   if (score >= 65) return "good";
@@ -306,12 +302,12 @@ export function computeStaffTrainingCpdCompliance(
     training_rating: "insufficient_data",
     training_score: 0,
     headline: "",
-    mandatory_training_compliance_rate: 0,
-    cpd_completion_rate: 0,
-    training_needs_coverage_rate: 0,
-    qualification_currency_rate: 0,
-    development_plan_coverage_rate: 0,
-    training_effectiveness_rate: 0,
+    mandatory_training_compliance_rate: null,
+    cpd_completion_rate: null,
+    training_needs_coverage_rate: null,
+    qualification_currency_rate: null,
+    development_plan_coverage_rate: null,
+    training_effectiveness_rate: null,
     mandatory_training_valid_count: 0,
     mandatory_training_expired_count: 0,
     mandatory_training_overdue_count: 0,
@@ -328,7 +324,7 @@ export function computeStaffTrainingCpdCompliance(
     qualifications_expired_count: 0,
     development_plans_active_count: 0,
     development_plans_current_count: 0,
-    development_objectives_achievement_rate: 0,
+    development_objectives_achievement_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -448,7 +444,7 @@ export function computeStaffTrainingCpdCompliance(
   const mandatoryExpiringSoonCount = mandatoryExpiringSoon.length;
 
   // Compliance rate = valid / total mandatory
-  const mandatoryTrainingComplianceRate = pct(mandatoryValidCount, totalMandatory);
+  const mandatoryTrainingComplianceRate = rate(mandatoryValidCount, totalMandatory);
 
   // All training records (not just mandatory) — for total counts
   const allTrainingTotal = mandatory_training_records.length;
@@ -456,11 +452,11 @@ export function computeStaffTrainingCpdCompliance(
   // Assessment pass rate
   const mandatoryWithAssessment = mandatoryRecords.filter(r => r.status === "completed");
   const mandatoryAssessmentPassed = mandatoryWithAssessment.filter(r => r.assessment_passed).length;
-  const assessmentPassRate = pct(mandatoryAssessmentPassed, mandatoryWithAssessment.length);
+  const assessmentPassRate = rate(mandatoryAssessmentPassed, mandatoryWithAssessment.length);
 
   // Certificate coverage
   const mandatoryWithCertificate = mandatoryRecords.filter(r => r.status === "completed" && r.certificate_issued).length;
-  const certificateCoverageRate = pct(mandatoryWithCertificate, mandatoryWithAssessment.length);
+  const certificateCoverageRate = rate(mandatoryWithCertificate, mandatoryWithAssessment.length);
 
   // Delivery method diversity
   const deliveryMethods = new Set<string>();
@@ -481,7 +477,7 @@ export function computeStaffTrainingCpdCompliance(
   const overdueCpd = cpd_records.filter(r => r.status === "overdue").length;
   const cancelledCpd = cpd_records.filter(r => r.status === "cancelled").length;
 
-  const cpdCompletionRate = pct(completedCpd, totalCpd);
+  const cpdCompletionRate = rate(completedCpd, totalCpd);
 
   // CPD hours
   const totalCpdHours = cpd_records.reduce((sum, r) => sum + (r.cpd_hours || 0), 0);
@@ -493,10 +489,10 @@ export function computeStaffTrainingCpdCompliance(
   const cpdLearningApplied = cpd_records.filter(r => r.status === "completed" && r.learning_applied).length;
   const cpdSharedWithTeam = cpd_records.filter(r => r.status === "completed" && r.shared_with_team).length;
 
-  const cpdReflectionRate = pct(cpdWithReflection, completedCpd);
-  const cpdEvidenceRate = pct(cpdWithEvidence, completedCpd);
-  const cpdLearningAppliedRate = pct(cpdLearningApplied, completedCpd);
-  const cpdSharedRate = pct(cpdSharedWithTeam, completedCpd);
+  const cpdReflectionRate = rate(cpdWithReflection, completedCpd);
+  const cpdEvidenceRate = rate(cpdWithEvidence, completedCpd);
+  const cpdLearningAppliedRate = rate(cpdLearningApplied, completedCpd);
+  const cpdSharedRate = rate(cpdSharedWithTeam, completedCpd);
 
   // CPD activity type diversity
   const cpdActivityTypes = new Set<string>();
@@ -512,21 +508,21 @@ export function computeStaffTrainingCpdCompliance(
   const totalTrainingNeeds = training_needs_records.length;
   const currentTrainingNeeds = training_needs_records.filter(r => r.is_current).length;
   const trainingNeedsCoverageRate = total_staff > 0
-    ? pct(currentTrainingNeeds, total_staff)
-    : pct(currentTrainingNeeds, totalTrainingNeeds);
+    ? rate(currentTrainingNeeds, total_staff)
+    : rate(currentTrainingNeeds, totalTrainingNeeds);
 
   // Training needs detail
   const totalNeedsIdentified = training_needs_records.reduce((sum, r) => sum + (r.needs_identified || 0), 0);
   const totalNeedsAddressed = training_needs_records.reduce((sum, r) => sum + (r.needs_addressed || 0), 0);
-  const needsAddressedRate = pct(totalNeedsAddressed, totalNeedsIdentified);
+  const needsAddressedRate = rate(totalNeedsAddressed, totalNeedsIdentified);
 
   // Staff involvement in TNA
   const tnaStaffInvolved = training_needs_records.filter(r => r.staff_involved).length;
-  const tnaStaffInvolvementRate = pct(tnaStaffInvolved, totalTrainingNeeds);
+  const tnaStaffInvolvementRate = rate(tnaStaffInvolved, totalTrainingNeeds);
 
   // Linked to supervision
   const tnaLinkedToSupervision = training_needs_records.filter(r => r.linked_to_supervision).length;
-  const tnaLinkedRate = pct(tnaLinkedToSupervision, totalTrainingNeeds);
+  const tnaLinkedRate = rate(tnaLinkedToSupervision, totalTrainingNeeds);
 
   // High priority needs
   const highPriorityNeeds = training_needs_records.filter(r => r.priority === "high").length;
@@ -553,18 +549,18 @@ export function computeStaffTrainingCpdCompliance(
   const currentQualifications = qualification_records.filter(r =>
     r.status === "achieved" && r.registration_current
   ).length;
-  const qualificationCurrencyRate = pct(currentQualifications, totalQualifications);
+  const qualificationCurrencyRate = rate(currentQualifications, totalQualifications);
 
   // Required qualifications
   const requiredQualifications = qualification_records.filter(r => r.is_required).length;
   const requiredAchieved = qualification_records.filter(r =>
     r.is_required && r.status === "achieved"
   ).length;
-  const requiredQualificationRate = pct(requiredAchieved, requiredQualifications);
+  const requiredQualificationRate = rate(requiredAchieved, requiredQualifications);
 
   // Evidence on file
   const evidenceOnFile = qualification_records.filter(r => r.evidence_on_file).length;
-  const evidenceRate = pct(evidenceOnFile, totalQualifications);
+  const evidenceRate = rate(evidenceOnFile, totalQualifications);
 
   // Expiring soon (within 90 days)
   const qualExpiringSoon = qualification_records.filter(r =>
@@ -579,8 +575,8 @@ export function computeStaffTrainingCpdCompliance(
   const activePlans = development_plan_records.filter(r => r.plan_exists).length;
   const currentPlans = development_plan_records.filter(r => r.plan_exists && r.is_current).length;
   const developmentPlanCoverageRate = total_staff > 0
-    ? pct(currentPlans, total_staff)
-    : pct(currentPlans, totalDevPlans);
+    ? rate(currentPlans, total_staff)
+    : rate(currentPlans, totalDevPlans);
 
   // Development plan quality metrics
   const plansStaffInvolved = development_plan_records.filter(r => r.plan_exists && r.staff_involved).length;
@@ -589,16 +585,16 @@ export function computeStaffTrainingCpdCompliance(
   const plansLinkedToSupervision = development_plan_records.filter(r => r.plan_exists && r.linked_to_supervision).length;
   const plansWithCareerPathway = development_plan_records.filter(r => r.plan_exists && r.career_pathway_documented).length;
 
-  const planStaffInvolvementRate = pct(plansStaffInvolved, activePlans);
-  const planLinkedToHomeRate = pct(plansLinkedToHome, activePlans);
-  const planMeasurableRate = pct(plansMeasurable, activePlans);
-  const planLinkedToSupervisionRate = pct(plansLinkedToSupervision, activePlans);
-  const planCareerPathwayRate = pct(plansWithCareerPathway, activePlans);
+  const planStaffInvolvementRate = rate(plansStaffInvolved, activePlans);
+  const planLinkedToHomeRate = rate(plansLinkedToHome, activePlans);
+  const planMeasurableRate = rate(plansMeasurable, activePlans);
+  const planLinkedToSupervisionRate = rate(plansLinkedToSupervision, activePlans);
+  const planCareerPathwayRate = rate(plansWithCareerPathway, activePlans);
 
   // Objectives
   const totalObjectivesSet = development_plan_records.reduce((sum, r) => sum + (r.objectives_set || 0), 0);
   const totalObjectivesAchieved = development_plan_records.reduce((sum, r) => sum + (r.objectives_achieved || 0), 0);
-  const developmentObjectivesAchievementRate = pct(totalObjectivesAchieved, totalObjectivesSet);
+  const developmentObjectivesAchievementRate = rate(totalObjectivesAchieved, totalObjectivesSet);
 
   // Stale plans (plan exists but not current)
   const stalePlans = development_plan_records.filter(r => r.plan_exists && !r.is_current).length;
@@ -614,16 +610,14 @@ export function computeStaffTrainingCpdCompliance(
   // - Needs addressed rate
   // - Development objectives achievement rate
 
-  const effectivenessComponents: number[] = [];
+  const effectivenessComponents: (number | null)[] = [];
   if (mandatoryWithAssessment.length > 0) effectivenessComponents.push(assessmentPassRate);
   if (completedCpd > 0) effectivenessComponents.push(cpdLearningAppliedRate);
   if (completedCpd > 0) effectivenessComponents.push(cpdReflectionRate);
   if (totalNeedsIdentified > 0) effectivenessComponents.push(needsAddressedRate);
   if (totalObjectivesSet > 0) effectivenessComponents.push(developmentObjectivesAchievementRate);
 
-  const trainingEffectivenessRate = effectivenessComponents.length > 0
-    ? Math.round(effectivenessComponents.reduce((s, v) => s + v, 0) / effectivenessComponents.length)
-    : null;
+  const trainingEffectivenessRate = meanOf(effectivenessComponents);
 
   // ══════════════════════════════════════════════════════════════════════
   // SCORING — Base 52 + 9 bonus categories (max 28) = max 80
@@ -633,25 +627,25 @@ export function computeStaffTrainingCpdCompliance(
 
   // ── Bonus 1: Mandatory training compliance (0–4) ─────────────────────
   if (totalMandatory > 0) {
-    if (mandatoryTrainingComplianceRate >= 95) score += 4;
-    else if (mandatoryTrainingComplianceRate >= 85) score += 3;
-    else if (mandatoryTrainingComplianceRate >= 70) score += 2;
-    else if (mandatoryTrainingComplianceRate >= 50) score += 1;
+    if (meets(mandatoryTrainingComplianceRate, 95)) score += 4;
+    else if (meets(mandatoryTrainingComplianceRate, 85)) score += 3;
+    else if (meets(mandatoryTrainingComplianceRate, 70)) score += 2;
+    else if (meets(mandatoryTrainingComplianceRate, 50)) score += 1;
     // else +0
   }
 
   // ── Bonus 2: CPD completion (0–4) ────────────────────────────────────
   if (totalCpd > 0) {
-    if (cpdCompletionRate >= 90) score += 4;
-    else if (cpdCompletionRate >= 75) score += 3;
-    else if (cpdCompletionRate >= 60) score += 2;
-    else if (cpdCompletionRate >= 40) score += 1;
+    if (meets(cpdCompletionRate, 90)) score += 4;
+    else if (meets(cpdCompletionRate, 75)) score += 3;
+    else if (meets(cpdCompletionRate, 60)) score += 2;
+    else if (meets(cpdCompletionRate, 40)) score += 1;
     // else +0
   }
 
   // ── Bonus 3: CPD quality (reflection + evidence + applied) (0–3) ────
   if (completedCpd > 0) {
-    const qualityAvg = (cpdReflectionRate + cpdEvidenceRate + cpdLearningAppliedRate) / 3;
+    const qualityAvg = (cpdReflectionRate! + cpdEvidenceRate! + cpdLearningAppliedRate!) / 3;
     if (qualityAvg >= 80) score += 3;
     else if (qualityAvg >= 60) score += 2;
     else if (qualityAvg >= 40) score += 1;
@@ -660,41 +654,41 @@ export function computeStaffTrainingCpdCompliance(
 
   // ── Bonus 4: Training needs coverage (0–3) ──────────────────────────
   if (total_staff > 0) {
-    if (trainingNeedsCoverageRate >= 90) score += 3;
-    else if (trainingNeedsCoverageRate >= 70) score += 2;
-    else if (trainingNeedsCoverageRate >= 50) score += 1;
+    if (meets(trainingNeedsCoverageRate, 90)) score += 3;
+    else if (meets(trainingNeedsCoverageRate, 70)) score += 2;
+    else if (meets(trainingNeedsCoverageRate, 50)) score += 1;
     // else +0
   }
 
   // ── Bonus 5: Training needs addressed (0–3) ─────────────────────────
   if (totalNeedsIdentified > 0) {
-    if (needsAddressedRate >= 85) score += 3;
-    else if (needsAddressedRate >= 65) score += 2;
-    else if (needsAddressedRate >= 45) score += 1;
+    if (meets(needsAddressedRate, 85)) score += 3;
+    else if (meets(needsAddressedRate, 65)) score += 2;
+    else if (meets(needsAddressedRate, 45)) score += 1;
     // else +0
   }
 
   // ── Bonus 6: Qualification currency (0–3) ───────────────────────────
   if (totalQualifications > 0) {
-    if (qualificationCurrencyRate >= 90) score += 3;
-    else if (qualificationCurrencyRate >= 75) score += 2;
-    else if (qualificationCurrencyRate >= 55) score += 1;
+    if (meets(qualificationCurrencyRate, 90)) score += 3;
+    else if (meets(qualificationCurrencyRate, 75)) score += 2;
+    else if (meets(qualificationCurrencyRate, 55)) score += 1;
     // else +0
   }
 
   // ── Bonus 7: Development plan coverage (0–3) ────────────────────────
   if (total_staff > 0) {
-    if (developmentPlanCoverageRate >= 90) score += 3;
-    else if (developmentPlanCoverageRate >= 70) score += 2;
-    else if (developmentPlanCoverageRate >= 50) score += 1;
+    if (meets(developmentPlanCoverageRate, 90)) score += 3;
+    else if (meets(developmentPlanCoverageRate, 70)) score += 2;
+    else if (meets(developmentPlanCoverageRate, 50)) score += 1;
     // else +0
   }
 
   // ── Bonus 8: Development objectives achievement (0–3) ───────────────
   if (totalObjectivesSet > 0) {
-    if (developmentObjectivesAchievementRate >= 80) score += 3;
-    else if (developmentObjectivesAchievementRate >= 60) score += 2;
-    else if (developmentObjectivesAchievementRate >= 40) score += 1;
+    if (meets(developmentObjectivesAchievementRate, 80)) score += 3;
+    else if (meets(developmentObjectivesAchievementRate, 60)) score += 2;
+    else if (meets(developmentObjectivesAchievementRate, 40)) score += 1;
     // else +0
   }
 
@@ -713,34 +707,34 @@ export function computeStaffTrainingCpdCompliance(
 
   // ── Penalty 1: Expired mandatory training ────────────────────────────
   if (totalMandatory > 0) {
-    const expiredPct = pct(mandatoryExpiredCount, totalMandatory);
-    if (expiredPct >= 30) score -= 10;
-    else if (expiredPct >= 15) score -= 6;
-    else if (expiredPct >= 5) score -= 3;
+    const expiredPct = rate(mandatoryExpiredCount, totalMandatory);
+    if (meets(expiredPct, 30)) score -= 10;
+    else if (meets(expiredPct, 15)) score -= 6;
+    else if (meets(expiredPct, 5)) score -= 3;
   }
 
   // ── Penalty 2: Overdue CPD ──────────────────────────────────────────
   if (totalCpd > 0) {
-    const overduePct = pct(overdueCpd, totalCpd);
-    if (overduePct >= 25) score -= 8;
-    else if (overduePct >= 10) score -= 4;
-    else if (overduePct >= 5) score -= 2;
+    const overduePct = rate(overdueCpd, totalCpd);
+    if (meets(overduePct, 25)) score -= 8;
+    else if (meets(overduePct, 10)) score -= 4;
+    else if (meets(overduePct, 5)) score -= 2;
   }
 
   // ── Penalty 3: Expired qualifications ────────────────────────────────
   if (totalQualifications > 0) {
-    const expiredQualPct = pct(expiredQualifications, totalQualifications);
-    if (expiredQualPct >= 25) score -= 8;
-    else if (expiredQualPct >= 10) score -= 4;
-    else if (expiredQualPct >= 5) score -= 2;
+    const expiredQualPct = rate(expiredQualifications, totalQualifications);
+    if (meets(expiredQualPct, 25)) score -= 8;
+    else if (meets(expiredQualPct, 10)) score -= 4;
+    else if (meets(expiredQualPct, 5)) score -= 2;
   }
 
   // ── Penalty 4: Stale development plans ──────────────────────────────
   if (activePlans > 0) {
-    const stalePct = pct(stalePlans, activePlans);
-    if (stalePct >= 40) score -= 6;
-    else if (stalePct >= 20) score -= 3;
-    else if (stalePct >= 10) score -= 1;
+    const stalePct = rate(stalePlans, activePlans);
+    if (meets(stalePct, 40)) score -= 6;
+    else if (meets(stalePct, 20)) score -= 3;
+    else if (meets(stalePct, 10)) score -= 1;
   }
 
   // ── Clamp and rate ──────────────────────────────────────────────────
@@ -753,25 +747,25 @@ export function computeStaffTrainingCpdCompliance(
 
   const strengths: string[] = [];
 
-  if (mandatoryTrainingComplianceRate >= 90 && totalMandatory > 0) {
+  if (meets(mandatoryTrainingComplianceRate, 90) && totalMandatory > 0) {
     strengths.push(
       `Mandatory training compliance at ${mandatoryTrainingComplianceRate}% — ${mandatoryValidCount} of ${totalMandatory} mandatory courses are current and valid.`
     );
   }
 
-  if (cpdCompletionRate >= 85 && totalCpd > 0) {
+  if (meets(cpdCompletionRate, 85) && totalCpd > 0) {
     strengths.push(
       `CPD completion rate is ${cpdCompletionRate}% — strong staff engagement with professional development.`
     );
   }
 
-  if (cpdReflectionRate >= 80 && completedCpd > 0) {
+  if (meets(cpdReflectionRate, 80) && completedCpd > 0) {
     strengths.push(
       `${cpdReflectionRate}% of completed CPD has reflective practice recorded — evidence of deep learning engagement.`
     );
   }
 
-  if (cpdLearningAppliedRate >= 80 && completedCpd > 0) {
+  if (meets(cpdLearningAppliedRate, 80) && completedCpd > 0) {
     strengths.push(
       `${cpdLearningAppliedRate}% of completed CPD has been applied to practice — learning is translating into improved care.`
     );
@@ -783,55 +777,55 @@ export function computeStaffTrainingCpdCompliance(
     );
   }
 
-  if (trainingNeedsCoverageRate >= 85 && total_staff > 0 && totalTrainingNeeds > 0) {
+  if (meets(trainingNeedsCoverageRate, 85) && total_staff > 0 && totalTrainingNeeds > 0) {
     strengths.push(
       `Training needs analysis coverage at ${trainingNeedsCoverageRate}% — systematic identification of development requirements.`
     );
   }
 
-  if (needsAddressedRate >= 80 && totalNeedsIdentified > 0) {
+  if (meets(needsAddressedRate, 80) && totalNeedsIdentified > 0) {
     strengths.push(
       `${needsAddressedRate}% of identified training needs have been addressed — responsive training planning.`
     );
   }
 
-  if (qualificationCurrencyRate >= 90 && totalQualifications > 0) {
+  if (meets(qualificationCurrencyRate, 90) && totalQualifications > 0) {
     strengths.push(
       `Qualification currency at ${qualificationCurrencyRate}% — staff qualifications and registrations are maintained.`
     );
   }
 
-  if (requiredQualificationRate >= 95 && requiredQualifications > 0) {
+  if (meets(requiredQualificationRate, 95) && requiredQualifications > 0) {
     strengths.push(
       `${requiredQualificationRate}% of required qualifications are achieved — strong compliance with role requirements.`
     );
   }
 
-  if (developmentPlanCoverageRate >= 85 && total_staff > 0 && totalDevPlans > 0) {
+  if (meets(developmentPlanCoverageRate, 85) && total_staff > 0 && totalDevPlans > 0) {
     strengths.push(
       `Development plan coverage at ${developmentPlanCoverageRate}% — most staff have current, active development plans.`
     );
   }
 
-  if (developmentObjectivesAchievementRate >= 75 && totalObjectivesSet > 0) {
+  if (meets(developmentObjectivesAchievementRate, 75) && totalObjectivesSet > 0) {
     strengths.push(
       `${developmentObjectivesAchievementRate}% of development objectives achieved — staff are meeting their professional targets.`
     );
   }
 
-  if (planStaffInvolvementRate >= 90 && activePlans > 0) {
+  if (meets(planStaffInvolvementRate, 90) && activePlans > 0) {
     strengths.push(
       `${planStaffInvolvementRate}% of development plans were co-created with staff — strong collaborative approach to development.`
     );
   }
 
-  if (planLinkedToHomeRate >= 80 && activePlans > 0) {
+  if (meets(planLinkedToHomeRate, 80) && activePlans > 0) {
     strengths.push(
       `${planLinkedToHomeRate}% of development plans linked to home priorities — strategic alignment of staff development.`
     );
   }
 
-  if (assessmentPassRate >= 95 && mandatoryWithAssessment.length > 0) {
+  if (meets(assessmentPassRate, 95) && mandatoryWithAssessment.length > 0) {
     strengths.push(
       `Training assessment pass rate is ${assessmentPassRate}% — staff are demonstrating competence after training.`
     );
@@ -849,25 +843,25 @@ export function computeStaffTrainingCpdCompliance(
     );
   }
 
-  if (cpdSharedRate >= 70 && completedCpd > 0) {
+  if (meets(cpdSharedRate, 70) && completedCpd > 0) {
     strengths.push(
       `${cpdSharedRate}% of completed CPD has been shared with the wider team — promoting a learning culture.`
     );
   }
 
-  if (tnaStaffInvolvementRate >= 85 && totalTrainingNeeds > 0) {
+  if (meets(tnaStaffInvolvementRate, 85) && totalTrainingNeeds > 0) {
     strengths.push(
       `${tnaStaffInvolvementRate}% of training needs analyses involved the staff member — inclusive and collaborative approach.`
     );
   }
 
-  if (evidenceRate >= 90 && totalQualifications > 0) {
+  if (meets(evidenceRate, 90) && totalQualifications > 0) {
     strengths.push(
       `${evidenceRate}% of qualifications have evidence on file — strong record-keeping and verification.`
     );
   }
 
-  if (planCareerPathwayRate >= 70 && activePlans > 0) {
+  if (meets(planCareerPathwayRate, 70) && activePlans > 0) {
     strengths.push(
       `${planCareerPathwayRate}% of development plans include career progression pathways — investing in staff retention.`
     );
@@ -885,7 +879,7 @@ export function computeStaffTrainingCpdCompliance(
 
   const concerns: string[] = [];
 
-  if (mandatoryTrainingComplianceRate < 70 && totalMandatory > 0) {
+  if (below(mandatoryTrainingComplianceRate, 70) && totalMandatory > 0) {
     concerns.push(
       `Mandatory training compliance is only ${mandatoryTrainingComplianceRate}% — Reg 32 requires evidence that staff are fit and trained. ${totalMandatory - mandatoryValidCount} course${totalMandatory - mandatoryValidCount !== 1 ? "s are" : " is"} non-compliant.`
     );
@@ -909,7 +903,7 @@ export function computeStaffTrainingCpdCompliance(
     );
   }
 
-  if (cpdCompletionRate < 50 && totalCpd > 0) {
+  if (below(cpdCompletionRate, 50) && totalCpd > 0) {
     concerns.push(
       `CPD completion rate is only ${cpdCompletionRate}% — staff are not engaging adequately with professional development.`
     );
@@ -927,25 +921,25 @@ export function computeStaffTrainingCpdCompliance(
     );
   }
 
-  if (cpdReflectionRate < 40 && completedCpd > 0) {
+  if (below(cpdReflectionRate, 40) && completedCpd > 0) {
     concerns.push(
       `Only ${cpdReflectionRate}% of completed CPD includes reflective practice — learning is not being embedded effectively.`
     );
   }
 
-  if (cpdLearningAppliedRate < 40 && completedCpd > 0) {
+  if (below(cpdLearningAppliedRate, 40) && completedCpd > 0) {
     concerns.push(
       `Only ${cpdLearningAppliedRate}% of CPD learning has been applied to practice — professional development is not translating into improved care.`
     );
   }
 
-  if (trainingNeedsCoverageRate < 50 && total_staff > 0) {
+  if (below(trainingNeedsCoverageRate, 50) && total_staff > 0) {
     concerns.push(
       `Training needs analysis coverage is only ${trainingNeedsCoverageRate}% — most staff do not have a current needs assessment.`
     );
   }
 
-  if (needsAddressedRate < 40 && totalNeedsIdentified > 0) {
+  if (below(needsAddressedRate, 40) && totalNeedsIdentified > 0) {
     concerns.push(
       `Only ${needsAddressedRate}% of identified training needs have been addressed — significant unmet development requirements.`
     );
@@ -957,7 +951,7 @@ export function computeStaffTrainingCpdCompliance(
     );
   }
 
-  if (qualificationCurrencyRate < 60 && totalQualifications > 0) {
+  if (below(qualificationCurrencyRate, 60) && totalQualifications > 0) {
     concerns.push(
       `Qualification currency rate is only ${qualificationCurrencyRate}% — staff qualifications or registrations are lapsing.`
     );
@@ -969,7 +963,7 @@ export function computeStaffTrainingCpdCompliance(
     );
   }
 
-  if (requiredQualificationRate < 80 && requiredQualifications > 0) {
+  if (below(requiredQualificationRate, 80) && requiredQualifications > 0) {
     concerns.push(
       `Only ${requiredQualificationRate}% of required qualifications are achieved — ${requiredQualifications - requiredAchieved} staff member${(requiredQualifications - requiredAchieved) > 1 ? "s lack" : " lacks"} required qualifications for their role.`
     );
@@ -981,7 +975,7 @@ export function computeStaffTrainingCpdCompliance(
     );
   }
 
-  if (developmentPlanCoverageRate < 50 && total_staff > 0) {
+  if (below(developmentPlanCoverageRate, 50) && total_staff > 0) {
     concerns.push(
       `Development plan coverage is only ${developmentPlanCoverageRate}% — most staff do not have a current development plan.`
     );
@@ -993,33 +987,33 @@ export function computeStaffTrainingCpdCompliance(
     );
   }
 
-  if (developmentObjectivesAchievementRate < 30 && totalObjectivesSet > 0) {
+  if (below(developmentObjectivesAchievementRate, 30) && totalObjectivesSet > 0) {
     concerns.push(
       `Only ${developmentObjectivesAchievementRate}% of development objectives achieved — staff are not meeting their professional targets.`
     );
   }
 
-  if (planStaffInvolvementRate < 50 && activePlans > 0) {
+  if (below(planStaffInvolvementRate, 50) && activePlans > 0) {
     concerns.push(
       `Only ${planStaffInvolvementRate}% of development plans involved the staff member — plans may lack ownership and engagement.`
     );
   }
 
-  if (assessmentPassRate < 70 && mandatoryWithAssessment.length > 0) {
+  if (below(assessmentPassRate, 70) && mandatoryWithAssessment.length > 0) {
     concerns.push(
       `Training assessment pass rate is only ${assessmentPassRate}% — staff may not be absorbing training content effectively.`
     );
   }
 
-  if (evidenceRate < 60 && totalQualifications > 0) {
+  if (below(evidenceRate, 60) && totalQualifications > 0) {
     concerns.push(
       `Only ${evidenceRate}% of qualifications have evidence on file — record-keeping and verification needs improvement.`
     );
   }
 
   if (cancelledCpd > 0 && totalCpd > 0) {
-    const cancelledPct = pct(cancelledCpd, totalCpd);
-    if (cancelledPct >= 15) {
+    const cancelledPct = rate(cancelledCpd, totalCpd);
+    if (meets(cancelledPct, 15)) {
       concerns.push(
         `${cancelledPct}% of CPD activities have been cancelled — barriers to professional development should be investigated.`
       );
@@ -1057,7 +1051,7 @@ export function computeStaffTrainingCpdCompliance(
     });
   }
 
-  if (mandatoryTrainingComplianceRate < 70 && totalMandatory > 0) {
+  if (below(mandatoryTrainingComplianceRate, 70) && totalMandatory > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Urgently address mandatory training compliance — currently at ${mandatoryTrainingComplianceRate}%. All staff must complete required training under Reg 32.`,
@@ -1084,7 +1078,7 @@ export function computeStaffTrainingCpdCompliance(
     });
   }
 
-  if (requiredQualificationRate < 80 && requiredQualifications > 0) {
+  if (below(requiredQualificationRate, 80) && requiredQualifications > 0) {
     recs.push({
       rank: rank++,
       recommendation: `${requiredQualifications - requiredAchieved} staff member${(requiredQualifications - requiredAchieved) > 1 ? "s lack" : " lacks"} required qualifications — create a plan for these to be achieved within 12 months.`,
@@ -1103,7 +1097,7 @@ export function computeStaffTrainingCpdCompliance(
     });
   }
 
-  if (trainingNeedsCoverageRate < 70 && total_staff > 0) {
+  if (below(trainingNeedsCoverageRate, 70) && total_staff > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Conduct training needs analyses for all staff — coverage currently at ${trainingNeedsCoverageRate}%. TNAs should be completed during supervision.`,
@@ -1112,7 +1106,7 @@ export function computeStaffTrainingCpdCompliance(
     });
   }
 
-  if (needsAddressedRate < 60 && totalNeedsIdentified > 0) {
+  if (below(needsAddressedRate, 60) && totalNeedsIdentified > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Address identified training needs more promptly — only ${needsAddressedRate}% of ${totalNeedsIdentified} identified needs have been met.`,
@@ -1121,7 +1115,7 @@ export function computeStaffTrainingCpdCompliance(
     });
   }
 
-  if (developmentPlanCoverageRate < 70 && total_staff > 0) {
+  if (below(developmentPlanCoverageRate, 70) && total_staff > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Create or update development plans for all staff — current coverage is ${developmentPlanCoverageRate}%. Every staff member should have a current plan.`,
@@ -1139,7 +1133,7 @@ export function computeStaffTrainingCpdCompliance(
     });
   }
 
-  if (cpdReflectionRate < 50 && completedCpd > 0) {
+  if (below(cpdReflectionRate, 50) && completedCpd > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Improve reflective practice for CPD — only ${cpdReflectionRate}% of completed activities include reflection. Build reflection templates into CPD recording.`,
@@ -1148,7 +1142,7 @@ export function computeStaffTrainingCpdCompliance(
     });
   }
 
-  if (cpdLearningAppliedRate < 50 && completedCpd > 0) {
+  if (below(cpdLearningAppliedRate, 50) && completedCpd > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Strengthen application of CPD learning to practice — only ${cpdLearningAppliedRate}% of CPD has been applied. Use supervision to review implementation.`,
@@ -1185,7 +1179,7 @@ export function computeStaffTrainingCpdCompliance(
     });
   }
 
-  if (cpdSharedRate < 50 && completedCpd > 0) {
+  if (below(cpdSharedRate, 50) && completedCpd > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Encourage CPD sharing — only ${cpdSharedRate}% of completed CPD is shared with the team. Introduce team learning sessions or CPD presentations.`,
@@ -1194,7 +1188,7 @@ export function computeStaffTrainingCpdCompliance(
     });
   }
 
-  if (planCareerPathwayRate < 50 && activePlans > 0) {
+  if (below(planCareerPathwayRate, 50) && activePlans > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Include career progression pathways in development plans — only ${planCareerPathwayRate}% currently do. This supports staff retention and motivation.`,
@@ -1203,7 +1197,7 @@ export function computeStaffTrainingCpdCompliance(
     });
   }
 
-  if (planMeasurableRate < 60 && activePlans > 0) {
+  if (below(planMeasurableRate, 60) && activePlans > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Strengthen development plan quality — only ${planMeasurableRate}% include measurable outcomes. Use SMART objective frameworks.`,
@@ -1212,7 +1206,7 @@ export function computeStaffTrainingCpdCompliance(
     });
   }
 
-  if (evidenceRate < 70 && totalQualifications > 0) {
+  if (below(evidenceRate, 70) && totalQualifications > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Improve qualification evidence filing — only ${evidenceRate}% of qualifications have evidence on file. Conduct an audit of staff files.`,
@@ -1239,7 +1233,7 @@ export function computeStaffTrainingCpdCompliance(
     });
   }
 
-  if (tnaLinkedRate < 60 && totalTrainingNeeds > 0) {
+  if (below(tnaLinkedRate, 60) && totalTrainingNeeds > 0) {
     recs.push({
       rank: rank++,
       recommendation: `Strengthen the link between training needs analysis and supervision — only ${tnaLinkedRate}% of TNAs are currently linked. Embed TNA discussion in supervision templates.`,
@@ -1273,7 +1267,7 @@ export function computeStaffTrainingCpdCompliance(
     });
   }
 
-  if (mandatoryTrainingComplianceRate < 50 && totalMandatory > 0) {
+  if (below(mandatoryTrainingComplianceRate, 50) && totalMandatory > 0) {
     insights.push({
       text: `Mandatory training compliance is at ${mandatoryTrainingComplianceRate}% — below the minimum acceptable threshold. This will be flagged as inadequate by Ofsted.`,
       severity: "critical",
@@ -1309,14 +1303,14 @@ export function computeStaffTrainingCpdCompliance(
     });
   }
 
-  if (developmentPlanCoverageRate < 30 && total_staff > 0 && totalDevPlans > 0) {
+  if (below(developmentPlanCoverageRate, 30) && total_staff > 0 && totalDevPlans > 0) {
     insights.push({
       text: `Only ${developmentPlanCoverageRate}% of staff have current development plans. Ofsted expects every staff member to have a plan demonstrating investment in their development.`,
       severity: "critical",
     });
   }
 
-  if (requiredQualificationRate < 70 && requiredQualifications >= 3) {
+  if (below(requiredQualificationRate, 70) && requiredQualifications >= 3) {
     insights.push({
       text: `Only ${requiredQualificationRate}% of required qualifications are achieved — ${requiredQualifications - requiredAchieved} staff are in roles without the required qualification. This is a significant regulatory concern.`,
       severity: "critical",
@@ -1337,14 +1331,14 @@ export function computeStaffTrainingCpdCompliance(
     });
   }
 
-  if (cpdCompletionRate < 60 && totalCpd > 0 && cpdCompletionRate >= 30) {
+  if (below(cpdCompletionRate, 60) && totalCpd > 0 && meets(cpdCompletionRate, 30)) {
     insights.push({
       text: `CPD completion rate is ${cpdCompletionRate}%. While some engagement exists, a more structured approach to CPD planning and protected time could improve completion.`,
       severity: "warning",
     });
   }
 
-  if (needsAddressedRate < 50 && totalNeedsIdentified > 0 && needsAddressedRate >= 20) {
+  if (below(needsAddressedRate, 50) && totalNeedsIdentified > 0 && meets(needsAddressedRate, 20)) {
     insights.push({
       text: `Only ${needsAddressedRate}% of identified training needs have been addressed. Training needs are being identified but not actioned — review training commissioning processes.`,
       severity: "warning",
@@ -1370,14 +1364,14 @@ export function computeStaffTrainingCpdCompliance(
     });
   }
 
-  if (tnaStaffInvolvementRate < 60 && totalTrainingNeeds > 0) {
+  if (below(tnaStaffInvolvementRate, 60) && totalTrainingNeeds > 0) {
     insights.push({
       text: `Only ${tnaStaffInvolvementRate}% of training needs analyses involved the staff member. Staff engagement in identifying their own development needs improves ownership and outcomes.`,
       severity: "warning",
     });
   }
 
-  if (assessmentPassRate < 80 && assessmentPassRate >= 50 && mandatoryWithAssessment.length > 0) {
+  if (below(assessmentPassRate, 80) && meets(assessmentPassRate, 50) && mandatoryWithAssessment.length > 0) {
     insights.push({
       text: `Training assessment pass rate is ${assessmentPassRate}%. Consider reviewing training quality and whether delivery methods suit all learning styles.`,
       severity: "warning",
@@ -1391,7 +1385,7 @@ export function computeStaffTrainingCpdCompliance(
     });
   }
 
-  if (planStaffInvolvementRate < 60 && activePlans >= 3) {
+  if (below(planStaffInvolvementRate, 60) && activePlans >= 3) {
     insights.push({
       text: `Only ${planStaffInvolvementRate}% of development plans were co-created with staff. Plans imposed without staff input risk disengagement — involve staff in setting their own objectives.`,
       severity: "warning",
@@ -1401,10 +1395,10 @@ export function computeStaffTrainingCpdCompliance(
   // ── Positive insights ────────────────────────────────────────────────
 
   if (
-    mandatoryTrainingComplianceRate >= 90 &&
-    cpdCompletionRate >= 80 &&
-    qualificationCurrencyRate >= 90 &&
-    developmentPlanCoverageRate >= 80 &&
+    meets(mandatoryTrainingComplianceRate, 90) &&
+    meets(cpdCompletionRate, 80) &&
+    meets(qualificationCurrencyRate, 90) &&
+    meets(developmentPlanCoverageRate, 80) &&
     totalMandatory > 0 &&
     totalCpd > 0 &&
     totalQualifications > 0 &&
@@ -1423,28 +1417,28 @@ export function computeStaffTrainingCpdCompliance(
     });
   }
 
-  if (cpdReflectionRate >= 80 && cpdLearningAppliedRate >= 80 && completedCpd > 0) {
+  if (meets(cpdReflectionRate, 80) && meets(cpdLearningAppliedRate, 80) && completedCpd > 0) {
     insights.push({
       text: `CPD quality is strong: ${cpdReflectionRate}% includes reflection and ${cpdLearningAppliedRate}% has been applied to practice. This demonstrates a genuine learning culture.`,
       severity: "positive",
     });
   }
 
-  if (needsAddressedRate >= 85 && totalNeedsIdentified > 0 && tnaStaffInvolvementRate >= 85 && totalTrainingNeeds > 0) {
+  if (meets(needsAddressedRate, 85) && totalNeedsIdentified > 0 && meets(tnaStaffInvolvementRate, 85) && totalTrainingNeeds > 0) {
     insights.push({
       text: `Training needs analysis is highly effective: ${needsAddressedRate}% of needs addressed with ${tnaStaffInvolvementRate}% staff involvement. A model of responsive, collaborative training planning.`,
       severity: "positive",
     });
   }
 
-  if (developmentObjectivesAchievementRate >= 80 && totalObjectivesSet >= 5) {
+  if (meets(developmentObjectivesAchievementRate, 80) && totalObjectivesSet >= 5) {
     insights.push({
       text: `${developmentObjectivesAchievementRate}% of development objectives achieved across ${totalObjectivesSet} objectives. Staff are meeting their professional targets consistently.`,
       severity: "positive",
     });
   }
 
-  if (planLinkedToHomeRate >= 80 && planLinkedToSupervisionRate >= 80 && activePlans >= 3) {
+  if (meets(planLinkedToHomeRate, 80) && meets(planLinkedToSupervisionRate, 80) && activePlans >= 3) {
     insights.push({
       text: `Development plans are well-integrated: ${planLinkedToHomeRate}% linked to home priorities and ${planLinkedToSupervisionRate}% linked to supervision. Strategic workforce development is embedded.`,
       severity: "positive",
@@ -1458,14 +1452,14 @@ export function computeStaffTrainingCpdCompliance(
     });
   }
 
-  if (assessmentPassRate >= 98 && mandatoryWithAssessment.length >= 5) {
+  if (meets(assessmentPassRate, 98) && mandatoryWithAssessment.length >= 5) {
     insights.push({
       text: `Training assessment pass rate is ${assessmentPassRate}% across ${mandatoryWithAssessment.length} completed courses. Staff are demonstrating excellent comprehension of training content.`,
       severity: "positive",
     });
   }
 
-  if (certificateCoverageRate >= 95 && mandatoryWithAssessment.length > 0) {
+  if (meets(certificateCoverageRate, 95) && mandatoryWithAssessment.length > 0) {
     insights.push({
       text: `${certificateCoverageRate}% of completed mandatory training has certificates on file — excellent evidence management for regulatory inspection.`,
       severity: "positive",
@@ -1498,11 +1492,11 @@ export function computeStaffTrainingCpdCompliance(
       : "Good staff training and CPD compliance — mandatory training, qualifications, and development are maintained across key areas.";
   } else if (rating === "adequate") {
     const gaps: string[] = [];
-    if (mandatoryTrainingComplianceRate < 70 && totalMandatory > 0) gaps.push("mandatory training");
-    if (cpdCompletionRate < 60 && totalCpd > 0) gaps.push("CPD completion");
-    if (qualificationCurrencyRate < 70 && totalQualifications > 0) gaps.push("qualification currency");
-    if (developmentPlanCoverageRate < 60 && total_staff > 0) gaps.push("development planning");
-    if (trainingNeedsCoverageRate < 60 && total_staff > 0) gaps.push("training needs analysis");
+    if (below(mandatoryTrainingComplianceRate, 70) && totalMandatory > 0) gaps.push("mandatory training");
+    if (below(cpdCompletionRate, 60) && totalCpd > 0) gaps.push("CPD completion");
+    if (below(qualificationCurrencyRate, 70) && totalQualifications > 0) gaps.push("qualification currency");
+    if (below(developmentPlanCoverageRate, 60) && total_staff > 0) gaps.push("development planning");
+    if (below(trainingNeedsCoverageRate, 60) && total_staff > 0) gaps.push("training needs analysis");
     headline = gaps.length > 0
       ? `Adequate training and CPD compliance — gaps in ${gaps.join(", ")} require focused attention to meet regulatory expectations.`
       : "Adequate staff training and CPD compliance — improvements needed across multiple areas to reach good or outstanding.";

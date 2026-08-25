@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, HeartPulse } from
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { SexualHealthRseRating } from "@/lib/engines/home-sexual-health-rse-education-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 const RATING_STYLES: Record<SexualHealthRseRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -57,7 +58,7 @@ export function HomeSexualHealthRseEducationIntelligenceCard() {
             <HeartPulse className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-pink-600")} />
             <span className="text-slate-900 font-bold">Sexual Health & RSE Education</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.rse_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.rse_score}%</span>}
+            {d.rse_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.rse_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -65,28 +66,28 @@ export function HomeSexualHealthRseEducationIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.rse_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.rse_delivery_rate >= 90 ? "bg-green-50" : d.rse_delivery_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.rse_delivery_rate >= 90 ? "text-[--cs-success]" : d.rse_delivery_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.rse_delivery_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.rse_delivery_rate, 90) ? "bg-green-50" : meets(d.rse_delivery_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.rse_delivery_rate, 90) ? "text-[--cs-success]" : meets(d.rse_delivery_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.rse_delivery_rate)}</p>
               <p className="text-[9px] text-muted-foreground">RSE</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.health_screening_rate >= 90 ? "bg-green-50" : d.health_screening_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.health_screening_rate >= 90 ? "text-[--cs-success]" : d.health_screening_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.health_screening_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.health_screening_rate, 90) ? "bg-green-50" : meets(d.health_screening_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.health_screening_rate, 90) ? "text-[--cs-success]" : meets(d.health_screening_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.health_screening_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Screening</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.age_appropriate_rate >= 90 ? "bg-green-50" : d.age_appropriate_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.age_appropriate_rate >= 90 ? "text-[--cs-success]" : d.age_appropriate_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.age_appropriate_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.age_appropriate_rate, 90) ? "bg-green-50" : meets(d.age_appropriate_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.age_appropriate_rate, 90) ? "text-[--cs-success]" : meets(d.age_appropriate_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.age_appropriate_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Age Approp.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.consent_education_rate >= 90 ? "bg-green-50" : d.consent_education_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.consent_education_rate >= 90 ? "text-[--cs-success]" : d.consent_education_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.consent_education_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.consent_education_rate, 90) ? "bg-green-50" : meets(d.consent_education_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.consent_education_rate, 90) ? "text-[--cs-success]" : meets(d.consent_education_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.consent_education_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Consent</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.safeguarding_awareness_rate >= 90 ? "bg-green-50" : d.safeguarding_awareness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.safeguarding_awareness_rate >= 90 ? "text-[--cs-success]" : d.safeguarding_awareness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.safeguarding_awareness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.safeguarding_awareness_rate, 90) ? "bg-green-50" : meets(d.safeguarding_awareness_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.safeguarding_awareness_rate, 90) ? "text-[--cs-success]" : meets(d.safeguarding_awareness_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.safeguarding_awareness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Safeguard.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_confidence_rate >= 90 ? "bg-green-50" : d.child_confidence_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_confidence_rate >= 90 ? "text-[--cs-success]" : d.child_confidence_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_confidence_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_confidence_rate, 90) ? "bg-green-50" : meets(d.child_confidence_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_confidence_rate, 90) ? "text-[--cs-success]" : meets(d.child_confidence_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_confidence_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Confidence</p>
             </div>
           </div>

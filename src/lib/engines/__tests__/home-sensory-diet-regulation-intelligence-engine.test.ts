@@ -196,12 +196,12 @@ describe("insufficient data", () => {
       self_regulation_records: [],
     });
     expect(r.total_diet_plans).toBe(0);
-    expect(r.diet_plan_coverage_rate).toBe(0);
-    expect(r.strategy_effectiveness_rate).toBe(0);
-    expect(r.break_scheduling_rate).toBe(0);
-    expect(r.therapy_integration_rate).toBe(0);
-    expect(r.self_regulation_rate).toBe(0);
-    expect(r.child_progress_rate).toBe(0);
+    expect(r.diet_plan_coverage_rate).toBeNull();
+    expect(r.strategy_effectiveness_rate).toBeNull();
+    expect(r.break_scheduling_rate).toBeNull();
+    expect(r.therapy_integration_rate).toBeNull();
+    expect(r.self_regulation_rate).toBeNull();
+    expect(r.child_progress_rate).toBeNull();
     expect(r.strengths).toEqual([]);
     expect(r.concerns).toEqual([]);
     expect(r.recommendations).toEqual([]);
@@ -1204,7 +1204,7 @@ describe("penalties", () => {
       const r = computeSensoryDietRegulation(baseInput({
         regulation_strategy_records: [],
       }));
-      expect(r.strategy_effectiveness_rate).toBe(0);
+      expect(r.strategy_effectiveness_rate).toBeNull();
     });
   });
 
@@ -1245,7 +1245,7 @@ describe("penalties", () => {
       const r = computeSensoryDietRegulation(baseInput({
         self_regulation_records: [],
       }));
-      expect(r.self_regulation_rate).toBe(0);
+      expect(r.self_regulation_rate).toBeNull();
     });
   });
 
@@ -1349,7 +1349,7 @@ describe("six rates", () => {
       const r = computeSensoryDietRegulation(baseInput({
         regulation_strategy_records: [],
       }));
-      expect(r.strategy_effectiveness_rate).toBe(0);
+      expect(r.strategy_effectiveness_rate).toBeNull();
     });
   });
 
@@ -1373,7 +1373,7 @@ describe("six rates", () => {
       const r = computeSensoryDietRegulation(baseInput({
         sensory_break_records: [],
       }));
-      expect(r.break_scheduling_rate).toBe(0);
+      expect(r.break_scheduling_rate).toBeNull();
     });
   });
 
@@ -1428,7 +1428,7 @@ describe("six rates", () => {
       const r = computeSensoryDietRegulation(baseInput({
         self_regulation_records: [],
       }));
-      expect(r.self_regulation_rate).toBe(0);
+      expect(r.self_regulation_rate).toBeNull();
     });
   });
 
@@ -1460,7 +1460,7 @@ describe("six rates", () => {
         self_regulation_records: [],
       }));
       // pct(0, 0) = 0
-      expect(r.child_progress_rate).toBe(0);
+      expect(r.child_progress_rate).toBeNull();
     });
   });
 });
@@ -2755,14 +2755,14 @@ describe("insights", () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe("edge cases", () => {
-  it("pct(0, 0) returns 0", () => {
+  it("rate(0,0)=nullreturns 0", () => {
     // childProgressRate when all arrays empty (non-allEmpty path)
     const r = computeSensoryDietRegulation(baseInput({
       regulation_strategy_records: [],
       occupational_therapy_records: [],
       self_regulation_records: [],
     }));
-    expect(r.child_progress_rate).toBe(0);
+    expect(r.child_progress_rate).toBeNull();
   });
 
   it("inactive diet plans do not count toward coverage", () => {

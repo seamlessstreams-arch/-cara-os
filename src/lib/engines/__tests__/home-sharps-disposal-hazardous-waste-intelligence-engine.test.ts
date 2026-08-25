@@ -193,7 +193,7 @@ describe("empty and edge states", () => {
     expect(r.coshh_compliance_rate).toBeNull();
     expect(r.clinical_waste_rate).toBeNull();
     expect(r.child_safety_rate).toBeNull();
-    expect(r.staff_training_rate).toBe(0);
+    expect(r.staff_training_rate).toBeNull();
   });
 
   it("4 -- all empty + 0 children has no strengths/concerns/recs/insights", () => {
@@ -272,7 +272,7 @@ describe("sharps bin rate composite", () => {
     expect(r.sharps_bin_rate).toBe(50);
   });
 
-  it("14 -- sharps_bin_rate is 0 when no sharps records", () => {
+  it("14 -- sharps_bin_rate is null when no sharps records", () => {
     const r = run({ sharps_bin_records: [] });
     expect(r.sharps_bin_rate).toBeNull();
   });
@@ -299,7 +299,7 @@ describe("hazardous waste rate composite", () => {
     expect(r.hazardous_waste_rate).toBe(0);
   });
 
-  it("17 -- hazardous_waste_rate is 0 when no records", () => {
+  it("17 -- hazardous_waste_rate is null when no records", () => {
     const r = run({ hazardous_waste_records: [] });
     expect(r.hazardous_waste_rate).toBeNull();
   });
@@ -339,7 +339,7 @@ describe("COSHH compliance rate composite", () => {
     expect(r.coshh_compliance_rate).toBe(0);
   });
 
-  it("21 -- coshh_compliance_rate is 0 when no records", () => {
+  it("21 -- coshh_compliance_rate is null when no records", () => {
     const r = run({ coshh_records: [] });
     expect(r.coshh_compliance_rate).toBeNull();
   });
@@ -379,7 +379,7 @@ describe("clinical waste rate composite", () => {
     expect(r.clinical_waste_rate).toBe(0);
   });
 
-  it("25 -- clinical_waste_rate is 0 when no records", () => {
+  it("25 -- clinical_waste_rate is null when no records", () => {
     const r = run({ clinical_waste_records: [] });
     expect(r.clinical_waste_rate).toBeNull();
   });
@@ -418,7 +418,7 @@ describe("child safety rate composite", () => {
     expect(r.child_safety_rate).toBe(0);
   });
 
-  it("29 -- child_safety_rate is 0 when no records", () => {
+  it("29 -- child_safety_rate is null when no records", () => {
     const r = run({ child_safety_records: [] });
     expect(r.child_safety_rate).toBeNull();
   });
@@ -458,9 +458,9 @@ describe("staff training rate composite", () => {
     expect(r.staff_training_rate).toBe(0);
   });
 
-  it("33 -- staff_training_rate is 0 when no haz/coshh/clinical records", () => {
+  it("33 -- staff_training_rate is null when no haz/coshh/clinical records", () => {
     const r = run({});
-    expect(r.staff_training_rate).toBe(0);
+    expect(r.staff_training_rate).toBeNull();
   });
 
   it("34 -- mixed training rates compute correctly", () => {
@@ -1869,13 +1869,14 @@ describe("result shape", () => {
 
   it("197 -- rates are numeric or null (fab-0)", () => {
     const r = run({ sharps_bin_records: [makeSharpsBin()] });
-    // The 5 composite rates are number | null (see engine header). staff_training_rate is number.
-    expect(typeof r.sharps_bin_rate === "number" || r.sharps_bin_rate === null).toBe(true);
-    expect(typeof r.hazardous_waste_rate === "number" || r.hazardous_waste_rate === null).toBe(true);
-    expect(typeof r.coshh_compliance_rate === "number" || r.coshh_compliance_rate === null).toBe(true);
-    expect(typeof r.clinical_waste_rate === "number" || r.clinical_waste_rate === null).toBe(true);
-    expect(typeof r.child_safety_rate === "number" || r.child_safety_rate === null).toBe(true);
-    expect(typeof r.staff_training_rate).toBe("number");
+    // Every rate is number | null — with only sharps-bin records supplied the
+    // other populations are unmeasured (honest null, never a fabricated 0).
+    for (const v of [
+      r.sharps_bin_rate, r.hazardous_waste_rate, r.coshh_compliance_rate,
+      r.clinical_waste_rate, r.child_safety_rate, r.staff_training_rate,
+    ]) {
+      expect(typeof v === "number" || v === null).toBe(true);
+    }
   });
 
   it("198 -- strengths, concerns are string arrays", () => {

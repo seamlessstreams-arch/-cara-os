@@ -10,7 +10,7 @@
 //             involvementRecords, submissionRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { above, below, meets } from "@/lib/metrics/rate";
+import { above, below, meanOf, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -186,13 +186,14 @@ export interface StatementPurposeChildrenGuideResult {
   total_review_cycle_records: number;
   total_involvement_records: number;
   total_submission_records: number;
-  // statement_currency_rate uses pct() directly (deterministic 0 on empty).
+  // statement_currency_rate uses rate() directly (deterministic 0 on empty).
   // The 5 composite rates below are null on empty: no source records ⇒ no
   // signal. "0% guide accessibility / 0% review cycle / 0% YP involvement /
   // 0% Ofsted submission / 0% stakeholder awareness" would read as a home
   // actively failing Reg 16 (Statement of Purpose), not "unmeasured".
   // Fab-0 doctrine.
-  statement_currency_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  statement_currency_rate: number | null;
   guide_accessibility_rate: number | null;
   review_cycle_rate: number | null;
   young_person_involvement_rate: number | null;
@@ -205,10 +206,6 @@ export interface StatementPurposeChildrenGuideResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -244,7 +241,7 @@ function emptyResult(
     total_review_cycle_records: 0,
     total_involvement_records: 0,
     total_submission_records: 0,
-    statement_currency_rate: 0,
+    statement_currency_rate: null,
     guide_accessibility_rate: null,
     review_cycle_rate: null,
     young_person_involvement_rate: null,
@@ -340,7 +337,7 @@ export function computeStatementPurposeChildrenGuide(
     const daysSinceReview = daysBetween(s.last_reviewed_date, today);
     return expiryDays > 0 && daysSinceReview <= 365;
   });
-  const statementCurrencyRate = pct(currencyValidStatements.length, Math.max(currentStatementCount, 1));
+  const statementCurrencyRate = rate(currencyValidStatements.length, Math.max(currentStatementCount, 1));
 
   // Schedule 1 coverage — 14 mandatory areas
   const schedule1Fields = [
@@ -368,19 +365,19 @@ export function computeStatementPurposeChildrenGuide(
       if (s[field]) schedule1CoveredTotal++;
     }
   }
-  const schedule1CoverageRate = pct(schedule1CoveredTotal, schedule1CheckedTotal);
+  const schedule1CoverageRate = rate(schedule1CoveredTotal, schedule1CheckedTotal);
 
   // Distribution to stakeholders
   const distributedStatements = statement_records.filter(
     (s) => s.distributed_to_stakeholders,
   );
-  const distributionRate = pct(distributedStatements.length, totalStatementRecords);
+  const distributionRate = rate(distributedStatements.length, totalStatementRecords);
 
   // Ofsted notification rate for statements
   const notifiedStatements = statement_records.filter(
     (s) => s.ofsted_notified,
   );
-  const statementNotificationRate = pct(notifiedStatements.length, totalStatementRecords);
+  const statementNotificationRate = rate(notifiedStatements.length, totalStatementRecords);
 
   // Expired statements
   const expiredStatements = statement_records.filter((s) => {
@@ -395,13 +392,13 @@ export function computeStatementPurposeChildrenGuide(
   const currentGuideCount = currentGuides.length;
 
   const ageAppropriateGuides = guide_records.filter((g) => g.age_appropriate);
-  const ageAppropriateRate = pct(ageAppropriateGuides.length, totalGuideRecords);
+  const ageAppropriateRate = rate(ageAppropriateGuides.length, totalGuideRecords);
 
   const accessibleFormatGuides = guide_records.filter((g) => g.accessible_format);
-  const accessibleFormatRate = pct(accessibleFormatGuides.length, totalGuideRecords);
+  const accessibleFormatRate = rate(accessibleFormatGuides.length, totalGuideRecords);
 
   const easyReadGuides = guide_records.filter((g) => g.easy_read_version);
-  const easyReadRate = pct(easyReadGuides.length, totalGuideRecords);
+  const easyReadRate = rate(easyReadGuides.length, totalGuideRecords);
 
   // Guide section coverage
   const guideCoverageFields = [
@@ -423,15 +420,15 @@ export function computeStatementPurposeChildrenGuide(
       if (g[field]) guideCoverageTotal++;
     }
   }
-  const guideSectionCoverageRate = pct(guideCoverageTotal, guideCheckedTotal);
+  const guideSectionCoverageRate = rate(guideCoverageTotal, guideCheckedTotal);
 
   // Given on admission
   const givenOnAdmission = guide_records.filter((g) => g.given_on_admission);
-  const admissionDistributionRate = pct(givenOnAdmission.length, totalGuideRecords);
+  const admissionDistributionRate = rate(givenOnAdmission.length, totalGuideRecords);
 
   // Child feedback on guides
   const feedbackCollected = guide_records.filter((g) => g.child_feedback_collected);
-  const feedbackCollectedRate = pct(feedbackCollected.length, totalGuideRecords);
+  const feedbackCollectedRate = rate(feedbackCollected.length, totalGuideRecords);
 
   // Guide section completeness
   const guideSectionsComplete = guide_records.reduce(
@@ -442,11 +439,11 @@ export function computeStatementPurposeChildrenGuide(
     (sum, g) => sum + g.sections_total,
     0,
   );
-  const guideSectionCompletenessRate = pct(guideSectionsComplete, guideSectionsTotal);
+  const guideSectionCompletenessRate = rate(guideSectionsComplete, guideSectionsTotal);
 
   // Composite guide accessibility rate
   // Average of age-appropriate, accessible format, easy-read, section coverage, admission distribution
-  const guideAccessibilityComponents: number[] = [];
+  const guideAccessibilityComponents: (number | null)[] = [];
   if (totalGuideRecords > 0) {
     guideAccessibilityComponents.push(ageAppropriateRate);
     guideAccessibilityComponents.push(accessibleFormatRate);
@@ -455,24 +452,19 @@ export function computeStatementPurposeChildrenGuide(
     guideAccessibilityComponents.push(guideSectionCompletenessRate);
   }
   const guideAccessibilityRate: number | null =
-    guideAccessibilityComponents.length > 0
-      ? Math.round(
-          guideAccessibilityComponents.reduce((a, b) => a + b, 0) /
-            guideAccessibilityComponents.length,
-        )
-      : null;
+    meanOf(guideAccessibilityComponents);
 
   // --- Review cycle compliance metrics ---
   const totalReviewCycleRecords = review_cycle_records.length;
   const completedOnTime = review_cycle_records.filter(
     (r) => r.completed_on_time,
   );
-  const reviewOnTimeRate = pct(completedOnTime.length, totalReviewCycleRecords);
+  const reviewOnTimeRate = rate(completedOnTime.length, totalReviewCycleRecords);
 
   const reviewsWithAmendments = review_cycle_records.filter(
     (r) => r.outcome === "amendments_required" || r.outcome === "major_revision",
   );
-  const amendmentRate = pct(reviewsWithAmendments.length, totalReviewCycleRecords);
+  const amendmentRate = rate(reviewsWithAmendments.length, totalReviewCycleRecords);
 
   const reviewChangesIdentified = review_cycle_records.reduce(
     (sum, r) => sum + r.changes_identified,
@@ -482,7 +474,7 @@ export function computeStatementPurposeChildrenGuide(
     (sum, r) => sum + r.changes_implemented,
     0,
   );
-  const changeImplementationRate = pct(reviewChangesImplemented, reviewChangesIdentified);
+  const changeImplementationRate = rate(reviewChangesImplemented, reviewChangesIdentified);
 
   const reviewSectionsReviewed = review_cycle_records.reduce(
     (sum, r) => sum + r.sections_reviewed,
@@ -492,19 +484,19 @@ export function computeStatementPurposeChildrenGuide(
     (sum, r) => sum + r.sections_total,
     0,
   );
-  const reviewCoverageRate = pct(reviewSectionsReviewed, reviewSectionsTotal);
+  const reviewCoverageRate = rate(reviewSectionsReviewed, reviewSectionsTotal);
 
   // Staff consulted during reviews
   const staffConsultedReviews = review_cycle_records.filter(
     (r) => r.staff_consulted,
   );
-  const staffConsultedRate = pct(staffConsultedReviews.length, totalReviewCycleRecords);
+  const staffConsultedRate = rate(staffConsultedReviews.length, totalReviewCycleRecords);
 
   // Placing authority consulted
   const placingAuthConsulted = review_cycle_records.filter(
     (r) => r.placing_authority_consulted,
   );
-  const placingAuthConsultedRate = pct(placingAuthConsulted.length, totalReviewCycleRecords);
+  const placingAuthConsultedRate = rate(placingAuthConsulted.length, totalReviewCycleRecords);
 
   // Overdue days
   const overdueReviews = review_cycle_records.filter(
@@ -520,52 +512,47 @@ export function computeStatementPurposeChildrenGuide(
       : null;
 
   // Composite review cycle rate
-  const reviewCycleComponents: number[] = [];
+  const reviewCycleComponents: (number | null)[] = [];
   if (totalReviewCycleRecords > 0) {
     reviewCycleComponents.push(reviewOnTimeRate);
     reviewCycleComponents.push(reviewCoverageRate);
     reviewCycleComponents.push(changeImplementationRate);
   }
   const reviewCycleRate: number | null =
-    reviewCycleComponents.length > 0
-      ? Math.round(
-          reviewCycleComponents.reduce((a, b) => a + b, 0) /
-            reviewCycleComponents.length,
-        )
-      : null;
+    meanOf(reviewCycleComponents);
 
   // --- Young person involvement metrics ---
   const totalInvolvementRecords = involvement_records.length;
 
   const viewsSought = involvement_records.filter((i) => i.views_sought);
-  const viewsSoughtRate = pct(viewsSought.length, totalInvolvementRecords);
+  const viewsSoughtRate = rate(viewsSought.length, totalInvolvementRecords);
 
   const viewsRecorded = involvement_records.filter((i) => i.views_recorded);
-  const viewsRecordedRate = pct(viewsRecorded.length, totalInvolvementRecords);
+  const viewsRecordedRate = rate(viewsRecorded.length, totalInvolvementRecords);
 
   const viewsActioned = involvement_records.filter((i) => i.views_actioned);
-  const viewsActionedRate = pct(viewsActioned.length, totalInvolvementRecords);
+  const viewsActionedRate = rate(viewsActioned.length, totalInvolvementRecords);
 
   const supportedToParticipate = involvement_records.filter(
     (i) => i.supported_to_participate,
   );
-  const supportedRate = pct(supportedToParticipate.length, totalInvolvementRecords);
+  const supportedRate = rate(supportedToParticipate.length, totalInvolvementRecords);
 
   // Unique children involved
   const uniqueChildrenInvolved = new Set(
     involvement_records.map((i) => i.child_id),
   ).size;
   const childInvolvementCoverage =
-    total_children > 0 ? pct(uniqueChildrenInvolved, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenInvolved, total_children) : 0;
 
   // Co-production count
   const coProductionRecords = involvement_records.filter(
     (i) => i.involvement_type === "co_production",
   );
-  const coProductionRate = pct(coProductionRecords.length, totalInvolvementRecords);
+  const coProductionRate = rate(coProductionRecords.length, totalInvolvementRecords);
 
   // Composite young person involvement rate
-  const involvementComponents: number[] = [];
+  const involvementComponents: (number | null)[] = [];
   if (totalInvolvementRecords > 0) {
     involvementComponents.push(viewsSoughtRate);
     involvementComponents.push(viewsRecordedRate);
@@ -573,12 +560,7 @@ export function computeStatementPurposeChildrenGuide(
     involvementComponents.push(supportedRate);
   }
   const youngPersonInvolvementRate: number | null =
-    involvementComponents.length > 0
-      ? Math.round(
-          involvementComponents.reduce((a, b) => a + b, 0) /
-            involvementComponents.length,
-        )
-      : null;
+    meanOf(involvementComponents);
 
   // --- Ofsted submission timeliness metrics ---
   const totalSubmissionRecords = submission_records.length;
@@ -591,12 +573,12 @@ export function computeStatementPurposeChildrenGuide(
   const timelySubmissions = submission_records.filter(
     (s) => s.submitted_on_time,
   );
-  const timelySubmissionRate = pct(timelySubmissions.length, totalSubmissionRecords);
+  const timelySubmissionRate = rate(timelySubmissions.length, totalSubmissionRecords);
 
   const ofstedTimelySubmissions = ofstedSubmissions.filter(
     (s) => s.submitted_on_time,
   );
-  const ofstedTimelyRate = pct(ofstedTimelySubmissions.length, totalOfstedSubmissions);
+  const ofstedTimelyRate = rate(ofstedTimelySubmissions.length, totalOfstedSubmissions);
 
   const amendmentsRequiredSubmissions = submission_records.filter(
     (s) => s.amendments_required,
@@ -605,13 +587,13 @@ export function computeStatementPurposeChildrenGuide(
   const amendmentsCompletedSubmissions = submission_records.filter(
     (s) => s.amendments_required && s.amendments_completed,
   );
-  const submissionAmendmentCompletionRate = pct(
+  const submissionAmendmentCompletionRate = rate(
     amendmentsCompletedSubmissions.length,
     amendmentsRequiredSubmissions.length,
   );
 
   // Composite Ofsted submission rate
-  const submissionComponents: number[] = [];
+  const submissionComponents: (number | null)[] = [];
   if (totalSubmissionRecords > 0) {
     submissionComponents.push(timelySubmissionRate);
     if (totalOfstedSubmissions > 0) {
@@ -622,16 +604,11 @@ export function computeStatementPurposeChildrenGuide(
     }
   }
   const ofstedSubmissionRate: number | null =
-    submissionComponents.length > 0
-      ? Math.round(
-          submissionComponents.reduce((a, b) => a + b, 0) /
-            submissionComponents.length,
-        )
-      : null;
+    meanOf(submissionComponents);
 
   // --- Stakeholder awareness composite ---
   // Combines distribution, notification, admission distribution, stakeholder consultation
-  const awarenessComponents: number[] = [];
+  const awarenessComponents: (number | null)[] = [];
   if (totalStatementRecords > 0) {
     awarenessComponents.push(distributionRate);
     awarenessComponents.push(statementNotificationRate);
@@ -645,20 +622,15 @@ export function computeStatementPurposeChildrenGuide(
     awarenessComponents.push(placingAuthConsultedRate);
   }
   const stakeholderAwarenessRate: number | null =
-    awarenessComponents.length > 0
-      ? Math.round(
-          awarenessComponents.reduce((a, b) => a + b, 0) /
-            awarenessComponents.length,
-        )
-      : null;
+    meanOf(awarenessComponents);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: statementCurrencyRate (>=95: +5, >=80: +3) ---
-  if (statementCurrencyRate >= 95) score += 5;
-  else if (statementCurrencyRate >= 80) score += 3;
+  if (meets(statementCurrencyRate, 95)) score += 5;
+  else if (meets(statementCurrencyRate, 80)) score += 3;
 
   // --- Bonus 2: guideAccessibilityRate (>=90: +5, >=70: +3) ---
   if (meets(guideAccessibilityRate, 90)) score += 5;
@@ -681,19 +653,19 @@ export function computeStatementPurposeChildrenGuide(
   else if (meets(stakeholderAwarenessRate, 70)) score += 1;
 
   // --- Bonus 7: schedule1CoverageRate (>=100: +3, >=85: +1) ---
-  if (schedule1CoverageRate >= 100) score += 3;
-  else if (schedule1CoverageRate >= 85) score += 1;
+  if (meets(schedule1CoverageRate, 100)) score += 3;
+  else if (meets(schedule1CoverageRate, 85)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // statementCurrencyRate < 50 → -5 (guarded)
-  if (statementCurrencyRate < 50 && totalStatementRecords > 0) score -= 5;
+  if (below(statementCurrencyRate, 50) && totalStatementRecords > 0) score -= 5;
 
   // below(guideAccessibilityRate, 40) → -5 (guarded)
   if (below(guideAccessibilityRate, 40) && totalGuideRecords > 0) score -= 5;
 
   // reviewOnTimeRate < 50 → -4 (guarded)
-  if (reviewOnTimeRate < 50 && totalReviewCycleRecords > 0) score -= 4;
+  if (below(reviewOnTimeRate, 50) && totalReviewCycleRecords > 0) score -= 4;
 
   // below(youngPersonInvolvementRate, 30) → -4 (guarded)
   if (below(youngPersonInvolvementRate, 30) && totalInvolvementRecords > 0) score -= 4;
@@ -706,9 +678,9 @@ export function computeStatementPurposeChildrenGuide(
 
   const strengths: string[] = [];
 
-  if (statementCurrencyRate >= 95 && totalStatementRecords > 0) {
+  if (meets(statementCurrencyRate, 95) && totalStatementRecords > 0) {
     strengths.push(`${statementCurrencyRate}% Statement of Purpose currency — the home maintains a current, reviewed, and in-date Statement of Purpose demonstrating strong regulatory compliance.`);
-  } else if (statementCurrencyRate >= 80 && totalStatementRecords > 0) {
+  } else if (meets(statementCurrencyRate, 80) && totalStatementRecords > 0) {
     strengths.push(`${statementCurrencyRate}% Statement of Purpose currency — the home generally maintains its Statement of Purpose within review and expiry dates.`);
   }
 
@@ -742,39 +714,39 @@ export function computeStatementPurposeChildrenGuide(
     strengths.push(`${stakeholderAwarenessRate}% stakeholder awareness — the home ensures key stakeholders are informed about and consulted on document content.`);
   }
 
-  if (schedule1CoverageRate >= 100 && schedule1CheckedTotal > 0) {
+  if (meets(schedule1CoverageRate, 100) && schedule1CheckedTotal > 0) {
     strengths.push("Statement of Purpose achieves full Schedule 1 coverage — all 14 mandatory areas are addressed, demonstrating comprehensive compliance with CHR 2015 Reg 16.");
-  } else if (schedule1CoverageRate >= 85 && schedule1CheckedTotal > 0) {
+  } else if (meets(schedule1CoverageRate, 85) && schedule1CheckedTotal > 0) {
     strengths.push(`${schedule1CoverageRate}% Schedule 1 coverage in Statement of Purpose — the majority of mandatory areas are addressed with only minor gaps.`);
   }
 
-  if (viewsActionedRate >= 90 && totalInvolvementRecords > 0) {
+  if (meets(viewsActionedRate, 90) && totalInvolvementRecords > 0) {
     strengths.push(`${viewsActionedRate}% of young people's views actioned — children's input genuinely shapes the documents that describe their care.`);
-  } else if (viewsActionedRate >= 70 && totalInvolvementRecords > 0) {
+  } else if (meets(viewsActionedRate, 70) && totalInvolvementRecords > 0) {
     strengths.push(`${viewsActionedRate}% of young people's views actioned — the home generally translates children's feedback into meaningful changes.`);
   }
 
-  if (changeImplementationRate >= 90 && reviewChangesIdentified > 0) {
+  if (meets(changeImplementationRate, 90) && reviewChangesIdentified > 0) {
     strengths.push(`${changeImplementationRate}% of review-identified changes implemented — the home follows through on review findings, keeping documents accurate and current.`);
-  } else if (changeImplementationRate >= 70 && reviewChangesIdentified > 0) {
+  } else if (meets(changeImplementationRate, 70) && reviewChangesIdentified > 0) {
     strengths.push(`${changeImplementationRate}% of review-identified changes implemented — most changes identified during reviews are acted upon.`);
   }
 
-  if (childInvolvementCoverage >= 100 && total_children > 0) {
+  if (meets(childInvolvementCoverage, 100) && total_children > 0) {
     strengths.push("Every child has been involved in Statement of Purpose or Children's Guide reviews — inclusive participation is embedded in the home's governance approach.");
-  } else if (childInvolvementCoverage >= 80 && total_children > 0) {
+  } else if (meets(childInvolvementCoverage, 80) && total_children > 0) {
     strengths.push(`${childInvolvementCoverage}% of children involved in document reviews — strong coverage ensuring most children have a voice in the documents that describe their care.`);
   }
 
-  if (coProductionRate >= 30 && totalInvolvementRecords > 0) {
+  if (meets(coProductionRate, 30) && totalInvolvementRecords > 0) {
     strengths.push(`${coProductionRate}% of involvement activities are co-production — the home goes beyond consultation to genuinely co-produce documents with young people.`);
   }
 
-  if (admissionDistributionRate >= 100 && totalGuideRecords > 0) {
+  if (meets(admissionDistributionRate, 100) && totalGuideRecords > 0) {
     strengths.push("Children's Guide is given to every child on admission — ensuring children immediately know their rights, routines, and how to raise concerns.");
   }
 
-  if (easyReadRate >= 80 && totalGuideRecords > 0) {
+  if (meets(easyReadRate, 80) && totalGuideRecords > 0) {
     strengths.push(`${easyReadRate}% of Children's Guides have easy-read versions available — accessible to children with additional communication needs.`);
   }
 
@@ -782,9 +754,9 @@ export function computeStatementPurposeChildrenGuide(
 
   const concerns: string[] = [];
 
-  if (statementCurrencyRate < 50 && totalStatementRecords > 0) {
+  if (below(statementCurrencyRate, 50) && totalStatementRecords > 0) {
     concerns.push(`Only ${statementCurrencyRate}% Statement of Purpose currency — the Statement of Purpose is not current, has expired, or has not been reviewed within required timescales. This is a direct breach of CHR 2015 Reg 16.`);
-  } else if (statementCurrencyRate >= 50 && statementCurrencyRate < 80 && totalStatementRecords > 0) {
+  } else if (meets(statementCurrencyRate, 50) && below(statementCurrencyRate, 80) && totalStatementRecords > 0) {
     concerns.push(`Statement of Purpose currency at ${statementCurrencyRate}% — review and currency gaps mean it may not accurately reflect the home's current operation.`);
   }
 
@@ -794,9 +766,9 @@ export function computeStatementPurposeChildrenGuide(
     concerns.push(`Children's Guide accessibility at ${guideAccessibilityRate}% — improvements needed in age-appropriateness, accessible formats, or content coverage.`);
   }
 
-  if (reviewOnTimeRate < 50 && totalReviewCycleRecords > 0) {
+  if (below(reviewOnTimeRate, 50) && totalReviewCycleRecords > 0) {
     concerns.push(`Only ${reviewOnTimeRate}% of reviews completed on time${above(avgOverdueDays, 0) ? `, averaging ${avgOverdueDays} days overdue` : ""}. This undermines the currency and accuracy of both documents.`);
-  } else if (reviewOnTimeRate >= 50 && reviewOnTimeRate < 80 && totalReviewCycleRecords > 0) {
+  } else if (meets(reviewOnTimeRate, 50) && below(reviewOnTimeRate, 80) && totalReviewCycleRecords > 0) {
     concerns.push(`Review on-time rate at ${reviewOnTimeRate}% — not all reviews completed within required timescales, risking document currency.`);
   }
 
@@ -830,23 +802,23 @@ export function computeStatementPurposeChildrenGuide(
     concerns.push("No current Children's Guide — a current guide must be available for every child under CHR 2015 Reg 17.");
   }
 
-  if (schedule1CoverageRate < 70 && schedule1CheckedTotal > 0) {
+  if (below(schedule1CoverageRate, 70) && schedule1CheckedTotal > 0) {
     concerns.push(`Schedule 1 coverage at only ${schedule1CoverageRate}% — the Statement of Purpose does not address all mandatory areas required by CHR 2015 Reg 16.`);
   }
 
-  if (viewsActionedRate < 40 && totalInvolvementRecords > 0) {
+  if (below(viewsActionedRate, 40) && totalInvolvementRecords > 0) {
     concerns.push(`Only ${viewsActionedRate}% of young people's views actioned — children's input is collected but not translated into meaningful changes, risking tokenistic participation.`);
   }
 
-  if (changeImplementationRate < 50 && reviewChangesIdentified > 0) {
+  if (below(changeImplementationRate, 50) && reviewChangesIdentified > 0) {
     concerns.push(`Only ${changeImplementationRate}% of review-identified changes implemented — changes are not being acted upon, undermining the review cycle.`);
   }
 
-  if (childInvolvementCoverage < 50 && total_children > 0 && totalInvolvementRecords > 0) {
+  if (below(childInvolvementCoverage, 50) && total_children > 0 && totalInvolvementRecords > 0) {
     concerns.push(`Only ${childInvolvementCoverage}% of children involved in document reviews — many children have had no opportunity to contribute their views.`);
   }
 
-  if (admissionDistributionRate < 50 && totalGuideRecords > 0) {
+  if (below(admissionDistributionRate, 50) && totalGuideRecords > 0) {
     concerns.push(`Only ${admissionDistributionRate}% of Children's Guides given on admission — children are not consistently receiving the guide on arrival.`);
   }
 
@@ -863,7 +835,7 @@ export function computeStatementPurposeChildrenGuide(
   const recommendations: StatementPurposeRecommendation[] = [];
   let rank = 0;
 
-  if (statementCurrencyRate < 50 && totalStatementRecords > 0) {
+  if (below(statementCurrencyRate, 50) && totalStatementRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Urgently review and update the Statement of Purpose to ensure it is current, within its review date, and accurately reflects the home's operation. An expired or out-of-date Statement of Purpose is a direct breach of CHR 2015 Reg 16.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 16 — Statement of Purpose" });
   }
 
@@ -875,7 +847,7 @@ export function computeStatementPurposeChildrenGuide(
     recommendations.push({ rank: ++rank, recommendation: "Urgently improve Children's Guide accessibility — ensure guides are age-appropriate, available in accessible formats, cover all required sections, and are given to every child on admission.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 17 — Children's Guide" });
   }
 
-  if (reviewOnTimeRate < 50 && totalReviewCycleRecords > 0) {
+  if (below(reviewOnTimeRate, 50) && totalReviewCycleRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Implement a structured review calendar with automated reminders to ensure all document reviews are completed on time. Late reviews undermine document currency and regulatory compliance.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 16 — Statement of Purpose" });
   }
 
@@ -891,7 +863,7 @@ export function computeStatementPurposeChildrenGuide(
     recommendations.push({ rank: ++rank, recommendation: "Establish a formal review cycle for both documents — reviews should be scheduled at least annually, with records of who reviewed, what was covered, and what changes were made.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 16 — Statement of Purpose" });
   }
 
-  if (schedule1CoverageRate < 70 && schedule1CheckedTotal > 0) {
+  if (below(schedule1CoverageRate, 70) && schedule1CheckedTotal > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Review the Statement of Purpose against all 14 Schedule 1 requirements and address the gaps — covering ethos, range of needs, accommodation, staffing, fire safety, behaviour management, education, health, contact, complaints, religious/cultural needs, emergency placement, registered manager, and responsible individual.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 16, Schedule 1" });
   }
 
@@ -899,7 +871,7 @@ export function computeStatementPurposeChildrenGuide(
     recommendations.push({ rank: ++rank, recommendation: "Review and improve the Ofsted submission process to ensure timely submissions — set up a tracking system with deadline reminders and ensure amendment requests are actioned promptly.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 16 — Statement of Purpose" });
   }
 
-  if (statementCurrencyRate >= 50 && statementCurrencyRate < 80 && totalStatementRecords > 0) {
+  if (meets(statementCurrencyRate, 50) && below(statementCurrencyRate, 80) && totalStatementRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Improve Statement of Purpose currency by establishing a proactive review schedule — review at least annually or when significant changes occur, and update expiry dates.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 16 — Statement of Purpose" });
   }
 
@@ -911,11 +883,11 @@ export function computeStatementPurposeChildrenGuide(
     recommendations.push({ rank: ++rank, recommendation: "Strengthen young person involvement through co-production workshops, feedback sessions, and child-friendly review formats. Ensure all children have the opportunity to contribute.", urgency: "soon", regulatory_ref: "SCCIF — Voice of the child" });
   }
 
-  if (viewsActionedRate < 40 && totalInvolvementRecords > 0) {
+  if (below(viewsActionedRate, 40) && totalInvolvementRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Implement a 'you said, we did' approach — document how young people's views have been actioned and feed back to children so they see their contributions make a difference.", urgency: "soon", regulatory_ref: "SCCIF — Voice of the child" });
   }
 
-  if (changeImplementationRate < 50 && reviewChangesIdentified > 0) {
+  if (below(changeImplementationRate, 50) && reviewChangesIdentified > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Create an action tracker for review-identified changes with assigned owners and deadlines — changes must be implemented to maintain document accuracy.", urgency: "soon", regulatory_ref: "CHR 2015 Reg 16 — Statement of Purpose" });
   }
 
@@ -923,15 +895,15 @@ export function computeStatementPurposeChildrenGuide(
     recommendations.push({ rank: ++rank, recommendation: "Improve stakeholder engagement by establishing a distribution checklist, collecting feedback from placing authorities, and ensuring the Children's Guide is discussed with every child on admission.", urgency: "planned", regulatory_ref: "CHR 2015 Reg 16 — Statement of Purpose" });
   }
 
-  if (reviewOnTimeRate >= 50 && reviewOnTimeRate < 80 && totalReviewCycleRecords > 0) {
+  if (meets(reviewOnTimeRate, 50) && below(reviewOnTimeRate, 80) && totalReviewCycleRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Improve review timeliness by setting calendar reminders at least 4 weeks before review due dates and assigning responsibility for initiating each review cycle.", urgency: "planned", regulatory_ref: "CHR 2015 Reg 16 — Statement of Purpose" });
   }
 
-  if (childInvolvementCoverage >= 50 && childInvolvementCoverage < 80 && total_children > 0 && totalInvolvementRecords > 0) {
+  if (meets(childInvolvementCoverage, 50) && below(childInvolvementCoverage, 80) && total_children > 0 && totalInvolvementRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Extend involvement opportunities to all children — identify those who have not yet participated and create accessible, supported opportunities for them to share their views.", urgency: "planned", regulatory_ref: "SCCIF — Voice of the child" });
   }
 
-  if (easyReadRate < 50 && totalGuideRecords > 0) {
+  if (below(easyReadRate, 50) && totalGuideRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Develop easy-read versions of the Children's Guide to ensure accessibility for children with additional communication needs or learning difficulties.", urgency: "planned", regulatory_ref: "CHR 2015 Reg 17 — Children's Guide" });
   }
 
@@ -939,7 +911,7 @@ export function computeStatementPurposeChildrenGuide(
     recommendations.push({ rank: ++rank, recommendation: "Tighten submission tracking with a submission log, automated deadline reminders, and a post-submission follow-up process for acknowledgements and feedback.", urgency: "planned", regulatory_ref: "CHR 2015 Reg 16 — Statement of Purpose" });
   }
 
-  if (admissionDistributionRate < 80 && admissionDistributionRate >= 50 && totalGuideRecords > 0) {
+  if (below(admissionDistributionRate, 80) && meets(admissionDistributionRate, 50) && totalGuideRecords > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Include Children's Guide distribution in the admission checklist to ensure every child receives the guide on arrival.", urgency: "planned", regulatory_ref: "CHR 2015 Reg 17 — Children's Guide" });
   }
 
@@ -949,7 +921,7 @@ export function computeStatementPurposeChildrenGuide(
 
   // -- Critical insights --
 
-  if (statementCurrencyRate < 50 && totalStatementRecords > 0) {
+  if (below(statementCurrencyRate, 50) && totalStatementRecords > 0) {
     insights.push({ text: `Only ${statementCurrencyRate}% Statement of Purpose currency. An out-of-date or expired Statement of Purpose means the home cannot evidence its documented purpose reflects current operation. Ofsted inspectors will check currency — failure signals poor leadership and governance.`, severity: "critical" });
   }
 
@@ -957,7 +929,7 @@ export function computeStatementPurposeChildrenGuide(
     insights.push({ text: `Only ${guideAccessibilityRate}% Children's Guide accessibility. If children cannot access and understand the guide, they cannot know their rights, routines, or how to raise concerns. This directly impacts safeguarding.`, severity: "critical" });
   }
 
-  if (reviewOnTimeRate < 50 && totalReviewCycleRecords > 0) {
+  if (below(reviewOnTimeRate, 50) && totalReviewCycleRecords > 0) {
     insights.push({ text: `Only ${reviewOnTimeRate}% of reviews completed on time${above(avgOverdueDays, 0) ? `, averaging ${avgOverdueDays} days overdue` : ""}. Late reviews mean documents may contain inaccurate information — this creates regulatory and safeguarding risks.`, severity: "critical" });
   }
 
@@ -977,13 +949,13 @@ export function computeStatementPurposeChildrenGuide(
     insights.push({ text: "No young person involvement records exist despite children on placement. Without evidence that children's views are sought and incorporated, the home cannot demonstrate child-centred leadership.", severity: "critical" });
   }
 
-  if (schedule1CoverageRate < 70 && schedule1CheckedTotal > 0) {
+  if (below(schedule1CoverageRate, 70) && schedule1CheckedTotal > 0) {
     insights.push({ text: `Schedule 1 coverage at only ${schedule1CoverageRate}%. The Statement of Purpose does not address significant mandatory areas — an incomplete statement fails to meet regulatory requirements.`, severity: "critical" });
   }
 
   // -- Warning insights --
 
-  if (statementCurrencyRate >= 50 && statementCurrencyRate < 80 && totalStatementRecords > 0) {
+  if (meets(statementCurrencyRate, 50) && below(statementCurrencyRate, 80) && totalStatementRecords > 0) {
     insights.push({ text: `Statement of Purpose currency at ${statementCurrencyRate}% — review or expiry dates indicate it may not fully reflect current operation. Proactive reviews would strengthen currency.`, severity: "warning" });
   }
 
@@ -991,7 +963,7 @@ export function computeStatementPurposeChildrenGuide(
     insights.push({ text: `Children's Guide accessibility at ${guideAccessibilityRate}% — age-appropriateness, format accessibility, or content coverage need attention.`, severity: "warning" });
   }
 
-  if (reviewOnTimeRate >= 50 && reviewOnTimeRate < 80 && totalReviewCycleRecords > 0) {
+  if (meets(reviewOnTimeRate, 50) && below(reviewOnTimeRate, 80) && totalReviewCycleRecords > 0) {
     insights.push({ text: `Review on-time rate at ${reviewOnTimeRate}% — some reviews are overdue. A proactive review calendar with advance reminders would improve timeliness.`, severity: "warning" });
   }
 
@@ -1007,23 +979,23 @@ export function computeStatementPurposeChildrenGuide(
     insights.push({ text: `Stakeholder awareness at ${stakeholderAwarenessRate}% — not all stakeholders being effectively reached. Placing authorities, staff, and children should all be consulted.`, severity: "warning" });
   }
 
-  if (changeImplementationRate >= 50 && changeImplementationRate < 70 && reviewChangesIdentified > 0) {
+  if (meets(changeImplementationRate, 50) && below(changeImplementationRate, 70) && reviewChangesIdentified > 0) {
     insights.push({ text: `Change implementation at ${changeImplementationRate}% — some review-identified changes not actioned. Unimplemented changes mean documents may not reflect current practice.`, severity: "warning" });
   }
 
-  if (childInvolvementCoverage >= 50 && childInvolvementCoverage < 80 && total_children > 0 && totalInvolvementRecords > 0) {
+  if (meets(childInvolvementCoverage, 50) && below(childInvolvementCoverage, 80) && total_children > 0 && totalInvolvementRecords > 0) {
     insights.push({ text: `${childInvolvementCoverage}% of children involved in document reviews — some children have not yet had the opportunity. Extending involvement demonstrates inclusive governance.`, severity: "warning" });
   }
 
-  if (schedule1CoverageRate >= 70 && schedule1CoverageRate < 85 && schedule1CheckedTotal > 0) {
+  if (meets(schedule1CoverageRate, 70) && below(schedule1CoverageRate, 85) && schedule1CheckedTotal > 0) {
     insights.push({ text: `Schedule 1 coverage at ${schedule1CoverageRate}% — most mandatory areas addressed but gaps remain. Full coverage is required for comprehensive compliance.`, severity: "warning" });
   }
 
-  if (amendmentRate >= 40 && totalReviewCycleRecords > 0) {
+  if (meets(amendmentRate, 40) && totalReviewCycleRecords > 0) {
     insights.push({ text: `${amendmentRate}% of reviews required amendments — frequent amendments may indicate documents are not maintained proactively between reviews.`, severity: "warning" });
   }
 
-  if (viewsActionedRate >= 40 && viewsActionedRate < 70 && totalInvolvementRecords > 0) {
+  if (meets(viewsActionedRate, 40) && below(viewsActionedRate, 70) && totalInvolvementRecords > 0) {
     insights.push({ text: `${viewsActionedRate}% of young people's views actioned — not all views translated into changes. Consider structural barriers to acting on children's feedback.`, severity: "warning" });
   }
 
@@ -1033,23 +1005,23 @@ export function computeStatementPurposeChildrenGuide(
     insights.push({ text: "The home demonstrates outstanding management of its Statement of Purpose and Children's Guide — documents are current, accessible, regularly reviewed, and shaped by genuine young person involvement. This evidences strong leadership.", severity: "positive" });
   }
 
-  if (statementCurrencyRate >= 95 && schedule1CoverageRate >= 100 && totalStatementRecords > 0 && schedule1CheckedTotal > 0) {
+  if (meets(statementCurrencyRate, 95) && meets(schedule1CoverageRate, 100) && totalStatementRecords > 0 && schedule1CheckedTotal > 0) {
     insights.push({ text: `${statementCurrencyRate}% Statement of Purpose currency with full Schedule 1 coverage — the home maintains a comprehensive, current document that accurately describes its purpose and approach to care.`, severity: "positive" });
   }
 
-  if (meets(guideAccessibilityRate, 90) && admissionDistributionRate >= 100 && totalGuideRecords > 0) {
+  if (meets(guideAccessibilityRate, 90) && meets(admissionDistributionRate, 100) && totalGuideRecords > 0) {
     insights.push({ text: `${guideAccessibilityRate}% Children's Guide accessibility with 100% admission distribution — every child receives an accessible, comprehensive guide on arrival.`, severity: "positive" });
   }
 
-  if (meets(reviewCycleRate, 90) && changeImplementationRate >= 90 && totalReviewCycleRecords > 0 && reviewChangesIdentified > 0) {
+  if (meets(reviewCycleRate, 90) && meets(changeImplementationRate, 90) && totalReviewCycleRecords > 0 && reviewChangesIdentified > 0) {
     insights.push({ text: `${reviewCycleRate}% review cycle compliance with ${changeImplementationRate}% change implementation — a rigorous and responsive review process keeps documents accurate and current.`, severity: "positive" });
   }
 
-  if (meets(youngPersonInvolvementRate, 90) && viewsActionedRate >= 90 && totalInvolvementRecords > 0) {
+  if (meets(youngPersonInvolvementRate, 90) && meets(viewsActionedRate, 90) && totalInvolvementRecords > 0) {
     insights.push({ text: `${youngPersonInvolvementRate}% young person involvement with ${viewsActionedRate}% of views actioned — children's voices genuinely shape the documents that describe their care.`, severity: "positive" });
   }
 
-  if (childInvolvementCoverage >= 100 && total_children > 0 && totalInvolvementRecords > 0) {
+  if (meets(childInvolvementCoverage, 100) && total_children > 0 && totalInvolvementRecords > 0) {
     insights.push({ text: "Every child has been involved in document reviews — inclusive participation is embedded in the home's governance.", severity: "positive" });
   }
 
@@ -1061,7 +1033,7 @@ export function computeStatementPurposeChildrenGuide(
     insights.push({ text: `${stakeholderAwarenessRate}% stakeholder awareness — documents widely distributed, stakeholders consulted, and children's feedback actively sought.`, severity: "positive" });
   }
 
-  if (coProductionRate >= 30 && totalInvolvementRecords > 0) {
+  if (meets(coProductionRate, 30) && totalInvolvementRecords > 0) {
     insights.push({ text: `${coProductionRate}% of involvement activities use co-production — the home goes beyond consultation to genuinely co-produce documents with young people.`, severity: "positive" });
   }
 

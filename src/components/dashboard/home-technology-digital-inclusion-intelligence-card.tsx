@@ -66,16 +66,16 @@ export function HomeTechnologyDigitalInclusionIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.digital_inclusion_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.device_access_rate >= 90 ? "bg-green-50" : d.device_access_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.device_access_rate >= 90 ? "text-[--cs-success]" : d.device_access_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.device_access_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.device_access_rate, 90) ? "bg-green-50" : meets(d.device_access_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.device_access_rate, 90) ? "text-[--cs-success]" : meets(d.device_access_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.device_access_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Devices</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.digital_skills_rate, 90) ? "bg-green-50" : meets(d.digital_skills_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
               <p className={cn("text-sm font-bold tabular-nums", meets(d.digital_skills_rate, 90) ? "text-[--cs-success]" : meets(d.digital_skills_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.digital_skills_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Skills</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.assistive_technology_rate >= 90 ? "bg-green-50" : d.assistive_technology_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.assistive_technology_rate >= 90 ? "text-[--cs-success]" : d.assistive_technology_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.assistive_technology_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.assistive_technology_rate, 90) ? "bg-green-50" : meets(d.assistive_technology_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.assistive_technology_rate, 90) ? "text-[--cs-success]" : meets(d.assistive_technology_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.assistive_technology_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Assistive</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.internet_safety_rate, 90) ? "bg-green-50" : meets(d.internet_safety_rate, 70) ? "bg-amber-50" : "bg-red-50")}>

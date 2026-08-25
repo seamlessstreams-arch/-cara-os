@@ -159,15 +159,15 @@ function nRecords<T extends { id: string }>(
 
 describe("computeStaffRotaAdequateStaffing", () => {
   // ── pct(0,0) = 0 ────────────────────────────────────────────────────────
-  describe("pct(0,0) edge case", () => {
-    it("returns 0 rates when all arrays are empty but staff > 0", () => {
+  describe("rate(0,0)=nulledge case", () => {
+    it("returns null rates when all arrays are empty but staff > 0", () => {
       const r = computeStaffRotaAdequateStaffing(baseInput({ total_staff: 8 }));
-      expect(r.shift_coverage_rate).toBe(0);
-      expect(r.ratio_compliance_rate).toBe(0);
-      expect(r.overtime_rate).toBe(0);
-      expect(r.agency_usage_rate).toBe(0);
-      expect(r.rota_planning_rate).toBe(0);
-      expect(r.staff_satisfaction_rate).toBe(0);
+      expect(r.shift_coverage_rate).toBeNull();
+      expect(r.ratio_compliance_rate).toBeNull();
+      expect(r.overtime_rate).toBeNull();
+      expect(r.agency_usage_rate).toBeNull();
+      expect(r.rota_planning_rate).toBeNull();
+      expect(r.staff_satisfaction_rate).toBeNull();
     });
   });
 
@@ -201,12 +201,12 @@ describe("computeStaffRotaAdequateStaffing", () => {
       const r = computeStaffRotaAdequateStaffing(
         baseInput({ total_staff: 0 }),
       );
-      expect(r.shift_coverage_rate).toBe(0);
-      expect(r.ratio_compliance_rate).toBe(0);
-      expect(r.overtime_rate).toBe(0);
-      expect(r.agency_usage_rate).toBe(0);
-      expect(r.rota_planning_rate).toBe(0);
-      expect(r.staff_satisfaction_rate).toBe(0);
+      expect(r.shift_coverage_rate).toBeNull();
+      expect(r.ratio_compliance_rate).toBeNull();
+      expect(r.overtime_rate).toBeNull();
+      expect(r.agency_usage_rate).toBeNull();
+      expect(r.rota_planning_rate).toBeNull();
+      expect(r.staff_satisfaction_rate).toBeNull();
     });
   });
 
@@ -1241,11 +1241,11 @@ describe("computeStaffRotaAdequateStaffing", () => {
         expect(r.shift_coverage_rate).toBe(75);
       });
 
-      it("returns 0 when no shifts", () => {
+      it("returns null when no shifts", () => {
         const r = computeStaffRotaAdequateStaffing(baseInput({
           ratio_compliance_records: [makeRatio()],
         }));
-        expect(r.shift_coverage_rate).toBe(0);
+        expect(r.shift_coverage_rate).toBeNull();
       });
     });
 
@@ -1320,11 +1320,11 @@ describe("computeStaffRotaAdequateStaffing", () => {
         expect(r.rota_planning_rate).toBe(50);
       });
 
-      it("returns 0 when no rota records", () => {
+      it("returns null when no rota records", () => {
         const r = computeStaffRotaAdequateStaffing(baseInput({
           shift_coverage_records: [makeShift()],
         }));
-        expect(r.rota_planning_rate).toBe(0);
+        expect(r.rota_planning_rate).toBeNull();
       });
     });
 
@@ -1341,11 +1341,11 @@ describe("computeStaffRotaAdequateStaffing", () => {
         expect(r.staff_satisfaction_rate).toBe(50);
       });
 
-      it("returns 0 when no rota records", () => {
+      it("returns null when no rota records", () => {
         const r = computeStaffRotaAdequateStaffing(baseInput({
           shift_coverage_records: [makeShift()],
         }));
-        expect(r.staff_satisfaction_rate).toBe(0);
+        expect(r.staff_satisfaction_rate).toBeNull();
       });
     });
   });

@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Eye } from "lucid
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { SensoryAccessibilityRating } from "@/lib/engines/home-sensory-accessibility-support-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 const RATING_STYLES: Record<SensoryAccessibilityRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -57,7 +58,7 @@ export function HomeSensoryAccessibilitySupportIntelligenceCard() {
             <Eye className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-[--cs-warning]")} />
             <span className="text-slate-900 font-bold">Sensory & Accessibility Support</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.sensory_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.sensory_score}%</span>}
+            {d.sensory_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.sensory_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -65,28 +66,28 @@ export function HomeSensoryAccessibilitySupportIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.sensory_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.sensory_profile_coverage_rate >= 90 ? "bg-green-50" : d.sensory_profile_coverage_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.sensory_profile_coverage_rate >= 90 ? "text-[--cs-success]" : d.sensory_profile_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.sensory_profile_coverage_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.sensory_profile_coverage_rate, 90) ? "bg-green-50" : meets(d.sensory_profile_coverage_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.sensory_profile_coverage_rate, 90) ? "text-[--cs-success]" : meets(d.sensory_profile_coverage_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.sensory_profile_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Profiles</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.accessibility_adaptation_rate >= 90 ? "bg-green-50" : d.accessibility_adaptation_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.accessibility_adaptation_rate >= 90 ? "text-[--cs-success]" : d.accessibility_adaptation_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.accessibility_adaptation_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.accessibility_adaptation_rate, 90) ? "bg-green-50" : meets(d.accessibility_adaptation_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.accessibility_adaptation_rate, 90) ? "text-[--cs-success]" : meets(d.accessibility_adaptation_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.accessibility_adaptation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Adapted</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.sensory_room_utilisation_rate >= 90 ? "bg-green-50" : d.sensory_room_utilisation_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.sensory_room_utilisation_rate >= 90 ? "text-[--cs-success]" : d.sensory_room_utilisation_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.sensory_room_utilisation_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.sensory_room_utilisation_rate, 90) ? "bg-green-50" : meets(d.sensory_room_utilisation_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.sensory_room_utilisation_rate, 90) ? "text-[--cs-success]" : meets(d.sensory_room_utilisation_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.sensory_room_utilisation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Room Use</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.equipment_maintenance_rate >= 90 ? "bg-green-50" : d.equipment_maintenance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.equipment_maintenance_rate >= 90 ? "text-[--cs-success]" : d.equipment_maintenance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.equipment_maintenance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.equipment_maintenance_rate, 90) ? "bg-green-50" : meets(d.equipment_maintenance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.equipment_maintenance_rate, 90) ? "text-[--cs-success]" : meets(d.equipment_maintenance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.equipment_maintenance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Equip.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.intervention_effectiveness_rate >= 90 ? "bg-green-50" : d.intervention_effectiveness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.intervention_effectiveness_rate >= 90 ? "text-[--cs-success]" : d.intervention_effectiveness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.intervention_effectiveness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.intervention_effectiveness_rate, 90) ? "bg-green-50" : meets(d.intervention_effectiveness_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.intervention_effectiveness_rate, 90) ? "text-[--cs-success]" : meets(d.intervention_effectiveness_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.intervention_effectiveness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Effect.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_feedback_rate >= 90 ? "bg-green-50" : d.child_feedback_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_feedback_rate >= 90 ? "text-[--cs-success]" : d.child_feedback_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_feedback_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_feedback_rate, 90) ? "bg-green-50" : meets(d.child_feedback_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_feedback_rate, 90) ? "text-[--cs-success]" : meets(d.child_feedback_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_feedback_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Feedback</p>
             </div>
           </div>

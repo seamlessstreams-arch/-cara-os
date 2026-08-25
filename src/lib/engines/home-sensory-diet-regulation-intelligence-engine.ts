@@ -13,7 +13,7 @@
 //             selfRegulationRecords
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { below, meets } from "@/lib/metrics/rate";
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -153,13 +153,19 @@ export interface SensoryDietResult {
   sensory_diet_score: number;
   headline: string;
   total_diet_plans: number;
-  diet_plan_coverage_rate: number;
-  strategy_effectiveness_rate: number;
-  break_scheduling_rate: number;
-  therapy_integration_rate: number;
-  self_regulation_rate: number;
-  child_progress_rate: number;
-  // The 6 rate fields above use pct() directly (deterministic 0 on empty).
+  /** null when the population is empty — nothing measured, not 0%. */
+  diet_plan_coverage_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  strategy_effectiveness_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  break_scheduling_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  therapy_integration_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  self_regulation_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  child_progress_rate: number | null;
+  // The 6 rate fields above use rate() directly (deterministic 0 on empty).
   // The 2 avg fields below are null on empty: no source records ⇒ no signal.
   // Fab-0 doctrine.
   strategy_effectiveness_avg: number | null;
@@ -171,10 +177,6 @@ export interface SensoryDietResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -199,12 +201,12 @@ function emptyResult(
     sensory_diet_score: score,
     headline,
     total_diet_plans: 0,
-    diet_plan_coverage_rate: 0,
-    strategy_effectiveness_rate: 0,
-    break_scheduling_rate: 0,
-    therapy_integration_rate: 0,
-    self_regulation_rate: 0,
-    child_progress_rate: 0,
+    diet_plan_coverage_rate: null,
+    strategy_effectiveness_rate: null,
+    break_scheduling_rate: null,
+    therapy_integration_rate: null,
+    self_regulation_rate: null,
+    child_progress_rate: null,
     strategy_effectiveness_avg: null,
     self_regulation_progress_avg: null,
     strengths: [],
@@ -292,17 +294,17 @@ export function computeSensoryDietRegulation(
     activeDietPlans.map((p) => p.child_id),
   ).size;
   const dietPlanCoverageRate =
-    total_children > 0 ? pct(uniqueChildrenWithPlans, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenWithPlans, total_children) : 0;
 
   const plansChildParticipated = activeDietPlans.filter(
     (p) => p.child_participated_in_planning,
   ).length;
-  const childParticipationInPlanningRate = pct(plansChildParticipated, activeDietPlans.length);
+  const childParticipationInPlanningRate = rate(plansChildParticipated, activeDietPlans.length);
 
   const plansStaffTrained = activeDietPlans.filter(
     (p) => p.staff_trained_on_plan,
   ).length;
-  const staffTrainedOnPlanRate = pct(plansStaffTrained, activeDietPlans.length);
+  const staffTrainedOnPlanRate = rate(plansStaffTrained, activeDietPlans.length);
 
   const totalActivitiesPrescribed = activeDietPlans.reduce(
     (sum, p) => sum + p.activities_prescribed,
@@ -312,19 +314,19 @@ export function computeSensoryDietRegulation(
     (sum, p) => sum + p.activities_implemented,
     0,
   );
-  const activityImplementationRate = pct(totalActivitiesImplemented, totalActivitiesPrescribed);
+  const activityImplementationRate = rate(totalActivitiesImplemented, totalActivitiesPrescribed);
 
   const overduePlanReviews = activeDietPlans.filter(
     (p) => p.review_overdue,
   ).length;
   const planReviewComplianceRate = activeDietPlans.length > 0
-    ? pct(activeDietPlans.length - overduePlanReviews, activeDietPlans.length)
+    ? rate(activeDietPlans.length - overduePlanReviews, activeDietPlans.length)
     : 0;
 
   const plansWithParentInfo = activeDietPlans.filter(
     (p) => p.parent_carer_informed,
   ).length;
-  const parentInformedRate = pct(plansWithParentInfo, activeDietPlans.length);
+  const parentInformedRate = rate(plansWithParentInfo, activeDietPlans.length);
 
   // ================================================================
   // REGULATION STRATEGY EFFECTIVENESS
@@ -339,7 +341,7 @@ export function computeSensoryDietRegulation(
   const effectiveStrategies = regulation_strategy_records.filter(
     (s) => s.effectiveness_rating >= 3,
   ).length;
-  const strategyEffectivenessRate = pct(effectiveStrategies, totalStrategies);
+  const strategyEffectivenessRate = rate(effectiveStrategies, totalStrategies);
 
   const strategyEffectivenessSum = regulation_strategy_records.reduce(
     (sum, s) => sum + s.effectiveness_rating,
@@ -353,7 +355,7 @@ export function computeSensoryDietRegulation(
   const strategiesUsedIndependently = regulation_strategy_records.filter(
     (s) => s.used_independently_by_child && s.active,
   ).length;
-  const independentUseRate = pct(strategiesUsedIndependently, totalActiveStrategies);
+  const independentUseRate = rate(strategiesUsedIndependently, totalActiveStrategies);
 
   const staffConsistencySum = regulation_strategy_records.reduce(
     (sum, s) => sum + s.staff_consistency_rating,
@@ -372,7 +374,7 @@ export function computeSensoryDietRegulation(
     (sum, s) => sum + s.positive_outcome_count,
     0,
   );
-  const positiveOutcomeRate = pct(totalPositiveOutcomes, totalOutcomes);
+  const positiveOutcomeRate = rate(totalPositiveOutcomes, totalOutcomes);
 
   const overdueStrategyReviews = regulation_strategy_records.filter(
     (s) => s.review_overdue && s.active,
@@ -386,22 +388,22 @@ export function computeSensoryDietRegulation(
   const scheduledBreaks = sensory_break_records.filter(
     (b) => b.scheduled,
   ).length;
-  const breakSchedulingRate = pct(scheduledBreaks, totalBreaks);
+  const breakSchedulingRate = rate(scheduledBreaks, totalBreaks);
 
   const childRequestedBreaks = sensory_break_records.filter(
     (b) => b.child_requested,
   ).length;
-  const childRequestedBreakRate = pct(childRequestedBreaks, totalBreaks);
+  const childRequestedBreakRate = rate(childRequestedBreaks, totalBreaks);
 
   const breaksWithImprovement = sensory_break_records.filter(
     (b) => b.regulation_improved,
   ).length;
-  const breakEffectivenessRate = pct(breaksWithImprovement, totalBreaks);
+  const breakEffectivenessRate = rate(breaksWithImprovement, totalBreaks);
 
   const breaksDocumented = sensory_break_records.filter(
     (b) => b.notes_recorded,
   ).length;
-  const breakDocumentationRate = pct(breaksDocumented, totalBreaks);
+  const breakDocumentationRate = rate(breaksDocumented, totalBreaks);
 
   // ================================================================
   // OCCUPATIONAL THERAPY INTEGRATION
@@ -416,7 +418,7 @@ export function computeSensoryDietRegulation(
     occupational_therapy_records.map((o) => o.child_id),
   ).size;
   const therapyIntegrationRate =
-    total_children > 0 ? pct(uniqueChildrenWithOT, total_children) : 0;
+    total_children > 0 ? rate(uniqueChildrenWithOT, total_children) : 0;
 
   const totalGoalsSet = occupational_therapy_records.reduce(
     (sum, o) => sum + o.goals_set,
@@ -426,7 +428,7 @@ export function computeSensoryDietRegulation(
     (sum, o) => sum + o.goals_achieved,
     0,
   );
-  const goalAchievementRate = pct(totalGoalsAchieved, totalGoalsSet);
+  const goalAchievementRate = rate(totalGoalsAchieved, totalGoalsSet);
 
   const totalRecommendationsMade = occupational_therapy_records.reduce(
     (sum, o) => sum + o.recommendations_made,
@@ -436,12 +438,12 @@ export function computeSensoryDietRegulation(
     (sum, o) => sum + o.recommendations_implemented,
     0,
   );
-  const recommendationImplementationRate = pct(totalRecommendationsImplemented, totalRecommendationsMade);
+  const recommendationImplementationRate = rate(totalRecommendationsImplemented, totalRecommendationsMade);
 
   const sessionsCarePlanUpdated = occupational_therapy_records.filter(
     (o) => o.care_plan_updated,
   ).length;
-  const carePlanUpdateRate = pct(sessionsCarePlanUpdated, totalOTSessions);
+  const carePlanUpdateRate = rate(sessionsCarePlanUpdated, totalOTSessions);
 
   const overdueOTSessions = occupational_therapy_records.filter(
     (o) => o.session_overdue && o.active,
@@ -457,7 +459,7 @@ export function computeSensoryDietRegulation(
   const childrenImproving = self_regulation_records.filter(
     (r) => r.current_score > r.baseline_score,
   ).length;
-  const selfRegulationRate = pct(childrenImproving, totalSelfRegAssessments);
+  const selfRegulationRate = rate(childrenImproving, totalSelfRegAssessments);
 
   // Progress toward target
   const selfRegProgressValues = self_regulation_records
@@ -479,17 +481,17 @@ export function computeSensoryDietRegulation(
   const canIdentifyTriggers = self_regulation_records.filter(
     (r) => r.can_identify_triggers,
   ).length;
-  const triggerIdentificationRate = pct(canIdentifyTriggers, totalSelfRegAssessments);
+  const triggerIdentificationRate = rate(canIdentifyTriggers, totalSelfRegAssessments);
 
   const canRequestHelp = self_regulation_records.filter(
     (r) => r.can_request_help,
   ).length;
-  const helpRequestRate = pct(canRequestHelp, totalSelfRegAssessments);
+  const helpRequestRate = rate(canRequestHelp, totalSelfRegAssessments);
 
   const canUseIndependently = self_regulation_records.filter(
     (r) => r.can_use_strategies_independently,
   ).length;
-  const independentStrategyUseRate = pct(canUseIndependently, totalSelfRegAssessments);
+  const independentStrategyUseRate = rate(canUseIndependently, totalSelfRegAssessments);
 
   // Progress trend analysis
   const improvingChildren = self_regulation_records.filter(
@@ -521,57 +523,57 @@ export function computeSensoryDietRegulation(
     effectiveStrategies;
   const childProgressDenominator =
     totalSelfRegAssessments + totalGoalsSet + totalStrategies;
-  const childProgressRate = pct(childProgressNumerator, childProgressDenominator);
+  const childProgressRate = rate(childProgressNumerator, childProgressDenominator);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: dietPlanCoverageRate (>=100: +4, >=80: +2) ---
-  if (dietPlanCoverageRate >= 100) score += 4;
-  else if (dietPlanCoverageRate >= 80) score += 2;
+  if (meets(dietPlanCoverageRate, 100)) score += 4;
+  else if (meets(dietPlanCoverageRate, 80)) score += 2;
 
   // --- Bonus 2: strategyEffectivenessRate (>=90: +5, >=70: +3) ---
-  if (strategyEffectivenessRate >= 90) score += 5;
-  else if (strategyEffectivenessRate >= 70) score += 3;
+  if (meets(strategyEffectivenessRate, 90)) score += 5;
+  else if (meets(strategyEffectivenessRate, 70)) score += 3;
 
   // --- Bonus 3: breakSchedulingRate (>=80: +3, >=60: +1) ---
-  if (breakSchedulingRate >= 80) score += 3;
-  else if (breakSchedulingRate >= 60) score += 1;
+  if (meets(breakSchedulingRate, 80)) score += 3;
+  else if (meets(breakSchedulingRate, 60)) score += 1;
 
   // --- Bonus 4: therapyIntegrationRate (>=80: +4, >=60: +2) ---
-  if (therapyIntegrationRate >= 80) score += 4;
-  else if (therapyIntegrationRate >= 60) score += 2;
+  if (meets(therapyIntegrationRate, 80)) score += 4;
+  else if (meets(therapyIntegrationRate, 60)) score += 2;
 
   // --- Bonus 5: selfRegulationRate (>=90: +4, >=70: +2) ---
-  if (selfRegulationRate >= 90) score += 4;
-  else if (selfRegulationRate >= 70) score += 2;
+  if (meets(selfRegulationRate, 90)) score += 4;
+  else if (meets(selfRegulationRate, 70)) score += 2;
 
   // --- Bonus 6: childProgressRate (>=80: +3, >=60: +1) ---
-  if (childProgressRate >= 80) score += 3;
-  else if (childProgressRate >= 60) score += 1;
+  if (meets(childProgressRate, 80)) score += 3;
+  else if (meets(childProgressRate, 60)) score += 1;
 
   // --- Bonus 7: activityImplementationRate (>=90: +3, >=70: +1) ---
-  if (activityImplementationRate >= 90) score += 3;
-  else if (activityImplementationRate >= 70) score += 1;
+  if (meets(activityImplementationRate, 90)) score += 3;
+  else if (meets(activityImplementationRate, 70)) score += 1;
 
   // --- Bonus 8: recommendationImplementationRate (>=90: +2, >=70: +1) ---
-  if (recommendationImplementationRate >= 90) score += 2;
-  else if (recommendationImplementationRate >= 70) score += 1;
+  if (meets(recommendationImplementationRate, 90)) score += 2;
+  else if (meets(recommendationImplementationRate, 70)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // Penalty 1: dietPlanCoverageRate < 50 → -5
-  if (dietPlanCoverageRate < 50 && sensory_diet_plan_records.length > 0) score -= 5;
+  if (below(dietPlanCoverageRate, 50) && sensory_diet_plan_records.length > 0) score -= 5;
 
   // Penalty 2: strategyEffectivenessRate < 40 → -5
-  if (strategyEffectivenessRate < 40 && regulation_strategy_records.length > 0) score -= 5;
+  if (below(strategyEffectivenessRate, 40) && regulation_strategy_records.length > 0) score -= 5;
 
   // Penalty 3: therapyIntegrationRate < 30 → -4
-  if (therapyIntegrationRate < 30 && occupational_therapy_records.length > 0) score -= 4;
+  if (below(therapyIntegrationRate, 30) && occupational_therapy_records.length > 0) score -= 4;
 
   // Penalty 4: selfRegulationRate < 40 → -4
-  if (selfRegulationRate < 40 && self_regulation_records.length > 0) score -= 4;
+  if (below(selfRegulationRate, 40) && self_regulation_records.length > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -581,157 +583,157 @@ export function computeSensoryDietRegulation(
 
   const strengths: string[] = [];
 
-  if (dietPlanCoverageRate >= 100 && total_children > 0) {
+  if (meets(dietPlanCoverageRate, 100) && total_children > 0) {
     strengths.push(
       "Every child has an active sensory diet plan — the home demonstrates comprehensive planning for each child's sensory regulation needs throughout the day.",
     );
-  } else if (dietPlanCoverageRate >= 80 && total_children > 0) {
+  } else if (meets(dietPlanCoverageRate, 80) && total_children > 0) {
     strengths.push(
       `${dietPlanCoverageRate}% of children have active sensory diet plans — strong coverage ensuring the majority of children have individualised sensory programmes.`,
     );
   }
 
-  if (strategyEffectivenessRate >= 90 && totalStrategies > 0) {
+  if (meets(strategyEffectivenessRate, 90) && totalStrategies > 0) {
     strengths.push(
       `${strategyEffectivenessRate}% of regulation strategies are effective — the home's approach to supporting children's regulation is highly successful.`,
     );
-  } else if (strategyEffectivenessRate >= 70 && totalStrategies > 0) {
+  } else if (meets(strategyEffectivenessRate, 70) && totalStrategies > 0) {
     strengths.push(
       `${strategyEffectivenessRate}% of regulation strategies rated as effective — the majority of strategies are achieving positive regulation outcomes for children.`,
     );
   }
 
-  if (breakSchedulingRate >= 80 && totalBreaks > 0) {
+  if (meets(breakSchedulingRate, 80) && totalBreaks > 0) {
     strengths.push(
       `${breakSchedulingRate}% of sensory breaks are pre-scheduled — proactive scheduling demonstrates that the home anticipates and plans for children's regulation needs.`,
     );
-  } else if (breakSchedulingRate >= 60 && totalBreaks > 0) {
+  } else if (meets(breakSchedulingRate, 60) && totalBreaks > 0) {
     strengths.push(
       `${breakSchedulingRate}% of sensory breaks scheduled — good levels of proactive break planning to support children's regulation.`,
     );
   }
 
-  if (therapyIntegrationRate >= 80 && total_children > 0) {
+  if (meets(therapyIntegrationRate, 80) && total_children > 0) {
     strengths.push(
       `${therapyIntegrationRate}% of children have occupational therapy involvement — strong integration of specialist therapy into children's sensory support.`,
     );
-  } else if (therapyIntegrationRate >= 60 && total_children > 0) {
+  } else if (meets(therapyIntegrationRate, 60) && total_children > 0) {
     strengths.push(
       `${therapyIntegrationRate}% occupational therapy integration — good engagement with specialist services to inform sensory diet planning.`,
     );
   }
 
-  if (selfRegulationRate >= 90 && totalSelfRegAssessments > 0) {
+  if (meets(selfRegulationRate, 90) && totalSelfRegAssessments > 0) {
     strengths.push(
       `${selfRegulationRate}% of children showing improvement in self-regulation — children are making excellent progress in managing their own sensory and emotional regulation.`,
     );
-  } else if (selfRegulationRate >= 70 && totalSelfRegAssessments > 0) {
+  } else if (meets(selfRegulationRate, 70) && totalSelfRegAssessments > 0) {
     strengths.push(
       `${selfRegulationRate}% of children improving in self-regulation — the majority of children are developing greater capacity to manage their own regulation.`,
     );
   }
 
-  if (childProgressRate >= 80) {
+  if (meets(childProgressRate, 80)) {
     strengths.push(
       `${childProgressRate}% overall child progress rate — children are making strong progress across sensory diet, therapy goals, and regulation strategies.`,
     );
-  } else if (childProgressRate >= 60) {
+  } else if (meets(childProgressRate, 60)) {
     strengths.push(
       `${childProgressRate}% overall child progress — good levels of measurable improvement across sensory regulation domains.`,
     );
   }
 
-  if (activityImplementationRate >= 90 && totalActivitiesPrescribed > 0) {
+  if (meets(activityImplementationRate, 90) && totalActivitiesPrescribed > 0) {
     strengths.push(
       `${activityImplementationRate}% of prescribed sensory diet activities are implemented — the home reliably delivers the sensory activities that have been planned for each child.`,
     );
-  } else if (activityImplementationRate >= 70 && totalActivitiesPrescribed > 0) {
+  } else if (meets(activityImplementationRate, 70) && totalActivitiesPrescribed > 0) {
     strengths.push(
       `${activityImplementationRate}% activity implementation — the home generally delivers the sensory activities prescribed in children's diet plans.`,
     );
   }
 
-  if (breakEffectivenessRate >= 80 && totalBreaks > 0) {
+  if (meets(breakEffectivenessRate, 80) && totalBreaks > 0) {
     strengths.push(
       `${breakEffectivenessRate}% of sensory breaks result in improved regulation — breaks are achieving their intended purpose of helping children return to a regulated state.`,
     );
-  } else if (breakEffectivenessRate >= 60 && totalBreaks > 0) {
+  } else if (meets(breakEffectivenessRate, 60) && totalBreaks > 0) {
     strengths.push(
       `${breakEffectivenessRate}% break effectiveness — the majority of sensory breaks lead to measurable improvement in children's regulation.`,
     );
   }
 
-  if (recommendationImplementationRate >= 90 && totalRecommendationsMade > 0) {
+  if (meets(recommendationImplementationRate, 90) && totalRecommendationsMade > 0) {
     strengths.push(
       `${recommendationImplementationRate}% of OT recommendations implemented — the home follows through comprehensively on professional guidance.`,
     );
-  } else if (recommendationImplementationRate >= 70 && totalRecommendationsMade > 0) {
+  } else if (meets(recommendationImplementationRate, 70) && totalRecommendationsMade > 0) {
     strengths.push(
       `${recommendationImplementationRate}% OT recommendation implementation — good compliance with professional guidance from occupational therapy.`,
     );
   }
 
-  if (independentUseRate >= 70 && totalActiveStrategies > 0) {
+  if (meets(independentUseRate, 70) && totalActiveStrategies > 0) {
     strengths.push(
       `${independentUseRate}% of active strategies are used independently by children — children are developing genuine self-regulation skills, not just relying on staff support.`,
     );
-  } else if (independentUseRate >= 50 && totalActiveStrategies > 0) {
+  } else if (meets(independentUseRate, 50) && totalActiveStrategies > 0) {
     strengths.push(
       `${independentUseRate}% of strategies used independently — children are beginning to internalise regulation strategies and use them without prompting.`,
     );
   }
 
-  if (childParticipationInPlanningRate >= 90 && activeDietPlans.length > 0) {
+  if (meets(childParticipationInPlanningRate, 90) && activeDietPlans.length > 0) {
     strengths.push(
       "Children participate in planning their own sensory diets in the vast majority of cases — plans are genuinely co-produced and child-centred.",
     );
-  } else if (childParticipationInPlanningRate >= 70 && activeDietPlans.length > 0) {
+  } else if (meets(childParticipationInPlanningRate, 70) && activeDietPlans.length > 0) {
     strengths.push(
       `${childParticipationInPlanningRate}% child participation in sensory diet planning — good practice in involving children in decisions about their own sensory support.`,
     );
   }
 
-  if (staffTrainedOnPlanRate >= 90 && activeDietPlans.length > 0) {
+  if (meets(staffTrainedOnPlanRate, 90) && activeDietPlans.length > 0) {
     strengths.push(
       "Staff are trained on sensory diet plans for nearly all children — consistent, informed delivery of sensory support across the team.",
     );
   }
 
-  if (triggerIdentificationRate >= 80 && totalSelfRegAssessments > 0) {
+  if (meets(triggerIdentificationRate, 80) && totalSelfRegAssessments > 0) {
     strengths.push(
       `${triggerIdentificationRate}% of children can identify their own sensory triggers — strong evidence that children are developing self-awareness about their regulation needs.`,
     );
   }
 
-  if (positiveOutcomeRate >= 80 && totalOutcomes > 0) {
+  if (meets(positiveOutcomeRate, 80) && totalOutcomes > 0) {
     strengths.push(
       `${positiveOutcomeRate}% positive outcome rate across all regulation strategy uses — strategies are consistently producing positive results in real-world situations.`,
     );
   }
 
-  if (planReviewComplianceRate >= 100 && activeDietPlans.length > 0) {
+  if (meets(planReviewComplianceRate, 100) && activeDietPlans.length > 0) {
     strengths.push(
       "All sensory diet plan reviews are up to date — the home ensures plans remain current and responsive to children's changing needs.",
     );
-  } else if (planReviewComplianceRate >= 80 && activeDietPlans.length > 0) {
+  } else if (meets(planReviewComplianceRate, 80) && activeDietPlans.length > 0) {
     strengths.push(
       `${planReviewComplianceRate}% of plan reviews on schedule — strong compliance with review timescales for sensory diet plans.`,
     );
   }
 
-  if (carePlanUpdateRate >= 90 && totalOTSessions > 0) {
+  if (meets(carePlanUpdateRate, 90) && totalOTSessions > 0) {
     strengths.push(
       `${carePlanUpdateRate}% of OT sessions result in care plan updates — therapy findings are consistently integrated into day-to-day care planning.`,
     );
   }
 
-  if (childRequestedBreakRate >= 40 && totalBreaks > 0) {
+  if (meets(childRequestedBreakRate, 40) && totalBreaks > 0) {
     strengths.push(
       `${childRequestedBreakRate}% of sensory breaks are child-requested — children feel empowered and able to advocate for their own regulation needs.`,
     );
   }
 
-  if (goalAchievementRate >= 70 && totalGoalsSet > 0) {
+  if (meets(goalAchievementRate, 70) && totalGoalsSet > 0) {
     strengths.push(
       `${goalAchievementRate}% of OT goals achieved — occupational therapy is delivering tangible outcomes for children's sensory development.`,
     );
@@ -741,81 +743,81 @@ export function computeSensoryDietRegulation(
 
   const concerns: string[] = [];
 
-  if (dietPlanCoverageRate < 50 && total_children > 0) {
+  if (below(dietPlanCoverageRate, 50) && total_children > 0) {
     concerns.push(
       `Only ${dietPlanCoverageRate}% of children have active sensory diet plans — the majority of children lack individualised sensory programmes, meaning their regulation needs may go unsupported throughout the day.`,
     );
-  } else if (dietPlanCoverageRate < 80 && dietPlanCoverageRate >= 50 && total_children > 0) {
+  } else if (below(dietPlanCoverageRate, 80) && meets(dietPlanCoverageRate, 50) && total_children > 0) {
     concerns.push(
       `Sensory diet plan coverage at ${dietPlanCoverageRate}% — some children still lack individualised sensory diet plans, which may result in inconsistent or inadequate sensory support.`,
     );
   }
 
-  if (strategyEffectivenessRate < 40 && totalStrategies > 0) {
+  if (below(strategyEffectivenessRate, 40) && totalStrategies > 0) {
     concerns.push(
       `Only ${strategyEffectivenessRate}% of regulation strategies rated as effective — the majority of strategies are not achieving the desired regulation outcomes, suggesting a need for fundamental reassessment of the approach.`,
     );
-  } else if (strategyEffectivenessRate < 70 && strategyEffectivenessRate >= 40 && totalStrategies > 0) {
+  } else if (below(strategyEffectivenessRate, 70) && meets(strategyEffectivenessRate, 40) && totalStrategies > 0) {
     concerns.push(
       `Regulation strategy effectiveness at ${strategyEffectivenessRate}% — a significant proportion of strategies are not meeting children's regulation needs effectively.`,
     );
   }
 
-  if (breakSchedulingRate < 40 && totalBreaks > 0) {
+  if (below(breakSchedulingRate, 40) && totalBreaks > 0) {
     concerns.push(
       `Only ${breakSchedulingRate}% of sensory breaks are pre-scheduled — most breaks are reactive rather than proactive, indicating the home is not anticipating children's regulation needs as part of daily planning.`,
     );
-  } else if (breakSchedulingRate < 60 && breakSchedulingRate >= 40 && totalBreaks > 0) {
+  } else if (below(breakSchedulingRate, 60) && meets(breakSchedulingRate, 40) && totalBreaks > 0) {
     concerns.push(
       `Break scheduling rate at ${breakSchedulingRate}% — many sensory breaks are not planned in advance, reducing their effectiveness as a proactive regulation tool.`,
     );
   }
 
-  if (therapyIntegrationRate < 30 && total_children > 0 && totalOTSessions > 0) {
+  if (below(therapyIntegrationRate, 30) && total_children > 0 && totalOTSessions > 0) {
     concerns.push(
       `Only ${therapyIntegrationRate}% of children have occupational therapy involvement — most children are not receiving specialist sensory assessment and guidance, limiting the quality and appropriateness of sensory diet planning.`,
     );
-  } else if (therapyIntegrationRate < 60 && therapyIntegrationRate >= 30 && total_children > 0) {
+  } else if (below(therapyIntegrationRate, 60) && meets(therapyIntegrationRate, 30) && total_children > 0) {
     concerns.push(
       `Occupational therapy integration at ${therapyIntegrationRate}% — not all children who may benefit from specialist sensory input are receiving it.`,
     );
   }
 
-  if (selfRegulationRate < 40 && totalSelfRegAssessments > 0) {
+  if (below(selfRegulationRate, 40) && totalSelfRegAssessments > 0) {
     concerns.push(
       `Only ${selfRegulationRate}% of children showing self-regulation improvement — the majority of children are not making measurable progress in managing their own regulation, suggesting current approaches are insufficient.`,
     );
-  } else if (selfRegulationRate < 70 && selfRegulationRate >= 40 && totalSelfRegAssessments > 0) {
+  } else if (below(selfRegulationRate, 70) && meets(selfRegulationRate, 40) && totalSelfRegAssessments > 0) {
     concerns.push(
       `Self-regulation improvement at ${selfRegulationRate}% — not all children are making expected progress in developing self-regulation skills.`,
     );
   }
 
-  if (activityImplementationRate < 50 && totalActivitiesPrescribed > 0) {
+  if (below(activityImplementationRate, 50) && totalActivitiesPrescribed > 0) {
     concerns.push(
       `Only ${activityImplementationRate}% of prescribed sensory diet activities implemented — the majority of planned sensory activities are not being delivered, undermining the effectiveness of sensory diet plans.`,
     );
-  } else if (activityImplementationRate < 70 && activityImplementationRate >= 50 && totalActivitiesPrescribed > 0) {
+  } else if (below(activityImplementationRate, 70) && meets(activityImplementationRate, 50) && totalActivitiesPrescribed > 0) {
     concerns.push(
       `Activity implementation at ${activityImplementationRate}% — some prescribed sensory diet activities are not being delivered, reducing plan effectiveness.`,
     );
   }
 
-  if (recommendationImplementationRate < 50 && totalRecommendationsMade > 0) {
+  if (below(recommendationImplementationRate, 50) && totalRecommendationsMade > 0) {
     concerns.push(
       `Only ${recommendationImplementationRate}% of OT recommendations implemented — the majority of professional guidance is not being followed through, wasting specialist input and leaving children without recommended support.`,
     );
-  } else if (recommendationImplementationRate < 70 && recommendationImplementationRate >= 50 && totalRecommendationsMade > 0) {
+  } else if (below(recommendationImplementationRate, 70) && meets(recommendationImplementationRate, 50) && totalRecommendationsMade > 0) {
     concerns.push(
       `OT recommendation implementation at ${recommendationImplementationRate}% — some professional recommendations are not being followed through, potentially leaving gaps in children's sensory support.`,
     );
   }
 
-  if (breakEffectivenessRate < 40 && totalBreaks > 0) {
+  if (below(breakEffectivenessRate, 40) && totalBreaks > 0) {
     concerns.push(
       `Only ${breakEffectivenessRate}% of sensory breaks result in improved regulation — most breaks are not achieving their purpose, suggesting break types, timing, or duration may not match children's needs.`,
     );
-  } else if (breakEffectivenessRate < 60 && breakEffectivenessRate >= 40 && totalBreaks > 0) {
+  } else if (below(breakEffectivenessRate, 60) && meets(breakEffectivenessRate, 40) && totalBreaks > 0) {
     concerns.push(
       `Sensory break effectiveness at ${breakEffectivenessRate}% — a notable proportion of breaks do not lead to improved regulation. Review break types and timing for individual children.`,
     );
@@ -851,19 +853,19 @@ export function computeSensoryDietRegulation(
     );
   }
 
-  if (staffTrainedOnPlanRate < 60 && activeDietPlans.length > 0) {
+  if (below(staffTrainedOnPlanRate, 60) && activeDietPlans.length > 0) {
     concerns.push(
       `Only ${staffTrainedOnPlanRate}% of sensory diet plans have staff trained to deliver them — without adequate staff training, plans cannot be implemented consistently or effectively.`,
     );
   }
 
-  if (decliningChildren > 0 && totalSelfRegAssessments > 0) {
+  if (above(decliningChildren, 0) && totalSelfRegAssessments > 0) {
     concerns.push(
       `${decliningChildren} child${decliningChildren !== 1 ? "ren show" : " shows"} declining self-regulation — active deterioration in regulation capacity requires immediate review and potentially revised intervention.`,
     );
   }
 
-  if (breakDocumentationRate < 60 && totalBreaks > 0) {
+  if (below(breakDocumentationRate, 60) && totalBreaks > 0) {
     concerns.push(
       `Sensory break documentation at only ${breakDocumentationRate}% — poor recording makes it difficult to evidence the purpose and effectiveness of sensory breaks or to identify patterns.`,
     );
@@ -874,7 +876,7 @@ export function computeSensoryDietRegulation(
   const recommendations: SensoryDietRecommendation[] = [];
   let rank = 0;
 
-  if (dietPlanCoverageRate < 50 && total_children > 0) {
+  if (below(dietPlanCoverageRate, 50) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -884,7 +886,7 @@ export function computeSensoryDietRegulation(
     });
   }
 
-  if (strategyEffectivenessRate < 40 && totalStrategies > 0) {
+  if (below(strategyEffectivenessRate, 40) && totalStrategies > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -894,7 +896,7 @@ export function computeSensoryDietRegulation(
     });
   }
 
-  if (selfRegulationRate < 40 && totalSelfRegAssessments > 0) {
+  if (below(selfRegulationRate, 40) && totalSelfRegAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -904,7 +906,7 @@ export function computeSensoryDietRegulation(
     });
   }
 
-  if (therapyIntegrationRate < 30 && total_children > 0 && occupational_therapy_records.length > 0) {
+  if (below(therapyIntegrationRate, 30) && total_children > 0 && occupational_therapy_records.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -914,7 +916,7 @@ export function computeSensoryDietRegulation(
     });
   }
 
-  if (activityImplementationRate < 50 && totalActivitiesPrescribed > 0) {
+  if (below(activityImplementationRate, 50) && totalActivitiesPrescribed > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -924,7 +926,7 @@ export function computeSensoryDietRegulation(
     });
   }
 
-  if (recommendationImplementationRate < 50 && totalRecommendationsMade > 0) {
+  if (below(recommendationImplementationRate, 50) && totalRecommendationsMade > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -954,7 +956,7 @@ export function computeSensoryDietRegulation(
     });
   }
 
-  if (staffTrainedOnPlanRate < 60 && activeDietPlans.length > 0) {
+  if (below(staffTrainedOnPlanRate, 60) && activeDietPlans.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -984,7 +986,7 @@ export function computeSensoryDietRegulation(
     });
   }
 
-  if (dietPlanCoverageRate >= 50 && dietPlanCoverageRate < 80 && total_children > 0) {
+  if (meets(dietPlanCoverageRate, 50) && below(dietPlanCoverageRate, 80) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -994,7 +996,7 @@ export function computeSensoryDietRegulation(
     });
   }
 
-  if (strategyEffectivenessRate >= 40 && strategyEffectivenessRate < 70 && totalStrategies > 0) {
+  if (meets(strategyEffectivenessRate, 40) && below(strategyEffectivenessRate, 70) && totalStrategies > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1004,7 +1006,7 @@ export function computeSensoryDietRegulation(
     });
   }
 
-  if (selfRegulationRate >= 40 && selfRegulationRate < 70 && totalSelfRegAssessments > 0) {
+  if (meets(selfRegulationRate, 40) && below(selfRegulationRate, 70) && totalSelfRegAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1014,7 +1016,7 @@ export function computeSensoryDietRegulation(
     });
   }
 
-  if (breakSchedulingRate < 60 && totalBreaks > 0) {
+  if (below(breakSchedulingRate, 60) && totalBreaks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1024,7 +1026,7 @@ export function computeSensoryDietRegulation(
     });
   }
 
-  if (therapyIntegrationRate >= 30 && therapyIntegrationRate < 60 && total_children > 0) {
+  if (meets(therapyIntegrationRate, 30) && below(therapyIntegrationRate, 60) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1034,7 +1036,7 @@ export function computeSensoryDietRegulation(
     });
   }
 
-  if (activityImplementationRate >= 50 && activityImplementationRate < 70 && totalActivitiesPrescribed > 0) {
+  if (meets(activityImplementationRate, 50) && below(activityImplementationRate, 70) && totalActivitiesPrescribed > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1044,7 +1046,7 @@ export function computeSensoryDietRegulation(
     });
   }
 
-  if (breakDocumentationRate < 70 && totalBreaks > 0) {
+  if (below(breakDocumentationRate, 70) && totalBreaks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1054,7 +1056,7 @@ export function computeSensoryDietRegulation(
     });
   }
 
-  if (childParticipationInPlanningRate < 70 && activeDietPlans.length > 0) {
+  if (below(childParticipationInPlanningRate, 70) && activeDietPlans.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1064,7 +1066,7 @@ export function computeSensoryDietRegulation(
     });
   }
 
-  if (recommendationImplementationRate >= 50 && recommendationImplementationRate < 70 && totalRecommendationsMade > 0) {
+  if (meets(recommendationImplementationRate, 50) && below(recommendationImplementationRate, 70) && totalRecommendationsMade > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1074,7 +1076,7 @@ export function computeSensoryDietRegulation(
     });
   }
 
-  if (parentInformedRate < 70 && activeDietPlans.length > 0) {
+  if (below(parentInformedRate, 70) && activeDietPlans.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1090,35 +1092,35 @@ export function computeSensoryDietRegulation(
 
   // -- Critical insights --
 
-  if (dietPlanCoverageRate < 50 && total_children > 0) {
+  if (below(dietPlanCoverageRate, 50) && total_children > 0) {
     insights.push({
       text: `Only ${dietPlanCoverageRate}% of children have sensory diet plans. Without individualised sensory programmes, the home cannot demonstrate that each child's regulation needs are proactively planned for and supported throughout the day. Ofsted expects evidence that care planning addresses sensory needs under Reg 14.`,
       severity: "critical",
     });
   }
 
-  if (strategyEffectivenessRate < 40 && totalStrategies > 0) {
+  if (below(strategyEffectivenessRate, 40) && totalStrategies > 0) {
     insights.push({
       text: `Only ${strategyEffectivenessRate}% of regulation strategies rated as effective. When the majority of strategies fail to support children's regulation, this indicates a systemic issue — strategies may not be appropriately matched to individual sensory profiles, staff may lack training in delivery, or the strategies may need specialist occupational therapy review.`,
       severity: "critical",
     });
   }
 
-  if (selfRegulationRate < 40 && totalSelfRegAssessments > 0) {
+  if (below(selfRegulationRate, 40) && totalSelfRegAssessments > 0) {
     insights.push({
       text: `Only ${selfRegulationRate}% of children showing self-regulation improvement. Most children are not developing greater capacity to manage their own sensory and emotional regulation, which is a fundamental concern for their progress and long-term outcomes. The SCCIF explicitly evaluates whether children make progress in areas including self-regulation.`,
       severity: "critical",
     });
   }
 
-  if (therapyIntegrationRate < 30 && total_children > 0 && occupational_therapy_records.length > 0) {
+  if (below(therapyIntegrationRate, 30) && total_children > 0 && occupational_therapy_records.length > 0) {
     insights.push({
       text: `Only ${therapyIntegrationRate}% of children have occupational therapy involvement. Children in residential care frequently have sensory processing differences that require specialist assessment and intervention. Without adequate OT input, sensory diet plans lack professional foundation and are less likely to be effective.`,
       severity: "critical",
     });
   }
 
-  if (activityImplementationRate < 50 && totalActivitiesPrescribed > 0) {
+  if (below(activityImplementationRate, 50) && totalActivitiesPrescribed > 0) {
     insights.push({
       text: `Only ${activityImplementationRate}% of prescribed sensory diet activities implemented. A significant gap between what is planned and what is delivered means children are not receiving the sensory input their plans identify as necessary. This undermines the purpose of care planning and may result in increased dysregulation.`,
       severity: "critical",
@@ -1126,7 +1128,7 @@ export function computeSensoryDietRegulation(
   }
 
   if (decliningChildren > 0 && totalSelfRegAssessments > 0) {
-    const decliningPct = pct(decliningChildren, totalSelfRegAssessments);
+    const decliningPct = rate(decliningChildren, totalSelfRegAssessments)!;
     insights.push({
       text: `${decliningChildren} child${decliningChildren !== 1 ? "ren" : ""} (${decliningPct}%) showing declining self-regulation. Active deterioration in regulation capacity is a serious concern that may be linked to placement instability, unmet sensory needs, or inadequate intervention. Each declining child requires immediate individual review.`,
       severity: "critical",
@@ -1135,35 +1137,35 @@ export function computeSensoryDietRegulation(
 
   // -- Warning insights --
 
-  if (dietPlanCoverageRate >= 50 && dietPlanCoverageRate < 80 && total_children > 0) {
+  if (meets(dietPlanCoverageRate, 50) && below(dietPlanCoverageRate, 80) && total_children > 0) {
     insights.push({
       text: `Sensory diet plan coverage at ${dietPlanCoverageRate}% — improving but some children still lack a structured sensory programme. Each child without a plan may have unmet regulation needs that affect their behaviour, learning, and wellbeing throughout the day.`,
       severity: "warning",
     });
   }
 
-  if (strategyEffectivenessRate >= 40 && strategyEffectivenessRate < 70 && totalStrategies > 0) {
+  if (meets(strategyEffectivenessRate, 40) && below(strategyEffectivenessRate, 70) && totalStrategies > 0) {
     insights.push({
       text: `Strategy effectiveness at ${strategyEffectivenessRate}% — some strategies are not achieving the desired regulation outcomes. Consider whether strategies are appropriately matched to each child's sensory profile and whether staff are delivering them consistently.`,
       severity: "warning",
     });
   }
 
-  if (selfRegulationRate >= 40 && selfRegulationRate < 70 && totalSelfRegAssessments > 0) {
+  if (meets(selfRegulationRate, 40) && below(selfRegulationRate, 70) && totalSelfRegAssessments > 0) {
     insights.push({
       text: `Self-regulation improvement at ${selfRegulationRate}% — not all children are making expected progress. Review whether interventions are appropriately intensive, whether OT goals are realistic, and whether staff are supporting children to practise strategies throughout the day.`,
       severity: "warning",
     });
   }
 
-  if (breakSchedulingRate >= 40 && breakSchedulingRate < 60 && totalBreaks > 0) {
+  if (meets(breakSchedulingRate, 40) && below(breakSchedulingRate, 60) && totalBreaks > 0) {
     insights.push({
       text: `Break scheduling at ${breakSchedulingRate}% — many breaks are reactive rather than proactive. Proactively scheduling sensory breaks based on each child's sensory diet plan helps prevent dysregulation rather than responding to it after the fact.`,
       severity: "warning",
     });
   }
 
-  if (therapyIntegrationRate >= 30 && therapyIntegrationRate < 60 && total_children > 0) {
+  if (meets(therapyIntegrationRate, 30) && below(therapyIntegrationRate, 60) && total_children > 0) {
     insights.push({
       text: `Occupational therapy integration at ${therapyIntegrationRate}% — some children who may benefit from specialist sensory input are not receiving it. OT involvement is critical for evidence-based sensory diet planning and regulation strategy development.`,
       severity: "warning",
@@ -1198,7 +1200,7 @@ export function computeSensoryDietRegulation(
     });
   }
 
-  if (recommendationImplementationRate >= 50 && recommendationImplementationRate < 70 && totalRecommendationsMade > 0) {
+  if (meets(recommendationImplementationRate, 50) && below(recommendationImplementationRate, 70) && totalRecommendationsMade > 0) {
     insights.push({
       text: `OT recommendation implementation at ${recommendationImplementationRate}% — some professional guidance is not being followed through. Each unimplemented recommendation represents a missed opportunity to improve children's sensory support based on expert assessment.`,
       severity: "warning",
@@ -1206,14 +1208,14 @@ export function computeSensoryDietRegulation(
   }
 
   if (fluctuatingChildren > 0 && totalSelfRegAssessments > 0) {
-    const fluctuatingPct = pct(fluctuatingChildren, totalSelfRegAssessments);
+    const fluctuatingPct = rate(fluctuatingChildren, totalSelfRegAssessments)!;
     insights.push({
       text: `${fluctuatingChildren} child${fluctuatingChildren !== 1 ? "ren" : ""} (${fluctuatingPct}%) showing fluctuating self-regulation. Inconsistency in regulation progress may indicate environmental triggers, inconsistent strategy delivery, or the need for more intensive support during periods of instability.`,
       severity: "warning",
     });
   }
 
-  if (activityImplementationRate >= 50 && activityImplementationRate < 70 && totalActivitiesPrescribed > 0) {
+  if (meets(activityImplementationRate, 50) && below(activityImplementationRate, 70) && totalActivitiesPrescribed > 0) {
     insights.push({
       text: `Activity implementation at ${activityImplementationRate}% — some prescribed sensory activities are not being delivered. The gap between plan and delivery may be due to staffing, training, or resource barriers that need to be addressed to ensure plans are effective.`,
       severity: "warning",
@@ -1284,8 +1286,8 @@ export function computeSensoryDietRegulation(
   }
 
   if (
-    dietPlanCoverageRate >= 100 &&
-    childParticipationInPlanningRate >= 90 &&
+    meets(dietPlanCoverageRate, 100) &&
+    meets(childParticipationInPlanningRate, 90) &&
     total_children > 0 &&
     activeDietPlans.length > 0
   ) {
@@ -1296,8 +1298,8 @@ export function computeSensoryDietRegulation(
   }
 
   if (
-    strategyEffectivenessRate >= 90 &&
-    positiveOutcomeRate >= 80 &&
+    meets(strategyEffectivenessRate, 90) &&
+    meets(positiveOutcomeRate, 80) &&
     totalStrategies > 0
   ) {
     insights.push({
@@ -1307,8 +1309,8 @@ export function computeSensoryDietRegulation(
   }
 
   if (
-    selfRegulationRate >= 90 &&
-    independentStrategyUseRate >= 70 &&
+    meets(selfRegulationRate, 90) &&
+    meets(independentStrategyUseRate, 70) &&
     totalSelfRegAssessments > 0
   ) {
     insights.push({
@@ -1318,8 +1320,8 @@ export function computeSensoryDietRegulation(
   }
 
   if (
-    therapyIntegrationRate >= 80 &&
-    recommendationImplementationRate >= 90 &&
+    meets(therapyIntegrationRate, 80) &&
+    meets(recommendationImplementationRate, 90) &&
     total_children > 0 &&
     totalRecommendationsMade > 0
   ) {
@@ -1330,8 +1332,8 @@ export function computeSensoryDietRegulation(
   }
 
   if (
-    breakSchedulingRate >= 80 &&
-    breakEffectivenessRate >= 80 &&
+    meets(breakSchedulingRate, 80) &&
+    meets(breakEffectivenessRate, 80) &&
     totalBreaks > 0
   ) {
     insights.push({
@@ -1341,8 +1343,8 @@ export function computeSensoryDietRegulation(
   }
 
   if (
-    activityImplementationRate >= 90 &&
-    staffTrainedOnPlanRate >= 90 &&
+    meets(activityImplementationRate, 90) &&
+    meets(staffTrainedOnPlanRate, 90) &&
     totalActivitiesPrescribed > 0 &&
     activeDietPlans.length > 0
   ) {
@@ -1353,8 +1355,8 @@ export function computeSensoryDietRegulation(
   }
 
   if (
-    triggerIdentificationRate >= 80 &&
-    helpRequestRate >= 80 &&
+    meets(triggerIdentificationRate, 80) &&
+    meets(helpRequestRate, 80) &&
     totalSelfRegAssessments > 0
   ) {
     insights.push({
@@ -1364,8 +1366,8 @@ export function computeSensoryDietRegulation(
   }
 
   if (
-    goalAchievementRate >= 70 &&
-    carePlanUpdateRate >= 90 &&
+    meets(goalAchievementRate, 70) &&
+    meets(carePlanUpdateRate, 90) &&
     totalGoalsSet > 0 &&
     totalOTSessions > 0
   ) {
@@ -1386,8 +1388,8 @@ export function computeSensoryDietRegulation(
   }
 
   if (
-    childRequestedBreakRate >= 40 &&
-    independentUseRate >= 50 &&
+    meets(childRequestedBreakRate, 40) &&
+    meets(independentUseRate, 50) &&
     totalBreaks > 0 &&
     totalActiveStrategies > 0
   ) {
@@ -1403,8 +1405,8 @@ export function computeSensoryDietRegulation(
     decliningChildren === 0 &&
     totalSelfRegAssessments > 0
   ) {
-    const improvingPct = pct(improvingChildren, totalSelfRegAssessments);
-    const stablePct = pct(stableChildren, totalSelfRegAssessments);
+    const improvingPct = rate(improvingChildren, totalSelfRegAssessments)!;
+    const stablePct = rate(stableChildren, totalSelfRegAssessments)!;
     insights.push({
       text: `${improvingPct}% of children improving and ${stablePct}% stable with no children declining — the self-regulation trajectory across the home is entirely positive, with children either making gains or maintaining their current level. Zero decline is a strong indicator of effective, sustained sensory support.`,
       severity: "positive",
