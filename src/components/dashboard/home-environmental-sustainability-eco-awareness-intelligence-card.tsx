@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Leaf } from "luci
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { SustainabilityRating } from "@/lib/engines/home-environmental-sustainability-eco-awareness-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 function useHomeEnvironmentalSustainabilityEcoAwarenessIntelligence() {
   return useQuery({
@@ -61,7 +62,7 @@ export function HomeEnvironmentalSustainabilityEcoAwarenessIntelligenceCard() {
             <Leaf className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-[--cs-success]")} />
             <span className="text-slate-900 font-bold">Environmental Sustainability</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.sustainability_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.sustainability_score}%</span>}
+            {d.sustainability_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.sustainability_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -69,28 +70,28 @@ export function HomeEnvironmentalSustainabilityEcoAwarenessIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.sustainability_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.energy_efficiency_rate >= 90 ? "bg-green-50" : d.energy_efficiency_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.energy_efficiency_rate >= 90 ? "text-[--cs-success]" : d.energy_efficiency_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.energy_efficiency_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.energy_efficiency_rate, 90) ? "bg-green-50" : meets(d.energy_efficiency_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.energy_efficiency_rate, 90) ? "text-[--cs-success]" : meets(d.energy_efficiency_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.energy_efficiency_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Energy</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.recycling_compliance_rate >= 90 ? "bg-green-50" : d.recycling_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.recycling_compliance_rate >= 90 ? "text-[--cs-success]" : d.recycling_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.recycling_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.recycling_compliance_rate, 90) ? "bg-green-50" : meets(d.recycling_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.recycling_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.recycling_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.recycling_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Recycle</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.eco_education_engagement_rate >= 90 ? "bg-green-50" : d.eco_education_engagement_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.eco_education_engagement_rate >= 90 ? "text-[--cs-success]" : d.eco_education_engagement_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.eco_education_engagement_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.eco_education_engagement_rate, 90) ? "bg-green-50" : meets(d.eco_education_engagement_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.eco_education_engagement_rate, 90) ? "text-[--cs-success]" : meets(d.eco_education_engagement_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.eco_education_engagement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Education</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.sustainability_practice_score >= 90 ? "bg-green-50" : d.sustainability_practice_score >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.sustainability_practice_score >= 90 ? "text-[--cs-success]" : d.sustainability_practice_score >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.sustainability_practice_score}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.sustainability_practice_score, 90) ? "bg-green-50" : meets(d.sustainability_practice_score, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.sustainability_practice_score, 90) ? "text-[--cs-success]" : meets(d.sustainability_practice_score, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.sustainability_practice_score)}</p>
               <p className="text-[9px] text-muted-foreground">Practices</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.carbon_awareness_rate >= 90 ? "bg-green-50" : d.carbon_awareness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.carbon_awareness_rate >= 90 ? "text-[--cs-success]" : d.carbon_awareness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.carbon_awareness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.carbon_awareness_rate, 90) ? "bg-green-50" : meets(d.carbon_awareness_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.carbon_awareness_rate, 90) ? "text-[--cs-success]" : meets(d.carbon_awareness_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.carbon_awareness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Carbon</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_participation_rate >= 90 ? "bg-green-50" : d.child_participation_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_participation_rate >= 90 ? "text-[--cs-success]" : d.child_participation_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_participation_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.child_participation_rate, 90) ? "bg-green-50" : meets(d.child_participation_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.child_participation_rate, 90) ? "text-[--cs-success]" : meets(d.child_participation_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_participation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Particip.</p>
             </div>
           </div>

@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME ELECTRICITY & GAS SAFETY INTELLIGENCE ENGINE
 // Monitors PAT testing compliance, gas safety certificate currency, electrical
@@ -189,10 +190,6 @@ export interface ElectricityGasSafetyResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -216,17 +213,17 @@ function emptyResult(
     electrical_score: score,
     headline,
     total_appliances_tested: 0,
-    pat_testing_rate: 0,
-    gas_certificate_rate: 0,
-    electrical_inspection_rate: 0,
-    co_detector_rate: 0,
-    child_safety_rate: 0,
-    staff_training_rate: 0,
-    pat_pass_rate: 0,
-    gas_satisfactory_rate: 0,
-    electrical_satisfactory_rate: 0,
-    co_functioning_rate: 0,
-    defect_resolution_rate: 0,
+    pat_testing_rate: null,
+    gas_certificate_rate: null,
+    electrical_inspection_rate: null,
+    co_detector_rate: null,
+    child_safety_rate: null,
+    staff_training_rate: null,
+    pat_pass_rate: null,
+    gas_satisfactory_rate: null,
+    electrical_satisfactory_rate: null,
+    co_functioning_rate: null,
+    defect_resolution_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -306,10 +303,10 @@ export function computeElectricityGasSafety(
   // --- PAT Testing ---
   const totalPatRecords = pat_testing_records.length;
   const patCurrentRecords = pat_testing_records.filter((p) => !p.test_overdue);
-  const patTestingRate = pct(patCurrentRecords.length, totalPatRecords);
+  const patTestingRate = rate(patCurrentRecords.length, totalPatRecords);
 
   const patPassRecords = pat_testing_records.filter((p) => p.result === "pass");
-  const patPassRate = pct(patPassRecords.length, totalPatRecords);
+  const patPassRate = rate(patPassRecords.length, totalPatRecords);
 
   const patFailRecords = pat_testing_records.filter((p) => p.result === "fail");
   const patFailCount = patFailRecords.length;
@@ -319,7 +316,7 @@ export function computeElectricityGasSafety(
   const patDefectRecords = pat_testing_records.filter((p) => p.defect_found);
   const patDefectCount = patDefectRecords.length;
   const patDefectsResolved = patDefectRecords.filter((p) => p.defect_resolved).length;
-  const patDefectResolutionRate = pct(patDefectsResolved, patDefectCount);
+  const patDefectResolutionRate = rate(patDefectsResolved, patDefectCount);
 
   const patHighRiskCount = pat_testing_records.filter((p) => p.risk_rating === "high").length;
 
@@ -327,12 +324,12 @@ export function computeElectricityGasSafety(
     (p) => p.child_accessible && (p.result === "fail" || p.defect_found),
   ).length;
 
-  const patQualifiedTesterRate = pct(
+  const patQualifiedTesterRate = rate(
     pat_testing_records.filter((p) => p.tester_qualified).length,
     totalPatRecords,
   );
 
-  const patLabelRate = pct(
+  const patLabelRate = rate(
     pat_testing_records.filter((p) => p.label_attached).length,
     totalPatRecords,
   );
@@ -340,12 +337,12 @@ export function computeElectricityGasSafety(
   // --- Gas Safety Certificates ---
   const totalGasRecords = gas_certificate_records.length;
   const gasCurrentRecords = gas_certificate_records.filter((g) => !g.expired);
-  const gasCertificateRate = pct(gasCurrentRecords.length, totalGasRecords);
+  const gasCertificateRate = rate(gasCurrentRecords.length, totalGasRecords);
 
   const gasSatisfactoryRecords = gas_certificate_records.filter(
     (g) => g.result === "satisfactory",
   );
-  const gasSatisfactoryRate = pct(gasSatisfactoryRecords.length, totalGasRecords);
+  const gasSatisfactoryRate = rate(gasSatisfactoryRecords.length, totalGasRecords);
 
   const gasExpiredCount = gas_certificate_records.filter((g) => g.expired).length;
 
@@ -365,24 +362,24 @@ export function computeElectricityGasSafety(
   const gasDefectsRectified = gas_certificate_records.filter(
     (g) => g.defects_found && g.defect_rectified,
   ).length;
-  const gasDefectResolutionRate = pct(gasDefectsRectified, gasDefectsFound);
+  const gasDefectResolutionRate = rate(gasDefectsRectified, gasDefectsFound);
 
-  const gasFlueCheckedRate = pct(
+  const gasFlueCheckedRate = rate(
     gas_certificate_records.filter((g) => g.flue_checked).length,
     totalGasRecords,
   );
 
-  const gasVentilationRate = pct(
+  const gasVentilationRate = rate(
     gas_certificate_records.filter((g) => g.ventilation_adequate).length,
     totalGasRecords,
   );
 
-  const gasSafetyDeviceRate = pct(
+  const gasSafetyDeviceRate = rate(
     gas_certificate_records.filter((g) => g.safety_device_operational).length,
     totalGasRecords,
   );
 
-  const gasCoReadingRate = pct(
+  const gasCoReadingRate = rate(
     gas_certificate_records.filter((g) => g.co_reading_acceptable).length,
     totalGasRecords,
   );
@@ -392,12 +389,12 @@ export function computeElectricityGasSafety(
   const electricalCurrentRecords = electrical_inspection_records.filter(
     (e) => !e.inspection_overdue,
   );
-  const electricalInspectionRate = pct(electricalCurrentRecords.length, totalElectricalRecords);
+  const electricalInspectionRate = rate(electricalCurrentRecords.length, totalElectricalRecords);
 
   const electricalSatisfactoryRecords = electrical_inspection_records.filter(
     (e) => e.result === "satisfactory",
   );
-  const electricalSatisfactoryRate = pct(electricalSatisfactoryRecords.length, totalElectricalRecords);
+  const electricalSatisfactoryRate = rate(electricalSatisfactoryRecords.length, totalElectricalRecords);
 
   const electricalOverdueCount = electrical_inspection_records.filter(
     (e) => e.inspection_overdue,
@@ -416,24 +413,24 @@ export function computeElectricityGasSafety(
     (sum, e) => sum + e.defects_rectified,
     0,
   );
-  const electricalDefectResolutionRate = pct(totalElectricalDefectsRectified, totalElectricalDefects);
+  const electricalDefectResolutionRate = rate(totalElectricalDefectsRectified, totalElectricalDefects);
 
-  const rcdTestedRate = pct(
+  const rcdTestedRate = rate(
     electrical_inspection_records.filter((e) => e.rcd_tested).length,
     totalElectricalRecords,
   );
 
-  const rcdOperatingRate = pct(
+  const rcdOperatingRate = rate(
     electrical_inspection_records.filter((e) => e.rcd_operating_correctly).length,
     totalElectricalRecords,
   );
 
-  const earthingRate = pct(
+  const earthingRate = rate(
     electrical_inspection_records.filter((e) => e.earthing_satisfactory).length,
     totalElectricalRecords,
   );
 
-  const bondingRate = pct(
+  const bondingRate = rate(
     electrical_inspection_records.filter((e) => e.bonding_satisfactory).length,
     totalElectricalRecords,
   );
@@ -441,29 +438,29 @@ export function computeElectricityGasSafety(
   // --- CO Detectors ---
   const totalCoDetectors = co_detector_records.length;
   const coFunctioningRecords = co_detector_records.filter((c) => c.functioning);
-  const coFunctioningRate = pct(coFunctioningRecords.length, totalCoDetectors);
+  const coFunctioningRate = rate(coFunctioningRecords.length, totalCoDetectors);
 
   const coTestedCurrent = co_detector_records.filter((c) => !c.test_overdue);
-  const coDetectorRate = pct(coTestedCurrent.length, totalCoDetectors);
+  const coDetectorRate = rate(coTestedCurrent.length, totalCoDetectors);
 
   const coNotFunctioningCount = co_detector_records.filter((c) => !c.functioning).length;
 
-  const coNearGasRate = pct(
+  const coNearGasRate = rate(
     co_detector_records.filter((c) => c.near_gas_appliance).length,
     totalCoDetectors,
   );
 
-  const coNearSleepingRate = pct(
+  const coNearSleepingRate = rate(
     co_detector_records.filter((c) => c.near_sleeping_area).length,
     totalCoDetectors,
   );
 
-  const coAudibleRate = pct(
+  const coAudibleRate = rate(
     co_detector_records.filter((c) => c.audible_from_bedrooms).length,
     totalCoDetectors,
   );
 
-  const coPositionedCorrectlyRate = pct(
+  const coPositionedCorrectlyRate = rate(
     co_detector_records.filter((c) => c.positioned_correctly).length,
     totalCoDetectors,
   );
@@ -472,7 +469,7 @@ export function computeElectricityGasSafety(
     (c) => c.battery_status === "low" || c.battery_status === "dead",
   ).length;
 
-  const coChildAwareRate = pct(
+  const coChildAwareRate = rate(
     co_detector_records.filter((c) => c.child_aware_of_alarm).length,
     totalCoDetectors,
   );
@@ -484,7 +481,7 @@ export function computeElectricityGasSafety(
   // --- Child Safety Awareness ---
   const totalChildSafetyRecords = child_safety_records.length;
   const uniqueChildrenAssessed = new Set(child_safety_records.map((c) => c.child_id)).size;
-  const childSafetyRate = total_children > 0 ? pct(uniqueChildrenAssessed, total_children) : 0;
+  const childSafetyRate = total_children > 0 ? rate(uniqueChildrenAssessed, total_children) : 0;
 
   const childKnowledgeScores = child_safety_records.map((c) => c.knowledge_score).filter((s): s is number => s !== null);
   const avgKnowledgeScore =
@@ -494,17 +491,17 @@ export function computeElectricityGasSafety(
         ) / 100
       : null;
 
-  const practicalDemoRate = pct(
+  const practicalDemoRate = rate(
     child_safety_records.filter((c) => c.practical_demonstration).length,
     totalChildSafetyRecords,
   );
 
-  const hazardIdentificationRate = pct(
+  const hazardIdentificationRate = rate(
     child_safety_records.filter((c) => c.can_identify_hazards).length,
     totalChildSafetyRecords,
   );
 
-  const emergencyProcedureRate = pct(
+  const emergencyProcedureRate = rate(
     child_safety_records.filter((c) => c.knows_emergency_procedure).length,
     totalChildSafetyRecords,
   );
@@ -519,9 +516,9 @@ export function computeElectricityGasSafety(
   const additionalSupportProvided = child_safety_records.filter(
     (c) => c.additional_support_needed && c.support_provided,
   ).length;
-  const supportProvisionRate = pct(additionalSupportProvided, additionalSupportNeeded);
+  const supportProvisionRate = rate(additionalSupportProvided, additionalSupportNeeded);
 
-  const childEngagementRate = pct(
+  const childEngagementRate = rate(
     child_safety_records.filter((c) => c.child_engaged_in_session).length,
     totalChildSafetyRecords,
   );
@@ -530,58 +527,58 @@ export function computeElectricityGasSafety(
   // Staff training rate is approximated from how many unique assessors (staff) have conducted
   // safety awareness sessions — more diverse assessors = broader staff competency
   const uniqueAssessors = new Set(child_safety_records.map((c) => c.assessed_by)).size;
-  const staffTrainingRate = total_staff > 0 ? clamp(pct(uniqueAssessors, total_staff), 0, 100) : 0;
+  const staffTrainingRate = total_staff > 0 ? clamp(rate(uniqueAssessors, total_staff)!, 0, 100) : null;
 
   // --- Composite Defect Resolution Rate ---
   const totalDefectsAll = patDefectCount + gasDefectsFound + totalElectricalDefects;
   const totalResolvedAll = patDefectsResolved + gasDefectsRectified + totalElectricalDefectsRectified;
-  const defectResolutionRate = pct(totalResolvedAll, totalDefectsAll);
+  const defectResolutionRate = rate(totalResolvedAll, totalDefectsAll);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: patTestingRate (>=100: +5, >=80: +3) ---
-  if (patTestingRate >= 100) score += 5;
-  else if (patTestingRate >= 80) score += 3;
+  if (meets(patTestingRate, 100)) score += 5;
+  else if (meets(patTestingRate, 80)) score += 3;
 
   // --- Bonus 2: gasCertificateRate (>=100: +5, >=80: +3) ---
-  if (gasCertificateRate >= 100) score += 5;
-  else if (gasCertificateRate >= 80) score += 3;
+  if (meets(gasCertificateRate, 100)) score += 5;
+  else if (meets(gasCertificateRate, 80)) score += 3;
 
   // --- Bonus 3: electricalInspectionRate (>=100: +5, >=80: +3) ---
-  if (electricalInspectionRate >= 100) score += 5;
-  else if (electricalInspectionRate >= 80) score += 3;
+  if (meets(electricalInspectionRate, 100)) score += 5;
+  else if (meets(electricalInspectionRate, 80)) score += 3;
 
   // --- Bonus 4: coDetectorRate (>=100: +4, >=80: +2) ---
-  if (coDetectorRate >= 100) score += 4;
-  else if (coDetectorRate >= 80) score += 2;
+  if (meets(coDetectorRate, 100)) score += 4;
+  else if (meets(coDetectorRate, 80)) score += 2;
 
   // --- Bonus 5: childSafetyRate (>=100: +4, >=80: +2) ---
-  if (childSafetyRate >= 100) score += 4;
-  else if (childSafetyRate >= 80) score += 2;
+  if (meets(childSafetyRate, 100)) score += 4;
+  else if (meets(childSafetyRate, 80)) score += 2;
 
   // --- Bonus 6: staffTrainingRate (>=80: +3, >=60: +1) ---
-  if (staffTrainingRate >= 80) score += 3;
-  else if (staffTrainingRate >= 60) score += 1;
+  if (meets(staffTrainingRate, 80)) score += 3;
+  else if (meets(staffTrainingRate, 60)) score += 1;
 
   // --- Bonus 7: defectResolutionRate (>=100: +2, >=80: +1) ---
-  if (defectResolutionRate >= 100) score += 2;
-  else if (defectResolutionRate >= 80) score += 1;
+  if (meets(defectResolutionRate, 100)) score += 2;
+  else if (meets(defectResolutionRate, 80)) score += 1;
 
   // ── Penalties (4 guarded) ─────────────────────────────────────────────
 
   // Penalty 1: patTestingRate < 50 → -6 (guarded by totalPatRecords > 0)
-  if (patTestingRate < 50 && totalPatRecords > 0) score -= 6;
+  if (below(patTestingRate, 50) && totalPatRecords > 0) score -= 6;
 
   // Penalty 2: gasCertificateRate < 50 → -6 (guarded by totalGasRecords > 0)
-  if (gasCertificateRate < 50 && totalGasRecords > 0) score -= 6;
+  if (below(gasCertificateRate, 50) && totalGasRecords > 0) score -= 6;
 
   // Penalty 3: electricalInspectionRate < 50 → -5 (guarded by totalElectricalRecords > 0)
-  if (electricalInspectionRate < 50 && totalElectricalRecords > 0) score -= 5;
+  if (below(electricalInspectionRate, 50) && totalElectricalRecords > 0) score -= 5;
 
   // Penalty 4: coDetectorRate < 50 → -5 (guarded by totalCoDetectors > 0)
-  if (coDetectorRate < 50 && totalCoDetectors > 0) score -= 5;
+  if (below(coDetectorRate, 50) && totalCoDetectors > 0) score -= 5;
 
   score = clamp(score, 0, 100);
 
@@ -592,163 +589,163 @@ export function computeElectricityGasSafety(
   const strengths: string[] = [];
 
   // PAT testing strengths
-  if (patTestingRate >= 100 && totalPatRecords > 0) {
+  if (meets(patTestingRate, 100) && totalPatRecords > 0) {
     strengths.push(
       "All portable appliance testing is current — every item has been tested within schedule, demonstrating comprehensive electrical safety compliance.",
     );
-  } else if (patTestingRate >= 80 && totalPatRecords > 0) {
+  } else if (meets(patTestingRate, 80) && totalPatRecords > 0) {
     strengths.push(
       `${patTestingRate}% of PAT testing is current — the home maintains strong portable appliance testing compliance.`,
     );
   }
 
-  if (patPassRate >= 100 && totalPatRecords > 0) {
+  if (meets(patPassRate, 100) && totalPatRecords > 0) {
     strengths.push(
       "Every appliance has passed PAT testing — no electrical safety defects identified across the home's portable appliances.",
     );
-  } else if (patPassRate >= 90 && totalPatRecords > 0) {
+  } else if (meets(patPassRate, 90) && totalPatRecords > 0) {
     strengths.push(
       `${patPassRate}% PAT pass rate — the vast majority of portable appliances meet safety standards.`,
     );
   }
 
-  if (patQualifiedTesterRate >= 100 && totalPatRecords > 0) {
+  if (meets(patQualifiedTesterRate, 100) && totalPatRecords > 0) {
     strengths.push(
       "All PAT testing carried out by qualified testers — the home ensures electrical testing is conducted by competent persons.",
     );
   }
 
-  if (patLabelRate >= 100 && totalPatRecords > 0) {
+  if (meets(patLabelRate, 100) && totalPatRecords > 0) {
     strengths.push(
       "All tested appliances have current labels attached — clear visual identification of testing status supports ongoing safety monitoring.",
     );
   }
 
-  if (patDefectResolutionRate >= 100 && patDefectCount > 0) {
+  if (meets(patDefectResolutionRate, 100) && patDefectCount > 0) {
     strengths.push(
       "All PAT defects have been resolved — the home addresses electrical defects promptly to maintain safety.",
     );
   }
 
   // Gas safety strengths
-  if (gasCertificateRate >= 100 && totalGasRecords > 0) {
+  if (meets(gasCertificateRate, 100) && totalGasRecords > 0) {
     strengths.push(
       "All gas safety certificates are current — the home maintains full compliance with gas safety regulations.",
     );
-  } else if (gasCertificateRate >= 80 && totalGasRecords > 0) {
+  } else if (meets(gasCertificateRate, 80) && totalGasRecords > 0) {
     strengths.push(
       `${gasCertificateRate}% of gas safety certificates are current — strong gas safety compliance across the home.`,
     );
   }
 
-  if (gasSatisfactoryRate >= 100 && totalGasRecords > 0) {
+  if (meets(gasSatisfactoryRate, 100) && totalGasRecords > 0) {
     strengths.push(
       "All gas appliances rated satisfactory — every gas appliance in the home meets safety standards.",
     );
-  } else if (gasSatisfactoryRate >= 90 && totalGasRecords > 0) {
+  } else if (meets(gasSatisfactoryRate, 90) && totalGasRecords > 0) {
     strengths.push(
       `${gasSatisfactoryRate}% of gas appliances rated satisfactory — the home maintains gas appliances to a high standard.`,
     );
   }
 
-  if (gasFlueCheckedRate >= 100 && totalGasRecords > 0) {
+  if (meets(gasFlueCheckedRate, 100) && totalGasRecords > 0) {
     strengths.push(
       "All gas appliance flues have been checked — comprehensive flue inspection reduces the risk of carbon monoxide exposure.",
     );
   }
 
-  if (gasSafetyDeviceRate >= 100 && totalGasRecords > 0) {
+  if (meets(gasSafetyDeviceRate, 100) && totalGasRecords > 0) {
     strengths.push(
       "All gas safety devices are operational — the home ensures every safety mechanism is functioning correctly.",
     );
   }
 
-  if (gasDefectResolutionRate >= 100 && gasDefectsFound > 0) {
+  if (meets(gasDefectResolutionRate, 100) && gasDefectsFound > 0) {
     strengths.push(
       "All gas defects have been rectified — the home responds promptly to identified gas safety issues.",
     );
   }
 
   // Electrical inspection strengths
-  if (electricalInspectionRate >= 100 && totalElectricalRecords > 0) {
+  if (meets(electricalInspectionRate, 100) && totalElectricalRecords > 0) {
     strengths.push(
       "All electrical inspections are current — the home maintains comprehensive compliance with fixed wiring and installation safety requirements.",
     );
-  } else if (electricalInspectionRate >= 80 && totalElectricalRecords > 0) {
+  } else if (meets(electricalInspectionRate, 80) && totalElectricalRecords > 0) {
     strengths.push(
       `${electricalInspectionRate}% of electrical inspections current — strong compliance with electrical safety inspection schedules.`,
     );
   }
 
-  if (electricalSatisfactoryRate >= 100 && totalElectricalRecords > 0) {
+  if (meets(electricalSatisfactoryRate, 100) && totalElectricalRecords > 0) {
     strengths.push(
       "All electrical inspections rated satisfactory — the home's electrical installations meet current safety standards.",
     );
-  } else if (electricalSatisfactoryRate >= 90 && totalElectricalRecords > 0) {
+  } else if (meets(electricalSatisfactoryRate, 90) && totalElectricalRecords > 0) {
     strengths.push(
       `${electricalSatisfactoryRate}% of electrical inspections rated satisfactory — electrical installations are generally in good condition.`,
     );
   }
 
-  if (rcdTestedRate >= 100 && rcdOperatingRate >= 100 && totalElectricalRecords > 0) {
+  if (meets(rcdTestedRate, 100) && meets(rcdOperatingRate, 100) && totalElectricalRecords > 0) {
     strengths.push(
       "All RCDs tested and operating correctly — residual current devices provide critical protection against electrical shock.",
     );
   }
 
-  if (electricalDefectResolutionRate >= 100 && totalElectricalDefects > 0) {
+  if (meets(electricalDefectResolutionRate, 100) && totalElectricalDefects > 0) {
     strengths.push(
       "All electrical defects have been rectified — the home resolves identified electrical issues promptly.",
     );
   }
 
-  if (earthingRate >= 100 && bondingRate >= 100 && totalElectricalRecords > 0) {
+  if (meets(earthingRate, 100) && meets(bondingRate, 100) && totalElectricalRecords > 0) {
     strengths.push(
       "Earthing and bonding satisfactory across all inspections — fundamental electrical safety measures are in place throughout the home.",
     );
   }
 
   // CO detector strengths
-  if (coDetectorRate >= 100 && totalCoDetectors > 0) {
+  if (meets(coDetectorRate, 100) && totalCoDetectors > 0) {
     strengths.push(
       "All carbon monoxide detectors are tested and current — the home maintains comprehensive CO detection coverage.",
     );
-  } else if (coDetectorRate >= 80 && totalCoDetectors > 0) {
+  } else if (meets(coDetectorRate, 80) && totalCoDetectors > 0) {
     strengths.push(
       `${coDetectorRate}% of CO detectors tested and current — strong carbon monoxide detection compliance.`,
     );
   }
 
-  if (coFunctioningRate >= 100 && totalCoDetectors > 0) {
+  if (meets(coFunctioningRate, 100) && totalCoDetectors > 0) {
     strengths.push(
       "All carbon monoxide detectors are functioning — complete CO detection protection across the home.",
     );
   }
 
-  if (coPositionedCorrectlyRate >= 100 && totalCoDetectors > 0) {
+  if (meets(coPositionedCorrectlyRate, 100) && totalCoDetectors > 0) {
     strengths.push(
       "All CO detectors are correctly positioned — proper placement maximises detection effectiveness and early warning capability.",
     );
   }
 
-  if (coNearSleepingRate >= 80 && totalCoDetectors > 0) {
+  if (meets(coNearSleepingRate, 80) && totalCoDetectors > 0) {
     strengths.push(
       `${coNearSleepingRate}% of CO detectors positioned near sleeping areas — the home prioritises protection of children during sleep.`,
     );
   }
 
-  if (coChildAwareRate >= 100 && totalCoDetectors > 0) {
+  if (meets(coChildAwareRate, 100) && totalCoDetectors > 0) {
     strengths.push(
       "All children are aware of CO alarm sounds — children know what to do when a carbon monoxide alarm activates.",
     );
   }
 
   // Child safety awareness strengths
-  if (childSafetyRate >= 100 && total_children > 0) {
+  if (meets(childSafetyRate, 100) && total_children > 0) {
     strengths.push(
       "Every child has received electrical and gas safety awareness assessment — the home ensures all children understand safety risks and emergency procedures.",
     );
-  } else if (childSafetyRate >= 80 && total_children > 0) {
+  } else if (meets(childSafetyRate, 80) && total_children > 0) {
     strengths.push(
       `${childSafetyRate}% of children have received safety awareness assessment — strong coverage of safety education across the home.`,
     );
@@ -764,47 +761,47 @@ export function computeElectricityGasSafety(
     );
   }
 
-  if (emergencyProcedureRate >= 100 && totalChildSafetyRecords > 0) {
+  if (meets(emergencyProcedureRate, 100) && totalChildSafetyRecords > 0) {
     strengths.push(
       "Every assessed child knows the emergency procedures for electrical and gas safety — children can respond appropriately to safety incidents.",
     );
   }
 
-  if (hazardIdentificationRate >= 90 && totalChildSafetyRecords > 0) {
+  if (meets(hazardIdentificationRate, 90) && totalChildSafetyRecords > 0) {
     strengths.push(
       `${hazardIdentificationRate}% of children can identify electrical and gas hazards — the home builds strong safety awareness.`,
     );
   }
 
-  if (childEngagementRate >= 90 && totalChildSafetyRecords > 0) {
+  if (meets(childEngagementRate, 90) && totalChildSafetyRecords > 0) {
     strengths.push(
       `${childEngagementRate}% child engagement in safety sessions — children are actively participating in learning about safety.`,
     );
   }
 
-  if (supportProvisionRate >= 100 && additionalSupportNeeded > 0) {
+  if (meets(supportProvisionRate, 100) && additionalSupportNeeded > 0) {
     strengths.push(
       "All children identified as needing additional safety support have received it — the home ensures no child is left without tailored safety education.",
     );
   }
 
   // Staff training strengths
-  if (staffTrainingRate >= 80 && total_staff > 0) {
+  if (meets(staffTrainingRate, 80) && total_staff > 0) {
     strengths.push(
       `${staffTrainingRate}% staff involvement in safety awareness delivery — a broad staff base is competent in electrical and gas safety education.`,
     );
-  } else if (staffTrainingRate >= 60 && total_staff > 0) {
+  } else if (meets(staffTrainingRate, 60) && total_staff > 0) {
     strengths.push(
       `${staffTrainingRate}% staff involvement in safety sessions — a good proportion of staff actively deliver safety awareness to children.`,
     );
   }
 
   // Composite strengths
-  if (defectResolutionRate >= 100 && totalDefectsAll > 0) {
+  if (meets(defectResolutionRate, 100) && totalDefectsAll > 0) {
     strengths.push(
       "Every identified defect across PAT, gas, and electrical domains has been resolved — the home demonstrates a zero-tolerance approach to safety defects.",
     );
-  } else if (defectResolutionRate >= 90 && totalDefectsAll > 0) {
+  } else if (meets(defectResolutionRate, 90) && totalDefectsAll > 0) {
     strengths.push(
       `${defectResolutionRate}% overall defect resolution rate — the home addresses the vast majority of identified safety issues promptly.`,
     );
@@ -815,11 +812,11 @@ export function computeElectricityGasSafety(
   const concerns: string[] = [];
 
   // PAT testing concerns
-  if (patTestingRate < 50 && totalPatRecords > 0) {
+  if (below(patTestingRate, 50) && totalPatRecords > 0) {
     concerns.push(
       `Only ${patTestingRate}% of PAT testing is current — the majority of portable appliances have overdue testing, creating significant electrical safety risk for children and staff.`,
     );
-  } else if (patTestingRate < 80 && patTestingRate >= 50 && totalPatRecords > 0) {
+  } else if (below(patTestingRate, 80) && meets(patTestingRate, 50) && totalPatRecords > 0) {
     concerns.push(
       `PAT testing compliance at ${patTestingRate}% — some portable appliances have overdue testing. All appliances used in areas accessible to children must be tested within schedule.`,
     );
@@ -843,7 +840,7 @@ export function computeElectricityGasSafety(
     );
   }
 
-  if (patDefectResolutionRate < 80 && patDefectCount > 0) {
+  if (below(patDefectResolutionRate, 80) && patDefectCount > 0) {
     concerns.push(
       `Only ${patDefectResolutionRate}% of PAT defects resolved — unresolved electrical defects pose ongoing risk. All defects must be addressed or the appliance removed from service.`,
     );
@@ -856,11 +853,11 @@ export function computeElectricityGasSafety(
   }
 
   // Gas safety concerns
-  if (gasCertificateRate < 50 && totalGasRecords > 0) {
+  if (below(gasCertificateRate, 50) && totalGasRecords > 0) {
     concerns.push(
       `Only ${gasCertificateRate}% of gas safety certificates are current — operating gas appliances without current safety certificates is a serious regulatory breach and an immediate risk to life.`,
     );
-  } else if (gasCertificateRate < 80 && gasCertificateRate >= 50 && totalGasRecords > 0) {
+  } else if (below(gasCertificateRate, 80) && meets(gasCertificateRate, 50) && totalGasRecords > 0) {
     concerns.push(
       `Gas safety certificate compliance at ${gasCertificateRate}% — some gas appliances have expired certificates. All gas appliances must have current safety certification.`,
     );
@@ -890,24 +887,24 @@ export function computeElectricityGasSafety(
     );
   }
 
-  if (gasDefectResolutionRate < 80 && gasDefectsFound > 0) {
+  if (below(gasDefectResolutionRate, 80) && gasDefectsFound > 0) {
     concerns.push(
       `Only ${gasDefectResolutionRate}% of gas defects rectified — unresolved gas defects pose a carbon monoxide poisoning and explosion risk.`,
     );
   }
 
-  if (gasCoReadingRate < 80 && totalGasRecords > 0) {
+  if (below(gasCoReadingRate, 80) && totalGasRecords > 0) {
     concerns.push(
       `Only ${gasCoReadingRate}% of gas appliances have acceptable CO readings — elevated carbon monoxide readings indicate incomplete combustion and potential poisoning risk.`,
     );
   }
 
   // Electrical inspection concerns
-  if (electricalInspectionRate < 50 && totalElectricalRecords > 0) {
+  if (below(electricalInspectionRate, 50) && totalElectricalRecords > 0) {
     concerns.push(
       `Only ${electricalInspectionRate}% of electrical inspections are current — the majority of electrical installations have overdue inspections, meaning the safety of the home's fixed wiring is unverified.`,
     );
-  } else if (electricalInspectionRate < 80 && electricalInspectionRate >= 50 && totalElectricalRecords > 0) {
+  } else if (below(electricalInspectionRate, 80) && meets(electricalInspectionRate, 50) && totalElectricalRecords > 0) {
     concerns.push(
       `Electrical inspection compliance at ${electricalInspectionRate}% — some inspections are overdue. Fixed wiring inspections are essential for ongoing electrical safety.`,
     );
@@ -925,13 +922,13 @@ export function computeElectricityGasSafety(
     );
   }
 
-  if (electricalDefectResolutionRate < 80 && totalElectricalDefects > 0) {
+  if (below(electricalDefectResolutionRate, 80) && totalElectricalDefects > 0) {
     concerns.push(
       `Only ${electricalDefectResolutionRate}% of electrical defects rectified — outstanding electrical defects compromise the safety of the home's electrical installation.`,
     );
   }
 
-  if (rcdOperatingRate < 80 && totalElectricalRecords > 0) {
+  if (below(rcdOperatingRate, 80) && totalElectricalRecords > 0) {
     concerns.push(
       `Only ${rcdOperatingRate}% of RCDs operating correctly — residual current devices are a critical safety measure and non-functioning RCDs leave occupants unprotected from electrical shock.`,
     );
@@ -944,11 +941,11 @@ export function computeElectricityGasSafety(
   }
 
   // CO detector concerns
-  if (coDetectorRate < 50 && totalCoDetectors > 0) {
+  if (below(coDetectorRate, 50) && totalCoDetectors > 0) {
     concerns.push(
       `Only ${coDetectorRate}% of CO detectors have current testing — the majority of carbon monoxide detectors are not verified as functional, leaving children at risk of undetected CO exposure.`,
     );
-  } else if (coDetectorRate < 80 && coDetectorRate >= 50 && totalCoDetectors > 0) {
+  } else if (below(coDetectorRate, 80) && meets(coDetectorRate, 50) && totalCoDetectors > 0) {
     concerns.push(
       `CO detector testing compliance at ${coDetectorRate}% — some detectors have overdue testing. All CO detectors must be tested regularly to ensure they will activate in an emergency.`,
     );
@@ -978,18 +975,18 @@ export function computeElectricityGasSafety(
     );
   }
 
-  if (coPositionedCorrectlyRate < 80 && totalCoDetectors > 0) {
+  if (below(coPositionedCorrectlyRate, 80) && totalCoDetectors > 0) {
     concerns.push(
       `Only ${coPositionedCorrectlyRate}% of CO detectors positioned correctly — incorrectly positioned detectors may not detect CO in time to provide adequate warning.`,
     );
   }
 
   // Child safety awareness concerns
-  if (childSafetyRate < 50 && total_children > 0) {
+  if (below(childSafetyRate, 50) && total_children > 0) {
     concerns.push(
       `Only ${childSafetyRate}% of children have received safety awareness assessment — the majority of children may not understand electrical and gas safety risks or know how to respond in an emergency.`,
     );
-  } else if (childSafetyRate < 80 && childSafetyRate >= 50 && total_children > 0) {
+  } else if (below(childSafetyRate, 80) && meets(childSafetyRate, 50) && total_children > 0) {
     concerns.push(
       `Child safety awareness coverage at ${childSafetyRate}% — some children have not received electrical and gas safety education. All children should be aware of safety risks appropriate to their age.`,
     );
@@ -1005,7 +1002,7 @@ export function computeElectricityGasSafety(
     );
   }
 
-  if (emergencyProcedureRate < 70 && totalChildSafetyRecords > 0) {
+  if (below(emergencyProcedureRate, 70) && totalChildSafetyRecords > 0) {
     concerns.push(
       `Only ${emergencyProcedureRate}% of children know emergency procedures — children must understand what to do in an electrical or gas emergency to protect themselves and others.`,
     );
@@ -1017,14 +1014,14 @@ export function computeElectricityGasSafety(
     );
   }
 
-  if (supportProvisionRate < 80 && additionalSupportNeeded > 0) {
+  if (below(supportProvisionRate, 80) && additionalSupportNeeded > 0) {
     concerns.push(
       `Only ${supportProvisionRate}% of children needing additional safety support have received it — where additional support needs are identified, they must be met to ensure children's safety.`,
     );
   }
 
   // Staff training concerns
-  if (staffTrainingRate < 40 && total_staff > 0) {
+  if (below(staffTrainingRate, 40) && total_staff > 0) {
     concerns.push(
       `Only ${staffTrainingRate}% of staff have delivered safety awareness sessions — limited staff involvement in safety education suggests gaps in staff competency in electrical and gas safety.`,
     );
@@ -1076,7 +1073,7 @@ export function computeElectricityGasSafety(
     });
   }
 
-  if (gasCertificateRate < 50 && totalGasRecords > 0) {
+  if (below(gasCertificateRate, 50) && totalGasRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1086,7 +1083,7 @@ export function computeElectricityGasSafety(
     });
   }
 
-  if (patTestingRate < 50 && totalPatRecords > 0) {
+  if (below(patTestingRate, 50) && totalPatRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1096,7 +1093,7 @@ export function computeElectricityGasSafety(
     });
   }
 
-  if (electricalInspectionRate < 50 && totalElectricalRecords > 0) {
+  if (below(electricalInspectionRate, 50) && totalElectricalRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1106,7 +1103,7 @@ export function computeElectricityGasSafety(
     });
   }
 
-  if (coDetectorRate < 50 && totalCoDetectors > 0) {
+  if (below(coDetectorRate, 50) && totalCoDetectors > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1147,7 +1144,7 @@ export function computeElectricityGasSafety(
   }
 
   // Soon recommendations
-  if (patTestingRate >= 50 && patTestingRate < 80 && totalPatRecords > 0) {
+  if (meets(patTestingRate, 50) && below(patTestingRate, 80) && totalPatRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1157,7 +1154,7 @@ export function computeElectricityGasSafety(
     });
   }
 
-  if (gasCertificateRate >= 50 && gasCertificateRate < 80 && totalGasRecords > 0) {
+  if (meets(gasCertificateRate, 50) && below(gasCertificateRate, 80) && totalGasRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1167,7 +1164,7 @@ export function computeElectricityGasSafety(
     });
   }
 
-  if (electricalInspectionRate >= 50 && electricalInspectionRate < 80 && totalElectricalRecords > 0) {
+  if (meets(electricalInspectionRate, 50) && below(electricalInspectionRate, 80) && totalElectricalRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1177,7 +1174,7 @@ export function computeElectricityGasSafety(
     });
   }
 
-  if (childSafetyRate < 80 && childSafetyRate >= 50 && total_children > 0) {
+  if (below(childSafetyRate, 80) && meets(childSafetyRate, 50) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1187,7 +1184,7 @@ export function computeElectricityGasSafety(
     });
   }
 
-  if (childSafetyRate < 50 && total_children > 0) {
+  if (below(childSafetyRate, 50) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1197,7 +1194,7 @@ export function computeElectricityGasSafety(
     });
   }
 
-  if (emergencyProcedureRate < 70 && totalChildSafetyRecords > 0) {
+  if (below(emergencyProcedureRate, 70) && totalChildSafetyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1207,7 +1204,7 @@ export function computeElectricityGasSafety(
     });
   }
 
-  if (rcdOperatingRate < 80 && totalElectricalRecords > 0) {
+  if (below(rcdOperatingRate, 80) && totalElectricalRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1217,7 +1214,7 @@ export function computeElectricityGasSafety(
     });
   }
 
-  if (coPositionedCorrectlyRate < 80 && totalCoDetectors > 0) {
+  if (below(coPositionedCorrectlyRate, 80) && totalCoDetectors > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1227,7 +1224,7 @@ export function computeElectricityGasSafety(
     });
   }
 
-  if (gasCoReadingRate < 80 && totalGasRecords > 0) {
+  if (below(gasCoReadingRate, 80) && totalGasRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1248,7 +1245,7 @@ export function computeElectricityGasSafety(
     });
   }
 
-  if (staffTrainingRate < 60 && total_staff > 0) {
+  if (below(staffTrainingRate, 60) && total_staff > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1268,7 +1265,7 @@ export function computeElectricityGasSafety(
     });
   }
 
-  if (patLabelRate < 90 && totalPatRecords > 0) {
+  if (below(patLabelRate, 90) && totalPatRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1288,7 +1285,7 @@ export function computeElectricityGasSafety(
     });
   }
 
-  if (supportProvisionRate < 80 && additionalSupportNeeded > 0) {
+  if (below(supportProvisionRate, 80) && additionalSupportNeeded > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1298,7 +1295,7 @@ export function computeElectricityGasSafety(
     });
   }
 
-  if (practicalDemoRate < 70 && totalChildSafetyRecords > 0) {
+  if (below(practicalDemoRate, 70) && totalChildSafetyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1328,28 +1325,28 @@ export function computeElectricityGasSafety(
     });
   }
 
-  if (patTestingRate < 50 && totalPatRecords > 0) {
+  if (below(patTestingRate, 50) && totalPatRecords > 0) {
     insights.push({
       text: `Only ${patTestingRate}% of portable appliance testing is current. Untested electrical appliances are an unknown risk — they may have damaged cables, faulty insulation, or missing earth connections that could cause electric shock or fire. In a children's home, where young people may use appliances unsupervised, this gap in testing represents a significant safeguarding concern under Reg 25.`,
       severity: "critical",
     });
   }
 
-  if (gasCertificateRate < 50 && totalGasRecords > 0) {
+  if (below(gasCertificateRate, 50) && totalGasRecords > 0) {
     insights.push({
       text: `Only ${gasCertificateRate}% of gas safety certificates are current. Gas Safety (Installation and Use) Regulations require annual safety checks on all gas appliances. Operating gas appliances without current certificates in a children's home is both illegal and dangerous — it means the home cannot evidence that gas appliances are safe for children to be around.`,
       severity: "critical",
     });
   }
 
-  if (electricalInspectionRate < 50 && totalElectricalRecords > 0) {
+  if (below(electricalInspectionRate, 50) && totalElectricalRecords > 0) {
     insights.push({
       text: `Only ${electricalInspectionRate}% of electrical inspections are current. Electrical Installation Condition Reports (EICRs) verify the ongoing safety of the home's fixed wiring. Without current inspections, hidden deterioration in wiring, distribution boards, and protective devices goes undetected, creating fire and electrocution risks. Ofsted inspectors will request evidence of current EICRs.`,
       severity: "critical",
     });
   }
 
-  if (coDetectorRate < 50 && totalCoDetectors > 0) {
+  if (below(coDetectorRate, 50) && totalCoDetectors > 0) {
     insights.push({
       text: `Only ${coDetectorRate}% of CO detectors have current testing. Carbon monoxide is an invisible, odourless gas that kills — children are particularly vulnerable as they may not recognise symptoms. Without regularly tested, functional CO detectors, the home has no early warning system for CO leaks. This is a life-safety issue that Ofsted considers fundamental under Reg 25.`,
       severity: "critical",
@@ -1372,28 +1369,28 @@ export function computeElectricityGasSafety(
 
   // -- Warning insights --
 
-  if (patTestingRate >= 50 && patTestingRate < 80 && totalPatRecords > 0) {
+  if (meets(patTestingRate, 50) && below(patTestingRate, 80) && totalPatRecords > 0) {
     insights.push({
       text: `PAT testing compliance at ${patTestingRate}% — improving but some appliances remain untested. Each untested appliance is an unquantified risk. Consider implementing a rolling testing programme to prevent backlogs and ensure continuous compliance.`,
       severity: "warning",
     });
   }
 
-  if (gasCertificateRate >= 50 && gasCertificateRate < 80 && totalGasRecords > 0) {
+  if (meets(gasCertificateRate, 50) && below(gasCertificateRate, 80) && totalGasRecords > 0) {
     insights.push({
       text: `Gas certificate compliance at ${gasCertificateRate}% — some certificates have expired or are due. Gas safety checks must be renewed annually, and the home should plan renewals at least one month before expiry to allow for scheduling and any remedial work.`,
       severity: "warning",
     });
   }
 
-  if (electricalInspectionRate >= 50 && electricalInspectionRate < 80 && totalElectricalRecords > 0) {
+  if (meets(electricalInspectionRate, 50) && below(electricalInspectionRate, 80) && totalElectricalRecords > 0) {
     insights.push({
       text: `Electrical inspection compliance at ${electricalInspectionRate}% — some inspections are overdue. EICRs for rented residential premises (including children's homes) are typically required every 5 years. Plan inspections well in advance to allow time for any remedial work.`,
       severity: "warning",
     });
   }
 
-  if (coDetectorRate >= 50 && coDetectorRate < 80 && totalCoDetectors > 0) {
+  if (meets(coDetectorRate, 50) && below(coDetectorRate, 80) && totalCoDetectors > 0) {
     insights.push({
       text: `CO detector testing at ${coDetectorRate}% — some detectors have overdue testing. Monthly functional testing of CO detectors is recommended as a minimum. Consider implementing a structured testing schedule linked to fire safety checks.`,
       severity: "warning",
@@ -1421,14 +1418,14 @@ export function computeElectricityGasSafety(
     });
   }
 
-  if (childSafetyRate >= 50 && childSafetyRate < 80 && total_children > 0) {
+  if (meets(childSafetyRate, 50) && below(childSafetyRate, 80) && total_children > 0) {
     insights.push({
       text: `Child safety awareness coverage at ${childSafetyRate}% — some children still lack formal safety education. All children should receive age-appropriate information about electrical and gas hazards, including how to recognise danger signs and what to do in an emergency.`,
       severity: "warning",
     });
   }
 
-  if (childSafetyRate < 50 && total_children > 0) {
+  if (below(childSafetyRate, 50) && total_children > 0) {
     insights.push({
       text: `Only ${childSafetyRate}% of children have received safety awareness assessment. Children in residential care may have limited prior exposure to safety education. Without targeted, age-appropriate education, they may not recognise electrical or gas hazards, understand the significance of CO alarm sounds, or know how to respond in an emergency.`,
       severity: "warning",
@@ -1442,14 +1439,14 @@ export function computeElectricityGasSafety(
     });
   }
 
-  if (staffTrainingRate < 60 && total_staff > 0) {
+  if (below(staffTrainingRate, 60) && total_staff > 0) {
     insights.push({
       text: `Only ${staffTrainingRate}% of staff have been involved in delivering safety awareness. Limited staff involvement may indicate gaps in staff confidence or competency in electrical and gas safety. All staff should be trained to recognise and respond to electrical and gas safety hazards.`,
       severity: "warning",
     });
   }
 
-  if (defectResolutionRate >= 50 && defectResolutionRate < 80 && totalDefectsAll > 0) {
+  if (meets(defectResolutionRate, 50) && below(defectResolutionRate, 80) && totalDefectsAll > 0) {
     insights.push({
       text: `Overall defect resolution at ${defectResolutionRate}% — some identified safety defects remain unresolved. Every unresolved defect is a known risk that the home has identified but not yet addressed. Implement a defect tracker with assigned owners and target resolution dates.`,
       severity: "warning",
@@ -1529,28 +1526,28 @@ export function computeElectricityGasSafety(
     });
   }
 
-  if (patTestingRate >= 100 && patPassRate >= 100 && totalPatRecords > 0) {
+  if (meets(patTestingRate, 100) && meets(patPassRate, 100) && totalPatRecords > 0) {
     insights.push({
       text: "All portable appliance testing is current with a 100% pass rate — the home operates a comprehensive and effective PAT testing programme. Every portable electrical appliance has been verified as safe, providing strong evidence of proactive electrical safety management.",
       severity: "positive",
     });
   }
 
-  if (gasCertificateRate >= 100 && gasSatisfactoryRate >= 100 && totalGasRecords > 0) {
+  if (meets(gasCertificateRate, 100) && meets(gasSatisfactoryRate, 100) && totalGasRecords > 0) {
     insights.push({
       text: "All gas safety certificates are current with every appliance rated satisfactory — the home maintains exemplary gas safety compliance. This provides robust evidence that all gas installations and appliances are safe for children and staff.",
       severity: "positive",
     });
   }
 
-  if (electricalInspectionRate >= 100 && electricalSatisfactoryRate >= 100 && totalElectricalRecords > 0) {
+  if (meets(electricalInspectionRate, 100) && meets(electricalSatisfactoryRate, 100) && totalElectricalRecords > 0) {
     insights.push({
       text: "All electrical inspections are current and satisfactory — the home's fixed electrical installations fully meet current safety standards. This is strong evidence of well-maintained premises under Reg 25.",
       severity: "positive",
     });
   }
 
-  if (coDetectorRate >= 100 && coFunctioningRate >= 100 && totalCoDetectors > 0) {
+  if (meets(coDetectorRate, 100) && meets(coFunctioningRate, 100) && totalCoDetectors > 0) {
     insights.push({
       text: "All carbon monoxide detectors are tested, functioning, and current — the home provides comprehensive CO protection for all children and staff. This demonstrates proactive life-safety management.",
       severity: "positive",
@@ -1558,8 +1555,8 @@ export function computeElectricityGasSafety(
   }
 
   if (
-    childSafetyRate >= 100 &&
-    emergencyProcedureRate >= 100 &&
+    meets(childSafetyRate, 100) &&
+    meets(emergencyProcedureRate, 100) &&
     total_children > 0 &&
     totalChildSafetyRecords > 0
   ) {
@@ -1569,7 +1566,7 @@ export function computeElectricityGasSafety(
     });
   }
 
-  if (defectResolutionRate >= 100 && totalDefectsAll > 0) {
+  if (meets(defectResolutionRate, 100) && totalDefectsAll > 0) {
     insights.push({
       text: "Every identified safety defect has been resolved across all domains — the home demonstrates a zero-tolerance approach to electrical and gas safety defects. No known safety issues remain outstanding, providing strong evidence of responsive and thorough safety management.",
       severity: "positive",
@@ -1577,8 +1574,8 @@ export function computeElectricityGasSafety(
   }
 
   if (
-    staffTrainingRate >= 80 &&
-    childSafetyRate >= 80 &&
+    meets(staffTrainingRate, 80) &&
+    meets(childSafetyRate, 80) &&
     total_staff > 0 &&
     total_children > 0
   ) {
@@ -1589,10 +1586,10 @@ export function computeElectricityGasSafety(
   }
 
   if (
-    rcdTestedRate >= 100 &&
-    rcdOperatingRate >= 100 &&
-    earthingRate >= 100 &&
-    bondingRate >= 100 &&
+    meets(rcdTestedRate, 100) &&
+    meets(rcdOperatingRate, 100) &&
+    meets(earthingRate, 100) &&
+    meets(bondingRate, 100) &&
     totalElectricalRecords > 0
   ) {
     insights.push({
@@ -1602,10 +1599,10 @@ export function computeElectricityGasSafety(
   }
 
   if (
-    gasFlueCheckedRate >= 100 &&
-    gasVentilationRate >= 100 &&
-    gasSafetyDeviceRate >= 100 &&
-    gasCoReadingRate >= 100 &&
+    meets(gasFlueCheckedRate, 100) &&
+    meets(gasVentilationRate, 100) &&
+    meets(gasSafetyDeviceRate, 100) &&
+    meets(gasCoReadingRate, 100) &&
     totalGasRecords > 0
   ) {
     insights.push({
@@ -1615,10 +1612,10 @@ export function computeElectricityGasSafety(
   }
 
   if (
-    coPositionedCorrectlyRate >= 100 &&
-    coNearGasRate >= 80 &&
-    coNearSleepingRate >= 80 &&
-    coAudibleRate >= 80 &&
+    meets(coPositionedCorrectlyRate, 100) &&
+    meets(coNearGasRate, 80) &&
+    meets(coNearSleepingRate, 80) &&
+    meets(coAudibleRate, 80) &&
     totalCoDetectors > 0
   ) {
     insights.push({

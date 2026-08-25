@@ -244,12 +244,12 @@ describe("insufficient data (0 children, all empty)", () => {
       hygiene_rating_records: [],
       cross_contamination_records: [],
     }));
-    expect(r.temperature_logging_rate).toBe(0);
-    expect(r.storage_compliance_rate).toBe(0);
-    expect(r.date_checking_rate).toBe(0);
-    expect(r.hygiene_rating_rate).toBe(0);
-    expect(r.cross_contamination_rate).toBe(0);
-    expect(r.staff_training_rate).toBe(0);
+    expect(r.temperature_logging_rate).toBeNull();
+    expect(r.storage_compliance_rate).toBeNull();
+    expect(r.date_checking_rate).toBeNull();
+    expect(r.hygiene_rating_rate).toBeNull();
+    expect(r.cross_contamination_rate).toBeNull();
+    expect(r.staff_training_rate).toBeNull();
   });
 });
 

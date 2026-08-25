@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -104,7 +105,7 @@ export function HomeEnrichmentAchievementIntelligenceCard() {
               {ratingStyle.label}
             </span>
             {d.enrichment_rating !== "insufficient_data" && (
-              <span className="text-xs font-bold tabular-nums text-slate-600">{d.enrichment_score}%</span>
+              <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.enrichment_score)}</span>
             )}
           </CardTitle>
         </div>
@@ -121,10 +122,10 @@ export function HomeEnrichmentAchievementIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Palette className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.creative_projects.child_coverage >= 80 ? "text-[--cs-success]" :
-                  d.creative_projects.child_coverage >= 50 ? "text-blue-600" : "text-[--cs-risk]"
+                  meets(d.creative_projects.child_coverage, 80) ? "text-[--cs-success]" :
+                  meets(d.creative_projects.child_coverage, 50) ? "text-blue-600" : "text-[--cs-risk]"
                 )}>
-                  {d.creative_projects.total_projects > 0 ? `${d.creative_projects.child_coverage}%` : "—"}
+                  {d.creative_projects.total_projects > 0 ? `${formatRate(d.creative_projects.child_coverage)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Creative</p>
@@ -135,10 +136,10 @@ export function HomeEnrichmentAchievementIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Users2 className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.clubs.child_coverage >= 80 ? "text-[--cs-success]" :
-                  d.clubs.child_coverage >= 50 ? "text-blue-600" : "text-[--cs-risk]"
+                  meets(d.clubs.child_coverage, 80) ? "text-[--cs-success]" :
+                  meets(d.clubs.child_coverage, 50) ? "text-blue-600" : "text-[--cs-risk]"
                 )}>
-                  {d.clubs.total_clubs > 0 ? `${d.clubs.child_coverage}%` : "—"}
+                  {d.clubs.total_clubs > 0 ? `${formatRate(d.clubs.child_coverage)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Clubs</p>
@@ -163,10 +164,10 @@ export function HomeEnrichmentAchievementIntelligenceCard() {
               <div className="flex items-center justify-center gap-1">
                 <Trophy className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
-                  d.reward_sanctions.reward_ratio >= 70 ? "text-[--cs-success]" :
-                  d.reward_sanctions.reward_ratio >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.reward_sanctions.reward_ratio, 70) ? "text-[--cs-success]" :
+                  meets(d.reward_sanctions.reward_ratio, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.reward_sanctions.total_90d > 0 ? `${d.reward_sanctions.reward_ratio}%` : "—"}
+                  {d.reward_sanctions.total_90d > 0 ? `${formatRate(d.reward_sanctions.reward_ratio)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Reward %</p>

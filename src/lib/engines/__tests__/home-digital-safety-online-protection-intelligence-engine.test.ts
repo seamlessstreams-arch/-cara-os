@@ -878,7 +878,7 @@ describe("Home Digital Safety & Online Protection Intelligence Engine", () => {
           internet_usage_logs: [makeUsageLog({ id: "log_1", monitoring_active: true, reviewed_by_staff: false, parental_controls_enabled: false, age_appropriate_filters: false })],
         }),
       );
-      expect(r.esafety_training_compliance_rate).toBe(0);
+      expect(r.esafety_training_compliance_rate).toBeNull();
       // Penalty1 NOT applied (no records)
       // bonus2: monitoring 100% → +3
       // penalty2 (access<50): -5
@@ -1003,7 +1003,7 @@ describe("Home Digital Safety & Online Protection Intelligence Engine", () => {
           esafety_training_records: [makeTraining({ completed: true, passed: false, child_engaged: false, child_understood: false })],
         }),
       );
-      expect(r.usage_monitoring_rate).toBe(0);
+      expect(r.usage_monitoring_rate).toBeNull();
       // No penalty4 (no logs)
       // bonus1: compliance 100% → +4
       // penalty2 (access<50): -5
@@ -1504,7 +1504,7 @@ describe("Home Digital Safety & Online Protection Intelligence Engine", () => {
 
   // ── Incident response composite metric ─────────────────────────────────
   describe("incident response composite metric", () => {
-    it("returns 0 when no incident components exist", () => {
+    it("returns null when no incident components exist", () => {
       const r = computeDigitalSafetyOnlineProtection(
         baseInput({
           total_children: 1,
@@ -3256,7 +3256,7 @@ describe("Home Digital Safety & Online Protection Intelligence Engine", () => {
       expect(r.social_media_risk_assessment_rate).toBe(0);
     });
 
-    it("pct(0,0) returns 0", () => {
+    it("rate(0,0)=nullreturns 0", () => {
       // When no training records, esafetyTrainingComplianceRate should be 0
       const r = computeDigitalSafetyOnlineProtection(
         baseInput({
@@ -3264,8 +3264,8 @@ describe("Home Digital Safety & Online Protection Intelligence Engine", () => {
           internet_usage_logs: [makeUsageLog()],
         }),
       );
-      expect(r.esafety_training_compliance_rate).toBe(0);
-      expect(r.training_pass_rate).toBe(0);
+      expect(r.esafety_training_compliance_rate).toBeNull();
+      expect(r.training_pass_rate).toBeNull();
     });
 
     it("handles empty risks_identified array for mitigation rate", () => {

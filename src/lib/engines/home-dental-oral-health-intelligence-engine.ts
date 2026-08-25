@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME DENTAL & ORAL HEALTH INTELLIGENCE ENGINE
 // Monitors how well the home manages children's dental health — check-up
@@ -167,10 +168,6 @@ export interface DentalOralHealthResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -195,12 +192,12 @@ function emptyResult(
     headline,
     total_checkup_records: 0,
     total_treatment_records: 0,
-    checkup_compliance_rate: 0,
-    oral_hygiene_rate: 0,
-    treatment_completion_rate: 0,
-    orthodontic_compliance_rate: 0,
-    anxiety_support_rate: 0,
-    child_engagement_rate: 0,
+    checkup_compliance_rate: null,
+    oral_hygiene_rate: null,
+    treatment_completion_rate: null,
+    orthodontic_compliance_rate: null,
+    anxiety_support_rate: null,
+    child_engagement_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -280,14 +277,14 @@ export function computeDentalOralHealth(
   const totalCheckupRecords = dental_checkup_records.length;
 
   const checkupsAttended = dental_checkup_records.filter((r) => r.attended).length;
-  const checkupComplianceRate = pct(checkupsAttended, totalCheckupRecords);
+  const checkupComplianceRate = rate(checkupsAttended, totalCheckupRecords);
 
   const checkupsConsented = dental_checkup_records.filter((r) => r.child_consented).length;
 
   const checkupsAllClear = dental_checkup_records.filter(
     (r) => r.outcome === "all_clear",
   ).length;
-  const allClearRate = pct(checkupsAllClear, totalCheckupRecords);
+  const allClearRate = rate(checkupsAllClear, totalCheckupRecords);
 
   // --- Oral hygiene metrics ---
   const totalHygieneRecords = oral_hygiene_records.length;
@@ -297,45 +294,45 @@ export function computeDentalOralHealth(
   const bothBrushingsCompleted = oral_hygiene_records.filter(
     (r) => r.morning_brushing_completed && r.evening_brushing_completed,
   ).length;
-  const brushingComplianceRate = pct(bothBrushingsCompleted, totalHygieneRecords);
+  const brushingComplianceRate = rate(bothBrushingsCompleted, totalHygieneRecords);
 
   const brushingDurationAdequate = oral_hygiene_records.filter((r) => r.brushing_duration_adequate).length;
 
   const childEngagedHygiene = oral_hygiene_records.filter((r) => r.child_engaged).length;
 
   const educationProvided = oral_hygiene_records.filter((r) => r.oral_health_education_provided).length;
-  const educationRate = pct(educationProvided, totalHygieneRecords);
+  const educationRate = rate(educationProvided, totalHygieneRecords);
 
   const childIndependent = oral_hygiene_records.filter((r) => r.child_independent).length;
-  const independenceRate = pct(childIndependent, totalHygieneRecords);
+  const independenceRate = rate(childIndependent, totalHygieneRecords);
 
   // Composite oral hygiene rate: morning + evening + duration adequate + child engaged
   const hygieneNumerator = morningBrushingCompleted + eveningBrushingCompleted + brushingDurationAdequate + childEngagedHygiene;
   const hygieneDenominator = totalHygieneRecords * 4;
-  const oralHygieneRate = pct(hygieneNumerator, hygieneDenominator);
+  const oralHygieneRate = rate(hygieneNumerator, hygieneDenominator);
 
   // --- Dental treatment metrics ---
   const totalTreatmentRecords = dental_treatment_records.length;
 
   const treatmentsCompleted = dental_treatment_records.filter((r) => r.treatment_completed).length;
-  const treatmentCompletionRate = pct(treatmentsCompleted, totalTreatmentRecords);
+  const treatmentCompletionRate = rate(treatmentsCompleted, totalTreatmentRecords);
 
   const treatmentFollowUpRequired = dental_treatment_records.filter((r) => r.follow_up_required).length;
   const treatmentFollowUpCompleted = dental_treatment_records.filter(
     (r) => r.follow_up_required && r.follow_up_completed,
   ).length;
-  const treatmentFollowUpRate = pct(treatmentFollowUpCompleted, treatmentFollowUpRequired);
+  const treatmentFollowUpRate = rate(treatmentFollowUpCompleted, treatmentFollowUpRequired);
 
   const painManaged = dental_treatment_records.filter((r) => r.pain_managed).length;
-  const painManagementRate = pct(painManaged, totalTreatmentRecords);
+  const painManagementRate = rate(painManaged, totalTreatmentRecords);
 
   const aftercareFollowed = dental_treatment_records.filter((r) => r.aftercare_instructions_followed).length;
-  const aftercareRate = pct(aftercareFollowed, totalTreatmentRecords);
+  const aftercareRate = rate(aftercareFollowed, totalTreatmentRecords);
 
   const treatmentConsented = dental_treatment_records.filter((r) => r.child_consented).length;
 
   const childCopedWell = dental_treatment_records.filter((r) => r.child_coped_well).length;
-  const copingRate = pct(childCopedWell, totalTreatmentRecords);
+  const copingRate = rate(childCopedWell, totalTreatmentRecords);
 
   // --- Orthodontic metrics ---
   const totalOrthoRecords = orthodontic_records.length;
@@ -347,7 +344,7 @@ export function computeDentalOralHealth(
   const orthoHygieneMaintained = orthodontic_records.filter((r) => r.oral_hygiene_maintained).length;
 
   const orthoProgressSatisfactory = orthodontic_records.filter((r) => r.progress_satisfactory).length;
-  const orthoProgressRate = pct(orthoProgressSatisfactory, totalOrthoRecords);
+  const orthoProgressRate = rate(orthoProgressSatisfactory, totalOrthoRecords);
 
   const orthoChildEngaged = orthodontic_records.filter((r) => r.child_engaged_with_treatment).length;
 
@@ -355,17 +352,17 @@ export function computeDentalOralHealth(
   const orthoDiscomfortManaged = orthodontic_records.filter(
     (r) => r.discomfort_reported && r.discomfort_managed,
   ).length;
-  const orthoDiscomfortManagedRate = pct(orthoDiscomfortManaged, orthoDiscomfortReported);
+  const orthoDiscomfortManagedRate = rate(orthoDiscomfortManaged, orthoDiscomfortReported);
 
   const applianceDamaged = orthodontic_records.filter(
     (r) => r.appliance_condition === "damaged" || r.appliance_condition === "lost",
   ).length;
-  const applianceIssueRate = pct(applianceDamaged, totalOrthoRecords);
+  const applianceIssueRate = rate(applianceDamaged, totalOrthoRecords);
 
   // Composite orthodontic compliance: attended + compliant with instructions + hygiene maintained + engaged
   const orthoComplianceNumerator = orthoAppointmentsAttended + orthoCompliant + orthoHygieneMaintained + orthoChildEngaged;
   const orthoComplianceDenominator = totalOrthoRecords * 4;
-  const orthodonticComplianceRate = pct(orthoComplianceNumerator, orthoComplianceDenominator);
+  const orthodonticComplianceRate = rate(orthoComplianceNumerator, orthoComplianceDenominator);
 
   // --- Dental anxiety metrics ---
   const totalAnxietyRecords = dental_anxiety_records.length;
@@ -375,20 +372,20 @@ export function computeDentalOralHealth(
   const postAppointmentDebrief = dental_anxiety_records.filter((r) => r.post_appointment_debrief).length;
 
   const desensitisationCompleted = dental_anxiety_records.filter((r) => r.desensitisation_session_completed).length;
-  const desensitisationRate = pct(desensitisationCompleted, totalAnxietyRecords);
+  const desensitisationRate = rate(desensitisationCompleted, totalAnxietyRecords);
 
   const anxietyChildAttended = dental_anxiety_records.filter((r) => r.child_attended_appointment).length;
-  const anxietyAttendanceRate = pct(anxietyChildAttended, totalAnxietyRecords);
+  const anxietyAttendanceRate = rate(anxietyChildAttended, totalAnxietyRecords);
 
   const anxietyChildCoped = dental_anxiety_records.filter((r) => r.child_coped_with_treatment).length;
 
   const anxietyImproved = dental_anxiety_records.filter((r) => r.improvement_noted).length;
-  const anxietyImprovementRate = pct(anxietyImproved, totalAnxietyRecords);
+  const anxietyImprovementRate = rate(anxietyImproved, totalAnxietyRecords);
 
   // Composite anxiety support rate: pre-prep + debrief + desensitisation + child coped
   const anxietySupportNumerator = preAppointmentPrep + postAppointmentDebrief + desensitisationCompleted + anxietyChildCoped;
   const anxietySupportDenominator = totalAnxietyRecords * 4;
-  const anxietySupportRate = pct(anxietySupportNumerator, anxietySupportDenominator);
+  const anxietySupportRate = rate(anxietySupportNumerator, anxietySupportDenominator);
 
   // Average anxiety level
   const anxietyLevelSum = dental_anxiety_records.reduce((sum, r) => sum + r.anxiety_level, 0);
@@ -419,61 +416,61 @@ export function computeDentalOralHealth(
     engagementDenominator += totalOrthoRecords;
   }
 
-  const childEngagementRate = pct(engagementNumerator, engagementDenominator);
+  const childEngagementRate = rate(engagementNumerator, engagementDenominator);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: checkupComplianceRate (>=90: +4, >=70: +2) ---
-  if (checkupComplianceRate >= 90) score += 4;
-  else if (checkupComplianceRate >= 70) score += 2;
+  if (meets(checkupComplianceRate, 90)) score += 4;
+  else if (meets(checkupComplianceRate, 70)) score += 2;
 
   // --- Bonus 2: oralHygieneRate (>=90: +3, >=70: +1) ---
-  if (oralHygieneRate >= 90) score += 3;
-  else if (oralHygieneRate >= 70) score += 1;
+  if (meets(oralHygieneRate, 90)) score += 3;
+  else if (meets(oralHygieneRate, 70)) score += 1;
 
   // --- Bonus 3: treatmentCompletionRate (>=90: +4, >=70: +2) ---
-  if (treatmentCompletionRate >= 90) score += 4;
-  else if (treatmentCompletionRate >= 70) score += 2;
+  if (meets(treatmentCompletionRate, 90)) score += 4;
+  else if (meets(treatmentCompletionRate, 70)) score += 2;
 
   // --- Bonus 4: orthodonticComplianceRate (>=85: +3, >=65: +1) ---
-  if (orthodonticComplianceRate >= 85) score += 3;
-  else if (orthodonticComplianceRate >= 65) score += 1;
+  if (meets(orthodonticComplianceRate, 85)) score += 3;
+  else if (meets(orthodonticComplianceRate, 65)) score += 1;
 
   // --- Bonus 5: anxietySupportRate (>=85: +3, >=65: +1) ---
-  if (anxietySupportRate >= 85) score += 3;
-  else if (anxietySupportRate >= 65) score += 1;
+  if (meets(anxietySupportRate, 85)) score += 3;
+  else if (meets(anxietySupportRate, 65)) score += 1;
 
   // --- Bonus 6: childEngagementRate (>=90: +3, >=70: +1) ---
-  if (childEngagementRate >= 90) score += 3;
-  else if (childEngagementRate >= 70) score += 1;
+  if (meets(childEngagementRate, 90)) score += 3;
+  else if (meets(childEngagementRate, 70)) score += 1;
 
   // --- Bonus 7: treatmentFollowUpRate (>=90: +3, >=70: +1) ---
-  if (treatmentFollowUpRate >= 90) score += 3;
-  else if (treatmentFollowUpRate >= 70) score += 1;
+  if (meets(treatmentFollowUpRate, 90)) score += 3;
+  else if (meets(treatmentFollowUpRate, 70)) score += 1;
 
   // --- Bonus 8: aftercareRate (>=90: +2, >=70: +1) ---
-  if (aftercareRate >= 90) score += 2;
-  else if (aftercareRate >= 70) score += 1;
+  if (meets(aftercareRate, 90)) score += 2;
+  else if (meets(aftercareRate, 70)) score += 1;
 
   // --- Bonus 9: painManagementRate (>=90: +3, >=70: +1) ---
-  if (painManagementRate >= 90) score += 3;
-  else if (painManagementRate >= 70) score += 1;
+  if (meets(painManagementRate, 90)) score += 3;
+  else if (meets(painManagementRate, 70)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // checkupComplianceRate < 50 → -5
-  if (checkupComplianceRate < 50 && totalCheckupRecords > 0) score -= 5;
+  if (below(checkupComplianceRate, 50) && totalCheckupRecords > 0) score -= 5;
 
   // oralHygieneRate < 40 → -5
-  if (oralHygieneRate < 40 && totalHygieneRecords > 0) score -= 5;
+  if (below(oralHygieneRate, 40) && totalHygieneRecords > 0) score -= 5;
 
   // treatmentCompletionRate < 50 → -5
-  if (treatmentCompletionRate < 50 && totalTreatmentRecords > 0) score -= 5;
+  if (below(treatmentCompletionRate, 50) && totalTreatmentRecords > 0) score -= 5;
 
   // anxietySupportRate < 40 → -3
-  if (anxietySupportRate < 40 && totalAnxietyRecords > 0) score -= 3;
+  if (below(anxietySupportRate, 40) && totalAnxietyRecords > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -483,131 +480,131 @@ export function computeDentalOralHealth(
 
   const strengths: string[] = [];
 
-  if (checkupComplianceRate >= 90 && totalCheckupRecords > 0) {
+  if (meets(checkupComplianceRate, 90) && totalCheckupRecords > 0) {
     strengths.push(
       `${checkupComplianceRate}% dental check-up compliance — children attend dental appointments consistently, ensuring early identification and prevention of dental health issues.`,
     );
-  } else if (checkupComplianceRate >= 70 && totalCheckupRecords > 0) {
+  } else if (meets(checkupComplianceRate, 70) && totalCheckupRecords > 0) {
     strengths.push(
       `${checkupComplianceRate}% dental check-up compliance — the home generally ensures children attend their scheduled dental appointments.`,
     );
   }
 
-  if (oralHygieneRate >= 90 && totalHygieneRecords > 0) {
+  if (meets(oralHygieneRate, 90) && totalHygieneRecords > 0) {
     strengths.push(
       `${oralHygieneRate}% oral hygiene adherence — children consistently complete brushing routines with adequate duration and engagement, demonstrating embedded oral health habits.`,
     );
-  } else if (oralHygieneRate >= 70 && totalHygieneRecords > 0) {
+  } else if (meets(oralHygieneRate, 70) && totalHygieneRecords > 0) {
     strengths.push(
       `${oralHygieneRate}% oral hygiene adherence — the home maintains generally good oral hygiene routines for children.`,
     );
   }
 
-  if (treatmentCompletionRate >= 90 && totalTreatmentRecords > 0) {
+  if (meets(treatmentCompletionRate, 90) && totalTreatmentRecords > 0) {
     strengths.push(
       `${treatmentCompletionRate}% dental treatment completion — all prescribed dental treatments are followed through to completion, ensuring children receive the care they need.`,
     );
-  } else if (treatmentCompletionRate >= 70 && totalTreatmentRecords > 0) {
+  } else if (meets(treatmentCompletionRate, 70) && totalTreatmentRecords > 0) {
     strengths.push(
       `${treatmentCompletionRate}% dental treatment completion — the home generally ensures prescribed dental treatments are completed.`,
     );
   }
 
-  if (orthodonticComplianceRate >= 85 && totalOrthoRecords > 0) {
+  if (meets(orthodonticComplianceRate, 85) && totalOrthoRecords > 0) {
     strengths.push(
       `${orthodonticComplianceRate}% orthodontic compliance — children attend orthodontic appointments, follow instructions, maintain hygiene, and engage positively with their treatment.`,
     );
-  } else if (orthodonticComplianceRate >= 65 && totalOrthoRecords > 0) {
+  } else if (meets(orthodonticComplianceRate, 65) && totalOrthoRecords > 0) {
     strengths.push(
       `${orthodonticComplianceRate}% orthodontic compliance — orthodontic care is generally well managed across the home.`,
     );
   }
 
-  if (anxietySupportRate >= 85 && totalAnxietyRecords > 0) {
+  if (meets(anxietySupportRate, 85) && totalAnxietyRecords > 0) {
     strengths.push(
       `${anxietySupportRate}% dental anxiety support — children with dental anxiety receive comprehensive preparation, desensitisation, and post-appointment support, enabling them to access dental care.`,
     );
-  } else if (anxietySupportRate >= 65 && totalAnxietyRecords > 0) {
+  } else if (meets(anxietySupportRate, 65) && totalAnxietyRecords > 0) {
     strengths.push(
       `${anxietySupportRate}% dental anxiety support — the home provides generally effective support for children with dental anxiety.`,
     );
   }
 
-  if (childEngagementRate >= 90) {
+  if (meets(childEngagementRate, 90)) {
     strengths.push(
       `${childEngagementRate}% child engagement across dental care — children actively participate in and consent to their dental health management, reflecting genuine partnership in their care.`,
     );
-  } else if (childEngagementRate >= 70) {
+  } else if (meets(childEngagementRate, 70)) {
     strengths.push(
       `${childEngagementRate}% child engagement — most children are positively engaged with their dental care across check-ups, hygiene, and treatment.`,
     );
   }
 
-  if (painManagementRate >= 90 && totalTreatmentRecords > 0) {
+  if (meets(painManagementRate, 90) && totalTreatmentRecords > 0) {
     strengths.push(
       `${painManagementRate}% pain management during dental treatment — children's pain is consistently managed during procedures, demonstrating attentive, child-centred clinical care.`,
     );
-  } else if (painManagementRate >= 70 && totalTreatmentRecords > 0) {
+  } else if (meets(painManagementRate, 70) && totalTreatmentRecords > 0) {
     strengths.push(
       `${painManagementRate}% pain management — pain is generally well managed during children's dental treatments.`,
     );
   }
 
-  if (aftercareRate >= 90 && totalTreatmentRecords > 0) {
+  if (meets(aftercareRate, 90) && totalTreatmentRecords > 0) {
     strengths.push(
       `${aftercareRate}% aftercare instruction compliance — post-treatment care is consistently followed, promoting healing and preventing complications.`,
     );
-  } else if (aftercareRate >= 70 && totalTreatmentRecords > 0) {
+  } else if (meets(aftercareRate, 70) && totalTreatmentRecords > 0) {
     strengths.push(
       `${aftercareRate}% aftercare compliance — post-treatment instructions are generally followed for children's dental procedures.`,
     );
   }
 
-  if (treatmentFollowUpRate >= 90 && treatmentFollowUpRequired > 0) {
+  if (meets(treatmentFollowUpRate, 90) && treatmentFollowUpRequired > 0) {
     strengths.push(
       `${treatmentFollowUpRate}% treatment follow-up completion — all required follow-up appointments are attended, ensuring continuity of dental care.`,
     );
-  } else if (treatmentFollowUpRate >= 70 && treatmentFollowUpRequired > 0) {
+  } else if (meets(treatmentFollowUpRate, 70) && treatmentFollowUpRequired > 0) {
     strengths.push(
       `${treatmentFollowUpRate}% treatment follow-up completion — the home generally ensures follow-up dental appointments are attended.`,
     );
   }
 
-  if (educationRate >= 90 && totalHygieneRecords > 0) {
+  if (meets(educationRate, 90) && totalHygieneRecords > 0) {
     strengths.push(
       `${educationRate}% oral health education delivery — children consistently receive age-appropriate oral health education alongside their daily routines, building lifelong healthy habits.`,
     );
-  } else if (educationRate >= 70 && totalHygieneRecords > 0) {
+  } else if (meets(educationRate, 70) && totalHygieneRecords > 0) {
     strengths.push(
       `${educationRate}% oral health education — the home regularly provides oral health education to support children's understanding of dental care.`,
     );
   }
 
-  if (brushingComplianceRate >= 90 && totalHygieneRecords > 0) {
+  if (meets(brushingComplianceRate, 90) && totalHygieneRecords > 0) {
     strengths.push(
       `${brushingComplianceRate}% twice-daily brushing compliance — children consistently complete both morning and evening brushing, establishing essential dental hygiene habits.`,
     );
   }
 
-  if (anxietyImprovementRate >= 80 && totalAnxietyRecords > 0) {
+  if (meets(anxietyImprovementRate, 80) && totalAnxietyRecords > 0) {
     strengths.push(
       `${anxietyImprovementRate}% improvement noted in children with dental anxiety — the home's support strategies are effectively reducing dental anxiety and enabling children to access care.`,
     );
   }
 
-  if (orthoDiscomfortManagedRate >= 90 && orthoDiscomfortReported > 0) {
+  if (meets(orthoDiscomfortManagedRate, 90) && orthoDiscomfortReported > 0) {
     strengths.push(
       `${orthoDiscomfortManagedRate}% of orthodontic discomfort effectively managed — children's orthodontic discomfort is promptly addressed, preventing unnecessary suffering.`,
     );
   }
 
-  if (desensitisationRate >= 80 && totalAnxietyRecords > 0) {
+  if (meets(desensitisationRate, 80) && totalAnxietyRecords > 0) {
     strengths.push(
       `${desensitisationRate}% desensitisation session completion — the home actively uses desensitisation techniques to help children overcome dental anxiety, reflecting trauma-informed dental care practice.`,
     );
   }
 
-  if (allClearRate >= 80 && totalCheckupRecords > 0) {
+  if (meets(allClearRate, 80) && totalCheckupRecords > 0) {
     strengths.push(
       `${allClearRate}% of dental check-ups result in all-clear outcomes — children's oral health is being well maintained through effective preventive care.`,
     );
@@ -617,93 +614,93 @@ export function computeDentalOralHealth(
 
   const concerns: string[] = [];
 
-  if (checkupComplianceRate < 50 && totalCheckupRecords > 0) {
+  if (below(checkupComplianceRate, 50) && totalCheckupRecords > 0) {
     concerns.push(
       `Only ${checkupComplianceRate}% dental check-up compliance — the majority of scheduled dental appointments are not being attended, which directly compromises children's dental health and the home's ability to identify oral health problems early.`,
     );
-  } else if (checkupComplianceRate < 70 && checkupComplianceRate >= 50 && totalCheckupRecords > 0) {
+  } else if (below(checkupComplianceRate, 70) && meets(checkupComplianceRate, 50) && totalCheckupRecords > 0) {
     concerns.push(
       `Dental check-up compliance at ${checkupComplianceRate}% — a significant proportion of dental appointments are missed, risking undetected dental issues and delayed treatment.`,
     );
   }
 
-  if (oralHygieneRate < 40 && totalHygieneRecords > 0) {
+  if (below(oralHygieneRate, 40) && totalHygieneRecords > 0) {
     concerns.push(
       `Oral hygiene adherence at only ${oralHygieneRate}% — children's daily brushing routines are not being completed consistently, duration is inadequate, and engagement is poor. This poses a direct risk to children's dental health.`,
     );
-  } else if (oralHygieneRate < 70 && oralHygieneRate >= 40 && totalHygieneRecords > 0) {
+  } else if (below(oralHygieneRate, 70) && meets(oralHygieneRate, 40) && totalHygieneRecords > 0) {
     concerns.push(
       `Oral hygiene adherence at ${oralHygieneRate}% — daily oral hygiene routines need improvement to protect children's dental health.`,
     );
   }
 
-  if (treatmentCompletionRate < 50 && totalTreatmentRecords > 0) {
+  if (below(treatmentCompletionRate, 50) && totalTreatmentRecords > 0) {
     concerns.push(
       `Only ${treatmentCompletionRate}% dental treatment completion — the majority of prescribed dental treatments are not being completed, leaving children with untreated dental conditions that may worsen and cause pain or infection.`,
     );
-  } else if (treatmentCompletionRate < 70 && treatmentCompletionRate >= 50 && totalTreatmentRecords > 0) {
+  } else if (below(treatmentCompletionRate, 70) && meets(treatmentCompletionRate, 50) && totalTreatmentRecords > 0) {
     concerns.push(
       `Dental treatment completion at ${treatmentCompletionRate}% — some prescribed treatments are not being followed through to completion.`,
     );
   }
 
-  if (orthodonticComplianceRate < 50 && totalOrthoRecords > 0) {
+  if (below(orthodonticComplianceRate, 50) && totalOrthoRecords > 0) {
     concerns.push(
       `Orthodontic compliance at only ${orthodonticComplianceRate}% — children's orthodontic care is poorly managed, with missed appointments, non-compliance with instructions, or poor hygiene maintenance, risking treatment failure.`,
     );
-  } else if (orthodonticComplianceRate < 65 && orthodonticComplianceRate >= 50 && totalOrthoRecords > 0) {
+  } else if (below(orthodonticComplianceRate, 65) && meets(orthodonticComplianceRate, 50) && totalOrthoRecords > 0) {
     concerns.push(
       `Orthodontic compliance at ${orthodonticComplianceRate}% — orthodontic care management needs improvement to prevent treatment delays or complications.`,
     );
   }
 
-  if (anxietySupportRate < 40 && totalAnxietyRecords > 0) {
+  if (below(anxietySupportRate, 40) && totalAnxietyRecords > 0) {
     concerns.push(
       `Dental anxiety support at only ${anxietySupportRate}% — children with dental anxiety are not receiving adequate preparation, desensitisation, or post-appointment support, which may prevent them from accessing essential dental care.`,
     );
-  } else if (anxietySupportRate < 65 && anxietySupportRate >= 40 && totalAnxietyRecords > 0) {
+  } else if (below(anxietySupportRate, 65) && meets(anxietySupportRate, 40) && totalAnxietyRecords > 0) {
     concerns.push(
       `Dental anxiety support at ${anxietySupportRate}% — the support provided to children with dental anxiety needs strengthening to ensure they can access dental care.`,
     );
   }
 
-  if (childEngagementRate < 50) {
+  if (below(childEngagementRate, 50)) {
     concerns.push(
       `Child engagement with dental care at only ${childEngagementRate}% — children are not actively participating in or consenting to their dental health management, which undermines their autonomy and may indicate a lack of age-appropriate preparation.`,
     );
-  } else if (childEngagementRate < 70 && childEngagementRate >= 50) {
+  } else if (below(childEngagementRate, 70) && meets(childEngagementRate, 50)) {
     concerns.push(
       `Child engagement at ${childEngagementRate}% — a notable proportion of children are not positively engaged with their dental care.`,
     );
   }
 
-  if (painManagementRate < 50 && totalTreatmentRecords > 0) {
+  if (below(painManagementRate, 50) && totalTreatmentRecords > 0) {
     concerns.push(
       `Pain management during dental treatment at only ${painManagementRate}% — children are experiencing unmanaged pain during dental procedures, which is unacceptable and may compound dental anxiety.`,
     );
-  } else if (painManagementRate < 70 && painManagementRate >= 50 && totalTreatmentRecords > 0) {
+  } else if (below(painManagementRate, 70) && meets(painManagementRate, 50) && totalTreatmentRecords > 0) {
     concerns.push(
       `Pain management at ${painManagementRate}% — not all children's pain is being adequately managed during dental treatment.`,
     );
   }
 
-  if (treatmentFollowUpRate < 50 && treatmentFollowUpRequired > 0) {
+  if (below(treatmentFollowUpRate, 50) && treatmentFollowUpRequired > 0) {
     concerns.push(
       `Only ${treatmentFollowUpRate}% of required treatment follow-ups completed — children are not attending follow-up dental appointments, risking complications from incomplete treatment.`,
     );
-  } else if (treatmentFollowUpRate < 70 && treatmentFollowUpRate >= 50 && treatmentFollowUpRequired > 0) {
+  } else if (below(treatmentFollowUpRate, 70) && meets(treatmentFollowUpRate, 50) && treatmentFollowUpRequired > 0) {
     concerns.push(
       `Treatment follow-up rate at ${treatmentFollowUpRate}% — some required dental follow-up appointments are being missed.`,
     );
   }
 
-  if (applianceIssueRate > 30 && totalOrthoRecords > 0) {
+  if (above(applianceIssueRate, 30) && totalOrthoRecords > 0) {
     concerns.push(
       `${applianceIssueRate}% of orthodontic records show damaged or lost appliances — this indicates children may not be receiving adequate support to care for their orthodontic appliances, or there may be underlying resistance to treatment.`,
     );
   }
 
-  if (brushingComplianceRate < 50 && totalHygieneRecords > 0) {
+  if (below(brushingComplianceRate, 50) && totalHygieneRecords > 0) {
     concerns.push(
       `Only ${brushingComplianceRate}% twice-daily brushing compliance — the majority of children are not completing both morning and evening brushing, the fundamental basis of oral health.`,
     );
@@ -736,7 +733,7 @@ export function computeDentalOralHealth(
   const recommendations: DentalOralHealthRecommendation[] = [];
   let rank = 0;
 
-  if (checkupComplianceRate < 50 && totalCheckupRecords > 0) {
+  if (below(checkupComplianceRate, 50) && totalCheckupRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -746,7 +743,7 @@ export function computeDentalOralHealth(
     });
   }
 
-  if (treatmentCompletionRate < 50 && totalTreatmentRecords > 0) {
+  if (below(treatmentCompletionRate, 50) && totalTreatmentRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -756,7 +753,7 @@ export function computeDentalOralHealth(
     });
   }
 
-  if (oralHygieneRate < 40 && totalHygieneRecords > 0) {
+  if (below(oralHygieneRate, 40) && totalHygieneRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -766,7 +763,7 @@ export function computeDentalOralHealth(
     });
   }
 
-  if (painManagementRate < 50 && totalTreatmentRecords > 0) {
+  if (below(painManagementRate, 50) && totalTreatmentRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -776,7 +773,7 @@ export function computeDentalOralHealth(
     });
   }
 
-  if (anxietySupportRate < 40 && totalAnxietyRecords > 0) {
+  if (below(anxietySupportRate, 40) && totalAnxietyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -806,7 +803,7 @@ export function computeDentalOralHealth(
     });
   }
 
-  if (childEngagementRate < 50) {
+  if (below(childEngagementRate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -816,7 +813,7 @@ export function computeDentalOralHealth(
     });
   }
 
-  if (treatmentFollowUpRate < 50 && treatmentFollowUpRequired > 0) {
+  if (below(treatmentFollowUpRate, 50) && treatmentFollowUpRequired > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -826,7 +823,7 @@ export function computeDentalOralHealth(
     });
   }
 
-  if (orthodonticComplianceRate < 50 && totalOrthoRecords > 0) {
+  if (below(orthodonticComplianceRate, 50) && totalOrthoRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -837,8 +834,8 @@ export function computeDentalOralHealth(
   }
 
   if (
-    checkupComplianceRate >= 50 &&
-    checkupComplianceRate < 70 &&
+    meets(checkupComplianceRate, 50) &&
+    below(checkupComplianceRate, 70) &&
     totalCheckupRecords > 0
   ) {
     recommendations.push({
@@ -851,8 +848,8 @@ export function computeDentalOralHealth(
   }
 
   if (
-    oralHygieneRate >= 40 &&
-    oralHygieneRate < 70 &&
+    meets(oralHygieneRate, 40) &&
+    below(oralHygieneRate, 70) &&
     totalHygieneRecords > 0
   ) {
     recommendations.push({
@@ -865,8 +862,8 @@ export function computeDentalOralHealth(
   }
 
   if (
-    treatmentCompletionRate >= 50 &&
-    treatmentCompletionRate < 70 &&
+    meets(treatmentCompletionRate, 50) &&
+    below(treatmentCompletionRate, 70) &&
     totalTreatmentRecords > 0
   ) {
     recommendations.push({
@@ -879,8 +876,8 @@ export function computeDentalOralHealth(
   }
 
   if (
-    anxietySupportRate >= 40 &&
-    anxietySupportRate < 65 &&
+    meets(anxietySupportRate, 40) &&
+    below(anxietySupportRate, 65) &&
     totalAnxietyRecords > 0
   ) {
     recommendations.push({
@@ -893,8 +890,8 @@ export function computeDentalOralHealth(
   }
 
   if (
-    orthodonticComplianceRate >= 50 &&
-    orthodonticComplianceRate < 65 &&
+    meets(orthodonticComplianceRate, 50) &&
+    below(orthodonticComplianceRate, 65) &&
     totalOrthoRecords > 0
   ) {
     recommendations.push({
@@ -907,8 +904,8 @@ export function computeDentalOralHealth(
   }
 
   if (
-    childEngagementRate >= 50 &&
-    childEngagementRate < 70
+    meets(childEngagementRate, 50) &&
+    below(childEngagementRate, 70)
   ) {
     recommendations.push({
       rank: ++rank,
@@ -919,7 +916,7 @@ export function computeDentalOralHealth(
     });
   }
 
-  if (educationRate < 50 && totalHygieneRecords > 0) {
+  if (below(educationRate, 50) && totalHygieneRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -929,7 +926,7 @@ export function computeDentalOralHealth(
     });
   }
 
-  if (aftercareRate < 70 && totalTreatmentRecords > 0) {
+  if (below(aftercareRate, 70) && totalTreatmentRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -939,7 +936,7 @@ export function computeDentalOralHealth(
     });
   }
 
-  if (applianceIssueRate > 30 && totalOrthoRecords > 0) {
+  if (above(applianceIssueRate, 30) && totalOrthoRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -955,35 +952,35 @@ export function computeDentalOralHealth(
 
   // -- Critical insights --
 
-  if (checkupComplianceRate < 50 && totalCheckupRecords > 0) {
+  if (below(checkupComplianceRate, 50) && totalCheckupRecords > 0) {
     insights.push({
       text: `Only ${checkupComplianceRate}% dental check-up compliance. Ofsted expects looked-after children to have regular dental check-ups as part of their health care. Poor attendance means dental problems go undetected, leading to preventable pain, infection, and more invasive treatment.`,
       severity: "critical",
     });
   }
 
-  if (oralHygieneRate < 40 && totalHygieneRecords > 0) {
+  if (below(oralHygieneRate, 40) && totalHygieneRecords > 0) {
     insights.push({
       text: `Oral hygiene adherence at only ${oralHygieneRate}%. Daily oral hygiene is the foundation of dental health. When children are not consistently brushing, with adequate supervision and engagement, the home is failing in its duty to promote basic health care habits under Reg 14.`,
       severity: "critical",
     });
   }
 
-  if (treatmentCompletionRate < 50 && totalTreatmentRecords > 0) {
+  if (below(treatmentCompletionRate, 50) && totalTreatmentRecords > 0) {
     insights.push({
       text: `Only ${treatmentCompletionRate}% dental treatment completion. Incomplete dental treatment leaves children with active dental disease that worsens over time. The home must ensure every prescribed treatment is completed to meet its statutory health care obligations.`,
       severity: "critical",
     });
   }
 
-  if (painManagementRate < 50 && totalTreatmentRecords > 0) {
+  if (below(painManagementRate, 50) && totalTreatmentRecords > 0) {
     insights.push({
       text: `Pain management at only ${painManagementRate}%. Children experiencing unmanaged pain during dental procedures may develop severe dental phobia, refuse future treatment, and suffer unnecessarily. This requires immediate liaison with dental professionals.`,
       severity: "critical",
     });
   }
 
-  if (anxietySupportRate < 40 && totalAnxietyRecords > 0) {
+  if (below(anxietySupportRate, 40) && totalAnxietyRecords > 0) {
     insights.push({
       text: `Dental anxiety support at only ${anxietySupportRate}%. Many looked-after children have heightened dental anxiety due to previous neglect, trauma, or lack of dental experience. Without adequate support, these children may be unable to access dental care at all, creating a cycle of worsening dental health.`,
       severity: "critical",
@@ -1007,8 +1004,8 @@ export function computeDentalOralHealth(
   // -- Warning insights --
 
   if (
-    checkupComplianceRate >= 50 &&
-    checkupComplianceRate < 70 &&
+    meets(checkupComplianceRate, 50) &&
+    below(checkupComplianceRate, 70) &&
     totalCheckupRecords > 0
   ) {
     insights.push({
@@ -1018,8 +1015,8 @@ export function computeDentalOralHealth(
   }
 
   if (
-    oralHygieneRate >= 40 &&
-    oralHygieneRate < 70 &&
+    meets(oralHygieneRate, 40) &&
+    below(oralHygieneRate, 70) &&
     totalHygieneRecords > 0
   ) {
     insights.push({
@@ -1029,8 +1026,8 @@ export function computeDentalOralHealth(
   }
 
   if (
-    treatmentCompletionRate >= 50 &&
-    treatmentCompletionRate < 70 &&
+    meets(treatmentCompletionRate, 50) &&
+    below(treatmentCompletionRate, 70) &&
     totalTreatmentRecords > 0
   ) {
     insights.push({
@@ -1040,8 +1037,8 @@ export function computeDentalOralHealth(
   }
 
   if (
-    orthodonticComplianceRate >= 50 &&
-    orthodonticComplianceRate < 65 &&
+    meets(orthodonticComplianceRate, 50) &&
+    below(orthodonticComplianceRate, 65) &&
     totalOrthoRecords > 0
   ) {
     insights.push({
@@ -1051,8 +1048,8 @@ export function computeDentalOralHealth(
   }
 
   if (
-    anxietySupportRate >= 40 &&
-    anxietySupportRate < 65 &&
+    meets(anxietySupportRate, 40) &&
+    below(anxietySupportRate, 65) &&
     totalAnxietyRecords > 0
   ) {
     insights.push({
@@ -1062,8 +1059,8 @@ export function computeDentalOralHealth(
   }
 
   if (
-    childEngagementRate >= 50 &&
-    childEngagementRate < 70
+    meets(childEngagementRate, 50) &&
+    below(childEngagementRate, 70)
   ) {
     insights.push({
       text: `Child engagement with dental care at ${childEngagementRate}% — some children are not positively participating in their dental health management. Low engagement may indicate inadequate preparation, poor communication, or dental anxiety.`,
@@ -1072,8 +1069,8 @@ export function computeDentalOralHealth(
   }
 
   if (
-    treatmentFollowUpRate >= 50 &&
-    treatmentFollowUpRate < 70 &&
+    meets(treatmentFollowUpRate, 50) &&
+    below(treatmentFollowUpRate, 70) &&
     treatmentFollowUpRequired > 0
   ) {
     insights.push({
@@ -1083,8 +1080,8 @@ export function computeDentalOralHealth(
   }
 
   if (
-    aftercareRate >= 50 &&
-    aftercareRate < 70 &&
+    meets(aftercareRate, 50) &&
+    below(aftercareRate, 70) &&
     totalTreatmentRecords > 0
   ) {
     insights.push({
@@ -1104,14 +1101,14 @@ export function computeDentalOralHealth(
     });
   }
 
-  if (educationRate < 50 && totalHygieneRecords > 0) {
+  if (below(educationRate, 50) && totalHygieneRecords > 0) {
     insights.push({
       text: `Oral health education at only ${educationRate}% — children are not consistently receiving education about dental hygiene, diet, and oral health. Education is essential for developing independent self-care skills.`,
       severity: "warning",
     });
   }
 
-  if (applianceIssueRate > 30 && totalOrthoRecords > 0) {
+  if (above(applianceIssueRate, 30) && totalOrthoRecords > 0) {
     insights.push({
       text: `${applianceIssueRate}% of orthodontic records show damaged or lost appliances — repeated appliance issues may indicate the child needs additional support, education about appliance care, or may be struggling with their treatment.`,
       severity: "warning",
@@ -1166,8 +1163,8 @@ export function computeDentalOralHealth(
   }
 
   if (
-    checkupComplianceRate >= 90 &&
-    treatmentCompletionRate >= 90 &&
+    meets(checkupComplianceRate, 90) &&
+    meets(treatmentCompletionRate, 90) &&
     totalCheckupRecords > 0 &&
     totalTreatmentRecords > 0
   ) {
@@ -1178,8 +1175,8 @@ export function computeDentalOralHealth(
   }
 
   if (
-    oralHygieneRate >= 90 &&
-    educationRate >= 80 &&
+    meets(oralHygieneRate, 90) &&
+    meets(educationRate, 80) &&
     totalHygieneRecords > 0
   ) {
     insights.push({
@@ -1189,8 +1186,8 @@ export function computeDentalOralHealth(
   }
 
   if (
-    anxietySupportRate >= 85 &&
-    anxietyImprovementRate >= 70 &&
+    meets(anxietySupportRate, 85) &&
+    meets(anxietyImprovementRate, 70) &&
     totalAnxietyRecords > 0
   ) {
     insights.push({
@@ -1200,7 +1197,7 @@ export function computeDentalOralHealth(
   }
 
   if (
-    childEngagementRate >= 90
+    meets(childEngagementRate, 90)
   ) {
     insights.push({
       text: `${childEngagementRate}% child engagement across dental care — children actively participate in and consent to their dental health management. High engagement leads to better outcomes, greater independence, and positive lifelong dental habits.`,
@@ -1209,8 +1206,8 @@ export function computeDentalOralHealth(
   }
 
   if (
-    orthodonticComplianceRate >= 85 &&
-    orthoProgressRate >= 80 &&
+    meets(orthodonticComplianceRate, 85) &&
+    meets(orthoProgressRate, 80) &&
     totalOrthoRecords > 0
   ) {
     insights.push({
@@ -1220,8 +1217,8 @@ export function computeDentalOralHealth(
   }
 
   if (
-    painManagementRate >= 90 &&
-    copingRate >= 80 &&
+    meets(painManagementRate, 90) &&
+    meets(copingRate, 80) &&
     totalTreatmentRecords > 0
   ) {
     insights.push({
@@ -1231,8 +1228,8 @@ export function computeDentalOralHealth(
   }
 
   if (
-    treatmentFollowUpRate >= 90 &&
-    aftercareRate >= 90 &&
+    meets(treatmentFollowUpRate, 90) &&
+    meets(aftercareRate, 90) &&
     treatmentFollowUpRequired > 0 &&
     totalTreatmentRecords > 0
   ) {
@@ -1243,8 +1240,8 @@ export function computeDentalOralHealth(
   }
 
   if (
-    brushingComplianceRate >= 90 &&
-    independenceRate >= 70 &&
+    meets(brushingComplianceRate, 90) &&
+    meets(independenceRate, 70) &&
     totalHygieneRecords > 0
   ) {
     insights.push({
@@ -1254,8 +1251,8 @@ export function computeDentalOralHealth(
   }
 
   if (
-    desensitisationRate >= 80 &&
-    anxietyAttendanceRate >= 80 &&
+    meets(desensitisationRate, 80) &&
+    meets(anxietyAttendanceRate, 80) &&
     totalAnxietyRecords > 0
   ) {
     insights.push({

@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME FIRE SAFETY & EMERGENCY DRILL INTELLIGENCE ENGINE
 // Tracks fire safety compliance: fire drill frequency and evacuation times,
@@ -151,10 +152,6 @@ export interface FireSafetyResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -188,12 +185,12 @@ function emptyResult(
     total_equipment_check_records: 0,
     total_training_records: 0,
     total_document_records: 0,
-    drill_compliance_rate: 0,
-    evacuation_time_rate: 0,
-    risk_assessment_currency_rate: 0,
-    equipment_check_rate: 0,
-    staff_training_rate: 0,
-    documentation_compliance_rate: 0,
+    drill_compliance_rate: null,
+    evacuation_time_rate: null,
+    risk_assessment_currency_rate: null,
+    equipment_check_rate: null,
+    staff_training_rate: null,
+    documentation_compliance_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -275,22 +272,22 @@ export function computeFireSafetyEmergencyDrill(
   const satisfactoryDrills = fire_drill_records.filter(
     (d) => d.result === "satisfactory",
   ).length;
-  const drillComplianceRate = pct(satisfactoryDrills, totalDrillRecords);
+  const drillComplianceRate = rate(satisfactoryDrills, totalDrillRecords);
 
   const failedDrills = fire_drill_records.filter(
     (d) => d.result === "failed" || d.result === "not_completed",
   ).length;
-  const failedDrillRate = pct(failedDrills, totalDrillRecords);
+  const failedDrillRate = rate(failedDrills, totalDrillRecords);
 
   const withinTargetDrills = fire_drill_records.filter(
     (d) => d.within_target,
   ).length;
-  const evacuationTimeRate = pct(withinTargetDrills, totalDrillRecords);
+  const evacuationTimeRate = rate(withinTargetDrills, totalDrillRecords);
 
   const allEvacuatedDrills = fire_drill_records.filter(
     (d) => d.all_occupants_evacuated,
   ).length;
-  const fullEvacuationRate = pct(allEvacuatedDrills, totalDrillRecords);
+  const fullEvacuationRate = rate(allEvacuatedDrills, totalDrillRecords);
 
   const issuesDrills = fire_drill_records.filter(
     (d) => d.issues_found.length > 0,
@@ -298,7 +295,7 @@ export function computeFireSafetyEmergencyDrill(
   const resolvedIssueDrills = issuesDrills.filter(
     (d) => d.all_issues_resolved,
   ).length;
-  const issueResolutionRate = pct(resolvedIssueDrills, issuesDrills.length);
+  const issueResolutionRate = rate(resolvedIssueDrills, issuesDrills.length);
 
   // Drill variety: count unique drill types
   const drillTypes = new Set(fire_drill_records.map((d) => d.drill_type));
@@ -308,13 +305,13 @@ export function computeFireSafetyEmergencyDrill(
   const nightDrills = fire_drill_records.filter(
     (d) => d.time_of_day === "night" || d.time_of_day === "early_morning",
   ).length;
-  const nightDrillRate = pct(nightDrills, totalDrillRecords);
+  const nightDrillRate = rate(nightDrills, totalDrillRecords);
 
   // Unannounced drills
   const unannouncedDrills = fire_drill_records.filter(
     (d) => d.drill_type === "unannounced",
   ).length;
-  const unannouncedDrillRate = pct(unannouncedDrills, totalDrillRecords);
+  const unannouncedDrillRate = rate(unannouncedDrills, totalDrillRecords);
 
   // Average evacuation time
   const evacTimes = fire_drill_records
@@ -330,12 +327,12 @@ export function computeFireSafetyEmergencyDrill(
   const currentAssessments = fire_risk_assessment_records.filter(
     (r) => r.is_current,
   ).length;
-  const riskAssessmentCurrencyRate = pct(currentAssessments, totalRiskAssessments);
+  const riskAssessmentCurrencyRate = rate(currentAssessments, totalRiskAssessments);
 
   const highCriticalAssessments = fire_risk_assessment_records.filter(
     (r) => r.risk_level === "high" || r.risk_level === "critical",
   ).length;
-  const highCriticalRate = pct(highCriticalAssessments, totalRiskAssessments);
+  const highCriticalRate = rate(highCriticalAssessments, totalRiskAssessments);
 
   const totalRaActions = fire_risk_assessment_records.reduce(
     (sum, r) => sum + r.actions_required,
@@ -345,12 +342,12 @@ export function computeFireSafetyEmergencyDrill(
     (sum, r) => sum + r.actions_completed,
     0,
   );
-  const raActionCompletionRate = pct(completedRaActions, totalRaActions);
+  const raActionCompletionRate = rate(completedRaActions, totalRaActions);
 
   const sharedWithStaffAssessments = fire_risk_assessment_records.filter(
     (r) => r.shared_with_staff,
   ).length;
-  const sharedWithStaffRate = pct(sharedWithStaffAssessments, totalRiskAssessments);
+  const sharedWithStaffRate = rate(sharedWithStaffAssessments, totalRiskAssessments);
 
   const compliantAreaTotal = fire_risk_assessment_records.reduce(
     (sum, r) => sum + r.areas_assessed,
@@ -360,14 +357,14 @@ export function computeFireSafetyEmergencyDrill(
     (sum, r) => sum + r.areas_compliant,
     0,
   );
-  const areaComplianceRate = pct(compliantAreaCount, compliantAreaTotal);
+  const areaComplianceRate = rate(compliantAreaCount, compliantAreaTotal);
 
   // --- Fire equipment check metrics ---
   const totalEquipmentChecks = fire_equipment_check_records.length;
   const passedEquipmentChecks = fire_equipment_check_records.filter(
     (e) => e.passed,
   ).length;
-  const equipmentCheckRate = pct(passedEquipmentChecks, totalEquipmentChecks);
+  const equipmentCheckRate = rate(passedEquipmentChecks, totalEquipmentChecks);
 
   const defectiveEquipment = fire_equipment_check_records.filter(
     (e) => e.defects_found.length > 0,
@@ -375,34 +372,34 @@ export function computeFireSafetyEmergencyDrill(
   const rectifiedDefects = defectiveEquipment.filter(
     (e) => e.defects_rectified,
   ).length;
-  const defectRectificationRate = pct(rectifiedDefects, defectiveEquipment.length);
+  const defectRectificationRate = rate(rectifiedDefects, defectiveEquipment.length);
 
   const overdueEquipmentChecks = fire_equipment_check_records.filter(
     (e) => daysBetween(e.next_check_due, today) > 0,
   ).length;
-  const overdueEquipmentRate = pct(overdueEquipmentChecks, totalEquipmentChecks);
+  const overdueEquipmentRate = rate(overdueEquipmentChecks, totalEquipmentChecks);
 
   const certificateHeldChecks = fire_equipment_check_records.filter(
     (e) => e.certificate_held,
   ).length;
-  const certificateHeldRate = pct(certificateHeldChecks, totalEquipmentChecks);
+  const certificateHeldRate = rate(certificateHeldChecks, totalEquipmentChecks);
 
   // --- Staff fire training metrics ---
   const totalTrainingRecords = fire_training_records.length;
   const completedTraining = fire_training_records.filter(
     (t) => t.completed,
   ).length;
-  const staffTrainingRate = pct(completedTraining, totalTrainingRecords);
+  const staffTrainingRate = rate(completedTraining, totalTrainingRecords);
 
   const passedTraining = fire_training_records.filter(
     (t) => t.completed && t.passed,
   ).length;
-  const trainingPassRate = pct(passedTraining, totalTrainingRecords);
+  const trainingPassRate = rate(passedTraining, totalTrainingRecords);
 
   const expiredTraining = fire_training_records.filter(
     (t) => t.expiry_date !== null && daysBetween(t.expiry_date!, today) > 0,
   ).length;
-  const expiredTrainingRate = pct(expiredTraining, totalTrainingRecords);
+  const expiredTrainingRate = rate(expiredTraining, totalTrainingRecords);
 
   // Fire marshal training
   const fireMarshalTraining = fire_training_records.filter(
@@ -414,23 +411,21 @@ export function computeFireSafetyEmergencyDrill(
   const currentDocuments = fire_safety_document_records.filter(
     (d) => d.is_current,
   ).length;
-  const documentCurrencyRate = pct(currentDocuments, totalDocumentRecords);
+  const documentCurrencyRate = rate(currentDocuments, totalDocumentRecords);
 
   const staffAccessibleDocs = fire_safety_document_records.filter(
     (d) => d.accessible_to_staff,
   ).length;
-  const staffAccessRate = pct(staffAccessibleDocs, totalDocumentRecords);
+  const staffAccessRate = rate(staffAccessibleDocs, totalDocumentRecords);
 
   const approvedDocs = fire_safety_document_records.filter(
     (d) => d.approved_by !== "",
   ).length;
-  const approvedDocRate = pct(approvedDocs, totalDocumentRecords);
+  const approvedDocRate = rate(approvedDocs, totalDocumentRecords);
 
   // Documentation compliance composite: currency + staff access + approval
   const documentationComplianceRate =
-    totalDocumentRecords > 0
-      ? Math.round((documentCurrencyRate + staffAccessRate + approvedDocRate) / 3)
-      : null;
+    totalDocumentRecords > 0 ? Math.round((documentCurrencyRate! + staffAccessRate! + approvedDocRate!) / 3) : null;
 
   // Document type coverage
   const docTypes = new Set(fire_safety_document_records.map((d) => d.document_type));
@@ -442,61 +437,61 @@ export function computeFireSafetyEmergencyDrill(
   const hasFireLogBook = docTypes.has("fire_log_book");
   const hasEmergencyContacts = docTypes.has("emergency_contacts");
   const keyDocCount = [hasFirePolicy, hasEvacuationPlan, hasFireRiskAssessment, hasFireLogBook, hasEmergencyContacts].filter(Boolean).length;
-  const keyDocRate = pct(keyDocCount, 5);
+  const keyDocRate = rate(keyDocCount, 5);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: drillComplianceRate (>=90: +4, >=70: +2) ---
-  if (drillComplianceRate >= 90) score += 4;
-  else if (drillComplianceRate >= 70) score += 2;
+  if (meets(drillComplianceRate, 90)) score += 4;
+  else if (meets(drillComplianceRate, 70)) score += 2;
 
   // --- Bonus 2: evacuationTimeRate (>=90: +4, >=70: +2) ---
-  if (evacuationTimeRate >= 90) score += 4;
-  else if (evacuationTimeRate >= 70) score += 2;
+  if (meets(evacuationTimeRate, 90)) score += 4;
+  else if (meets(evacuationTimeRate, 70)) score += 2;
 
   // --- Bonus 3: riskAssessmentCurrencyRate (>=90: +3, >=70: +1) ---
-  if (riskAssessmentCurrencyRate >= 90) score += 3;
-  else if (riskAssessmentCurrencyRate >= 70) score += 1;
+  if (meets(riskAssessmentCurrencyRate, 90)) score += 3;
+  else if (meets(riskAssessmentCurrencyRate, 70)) score += 1;
 
   // --- Bonus 4: equipmentCheckRate (>=90: +3, >=70: +1) ---
-  if (equipmentCheckRate >= 90) score += 3;
-  else if (equipmentCheckRate >= 70) score += 1;
+  if (meets(equipmentCheckRate, 90)) score += 3;
+  else if (meets(equipmentCheckRate, 70)) score += 1;
 
   // --- Bonus 5: staffTrainingRate (>=90: +3, >=70: +1) ---
-  if (staffTrainingRate >= 90) score += 3;
-  else if (staffTrainingRate >= 70) score += 1;
+  if (meets(staffTrainingRate, 90)) score += 3;
+  else if (meets(staffTrainingRate, 70)) score += 1;
 
   // --- Bonus 6: documentationComplianceRate (>=90: +3, >=70: +1) ---
   if ((documentationComplianceRate ?? 0) >= 90) score += 3;
   else if ((documentationComplianceRate ?? 0) >= 70) score += 1;
 
   // --- Bonus 7: issueResolutionRate (>=90: +3, >=70: +1) ---
-  if (issueResolutionRate >= 90) score += 3;
-  else if (issueResolutionRate >= 70) score += 1;
+  if (meets(issueResolutionRate, 90)) score += 3;
+  else if (meets(issueResolutionRate, 70)) score += 1;
 
   // --- Bonus 8: raActionCompletionRate (>=90: +3, >=70: +1) ---
-  if (raActionCompletionRate >= 90) score += 3;
-  else if (raActionCompletionRate >= 70) score += 1;
+  if (meets(raActionCompletionRate, 90)) score += 3;
+  else if (meets(raActionCompletionRate, 70)) score += 1;
 
   // --- Bonus 9: nightDrillRate (>=20: +2) AND unannouncedDrillRate (>=20: +2 combined max +2) ---
-  if (nightDrillRate >= 20 && unannouncedDrillRate >= 20) score += 2;
-  else if (nightDrillRate >= 20 || unannouncedDrillRate >= 20) score += 1;
+  if (meets(nightDrillRate, 20) && meets(unannouncedDrillRate, 20)) score += 2;
+  else if (meets(nightDrillRate, 20) || meets(unannouncedDrillRate, 20)) score += 1;
 
   // ── Penalties (4 penalties, guarded by array.length > 0) ──────────────
 
   // Penalty 1: drillComplianceRate < 40 → -5 (guarded)
-  if (drillComplianceRate < 40 && fire_drill_records.length > 0) score -= 5;
+  if (below(drillComplianceRate, 40) && fire_drill_records.length > 0) score -= 5;
 
   // Penalty 2: equipmentCheckRate < 50 → -5 (guarded)
-  if (equipmentCheckRate < 50 && fire_equipment_check_records.length > 0) score -= 5;
+  if (below(equipmentCheckRate, 50) && fire_equipment_check_records.length > 0) score -= 5;
 
   // Penalty 3: staffTrainingRate < 40 → -4 (guarded)
-  if (staffTrainingRate < 40 && fire_training_records.length > 0) score -= 4;
+  if (below(staffTrainingRate, 40) && fire_training_records.length > 0) score -= 4;
 
   // Penalty 4: riskAssessmentCurrencyRate < 50 → -4 (guarded)
-  if (riskAssessmentCurrencyRate < 50 && fire_risk_assessment_records.length > 0) score -= 4;
+  if (below(riskAssessmentCurrencyRate, 50) && fire_risk_assessment_records.length > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -506,51 +501,51 @@ export function computeFireSafetyEmergencyDrill(
 
   const strengths: string[] = [];
 
-  if (drillComplianceRate >= 90 && totalDrillRecords > 0) {
+  if (meets(drillComplianceRate, 90) && totalDrillRecords > 0) {
     strengths.push(
       `${drillComplianceRate}% of fire drills achieved a satisfactory result — the home demonstrates excellent fire drill practice and emergency preparedness.`,
     );
-  } else if (drillComplianceRate >= 70 && totalDrillRecords > 0) {
+  } else if (meets(drillComplianceRate, 70) && totalDrillRecords > 0) {
     strengths.push(
       `${drillComplianceRate}% fire drill compliance — the home maintains a good standard of fire drill practice with the majority of drills completing satisfactorily.`,
     );
   }
 
-  if (evacuationTimeRate >= 90 && totalDrillRecords > 0) {
+  if (meets(evacuationTimeRate, 90) && totalDrillRecords > 0) {
     strengths.push(
       `${evacuationTimeRate}% of evacuations completed within target time — evacuation procedures are well-rehearsed and staff respond efficiently to emergency scenarios.`,
     );
-  } else if (evacuationTimeRate >= 70 && totalDrillRecords > 0) {
+  } else if (meets(evacuationTimeRate, 70) && totalDrillRecords > 0) {
     strengths.push(
       `${evacuationTimeRate}% of evacuations within target time — good evacuation performance demonstrating effective emergency procedures.`,
     );
   }
 
-  if (riskAssessmentCurrencyRate >= 90 && totalRiskAssessments > 0) {
+  if (meets(riskAssessmentCurrencyRate, 90) && totalRiskAssessments > 0) {
     strengths.push(
       `${riskAssessmentCurrencyRate}% of fire risk assessments are current — the home maintains up-to-date risk assessments as required by the Fire Safety Order 2005.`,
     );
-  } else if (riskAssessmentCurrencyRate >= 70 && totalRiskAssessments > 0) {
+  } else if (meets(riskAssessmentCurrencyRate, 70) && totalRiskAssessments > 0) {
     strengths.push(
       `${riskAssessmentCurrencyRate}% fire risk assessment currency rate — the home generally maintains current fire risk assessments.`,
     );
   }
 
-  if (equipmentCheckRate >= 90 && totalEquipmentChecks > 0) {
+  if (meets(equipmentCheckRate, 90) && totalEquipmentChecks > 0) {
     strengths.push(
       `${equipmentCheckRate}% of fire equipment checks passed — fire safety equipment is well-maintained and in good working order across the home.`,
     );
-  } else if (equipmentCheckRate >= 70 && totalEquipmentChecks > 0) {
+  } else if (meets(equipmentCheckRate, 70) && totalEquipmentChecks > 0) {
     strengths.push(
       `${equipmentCheckRate}% fire equipment pass rate — the majority of fire safety equipment is maintained to a satisfactory standard.`,
     );
   }
 
-  if (staffTrainingRate >= 90 && totalTrainingRecords > 0) {
+  if (meets(staffTrainingRate, 90) && totalTrainingRecords > 0) {
     strengths.push(
       `${staffTrainingRate}% staff fire training completion rate — staff are well-trained in fire safety procedures and emergency response.`,
     );
-  } else if (staffTrainingRate >= 70 && totalTrainingRecords > 0) {
+  } else if (meets(staffTrainingRate, 70) && totalTrainingRecords > 0) {
     strengths.push(
       `${staffTrainingRate}% staff fire training rate — the majority of staff have completed their fire safety training.`,
     );
@@ -566,39 +561,39 @@ export function computeFireSafetyEmergencyDrill(
     );
   }
 
-  if (issueResolutionRate >= 90 && issuesDrills.length > 0) {
+  if (meets(issueResolutionRate, 90) && issuesDrills.length > 0) {
     strengths.push(
       `${issueResolutionRate}% of drill issues resolved — the home demonstrates a strong commitment to addressing fire drill findings promptly and effectively.`,
     );
-  } else if (issueResolutionRate >= 70 && issuesDrills.length > 0) {
+  } else if (meets(issueResolutionRate, 70) && issuesDrills.length > 0) {
     strengths.push(
       `${issueResolutionRate}% drill issue resolution rate — the home generally addresses fire drill findings in a timely manner.`,
     );
   }
 
-  if (raActionCompletionRate >= 90 && totalRaActions > 0) {
+  if (meets(raActionCompletionRate, 90) && totalRaActions > 0) {
     strengths.push(
       `${raActionCompletionRate}% of risk assessment actions completed — fire risk assessment findings are being acted upon comprehensively.`,
     );
-  } else if (raActionCompletionRate >= 70 && totalRaActions > 0) {
+  } else if (meets(raActionCompletionRate, 70) && totalRaActions > 0) {
     strengths.push(
       `${raActionCompletionRate}% risk assessment action completion — the home generally follows through on fire risk assessment recommendations.`,
     );
   }
 
-  if (fullEvacuationRate >= 95 && totalDrillRecords > 0) {
+  if (meets(fullEvacuationRate, 95) && totalDrillRecords > 0) {
     strengths.push(
       `${fullEvacuationRate}% full evacuation rate — all occupants are consistently evacuated during fire drills, demonstrating effective emergency procedures.`,
     );
   }
 
-  if (nightDrillRate >= 20 && totalDrillRecords > 0) {
+  if (meets(nightDrillRate, 20) && totalDrillRecords > 0) {
     strengths.push(
       `Night drills represent ${nightDrillRate}% of all drills — the home tests emergency procedures during vulnerable night-time periods as recommended by fire safety best practice.`,
     );
   }
 
-  if (unannouncedDrillRate >= 20 && totalDrillRecords > 0) {
+  if (meets(unannouncedDrillRate, 20) && totalDrillRecords > 0) {
     strengths.push(
       `${unannouncedDrillRate}% of drills are unannounced — the home tests genuine emergency response capability rather than relying solely on scheduled exercises.`,
     );
@@ -610,7 +605,7 @@ export function computeFireSafetyEmergencyDrill(
     );
   }
 
-  if (defectRectificationRate >= 90 && defectiveEquipment.length > 0) {
+  if (meets(defectRectificationRate, 90) && defectiveEquipment.length > 0) {
     strengths.push(
       `${defectRectificationRate}% of equipment defects rectified — the home responds effectively to fire equipment faults, minimising risk to children and staff.`,
     );
@@ -628,13 +623,13 @@ export function computeFireSafetyEmergencyDrill(
     );
   }
 
-  if (certificateHeldRate >= 90 && totalEquipmentChecks > 0) {
+  if (meets(certificateHeldRate, 90) && totalEquipmentChecks > 0) {
     strengths.push(
       `${certificateHeldRate}% of equipment checks have certificates held — strong evidence base for fire equipment maintenance compliance.`,
     );
   }
 
-  if (areaComplianceRate >= 90 && compliantAreaTotal > 0) {
+  if (meets(areaComplianceRate, 90) && compliantAreaTotal > 0) {
     strengths.push(
       `${areaComplianceRate}% of assessed areas compliant — fire risk assessments show a high standard of compliance across the premises.`,
     );
@@ -644,51 +639,51 @@ export function computeFireSafetyEmergencyDrill(
 
   const concerns: string[] = [];
 
-  if (drillComplianceRate < 40 && totalDrillRecords > 0) {
+  if (below(drillComplianceRate, 40) && totalDrillRecords > 0) {
     concerns.push(
       `Only ${drillComplianceRate}% of fire drills achieved a satisfactory result — the majority of drills reveal issues or failures, indicating fundamental weaknesses in the home's fire safety procedures.`,
     );
-  } else if (drillComplianceRate < 70 && drillComplianceRate >= 40 && totalDrillRecords > 0) {
+  } else if (below(drillComplianceRate, 70) && meets(drillComplianceRate, 40) && totalDrillRecords > 0) {
     concerns.push(
       `Fire drill compliance at ${drillComplianceRate}% — a significant proportion of drills do not achieve satisfactory outcomes, requiring review of evacuation procedures and staff competency.`,
     );
   }
 
-  if (evacuationTimeRate < 40 && totalDrillRecords > 0) {
+  if (below(evacuationTimeRate, 40) && totalDrillRecords > 0) {
     concerns.push(
       `Only ${evacuationTimeRate}% of evacuations completed within target time — slow evacuation times represent a direct risk to children's safety in a genuine fire emergency.`,
     );
-  } else if (evacuationTimeRate < 70 && evacuationTimeRate >= 40 && totalDrillRecords > 0) {
+  } else if (below(evacuationTimeRate, 70) && meets(evacuationTimeRate, 40) && totalDrillRecords > 0) {
     concerns.push(
       `Evacuation time compliance at ${evacuationTimeRate}% — not all drills meet the target evacuation time, suggesting procedures or building layout need review.`,
     );
   }
 
-  if (riskAssessmentCurrencyRate < 50 && totalRiskAssessments > 0) {
+  if (below(riskAssessmentCurrencyRate, 50) && totalRiskAssessments > 0) {
     concerns.push(
       `Only ${riskAssessmentCurrencyRate}% of fire risk assessments are current — expired or overdue assessments mean the home cannot evidence that fire risks are being managed in line with the Fire Safety Order 2005.`,
     );
-  } else if (riskAssessmentCurrencyRate < 70 && riskAssessmentCurrencyRate >= 50 && totalRiskAssessments > 0) {
+  } else if (below(riskAssessmentCurrencyRate, 70) && meets(riskAssessmentCurrencyRate, 50) && totalRiskAssessments > 0) {
     concerns.push(
       `Fire risk assessment currency at ${riskAssessmentCurrencyRate}% — some assessments are overdue for review, which could leave unidentified risks unmanaged.`,
     );
   }
 
-  if (equipmentCheckRate < 50 && totalEquipmentChecks > 0) {
+  if (below(equipmentCheckRate, 50) && totalEquipmentChecks > 0) {
     concerns.push(
       `Only ${equipmentCheckRate}% of fire equipment checks passed — a significant proportion of fire safety equipment is failing checks, creating direct risk to life safety.`,
     );
-  } else if (equipmentCheckRate < 70 && equipmentCheckRate >= 50 && totalEquipmentChecks > 0) {
+  } else if (below(equipmentCheckRate, 70) && meets(equipmentCheckRate, 50) && totalEquipmentChecks > 0) {
     concerns.push(
       `Fire equipment pass rate at ${equipmentCheckRate}% — some fire safety equipment is not meeting required standards, requiring attention to maintain safety compliance.`,
     );
   }
 
-  if (staffTrainingRate < 40 && totalTrainingRecords > 0) {
+  if (below(staffTrainingRate, 40) && totalTrainingRecords > 0) {
     concerns.push(
       `Only ${staffTrainingRate}% staff fire training completion — the majority of staff have not completed required fire safety training, leaving them unprepared to respond to a fire emergency.`,
     );
-  } else if (staffTrainingRate < 70 && staffTrainingRate >= 40 && totalTrainingRecords > 0) {
+  } else if (below(staffTrainingRate, 70) && meets(staffTrainingRate, 40) && totalTrainingRecords > 0) {
     concerns.push(
       `Staff fire training rate at ${staffTrainingRate}% — a significant number of staff have incomplete fire safety training, which may compromise emergency response.`,
     );
@@ -704,41 +699,41 @@ export function computeFireSafetyEmergencyDrill(
     );
   }
 
-  if (failedDrillRate >= 20 && totalDrillRecords > 0) {
+  if (meets(failedDrillRate, 20) && totalDrillRecords > 0) {
     concerns.push(
       `${failedDrillRate}% of fire drills failed or were not completed — this level of drill failure represents a significant concern about the home's emergency preparedness.`,
     );
   }
 
-  if (fullEvacuationRate < 80 && totalDrillRecords > 0) {
+  if (below(fullEvacuationRate, 80) && totalDrillRecords > 0) {
     concerns.push(
       `Only ${fullEvacuationRate}% of drills achieved full evacuation — not all occupants are consistently evacuated during fire drills, which could have life-threatening consequences in a real emergency.`,
     );
   }
 
-  if (highCriticalRate >= 30 && totalRiskAssessments > 0) {
+  if (meets(highCriticalRate, 30) && totalRiskAssessments > 0) {
     concerns.push(
       `${highCriticalRate}% of fire risk assessments rated high or critical risk — a concerning proportion of assessments identify significant fire hazards requiring urgent remediation.`,
     );
   }
 
-  if (raActionCompletionRate < 50 && totalRaActions > 0) {
+  if (below(raActionCompletionRate, 50) && totalRaActions > 0) {
     concerns.push(
       `Only ${raActionCompletionRate}% of fire risk assessment actions completed — identified fire risks are not being addressed, leaving known hazards unmitigated.`,
     );
-  } else if (raActionCompletionRate < 70 && raActionCompletionRate >= 50 && totalRaActions > 0) {
+  } else if (below(raActionCompletionRate, 70) && meets(raActionCompletionRate, 50) && totalRaActions > 0) {
     concerns.push(
       `Risk assessment action completion at ${raActionCompletionRate}% — some identified fire risks remain unaddressed, requiring follow-through on outstanding actions.`,
     );
   }
 
-  if (overdueEquipmentRate >= 20 && totalEquipmentChecks > 0) {
+  if (meets(overdueEquipmentRate, 20) && totalEquipmentChecks > 0) {
     concerns.push(
       `${overdueEquipmentRate}% of fire equipment checks are overdue — equipment with lapsed maintenance schedules may not function in an emergency.`,
     );
   }
 
-  if (expiredTrainingRate >= 20 && totalTrainingRecords > 0) {
+  if (meets(expiredTrainingRate, 20) && totalTrainingRecords > 0) {
     concerns.push(
       `${expiredTrainingRate}% of fire training records have expired — staff with lapsed fire training may not be competent to respond effectively to a fire emergency.`,
     );
@@ -750,19 +745,19 @@ export function computeFireSafetyEmergencyDrill(
     );
   }
 
-  if (keyDocRate < 60 && totalDocumentRecords > 0) {
+  if (below(keyDocRate, 60) && totalDocumentRecords > 0) {
     concerns.push(
       `Only ${keyDocRate}% of the five key fire safety documents are in place — missing core documents (fire policy, evacuation plan, fire risk assessment, fire log book, emergency contacts) represents a significant gap in fire safety governance.`,
     );
   }
 
-  if (defectRectificationRate < 50 && defectiveEquipment.length > 0) {
+  if (below(defectRectificationRate, 50) && defectiveEquipment.length > 0) {
     concerns.push(
       `Only ${defectRectificationRate}% of equipment defects rectified — known equipment faults are not being resolved, leaving fire safety systems potentially non-functional.`,
     );
   }
 
-  if (issueResolutionRate < 50 && issuesDrills.length > 0) {
+  if (below(issueResolutionRate, 50) && issuesDrills.length > 0) {
     concerns.push(
       `Only ${issueResolutionRate}% of fire drill issues resolved — identified problems from drills are not being addressed, meaning the same failures are likely to recur.`,
     );
@@ -773,7 +768,7 @@ export function computeFireSafetyEmergencyDrill(
   const recommendations: FireSafetyRecommendation[] = [];
   let rank = 0;
 
-  if (drillComplianceRate < 40 && totalDrillRecords > 0) {
+  if (below(drillComplianceRate, 40) && totalDrillRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -783,7 +778,7 @@ export function computeFireSafetyEmergencyDrill(
     });
   }
 
-  if (equipmentCheckRate < 50 && totalEquipmentChecks > 0) {
+  if (below(equipmentCheckRate, 50) && totalEquipmentChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -793,7 +788,7 @@ export function computeFireSafetyEmergencyDrill(
     });
   }
 
-  if (staffTrainingRate < 40 && totalTrainingRecords > 0) {
+  if (below(staffTrainingRate, 40) && totalTrainingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -803,7 +798,7 @@ export function computeFireSafetyEmergencyDrill(
     });
   }
 
-  if (riskAssessmentCurrencyRate < 50 && totalRiskAssessments > 0) {
+  if (below(riskAssessmentCurrencyRate, 50) && totalRiskAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -813,7 +808,7 @@ export function computeFireSafetyEmergencyDrill(
     });
   }
 
-  if (evacuationTimeRate < 40 && totalDrillRecords > 0) {
+  if (below(evacuationTimeRate, 40) && totalDrillRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -823,7 +818,7 @@ export function computeFireSafetyEmergencyDrill(
     });
   }
 
-  if (raActionCompletionRate < 50 && totalRaActions > 0) {
+  if (below(raActionCompletionRate, 50) && totalRaActions > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -833,7 +828,7 @@ export function computeFireSafetyEmergencyDrill(
     });
   }
 
-  if (fullEvacuationRate < 80 && totalDrillRecords > 0) {
+  if (below(fullEvacuationRate, 80) && totalDrillRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -853,7 +848,7 @@ export function computeFireSafetyEmergencyDrill(
     });
   }
 
-  if (issueResolutionRate < 50 && issuesDrills.length > 0) {
+  if (below(issueResolutionRate, 50) && issuesDrills.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -863,7 +858,7 @@ export function computeFireSafetyEmergencyDrill(
     });
   }
 
-  if (defectRectificationRate < 50 && defectiveEquipment.length > 0) {
+  if (below(defectRectificationRate, 50) && defectiveEquipment.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -873,7 +868,7 @@ export function computeFireSafetyEmergencyDrill(
     });
   }
 
-  if (keyDocRate < 60 && totalDocumentRecords > 0) {
+  if (below(keyDocRate, 60) && totalDocumentRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -884,8 +879,8 @@ export function computeFireSafetyEmergencyDrill(
   }
 
   if (
-    drillComplianceRate >= 40 &&
-    drillComplianceRate < 70 &&
+    meets(drillComplianceRate, 40) &&
+    below(drillComplianceRate, 70) &&
     totalDrillRecords > 0
   ) {
     recommendations.push({
@@ -898,8 +893,8 @@ export function computeFireSafetyEmergencyDrill(
   }
 
   if (
-    staffTrainingRate >= 40 &&
-    staffTrainingRate < 70 &&
+    meets(staffTrainingRate, 40) &&
+    below(staffTrainingRate, 70) &&
     totalTrainingRecords > 0
   ) {
     recommendations.push({
@@ -912,8 +907,8 @@ export function computeFireSafetyEmergencyDrill(
   }
 
   if (
-    equipmentCheckRate >= 50 &&
-    equipmentCheckRate < 70 &&
+    meets(equipmentCheckRate, 50) &&
+    below(equipmentCheckRate, 70) &&
     totalEquipmentChecks > 0
   ) {
     recommendations.push({
@@ -940,8 +935,8 @@ export function computeFireSafetyEmergencyDrill(
   }
 
   if (
-    evacuationTimeRate >= 40 &&
-    evacuationTimeRate < 70 &&
+    meets(evacuationTimeRate, 40) &&
+    below(evacuationTimeRate, 70) &&
     totalDrillRecords > 0
   ) {
     recommendations.push({
@@ -953,7 +948,7 @@ export function computeFireSafetyEmergencyDrill(
     });
   }
 
-  if (expiredTrainingRate >= 20 && totalTrainingRecords > 0) {
+  if (meets(expiredTrainingRate, 20) && totalTrainingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -974,8 +969,8 @@ export function computeFireSafetyEmergencyDrill(
   }
 
   if (
-    riskAssessmentCurrencyRate >= 50 &&
-    riskAssessmentCurrencyRate < 70 &&
+    meets(riskAssessmentCurrencyRate, 50) &&
+    below(riskAssessmentCurrencyRate, 70) &&
     totalRiskAssessments > 0
   ) {
     recommendations.push({
@@ -1033,49 +1028,49 @@ export function computeFireSafetyEmergencyDrill(
 
   // -- Critical insights --
 
-  if (drillComplianceRate < 40 && totalDrillRecords > 0) {
+  if (below(drillComplianceRate, 40) && totalDrillRecords > 0) {
     insights.push({
       text: `Only ${drillComplianceRate}% of fire drills satisfactory. This level of drill failure indicates that the home's fire safety procedures are fundamentally inadequate. Under CHR 2015 Reg 25, the registered person must take adequate steps to protect children from the risk of fire. Ofsted would view this as a serious safeguarding concern.`,
       severity: "critical",
     });
   }
 
-  if (equipmentCheckRate < 50 && totalEquipmentChecks > 0) {
+  if (below(equipmentCheckRate, 50) && totalEquipmentChecks > 0) {
     insights.push({
       text: `Only ${equipmentCheckRate}% of fire equipment passed checks. Fire safety equipment exists to protect lives — when the majority of equipment is failing checks, children and staff are at direct risk. The Regulatory Reform (Fire Safety) Order 2005 Art 17 requires equipment to be maintained in an efficient state and effective working order.`,
       severity: "critical",
     });
   }
 
-  if (staffTrainingRate < 40 && totalTrainingRecords > 0) {
+  if (below(staffTrainingRate, 40) && totalTrainingRecords > 0) {
     insights.push({
       text: `Only ${staffTrainingRate}% of staff fire training completed. Staff who have not completed fire safety training cannot be relied upon to respond effectively in an emergency. The Fire Safety Order 2005 Art 21 requires the responsible person to provide adequate fire safety training — this level of non-completion represents a regulatory breach.`,
       severity: "critical",
     });
   }
 
-  if (riskAssessmentCurrencyRate < 50 && totalRiskAssessments > 0) {
+  if (below(riskAssessmentCurrencyRate, 50) && totalRiskAssessments > 0) {
     insights.push({
       text: `Only ${riskAssessmentCurrencyRate}% of fire risk assessments current. Out-of-date risk assessments mean the home is managing fire risks based on historic rather than current conditions. The Fire Safety Order 2005 requires assessments to be reviewed regularly — this gap could mask new or changed fire hazards.`,
       severity: "critical",
     });
   }
 
-  if (evacuationTimeRate < 40 && totalDrillRecords > 0) {
+  if (below(evacuationTimeRate, 40) && totalDrillRecords > 0) {
     insights.push({
       text: `Only ${evacuationTimeRate}% of evacuations within target time. In a real fire, every second counts. The average evacuation time of ${avgEvacTime} seconds suggests barriers to rapid egress that must be identified and resolved. Consider escape route obstructions, locked doors, inadequate signage, or insufficient staff deployment.`,
       severity: "critical",
     });
   }
 
-  if (fullEvacuationRate < 70 && totalDrillRecords > 0) {
+  if (below(fullEvacuationRate, 70) && totalDrillRecords > 0) {
     insights.push({
       text: `Only ${fullEvacuationRate}% of drills achieved full evacuation of all occupants. Any individual unaccounted for during a fire could lose their life. This represents the most fundamental measure of fire safety — every person must be evacuated every time.`,
       severity: "critical",
     });
   }
 
-  if (highCriticalRate >= 50 && totalRiskAssessments > 0) {
+  if (meets(highCriticalRate, 50) && totalRiskAssessments > 0) {
     insights.push({
       text: `${highCriticalRate}% of fire risk assessments rated high or critical. A majority of assessments identifying severe fire risks suggests the premises has fundamental fire safety issues requiring significant investment and remediation.`,
       severity: "critical",
@@ -1099,8 +1094,8 @@ export function computeFireSafetyEmergencyDrill(
   // -- Warning insights --
 
   if (
-    drillComplianceRate >= 40 &&
-    drillComplianceRate < 70 &&
+    meets(drillComplianceRate, 40) &&
+    below(drillComplianceRate, 70) &&
     totalDrillRecords > 0
   ) {
     insights.push({
@@ -1110,8 +1105,8 @@ export function computeFireSafetyEmergencyDrill(
   }
 
   if (
-    evacuationTimeRate >= 40 &&
-    evacuationTimeRate < 70 &&
+    meets(evacuationTimeRate, 40) &&
+    below(evacuationTimeRate, 70) &&
     totalDrillRecords > 0
   ) {
     insights.push({
@@ -1121,8 +1116,8 @@ export function computeFireSafetyEmergencyDrill(
   }
 
   if (
-    equipmentCheckRate >= 50 &&
-    equipmentCheckRate < 70 &&
+    meets(equipmentCheckRate, 50) &&
+    below(equipmentCheckRate, 70) &&
     totalEquipmentChecks > 0
   ) {
     insights.push({
@@ -1132,8 +1127,8 @@ export function computeFireSafetyEmergencyDrill(
   }
 
   if (
-    staffTrainingRate >= 40 &&
-    staffTrainingRate < 70 &&
+    meets(staffTrainingRate, 40) &&
+    below(staffTrainingRate, 70) &&
     totalTrainingRecords > 0
   ) {
     insights.push({
@@ -1143,8 +1138,8 @@ export function computeFireSafetyEmergencyDrill(
   }
 
   if (
-    riskAssessmentCurrencyRate >= 50 &&
-    riskAssessmentCurrencyRate < 70 &&
+    meets(riskAssessmentCurrencyRate, 50) &&
+    below(riskAssessmentCurrencyRate, 70) &&
     totalRiskAssessments > 0
   ) {
     insights.push({
@@ -1165,8 +1160,8 @@ export function computeFireSafetyEmergencyDrill(
   }
 
   if (
-    raActionCompletionRate >= 50 &&
-    raActionCompletionRate < 70 &&
+    meets(raActionCompletionRate, 50) &&
+    below(raActionCompletionRate, 70) &&
     totalRaActions > 0
   ) {
     insights.push({
@@ -1176,8 +1171,8 @@ export function computeFireSafetyEmergencyDrill(
   }
 
   if (
-    issueResolutionRate >= 50 &&
-    issueResolutionRate < 70 &&
+    meets(issueResolutionRate, 50) &&
+    below(issueResolutionRate, 70) &&
     issuesDrills.length > 0
   ) {
     insights.push({
@@ -1186,14 +1181,14 @@ export function computeFireSafetyEmergencyDrill(
     });
   }
 
-  if (overdueEquipmentRate >= 10 && overdueEquipmentRate < 20 && totalEquipmentChecks > 0) {
+  if (meets(overdueEquipmentRate, 10) && below(overdueEquipmentRate, 20) && totalEquipmentChecks > 0) {
     insights.push({
       text: `${overdueEquipmentRate}% of equipment checks overdue — while not yet critical, any lapse in maintenance scheduling could result in equipment failing when needed most. Implement automated reminders for upcoming check dates.`,
       severity: "warning",
     });
   }
 
-  if (expiredTrainingRate >= 10 && expiredTrainingRate < 20 && totalTrainingRecords > 0) {
+  if (meets(expiredTrainingRate, 10) && below(expiredTrainingRate, 20) && totalTrainingRecords > 0) {
     insights.push({
       text: `${expiredTrainingRate}% of fire training records have expired — staff with lapsed training may retain knowledge but cannot evidence current competency. Schedule refresher training before certificates expire.`,
       severity: "warning",
@@ -1207,7 +1202,7 @@ export function computeFireSafetyEmergencyDrill(
     });
   }
 
-  if (sharedWithStaffRate < 70 && totalRiskAssessments > 0) {
+  if (below(sharedWithStaffRate, 70) && totalRiskAssessments > 0) {
     insights.push({
       text: `Only ${sharedWithStaffRate}% of fire risk assessments shared with staff. Staff who are unaware of identified fire risks cannot take appropriate precautions. Under the Fire Safety Order, employees must be provided with comprehensible and relevant information about fire risks.`,
       severity: "warning",
@@ -1224,8 +1219,8 @@ export function computeFireSafetyEmergencyDrill(
   }
 
   if (
-    drillComplianceRate >= 90 &&
-    evacuationTimeRate >= 90 &&
+    meets(drillComplianceRate, 90) &&
+    meets(evacuationTimeRate, 90) &&
     totalDrillRecords > 0
   ) {
     insights.push({
@@ -1235,8 +1230,8 @@ export function computeFireSafetyEmergencyDrill(
   }
 
   if (
-    riskAssessmentCurrencyRate >= 90 &&
-    raActionCompletionRate >= 90 &&
+    meets(riskAssessmentCurrencyRate, 90) &&
+    meets(raActionCompletionRate, 90) &&
     totalRiskAssessments > 0 &&
     totalRaActions > 0
   ) {
@@ -1247,19 +1242,19 @@ export function computeFireSafetyEmergencyDrill(
   }
 
   if (
-    equipmentCheckRate >= 90 &&
-    defectRectificationRate >= 90 &&
+    meets(equipmentCheckRate, 90) &&
+    meets(defectRectificationRate, 90) &&
     totalEquipmentChecks > 0
   ) {
     insights.push({
-      text: `${equipmentCheckRate}% equipment pass rate with ${defectRectificationRate >= 90 && defectiveEquipment.length > 0 ? defectRectificationRate + "% defect rectification" : "minimal defects"} — fire safety equipment is comprehensively maintained, providing confidence that it will function when needed.`,
+      text: `${equipmentCheckRate}% equipment pass rate with ${meets(defectRectificationRate, 90) && defectiveEquipment.length > 0 ? defectRectificationRate + "% defect rectification" : "minimal defects"} — fire safety equipment is comprehensively maintained, providing confidence that it will function when needed.`,
       severity: "positive",
     });
   }
 
   if (
-    staffTrainingRate >= 90 &&
-    trainingPassRate >= 90 &&
+    meets(staffTrainingRate, 90) &&
+    meets(trainingPassRate, 90) &&
     totalTrainingRecords > 0
   ) {
     insights.push({
@@ -1270,7 +1265,7 @@ export function computeFireSafetyEmergencyDrill(
 
   if (
     (documentationComplianceRate ?? 0) >= 90 &&
-    keyDocRate >= 80 &&
+    meets(keyDocRate, 80) &&
     totalDocumentRecords > 0
   ) {
     insights.push({
@@ -1280,8 +1275,8 @@ export function computeFireSafetyEmergencyDrill(
   }
 
   if (
-    nightDrillRate >= 20 &&
-    unannouncedDrillRate >= 20 &&
+    meets(nightDrillRate, 20) &&
+    meets(unannouncedDrillRate, 20) &&
     totalDrillRecords > 0
   ) {
     insights.push({
@@ -1291,7 +1286,7 @@ export function computeFireSafetyEmergencyDrill(
   }
 
   if (
-    fullEvacuationRate >= 95 &&
+    meets(fullEvacuationRate, 95) &&
     totalDrillRecords > 0
   ) {
     insights.push({
@@ -1301,9 +1296,9 @@ export function computeFireSafetyEmergencyDrill(
   }
 
   if (
-    areaComplianceRate >= 90 &&
+    meets(areaComplianceRate, 90) &&
     compliantAreaTotal > 0 &&
-    highCriticalRate < 10
+    below(highCriticalRate, 10)
   ) {
     insights.push({
       text: `${areaComplianceRate}% of assessed areas compliant with very few high-risk findings — the premises demonstrates a high standard of fire safety across all assessed areas.`,

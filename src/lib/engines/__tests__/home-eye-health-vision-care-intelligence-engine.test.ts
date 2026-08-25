@@ -200,14 +200,14 @@ describe("insufficient_data", () => {
     expect(r.total_engagement_records).toBe(0);
   });
 
-  it("all rates are 0 for insufficient_data", () => {
+  it("all rates are null for insufficient_data", () => {
     const r = run({ total_children: 0 });
-    expect(r.eye_test_compliance_rate).toBe(0);
-    expect(r.prescription_management_rate).toBe(0);
-    expect(r.optician_referral_rate).toBe(0);
-    expect(r.visual_aid_rate).toBe(0);
-    expect(r.child_engagement_rate).toBe(0);
-    expect(r.follow_up_rate).toBe(0);
+    expect(r.eye_test_compliance_rate).toBeNull();
+    expect(r.prescription_management_rate).toBeNull();
+    expect(r.optician_referral_rate).toBeNull();
+    expect(r.visual_aid_rate).toBeNull();
+    expect(r.child_engagement_rate).toBeNull();
+    expect(r.follow_up_rate).toBeNull();
   });
 });
 
@@ -258,14 +258,14 @@ describe("inadequate floor — children present, all arrays empty", () => {
     expect(r.total_engagement_records).toBe(0);
   });
 
-  it("all rates are 0", () => {
+  it("all rates are null", () => {
     const r = run({ total_children: 1 });
-    expect(r.eye_test_compliance_rate).toBe(0);
-    expect(r.prescription_management_rate).toBe(0);
-    expect(r.optician_referral_rate).toBe(0);
-    expect(r.visual_aid_rate).toBe(0);
-    expect(r.child_engagement_rate).toBe(0);
-    expect(r.follow_up_rate).toBe(0);
+    expect(r.eye_test_compliance_rate).toBeNull();
+    expect(r.prescription_management_rate).toBeNull();
+    expect(r.optician_referral_rate).toBeNull();
+    expect(r.visual_aid_rate).toBeNull();
+    expect(r.child_engagement_rate).toBeNull();
+    expect(r.follow_up_rate).toBeNull();
   });
 });
 
@@ -274,23 +274,23 @@ describe("inadequate floor — children present, all arrays empty", () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("pct(0, 0) = 0", () => {
-  it("follow_up_rate is 0 when no follow-ups required", () => {
+  it("follow_up_rate is null when no follow-ups required", () => {
     const r = run({
       eye_test_records: [makeEyeTest()],
       prescription_records: [makePrescription({ follow_up_required: false })],
       optician_referral_records: [makeReferral({ follow_up_required: false })],
     });
-    expect(r.follow_up_rate).toBe(0);
+    expect(r.follow_up_rate).toBeNull();
   });
 
-  it("all rates are 0 with 0 children and 0 records", () => {
+  it("all rates are null with 0 children and 0 records", () => {
     const r = run({ total_children: 0 });
-    expect(r.eye_test_compliance_rate).toBe(0);
-    expect(r.prescription_management_rate).toBe(0);
-    expect(r.optician_referral_rate).toBe(0);
-    expect(r.visual_aid_rate).toBe(0);
-    expect(r.child_engagement_rate).toBe(0);
-    expect(r.follow_up_rate).toBe(0);
+    expect(r.eye_test_compliance_rate).toBeNull();
+    expect(r.prescription_management_rate).toBeNull();
+    expect(r.optician_referral_rate).toBeNull();
+    expect(r.visual_aid_rate).toBeNull();
+    expect(r.child_engagement_rate).toBeNull();
+    expect(r.follow_up_rate).toBeNull();
   });
 });
 
@@ -807,12 +807,12 @@ describe("Bonus 6 — followUpRate", () => {
     expect(r.follow_up_rate).toBe(50);
   });
 
-  it("+0 when no follow-ups required (pct(0,0) = 0)", () => {
+  it("+0 when no follow-ups required (rate(0,0)=null)", () => {
     const r = run({
       prescription_records: [makePrescription({ follow_up_required: false })],
       optician_referral_records: [makeReferral({ follow_up_required: false })],
     });
-    expect(r.follow_up_rate).toBe(0);
+    expect(r.follow_up_rate).toBeNull();
   });
 });
 
@@ -1127,11 +1127,11 @@ describe("follow_up_rate composite", () => {
     expect(r.follow_up_rate).toBe(100);
   });
 
-  it("0% when no follow-ups required (pct(0,0)=0)", () => {
+  it("null when no follow-ups required (rate(0,0)=null)", () => {
     const r = run({
       prescription_records: [makePrescription({ follow_up_required: false })],
     });
-    expect(r.follow_up_rate).toBe(0);
+    expect(r.follow_up_rate).toBeNull();
   });
 });
 

@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME EYE HEALTH & VISION CARE INTELLIGENCE ENGINE
 // Monitors how well the home manages children's eye health — eye test
@@ -180,10 +181,6 @@ export interface EyeHealthResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -211,12 +208,12 @@ function emptyResult(
     total_referral_records: 0,
     total_visual_aid_records: 0,
     total_engagement_records: 0,
-    eye_test_compliance_rate: 0,
-    prescription_management_rate: 0,
-    optician_referral_rate: 0,
-    visual_aid_rate: 0,
-    child_engagement_rate: 0,
-    follow_up_rate: 0,
+    eye_test_compliance_rate: null,
+    prescription_management_rate: null,
+    optician_referral_rate: null,
+    visual_aid_rate: null,
+    child_engagement_rate: null,
+    follow_up_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -296,24 +293,24 @@ export function computeEyeHealthVisionCare(
   const totalEyeTestRecords = eye_test_records.length;
 
   const eyeTestsAttended = eye_test_records.filter((r) => r.attended).length;
-  const eyeTestAttendanceRate = pct(eyeTestsAttended, totalEyeTestRecords);
+  const eyeTestAttendanceRate = rate(eyeTestsAttended, totalEyeTestRecords);
 
   const eyeTestsConsented = eye_test_records.filter((r) => r.child_consented).length;
 
   const childCooperative = eye_test_records.filter((r) => r.child_cooperative).length;
 
   const eyeTestsWithNextDate = eye_test_records.filter((r) => r.next_test_date !== null).length;
-  const nextTestScheduledRate = pct(eyeTestsWithNextDate, totalEyeTestRecords);
+  const nextTestScheduledRate = rate(eyeTestsWithNextDate, totalEyeTestRecords);
 
   const normalOutcomes = eye_test_records.filter((r) => r.outcome === "normal").length;
-  const normalOutcomeRate = pct(normalOutcomes, totalEyeTestRecords);
+  const normalOutcomeRate = rate(normalOutcomes, totalEyeTestRecords);
 
   const prescriptionNeeded = eye_test_records.filter((r) => r.outcome === "prescription_needed").length;
 
   // Composite eye test compliance: attended + consented + cooperative + next test scheduled
   const eyeTestComplianceNumerator = eyeTestsAttended + eyeTestsConsented + childCooperative + eyeTestsWithNextDate;
   const eyeTestComplianceDenominator = totalEyeTestRecords * 4;
-  const eyeTestComplianceRate = pct(eyeTestComplianceNumerator, eyeTestComplianceDenominator);
+  const eyeTestComplianceRate = rate(eyeTestComplianceNumerator, eyeTestComplianceDenominator);
 
   // --- Prescription management metrics ---
   const totalPrescriptionRecords = prescription_records.length;
@@ -321,10 +318,10 @@ export function computeEyeHealthVisionCare(
   const prescriptionsDispensed = prescription_records.filter((r) => r.dispensed).length;
 
   const usingCorrectly = prescription_records.filter((r) => r.child_using_correctly).length;
-  const correctUsageRate = pct(usingCorrectly, totalPrescriptionRecords);
+  const correctUsageRate = rate(usingCorrectly, totalPrescriptionRecords);
 
   const childComfortable = prescription_records.filter((r) => r.child_comfortable).length;
-  const comfortRate = pct(childComfortable, totalPrescriptionRecords);
+  const comfortRate = rate(childComfortable, totalPrescriptionRecords);
 
   const reviewCompleted = prescription_records.filter((r) => r.review_completed).length;
 
@@ -332,7 +329,7 @@ export function computeEyeHealthVisionCare(
   const replacementArranged = prescription_records.filter(
     (r) => r.replacement_needed && r.replacement_arranged,
   ).length;
-  const replacementArrangedRate = pct(replacementArranged, replacementNeeded);
+  const replacementArrangedRate = rate(replacementArranged, replacementNeeded);
 
   const prescriptionFollowUpRequired = prescription_records.filter((r) => r.follow_up_required).length;
   const prescriptionFollowUpCompleted = prescription_records.filter(
@@ -342,13 +339,13 @@ export function computeEyeHealthVisionCare(
   // Composite prescription management: dispensed + using correctly + comfortable + review completed
   const prescriptionMgmtNumerator = prescriptionsDispensed + usingCorrectly + childComfortable + reviewCompleted;
   const prescriptionMgmtDenominator = totalPrescriptionRecords * 4;
-  const prescriptionManagementRate = pct(prescriptionMgmtNumerator, prescriptionMgmtDenominator);
+  const prescriptionManagementRate = rate(prescriptionMgmtNumerator, prescriptionMgmtDenominator);
 
   // --- Optician referral metrics ---
   const totalReferralRecords = optician_referral_records.length;
 
   const referralsAttended = optician_referral_records.filter((r) => r.appointment_attended).length;
-  const referralAttendanceRate = pct(referralsAttended, totalReferralRecords);
+  const referralAttendanceRate = rate(referralsAttended, totalReferralRecords);
 
   const referralsConsented = optician_referral_records.filter((r) => r.child_consented).length;
 
@@ -360,7 +357,7 @@ export function computeEyeHealthVisionCare(
   const urgentReferralsAttended = optician_referral_records.filter(
     (r) => r.urgent && r.appointment_attended,
   ).length;
-  const urgentReferralAttendanceRate = pct(urgentReferralsAttended, urgentReferrals);
+  const urgentReferralAttendanceRate = rate(urgentReferralsAttended, urgentReferrals);
 
   const referralFollowUpRequired = optician_referral_records.filter((r) => r.follow_up_required).length;
   const referralFollowUpCompleted = optician_referral_records.filter(
@@ -375,7 +372,7 @@ export function computeEyeHealthVisionCare(
   // Composite optician referral rate: attended + consented + parent informed + social worker informed
   const referralNumerator = referralsAttended + referralsConsented + parentInformed + socialWorkerInformed;
   const referralDenominator = totalReferralRecords * 4;
-  const opticianReferralRate = pct(referralNumerator, referralDenominator);
+  const opticianReferralRate = rate(referralNumerator, referralDenominator);
 
   // --- Visual aid metrics ---
   const totalVisualAidRecords = visual_aid_records.length;
@@ -385,30 +382,30 @@ export function computeEyeHealthVisionCare(
   const aidsComfortable = visual_aid_records.filter((r) => r.child_comfortable_with_aid).length;
 
   const aidsSuitable = visual_aid_records.filter((r) => r.suitable_for_needs).length;
-  const aidSuitabilityRate = pct(aidsSuitable, totalVisualAidRecords);
+  const aidSuitabilityRate = rate(aidsSuitable, totalVisualAidRecords);
 
   const aidsGoodCondition = visual_aid_records.filter(
     (r) => r.condition === "new" || r.condition === "good",
   ).length;
 
   const schoolNotified = visual_aid_records.filter((r) => r.school_notified).length;
-  const schoolNotifiedRate = pct(schoolNotified, totalVisualAidRecords);
+  const schoolNotifiedRate = rate(schoolNotified, totalVisualAidRecords);
 
   const spareAvailable = visual_aid_records.filter((r) => r.spare_available).length;
-  const spareAvailableRate = pct(spareAvailable, totalVisualAidRecords);
+  const spareAvailableRate = rate(spareAvailable, totalVisualAidRecords);
 
   const aidCheckOverdue = visual_aid_records.filter((r) => r.check_overdue).length;
-  const aidCheckOverdueRate = pct(aidCheckOverdue, totalVisualAidRecords);
+  const aidCheckOverdueRate = rate(aidCheckOverdue, totalVisualAidRecords);
 
   const aidsPoorOrBroken = visual_aid_records.filter(
     (r) => r.condition === "poor" || r.condition === "broken" || r.condition === "lost",
   ).length;
-  const aidPoorConditionRate = pct(aidsPoorOrBroken, totalVisualAidRecords);
+  const aidPoorConditionRate = rate(aidsPoorOrBroken, totalVisualAidRecords);
 
   // Composite visual aid rate: using + comfortable + suitable + good condition
   const visualAidNumerator = aidsInUse + aidsComfortable + aidsSuitable + aidsGoodCondition;
   const visualAidDenominator = totalVisualAidRecords * 4;
-  const visualAidRate = pct(visualAidNumerator, visualAidDenominator);
+  const visualAidRate = rate(visualAidNumerator, visualAidDenominator);
 
   // --- Child engagement metrics ---
   const totalEngagementRecords = child_engagement_records.length;
@@ -420,24 +417,24 @@ export function computeEyeHealthVisionCare(
   const childUnderstood = child_engagement_records.filter((r) => r.child_understood_information).length;
 
   const childMadeChoices = child_engagement_records.filter((r) => r.child_made_choices).length;
-  const choiceMakingRate = pct(childMadeChoices, totalEngagementRecords);
+  const choiceMakingRate = rate(childMadeChoices, totalEngagementRecords);
 
   const positiveExperience = child_engagement_records.filter((r) => r.positive_experience).length;
-  const positiveExperienceRate = pct(positiveExperience, totalEngagementRecords);
+  const positiveExperienceRate = rate(positiveExperience, totalEngagementRecords);
 
   const independencePromoted = child_engagement_records.filter((r) => r.independence_promoted).length;
-  const independenceRate = pct(independencePromoted, totalEngagementRecords);
+  const independenceRate = rate(independencePromoted, totalEngagementRecords);
 
   const concernsRaised = child_engagement_records.filter((r) => r.concerns_raised_by_child).length;
   const concernsAddressed = child_engagement_records.filter(
     (r) => r.concerns_raised_by_child && r.concerns_addressed,
   ).length;
-  const concernsAddressedRate = pct(concernsAddressed, concernsRaised);
+  const concernsAddressedRate = rate(concernsAddressed, concernsRaised);
 
   // Composite child engagement: participated + views sought + understood + positive experience
   const engagementNumerator = childParticipated + viewsSought + childUnderstood + positiveExperience;
   const engagementDenominator = totalEngagementRecords * 4;
-  const childEngagementRate = pct(engagementNumerator, engagementDenominator);
+  const childEngagementRate = rate(engagementNumerator, engagementDenominator);
 
   // --- Follow-up composite rate ---
   let followUpNumerator = 0;
@@ -452,51 +449,51 @@ export function computeEyeHealthVisionCare(
     followUpDenominator += referralFollowUpRequired;
   }
 
-  const followUpRate = pct(followUpNumerator, followUpDenominator);
+  const followUpRate = rate(followUpNumerator, followUpDenominator);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus 1: eyeTestComplianceRate (>=90: +5, >=70: +2) ---
-  if (eyeTestComplianceRate >= 90) score += 5;
-  else if (eyeTestComplianceRate >= 70) score += 2;
+  if (meets(eyeTestComplianceRate, 90)) score += 5;
+  else if (meets(eyeTestComplianceRate, 70)) score += 2;
 
   // --- Bonus 2: prescriptionManagementRate (>=90: +5, >=70: +2) ---
-  if (prescriptionManagementRate >= 90) score += 5;
-  else if (prescriptionManagementRate >= 70) score += 2;
+  if (meets(prescriptionManagementRate, 90)) score += 5;
+  else if (meets(prescriptionManagementRate, 70)) score += 2;
 
   // --- Bonus 3: opticianReferralRate (>=90: +4, >=70: +2) ---
-  if (opticianReferralRate >= 90) score += 4;
-  else if (opticianReferralRate >= 70) score += 2;
+  if (meets(opticianReferralRate, 90)) score += 4;
+  else if (meets(opticianReferralRate, 70)) score += 2;
 
   // --- Bonus 4: visualAidRate (>=90: +4, >=70: +2) ---
-  if (visualAidRate >= 90) score += 4;
-  else if (visualAidRate >= 70) score += 2;
+  if (meets(visualAidRate, 90)) score += 4;
+  else if (meets(visualAidRate, 70)) score += 2;
 
   // --- Bonus 5: childEngagementRate (>=90: +5, >=70: +2) ---
-  if (childEngagementRate >= 90) score += 5;
-  else if (childEngagementRate >= 70) score += 2;
+  if (meets(childEngagementRate, 90)) score += 5;
+  else if (meets(childEngagementRate, 70)) score += 2;
 
   // --- Bonus 6: followUpRate (>=90: +5, >=70: +2) ---
-  if (followUpRate >= 90) score += 5;
-  else if (followUpRate >= 70) score += 2;
+  if (meets(followUpRate, 90)) score += 5;
+  else if (meets(followUpRate, 70)) score += 2;
 
   // Max bonuses = 5+5+4+4+5+5 = 28
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // eyeTestComplianceRate < 50 -> -5
-  if (eyeTestComplianceRate < 50 && eye_test_records.length > 0) score -= 5;
+  if (below(eyeTestComplianceRate, 50) && eye_test_records.length > 0) score -= 5;
 
   // prescriptionManagementRate < 50 -> -5
-  if (prescriptionManagementRate < 50 && prescription_records.length > 0) score -= 5;
+  if (below(prescriptionManagementRate, 50) && prescription_records.length > 0) score -= 5;
 
   // opticianReferralRate < 50 -> -4
-  if (opticianReferralRate < 50 && optician_referral_records.length > 0) score -= 4;
+  if (below(opticianReferralRate, 50) && optician_referral_records.length > 0) score -= 4;
 
   // childEngagementRate < 40 -> -4
-  if (childEngagementRate < 40 && child_engagement_records.length > 0) score -= 4;
+  if (below(childEngagementRate, 40) && child_engagement_records.length > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -506,127 +503,127 @@ export function computeEyeHealthVisionCare(
 
   const strengths: string[] = [];
 
-  if (eyeTestComplianceRate >= 90 && totalEyeTestRecords > 0) {
+  if (meets(eyeTestComplianceRate, 90) && totalEyeTestRecords > 0) {
     strengths.push(
       `${eyeTestComplianceRate}% eye test compliance — children attend eye tests consistently, consent is obtained, and follow-up appointments are scheduled, ensuring early identification and management of vision problems.`,
     );
-  } else if (eyeTestComplianceRate >= 70 && totalEyeTestRecords > 0) {
+  } else if (meets(eyeTestComplianceRate, 70) && totalEyeTestRecords > 0) {
     strengths.push(
       `${eyeTestComplianceRate}% eye test compliance — the home generally ensures children attend scheduled eye tests with appropriate consent and follow-up scheduling.`,
     );
   }
 
-  if (prescriptionManagementRate >= 90 && totalPrescriptionRecords > 0) {
+  if (meets(prescriptionManagementRate, 90) && totalPrescriptionRecords > 0) {
     strengths.push(
       `${prescriptionManagementRate}% prescription management — prescriptions are dispensed promptly, children use their corrective aids correctly, and regular reviews ensure ongoing suitability.`,
     );
-  } else if (prescriptionManagementRate >= 70 && totalPrescriptionRecords > 0) {
+  } else if (meets(prescriptionManagementRate, 70) && totalPrescriptionRecords > 0) {
     strengths.push(
       `${prescriptionManagementRate}% prescription management — the home generally manages children's optical prescriptions effectively.`,
     );
   }
 
-  if (opticianReferralRate >= 90 && totalReferralRecords > 0) {
+  if (meets(opticianReferralRate, 90) && totalReferralRecords > 0) {
     strengths.push(
       `${opticianReferralRate}% optician referral management — referrals are tracked effectively, appointments are attended, and all relevant parties are informed, ensuring comprehensive multi-agency communication.`,
     );
-  } else if (opticianReferralRate >= 70 && totalReferralRecords > 0) {
+  } else if (meets(opticianReferralRate, 70) && totalReferralRecords > 0) {
     strengths.push(
       `${opticianReferralRate}% optician referral management — the home manages optician referrals effectively with good attendance and communication.`,
     );
   }
 
-  if (visualAidRate >= 90 && totalVisualAidRecords > 0) {
+  if (meets(visualAidRate, 90) && totalVisualAidRecords > 0) {
     strengths.push(
       `${visualAidRate}% visual aid provision — visual aids are in good condition, suitable for children's needs, and children are comfortable using them, supporting their daily functioning and learning.`,
     );
-  } else if (visualAidRate >= 70 && totalVisualAidRecords > 0) {
+  } else if (meets(visualAidRate, 70) && totalVisualAidRecords > 0) {
     strengths.push(
       `${visualAidRate}% visual aid provision — the home generally ensures children have appropriate visual aids in good condition.`,
     );
   }
 
-  if (childEngagementRate >= 90 && totalEngagementRecords > 0) {
+  if (meets(childEngagementRate, 90) && totalEngagementRecords > 0) {
     strengths.push(
       `${childEngagementRate}% child engagement with eye care — children actively participate in decisions about their eye health, their views are sought and recorded, and they have positive experiences, reflecting genuine partnership in care.`,
     );
-  } else if (childEngagementRate >= 70 && totalEngagementRecords > 0) {
+  } else if (meets(childEngagementRate, 70) && totalEngagementRecords > 0) {
     strengths.push(
       `${childEngagementRate}% child engagement — most children are positively involved in their eye health care decisions and experiences.`,
     );
   }
 
-  if (followUpRate >= 90 && followUpDenominator > 0) {
+  if (meets(followUpRate, 90) && followUpDenominator > 0) {
     strengths.push(
       `${followUpRate}% follow-up completion — all required eye health follow-up appointments and reviews are completed, ensuring continuity of vision care.`,
     );
-  } else if (followUpRate >= 70 && followUpDenominator > 0) {
+  } else if (meets(followUpRate, 70) && followUpDenominator > 0) {
     strengths.push(
       `${followUpRate}% follow-up completion — the home generally ensures eye health follow-up appointments are attended.`,
     );
   }
 
-  if (eyeTestAttendanceRate >= 95 && totalEyeTestRecords > 0) {
+  if (meets(eyeTestAttendanceRate, 95) && totalEyeTestRecords > 0) {
     strengths.push(
       `${eyeTestAttendanceRate}% eye test attendance — near-perfect attendance demonstrates the home's commitment to children's visual health monitoring.`,
     );
   }
 
-  if (correctUsageRate >= 90 && totalPrescriptionRecords > 0) {
+  if (meets(correctUsageRate, 90) && totalPrescriptionRecords > 0) {
     strengths.push(
       `${correctUsageRate}% correct prescription usage — children are supported to use their prescribed visual aids correctly, maximising the benefit of their prescriptions.`,
     );
   }
 
-  if (replacementArrangedRate >= 90 && replacementNeeded > 0) {
+  if (meets(replacementArrangedRate, 90) && replacementNeeded > 0) {
     strengths.push(
       `${replacementArrangedRate}% replacement arrangement rate — when visual aids need replacing, the home acts promptly to arrange replacements, ensuring children are never without necessary visual support.`,
     );
   }
 
-  if (schoolNotifiedRate >= 90 && totalVisualAidRecords > 0) {
+  if (meets(schoolNotifiedRate, 90) && totalVisualAidRecords > 0) {
     strengths.push(
       `${schoolNotifiedRate}% school notification of visual aids — schools are consistently informed about children's visual aids, ensuring continuity of support across settings.`,
     );
   }
 
-  if (aidSuitabilityRate >= 95 && totalVisualAidRecords > 0) {
+  if (meets(aidSuitabilityRate, 95) && totalVisualAidRecords > 0) {
     strengths.push(
       `${aidSuitabilityRate}% visual aid suitability — virtually all visual aids are assessed as suitable for children's needs, indicating thorough needs assessment and appropriate provision.`,
     );
   }
 
-  if (positiveExperienceRate >= 90 && totalEngagementRecords > 0) {
+  if (meets(positiveExperienceRate, 90) && totalEngagementRecords > 0) {
     strengths.push(
       `${positiveExperienceRate}% positive eye care experiences — children consistently report positive experiences during eye health interactions, indicating child-friendly, accessible approaches to vision care.`,
     );
   }
 
-  if (independenceRate >= 85 && totalEngagementRecords > 0) {
+  if (meets(independenceRate, 85) && totalEngagementRecords > 0) {
     strengths.push(
       `${independenceRate}% independence promotion in eye care — the home actively promotes children's independence in managing their own eye health, building essential self-care skills for adulthood.`,
     );
   }
 
-  if (concernsAddressedRate >= 90 && concernsRaised > 0) {
+  if (meets(concernsAddressedRate, 90) && concernsRaised > 0) {
     strengths.push(
       `${concernsAddressedRate}% of child-raised concerns addressed — when children raise concerns about their eye health or vision care, these are consistently addressed, demonstrating responsive, child-centred practice.`,
     );
   }
 
-  if (urgentReferralAttendanceRate >= 95 && urgentReferrals > 0) {
+  if (meets(urgentReferralAttendanceRate, 95) && urgentReferrals > 0) {
     strengths.push(
       `${urgentReferralAttendanceRate}% urgent referral attendance — all urgent eye health referrals are attended promptly, ensuring critical vision issues receive immediate clinical attention.`,
     );
   }
 
-  if (normalOutcomeRate >= 80 && totalEyeTestRecords > 0) {
+  if (meets(normalOutcomeRate, 80) && totalEyeTestRecords > 0) {
     strengths.push(
       `${normalOutcomeRate}% of eye tests show normal outcomes — the majority of children have healthy vision, which may indicate effective preventive care and early intervention.`,
     );
   }
 
-  if (spareAvailableRate >= 80 && totalVisualAidRecords > 0) {
+  if (meets(spareAvailableRate, 80) && totalVisualAidRecords > 0) {
     strengths.push(
       `${spareAvailableRate}% of visual aids have spares available — the home ensures backup visual aids are available, preventing disruption when aids are damaged or lost.`,
     );
@@ -636,79 +633,79 @@ export function computeEyeHealthVisionCare(
 
   const concerns: string[] = [];
 
-  if (eyeTestComplianceRate < 50 && totalEyeTestRecords > 0) {
+  if (below(eyeTestComplianceRate, 50) && totalEyeTestRecords > 0) {
     concerns.push(
       `Only ${eyeTestComplianceRate}% eye test compliance — the majority of eye tests are not fully compliant (attendance, consent, cooperation, or follow-up scheduling is inadequate), directly compromising children's ability to have vision problems identified and managed.`,
     );
-  } else if (eyeTestComplianceRate < 70 && eyeTestComplianceRate >= 50 && totalEyeTestRecords > 0) {
+  } else if (below(eyeTestComplianceRate, 70) && meets(eyeTestComplianceRate, 50) && totalEyeTestRecords > 0) {
     concerns.push(
       `Eye test compliance at ${eyeTestComplianceRate}% — a significant proportion of eye tests lack full compliance, risking undetected vision problems.`,
     );
   }
 
-  if (prescriptionManagementRate < 50 && totalPrescriptionRecords > 0) {
+  if (below(prescriptionManagementRate, 50) && totalPrescriptionRecords > 0) {
     concerns.push(
       `Only ${prescriptionManagementRate}% prescription management — prescriptions are not being dispensed promptly, children are not using corrective aids correctly, or reviews are not completed, meaning children may have vision needs that are not being met.`,
     );
-  } else if (prescriptionManagementRate < 70 && prescriptionManagementRate >= 50 && totalPrescriptionRecords > 0) {
+  } else if (below(prescriptionManagementRate, 70) && meets(prescriptionManagementRate, 50) && totalPrescriptionRecords > 0) {
     concerns.push(
       `Prescription management at ${prescriptionManagementRate}% — some aspects of prescription management need improvement to ensure children's vision correction needs are fully met.`,
     );
   }
 
-  if (opticianReferralRate < 50 && totalReferralRecords > 0) {
+  if (below(opticianReferralRate, 50) && totalReferralRecords > 0) {
     concerns.push(
       `Only ${opticianReferralRate}% optician referral management — referral appointments are not being attended, consent is lacking, or relevant parties are not being informed, creating gaps in children's vision care pathway.`,
     );
-  } else if (opticianReferralRate < 70 && opticianReferralRate >= 50 && totalReferralRecords > 0) {
+  } else if (below(opticianReferralRate, 70) && meets(opticianReferralRate, 50) && totalReferralRecords > 0) {
     concerns.push(
       `Optician referral management at ${opticianReferralRate}% — referral processes need strengthening to ensure children receive timely specialist vision care.`,
     );
   }
 
-  if (visualAidRate < 50 && totalVisualAidRecords > 0) {
+  if (below(visualAidRate, 50) && totalVisualAidRecords > 0) {
     concerns.push(
       `Only ${visualAidRate}% visual aid provision — visual aids are in poor condition, not being used by children, uncomfortable, or unsuitable for their needs, meaning children's daily vision is not being adequately supported.`,
     );
-  } else if (visualAidRate < 70 && visualAidRate >= 50 && totalVisualAidRecords > 0) {
+  } else if (below(visualAidRate, 70) && meets(visualAidRate, 50) && totalVisualAidRecords > 0) {
     concerns.push(
       `Visual aid provision at ${visualAidRate}% — some visual aids are not meeting children's needs effectively and require review.`,
     );
   }
 
-  if (childEngagementRate < 40 && totalEngagementRecords > 0) {
+  if (below(childEngagementRate, 40) && totalEngagementRecords > 0) {
     concerns.push(
       `Child engagement with eye care at only ${childEngagementRate}% — children are not participating in decisions about their eye health, their views are not being sought, and experiences are not positive, which undermines their autonomy and may indicate barriers to accessing eye care.`,
     );
-  } else if (childEngagementRate < 70 && childEngagementRate >= 40 && totalEngagementRecords > 0) {
+  } else if (below(childEngagementRate, 70) && meets(childEngagementRate, 40) && totalEngagementRecords > 0) {
     concerns.push(
       `Child engagement at ${childEngagementRate}% — some children are not positively engaged with their eye health care, which may indicate a need for more age-appropriate or child-centred approaches.`,
     );
   }
 
-  if (followUpRate < 50 && followUpDenominator > 0) {
+  if (below(followUpRate, 50) && followUpDenominator > 0) {
     concerns.push(
       `Only ${followUpRate}% of required eye health follow-ups completed — children are not attending follow-up appointments, risking deterioration of vision problems that require ongoing monitoring.`,
     );
-  } else if (followUpRate < 70 && followUpRate >= 50 && followUpDenominator > 0) {
+  } else if (below(followUpRate, 70) && meets(followUpRate, 50) && followUpDenominator > 0) {
     concerns.push(
       `Eye health follow-up rate at ${followUpRate}% — some required follow-up appointments are being missed, potentially impacting continuity of vision care.`,
     );
   }
 
-  if (eyeTestAttendanceRate < 50 && totalEyeTestRecords > 0) {
+  if (below(eyeTestAttendanceRate, 50) && totalEyeTestRecords > 0) {
     concerns.push(
       `Only ${eyeTestAttendanceRate}% eye test attendance — the majority of scheduled eye tests are not being attended, meaning children's vision health is not being monitored.`,
     );
   }
 
-  if (aidPoorConditionRate > 30 && totalVisualAidRecords > 0) {
+  if (above(aidPoorConditionRate, 30) && totalVisualAidRecords > 0) {
     concerns.push(
       `${aidPoorConditionRate}% of visual aids are in poor, broken, or lost condition — children cannot effectively use visual aids that are not in working condition. Immediate replacement or repair is needed.`,
     );
   }
 
-  if (aidCheckOverdueRate > 30 && totalVisualAidRecords > 0) {
+  if (above(aidCheckOverdueRate, 30) && totalVisualAidRecords > 0) {
     concerns.push(
       `${aidCheckOverdueRate}% of visual aid checks are overdue — regular checking ensures aids remain suitable and in good condition. Overdue checks may mean children are using aids that are no longer appropriate.`,
     );
@@ -720,7 +717,7 @@ export function computeEyeHealthVisionCare(
     );
   }
 
-  if (correctUsageRate < 50 && totalPrescriptionRecords > 0) {
+  if (below(correctUsageRate, 50) && totalPrescriptionRecords > 0) {
     concerns.push(
       `Only ${correctUsageRate}% of children are using their prescriptions correctly — children may be struggling with their visual aids, lacking support to wear or use them properly, or choosing not to use them due to discomfort or social factors.`,
     );
@@ -744,13 +741,13 @@ export function computeEyeHealthVisionCare(
     );
   }
 
-  if (schoolNotifiedRate < 50 && totalVisualAidRecords > 0) {
+  if (below(schoolNotifiedRate, 50) && totalVisualAidRecords > 0) {
     concerns.push(
       `Only ${schoolNotifiedRate}% of schools notified about visual aids — without school notification, children may not receive appropriate visual support in the classroom, impacting their education.`,
     );
   }
 
-  if (concernsAddressedRate < 50 && concernsRaised > 0) {
+  if (below(concernsAddressedRate, 50) && concernsRaised > 0) {
     concerns.push(
       `Only ${concernsAddressedRate}% of child-raised eye health concerns are addressed — when children raise concerns about their vision or eye care, these are not being consistently responded to.`,
     );
@@ -761,7 +758,7 @@ export function computeEyeHealthVisionCare(
   const recommendations: EyeHealthRecommendation[] = [];
   let rank = 0;
 
-  if (eyeTestComplianceRate < 50 && totalEyeTestRecords > 0) {
+  if (below(eyeTestComplianceRate, 50) && totalEyeTestRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -771,7 +768,7 @@ export function computeEyeHealthVisionCare(
     });
   }
 
-  if (prescriptionManagementRate < 50 && totalPrescriptionRecords > 0) {
+  if (below(prescriptionManagementRate, 50) && totalPrescriptionRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -781,7 +778,7 @@ export function computeEyeHealthVisionCare(
     });
   }
 
-  if (opticianReferralRate < 50 && totalReferralRecords > 0) {
+  if (below(opticianReferralRate, 50) && totalReferralRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -791,7 +788,7 @@ export function computeEyeHealthVisionCare(
     });
   }
 
-  if (childEngagementRate < 40 && totalEngagementRecords > 0) {
+  if (below(childEngagementRate, 40) && totalEngagementRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -811,7 +808,7 @@ export function computeEyeHealthVisionCare(
     });
   }
 
-  if (visualAidRate < 50 && totalVisualAidRecords > 0) {
+  if (below(visualAidRate, 50) && totalVisualAidRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -821,7 +818,7 @@ export function computeEyeHealthVisionCare(
     });
   }
 
-  if (aidPoorConditionRate > 30 && totalVisualAidRecords > 0) {
+  if (above(aidPoorConditionRate, 30) && totalVisualAidRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -831,7 +828,7 @@ export function computeEyeHealthVisionCare(
     });
   }
 
-  if (followUpRate < 50 && followUpDenominator > 0) {
+  if (below(followUpRate, 50) && followUpDenominator > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -842,8 +839,8 @@ export function computeEyeHealthVisionCare(
   }
 
   if (
-    eyeTestComplianceRate >= 50 &&
-    eyeTestComplianceRate < 70 &&
+    meets(eyeTestComplianceRate, 50) &&
+    below(eyeTestComplianceRate, 70) &&
     totalEyeTestRecords > 0
   ) {
     recommendations.push({
@@ -856,8 +853,8 @@ export function computeEyeHealthVisionCare(
   }
 
   if (
-    prescriptionManagementRate >= 50 &&
-    prescriptionManagementRate < 70 &&
+    meets(prescriptionManagementRate, 50) &&
+    below(prescriptionManagementRate, 70) &&
     totalPrescriptionRecords > 0
   ) {
     recommendations.push({
@@ -870,8 +867,8 @@ export function computeEyeHealthVisionCare(
   }
 
   if (
-    opticianReferralRate >= 50 &&
-    opticianReferralRate < 70 &&
+    meets(opticianReferralRate, 50) &&
+    below(opticianReferralRate, 70) &&
     totalReferralRecords > 0
   ) {
     recommendations.push({
@@ -884,8 +881,8 @@ export function computeEyeHealthVisionCare(
   }
 
   if (
-    visualAidRate >= 50 &&
-    visualAidRate < 70 &&
+    meets(visualAidRate, 50) &&
+    below(visualAidRate, 70) &&
     totalVisualAidRecords > 0
   ) {
     recommendations.push({
@@ -898,8 +895,8 @@ export function computeEyeHealthVisionCare(
   }
 
   if (
-    childEngagementRate >= 40 &&
-    childEngagementRate < 70 &&
+    meets(childEngagementRate, 40) &&
+    below(childEngagementRate, 70) &&
     totalEngagementRecords > 0
   ) {
     recommendations.push({
@@ -912,8 +909,8 @@ export function computeEyeHealthVisionCare(
   }
 
   if (
-    followUpRate >= 50 &&
-    followUpRate < 70 &&
+    meets(followUpRate, 50) &&
+    below(followUpRate, 70) &&
     followUpDenominator > 0
   ) {
     recommendations.push({
@@ -925,7 +922,7 @@ export function computeEyeHealthVisionCare(
     });
   }
 
-  if (schoolNotifiedRate < 50 && totalVisualAidRecords > 0) {
+  if (below(schoolNotifiedRate, 50) && totalVisualAidRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -935,7 +932,7 @@ export function computeEyeHealthVisionCare(
     });
   }
 
-  if (spareAvailableRate < 50 && totalVisualAidRecords > 0) {
+  if (below(spareAvailableRate, 50) && totalVisualAidRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -945,7 +942,7 @@ export function computeEyeHealthVisionCare(
     });
   }
 
-  if (correctUsageRate < 50 && totalPrescriptionRecords > 0) {
+  if (below(correctUsageRate, 50) && totalPrescriptionRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -955,7 +952,7 @@ export function computeEyeHealthVisionCare(
     });
   }
 
-  if (aidCheckOverdueRate > 30 && totalVisualAidRecords > 0) {
+  if (above(aidCheckOverdueRate, 30) && totalVisualAidRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -975,7 +972,7 @@ export function computeEyeHealthVisionCare(
     });
   }
 
-  if (concernsAddressedRate < 50 && concernsRaised > 0) {
+  if (below(concernsAddressedRate, 50) && concernsRaised > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -991,28 +988,28 @@ export function computeEyeHealthVisionCare(
 
   // -- Critical insights --
 
-  if (eyeTestComplianceRate < 50 && totalEyeTestRecords > 0) {
+  if (below(eyeTestComplianceRate, 50) && totalEyeTestRecords > 0) {
     insights.push({
       text: `Only ${eyeTestComplianceRate}% eye test compliance. Ofsted expects looked-after children to have regular eye tests as part of their health care. Poor compliance means vision problems go undetected, potentially impacting children's education, safety, and daily functioning.`,
       severity: "critical",
     });
   }
 
-  if (prescriptionManagementRate < 50 && totalPrescriptionRecords > 0) {
+  if (below(prescriptionManagementRate, 50) && totalPrescriptionRecords > 0) {
     insights.push({
       text: `Prescription management at only ${prescriptionManagementRate}%. When prescriptions are not dispensed, not used correctly, or not reviewed, children are effectively going without the vision correction they have been assessed as needing. This directly impacts their quality of life and learning.`,
       severity: "critical",
     });
   }
 
-  if (opticianReferralRate < 50 && totalReferralRecords > 0) {
+  if (below(opticianReferralRate, 50) && totalReferralRecords > 0) {
     insights.push({
       text: `Optician referral management at only ${opticianReferralRate}%. Poor referral management means children with identified vision concerns are not receiving the specialist assessment and treatment they need. This represents a failure to follow through on clinical recommendations.`,
       severity: "critical",
     });
   }
 
-  if (childEngagementRate < 40 && totalEngagementRecords > 0) {
+  if (below(childEngagementRate, 40) && totalEngagementRecords > 0) {
     insights.push({
       text: `Child engagement with eye care at only ${childEngagementRate}%. Children who are not engaged in their eye health care are less likely to attend appointments, use their visual aids, and report problems. Low engagement may indicate anxiety, lack of understanding, or negative past experiences.`,
       severity: "critical",
@@ -1026,14 +1023,14 @@ export function computeEyeHealthVisionCare(
     });
   }
 
-  if (aidPoorConditionRate > 50 && totalVisualAidRecords > 0) {
+  if (above(aidPoorConditionRate, 50) && totalVisualAidRecords > 0) {
     insights.push({
       text: `${aidPoorConditionRate}% of visual aids are in poor, broken, or lost condition. More than half of the visual aids in the home are not fit for purpose. Children cannot learn, play, or function safely without working visual aids. This requires urgent and comprehensive replacement.`,
       severity: "critical",
     });
   }
 
-  if (correctUsageRate < 30 && totalPrescriptionRecords > 0) {
+  if (below(correctUsageRate, 30) && totalPrescriptionRecords > 0) {
     insights.push({
       text: `Only ${correctUsageRate}% of children are using their prescriptions correctly. The vast majority of prescribed visual corrections are not being used as intended, meaning children's vision is not being corrected despite prescriptions being in place. This requires a whole-home approach to understanding and removing barriers.`,
       severity: "critical",
@@ -1043,8 +1040,8 @@ export function computeEyeHealthVisionCare(
   // -- Warning insights --
 
   if (
-    eyeTestComplianceRate >= 50 &&
-    eyeTestComplianceRate < 70 &&
+    meets(eyeTestComplianceRate, 50) &&
+    below(eyeTestComplianceRate, 70) &&
     totalEyeTestRecords > 0
   ) {
     insights.push({
@@ -1054,8 +1051,8 @@ export function computeEyeHealthVisionCare(
   }
 
   if (
-    prescriptionManagementRate >= 50 &&
-    prescriptionManagementRate < 70 &&
+    meets(prescriptionManagementRate, 50) &&
+    below(prescriptionManagementRate, 70) &&
     totalPrescriptionRecords > 0
   ) {
     insights.push({
@@ -1065,8 +1062,8 @@ export function computeEyeHealthVisionCare(
   }
 
   if (
-    opticianReferralRate >= 50 &&
-    opticianReferralRate < 70 &&
+    meets(opticianReferralRate, 50) &&
+    below(opticianReferralRate, 70) &&
     totalReferralRecords > 0
   ) {
     insights.push({
@@ -1076,8 +1073,8 @@ export function computeEyeHealthVisionCare(
   }
 
   if (
-    visualAidRate >= 50 &&
-    visualAidRate < 70 &&
+    meets(visualAidRate, 50) &&
+    below(visualAidRate, 70) &&
     totalVisualAidRecords > 0
   ) {
     insights.push({
@@ -1087,8 +1084,8 @@ export function computeEyeHealthVisionCare(
   }
 
   if (
-    childEngagementRate >= 40 &&
-    childEngagementRate < 70 &&
+    meets(childEngagementRate, 40) &&
+    below(childEngagementRate, 70) &&
     totalEngagementRecords > 0
   ) {
     insights.push({
@@ -1098,8 +1095,8 @@ export function computeEyeHealthVisionCare(
   }
 
   if (
-    followUpRate >= 50 &&
-    followUpRate < 70 &&
+    meets(followUpRate, 50) &&
+    below(followUpRate, 70) &&
     followUpDenominator > 0
   ) {
     insights.push({
@@ -1109,8 +1106,8 @@ export function computeEyeHealthVisionCare(
   }
 
   if (
-    aidPoorConditionRate > 20 &&
-    aidPoorConditionRate <= 50 &&
+    above(aidPoorConditionRate, 20) &&
+    aidPoorConditionRate! <= 50 &&
     totalVisualAidRecords > 0
   ) {
     insights.push({
@@ -1120,7 +1117,7 @@ export function computeEyeHealthVisionCare(
   }
 
   if (
-    aidCheckOverdueRate > 20 &&
+    above(aidCheckOverdueRate, 20) &&
     totalVisualAidRecords > 0
   ) {
     insights.push({
@@ -1141,8 +1138,8 @@ export function computeEyeHealthVisionCare(
   }
 
   if (
-    schoolNotifiedRate >= 50 &&
-    schoolNotifiedRate < 80 &&
+    meets(schoolNotifiedRate, 50) &&
+    below(schoolNotifiedRate, 80) &&
     totalVisualAidRecords > 0
   ) {
     insights.push({
@@ -1233,8 +1230,8 @@ export function computeEyeHealthVisionCare(
   }
 
   if (
-    eyeTestComplianceRate >= 90 &&
-    prescriptionManagementRate >= 90 &&
+    meets(eyeTestComplianceRate, 90) &&
+    meets(prescriptionManagementRate, 90) &&
     totalEyeTestRecords > 0 &&
     totalPrescriptionRecords > 0
   ) {
@@ -1245,8 +1242,8 @@ export function computeEyeHealthVisionCare(
   }
 
   if (
-    visualAidRate >= 90 &&
-    aidSuitabilityRate >= 90 &&
+    meets(visualAidRate, 90) &&
+    meets(aidSuitabilityRate, 90) &&
     totalVisualAidRecords > 0
   ) {
     insights.push({
@@ -1256,8 +1253,8 @@ export function computeEyeHealthVisionCare(
   }
 
   if (
-    childEngagementRate >= 90 &&
-    positiveExperienceRate >= 85 &&
+    meets(childEngagementRate, 90) &&
+    meets(positiveExperienceRate, 85) &&
     totalEngagementRecords > 0
   ) {
     insights.push({
@@ -1267,8 +1264,8 @@ export function computeEyeHealthVisionCare(
   }
 
   if (
-    opticianReferralRate >= 90 &&
-    referralAttendanceRate >= 90 &&
+    meets(opticianReferralRate, 90) &&
+    meets(referralAttendanceRate, 90) &&
     totalReferralRecords > 0
   ) {
     insights.push({
@@ -1278,7 +1275,7 @@ export function computeEyeHealthVisionCare(
   }
 
   if (
-    followUpRate >= 90 &&
+    meets(followUpRate, 90) &&
     followUpDenominator > 0
   ) {
     insights.push({
@@ -1288,8 +1285,8 @@ export function computeEyeHealthVisionCare(
   }
 
   if (
-    eyeTestAttendanceRate >= 95 &&
-    nextTestScheduledRate >= 90 &&
+    meets(eyeTestAttendanceRate, 95) &&
+    meets(nextTestScheduledRate, 90) &&
     totalEyeTestRecords > 0
   ) {
     insights.push({
@@ -1299,8 +1296,8 @@ export function computeEyeHealthVisionCare(
   }
 
   if (
-    correctUsageRate >= 90 &&
-    comfortRate >= 85 &&
+    meets(correctUsageRate, 90) &&
+    meets(comfortRate, 85) &&
     totalPrescriptionRecords > 0
   ) {
     insights.push({
@@ -1310,7 +1307,7 @@ export function computeEyeHealthVisionCare(
   }
 
   if (
-    schoolNotifiedRate >= 90 &&
+    meets(schoolNotifiedRate, 90) &&
     totalVisualAidRecords > 0
   ) {
     insights.push({
@@ -1320,8 +1317,8 @@ export function computeEyeHealthVisionCare(
   }
 
   if (
-    independenceRate >= 85 &&
-    choiceMakingRate >= 80 &&
+    meets(independenceRate, 85) &&
+    meets(choiceMakingRate, 80) &&
     totalEngagementRecords > 0
   ) {
     insights.push({
@@ -1331,8 +1328,8 @@ export function computeEyeHealthVisionCare(
   }
 
   if (
-    replacementArrangedRate >= 90 &&
-    spareAvailableRate >= 80 &&
+    meets(replacementArrangedRate, 90) &&
+    meets(spareAvailableRate, 80) &&
     replacementNeeded > 0 &&
     totalVisualAidRecords > 0
   ) {
@@ -1343,7 +1340,7 @@ export function computeEyeHealthVisionCare(
   }
 
   if (
-    urgentReferralAttendanceRate >= 95 &&
+    meets(urgentReferralAttendanceRate, 95) &&
     urgentReferrals > 0
   ) {
     insights.push({

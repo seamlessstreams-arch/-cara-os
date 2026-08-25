@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME DIGITAL SAFETY & ONLINE PROTECTION INTELLIGENCE ENGINE
 // Evaluates digital safety and online protection for children in care:
@@ -187,10 +188,6 @@ export interface DigitalSafetyOnlineProtectionResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -218,17 +215,17 @@ function emptyResult(
     total_social_media_assessments: 0,
     total_access_agreements: 0,
     total_digital_literacy_records: 0,
-    esafety_training_compliance_rate: 0,
-    usage_monitoring_rate: 0,
-    social_media_risk_assessment_rate: 0,
-    access_agreement_coverage_rate: 0,
-    digital_literacy_engagement_rate: 0,
-    incident_response_rate: 0,
-    training_pass_rate: 0,
+    esafety_training_compliance_rate: null,
+    usage_monitoring_rate: null,
+    social_media_risk_assessment_rate: null,
+    access_agreement_coverage_rate: null,
+    digital_literacy_engagement_rate: null,
+    incident_response_rate: null,
+    training_pass_rate: null,
     overdue_training_count: 0,
     high_risk_usage_count: 0,
     flagged_content_count: 0,
-    privacy_settings_compliance_rate: 0,
+    privacy_settings_compliance_rate: null,
     agreement_breach_count: 0,
     children_with_training: 0,
     children_with_agreements: 0,
@@ -319,10 +316,10 @@ export function computeDigitalSafetyOnlineProtection(
 
   // --- E-safety training metrics ---
   const completedTraining = esafety_training_records.filter((t) => t.completed).length;
-  const esafetyTrainingComplianceRate = pct(completedTraining, totalTrainingRecords);
+  const esafetyTrainingComplianceRate = rate(completedTraining, totalTrainingRecords);
 
   const passedTraining = esafety_training_records.filter((t) => t.passed).length;
-  const trainingPassRate = pct(passedTraining, totalTrainingRecords);
+  const trainingPassRate = rate(passedTraining, totalTrainingRecords);
 
   const overdueTraining = esafety_training_records.filter((t) => t.overdue).length;
   const overdueTrainingCount = overdueTraining;
@@ -332,23 +329,23 @@ export function computeDigitalSafetyOnlineProtection(
   ).size;
 
   const engagedInTraining = esafety_training_records.filter((t) => t.child_engaged).length;
-  const trainingEngagementRate = pct(engagedInTraining, totalTrainingRecords);
+  const trainingEngagementRate = rate(engagedInTraining, totalTrainingRecords);
 
   const understoodTraining = esafety_training_records.filter((t) => t.child_understood).length;
-  const trainingUnderstandingRate = pct(understoodTraining, totalTrainingRecords);
+  const trainingUnderstandingRate = rate(understoodTraining, totalTrainingRecords);
 
   const followUpRequired = esafety_training_records.filter((t) => t.follow_up_required).length;
   const followUpCompleted = esafety_training_records.filter(
     (t) => t.follow_up_required && t.follow_up_completed,
   ).length;
-  const trainingFollowUpRate = pct(followUpCompleted, followUpRequired);
+  const trainingFollowUpRate = rate(followUpCompleted, followUpRequired);
 
   // --- Internet usage monitoring metrics ---
   const monitoredLogs = internet_usage_logs.filter((l) => l.monitoring_active).length;
-  const usageMonitoringRate = pct(monitoredLogs, totalUsageLogs);
+  const usageMonitoringRate = rate(monitoredLogs, totalUsageLogs);
 
   const reviewedLogs = internet_usage_logs.filter((l) => l.reviewed_by_staff).length;
-  const staffReviewRate = pct(reviewedLogs, totalUsageLogs);
+  const staffReviewRate = rate(reviewedLogs, totalUsageLogs);
 
   const childrenWithMonitoring = new Set(
     internet_usage_logs.filter((l) => l.monitoring_active).map((l) => l.child_id),
@@ -360,7 +357,7 @@ export function computeDigitalSafetyOnlineProtection(
   const flaggedWithAction = internet_usage_logs.filter(
     (l) => l.flagged_content && l.action_taken,
   ).length;
-  const flaggedContentResponseRate = pct(flaggedWithAction, flaggedContentLogs);
+  const flaggedContentResponseRate = rate(flaggedWithAction, flaggedContentLogs);
 
   const highRiskLogs = internet_usage_logs.filter(
     (l) => l.risk_level === "high" || l.risk_level === "critical",
@@ -370,40 +367,40 @@ export function computeDigitalSafetyOnlineProtection(
   const parentalControlsActive = internet_usage_logs.filter(
     (l) => l.parental_controls_enabled,
   ).length;
-  const parentalControlsRate = pct(parentalControlsActive, totalUsageLogs);
+  const parentalControlsRate = rate(parentalControlsActive, totalUsageLogs);
 
   const ageFiltersActive = internet_usage_logs.filter(
     (l) => l.age_appropriate_filters,
   ).length;
-  const ageFilterRate = pct(ageFiltersActive, totalUsageLogs);
+  const ageFilterRate = rate(ageFiltersActive, totalUsageLogs);
 
   const concernsRaised = internet_usage_logs.filter((l) => l.concerns_raised).length;
   const concernsResolved = internet_usage_logs.filter(
     (l) => l.concerns_raised && l.concern_resolved,
   ).length;
-  const concernResolutionRate = pct(concernsResolved, concernsRaised);
+  const concernResolutionRate = rate(concernsResolved, concernsRaised);
 
   // --- Social media assessment metrics ---
   const childrenWithAssessments = new Set(
     social_media_assessments.map((a) => a.child_id),
   ).size;
   const socialMediaRiskAssessmentRate =
-    total_children > 0 ? pct(childrenWithAssessments, total_children) : 0;
+    total_children > 0 ? rate(childrenWithAssessments, total_children) : 0;
 
   const privacyAppropriate = social_media_assessments.filter(
     (a) => a.privacy_settings_appropriate,
   ).length;
-  const privacySettingsComplianceRate = pct(privacyAppropriate, totalSocialMediaAssessments);
+  const privacySettingsComplianceRate = rate(privacyAppropriate, totalSocialMediaAssessments);
 
   const childInvolved = social_media_assessments.filter(
     (a) => a.child_involved_in_assessment,
   ).length;
-  const childInvolvementRate = pct(childInvolved, totalSocialMediaAssessments);
+  const childInvolvementRate = rate(childInvolved, totalSocialMediaAssessments);
 
   const monitoringPlanInPlace = social_media_assessments.filter(
     (a) => a.monitoring_plan_in_place,
   ).length;
-  const monitoringPlanRate = pct(monitoringPlanInPlace, totalSocialMediaAssessments);
+  const monitoringPlanRate = rate(monitoringPlanInPlace, totalSocialMediaAssessments);
 
   const overdueAssessments = social_media_assessments.filter((a) => a.overdue).length;
 
@@ -413,7 +410,7 @@ export function computeDigitalSafetyOnlineProtection(
   const concernsEscalated = social_media_assessments.filter(
     (a) => a.concerns_identified && a.concerns_escalated,
   ).length;
-  const escalationRate = pct(concernsEscalated, concernsIdentified);
+  const escalationRate = rate(concernsEscalated, concernsIdentified);
 
   // --- Online access agreement metrics ---
   const activeAgreements = online_access_agreements.filter((a) => a.active).length;
@@ -421,17 +418,17 @@ export function computeDigitalSafetyOnlineProtection(
     online_access_agreements.filter((a) => a.active).map((a) => a.child_id),
   ).size;
   const accessAgreementCoverageRate =
-    total_children > 0 ? pct(childrenWithAgreements, total_children) : 0;
+    total_children > 0 ? rate(childrenWithAgreements, total_children) : 0;
 
   const signedByChild = online_access_agreements.filter(
     (a) => a.active && a.signed_by_child,
   ).length;
-  const childSignatureRate = pct(signedByChild, activeAgreements);
+  const childSignatureRate = rate(signedByChild, activeAgreements);
 
   const termsExplained = online_access_agreements.filter(
     (a) => a.active && a.terms_explained,
   ).length;
-  const termsExplainedRate = pct(termsExplained, activeAgreements);
+  const termsExplainedRate = rate(termsExplained, activeAgreements);
 
   const overdueAgreements = online_access_agreements.filter(
     (a) => a.active && a.overdue,
@@ -449,7 +446,7 @@ export function computeDigitalSafetyOnlineProtection(
   const breachActionsCompleted = online_access_agreements.filter(
     (a) => a.breach_count > 0 && a.breach_actions_taken,
   ).length;
-  const breachResponseRate = pct(breachActionsCompleted, agreementsWithBreaches);
+  const breachResponseRate = rate(breachActionsCompleted, agreementsWithBreaches);
 
   // --- Digital literacy metrics ---
   const childrenWithLiteracySupport = new Set(
@@ -461,7 +458,7 @@ export function computeDigitalSafetyOnlineProtection(
   const highEngagement = digital_literacy_records.filter(
     (r) => r.engagement_level === "high" || r.engagement_level === "medium",
   ).length;
-  const digitalLiteracyEngagementRate = pct(highEngagement, totalDigitalLiteracyRecords);
+  const digitalLiteracyEngagementRate = rate(highEngagement, totalDigitalLiteracyRecords);
 
   const certifications = digital_literacy_records.filter(
     (r) => r.certification_earned,
@@ -483,10 +480,10 @@ export function computeDigitalSafetyOnlineProtection(
   // --- Incident response composite metric ---
   // Combines: flagged content response + concern resolution + escalation + breach response
   const incidentResponseComponents: number[] = [];
-  if (flaggedContentLogs > 0) incidentResponseComponents.push(flaggedContentResponseRate);
-  if (concernsRaised > 0) incidentResponseComponents.push(concernResolutionRate);
-  if (concernsIdentified > 0) incidentResponseComponents.push(escalationRate);
-  if (agreementsWithBreaches > 0) incidentResponseComponents.push(breachResponseRate);
+  if (flaggedContentLogs > 0) incidentResponseComponents.push(flaggedContentResponseRate!);
+  if (concernsRaised > 0) incidentResponseComponents.push(concernResolutionRate!);
+  if (concernsIdentified > 0) incidentResponseComponents.push(escalationRate!);
+  if (agreementsWithBreaches > 0) incidentResponseComponents.push(breachResponseRate!);
   const incidentResponseRate =
     incidentResponseComponents.length > 0
       ? Math.round(
@@ -501,56 +498,56 @@ export function computeDigitalSafetyOnlineProtection(
   let score = 52;
 
   // --- Bonus 1: esafetyTrainingComplianceRate (>=90: +4, >=70: +2) --- max 4
-  if (esafetyTrainingComplianceRate >= 90) score += 4;
-  else if (esafetyTrainingComplianceRate >= 70) score += 2;
+  if (meets(esafetyTrainingComplianceRate, 90)) score += 4;
+  else if (meets(esafetyTrainingComplianceRate, 70)) score += 2;
 
   // --- Bonus 2: usageMonitoringRate (>=90: +3, >=70: +1) --- max 3
-  if (usageMonitoringRate >= 90) score += 3;
-  else if (usageMonitoringRate >= 70) score += 1;
+  if (meets(usageMonitoringRate, 90)) score += 3;
+  else if (meets(usageMonitoringRate, 70)) score += 1;
 
   // --- Bonus 3: socialMediaRiskAssessmentRate (>=90: +4, >=70: +2) --- max 4
-  if (socialMediaRiskAssessmentRate >= 90) score += 4;
-  else if (socialMediaRiskAssessmentRate >= 70) score += 2;
+  if (meets(socialMediaRiskAssessmentRate, 90)) score += 4;
+  else if (meets(socialMediaRiskAssessmentRate, 70)) score += 2;
 
   // --- Bonus 4: accessAgreementCoverageRate (>=100: +3, >=80: +1) --- max 3
-  if (accessAgreementCoverageRate >= 100) score += 3;
-  else if (accessAgreementCoverageRate >= 80) score += 1;
+  if (meets(accessAgreementCoverageRate, 100)) score += 3;
+  else if (meets(accessAgreementCoverageRate, 80)) score += 1;
 
   // --- Bonus 5: digitalLiteracyEngagementRate (>=90: +3, >=70: +1) --- max 3
-  if (digitalLiteracyEngagementRate >= 90) score += 3;
-  else if (digitalLiteracyEngagementRate >= 70) score += 1;
+  if (meets(digitalLiteracyEngagementRate, 90)) score += 3;
+  else if (meets(digitalLiteracyEngagementRate, 70)) score += 1;
 
   // --- Bonus 6: incidentResponseRate (>=90: +3, >=70: +1) --- max 3
   if ((incidentResponseRate ?? 0) >= 90) score += 3;
   else if ((incidentResponseRate ?? 0) >= 70) score += 1;
 
   // --- Bonus 7: privacySettingsComplianceRate (>=90: +3, >=70: +1) --- max 3
-  if (privacySettingsComplianceRate >= 90) score += 3;
-  else if (privacySettingsComplianceRate >= 70) score += 1;
+  if (meets(privacySettingsComplianceRate, 90)) score += 3;
+  else if (meets(privacySettingsComplianceRate, 70)) score += 1;
 
   // --- Bonus 8: staffReviewRate (>=90: +2, >=70: +1) --- max 2
-  if (staffReviewRate >= 90) score += 2;
-  else if (staffReviewRate >= 70) score += 1;
+  if (meets(staffReviewRate, 90)) score += 2;
+  else if (meets(staffReviewRate, 70)) score += 1;
 
   // --- Bonus 9: trainingPassRate (>=90: +3, >=70: +1) --- max 3
-  if (trainingPassRate >= 90) score += 3;
-  else if (trainingPassRate >= 70) score += 1;
+  if (meets(trainingPassRate, 90)) score += 3;
+  else if (meets(trainingPassRate, 70)) score += 1;
 
   // Total max bonus: 4+3+4+3+3+3+3+2+3 = 28
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // Penalty 1: esafetyTrainingComplianceRate < 50 → -5 (guard: totalTrainingRecords > 0)
-  if (esafetyTrainingComplianceRate < 50 && totalTrainingRecords > 0) score -= 5;
+  if (below(esafetyTrainingComplianceRate, 50) && totalTrainingRecords > 0) score -= 5;
 
   // Penalty 2: accessAgreementCoverageRate < 50 → -5 (guard: total_children > 0)
-  if (accessAgreementCoverageRate < 50 && total_children > 0) score -= 5;
+  if (below(accessAgreementCoverageRate, 50) && total_children > 0) score -= 5;
 
   // Penalty 3: incidentResponseRate < 40 with incidents existing → -4
   if ((incidentResponseRate ?? 0) < 40 && incidentResponseComponents.length > 0) score -= 4;
 
   // Penalty 4: usageMonitoringRate < 50 → -4 (guard: totalUsageLogs > 0)
-  if (usageMonitoringRate < 50 && totalUsageLogs > 0) score -= 4;
+  if (below(usageMonitoringRate, 50) && totalUsageLogs > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -560,97 +557,97 @@ export function computeDigitalSafetyOnlineProtection(
 
   const strengths: string[] = [];
 
-  if (esafetyTrainingComplianceRate >= 100 && totalTrainingRecords > 0) {
+  if (meets(esafetyTrainingComplianceRate, 100) && totalTrainingRecords > 0) {
     strengths.push(
       "Every e-safety training session has been completed — the home demonstrates full compliance with e-safety training requirements for all children.",
     );
-  } else if (esafetyTrainingComplianceRate >= 90 && totalTrainingRecords > 0) {
+  } else if (meets(esafetyTrainingComplianceRate, 90) && totalTrainingRecords > 0) {
     strengths.push(
       `${esafetyTrainingComplianceRate}% e-safety training compliance — nearly all training sessions completed, demonstrating strong commitment to digital safety education.`,
     );
-  } else if (esafetyTrainingComplianceRate >= 80 && totalTrainingRecords > 0) {
+  } else if (meets(esafetyTrainingComplianceRate, 80) && totalTrainingRecords > 0) {
     strengths.push(
       `${esafetyTrainingComplianceRate}% e-safety training compliance — good levels of training completion across the home.`,
     );
   }
 
-  if (trainingPassRate >= 90 && totalTrainingRecords > 0) {
+  if (meets(trainingPassRate, 90) && totalTrainingRecords > 0) {
     strengths.push(
       `${trainingPassRate}% training pass rate — children are demonstrating strong understanding of e-safety concepts through assessments.`,
     );
-  } else if (trainingPassRate >= 80 && totalTrainingRecords > 0) {
+  } else if (meets(trainingPassRate, 80) && totalTrainingRecords > 0) {
     strengths.push(
       `${trainingPassRate}% training pass rate — most children are successfully demonstrating their e-safety knowledge.`,
     );
   }
 
-  if (usageMonitoringRate >= 90 && totalUsageLogs > 0) {
+  if (meets(usageMonitoringRate, 90) && totalUsageLogs > 0) {
     strengths.push(
       `${usageMonitoringRate}% of internet usage actively monitored — comprehensive oversight of children's online activity is in place.`,
     );
-  } else if (usageMonitoringRate >= 80 && totalUsageLogs > 0) {
+  } else if (meets(usageMonitoringRate, 80) && totalUsageLogs > 0) {
     strengths.push(
       `${usageMonitoringRate}% internet usage monitoring rate — strong monitoring coverage of children's online activity.`,
     );
   }
 
-  if (staffReviewRate >= 90 && totalUsageLogs > 0) {
+  if (meets(staffReviewRate, 90) && totalUsageLogs > 0) {
     strengths.push(
       `${staffReviewRate}% of internet usage logs reviewed by staff — proactive staff engagement in monitoring children's digital safety.`,
     );
-  } else if (staffReviewRate >= 80 && totalUsageLogs > 0) {
+  } else if (meets(staffReviewRate, 80) && totalUsageLogs > 0) {
     strengths.push(
       `${staffReviewRate}% staff review rate of internet usage — good staff involvement in overseeing online activity.`,
     );
   }
 
-  if (socialMediaRiskAssessmentRate >= 100 && total_children > 0 && totalSocialMediaAssessments > 0) {
+  if (meets(socialMediaRiskAssessmentRate, 100) && total_children > 0 && totalSocialMediaAssessments > 0) {
     strengths.push(
       "Every child has had a social media risk assessment — comprehensive coverage ensures all children's online presence is evaluated for safety.",
     );
-  } else if (socialMediaRiskAssessmentRate >= 80 && total_children > 0 && totalSocialMediaAssessments > 0) {
+  } else if (meets(socialMediaRiskAssessmentRate, 80) && total_children > 0 && totalSocialMediaAssessments > 0) {
     strengths.push(
       `${socialMediaRiskAssessmentRate}% social media risk assessment coverage — the majority of children have had their social media presence assessed for risks.`,
     );
   }
 
-  if (privacySettingsComplianceRate >= 90 && totalSocialMediaAssessments > 0) {
+  if (meets(privacySettingsComplianceRate, 90) && totalSocialMediaAssessments > 0) {
     strengths.push(
       `${privacySettingsComplianceRate}% privacy settings compliance — social media accounts have appropriate privacy protections in place.`,
     );
-  } else if (privacySettingsComplianceRate >= 80 && totalSocialMediaAssessments > 0) {
+  } else if (meets(privacySettingsComplianceRate, 80) && totalSocialMediaAssessments > 0) {
     strengths.push(
       `${privacySettingsComplianceRate}% of social media accounts have appropriate privacy settings — strong oversight of children's online privacy.`,
     );
   }
 
-  if (accessAgreementCoverageRate >= 100 && total_children > 0 && totalAccessAgreements > 0) {
+  if (meets(accessAgreementCoverageRate, 100) && total_children > 0 && totalAccessAgreements > 0) {
     strengths.push(
       "Every child has an active online access agreement — comprehensive coverage of digital access expectations and boundaries.",
     );
-  } else if (accessAgreementCoverageRate >= 80 && total_children > 0 && totalAccessAgreements > 0) {
+  } else if (meets(accessAgreementCoverageRate, 80) && total_children > 0 && totalAccessAgreements > 0) {
     strengths.push(
       `${accessAgreementCoverageRate}% online access agreement coverage — the majority of children have documented agreements governing their internet use.`,
     );
   }
 
-  if (childSignatureRate >= 90 && activeAgreements > 0) {
+  if (meets(childSignatureRate, 90) && activeAgreements > 0) {
     strengths.push(
       `${childSignatureRate}% of access agreements signed by the child — children are actively involved in agreeing their digital boundaries.`,
     );
   }
 
-  if (termsExplainedRate >= 90 && activeAgreements > 0) {
+  if (meets(termsExplainedRate, 90) && activeAgreements > 0) {
     strengths.push(
       `Terms explained in ${termsExplainedRate}% of access agreements — staff ensure children understand their digital boundaries and responsibilities.`,
     );
   }
 
-  if (digitalLiteracyEngagementRate >= 90 && totalDigitalLiteracyRecords > 0) {
+  if (meets(digitalLiteracyEngagementRate, 90) && totalDigitalLiteracyRecords > 0) {
     strengths.push(
       `${digitalLiteracyEngagementRate}% engagement in digital literacy activities — children are actively participating in developing their digital skills and knowledge.`,
     );
-  } else if (digitalLiteracyEngagementRate >= 80 && totalDigitalLiteracyRecords > 0) {
+  } else if (meets(digitalLiteracyEngagementRate, 80) && totalDigitalLiteracyRecords > 0) {
     strengths.push(
       `${digitalLiteracyEngagementRate}% digital literacy engagement — good levels of participation in digital skills development.`,
     );
@@ -666,25 +663,25 @@ export function computeDigitalSafetyOnlineProtection(
     );
   }
 
-  if (flaggedContentResponseRate >= 100 && flaggedContentLogs > 0) {
+  if (meets(flaggedContentResponseRate, 100) && flaggedContentLogs > 0) {
     strengths.push(
       "Every instance of flagged content has been acted upon — the home demonstrates zero-tolerance for unsafe online content exposure.",
     );
   }
 
-  if (parentalControlsRate >= 90 && totalUsageLogs > 0) {
+  if (meets(parentalControlsRate, 90) && totalUsageLogs > 0) {
     strengths.push(
       `${parentalControlsRate}% parental controls enabled — robust technical safeguards are in place across devices.`,
     );
   }
 
-  if (ageFilterRate >= 90 && totalUsageLogs > 0) {
+  if (meets(ageFilterRate, 90) && totalUsageLogs > 0) {
     strengths.push(
       `${ageFilterRate}% age-appropriate filtering in place — content filtering is configured to match each child's developmental stage.`,
     );
   }
 
-  if (childInvolvementRate >= 80 && totalSocialMediaAssessments > 0) {
+  if (meets(childInvolvementRate, 80) && totalSocialMediaAssessments > 0) {
     strengths.push(
       `${childInvolvementRate}% child involvement in social media assessments — children are partners in evaluating their own online safety.`,
     );
@@ -696,15 +693,15 @@ export function computeDigitalSafetyOnlineProtection(
     );
   }
 
-  if (monitoringPlanRate >= 90 && totalSocialMediaAssessments > 0) {
+  if (meets(monitoringPlanRate, 90) && totalSocialMediaAssessments > 0) {
     strengths.push(
       `${monitoringPlanRate}% of social media assessments have monitoring plans in place — ongoing oversight is structured and documented.`,
     );
   }
 
   if (onlineSafetyLiteracy > 0 && totalDigitalLiteracyRecords > 0) {
-    const onlineSafetyPct = pct(onlineSafetyLiteracy, completedLiteracy);
-    if (onlineSafetyPct >= 30) {
+    const onlineSafetyPct = rate(onlineSafetyLiteracy, completedLiteracy);
+    if (meets(onlineSafetyPct, 30)) {
       strengths.push(
         `Online safety is a focus of digital literacy provision — ${onlineSafetyLiteracy} completed session${onlineSafetyLiteracy !== 1 ? "s" : ""} specifically covering online safety skills.`,
       );
@@ -723,25 +720,25 @@ export function computeDigitalSafetyOnlineProtection(
     );
   }
 
-  if (escalationRate >= 100 && concernsIdentified > 0) {
+  if (meets(escalationRate, 100) && concernsIdentified > 0) {
     strengths.push(
       "Every social media concern has been appropriately escalated — the home demonstrates robust escalation procedures for online safeguarding concerns.",
     );
   }
 
-  if (breachResponseRate >= 100 && agreementsWithBreaches > 0) {
+  if (meets(breachResponseRate, 100) && agreementsWithBreaches > 0) {
     strengths.push(
       "All agreement breaches have had appropriate actions taken — the home consistently enforces digital boundaries while supporting children to understand expectations.",
     );
   }
 
-  if (trainingEngagementRate >= 90 && totalTrainingRecords > 0) {
+  if (meets(trainingEngagementRate, 90) && totalTrainingRecords > 0) {
     strengths.push(
       `${trainingEngagementRate}% child engagement in e-safety training — children are actively participating in and responding to digital safety education.`,
     );
   }
 
-  if (trainingUnderstandingRate >= 90 && totalTrainingRecords > 0) {
+  if (meets(trainingUnderstandingRate, 90) && totalTrainingRecords > 0) {
     strengths.push(
       `${trainingUnderstandingRate}% of children demonstrated understanding of e-safety training content — training is effective and age-appropriate.`,
     );
@@ -751,81 +748,81 @@ export function computeDigitalSafetyOnlineProtection(
 
   const concerns: string[] = [];
 
-  if (esafetyTrainingComplianceRate < 50 && totalTrainingRecords > 0) {
+  if (below(esafetyTrainingComplianceRate, 50) && totalTrainingRecords > 0) {
     concerns.push(
       `Only ${esafetyTrainingComplianceRate}% of e-safety training completed — the majority of children have not received essential digital safety training, leaving them vulnerable to online risks.`,
     );
-  } else if (esafetyTrainingComplianceRate < 80 && esafetyTrainingComplianceRate >= 50 && totalTrainingRecords > 0) {
+  } else if (below(esafetyTrainingComplianceRate, 80) && meets(esafetyTrainingComplianceRate, 50) && totalTrainingRecords > 0) {
     concerns.push(
       `E-safety training compliance at ${esafetyTrainingComplianceRate}% — some children have not completed their digital safety training, which may leave them less prepared to navigate online risks safely.`,
     );
   }
 
-  if (trainingPassRate < 50 && totalTrainingRecords > 0) {
+  if (below(trainingPassRate, 50) && totalTrainingRecords > 0) {
     concerns.push(
       `Only ${trainingPassRate}% training pass rate — the majority of children are not demonstrating adequate understanding of e-safety concepts, suggesting training may not be effective or age-appropriate.`,
     );
-  } else if (trainingPassRate < 70 && trainingPassRate >= 50 && totalTrainingRecords > 0) {
+  } else if (below(trainingPassRate, 70) && meets(trainingPassRate, 50) && totalTrainingRecords > 0) {
     concerns.push(
       `Training pass rate at ${trainingPassRate}% — a significant proportion of children are not fully grasping e-safety concepts, indicating the need for adapted approaches.`,
     );
   }
 
-  if (usageMonitoringRate < 50 && totalUsageLogs > 0) {
+  if (below(usageMonitoringRate, 50) && totalUsageLogs > 0) {
     concerns.push(
       `Only ${usageMonitoringRate}% of internet usage is monitored — the majority of children's online activity is unsupervised, creating significant safeguarding risks.`,
     );
-  } else if (usageMonitoringRate < 80 && usageMonitoringRate >= 50 && totalUsageLogs > 0) {
+  } else if (below(usageMonitoringRate, 80) && meets(usageMonitoringRate, 50) && totalUsageLogs > 0) {
     concerns.push(
       `Internet usage monitoring at ${usageMonitoringRate}% — gaps in monitoring coverage may leave some children's online activity unsupervised.`,
     );
   }
 
-  if (staffReviewRate < 50 && totalUsageLogs > 0) {
+  if (below(staffReviewRate, 50) && totalUsageLogs > 0) {
     concerns.push(
       `Only ${staffReviewRate}% of internet usage logs reviewed by staff — without regular staff review, concerning patterns in children's online behaviour may go undetected.`,
     );
-  } else if (staffReviewRate < 70 && staffReviewRate >= 50 && totalUsageLogs > 0) {
+  } else if (below(staffReviewRate, 70) && meets(staffReviewRate, 50) && totalUsageLogs > 0) {
     concerns.push(
       `Staff review rate of internet usage logs at ${staffReviewRate}% — inconsistent review may mean some safeguarding concerns are missed.`,
     );
   }
 
-  if (socialMediaRiskAssessmentRate < 50 && total_children > 0 && (totalSocialMediaAssessments > 0 || total_children > 0)) {
+  if (below(socialMediaRiskAssessmentRate, 50) && total_children > 0 && (totalSocialMediaAssessments > 0 || total_children > 0)) {
     concerns.push(
       `Only ${socialMediaRiskAssessmentRate}% of children have had a social media risk assessment — the majority of children's social media presence has not been evaluated for safety risks.`,
     );
-  } else if (socialMediaRiskAssessmentRate < 80 && socialMediaRiskAssessmentRate >= 50 && total_children > 0) {
+  } else if (below(socialMediaRiskAssessmentRate, 80) && meets(socialMediaRiskAssessmentRate, 50) && total_children > 0) {
     concerns.push(
       `Social media risk assessment coverage at ${socialMediaRiskAssessmentRate}% — some children's social media use has not been assessed, leaving potential risks unidentified.`,
     );
   }
 
-  if (privacySettingsComplianceRate < 50 && totalSocialMediaAssessments > 0) {
+  if (below(privacySettingsComplianceRate, 50) && totalSocialMediaAssessments > 0) {
     concerns.push(
       `Only ${privacySettingsComplianceRate}% of social media accounts have appropriate privacy settings — children's personal information may be exposed to inappropriate audiences.`,
     );
-  } else if (privacySettingsComplianceRate < 80 && privacySettingsComplianceRate >= 50 && totalSocialMediaAssessments > 0) {
+  } else if (below(privacySettingsComplianceRate, 80) && meets(privacySettingsComplianceRate, 50) && totalSocialMediaAssessments > 0) {
     concerns.push(
       `Privacy settings compliance at ${privacySettingsComplianceRate}% — some children's social media accounts do not have adequate privacy protections.`,
     );
   }
 
-  if (accessAgreementCoverageRate < 50 && total_children > 0) {
+  if (below(accessAgreementCoverageRate, 50) && total_children > 0) {
     concerns.push(
       `Only ${accessAgreementCoverageRate}% of children have an active online access agreement — the majority of children are using the internet without documented expectations and boundaries.`,
     );
-  } else if (accessAgreementCoverageRate < 80 && accessAgreementCoverageRate >= 50 && total_children > 0) {
+  } else if (below(accessAgreementCoverageRate, 80) && meets(accessAgreementCoverageRate, 50) && total_children > 0) {
     concerns.push(
       `Online access agreement coverage at ${accessAgreementCoverageRate}% — some children do not have formal agreements governing their internet use.`,
     );
   }
 
-  if (digitalLiteracyEngagementRate < 50 && totalDigitalLiteracyRecords > 0) {
+  if (below(digitalLiteracyEngagementRate, 50) && totalDigitalLiteracyRecords > 0) {
     concerns.push(
       `Only ${digitalLiteracyEngagementRate}% engagement in digital literacy activities — the majority of children are not actively participating in digital skills development.`,
     );
-  } else if (digitalLiteracyEngagementRate < 70 && digitalLiteracyEngagementRate >= 50 && totalDigitalLiteracyRecords > 0) {
+  } else if (below(digitalLiteracyEngagementRate, 70) && meets(digitalLiteracyEngagementRate, 50) && totalDigitalLiteracyRecords > 0) {
     concerns.push(
       `Digital literacy engagement at ${digitalLiteracyEngagementRate}% — some children are not fully engaging with digital skills development opportunities.`,
     );
@@ -847,7 +844,7 @@ export function computeDigitalSafetyOnlineProtection(
     );
   }
 
-  if (flaggedContentLogs > 0 && flaggedContentResponseRate < 100) {
+  if (flaggedContentLogs > 0 && below(flaggedContentResponseRate, 100)) {
     concerns.push(
       `${flaggedContentLogs} instance${flaggedContentLogs !== 1 ? "s" : ""} of flagged content with only ${flaggedContentResponseRate}% receiving action — all flagged content must be investigated and responded to.`,
     );
@@ -871,19 +868,19 @@ export function computeDigitalSafetyOnlineProtection(
     );
   }
 
-  if (totalBreaches > 0 && breachResponseRate < 100) {
+  if (totalBreaches > 0 && below(breachResponseRate, 100)) {
     concerns.push(
       `${totalBreaches} agreement breach${totalBreaches !== 1 ? "es" : ""} recorded with only ${breachResponseRate}% receiving action — all breaches should be addressed constructively to maintain safe digital boundaries.`,
     );
   }
 
-  if (parentalControlsRate < 50 && totalUsageLogs > 0) {
+  if (below(parentalControlsRate, 50) && totalUsageLogs > 0) {
     concerns.push(
       `Parental controls enabled on only ${parentalControlsRate}% of monitored sessions — children may be accessing the internet without adequate technical safeguards.`,
     );
   }
 
-  if (ageFilterRate < 50 && totalUsageLogs > 0) {
+  if (below(ageFilterRate, 50) && totalUsageLogs > 0) {
     concerns.push(
       `Age-appropriate filters active in only ${ageFilterRate}% of sessions — children may be exposed to content that is not suitable for their developmental stage.`,
     );
@@ -901,13 +898,13 @@ export function computeDigitalSafetyOnlineProtection(
     );
   }
 
-  if (escalationRate < 50 && concernsIdentified > 0) {
+  if (below(escalationRate, 50) && concernsIdentified > 0) {
     concerns.push(
       `Only ${escalationRate}% of identified social media concerns have been escalated — some serious concerns may not be receiving appropriate attention or follow-up.`,
     );
   }
 
-  if (childInvolvementRate < 50 && totalSocialMediaAssessments > 0) {
+  if (below(childInvolvementRate, 50) && totalSocialMediaAssessments > 0) {
     concerns.push(
       `Children involved in only ${childInvolvementRate}% of social media assessments — assessments should be collaborative, with children's views and understanding informing the process.`,
     );
@@ -918,7 +915,7 @@ export function computeDigitalSafetyOnlineProtection(
   const recommendations: DigitalSafetyRecommendation[] = [];
   let rank = 0;
 
-  if (esafetyTrainingComplianceRate < 50 && totalTrainingRecords > 0) {
+  if (below(esafetyTrainingComplianceRate, 50) && totalTrainingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -938,7 +935,7 @@ export function computeDigitalSafetyOnlineProtection(
     });
   }
 
-  if (accessAgreementCoverageRate < 50 && total_children > 0) {
+  if (below(accessAgreementCoverageRate, 50) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -948,7 +945,7 @@ export function computeDigitalSafetyOnlineProtection(
     });
   }
 
-  if (usageMonitoringRate < 50 && totalUsageLogs > 0) {
+  if (below(usageMonitoringRate, 50) && totalUsageLogs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -968,7 +965,7 @@ export function computeDigitalSafetyOnlineProtection(
     });
   }
 
-  if (socialMediaRiskAssessmentRate < 50 && total_children > 0) {
+  if (below(socialMediaRiskAssessmentRate, 50) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -988,7 +985,7 @@ export function computeDigitalSafetyOnlineProtection(
     });
   }
 
-  if (flaggedContentLogs > 0 && flaggedContentResponseRate < 100) {
+  if (flaggedContentLogs > 0 && below(flaggedContentResponseRate, 100)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -998,7 +995,7 @@ export function computeDigitalSafetyOnlineProtection(
     });
   }
 
-  if (privacySettingsComplianceRate < 50 && totalSocialMediaAssessments > 0) {
+  if (below(privacySettingsComplianceRate, 50) && totalSocialMediaAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1018,7 +1015,7 @@ export function computeDigitalSafetyOnlineProtection(
     });
   }
 
-  if (esafetyTrainingComplianceRate >= 50 && esafetyTrainingComplianceRate < 80 && totalTrainingRecords > 0) {
+  if (meets(esafetyTrainingComplianceRate, 50) && below(esafetyTrainingComplianceRate, 80) && totalTrainingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1028,7 +1025,7 @@ export function computeDigitalSafetyOnlineProtection(
     });
   }
 
-  if (usageMonitoringRate >= 50 && usageMonitoringRate < 80 && totalUsageLogs > 0) {
+  if (meets(usageMonitoringRate, 50) && below(usageMonitoringRate, 80) && totalUsageLogs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1038,7 +1035,7 @@ export function computeDigitalSafetyOnlineProtection(
     });
   }
 
-  if (socialMediaRiskAssessmentRate >= 50 && socialMediaRiskAssessmentRate < 80 && total_children > 0) {
+  if (meets(socialMediaRiskAssessmentRate, 50) && below(socialMediaRiskAssessmentRate, 80) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1048,7 +1045,7 @@ export function computeDigitalSafetyOnlineProtection(
     });
   }
 
-  if (accessAgreementCoverageRate >= 50 && accessAgreementCoverageRate < 80 && total_children > 0) {
+  if (meets(accessAgreementCoverageRate, 50) && below(accessAgreementCoverageRate, 80) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1058,7 +1055,7 @@ export function computeDigitalSafetyOnlineProtection(
     });
   }
 
-  if (staffReviewRate < 70 && totalUsageLogs > 0) {
+  if (below(staffReviewRate, 70) && totalUsageLogs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1068,7 +1065,7 @@ export function computeDigitalSafetyOnlineProtection(
     });
   }
 
-  if (digitalLiteracyEngagementRate < 50 && totalDigitalLiteracyRecords > 0) {
+  if (below(digitalLiteracyEngagementRate, 50) && totalDigitalLiteracyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1088,7 +1085,7 @@ export function computeDigitalSafetyOnlineProtection(
     });
   }
 
-  if (trainingPassRate < 50 && totalTrainingRecords > 0) {
+  if (below(trainingPassRate, 50) && totalTrainingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1098,7 +1095,7 @@ export function computeDigitalSafetyOnlineProtection(
     });
   }
 
-  if (childInvolvementRate < 50 && totalSocialMediaAssessments > 0) {
+  if (below(childInvolvementRate, 50) && totalSocialMediaAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1108,7 +1105,7 @@ export function computeDigitalSafetyOnlineProtection(
     });
   }
 
-  if (parentalControlsRate < 70 && totalUsageLogs > 0) {
+  if (below(parentalControlsRate, 70) && totalUsageLogs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1118,7 +1115,7 @@ export function computeDigitalSafetyOnlineProtection(
     });
   }
 
-  if (ageFilterRate < 70 && totalUsageLogs > 0) {
+  if (below(ageFilterRate, 70) && totalUsageLogs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1148,7 +1145,7 @@ export function computeDigitalSafetyOnlineProtection(
     });
   }
 
-  if (digitalLiteracyEngagementRate >= 50 && digitalLiteracyEngagementRate < 70 && totalDigitalLiteracyRecords > 0) {
+  if (meets(digitalLiteracyEngagementRate, 50) && below(digitalLiteracyEngagementRate, 70) && totalDigitalLiteracyRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1174,7 +1171,7 @@ export function computeDigitalSafetyOnlineProtection(
 
   // -- Critical insights --
 
-  if (esafetyTrainingComplianceRate < 50 && totalTrainingRecords > 0) {
+  if (below(esafetyTrainingComplianceRate, 50) && totalTrainingRecords > 0) {
     insights.push({
       text: `Only ${esafetyTrainingComplianceRate}% of e-safety training completed. Ofsted will view the absence of completed digital safety training as evidence that children are not being equipped to protect themselves online. This is a fundamental safeguarding gap under Reg 12 and Reg 13.`,
       severity: "critical",
@@ -1188,14 +1185,14 @@ export function computeDigitalSafetyOnlineProtection(
     });
   }
 
-  if (accessAgreementCoverageRate < 50 && total_children > 0) {
+  if (below(accessAgreementCoverageRate, 50) && total_children > 0) {
     insights.push({
       text: `Only ${accessAgreementCoverageRate}% of children have online access agreements. Without clear, documented agreements, children lack understanding of digital boundaries, and the home has no framework for addressing inappropriate online behaviour constructively.`,
       severity: "critical",
     });
   }
 
-  if (usageMonitoringRate < 50 && totalUsageLogs > 0) {
+  if (below(usageMonitoringRate, 50) && totalUsageLogs > 0) {
     insights.push({
       text: `Only ${usageMonitoringRate}% of internet usage is actively monitored. Children in care are disproportionately vulnerable to online exploitation, grooming, and harmful content. Without comprehensive monitoring, the home cannot fulfil its safeguarding duties under Reg 13.`,
       severity: "critical",
@@ -1216,14 +1213,14 @@ export function computeDigitalSafetyOnlineProtection(
     });
   }
 
-  if (privacySettingsComplianceRate < 50 && totalSocialMediaAssessments > 0) {
+  if (below(privacySettingsComplianceRate, 50) && totalSocialMediaAssessments > 0) {
     insights.push({
       text: `Only ${privacySettingsComplianceRate}% of social media accounts have appropriate privacy settings. Inappropriate privacy settings expose children to contact from strangers, potential grooming, and sharing of personal information that could be used to locate or identify them.`,
       severity: "critical",
     });
   }
 
-  if (socialMediaRiskAssessmentRate < 50 && total_children > 0 && totalSocialMediaAssessments > 0) {
+  if (below(socialMediaRiskAssessmentRate, 50) && total_children > 0 && totalSocialMediaAssessments > 0) {
     insights.push({
       text: `Only ${socialMediaRiskAssessmentRate}% of children have had social media risk assessments. Without assessment, the home cannot identify which children are at risk from their social media activity, including exposure to inappropriate content, cyberbullying, or contact from unknown individuals.`,
       severity: "critical",
@@ -1232,56 +1229,56 @@ export function computeDigitalSafetyOnlineProtection(
 
   // -- Warning insights --
 
-  if (esafetyTrainingComplianceRate >= 50 && esafetyTrainingComplianceRate < 80 && totalTrainingRecords > 0) {
+  if (meets(esafetyTrainingComplianceRate, 50) && below(esafetyTrainingComplianceRate, 80) && totalTrainingRecords > 0) {
     insights.push({
       text: `E-safety training compliance at ${esafetyTrainingComplianceRate}% — improving but gaps remain. Every child must complete e-safety training to understand the risks they face online and know how to seek help.`,
       severity: "warning",
     });
   }
 
-  if (trainingPassRate >= 50 && trainingPassRate < 70 && totalTrainingRecords > 0) {
+  if (meets(trainingPassRate, 50) && below(trainingPassRate, 70) && totalTrainingRecords > 0) {
     insights.push({
       text: `Training pass rate at ${trainingPassRate}% — some children are not fully grasping e-safety concepts. Consider whether training content is appropriately pitched to each child's age and understanding.`,
       severity: "warning",
     });
   }
 
-  if (usageMonitoringRate >= 50 && usageMonitoringRate < 80 && totalUsageLogs > 0) {
+  if (meets(usageMonitoringRate, 50) && below(usageMonitoringRate, 80) && totalUsageLogs > 0) {
     insights.push({
       text: `Internet usage monitoring at ${usageMonitoringRate}% — gaps in monitoring coverage leave some children's online activity unsupervised. Consistent monitoring across all devices and sessions is essential for safeguarding.`,
       severity: "warning",
     });
   }
 
-  if (staffReviewRate >= 50 && staffReviewRate < 70 && totalUsageLogs > 0) {
+  if (meets(staffReviewRate, 50) && below(staffReviewRate, 70) && totalUsageLogs > 0) {
     insights.push({
       text: `Staff review rate at ${staffReviewRate}% — not all internet usage logs are being reviewed by staff. Automated monitoring is not sufficient alone; staff review adds contextual understanding of children's online behaviour.`,
       severity: "warning",
     });
   }
 
-  if (socialMediaRiskAssessmentRate >= 50 && socialMediaRiskAssessmentRate < 80 && total_children > 0) {
+  if (meets(socialMediaRiskAssessmentRate, 50) && below(socialMediaRiskAssessmentRate, 80) && total_children > 0) {
     insights.push({
       text: `Social media risk assessment coverage at ${socialMediaRiskAssessmentRate}% — some children's social media activity has not been formally assessed. Given the rapidly evolving nature of social media risks, comprehensive coverage is essential.`,
       severity: "warning",
     });
   }
 
-  if (privacySettingsComplianceRate >= 50 && privacySettingsComplianceRate < 80 && totalSocialMediaAssessments > 0) {
+  if (meets(privacySettingsComplianceRate, 50) && below(privacySettingsComplianceRate, 80) && totalSocialMediaAssessments > 0) {
     insights.push({
       text: `Privacy settings compliance at ${privacySettingsComplianceRate}% — some children's social media accounts lack appropriate privacy protections. Regular review of privacy settings is needed as platforms frequently change their defaults.`,
       severity: "warning",
     });
   }
 
-  if (accessAgreementCoverageRate >= 50 && accessAgreementCoverageRate < 80 && total_children > 0) {
+  if (meets(accessAgreementCoverageRate, 50) && below(accessAgreementCoverageRate, 80) && total_children > 0) {
     insights.push({
       text: `Online access agreement coverage at ${accessAgreementCoverageRate}% — not all children have documented agreements governing their internet use. Agreements provide an important framework for discussing and agreeing digital boundaries.`,
       severity: "warning",
     });
   }
 
-  if (digitalLiteracyEngagementRate >= 50 && digitalLiteracyEngagementRate < 70 && totalDigitalLiteracyRecords > 0) {
+  if (meets(digitalLiteracyEngagementRate, 50) && below(digitalLiteracyEngagementRate, 70) && totalDigitalLiteracyRecords > 0) {
     insights.push({
       text: `Digital literacy engagement at ${digitalLiteracyEngagementRate}% — while some children are engaging with digital skills development, a significant proportion are not fully participating. Consider whether the format and content are sufficiently engaging and relevant.`,
       severity: "warning",
@@ -1328,14 +1325,14 @@ export function computeDigitalSafetyOnlineProtection(
     });
   }
 
-  if (childInvolvementRate >= 50 && childInvolvementRate < 80 && totalSocialMediaAssessments > 0) {
+  if (meets(childInvolvementRate, 50) && below(childInvolvementRate, 80) && totalSocialMediaAssessments > 0) {
     insights.push({
       text: `Children involved in ${childInvolvementRate}% of social media assessments — increasing child involvement helps them understand risks and develop their own protective strategies, which is more effective than top-down monitoring alone.`,
       severity: "warning",
     });
   }
 
-  if (trainingFollowUpRate < 70 && followUpRequired > 0) {
+  if (below(trainingFollowUpRate, 70) && followUpRequired > 0) {
     insights.push({
       text: `Only ${trainingFollowUpRate}% of required training follow-ups have been completed. When follow-up is needed after e-safety training, it typically indicates the child needs additional support to understand key concepts — leaving these incomplete undermines the training's effectiveness.`,
       severity: "warning",
@@ -1390,14 +1387,14 @@ export function computeDigitalSafetyOnlineProtection(
     });
   }
 
-  if (esafetyTrainingComplianceRate >= 100 && trainingPassRate >= 90 && totalTrainingRecords > 0) {
+  if (meets(esafetyTrainingComplianceRate, 100) && meets(trainingPassRate, 90) && totalTrainingRecords > 0) {
     insights.push({
       text: `All e-safety training completed with a ${trainingPassRate}% pass rate — children are not only receiving training but demonstrating genuine understanding of online safety concepts. This comprehensive approach equips children with the knowledge to protect themselves.`,
       severity: "positive",
     });
   }
 
-  if (usageMonitoringRate >= 90 && staffReviewRate >= 90 && totalUsageLogs > 0) {
+  if (meets(usageMonitoringRate, 90) && meets(staffReviewRate, 90) && totalUsageLogs > 0) {
     insights.push({
       text: `${usageMonitoringRate}% monitoring with ${staffReviewRate}% staff review — the home operates a dual-layer approach to internet safety combining automated monitoring with human oversight. This is best practice in online safeguarding.`,
       severity: "positive",
@@ -1405,8 +1402,8 @@ export function computeDigitalSafetyOnlineProtection(
   }
 
   if (
-    socialMediaRiskAssessmentRate >= 100 &&
-    privacySettingsComplianceRate >= 90 &&
+    meets(socialMediaRiskAssessmentRate, 100) &&
+    meets(privacySettingsComplianceRate, 90) &&
     total_children > 0 &&
     totalSocialMediaAssessments > 0
   ) {
@@ -1417,8 +1414,8 @@ export function computeDigitalSafetyOnlineProtection(
   }
 
   if (
-    accessAgreementCoverageRate >= 100 &&
-    childSignatureRate >= 90 &&
+    meets(accessAgreementCoverageRate, 100) &&
+    meets(childSignatureRate, 90) &&
     total_children > 0 &&
     activeAgreements > 0
   ) {
@@ -1428,7 +1425,7 @@ export function computeDigitalSafetyOnlineProtection(
     });
   }
 
-  if (digitalLiteracyEngagementRate >= 90 && totalDigitalLiteracyRecords > 0) {
+  if (meets(digitalLiteracyEngagementRate, 90) && totalDigitalLiteracyRecords > 0) {
     insights.push({
       text: `${digitalLiteracyEngagementRate}% engagement in digital literacy — children are actively developing the digital skills and critical thinking they need to navigate the online world safely and effectively. This proactive approach builds lasting protective factors.`,
       severity: "positive",
@@ -1442,7 +1439,7 @@ export function computeDigitalSafetyOnlineProtection(
     });
   }
 
-  if (flaggedContentResponseRate >= 100 && flaggedContentLogs > 0) {
+  if (meets(flaggedContentResponseRate, 100) && flaggedContentLogs > 0) {
     insights.push({
       text: "Every instance of flagged content has received a documented response — the home takes a zero-tolerance approach to inappropriate online content, ensuring every incident is investigated, discussed with the child, and resolved.",
       severity: "positive",
@@ -1450,8 +1447,8 @@ export function computeDigitalSafetyOnlineProtection(
   }
 
   if (
-    parentalControlsRate >= 90 &&
-    ageFilterRate >= 90 &&
+    meets(parentalControlsRate, 90) &&
+    meets(ageFilterRate, 90) &&
     totalUsageLogs > 0
   ) {
     insights.push({
@@ -1460,14 +1457,14 @@ export function computeDigitalSafetyOnlineProtection(
     });
   }
 
-  if (concernResolutionRate >= 100 && concernsRaised > 0) {
+  if (meets(concernResolutionRate, 100) && concernsRaised > 0) {
     insights.push({
       text: "Every internet usage concern has been resolved — the home demonstrates thorough follow-through on all identified online safety concerns, ensuring children are supported and protected.",
       severity: "positive",
     });
   }
 
-  if (escalationRate >= 100 && concernsIdentified > 0) {
+  if (meets(escalationRate, 100) && concernsIdentified > 0) {
     insights.push({
       text: "Every identified social media concern has been appropriately escalated — the home's escalation procedures are working effectively, ensuring serious online risks receive the attention they require.",
       severity: "positive",
@@ -1482,8 +1479,8 @@ export function computeDigitalSafetyOnlineProtection(
   }
 
   if (
-    trainingEngagementRate >= 90 &&
-    trainingUnderstandingRate >= 90 &&
+    meets(trainingEngagementRate, 90) &&
+    meets(trainingUnderstandingRate, 90) &&
     totalTrainingRecords > 0
   ) {
     insights.push({
@@ -1492,14 +1489,14 @@ export function computeDigitalSafetyOnlineProtection(
     });
   }
 
-  if (childInvolvementRate >= 80 && totalSocialMediaAssessments > 0) {
+  if (meets(childInvolvementRate, 80) && totalSocialMediaAssessments > 0) {
     insights.push({
       text: `${childInvolvementRate}% child involvement in social media assessments — the home treats children as partners in managing their online safety, empowering them to understand risks and develop their own protective strategies.`,
       severity: "positive",
     });
   }
 
-  if (monitoringPlanRate >= 90 && totalSocialMediaAssessments > 0) {
+  if (meets(monitoringPlanRate, 90) && totalSocialMediaAssessments > 0) {
     insights.push({
       text: `${monitoringPlanRate}% of social media assessments have monitoring plans in place — ongoing, structured oversight ensures that identified risks are continuously managed rather than reviewed once and forgotten.`,
       severity: "positive",

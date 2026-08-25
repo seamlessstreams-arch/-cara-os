@@ -1974,7 +1974,7 @@ describe("Home Family Social Connectivity Intelligence Engine", () => {
       expect(typeof r.connectivity_score).toBe("number");
     });
 
-    it("only family_time_sessions populated triggers pct(0,0)=0 penalties", () => {
+    it("only family_time_sessions populated triggers rate(0,0)=null penalties", () => {
       const r = computeFamilySocialConnectivity({
         today: TODAY, total_children: 2, total_staff: 2,
         family_time_sessions: [makeSession({ child_id: "C1", quality_rating: 3 }), makeSession({ child_id: "C2", quality_rating: 3 })],
@@ -1983,9 +1983,9 @@ describe("Home Family Social Connectivity Intelligence Engine", () => {
       });
       expect(r.connectivity_rating).not.toBe("insufficient_data");
       expect(r.contact_plan_coverage).toBe(0);
-      expect(r.parent_engagement_rate).toBe(0);
+      expect(r.parent_engagement_rate).toBeNull();
       expect(r.social_worker_contact_rate).toBe(0);
-      expect(r.sibling_contact_compliance).toBe(0);
+      expect(r.sibling_contact_compliance).toBeNull();
     });
 
     it("only contact_plans populated has correct coverage", () => {
@@ -2000,20 +2000,20 @@ describe("Home Family Social Connectivity Intelligence Engine", () => {
       expect(r.total_sessions).toBe(0);
     });
 
-    it("pct(0,0)=0 for empty parent_partnership_records", () => {
+    it("rate(0,0)=null for empty parent_partnership_records", () => {
       const r = computeFamilySocialConnectivity(baseInput({ parent_partnership_records: [] }));
-      expect(r.parent_engagement_rate).toBe(0);
+      expect(r.parent_engagement_rate).toBeNull();
     });
 
-    it("pct(0,0)=0 for empty sibling_contact_protocols", () => {
+    it("rate(0,0)=null for empty sibling_contact_protocols", () => {
       const r = computeFamilySocialConnectivity(baseInput({ sibling_contact_protocols: [] }));
-      expect(r.sibling_contact_compliance).toBe(0);
+      expect(r.sibling_contact_compliance).toBeNull();
     });
 
     it("empty family_time_sessions leaves session_quality_avg unmeasured (other two metrics are genuine zeros)", () => {
       const r = computeFamilySocialConnectivity(baseInput({ family_time_sessions: [] }));
-      expect(r.child_voice_capture_rate).toBe(0);
-      expect(r.post_contact_distress_rate).toBe(0);
+      expect(r.child_voice_capture_rate).toBeNull();
+      expect(r.post_contact_distress_rate).toBeNull();
       expect(r.session_quality_avg).toBeNull();
     });
 

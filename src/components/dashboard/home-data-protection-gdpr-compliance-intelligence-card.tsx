@@ -74,8 +74,8 @@ export function HomeDataProtectionGdprComplianceIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", meets(d.sar_handling_rate, 90) ? "text-[--cs-success]" : meets(d.sar_handling_rate, 70) ? "text-[--cs-warning]" : d.sar_handling_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.sar_handling_rate)}</p>
               <p className="text-[9px] text-muted-foreground">SAR</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.breach_management_rate >= 90 ? "bg-green-50" : d.breach_management_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.breach_management_rate >= 90 ? "text-[--cs-success]" : d.breach_management_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.breach_management_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.breach_management_rate, 90) ? "bg-green-50" : meets(d.breach_management_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.breach_management_rate, 90) ? "text-[--cs-success]" : meets(d.breach_management_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.breach_management_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Breach</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", meets(d.privacy_notice_rate, 90) ? "bg-green-50" : meets(d.privacy_notice_rate, 70) ? "bg-amber-50" : d.privacy_notice_rate === null ? "bg-muted" : "bg-red-50")}>
@@ -86,8 +86,8 @@ export function HomeDataProtectionGdprComplianceIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", meets(d.staff_training_rate, 90) ? "text-[--cs-success]" : meets(d.staff_training_rate, 70) ? "text-[--cs-warning]" : d.staff_training_rate === null ? "text-muted-foreground" : "text-[--cs-risk]")}>{formatRate(d.staff_training_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Training</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.record_security_rate >= 90 ? "bg-green-50" : d.record_security_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.record_security_rate >= 90 ? "text-[--cs-success]" : d.record_security_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.record_security_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.record_security_rate, 90) ? "bg-green-50" : meets(d.record_security_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.record_security_rate, 90) ? "text-[--cs-success]" : meets(d.record_security_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.record_security_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Security</p>
             </div>
           </div>

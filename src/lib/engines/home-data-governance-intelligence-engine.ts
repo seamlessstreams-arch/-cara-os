@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME DATA GOVERNANCE INTELLIGENCE ENGINE
 // Home-level: aggregates data breaches, data protection records, CCTV access
@@ -157,10 +158,6 @@ export interface HomeDataGovernanceResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function daysBetween(a: string, b: string): number {
   return Math.round(
     (new Date(b).getTime() - new Date(a).getTime()) / 86_400_000,
@@ -206,13 +203,13 @@ export function computeHomeDataGovernance(
   const icoReportedCount = data_breaches.filter(b => b.reported_to_ico).length;
 
   const breachesRequiringNotification = data_breaches.filter(b => b.risk_to_individuals === "high");
-  const subjectsNotifiedRate = pct(
+  const subjectsNotifiedRate = rate(
     breachesRequiringNotification.filter(b => b.data_subjects_notified).length,
     breachesRequiringNotification.length,
   );
 
   const breachesWithLessons = data_breaches.filter(b => b.lessons_learned.length > 0);
-  const lessonsDocumentedRate = pct(breachesWithLessons.length, data_breaches.length);
+  const lessonsDocumentedRate = rate(breachesWithLessons.length, data_breaches.length);
 
   const byBreachType: Record<string, number> = {};
   for (const b of data_breaches) {
@@ -234,7 +231,7 @@ export function computeHomeDataGovernance(
   // ── Data protection profile ──────────────────────────────────────────
   const overdueRecords = data_protection_records.filter(r => r.status === "overdue" || (r.status !== "completed" && r.status !== "closed" && daysBetween(r.due_date, today) > 0)).length;
   const completedRecords = data_protection_records.filter(r => r.status === "completed" || r.status === "closed").length;
-  const completionRate = pct(completedRecords, data_protection_records.length);
+  const completionRate = rate(completedRecords, data_protection_records.length);
   const retentionReviews = data_protection_records.filter(r => r.type === "retention_review").length;
   const consentReviews = data_protection_records.filter(r => r.type === "consent_review").length;
   const dpiasCompleted = data_protection_records.filter(r => r.type === "dpia" && (r.status === "completed" || r.status === "closed")).length;
@@ -256,13 +253,13 @@ export function computeHomeDataGovernance(
   });
 
   const justifiedAccesses = cctv_accesses.filter(c => JUSTIFIED_REASONS.has(c.reason));
-  const justifiedAccessRate = pct(justifiedAccesses.length, cctv_accesses.length);
+  const justifiedAccessRate = rate(justifiedAccesses.length, cctv_accesses.length);
 
   const authorisedAccesses = cctv_accesses.filter(c => c.authorised_by !== "" && c.authorised_by !== c.accessed_by);
-  const authorisedRate = pct(authorisedAccesses.length, cctv_accesses.length);
+  const authorisedRate = rate(authorisedAccesses.length, cctv_accesses.length);
 
   const witnessedAccesses = cctv_accesses.filter(c => c.witness_present !== null && c.witness_present !== "");
-  const witnessRate = pct(witnessedAccesses.length, cctv_accesses.length);
+  const witnessRate = rate(witnessedAccesses.length, cctv_accesses.length);
 
   const byReason: Record<string, number> = {};
   for (const c of cctv_accesses) {
@@ -291,19 +288,19 @@ export function computeHomeDataGovernance(
     s.status !== "completed" && s.status !== "refused" && daysBetween(s.deadline_date, today) > 0,
   ).length;
 
-  const onTimeRate = pct(completedOnTime, completedSARs.length);
+  const onTimeRate = rate(completedOnTime, completedSARs.length);
 
-  const identityVerifiedRate = pct(
+  const identityVerifiedRate = rate(
     subject_access_requests.filter(s => s.identity_verified).length,
     subject_access_requests.length,
   );
 
-  const dpoConsultedRate = pct(
+  const dpoConsultedRate = rate(
     subject_access_requests.filter(s => s.dpo_consulted).length,
     subject_access_requests.length,
   );
 
-  const extensionRate = pct(
+  const extensionRate = rate(
     subject_access_requests.filter(s => s.extension_applied).length,
     subject_access_requests.length,
   );
@@ -338,9 +335,9 @@ export function computeHomeDataGovernance(
 
   // mod2: Data protection training / record keeping (±4) — staff coverage via DP records
   const dpRecordCoverage = data_protection_records.length;
-  if (dpRecordCoverage >= 5 && completionRate >= 80) {
+  if (dpRecordCoverage >= 5 && meets(completionRate, 80)) {
     score += 4;
-  } else if (dpRecordCoverage >= 3 && completionRate >= 60) {
+  } else if (dpRecordCoverage >= 3 && meets(completionRate, 60)) {
     score += 2;
   } else if (dpRecordCoverage >= 1) {
     score += 0;
@@ -353,11 +350,11 @@ export function computeHomeDataGovernance(
   // mod3: SAR compliance (±5) — response timeliness
   if (subject_access_requests.length === 0) {
     score += 1; // No SARs is neutral-positive
-  } else if (onTimeRate >= 100 && overdueSARs === 0) {
+  } else if (meets(onTimeRate, 100) && overdueSARs === 0) {
     score += 5;
-  } else if (onTimeRate >= 75) {
+  } else if (meets(onTimeRate, 75)) {
     score += 2;
-  } else if (onTimeRate >= 50) {
+  } else if (meets(onTimeRate, 50)) {
     score += 0;
   } else {
     score -= 4;
@@ -366,11 +363,11 @@ export function computeHomeDataGovernance(
   // mod4: CCTV governance (±3) — access logging, justified access rate
   if (cctv_accesses.length === 0) {
     score += 1; // Slightly positive — no CCTV access needed
-  } else if (justifiedAccessRate >= 90 && authorisedRate >= 80) {
+  } else if (meets(justifiedAccessRate, 90) && meets(authorisedRate, 80)) {
     score += 3;
-  } else if (justifiedAccessRate >= 70) {
+  } else if (meets(justifiedAccessRate, 70)) {
     score += 1;
-  } else if (justifiedAccessRate >= 50) {
+  } else if (meets(justifiedAccessRate, 50)) {
     score += 0;
   } else {
     score -= 3;
@@ -386,10 +383,10 @@ export function computeHomeDataGovernance(
       if (!b.ico_reported_date || !b.date_discovered) return false;
       return daysBetween(b.date_discovered, b.ico_reported_date) <= 3; // 72 hours
     });
-    const timelyRate = pct(reportedTimely.length, breachesRequiringICO.length);
-    if (timelyRate >= 100) score += 3;
-    else if (timelyRate >= 75) score += 1;
-    else if (timelyRate >= 50) score += 0;
+    const timelyRate = rate(reportedTimely.length, breachesRequiringICO.length);
+    if (meets(timelyRate, 100)) score += 3;
+    else if (meets(timelyRate, 75)) score += 1;
+    else if (meets(timelyRate, 50)) score += 0;
     else score -= 3;
   }
 
@@ -411,21 +408,21 @@ export function computeHomeDataGovernance(
   if (retentionReviews === 0) {
     score -= 1; // Should have retention reviews
   } else {
-    const retentionCompletionRate = pct(retentionReviewsCompleted, retentionReviews);
-    if (retentionCompletionRate >= 100) score += 3;
-    else if (retentionCompletionRate >= 75) score += 1;
-    else if (retentionCompletionRate >= 50) score += 0;
+    const retentionCompletionRate = rate(retentionReviewsCompleted, retentionReviews);
+    if (meets(retentionCompletionRate, 100)) score += 3;
+    else if (meets(retentionCompletionRate, 75)) score += 1;
+    else if (meets(retentionCompletionRate, 50)) score += 0;
     else score -= 3;
   }
 
   // mod8: Incident learning (±3) — breach lessons documented
   if (data_breaches.length === 0) {
     score += 2; // No breaches — positive
-  } else if (lessonsDocumentedRate >= 100) {
+  } else if (meets(lessonsDocumentedRate, 100)) {
     score += 3;
-  } else if (lessonsDocumentedRate >= 75) {
+  } else if (meets(lessonsDocumentedRate, 75)) {
     score += 1;
-  } else if (lessonsDocumentedRate >= 50) {
+  } else if (meets(lessonsDocumentedRate, 50)) {
     score += 0;
   } else {
     score -= 3;
@@ -451,10 +448,10 @@ export function computeHomeDataGovernance(
   // Strengths
   if (data_breaches.length === 0) strengths.push("No data breaches recorded — strong data protection culture.");
   if (data_breaches.length > 0 && openBreaches === 0) strengths.push("All data breaches resolved — effective breach management process.");
-  if (data_breaches.length > 0 && lessonsDocumentedRate >= 100) strengths.push("Lessons documented for every breach — continuous improvement embedded.");
-  if (subject_access_requests.length > 0 && onTimeRate >= 100) strengths.push("All subject access requests completed on time — excellent GDPR compliance.");
-  if (cctv_accesses.length > 0 && justifiedAccessRate >= 90) strengths.push("CCTV access consistently justified — proper governance of surveillance data.");
-  if (cctv_accesses.length > 0 && authorisedRate >= 90) strengths.push("CCTV accesses properly authorised by a separate individual — robust oversight.");
+  if (data_breaches.length > 0 && meets(lessonsDocumentedRate, 100)) strengths.push("Lessons documented for every breach — continuous improvement embedded.");
+  if (subject_access_requests.length > 0 && meets(onTimeRate, 100)) strengths.push("All subject access requests completed on time — excellent GDPR compliance.");
+  if (cctv_accesses.length > 0 && meets(justifiedAccessRate, 90)) strengths.push("CCTV access consistently justified — proper governance of surveillance data.");
+  if (cctv_accesses.length > 0 && meets(authorisedRate, 90)) strengths.push("CCTV accesses properly authorised by a separate individual — robust oversight.");
   if (overdueRecords === 0 && data_protection_records.length >= 3) strengths.push("All data protection records up to date — proactive compliance management.");
   if (dpiasCompleted >= 1) strengths.push(`${dpiasCompleted} data protection impact assessment${dpiasCompleted > 1 ? "s" : ""} completed — privacy by design in practice.`);
 
@@ -464,9 +461,9 @@ export function computeHomeDataGovernance(
   if (specialCategoryCount > 0) concerns.push(`${specialCategoryCount} breach${specialCategoryCount > 1 ? "es" : ""} involved special category data — enhanced safeguards required.`);
   if (overdueSARs > 0) concerns.push(`${overdueSARs} subject access request${overdueSARs > 1 ? "s" : ""} overdue — statutory deadline breach.`);
   if (overdueRecords > 0) concerns.push(`${overdueRecords} data protection record${overdueRecords > 1 ? "s" : ""} overdue — compliance gap.`);
-  if (cctv_accesses.length > 0 && justifiedAccessRate < 70) concerns.push(`Only ${justifiedAccessRate}% of CCTV accesses have justified reasons — potential misuse.`);
-  if (cctv_accesses.length > 0 && authorisedRate < 50) concerns.push(`Only ${authorisedRate}% of CCTV accesses independently authorised — weak oversight.`);
-  if (data_breaches.length > 0 && lessonsDocumentedRate < 50) concerns.push(`Only ${lessonsDocumentedRate}% of breaches have lessons documented — learning opportunity missed.`);
+  if (cctv_accesses.length > 0 && below(justifiedAccessRate, 70)) concerns.push(`Only ${justifiedAccessRate}% of CCTV accesses have justified reasons — potential misuse.`);
+  if (cctv_accesses.length > 0 && below(authorisedRate, 50)) concerns.push(`Only ${authorisedRate}% of CCTV accesses independently authorised — weak oversight.`);
+  if (data_breaches.length > 0 && below(lessonsDocumentedRate, 50)) concerns.push(`Only ${lessonsDocumentedRate}% of breaches have lessons documented — learning opportunity missed.`);
   if (retentionReviews === 0 && data_protection_records.length > 0) concerns.push("No data retention reviews conducted — risk of holding data beyond lawful basis.");
 
   // Recommendations
@@ -482,13 +479,13 @@ export function computeHomeDataGovernance(
   if (retentionReviews === 0 && data_protection_records.length > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Conduct data retention reviews — ensure records are not held beyond lawful retention periods.", urgency: "soon", regulatory_ref: "GDPR Art 5(1)(e)" });
   }
-  if (cctv_accesses.length > 0 && justifiedAccessRate < 80) {
+  if (cctv_accesses.length > 0 && below(justifiedAccessRate, 80)) {
     recommendations.push({ rank: ++rank, recommendation: "Strengthen CCTV access governance — ensure all accesses have documented justification.", urgency: "soon", regulatory_ref: "GDPR Art 6" });
   }
-  if (data_breaches.length > 0 && lessonsDocumentedRate < 75) {
+  if (data_breaches.length > 0 && below(lessonsDocumentedRate, 75)) {
     recommendations.push({ rank: ++rank, recommendation: "Document lessons learned from all data breaches to drive continuous improvement.", urgency: "planned", regulatory_ref: "Reg 13" });
   }
-  if (subject_access_requests.length > 0 && identityVerifiedRate < 80) {
+  if (subject_access_requests.length > 0 && below(identityVerifiedRate, 80)) {
     recommendations.push({ rank: ++rank, recommendation: "Ensure identity verification for all subject access requests before disclosure.", urgency: "soon", regulatory_ref: "GDPR Art 12" });
   }
 
@@ -508,10 +505,10 @@ export function computeHomeDataGovernance(
   if (specialCategoryCount >= 2) {
     insights.push({ text: `${specialCategoryCount} breaches involved special category data (health, ethnicity, etc.). Children's homes routinely handle sensitive data — review encryption, access controls, and staff awareness.`, severity: "warning" });
   }
-  if (cctv_accesses.length > 0 && authorisedRate < 50) {
+  if (cctv_accesses.length > 0 && below(authorisedRate, 50)) {
     insights.push({ text: `Only ${authorisedRate}% of CCTV accesses are independently authorised. Self-authorised surveillance access creates safeguarding and privacy risks. Implement a dual-authorisation policy.`, severity: "warning" });
   }
-  if (subject_access_requests.length > 0 && dpoConsultedRate >= 80) {
+  if (subject_access_requests.length > 0 && meets(dpoConsultedRate, 80)) {
     insights.push({ text: "DPO consultation rate is strong across subject access requests. This demonstrates good governance and reduces the risk of inappropriate disclosure.", severity: "positive" });
   }
 

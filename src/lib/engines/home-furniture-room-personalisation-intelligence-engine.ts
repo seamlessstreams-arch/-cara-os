@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME FURNITURE & ROOM PERSONALISATION INTELLIGENCE ENGINE
 // Monitors bedroom and room personalisation quality — furniture adequacy,
@@ -183,10 +184,6 @@ export interface FurnitureRoomResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -214,16 +211,16 @@ function emptyResult(
     total_choice_records: 0,
     total_comfort_assessments: 0,
     total_dignity_assessments: 0,
-    furniture_adequacy_rate: 0,
-    personalisation_rate: 0,
-    child_choice_rate: 0,
-    comfort_rate: 0,
-    dignity_rate: 0,
-    child_satisfaction_rate: 0,
+    furniture_adequacy_rate: null,
+    personalisation_rate: null,
+    child_choice_rate: null,
+    comfort_rate: null,
+    dignity_rate: null,
+    child_satisfaction_rate: null,
     furniture_condition_avg: 0,
     comfort_rating_avg: 0,
-    personalisation_budget_utilisation_rate: 0,
-    choice_fulfilment_rate: 0,
+    personalisation_budget_utilisation_rate: null,
+    choice_fulfilment_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -320,7 +317,7 @@ export function computeFurnitureRoomPersonalisation(
   });
   const totalFurnitureItems = furnitureItemChecks.reduce((s, c) => s + c.total, 0);
   const totalFurnitureAdequate = furnitureItemChecks.reduce((s, c) => s + c.adequate, 0);
-  const furnitureAdequacyRate = pct(totalFurnitureAdequate, totalFurnitureItems);
+  const furnitureAdequacyRate = rate(totalFurnitureAdequate, totalFurnitureItems);
 
   const conditionScoreMap: Record<string, number> = {
     excellent: 4,
@@ -343,12 +340,12 @@ export function computeFurnitureRoomPersonalisation(
   const replacementActioned = furniture_adequacy_records.filter(
     (f) => f.replacement_needed && f.replacement_actioned,
   ).length;
-  const replacementActionRate = pct(replacementActioned, replacementNeeded);
+  const replacementActionRate = rate(replacementActioned, replacementNeeded);
 
   const furnitureChildConsulted = furniture_adequacy_records.filter(
     (f) => f.child_consulted,
   ).length;
-  const furnitureConsultationRate = pct(furnitureChildConsulted, totalFurnitureAssessments);
+  const furnitureConsultationRate = rate(furnitureChildConsulted, totalFurnitureAssessments);
 
   const inspectionOverdue = furniture_adequacy_records.filter(
     (f) => f.inspection_overdue,
@@ -383,12 +380,12 @@ export function computeFurnitureRoomPersonalisation(
     (s, c) => s + c.done,
     0,
   );
-  const personalisationRate = pct(totalPersonalisationDone, totalPersonalisationItems);
+  const personalisationRate = rate(totalPersonalisationDone, totalPersonalisationItems);
 
   const roomReflectsIdentityCount = room_personalisation_records.filter(
     (r) => r.room_reflects_identity,
   ).length;
-  const identityReflectionRate = pct(roomReflectsIdentityCount, totalPersonalisationAssessments);
+  const identityReflectionRate = rate(roomReflectsIdentityCount, totalPersonalisationAssessments);
 
   const childSatisfiedWithRoomCount = room_personalisation_records.filter(
     (r) => r.child_satisfied_with_room,
@@ -397,7 +394,7 @@ export function computeFurnitureRoomPersonalisation(
   const budgetProvidedCount = room_personalisation_records.filter(
     (r) => r.personalisation_budget_provided,
   ).length;
-  const budgetProvisionRate = pct(budgetProvidedCount, totalPersonalisationAssessments);
+  const budgetProvisionRate = rate(budgetProvidedCount, totalPersonalisationAssessments);
 
   const totalBudgetApproved = room_personalisation_records.reduce(
     (s, r) => s + (r.budget_amount_approved ?? 0),
@@ -407,12 +404,12 @@ export function computeFurnitureRoomPersonalisation(
     (s, r) => s + (r.budget_amount_spent ?? 0),
     0,
   );
-  const budgetUtilisationRate = pct(totalBudgetSpent, totalBudgetApproved);
+  const budgetUtilisationRate = rate(totalBudgetSpent, totalBudgetApproved);
 
   const lockableStorageCount = room_personalisation_records.filter(
     (r) => r.has_lockable_storage,
   ).length;
-  const lockableStorageRate = pct(lockableStorageCount, totalPersonalisationAssessments);
+  const lockableStorageRate = rate(lockableStorageCount, totalPersonalisationAssessments);
 
   const personalisationReviewOverdue = room_personalisation_records.filter(
     (r) => r.review_overdue,
@@ -422,19 +419,19 @@ export function computeFurnitureRoomPersonalisation(
   const totalChoiceRecords = child_choice_records.length;
 
   const fulfilledChoices = child_choice_records.filter((c) => c.fulfilled).length;
-  const choiceFulfilmentRate = pct(fulfilledChoices, totalChoiceRecords);
+  const choiceFulfilmentRate = rate(fulfilledChoices, totalChoiceRecords);
 
   const childSatisfiedWithChoice = child_choice_records.filter(
     (c) => c.fulfilled && c.child_satisfied_with_outcome,
   ).length;
-  const choiceSatisfactionRate = pct(childSatisfiedWithChoice, fulfilledChoices);
+  const choiceSatisfactionRate = rate(childSatisfiedWithChoice, fulfilledChoices);
 
   // Child choice rate = children who have made at least one fulfilled choice
   const childrenWithFulfilledChoice = new Set(
     child_choice_records.filter((c) => c.fulfilled).map((c) => c.child_id),
   ).size;
   const childChoiceRate =
-    total_children > 0 ? pct(childrenWithFulfilledChoice, total_children) : 0;
+    total_children > 0 ? rate(childrenWithFulfilledChoice, total_children) : 0;
 
   // Choice type distribution
   const choiceTypeCounts: Record<string, number> = {};
@@ -462,7 +459,7 @@ export function computeFurnitureRoomPersonalisation(
   });
   const totalComfortItems = comfortItemChecks.reduce((s, c) => s + c.total, 0);
   const totalComfortOk = comfortItemChecks.reduce((s, c) => s + c.ok, 0);
-  const comfortRate = pct(totalComfortOk, totalComfortItems);
+  const comfortRate = rate(totalComfortOk, totalComfortItems);
 
   const comfortRatingSum = comfort_assessment_records.reduce(
     (sum, c) => sum + c.overall_comfort_rating,
@@ -480,7 +477,7 @@ export function computeFurnitureRoomPersonalisation(
   const feelsSafeCount = comfort_assessment_records.filter(
     (c) => c.feels_safe_in_room,
   ).length;
-  const feelsSafeRate = pct(feelsSafeCount, totalComfortAssessments);
+  const feelsSafeRate = rate(feelsSafeCount, totalComfortAssessments);
 
   const totalComfortIssues = comfort_assessment_records.reduce(
     (s, c) => s + c.issues_identified,
@@ -490,12 +487,12 @@ export function computeFurnitureRoomPersonalisation(
     (s, c) => s + c.issues_resolved,
     0,
   );
-  const comfortIssueResolutionRate = pct(totalComfortIssuesResolved, totalComfortIssues);
+  const comfortIssueResolutionRate = rate(totalComfortIssuesResolved, totalComfortIssues);
 
   const mattressComfortableCount = comfort_assessment_records.filter(
     (c) => c.mattress_comfortable,
   ).length;
-  const mattressRate = pct(mattressComfortableCount, totalComfortAssessments);
+  const mattressRate = rate(mattressComfortableCount, totalComfortAssessments);
 
   // --- Dignity of personal space ---
   const totalDignityAssessments = dignity_space_records.length;
@@ -518,67 +515,67 @@ export function computeFurnitureRoomPersonalisation(
   });
   const totalDignityItems = dignityItemChecks.reduce((s, c) => s + c.total, 0);
   const totalDignityMet = dignityItemChecks.reduce((s, c) => s + c.met, 0);
-  const dignityRate = pct(totalDignityMet, totalDignityItems);
+  const dignityRate = rate(totalDignityMet, totalDignityItems);
 
   const workingLockCount = dignity_space_records.filter(
     (d) => d.has_working_lock,
   ).length;
-  const workingLockRate = pct(workingLockCount, totalDignityAssessments);
+  const workingLockRate = rate(workingLockCount, totalDignityAssessments);
 
   const knockBeforeEntryCount = dignity_space_records.filter(
     (d) => d.knock_before_entry_observed,
   ).length;
-  const knockBeforeEntryRate = pct(knockBeforeEntryCount, totalDignityAssessments);
+  const knockBeforeEntryRate = rate(knockBeforeEntryCount, totalDignityAssessments);
 
   const childFeelsRoomIsTheirsCount = dignity_space_records.filter(
     (d) => d.child_feels_room_is_theirs,
   ).length;
-  const ownershipFeelingRate = pct(childFeelsRoomIsTheirsCount, totalDignityAssessments);
+  const ownershipFeelingRate = rate(childFeelsRoomIsTheirsCount, totalDignityAssessments);
 
   const roomNotPunishmentCount = dignity_space_records.filter(
     (d) => d.room_not_used_as_punishment,
   ).length;
-  const notUsedAsPunishmentRate = pct(roomNotPunishmentCount, totalDignityAssessments);
+  const notUsedAsPunishmentRate = rate(roomNotPunishmentCount, totalDignityAssessments);
 
   const spaceRespectedCount = dignity_space_records.filter(
     (d) => d.personal_space_respected,
   ).length;
-  const spaceRespectedRate = pct(spaceRespectedCount, totalDignityAssessments);
+  const spaceRespectedRate = rate(spaceRespectedCount, totalDignityAssessments);
 
   // --- Child satisfaction rate (composite across personalisation, choice, comfort) ---
   const satisfactionOpportunities =
     totalPersonalisationAssessments + fulfilledChoices + totalComfortAssessments;
   const satisfactionPositive =
     childSatisfiedWithRoomCount + childSatisfiedWithChoice + childReportedComfort;
-  const childSatisfactionRate = pct(satisfactionPositive, satisfactionOpportunities);
+  const childSatisfactionRate = rate(satisfactionPositive, satisfactionOpportunities);
 
   // ── Scoring: base 52, max bonuses +28, 4 penalties ────────────────────
 
   let score = 52;
 
   // --- Bonus 1: furnitureAdequacyRate (>=95: +5, >=80: +3) ---
-  if (furnitureAdequacyRate >= 95) score += 5;
-  else if (furnitureAdequacyRate >= 80) score += 3;
+  if (meets(furnitureAdequacyRate, 95)) score += 5;
+  else if (meets(furnitureAdequacyRate, 80)) score += 3;
 
   // --- Bonus 2: personalisationRate (>=90: +5, >=70: +3) ---
-  if (personalisationRate >= 90) score += 5;
-  else if (personalisationRate >= 70) score += 3;
+  if (meets(personalisationRate, 90)) score += 5;
+  else if (meets(personalisationRate, 70)) score += 3;
 
   // --- Bonus 3: childChoiceRate (>=90: +4, >=70: +2) ---
-  if (childChoiceRate >= 90) score += 4;
-  else if (childChoiceRate >= 70) score += 2;
+  if (meets(childChoiceRate, 90)) score += 4;
+  else if (meets(childChoiceRate, 70)) score += 2;
 
   // --- Bonus 4: comfortRate (>=95: +4, >=80: +2) ---
-  if (comfortRate >= 95) score += 4;
-  else if (comfortRate >= 80) score += 2;
+  if (meets(comfortRate, 95)) score += 4;
+  else if (meets(comfortRate, 80)) score += 2;
 
   // --- Bonus 5: dignityRate (>=95: +5, >=80: +3) ---
-  if (dignityRate >= 95) score += 5;
-  else if (dignityRate >= 80) score += 3;
+  if (meets(dignityRate, 95)) score += 5;
+  else if (meets(dignityRate, 80)) score += 3;
 
   // --- Bonus 6: childSatisfactionRate (>=90: +3, >=70: +1) ---
-  if (childSatisfactionRate >= 90) score += 3;
-  else if (childSatisfactionRate >= 70) score += 1;
+  if (meets(childSatisfactionRate, 90)) score += 3;
+  else if (meets(childSatisfactionRate, 70)) score += 1;
 
   // --- Bonus 7: furnitureConditionAvg (>=3.5: +2, >=2.5: +1) ---
   if ((furnitureConditionAvg ?? 0) >= 3.5) score += 2;
@@ -587,16 +584,16 @@ export function computeFurnitureRoomPersonalisation(
   // ── Penalties (guarded by array.length > 0) ───────────────────────────
 
   // Penalty 1: furnitureAdequacyRate < 50
-  if (furnitureAdequacyRate < 50 && furniture_adequacy_records.length > 0) score -= 6;
+  if (below(furnitureAdequacyRate, 50) && furniture_adequacy_records.length > 0) score -= 6;
 
   // Penalty 2: personalisationRate < 40
-  if (personalisationRate < 40 && room_personalisation_records.length > 0) score -= 5;
+  if (below(personalisationRate, 40) && room_personalisation_records.length > 0) score -= 5;
 
   // Penalty 3: dignityRate < 50
-  if (dignityRate < 50 && dignity_space_records.length > 0) score -= 6;
+  if (below(dignityRate, 50) && dignity_space_records.length > 0) score -= 6;
 
   // Penalty 4: comfortRate < 50
-  if (comfortRate < 50 && comfort_assessment_records.length > 0) score -= 5;
+  if (below(comfortRate, 50) && comfort_assessment_records.length > 0) score -= 5;
 
   score = clamp(score, 0, 100);
 
@@ -606,61 +603,61 @@ export function computeFurnitureRoomPersonalisation(
 
   const strengths: string[] = [];
 
-  if (furnitureAdequacyRate >= 95 && totalFurnitureAssessments > 0) {
+  if (meets(furnitureAdequacyRate, 95) && totalFurnitureAssessments > 0) {
     strengths.push(
       `${furnitureAdequacyRate}% of furniture items meet adequacy standards — children's bedrooms are comprehensively furnished to a high standard, ensuring comfort and functionality.`,
     );
-  } else if (furnitureAdequacyRate >= 80 && totalFurnitureAssessments > 0) {
+  } else if (meets(furnitureAdequacyRate, 80) && totalFurnitureAssessments > 0) {
     strengths.push(
       `${furnitureAdequacyRate}% furniture adequacy — the majority of bedroom furnishings meet the required standard across all assessed items.`,
     );
   }
 
-  if (personalisationRate >= 90 && totalPersonalisationAssessments > 0) {
+  if (meets(personalisationRate, 90) && totalPersonalisationAssessments > 0) {
     strengths.push(
       `${personalisationRate}% room personalisation completion — children's bedrooms strongly reflect their individual identity, preferences, and sense of belonging.`,
     );
-  } else if (personalisationRate >= 70 && totalPersonalisationAssessments > 0) {
+  } else if (meets(personalisationRate, 70) && totalPersonalisationAssessments > 0) {
     strengths.push(
       `${personalisationRate}% personalisation completion — good levels of personal touches, chosen decor, and identity expression in children's bedrooms.`,
     );
   }
 
-  if (childChoiceRate >= 90 && total_children > 0) {
+  if (meets(childChoiceRate, 90) && total_children > 0) {
     strengths.push(
       `${childChoiceRate}% of children have exercised meaningful choice over their room — the home actively empowers children to shape their personal space.`,
     );
-  } else if (childChoiceRate >= 70 && total_children > 0) {
+  } else if (meets(childChoiceRate, 70) && total_children > 0) {
     strengths.push(
       `${childChoiceRate}% of children have had room choices fulfilled — the home generally supports children's agency over their bedroom environment.`,
     );
   }
 
-  if (comfortRate >= 95 && totalComfortAssessments > 0) {
+  if (meets(comfortRate, 95) && totalComfortAssessments > 0) {
     strengths.push(
       `${comfortRate}% comfort assessment compliance — bedrooms consistently meet comfort standards including temperature, noise, privacy, lighting, and cleanliness.`,
     );
-  } else if (comfortRate >= 80 && totalComfortAssessments > 0) {
+  } else if (meets(comfortRate, 80) && totalComfortAssessments > 0) {
     strengths.push(
       `${comfortRate}% comfort compliance — the majority of comfort factors in children's bedrooms meet the expected standard.`,
     );
   }
 
-  if (dignityRate >= 95 && totalDignityAssessments > 0) {
+  if (meets(dignityRate, 95) && totalDignityAssessments > 0) {
     strengths.push(
       `${dignityRate}% dignity standards met — children's personal space, privacy, and dignity are consistently respected to an exemplary standard.`,
     );
-  } else if (dignityRate >= 80 && totalDignityAssessments > 0) {
+  } else if (meets(dignityRate, 80) && totalDignityAssessments > 0) {
     strengths.push(
       `${dignityRate}% dignity compliance — the home demonstrates strong practice in respecting children's personal space and privacy.`,
     );
   }
 
-  if (childSatisfactionRate >= 90 && satisfactionOpportunities > 0) {
+  if (meets(childSatisfactionRate, 90) && satisfactionOpportunities > 0) {
     strengths.push(
       `${childSatisfactionRate}% child satisfaction with their rooms — children overwhelmingly report being happy with their bedrooms, indicating personalisation efforts genuinely resonate with them.`,
     );
-  } else if (childSatisfactionRate >= 70 && satisfactionOpportunities > 0) {
+  } else if (meets(childSatisfactionRate, 70) && satisfactionOpportunities > 0) {
     strengths.push(
       `${childSatisfactionRate}% child satisfaction — the majority of children report positive feelings about their rooms and personalisation choices.`,
     );
@@ -676,53 +673,53 @@ export function computeFurnitureRoomPersonalisation(
     );
   }
 
-  if (choiceFulfilmentRate >= 90 && totalChoiceRecords > 0) {
+  if (meets(choiceFulfilmentRate, 90) && totalChoiceRecords > 0) {
     strengths.push(
       `${choiceFulfilmentRate}% of children's room choices have been fulfilled — the home demonstrates excellent responsiveness to children's preferences and requests.`,
     );
-  } else if (choiceFulfilmentRate >= 70 && totalChoiceRecords > 0) {
+  } else if (meets(choiceFulfilmentRate, 70) && totalChoiceRecords > 0) {
     strengths.push(
       `${choiceFulfilmentRate}% choice fulfilment rate — the home generally delivers on children's personalisation requests.`,
     );
   }
 
-  if (knockBeforeEntryRate >= 95 && totalDignityAssessments > 0) {
+  if (meets(knockBeforeEntryRate, 95) && totalDignityAssessments > 0) {
     strengths.push(
       "Staff consistently knock before entering children's rooms — a fundamental dignity practice embedded in the home's culture.",
     );
   }
 
-  if (workingLockRate >= 100 && totalDignityAssessments > 0) {
+  if (meets(workingLockRate, 100) && totalDignityAssessments > 0) {
     strengths.push(
       "Every child's room has a working lock — children can secure their personal space, reinforcing ownership and security.",
     );
   }
 
-  if (feelsSafeRate >= 95 && totalComfortAssessments > 0) {
+  if (meets(feelsSafeRate, 95) && totalComfortAssessments > 0) {
     strengths.push(
       `${feelsSafeRate}% of children feel safe in their room — bedrooms function as genuine safe spaces.`,
     );
   }
 
-  if (ownershipFeelingRate >= 90 && totalDignityAssessments > 0) {
+  if (meets(ownershipFeelingRate, 90) && totalDignityAssessments > 0) {
     strengths.push(
       `${ownershipFeelingRate}% of children feel their room is truly theirs — the home succeeds in creating personal spaces where children belong.`,
     );
   }
 
-  if (replacementActionRate >= 100 && replacementNeeded > 0) {
+  if (meets(replacementActionRate, 100) && replacementNeeded > 0) {
     strengths.push(
       "All identified furniture replacements have been actioned — the home responds promptly when furnishings fall below standard.",
     );
   }
 
-  if (identityReflectionRate >= 90 && totalPersonalisationAssessments > 0) {
+  if (meets(identityReflectionRate, 90) && totalPersonalisationAssessments > 0) {
     strengths.push(
       `${identityReflectionRate}% of rooms assessed as reflecting the child's identity — bedrooms serve as meaningful expressions of who each child is.`,
     );
   }
 
-  if (notUsedAsPunishmentRate >= 100 && totalDignityAssessments > 0) {
+  if (meets(notUsedAsPunishmentRate, 100) && totalDignityAssessments > 0) {
     strengths.push(
       "No evidence of rooms being used as punishment — the home maintains a clear boundary between personal space and behavioural management.",
     );
@@ -732,61 +729,61 @@ export function computeFurnitureRoomPersonalisation(
 
   const concerns: string[] = [];
 
-  if (furnitureAdequacyRate < 50 && totalFurnitureAssessments > 0) {
+  if (below(furnitureAdequacyRate, 50) && totalFurnitureAssessments > 0) {
     concerns.push(
       `Only ${furnitureAdequacyRate}% of furniture items meet adequacy standards — the majority of children's bedroom furnishings do not meet the basic standard required, undermining children's comfort and the home's compliance with Reg 25.`,
     );
-  } else if (furnitureAdequacyRate < 80 && furnitureAdequacyRate >= 50 && totalFurnitureAssessments > 0) {
+  } else if (below(furnitureAdequacyRate, 80) && meets(furnitureAdequacyRate, 50) && totalFurnitureAssessments > 0) {
     concerns.push(
       `Furniture adequacy at ${furnitureAdequacyRate}% — some bedroom furnishings do not meet the required standard, meaning some children's rooms may lack essential items or have items in poor condition.`,
     );
   }
 
-  if (personalisationRate < 40 && totalPersonalisationAssessments > 0) {
+  if (below(personalisationRate, 40) && totalPersonalisationAssessments > 0) {
     concerns.push(
       `Only ${personalisationRate}% personalisation completion — the majority of children's rooms lack personal touches, chosen decor, and expressions of identity, suggesting children have not been enabled to make their room their own.`,
     );
-  } else if (personalisationRate < 70 && personalisationRate >= 40 && totalPersonalisationAssessments > 0) {
+  } else if (below(personalisationRate, 70) && meets(personalisationRate, 40) && totalPersonalisationAssessments > 0) {
     concerns.push(
       `Personalisation at ${personalisationRate}% — many children's rooms still lack key personalisation elements such as chosen bedding, wall decor, or personal photos.`,
     );
   }
 
-  if (childChoiceRate < 50 && total_children > 0 && totalChoiceRecords > 0) {
+  if (below(childChoiceRate, 50) && total_children > 0 && totalChoiceRecords > 0) {
     concerns.push(
       `Only ${childChoiceRate}% of children have had room choices fulfilled — the majority of children have not been given meaningful agency over their bedroom environment.`,
     );
-  } else if (childChoiceRate < 70 && childChoiceRate >= 50 && total_children > 0 && totalChoiceRecords > 0) {
+  } else if (below(childChoiceRate, 70) && meets(childChoiceRate, 50) && total_children > 0 && totalChoiceRecords > 0) {
     concerns.push(
       `Child choice rate at ${childChoiceRate}% — not all children have had the opportunity to make and see fulfilled choices about their room.`,
     );
   }
 
-  if (comfortRate < 50 && totalComfortAssessments > 0) {
+  if (below(comfortRate, 50) && totalComfortAssessments > 0) {
     concerns.push(
       `Only ${comfortRate}% comfort compliance — the majority of comfort factors in children's bedrooms do not meet the expected standard, indicating systemic issues with bedroom environment quality.`,
     );
-  } else if (comfortRate < 80 && comfortRate >= 50 && totalComfortAssessments > 0) {
+  } else if (below(comfortRate, 80) && meets(comfortRate, 50) && totalComfortAssessments > 0) {
     concerns.push(
       `Comfort rate at ${comfortRate}% — some comfort factors such as temperature, noise, privacy, or cleanliness are not consistently meeting standard across all children's bedrooms.`,
     );
   }
 
-  if (dignityRate < 50 && totalDignityAssessments > 0) {
+  if (below(dignityRate, 50) && totalDignityAssessments > 0) {
     concerns.push(
       `Only ${dignityRate}% dignity standards met — the majority of dignity indicators are not being met, raising serious concerns about whether children's personal space, privacy, and autonomy are being respected.`,
     );
-  } else if (dignityRate < 80 && dignityRate >= 50 && totalDignityAssessments > 0) {
+  } else if (below(dignityRate, 80) && meets(dignityRate, 50) && totalDignityAssessments > 0) {
     concerns.push(
       `Dignity rate at ${dignityRate}% — some dignity standards are not consistently met, which may affect children's sense of ownership, privacy, and respect in their personal space.`,
     );
   }
 
-  if (childSatisfactionRate < 50 && satisfactionOpportunities > 0) {
+  if (below(childSatisfactionRate, 50) && satisfactionOpportunities > 0) {
     concerns.push(
       `Only ${childSatisfactionRate}% child satisfaction with rooms — most children are not satisfied with their bedroom environment, raising questions about whether the home is meeting children's needs and wishes regarding personal space.`,
     );
-  } else if (childSatisfactionRate < 70 && childSatisfactionRate >= 50 && satisfactionOpportunities > 0) {
+  } else if (below(childSatisfactionRate, 70) && meets(childSatisfactionRate, 50) && satisfactionOpportunities > 0) {
     concerns.push(
       `Child satisfaction at ${childSatisfactionRate}% — a significant proportion of children are not satisfied with their room, indicating personalisation or comfort efforts may not align with children's actual preferences.`,
     );
@@ -810,55 +807,55 @@ export function computeFurnitureRoomPersonalisation(
     );
   }
 
-  if (choiceFulfilmentRate < 50 && totalChoiceRecords > 0) {
+  if (below(choiceFulfilmentRate, 50) && totalChoiceRecords > 0) {
     concerns.push(
       `Only ${choiceFulfilmentRate}% of children's room choices fulfilled — the majority of expressed preferences have not been actioned, undermining agency and belonging.`,
     );
   }
 
-  if (workingLockRate < 80 && totalDignityAssessments > 0) {
+  if (below(workingLockRate, 80) && totalDignityAssessments > 0) {
     concerns.push(
       `Only ${workingLockRate}% of rooms have a working lock — children without functioning locks cannot secure their personal space.`,
     );
   }
 
-  if (knockBeforeEntryRate < 80 && totalDignityAssessments > 0) {
+  if (below(knockBeforeEntryRate, 80) && totalDignityAssessments > 0) {
     concerns.push(
       `Knock-before-entry observed in only ${knockBeforeEntryRate}% of assessments — inconsistent practice undermines children's trust and sense of personal space.`,
     );
   }
 
-  if (feelsSafeRate < 80 && totalComfortAssessments > 0) {
+  if (below(feelsSafeRate, 80) && totalComfortAssessments > 0) {
     concerns.push(
       `Only ${feelsSafeRate}% of children feel safe in their room — low safety feelings indicate a significant issue requiring immediate exploration.`,
     );
   }
 
-  if (replacementNeeded > 0 && replacementActionRate < 50) {
+  if (replacementNeeded > 0 && below(replacementActionRate, 50)) {
     concerns.push(
       `Only ${replacementActionRate}% of needed furniture replacements actioned — children are waiting for furnishings already identified as below standard.`,
     );
   }
 
-  if (notUsedAsPunishmentRate < 100 && totalDignityAssessments > 0) {
+  if (below(notUsedAsPunishmentRate, 100) && totalDignityAssessments > 0) {
     concerns.push(
-      `Evidence suggests rooms may be used as punishment in ${100 - notUsedAsPunishmentRate}% of assessments — a child's bedroom must never be used punitively.`,
+      `Evidence suggests rooms may be used as punishment in ${100 - notUsedAsPunishmentRate!}% of assessments — a child's bedroom must never be used punitively.`,
     );
   }
 
-  if (mattressRate < 80 && totalComfortAssessments > 0) {
+  if (below(mattressRate, 80) && totalComfortAssessments > 0) {
     concerns.push(
       `Only ${mattressRate}% of mattresses assessed as comfortable — inadequate mattresses directly impact children's health and wellbeing.`,
     );
   }
 
-  if (lockableStorageRate < 70 && totalPersonalisationAssessments > 0) {
+  if (below(lockableStorageRate, 70) && totalPersonalisationAssessments > 0) {
     concerns.push(
       `Only ${lockableStorageRate}% of children have lockable storage — without secure storage, children cannot protect personal belongings.`,
     );
   }
 
-  if (comfortIssueResolutionRate < 50 && totalComfortIssues > 0) {
+  if (below(comfortIssueResolutionRate, 50) && totalComfortIssues > 0) {
     concerns.push(
       `Only ${comfortIssueResolutionRate}% of identified comfort issues resolved — the home is not acting on known bedroom environment problems.`,
     );
@@ -869,7 +866,7 @@ export function computeFurnitureRoomPersonalisation(
   const recommendations: FurnitureRoomRecommendation[] = [];
   let rank = 0;
 
-  if (furnitureAdequacyRate < 50 && totalFurnitureAssessments > 0) {
+  if (below(furnitureAdequacyRate, 50) && totalFurnitureAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -879,7 +876,7 @@ export function computeFurnitureRoomPersonalisation(
     });
   }
 
-  if (dignityRate < 50 && totalDignityAssessments > 0) {
+  if (below(dignityRate, 50) && totalDignityAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -889,7 +886,7 @@ export function computeFurnitureRoomPersonalisation(
     });
   }
 
-  if (comfortRate < 50 && totalComfortAssessments > 0) {
+  if (below(comfortRate, 50) && totalComfortAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -899,7 +896,7 @@ export function computeFurnitureRoomPersonalisation(
     });
   }
 
-  if (personalisationRate < 40 && totalPersonalisationAssessments > 0) {
+  if (below(personalisationRate, 40) && totalPersonalisationAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -909,7 +906,7 @@ export function computeFurnitureRoomPersonalisation(
     });
   }
 
-  if (feelsSafeRate < 80 && totalComfortAssessments > 0) {
+  if (below(feelsSafeRate, 80) && totalComfortAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -919,7 +916,7 @@ export function computeFurnitureRoomPersonalisation(
     });
   }
 
-  if (notUsedAsPunishmentRate < 100 && totalDignityAssessments > 0) {
+  if (below(notUsedAsPunishmentRate, 100) && totalDignityAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -939,7 +936,7 @@ export function computeFurnitureRoomPersonalisation(
     });
   }
 
-  if (workingLockRate < 80 && totalDignityAssessments > 0) {
+  if (below(workingLockRate, 80) && totalDignityAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -949,7 +946,7 @@ export function computeFurnitureRoomPersonalisation(
     });
   }
 
-  if (knockBeforeEntryRate < 80 && totalDignityAssessments > 0) {
+  if (below(knockBeforeEntryRate, 80) && totalDignityAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -960,8 +957,8 @@ export function computeFurnitureRoomPersonalisation(
   }
 
   if (
-    furnitureAdequacyRate >= 50 &&
-    furnitureAdequacyRate < 80 &&
+    meets(furnitureAdequacyRate, 50) &&
+    below(furnitureAdequacyRate, 80) &&
     totalFurnitureAssessments > 0
   ) {
     recommendations.push({
@@ -974,8 +971,8 @@ export function computeFurnitureRoomPersonalisation(
   }
 
   if (
-    personalisationRate >= 40 &&
-    personalisationRate < 70 &&
+    meets(personalisationRate, 40) &&
+    below(personalisationRate, 70) &&
     totalPersonalisationAssessments > 0
   ) {
     recommendations.push({
@@ -988,8 +985,8 @@ export function computeFurnitureRoomPersonalisation(
   }
 
   if (
-    childChoiceRate >= 50 &&
-    childChoiceRate < 70 &&
+    meets(childChoiceRate, 50) &&
+    below(childChoiceRate, 70) &&
     total_children > 0 &&
     totalChoiceRecords > 0
   ) {
@@ -1002,7 +999,7 @@ export function computeFurnitureRoomPersonalisation(
     });
   }
 
-  if (choiceFulfilmentRate < 70 && choiceFulfilmentRate >= 50 && totalChoiceRecords > 0) {
+  if (below(choiceFulfilmentRate, 70) && meets(choiceFulfilmentRate, 50) && totalChoiceRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1012,7 +1009,7 @@ export function computeFurnitureRoomPersonalisation(
     });
   }
 
-  if (mattressRate < 80 && totalComfortAssessments > 0) {
+  if (below(mattressRate, 80) && totalComfortAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1022,7 +1019,7 @@ export function computeFurnitureRoomPersonalisation(
     });
   }
 
-  if (lockableStorageRate < 70 && totalPersonalisationAssessments > 0) {
+  if (below(lockableStorageRate, 70) && totalPersonalisationAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1052,7 +1049,7 @@ export function computeFurnitureRoomPersonalisation(
     });
   }
 
-  if (comfortIssueResolutionRate < 50 && totalComfortIssues > 0) {
+  if (below(comfortIssueResolutionRate, 50) && totalComfortIssues > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1063,8 +1060,8 @@ export function computeFurnitureRoomPersonalisation(
   }
 
   if (
-    dignityRate >= 50 &&
-    dignityRate < 80 &&
+    meets(dignityRate, 50) &&
+    below(dignityRate, 80) &&
     totalDignityAssessments > 0
   ) {
     recommendations.push({
@@ -1077,8 +1074,8 @@ export function computeFurnitureRoomPersonalisation(
   }
 
   if (
-    comfortRate >= 50 &&
-    comfortRate < 80 &&
+    meets(comfortRate, 50) &&
+    below(comfortRate, 80) &&
     totalComfortAssessments > 0
   ) {
     recommendations.push({
@@ -1091,8 +1088,8 @@ export function computeFurnitureRoomPersonalisation(
   }
 
   if (
-    childSatisfactionRate >= 50 &&
-    childSatisfactionRate < 70 &&
+    meets(childSatisfactionRate, 50) &&
+    below(childSatisfactionRate, 70) &&
     satisfactionOpportunities > 0
   ) {
     recommendations.push({
@@ -1104,7 +1101,7 @@ export function computeFurnitureRoomPersonalisation(
     });
   }
 
-  if (budgetProvisionRate < 80 && totalPersonalisationAssessments > 0) {
+  if (below(budgetProvisionRate, 80) && totalPersonalisationAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1114,7 +1111,7 @@ export function computeFurnitureRoomPersonalisation(
     });
   }
 
-  if (furnitureConsultationRate < 70 && totalFurnitureAssessments > 0) {
+  if (below(furnitureConsultationRate, 70) && totalFurnitureAssessments > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1130,42 +1127,42 @@ export function computeFurnitureRoomPersonalisation(
 
   // -- Critical insights --
 
-  if (furnitureAdequacyRate < 50 && totalFurnitureAssessments > 0) {
+  if (below(furnitureAdequacyRate, 50) && totalFurnitureAssessments > 0) {
     insights.push({
       text: `Only ${furnitureAdequacyRate}% of bedroom furniture meets adequacy standards. Ofsted inspectors assess the physical environment of bedrooms as a direct indicator of care quality — inadequate furniture signals children's comfort and dignity are not prioritised.`,
       severity: "critical",
     });
   }
 
-  if (personalisationRate < 40 && totalPersonalisationAssessments > 0) {
+  if (below(personalisationRate, 40) && totalPersonalisationAssessments > 0) {
     insights.push({
       text: `Only ${personalisationRate}% personalisation completion. Rooms lacking personal touches and chosen decor feel institutional rather than homely. Ofsted expects bedrooms to reflect children's individual identity and choices.`,
       severity: "critical",
     });
   }
 
-  if (dignityRate < 50 && totalDignityAssessments > 0) {
+  if (below(dignityRate, 50) && totalDignityAssessments > 0) {
     insights.push({
       text: `Only ${dignityRate}% of dignity standards met. When privacy and dignity are not consistently respected, children experience their bedroom as a controlled environment rather than a safe personal space, contradicting SCCIF expectations.`,
       severity: "critical",
     });
   }
 
-  if (comfortRate < 50 && totalComfortAssessments > 0) {
+  if (below(comfortRate, 50) && totalComfortAssessments > 0) {
     insights.push({
       text: `Only ${comfortRate}% comfort compliance. Uncomfortable bedrooms affect children's sleep quality, emotional regulation, and overall wellbeing. The physical environment is a foundational element of quality care.`,
       severity: "critical",
     });
   }
 
-  if (notUsedAsPunishmentRate < 100 && totalDignityAssessments > 0) {
+  if (below(notUsedAsPunishmentRate, 100) && totalDignityAssessments > 0) {
     insights.push({
       text: "Evidence that bedrooms may be used as punishment in some cases. Using a child's personal space punitively transforms it from a place of safety into one associated with control. This must cease immediately.",
       severity: "critical",
     });
   }
 
-  if (feelsSafeRate < 70 && totalComfortAssessments > 0) {
+  if (below(feelsSafeRate, 70) && totalComfortAssessments > 0) {
     insights.push({
       text: `Only ${feelsSafeRate}% of children feel safe in their bedroom. This may indicate concerns about peer dynamics, staff intrusion, or environmental factors requiring individual exploration.`,
       severity: "critical",
@@ -1175,8 +1172,8 @@ export function computeFurnitureRoomPersonalisation(
   // -- Warning insights --
 
   if (
-    furnitureAdequacyRate >= 50 &&
-    furnitureAdequacyRate < 80 &&
+    meets(furnitureAdequacyRate, 50) &&
+    below(furnitureAdequacyRate, 80) &&
     totalFurnitureAssessments > 0
   ) {
     insights.push({
@@ -1186,8 +1183,8 @@ export function computeFurnitureRoomPersonalisation(
   }
 
   if (
-    personalisationRate >= 40 &&
-    personalisationRate < 70 &&
+    meets(personalisationRate, 40) &&
+    below(personalisationRate, 70) &&
     totalPersonalisationAssessments > 0
   ) {
     insights.push({
@@ -1197,8 +1194,8 @@ export function computeFurnitureRoomPersonalisation(
   }
 
   if (
-    dignityRate >= 50 &&
-    dignityRate < 80 &&
+    meets(dignityRate, 50) &&
+    below(dignityRate, 80) &&
     totalDignityAssessments > 0
   ) {
     insights.push({
@@ -1208,8 +1205,8 @@ export function computeFurnitureRoomPersonalisation(
   }
 
   if (
-    comfortRate >= 50 &&
-    comfortRate < 80 &&
+    meets(comfortRate, 50) &&
+    below(comfortRate, 80) &&
     totalComfortAssessments > 0
   ) {
     insights.push({
@@ -1219,8 +1216,8 @@ export function computeFurnitureRoomPersonalisation(
   }
 
   if (
-    childSatisfactionRate >= 50 &&
-    childSatisfactionRate < 70 &&
+    meets(childSatisfactionRate, 50) &&
+    below(childSatisfactionRate, 70) &&
     satisfactionOpportunities > 0
   ) {
     insights.push({
@@ -1252,7 +1249,7 @@ export function computeFurnitureRoomPersonalisation(
     });
   }
 
-  if (budgetUtilisationRate > 0 && budgetUtilisationRate < 50 && totalBudgetApproved > 0) {
+  if (above(budgetUtilisationRate, 0) && below(budgetUtilisationRate, 50) && totalBudgetApproved > 0) {
     insights.push({
       text: `Personalisation budget utilisation at only ${budgetUtilisationRate}% — budgets approved but not fully used. Children may need more support or encouragement to spend their personalisation budget.`,
       severity: "warning",
@@ -1268,49 +1265,49 @@ export function computeFurnitureRoomPersonalisation(
     });
   }
 
-  if (furnitureAdequacyRate >= 95 && (furnitureConditionAvg ?? 0) >= 3.5 && totalFurnitureAssessments > 0) {
+  if (meets(furnitureAdequacyRate, 95) && (furnitureConditionAvg ?? 0) >= 3.5 && totalFurnitureAssessments > 0) {
     insights.push({
       text: `${furnitureAdequacyRate}% furniture adequacy with condition ${furnitureConditionAvg}/4 — bedrooms are comprehensively and well-furnished to a high standard.`,
       severity: "positive",
     });
   }
 
-  if (personalisationRate >= 90 && identityReflectionRate >= 90 && totalPersonalisationAssessments > 0) {
+  if (meets(personalisationRate, 90) && meets(identityReflectionRate, 90) && totalPersonalisationAssessments > 0) {
     insights.push({
       text: `${personalisationRate}% personalisation with ${identityReflectionRate}% identity reflection — bedrooms genuinely express who each child is, a powerful indicator of belonging.`,
       severity: "positive",
     });
   }
 
-  if (childChoiceRate >= 90 && choiceSatisfactionRate >= 90 && total_children > 0 && fulfilledChoices > 0) {
+  if (meets(childChoiceRate, 90) && meets(choiceSatisfactionRate, 90) && total_children > 0 && fulfilledChoices > 0) {
     insights.push({
       text: `${childChoiceRate}% choice rate with ${choiceSatisfactionRate}% satisfaction — children are not just offered choice but satisfied with how preferences are implemented.`,
       severity: "positive",
     });
   }
 
-  if (comfortRate >= 95 && (comfortRatingAvg ?? 0) >= 4.0 && totalComfortAssessments > 0) {
+  if (meets(comfortRate, 95) && (comfortRatingAvg ?? 0) >= 4.0 && totalComfortAssessments > 0) {
     insights.push({
       text: `${comfortRate}% comfort compliance with rating ${comfortRatingAvg}/5 — bedrooms consistently provide a comfortable environment for sleep and relaxation.`,
       severity: "positive",
     });
   }
 
-  if (dignityRate >= 95 && ownershipFeelingRate >= 90 && totalDignityAssessments > 0) {
+  if (meets(dignityRate, 95) && meets(ownershipFeelingRate, 90) && totalDignityAssessments > 0) {
     insights.push({
       text: `${dignityRate}% dignity with ${ownershipFeelingRate}% ownership feeling — the home exemplifies respect for children's personal space, privacy, and autonomy.`,
       severity: "positive",
     });
   }
 
-  if (childSatisfactionRate >= 90 && satisfactionOpportunities > 0) {
+  if (meets(childSatisfactionRate, 90) && satisfactionOpportunities > 0) {
     insights.push({
       text: `${childSatisfactionRate}% child satisfaction — children feel positive about their bedroom environment, the strongest indicator the home's approach genuinely meets their needs.`,
       severity: "positive",
     });
   }
 
-  if (knockBeforeEntryRate >= 95 && workingLockRate >= 100 && spaceRespectedRate >= 95 && totalDignityAssessments > 0) {
+  if (meets(knockBeforeEntryRate, 95) && meets(workingLockRate, 100) && meets(spaceRespectedRate, 95) && totalDignityAssessments > 0) {
     insights.push({
       text: "Exemplary privacy practice — staff consistently knock before entry, every room has a working lock, and personal space is respected.",
       severity: "positive",

@@ -242,12 +242,12 @@ describe("insufficient_data", () => {
       fire_training_records: [],
       fire_safety_document_records: [],
     });
-    expect(r.drill_compliance_rate).toBe(0);
-    expect(r.evacuation_time_rate).toBe(0);
-    expect(r.risk_assessment_currency_rate).toBe(0);
-    expect(r.equipment_check_rate).toBe(0);
-    expect(r.staff_training_rate).toBe(0);
-    expect(r.documentation_compliance_rate).toBe(0);
+    expect(r.drill_compliance_rate).toBeNull();
+    expect(r.evacuation_time_rate).toBeNull();
+    expect(r.risk_assessment_currency_rate).toBeNull();
+    expect(r.equipment_check_rate).toBeNull();
+    expect(r.staff_training_rate).toBeNull();
+    expect(r.documentation_compliance_rate).toBeNull();
   });
 
   it("has empty arrays for strengths/concerns/recommendations/insights", () => {
@@ -332,12 +332,12 @@ describe("inadequate floor (all empty, children > 0)", () => {
   });
 
   it("all rates are zero", () => {
-    expect(r.drill_compliance_rate).toBe(0);
-    expect(r.evacuation_time_rate).toBe(0);
-    expect(r.risk_assessment_currency_rate).toBe(0);
-    expect(r.equipment_check_rate).toBe(0);
-    expect(r.staff_training_rate).toBe(0);
-    expect(r.documentation_compliance_rate).toBe(0);
+    expect(r.drill_compliance_rate).toBeNull();
+    expect(r.evacuation_time_rate).toBeNull();
+    expect(r.risk_assessment_currency_rate).toBeNull();
+    expect(r.equipment_check_rate).toBeNull();
+    expect(r.staff_training_rate).toBeNull();
+    expect(r.documentation_compliance_rate).toBeNull();
   });
 });
 
@@ -1156,9 +1156,9 @@ describe("rate computations", () => {
       expect(r.drill_compliance_rate).toBe(25); // 1/4
     });
 
-    it("returns 0 when no drills", () => {
+    it("returns null when no drills", () => {
       const r = computeFireSafetyEmergencyDrill(baseInput({ fire_drill_records: [] }));
-      expect(r.drill_compliance_rate).toBe(0);
+      expect(r.drill_compliance_rate).toBeNull();
     });
 
     it("returns 100 when all satisfactory", () => {
@@ -1184,9 +1184,9 @@ describe("rate computations", () => {
       expect(r.evacuation_time_rate).toBe(67); // Math.round(2/3*100)
     });
 
-    it("returns 0 when no drills", () => {
+    it("returns null when no drills", () => {
       const r = computeFireSafetyEmergencyDrill(baseInput({ fire_drill_records: [] }));
-      expect(r.evacuation_time_rate).toBe(0);
+      expect(r.evacuation_time_rate).toBeNull();
     });
   });
 
@@ -1201,9 +1201,9 @@ describe("rate computations", () => {
       expect(r.risk_assessment_currency_rate).toBe(50);
     });
 
-    it("returns 0 when no assessments", () => {
+    it("returns null when no assessments", () => {
       const r = computeFireSafetyEmergencyDrill(baseInput({ fire_risk_assessment_records: [] }));
-      expect(r.risk_assessment_currency_rate).toBe(0);
+      expect(r.risk_assessment_currency_rate).toBeNull();
     });
   });
 
@@ -1220,9 +1220,9 @@ describe("rate computations", () => {
       expect(r.equipment_check_rate).toBe(50);
     });
 
-    it("returns 0 when no checks", () => {
+    it("returns null when no checks", () => {
       const r = computeFireSafetyEmergencyDrill(baseInput({ fire_equipment_check_records: [] }));
-      expect(r.equipment_check_rate).toBe(0);
+      expect(r.equipment_check_rate).toBeNull();
     });
   });
 
@@ -1238,9 +1238,9 @@ describe("rate computations", () => {
       expect(r.staff_training_rate).toBe(67); // Math.round(2/3*100)
     });
 
-    it("returns 0 when no training", () => {
+    it("returns null when no training", () => {
       const r = computeFireSafetyEmergencyDrill(baseInput({ fire_training_records: [] }));
-      expect(r.staff_training_rate).toBe(0);
+      expect(r.staff_training_rate).toBeNull();
     });
   });
 
@@ -1258,7 +1258,7 @@ describe("rate computations", () => {
       expect(r.documentation_compliance_rate).toBe(78);
     });
 
-    it("returns 0 when no documents", () => {
+    it("returns null when no documents", () => {
       const r = computeFireSafetyEmergencyDrill(baseInput({ fire_safety_document_records: [] }));
       expect(r.documentation_compliance_rate).toBeNull();;
     });
@@ -2135,13 +2135,13 @@ describe("insights", () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe("edge cases", () => {
-  it("pct(0,0) returns 0", () => {
+  it("rate(0,0)=nullreturns 0", () => {
     // No drills → drillComplianceRate = pct(0,0) = 0
     const r = computeFireSafetyEmergencyDrill(baseInput({
       fire_drill_records: [],
     }));
-    expect(r.drill_compliance_rate).toBe(0);
-    expect(r.evacuation_time_rate).toBe(0);
+    expect(r.drill_compliance_rate).toBeNull();
+    expect(r.evacuation_time_rate).toBeNull();
   });
 
   it("score is clamped to 0 minimum", () => {

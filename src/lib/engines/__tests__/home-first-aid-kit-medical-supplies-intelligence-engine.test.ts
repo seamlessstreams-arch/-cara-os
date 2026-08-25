@@ -203,12 +203,12 @@ describe("Home First Aid Kit & Medical Supplies Intelligence Engine", () => {
       expect(r.total_stock_items).toBe(0);
       expect(r.total_expiry_items).toBe(0);
       expect(r.total_trained_staff).toBe(0);
-      expect(r.kit_check_rate).toBe(0);
-      expect(r.stock_adequacy_rate).toBe(0);
-      expect(r.expiry_monitoring_rate).toBe(0);
-      expect(r.accessibility_rate).toBe(0);
-      expect(r.staff_training_rate).toBe(0);
-      expect(r.child_awareness_rate).toBe(0);
+      expect(r.kit_check_rate).toBeNull();
+      expect(r.stock_adequacy_rate).toBeNull();
+      expect(r.expiry_monitoring_rate).toBeNull();
+      expect(r.accessibility_rate).toBeNull();
+      expect(r.staff_training_rate).toBeNull();
+      expect(r.child_awareness_rate).toBeNull();
     });
 
     it("8 — empty strengths, concerns, recommendations, insights for insufficient_data", () => {
@@ -617,9 +617,9 @@ describe("Home First Aid Kit & Medical Supplies Intelligence Engine", () => {
       expect(r.kit_check_rate).toBe(50);
     });
 
-    it("42 — kit_check_rate is 0 when no checks", () => {
+    it("42 — kit_check_rate is null when no checks", () => {
       const r = run({});
-      expect(r.kit_check_rate).toBe(0);
+      expect(r.kit_check_rate).toBeNull();
     });
 
     it("43 — kit_check_rate 100 when all checks compliant", () => {
@@ -679,15 +679,15 @@ describe("Home First Aid Kit & Medical Supplies Intelligence Engine", () => {
       expect(r.critical_stock_adequacy_rate).toBe(50);
     });
 
-    it("49 — stock_adequacy_rate is 0 when no stock records", () => {
+    it("49 — stock_adequacy_rate is null when no stock records", () => {
       const r = run({});
-      expect(r.stock_adequacy_rate).toBe(0);
+      expect(r.stock_adequacy_rate).toBeNull();
     });
 
-    it("50 — critical_stock_adequacy_rate is 0 when no critical items", () => {
+    it("50 — critical_stock_adequacy_rate is null when no critical items", () => {
       const stocks = [makeStock({ is_critical_item: false })];
       const r = run({ stock_records: stocks });
-      expect(r.critical_stock_adequacy_rate).toBe(0);
+      expect(r.critical_stock_adequacy_rate).toBeNull();
     });
 
     it("51 — stock_adequacy_rate 100% when all items adequate", () => {
@@ -743,9 +743,9 @@ describe("Home First Aid Kit & Medical Supplies Intelligence Engine", () => {
       expect(r.expiry_monitoring_rate).toBe(90);
     });
 
-    it("56 — expiry_monitoring_rate is 0 when no expiry records", () => {
+    it("56 — expiry_monitoring_rate is null when no expiry records", () => {
       const r = run({});
-      expect(r.expiry_monitoring_rate).toBe(0);
+      expect(r.expiry_monitoring_rate).toBeNull();
     });
 
     it("57 — expiry_monitoring_rate 100 when no items expired", () => {
@@ -791,14 +791,14 @@ describe("Home First Aid Kit & Medical Supplies Intelligence Engine", () => {
       expect(r.child_awareness_rate).toBe(67);
     });
 
-    it("60 — accessibility_rate is 0 when no accessibility records", () => {
+    it("60 — accessibility_rate is null when no accessibility records", () => {
       const r = run({});
-      expect(r.accessibility_rate).toBe(0);
+      expect(r.accessibility_rate).toBeNull();
     });
 
-    it("61 — child_awareness_rate is 0 when no accessibility records", () => {
+    it("61 — child_awareness_rate is null when no accessibility records", () => {
       const r = run({});
-      expect(r.child_awareness_rate).toBe(0);
+      expect(r.child_awareness_rate).toBeNull();
     });
 
     it("62 — accessibility_rate 100 when all kits fully accessible", () => {
@@ -861,9 +861,9 @@ describe("Home First Aid Kit & Medical Supplies Intelligence Engine", () => {
       expect(r.paediatric_trained_rate).toBe(20);
     });
 
-    it("68 — paediatric_trained_rate is 0 when total_staff is 0", () => {
+    it("68 — paediatric_trained_rate is null when total_staff is null", () => {
       const r = run({ total_staff: 0 });
-      expect(r.paediatric_trained_rate).toBe(0);
+      expect(r.paediatric_trained_rate).toBeNull();
     });
 
     it("69 — staff_training_rate 100% when all staff trained", () => {

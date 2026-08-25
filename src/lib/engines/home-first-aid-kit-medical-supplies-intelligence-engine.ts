@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME FIRST AID KIT & MEDICAL SUPPLIES INTELLIGENCE ENGINE
 // Monitors first aid kit checks, medical supply stock adequacy, expiry date
@@ -166,10 +167,6 @@ export interface FirstAidKitMedicalSuppliesResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -196,16 +193,16 @@ function emptyResult(
     total_stock_items: 0,
     total_expiry_items: 0,
     total_trained_staff: 0,
-    kit_check_rate: 0,
-    stock_adequacy_rate: 0,
-    expiry_monitoring_rate: 0,
-    accessibility_rate: 0,
-    staff_training_rate: 0,
-    child_awareness_rate: 0,
-    critical_stock_adequacy_rate: 0,
+    kit_check_rate: null,
+    stock_adequacy_rate: null,
+    expiry_monitoring_rate: null,
+    accessibility_rate: null,
+    staff_training_rate: null,
+    child_awareness_rate: null,
+    critical_stock_adequacy_rate: null,
     expired_items_count: 0,
     near_expiry_items_count: 0,
-    paediatric_trained_rate: 0,
+    paediatric_trained_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -291,7 +288,7 @@ export function computeFirstAidKitMedicalSupplies(
   const checksDocumented = kit_check_records.filter(
     (k) => k.check_documented,
   ).length;
-  const checkDocumentationRate = pct(checksDocumented, totalChecks);
+  const checkDocumentationRate = rate(checksDocumented, totalChecks);
 
   const overdueChecks = kit_check_records.filter(
     (k) => k.check_overdue,
@@ -306,26 +303,26 @@ export function computeFirstAidKitMedicalSupplies(
     (sum, k) => sum + k.issues_resolved,
     0,
   );
-  const issueResolutionRate = pct(totalIssuesResolved, totalIssuesFound);
+  const issueResolutionRate = rate(totalIssuesResolved, totalIssuesFound);
 
   // Kit check rate: percentage of checks where all items present and documented
   const compliantChecks = kit_check_records.filter(
     (k) => k.all_items_present && k.check_documented,
   ).length;
-  const kitCheckRate = pct(compliantChecks, totalChecks);
+  const kitCheckRate = rate(compliantChecks, totalChecks);
 
   // --- Stock adequacy rate ---
   const totalStockItems = stock_records.length;
   const stockItemsAdequate = stock_records.filter(
     (s) => s.current_quantity >= s.minimum_threshold,
   ).length;
-  const stockAdequacyRate = pct(stockItemsAdequate, totalStockItems);
+  const stockAdequacyRate = rate(stockItemsAdequate, totalStockItems);
 
   const criticalItems = stock_records.filter((s) => s.is_critical_item);
   const criticalItemsAdequate = criticalItems.filter(
     (s) => s.current_quantity >= s.minimum_threshold,
   ).length;
-  const criticalStockAdequacyRate = pct(
+  const criticalStockAdequacyRate = rate(
     criticalItemsAdequate,
     criticalItems.length,
   );
@@ -337,7 +334,7 @@ export function computeFirstAidKitMedicalSupplies(
   const stockAuditMatched = stock_records.filter(
     (s) => s.audit_matched_records,
   ).length;
-  const stockAuditAccuracyRate = pct(stockAuditMatched, totalStockItems);
+  const stockAuditAccuracyRate = rate(stockAuditMatched, totalStockItems);
 
   const reordersPending = stock_records.filter(
     (s) => s.current_quantity < s.minimum_threshold && !s.reorder_placed,
@@ -365,7 +362,7 @@ export function computeFirstAidKitMedicalSupplies(
 
   // Expiry monitoring rate: percentage of items that are not expired
   const expiryMonitoringRate =
-    totalExpiryItems > 0 ? pct(totalExpiryItems - expiredItems, totalExpiryItems) : 0;
+    totalExpiryItems > 0 ? rate(totalExpiryItems - expiredItems, totalExpiryItems) : 0;
 
   // --- Accessibility rate ---
   const totalAccessibilityAudits = accessibility_records.length;
@@ -387,17 +384,17 @@ export function computeFirstAidKitMedicalSupplies(
       a.is_unlocked &&
       a.location_compliant,
   ).length;
-  const accessibilityRate = pct(fullyAccessibleKits, totalAccessibilityAudits);
+  const accessibilityRate = rate(fullyAccessibleKits, totalAccessibilityAudits);
 
-  const hseComplianceRate = pct(meetsHseKits, totalAccessibilityAudits);
+  const hseComplianceRate = rate(meetsHseKits, totalAccessibilityAudits);
 
-  const staffLocationAwarenessRate = pct(
+  const staffLocationAwarenessRate = rate(
     staffKnowLocation,
     totalAccessibilityAudits,
   );
 
   // Child awareness rate: children know where the kits are
-  const childAwarenessRate = pct(childrenKnowLocation, totalAccessibilityAudits);
+  const childAwarenessRate = rate(childrenKnowLocation, totalAccessibilityAudits);
 
   // Kits too far from main area (> 50 metres)
   const kitsTooFar = accessibility_records.filter(
@@ -426,7 +423,7 @@ export function computeFirstAidKitMedicalSupplies(
       .map((t) => t.staff_id),
   ).size;
   const staffTrainingRate =
-    total_staff > 0 ? pct(uniqueStaffWithCurrentTraining, total_staff) : 0;
+    total_staff > 0 ? rate(uniqueStaffWithCurrentTraining, total_staff) : 0;
 
   const uniquePaediatricStaff = new Set(
     training_records
@@ -434,12 +431,12 @@ export function computeFirstAidKitMedicalSupplies(
       .map((t) => t.staff_id),
   ).size;
   const paediatricTrainedRate =
-    total_staff > 0 ? pct(uniquePaediatricStaff, total_staff) : 0;
+    total_staff > 0 ? rate(uniquePaediatricStaff, total_staff) : 0;
 
   const refreshersCompleted = training_records.filter(
     (t) => t.refresher_completed,
   ).length;
-  const refresherComplianceRate = pct(
+  const refresherComplianceRate = rate(
     refreshersCompleted,
     training_records.filter((t) => t.is_current).length,
   );
@@ -448,7 +445,7 @@ export function computeFirstAidKitMedicalSupplies(
   const practicalAssessmentsPassed = training_records.filter(
     (t) => t.practical_assessment_passed,
   ).length;
-  const practicalPassRate = pct(practicalAssessmentsPassed, totalTrainingRecords);
+  const practicalPassRate = rate(practicalAssessmentsPassed, totalTrainingRecords);
 
   // Training type distribution
   const trainingTypeCounts: Record<string, number> = {};
@@ -462,50 +459,50 @@ export function computeFirstAidKitMedicalSupplies(
   let score = 52;
 
   // --- Bonus 1: kitCheckRate (>=95: +5, >=80: +3, >=60: +1) ---
-  if (kitCheckRate >= 95) score += 5;
-  else if (kitCheckRate >= 80) score += 3;
-  else if (kitCheckRate >= 60) score += 1;
+  if (meets(kitCheckRate, 95)) score += 5;
+  else if (meets(kitCheckRate, 80)) score += 3;
+  else if (meets(kitCheckRate, 60)) score += 1;
 
   // --- Bonus 2: stockAdequacyRate (>=95: +5, >=80: +3, >=60: +1) ---
-  if (stockAdequacyRate >= 95) score += 5;
-  else if (stockAdequacyRate >= 80) score += 3;
-  else if (stockAdequacyRate >= 60) score += 1;
+  if (meets(stockAdequacyRate, 95)) score += 5;
+  else if (meets(stockAdequacyRate, 80)) score += 3;
+  else if (meets(stockAdequacyRate, 60)) score += 1;
 
   // --- Bonus 3: expiryMonitoringRate (>=98: +5, >=90: +3, >=75: +1) ---
-  if (expiryMonitoringRate >= 98) score += 5;
-  else if (expiryMonitoringRate >= 90) score += 3;
-  else if (expiryMonitoringRate >= 75) score += 1;
+  if (meets(expiryMonitoringRate, 98)) score += 5;
+  else if (meets(expiryMonitoringRate, 90)) score += 3;
+  else if (meets(expiryMonitoringRate, 75)) score += 1;
 
   // --- Bonus 4: accessibilityRate (>=100: +4, >=80: +2) ---
-  if (accessibilityRate >= 100) score += 4;
-  else if (accessibilityRate >= 80) score += 2;
+  if (meets(accessibilityRate, 100)) score += 4;
+  else if (meets(accessibilityRate, 80)) score += 2;
 
   // --- Bonus 5: staffTrainingRate (>=100: +4, >=80: +2) ---
-  if (staffTrainingRate >= 100) score += 4;
-  else if (staffTrainingRate >= 80) score += 2;
+  if (meets(staffTrainingRate, 100)) score += 4;
+  else if (meets(staffTrainingRate, 80)) score += 2;
 
   // --- Bonus 6: childAwarenessRate (>=90: +3, >=70: +1) ---
-  if (childAwarenessRate >= 90) score += 3;
-  else if (childAwarenessRate >= 70) score += 1;
+  if (meets(childAwarenessRate, 90)) score += 3;
+  else if (meets(childAwarenessRate, 70)) score += 1;
 
   // --- Bonus 7: paediatricTrainedRate (>=80: +2) ---
-  if (paediatricTrainedRate >= 80) score += 2;
+  if (meets(paediatricTrainedRate, 80)) score += 2;
 
   // max bonuses = 5+5+5+4+4+3+2 = 28
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // Penalty 1: kitCheckRate < 50 and checks exist → -5
-  if (kitCheckRate < 50 && totalChecks > 0) score -= 5;
+  if (below(kitCheckRate, 50) && totalChecks > 0) score -= 5;
 
   // Penalty 2: expiredItems > 0 and critical stock below minimum → -5
   if (expiredItems > 0 && criticalStockBelowMinimum > 0) score -= 5;
 
   // Penalty 3: staffTrainingRate < 50 and staff exist → -4
-  if (staffTrainingRate < 50 && total_staff > 0) score -= 4;
+  if (below(staffTrainingRate, 50) && total_staff > 0) score -= 4;
 
   // Penalty 4: accessibilityRate < 50 and audits exist → -4
-  if (accessibilityRate < 50 && totalAccessibilityAudits > 0) score -= 4;
+  if (below(accessibilityRate, 50) && totalAccessibilityAudits > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -515,125 +512,125 @@ export function computeFirstAidKitMedicalSupplies(
 
   const strengths: string[] = [];
 
-  if (kitCheckRate >= 95 && totalChecks > 0) {
+  if (meets(kitCheckRate, 95) && totalChecks > 0) {
     strengths.push(
       "First aid kit checks are exemplary — all kits are fully stocked, documented, and maintained to the highest standard, ensuring children have reliable access to first aid provision at all times.",
     );
-  } else if (kitCheckRate >= 80 && totalChecks > 0) {
+  } else if (meets(kitCheckRate, 80) && totalChecks > 0) {
     strengths.push(
       `${kitCheckRate}% of kit checks are fully compliant — the home maintains strong first aid kit checking practice with consistent documentation.`,
     );
-  } else if (kitCheckRate >= 60 && totalChecks > 0) {
+  } else if (meets(kitCheckRate, 60) && totalChecks > 0) {
     strengths.push(
       `${kitCheckRate}% kit check compliance — the home demonstrates regular first aid kit monitoring, though some checks identify gaps.`,
     );
   }
 
-  if (stockAdequacyRate >= 95 && totalStockItems > 0) {
+  if (meets(stockAdequacyRate, 95) && totalStockItems > 0) {
     strengths.push(
       "Medical supply stock is exceptionally well managed — all items are at or above minimum threshold levels, demonstrating proactive stock management that ensures readiness for emergencies.",
     );
-  } else if (stockAdequacyRate >= 80 && totalStockItems > 0) {
+  } else if (meets(stockAdequacyRate, 80) && totalStockItems > 0) {
     strengths.push(
       `${stockAdequacyRate}% stock adequacy — the home maintains good medical supply levels with the majority of items above minimum thresholds.`,
     );
   }
 
-  if (criticalStockAdequacyRate >= 100 && criticalItems.length > 0) {
+  if (meets(criticalStockAdequacyRate, 100) && criticalItems.length > 0) {
     strengths.push(
       "All critical medical supply items are fully stocked — the home prioritises the availability of essential items that may be needed in a medical emergency.",
     );
-  } else if (criticalStockAdequacyRate >= 90 && criticalItems.length > 0) {
+  } else if (meets(criticalStockAdequacyRate, 90) && criticalItems.length > 0) {
     strengths.push(
       `${criticalStockAdequacyRate}% critical item stock adequacy — essential medical supplies are well maintained with very few items below threshold.`,
     );
   }
 
-  if (expiryMonitoringRate >= 98 && totalExpiryItems > 0) {
+  if (meets(expiryMonitoringRate, 98) && totalExpiryItems > 0) {
     strengths.push(
       "Outstanding expiry monitoring — virtually all medical supplies are within their use-by dates, demonstrating rigorous expiry management that protects children from ineffective or unsafe products.",
     );
-  } else if (expiryMonitoringRate >= 90 && totalExpiryItems > 0) {
+  } else if (meets(expiryMonitoringRate, 90) && totalExpiryItems > 0) {
     strengths.push(
       `${expiryMonitoringRate}% of medical supplies within date — strong expiry monitoring ensures the vast majority of items are safe and effective.`,
     );
   }
 
-  if (accessibilityRate >= 100 && totalAccessibilityAudits > 0) {
+  if (meets(accessibilityRate, 100) && totalAccessibilityAudits > 0) {
     strengths.push(
       "Every first aid kit meets full accessibility standards — all kits are accessible 24 hours, clearly signed, unlocked, and in compliant locations, ensuring immediate access in emergencies.",
     );
-  } else if (accessibilityRate >= 80 && totalAccessibilityAudits > 0) {
+  } else if (meets(accessibilityRate, 80) && totalAccessibilityAudits > 0) {
     strengths.push(
       `${accessibilityRate}% of first aid kits meet full accessibility standards — the home ensures strong accessibility for the majority of its kits.`,
     );
   }
 
-  if (staffTrainingRate >= 100 && total_staff > 0) {
+  if (meets(staffTrainingRate, 100) && total_staff > 0) {
     strengths.push(
       "Every member of staff holds current first aid training — the home has complete coverage ensuring a trained first aider is always available to respond to children's medical needs.",
     );
-  } else if (staffTrainingRate >= 80 && total_staff > 0) {
+  } else if (meets(staffTrainingRate, 80) && total_staff > 0) {
     strengths.push(
       `${staffTrainingRate}% of staff have current first aid training — strong training coverage means a trained first aider is almost always available on shift.`,
     );
   }
 
-  if (paediatricTrainedRate >= 80 && total_staff > 0) {
+  if (meets(paediatricTrainedRate, 80) && total_staff > 0) {
     strengths.push(
       `${paediatricTrainedRate}% of staff are paediatric first aid qualified — excellent coverage of age-appropriate first aid skills tailored to working with children and young people.`,
     );
-  } else if (paediatricTrainedRate >= 50 && total_staff > 0) {
+  } else if (meets(paediatricTrainedRate, 50) && total_staff > 0) {
     strengths.push(
       `${paediatricTrainedRate}% paediatric first aid coverage — a good proportion of staff hold paediatric-specific qualifications relevant to the children's home context.`,
     );
   }
 
-  if (childAwarenessRate >= 90 && totalAccessibilityAudits > 0) {
+  if (meets(childAwarenessRate, 90) && totalAccessibilityAudits > 0) {
     strengths.push(
       `${childAwarenessRate}% of children know where first aid kits are located — outstanding awareness ensures children can direct staff or access help quickly in an emergency.`,
     );
-  } else if (childAwarenessRate >= 70 && totalAccessibilityAudits > 0) {
+  } else if (meets(childAwarenessRate, 70) && totalAccessibilityAudits > 0) {
     strengths.push(
       `${childAwarenessRate}% child awareness of first aid kit locations — good practice in ensuring children know where to find first aid provision.`,
     );
   }
 
-  if (hseComplianceRate >= 100 && totalAccessibilityAudits > 0) {
+  if (meets(hseComplianceRate, 100) && totalAccessibilityAudits > 0) {
     strengths.push(
       "All first aid kit locations meet HSE guidance — the home's first aid provision fully complies with Health and Safety Executive requirements for workplace first aid.",
     );
-  } else if (hseComplianceRate >= 80 && totalAccessibilityAudits > 0) {
+  } else if (meets(hseComplianceRate, 80) && totalAccessibilityAudits > 0) {
     strengths.push(
       `${hseComplianceRate}% HSE compliance for kit locations — the home demonstrates strong adherence to health and safety guidance for first aid provision.`,
     );
   }
 
-  if (checkDocumentationRate >= 95 && totalChecks > 0) {
+  if (meets(checkDocumentationRate, 95) && totalChecks > 0) {
     strengths.push(
       "Kit check documentation is exemplary — nearly all checks are fully documented, providing a robust audit trail that evidences the home's commitment to first aid safety.",
     );
   }
 
-  if (issueResolutionRate >= 90 && totalIssuesFound > 0) {
+  if (meets(issueResolutionRate, 90) && totalIssuesFound > 0) {
     strengths.push(
       `${issueResolutionRate}% of issues identified during kit checks have been resolved — the home acts promptly to address problems, maintaining kit readiness.`,
     );
   }
 
-  if (stockAuditAccuracyRate >= 95 && totalStockItems > 0) {
+  if (meets(stockAuditAccuracyRate, 95) && totalStockItems > 0) {
     strengths.push(
       `${stockAuditAccuracyRate}% stock audit accuracy — physical stock matches records, demonstrating reliable inventory management.`,
     );
   }
 
-  if (refresherComplianceRate >= 90 && currentTraining > 0) {
+  if (meets(refresherComplianceRate, 90) && currentTraining > 0) {
     strengths.push(
       `${refresherComplianceRate}% refresher training compliance — staff maintain first aid skills through regular refresher training.`,
     );
   }
 
-  if (staffLocationAwarenessRate >= 100 && totalAccessibilityAudits > 0) {
+  if (meets(staffLocationAwarenessRate, 100) && totalAccessibilityAudits > 0) {
     strengths.push(
       "All staff know every first aid kit location — comprehensive awareness ensures rapid response capability.",
     );
@@ -643,21 +640,21 @@ export function computeFirstAidKitMedicalSupplies(
 
   const concerns: string[] = [];
 
-  if (kitCheckRate < 50 && totalChecks > 0) {
+  if (below(kitCheckRate, 50) && totalChecks > 0) {
     concerns.push(
       `Only ${kitCheckRate}% of first aid kit checks are fully compliant — the majority of checks reveal missing items or lack documentation, meaning the home cannot evidence that kits are reliably maintained and ready for use.`,
     );
-  } else if (kitCheckRate < 80 && kitCheckRate >= 50 && totalChecks > 0) {
+  } else if (below(kitCheckRate, 80) && meets(kitCheckRate, 50) && totalChecks > 0) {
     concerns.push(
       `Kit check compliance at ${kitCheckRate}% — a significant proportion of kit checks identify missing items or incomplete documentation, raising questions about the reliability of first aid provision.`,
     );
   }
 
-  if (stockAdequacyRate < 50 && totalStockItems > 0) {
+  if (below(stockAdequacyRate, 50) && totalStockItems > 0) {
     concerns.push(
       `Only ${stockAdequacyRate}% of medical supply items are at adequate stock levels — the majority of items are below minimum thresholds, creating serious risks if multiple first aid incidents occur simultaneously.`,
     );
-  } else if (stockAdequacyRate < 80 && stockAdequacyRate >= 50 && totalStockItems > 0) {
+  } else if (below(stockAdequacyRate, 80) && meets(stockAdequacyRate, 50) && totalStockItems > 0) {
     concerns.push(
       `Stock adequacy at ${stockAdequacyRate}% — a notable proportion of medical supplies are below minimum thresholds, which may compromise the home's ability to respond to first aid needs.`,
     );
@@ -699,37 +696,37 @@ export function computeFirstAidKitMedicalSupplies(
     );
   }
 
-  if (accessibilityRate < 50 && totalAccessibilityAudits > 0) {
+  if (below(accessibilityRate, 50) && totalAccessibilityAudits > 0) {
     concerns.push(
       `Only ${accessibilityRate}% of first aid kits meet full accessibility standards — the majority of kits fail to meet basic requirements for 24-hour access, clear signage, or appropriate location, potentially delaying emergency response.`,
     );
-  } else if (accessibilityRate < 80 && accessibilityRate >= 50 && totalAccessibilityAudits > 0) {
+  } else if (below(accessibilityRate, 80) && meets(accessibilityRate, 50) && totalAccessibilityAudits > 0) {
     concerns.push(
       `Accessibility rate at ${accessibilityRate}% — some first aid kits do not meet full accessibility standards, which could impede rapid access during emergencies.`,
     );
   }
 
-  if (staffTrainingRate < 50 && total_staff > 0) {
+  if (below(staffTrainingRate, 50) && total_staff > 0) {
     concerns.push(
       `Only ${staffTrainingRate}% of staff have current first aid training — the home may have insufficient trained first aiders available on shift, creating a significant risk that no qualified responder is available during a medical emergency.`,
     );
-  } else if (staffTrainingRate < 80 && staffTrainingRate >= 50 && total_staff > 0) {
+  } else if (below(staffTrainingRate, 80) && meets(staffTrainingRate, 50) && total_staff > 0) {
     concerns.push(
       `Staff training coverage at ${staffTrainingRate}% — gaps in first aid training mean some shifts may lack a trained first aider, compromising the home's emergency response capacity.`,
     );
   }
 
-  if (paediatricTrainedRate < 30 && total_staff > 0 && totalTrainingRecords > 0) {
+  if (below(paediatricTrainedRate, 30) && total_staff > 0 && totalTrainingRecords > 0) {
     concerns.push(
       `Only ${paediatricTrainedRate}% of staff have paediatric first aid qualifications — given the home cares for children, a higher proportion of paediatric-trained staff is essential to respond appropriately to children's specific medical needs.`,
     );
   }
 
-  if (childAwarenessRate < 50 && totalAccessibilityAudits > 0) {
+  if (below(childAwarenessRate, 50) && totalAccessibilityAudits > 0) {
     concerns.push(
       `Only ${childAwarenessRate}% of children know where first aid kits are located — children must be aware of where to find or direct others to first aid provision, particularly in situations where they may need to seek help independently.`,
     );
-  } else if (childAwarenessRate < 70 && childAwarenessRate >= 50 && totalAccessibilityAudits > 0) {
+  } else if (below(childAwarenessRate, 70) && meets(childAwarenessRate, 50) && totalAccessibilityAudits > 0) {
     concerns.push(
       `Child awareness of kit locations at ${childAwarenessRate}% — not all children know where first aid kits are located, reducing their ability to access or direct others to help.`,
     );
@@ -765,19 +762,19 @@ export function computeFirstAidKitMedicalSupplies(
     );
   }
 
-  if (stockAuditAccuracyRate < 70 && totalStockItems > 0) {
+  if (below(stockAuditAccuracyRate, 70) && totalStockItems > 0) {
     concerns.push(
       `Stock audit accuracy at only ${stockAuditAccuracyRate}% — physical stock does not match records for a significant proportion of items, indicating poor inventory management that may mask actual shortages.`,
     );
   }
 
-  if (checkDocumentationRate < 70 && totalChecks > 0) {
+  if (below(checkDocumentationRate, 70) && totalChecks > 0) {
     concerns.push(
       `Only ${checkDocumentationRate}% of kit checks are documented — undocumented checks cannot evidence compliance and leave the home unable to demonstrate systematic first aid maintenance to inspectors.`,
     );
   }
 
-  if (issueResolutionRate < 50 && totalIssuesFound > 0) {
+  if (below(issueResolutionRate, 50) && totalIssuesFound > 0) {
     concerns.push(
       `Only ${issueResolutionRate}% of issues found during kit checks have been resolved — outstanding issues accumulate and progressively degrade kit quality and readiness.`,
     );
@@ -808,7 +805,7 @@ export function computeFirstAidKitMedicalSupplies(
     });
   }
 
-  if (staffTrainingRate < 50 && total_staff > 0) {
+  if (below(staffTrainingRate, 50) && total_staff > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -818,7 +815,7 @@ export function computeFirstAidKitMedicalSupplies(
     });
   }
 
-  if (accessibilityRate < 50 && totalAccessibilityAudits > 0) {
+  if (below(accessibilityRate, 50) && totalAccessibilityAudits > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -828,7 +825,7 @@ export function computeFirstAidKitMedicalSupplies(
     });
   }
 
-  if (kitCheckRate < 50 && totalChecks > 0) {
+  if (below(kitCheckRate, 50) && totalChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -859,8 +856,8 @@ export function computeFirstAidKitMedicalSupplies(
   }
 
   if (
-    kitCheckRate >= 50 &&
-    kitCheckRate < 80 &&
+    meets(kitCheckRate, 50) &&
+    below(kitCheckRate, 80) &&
     totalChecks > 0
   ) {
     recommendations.push({
@@ -873,8 +870,8 @@ export function computeFirstAidKitMedicalSupplies(
   }
 
   if (
-    stockAdequacyRate >= 50 &&
-    stockAdequacyRate < 80 &&
+    meets(stockAdequacyRate, 50) &&
+    below(stockAdequacyRate, 80) &&
     totalStockItems > 0
   ) {
     recommendations.push({
@@ -886,7 +883,7 @@ export function computeFirstAidKitMedicalSupplies(
     });
   }
 
-  if (stockAdequacyRate < 50 && totalStockItems > 0) {
+  if (below(stockAdequacyRate, 50) && totalStockItems > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -897,8 +894,8 @@ export function computeFirstAidKitMedicalSupplies(
   }
 
   if (
-    accessibilityRate >= 50 &&
-    accessibilityRate < 80 &&
+    meets(accessibilityRate, 50) &&
+    below(accessibilityRate, 80) &&
     totalAccessibilityAudits > 0
   ) {
     recommendations.push({
@@ -911,8 +908,8 @@ export function computeFirstAidKitMedicalSupplies(
   }
 
   if (
-    staffTrainingRate >= 50 &&
-    staffTrainingRate < 80 &&
+    meets(staffTrainingRate, 50) &&
+    below(staffTrainingRate, 80) &&
     total_staff > 0
   ) {
     recommendations.push({
@@ -924,7 +921,7 @@ export function computeFirstAidKitMedicalSupplies(
     });
   }
 
-  if (childAwarenessRate < 70 && totalAccessibilityAudits > 0) {
+  if (below(childAwarenessRate, 70) && totalAccessibilityAudits > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -964,7 +961,7 @@ export function computeFirstAidKitMedicalSupplies(
     });
   }
 
-  if (paediatricTrainedRate < 50 && total_staff > 0 && totalTrainingRecords > 0) {
+  if (below(paediatricTrainedRate, 50) && total_staff > 0 && totalTrainingRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -975,8 +972,8 @@ export function computeFirstAidKitMedicalSupplies(
   }
 
   if (
-    childAwarenessRate >= 70 &&
-    childAwarenessRate < 90 &&
+    meets(childAwarenessRate, 70) &&
+    below(childAwarenessRate, 90) &&
     totalAccessibilityAudits > 0
   ) {
     recommendations.push({
@@ -988,7 +985,7 @@ export function computeFirstAidKitMedicalSupplies(
     });
   }
 
-  if (stockAuditAccuracyRate < 80 && totalStockItems > 0) {
+  if (below(stockAuditAccuracyRate, 80) && totalStockItems > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -998,7 +995,7 @@ export function computeFirstAidKitMedicalSupplies(
     });
   }
 
-  if (checkDocumentationRate < 80 && totalChecks > 0) {
+  if (below(checkDocumentationRate, 80) && totalChecks > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1018,7 +1015,7 @@ export function computeFirstAidKitMedicalSupplies(
     });
   }
 
-  if (refresherComplianceRate < 70 && currentTraining > 0) {
+  if (below(refresherComplianceRate, 70) && currentTraining > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1053,21 +1050,21 @@ export function computeFirstAidKitMedicalSupplies(
     });
   }
 
-  if (staffTrainingRate < 50 && total_staff > 0) {
+  if (below(staffTrainingRate, 50) && total_staff > 0) {
     insights.push({
       text: `Only ${staffTrainingRate}% of staff hold current first aid qualifications. The home cannot guarantee that a trained first aider will be present on every shift, which is a fundamental requirement under Reg 14. In a medical emergency involving a child, the absence of a qualified responder could have catastrophic consequences.`,
       severity: "critical",
     });
   }
 
-  if (accessibilityRate < 50 && totalAccessibilityAudits > 0) {
+  if (below(accessibilityRate, 50) && totalAccessibilityAudits > 0) {
     insights.push({
       text: `Only ${accessibilityRate}% of first aid kits meet full accessibility standards. Kits that are locked, poorly signed, or in non-compliant locations cannot be accessed quickly in an emergency. Every minute of delay in accessing first aid equipment during a serious incident increases the risk of harm to children.`,
       severity: "critical",
     });
   }
 
-  if (kitCheckRate < 50 && totalChecks > 0) {
+  if (below(kitCheckRate, 50) && totalChecks > 0) {
     insights.push({
       text: `Kit check compliance at only ${kitCheckRate}%. Without reliable kit checks, the home cannot evidence that first aid kits are maintained, stocked, and ready for use. Ofsted expects documented evidence of systematic kit maintenance under Reg 14 and Reg 25.`,
       severity: "critical",
@@ -1077,8 +1074,8 @@ export function computeFirstAidKitMedicalSupplies(
   // -- Warning insights --
 
   if (
-    kitCheckRate >= 50 &&
-    kitCheckRate < 80 &&
+    meets(kitCheckRate, 50) &&
+    below(kitCheckRate, 80) &&
     totalChecks > 0
   ) {
     insights.push({
@@ -1088,8 +1085,8 @@ export function computeFirstAidKitMedicalSupplies(
   }
 
   if (
-    stockAdequacyRate >= 50 &&
-    stockAdequacyRate < 80 &&
+    meets(stockAdequacyRate, 50) &&
+    below(stockAdequacyRate, 80) &&
     totalStockItems > 0
   ) {
     insights.push({
@@ -1099,8 +1096,8 @@ export function computeFirstAidKitMedicalSupplies(
   }
 
   if (
-    expiryMonitoringRate >= 75 &&
-    expiryMonitoringRate < 90 &&
+    meets(expiryMonitoringRate, 75) &&
+    below(expiryMonitoringRate, 90) &&
     totalExpiryItems > 0
   ) {
     insights.push({
@@ -1110,8 +1107,8 @@ export function computeFirstAidKitMedicalSupplies(
   }
 
   if (
-    accessibilityRate >= 50 &&
-    accessibilityRate < 80 &&
+    meets(accessibilityRate, 50) &&
+    below(accessibilityRate, 80) &&
     totalAccessibilityAudits > 0
   ) {
     insights.push({
@@ -1121,8 +1118,8 @@ export function computeFirstAidKitMedicalSupplies(
   }
 
   if (
-    staffTrainingRate >= 50 &&
-    staffTrainingRate < 80 &&
+    meets(staffTrainingRate, 50) &&
+    below(staffTrainingRate, 80) &&
     total_staff > 0
   ) {
     insights.push({
@@ -1132,8 +1129,8 @@ export function computeFirstAidKitMedicalSupplies(
   }
 
   if (
-    childAwarenessRate >= 50 &&
-    childAwarenessRate < 70 &&
+    meets(childAwarenessRate, 50) &&
+    below(childAwarenessRate, 70) &&
     totalAccessibilityAudits > 0
   ) {
     insights.push({
@@ -1164,8 +1161,8 @@ export function computeFirstAidKitMedicalSupplies(
   }
 
   if (
-    stockAuditAccuracyRate >= 50 &&
-    stockAuditAccuracyRate < 80 &&
+    meets(stockAuditAccuracyRate, 50) &&
+    below(stockAuditAccuracyRate, 80) &&
     totalStockItems > 0
   ) {
     insights.push({
@@ -1197,7 +1194,7 @@ export function computeFirstAidKitMedicalSupplies(
     });
   }
 
-  if (kitCheckRate >= 95 && checkDocumentationRate >= 95 && totalChecks > 0) {
+  if (meets(kitCheckRate, 95) && meets(checkDocumentationRate, 95) && totalChecks > 0) {
     insights.push({
       text: "Kit checks are exemplary with near-complete documentation — a gold-standard maintenance regime providing powerful evidence of systematic safety management for Ofsted.",
       severity: "positive",
@@ -1205,8 +1202,8 @@ export function computeFirstAidKitMedicalSupplies(
   }
 
   if (
-    stockAdequacyRate >= 95 &&
-    criticalStockAdequacyRate >= 100 &&
+    meets(stockAdequacyRate, 95) &&
+    meets(criticalStockAdequacyRate, 100) &&
     totalStockItems > 0 &&
     criticalItems.length > 0
   ) {
@@ -1217,7 +1214,7 @@ export function computeFirstAidKitMedicalSupplies(
   }
 
   if (
-    expiryMonitoringRate >= 98 &&
+    meets(expiryMonitoringRate, 98) &&
     totalExpiryItems > 0
   ) {
     insights.push({
@@ -1226,28 +1223,28 @@ export function computeFirstAidKitMedicalSupplies(
     });
   }
 
-  if (accessibilityRate >= 100 && hseComplianceRate >= 100 && totalAccessibilityAudits > 0) {
+  if (meets(accessibilityRate, 100) && meets(hseComplianceRate, 100) && totalAccessibilityAudits > 0) {
     insights.push({
       text: "Every first aid kit meets full accessibility and HSE compliance standards — accessible 24 hours, clearly signed, unlocked, and in compliant locations, ensuring immediate emergency access.",
       severity: "positive",
     });
   }
 
-  if (staffTrainingRate >= 100 && paediatricTrainedRate >= 80 && total_staff > 0) {
+  if (meets(staffTrainingRate, 100) && meets(paediatricTrainedRate, 80) && total_staff > 0) {
     insights.push({
       text: `100% staff training with ${paediatricTrainedRate}% paediatric qualified — every shift has qualified first aiders with child-specific skills, demonstrating exceptional commitment to children's safety.`,
       severity: "positive",
     });
   }
 
-  if (childAwarenessRate >= 90 && staffLocationAwarenessRate >= 100 && totalAccessibilityAudits > 0) {
+  if (meets(childAwarenessRate, 90) && meets(staffLocationAwarenessRate, 100) && totalAccessibilityAudits > 0) {
     insights.push({
       text: `${childAwarenessRate}% child awareness with 100% staff awareness of kit locations — both children and staff know where to find first aid provision, enabling rapid emergency response.`,
       severity: "positive",
     });
   }
 
-  if (issueResolutionRate >= 95 && totalIssuesFound > 0) {
+  if (meets(issueResolutionRate, 95) && totalIssuesFound > 0) {
     insights.push({
       text: `${issueResolutionRate}% of kit check issues resolved — the home identifies and promptly resolves problems, demonstrating a responsive safety culture.`,
       severity: "positive",
@@ -1255,8 +1252,8 @@ export function computeFirstAidKitMedicalSupplies(
   }
 
   if (
-    refresherComplianceRate >= 90 &&
-    practicalPassRate >= 90 &&
+    meets(refresherComplianceRate, 90) &&
+    meets(practicalPassRate, 90) &&
     currentTraining > 0 &&
     totalTrainingRecords > 0
   ) {

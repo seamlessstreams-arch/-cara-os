@@ -224,16 +224,16 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
       });
       expect(r.total_restraints).toBe(0);
       expect(r.average_restraint_duration).toBe(0);
-      expect(r.restraint_review_rate).toBe(0);
-      expect(r.child_debrief_rate).toBe(0);
-      expect(r.staff_debrief_rate).toBe(0);
-      expect(r.reward_to_sanction_ratio).toBe(0);
+      expect(r.restraint_review_rate).toBeNull();
+      expect(r.child_debrief_rate).toBeNull();
+      expect(r.staff_debrief_rate).toBeNull();
+      expect(r.reward_to_sanction_ratio).toBeNull();
       expect(r.positive_achievement_count).toBe(0);
-      expect(r.achievement_celebration_rate).toBe(0);
-      expect(r.de_escalation_attempt_rate).toBe(0);
-      expect(r.body_map_completion_rate).toBe(0);
+      expect(r.achievement_celebration_rate).toBeNull();
+      expect(r.de_escalation_attempt_rate).toBeNull();
+      expect(r.body_map_completion_rate).toBeNull();
       expect(r.post_incident_quality_avg).toBe(0);
-      expect(r.injury_rate).toBe(0);
+      expect(r.injury_rate).toBeNull();
     });
   });
 
@@ -719,7 +719,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
       const r = computeEmotionalSafetyClimate(baseInput({ restraints: [] }));
       // pct(0,0) = 0, but penalty guarded by totalRestraints > 0
       // Score should still include the +2 bonus for no restraints
-      expect(r.child_debrief_rate).toBe(0);
+      expect(r.child_debrief_rate).toBeNull();
       expect(r.safety_score).toBeGreaterThanOrEqual(52);
     });
 
@@ -734,13 +734,13 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
 
     it("does not apply body map penalty when no restraints exist", () => {
       const r = computeEmotionalSafetyClimate(baseInput({ restraints: [] }));
-      expect(r.body_map_completion_rate).toBe(0);
+      expect(r.body_map_completion_rate).toBeNull();
       expect(r.safety_score).toBeGreaterThanOrEqual(52);
     });
 
     it("does not apply review rate penalty when no restraints exist", () => {
       const r = computeEmotionalSafetyClimate(baseInput({ restraints: [] }));
-      expect(r.restraint_review_rate).toBe(0);
+      expect(r.restraint_review_rate).toBeNull();
       expect(r.safety_score).toBeGreaterThanOrEqual(52);
     });
   });
@@ -1001,7 +1001,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
       expect(r.average_restraint_duration).toBe(6);
     });
 
-    it("returns 0 average_restraint_duration when no restraints", () => {
+    it("returns null average_restraint_duration when no restraints", () => {
       const r = computeEmotionalSafetyClimate(baseInput({ restraints: [] }));
       expect(r.average_restraint_duration).toBeNull();;
     });
@@ -1077,7 +1077,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
       expect(r.reward_to_sanction_ratio).toBe(3);
     });
 
-    it("returns 0 ratio when no rewards and no sanctions", () => {
+    it("returns null ratio when no rewards and no sanctions", () => {
       const r = computeEmotionalSafetyClimate(
         baseInput({ sanction_rewards: [] }),
       );
@@ -1142,7 +1142,7 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
       expect(r.post_incident_quality_avg).toBe(4);
     });
 
-    it("returns 0 post_incident_quality_avg when no debriefs", () => {
+    it("returns null post_incident_quality_avg when no debriefs", () => {
       const r = computeEmotionalSafetyClimate(
         baseInput({ post_incident_debriefs: [] }),
       );
@@ -1166,9 +1166,9 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
       expect(r.injury_rate).toBe(25);
     });
 
-    it("returns 0 injury_rate when no restraints", () => {
+    it("returns null injury_rate when no restraints", () => {
       const r = computeEmotionalSafetyClimate(baseInput({ restraints: [] }));
-      expect(r.injury_rate).toBe(0);
+      expect(r.injury_rate).toBeNull();
     });
 
     it("rounds ratio to 2 decimal places", () => {
@@ -2467,14 +2467,14 @@ describe("Home Emotional Safety Climate Intelligence Engine", () => {
   // ==========================================================================
 
   describe("edge cases", () => {
-    it("pct(0,0) returns 0 — rates are 0 when no restraints", () => {
+    it("rate(0,0)=nullreturns 0 — rates are 0 when no restraints", () => {
       const r = computeEmotionalSafetyClimate(baseInput({ restraints: [] }));
-      expect(r.child_debrief_rate).toBe(0);
-      expect(r.staff_debrief_rate).toBe(0);
-      expect(r.restraint_review_rate).toBe(0);
-      expect(r.de_escalation_attempt_rate).toBe(0);
-      expect(r.body_map_completion_rate).toBe(0);
-      expect(r.injury_rate).toBe(0);
+      expect(r.child_debrief_rate).toBeNull();
+      expect(r.staff_debrief_rate).toBeNull();
+      expect(r.restraint_review_rate).toBeNull();
+      expect(r.de_escalation_attempt_rate).toBeNull();
+      expect(r.body_map_completion_rate).toBeNull();
+      expect(r.injury_rate).toBeNull();
     });
 
     it("pct(0,0) = 0 does not trigger restraint penalties when no restraints", () => {

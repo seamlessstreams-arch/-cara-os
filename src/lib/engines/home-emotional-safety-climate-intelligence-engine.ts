@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME EMOTIONAL SAFETY CLIMATE INTELLIGENCE ENGINE
 // Cross-domain composite engine measuring the emotional safety culture of the
@@ -133,10 +134,6 @@ export interface EmotionalSafetyClimateResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -161,16 +158,16 @@ function emptyResult(
     headline,
     total_restraints: 0,
     average_restraint_duration: 0,
-    restraint_review_rate: 0,
-    child_debrief_rate: 0,
-    staff_debrief_rate: 0,
-    reward_to_sanction_ratio: 0,
+    restraint_review_rate: null,
+    child_debrief_rate: null,
+    staff_debrief_rate: null,
+    reward_to_sanction_ratio: null,
     positive_achievement_count: 0,
-    achievement_celebration_rate: 0,
-    de_escalation_attempt_rate: 0,
-    body_map_completion_rate: 0,
+    achievement_celebration_rate: null,
+    de_escalation_attempt_rate: null,
+    body_map_completion_rate: null,
     post_incident_quality_avg: 0,
-    injury_rate: 0,
+    injury_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -260,32 +257,32 @@ export function computeEmotionalSafetyClimate(
   const reviewedRestraints = restraints.filter(
     (r) => r.review_status === "reviewed",
   ).length;
-  const restraintReviewRate = pct(reviewedRestraints, totalRestraints);
+  const restraintReviewRate = rate(reviewedRestraints, totalRestraints);
 
   const childDebriefedRestraints = restraints.filter(
     (r) => r.child_debriefed,
   ).length;
-  const childDebriefRate = pct(childDebriefedRestraints, totalRestraints);
+  const childDebriefRate = rate(childDebriefedRestraints, totalRestraints);
 
   const staffDebriefedRestraints = restraints.filter(
     (r) => r.staff_debriefed,
   ).length;
-  const staffDebriefRate = pct(staffDebriefedRestraints, totalRestraints);
+  const staffDebriefRate = rate(staffDebriefedRestraints, totalRestraints);
 
   const restraintsWithDeEscalation = restraints.filter(
     (r) => r.de_escalation_attempts.length > 0,
   ).length;
-  const deEscalationRate = pct(restraintsWithDeEscalation, totalRestraints);
+  const deEscalationRate = rate(restraintsWithDeEscalation, totalRestraints);
 
   const bodyMapCompleted = restraints.filter(
     (r) => r.body_map_completed,
   ).length;
-  const bodyMapRate = pct(bodyMapCompleted, totalRestraints);
+  const bodyMapRate = rate(bodyMapCompleted, totalRestraints);
 
   const restraintsWithInjuries = restraints.filter(
     (r) => r.injuries.length > 0,
   ).length;
-  const injuryRate = pct(restraintsWithInjuries, totalRestraints);
+  const injuryRate = rate(restraintsWithInjuries, totalRestraints);
 
   // --- Sanction/reward metrics ---
   const rewards = sanction_rewards.filter((s) => s.direction === "reward");
@@ -326,8 +323,8 @@ export function computeEmotionalSafetyClimate(
     (d) => d.support_offered,
   ).length;
 
-  const staffSupportRate = pct(staffSupportOffered, totalStaffDebriefs);
-  const staffEmotionalExplorationRate = pct(
+  const staffSupportRate = rate(staffSupportOffered, totalStaffDebriefs);
+  const staffEmotionalExplorationRate = rate(
     staffEmotionalImpactExplored,
     totalStaffDebriefs,
   );
@@ -337,7 +334,7 @@ export function computeEmotionalSafetyClimate(
   const celebratedAchievements = positive_achievements.filter(
     (a) => a.celebrated,
   ).length;
-  const achievementCelebrationRate = pct(
+  const achievementCelebrationRate = rate(
     celebratedAchievements,
     positiveAchievementCount,
   );
@@ -354,13 +351,13 @@ export function computeEmotionalSafetyClimate(
 
   // --- Bonus: child debrief rate (after restraints) ---
   // childDebriefRate >= 100 → +4, >= 80 → +2
-  if (childDebriefRate >= 100) score += 4;
-  else if (childDebriefRate >= 80) score += 2;
+  if (meets(childDebriefRate, 100)) score += 4;
+  else if (meets(childDebriefRate, 80)) score += 2;
 
   // --- Bonus: staff debrief rate (after restraints) ---
   // staffDebriefRate >= 100 → +3, >= 80 → +1
-  if (staffDebriefRate >= 100) score += 3;
-  else if (staffDebriefRate >= 80) score += 1;
+  if (meets(staffDebriefRate, 100)) score += 3;
+  else if (meets(staffDebriefRate, 80)) score += 1;
 
   // --- Bonus: reward-to-sanction ratio ---
   // >= 4.0 → +4, >= 2.0 → +2
@@ -369,23 +366,23 @@ export function computeEmotionalSafetyClimate(
 
   // --- Bonus: de-escalation attempt rate ---
   // >= 100 → +3, >= 90 → +1
-  if (deEscalationRate >= 100) score += 3;
-  else if (deEscalationRate >= 90) score += 1;
+  if (meets(deEscalationRate, 100)) score += 3;
+  else if (meets(deEscalationRate, 90)) score += 1;
 
   // --- Bonus: body map completion rate ---
   // >= 100 → +3, >= 80 → +1
-  if (bodyMapRate >= 100) score += 3;
-  else if (bodyMapRate >= 80) score += 1;
+  if (meets(bodyMapRate, 100)) score += 3;
+  else if (meets(bodyMapRate, 80)) score += 1;
 
   // --- Bonus: restraint review rate ---
   // >= 100 → +3, >= 80 → +1
-  if (restraintReviewRate >= 100) score += 3;
-  else if (restraintReviewRate >= 80) score += 1;
+  if (meets(restraintReviewRate, 100)) score += 3;
+  else if (meets(restraintReviewRate, 80)) score += 1;
 
   // --- Bonus: achievement celebration rate ---
   // >= 90 → +3, >= 70 → +1
-  if (achievementCelebrationRate >= 90) score += 3;
-  else if (achievementCelebrationRate >= 70) score += 1;
+  if (meets(achievementCelebrationRate, 90)) score += 3;
+  else if (meets(achievementCelebrationRate, 70)) score += 1;
 
   // --- Bonus: post-incident quality average ---
   // >= 4.0 → +3, >= 3.0 → +1
@@ -401,16 +398,16 @@ export function computeEmotionalSafetyClimate(
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // childDebriefRate < 50 → -5
-  if (childDebriefRate < 50 && totalRestraints > 0) score -= 5;
+  if (below(childDebriefRate, 50) && totalRestraints > 0) score -= 5;
 
   // rewardToSanctionRatio < 1.0 → -5
   if ((rewardToSanctionRatio ?? 0) < 1.0 && sanctionCount > 0) score -= 5;
 
   // bodyMapRate < 50 → -5
-  if (bodyMapRate < 50 && totalRestraints > 0) score -= 5;
+  if (below(bodyMapRate, 50) && totalRestraints > 0) score -= 5;
 
   // restraintReviewRate < 50 → -3
-  if (restraintReviewRate < 50 && totalRestraints > 0) score -= 3;
+  if (below(restraintReviewRate, 50) && totalRestraints > 0) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -420,21 +417,21 @@ export function computeEmotionalSafetyClimate(
 
   const strengths: string[] = [];
 
-  if (childDebriefRate >= 100 && totalRestraints > 0) {
+  if (meets(childDebriefRate, 100) && totalRestraints > 0) {
     strengths.push(
       "Every child is debriefed after restraint — children's voices are consistently heard following physical interventions.",
     );
-  } else if (childDebriefRate >= 80 && totalRestraints > 0) {
+  } else if (meets(childDebriefRate, 80) && totalRestraints > 0) {
     strengths.push(
       `${childDebriefRate}% child debrief rate after restraints — strong commitment to hearing children's experiences post-intervention.`,
     );
   }
 
-  if (staffDebriefRate >= 100 && totalRestraints > 0) {
+  if (meets(staffDebriefRate, 100) && totalRestraints > 0) {
     strengths.push(
       "All staff are debriefed after restraint — reflective practice is embedded in the team culture.",
     );
-  } else if (staffDebriefRate >= 80 && totalRestraints > 0) {
+  } else if (meets(staffDebriefRate, 80) && totalRestraints > 0) {
     strengths.push(
       `${staffDebriefRate}% staff debrief rate after restraints — staff are supported to reflect and learn from physical interventions.`,
     );
@@ -456,29 +453,29 @@ export function computeEmotionalSafetyClimate(
     );
   }
 
-  if (deEscalationRate >= 100 && totalRestraints > 0) {
+  if (meets(deEscalationRate, 100) && totalRestraints > 0) {
     strengths.push(
       "De-escalation attempted before every restraint — staff consistently try alternatives before physical intervention.",
     );
-  } else if (deEscalationRate >= 90 && totalRestraints > 0) {
+  } else if (meets(deEscalationRate, 90) && totalRestraints > 0) {
     strengths.push(
       `De-escalation attempted in ${deEscalationRate}% of restraints — strong commitment to least restrictive practice.`,
     );
   }
 
-  if (bodyMapRate >= 100 && totalRestraints > 0) {
+  if (meets(bodyMapRate, 100) && totalRestraints > 0) {
     strengths.push(
       "Body maps completed for every restraint — thorough safeguarding documentation.",
     );
   }
 
-  if (restraintReviewRate >= 100 && totalRestraints > 0) {
+  if (meets(restraintReviewRate, 100) && totalRestraints > 0) {
     strengths.push(
       "Every restraint reviewed by management — robust oversight of physical interventions.",
     );
   }
 
-  if (achievementCelebrationRate >= 90 && positiveAchievementCount > 0) {
+  if (meets(achievementCelebrationRate, 90) && positiveAchievementCount > 0) {
     strengths.push(
       `${achievementCelebrationRate}% of positive achievements celebrated — children's successes are recognised and valued.`,
     );
@@ -502,7 +499,7 @@ export function computeEmotionalSafetyClimate(
     );
   }
 
-  if (staffSupportRate >= 90 && totalStaffDebriefs > 0) {
+  if (meets(staffSupportRate, 90) && totalStaffDebriefs > 0) {
     strengths.push(
       `Support offered in ${staffSupportRate}% of staff debriefs — the home actively cares for staff emotional wellbeing.`,
     );
@@ -515,8 +512,8 @@ export function computeEmotionalSafetyClimate(
   }
 
   if (
-    pct(sharedAchievements, positiveAchievementCount) >= 70 &&
-    positiveAchievementCount > 0
+    positiveAchievementCount > 0 &&
+    meets(rate(sharedAchievements, positiveAchievementCount), 70)
   ) {
     strengths.push(
       "Achievements are regularly shared with children's networks — building a connected celebration of progress.",
@@ -527,17 +524,17 @@ export function computeEmotionalSafetyClimate(
 
   const concerns: string[] = [];
 
-  if (childDebriefRate < 50 && totalRestraints > 0) {
+  if (below(childDebriefRate, 50) && totalRestraints > 0) {
     concerns.push(
       `Only ${childDebriefRate}% of children debriefed after restraint — the majority of children are not being heard following physical intervention, undermining emotional safety.`,
     );
-  } else if (childDebriefRate < 80 && childDebriefRate >= 50 && totalRestraints > 0) {
+  } else if (below(childDebriefRate, 80) && meets(childDebriefRate, 50) && totalRestraints > 0) {
     concerns.push(
       `Child debrief rate at ${childDebriefRate}% — not all children are heard after restraint, which may leave some feeling unheard or unsafe.`,
     );
   }
 
-  if (staffDebriefRate < 50 && totalRestraints > 0) {
+  if (below(staffDebriefRate, 50) && totalRestraints > 0) {
     concerns.push(
       `Only ${staffDebriefRate}% of staff debriefed after restraint — staff may be carrying unprocessed emotional impact from physical interventions.`,
     );
@@ -555,29 +552,29 @@ export function computeEmotionalSafetyClimate(
     );
   }
 
-  if (bodyMapRate < 50 && totalRestraints > 0) {
+  if (below(bodyMapRate, 50) && totalRestraints > 0) {
     concerns.push(
       `Body map completion at only ${bodyMapRate}% — significant safeguarding documentation gap following physical interventions.`,
     );
-  } else if (bodyMapRate < 80 && bodyMapRate >= 50 && totalRestraints > 0) {
+  } else if (below(bodyMapRate, 80) && meets(bodyMapRate, 50) && totalRestraints > 0) {
     concerns.push(
       `Body map completion at ${bodyMapRate}% — some restraints lack essential safeguarding documentation.`,
     );
   }
 
-  if (restraintReviewRate < 50 && totalRestraints > 0) {
+  if (below(restraintReviewRate, 50) && totalRestraints > 0) {
     concerns.push(
       `Only ${restraintReviewRate}% of restraints reviewed — management oversight of physical interventions is insufficient.`,
     );
   }
 
-  if (deEscalationRate < 80 && totalRestraints > 0) {
+  if (below(deEscalationRate, 80) && totalRestraints > 0) {
     concerns.push(
       `De-escalation attempted in only ${deEscalationRate}% of restraints — staff may be resorting to physical intervention without adequate attempts to de-escalate.`,
     );
   }
 
-  if (injuryRate > 0 && totalRestraints > 0) {
+  if (above(injuryRate, 0) && totalRestraints > 0) {
     concerns.push(
       `Injuries recorded in ${injuryRate}% of restraints (${restraintsWithInjuries} incident${restraintsWithInjuries !== 1 ? "s" : ""}) — physical intervention techniques may need urgent review.`,
     );
@@ -595,13 +592,13 @@ export function computeEmotionalSafetyClimate(
     );
   }
 
-  if (achievementCelebrationRate < 50 && positiveAchievementCount > 0) {
+  if (below(achievementCelebrationRate, 50) && positiveAchievementCount > 0) {
     concerns.push(
       `Only ${achievementCelebrationRate}% of achievements celebrated — many positive moments pass without recognition, undermining children's self-esteem.`,
     );
   }
 
-  if (staffSupportRate < 50 && totalStaffDebriefs > 0) {
+  if (below(staffSupportRate, 50) && totalStaffDebriefs > 0) {
     concerns.push(
       `Support offered in only ${staffSupportRate}% of staff debriefs — staff emotional wellbeing is not being adequately addressed.`,
     );
@@ -630,7 +627,7 @@ export function computeEmotionalSafetyClimate(
   const recommendations: EmotionalSafetyRecommendation[] = [];
   let rank = 0;
 
-  if (childDebriefRate < 50 && totalRestraints > 0) {
+  if (below(childDebriefRate, 50) && totalRestraints > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -640,7 +637,7 @@ export function computeEmotionalSafetyClimate(
     });
   }
 
-  if (bodyMapRate < 50 && totalRestraints > 0) {
+  if (below(bodyMapRate, 50) && totalRestraints > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -660,7 +657,7 @@ export function computeEmotionalSafetyClimate(
     });
   }
 
-  if (restraintReviewRate < 50 && totalRestraints > 0) {
+  if (below(restraintReviewRate, 50) && totalRestraints > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -696,7 +693,7 @@ export function computeEmotionalSafetyClimate(
     });
   }
 
-  if (staffDebriefRate < 50 && staffDebriefRate > 0 && totalRestraints > 0) {
+  if (below(staffDebriefRate, 50) && above(staffDebriefRate, 0) && totalRestraints > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -706,7 +703,7 @@ export function computeEmotionalSafetyClimate(
     });
   }
 
-  if (deEscalationRate < 80 && totalRestraints > 0) {
+  if (below(deEscalationRate, 80) && totalRestraints > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -716,7 +713,7 @@ export function computeEmotionalSafetyClimate(
     });
   }
 
-  if (injuryRate > 0 && totalRestraints > 0) {
+  if (above(injuryRate, 0) && totalRestraints > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -746,7 +743,7 @@ export function computeEmotionalSafetyClimate(
     });
   }
 
-  if (achievementCelebrationRate < 50 && positiveAchievementCount > 0) {
+  if (below(achievementCelebrationRate, 50) && positiveAchievementCount > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -757,8 +754,8 @@ export function computeEmotionalSafetyClimate(
   }
 
   if (
-    childDebriefRate >= 50 &&
-    childDebriefRate < 80 &&
+    meets(childDebriefRate, 50) &&
+    below(childDebriefRate, 80) &&
     totalRestraints > 0
   ) {
     recommendations.push({
@@ -771,8 +768,8 @@ export function computeEmotionalSafetyClimate(
   }
 
   if (
-    bodyMapRate >= 50 &&
-    bodyMapRate < 80 &&
+    meets(bodyMapRate, 50) &&
+    below(bodyMapRate, 80) &&
     totalRestraints > 0
   ) {
     recommendations.push({
@@ -785,8 +782,8 @@ export function computeEmotionalSafetyClimate(
   }
 
   if (
-    achievementCelebrationRate >= 50 &&
-    achievementCelebrationRate < 70 &&
+    meets(achievementCelebrationRate, 50) &&
+    below(achievementCelebrationRate, 70) &&
     positiveAchievementCount > 0
   ) {
     recommendations.push({
@@ -799,8 +796,8 @@ export function computeEmotionalSafetyClimate(
   }
 
   if (
-    pct(sharedAchievements, positiveAchievementCount) < 50 &&
-    positiveAchievementCount > 0
+    positiveAchievementCount > 0 &&
+    below(rate(sharedAchievements, positiveAchievementCount), 50)
   ) {
     recommendations.push({
       rank: ++rank,
@@ -817,14 +814,14 @@ export function computeEmotionalSafetyClimate(
 
   // -- Critical insights --
 
-  if (childDebriefRate < 50 && totalRestraints > 0) {
+  if (below(childDebriefRate, 50) && totalRestraints > 0) {
     insights.push({
       text: `Only ${childDebriefRate}% of children are debriefed after restraint. Ofsted will view this as a failure to safeguard children's emotional wellbeing under Reg 12 and Reg 13. Children who are restrained without a subsequent debrief may feel unheard, frightened, or re-traumatised.`,
       severity: "critical",
     });
   }
 
-  if (bodyMapRate < 50 && totalRestraints > 0) {
+  if (below(bodyMapRate, 50) && totalRestraints > 0) {
     insights.push({
       text: `Body maps completed in only ${bodyMapRate}% of restraints. This is a safeguarding failure — without body maps, injuries may go unrecorded and allegations cannot be properly investigated. Reg 13 compliance is at risk.`,
       severity: "critical",
@@ -845,14 +842,14 @@ export function computeEmotionalSafetyClimate(
     });
   }
 
-  if (restraintReviewRate < 50 && totalRestraints > 0) {
+  if (below(restraintReviewRate, 50) && totalRestraints > 0) {
     insights.push({
       text: `Only ${restraintReviewRate}% of restraints reviewed by management. Without systematic review, the home cannot identify patterns, prevent unnecessary restraints, or demonstrate quality oversight under Reg 45.`,
       severity: "critical",
     });
   }
 
-  if (injuryRate >= 30 && totalRestraints > 0) {
+  if (meets(injuryRate, 30) && totalRestraints > 0) {
     insights.push({
       text: `Injuries in ${injuryRate}% of restraints signals a serious concern about the safety of restraint techniques. This requires immediate investigation and may trigger Ofsted notification under Reg 40.`,
       severity: "critical",
@@ -862,8 +859,8 @@ export function computeEmotionalSafetyClimate(
   // -- Warning insights --
 
   if (
-    childDebriefRate >= 50 &&
-    childDebriefRate < 80 &&
+    meets(childDebriefRate, 50) &&
+    below(childDebriefRate, 80) &&
     totalRestraints > 0
   ) {
     insights.push({
@@ -873,8 +870,8 @@ export function computeEmotionalSafetyClimate(
   }
 
   if (
-    staffDebriefRate >= 50 &&
-    staffDebriefRate < 80 &&
+    meets(staffDebriefRate, 50) &&
+    below(staffDebriefRate, 80) &&
     totalRestraints > 0
   ) {
     insights.push({
@@ -883,7 +880,7 @@ export function computeEmotionalSafetyClimate(
     });
   }
 
-  if (staffDebriefRate < 50 && totalRestraints > 0) {
+  if (below(staffDebriefRate, 50) && totalRestraints > 0) {
     insights.push({
       text: `Only ${staffDebriefRate}% of staff debriefed after restraint — staff who carry unprocessed experiences are at greater risk of emotional dysregulation, which directly impacts the emotional safety climate for children.`,
       severity: "warning",
@@ -902,8 +899,8 @@ export function computeEmotionalSafetyClimate(
   }
 
   if (
-    deEscalationRate >= 80 &&
-    deEscalationRate < 100 &&
+    meets(deEscalationRate, 80) &&
+    below(deEscalationRate, 100) &&
     totalRestraints > 0
   ) {
     insights.push({
@@ -912,7 +909,7 @@ export function computeEmotionalSafetyClimate(
     });
   }
 
-  if (deEscalationRate < 80 && totalRestraints > 0) {
+  if (below(deEscalationRate, 80) && totalRestraints > 0) {
     insights.push({
       text: `De-escalation attempted in only ${deEscalationRate}% of restraints — staff may be moving to physical intervention too quickly, undermining children's emotional safety and trust.`,
       severity: "warning",
@@ -931,8 +928,8 @@ export function computeEmotionalSafetyClimate(
   }
 
   if (
-    achievementCelebrationRate >= 50 &&
-    achievementCelebrationRate < 70 &&
+    meets(achievementCelebrationRate, 50) &&
+    below(achievementCelebrationRate, 70) &&
     positiveAchievementCount > 0
   ) {
     insights.push({
@@ -942,8 +939,8 @@ export function computeEmotionalSafetyClimate(
   }
 
   if (
-    injuryRate > 0 &&
-    injuryRate < 30 &&
+    above(injuryRate, 0) &&
+    below(injuryRate, 30) &&
     totalRestraints > 0
   ) {
     insights.push({
@@ -962,8 +959,8 @@ export function computeEmotionalSafetyClimate(
   }
 
   if (
-    childDebriefRate >= 100 &&
-    staffDebriefRate >= 100 &&
+    meets(childDebriefRate, 100) &&
+    meets(staffDebriefRate, 100) &&
     totalRestraints > 0
   ) {
     insights.push({
@@ -987,7 +984,7 @@ export function computeEmotionalSafetyClimate(
   }
 
   if (
-    deEscalationRate >= 100 &&
+    meets(deEscalationRate, 100) &&
     totalRestraints > 0
   ) {
     insights.push({
@@ -997,8 +994,8 @@ export function computeEmotionalSafetyClimate(
   }
 
   if (
-    bodyMapRate >= 100 &&
-    restraintReviewRate >= 100 &&
+    meets(bodyMapRate, 100) &&
+    meets(restraintReviewRate, 100) &&
     totalRestraints > 0
   ) {
     insights.push({
@@ -1008,7 +1005,7 @@ export function computeEmotionalSafetyClimate(
   }
 
   if (
-    achievementCelebrationRate >= 90 &&
+    meets(achievementCelebrationRate, 90) &&
     achievementCategories >= 4 &&
     positiveAchievementCount > 0
   ) {
@@ -1021,17 +1018,17 @@ export function computeEmotionalSafetyClimate(
   if (
     (postIncidentQualityAvg ?? 0) >= 4.0 &&
     totalPostIncidentDebriefs > 0 &&
-    pct(debriefVoiceCaptured, totalPostIncidentDebriefs) >= 90
+    meets(rate(debriefVoiceCaptured, totalPostIncidentDebriefs), 90)
   ) {
     insights.push({
-      text: `High-quality post-incident debriefs (${postIncidentQualityAvg}/5 average) with child voice captured in ${pct(debriefVoiceCaptured, totalPostIncidentDebriefs)}% — children's experiences are at the centre of the home's incident response.`,
+      text: `High-quality post-incident debriefs (${postIncidentQualityAvg}/5 average) with child voice captured in ${rate(debriefVoiceCaptured, totalPostIncidentDebriefs)}% — children's experiences are at the centre of the home's incident response.`,
       severity: "positive",
     });
   }
 
   if (
-    staffSupportRate >= 90 &&
-    staffEmotionalExplorationRate >= 90 &&
+    meets(staffSupportRate, 90) &&
+    meets(staffEmotionalExplorationRate, 90) &&
     totalStaffDebriefs > 0
   ) {
     insights.push({

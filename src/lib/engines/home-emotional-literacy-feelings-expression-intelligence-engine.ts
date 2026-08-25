@@ -1,3 +1,4 @@
+import { above, below, meanOf, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME EMOTIONAL LITERACY & FEELINGS EXPRESSION INTELLIGENCE ENGINE
 // Measures emotional literacy development across the home — emotion identification
@@ -196,10 +197,6 @@ export interface EmotionalLiteracyResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -356,7 +353,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
   ).size;
 
   // Identification rate: children assessed / total children
-  const emotionIdentificationRate = pct(childrenWithIdAssessment, total_children);
+  const emotionIdentificationRate = rate(childrenWithIdAssessment, total_children);
 
   // Average identification score (current_score out of 10, scaled to %)
   const idScores = emotion_identification_records.map((r) => r.current_score);
@@ -364,29 +361,29 @@ export function computeEmotionalLiteracyFeelingsExpression(
 
   // Nuanced emotion recognition
   const nuancedCount = emotion_identification_records.filter((r) => r.nuanced_emotions_identified).length;
-  const nuancedRate = pct(nuancedCount, totalIdRecords);
+  const nuancedRate = rate(nuancedCount, totalIdRecords);
 
   // Self-recognition
   const selfRecCount = emotion_identification_records.filter((r) => r.self_recognition).length;
-  const selfRecognitionRate = pct(selfRecCount, totalIdRecords);
+  const selfRecognitionRate = rate(selfRecCount, totalIdRecords);
 
   // Empathy demonstrated
   const empathyCount = emotion_identification_records.filter((r) => r.empathy_demonstrated).length;
-  const empathyRate = pct(empathyCount, totalIdRecords);
+  const empathyRate = rate(empathyCount, totalIdRecords);
 
   // Context understanding
   const contextCount = emotion_identification_records.filter((r) => r.context_understanding).length;
-  const contextRate = pct(contextCount, totalIdRecords);
+  const contextRate = rate(contextCount, totalIdRecords);
 
   // Engagement rate
   const idEngagedCount = emotion_identification_records.filter((r) => r.child_engaged).length;
-  const idEngagementRate = pct(idEngagedCount, totalIdRecords);
+  const idEngagementRate = rate(idEngagedCount, totalIdRecords);
 
   // Progress tracking
   const idImproved = emotion_identification_records.filter((r) => r.progress_since_last === "improved").length;
   const idDeclined = emotion_identification_records.filter((r) => r.progress_since_last === "declined").length;
   const idNonFirst = emotion_identification_records.filter((r) => r.progress_since_last !== "first_assessment").length;
-  const idProgressRate = pct(idImproved, idNonFirst);
+  const idProgressRate = rate(idImproved, idNonFirst);
 
   // ════════════════════════════════════════════════════════════════════════
   // DOMAIN 2: Feelings Vocabulary Metrics
@@ -398,7 +395,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
   ).size;
 
   // Vocabulary breadth rate: children with vocab assessment / total children
-  const vocabularyBreadthRate = pct(childrenWithVocab, total_children);
+  const vocabularyBreadthRate = rate(childrenWithVocab, total_children);
 
   // Average words known
   const wordCounts = feelings_vocabulary_records.map((r) => r.total_feeling_words_known);
@@ -408,32 +405,32 @@ export function computeEmotionalLiteracyFeelingsExpression(
   const advancedOrNuanced = feelings_vocabulary_records.filter(
     (r) => r.vocabulary_tier === "advanced" || r.vocabulary_tier === "nuanced",
   ).length;
-  const advancedVocabRate = pct(advancedOrNuanced, totalVocabRecords);
+  const advancedVocabRate = rate(advancedOrNuanced, totalVocabRecords);
 
   // Spontaneous use
   const spontaneousCount = feelings_vocabulary_records.filter((r) => r.uses_feelings_spontaneously).length;
-  const spontaneousUseRate = pct(spontaneousCount, totalVocabRecords);
+  const spontaneousUseRate = rate(spontaneousCount, totalVocabRecords);
 
   // Creative expression
   const creativeCount = feelings_vocabulary_records.filter((r) => r.creative_expression).length;
-  const creativeExpressionRate = pct(creativeCount, totalVocabRecords);
+  const creativeExpressionRate = rate(creativeCount, totalVocabRecords);
 
   // Can differentiate similar emotions
   const differentiateCount = feelings_vocabulary_records.filter((r) => r.can_differentiate_similar).length;
-  const differentiateRate = pct(differentiateCount, totalVocabRecords);
+  const differentiateRate = rate(differentiateCount, totalVocabRecords);
 
   // Age appropriate
   const ageAppropriateCount = feelings_vocabulary_records.filter((r) => r.age_appropriate).length;
-  const ageAppropriateRate = pct(ageAppropriateCount, totalVocabRecords);
+  const ageAppropriateRate = rate(ageAppropriateCount, totalVocabRecords);
 
   // Progress
   const vocabImproved = feelings_vocabulary_records.filter((r) => r.progress_since_last === "improved").length;
   const vocabNonFirst = feelings_vocabulary_records.filter((r) => r.progress_since_last !== "first_assessment").length;
-  const vocabProgressRate = pct(vocabImproved, vocabNonFirst);
+  const vocabProgressRate = rate(vocabImproved, vocabNonFirst);
 
   // Multilingual
   const multilingualCount = feelings_vocabulary_records.filter((r) => r.multilingual_expression).length;
-  const multilingualRate = pct(multilingualCount, totalVocabRecords);
+  const multilingualRate = rate(multilingualCount, totalVocabRecords);
 
   // ════════════════════════════════════════════════════════════════════════
   // DOMAIN 3: Expression Tool Metrics
@@ -445,7 +442,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
   ).size;
 
   // Expression tool rate: children with tools / total children
-  const expressionToolRate = pct(childrenWithTools, total_children);
+  const expressionToolRate = rate(childrenWithTools, total_children);
 
   // Unique tool types in use
   const uniqueToolTypes = new Set(expression_tool_records.map((r) => r.tool_type)).size;
@@ -453,11 +450,11 @@ export function computeEmotionalLiteracyFeelingsExpression(
   // Child-initiated tool use
   const totalToolUses = expression_tool_records.reduce((s, r) => s + r.times_used, 0);
   const totalChildInitiated = expression_tool_records.reduce((s, r) => s + r.child_initiated_use, 0);
-  const childInitiatedToolRate = pct(totalChildInitiated, totalToolUses);
+  const childInitiatedToolRate = rate(totalChildInitiated, totalToolUses);
 
   // Tool accessibility
   const accessibleTools = expression_tool_records.filter((r) => r.accessible_to_child).length;
-  const toolAccessibilityRate = pct(accessibleTools, totalToolRecords);
+  const toolAccessibilityRate = rate(accessibleTools, totalToolRecords);
 
   // Average effectiveness
   const toolEffectivenessScores = expression_tool_records.map((r) => r.effectiveness_rating);
@@ -465,7 +462,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
 
   // Staff confidence
   const staffConfidentTools = expression_tool_records.filter((r) => r.staff_confidence_using).length;
-  const staffToolConfidenceRate = pct(staffConfidentTools, totalToolRecords);
+  const staffToolConfidenceRate = rate(staffConfidentTools, totalToolRecords);
 
   // ════════════════════════════════════════════════════════════════════════
   // DOMAIN 4: Therapeutic Journaling Metrics
@@ -477,15 +474,15 @@ export function computeEmotionalLiteracyFeelingsExpression(
   ).size;
 
   // Journal engagement rate: children journaling / total children
-  const journalEngagementRate = pct(childrenJournaling, total_children);
+  const journalEngagementRate = rate(childrenJournaling, total_children);
 
   // Child-initiated journaling
   const childInitiatedJournals = therapeutic_journal_records.filter((r) => r.child_initiated).length;
-  const childInitiatedJournalRate = pct(childInitiatedJournals, totalJournalEntries);
+  const childInitiatedJournalRate = rate(childInitiatedJournals, totalJournalEntries);
 
   // Staff response rate
   const staffRespondedJournals = therapeutic_journal_records.filter((r) => r.staff_responded).length;
-  const staffResponseRate = pct(staffRespondedJournals, totalJournalEntries);
+  const staffResponseRate = rate(staffRespondedJournals, totalJournalEntries);
 
   // Average journal depth
   const depthScores = therapeutic_journal_records.map((r) => r.depth_rating);
@@ -493,15 +490,15 @@ export function computeEmotionalLiteracyFeelingsExpression(
 
   // Child found helpful
   const helpfulJournals = therapeutic_journal_records.filter((r) => r.child_found_helpful).length;
-  const helpfulRate = pct(helpfulJournals, totalJournalEntries);
+  const helpfulRate = rate(helpfulJournals, totalJournalEntries);
 
   // Linked to keywork
   const linkedToKeywork = therapeutic_journal_records.filter((r) => r.linked_to_keywork).length;
-  const keyworkLinkRate = pct(linkedToKeywork, totalJournalEntries);
+  const keyworkLinkRate = rate(linkedToKeywork, totalJournalEntries);
 
   // Confidentiality maintained
   const confidentialMaintained = therapeutic_journal_records.filter((r) => r.confidentiality_maintained).length;
-  const confidentialityRate = pct(confidentialMaintained, totalJournalEntries);
+  const confidentialityRate = rate(confidentialMaintained, totalJournalEntries);
 
   // Journal type diversity
   const journalTypes = new Set(therapeutic_journal_records.map((r) => r.journal_type)).size;
@@ -514,56 +511,55 @@ export function computeEmotionalLiteracyFeelingsExpression(
 
   // Staff attunement rate (composite of key indicators)
   const recognisedCount = staff_attunement_records.filter((r) => r.recognised_emotional_state).length;
-  const emotionalRecognitionRate = pct(recognisedCount, totalAttunementObs);
+  const emotionalRecognitionRate = rate(recognisedCount, totalAttunementObs);
 
   const respondedAppropriately = staff_attunement_records.filter((r) => r.responded_appropriately).length;
-  const appropriateResponseRate = pct(respondedAppropriately, totalAttunementObs);
+  const appropriateResponseRate = rate(respondedAppropriately, totalAttunementObs);
 
   const usedEmotionalLanguage = staff_attunement_records.filter((r) => r.used_emotional_language).length;
-  const emotionalLanguageRate = pct(usedEmotionalLanguage, totalAttunementObs);
+  const emotionalLanguageRate = rate(usedEmotionalLanguage, totalAttunementObs);
 
   const validatedFeelings = staff_attunement_records.filter((r) => r.validated_feelings).length;
-  const validationRate = pct(validatedFeelings, totalAttunementObs);
+  const validationRate = rate(validatedFeelings, totalAttunementObs);
 
   const coRegulationEffective = staff_attunement_records.filter((r) => r.co_regulation_effective).length;
-  const coRegulationRate = pct(coRegulationEffective, totalAttunementObs);
+  const coRegulationRate = rate(coRegulationEffective, totalAttunementObs);
 
   const missedCues = staff_attunement_records.filter((r) => r.missed_emotional_cues).length;
-  const missedCuesRate = pct(missedCues, totalAttunementObs);
+  const missedCuesRate = rate(missedCues, totalAttunementObs);
 
   const repairAttempted = staff_attunement_records.filter((r) => r.repair_attempted_after_rupture).length;
-  const repairRate = pct(repairAttempted, totalAttunementObs);
+  const repairRate = rate(repairAttempted, totalAttunementObs);
 
   const trainingCompleted = staff_attunement_records.filter((r) => r.training_completed).length;
-  const staffTrainingRate = pct(trainingCompleted, totalAttunementObs);
+  const staffTrainingRate = rate(trainingCompleted, totalAttunementObs);
 
   // Composite staff attunement rate (weighted average of key indicators)
   const staffAttunementRate =
     totalAttunementObs > 0
       ? Math.round(
-          (emotionalRecognitionRate * 0.25 +
-            appropriateResponseRate * 0.25 +
-            validationRate * 0.2 +
-            coRegulationRate * 0.15 +
-            emotionalLanguageRate * 0.15),
+          (emotionalRecognitionRate! * 0.25 +
+            appropriateResponseRate! * 0.25 +
+            validationRate! * 0.2 +
+            coRegulationRate! * 0.15 +
+            emotionalLanguageRate! * 0.15),
         )
-      : 0;
+      : null;
 
   // ════════════════════════════════════════════════════════════════════════
   // DOMAIN 6: Child Progress Rate (composite)
   // ════════════════════════════════════════════════════════════════════════
 
   // Combine progress indicators across domains
-  const progressIndicators: number[] = [];
+  // childInitiatedToolRate is measured over tool USES, which can be zero even
+  // when tool records exist — meanOf drops the unmeasured component.
+  const progressIndicators: (number | null)[] = [];
   if (idNonFirst > 0) progressIndicators.push(idProgressRate);
   if (vocabNonFirst > 0) progressIndicators.push(vocabProgressRate);
   if (totalToolRecords > 0) progressIndicators.push(childInitiatedToolRate);
   if (totalJournalEntries > 0) progressIndicators.push(helpfulRate);
 
-  const childProgressRate =
-    progressIndicators.length > 0
-      ? Math.round(progressIndicators.reduce((s, v) => s + v, 0) / progressIndicators.length)
-      : null;
+  const childProgressRate = meanOf(progressIndicators);
 
   // ════════════════════════════════════════════════════════════════════════
   // SCORING: base = 52, max bonuses = +28, 4 penalties
@@ -572,54 +568,54 @@ export function computeEmotionalLiteracyFeelingsExpression(
   let score = 52;
 
   // --- Bonus 1: Emotion identification coverage (+5 / +3) ---
-  if (emotionIdentificationRate >= 90) score += 5;
-  else if (emotionIdentificationRate >= 70) score += 3;
+  if (meets(emotionIdentificationRate, 90)) score += 5;
+  else if (meets(emotionIdentificationRate, 70)) score += 3;
 
   // --- Bonus 2: Vocabulary breadth coverage (+4 / +2) ---
-  if (vocabularyBreadthRate >= 90) score += 4;
-  else if (vocabularyBreadthRate >= 70) score += 2;
+  if (meets(vocabularyBreadthRate, 90)) score += 4;
+  else if (meets(vocabularyBreadthRate, 70)) score += 2;
 
   // --- Bonus 3: Expression tool provision (+4 / +2) ---
-  if (expressionToolRate >= 90) score += 4;
-  else if (expressionToolRate >= 70) score += 2;
+  if (meets(expressionToolRate, 90)) score += 4;
+  else if (meets(expressionToolRate, 70)) score += 2;
 
   // --- Bonus 4: Journal engagement (+4 / +2) ---
-  if (journalEngagementRate >= 80) score += 4;
-  else if (journalEngagementRate >= 60) score += 2;
+  if (meets(journalEngagementRate, 80)) score += 4;
+  else if (meets(journalEngagementRate, 60)) score += 2;
 
   // --- Bonus 5: Staff attunement (+5 / +3) ---
-  if (staffAttunementRate >= 85) score += 5;
-  else if (staffAttunementRate >= 70) score += 3;
+  if (meets(staffAttunementRate, 85)) score += 5;
+  else if (meets(staffAttunementRate, 70)) score += 3;
 
   // --- Bonus 6: Child progress rate (+3 / +1) ---
   if ((childProgressRate ?? 0) >= 80) score += 3;
   else if ((childProgressRate ?? 0) >= 60) score += 1;
 
   // --- Bonus 7: Self-recognition & empathy (+3 / +1) ---
-  if (selfRecognitionRate >= 80 && empathyRate >= 80) score += 3;
-  else if (selfRecognitionRate >= 60 || empathyRate >= 60) score += 1;
+  if (meets(selfRecognitionRate, 80) && meets(empathyRate, 80)) score += 3;
+  else if (meets(selfRecognitionRate, 60) || meets(empathyRate, 60)) score += 1;
 
   // Max bonuses total: 5+4+4+4+5+3+3 = 28
 
   // ── Penalties (guarded by array.length > 0) ───────────────────────────
 
   // Penalty 1: Low identification coverage
-  if (emotion_identification_records.length > 0 && emotionIdentificationRate < 40) {
+  if (emotion_identification_records.length > 0 && below(emotionIdentificationRate, 40)) {
     score -= 6;
   }
 
   // Penalty 2: Low staff attunement
-  if (staff_attunement_records.length > 0 && staffAttunementRate < 50) {
+  if (staff_attunement_records.length > 0 && below(staffAttunementRate, 50)) {
     score -= 6;
   }
 
   // Penalty 3: High missed cues rate
-  if (staff_attunement_records.length > 0 && missedCuesRate > 30) {
+  if (staff_attunement_records.length > 0 && above(missedCuesRate, 30)) {
     score -= 4;
   }
 
   // Penalty 4: No expression tools despite children present
-  if (expression_tool_records.length > 0 && expressionToolRate < 30) {
+  if (expression_tool_records.length > 0 && below(expressionToolRate, 30)) {
     score -= 4;
   }
 
@@ -634,85 +630,85 @@ export function computeEmotionalLiteracyFeelingsExpression(
   const strengths: string[] = [];
 
   // --- Emotion identification strengths ---
-  if (emotionIdentificationRate >= 90 && totalIdRecords > 0) {
+  if (meets(emotionIdentificationRate, 90) && totalIdRecords > 0) {
     strengths.push(
       `${emotionIdentificationRate}% of children have emotion identification assessments — excellent coverage ensuring every child's emotional literacy baseline is understood.`,
     );
-  } else if (emotionIdentificationRate >= 70 && totalIdRecords > 0) {
+  } else if (meets(emotionIdentificationRate, 70) && totalIdRecords > 0) {
     strengths.push(
       `${emotionIdentificationRate}% of children assessed for emotion identification — good coverage of emotional literacy baselines.`,
     );
   }
 
-  if (nuancedRate >= 70 && totalIdRecords > 0) {
+  if (meets(nuancedRate, 70) && totalIdRecords > 0) {
     strengths.push(
       `${nuancedRate}% of assessments show nuanced emotion recognition — children are moving beyond basic emotional categories to identify complex feelings.`,
     );
   }
 
-  if (selfRecognitionRate >= 80 && totalIdRecords > 0) {
+  if (meets(selfRecognitionRate, 80) && totalIdRecords > 0) {
     strengths.push(
       `${selfRecognitionRate}% self-recognition rate — children can identify their own emotional states, a critical foundation for emotional regulation.`,
     );
   }
 
-  if (empathyRate >= 80 && totalIdRecords > 0) {
+  if (meets(empathyRate, 80) && totalIdRecords > 0) {
     strengths.push(
       `${empathyRate}% empathy demonstration rate — children are recognising and responding to emotions in others, showing strong social-emotional development.`,
     );
   }
 
-  if (contextRate >= 80 && totalIdRecords > 0) {
+  if (meets(contextRate, 80) && totalIdRecords > 0) {
     strengths.push(
       `${contextRate}% context understanding rate — children understand why people feel certain emotions, demonstrating mature emotional reasoning.`,
     );
   }
 
-  if (idEngagementRate >= 90 && totalIdRecords > 0) {
+  if (meets(idEngagementRate, 90) && totalIdRecords > 0) {
     strengths.push(
       `${idEngagementRate}% engagement in emotion identification activities — children are actively participating in their emotional literacy development.`,
     );
   }
 
   // --- Vocabulary strengths ---
-  if (vocabularyBreadthRate >= 90 && totalVocabRecords > 0) {
+  if (meets(vocabularyBreadthRate, 90) && totalVocabRecords > 0) {
     strengths.push(
       `${vocabularyBreadthRate}% of children have feelings vocabulary assessments — comprehensive tracking of emotional language development.`,
     );
   }
 
-  if (spontaneousUseRate >= 70 && totalVocabRecords > 0) {
+  if (meets(spontaneousUseRate, 70) && totalVocabRecords > 0) {
     strengths.push(
       `${spontaneousUseRate}% of children use feelings vocabulary spontaneously — emotional language is embedded in daily life, not just structured sessions.`,
     );
   }
 
-  if (advancedVocabRate >= 50 && totalVocabRecords > 0) {
+  if (meets(advancedVocabRate, 50) && totalVocabRecords > 0) {
     strengths.push(
       `${advancedVocabRate}% of children at advanced or nuanced vocabulary tier — children are developing sophisticated emotional language.`,
     );
   }
 
-  if (differentiateRate >= 70 && totalVocabRecords > 0) {
+  if (meets(differentiateRate, 70) && totalVocabRecords > 0) {
     strengths.push(
       `${differentiateRate}% can differentiate similar emotions — children distinguish between feelings like disappointment and sadness, showing depth of understanding.`,
     );
   }
 
-  if (creativeExpressionRate >= 60 && totalVocabRecords > 0) {
+  if (meets(creativeExpressionRate, 60) && totalVocabRecords > 0) {
     strengths.push(
       `${creativeExpressionRate}% use creative expression to communicate feelings — the home supports multiple pathways for emotional expression.`,
     );
   }
 
-  if (multilingualRate > 0 && totalVocabRecords > 0) {
+  if (above(multilingualRate, 0) && totalVocabRecords > 0) {
     strengths.push(
       `${multilingualRate}% express feelings in their heritage language — the home values cultural identity in emotional expression.`,
     );
   }
 
   // --- Expression tool strengths ---
-  if (expressionToolRate >= 90 && totalToolRecords > 0) {
+  if (meets(expressionToolRate, 90) && totalToolRecords > 0) {
     strengths.push(
       `${expressionToolRate}% of children have access to expression tools — excellent provision of emotional expression resources.`,
     );
@@ -724,13 +720,13 @@ export function computeEmotionalLiteracyFeelingsExpression(
     );
   }
 
-  if (childInitiatedToolRate >= 50 && totalToolRecords > 0) {
+  if (meets(childInitiatedToolRate, 50) && totalToolRecords > 0) {
     strengths.push(
       `${childInitiatedToolRate}% of tool use is child-initiated — children are independently choosing to use expression tools, showing genuine engagement.`,
     );
   }
 
-  if (toolAccessibilityRate >= 90 && totalToolRecords > 0) {
+  if (meets(toolAccessibilityRate, 90) && totalToolRecords > 0) {
     strengths.push(
       `${toolAccessibilityRate}% tool accessibility rate — expression tools are readily available for children to access independently.`,
     );
@@ -742,26 +738,26 @@ export function computeEmotionalLiteracyFeelingsExpression(
     );
   }
 
-  if (staffToolConfidenceRate >= 80 && totalToolRecords > 0) {
+  if (meets(staffToolConfidenceRate, 80) && totalToolRecords > 0) {
     strengths.push(
       `${staffToolConfidenceRate}% staff confidence in using expression tools — staff are well-equipped to support children's emotional expression.`,
     );
   }
 
   // --- Journaling strengths ---
-  if (journalEngagementRate >= 80 && totalJournalEntries > 0) {
+  if (meets(journalEngagementRate, 80) && totalJournalEntries > 0) {
     strengths.push(
       `${journalEngagementRate}% of children engaged in therapeutic journaling — strong participation in reflective emotional expression.`,
     );
   }
 
-  if (childInitiatedJournalRate >= 50 && totalJournalEntries > 0) {
+  if (meets(childInitiatedJournalRate, 50) && totalJournalEntries > 0) {
     strengths.push(
       `${childInitiatedJournalRate}% of journal entries are child-initiated — children are proactively choosing to explore their emotions through journaling.`,
     );
   }
 
-  if (staffResponseRate >= 80 && totalJournalEntries > 0) {
+  if (meets(staffResponseRate, 80) && totalJournalEntries > 0) {
     strengths.push(
       `${staffResponseRate}% staff response rate to journal entries — children know their emotional expressions are read, valued, and acknowledged.`,
     );
@@ -773,13 +769,13 @@ export function computeEmotionalLiteracyFeelingsExpression(
     );
   }
 
-  if (keyworkLinkRate >= 70 && totalJournalEntries > 0) {
+  if (meets(keyworkLinkRate, 70) && totalJournalEntries > 0) {
     strengths.push(
       `${keyworkLinkRate}% of journal entries linked to keywork sessions — emotional journaling is integrated into the therapeutic relationship.`,
     );
   }
 
-  if (confidentialityRate >= 95 && totalJournalEntries > 0) {
+  if (meets(confidentialityRate, 95) && totalJournalEntries > 0) {
     strengths.push(
       "Confidentiality maintained across virtually all journal entries — children can trust that their emotional expression is safe and private.",
     );
@@ -792,49 +788,49 @@ export function computeEmotionalLiteracyFeelingsExpression(
   }
 
   // --- Staff attunement strengths ---
-  if (staffAttunementRate >= 85 && totalAttunementObs > 0) {
+  if (meets(staffAttunementRate, 85) && totalAttunementObs > 0) {
     strengths.push(
       `${staffAttunementRate}% composite staff attunement rate — staff consistently recognise, validate, and respond to children's emotional states.`,
     );
   }
 
-  if (emotionalRecognitionRate >= 90 && totalAttunementObs > 0) {
+  if (meets(emotionalRecognitionRate, 90) && totalAttunementObs > 0) {
     strengths.push(
       `${emotionalRecognitionRate}% emotional state recognition rate — staff are attuned to children's feelings and pick up on emotional cues.`,
     );
   }
 
-  if (validationRate >= 85 && totalAttunementObs > 0) {
+  if (meets(validationRate, 85) && totalAttunementObs > 0) {
     strengths.push(
       `${validationRate}% feelings validation rate — staff consistently acknowledge children's emotions as valid, building emotional safety.`,
     );
   }
 
-  if (coRegulationRate >= 80 && totalAttunementObs > 0) {
+  if (meets(coRegulationRate, 80) && totalAttunementObs > 0) {
     strengths.push(
       `${coRegulationRate}% effective co-regulation rate — staff successfully help children regulate their emotions through attuned support.`,
     );
   }
 
-  if (missedCuesRate <= 10 && totalAttunementObs > 0) {
+  if (totalAttunementObs > 0 && missedCuesRate! <= 10) {
     strengths.push(
       `Only ${missedCuesRate}% missed emotional cues — staff are highly attuned and rarely miss children's distress signals.`,
     );
   }
 
-  if (emotionalLanguageRate >= 80 && totalAttunementObs > 0) {
+  if (meets(emotionalLanguageRate, 80) && totalAttunementObs > 0) {
     strengths.push(
       `${emotionalLanguageRate}% of staff model emotional language — children hear feelings vocabulary used naturally by the adults around them.`,
     );
   }
 
-  if (staffTrainingRate >= 90 && totalAttunementObs > 0) {
+  if (meets(staffTrainingRate, 90) && totalAttunementObs > 0) {
     strengths.push(
       `${staffTrainingRate}% of observed staff have completed emotional literacy training — the team has strong foundational knowledge.`,
     );
   }
 
-  if (repairRate >= 80 && totalAttunementObs > 0) {
+  if (meets(repairRate, 80) && totalAttunementObs > 0) {
     strengths.push(
       `${repairRate}% repair attempt rate after relational ruptures — staff model healthy emotional repair, teaching children that relationships can recover.`,
     );
@@ -847,13 +843,13 @@ export function computeEmotionalLiteracyFeelingsExpression(
     );
   }
 
-  if (idProgressRate >= 80 && idNonFirst > 0) {
+  if (meets(idProgressRate, 80) && idNonFirst > 0) {
     strengths.push(
       `${idProgressRate}% of children showing improvement in emotion identification — targeted support is producing measurable outcomes.`,
     );
   }
 
-  if (vocabProgressRate >= 80 && vocabNonFirst > 0) {
+  if (meets(vocabProgressRate, 80) && vocabNonFirst > 0) {
     strengths.push(
       `${vocabProgressRate}% of children expanding their feelings vocabulary — emotional language is growing over time.`,
     );
@@ -866,11 +862,11 @@ export function computeEmotionalLiteracyFeelingsExpression(
   const concerns: string[] = [];
 
   // --- Identification concerns ---
-  if (emotionIdentificationRate < 40 && totalIdRecords > 0) {
+  if (below(emotionIdentificationRate, 40) && totalIdRecords > 0) {
     concerns.push(
       `Only ${emotionIdentificationRate}% of children have emotion identification assessments — the majority of children's emotional literacy baselines are unknown.`,
     );
-  } else if (emotionIdentificationRate < 70 && emotionIdentificationRate >= 40 && totalIdRecords > 0) {
+  } else if (below(emotionIdentificationRate, 70) && meets(emotionIdentificationRate, 40) && totalIdRecords > 0) {
     concerns.push(
       `${emotionIdentificationRate}% emotion identification coverage — some children have not been assessed, limiting ability to track their emotional literacy development.`,
     );
@@ -882,7 +878,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     );
   }
 
-  if (selfRecognitionRate < 40 && totalIdRecords > 0) {
+  if (below(selfRecognitionRate, 40) && totalIdRecords > 0) {
     concerns.push(
       `Only ${selfRecognitionRate}% self-recognition rate — most children struggle to identify their own emotional states, limiting their ability to self-regulate.`,
     );
@@ -895,7 +891,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
   }
 
   // --- Vocabulary concerns ---
-  if (vocabularyBreadthRate < 40 && totalVocabRecords > 0) {
+  if (below(vocabularyBreadthRate, 40) && totalVocabRecords > 0) {
     concerns.push(
       `Only ${vocabularyBreadthRate}% of children have feelings vocabulary assessments — most children's emotional language development is not being tracked.`,
     );
@@ -907,24 +903,24 @@ export function computeEmotionalLiteracyFeelingsExpression(
     );
   }
 
-  if (spontaneousUseRate < 30 && totalVocabRecords > 0) {
+  if (below(spontaneousUseRate, 30) && totalVocabRecords > 0) {
     concerns.push(
       `Only ${spontaneousUseRate}% of children use feelings vocabulary spontaneously — emotional language is not transferring to everyday situations.`,
     );
   }
 
-  if (ageAppropriateRate < 60 && totalVocabRecords > 0) {
+  if (below(ageAppropriateRate, 60) && totalVocabRecords > 0) {
     concerns.push(
       `Only ${ageAppropriateRate}% of children at age-appropriate vocabulary level — many children's emotional language is below what would be expected for their age.`,
     );
   }
 
   // --- Expression tool concerns ---
-  if (expressionToolRate < 30 && totalToolRecords > 0) {
+  if (below(expressionToolRate, 30) && totalToolRecords > 0) {
     concerns.push(
       `Only ${expressionToolRate}% of children have access to expression tools — most children lack structured resources for communicating feelings.`,
     );
-  } else if (expressionToolRate < 60 && expressionToolRate >= 30 && totalToolRecords > 0) {
+  } else if (below(expressionToolRate, 60) && meets(expressionToolRate, 30) && totalToolRecords > 0) {
     concerns.push(
       `${expressionToolRate}% expression tool coverage — not all children have access to tools that help them communicate their emotions.`,
     );
@@ -936,7 +932,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     );
   }
 
-  if (toolAccessibilityRate < 50 && totalToolRecords > 0) {
+  if (below(toolAccessibilityRate, 50) && totalToolRecords > 0) {
     concerns.push(
       `Only ${toolAccessibilityRate}% of expression tools are accessible to children independently — tools exist but children cannot easily reach or use them.`,
     );
@@ -948,14 +944,14 @@ export function computeEmotionalLiteracyFeelingsExpression(
     );
   }
 
-  if (staffToolConfidenceRate < 50 && totalToolRecords > 0) {
+  if (below(staffToolConfidenceRate, 50) && totalToolRecords > 0) {
     concerns.push(
       `Only ${staffToolConfidenceRate}% staff confidence in using expression tools — staff may not be skilled enough to support children effectively with available resources.`,
     );
   }
 
   // --- Journaling concerns ---
-  if (journalEngagementRate < 30 && totalJournalEntries > 0) {
+  if (below(journalEngagementRate, 30) && totalJournalEntries > 0) {
     concerns.push(
       `Only ${journalEngagementRate}% of children engaged in therapeutic journaling — most children are missing this valuable channel for emotional expression.`,
     );
@@ -967,13 +963,13 @@ export function computeEmotionalLiteracyFeelingsExpression(
     );
   }
 
-  if (staffResponseRate < 50 && totalJournalEntries > 0) {
+  if (below(staffResponseRate, 50) && totalJournalEntries > 0) {
     concerns.push(
       `Only ${staffResponseRate}% staff response rate to journal entries — children who share their feelings through journaling are not consistently being acknowledged.`,
     );
   }
 
-  if (confidentialityRate < 90 && totalJournalEntries > 0) {
+  if (below(confidentialityRate, 90) && totalJournalEntries > 0) {
     concerns.push(
       `Confidentiality maintained in only ${confidentialityRate}% of journal entries — breaches in journal confidentiality will undermine children's trust in emotional expression.`,
     );
@@ -986,11 +982,11 @@ export function computeEmotionalLiteracyFeelingsExpression(
   }
 
   // --- Staff attunement concerns ---
-  if (staffAttunementRate < 50 && totalAttunementObs > 0) {
+  if (below(staffAttunementRate, 50) && totalAttunementObs > 0) {
     concerns.push(
       `Composite staff attunement rate only ${staffAttunementRate}% — staff are not consistently recognising, validating, or responding to children's emotional states.`,
     );
-  } else if (staffAttunementRate < 70 && staffAttunementRate >= 50 && totalAttunementObs > 0) {
+  } else if (below(staffAttunementRate, 70) && meets(staffAttunementRate, 50) && totalAttunementObs > 0) {
     concerns.push(
       `Staff attunement rate at ${staffAttunementRate}% — while some staff show good emotional awareness, consistency across the team needs improvement.`,
     );
@@ -1002,35 +998,35 @@ export function computeEmotionalLiteracyFeelingsExpression(
     );
   }
 
-  if (missedCuesRate > 30 && totalAttunementObs > 0) {
+  if (above(missedCuesRate, 30) && totalAttunementObs > 0) {
     concerns.push(
       `${missedCuesRate}% missed emotional cues — staff are frequently failing to notice when children are in distress, undermining emotional safety.`,
     );
-  } else if (missedCuesRate > 15 && missedCuesRate <= 30 && totalAttunementObs > 0) {
+  } else if (above(missedCuesRate, 15) && missedCuesRate! <= 30 && totalAttunementObs > 0) {
     concerns.push(
       `${missedCuesRate}% missed emotional cues — some staff miss children's emotional signals, which can leave children feeling unnoticed.`,
     );
   }
 
-  if (validationRate < 50 && totalAttunementObs > 0) {
+  if (below(validationRate, 50) && totalAttunementObs > 0) {
     concerns.push(
       `Only ${validationRate}% feelings validation rate — children's emotions are frequently not being acknowledged as valid, which can suppress emotional expression.`,
     );
   }
 
-  if (coRegulationRate < 50 && totalAttunementObs > 0) {
+  if (below(coRegulationRate, 50) && totalAttunementObs > 0) {
     concerns.push(
       `Only ${coRegulationRate}% effective co-regulation — staff are not consistently helping children manage their emotions, leaving children to cope alone.`,
     );
   }
 
-  if (staffTrainingRate < 50 && totalAttunementObs > 0) {
+  if (below(staffTrainingRate, 50) && totalAttunementObs > 0) {
     concerns.push(
       `Only ${staffTrainingRate}% of observed staff have completed emotional literacy training — insufficient training undermines the team's ability to support children's emotional development.`,
     );
   }
 
-  if (repairRate < 40 && totalAttunementObs > 0) {
+  if (below(repairRate, 40) && totalAttunementObs > 0) {
     concerns.push(
       `Only ${repairRate}% repair attempt rate after relational ruptures — unrepaired ruptures damage the staff-child relationship and children's sense of emotional safety.`,
     );
@@ -1062,7 +1058,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     });
   }
 
-  if (emotionIdentificationRate < 40 && totalIdRecords > 0) {
+  if (below(emotionIdentificationRate, 40) && totalIdRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1072,7 +1068,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     });
   }
 
-  if (staffAttunementRate < 50 && totalAttunementObs > 0) {
+  if (below(staffAttunementRate, 50) && totalAttunementObs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1092,7 +1088,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     });
   }
 
-  if (missedCuesRate > 30 && totalAttunementObs > 0) {
+  if (above(missedCuesRate, 30) && totalAttunementObs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1112,7 +1108,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     });
   }
 
-  if (expressionToolRate < 30 && totalToolRecords > 0) {
+  if (below(expressionToolRate, 30) && totalToolRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1122,7 +1118,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     });
   }
 
-  if (validationRate < 50 && totalAttunementObs > 0) {
+  if (below(validationRate, 50) && totalAttunementObs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1144,7 +1140,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     });
   }
 
-  if (vocabularyBreadthRate < 40 && totalVocabRecords > 0) {
+  if (below(vocabularyBreadthRate, 40) && totalVocabRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1154,7 +1150,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     });
   }
 
-  if (spontaneousUseRate < 30 && totalVocabRecords > 0) {
+  if (below(spontaneousUseRate, 30) && totalVocabRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1174,7 +1170,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     });
   }
 
-  if (staffResponseRate < 50 && totalJournalEntries > 0) {
+  if (below(staffResponseRate, 50) && totalJournalEntries > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1184,7 +1180,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     });
   }
 
-  if (toolAccessibilityRate < 50 && totalToolRecords > 0) {
+  if (below(toolAccessibilityRate, 50) && totalToolRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1194,7 +1190,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     });
   }
 
-  if (staffToolConfidenceRate < 50 && totalToolRecords > 0) {
+  if (below(staffToolConfidenceRate, 50) && totalToolRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1204,7 +1200,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     });
   }
 
-  if (staffTrainingRate < 50 && totalAttunementObs > 0) {
+  if (below(staffTrainingRate, 50) && totalAttunementObs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1214,7 +1210,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     });
   }
 
-  if (coRegulationRate < 50 && totalAttunementObs > 0) {
+  if (below(coRegulationRate, 50) && totalAttunementObs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1224,7 +1220,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     });
   }
 
-  if (repairRate < 40 && totalAttunementObs > 0) {
+  if (below(repairRate, 40) && totalAttunementObs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1234,7 +1230,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     });
   }
 
-  if (selfRecognitionRate < 40 && totalIdRecords > 0) {
+  if (below(selfRecognitionRate, 40) && totalIdRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1246,7 +1242,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
 
   // --- Planned ---
 
-  if (emotionIdentificationRate >= 40 && emotionIdentificationRate < 70 && totalIdRecords > 0) {
+  if (meets(emotionIdentificationRate, 40) && below(emotionIdentificationRate, 70) && totalIdRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1256,7 +1252,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     });
   }
 
-  if (vocabularyBreadthRate >= 40 && vocabularyBreadthRate < 70 && totalVocabRecords > 0) {
+  if (meets(vocabularyBreadthRate, 40) && below(vocabularyBreadthRate, 70) && totalVocabRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1266,7 +1262,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     });
   }
 
-  if (journalEngagementRate < 60 && journalEngagementRate >= 30 && totalJournalEntries > 0) {
+  if (below(journalEngagementRate, 60) && meets(journalEngagementRate, 30) && totalJournalEntries > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1276,7 +1272,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     });
   }
 
-  if (keyworkLinkRate < 50 && totalJournalEntries > 0) {
+  if (below(keyworkLinkRate, 50) && totalJournalEntries > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1286,7 +1282,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     });
   }
 
-  if (expressionToolRate >= 30 && expressionToolRate < 70 && totalToolRecords > 0) {
+  if (meets(expressionToolRate, 30) && below(expressionToolRate, 70) && totalToolRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1306,7 +1302,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     });
   }
 
-  if (staffAttunementRate >= 50 && staffAttunementRate < 70 && totalAttunementObs > 0) {
+  if (meets(staffAttunementRate, 50) && below(staffAttunementRate, 70) && totalAttunementObs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1316,7 +1312,7 @@ export function computeEmotionalLiteracyFeelingsExpression(
     });
   }
 
-  if (emotionalLanguageRate < 60 && totalAttunementObs > 0) {
+  if (below(emotionalLanguageRate, 60) && totalAttunementObs > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -1351,42 +1347,42 @@ export function computeEmotionalLiteracyFeelingsExpression(
     });
   }
 
-  if (emotionIdentificationRate < 40 && totalIdRecords > 0) {
+  if (below(emotionIdentificationRate, 40) && totalIdRecords > 0) {
     insights.push({
       text: `Only ${emotionIdentificationRate}% of children have emotion identification assessments. The majority of children's emotional literacy development is invisible to the home, making it impossible to demonstrate progress under SCCIF Experiences & Progress.`,
       severity: "critical",
     });
   }
 
-  if (staffAttunementRate < 50 && totalAttunementObs > 0) {
+  if (below(staffAttunementRate, 50) && totalAttunementObs > 0) {
     insights.push({
       text: `Composite staff attunement at ${staffAttunementRate}% means children are not consistently experiencing emotionally attuned care. Ofsted will view this as a failure to build positive relationships under Reg 12 — children need adults who notice, understand, and respond to their emotional world.`,
       severity: "critical",
     });
   }
 
-  if (missedCuesRate > 30 && totalAttunementObs > 0) {
+  if (above(missedCuesRate, 30) && totalAttunementObs > 0) {
     insights.push({
       text: `Staff miss emotional cues ${missedCuesRate}% of the time. Children whose distress goes unnoticed learn that their feelings do not matter, which can lead to escalation, withdrawal, or emotional shutdown. This directly undermines Reg 12 positive relationships.`,
       severity: "critical",
     });
   }
 
-  if (expressionToolRate < 30 && totalToolRecords > 0) {
+  if (below(expressionToolRate, 30) && totalToolRecords > 0) {
     insights.push({
       text: `Only ${expressionToolRate}% of children have access to expression tools. Without structured ways to communicate feelings, children may resort to behaviour as their primary emotional outlet — increasing incidents and undermining placement stability.`,
       severity: "critical",
     });
   }
 
-  if (validationRate < 50 && totalAttunementObs > 0) {
+  if (below(validationRate, 50) && totalAttunementObs > 0) {
     insights.push({
       text: `Only ${validationRate}% feelings validation rate. When children's emotions are not acknowledged as valid, they learn to hide or suppress feelings. This is antithetical to emotional literacy development and may cause long-term harm.`,
       severity: "critical",
     });
   }
 
-  if (confidentialityRate < 80 && totalJournalEntries > 0) {
+  if (below(confidentialityRate, 80) && totalJournalEntries > 0) {
     insights.push({
       text: `Confidentiality maintained in only ${confidentialityRate}% of journal entries. Breaches in journaling confidentiality will destroy children's trust in emotional expression and may cause them to shut down completely.`,
       severity: "critical",
@@ -1395,70 +1391,70 @@ export function computeEmotionalLiteracyFeelingsExpression(
 
   // -- Warning insights --
 
-  if (emotionIdentificationRate >= 40 && emotionIdentificationRate < 70 && totalIdRecords > 0) {
+  if (meets(emotionIdentificationRate, 40) && below(emotionIdentificationRate, 70) && totalIdRecords > 0) {
     insights.push({
       text: `Emotion identification coverage at ${emotionIdentificationRate}% — improving but some children are still without assessments. Every child deserves a personalised emotional literacy plan based on their unique strengths and needs.`,
       severity: "warning",
     });
   }
 
-  if (selfRecognitionRate >= 40 && selfRecognitionRate < 60 && totalIdRecords > 0) {
+  if (meets(selfRecognitionRate, 40) && below(selfRecognitionRate, 60) && totalIdRecords > 0) {
     insights.push({
       text: `Self-recognition at ${selfRecognitionRate}% — some children can identify their own emotions, but others are still disconnected from their internal emotional experience. Daily emotion check-ins could strengthen this skill.`,
       severity: "warning",
     });
   }
 
-  if (selfRecognitionRate < 40 && totalIdRecords > 0) {
+  if (below(selfRecognitionRate, 40) && totalIdRecords > 0) {
     insights.push({
       text: `Only ${selfRecognitionRate}% of children can identify their own emotions. Self-recognition is the foundation of emotional regulation — without it, children cannot begin to manage their feelings.`,
       severity: "warning",
     });
   }
 
-  if (spontaneousUseRate >= 30 && spontaneousUseRate < 60 && totalVocabRecords > 0) {
+  if (meets(spontaneousUseRate, 30) && below(spontaneousUseRate, 60) && totalVocabRecords > 0) {
     insights.push({
       text: `${spontaneousUseRate}% spontaneous vocabulary use — children know feelings words but do not consistently use them in everyday situations. Staff modelling and daily emotional check-ins can bridge this gap.`,
       severity: "warning",
     });
   }
 
-  if (vocabularyBreadthRate >= 40 && vocabularyBreadthRate < 70 && totalVocabRecords > 0) {
+  if (meets(vocabularyBreadthRate, 40) && below(vocabularyBreadthRate, 70) && totalVocabRecords > 0) {
     insights.push({
       text: `Vocabulary assessment coverage at ${vocabularyBreadthRate}% — not all children's emotional language development is being tracked. Embedding vocabulary tracking into keywork would improve coverage.`,
       severity: "warning",
     });
   }
 
-  if (staffAttunementRate >= 50 && staffAttunementRate < 70 && totalAttunementObs > 0) {
+  if (meets(staffAttunementRate, 50) && below(staffAttunementRate, 70) && totalAttunementObs > 0) {
     insights.push({
       text: `Staff attunement at ${staffAttunementRate}% — some staff show good emotional awareness but practice is inconsistent. Reflective supervision focused on emotional attunement could strengthen the whole team.`,
       severity: "warning",
     });
   }
 
-  if (missedCuesRate > 15 && missedCuesRate <= 30 && totalAttunementObs > 0) {
+  if (above(missedCuesRate, 15) && missedCuesRate! <= 30 && totalAttunementObs > 0) {
     insights.push({
       text: `${missedCuesRate}% missed emotional cues. While not at critical levels, every missed cue represents a child whose emotional needs went unmet. Targeted observation skills training could reduce this.`,
       severity: "warning",
     });
   }
 
-  if (staffResponseRate >= 50 && staffResponseRate < 80 && totalJournalEntries > 0) {
+  if (meets(staffResponseRate, 50) && below(staffResponseRate, 80) && totalJournalEntries > 0) {
     insights.push({
       text: `Staff respond to ${staffResponseRate}% of journal entries. Consistent acknowledgement of children's written emotional expression is essential — unanswered journals signal that feelings do not matter.`,
       severity: "warning",
     });
   }
 
-  if (journalEngagementRate >= 30 && journalEngagementRate < 60 && totalJournalEntries > 0) {
+  if (meets(journalEngagementRate, 30) && below(journalEngagementRate, 60) && totalJournalEntries > 0) {
     insights.push({
       text: `${journalEngagementRate}% journaling engagement — some children are benefiting but others are missing out. Consider different formats (art, audio, digital) to engage children who may not connect with traditional written journaling.`,
       severity: "warning",
     });
   }
 
-  if (expressionToolRate >= 30 && expressionToolRate < 70 && totalToolRecords > 0) {
+  if (meets(expressionToolRate, 30) && below(expressionToolRate, 70) && totalToolRecords > 0) {
     insights.push({
       text: `Expression tool coverage at ${expressionToolRate}% — not all children have personalised tools for emotional expression. Children without tools may lack healthy outlets for difficult feelings.`,
       severity: "warning",
@@ -1479,14 +1475,14 @@ export function computeEmotionalLiteracyFeelingsExpression(
     });
   }
 
-  if (coRegulationRate >= 50 && coRegulationRate < 70 && totalAttunementObs > 0) {
+  if (meets(coRegulationRate, 50) && below(coRegulationRate, 70) && totalAttunementObs > 0) {
     insights.push({
       text: `Co-regulation effectiveness at ${coRegulationRate}% — staff sometimes help children regulate but not consistently. Strengthening co-regulation skills through practice supervision would benefit both staff and children.`,
       severity: "warning",
     });
   }
 
-  if (staffTrainingRate >= 50 && staffTrainingRate < 80 && totalAttunementObs > 0) {
+  if (meets(staffTrainingRate, 50) && below(staffTrainingRate, 80) && totalAttunementObs > 0) {
     insights.push({
       text: `${staffTrainingRate}% of staff have emotional literacy training — training gaps mean some staff lack foundational skills for supporting children's emotional development.`,
       severity: "warning",
@@ -1502,56 +1498,56 @@ export function computeEmotionalLiteracyFeelingsExpression(
     });
   }
 
-  if (emotionIdentificationRate >= 90 && nuancedRate >= 70 && totalIdRecords > 0) {
+  if (meets(emotionIdentificationRate, 90) && meets(nuancedRate, 70) && totalIdRecords > 0) {
     insights.push({
       text: `${emotionIdentificationRate}% assessment coverage with ${nuancedRate}% nuanced recognition — children are developing sophisticated emotional awareness that goes beyond basic feelings. This depth of emotional literacy supports resilience and healthy relationships.`,
       severity: "positive",
     });
   }
 
-  if (selfRecognitionRate >= 80 && empathyRate >= 80 && totalIdRecords > 0) {
+  if (meets(selfRecognitionRate, 80) && meets(empathyRate, 80) && totalIdRecords > 0) {
     insights.push({
       text: `${selfRecognitionRate}% self-recognition and ${empathyRate}% empathy — children can both identify their own emotions and recognise feelings in others. This dual capability is fundamental to healthy social-emotional development.`,
       severity: "positive",
     });
   }
 
-  if (staffAttunementRate >= 85 && totalAttunementObs > 0) {
+  if (meets(staffAttunementRate, 85) && totalAttunementObs > 0) {
     insights.push({
       text: `${staffAttunementRate}% composite staff attunement demonstrates that the team is deeply attuned to children's emotional worlds. Children experience consistent emotional responsiveness, which builds trust, security, and willingness to be vulnerable.`,
       severity: "positive",
     });
   }
 
-  if (validationRate >= 85 && coRegulationRate >= 80 && totalAttunementObs > 0) {
+  if (meets(validationRate, 85) && meets(coRegulationRate, 80) && totalAttunementObs > 0) {
     insights.push({
       text: `${validationRate}% validation with ${coRegulationRate}% effective co-regulation — children's feelings are consistently acknowledged and staff skilfully help children manage overwhelming emotions. This is outstanding relational practice.`,
       severity: "positive",
     });
   }
 
-  if (spontaneousUseRate >= 70 && totalVocabRecords > 0) {
+  if (meets(spontaneousUseRate, 70) && totalVocabRecords > 0) {
     insights.push({
       text: `${spontaneousUseRate}% spontaneous feelings vocabulary use — emotional language is embedded in the home's culture, not confined to structured sessions. Children naturally name and discuss their feelings in everyday conversations.`,
       severity: "positive",
     });
   }
 
-  if (childInitiatedToolRate >= 50 && childInitiatedJournalRate >= 50 && totalToolRecords > 0 && totalJournalEntries > 0) {
+  if (meets(childInitiatedToolRate, 50) && meets(childInitiatedJournalRate, 50) && totalToolRecords > 0 && totalJournalEntries > 0) {
     insights.push({
       text: `Children initiate ${childInitiatedToolRate}% of tool use and ${childInitiatedJournalRate}% of journal entries — children are taking ownership of their emotional expression, choosing to use resources independently rather than only when directed by staff.`,
       severity: "positive",
     });
   }
 
-  if (avgJournalDepth >= 4.0 && helpfulRate >= 80 && totalJournalEntries > 0) {
+  if (avgJournalDepth >= 4.0 && meets(helpfulRate, 80) && totalJournalEntries > 0) {
     insights.push({
       text: `Journal depth averaging ${avgJournalDepth}/5 with ${helpfulRate}% of children finding journaling helpful — therapeutic journaling is a genuine tool for emotional processing, not just a recording exercise.`,
       severity: "positive",
     });
   }
 
-  if (staffResponseRate >= 90 && keyworkLinkRate >= 70 && totalJournalEntries > 0) {
+  if (meets(staffResponseRate, 90) && meets(keyworkLinkRate, 70) && totalJournalEntries > 0) {
     insights.push({
       text: `${staffResponseRate}% staff response rate with ${keyworkLinkRate}% keywork integration — children's written emotional expression is consistently acknowledged and woven into their therapeutic relationship with their keyworker.`,
       severity: "positive",
@@ -1565,28 +1561,28 @@ export function computeEmotionalLiteracyFeelingsExpression(
     });
   }
 
-  if (emotionalLanguageRate >= 80 && totalAttunementObs > 0) {
+  if (meets(emotionalLanguageRate, 80) && totalAttunementObs > 0) {
     insights.push({
       text: `${emotionalLanguageRate}% of staff model emotional language — children hear feelings vocabulary used naturally and consistently by the adults around them, creating an emotionally literate environment.`,
       severity: "positive",
     });
   }
 
-  if (repairRate >= 80 && totalAttunementObs > 0) {
+  if (meets(repairRate, 80) && totalAttunementObs > 0) {
     insights.push({
       text: `${repairRate}% relational repair rate — staff consistently model healthy emotional recovery after difficult moments, teaching children that relationships can withstand conflict and be restored.`,
       severity: "positive",
     });
   }
 
-  if (uniqueToolTypes >= 5 && toolAccessibilityRate >= 90 && totalToolRecords > 0) {
+  if (uniqueToolTypes >= 5 && meets(toolAccessibilityRate, 90) && totalToolRecords > 0) {
     insights.push({
       text: `${uniqueToolTypes} tool types with ${toolAccessibilityRate}% accessibility — the home offers a rich, accessible range of expression tools ensuring every child can find a pathway to communicate their feelings.`,
       severity: "positive",
     });
   }
 
-  if (creativeExpressionRate >= 60 && multilingualRate > 0 && totalVocabRecords > 0) {
+  if (meets(creativeExpressionRate, 60) && above(multilingualRate, 0) && totalVocabRecords > 0) {
     insights.push({
       text: `${creativeExpressionRate}% creative expression and ${multilingualRate}% multilingual emotional expression — the home embraces diverse pathways for emotional communication, including cultural and creative approaches.`,
       severity: "positive",

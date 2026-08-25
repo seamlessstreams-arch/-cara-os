@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Refrigerator } fr
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { FoodStorageRating } from "@/lib/engines/home-food-storage-refrigeration-safety-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 function useHomeFoodStorageRefrigerationSafetyIntelligence() {
   return useQuery({
@@ -61,7 +62,7 @@ export function HomeFoodStorageRefrigerationSafetyIntelligenceCard() {
             <Refrigerator className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-blue-600")} />
             <span className="text-slate-900 font-bold">Food Storage & Refrigeration Safety</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.food_storage_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.food_storage_score}%</span>}
+            {d.food_storage_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.food_storage_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -69,28 +70,28 @@ export function HomeFoodStorageRefrigerationSafetyIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.food_storage_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.temperature_logging_rate >= 90 ? "bg-green-50" : d.temperature_logging_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.temperature_logging_rate >= 90 ? "text-[--cs-success]" : d.temperature_logging_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.temperature_logging_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.temperature_logging_rate, 90) ? "bg-green-50" : meets(d.temperature_logging_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.temperature_logging_rate, 90) ? "text-[--cs-success]" : meets(d.temperature_logging_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.temperature_logging_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Temp Log</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.storage_compliance_rate >= 90 ? "bg-green-50" : d.storage_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.storage_compliance_rate >= 90 ? "text-[--cs-success]" : d.storage_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.storage_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.storage_compliance_rate, 90) ? "bg-green-50" : meets(d.storage_compliance_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.storage_compliance_rate, 90) ? "text-[--cs-success]" : meets(d.storage_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.storage_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Storage</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.date_checking_rate >= 90 ? "bg-green-50" : d.date_checking_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.date_checking_rate >= 90 ? "text-[--cs-success]" : d.date_checking_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.date_checking_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.date_checking_rate, 90) ? "bg-green-50" : meets(d.date_checking_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.date_checking_rate, 90) ? "text-[--cs-success]" : meets(d.date_checking_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.date_checking_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Dates</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.hygiene_rating_rate >= 90 ? "bg-green-50" : d.hygiene_rating_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.hygiene_rating_rate >= 90 ? "text-[--cs-success]" : d.hygiene_rating_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.hygiene_rating_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.hygiene_rating_rate, 90) ? "bg-green-50" : meets(d.hygiene_rating_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.hygiene_rating_rate, 90) ? "text-[--cs-success]" : meets(d.hygiene_rating_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.hygiene_rating_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Hygiene</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.cross_contamination_rate >= 90 ? "bg-green-50" : d.cross_contamination_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.cross_contamination_rate >= 90 ? "text-[--cs-success]" : d.cross_contamination_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.cross_contamination_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.cross_contamination_rate, 90) ? "bg-green-50" : meets(d.cross_contamination_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.cross_contamination_rate, 90) ? "text-[--cs-success]" : meets(d.cross_contamination_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.cross_contamination_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Cross-Con</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.staff_training_rate >= 90 ? "bg-green-50" : d.staff_training_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.staff_training_rate >= 90 ? "text-[--cs-success]" : d.staff_training_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.staff_training_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.staff_training_rate, 90) ? "bg-green-50" : meets(d.staff_training_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.staff_training_rate, 90) ? "text-[--cs-success]" : meets(d.staff_training_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.staff_training_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Training</p>
             </div>
           </div>

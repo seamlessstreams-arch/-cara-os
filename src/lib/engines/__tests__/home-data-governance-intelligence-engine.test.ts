@@ -1079,10 +1079,10 @@ describe("Home Data Governance Intelligence Engine", () => {
         cctv_accesses: [],
         subject_access_requests: [],
       }));
-      expect(r.breaches.lessons_documented_rate).toBe(0);
-      expect(r.breaches.subjects_notified_rate).toBe(0);
-      expect(r.cctv.justified_access_rate).toBe(0);
-      expect(r.sars.on_time_rate).toBe(0);
+      expect(r.breaches.lessons_documented_rate).toBeNull();
+      expect(r.breaches.subjects_notified_rate).toBeNull();
+      expect(r.cctv.justified_access_rate).toBeNull();
+      expect(r.sars.on_time_rate).toBeNull();
     });
 
     it("handles SAR with null date_completed", () => {

@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ArrowRightLeft } 
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import type { HandoverRating } from "@/lib/engines/home-handover-communication-quality-intelligence-engine";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 function useHomeHandoverCommunicationQualityIntelligence() {
   return useQuery({
@@ -61,7 +62,7 @@ export function HomeHandoverCommunicationQualityIntelligenceCard() {
             <ArrowRightLeft className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-violet-600")} />
             <span className="text-slate-900 font-bold">Handover & Communication Quality</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.handover_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.handover_score}%</span>}
+            {d.handover_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.handover_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -69,28 +70,28 @@ export function HomeHandoverCommunicationQualityIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.handover_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.handover_quality_rate >= 90 ? "bg-green-50" : d.handover_quality_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.handover_quality_rate >= 90 ? "text-[--cs-success]" : d.handover_quality_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.handover_quality_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.handover_quality_rate, 90) ? "bg-green-50" : meets(d.handover_quality_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.handover_quality_rate, 90) ? "text-[--cs-success]" : meets(d.handover_quality_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.handover_quality_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Quality</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.communication_log_rate >= 90 ? "bg-green-50" : d.communication_log_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.communication_log_rate >= 90 ? "text-[--cs-success]" : d.communication_log_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.communication_log_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.communication_log_rate, 90) ? "bg-green-50" : meets(d.communication_log_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.communication_log_rate, 90) ? "text-[--cs-success]" : meets(d.communication_log_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.communication_log_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Comms</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.critical_info_rate >= 90 ? "bg-green-50" : d.critical_info_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.critical_info_rate >= 90 ? "text-[--cs-success]" : d.critical_info_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.critical_info_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.critical_info_rate, 90) ? "bg-green-50" : meets(d.critical_info_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.critical_info_rate, 90) ? "text-[--cs-success]" : meets(d.critical_info_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.critical_info_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Critical</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.handover_timeliness_rate >= 90 ? "bg-green-50" : d.handover_timeliness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.handover_timeliness_rate >= 90 ? "text-[--cs-success]" : d.handover_timeliness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.handover_timeliness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.handover_timeliness_rate, 90) ? "bg-green-50" : meets(d.handover_timeliness_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.handover_timeliness_rate, 90) ? "text-[--cs-success]" : meets(d.handover_timeliness_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.handover_timeliness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Timely</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.staff_satisfaction_rate >= 90 ? "bg-green-50" : d.staff_satisfaction_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.staff_satisfaction_rate >= 90 ? "text-[--cs-success]" : d.staff_satisfaction_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.staff_satisfaction_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.staff_satisfaction_rate, 90) ? "bg-green-50" : meets(d.staff_satisfaction_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.staff_satisfaction_rate, 90) ? "text-[--cs-success]" : meets(d.staff_satisfaction_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.staff_satisfaction_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Satisf.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.action_completion_rate >= 90 ? "bg-green-50" : d.action_completion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.action_completion_rate >= 90 ? "text-[--cs-success]" : d.action_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.action_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", meets(d.action_completion_rate, 90) ? "bg-green-50" : meets(d.action_completion_rate, 70) ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", meets(d.action_completion_rate, 90) ? "text-[--cs-success]" : meets(d.action_completion_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.action_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Actions</p>
             </div>
           </div>

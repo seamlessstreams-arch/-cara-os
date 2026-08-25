@@ -174,12 +174,12 @@ describe("Home Environmental Sustainability & Eco-Awareness Intelligence Engine"
 
     it("all metric rates are 0", () => {
       const r = run();
-      expect(r.energy_efficiency_rate).toBe(0);
-      expect(r.recycling_compliance_rate).toBe(0);
-      expect(r.eco_education_engagement_rate).toBe(0);
+      expect(r.energy_efficiency_rate).toBeNull();
+      expect(r.recycling_compliance_rate).toBeNull();
+      expect(r.eco_education_engagement_rate).toBeNull();
       expect(r.sustainability_practice_score).toBe(0);
-      expect(r.carbon_awareness_rate).toBe(0);
-      expect(r.child_participation_rate).toBe(0);
+      expect(r.carbon_awareness_rate).toBeNull();
+      expect(r.child_participation_rate).toBeNull();
     });
   });
 
@@ -222,12 +222,12 @@ describe("Home Environmental Sustainability & Eco-Awareness Intelligence Engine"
 
     it("all metric rates remain 0", () => {
       const r = run({ total_children: 4 });
-      expect(r.energy_efficiency_rate).toBe(0);
-      expect(r.recycling_compliance_rate).toBe(0);
-      expect(r.eco_education_engagement_rate).toBe(0);
+      expect(r.energy_efficiency_rate).toBeNull();
+      expect(r.recycling_compliance_rate).toBeNull();
+      expect(r.eco_education_engagement_rate).toBeNull();
       expect(r.sustainability_practice_score).toBe(0);
-      expect(r.carbon_awareness_rate).toBe(0);
-      expect(r.child_participation_rate).toBe(0);
+      expect(r.carbon_awareness_rate).toBeNull();
+      expect(r.child_participation_rate).toBeNull();
     });
   });
 
@@ -235,12 +235,12 @@ describe("Home Environmental Sustainability & Eco-Awareness Intelligence Engine"
   // 3. pct(0, 0) = 0
   // ═══════════════════════════════════════════════════════════════════════════
   describe("pct(0, 0) = 0", () => {
-    it("energy_efficiency_rate is 0 when no energy records but other records exist", () => {
+    it("energy_efficiency_rate is null when no energy records but other records exist", () => {
       const r = run({
         total_children: 3,
         recycling_records: [makeRecycling("r1", { compliant: true })],
       });
-      expect(r.energy_efficiency_rate).toBe(0);
+      expect(r.energy_efficiency_rate).toBeNull();
     });
   });
 
@@ -880,7 +880,7 @@ describe("Home Environmental Sustainability & Eco-Awareness Intelligence Engine"
         total_children: 3,
         energy_usage_records: [makeEnergy("e1", { within_target: true })],
       });
-      expect(r.child_participation_rate).toBe(0);
+      expect(r.child_participation_rate).toBeNull();
       // base 52 + 4(energy) = 56, no child participation penalty since denom = 0
       expect(r.sustainability_score).toBe(56);
     });

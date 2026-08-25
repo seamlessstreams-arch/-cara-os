@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME EMERGENCY CONTACT & NEXT OF KIN INTELLIGENCE ENGINE
 // Monitors emergency contact management — contact information currency,
@@ -138,12 +139,18 @@ export interface EmergencyContactResult {
   headline: string;
   total_contact_records: number;
   total_accessibility_tests: number;
-  contact_currency_rate: number;
-  accessibility_rate: number;
-  update_frequency_rate: number;
-  multi_contact_rate: number;
-  out_of_hours_rate: number;
-  verification_rate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  contact_currency_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  accessibility_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  update_frequency_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  multi_contact_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  out_of_hours_rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  verification_rate: number | null;
   strengths: string[];
   concerns: string[];
   recommendations: EmergencyContactRecommendation[];
@@ -151,10 +158,6 @@ export interface EmergencyContactResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -187,12 +190,12 @@ function emptyResult(
     headline,
     total_contact_records: 0,
     total_accessibility_tests: 0,
-    contact_currency_rate: 0,
-    accessibility_rate: 0,
-    update_frequency_rate: 0,
-    multi_contact_rate: 0,
-    out_of_hours_rate: 0,
-    verification_rate: 0,
+    contact_currency_rate: null,
+    accessibility_rate: null,
+    update_frequency_rate: null,
+    multi_contact_rate: null,
+    out_of_hours_rate: null,
+    verification_rate: null,
     strengths: [],
     concerns: [],
     recommendations: [],
@@ -278,7 +281,7 @@ export function computeEmergencyContactNextOfKin(
   const currentContacts = contact_information_records.filter((c) => c.is_current).length;
 
   const consentedContacts = contact_information_records.filter((c) => c.consent_to_contact).length;
-  const consentRate = pct(consentedContacts, totalContactRecords);
+  const consentRate = rate(consentedContacts, totalContactRecords);
 
   // Contacts verified within the last 90 days
   const recentlyVerifiedContacts = contact_information_records.filter((c) => {
@@ -290,32 +293,32 @@ export function computeEmergencyContactNextOfKin(
   const everVerifiedContacts = contact_information_records.filter(
     (c) => c.last_verified_date !== null && c.last_verified_date !== "",
   ).length;
-  const verificationRate = pct(everVerifiedContacts, totalContactRecords);
+  const verificationRate = rate(everVerifiedContacts, totalContactRecords);
 
   // Stale contacts — not verified in over 180 days
   const staleContacts = contact_information_records.filter((c) => {
     if (!c.last_verified_date) return true;
     return daysBetween(c.last_verified_date, today) > 180;
   }).length;
-  const staleContactRate = pct(staleContacts, totalContactRecords);
+  const staleContactRate = rate(staleContacts, totalContactRecords);
 
   // Contact currency composite: current + consented + verified recently
   const currencyNumerator = currentContacts + consentedContacts + recentlyVerifiedContacts;
   const currencyDenominator = totalContactRecords * 3;
-  const contactCurrencyRate = pct(currencyNumerator, currencyDenominator);
+  const contactCurrencyRate = rate(currencyNumerator, currencyDenominator);
 
   // Unique children with at least one current contact
   const childrenWithCurrentContact = new Set(
     contact_information_records.filter((c) => c.is_current).map((c) => c.child_id),
   ).size;
-  const childCoverageRate = total_children > 0 ? pct(childrenWithCurrentContact, total_children) : 0;
+  const childCoverageRate = total_children > 0 ? rate(childrenWithCurrentContact, total_children) : 0;
 
   // ── 2. Accessibility Metrics ──────────────────────────────────────────
 
   const totalAccessibilityTests = accessibility_records.length;
 
   const reachableTests = accessibility_records.filter((a) => a.phone_reachable).length;
-  const reachableRate = pct(reachableTests, totalAccessibilityTests);
+  const reachableRate = rate(reachableTests, totalAccessibilityTests);
 
   const answeredQuickly = accessibility_records.filter((a) => a.answered_within_3_rings).length;
 
@@ -325,12 +328,12 @@ export function computeEmergencyContactNextOfKin(
   const rapidResponse = accessibility_records.filter(
     (a) => a.response_time_minutes !== null && a.response_time_minutes <= 15,
   ).length;
-  const rapidResponseRate = pct(rapidResponse, totalAccessibilityTests);
+  const rapidResponseRate = rate(rapidResponse, totalAccessibilityTests);
 
   // Accessibility composite: reachable + quick answer + voicemail
   const accessNumerator = reachableTests + answeredQuickly + voicemailAvailable;
   const accessDenominator = totalAccessibilityTests * 3;
-  const accessibilityRate = pct(accessNumerator, accessDenominator);
+  const accessibilityRate = rate(accessNumerator, accessDenominator);
 
   // ── 3. Update Frequency Metrics ───────────────────────────────────────
 
@@ -339,18 +342,18 @@ export function computeEmergencyContactNextOfKin(
   const verifiedAccurateUpdates = update_frequency_records.filter((u) => u.verified_accurate).length;
 
   const overdueReviews = update_frequency_records.filter((u) => u.review_overdue).length;
-  const overdueRate = pct(overdueReviews, totalUpdateRecords);
+  const overdueRate = rate(overdueReviews, totalUpdateRecords);
 
   // Scheduled reviews vs reactive
   const scheduledUpdates = update_frequency_records.filter(
     (u) => u.update_type === "scheduled_review" || u.update_type === "annual_review",
   ).length;
-  const scheduledUpdateRate = pct(scheduledUpdates, totalUpdateRecords);
+  const scheduledUpdateRate = rate(scheduledUpdates, totalUpdateRecords);
 
   // Update frequency composite: accuracy + on-time + scheduled
   const updateNumerator = verifiedAccurateUpdates + (totalUpdateRecords - overdueReviews) + scheduledUpdates;
   const updateDenominator = totalUpdateRecords * 3;
-  const updateFrequencyRate = pct(updateNumerator, updateDenominator);
+  const updateFrequencyRate = rate(updateNumerator, updateDenominator);
 
   // ── 4. Multi-Contact Coverage Metrics ─────────────────────────────────
 
@@ -363,17 +366,17 @@ export function computeEmergencyContactNextOfKin(
   const withNextOfKin = multi_contact_records.filter(
     (m) => m.next_of_kin_designated,
   ).length;
-  const nextOfKinRate = pct(withNextOfKin, totalMultiContactRecords);
+  const nextOfKinRate = rate(withNextOfKin, totalMultiContactRecords);
 
   const withSocialWorker = multi_contact_records.filter(
     (m) => m.social_worker_contact_on_file,
   ).length;
-  const socialWorkerRate = pct(withSocialWorker, totalMultiContactRecords);
+  const socialWorkerRate = rate(withSocialWorker, totalMultiContactRecords);
 
   const withPlacingAuthority = multi_contact_records.filter(
     (m) => m.placing_authority_contact_on_file,
   ).length;
-  const placingAuthorityRate = pct(withPlacingAuthority, totalMultiContactRecords);
+  const placingAuthorityRate = rate(withPlacingAuthority, totalMultiContactRecords);
 
   const gapsIdentifiedRecords = multi_contact_records.filter(
     (m) => m.gaps_identified.length > 0,
@@ -381,12 +384,12 @@ export function computeEmergencyContactNextOfKin(
   const gapsAddressedRecords = multi_contact_records.filter(
     (m) => m.gaps_identified.length > 0 && m.gaps_addressed,
   ).length;
-  const gapResolutionRate = pct(gapsAddressedRecords, gapsIdentifiedRecords);
+  const gapResolutionRate = rate(gapsAddressedRecords, gapsIdentifiedRecords);
 
   // Multi-contact composite: min 2 contacts + next of kin + social worker + placing authority
   const multiNumerator = withMinTwoContacts + withNextOfKin + withSocialWorker + withPlacingAuthority;
   const multiDenominator = totalMultiContactRecords * 4;
-  const multiContactRate = pct(multiNumerator, multiDenominator);
+  const multiContactRate = rate(multiNumerator, multiDenominator);
 
   // ── 5. Out-of-Hours Metrics ───────────────────────────────────────────
 
@@ -395,17 +398,17 @@ export function computeEmergencyContactNextOfKin(
   const oohTestSuccessful = out_of_hours_records.filter(
     (o) => o.test_successful,
   ).length;
-  const oohTestSuccessRate = pct(oohTestSuccessful, totalOOHRecords);
+  const oohTestSuccessRate = rate(oohTestSuccessful, totalOOHRecords);
 
   const escalationDocumented = out_of_hours_records.filter(
     (o) => o.escalation_procedure_documented,
   ).length;
-  const escalationDocumentedRate = pct(escalationDocumented, totalOOHRecords);
+  const escalationDocumentedRate = rate(escalationDocumented, totalOOHRecords);
 
   const staffAware = out_of_hours_records.filter(
     (o) => o.staff_aware_of_procedure,
   ).length;
-  const staffAwareRate = pct(staffAware, totalOOHRecords);
+  const staffAwareRate = rate(staffAware, totalOOHRecords);
 
   // OOH composite: designated + EDT + on-call + escalation documented + staff aware
   const oohChecks = [
@@ -422,7 +425,7 @@ export function computeEmergencyContactNextOfKin(
       if (check(rec)) oohChecksPassed++;
     }
   }
-  const outOfHoursRate = pct(oohChecksPassed, oohChecksPossible);
+  const outOfHoursRate = rate(oohChecksPassed, oohChecksPossible);
 
   // ══════════════════════════════════════════════════════════════════════
   // SCORING: base 52, max bonuses +28, 4 penalties guarded by .length>0
@@ -431,50 +434,50 @@ export function computeEmergencyContactNextOfKin(
   let score = 52;
 
   // --- Bonus 1: contactCurrencyRate (>=90: +4, >=70: +2) ---
-  if (contactCurrencyRate >= 90) score += 4;
-  else if (contactCurrencyRate >= 70) score += 2;
+  if (meets(contactCurrencyRate, 90)) score += 4;
+  else if (meets(contactCurrencyRate, 70)) score += 2;
 
   // --- Bonus 2: accessibilityRate (>=90: +4, >=70: +2) ---
-  if (accessibilityRate >= 90) score += 4;
-  else if (accessibilityRate >= 70) score += 2;
+  if (meets(accessibilityRate, 90)) score += 4;
+  else if (meets(accessibilityRate, 70)) score += 2;
 
   // --- Bonus 3: updateFrequencyRate (>=90: +3, >=70: +1) ---
-  if (updateFrequencyRate >= 90) score += 3;
-  else if (updateFrequencyRate >= 70) score += 1;
+  if (meets(updateFrequencyRate, 90)) score += 3;
+  else if (meets(updateFrequencyRate, 70)) score += 1;
 
   // --- Bonus 4: multiContactRate (>=90: +4, >=70: +2) ---
-  if (multiContactRate >= 90) score += 4;
-  else if (multiContactRate >= 70) score += 2;
+  if (meets(multiContactRate, 90)) score += 4;
+  else if (meets(multiContactRate, 70)) score += 2;
 
   // --- Bonus 5: outOfHoursRate (>=90: +4, >=70: +2) ---
-  if (outOfHoursRate >= 90) score += 4;
-  else if (outOfHoursRate >= 70) score += 2;
+  if (meets(outOfHoursRate, 90)) score += 4;
+  else if (meets(outOfHoursRate, 70)) score += 2;
 
   // --- Bonus 6: verificationRate (>=90: +3, >=70: +1) ---
-  if (verificationRate >= 90) score += 3;
-  else if (verificationRate >= 70) score += 1;
+  if (meets(verificationRate, 90)) score += 3;
+  else if (meets(verificationRate, 70)) score += 1;
 
   // --- Bonus 7: childCoverageRate (>=90: +3, >=60: +1) ---
-  if (childCoverageRate >= 90) score += 3;
-  else if (childCoverageRate >= 60) score += 1;
+  if (meets(childCoverageRate, 90)) score += 3;
+  else if (meets(childCoverageRate, 60)) score += 1;
 
   // --- Bonus 8: nextOfKinRate (>=90: +3, >=70: +1) ---
-  if (nextOfKinRate >= 90) score += 3;
-  else if (nextOfKinRate >= 70) score += 1;
+  if (meets(nextOfKinRate, 90)) score += 3;
+  else if (meets(nextOfKinRate, 70)) score += 1;
 
   // ── Penalties (4, guarded by .length > 0) ─────────────────────────────
 
   // contactCurrencyRate < 50 → -5
-  if (contactCurrencyRate < 50 && contact_information_records.length > 0) score -= 5;
+  if (below(contactCurrencyRate, 50) && contact_information_records.length > 0) score -= 5;
 
   // accessibilityRate < 50 → -5
-  if (accessibilityRate < 50 && accessibility_records.length > 0) score -= 5;
+  if (below(accessibilityRate, 50) && accessibility_records.length > 0) score -= 5;
 
   // outOfHoursRate < 50 → -4
-  if (outOfHoursRate < 50 && out_of_hours_records.length > 0) score -= 4;
+  if (below(outOfHoursRate, 50) && out_of_hours_records.length > 0) score -= 4;
 
   // multiContactRate < 40 → -4
-  if (multiContactRate < 40 && multi_contact_records.length > 0) score -= 4;
+  if (below(multiContactRate, 40) && multi_contact_records.length > 0) score -= 4;
 
   score = clamp(score, 0, 100);
 
@@ -486,129 +489,129 @@ export function computeEmergencyContactNextOfKin(
 
   const strengths: string[] = [];
 
-  if (contactCurrencyRate >= 90 && totalContactRecords > 0) {
+  if (meets(contactCurrencyRate, 90) && totalContactRecords > 0) {
     strengths.push(
       `${contactCurrencyRate}% contact currency — emergency contact information is consistently current, consented, and recently verified, ensuring the home can reach responsible adults when needed.`,
     );
-  } else if (contactCurrencyRate >= 70 && totalContactRecords > 0) {
+  } else if (meets(contactCurrencyRate, 70) && totalContactRecords > 0) {
     strengths.push(
       `${contactCurrencyRate}% contact currency — the home generally maintains up-to-date and verified emergency contact information.`,
     );
   }
 
-  if (accessibilityRate >= 90 && totalAccessibilityTests > 0) {
+  if (meets(accessibilityRate, 90) && totalAccessibilityTests > 0) {
     strengths.push(
       `${accessibilityRate}% accessibility rate — emergency contacts are consistently reachable, answer promptly, and have voicemail available, demonstrating robust communication pathways.`,
     );
-  } else if (accessibilityRate >= 70 && totalAccessibilityTests > 0) {
+  } else if (meets(accessibilityRate, 70) && totalAccessibilityTests > 0) {
     strengths.push(
       `${accessibilityRate}% accessibility rate — the majority of emergency contacts are reachable and responsive when tested.`,
     );
   }
 
-  if (updateFrequencyRate >= 90 && totalUpdateRecords > 0) {
+  if (meets(updateFrequencyRate, 90) && totalUpdateRecords > 0) {
     strengths.push(
       `${updateFrequencyRate}% update frequency compliance — contact details are reviewed on schedule, verified for accuracy, and proactively maintained through planned reviews.`,
     );
-  } else if (updateFrequencyRate >= 70 && totalUpdateRecords > 0) {
+  } else if (meets(updateFrequencyRate, 70) && totalUpdateRecords > 0) {
     strengths.push(
       `${updateFrequencyRate}% update frequency compliance — the home generally reviews and updates contact information on schedule.`,
     );
   }
 
-  if (multiContactRate >= 90 && totalMultiContactRecords > 0) {
+  if (meets(multiContactRate, 90) && totalMultiContactRecords > 0) {
     strengths.push(
       `${multiContactRate}% multi-contact coverage — children have multiple emergency contacts, designated next of kin, and professional contacts on file, providing comprehensive safety nets.`,
     );
-  } else if (multiContactRate >= 70 && totalMultiContactRecords > 0) {
+  } else if (meets(multiContactRate, 70) && totalMultiContactRecords > 0) {
     strengths.push(
       `${multiContactRate}% multi-contact coverage — most children have adequate emergency contact coverage with professional contacts on file.`,
     );
   }
 
-  if (outOfHoursRate >= 90 && totalOOHRecords > 0) {
+  if (meets(outOfHoursRate, 90) && totalOOHRecords > 0) {
     strengths.push(
       `${outOfHoursRate}% out-of-hours readiness — the home maintains comprehensive out-of-hours arrangements with designated contacts, escalation procedures, and staff awareness.`,
     );
-  } else if (outOfHoursRate >= 70 && totalOOHRecords > 0) {
+  } else if (meets(outOfHoursRate, 70) && totalOOHRecords > 0) {
     strengths.push(
       `${outOfHoursRate}% out-of-hours readiness — the home generally has appropriate out-of-hours emergency arrangements in place.`,
     );
   }
 
-  if (verificationRate >= 90 && totalContactRecords > 0) {
+  if (meets(verificationRate, 90) && totalContactRecords > 0) {
     strengths.push(
       `${verificationRate}% of contacts verified — the home actively confirms the accuracy of emergency contact information, reducing the risk of outdated or incorrect details during emergencies.`,
     );
-  } else if (verificationRate >= 70 && totalContactRecords > 0) {
+  } else if (meets(verificationRate, 70) && totalContactRecords > 0) {
     strengths.push(
       `${verificationRate}% of contacts verified — the majority of emergency contacts have been verified for accuracy.`,
     );
   }
 
-  if (childCoverageRate >= 90 && total_children > 0) {
+  if (meets(childCoverageRate, 90) && total_children > 0) {
     strengths.push(
       `${childCoverageRate}% of children have current emergency contacts — every child on placement has at least one verified, current contact available.`,
     );
-  } else if (childCoverageRate >= 70 && total_children > 0) {
+  } else if (meets(childCoverageRate, 70) && total_children > 0) {
     strengths.push(
       `${childCoverageRate}% of children have current emergency contacts — the majority of children have accessible emergency contact arrangements.`,
     );
   }
 
-  if (nextOfKinRate >= 90 && totalMultiContactRecords > 0) {
+  if (meets(nextOfKinRate, 90) && totalMultiContactRecords > 0) {
     strengths.push(
       `${nextOfKinRate}% next of kin designation — nearly all children have a clearly designated next of kin, ensuring the home meets its notification obligations under Reg 40.`,
     );
-  } else if (nextOfKinRate >= 70 && totalMultiContactRecords > 0) {
+  } else if (meets(nextOfKinRate, 70) && totalMultiContactRecords > 0) {
     strengths.push(
       `${nextOfKinRate}% next of kin designation — the majority of children have a designated next of kin on file.`,
     );
   }
 
-  if (reachableRate >= 90 && totalAccessibilityTests > 0) {
+  if (meets(reachableRate, 90) && totalAccessibilityTests > 0) {
     strengths.push(
       `${reachableRate}% phone reachability — emergency contacts are consistently reachable by telephone, providing confidence that the home can make urgent contact when required.`,
     );
   }
 
-  if (escalationDocumentedRate >= 90 && totalOOHRecords > 0) {
+  if (meets(escalationDocumentedRate, 90) && totalOOHRecords > 0) {
     strengths.push(
       `${escalationDocumentedRate}% of out-of-hours escalation procedures documented — clear, documented procedures ensure staff know exactly who to contact and in what order during emergencies outside normal hours.`,
     );
   }
 
-  if (staffAwareRate >= 90 && totalOOHRecords > 0) {
+  if (meets(staffAwareRate, 90) && totalOOHRecords > 0) {
     strengths.push(
       `${staffAwareRate}% staff awareness of out-of-hours procedures — staff are well-informed about emergency escalation pathways, reducing response times and confusion during critical situations.`,
     );
   }
 
-  if (gapResolutionRate >= 90 && gapsIdentifiedRecords > 0) {
+  if (meets(gapResolutionRate, 90) && gapsIdentifiedRecords > 0) {
     strengths.push(
       `${gapResolutionRate}% of identified contact gaps addressed — the home proactively identifies and resolves gaps in emergency contact arrangements, demonstrating continuous improvement.`,
     );
   }
 
-  if (consentRate >= 90 && totalContactRecords > 0) {
+  if (meets(consentRate, 90) && totalContactRecords > 0) {
     strengths.push(
       `${consentRate}% consent to contact recorded — the home maintains clear consent records for contacting emergency contacts, reflecting good data governance practice.`,
     );
   }
 
-  if (socialWorkerRate >= 90 && totalMultiContactRecords > 0) {
+  if (meets(socialWorkerRate, 90) && totalMultiContactRecords > 0) {
     strengths.push(
       `${socialWorkerRate}% of children have social worker contact on file — professional contact information is readily available to support multi-agency working and rapid communication.`,
     );
   }
 
-  if (rapidResponseRate >= 90 && totalAccessibilityTests > 0) {
+  if (meets(rapidResponseRate, 90) && totalAccessibilityTests > 0) {
     strengths.push(
       `${rapidResponseRate}% of contacts respond within 15 minutes — emergency contacts demonstrate excellent responsiveness, ensuring timely communication during critical situations.`,
     );
   }
 
-  if (oohTestSuccessRate >= 90 && totalOOHRecords > 0) {
+  if (meets(oohTestSuccessRate, 90) && totalOOHRecords > 0) {
     strengths.push(
       `${oohTestSuccessRate}% out-of-hours test success rate — out-of-hours arrangements have been tested and confirmed to work, providing assurance that emergency pathways are functional.`,
     );
@@ -620,113 +623,113 @@ export function computeEmergencyContactNextOfKin(
 
   const concerns: string[] = [];
 
-  if (contactCurrencyRate < 50 && totalContactRecords > 0) {
+  if (below(contactCurrencyRate, 50) && totalContactRecords > 0) {
     concerns.push(
       `Only ${contactCurrencyRate}% contact currency — the majority of emergency contact information is not current, not consented, or not recently verified, creating significant risk that the home cannot reach responsible adults in an emergency.`,
     );
-  } else if (contactCurrencyRate < 70 && contactCurrencyRate >= 50 && totalContactRecords > 0) {
+  } else if (below(contactCurrencyRate, 70) && meets(contactCurrencyRate, 50) && totalContactRecords > 0) {
     concerns.push(
       `Contact currency at ${contactCurrencyRate}% — a notable proportion of emergency contacts are not fully current, consented, or recently verified.`,
     );
   }
 
-  if (accessibilityRate < 50 && totalAccessibilityTests > 0) {
+  if (below(accessibilityRate, 50) && totalAccessibilityTests > 0) {
     concerns.push(
       `Only ${accessibilityRate}% accessibility rate — the majority of emergency contacts are not reliably reachable, undermining the home's ability to communicate urgently when children's safety is at stake.`,
     );
-  } else if (accessibilityRate < 70 && accessibilityRate >= 50 && totalAccessibilityTests > 0) {
+  } else if (below(accessibilityRate, 70) && meets(accessibilityRate, 50) && totalAccessibilityTests > 0) {
     concerns.push(
       `Accessibility rate at ${accessibilityRate}% — a significant proportion of emergency contacts are not consistently reachable when tested.`,
     );
   }
 
-  if (updateFrequencyRate < 50 && totalUpdateRecords > 0) {
+  if (below(updateFrequencyRate, 50) && totalUpdateRecords > 0) {
     concerns.push(
       `Only ${updateFrequencyRate}% update frequency compliance — contact reviews are overdue, unverified, or largely reactive rather than planned, risking outdated information being held on file.`,
     );
-  } else if (updateFrequencyRate < 70 && updateFrequencyRate >= 50 && totalUpdateRecords > 0) {
+  } else if (below(updateFrequencyRate, 70) && meets(updateFrequencyRate, 50) && totalUpdateRecords > 0) {
     concerns.push(
       `Update frequency compliance at ${updateFrequencyRate}% — some contact reviews are overdue or not being conducted through planned schedules.`,
     );
   }
 
-  if (multiContactRate < 40 && totalMultiContactRecords > 0) {
+  if (below(multiContactRate, 40) && totalMultiContactRecords > 0) {
     concerns.push(
       `Only ${multiContactRate}% multi-contact coverage — children do not have adequate numbers of emergency contacts, next of kin designations, or professional contacts on file, leaving significant gaps in safety arrangements.`,
     );
-  } else if (multiContactRate < 70 && multiContactRate >= 40 && totalMultiContactRecords > 0) {
+  } else if (below(multiContactRate, 70) && meets(multiContactRate, 40) && totalMultiContactRecords > 0) {
     concerns.push(
       `Multi-contact coverage at ${multiContactRate}% — some children lack sufficient emergency contacts, next of kin designations, or professional contact records.`,
     );
   }
 
-  if (outOfHoursRate < 50 && totalOOHRecords > 0) {
+  if (below(outOfHoursRate, 50) && totalOOHRecords > 0) {
     concerns.push(
       `Only ${outOfHoursRate}% out-of-hours readiness — out-of-hours emergency arrangements are inadequate, with missing contacts, undocumented procedures, or staff unaware of escalation pathways. This is a direct safety risk.`,
     );
-  } else if (outOfHoursRate < 70 && outOfHoursRate >= 50 && totalOOHRecords > 0) {
+  } else if (below(outOfHoursRate, 70) && meets(outOfHoursRate, 50) && totalOOHRecords > 0) {
     concerns.push(
       `Out-of-hours readiness at ${outOfHoursRate}% — some out-of-hours arrangements are incomplete, untested, or not fully communicated to staff.`,
     );
   }
 
-  if (verificationRate < 50 && totalContactRecords > 0) {
+  if (below(verificationRate, 50) && totalContactRecords > 0) {
     concerns.push(
       `Only ${verificationRate}% of emergency contacts have been verified — the home holds contact information that has not been confirmed as accurate, creating a risk of failed communication during emergencies.`,
     );
-  } else if (verificationRate < 70 && verificationRate >= 50 && totalContactRecords > 0) {
+  } else if (below(verificationRate, 70) && meets(verificationRate, 50) && totalContactRecords > 0) {
     concerns.push(
       `Contact verification rate at ${verificationRate}% — a significant proportion of emergency contacts have not been verified for accuracy.`,
     );
   }
 
-  if (childCoverageRate < 50 && total_children > 0) {
+  if (below(childCoverageRate, 50) && total_children > 0) {
     concerns.push(
       `Only ${childCoverageRate}% of children have current emergency contacts — a significant number of children on placement do not have accessible, current emergency contact arrangements, which is a fundamental safeguarding failure.`,
     );
-  } else if (childCoverageRate < 70 && childCoverageRate >= 50 && total_children > 0) {
+  } else if (below(childCoverageRate, 70) && meets(childCoverageRate, 50) && total_children > 0) {
     concerns.push(
       `Child emergency contact coverage at ${childCoverageRate}% — some children on placement lack current emergency contact arrangements.`,
     );
   }
 
-  if (nextOfKinRate < 50 && totalMultiContactRecords > 0) {
+  if (below(nextOfKinRate, 50) && totalMultiContactRecords > 0) {
     concerns.push(
       `Only ${nextOfKinRate}% of children have a designated next of kin — the home cannot meet its Reg 40 notification obligations for many children, as there is no clearly designated person to notify of serious events.`,
     );
-  } else if (nextOfKinRate < 70 && nextOfKinRate >= 50 && totalMultiContactRecords > 0) {
+  } else if (below(nextOfKinRate, 70) && meets(nextOfKinRate, 50) && totalMultiContactRecords > 0) {
     concerns.push(
       `Next of kin designation at ${nextOfKinRate}% — some children do not have a clearly designated next of kin, creating gaps in notification arrangements.`,
     );
   }
 
-  if (staleContactRate > 50 && totalContactRecords > 0) {
+  if (above(staleContactRate, 50) && totalContactRecords > 0) {
     concerns.push(
       `${staleContactRate}% of contacts are stale (not verified in 180+ days) — a majority of emergency contacts have not been verified in over six months, significantly increasing the risk of holding outdated information.`,
     );
-  } else if (staleContactRate > 30 && staleContactRate <= 50 && totalContactRecords > 0) {
+  } else if (above(staleContactRate, 30) && staleContactRate! <= 50 && totalContactRecords > 0) {
     concerns.push(
       `${staleContactRate}% of contacts are stale — a notable proportion of contacts have not been verified in over six months.`,
     );
   }
 
-  if (overdueRate > 50 && totalUpdateRecords > 0) {
+  if (above(overdueRate, 50) && totalUpdateRecords > 0) {
     concerns.push(
       `${overdueRate}% of contact reviews are overdue — the majority of scheduled reviews have not been completed on time, undermining the home's ability to maintain current contact information.`,
     );
-  } else if (overdueRate > 30 && overdueRate <= 50 && totalUpdateRecords > 0) {
+  } else if (above(overdueRate, 30) && overdueRate! <= 50 && totalUpdateRecords > 0) {
     concerns.push(
       `${overdueRate}% of contact reviews are overdue — a significant proportion of scheduled reviews have not been completed on time.`,
     );
   }
 
-  if (escalationDocumentedRate < 50 && totalOOHRecords > 0) {
+  if (below(escalationDocumentedRate, 50) && totalOOHRecords > 0) {
     concerns.push(
       `Only ${escalationDocumentedRate}% of out-of-hours escalation procedures documented — staff may not know who to contact or in what order during an emergency outside normal hours.`,
     );
   }
 
-  if (staffAwareRate < 50 && totalOOHRecords > 0) {
+  if (below(staffAwareRate, 50) && totalOOHRecords > 0) {
     concerns.push(
       `Only ${staffAwareRate}% staff awareness of out-of-hours procedures — staff are not adequately informed about emergency escalation pathways, which could lead to dangerous delays during critical situations.`,
     );
@@ -757,7 +760,7 @@ export function computeEmergencyContactNextOfKin(
   const recommendations: EmergencyContactRecommendation[] = [];
   let rank = 0;
 
-  if (contactCurrencyRate < 50 && totalContactRecords > 0) {
+  if (below(contactCurrencyRate, 50) && totalContactRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -767,7 +770,7 @@ export function computeEmergencyContactNextOfKin(
     });
   }
 
-  if (accessibilityRate < 50 && totalAccessibilityTests > 0) {
+  if (below(accessibilityRate, 50) && totalAccessibilityTests > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -777,7 +780,7 @@ export function computeEmergencyContactNextOfKin(
     });
   }
 
-  if (outOfHoursRate < 50 && totalOOHRecords > 0) {
+  if (below(outOfHoursRate, 50) && totalOOHRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -787,7 +790,7 @@ export function computeEmergencyContactNextOfKin(
     });
   }
 
-  if (childCoverageRate < 50 && total_children > 0) {
+  if (below(childCoverageRate, 50) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -797,7 +800,7 @@ export function computeEmergencyContactNextOfKin(
     });
   }
 
-  if (nextOfKinRate < 50 && totalMultiContactRecords > 0) {
+  if (below(nextOfKinRate, 50) && totalMultiContactRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -807,7 +810,7 @@ export function computeEmergencyContactNextOfKin(
     });
   }
 
-  if (multiContactRate < 40 && totalMultiContactRecords > 0) {
+  if (below(multiContactRate, 40) && totalMultiContactRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -847,7 +850,7 @@ export function computeEmergencyContactNextOfKin(
     });
   }
 
-  if (staffAwareRate < 50 && totalOOHRecords > 0) {
+  if (below(staffAwareRate, 50) && totalOOHRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -857,7 +860,7 @@ export function computeEmergencyContactNextOfKin(
     });
   }
 
-  if (escalationDocumentedRate < 50 && totalOOHRecords > 0) {
+  if (below(escalationDocumentedRate, 50) && totalOOHRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -867,7 +870,7 @@ export function computeEmergencyContactNextOfKin(
     });
   }
 
-  if (verificationRate < 50 && totalContactRecords > 0) {
+  if (below(verificationRate, 50) && totalContactRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -877,7 +880,7 @@ export function computeEmergencyContactNextOfKin(
     });
   }
 
-  if (staleContactRate > 50 && totalContactRecords > 0) {
+  if (above(staleContactRate, 50) && totalContactRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -887,7 +890,7 @@ export function computeEmergencyContactNextOfKin(
     });
   }
 
-  if (overdueRate > 50 && totalUpdateRecords > 0) {
+  if (above(overdueRate, 50) && totalUpdateRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -897,7 +900,7 @@ export function computeEmergencyContactNextOfKin(
     });
   }
 
-  if (contactCurrencyRate >= 50 && contactCurrencyRate < 70 && totalContactRecords > 0) {
+  if (meets(contactCurrencyRate, 50) && below(contactCurrencyRate, 70) && totalContactRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -907,7 +910,7 @@ export function computeEmergencyContactNextOfKin(
     });
   }
 
-  if (accessibilityRate >= 50 && accessibilityRate < 70 && totalAccessibilityTests > 0) {
+  if (meets(accessibilityRate, 50) && below(accessibilityRate, 70) && totalAccessibilityTests > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -917,7 +920,7 @@ export function computeEmergencyContactNextOfKin(
     });
   }
 
-  if (multiContactRate >= 40 && multiContactRate < 70 && totalMultiContactRecords > 0) {
+  if (meets(multiContactRate, 40) && below(multiContactRate, 70) && totalMultiContactRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -927,7 +930,7 @@ export function computeEmergencyContactNextOfKin(
     });
   }
 
-  if (outOfHoursRate >= 50 && outOfHoursRate < 70 && totalOOHRecords > 0) {
+  if (meets(outOfHoursRate, 50) && below(outOfHoursRate, 70) && totalOOHRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -937,7 +940,7 @@ export function computeEmergencyContactNextOfKin(
     });
   }
 
-  if (nextOfKinRate >= 50 && nextOfKinRate < 70 && totalMultiContactRecords > 0) {
+  if (meets(nextOfKinRate, 50) && below(nextOfKinRate, 70) && totalMultiContactRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -947,7 +950,7 @@ export function computeEmergencyContactNextOfKin(
     });
   }
 
-  if (scheduledUpdateRate < 50 && totalUpdateRecords > 0) {
+  if (below(scheduledUpdateRate, 50) && totalUpdateRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -957,7 +960,7 @@ export function computeEmergencyContactNextOfKin(
     });
   }
 
-  if (gapResolutionRate < 70 && gapsIdentifiedRecords > 0) {
+  if (below(gapResolutionRate, 70) && gapsIdentifiedRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -967,7 +970,7 @@ export function computeEmergencyContactNextOfKin(
     });
   }
 
-  if (updateFrequencyRate >= 50 && updateFrequencyRate < 70 && totalUpdateRecords > 0) {
+  if (meets(updateFrequencyRate, 50) && below(updateFrequencyRate, 70) && totalUpdateRecords > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -985,42 +988,42 @@ export function computeEmergencyContactNextOfKin(
 
   // -- Critical insights --
 
-  if (contactCurrencyRate < 50 && totalContactRecords > 0) {
+  if (below(contactCurrencyRate, 50) && totalContactRecords > 0) {
     insights.push({
       text: `Only ${contactCurrencyRate}% contact currency. Ofsted expects children's homes to maintain current, verified emergency contact information for every child. When the majority of contacts are outdated, unverified, or lack consent, the home cannot fulfil its duty to communicate with responsible adults during emergencies — a fundamental Reg 5 and Reg 40 failure.`,
       severity: "critical",
     });
   }
 
-  if (accessibilityRate < 50 && totalAccessibilityTests > 0) {
+  if (below(accessibilityRate, 50) && totalAccessibilityTests > 0) {
     insights.push({
       text: `Only ${accessibilityRate}% accessibility rate. Emergency contacts that cannot be reached provide no protective function. When accessibility testing reveals that the majority of contacts are unreachable, the home's emergency communication capability is critically compromised, directly impacting children's safety.`,
       severity: "critical",
     });
   }
 
-  if (outOfHoursRate < 50 && totalOOHRecords > 0) {
+  if (below(outOfHoursRate, 50) && totalOOHRecords > 0) {
     insights.push({
       text: `Only ${outOfHoursRate}% out-of-hours readiness. Many serious incidents occur outside normal working hours. Inadequate out-of-hours arrangements — missing contacts, undocumented escalation procedures, or uninformed staff — mean the home may not be able to respond effectively to emergencies when children are most vulnerable.`,
       severity: "critical",
     });
   }
 
-  if (childCoverageRate < 50 && total_children > 0) {
+  if (below(childCoverageRate, 50) && total_children > 0) {
     insights.push({
       text: `Only ${childCoverageRate}% of children have current emergency contacts. Children without accessible emergency contact arrangements are at significantly heightened risk — the home cannot notify responsible adults of injuries, illnesses, missing episodes, or other serious events. This is a direct safeguarding concern.`,
       severity: "critical",
     });
   }
 
-  if (nextOfKinRate < 50 && totalMultiContactRecords > 0) {
+  if (below(nextOfKinRate, 50) && totalMultiContactRecords > 0) {
     insights.push({
       text: `Only ${nextOfKinRate}% next of kin designation. Under Reg 40, homes must notify the relevant person of serious events. Without a clearly designated next of kin for each child, the home cannot meet this legal obligation, which has significant implications for regulatory compliance and family engagement.`,
       severity: "critical",
     });
   }
 
-  if (staffAwareRate < 50 && totalOOHRecords > 0) {
+  if (below(staffAwareRate, 50) && totalOOHRecords > 0) {
     insights.push({
       text: `Only ${staffAwareRate}% staff awareness of out-of-hours procedures. Staff who are not aware of emergency escalation pathways represent a direct safety risk — during a night-time or weekend emergency, delays in contacting the right people can have serious consequences for children's welfare.`,
       severity: "critical",
@@ -1043,70 +1046,70 @@ export function computeEmergencyContactNextOfKin(
 
   // -- Warning insights --
 
-  if (contactCurrencyRate >= 50 && contactCurrencyRate < 70 && totalContactRecords > 0) {
+  if (meets(contactCurrencyRate, 50) && below(contactCurrencyRate, 70) && totalContactRecords > 0) {
     insights.push({
       text: `Contact currency at ${contactCurrencyRate}% — improving but inconsistent. Some contacts are outdated, lack consent, or have not been recently verified. The home should implement a systematic review cycle to ensure all contact information is confirmed at least quarterly.`,
       severity: "warning",
     });
   }
 
-  if (accessibilityRate >= 50 && accessibilityRate < 70 && totalAccessibilityTests > 0) {
+  if (meets(accessibilityRate, 50) && below(accessibilityRate, 70) && totalAccessibilityTests > 0) {
     insights.push({
       text: `Accessibility rate at ${accessibilityRate}% — some emergency contacts are not reliably reachable. Consider establishing alternative communication methods (text, email, alternative numbers) for contacts who are difficult to reach by phone.`,
       severity: "warning",
     });
   }
 
-  if (updateFrequencyRate >= 50 && updateFrequencyRate < 70 && totalUpdateRecords > 0) {
+  if (meets(updateFrequencyRate, 50) && below(updateFrequencyRate, 70) && totalUpdateRecords > 0) {
     insights.push({
       text: `Update frequency compliance at ${updateFrequencyRate}% — contact reviews are not consistently on schedule. Regular, planned reviews are essential to maintaining current information. Consider linking contact reviews to existing review cycles (LAC reviews, placement reviews).`,
       severity: "warning",
     });
   }
 
-  if (multiContactRate >= 40 && multiContactRate < 70 && totalMultiContactRecords > 0) {
+  if (meets(multiContactRate, 40) && below(multiContactRate, 70) && totalMultiContactRecords > 0) {
     insights.push({
       text: `Multi-contact coverage at ${multiContactRate}% — some children do not have adequate emergency contact diversity. Children benefit from having multiple, different types of contacts (family, professional, community) to provide comprehensive safety coverage.`,
       severity: "warning",
     });
   }
 
-  if (outOfHoursRate >= 50 && outOfHoursRate < 70 && totalOOHRecords > 0) {
+  if (meets(outOfHoursRate, 50) && below(outOfHoursRate, 70) && totalOOHRecords > 0) {
     insights.push({
       text: `Out-of-hours readiness at ${outOfHoursRate}% — some gaps exist in the home's out-of-hours arrangements. Regular testing and staff training on escalation procedures would strengthen the home's emergency response capability outside normal hours.`,
       severity: "warning",
     });
   }
 
-  if (staleContactRate > 30 && staleContactRate <= 50 && totalContactRecords > 0) {
+  if (above(staleContactRate, 30) && staleContactRate! <= 50 && totalContactRecords > 0) {
     insights.push({
       text: `${staleContactRate}% of contacts are stale (not verified in 180+ days). Contact details change frequently — phone numbers, addresses, and relationship circumstances can all shift. Regular verification prevents the home from holding outdated information that fails when needed most.`,
       severity: "warning",
     });
   }
 
-  if (overdueRate > 30 && overdueRate <= 50 && totalUpdateRecords > 0) {
+  if (above(overdueRate, 30) && overdueRate! <= 50 && totalUpdateRecords > 0) {
     insights.push({
       text: `${overdueRate}% of contact reviews are overdue. Falling behind on scheduled reviews means contact information may drift out of date without the home being aware. Consider implementing automated reminders and linking reviews to placement review cycles.`,
       severity: "warning",
     });
   }
 
-  if (verificationRate >= 50 && verificationRate < 70 && totalContactRecords > 0) {
+  if (meets(verificationRate, 50) && below(verificationRate, 70) && totalContactRecords > 0) {
     insights.push({
       text: `Contact verification rate at ${verificationRate}% — not all emergency contacts have been confirmed as accurate. Unverified contacts may contain outdated phone numbers or addresses that fail during emergencies. A systematic verification programme would reduce this risk.`,
       severity: "warning",
     });
   }
 
-  if (scheduledUpdateRate < 50 && totalUpdateRecords > 0) {
+  if (below(scheduledUpdateRate, 50) && totalUpdateRecords > 0) {
     insights.push({
       text: `Only ${scheduledUpdateRate}% of contact updates are scheduled/planned. A reactive approach to contact maintenance — updating only when prompted by incidents or changes — means the home may miss gradual drift in contact accuracy. Proactive, scheduled reviews are best practice.`,
       severity: "warning",
     });
   }
 
-  if (gapResolutionRate < 70 && gapResolutionRate >= 40 && gapsIdentifiedRecords > 0) {
+  if (below(gapResolutionRate, 70) && meets(gapResolutionRate, 40) && gapsIdentifiedRecords > 0) {
     insights.push({
       text: `Contact gap resolution rate at ${gapResolutionRate}% — some identified gaps in contact arrangements remain unaddressed. The home has identified issues but not followed through to resolution, which limits the effectiveness of its review processes.`,
       severity: "warning",
@@ -1140,70 +1143,70 @@ export function computeEmergencyContactNextOfKin(
     });
   }
 
-  if (contactCurrencyRate >= 90 && verificationRate >= 90 && totalContactRecords > 0) {
+  if (meets(contactCurrencyRate, 90) && meets(verificationRate, 90) && totalContactRecords > 0) {
     insights.push({
       text: `${contactCurrencyRate}% contact currency with ${verificationRate}% verification — emergency contact information is both current and confirmed accurate. The home can be confident that contact details will be reliable when needed during emergencies.`,
       severity: "positive",
     });
   }
 
-  if (accessibilityRate >= 90 && rapidResponseRate >= 90 && totalAccessibilityTests > 0) {
+  if (meets(accessibilityRate, 90) && meets(rapidResponseRate, 90) && totalAccessibilityTests > 0) {
     insights.push({
       text: `${accessibilityRate}% accessibility with ${rapidResponseRate}% rapid response — emergency contacts are not only reachable but respond quickly. This demonstrates that the home has established effective communication pathways with families and professionals.`,
       severity: "positive",
     });
   }
 
-  if (multiContactRate >= 90 && nextOfKinRate >= 90 && totalMultiContactRecords > 0) {
+  if (meets(multiContactRate, 90) && meets(nextOfKinRate, 90) && totalMultiContactRecords > 0) {
     insights.push({
       text: `${multiContactRate}% multi-contact coverage with ${nextOfKinRate}% next of kin designation — children have comprehensive emergency contact arrangements with clearly designated next of kin. The home meets its Reg 40 notification obligations and provides robust safety nets.`,
       severity: "positive",
     });
   }
 
-  if (outOfHoursRate >= 90 && staffAwareRate >= 90 && totalOOHRecords > 0) {
+  if (meets(outOfHoursRate, 90) && meets(staffAwareRate, 90) && totalOOHRecords > 0) {
     insights.push({
       text: `${outOfHoursRate}% out-of-hours readiness with ${staffAwareRate}% staff awareness — the home maintains excellent out-of-hours emergency arrangements and staff know exactly how to escalate concerns. This provides strong assurance of 24-hour emergency response capability.`,
       severity: "positive",
     });
   }
 
-  if (escalationDocumentedRate >= 90 && oohTestSuccessRate >= 90 && totalOOHRecords > 0) {
+  if (meets(escalationDocumentedRate, 90) && meets(oohTestSuccessRate, 90) && totalOOHRecords > 0) {
     insights.push({
       text: `${escalationDocumentedRate}% escalation procedures documented with ${oohTestSuccessRate}% test success — out-of-hours procedures are not only documented but tested and confirmed to work. The home demonstrates excellent emergency preparedness.`,
       severity: "positive",
     });
   }
 
-  if (childCoverageRate >= 90 && total_children > 0) {
+  if (meets(childCoverageRate, 90) && total_children > 0) {
     insights.push({
       text: `${childCoverageRate}% child coverage — virtually every child on placement has current, accessible emergency contacts. This universal coverage means the home can respond to any emergency with confidence that responsible adults can be reached.`,
       severity: "positive",
     });
   }
 
-  if (gapResolutionRate >= 90 && gapsIdentifiedRecords > 0) {
+  if (meets(gapResolutionRate, 90) && gapsIdentifiedRecords > 0) {
     insights.push({
       text: `${gapResolutionRate}% gap resolution — the home actively identifies and addresses gaps in emergency contact arrangements. This proactive approach demonstrates continuous improvement in maintaining comprehensive safety nets for children.`,
       severity: "positive",
     });
   }
 
-  if (updateFrequencyRate >= 90 && scheduledUpdateRate >= 80 && totalUpdateRecords > 0) {
+  if (meets(updateFrequencyRate, 90) && meets(scheduledUpdateRate, 80) && totalUpdateRecords > 0) {
     insights.push({
       text: `${updateFrequencyRate}% update frequency with ${scheduledUpdateRate}% scheduled reviews — the home maintains a proactive, systematic approach to keeping contact information current. Planned reviews, rather than reactive updates, ensure consistent data quality.`,
       severity: "positive",
     });
   }
 
-  if (consentRate >= 90 && totalContactRecords > 0) {
+  if (meets(consentRate, 90) && totalContactRecords > 0) {
     insights.push({
       text: `${consentRate}% consent to contact recorded — the home maintains excellent consent records, ensuring that emergency contact arrangements are both legally compliant and respectful of families' wishes.`,
       severity: "positive",
     });
   }
 
-  if (socialWorkerRate >= 90 && placingAuthorityRate >= 90 && totalMultiContactRecords > 0) {
+  if (meets(socialWorkerRate, 90) && meets(placingAuthorityRate, 90) && totalMultiContactRecords > 0) {
     insights.push({
       text: `${socialWorkerRate}% social worker and ${placingAuthorityRate}% placing authority contact coverage — professional contacts are comprehensively recorded, supporting effective multi-agency communication and rapid information sharing.`,
       severity: "positive",
