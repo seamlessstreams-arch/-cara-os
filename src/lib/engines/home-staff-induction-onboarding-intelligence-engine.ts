@@ -11,6 +11,8 @@
 // thorough, timely, and cover all mandatory areas before lone working.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface StaffInductionInput {
@@ -128,10 +130,6 @@ export interface StaffInductionOnboardingResult {
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
-}
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
 }
 
 function toRating(score: number): InductionOnboardingRating {
@@ -273,14 +271,14 @@ export function computeStaffInductionOnboarding(
   const notStartedInductions = staff_inductions.filter(
     (i) => i.status === "not_started",
   ).length;
-  const completionRate = pct(completedInductions, totalInductions);
+  const completionRate = rate(completedInductions, totalInductions);
 
   // ── Metric 2: Agency induction completion ────────────────────────────
   const totalAgency = agency_inductions.length;
   const completedAgency = agency_inductions.filter(
     (a) => a.completed,
   ).length;
-  const agencyCompletionRate = pct(completedAgency, totalAgency);
+  const agencyCompletionRate = rate(completedAgency, totalAgency);
 
   // ── Metric 3: Safeguarding coverage ──────────────────────────────────
   // Counts across both permanent and agency inductions
@@ -291,7 +289,7 @@ export function computeStaffInductionOnboarding(
     (a) => a.safeguarding_briefed,
   ).length;
   const totalInductionRecords = totalInductions + totalAgency;
-  const safeguardingCoverage = pct(
+  const safeguardingCoverage = rate(
     permanentSafeguarding + agencySafeguarding,
     totalInductionRecords,
   );
@@ -303,7 +301,7 @@ export function computeStaffInductionOnboarding(
   const agencyMedication = agency_inductions.filter(
     (a) => a.medication_briefed,
   ).length;
-  const medicationCoverage = pct(
+  const medicationCoverage = rate(
     permanentMedication + agencyMedication,
     totalInductionRecords,
   );
@@ -315,7 +313,7 @@ export function computeStaffInductionOnboarding(
   const agencyFire = agency_inductions.filter(
     (a) => a.fire_procedures_briefed,
   ).length;
-  const fireSafetyCoverage = pct(
+  const fireSafetyCoverage = rate(
     permanentFire + agencyFire,
     totalInductionRecords,
   );
@@ -325,21 +323,21 @@ export function computeStaffInductionOnboarding(
   const competencyConfirmed = shadowing_records.filter(
     (s) => s.competency_confirmed,
   ).length;
-  const shadowingCompletionRate = pct(totalShadowing, total_staff);
-  const shadowingCompetencyRate = pct(competencyConfirmed, totalShadowing);
+  const shadowingCompletionRate = rate(totalShadowing, total_staff);
+  const shadowingCompetencyRate = rate(competencyConfirmed, totalShadowing);
 
   // ── Metric 7: Lone working readiness ─────────────────────────────────
   const readyForLoneWorking = shadowing_records.filter(
     (s) => s.ready_for_lone_working,
   ).length;
-  const loneWorkingReadiness = pct(readyForLoneWorking, totalShadowing);
+  const loneWorkingReadiness = rate(readyForLoneWorking, totalShadowing);
 
   // ── Metric 8: Handbook acknowledgement ───────────────────────────────
   const totalHandbooks = handbook_acknowledgements.length;
   const signedHandbooks = handbook_acknowledgements.filter(
     (h) => h.signed,
   ).length;
-  const handbookAckRate = pct(signedHandbooks, totalHandbooks);
+  const handbookAckRate = rate(signedHandbooks, totalHandbooks);
 
   // ── Metric 9: Average module completion ──────────────────────────────
   const avgModuleCompletion =
@@ -388,52 +386,52 @@ export function computeStaffInductionOnboarding(
   let score = 52;
 
   // Bonus 1: Induction completion rate (+4 / +2)
-  if (completionRate >= 100) score += 4;
-  else if (completionRate >= 85) score += 2;
+  if (meets(completionRate, 100)) score += 4;
+  else if (meets(completionRate, 85)) score += 2;
 
   // Bonus 2: Agency induction completion rate (+3 / +1)
-  if (agencyCompletionRate >= 100) score += 3;
-  else if (agencyCompletionRate >= 80) score += 1;
+  if (meets(agencyCompletionRate, 100)) score += 3;
+  else if (meets(agencyCompletionRate, 80)) score += 1;
 
   // Bonus 3: Safeguarding coverage (+4 / +2)
-  if (safeguardingCoverage >= 100) score += 4;
-  else if (safeguardingCoverage >= 90) score += 2;
+  if (meets(safeguardingCoverage, 100)) score += 4;
+  else if (meets(safeguardingCoverage, 90)) score += 2;
 
   // Bonus 4: Medication coverage (+3 / +1)
-  if (medicationCoverage >= 100) score += 3;
-  else if (medicationCoverage >= 85) score += 1;
+  if (meets(medicationCoverage, 100)) score += 3;
+  else if (meets(medicationCoverage, 85)) score += 1;
 
   // Bonus 5: Fire safety coverage (+2 / +1)
-  if (fireSafetyCoverage >= 100) score += 2;
-  else if (fireSafetyCoverage >= 90) score += 1;
+  if (meets(fireSafetyCoverage, 100)) score += 2;
+  else if (meets(fireSafetyCoverage, 90)) score += 1;
 
   // Bonus 6: Shadowing competency rate (+3 / +1)
-  if (shadowingCompetencyRate >= 100) score += 3;
-  else if (shadowingCompetencyRate >= 80) score += 1;
+  if (meets(shadowingCompetencyRate, 100)) score += 3;
+  else if (meets(shadowingCompetencyRate, 80)) score += 1;
 
   // Bonus 7: Handbook acknowledgement rate (+3 / +1)
-  if (handbookAckRate >= 100) score += 3;
-  else if (handbookAckRate >= 85) score += 1;
+  if (meets(handbookAckRate, 100)) score += 3;
+  else if (meets(handbookAckRate, 85)) score += 1;
 
   // Bonus 8: Lone working readiness (+3 / +1)
-  if (loneWorkingReadiness >= 100) score += 3;
-  else if (loneWorkingReadiness >= 80) score += 1;
+  if (meets(loneWorkingReadiness, 100)) score += 3;
+  else if (meets(loneWorkingReadiness, 80)) score += 1;
 
   // Bonus 9: Average module completion (+3 / +1)
   if (avgModuleCompletion >= 95) score += 3;
   else if (avgModuleCompletion >= 80) score += 1;
 
   // Penalty 1: Safeguarding coverage < 50%
-  if (safeguardingCoverage < 50) score -= 5;
+  if (below(safeguardingCoverage, 50)) score -= 5;
 
   // Penalty 2: Completion rate < 50%
-  if (completionRate < 50) score -= 5;
+  if (below(completionRate, 50)) score -= 5;
 
   // Penalty 3: Agency completion rate < 50%
-  if (agencyCompletionRate < 50) score -= 5;
+  if (below(agencyCompletionRate, 50)) score -= 5;
 
   // Penalty 4: Fire safety coverage < 70%
-  if (fireSafetyCoverage < 70) score -= 3;
+  if (below(fireSafetyCoverage, 70)) score -= 3;
 
   score = clamp(score, 0, 100);
   const rating = toRating(score);
@@ -441,69 +439,69 @@ export function computeStaffInductionOnboarding(
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
 
-  if (completionRate >= 100 && totalInductions > 0) {
+  if (meets(completionRate, 100) && totalInductions > 0) {
     strengths.push(
       `All ${totalInductions} staff inductions completed — 100% completion demonstrates a rigorous onboarding process.`,
     );
-  } else if (completionRate >= 85 && totalInductions > 0) {
+  } else if (meets(completionRate, 85) && totalInductions > 0) {
     strengths.push(
-      `${completionRate}% induction completion rate — the majority of staff have completed their structured induction.`,
+      `${formatRate(completionRate)} induction completion rate — the majority of staff have completed their structured induction.`,
     );
   }
 
-  if (agencyCompletionRate >= 100 && totalAgency > 0) {
+  if (meets(agencyCompletionRate, 100) && totalAgency > 0) {
     strengths.push(
       `All ${totalAgency} agency staff inductions completed — agency workers are properly briefed before working with children.`,
     );
-  } else if (agencyCompletionRate >= 80 && totalAgency > 0) {
+  } else if (meets(agencyCompletionRate, 80) && totalAgency > 0) {
     strengths.push(
-      `${agencyCompletionRate}% agency induction completion rate — most agency staff receive a home-specific induction.`,
+      `${formatRate(agencyCompletionRate)} agency induction completion rate — most agency staff receive a home-specific induction.`,
     );
   }
 
-  if (safeguardingCoverage >= 100 && totalInductionRecords > 0) {
+  if (meets(safeguardingCoverage, 100) && totalInductionRecords > 0) {
     strengths.push(
       "Safeguarding covered in 100% of inductions — every staff member and agency worker is briefed on safeguarding responsibilities.",
     );
-  } else if (safeguardingCoverage >= 90 && totalInductionRecords > 0) {
+  } else if (meets(safeguardingCoverage, 90) && totalInductionRecords > 0) {
     strengths.push(
-      `Safeguarding coverage at ${safeguardingCoverage}% across inductions — strong safeguarding awareness during onboarding.`,
+      `Safeguarding coverage at ${formatRate(safeguardingCoverage)} across inductions — strong safeguarding awareness during onboarding.`,
     );
   }
 
-  if (medicationCoverage >= 100 && totalInductionRecords > 0) {
+  if (meets(medicationCoverage, 100) && totalInductionRecords > 0) {
     strengths.push(
       "Medication procedures covered in all inductions — staff are prepared for safe medication administration.",
     );
   }
 
-  if (fireSafetyCoverage >= 100 && totalInductionRecords > 0) {
+  if (meets(fireSafetyCoverage, 100) && totalInductionRecords > 0) {
     strengths.push(
       "Fire safety covered in all inductions — every staff member knows fire procedures from day one.",
     );
   }
 
-  if (shadowingCompetencyRate >= 100 && totalShadowing > 0) {
+  if (meets(shadowingCompetencyRate, 100) && totalShadowing > 0) {
     strengths.push(
       `All ${totalShadowing} shadowing records confirm competency — staff demonstrate readiness through supervised practice.`,
     );
-  } else if (shadowingCompetencyRate >= 80 && totalShadowing > 0) {
+  } else if (meets(shadowingCompetencyRate, 80) && totalShadowing > 0) {
     strengths.push(
-      `${shadowingCompetencyRate}% of shadowing assessments confirm competency — most staff are demonstrating capability during shadowing.`,
+      `${formatRate(shadowingCompetencyRate)} of shadowing assessments confirm competency — most staff are demonstrating capability during shadowing.`,
     );
   }
 
-  if (handbookAckRate >= 100 && totalHandbooks > 0) {
+  if (meets(handbookAckRate, 100) && totalHandbooks > 0) {
     strengths.push(
       `All ${totalHandbooks} handbook acknowledgements signed — staff are confirmed as having read key policies.`,
     );
-  } else if (handbookAckRate >= 85 && totalHandbooks > 0) {
+  } else if (meets(handbookAckRate, 85) && totalHandbooks > 0) {
     strengths.push(
-      `${handbookAckRate}% handbook acknowledgement rate — the majority of staff have read and signed the handbook.`,
+      `${formatRate(handbookAckRate)} handbook acknowledgement rate — the majority of staff have read and signed the handbook.`,
     );
   }
 
-  if (loneWorkingReadiness >= 100 && totalShadowing > 0) {
+  if (meets(loneWorkingReadiness, 100) && totalShadowing > 0) {
     strengths.push(
       "All shadowed staff assessed as ready for lone working — mentors confirm competency before unsupervised shifts.",
     );
@@ -546,59 +544,59 @@ export function computeStaffInductionOnboarding(
     );
   }
 
-  if (completionRate < 50 && totalInductions > 0) {
+  if (below(completionRate, 50) && totalInductions > 0) {
     concerns.push(
-      `Only ${completionRate}% of staff inductions completed — more than half of staff lack a completed induction programme.`,
+      `Only ${formatRate(completionRate)} of staff inductions completed — more than half of staff lack a completed induction programme.`,
     );
   }
 
-  if (agencyCompletionRate < 50 && totalAgency > 0) {
+  if (below(agencyCompletionRate, 50) && totalAgency > 0) {
     concerns.push(
-      `Only ${agencyCompletionRate}% of agency inductions completed — agency staff may be working without adequate home-specific briefing.`,
+      `Only ${formatRate(agencyCompletionRate)} of agency inductions completed — agency staff may be working without adequate home-specific briefing.`,
     );
   }
 
-  if (safeguardingCoverage < 50 && totalInductionRecords > 0) {
+  if (below(safeguardingCoverage, 50) && totalInductionRecords > 0) {
     concerns.push(
-      `Safeguarding covered in only ${safeguardingCoverage}% of inductions — a critical gap that Ofsted will scrutinise under Reg 34.`,
+      `Safeguarding covered in only ${formatRate(safeguardingCoverage)} of inductions — a critical gap that Ofsted will scrutinise under Reg 34.`,
     );
   } else if (
-    safeguardingCoverage < 80 &&
-    safeguardingCoverage >= 50 &&
+    below(safeguardingCoverage, 80) &&
+    meets(safeguardingCoverage, 50) &&
     totalInductionRecords > 0
   ) {
     concerns.push(
-      `Safeguarding coverage at ${safeguardingCoverage}% — not all staff are receiving safeguarding briefing during induction.`,
+      `Safeguarding coverage at ${formatRate(safeguardingCoverage)} — not all staff are receiving safeguarding briefing during induction.`,
     );
   }
 
-  if (medicationCoverage < 70 && totalInductionRecords > 0) {
+  if (below(medicationCoverage, 70) && totalInductionRecords > 0) {
     concerns.push(
-      `Medication procedures covered in only ${medicationCoverage}% of inductions — staff may not be equipped for safe medication administration.`,
+      `Medication procedures covered in only ${formatRate(medicationCoverage)} of inductions — staff may not be equipped for safe medication administration.`,
     );
   }
 
-  if (fireSafetyCoverage < 70 && totalInductionRecords > 0) {
+  if (below(fireSafetyCoverage, 70) && totalInductionRecords > 0) {
     concerns.push(
-      `Fire safety covered in only ${fireSafetyCoverage}% of inductions — staff may not know evacuation procedures, breaching Reg 32.`,
+      `Fire safety covered in only ${formatRate(fireSafetyCoverage)} of inductions — staff may not know evacuation procedures, breaching Reg 32.`,
     );
   }
 
-  if (shadowingCompetencyRate < 50 && totalShadowing > 0) {
+  if (below(shadowingCompetencyRate, 50) && totalShadowing > 0) {
     concerns.push(
-      `Only ${shadowingCompetencyRate}% of shadowing assessments confirm competency — significant proportion of staff not yet assessed as competent.`,
+      `Only ${formatRate(shadowingCompetencyRate)} of shadowing assessments confirm competency — significant proportion of staff not yet assessed as competent.`,
     );
   }
 
-  if (loneWorkingReadiness < 50 && totalShadowing > 0) {
+  if (below(loneWorkingReadiness, 50) && totalShadowing > 0) {
     concerns.push(
-      `Only ${loneWorkingReadiness}% of shadowed staff assessed as ready for lone working — staff may be working unsupervised before they are competent.`,
+      `Only ${formatRate(loneWorkingReadiness)} of shadowed staff assessed as ready for lone working — staff may be working unsupervised before they are competent.`,
     );
   }
 
-  if (handbookAckRate < 50 && totalHandbooks > 0) {
+  if (below(handbookAckRate, 50) && totalHandbooks > 0) {
     concerns.push(
-      `Only ${handbookAckRate}% of handbook acknowledgements signed — staff may not be aware of key policies and procedures.`,
+      `Only ${formatRate(handbookAckRate)} of handbook acknowledgements signed — staff may not be aware of key policies and procedures.`,
     );
   }
 
@@ -638,73 +636,73 @@ export function computeStaffInductionOnboarding(
     });
   }
 
-  if (safeguardingCoverage < 80 && totalInductionRecords > 0) {
+  if (below(safeguardingCoverage, 80) && totalInductionRecords > 0) {
     recs.push({
       rank: rank++,
-      recommendation: `Increase safeguarding coverage from ${safeguardingCoverage}% to 100% — every induction must include safeguarding awareness. Reg 34 requires staff to be fit, which includes safeguarding competence.`,
+      recommendation: `Increase safeguarding coverage from ${formatRate(safeguardingCoverage)} to 100% — every induction must include safeguarding awareness. Reg 34 requires staff to be fit, which includes safeguarding competence.`,
       urgency: "immediate",
       regulatory_ref: "CHR 2015 Reg 34",
     });
   }
 
-  if (agencyCompletionRate < 80 && totalAgency > 0) {
+  if (below(agencyCompletionRate, 80) && totalAgency > 0) {
     recs.push({
       rank: rank++,
-      recommendation: `Improve agency induction completion from ${agencyCompletionRate}% — all agency staff must receive a home-specific induction before working with children. Use a standardised agency induction checklist.`,
+      recommendation: `Improve agency induction completion from ${formatRate(agencyCompletionRate)} — all agency staff must receive a home-specific induction before working with children. Use a standardised agency induction checklist.`,
       urgency: "immediate",
       regulatory_ref: "CHR 2015 Reg 33",
     });
   }
 
-  if (fireSafetyCoverage < 90 && totalInductionRecords > 0) {
+  if (below(fireSafetyCoverage, 90) && totalInductionRecords > 0) {
     recs.push({
       rank: rank++,
-      recommendation: `Improve fire safety coverage from ${fireSafetyCoverage}% — every staff member and agency worker must know fire procedures. Reg 32 requires the premises to be safe, which depends on staff knowing evacuation routes.`,
+      recommendation: `Improve fire safety coverage from ${formatRate(fireSafetyCoverage)} — every staff member and agency worker must know fire procedures. Reg 32 requires the premises to be safe, which depends on staff knowing evacuation routes.`,
       urgency: "immediate",
       regulatory_ref: "CHR 2015 Reg 32",
     });
   }
 
-  if (completionRate < 85 && totalInductions > 0) {
+  if (below(completionRate, 85) && totalInductions > 0) {
     recs.push({
       rank: rank++,
-      recommendation: `Increase staff induction completion rate from ${completionRate}% — target 100% within the first two weeks of employment. Sch 2 requires evidence that workers have received appropriate induction.`,
+      recommendation: `Increase staff induction completion rate from ${formatRate(completionRate)} — target 100% within the first two weeks of employment. Sch 2 requires evidence that workers have received appropriate induction.`,
       urgency: "soon",
       regulatory_ref: "CHR 2015 Sch 2",
     });
   }
 
-  if (medicationCoverage < 85 && totalInductionRecords > 0) {
+  if (below(medicationCoverage, 85) && totalInductionRecords > 0) {
     recs.push({
       rank: rank++,
-      recommendation: `Increase medication coverage from ${medicationCoverage}% — all staff must understand medication procedures before administering or witnessing medication.`,
+      recommendation: `Increase medication coverage from ${formatRate(medicationCoverage)} — all staff must understand medication procedures before administering or witnessing medication.`,
       urgency: "soon",
       regulatory_ref: "CHR 2015 Reg 34",
     });
   }
 
-  if (shadowingCompetencyRate < 80 && totalShadowing > 0) {
+  if (below(shadowingCompetencyRate, 80) && totalShadowing > 0) {
     recs.push({
       rank: rank++,
-      recommendation: `Review shadowing programme — only ${shadowingCompetencyRate}% confirm competency. Extend shadowing periods or provide additional mentoring support for staff not yet meeting the standard.`,
+      recommendation: `Review shadowing programme — only ${formatRate(shadowingCompetencyRate)} confirm competency. Extend shadowing periods or provide additional mentoring support for staff not yet meeting the standard.`,
       urgency: "soon",
       regulatory_ref: "CHR 2015 Reg 33",
     });
   }
 
-  if (loneWorkingReadiness < 80 && totalShadowing > 0) {
+  if (below(loneWorkingReadiness, 80) && totalShadowing > 0) {
     recs.push({
       rank: rank++,
-      recommendation: `Address lone working readiness — only ${loneWorkingReadiness}% of shadowed staff are confirmed ready. No staff should work lone shifts until competency is verified by a mentor.`,
+      recommendation: `Address lone working readiness — only ${formatRate(loneWorkingReadiness)} of shadowed staff are confirmed ready. No staff should work lone shifts until competency is verified by a mentor.`,
       urgency: "soon",
       regulatory_ref: "CHR 2015 Reg 34",
     });
   }
 
-  if (handbookAckRate < 85 && totalHandbooks > 0) {
+  if (below(handbookAckRate, 85) && totalHandbooks > 0) {
     recs.push({
       rank: rank++,
-      recommendation: `Improve handbook acknowledgement rate from ${handbookAckRate}% — all staff must read and sign the handbook as part of induction. Include safeguarding, behaviour management, and whistleblowing policies.`,
+      recommendation: `Improve handbook acknowledgement rate from ${formatRate(handbookAckRate)} — all staff must read and sign the handbook as part of induction. Include safeguarding, behaviour management, and whistleblowing policies.`,
       urgency: "soon",
       regulatory_ref: "CHR 2015 Reg 33",
     });
@@ -750,9 +748,9 @@ export function computeStaffInductionOnboarding(
   const insights: InductionInsight[] = [];
 
   // Critical insights
-  if (safeguardingCoverage < 50 && totalInductionRecords > 0) {
+  if (below(safeguardingCoverage, 50) && totalInductionRecords > 0) {
     insights.push({
-      text: `Safeguarding is covered in fewer than half of all inductions (${safeguardingCoverage}%). This is a serious deficiency. Under Regulation 34, the registered person must ensure staff are fit to work with children, and safeguarding awareness is fundamental to fitness. Ofsted will view this as a significant leadership failure.`,
+      text: `Safeguarding is covered in fewer than half of all inductions (${formatRate(safeguardingCoverage)}). This is a serious deficiency. Under Regulation 34, the registered person must ensure staff are fit to work with children, and safeguarding awareness is fundamental to fitness. Ofsted will view this as a significant leadership failure.`,
       severity: "critical",
     });
   }
@@ -769,57 +767,57 @@ export function computeStaffInductionOnboarding(
     });
   }
 
-  if (completionRate < 50 && totalInductions > 0) {
+  if (below(completionRate, 50) && totalInductions > 0) {
     insights.push({
-      text: `Fewer than half of staff inductions are completed (${completionRate}%). This means the majority of staff may be working without having gone through the full induction programme. Regulation 33 requires staff to be suitably trained, and the induction is the foundation of that training.`,
+      text: `Fewer than half of staff inductions are completed (${formatRate(completionRate)}). This means the majority of staff may be working without having gone through the full induction programme. Regulation 33 requires staff to be suitably trained, and the induction is the foundation of that training.`,
       severity: "critical",
     });
   }
 
   if (
-    agencyCompletionRate < 50 &&
+    below(agencyCompletionRate, 50) &&
     totalAgency > 0
   ) {
     insights.push({
-      text: `Agency induction completion is critically low at ${agencyCompletionRate}%. Agency staff present a higher safeguarding risk as they are less familiar with the home, the children, and the specific procedures. Every agency worker must receive a home-specific induction on every placement.`,
+      text: `Agency induction completion is critically low at ${formatRate(agencyCompletionRate)}. Agency staff present a higher safeguarding risk as they are less familiar with the home, the children, and the specific procedures. Every agency worker must receive a home-specific induction on every placement.`,
       severity: "critical",
     });
   }
 
   // Warning insights
   if (
-    loneWorkingReadiness < 50 &&
+    below(loneWorkingReadiness, 50) &&
     totalShadowing > 0
   ) {
     insights.push({
-      text: `Only ${loneWorkingReadiness}% of shadowed staff are assessed as ready for lone working. If staff are working unsupervised before being confirmed ready, this creates a safeguarding risk. Review shift rotas to ensure no unconfirmed staff are working lone shifts.`,
+      text: `Only ${formatRate(loneWorkingReadiness)} of shadowed staff are assessed as ready for lone working. If staff are working unsupervised before being confirmed ready, this creates a safeguarding risk. Review shift rotas to ensure no unconfirmed staff are working lone shifts.`,
       severity: "warning",
     });
   }
 
-  if (handbookAckRate < 50 && totalHandbooks > 0) {
+  if (below(handbookAckRate, 50) && totalHandbooks > 0) {
     insights.push({
-      text: `Handbook acknowledgement rate is only ${handbookAckRate}%. Staff who have not read and signed the handbook may not understand key policies including safeguarding, behaviour management, and whistleblowing procedures. This weakens the home's compliance position.`,
-      severity: "warning",
-    });
-  }
-
-  if (
-    medicationCoverage < 70 &&
-    totalInductionRecords > 0
-  ) {
-    insights.push({
-      text: `Medication procedures are covered in only ${medicationCoverage}% of inductions. Staff who have not been briefed on medication protocols may make errors in administration, storage, or recording. This is a health and safety concern that Ofsted will investigate.`,
+      text: `Handbook acknowledgement rate is only ${formatRate(handbookAckRate)}. Staff who have not read and signed the handbook may not understand key policies including safeguarding, behaviour management, and whistleblowing procedures. This weakens the home's compliance position.`,
       severity: "warning",
     });
   }
 
   if (
-    fireSafetyCoverage < 70 &&
+    below(medicationCoverage, 70) &&
     totalInductionRecords > 0
   ) {
     insights.push({
-      text: `Fire safety is covered in only ${fireSafetyCoverage}% of inductions. Under Regulation 32, the home must ensure premises safety, and this depends on all staff knowing fire procedures. Staff who are not briefed on evacuation routes and fire protocols represent a risk to children.`,
+      text: `Medication procedures are covered in only ${formatRate(medicationCoverage)} of inductions. Staff who have not been briefed on medication protocols may make errors in administration, storage, or recording. This is a health and safety concern that Ofsted will investigate.`,
+      severity: "warning",
+    });
+  }
+
+  if (
+    below(fireSafetyCoverage, 70) &&
+    totalInductionRecords > 0
+  ) {
+    insights.push({
+      text: `Fire safety is covered in only ${formatRate(fireSafetyCoverage)} of inductions. Under Regulation 32, the home must ensure premises safety, and this depends on all staff knowing fire procedures. Staff who are not briefed on evacuation routes and fire protocols represent a risk to children.`,
       severity: "warning",
     });
   }
@@ -836,10 +834,10 @@ export function computeStaffInductionOnboarding(
 
   // Positive insights
   if (
-    completionRate >= 100 &&
-    agencyCompletionRate >= 100 &&
-    safeguardingCoverage >= 100 &&
-    handbookAckRate >= 100 &&
+    meets(completionRate, 100) &&
+    meets(agencyCompletionRate, 100) &&
+    meets(safeguardingCoverage, 100) &&
+    meets(handbookAckRate, 100) &&
     totalInductionRecords > 0
   ) {
     insights.push({
@@ -847,13 +845,13 @@ export function computeStaffInductionOnboarding(
       severity: "positive",
     });
   } else if (
-    completionRate >= 85 &&
-    safeguardingCoverage >= 90 &&
-    shadowingCompetencyRate >= 80 &&
+    meets(completionRate, 85) &&
+    meets(safeguardingCoverage, 90) &&
+    meets(shadowingCompetencyRate, 80) &&
     totalInductionRecords > 0
   ) {
     insights.push({
-      text: `Good induction framework in place — ${completionRate}% completion, ${safeguardingCoverage}% safeguarding coverage, and ${shadowingCompetencyRate}% shadowing competency confirmation. Minor improvements could elevate this to outstanding practice.`,
+      text: `Good induction framework in place — ${formatRate(completionRate)} completion, ${formatRate(safeguardingCoverage)} safeguarding coverage, and ${formatRate(shadowingCompetencyRate)} shadowing competency confirmation. Minor improvements could elevate this to outstanding practice.`,
       severity: "positive",
     });
   }
@@ -861,7 +859,7 @@ export function computeStaffInductionOnboarding(
   if (
     totalShadowing > 0 &&
     totalShadowHours > 0 &&
-    loneWorkingReadiness >= 80
+    meets(loneWorkingReadiness, 80)
   ) {
     const avgHours =
       totalShadowing > 0
@@ -869,7 +867,7 @@ export function computeStaffInductionOnboarding(
         : null;
     if ((avgHours ?? 0) >= 8) {
       insights.push({
-        text: `Shadowing programme is robust — averaging ${avgHours} hours per staff member with ${loneWorkingReadiness}% lone working readiness. This provides strong evidence that staff are properly prepared through supervised practice.`,
+        text: `Shadowing programme is robust — averaging ${avgHours} hours per staff member with ${formatRate(loneWorkingReadiness)} lone working readiness. This provides strong evidence that staff are properly prepared through supervised practice.`,
         severity: "positive",
       });
     }
@@ -890,15 +888,15 @@ export function computeStaffInductionOnboarding(
   // ── Headline ──────────────────────────────────────────────────────────
   let headline: string;
   if (rating === "outstanding") {
-    headline = `Outstanding induction and onboarding — ${completionRate}% completion, ${safeguardingCoverage}% safeguarding coverage, ${shadowingCompetencyRate}% shadowing competency across ${totalInductionRecords} induction records.`;
+    headline = `Outstanding induction and onboarding — ${formatRate(completionRate)} completion, ${formatRate(safeguardingCoverage)} safeguarding coverage, ${formatRate(shadowingCompetencyRate)} shadowing competency across ${totalInductionRecords} induction records.`;
   } else if (rating === "good") {
     const issues: string[] = [];
     if (overdueInductions > 0)
       issues.push(`${overdueInductions} overdue induction${overdueInductions > 1 ? "s" : ""}`);
-    if (agencyCompletionRate < 100 && totalAgency > 0)
-      issues.push(`agency completion at ${agencyCompletionRate}%`);
-    if (handbookAckRate < 100 && totalHandbooks > 0)
-      issues.push(`handbook acknowledgement at ${handbookAckRate}%`);
+    if (below(agencyCompletionRate, 100) && totalAgency > 0)
+      issues.push(`agency completion at ${formatRate(agencyCompletionRate)}`);
+    if (below(handbookAckRate, 100) && totalHandbooks > 0)
+      issues.push(`handbook acknowledgement at ${formatRate(handbookAckRate)}`);
     headline =
       issues.length > 0
         ? `Good induction and onboarding practice — attention needed on ${issues.join(", ")}.`

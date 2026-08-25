@@ -102,7 +102,7 @@ export function HomeMentalHealthIntelligenceCard() {
               {ratingStyle.label}
             </span>
             {d.mental_health_rating !== "insufficient_data" && (
-              <span className="text-xs font-bold tabular-nums text-slate-600">{d.mental_health_score}%</span>
+              <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.mental_health_score)}</span>
             )}
           </CardTitle>
         </div>
@@ -122,7 +122,7 @@ export function HomeMentalHealthIntelligenceCard() {
                   (d.check_ins.check_in_coverage_rate ?? 0) >= 100 ? "text-[--cs-success]" :
                   (d.check_ins.check_in_coverage_rate ?? 0) >= 75 ? "text-blue-600" : "text-[--cs-risk]"
                 )}>
-                  {d.check_ins.check_in_coverage_rate}%
+                  {formatRate(d.check_ins.check_in_coverage_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Coverage</p>
@@ -165,7 +165,7 @@ export function HomeMentalHealthIntelligenceCard() {
                   (d.therapy.attendance_rate ?? 0) >= 75 ? "text-[--cs-warning]" :
                   d.therapy.total_sessions_90d === 0 ? "text-slate-600" : "text-[--cs-risk]"
                 )}>
-                  {d.therapy.total_sessions_90d > 0 ? `${d.therapy.attendance_rate}%` : "—"}
+                  {d.therapy.total_sessions_90d > 0 ? `${formatRate(d.therapy.attendance_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Therapy</p>

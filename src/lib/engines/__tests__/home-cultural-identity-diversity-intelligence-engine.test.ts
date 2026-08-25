@@ -1807,7 +1807,7 @@ describe("Home Cultural Identity & Diversity Intelligence Engine", () => {
       expect(r.child_voice_in_plans_rate).toBe(100);
     });
 
-    it("pct(0, 0) returns 0", () => {
+    it("childVoiceInPlansRate is unmeasured when no active plans", () => {
       // When no active plans, childVoiceInPlansRate should be pct(0, 0) = 0
       const r = computeCulturalIdentityDiversity({
         today: "2025-06-01",
@@ -1821,8 +1821,8 @@ describe("Home Cultural Identity & Diversity Intelligence Engine", () => {
         personal_passports: [],
       });
       // No active plans → pct(0, 0) = 0
-      expect(r.child_voice_in_plans_rate).toBe(0);
-      expect(r.identity_review_timeliness_rate).toBe(0);
+      expect(r.child_voice_in_plans_rate).toBeNull();
+      expect(r.identity_review_timeliness_rate).toBeNull();
     });
 
     it("total_cultural_plans counts only active plans", () => {
@@ -3111,8 +3111,8 @@ describe("Home Cultural Identity & Diversity Intelligence Engine", () => {
       expect(r.total_cultural_plans).toBe(0);
       expect(r.life_story_work_rate).toBe(0);
       expect(r.religious_observance_rate).toBe(0);
-      expect(r.identity_review_timeliness_rate).toBe(0);
-      expect(r.child_voice_in_plans_rate).toBe(0);
+      expect(r.identity_review_timeliness_rate).toBeNull();
+      expect(r.child_voice_in_plans_rate).toBeNull();
     });
 
     it("inactive mentors are excluded from mentor rate", () => {

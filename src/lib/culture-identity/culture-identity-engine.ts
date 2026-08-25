@@ -306,10 +306,6 @@ function daysBetween(a: string, b: string): number {
 }
 
 // Was `d === 0 ? 0 : …`: nothing recorded read as 0%, not as unmeasured.
-function pct(n: number, d: number): number | null {
-  return rate(n, d);
-}
-
 function inPeriod(date: string, start: string, end: string): boolean {
   return date.slice(0, 10) >= start.slice(0, 10) && date.slice(0, 10) <= end.slice(0, 10);
 }
@@ -334,7 +330,7 @@ export function evaluateIdentitySupport(
       .map((a) => a.childId),
   );
   const childrenWithAssessment = childrenWithAssessmentSet.size;
-  const assessmentRate = pct(childrenWithAssessment, totalChildren);
+  const assessmentRate = rate(childrenWithAssessment, totalChildren);
 
   // Aggregate needs across all assessments
   const allNeeds: IdentityNeed[] = assessments
@@ -350,7 +346,7 @@ export function evaluateIdentitySupport(
   const assessedNeeds = allNeeds.filter(
     (n) => n.status !== "not_assessed",
   ).length;
-  const needsMetRate = pct(needsMet, assessedNeeds);
+  const needsMetRate = rate(needsMet, assessedNeeds);
 
   // Dimension coverage: how many children have each dimension assessed
   const dimensionCoverage: Record<IdentityDimension, number> = {
@@ -406,9 +402,9 @@ export function evaluateActivityProvision(
       : Math.round((totalActivities / placed.length) * 10) / 10;
 
   const engaged = periodActivities.filter((a) => a.childEngaged).length;
-  const childEngagementRate = pct(engaged, totalActivities);
+  const childEngagementRate = rate(engaged, totalActivities);
   const initiated = periodActivities.filter((a) => a.childInitiated).length;
-  const childInitiatedRate = pct(initiated, totalActivities);
+  const childInitiatedRate = rate(initiated, totalActivities);
 
   // Activity type breakdown
   const typeCounts = new Map<IdentityActivityType, number>();
@@ -463,9 +459,9 @@ export function analyseDiversityIncidents(
   const reported = periodIncidents.filter((i) => i.reported).length;
   const investigated = periodIncidents.filter((i) => i.investigated).length;
   const resolved = periodIncidents.filter((i) => i.resolved).length;
-  const reportedRate = pct(reported, totalIncidents);
-  const investigatedRate = pct(investigated, totalIncidents);
-  const resolvedRate = pct(resolved, totalIncidents);
+  const reportedRate = rate(reported, totalIncidents);
+  const investigatedRate = rate(investigated, totalIncidents);
+  const resolvedRate = rate(resolved, totalIncidents);
 
   // Average resolution days (for resolved incidents)
   const resolvedIncidents = periodIncidents.filter(
@@ -533,7 +529,7 @@ export function evaluateStaffCompetence(
   const staffWithTraining = staffIds.filter((id) =>
     staffWithTrainingSet.has(id),
   ).length;
-  const trainingRate = pct(staffWithTraining, totalStaff);
+  const trainingRate = rate(staffWithTraining, totalStaff);
 
   // Expired training
   const expiredTraining = training.filter(
@@ -608,7 +604,7 @@ export function buildChildIdentityProfiles(
     const assessedNeeds = allNeeds.filter(
       (n) => n.status !== "not_assessed",
     ).length;
-    const needsMetRate = pct(needsMet, assessedNeeds);
+    const needsMetRate = rate(needsMet, assessedNeeds);
 
     // Activities
     const childActivities = activities.filter(
@@ -617,7 +613,7 @@ export function buildChildIdentityProfiles(
     );
     const activitiesCount = childActivities.length;
     const engaged = childActivities.filter((a) => a.childEngaged).length;
-    const activityEngagementRate = pct(engaged, activitiesCount);
+    const activityEngagementRate = rate(engaged, activitiesCount);
     const childInitiatedCount = childActivities.filter(
       (a) => a.childInitiated,
     ).length;

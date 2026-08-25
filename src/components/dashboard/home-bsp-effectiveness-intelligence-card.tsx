@@ -139,7 +139,7 @@ export function HomeBSPEffectivenessIntelligenceCard() {
                   meets(d.behaviour.strategy_usage_rate, 80) ? "text-[--cs-success]" :
                   meets(d.behaviour.strategy_usage_rate, 60) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.behaviour.concerning_count > 0 ? `${d.behaviour.strategy_usage_rate}%` : "—"}
+                  {d.behaviour.concerning_count > 0 ? `${formatRate(d.behaviour.strategy_usage_rate)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Strategy Use</p>
@@ -192,10 +192,10 @@ export function HomeBSPEffectivenessIntelligenceCard() {
                 <p>Professional input: <span className={cn("font-medium",
                   meets(d.plan_quality.professional_input_rate, 80) ? "text-[--cs-success]" :
                   meets(d.plan_quality.professional_input_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]"
-                )}>{d.plan_quality.total_active > 0 ? `${d.plan_quality.professional_input_rate}%` : "N/A"}</span></p>
+                )}>{d.plan_quality.total_active > 0 ? `${formatRate(d.plan_quality.professional_input_rate)}` : "N/A"}</span></p>
                 <p>Safety plan: <span className={cn("font-medium",
                   meets(d.plan_quality.safety_plan_rate, 90) ? "text-[--cs-success]" : "text-[--cs-warning]"
-                )}>{d.plan_quality.total_active > 0 ? `${d.plan_quality.safety_plan_rate}%` : "N/A"}</span></p>
+                )}>{d.plan_quality.total_active > 0 ? `${formatRate(d.plan_quality.safety_plan_rate)}` : "N/A"}</span></p>
               </div>
             </div>
             <div className="rounded border p-2 text-xs">
@@ -205,7 +205,7 @@ export function HomeBSPEffectivenessIntelligenceCard() {
                 <p>Positive: <span className={cn("font-medium",
                   meets(d.behaviour.positive_rate, 70) ? "text-[--cs-success]" :
                   meets(d.behaviour.positive_rate, 50) ? "text-[--cs-warning]" : "text-[--cs-risk]"
-                )}>{d.behaviour.total_entries > 0 ? `${d.behaviour.positive_rate}%` : "N/A"}</span></p>
+                )}>{d.behaviour.total_entries > 0 ? `${formatRate(d.behaviour.positive_rate)}` : "N/A"}</span></p>
                 <p>High intensity: <span className={cn("font-medium",
                   d.behaviour.high_intensity_count === 0 ? "text-[--cs-success]" :
                   (d.behaviour.high_intensity_rate !== null && d.behaviour.high_intensity_rate <= 30) ? "text-[--cs-warning]" : "text-[--cs-risk]"

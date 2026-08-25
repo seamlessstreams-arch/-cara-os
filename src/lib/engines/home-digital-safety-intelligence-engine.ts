@@ -6,6 +6,8 @@
 // CHR 2015 Reg 12/13: "Protection of children — safeguarding arrangements."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input types ─────────────────────────────────────────────────────────────
 
 export const ALL_INCIDENT_CATEGORIES = [
@@ -119,10 +121,6 @@ export interface HomeDigitalSafetyResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function daysBetween(a: string, b: string): number {
   return Math.round(
     (new Date(b).getTime() - new Date(a).getTime()) / 86_400_000,
@@ -169,9 +167,9 @@ export function computeHomeDigitalSafety(
   }
 
   const withActions = incidents90d.filter(i => i.actions_taken.length > 0);
-  const safeguardingReferralRate = pct(incidents90d.filter(i => i.safeguarding_referral).length, incidents90d.length);
-  const parentNotificationRate = pct(incidents90d.filter(i => i.parent_carer_notified).length, incidents90d.length);
-  const resolutionRate = pct(resolvedIncidents, incidents90d.length);
+  const safeguardingReferralRate = rate(incidents90d.filter(i => i.safeguarding_referral).length, incidents90d.length);
+  const parentNotificationRate = rate(incidents90d.filter(i => i.parent_carer_notified).length, incidents90d.length);
+  const resolutionRate = rate(resolvedIncidents, incidents90d.length);
 
   const incidentProfile: IncidentProfile = {
     total_incidents_90d: incidents90d.length,
@@ -186,9 +184,9 @@ export function computeHomeDigitalSafety(
 
   // ── Agreements ────────────────────────────────────────────────────────
   const childrenWithAgreements = new Set(agreements.map(a => a.child_id)).size;
-  const agreementCoverageRate = pct(childrenWithAgreements, total_children);
+  const agreementCoverageRate = rate(childrenWithAgreements, total_children);
   const signedAgreements = agreements.filter(a => a.child_signature);
-  const signedRate = pct(signedAgreements.length, agreements.length);
+  const signedRate = rate(signedAgreements.length, agreements.length);
   const overdueAgreementReviews = agreements.filter(a => daysBetween(a.review_date, today) > 0).length;
   const withParentalControls = agreements.filter(a => a.parental_controls !== "" && a.parental_controls !== "none").length;
   const totalDevices = agreements.reduce((sum, a) => sum + a.devices.length, 0);
@@ -207,7 +205,7 @@ export function computeHomeDigitalSafety(
 
   // ── Photo & Media Consents ────────────────────────────────────────────
   const childrenWithPhotoConsent = new Set(photo_consents.map(p => p.child_id)).size;
-  const photoConsentCoverageRate = pct(childrenWithPhotoConsent, total_children);
+  const photoConsentCoverageRate = rate(childrenWithPhotoConsent, total_children);
   const overduePhotoReviews = photo_consents.filter(p => daysBetween(p.next_review_date, today) > 0).length;
 
   const activeMediaConsents = media_consents.filter(m => daysBetween(today, m.expiry_of_consent) >= 0).length;
@@ -215,7 +213,7 @@ export function computeHomeDigitalSafety(
   const consentedMedia = media_consents.filter(m =>
     m.child_gave_consent === "yes_explicit" || m.child_gave_consent === "yes_assenting",
   );
-  const childConsentRate = pct(consentedMedia.length, media_consents.length);
+  const childConsentRate = rate(consentedMedia.length, media_consents.length);
 
   const consentProfile: ConsentProfile = {
     children_with_photo_consent: childrenWithPhotoConsent,
@@ -231,26 +229,26 @@ export function computeHomeDigitalSafety(
   let score = 52;
 
   // mod1: Agreement coverage (±5) — every child should have an online safety agreement
-  if (agreementCoverageRate >= 100) score += 5;
-  else if (agreementCoverageRate >= 75) score += 3;
-  else if (agreementCoverageRate >= 50) score += 0;
-  else if (agreementCoverageRate >= 25) score -= 2;
+  if (meets(agreementCoverageRate, 100)) score += 5;
+  else if (meets(agreementCoverageRate, 75)) score += 3;
+  else if (meets(agreementCoverageRate, 50)) score += 0;
+  else if (meets(agreementCoverageRate, 25)) score -= 2;
   else score -= 5;
 
   // mod2: Photo consent coverage (±4) — GDPR compliance
-  if (photoConsentCoverageRate >= 100) score += 4;
-  else if (photoConsentCoverageRate >= 75) score += 2;
-  else if (photoConsentCoverageRate >= 50) score += 0;
+  if (meets(photoConsentCoverageRate, 100)) score += 4;
+  else if (meets(photoConsentCoverageRate, 75)) score += 2;
+  else if (meets(photoConsentCoverageRate, 50)) score += 0;
   else score -= 4;
 
   // mod3: Incident response quality (±4) — actions taken on incidents
   if (incidents90d.length === 0) {
     score += 3; // No incidents with good agreements = proactive prevention
   } else {
-    const actionRate = pct(withActions.length, incidents90d.length);
-    if (actionRate >= 100 && parentNotificationRate >= 80) score += 4;
-    else if (actionRate >= 80) score += 2;
-    else if (actionRate >= 50) score += 0;
+    const actionRate = rate(withActions.length, incidents90d.length);
+    if (meets(actionRate, 100) && meets(parentNotificationRate, 80)) score += 4;
+    else if (meets(actionRate, 80)) score += 2;
+    else if (meets(actionRate, 50)) score += 0;
     else score -= 4;
   }
 
@@ -258,9 +256,9 @@ export function computeHomeDigitalSafety(
   if (agreements.length === 0) {
     score -= 3;
   } else {
-    if (signedRate >= 100) score += 3;
-    else if (signedRate >= 75) score += 1;
-    else if (signedRate >= 50) score += 0;
+    if (meets(signedRate, 100)) score += 3;
+    else if (meets(signedRate, 75)) score += 1;
+    else if (meets(signedRate, 50)) score += 0;
     else score -= 3;
   }
 
@@ -281,17 +279,17 @@ export function computeHomeDigitalSafety(
   if (agreements.length === 0) {
     score -= 2;
   } else {
-    const controlRate = pct(withParentalControls, agreements.length);
-    if (controlRate >= 80) score += 3;
-    else if (controlRate >= 50) score += 1;
-    else if (controlRate >= 25) score += 0;
+    const controlRate = rate(withParentalControls, agreements.length);
+    if (meets(controlRate, 80)) score += 3;
+    else if (meets(controlRate, 50)) score += 1;
+    else if (meets(controlRate, 25)) score += 0;
     else score -= 3;
   }
 
   // mod8: Media consent governance (±2) — expired consents and child voice
   if (media_consents.length === 0 && photo_consents.length === 0) {
     score -= 1;
-  } else if (expiredMediaConsents === 0 && childConsentRate >= 80) {
+  } else if (expiredMediaConsents === 0 && meets(childConsentRate, 80)) {
     score += 2;
   } else if (expiredMediaConsents <= 1) {
     score += 1;
@@ -317,15 +315,15 @@ export function computeHomeDigitalSafety(
   let rank = 0;
 
   // Strengths
-  if (agreementCoverageRate >= 100) strengths.push("Every child has an online safety agreement — proactive digital safeguarding embedded in practice.");
-  if (signedRate >= 100 && agreements.length > 0) strengths.push("All online safety agreements signed by children — strong child participation in digital safety.");
-  if (photoConsentCoverageRate >= 100) strengths.push("Photo consent records in place for all children — GDPR-compliant image management.");
-  if (incidents90d.length > 0 && resolutionRate >= 80) strengths.push(`${resolutionRate}% of online safety incidents resolved — effective incident response.`);
-  if (incidents90d.length === 0 && agreementCoverageRate >= 75) strengths.push("No online safety incidents in 90 days with good agreement coverage — preventive approach working.");
+  if (meets(agreementCoverageRate, 100)) strengths.push("Every child has an online safety agreement — proactive digital safeguarding embedded in practice.");
+  if (meets(signedRate, 100) && agreements.length > 0) strengths.push("All online safety agreements signed by children — strong child participation in digital safety.");
+  if (meets(photoConsentCoverageRate, 100)) strengths.push("Photo consent records in place for all children — GDPR-compliant image management.");
+  if (incidents90d.length > 0 && meets(resolutionRate, 80)) strengths.push(`${formatRate(resolutionRate)} of online safety incidents resolved — effective incident response.`);
+  if (incidents90d.length === 0 && meets(agreementCoverageRate, 75)) strengths.push("No online safety incidents in 90 days with good agreement coverage — preventive approach working.");
   if (totalOverdue === 0 && agreements.length > 0) strengths.push("All agreements and consents reviewed on schedule — governance is current.");
 
   // Concerns
-  if (agreementCoverageRate < 100 && total_children > childrenWithAgreements) {
+  if (below(agreementCoverageRate, 100) && total_children > childrenWithAgreements) {
     concerns.push(`${total_children - childrenWithAgreements} child${(total_children - childrenWithAgreements) > 1 ? "ren" : ""} without online safety agreements.`);
   }
   if (openIncidents >= 3) concerns.push(`${openIncidents} online safety incidents remain open — timely resolution is essential.`);
@@ -333,11 +331,11 @@ export function computeHomeDigitalSafety(
   if (overdueAgreementReviews > 0) concerns.push(`${overdueAgreementReviews} online safety agreement review${overdueAgreementReviews > 1 ? "s" : ""} overdue.`);
   if (overduePhotoReviews > 0) concerns.push(`${overduePhotoReviews} photo consent review${overduePhotoReviews > 1 ? "s" : ""} overdue — GDPR compliance risk.`);
   if (expiredMediaConsents > 0) concerns.push(`${expiredMediaConsents} expired media consent${expiredMediaConsents > 1 ? "s" : ""} — may need renewal or archiving.`);
-  if (parentNotificationRate < 50 && incidents90d.length > 0) concerns.push(`Parent/carer notification rate only ${parentNotificationRate}% for online safety incidents.`);
+  if (below(parentNotificationRate, 50) && incidents90d.length > 0) concerns.push(`Parent/carer notification rate only ${formatRate(parentNotificationRate)} for online safety incidents.`);
 
   // Recommendations
-  if (agreementCoverageRate < 100) {
-    recommendations.push({ rank: ++rank, recommendation: "Create online safety agreements for all children — each child needs an individualised digital safety plan.", urgency: agreementCoverageRate < 50 ? "immediate" : "soon", regulatory_ref: "KCSIE" });
+  if (below(agreementCoverageRate, 100)) {
+    recommendations.push({ rank: ++rank, recommendation: "Create online safety agreements for all children — each child needs an individualised digital safety plan.", urgency: below(agreementCoverageRate, 50) ? "immediate" : "soon", regulatory_ref: "KCSIE" });
   }
   if (overdueAgreementReviews > 0 || overduePhotoReviews > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Complete overdue agreement and consent reviews to maintain governance compliance.", urgency: totalOverdue > 3 ? "immediate" : "soon", regulatory_ref: "Reg 13" });
@@ -345,15 +343,15 @@ export function computeHomeDigitalSafety(
   if (openIncidents >= 2) {
     recommendations.push({ rank: ++rank, recommendation: "Prioritise resolution of open online safety incidents — assign owners and set target dates.", urgency: "soon", regulatory_ref: "Reg 12" });
   }
-  if (signedRate < 75 && agreements.length > 0) {
+  if (below(signedRate, 75) && agreements.length > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Ensure children sign their online safety agreements — use direct work to discuss digital safety.", urgency: "planned", regulatory_ref: "KCSIE" });
   }
-  if (parentNotificationRate < 80 && incidents90d.length > 0) {
+  if (below(parentNotificationRate, 80) && incidents90d.length > 0) {
     recommendations.push({ rank: ++rank, recommendation: "Improve parent/carer notification when online safety incidents occur — partnership working is essential.", urgency: "soon", regulatory_ref: "Reg 12" });
   }
 
   // Cara Insights
-  if (agreementCoverageRate >= 100 && photoConsentCoverageRate >= 100 && signedRate >= 100 && totalOverdue === 0) {
+  if (meets(agreementCoverageRate, 100) && meets(photoConsentCoverageRate, 100) && meets(signedRate, 100) && totalOverdue === 0) {
     insights.push({ text: "Digital safety governance is exemplary. Every child has a signed agreement, consents are current, and reviews are on schedule. This demonstrates proactive digital safeguarding that Ofsted will recognise as outstanding.", severity: "positive" });
   }
   if (highSeverity >= 3) {
@@ -362,8 +360,8 @@ export function computeHomeDigitalSafety(
   if (escalatedIncidents >= 2) {
     insights.push({ text: `${escalatedIncidents} incidents escalated — this may indicate that initial response is insufficient or that risk assessment at first report needs strengthening.`, severity: "warning" });
   }
-  if (agreements.length > 0 && signedRate < 50) {
-    insights.push({ text: `Only ${signedRate}% of agreements signed by children. The child's voice in digital safety is weak — Article 12 UNCRC requires their informed participation.`, severity: "warning" });
+  if (agreements.length > 0 && below(signedRate, 50)) {
+    insights.push({ text: `Only ${formatRate(signedRate)} of agreements signed by children. The child's voice in digital safety is weak — Article 12 UNCRC requires their informed participation.`, severity: "warning" });
   }
 
   // ── Headline ──────────────────────────────────────────────────────────
@@ -371,7 +369,7 @@ export function computeHomeDigitalSafety(
   if (digital_safety_rating === "outstanding") {
     headline = `Outstanding digital safety — ${childrenWithAgreements} children covered with ${incidents90d.length === 0 ? "no incidents" : "all incidents managed"}.`;
   } else if (digital_safety_rating === "good") {
-    headline = `Good digital safeguarding — ${agreementCoverageRate}% agreement coverage. ${concerns.length > 0 ? concerns.length + " area" + (concerns.length > 1 ? "s" : "") + " for improvement." : ""}`;
+    headline = `Good digital safeguarding — ${formatRate(agreementCoverageRate)} agreement coverage. ${concerns.length > 0 ? concerns.length + " area" + (concerns.length > 1 ? "s" : "") + " for improvement." : ""}`;
   } else if (digital_safety_rating === "adequate") {
     headline = `Digital safety requires improvement — ${concerns.length} concern${concerns.length !== 1 ? "s" : ""} identified.`;
   } else {

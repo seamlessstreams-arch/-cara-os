@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
@@ -104,7 +105,7 @@ export function HomeWorkforcePlanningIntelligenceCard() {
               {ratingStyle.label}
             </span>
             {d.workforce_rating !== "insufficient_data" && (
-              <span className="text-xs font-bold tabular-nums text-slate-600">{d.workforce_score}%</span>
+              <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.workforce_score)}</span>
             )}
           </CardTitle>
         </div>
@@ -135,7 +136,7 @@ export function HomeWorkforcePlanningIntelligenceCard() {
                   (d.staff_composition.permanent_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.staff_composition.permanent_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.staff_composition.permanent_rate}%
+                  {formatRate(d.staff_composition.permanent_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Permanent</p>
@@ -149,7 +150,7 @@ export function HomeWorkforcePlanningIntelligenceCard() {
                   (d.succession_profile.avg_readiness_score ?? 0) >= 70 ? "text-[--cs-success]" :
                   (d.succession_profile.avg_readiness_score ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.succession_profile.total_plans > 0 ? `${d.succession_profile.avg_readiness_score}%` : "—"}
+                  {d.succession_profile.total_plans > 0 ? `${formatRate(d.succession_profile.avg_readiness_score)}` : "—"}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Succession</p>
@@ -163,7 +164,7 @@ export function HomeWorkforcePlanningIntelligenceCard() {
                   (d.staff_composition.dbs_update_service_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.staff_composition.dbs_update_service_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.staff_composition.dbs_update_service_rate}%
+                  {formatRate(d.staff_composition.dbs_update_service_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">DBS Update</p>

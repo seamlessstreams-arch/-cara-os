@@ -408,17 +408,17 @@ describe("Home Staff Induction & Onboarding Intelligence Engine", () => {
 
   describe("Individual bonuses", () => {
     it("Bonus 1: completionRate >= 100 gives +4", () => {
-      // All completed, no agency (avoid agency penalty)
-      // No agency => pct(0,0)=0 => agencyCompletionRate=0 => penalty -5
+      // All completed, no agency inductions at all.
       // safeguarding 100% (+4), medication 100% (+3), fire 100% (+2)
       // shadowingComp 100% (+3), handbook 100% (+3), loneWorking 100% (+3), avgModule 100% (+3)
       // total bonuses without agency = 4+4+3+2+3+3+3+3 = 25
-      // penalty for agencyCompletionRate<50 = -5
-      // 52 + 25 - 5 = 72
+      // agencyCompletionRate is unmeasured (0 agency inductions), so below()
+      // is false and the <50% penalty does not fire against a fabricated 0%.
+      // 52 + 25 = 77
       const r = computeStaffInductionOnboarding(
         baseInput({ agency_inductions: [] }),
       );
-      expect(r.induction_score).toBe(72);
+      expect(r.induction_score).toBe(77);
     });
 
     it("Bonus 1 lower tier: completionRate >= 85 gives +2", () => {
@@ -1329,48 +1329,50 @@ describe("Home Staff Induction & Onboarding Intelligence Engine", () => {
   // ═══════════════════════════════════════════════════════════════════════════
 
   describe("pct(0,0) = 0 behavior", () => {
-    it("no agency inductions => agencyCompletionRate = 0 => triggers penalty", () => {
+    it("no agency inductions leaves agency_induction_completion_rate unmeasured and does not penalise", () => {
       const r = computeStaffInductionOnboarding(
         baseInput({ agency_inductions: [] }),
       );
-      expect(r.agency_induction_completion_rate).toBe(0);
-      // agencyCompletionRate 0 < 50 => -5 penalty applied
+      expect(r.agency_induction_completion_rate).toBeNull();
+      // below() is false for null, so the <50% penalty does not fire against
+      // a home with no agency inductions to measure — see the score tests.
     });
 
-    it("no shadowing records => shadowingCompetencyRate = 0, loneWorkingReadiness = 0", () => {
+    it("no shadowing records leaves shadowing_competency_rate and lone_working_readiness_rate unmeasured", () => {
       const r = computeStaffInductionOnboarding(
         baseInput({ shadowing_records: [] }),
       );
-      expect(r.shadowing_competency_rate).toBe(0);
-      expect(r.lone_working_readiness_rate).toBe(0);
+      expect(r.shadowing_competency_rate).toBeNull();
+      expect(r.lone_working_readiness_rate).toBeNull();
       expect(r.shadowing_completion_rate).toBe(0);
     });
 
-    it("no handbook acknowledgements => handbookAckRate = 0", () => {
+    it("no handbook acknowledgements leaves handbook_acknowledgement_rate unmeasured", () => {
       const r = computeStaffInductionOnboarding(
         baseInput({ handbook_acknowledgements: [] }),
       );
-      expect(r.handbook_acknowledgement_rate).toBe(0);
+      expect(r.handbook_acknowledgement_rate).toBeNull();
     });
 
-    it("no staff inductions but agency exists => completionRate = 0 => triggers penalty", () => {
+    it("no staff inductions but agency exists leaves completion_rate unmeasured and does not penalise", () => {
       const r = computeStaffInductionOnboarding(
         baseInput({
           staff_inductions: [],
           agency_inductions: [makeAgencyInduction()],
         }),
       );
-      expect(r.completion_rate).toBe(0);
-      // completionRate 0 < 50 => -5 penalty
+      expect(r.completion_rate).toBeNull();
+      // below() is false for null, so the <50% penalty does not fire.
     });
 
-    it("shadowing_completion_rate with total_staff=0 is pct(n, 0) = 0", () => {
-      // Even though we have shadowing records, if total_staff is 0, pct(5, 0) = 0
-      // But total_staff=0 with non-empty arrays won't trigger the special case.
+    it("shadowing_completion_rate is unmeasured when total_staff=0", () => {
+      // Even though we have shadowing records, if total_staff is 0, the
+      // denominator is 0 and the rate is unmeasured, not a measured 0%.
+      // total_staff=0 with non-empty arrays won't trigger the special case.
       const r = computeStaffInductionOnboarding(
         baseInput({ total_staff: 0 }),
       );
-      expect(r.shadowing_completion_rate).toBe(0);
+      expect(r.shadowing_completion_rate).toBeNull();
     });
   });
 
@@ -2728,7 +2730,7 @@ describe("Home Staff Induction & Onboarding Intelligence Engine", () => {
       expect(r.total_inductions).toBe(1);
       expect(r.completion_rate).toBe(100);
       // agencyCompletionRate = pct(0,0) = 0 => penalty -5
-      expect(r.agency_induction_completion_rate).toBe(0);
+      expect(r.agency_induction_completion_rate).toBeNull();
     });
 
     it("single agency induction record", () => {
@@ -2743,7 +2745,7 @@ describe("Home Staff Induction & Onboarding Intelligence Engine", () => {
       expect(r.total_inductions).toBe(1);
       expect(r.agency_induction_completion_rate).toBe(100);
       // completionRate = pct(0,0) = 0 => penalty -5
-      expect(r.completion_rate).toBe(0);
+      expect(r.completion_rate).toBeNull();
     });
 
     it("empty sub-arrays with at least one non-empty prevents special case", () => {
@@ -2771,11 +2773,14 @@ describe("Home Staff Induction & Onboarding Intelligence Engine", () => {
       });
       // Not the insufficient_data special case (handbook array is non-empty)
       expect(r.induction_rating).not.toBe("insufficient_data");
-      // Goes through normal scoring: pct(0,0)=0 for many metrics triggers penalties
-      // handbookAckRate 100% (+3), penalties: completion<50(-5), agency<50(-5), safeguarding<50(-5), fire<70(-3)
-      // 52 + 3 - 18 = 37 => inadequate (but through normal path, not special case)
-      expect(r.induction_score).toBe(37);
-      expect(r.induction_rating).toBe("inadequate");
+      // Goes through normal scoring: handbookAckRate 100% (+3). completionRate,
+      // agencyCompletionRate, safeguardingCoverage and fireSafetyCoverage are
+      // all computed from empty source populations (staff_inductions and
+      // agency_inductions are both []), so all four are unmeasured — none of
+      // the four below() penalties fire against a fabricated 0%.
+      // 52 + 3 = 55 => adequate, through the normal path, not the special case.
+      expect(r.induction_score).toBe(55);
+      expect(r.induction_rating).toBe("adequate");
     });
 
     it("score is clamped to 0 (never negative)", () => {
@@ -3078,14 +3083,16 @@ describe("Home Staff Induction & Onboarding Intelligence Engine", () => {
     });
 
     it("mixed bonuses and penalties produce correct score", () => {
-      // completion 100% (+4), agency pct(0,0)=0% (-5, no bonus), safeguarding 100% (+4),
-      // medication 100% (+3), fire 100% (+2), shadow comp 100% (+3),
-      // handbook 100% (+3), lone working 100% (+3), avg module 100% (+3)
-      // = 52 + 25 - 5 = 72
+      // completion 100% (+4), agency unmeasured (0 agency inductions — no
+      // bonus, and below() is false for null so no penalty either),
+      // safeguarding 100% (+4), medication 100% (+3), fire 100% (+2),
+      // shadow comp 100% (+3), handbook 100% (+3), lone working 100% (+3),
+      // avg module 100% (+3)
+      // = 52 + 25 = 77
       const r = computeStaffInductionOnboarding(
         baseInput({ agency_inductions: [] }),
       );
-      expect(r.induction_score).toBe(72);
+      expect(r.induction_score).toBe(77);
     });
 
     it("lower tier bonuses produce correct score", () => {

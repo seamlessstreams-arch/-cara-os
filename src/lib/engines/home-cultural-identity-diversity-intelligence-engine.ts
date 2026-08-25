@@ -11,6 +11,8 @@
 //             diversityCalendarEvents, personalPassports
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface CulturalIdentityPlanInput {
@@ -138,10 +140,6 @@ export interface CulturalIdentityDiversityResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -254,12 +252,12 @@ export function computeCulturalIdentityDiversity(
   const activePlans = cultural_identity_plans.filter((p) => p.active);
   const childrenWithPlans = new Set(activePlans.map((p) => p.child_id)).size;
   const totalCulturalPlans = activePlans.length;
-  const culturalPlanCoverageRate = pct(childrenWithPlans, total_children);
+  const culturalPlanCoverageRate = rate(childrenWithPlans, total_children);
 
   // --- Mentor assignment rate ---
   const activeMentors = cultural_religious_mentors.filter((m) => m.active);
   const childrenWithMentors = new Set(activeMentors.map((m) => m.child_id)).size;
-  const mentorAssignmentRate = pct(childrenWithMentors, total_children);
+  const mentorAssignmentRate = rate(childrenWithMentors, total_children);
 
   // --- Cultural visit frequency (visits per child) ---
   const totalVisits = cultural_visits.length;
@@ -276,20 +274,20 @@ export function computeCulturalIdentityDiversity(
       childrenParticipated.add(childId);
     }
   }
-  const diversityParticipationRate = pct(childrenParticipated.size, total_children);
+  const diversityParticipationRate = rate(childrenParticipated.size, total_children);
 
   // --- Life story work rate ---
   const childrenWithLifeStory = new Set(
     activePlans.filter((p) => p.life_story_work_active).map((p) => p.child_id),
   ).size;
-  const lifeStoryWorkRate = pct(childrenWithLifeStory, total_children);
+  const lifeStoryWorkRate = rate(childrenWithLifeStory, total_children);
 
   // --- Religious observance support rate ---
   // Children with religion documented and active plan = religious needs met
   const childrenWithReligionDocumented = new Set(
     activePlans.filter((p) => p.religion_documented).map((p) => p.child_id),
   ).size;
-  const religiousObservanceRate = pct(childrenWithReligionDocumented, total_children);
+  const religiousObservanceRate = rate(childrenWithReligionDocumented, total_children);
 
   // --- Identity review timeliness ---
   // Of active plans, how many have been reviewed on time (review_date <= next_review_date or reviewed is true)
@@ -302,72 +300,72 @@ export function computeCulturalIdentityDiversity(
     }
     return true;
   }).length;
-  const identityReviewTimelinessRate = pct(plansReviewedOnTime, plansRequiringReview);
+  const identityReviewTimelinessRate = rate(plansReviewedOnTime, plansRequiringReview);
 
   const childrenWithPassports = new Set(
     personal_passports
       .filter((p) => p.identity_info_complete && p.cultural_needs_documented && p.photo_current)
       .map((p) => p.child_id),
   ).size;
-  const personalPassportCurrencyRate = pct(childrenWithPassports, total_children);
+  const personalPassportCurrencyRate = rate(childrenWithPassports, total_children);
 
   // --- Child voice in identity plans ---
   const plansWithChildVoice = activePlans.filter((p) => p.child_voice_captured).length;
-  const childVoiceInPlansRate = pct(plansWithChildVoice, activePlans.length);
+  const childVoiceInPlansRate = rate(plansWithChildVoice, activePlans.length);
 
   // ── Scoring: base 52 ─────────────────────────────────────────────────
 
   let score = 52;
 
   // --- Bonus: culturalIdentityPlanCoverage (>=100: +4, >=80: +2) ---
-  if (culturalPlanCoverageRate >= 100) score += 4;
-  else if (culturalPlanCoverageRate >= 80) score += 2;
+  if (meets(culturalPlanCoverageRate, 100)) score += 4;
+  else if (meets(culturalPlanCoverageRate, 80)) score += 2;
 
   // --- Bonus: mentorAssignmentRate (>=100: +3, >=80: +1) ---
-  if (mentorAssignmentRate >= 100) score += 3;
-  else if (mentorAssignmentRate >= 80) score += 1;
+  if (meets(mentorAssignmentRate, 100)) score += 3;
+  else if (meets(mentorAssignmentRate, 80)) score += 1;
 
   // --- Bonus: culturalVisitFrequency (>=4 per child: +3, >=2: +1) ---
   if ((culturalVisitsPerChild ?? 0) >= 4) score += 3;
   else if ((culturalVisitsPerChild ?? 0) >= 2) score += 1;
 
   // --- Bonus: diversityEventParticipation (>=90: +3, >=70: +1) ---
-  if (diversityParticipationRate >= 90) score += 3;
-  else if (diversityParticipationRate >= 70) score += 1;
+  if (meets(diversityParticipationRate, 90)) score += 3;
+  else if (meets(diversityParticipationRate, 70)) score += 1;
 
   // --- Bonus: lifeStoryWorkRate (>=100: +3, >=80: +1) ---
-  if (lifeStoryWorkRate >= 100) score += 3;
-  else if (lifeStoryWorkRate >= 80) score += 1;
+  if (meets(lifeStoryWorkRate, 100)) score += 3;
+  else if (meets(lifeStoryWorkRate, 80)) score += 1;
 
   // --- Bonus: religiousObservanceSupport (>=100: +3, >=80: +1) ---
-  if (religiousObservanceRate >= 100) score += 3;
-  else if (religiousObservanceRate >= 80) score += 1;
+  if (meets(religiousObservanceRate, 100)) score += 3;
+  else if (meets(religiousObservanceRate, 80)) score += 1;
 
   // --- Bonus: identityReviewTimeliness (>=90: +3, >=70: +1) ---
-  if (identityReviewTimelinessRate >= 90) score += 3;
-  else if (identityReviewTimelinessRate >= 70) score += 1;
+  if (meets(identityReviewTimelinessRate, 90)) score += 3;
+  else if (meets(identityReviewTimelinessRate, 70)) score += 1;
 
   // --- Bonus: personalPassportCurrency (>=100: +3, >=80: +1) ---
-  if (personalPassportCurrencyRate >= 100) score += 3;
-  else if (personalPassportCurrencyRate >= 80) score += 1;
+  if (meets(personalPassportCurrencyRate, 100)) score += 3;
+  else if (meets(personalPassportCurrencyRate, 80)) score += 1;
 
   // --- Bonus: childVoiceInIdentityPlans (>=90: +3, >=70: +1) ---
-  if (childVoiceInPlansRate >= 90) score += 3;
-  else if (childVoiceInPlansRate >= 70) score += 1;
+  if (meets(childVoiceInPlansRate, 90)) score += 3;
+  else if (meets(childVoiceInPlansRate, 70)) score += 1;
 
   // ── Penalties ─────────────────────────────────────────────────────────
 
   // culturalIdentityPlanCoverage < 50 → -5
-  if (culturalPlanCoverageRate < 50) score -= 5;
+  if (below(culturalPlanCoverageRate, 50)) score -= 5;
 
   // mentorAssignmentRate < 30 → -5
-  if (mentorAssignmentRate < 30) score -= 5;
+  if (below(mentorAssignmentRate, 30)) score -= 5;
 
   // diversityEventParticipation < 30 → -5
-  if (diversityParticipationRate < 30) score -= 5;
+  if (below(diversityParticipationRate, 30)) score -= 5;
 
   // religiousObservanceSupport < 50 → -3
-  if (religiousObservanceRate < 50) score -= 3;
+  if (below(religiousObservanceRate, 50)) score -= 3;
 
   score = clamp(score, 0, 100);
 
@@ -377,23 +375,23 @@ export function computeCulturalIdentityDiversity(
 
   const strengths: string[] = [];
 
-  if (culturalPlanCoverageRate >= 100) {
+  if (meets(culturalPlanCoverageRate, 100)) {
     strengths.push(
       "Every child has an active cultural identity plan — cultural, ethnic, and religious identity needs are systematically documented and supported.",
     );
-  } else if (culturalPlanCoverageRate >= 80) {
+  } else if (meets(culturalPlanCoverageRate, 80)) {
     strengths.push(
-      `${culturalPlanCoverageRate}% of children have active cultural identity plans — strong commitment to documenting and supporting identity needs.`,
+      `${formatRate(culturalPlanCoverageRate)} of children have active cultural identity plans — strong commitment to documenting and supporting identity needs.`,
     );
   }
 
-  if (mentorAssignmentRate >= 100) {
+  if (meets(mentorAssignmentRate, 100)) {
     strengths.push(
       "Every child has an assigned cultural or religious mentor — children are connected to role models who reflect and affirm their identity.",
     );
-  } else if (mentorAssignmentRate >= 80) {
+  } else if (meets(mentorAssignmentRate, 80)) {
     strengths.push(
-      `${mentorAssignmentRate}% of children have cultural or religious mentors — most children benefit from identity-affirming mentoring relationships.`,
+      `${formatRate(mentorAssignmentRate)} of children have cultural or religious mentors — most children benefit from identity-affirming mentoring relationships.`,
     );
   }
 
@@ -407,77 +405,77 @@ export function computeCulturalIdentityDiversity(
     );
   }
 
-  if (diversityParticipationRate >= 90) {
+  if (meets(diversityParticipationRate, 90)) {
     strengths.push(
-      `${diversityParticipationRate}% of children participate in diversity calendar events — the home actively promotes inclusion and celebration of diverse cultures.`,
+      `${formatRate(diversityParticipationRate)} of children participate in diversity calendar events — the home actively promotes inclusion and celebration of diverse cultures.`,
     );
-  } else if (diversityParticipationRate >= 70) {
+  } else if (meets(diversityParticipationRate, 70)) {
     strengths.push(
-      `${diversityParticipationRate}% of children engage with diversity events — good participation in cultural celebrations and awareness activities.`,
+      `${formatRate(diversityParticipationRate)} of children engage with diversity events — good participation in cultural celebrations and awareness activities.`,
     );
   }
 
-  if (lifeStoryWorkRate >= 100) {
+  if (meets(lifeStoryWorkRate, 100)) {
     strengths.push(
       "Active life story work for every child — children are supported to understand their history and build a coherent sense of identity.",
     );
-  } else if (lifeStoryWorkRate >= 80) {
+  } else if (meets(lifeStoryWorkRate, 80)) {
     strengths.push(
-      `Life story work active for ${lifeStoryWorkRate}% of children — strong commitment to helping children understand and own their narrative.`,
+      `Life story work active for ${formatRate(lifeStoryWorkRate)} of children — strong commitment to helping children understand and own their narrative.`,
     );
   }
 
-  if (religiousObservanceRate >= 100) {
+  if (meets(religiousObservanceRate, 100)) {
     strengths.push(
       "Religious needs documented for every child — the home demonstrates full respect for and support of children's religious identities.",
     );
-  } else if (religiousObservanceRate >= 80) {
+  } else if (meets(religiousObservanceRate, 80)) {
     strengths.push(
-      `Religious needs documented for ${religiousObservanceRate}% of children — strong support for children's spiritual and religious identities.`,
+      `Religious needs documented for ${formatRate(religiousObservanceRate)} of children — strong support for children's spiritual and religious identities.`,
     );
   }
 
-  if (identityReviewTimelinessRate >= 90 && activePlans.length > 0) {
+  if (meets(identityReviewTimelinessRate, 90) && activePlans.length > 0) {
     strengths.push(
-      `${identityReviewTimelinessRate}% of identity plans reviewed on time — cultural identity support is actively monitored and kept current.`,
+      `${formatRate(identityReviewTimelinessRate)} of identity plans reviewed on time — cultural identity support is actively monitored and kept current.`,
     );
   }
 
-  if (personalPassportCurrencyRate >= 100) {
+  if (meets(personalPassportCurrencyRate, 100)) {
     strengths.push(
       "Every child has an up-to-date personal passport — identity documentation is comprehensive and current.",
     );
-  } else if (personalPassportCurrencyRate >= 80) {
+  } else if (meets(personalPassportCurrencyRate, 80)) {
     strengths.push(
-      `${personalPassportCurrencyRate}% of children have current personal passports — identity documentation is well-maintained.`,
+      `${formatRate(personalPassportCurrencyRate)} of children have current personal passports — identity documentation is well-maintained.`,
     );
   }
 
-  if (childVoiceInPlansRate >= 90 && activePlans.length > 0) {
+  if (meets(childVoiceInPlansRate, 90) && activePlans.length > 0) {
     strengths.push(
-      `Child voice captured in ${childVoiceInPlansRate}% of identity plans — children are active participants in shaping how their cultural identity is supported.`,
+      `Child voice captured in ${formatRate(childVoiceInPlansRate)} of identity plans — children are active participants in shaping how their cultural identity is supported.`,
     );
-  } else if (childVoiceInPlansRate >= 70 && activePlans.length > 0) {
+  } else if (meets(childVoiceInPlansRate, 70) && activePlans.length > 0) {
     strengths.push(
-      `Child voice present in ${childVoiceInPlansRate}% of identity plans — most children contribute to their own cultural identity planning.`,
+      `Child voice present in ${formatRate(childVoiceInPlansRate)} of identity plans — most children contribute to their own cultural identity planning.`,
     );
   }
 
   // Positive feedback from cultural visits
   const positiveFeedbackVisits = cultural_visits.filter((v) => v.child_feedback_positive).length;
-  const positiveFeedbackRate = pct(positiveFeedbackVisits, totalVisits);
-  if (positiveFeedbackRate >= 80 && totalVisits > 0) {
+  const positiveFeedbackRate = rate(positiveFeedbackVisits, totalVisits);
+  if (meets(positiveFeedbackRate, 80) && totalVisits > 0) {
     strengths.push(
-      `${positiveFeedbackRate}% positive child feedback from cultural visits — children are enjoying and valuing their cultural experiences.`,
+      `${formatRate(positiveFeedbackRate)} positive child feedback from cultural visits — children are enjoying and valuing their cultural experiences.`,
     );
   }
 
   // Diversity events with documented learning
   const eventsWithLearning = diversity_calendar_events.filter((e) => e.learning_documented).length;
-  const learningDocRate = pct(eventsWithLearning, diversity_calendar_events.length);
-  if (learningDocRate >= 80 && diversity_calendar_events.length > 0) {
+  const learningDocRate = rate(eventsWithLearning, diversity_calendar_events.length);
+  if (meets(learningDocRate, 80) && diversity_calendar_events.length > 0) {
     strengths.push(
-      `Learning documented in ${learningDocRate}% of diversity events — cultural education is embedded in the home's approach to diversity.`,
+      `Learning documented in ${formatRate(learningDocRate)} of diversity events — cultural education is embedded in the home's approach to diversity.`,
     );
   }
 
@@ -501,23 +499,23 @@ export function computeCulturalIdentityDiversity(
 
   const concerns: string[] = [];
 
-  if (culturalPlanCoverageRate < 50 && total_children > 0) {
+  if (below(culturalPlanCoverageRate, 50) && total_children > 0) {
     concerns.push(
-      `Only ${culturalPlanCoverageRate}% of children have active cultural identity plans — the majority of children's cultural, ethnic, and religious needs are not formally documented or supported.`,
+      `Only ${formatRate(culturalPlanCoverageRate)} of children have active cultural identity plans — the majority of children's cultural, ethnic, and religious needs are not formally documented or supported.`,
     );
-  } else if (culturalPlanCoverageRate >= 50 && culturalPlanCoverageRate < 80 && total_children > 0) {
+  } else if (meets(culturalPlanCoverageRate, 50) && below(culturalPlanCoverageRate, 80) && total_children > 0) {
     concerns.push(
-      `Cultural identity plan coverage at ${culturalPlanCoverageRate}% — not all children have documented plans for their cultural identity support.`,
+      `Cultural identity plan coverage at ${formatRate(culturalPlanCoverageRate)} — not all children have documented plans for their cultural identity support.`,
     );
   }
 
-  if (mentorAssignmentRate < 30 && total_children > 0) {
+  if (below(mentorAssignmentRate, 30) && total_children > 0) {
     concerns.push(
-      `Only ${mentorAssignmentRate}% of children have a cultural or religious mentor — most children lack access to identity-affirming mentoring relationships.`,
+      `Only ${formatRate(mentorAssignmentRate)} of children have a cultural or religious mentor — most children lack access to identity-affirming mentoring relationships.`,
     );
-  } else if (mentorAssignmentRate >= 30 && mentorAssignmentRate < 80 && total_children > 0) {
+  } else if (meets(mentorAssignmentRate, 30) && below(mentorAssignmentRate, 80) && total_children > 0) {
     concerns.push(
-      `Mentor assignment rate at ${mentorAssignmentRate}% — some children do not have access to cultural or religious mentoring support.`,
+      `Mentor assignment rate at ${formatRate(mentorAssignmentRate)} — some children do not have access to cultural or religious mentoring support.`,
     );
   }
 
@@ -531,63 +529,63 @@ export function computeCulturalIdentityDiversity(
     );
   }
 
-  if (diversityParticipationRate < 30 && total_children > 0) {
+  if (below(diversityParticipationRate, 30) && total_children > 0) {
     concerns.push(
-      `Only ${diversityParticipationRate}% of children participate in diversity events — the majority of children are not engaging with cultural celebrations and awareness activities.`,
+      `Only ${formatRate(diversityParticipationRate)} of children participate in diversity events — the majority of children are not engaging with cultural celebrations and awareness activities.`,
     );
-  } else if (diversityParticipationRate >= 30 && diversityParticipationRate < 70 && total_children > 0) {
+  } else if (meets(diversityParticipationRate, 30) && below(diversityParticipationRate, 70) && total_children > 0) {
     concerns.push(
-      `Diversity event participation at ${diversityParticipationRate}% — not all children are included in cultural celebrations.`,
-    );
-  }
-
-  if (lifeStoryWorkRate < 50 && total_children > 0) {
-    concerns.push(
-      `Life story work active for only ${lifeStoryWorkRate}% of children — most children are not being supported to understand their personal history and identity narrative.`,
-    );
-  } else if (lifeStoryWorkRate >= 50 && lifeStoryWorkRate < 80 && total_children > 0) {
-    concerns.push(
-      `Life story work rate at ${lifeStoryWorkRate}% — not all children are supported with active life story work.`,
+      `Diversity event participation at ${formatRate(diversityParticipationRate)} — not all children are included in cultural celebrations.`,
     );
   }
 
-  if (religiousObservanceRate < 50 && total_children > 0) {
+  if (below(lifeStoryWorkRate, 50) && total_children > 0) {
     concerns.push(
-      `Religious needs documented for only ${religiousObservanceRate}% of children — many children's spiritual and religious identities are not being formally supported.`,
+      `Life story work active for only ${formatRate(lifeStoryWorkRate)} of children — most children are not being supported to understand their personal history and identity narrative.`,
     );
-  } else if (religiousObservanceRate >= 50 && religiousObservanceRate < 80 && total_children > 0) {
+  } else if (meets(lifeStoryWorkRate, 50) && below(lifeStoryWorkRate, 80) && total_children > 0) {
     concerns.push(
-      `Religious observance support at ${religiousObservanceRate}% — some children's religious needs are not yet documented in their identity plans.`,
-    );
-  }
-
-  if (identityReviewTimelinessRate < 50 && activePlans.length > 0) {
-    concerns.push(
-      `Only ${identityReviewTimelinessRate}% of identity plans reviewed on time — cultural identity support is not being regularly monitored and updated.`,
-    );
-  } else if (identityReviewTimelinessRate >= 50 && identityReviewTimelinessRate < 70 && activePlans.length > 0) {
-    concerns.push(
-      `Identity plan review timeliness at ${identityReviewTimelinessRate}% — some plans are overdue for review, risking outdated cultural support.`,
+      `Life story work rate at ${formatRate(lifeStoryWorkRate)} — not all children are supported with active life story work.`,
     );
   }
 
-  if (personalPassportCurrencyRate < 50 && total_children > 0) {
+  if (below(religiousObservanceRate, 50) && total_children > 0) {
     concerns.push(
-      `Only ${personalPassportCurrencyRate}% of children have current personal passports — identity documentation is incomplete for most children.`,
+      `Religious needs documented for only ${formatRate(religiousObservanceRate)} of children — many children's spiritual and religious identities are not being formally supported.`,
     );
-  } else if (personalPassportCurrencyRate >= 50 && personalPassportCurrencyRate < 80 && total_children > 0) {
+  } else if (meets(religiousObservanceRate, 50) && below(religiousObservanceRate, 80) && total_children > 0) {
     concerns.push(
-      `Personal passport currency at ${personalPassportCurrencyRate}% — some children's identity documentation needs updating.`,
+      `Religious observance support at ${formatRate(religiousObservanceRate)} — some children's religious needs are not yet documented in their identity plans.`,
     );
   }
 
-  if (childVoiceInPlansRate < 50 && activePlans.length > 0) {
+  if (below(identityReviewTimelinessRate, 50) && activePlans.length > 0) {
     concerns.push(
-      `Child voice captured in only ${childVoiceInPlansRate}% of identity plans — most children are not contributing to decisions about their cultural identity support.`,
+      `Only ${formatRate(identityReviewTimelinessRate)} of identity plans reviewed on time — cultural identity support is not being regularly monitored and updated.`,
     );
-  } else if (childVoiceInPlansRate >= 50 && childVoiceInPlansRate < 70 && activePlans.length > 0) {
+  } else if (meets(identityReviewTimelinessRate, 50) && below(identityReviewTimelinessRate, 70) && activePlans.length > 0) {
     concerns.push(
-      `Child voice present in ${childVoiceInPlansRate}% of identity plans — not all children have a say in how their cultural identity is supported.`,
+      `Identity plan review timeliness at ${formatRate(identityReviewTimelinessRate)} — some plans are overdue for review, risking outdated cultural support.`,
+    );
+  }
+
+  if (below(personalPassportCurrencyRate, 50) && total_children > 0) {
+    concerns.push(
+      `Only ${formatRate(personalPassportCurrencyRate)} of children have current personal passports — identity documentation is incomplete for most children.`,
+    );
+  } else if (meets(personalPassportCurrencyRate, 50) && below(personalPassportCurrencyRate, 80) && total_children > 0) {
+    concerns.push(
+      `Personal passport currency at ${formatRate(personalPassportCurrencyRate)} — some children's identity documentation needs updating.`,
+    );
+  }
+
+  if (below(childVoiceInPlansRate, 50) && activePlans.length > 0) {
+    concerns.push(
+      `Child voice captured in only ${formatRate(childVoiceInPlansRate)} of identity plans — most children are not contributing to decisions about their cultural identity support.`,
+    );
+  } else if (meets(childVoiceInPlansRate, 50) && below(childVoiceInPlansRate, 70) && activePlans.length > 0) {
+    concerns.push(
+      `Child voice present in ${formatRate(childVoiceInPlansRate)} of identity plans — not all children have a say in how their cultural identity is supported.`,
     );
   }
 
@@ -608,7 +606,7 @@ export function computeCulturalIdentityDiversity(
   const recommendations: CulturalIdentityRecommendation[] = [];
   let rank = 0;
 
-  if (culturalPlanCoverageRate < 50 && total_children > 0) {
+  if (below(culturalPlanCoverageRate, 50) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -618,7 +616,7 @@ export function computeCulturalIdentityDiversity(
     });
   }
 
-  if (mentorAssignmentRate < 30 && total_children > 0) {
+  if (below(mentorAssignmentRate, 30) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -628,7 +626,7 @@ export function computeCulturalIdentityDiversity(
     });
   }
 
-  if (diversityParticipationRate < 30 && total_children > 0) {
+  if (below(diversityParticipationRate, 30) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -638,7 +636,7 @@ export function computeCulturalIdentityDiversity(
     });
   }
 
-  if (religiousObservanceRate < 50 && total_children > 0) {
+  if (below(religiousObservanceRate, 50) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -648,7 +646,7 @@ export function computeCulturalIdentityDiversity(
     });
   }
 
-  if (lifeStoryWorkRate < 50 && total_children > 0) {
+  if (below(lifeStoryWorkRate, 50) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -658,7 +656,7 @@ export function computeCulturalIdentityDiversity(
     });
   }
 
-  if (childVoiceInPlansRate < 50 && activePlans.length > 0) {
+  if (below(childVoiceInPlansRate, 50) && activePlans.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -678,7 +676,7 @@ export function computeCulturalIdentityDiversity(
     });
   }
 
-  if (personalPassportCurrencyRate < 50 && personal_passports.length > 0 && total_children > 0) {
+  if (below(personalPassportCurrencyRate, 50) && personal_passports.length > 0 && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -698,7 +696,7 @@ export function computeCulturalIdentityDiversity(
     });
   }
 
-  if (identityReviewTimelinessRate < 70 && activePlans.length > 0) {
+  if (below(identityReviewTimelinessRate, 70) && activePlans.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -708,7 +706,7 @@ export function computeCulturalIdentityDiversity(
     });
   }
 
-  if (culturalPlanCoverageRate >= 50 && culturalPlanCoverageRate < 80 && total_children > 0) {
+  if (meets(culturalPlanCoverageRate, 50) && below(culturalPlanCoverageRate, 80) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -718,7 +716,7 @@ export function computeCulturalIdentityDiversity(
     });
   }
 
-  if (mentorAssignmentRate >= 30 && mentorAssignmentRate < 80 && total_children > 0) {
+  if (meets(mentorAssignmentRate, 30) && below(mentorAssignmentRate, 80) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -728,7 +726,7 @@ export function computeCulturalIdentityDiversity(
     });
   }
 
-  if (diversityParticipationRate >= 30 && diversityParticipationRate < 70 && total_children > 0) {
+  if (meets(diversityParticipationRate, 30) && below(diversityParticipationRate, 70) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -738,7 +736,7 @@ export function computeCulturalIdentityDiversity(
     });
   }
 
-  if (childVoiceInPlansRate >= 50 && childVoiceInPlansRate < 70 && activePlans.length > 0) {
+  if (meets(childVoiceInPlansRate, 50) && below(childVoiceInPlansRate, 70) && activePlans.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -748,7 +746,7 @@ export function computeCulturalIdentityDiversity(
     });
   }
 
-  if (lifeStoryWorkRate >= 50 && lifeStoryWorkRate < 80 && total_children > 0) {
+  if (meets(lifeStoryWorkRate, 50) && below(lifeStoryWorkRate, 80) && total_children > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -758,7 +756,7 @@ export function computeCulturalIdentityDiversity(
     });
   }
 
-  if (learningDocRate < 50 && diversity_calendar_events.length > 0) {
+  if (below(learningDocRate, 50) && diversity_calendar_events.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -774,53 +772,53 @@ export function computeCulturalIdentityDiversity(
 
   // -- Critical insights --
 
-  if (culturalPlanCoverageRate < 50 && total_children > 0) {
+  if (below(culturalPlanCoverageRate, 50) && total_children > 0) {
     insights.push({
-      text: `Only ${culturalPlanCoverageRate}% of children have cultural identity plans. Ofsted will view this as a failure to meet Reg 5 (positive identity) — children's cultural, ethnic, and religious needs must be formally documented and actively supported.`,
+      text: `Only ${formatRate(culturalPlanCoverageRate)} of children have cultural identity plans. Ofsted will view this as a failure to meet Reg 5 (positive identity) — children's cultural, ethnic, and religious needs must be formally documented and actively supported.`,
       severity: "critical",
     });
   }
 
-  if (mentorAssignmentRate < 30 && total_children > 0) {
+  if (below(mentorAssignmentRate, 30) && total_children > 0) {
     insights.push({
-      text: `Only ${mentorAssignmentRate}% of children have cultural or religious mentors. Children in care often lack connections to their cultural heritage — without mentors who reflect their identity, children may experience cultural isolation and identity confusion.`,
+      text: `Only ${formatRate(mentorAssignmentRate)} of children have cultural or religious mentors. Children in care often lack connections to their cultural heritage — without mentors who reflect their identity, children may experience cultural isolation and identity confusion.`,
       severity: "critical",
     });
   }
 
-  if (diversityParticipationRate < 30 && total_children > 0) {
+  if (below(diversityParticipationRate, 30) && total_children > 0) {
     insights.push({
-      text: `Only ${diversityParticipationRate}% of children participate in diversity events. The home is not creating an inclusive environment where cultural diversity is celebrated and children can learn about different traditions and backgrounds.`,
+      text: `Only ${formatRate(diversityParticipationRate)} of children participate in diversity events. The home is not creating an inclusive environment where cultural diversity is celebrated and children can learn about different traditions and backgrounds.`,
       severity: "critical",
     });
   }
 
-  if (religiousObservanceRate < 50 && total_children > 0) {
+  if (below(religiousObservanceRate, 50) && total_children > 0) {
     insights.push({
-      text: `Religious needs documented for only ${religiousObservanceRate}% of children. Under Reg 5, children's spiritual and religious identities must be understood and supported. Failure to document these needs means they cannot be met.`,
+      text: `Religious needs documented for only ${formatRate(religiousObservanceRate)} of children. Under Reg 5, children's spiritual and religious identities must be understood and supported. Failure to document these needs means they cannot be met.`,
       severity: "critical",
     });
   }
 
-  if (lifeStoryWorkRate < 30 && total_children > 0) {
+  if (below(lifeStoryWorkRate, 30) && total_children > 0) {
     insights.push({
-      text: `Life story work active for only ${lifeStoryWorkRate}% of children. Without life story work, children may struggle to develop a coherent sense of identity and understand their personal history, which SCCIF identifies as essential for positive outcomes.`,
+      text: `Life story work active for only ${formatRate(lifeStoryWorkRate)} of children. Without life story work, children may struggle to develop a coherent sense of identity and understand their personal history, which SCCIF identifies as essential for positive outcomes.`,
       severity: "critical",
     });
   }
 
   // -- Warning insights --
 
-  if (culturalPlanCoverageRate >= 50 && culturalPlanCoverageRate < 80 && total_children > 0) {
+  if (meets(culturalPlanCoverageRate, 50) && below(culturalPlanCoverageRate, 80) && total_children > 0) {
     insights.push({
-      text: `Cultural identity plan coverage at ${culturalPlanCoverageRate}% — improving but some children still lack documented cultural support. Each child without a plan represents an unmet regulatory obligation under Reg 5.`,
+      text: `Cultural identity plan coverage at ${formatRate(culturalPlanCoverageRate)} — improving but some children still lack documented cultural support. Each child without a plan represents an unmet regulatory obligation under Reg 5.`,
       severity: "warning",
     });
   }
 
-  if (mentorAssignmentRate >= 30 && mentorAssignmentRate < 80 && total_children > 0) {
+  if (meets(mentorAssignmentRate, 30) && below(mentorAssignmentRate, 80) && total_children > 0) {
     insights.push({
-      text: `Mentor assignment at ${mentorAssignmentRate}% — some children lack identity-affirming mentoring relationships. Culturally matched mentors play a vital role in helping children maintain a positive sense of identity.`,
+      text: `Mentor assignment at ${formatRate(mentorAssignmentRate)} — some children lack identity-affirming mentoring relationships. Culturally matched mentors play a vital role in helping children maintain a positive sense of identity.`,
       severity: "warning",
     });
   }
@@ -832,51 +830,51 @@ export function computeCulturalIdentityDiversity(
     });
   }
 
-  if (diversityParticipationRate >= 30 && diversityParticipationRate < 70 && total_children > 0) {
+  if (meets(diversityParticipationRate, 30) && below(diversityParticipationRate, 70) && total_children > 0) {
     insights.push({
-      text: `Diversity event participation at ${diversityParticipationRate}% — some children may not feel included in the home's cultural programme. Consider reviewing individual barriers to participation.`,
+      text: `Diversity event participation at ${formatRate(diversityParticipationRate)} — some children may not feel included in the home's cultural programme. Consider reviewing individual barriers to participation.`,
       severity: "warning",
     });
   }
 
-  if (lifeStoryWorkRate >= 30 && lifeStoryWorkRate < 80 && total_children > 0) {
+  if (meets(lifeStoryWorkRate, 30) && below(lifeStoryWorkRate, 80) && total_children > 0) {
     insights.push({
-      text: `Life story work active for ${lifeStoryWorkRate}% of children — children without life story work may struggle to make sense of their history and develop a secure sense of identity.`,
+      text: `Life story work active for ${formatRate(lifeStoryWorkRate)} of children — children without life story work may struggle to make sense of their history and develop a secure sense of identity.`,
       severity: "warning",
     });
   }
 
-  if (identityReviewTimelinessRate >= 50 && identityReviewTimelinessRate < 70 && activePlans.length > 0) {
+  if (meets(identityReviewTimelinessRate, 50) && below(identityReviewTimelinessRate, 70) && activePlans.length > 0) {
     insights.push({
-      text: `Identity plan review timeliness at ${identityReviewTimelinessRate}% — overdue reviews mean cultural support may not reflect children's evolving identity needs.`,
+      text: `Identity plan review timeliness at ${formatRate(identityReviewTimelinessRate)} — overdue reviews mean cultural support may not reflect children's evolving identity needs.`,
       severity: "warning",
     });
   }
 
-  if (identityReviewTimelinessRate < 50 && activePlans.length > 0) {
+  if (below(identityReviewTimelinessRate, 50) && activePlans.length > 0) {
     insights.push({
-      text: `Only ${identityReviewTimelinessRate}% of identity plans reviewed on time — widespread overdue reviews suggest cultural identity support is not being actively monitored.`,
+      text: `Only ${formatRate(identityReviewTimelinessRate)} of identity plans reviewed on time — widespread overdue reviews suggest cultural identity support is not being actively monitored.`,
       severity: "warning",
     });
   }
 
-  if (personalPassportCurrencyRate >= 50 && personalPassportCurrencyRate < 80 && total_children > 0) {
+  if (meets(personalPassportCurrencyRate, 50) && below(personalPassportCurrencyRate, 80) && total_children > 0) {
     insights.push({
-      text: `Personal passport currency at ${personalPassportCurrencyRate}% — some children's identity documents are incomplete or outdated, which may affect placement transitions and identity continuity.`,
+      text: `Personal passport currency at ${formatRate(personalPassportCurrencyRate)} — some children's identity documents are incomplete or outdated, which may affect placement transitions and identity continuity.`,
       severity: "warning",
     });
   }
 
-  if (childVoiceInPlansRate >= 50 && childVoiceInPlansRate < 70 && activePlans.length > 0) {
+  if (meets(childVoiceInPlansRate, 50) && below(childVoiceInPlansRate, 70) && activePlans.length > 0) {
     insights.push({
-      text: `Child voice present in ${childVoiceInPlansRate}% of identity plans — some children are not being asked about their own cultural identity and what support matters to them.`,
+      text: `Child voice present in ${formatRate(childVoiceInPlansRate)} of identity plans — some children are not being asked about their own cultural identity and what support matters to them.`,
       severity: "warning",
     });
   }
 
-  if (childVoiceInPlansRate < 50 && activePlans.length > 0) {
+  if (below(childVoiceInPlansRate, 50) && activePlans.length > 0) {
     insights.push({
-      text: `Child voice captured in only ${childVoiceInPlansRate}% of identity plans. Children must be active participants in defining how their cultural identity is supported — plans written without the child's input risk being tokenistic rather than meaningful.`,
+      text: `Child voice captured in only ${formatRate(childVoiceInPlansRate)} of identity plans. Children must be active participants in defining how their cultural identity is supported — plans written without the child's input risk being tokenistic rather than meaningful.`,
       severity: "warning",
     });
   }
@@ -890,42 +888,42 @@ export function computeCulturalIdentityDiversity(
     });
   }
 
-  if (culturalPlanCoverageRate >= 100 && total_children > 0) {
+  if (meets(culturalPlanCoverageRate, 100) && total_children > 0) {
     insights.push({
       text: "Every child has an active cultural identity plan — the home systematically identifies and supports each child's unique cultural, religious, ethnic, and linguistic identity needs under Reg 5.",
       severity: "positive",
     });
   }
 
-  if (mentorAssignmentRate >= 100 && total_children > 0) {
+  if (meets(mentorAssignmentRate, 100) && total_children > 0) {
     insights.push({
       text: "Every child has an identity-affirming mentor — this exceptional practice ensures children maintain meaningful connections to their cultural heritage and community.",
       severity: "positive",
     });
   }
 
-  if (lifeStoryWorkRate >= 100 && total_children > 0) {
+  if (meets(lifeStoryWorkRate, 100) && total_children > 0) {
     insights.push({
       text: "Life story work active for every child — the home demonstrates exemplary practice in helping children understand their history, family connections, and identity narrative as required by SCCIF.",
       severity: "positive",
     });
   }
 
-  if (childVoiceInPlansRate >= 90 && activePlans.length > 0) {
+  if (meets(childVoiceInPlansRate, 90) && activePlans.length > 0) {
     insights.push({
-      text: `Child voice captured in ${childVoiceInPlansRate}% of identity plans — children are genuine partners in shaping how their cultural identity is understood and supported, reflecting outstanding Reg 7 practice.`,
+      text: `Child voice captured in ${formatRate(childVoiceInPlansRate)} of identity plans — children are genuine partners in shaping how their cultural identity is understood and supported, reflecting outstanding Reg 7 practice.`,
       severity: "positive",
     });
   }
 
-  if (diversityParticipationRate >= 90 && total_children > 0) {
+  if (meets(diversityParticipationRate, 90) && total_children > 0) {
     insights.push({
-      text: `${diversityParticipationRate}% of children participate in diversity events — the home creates an inclusive environment where cultural diversity is actively celebrated and every child feels their background is valued.`,
+      text: `${formatRate(diversityParticipationRate)} of children participate in diversity events — the home creates an inclusive environment where cultural diversity is actively celebrated and every child feels their background is valued.`,
       severity: "positive",
     });
   }
 
-  if (personalPassportCurrencyRate >= 100 && total_children > 0) {
+  if (meets(personalPassportCurrencyRate, 100) && total_children > 0) {
     insights.push({
       text: "Every child has a current personal passport with complete identity information, documented cultural needs, and current photograph — exemplary identity documentation practice.",
       severity: "positive",
@@ -939,7 +937,7 @@ export function computeCulturalIdentityDiversity(
     });
   }
 
-  if (religiousObservanceRate >= 100 && total_children > 0) {
+  if (meets(religiousObservanceRate, 100) && total_children > 0) {
     insights.push({
       text: "Religious needs documented for every child — the home demonstrates comprehensive respect for children's spiritual identities, supporting faith-based observance and understanding under Reg 5.",
       severity: "positive",
@@ -947,8 +945,8 @@ export function computeCulturalIdentityDiversity(
   }
 
   if (
-    identityReviewTimelinessRate >= 90 &&
-    personalPassportCurrencyRate >= 90 &&
+    meets(identityReviewTimelinessRate, 90) &&
+    meets(personalPassportCurrencyRate, 90) &&
     activePlans.length > 0
   ) {
     insights.push({

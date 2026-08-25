@@ -5,6 +5,8 @@
 // CHR 2015 Reg 33 (Employment of Staff) + Reg 32. SCCIF: "Well-Led."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, meanOf, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface StaffInput {
@@ -146,10 +148,6 @@ function toRating(score: number): WorkforcePlanningRating {
   return "inadequate";
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 // ── Main Compute ────────────────────────────────────────────────────────────
 
 export function computeHomeWorkforcePlanning(
@@ -202,9 +200,9 @@ export function computeHomeWorkforcePlanning(
     fixed_term_count: fixedTerm.length,
     agency_count: agency.length,
     bank_count: bank.length,
-    permanent_rate: pct(permanent.length, activeStaff.length),
+    permanent_rate: rate(permanent.length, activeStaff.length),
     avg_contracted_hours: avgHours,
-    dbs_update_service_rate: pct(dbsUpdateCount, activeStaff.length),
+    dbs_update_service_rate: rate(dbsUpdateCount, activeStaff.length),
     new_staff_count: newStaff.length,
     long_serving_count: longServing.length,
   };
@@ -234,7 +232,7 @@ export function computeHomeWorkforcePlanning(
   const openVacancies = vacancies.filter(v => v.status === "open");
   const onHold = vacancies.filter(v => v.status === "on_hold");
   const closed = vacancies.filter(v => v.status === "closed");
-  const vacancyRate = pct(openVacancies.length, activeStaff.length + openVacancies.length);
+  const vacancyRate = rate(openVacancies.length, activeStaff.length + openVacancies.length);
 
   const vacancyCoverage: VacancyCoverageProfile = {
     total_vacancies: vacancies.length,
@@ -249,17 +247,17 @@ export function computeHomeWorkforcePlanning(
   const inProgressInductions = inductions.filter(i => i.overall_status === "in_progress");
   const overdueInductions = inProgressInductions.filter(i => i.target_completion_date < today);
   const probationPassed = inductions.filter(i => i.probation_passed);
-  const avgItemRate = inductions.length > 0
-    ? Math.round(inductions.reduce((s, i) => s + pct(i.completed_items, i.total_items), 0) / inductions.length)
-    : null;
+  // An induction with 0 total_items has nothing to score item completion
+  // against — dropped from the average via meanOf rather than counted as 0%.
+  const avgItemRate = meanOf(inductions.map(i => rate(i.completed_items, i.total_items)));
 
   const inductionProfile: InductionProfile = {
     total_inductions: inductions.length,
     completed_count: completedInductions.length,
     in_progress_count: inProgressInductions.length,
     overdue_count: overdueInductions.length,
-    completion_rate: pct(completedInductions.length, inductions.length),
-    probation_passed_rate: pct(probationPassed.length, inductions.length),
+    completion_rate: rate(completedInductions.length, inductions.length),
+    probation_passed_rate: rate(probationPassed.length, inductions.length),
     avg_item_completion_rate: avgItemRate,
   };
 
@@ -285,8 +283,8 @@ export function computeHomeWorkforcePlanning(
 
   // 3. Vacancy coverage (±3)
   if (vacancyRate === 0) score += 3;
-  else if (vacancyRate <= 10) score += 1;
-  else if (vacancyRate <= 20) score -= 1;
+  else if ((vacancyRate !== null && vacancyRate <= 10)) score += 1;
+  else if ((vacancyRate !== null && vacancyRate <= 20)) score -= 1;
   else score -= 3;
 
   // 4. Induction completion (±4)
@@ -310,7 +308,7 @@ export function computeHomeWorkforcePlanning(
 
   // 7. Agency reliance (±3)
   if (agency.length === 0) score += 3;
-  else if (pct(agency.length, activeStaff.length) <= 20) score += 1;
+  else if (below(rate(agency.length, activeStaff.length), 21)) score += 1;
   else score -= 2;
 
   // 8. Succession review currency (±3)
@@ -372,8 +370,8 @@ export function computeHomeWorkforcePlanning(
   if ((staffComposition.permanent_rate ?? 0) >= 80 && agency.length === 0 && succession_plans.length > 0 && (avgReadiness ?? 0) >= 70) {
     insights.push({ text: `Workforce planning is exemplary — ${staffComposition.permanent_rate}% permanent staff, no agency reliance, and active succession planning with ${avgReadiness}% average readiness. Ofsted will recognise a home that invests in its people and plans for continuity, providing children with a stable, familiar team.`, severity: "positive" });
   }
-  if (agency.length > 0 && pct(agency.length, activeStaff.length) > 20) {
-    insights.push({ text: `${pct(agency.length, activeStaff.length)}% of the workforce are agency staff. High agency reliance means children experience unfamiliar adults, weakening therapeutic relationships and consistency of care. Ofsted will question whether the home can provide the stability children need.`, severity: "critical" });
+  if (agency.length > 0 && above(rate(agency.length, activeStaff.length), 20)) {
+    insights.push({ text: `${rate(agency.length, activeStaff.length)}% of the workforce are agency staff. High agency reliance means children experience unfamiliar adults, weakening therapeutic relationships and consistency of care. Ofsted will question whether the home can provide the stability children need.`, severity: "critical" });
   }
   if (succession_plans.length === 0) {
     insights.push({ text: "No succession plans are in place. If the Registered Manager or key senior staff were to leave, there is no documented plan for leadership continuity. Ofsted expects homes to plan proactively for workforce changes — the absence of succession planning is a leadership and management gap.", severity: "warning" });

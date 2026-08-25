@@ -217,10 +217,14 @@ describe("computeInformationFlowQuality", () => {
       // Falls through both special cases (not insufficient_data because total_staff > 0,
       // not the children case because total_children === 0).
       // However, with all arrays empty, all rates are 0 via pct(0,0)=0,
-      // triggering all four penalties: 52 - 5 - 5 - 5 - 3 = 34 → inadequate.
+      // All four rates (handover completion, significant-event handover,
+      // urgent-notification-read, daily-log coverage) are computed from a
+      // 0/0 population here, so they're unmeasured — none of the four
+      // below() penalties fire against a rate that was never measured.
+      // 52, no penalties → adequate.
       expect(result.flow_rating).not.toBe("insufficient_data");
-      expect(result.flow_rating).toBe("inadequate");
-      expect(result.flow_score).toBe(34);
+      expect(result.flow_rating).toBe("adequate");
+      expect(result.flow_score).toBe(52);
     });
   });
 
@@ -408,8 +412,10 @@ describe("computeInformationFlowQuality", () => {
       );
       const result = computeInformationFlowQuality(input);
       expect(result.care_event_verification_rate).toBe(90);
-      // sigEventHandover=pct(0,0)=0 => -5
-      expect(result.flow_score).toBe(51);
+      // No significant events in this override, so significantEventHandoverRate
+      // is unmeasured (0/0) — below() is false for null, so the -5 penalty
+      // that used to fire against a fabricated 0% no longer applies.
+      expect(result.flow_score).toBe(56);
     });
 
     it("careEventVerificationRate >= 75 but < 90 gives +1", () => {
@@ -419,8 +425,9 @@ describe("computeInformationFlowQuality", () => {
       );
       const result = computeInformationFlowQuality(input);
       expect(result.care_event_verification_rate).toBe(75);
-      // sigEventHandover=pct(0,0)=0 => -5
-      expect(result.flow_score).toBe(49);
+      // No significant events in this override, so significantEventHandoverRate
+      // is unmeasured — the -5 penalty no longer fires against a fabricated 0%.
+      expect(result.flow_score).toBe(54);
     });
 
     it("notificationReadRate >= 90 gives +3", () => {
@@ -630,7 +637,7 @@ describe("computeInformationFlowQuality", () => {
       expect(result.flow_score).toBe(50);
     });
 
-    it("significantEventHandoverRate penalty fires even with 0 significant events", () => {
+    it("significantEventHandoverRate penalty does not fire with 0 significant events", () => {
       const result = computeInformationFlowQuality(
         baseInput({
           total_staff: 50,
@@ -649,9 +656,11 @@ describe("computeInformationFlowQuality", () => {
           ),
         }),
       );
-      expect(result.significant_event_handover_rate).toBe(0);
-      // pct(0,0)=0 < 50 => -5. 52 + 1(notif) - 5 = 48
-      expect(result.flow_score).toBe(48);
+      expect(result.significant_event_handover_rate).toBeNull();
+      // No significant events, so the rate is unmeasured, not a measured 0% —
+      // below() is false for null, so the -5 penalty this test used to lock
+      // in no longer fires. 52 + 1(notif) = 53.
+      expect(result.flow_score).toBe(53);
     });
 
     it("all four penalties stack", () => {
@@ -902,7 +911,7 @@ describe("computeInformationFlowQuality", () => {
           makeNotification({ id: "n-2", priority: "low", read: true }),
         ],
       }));
-      expect(result.urgent_notification_read_rate).toBe(0);
+      expect(result.urgent_notification_read_rate).toBeNull();
     });
 
     it("information_continuity_score averages four rates", () => {
@@ -938,11 +947,11 @@ describe("computeInformationFlowQuality", () => {
       expect(result.staff_engagement_rate).toBe(80);
     });
 
-    it("pct returns 0 when denominator is 0", () => {
+    it("daily_log_coverage_rate is unmeasured for a zero denominator", () => {
       const result = computeInformationFlowQuality(baseInput({
         total_children: 0, total_staff: 5, handovers: [makeHandover({ id: "h-1" })],
       }));
-      expect(result.daily_log_coverage_rate).toBe(0);
+      expect(result.daily_log_coverage_rate).toBeNull();
     });
 
     it("pct rounds 33.33 to 33", () => {
@@ -1511,18 +1520,18 @@ describe("computeInformationFlowQuality", () => {
       expect(result.staff_engagement_rate).toBe(40);
     });
 
-    it("total_children=0 with data no division error", () => {
+    it("daily_log_coverage_rate is unmeasured when total_children=0, without a division error", () => {
       const result = computeInformationFlowQuality(baseInput({
         total_children: 0, daily_logs: [makeDailyLog({ id: "dl-1", child_id: "child-1" })], handovers: [makeHandover({ id: "h-1" })],
       }));
-      expect(result.daily_log_coverage_rate).toBe(0);
+      expect(result.daily_log_coverage_rate).toBeNull();
     });
 
-    it("total_staff=0 with data no division error", () => {
+    it("staff_engagement_rate is unmeasured when total_staff=0, without a division error", () => {
       const result = computeInformationFlowQuality(baseInput({
         total_staff: 0, total_children: 0, handovers: [makeHandover({ id: "h-1" })],
       }));
-      expect(result.staff_engagement_rate).toBe(0);
+      expect(result.staff_engagement_rate).toBeNull();
     });
 
     it("high priority counts as urgent", () => {
@@ -1532,10 +1541,10 @@ describe("computeInformationFlowQuality", () => {
       expect(result.urgent_notification_read_rate).toBe(50);
     });
 
-    it("empty handovers gives 0% rates", () => {
+    it("empty handovers leaves handover rates unmeasured", () => {
       const result = computeInformationFlowQuality(baseInput({ handovers: [], daily_logs: [makeDailyLog({ id: "dl-1", child_id: "child-1" })] }));
-      expect(result.handover_completion_rate).toBe(0);
-      expect(result.handover_content_rate).toBe(0);
+      expect(result.handover_completion_rate).toBeNull();
+      expect(result.handover_content_rate).toBeNull();
     });
   });
 
@@ -1615,7 +1624,29 @@ describe("computeInformationFlowQuality", () => {
     });
 
     it("all rate fields are numbers", () => {
-      const result = computeInformationFlowQuality(baseInput({ handovers: [makeHandover({ id: "h-1" })] }));
+      // Needs every source population non-empty — a single handover leaves
+      // daily_logs/care_events/notifications-derived rates unmeasured (null),
+      // which is correct behaviour but not what this shape check is testing.
+      const result = computeInformationFlowQuality(baseInput({
+        total_staff: 50,
+        total_children: 6,
+        handovers: [
+          makeHandover({ id: "srv-hb-1", completed: true, has_content: true }),
+          makeHandover({ id: "srv-hb-2", completed: false, has_content: false, handed_over_by: "srv-staff-3", received_by: "srv-staff-4" }),
+        ],
+        daily_logs: [
+          makeDailyLog({ id: "srv-dlb-1", child_id: "child-1", word_count: 60, staff_id: "srv-staff-5" }),
+          makeDailyLog({ id: "srv-dlb-2", child_id: "child-2", word_count: 60, staff_id: "srv-staff-6" }),
+          makeDailyLog({ id: "srv-dlb-3", child_id: "child-3", word_count: 60, staff_id: "srv-staff-7" }),
+        ],
+        care_events: [
+          makeCareEvent({ id: "srv-ceb-1", is_significant: true, has_handover_note: true, is_verified: true, staff_id: "srv-staff-8" }),
+          makeCareEvent({ id: "srv-ceb-2", is_significant: true, has_handover_note: false, is_verified: true, staff_id: "srv-staff-9" }),
+        ],
+        notifications: Array.from({ length: 10 }, (_, i) =>
+          makeNotification({ id: `srv-nb-${i}`, priority: "urgent", read: i < 7, recipient_id: `srv-staff-nb-${i}` }),
+        ),
+      }));
       expect(typeof result.handover_completion_rate).toBe("number");
       expect(typeof result.handover_content_rate).toBe("number");
       expect(typeof result.daily_log_coverage_rate).toBe("number");
@@ -1821,12 +1852,12 @@ describe("computeInformationFlowQuality", () => {
       expect(result.notification_read_rate).toBe(50);
     });
 
-    it("no urgent means urgentRate 0", () => {
+    it("no urgent notifications leaves urgent_notification_read_rate unmeasured", () => {
       const result = computeInformationFlowQuality(baseInput({
         notifications: [makeNotification({ id: "n-1", priority: "normal", read: true }), makeNotification({ id: "n-2", priority: "low", read: true })],
         handovers: [makeHandover({ id: "h-1" })],
       }));
-      expect(result.urgent_notification_read_rate).toBe(0);
+      expect(result.urgent_notification_read_rate).toBeNull();
       expect(result.notification_read_rate).toBe(100);
     });
   });
@@ -2022,8 +2053,12 @@ describe("computeInformationFlowQuality", () => {
         total_staff: 10, total_children: 6,
         handovers: Array.from({ length: 20 }, (_, i) => makeHandover({ id: `h-${i}`, completed: true, has_content: true, handed_over_by: `s-${i}`, received_by: `r-${i}` })),
       }));
-      // +4(comp) +3(content) -3(coverage<40) -5(sigEvent) -5(urgentNotif) +2(staff)
-      expect(result.flow_score).toBe(48);
+      // +4(comp) +3(content) +2(staff). coverage<40 still applies as a real
+      // -3 — 6 children, 0 with logs, is a genuine measured 0%, not an empty
+      // population. sigEvent and urgentNotif are both computed from a 0/0
+      // population (no care_events, no notifications) and are unmeasured, so
+      // neither -5 penalty fires. 52+4+3-3+2 = 58.
+      expect(result.flow_score).toBe(58);
     });
 
     it("only notifications", () => {
@@ -2031,8 +2066,11 @@ describe("computeInformationFlowQuality", () => {
         total_staff: 50, total_children: 6,
         notifications: Array.from({ length: 10 }, (_, i) => makeNotification({ id: `n-${i}`, priority: i < 5 ? "urgent" : "normal", read: true })),
       }));
-      // +3(notifRead) +2(urgentNotifRead) -5(handoverComp) -3(coverage) -5(sigEvent)
-      expect(result.flow_score).toBe(44);
+      // +3(notifRead) +2(urgentNotifRead) -3(coverage, a genuine measured 0%
+      // — 6 children, 0 with logs). handoverComp and sigEvent are both
+      // computed from a 0/0 population (no handovers, no care_events) and are
+      // unmeasured, so neither -5 penalty fires. 52+3+2-3 = 54.
+      expect(result.flow_score).toBe(54);
     });
   });
 
@@ -2246,13 +2284,13 @@ describe("computeInformationFlowQuality", () => {
       expect(result.information_continuity_score).toBe(50);
     });
 
-    it("continuity is 0 when all arrays empty but falls through special cases", () => {
+    it("information_continuity_score is unmeasured when all arrays are empty but falls through special cases", () => {
       const result = computeInformationFlowQuality(baseInput({
         total_staff: 1,
         total_children: 0,
       }));
-      // All rates are 0 via pct(0,0)=0
-      expect(result.information_continuity_score).toBe(0);
+      // All four source rates are computed from a 0/0 population — unmeasured
+      expect(result.information_continuity_score).toBeNull();
     });
 
     it("continuity is 100 when all four rates are 100", () => {

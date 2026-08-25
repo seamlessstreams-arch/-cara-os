@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate } from "@/lib/metrics/rate";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
@@ -57,7 +58,7 @@ export function HomeCulturalIdentityDiversityIntelligenceCard() {
             <Globe className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-[--cs-warning]")} />
             <span className="text-slate-900 font-bold">Cultural Identity & Diversity</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.identity_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.identity_score}%</span>}
+            {d.identity_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.identity_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -66,27 +67,27 @@ export function HomeCulturalIdentityDiversityIntelligenceCard() {
         {d.identity_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
             <div className={cn("text-center rounded-lg p-1.5", d.cultural_plan_coverage_rate >= 80 ? "bg-green-50" : d.cultural_plan_coverage_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.cultural_plan_coverage_rate >= 80 ? "text-[--cs-success]" : d.cultural_plan_coverage_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.cultural_plan_coverage_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.cultural_plan_coverage_rate >= 80 ? "text-[--cs-success]" : d.cultural_plan_coverage_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.cultural_plan_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">ID Plans</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.mentor_assignment_rate >= 80 ? "bg-green-50" : d.mentor_assignment_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.mentor_assignment_rate >= 80 ? "text-[--cs-success]" : d.mentor_assignment_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.mentor_assignment_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.mentor_assignment_rate >= 80 ? "text-[--cs-success]" : d.mentor_assignment_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.mentor_assignment_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Mentors</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.diversity_participation_rate >= 80 ? "bg-green-50" : d.diversity_participation_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.diversity_participation_rate >= 80 ? "text-[--cs-success]" : d.diversity_participation_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.diversity_participation_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.diversity_participation_rate >= 80 ? "text-[--cs-success]" : d.diversity_participation_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.diversity_participation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Diversity</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.life_story_work_rate >= 80 ? "bg-green-50" : d.life_story_work_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.life_story_work_rate >= 80 ? "text-[--cs-success]" : d.life_story_work_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.life_story_work_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.life_story_work_rate >= 80 ? "text-[--cs-success]" : d.life_story_work_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.life_story_work_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Life Story</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.child_voice_in_plans_rate >= 80 ? "bg-green-50" : d.child_voice_in_plans_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_voice_in_plans_rate >= 80 ? "text-[--cs-success]" : d.child_voice_in_plans_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_voice_in_plans_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.child_voice_in_plans_rate >= 80 ? "text-[--cs-success]" : d.child_voice_in_plans_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_voice_in_plans_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Child Voice</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.personal_passport_currency_rate >= 80 ? "bg-green-50" : d.personal_passport_currency_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.personal_passport_currency_rate >= 80 ? "text-[--cs-success]" : d.personal_passport_currency_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.personal_passport_currency_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.personal_passport_currency_rate >= 80 ? "text-[--cs-success]" : d.personal_passport_currency_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.personal_passport_currency_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Passports</p>
             </div>
           </div>

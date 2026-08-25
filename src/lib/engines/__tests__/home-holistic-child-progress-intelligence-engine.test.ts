@@ -745,12 +745,15 @@ describe("computeHolisticChildProgress", () => {
         key_work_sessions: [makeKeyWorkSession({ id: "poi2-kw-1", completed: true, has_child_voice: false, goals_progressed: 1, goals_total: 4 }), makeKeyWorkSession({ id: "poi2-kw-2", completed: false, has_child_voice: false, goals_progressed: 0, goals_total: 4 })],
         independence_records: [makeIndependenceRecord({ id: "poi2-ir-1", overall_readiness: 40, has_child_view: false })],
       }));
-      // pct(0, 0) = 0 for improvement, but outcome_reviews.length > 0 so -3 DOES apply
-      // Wait - the condition is: outcomeImprovementRate === 0 && outcome_reviews.length > 0
-      // outcomeImprovementRate = pct(improved.length, reviewsWithPrevious.length) = pct(0, 0) = 0
-      // So the -3 penalty DOES apply even when no reviews have previous_score.
-      expect(r.outcome_improvement_rate).toBe(0);
-      expect(r.progress_score).toBe(49); // 52 - 3 = 49
+      // No reviews have previous_score, so reviewsWithPrevious.length is 0 and
+      // outcomeImprovementRate = rate(0, 0) = null — unmeasured, not a real 0%.
+      // The penalty checks `outcomeImprovementRate === 0`, and null !== 0, so
+      // it correctly does not apply — this test's title was always right, the
+      // old fab-0 bug just made the assertion below say otherwise: pct(0,0)
+      // used to equal 0, which the strict-equality check couldn't tell apart
+      // from a genuinely measured 0% improvement.
+      expect(r.outcome_improvement_rate).toBeNull();
+      expect(r.progress_score).toBe(52); // no data to measure improvement from, so no penalty
     });
   });
 
@@ -977,21 +980,21 @@ describe("computeHolisticChildProgress", () => {
       expect(r.outcome_improvement_rate).toBe(0);
     });
 
-    it("returns 0 when all reviews have null previous_score (pct(0,0))", () => {
+    it("outcome_improvement_rate is unmeasured when all reviews have null previous_score", () => {
       const r = computeHolisticChildProgress(baseInput({
         outcome_reviews: [
           makeOutcomeReview({ id: "oir4-or-1", score: 9, previous_score: null }),
           makeOutcomeReview({ id: "oir4-or-2", score: 9, previous_score: null }),
         ],
       }));
-      expect(r.outcome_improvement_rate).toBe(0);
+      expect(r.outcome_improvement_rate).toBeNull();
     });
 
-    it("returns 0 when no outcome reviews", () => {
+    it("outcome_improvement_rate is unmeasured when there are no outcome reviews", () => {
       const r = computeHolisticChildProgress(baseInput({
         key_work_sessions: [makeKeyWorkSession({ id: "oir5-kw-1" })],
       }));
-      expect(r.outcome_improvement_rate).toBe(0);
+      expect(r.outcome_improvement_rate).toBeNull();
     });
   });
 
@@ -1007,11 +1010,11 @@ describe("computeHolisticChildProgress", () => {
       expect(r.outcome_child_voice_rate).toBe(67); // Math.round(2/3*100)
     });
 
-    it("returns 0 when no outcome reviews", () => {
+    it("outcome_child_voice_rate is unmeasured when there are no outcome reviews", () => {
       const r = computeHolisticChildProgress(baseInput({
         key_work_sessions: [makeKeyWorkSession({ id: "ocvr2-kw-1" })],
       }));
-      expect(r.outcome_child_voice_rate).toBe(0);
+      expect(r.outcome_child_voice_rate).toBeNull();
     });
   });
 
@@ -1028,11 +1031,11 @@ describe("computeHolisticChildProgress", () => {
       expect(r.education_engagement_rate).toBe(50);
     });
 
-    it("returns 0 when no education records", () => {
+    it("education_engagement_rate is unmeasured when there are no education records", () => {
       const r = computeHolisticChildProgress(baseInput({
         outcome_reviews: [makeOutcomeReview({ id: "eer2-or-1" })],
       }));
-      expect(r.education_engagement_rate).toBe(0);
+      expect(r.education_engagement_rate).toBeNull();
     });
   });
 
@@ -1079,11 +1082,11 @@ describe("computeHolisticChildProgress", () => {
       expect(r.key_work_completion_rate).toBe(67);
     });
 
-    it("returns 0 when no key work sessions", () => {
+    it("key_work_completion_rate is unmeasured when there are no key work sessions", () => {
       const r = computeHolisticChildProgress(baseInput({
         outcome_reviews: [makeOutcomeReview({ id: "kwcr2-or-1" })],
       }));
-      expect(r.key_work_completion_rate).toBe(0);
+      expect(r.key_work_completion_rate).toBeNull();
     });
   });
 
@@ -1098,13 +1101,13 @@ describe("computeHolisticChildProgress", () => {
       expect(r.key_work_goal_progress_rate).toBe(50); // 5/10 = 50%
     });
 
-    it("returns 0 when total goals is 0", () => {
+    it("key_work_goal_progress_rate is unmeasured when total goals is 0", () => {
       const r = computeHolisticChildProgress(baseInput({
         key_work_sessions: [
           makeKeyWorkSession({ id: "kwgp2-kw-1", goals_progressed: 0, goals_total: 0 }),
         ],
       }));
-      expect(r.key_work_goal_progress_rate).toBe(0);
+      expect(r.key_work_goal_progress_rate).toBeNull();
     });
   });
 
@@ -2097,11 +2100,11 @@ describe("computeHolisticChildProgress", () => {
       expect(r.outcome_improvement_rate).toBe(0);
     });
 
-    it("pct(0, 0) returns 0", () => {
+    it("key_work_goal_progress_rate is unmeasured for a zero denominator", () => {
       const r = computeHolisticChildProgress(baseInput({
         key_work_sessions: [makeKeyWorkSession({ id: "ec-pct-kw-1", goals_progressed: 0, goals_total: 0 })],
       }));
-      expect(r.key_work_goal_progress_rate).toBe(0);
+      expect(r.key_work_goal_progress_rate).toBeNull();
     });
   });
 

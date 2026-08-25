@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, HeartPulse } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -64,7 +65,7 @@ export function HomeTherapeuticWellbeingImpactIntelligenceCard() {
             <HeartPulse className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-fuchsia-600")} />
             <span className="text-slate-900 font-bold">Therapeutic Wellbeing</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.wellbeing_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.wellbeing_score}%</span>}
+            {d.wellbeing_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.wellbeing_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -82,15 +83,15 @@ export function HomeTherapeuticWellbeingImpactIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Avg Score</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.improving_trend_rate ?? 0) >= 70 ? "bg-green-50" : (d.improving_trend_rate ?? 0) >= 40 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.improving_trend_rate ?? 0) >= 70 ? "text-[--cs-success]" : (d.improving_trend_rate ?? 0) >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.improving_trend_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.improving_trend_rate ?? 0) >= 70 ? "text-[--cs-success]" : (d.improving_trend_rate ?? 0) >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.improving_trend_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Improving</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.self_soothing_coverage_rate ?? 0) >= 80 ? "bg-green-50" : (d.self_soothing_coverage_rate ?? 0) >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.self_soothing_coverage_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.self_soothing_coverage_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.self_soothing_coverage_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.self_soothing_coverage_rate ?? 0) >= 80 ? "text-[--cs-success]" : (d.self_soothing_coverage_rate ?? 0) >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.self_soothing_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Soothing</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", (d.grief_support_rate ?? 0) >= 90 ? "bg-green-50" : (d.grief_support_rate ?? 0) >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", (d.grief_support_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.grief_support_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.grief_support_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", (d.grief_support_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.grief_support_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.grief_support_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Grief</p>
             </div>
           </div>

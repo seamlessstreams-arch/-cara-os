@@ -7,6 +7,8 @@
 // children's lives" — "Progress and outcomes", "Experiences and progress".
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface OutcomeTargetInput {
@@ -128,10 +130,6 @@ const ALL_DOMAINS = [
   "family_social", "self_care", "independence", "behaviour",
 ];
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function avg(values: number[]): number {
   if (values.length === 0) return 0;
   return Math.round((values.reduce((s, v) => s + v, 0) / values.length) * 10) / 10;
@@ -223,8 +221,8 @@ export function computeHomeOutcomesProgress(
     improving_count: improvingCount,
     stable_count: stableCount,
     declining_count: decliningCount,
-    improving_rate: pct(improvingCount, activeTargets.length),
-    declining_rate: pct(decliningCount, activeTargets.length),
+    improving_rate: rate(improvingCount, activeTargets.length),
+    declining_rate: rate(decliningCount, activeTargets.length),
     avg_current_rating: avg(activeTargets.map(t => t.current_rating)),
     avg_baseline_rating: avg(activeTargets.map(t => t.baseline_rating)),
     avg_progress: avg(activeTargets.map(t => t.current_rating - t.baseline_rating)),
@@ -235,7 +233,7 @@ export function computeHomeOutcomesProgress(
   // ── Review Profile ────────────────────────────────────────────
   const overdueTargets = activeTargets.filter(t => t.status === "active" && t.review_date < today).length;
   const activeForOverdue = activeTargets.filter(t => t.status === "active").length;
-  const overdueRate = pct(overdueTargets, activeForOverdue);
+  const overdueRate = rate(overdueTargets, activeForOverdue);
 
   const ypParticipated = recentReviews.filter(r => r.yp_participated).length;
   const reviewsWithBarriers = recentReviews.filter(r => r.has_barriers).length;
@@ -251,7 +249,7 @@ export function computeHomeOutcomesProgress(
     avg_reviews_per_target: avgReviewsPerTarget,
     overdue_targets: overdueTargets,
     overdue_rate: overdueRate,
-    yp_participation_rate: pct(ypParticipated, recentReviews.length),
+    yp_participation_rate: rate(ypParticipated, recentReviews.length),
     reviews_with_barriers: reviewsWithBarriers,
     reviews_with_next_steps: reviewsWithNextSteps,
   };
@@ -264,7 +262,7 @@ export function computeHomeOutcomesProgress(
   const childrenWithTargets = Object.keys(childMap).length;
   const childrenWithout = Math.max(0, total_children - childrenWithTargets);
   const coverageRate = total_children > 0
-    ? pct(childrenWithTargets, total_children)
+    ? rate(childrenWithTargets, total_children)
     : (childrenWithTargets > 0 ? 100  : null);
   const perChildCounts = Object.values(childMap);
   const minTargets = perChildCounts.length > 0 ? Math.min(...perChildCounts) : null;
@@ -274,7 +272,7 @@ export function computeHomeOutcomesProgress(
     : null;
 
   const targetsWithVoice = activeTargets.filter(t => t.has_yp_voice).length;
-  const ypVoiceRate = pct(targetsWithVoice, activeTargets.length);
+  const ypVoiceRate = rate(targetsWithVoice, activeTargets.length);
 
   const equityProfile: EquityProfile = {
     children_with_targets: childrenWithTargets,
@@ -297,17 +295,17 @@ export function computeHomeOutcomesProgress(
   else score -= 3;
 
   // 2. Improving direction rate (±4)
-  const improvingRate = pct(improvingCount, activeTargets.length);
-  if (improvingRate >= 60) score += 4;
-  else if (improvingRate >= 40) score += 2;
-  else if (improvingRate >= 20) score += 0;
+  const improvingRate = rate(improvingCount, activeTargets.length);
+  if (meets(improvingRate, 60)) score += 4;
+  else if (meets(improvingRate, 40)) score += 2;
+  else if (meets(improvingRate, 20)) score += 0;
   else score -= 3;
 
   // 3. Declining rate (±3)
-  const decliningRate = pct(decliningCount, activeTargets.length);
+  const decliningRate = rate(decliningCount, activeTargets.length);
   if (decliningCount === 0) score += 3;
-  else if (decliningRate <= 10) score += 1;
-  else if (decliningRate <= 25) score += 0;
+  else if ((decliningRate !== null && decliningRate <= 10)) score += 1;
+  else if ((decliningRate !== null && decliningRate <= 25)) score += 0;
   else score -= 2;
 
   // 4. Average progress (±4)
@@ -320,14 +318,14 @@ export function computeHomeOutcomesProgress(
 
   // 5. Review timeliness (±3)
   if (overdueRate === 0) score += 3;
-  else if (overdueRate <= 20) score += 1;
-  else if (overdueRate <= 50) score += 0;
+  else if ((overdueRate !== null && overdueRate <= 20)) score += 1;
+  else if ((overdueRate !== null && overdueRate <= 50)) score += 0;
   else score -= 2;
 
   // 6. YP voice in targets (±4)
-  if (ypVoiceRate >= 80) score += 4;
-  else if (ypVoiceRate >= 60) score += 2;
-  else if (ypVoiceRate >= 40) score += 0;
+  if (meets(ypVoiceRate, 80)) score += 4;
+  else if (meets(ypVoiceRate, 60)) score += 2;
+  else if (meets(ypVoiceRate, 40)) score += 0;
   else score -= 3;
 
   // 7. Child coverage (±3)
@@ -348,9 +346,9 @@ export function computeHomeOutcomesProgress(
   // ── Strengths ─────────────────────────────────────────────────
   const strengths: string[] = [];
   if (domainsRepresented.length >= 6) strengths.push(`${domainsRepresented.length} out of 8 outcome domains covered — comprehensive therapeutic breadth.`);
-  if (improvingRate >= 60) strengths.push(`${improvingRate}% of targets are improving — children are making meaningful progress.`);
+  if (meets(improvingRate, 60)) strengths.push(`${formatRate(improvingRate)} of targets are improving — children are making meaningful progress.`);
   if (decliningCount === 0) strengths.push("No targets are declining — all children are maintaining or building on progress.");
-  if (ypVoiceRate >= 80) strengths.push(`${ypVoiceRate}% of targets include young person voice — excellent child participation.`);
+  if (meets(ypVoiceRate, 80)) strengths.push(`${formatRate(ypVoiceRate)} of targets include young person voice — excellent child participation.`);
   if ((coverageRate ?? 0) >= 100) strengths.push("All children have individual outcome targets — equitable focus on every child's progress.");
   if (overdueRate === 0 && activeForOverdue > 0) strengths.push("All target reviews are up to date — strong review discipline.");
   if (avgProg >= 1.5) strengths.push(`Average rating improvement of ${avgProg} points — strong upward trajectory across all children.`);
@@ -358,10 +356,10 @@ export function computeHomeOutcomesProgress(
   // ── Concerns ──────────────────────────────────────────────────
   const concerns: string[] = [];
   if (domainsRepresented.length < 4) concerns.push(`Only ${domainsRepresented.length} out of 8 domains covered — key areas of children's lives are not being targeted.`);
-  if (decliningRate > 25) concerns.push(`${decliningRate}% of targets are declining — children are losing ground on their outcomes.`);
+  if (above(decliningRate, 25)) concerns.push(`${formatRate(decliningRate)} of targets are declining — children are losing ground on their outcomes.`);
   if (childrenWithout > 0 && total_children > 0) concerns.push(`${childrenWithout} child${childrenWithout > 1 ? "ren" : ""} ha${childrenWithout > 1 ? "ve" : "s"} no outcome targets — their progress is not being tracked.`);
-  if (overdueRate > 50) concerns.push(`${overdueRate}% of target reviews are overdue — review discipline has lapsed.`);
-  if (ypVoiceRate < 40) concerns.push(`Only ${ypVoiceRate}% of targets include young person voice — children's wishes and feelings are underrepresented.`);
+  if (above(overdueRate, 50)) concerns.push(`${formatRate(overdueRate)} of target reviews are overdue — review discipline has lapsed.`);
+  if (below(ypVoiceRate, 40)) concerns.push(`Only ${formatRate(ypVoiceRate)} of targets include young person voice — children's wishes and feelings are underrepresented.`);
   if (avgProg < 0) concerns.push(`Average rating has declined by ${Math.abs(avgProg)} points — outcomes are worsening across the home.`);
 
   // ── Recommendations ───────────────────────────────────────────
@@ -372,13 +370,13 @@ export function computeHomeOutcomesProgress(
     recs.push({ rank: rank++, recommendation: `${childrenWithout} child${childrenWithout > 1 ? "ren" : ""} ha${childrenWithout > 1 ? "ve" : "s"} no outcome targets — set individual targets covering at least 4 domains per child.`, urgency: "immediate", regulatory_ref: "Reg 6" });
   }
   if (decliningCount > 0) {
-    recs.push({ rank: rank++, recommendation: `${decliningCount} target${decliningCount > 1 ? "s are" : " is"} declining — conduct urgent reviews to identify barriers and adjust support plans.`, urgency: decliningRate > 25 ? "immediate" : "soon", regulatory_ref: "Reg 6" });
+    recs.push({ rank: rank++, recommendation: `${decliningCount} target${decliningCount > 1 ? "s are" : " is"} declining — conduct urgent reviews to identify barriers and adjust support plans.`, urgency: above(decliningRate, 25) ? "immediate" : "soon", regulatory_ref: "Reg 6" });
   }
-  if (overdueRate > 20) {
-    recs.push({ rank: rank++, recommendation: `${overdueTargets} target review${overdueTargets > 1 ? "s are" : " is"} overdue — schedule reviews within the next 7 days.`, urgency: overdueRate > 50 ? "immediate" : "soon", regulatory_ref: "Reg 45" });
+  if (above(overdueRate, 20)) {
+    recs.push({ rank: rank++, recommendation: `${overdueTargets} target review${overdueTargets > 1 ? "s are" : " is"} overdue — schedule reviews within the next 7 days.`, urgency: above(overdueRate, 50) ? "immediate" : "soon", regulatory_ref: "Reg 45" });
   }
-  if (ypVoiceRate < 60) {
-    recs.push({ rank: rank++, recommendation: `Young person voice is recorded in only ${ypVoiceRate}% of targets — ensure children's wishes and feelings are captured at every review.`, urgency: "soon", regulatory_ref: "Reg 7" });
+  if (below(ypVoiceRate, 60)) {
+    recs.push({ rank: rank++, recommendation: `Young person voice is recorded in only ${formatRate(ypVoiceRate)} of targets — ensure children's wishes and feelings are captured at every review.`, urgency: "soon", regulatory_ref: "Reg 7" });
   }
   if (domainsMissing.length > 4) {
     recs.push({ rank: rank++, recommendation: `${domainsMissing.length} outcome domains are missing targets — broaden therapeutic focus to cover health, education, emotional wellbeing, identity, family, self-care, independence, and behaviour.`, urgency: "planned", regulatory_ref: "Reg 6" });
@@ -388,35 +386,35 @@ export function computeHomeOutcomesProgress(
   const insights: OutcomesInsight[] = [];
 
   if (rating === "outstanding") {
-    insights.push({ text: `Exemplary outcomes practice — ${activeTargets.length} targets across ${domainsRepresented.length} domains with ${improvingRate}% improving. Children's progress is well-evidenced, regularly reviewed, and informed by their own voice. Ofsted inspectors will find strong evidence that the home is making a measurable difference to children's lives.`, severity: "positive" });
+    insights.push({ text: `Exemplary outcomes practice — ${activeTargets.length} targets across ${domainsRepresented.length} domains with ${formatRate(improvingRate)} improving. Children's progress is well-evidenced, regularly reviewed, and informed by their own voice. Ofsted inspectors will find strong evidence that the home is making a measurable difference to children's lives.`, severity: "positive" });
   }
   if (decliningCount > 0) {
     const decliningChildren = [...new Set(activeTargets.filter(t => t.direction === "declining").map(t => t.child_id))].length;
-    insights.push({ text: `${decliningCount} target${decliningCount > 1 ? "s" : ""} across ${decliningChildren} child${decliningChildren > 1 ? "ren" : ""} ${decliningCount > 1 ? "are" : "is"} declining. Under SCCIF, inspectors specifically look for evidence that 'children make progress' — any regression requires investigation and management response.`, severity: decliningRate > 25 ? "critical" : "warning" });
+    insights.push({ text: `${decliningCount} target${decliningCount > 1 ? "s" : ""} across ${decliningChildren} child${decliningChildren > 1 ? "ren" : ""} ${decliningCount > 1 ? "are" : "is"} declining. Under SCCIF, inspectors specifically look for evidence that 'children make progress' — any regression requires investigation and management response.`, severity: above(decliningRate, 25) ? "critical" : "warning" });
   }
-  if (overdueRate > 50) {
-    insights.push({ text: `${overdueRate}% of target reviews are overdue. Review timeliness directly evidences the home's commitment to monitoring children's progress. Ofsted inspectors will expect to see that care plans are 'regularly reviewed and updated'.`, severity: "critical" });
+  if (above(overdueRate, 50)) {
+    insights.push({ text: `${formatRate(overdueRate)} of target reviews are overdue. Review timeliness directly evidences the home's commitment to monitoring children's progress. Ofsted inspectors will expect to see that care plans are 'regularly reviewed and updated'.`, severity: "critical" });
   }
   if (childrenWithout > 0 && total_children > 0) {
     insights.push({ text: `${childrenWithout} of ${total_children} children have no outcome targets. Regulation 6 requires the home to provide care designed to meet each child's needs and promote their welfare. An absence of measurable targets for any child represents a significant gap.`, severity: "critical" });
   }
-  if (ypVoiceRate >= 80 && recentReviews.length > 0) {
-    const reviewParticipation = pct(ypParticipated, recentReviews.length);
-    if (reviewParticipation >= 80) {
-      insights.push({ text: `Young people's voices are strongly present — ${ypVoiceRate}% of targets and ${reviewParticipation}% of reviews include their wishes and feelings. This demonstrates genuine child-centred practice aligned with Regulation 7 (children's wishes and feelings).`, severity: "positive" });
+  if (meets(ypVoiceRate, 80) && recentReviews.length > 0) {
+    const reviewParticipation = rate(ypParticipated, recentReviews.length);
+    if (meets(reviewParticipation, 80)) {
+      insights.push({ text: `Young people's voices are strongly present — ${formatRate(ypVoiceRate)} of targets and ${formatRate(reviewParticipation)} of reviews include their wishes and feelings. This demonstrates genuine child-centred practice aligned with Regulation 7 (children's wishes and feelings).`, severity: "positive" });
     }
   }
 
   // ── Headline ──────────────────────────────────────────────────
   let headline: string;
   if (rating === "outstanding") {
-    headline = `Outstanding outcomes practice — ${activeTargets.length} targets across ${domainsRepresented.length} domains, ${improvingRate}% improving, with strong YP voice.`;
+    headline = `Outstanding outcomes practice — ${activeTargets.length} targets across ${domainsRepresented.length} domains, ${formatRate(improvingRate)} improving, with strong YP voice.`;
   } else if (rating === "good") {
-    headline = `Good outcomes progress — ${improvingRate}% of targets improving across ${domainsRepresented.length} domains.`;
+    headline = `Good outcomes progress — ${formatRate(improvingRate)} of targets improving across ${domainsRepresented.length} domains.`;
   } else if (rating === "adequate") {
     headline = `Adequate outcomes tracking — progress is mixed with ${decliningCount > 0 ? `${decliningCount} declining target${decliningCount > 1 ? "s" : ""}` : "limited improvement"}.`;
   } else {
-    headline = `Inadequate outcomes framework — ${decliningRate > 25 ? "significant decline in ratings" : "coverage gaps and limited progress evidence"} need urgent attention.`;
+    headline = `Inadequate outcomes framework — ${above(decliningRate, 25) ? "significant decline in ratings" : "coverage gaps and limited progress evidence"} need urgent attention.`;
   }
 
   return {

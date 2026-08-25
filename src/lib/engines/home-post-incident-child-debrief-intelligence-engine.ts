@@ -7,6 +7,8 @@
 // SCCIF: Helped and protected; Experiences and progress.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface PostIncidentDebriefRecordInput {
@@ -77,10 +79,6 @@ export interface PostIncidentDebriefResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
@@ -123,7 +121,7 @@ export function computePostIncidentDebrief(
   // ── Metrics ────────────────────────────────────────────────────────────
   const total = debriefs.length;
   const uniqueChildren = new Set(debriefs.map(d => d.child_id)).size;
-  const childrenDebriefedRate = pct(uniqueChildren, total_children);
+  const childrenDebriefedRate = rate(uniqueChildren, total_children);
 
   // Timeliness: debrief within 48 hours (2 days) of incident
   const timelyDebriefs = debriefs.filter(d => {
@@ -132,27 +130,27 @@ export function computePostIncidentDebrief(
     const debriefMs = new Date(d.debrief_date).getTime();
     return (debriefMs - incidentMs) <= 2 * 86400000 && debriefMs >= incidentMs;
   });
-  const timelinessRate = pct(timelyDebriefs.length, total);
+  const timelinessRate = rate(timelyDebriefs.length, total);
 
   // Child readiness respected
   const readyDebriefs = debriefs.filter(d => d.child_ready_to_debrief);
-  const childReadinessRate = pct(readyDebriefs.length, total);
+  const childReadinessRate = rate(readyDebriefs.length, total);
 
   // Voice depth: debriefs with child_account + feelings_before_during + feelings_now
   const deepVoice = debriefs.filter(
     d => d.has_child_account && d.has_feelings_before_during && d.has_feelings_now,
   );
-  const voiceDepthRate = pct(deepVoice.length, total);
+  const voiceDepthRate = rate(deepVoice.length, total);
 
   // Restorative actions: debriefs with repairs agreed or apologies (offered or received)
   const restorativeDebriefs = debriefs.filter(
     d => d.repairs_agreed_count > 0 || d.has_apologies_offered || d.has_apologies_received,
   );
-  const restorativeActionRate = pct(restorativeDebriefs.length, total);
+  const restorativeActionRate = rate(restorativeDebriefs.length, total);
 
   // Follow-up scheduled
   const withFollowUp = debriefs.filter(d => d.has_follow_up_date).length;
-  const followUpRate = pct(withFollowUp, total);
+  const followUpRate = rate(withFollowUp, total);
 
   // Method diversity
   const uniqueMethods = new Set(debriefs.map(d => d.debrief_method)).size;
@@ -175,55 +173,55 @@ export function computePostIncidentDebrief(
   if (total === 0) {
     score -= 3;
   } else {
-    if (timelinessRate >= 80) score += 6;
-    else if (timelinessRate >= 50) score += 2;
-    else if (timelinessRate < 30) score -= 5;
+    if (meets(timelinessRate, 80)) score += 6;
+    else if (meets(timelinessRate, 50)) score += 2;
+    else if (below(timelinessRate, 30)) score -= 5;
   }
 
   // Modifier 2: Child readiness respected
   if (total === 0) {
     score -= 1;
   } else {
-    if (childReadinessRate >= 85) score += 5;
-    else if (childReadinessRate >= 60) score += 2;
-    else if (childReadinessRate < 40) score -= 5;
+    if (meets(childReadinessRate, 85)) score += 5;
+    else if (meets(childReadinessRate, 60)) score += 2;
+    else if (below(childReadinessRate, 40)) score -= 5;
   }
 
   // Modifier 3: Voice depth
   if (total === 0) {
     score -= 1;
   } else {
-    if (voiceDepthRate >= 75) score += 5;
-    else if (voiceDepthRate >= 45) score += 2;
-    else if (voiceDepthRate < 20) score -= 4;
+    if (meets(voiceDepthRate, 75)) score += 5;
+    else if (meets(voiceDepthRate, 45)) score += 2;
+    else if (below(voiceDepthRate, 20)) score -= 4;
   }
 
   // Modifier 4: Restorative actions
   if (total === 0) {
     // no adjustment
   } else {
-    if (restorativeActionRate >= 75) score += 5;
-    else if (restorativeActionRate >= 50) score += 2;
-    else if (restorativeActionRate < 25) score -= 4;
+    if (meets(restorativeActionRate, 75)) score += 5;
+    else if (meets(restorativeActionRate, 50)) score += 2;
+    else if (below(restorativeActionRate, 25)) score -= 4;
   }
 
   // Modifier 5: Follow-up scheduling
   if (total === 0) {
     score -= 1;
   } else {
-    if (followUpRate >= 80) score += 4;
-    else if (followUpRate >= 50) score += 1;
-    else if (followUpRate < 20) score -= 4;
+    if (meets(followUpRate, 80)) score += 4;
+    else if (meets(followUpRate, 50)) score += 1;
+    else if (below(followUpRate, 20)) score -= 4;
   }
 
   // Modifier 6: Method diversity and child requests
   if (total === 0) {
     score -= 2;
   } else {
-    const requestRate = pct(withRequests, total);
-    if (uniqueMethods >= 4 && requestRate >= 60) score += 5;
-    else if (uniqueMethods >= 2 || requestRate >= 40) score += 2;
-    else if (uniqueMethods < 2 && requestRate < 20) score -= 3;
+    const requestRate = rate(withRequests, total);
+    if (uniqueMethods >= 4 && meets(requestRate, 60)) score += 5;
+    else if (uniqueMethods >= 2 || meets(requestRate, 40)) score += 2;
+    else if (uniqueMethods < 2 && below(requestRate, 20)) score -= 3;
   }
 
   score = clamp(score, 0, 100);
@@ -234,15 +232,15 @@ export function computePostIncidentDebrief(
 
   // ── Strengths ──────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (timelinessRate >= 80 && total > 0)
+  if (meets(timelinessRate, 80) && total > 0)
     strengths.push("Debriefs are conducted promptly — children's experiences are explored while events are fresh");
-  if (childReadinessRate >= 85 && total > 0)
+  if (meets(childReadinessRate, 85) && total > 0)
     strengths.push("Children's readiness to debrief is consistently assessed — the process respects emotional capacity");
-  if (voiceDepthRate >= 75 && total > 0)
+  if (meets(voiceDepthRate, 75) && total > 0)
     strengths.push("Debriefs capture deep child voice — accounts, feelings and reflections are thoroughly documented");
-  if (restorativeActionRate >= 75 && total > 0)
+  if (meets(restorativeActionRate, 75) && total > 0)
     strengths.push("Restorative actions are embedded in the debrief process — repairs and apologies support healing");
-  if (followUpRate >= 80 && total > 0)
+  if (meets(followUpRate, 80) && total > 0)
     strengths.push("Follow-up is consistently scheduled after debriefs — continuity of support is assured");
   if (uniqueMethods >= 4 && total > 0)
     strengths.push("Diverse debrief methods are used — children can engage through the approach that suits them best");
@@ -251,15 +249,15 @@ export function computePostIncidentDebrief(
   const concerns: string[] = [];
   if (total === 0 && total_children > 0)
     concerns.push("No post-incident debriefs exist — children's experiences of incidents are not being formally explored");
-  if (timelinessRate < 30 && total > 0)
+  if (below(timelinessRate, 30) && total > 0)
     concerns.push("Debriefs are frequently delayed — children may not receive timely support after incidents");
-  if (childReadinessRate < 40 && total > 0)
+  if (below(childReadinessRate, 40) && total > 0)
     concerns.push("Child readiness is often not confirmed — debriefs may be conducted before children are emotionally ready");
-  if (voiceDepthRate < 20 && total > 0)
+  if (below(voiceDepthRate, 20) && total > 0)
     concerns.push("Debriefs lack depth — children's accounts, feelings and reflections are not consistently captured");
-  if (restorativeActionRate < 25 && total > 0)
+  if (below(restorativeActionRate, 25) && total > 0)
     concerns.push("Restorative actions are rare — the debrief process is not supporting relational repair");
-  if (followUpRate < 20 && total > 0)
+  if (below(followUpRate, 20) && total > 0)
     concerns.push("Follow-up is rarely scheduled — children may lack ongoing support after incidents");
 
   // ── Recommendations ────────────────────────────────────────────────────
@@ -268,13 +266,13 @@ export function computePostIncidentDebrief(
 
   if (total === 0 && total_children > 0)
     recommendations.push({ rank: ++rank, recommendation: "Implement a structured post-incident debrief process for all children involved in incidents", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 13" });
-  if (timelinessRate < 50 && total > 0)
+  if (below(timelinessRate, 50) && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Ensure debriefs occur within 48 hours of incidents while respecting child readiness", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 35" });
-  if (voiceDepthRate < 45 && total > 0)
+  if (below(voiceDepthRate, 45) && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Deepen debrief quality by capturing children's full account, feelings before/during/after, and what they wish had been different", urgency: "soon", regulatory_ref: "SCCIF Experiences" });
-  if (restorativeActionRate < 50 && total > 0)
+  if (below(restorativeActionRate, 50) && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Embed restorative practices in the debrief process — facilitate apologies, acknowledgements and agreed repairs", urgency: "soon", regulatory_ref: "CHR 2015 Reg 13" });
-  if (followUpRate < 50 && total > 0)
+  if (below(followUpRate, 50) && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Schedule follow-up for every debrief to ensure children receive ongoing support after incidents", urgency: "soon", regulatory_ref: "SCCIF Helped & Protected" });
   if (uniqueMethods < 2 && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Offer diverse debrief methods — not all children engage through conversation; consider drawing, visual cards or walk-and-talk", urgency: "planned", regulatory_ref: "CHR 2015 Reg 35" });
@@ -283,13 +281,13 @@ export function computePostIncidentDebrief(
   const insights: PostIncidentDebriefResult["insights"] = [];
   if (total === 0 && total_children > 0)
     insights.push({ text: "No debrief records means Ofsted cannot verify children's post-incident experiences are explored or supported", severity: "critical" });
-  if (total > 0 && voiceDepthRate >= 75 && restorativeActionRate >= 75)
+  if (total > 0 && meets(voiceDepthRate, 75) && meets(restorativeActionRate, 75))
     insights.push({ text: "Deep child voice combined with restorative actions demonstrates a genuinely child-centred response to incidents", severity: "positive" });
-  if (total > 0 && timelinessRate >= 80 && childReadinessRate >= 85)
+  if (total > 0 && meets(timelinessRate, 80) && meets(childReadinessRate, 85))
     insights.push({ text: "Prompt debriefs with readiness assessment show the home balances timeliness with emotional sensitivity", severity: "positive" });
-  if (pct(withWishes, total) >= 60 && total > 0)
+  if (total > 0 && meets(rate(withWishes, total), 60))
     insights.push({ text: "Children regularly share what they wish had been different — this feedback loop drives practice improvement", severity: "positive" });
-  if (pct(withReflection, total) < 30 && total > 0)
+  if (total > 0 && below(rate(withReflection, total), 30))
     insights.push({ text: "Limited reflection on what helped and what did not suggests debriefs are not fully learning-oriented", severity: "warning" });
   if (uniqueMethods >= 4 && total > 0)
     insights.push({ text: "Multiple debrief methods demonstrate creative, child-centred approaches to post-incident support", severity: "positive" });

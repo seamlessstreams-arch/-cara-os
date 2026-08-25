@@ -87,7 +87,7 @@ export function HomeInformationFlowQualityIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Notif Read</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.information_continuity_score >= 80 ? "bg-green-50" : d.information_continuity_score >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.information_continuity_score >= 80 ? "text-[--cs-success]" : d.information_continuity_score >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.information_continuity_score}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.information_continuity_score >= 80 ? "text-[--cs-success]" : d.information_continuity_score >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.information_continuity_score)}</p>
               <p className="text-[9px] text-muted-foreground">Flow</p>
             </div>
           </div>

@@ -12,6 +12,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { ChildImpactView, ChildImpactDomain } from "./types";
+import { formatRate, rate } from "@/lib/metrics/rate";
 
 // ── Input Types ─────────────────────────────────────────────────────────────
 
@@ -187,10 +188,6 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
 }
 
-function pct(n: number, d: number): number | null {
-  return d > 0 ? Math.round((n / d) * 100) : null;
-}
-
 function recent(today: string, date: string, windowDays: number): boolean {
   return daysBetween(date, today) <= windowDays && daysBetween(date, today) >= 0;
 }
@@ -312,11 +309,11 @@ function scoreCarePlanProgress(input: ChildImpactInput): ChildImpactDomain {
 
   // Score: % achieved + % improving of active + yp voice bonus
   let score = 0;
-  const achievedPct = pct(achieved.length, targets.length);
+  const achievedPct = rate(achieved.length, targets.length);
   score += (achievedPct ?? 0) * 0.4;
 
   if (active.length > 0) {
-    const improvingPct = pct(improving.length, active.length);
+    const improvingPct = rate(improving.length, active.length);
     score += (improvingPct ?? 0) * 0.4;
   } else {
     score += 40; // all achieved = full marks for improvement
@@ -324,7 +321,7 @@ function scoreCarePlanProgress(input: ChildImpactInput): ChildImpactDomain {
 
   // YP voice
   const withVoice = targets.filter((t) => t.yp_voice && t.yp_voice.trim().length > 0);
-  const voicePct = pct(withVoice.length, targets.length);
+  const voicePct = rate(withVoice.length, targets.length);
   score += (voicePct ?? 0) * 0.2;
 
   // Review timeliness
@@ -559,16 +556,16 @@ function scoreHealth(input: ChildImpactInput): ChildImpactDomain {
 
   const attended = assessments.filter((a) => a.attended !== false);
   const missed = assessments.filter((a) => a.attended === false);
-  const attendRate = pct(attended.length, assessments.length);
+  const attendRate = rate(attended.length, assessments.length);
 
   if ((attendRate ?? 0) >= 90) {
     score += 30;
-    highlights.push(`${attendRate}% of health appointments attended`);
+    highlights.push(`${formatRate(attendRate)} of health appointments attended`);
   } else if ((attendRate ?? 0) >= 70) {
     score += 15;
-    highlights.push(`${attendRate}% health appointment attendance`);
+    highlights.push(`${formatRate(attendRate)} health appointment attendance`);
   } else {
-    concerns.push(`Only ${attendRate}% of health appointments attended`);
+    concerns.push(`Only ${formatRate(attendRate)} of health appointments attended`);
   }
 
   if (missed.length > 0) {
@@ -676,7 +673,7 @@ function scoreRelationships(input: ChildImpactInput): ChildImpactDomain {
   // Engaged in sessions
   const engaged = recentKW.filter((k) => k.child_engaged);
   if (engaged.length > 0 && recentKW.length > 0) {
-    const engagePct = pct(engaged.length, recentKW.length);
+    const engagePct = rate(engaged.length, recentKW.length);
     if ((engagePct ?? 0) >= 80) highlights.push("Child actively engaged in key work sessions");
   }
 
@@ -747,10 +744,10 @@ function scoreDirectWork(input: ChildImpactInput): ChildImpactDomain {
   // Quality: child engagement
   const engaged = recentSessions.filter((s) => s.child_engaged);
   if (recentSessions.length > 0) {
-    const engageRate = pct(engaged.length, recentSessions.length);
+    const engageRate = rate(engaged.length, recentSessions.length);
     if ((engageRate ?? 0) >= 80) {
       score += 15;
-      highlights.push(`${engageRate}% child engagement rate — child is actively participating`);
+      highlights.push(`${formatRate(engageRate)} child engagement rate — child is actively participating`);
     } else if ((engageRate ?? 0) >= 50) {
       score += 5;
     } else {
@@ -761,7 +758,7 @@ function scoreDirectWork(input: ChildImpactInput): ChildImpactDomain {
   // Views captured
   const viewsCaptured = recentSessions.filter((s) => s.child_views_captured);
   if (viewsCaptured.length > 0 && recentSessions.length > 0) {
-    const viewsRate = pct(viewsCaptured.length, recentSessions.length);
+    const viewsRate = rate(viewsCaptured.length, recentSessions.length);
     if ((viewsRate ?? 0) >= 80) {
       score += 10;
       highlights.push("Child's views consistently captured in direct work");
@@ -892,7 +889,7 @@ function scoreVoiceParticipation(input: ChildImpactInput): ChildImpactDomain {
     const participated = lacReviews.filter(
       (r) => r.child_participation === "attended" || r.child_participation === "views_submitted",
     );
-    const pRate = pct(participated.length, lacReviews.length);
+    const pRate = rate(participated.length, lacReviews.length);
     if ((pRate ?? 0) >= 80) {
       score += 15;
       highlights.push("Strong participation in LAC reviews");
@@ -926,7 +923,7 @@ function scoreVoiceParticipation(input: ChildImpactInput): ChildImpactDomain {
   // Responses given
   const responded = recentFeedback.filter((f) => f.response_given_to_child);
   if (recentFeedback.length > 0) {
-    const responseRate = pct(responded.length, recentFeedback.length);
+    const responseRate = rate(responded.length, recentFeedback.length);
     if ((responseRate ?? 0) >= 80) {
       score += 10;
       highlights.push("Feedback is acted upon and responded to");

@@ -537,7 +537,7 @@ describe("computeHomeFacilitiesCompliance", () => {
         makeWaterRecord({ id: `wh_${i}`, action_required_present: false }),
       );
       const r = computeHomeFacilitiesCompliance(baseInput({ water_hygiene_records: records }));
-      expect(r.water.action_completion_rate).toBe(0); // pct(0,0) = 0
+      expect(r.water.action_completion_rate).toBeNull(); // pct(0,0) = 0
     });
   });
 
@@ -714,7 +714,7 @@ describe("computeHomeFacilitiesCompliance", () => {
         makePestRecord({ id: `pr_${i}`, follow_up_required: false }),
       );
       const r = computeHomeFacilitiesCompliance(baseInput({ pest_records: pestRecords }));
-      expect(r.pest.follow_up_completion_rate).toBe(0); // pct(0,0) = 0
+      expect(r.pest.follow_up_completion_rate).toBeNull(); // pct(0,0) = 0
     });
   });
 
@@ -931,12 +931,12 @@ describe("computeHomeFacilitiesCompliance", () => {
       expect(r.pest.total_records).toBe(3);
     });
 
-    it("returns 0 follow-up rate when no follow-ups needed", () => {
+    it("follow_up_completion_rate is unmeasured when no follow-ups needed", () => {
       const pestRecords = [
         makePestRecord({ id: "pr_1", follow_up_required: false }),
       ];
       const r = computeHomeFacilitiesCompliance(baseInput({ pest_records: pestRecords }));
-      expect(r.pest.follow_up_completion_rate).toBe(0);
+      expect(r.pest.follow_up_completion_rate).toBeNull();
     });
   });
 
@@ -1473,7 +1473,7 @@ describe("computeHomeFacilitiesCompliance", () => {
       );
       const r = computeHomeFacilitiesCompliance(baseInput({ window_checks: windowChecks }));
       expect(r.windows.above_ground_count).toBe(0);
-      expect(r.windows.restrictor_compliance_rate).toBe(0); // pct(0, 0) = 0
+      expect(r.windows.restrictor_compliance_rate).toBeNull(); // pct(0, 0) = 0
     });
 
     it("today parameter drives all date comparisons", () => {

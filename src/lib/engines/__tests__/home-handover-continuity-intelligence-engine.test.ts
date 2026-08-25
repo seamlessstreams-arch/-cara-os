@@ -279,12 +279,12 @@ describe("Home Handover Continuity Intelligence Engine", () => {
       expect(r.sign_off_profile.fully_signed_count).toBe(2);
     });
 
-    it("handles zero incoming staff gracefully", () => {
+    it("avg_staff_sign_off_rate is unmeasured with zero incoming staff", () => {
       const handovers = [
         makeHandover({ id: "hnd_1", shift_date: "2026-05-20", incoming_staff_count: 0, sign_off_count: 0 }),
       ];
       const r = computeHomeHandoverContinuity(baseInput({ handovers }));
-      expect(r.sign_off_profile.avg_staff_sign_off_rate).toBe(0);
+      expect(r.sign_off_profile.avg_staff_sign_off_rate).toBeNull();
       expect(r.sign_off_profile.fully_signed_count).toBe(0);
     });
   });
@@ -332,12 +332,12 @@ describe("Home Handover Continuity Intelligence Engine", () => {
       expect(r.child_coverage_profile.alert_recording_rate).toBe(50);
     });
 
-    it("handles zero total children gracefully", () => {
+    it("avg_child_coverage is unmeasured with zero total children", () => {
       const handovers = [
         makeHandover({ id: "hnd_1", shift_date: "2026-05-20", child_update_count: 0, total_children: 0 }),
       ];
       const r = computeHomeHandoverContinuity(baseInput({ handovers }));
-      expect(r.child_coverage_profile.avg_child_coverage).toBe(0);
+      expect(r.child_coverage_profile.avg_child_coverage).toBeNull();
       expect(r.child_coverage_profile.full_coverage_count).toBe(0);
     });
   });

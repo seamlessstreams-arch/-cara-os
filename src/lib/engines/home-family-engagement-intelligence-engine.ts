@@ -6,6 +6,8 @@
 // CHR 2015 Reg 7, 8, 9. SCCIF: "Effective."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface FamilyTimeInput {
@@ -57,7 +59,8 @@ export interface ContactProfile {
   total_sessions_90d: number;
   children_with_contact: string[];
   children_without_contact: string[];
-  contact_coverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  contact_coverage: number | null;
   avg_duration_minutes: number | null;
   safety_rate: number | null;
   concern_count: number;
@@ -74,7 +77,8 @@ export interface RelationshipProfile {
   total_assessments: number;
   children_assessed: string[];
   children_not_assessed: string[];
-  assessment_coverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  assessment_coverage: number | null;
   avg_quality_score: number | null;
   improving_count: number;
   declining_count: number;
@@ -128,10 +132,6 @@ function daysBetween(a: string, b: string): number {
   );
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 // ── Main Compute ────────────────────────────────────────────────────────────
 
 export function computeHomeFamilyEngagement(
@@ -172,19 +172,19 @@ export function computeHomeFamilyEngagement(
   // ── Contact Profile ─────────────────────────────────────────────────
   const childrenWithContact = [...new Set(sessions90d.map(s => s.child_id))];
   const childrenWithoutContact = child_ids.filter(id => !childrenWithContact.includes(id));
-  const contactCoverage = total_children > 0 ? pct(childrenWithContact.length, total_children) : 0;
+  const contactCoverage = total_children > 0 ? rate(childrenWithContact.length, total_children) : 0;
 
   const avgDuration = sessions90d.length > 0
     ? Math.round(sessions90d.reduce((a, s) => a + s.duration_minutes, 0) / sessions90d.length)
     : null;
 
   const safeSessions = sessions90d.filter(s => s.was_safe).length;
-  const safetyRate = pct(safeSessions, sessions90d.length);
+  const safetyRate = rate(safeSessions, sessions90d.length);
 
   const concernCount = sessions90d.filter(s => s.has_concerns).length;
 
   const withPositive = sessions90d.filter(s => s.has_positive_observations).length;
-  const positiveRate = pct(withPositive, sessions90d.length);
+  const positiveRate = rate(withPositive, sessions90d.length);
 
   const contactProfile: ContactProfile = {
     total_sessions_90d: sessions90d.length,
@@ -199,13 +199,13 @@ export function computeHomeFamilyEngagement(
 
   // ── Child Voice Profile ─────────────────────────────────────────────
   const withVoice = sessions90d.filter(s => s.has_child_voice).length;
-  const voiceRate = pct(withVoice, sessions90d.length);
+  const voiceRate = rate(withVoice, sessions90d.length);
 
   const swNotified = sessions90d.filter(s => s.report_sent_to_sw).length;
-  const swRate = pct(swNotified, sessions90d.length);
+  const swRate = rate(swNotified, sessions90d.length);
 
   const withRecs = sessions90d.filter(s => s.has_recommendations).length;
-  const recRate = pct(withRecs, sessions90d.length);
+  const recRate = rate(withRecs, sessions90d.length);
 
   const voiceProfile: ChildVoiceProfile = {
     voice_capture_rate: voiceRate,
@@ -216,7 +216,7 @@ export function computeHomeFamilyEngagement(
   // ── Relationship Profile ────────────────────────────────────────────
   const childrenAssessed = [...new Set(latestRelationships.map(r => r.child_id))];
   const childrenNotAssessed = child_ids.filter(id => !childrenAssessed.includes(id));
-  const assessmentCoverage = total_children > 0 ? pct(childrenAssessed.length, total_children) : 0;
+  const assessmentCoverage = total_children > 0 ? rate(childrenAssessed.length, total_children) : 0;
 
   const qualityScores = latestRelationships.map(r => r.quality_1_to_10).filter(q => q > 0);
   const avgQuality = qualityScores.length > 0
@@ -230,10 +230,10 @@ export function computeHomeFamilyEngagement(
   const overdueReviews = latestRelationships.filter(r => r.next_review && r.next_review < today).length;
 
   const withInterventions = latestRelationships.filter(r => r.has_interventions).length;
-  const interventionRate = pct(withInterventions, latestRelationships.length);
+  const interventionRate = rate(withInterventions, latestRelationships.length);
 
   const withWishes = latestRelationships.filter(r => r.has_child_wishes).length;
-  const wishesRate = pct(withWishes, latestRelationships.length);
+  const wishesRate = rate(withWishes, latestRelationships.length);
 
   const relProfile: RelationshipProfile = {
     total_assessments: latestRelationships.length,
@@ -254,8 +254,8 @@ export function computeHomeFamilyEngagement(
 
   // 1. Contact coverage (±5)
   if (sessions90d.length > 0) {
-    if (contactCoverage >= 80) score += 5;
-    else if (contactCoverage >= 60) score += 2;
+    if (meets(contactCoverage, 80)) score += 5;
+    else if (meets(contactCoverage, 60)) score += 2;
     else score -= 3;
   }
 
@@ -267,22 +267,22 @@ export function computeHomeFamilyEngagement(
 
   // 3. Child voice capture (±4)
   if (sessions90d.length > 0) {
-    if (voiceRate >= 80) score += 4;
-    else if (voiceRate >= 60) score += 2;
+    if (meets(voiceRate, 80)) score += 4;
+    else if (meets(voiceRate, 60)) score += 2;
     else score -= 3;
   }
 
   // 4. SW notification (±3)
   if (sessions90d.length > 0) {
-    if (swRate >= 80) score += 3;
-    else if (swRate >= 60) score += 1;
+    if (meets(swRate, 80)) score += 3;
+    else if (meets(swRate, 60)) score += 1;
     else score -= 2;
   }
 
   // 5. Assessment coverage (±5)
   if (latestRelationships.length > 0) {
-    if (assessmentCoverage >= 80) score += 5;
-    else if (assessmentCoverage >= 60) score += 2;
+    if (meets(assessmentCoverage, 80)) score += 5;
+    else if (meets(assessmentCoverage, 60)) score += 2;
     else score -= 3;
   }
 
@@ -308,14 +308,14 @@ export function computeHomeFamilyEngagement(
 
   // 9. Child wishes in relationships (±2)
   if (latestRelationships.length > 0) {
-    if (wishesRate >= 80) score += 2;
+    if (meets(wishesRate, 80)) score += 2;
     else score -= 1;
   }
 
   // 10. Positive observations (±2)
   if (sessions90d.length > 0) {
-    if (positiveRate >= 80) score += 2;
-    else if (positiveRate >= 50) score += 1;
+    if (meets(positiveRate, 80)) score += 2;
+    else if (meets(positiveRate, 50)) score += 1;
     else score -= 1;
   }
 
@@ -324,22 +324,22 @@ export function computeHomeFamilyEngagement(
 
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (contactCoverage >= 80 && sessions90d.length > 0) strengths.push(`${contactCoverage}% of children have had family contact in the last 90 days — strong family engagement.`);
+  if (meets(contactCoverage, 80) && sessions90d.length > 0) strengths.push(`${contactCoverage}% of children have had family contact in the last 90 days — strong family engagement.`);
   if (safetyRate === 100 && sessions90d.length > 0) strengths.push("All family time sessions assessed as safe — safeguarding within family contact is effective.");
-  if (voiceRate >= 80 && sessions90d.length > 0) strengths.push(`Child voice captured after ${voiceRate}% of family time sessions — children's feelings about contact are actively sought.`);
-  if (swRate >= 80 && sessions90d.length > 0) strengths.push(`Social worker notified after ${swRate}% of sessions — communication with placing authorities is consistent.`);
-  if (assessmentCoverage >= 80 && latestRelationships.length > 0) strengths.push(`${assessmentCoverage}% of children have family relationship assessments — proactive understanding of family dynamics.`);
+  if (meets(voiceRate, 80) && sessions90d.length > 0) strengths.push(`Child voice captured after ${formatRate(voiceRate)} of family time sessions — children's feelings about contact are actively sought.`);
+  if (meets(swRate, 80) && sessions90d.length > 0) strengths.push(`Social worker notified after ${formatRate(swRate)} of sessions — communication with placing authorities is consistent.`);
+  if (meets(assessmentCoverage, 80) && latestRelationships.length > 0) strengths.push(`${assessmentCoverage}% of children have family relationship assessments — proactive understanding of family dynamics.`);
   if ((avgQuality ?? 0) >= 7 && qualityScores.length > 0) strengths.push(`Average relationship quality score ${(avgQuality ?? 0)}/10 — family relationships are generally positive.`);
   if (improvingCount > 0 && decliningCount === 0) strengths.push(`${improvingCount} family relationship${improvingCount > 1 ? "s" : ""} on an improving trajectory — the home is positively influencing family connections.`);
   if (overdueReviews === 0 && latestRelationships.length > 0) strengths.push("All family relationship reviews are current — management oversight of family links is timely.");
-  if (positiveRate >= 80 && sessions90d.length > 0) strengths.push(`Positive observations recorded in ${positiveRate}% of sessions — quality of contact recording is thorough.`);
+  if (meets(positiveRate, 80) && sessions90d.length > 0) strengths.push(`Positive observations recorded in ${formatRate(positiveRate)} of sessions — quality of contact recording is thorough.`);
 
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
   if (childrenWithoutContact.length > 0 && sessions90d.length > 0) concerns.push(`${childrenWithoutContact.length} child${childrenWithoutContact.length > 1 ? "ren" : ""} without family contact in the last 90 days — all children should have facilitated contact where safe.`);
-  if (safetyRate < 100 && sessions90d.length > 0) concerns.push(`${sessions90d.length - safeSessions} family time session${(sessions90d.length - safeSessions) > 1 ? "s" : ""} flagged as unsafe — immediate review of contact arrangements required.`);
-  if (voiceRate < 60 && sessions90d.length > 0) concerns.push(`Child voice only captured after ${voiceRate}% of sessions — children must be asked about their feelings after contact.`);
-  if (swRate < 60 && sessions90d.length > 0) concerns.push(`Social worker notified after only ${swRate}% of sessions — placing authorities must be kept informed.`);
+  if (below(safetyRate, 100) && sessions90d.length > 0) concerns.push(`${sessions90d.length - safeSessions} family time session${(sessions90d.length - safeSessions) > 1 ? "s" : ""} flagged as unsafe — immediate review of contact arrangements required.`);
+  if (below(voiceRate, 60) && sessions90d.length > 0) concerns.push(`Child voice only captured after ${formatRate(voiceRate)} of sessions — children must be asked about their feelings after contact.`);
+  if (below(swRate, 60) && sessions90d.length > 0) concerns.push(`Social worker notified after only ${formatRate(swRate)} of sessions — placing authorities must be kept informed.`);
   if (childrenNotAssessed.length > 0 && latestRelationships.length > 0) concerns.push(`${childrenNotAssessed.length} child${childrenNotAssessed.length > 1 ? "ren" : ""} without family relationship assessments.`);
   if (decliningCount > 0) concerns.push(`${decliningCount} family relationship${decliningCount > 1 ? "s" : ""} declining — targeted intervention needed.`);
   if (overdueReviews > 0) concerns.push(`${overdueReviews} family relationship review${overdueReviews > 1 ? "s" : ""} overdue — reviews must be completed on schedule.`);
@@ -349,13 +349,13 @@ export function computeHomeFamilyEngagement(
   const recs: FamilyRecommendation[] = [];
   let rank = 1;
 
-  if (safetyRate < 100 && sessions90d.length > 0) {
+  if (below(safetyRate, 100) && sessions90d.length > 0) {
     recs.push({ rank: rank++, recommendation: "Review unsafe family time sessions and update risk assessments and contact plans.", urgency: "immediate", regulatory_ref: "Reg 7" });
   }
   if (childrenWithoutContact.length > 0 && sessions90d.length > 0) {
     recs.push({ rank: rank++, recommendation: `Facilitate family contact for ${childrenWithoutContact.length} child${childrenWithoutContact.length > 1 ? "ren" : ""} without recent sessions, or document reasons contact is not in the child's interests.`, urgency: "soon", regulatory_ref: "Reg 7" });
   }
-  if (voiceRate < 60 && sessions90d.length > 0) {
+  if (below(voiceRate, 60) && sessions90d.length > 0) {
     recs.push({ rank: rank++, recommendation: "Ensure child voice is captured after every family time session — record feelings, wishes, and any worries.", urgency: "soon", regulatory_ref: "Reg 7" });
   }
   if (childrenNotAssessed.length > 0) {
@@ -368,7 +368,7 @@ export function computeHomeFamilyEngagement(
   // ── Insights ──────────────────────────────────────────────────────────
   const insights: FamilyInsight[] = [];
 
-  if (safetyRate < 100 && sessions90d.length > 0) {
+  if (below(safetyRate, 100) && sessions90d.length > 0) {
     insights.push({ text: `${sessions90d.length - safeSessions} family time session${(sessions90d.length - safeSessions) > 1 ? "s" : ""} flagged as unsafe. Ofsted expects robust risk assessment of all family contact — unsafe sessions require immediate review of contact arrangements.`, severity: "critical" });
   }
   if (decliningCount >= 2) {
@@ -377,20 +377,20 @@ export function computeHomeFamilyEngagement(
   if (childrenWithoutContact.length > 0 && sessions90d.length > 0) {
     insights.push({ text: `${childrenWithoutContact.length} child${childrenWithoutContact.length > 1 ? "ren" : ""} without family contact in 90 days. Ofsted expects homes to proactively facilitate family relationships unless there are documented safeguarding reasons not to.`, severity: "warning" });
   }
-  if (contactCoverage >= 80 && voiceRate >= 80 && sessions90d.length > 0) {
-    insights.push({ text: `${contactCoverage}% contact coverage with ${voiceRate}% child voice capture. This demonstrates child-centred family engagement — Ofsted's key expectation for outstanding homes.`, severity: "positive" });
+  if (meets(contactCoverage, 80) && meets(voiceRate, 80) && sessions90d.length > 0) {
+    insights.push({ text: `${contactCoverage}% contact coverage with ${formatRate(voiceRate)} child voice capture. This demonstrates child-centred family engagement — Ofsted's key expectation for outstanding homes.`, severity: "positive" });
   }
-  if (swRate >= 80 && sessions90d.length > 0) {
-    insights.push({ text: `Social worker notification rate ${swRate}% shows strong communication with placing authorities about family dynamics — a hallmark of effective partnership working.`, severity: "positive" });
+  if (meets(swRate, 80) && sessions90d.length > 0) {
+    insights.push({ text: `Social worker notification rate ${formatRate(swRate)} shows strong communication with placing authorities about family dynamics — a hallmark of effective partnership working.`, severity: "positive" });
   }
-  if (assessmentCoverage >= 80 && wishesRate >= 80 && latestRelationships.length > 0) {
-    insights.push({ text: `${assessmentCoverage}% relationship assessment coverage with ${wishesRate}% child wishes documented. The home demonstrates a comprehensive, child-centred understanding of family dynamics.`, severity: "positive" });
+  if (meets(assessmentCoverage, 80) && meets(wishesRate, 80) && latestRelationships.length > 0) {
+    insights.push({ text: `${assessmentCoverage}% relationship assessment coverage with ${formatRate(wishesRate)} child wishes documented. The home demonstrates a comprehensive, child-centred understanding of family dynamics.`, severity: "positive" });
   }
 
   // ── Headline ──────────────────────────────────────────────────────────
   let headline: string;
   if (rating === "outstanding") {
-    headline = `Outstanding family engagement — ${contactCoverage}% contact coverage with ${voiceRate}% child voice capture across ${sessions90d.length} sessions.`;
+    headline = `Outstanding family engagement — ${contactCoverage}% contact coverage with ${formatRate(voiceRate)} child voice capture across ${sessions90d.length} sessions.`;
   } else if (rating === "good") {
     headline = `Good family engagement — consistent contact facilitation with ${contactCoverage}% coverage.`;
   } else if (rating === "adequate") {

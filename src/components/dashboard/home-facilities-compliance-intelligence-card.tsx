@@ -156,10 +156,10 @@ export function HomeFacilitiesComplianceIntelligenceCard() {
                 <SquareStack className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
                   d.windows.above_ground_count === 0 ? "text-slate-400" :
-                  d.windows.restrictor_compliance_rate >= 90 ? "text-[--cs-success]" :
-                  d.windows.restrictor_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]"
+                  meets(d.windows.restrictor_compliance_rate, 90) ? "text-[--cs-success]" :
+                  meets(d.windows.restrictor_compliance_rate, 70) ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.windows.above_ground_count === 0 ? "--" : `${d.windows.restrictor_compliance_rate}%`}
+                  {d.windows.above_ground_count === 0 ? "--" : `${formatRate(d.windows.restrictor_compliance_rate)}`}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Restrictors</p>

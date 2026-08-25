@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatRate } from "@/lib/metrics/rate";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
   Loader2,
@@ -114,7 +115,7 @@ export function HomeOutcomesProgressIntelligenceCard() {
               {ratingStyle.label}
             </span>
             {d.outcomes_rating !== "insufficient_data" && (
-              <span className="text-xs font-bold tabular-nums text-slate-600">{d.outcomes_score}%</span>
+              <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.outcomes_score)}</span>
             )}
           </CardTitle>
         </div>
@@ -134,7 +135,7 @@ export function HomeOutcomesProgressIntelligenceCard() {
                   (d.progress_profile.improving_rate ?? 0) >= 60 ? "text-[--cs-success]" :
                   (d.progress_profile.improving_rate ?? 0) >= 40 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.progress_profile.improving_rate}%
+                  {formatRate(d.progress_profile.improving_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">Improving</p>
@@ -176,7 +177,7 @@ export function HomeOutcomesProgressIntelligenceCard() {
                   (d.equity_profile.yp_voice_rate ?? 0) >= 80 ? "text-[--cs-success]" :
                   (d.equity_profile.yp_voice_rate ?? 0) >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
-                  {d.equity_profile.yp_voice_rate}%
+                  {formatRate(d.equity_profile.yp_voice_rate)}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground">YP Voice</p>

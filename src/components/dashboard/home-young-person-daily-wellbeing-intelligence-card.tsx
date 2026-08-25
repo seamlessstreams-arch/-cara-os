@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Smile } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -57,7 +58,7 @@ export function HomeYoungPersonDailyWellbeingIntelligenceCard() {
             <Smile className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-[--cs-warning]")} />
             <span className="text-slate-900 font-bold">Daily Wellbeing</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.wellbeing_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.wellbeing_score}%</span>}
+            {d.wellbeing_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.wellbeing_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -74,11 +75,11 @@ export function HomeYoungPersonDailyWellbeingIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">Mood</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.daily_coverage_rate >= 90 ? "bg-green-50" : d.daily_coverage_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.daily_coverage_rate >= 90 ? "text-[--cs-success]" : d.daily_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.daily_coverage_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.daily_coverage_rate >= 90 ? "text-[--cs-success]" : d.daily_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.daily_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Coverage</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.de_escalation_rate >= 90 ? "bg-green-50" : d.de_escalation_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.de_escalation_rate >= 90 ? "text-[--cs-success]" : d.de_escalation_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.de_escalation_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.de_escalation_rate >= 90 ? "text-[--cs-success]" : d.de_escalation_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.de_escalation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">De-escal.</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.high_severity_count === 0 ? "bg-green-50" : "bg-red-50")}>
@@ -86,7 +87,7 @@ export function HomeYoungPersonDailyWellbeingIntelligenceCard() {
               <p className="text-[9px] text-muted-foreground">High Sev.</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.child_coverage_rate >= 100 ? "bg-green-50" : d.child_coverage_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_coverage_rate >= 100 ? "text-[--cs-success]" : d.child_coverage_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.child_coverage_rate}%</p>
+              <p className={cn("text-sm font-bold tabular-nums", d.child_coverage_rate >= 100 ? "text-[--cs-success]" : d.child_coverage_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Equity</p>
             </div>
           </div>

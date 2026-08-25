@@ -6,6 +6,8 @@
 // helped and protected."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { above, below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface KeyworkerSessionInput {
@@ -115,10 +117,6 @@ function toRating(score: number): KeyworkerRating {
   return "inadequate";
 }
 
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function avg(vals: number[]): number {
   return vals.length === 0 ? 0 : Math.round((vals.reduce((s, v) => s + v, 0) / vals.length) * 10) / 10;
 }
@@ -161,7 +159,7 @@ export function computeHomeKeyworker(
     childMap.set(s.child_id, (childMap.get(s.child_id) ?? 0) + 1);
   }
   const childrenWithSessions = childMap.size;
-  const coverageRate = total_children > 0 ? pct(childrenWithSessions, total_children) : (childrenWithSessions > 0 ? 100 : 0);
+  const coverageRate = total_children > 0 ? rate(childrenWithSessions, total_children) : (childrenWithSessions > 0 ? 100 : 0);
   const perChildCounts = [...childMap.values()];
   const avgPerChild = perChildCounts.length > 0
     ? Math.round((perChildCounts.reduce((s, v) => s + v, 0) / perChildCounts.length) * 10) / 10
@@ -183,7 +181,7 @@ export function computeHomeKeyworker(
   const avgSatisfaction = avg(sessions.map(s => s.child_satisfaction));
   const avgThemes = avg(sessions.map(s => s.themes_count));
   const adequateDuration = sessions.filter(s => s.duration_minutes >= 20).length;
-  const adequateDurationRate = pct(adequateDuration, sessions.length);
+  const adequateDurationRate = rate(adequateDuration, sessions.length);
 
   const qualityProfile: QualityProfile = {
     avg_duration: avgDuration,
@@ -198,9 +196,9 @@ export function computeHomeKeyworker(
   const childActions = sessions.filter(s => s.agreed_actions_child_count > 0).length;
 
   const engagementProfile: EngagementProfile = {
-    child_chose_format_rate: pct(choseFormat, sessions.length),
-    child_brought_up_rate: pct(childBroughtUp, sessions.length),
-    child_actions_rate: pct(childActions, sessions.length),
+    child_chose_format_rate: rate(choseFormat, sessions.length),
+    child_brought_up_rate: rate(childBroughtUp, sessions.length),
+    child_actions_rate: rate(childActions, sessions.length),
   };
 
   // ── Therapeutic Profile ────────────────────────────────────────
@@ -208,7 +206,7 @@ export function computeHomeKeyworker(
   const avgMoodBefore = avg(validMood.map(s => s.mood_before));
   const avgMoodAfter = avg(validMood.map(s => s.mood_after));
   const improved = validMood.filter(s => s.mood_after > s.mood_before);
-  const moodImprovementRate = pct(improved.length, validMood.length);
+  const moodImprovementRate = rate(improved.length, validMood.length);
 
   const therapeuticProfile: TherapeuticProfile = {
     avg_mood_before: avgMoodBefore,
@@ -219,7 +217,7 @@ export function computeHomeKeyworker(
 
   // ── Follow-Up Profile ──────────────────────────────────────────
   const withFollowUp = sessions.filter(s => s.follow_up_date !== "");
-  const followUpSetRate = pct(withFollowUp.length, sessions.length);
+  const followUpSetRate = rate(withFollowUp.length, sessions.length);
   const overdueFollowUps = withFollowUp.filter(s => s.follow_up_date < today).length;
   const flagsTotal = sessions.reduce((s, sess) => s + sess.flags_raised_count, 0);
 
@@ -234,9 +232,9 @@ export function computeHomeKeyworker(
   let score = 52;
 
   // 1. Coverage (±5)
-  if (coverageRate >= 100) score += 5;
-  else if (coverageRate >= 80) score += 3;
-  else if (coverageRate >= 50) score += 1;
+  if (meets(coverageRate, 100)) score += 5;
+  else if (meets(coverageRate, 80)) score += 3;
+  else if (meets(coverageRate, 50)) score += 1;
   else score -= 4;
 
   // 2. Session frequency per child (±4)
@@ -246,8 +244,8 @@ export function computeHomeKeyworker(
   else score -= 3;
 
   // 3. Duration quality (±3)
-  if (adequateDurationRate >= 90) score += 3;
-  else if (adequateDurationRate >= 70) score += 1;
+  if (meets(adequateDurationRate, 90)) score += 3;
+  else if (meets(adequateDurationRate, 70)) score += 1;
   else score -= 2;
 
   // 4. Child satisfaction (±4)
@@ -258,8 +256,8 @@ export function computeHomeKeyworker(
 
   // 5. Mood improvement (±3)
   if (validMood.length > 0) {
-    if (moodImprovementRate >= 70) score += 3;
-    else if (moodImprovementRate >= 50) score += 1;
+    if (meets(moodImprovementRate, 70)) score += 3;
+    else if (meets(moodImprovementRate, 50)) score += 1;
     else score -= 2;
   } else {
     score += 1; // No mood data recorded — not a penalty
@@ -272,9 +270,9 @@ export function computeHomeKeyworker(
 
   // 7. Follow-up currency (±3)
   if (withFollowUp.length > 0) {
-    const overdueRate = pct(overdueFollowUps, withFollowUp.length);
-    if (overdueRate <= 10) score += 3;
-    else if (overdueRate <= 30) score += 1;
+    const overdueRate = rate(overdueFollowUps, withFollowUp.length);
+    if ((overdueRate !== null && overdueRate <= 10)) score += 3;
+    else if ((overdueRate !== null && overdueRate <= 30)) score += 1;
     else score -= 2;
   } else {
     score += 1; // No follow-ups set — not a penalty
@@ -290,33 +288,33 @@ export function computeHomeKeyworker(
 
   // ── Strengths ─────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (coverageRate >= 100) strengths.push("Every child in the home is receiving keyworker sessions — full coverage achieved.");
+  if (meets(coverageRate, 100)) strengths.push("Every child in the home is receiving keyworker sessions — full coverage achieved.");
   if (avgSatisfaction >= 4.0) strengths.push(`Children report high satisfaction (${avgSatisfaction}/5) — sessions are meaningful to them.`);
-  if (moodImprovementRate >= 70 && validMood.length > 0) strengths.push(`${moodImprovementRate}% of sessions show mood improvement — genuine therapeutic benefit.`);
+  if (meets(moodImprovementRate, 70) && validMood.length > 0) strengths.push(`${formatRate(moodImprovementRate)} of sessions show mood improvement — genuine therapeutic benefit.`);
   if ((engagementProfile.child_chose_format_rate ?? 0) >= 80) strengths.push(`Children choose session format ${(engagementProfile.child_chose_format_rate ?? 0)}% of the time — child-centred practice.`);
   if ((avgPerChild ?? 0) >= 4) strengths.push(`Average ${(avgPerChild ?? 0)} sessions per child — consistent, regular engagement.`);
-  if (adequateDurationRate >= 90) strengths.push(`${adequateDurationRate}% of sessions are 20+ minutes — sufficient time for meaningful work.`);
+  if (meets(adequateDurationRate, 90)) strengths.push(`${formatRate(adequateDurationRate)} of sessions are 20+ minutes — sufficient time for meaningful work.`);
 
   // ── Concerns ──────────────────────────────────────────────────
   const concerns: string[] = [];
-  if (coverageRate < 50) concerns.push(`Only ${coverageRate}% of children have had keyworker sessions — some children are not being reached.`);
+  if (below(coverageRate, 50)) concerns.push(`Only ${coverageRate}% of children have had keyworker sessions — some children are not being reached.`);
   if (avgSatisfaction < 3.0 && sessions.length > 0) concerns.push(`Average satisfaction is ${avgSatisfaction}/5 — children may not find sessions helpful.`);
-  if (validMood.length > 0 && moodImprovementRate < 50) concerns.push(`Only ${moodImprovementRate}% of sessions show mood improvement — review therapeutic approach.`);
-  if (adequateDurationRate < 70) concerns.push(`Only ${adequateDurationRate}% of sessions reach 20 minutes — sessions may be too brief for meaningful engagement.`);
+  if (validMood.length > 0 && below(moodImprovementRate, 50)) concerns.push(`Only ${formatRate(moodImprovementRate)} of sessions show mood improvement — review therapeutic approach.`);
+  if (below(adequateDurationRate, 70)) concerns.push(`Only ${formatRate(adequateDurationRate)} of sessions reach 20 minutes — sessions may be too brief for meaningful engagement.`);
   if ((engagementProfile.child_chose_format_rate ?? 0) < 50) concerns.push(`Children choose their session format only ${(engagementProfile.child_chose_format_rate ?? 0)}% of the time — sessions may feel imposed.`);
-  if (withFollowUp.length > 0 && pct(overdueFollowUps, withFollowUp.length) > 30) concerns.push(`${overdueFollowUps} follow-up sessions are overdue — continuity of therapeutic support is at risk.`);
+  if (withFollowUp.length > 0 && above(rate(overdueFollowUps, withFollowUp.length), 30)) concerns.push(`${overdueFollowUps} follow-up sessions are overdue — continuity of therapeutic support is at risk.`);
 
   // ── Recommendations ───────────────────────────────────────────
   const recs: KeyworkerRecommendation[] = [];
   let rank = 1;
 
-  if (coverageRate < 50) {
+  if (below(coverageRate, 50)) {
     recs.push({ rank: rank++, recommendation: "Ensure every child has a named keyworker and receives at least weekly 1:1 sessions.", urgency: "immediate", regulatory_ref: "Reg 44" });
   }
   if (avgSatisfaction < 3.0 && sessions.length > 0) {
     recs.push({ rank: rank++, recommendation: `Child satisfaction averages ${avgSatisfaction}/5 — review session content, format, and whether children feel heard.`, urgency: "soon", regulatory_ref: "Reg 44" });
   }
-  if (adequateDurationRate < 70) {
+  if (below(adequateDurationRate, 70)) {
     recs.push({ rank: rank++, recommendation: "Increase session duration — aim for at least 20 minutes to allow meaningful therapeutic engagement.", urgency: "soon", regulatory_ref: "Reg 44" });
   }
   if ((engagementProfile.child_chose_format_rate ?? 0) < 50) {
@@ -326,14 +324,14 @@ export function computeHomeKeyworker(
   // ── Insights ──────────────────────────────────────────────────
   const insights: KeyworkerInsight[] = [];
 
-  if (coverageRate >= 100 && avgSatisfaction >= 4.0 && moodImprovementRate >= 70) {
-    insights.push({ text: `Keyworker practice is exemplary — every child receives sessions, satisfaction averages ${avgSatisfaction}/5, and ${moodImprovementRate}% of sessions show mood improvement. Ofsted will recognise a home where children have consistent, meaningful relationships with trusted adults who make a tangible difference to their wellbeing.`, severity: "positive" });
+  if (meets(coverageRate, 100) && avgSatisfaction >= 4.0 && meets(moodImprovementRate, 70)) {
+    insights.push({ text: `Keyworker practice is exemplary — every child receives sessions, satisfaction averages ${avgSatisfaction}/5, and ${formatRate(moodImprovementRate)} of sessions show mood improvement. Ofsted will recognise a home where children have consistent, meaningful relationships with trusted adults who make a tangible difference to their wellbeing.`, severity: "positive" });
   }
-  if (coverageRate < 50) {
+  if (below(coverageRate, 50)) {
     insights.push({ text: `Only ${coverageRate}% of children are receiving keyworker sessions. Ofsted expects to see every child building a trusted relationship with a named keyworker. Without this, children may not have a safe space to express their views, discuss worries, or process their experiences.`, severity: "critical" });
   }
-  if (validMood.length > 0 && moodImprovementRate < 50) {
-    insights.push({ text: `Only ${moodImprovementRate}% of sessions show mood improvement. When sessions don't help children feel better, it may indicate the approach needs reviewing — consider different formats, environments, or therapeutic techniques.`, severity: "warning" });
+  if (validMood.length > 0 && below(moodImprovementRate, 50)) {
+    insights.push({ text: `Only ${formatRate(moodImprovementRate)} of sessions show mood improvement. When sessions don't help children feel better, it may indicate the approach needs reviewing — consider different formats, environments, or therapeutic techniques.`, severity: "warning" });
   }
   if (avgSatisfaction < 3.0 && sessions.length > 0) {
     insights.push({ text: `Average child satisfaction is ${avgSatisfaction}/5. Low satisfaction may indicate sessions feel like a chore rather than a support. Ask children what would make sessions more useful to them.`, severity: "warning" });

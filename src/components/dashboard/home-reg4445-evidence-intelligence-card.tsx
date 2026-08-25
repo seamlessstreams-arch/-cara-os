@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ClipboardCheck } from "lucide-react";
@@ -64,7 +65,7 @@ export function HomeReg4445EvidenceIntelligenceCard() {
             <ClipboardCheck className={cn("h-4 w-4", isAlert ? "text-[--cs-risk]" : "text-blue-600")} />
             <span className="text-slate-900">Reg 44/45 Evidence</span>
             <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>{ratingStyle.label}</span>
-            {d.reg4445_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{d.reg4445_score}%</span>}
+            {d.reg4445_rating !== "insufficient_data" && <span className="text-xs font-bold tabular-nums text-slate-600">{formatRate(d.reg4445_score)}</span>}
           </CardTitle>
         </div>
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
@@ -74,11 +75,11 @@ export function HomeReg4445EvidenceIntelligenceCard() {
         {d.reg4445_rating !== "insufficient_data" && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <div className="text-center rounded-lg bg-slate-50 p-2">
-              <p className={cn("text-lg font-bold tabular-nums", (d.reg44_visits.visit_completed_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.reg44_visits.visit_completed_rate ?? 0) >= 50 ? "text-blue-600" : "text-[--cs-risk]")}>{d.reg44_visits.total_packs > 0 ? `${d.reg44_visits.visit_completed_rate}%` : "—"}</p>
+              <p className={cn("text-lg font-bold tabular-nums", (d.reg44_visits.visit_completed_rate ?? 0) >= 90 ? "text-[--cs-success]" : (d.reg44_visits.visit_completed_rate ?? 0) >= 50 ? "text-blue-600" : "text-[--cs-risk]")}>{d.reg44_visits.total_packs > 0 ? `${formatRate(d.reg44_visits.visit_completed_rate)}` : "—"}</p>
               <p className="text-[10px] text-muted-foreground">Reg 44 Visits</p>
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">
-              <p className={cn("text-lg font-bold tabular-nums", (d.reg45.strong_evidence_rate ?? 0) >= 70 ? "text-[--cs-success]" : (d.reg45.strong_evidence_rate ?? 0) >= 40 ? "text-blue-600" : "text-[--cs-risk]")}>{d.reg45.total_evidence > 0 ? `${d.reg45.strong_evidence_rate}%` : "—"}</p>
+              <p className={cn("text-lg font-bold tabular-nums", (d.reg45.strong_evidence_rate ?? 0) >= 70 ? "text-[--cs-success]" : (d.reg45.strong_evidence_rate ?? 0) >= 40 ? "text-blue-600" : "text-[--cs-risk]")}>{d.reg45.total_evidence > 0 ? `${formatRate(d.reg45.strong_evidence_rate)}` : "—"}</p>
               <p className="text-[10px] text-muted-foreground">Reg 45 Strong</p>
             </div>
             <div className="text-center rounded-lg bg-slate-50 p-2">

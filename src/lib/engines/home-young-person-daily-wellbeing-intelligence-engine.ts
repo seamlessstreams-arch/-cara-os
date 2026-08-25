@@ -12,6 +12,8 @@
 // SCCIF: "Experiences and progress of children", "Helped and protected."
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface DailySummaryInput {
@@ -97,10 +99,6 @@ export interface YoungPersonDailyWellbeingResult {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v));
@@ -197,11 +195,11 @@ export function computeYoungPersonDailyWellbeing(
 
   // Daily log coverage: unique days with logs / 30
   const uniqueLogDays = new Set(logs30d.map(l => l.date)).size;
-  const dailyCoverageRate = pct(uniqueLogDays, 30);
+  const dailyCoverageRate = rate(uniqueLogDays, 30);
 
   // Mood tracking quality: logs with mood_score > 0
   const logsWithMood = logs30d.filter(l => (l.mood_score ?? 0) > 0);
-  const moodTrackingRate = pct(logsWithMood.length, logs30d.length);
+  const moodTrackingRate = rate(logsWithMood.length, logs30d.length);
 
   // Average mood score across all daily logs with mood
   const averageMoodScore = logsWithMood.length > 0
@@ -210,18 +208,18 @@ export function computeYoungPersonDailyWellbeing(
 
   // Behaviour documentation: has_antecedent AND has_consequence AND has_outcome
   const fullyDocBeh = beh30d.filter(b => b.has_antecedent && b.has_consequence && b.has_outcome);
-  const behaviourDocRate = pct(fullyDocBeh.length, beh30d.length);
+  const behaviourDocRate = rate(fullyDocBeh.length, beh30d.length);
 
   // De-escalation practice: de_escalation_used rate in medium/high/critical
   const qualifyingBeh = beh30d.filter(b =>
     b.severity === "medium" || b.severity === "high" || b.severity === "critical",
   );
   const deEscUsed = qualifyingBeh.filter(b => b.de_escalation_used);
-  const deEscalationRate = pct(deEscUsed.length, qualifyingBeh.length);
+  const deEscalationRate = rate(deEscUsed.length, qualifyingBeh.length);
 
   // Child coverage equity: children with daily log entries
   const childrenWithLogs = new Set(logs30d.map(l => l.child_id)).size;
-  const childCoverageRate = pct(childrenWithLogs, total_children);
+  const childCoverageRate = rate(childrenWithLogs, total_children);
 
   // High severity count
   const highSeverityCount = beh30d.filter(b =>
@@ -234,13 +232,13 @@ export function computeYoungPersonDailyWellbeing(
   // Modifier 1: Daily log coverage (unique days with logs / 30)
   if (logs30d.length === 0) {
     score -= 3;
-  } else if (dailyCoverageRate >= 90) {
+  } else if (meets(dailyCoverageRate, 90)) {
     score += 6;
-  } else if (dailyCoverageRate >= 70) {
+  } else if (meets(dailyCoverageRate, 70)) {
     score += 3;
-  } else if (dailyCoverageRate >= 50) {
+  } else if (meets(dailyCoverageRate, 50)) {
     // no change
-  } else if (dailyCoverageRate >= 30) {
+  } else if (meets(dailyCoverageRate, 30)) {
     score -= 5;
     score -= 3; // extra penalty for <50%
   } else {
@@ -252,11 +250,11 @@ export function computeYoungPersonDailyWellbeing(
   // Modifier 2: Mood tracking quality
   if (logs30d.length === 0) {
     score -= 1;
-  } else if (moodTrackingRate >= 90) {
+  } else if (meets(moodTrackingRate, 90)) {
     score += 5;
-  } else if (moodTrackingRate >= 70) {
+  } else if (meets(moodTrackingRate, 70)) {
     score += 2;
-  } else if (moodTrackingRate >= 50) {
+  } else if (meets(moodTrackingRate, 50)) {
     // no change
   } else {
     score -= 5;
@@ -265,11 +263,11 @@ export function computeYoungPersonDailyWellbeing(
   // Modifier 3: Behaviour documentation
   if (beh30d.length === 0) {
     score -= 1;
-  } else if (behaviourDocRate >= 90) {
+  } else if (meets(behaviourDocRate, 90)) {
     score += 5;
-  } else if (behaviourDocRate >= 70) {
+  } else if (meets(behaviourDocRate, 70)) {
     score += 2;
-  } else if (behaviourDocRate >= 50) {
+  } else if (meets(behaviourDocRate, 50)) {
     // no change
   } else {
     score -= 4;
@@ -278,11 +276,11 @@ export function computeYoungPersonDailyWellbeing(
   // Modifier 4: De-escalation practice
   if (qualifyingBeh.length === 0) {
     score += 1;
-  } else if (deEscalationRate >= 90) {
+  } else if (meets(deEscalationRate, 90)) {
     score += 5;
-  } else if (deEscalationRate >= 70) {
+  } else if (meets(deEscalationRate, 70)) {
     score += 2;
-  } else if (deEscalationRate >= 50) {
+  } else if (meets(deEscalationRate, 50)) {
     // no change
   } else {
     score -= 4;
@@ -302,10 +300,10 @@ export function computeYoungPersonDailyWellbeing(
         daysBetween(s.date, l.date) > 0,
       );
     });
-    const followupRate = pct(followedUp.length, followupSummaries.length);
-    if (followupRate >= 80) {
+    const followupRate = rate(followedUp.length, followupSummaries.length);
+    if (meets(followupRate, 80)) {
       score += 4;
-    } else if (followupRate >= 50) {
+    } else if (meets(followupRate, 50)) {
       score += 2;
     } else {
       score -= 4;
@@ -315,11 +313,11 @@ export function computeYoungPersonDailyWellbeing(
   // Modifier 6: Child coverage equity
   if (logs30d.length === 0) {
     score -= 2;
-  } else if (childCoverageRate >= 100) {
+  } else if (meets(childCoverageRate, 100)) {
     score += 5;
-  } else if (childCoverageRate >= 80) {
+  } else if (meets(childCoverageRate, 80)) {
     score += 2;
-  } else if (childCoverageRate >= 60) {
+  } else if (meets(childCoverageRate, 60)) {
     // no change
   } else {
     score -= 3;
@@ -338,19 +336,19 @@ export function computeYoungPersonDailyWellbeing(
   // ── Strengths ───────────────────────────────────────────────────────
   const strengths: string[] = [];
 
-  if (dailyCoverageRate >= 90) {
-    strengths.push(`Daily logs recorded on ${uniqueLogDays} of the last 30 days (${dailyCoverageRate}%) — consistent daily recording demonstrates embedded practice.`);
+  if (meets(dailyCoverageRate, 90)) {
+    strengths.push(`Daily logs recorded on ${uniqueLogDays} of the last 30 days (${formatRate(dailyCoverageRate)}) — consistent daily recording demonstrates embedded practice.`);
   }
-  if (moodTrackingRate >= 90 && logs30d.length > 0) {
-    strengths.push(`Mood tracked in ${moodTrackingRate}% of daily log entries — strong emotional monitoring supports early identification of wellbeing concerns.`);
+  if (meets(moodTrackingRate, 90) && logs30d.length > 0) {
+    strengths.push(`Mood tracked in ${formatRate(moodTrackingRate)} of daily log entries — strong emotional monitoring supports early identification of wellbeing concerns.`);
   }
-  if (behaviourDocRate >= 90 && beh30d.length > 0) {
-    strengths.push(`${behaviourDocRate}% of behaviour incidents fully documented with antecedent, consequence, and outcome — thorough recording supports pattern analysis.`);
+  if (meets(behaviourDocRate, 90) && beh30d.length > 0) {
+    strengths.push(`${formatRate(behaviourDocRate)} of behaviour incidents fully documented with antecedent, consequence, and outcome — thorough recording supports pattern analysis.`);
   }
-  if (deEscalationRate >= 90 && qualifyingBeh.length > 0) {
-    strengths.push(`De-escalation used in ${deEscalationRate}% of medium/high/critical incidents — staff are prioritising therapeutic responses over restrictive practice.`);
+  if (meets(deEscalationRate, 90) && qualifyingBeh.length > 0) {
+    strengths.push(`De-escalation used in ${formatRate(deEscalationRate)} of medium/high/critical incidents — staff are prioritising therapeutic responses over restrictive practice.`);
   }
-  if (childCoverageRate >= 100 && logs30d.length > 0) {
+  if (meets(childCoverageRate, 100) && logs30d.length > 0) {
     strengths.push("Every child has daily log entries — no child is invisible in the recording system.");
   }
   if ((averageMoodScore ?? 0) >= 7 && logsWithMood.length >= 5) {
@@ -360,7 +358,7 @@ export function computeYoungPersonDailyWellbeing(
     const followedUp = followupSummaries.filter(s =>
       logs30d.some(l => l.child_id === s.child_id && daysBetween(s.date, l.date) > 0),
     );
-    if (pct(followedUp.length, followupSummaries.length) >= 80) {
+    if (meets(rate(followedUp.length, followupSummaries.length), 80)) {
       strengths.push("Strong follow-up responsiveness — flagged concerns are being actioned promptly through subsequent daily logs.");
     }
   }
@@ -368,20 +366,20 @@ export function computeYoungPersonDailyWellbeing(
   // ── Concerns ────────────────────────────────────────────────────────
   const concerns: string[] = [];
 
-  if (dailyCoverageRate < 50 && logs30d.length > 0) {
-    concerns.push(`Daily logs recorded on only ${uniqueLogDays} of the last 30 days (${dailyCoverageRate}%) — significant recording gaps could hide safeguarding concerns.`);
+  if (below(dailyCoverageRate, 50) && logs30d.length > 0) {
+    concerns.push(`Daily logs recorded on only ${uniqueLogDays} of the last 30 days (${formatRate(dailyCoverageRate)}) — significant recording gaps could hide safeguarding concerns.`);
   }
-  if (moodTrackingRate < 50 && logs30d.length > 0) {
-    concerns.push(`Mood tracked in only ${moodTrackingRate}% of daily log entries — emotional wellbeing is not being consistently monitored.`);
+  if (below(moodTrackingRate, 50) && logs30d.length > 0) {
+    concerns.push(`Mood tracked in only ${formatRate(moodTrackingRate)} of daily log entries — emotional wellbeing is not being consistently monitored.`);
   }
-  if (behaviourDocRate < 50 && beh30d.length > 0) {
-    concerns.push(`Only ${behaviourDocRate}% of behaviour incidents fully documented — incomplete recording undermines pattern analysis and regulatory compliance.`);
+  if (below(behaviourDocRate, 50) && beh30d.length > 0) {
+    concerns.push(`Only ${formatRate(behaviourDocRate)} of behaviour incidents fully documented — incomplete recording undermines pattern analysis and regulatory compliance.`);
   }
-  if (deEscalationRate < 50 && qualifyingBeh.length > 0) {
-    concerns.push(`De-escalation used in only ${deEscalationRate}% of medium/high/critical incidents — staff may be over-relying on restrictive practices.`);
+  if (below(deEscalationRate, 50) && qualifyingBeh.length > 0) {
+    concerns.push(`De-escalation used in only ${formatRate(deEscalationRate)} of medium/high/critical incidents — staff may be over-relying on restrictive practices.`);
   }
-  if (childCoverageRate < 60 && logs30d.length > 0) {
-    concerns.push(`Only ${childCoverageRate}% of children have daily log entries — ${total_children - childrenWithLogs} child${(total_children - childrenWithLogs) > 1 ? "ren" : ""} missing from daily recording.`);
+  if (below(childCoverageRate, 60) && logs30d.length > 0) {
+    concerns.push(`Only ${formatRate(childCoverageRate)} of children have daily log entries — ${total_children - childrenWithLogs} child${(total_children - childrenWithLogs) > 1 ? "ren" : ""} missing from daily recording.`);
   }
   if (highSeverityCount >= 5) {
     concerns.push(`${highSeverityCount} high/critical severity behaviour incidents in 30 days — escalating behaviour patterns require review of care plans and risk assessments.`);
@@ -393,7 +391,7 @@ export function computeYoungPersonDailyWellbeing(
     const followedUp = followupSummaries.filter(s =>
       logs30d.some(l => l.child_id === s.child_id && daysBetween(s.date, l.date) > 0),
     );
-    if (pct(followedUp.length, followupSummaries.length) < 50) {
+    if (below(rate(followedUp.length, followupSummaries.length), 50)) {
       concerns.push("Poor follow-up on flagged concerns — summaries requiring action are not being followed through in subsequent daily logs.");
     }
   }
@@ -402,11 +400,11 @@ export function computeYoungPersonDailyWellbeing(
   const recommendations: WellbeingRecommendation[] = [];
   let rank = 0;
 
-  if (dailyCoverageRate < 50 && logs30d.length > 0) {
+  if (below(dailyCoverageRate, 50) && logs30d.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Embed daily recording into shift routines — every shift must produce at least one entry per child to maintain regulatory compliance.",
-      urgency: dailyCoverageRate < 30 ? "immediate" : "soon",
+      urgency: below(dailyCoverageRate, 30) ? "immediate" : "soon",
       regulatory_ref: "CHR 2015 Reg 36",
     });
   }
@@ -418,7 +416,7 @@ export function computeYoungPersonDailyWellbeing(
       regulatory_ref: "CHR 2015 Reg 36",
     });
   }
-  if (moodTrackingRate < 50 && logs30d.length > 0) {
+  if (below(moodTrackingRate, 50) && logs30d.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Include mood scores in all daily log entries to build emotional wellbeing baselines and identify emerging patterns.",
@@ -426,7 +424,7 @@ export function computeYoungPersonDailyWellbeing(
       regulatory_ref: "CHR 2015 Reg 12",
     });
   }
-  if (behaviourDocRate < 50 && beh30d.length > 0) {
+  if (below(behaviourDocRate, 50) && beh30d.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Ensure all behaviour incidents are documented with antecedent, consequence, and outcome to support effective behaviour analysis.",
@@ -434,7 +432,7 @@ export function computeYoungPersonDailyWellbeing(
       regulatory_ref: "CHR 2015 Reg 36",
     });
   }
-  if (deEscalationRate < 50 && qualifyingBeh.length > 0) {
+  if (below(deEscalationRate, 50) && qualifyingBeh.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Provide de-escalation training refresher for all staff — therapeutic responses should be the first approach for medium/high severity incidents.",
@@ -442,11 +440,11 @@ export function computeYoungPersonDailyWellbeing(
       regulatory_ref: "CHR 2015 Reg 12",
     });
   }
-  if (childCoverageRate < 80 && logs30d.length > 0) {
+  if (below(childCoverageRate, 80) && logs30d.length > 0) {
     recommendations.push({
       rank: ++rank,
       recommendation: "Ensure all children have daily log entries — use handover checklists to verify every child's day has been recorded.",
-      urgency: childCoverageRate < 60 ? "immediate" : "soon",
+      urgency: below(childCoverageRate, 60) ? "immediate" : "soon",
       regulatory_ref: "CHR 2015 Reg 5",
     });
   }
@@ -462,7 +460,7 @@ export function computeYoungPersonDailyWellbeing(
     const followedUp = followupSummaries.filter(s =>
       logs30d.some(l => l.child_id === s.child_id && daysBetween(s.date, l.date) > 0),
     );
-    if (pct(followedUp.length, followupSummaries.length) < 50) {
+    if (below(rate(followedUp.length, followupSummaries.length), 50)) {
       recommendations.push({
         rank: ++rank,
         recommendation: "Establish a follow-up tracking system — flagged concerns from daily summaries must be actioned and recorded within 24 hours.",
@@ -481,22 +479,22 @@ export function computeYoungPersonDailyWellbeing(
       severity: "positive",
     });
   }
-  if (dailyCoverageRate >= 90 && moodTrackingRate >= 90 && childCoverageRate >= 100) {
+  if (meets(dailyCoverageRate, 90) && meets(moodTrackingRate, 90) && meets(childCoverageRate, 100)) {
     insights.push({
       text: "Comprehensive daily recording with mood tracking across all children — this creates a rich longitudinal picture of every child's daily experience and emotional wellbeing.",
       severity: "positive",
     });
   }
-  if (deEscalationRate >= 90 && qualifyingBeh.length >= 3) {
+  if (meets(deEscalationRate, 90) && qualifyingBeh.length >= 3) {
     insights.push({
-      text: `De-escalation used in ${deEscalationRate}% of ${qualifyingBeh.length} qualifying incidents. Staff are consistently applying therapeutic approaches — this reduces the need for restrictive intervention and supports children's emotional regulation.`,
+      text: `De-escalation used in ${formatRate(deEscalationRate)} of ${qualifyingBeh.length} qualifying incidents. Staff are consistently applying therapeutic approaches — this reduces the need for restrictive intervention and supports children's emotional regulation.`,
       severity: "positive",
     });
   }
 
-  if (dailyCoverageRate < 30 && logs30d.length > 0) {
+  if (below(dailyCoverageRate, 30) && logs30d.length > 0) {
     insights.push({
-      text: `Daily recording coverage is critically low at ${dailyCoverageRate}%. Ofsted inspectors will view sparse recording as a leadership and management failure — children's daily experiences must be visible in the record.`,
+      text: `Daily recording coverage is critically low at ${formatRate(dailyCoverageRate)}. Ofsted inspectors will view sparse recording as a leadership and management failure — children's daily experiences must be visible in the record.`,
       severity: "critical",
     });
   }
@@ -506,27 +504,27 @@ export function computeYoungPersonDailyWellbeing(
       severity: "critical",
     });
   }
-  if (childCoverageRate < 60 && logs30d.length > 0) {
+  if (below(childCoverageRate, 60) && logs30d.length > 0) {
     insights.push({
       text: `${total_children - childrenWithLogs} of ${total_children} children have no daily log entries. These children are invisible in the recording system — their wellbeing cannot be tracked, and safeguarding concerns may go undetected.`,
       severity: "critical",
     });
   }
-  if (moodTrackingRate < 50 && logs30d.length > 0 && (averageMoodScore ?? 0) > 0 && (averageMoodScore ?? 0) < 4) {
+  if (below(moodTrackingRate, 50) && logs30d.length > 0 && (averageMoodScore ?? 0) > 0 && (averageMoodScore ?? 0) < 4) {
     insights.push({
-      text: `Low mood tracking rate (${moodTrackingRate}%) combined with low average mood (${averageMoodScore}/10) suggests both poor monitoring and concerning emotional wellbeing. Immediate therapeutic intervention and enhanced monitoring are needed.`,
+      text: `Low mood tracking rate (${formatRate(moodTrackingRate)}) combined with low average mood (${averageMoodScore}/10) suggests both poor monitoring and concerning emotional wellbeing. Immediate therapeutic intervention and enhanced monitoring are needed.`,
       severity: "critical",
     });
   }
-  if (behaviourDocRate < 50 && beh30d.length >= 5) {
+  if (below(behaviourDocRate, 50) && beh30d.length >= 5) {
     insights.push({
-      text: `Behaviour documentation is incomplete in ${100 - behaviourDocRate}% of incidents. Without full antecedent-behaviour-consequence recording, the home cannot identify triggers or evaluate intervention effectiveness.`,
+      text: `Behaviour documentation is incomplete in ${100 - behaviourDocRate!}% of incidents. Without full antecedent-behaviour-consequence recording, the home cannot identify triggers or evaluate intervention effectiveness.`,
       severity: "warning",
     });
   }
-  if (deEscalationRate < 50 && qualifyingBeh.length >= 3) {
+  if (below(deEscalationRate, 50) && qualifyingBeh.length >= 3) {
     insights.push({
-      text: `De-escalation techniques used in only ${deEscalationRate}% of medium/high/critical incidents. Ofsted expects to see evidence that staff prioritise therapeutic de-escalation before any restrictive practice.`,
+      text: `De-escalation techniques used in only ${formatRate(deEscalationRate)} of medium/high/critical incidents. Ofsted expects to see evidence that staff prioritise therapeutic de-escalation before any restrictive practice.`,
       severity: "warning",
     });
   }
@@ -534,7 +532,7 @@ export function computeYoungPersonDailyWellbeing(
   // ── Headline ────────────────────────────────────────────────────────
   let headline: string;
   if (wellbeing_rating === "outstanding") {
-    headline = `Outstanding daily wellbeing practice — ${logs30d.length} logs across ${uniqueLogDays} days covering ${childrenWithLogs} children with ${moodTrackingRate}% mood tracking.`;
+    headline = `Outstanding daily wellbeing practice — ${logs30d.length} logs across ${uniqueLogDays} days covering ${childrenWithLogs} children with ${formatRate(moodTrackingRate)} mood tracking.`;
   } else if (wellbeing_rating === "good") {
     headline = `Good daily wellbeing recording — ${logs30d.length} logs in 30 days.${concerns.length > 0 ? ` ${concerns.length} area${concerns.length > 1 ? "s" : ""} for improvement.` : ""}`;
   } else if (wellbeing_rating === "adequate") {
