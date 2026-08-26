@@ -9,7 +9,6 @@ export {
   evaluateInspectionPolicy,
   evaluateStaffInspectionReadiness,
   buildChildInspectionProfiles,
-  pct,
   getRating,
   getInspectionCategoryLabel,
   getInspectionOutcomeLabel,

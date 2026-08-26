@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // Food Nutrition Quality Intelligence Engine
 //
@@ -124,18 +125,25 @@ export interface StaffNutritionTraining {
 export interface MealQualityResult {
   overallScore: number;
   totalRecords: number;
-  nutritionRate: number;
-  dietaryNeedsMetRate: number;
-  childChoiceRate: number;
-  freshIngredientsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  nutritionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dietaryNeedsMetRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childChoiceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  freshIngredientsRate: number | null;
 }
 
 export interface NutritionComplianceResult {
   overallScore: number;
   totalRecords: number;
-  portionAppropriateRate: number;
-  documentedRate: number;
-  childSatisfiedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  portionAppropriateRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childSatisfiedRate: number | null;
   mealTypeDiversity: number;
 }
 
@@ -153,12 +161,18 @@ export interface NutritionPolicyResult {
 export interface StaffNutritionReadinessResult {
   overallScore: number;
   totalStaff: number;
-  foodHygieneRate: number;
-  nutritionalPlanningRate: number;
-  allergyAwarenessRate: number;
-  culturalDietaryNeedsRate: number;
-  portionControlRate: number;
-  mealPreparationRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  foodHygieneRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  nutritionalPlanningRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  allergyAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  culturalDietaryNeedsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  portionControlRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  mealPreparationRate: number | null;
 }
 
 export interface ChildNutritionProfile {
@@ -190,11 +204,6 @@ export interface FoodNutritionQualityIntelligence {
 
 // -- Helpers -------------------------------------------------------------------
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -220,10 +229,10 @@ export function evaluateMealQuality(
     return {
       overallScore: 0,
       totalRecords: 0,
-      nutritionRate: 0,
-      dietaryNeedsMetRate: 0,
-      childChoiceRate: 0,
-      freshIngredientsRate: 0,
+      nutritionRate: null,
+      dietaryNeedsMetRate: null,
+      childChoiceRate: null,
+      freshIngredientsRate: null,
     };
   }
 
@@ -232,32 +241,32 @@ export function evaluateMealQuality(
   const excellentGood = records.filter(
     (r) => r.nutritionRating === "excellent" || r.nutritionRating === "good",
   ).length;
-  const nutritionRate = pct(excellentGood, records.length);
-  if (nutritionRate >= 90) score += 7;
-  else if (nutritionRate >= 70) score += 5;
-  else if (nutritionRate >= 50) score += 3;
-  else if (nutritionRate > 0) score += 1;
+  const nutritionRate = rate(excellentGood, records.length);
+  if (meets(nutritionRate, 90)) score += 7;
+  else if (meets(nutritionRate, 70)) score += 5;
+  else if (meets(nutritionRate, 50)) score += 3;
+  else if (above(nutritionRate, 0)) score += 1;
 
   const dietaryMet = records.filter((r) => r.dietaryNeedsMet).length;
-  const dietaryNeedsMetRate = pct(dietaryMet, records.length);
-  if (dietaryNeedsMetRate >= 90) score += 6;
-  else if (dietaryNeedsMetRate >= 70) score += 4;
-  else if (dietaryNeedsMetRate >= 50) score += 3;
-  else if (dietaryNeedsMetRate > 0) score += 1;
+  const dietaryNeedsMetRate = rate(dietaryMet, records.length);
+  if (meets(dietaryNeedsMetRate, 90)) score += 6;
+  else if (meets(dietaryNeedsMetRate, 70)) score += 4;
+  else if (meets(dietaryNeedsMetRate, 50)) score += 3;
+  else if (above(dietaryNeedsMetRate, 0)) score += 1;
 
   const childChoice = records.filter((r) => r.childChoiceOffered).length;
-  const childChoiceRate = pct(childChoice, records.length);
-  if (childChoiceRate >= 90) score += 6;
-  else if (childChoiceRate >= 70) score += 4;
-  else if (childChoiceRate >= 50) score += 3;
-  else if (childChoiceRate > 0) score += 1;
+  const childChoiceRate = rate(childChoice, records.length);
+  if (meets(childChoiceRate, 90)) score += 6;
+  else if (meets(childChoiceRate, 70)) score += 4;
+  else if (meets(childChoiceRate, 50)) score += 3;
+  else if (above(childChoiceRate, 0)) score += 1;
 
   const freshIngredients = records.filter((r) => r.freshIngredientsUsed).length;
-  const freshIngredientsRate = pct(freshIngredients, records.length);
-  if (freshIngredientsRate >= 90) score += 6;
-  else if (freshIngredientsRate >= 70) score += 4;
-  else if (freshIngredientsRate >= 50) score += 3;
-  else if (freshIngredientsRate > 0) score += 1;
+  const freshIngredientsRate = rate(freshIngredients, records.length);
+  if (meets(freshIngredientsRate, 90)) score += 6;
+  else if (meets(freshIngredientsRate, 70)) score += 4;
+  else if (meets(freshIngredientsRate, 50)) score += 3;
+  else if (above(freshIngredientsRate, 0)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -285,9 +294,9 @@ export function evaluateNutritionCompliance(
     return {
       overallScore: 0,
       totalRecords: 0,
-      portionAppropriateRate: 0,
-      documentedRate: 0,
-      childSatisfiedRate: 0,
+      portionAppropriateRate: null,
+      documentedRate: null,
+      childSatisfiedRate: null,
       mealTypeDiversity: 0,
     };
   }
@@ -295,25 +304,25 @@ export function evaluateNutritionCompliance(
   let score = 0;
 
   const portionOk = records.filter((r) => r.portionAppropriate).length;
-  const portionAppropriateRate = pct(portionOk, records.length);
-  if (portionAppropriateRate >= 90) score += 8;
-  else if (portionAppropriateRate >= 70) score += 6;
-  else if (portionAppropriateRate >= 50) score += 4;
-  else if (portionAppropriateRate > 0) score += 2;
+  const portionAppropriateRate = rate(portionOk, records.length);
+  if (meets(portionAppropriateRate, 90)) score += 8;
+  else if (meets(portionAppropriateRate, 70)) score += 6;
+  else if (meets(portionAppropriateRate, 50)) score += 4;
+  else if (above(portionAppropriateRate, 0)) score += 2;
 
   const documented = records.filter((r) => r.documentedInRecord).length;
-  const documentedRate = pct(documented, records.length);
-  if (documentedRate >= 90) score += 7;
-  else if (documentedRate >= 70) score += 5;
-  else if (documentedRate >= 50) score += 3;
-  else if (documentedRate > 0) score += 1;
+  const documentedRate = rate(documented, records.length);
+  if (meets(documentedRate, 90)) score += 7;
+  else if (meets(documentedRate, 70)) score += 5;
+  else if (meets(documentedRate, 50)) score += 3;
+  else if (above(documentedRate, 0)) score += 1;
 
   const satisfied = records.filter((r) => r.childSatisfied).length;
-  const childSatisfiedRate = pct(satisfied, records.length);
-  if (childSatisfiedRate >= 90) score += 5;
-  else if (childSatisfiedRate >= 70) score += 3;
-  else if (childSatisfiedRate >= 50) score += 2;
-  else if (childSatisfiedRate > 0) score += 1;
+  const childSatisfiedRate = rate(satisfied, records.length);
+  if (meets(childSatisfiedRate, 90)) score += 5;
+  else if (meets(childSatisfiedRate, 70)) score += 3;
+  else if (meets(childSatisfiedRate, 50)) score += 2;
+  else if (above(childSatisfiedRate, 0)) score += 1;
 
   const uniqueTypes = new Set(records.map((r) => r.mealType));
   const mealTypeDiversity = Math.round((uniqueTypes.size / 8) * 100);
@@ -386,7 +395,7 @@ export function evaluateNutritionPolicy(
  * Evaluates staff nutrition readiness from training records.
  * PRESENCE pattern: empty training = 0 (no evidence of competence).
  *
- * Each skill rate = pct(trained, total).
+ * Each skill rate = rate(trained, total).
  * Partial score = Math.round(rate / 100 * weight).
  *
  *   foodHygiene           -> weight 6
@@ -403,31 +412,31 @@ export function evaluateStaffNutritionReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      foodHygieneRate: 0,
-      nutritionalPlanningRate: 0,
-      allergyAwarenessRate: 0,
-      culturalDietaryNeedsRate: 0,
-      portionControlRate: 0,
-      mealPreparationRate: 0,
+      foodHygieneRate: null,
+      nutritionalPlanningRate: null,
+      allergyAwarenessRate: null,
+      culturalDietaryNeedsRate: null,
+      portionControlRate: null,
+      mealPreparationRate: null,
     };
   }
 
   const total = training.length;
 
-  const foodHygieneRate = pct(training.filter((t) => t.foodHygiene).length, total);
-  const nutritionalPlanningRate = pct(training.filter((t) => t.nutritionalPlanning).length, total);
-  const allergyAwarenessRate = pct(training.filter((t) => t.allergyAwareness).length, total);
-  const culturalDietaryNeedsRate = pct(training.filter((t) => t.culturalDietaryNeeds).length, total);
-  const portionControlRate = pct(training.filter((t) => t.portionControl).length, total);
-  const mealPreparationRate = pct(training.filter((t) => t.mealPreparation).length, total);
+  const foodHygieneRate = rate(training.filter((t) => t.foodHygiene).length, total);
+  const nutritionalPlanningRate = rate(training.filter((t) => t.nutritionalPlanning).length, total);
+  const allergyAwarenessRate = rate(training.filter((t) => t.allergyAwareness).length, total);
+  const culturalDietaryNeedsRate = rate(training.filter((t) => t.culturalDietaryNeeds).length, total);
+  const portionControlRate = rate(training.filter((t) => t.portionControl).length, total);
+  const mealPreparationRate = rate(training.filter((t) => t.mealPreparation).length, total);
 
   const score =
-    Math.round((foodHygieneRate / 100) * 6) +
-    Math.round((nutritionalPlanningRate / 100) * 5) +
-    Math.round((allergyAwarenessRate / 100) * 5) +
-    Math.round((culturalDietaryNeedsRate / 100) * 4) +
-    Math.round((portionControlRate / 100) * 3) +
-    Math.round((mealPreparationRate / 100) * 2);
+    Math.round(((foodHygieneRate ?? 0) / 100) * 6) +
+    Math.round(((nutritionalPlanningRate ?? 0) / 100) * 5) +
+    Math.round(((allergyAwarenessRate ?? 0) / 100) * 5) +
+    Math.round(((culturalDietaryNeedsRate ?? 0) / 100) * 4) +
+    Math.round(((portionControlRate ?? 0) / 100) * 3) +
+    Math.round(((mealPreparationRate ?? 0) / 100) * 2);
 
   return {
     overallScore: Math.min(score, 25),
@@ -461,10 +470,10 @@ export function buildChildNutritionProfiles(
     const excellentGood = childRecords.filter(
       (r) => r.nutritionRating === "excellent" || r.nutritionRating === "good",
     ).length;
-    const nutritionRate = pct(excellentGood, childRecords.length);
+    const nutritionRate = rate(excellentGood, childRecords.length)!;
 
     const dietaryMet = childRecords.filter((r) => r.dietaryNeedsMet).length;
-    const dietaryNeedsMetRate = pct(dietaryMet, childRecords.length);
+    const dietaryNeedsMetRate = rate(dietaryMet, childRecords.length)!;
 
     const uniqueTypes = new Set(childRecords.map((r) => r.mealType));
     const uniqueMealTypes = uniqueTypes.size;
@@ -477,14 +486,14 @@ export function buildChildNutritionProfiles(
     else if (childRecords.length >= 5) score += 1;
 
     // Nutrition rate (0-3): >=80% -> 3, >=60% -> 2, >=40% -> 1
-    if (nutritionRate >= 80) score += 3;
-    else if (nutritionRate >= 60) score += 2;
-    else if (nutritionRate >= 40) score += 1;
+    if (meets(nutritionRate, 80)) score += 3;
+    else if (meets(nutritionRate, 60)) score += 2;
+    else if (meets(nutritionRate, 40)) score += 1;
 
     // Dietary needs met (0-3): >=80% -> 3, >=60% -> 2, >=40% -> 1
-    if (dietaryNeedsMetRate >= 80) score += 3;
-    else if (dietaryNeedsMetRate >= 60) score += 2;
-    else if (dietaryNeedsMetRate >= 40) score += 1;
+    if (meets(dietaryNeedsMetRate, 80)) score += 3;
+    else if (meets(dietaryNeedsMetRate, 60)) score += 2;
+    else if (meets(dietaryNeedsMetRate, 40)) score += 1;
 
     // Diversity (0-2): >=4 unique meal types -> 2, >=2 -> 1
     if (uniqueMealTypes >= 4) score += 2;
@@ -530,32 +539,32 @@ export function generateFoodNutritionQualityIntelligence(
   // -- Strengths ---------------------------------------------------------------
   const strengths: string[] = [];
 
-  if (mealQuality.nutritionRate >= 80) {
+  if (meets(mealQuality.nutritionRate, 80)) {
     strengths.push(
       "Strong nutritional quality across meals",
     );
   }
-  if (mealQuality.dietaryNeedsMetRate >= 80) {
+  if (meets(mealQuality.dietaryNeedsMetRate, 80)) {
     strengths.push(
       "Dietary needs consistently met for all children",
     );
   }
-  if (mealQuality.childChoiceRate >= 80) {
+  if (meets(mealQuality.childChoiceRate, 80)) {
     strengths.push(
       "Children's food choices are regularly offered and respected",
     );
   }
-  if (nutritionCompliance.documentedRate >= 80) {
+  if (meets(nutritionCompliance.documentedRate, 80)) {
     strengths.push(
       "Excellent meal documentation and record-keeping",
     );
   }
-  if (mealQuality.freshIngredientsRate >= 80) {
+  if (meets(mealQuality.freshIngredientsRate, 80)) {
     strengths.push(
       "Fresh ingredients used consistently across meals",
     );
   }
-  if (nutritionCompliance.portionAppropriateRate >= 80) {
+  if (meets(nutritionCompliance.portionAppropriateRate, 80)) {
     strengths.push(
       "Portions are appropriate and well-managed for children",
     );
@@ -574,27 +583,27 @@ export function generateFoodNutritionQualityIntelligence(
   // -- Areas for improvement ---------------------------------------------------
   const areasForImprovement: string[] = [];
 
-  if (mealQuality.nutritionRate < 60 && records.length > 0) {
+  if (below(mealQuality.nutritionRate, 60) && records.length > 0) {
     areasForImprovement.push(
       "Nutritional quality of meals needs improvement — too few meals rated good or excellent",
     );
   }
-  if (mealQuality.dietaryNeedsMetRate < 80 && records.length > 0) {
+  if (below(mealQuality.dietaryNeedsMetRate, 80) && records.length > 0) {
     areasForImprovement.push(
       "Dietary needs are not consistently met — review individual dietary requirements",
     );
   }
-  if (mealQuality.freshIngredientsRate < 60 && records.length > 0) {
+  if (below(mealQuality.freshIngredientsRate, 60) && records.length > 0) {
     areasForImprovement.push(
       "Use of fresh ingredients is below expectations — increase fresh food in meal preparation",
     );
   }
-  if (nutritionCompliance.childSatisfiedRate < 60 && records.length > 0) {
+  if (below(nutritionCompliance.childSatisfiedRate, 60) && records.length > 0) {
     areasForImprovement.push(
       "Children's satisfaction with meals is low — review menu choices and meal quality",
     );
   }
-  if (nutritionCompliance.documentedRate < 70 && records.length > 0) {
+  if (below(nutritionCompliance.documentedRate, 70) && records.length > 0) {
     areasForImprovement.push(
       "Meal documentation needs strengthening — ensure all meals are properly recorded",
     );
@@ -618,12 +627,12 @@ export function generateFoodNutritionQualityIntelligence(
       "URGENT: No staff nutrition training records — deliver food hygiene, nutritional planning, and allergy awareness training to all staff",
     );
   }
-  if (nutritionCompliance.childSatisfiedRate < 60 && records.length > 0) {
+  if (below(nutritionCompliance.childSatisfiedRate, 60) && records.length > 0) {
     actions.push(
       "Address children's satisfaction with meals",
     );
   }
-  if (mealQuality.freshIngredientsRate < 60 && records.length > 0) {
+  if (below(mealQuality.freshIngredientsRate, 60) && records.length > 0) {
     actions.push(
       "Increase use of fresh ingredients",
     );

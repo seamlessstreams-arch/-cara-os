@@ -3,7 +3,6 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 export {
-  pct,
   getRating,
   evaluateWarmthCulture,
   evaluateChildExperience,

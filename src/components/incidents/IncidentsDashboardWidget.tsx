@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildIncidentProfile { childId: string; childName: string; totalRecords: number; deEscalationAttemptedRate: number; childViewRecordedRate: number; categoriesCovered: string[]; overallScore: number; }
 
@@ -73,18 +74,18 @@ export default function IncidentsDashboardWidget() {
       <Section title="Incident Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Records" value={data.incidentQuality.totalRecords} />
-          <Stat label="De-Escalation" value={`${data.incidentQuality.deEscalationAttemptedRate}%`} />
-          <Stat label="Child View" value={`${data.incidentQuality.childViewRecordedRate}%`} />
-          <Stat label="Debrief" value={`${data.incidentQuality.debriefConductedRate}%`} />
-          <Stat label="Lessons" value={`${data.incidentQuality.lessonsIdentifiedRate}%`} />
+          <Stat label="De-Escalation" value={`${formatRate(data.incidentQuality.deEscalationAttemptedRate)}`} />
+          <Stat label="Child View" value={`${formatRate(data.incidentQuality.childViewRecordedRate)}`} />
+          <Stat label="Debrief" value={`${formatRate(data.incidentQuality.debriefConductedRate)}`} />
+          <Stat label="Lessons" value={`${formatRate(data.incidentQuality.lessonsIdentifiedRate)}`} />
         </div>
       </Section>
 
       <Section title="Incident Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documentation" value={`${data.incidentCompliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${data.incidentCompliance.timelyRecordingRate}%`} />
-          <Stat label="De-Escalation" value={`${data.incidentCompliance.deEscalationAttemptedRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(data.incidentCompliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(data.incidentCompliance.timelyRecordingRate)}`} />
+          <Stat label="De-Escalation" value={`${formatRate(data.incidentCompliance.deEscalationAttemptedRate)}`} />
           <Stat label="Category Coverage" value={`${Math.round(data.incidentCompliance.categoryDiversityRatio * 100)}%`} />
         </div>
       </Section>
@@ -108,12 +109,12 @@ export default function IncidentsDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
-          <Stat label="De-Escalation" value={`${data.staffReadiness.deEscalationSkillsRate}%`} />
-          <Stat label="Incident Recording" value={`${data.staffReadiness.incidentRecordingRate}%`} />
-          <Stat label="Restraint Cert" value={`${data.staffReadiness.restraintCertificationRate}%`} />
-          <Stat label="Post-Incident" value={`${data.staffReadiness.postIncidentSupportRate}%`} />
-          <Stat label="Child Protection" value={`${data.staffReadiness.childProtectionAwarenessRate}%`} />
-          <Stat label="Conflict Resolution" value={`${data.staffReadiness.conflictResolutionRate}%`} />
+          <Stat label="De-Escalation" value={`${formatRate(data.staffReadiness.deEscalationSkillsRate)}`} />
+          <Stat label="Incident Recording" value={`${formatRate(data.staffReadiness.incidentRecordingRate)}`} />
+          <Stat label="Restraint Cert" value={`${formatRate(data.staffReadiness.restraintCertificationRate)}`} />
+          <Stat label="Post-Incident" value={`${formatRate(data.staffReadiness.postIncidentSupportRate)}`} />
+          <Stat label="Child Protection" value={`${formatRate(data.staffReadiness.childProtectionAwarenessRate)}`} />
+          <Stat label="Conflict Resolution" value={`${formatRate(data.staffReadiness.conflictResolutionRate)}`} />
         </div>
       </Section>
 

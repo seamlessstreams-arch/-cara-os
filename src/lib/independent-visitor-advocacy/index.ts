@@ -5,7 +5,6 @@ export {
   evaluatePolicyGovernance,
   evaluateStaffAdvocacyReadiness,
   buildChildAdvocacyProfiles,
-  pct,
   getRating,
   getVisitorStatusLabel,
   getVisitOutcomeLabel,

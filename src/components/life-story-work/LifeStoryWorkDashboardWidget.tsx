@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -194,20 +195,20 @@ export default function LifeStoryWorkDashboardWidget() {
       <Section title="Session Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Sessions" value={data.sessionQuality.totalSessions} />
-          <Stat label="Engagement" value={`${data.sessionQuality.engagementRate}%`} />
-          <Stat label="Therapeutic" value={`${data.sessionQuality.therapeuticRate}%`} />
-          <Stat label="Child-Led" value={`${data.sessionQuality.childLedRate}%`} />
-          <Stat label="Recorded" value={`${data.sessionQuality.recordedRate}%`} />
-          <Stat label="Follow-Up" value={`${data.sessionQuality.followUpRate}%`} />
+          <Stat label="Engagement" value={`${formatRate(data.sessionQuality.engagementRate)}`} />
+          <Stat label="Therapeutic" value={`${formatRate(data.sessionQuality.therapeuticRate)}`} />
+          <Stat label="Child-Led" value={`${formatRate(data.sessionQuality.childLedRate)}`} />
+          <Stat label="Recorded" value={`${formatRate(data.sessionQuality.recordedRate)}`} />
+          <Stat label="Follow-Up" value={`${formatRate(data.sessionQuality.followUpRate)}`} />
         </div>
       </Section>
 
       <Section title="Memory & Record Keeping">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Items" value={data.memoryRecordKeeping.totalItems} />
-          <Stat label="Secure Storage" value={`${data.memoryRecordKeeping.secureStorageRate}%`} />
-          <Stat label="Child Access" value={`${data.memoryRecordKeeping.childAccessRate}%`} />
-          <Stat label="Quality Checked" value={`${data.memoryRecordKeeping.qualityCheckedRate}%`} />
+          <Stat label="Secure Storage" value={`${formatRate(data.memoryRecordKeeping.secureStorageRate)}`} />
+          <Stat label="Child Access" value={`${formatRate(data.memoryRecordKeeping.childAccessRate)}`} />
+          <Stat label="Quality Checked" value={`${formatRate(data.memoryRecordKeeping.qualityCheckedRate)}`} />
         </div>
       </Section>
 
@@ -233,12 +234,12 @@ export default function LifeStoryWorkDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
-          <Stat label="LSW Trained" value={`${data.staffReadiness.lifeStoryWorkRate}%`} />
-          <Stat label="Therapeutic" value={`${data.staffReadiness.therapeuticNarrativeRate}%`} />
-          <Stat label="Trauma-Informed" value={`${data.staffReadiness.traumaInformedRate}%`} />
-          <Stat label="Cultural" value={`${data.staffReadiness.culturalSensitivityRate}%`} />
-          <Stat label="Child-Led" value={`${data.staffReadiness.childLedApproachRate}%`} />
-          <Stat label="Memory Keeping" value={`${data.staffReadiness.memoryKeepingRate}%`} />
+          <Stat label="LSW Trained" value={`${formatRate(data.staffReadiness.lifeStoryWorkRate)}`} />
+          <Stat label="Therapeutic" value={`${formatRate(data.staffReadiness.therapeuticNarrativeRate)}`} />
+          <Stat label="Trauma-Informed" value={`${formatRate(data.staffReadiness.traumaInformedRate)}`} />
+          <Stat label="Cultural" value={`${formatRate(data.staffReadiness.culturalSensitivityRate)}`} />
+          <Stat label="Child-Led" value={`${formatRate(data.staffReadiness.childLedApproachRate)}`} />
+          <Stat label="Memory Keeping" value={`${formatRate(data.staffReadiness.memoryKeepingRate)}`} />
         </div>
       </Section>
 

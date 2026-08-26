@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — Incident Pattern Analysis Intelligence Engine
 //
@@ -138,20 +139,26 @@ export interface IncidentResponseResult {
   totalIncidents: number;
   criticalIncidentCount: number;
   majorIncidentCount: number;
-  responseQualityRate: number; // %
-  deEscalationSuccessRate: number; // %
-  childDebriefRate: number; // %
-  restraintRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  responseQualityRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  deEscalationSuccessRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  childDebriefRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  restraintRate: number | null; // %
   averageResponseTimeMins: number | null;
 }
 
 export interface NotificationComplianceResult {
   overallScore: number; // 0-25
   totalNotifiable: number;
-  timelyCompleteRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyCompleteRate: number | null; // %
   lateNotificationCount: number;
   notNotifiedCount: number;
-  managersInformedRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  managersInformedRate: number | null; // %
 }
 
 export interface PatternAnalysisResult {
@@ -159,7 +166,8 @@ export interface PatternAnalysisResult {
   trendsAnalysed: number;
   escalatingChildCount: number;
   predominantCategory: IncidentCategory | "none";
-  lessonsIdentifiedRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  lessonsIdentifiedRate: number | null; // %
   triggerPatternsIdentified: number;
   environmentalFactorsCount: number;
 }
@@ -167,10 +175,14 @@ export interface PatternAnalysisResult {
 export interface PostIncidentResult {
   overallScore: number; // 0-25
   totalPostIncident: number;
-  debriefCompletionRate: number; // %
-  supportPlanUpdateRate: number; // %
-  medicalAttentionRate: number; // %
-  externalReferralRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  debriefCompletionRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  supportPlanUpdateRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  medicalAttentionRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  externalReferralRate: number | null; // %
   noActionCount: number;
 }
 
@@ -181,7 +193,8 @@ export interface ChildIncidentProfile {
   criticalCount: number;
   predominantCategory: IncidentCategory | "none";
   escalating: boolean;
-  deEscalationSuccessRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  deEscalationSuccessRate: number | null; // %
   restraintCount: number;
   overallScore: number; // 0-10
 }
@@ -204,11 +217,6 @@ export interface IncidentPatternAnalysisIntelligence {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
@@ -315,10 +323,10 @@ export function evaluateIncidentResponse(
       totalIncidents: 0,
       criticalIncidentCount: 0,
       majorIncidentCount: 0,
-      responseQualityRate: 0,
-      deEscalationSuccessRate: 0,
-      childDebriefRate: 0,
-      restraintRate: 0,
+      responseQualityRate: null,
+      deEscalationSuccessRate: null,
+      childDebriefRate: null,
+      restraintRate: null,
       averageResponseTimeMins: 0,
     };
   }
@@ -331,22 +339,22 @@ export function evaluateIncidentResponse(
   const goodResponses = incidents.filter(
     (i) => i.responseQuality === "exemplary" || i.responseQuality === "appropriate",
   ).length;
-  const responseQualityRate = pct(goodResponses, total);
+  const responseQualityRate = rate(goodResponses, total);
 
   // De-escalation success rate (only among those where attempted)
   const deEscAttempted = incidents.filter((i) => i.deEscalationAttempted);
   const deEscSuccessful = deEscAttempted.filter(
     (i) => i.deEscalationOutcome === "successful" || i.deEscalationOutcome === "partially_successful",
   ).length;
-  const deEscalationSuccessRate = pct(deEscSuccessful, deEscAttempted.length);
+  const deEscalationSuccessRate = rate(deEscSuccessful, deEscAttempted.length);
 
   // Child debrief rate
   const childDebriefed = incidents.filter((i) => i.childDebriefed).length;
-  const childDebriefRate = pct(childDebriefed, total);
+  const childDebriefRate = rate(childDebriefed, total);
 
   // Restraint rate
   const restraintUsed = incidents.filter((i) => i.restraintUsed).length;
-  const restraintRate = pct(restraintUsed, total);
+  const restraintRate = rate(restraintUsed, total);
 
   // Average response time from staff responses
   const avgResponseTime =
@@ -358,21 +366,21 @@ export function evaluateIncidentResponse(
 
   // Score calculation
   // Response quality contributes up to 8 points
-  let score = (responseQualityRate / 100) * 8;
+  let score = ((responseQualityRate ?? 0) / 100) * 8;
 
   // De-escalation success contributes up to 7 points
   if (deEscAttempted.length > 0) {
-    score += (deEscalationSuccessRate / 100) * 7;
+    score += (deEscalationSuccessRate! / 100) * 7;
   } else {
     // No de-escalation attempted is concerning if there were incidents
     score += 0;
   }
 
   // Child debrief contributes up to 5 points
-  score += (childDebriefRate / 100) * 5;
+  score += ((childDebriefRate ?? 0) / 100) * 5;
 
   // Low restraint rate contributes up to 5 points (lower is better)
-  const lowRestraintFactor = restraintRate === 0 ? 1 : Math.max(0, 1 - restraintRate / 100);
+  const lowRestraintFactor = restraintRate === 0 ? 1 : Math.max(0, 1 - (restraintRate ?? 0) / 100);
   score += lowRestraintFactor * 5;
 
   // Penalties
@@ -403,10 +411,10 @@ export function evaluateNotificationCompliance(
     return {
       overallScore: MAX_SCORE,
       totalNotifiable: 0,
-      timelyCompleteRate: 0,
+      timelyCompleteRate: null,
       lateNotificationCount: 0,
       notNotifiedCount: 0,
-      managersInformedRate: 0,
+      managersInformedRate: null,
     };
   }
 
@@ -415,7 +423,7 @@ export function evaluateNotificationCompliance(
   const timelyComplete = incidents.filter(
     (i) => i.notificationStatus === "timely_and_complete",
   ).length;
-  const timelyCompleteRate = pct(timelyComplete, total);
+  const timelyCompleteRate = rate(timelyComplete, total);
 
   const lateNotificationCount = incidents.filter(
     (i) => i.notificationStatus === "late",
@@ -426,14 +434,14 @@ export function evaluateNotificationCompliance(
   ).length;
 
   const managersInformed = incidents.filter((i) => i.managersInformed).length;
-  const managersInformedRate = pct(managersInformed, total);
+  const managersInformedRate = rate(managersInformed, total);
 
   // Score calculation
   // Timely + complete rate contributes up to 15 points
-  let score = (timelyCompleteRate / 100) * 15;
+  let score = ((timelyCompleteRate ?? 0) / 100) * 15;
 
   // Managers informed rate contributes up to 10 points
-  score += (managersInformedRate / 100) * 10;
+  score += ((managersInformedRate ?? 0) / 100) * 10;
 
   // Penalties for not-notified incidents
   score -= notNotifiedCount * 5;
@@ -463,7 +471,7 @@ export function evaluatePatternAnalysis(
       trendsAnalysed: 0,
       escalatingChildCount: 0,
       predominantCategory: "none",
-      lessonsIdentifiedRate: 0,
+      lessonsIdentifiedRate: null,
       triggerPatternsIdentified: 0,
       environmentalFactorsCount: 0,
     };
@@ -488,7 +496,7 @@ export function evaluatePatternAnalysis(
 
   // Lessons identified rate
   const lessonsIdentified = incidents.filter((i) => i.lessonsIdentified).length;
-  const lessonsIdentifiedRate = pct(lessonsIdentified, incidents.length);
+  const lessonsIdentifiedRate = rate(lessonsIdentified, incidents.length);
 
   // Trigger patterns from trends
   const allTriggers = new Set<string>();
@@ -506,7 +514,7 @@ export function evaluatePatternAnalysis(
 
   // Score calculation
   // Lessons identified rate contributes up to 12 points
-  let score = incidents.length > 0 ? (lessonsIdentifiedRate / 100) * 12 : 12;
+  let score = incidents.length > 0 ? (lessonsIdentifiedRate! / 100) * 12 : 12;
 
   // Trigger patterns identified contributes up to 8 points (more patterns = better understanding)
   const triggerScore = Math.min(triggerPatternsIdentified, 5) / 5;
@@ -541,10 +549,10 @@ export function evaluatePostIncident(
     return {
       overallScore: MAX_SCORE,
       totalPostIncident: 0,
-      debriefCompletionRate: 0,
-      supportPlanUpdateRate: 0,
-      medicalAttentionRate: 0,
-      externalReferralRate: 0,
+      debriefCompletionRate: null,
+      supportPlanUpdateRate: null,
+      medicalAttentionRate: null,
+      externalReferralRate: null,
       noActionCount: 0,
     };
   }
@@ -554,22 +562,22 @@ export function evaluatePostIncident(
   const debriefCount = incidents.filter((i) =>
     i.postIncidentActions.includes("debrief_completed"),
   ).length;
-  const debriefCompletionRate = pct(debriefCount, total);
+  const debriefCompletionRate = rate(debriefCount, total);
 
   const supportPlanCount = incidents.filter((i) =>
     i.postIncidentActions.includes("support_plan_updated"),
   ).length;
-  const supportPlanUpdateRate = pct(supportPlanCount, total);
+  const supportPlanUpdateRate = rate(supportPlanCount, total);
 
   const medicalCount = incidents.filter((i) =>
     i.postIncidentActions.includes("medical_attention"),
   ).length;
-  const medicalAttentionRate = pct(medicalCount, total);
+  const medicalAttentionRate = rate(medicalCount, total);
 
   const referralCount = incidents.filter((i) =>
     i.postIncidentActions.includes("external_referral"),
   ).length;
-  const externalReferralRate = pct(referralCount, total);
+  const externalReferralRate = rate(referralCount, total);
 
   const noActionCount = incidents.filter((i) =>
     i.postIncidentActions.includes("no_action"),
@@ -577,10 +585,10 @@ export function evaluatePostIncident(
 
   // Score calculation
   // Debrief completion contributes up to 10 points
-  let score = (debriefCompletionRate / 100) * 10;
+  let score = ((debriefCompletionRate ?? 0) / 100) * 10;
 
   // Support plan updates contribute up to 8 points
-  score += (supportPlanUpdateRate / 100) * 8;
+  score += ((supportPlanUpdateRate ?? 0) / 100) * 8;
 
   // Medical attention when injury occurred contributes up to 4 points
   const injuryIncidents = incidents.filter((i) => i.injuryOccurred);
@@ -588,7 +596,7 @@ export function evaluatePostIncident(
     const medicalForInjury = injuryIncidents.filter((i) =>
       i.postIncidentActions.includes("medical_attention"),
     ).length;
-    score += (pct(medicalForInjury, injuryIncidents.length) / 100) * 4;
+    score += (rate(medicalForInjury, injuryIncidents.length)! / 100) * 4;
   } else {
     score += 4; // No injuries = full marks for this component
   }
@@ -660,7 +668,7 @@ export function buildChildIncidentProfiles(
         i.deEscalationOutcome === "successful" ||
         i.deEscalationOutcome === "partially_successful",
     ).length;
-    const deEscalationSuccessRate = pct(deEscSuccess, deEscAttempted.length);
+    const deEscalationSuccessRate = rate(deEscSuccess, deEscAttempted.length);
 
     const restraintCount = childIncidents.filter((i) => i.restraintUsed).length;
 
@@ -673,7 +681,7 @@ export function buildChildIncidentProfiles(
     childScore -= criticalCount * 2;
     // Bonus for high de-escalation success
     if (deEscAttempted.length > 0) {
-      childScore += (deEscalationSuccessRate / 100) * 2 - 1; // -1 to +1
+      childScore += (deEscalationSuccessRate! / 100) * 2 - 1; // -1 to +1
     }
     // Penalty for restraint usage
     childScore -= restraintCount * 0.5;
@@ -718,15 +726,15 @@ function generateStrengths(
     strengths.push("Incident response quality is consistently high, demonstrating skilled and proportionate staff interventions");
   }
 
-  if (ir.responseQualityRate >= 90 && totalIncidents > 0) {
+  if (meets(ir.responseQualityRate, 90) && totalIncidents > 0) {
     strengths.push(`Response quality rated exemplary or appropriate in ${ir.responseQualityRate}% of incidents`);
   }
 
-  if (ir.deEscalationSuccessRate >= 80 && totalIncidents > 0) {
+  if (meets(ir.deEscalationSuccessRate, 80) && totalIncidents > 0) {
     strengths.push(`De-escalation strategies are effective, with a ${ir.deEscalationSuccessRate}% success rate showing staff skill in managing behaviour without physical intervention`);
   }
 
-  if (ir.childDebriefRate >= 90 && totalIncidents > 0) {
+  if (meets(ir.childDebriefRate, 90) && totalIncidents > 0) {
     strengths.push(`Children are consistently debriefed after incidents (${ir.childDebriefRate}%), ensuring their voice is heard and emotional recovery is supported`);
   }
 
@@ -738,11 +746,11 @@ function generateStrengths(
     strengths.push("Notification compliance is strong, with relevant authorities informed in a timely and complete manner");
   }
 
-  if (nc.timelyCompleteRate >= 90 && nc.totalNotifiable > 0) {
+  if (meets(nc.timelyCompleteRate, 90) && nc.totalNotifiable > 0) {
     strengths.push(`${nc.timelyCompleteRate}% of notifications were timely and complete, meeting Reg 40 requirements`);
   }
 
-  if (nc.managersInformedRate >= 95 && nc.totalNotifiable > 0) {
+  if (meets(nc.managersInformedRate, 95) && nc.totalNotifiable > 0) {
     strengths.push("Managers are consistently informed of all incidents, ensuring effective oversight and governance");
   }
 
@@ -750,7 +758,7 @@ function generateStrengths(
     strengths.push("Pattern analysis is thorough, with trends identified and environmental triggers understood");
   }
 
-  if (pa.lessonsIdentifiedRate >= 90 && totalIncidents > 0) {
+  if (meets(pa.lessonsIdentifiedRate, 90) && totalIncidents > 0) {
     strengths.push(`Lessons are identified from ${pa.lessonsIdentifiedRate}% of incidents, demonstrating a strong learning culture`);
   }
 
@@ -762,7 +770,7 @@ function generateStrengths(
     strengths.push("Post-incident processes are robust, with debriefs completed and support plans updated consistently");
   }
 
-  if (pi.debriefCompletionRate >= 90 && totalIncidents > 0) {
+  if (meets(pi.debriefCompletionRate, 90) && totalIncidents > 0) {
     strengths.push(`Post-incident debriefs are completed for ${pi.debriefCompletionRate}% of incidents`);
   }
 
@@ -786,19 +794,19 @@ function generateAreasForImprovement(
     areas.push("Incident response quality requires significant improvement to meet regulatory expectations");
   }
 
-  if (ir.responseQualityRate < 70 && totalIncidents > 0) {
+  if (below(ir.responseQualityRate, 70) && totalIncidents > 0) {
     areas.push(`Only ${ir.responseQualityRate}% of incident responses are rated as appropriate or better — staff training in de-escalation and incident management should be prioritised`);
   }
 
-  if (ir.deEscalationSuccessRate < 60 && totalIncidents > 0) {
+  if (below(ir.deEscalationSuccessRate, 60) && totalIncidents > 0) {
     areas.push(`De-escalation success rate is ${ir.deEscalationSuccessRate}% — review de-escalation strategies and consider additional training`);
   }
 
-  if (ir.childDebriefRate < 70 && totalIncidents > 0) {
+  if (below(ir.childDebriefRate, 70) && totalIncidents > 0) {
     areas.push(`Only ${ir.childDebriefRate}% of children were debriefed after incidents — this must improve to ensure children's voices are heard (UNCRC Article 19)`);
   }
 
-  if (ir.restraintRate > 30 && totalIncidents > 0) {
+  if (above(ir.restraintRate, 30) && totalIncidents > 0) {
     areas.push(`Restraint was used in ${ir.restraintRate}% of incidents — this rate is concerning and should be reviewed against Restraint Reduction Network Standards`);
   }
 
@@ -814,7 +822,7 @@ function generateAreasForImprovement(
     areas.push(`${nc.lateNotificationCount} notification(s) were made late — procedures should be reviewed to ensure timely reporting`);
   }
 
-  if (nc.managersInformedRate < 80 && nc.totalNotifiable > 0) {
+  if (below(nc.managersInformedRate, 80) && nc.totalNotifiable > 0) {
     areas.push(`Managers were informed in only ${nc.managersInformedRate}% of incidents — oversight and governance must improve`);
   }
 
@@ -822,7 +830,7 @@ function generateAreasForImprovement(
     areas.push(`${pa.escalatingChildCount} child(ren) showing escalating incident patterns — individual support plans require urgent review`);
   }
 
-  if (pa.lessonsIdentifiedRate < 60 && totalIncidents > 0) {
+  if (below(pa.lessonsIdentifiedRate, 60) && totalIncidents > 0) {
     areas.push(`Lessons are identified in only ${pa.lessonsIdentifiedRate}% of incidents — a learning culture must be embedded`);
   }
 
@@ -830,7 +838,7 @@ function generateAreasForImprovement(
     areas.push("Post-incident processes need strengthening to ensure proper follow-up after every incident");
   }
 
-  if (pi.debriefCompletionRate < 70 && totalIncidents > 0) {
+  if (below(pi.debriefCompletionRate, 70) && totalIncidents > 0) {
     areas.push(`Post-incident debrief completion is only ${pi.debriefCompletionRate}% — debriefs must be completed for all incidents`);
   }
 
@@ -872,15 +880,15 @@ function generateActions(
   }
 
   // High priority
-  if (ir.deEscalationSuccessRate < 50 && totalIncidents > 0) {
+  if (below(ir.deEscalationSuccessRate, 50) && totalIncidents > 0) {
     actions.push("Schedule team training on de-escalation techniques within the next 4 weeks");
   }
 
-  if (ir.childDebriefRate < 70 && totalIncidents > 0) {
+  if (below(ir.childDebriefRate, 70) && totalIncidents > 0) {
     actions.push("Implement mandatory child debrief protocol following every incident — assign keyworker responsibility");
   }
 
-  if (ir.restraintRate > 20 && totalIncidents > 0) {
+  if (above(ir.restraintRate, 20) && totalIncidents > 0) {
     actions.push("Commission restraint reduction review and update physical intervention policy");
   }
 
@@ -888,20 +896,20 @@ function generateActions(
     actions.push("Review notification procedures and ensure all staff understand Reg 40 reporting timescales");
   }
 
-  if (nc.managersInformedRate < 80 && nc.totalNotifiable > 0) {
+  if (below(nc.managersInformedRate, 80) && nc.totalNotifiable > 0) {
     actions.push("Establish clear escalation pathway to ensure managers are informed of all incidents within 1 hour");
   }
 
-  if (pa.lessonsIdentifiedRate < 60 && totalIncidents > 0) {
+  if (below(pa.lessonsIdentifiedRate, 60) && totalIncidents > 0) {
     actions.push("Introduce structured incident review meetings to ensure lessons are identified and shared from every incident");
   }
 
-  if (pi.debriefCompletionRate < 70 && totalIncidents > 0) {
+  if (below(pi.debriefCompletionRate, 70) && totalIncidents > 0) {
     actions.push("Implement a post-incident checklist to ensure debriefs, support plan reviews, and follow-up actions are completed");
   }
 
   // General improvements
-  if (ir.responseQualityRate < 80 && totalIncidents > 0) {
+  if (below(ir.responseQualityRate, 80) && totalIncidents > 0) {
     actions.push("Arrange reflective practice sessions focusing on incident response quality and proportionality");
   }
 

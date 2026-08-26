@@ -10,7 +10,6 @@ import {
   evaluatePolicyGovernance,
   evaluateStaffAdvocacyReadiness,
   buildChildAdvocacyProfiles,
-  pct,
   getRating,
   getVisitorStatusLabel,
   getVisitOutcomeLabel,
@@ -99,27 +98,6 @@ function makeTraining(overrides: Partial<StaffAdvocacyTraining> = {}): StaffAdvo
 // pct()
 // =============================================================================
 
-describe("pct", () => {
-  it("returns percentage rounded to integer", () => {
-    expect(pct(3, 4)).toBe(75);
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(0, 0)).toBe(0);
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 100 when num equals den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 0 when num is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-});
-
 // =============================================================================
 // getRating()
 // =============================================================================
@@ -206,11 +184,11 @@ describe("evaluateVisitorActivity", () => {
     const r = evaluateVisitorActivity([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalVisits).toBe(0);
-    expect(r.positiveOutcomeRate).toBe(0);
-    expect(r.childEngagementRate).toBe(0);
-    expect(r.childSatisfactionRate).toBe(0);
-    expect(r.recordedRate).toBe(0);
-    expect(r.privateTimeRate).toBe(0);
+    expect(r.positiveOutcomeRate).toBeNull();
+    expect(r.childEngagementRate).toBeNull();
+    expect(r.childSatisfactionRate).toBeNull();
+    expect(r.recordedRate).toBeNull();
+    expect(r.privateTimeRate).toBeNull();
   });
 
   it("scores 25 for perfect visits", () => {
@@ -334,11 +312,11 @@ describe("evaluateAdvocacyAccess", () => {
     const r = evaluateAdvocacyAccess([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalReferrals).toBe(0);
-    expect(r.successfulRate).toBe(0);
-    expect(r.informedOfRightsRate).toBe(0);
-    expect(r.consentObtainedRate).toBe(0);
-    expect(r.timelyResponseRate).toBe(0);
-    expect(r.childSatisfactionRate).toBe(0);
+    expect(r.successfulRate).toBeNull();
+    expect(r.informedOfRightsRate).toBeNull();
+    expect(r.consentObtainedRate).toBeNull();
+    expect(r.timelyResponseRate).toBeNull();
+    expect(r.childSatisfactionRate).toBeNull();
   });
 
   it("scores 25 for perfect referrals", () => {
@@ -619,12 +597,12 @@ describe("evaluateStaffAdvocacyReadiness", () => {
     const r = evaluateStaffAdvocacyReadiness([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalStaff).toBe(0);
-    expect(r.advocacyRightsRate).toBe(0);
-    expect(r.independentVisitorRate).toBe(0);
-    expect(r.complaintsProcessRate).toBe(0);
-    expect(r.signpostingRate).toBe(0);
-    expect(r.childParticipationRate).toBe(0);
-    expect(r.confidentialityRate).toBe(0);
+    expect(r.advocacyRightsRate).toBeNull();
+    expect(r.independentVisitorRate).toBeNull();
+    expect(r.complaintsProcessRate).toBeNull();
+    expect(r.signpostingRate).toBeNull();
+    expect(r.childParticipationRate).toBeNull();
+    expect(r.confidentialityRate).toBeNull();
   });
 
   it("scores 25 for fully trained staff", () => {
@@ -919,7 +897,7 @@ describe("buildChildAdvocacyProfiles", () => {
     const refs = [makeReferral({ childId: "c1", childName: "Alex" })];
     const p = buildChildAdvocacyProfiles([], refs);
     expect(p[0].totalVisits).toBe(0);
-    expect(p[0].positiveOutcomeRate).toBe(0); // pct(0, 0) = 0
+    expect(p[0].positiveOutcomeRate).toBeNull(); // pct(0, 0) = 0
     expect(p[0].overallScore).toBeGreaterThanOrEqual(0);
   });
 });

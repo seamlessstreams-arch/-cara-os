@@ -1,3 +1,4 @@
+import { below, formatRate, meets, rate } from "@/lib/metrics/rate";
 /* ──────────────────────────────────────────────────────────────
    Health Intelligence Engine
 
@@ -87,19 +88,27 @@ export interface StaffHealthTraining {
 export interface HealthQualityResult {
   overallScore: number;
   totalRecords: number;
-  completedOnTimeRate: number;
-  childConsentRate: number;
-  actionPlanRate: number;
-  followUpRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completedOnTimeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childConsentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionPlanRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  followUpRate: number | null;
 }
 
 export interface HealthComplianceResult {
   overallScore: number;
   totalRecords: number;
-  documentedRate: number;
-  gpNotifiedRate: number;
-  parentInformedRate: number;
-  typeDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  gpNotifiedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  parentInformedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  typeDiversityRatio: number | null;
 }
 
 export interface HealthPolicyResult {
@@ -116,12 +125,18 @@ export interface HealthPolicyResult {
 export interface StaffHealthReadinessResult {
   overallScore: number;
   totalStaff: number;
-  healthAssessmentProcessRate: number;
-  mentalHealthAwarenessRate: number;
-  medicationAdministrationRate: number;
-  consentAndCapacityRate: number;
-  firstAidCertifiedRate: number;
-  healthPromotionSkillsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  healthAssessmentProcessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  mentalHealthAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  medicationAdministrationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  consentAndCapacityRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  firstAidCertifiedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  healthPromotionSkillsRate: number | null;
 }
 
 export interface ChildHealthProfile {
@@ -152,11 +167,6 @@ export interface HealthIntelligence {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -214,10 +224,10 @@ export function evaluateHealthQuality(
     return {
       overallScore: 0,
       totalRecords: 0,
-      completedOnTimeRate: 0,
-      childConsentRate: 0,
-      actionPlanRate: 0,
-      followUpRate: 0,
+      completedOnTimeRate: null,
+      childConsentRate: null,
+      actionPlanRate: null,
+      followUpRate: null,
     };
   }
 
@@ -228,17 +238,17 @@ export function evaluateHealthQuality(
   const actionPlan = records.filter((r) => r.actionPlanCreated).length;
   const followUp = records.filter((r) => r.followUpScheduled).length;
 
-  const completedOnTimeRate = pct(completedOnTime, records.length);
-  const childConsentRate = pct(consented, records.length);
-  const actionPlanRate = pct(actionPlan, records.length);
-  const followUpRate = pct(followUp, records.length);
+  const completedOnTimeRate = rate(completedOnTime, records.length);
+  const childConsentRate = rate(consented, records.length);
+  const actionPlanRate = rate(actionPlan, records.length);
+  const followUpRate = rate(followUp, records.length);
 
   // Weights: completedOnTimeRate 7 + childConsentRate 6 + actionPlanRate 6 + followUpRate 6 = 25
   let score = 0;
-  score += Math.round((completedOnTimeRate / 100) * 7);
-  score += Math.round((childConsentRate / 100) * 6);
-  score += Math.round((actionPlanRate / 100) * 6);
-  score += Math.round((followUpRate / 100) * 6);
+  score += Math.round((completedOnTimeRate! / 100) * 7);
+  score += Math.round((childConsentRate! / 100) * 6);
+  score += Math.round((actionPlanRate! / 100) * 6);
+  score += Math.round((followUpRate! / 100) * 6);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -270,9 +280,9 @@ export function evaluateHealthCompliance(
     return {
       overallScore: 0,
       totalRecords: 0,
-      documentedRate: 0,
-      gpNotifiedRate: 0,
-      parentInformedRate: 0,
+      documentedRate: null,
+      gpNotifiedRate: null,
+      parentInformedRate: null,
       typeDiversityRatio: 0,
     };
   }
@@ -282,18 +292,18 @@ export function evaluateHealthCompliance(
   const parentInformed = records.filter((r) => r.parentCarerInformed).length;
 
   const uniqueTypes = new Set(records.map((r) => r.assessmentType));
-  const typeDiversityRatio = pct(uniqueTypes.size, ALL_ASSESSMENT_TYPES.length);
+  const typeDiversityRatio = rate(uniqueTypes.size, ALL_ASSESSMENT_TYPES.length);
 
-  const documentedRate = pct(documented, records.length);
-  const gpNotifiedRate = pct(gpNotified, records.length);
-  const parentInformedRate = pct(parentInformed, records.length);
+  const documentedRate = rate(documented, records.length);
+  const gpNotifiedRate = rate(gpNotified, records.length);
+  const parentInformedRate = rate(parentInformed, records.length);
 
   // Weights: documentedRate 8 + gpNotifiedRate 7 + parentInformedRate 5 + typeDiversityRatio 5 = 25
   let score = 0;
-  score += Math.round((documentedRate / 100) * 8);
-  score += Math.round((gpNotifiedRate / 100) * 7);
-  score += Math.round((parentInformedRate / 100) * 5);
-  score += Math.round((typeDiversityRatio / 100) * 5);
+  score += Math.round((documentedRate! / 100) * 8);
+  score += Math.round((gpNotifiedRate! / 100) * 7);
+  score += Math.round((parentInformedRate! / 100) * 5);
+  score += Math.round(((typeDiversityRatio ?? 0) / 100) * 5);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -354,12 +364,12 @@ export function evaluateStaffHealthReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      healthAssessmentProcessRate: 0,
-      mentalHealthAwarenessRate: 0,
-      medicationAdministrationRate: 0,
-      consentAndCapacityRate: 0,
-      firstAidCertifiedRate: 0,
-      healthPromotionSkillsRate: 0,
+      healthAssessmentProcessRate: null,
+      mentalHealthAwarenessRate: null,
+      medicationAdministrationRate: null,
+      consentAndCapacityRate: null,
+      firstAidCertifiedRate: null,
+      healthPromotionSkillsRate: null,
     };
   }
 
@@ -379,21 +389,21 @@ export function evaluateStaffHealthReadiness(
     if (t.healthPromotionSkills) healthPromo++;
   }
 
-  const healthAssessmentProcessRate = pct(assessmentProcess, training.length);
-  const mentalHealthAwarenessRate = pct(mentalHealth, training.length);
-  const medicationAdministrationRate = pct(medication, training.length);
-  const consentAndCapacityRate = pct(consent, training.length);
-  const firstAidCertifiedRate = pct(firstAid, training.length);
-  const healthPromotionSkillsRate = pct(healthPromo, training.length);
+  const healthAssessmentProcessRate = rate(assessmentProcess, training.length);
+  const mentalHealthAwarenessRate = rate(mentalHealth, training.length);
+  const medicationAdministrationRate = rate(medication, training.length);
+  const consentAndCapacityRate = rate(consent, training.length);
+  const firstAidCertifiedRate = rate(firstAid, training.length);
+  const healthPromotionSkillsRate = rate(healthPromo, training.length);
 
   // Weights: 6+5+5+4+3+2 = 25
   let score = 0;
-  score += Math.round((healthAssessmentProcessRate / 100) * 6);
-  score += Math.round((mentalHealthAwarenessRate / 100) * 5);
-  score += Math.round((medicationAdministrationRate / 100) * 5);
-  score += Math.round((consentAndCapacityRate / 100) * 4);
-  score += Math.round((firstAidCertifiedRate / 100) * 3);
-  score += Math.round((healthPromotionSkillsRate / 100) * 2);
+  score += Math.round((healthAssessmentProcessRate! / 100) * 6);
+  score += Math.round(((mentalHealthAwarenessRate ?? 0) / 100) * 5);
+  score += Math.round(((medicationAdministrationRate ?? 0) / 100) * 5);
+  score += Math.round(((consentAndCapacityRate ?? 0) / 100) * 4);
+  score += Math.round(((firstAidCertifiedRate ?? 0) / 100) * 3);
+  score += Math.round(((healthPromotionSkillsRate ?? 0) / 100) * 2);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -429,8 +439,8 @@ export function buildChildHealthProfiles(
     const consented = childRecords.filter((r) => r.childConsented).length;
     const uniqueTypes = new Set(childRecords.map((r) => r.assessmentType));
 
-    const completedOnTimeRate = pct(completedOnTime, childRecords.length);
-    const childConsentRate = pct(consented, childRecords.length);
+    const completedOnTimeRate = rate(completedOnTime, childRecords.length)!;
+    const childConsentRate = rate(consented, childRecords.length)!;
 
     // freq: >=10 -> 2, >=5 -> 1, else 0
     let freq = 0;
@@ -439,15 +449,15 @@ export function buildChildHealthProfiles(
 
     // rate1 (completedOnTimeRate): >=80 -> 3, >=60 -> 2, >=40 -> 1, else 0
     let rate1 = 0;
-    if (completedOnTimeRate >= 80) rate1 = 3;
-    else if (completedOnTimeRate >= 60) rate1 = 2;
-    else if (completedOnTimeRate >= 40) rate1 = 1;
+    if (meets(completedOnTimeRate, 80)) rate1 = 3;
+    else if (meets(completedOnTimeRate, 60)) rate1 = 2;
+    else if (meets(completedOnTimeRate, 40)) rate1 = 1;
 
     // rate2 (childConsentRate): same thresholds
     let rate2 = 0;
-    if (childConsentRate >= 80) rate2 = 3;
-    else if (childConsentRate >= 60) rate2 = 2;
-    else if (childConsentRate >= 40) rate2 = 1;
+    if (meets(childConsentRate, 80)) rate2 = 3;
+    else if (meets(childConsentRate, 60)) rate2 = 2;
+    else if (meets(childConsentRate, 40)) rate2 = 1;
 
     // diversity (unique assessment types): >=4 -> 2, >=2 -> 1, else 0
     let diversity = 0;
@@ -497,20 +507,20 @@ export function generateHealthIntelligence(
   // ── Strengths (score >= 20) ──
   const strengths: string[] = [];
   if (healthQuality.overallScore >= 20)
-    strengths.push("Health assessment quality is strong with " + healthQuality.completedOnTimeRate + "% completed on time");
+    strengths.push("Health assessment quality is strong with " + formatRate(healthQuality.completedOnTimeRate) + " completed on time");
   if (healthCompliance.overallScore >= 20)
-    strengths.push("Health compliance is excellent with " + healthCompliance.documentedRate + "% documentation rate");
+    strengths.push("Health compliance is excellent with " + formatRate(healthCompliance.documentedRate) + " documentation rate");
   if (healthPolicy.overallScore >= 20)
     strengths.push("Comprehensive health policies in place covering key regulatory areas");
   if (staffHealthReadiness.overallScore >= 20)
     strengths.push("Staff health readiness is strong with well-trained team across all competencies");
-  if (healthQuality.childConsentRate >= 90)
+  if (meets(healthQuality.childConsentRate, 90))
     strengths.push("Excellent child consent practice at " + healthQuality.childConsentRate + "%");
-  if (healthQuality.actionPlanRate >= 90)
+  if (meets(healthQuality.actionPlanRate, 90))
     strengths.push("Action plans consistently created for health assessments");
-  if (healthCompliance.gpNotifiedRate >= 90)
+  if (meets(healthCompliance.gpNotifiedRate, 90))
     strengths.push("GP notification rate excellent at " + healthCompliance.gpNotifiedRate + "%");
-  if (healthCompliance.parentInformedRate >= 90)
+  if (meets(healthCompliance.parentInformedRate, 90))
     strengths.push("Parents/carers consistently informed of health outcomes");
   if (staffHealthReadiness.firstAidCertifiedRate === 100)
     strengths.push("All staff hold current first aid certification");
@@ -525,13 +535,13 @@ export function generateHealthIntelligence(
     areasForImprovement.push("Health policy framework is incomplete — review and update policies");
   if (staffHealthReadiness.overallScore < 15)
     areasForImprovement.push("Staff health readiness requires improvement — training gaps identified");
-  if (healthQuality.completedOnTimeRate < 50)
+  if (below(healthQuality.completedOnTimeRate, 50))
     areasForImprovement.push("Only " + healthQuality.completedOnTimeRate + "% of assessments completed on time — target 80%+");
-  if (healthCompliance.documentedRate < 50)
+  if (below(healthCompliance.documentedRate, 50))
     areasForImprovement.push("Documentation rate at " + healthCompliance.documentedRate + "% — all assessments must be recorded in care files");
-  if (healthQuality.childConsentRate < 50)
+  if (below(healthQuality.childConsentRate, 50))
     areasForImprovement.push("Child consent rate at " + healthQuality.childConsentRate + "% — ensure consent is obtained for all assessments");
-  if (healthCompliance.gpNotifiedRate < 50)
+  if (below(healthCompliance.gpNotifiedRate, 50))
     areasForImprovement.push("GP notification rate at " + healthCompliance.gpNotifiedRate + "% — GPs must be informed of all assessment outcomes");
 
   // ── Actions ──
@@ -540,17 +550,17 @@ export function generateHealthIntelligence(
     actions.push("URGENT: No health policies in place — develop and implement health policy framework immediately");
   if (staffHealthReadiness.overallScore === 0)
     actions.push("URGENT: No staff health training recorded — arrange comprehensive health training programme");
-  if (healthQuality.completedOnTimeRate < 50)
+  if (below(healthQuality.completedOnTimeRate, 50))
     actions.push("Review health assessment scheduling to improve timeliness — currently " + healthQuality.completedOnTimeRate + "%");
-  if (healthCompliance.documentedRate < 50)
+  if (below(healthCompliance.documentedRate, 50))
     actions.push("Implement documentation audit to ensure all assessments are recorded in care files");
-  if (healthQuality.childConsentRate < 50)
+  if (below(healthQuality.childConsentRate, 50))
     actions.push("Review consent processes and ensure age-appropriate consent is obtained");
-  if (healthCompliance.gpNotifiedRate < 50)
+  if (below(healthCompliance.gpNotifiedRate, 50))
     actions.push("Establish GP notification protocol for all health assessment outcomes");
-  if (healthQuality.followUpRate < 60)
+  if (below(healthQuality.followUpRate, 60))
     actions.push("Strengthen follow-up scheduling after health assessments — current rate " + healthQuality.followUpRate + "%");
-  if (healthCompliance.parentInformedRate < 60)
+  if (below(healthCompliance.parentInformedRate, 60))
     actions.push("Improve communication with parents/carers about health assessment outcomes");
 
   const regulatoryLinks: string[] = [

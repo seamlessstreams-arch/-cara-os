@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { HandoverCommunicationQualityIntelligence } from "@/lib/handover-communication-quality";
+import { formatRate } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -151,7 +152,7 @@ export function HandoverCommunicationQualityDashboardWidget() {
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
           <div className="text-2xl font-bold text-gray-900">
-            {data.handoverQuality.thoroughRate}%
+            {formatRate(data.handoverQuality.thoroughRate)}
           </div>
           <div className="text-xs text-gray-500 mt-1">Thorough Handovers</div>
         </div>
@@ -210,23 +211,23 @@ export function HandoverCommunicationQualityDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">Thorough Rate:</span>{" "}
-              <span className="font-medium">{data.handoverQuality.thoroughRate}%</span>
+              <span className="font-medium">{formatRate(data.handoverQuality.thoroughRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Child Updates:</span>{" "}
-              <span className="font-medium">{data.handoverQuality.childUpdatesRate}%</span>
+              <span className="font-medium">{formatRate(data.handoverQuality.childUpdatesRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Risk Updates:</span>{" "}
-              <span className="font-medium">{data.handoverQuality.riskUpdatesRate}%</span>
+              <span className="font-medium">{formatRate(data.handoverQuality.riskUpdatesRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Medication Updates:</span>{" "}
-              <span className="font-medium">{data.handoverQuality.medicationUpdatesRate}%</span>
+              <span className="font-medium">{formatRate(data.handoverQuality.medicationUpdatesRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Timeliness:</span>{" "}
-              <span className="font-medium">{data.handoverQuality.timelinessRate}%</span>
+              <span className="font-medium">{formatRate(data.handoverQuality.timelinessRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Avg Duration:</span>{" "}
@@ -244,15 +245,15 @@ export function HandoverCommunicationQualityDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">Acknowledged:</span>{" "}
-              <span className="font-medium">{data.communicationEffectiveness.acknowledgedRate}%</span>
+              <span className="font-medium">{formatRate(data.communicationEffectiveness.acknowledgedRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Action Completion:</span>{" "}
-              <span className="font-medium">{data.communicationEffectiveness.actionCompletionRate}%</span>
+              <span className="font-medium">{formatRate(data.communicationEffectiveness.actionCompletionRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Critical Acknowledged:</span>{" "}
-              <span className="font-medium">{data.communicationEffectiveness.criticalAcknowledgedRate}%</span>
+              <span className="font-medium">{formatRate(data.communicationEffectiveness.criticalAcknowledgedRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Avg Response Time:</span>{" "}
@@ -278,23 +279,23 @@ export function HandoverCommunicationQualityDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">Agenda Used:</span>{" "}
-              <span className="font-medium">{data.teamMeetingQuality.agendaUsedRate}%</span>
+              <span className="font-medium">{formatRate(data.teamMeetingQuality.agendaUsedRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Minutes Taken:</span>{" "}
-              <span className="font-medium">{data.teamMeetingQuality.minutesTakenRate}%</span>
+              <span className="font-medium">{formatRate(data.teamMeetingQuality.minutesTakenRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Action Completion:</span>{" "}
-              <span className="font-medium">{data.teamMeetingQuality.actionCompletionRate}%</span>
+              <span className="font-medium">{formatRate(data.teamMeetingQuality.actionCompletionRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Children Discussed:</span>{" "}
-              <span className="font-medium">{data.teamMeetingQuality.childrenDiscussedRate}%</span>
+              <span className="font-medium">{formatRate(data.teamMeetingQuality.childrenDiscussedRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Safeguarding:</span>{" "}
-              <span className="font-medium">{data.teamMeetingQuality.safeguardingRate}%</span>
+              <span className="font-medium">{formatRate(data.teamMeetingQuality.safeguardingRate)}</span>
             </div>
           </div>
         </Section>
@@ -308,38 +309,38 @@ export function HandoverCommunicationQualityDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">Data Protection:</span>{" "}
-              <span className={`font-medium ${data.informationGovernance.dataProtectionRate === 100 ? "text-green-600" : "text-amber-600"}`}>
-                {data.informationGovernance.dataProtectionRate}%
+              <span className={`font-medium ${data.informationGovernance.dataProtectionRate === null ? "text-slate-500" : data.informationGovernance.dataProtectionRate === 100 ? "text-green-600" : "text-amber-600"}`}>
+                {formatRate(data.informationGovernance.dataProtectionRate)}
               </span>
             </div>
             <div>
               <span className="text-gray-500">Secure Storage:</span>{" "}
-              <span className={`font-medium ${data.informationGovernance.secureStorageRate === 100 ? "text-green-600" : "text-amber-600"}`}>
-                {data.informationGovernance.secureStorageRate}%
+              <span className={`font-medium ${data.informationGovernance.secureStorageRate === null ? "text-slate-500" : data.informationGovernance.secureStorageRate === 100 ? "text-green-600" : "text-amber-600"}`}>
+                {formatRate(data.informationGovernance.secureStorageRate)}
               </span>
             </div>
             <div>
               <span className="text-gray-500">Need-to-Know:</span>{" "}
               <span className={`font-medium ${data.informationGovernance.needToKnowRate === 100 ? "text-green-600" : "text-amber-600"}`}>
-                {data.informationGovernance.needToKnowRate}%
+                {formatRate(data.informationGovernance.needToKnowRate)}
               </span>
             </div>
             <div>
               <span className="text-gray-500">Consent Recorded:</span>{" "}
               <span className={`font-medium ${data.informationGovernance.consentRate === 100 ? "text-green-600" : "text-amber-600"}`}>
-                {data.informationGovernance.consentRate}%
+                {formatRate(data.informationGovernance.consentRate)}
               </span>
             </div>
             <div>
               <span className="text-gray-500">Staff Trained:</span>{" "}
               <span className={`font-medium ${data.informationGovernance.staffTrainedRate === 100 ? "text-green-600" : "text-amber-600"}`}>
-                {data.informationGovernance.staffTrainedRate}%
+                {formatRate(data.informationGovernance.staffTrainedRate)}
               </span>
             </div>
             <div>
               <span className="text-gray-500">Breach Process:</span>{" "}
               <span className={`font-medium ${data.informationGovernance.breachProcessRate === 100 ? "text-green-600" : "text-amber-600"}`}>
-                {data.informationGovernance.breachProcessRate}%
+                {formatRate(data.informationGovernance.breachProcessRate)}
               </span>
             </div>
           </div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { HygienePersonalCareIntelligence } from "@/lib/hygiene-personal-care";
+import { formatRate } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -101,11 +102,11 @@ export default function HygienePersonalCareDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Sessions</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.quality.competencyRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.quality.competencyRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Competency</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.quality.dignityRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.quality.dignityRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Dignity</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -145,19 +146,19 @@ export default function HygienePersonalCareDashboardWidget() {
         <Section title="Quality">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Sessions:</span> <span className="font-medium">{data.quality.totalSessions}</span></div>
-            <div><span className="text-gray-500">Competency:</span> <span className="font-medium">{data.quality.competencyRate}%</span></div>
-            <div><span className="text-gray-500">Participation:</span> <span className="font-medium">{data.quality.participationRate}%</span></div>
-            <div><span className="text-gray-500">Dignity:</span> <span className="font-medium">{data.quality.dignityRate}%</span></div>
-            <div><span className="text-gray-500">Progress:</span> <span className="font-medium">{data.quality.progressRate}%</span></div>
+            <div><span className="text-gray-500">Competency:</span> <span className="font-medium">{formatRate(data.quality.competencyRate)}</span></div>
+            <div><span className="text-gray-500">Participation:</span> <span className="font-medium">{formatRate(data.quality.participationRate)}</span></div>
+            <div><span className="text-gray-500">Dignity:</span> <span className="font-medium">{formatRate(data.quality.dignityRate)}</span></div>
+            <div><span className="text-gray-500">Progress:</span> <span className="font-medium">{formatRate(data.quality.progressRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Compliance">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div><span className="text-gray-500">Documented:</span> <span className="font-medium">{data.compliance.documentedRate}%</span></div>
-            <div><span className="text-gray-500">Staff Supported:</span> <span className="font-medium">{data.compliance.staffSupportedRate}%</span></div>
-            <div><span className="text-gray-500">Feedback:</span> <span className="font-medium">{data.compliance.feedbackRate}%</span></div>
-            <div><span className="text-gray-500">Area Diversity:</span> <span className="font-medium">{data.compliance.hygieneAreaDiversityRatio}%</span></div>
+            <div><span className="text-gray-500">Documented:</span> <span className="font-medium">{formatRate(data.compliance.documentedRate)}</span></div>
+            <div><span className="text-gray-500">Staff Supported:</span> <span className="font-medium">{formatRate(data.compliance.staffSupportedRate)}</span></div>
+            <div><span className="text-gray-500">Feedback:</span> <span className="font-medium">{formatRate(data.compliance.feedbackRate)}</span></div>
+            <div><span className="text-gray-500">Area Diversity:</span> <span className="font-medium">{formatRate(data.compliance.hygieneAreaDiversityRatio)}</span></div>
           </div>
         </Section>
 
@@ -176,12 +177,12 @@ export default function HygienePersonalCareDashboardWidget() {
         <Section title="Staff Readiness">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
             <div><span className="text-gray-500">Staff:</span> <span className="font-medium">{data.staffReadiness.totalStaff}</span></div>
-            <div><span className="text-gray-500">Personal Care:</span> <span className="font-medium">{data.staffReadiness.personalCareSkillsRate}%</span></div>
-            <div><span className="text-gray-500">Dignity & Privacy:</span> <span className="font-medium">{data.staffReadiness.dignityAndPrivacyRate}%</span></div>
-            <div><span className="text-gray-500">Infection Control:</span> <span className="font-medium">{data.staffReadiness.infectionControlRate}%</span></div>
-            <div><span className="text-gray-500">Age-Appropriate:</span> <span className="font-medium">{data.staffReadiness.ageAppropriateSupportRate}%</span></div>
-            <div><span className="text-gray-500">Cultural Awareness:</span> <span className="font-medium">{data.staffReadiness.culturalAwarenessRate}%</span></div>
-            <div><span className="text-gray-500">Safeguarding:</span> <span className="font-medium">{data.staffReadiness.safeguardingInPersonalCareRate}%</span></div>
+            <div><span className="text-gray-500">Personal Care:</span> <span className="font-medium">{formatRate(data.staffReadiness.personalCareSkillsRate)}</span></div>
+            <div><span className="text-gray-500">Dignity & Privacy:</span> <span className="font-medium">{formatRate(data.staffReadiness.dignityAndPrivacyRate)}</span></div>
+            <div><span className="text-gray-500">Infection Control:</span> <span className="font-medium">{formatRate(data.staffReadiness.infectionControlRate)}</span></div>
+            <div><span className="text-gray-500">Age-Appropriate:</span> <span className="font-medium">{formatRate(data.staffReadiness.ageAppropriateSupportRate)}</span></div>
+            <div><span className="text-gray-500">Cultural Awareness:</span> <span className="font-medium">{formatRate(data.staffReadiness.culturalAwarenessRate)}</span></div>
+            <div><span className="text-gray-500">Safeguarding:</span> <span className="font-medium">{formatRate(data.staffReadiness.safeguardingInPersonalCareRate)}</span></div>
           </div>
         </Section>
 

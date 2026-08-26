@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getScreeningTypeLabel,
   getScreeningStatusLabel,
@@ -23,24 +22,6 @@ import type {
 } from "../health-screening-compliance-engine";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-  it("calculates correct percentage", () => {
-    expect(pct(3, 4)).toBe(75);
-  });
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-  it("returns 100 for equal numerator and denominator", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-  it("returns 0 for zero numerator", () => {
-    expect(pct(0, 5)).toBe(0);
-  });
-});
 
 describe("getRating", () => {
   it("returns outstanding for score >= 80", () => {
@@ -147,7 +128,7 @@ describe("evaluateScreeningCompliance", () => {
     const result = evaluateScreeningCompliance([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalScreenings).toBe(0);
-    expect(result.onTimeRate).toBe(0);
+    expect(result.onTimeRate).toBeNull();
     expect(result.overdueCount).toBe(0);
   });
 
@@ -220,7 +201,7 @@ describe("evaluateGPAccess", () => {
     const result = evaluateGPAccess([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalChildren).toBe(0);
-    expect(result.registeredRate).toBe(0);
+    expect(result.registeredRate).toBeNull();
   });
 
   it("scores well for all registered with nurse and passport", () => {
@@ -332,7 +313,7 @@ describe("evaluateStaffHealthReadiness", () => {
     const result = evaluateStaffHealthReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.firstAidRate).toBe(0);
+    expect(result.firstAidRate).toBeNull();
   });
 
   it("scores well for fully trained staff", () => {

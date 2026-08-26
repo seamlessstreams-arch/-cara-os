@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { FoodNutritionQualityIntelligence } from "@/lib/food-nutrition-quality";
+import { formatRate } from "@/lib/metrics/rate";
 
 const ratingColour: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -113,11 +114,11 @@ export default function FoodNutritionQualityDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Meal Records</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.mealQuality.nutritionRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.mealQuality.nutritionRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Nutrition Quality</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.mealQuality.dietaryNeedsMetRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.mealQuality.dietaryNeedsMetRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Dietary Needs Met</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -158,19 +159,19 @@ export default function FoodNutritionQualityDashboardWidget() {
         <Section title="Meal Quality">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <Stat label="Records" value={data.mealQuality.totalRecords} />
-            <Stat label="Nutrition Rate" value={`${data.mealQuality.nutritionRate}%`} />
-            <Stat label="Dietary Needs Met" value={`${data.mealQuality.dietaryNeedsMetRate}%`} />
-            <Stat label="Child Choice" value={`${data.mealQuality.childChoiceRate}%`} />
-            <Stat label="Fresh Ingredients" value={`${data.mealQuality.freshIngredientsRate}%`} />
+            <Stat label="Nutrition Rate" value={`${formatRate(data.mealQuality.nutritionRate)}`} />
+            <Stat label="Dietary Needs Met" value={`${formatRate(data.mealQuality.dietaryNeedsMetRate)}`} />
+            <Stat label="Child Choice" value={`${formatRate(data.mealQuality.childChoiceRate)}`} />
+            <Stat label="Fresh Ingredients" value={`${formatRate(data.mealQuality.freshIngredientsRate)}`} />
           </div>
         </Section>
 
         <Section title="Nutrition Compliance">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <Stat label="Records" value={data.nutritionCompliance.totalRecords} />
-            <Stat label="Portions Appropriate" value={`${data.nutritionCompliance.portionAppropriateRate}%`} />
-            <Stat label="Documented" value={`${data.nutritionCompliance.documentedRate}%`} />
-            <Stat label="Child Satisfied" value={`${data.nutritionCompliance.childSatisfiedRate}%`} />
+            <Stat label="Portions Appropriate" value={`${formatRate(data.nutritionCompliance.portionAppropriateRate)}`} />
+            <Stat label="Documented" value={`${formatRate(data.nutritionCompliance.documentedRate)}`} />
+            <Stat label="Child Satisfied" value={`${formatRate(data.nutritionCompliance.childSatisfiedRate)}`} />
             <Stat label="Meal Diversity" value={`${data.nutritionCompliance.mealTypeDiversity}%`} />
           </div>
         </Section>
@@ -190,12 +191,12 @@ export default function FoodNutritionQualityDashboardWidget() {
         <Section title="Staff Nutrition Readiness">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <Stat label="Staff" value={data.staffNutritionReadiness.totalStaff} />
-            <Stat label="Food Hygiene" value={`${data.staffNutritionReadiness.foodHygieneRate}%`} />
-            <Stat label="Nutritional Planning" value={`${data.staffNutritionReadiness.nutritionalPlanningRate}%`} />
-            <Stat label="Allergy Awareness" value={`${data.staffNutritionReadiness.allergyAwarenessRate}%`} />
-            <Stat label="Cultural Dietary" value={`${data.staffNutritionReadiness.culturalDietaryNeedsRate}%`} />
-            <Stat label="Portion Control" value={`${data.staffNutritionReadiness.portionControlRate}%`} />
-            <Stat label="Meal Preparation" value={`${data.staffNutritionReadiness.mealPreparationRate}%`} />
+            <Stat label="Food Hygiene" value={`${formatRate(data.staffNutritionReadiness.foodHygieneRate)}`} />
+            <Stat label="Nutritional Planning" value={`${formatRate(data.staffNutritionReadiness.nutritionalPlanningRate)}`} />
+            <Stat label="Allergy Awareness" value={`${formatRate(data.staffNutritionReadiness.allergyAwarenessRate)}`} />
+            <Stat label="Cultural Dietary" value={`${formatRate(data.staffNutritionReadiness.culturalDietaryNeedsRate)}`} />
+            <Stat label="Portion Control" value={`${formatRate(data.staffNutritionReadiness.portionControlRate)}`} />
+            <Stat label="Meal Preparation" value={`${formatRate(data.staffNutritionReadiness.mealPreparationRate)}`} />
           </div>
         </Section>
 

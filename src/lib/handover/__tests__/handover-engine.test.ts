@@ -4,7 +4,6 @@
 
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getHandoverCategoryLabel,
   getHandoverOutcomeLabel,
@@ -73,29 +72,6 @@ function makeTraining(overrides: Partial<StaffHandoverTraining> = {}): StaffHand
 // ══════════════════════════════════════════════════════════════════════════════
 // pct helper
 // ══════════════════════════════════════════════════════════════════════════════
-
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when both are 0", () => {
-    expect(pct(0, 0)).toBe(0);
-  });
-
-  it("returns 100 when num equals den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-});
 
 // ══════════════════════════════════════════════════════════════════════════════
 // getRating helper
@@ -214,10 +190,10 @@ describe("evaluateHandoverQuality", () => {
     const result = evaluateHandoverQuality([]);
     expect(result.totalRecords).toBe(0);
     expect(result.score).toBe(0);
-    expect(result.allChildrenCoveredRate).toBe(0);
-    expect(result.medicationStatusUpdatedRate).toBe(0);
-    expect(result.incidentsCommunicatedRate).toBe(0);
-    expect(result.tasksHandedOverRate).toBe(0);
+    expect(result.allChildrenCoveredRate).toBeNull();
+    expect(result.medicationStatusUpdatedRate).toBeNull();
+    expect(result.incidentsCommunicatedRate).toBeNull();
+    expect(result.tasksHandedOverRate).toBeNull();
   });
 
   it("adds a concern for empty records", () => {
@@ -311,8 +287,8 @@ describe("evaluateHandoverCompliance", () => {
     const result = evaluateHandoverCompliance([]);
     expect(result.totalRecords).toBe(0);
     expect(result.score).toBe(0);
-    expect(result.documentationRate).toBe(0);
-    expect(result.timelyRecordingRate).toBe(0);
+    expect(result.documentationRate).toBeNull();
+    expect(result.timelyRecordingRate).toBeNull();
     expect(result.categoryDiversityRatio).toBe(0);
   });
 

@@ -5,7 +5,6 @@ export {
   evaluatePolicy,
   evaluateStaffReadiness,
   buildChildProfiles,
-  pct,
   getRating,
   getHygieneAreaLabel,
   getCompetencyLevelLabel,

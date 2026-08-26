@@ -9,7 +9,6 @@ export {
   evaluateHrFilesPolicy,
   evaluateStaffHrFilesReadiness,
   buildChildHrFilesProfiles,
-  pct,
   getRating,
   getHrFilesCategoryLabel,
   getHrFilesOutcomeLabel,

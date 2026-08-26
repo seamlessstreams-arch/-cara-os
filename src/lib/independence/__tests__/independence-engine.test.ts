@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getCategoryLabel,
   getOutcomeLabel,
@@ -68,16 +67,6 @@ function makeTraining(overrides: Partial<StaffIndependenceTraining> = {}): Staff
 }
 
 // -- pct -----------------------------------------------------------------------
-
-describe("pct", () => {
-  it("returns 0 for zero denominator", () => expect(pct(5, 0)).toBe(0));
-  it("rounds correctly", () => expect(pct(1, 3)).toBe(33));
-  it("returns 100 for equal values", () => expect(pct(10, 10)).toBe(100));
-  it("returns 50 for half", () => expect(pct(5, 10)).toBe(50));
-  it("returns 0 for zero numerator", () => expect(pct(0, 10)).toBe(0));
-  it("handles large numbers", () => expect(pct(999, 1000)).toBe(100));
-  it("rounds 2/3 to 67", () => expect(pct(2, 3)).toBe(67));
-});
 
 // -- getRating -----------------------------------------------------------------
 
@@ -156,10 +145,10 @@ describe("evaluateIndependenceQuality", () => {
     const r = evaluateIndependenceQuality([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalRecords).toBe(0);
-    expect(r.individualPlanRate).toBe(0);
-    expect(r.ageAppropriateRate).toBe(0);
-    expect(r.childEngagedRate).toBe(0);
-    expect(r.progressRecordedRate).toBe(0);
+    expect(r.individualPlanRate).toBeNull();
+    expect(r.ageAppropriateRate).toBeNull();
+    expect(r.childEngagedRate).toBeNull();
+    expect(r.progressRecordedRate).toBeNull();
   });
 
   it("returns max score for all-excellent records", () => {
@@ -270,10 +259,10 @@ describe("evaluateIndependenceCompliance", () => {
     const r = evaluateIndependenceCompliance([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalRecords).toBe(0);
-    expect(r.documentationCompleteRate).toBe(0);
-    expect(r.pathwayPlanAlignedRate).toBe(0);
-    expect(r.positiveOutcomeRate).toBe(0);
-    expect(r.categoryDiversityRate).toBe(0);
+    expect(r.documentationCompleteRate).toBeNull();
+    expect(r.pathwayPlanAlignedRate).toBeNull();
+    expect(r.positiveOutcomeRate).toBeNull();
+    expect(r.categoryDiversityRate).toBeNull();
   });
 
   it("returns max score for excellent records covering all categories", () => {
@@ -522,12 +511,12 @@ describe("evaluateStaffIndependenceReadiness", () => {
     const r = evaluateStaffIndependenceReadiness([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalStaff).toBe(0);
-    expect(r.independencePlanningRate).toBe(0);
-    expect(r.lifeSkillsTeachingRate).toBe(0);
-    expect(r.pathwayKnowledgeRate).toBe(0);
-    expect(r.motivationalSkillsRate).toBe(0);
-    expect(r.communityResourcesRate).toBe(0);
-    expect(r.transitionSupportRate).toBe(0);
+    expect(r.independencePlanningRate).toBeNull();
+    expect(r.lifeSkillsTeachingRate).toBeNull();
+    expect(r.pathwayKnowledgeRate).toBeNull();
+    expect(r.motivationalSkillsRate).toBeNull();
+    expect(r.communityResourcesRate).toBeNull();
+    expect(r.transitionSupportRate).toBeNull();
   });
 
   it("returns max score for fully trained staff", () => {

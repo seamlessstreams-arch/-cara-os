@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara Incidents Intelligence Engine  (v2 — standardised)
 //
@@ -84,18 +85,25 @@ export interface StaffIncidentTraining {
 export interface IncidentQualityResult {
   overallScore: number;
   totalRecords: number;
-  deEscalationAttemptedRate: number;
-  childViewRecordedRate: number;
-  debriefConductedRate: number;
-  lessonsIdentifiedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  deEscalationAttemptedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewRecordedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  debriefConductedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  lessonsIdentifiedRate: number | null;
 }
 
 export interface IncidentComplianceResult {
   overallScore: number;
   totalRecords: number;
-  documentationRate: number;
-  timelyRecordingRate: number;
-  deEscalationAttemptedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  deEscalationAttemptedRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
 }
@@ -114,20 +122,28 @@ export interface IncidentPolicyResult {
 export interface StaffIncidentReadinessResult {
   overallScore: number;
   totalStaff: number;
-  deEscalationSkillsRate: number;
-  incidentRecordingRate: number;
-  restraintCertificationRate: number;
-  postIncidentSupportRate: number;
-  childProtectionAwarenessRate: number;
-  conflictResolutionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  deEscalationSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  incidentRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  restraintCertificationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  postIncidentSupportRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childProtectionAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  conflictResolutionRate: number | null;
 }
 
 export interface ChildIncidentProfile {
   childId: string;
   childName: string;
   totalRecords: number;
-  deEscalationAttemptedRate: number;
-  childViewRecordedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  deEscalationAttemptedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewRecordedRate: number | null;
   categoriesCovered: string[];
   overallScore: number;
 }
@@ -150,11 +166,6 @@ export interface IncidentIntelligence {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -205,16 +216,16 @@ export function getRatingLabel(r: Rating): string {
 
 export function evaluateIncidentQuality(records: IncidentRecord[]): IncidentQualityResult {
   const total = records.length;
-  const deEscalationAttemptedRate = pct(records.filter(r => r.deEscalationAttempted).length, total);
-  const childViewRecordedRate = pct(records.filter(r => r.childViewRecorded).length, total);
-  const debriefConductedRate = pct(records.filter(r => r.debriefConducted).length, total);
-  const lessonsIdentifiedRate = pct(records.filter(r => r.lessonsIdentified).length, total);
+  const deEscalationAttemptedRate = rate(records.filter(r => r.deEscalationAttempted).length, total);
+  const childViewRecordedRate = rate(records.filter(r => r.childViewRecorded).length, total);
+  const debriefConductedRate = rate(records.filter(r => r.debriefConducted).length, total);
+  const lessonsIdentifiedRate = rate(records.filter(r => r.lessonsIdentified).length, total);
 
   let score = 0;
-  score += (deEscalationAttemptedRate / 100) * 7;
-  score += (childViewRecordedRate / 100) * 6;
-  score += (debriefConductedRate / 100) * 6;
-  score += (lessonsIdentifiedRate / 100) * 6;
+  score += ((deEscalationAttemptedRate ?? 0) / 100) * 7;
+  score += ((childViewRecordedRate ?? 0) / 100) * 6;
+  score += ((debriefConductedRate ?? 0) / 100) * 6;
+  score += ((lessonsIdentifiedRate ?? 0) / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -226,18 +237,18 @@ export function evaluateIncidentQuality(records: IncidentRecord[]): IncidentQual
 
 export function evaluateIncidentCompliance(records: IncidentRecord[]): IncidentComplianceResult {
   const total = records.length;
-  const documentationRate = pct(records.filter(r => r.documentationComplete).length, total);
-  const timelyRecordingRate = pct(records.filter(r => r.timelyRecording).length, total);
-  const deEscalationAttemptedRate = pct(records.filter(r => r.deEscalationAttempted).length, total);
+  const documentationRate = rate(records.filter(r => r.documentationComplete).length, total);
+  const timelyRecordingRate = rate(records.filter(r => r.timelyRecording).length, total);
+  const deEscalationAttemptedRate = rate(records.filter(r => r.deEscalationAttempted).length, total);
 
   const usedCategories = new Set(records.map(r => r.category));
   const uniqueCategories = usedCategories.size;
   const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
 
   let score = 0;
-  score += (documentationRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (deEscalationAttemptedRate / 100) * 5;
+  score += ((documentationRate ?? 0) / 100) * 8;
+  score += ((timelyRecordingRate ?? 0) / 100) * 7;
+  score += ((deEscalationAttemptedRate ?? 0) / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -288,20 +299,20 @@ export function evaluateIncidentPolicy(policy: IncidentPolicy | null): IncidentP
 
 export function evaluateStaffIncidentReadiness(staff: StaffIncidentTraining[]): StaffIncidentReadinessResult {
   const total = staff.length;
-  const deEscalationSkillsRate = pct(staff.filter(s => s.deEscalationSkills).length, total);
-  const incidentRecordingRate = pct(staff.filter(s => s.incidentRecording).length, total);
-  const restraintCertificationRate = pct(staff.filter(s => s.restraintCertification).length, total);
-  const postIncidentSupportRate = pct(staff.filter(s => s.postIncidentSupport).length, total);
-  const childProtectionAwarenessRate = pct(staff.filter(s => s.childProtectionAwareness).length, total);
-  const conflictResolutionRate = pct(staff.filter(s => s.conflictResolution).length, total);
+  const deEscalationSkillsRate = rate(staff.filter(s => s.deEscalationSkills).length, total);
+  const incidentRecordingRate = rate(staff.filter(s => s.incidentRecording).length, total);
+  const restraintCertificationRate = rate(staff.filter(s => s.restraintCertification).length, total);
+  const postIncidentSupportRate = rate(staff.filter(s => s.postIncidentSupport).length, total);
+  const childProtectionAwarenessRate = rate(staff.filter(s => s.childProtectionAwareness).length, total);
+  const conflictResolutionRate = rate(staff.filter(s => s.conflictResolution).length, total);
 
   let score = 0;
-  score += (deEscalationSkillsRate / 100) * 6;
-  score += (incidentRecordingRate / 100) * 5;
-  score += (restraintCertificationRate / 100) * 5;
-  score += (postIncidentSupportRate / 100) * 4;
-  score += (childProtectionAwarenessRate / 100) * 3;
-  score += (conflictResolutionRate / 100) * 2;
+  score += ((deEscalationSkillsRate ?? 0) / 100) * 6;
+  score += ((incidentRecordingRate ?? 0) / 100) * 5;
+  score += ((restraintCertificationRate ?? 0) / 100) * 5;
+  score += ((postIncidentSupportRate ?? 0) / 100) * 4;
+  score += ((childProtectionAwarenessRate ?? 0) / 100) * 3;
+  score += ((conflictResolutionRate ?? 0) / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -323,8 +334,8 @@ export function buildChildIncidentProfiles(records: IncidentRecord[]): ChildInci
   for (const [childId, recs] of byChild) {
     const childName = recs[0].childName;
     const totalRecords = recs.length;
-    const deEscalationAttemptedRate = pct(recs.filter(r => r.deEscalationAttempted).length, totalRecords);
-    const childViewRecordedRate = pct(recs.filter(r => r.childViewRecorded).length, totalRecords);
+    const deEscalationAttemptedRate = rate(recs.filter(r => r.deEscalationAttempted).length, totalRecords);
+    const childViewRecordedRate = rate(recs.filter(r => r.childViewRecorded).length, totalRecords);
     const categoriesCovered = [...new Set(recs.map(r => r.category))];
 
     let score = 0;
@@ -332,13 +343,13 @@ export function buildChildIncidentProfiles(records: IncidentRecord[]): ChildInci
     if (totalRecords >= 10) score += 2;
     else if (totalRecords >= 5) score += 1;
     // Rate 1: deEscalationAttemptedRate
-    if (deEscalationAttemptedRate >= 80) score += 3;
-    else if (deEscalationAttemptedRate >= 60) score += 2;
-    else if (deEscalationAttemptedRate >= 40) score += 1;
+    if (meets(deEscalationAttemptedRate, 80)) score += 3;
+    else if (meets(deEscalationAttemptedRate, 60)) score += 2;
+    else if (meets(deEscalationAttemptedRate, 40)) score += 1;
     // Rate 2: childViewRecordedRate
-    if (childViewRecordedRate >= 80) score += 3;
-    else if (childViewRecordedRate >= 60) score += 2;
-    else if (childViewRecordedRate >= 40) score += 1;
+    if (meets(childViewRecordedRate, 80)) score += 3;
+    else if (meets(childViewRecordedRate, 60)) score += 2;
+    else if (meets(childViewRecordedRate, 40)) score += 1;
     // Diversity
     if (categoriesCovered.length >= 4) score += 2;
     else if (categoriesCovered.length >= 2) score += 1;
@@ -384,32 +395,32 @@ export function generateIncidentIntelligence(input: {
   const rating = getRating(overallScore);
 
   const strengths: string[] = [];
-  if (incidentQuality.deEscalationAttemptedRate >= 80) strengths.push("Excellent de-escalation practices consistently applied");
-  if (incidentQuality.childViewRecordedRate >= 80) strengths.push("Children's views consistently recorded in incidents");
-  if (incidentQuality.debriefConductedRate >= 90) strengths.push("Strong post-incident debrief culture");
-  if (incidentQuality.lessonsIdentifiedRate >= 80) strengths.push("Lessons consistently identified from incidents");
-  if (incidentCompliance.documentationRate >= 90) strengths.push("Excellent incident documentation practices");
-  if (incidentCompliance.categoryDiversityRatio >= 0.75) strengths.push("Good breadth of incident categories recorded");
-  if (incidentPolicy.overallScore >= 22) strengths.push("Comprehensive incident management policies in place");
-  if (staffReadiness.deEscalationSkillsRate >= 80) strengths.push("Staff well-trained in de-escalation techniques");
-  if (staffReadiness.restraintCertificationRate >= 80) strengths.push("Staff restraint certifications well maintained");
+  if (meets(incidentQuality.deEscalationAttemptedRate, 80)) strengths.push("Excellent de-escalation practices consistently applied");
+  if (meets(incidentQuality.childViewRecordedRate, 80)) strengths.push("Children's views consistently recorded in incidents");
+  if (meets(incidentQuality.debriefConductedRate, 90)) strengths.push("Strong post-incident debrief culture");
+  if (meets(incidentQuality.lessonsIdentifiedRate, 80)) strengths.push("Lessons consistently identified from incidents");
+  if (meets(incidentCompliance.documentationRate, 90)) strengths.push("Excellent incident documentation practices");
+  if (meets(incidentCompliance.categoryDiversityRatio, 0.75)) strengths.push("Good breadth of incident categories recorded");
+  if (meets(incidentPolicy.overallScore, 22)) strengths.push("Comprehensive incident management policies in place");
+  if (meets(staffReadiness.deEscalationSkillsRate, 80)) strengths.push("Staff well-trained in de-escalation techniques");
+  if (meets(staffReadiness.restraintCertificationRate, 80)) strengths.push("Staff restraint certifications well maintained");
 
   const areasForImprovement: string[] = [];
-  if (incidentQuality.deEscalationAttemptedRate < 60) areasForImprovement.push("De-escalation not consistently attempted before incidents");
-  if (incidentQuality.childViewRecordedRate < 60) areasForImprovement.push("Children's views not consistently recorded in incidents");
-  if (incidentQuality.debriefConductedRate < 60) areasForImprovement.push("Post-incident debriefs not consistently conducted");
-  if (incidentCompliance.timelyRecordingRate < 70) areasForImprovement.push("Incident records not completed in a timely manner");
-  if (incidentCompliance.categoryDiversityRatio < 0.5) areasForImprovement.push("Limited range of incident categories recorded");
-  if (staffReadiness.incidentRecordingRate < 60) areasForImprovement.push("Staff incident recording skills need improvement");
-  if (staffReadiness.conflictResolutionRate < 60) areasForImprovement.push("Conflict resolution training coverage needs improvement");
+  if (below(incidentQuality.deEscalationAttemptedRate, 60)) areasForImprovement.push("De-escalation not consistently attempted before incidents");
+  if (below(incidentQuality.childViewRecordedRate, 60)) areasForImprovement.push("Children's views not consistently recorded in incidents");
+  if (below(incidentQuality.debriefConductedRate, 60)) areasForImprovement.push("Post-incident debriefs not consistently conducted");
+  if (below(incidentCompliance.timelyRecordingRate, 70)) areasForImprovement.push("Incident records not completed in a timely manner");
+  if (below(incidentCompliance.categoryDiversityRatio, 0.5)) areasForImprovement.push("Limited range of incident categories recorded");
+  if (below(staffReadiness.incidentRecordingRate, 60)) areasForImprovement.push("Staff incident recording skills need improvement");
+  if (below(staffReadiness.conflictResolutionRate, 60)) areasForImprovement.push("Conflict resolution training coverage needs improvement");
 
   const actions: string[] = [];
-  if (incidentQuality.deEscalationAttemptedRate < 40) actions.push("URGENT: Implement mandatory de-escalation before any incident response");
-  if (incidentQuality.childViewRecordedRate < 40) actions.push("URGENT: Ensure children's views are captured in every incident record");
-  if (incidentCompliance.documentationRate < 60) actions.push("URGENT: Ensure all incidents are properly documented");
+  if (below(incidentQuality.deEscalationAttemptedRate, 40)) actions.push("URGENT: Implement mandatory de-escalation before any incident response");
+  if (below(incidentQuality.childViewRecordedRate, 40)) actions.push("URGENT: Ensure children's views are captured in every incident record");
+  if (below(incidentCompliance.documentationRate, 60)) actions.push("URGENT: Ensure all incidents are properly documented");
   if (!policy || incidentPolicy.overallScore < 16) actions.push("Review and update incident management policies and procedures");
-  if (staffReadiness.overallScore < 15) actions.push("Prioritise staff incident management training programme");
-  if (incidentQuality.lessonsIdentifiedRate < 50) actions.push("Strengthen lessons-learned process following incidents");
+  if (below(staffReadiness.overallScore, 15)) actions.push("Prioritise staff incident management training programme");
+  if (below(incidentQuality.lessonsIdentifiedRate, 50)) actions.push("Strengthen lessons-learned process following incidents");
   if (filtered.length === 0) actions.push("URGENT: No incident records found — ensure robust incident recording mechanisms are in place");
 
   const regulatoryLinks = [

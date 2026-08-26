@@ -1,3 +1,4 @@
+import { above, below, meanOf, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // Independent Visitor & Advocacy Intelligence Engine
 //
@@ -169,21 +170,31 @@ export interface StaffAdvocacyTraining {
 export interface VisitorActivityResult {
   overallScore: number;
   totalVisits: number;
-  positiveOutcomeRate: number;
-  childEngagementRate: number;
-  childSatisfactionRate: number;
-  recordedRate: number;
-  privateTimeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveOutcomeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childEngagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childSatisfactionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  recordedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  privateTimeRate: number | null;
 }
 
 export interface AdvocacyAccessResult {
   overallScore: number;
   totalReferrals: number;
-  successfulRate: number;
-  informedOfRightsRate: number;
-  consentObtainedRate: number;
-  timelyResponseRate: number;
-  childSatisfactionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  successfulRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  informedOfRightsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  consentObtainedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyResponseRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childSatisfactionRate: number | null;
 }
 
 export interface PolicyGovernanceResult {
@@ -200,12 +211,18 @@ export interface PolicyGovernanceResult {
 export interface StaffAdvocacyReadinessResult {
   overallScore: number;
   totalStaff: number;
-  advocacyRightsRate: number;
-  independentVisitorRate: number;
-  complaintsProcessRate: number;
-  signpostingRate: number;
-  childParticipationRate: number;
-  confidentialityRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  advocacyRightsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  independentVisitorRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  complaintsProcessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  signpostingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childParticipationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  confidentialityRate: number | null;
 }
 
 export interface ChildAdvocacyProfile {
@@ -213,7 +230,8 @@ export interface ChildAdvocacyProfile {
   childName: string;
   totalVisits: number;
   totalReferrals: number;
-  positiveOutcomeRate: number;
+  /** null when this child has no measurable population for it. */
+  positiveOutcomeRate: number | null;
   satisfactionRate: number;
   overallScore: number;
 }
@@ -236,11 +254,6 @@ export interface IndependentVisitorAdvocacyIntelligence {
 }
 
 // -- Helpers -------------------------------------------------------------------
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -267,11 +280,11 @@ export function evaluateVisitorActivity(
     return {
       overallScore: 0,
       totalVisits: 0,
-      positiveOutcomeRate: 0,
-      childEngagementRate: 0,
-      childSatisfactionRate: 0,
-      recordedRate: 0,
-      privateTimeRate: 0,
+      positiveOutcomeRate: null,
+      childEngagementRate: null,
+      childSatisfactionRate: null,
+      recordedRate: null,
+      privateTimeRate: null,
     };
   }
 
@@ -280,31 +293,31 @@ export function evaluateVisitorActivity(
   const positive = visits.filter(
     (v) => v.visitOutcome === "very_positive" || v.visitOutcome === "positive",
   ).length;
-  const positiveOutcomeRate = pct(positive, visits.length);
-  if (positiveOutcomeRate >= 80) score += 7;
-  else if (positiveOutcomeRate >= 60) score += 5;
-  else if (positiveOutcomeRate >= 40) score += 3;
-  else if (positiveOutcomeRate > 0) score += 1;
+  const positiveOutcomeRate = rate(positive, visits.length);
+  if (meets(positiveOutcomeRate, 80)) score += 7;
+  else if (meets(positiveOutcomeRate, 60)) score += 5;
+  else if (meets(positiveOutcomeRate, 40)) score += 3;
+  else if (above(positiveOutcomeRate, 0)) score += 1;
 
   const engaged = visits.filter((v) => v.childEngaged).length;
-  const childEngagementRate = pct(engaged, visits.length);
-  if (childEngagementRate >= 90) score += 6;
-  else if (childEngagementRate >= 70) score += 4;
-  else if (childEngagementRate >= 50) score += 3;
-  else if (childEngagementRate > 0) score += 1;
+  const childEngagementRate = rate(engaged, visits.length);
+  if (meets(childEngagementRate, 90)) score += 6;
+  else if (meets(childEngagementRate, 70)) score += 4;
+  else if (meets(childEngagementRate, 50)) score += 3;
+  else if (above(childEngagementRate, 0)) score += 1;
 
   const recorded = visits.filter((v) => v.recordedInCasefile).length;
-  const recordedRate = pct(recorded, visits.length);
-  if (recordedRate >= 90) score += 6;
-  else if (recordedRate >= 70) score += 4;
-  else if (recordedRate >= 50) score += 3;
-  else if (recordedRate > 0) score += 1;
+  const recordedRate = rate(recorded, visits.length);
+  if (meets(recordedRate, 90)) score += 6;
+  else if (meets(recordedRate, 70)) score += 4;
+  else if (meets(recordedRate, 50)) score += 3;
+  else if (above(recordedRate, 0)) score += 1;
 
   const satisfied = visits.filter((v) => v.childSatisfied).length;
-  const childSatisfactionRate = pct(satisfied, visits.length);
+  const childSatisfactionRate = rate(satisfied, visits.length);
   const priv = visits.filter((v) => v.privateTimeProvided).length;
-  const privateTimeRate = pct(priv, visits.length);
-  const combinedRate = Math.round((childSatisfactionRate + privateTimeRate) / 2);
+  const privateTimeRate = rate(priv, visits.length);
+  const combinedRate = meanOf([childSatisfactionRate, privateTimeRate]) ?? 0; // unmeasured earns no bonus
   if (combinedRate >= 90) score += 6;
   else if (combinedRate >= 70) score += 4;
   else if (combinedRate >= 50) score += 3;
@@ -337,11 +350,11 @@ export function evaluateAdvocacyAccess(
     return {
       overallScore: 0,
       totalReferrals: 0,
-      successfulRate: 0,
-      informedOfRightsRate: 0,
-      consentObtainedRate: 0,
-      timelyResponseRate: 0,
-      childSatisfactionRate: 0,
+      successfulRate: null,
+      informedOfRightsRate: null,
+      consentObtainedRate: null,
+      timelyResponseRate: null,
+      childSatisfactionRate: null,
     };
   }
 
@@ -350,31 +363,31 @@ export function evaluateAdvocacyAccess(
   const successful = referrals.filter(
     (r) => r.referralOutcome === "successful" || r.referralOutcome === "not_needed",
   ).length;
-  const successfulRate = pct(successful, referrals.length);
-  if (successfulRate >= 80) score += 7;
-  else if (successfulRate >= 60) score += 5;
-  else if (successfulRate >= 40) score += 3;
-  else if (successfulRate > 0) score += 1;
+  const successfulRate = rate(successful, referrals.length);
+  if (meets(successfulRate, 80)) score += 7;
+  else if (meets(successfulRate, 60)) score += 5;
+  else if (meets(successfulRate, 40)) score += 3;
+  else if (above(successfulRate, 0)) score += 1;
 
   const informed = referrals.filter((r) => r.childInformedOfRights).length;
-  const informedOfRightsRate = pct(informed, referrals.length);
-  if (informedOfRightsRate >= 90) score += 6;
-  else if (informedOfRightsRate >= 70) score += 4;
-  else if (informedOfRightsRate >= 50) score += 3;
-  else if (informedOfRightsRate > 0) score += 1;
+  const informedOfRightsRate = rate(informed, referrals.length);
+  if (meets(informedOfRightsRate, 90)) score += 6;
+  else if (meets(informedOfRightsRate, 70)) score += 4;
+  else if (meets(informedOfRightsRate, 50)) score += 3;
+  else if (above(informedOfRightsRate, 0)) score += 1;
 
   const consent = referrals.filter((r) => r.childConsentObtained).length;
-  const consentObtainedRate = pct(consent, referrals.length);
-  if (consentObtainedRate >= 90) score += 6;
-  else if (consentObtainedRate >= 70) score += 4;
-  else if (consentObtainedRate >= 50) score += 3;
-  else if (consentObtainedRate > 0) score += 1;
+  const consentObtainedRate = rate(consent, referrals.length);
+  if (meets(consentObtainedRate, 90)) score += 6;
+  else if (meets(consentObtainedRate, 70)) score += 4;
+  else if (meets(consentObtainedRate, 50)) score += 3;
+  else if (above(consentObtainedRate, 0)) score += 1;
 
   const timely = referrals.filter((r) => r.timelyResponse).length;
-  const timelyResponseRate = pct(timely, referrals.length);
+  const timelyResponseRate = rate(timely, referrals.length);
   const sat = referrals.filter((r) => r.childSatisfied).length;
-  const childSatisfactionRate = pct(sat, referrals.length);
-  const combinedRate = Math.round((timelyResponseRate + childSatisfactionRate) / 2);
+  const childSatisfactionRate = rate(sat, referrals.length);
+  const combinedRate = meanOf([timelyResponseRate, childSatisfactionRate]) ?? 0;
   if (combinedRate >= 90) score += 6;
   else if (combinedRate >= 70) score += 4;
   else if (combinedRate >= 50) score += 3;
@@ -459,55 +472,55 @@ export function evaluateStaffAdvocacyReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      advocacyRightsRate: 0,
-      independentVisitorRate: 0,
-      complaintsProcessRate: 0,
-      signpostingRate: 0,
-      childParticipationRate: 0,
-      confidentialityRate: 0,
+      advocacyRightsRate: null,
+      independentVisitorRate: null,
+      complaintsProcessRate: null,
+      signpostingRate: null,
+      childParticipationRate: null,
+      confidentialityRate: null,
     };
   }
 
   let score = 0;
 
   const rights = training.filter((t) => t.advocacyRights).length;
-  const advocacyRightsRate = pct(rights, training.length);
-  if (advocacyRightsRate >= 90) score += 6;
-  else if (advocacyRightsRate >= 70) score += 4;
-  else if (advocacyRightsRate >= 50) score += 3;
-  else if (advocacyRightsRate > 0) score += 1;
+  const advocacyRightsRate = rate(rights, training.length);
+  if (meets(advocacyRightsRate, 90)) score += 6;
+  else if (meets(advocacyRightsRate, 70)) score += 4;
+  else if (meets(advocacyRightsRate, 50)) score += 3;
+  else if (above(advocacyRightsRate, 0)) score += 1;
 
   const iv = training.filter((t) => t.independentVisitorRole).length;
-  const independentVisitorRate = pct(iv, training.length);
-  if (independentVisitorRate >= 90) score += 5;
-  else if (independentVisitorRate >= 70) score += 3;
-  else if (independentVisitorRate >= 50) score += 2;
-  else if (independentVisitorRate > 0) score += 1;
+  const independentVisitorRate = rate(iv, training.length);
+  if (meets(independentVisitorRate, 90)) score += 5;
+  else if (meets(independentVisitorRate, 70)) score += 3;
+  else if (meets(independentVisitorRate, 50)) score += 2;
+  else if (above(independentVisitorRate, 0)) score += 1;
 
   const complaints = training.filter((t) => t.complaintsProcess).length;
-  const complaintsProcessRate = pct(complaints, training.length);
-  if (complaintsProcessRate >= 90) score += 5;
-  else if (complaintsProcessRate >= 70) score += 3;
-  else if (complaintsProcessRate >= 50) score += 2;
-  else if (complaintsProcessRate > 0) score += 1;
+  const complaintsProcessRate = rate(complaints, training.length);
+  if (meets(complaintsProcessRate, 90)) score += 5;
+  else if (meets(complaintsProcessRate, 70)) score += 3;
+  else if (meets(complaintsProcessRate, 50)) score += 2;
+  else if (above(complaintsProcessRate, 0)) score += 1;
 
   const signpost = training.filter((t) => t.signposting).length;
-  const signpostingRate = pct(signpost, training.length);
-  if (signpostingRate >= 90) score += 4;
-  else if (signpostingRate >= 70) score += 3;
-  else if (signpostingRate >= 50) score += 2;
-  else if (signpostingRate > 0) score += 1;
+  const signpostingRate = rate(signpost, training.length);
+  if (meets(signpostingRate, 90)) score += 4;
+  else if (meets(signpostingRate, 70)) score += 3;
+  else if (meets(signpostingRate, 50)) score += 2;
+  else if (above(signpostingRate, 0)) score += 1;
 
   const participation = training.filter((t) => t.childParticipation).length;
-  const childParticipationRate = pct(participation, training.length);
-  if (childParticipationRate >= 90) score += 3;
-  else if (childParticipationRate >= 70) score += 2;
-  else if (childParticipationRate >= 50) score += 1;
+  const childParticipationRate = rate(participation, training.length);
+  if (meets(childParticipationRate, 90)) score += 3;
+  else if (meets(childParticipationRate, 70)) score += 2;
+  else if (meets(childParticipationRate, 50)) score += 1;
 
   const confidential = training.filter((t) => t.confidentiality).length;
-  const confidentialityRate = pct(confidential, training.length);
-  if (confidentialityRate >= 90) score += 2;
-  else if (confidentialityRate >= 70) score += 1;
+  const confidentialityRate = rate(confidential, training.length);
+  if (meets(confidentialityRate, 90)) score += 2;
+  else if (meets(confidentialityRate, 70)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -558,18 +571,18 @@ export function buildChildAdvocacyProfiles(
     const positiveVisits = entry.visits.filter(
       (v) => v.visitOutcome === "very_positive" || v.visitOutcome === "positive",
     ).length;
-    const positiveOutcomeRate = pct(positiveVisits, entry.visits.length);
-    if (positiveOutcomeRate >= 80) score += 3;
-    else if (positiveOutcomeRate >= 50) score += 2;
-    else if (positiveOutcomeRate > 0) score += 1;
+    const positiveOutcomeRate = rate(positiveVisits, entry.visits.length);
+    if (meets(positiveOutcomeRate, 80)) score += 3;
+    else if (meets(positiveOutcomeRate, 50)) score += 2;
+    else if (above(positiveOutcomeRate, 0)) score += 1;
 
     // Satisfaction (0-2) — combined visits + referrals
     const visitSat = entry.visits.filter((v) => v.childSatisfied).length;
     const refSat = entry.referrals.filter((r) => r.childSatisfied).length;
     const totalItems = entry.visits.length + entry.referrals.length;
-    const satisfactionRate = pct(visitSat + refSat, totalItems);
-    if (satisfactionRate >= 80) score += 2;
-    else if (satisfactionRate >= 50) score += 1;
+    const satisfactionRate = rate(visitSat + refSat, totalItems)!;
+    if (meets(satisfactionRate, 80)) score += 2;
+    else if (meets(satisfactionRate, 50)) score += 1;
 
     // Advocacy access (0-2)
     if (entry.referrals.length >= 2) score += 2;
@@ -616,37 +629,37 @@ export function generateIndependentVisitorAdvocacyIntelligence(
   // -- Strengths ---------------------------------------------------------------
   const strengths: string[] = [];
 
-  if (visitorActivity.positiveOutcomeRate >= 80 && visits.length > 0) {
+  if (meets(visitorActivity.positiveOutcomeRate, 80) && visits.length > 0) {
     strengths.push(
       "Independent visitor relationships producing consistently positive outcomes",
     );
   }
-  if (visitorActivity.childEngagementRate >= 90 && visits.length > 0) {
+  if (meets(visitorActivity.childEngagementRate, 90) && visits.length > 0) {
     strengths.push(
       "Children highly engaged with their independent visitors",
     );
   }
-  if (visitorActivity.privateTimeRate >= 90 && visits.length > 0) {
+  if (meets(visitorActivity.privateTimeRate, 90) && visits.length > 0) {
     strengths.push(
       "Private time consistently provided during independent visitor sessions",
     );
   }
-  if (advocacyAccess.informedOfRightsRate >= 90 && referrals.length > 0) {
+  if (meets(advocacyAccess.informedOfRightsRate, 90) && referrals.length > 0) {
     strengths.push(
       "Children consistently informed of their advocacy rights",
     );
   }
-  if (advocacyAccess.successfulRate >= 80 && referrals.length > 0) {
+  if (meets(advocacyAccess.successfulRate, 80) && referrals.length > 0) {
     strengths.push(
       "Advocacy referrals consistently resulting in successful outcomes",
     );
   }
-  if (staffAdvocacyReadiness.advocacyRightsRate >= 90 && training.length > 0) {
+  if (meets(staffAdvocacyReadiness.advocacyRightsRate, 90) && training.length > 0) {
     strengths.push(
       "Staff team fully trained in children's advocacy rights",
     );
   }
-  if (staffAdvocacyReadiness.signpostingRate >= 90 && training.length > 0) {
+  if (meets(staffAdvocacyReadiness.signpostingRate, 90) && training.length > 0) {
     strengths.push(
       "Staff team trained to signpost children to advocacy services",
     );
@@ -660,27 +673,27 @@ export function generateIndependentVisitorAdvocacyIntelligence(
   // -- Areas for improvement ---------------------------------------------------
   const areasForImprovement: string[] = [];
 
-  if (visitorActivity.positiveOutcomeRate < 60 && visits.length > 0) {
+  if (below(visitorActivity.positiveOutcomeRate, 60) && visits.length > 0) {
     areasForImprovement.push(
       "Independent visitor outcomes below expected standard — review matching and support",
     );
   }
-  if (visitorActivity.recordedRate < 70 && visits.length > 0) {
+  if (below(visitorActivity.recordedRate, 70) && visits.length > 0) {
     areasForImprovement.push(
       "Independent visitor sessions not consistently recorded in casefiles",
     );
   }
-  if (advocacyAccess.informedOfRightsRate < 70 && referrals.length > 0) {
+  if (below(advocacyAccess.informedOfRightsRate, 70) && referrals.length > 0) {
     areasForImprovement.push(
       "Children not consistently informed of their advocacy rights during referrals",
     );
   }
-  if (staffAdvocacyReadiness.independentVisitorRate < 70 && training.length > 0) {
+  if (below(staffAdvocacyReadiness.independentVisitorRate, 70) && training.length > 0) {
     areasForImprovement.push(
       "Staff training on independent visitor role needs strengthening",
     );
   }
-  if (staffAdvocacyReadiness.complaintsProcessRate < 70 && training.length > 0) {
+  if (below(staffAdvocacyReadiness.complaintsProcessRate, 70) && training.length > 0) {
     areasForImprovement.push(
       "Staff training on complaints advocacy process needs improvement",
     );
@@ -709,7 +722,7 @@ export function generateIndependentVisitorAdvocacyIntelligence(
       "URGENT: No staff advocacy training records — deliver training on advocacy rights and independent visitors",
     );
   }
-  if (visitorActivity.privateTimeRate < 70 && visits.length > 0) {
+  if (below(visitorActivity.privateTimeRate, 70) && visits.length > 0) {
     actions.push(
       "Ensure private time is consistently provided during independent visitor sessions",
     );
@@ -722,7 +735,7 @@ export function generateIndependentVisitorAdvocacyIntelligence(
       `${failedReferrals.length} advocacy referral(s) failed due to no service available — explore alternative advocacy provision`,
     );
   }
-  if (advocacyAccess.consentObtainedRate < 80 && referrals.length > 0) {
+  if (below(advocacyAccess.consentObtainedRate, 80) && referrals.length > 0) {
     actions.push(
       "Improve consent recording for advocacy referrals",
     );

@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara Life Story & Identity Work Engine
 //
@@ -83,19 +84,27 @@ export interface SessionQualityResult {
   rating: Rating;
   totalSessions: number;
   completedSessions: number;
-  completionRate: number;
-  childLedRate: number;
-  engagementRate: number;
-  documentationRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childLedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  engagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationRate: number | null;
 }
 
 export interface IdentityCultureResult {
   overallScore: number;
   rating: Rating;
-  identityAddressedRate: number;
-  culturalActivityRate: number;
-  familyExploredRate: number;
-  photographRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  identityAddressedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  culturalActivityRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  familyExploredRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  photographRate: number | null;
 }
 
 export interface LifeStoryPolicyResult {
@@ -114,20 +123,28 @@ export interface StaffLifeStoryReadinessResult {
   overallScore: number;
   rating: Rating;
   totalStaff: number;
-  lifeStoryWorkRate: number;
-  identitySupportRate: number;
-  culturalCompetencyRate: number;
-  therapeuticApproachRate: number;
-  memoryKeepingRate: number;
-  familyWorkSkillsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  lifeStoryWorkRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  identitySupportRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  culturalCompetencyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  therapeuticApproachRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  memoryKeepingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  familyWorkSkillsRate: number | null;
 }
 
 export interface ChildLifeStoryProfile {
   childId: string;
   childName: string;
   totalSessions: number;
-  completionRate: number;
-  childLedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childLedRate: number | null;
   sessionTypesCovered: string[];
   overallScore: number;
 }
@@ -150,11 +167,6 @@ export interface LifeStoryIntelligence {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -200,22 +212,22 @@ export function getRatingLabel(r: Rating): string {
 export function evaluateSessionQuality(records: LifeStoryRecord[]): SessionQualityResult {
   const total = records.length;
   if (total === 0) {
-    return { overallScore: 0, rating: "inadequate", totalSessions: 0, completedSessions: 0, completionRate: 0, childLedRate: 0, engagementRate: 0, documentationRate: 0 };
+    return { overallScore: 0, rating: "inadequate", totalSessions: 0, completedSessions: 0, completionRate: null, childLedRate: null, engagementRate: null, documentationRate: null };
   }
 
   const completed = records.filter((r) => r.completed);
   const completedCount = completed.length;
 
-  const completionRate = pct(completedCount, total);
-  const childLedRate = pct(completed.filter((r) => r.childLedContent).length, completedCount);
-  const engagementRate = pct(
+  const completionRate = rate(completedCount, total);
+  const childLedRate = rate(completed.filter((r) => r.childLedContent).length, completedCount);
+  const engagementRate = rate(
     completed.filter((r) => r.childEngagement === "high" || r.childEngagement === "moderate").length,
     completedCount,
   );
-  const documentationRate = pct(completed.filter((r) => r.addedToLifeStoryBook).length, completedCount);
+  const documentationRate = rate(completed.filter((r) => r.addedToLifeStoryBook).length, completedCount);
 
   // Weighted: completionRate 7 + childLedRate 6 + engagementRate 6 + documentationRate 6 = 25
-  const raw = (completionRate / 100) * 7 + (childLedRate / 100) * 6 + (engagementRate / 100) * 6 + (documentationRate / 100) * 6;
+  const raw = (completionRate! / 100) * 7 + ((childLedRate ?? 0) / 100) * 6 + ((engagementRate ?? 0) / 100) * 6 + ((documentationRate ?? 0) / 100) * 6;
   const overallScore = Math.min(25, Math.round(raw));
 
   return { overallScore, rating: getRating(overallScore * 4), totalSessions: total, completedSessions: completedCount, completionRate, childLedRate, engagementRate, documentationRate };
@@ -228,16 +240,16 @@ export function evaluateIdentityCulture(records: LifeStoryRecord[]): IdentityCul
   const count = completed.length;
 
   if (count === 0) {
-    return { overallScore: 0, rating: "inadequate", identityAddressedRate: 0, culturalActivityRate: 0, familyExploredRate: 0, photographRate: 0 };
+    return { overallScore: 0, rating: "inadequate", identityAddressedRate: null, culturalActivityRate: null, familyExploredRate: null, photographRate: null };
   }
 
-  const identityAddressedRate = pct(completed.filter((r) => r.identityNeedsAddressed).length, count);
-  const culturalActivityRate = pct(completed.filter((r) => r.culturalActivityIncluded).length, count);
-  const familyExploredRate = pct(completed.filter((r) => r.familyConnectionExplored).length, count);
-  const photographRate = pct(completed.filter((r) => r.photographsTaken).length, count);
+  const identityAddressedRate = rate(completed.filter((r) => r.identityNeedsAddressed).length, count);
+  const culturalActivityRate = rate(completed.filter((r) => r.culturalActivityIncluded).length, count);
+  const familyExploredRate = rate(completed.filter((r) => r.familyConnectionExplored).length, count);
+  const photographRate = rate(completed.filter((r) => r.photographsTaken).length, count);
 
   // Weighted: identityAddressedRate 8 + culturalActivityRate 7 + familyExploredRate 5 + photographRate 5 = 25
-  const raw = (identityAddressedRate / 100) * 8 + (culturalActivityRate / 100) * 7 + (familyExploredRate / 100) * 5 + (photographRate / 100) * 5;
+  const raw = (identityAddressedRate! / 100) * 8 + (culturalActivityRate! / 100) * 7 + (familyExploredRate! / 100) * 5 + (photographRate! / 100) * 5;
   const overallScore = Math.min(25, Math.round(raw));
 
   return { overallScore, rating: getRating(overallScore * 4), identityAddressedRate, culturalActivityRate, familyExploredRate, photographRate };
@@ -278,24 +290,24 @@ export function evaluateLifeStoryPolicy(policy: LifeStoryPolicy | null): LifeSto
 export function evaluateStaffLifeStoryReadiness(staff: StaffLifeStoryTraining[]): StaffLifeStoryReadinessResult {
   const count = staff.length;
   if (count === 0) {
-    return { overallScore: 0, rating: "inadequate", totalStaff: 0, lifeStoryWorkRate: 0, identitySupportRate: 0, culturalCompetencyRate: 0, therapeuticApproachRate: 0, memoryKeepingRate: 0, familyWorkSkillsRate: 0 };
+    return { overallScore: 0, rating: "inadequate", totalStaff: 0, lifeStoryWorkRate: null, identitySupportRate: null, culturalCompetencyRate: null, therapeuticApproachRate: null, memoryKeepingRate: null, familyWorkSkillsRate: null };
   }
 
-  const lifeStoryWorkRate = pct(staff.filter((s) => s.lifeStoryWork).length, count);
-  const identitySupportRate = pct(staff.filter((s) => s.identitySupport).length, count);
-  const culturalCompetencyRate = pct(staff.filter((s) => s.culturalCompetency).length, count);
-  const therapeuticApproachRate = pct(staff.filter((s) => s.therapeuticApproach).length, count);
-  const memoryKeepingRate = pct(staff.filter((s) => s.memoryKeeping).length, count);
-  const familyWorkSkillsRate = pct(staff.filter((s) => s.familyWorkSkills).length, count);
+  const lifeStoryWorkRate = rate(staff.filter((s) => s.lifeStoryWork).length, count);
+  const identitySupportRate = rate(staff.filter((s) => s.identitySupport).length, count);
+  const culturalCompetencyRate = rate(staff.filter((s) => s.culturalCompetency).length, count);
+  const therapeuticApproachRate = rate(staff.filter((s) => s.therapeuticApproach).length, count);
+  const memoryKeepingRate = rate(staff.filter((s) => s.memoryKeeping).length, count);
+  const familyWorkSkillsRate = rate(staff.filter((s) => s.familyWorkSkills).length, count);
 
   // Weighted: 6+5+5+4+3+2 = 25
   const raw =
-    (lifeStoryWorkRate / 100) * 6 +
-    (identitySupportRate / 100) * 5 +
-    (culturalCompetencyRate / 100) * 5 +
-    (therapeuticApproachRate / 100) * 4 +
-    (memoryKeepingRate / 100) * 3 +
-    (familyWorkSkillsRate / 100) * 2;
+    (lifeStoryWorkRate! / 100) * 6 +
+    (identitySupportRate! / 100) * 5 +
+    (culturalCompetencyRate! / 100) * 5 +
+    (therapeuticApproachRate! / 100) * 4 +
+    (memoryKeepingRate! / 100) * 3 +
+    (familyWorkSkillsRate! / 100) * 2;
   const overallScore = Math.min(25, Math.round(raw));
 
   return { overallScore, rating: getRating(overallScore * 4), totalStaff: count, lifeStoryWorkRate, identitySupportRate, culturalCompetencyRate, therapeuticApproachRate, memoryKeepingRate, familyWorkSkillsRate };
@@ -318,8 +330,8 @@ export function buildChildLifeStoryProfiles(records: LifeStoryRecord[]): ChildLi
     const completed = recs.filter((r) => r.completed);
     const completedCount = completed.length;
 
-    const completionRate = pct(completedCount, totalSessions);
-    const childLedRate = pct(completed.filter((r) => r.childLedContent).length, completedCount);
+    const completionRate = rate(completedCount, totalSessions);
+    const childLedRate = rate(completed.filter((r) => r.childLedContent).length, completedCount);
 
     const typesSet = new Set(completed.map((r) => r.sessionType));
     const sessionTypesCovered = [...typesSet];
@@ -332,14 +344,14 @@ export function buildChildLifeStoryProfiles(records: LifeStoryRecord[]): ChildLi
     else if (totalSessions >= 5) score += 1;
 
     // Rate 1: completionRate
-    if (completionRate >= 80) score += 3;
-    else if (completionRate >= 60) score += 2;
-    else if (completionRate >= 40) score += 1;
+    if (meets(completionRate, 80)) score += 3;
+    else if (meets(completionRate, 60)) score += 2;
+    else if (meets(completionRate, 40)) score += 1;
 
     // Rate 2: childLedRate
-    if (childLedRate >= 80) score += 3;
-    else if (childLedRate >= 60) score += 2;
-    else if (childLedRate >= 40) score += 1;
+    if (meets(childLedRate, 80)) score += 3;
+    else if (meets(childLedRate, 60)) score += 2;
+    else if (meets(childLedRate, 40)) score += 1;
 
     // Diversity of session types
     const typeCount = sessionTypesCovered.length;
@@ -384,39 +396,39 @@ export function generateLifeStoryIntelligence(
 
   // Strengths (>=80%)
   const strengths: string[] = [];
-  if (sessionQuality.completionRate >= 80) strengths.push("Strong session completion rate — life story work is being delivered consistently");
-  if (sessionQuality.childLedRate >= 80) strengths.push("Excellent child-led approach — children are directing their own narrative");
-  if (sessionQuality.engagementRate >= 80) strengths.push("High child engagement in life story sessions");
-  if (sessionQuality.documentationRate >= 80) strengths.push("Life story books are being regularly updated with session outputs");
-  if (identityCulture.identityAddressedRate >= 80) strengths.push("Identity needs are consistently addressed within sessions");
-  if (identityCulture.culturalActivityRate >= 80) strengths.push("Cultural activities are well integrated into life story work");
-  if (identityCulture.familyExploredRate >= 80) strengths.push("Family connections are being explored through life story sessions");
-  if (identityCulture.photographRate >= 80) strengths.push("Photographs are being taken to preserve memories");
-  if (staffReadiness.lifeStoryWorkRate >= 80) strengths.push("Staff are well trained in life story work methods");
+  if (meets(sessionQuality.completionRate, 80)) strengths.push("Strong session completion rate — life story work is being delivered consistently");
+  if (meets(sessionQuality.childLedRate, 80)) strengths.push("Excellent child-led approach — children are directing their own narrative");
+  if (meets(sessionQuality.engagementRate, 80)) strengths.push("High child engagement in life story sessions");
+  if (meets(sessionQuality.documentationRate, 80)) strengths.push("Life story books are being regularly updated with session outputs");
+  if (meets(identityCulture.identityAddressedRate, 80)) strengths.push("Identity needs are consistently addressed within sessions");
+  if (meets(identityCulture.culturalActivityRate, 80)) strengths.push("Cultural activities are well integrated into life story work");
+  if (meets(identityCulture.familyExploredRate, 80)) strengths.push("Family connections are being explored through life story sessions");
+  if (meets(identityCulture.photographRate, 80)) strengths.push("Photographs are being taken to preserve memories");
+  if (meets(staffReadiness.lifeStoryWorkRate, 80)) strengths.push("Staff are well trained in life story work methods");
 
   // Areas for improvement (<60%)
   const areasForImprovement: string[] = [];
-  if (sessionQuality.completionRate < 60) areasForImprovement.push("Session completion rate needs improvement — too many sessions cancelled or missed");
-  if (sessionQuality.childLedRate < 60) areasForImprovement.push("More sessions should be child-led to give children ownership of their narrative");
-  if (sessionQuality.engagementRate < 60) areasForImprovement.push("Child engagement is low — consider different approaches or session types");
-  if (sessionQuality.documentationRate < 60) areasForImprovement.push("Life story book documentation needs improvement");
-  if (identityCulture.identityAddressedRate < 60) areasForImprovement.push("Identity needs are not being systematically addressed in sessions");
-  if (identityCulture.culturalActivityRate < 60) areasForImprovement.push("Cultural activities are insufficiently integrated into life story work");
-  if (identityCulture.familyExploredRate < 60) areasForImprovement.push("Family connections are not being adequately explored");
-  if (identityCulture.photographRate < 60) areasForImprovement.push("More photographs should be taken to preserve memories for children");
-  if (staffReadiness.lifeStoryWorkRate < 60) areasForImprovement.push("Staff training in life story work methods is insufficient");
-  if (staffReadiness.culturalCompetencyRate < 60) areasForImprovement.push("Staff cultural competency training needs attention");
+  if (below(sessionQuality.completionRate, 60)) areasForImprovement.push("Session completion rate needs improvement — too many sessions cancelled or missed");
+  if (below(sessionQuality.childLedRate, 60)) areasForImprovement.push("More sessions should be child-led to give children ownership of their narrative");
+  if (below(sessionQuality.engagementRate, 60)) areasForImprovement.push("Child engagement is low — consider different approaches or session types");
+  if (below(sessionQuality.documentationRate, 60)) areasForImprovement.push("Life story book documentation needs improvement");
+  if (below(identityCulture.identityAddressedRate, 60)) areasForImprovement.push("Identity needs are not being systematically addressed in sessions");
+  if (below(identityCulture.culturalActivityRate, 60)) areasForImprovement.push("Cultural activities are insufficiently integrated into life story work");
+  if (below(identityCulture.familyExploredRate, 60)) areasForImprovement.push("Family connections are not being adequately explored");
+  if (below(identityCulture.photographRate, 60)) areasForImprovement.push("More photographs should be taken to preserve memories for children");
+  if (below(staffReadiness.lifeStoryWorkRate, 60)) areasForImprovement.push("Staff training in life story work methods is insufficient");
+  if (below(staffReadiness.culturalCompetencyRate, 60)) areasForImprovement.push("Staff cultural competency training needs attention");
 
   // Actions
   const actions: string[] = [];
   if (lifeStoryPolicy.overallScore === 0) actions.push("URGENT: Establish a formal life story work policy — CHR 2015 Reg 5/14 require documented approach");
   if (staffReadiness.overallScore === 0) actions.push("URGENT: Provide life story work training to all staff — children's identity rights depend on skilled facilitation");
-  if (sessionQuality.completionRate < 50) actions.push("Review scheduling and barriers to session completion — aim for at least 80% completion rate");
-  if (sessionQuality.childLedRate < 50) actions.push("Train staff in child-led life story techniques — the child's voice must be central (UNCRC Article 8)");
-  if (identityCulture.culturalActivityRate < 50) actions.push("Integrate cultural activities into life story sessions — UNCRC Article 30 and Children Act 1989 s.22(5)(c)");
-  if (identityCulture.familyExploredRate < 50) actions.push("Ensure family connections are explored in life story work — maintain links where safe to do so");
-  if (identityCulture.photographRate < 50) actions.push("Establish regular photograph sessions — children need visual memories preserved");
-  if (staffReadiness.therapeuticApproachRate < 50) actions.push("Provide therapeutic life story work training — some children need trauma-informed approaches");
+  if (below(sessionQuality.completionRate, 50)) actions.push("Review scheduling and barriers to session completion — aim for at least 80% completion rate");
+  if (below(sessionQuality.childLedRate, 50)) actions.push("Train staff in child-led life story techniques — the child's voice must be central (UNCRC Article 8)");
+  if (below(identityCulture.culturalActivityRate, 50)) actions.push("Integrate cultural activities into life story sessions — UNCRC Article 30 and Children Act 1989 s.22(5)(c)");
+  if (below(identityCulture.familyExploredRate, 50)) actions.push("Ensure family connections are explored in life story work — maintain links where safe to do so");
+  if (below(identityCulture.photographRate, 50)) actions.push("Establish regular photograph sessions — children need visual memories preserved");
+  if (below(staffReadiness.therapeuticApproachRate, 50)) actions.push("Provide therapeutic life story work training — some children need trauma-informed approaches");
 
   const regulatoryLinks: string[] = [
     "CHR 2015 Reg 5 — Quality and purpose of care (identity and belonging)",

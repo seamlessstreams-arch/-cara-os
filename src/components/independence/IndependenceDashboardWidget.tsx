@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 // -- Local types (mirror engine result shape) ----------------------------------
 
@@ -187,11 +188,11 @@ export default function IndependenceDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Assessments</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.independenceQuality.childEngagedRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.independenceQuality.childEngagedRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Engagement</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.independenceCompliance.positiveOutcomeRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.independenceCompliance.positiveOutcomeRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Positive Outcomes</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -232,19 +233,19 @@ export default function IndependenceDashboardWidget() {
         <Section title="Independence Quality">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <Stat label="Assessments" value={data.independenceQuality.totalRecords} />
-            <Stat label="Individual Plans" value={`${data.independenceQuality.individualPlanRate}%`} />
-            <Stat label="Age Appropriate" value={`${data.independenceQuality.ageAppropriateRate}%`} />
-            <Stat label="Child Engaged" value={`${data.independenceQuality.childEngagedRate}%`} />
-            <Stat label="Progress Recorded" value={`${data.independenceQuality.progressRecordedRate}%`} />
+            <Stat label="Individual Plans" value={`${formatRate(data.independenceQuality.individualPlanRate)}`} />
+            <Stat label="Age Appropriate" value={`${formatRate(data.independenceQuality.ageAppropriateRate)}`} />
+            <Stat label="Child Engaged" value={`${formatRate(data.independenceQuality.childEngagedRate)}`} />
+            <Stat label="Progress Recorded" value={`${formatRate(data.independenceQuality.progressRecordedRate)}`} />
           </div>
         </Section>
 
         <Section title="Independence Compliance">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <Stat label="Documentation" value={`${data.independenceCompliance.documentationCompleteRate}%`} />
-            <Stat label="Pathway Aligned" value={`${data.independenceCompliance.pathwayPlanAlignedRate}%`} />
-            <Stat label="Positive Outcomes" value={`${data.independenceCompliance.positiveOutcomeRate}%`} />
-            <Stat label="Category Diversity" value={`${data.independenceCompliance.categoryDiversityRate}%`} />
+            <Stat label="Documentation" value={`${formatRate(data.independenceCompliance.documentationCompleteRate)}`} />
+            <Stat label="Pathway Aligned" value={`${formatRate(data.independenceCompliance.pathwayPlanAlignedRate)}`} />
+            <Stat label="Positive Outcomes" value={`${formatRate(data.independenceCompliance.positiveOutcomeRate)}`} />
+            <Stat label="Category Diversity" value={`${formatRate(data.independenceCompliance.categoryDiversityRate)}`} />
           </div>
         </Section>
 
@@ -263,12 +264,12 @@ export default function IndependenceDashboardWidget() {
         <Section title="Staff Independence Readiness">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <Stat label="Staff" value={data.staffIndependenceReadiness.totalStaff} />
-            <Stat label="Independence Planning" value={`${data.staffIndependenceReadiness.independencePlanningRate}%`} />
-            <Stat label="Life Skills Teaching" value={`${data.staffIndependenceReadiness.lifeSkillsTeachingRate}%`} />
-            <Stat label="Pathway Knowledge" value={`${data.staffIndependenceReadiness.pathwayKnowledgeRate}%`} />
-            <Stat label="Motivational Skills" value={`${data.staffIndependenceReadiness.motivationalSkillsRate}%`} />
-            <Stat label="Community Resources" value={`${data.staffIndependenceReadiness.communityResourcesRate}%`} />
-            <Stat label="Transition Support" value={`${data.staffIndependenceReadiness.transitionSupportRate}%`} />
+            <Stat label="Independence Planning" value={`${formatRate(data.staffIndependenceReadiness.independencePlanningRate)}`} />
+            <Stat label="Life Skills Teaching" value={`${formatRate(data.staffIndependenceReadiness.lifeSkillsTeachingRate)}`} />
+            <Stat label="Pathway Knowledge" value={`${formatRate(data.staffIndependenceReadiness.pathwayKnowledgeRate)}`} />
+            <Stat label="Motivational Skills" value={`${formatRate(data.staffIndependenceReadiness.motivationalSkillsRate)}`} />
+            <Stat label="Community Resources" value={`${formatRate(data.staffIndependenceReadiness.communityResourcesRate)}`} />
+            <Stat label="Transition Support" value={`${formatRate(data.staffIndependenceReadiness.transitionSupportRate)}`} />
           </div>
         </Section>
 

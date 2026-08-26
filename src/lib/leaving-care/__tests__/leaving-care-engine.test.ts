@@ -995,14 +995,14 @@ describe("buildChildLeavingProfiles", () => {
     expect(profiles[0].goalAchievementRate).toBe(70);
   });
 
-  it("returns 0 goal rate when no plan", () => {
+  it("returns null goal rate when no plan", () => {
     const children = [makeChild()];
     const profiles = buildChildLeavingProfiles(children, [], [], [], []);
     // fab-0: null when no plan / no goals set.
     expect(profiles[0].goalAchievementRate).toBeNull();
   });
 
-  it("returns 0 goal rate when goalsSet is 0", () => {
+  it("returns null goal rate when goalsSet is null", () => {
     const children = [makeChild()];
     const plans = [makePlan({ goalsSet: 0, goalsAchieved: 0 })];
     const profiles = buildChildLeavingProfiles(children, plans, [], [], []);

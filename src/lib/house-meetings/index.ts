@@ -5,7 +5,6 @@ export {
   evaluateHouseMeetingPolicy,
   evaluateStaffHouseMeetingReadiness,
   buildChildHouseMeetingProfiles,
-  pct,
   getRating,
   getHouseMeetingCategoryLabel,
   getHouseMeetingOutcomeLabel,

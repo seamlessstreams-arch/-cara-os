@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildInspectionProfile { childId: string; childName: string; totalRecords: number; evidenceDocumentedRate: number; childViewIncludedRate: number; categoriesCovered: string[]; overallScore: number; }
 
@@ -73,19 +74,19 @@ export default function InspectionDashboardWidget() {
       <Section title="Inspection Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Records" value={data.inspectionQuality.totalRecords} />
-          <Stat label="Evidence Documented" value={`${data.inspectionQuality.evidenceDocumentedRate}%`} />
-          <Stat label="Action Plans" value={`${data.inspectionQuality.actionPlanCreatedRate}%`} />
-          <Stat label="Staff Prepared" value={`${data.inspectionQuality.staffPreparedRate}%`} />
-          <Stat label="Child Views" value={`${data.inspectionQuality.childViewIncludedRate}%`} />
+          <Stat label="Evidence Documented" value={`${formatRate(data.inspectionQuality.evidenceDocumentedRate)}`} />
+          <Stat label="Action Plans" value={`${formatRate(data.inspectionQuality.actionPlanCreatedRate)}`} />
+          <Stat label="Staff Prepared" value={`${formatRate(data.inspectionQuality.staffPreparedRate)}`} />
+          <Stat label="Child Views" value={`${formatRate(data.inspectionQuality.childViewIncludedRate)}`} />
         </div>
       </Section>
 
       <Section title="Inspection Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documentation" value={`${data.inspectionCompliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${data.inspectionCompliance.timelyRecordingRate}%`} />
-          <Stat label="Child Views" value={`${data.inspectionCompliance.childViewIncludedRate}%`} />
-          <Stat label="Category Coverage" value={`${data.inspectionCompliance.categoryDiversityRatio}%`} />
+          <Stat label="Documentation" value={`${formatRate(data.inspectionCompliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(data.inspectionCompliance.timelyRecordingRate)}`} />
+          <Stat label="Child Views" value={`${formatRate(data.inspectionCompliance.childViewIncludedRate)}`} />
+          <Stat label="Category Coverage" value={`${formatRate(data.inspectionCompliance.categoryDiversityRatio)}`} />
         </div>
       </Section>
 
@@ -108,12 +109,12 @@ export default function InspectionDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
-          <Stat label="Inspection Readiness" value={`${data.staffReadiness.inspectionReadinessRate}%`} />
-          <Stat label="Evidence Presentation" value={`${data.staffReadiness.evidencePresentationRate}%`} />
-          <Stat label="Regulatory Knowledge" value={`${data.staffReadiness.regulatoryKnowledgeRate}%`} />
-          <Stat label="Self-Assessment" value={`${data.staffReadiness.selfAssessmentRate}%`} />
-          <Stat label="Action Plan Dev." value={`${data.staffReadiness.actionPlanDevelopmentRate}%`} />
-          <Stat label="Quality Assurance" value={`${data.staffReadiness.qualityAssuranceRate}%`} />
+          <Stat label="Inspection Readiness" value={`${formatRate(data.staffReadiness.inspectionReadinessRate)}`} />
+          <Stat label="Evidence Presentation" value={`${formatRate(data.staffReadiness.evidencePresentationRate)}`} />
+          <Stat label="Regulatory Knowledge" value={`${formatRate(data.staffReadiness.regulatoryKnowledgeRate)}`} />
+          <Stat label="Self-Assessment" value={`${formatRate(data.staffReadiness.selfAssessmentRate)}`} />
+          <Stat label="Action Plan Dev." value={`${formatRate(data.staffReadiness.actionPlanDevelopmentRate)}`} />
+          <Stat label="Quality Assurance" value={`${formatRate(data.staffReadiness.qualityAssuranceRate)}`} />
         </div>
       </Section>
 

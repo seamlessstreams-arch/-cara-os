@@ -5,7 +5,6 @@ export {
   evaluateIndependencePolicy,
   evaluateStaffIndependenceReadiness,
   buildChildIndependenceProfiles,
-  pct,
   getRating,
   getCategoryLabel,
   getOutcomeLabel,

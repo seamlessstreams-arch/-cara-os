@@ -5,7 +5,6 @@ export {
   evaluateInformationGovernance,
   buildStaffCommunicationProfiles,
   generateHandoverCommunicationQualityIntelligence,
-  pct,
   getRating,
   getHandoverTypeLabel,
   getHandoverFormatLabel,

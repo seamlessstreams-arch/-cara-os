@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { above, below, formatRate } from "@/lib/metrics/rate";
 import type { LanguageCommunicationSupportIntelligence } from "@/lib/language-communication-support";
 
 const ratingColors: Record<string, string> = {
@@ -112,7 +113,7 @@ export function LanguageCommunicationSupportDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Children</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.needsAssessment.communicationPlanRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.needsAssessment.communicationPlanRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Plans in Place</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -120,7 +121,7 @@ export function LanguageCommunicationSupportDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Sessions</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.supportProvision.qualityGoodPlusRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.supportProvision.qualityGoodPlusRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Good+ Quality</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -163,19 +164,19 @@ export function LanguageCommunicationSupportDashboardWidget() {
         <Section title="Needs Assessment">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Profiles:</span> <span className="font-medium">{data.needsAssessment.totalProfiles}</span></div>
-            <div><span className="text-gray-500">Plan Rate:</span> <span className="font-medium">{data.needsAssessment.communicationPlanRate}%</span></div>
-            <div><span className="text-gray-500">Plans Current:</span> <span className="font-medium">{data.needsAssessment.planCurrentRate}%</span></div>
-            <div><span className="text-gray-500">Interpreter:</span> <span className={`font-medium ${data.needsAssessment.interpreterAvailableRate < 100 && data.needsAssessment.interpreterAvailableRate > 0 ? "text-amber-600" : data.needsAssessment.interpreterAvailableRate === 100 ? "text-green-600" : ""}`}>{data.needsAssessment.interpreterAvailableRate}%</span></div>
-            <div><span className="text-gray-500">Devices:</span> <span className={`font-medium ${data.needsAssessment.deviceProvidedRate < 100 && data.needsAssessment.deviceProvidedRate > 0 ? "text-amber-600" : data.needsAssessment.deviceProvidedRate === 100 ? "text-green-600" : ""}`}>{data.needsAssessment.deviceProvidedRate}%</span></div>
+            <div><span className="text-gray-500">Plan Rate:</span> <span className="font-medium">{formatRate(data.needsAssessment.communicationPlanRate)}</span></div>
+            <div><span className="text-gray-500">Plans Current:</span> <span className="font-medium">{formatRate(data.needsAssessment.planCurrentRate)}</span></div>
+            <div><span className="text-gray-500">Interpreter:</span> <span className={`font-medium ${below(data.needsAssessment.interpreterAvailableRate, 100) && above(data.needsAssessment.interpreterAvailableRate, 0) ? "text-amber-600" : data.needsAssessment.interpreterAvailableRate === 100 ? "text-green-600" : ""}`}>{formatRate(data.needsAssessment.interpreterAvailableRate)}</span></div>
+            <div><span className="text-gray-500">Devices:</span> <span className={`font-medium ${below(data.needsAssessment.deviceProvidedRate, 100) && above(data.needsAssessment.deviceProvidedRate, 0) ? "text-amber-600" : data.needsAssessment.deviceProvidedRate === 100 ? "text-green-600" : ""}`}>{formatRate(data.needsAssessment.deviceProvidedRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Support Provision">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Sessions:</span> <span className="font-medium">{data.supportProvision.totalSessions}</span></div>
-            <div><span className="text-gray-500">Good+:</span> <span className="font-medium">{data.supportProvision.qualityGoodPlusRate}%</span></div>
-            <div><span className="text-gray-500">Engaged:</span> <span className="font-medium">{data.supportProvision.childEngagedRate}%</span></div>
-            <div><span className="text-gray-500">Progress:</span> <span className="font-medium">{data.supportProvision.progressNotedRate}%</span></div>
+            <div><span className="text-gray-500">Good+:</span> <span className="font-medium">{formatRate(data.supportProvision.qualityGoodPlusRate)}</span></div>
+            <div><span className="text-gray-500">Engaged:</span> <span className="font-medium">{formatRate(data.supportProvision.childEngagedRate)}</span></div>
+            <div><span className="text-gray-500">Progress:</span> <span className="font-medium">{formatRate(data.supportProvision.progressNotedRate)}</span></div>
             <div><span className="text-gray-500">Avg/Child:</span> <span className="font-medium">{data.supportProvision.averageSessionsPerChild}</span></div>
           </div>
         </Section>
@@ -183,22 +184,22 @@ export function LanguageCommunicationSupportDashboardWidget() {
         <Section title="Environment Accessibility">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Audits:</span> <span className="font-medium">{data.environmentAccessibility.totalAudits}</span></div>
-            <div><span className="text-gray-500">Easy Read:</span> <span className="font-medium">{data.environmentAccessibility.easyReadRate}%</span></div>
-            <div><span className="text-gray-500">Visual Aids:</span> <span className="font-medium">{data.environmentAccessibility.visualAidsRate}%</span></div>
-            <div><span className="text-gray-500">Signage:</span> <span className="font-medium">{data.environmentAccessibility.signageAccessibleRate}%</span></div>
-            <div><span className="text-gray-500">Child Views:</span> <span className="font-medium">{data.environmentAccessibility.childViewsAccessibleRate}%</span></div>
+            <div><span className="text-gray-500">Easy Read:</span> <span className="font-medium">{formatRate(data.environmentAccessibility.easyReadRate)}</span></div>
+            <div><span className="text-gray-500">Visual Aids:</span> <span className="font-medium">{formatRate(data.environmentAccessibility.visualAidsRate)}</span></div>
+            <div><span className="text-gray-500">Signage:</span> <span className="font-medium">{formatRate(data.environmentAccessibility.signageAccessibleRate)}</span></div>
+            <div><span className="text-gray-500">Child Views:</span> <span className="font-medium">{formatRate(data.environmentAccessibility.childViewsAccessibleRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Staff Competence">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Staff:</span> <span className="font-medium">{data.staffCompetence.totalStaff}</span></div>
-            <div><span className="text-gray-500">Awareness:</span> <span className="font-medium">{data.staffCompetence.awarenessRate}%</span></div>
-            <div><span className="text-gray-500">Sign Language:</span> <span className="font-medium">{data.staffCompetence.signLanguageRate}%</span></div>
-            <div><span className="text-gray-500">Aug. Device:</span> <span className="font-medium">{data.staffCompetence.augmentativeDeviceRate}%</span></div>
-            <div><span className="text-gray-500">Easy Read:</span> <span className="font-medium">{data.staffCompetence.easyReadRate}%</span></div>
-            <div><span className="text-gray-500">Autism:</span> <span className="font-medium">{data.staffCompetence.autismCommunicationRate}%</span></div>
-            <div><span className="text-gray-500">Interpreter:</span> <span className="font-medium">{data.staffCompetence.interpreterWorkingRate}%</span></div>
+            <div><span className="text-gray-500">Awareness:</span> <span className="font-medium">{formatRate(data.staffCompetence.awarenessRate)}</span></div>
+            <div><span className="text-gray-500">Sign Language:</span> <span className="font-medium">{formatRate(data.staffCompetence.signLanguageRate)}</span></div>
+            <div><span className="text-gray-500">Aug. Device:</span> <span className="font-medium">{formatRate(data.staffCompetence.augmentativeDeviceRate)}</span></div>
+            <div><span className="text-gray-500">Easy Read:</span> <span className="font-medium">{formatRate(data.staffCompetence.easyReadRate)}</span></div>
+            <div><span className="text-gray-500">Autism:</span> <span className="font-medium">{formatRate(data.staffCompetence.autismCommunicationRate)}</span></div>
+            <div><span className="text-gray-500">Interpreter:</span> <span className="font-medium">{formatRate(data.staffCompetence.interpreterWorkingRate)}</span></div>
           </div>
         </Section>
 

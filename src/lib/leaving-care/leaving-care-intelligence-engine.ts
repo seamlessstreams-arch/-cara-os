@@ -19,6 +19,7 @@
    ────────────────────────────────────────────────────────────── */
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -128,18 +129,25 @@ export interface StaffLeavingCareTraining {
 export interface LeavingCareQualityResult {
   overallScore: number;
   totalRecords: number;
-  pathwayPlanReviewedRate: number;
-  youngPersonConsultedRate: number;
-  independenceSkillsAssessedRate: number;
-  transitionPlanInPlaceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  pathwayPlanReviewedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  youngPersonConsultedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  independenceSkillsAssessedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  transitionPlanInPlaceRate: number | null;
 }
 
 export interface LeavingCareComplianceResult {
   overallScore: number;
   totalRecords: number;
-  documentationCompleteRate: number;
-  timelyRecordingRate: number;
-  pathwayPlanReviewedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationCompleteRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  pathwayPlanReviewedRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
 }
@@ -158,12 +166,18 @@ export interface LeavingCarePolicyResult {
 export interface StaffLeavingCareReadinessResult {
   overallScore: number;
   totalStaff: number;
-  pathwayPlanningKnowledgeRate: number;
-  independenceSkillsTeachingRate: number;
-  transitionSupportSkillsRate: number;
-  benefitsAdviceKnowledgeRate: number;
-  accommodationSupportSkillsRate: number;
-  emotionalSupportSkillsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  pathwayPlanningKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  independenceSkillsTeachingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  transitionSupportSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  benefitsAdviceKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  accommodationSupportSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  emotionalSupportSkillsRate: number | null;
 }
 
 export interface ChildLeavingCareProfile {
@@ -195,11 +209,6 @@ export interface LeavingCareIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRatingIntel(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -214,19 +223,19 @@ export function evaluateLeavingCareQuality(
 ): LeavingCareQualityResult {
   const n = records.length;
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, pathwayPlanReviewedRate: 0, youngPersonConsultedRate: 0, independenceSkillsAssessedRate: 0, transitionPlanInPlaceRate: 0 };
+    return { overallScore: 0, totalRecords: 0, pathwayPlanReviewedRate: null, youngPersonConsultedRate: null, independenceSkillsAssessedRate: null, transitionPlanInPlaceRate: null };
   }
 
-  const pathwayPlanReviewedRate = pct(records.filter((r) => r.pathwayPlanReviewed).length, n);
-  const youngPersonConsultedRate = pct(records.filter((r) => r.youngPersonConsulted).length, n);
-  const independenceSkillsAssessedRate = pct(records.filter((r) => r.independenceSkillsAssessed).length, n);
-  const transitionPlanInPlaceRate = pct(records.filter((r) => r.transitionPlanInPlace).length, n);
+  const pathwayPlanReviewedRate = rate(records.filter((r) => r.pathwayPlanReviewed).length, n);
+  const youngPersonConsultedRate = rate(records.filter((r) => r.youngPersonConsulted).length, n);
+  const independenceSkillsAssessedRate = rate(records.filter((r) => r.independenceSkillsAssessed).length, n);
+  const transitionPlanInPlaceRate = rate(records.filter((r) => r.transitionPlanInPlace).length, n);
 
   let score = 0;
-  score += (pathwayPlanReviewedRate / 100) * 7;
-  score += (youngPersonConsultedRate / 100) * 6;
-  score += (independenceSkillsAssessedRate / 100) * 6;
-  score += (transitionPlanInPlaceRate / 100) * 6;
+  score += (pathwayPlanReviewedRate! / 100) * 7;
+  score += (youngPersonConsultedRate! / 100) * 6;
+  score += (independenceSkillsAssessedRate! / 100) * 6;
+  score += (transitionPlanInPlaceRate! / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -240,20 +249,20 @@ export function evaluateLeavingCareCompliance(
 ): LeavingCareComplianceResult {
   const n = records.length;
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: 0, timelyRecordingRate: 0, pathwayPlanReviewedRate: 0, categoryDiversityRatio: 0, uniqueCategories: 0 };
+    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: null, timelyRecordingRate: null, pathwayPlanReviewedRate: null, categoryDiversityRatio: 0, uniqueCategories: 0 };
   }
 
-  const documentationCompleteRate = pct(records.filter((r) => r.documentationComplete).length, n);
-  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, n);
-  const pathwayPlanReviewedRate = pct(records.filter((r) => r.pathwayPlanReviewed).length, n);
+  const documentationCompleteRate = rate(records.filter((r) => r.documentationComplete).length, n);
+  const timelyRecordingRate = rate(records.filter((r) => r.timelyRecording).length, n);
+  const pathwayPlanReviewedRate = rate(records.filter((r) => r.pathwayPlanReviewed).length, n);
   const uniqueCategoriesSet = new Set(records.map((r) => r.category));
   const uniqueCategories = uniqueCategoriesSet.size;
   const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
 
   let score = 0;
-  score += (documentationCompleteRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (pathwayPlanReviewedRate / 100) * 5;
+  score += (documentationCompleteRate! / 100) * 8;
+  score += (timelyRecordingRate! / 100) * 7;
+  score += (pathwayPlanReviewedRate! / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -298,23 +307,23 @@ export function evaluateStaffLeavingCareReadiness(
 ): StaffLeavingCareReadinessResult {
   const n = training.length;
   if (n === 0) {
-    return { overallScore: 0, totalStaff: 0, pathwayPlanningKnowledgeRate: 0, independenceSkillsTeachingRate: 0, transitionSupportSkillsRate: 0, benefitsAdviceKnowledgeRate: 0, accommodationSupportSkillsRate: 0, emotionalSupportSkillsRate: 0 };
+    return { overallScore: 0, totalStaff: 0, pathwayPlanningKnowledgeRate: null, independenceSkillsTeachingRate: null, transitionSupportSkillsRate: null, benefitsAdviceKnowledgeRate: null, accommodationSupportSkillsRate: null, emotionalSupportSkillsRate: null };
   }
 
-  const pathwayPlanningKnowledgeRate = pct(training.filter((t) => t.pathwayPlanningKnowledge).length, n);
-  const independenceSkillsTeachingRate = pct(training.filter((t) => t.independenceSkillsTeaching).length, n);
-  const transitionSupportSkillsRate = pct(training.filter((t) => t.transitionSupportSkills).length, n);
-  const benefitsAdviceKnowledgeRate = pct(training.filter((t) => t.benefitsAdviceKnowledge).length, n);
-  const accommodationSupportSkillsRate = pct(training.filter((t) => t.accommodationSupportSkills).length, n);
-  const emotionalSupportSkillsRate = pct(training.filter((t) => t.emotionalSupportSkills).length, n);
+  const pathwayPlanningKnowledgeRate = rate(training.filter((t) => t.pathwayPlanningKnowledge).length, n);
+  const independenceSkillsTeachingRate = rate(training.filter((t) => t.independenceSkillsTeaching).length, n);
+  const transitionSupportSkillsRate = rate(training.filter((t) => t.transitionSupportSkills).length, n);
+  const benefitsAdviceKnowledgeRate = rate(training.filter((t) => t.benefitsAdviceKnowledge).length, n);
+  const accommodationSupportSkillsRate = rate(training.filter((t) => t.accommodationSupportSkills).length, n);
+  const emotionalSupportSkillsRate = rate(training.filter((t) => t.emotionalSupportSkills).length, n);
 
   let score = 0;
-  score += (pathwayPlanningKnowledgeRate / 100) * 6;
-  score += (independenceSkillsTeachingRate / 100) * 5;
-  score += (transitionSupportSkillsRate / 100) * 5;
-  score += (benefitsAdviceKnowledgeRate / 100) * 4;
-  score += (accommodationSupportSkillsRate / 100) * 3;
-  score += (emotionalSupportSkillsRate / 100) * 2;
+  score += (pathwayPlanningKnowledgeRate! / 100) * 6;
+  score += (independenceSkillsTeachingRate! / 100) * 5;
+  score += (transitionSupportSkillsRate! / 100) * 5;
+  score += (benefitsAdviceKnowledgeRate! / 100) * 4;
+  score += (accommodationSupportSkillsRate! / 100) * 3;
+  score += (emotionalSupportSkillsRate! / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -335,8 +344,8 @@ export function buildChildLeavingCareProfiles(
 
   return Array.from(childMap.values()).map((child) => {
     const totalRecords = child.records.length;
-    const pathwayPlanReviewedRate = pct(child.records.filter((r) => r.pathwayPlanReviewed).length, totalRecords);
-    const youngPersonConsultedRate = pct(child.records.filter((r) => r.youngPersonConsulted).length, totalRecords);
+    const pathwayPlanReviewedRate = rate(child.records.filter((r) => r.pathwayPlanReviewed).length, totalRecords)!;
+    const youngPersonConsultedRate = rate(child.records.filter((r) => r.youngPersonConsulted).length, totalRecords)!;
     const categoriesCovered = Array.from(new Set(child.records.map((r) => r.category)));
 
     let frequencyScore = 0;
@@ -344,14 +353,14 @@ export function buildChildLeavingCareProfiles(
     else if (totalRecords >= 5) frequencyScore = 1;
 
     let rate1Score = 0;
-    if (pathwayPlanReviewedRate >= 80) rate1Score = 3;
-    else if (pathwayPlanReviewedRate >= 60) rate1Score = 2;
-    else if (pathwayPlanReviewedRate >= 40) rate1Score = 1;
+    if (meets(pathwayPlanReviewedRate, 80)) rate1Score = 3;
+    else if (meets(pathwayPlanReviewedRate, 60)) rate1Score = 2;
+    else if (meets(pathwayPlanReviewedRate, 40)) rate1Score = 1;
 
     let rate2Score = 0;
-    if (youngPersonConsultedRate >= 80) rate2Score = 3;
-    else if (youngPersonConsultedRate >= 60) rate2Score = 2;
-    else if (youngPersonConsultedRate >= 40) rate2Score = 1;
+    if (meets(youngPersonConsultedRate, 80)) rate2Score = 3;
+    else if (meets(youngPersonConsultedRate, 60)) rate2Score = 2;
+    else if (meets(youngPersonConsultedRate, 40)) rate2Score = 1;
 
     let diversityBonus = 0;
     if (categoriesCovered.length >= 4) diversityBonus = 2;
@@ -396,8 +405,8 @@ export function generateLeavingCareIntelligence(
   if (complianceResult.overallScore >= 20) strengths.push("Leaving care compliance is strong (" + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore >= 20) strengths.push("Leaving care policy framework is robust (" + policyResult.overallScore + "/25)");
   if (staffResult.overallScore >= 20) strengths.push("Staff leaving care readiness is strong (" + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.pathwayPlanReviewedRate >= 90) strengths.push("Pathway plan review rate at " + qualityResult.pathwayPlanReviewedRate + "%");
-  if (periodRecords.length > 0 && qualityResult.youngPersonConsultedRate >= 90) strengths.push("Young person consultation at " + qualityResult.youngPersonConsultedRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.pathwayPlanReviewedRate, 90)) strengths.push("Pathway plan review rate at " + qualityResult.pathwayPlanReviewedRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.youngPersonConsultedRate, 90)) strengths.push("Young person consultation at " + qualityResult.youngPersonConsultedRate + "%");
 
   const areasForImprovement: string[] = [];
   if (overallScore < 40) areasForImprovement.push("Leaving care preparation rated Inadequate (" + overallScore + "/100) — urgent systemic review required");
@@ -406,7 +415,7 @@ export function generateLeavingCareIntelligence(
   if (complianceResult.overallScore < 15) areasForImprovement.push("Leaving care compliance needs improvement (" + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore < 15) areasForImprovement.push("Leaving care policy needs strengthening (" + policyResult.overallScore + "/25)");
   if (staffResult.overallScore < 15) areasForImprovement.push("Staff readiness needs improvement (" + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.youngPersonConsultedRate < 80) areasForImprovement.push("Young person consultation at " + qualityResult.youngPersonConsultedRate + "% — must ensure young people shape their own leaving care plans");
+  if (periodRecords.length > 0 && below(qualityResult.youngPersonConsultedRate, 80)) areasForImprovement.push("Young person consultation at " + qualityResult.youngPersonConsultedRate + "% — must ensure young people shape their own leaving care plans");
   if (periodRecords.length === 0) areasForImprovement.push("No leaving care preparation records — support must be documented");
   if (policy === null) areasForImprovement.push("No leaving care policy in place — statutory requirement under CHR 2015 Reg 14");
   if (staff.length === 0) areasForImprovement.push("No staff leaving care training records — training required");
@@ -414,11 +423,11 @@ export function generateLeavingCareIntelligence(
   const actions: string[] = [];
   if (policy === null || policyResult.overallScore === 0) actions.push("URGENT: No leaving care policy — develop and implement pathway planning framework immediately (CHR 2015 Reg 14)");
   if (staff.length === 0) actions.push("URGENT: No staff leaving care training — schedule transition support training for all care staff");
-  if (periodRecords.length > 0 && qualityResult.pathwayPlanReviewedRate < 50) actions.push("HIGH: Pathway plan review rate at " + qualityResult.pathwayPlanReviewedRate + "% — all pathway plans must be reviewed termly");
-  if (periodRecords.length > 0 && qualityResult.youngPersonConsultedRate < 50) actions.push("HIGH: Young person consultation at " + qualityResult.youngPersonConsultedRate + "% — ensure young people are central to their leaving care planning");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate < 50) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all preparation activities must be recorded");
-  if (periodRecords.length > 0 && complianceResult.timelyRecordingRate < 50) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
-  if (staff.length > 0 && staffResult.pathwayPlanningKnowledgeRate < 50) actions.push("MEDIUM: Pathway planning knowledge at " + staffResult.pathwayPlanningKnowledgeRate + "% — schedule training");
+  if (periodRecords.length > 0 && below(qualityResult.pathwayPlanReviewedRate, 50)) actions.push("HIGH: Pathway plan review rate at " + qualityResult.pathwayPlanReviewedRate + "% — all pathway plans must be reviewed termly");
+  if (periodRecords.length > 0 && below(qualityResult.youngPersonConsultedRate, 50)) actions.push("HIGH: Young person consultation at " + qualityResult.youngPersonConsultedRate + "% — ensure young people are central to their leaving care planning");
+  if (periodRecords.length > 0 && below(complianceResult.documentationCompleteRate, 50)) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all preparation activities must be recorded");
+  if (periodRecords.length > 0 && below(complianceResult.timelyRecordingRate, 50)) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
+  if (staff.length > 0 && below(staffResult.pathwayPlanningKnowledgeRate, 50)) actions.push("MEDIUM: Pathway planning knowledge at " + staffResult.pathwayPlanningKnowledgeRate + "% — schedule training");
   const lowScoreChildren = childProfiles.filter((p) => p.overallScore <= 3);
   if (lowScoreChildren.length > 0) actions.push("MEDIUM: " + lowScoreChildren.length + " young person(s) with low preparation scores — review individual pathway plans");
   if (actions.length === 0) actions.push("No immediate actions required. Leaving care preparation operating within expected standards.");

@@ -18,6 +18,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meanOf, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -130,47 +131,71 @@ export interface StaffCultureRecord {
 export interface WarmthCultureResult {
   overallScore: number;
   totalObservations: number;
-  excellentGoodRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  excellentGoodRate: number | null;
   warmthScore: number | null;
-  calmScore: number;
-  respectScore: number;
-  funScore: number;
-  nurtureScore: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  calmScore: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  respectScore: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  funScore: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  nurtureScore: number | null;
   indicatorDistribution: Record<AtmosphereIndicator, number>;
 }
 
 export interface ChildExperienceResult {
   overallScore: number;
   totalFeedback: number;
-  positiveRate: number;
-  feelsAtHomeRate: number;
-  feelsListenedToRate: number;
-  feelsSafeRate: number;
-  hasPrivacyRate: number;
-  enjoysLivingRate: number;
-  canBeThemselvesRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feelsAtHomeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feelsListenedToRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feelsSafeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  hasPrivacyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  enjoysLivingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  canBeThemselvesRate: number | null;
 }
 
 export interface EnvironmentQualityResult {
   overallScore: number;
   totalAudits: number;
-  cleanRate: number;
-  personalisedRate: number;
-  welcomingRate: number;
-  childContributedRate: number;
-  repairsActionedRate: number;
-  sensoryConsideredRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  cleanRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  personalisedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  welcomingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childContributedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  repairsActionedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  sensoryConsideredRate: number | null;
 }
 
 export interface StaffPracticeResult {
   overallScore: number;
   totalRecords: number;
-  therapeuticRate: number;
-  childCentredRate: number;
-  warmInteractionRate: number;
-  positiveReinforcementRate: number;
-  reflectiveRate: number;
-  boundariesRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  therapeuticRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childCentredRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  warmInteractionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveReinforcementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reflectiveRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  boundariesRate: number | null;
 }
 
 export interface ChildAtmosphereProfile {
@@ -201,10 +226,6 @@ export interface HomeAtmosphereEthosIntelligence {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  return den === 0 ? 0 : Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -332,7 +353,7 @@ export function evaluateWarmthCulture(
     return {
       overallScore: 0,
       totalObservations: 0,
-      excellentGoodRate: 0,
+      excellentGoodRate: null,
       warmthScore: 0,
       calmScore: 0,
       respectScore: 0,
@@ -352,7 +373,7 @@ export function evaluateWarmthCulture(
   const excellentGood = observations.filter(
     (o) => o.rating === "excellent" || o.rating === "good",
   ).length;
-  const excellentGoodRate = pct(excellentGood, total);
+  const excellentGoodRate = rate(excellentGood, total);
 
   // Warmth score: average numeric rating for warmth indicator observations
   const warmthObs = observations.filter((o) => o.indicator === "warmth");
@@ -371,42 +392,43 @@ export function evaluateWarmthCulture(
   const calmSafetyGood = calmSafetyObs.filter(
     (o) => o.rating === "excellent" || o.rating === "good",
   ).length;
-  const calmScore = pct(calmSafetyGood, calmSafetyObs.length);
+  const calmScore = rate(calmSafetyGood, calmSafetyObs.length);
 
   // Respect score: pct of respect indicator observations rated excellent/good
   const respectObs = observations.filter((o) => o.indicator === "respect");
   const respectGood = respectObs.filter(
     (o) => o.rating === "excellent" || o.rating === "good",
   ).length;
-  const respectScore = pct(respectGood, respectObs.length);
+  const respectScore = rate(respectGood, respectObs.length);
 
   // Fun score: pct of fun indicator observations rated excellent/good
   const funObs = observations.filter((o) => o.indicator === "fun");
   const funGood = funObs.filter(
     (o) => o.rating === "excellent" || o.rating === "good",
   ).length;
-  const funScore = pct(funGood, funObs.length);
+  const funScore = rate(funGood, funObs.length);
 
   // Nurture score: pct of nurture indicator observations rated excellent/good
   const nurtureObs = observations.filter((o) => o.indicator === "nurture");
   const nurtureGood = nurtureObs.filter(
     (o) => o.rating === "excellent" || o.rating === "good",
   ).length;
-  const nurtureScore = pct(nurtureGood, nurtureObs.length);
+  const nurtureScore = rate(nurtureGood, nurtureObs.length);
 
   // Scoring (0-25):
   // excellent+good rate (0-8)
-  const egPts = Math.min(8, Math.round((excellentGoodRate / 100) * 8));
+  const egPts = Math.min(8, Math.round((excellentGoodRate! / 100) * 8));
   // warmth observations (0-5)
   const warmthPts = Math.min(5, Math.round(((warmthScore ?? 0) / 100) * 5));
   // calm/safety (0-4)
-  const calmPts = Math.min(4, Math.round((calmScore / 100) * 4));
+  const calmPts = Math.min(4, Math.round(((calmScore ?? 0) / 100) * 4));
   // respect (0-4)
-  const respectPts = Math.min(4, Math.round((respectScore / 100) * 4));
+  const respectPts = Math.min(4, Math.round(((respectScore ?? 0) / 100) * 4));
   // fun + nurture (0-4)
+  // OR-guard: one side can be unmeasured — meanOf averages what is measured
   const funNurtureAvg =
     funObs.length > 0 || nurtureObs.length > 0
-      ? (funScore + nurtureScore) / 2
+      ? meanOf([funScore, nurtureScore])
       : null;
   const funNurturePts = Math.min(4, Math.round(((funNurtureAvg ?? 0) / 100) * 4));
 
@@ -438,13 +460,13 @@ export function evaluateChildExperience(
     return {
       overallScore: 0,
       totalFeedback: 0,
-      positiveRate: 0,
-      feelsAtHomeRate: 0,
-      feelsListenedToRate: 0,
-      feelsSafeRate: 0,
-      hasPrivacyRate: 0,
-      enjoysLivingRate: 0,
-      canBeThemselvesRate: 0,
+      positiveRate: null,
+      feelsAtHomeRate: null,
+      feelsListenedToRate: null,
+      feelsSafeRate: null,
+      hasPrivacyRate: null,
+      enjoysLivingRate: null,
+      canBeThemselvesRate: null,
     };
   }
 
@@ -453,47 +475,47 @@ export function evaluateChildExperience(
       f.overallSentiment === "very_positive" ||
       f.overallSentiment === "positive",
   ).length;
-  const positiveRate = pct(positiveCount, total);
+  const positiveRate = rate(positiveCount, total);
 
-  const feelsAtHomeRate = pct(
+  const feelsAtHomeRate = rate(
     feedback.filter((f) => f.feelsAtHome).length,
     total,
   );
-  const feelsListenedToRate = pct(
+  const feelsListenedToRate = rate(
     feedback.filter((f) => f.feelsListenedTo).length,
     total,
   );
-  const feelsSafeRate = pct(
+  const feelsSafeRate = rate(
     feedback.filter((f) => f.feelsSafe).length,
     total,
   );
-  const hasPrivacyRate = pct(
+  const hasPrivacyRate = rate(
     feedback.filter((f) => f.hasPrivacy).length,
     total,
   );
-  const enjoysLivingRate = pct(
+  const enjoysLivingRate = rate(
     feedback.filter((f) => f.enjoysLivingHere).length,
     total,
   );
-  const canBeThemselvesRate = pct(
+  const canBeThemselvesRate = rate(
     feedback.filter((f) => f.canBeThemselves).length,
     total,
   );
 
   // Scoring (0-25):
   // positive sentiment rate (0-7)
-  const posPts = Math.min(7, Math.round((positiveRate / 100) * 7));
+  const posPts = Math.min(7, Math.round((positiveRate! / 100) * 7));
   // feels safe (0-5)
-  const safePts = Math.min(5, Math.round((feelsSafeRate / 100) * 5));
+  const safePts = Math.min(5, Math.round((feelsSafeRate! / 100) * 5));
   // feels at home (0-4)
-  const homePts = Math.min(4, Math.round((feelsAtHomeRate / 100) * 4));
+  const homePts = Math.min(4, Math.round((feelsAtHomeRate! / 100) * 4));
   // listens (0-3)
-  const listenPts = Math.min(3, Math.round((feelsListenedToRate / 100) * 3));
+  const listenPts = Math.min(3, Math.round((feelsListenedToRate! / 100) * 3));
   // privacy (0-3)
-  const privacyPts = Math.min(3, Math.round((hasPrivacyRate / 100) * 3));
+  const privacyPts = Math.min(3, Math.round(((hasPrivacyRate ?? 0) / 100) * 3));
   // enjoys + can be themselves (0-3)
-  const enjoysSelfAvg = (enjoysLivingRate + canBeThemselvesRate) / 2;
-  const enjoysSelfPts = Math.min(3, Math.round((enjoysSelfAvg / 100) * 3));
+  const enjoysSelfAvg = meanOf([enjoysLivingRate, canBeThemselvesRate]);
+  const enjoysSelfPts = Math.min(3, Math.round(((enjoysSelfAvg ?? 0) / 100) * 3));
 
   const overallScore = Math.min(
     25,
@@ -523,29 +545,29 @@ export function evaluateEnvironmentQuality(
     return {
       overallScore: 0,
       totalAudits: 0,
-      cleanRate: 0,
-      personalisedRate: 0,
-      welcomingRate: 0,
-      childContributedRate: 0,
-      repairsActionedRate: 0,
-      sensoryConsideredRate: 0,
+      cleanRate: null,
+      personalisedRate: null,
+      welcomingRate: null,
+      childContributedRate: null,
+      repairsActionedRate: null,
+      sensoryConsideredRate: null,
     };
   }
 
-  const cleanRate = pct(audits.filter((a) => a.clean).length, total);
-  const personalisedRate = pct(
+  const cleanRate = rate(audits.filter((a) => a.clean).length, total);
+  const personalisedRate = rate(
     audits.filter((a) => a.personalised).length,
     total,
   );
-  const welcomingRate = pct(
+  const welcomingRate = rate(
     audits.filter((a) => a.welcoming).length,
     total,
   );
-  const childContributedRate = pct(
+  const childContributedRate = rate(
     audits.filter((a) => a.childContributed).length,
     total,
   );
-  const sensoryConsideredRate = pct(
+  const sensoryConsideredRate = rate(
     audits.filter((a) => a.sensoryConsidered).length,
     total,
   );
@@ -555,26 +577,26 @@ export function evaluateEnvironmentQuality(
   const repairsActioned = repairsNeeded.filter(
     (a) => a.repairsActioned === true,
   ).length;
-  const repairsActionedRate = pct(repairsActioned, repairsNeeded.length);
+  const repairsActionedRate = rate(repairsActioned, repairsNeeded.length);
 
   // Scoring (0-25):
   // clean (0-6)
-  const cleanPts = Math.min(6, Math.round((cleanRate / 100) * 6));
+  const cleanPts = Math.min(6, Math.round((cleanRate! / 100) * 6));
   // personalised (0-5)
-  const personalPts = Math.min(5, Math.round((personalisedRate / 100) * 5));
+  const personalPts = Math.min(5, Math.round((personalisedRate! / 100) * 5));
   // welcoming (0-4)
-  const welcomePts = Math.min(4, Math.round((welcomingRate / 100) * 4));
+  const welcomePts = Math.min(4, Math.round((welcomingRate! / 100) * 4));
   // child contributed (0-4)
   const childContribPts = Math.min(
     4,
-    Math.round((childContributedRate / 100) * 4),
+    Math.round((childContributedRate! / 100) * 4),
   );
   // repairs actioned (0-3)
-  const repairsPts = Math.min(3, Math.round((repairsActionedRate / 100) * 3));
+  const repairsPts = Math.min(3, Math.round(((repairsActionedRate ?? 0) / 100) * 3));
   // sensory considered (0-3)
   const sensoryPts = Math.min(
     3,
-    Math.round((sensoryConsideredRate / 100) * 3),
+    Math.round((sensoryConsideredRate! / 100) * 3),
   );
 
   const overallScore = Math.min(
@@ -604,54 +626,54 @@ export function evaluateStaffPractice(
     return {
       overallScore: 0,
       totalRecords: 0,
-      therapeuticRate: 0,
-      childCentredRate: 0,
-      warmInteractionRate: 0,
-      positiveReinforcementRate: 0,
-      reflectiveRate: 0,
-      boundariesRate: 0,
+      therapeuticRate: null,
+      childCentredRate: null,
+      warmInteractionRate: null,
+      positiveReinforcementRate: null,
+      reflectiveRate: null,
+      boundariesRate: null,
     };
   }
 
-  const therapeuticRate = pct(
+  const therapeuticRate = rate(
     records.filter((r) => r.therapeuticApproachUsed).length,
     total,
   );
-  const childCentredRate = pct(
+  const childCentredRate = rate(
     records.filter((r) => r.childCentredLanguage).length,
     total,
   );
-  const warmInteractionRate = pct(
+  const warmInteractionRate = rate(
     records.filter((r) => r.warmInteractionObserved).length,
     total,
   );
-  const positiveReinforcementRate = pct(
+  const positiveReinforcementRate = rate(
     records.filter((r) => r.positiveReinforcementGiven).length,
     total,
   );
-  const reflectiveRate = pct(
+  const reflectiveRate = rate(
     records.filter((r) => r.reflectivePractice).length,
     total,
   );
-  const boundariesRate = pct(
+  const boundariesRate = rate(
     records.filter((r) => r.boundariesMaintained).length,
     total,
   );
 
   // Scoring (0-25):
   // therapeutic approach (0-7)
-  const therapPts = Math.min(7, Math.round((therapeuticRate / 100) * 7));
+  const therapPts = Math.min(7, Math.round((therapeuticRate! / 100) * 7));
   // child-centred language (0-6)
-  const ccPts = Math.min(6, Math.round((childCentredRate / 100) * 6));
+  const ccPts = Math.min(6, Math.round((childCentredRate! / 100) * 6));
   // warm interaction (0-5)
-  const warmPts = Math.min(5, Math.round((warmInteractionRate / 100) * 5));
+  const warmPts = Math.min(5, Math.round((warmInteractionRate! / 100) * 5));
   // positive reinforcement (0-4)
   const posPts = Math.min(
     4,
-    Math.round((positiveReinforcementRate / 100) * 4),
+    Math.round((positiveReinforcementRate! / 100) * 4),
   );
   // reflective (0-3)
-  const reflPts = Math.min(3, Math.round((reflectiveRate / 100) * 3));
+  const reflPts = Math.min(3, Math.round((reflectiveRate! / 100) * 3));
 
   const overallScore = Math.min(
     25,
@@ -698,7 +720,7 @@ export function buildChildAtmosphereProfiles(
         r.overallSentiment === "very_positive" ||
         r.overallSentiment === "positive",
     ).length;
-    const positiveRate = pct(positiveCount, feedbackCount);
+    const positiveRate = rate(positiveCount, feedbackCount)!;
 
     // Sort by date to get latest
     const sorted = [...records].sort((a, b) => (a.date > b.date ? 1 : -1));
@@ -708,7 +730,7 @@ export function buildChildAtmosphereProfiles(
     // positiveRate contribution (0-4), feelsAtHome (0-1), feelsSafe (0-2),
     // feelsListenedTo (0-1), hasPrivacy (0-1), canBeThemselves (0-1)
     let score = 0;
-    score += Math.round((positiveRate / 100) * 4);
+    score += Math.round(((positiveRate ?? 0) / 100) * 4);
     if (latest.feelsAtHome) score += 1;
     if (latest.feelsSafe) score += 2;
     if (latest.feelsListenedTo) score += 1;
@@ -778,7 +800,7 @@ export function generateHomeAtmosphereEthosIntelligence(
   // ── Strengths ──────────────────────────────────────────────────────────
   const strengths: string[] = [];
 
-  if (warmthCulture.excellentGoodRate >= 80 && warmthCulture.totalObservations > 0) {
+  if (meets(warmthCulture.excellentGoodRate, 80) && warmthCulture.totalObservations > 0) {
     strengths.push(
       "The home demonstrates a consistently warm and positive atmosphere with the majority of observations rated excellent or good.",
     );
@@ -788,57 +810,57 @@ export function generateHomeAtmosphereEthosIntelligence(
       "Warmth is strongly embedded in the culture, with staff creating a genuinely caring environment.",
     );
   }
-  if (warmthCulture.respectScore >= 80) {
+  if (meets(warmthCulture.respectScore, 80)) {
     strengths.push(
       "Respect between staff and children is consistently observed, promoting dignity and positive relationships.",
     );
   }
-  if (childExperience.positiveRate >= 80 && childExperience.totalFeedback > 0) {
+  if (meets(childExperience.positiveRate, 80) && childExperience.totalFeedback > 0) {
     strengths.push(
       "Children overwhelmingly report positive experiences of living in the home.",
     );
   }
-  if (childExperience.feelsSafeRate >= 90) {
+  if (meets(childExperience.feelsSafeRate, 90)) {
     strengths.push(
       "Children consistently report feeling safe, which is fundamental to a positive living environment.",
     );
   }
-  if (childExperience.feelsAtHomeRate >= 80) {
+  if (meets(childExperience.feelsAtHomeRate, 80)) {
     strengths.push(
       "Children feel at home, indicating the environment successfully creates a sense of belonging.",
     );
   }
-  if (childExperience.canBeThemselvesRate >= 80) {
+  if (meets(childExperience.canBeThemselvesRate, 80)) {
     strengths.push(
       "Children feel they can be themselves, reflecting an inclusive and accepting culture.",
     );
   }
-  if (environmentQuality.cleanRate >= 90 && environmentQuality.totalAudits > 0) {
+  if (meets(environmentQuality.cleanRate, 90) && environmentQuality.totalAudits > 0) {
     strengths.push(
       "The home is consistently maintained to a high standard of cleanliness.",
     );
   }
-  if (environmentQuality.personalisedRate >= 80) {
+  if (meets(environmentQuality.personalisedRate, 80)) {
     strengths.push(
       "Living spaces are personalised to children's tastes and preferences, creating a homely feel.",
     );
   }
-  if (environmentQuality.childContributedRate >= 80) {
+  if (meets(environmentQuality.childContributedRate, 80)) {
     strengths.push(
       "Children actively contribute to their environment, demonstrating meaningful participation.",
     );
   }
-  if (staffPractice.therapeuticRate >= 80 && staffPractice.totalRecords > 0) {
+  if (meets(staffPractice.therapeuticRate, 80) && staffPractice.totalRecords > 0) {
     strengths.push(
       "Therapeutic approaches are well embedded in staff practice across the team.",
     );
   }
-  if (staffPractice.warmInteractionRate >= 80) {
+  if (meets(staffPractice.warmInteractionRate, 80)) {
     strengths.push(
       "Warm interactions between staff and children are consistently observed, nurturing positive attachments.",
     );
   }
-  if (staffPractice.reflectiveRate >= 80) {
+  if (meets(staffPractice.reflectiveRate, 80)) {
     strengths.push(
       "Staff engage in reflective practice, continuously improving the quality of care.",
     );
@@ -847,42 +869,42 @@ export function generateHomeAtmosphereEthosIntelligence(
   // ── Areas for Improvement ──────────────────────────────────────────────
   const areasForImprovement: string[] = [];
 
-  if (warmthCulture.excellentGoodRate < 60 && warmthCulture.totalObservations > 0) {
+  if (below(warmthCulture.excellentGoodRate, 60) && warmthCulture.totalObservations > 0) {
     areasForImprovement.push(
       "Fewer than 60% of atmosphere observations are rated excellent or good — the home needs to embed a more consistently positive culture.",
     );
   }
-  if (warmthCulture.calmScore < 60 && warmthCulture.totalObservations > 0) {
+  if (below(warmthCulture.calmScore, 60) && warmthCulture.totalObservations > 0) {
     areasForImprovement.push(
       "Calm and safety scores indicate inconsistency — consider reviewing de-escalation approaches and daily routines.",
     );
   }
-  if (warmthCulture.funScore < 50 && warmthCulture.totalObservations > 0) {
+  if (below(warmthCulture.funScore, 50) && warmthCulture.totalObservations > 0) {
     areasForImprovement.push(
       "Fun and enjoyment are not strongly evidenced — ensure children have regular access to enjoyable activities.",
     );
   }
-  if (childExperience.feelsSafeRate < 80 && childExperience.totalFeedback > 0) {
+  if (below(childExperience.feelsSafeRate, 80) && childExperience.totalFeedback > 0) {
     areasForImprovement.push(
       "Not all children consistently feel safe — this must be urgently addressed as safety is a fundamental need.",
     );
   }
-  if (childExperience.feelsListenedToRate < 70 && childExperience.totalFeedback > 0) {
+  if (below(childExperience.feelsListenedToRate, 70) && childExperience.totalFeedback > 0) {
     areasForImprovement.push(
       "Children do not consistently feel listened to — review how children's views are sought and acted upon.",
     );
   }
-  if (childExperience.hasPrivacyRate < 70 && childExperience.totalFeedback > 0) {
+  if (below(childExperience.hasPrivacyRate, 70) && childExperience.totalFeedback > 0) {
     areasForImprovement.push(
       "Privacy concerns are raised by children — ensure each child has appropriate private space and time.",
     );
   }
-  if (environmentQuality.personalisedRate < 60 && environmentQuality.totalAudits > 0) {
+  if (below(environmentQuality.personalisedRate, 60) && environmentQuality.totalAudits > 0) {
     areasForImprovement.push(
       "Many areas lack personalisation — involve children in decorating and personalising communal and private spaces.",
     );
   }
-  if (environmentQuality.repairsActionedRate < 80 && environmentQuality.totalAudits > 0) {
+  if (below(environmentQuality.repairsActionedRate, 80) && environmentQuality.totalAudits > 0) {
     const repairsNeeded = audits.filter((a) => a.repairsNeeded).length;
     if (repairsNeeded > 0) {
       areasForImprovement.push(
@@ -890,17 +912,17 @@ export function generateHomeAtmosphereEthosIntelligence(
       );
     }
   }
-  if (staffPractice.therapeuticRate < 70 && staffPractice.totalRecords > 0) {
+  if (below(staffPractice.therapeuticRate, 70) && staffPractice.totalRecords > 0) {
     areasForImprovement.push(
       "Therapeutic approaches are not consistently used — consider additional training and supervision to embed therapeutic care.",
     );
   }
-  if (staffPractice.childCentredRate < 70 && staffPractice.totalRecords > 0) {
+  if (below(staffPractice.childCentredRate, 70) && staffPractice.totalRecords > 0) {
     areasForImprovement.push(
       "Child-centred language is not used consistently across the team — address in supervision and team meetings.",
     );
   }
-  if (staffPractice.reflectiveRate < 60 && staffPractice.totalRecords > 0) {
+  if (below(staffPractice.reflectiveRate, 60) && staffPractice.totalRecords > 0) {
     areasForImprovement.push(
       "Reflective practice is not well embedded — ensure all staff have regular reflective supervision.",
     );
@@ -909,58 +931,58 @@ export function generateHomeAtmosphereEthosIntelligence(
   // ── Actions ────────────────────────────────────────────────────────────
   const actions: string[] = [];
 
-  if (childExperience.feelsSafeRate < 80 && childExperience.totalFeedback > 0) {
+  if (below(childExperience.feelsSafeRate, 80) && childExperience.totalFeedback > 0) {
     actions.push(
       "URGENT: Conduct individual sessions with all children to understand safety concerns and develop immediate action plans.",
     );
   }
-  if (warmthCulture.excellentGoodRate < 50 && warmthCulture.totalObservations > 0) {
+  if (below(warmthCulture.excellentGoodRate, 50) && warmthCulture.totalObservations > 0) {
     actions.push(
       "URGENT: Review the home's culture and ethos with the entire staff team and develop an improvement plan.",
     );
   }
-  if (childExperience.feelsListenedToRate < 70 && childExperience.totalFeedback > 0) {
+  if (below(childExperience.feelsListenedToRate, 70) && childExperience.totalFeedback > 0) {
     actions.push(
       "Strengthen children's participation by implementing regular house meetings and individual consultation sessions.",
     );
   }
-  if (childExperience.hasPrivacyRate < 70 && childExperience.totalFeedback > 0) {
+  if (below(childExperience.hasPrivacyRate, 70) && childExperience.totalFeedback > 0) {
     actions.push(
       "Review privacy arrangements for each child and make adjustments to ensure appropriate private space and time.",
     );
   }
-  if (environmentQuality.personalisedRate < 70 && environmentQuality.totalAudits > 0) {
+  if (below(environmentQuality.personalisedRate, 70) && environmentQuality.totalAudits > 0) {
     actions.push(
       "Work with each child to personalise their bedroom and involve children in decisions about communal spaces.",
     );
   }
-  if (environmentQuality.childContributedRate < 60 && environmentQuality.totalAudits > 0) {
+  if (below(environmentQuality.childContributedRate, 60) && environmentQuality.totalAudits > 0) {
     actions.push(
       "Increase children's involvement in environmental decisions through house meetings and choice boards.",
     );
   }
-  if (staffPractice.therapeuticRate < 70 && staffPractice.totalRecords > 0) {
+  if (below(staffPractice.therapeuticRate, 70) && staffPractice.totalRecords > 0) {
     actions.push(
       "Arrange therapeutic care refresher training for all staff within the next review period.",
     );
   }
-  if (staffPractice.childCentredRate < 70 && staffPractice.totalRecords > 0) {
+  if (below(staffPractice.childCentredRate, 70) && staffPractice.totalRecords > 0) {
     actions.push(
       "Include child-centred language as a standing agenda item in team meetings and supervision.",
     );
   }
-  if (staffPractice.reflectiveRate < 60 && staffPractice.totalRecords > 0) {
+  if (below(staffPractice.reflectiveRate, 60) && staffPractice.totalRecords > 0) {
     actions.push(
       "Schedule monthly reflective practice sessions for all staff members.",
     );
   }
-  if (warmthCulture.funScore < 50 && warmthCulture.totalObservations > 0) {
+  if (below(warmthCulture.funScore, 50) && warmthCulture.totalObservations > 0) {
     actions.push(
       "Develop a weekly activities programme that prioritises fun and enjoyment alongside therapeutic goals.",
     );
   }
   if (
-    environmentQuality.repairsActionedRate < 80 &&
+    below(environmentQuality.repairsActionedRate, 80) &&
     environmentQuality.totalAudits > 0 &&
     audits.filter((a) => a.repairsNeeded).length > 0
   ) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -196,22 +197,22 @@ export default function IndependentVisitorAdvocacyDashboardWidget() {
       <Section title="Visitor Activity" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Visits" value={data.visitorActivity.totalVisits} />
-          <Stat label="Positive Outcome" value={`${data.visitorActivity.positiveOutcomeRate}%`} />
-          <Stat label="Child Engaged" value={`${data.visitorActivity.childEngagementRate}%`} />
-          <Stat label="Child Satisfied" value={`${data.visitorActivity.childSatisfactionRate}%`} />
-          <Stat label="Recorded" value={`${data.visitorActivity.recordedRate}%`} />
-          <Stat label="Private Time" value={`${data.visitorActivity.privateTimeRate}%`} />
+          <Stat label="Positive Outcome" value={`${formatRate(data.visitorActivity.positiveOutcomeRate)}`} />
+          <Stat label="Child Engaged" value={`${formatRate(data.visitorActivity.childEngagementRate)}`} />
+          <Stat label="Child Satisfied" value={`${formatRate(data.visitorActivity.childSatisfactionRate)}`} />
+          <Stat label="Recorded" value={`${formatRate(data.visitorActivity.recordedRate)}`} />
+          <Stat label="Private Time" value={`${formatRate(data.visitorActivity.privateTimeRate)}`} />
         </div>
       </Section>
 
       <Section title="Advocacy Access">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Referrals" value={data.advocacyAccess.totalReferrals} />
-          <Stat label="Successful" value={`${data.advocacyAccess.successfulRate}%`} />
-          <Stat label="Informed of Rights" value={`${data.advocacyAccess.informedOfRightsRate}%`} />
-          <Stat label="Consent Obtained" value={`${data.advocacyAccess.consentObtainedRate}%`} />
-          <Stat label="Timely Response" value={`${data.advocacyAccess.timelyResponseRate}%`} />
-          <Stat label="Child Satisfied" value={`${data.advocacyAccess.childSatisfactionRate}%`} />
+          <Stat label="Successful" value={`${formatRate(data.advocacyAccess.successfulRate)}`} />
+          <Stat label="Informed of Rights" value={`${formatRate(data.advocacyAccess.informedOfRightsRate)}`} />
+          <Stat label="Consent Obtained" value={`${formatRate(data.advocacyAccess.consentObtainedRate)}`} />
+          <Stat label="Timely Response" value={`${formatRate(data.advocacyAccess.timelyResponseRate)}`} />
+          <Stat label="Child Satisfied" value={`${formatRate(data.advocacyAccess.childSatisfactionRate)}`} />
         </div>
       </Section>
 
@@ -237,12 +238,12 @@ export default function IndependentVisitorAdvocacyDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffAdvocacyReadiness.totalStaff} />
-          <Stat label="Advocacy Rights" value={`${data.staffAdvocacyReadiness.advocacyRightsRate}%`} />
-          <Stat label="IV Role" value={`${data.staffAdvocacyReadiness.independentVisitorRate}%`} />
-          <Stat label="Complaints" value={`${data.staffAdvocacyReadiness.complaintsProcessRate}%`} />
-          <Stat label="Signposting" value={`${data.staffAdvocacyReadiness.signpostingRate}%`} />
-          <Stat label="Participation" value={`${data.staffAdvocacyReadiness.childParticipationRate}%`} />
-          <Stat label="Confidentiality" value={`${data.staffAdvocacyReadiness.confidentialityRate}%`} />
+          <Stat label="Advocacy Rights" value={`${formatRate(data.staffAdvocacyReadiness.advocacyRightsRate)}`} />
+          <Stat label="IV Role" value={`${formatRate(data.staffAdvocacyReadiness.independentVisitorRate)}`} />
+          <Stat label="Complaints" value={`${formatRate(data.staffAdvocacyReadiness.complaintsProcessRate)}`} />
+          <Stat label="Signposting" value={`${formatRate(data.staffAdvocacyReadiness.signpostingRate)}`} />
+          <Stat label="Participation" value={`${formatRate(data.staffAdvocacyReadiness.childParticipationRate)}`} />
+          <Stat label="Confidentiality" value={`${formatRate(data.staffAdvocacyReadiness.confidentialityRate)}`} />
         </div>
       </Section>
 

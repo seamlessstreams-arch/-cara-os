@@ -17,6 +17,7 @@
    ────────────────────────────────────────────────────────────── */
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -126,18 +127,25 @@ export interface StaffHrFilesTraining {
 export interface HrFilesQualityResult {
   overallScore: number;
   totalRecords: number;
-  recordAccurateRate: number;
-  signaturesObtainedRate: number;
-  actionPointsDocumentedRate: number;
-  timeframesMetRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  recordAccurateRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  signaturesObtainedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionPointsDocumentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timeframesMetRate: number | null;
 }
 
 export interface HrFilesComplianceResult {
   overallScore: number;
   totalRecords: number;
-  documentationCompleteRate: number;
-  timelyRecordingRate: number;
-  recordAccurateRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationCompleteRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  recordAccurateRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
 }
@@ -156,12 +164,18 @@ export interface HrFilesPolicyResult {
 export interface StaffHrFilesReadinessResult {
   overallScore: number;
   totalStaff: number;
-  hrPolicyKnowledgeRate: number;
-  supervisionSkillsRate: number;
-  saferRecruitmentKnowledgeRate: number;
-  trainingComplianceSkillsRate: number;
-  absenceManagementSkillsRate: number;
-  performanceReviewSkillsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  hrPolicyKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  supervisionSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  saferRecruitmentKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  trainingComplianceSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  absenceManagementSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  performanceReviewSkillsRate: number | null;
 }
 
 export interface ChildHrFilesProfile {
@@ -193,11 +207,6 @@ export interface HrFilesIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -213,19 +222,19 @@ export function evaluateHrFilesQuality(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, recordAccurateRate: 0, signaturesObtainedRate: 0, actionPointsDocumentedRate: 0, timeframesMetRate: 0 };
+    return { overallScore: 0, totalRecords: 0, recordAccurateRate: null, signaturesObtainedRate: null, actionPointsDocumentedRate: null, timeframesMetRate: null };
   }
 
-  const recordAccurateRate = pct(records.filter((r) => r.recordAccurate).length, n);
-  const signaturesObtainedRate = pct(records.filter((r) => r.signaturesObtained).length, n);
-  const actionPointsDocumentedRate = pct(records.filter((r) => r.actionPointsDocumented).length, n);
-  const timeframesMetRate = pct(records.filter((r) => r.timeframesMet).length, n);
+  const recordAccurateRate = rate(records.filter((r) => r.recordAccurate).length, n);
+  const signaturesObtainedRate = rate(records.filter((r) => r.signaturesObtained).length, n);
+  const actionPointsDocumentedRate = rate(records.filter((r) => r.actionPointsDocumented).length, n);
+  const timeframesMetRate = rate(records.filter((r) => r.timeframesMet).length, n);
 
   let score = 0;
-  score += (recordAccurateRate / 100) * 7;
-  score += (signaturesObtainedRate / 100) * 6;
-  score += (actionPointsDocumentedRate / 100) * 6;
-  score += (timeframesMetRate / 100) * 6;
+  score += (recordAccurateRate! / 100) * 7;
+  score += (signaturesObtainedRate! / 100) * 6;
+  score += (actionPointsDocumentedRate! / 100) * 6;
+  score += (timeframesMetRate! / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -240,21 +249,21 @@ export function evaluateHrFilesCompliance(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: 0, timelyRecordingRate: 0, recordAccurateRate: 0, categoryDiversityRatio: 0, uniqueCategories: 0 };
+    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: null, timelyRecordingRate: null, recordAccurateRate: null, categoryDiversityRatio: 0, uniqueCategories: 0 };
   }
 
-  const documentationCompleteRate = pct(records.filter((r) => r.documentationComplete).length, n);
-  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, n);
-  const recordAccurateRate = pct(records.filter((r) => r.recordAccurate).length, n);
+  const documentationCompleteRate = rate(records.filter((r) => r.documentationComplete).length, n);
+  const timelyRecordingRate = rate(records.filter((r) => r.timelyRecording).length, n);
+  const recordAccurateRate = rate(records.filter((r) => r.recordAccurate).length, n);
 
   const uniqueCategoriesSet = new Set(records.map((r) => r.category));
   const uniqueCategories = uniqueCategoriesSet.size;
   const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
 
   let score = 0;
-  score += (documentationCompleteRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (recordAccurateRate / 100) * 5;
+  score += (documentationCompleteRate! / 100) * 8;
+  score += (timelyRecordingRate! / 100) * 7;
+  score += (recordAccurateRate! / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -300,23 +309,23 @@ export function evaluateStaffHrFilesReadiness(
   const n = training.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalStaff: 0, hrPolicyKnowledgeRate: 0, supervisionSkillsRate: 0, saferRecruitmentKnowledgeRate: 0, trainingComplianceSkillsRate: 0, absenceManagementSkillsRate: 0, performanceReviewSkillsRate: 0 };
+    return { overallScore: 0, totalStaff: 0, hrPolicyKnowledgeRate: null, supervisionSkillsRate: null, saferRecruitmentKnowledgeRate: null, trainingComplianceSkillsRate: null, absenceManagementSkillsRate: null, performanceReviewSkillsRate: null };
   }
 
-  const hrPolicyKnowledgeRate = pct(training.filter((t) => t.hrPolicyKnowledge).length, n);
-  const supervisionSkillsRate = pct(training.filter((t) => t.supervisionSkills).length, n);
-  const saferRecruitmentKnowledgeRate = pct(training.filter((t) => t.saferRecruitmentKnowledge).length, n);
-  const trainingComplianceSkillsRate = pct(training.filter((t) => t.trainingComplianceSkills).length, n);
-  const absenceManagementSkillsRate = pct(training.filter((t) => t.absenceManagementSkills).length, n);
-  const performanceReviewSkillsRate = pct(training.filter((t) => t.performanceReviewSkills).length, n);
+  const hrPolicyKnowledgeRate = rate(training.filter((t) => t.hrPolicyKnowledge).length, n);
+  const supervisionSkillsRate = rate(training.filter((t) => t.supervisionSkills).length, n);
+  const saferRecruitmentKnowledgeRate = rate(training.filter((t) => t.saferRecruitmentKnowledge).length, n);
+  const trainingComplianceSkillsRate = rate(training.filter((t) => t.trainingComplianceSkills).length, n);
+  const absenceManagementSkillsRate = rate(training.filter((t) => t.absenceManagementSkills).length, n);
+  const performanceReviewSkillsRate = rate(training.filter((t) => t.performanceReviewSkills).length, n);
 
   let score = 0;
-  score += (hrPolicyKnowledgeRate / 100) * 6;
-  score += (supervisionSkillsRate / 100) * 5;
-  score += (saferRecruitmentKnowledgeRate / 100) * 5;
-  score += (trainingComplianceSkillsRate / 100) * 4;
-  score += (absenceManagementSkillsRate / 100) * 3;
-  score += (performanceReviewSkillsRate / 100) * 2;
+  score += (hrPolicyKnowledgeRate! / 100) * 6;
+  score += (supervisionSkillsRate! / 100) * 5;
+  score += (saferRecruitmentKnowledgeRate! / 100) * 5;
+  score += (trainingComplianceSkillsRate! / 100) * 4;
+  score += (absenceManagementSkillsRate! / 100) * 3;
+  score += (performanceReviewSkillsRate! / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -341,8 +350,8 @@ export function buildChildHrFilesProfiles(
 
   return Array.from(childMap.values()).map((child) => {
     const totalRecords = child.records.length;
-    const recordAccurateRate = pct(child.records.filter((r) => r.recordAccurate).length, totalRecords);
-    const signaturesObtainedRate = pct(child.records.filter((r) => r.signaturesObtained).length, totalRecords);
+    const recordAccurateRate = rate(child.records.filter((r) => r.recordAccurate).length, totalRecords)!;
+    const signaturesObtainedRate = rate(child.records.filter((r) => r.signaturesObtained).length, totalRecords)!;
     const uniqueCategoriesSet = new Set(child.records.map((r) => r.category));
     const categoriesCovered = Array.from(uniqueCategoriesSet);
 
@@ -351,14 +360,14 @@ export function buildChildHrFilesProfiles(
     else if (totalRecords >= 5) frequencyScore = 1;
 
     let rate1Score = 0;
-    if (recordAccurateRate >= 80) rate1Score = 3;
-    else if (recordAccurateRate >= 60) rate1Score = 2;
-    else if (recordAccurateRate >= 40) rate1Score = 1;
+    if (meets(recordAccurateRate, 80)) rate1Score = 3;
+    else if (meets(recordAccurateRate, 60)) rate1Score = 2;
+    else if (meets(recordAccurateRate, 40)) rate1Score = 1;
 
     let rate2Score = 0;
-    if (signaturesObtainedRate >= 80) rate2Score = 3;
-    else if (signaturesObtainedRate >= 60) rate2Score = 2;
-    else if (signaturesObtainedRate >= 40) rate2Score = 1;
+    if (meets(signaturesObtainedRate, 80)) rate2Score = 3;
+    else if (meets(signaturesObtainedRate, 60)) rate2Score = 2;
+    else if (meets(signaturesObtainedRate, 40)) rate2Score = 1;
 
     let diversityBonus = 0;
     if (categoriesCovered.length >= 4) diversityBonus = 2;
@@ -407,9 +416,9 @@ export function generateHrFilesIntelligence(
   if (complianceResult.overallScore >= 20) strengths.push("HR compliance is strong (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore >= 20) strengths.push("HR policy framework is robust (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore >= 20) strengths.push("Staff HR readiness is strong (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.recordAccurateRate >= 90) strengths.push("Record accuracy rate at " + qualityResult.recordAccurateRate + "%");
-  if (periodRecords.length > 0 && qualityResult.signaturesObtainedRate >= 90) strengths.push("Signatures obtained rate at " + qualityResult.signaturesObtainedRate + "%");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate >= 90) strengths.push("Documentation rate at " + complianceResult.documentationCompleteRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.recordAccurateRate, 90)) strengths.push("Record accuracy rate at " + qualityResult.recordAccurateRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.signaturesObtainedRate, 90)) strengths.push("Signatures obtained rate at " + qualityResult.signaturesObtainedRate + "%");
+  if (periodRecords.length > 0 && meets(complianceResult.documentationCompleteRate, 90)) strengths.push("Documentation rate at " + complianceResult.documentationCompleteRate + "%");
 
   // ── Areas for improvement ─────────────────────────────────────────────
   const areasForImprovement: string[] = [];
@@ -419,7 +428,7 @@ export function generateHrFilesIntelligence(
   if (complianceResult.overallScore < 15) areasForImprovement.push("HR compliance needs improvement (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore < 15) areasForImprovement.push("HR policy needs strengthening (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore < 15) areasForImprovement.push("Staff HR readiness needs improvement (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.recordAccurateRate < 80) areasForImprovement.push("Record accuracy at " + qualityResult.recordAccurateRate + "% — must improve for audit trail");
+  if (periodRecords.length > 0 && below(qualityResult.recordAccurateRate, 80)) areasForImprovement.push("Record accuracy at " + qualityResult.recordAccurateRate + "% — must improve for audit trail");
   if (periodRecords.length === 0) areasForImprovement.push("No HR file records — workforce documentation must be maintained");
   if (policy === null) areasForImprovement.push("No HR files policy in place — statutory requirement");
   if (staff.length === 0) areasForImprovement.push("No staff HR training records — training required");
@@ -428,11 +437,11 @@ export function generateHrFilesIntelligence(
   const actions: string[] = [];
   if (policy === null || policyResult.overallScore === 0) actions.push("URGENT: No HR files policy — develop and implement comprehensive policy immediately");
   if (staff.length === 0) actions.push("URGENT: No staff HR training — schedule training for all staff");
-  if (periodRecords.length > 0 && qualityResult.recordAccurateRate < 50) actions.push("HIGH: Record accuracy at " + qualityResult.recordAccurateRate + "% — review recording processes");
-  if (periodRecords.length > 0 && qualityResult.signaturesObtainedRate < 50) actions.push("HIGH: Signatures obtained at " + qualityResult.signaturesObtainedRate + "% — ensure signatures are consistently captured");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate < 50) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all HR records must be completed");
-  if (periodRecords.length > 0 && complianceResult.timelyRecordingRate < 50) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
-  if (staff.length > 0 && staffResult.hrPolicyKnowledgeRate < 50) actions.push("MEDIUM: HR policy knowledge at " + staffResult.hrPolicyKnowledgeRate + "% — schedule training for staff");
+  if (periodRecords.length > 0 && below(qualityResult.recordAccurateRate, 50)) actions.push("HIGH: Record accuracy at " + qualityResult.recordAccurateRate + "% — review recording processes");
+  if (periodRecords.length > 0 && below(qualityResult.signaturesObtainedRate, 50)) actions.push("HIGH: Signatures obtained at " + qualityResult.signaturesObtainedRate + "% — ensure signatures are consistently captured");
+  if (periodRecords.length > 0 && below(complianceResult.documentationCompleteRate, 50)) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all HR records must be completed");
+  if (periodRecords.length > 0 && below(complianceResult.timelyRecordingRate, 50)) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
+  if (staff.length > 0 && below(staffResult.hrPolicyKnowledgeRate, 50)) actions.push("MEDIUM: HR policy knowledge at " + staffResult.hrPolicyKnowledgeRate + "% — schedule training for staff");
   const lowScoreChildren = childProfiles.filter((p) => p.overallScore <= 3);
   if (lowScoreChildren.length > 0) actions.push("MEDIUM: " + lowScoreChildren.length + " staff member(s) with low HR file scores — review individual records");
   if (actions.length === 0) actions.push("No immediate actions required. HR files systems operating within expected standards.");

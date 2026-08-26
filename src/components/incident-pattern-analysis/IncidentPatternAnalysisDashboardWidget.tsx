@@ -13,6 +13,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useEffect } from "react";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 // ── Local interfaces for API response shape ─────────────────────────────
 
@@ -360,18 +361,18 @@ export function IncidentPatternAnalysisDashboardWidget() {
         />
         <MetricCard
           label="De-escalation"
-          value={`${data.incidentResponse.deEscalationSuccessRate}%`}
-          color={data.incidentResponse.deEscalationSuccessRate >= 70 ? "green" : "amber"}
+          value={`${formatRate(data.incidentResponse.deEscalationSuccessRate)}`}
+          color={meets(data.incidentResponse.deEscalationSuccessRate, 70) ? "green" : "amber"}
         />
         <MetricCard
           label="Child Debrief"
-          value={`${data.incidentResponse.childDebriefRate}%`}
-          color={data.incidentResponse.childDebriefRate >= 80 ? "green" : "amber"}
+          value={`${formatRate(data.incidentResponse.childDebriefRate)}`}
+          color={meets(data.incidentResponse.childDebriefRate, 80) ? "green" : "amber"}
         />
         <MetricCard
           label="Notification"
-          value={`${data.notificationCompliance.timelyCompleteRate}%`}
-          color={data.notificationCompliance.timelyCompleteRate >= 80 ? "green" : "amber"}
+          value={`${formatRate(data.notificationCompliance.timelyCompleteRate)}`}
+          color={meets(data.notificationCompliance.timelyCompleteRate, 80) ? "green" : "amber"}
         />
       </div>
 
@@ -421,13 +422,13 @@ export function IncidentPatternAnalysisDashboardWidget() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <MetricCard
             label="Response Quality"
-            value={`${data.incidentResponse.responseQualityRate}%`}
-            color={data.incidentResponse.responseQualityRate >= 80 ? "green" : "amber"}
+            value={`${formatRate(data.incidentResponse.responseQualityRate)}`}
+            color={meets(data.incidentResponse.responseQualityRate, 80) ? "green" : "amber"}
           />
           <MetricCard
             label="Restraint Rate"
-            value={`${data.incidentResponse.restraintRate}%`}
-            color={data.incidentResponse.restraintRate === 0 ? "green" : "red"}
+            value={`${formatRate(data.incidentResponse.restraintRate)}`}
+            color={data.incidentResponse.restraintRate === null ? "blue" : data.incidentResponse.restraintRate === 0 ? "green" : "red"}
           />
           <MetricCard
             label="Avg Response"
@@ -447,8 +448,8 @@ export function IncidentPatternAnalysisDashboardWidget() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <MetricCard
             label="Timely & Complete"
-            value={`${data.notificationCompliance.timelyCompleteRate}%`}
-            color={data.notificationCompliance.timelyCompleteRate >= 90 ? "green" : "amber"}
+            value={`${formatRate(data.notificationCompliance.timelyCompleteRate)}`}
+            color={meets(data.notificationCompliance.timelyCompleteRate, 90) ? "green" : "amber"}
           />
           <MetricCard
             label="Late"
@@ -462,8 +463,8 @@ export function IncidentPatternAnalysisDashboardWidget() {
           />
           <MetricCard
             label="Managers Informed"
-            value={`${data.notificationCompliance.managersInformedRate}%`}
-            color={data.notificationCompliance.managersInformedRate >= 90 ? "green" : "amber"}
+            value={`${formatRate(data.notificationCompliance.managersInformedRate)}`}
+            color={meets(data.notificationCompliance.managersInformedRate, 90) ? "green" : "amber"}
           />
         </div>
       </CollapsibleSection>
@@ -483,8 +484,8 @@ export function IncidentPatternAnalysisDashboardWidget() {
           />
           <MetricCard
             label="Lessons Rate"
-            value={`${data.patternAnalysis.lessonsIdentifiedRate}%`}
-            color={data.patternAnalysis.lessonsIdentifiedRate >= 80 ? "green" : "amber"}
+            value={`${formatRate(data.patternAnalysis.lessonsIdentifiedRate)}`}
+            color={meets(data.patternAnalysis.lessonsIdentifiedRate, 80) ? "green" : "amber"}
           />
           <MetricCard
             label="Triggers Found"
@@ -507,17 +508,17 @@ export function IncidentPatternAnalysisDashboardWidget() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <MetricCard
             label="Debrief Rate"
-            value={`${data.postIncident.debriefCompletionRate}%`}
-            color={data.postIncident.debriefCompletionRate >= 80 ? "green" : "amber"}
+            value={`${formatRate(data.postIncident.debriefCompletionRate)}`}
+            color={meets(data.postIncident.debriefCompletionRate, 80) ? "green" : "amber"}
           />
           <MetricCard
             label="Plan Updated"
-            value={`${data.postIncident.supportPlanUpdateRate}%`}
-            color={data.postIncident.supportPlanUpdateRate >= 70 ? "green" : "amber"}
+            value={`${formatRate(data.postIncident.supportPlanUpdateRate)}`}
+            color={meets(data.postIncident.supportPlanUpdateRate, 70) ? "green" : "amber"}
           />
           <MetricCard
             label="Medical"
-            value={`${data.postIncident.medicalAttentionRate}%`}
+            value={`${formatRate(data.postIncident.medicalAttentionRate)}`}
             color="blue"
           />
           <MetricCard
