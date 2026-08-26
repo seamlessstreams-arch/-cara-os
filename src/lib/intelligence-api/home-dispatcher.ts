@@ -3054,7 +3054,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const belongings: BelongingsInput[] = rawBelongings.map((b) => {
       const items = (b.items ?? []) as any[];
       const lost = items.filter((i) => i.status === "lost" || i.status === "damaged").length;
-      const replaced = items.filter((i) => i.status === "replaced").length;
+      // BelongingItemStatus has no "replaced" value — replacement is unmeasurable
+      const replaced = 0;
       return {
         child_id: b.child_id ?? "",
         inventory_up_to_date: !!(b.admission_inventory_complete ?? b.inventory_up_to_date),
@@ -3091,7 +3092,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       date: (g.date ?? today).toString().slice(0, 10),
       occasion: g.reason ?? g.occasion ?? "other",
       age_appropriate: g.approval_status === "approved" || !!(g.age_appropriate ?? true),
-      child_involved_in_choice: !!(g.child_involved_in_choice ?? (g.direction === "given_to_child" ? false : true)),
+      child_involved_in_choice: !!(g.child_involved_in_choice ?? (g.direction === "given" ? false : true)),
     }));
   
     const result = computeBelongingPersonalProperty({
@@ -3582,7 +3583,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       date: (e.request_date ?? e.date ?? today).toString().slice(0, 10),
       type: e.reason ?? e.type ?? "crisis",
       response_within_24h: e.response_time != null ? e.response_time <= 24 : !!(e.response_within_24h),
-      follow_up_completed: !!(e.follow_up_completed ?? e.status === "completed"),
+      // EmergencyReferral records no follow-up field and its status is
+      // accepted_emergency | declined | pending_capacity — unmeasured, not claimed
+      follow_up_completed: false,
     }));
   
     // Specialist contacts — aggregate from OT, opticians, dental, and health assessments
@@ -3669,7 +3672,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         reviewed_at: a.reviewed_at ?? null,
         approved_at: a.approved_at ?? a.reviewed_at ?? null,
         rejected_by: a.rejected_by ?? null,
-        has_structured_content: a.structured_content != null && a.structured_content !== "",
+        has_structured_content: a.structured_content != null,
         has_plain_text: a.plain_text_content != null && a.plain_text_content !== "",
         source_ids_count: Array.isArray(a.source_ids) ? a.source_ids.length : 0,
       }));
@@ -3784,7 +3787,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       id: p.id ?? "",
       policy_name: p.title ?? "",
       last_reviewed: (p.last_review_date ?? "").toString().slice(0, 10),
-      is_current: p.status === "current" || p.status === "approved",
+      is_current: p.status === "current",
       staff_aware: p.staff_total > 0 ? (p.staff_signed / p.staff_total) >= 0.8 : false,
     }));
   
@@ -3797,7 +3800,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         id: o.id ?? "",
         date: (o.date ?? today).toString().slice(0, 10),
         type: o.engagement_type ?? "self_evaluation",
-        completed: o.engagement_status === "completed" || o.engagement_status === "closed",
+        completed: o.engagement_status === "closed_resolved",
         actions_arising: actions.length,
         actions_resolved: resolved,
       };
@@ -7258,7 +7261,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       id: p.id ?? "",
       child_id: p.child_id ?? "",
       has_screen_time_limits: ((p.agreed_screen_time_limits ?? []) as any[]).length > 0,
-      parental_controls_active: p.parental_controls_level !== "none" && p.parental_controls_level !== undefined,
+      parental_controls_active: p.parental_controls_level === "light" || p.parental_controls_level === "standard" || p.parental_controls_level === "high",
       has_exploitation_risk_assessment:
         ((p.exploitation_risk_factors ?? []) as any[]).length > 0 ||
         ((p.exploitation_protections ?? []) as any[]).length > 0,
@@ -7698,7 +7701,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       child_views_provided: !!(p.child_views),
       carer_views_provided: !!(p.carer_views),
       targets_count: Array.isArray(p.targets) ? p.targets.length : 0,
-      targets_met_count: Array.isArray(p.targets) ? (p.targets as any[]).filter((t) => t.attainment === "achieved" || t.progress === "exceeded").length : 0,
+      targets_met_count: Array.isArray(p.targets) ? (p.targets as any[]).filter((t) => t.attainment === "above" || t.attainment === "at" || t.progress === "exceeded").length : 0,
       pupil_premium_amount: typeof p.pupil_premium?.annual_allocation === "number" ? p.pupil_premium.annual_allocation : 0,
     }));
   
@@ -9060,7 +9063,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         opening_compliance: !!(w.opening_compliance_with_100mm_rule),
         outcome: w.outcome ?? "pass",
         next_due_date: (w.next_due_date ?? "").toString().slice(0, 10),
-        floor_above_ground: w.floor_level !== "ground" && w.floor_level !== "basement",
+        floor_above_ground: w.floor_level !== "ground",
       }));
   
     // ── Pest Records ─────────────────────────────────────────────────────
@@ -12394,7 +12397,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       id: t.id ?? "",
       staff_id: t.staff_id ?? "",
       training_type: t.competency_type ?? "general",
-      completed: t.status === "competent" || t.status === "passed" || !!(t.practical_assessment && t.written_assessment),
+      completed: t.status === "competent" || !!(t.practical_assessment && t.written_assessment),
       expiry_date: (t.expiry_date ?? "").toString().slice(0, 10),
     }));
   
@@ -16551,7 +16554,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       category: k.category ?? "",
       target: parseFloat(k.target) || 0,
       actual: parseFloat(k.value) || 0,
-      met: k.rag === "green" || k.rag === "amber_improving",
+      met: k.rag === "green",
     }));
   
     const result = computeOutcomeStarNeeds({
@@ -17853,7 +17856,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       id: p.id, child_id: p.child_id ?? "",
       completed_date: (p.referral_date ?? "").toString().slice(0, 10),
       risk_assessment_included: !!(p.risk_considerations?.length),
-      all_sections_complete: p.status === "completed" || !!(p.items?.every?.((i: any) => i.completed)),
+      all_sections_complete: p.status === "complete" || !!(p.items?.every?.((i: any) => i.completed)),
       placing_authority_consulted: !!(p.local_authority),
       child_visited_home: !!(p.impact_assessment_done),
     }));
@@ -17862,7 +17865,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       id: w.id, child_id: w.child_id ?? "",
       provided_date: (w.preparedDate ?? w.admissionDate ?? "").toString().slice(0, 10),
       personalised: !!(w.personalTouches?.length),
-      child_friendly: w.status === "delivered" || w.status === "completed" || !!(w.childFeedback),
+      child_friendly: w.status === "delivered" || !!(w.childFeedback),
       photos_included: !!(w.items?.some?.((i: any) => i.category === "photos" || i.item?.toLowerCase?.().includes?.("photo"))),
     }));
   
@@ -19254,7 +19257,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     // Participation
     const councilChildren = (children as any[]).filter((c) => c.on_council || c.on_forum || c.participation_role).length;
     const advocacyRecords = (store.advocacyRecords as any[] ?? []);
-    const advocacyAccepted = advocacyRecords.filter((a) => a.accepted || a.status === "accepted" || a.status === "active").length;
+    const advocacyAccepted = advocacyRecords.filter((a) => a.status === "active" || a.status === "completed").length;
   
     // Key working
     const kwSessions = (store.keyWorkingSessions as any[] ?? []);
@@ -19274,7 +19277,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     // Life story
     const lifeStories = (store.lifeStoryEntries as any[] ?? []);
     const childrenWithLS = new Set(lifeStories.map((l) => l.child_id ?? l.young_person_id).filter(Boolean)).size;
-    const lsUpToDate = new Set(lifeStories.filter((l) => l.up_to_date || l.current || l.status === "current").map((l) => l.child_id ?? l.young_person_id).filter(Boolean)).size;
+    const lsUpToDate = new Set(lifeStories.filter((l) => l.status === "completed" || l.status === "in_progress").map((l) => l.child_id ?? l.young_person_id).filter(Boolean)).size;
     const passports = (store.personalPassports as any[] ?? []);
     const childrenWithPP = new Set(passports.map((p) => p.child_id ?? p.young_person_id).filter(Boolean)).size;
   
@@ -19906,7 +19909,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const reg44Reports = (store.reg44VisitReports as any[] ?? []);
     const reg44Completed = reg44Reports.filter((r) => r.completed || r.status === "completed").length;
     const reg44Actions = (store.reg44ActionRecords as any[] ?? []);
-    const reg44ActionsResolved = reg44Actions.filter((a) => a.resolved || a.status === "resolved" || a.status === "closed").length;
+    const reg44ActionsResolved = reg44Actions.filter((a) => a.status === "completed").length;
   
     // Reg 45 evidence
     const reg45Queue = (store.reg45EvidenceQueue as any[] ?? []);
@@ -19923,7 +19926,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     // Data governance
     const dataBreaches = (store.dataBreachRecords as any[] ?? []);
-    const breachesResolved = dataBreaches.filter((b) => b.resolved || b.status === "resolved").length;
+    const breachesResolved = dataBreaches.filter((b) => b.status === "closed_resolved").length;
     const sars = (store.subjectAccessRequestRecords as any[] ?? []);
     const sarsOnTime = sars.filter((s) => s.completed_on_time || s.status === "completed").length;
     const dpRecords = (store.dataProtectionRecords as any[] ?? []);
@@ -21015,7 +21018,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     // Exploitation screenings
     const expScreenings = (store.exploitationScreenings as any[] ?? []);
-    const expCompleted = expScreenings.filter((e) => e.completed || e.status === "completed").length;
+    // a screening is complete once it has moved beyond assessment
+    const expCompleted = expScreenings.filter((e) => e.status === "referred" || e.status === "monitoring" || e.status === "nrm_submitted" || e.status === "closed" || e.status === "de_escalated").length;
     const expHighRisk = expScreenings.filter((e) => e.risk_level === "high" || e.outcome === "high").length;
   
     // Missing episodes
@@ -21036,7 +21040,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     // Incidents
     const incidents = store.incidents ?? [];
     const incArr = incidents as any[];
-    const serious = incArr.filter((i) => i.severity === "serious" || i.severity === "major" || i.category === "serious").length;
+    const serious = incArr.filter((i) => i.severity === "critical" || i.severity === "high").length;
     const withFollowup = incArr.filter((i) => i.followup_completed || i.follow_up_completed || i.resolved).length;
   
     // Notifiable events
@@ -21045,11 +21049,11 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     // Disclosures
     const disclosures = (store.disclosures as any[] ?? []);
-    const discActed = disclosures.filter((d) => d.acted_on || d.action_taken || d.status === "actioned").length;
+    const discActed = disclosures.filter((d) => (d.immediate_actions_taken ?? []).length > 0).length;
   
     // LADO
     const lado = (store.ladoReferrals as any[] ?? []);
-    const ladoResolved = lado.filter((l) => l.status === "resolved" || l.status === "closed").length;
+    const ladoResolved = lado.filter((l) => l.status === "closed" || l.status === "nfa" || l.status === "outcome_reached").length;
   
     // Multi-agency
     const maMeetings = (store.multiAgencyMeetings as any[] ?? []);
@@ -21057,7 +21061,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     // Contextual safeguarding
     const ctxRisks = (store.contextualSafeguardingRisks as any[] ?? []);
-    const ctxMitigated = ctxRisks.filter((c) => c.mitigated || c.status === "mitigated" || c.status === "resolved").length;
+    const ctxMitigated = ctxRisks.filter((c) => c.status === "resolved").length;
   
     const result = computeSafeguardingOversight({
       today: todayStr(),
@@ -21289,7 +21293,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const completed = checklist.filter((c) => c.completed).length;
       const checklistRate = checklist.length > 0 ? Math.round((completed / checklist.length) * 100) : null;
       const refs = (r.references ?? []) as any[];
-      const refsReceived = refs.filter((ref) => ref.status === "received" || ref.status === "verified").length;
+      const refsReceived = refs.filter((ref) => ref.status === "received" || ref.status === "concerns_raised").length;
       const panel = (r.interviewers ?? []) as any[];
       return {
         id: r.id ?? "",
@@ -21864,7 +21868,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       item_name: e.item_name ?? "",
       condition: e.condition === "excellent" ? "good" : (e.condition === "worn_replace_soon" ? "fair" : (e.condition === "damaged_out_of_use" ? "broken" : (e.condition ?? "good"))),
       last_checked: (e.purchase_date ?? today).toString().slice(0, 10),
-      in_use: !!(e.use_frequency && e.use_frequency !== "never"),
+      in_use: !!e.use_frequency,
     }));
   
     // Physical activities — combine from physicalActivityEntries, cyclingBikeRecords, swimRecords
@@ -22907,7 +22911,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       review_date: (p.review_date ?? "").toString().slice(0, 10),
       cgm_in_use: !!(p.cgm_in_use),
       school_plan_in_place: !!(p.school_plan_in_place),
-      child_can_self_manage: p.child_can_self_manage !== "not_at_all",
+      child_can_self_manage: p.child_can_self_manage === "fully" || p.child_can_self_manage === "with_prompts",
       emergency_contacts_count: p.emergency_contacts?.length ?? 0,
       flags_for_review_count: p.flags_for_review?.length ?? 0,
     }));
@@ -27527,7 +27531,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         const expectedChecks = total_children;
         const completedChecks = checks.length;
         const distressedChildren = checks.filter(
-          (c) => c.mood === "distressed" || c.mood === "upset" || c.status === "distressed",
+          (c) => c.mood === "distressed" || c.mood === "upset" || c.status === "concern",
         );
         const distressedCount = distressedChildren.length;
         const allDistressedActioned = distressedCount === 0
@@ -27535,7 +27539,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
           : distressedChildren.every((c) => c.notes && c.notes.trim().length > 0);
         const windowsSecure = checks.filter((c) => c.window_secure === true).length;
         const tempIssues = checks.filter(
-          (c) => c.room_temperature === "too_warm" || c.room_temperature === "too_cold",
+          (c) => c.room_temperature === "too_hot" || c.room_temperature === "too_cold",
         ).length;
         const hasNotes = checks.some((c) => c.notes && c.notes.trim().length > 0);
   
@@ -28167,11 +28171,11 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       // Training
       const trainingRecords = (store.trainingRecords as any[] ?? []).filter((t) => t.staff_id === staffId || t.staffId === staffId);
       const mandatoryTraining = trainingRecords.filter((t) => t.mandatory || t.type === "mandatory");
-      const mandatoryCurrent = mandatoryTraining.length === 0 || mandatoryTraining.every((t) => t.completed || t.status === "completed" || t.up_to_date);
+      const mandatoryCurrent = mandatoryTraining.length === 0 || mandatoryTraining.every((t) => t.status === "compliant" || t.status === "expiring_soon");
   
       // Qualifications
       const qualifications = (store.qualifications as any[] ?? []).filter((q) => q.staff_id === staffId || q.staffId === staffId);
-      const qualsMet = qualifications.length === 0 || qualifications.every((q) => q.met || q.status === "met" || q.verified);
+      const qualsMet = qualifications.length === 0 || qualifications.every((q) => q.status === "completed" || q.status === "exempt");
   
       // Sickness
       const sicknessRecords = (store.staffSicknessRecords as any[] ?? []).filter((sr) => sr.staff_id === staffId || sr.staffId === staffId);
@@ -28191,7 +28195,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       // Grievance
       const grievances = (store.staffGrievanceRecords as any[] ?? []).filter((g) => g.staff_id === staffId || g.staffId === staffId);
-      const grievanceActive = grievances.some((g) => g.status === "active" || g.status === "open");
+      const grievanceActive = grievances.some((g) => g.status === "informal_raised" || g.status === "formal_submitted" || g.status === "under_investigation" || g.status === "hearing_scheduled" || g.status === "appealed");
   
       // Wellbeing
       const wellbeingRecords = (store.staffWellbeingRecords as any[] ?? []).filter((w) => w.staff_id === staffId || w.staffId === staffId);
@@ -28226,10 +28230,10 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     // Home-level metrics
     const vacancies = (store.vacancies as any[] ?? []);
-    const openVacancies = vacancies.filter((v) => v.status === "open" || v.status === "active" || !v.filled);
+    const openVacancies = vacancies.filter((v) => v.status === "open");
     const shifts = store.shifts ?? [];
     const shiftsTotal = (shifts as any[]).length;
-    const shiftsCovered = (shifts as any[]).filter((sh) => sh.covered || sh.status === "covered" || sh.staff_id || sh.staffId).length;
+    const shiftsCovered = (shifts as any[]).filter((sh) => !!sh.staff_id).length;
     const agencyStaff = optionalCollection(store, "agencyStaffRecords").filter((a) => a.active || a.status === "active");
     const handovers = (store.handovers as any[] ?? []);
     const handoverCompleted = (handovers as any[]).filter((h) => h.completed || h.status === "completed").length;
