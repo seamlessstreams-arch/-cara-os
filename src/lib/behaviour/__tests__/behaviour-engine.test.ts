@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getBehaviourCategoryLabel,
   getBehaviourOutcomeLabel,
@@ -68,24 +67,6 @@ function makeTraining(overrides: Partial<StaffBehaviourTraining> = {}): StaffBeh
 
 // ── pct ────────────────────────────────────────────────────────────────────
 
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-  it("returns 100 for equal num and den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-  it("returns 0 for 0 numerator", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-});
 
 // ── getRating ──────────────────────────────────────────────────────────────
 
@@ -150,10 +131,10 @@ describe("evaluateBehaviourQuality", () => {
     expect(result.overallScore).toBe(0);
     expect(result.rating).toBe("inadequate");
     expect(result.totalRecords).toBe(0);
-    expect(result.positiveApproachRate).toBe(0);
-    expect(result.deEscalationRate).toBe(0);
-    expect(result.childViewRate).toBe(0);
-    expect(result.supportPlanRate).toBe(0);
+    expect(result.positiveApproachRate).toBeNull();
+    expect(result.deEscalationRate).toBeNull();
+    expect(result.childViewRate).toBeNull();
+    expect(result.supportPlanRate).toBeNull();
   });
 
   it("returns max score for all-true records", () => {
@@ -213,9 +194,9 @@ describe("evaluateBehaviourCompliance", () => {
     const result = evaluateBehaviourCompliance([]);
     expect(result.overallScore).toBe(0);
     expect(result.rating).toBe("inadequate");
-    expect(result.documentationRate).toBe(0);
-    expect(result.timelyRecordingRate).toBe(0);
-    expect(result.supportPlanFollowedRate).toBe(0);
+    expect(result.documentationRate).toBeNull();
+    expect(result.timelyRecordingRate).toBeNull();
+    expect(result.supportPlanFollowedRate).toBeNull();
     expect(result.categoryDiversityRatio).toBe(0);
   });
 
@@ -353,12 +334,12 @@ describe("evaluateStaffBehaviourReadiness", () => {
     expect(result.overallScore).toBe(0);
     expect(result.rating).toBe("inadequate");
     expect(result.totalStaff).toBe(0);
-    expect(result.positiveApproachesRate).toBe(0);
-    expect(result.deEscalationSkillsRate).toBe(0);
-    expect(result.traumaInformedRate).toBe(0);
-    expect(result.restorativePracticeRate).toBe(0);
-    expect(result.riskAssessmentRate).toBe(0);
-    expect(result.recordKeepingRate).toBe(0);
+    expect(result.positiveApproachesRate).toBeNull();
+    expect(result.deEscalationSkillsRate).toBeNull();
+    expect(result.traumaInformedRate).toBeNull();
+    expect(result.restorativePracticeRate).toBeNull();
+    expect(result.riskAssessmentRate).toBeNull();
+    expect(result.recordKeepingRate).toBeNull();
   });
 
   it("returns max score for all-true staff", () => {

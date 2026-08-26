@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct, getRating, getAdmissionCategoryLabel, getAdmissionOutcomeLabel, getRatingLabel,
+  getRating, getAdmissionCategoryLabel, getAdmissionOutcomeLabel, getRatingLabel,
   evaluateAdmissionQuality, evaluateAdmissionCompliance, evaluateAdmissionPolicy,
   evaluateStaffAdmissionReadiness, buildChildAdmissionProfiles,
   generateAdmissionsIntelligence,
@@ -21,13 +21,6 @@ function makeTraining(o: Partial<StaffAdmissionTraining> = {}): StaffAdmissionTr
   return { id: `t-${_tid}`, staffId: `staff-${_tid}`, staffName: `Staff ${_tid}`, assessmentSkills: true, matchingExpertise: true, transitionPlanning: true, childParticipationSkills: true, riskAssessment: true, familyEngagement: true, ...o };
 }
 
-describe("pct", () => {
-  it("returns 0 for den=0", () => { expect(pct(5, 0)).toBe(0); });
-  it("correct pct", () => { expect(pct(3, 4)).toBe(75); });
-  it("rounds", () => { expect(pct(1, 3)).toBe(33); });
-  it("100 for equal", () => { expect(pct(10, 10)).toBe(100); });
-  it("0 for num=0", () => { expect(pct(0, 5)).toBe(0); });
-});
 
 describe("getRating", () => {
   it("outstanding >= 80", () => { expect(getRating(80)).toBe("outstanding"); });

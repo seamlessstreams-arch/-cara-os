@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // AFTERCARE OUTCOMES TRACKING INTELLIGENCE ENGINE
 //
@@ -146,37 +147,53 @@ export interface KeepingInTouchResult {
   overallScore: number;
   totalContacts: number;
   contactFrequencyScore: number;
-  regularContactRate: number;
-  childInitiatedRate: number;
-  concernsFollowedUpRate: number;
-  wellbeingRecordedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  regularContactRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childInitiatedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  concernsFollowedUpRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  wellbeingRecordedRate: number | null;
 }
 
 export interface HousingStabilityResult {
   overallScore: number;
   totalLeavers: number;
-  stableHousingRate: number;
-  pathwayPlanRate: number;
-  personalAdviserRate: number;
-  homelessnessRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  stableHousingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  pathwayPlanRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  personalAdviserRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  homelessnessRate: number | null;
 }
 
 export interface EducationEmploymentResult {
   overallScore: number;
   totalLeavers: number;
-  engagedRate: number;
-  neetRate: number;
-  educationContinuedRate: number;
-  trainingAccessRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  engagedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  neetRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  educationContinuedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  trainingAccessRate: number | null;
 }
 
 export interface WellbeingSupportResult {
   overallScore: number;
   totalAssessments: number;
-  assessmentsDoneRate: number;
-  thrivingStableRate: number;
-  supportServicesAccessedRate: number;
-  mentalHealthSupportedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  assessmentsDoneRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  thrivingStableRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  supportServicesAccessedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  mentalHealthSupportedRate: number | null;
 }
 
 export interface CareLeaverProfileResult {
@@ -207,11 +224,6 @@ export interface AftercareOutcomesTrackingIntelligence {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -314,10 +326,10 @@ export function evaluateKeepingInTouch(
       overallScore: 0,
       totalContacts: 0,
       contactFrequencyScore: 0,
-      regularContactRate: 0,
-      childInitiatedRate: 0,
-      concernsFollowedUpRate: 0,
-      wellbeingRecordedRate: 0,
+      regularContactRate: null,
+      childInitiatedRate: null,
+      concernsFollowedUpRate: null,
+      wellbeingRecordedRate: null,
     };
   }
 
@@ -332,20 +344,20 @@ export function evaluateKeepingInTouch(
   for (const count of leaverContactCounts.values()) {
     if (count >= 2) regularContactCount++;
   }
-  const regularContactRate = pct(regularContactCount, leaverCount);
+  const regularContactRate = rate(regularContactCount, leaverCount);
 
   // Child initiated contacts
   const childInitiated = contacts.filter((c) => c.initiatedBy === "child").length;
-  const childInitiatedRate = pct(childInitiated, contacts.length);
+  const childInitiatedRate = rate(childInitiated, contacts.length);
 
   // Concerns followed up
   const concernsRaised = contacts.filter((c) => c.concernsRaised && c.followUpRequired);
   const concernsFollowedUp = concernsRaised.filter((c) => c.followUpCompleted).length;
-  const concernsFollowedUpRate = pct(concernsFollowedUp, concernsRaised.length);
+  const concernsFollowedUpRate = rate(concernsFollowedUp, concernsRaised.length);
 
   // Wellbeing recorded (not "unknown")
   const wellbeingRecorded = contacts.filter((c) => c.wellbeingRating !== "unknown").length;
-  const wellbeingRecordedRate = pct(wellbeingRecorded, contacts.length);
+  const wellbeingRecordedRate = rate(wellbeingRecorded, contacts.length);
 
   // Scoring: contact frequency (0-7), regular contact rate (0-6),
   // child-initiated (0-5), concerns followed up (0-4), wellbeing recorded (0-3)
@@ -356,17 +368,17 @@ export function evaluateKeepingInTouch(
   const contactFrequencyScore = Math.min(7, Math.round(avgContactsPerLeaver * 2));
   score += contactFrequencyScore;
 
-  score += Math.round((regularContactRate / 100) * 6);
-  score += Math.round((childInitiatedRate / 100) * 5);
+  score += Math.round(((regularContactRate ?? 0) / 100) * 6);
+  score += Math.round(((childInitiatedRate ?? 0) / 100) * 5);
 
   // Concerns followed up: if no concerns, partial credit
   if (concernsRaised.length === 0) {
     score += 2; // partial credit — no concerns is neutral
   } else {
-    score += Math.round((concernsFollowedUpRate / 100) * 4);
+    score += Math.round(((concernsFollowedUpRate ?? 0) / 100) * 4);
   }
 
-  score += Math.round((wellbeingRecordedRate / 100) * 3);
+  score += Math.round(((wellbeingRecordedRate ?? 0) / 100) * 3);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -390,37 +402,41 @@ export function evaluateHousingStability(
     return {
       overallScore: 0,
       totalLeavers: 0,
-      stableHousingRate: 0,
-      pathwayPlanRate: 0,
-      personalAdviserRate: 0,
-      homelessnessRate: 0,
+      stableHousingRate: null,
+      pathwayPlanRate: null,
+      personalAdviserRate: null,
+      homelessnessRate: null,
     };
   }
 
   const stableHousing = leavers.filter(
     (l) => l.housingStatus === "stable" || l.housingStatus === "returned_home" || l.housingStatus === "supported_housing",
   ).length;
-  const stableHousingRate = pct(stableHousing, leavers.length);
+  const stableHousingRate = rate(stableHousing, leavers.length);
 
   const pathwayPlan = leavers.filter((l) => l.hasPathwayPlan).length;
-  const pathwayPlanRate = pct(pathwayPlan, leavers.length);
+  const pathwayPlanRate = rate(pathwayPlan, leavers.length);
 
   const personalAdviser = leavers.filter((l) => l.personalAdviserAssigned).length;
-  const personalAdviserRate = pct(personalAdviser, leavers.length);
+  const personalAdviserRate = rate(personalAdviser, leavers.length);
 
   const homeless = leavers.filter((l) => l.housingStatus === "homeless").length;
-  const homelessnessRate = pct(homeless, leavers.length);
+  const homelessnessRate = rate(homeless, leavers.length);
 
   // Scoring: stable housing rate (0-8), pathway plan rate (0-6),
   // personal adviser assigned (0-5), homelessness rate penalty (0-6 bonus if none homeless)
   let score = 0;
-  score += Math.round((stableHousingRate / 100) * 8);
-  score += Math.round((pathwayPlanRate / 100) * 6);
-  score += Math.round((personalAdviserRate / 100) * 5);
+  score += Math.round(((stableHousingRate ?? 0) / 100) * 8);
+  score += Math.round(((pathwayPlanRate ?? 0) / 100) * 6);
+  score += Math.round(((personalAdviserRate ?? 0) / 100) * 5);
 
-  if (homelessnessRate === 0) score += 6;
-  else if (homelessnessRate <= 10) score += 3;
-  else if (homelessnessRate <= 25) score += 1;
+  // unmeasured homelessness (no leavers tracked) earns no bonus — the old
+  // pct fabricated 0% here and awarded the full +6
+  if (homelessnessRate !== null) {
+    if (homelessnessRate === 0) score += 6;
+    else if (homelessnessRate <= 10) score += 3;
+    else if (homelessnessRate <= 25) score += 1;
+  }
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -443,10 +459,10 @@ export function evaluateEducationEmployment(
     return {
       overallScore: 0,
       totalLeavers: 0,
-      engagedRate: 0,
-      neetRate: 0,
-      educationContinuedRate: 0,
-      trainingAccessRate: 0,
+      engagedRate: null,
+      neetRate: null,
+      educationContinuedRate: null,
+      trainingAccessRate: null,
     };
   }
 
@@ -458,28 +474,30 @@ export function evaluateEducationEmployment(
       l.employmentEducationStatus === "training" ||
       l.employmentEducationStatus === "volunteering",
   ).length;
-  const engagedRate = pct(engaged, leavers.length);
+  const engagedRate = rate(engaged, leavers.length);
 
   const neet = leavers.filter((l) => l.employmentEducationStatus === "neet").length;
-  const neetRate = pct(neet, leavers.length);
+  const neetRate = rate(neet, leavers.length);
 
   const educationContinued = leavers.filter((l) => l.employmentEducationStatus === "in_education").length;
-  const educationContinuedRate = pct(educationContinued, leavers.length);
+  const educationContinuedRate = rate(educationContinued, leavers.length);
 
   const trainingAccess = leavers.filter((l) => l.employmentEducationStatus === "training").length;
-  const trainingAccessRate = pct(trainingAccess, leavers.length);
+  const trainingAccessRate = rate(trainingAccess, leavers.length);
 
   // Scoring: engaged rate (0-8), NEET rate penalty (0-6 bonus if low),
   // education continued (0-5), training access (0-6)
   let score = 0;
-  score += Math.round((engagedRate / 100) * 8);
+  score += Math.round(((engagedRate ?? 0) / 100) * 8);
 
-  if (neetRate === 0) score += 6;
-  else if (neetRate <= 10) score += 4;
-  else if (neetRate <= 25) score += 2;
+  if (neetRate !== null) {
+    if (neetRate === 0) score += 6;
+    else if (neetRate <= 10) score += 4;
+    else if (neetRate <= 25) score += 2;
+  }
 
-  score += Math.round((educationContinuedRate / 100) * 5);
-  score += Math.round((trainingAccessRate / 100) * 6);
+  score += Math.round(((educationContinuedRate ?? 0) / 100) * 5);
+  score += Math.round(((trainingAccessRate ?? 0) / 100) * 6);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -504,39 +522,39 @@ export function evaluateWellbeingSupport(
     return {
       overallScore: 0,
       totalAssessments: 0,
-      assessmentsDoneRate: 0,
-      thrivingStableRate: 0,
-      supportServicesAccessedRate: 0,
-      mentalHealthSupportedRate: 0,
+      assessmentsDoneRate: null,
+      thrivingStableRate: null,
+      supportServicesAccessedRate: null,
+      mentalHealthSupportedRate: null,
     };
   }
 
   // Assessments done rate: proportion of leavers who have an assessment
   const assessedChildIds = new Set(assessments.map((a) => a.childId));
   const leaverCount = leavers.length > 0 ? leavers.length : assessedChildIds.size;
-  const assessmentsDoneRate = pct(assessedChildIds.size, leaverCount);
+  const assessmentsDoneRate = rate(assessedChildIds.size, leaverCount);
 
   // Thriving/stable rate among assessments
   const thrivingStable = assessments.filter(
     (a) => a.overallWellbeing === "thriving" || a.overallWellbeing === "stable",
   ).length;
-  const thrivingStableRate = pct(thrivingStable, assessments.length);
+  const thrivingStableRate = rate(thrivingStable, assessments.length);
 
   // Support services accessed
   const accessedServices = services.filter((s) => s.accessedService).length;
-  const supportServicesAccessedRate = pct(accessedServices, services.length);
+  const supportServicesAccessedRate = rate(accessedServices, services.length);
 
   // Mental health supported
   const mentalHealthSupported = assessments.filter((a) => a.mentalHealthSupported).length;
-  const mentalHealthSupportedRate = pct(mentalHealthSupported, assessments.length);
+  const mentalHealthSupportedRate = rate(mentalHealthSupported, assessments.length);
 
   // Scoring: outcome assessments done (0-7), thriving/stable rate (0-6),
   // support services accessed (0-6), mental health supported (0-6)
   let score = 0;
-  score += Math.round((assessmentsDoneRate / 100) * 7);
-  score += Math.round((thrivingStableRate / 100) * 6);
-  score += Math.round((supportServicesAccessedRate / 100) * 6);
-  score += Math.round((mentalHealthSupportedRate / 100) * 6);
+  score += Math.round(((assessmentsDoneRate ?? 0) / 100) * 7);
+  score += Math.round(((thrivingStableRate ?? 0) / 100) * 6);
+  score += Math.round(((supportServicesAccessedRate ?? 0) / 100) * 6);
+  score += Math.round(((mentalHealthSupportedRate ?? 0) / 100) * 6);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -636,25 +654,25 @@ export function generateAftercareOutcomesTrackingIntelligence(
 
   // -- Strengths --
   const strengths: string[] = [];
-  if (contacts.length > 0 && keepingInTouch.regularContactRate >= 90)
+  if (contacts.length > 0 && meets(keepingInTouch.regularContactRate, 90))
     strengths.push("Regular contact maintained with " + keepingInTouch.regularContactRate + "% of care leavers");
   if (contacts.length > 0 && keepingInTouch.wellbeingRecordedRate === 100)
     strengths.push("Wellbeing recorded in all aftercare contacts");
-  if (contacts.length > 0 && keepingInTouch.childInitiatedRate >= 30)
+  if (contacts.length > 0 && meets(keepingInTouch.childInitiatedRate, 30))
     strengths.push("Good engagement — " + keepingInTouch.childInitiatedRate + "% of contacts initiated by care leavers");
-  if (leavers.length > 0 && housingStability.stableHousingRate >= 80)
+  if (leavers.length > 0 && meets(housingStability.stableHousingRate, 80))
     strengths.push("Strong housing stability — " + housingStability.stableHousingRate + "% in stable accommodation");
   if (leavers.length > 0 && housingStability.pathwayPlanRate === 100)
     strengths.push("Pathway plans in place for all care leavers");
   if (leavers.length > 0 && housingStability.personalAdviserRate === 100)
     strengths.push("Personal adviser assigned to all care leavers");
-  if (leavers.length > 0 && educationEmployment.engagedRate >= 80)
+  if (leavers.length > 0 && meets(educationEmployment.engagedRate, 80))
     strengths.push("High ETE engagement — " + educationEmployment.engagedRate + "% in education, employment, or training");
   if (leavers.length > 0 && educationEmployment.neetRate === 0)
     strengths.push("No care leavers classified as NEET");
-  if (assessments.length > 0 && wellbeingSupport.thrivingStableRate >= 80)
+  if (assessments.length > 0 && meets(wellbeingSupport.thrivingStableRate, 80))
     strengths.push("Positive wellbeing outcomes — " + wellbeingSupport.thrivingStableRate + "% thriving or stable");
-  if (services.length > 0 && wellbeingSupport.supportServicesAccessedRate >= 80)
+  if (services.length > 0 && meets(wellbeingSupport.supportServicesAccessedRate, 80))
     strengths.push("Good support service access — " + wellbeingSupport.supportServicesAccessedRate + "% of referrals accessed");
 
   // -- Areas for Improvement --
@@ -663,17 +681,17 @@ export function generateAftercareOutcomesTrackingIntelligence(
     areasForImprovement.push("No care leaver profiles documented — all leavers should have records maintained");
   if (contacts.length === 0 && leavers.length > 0)
     areasForImprovement.push("No aftercare contacts recorded — statutory duty to keep in touch");
-  if (leavers.length > 0 && housingStability.pathwayPlanRate < 100)
-    areasForImprovement.push("Pathway plans missing for " + (100 - housingStability.pathwayPlanRate) + "% of care leavers");
-  if (leavers.length > 0 && housingStability.personalAdviserRate < 100)
-    areasForImprovement.push("Personal adviser not assigned for " + (100 - housingStability.personalAdviserRate) + "% of care leavers");
-  if (leavers.length > 0 && educationEmployment.neetRate > 20)
+  if (leavers.length > 0 && below(housingStability.pathwayPlanRate, 100))
+    areasForImprovement.push("Pathway plans missing for " + (100 - (housingStability.pathwayPlanRate ?? 0)) + "% of care leavers");
+  if (leavers.length > 0 && below(housingStability.personalAdviserRate, 100))
+    areasForImprovement.push("Personal adviser not assigned for " + (100 - (housingStability.personalAdviserRate ?? 0)) + "% of care leavers");
+  if (leavers.length > 0 && above(educationEmployment.neetRate, 20))
     areasForImprovement.push("High NEET rate at " + educationEmployment.neetRate + "% — targeted support required");
-  if (contacts.length > 0 && keepingInTouch.concernsFollowedUpRate < 80 && contacts.some((c) => c.concernsRaised && c.followUpRequired))
+  if (contacts.length > 0 && below(keepingInTouch.concernsFollowedUpRate, 80) && contacts.some((c) => c.concernsRaised && c.followUpRequired))
     areasForImprovement.push("Concerns follow-up rate at " + keepingInTouch.concernsFollowedUpRate + "% — all concerns must be addressed");
   if (assessments.length === 0 && leavers.length > 0)
     areasForImprovement.push("No outcome assessments completed — schedule assessments for all care leavers");
-  if (assessments.length > 0 && wellbeingSupport.thrivingStableRate < 50)
+  if (assessments.length > 0 && below(wellbeingSupport.thrivingStableRate, 50))
     areasForImprovement.push("Wellbeing concerns — only " + wellbeingSupport.thrivingStableRate + "% of care leavers thriving or stable");
 
   // -- Actions --

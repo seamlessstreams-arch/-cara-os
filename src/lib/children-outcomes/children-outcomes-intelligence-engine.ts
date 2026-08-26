@@ -18,6 +18,7 @@
    ────────────────────────────────────────────────────────────── */
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -127,18 +128,25 @@ export interface StaffChildrenOutcomesTraining {
 export interface ChildrenOutcomesQualityResult {
   overallScore: number;
   totalRecords: number;
-  outcomeMeasuredRate: number;
-  progressEvidencedRate: number;
-  interventionAlignedRate: number;
-  voiceOfChildCapturedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  outcomeMeasuredRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  progressEvidencedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  interventionAlignedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  voiceOfChildCapturedRate: number | null;
 }
 
 export interface ChildrenOutcomesComplianceResult {
   overallScore: number;
   totalRecords: number;
-  documentationCompleteRate: number;
-  timelyRecordingRate: number;
-  outcomeMeasuredRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationCompleteRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  outcomeMeasuredRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
 }
@@ -157,12 +165,18 @@ export interface ChildrenOutcomesPolicyResult {
 export interface StaffChildrenOutcomesReadinessResult {
   overallScore: number;
   totalStaff: number;
-  outcomesFrameworkKnowledgeRate: number;
-  progressTrackingSkillsRate: number;
-  therapeuticInterventionsRate: number;
-  educationalSupportSkillsRate: number;
-  voiceOfChildTechniquesRate: number;
-  multiAgencyCollaborationRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  outcomesFrameworkKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  progressTrackingSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  therapeuticInterventionsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  educationalSupportSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  voiceOfChildTechniquesRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  multiAgencyCollaborationRate: number | null;
 }
 
 export interface ChildOutcomesProfile {
@@ -194,11 +208,6 @@ export interface ChildrenOutcomesIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -214,19 +223,19 @@ export function evaluateChildrenOutcomesQuality(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, outcomeMeasuredRate: 0, progressEvidencedRate: 0, interventionAlignedRate: 0, voiceOfChildCapturedRate: 0 };
+    return { overallScore: 0, totalRecords: 0, outcomeMeasuredRate: null, progressEvidencedRate: null, interventionAlignedRate: null, voiceOfChildCapturedRate: null };
   }
 
-  const outcomeMeasuredRate = pct(records.filter((r) => r.outcomeMeasured).length, n);
-  const progressEvidencedRate = pct(records.filter((r) => r.progressEvidenced).length, n);
-  const interventionAlignedRate = pct(records.filter((r) => r.interventionAligned).length, n);
-  const voiceOfChildCapturedRate = pct(records.filter((r) => r.voiceOfChildCaptured).length, n);
+  const outcomeMeasuredRate = rate(records.filter((r) => r.outcomeMeasured).length, n);
+  const progressEvidencedRate = rate(records.filter((r) => r.progressEvidenced).length, n);
+  const interventionAlignedRate = rate(records.filter((r) => r.interventionAligned).length, n);
+  const voiceOfChildCapturedRate = rate(records.filter((r) => r.voiceOfChildCaptured).length, n);
 
   let score = 0;
-  score += (outcomeMeasuredRate / 100) * 7;
-  score += (progressEvidencedRate / 100) * 6;
-  score += (interventionAlignedRate / 100) * 6;
-  score += (voiceOfChildCapturedRate / 100) * 6;
+  score += ((outcomeMeasuredRate ?? 0) / 100) * 7;
+  score += ((progressEvidencedRate ?? 0) / 100) * 6;
+  score += ((interventionAlignedRate ?? 0) / 100) * 6;
+  score += ((voiceOfChildCapturedRate ?? 0) / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -241,21 +250,21 @@ export function evaluateChildrenOutcomesCompliance(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: 0, timelyRecordingRate: 0, outcomeMeasuredRate: 0, categoryDiversityRatio: 0, uniqueCategories: 0 };
+    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: null, timelyRecordingRate: null, outcomeMeasuredRate: null, categoryDiversityRatio: 0, uniqueCategories: 0 };
   }
 
-  const documentationCompleteRate = pct(records.filter((r) => r.documentationComplete).length, n);
-  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, n);
-  const outcomeMeasuredRate = pct(records.filter((r) => r.outcomeMeasured).length, n);
+  const documentationCompleteRate = rate(records.filter((r) => r.documentationComplete).length, n);
+  const timelyRecordingRate = rate(records.filter((r) => r.timelyRecording).length, n);
+  const outcomeMeasuredRate = rate(records.filter((r) => r.outcomeMeasured).length, n);
 
   const uniqueCategoriesSet = new Set(records.map((r) => r.category));
   const uniqueCategories = uniqueCategoriesSet.size;
   const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
 
   let score = 0;
-  score += (documentationCompleteRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (outcomeMeasuredRate / 100) * 5;
+  score += ((documentationCompleteRate ?? 0) / 100) * 8;
+  score += ((timelyRecordingRate ?? 0) / 100) * 7;
+  score += ((outcomeMeasuredRate ?? 0) / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -301,23 +310,23 @@ export function evaluateStaffChildrenOutcomesReadiness(
   const n = training.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalStaff: 0, outcomesFrameworkKnowledgeRate: 0, progressTrackingSkillsRate: 0, therapeuticInterventionsRate: 0, educationalSupportSkillsRate: 0, voiceOfChildTechniquesRate: 0, multiAgencyCollaborationRate: 0 };
+    return { overallScore: 0, totalStaff: 0, outcomesFrameworkKnowledgeRate: null, progressTrackingSkillsRate: null, therapeuticInterventionsRate: null, educationalSupportSkillsRate: null, voiceOfChildTechniquesRate: null, multiAgencyCollaborationRate: null };
   }
 
-  const outcomesFrameworkKnowledgeRate = pct(training.filter((t) => t.outcomesFrameworkKnowledge).length, n);
-  const progressTrackingSkillsRate = pct(training.filter((t) => t.progressTrackingSkills).length, n);
-  const therapeuticInterventionsRate = pct(training.filter((t) => t.therapeuticInterventions).length, n);
-  const educationalSupportSkillsRate = pct(training.filter((t) => t.educationalSupportSkills).length, n);
-  const voiceOfChildTechniquesRate = pct(training.filter((t) => t.voiceOfChildTechniques).length, n);
-  const multiAgencyCollaborationRate = pct(training.filter((t) => t.multiAgencyCollaboration).length, n);
+  const outcomesFrameworkKnowledgeRate = rate(training.filter((t) => t.outcomesFrameworkKnowledge).length, n);
+  const progressTrackingSkillsRate = rate(training.filter((t) => t.progressTrackingSkills).length, n);
+  const therapeuticInterventionsRate = rate(training.filter((t) => t.therapeuticInterventions).length, n);
+  const educationalSupportSkillsRate = rate(training.filter((t) => t.educationalSupportSkills).length, n);
+  const voiceOfChildTechniquesRate = rate(training.filter((t) => t.voiceOfChildTechniques).length, n);
+  const multiAgencyCollaborationRate = rate(training.filter((t) => t.multiAgencyCollaboration).length, n);
 
   let score = 0;
-  score += (outcomesFrameworkKnowledgeRate / 100) * 6;
-  score += (progressTrackingSkillsRate / 100) * 5;
-  score += (therapeuticInterventionsRate / 100) * 5;
-  score += (educationalSupportSkillsRate / 100) * 4;
-  score += (voiceOfChildTechniquesRate / 100) * 3;
-  score += (multiAgencyCollaborationRate / 100) * 2;
+  score += ((outcomesFrameworkKnowledgeRate ?? 0) / 100) * 6;
+  score += ((progressTrackingSkillsRate ?? 0) / 100) * 5;
+  score += ((therapeuticInterventionsRate ?? 0) / 100) * 5;
+  score += ((educationalSupportSkillsRate ?? 0) / 100) * 4;
+  score += ((voiceOfChildTechniquesRate ?? 0) / 100) * 3;
+  score += ((multiAgencyCollaborationRate ?? 0) / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -342,8 +351,8 @@ export function buildChildOutcomesProfiles(
 
   return Array.from(childMap.values()).map((child) => {
     const totalRecords = child.records.length;
-    const outcomeMeasuredRate = pct(child.records.filter((r) => r.outcomeMeasured).length, totalRecords);
-    const progressEvidencedRate = pct(child.records.filter((r) => r.progressEvidenced).length, totalRecords);
+    const outcomeMeasuredRate = rate(child.records.filter((r) => r.outcomeMeasured).length, totalRecords)!;
+    const progressEvidencedRate = rate(child.records.filter((r) => r.progressEvidenced).length, totalRecords)!;
     const uniqueCategoriesSet = new Set(child.records.map((r) => r.category));
     const categoriesCovered = Array.from(uniqueCategoriesSet);
 
@@ -352,14 +361,14 @@ export function buildChildOutcomesProfiles(
     else if (totalRecords >= 5) frequencyScore = 1;
 
     let rate1Score = 0;
-    if (outcomeMeasuredRate >= 80) rate1Score = 3;
-    else if (outcomeMeasuredRate >= 60) rate1Score = 2;
-    else if (outcomeMeasuredRate >= 40) rate1Score = 1;
+    if (meets(outcomeMeasuredRate, 80)) rate1Score = 3;
+    else if (meets(outcomeMeasuredRate, 60)) rate1Score = 2;
+    else if (meets(outcomeMeasuredRate, 40)) rate1Score = 1;
 
     let rate2Score = 0;
-    if (progressEvidencedRate >= 80) rate2Score = 3;
-    else if (progressEvidencedRate >= 60) rate2Score = 2;
-    else if (progressEvidencedRate >= 40) rate2Score = 1;
+    if (meets(progressEvidencedRate, 80)) rate2Score = 3;
+    else if (meets(progressEvidencedRate, 60)) rate2Score = 2;
+    else if (meets(progressEvidencedRate, 40)) rate2Score = 1;
 
     let diversityBonus = 0;
     if (categoriesCovered.length >= 4) diversityBonus = 2;
@@ -407,9 +416,9 @@ export function generateChildrenOutcomesIntelligence(
   if (complianceResult.overallScore >= 20) strengths.push("Outcomes compliance is strong (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore >= 20) strengths.push("Outcomes policy framework is robust (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore >= 20) strengths.push("Staff outcomes readiness is strong (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.outcomeMeasuredRate >= 90) strengths.push("Outcome measurement rate at " + qualityResult.outcomeMeasuredRate + "%");
-  if (periodRecords.length > 0 && qualityResult.progressEvidencedRate >= 90) strengths.push("Progress evidenced at " + qualityResult.progressEvidencedRate + "%");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate >= 90) strengths.push("Documentation rate at " + complianceResult.documentationCompleteRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.outcomeMeasuredRate, 90)) strengths.push("Outcome measurement rate at " + qualityResult.outcomeMeasuredRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.progressEvidencedRate, 90)) strengths.push("Progress evidenced at " + qualityResult.progressEvidencedRate + "%");
+  if (periodRecords.length > 0 && meets(complianceResult.documentationCompleteRate, 90)) strengths.push("Documentation rate at " + complianceResult.documentationCompleteRate + "%");
 
   const areasForImprovement: string[] = [];
   if (overallScore < 40) areasForImprovement.push("Children outcomes rated Inadequate (" + overallScore + "/100) — urgent systemic review required");
@@ -418,7 +427,7 @@ export function generateChildrenOutcomesIntelligence(
   if (complianceResult.overallScore < 15) areasForImprovement.push("Outcomes compliance needs improvement (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore < 15) areasForImprovement.push("Outcomes policy needs strengthening (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore < 15) areasForImprovement.push("Staff outcomes readiness needs improvement (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.outcomeMeasuredRate < 80) areasForImprovement.push("Outcome measurement at " + qualityResult.outcomeMeasuredRate + "% — must improve for child welfare");
+  if (periodRecords.length > 0 && below(qualityResult.outcomeMeasuredRate, 80)) areasForImprovement.push("Outcome measurement at " + qualityResult.outcomeMeasuredRate + "% — must improve for child welfare");
   if (periodRecords.length === 0) areasForImprovement.push("No outcomes records — outcomes must be documented");
   if (policy === null) areasForImprovement.push("No outcomes policy in place — statutory requirement");
   if (staff.length === 0) areasForImprovement.push("No staff outcomes training records — training required");
@@ -426,11 +435,11 @@ export function generateChildrenOutcomesIntelligence(
   const actions: string[] = [];
   if (policy === null || policyResult.overallScore === 0) actions.push("URGENT: No outcomes policy — develop and implement comprehensive policy immediately");
   if (staff.length === 0) actions.push("URGENT: No staff outcomes training — schedule training for all staff");
-  if (periodRecords.length > 0 && qualityResult.outcomeMeasuredRate < 50) actions.push("HIGH: Outcome measurement at " + qualityResult.outcomeMeasuredRate + "% — review measurement processes");
-  if (periodRecords.length > 0 && qualityResult.progressEvidencedRate < 50) actions.push("HIGH: Progress evidencing at " + qualityResult.progressEvidencedRate + "% — ensure progress is consistently documented");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate < 50) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all outcomes must be recorded");
-  if (periodRecords.length > 0 && complianceResult.timelyRecordingRate < 50) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
-  if (staff.length > 0 && staffResult.outcomesFrameworkKnowledgeRate < 50) actions.push("MEDIUM: Outcomes framework knowledge at " + staffResult.outcomesFrameworkKnowledgeRate + "% — schedule training for staff");
+  if (periodRecords.length > 0 && below(qualityResult.outcomeMeasuredRate, 50)) actions.push("HIGH: Outcome measurement at " + qualityResult.outcomeMeasuredRate + "% — review measurement processes");
+  if (periodRecords.length > 0 && below(qualityResult.progressEvidencedRate, 50)) actions.push("HIGH: Progress evidencing at " + qualityResult.progressEvidencedRate + "% — ensure progress is consistently documented");
+  if (periodRecords.length > 0 && below(complianceResult.documentationCompleteRate, 50)) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all outcomes must be recorded");
+  if (periodRecords.length > 0 && below(complianceResult.timelyRecordingRate, 50)) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
+  if (staff.length > 0 && below(staffResult.outcomesFrameworkKnowledgeRate, 50)) actions.push("MEDIUM: Outcomes framework knowledge at " + staffResult.outcomesFrameworkKnowledgeRate + "% — schedule training for staff");
   const lowScoreChildren = childProfiles.filter((p) => p.overallScore <= 3);
   if (lowScoreChildren.length > 0) actions.push("MEDIUM: " + lowScoreChildren.length + " child(ren) with low outcomes scores — review individual care plans");
   if (actions.length === 0) actions.push("No immediate actions required. Children outcomes systems operating within expected standards.");

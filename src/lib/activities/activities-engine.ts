@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 /* ──────────────────────────────────────────────────────────────
    Activities & Enrichment Intelligence Engine
 
@@ -132,10 +133,14 @@ export interface StaffActivityTraining {
 
 export interface ActivityQualityResult {
   totalRecords: number;
-  childChoiceRate: number;
-  ageAppropriateRate: number;
-  inclusiveRate: number;
-  enjoymentRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childChoiceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  ageAppropriateRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  inclusiveRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  enjoymentRate: number | null;
   score: number;
   strengths: string[];
   concerns: string[];
@@ -143,10 +148,14 @@ export interface ActivityQualityResult {
 
 export interface ActivityComplianceResult {
   totalRecords: number;
-  documentationRate: number;
-  riskAssessedRate: number;
-  childChoiceRate: number;
-  categoryDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childChoiceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  categoryDiversityRatio: number | null;
   uniqueCategories: number;
   score: number;
   strengths: string[];
@@ -168,12 +177,18 @@ export interface ActivityPolicyResult {
 
 export interface StaffActivityReadinessResult {
   totalStaff: number;
-  activityPlanningRate: number;
-  safeguardingAwarenessRate: number;
-  inclusionSkillsRate: number;
-  riskManagementRate: number;
-  communityLinksRate: number;
-  firstAidRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  activityPlanningRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  inclusionSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskManagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  communityLinksRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  firstAidRate: number | null;
   score: number;
   strengths: string[];
   concerns: string[];
@@ -222,11 +237,6 @@ const ALL_CATEGORIES: ActivityCategory[] = [
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -244,10 +254,10 @@ export function evaluateActivityQuality(
   if (totalRecords === 0) {
     return {
       totalRecords: 0,
-      childChoiceRate: 0,
-      ageAppropriateRate: 0,
-      inclusiveRate: 0,
-      enjoymentRate: 0,
+      childChoiceRate: null,
+      ageAppropriateRate: null,
+      inclusiveRate: null,
+      enjoymentRate: null,
       score: 0,
       strengths: [],
       concerns: ["No activity records — quality cannot be assessed"],
@@ -255,50 +265,50 @@ export function evaluateActivityQuality(
   }
 
   const childChoiceCount = records.filter((r) => r.childChoiceOffered).length;
-  const childChoiceRate = pct(childChoiceCount, totalRecords);
+  const childChoiceRate = rate(childChoiceCount, totalRecords);
 
   const ageAppropriateCount = records.filter((r) => r.ageAppropriate).length;
-  const ageAppropriateRate = pct(ageAppropriateCount, totalRecords);
+  const ageAppropriateRate = rate(ageAppropriateCount, totalRecords);
 
   const inclusiveCount = records.filter((r) => r.inclusiveParticipation).length;
-  const inclusiveRate = pct(inclusiveCount, totalRecords);
+  const inclusiveRate = rate(inclusiveCount, totalRecords);
 
   const enjoymentCount = records.filter((r) => r.enjoymentRecorded).length;
-  const enjoymentRate = pct(enjoymentCount, totalRecords);
+  const enjoymentRate = rate(enjoymentCount, totalRecords);
 
   // Weights: childChoiceRate 7 + ageAppropriateRate 6 + inclusiveRate 6 + enjoymentRate 6 = 25
   let score = 0;
-  score += (childChoiceRate / 100) * 7;
-  score += (ageAppropriateRate / 100) * 6;
-  score += (inclusiveRate / 100) * 6;
-  score += (enjoymentRate / 100) * 6;
+  score += ((childChoiceRate ?? 0) / 100) * 7;
+  score += ((ageAppropriateRate ?? 0) / 100) * 6;
+  score += ((inclusiveRate ?? 0) / 100) * 6;
+  score += ((enjoymentRate ?? 0) / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (childChoiceRate >= 80) {
+  if (meets(childChoiceRate, 80)) {
     strengths.push("Strong child choice: " + childChoiceRate + "% of activities offered child choice");
-  } else if (childChoiceRate < 50) {
+  } else if (below(childChoiceRate, 50)) {
     concerns.push("Child choice rate at " + childChoiceRate + "% — children not consistently offered choice in activities");
   }
 
-  if (ageAppropriateRate >= 80) {
+  if (meets(ageAppropriateRate, 80)) {
     strengths.push("Excellent age-appropriateness: " + ageAppropriateRate + "% of activities age-appropriate");
-  } else if (ageAppropriateRate < 50) {
+  } else if (below(ageAppropriateRate, 50)) {
     concerns.push("Age-appropriateness at " + ageAppropriateRate + "% — activities may not suit children's developmental stage");
   }
 
-  if (inclusiveRate >= 80) {
+  if (meets(inclusiveRate, 80)) {
     strengths.push("Strong inclusive participation: " + inclusiveRate + "% of activities inclusive");
-  } else if (inclusiveRate < 50) {
+  } else if (below(inclusiveRate, 50)) {
     concerns.push("Inclusive participation at " + inclusiveRate + "% — barriers to participation may exist");
   }
 
-  if (enjoymentRate >= 80) {
+  if (meets(enjoymentRate, 80)) {
     strengths.push("Good enjoyment recording: " + enjoymentRate + "% of activities have enjoyment recorded");
-  } else if (enjoymentRate < 50) {
+  } else if (below(enjoymentRate, 50)) {
     concerns.push("Enjoyment recording at " + enjoymentRate + "% — child voice in activities not captured consistently");
   }
 
@@ -324,9 +334,9 @@ export function evaluateActivityCompliance(
   if (totalRecords === 0) {
     return {
       totalRecords: 0,
-      documentationRate: 0,
-      riskAssessedRate: 0,
-      childChoiceRate: 0,
+      documentationRate: null,
+      riskAssessedRate: null,
+      childChoiceRate: null,
       categoryDiversityRatio: 0,
       uniqueCategories: 0,
       score: 0,
@@ -336,45 +346,45 @@ export function evaluateActivityCompliance(
   }
 
   const documentationCount = records.filter((r) => r.documentationComplete).length;
-  const documentationRate = pct(documentationCount, totalRecords);
+  const documentationRate = rate(documentationCount, totalRecords);
 
   const riskAssessedCount = records.filter((r) => r.riskAssessed).length;
-  const riskAssessedRate = pct(riskAssessedCount, totalRecords);
+  const riskAssessedRate = rate(riskAssessedCount, totalRecords);
 
   const childChoiceCount = records.filter((r) => r.childChoiceOffered).length;
-  const childChoiceRate = pct(childChoiceCount, totalRecords);
+  const childChoiceRate = rate(childChoiceCount, totalRecords);
 
   const uniqueCategoriesSet = new Set(records.map((r) => r.category));
   const uniqueCategories = uniqueCategoriesSet.size;
-  const categoryDiversityRatio = pct(uniqueCategories, ALL_CATEGORIES.length);
+  const categoryDiversityRatio = rate(uniqueCategories, ALL_CATEGORIES.length);
 
   // Weights: documentationRate 8 + riskAssessedRate 7 + childChoiceRate 5 + categoryDiversityRatio 5 = 25
   let score = 0;
-  score += (documentationRate / 100) * 8;
-  score += (riskAssessedRate / 100) * 7;
-  score += (childChoiceRate / 100) * 5;
-  score += (categoryDiversityRatio / 100) * 5;
+  score += ((documentationRate ?? 0) / 100) * 8;
+  score += ((riskAssessedRate ?? 0) / 100) * 7;
+  score += ((childChoiceRate ?? 0) / 100) * 5;
+  score += ((categoryDiversityRatio ?? 0) / 100) * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (documentationRate >= 90) {
+  if (meets(documentationRate, 90)) {
     strengths.push("Thorough documentation: " + documentationRate + "% of activities fully documented");
-  } else if (documentationRate < 60) {
+  } else if (below(documentationRate, 60)) {
     concerns.push("Documentation rate at " + documentationRate + "% — activity records incomplete");
   }
 
-  if (riskAssessedRate >= 90) {
+  if (meets(riskAssessedRate, 90)) {
     strengths.push("Excellent risk assessment: " + riskAssessedRate + "% of activities risk-assessed");
-  } else if (riskAssessedRate < 60) {
+  } else if (below(riskAssessedRate, 60)) {
     concerns.push("Risk assessment at " + riskAssessedRate + "% — not all activities have been risk-assessed");
   }
 
-  if (childChoiceRate >= 80) {
+  if (meets(childChoiceRate, 80)) {
     strengths.push("Strong child participation: " + childChoiceRate + "% of activities offered child choice");
-  } else if (childChoiceRate < 50) {
+  } else if (below(childChoiceRate, 50)) {
     concerns.push("Child choice at " + childChoiceRate + "% — children not consistently involved in activity selection");
   }
 
@@ -492,12 +502,12 @@ export function evaluateStaffActivityReadiness(
   if (totalStaff === 0) {
     return {
       totalStaff: 0,
-      activityPlanningRate: 0,
-      safeguardingAwarenessRate: 0,
-      inclusionSkillsRate: 0,
-      riskManagementRate: 0,
-      communityLinksRate: 0,
-      firstAidRate: 0,
+      activityPlanningRate: null,
+      safeguardingAwarenessRate: null,
+      inclusionSkillsRate: null,
+      riskManagementRate: null,
+      communityLinksRate: null,
+      firstAidRate: null,
       score: 0,
       strengths: [],
       concerns: ["No staff training records — URGENT: schedule activity training for all staff"],
@@ -505,70 +515,70 @@ export function evaluateStaffActivityReadiness(
   }
 
   const planningCount = training.filter((t) => t.activityPlanning).length;
-  const activityPlanningRate = pct(planningCount, totalStaff);
+  const activityPlanningRate = rate(planningCount, totalStaff);
 
   const safeguardingCount = training.filter((t) => t.safeguardingAwareness).length;
-  const safeguardingAwarenessRate = pct(safeguardingCount, totalStaff);
+  const safeguardingAwarenessRate = rate(safeguardingCount, totalStaff);
 
   const inclusionCount = training.filter((t) => t.inclusionSkills).length;
-  const inclusionSkillsRate = pct(inclusionCount, totalStaff);
+  const inclusionSkillsRate = rate(inclusionCount, totalStaff);
 
   const riskCount = training.filter((t) => t.riskManagement).length;
-  const riskManagementRate = pct(riskCount, totalStaff);
+  const riskManagementRate = rate(riskCount, totalStaff);
 
   const communityCount = training.filter((t) => t.communityLinks).length;
-  const communityLinksRate = pct(communityCount, totalStaff);
+  const communityLinksRate = rate(communityCount, totalStaff);
 
   const firstAidCount = training.filter((t) => t.firstAid).length;
-  const firstAidRate = pct(firstAidCount, totalStaff);
+  const firstAidRate = rate(firstAidCount, totalStaff);
 
   // Weights: 6+5+5+4+3+2 = 25
   let score = 0;
-  score += (activityPlanningRate / 100) * 6;
-  score += (safeguardingAwarenessRate / 100) * 5;
-  score += (inclusionSkillsRate / 100) * 5;
-  score += (riskManagementRate / 100) * 4;
-  score += (communityLinksRate / 100) * 3;
-  score += (firstAidRate / 100) * 2;
+  score += ((activityPlanningRate ?? 0) / 100) * 6;
+  score += ((safeguardingAwarenessRate ?? 0) / 100) * 5;
+  score += ((inclusionSkillsRate ?? 0) / 100) * 5;
+  score += ((riskManagementRate ?? 0) / 100) * 4;
+  score += ((communityLinksRate ?? 0) / 100) * 3;
+  score += ((firstAidRate ?? 0) / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (activityPlanningRate >= 80) {
+  if (meets(activityPlanningRate, 80)) {
     strengths.push("Strong activity planning skills: " + activityPlanningRate + "% of staff");
-  } else if (activityPlanningRate < 50) {
+  } else if (below(activityPlanningRate, 50)) {
     concerns.push("Activity planning at " + activityPlanningRate + "% — staff may lack skills to plan enrichment activities");
   }
 
-  if (safeguardingAwarenessRate >= 80) {
+  if (meets(safeguardingAwarenessRate, 80)) {
     strengths.push("Good safeguarding awareness: " + safeguardingAwarenessRate + "% of staff");
-  } else if (safeguardingAwarenessRate < 50) {
+  } else if (below(safeguardingAwarenessRate, 50)) {
     concerns.push("Safeguarding awareness at " + safeguardingAwarenessRate + "% — safeguarding in activity contexts needs attention");
   }
 
-  if (inclusionSkillsRate >= 80) {
+  if (meets(inclusionSkillsRate, 80)) {
     strengths.push("Strong inclusion skills: " + inclusionSkillsRate + "% of staff skilled in inclusive participation");
-  } else if (inclusionSkillsRate < 50) {
+  } else if (below(inclusionSkillsRate, 50)) {
     concerns.push("Inclusion skills at " + inclusionSkillsRate + "% — staff may not support all children to participate");
   }
 
-  if (riskManagementRate >= 80) {
+  if (meets(riskManagementRate, 80)) {
     strengths.push("Good risk management skills: " + riskManagementRate + "% of staff competent in activity risk management");
-  } else if (riskManagementRate < 50) {
+  } else if (below(riskManagementRate, 50)) {
     concerns.push("Risk management at " + riskManagementRate + "% — activity risk assessments may be inadequate");
   }
 
-  if (communityLinksRate >= 80) {
+  if (meets(communityLinksRate, 80)) {
     strengths.push("Strong community links: " + communityLinksRate + "% of staff have community connections for activities");
-  } else if (communityLinksRate < 50) {
+  } else if (below(communityLinksRate, 50)) {
     concerns.push("Community links at " + communityLinksRate + "% — community activity options may be limited");
   }
 
-  if (firstAidRate >= 80) {
+  if (meets(firstAidRate, 80)) {
     strengths.push("Good first aid coverage: " + firstAidRate + "% of staff first-aid trained");
-  } else if (firstAidRate < 50) {
+  } else if (below(firstAidRate, 50)) {
     concerns.push("First aid at " + firstAidRate + "% — safety during activities may be compromised");
   }
 
@@ -606,10 +616,10 @@ export function buildChildActivityProfiles(
     const totalActivities = child.records.length;
 
     const choiceCount = child.records.filter((r) => r.childChoiceOffered).length;
-    const childChoiceRate = pct(choiceCount, totalActivities);
+    const childChoiceRate = rate(choiceCount, totalActivities)!;
 
     const enjoymentCount = child.records.filter((r) => r.enjoymentRecorded).length;
-    const enjoymentRate = pct(enjoymentCount, totalActivities);
+    const enjoymentRate = rate(enjoymentCount, totalActivities)!;
 
     const uniqueCategoriesSet = new Set(child.records.map((r) => r.category));
     const uniqueCategories = uniqueCategoriesSet.size;
@@ -621,15 +631,15 @@ export function buildChildActivityProfiles(
 
     // rate1 (childChoiceRate): >=80 -> 3, >=60 -> 2, >=40 -> 1, else 0
     let rate1Score = 0;
-    if (childChoiceRate >= 80) rate1Score = 3;
-    else if (childChoiceRate >= 60) rate1Score = 2;
-    else if (childChoiceRate >= 40) rate1Score = 1;
+    if (meets(childChoiceRate, 80)) rate1Score = 3;
+    else if (meets(childChoiceRate, 60)) rate1Score = 2;
+    else if (meets(childChoiceRate, 40)) rate1Score = 1;
 
     // rate2 (enjoymentRate): same thresholds
     let rate2Score = 0;
-    if (enjoymentRate >= 80) rate2Score = 3;
-    else if (enjoymentRate >= 60) rate2Score = 2;
-    else if (enjoymentRate >= 40) rate2Score = 1;
+    if (meets(enjoymentRate, 80)) rate2Score = 3;
+    else if (meets(enjoymentRate, 60)) rate2Score = 2;
+    else if (meets(enjoymentRate, 40)) rate2Score = 1;
 
     // diversity (unique categories): >=4 -> 2, >=2 -> 1, else 0
     let diversityBonus = 0;
@@ -820,31 +830,31 @@ function generateActions(
   }
 
   // Conditional on rates < 50
-  if (quality.totalRecords > 0 && quality.childChoiceRate < 50) {
+  if (quality.totalRecords > 0 && below(quality.childChoiceRate, 50)) {
     actions.push("HIGH: Child choice rate at " + quality.childChoiceRate + "% — embed child participation in all activity planning");
   }
 
-  if (quality.totalRecords > 0 && quality.ageAppropriateRate < 50) {
+  if (quality.totalRecords > 0 && below(quality.ageAppropriateRate, 50)) {
     actions.push("HIGH: Age-appropriateness at " + quality.ageAppropriateRate + "% — review activity suitability for children's developmental stages");
   }
 
-  if (quality.totalRecords > 0 && quality.inclusiveRate < 50) {
+  if (quality.totalRecords > 0 && below(quality.inclusiveRate, 50)) {
     actions.push("HIGH: Inclusive participation at " + quality.inclusiveRate + "% — address barriers to participation");
   }
 
-  if (quality.totalRecords > 0 && quality.enjoymentRate < 50) {
+  if (quality.totalRecords > 0 && below(quality.enjoymentRate, 50)) {
     actions.push("HIGH: Enjoyment recording at " + quality.enjoymentRate + "% — ensure child voice is captured for all activities");
   }
 
-  if (compliance.totalRecords > 0 && compliance.documentationRate < 50) {
+  if (compliance.totalRecords > 0 && below(compliance.documentationRate, 50)) {
     actions.push("MEDIUM: Documentation rate at " + compliance.documentationRate + "% — improve activity recording practices");
   }
 
-  if (compliance.totalRecords > 0 && compliance.riskAssessedRate < 50) {
+  if (compliance.totalRecords > 0 && below(compliance.riskAssessedRate, 50)) {
     actions.push("MEDIUM: Risk assessment at " + compliance.riskAssessedRate + "% — ensure all activities are properly risk-assessed");
   }
 
-  if (staff.totalStaff > 0 && staff.activityPlanningRate < 50) {
+  if (staff.totalStaff > 0 && below(staff.activityPlanningRate, 50)) {
     actions.push("MEDIUM: Staff activity planning at " + staff.activityPlanningRate + "% — schedule enrichment planning training");
   }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 // ── Local Interfaces (mirrors API shape) ──────────────────────────────────
 
@@ -247,10 +248,10 @@ export default function AfterCareSupportQualityDashboardWidget() {
         {/* Support Quality */}
         <Section title="Support Quality" defaultOpen>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Stat label="Engagement" value={`${data.afterCareSupportQuality.engagementRate}%`} />
-            <Stat label="Needs Assessed" value={`${data.afterCareSupportQuality.needsAssessedRate}%`} />
-            <Stat label="Goals Set" value={`${data.afterCareSupportQuality.goalsSetRate}%`} />
-            <Stat label="Progress Tracked" value={`${data.afterCareSupportQuality.progressRate}%`} />
+            <Stat label="Engagement" value={`${formatRate(data.afterCareSupportQuality.engagementRate)}`} />
+            <Stat label="Needs Assessed" value={`${formatRate(data.afterCareSupportQuality.needsAssessedRate)}`} />
+            <Stat label="Goals Set" value={`${formatRate(data.afterCareSupportQuality.goalsSetRate)}`} />
+            <Stat label="Progress Tracked" value={`${formatRate(data.afterCareSupportQuality.progressRate)}`} />
           </div>
           <p className="text-xs text-gray-400">
             Total sessions: {data.afterCareSupportQuality.totalSessions}
@@ -260,10 +261,10 @@ export default function AfterCareSupportQualityDashboardWidget() {
         {/* Support Compliance */}
         <Section title="Support Compliance">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Stat label="Documented" value={`${data.afterCareSupportCompliance.documentedRate}%`} />
-            <Stat label="Staff Supported" value={`${data.afterCareSupportCompliance.staffSupportedRate}%`} />
-            <Stat label="Feedback Given" value={`${data.afterCareSupportCompliance.feedbackRate}%`} />
-            <Stat label="Type Diversity" value={`${data.afterCareSupportCompliance.supportTypeDiversityRatio}%`} />
+            <Stat label="Documented" value={`${formatRate(data.afterCareSupportCompliance.documentedRate)}`} />
+            <Stat label="Staff Supported" value={`${formatRate(data.afterCareSupportCompliance.staffSupportedRate)}`} />
+            <Stat label="Feedback Given" value={`${formatRate(data.afterCareSupportCompliance.feedbackRate)}`} />
+            <Stat label="Type Diversity" value={`${formatRate(data.afterCareSupportCompliance.supportTypeDiversityRatio)}`} />
           </div>
         </Section>
 
@@ -310,27 +311,27 @@ export default function AfterCareSupportQualityDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">Leaving Care Knowledge:</span>{" "}
-              <span className="font-medium">{data.staffAfterCareReadiness.leavingCareKnowledgeRate}%</span>
+              <span className="font-medium">{formatRate(data.staffAfterCareReadiness.leavingCareKnowledgeRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Pathway Planning:</span>{" "}
-              <span className="font-medium">{data.staffAfterCareReadiness.pathwayPlanningRate}%</span>
+              <span className="font-medium">{formatRate(data.staffAfterCareReadiness.pathwayPlanningRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Housing Advice:</span>{" "}
-              <span className="font-medium">{data.staffAfterCareReadiness.housingAdviceRate}%</span>
+              <span className="font-medium">{formatRate(data.staffAfterCareReadiness.housingAdviceRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Employment Support:</span>{" "}
-              <span className="font-medium">{data.staffAfterCareReadiness.employmentSupportRate}%</span>
+              <span className="font-medium">{formatRate(data.staffAfterCareReadiness.employmentSupportRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Benefits & Finance:</span>{" "}
-              <span className="font-medium">{data.staffAfterCareReadiness.benefitsAndFinanceRate}%</span>
+              <span className="font-medium">{formatRate(data.staffAfterCareReadiness.benefitsAndFinanceRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Emotional Resilience:</span>{" "}
-              <span className="font-medium">{data.staffAfterCareReadiness.emotionalResilienceRate}%</span>
+              <span className="font-medium">{formatRate(data.staffAfterCareReadiness.emotionalResilienceRate)}</span>
             </div>
           </div>
         </Section>

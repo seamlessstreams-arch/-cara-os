@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -218,10 +219,10 @@ export default function ComplaintsAdvocacyAccessDashboardWidget() {
       <Section title="Complaints Handling" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Stat label="Total Complaints" value={data.complaintsHandling.totalComplaints} />
-          <Stat label="Resolved Rate" value={`${data.complaintsHandling.resolvedRate}%`} />
-          <Stat label="Within Timescale" value={`${data.complaintsHandling.resolvedWithinTimescaleRate}%`} />
-          <Stat label="Advocacy Offered" value={`${data.complaintsHandling.advocacyOfferedRate}%`} />
-          <Stat label="Satisfaction" value={`${data.complaintsHandling.satisfactionRate}%`} />
+          <Stat label="Resolved Rate" value={`${formatRate(data.complaintsHandling.resolvedRate)}`} />
+          <Stat label="Within Timescale" value={`${formatRate(data.complaintsHandling.resolvedWithinTimescaleRate)}`} />
+          <Stat label="Advocacy Offered" value={`${formatRate(data.complaintsHandling.advocacyOfferedRate)}`} />
+          <Stat label="Satisfaction" value={`${formatRate(data.complaintsHandling.satisfactionRate)}`} />
           <Stat label="Avg Days to Resolve" value={data.complaintsHandling.averageDaysToResolve} />
         </div>
       </Section>
@@ -230,11 +231,11 @@ export default function ComplaintsAdvocacyAccessDashboardWidget() {
       <Section title="Advocacy Access">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Stat label="Total Referrals" value={data.advocacyAccess.totalReferrals} />
-          <Stat label="Contact Made" value={`${data.advocacyAccess.contactMadeRate}%`} />
-          <Stat label="Independent" value={`${data.advocacyAccess.independentRate}%`} />
-          <Stat label="Child Informed" value={`${data.advocacyAccess.childInformedRate}%`} />
-          <Stat label="Timely Access" value={`${data.advocacyAccess.timelyAccessRate}%`} />
-          <Stat label="Ongoing Support" value={`${data.advocacyAccess.ongoingSupportRate}%`} />
+          <Stat label="Contact Made" value={`${formatRate(data.advocacyAccess.contactMadeRate)}`} />
+          <Stat label="Independent" value={`${formatRate(data.advocacyAccess.independentRate)}`} />
+          <Stat label="Child Informed" value={`${formatRate(data.advocacyAccess.childInformedRate)}`} />
+          <Stat label="Timely Access" value={`${formatRate(data.advocacyAccess.timelyAccessRate)}`} />
+          <Stat label="Ongoing Support" value={`${formatRate(data.advocacyAccess.ongoingSupportRate)}`} />
         </div>
       </Section>
 
@@ -264,12 +265,12 @@ export default function ComplaintsAdvocacyAccessDashboardWidget() {
       <Section title="Staff Complaints Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffComplaintsReadiness.totalStaff} />
-          <Stat label="Procedure" value={`${data.staffComplaintsReadiness.complaintsProcedureRate}%`} />
-          <Stat label="Advocacy Referral" value={`${data.staffComplaintsReadiness.advocacyReferralRate}%`} />
-          <Stat label="Child Rights" value={`${data.staffComplaintsReadiness.childRightsRate}%`} />
-          <Stat label="Conflict Resolution" value={`${data.staffComplaintsReadiness.conflictResolutionRate}%`} />
-          <Stat label="Record Keeping" value={`${data.staffComplaintsReadiness.recordKeepingRate}%`} />
-          <Stat label="Escalation" value={`${data.staffComplaintsReadiness.escalationRate}%`} />
+          <Stat label="Procedure" value={`${formatRate(data.staffComplaintsReadiness.complaintsProcedureRate)}`} />
+          <Stat label="Advocacy Referral" value={`${formatRate(data.staffComplaintsReadiness.advocacyReferralRate)}`} />
+          <Stat label="Child Rights" value={`${formatRate(data.staffComplaintsReadiness.childRightsRate)}`} />
+          <Stat label="Conflict Resolution" value={`${formatRate(data.staffComplaintsReadiness.conflictResolutionRate)}`} />
+          <Stat label="Record Keeping" value={`${formatRate(data.staffComplaintsReadiness.recordKeepingRate)}`} />
+          <Stat label="Escalation" value={`${formatRate(data.staffComplaintsReadiness.escalationRate)}`} />
         </div>
       </Section>
 

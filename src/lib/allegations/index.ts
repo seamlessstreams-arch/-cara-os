@@ -5,7 +5,6 @@ export {
   evaluateAllegationPolicy,
   evaluateStaffAllegationReadiness,
   buildChildAllegationProfiles,
-  pct,
   getRating,
   getAllegationCategoryLabel,
   getAllegationOutcomeLabel,

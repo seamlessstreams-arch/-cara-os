@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildCommunityProfile { childId: string; childName: string; totalActivities: number; participationRate: number; childInitiatedRate: number; overallScore: number; }
 
@@ -85,19 +86,19 @@ export default function CommunityEngagementParticipationDashboardWidget() {
       <Section title="Engagement Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Activities" value={data.engagementQuality.totalActivities} />
-          <Stat label="Participation" value={`${data.engagementQuality.participationRate}%`} />
-          <Stat label="Child Initiated" value={`${data.engagementQuality.childInitiatedRate}%`} />
-          <Stat label="Social Skills" value={`${data.engagementQuality.socialSkillsRate}%`} />
-          <Stat label="Community Links" value={`${data.engagementQuality.communityLinksRate}%`} />
+          <Stat label="Participation" value={`${formatRate(data.engagementQuality.participationRate)}`} />
+          <Stat label="Child Initiated" value={`${formatRate(data.engagementQuality.childInitiatedRate)}`} />
+          <Stat label="Social Skills" value={`${formatRate(data.engagementQuality.socialSkillsRate)}`} />
+          <Stat label="Community Links" value={`${formatRate(data.engagementQuality.communityLinksRate)}`} />
         </div>
       </Section>
 
       <Section title="Engagement Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documented" value={`${data.engagementCompliance.documentedRate}%`} />
-          <Stat label="Staff Supported" value={`${data.engagementCompliance.staffSupportedRate}%`} />
-          <Stat label="Feedback" value={`${data.engagementCompliance.feedbackRate}%`} />
-          <Stat label="Activity Diversity" value={`${data.engagementCompliance.activityDiversityRatio}%`} />
+          <Stat label="Documented" value={`${formatRate(data.engagementCompliance.documentedRate)}`} />
+          <Stat label="Staff Supported" value={`${formatRate(data.engagementCompliance.staffSupportedRate)}`} />
+          <Stat label="Feedback" value={`${formatRate(data.engagementCompliance.feedbackRate)}`} />
+          <Stat label="Activity Diversity" value={`${formatRate(data.engagementCompliance.activityDiversityRatio)}`} />
         </div>
       </Section>
 
@@ -120,12 +121,12 @@ export default function CommunityEngagementParticipationDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffCommunityReadiness.totalStaff} />
-          <Stat label="Engagement" value={`${data.staffCommunityReadiness.communityEngagementRate}%`} />
-          <Stat label="Social Inclusion" value={`${data.staffCommunityReadiness.socialInclusionRate}%`} />
-          <Stat label="Safeguarding" value={`${data.staffCommunityReadiness.safeguardingInCommunityRate}%`} />
-          <Stat label="Activity Planning" value={`${data.staffCommunityReadiness.activityPlanningRate}%`} />
-          <Stat label="Partnership" value={`${data.staffCommunityReadiness.partnershipWorkingRate}%`} />
-          <Stat label="Documentation" value={`${data.staffCommunityReadiness.documentationRate}%`} />
+          <Stat label="Engagement" value={`${formatRate(data.staffCommunityReadiness.communityEngagementRate)}`} />
+          <Stat label="Social Inclusion" value={`${formatRate(data.staffCommunityReadiness.socialInclusionRate)}`} />
+          <Stat label="Safeguarding" value={`${formatRate(data.staffCommunityReadiness.safeguardingInCommunityRate)}`} />
+          <Stat label="Activity Planning" value={`${formatRate(data.staffCommunityReadiness.activityPlanningRate)}`} />
+          <Stat label="Partnership" value={`${formatRate(data.staffCommunityReadiness.partnershipWorkingRate)}`} />
+          <Stat label="Documentation" value={`${formatRate(data.staffCommunityReadiness.documentationRate)}`} />
         </div>
       </Section>
 

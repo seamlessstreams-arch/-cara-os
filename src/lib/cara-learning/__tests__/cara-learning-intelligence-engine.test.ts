@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getCaraLearningCategoryLabel,
   getCaraLearningOutcomeLabel,
@@ -77,23 +76,6 @@ function fullStaff(): StaffCaraLearningTraining {
 
 /* ── pct() ───────────────────────────────────────────────────── */
 
-describe("pct()", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(0, 0)).toBe(0);
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("calculates percentage correctly", () => {
-    expect(pct(1, 2)).toBe(50);
-    expect(pct(3, 4)).toBe(75);
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-});
 
 /* ── getRating() ─────────────────────────────────────────────── */
 
@@ -158,10 +140,10 @@ describe("evaluateCaraLearningQuality()", () => {
     const result = evaluateCaraLearningQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalRecords).toBe(0);
-    expect(result.taskCompletedAccuratelyRate).toBe(0);
-    expect(result.costEfficiencyMaintainedRate).toBe(0);
-    expect(result.learningDocumentedRate).toBe(0);
-    expect(result.qualityAssurancePassedRate).toBe(0);
+    expect(result.taskCompletedAccuratelyRate).toBeNull();
+    expect(result.costEfficiencyMaintainedRate).toBeNull();
+    expect(result.learningDocumentedRate).toBeNull();
+    expect(result.qualityAssurancePassedRate).toBeNull();
   });
 
   it("returns max score (25) for all-true records", () => {
@@ -219,9 +201,9 @@ describe("evaluateCaraLearningCompliance()", () => {
     const result = evaluateCaraLearningCompliance([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalRecords).toBe(0);
-    expect(result.documentationCompleteRate).toBe(0);
-    expect(result.timelyRecordingRate).toBe(0);
-    expect(result.taskCompletedAccuratelyRate).toBe(0);
+    expect(result.documentationCompleteRate).toBeNull();
+    expect(result.timelyRecordingRate).toBeNull();
+    expect(result.taskCompletedAccuratelyRate).toBeNull();
     expect(result.categoryDiversityRatio).toBe(0);
     expect(result.uniqueCategories).toBe(0);
   });
@@ -340,12 +322,12 @@ describe("evaluateStaffCaraLearningReadiness()", () => {
     const result = evaluateStaffCaraLearningReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.agentManagementKnowledgeRate).toBe(0);
-    expect(result.costAnalysisSkillsRate).toBe(0);
-    expect(result.qualityAssuranceSkillsRate).toBe(0);
-    expect(result.dataInterpretationSkillsRate).toBe(0);
-    expect(result.performanceMonitoringSkillsRate).toBe(0);
-    expect(result.humanOversightCapabilityRate).toBe(0);
+    expect(result.agentManagementKnowledgeRate).toBeNull();
+    expect(result.costAnalysisSkillsRate).toBeNull();
+    expect(result.qualityAssuranceSkillsRate).toBeNull();
+    expect(result.dataInterpretationSkillsRate).toBeNull();
+    expect(result.performanceMonitoringSkillsRate).toBeNull();
+    expect(result.humanOversightCapabilityRate).toBeNull();
   });
 
   it("returns 25 for fully trained staff", () => {

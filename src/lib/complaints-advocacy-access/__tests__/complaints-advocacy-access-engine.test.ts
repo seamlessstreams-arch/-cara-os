@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getComplaintTypeLabel,
   getComplaintStatusLabel,
@@ -93,24 +92,6 @@ function makeTraining(overrides: Partial<StaffComplaintsTraining> = {}): StaffCo
 
 // -- pct() --------------------------------------------------------------------
 
-describe("pct", () => {
-  it("returns null when denominator is 0 — nothing measured, not 0%", () => {
-    expect(pct(5, 0)).toBeNull();
-    expect(pct(5, 0)).not.toBe(0); // 0% is a claim about a population that does not exist
-  });
-  it("calculates percentage correctly", () => {
-    expect(pct(3, 4)).toBe(75);
-  });
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-  it("returns 100 when num equals den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-  it("returns 0 when num is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-});
 
 // -- getRating() ---------------------------------------------------------------
 
@@ -198,10 +179,10 @@ describe("evaluateComplaintsHandling", () => {
     const r = evaluateComplaintsHandling([]);
     expect(r.overallScore).toBe(25);
     expect(r.totalComplaints).toBe(0);
-    expect(r.resolvedRate).toBe(0);
-    expect(r.resolvedWithinTimescaleRate).toBe(0);
-    expect(r.advocacyOfferedRate).toBe(0);
-    expect(r.satisfactionRate).toBe(0);
+    expect(r.resolvedRate).toBeNull();
+    expect(r.resolvedWithinTimescaleRate).toBeNull();
+    expect(r.advocacyOfferedRate).toBeNull();
+    expect(r.satisfactionRate).toBeNull();
     expect(r.averageDaysToResolve).toBe(0);
   });
 
@@ -358,11 +339,11 @@ describe("evaluateAdvocacyAccess", () => {
     const r = evaluateAdvocacyAccess([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalReferrals).toBe(0);
-    expect(r.contactMadeRate).toBe(0);
-    expect(r.independentRate).toBe(0);
-    expect(r.childInformedRate).toBe(0);
-    expect(r.timelyAccessRate).toBe(0);
-    expect(r.ongoingSupportRate).toBe(0);
+    expect(r.contactMadeRate).toBeNull();
+    expect(r.independentRate).toBeNull();
+    expect(r.childInformedRate).toBeNull();
+    expect(r.timelyAccessRate).toBeNull();
+    expect(r.ongoingSupportRate).toBeNull();
   });
 
   it("scores maximum for perfect advocacy access", () => {
@@ -627,12 +608,12 @@ describe("evaluateStaffComplaintsReadiness", () => {
     const r = evaluateStaffComplaintsReadiness([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalStaff).toBe(0);
-    expect(r.complaintsProcedureRate).toBe(0);
-    expect(r.advocacyReferralRate).toBe(0);
-    expect(r.childRightsRate).toBe(0);
-    expect(r.conflictResolutionRate).toBe(0);
-    expect(r.recordKeepingRate).toBe(0);
-    expect(r.escalationRate).toBe(0);
+    expect(r.complaintsProcedureRate).toBeNull();
+    expect(r.advocacyReferralRate).toBeNull();
+    expect(r.childRightsRate).toBeNull();
+    expect(r.conflictResolutionRate).toBeNull();
+    expect(r.recordKeepingRate).toBeNull();
+    expect(r.escalationRate).toBeNull();
   });
 
   it("scores maximum for fully trained staff", () => {

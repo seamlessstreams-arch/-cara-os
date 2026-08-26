@@ -5,7 +5,6 @@ export {
   evaluateComplaintPolicy,
   evaluateStaffComplaintReadiness,
   buildChildComplaintProfiles,
-  pct,
   getRating,
   getComplaintCategoryLabel,
   getComplaintStatusLabel,

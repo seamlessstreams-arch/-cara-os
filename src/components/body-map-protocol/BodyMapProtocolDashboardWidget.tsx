@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { BodyMapProtocolIntelligence } from "@/lib/body-map-protocol";
+import { formatRate } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -101,7 +102,7 @@ export function BodyMapProtocolDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Body Maps</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.recordingQuality.thoroughRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.recordingQuality.thoroughRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Thorough</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -109,7 +110,7 @@ export function BodyMapProtocolDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Audits</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.staffCompetence.bodyMapTrainedRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.staffCompetence.bodyMapTrainedRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Staff Trained</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -155,44 +156,44 @@ export function BodyMapProtocolDashboardWidget() {
         <Section title="Recording Quality">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Records:</span> <span className="font-medium">{data.recordingQuality.totalRecords}</span></div>
-            <div><span className="text-gray-500">Thorough:</span> <span className="font-medium">{data.recordingQuality.thoroughRate}%</span></div>
-            <div><span className="text-gray-500">Child Explanation:</span> <span className="font-medium">{data.recordingQuality.childExplanationRate}%</span></div>
-            <div><span className="text-gray-500">Timely:</span> <span className="font-medium">{data.recordingQuality.timelyRecordingRate}%</span></div>
-            <div><span className="text-gray-500">Photographed:</span> <span className="font-medium">{data.recordingQuality.photographRate}%</span></div>
-            <div><span className="text-gray-500">Manager Informed:</span> <span className="font-medium">{data.recordingQuality.managerInformedRate}%</span></div>
-            <div><span className="text-gray-500">Follow-up Done:</span> <span className="font-medium">{data.recordingQuality.followUpCompletedRate}%</span></div>
+            <div><span className="text-gray-500">Thorough:</span> <span className="font-medium">{formatRate(data.recordingQuality.thoroughRate)}</span></div>
+            <div><span className="text-gray-500">Child Explanation:</span> <span className="font-medium">{formatRate(data.recordingQuality.childExplanationRate)}</span></div>
+            <div><span className="text-gray-500">Timely:</span> <span className="font-medium">{formatRate(data.recordingQuality.timelyRecordingRate)}</span></div>
+            <div><span className="text-gray-500">Photographed:</span> <span className="font-medium">{formatRate(data.recordingQuality.photographRate)}</span></div>
+            <div><span className="text-gray-500">Manager Informed:</span> <span className="font-medium">{formatRate(data.recordingQuality.managerInformedRate)}</span></div>
+            <div><span className="text-gray-500">Follow-up Done:</span> <span className="font-medium">{formatRate(data.recordingQuality.followUpCompletedRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Audit Compliance">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Audits:</span> <span className="font-medium">{data.auditCompliance.totalAudits}</span></div>
-            <div><span className="text-gray-500">Compliant:</span> <span className="font-medium">{data.auditCompliance.overallCompliantRate}%</span></div>
-            <div><span className="text-gray-500">Secure Storage:</span> <span className="font-medium">{data.auditCompliance.storageSecureRate}%</span></div>
-            <div><span className="text-gray-500">Protocol Accessible:</span> <span className="font-medium">{data.auditCompliance.protocolAccessibleRate}%</span></div>
-            <div><span className="text-gray-500">Cross Referenced:</span> <span className="font-medium">{data.auditCompliance.crossReferencedRate}%</span></div>
-            <div><span className="text-gray-500">Staff Trained:</span> <span className="font-medium">{data.auditCompliance.staffTrainedRate}%</span></div>
+            <div><span className="text-gray-500">Compliant:</span> <span className="font-medium">{formatRate(data.auditCompliance.overallCompliantRate)}</span></div>
+            <div><span className="text-gray-500">Secure Storage:</span> <span className="font-medium">{formatRate(data.auditCompliance.storageSecureRate)}</span></div>
+            <div><span className="text-gray-500">Protocol Accessible:</span> <span className="font-medium">{formatRate(data.auditCompliance.protocolAccessibleRate)}</span></div>
+            <div><span className="text-gray-500">Cross Referenced:</span> <span className="font-medium">{formatRate(data.auditCompliance.crossReferencedRate)}</span></div>
+            <div><span className="text-gray-500">Staff Trained:</span> <span className="font-medium">{formatRate(data.auditCompliance.staffTrainedRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Staff Competence">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Staff:</span> <span className="font-medium">{data.staffCompetence.totalStaff}</span></div>
-            <div><span className="text-gray-500">Body Map:</span> <span className="font-medium">{data.staffCompetence.bodyMapTrainedRate}%</span></div>
-            <div><span className="text-gray-500">Safeguarding:</span> <span className="font-medium">{data.staffCompetence.safeguardingRate}%</span></div>
-            <div><span className="text-gray-500">Photography:</span> <span className="font-medium">{data.staffCompetence.photographyRate}%</span></div>
-            <div><span className="text-gray-500">Documentation:</span> <span className="font-medium">{data.staffCompetence.documentationRate}%</span></div>
-            <div><span className="text-gray-500">Escalation:</span> <span className="font-medium">{data.staffCompetence.escalationRate}%</span></div>
+            <div><span className="text-gray-500">Body Map:</span> <span className="font-medium">{formatRate(data.staffCompetence.bodyMapTrainedRate)}</span></div>
+            <div><span className="text-gray-500">Safeguarding:</span> <span className="font-medium">{formatRate(data.staffCompetence.safeguardingRate)}</span></div>
+            <div><span className="text-gray-500">Photography:</span> <span className="font-medium">{formatRate(data.staffCompetence.photographyRate)}</span></div>
+            <div><span className="text-gray-500">Documentation:</span> <span className="font-medium">{formatRate(data.staffCompetence.documentationRate)}</span></div>
+            <div><span className="text-gray-500">Escalation:</span> <span className="font-medium">{formatRate(data.staffCompetence.escalationRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Escalation Effectiveness">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Escalations:</span> <span className="font-medium">{data.escalationEffectiveness.totalEscalations}</span></div>
-            <div><span className="text-gray-500">Timely:</span> <span className="font-medium">{data.escalationEffectiveness.timelyRate}%</span></div>
-            <div><span className="text-gray-500">Appropriate:</span> <span className="font-medium">{data.escalationEffectiveness.appropriateRate}%</span></div>
-            <div><span className="text-gray-500">Referral Made:</span> <span className="font-medium">{data.escalationEffectiveness.referralMadeRate}%</span></div>
-            <div><span className="text-gray-500">Outcome Recorded:</span> <span className="font-medium">{data.escalationEffectiveness.outcomeRecordedRate}%</span></div>
+            <div><span className="text-gray-500">Timely:</span> <span className="font-medium">{formatRate(data.escalationEffectiveness.timelyRate)}</span></div>
+            <div><span className="text-gray-500">Appropriate:</span> <span className="font-medium">{formatRate(data.escalationEffectiveness.appropriateRate)}</span></div>
+            <div><span className="text-gray-500">Referral Made:</span> <span className="font-medium">{formatRate(data.escalationEffectiveness.referralMadeRate)}</span></div>
+            <div><span className="text-gray-500">Outcome Recorded:</span> <span className="font-medium">{formatRate(data.escalationEffectiveness.outcomeRecordedRate)}</span></div>
           </div>
         </Section>
 

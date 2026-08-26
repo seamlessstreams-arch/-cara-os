@@ -5,7 +5,6 @@ export {
   evaluateCommunityPolicy,
   evaluateStaffCommunityReadiness,
   buildChildCommunityProfiles,
-  pct,
   getRating,
   getActivityTypeLabel,
   getParticipationLevelLabel,

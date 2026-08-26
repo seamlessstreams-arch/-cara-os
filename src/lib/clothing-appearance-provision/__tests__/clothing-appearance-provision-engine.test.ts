@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getClothingCategoryLabel,
   getProvisionQualityLabel,
@@ -69,15 +68,6 @@ function makeTraining(overrides: Partial<StaffClothingTraining> = {}): StaffClot
 
 // -- pct -----------------------------------------------------------------------
 
-describe("pct", () => {
-  it("returns null for a zero denominator — nothing measured, not 0%", () => {
-    expect(pct(5, 0)).toBeNull();
-    expect(pct(5, 0)).not.toBe(0); // 0% is a claim about a population that does not exist
-  });
-  it("rounds correctly", () => expect(pct(1, 3)).toBe(33));
-  it("returns 100 for equal values", () => expect(pct(10, 10)).toBe(100));
-  it("returns 50 for half", () => expect(pct(5, 10)).toBe(50));
-});
 
 // -- getRating -----------------------------------------------------------------
 
@@ -190,7 +180,7 @@ describe("evaluateCompliance", () => {
   it("returns 0 for empty assessments", () => {
     const r = evaluateCompliance([]);
     expect(r.overallScore).toBe(0);
-    expect(r.documentedRate).toBe(0);
+    expect(r.documentedRate).toBeNull();
   });
 
   it("returns max score for fully compliant assessments", () => {

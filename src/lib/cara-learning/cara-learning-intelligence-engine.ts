@@ -18,6 +18,7 @@
    ────────────────────────────────────────────────────────────── */
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -127,18 +128,25 @@ export interface StaffCaraLearningTraining {
 export interface CaraLearningQualityResult {
   overallScore: number;
   totalRecords: number;
-  taskCompletedAccuratelyRate: number;
-  costEfficiencyMaintainedRate: number;
-  learningDocumentedRate: number;
-  qualityAssurancePassedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  taskCompletedAccuratelyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  costEfficiencyMaintainedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  learningDocumentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  qualityAssurancePassedRate: number | null;
 }
 
 export interface CaraLearningComplianceResult {
   overallScore: number;
   totalRecords: number;
-  documentationCompleteRate: number;
-  timelyRecordingRate: number;
-  taskCompletedAccuratelyRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationCompleteRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  taskCompletedAccuratelyRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
 }
@@ -157,12 +165,18 @@ export interface CaraLearningPolicyResult {
 export interface StaffCaraLearningReadinessResult {
   overallScore: number;
   totalStaff: number;
-  agentManagementKnowledgeRate: number;
-  costAnalysisSkillsRate: number;
-  qualityAssuranceSkillsRate: number;
-  dataInterpretationSkillsRate: number;
-  performanceMonitoringSkillsRate: number;
-  humanOversightCapabilityRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  agentManagementKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  costAnalysisSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  qualityAssuranceSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dataInterpretationSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  performanceMonitoringSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  humanOversightCapabilityRate: number | null;
 }
 
 export interface ChildCaraLearningProfile {
@@ -194,11 +208,6 @@ export interface CaraLearningIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -214,19 +223,19 @@ export function evaluateCaraLearningQuality(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, taskCompletedAccuratelyRate: 0, costEfficiencyMaintainedRate: 0, learningDocumentedRate: 0, qualityAssurancePassedRate: 0 };
+    return { overallScore: 0, totalRecords: 0, taskCompletedAccuratelyRate: null, costEfficiencyMaintainedRate: null, learningDocumentedRate: null, qualityAssurancePassedRate: null };
   }
 
-  const taskCompletedAccuratelyRate = pct(records.filter((r) => r.taskCompletedAccurately).length, n);
-  const costEfficiencyMaintainedRate = pct(records.filter((r) => r.costEfficiencyMaintained).length, n);
-  const learningDocumentedRate = pct(records.filter((r) => r.learningDocumented).length, n);
-  const qualityAssurancePassedRate = pct(records.filter((r) => r.qualityAssurancePassed).length, n);
+  const taskCompletedAccuratelyRate = rate(records.filter((r) => r.taskCompletedAccurately).length, n);
+  const costEfficiencyMaintainedRate = rate(records.filter((r) => r.costEfficiencyMaintained).length, n);
+  const learningDocumentedRate = rate(records.filter((r) => r.learningDocumented).length, n);
+  const qualityAssurancePassedRate = rate(records.filter((r) => r.qualityAssurancePassed).length, n);
 
   let score = 0;
-  score += (taskCompletedAccuratelyRate / 100) * 7;
-  score += (costEfficiencyMaintainedRate / 100) * 6;
-  score += (learningDocumentedRate / 100) * 6;
-  score += (qualityAssurancePassedRate / 100) * 6;
+  score += ((taskCompletedAccuratelyRate ?? 0) / 100) * 7;
+  score += ((costEfficiencyMaintainedRate ?? 0) / 100) * 6;
+  score += ((learningDocumentedRate ?? 0) / 100) * 6;
+  score += ((qualityAssurancePassedRate ?? 0) / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -241,21 +250,21 @@ export function evaluateCaraLearningCompliance(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: 0, timelyRecordingRate: 0, taskCompletedAccuratelyRate: 0, categoryDiversityRatio: 0, uniqueCategories: 0 };
+    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: null, timelyRecordingRate: null, taskCompletedAccuratelyRate: null, categoryDiversityRatio: 0, uniqueCategories: 0 };
   }
 
-  const documentationCompleteRate = pct(records.filter((r) => r.documentationComplete).length, n);
-  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, n);
-  const taskCompletedAccuratelyRate = pct(records.filter((r) => r.taskCompletedAccurately).length, n);
+  const documentationCompleteRate = rate(records.filter((r) => r.documentationComplete).length, n);
+  const timelyRecordingRate = rate(records.filter((r) => r.timelyRecording).length, n);
+  const taskCompletedAccuratelyRate = rate(records.filter((r) => r.taskCompletedAccurately).length, n);
 
   const uniqueCategoriesSet = new Set(records.map((r) => r.category));
   const uniqueCategories = uniqueCategoriesSet.size;
   const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
 
   let score = 0;
-  score += (documentationCompleteRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (taskCompletedAccuratelyRate / 100) * 5;
+  score += ((documentationCompleteRate ?? 0) / 100) * 8;
+  score += ((timelyRecordingRate ?? 0) / 100) * 7;
+  score += ((taskCompletedAccuratelyRate ?? 0) / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -301,23 +310,23 @@ export function evaluateStaffCaraLearningReadiness(
   const n = training.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalStaff: 0, agentManagementKnowledgeRate: 0, costAnalysisSkillsRate: 0, qualityAssuranceSkillsRate: 0, dataInterpretationSkillsRate: 0, performanceMonitoringSkillsRate: 0, humanOversightCapabilityRate: 0 };
+    return { overallScore: 0, totalStaff: 0, agentManagementKnowledgeRate: null, costAnalysisSkillsRate: null, qualityAssuranceSkillsRate: null, dataInterpretationSkillsRate: null, performanceMonitoringSkillsRate: null, humanOversightCapabilityRate: null };
   }
 
-  const agentManagementKnowledgeRate = pct(training.filter((t) => t.agentManagementKnowledge).length, n);
-  const costAnalysisSkillsRate = pct(training.filter((t) => t.costAnalysisSkills).length, n);
-  const qualityAssuranceSkillsRate = pct(training.filter((t) => t.qualityAssuranceSkills).length, n);
-  const dataInterpretationSkillsRate = pct(training.filter((t) => t.dataInterpretationSkills).length, n);
-  const performanceMonitoringSkillsRate = pct(training.filter((t) => t.performanceMonitoringSkills).length, n);
-  const humanOversightCapabilityRate = pct(training.filter((t) => t.humanOversightCapability).length, n);
+  const agentManagementKnowledgeRate = rate(training.filter((t) => t.agentManagementKnowledge).length, n);
+  const costAnalysisSkillsRate = rate(training.filter((t) => t.costAnalysisSkills).length, n);
+  const qualityAssuranceSkillsRate = rate(training.filter((t) => t.qualityAssuranceSkills).length, n);
+  const dataInterpretationSkillsRate = rate(training.filter((t) => t.dataInterpretationSkills).length, n);
+  const performanceMonitoringSkillsRate = rate(training.filter((t) => t.performanceMonitoringSkills).length, n);
+  const humanOversightCapabilityRate = rate(training.filter((t) => t.humanOversightCapability).length, n);
 
   let score = 0;
-  score += (agentManagementKnowledgeRate / 100) * 6;
-  score += (costAnalysisSkillsRate / 100) * 5;
-  score += (qualityAssuranceSkillsRate / 100) * 5;
-  score += (dataInterpretationSkillsRate / 100) * 4;
-  score += (performanceMonitoringSkillsRate / 100) * 3;
-  score += (humanOversightCapabilityRate / 100) * 2;
+  score += ((agentManagementKnowledgeRate ?? 0) / 100) * 6;
+  score += ((costAnalysisSkillsRate ?? 0) / 100) * 5;
+  score += ((qualityAssuranceSkillsRate ?? 0) / 100) * 5;
+  score += ((dataInterpretationSkillsRate ?? 0) / 100) * 4;
+  score += ((performanceMonitoringSkillsRate ?? 0) / 100) * 3;
+  score += ((humanOversightCapabilityRate ?? 0) / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -342,8 +351,8 @@ export function buildChildCaraLearningProfiles(
 
   return Array.from(childMap.values()).map((child) => {
     const totalRecords = child.records.length;
-    const taskCompletedAccuratelyRate = pct(child.records.filter((r) => r.taskCompletedAccurately).length, totalRecords);
-    const costEfficiencyMaintainedRate = pct(child.records.filter((r) => r.costEfficiencyMaintained).length, totalRecords);
+    const taskCompletedAccuratelyRate = rate(child.records.filter((r) => r.taskCompletedAccurately).length, totalRecords)!;
+    const costEfficiencyMaintainedRate = rate(child.records.filter((r) => r.costEfficiencyMaintained).length, totalRecords)!;
     const uniqueCategoriesSet = new Set(child.records.map((r) => r.category));
     const categoriesCovered = Array.from(uniqueCategoriesSet);
 
@@ -352,14 +361,14 @@ export function buildChildCaraLearningProfiles(
     else if (totalRecords >= 5) frequencyScore = 1;
 
     let rate1Score = 0;
-    if (taskCompletedAccuratelyRate >= 80) rate1Score = 3;
-    else if (taskCompletedAccuratelyRate >= 60) rate1Score = 2;
-    else if (taskCompletedAccuratelyRate >= 40) rate1Score = 1;
+    if (meets(taskCompletedAccuratelyRate, 80)) rate1Score = 3;
+    else if (meets(taskCompletedAccuratelyRate, 60)) rate1Score = 2;
+    else if (meets(taskCompletedAccuratelyRate, 40)) rate1Score = 1;
 
     let rate2Score = 0;
-    if (costEfficiencyMaintainedRate >= 80) rate2Score = 3;
-    else if (costEfficiencyMaintainedRate >= 60) rate2Score = 2;
-    else if (costEfficiencyMaintainedRate >= 40) rate2Score = 1;
+    if (meets(costEfficiencyMaintainedRate, 80)) rate2Score = 3;
+    else if (meets(costEfficiencyMaintainedRate, 60)) rate2Score = 2;
+    else if (meets(costEfficiencyMaintainedRate, 40)) rate2Score = 1;
 
     let diversityBonus = 0;
     if (categoriesCovered.length >= 4) diversityBonus = 2;
@@ -407,8 +416,8 @@ export function generateCaraLearningIntelligence(
   if (complianceResult.overallScore >= 20) strengths.push("Cara learning compliance is strong (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore >= 20) strengths.push("Cara learning policy framework is robust (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore >= 20) strengths.push("Staff Cara learning readiness is strong (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.taskCompletedAccuratelyRate >= 90) strengths.push("Task completion accuracy at " + qualityResult.taskCompletedAccuratelyRate + "%");
-  if (periodRecords.length > 0 && qualityResult.costEfficiencyMaintainedRate >= 90) strengths.push("Cost efficiency maintained at " + qualityResult.costEfficiencyMaintainedRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.taskCompletedAccuratelyRate, 90)) strengths.push("Task completion accuracy at " + qualityResult.taskCompletedAccuratelyRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.costEfficiencyMaintainedRate, 90)) strengths.push("Cost efficiency maintained at " + qualityResult.costEfficiencyMaintainedRate + "%");
 
   const areasForImprovement: string[] = [];
   if (overallScore < 40) areasForImprovement.push("Cara learning capability rated Inadequate (" + overallScore + "/100) — urgent systemic review required");
@@ -417,7 +426,7 @@ export function generateCaraLearningIntelligence(
   if (complianceResult.overallScore < 15) areasForImprovement.push("Cara learning compliance needs improvement (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore < 15) areasForImprovement.push("Cara learning policy needs strengthening (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore < 15) areasForImprovement.push("Staff Cara learning readiness needs improvement (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.costEfficiencyMaintainedRate < 80) areasForImprovement.push("Cost efficiency at " + qualityResult.costEfficiencyMaintainedRate + "% — must improve");
+  if (periodRecords.length > 0 && below(qualityResult.costEfficiencyMaintainedRate, 80)) areasForImprovement.push("Cost efficiency at " + qualityResult.costEfficiencyMaintainedRate + "% — must improve");
   if (periodRecords.length === 0) areasForImprovement.push("No Cara learning records — agent learning must be documented");
   if (policy === null) areasForImprovement.push("No Cara learning policy in place — governance requirement");
   if (staff.length === 0) areasForImprovement.push("No staff Cara learning training records — training required");
@@ -425,11 +434,11 @@ export function generateCaraLearningIntelligence(
   const actions: string[] = [];
   if (policy === null || policyResult.overallScore === 0) actions.push("URGENT: No Cara learning policy — develop and implement comprehensive agent governance framework immediately");
   if (staff.length === 0) actions.push("URGENT: No staff Cara learning training — schedule training for all care staff");
-  if (periodRecords.length > 0 && qualityResult.taskCompletedAccuratelyRate < 50) actions.push("HIGH: Task completion accuracy at " + qualityResult.taskCompletedAccuratelyRate + "% — review agent configuration and training data");
-  if (periodRecords.length > 0 && qualityResult.costEfficiencyMaintainedRate < 50) actions.push("HIGH: Cost efficiency at " + qualityResult.costEfficiencyMaintainedRate + "% — review agent usage patterns and optimise");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate < 50) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all agent activities must be recorded");
-  if (periodRecords.length > 0 && complianceResult.timelyRecordingRate < 50) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
-  if (staff.length > 0 && staffResult.agentManagementKnowledgeRate < 50) actions.push("MEDIUM: Agent management knowledge at " + staffResult.agentManagementKnowledgeRate + "% — schedule training");
+  if (periodRecords.length > 0 && below(qualityResult.taskCompletedAccuratelyRate, 50)) actions.push("HIGH: Task completion accuracy at " + qualityResult.taskCompletedAccuratelyRate + "% — review agent configuration and training data");
+  if (periodRecords.length > 0 && below(qualityResult.costEfficiencyMaintainedRate, 50)) actions.push("HIGH: Cost efficiency at " + qualityResult.costEfficiencyMaintainedRate + "% — review agent usage patterns and optimise");
+  if (periodRecords.length > 0 && below(complianceResult.documentationCompleteRate, 50)) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all agent activities must be recorded");
+  if (periodRecords.length > 0 && below(complianceResult.timelyRecordingRate, 50)) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
+  if (staff.length > 0 && below(staffResult.agentManagementKnowledgeRate, 50)) actions.push("MEDIUM: Agent management knowledge at " + staffResult.agentManagementKnowledgeRate + "% — schedule training");
   const lowScoreChildren = childProfiles.filter((p) => p.overallScore <= 3);
   if (lowScoreChildren.length > 0) actions.push("MEDIUM: " + lowScoreChildren.length + " child(ren) with low Cara learning engagement scores — review individual agent support plans");
   if (actions.length === 0) actions.push("No immediate actions required. Cara learning systems operating within expected standards.");

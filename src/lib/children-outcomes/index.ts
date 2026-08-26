@@ -5,7 +5,6 @@ export {
   evaluateChildrenOutcomesPolicy,
   evaluateStaffChildrenOutcomesReadiness,
   buildChildOutcomesProfiles,
-  pct,
   getRating,
   getChildrenOutcomesCategoryLabel,
   getChildrenOutcomesOutcomeLabel,

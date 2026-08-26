@@ -20,6 +20,7 @@
    ────────────────────────────────────────────────────────────── */
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -129,18 +130,25 @@ export interface StaffBehaviourIntelligenceTraining {
 export interface BehaviourIntelligenceQualityResult {
   overallScore: number;
   totalRecords: number;
-  childViewIncludedRate: number;
-  deEscalationAttemptedRate: number;
-  positiveReinforcementUsedRate: number;
-  supportPlanFollowedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewIncludedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  deEscalationAttemptedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveReinforcementUsedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  supportPlanFollowedRate: number | null;
 }
 
 export interface BehaviourIntelligenceComplianceResult {
   overallScore: number;
   totalRecords: number;
-  documentationCompleteRate: number;
-  timelyRecordingRate: number;
-  childViewIncludedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationCompleteRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewIncludedRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
 }
@@ -159,12 +167,18 @@ export interface BehaviourIntelligencePolicyResult {
 export interface StaffBehaviourIntelligenceReadinessResult {
   overallScore: number;
   totalStaff: number;
-  behaviourManagementKnowledgeRate: number;
-  deEscalationSkillsRate: number;
-  restorativePracticeSkillsRate: number;
-  physicalInterventionTrainingRate: number;
-  traumaInformedApproachRate: number;
-  behaviourAnalysisSkillsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  behaviourManagementKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  deEscalationSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  restorativePracticeSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  physicalInterventionTrainingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  traumaInformedApproachRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  behaviourAnalysisSkillsRate: number | null;
 }
 
 export interface ChildBehaviourIntelligenceProfile {
@@ -196,11 +210,6 @@ export interface BehaviourIntelligenceResult {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): BehaviourIntelligenceRating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -217,19 +226,19 @@ export function evaluateBehaviourIntelligenceQuality(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, childViewIncludedRate: 0, deEscalationAttemptedRate: 0, positiveReinforcementUsedRate: 0, supportPlanFollowedRate: 0 };
+    return { overallScore: 0, totalRecords: 0, childViewIncludedRate: null, deEscalationAttemptedRate: null, positiveReinforcementUsedRate: null, supportPlanFollowedRate: null };
   }
 
-  const childViewIncludedRate = pct(records.filter((r) => r.childViewIncluded).length, n);
-  const deEscalationAttemptedRate = pct(records.filter((r) => r.deEscalationAttempted).length, n);
-  const positiveReinforcementUsedRate = pct(records.filter((r) => r.positiveReinforcementUsed).length, n);
-  const supportPlanFollowedRate = pct(records.filter((r) => r.supportPlanFollowed).length, n);
+  const childViewIncludedRate = rate(records.filter((r) => r.childViewIncluded).length, n);
+  const deEscalationAttemptedRate = rate(records.filter((r) => r.deEscalationAttempted).length, n);
+  const positiveReinforcementUsedRate = rate(records.filter((r) => r.positiveReinforcementUsed).length, n);
+  const supportPlanFollowedRate = rate(records.filter((r) => r.supportPlanFollowed).length, n);
 
   let score = 0;
-  score += (childViewIncludedRate / 100) * 7;
-  score += (deEscalationAttemptedRate / 100) * 6;
-  score += (positiveReinforcementUsedRate / 100) * 6;
-  score += (supportPlanFollowedRate / 100) * 6;
+  score += ((childViewIncludedRate ?? 0) / 100) * 7;
+  score += ((deEscalationAttemptedRate ?? 0) / 100) * 6;
+  score += ((positiveReinforcementUsedRate ?? 0) / 100) * 6;
+  score += ((supportPlanFollowedRate ?? 0) / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -245,21 +254,21 @@ export function evaluateBehaviourIntelligenceCompliance(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: 0, timelyRecordingRate: 0, childViewIncludedRate: 0, categoryDiversityRatio: 0, uniqueCategories: 0 };
+    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: null, timelyRecordingRate: null, childViewIncludedRate: null, categoryDiversityRatio: 0, uniqueCategories: 0 };
   }
 
-  const documentationCompleteRate = pct(records.filter((r) => r.documentationComplete).length, n);
-  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, n);
-  const childViewIncludedRate = pct(records.filter((r) => r.childViewIncluded).length, n);
+  const documentationCompleteRate = rate(records.filter((r) => r.documentationComplete).length, n);
+  const timelyRecordingRate = rate(records.filter((r) => r.timelyRecording).length, n);
+  const childViewIncludedRate = rate(records.filter((r) => r.childViewIncluded).length, n);
 
   const uniqueCategoriesSet = new Set(records.map((r) => r.category));
   const uniqueCategories = uniqueCategoriesSet.size;
   const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
 
   let score = 0;
-  score += (documentationCompleteRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (childViewIncludedRate / 100) * 5;
+  score += ((documentationCompleteRate ?? 0) / 100) * 8;
+  score += ((timelyRecordingRate ?? 0) / 100) * 7;
+  score += ((childViewIncludedRate ?? 0) / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -308,23 +317,23 @@ export function evaluateStaffBehaviourIntelligenceReadiness(
   const n = training.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalStaff: 0, behaviourManagementKnowledgeRate: 0, deEscalationSkillsRate: 0, restorativePracticeSkillsRate: 0, physicalInterventionTrainingRate: 0, traumaInformedApproachRate: 0, behaviourAnalysisSkillsRate: 0 };
+    return { overallScore: 0, totalStaff: 0, behaviourManagementKnowledgeRate: null, deEscalationSkillsRate: null, restorativePracticeSkillsRate: null, physicalInterventionTrainingRate: null, traumaInformedApproachRate: null, behaviourAnalysisSkillsRate: null };
   }
 
-  const behaviourManagementKnowledgeRate = pct(training.filter((t) => t.behaviourManagementKnowledge).length, n);
-  const deEscalationSkillsRate = pct(training.filter((t) => t.deEscalationSkills).length, n);
-  const restorativePracticeSkillsRate = pct(training.filter((t) => t.restorativePracticeSkills).length, n);
-  const physicalInterventionTrainingRate = pct(training.filter((t) => t.physicalInterventionTraining).length, n);
-  const traumaInformedApproachRate = pct(training.filter((t) => t.traumaInformedApproach).length, n);
-  const behaviourAnalysisSkillsRate = pct(training.filter((t) => t.behaviourAnalysisSkills).length, n);
+  const behaviourManagementKnowledgeRate = rate(training.filter((t) => t.behaviourManagementKnowledge).length, n);
+  const deEscalationSkillsRate = rate(training.filter((t) => t.deEscalationSkills).length, n);
+  const restorativePracticeSkillsRate = rate(training.filter((t) => t.restorativePracticeSkills).length, n);
+  const physicalInterventionTrainingRate = rate(training.filter((t) => t.physicalInterventionTraining).length, n);
+  const traumaInformedApproachRate = rate(training.filter((t) => t.traumaInformedApproach).length, n);
+  const behaviourAnalysisSkillsRate = rate(training.filter((t) => t.behaviourAnalysisSkills).length, n);
 
   let score = 0;
-  score += (behaviourManagementKnowledgeRate / 100) * 6;
-  score += (deEscalationSkillsRate / 100) * 5;
-  score += (restorativePracticeSkillsRate / 100) * 5;
-  score += (physicalInterventionTrainingRate / 100) * 4;
-  score += (traumaInformedApproachRate / 100) * 3;
-  score += (behaviourAnalysisSkillsRate / 100) * 2;
+  score += ((behaviourManagementKnowledgeRate ?? 0) / 100) * 6;
+  score += ((deEscalationSkillsRate ?? 0) / 100) * 5;
+  score += ((restorativePracticeSkillsRate ?? 0) / 100) * 5;
+  score += ((physicalInterventionTrainingRate ?? 0) / 100) * 4;
+  score += ((traumaInformedApproachRate ?? 0) / 100) * 3;
+  score += ((behaviourAnalysisSkillsRate ?? 0) / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -351,8 +360,8 @@ export function buildChildBehaviourIntelligenceProfiles(
 
   return Array.from(childMap.values()).map((child) => {
     const totalRecords = child.records.length;
-    const childViewIncludedRate = pct(child.records.filter((r) => r.childViewIncluded).length, totalRecords);
-    const deEscalationAttemptedRate = pct(child.records.filter((r) => r.deEscalationAttempted).length, totalRecords);
+    const childViewIncludedRate = rate(child.records.filter((r) => r.childViewIncluded).length, totalRecords)!;
+    const deEscalationAttemptedRate = rate(child.records.filter((r) => r.deEscalationAttempted).length, totalRecords)!;
     const uniqueCategoriesSet = new Set(child.records.map((r) => r.category));
     const categoriesCovered = Array.from(uniqueCategoriesSet);
 
@@ -361,14 +370,14 @@ export function buildChildBehaviourIntelligenceProfiles(
     else if (totalRecords >= 5) frequencyScore = 1;
 
     let rate1Score = 0;
-    if (childViewIncludedRate >= 80) rate1Score = 3;
-    else if (childViewIncludedRate >= 60) rate1Score = 2;
-    else if (childViewIncludedRate >= 40) rate1Score = 1;
+    if (meets(childViewIncludedRate, 80)) rate1Score = 3;
+    else if (meets(childViewIncludedRate, 60)) rate1Score = 2;
+    else if (meets(childViewIncludedRate, 40)) rate1Score = 1;
 
     let rate2Score = 0;
-    if (deEscalationAttemptedRate >= 80) rate2Score = 3;
-    else if (deEscalationAttemptedRate >= 60) rate2Score = 2;
-    else if (deEscalationAttemptedRate >= 40) rate2Score = 1;
+    if (meets(deEscalationAttemptedRate, 80)) rate2Score = 3;
+    else if (meets(deEscalationAttemptedRate, 60)) rate2Score = 2;
+    else if (meets(deEscalationAttemptedRate, 40)) rate2Score = 1;
 
     let diversityBonus = 0;
     if (categoriesCovered.length >= 4) diversityBonus = 2;
@@ -417,8 +426,8 @@ export function generateBehaviourIntelligenceReport(
   if (complianceResult.overallScore >= 20) strengths.push("Behaviour compliance is strong (" + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore >= 20) strengths.push("Behaviour policy framework is robust (" + policyResult.overallScore + "/25)");
   if (staffResult.overallScore >= 20) strengths.push("Staff behaviour management readiness is strong (" + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.childViewIncludedRate >= 90) strengths.push("Child views included at " + qualityResult.childViewIncludedRate + "%");
-  if (periodRecords.length > 0 && qualityResult.deEscalationAttemptedRate >= 90) strengths.push("De-escalation attempted at " + qualityResult.deEscalationAttemptedRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.childViewIncludedRate, 90)) strengths.push("Child views included at " + qualityResult.childViewIncludedRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.deEscalationAttemptedRate, 90)) strengths.push("De-escalation attempted at " + qualityResult.deEscalationAttemptedRate + "%");
 
   // Areas for improvement (low scores)
   const areasForImprovement: string[] = [];
@@ -428,7 +437,7 @@ export function generateBehaviourIntelligenceReport(
   if (complianceResult.overallScore < 15) areasForImprovement.push("Behaviour compliance needs improvement (" + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore < 15) areasForImprovement.push("Behaviour policy needs strengthening (" + policyResult.overallScore + "/25)");
   if (staffResult.overallScore < 15) areasForImprovement.push("Staff behaviour readiness needs improvement (" + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.childViewIncludedRate < 80) areasForImprovement.push("Child views included at " + qualityResult.childViewIncludedRate + "% — child's perspective must be consistently captured");
+  if (periodRecords.length > 0 && below(qualityResult.childViewIncludedRate, 80)) areasForImprovement.push("Child views included at " + qualityResult.childViewIncludedRate + "% — child's perspective must be consistently captured");
   if (periodRecords.length === 0) areasForImprovement.push("No behaviour records — behaviour management must be documented");
   if (policy === null) areasForImprovement.push("No behaviour management policy in place — statutory requirement under CHR 2015 Reg 35");
   if (staff.length === 0) areasForImprovement.push("No staff behaviour training records — training required");
@@ -437,11 +446,11 @@ export function generateBehaviourIntelligenceReport(
   const actions: string[] = [];
   if (policy === null || policyResult.overallScore === 0) actions.push("URGENT: No behaviour management policy — develop and implement behaviour support framework immediately (CHR 2015 Reg 35)");
   if (staff.length === 0) actions.push("URGENT: No staff behaviour training — schedule behaviour management training for all care staff");
-  if (periodRecords.length > 0 && qualityResult.childViewIncludedRate < 50) actions.push("HIGH: Child views included at " + qualityResult.childViewIncludedRate + "% — all behaviour incidents must capture the child's perspective");
-  if (periodRecords.length > 0 && qualityResult.deEscalationAttemptedRate < 50) actions.push("HIGH: De-escalation attempted at " + qualityResult.deEscalationAttemptedRate + "% — ensure de-escalation is always attempted before restrictive intervention (CHR 2015 Reg 20)");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate < 50) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all behaviour incidents must be properly documented");
-  if (periodRecords.length > 0 && complianceResult.timelyRecordingRate < 50) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — behaviour records must be completed promptly");
-  if (staff.length > 0 && staffResult.behaviourManagementKnowledgeRate < 50) actions.push("MEDIUM: Behaviour management knowledge at " + staffResult.behaviourManagementKnowledgeRate + "% — schedule training");
+  if (periodRecords.length > 0 && below(qualityResult.childViewIncludedRate, 50)) actions.push("HIGH: Child views included at " + qualityResult.childViewIncludedRate + "% — all behaviour incidents must capture the child's perspective");
+  if (periodRecords.length > 0 && below(qualityResult.deEscalationAttemptedRate, 50)) actions.push("HIGH: De-escalation attempted at " + qualityResult.deEscalationAttemptedRate + "% — ensure de-escalation is always attempted before restrictive intervention (CHR 2015 Reg 20)");
+  if (periodRecords.length > 0 && below(complianceResult.documentationCompleteRate, 50)) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all behaviour incidents must be properly documented");
+  if (periodRecords.length > 0 && below(complianceResult.timelyRecordingRate, 50)) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — behaviour records must be completed promptly");
+  if (staff.length > 0 && below(staffResult.behaviourManagementKnowledgeRate, 50)) actions.push("MEDIUM: Behaviour management knowledge at " + staffResult.behaviourManagementKnowledgeRate + "% — schedule training");
   const lowScoreChildren = childProfiles.filter((p) => p.overallScore <= 3);
   if (lowScoreChildren.length > 0) actions.push("MEDIUM: " + lowScoreChildren.length + " child(ren) with low behaviour support scores — review individual behaviour support plans");
   if (actions.length === 0) actions.push("No immediate actions required. Behaviour management systems operating within expected standards.");

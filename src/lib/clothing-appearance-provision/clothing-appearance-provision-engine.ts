@@ -200,10 +200,6 @@ export interface ClothingAppearanceProvisionIntelligence {
 // -- Helpers -------------------------------------------------------------------
 
 // Was `if (den === 0) return 0;`: nothing recorded read as 0%.
-export function pct(num: number, den: number): number | null {
-  return rate(num, den);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -229,10 +225,10 @@ export function evaluateQuality(
     return {
       overallScore: 0,
       totalAssessments: 0,
-      qualityRate: 0,
-      childChoiceRate: 0,
-      ageAppropriateRate: 0,
-      culturalRate: 0,
+      qualityRate: null,
+      childChoiceRate: null,
+      ageAppropriateRate: null,
+      culturalRate: null,
     };
   }
 
@@ -241,28 +237,28 @@ export function evaluateQuality(
   const highQuality = assessments.filter(
     (a) => a.provisionQuality === "excellent" || a.provisionQuality === "good",
   ).length;
-  const qualityRate = pct(highQuality, assessments.length);
+  const qualityRate = rate(highQuality, assessments.length);
   if (meets(qualityRate, 90)) score += 7;
   else if (meets(qualityRate, 70)) score += 5;
   else if (meets(qualityRate, 50)) score += 3;
   else if (above(qualityRate, 0)) score += 1;
 
   const childChoice = assessments.filter((a) => a.childChoiceRespected).length;
-  const childChoiceRate = pct(childChoice, assessments.length);
+  const childChoiceRate = rate(childChoice, assessments.length);
   if (meets(childChoiceRate, 90)) score += 6;
   else if (meets(childChoiceRate, 70)) score += 4;
   else if (meets(childChoiceRate, 50)) score += 3;
   else if (above(childChoiceRate, 0)) score += 1;
 
   const ageAppropriate = assessments.filter((a) => a.ageAppropriate).length;
-  const ageAppropriateRate = pct(ageAppropriate, assessments.length);
+  const ageAppropriateRate = rate(ageAppropriate, assessments.length);
   if (meets(ageAppropriateRate, 90)) score += 6;
   else if (meets(ageAppropriateRate, 70)) score += 4;
   else if (meets(ageAppropriateRate, 50)) score += 3;
   else if (above(ageAppropriateRate, 0)) score += 1;
 
   const cultural = assessments.filter((a) => a.culturalNeedsMet).length;
-  const culturalRate = pct(cultural, assessments.length);
+  const culturalRate = rate(cultural, assessments.length);
   if (meets(culturalRate, 90)) score += 6;
   else if (meets(culturalRate, 70)) score += 4;
   else if (meets(culturalRate, 50)) score += 3;
@@ -293,9 +289,9 @@ export function evaluateCompliance(
   if (assessments.length === 0) {
     return {
       overallScore: 0,
-      documentedRate: 0,
-      staffAssessedRate: 0,
-      feedbackRate: 0,
+      documentedRate: null,
+      staffAssessedRate: null,
+      feedbackRate: null,
       categoryDiversityRatio: 0,
     };
   }
@@ -303,21 +299,21 @@ export function evaluateCompliance(
   let score = 0;
 
   const documented = assessments.filter((a) => a.documentedInPlan).length;
-  const documentedRate = pct(documented, assessments.length);
+  const documentedRate = rate(documented, assessments.length);
   if (meets(documentedRate, 90)) score += 8;
   else if (meets(documentedRate, 70)) score += 6;
   else if (meets(documentedRate, 50)) score += 4;
   else if (above(documentedRate, 0)) score += 2;
 
   const staffAssessed = assessments.filter((a) => a.staffAssessed).length;
-  const staffAssessedRate = pct(staffAssessed, assessments.length);
+  const staffAssessedRate = rate(staffAssessed, assessments.length);
   if (meets(staffAssessedRate, 90)) score += 7;
   else if (meets(staffAssessedRate, 70)) score += 5;
   else if (meets(staffAssessedRate, 50)) score += 3;
   else if (above(staffAssessedRate, 0)) score += 1;
 
   const feedback = assessments.filter((a) => a.feedbackGiven).length;
-  const feedbackRate = pct(feedback, assessments.length);
+  const feedbackRate = rate(feedback, assessments.length);
   if (meets(feedbackRate, 90)) score += 5;
   else if (meets(feedbackRate, 70)) score += 3;
   else if (meets(feedbackRate, 50)) score += 2;
@@ -325,7 +321,7 @@ export function evaluateCompliance(
 
   const uniqueCategories = new Set(assessments.map((a) => a.clothingCategory)).size;
   const totalCategories = 8; // total ClothingCategory values
-  const categoryDiversityRatio = pct(uniqueCategories, totalCategories);
+  const categoryDiversityRatio = rate(uniqueCategories, totalCategories);
   if (meets(categoryDiversityRatio, 90)) score += 5;
   else if (meets(categoryDiversityRatio, 70)) score += 3;
   else if (meets(categoryDiversityRatio, 50)) score += 2;
@@ -358,60 +354,60 @@ export function evaluatePolicy(
   if (policies.length === 0) {
     return {
       overallScore: 0,
-      clothingProvisionStrategyRate: 0,
-      clothingBudgetFrameworkRate: 0,
-      seasonalReviewProcedureRate: 0,
-      childChoiceGuidanceRate: 0,
-      culturalAndReligiousAccommodationRate: 0,
-      laundryAndMaintenancePlanRate: 0,
-      regularReviewRate: 0,
+      clothingProvisionStrategyRate: null,
+      clothingBudgetFrameworkRate: null,
+      seasonalReviewProcedureRate: null,
+      childChoiceGuidanceRate: null,
+      culturalAndReligiousAccommodationRate: null,
+      laundryAndMaintenancePlanRate: null,
+      regularReviewRate: null,
     };
   }
 
   let score = 0;
 
   const strategy = policies.filter((p) => p.clothingProvisionStrategy).length;
-  const clothingProvisionStrategyRate = pct(strategy, policies.length);
+  const clothingProvisionStrategyRate = rate(strategy, policies.length);
   if (meets(clothingProvisionStrategyRate, 90)) score += 4;
   else if (meets(clothingProvisionStrategyRate, 70)) score += 3;
   else if (meets(clothingProvisionStrategyRate, 50)) score += 2;
   else if (above(clothingProvisionStrategyRate, 0)) score += 1;
 
   const budget = policies.filter((p) => p.clothingBudgetFramework).length;
-  const clothingBudgetFrameworkRate = pct(budget, policies.length);
+  const clothingBudgetFrameworkRate = rate(budget, policies.length);
   if (meets(clothingBudgetFrameworkRate, 90)) score += 4;
   else if (meets(clothingBudgetFrameworkRate, 70)) score += 3;
   else if (meets(clothingBudgetFrameworkRate, 50)) score += 2;
   else if (above(clothingBudgetFrameworkRate, 0)) score += 1;
 
   const seasonal = policies.filter((p) => p.seasonalReviewProcedure).length;
-  const seasonalReviewProcedureRate = pct(seasonal, policies.length);
+  const seasonalReviewProcedureRate = rate(seasonal, policies.length);
   if (meets(seasonalReviewProcedureRate, 90)) score += 4;
   else if (meets(seasonalReviewProcedureRate, 70)) score += 3;
   else if (meets(seasonalReviewProcedureRate, 50)) score += 2;
   else if (above(seasonalReviewProcedureRate, 0)) score += 1;
 
   const childChoice = policies.filter((p) => p.childChoiceGuidance).length;
-  const childChoiceGuidanceRate = pct(childChoice, policies.length);
+  const childChoiceGuidanceRate = rate(childChoice, policies.length);
   if (meets(childChoiceGuidanceRate, 90)) score += 4;
   else if (meets(childChoiceGuidanceRate, 70)) score += 3;
   else if (meets(childChoiceGuidanceRate, 50)) score += 2;
   else if (above(childChoiceGuidanceRate, 0)) score += 1;
 
   const cultural = policies.filter((p) => p.culturalAndReligiousAccommodation).length;
-  const culturalAndReligiousAccommodationRate = pct(cultural, policies.length);
+  const culturalAndReligiousAccommodationRate = rate(cultural, policies.length);
   if (meets(culturalAndReligiousAccommodationRate, 90)) score += 3;
   else if (meets(culturalAndReligiousAccommodationRate, 70)) score += 2;
   else if (meets(culturalAndReligiousAccommodationRate, 50)) score += 1;
 
   const laundry = policies.filter((p) => p.laundryAndMaintenancePlan).length;
-  const laundryAndMaintenancePlanRate = pct(laundry, policies.length);
+  const laundryAndMaintenancePlanRate = rate(laundry, policies.length);
   if (meets(laundryAndMaintenancePlanRate, 90)) score += 3;
   else if (meets(laundryAndMaintenancePlanRate, 70)) score += 2;
   else if (meets(laundryAndMaintenancePlanRate, 50)) score += 1;
 
   const review = policies.filter((p) => p.regularReview).length;
-  const regularReviewRate = pct(review, policies.length);
+  const regularReviewRate = rate(review, policies.length);
   if (meets(regularReviewRate, 90)) score += 3;
   else if (meets(regularReviewRate, 70)) score += 2;
   else if (meets(regularReviewRate, 50)) score += 1;
@@ -445,53 +441,53 @@ export function evaluateStaffReadiness(
   if (training.length === 0) {
     return {
       overallScore: 0,
-      clothingAssessmentRate: 0,
-      childChoiceFacilitationRate: 0,
-      budgetManagementRate: 0,
-      culturalAwarenessRate: 0,
-      ageAppropriateGuidanceRate: 0,
-      recordKeepingRate: 0,
+      clothingAssessmentRate: null,
+      childChoiceFacilitationRate: null,
+      budgetManagementRate: null,
+      culturalAwarenessRate: null,
+      ageAppropriateGuidanceRate: null,
+      recordKeepingRate: null,
     };
   }
 
   let score = 0;
 
   const clothingAssessment = training.filter((t) => t.clothingAssessment).length;
-  const clothingAssessmentRate = pct(clothingAssessment, training.length);
+  const clothingAssessmentRate = rate(clothingAssessment, training.length);
   if (meets(clothingAssessmentRate, 90)) score += 6;
   else if (meets(clothingAssessmentRate, 70)) score += 4;
   else if (meets(clothingAssessmentRate, 50)) score += 3;
   else if (above(clothingAssessmentRate, 0)) score += 1;
 
   const childChoice = training.filter((t) => t.childChoiceFacilitation).length;
-  const childChoiceFacilitationRate = pct(childChoice, training.length);
+  const childChoiceFacilitationRate = rate(childChoice, training.length);
   if (meets(childChoiceFacilitationRate, 90)) score += 5;
   else if (meets(childChoiceFacilitationRate, 70)) score += 3;
   else if (meets(childChoiceFacilitationRate, 50)) score += 2;
   else if (above(childChoiceFacilitationRate, 0)) score += 1;
 
   const budgetMgmt = training.filter((t) => t.budgetManagement).length;
-  const budgetManagementRate = pct(budgetMgmt, training.length);
+  const budgetManagementRate = rate(budgetMgmt, training.length);
   if (meets(budgetManagementRate, 90)) score += 5;
   else if (meets(budgetManagementRate, 70)) score += 3;
   else if (meets(budgetManagementRate, 50)) score += 2;
   else if (above(budgetManagementRate, 0)) score += 1;
 
   const cultural = training.filter((t) => t.culturalAwareness).length;
-  const culturalAwarenessRate = pct(cultural, training.length);
+  const culturalAwarenessRate = rate(cultural, training.length);
   if (meets(culturalAwarenessRate, 90)) score += 4;
   else if (meets(culturalAwarenessRate, 70)) score += 3;
   else if (meets(culturalAwarenessRate, 50)) score += 2;
   else if (above(culturalAwarenessRate, 0)) score += 1;
 
   const ageApp = training.filter((t) => t.ageAppropriateGuidance).length;
-  const ageAppropriateGuidanceRate = pct(ageApp, training.length);
+  const ageAppropriateGuidanceRate = rate(ageApp, training.length);
   if (meets(ageAppropriateGuidanceRate, 90)) score += 3;
   else if (meets(ageAppropriateGuidanceRate, 70)) score += 2;
   else if (meets(ageAppropriateGuidanceRate, 50)) score += 1;
 
   const recordKeeping = training.filter((t) => t.recordKeeping).length;
-  const recordKeepingRate = pct(recordKeeping, training.length);
+  const recordKeepingRate = rate(recordKeeping, training.length);
   if (meets(recordKeepingRate, 90)) score += 2;
   else if (meets(recordKeepingRate, 70)) score += 1;
 
@@ -526,10 +522,10 @@ export function buildChildProfiles(
     const highQuality = childAssessments.filter(
       (a) => a.provisionQuality === "excellent" || a.provisionQuality === "good",
     ).length;
-    const qualityRate = pct(highQuality, childAssessments.length);
+    const qualityRate = rate(highQuality, childAssessments.length);
 
     const childChoice = childAssessments.filter((a) => a.childChoiceRespected).length;
-    const childChoiceRate = pct(childChoice, childAssessments.length);
+    const childChoiceRate = rate(childChoice, childAssessments.length);
 
     // Score 0-10
     let score = 0;
@@ -560,9 +556,9 @@ export function buildChildProfiles(
 
     // Cultural + age appropriate (0-3)
     const culturalMet = childAssessments.filter((a) => a.culturalNeedsMet).length;
-    const culturalRate = pct(culturalMet, childAssessments.length);
+    const culturalRate = rate(culturalMet, childAssessments.length);
     const ageApp = childAssessments.filter((a) => a.ageAppropriate).length;
-    const ageRate = pct(ageApp, childAssessments.length);
+    const ageRate = rate(ageApp, childAssessments.length);
     const combinedRate = meanOf([culturalRate, ageRate]);
     if (meets(combinedRate, 80)) score += 3;
     else if (meets(combinedRate, 60)) score += 2;

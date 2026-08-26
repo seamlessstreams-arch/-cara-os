@@ -36,7 +36,6 @@ export {
   evaluateCarePlanningPolicyCompliance,
   evaluateStaffCarePlanningCompetency,
   buildChildCarePlanningProfiles,
-  pct as carePlanningPct,
   getRating as getCarePlanningIntelRating,
   getCarePlanningCategoryLabel,
   getCarePlanningOutcomeLabel,

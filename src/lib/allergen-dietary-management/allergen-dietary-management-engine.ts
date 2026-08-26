@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // ALLERGEN & DIETARY MANAGEMENT INTELLIGENCE ENGINE
 //
@@ -142,43 +143,63 @@ export interface AllergenDocumentationResult {
   overallScore: number;
   totalChildren: number;
   childrenWithAllergens: number;
-  emergencyPlanCurrentRate: number;
-  epiPenAvailableRate: number;
-  gpNotifiedRate: number;
-  socialWorkerNotifiedRate: number;
-  reviewUpToDateRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  emergencyPlanCurrentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  epiPenAvailableRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  gpNotifiedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  socialWorkerNotifiedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reviewUpToDateRate: number | null;
   lifeThreatening: number;
 }
 
 export interface MealSafetyResult {
   overallScore: number;
   totalMeals: number;
-  allergenLabelledRate: number;
-  dietaryMetRate: number;
-  crossContaminationPreventedRate: number;
-  childConsultedRate: number;
-  fullyCompliantRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  allergenLabelledRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dietaryMetRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  crossContaminationPreventedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childConsultedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  fullyCompliantRate: number | null;
 }
 
 export interface IncidentResponseResult {
   overallScore: number;
   totalIncidents: number;
-  timelyResponseRate: number;
-  emergencyPlanFollowedRate: number;
-  rootCauseIdentifiedRate: number;
-  preventiveMeasuresRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyResponseRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  emergencyPlanFollowedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  rootCauseIdentifiedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  preventiveMeasuresRate: number | null;
   hospitalVisitCount: number;
 }
 
 export interface StaffCompetenceResult {
   overallScore: number;
   totalStaff: number;
-  allergenAwarenessRate: number;
-  epiPenTrainedRate: number;
-  foodHygieneRate: number;
-  crossContaminationTrainedRate: number;
-  anaphylaxisTrainedRate: number;
-  fullyCompetentRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  allergenAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  epiPenTrainedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  foodHygieneRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  crossContaminationTrainedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  anaphylaxisTrainedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  fullyCompetentRate: number | null;
 }
 
 export interface ChildAllergenSummary {
@@ -210,11 +231,6 @@ export interface AllergenDietaryManagementIntelligence {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -313,11 +329,11 @@ export function evaluateAllergenDocumentation(
       overallScore: 0,
       totalChildren: 0,
       childrenWithAllergens: 0,
-      emergencyPlanCurrentRate: 0,
-      epiPenAvailableRate: 0,
-      gpNotifiedRate: 0,
-      socialWorkerNotifiedRate: 0,
-      reviewUpToDateRate: 0,
+      emergencyPlanCurrentRate: null,
+      epiPenAvailableRate: null,
+      gpNotifiedRate: null,
+      socialWorkerNotifiedRate: null,
+      reviewUpToDateRate: null,
       lifeThreatening: 0,
     };
   }
@@ -355,20 +371,20 @@ export function evaluateAllergenDocumentation(
     if (p.reviewDue >= p.lastReviewDate) reviewUpToDate++;
   }
 
-  const emergencyPlanCurrentRate = pct(emergencyCurrent, withAllergens.length);
-  const epiPenAvailableRate = pct(epiPenAvailable, needsEpiPen);
-  const gpNotifiedRate = pct(gpNotified, withAllergens.length);
-  const socialWorkerNotifiedRate = pct(swNotified, withAllergens.length);
-  const reviewUpToDateRate = pct(reviewUpToDate, profiles.length);
+  const emergencyPlanCurrentRate = rate(emergencyCurrent, withAllergens.length);
+  const epiPenAvailableRate = rate(epiPenAvailable, needsEpiPen);
+  const gpNotifiedRate = rate(gpNotified, withAllergens.length);
+  const socialWorkerNotifiedRate = rate(swNotified, withAllergens.length);
+  const reviewUpToDateRate = rate(reviewUpToDate, profiles.length);
 
   // Scoring: emergency plans (0-7), epiPen (0-5), GP notified (0-4),
   // SW notified (0-4), review up to date (0-5)
   let score = 0;
-  score += Math.round((emergencyPlanCurrentRate / 100) * 7);
-  score += Math.round((epiPenAvailableRate / 100) * 5);
-  score += Math.round((gpNotifiedRate / 100) * 4);
-  score += Math.round((socialWorkerNotifiedRate / 100) * 4);
-  score += Math.round((reviewUpToDateRate / 100) * 5);
+  score += Math.round(((emergencyPlanCurrentRate ?? 0) / 100) * 7);
+  score += Math.round(((epiPenAvailableRate ?? 0) / 100) * 5);
+  score += Math.round(((gpNotifiedRate ?? 0) / 100) * 4);
+  score += Math.round(((socialWorkerNotifiedRate ?? 0) / 100) * 4);
+  score += Math.round(((reviewUpToDateRate ?? 0) / 100) * 5);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -392,11 +408,11 @@ export function evaluateMealSafety(meals: MealPlanRecord[]): MealSafetyResult {
     return {
       overallScore: 0,
       totalMeals: 0,
-      allergenLabelledRate: 0,
-      dietaryMetRate: 0,
-      crossContaminationPreventedRate: 0,
-      childConsultedRate: 0,
-      fullyCompliantRate: 0,
+      allergenLabelledRate: null,
+      dietaryMetRate: null,
+      crossContaminationPreventedRate: null,
+      childConsultedRate: null,
+      fullyCompliantRate: null,
     };
   }
 
@@ -414,20 +430,20 @@ export function evaluateMealSafety(meals: MealPlanRecord[]): MealSafetyResult {
     if (m.complianceStatus === "fully_compliant") fullyCompliant++;
   }
 
-  const allergenLabelledRate = pct(labelled, meals.length);
-  const dietaryMetRate = pct(dietaryMet, meals.length);
-  const crossContaminationPreventedRate = pct(crossPrevented, meals.length);
-  const childConsultedRate = pct(consulted, meals.length);
-  const fullyCompliantRate = pct(fullyCompliant, meals.length);
+  const allergenLabelledRate = rate(labelled, meals.length);
+  const dietaryMetRate = rate(dietaryMet, meals.length);
+  const crossContaminationPreventedRate = rate(crossPrevented, meals.length);
+  const childConsultedRate = rate(consulted, meals.length);
+  const fullyCompliantRate = rate(fullyCompliant, meals.length);
 
   // Scoring: allergen labelled (0-7), dietary met (0-6), cross-contamination (0-5),
   // child consulted (0-4), fully compliant (0-3)
   let score = 0;
-  score += Math.round((allergenLabelledRate / 100) * 7);
-  score += Math.round((dietaryMetRate / 100) * 6);
-  score += Math.round((crossContaminationPreventedRate / 100) * 5);
-  score += Math.round((childConsultedRate / 100) * 4);
-  score += Math.round((fullyCompliantRate / 100) * 3);
+  score += Math.round(((allergenLabelledRate ?? 0) / 100) * 7);
+  score += Math.round(((dietaryMetRate ?? 0) / 100) * 6);
+  score += Math.round(((crossContaminationPreventedRate ?? 0) / 100) * 5);
+  score += Math.round(((childConsultedRate ?? 0) / 100) * 4);
+  score += Math.round(((fullyCompliantRate ?? 0) / 100) * 3);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -451,10 +467,10 @@ export function evaluateIncidentResponse(
     return {
       overallScore: 25,
       totalIncidents: 0,
-      timelyResponseRate: 0,
-      emergencyPlanFollowedRate: 0,
-      rootCauseIdentifiedRate: 0,
-      preventiveMeasuresRate: 0,
+      timelyResponseRate: null,
+      emergencyPlanFollowedRate: null,
+      rootCauseIdentifiedRate: null,
+      preventiveMeasuresRate: null,
       hospitalVisitCount: 0,
     };
   }
@@ -473,18 +489,18 @@ export function evaluateIncidentResponse(
     if (inc.hospitalVisit) hospitalVisits++;
   }
 
-  const timelyResponseRate = pct(timely, incidents.length);
-  const emergencyPlanFollowedRate = pct(planFollowed, incidents.length);
-  const rootCauseIdentifiedRate = pct(rootCause, incidents.length);
-  const preventiveMeasuresRate = pct(preventive, incidents.length);
+  const timelyResponseRate = rate(timely, incidents.length);
+  const emergencyPlanFollowedRate = rate(planFollowed, incidents.length);
+  const rootCauseIdentifiedRate = rate(rootCause, incidents.length);
+  const preventiveMeasuresRate = rate(preventive, incidents.length);
 
   // Scoring: timely response (0-8), plan followed (0-7), root cause (0-5),
   // preventive measures (0-5)
   let score = 0;
-  score += Math.round((timelyResponseRate / 100) * 8);
-  score += Math.round((emergencyPlanFollowedRate / 100) * 7);
-  score += Math.round((rootCauseIdentifiedRate / 100) * 5);
-  score += Math.round((preventiveMeasuresRate / 100) * 5);
+  score += Math.round(((timelyResponseRate ?? 0) / 100) * 8);
+  score += Math.round(((emergencyPlanFollowedRate ?? 0) / 100) * 7);
+  score += Math.round(((rootCauseIdentifiedRate ?? 0) / 100) * 5);
+  score += Math.round(((preventiveMeasuresRate ?? 0) / 100) * 5);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -508,12 +524,12 @@ export function evaluateStaffCompetence(
     return {
       overallScore: 0,
       totalStaff: 0,
-      allergenAwarenessRate: 0,
-      epiPenTrainedRate: 0,
-      foodHygieneRate: 0,
-      crossContaminationTrainedRate: 0,
-      anaphylaxisTrainedRate: 0,
-      fullyCompetentRate: 0,
+      allergenAwarenessRate: null,
+      epiPenTrainedRate: null,
+      foodHygieneRate: null,
+      crossContaminationTrainedRate: null,
+      anaphylaxisTrainedRate: null,
+      fullyCompetentRate: null,
     };
   }
 
@@ -533,21 +549,21 @@ export function evaluateStaffCompetence(
     if (t.competenceLevel === "fully_competent") fullyCompetent++;
   }
 
-  const allergenAwarenessRate = pct(allergenAwareness, training.length);
-  const epiPenTrainedRate = pct(epiPenTrained, training.length);
-  const foodHygieneRate = pct(foodHygiene, training.length);
-  const crossContaminationTrainedRate = pct(crossContamination, training.length);
-  const anaphylaxisTrainedRate = pct(anaphylaxis, training.length);
-  const fullyCompetentRate = pct(fullyCompetent, training.length);
+  const allergenAwarenessRate = rate(allergenAwareness, training.length);
+  const epiPenTrainedRate = rate(epiPenTrained, training.length);
+  const foodHygieneRate = rate(foodHygiene, training.length);
+  const crossContaminationTrainedRate = rate(crossContamination, training.length);
+  const anaphylaxisTrainedRate = rate(anaphylaxis, training.length);
+  const fullyCompetentRate = rate(fullyCompetent, training.length);
 
   // Scoring: allergen awareness (0-7), epiPen (0-5), food hygiene (0-5),
   // cross-contamination (0-4), anaphylaxis (0-4)
   let score = 0;
-  score += Math.round((allergenAwarenessRate / 100) * 7);
-  score += Math.round((epiPenTrainedRate / 100) * 5);
-  score += Math.round((foodHygieneRate / 100) * 5);
-  score += Math.round((crossContaminationTrainedRate / 100) * 4);
-  score += Math.round((anaphylaxisTrainedRate / 100) * 4);
+  score += Math.round(((allergenAwarenessRate ?? 0) / 100) * 7);
+  score += Math.round(((epiPenTrainedRate ?? 0) / 100) * 5);
+  score += Math.round(((foodHygieneRate ?? 0) / 100) * 5);
+  score += Math.round(((crossContaminationTrainedRate ?? 0) / 100) * 4);
+  score += Math.round(((anaphylaxisTrainedRate ?? 0) / 100) * 4);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -637,7 +653,7 @@ export function generateAllergenDietaryManagementIntelligence(
     strengths.push("GP notification complete for all children with allergens");
   if (meals.length > 0 && mealSafety.allergenLabelledRate === 100)
     strengths.push("100% allergen labelling compliance across all meals");
-  if (meals.length > 0 && mealSafety.crossContaminationPreventedRate >= 95)
+  if (meals.length > 0 && meets(mealSafety.crossContaminationPreventedRate, 95))
     strengths.push("Excellent cross-contamination prevention at " + mealSafety.crossContaminationPreventedRate + "%");
   if (incidents.length === 0 && profiles.length > 0)
     strengths.push("No allergen incidents in the reporting period — effective prevention");
@@ -647,26 +663,26 @@ export function generateAllergenDietaryManagementIntelligence(
     strengths.push("All staff have allergen awareness training");
   if (training.length > 0 && staffCompetence.fullyCompetentRate === 100)
     strengths.push("All staff assessed as fully competent in allergen management");
-  if (meals.length > 0 && mealSafety.childConsultedRate >= 90)
+  if (meals.length > 0 && meets(mealSafety.childConsultedRate, 90))
     strengths.push("Children consistently consulted about meals and dietary preferences");
 
   // ── Areas for Improvement ──
   const areasForImprovement: string[] = [];
   if (profiles.length === 0)
     areasForImprovement.push("No allergen profiles on record — all children should have documented allergen status");
-  if (withAllergens.length > 0 && allergenDocumentation.emergencyPlanCurrentRate < 100)
+  if (withAllergens.length > 0 && below(allergenDocumentation.emergencyPlanCurrentRate, 100))
     areasForImprovement.push("Emergency plan currency at " + allergenDocumentation.emergencyPlanCurrentRate + "% — all should be current");
-  if (meals.length > 0 && mealSafety.allergenLabelledRate < 100)
+  if (meals.length > 0 && below(mealSafety.allergenLabelledRate, 100))
     areasForImprovement.push("Allergen labelling compliance at " + mealSafety.allergenLabelledRate + "% — must be 100% (Natasha's Law)");
-  if (meals.length > 0 && mealSafety.dietaryMetRate < 90)
+  if (meals.length > 0 && below(mealSafety.dietaryMetRate, 90))
     areasForImprovement.push("Dietary requirements met in only " + mealSafety.dietaryMetRate + "% of meals");
-  if (training.length > 0 && staffCompetence.epiPenTrainedRate < 100)
+  if (training.length > 0 && below(staffCompetence.epiPenTrainedRate, 100))
     areasForImprovement.push("EpiPen training coverage at " + staffCompetence.epiPenTrainedRate + "% — all staff should be trained");
   if (training.length === 0)
     areasForImprovement.push("No staff allergen training records — all staff require training");
   if (meals.length === 0 && profiles.length > 0)
     areasForImprovement.push("No meal plan records — meal safety documentation required");
-  if (meals.length > 0 && mealSafety.childConsultedRate < 70)
+  if (meals.length > 0 && below(mealSafety.childConsultedRate, 70))
     areasForImprovement.push("Children consulted about meals in only " + mealSafety.childConsultedRate + "% of cases");
 
   // ── Actions ──
@@ -682,18 +698,18 @@ export function generateAllergenDietaryManagementIntelligence(
   const ltMissingEpiPen = lifeThreatProfiles.filter((p) => p.epiPenAvailable !== true);
   if (ltMissingEpiPen.length > 0)
     actions.push("URGENT: " + ltMissingEpiPen.length + " child(ren) with life-threatening allergies have no EpiPen available");
-  if (training.length > 0 && staffCompetence.anaphylaxisTrainedRate < 75)
+  if (training.length > 0 && below(staffCompetence.anaphylaxisTrainedRate, 75))
     actions.push("URGENT: Only " + staffCompetence.anaphylaxisTrainedRate + "% staff trained in anaphylaxis response — all must complete training");
-  if (incidents.length > 0 && incidentResponse.rootCauseIdentifiedRate < 100)
-    actions.push("Complete root cause analysis for all allergen incidents — " + (100 - incidentResponse.rootCauseIdentifiedRate) + "% outstanding");
-  if (meals.length > 0 && mealSafety.allergenLabelledRate < 100)
+  if (incidents.length > 0 && below(incidentResponse.rootCauseIdentifiedRate, 100))
+    actions.push("Complete root cause analysis for all allergen incidents — " + (100 - (incidentResponse.rootCauseIdentifiedRate ?? 0)) + "% outstanding");
+  if (meals.length > 0 && below(mealSafety.allergenLabelledRate, 100))
     actions.push("Achieve 100% allergen labelling — legal requirement under Natasha's Law (PPDS) 2021");
   if (profiles.length === 0)
     actions.push("Create allergen profiles for all children — even children with no known allergens should have a documented 'none' record");
-  if (allergenDocumentation.reviewUpToDateRate < 100 && profiles.length > 0)
-    actions.push("Schedule allergen profile reviews for overdue children — " + (100 - allergenDocumentation.reviewUpToDateRate) + "% overdue");
-  if (incidents.length > 0 && incidentResponse.preventiveMeasuresRate < 100)
-    actions.push("Implement preventive measures for all allergen incidents — " + (100 - incidentResponse.preventiveMeasuresRate) + "% without measures");
+  if (below(allergenDocumentation.reviewUpToDateRate, 100) && profiles.length > 0)
+    actions.push("Schedule allergen profile reviews for overdue children — " + (100 - (allergenDocumentation.reviewUpToDateRate ?? 0)) + "% overdue");
+  if (incidents.length > 0 && below(incidentResponse.preventiveMeasuresRate, 100))
+    actions.push("Implement preventive measures for all allergen incidents — " + (100 - (incidentResponse.preventiveMeasuresRate ?? 0)) + "% without measures");
 
   const regulatoryLinks: string[] = [
     "CHR 2015, Reg 10 — Health and wellbeing: dietary needs and allergen management",

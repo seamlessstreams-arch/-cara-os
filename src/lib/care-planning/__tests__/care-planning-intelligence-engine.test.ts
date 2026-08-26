@@ -6,7 +6,6 @@ import {
   evaluateStaffCarePlanningCompetency,
   buildChildCarePlanningProfiles,
   generateCarePlanningIntelligenceReport,
-  pct,
   getRating,
   getCarePlanningCategoryLabel,
   getCarePlanningOutcomeLabel,
@@ -39,13 +38,6 @@ const ALL_CATEGORIES: CarePlanningCategory[] = ["care_plan_creation", "care_plan
 
 // ── pct ─────────────────────────────────────────────────────────────────────
 
-describe("pct", () => {
-  it("computes correct percentage", () => { expect(pct(3, 4)).toBe(75); });
-  it("returns 0 when den is 0", () => { expect(pct(5, 0)).toBe(0); });
-  it("rounds to nearest integer", () => { expect(pct(1, 3)).toBe(33); expect(pct(2, 3)).toBe(67); });
-  it("handles 100%", () => { expect(pct(10, 10)).toBe(100); });
-  it("handles 0 numerator", () => { expect(pct(0, 10)).toBe(0); });
-});
 
 // ── getRating ──────────────────────────────────────────────────────────────
 

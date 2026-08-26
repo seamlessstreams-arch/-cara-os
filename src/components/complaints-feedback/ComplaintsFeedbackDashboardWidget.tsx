@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildComplaintProfile { childId: string; childName: string; totalComplaints: number; resolutionRate: number; childViewsRate: number; categoriesCovered: string[]; overallScore: number; }
 
@@ -73,19 +74,19 @@ export default function ComplaintsFeedbackDashboardWidget() {
       <Section title="Complaint Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Complaints" value={data.complaintQuality.totalComplaints} />
-          <Stat label="Resolution" value={`${data.complaintQuality.resolutionRate}%`} />
-          <Stat label="Child Views" value={`${data.complaintQuality.childViewsRate}%`} />
-          <Stat label="Timely Response" value={`${data.complaintQuality.timelyResponseRate}%`} />
-          <Stat label="Advocacy Offered" value={`${data.complaintQuality.advocacyRate}%`} />
+          <Stat label="Resolution" value={`${formatRate(data.complaintQuality.resolutionRate)}`} />
+          <Stat label="Child Views" value={`${formatRate(data.complaintQuality.childViewsRate)}`} />
+          <Stat label="Timely Response" value={`${formatRate(data.complaintQuality.timelyResponseRate)}`} />
+          <Stat label="Advocacy Offered" value={`${formatRate(data.complaintQuality.advocacyRate)}`} />
         </div>
       </Section>
 
       <Section title="Complaint Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documented" value={`${data.complaintCompliance.documentedRate}%`} />
-          <Stat label="Complainant Informed" value={`${data.complaintCompliance.complainantInformedRate}%`} />
-          <Stat label="Lessons Learned" value={`${data.complaintCompliance.lessonLearnedRate}%`} />
-          <Stat label="Category Diversity" value={`${data.complaintCompliance.categoryDiversityRatio}%`} />
+          <Stat label="Documented" value={`${formatRate(data.complaintCompliance.documentedRate)}`} />
+          <Stat label="Complainant Informed" value={`${formatRate(data.complaintCompliance.complainantInformedRate)}`} />
+          <Stat label="Lessons Learned" value={`${formatRate(data.complaintCompliance.lessonLearnedRate)}`} />
+          <Stat label="Category Diversity" value={`${formatRate(data.complaintCompliance.categoryDiversityRatio)}`} />
         </div>
       </Section>
 
@@ -108,12 +109,12 @@ export default function ComplaintsFeedbackDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffComplaintReadiness.totalStaff} />
-          <Stat label="Complaints Handling" value={`${data.staffComplaintReadiness.complaintsHandlingRate}%`} />
-          <Stat label="Active Listening" value={`${data.staffComplaintReadiness.activeListeningRate}%`} />
-          <Stat label="Conflict Resolution" value={`${data.staffComplaintReadiness.conflictResolutionRate}%`} />
-          <Stat label="Child Rights" value={`${data.staffComplaintReadiness.childRightsRate}%`} />
-          <Stat label="Documentation" value={`${data.staffComplaintReadiness.documentationRate}%`} />
-          <Stat label="Escalation" value={`${data.staffComplaintReadiness.escalationRate}%`} />
+          <Stat label="Complaints Handling" value={`${formatRate(data.staffComplaintReadiness.complaintsHandlingRate)}`} />
+          <Stat label="Active Listening" value={`${formatRate(data.staffComplaintReadiness.activeListeningRate)}`} />
+          <Stat label="Conflict Resolution" value={`${formatRate(data.staffComplaintReadiness.conflictResolutionRate)}`} />
+          <Stat label="Child Rights" value={`${formatRate(data.staffComplaintReadiness.childRightsRate)}`} />
+          <Stat label="Documentation" value={`${formatRate(data.staffComplaintReadiness.documentationRate)}`} />
+          <Stat label="Escalation" value={`${formatRate(data.staffComplaintReadiness.escalationRate)}`} />
         </div>
       </Section>
 

@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // Cara -- Complaint Resolution Effectiveness Intelligence Engine
 //
@@ -127,17 +128,24 @@ export interface StaffComplaintTraining {
 
 export interface ResolutionQualityResult {
   overallScore: number; // 0-25
-  resolutionRate: number; // %
-  childInformedRate: number; // %
-  lessonsLearnedRate: number; // %
-  actionsTakenRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  resolutionRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  childInformedRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  lessonsLearnedRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionsTakenRate: number | null; // %
 }
 
 export interface ComplaintComplianceResult {
   overallScore: number; // 0-25
-  resolvedWithinTimescaleRate: number; // %
-  documentedRate: number; // %
-  complainantSatisfiedRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  resolvedWithinTimescaleRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  complainantSatisfiedRate: number | null; // %
   sourceDiversity: number; // 0-1 fraction
 }
 
@@ -155,20 +163,28 @@ export interface ComplaintPolicyResult {
 export interface StaffComplaintReadinessResult {
   overallScore: number; // 0-25
   totalStaff: number;
-  complaintHandlingRate: number; // %
-  childFocusedResolutionRate: number; // %
-  conflictResolutionRate: number; // %
-  documentationSkillsRate: number; // %
-  advocacyAwarenessRate: number; // %
-  regulatoryRequirementsRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  complaintHandlingRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  childFocusedResolutionRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  conflictResolutionRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationSkillsRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  advocacyAwarenessRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  regulatoryRequirementsRate: number | null; // %
 }
 
 export interface ChildComplaintProfile {
   childId: string;
   childName: string;
   complaintCount: number;
-  resolutionRate: number; // %
-  childInformedRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  resolutionRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  childInformedRate: number | null; // %
   sourceDiversity: number; // unique sources count
   overallScore: number; // 0-10
 }
@@ -193,11 +209,6 @@ export interface ComplaintResolutionEffectivenessIntelligence {
 // -- Helpers ------------------------------------------------------------------
 
 /** Calculate percentage, returning 0 if denominator is 0. */
-export function pct(numerator: number, denominator: number): number {
-  if (denominator === 0) return 0;
-  return Math.round((numerator / denominator) * 100);
-}
-
 /** Map overall score (0-100) to Ofsted-style rating. */
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -224,10 +235,10 @@ export function evaluateResolutionQuality(
   if (records.length === 0) {
     return {
       overallScore: 0,
-      resolutionRate: 0,
-      childInformedRate: 0,
-      lessonsLearnedRate: 0,
-      actionsTakenRate: 0,
+      resolutionRate: null,
+      childInformedRate: null,
+      lessonsLearnedRate: null,
+      actionsTakenRate: null,
     };
   }
 
@@ -242,16 +253,16 @@ export function evaluateResolutionQuality(
   const lessonsLearned = records.filter((r) => r.lessonsLearned);
   const actionsTaken = records.filter((r) => r.actionsTaken);
 
-  const resolutionRate = pct(resolved.length, total);
-  const childInformedRate = pct(childInformed.length, total);
-  const lessonsLearnedRate = pct(lessonsLearned.length, total);
-  const actionsTakenRate = pct(actionsTaken.length, total);
+  const resolutionRate = rate(resolved.length, total);
+  const childInformedRate = rate(childInformed.length, total);
+  const lessonsLearnedRate = rate(lessonsLearned.length, total);
+  const actionsTakenRate = rate(actionsTaken.length, total);
 
   // Sub-scores
-  const resolutionScore = Math.round((resolutionRate / 100) * 7);
-  const childInformedScore = Math.round((childInformedRate / 100) * 6);
-  const lessonsLearnedScore = Math.round((lessonsLearnedRate / 100) * 6);
-  const actionsTakenScore = Math.round((actionsTakenRate / 100) * 6);
+  const resolutionScore = Math.round(((resolutionRate ?? 0) / 100) * 7);
+  const childInformedScore = Math.round(((childInformedRate ?? 0) / 100) * 6);
+  const lessonsLearnedScore = Math.round(((lessonsLearnedRate ?? 0) / 100) * 6);
+  const actionsTakenScore = Math.round(((actionsTakenRate ?? 0) / 100) * 6);
 
   const overallScore = Math.min(
     25,
@@ -286,9 +297,9 @@ export function evaluateComplaintCompliance(
   if (records.length === 0) {
     return {
       overallScore: 0,
-      resolvedWithinTimescaleRate: 0,
-      documentedRate: 0,
-      complainantSatisfiedRate: 0,
+      resolvedWithinTimescaleRate: null,
+      documentedRate: null,
+      complainantSatisfiedRate: null,
       sourceDiversity: 0,
     };
   }
@@ -302,14 +313,14 @@ export function evaluateComplaintCompliance(
   const uniqueSources = new Set(records.map((r) => r.complaintSource));
   const sourceDiversityFraction = uniqueSources.size / 8;
 
-  const resolvedWithinTimescaleRate = pct(resolvedInTime.length, total);
-  const documentedRate = pct(documented.length, total);
-  const complainantSatisfiedRate = pct(satisfied.length, total);
+  const resolvedWithinTimescaleRate = rate(resolvedInTime.length, total);
+  const documentedRate = rate(documented.length, total);
+  const complainantSatisfiedRate = rate(satisfied.length, total);
 
   // Sub-scores
-  const timescaleScore = Math.round((resolvedWithinTimescaleRate / 100) * 8);
-  const documentedScore = Math.round((documentedRate / 100) * 7);
-  const satisfiedScore = Math.round((complainantSatisfiedRate / 100) * 5);
+  const timescaleScore = Math.round(((resolvedWithinTimescaleRate ?? 0) / 100) * 8);
+  const documentedScore = Math.round(((documentedRate ?? 0) / 100) * 7);
+  const satisfiedScore = Math.round(((complainantSatisfiedRate ?? 0) / 100) * 5);
   const diversityScore = Math.round(Math.min(1, sourceDiversityFraction) * 5);
 
   const overallScore = Math.min(
@@ -377,7 +388,7 @@ export function evaluateComplaintPolicy(
  *
  * PRESENCE pattern: empty training -> 0.
  * 6 skills weighted: 6+5+5+4+3+2 = 25.
- * Each skill rate = pct(trained, total), partial score = round(rate/100 * weight).
+ * Each skill rate = rate(trained, total), partial score = round(rate/100 * weight).
  */
 export function evaluateStaffComplaintReadiness(
   training: StaffComplaintTraining[],
@@ -386,12 +397,12 @@ export function evaluateStaffComplaintReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      complaintHandlingRate: 0,
-      childFocusedResolutionRate: 0,
-      conflictResolutionRate: 0,
-      documentationSkillsRate: 0,
-      advocacyAwarenessRate: 0,
-      regulatoryRequirementsRate: 0,
+      complaintHandlingRate: null,
+      childFocusedResolutionRate: null,
+      conflictResolutionRate: null,
+      documentationSkillsRate: null,
+      advocacyAwarenessRate: null,
+      regulatoryRequirementsRate: null,
     };
   }
 
@@ -404,20 +415,20 @@ export function evaluateStaffComplaintReadiness(
   const advocacyCount = training.filter((t) => t.advocacyAwareness).length;
   const regulatoryCount = training.filter((t) => t.regulatoryRequirements).length;
 
-  const complaintHandlingRate = pct(complaintHandlingCount, total);
-  const childFocusedResolutionRate = pct(childFocusedCount, total);
-  const conflictResolutionRate = pct(conflictCount, total);
-  const documentationSkillsRate = pct(documentationCount, total);
-  const advocacyAwarenessRate = pct(advocacyCount, total);
-  const regulatoryRequirementsRate = pct(regulatoryCount, total);
+  const complaintHandlingRate = rate(complaintHandlingCount, total);
+  const childFocusedResolutionRate = rate(childFocusedCount, total);
+  const conflictResolutionRate = rate(conflictCount, total);
+  const documentationSkillsRate = rate(documentationCount, total);
+  const advocacyAwarenessRate = rate(advocacyCount, total);
+  const regulatoryRequirementsRate = rate(regulatoryCount, total);
 
   // Weighted sub-scores: 6+5+5+4+3+2 = 25
-  const s1 = Math.round((complaintHandlingRate / 100) * 6);
-  const s2 = Math.round((childFocusedResolutionRate / 100) * 5);
-  const s3 = Math.round((conflictResolutionRate / 100) * 5);
-  const s4 = Math.round((documentationSkillsRate / 100) * 4);
-  const s5 = Math.round((advocacyAwarenessRate / 100) * 3);
-  const s6 = Math.round((regulatoryRequirementsRate / 100) * 2);
+  const s1 = Math.round(((complaintHandlingRate ?? 0) / 100) * 6);
+  const s2 = Math.round(((childFocusedResolutionRate ?? 0) / 100) * 5);
+  const s3 = Math.round(((conflictResolutionRate ?? 0) / 100) * 5);
+  const s4 = Math.round(((documentationSkillsRate ?? 0) / 100) * 4);
+  const s5 = Math.round(((advocacyAwarenessRate ?? 0) / 100) * 3);
+  const s6 = Math.round(((regulatoryRequirementsRate ?? 0) / 100) * 2);
 
   const overallScore = Math.min(25, Math.max(0, s1 + s2 + s3 + s4 + s5 + s6));
 
@@ -469,8 +480,8 @@ export function buildChildComplaintProfiles(
     const informed = childRecords.filter((r) => r.childInformed);
     const uniqueSources = new Set(childRecords.map((r) => r.complaintSource));
 
-    const resolutionRate = pct(resolved.length, count);
-    const childInformedRate = pct(informed.length, count);
+    const resolutionRate = rate(resolved.length, count);
+    const childInformedRate = rate(informed.length, count);
     const sourceDiversity = uniqueSources.size;
 
     // Score components
@@ -479,14 +490,14 @@ export function buildChildComplaintProfiles(
     else if (count >= 5) frequencyScore = 1;
 
     let resolutionScore = 0;
-    if (resolutionRate >= 80) resolutionScore = 3;
-    else if (resolutionRate >= 60) resolutionScore = 2;
-    else if (resolutionRate >= 40) resolutionScore = 1;
+    if (meets(resolutionRate, 80)) resolutionScore = 3;
+    else if (meets(resolutionRate, 60)) resolutionScore = 2;
+    else if (meets(resolutionRate, 40)) resolutionScore = 1;
 
     let informedScore = 0;
-    if (childInformedRate >= 80) informedScore = 3;
-    else if (childInformedRate >= 60) informedScore = 2;
-    else if (childInformedRate >= 40) informedScore = 1;
+    if (meets(childInformedRate, 80)) informedScore = 3;
+    else if (meets(childInformedRate, 60)) informedScore = 2;
+    else if (meets(childInformedRate, 40)) informedScore = 1;
 
     let diversityScore = 0;
     if (sourceDiversity >= 4) diversityScore = 2;
@@ -545,22 +556,22 @@ export function generateComplaintResolutionEffectivenessIntelligence(
   // -- Strengths (when rate >= 80) --
   const strengths: string[] = [];
 
-  if (records.length > 0 && resolutionQuality.resolutionRate >= 80) {
+  if (records.length > 0 && meets(resolutionQuality.resolutionRate, 80)) {
     strengths.push(
       "Strong complaint resolution rate demonstrates effective handling of concerns raised",
     );
   }
-  if (records.length > 0 && resolutionQuality.childInformedRate >= 80) {
+  if (records.length > 0 && meets(resolutionQuality.childInformedRate, 80)) {
     strengths.push(
       "Children consistently informed of complaint outcomes, supporting their right to be heard",
     );
   }
-  if (records.length > 0 && resolutionQuality.lessonsLearnedRate >= 80) {
+  if (records.length > 0 && meets(resolutionQuality.lessonsLearnedRate, 80)) {
     strengths.push(
       "Good learning from complaints culture with lessons identified and applied",
     );
   }
-  if (records.length > 0 && complaintCompliance.documentedRate >= 80) {
+  if (records.length > 0 && meets(complaintCompliance.documentedRate, 80)) {
     strengths.push(
       "Excellent documentation of complaints ensures accountability and transparency",
     );
@@ -569,22 +580,22 @@ export function generateComplaintResolutionEffectivenessIntelligence(
   // -- Areas for improvement --
   const areasForImprovement: string[] = [];
 
-  if (records.length > 0 && resolutionQuality.resolutionRate < 80) {
+  if (records.length > 0 && below(resolutionQuality.resolutionRate, 80)) {
     areasForImprovement.push(
       `Resolution rate at ${resolutionQuality.resolutionRate}% -- target is 80% or above`,
     );
   }
-  if (records.length > 0 && resolutionQuality.childInformedRate < 80) {
+  if (records.length > 0 && below(resolutionQuality.childInformedRate, 80)) {
     areasForImprovement.push(
       `Only ${resolutionQuality.childInformedRate}% of children informed of complaint outcomes`,
     );
   }
-  if (records.length > 0 && complaintCompliance.resolvedWithinTimescaleRate < 80) {
+  if (records.length > 0 && below(complaintCompliance.resolvedWithinTimescaleRate, 80)) {
     areasForImprovement.push(
       `Only ${complaintCompliance.resolvedWithinTimescaleRate}% of complaints resolved within timescales`,
     );
   }
-  if (records.length > 0 && complaintCompliance.complainantSatisfiedRate < 80) {
+  if (records.length > 0 && below(complaintCompliance.complainantSatisfiedRate, 80)) {
     areasForImprovement.push(
       `Complainant satisfaction at ${complaintCompliance.complainantSatisfiedRate}% -- needs attention`,
     );
@@ -610,7 +621,7 @@ export function generateComplaintResolutionEffectivenessIntelligence(
   }
   if (
     records.length > 0 &&
-    complaintCompliance.resolvedWithinTimescaleRate < 80
+    below(complaintCompliance.resolvedWithinTimescaleRate, 80)
   ) {
     actions.push(
       "Improve resolution timescales by implementing tracking systems and escalation triggers",
@@ -618,7 +629,7 @@ export function generateComplaintResolutionEffectivenessIntelligence(
   }
   if (
     records.length > 0 &&
-    complaintCompliance.complainantSatisfiedRate < 80
+    below(complaintCompliance.complainantSatisfiedRate, 80)
   ) {
     actions.push(
       "Address complainant satisfaction through improved communication and follow-up during resolution",

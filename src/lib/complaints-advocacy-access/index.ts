@@ -5,7 +5,6 @@ export {
   evaluateResolutionQuality,
   evaluateStaffComplaintsReadiness,
   buildChildComplaintsSummaries,
-  pct,
   getRating,
   getComplaintTypeLabel,
   getComplaintStatusLabel,

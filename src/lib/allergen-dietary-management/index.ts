@@ -5,7 +5,6 @@ export {
   evaluateIncidentResponse,
   evaluateStaffCompetence,
   buildChildAllergenSummaries,
-  pct,
   getRating,
   getAllergenTypeLabel,
   getDietaryRequirementLabel,

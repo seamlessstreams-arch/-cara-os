@@ -15,6 +15,7 @@ import type { JSX } from "react";
 // ==============================================================================
 
 import { useState, useEffect } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 // -- Local interfaces (mirrors API shape) ------------------------------------
 
@@ -307,11 +308,11 @@ export default function ComplaintResolutionEffectivenessDashboardWidget() {
 
       {/* Key Stats */}
       <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-4">
-        <Stat label="Resolution" value={`${data.resolutionQuality.resolutionRate}%`} />
-        <Stat label="Timescale" value={`${data.complaintCompliance.resolvedWithinTimescaleRate}%`} />
-        <Stat label="Informed" value={`${data.resolutionQuality.childInformedRate}%`} />
-        <Stat label="Documented" value={`${data.complaintCompliance.documentedRate}%`} />
-        <Stat label="Satisfied" value={`${data.complaintCompliance.complainantSatisfiedRate}%`} />
+        <Stat label="Resolution" value={`${formatRate(data.resolutionQuality.resolutionRate)}`} />
+        <Stat label="Timescale" value={`${formatRate(data.complaintCompliance.resolvedWithinTimescaleRate)}`} />
+        <Stat label="Informed" value={`${formatRate(data.resolutionQuality.childInformedRate)}`} />
+        <Stat label="Documented" value={`${formatRate(data.complaintCompliance.documentedRate)}`} />
+        <Stat label="Satisfied" value={`${formatRate(data.complaintCompliance.complainantSatisfiedRate)}`} />
         <Stat label="Staff" value={data.staffComplaintReadiness.totalStaff} />
       </div>
 
@@ -374,10 +375,10 @@ export default function ComplaintResolutionEffectivenessDashboardWidget() {
           {activeTab === "quality" && (
             <Section title="Resolution Quality">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                <Stat label="Resolution Rate" value={`${data.resolutionQuality.resolutionRate}%`} />
-                <Stat label="Child Informed" value={`${data.resolutionQuality.childInformedRate}%`} />
-                <Stat label="Lessons Learned" value={`${data.resolutionQuality.lessonsLearnedRate}%`} />
-                <Stat label="Actions Taken" value={`${data.resolutionQuality.actionsTakenRate}%`} />
+                <Stat label="Resolution Rate" value={`${formatRate(data.resolutionQuality.resolutionRate)}`} />
+                <Stat label="Child Informed" value={`${formatRate(data.resolutionQuality.childInformedRate)}`} />
+                <Stat label="Lessons Learned" value={`${formatRate(data.resolutionQuality.lessonsLearnedRate)}`} />
+                <Stat label="Actions Taken" value={`${formatRate(data.resolutionQuality.actionsTakenRate)}`} />
               </div>
               {data.meta?.recordSummary && (
                 <div className="bg-gray-50 rounded-lg p-3 mt-2">
@@ -411,9 +412,9 @@ export default function ComplaintResolutionEffectivenessDashboardWidget() {
           {activeTab === "compliance" && (
             <Section title="Complaint Compliance">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                <Stat label="Within Timescale" value={`${data.complaintCompliance.resolvedWithinTimescaleRate}%`} />
-                <Stat label="Documented" value={`${data.complaintCompliance.documentedRate}%`} />
-                <Stat label="Satisfied" value={`${data.complaintCompliance.complainantSatisfiedRate}%`} />
+                <Stat label="Within Timescale" value={`${formatRate(data.complaintCompliance.resolvedWithinTimescaleRate)}`} />
+                <Stat label="Documented" value={`${formatRate(data.complaintCompliance.documentedRate)}`} />
+                <Stat label="Satisfied" value={`${formatRate(data.complaintCompliance.complainantSatisfiedRate)}`} />
                 <Stat label="Source Diversity" value={`${Math.round(data.complaintCompliance.sourceDiversity * 100)}%`} />
               </div>
             </Section>
@@ -448,12 +449,12 @@ export default function ComplaintResolutionEffectivenessDashboardWidget() {
           {activeTab === "staff" && (
             <Section title="Staff Complaint Readiness">
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                <Stat label="Complaint Handling" value={`${data.staffComplaintReadiness.complaintHandlingRate}%`} />
-                <Stat label="Child-Focused" value={`${data.staffComplaintReadiness.childFocusedResolutionRate}%`} />
-                <Stat label="Conflict Resolution" value={`${data.staffComplaintReadiness.conflictResolutionRate}%`} />
-                <Stat label="Documentation" value={`${data.staffComplaintReadiness.documentationSkillsRate}%`} />
-                <Stat label="Advocacy Awareness" value={`${data.staffComplaintReadiness.advocacyAwarenessRate}%`} />
-                <Stat label="Regulatory" value={`${data.staffComplaintReadiness.regulatoryRequirementsRate}%`} />
+                <Stat label="Complaint Handling" value={`${formatRate(data.staffComplaintReadiness.complaintHandlingRate)}`} />
+                <Stat label="Child-Focused" value={`${formatRate(data.staffComplaintReadiness.childFocusedResolutionRate)}`} />
+                <Stat label="Conflict Resolution" value={`${formatRate(data.staffComplaintReadiness.conflictResolutionRate)}`} />
+                <Stat label="Documentation" value={`${formatRate(data.staffComplaintReadiness.documentationSkillsRate)}`} />
+                <Stat label="Advocacy Awareness" value={`${formatRate(data.staffComplaintReadiness.advocacyAwarenessRate)}`} />
+                <Stat label="Regulatory" value={`${formatRate(data.staffComplaintReadiness.regulatoryRequirementsRate)}`} />
               </div>
               <div className="mt-2">
                 <Stat label="Total Staff" value={data.staffComplaintReadiness.totalStaff} />

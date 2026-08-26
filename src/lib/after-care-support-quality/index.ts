@@ -5,7 +5,6 @@ export {
   evaluateAfterCareSupportPolicy,
   evaluateStaffAfterCareReadiness,
   buildChildAfterCareProfiles,
-  pct,
   getRating,
   getSupportTypeLabel,
   getEngagementLevelLabel,

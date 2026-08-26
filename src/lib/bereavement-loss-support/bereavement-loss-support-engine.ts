@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — Bereavement, Loss & Support Intelligence Engine
 //
@@ -107,18 +108,25 @@ export interface StaffBereavementTraining {
 
 export interface LossResponseResult {
   totalEvents: number;
-  impactAssessedRate: number;
-  supportPlanCreatedRate: number;
-  supportPlanReviewedRate: number;
-  allEventsWithPlansRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  impactAssessedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  supportPlanCreatedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  supportPlanReviewedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  allEventsWithPlansRate: number | null;
   overallScore: number;
 }
 
 export interface SupportQualityResult {
   totalInterventions: number;
-  childEngagedRate: number;
-  positiveOutcomeRate: number;
-  followUpCompletedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childEngagedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveOutcomeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  followUpCompletedRate: number | null;
   supportTypeVariety: number;
   overallScore: number;
 }
@@ -137,12 +145,18 @@ export interface BereavementPolicyResult {
 
 export interface StaffBereavementReadinessResult {
   totalStaff: number;
-  griefAwarenessRate: number;
-  therapeuticResponseRate: number;
-  memoryWorkSkillsRate: number;
-  culturalSensitivityRate: number;
-  childDevelopmentGriefRate: number;
-  referralPathwaysRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  griefAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  therapeuticResponseRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  memoryWorkSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  culturalSensitivityRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childDevelopmentGriefRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  referralPathwaysRate: number | null;
   overallScore: number;
 }
 
@@ -179,11 +193,6 @@ export interface BereavementLossSupportIntelligence {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -283,10 +292,10 @@ export function evaluateLossResponse(events: LossEvent[]): LossResponseResult {
   if (events.length === 0) {
     return {
       totalEvents: 0,
-      impactAssessedRate: 0,
-      supportPlanCreatedRate: 0,
-      supportPlanReviewedRate: 0,
-      allEventsWithPlansRate: 0,
+      impactAssessedRate: null,
+      supportPlanCreatedRate: null,
+      supportPlanReviewedRate: null,
+      allEventsWithPlansRate: null,
       overallScore: 25,
     };
   }
@@ -297,19 +306,19 @@ export function evaluateLossResponse(events: LossEvent[]): LossResponseResult {
   const supportPlanReviewedCount = events.filter(e => e.supportPlanReviewed).length;
   const allWithPlansCount = events.filter(e => e.impactAssessed && e.supportPlanCreated && e.supportPlanReviewed).length;
 
-  const impactAssessedRate = pct(impactAssessedCount, total);
-  const supportPlanCreatedRate = pct(supportPlanCreatedCount, total);
-  const supportPlanReviewedRate = pct(supportPlanReviewedCount, total);
-  const allEventsWithPlansRate = pct(allWithPlansCount, total);
+  const impactAssessedRate = rate(impactAssessedCount, total);
+  const supportPlanCreatedRate = rate(supportPlanCreatedCount, total);
+  const supportPlanReviewedRate = rate(supportPlanReviewedCount, total);
+  const allEventsWithPlansRate = rate(allWithPlansCount, total);
 
   // Impact assessed rate (0-7)
-  const impactScore = Math.min(Math.round((impactAssessedRate / 100) * 7), 7);
+  const impactScore = Math.min(Math.round(((impactAssessedRate ?? 0) / 100) * 7), 7);
   // Support plan created rate (0-6)
-  const planCreatedScore = Math.min(Math.round((supportPlanCreatedRate / 100) * 6), 6);
+  const planCreatedScore = Math.min(Math.round(((supportPlanCreatedRate ?? 0) / 100) * 6), 6);
   // Support plan reviewed rate (0-6)
-  const planReviewedScore = Math.min(Math.round((supportPlanReviewedRate / 100) * 6), 6);
+  const planReviewedScore = Math.min(Math.round(((supportPlanReviewedRate ?? 0) / 100) * 6), 6);
   // All events with plans rate bonus (0-6)
-  const allPlansScore = Math.min(Math.round((allEventsWithPlansRate / 100) * 6), 6);
+  const allPlansScore = Math.min(Math.round(((allEventsWithPlansRate ?? 0) / 100) * 6), 6);
 
   const overallScore = Math.min(impactScore + planCreatedScore + planReviewedScore + allPlansScore, 25);
 
@@ -329,9 +338,9 @@ export function evaluateSupportQuality(interventions: SupportIntervention[]): Su
   if (interventions.length === 0) {
     return {
       totalInterventions: 0,
-      childEngagedRate: 0,
-      positiveOutcomeRate: 0,
-      followUpCompletedRate: 0,
+      childEngagedRate: null,
+      positiveOutcomeRate: null,
+      followUpCompletedRate: null,
       supportTypeVariety: 0,
       overallScore: 0,
     };
@@ -343,20 +352,20 @@ export function evaluateSupportQuality(interventions: SupportIntervention[]): Su
   const followUpScheduledCount = interventions.filter(i => i.followUpScheduled).length;
   const followUpCompletedCount = interventions.filter(i => i.followUpCompleted).length;
 
-  const childEngagedRate = pct(childEngagedCount, total);
-  const positiveOutcomeRate = pct(positiveOutcomeCount, total);
-  const followUpCompletedRate = pct(followUpCompletedCount, followUpScheduledCount);
+  const childEngagedRate = rate(childEngagedCount, total);
+  const positiveOutcomeRate = rate(positiveOutcomeCount, total);
+  const followUpCompletedRate = rate(followUpCompletedCount, followUpScheduledCount);
 
   const uniqueSupportTypes = new Set(interventions.map(i => i.supportType)).size;
   const totalPossibleTypes = 7; // total number of SupportType values
   const supportTypeVariety = uniqueSupportTypes;
 
   // Child engaged rate (0-7)
-  const engagedScore = Math.min(Math.round((childEngagedRate / 100) * 7), 7);
+  const engagedScore = Math.min(Math.round(((childEngagedRate ?? 0) / 100) * 7), 7);
   // Positive outcome rate (0-6)
-  const outcomeScore = Math.min(Math.round((positiveOutcomeRate / 100) * 6), 6);
+  const outcomeScore = Math.min(Math.round(((positiveOutcomeRate ?? 0) / 100) * 6), 6);
   // Follow-up completed rate (0-6)
-  const followUpScore = Math.min(Math.round((followUpCompletedRate / 100) * 6), 6);
+  const followUpScore = Math.min(Math.round(((followUpCompletedRate ?? 0) / 100) * 6), 6);
   // Variety of support types (0-6)
   const varietyScore = Math.min(Math.round((uniqueSupportTypes / totalPossibleTypes) * 6), 6);
 
@@ -432,33 +441,33 @@ export function evaluateStaffBereavementReadiness(training: StaffBereavementTrai
   if (training.length === 0) {
     return {
       totalStaff: 0,
-      griefAwarenessRate: 0,
-      therapeuticResponseRate: 0,
-      memoryWorkSkillsRate: 0,
-      culturalSensitivityRate: 0,
-      childDevelopmentGriefRate: 0,
-      referralPathwaysRate: 0,
+      griefAwarenessRate: null,
+      therapeuticResponseRate: null,
+      memoryWorkSkillsRate: null,
+      culturalSensitivityRate: null,
+      childDevelopmentGriefRate: null,
+      referralPathwaysRate: null,
       overallScore: 0,
     };
   }
 
   const total = training.length;
-  const griefAwarenessRate = pct(training.filter(t => t.griefAwareness).length, total);
-  const therapeuticResponseRate = pct(training.filter(t => t.therapeuticResponse).length, total);
-  const memoryWorkSkillsRate = pct(training.filter(t => t.memoryWorkSkills).length, total);
-  const culturalSensitivityRate = pct(training.filter(t => t.culturalSensitivity).length, total);
-  const childDevelopmentGriefRate = pct(training.filter(t => t.childDevelopmentGrief).length, total);
-  const referralPathwaysRate = pct(training.filter(t => t.referralPathways).length, total);
+  const griefAwarenessRate = rate(training.filter(t => t.griefAwareness).length, total);
+  const therapeuticResponseRate = rate(training.filter(t => t.therapeuticResponse).length, total);
+  const memoryWorkSkillsRate = rate(training.filter(t => t.memoryWorkSkills).length, total);
+  const culturalSensitivityRate = rate(training.filter(t => t.culturalSensitivity).length, total);
+  const childDevelopmentGriefRate = rate(training.filter(t => t.childDevelopmentGrief).length, total);
+  const referralPathwaysRate = rate(training.filter(t => t.referralPathways).length, total);
 
   // Rate-based scoring per field (total = 25)
   // griefAwareness=6, therapeuticResponse=5, memoryWorkSkills=4,
   // culturalSensitivity=4, childDevelopmentGrief=3, referralPathways=3
-  const griefScore = Math.min(Math.round((griefAwarenessRate / 100) * 6), 6);
-  const therapyScore = Math.min(Math.round((therapeuticResponseRate / 100) * 5), 5);
-  const memoryScore = Math.min(Math.round((memoryWorkSkillsRate / 100) * 4), 4);
-  const culturalScore = Math.min(Math.round((culturalSensitivityRate / 100) * 4), 4);
-  const devScore = Math.min(Math.round((childDevelopmentGriefRate / 100) * 3), 3);
-  const referralScore = Math.min(Math.round((referralPathwaysRate / 100) * 3), 3);
+  const griefScore = Math.min(Math.round(((griefAwarenessRate ?? 0) / 100) * 6), 6);
+  const therapyScore = Math.min(Math.round(((therapeuticResponseRate ?? 0) / 100) * 5), 5);
+  const memoryScore = Math.min(Math.round(((memoryWorkSkillsRate ?? 0) / 100) * 4), 4);
+  const culturalScore = Math.min(Math.round(((culturalSensitivityRate ?? 0) / 100) * 4), 4);
+  const devScore = Math.min(Math.round(((childDevelopmentGriefRate ?? 0) / 100) * 3), 3);
+  const referralScore = Math.min(Math.round(((referralPathwaysRate ?? 0) / 100) * 3), 3);
 
   const overallScore = Math.min(griefScore + therapyScore + memoryScore + culturalScore + devScore + referralScore, 25);
 
@@ -498,9 +507,9 @@ export function buildChildGriefProfiles(
 
     const totalInterventions = childInterventions.length;
     const engagedCount = childInterventions.filter(i => i.childEngaged).length;
-    const engagementRate = pct(engagedCount, totalInterventions);
+    const engagementRate = rate(engagedCount, totalInterventions)!;
     const positiveCount = childInterventions.filter(i => i.outcome === "positive" || i.outcome === "partially_positive").length;
-    const positiveOutcomeRate = pct(positiveCount, totalInterventions);
+    const positiveOutcomeRate = rate(positiveCount, totalInterventions)!;
 
     // Overall score 0-10
     let score = 0;
@@ -513,9 +522,9 @@ export function buildChildGriefProfiles(
       // Support plan in place (0-2)
       if (supportPlanInPlace) score += 2;
       // Engagement rate (0-3)
-      score += Math.min(Math.round((engagementRate / 100) * 3), 3);
+      score += Math.min(Math.round(((engagementRate ?? 0) / 100) * 3), 3);
       // Positive outcome rate (0-3)
-      score += Math.min(Math.round((positiveOutcomeRate / 100) * 3), 3);
+      score += Math.min(Math.round(((positiveOutcomeRate ?? 0) / 100) * 3), 3);
     }
 
     const overallScore = Math.min(score, 10);
@@ -528,13 +537,13 @@ export function buildChildGriefProfiles(
     if (totalLossEvents > 0 && !supportPlanInPlace) riskFactors.push("Support plan not in place for all loss events");
     if (totalLossEvents > 1) riskFactors.push("Multiple loss events — cumulative grief risk");
     if (totalInterventions === 0 && totalLossEvents > 0) riskFactors.push("No support interventions recorded despite loss events");
-    if (engagementRate < 50 && totalInterventions > 0) riskFactors.push("Low engagement with support interventions");
+    if (below(engagementRate, 50) && totalInterventions > 0) riskFactors.push("Low engagement with support interventions");
     if (lossTypes.includes("bereavement")) riskFactors.push("Bereavement experienced — ongoing monitoring needed");
 
     if (impactAssessed && totalLossEvents > 0) protectiveFactors.push("Impact of loss has been assessed");
     if (supportPlanInPlace && totalLossEvents > 0) protectiveFactors.push("Support plan in place for all loss events");
-    if (engagementRate >= 80 && totalInterventions > 0) protectiveFactors.push("High engagement with support interventions");
-    if (positiveOutcomeRate >= 80 && totalInterventions > 0) protectiveFactors.push("Positive outcomes from support interventions");
+    if (meets(engagementRate, 80) && totalInterventions > 0) protectiveFactors.push("High engagement with support interventions");
+    if (meets(positiveOutcomeRate, 80) && totalInterventions > 0) protectiveFactors.push("Positive outcomes from support interventions");
     if (totalInterventions >= 3) protectiveFactors.push("Multiple support interventions delivered");
     if (lossTypes.length > 0 && childInterventions.some(i => i.supportType === "memory_work")) {
       protectiveFactors.push("Memory work undertaken to process loss");
@@ -583,42 +592,42 @@ export function generateBereavementLossSupportIntelligence(
   const strengths: string[] = [];
   if (lossResponse.overallScore >= 20) strengths.push("Strong response to loss events with thorough impact assessments and support planning");
   if (lossResponse.totalEvents === 0) strengths.push("No loss events recorded in the period — proactive readiness should be maintained");
-  if (supportQuality.childEngagedRate >= 80) strengths.push("High child engagement with support interventions demonstrates child-centred grief practice");
-  if (supportQuality.positiveOutcomeRate >= 80) strengths.push("Consistently positive outcomes from bereavement and loss support interventions");
+  if (meets(supportQuality.childEngagedRate, 80)) strengths.push("High child engagement with support interventions demonstrates child-centred grief practice");
+  if (meets(supportQuality.positiveOutcomeRate, 80)) strengths.push("Consistently positive outcomes from bereavement and loss support interventions");
   if (supportQuality.supportTypeVariety >= 4) strengths.push("Diverse range of support types offered including therapeutic, memory work, and specialist input");
   if (bereavementPolicy.overallScore >= 20) strengths.push("Comprehensive bereavement and loss policy covering grief awareness, memory work, and specialist pathways");
   if (bereavementPolicy.policyCurrent) strengths.push("Bereavement and loss policy is current and recently reviewed");
-  if (staffReadiness.griefAwarenessRate >= 80) strengths.push("Majority of staff have grief awareness training, supporting consistent responses to loss");
+  if (meets(staffReadiness.griefAwarenessRate, 80)) strengths.push("Majority of staff have grief awareness training, supporting consistent responses to loss");
   if (staffReadiness.overallScore >= 20) strengths.push("Strong staff readiness across grief awareness, therapeutic response, and cultural sensitivity");
-  if (supportQuality.followUpCompletedRate >= 80) strengths.push("Follow-up support is consistently completed after initial interventions");
+  if (meets(supportQuality.followUpCompletedRate, 80)) strengths.push("Follow-up support is consistently completed after initial interventions");
 
   // Areas for improvement
   const areasForImprovement: string[] = [];
-  if (lossResponse.impactAssessedRate < 100 && lossResponse.totalEvents > 0) areasForImprovement.push("Not all loss events have been impact-assessed — gaps in understanding children's grief responses");
-  if (lossResponse.supportPlanCreatedRate < 100 && lossResponse.totalEvents > 0) areasForImprovement.push("Support plans not created for all loss events — each loss should have a tailored support plan");
-  if (lossResponse.supportPlanReviewedRate < 80 && lossResponse.totalEvents > 0) areasForImprovement.push("Support plans not consistently reviewed — regular review ensures plans remain effective");
-  if (supportQuality.childEngagedRate < 60 && supportQuality.totalInterventions > 0) areasForImprovement.push("Child engagement with support interventions is low — consider alternative approaches");
+  if (below(lossResponse.impactAssessedRate, 100) && lossResponse.totalEvents > 0) areasForImprovement.push("Not all loss events have been impact-assessed — gaps in understanding children's grief responses");
+  if (below(lossResponse.supportPlanCreatedRate, 100) && lossResponse.totalEvents > 0) areasForImprovement.push("Support plans not created for all loss events — each loss should have a tailored support plan");
+  if (below(lossResponse.supportPlanReviewedRate, 80) && lossResponse.totalEvents > 0) areasForImprovement.push("Support plans not consistently reviewed — regular review ensures plans remain effective");
+  if (below(supportQuality.childEngagedRate, 60) && supportQuality.totalInterventions > 0) areasForImprovement.push("Child engagement with support interventions is low — consider alternative approaches");
   if (supportQuality.supportTypeVariety < 3 && supportQuality.totalInterventions > 0) areasForImprovement.push("Limited variety in support types — children benefit from a range of grief support approaches");
   if (!bereavementPolicy.policyCurrent) areasForImprovement.push("Bereavement and loss policy is not current — review and update required");
   if (!bereavementPolicy.memoryWorkGuidance) areasForImprovement.push("Policy lacks memory work guidance — memory work is vital for children processing loss");
   if (!bereavementPolicy.culturalConsiderations) areasForImprovement.push("Policy does not address cultural considerations in grief and bereavement");
-  if (staffReadiness.griefAwarenessRate < 80) areasForImprovement.push("Grief awareness training coverage is insufficient — all staff need foundational grief knowledge");
-  if (staffReadiness.therapeuticResponseRate < 60) areasForImprovement.push("Therapeutic response training is low — staff need skills to support children through grief");
-  if (staffReadiness.culturalSensitivityRate < 60) areasForImprovement.push("Cultural sensitivity training for grief is lacking — grief responses vary across cultures");
-  if (supportQuality.followUpCompletedRate < 60 && supportQuality.totalInterventions > 0) areasForImprovement.push("Follow-up after interventions is inconsistent — risk of children falling through gaps in support");
+  if (below(staffReadiness.griefAwarenessRate, 80)) areasForImprovement.push("Grief awareness training coverage is insufficient — all staff need foundational grief knowledge");
+  if (below(staffReadiness.therapeuticResponseRate, 60)) areasForImprovement.push("Therapeutic response training is low — staff need skills to support children through grief");
+  if (below(staffReadiness.culturalSensitivityRate, 60)) areasForImprovement.push("Cultural sensitivity training for grief is lacking — grief responses vary across cultures");
+  if (below(supportQuality.followUpCompletedRate, 60) && supportQuality.totalInterventions > 0) areasForImprovement.push("Follow-up after interventions is inconsistent — risk of children falling through gaps in support");
 
   // Actions
   const actions: string[] = [];
-  if (lossResponse.impactAssessedRate < 100 && lossResponse.totalEvents > 0) actions.push("Complete impact assessments for all outstanding loss events within 10 working days");
-  if (lossResponse.supportPlanCreatedRate < 100 && lossResponse.totalEvents > 0) actions.push("Create tailored support plans for all children with loss events lacking a plan");
+  if (below(lossResponse.impactAssessedRate, 100) && lossResponse.totalEvents > 0) actions.push("Complete impact assessments for all outstanding loss events within 10 working days");
+  if (below(lossResponse.supportPlanCreatedRate, 100) && lossResponse.totalEvents > 0) actions.push("Create tailored support plans for all children with loss events lacking a plan");
   if (!bereavementPolicy.policyCurrent) actions.push("Review and update the bereavement and loss policy to ensure it reflects current best practice");
   if (!bereavementPolicy.specialistReferralPathway) actions.push("Establish clear specialist referral pathways within the bereavement policy");
   if (!bereavementPolicy.memoryWorkGuidance) actions.push("Add memory work guidance to the bereavement policy to support life story and remembrance activities");
-  if (staffReadiness.griefAwarenessRate < 100) actions.push("Schedule grief awareness training for all staff who have not yet completed it");
-  if (staffReadiness.therapeuticResponseRate < 80) actions.push("Provide therapeutic response training to increase staff confidence in supporting grieving children");
-  if (staffReadiness.culturalSensitivityRate < 80) actions.push("Deliver cultural sensitivity training in relation to grief, loss, and bereavement practices");
-  if (supportQuality.childEngagedRate < 60 && supportQuality.totalInterventions > 0) actions.push("Review engagement approach for children not engaging with support — explore creative and non-verbal methods");
-  if (supportQuality.followUpCompletedRate < 80 && supportQuality.totalInterventions > 0) actions.push("Implement a follow-up tracking system to ensure all scheduled follow-ups are completed");
+  if (below(staffReadiness.griefAwarenessRate, 100)) actions.push("Schedule grief awareness training for all staff who have not yet completed it");
+  if (below(staffReadiness.therapeuticResponseRate, 80)) actions.push("Provide therapeutic response training to increase staff confidence in supporting grieving children");
+  if (below(staffReadiness.culturalSensitivityRate, 80)) actions.push("Deliver cultural sensitivity training in relation to grief, loss, and bereavement practices");
+  if (below(supportQuality.childEngagedRate, 60) && supportQuality.totalInterventions > 0) actions.push("Review engagement approach for children not engaging with support — explore creative and non-verbal methods");
+  if (below(supportQuality.followUpCompletedRate, 80) && supportQuality.totalInterventions > 0) actions.push("Implement a follow-up tracking system to ensure all scheduled follow-ups are completed");
 
   const regulatoryLinks = [
     "CHR 2015 Reg 10 — Duty to promote contact between child and family, supporting children through separation",

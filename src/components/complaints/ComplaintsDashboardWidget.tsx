@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildComplaintProfile { childId: string; childName: string; totalRecords: number; acknowledgedWithinTargetRate: number; childViewCapturedRate: number; categoriesCovered: string[]; overallScore: number; }
 
@@ -73,19 +74,19 @@ export default function ComplaintsDashboardWidget() {
       <Section title="Complaint Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Complaints" value={data.complaintQuality.totalComplaints} />
-          <Stat label="Acknowledged on Time" value={`${data.complaintQuality.acknowledgedWithinTargetRate}%`} />
-          <Stat label="Investigation Thorough" value={`${data.complaintQuality.investigationThoroughRate}%`} />
-          <Stat label="Child View Captured" value={`${data.complaintQuality.childViewCapturedRate}%`} />
-          <Stat label="Outcome Explained" value={`${data.complaintQuality.outcomeExplainedRate}%`} />
+          <Stat label="Acknowledged on Time" value={`${formatRate(data.complaintQuality.acknowledgedWithinTargetRate)}`} />
+          <Stat label="Investigation Thorough" value={`${formatRate(data.complaintQuality.investigationThoroughRate)}`} />
+          <Stat label="Child View Captured" value={`${formatRate(data.complaintQuality.childViewCapturedRate)}`} />
+          <Stat label="Outcome Explained" value={`${formatRate(data.complaintQuality.outcomeExplainedRate)}`} />
         </div>
       </Section>
 
       <Section title="Complaint Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documentation" value={`${data.complaintCompliance.documentationRate}%`} />
-          <Stat label="Timely Resolution" value={`${data.complaintCompliance.timelyResolutionRate}%`} />
-          <Stat label="Child View Captured" value={`${data.complaintCompliance.childViewCapturedRate}%`} />
-          <Stat label="Category Coverage" value={`${data.complaintCompliance.categoryDiversityRatio}%`} />
+          <Stat label="Documentation" value={`${formatRate(data.complaintCompliance.documentationRate)}`} />
+          <Stat label="Timely Resolution" value={`${formatRate(data.complaintCompliance.timelyResolutionRate)}`} />
+          <Stat label="Child View Captured" value={`${formatRate(data.complaintCompliance.childViewCapturedRate)}`} />
+          <Stat label="Category Coverage" value={`${formatRate(data.complaintCompliance.categoryDiversityRatio)}`} />
         </div>
       </Section>
 
@@ -108,12 +109,12 @@ export default function ComplaintsDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
-          <Stat label="Complaint Handling" value={`${data.staffReadiness.complaintHandlingRate}%`} />
-          <Stat label="Child Advocacy" value={`${data.staffReadiness.childAdvocacyRate}%`} />
-          <Stat label="Investigation Skills" value={`${data.staffReadiness.investigationSkillsRate}%`} />
-          <Stat label="Record Keeping" value={`${data.staffReadiness.recordKeepingRate}%`} />
-          <Stat label="Conflict Resolution" value={`${data.staffReadiness.conflictResolutionRate}%`} />
-          <Stat label="Regulatory Knowledge" value={`${data.staffReadiness.regulatoryKnowledgeRate}%`} />
+          <Stat label="Complaint Handling" value={`${formatRate(data.staffReadiness.complaintHandlingRate)}`} />
+          <Stat label="Child Advocacy" value={`${formatRate(data.staffReadiness.childAdvocacyRate)}`} />
+          <Stat label="Investigation Skills" value={`${formatRate(data.staffReadiness.investigationSkillsRate)}`} />
+          <Stat label="Record Keeping" value={`${formatRate(data.staffReadiness.recordKeepingRate)}`} />
+          <Stat label="Conflict Resolution" value={`${formatRate(data.staffReadiness.conflictResolutionRate)}`} />
+          <Stat label="Regulatory Knowledge" value={`${formatRate(data.staffReadiness.regulatoryKnowledgeRate)}`} />
         </div>
       </Section>
 

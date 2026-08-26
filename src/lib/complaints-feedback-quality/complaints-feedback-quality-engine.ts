@@ -1,3 +1,4 @@
+import { below, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — Complaints & Feedback Quality Intelligence Engine
 //
@@ -139,10 +140,14 @@ export interface LessonLearned {
 export interface ComplaintHandlingResult {
   overallScore: number; // 0-25
   totalComplaints: number;
-  resolvedWithinTimescaleRate: number; // %
-  upheldPartiallyRate: number; // %
-  childInformedRate: number; // %
-  childSupportedRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  resolvedWithinTimescaleRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  upheldPartiallyRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  childInformedRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  childSupportedRate: number | null; // %
   averageResolutionDays: number | null;
   escalationCount: number;
 }
@@ -150,9 +155,12 @@ export interface ComplaintHandlingResult {
 export interface FeedbackCultureResult {
   overallScore: number; // 0-25
   totalFeedback: number;
-  acknowledgedRate: number; // %
-  actedUponRate: number; // %
-  responseTimelyRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  acknowledgedRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  actedUponRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  responseTimelyRate: number | null; // %
   childFeedbackCount: number;
   complimentCount: number;
   suggestionCount: number;
@@ -161,9 +169,12 @@ export interface FeedbackCultureResult {
 export interface LearningOutcomesResult {
   overallScore: number; // 0-25
   totalLessons: number;
-  implementedRate: number; // %
-  impactAssessedRate: number; // %
-  sharedWithTeamRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  implementedRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  impactAssessedRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  sharedWithTeamRate: number | null; // %
   policyChangedCount: number;
 }
 
@@ -175,7 +186,8 @@ export interface PolicyComplianceResult {
   advocacyAccessible: boolean;
   independentPerson: boolean;
   auditCompleted: boolean;
-  complianceRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  complianceRate: number | null; // %
 }
 
 export interface ChildComplaintProfile {
@@ -208,11 +220,6 @@ export interface ComplaintsFeedbackQualityIntelligence {
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 /** Calculate percentage, returning 0 if denominator is 0. */
-export function pct(numerator: number, denominator: number): number {
-  if (denominator === 0) return 0;
-  return Math.round((numerator / denominator) * 100);
-}
-
 /** Map overall score (0-100) to Ofsted-style rating. */
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -335,10 +342,10 @@ export function evaluateComplaintHandling(
     return {
       overallScore: 25,
       totalComplaints: 0,
-      resolvedWithinTimescaleRate: 0,
-      upheldPartiallyRate: 0,
-      childInformedRate: 0,
-      childSupportedRate: 0,
+      resolvedWithinTimescaleRate: null,
+      upheldPartiallyRate: null,
+      childInformedRate: null,
+      childSupportedRate: null,
       averageResolutionDays: 0,
       escalationCount: 0,
     };
@@ -374,10 +381,10 @@ export function evaluateComplaintHandling(
 
   const escalationCount = complaints.filter((c) => c.escalatedExternally).length;
 
-  const resolvedWithinTimescaleRate = pct(resolvedInTime.length, resolved.length);
-  const upheldPartiallyRate = pct(upheldOrPartial.length, withOutcome.length);
-  const childInformedRate = pct(childInformed.length, childLinked.length);
-  const childSupportedRate = pct(childSupported.length, childLinked.length);
+  const resolvedWithinTimescaleRate = rate(resolvedInTime.length, resolved.length);
+  const upheldPartiallyRate = rate(upheldOrPartial.length, withOutcome.length);
+  const childInformedRate = rate(childInformed.length, childLinked.length);
+  const childSupportedRate = rate(childSupported.length, childLinked.length);
   const averageResolutionDays =
     resolutionDaysCount > 0
       ? Math.round((totalResolutionDays / resolutionDaysCount) * 10) / 10
@@ -385,11 +392,11 @@ export function evaluateComplaintHandling(
 
   // Scoring (0-25 scale)
   // Resolution timeliness: 30% weight
-  const timelinessNorm = resolvedWithinTimescaleRate / 100;
+  const timelinessNorm = (resolvedWithinTimescaleRate ?? 0) / 100; // unmeasured earns no timeliness credit
   // Child informed: 25% weight
-  const informedNorm = childLinked.length > 0 ? childInformedRate / 100 : 1;
+  const informedNorm = childLinked.length > 0 ? childInformedRate! / 100 : 1;
   // Child supported: 25% weight
-  const supportedNorm = childLinked.length > 0 ? childSupportedRate / 100 : 1;
+  const supportedNorm = childLinked.length > 0 ? childSupportedRate! / 100 : 1;
   // Low escalation: 20% weight (fewer escalations = better)
   const escalationNorm = Math.max(
     0,
@@ -435,9 +442,9 @@ export function evaluateFeedbackCulture(
     return {
       overallScore: 0,
       totalFeedback: 0,
-      acknowledgedRate: 0,
-      actedUponRate: 0,
-      responseTimelyRate: 0,
+      acknowledgedRate: null,
+      actedUponRate: null,
+      responseTimelyRate: null,
       childFeedbackCount: 0,
       complimentCount: 0,
       suggestionCount: 0,
@@ -451,17 +458,17 @@ export function evaluateFeedbackCulture(
   const compliments = feedback.filter((f) => f.feedbackType === "compliment");
   const suggestions = feedback.filter((f) => f.feedbackType === "suggestion");
 
-  const acknowledgedRate = pct(acknowledged.length, feedback.length);
-  const actedUponRate = pct(actedUpon.length, feedback.length);
-  const responseTimelyRate = pct(timely.length, feedback.length);
+  const acknowledgedRate = rate(acknowledged.length, feedback.length);
+  const actedUponRate = rate(actedUpon.length, feedback.length);
+  const responseTimelyRate = rate(timely.length, feedback.length);
 
   // Scoring (0-25 scale)
   // Acknowledged: 25% weight
-  const ackNorm = acknowledgedRate / 100;
+  const ackNorm = (acknowledgedRate ?? 0) / 100;
   // Acted upon: 30% weight
-  const actedNorm = actedUponRate / 100;
+  const actedNorm = (actedUponRate ?? 0) / 100;
   // Response timeliness: 25% weight
-  const timelyNorm = responseTimelyRate / 100;
+  const timelyNorm = (responseTimelyRate ?? 0) / 100;
   // Child feedback proportion: 20% weight (target >=30% from children)
   const childProportion = feedback.length > 0 ? childFeedback.length / feedback.length : 0;
   const childNorm = Math.min(childProportion / 0.3, 1);
@@ -496,9 +503,9 @@ export function evaluateLearningOutcomes(
     return {
       overallScore: hasComplaints ? 0 : 25,
       totalLessons: 0,
-      implementedRate: 0,
-      impactAssessedRate: 0,
-      sharedWithTeamRate: 0,
+      implementedRate: null,
+      impactAssessedRate: null,
+      sharedWithTeamRate: null,
       policyChangedCount: 0,
     };
   }
@@ -508,17 +515,17 @@ export function evaluateLearningOutcomes(
   const sharedWithTeam = lessons.filter((l) => l.sharedWithTeam);
   const policyChanged = lessons.filter((l) => l.policyChanged);
 
-  const implementedRate = pct(implemented.length, lessons.length);
-  const impactAssessedRate = pct(impactAssessed.length, lessons.length);
-  const sharedWithTeamRate = pct(sharedWithTeam.length, lessons.length);
+  const implementedRate = rate(implemented.length, lessons.length);
+  const impactAssessedRate = rate(impactAssessed.length, lessons.length);
+  const sharedWithTeamRate = rate(sharedWithTeam.length, lessons.length);
 
   // Scoring (0-25 scale)
   // Implemented: 35% weight
-  const implNorm = implementedRate / 100;
+  const implNorm = (implementedRate ?? 0) / 100;
   // Impact assessed: 30% weight
-  const impactNorm = impactAssessedRate / 100;
+  const impactNorm = (impactAssessedRate ?? 0) / 100;
   // Shared with team: 35% weight
-  const sharedNorm = sharedWithTeamRate / 100;
+  const sharedNorm = (sharedWithTeamRate ?? 0) / 100;
 
   const score = Math.round(
     (implNorm * 0.35 + impactNorm * 0.3 + sharedNorm * 0.35) * 25,
@@ -551,7 +558,7 @@ export function evaluatePolicyCompliance(
       advocacyAccessible: false,
       independentPerson: false,
       auditCompleted: false,
-      complianceRate: 0,
+      complianceRate: null,
     };
   }
 
@@ -565,7 +572,7 @@ export function evaluatePolicyCompliance(
   ];
 
   const trueCount = fields.filter(Boolean).length;
-  const complianceRate = pct(trueCount, fields.length);
+  const complianceRate = rate(trueCount, fields.length);
 
   // Each true field contributes equally: 25 / 6 ~ 4.17 per field
   const score = Math.round((trueCount / fields.length) * 25);
@@ -721,17 +728,17 @@ export function generateComplaintsFeedbackQualityIntelligence(
   // ── Areas for Improvement ──
   const areasForImprovement: string[] = [];
 
-  if (complaintHandling.resolvedWithinTimescaleRate < 80 && complaintHandling.totalComplaints > 0) {
+  if (below(complaintHandling.resolvedWithinTimescaleRate, 80) && complaintHandling.totalComplaints > 0) {
     areasForImprovement.push(
       `Only ${complaintHandling.resolvedWithinTimescaleRate}% of complaints resolved within target timescales`,
     );
   }
-  if (complaintHandling.childInformedRate < 80 && complaintHandling.totalComplaints > 0) {
+  if (below(complaintHandling.childInformedRate, 80) && complaintHandling.totalComplaints > 0) {
     areasForImprovement.push(
       `Only ${complaintHandling.childInformedRate}% of children informed of complaint outcomes`,
     );
   }
-  if (complaintHandling.childSupportedRate < 80 && complaintHandling.totalComplaints > 0) {
+  if (below(complaintHandling.childSupportedRate, 80) && complaintHandling.totalComplaints > 0) {
     areasForImprovement.push(
       `Only ${complaintHandling.childSupportedRate}% of children supported to make complaints`,
     );
@@ -741,12 +748,12 @@ export function generateComplaintsFeedbackQualityIntelligence(
       "No feedback recorded — this suggests children and stakeholders may not feel able to share views",
     );
   }
-  if (feedbackCulture.acknowledgedRate < 80 && feedbackCulture.totalFeedback > 0) {
+  if (below(feedbackCulture.acknowledgedRate, 80) && feedbackCulture.totalFeedback > 0) {
     areasForImprovement.push(
       `Only ${feedbackCulture.acknowledgedRate}% of feedback acknowledged — all feedback should receive a response`,
     );
   }
-  if (feedbackCulture.actedUponRate < 60 && feedbackCulture.totalFeedback > 0) {
+  if (below(feedbackCulture.actedUponRate, 60) && feedbackCulture.totalFeedback > 0) {
     areasForImprovement.push(
       `Only ${feedbackCulture.actedUponRate}% of feedback acted upon`,
     );
@@ -756,7 +763,7 @@ export function generateComplaintsFeedbackQualityIntelligence(
       "No feedback recorded directly from children — their voice must be actively sought",
     );
   }
-  if (learningOutcomes.implementedRate < 80 && learningOutcomes.totalLessons > 0) {
+  if (below(learningOutcomes.implementedRate, 80) && learningOutcomes.totalLessons > 0) {
     areasForImprovement.push(
       `Only ${learningOutcomes.implementedRate}% of lessons learned have been implemented`,
     );
@@ -766,7 +773,7 @@ export function generateComplaintsFeedbackQualityIntelligence(
       "No lessons learned recorded despite complaints — learning from complaints is essential",
     );
   }
-  if (policyCompliance.complianceRate < 80 && policy !== null) {
+  if (below(policyCompliance.complianceRate, 80) && policy !== null) {
     areasForImprovement.push(
       `Policy compliance at ${policyCompliance.complianceRate}% — gaps in complaints procedure need addressing`,
     );
@@ -780,17 +787,17 @@ export function generateComplaintsFeedbackQualityIntelligence(
   // ── Actions ──
   const actions: string[] = [];
 
-  if (complaintHandling.resolvedWithinTimescaleRate < 80 && complaintHandling.totalComplaints > 0) {
+  if (below(complaintHandling.resolvedWithinTimescaleRate, 80) && complaintHandling.totalComplaints > 0) {
     actions.push(
       "Review complaint handling timescales and implement tracking to ensure all complaints are resolved promptly",
     );
   }
-  if (complaintHandling.childInformedRate < 100 && complaintHandling.totalComplaints > 0) {
+  if (below(complaintHandling.childInformedRate, 100) && complaintHandling.totalComplaints > 0) {
     actions.push(
       "Ensure all children are informed of complaint outcomes in an age-appropriate way",
     );
   }
-  if (complaintHandling.childSupportedRate < 100 && complaintHandling.totalComplaints > 0) {
+  if (below(complaintHandling.childSupportedRate, 100) && complaintHandling.totalComplaints > 0) {
     actions.push(
       "Provide all children with access to advocacy and support when making complaints",
     );
@@ -800,7 +807,7 @@ export function generateComplaintsFeedbackQualityIntelligence(
       "Implement regular feedback mechanisms including children's meetings, suggestion boxes and key-worker sessions",
     );
   }
-  if (feedbackCulture.acknowledgedRate < 100 && feedbackCulture.totalFeedback > 0) {
+  if (below(feedbackCulture.acknowledgedRate, 100) && feedbackCulture.totalFeedback > 0) {
     actions.push(
       "Acknowledge all feedback promptly and communicate how it will be used",
     );
@@ -815,7 +822,7 @@ export function generateComplaintsFeedbackQualityIntelligence(
       "Document lessons learned from all complaints and develop action plans for implementation",
     );
   }
-  if (learningOutcomes.sharedWithTeamRate < 100 && learningOutcomes.totalLessons > 0) {
+  if (below(learningOutcomes.sharedWithTeamRate, 100) && learningOutcomes.totalLessons > 0) {
     actions.push(
       "Share lessons learned from complaints with the whole staff team through team meetings and supervision",
     );
