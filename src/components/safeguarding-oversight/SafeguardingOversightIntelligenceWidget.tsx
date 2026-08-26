@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { SafeguardingOversightIntelligenceResult } from "@/lib/safeguarding-oversight/safeguarding-oversight-intelligence-engine";
+import { formatRate } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -116,11 +117,11 @@ export function SafeguardingOversightIntelligenceWidget() {
           <div className="text-xs text-gray-500 mt-1">Records</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.safeguardingOversightQuality.riskAssessmentCompletedRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.safeguardingOversightQuality.riskAssessmentCompletedRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Risk Assessed</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.safeguardingOversightCompliance.documentationCompleteRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.safeguardingOversightCompliance.documentationCompleteRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Documented</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -140,18 +141,18 @@ export function SafeguardingOversightIntelligenceWidget() {
         <Section title="Safeguarding Quality" defaultOpen>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <Stat label="Records" value={data.safeguardingOversightQuality.totalRecords} />
-            <Stat label="Risk Assessed" value={`${data.safeguardingOversightQuality.riskAssessmentCompletedRate}%`} />
-            <Stat label="DSL Informed" value={`${data.safeguardingOversightQuality.safeguardingLeadInformedRate}%`} />
-            <Stat label="Multi-Agency" value={`${data.safeguardingOversightQuality.multiAgencyEngagedRate}%`} />
-            <Stat label="Child Voice" value={`${data.safeguardingOversightQuality.childViewCapturedRate}%`} />
+            <Stat label="Risk Assessed" value={`${formatRate(data.safeguardingOversightQuality.riskAssessmentCompletedRate)}`} />
+            <Stat label="DSL Informed" value={`${formatRate(data.safeguardingOversightQuality.safeguardingLeadInformedRate)}`} />
+            <Stat label="Multi-Agency" value={`${formatRate(data.safeguardingOversightQuality.multiAgencyEngagedRate)}`} />
+            <Stat label="Child Voice" value={`${formatRate(data.safeguardingOversightQuality.childViewCapturedRate)}`} />
           </div>
         </Section>
 
         <Section title="Compliance">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <Stat label="Documentation" value={`${data.safeguardingOversightCompliance.documentationCompleteRate}%`} />
-            <Stat label="Timely Recording" value={`${data.safeguardingOversightCompliance.timelyRecordingRate}%`} />
-            <Stat label="Risk Assessment" value={`${data.safeguardingOversightCompliance.riskAssessmentCompletedRate}%`} />
+            <Stat label="Documentation" value={`${formatRate(data.safeguardingOversightCompliance.documentationCompleteRate)}`} />
+            <Stat label="Timely Recording" value={`${formatRate(data.safeguardingOversightCompliance.timelyRecordingRate)}`} />
+            <Stat label="Risk Assessment" value={`${formatRate(data.safeguardingOversightCompliance.riskAssessmentCompletedRate)}`} />
             <Stat label="Categories" value={`${data.safeguardingOversightCompliance.uniqueCategories}/8`} />
             <Stat label="Diversity Ratio" value={data.safeguardingOversightCompliance.categoryDiversityRatio} />
           </div>
@@ -172,12 +173,12 @@ export function SafeguardingOversightIntelligenceWidget() {
         <Section title="Staff Readiness">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
             <Stat label="Staff Count" value={data.staffReadiness.totalStaff} />
-            <Stat label="Awareness" value={`${data.staffReadiness.safeguardingAwarenessRate}%`} />
-            <Stat label="Recognising Signs" value={`${data.staffReadiness.recognisingSignsRate}%`} />
-            <Stat label="Referral Procedures" value={`${data.staffReadiness.referralProceduresRate}%`} />
-            <Stat label="Record Keeping" value={`${data.staffReadiness.recordKeepingSkillsRate}%`} />
-            <Stat label="Multi-Agency" value={`${data.staffReadiness.multiAgencyWorkingRate}%`} />
-            <Stat label="Online Safety" value={`${data.staffReadiness.onlineSafetyKnowledgeRate}%`} />
+            <Stat label="Awareness" value={`${formatRate(data.staffReadiness.safeguardingAwarenessRate)}`} />
+            <Stat label="Recognising Signs" value={`${formatRate(data.staffReadiness.recognisingSignsRate)}`} />
+            <Stat label="Referral Procedures" value={`${formatRate(data.staffReadiness.referralProceduresRate)}`} />
+            <Stat label="Record Keeping" value={`${formatRate(data.staffReadiness.recordKeepingSkillsRate)}`} />
+            <Stat label="Multi-Agency" value={`${formatRate(data.staffReadiness.multiAgencyWorkingRate)}`} />
+            <Stat label="Online Safety" value={`${formatRate(data.staffReadiness.onlineSafetyKnowledgeRate)}`} />
           </div>
         </Section>
 

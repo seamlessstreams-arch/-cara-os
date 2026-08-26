@@ -6,7 +6,6 @@ import {
   evaluateStaffVoiceOfChildReadiness,
   buildChildVoiceOfChildProfiles,
   generateVoiceOfChildIntelligenceReport,
-  pct,
   getRating,
   getVoiceOfChildCategoryLabel,
   getVoiceOfChildOutcomeLabel,
@@ -70,14 +69,6 @@ const ALL_CATEGORIES: VoiceOfChildCategory[] = [
 
 // ── pct ─────────────────────────────────────────────────────────────────────
 
-describe("pct", () => {
-  it("computes correct percentage", () => { expect(pct(3, 4)).toBe(75); });
-  it("returns 0 when den is 0", () => { expect(pct(5, 0)).toBe(0); });
-  it("rounds to nearest integer", () => { expect(pct(1, 3)).toBe(33); expect(pct(2, 3)).toBe(67); });
-  it("handles 100%", () => { expect(pct(10, 10)).toBe(100); });
-  it("handles 0 numerator", () => { expect(pct(0, 10)).toBe(0); });
-});
-
 // ── getRating ───────────────────────────────────────────────────────────────
 
 describe("getRating", () => {
@@ -124,10 +115,10 @@ describe("evaluateVoiceOfChildQuality", () => {
     const result = evaluateVoiceOfChildQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalRecords).toBe(0);
-    expect(result.wishesFeelingsRecordedRate).toBe(0);
-    expect(result.childDirectlyConsultedRate).toBe(0);
-    expect(result.voiceInfluencedOutcomeRate).toBe(0);
-    expect(result.ageAppropriateMethodRate).toBe(0);
+    expect(result.wishesFeelingsRecordedRate).toBeNull();
+    expect(result.childDirectlyConsultedRate).toBeNull();
+    expect(result.voiceInfluencedOutcomeRate).toBeNull();
+    expect(result.ageAppropriateMethodRate).toBeNull();
   });
 
   it("scores max for all-true records", () => {
@@ -180,9 +171,9 @@ describe("evaluateVoiceOfChildCompliance", () => {
     const result = evaluateVoiceOfChildCompliance([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalRecords).toBe(0);
-    expect(result.documentationCompleteRate).toBe(0);
-    expect(result.timelyRecordingRate).toBe(0);
-    expect(result.wishesFeelingsRecordedRate).toBe(0);
+    expect(result.documentationCompleteRate).toBeNull();
+    expect(result.timelyRecordingRate).toBeNull();
+    expect(result.wishesFeelingsRecordedRate).toBeNull();
     expect(result.categoryDiversityRatio).toBe(0);
     expect(result.uniqueCategories).toBe(0);
   });
@@ -281,12 +272,12 @@ describe("evaluateStaffVoiceOfChildReadiness", () => {
     const result = evaluateStaffVoiceOfChildReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.wishesFeelingsCaptureRate).toBe(0);
-    expect(result.activeListeningSkillsRate).toBe(0);
-    expect(result.ageAppropriateEngagementRate).toBe(0);
-    expect(result.advocacyAwarenessRate).toBe(0);
-    expect(result.participationFacilitationRate).toBe(0);
-    expect(result.nonVerbalCommunicationRate).toBe(0);
+    expect(result.wishesFeelingsCaptureRate).toBeNull();
+    expect(result.activeListeningSkillsRate).toBeNull();
+    expect(result.ageAppropriateEngagementRate).toBeNull();
+    expect(result.advocacyAwarenessRate).toBeNull();
+    expect(result.participationFacilitationRate).toBeNull();
+    expect(result.nonVerbalCommunicationRate).toBeNull();
   });
 
   it("scores max for all-skilled staff", () => {

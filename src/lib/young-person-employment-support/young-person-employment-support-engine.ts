@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // YOUNG PERSON EMPLOYMENT SUPPORT INTELLIGENCE ENGINE
 //
@@ -111,17 +112,23 @@ export interface StaffEmploymentTraining {
 export interface CareersPlanQualityResult {
   overallScore: number;
   totalProfiles: number;
-  planExistsRate: number;
-  planCurrentRate: number;
-  aspirationsRecordedRate: number;
-  adviserEngagedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  planExistsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  planCurrentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  aspirationsRecordedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  adviserEngagedRate: number | null;
 }
 
 export interface SkillDevelopmentResult {
   overallScore: number;
   totalSessions: number;
-  engagedRate: number;
-  achievedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  engagedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  achievedRate: number | null;
   supportTypeVariety: number;
   averageSessionsPerChild: number | null;
 }
@@ -129,21 +136,29 @@ export interface SkillDevelopmentResult {
 export interface PartnershipAccessResult {
   overallScore: number;
   totalPartnerships: number;
-  activeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  activeRate: number | null;
   totalOpportunities: number;
   employerEngagementCount: number;
-  childrenAccessingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childrenAccessingRate: number | null;
 }
 
 export interface StaffReadinessResult {
   overallScore: number;
   totalStaff: number;
-  careersGuidanceRate: number;
-  cvInterviewRate: number;
-  financialLiteracyRate: number;
-  apprenticeshipRate: number;
-  labourMarketRate: number;
-  motivationalInterviewingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  careersGuidanceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  cvInterviewRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  financialLiteracyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  apprenticeshipRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  labourMarketRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  motivationalInterviewingRate: number | null;
 }
 
 export interface ChildEmploymentProfileResult {
@@ -176,11 +191,6 @@ export interface YoungPersonEmploymentSupportIntelligence {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -248,10 +258,10 @@ export function evaluateCareersPlanQuality(
     return {
       overallScore: 0,
       totalProfiles: 0,
-      planExistsRate: 0,
-      planCurrentRate: 0,
-      aspirationsRecordedRate: 0,
-      adviserEngagedRate: 0,
+      planExistsRate: null,
+      planCurrentRate: null,
+      aspirationsRecordedRate: null,
+      adviserEngagedRate: null,
     };
   }
 
@@ -267,17 +277,17 @@ export function evaluateCareersPlanQuality(
     if (p.personalAdviserEngaged) adviserEngaged++;
   }
 
-  const planExistsRate = pct(planExists, profiles.length);
-  const planCurrentRate = pct(planCurrent, profiles.length);
-  const aspirationsRecordedRate = pct(aspirationsRecorded, profiles.length);
-  const adviserEngagedRate = pct(adviserEngaged, profiles.length);
+  const planExistsRate = rate(planExists, profiles.length);
+  const planCurrentRate = rate(planCurrent, profiles.length);
+  const aspirationsRecordedRate = rate(aspirationsRecorded, profiles.length);
+  const adviserEngagedRate = rate(adviserEngaged, profiles.length);
 
   // Scoring: plans exist (0-7), plan current (0-6), aspirations recorded (0-6), adviser engaged (0-6)
   let score = 0;
-  score += Math.round((planExistsRate / 100) * 7);
-  score += Math.round((planCurrentRate / 100) * 6);
-  score += Math.round((aspirationsRecordedRate / 100) * 6);
-  score += Math.round((adviserEngagedRate / 100) * 6);
+  score += Math.round((planExistsRate! / 100) * 7);
+  score += Math.round((planCurrentRate! / 100) * 6);
+  score += Math.round((aspirationsRecordedRate! / 100) * 6);
+  score += Math.round((adviserEngagedRate! / 100) * 6);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -301,8 +311,8 @@ export function evaluateSkillDevelopment(
     return {
       overallScore: 0,
       totalSessions: 0,
-      engagedRate: 0,
-      achievedRate: 0,
+      engagedRate: null,
+      achievedRate: null,
       supportTypeVariety: 0,
       averageSessionsPerChild: 0,
     };
@@ -320,18 +330,18 @@ export function evaluateSkillDevelopment(
   const childIds = new Set(sessions.map((s) => s.childId));
   const averageSessionsPerChild = childIds.size > 0 ? Math.round(sessions.length / childIds.size) : null;
 
-  const engagedRate = pct(engaged, sessions.length);
-  const achievedRate = pct(achieved, sessions.length);
+  const engagedRate = rate(engaged, sessions.length);
+  const achievedRate = rate(achieved, sessions.length);
   const supportTypeVariety = supportTypes.size;
 
   // Scoring: sessions quality engaged (0-7), skills achieved (0-6), variety of support types (0-6), regular sessions (0-6)
   let score = 0;
-  score += Math.round((engagedRate / 100) * 7);
-  score += Math.round((achievedRate / 100) * 6);
+  score += Math.round((engagedRate! / 100) * 7);
+  score += Math.round((achievedRate! / 100) * 6);
 
   // Variety: 8 possible types, scale 0-6
-  const varietyPct = pct(supportTypeVariety, 8);
-  score += Math.round((varietyPct / 100) * 6);
+  const varietyPct = rate(supportTypeVariety, 8);
+  score += Math.round((varietyPct! / 100) * 6);
 
   // Regular sessions: at least 2 per child per period is good
   const sessionDen = profileCount > 0 ? profileCount : childIds.size;
@@ -362,10 +372,10 @@ export function evaluatePartnershipAccess(
     return {
       overallScore: 0,
       totalPartnerships: 0,
-      activeRate: 0,
+      activeRate: null,
       totalOpportunities: 0,
       employerEngagementCount: 0,
-      childrenAccessingRate: 0,
+      childrenAccessingRate: null,
     };
   }
 
@@ -383,14 +393,14 @@ export function evaluatePartnershipAccess(
     }
   }
 
-  const activeRate = pct(active, partnerships.length);
-  const childrenAccessingRate = profileCount > 0 ? pct(childrenAccessing.size, profileCount) : 0;
+  const activeRate = rate(active, partnerships.length);
+  const childrenAccessingRate = profileCount > 0 ? rate(childrenAccessing.size, profileCount) : 0;
 
   // Scoring: active partnerships (0-7), opportunities provided (0-6), employer engagement (0-6), children accessing (0-6)
   let score = 0;
 
   // Active partnerships: more active = better, scale by ratio
-  score += Math.round((activeRate / 100) * 7);
+  score += Math.round((activeRate! / 100) * 7);
 
   // Opportunities: at least 5 is great
   if (totalOpportunities >= 5) score += 6;
@@ -403,7 +413,7 @@ export function evaluatePartnershipAccess(
   else if (employerCount >= 1) score += 3;
 
   // Children accessing partnerships
-  score += Math.round((childrenAccessingRate / 100) * 6);
+  score += Math.round(((childrenAccessingRate ?? 0) / 100) * 6);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -426,12 +436,12 @@ export function evaluateStaffReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      careersGuidanceRate: 0,
-      cvInterviewRate: 0,
-      financialLiteracyRate: 0,
-      apprenticeshipRate: 0,
-      labourMarketRate: 0,
-      motivationalInterviewingRate: 0,
+      careersGuidanceRate: null,
+      cvInterviewRate: null,
+      financialLiteracyRate: null,
+      apprenticeshipRate: null,
+      labourMarketRate: null,
+      motivationalInterviewingRate: null,
     };
   }
 
@@ -451,22 +461,22 @@ export function evaluateStaffReadiness(
     if (t.motivationalInterviewing) motivationalInterviewing++;
   }
 
-  const careersGuidanceRate = pct(careersGuidance, training.length);
-  const cvInterviewRate = pct(cvInterview, training.length);
-  const financialLiteracyRate = pct(financialLiteracy, training.length);
-  const apprenticeshipRate = pct(apprenticeship, training.length);
-  const labourMarketRate = pct(labourMarket, training.length);
-  const motivationalInterviewingRate = pct(motivationalInterviewing, training.length);
+  const careersGuidanceRate = rate(careersGuidance, training.length);
+  const cvInterviewRate = rate(cvInterview, training.length);
+  const financialLiteracyRate = rate(financialLiteracy, training.length);
+  const apprenticeshipRate = rate(apprenticeship, training.length);
+  const labourMarketRate = rate(labourMarket, training.length);
+  const motivationalInterviewingRate = rate(motivationalInterviewing, training.length);
 
   // Scoring: careers guidance (0-6), CV/interview (0-5), financial literacy (0-5),
   // apprenticeship (0-4), labour market (0-3), motivational interviewing (0-2)
   let score = 0;
-  score += Math.round((careersGuidanceRate / 100) * 6);
-  score += Math.round((cvInterviewRate / 100) * 5);
-  score += Math.round((financialLiteracyRate / 100) * 5);
-  score += Math.round((apprenticeshipRate / 100) * 4);
-  score += Math.round((labourMarketRate / 100) * 3);
-  score += Math.round((motivationalInterviewingRate / 100) * 2);
+  score += Math.round((careersGuidanceRate! / 100) * 6);
+  score += Math.round(((cvInterviewRate ?? 0) / 100) * 5);
+  score += Math.round(((financialLiteracyRate ?? 0) / 100) * 5);
+  score += Math.round(((apprenticeshipRate ?? 0) / 100) * 4);
+  score += Math.round(((labourMarketRate ?? 0) / 100) * 3);
+  score += Math.round(((motivationalInterviewingRate ?? 0) / 100) * 2);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -562,9 +572,9 @@ export function generateYoungPersonEmploymentSupportIntelligence(
     strengths.push("All careers plans are up to date and current");
   if (profiles.length > 0 && careersPlanQuality.aspirationsRecordedRate === 100)
     strengths.push("Career aspirations recorded for every young person");
-  if (sessions.length > 0 && skillDevelopment.engagedRate >= 85)
+  if (sessions.length > 0 && meets(skillDevelopment.engagedRate, 85))
     strengths.push("High engagement in employment support sessions — " + skillDevelopment.engagedRate + "% engaged or highly engaged");
-  if (sessions.length > 0 && skillDevelopment.achievedRate >= 80)
+  if (sessions.length > 0 && meets(skillDevelopment.achievedRate, 80))
     strengths.push("Strong outcome achievement — " + skillDevelopment.achievedRate + "% of sessions resulted in achieved outcomes");
   if (sessions.length > 0 && skillDevelopment.supportTypeVariety >= 5)
     strengths.push("Good variety of support types offered — " + skillDevelopment.supportTypeVariety + " different types");
@@ -574,21 +584,21 @@ export function generateYoungPersonEmploymentSupportIntelligence(
     strengths.push("Strong employer engagement with " + partnershipAccess.employerEngagementCount + " employer partnerships");
   if (training.length > 0 && staffReadiness.careersGuidanceRate === 100)
     strengths.push("All staff trained in careers guidance");
-  if (profiles.length > 0 && careersPlanQuality.adviserEngagedRate >= 80)
+  if (profiles.length > 0 && meets(careersPlanQuality.adviserEngagedRate, 80))
     strengths.push("Personal advisers engaged for " + careersPlanQuality.adviserEngagedRate + "% of young people");
 
   // -- Areas for Improvement --
   const areasForImprovement: string[] = [];
   if (profiles.length === 0)
     areasForImprovement.push("No employment profiles documented — all eligible young people (14+) should have employment readiness assessments");
-  if (profiles.length > 0 && careersPlanQuality.planExistsRate < 100)
-    areasForImprovement.push("Careers plans missing for " + (100 - careersPlanQuality.planExistsRate) + "% of young people");
-  if (profiles.length > 0 && careersPlanQuality.planCurrentRate < 80) {
+  if (profiles.length > 0 && below(careersPlanQuality.planExistsRate, 100))
+    areasForImprovement.push("Careers plans missing for " + (100 - careersPlanQuality.planExistsRate!) + "% of young people");
+  if (profiles.length > 0 && below(careersPlanQuality.planCurrentRate, 80)) {
     const overdueCount = profiles.filter((p) => p.careersPlanStatus === "overdue").length;
     if (overdueCount > 0)
       areasForImprovement.push(overdueCount + " careers plan(s) overdue for review");
   }
-  if (sessions.length > 0 && skillDevelopment.engagedRate < 60)
+  if (sessions.length > 0 && below(skillDevelopment.engagedRate, 60))
     areasForImprovement.push("Low engagement in employment support sessions — only " + skillDevelopment.engagedRate + "% engaged");
   if (sessions.length === 0 && profiles.length > 0)
     areasForImprovement.push("No employment support sessions recorded — schedule regular sessions for all young people");
@@ -598,9 +608,9 @@ export function generateYoungPersonEmploymentSupportIntelligence(
     areasForImprovement.push("No employer partnerships — work experience placements require employer links");
   if (training.length === 0)
     areasForImprovement.push("No staff training records for employment support delivery");
-  if (training.length > 0 && staffReadiness.careersGuidanceRate < 75)
+  if (training.length > 0 && below(staffReadiness.careersGuidanceRate, 75))
     areasForImprovement.push("Only " + staffReadiness.careersGuidanceRate + "% of staff trained in careers guidance — target 100%");
-  if (training.length > 0 && staffReadiness.financialLiteracyRate < 50)
+  if (training.length > 0 && below(staffReadiness.financialLiteracyRate, 50))
     areasForImprovement.push("Financial literacy training low at " + staffReadiness.financialLiteracyRate + "% — young people need support managing money");
 
   // -- Actions --
@@ -620,9 +630,9 @@ export function generateYoungPersonEmploymentSupportIntelligence(
     actions.push("Develop external partnerships with local employers and training providers");
   if (partnerships.length > 0 && partnershipAccess.employerEngagementCount === 0)
     actions.push("Establish at least one employer partnership to facilitate work experience placements");
-  if (training.length > 0 && staffReadiness.careersGuidanceRate < 75)
+  if (training.length > 0 && below(staffReadiness.careersGuidanceRate, 75))
     actions.push("Arrange careers guidance training — only " + staffReadiness.careersGuidanceRate + "% of staff currently trained");
-  if (training.length > 0 && staffReadiness.financialLiteracyRate < 50)
+  if (training.length > 0 && below(staffReadiness.financialLiteracyRate, 50))
     actions.push("Arrange financial literacy training for staff — essential for supporting young people's independence");
   const noWorkExp = profiles.filter((p) => !p.workExperienceCompleted && p.age >= 15);
   if (noWorkExp.length > 0)

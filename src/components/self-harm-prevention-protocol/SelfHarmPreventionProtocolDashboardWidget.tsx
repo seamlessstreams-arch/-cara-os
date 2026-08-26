@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { SelfHarmPreventionProtocolIntelligence } from "@/lib/self-harm-prevention-protocol";
+import { formatRate } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -131,7 +132,7 @@ export function SelfHarmPreventionProtocolDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Incidents</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.safetyPlanning.safetyPlanInPlaceRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.safetyPlanning.safetyPlanInPlaceRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Plans Current</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -177,19 +178,19 @@ export function SelfHarmPreventionProtocolDashboardWidget() {
         <Section title="Risk Assessment Quality">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Profiles:</span> <span className="font-medium">{data.riskAssessmentQuality.totalProfiles}</span></div>
-            <div><span className="text-gray-500">Assessed:</span> <span className="font-medium">{data.riskAssessmentQuality.riskAssessedRate}%</span></div>
-            <div><span className="text-gray-500">Review Current:</span> <span className="font-medium">{data.riskAssessmentQuality.reviewCurrentRate}%</span></div>
-            <div><span className="text-gray-500">Triggers ID&apos;d:</span> <span className="font-medium">{data.riskAssessmentQuality.triggersIdentifiedRate}%</span></div>
-            <div><span className="text-gray-500">Prof. Support:</span> <span className="font-medium">{data.riskAssessmentQuality.professionalSupportRate}%</span></div>
+            <div><span className="text-gray-500">Assessed:</span> <span className="font-medium">{formatRate(data.riskAssessmentQuality.riskAssessedRate)}</span></div>
+            <div><span className="text-gray-500">Review Current:</span> <span className="font-medium">{formatRate(data.riskAssessmentQuality.reviewCurrentRate)}</span></div>
+            <div><span className="text-gray-500">Triggers ID&apos;d:</span> <span className="font-medium">{formatRate(data.riskAssessmentQuality.triggersIdentifiedRate)}</span></div>
+            <div><span className="text-gray-500">Prof. Support:</span> <span className="font-medium">{formatRate(data.riskAssessmentQuality.professionalSupportRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Safety Planning">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div><span className="text-gray-500">Plans Current:</span> <span className="font-medium">{data.safetyPlanning.safetyPlanInPlaceRate}%</span></div>
-            <div><span className="text-gray-500">Coping Strategies:</span> <span className="font-medium">{data.safetyPlanning.copingStrategiesRate}%</span></div>
-            <div><span className="text-gray-500">Emergency Contacts:</span> <span className="font-medium">{data.safetyPlanning.emergencyContactsRate}%</span></div>
-            <div><span className="text-gray-500">Env. Compliant:</span> <span className={`font-medium ${data.safetyPlanning.environmentalComplianceRate === 100 ? "text-green-600" : "text-amber-600"}`}>{data.safetyPlanning.environmentalComplianceRate}%</span></div>
+            <div><span className="text-gray-500">Plans Current:</span> <span className="font-medium">{formatRate(data.safetyPlanning.safetyPlanInPlaceRate)}</span></div>
+            <div><span className="text-gray-500">Coping Strategies:</span> <span className="font-medium">{formatRate(data.safetyPlanning.copingStrategiesRate)}</span></div>
+            <div><span className="text-gray-500">Emergency Contacts:</span> <span className="font-medium">{formatRate(data.safetyPlanning.emergencyContactsRate)}</span></div>
+            <div><span className="text-gray-500">Env. Compliant:</span> <span className={`font-medium ${data.safetyPlanning.environmentalComplianceRate === null ? "text-slate-500" : data.safetyPlanning.environmentalComplianceRate === 100 ? "text-green-600" : "text-amber-600"}`}>{formatRate(data.safetyPlanning.environmentalComplianceRate)}</span></div>
             <div><span className="text-gray-500">Total Checks:</span> <span className="font-medium">{data.safetyPlanning.totalChecks}</span></div>
           </div>
         </Section>
@@ -197,21 +198,21 @@ export function SelfHarmPreventionProtocolDashboardWidget() {
         <Section title="Incident Response">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Incidents:</span> <span className="font-medium">{data.incidentResponse.totalIncidents}</span></div>
-            <div><span className="text-gray-500">Immediate Action:</span> <span className="font-medium">{data.incidentResponse.immediateActionRate}%</span></div>
-            <div><span className="text-gray-500">Medical Assessed:</span> <span className="font-medium">{data.incidentResponse.medicalAssessmentRate}%</span></div>
-            <div><span className="text-gray-500">Debriefed:</span> <span className="font-medium">{data.incidentResponse.debriefCompletedRate}%</span></div>
-            <div><span className="text-gray-500">Plan Updated:</span> <span className="font-medium">{data.incidentResponse.safetyPlanUpdatedRate}%</span></div>
+            <div><span className="text-gray-500">Immediate Action:</span> <span className="font-medium">{formatRate(data.incidentResponse.immediateActionRate)}</span></div>
+            <div><span className="text-gray-500">Medical Assessed:</span> <span className="font-medium">{formatRate(data.incidentResponse.medicalAssessmentRate)}</span></div>
+            <div><span className="text-gray-500">Debriefed:</span> <span className="font-medium">{formatRate(data.incidentResponse.debriefCompletedRate)}</span></div>
+            <div><span className="text-gray-500">Plan Updated:</span> <span className="font-medium">{formatRate(data.incidentResponse.safetyPlanUpdatedRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Staff Competence">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Staff:</span> <span className="font-medium">{data.staffCompetence.totalStaff}</span></div>
-            <div><span className="text-gray-500">Awareness:</span> <span className="font-medium">{data.staffCompetence.selfHarmAwarenessRate}%</span></div>
-            <div><span className="text-gray-500">Risk Assessment:</span> <span className="font-medium">{data.staffCompetence.riskAssessmentRate}%</span></div>
-            <div><span className="text-gray-500">Crisis Intervention:</span> <span className="font-medium">{data.staffCompetence.crisisInterventionRate}%</span></div>
-            <div><span className="text-gray-500">Safety Planning:</span> <span className="font-medium">{data.staffCompetence.safetyPlanningRate}%</span></div>
-            <div><span className="text-gray-500">MH First Aid:</span> <span className="font-medium">{data.staffCompetence.mentalHealthFirstAidRate}%</span></div>
+            <div><span className="text-gray-500">Awareness:</span> <span className="font-medium">{formatRate(data.staffCompetence.selfHarmAwarenessRate)}</span></div>
+            <div><span className="text-gray-500">Risk Assessment:</span> <span className="font-medium">{formatRate(data.staffCompetence.riskAssessmentRate)}</span></div>
+            <div><span className="text-gray-500">Crisis Intervention:</span> <span className="font-medium">{formatRate(data.staffCompetence.crisisInterventionRate)}</span></div>
+            <div><span className="text-gray-500">Safety Planning:</span> <span className="font-medium">{formatRate(data.staffCompetence.safetyPlanningRate)}</span></div>
+            <div><span className="text-gray-500">MH First Aid:</span> <span className="font-medium">{formatRate(data.staffCompetence.mentalHealthFirstAidRate)}</span></div>
           </div>
         </Section>
 

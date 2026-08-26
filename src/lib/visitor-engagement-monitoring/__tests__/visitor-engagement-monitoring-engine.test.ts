@@ -14,8 +14,7 @@ import {
   getVisitorTypeLabel,
   getVisitOutcomeLabel,
   getRatingLabel,
-  pct,
-} from "../visitor-engagement-monitoring-engine";
+  } from "../visitor-engagement-monitoring-engine";
 import type {
   VisitorRecord,
   VisitorPolicy,
@@ -68,29 +67,6 @@ const makeTraining = (overrides: Partial<StaffVisitorTraining> = {}): StaffVisit
 // ══════════════════════════════════════════════════════════════════════════════
 // HELPERS
 // ══════════════════════════════════════════════════════════════════════════════
-
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-
-  it("returns 100 for equal numerator and denominator", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-});
 
 describe("getRating", () => {
   it("returns outstanding for score >= 80", () => {
@@ -209,11 +185,11 @@ describe("evaluateVisitorSafeguarding", () => {
 
   it("returns zeroed rates for empty records", () => {
     const result = evaluateVisitorSafeguarding([]);
-    expect(result.identityVerifiedRate).toBe(0);
-    expect(result.dbsCheckedRate).toBe(0);
-    expect(result.safeguardingFollowedRate).toBe(0);
-    expect(result.signedInRate).toBe(0);
-    expect(result.documentedInLogRate).toBe(0);
+    expect(result.identityVerifiedRate).toBeNull();
+    expect(result.dbsCheckedRate).toBeNull();
+    expect(result.safeguardingFollowedRate).toBeNull();
+    expect(result.signedInRate).toBeNull();
+    expect(result.documentedInLogRate).toBeNull();
   });
 
   it("returns full score for perfect records", () => {
@@ -384,9 +360,9 @@ describe("evaluateVisitQuality", () => {
 
   it("returns zeroed rates for empty records", () => {
     const result = evaluateVisitQuality([]);
-    expect(result.positiveOutcomeRate).toBe(0);
-    expect(result.childConsentedRate).toBe(0);
-    expect(result.feedbackRecordedRate).toBe(0);
+    expect(result.positiveOutcomeRate).toBeNull();
+    expect(result.childConsentedRate).toBeNull();
+    expect(result.feedbackRecordedRate).toBeNull();
   });
 
   it("returns full score for perfect records", () => {
@@ -691,12 +667,12 @@ describe("evaluateStaffVisitorReadiness", () => {
 
   it("returns zeroed rates for empty training array", () => {
     const result = evaluateStaffVisitorReadiness([]);
-    expect(result.visitorManagementRate).toBe(0);
-    expect(result.safeguardingVisitorsRate).toBe(0);
-    expect(result.identityCheckingRate).toBe(0);
-    expect(result.childProtectionRate).toBe(0);
-    expect(result.conflictManagementRate).toBe(0);
-    expect(result.recordKeepingRate).toBe(0);
+    expect(result.visitorManagementRate).toBeNull();
+    expect(result.safeguardingVisitorsRate).toBeNull();
+    expect(result.identityCheckingRate).toBeNull();
+    expect(result.childProtectionRate).toBeNull();
+    expect(result.conflictManagementRate).toBeNull();
+    expect(result.recordKeepingRate).toBeNull();
   });
 
   it("returns full score for perfect training", () => {

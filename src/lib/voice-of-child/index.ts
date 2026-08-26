@@ -33,7 +33,6 @@ export {
   evaluateVoiceOfChildPolicy,
   evaluateStaffVoiceOfChildReadiness,
   buildChildVoiceOfChildProfiles,
-  pct,
   getRating,
   getVoiceOfChildCategoryLabel,
   getVoiceOfChildOutcomeLabel,

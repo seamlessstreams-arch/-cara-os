@@ -8,7 +8,6 @@ import {
   getTransportModeLabel,
   getRiskLevelLabel,
   getRatingLabel,
-  pct,
   getRating,
   evaluateJourneyQuality,
   evaluateVehicleSafety,
@@ -187,28 +186,6 @@ describe("getRatingLabel", () => {
 // Helpers
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 100 for equal numerator and denominator", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-
-  it("returns 0 for 0 numerator", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-});
-
 describe("getRating", () => {
   it("returns outstanding for score >= 80", () => {
     expect(getRating(80)).toBe("outstanding");
@@ -243,10 +220,10 @@ describe("evaluateJourneyQuality", () => {
   it("returns zero scores for empty records", () => {
     const result = evaluateJourneyQuality([]);
     expect(result.totalJourneys).toBe(0);
-    expect(result.onTimeRate).toBe(0);
-    expect(result.riskAssessmentRate).toBe(0);
-    expect(result.seatbeltRate).toBe(0);
-    expect(result.childComfortableRate).toBe(0);
+    expect(result.onTimeRate).toBeNull();
+    expect(result.riskAssessmentRate).toBeNull();
+    expect(result.seatbeltRate).toBeNull();
+    expect(result.childComfortableRate).toBeNull();
     expect(result.journeyQualityScore).toBe(0);
     expect(result.journeysByType).toEqual({});
     expect(result.journeysByMode).toEqual({});
@@ -349,12 +326,12 @@ describe("evaluateVehicleSafety", () => {
   it("returns zero scores for empty checks", () => {
     const result = evaluateVehicleSafety([]);
     expect(result.totalChecks).toBe(0);
-    expect(result.motCurrentRate).toBe(0);
-    expect(result.insuranceCurrentRate).toBe(0);
-    expect(result.roadworthyRate).toBe(0);
-    expect(result.firstAidKitRate).toBe(0);
-    expect(result.childLockRate).toBe(0);
-    expect(result.cleanAndTidyRate).toBe(0);
+    expect(result.motCurrentRate).toBeNull();
+    expect(result.insuranceCurrentRate).toBeNull();
+    expect(result.roadworthyRate).toBeNull();
+    expect(result.firstAidKitRate).toBeNull();
+    expect(result.childLockRate).toBeNull();
+    expect(result.cleanAndTidyRate).toBeNull();
     expect(result.vehicleSafetyScore).toBe(0);
   });
 
@@ -438,13 +415,13 @@ describe("evaluateTravelPolicy", () => {
   it("returns zero scores for empty policies", () => {
     const result = evaluateTravelPolicy([]);
     expect(result.totalPolicies).toBe(0);
-    expect(result.driverChecksRate).toBe(0);
-    expect(result.insuranceVerifiedRate).toBe(0);
-    expect(result.riskAssessmentProtocolRate).toBe(0);
-    expect(result.loneDrivingPolicyRate).toBe(0);
-    expect(result.breakdownProcedureRate).toBe(0);
-    expect(result.childConsentRate).toBe(0);
-    expect(result.routePlanningRate).toBe(0);
+    expect(result.driverChecksRate).toBeNull();
+    expect(result.insuranceVerifiedRate).toBeNull();
+    expect(result.riskAssessmentProtocolRate).toBeNull();
+    expect(result.loneDrivingPolicyRate).toBeNull();
+    expect(result.breakdownProcedureRate).toBeNull();
+    expect(result.childConsentRate).toBeNull();
+    expect(result.routePlanningRate).toBeNull();
     expect(result.travelPolicyScore).toBe(0);
   });
 
@@ -536,12 +513,12 @@ describe("evaluateStaffTravelReadiness", () => {
   it("returns zero scores for empty staff", () => {
     const result = evaluateStaffTravelReadiness([]);
     expect(result.totalStaff).toBe(0);
-    expect(result.drivingAssessmentRate).toBe(0);
-    expect(result.childTransportSafetyRate).toBe(0);
-    expect(result.firstAidTrainingRate).toBe(0);
-    expect(result.riskAssessmentRate).toBe(0);
-    expect(result.breakdownProcedureRate).toBe(0);
-    expect(result.childComfortAwarenessRate).toBe(0);
+    expect(result.drivingAssessmentRate).toBeNull();
+    expect(result.childTransportSafetyRate).toBeNull();
+    expect(result.firstAidTrainingRate).toBeNull();
+    expect(result.riskAssessmentRate).toBeNull();
+    expect(result.breakdownProcedureRate).toBeNull();
+    expect(result.childComfortAwarenessRate).toBeNull();
     expect(result.staffTravelReadinessScore).toBe(0);
   });
 

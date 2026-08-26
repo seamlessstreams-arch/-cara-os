@@ -225,10 +225,10 @@ export default function SubstanceMisuseAwarenessDashboardWidget() {
       <Section title="Education & Prevention">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <Stat label="Sessions" value={data.educationPrevention.totalSessions} />
-          <Stat label="High Engagement" value={`${data.educationPrevention.highEngagementRate}%`} />
-          <Stat label="Resources Provided" value={`${data.educationPrevention.resourcesProvidedRate}%`} />
+          <Stat label="High Engagement" value={`${formatRate(data.educationPrevention.highEngagementRate)}`} />
+          <Stat label="Resources Provided" value={`${formatRate(data.educationPrevention.resourcesProvidedRate)}`} />
           <Stat label="Session Types" value={data.educationPrevention.sessionTypeVariety} />
-          <Stat label="Children Reached" value={`${data.educationPrevention.childrenReachedRate}%`} />
+          <Stat label="Children Reached" value={`${formatRate(data.educationPrevention.childrenReachedRate)}`} />
         </div>
       </Section>
 
@@ -241,10 +241,10 @@ export default function SubstanceMisuseAwarenessDashboardWidget() {
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <Stat label="Interventions" value={data.interventionSupport.totalInterventions} />
-            <Stat label="Engaged" value={`${data.interventionSupport.engagedRate}%`} />
-            <Stat label="Recovery Plan" value={`${data.interventionSupport.recoveryPlanRate}%`} />
-            <Stat label="Follow-Up" value={`${data.interventionSupport.followUpRate}%`} />
-            <Stat label="Parent Notified" value={`${data.interventionSupport.parentNotifiedRate}%`} />
+            <Stat label="Engaged" value={`${formatRate(data.interventionSupport.engagedRate)}`} />
+            <Stat label="Recovery Plan" value={`${formatRate(data.interventionSupport.recoveryPlanRate)}`} />
+            <Stat label="Follow-Up" value={`${formatRate(data.interventionSupport.followUpRate)}`} />
+            <Stat label="Parent Notified" value={`${formatRate(data.interventionSupport.parentNotifiedRate)}`} />
           </div>
         )}
       </Section>
@@ -253,12 +253,12 @@ export default function SubstanceMisuseAwarenessDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffSubstanceReadiness.totalStaff} />
-          <Stat label="Awareness" value={`${data.staffSubstanceReadiness.substanceAwarenessRate}%`} />
-          <Stat label="Risk Screening" value={`${data.staffSubstanceReadiness.riskScreeningRate}%`} />
-          <Stat label="Harm Reduction" value={`${data.staffSubstanceReadiness.harmReductionRate}%`} />
-          <Stat label="Motivational Int." value={`${data.staffSubstanceReadiness.motivationalRate}%`} />
-          <Stat label="Referral Pathway" value={`${data.staffSubstanceReadiness.referralPathwayRate}%`} />
-          <Stat label="Emergency Response" value={`${data.staffSubstanceReadiness.emergencyResponseRate}%`} />
+          <Stat label="Awareness" value={`${formatRate(data.staffSubstanceReadiness.substanceAwarenessRate)}`} />
+          <Stat label="Risk Screening" value={`${formatRate(data.staffSubstanceReadiness.riskScreeningRate)}`} />
+          <Stat label="Harm Reduction" value={`${formatRate(data.staffSubstanceReadiness.harmReductionRate)}`} />
+          <Stat label="Motivational Int." value={`${formatRate(data.staffSubstanceReadiness.motivationalRate)}`} />
+          <Stat label="Referral Pathway" value={`${formatRate(data.staffSubstanceReadiness.referralPathwayRate)}`} />
+          <Stat label="Emergency Response" value={`${formatRate(data.staffSubstanceReadiness.emergencyResponseRate)}`} />
         </div>
       </Section>
 

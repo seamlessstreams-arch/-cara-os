@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { StatementOfPurposeAlignmentIntelligence } from "@/lib/statement-of-purpose-alignment";
+import { formatRate } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -164,25 +165,25 @@ export function StatementOfPurposeAlignmentDashboardWidget() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-gray-50 rounded-lg p-3 text-center">
           <div className="text-2xl font-bold text-gray-900">
-            {data.alignmentQuality.fullyAlignedRate}%
+            {formatRate(data.alignmentQuality.fullyAlignedRate)}
           </div>
           <div className="text-xs text-gray-500 mt-1">Fully Aligned</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
           <div className="text-2xl font-bold text-gray-900">
-            {data.reviewCurrency.currentRate}%
+            {formatRate(data.reviewCurrency.currentRate)}
           </div>
           <div className="text-xs text-gray-500 mt-1">Reviews Current</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
           <div className="text-2xl font-bold text-gray-900">
-            {data.stakeholderAwareness.awareRate}%
+            {formatRate(data.stakeholderAwareness.awareRate)}
           </div>
           <div className="text-xs text-gray-500 mt-1">Stakeholder Aware</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
           <div className="text-2xl font-bold text-gray-900">
-            {data.ofstedResponse.addressedRate}%
+            {formatRate(data.ofstedResponse.addressedRate)}
           </div>
           <div className="text-xs text-gray-500 mt-1">Ofsted Addressed</div>
         </div>
@@ -241,7 +242,7 @@ export function StatementOfPurposeAlignmentDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">Fully Aligned:</span>{" "}
-              <span className="font-medium">{data.alignmentQuality.fullyAlignedRate}%</span>
+              <span className="font-medium">{formatRate(data.alignmentQuality.fullyAlignedRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Not Aligned:</span>{" "}
@@ -249,7 +250,7 @@ export function StatementOfPurposeAlignmentDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">Strong Evidence:</span>{" "}
-              <span className="font-medium">{data.alignmentQuality.strongEvidenceRate}%</span>
+              <span className="font-medium">{formatRate(data.alignmentQuality.strongEvidenceRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Actions Required:</span>{" "}
@@ -257,7 +258,7 @@ export function StatementOfPurposeAlignmentDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">Actions Taken:</span>{" "}
-              <span className="font-medium">{data.alignmentQuality.actionsTakenRate}%</span>
+              <span className="font-medium">{formatRate(data.alignmentQuality.actionsTakenRate)}</span>
             </div>
           </div>
         </Section>
@@ -271,7 +272,7 @@ export function StatementOfPurposeAlignmentDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">Current:</span>{" "}
-              <span className="font-medium">{data.reviewCurrency.currentRate}%</span>
+              <span className="font-medium">{formatRate(data.reviewCurrency.currentRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Overdue:</span>{" "}
@@ -279,15 +280,15 @@ export function StatementOfPurposeAlignmentDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">Children Consulted:</span>{" "}
-              <span className="font-medium">{data.reviewCurrency.childrenConsultedRate}%</span>
+              <span className="font-medium">{formatRate(data.reviewCurrency.childrenConsultedRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Staff Consulted:</span>{" "}
-              <span className="font-medium">{data.reviewCurrency.staffConsultedRate}%</span>
+              <span className="font-medium">{formatRate(data.reviewCurrency.staffConsultedRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">All Sections Reviewed:</span>{" "}
-              <span className="font-medium">{data.reviewCurrency.allSectionsRate}%</span>
+              <span className="font-medium">{formatRate(data.reviewCurrency.allSectionsRate)}</span>
             </div>
           </div>
         </Section>
@@ -301,19 +302,19 @@ export function StatementOfPurposeAlignmentDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">Aware of SoP:</span>{" "}
-              <span className="font-medium">{data.stakeholderAwareness.awareRate}%</span>
+              <span className="font-medium">{formatRate(data.stakeholderAwareness.awareRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Reflects Reality:</span>{" "}
-              <span className="font-medium">{data.stakeholderAwareness.reflectsRealityRate}%</span>
+              <span className="font-medium">{formatRate(data.stakeholderAwareness.reflectsRealityRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Values Evident:</span>{" "}
-              <span className="font-medium">{data.stakeholderAwareness.valuesEvidentRate}%</span>
+              <span className="font-medium">{formatRate(data.stakeholderAwareness.valuesEvidentRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Suggestions Provided:</span>{" "}
-              <span className="font-medium">{data.stakeholderAwareness.suggestionsRate}%</span>
+              <span className="font-medium">{formatRate(data.stakeholderAwareness.suggestionsRate)}</span>
             </div>
           </div>
         </Section>
@@ -327,11 +328,11 @@ export function StatementOfPurposeAlignmentDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">Addressed:</span>{" "}
-              <span className="font-medium">{data.ofstedResponse.addressedRate}%</span>
+              <span className="font-medium">{formatRate(data.ofstedResponse.addressedRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Evidence of Change:</span>{" "}
-              <span className="font-medium">{data.ofstedResponse.evidenceRate}%</span>
+              <span className="font-medium">{formatRate(data.ofstedResponse.evidenceRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Outstanding:</span>{" "}

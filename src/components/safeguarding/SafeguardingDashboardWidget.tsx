@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildSafeguardingProfile { childId: string; childName: string; totalRecords: number; timelyResponseRate: number; childViewCapturedRate: number; categoriesCovered: string[]; overallScore: number; }
 
@@ -73,19 +74,19 @@ export default function SafeguardingDashboardWidget() {
       <Section title="Safeguarding Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Records" value={data.safeguardingQuality.totalRecords} />
-          <Stat label="Timely Response" value={`${data.safeguardingQuality.timelyResponseRate}%`} />
-          <Stat label="Child View Captured" value={`${data.safeguardingQuality.childViewCapturedRate}%`} />
-          <Stat label="Multi-Agency" value={`${data.safeguardingQuality.multiAgencyEngagedRate}%`} />
-          <Stat label="Risk Assessment" value={`${data.safeguardingQuality.riskAssessmentUpdatedRate}%`} />
+          <Stat label="Timely Response" value={`${formatRate(data.safeguardingQuality.timelyResponseRate)}`} />
+          <Stat label="Child View Captured" value={`${formatRate(data.safeguardingQuality.childViewCapturedRate)}`} />
+          <Stat label="Multi-Agency" value={`${formatRate(data.safeguardingQuality.multiAgencyEngagedRate)}`} />
+          <Stat label="Risk Assessment" value={`${formatRate(data.safeguardingQuality.riskAssessmentUpdatedRate)}`} />
         </div>
       </Section>
 
       <Section title="Safeguarding Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documentation" value={`${data.safeguardingCompliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${data.safeguardingCompliance.timelyRecordingRate}%`} />
-          <Stat label="Child View" value={`${data.safeguardingCompliance.childViewCapturedRate}%`} />
-          <Stat label="Category Coverage" value={`${data.safeguardingCompliance.categoryDiversityRatio}%`} />
+          <Stat label="Documentation" value={`${formatRate(data.safeguardingCompliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(data.safeguardingCompliance.timelyRecordingRate)}`} />
+          <Stat label="Child View" value={`${formatRate(data.safeguardingCompliance.childViewCapturedRate)}`} />
+          <Stat label="Category Coverage" value={`${formatRate(data.safeguardingCompliance.categoryDiversityRatio)}`} />
         </div>
       </Section>
 
@@ -108,12 +109,12 @@ export default function SafeguardingDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
-          <Stat label="Level 3 Safeguarding" value={`${data.staffReadiness.safeguardingLevel3Rate}%`} />
-          <Stat label="Child Protection" value={`${data.staffReadiness.childProtectionAwarenessRate}%`} />
-          <Stat label="Prevent Duty" value={`${data.staffReadiness.preventDutyTrainingRate}%`} />
-          <Stat label="Online Safety" value={`${data.staffReadiness.onlineSafetyTrainingRate}%`} />
-          <Stat label="Concern Recording" value={`${data.staffReadiness.concernRecordingSkillsRate}%`} />
-          <Stat label="Multi-Agency" value={`${data.staffReadiness.multiAgencyWorkingKnowledgeRate}%`} />
+          <Stat label="Level 3 Safeguarding" value={`${formatRate(data.staffReadiness.safeguardingLevel3Rate)}`} />
+          <Stat label="Child Protection" value={`${formatRate(data.staffReadiness.childProtectionAwarenessRate)}`} />
+          <Stat label="Prevent Duty" value={`${formatRate(data.staffReadiness.preventDutyTrainingRate)}`} />
+          <Stat label="Online Safety" value={`${formatRate(data.staffReadiness.onlineSafetyTrainingRate)}`} />
+          <Stat label="Concern Recording" value={`${formatRate(data.staffReadiness.concernRecordingSkillsRate)}`} />
+          <Stat label="Multi-Agency" value={`${formatRate(data.staffReadiness.multiAgencyWorkingKnowledgeRate)}`} />
         </div>
       </Section>
 

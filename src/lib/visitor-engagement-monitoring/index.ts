@@ -13,7 +13,6 @@ export {
   getVisitorTypeLabel,
   getVisitOutcomeLabel,
   getRatingLabel,
-  pct,
 } from "./visitor-engagement-monitoring-engine";
 
 export type {

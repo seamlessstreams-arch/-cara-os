@@ -5,7 +5,6 @@ export {
   evaluateOfstedResponse,
   buildSectionProfiles,
   generateStatementOfPurposeAlignmentIntelligence,
-  pct,
   getRating,
   getSoPSectionLabel,
   getAlignmentLevelLabel,

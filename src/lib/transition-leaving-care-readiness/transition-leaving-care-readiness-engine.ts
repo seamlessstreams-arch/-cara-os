@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // Transition & Leaving Care Readiness Intelligence Engine
 // Pure deterministic — no AI, no external calls, no randomness, no Date.now()
 
@@ -99,18 +100,26 @@ export interface StaffTransitionTraining {
 export interface ReadinessPreparationResult {
   overallScore: number;
   totalAssessments: number;
-  progressRate: number;
-  pathwayPlanRate: number;
-  personalAdvisorRate: number;
-  childVoiceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  progressRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  pathwayPlanRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  personalAdvisorRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childVoiceRate: number | null;
 }
 
 export interface TransitionComplianceResult {
   overallScore: number;
-  goalsSetRate: number;
-  documentedRate: number;
-  reviewScheduledRate: number;
-  areaDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  goalsSetRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reviewScheduledRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  areaDiversityRatio: number | null;
 }
 
 export interface TransitionPolicyResult {
@@ -127,20 +136,28 @@ export interface TransitionPolicyResult {
 export interface StaffTransitionReadinessResult {
   overallScore: number;
   totalStaff: number;
-  leavingCareActRate: number;
-  pathwayPlanningRate: number;
-  independencePracticalRate: number;
-  financialCapabilityRate: number;
-  emotionalResilienceRate: number;
-  housingOptionsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  leavingCareActRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  pathwayPlanningRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  independencePracticalRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  financialCapabilityRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  emotionalResilienceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  housingOptionsRate: number | null;
 }
 
 export interface ChildTransitionProfile {
   childId: string;
   childName: string;
   totalAssessments: number;
-  progressRate: number;
-  pathwayPlanRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  progressRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  pathwayPlanRate: number | null;
   overallScore: number;
 }
 
@@ -163,11 +180,6 @@ export interface TransitionLeavingCareReadinessIntelligence {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -179,7 +191,7 @@ export function getRating(score: number): Rating {
 
 export function evaluateReadinessPreparation(assessments: TransitionAssessment[]): ReadinessPreparationResult {
   if (assessments.length === 0) {
-    return { overallScore: 0, totalAssessments: 0, progressRate: 0, pathwayPlanRate: 0, personalAdvisorRate: 0, childVoiceRate: 0 };
+    return { overallScore: 0, totalAssessments: 0, progressRate: null, pathwayPlanRate: null, personalAdvisorRate: null, childVoiceRate: null };
   }
 
   const total = assessments.length;
@@ -188,15 +200,15 @@ export function evaluateReadinessPreparation(assessments: TransitionAssessment[]
   const advisorCount = assessments.filter((a) => a.personalAdvisorInvolved).length;
   const voiceCount = assessments.filter((a) => a.childVoiceCaptured).length;
 
-  const progressRate = pct(progressCount, total);
-  const pathwayPlanRate = pct(pathwayCount, total);
-  const personalAdvisorRate = pct(advisorCount, total);
-  const childVoiceRate = pct(voiceCount, total);
+  const progressRate = rate(progressCount, total);
+  const pathwayPlanRate = rate(pathwayCount, total);
+  const personalAdvisorRate = rate(advisorCount, total);
+  const childVoiceRate = rate(voiceCount, total);
 
-  const progScore = Math.round((progressRate / 100) * 7);
-  const pathScore = Math.round((pathwayPlanRate / 100) * 6);
-  const advScore = Math.round((personalAdvisorRate / 100) * 6);
-  const voiceScore = Math.round((childVoiceRate / 100) * 6);
+  const progScore = Math.round(((progressRate ?? 0) / 100) * 7);
+  const pathScore = Math.round(((pathwayPlanRate ?? 0) / 100) * 6);
+  const advScore = Math.round(((personalAdvisorRate ?? 0) / 100) * 6);
+  const voiceScore = Math.round(((childVoiceRate ?? 0) / 100) * 6);
 
   const overallScore = Math.min(25, progScore + pathScore + advScore + voiceScore);
 
@@ -205,7 +217,7 @@ export function evaluateReadinessPreparation(assessments: TransitionAssessment[]
 
 export function evaluateTransitionCompliance(assessments: TransitionAssessment[]): TransitionComplianceResult {
   if (assessments.length === 0) {
-    return { overallScore: 0, goalsSetRate: 0, documentedRate: 0, reviewScheduledRate: 0, areaDiversityRatio: 0 };
+    return { overallScore: 0, goalsSetRate: null, documentedRate: null, reviewScheduledRate: null, areaDiversityRatio: 0 };
   }
 
   const total = assessments.length;
@@ -213,16 +225,16 @@ export function evaluateTransitionCompliance(assessments: TransitionAssessment[]
   const documentedCount = assessments.filter((a) => a.documentedInPlan).length;
   const reviewCount = assessments.filter((a) => a.reviewScheduled).length;
   const uniqueAreas = new Set(assessments.map((a) => a.readinessArea)).size;
-  const diversityRatio = pct(uniqueAreas, 8);
+  const diversityRatio = rate(uniqueAreas, 8);
 
-  const goalsSetRate = pct(goalsCount, total);
-  const documentedRate = pct(documentedCount, total);
-  const reviewScheduledRate = pct(reviewCount, total);
+  const goalsSetRate = rate(goalsCount, total);
+  const documentedRate = rate(documentedCount, total);
+  const reviewScheduledRate = rate(reviewCount, total);
 
-  const goalScore = Math.round((goalsSetRate / 100) * 8);
-  const docScore = Math.round((documentedRate / 100) * 7);
-  const revScore = Math.round((reviewScheduledRate / 100) * 5);
-  const divScore = Math.round((diversityRatio / 100) * 5);
+  const goalScore = Math.round(((goalsSetRate ?? 0) / 100) * 8);
+  const docScore = Math.round(((documentedRate ?? 0) / 100) * 7);
+  const revScore = Math.round(((reviewScheduledRate ?? 0) / 100) * 5);
+  const divScore = Math.round((diversityRatio! / 100) * 5);
 
   const overallScore = Math.min(25, goalScore + docScore + revScore + divScore);
 
@@ -266,7 +278,7 @@ export function evaluateTransitionPolicy(policy: TransitionPolicy | null): Trans
 
 export function evaluateStaffTransitionReadiness(training: StaffTransitionTraining[]): StaffTransitionReadinessResult {
   if (training.length === 0) {
-    return { overallScore: 0, totalStaff: 0, leavingCareActRate: 0, pathwayPlanningRate: 0, independencePracticalRate: 0, financialCapabilityRate: 0, emotionalResilienceRate: 0, housingOptionsRate: 0 };
+    return { overallScore: 0, totalStaff: 0, leavingCareActRate: null, pathwayPlanningRate: null, independencePracticalRate: null, financialCapabilityRate: null, emotionalResilienceRate: null, housingOptionsRate: null };
   }
 
   const total = training.length;
@@ -277,19 +289,19 @@ export function evaluateStaffTransitionReadiness(training: StaffTransitionTraini
   const erCount = training.filter((t) => t.emotionalResilience).length;
   const hoCount = training.filter((t) => t.housingOptions).length;
 
-  const leavingCareActRate = pct(lcaCount, total);
-  const pathwayPlanningRate = pct(ppCount, total);
-  const independencePracticalRate = pct(ipCount, total);
-  const financialCapabilityRate = pct(fcCount, total);
-  const emotionalResilienceRate = pct(erCount, total);
-  const housingOptionsRate = pct(hoCount, total);
+  const leavingCareActRate = rate(lcaCount, total);
+  const pathwayPlanningRate = rate(ppCount, total);
+  const independencePracticalRate = rate(ipCount, total);
+  const financialCapabilityRate = rate(fcCount, total);
+  const emotionalResilienceRate = rate(erCount, total);
+  const housingOptionsRate = rate(hoCount, total);
 
-  const s1 = Math.round((leavingCareActRate / 100) * 6);
-  const s2 = Math.round((pathwayPlanningRate / 100) * 5);
-  const s3 = Math.round((independencePracticalRate / 100) * 5);
-  const s4 = Math.round((financialCapabilityRate / 100) * 4);
-  const s5 = Math.round((emotionalResilienceRate / 100) * 3);
-  const s6 = Math.round((housingOptionsRate / 100) * 2);
+  const s1 = Math.round(((leavingCareActRate ?? 0) / 100) * 6);
+  const s2 = Math.round(((pathwayPlanningRate ?? 0) / 100) * 5);
+  const s3 = Math.round(((independencePracticalRate ?? 0) / 100) * 5);
+  const s4 = Math.round(((financialCapabilityRate ?? 0) / 100) * 4);
+  const s5 = Math.round(((emotionalResilienceRate ?? 0) / 100) * 3);
+  const s6 = Math.round(((housingOptionsRate ?? 0) / 100) * 2);
 
   const overallScore = Math.min(25, s1 + s2 + s3 + s4 + s5 + s6);
 
@@ -315,8 +327,8 @@ export function buildChildTransitionProfiles(assessments: TransitionAssessment[]
     const progressCount = assess.filter((a) => a.progressLevel === "exceeding" || a.progressLevel === "on_track").length;
     const pathwayCount = assess.filter((a) => a.pathwayPlanLinked).length;
 
-    const progressRate = pct(progressCount, total);
-    const pathwayPlanRate = pct(pathwayCount, total);
+    const progressRate = rate(progressCount, total);
+    const pathwayPlanRate = rate(pathwayCount, total);
 
     // Score 0-10: frequency(0-2), progress(0-3), pathway(0-3), diversity(0-2)
     let freqScore = 0;
@@ -324,14 +336,14 @@ export function buildChildTransitionProfiles(assessments: TransitionAssessment[]
     else if (total >= 5) freqScore = 1;
 
     let progScore = 0;
-    if (progressRate >= 80) progScore = 3;
-    else if (progressRate >= 60) progScore = 2;
-    else if (progressRate >= 40) progScore = 1;
+    if (meets(progressRate, 80)) progScore = 3;
+    else if (meets(progressRate, 60)) progScore = 2;
+    else if (meets(progressRate, 40)) progScore = 1;
 
     let pathScore = 0;
-    if (pathwayPlanRate >= 80) pathScore = 3;
-    else if (pathwayPlanRate >= 60) pathScore = 2;
-    else if (pathwayPlanRate >= 40) pathScore = 1;
+    if (meets(pathwayPlanRate, 80)) pathScore = 3;
+    else if (meets(pathwayPlanRate, 60)) pathScore = 2;
+    else if (meets(pathwayPlanRate, 40)) pathScore = 1;
 
     // Diversity: unique readiness areas
     const uniqueAreas = new Set(assess.map((a) => a.readinessArea)).size;
@@ -371,21 +383,21 @@ export function generateTransitionLeavingCareReadinessIntelligence(
   const areasForImprovement: string[] = [];
   const actions: string[] = [];
 
-  if (readinessPreparation.progressRate >= 80) strengths.push("Strong transition readiness — young people are progressing well across independence areas");
-  if (readinessPreparation.childVoiceRate >= 80) strengths.push("Young people's voices are consistently captured in transition planning");
-  if (readinessPreparation.personalAdvisorRate >= 80) strengths.push("Personal advisors are consistently involved in transition assessments");
-  if (transitionCompliance.documentedRate >= 80) strengths.push("Excellent documentation of transition planning in pathway plans");
+  if (meets(readinessPreparation.progressRate, 80)) strengths.push("Strong transition readiness — young people are progressing well across independence areas");
+  if (meets(readinessPreparation.childVoiceRate, 80)) strengths.push("Young people's voices are consistently captured in transition planning");
+  if (meets(readinessPreparation.personalAdvisorRate, 80)) strengths.push("Personal advisors are consistently involved in transition assessments");
+  if (meets(transitionCompliance.documentedRate, 80)) strengths.push("Excellent documentation of transition planning in pathway plans");
 
-  if (assessments.length > 0 && readinessPreparation.progressRate < 60) areasForImprovement.push("Transition readiness progress needs improvement — review independence programme content");
-  if (assessments.length > 0 && readinessPreparation.childVoiceRate < 60) areasForImprovement.push("Young people's voices not consistently captured — embed participation in every assessment");
-  if (assessments.length > 0 && transitionCompliance.goalsSetRate < 60) areasForImprovement.push("Goals not consistently set in transition assessments — improve planning structure");
-  if (assessments.length > 0 && readinessPreparation.personalAdvisorRate < 60) areasForImprovement.push("Personal advisor involvement is low — ensure allocation and engagement");
+  if (assessments.length > 0 && below(readinessPreparation.progressRate, 60)) areasForImprovement.push("Transition readiness progress needs improvement — review independence programme content");
+  if (assessments.length > 0 && below(readinessPreparation.childVoiceRate, 60)) areasForImprovement.push("Young people's voices not consistently captured — embed participation in every assessment");
+  if (assessments.length > 0 && below(transitionCompliance.goalsSetRate, 60)) areasForImprovement.push("Goals not consistently set in transition assessments — improve planning structure");
+  if (assessments.length > 0 && below(readinessPreparation.personalAdvisorRate, 60)) areasForImprovement.push("Personal advisor involvement is low — ensure allocation and engagement");
 
   if (assessments.length === 0) actions.push("No transition assessment records found — begin systematic readiness assessments immediately");
   if (!policy) actions.push("URGENT: No transition and leaving care policy in place — develop and implement immediately");
   if (training.length === 0) actions.push("URGENT: No staff transition training recorded — arrange training for all staff");
-  if (assessments.length > 0 && transitionCompliance.reviewScheduledRate < 60) actions.push("Improve review scheduling for transition assessments");
-  if (assessments.length > 0 && readinessPreparation.pathwayPlanRate < 60) actions.push("Strengthen links between transition assessments and pathway plans");
+  if (assessments.length > 0 && below(transitionCompliance.reviewScheduledRate, 60)) actions.push("Improve review scheduling for transition assessments");
+  if (assessments.length > 0 && below(readinessPreparation.pathwayPlanRate, 60)) actions.push("Strengthen links between transition assessments and pathway plans");
 
   const regulatoryLinks: string[] = [
     "Children (Leaving Care) Act 2000 — Pathway planning duties",

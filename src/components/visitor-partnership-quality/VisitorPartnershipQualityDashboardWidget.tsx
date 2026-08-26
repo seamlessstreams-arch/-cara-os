@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { above, formatRate } from "@/lib/metrics/rate";
 import type { VisitorPartnershipQualityIntelligence } from "@/lib/visitor-partnership-quality";
 
 const ratingColors: Record<string, string> = {
@@ -101,7 +102,7 @@ export function VisitorPartnershipQualityDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Total Visits</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.visitQuality.childSeenRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.visitQuality.childSeenRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Child Seen</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -109,11 +110,11 @@ export function VisitorPartnershipQualityDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Reg 44 Visits</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.partnershipEffectiveness.excellentGoodRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.partnershipEffectiveness.excellentGoodRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Partnership Good+</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.actionResponse.completedRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.actionResponse.completedRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Actions Done</div>
         </div>
       </div>
@@ -151,11 +152,11 @@ export function VisitorPartnershipQualityDashboardWidget() {
         <Section title="Visit Quality">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Visits:</span> <span className="font-medium">{data.visitQuality.totalVisits}</span></div>
-            <div><span className="text-gray-500">Positive:</span> <span className="font-medium">{data.visitQuality.positiveOutcomeRate}%</span></div>
-            <div><span className="text-gray-500">Reports:</span> <span className="font-medium">{data.visitQuality.reportProvidedRate}%</span></div>
-            <div><span className="text-gray-500">Child Seen:</span> <span className="font-medium">{data.visitQuality.childSeenRate}%</span></div>
-            <div><span className="text-gray-500">Spoken Alone:</span> <span className="font-medium">{data.visitQuality.childSpokenAloneRate}%</span></div>
-            <div><span className="text-gray-500">Cancelled:</span> <span className={`font-medium ${data.visitQuality.cancellationRate > 0 ? "text-amber-600" : "text-green-600"}`}>{data.visitQuality.cancellationRate}%</span></div>
+            <div><span className="text-gray-500">Positive:</span> <span className="font-medium">{formatRate(data.visitQuality.positiveOutcomeRate)}</span></div>
+            <div><span className="text-gray-500">Reports:</span> <span className="font-medium">{formatRate(data.visitQuality.reportProvidedRate)}</span></div>
+            <div><span className="text-gray-500">Child Seen:</span> <span className="font-medium">{formatRate(data.visitQuality.childSeenRate)}</span></div>
+            <div><span className="text-gray-500">Spoken Alone:</span> <span className="font-medium">{formatRate(data.visitQuality.childSpokenAloneRate)}</span></div>
+            <div><span className="text-gray-500">Cancelled:</span> <span className={`font-medium ${above(data.visitQuality.cancellationRate, 0) ? "text-amber-600" : "text-green-600"}`}>{formatRate(data.visitQuality.cancellationRate)}</span></div>
             <div><span className="text-gray-500">Avg Duration:</span> <span className="font-medium">{data.visitQuality.averageDuration} min</span></div>
           </div>
         </Section>
@@ -163,23 +164,23 @@ export function VisitorPartnershipQualityDashboardWidget() {
         <Section title="Partnership Effectiveness">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Assessments:</span> <span className="font-medium">{data.partnershipEffectiveness.totalAssessments}</span></div>
-            <div><span className="text-gray-500">Good+:</span> <span className="font-medium">{data.partnershipEffectiveness.excellentGoodRate}%</span></div>
-            <div><span className="text-gray-500">Info Sharing:</span> <span className="font-medium">{data.partnershipEffectiveness.informationSharingRate}%</span></div>
-            <div><span className="text-gray-500">Joint Planning:</span> <span className="font-medium">{data.partnershipEffectiveness.jointPlanningRate}%</span></div>
-            <div><span className="text-gray-500">Responsive:</span> <span className="font-medium">{data.partnershipEffectiveness.responsiveRate}%</span></div>
-            <div><span className="text-gray-500">Child Focused:</span> <span className="font-medium">{data.partnershipEffectiveness.childFocusedRate}%</span></div>
-            <div><span className="text-gray-500">Challenge:</span> <span className="font-medium">{data.partnershipEffectiveness.challengeAcceptedRate}%</span></div>
+            <div><span className="text-gray-500">Good+:</span> <span className="font-medium">{formatRate(data.partnershipEffectiveness.excellentGoodRate)}</span></div>
+            <div><span className="text-gray-500">Info Sharing:</span> <span className="font-medium">{formatRate(data.partnershipEffectiveness.informationSharingRate)}</span></div>
+            <div><span className="text-gray-500">Joint Planning:</span> <span className="font-medium">{formatRate(data.partnershipEffectiveness.jointPlanningRate)}</span></div>
+            <div><span className="text-gray-500">Responsive:</span> <span className="font-medium">{formatRate(data.partnershipEffectiveness.responsiveRate)}</span></div>
+            <div><span className="text-gray-500">Child Focused:</span> <span className="font-medium">{formatRate(data.partnershipEffectiveness.childFocusedRate)}</span></div>
+            <div><span className="text-gray-500">Challenge:</span> <span className="font-medium">{formatRate(data.partnershipEffectiveness.challengeAcceptedRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Reg 44 Compliance">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Visits:</span> <span className="font-medium">{data.reg44Compliance.totalVisits}</span></div>
-            <div><span className="text-gray-500">Children Seen:</span> <span className="font-medium">{data.reg44Compliance.childInterviewRate}%</span></div>
-            <div><span className="text-gray-500">Timely Reports:</span> <span className="font-medium">{data.reg44Compliance.reportTimelyRate}%</span></div>
-            <div><span className="text-gray-500">Issues Resolved:</span> <span className="font-medium">{data.reg44Compliance.issueResolutionRate}%</span></div>
-            <div><span className="text-gray-500">Prev Recs Reviewed:</span> <span className="font-medium">{data.reg44Compliance.previousRecsReviewedRate}%</span></div>
-            <div><span className="text-gray-500">Overall Positive:</span> <span className="font-medium">{data.reg44Compliance.overallPositiveRate}%</span></div>
+            <div><span className="text-gray-500">Children Seen:</span> <span className="font-medium">{formatRate(data.reg44Compliance.childInterviewRate)}</span></div>
+            <div><span className="text-gray-500">Timely Reports:</span> <span className="font-medium">{formatRate(data.reg44Compliance.reportTimelyRate)}</span></div>
+            <div><span className="text-gray-500">Issues Resolved:</span> <span className="font-medium">{formatRate(data.reg44Compliance.issueResolutionRate)}</span></div>
+            <div><span className="text-gray-500">Prev Recs Reviewed:</span> <span className="font-medium">{formatRate(data.reg44Compliance.previousRecsReviewedRate)}</span></div>
+            <div><span className="text-gray-500">Overall Positive:</span> <span className="font-medium">{formatRate(data.reg44Compliance.overallPositiveRate)}</span></div>
             <div><span className="text-gray-500">Avg Issues:</span> <span className="font-medium">{data.reg44Compliance.averageIssuesRaised}</span></div>
           </div>
         </Section>
@@ -187,7 +188,7 @@ export function VisitorPartnershipQualityDashboardWidget() {
         <Section title="Action Response">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Actions:</span> <span className="font-medium">{data.actionResponse.totalActions}</span></div>
-            <div><span className="text-gray-500">Completed:</span> <span className="font-medium">{data.actionResponse.completedRate}%</span></div>
+            <div><span className="text-gray-500">Completed:</span> <span className="font-medium">{formatRate(data.actionResponse.completedRate)}</span></div>
             <div><span className="text-gray-500">Overdue:</span> <span className={`font-medium ${data.actionResponse.overdueCount > 0 ? "text-red-600" : "text-green-600"}`}>{data.actionResponse.overdueCount}</span></div>
             <div><span className="text-gray-500">In Progress:</span> <span className="font-medium">{data.actionResponse.inProgressCount}</span></div>
           </div>

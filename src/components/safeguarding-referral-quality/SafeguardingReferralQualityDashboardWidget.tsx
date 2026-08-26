@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildSafeguardingProfile { childId: string; childName: string; totalReferrals: number; appropriateOutcomeRate: number; timelyResponseRate: number; overallScore: number; }
 
@@ -85,19 +86,19 @@ export default function SafeguardingReferralQualityDashboardWidget() {
       <Section title="Referral Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Referrals" value={data.referralQuality.totalReferrals} />
-          <Stat label="Appropriate Outcome" value={`${data.referralQuality.appropriateOutcomeRate}%`} />
-          <Stat label="Timely Response" value={`${data.referralQuality.timelyResponseRate}%`} />
-          <Stat label="Multi-Agency" value={`${data.referralQuality.multiAgencyRate}%`} />
-          <Stat label="Child Informed" value={`${data.referralQuality.childInformedRate}%`} />
+          <Stat label="Appropriate Outcome" value={`${formatRate(data.referralQuality.appropriateOutcomeRate)}`} />
+          <Stat label="Timely Response" value={`${formatRate(data.referralQuality.timelyResponseRate)}`} />
+          <Stat label="Multi-Agency" value={`${formatRate(data.referralQuality.multiAgencyRate)}`} />
+          <Stat label="Child Informed" value={`${formatRate(data.referralQuality.childInformedRate)}`} />
         </div>
       </Section>
 
       <Section title="Referral Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documented" value={`${data.referralCompliance.documentedRate}%`} />
-          <Stat label="Management Oversight" value={`${data.referralCompliance.managementOversightRate}%`} />
-          <Stat label="Lessons Learned" value={`${data.referralCompliance.lessonsLearnedRate}%`} />
-          <Stat label="Referral Type Diversity" value={`${data.referralCompliance.referralTypeDiversityRatio}%`} />
+          <Stat label="Documented" value={`${formatRate(data.referralCompliance.documentedRate)}`} />
+          <Stat label="Management Oversight" value={`${formatRate(data.referralCompliance.managementOversightRate)}`} />
+          <Stat label="Lessons Learned" value={`${formatRate(data.referralCompliance.lessonsLearnedRate)}`} />
+          <Stat label="Referral Type Diversity" value={`${formatRate(data.referralCompliance.referralTypeDiversityRatio)}`} />
         </div>
       </Section>
 
@@ -120,12 +121,12 @@ export default function SafeguardingReferralQualityDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffSafeguardingReadiness.totalStaff} />
-          <Stat label="Level 3 Safeguarding" value={`${data.staffSafeguardingReadiness.safeguardingLevel3Rate}%`} />
-          <Stat label="Referral Processes" value={`${data.staffSafeguardingReadiness.referralProcessesRate}%`} />
-          <Stat label="Multi-Agency" value={`${data.staffSafeguardingReadiness.multiAgencyWorkingRate}%`} />
-          <Stat label="Recognising Abuse" value={`${data.staffSafeguardingReadiness.recognisingAbuseRate}%`} />
-          <Stat label="Record Keeping" value={`${data.staffSafeguardingReadiness.recordKeepingRate}%`} />
-          <Stat label="Whistleblowing" value={`${data.staffSafeguardingReadiness.whistleblowingRate}%`} />
+          <Stat label="Level 3 Safeguarding" value={`${formatRate(data.staffSafeguardingReadiness.safeguardingLevel3Rate)}`} />
+          <Stat label="Referral Processes" value={`${formatRate(data.staffSafeguardingReadiness.referralProcessesRate)}`} />
+          <Stat label="Multi-Agency" value={`${formatRate(data.staffSafeguardingReadiness.multiAgencyWorkingRate)}`} />
+          <Stat label="Recognising Abuse" value={`${formatRate(data.staffSafeguardingReadiness.recognisingAbuseRate)}`} />
+          <Stat label="Record Keeping" value={`${formatRate(data.staffSafeguardingReadiness.recordKeepingRate)}`} />
+          <Stat label="Whistleblowing" value={`${formatRate(data.staffSafeguardingReadiness.whistleblowingRate)}`} />
         </div>
       </Section>
 

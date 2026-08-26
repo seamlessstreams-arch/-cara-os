@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // Staff Wellbeing Resilience Intelligence Engine
 // Pure deterministic — no AI, no external calls, no randomness, no Date.now()
 
@@ -131,18 +132,25 @@ export interface StaffResilienceTraining {
 
 export interface WellbeingQualityResult {
   totalAssessments: number;
-  wellbeingRate: number;
-  stressManagedRate: number;
-  supportProvidedRate: number;
-  workloadReviewedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  wellbeingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  stressManagedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  supportProvidedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  workloadReviewedRate: number | null;
   score: number; // 0-25
 }
 
 export interface WellbeingComplianceResult {
   totalAssessments: number;
-  actionPlanRate: number;
-  followUpRate: number;
-  feedbackRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionPlanRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  followUpRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feedbackRate: number | null;
   wellbeingTypeDiversityRatio: number;
   score: number; // 0-25
 }
@@ -161,17 +169,23 @@ export interface WellbeingPolicyResult {
 export interface StaffResilienceReadinessResult {
   totalStaff: number;
   stressManagementCount: number;
-  stressManagementRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  stressManagementRate: number | null;
   emotionalResilienceCount: number;
-  emotionalResilienceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  emotionalResilienceRate: number | null;
   boundaryMaintenanceCount: number;
-  boundaryMaintenanceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  boundaryMaintenanceRate: number | null;
   selfCareCount: number;
-  selfCareRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  selfCareRate: number | null;
   teamSupportCount: number;
-  teamSupportRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  teamSupportRate: number | null;
   debriefingSkillsCount: number;
-  debriefingSkillsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  debriefingSkillsRate: number | null;
   score: number; // 0-25
 }
 
@@ -208,11 +222,6 @@ export interface StaffWellbeingResilienceIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 function cap(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
@@ -234,10 +243,10 @@ export function evaluateWellbeingQuality(
   if (total === 0) {
     return {
       totalAssessments: 0,
-      wellbeingRate: 0,
-      stressManagedRate: 0,
-      supportProvidedRate: 0,
-      workloadReviewedRate: 0,
+      wellbeingRate: null,
+      stressManagedRate: null,
+      supportProvidedRate: null,
+      workloadReviewedRate: null,
       score: 0,
     };
   }
@@ -245,23 +254,23 @@ export function evaluateWellbeingQuality(
   const positiveCount = assessments.filter(
     (a) => a.wellbeingScore === "excellent" || a.wellbeingScore === "good",
   ).length;
-  const wellbeingRate = pct(positiveCount, total);
+  const wellbeingRate = rate(positiveCount, total);
 
   const stressManagedCount = assessments.filter((a) => a.stressManaged).length;
-  const stressManagedRate = pct(stressManagedCount, total);
+  const stressManagedRate = rate(stressManagedCount, total);
 
   const supportProvidedCount = assessments.filter((a) => a.supportProvided).length;
-  const supportProvidedRate = pct(supportProvidedCount, total);
+  const supportProvidedRate = rate(supportProvidedCount, total);
 
   const workloadReviewedCount = assessments.filter((a) => a.workloadReviewed).length;
-  const workloadReviewedRate = pct(workloadReviewedCount, total);
+  const workloadReviewedRate = rate(workloadReviewedCount, total);
 
   // Weighted scoring: wellbeingScore 0-7, stressManaged 0-6, supportProvided 0-6, workloadReviewed 0-6
   let score = 0;
-  score += (wellbeingRate / 100) * 7;
-  score += (stressManagedRate / 100) * 6;
-  score += (supportProvidedRate / 100) * 6;
-  score += (workloadReviewedRate / 100) * 6;
+  score += (wellbeingRate! / 100) * 7;
+  score += (stressManagedRate! / 100) * 6;
+  score += (supportProvidedRate! / 100) * 6;
+  score += (workloadReviewedRate! / 100) * 6;
 
   score = cap(Math.round(score * 10) / 10, 0, 25);
 
@@ -285,31 +294,31 @@ export function evaluateWellbeingCompliance(
   if (total === 0) {
     return {
       totalAssessments: 0,
-      actionPlanRate: 0,
-      followUpRate: 0,
-      feedbackRate: 0,
+      actionPlanRate: null,
+      followUpRate: null,
+      feedbackRate: null,
       wellbeingTypeDiversityRatio: 0,
       score: 0,
     };
   }
 
   const actionPlanCount = assessments.filter((a) => a.actionPlanCreated).length;
-  const actionPlanRate = pct(actionPlanCount, total);
+  const actionPlanRate = rate(actionPlanCount, total);
 
   const followUpCount = assessments.filter((a) => a.followUpScheduled).length;
-  const followUpRate = pct(followUpCount, total);
+  const followUpRate = rate(followUpCount, total);
 
   const feedbackCount = assessments.filter((a) => a.feedbackGiven).length;
-  const feedbackRate = pct(feedbackCount, total);
+  const feedbackRate = rate(feedbackCount, total);
 
   const uniqueTypes = new Set(assessments.map((a) => a.wellbeingType)).size;
   const wellbeingTypeDiversityRatio = Math.round((uniqueTypes / 8) * 100) / 100;
 
   // Weighted scoring: actionPlan 0-8, followUp 0-7, feedback 0-5, diversity 0-5
   let score = 0;
-  score += (actionPlanRate / 100) * 8;
-  score += (followUpRate / 100) * 7;
-  score += (feedbackRate / 100) * 5;
+  score += (actionPlanRate! / 100) * 8;
+  score += (followUpRate! / 100) * 7;
+  score += (feedbackRate! / 100) * 5;
   score += wellbeingTypeDiversityRatio * 5;
 
   score = cap(Math.round(score * 10) / 10, 0, 25);
@@ -377,47 +386,47 @@ export function evaluateStaffResilienceReadiness(
     return {
       totalStaff: 0,
       stressManagementCount: 0,
-      stressManagementRate: 0,
+      stressManagementRate: null,
       emotionalResilienceCount: 0,
-      emotionalResilienceRate: 0,
+      emotionalResilienceRate: null,
       boundaryMaintenanceCount: 0,
-      boundaryMaintenanceRate: 0,
+      boundaryMaintenanceRate: null,
       selfCareCount: 0,
-      selfCareRate: 0,
+      selfCareRate: null,
       teamSupportCount: 0,
-      teamSupportRate: 0,
+      teamSupportRate: null,
       debriefingSkillsCount: 0,
-      debriefingSkillsRate: 0,
+      debriefingSkillsRate: null,
       score: 0,
     };
   }
 
   const stressManagementCount = training.filter((t) => t.stressManagement).length;
-  const stressManagementRate = pct(stressManagementCount, totalStaff);
+  const stressManagementRate = rate(stressManagementCount, totalStaff);
 
   const emotionalResilienceCount = training.filter((t) => t.emotionalResilience).length;
-  const emotionalResilienceRate = pct(emotionalResilienceCount, totalStaff);
+  const emotionalResilienceRate = rate(emotionalResilienceCount, totalStaff);
 
   const boundaryMaintenanceCount = training.filter((t) => t.boundaryMaintenance).length;
-  const boundaryMaintenanceRate = pct(boundaryMaintenanceCount, totalStaff);
+  const boundaryMaintenanceRate = rate(boundaryMaintenanceCount, totalStaff);
 
   const selfCareCount = training.filter((t) => t.selfCare).length;
-  const selfCareRate = pct(selfCareCount, totalStaff);
+  const selfCareRate = rate(selfCareCount, totalStaff);
 
   const teamSupportCount = training.filter((t) => t.teamSupport).length;
-  const teamSupportRate = pct(teamSupportCount, totalStaff);
+  const teamSupportRate = rate(teamSupportCount, totalStaff);
 
   const debriefingSkillsCount = training.filter((t) => t.debriefingSkills).length;
-  const debriefingSkillsRate = pct(debriefingSkillsCount, totalStaff);
+  const debriefingSkillsRate = rate(debriefingSkillsCount, totalStaff);
 
   // 6 skills weighted: 6+5+5+4+3+2 = 25
   let score = 0;
-  score += (stressManagementRate / 100) * 6;
-  score += (emotionalResilienceRate / 100) * 5;
-  score += (boundaryMaintenanceRate / 100) * 5;
-  score += (selfCareRate / 100) * 4;
-  score += (teamSupportRate / 100) * 3;
-  score += (debriefingSkillsRate / 100) * 2;
+  score += (stressManagementRate! / 100) * 6;
+  score += (emotionalResilienceRate! / 100) * 5;
+  score += (boundaryMaintenanceRate! / 100) * 5;
+  score += (selfCareRate! / 100) * 4;
+  score += ((teamSupportRate ?? 0) / 100) * 3;
+  score += ((debriefingSkillsRate ?? 0) / 100) * 2;
 
   score = cap(Math.round(score * 10) / 10, 0, 25);
 
@@ -463,10 +472,10 @@ export function buildStaffWellbeingProfiles(
     const positiveCount = staff.assessments.filter(
       (a) => a.wellbeingScore === "excellent" || a.wellbeingScore === "good",
     ).length;
-    const wellbeingRate = pct(positiveCount, total);
+    const wellbeingRate = rate(positiveCount, total)!;
 
     const stressManagedCount = staff.assessments.filter((a) => a.stressManaged).length;
-    const stressManagedRate = pct(stressManagedCount, total);
+    const stressManagedRate = rate(stressManagedCount, total)!;
 
     const uniqueTypes = new Set(staff.assessments.map((a) => a.wellbeingType)).size;
 
@@ -478,14 +487,14 @@ export function buildStaffWellbeingProfiles(
     else if (total >= 5) score += 1;
 
     // wellbeing: based on wellbeingRate tiers
-    if (wellbeingRate >= 80) score += 3;
-    else if (wellbeingRate >= 60) score += 2;
-    else if (wellbeingRate >= 40) score += 1;
+    if (meets(wellbeingRate, 80)) score += 3;
+    else if (meets(wellbeingRate, 60)) score += 2;
+    else if (meets(wellbeingRate, 40)) score += 1;
 
     // stress: based on stressManagedRate tiers
-    if (stressManagedRate >= 80) score += 3;
-    else if (stressManagedRate >= 60) score += 2;
-    else if (stressManagedRate >= 40) score += 1;
+    if (meets(stressManagedRate, 80)) score += 3;
+    else if (meets(stressManagedRate, 60)) score += 2;
+    else if (meets(stressManagedRate, 40)) score += 1;
 
     // diversityBonus: >=4 types -> 2, >=2 -> 1
     if (uniqueTypes >= 4) score += 2;
@@ -535,16 +544,16 @@ export function generateStaffWellbeingResilienceIntelligence(
   const actions: string[] = [];
 
   // Strengths logic
-  if (wellbeingQuality.wellbeingRate >= 80 && assessments.length > 0) {
+  if (meets(wellbeingQuality.wellbeingRate, 80) && assessments.length > 0) {
     strengths.push("Strong staff wellbeing culture with " + wellbeingQuality.wellbeingRate + "% positive wellbeing scores");
   }
-  if (wellbeingQuality.stressManagedRate >= 80 && assessments.length > 0) {
+  if (meets(wellbeingQuality.stressManagedRate, 80) && assessments.length > 0) {
     strengths.push("Effective stress management with " + wellbeingQuality.stressManagedRate + "% stress managed rate");
   }
-  if (wellbeingQuality.supportProvidedRate >= 80 && assessments.length > 0) {
+  if (meets(wellbeingQuality.supportProvidedRate, 80) && assessments.length > 0) {
     strengths.push("Consistent support provision with " + wellbeingQuality.supportProvidedRate + "% support provided rate");
   }
-  if (wellbeingCompliance.actionPlanRate >= 80 && assessments.length > 0) {
+  if (meets(wellbeingCompliance.actionPlanRate, 80) && assessments.length > 0) {
     strengths.push("Robust action planning with " + wellbeingCompliance.actionPlanRate + "% action plan creation rate");
   }
   if (wellbeingPolicyResult.score === 25) {
@@ -555,10 +564,10 @@ export function generateStaffWellbeingResilienceIntelligence(
   }
 
   // Areas for improvement
-  if (assessments.length > 0 && wellbeingQuality.wellbeingRate < 60) {
+  if (assessments.length > 0 && below(wellbeingQuality.wellbeingRate, 60)) {
     areasForImprovement.push("Wellbeing score rate at " + wellbeingQuality.wellbeingRate + "% — below 60% threshold, targeted wellbeing interventions needed");
   }
-  if (assessments.length > 0 && wellbeingCompliance.followUpRate < 60) {
+  if (assessments.length > 0 && below(wellbeingCompliance.followUpRate, 60)) {
     areasForImprovement.push("Follow-up scheduling rate at " + wellbeingCompliance.followUpRate + "% — below 60% threshold, improve follow-up processes");
   }
   if (assessments.length > 0 && wellbeingCompliance.wellbeingTypeDiversityRatio < 0.5) {
@@ -578,7 +587,7 @@ export function generateStaffWellbeingResilienceIntelligence(
   if (training.length === 0) {
     actions.push("URGENT: No staff resilience training records — arrange resilience training programme for all staff");
   }
-  if (assessments.length > 0 && wellbeingQuality.workloadReviewedRate < 50) {
+  if (assessments.length > 0 && below(wellbeingQuality.workloadReviewedRate, 50)) {
     actions.push("Workload review rate at " + wellbeingQuality.workloadReviewedRate + "% — ensure workload is reviewed in all wellbeing assessments");
   }
   if (policy && !policy.burnoutPreventionPlan) {

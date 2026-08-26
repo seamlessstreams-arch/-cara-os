@@ -5,7 +5,6 @@ export {
   evaluateWorkforcePolicy,
   evaluateStaffWorkforceReadiness,
   buildStaffWorkforceProfiles,
-  pct,
   getRating,
   getWorkforceCategoryLabel,
   getWorkforceOutcomeLabel,

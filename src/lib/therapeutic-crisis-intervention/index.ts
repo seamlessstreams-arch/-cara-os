@@ -5,7 +5,6 @@ export {
   evaluateCrisisPolicy,
   evaluateStaffCrisisReadiness,
   buildChildCrisisProfiles,
-  pct,
   getRating,
   getInterventionTypeLabel,
   getIncidentSeverityLabel,

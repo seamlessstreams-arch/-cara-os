@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildPreventionProfile { childId: string; childName: string; totalSessions: number; understandingRate: number; engagementRate: number; topicsCovered: string[]; overallScore: number; }
 
@@ -73,19 +74,19 @@ export default function SubstanceMisusePreventionDashboardWidget() {
       <Section title="Prevention Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Sessions" value={data.preventionQuality.totalSessions} />
-          <Stat label="Understanding" value={`${data.preventionQuality.understandingRate}%`} />
-          <Stat label="Engagement" value={`${data.preventionQuality.engagementRate}%`} />
-          <Stat label="Scenario Practice" value={`${data.preventionQuality.scenarioRate}%`} />
-          <Stat label="Coping Strategies" value={`${data.preventionQuality.copingStrategyRate}%`} />
+          <Stat label="Understanding" value={`${formatRate(data.preventionQuality.understandingRate)}`} />
+          <Stat label="Engagement" value={`${formatRate(data.preventionQuality.engagementRate)}`} />
+          <Stat label="Scenario Practice" value={`${formatRate(data.preventionQuality.scenarioRate)}`} />
+          <Stat label="Coping Strategies" value={`${formatRate(data.preventionQuality.copingStrategyRate)}`} />
         </div>
       </Section>
 
       <Section title="Prevention Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documented" value={`${data.preventionCompliance.documentedRate}%`} />
-          <Stat label="Staff Delivered" value={`${data.preventionCompliance.staffDeliveredRate}%`} />
-          <Stat label="Follow-Up" value={`${data.preventionCompliance.followUpRate}%`} />
-          <Stat label="Topic Diversity" value={`${data.preventionCompliance.topicDiversityRatio}%`} />
+          <Stat label="Documented" value={`${formatRate(data.preventionCompliance.documentedRate)}`} />
+          <Stat label="Staff Delivered" value={`${formatRate(data.preventionCompliance.staffDeliveredRate)}`} />
+          <Stat label="Follow-Up" value={`${formatRate(data.preventionCompliance.followUpRate)}`} />
+          <Stat label="Topic Diversity" value={`${formatRate(data.preventionCompliance.topicDiversityRatio)}`} />
         </div>
       </Section>
 
@@ -108,12 +109,12 @@ export default function SubstanceMisusePreventionDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffPreventionReadiness.totalStaff} />
-          <Stat label="Substance Knowledge" value={`${data.staffPreventionReadiness.substanceKnowledgeRate}%`} />
-          <Stat label="Risk Indicators" value={`${data.staffPreventionReadiness.riskIndicatorRate}%`} />
-          <Stat label="Motivational Int." value={`${data.staffPreventionReadiness.motivationalInterviewingRate}%`} />
-          <Stat label="Incident Mgmt" value={`${data.staffPreventionReadiness.incidentManagementRate}%`} />
-          <Stat label="Safeguarding Links" value={`${data.staffPreventionReadiness.safeguardingLinksRate}%`} />
-          <Stat label="Age-Appropriate" value={`${data.staffPreventionReadiness.ageAppropriateDeliveryRate}%`} />
+          <Stat label="Substance Knowledge" value={`${formatRate(data.staffPreventionReadiness.substanceKnowledgeRate)}`} />
+          <Stat label="Risk Indicators" value={`${formatRate(data.staffPreventionReadiness.riskIndicatorRate)}`} />
+          <Stat label="Motivational Int." value={`${formatRate(data.staffPreventionReadiness.motivationalInterviewingRate)}`} />
+          <Stat label="Incident Mgmt" value={`${formatRate(data.staffPreventionReadiness.incidentManagementRate)}`} />
+          <Stat label="Safeguarding Links" value={`${formatRate(data.staffPreventionReadiness.safeguardingLinksRate)}`} />
+          <Stat label="Age-Appropriate" value={`${formatRate(data.staffPreventionReadiness.ageAppropriateDeliveryRate)}`} />
         </div>
       </Section>
 

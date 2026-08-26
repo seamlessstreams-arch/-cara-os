@@ -5,7 +5,6 @@ export {
   evaluateStaffVisitorReadiness,
   buildChildVisitorProfiles,
   generateVisitorManagementQualityIntelligence,
-  pct,
   getRating,
   getVisitorTypeLabel,
   getVisitQualityLabel,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { below, formatRate } from "@/lib/metrics/rate";
 import type { TransitionPathwayPlanningIntelligence } from "@/lib/transition-pathway-planning";
 
 const ratingColors: Record<string, string> = {
@@ -165,44 +166,44 @@ export function TransitionPathwayPlanningDashboardWidget() {
         <Section title="Pathway Planning">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
             <div><span className="text-gray-500">Plans:</span> <span className="font-medium">{data.pathwayPlanning.totalPlans}</span></div>
-            <div><span className="text-gray-500">Personal Adviser:</span> <span className="font-medium">{data.pathwayPlanning.personalAdviserRate}%</span></div>
-            <div><span className="text-gray-500">Regularly Reviewed:</span> <span className="font-medium">{data.pathwayPlanning.planReviewedRate}%</span></div>
-            <div><span className="text-gray-500">Child Views:</span> <span className="font-medium">{data.pathwayPlanning.childViewsRate}%</span></div>
-            <div><span className="text-gray-500">Accommodation:</span> <span className="font-medium">{data.pathwayPlanning.accommodationRate}%</span></div>
-            <div><span className="text-gray-500">Financial Plan:</span> <span className="font-medium">{data.pathwayPlanning.financialPlanRate}%</span></div>
-            <div><span className="text-gray-500">Health Passport:</span> <span className="font-medium">{data.pathwayPlanning.healthPassportRate}%</span></div>
+            <div><span className="text-gray-500">Personal Adviser:</span> <span className="font-medium">{formatRate(data.pathwayPlanning.personalAdviserRate)}</span></div>
+            <div><span className="text-gray-500">Regularly Reviewed:</span> <span className="font-medium">{formatRate(data.pathwayPlanning.planReviewedRate)}</span></div>
+            <div><span className="text-gray-500">Child Views:</span> <span className="font-medium">{formatRate(data.pathwayPlanning.childViewsRate)}</span></div>
+            <div><span className="text-gray-500">Accommodation:</span> <span className="font-medium">{formatRate(data.pathwayPlanning.accommodationRate)}</span></div>
+            <div><span className="text-gray-500">Financial Plan:</span> <span className="font-medium">{formatRate(data.pathwayPlanning.financialPlanRate)}</span></div>
+            <div><span className="text-gray-500">Health Passport:</span> <span className="font-medium">{formatRate(data.pathwayPlanning.healthPassportRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Independence Skills">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Assessments:</span> <span className="font-medium">{data.independenceSkills.totalAssessments}</span></div>
-            <div><span className="text-gray-500">Competent+:</span> <span className="font-medium">{data.independenceSkills.competentPlusRate}%</span></div>
-            <div><span className="text-gray-500">Support in Place:</span> <span className="font-medium">{data.independenceSkills.supportInPlaceRate}%</span></div>
-            <div><span className="text-gray-500">Progress Recorded:</span> <span className="font-medium">{data.independenceSkills.progressRecordedRate}%</span></div>
+            <div><span className="text-gray-500">Competent+:</span> <span className="font-medium">{formatRate(data.independenceSkills.competentPlusRate)}</span></div>
+            <div><span className="text-gray-500">Support in Place:</span> <span className="font-medium">{formatRate(data.independenceSkills.supportInPlaceRate)}</span></div>
+            <div><span className="text-gray-500">Progress Recorded:</span> <span className="font-medium">{formatRate(data.independenceSkills.progressRecordedRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Transition Meetings">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
             <div><span className="text-gray-500">Meetings:</span> <span className="font-medium">{data.transitionMeetings.totalMeetings}</span></div>
-            <div><span className="text-gray-500">Child Attended:</span> <span className="font-medium">{data.transitionMeetings.childAttendedRate}%</span></div>
-            <div><span className="text-gray-500">Minutes Recorded:</span> <span className="font-medium">{data.transitionMeetings.minutesRecordedRate}%</span></div>
-            <div><span className="text-gray-500">Actions Agreed:</span> <span className="font-medium">{data.transitionMeetings.actionsAgreedRate}%</span></div>
-            <div><span className="text-gray-500">SW Present:</span> <span className={`font-medium ${data.transitionMeetings.socialWorkerPresentRate < 100 ? "text-amber-600" : "text-green-600"}`}>{data.transitionMeetings.socialWorkerPresentRate}%</span></div>
-            <div><span className="text-gray-500">Next Scheduled:</span> <span className="font-medium">{data.transitionMeetings.nextMeetingScheduledRate}%</span></div>
+            <div><span className="text-gray-500">Child Attended:</span> <span className="font-medium">{formatRate(data.transitionMeetings.childAttendedRate)}</span></div>
+            <div><span className="text-gray-500">Minutes Recorded:</span> <span className="font-medium">{formatRate(data.transitionMeetings.minutesRecordedRate)}</span></div>
+            <div><span className="text-gray-500">Actions Agreed:</span> <span className="font-medium">{formatRate(data.transitionMeetings.actionsAgreedRate)}</span></div>
+            <div><span className="text-gray-500">SW Present:</span> <span className={`font-medium ${below(data.transitionMeetings.socialWorkerPresentRate, 100) ? "text-amber-600" : "text-green-600"}`}>{formatRate(data.transitionMeetings.socialWorkerPresentRate)}</span></div>
+            <div><span className="text-gray-500">Next Scheduled:</span> <span className="font-medium">{formatRate(data.transitionMeetings.nextMeetingScheduledRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Staff Transition Readiness">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
             <div><span className="text-gray-500">Staff:</span> <span className="font-medium">{data.staffTransitionReadiness.totalStaff}</span></div>
-            <div><span className="text-gray-500">Leaving Care Policy:</span> <span className="font-medium">{data.staffTransitionReadiness.leavingCarePolicyRate}%</span></div>
-            <div><span className="text-gray-500">Pathway Planning:</span> <span className="font-medium">{data.staffTransitionReadiness.pathwayPlanningRate}%</span></div>
-            <div><span className="text-gray-500">Independence Skills:</span> <span className="font-medium">{data.staffTransitionReadiness.independenceSkillsRate}%</span></div>
-            <div><span className="text-gray-500">Housing Options:</span> <span className="font-medium">{data.staffTransitionReadiness.housingOptionsRate}%</span></div>
-            <div><span className="text-gray-500">Financial Capability:</span> <span className="font-medium">{data.staffTransitionReadiness.financialCapabilityRate}%</span></div>
-            <div><span className="text-gray-500">Emotional Support:</span> <span className="font-medium">{data.staffTransitionReadiness.emotionalSupportRate}%</span></div>
+            <div><span className="text-gray-500">Leaving Care Policy:</span> <span className="font-medium">{formatRate(data.staffTransitionReadiness.leavingCarePolicyRate)}</span></div>
+            <div><span className="text-gray-500">Pathway Planning:</span> <span className="font-medium">{formatRate(data.staffTransitionReadiness.pathwayPlanningRate)}</span></div>
+            <div><span className="text-gray-500">Independence Skills:</span> <span className="font-medium">{formatRate(data.staffTransitionReadiness.independenceSkillsRate)}</span></div>
+            <div><span className="text-gray-500">Housing Options:</span> <span className="font-medium">{formatRate(data.staffTransitionReadiness.housingOptionsRate)}</span></div>
+            <div><span className="text-gray-500">Financial Capability:</span> <span className="font-medium">{formatRate(data.staffTransitionReadiness.financialCapabilityRate)}</span></div>
+            <div><span className="text-gray-500">Emotional Support:</span> <span className="font-medium">{formatRate(data.staffTransitionReadiness.emotionalSupportRate)}</span></div>
           </div>
         </Section>
 

@@ -12,6 +12,7 @@
 // ==============================================================================
 
 import { useState, useEffect } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 // -- Local Type Definitions ----------------------------------------------------
 
@@ -305,7 +306,7 @@ export function WaterSafetyLegionellaDashboardWidget() {
             Corrective actions taken:{" "}
             {data.temperatureCompliance.correctiveActionCount} of{" "}
             {data.temperatureCompliance.issueCount} (
-            {data.temperatureCompliance.correctiveActionRate}%)
+            {formatRate(data.temperatureCompliance.correctiveActionRate)})
           </p>
         </div>
       )}
@@ -373,11 +374,11 @@ export function WaterSafetyLegionellaDashboardWidget() {
             />
             <StatRow
               label="Pass rate"
-              value={`${data.temperatureCompliance.passRate}%`}
+              value={`${formatRate(data.temperatureCompliance.passRate)}`}
             />
             <StatRow
               label="Within safe range"
-              value={`${data.temperatureCompliance.withinSafeRangeRate}%`}
+              value={`${formatRate(data.temperatureCompliance.withinSafeRangeRate)}`}
             />
             <StatRow
               label="Issues found"
@@ -385,7 +386,7 @@ export function WaterSafetyLegionellaDashboardWidget() {
             />
             <StatRow
               label="Corrective actions"
-              value={`${data.temperatureCompliance.correctiveActionRate}%`}
+              value={`${formatRate(data.temperatureCompliance.correctiveActionRate)}`}
             />
             <StatRow
               label="Source types covered"
@@ -416,15 +417,15 @@ export function WaterSafetyLegionellaDashboardWidget() {
             />
             <StatRow
               label="Low risk rate"
-              value={`${data.legionellaManagement.lowRiskRate}%`}
+              value={`${formatRate(data.legionellaManagement.lowRiskRate)}`}
             />
             <StatRow
               label="Flushing schedules"
-              value={`${data.legionellaManagement.flushingScheduleRate}%`}
+              value={`${formatRate(data.legionellaManagement.flushingScheduleRate)}`}
             />
             <StatRow
               label="Water treatment active"
-              value={`${data.legionellaManagement.waterTreatmentRate}%`}
+              value={`${formatRate(data.legionellaManagement.waterTreatmentRate)}`}
             />
             <StatRow
               label="Dead legs identified"
@@ -436,7 +437,7 @@ export function WaterSafetyLegionellaDashboardWidget() {
             />
             <StatRow
               label="Dead legs management"
-              value={`${data.legionellaManagement.deadLegsManagementRate}%`}
+              value={`${formatRate(data.legionellaManagement.deadLegsManagementRate)}`}
             />
             <StatRow
               label="Score"
@@ -503,27 +504,27 @@ export function WaterSafetyLegionellaDashboardWidget() {
             />
             <StatRow
               label="Legionella awareness"
-              value={`${data.staffWaterReadiness.legionellaAwarenessRate}%`}
+              value={`${formatRate(data.staffWaterReadiness.legionellaAwarenessRate)}`}
             />
             <StatRow
               label="Temperature monitoring"
-              value={`${data.staffWaterReadiness.temperatureMonitoringRate}%`}
+              value={`${formatRate(data.staffWaterReadiness.temperatureMonitoringRate)}`}
             />
             <StatRow
               label="Scalding prevention"
-              value={`${data.staffWaterReadiness.scaldingPreventionRate}%`}
+              value={`${formatRate(data.staffWaterReadiness.scaldingPreventionRate)}`}
             />
             <StatRow
               label="Bath supervision"
-              value={`${data.staffWaterReadiness.bathSupervisionRate}%`}
+              value={`${formatRate(data.staffWaterReadiness.bathSupervisionRate)}`}
             />
             <StatRow
               label="Emergency response"
-              value={`${data.staffWaterReadiness.emergencyResponseRate}%`}
+              value={`${formatRate(data.staffWaterReadiness.emergencyResponseRate)}`}
             />
             <StatRow
               label="Record keeping"
-              value={`${data.staffWaterReadiness.recordKeepingRate}%`}
+              value={`${formatRate(data.staffWaterReadiness.recordKeepingRate)}`}
             />
             <StatRow
               label="Score"

@@ -5,7 +5,6 @@ export {
   evaluateActionResponse,
   buildChildVisitorProfiles,
   generateVisitorPartnershipQualityIntelligence,
-  pct,
   getRating,
   getVisitorTypeLabel,
   getVisitPurposeLabel,

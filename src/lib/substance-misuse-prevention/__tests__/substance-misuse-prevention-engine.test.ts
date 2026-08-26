@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct, getRating, getPreventionTopicLabel, getUnderstandingLevelLabel, getRatingLabel,
+  getRating, getPreventionTopicLabel, getUnderstandingLevelLabel, getRatingLabel,
   evaluatePreventionQuality, evaluatePreventionCompliance, evaluatePreventionPolicy,
   evaluateStaffPreventionReadiness, buildChildPreventionProfiles,
   generateSubstanceMisusePreventionIntelligence,
@@ -20,14 +20,6 @@ function makeTraining(o: Partial<StaffPreventionTraining> = {}): StaffPrevention
   _tid++;
   return { id: `t-${_tid}`, staffId: `staff-${_tid}`, staffName: `Staff ${_tid}`, substanceKnowledge: true, riskIndicatorRecognition: true, motivationalInterviewing: true, incidentManagement: true, safeguardingLinks: true, ageAppropriateDelivery: true, ...o };
 }
-
-describe("pct", () => {
-  it("returns 0 for den=0", () => { expect(pct(5, 0)).toBe(0); });
-  it("correct pct", () => { expect(pct(3, 4)).toBe(75); });
-  it("rounds", () => { expect(pct(1, 3)).toBe(33); });
-  it("100 for equal", () => { expect(pct(10, 10)).toBe(100); });
-  it("0 for num=0", () => { expect(pct(0, 5)).toBe(0); });
-});
 
 describe("getRating", () => {
   it("outstanding >= 80", () => { expect(getRating(80)).toBe("outstanding"); });
@@ -67,10 +59,10 @@ describe("evaluatePreventionQuality", () => {
     const r = evaluatePreventionQuality([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalSessions).toBe(0);
-    expect(r.understandingRate).toBe(0);
-    expect(r.engagementRate).toBe(0);
-    expect(r.scenarioRate).toBe(0);
-    expect(r.copingStrategyRate).toBe(0);
+    expect(r.understandingRate).toBeNull();
+    expect(r.engagementRate).toBeNull();
+    expect(r.scenarioRate).toBeNull();
+    expect(r.copingStrategyRate).toBeNull();
   });
   it("max 25 with perfect sessions", () => {
     const r = evaluatePreventionQuality(Array.from({ length: 10 }, () => makeSession()));
@@ -120,9 +112,9 @@ describe("evaluatePreventionCompliance", () => {
   it("zeros for empty", () => {
     const r = evaluatePreventionCompliance([]);
     expect(r.overallScore).toBe(0);
-    expect(r.documentedRate).toBe(0);
-    expect(r.staffDeliveredRate).toBe(0);
-    expect(r.followUpRate).toBe(0);
+    expect(r.documentedRate).toBeNull();
+    expect(r.staffDeliveredRate).toBeNull();
+    expect(r.followUpRate).toBeNull();
     expect(r.topicDiversityRatio).toBe(0);
   });
   it("max 25 with full diversity", () => {

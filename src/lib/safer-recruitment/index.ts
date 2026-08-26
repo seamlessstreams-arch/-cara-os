@@ -5,7 +5,6 @@ export {
   evaluateSaferRecruitmentPolicy,
   evaluateStaffSaferRecruitmentReadiness,
   buildStaffRecruitmentProfiles,
-  pct,
   getRating,
   getSaferRecruitmentCategoryLabel,
   getSaferRecruitmentOutcomeLabel,

@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getStaffWellbeingCategoryLabel,
   getStaffWellbeingOutcomeLabel,
@@ -67,14 +66,6 @@ function makeTraining(overrides: Partial<StaffWellbeingTraining> = {}): StaffWel
 
 // ── pct ────────────────────────────────────────────────────────────────────
 
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => { expect(pct(5, 0)).toBe(0); });
-  it("returns 100 for equal num and den", () => { expect(pct(10, 10)).toBe(100); });
-  it("returns 50 for half", () => { expect(pct(5, 10)).toBe(50); });
-  it("rounds to nearest integer", () => { expect(pct(1, 3)).toBe(33); expect(pct(2, 3)).toBe(67); });
-  it("returns 0 for 0 numerator", () => { expect(pct(0, 10)).toBe(0); });
-});
-
 // ── getRating ──────────────────────────────────────────────────────────────
 
 describe("getRating", () => {
@@ -124,7 +115,7 @@ describe("evaluateWellbeingQuality", () => {
     expect(result.overallScore).toBe(0);
     expect(result.rating).toBe("inadequate");
     expect(result.totalRecords).toBe(0);
-    expect(result.supervisionReceivedRate).toBe(0);
+    expect(result.supervisionReceivedRate).toBeNull();
   });
 
   it("returns max score for all-true records", () => {
@@ -174,7 +165,7 @@ describe("evaluateWellbeingCompliance", () => {
     const result = evaluateWellbeingCompliance([]);
     expect(result.overallScore).toBe(0);
     expect(result.rating).toBe("inadequate");
-    expect(result.documentationRate).toBe(0);
+    expect(result.documentationRate).toBeNull();
   });
 
   it("calculates documentation and timely rates", () => {

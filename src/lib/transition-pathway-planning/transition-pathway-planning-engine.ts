@@ -1,3 +1,4 @@
+import { below, meanOf, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // TRANSITION PATHWAY PLANNING INTELLIGENCE ENGINE
 //
@@ -121,42 +122,62 @@ export interface StaffTransitionTraining {
 export interface PathwayPlanningResult {
   overallScore: number;
   totalPlans: number;
-  personalAdviserRate: number;
-  planReviewedRate: number;
-  childViewsRate: number;
-  accommodationRate: number;
-  financialPlanRate: number;
-  healthPassportRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  personalAdviserRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  planReviewedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  accommodationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  financialPlanRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  healthPassportRate: number | null;
 }
 
 export interface IndependenceSkillsResult {
   overallScore: number;
   totalAssessments: number;
-  competentPlusRate: number;
-  supportInPlaceRate: number;
-  progressRecordedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  competentPlusRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  supportInPlaceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  progressRecordedRate: number | null;
   skillBreadthScore: number;
 }
 
 export interface TransitionMeetingsResult {
   overallScore: number;
   totalMeetings: number;
-  childAttendedRate: number;
-  minutesRecordedRate: number;
-  actionsAgreedRate: number;
-  socialWorkerPresentRate: number;
-  nextMeetingScheduledRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childAttendedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  minutesRecordedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionsAgreedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  socialWorkerPresentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  nextMeetingScheduledRate: number | null;
 }
 
 export interface StaffTransitionReadinessResult {
   overallScore: number;
   totalStaff: number;
-  leavingCarePolicyRate: number;
-  pathwayPlanningRate: number;
-  independenceSkillsRate: number;
-  housingOptionsRate: number;
-  financialCapabilityRate: number;
-  emotionalSupportRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  leavingCarePolicyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  pathwayPlanningRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  independenceSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  housingOptionsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  financialCapabilityRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  emotionalSupportRate: number | null;
 }
 
 export interface ChildTransitionProfile {
@@ -187,11 +208,6 @@ export interface TransitionPathwayPlanningIntelligence {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -273,40 +289,40 @@ export function evaluatePathwayPlanning(
     return {
       overallScore: 0,
       totalPlans: 0,
-      personalAdviserRate: 0,
-      planReviewedRate: 0,
-      childViewsRate: 0,
-      accommodationRate: 0,
-      financialPlanRate: 0,
-      healthPassportRate: 0,
+      personalAdviserRate: null,
+      planReviewedRate: null,
+      childViewsRate: null,
+      accommodationRate: null,
+      financialPlanRate: null,
+      healthPassportRate: null,
     };
   }
 
   const personalAdviserCount = plans.filter((p) => p.personalAdviserAssigned).length;
-  const personalAdviserRate = pct(personalAdviserCount, plans.length);
+  const personalAdviserRate = rate(personalAdviserCount, plans.length);
 
   const planReviewedCount = plans.filter((p) => p.planReviewedRegularly).length;
-  const planReviewedRate = pct(planReviewedCount, plans.length);
+  const planReviewedRate = rate(planReviewedCount, plans.length);
 
   const childViewsCount = plans.filter((p) => p.childViewsIncluded).length;
-  const childViewsRate = pct(childViewsCount, plans.length);
+  const childViewsRate = rate(childViewsCount, plans.length);
 
   const accommodationCount = plans.filter((p) => p.accommodationIdentified).length;
-  const accommodationRate = pct(accommodationCount, plans.length);
+  const accommodationRate = rate(accommodationCount, plans.length);
 
   const financialPlanCount = plans.filter((p) => p.financialPlanInPlace).length;
-  const financialPlanRate = pct(financialPlanCount, plans.length);
+  const financialPlanRate = rate(financialPlanCount, plans.length);
 
   const healthPassportCount = plans.filter((p) => p.healthPassportCompleted).length;
-  const healthPassportRate = pct(healthPassportCount, plans.length);
+  const healthPassportRate = rate(healthPassportCount, plans.length);
 
   let score = 0;
-  score += Math.round((personalAdviserRate / 100) * 6);
-  score += Math.round((planReviewedRate / 100) * 6);
-  score += Math.round((childViewsRate / 100) * 5);
-  score += Math.round((accommodationRate / 100) * 4);
-  score += Math.round((financialPlanRate / 100) * 2);
-  score += Math.round((healthPassportRate / 100) * 2);
+  score += Math.round((personalAdviserRate! / 100) * 6);
+  score += Math.round((planReviewedRate! / 100) * 6);
+  score += Math.round((childViewsRate! / 100) * 5);
+  score += Math.round((accommodationRate! / 100) * 4);
+  score += Math.round((financialPlanRate! / 100) * 2);
+  score += Math.round((healthPassportRate! / 100) * 2);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -334,9 +350,9 @@ export function evaluateIndependenceSkills(
     return {
       overallScore: 0,
       totalAssessments: 0,
-      competentPlusRate: 0,
-      supportInPlaceRate: 0,
-      progressRecordedRate: 0,
+      competentPlusRate: null,
+      supportInPlaceRate: null,
+      progressRecordedRate: null,
       skillBreadthScore: 0,
     };
   }
@@ -344,22 +360,22 @@ export function evaluateIndependenceSkills(
   const competentPlus = assessments.filter(
     (a) => a.currentLevel === "competent" || a.currentLevel === "independent",
   ).length;
-  const competentPlusRate = pct(competentPlus, assessments.length);
+  const competentPlusRate = rate(competentPlus, assessments.length);
 
   const supportInPlace = assessments.filter((a) => a.supportInPlace).length;
-  const supportInPlaceRate = pct(supportInPlace, assessments.length);
+  const supportInPlaceRate = rate(supportInPlace, assessments.length);
 
   const progressRecorded = assessments.filter((a) => a.progressRecorded).length;
-  const progressRecordedRate = pct(progressRecorded, assessments.length);
+  const progressRecordedRate = rate(progressRecorded, assessments.length);
 
   const uniqueSkills = new Set(assessments.map((a) => a.skillArea));
   const skillBreadthRatio = uniqueSkills.size / 12;
   const skillBreadthScore = Math.round(skillBreadthRatio * 6);
 
   let score = 0;
-  score += Math.round((competentPlusRate / 100) * 7);
-  score += Math.round((supportInPlaceRate / 100) * 6);
-  score += Math.round((progressRecordedRate / 100) * 6);
+  score += Math.round((competentPlusRate! / 100) * 7);
+  score += Math.round((supportInPlaceRate! / 100) * 6);
+  score += Math.round((progressRecordedRate! / 100) * 6);
   score += Math.min(6, skillBreadthScore);
 
   return {
@@ -386,36 +402,36 @@ export function evaluateTransitionMeetings(
     return {
       overallScore: 0,
       totalMeetings: 0,
-      childAttendedRate: 0,
-      minutesRecordedRate: 0,
-      actionsAgreedRate: 0,
-      socialWorkerPresentRate: 0,
-      nextMeetingScheduledRate: 0,
+      childAttendedRate: null,
+      minutesRecordedRate: null,
+      actionsAgreedRate: null,
+      socialWorkerPresentRate: null,
+      nextMeetingScheduledRate: null,
     };
   }
 
   const childAttended = meetings.filter((m) => m.childAttended).length;
-  const childAttendedRate = pct(childAttended, meetings.length);
+  const childAttendedRate = rate(childAttended, meetings.length);
 
   const minutesRecorded = meetings.filter((m) => m.minutesRecorded).length;
-  const minutesRecordedRate = pct(minutesRecorded, meetings.length);
+  const minutesRecordedRate = rate(minutesRecorded, meetings.length);
 
   const actionsAgreed = meetings.filter((m) => m.actionsAgreed).length;
-  const actionsAgreedRate = pct(actionsAgreed, meetings.length);
+  const actionsAgreedRate = rate(actionsAgreed, meetings.length);
 
   const socialWorkerPresent = meetings.filter((m) => m.socialWorkerPresent).length;
-  const socialWorkerPresentRate = pct(socialWorkerPresent, meetings.length);
+  const socialWorkerPresentRate = rate(socialWorkerPresent, meetings.length);
 
   const nextMeetingScheduled = meetings.filter((m) => m.nextMeetingScheduled).length;
-  const nextMeetingScheduledRate = pct(nextMeetingScheduled, meetings.length);
+  const nextMeetingScheduledRate = rate(nextMeetingScheduled, meetings.length);
 
   // SW present + next meeting combined: average of both rates, scaled to 0-6
-  const combinedRate = (socialWorkerPresentRate + nextMeetingScheduledRate) / 2;
+  const combinedRate = meanOf([socialWorkerPresentRate, nextMeetingScheduledRate]) ?? 0;
 
   let score = 0;
-  score += Math.round((childAttendedRate / 100) * 7);
-  score += Math.round((minutesRecordedRate / 100) * 6);
-  score += Math.round((actionsAgreedRate / 100) * 6);
+  score += Math.round((childAttendedRate! / 100) * 7);
+  score += Math.round((minutesRecordedRate! / 100) * 6);
+  score += Math.round((actionsAgreedRate! / 100) * 6);
   score += Math.round((combinedRate / 100) * 6);
 
   return {
@@ -444,40 +460,40 @@ export function evaluateStaffTransitionReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      leavingCarePolicyRate: 0,
-      pathwayPlanningRate: 0,
-      independenceSkillsRate: 0,
-      housingOptionsRate: 0,
-      financialCapabilityRate: 0,
-      emotionalSupportRate: 0,
+      leavingCarePolicyRate: null,
+      pathwayPlanningRate: null,
+      independenceSkillsRate: null,
+      housingOptionsRate: null,
+      financialCapabilityRate: null,
+      emotionalSupportRate: null,
     };
   }
 
   const leavingCareCount = training.filter((t) => t.leavingCarePolicy).length;
-  const leavingCarePolicyRate = pct(leavingCareCount, training.length);
+  const leavingCarePolicyRate = rate(leavingCareCount, training.length);
 
   const pathwayPlanningCount = training.filter((t) => t.pathwayPlanning).length;
-  const pathwayPlanningRate = pct(pathwayPlanningCount, training.length);
+  const pathwayPlanningRate = rate(pathwayPlanningCount, training.length);
 
   const independenceSkillsCount = training.filter((t) => t.independenceSkills).length;
-  const independenceSkillsRate = pct(independenceSkillsCount, training.length);
+  const independenceSkillsRate = rate(independenceSkillsCount, training.length);
 
   const housingOptionsCount = training.filter((t) => t.housingOptions).length;
-  const housingOptionsRate = pct(housingOptionsCount, training.length);
+  const housingOptionsRate = rate(housingOptionsCount, training.length);
 
   const financialCapabilityCount = training.filter((t) => t.financialCapability).length;
-  const financialCapabilityRate = pct(financialCapabilityCount, training.length);
+  const financialCapabilityRate = rate(financialCapabilityCount, training.length);
 
   const emotionalSupportCount = training.filter((t) => t.emotionalSupport).length;
-  const emotionalSupportRate = pct(emotionalSupportCount, training.length);
+  const emotionalSupportRate = rate(emotionalSupportCount, training.length);
 
   let score = 0;
-  score += Math.round((leavingCarePolicyRate / 100) * 6);
-  score += Math.round((pathwayPlanningRate / 100) * 5);
-  score += Math.round((independenceSkillsRate / 100) * 5);
-  score += Math.round((housingOptionsRate / 100) * 4);
-  score += Math.round((financialCapabilityRate / 100) * 3);
-  score += Math.round((emotionalSupportRate / 100) * 2);
+  score += Math.round((leavingCarePolicyRate! / 100) * 6);
+  score += Math.round((pathwayPlanningRate! / 100) * 5);
+  score += Math.round((independenceSkillsRate! / 100) * 5);
+  score += Math.round((housingOptionsRate! / 100) * 4);
+  score += Math.round((financialCapabilityRate! / 100) * 3);
+  score += Math.round((emotionalSupportRate! / 100) * 2);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -593,13 +609,13 @@ export function generateTransitionPathwayPlanningIntelligence(
     strengths.push("All pathway plans reviewed regularly and kept up to date");
   if (plans.length > 0 && pathwayPlanning.childViewsRate === 100)
     strengths.push("Child views included in all pathway plans — strong participation");
-  if (plans.length > 0 && pathwayPlanning.accommodationRate >= 80)
+  if (plans.length > 0 && meets(pathwayPlanning.accommodationRate, 80))
     strengths.push("Accommodation identified for " + pathwayPlanning.accommodationRate + "% of transitioning children");
-  if (assessments.length > 0 && independenceSkills.competentPlusRate >= 70)
+  if (assessments.length > 0 && meets(independenceSkills.competentPlusRate, 70))
     strengths.push("Strong independence skill development — " + independenceSkills.competentPlusRate + "% at competent or independent level");
   if (assessments.length > 0 && independenceSkills.progressRecordedRate === 100)
     strengths.push("Progress recorded for all independence skill assessments");
-  if (meetings.length > 0 && transitionMeetings.childAttendedRate >= 90)
+  if (meetings.length > 0 && meets(transitionMeetings.childAttendedRate, 90))
     strengths.push("Excellent child participation — " + transitionMeetings.childAttendedRate + "% attendance at transition meetings");
   if (meetings.length > 0 && transitionMeetings.minutesRecordedRate === 100)
     strengths.push("Minutes recorded for all transition meetings");
@@ -612,30 +628,30 @@ export function generateTransitionPathwayPlanningIntelligence(
   const areasForImprovement: string[] = [];
   if (plans.length === 0)
     areasForImprovement.push("No pathway plans documented — all children approaching transition must have a plan");
-  if (plans.length > 0 && pathwayPlanning.personalAdviserRate < 100)
-    areasForImprovement.push("Personal adviser not assigned for " + (100 - pathwayPlanning.personalAdviserRate) + "% of pathway plans — statutory requirement");
-  if (plans.length > 0 && pathwayPlanning.planReviewedRate < 80)
+  if (plans.length > 0 && below(pathwayPlanning.personalAdviserRate, 100))
+    areasForImprovement.push("Personal adviser not assigned for " + (100 - pathwayPlanning.personalAdviserRate!) + "% of pathway plans — statutory requirement");
+  if (plans.length > 0 && below(pathwayPlanning.planReviewedRate, 80))
     areasForImprovement.push("Only " + pathwayPlanning.planReviewedRate + "% of pathway plans reviewed regularly — plans must be kept current");
-  if (plans.length > 0 && pathwayPlanning.childViewsRate < 100)
-    areasForImprovement.push("Child views missing from " + (100 - pathwayPlanning.childViewsRate) + "% of pathway plans");
-  if (plans.length > 0 && pathwayPlanning.healthPassportRate < 80)
+  if (plans.length > 0 && below(pathwayPlanning.childViewsRate, 100))
+    areasForImprovement.push("Child views missing from " + (100 - pathwayPlanning.childViewsRate!) + "% of pathway plans");
+  if (plans.length > 0 && below(pathwayPlanning.healthPassportRate, 80))
     areasForImprovement.push("Health passports completed for only " + pathwayPlanning.healthPassportRate + "% of children — should be universal");
   if (assessments.length === 0 && plans.length > 0)
     areasForImprovement.push("No independence skill assessments documented — essential for transition readiness");
-  if (assessments.length > 0 && independenceSkills.competentPlusRate < 50)
+  if (assessments.length > 0 && below(independenceSkills.competentPlusRate, 50))
     areasForImprovement.push("Only " + independenceSkills.competentPlusRate + "% of skills assessed at competent or independent level");
-  if (assessments.length > 0 && independenceSkills.supportInPlaceRate < 80)
+  if (assessments.length > 0 && below(independenceSkills.supportInPlaceRate, 80))
     areasForImprovement.push("Support in place for only " + independenceSkills.supportInPlaceRate + "% of skill assessments");
   if (meetings.length === 0 && plans.length > 0)
     areasForImprovement.push("No transition meetings recorded — regular multi-agency meetings required");
-  if (meetings.length > 0 && transitionMeetings.childAttendedRate < 80)
+  if (meetings.length > 0 && below(transitionMeetings.childAttendedRate, 80))
     areasForImprovement.push("Child attendance at transition meetings is " + transitionMeetings.childAttendedRate + "% — children should be central to their planning");
-  if (meetings.length > 0 && transitionMeetings.socialWorkerPresentRate < 80)
+  if (meetings.length > 0 && below(transitionMeetings.socialWorkerPresentRate, 80))
     areasForImprovement.push("Social worker present at only " + transitionMeetings.socialWorkerPresentRate + "% of transition meetings");
   if (training.length === 0)
     areasForImprovement.push("No staff transition training documented — all staff must be prepared to support transitions");
-  if (training.length > 0 && staffTransitionReadiness.leavingCarePolicyRate < 100)
-    areasForImprovement.push("Leaving care policy training incomplete — " + (100 - staffTransitionReadiness.leavingCarePolicyRate) + "% of staff not trained");
+  if (training.length > 0 && below(staffTransitionReadiness.leavingCarePolicyRate, 100))
+    areasForImprovement.push("Leaving care policy training incomplete — " + (100 - staffTransitionReadiness.leavingCarePolicyRate!) + "% of staff not trained");
 
   // -- Actions --
   const actions: string[] = [];

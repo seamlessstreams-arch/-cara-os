@@ -10,7 +10,6 @@ import {
   evaluateStaffWaterReadiness,
   buildWaterSafetyLocationProfiles,
   generateWaterSafetyLegionellaIntelligence,
-  pct,
   getRating,
   getWaterSourceTypeLabel,
   getCheckOutcomeLabel,
@@ -90,29 +89,6 @@ const makeTraining = (
 // ==============================================================================
 // pct() helper
 // ==============================================================================
-
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when both are 0", () => {
-    expect(pct(0, 0)).toBe(0);
-  });
-
-  it("returns 100 for equal values", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-});
 
 // ==============================================================================
 // getRating() helper
@@ -198,10 +174,10 @@ describe("evaluateTemperatureCompliance", () => {
     const result = evaluateTemperatureCompliance([]);
     expect(result.score).toBe(0);
     expect(result.totalChecks).toBe(0);
-    expect(result.passRate).toBe(0);
-    expect(result.withinSafeRangeRate).toBe(0);
-    expect(result.correctiveActionRate).toBe(0);
-    expect(result.sourceTypeCoverage).toBe(0);
+    expect(result.passRate).toBeNull();
+    expect(result.withinSafeRangeRate).toBeNull();
+    expect(result.correctiveActionRate).toBeNull();
+    expect(result.sourceTypeCoverage).toBeNull();
   });
 
   it("scores pass rate correctly — all pass", () => {
@@ -257,11 +233,11 @@ describe("evaluateTemperatureCompliance", () => {
     expect(result.correctiveActionRate).toBe(67);
   });
 
-  it("corrective action rate is 0 when no issues", () => {
+  it("corrective action rate is null when no issues", () => {
     const checks = [makeCheck({ id: "1", outcome: "pass" })];
     const result = evaluateTemperatureCompliance(checks);
     expect(result.issueCount).toBe(0);
-    expect(result.correctiveActionRate).toBe(0);
+    expect(result.correctiveActionRate).toBeNull();
   });
 
   it("calculates source type coverage", () => {
@@ -367,10 +343,10 @@ describe("evaluateLegionellaManagement", () => {
     const result = evaluateLegionellaManagement([]);
     expect(result.score).toBe(0);
     expect(result.totalAssessments).toBe(0);
-    expect(result.lowRiskRate).toBe(0);
-    expect(result.flushingScheduleRate).toBe(0);
-    expect(result.waterTreatmentRate).toBe(0);
-    expect(result.deadLegsManagementRate).toBe(0);
+    expect(result.lowRiskRate).toBeNull();
+    expect(result.flushingScheduleRate).toBeNull();
+    expect(result.waterTreatmentRate).toBeNull();
+    expect(result.deadLegsManagementRate).toBeNull();
   });
 
   it("scores low risk rate correctly — all low", () => {
@@ -431,7 +407,7 @@ describe("evaluateLegionellaManagement", () => {
     expect(result.deadLegsManagementRate).toBe(50);
   });
 
-  it("dead legs management rate is 0 when none identified", () => {
+  it("dead legs management rate is null when none identified", () => {
     const assessments = [
       makeAssessment({
         id: "1",
@@ -440,7 +416,7 @@ describe("evaluateLegionellaManagement", () => {
       }),
     ];
     const result = evaluateLegionellaManagement(assessments);
-    expect(result.deadLegsManagementRate).toBe(0);
+    expect(result.deadLegsManagementRate).toBeNull();
   });
 
   it("groups by risk level", () => {
@@ -648,7 +624,7 @@ describe("evaluateStaffWaterReadiness", () => {
     const result = evaluateStaffWaterReadiness([]);
     expect(result.score).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.legionellaAwarenessRate).toBe(0);
+    expect(result.legionellaAwarenessRate).toBeNull();
   });
 
   it("gives maximum score for fully trained staff", () => {

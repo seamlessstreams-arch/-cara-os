@@ -6,7 +6,6 @@ import {
   evaluateIncidentResponse,
   evaluateStaffCompetence,
   buildChildSelfHarmProfiles,
-  pct,
   getRating,
   getRiskLevelLabel,
   getSelfHarmTypeLabel,
@@ -94,14 +93,6 @@ function mkTraining(overrides: Partial<StaffSelfHarmTraining> = {}): StaffSelfHa
 
 // ── pct ───────────────────────────────────────────────────────────────────
 
-describe("pct", () => {
-  it("returns 0 for 0/0", () => expect(pct(0, 0)).toBe(0));
-  it("calculates correctly", () => expect(pct(3, 4)).toBe(75));
-  it("rounds", () => expect(pct(1, 3)).toBe(33));
-  it("full", () => expect(pct(5, 5)).toBe(100));
-  it("returns 0 for 0/5", () => expect(pct(0, 5)).toBe(0));
-});
-
 // ── getRating ─────────────────────────────────────────────────────────────
 
 describe("getRating", () => {
@@ -160,10 +151,10 @@ describe("evaluateRiskAssessmentQuality", () => {
     const result = evaluateRiskAssessmentQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalProfiles).toBe(0);
-    expect(result.riskAssessedRate).toBe(0);
-    expect(result.reviewCurrentRate).toBe(0);
-    expect(result.triggersIdentifiedRate).toBe(0);
-    expect(result.professionalSupportRate).toBe(0);
+    expect(result.riskAssessedRate).toBeNull();
+    expect(result.reviewCurrentRate).toBeNull();
+    expect(result.triggersIdentifiedRate).toBeNull();
+    expect(result.professionalSupportRate).toBeNull();
   });
 
   it("scores high for fully compliant profiles", () => {
@@ -238,10 +229,10 @@ describe("evaluateSafetyPlanning", () => {
     expect(result.overallScore).toBe(0);
     expect(result.totalProfiles).toBe(0);
     expect(result.totalChecks).toBe(0);
-    expect(result.safetyPlanInPlaceRate).toBe(0);
-    expect(result.copingStrategiesRate).toBe(0);
-    expect(result.emergencyContactsRate).toBe(0);
-    expect(result.environmentalComplianceRate).toBe(0);
+    expect(result.safetyPlanInPlaceRate).toBeNull();
+    expect(result.copingStrategiesRate).toBeNull();
+    expect(result.emergencyContactsRate).toBeNull();
+    expect(result.environmentalComplianceRate).toBeNull();
   });
 
   it("scores high for fully compliant data", () => {
@@ -319,7 +310,7 @@ describe("evaluateSafetyPlanning", () => {
     const profiles = [mkProfile()];
     const result = evaluateSafetyPlanning(profiles, []);
     expect(result.totalProfiles).toBe(1);
-    expect(result.environmentalComplianceRate).toBe(0);
+    expect(result.environmentalComplianceRate).toBeNull();
   });
 });
 
@@ -330,10 +321,10 @@ describe("evaluateIncidentResponse", () => {
     const result = evaluateIncidentResponse([]);
     expect(result.overallScore).toBe(25);
     expect(result.totalIncidents).toBe(0);
-    expect(result.immediateActionRate).toBe(0);
-    expect(result.medicalAssessmentRate).toBe(0);
-    expect(result.debriefCompletedRate).toBe(0);
-    expect(result.safetyPlanUpdatedRate).toBe(0);
+    expect(result.immediateActionRate).toBeNull();
+    expect(result.medicalAssessmentRate).toBeNull();
+    expect(result.debriefCompletedRate).toBeNull();
+    expect(result.safetyPlanUpdatedRate).toBeNull();
   });
 
   it("scores high for well-managed incidents", () => {
@@ -412,11 +403,11 @@ describe("evaluateStaffCompetence", () => {
     const result = evaluateStaffCompetence([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.selfHarmAwarenessRate).toBe(0);
-    expect(result.riskAssessmentRate).toBe(0);
-    expect(result.crisisInterventionRate).toBe(0);
-    expect(result.safetyPlanningRate).toBe(0);
-    expect(result.mentalHealthFirstAidRate).toBe(0);
+    expect(result.selfHarmAwarenessRate).toBeNull();
+    expect(result.riskAssessmentRate).toBeNull();
+    expect(result.crisisInterventionRate).toBeNull();
+    expect(result.safetyPlanningRate).toBeNull();
+    expect(result.mentalHealthFirstAidRate).toBeNull();
   });
 
   it("scores high for fully trained staff", () => {

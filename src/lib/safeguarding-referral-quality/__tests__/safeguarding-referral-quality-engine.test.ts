@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   generateSafeguardingReferralQualityIntelligence, evaluateReferralQuality, evaluateReferralCompliance,
-  evaluateSafeguardingPolicy, evaluateStaffSafeguardingReadiness, buildChildSafeguardingProfiles, pct, getRating,
+  evaluateSafeguardingPolicy, evaluateStaffSafeguardingReadiness, buildChildSafeguardingProfiles, getRating,
   getReferralTypeLabel, getReferralOutcomeLabel, getRatingLabel,
 } from "../safeguarding-referral-quality-engine";
 import type { SafeguardingReferral, SafeguardingPolicy, StaffSafeguardingTraining } from "../safeguarding-referral-quality-engine";
@@ -19,13 +19,6 @@ function makeTraining(overrides: Partial<StaffSafeguardingTraining> = {}): Staff
   _tid++;
   return { id: `st-${_tid}`, staffId: `staff-${_tid}`, staffName: `Staff ${_tid}`, safeguardingLevel3: true, referralProcesses: true, multiAgencyWorking: true, recognisingAbuse: true, recordKeeping: true, whistleblowing: true, ...overrides };
 }
-
-describe("pct", () => {
-  it("returns percentage", () => { expect(pct(3, 4)).toBe(75); });
-  it("returns 0 for den=0", () => { expect(pct(0, 0)).toBe(0); });
-  it("returns 100 for equal", () => { expect(pct(5, 5)).toBe(100); });
-  it("returns 0 for num=0", () => { expect(pct(0, 10)).toBe(0); });
-});
 
 describe("getRating", () => {
   it("outstanding >= 80", () => { expect(getRating(80)).toBe("outstanding"); expect(getRating(100)).toBe("outstanding"); });

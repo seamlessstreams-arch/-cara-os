@@ -23,6 +23,7 @@
    ────────────────────────────────────────────────────────────── */
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -134,18 +135,25 @@ export interface StaffSupervisionEffectivenessTraining {
 export interface StaffSupervisionEffectivenessQualityResult {
   overallScore: number;
   totalRecords: number;
-  safeguardingDiscussedRate: number;
-  wellbeingCheckedRate: number;
-  actionPointsSetRate: number;
-  previousActionsReviewedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingDiscussedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  wellbeingCheckedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionPointsSetRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  previousActionsReviewedRate: number | null;
 }
 
 export interface StaffSupervisionEffectivenessComplianceResult {
   overallScore: number;
   totalRecords: number;
-  documentationCompleteRate: number;
-  timelyRecordingRate: number;
-  safeguardingDiscussedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationCompleteRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingDiscussedRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
 }
@@ -164,12 +172,18 @@ export interface StaffSupervisionEffectivenessPolicyResult {
 export interface StaffSupervisionEffectivenessReadinessResult {
   overallScore: number;
   totalSupervisors: number;
-  supervisionFacilitationSkillsRate: number;
-  reflectivePracticeKnowledgeRate: number;
-  safeguardingSupervisionSkillsRate: number;
-  performanceManagementSkillsRate: number;
-  mentoringCoachingSkillsRate: number;
-  documentationStandardsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  supervisionFacilitationSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reflectivePracticeKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingSupervisionSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  performanceManagementSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  mentoringCoachingSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationStandardsRate: number | null;
 }
 
 export interface StaffSupervisionEffectivenessProfile {
@@ -201,11 +215,6 @@ export interface StaffSupervisionEffectivenessIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -221,19 +230,19 @@ export function evaluateStaffSupervisionEffectivenessQuality(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, safeguardingDiscussedRate: 0, wellbeingCheckedRate: 0, actionPointsSetRate: 0, previousActionsReviewedRate: 0 };
+    return { overallScore: 0, totalRecords: 0, safeguardingDiscussedRate: null, wellbeingCheckedRate: null, actionPointsSetRate: null, previousActionsReviewedRate: null };
   }
 
-  const safeguardingDiscussedRate = pct(records.filter((r) => r.safeguardingDiscussed).length, n);
-  const wellbeingCheckedRate = pct(records.filter((r) => r.wellbeingChecked).length, n);
-  const actionPointsSetRate = pct(records.filter((r) => r.actionPointsSet).length, n);
-  const previousActionsReviewedRate = pct(records.filter((r) => r.previousActionsReviewed).length, n);
+  const safeguardingDiscussedRate = rate(records.filter((r) => r.safeguardingDiscussed).length, n);
+  const wellbeingCheckedRate = rate(records.filter((r) => r.wellbeingChecked).length, n);
+  const actionPointsSetRate = rate(records.filter((r) => r.actionPointsSet).length, n);
+  const previousActionsReviewedRate = rate(records.filter((r) => r.previousActionsReviewed).length, n);
 
   let score = 0;
-  score += (safeguardingDiscussedRate / 100) * 7;
-  score += (wellbeingCheckedRate / 100) * 6;
-  score += (actionPointsSetRate / 100) * 6;
-  score += (previousActionsReviewedRate / 100) * 6;
+  score += (safeguardingDiscussedRate! / 100) * 7;
+  score += (wellbeingCheckedRate! / 100) * 6;
+  score += (actionPointsSetRate! / 100) * 6;
+  score += (previousActionsReviewedRate! / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -248,21 +257,21 @@ export function evaluateStaffSupervisionEffectivenessCompliance(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: 0, timelyRecordingRate: 0, safeguardingDiscussedRate: 0, categoryDiversityRatio: 0, uniqueCategories: 0 };
+    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: null, timelyRecordingRate: null, safeguardingDiscussedRate: null, categoryDiversityRatio: 0, uniqueCategories: 0 };
   }
 
-  const documentationCompleteRate = pct(records.filter((r) => r.documentationComplete).length, n);
-  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, n);
-  const safeguardingDiscussedRate = pct(records.filter((r) => r.safeguardingDiscussed).length, n);
+  const documentationCompleteRate = rate(records.filter((r) => r.documentationComplete).length, n);
+  const timelyRecordingRate = rate(records.filter((r) => r.timelyRecording).length, n);
+  const safeguardingDiscussedRate = rate(records.filter((r) => r.safeguardingDiscussed).length, n);
 
   const uniqueCategoriesSet = new Set(records.map((r) => r.category));
   const uniqueCategories = uniqueCategoriesSet.size;
   const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
 
   let score = 0;
-  score += (documentationCompleteRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (safeguardingDiscussedRate / 100) * 5;
+  score += (documentationCompleteRate! / 100) * 8;
+  score += (timelyRecordingRate! / 100) * 7;
+  score += (safeguardingDiscussedRate! / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -308,23 +317,23 @@ export function evaluateStaffSupervisionEffectivenessReadiness(
   const n = training.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalSupervisors: 0, supervisionFacilitationSkillsRate: 0, reflectivePracticeKnowledgeRate: 0, safeguardingSupervisionSkillsRate: 0, performanceManagementSkillsRate: 0, mentoringCoachingSkillsRate: 0, documentationStandardsRate: 0 };
+    return { overallScore: 0, totalSupervisors: 0, supervisionFacilitationSkillsRate: null, reflectivePracticeKnowledgeRate: null, safeguardingSupervisionSkillsRate: null, performanceManagementSkillsRate: null, mentoringCoachingSkillsRate: null, documentationStandardsRate: null };
   }
 
-  const supervisionFacilitationSkillsRate = pct(training.filter((t) => t.supervisionFacilitationSkills).length, n);
-  const reflectivePracticeKnowledgeRate = pct(training.filter((t) => t.reflectivePracticeKnowledge).length, n);
-  const safeguardingSupervisionSkillsRate = pct(training.filter((t) => t.safeguardingSupervisionSkills).length, n);
-  const performanceManagementSkillsRate = pct(training.filter((t) => t.performanceManagementSkills).length, n);
-  const mentoringCoachingSkillsRate = pct(training.filter((t) => t.mentoringCoachingSkills).length, n);
-  const documentationStandardsRate = pct(training.filter((t) => t.documentationStandards).length, n);
+  const supervisionFacilitationSkillsRate = rate(training.filter((t) => t.supervisionFacilitationSkills).length, n);
+  const reflectivePracticeKnowledgeRate = rate(training.filter((t) => t.reflectivePracticeKnowledge).length, n);
+  const safeguardingSupervisionSkillsRate = rate(training.filter((t) => t.safeguardingSupervisionSkills).length, n);
+  const performanceManagementSkillsRate = rate(training.filter((t) => t.performanceManagementSkills).length, n);
+  const mentoringCoachingSkillsRate = rate(training.filter((t) => t.mentoringCoachingSkills).length, n);
+  const documentationStandardsRate = rate(training.filter((t) => t.documentationStandards).length, n);
 
   let score = 0;
-  score += (supervisionFacilitationSkillsRate / 100) * 6;
-  score += (reflectivePracticeKnowledgeRate / 100) * 5;
-  score += (safeguardingSupervisionSkillsRate / 100) * 5;
-  score += (performanceManagementSkillsRate / 100) * 4;
-  score += (mentoringCoachingSkillsRate / 100) * 3;
-  score += (documentationStandardsRate / 100) * 2;
+  score += (supervisionFacilitationSkillsRate! / 100) * 6;
+  score += (reflectivePracticeKnowledgeRate! / 100) * 5;
+  score += (safeguardingSupervisionSkillsRate! / 100) * 5;
+  score += (performanceManagementSkillsRate! / 100) * 4;
+  score += (mentoringCoachingSkillsRate! / 100) * 3;
+  score += (documentationStandardsRate! / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -349,8 +358,8 @@ export function buildStaffSupervisionProfiles(
 
   return Array.from(staffMap.values()).map((staff) => {
     const totalRecords = staff.records.length;
-    const safeguardingDiscussedRate = pct(staff.records.filter((r) => r.safeguardingDiscussed).length, totalRecords);
-    const wellbeingCheckedRate = pct(staff.records.filter((r) => r.wellbeingChecked).length, totalRecords);
+    const safeguardingDiscussedRate = rate(staff.records.filter((r) => r.safeguardingDiscussed).length, totalRecords)!;
+    const wellbeingCheckedRate = rate(staff.records.filter((r) => r.wellbeingChecked).length, totalRecords)!;
     const uniqueCategoriesSet = new Set(staff.records.map((r) => r.category));
     const categoriesCovered = Array.from(uniqueCategoriesSet);
 
@@ -359,14 +368,14 @@ export function buildStaffSupervisionProfiles(
     else if (totalRecords >= 5) frequencyScore = 1;
 
     let rate1Score = 0;
-    if (safeguardingDiscussedRate >= 80) rate1Score = 3;
-    else if (safeguardingDiscussedRate >= 60) rate1Score = 2;
-    else if (safeguardingDiscussedRate >= 40) rate1Score = 1;
+    if (meets(safeguardingDiscussedRate, 80)) rate1Score = 3;
+    else if (meets(safeguardingDiscussedRate, 60)) rate1Score = 2;
+    else if (meets(safeguardingDiscussedRate, 40)) rate1Score = 1;
 
     let rate2Score = 0;
-    if (wellbeingCheckedRate >= 80) rate2Score = 3;
-    else if (wellbeingCheckedRate >= 60) rate2Score = 2;
-    else if (wellbeingCheckedRate >= 40) rate2Score = 1;
+    if (meets(wellbeingCheckedRate, 80)) rate2Score = 3;
+    else if (meets(wellbeingCheckedRate, 60)) rate2Score = 2;
+    else if (meets(wellbeingCheckedRate, 40)) rate2Score = 1;
 
     let diversityBonus = 0;
     if (categoriesCovered.length >= 4) diversityBonus = 2;
@@ -414,9 +423,9 @@ export function generateStaffSupervisionEffectivenessIntelligence(
   if (complianceResult.overallScore >= 20) strengths.push("Supervision compliance is strong (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore >= 20) strengths.push("Supervision policy framework is robust (score " + policyResult.overallScore + "/25)");
   if (readinessResult.overallScore >= 20) strengths.push("Supervisor readiness is strong (score " + readinessResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.safeguardingDiscussedRate >= 90) strengths.push("Safeguarding discussed in " + qualityResult.safeguardingDiscussedRate + "% of supervision sessions");
-  if (periodRecords.length > 0 && qualityResult.wellbeingCheckedRate >= 90) strengths.push("Staff wellbeing checked in " + qualityResult.wellbeingCheckedRate + "% of supervision sessions");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate >= 90) strengths.push("Documentation rate at " + complianceResult.documentationCompleteRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.safeguardingDiscussedRate, 90)) strengths.push("Safeguarding discussed in " + qualityResult.safeguardingDiscussedRate + "% of supervision sessions");
+  if (periodRecords.length > 0 && meets(qualityResult.wellbeingCheckedRate, 90)) strengths.push("Staff wellbeing checked in " + qualityResult.wellbeingCheckedRate + "% of supervision sessions");
+  if (periodRecords.length > 0 && meets(complianceResult.documentationCompleteRate, 90)) strengths.push("Documentation rate at " + complianceResult.documentationCompleteRate + "%");
 
   const areasForImprovement: string[] = [];
   if (overallScore < 40) areasForImprovement.push("Staff supervision effectiveness rated Inadequate (" + overallScore + "/100) — urgent systemic review required");
@@ -425,7 +434,7 @@ export function generateStaffSupervisionEffectivenessIntelligence(
   if (complianceResult.overallScore < 15) areasForImprovement.push("Supervision compliance needs improvement (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore < 15) areasForImprovement.push("Supervision policy needs strengthening (score " + policyResult.overallScore + "/25)");
   if (readinessResult.overallScore < 15) areasForImprovement.push("Supervisor readiness needs improvement (score " + readinessResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.safeguardingDiscussedRate < 80) areasForImprovement.push("Safeguarding discussed in only " + qualityResult.safeguardingDiscussedRate + "% of sessions — must improve");
+  if (periodRecords.length > 0 && below(qualityResult.safeguardingDiscussedRate, 80)) areasForImprovement.push("Safeguarding discussed in only " + qualityResult.safeguardingDiscussedRate + "% of sessions — must improve");
   if (periodRecords.length === 0) areasForImprovement.push("No supervision records — supervision sessions must be documented");
   if (policy === null) areasForImprovement.push("No supervision policy in place — statutory requirement");
   if (training.length === 0) areasForImprovement.push("No supervisor training records — training required for all supervisors");
@@ -433,11 +442,11 @@ export function generateStaffSupervisionEffectivenessIntelligence(
   const actions: string[] = [];
   if (policy === null || policyResult.overallScore === 0) actions.push("URGENT: No supervision policy — develop and implement comprehensive supervision framework immediately");
   if (training.length === 0) actions.push("URGENT: No supervisor training — schedule supervision skills training for all supervisors");
-  if (periodRecords.length > 0 && qualityResult.safeguardingDiscussedRate < 50) actions.push("HIGH: Safeguarding discussed in only " + qualityResult.safeguardingDiscussedRate + "% of sessions — embed safeguarding in supervision agenda");
-  if (periodRecords.length > 0 && qualityResult.wellbeingCheckedRate < 50) actions.push("HIGH: Wellbeing checked in only " + qualityResult.wellbeingCheckedRate + "% of sessions — embed wellbeing checks in every session");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate < 50) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all supervision must be recorded");
-  if (periodRecords.length > 0 && complianceResult.timelyRecordingRate < 50) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
-  if (training.length > 0 && readinessResult.supervisionFacilitationSkillsRate < 50) actions.push("MEDIUM: Supervision facilitation skills at " + readinessResult.supervisionFacilitationSkillsRate + "% — schedule training for supervisors");
+  if (periodRecords.length > 0 && below(qualityResult.safeguardingDiscussedRate, 50)) actions.push("HIGH: Safeguarding discussed in only " + qualityResult.safeguardingDiscussedRate + "% of sessions — embed safeguarding in supervision agenda");
+  if (periodRecords.length > 0 && below(qualityResult.wellbeingCheckedRate, 50)) actions.push("HIGH: Wellbeing checked in only " + qualityResult.wellbeingCheckedRate + "% of sessions — embed wellbeing checks in every session");
+  if (periodRecords.length > 0 && below(complianceResult.documentationCompleteRate, 50)) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all supervision must be recorded");
+  if (periodRecords.length > 0 && below(complianceResult.timelyRecordingRate, 50)) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
+  if (training.length > 0 && below(readinessResult.supervisionFacilitationSkillsRate, 50)) actions.push("MEDIUM: Supervision facilitation skills at " + readinessResult.supervisionFacilitationSkillsRate + "% — schedule training for supervisors");
   const lowScoreStaff = staffProfiles.filter((p) => p.overallScore <= 3);
   if (lowScoreStaff.length > 0) actions.push("MEDIUM: " + lowScoreStaff.length + " staff member(s) with low supervision scores — review individual supervision provisions");
   if (actions.length === 0) actions.push("No immediate actions required. Supervision systems operating within expected standards.");

@@ -1,3 +1,4 @@
+import { meets, rate } from "@/lib/metrics/rate";
 // Staff Supervision Effectiveness Intelligence Engine
 // Pure deterministic — no AI, no external calls, no randomness, no Date.now()
 
@@ -165,11 +166,6 @@ export interface StaffSupervisionEffectivenessIntelligence {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -181,7 +177,7 @@ export function getRating(score: number): Rating {
 
 export function evaluateSessionEffectiveness(sessions: SupervisionSession[]): SessionEffectivenessResult {
   if (sessions.length === 0) {
-    return { overallScore: 0, totalSessions: 0, effectivenessRate: 0, safeguardingRate: 0, wellbeingRate: 0, actionPointsRate: 0 };
+    return { overallScore: 0, totalSessions: 0, effectivenessRate: null, safeguardingRate: null, wellbeingRate: null, actionPointsRate: null };
   }
 
   const total = sessions.length;
@@ -190,15 +186,15 @@ export function evaluateSessionEffectiveness(sessions: SupervisionSession[]): Se
   const wellbeingCount = sessions.filter((s) => s.wellbeingChecked).length;
   const actionCount = sessions.filter((s) => s.actionPointsSet).length;
 
-  const effectivenessRate = pct(effectiveCount, total);
-  const safeguardingRate = pct(safeguardingCount, total);
-  const wellbeingRate = pct(wellbeingCount, total);
-  const actionPointsRate = pct(actionCount, total);
+  const effectivenessRate = rate(effectiveCount, total);
+  const safeguardingRate = rate(safeguardingCount, total);
+  const wellbeingRate = rate(wellbeingCount, total);
+  const actionPointsRate = rate(actionCount, total);
 
-  const effScore = Math.round((effectivenessRate / 100) * 7);
-  const safScore = Math.round((safeguardingRate / 100) * 6);
-  const wellScore = Math.round((wellbeingRate / 100) * 6);
-  const actScore = Math.round((actionPointsRate / 100) * 6);
+  const effScore = Math.round(((effectivenessRate ?? 0) / 100) * 7);
+  const safScore = Math.round(((safeguardingRate ?? 0) / 100) * 6);
+  const wellScore = Math.round(((wellbeingRate ?? 0) / 100) * 6);
+  const actScore = Math.round(((actionPointsRate ?? 0) / 100) * 6);
 
   const overallScore = Math.min(25, effScore + safScore + wellScore + actScore);
 
@@ -207,7 +203,7 @@ export function evaluateSessionEffectiveness(sessions: SupervisionSession[]): Se
 
 export function evaluateSupervisionCompliance(sessions: SupervisionSession[]): SupervisionComplianceResult {
   if (sessions.length === 0) {
-    return { overallScore: 0, previousActionsReviewedRate: 0, documentedRate: 0, staffSatisfactionRate: 0, typeDiversityRatio: 0 };
+    return { overallScore: 0, previousActionsReviewedRate: null, documentedRate: null, staffSatisfactionRate: null, typeDiversityRatio: 0 };
   }
 
   const total = sessions.length;
@@ -215,16 +211,16 @@ export function evaluateSupervisionCompliance(sessions: SupervisionSession[]): S
   const documentedCount = sessions.filter((s) => s.documentedInRecord).length;
   const satisfiedCount = sessions.filter((s) => s.staffSatisfied).length;
   const uniqueTypes = new Set(sessions.map((s) => s.supervisionType)).size;
-  const diversityRatio = pct(uniqueTypes, 8);
+  const diversityRatio = rate(uniqueTypes, 8);
 
-  const previousActionsReviewedRate = pct(reviewedCount, total);
-  const documentedRate = pct(documentedCount, total);
-  const staffSatisfactionRate = pct(satisfiedCount, total);
+  const previousActionsReviewedRate = rate(reviewedCount, total);
+  const documentedRate = rate(documentedCount, total);
+  const staffSatisfactionRate = rate(satisfiedCount, total);
 
-  const revScore = Math.round((previousActionsReviewedRate / 100) * 8);
-  const docScore = Math.round((documentedRate / 100) * 7);
-  const satScore = Math.round((staffSatisfactionRate / 100) * 5);
-  const divScore = Math.round((diversityRatio / 100) * 5);
+  const revScore = Math.round(((previousActionsReviewedRate ?? 0) / 100) * 8);
+  const docScore = Math.round(((documentedRate ?? 0) / 100) * 7);
+  const satScore = Math.round(((staffSatisfactionRate ?? 0) / 100) * 5);
+  const divScore = Math.round((diversityRatio! / 100) * 5);
 
   const overallScore = Math.min(25, revScore + docScore + satScore + divScore);
 
@@ -268,7 +264,7 @@ export function evaluateSupervisionPolicy(policy: SupervisionPolicy | null): Sup
 
 export function evaluateSupervisorReadiness(training: SupervisorTraining[]): SupervisorReadinessResult {
   if (training.length === 0) {
-    return { overallScore: 0, totalSupervisors: 0, supervisionSkillsRate: 0, reflectivePracticeRate: 0, safeguardingOversightRate: 0, performanceManagementRate: 0, wellbeingSupportRate: 0, documentationRate: 0 };
+    return { overallScore: 0, totalSupervisors: 0, supervisionSkillsRate: null, reflectivePracticeRate: null, safeguardingOversightRate: null, performanceManagementRate: null, wellbeingSupportRate: null, documentationRate: null };
   }
 
   const total = training.length;
@@ -279,19 +275,19 @@ export function evaluateSupervisorReadiness(training: SupervisorTraining[]): Sup
   const wellbeingCount = training.filter((t) => t.wellbeingSupport).length;
   const docCount = training.filter((t) => t.documentationSkills).length;
 
-  const supervisionSkillsRate = pct(skillsCount, total);
-  const reflectivePracticeRate = pct(reflectiveCount, total);
-  const safeguardingOversightRate = pct(safeguardingCount, total);
-  const performanceManagementRate = pct(perfCount, total);
-  const wellbeingSupportRate = pct(wellbeingCount, total);
-  const documentationRate = pct(docCount, total);
+  const supervisionSkillsRate = rate(skillsCount, total);
+  const reflectivePracticeRate = rate(reflectiveCount, total);
+  const safeguardingOversightRate = rate(safeguardingCount, total);
+  const performanceManagementRate = rate(perfCount, total);
+  const wellbeingSupportRate = rate(wellbeingCount, total);
+  const documentationRate = rate(docCount, total);
 
-  const s1 = Math.round((supervisionSkillsRate / 100) * 6);
-  const s2 = Math.round((reflectivePracticeRate / 100) * 5);
-  const s3 = Math.round((safeguardingOversightRate / 100) * 5);
-  const s4 = Math.round((performanceManagementRate / 100) * 4);
-  const s5 = Math.round((wellbeingSupportRate / 100) * 3);
-  const s6 = Math.round((documentationRate / 100) * 2);
+  const s1 = Math.round(((supervisionSkillsRate ?? 0) / 100) * 6);
+  const s2 = Math.round(((reflectivePracticeRate ?? 0) / 100) * 5);
+  const s3 = Math.round(((safeguardingOversightRate ?? 0) / 100) * 5);
+  const s4 = Math.round(((performanceManagementRate ?? 0) / 100) * 4);
+  const s5 = Math.round(((wellbeingSupportRate ?? 0) / 100) * 3);
+  const s6 = Math.round(((documentationRate ?? 0) / 100) * 2);
 
   const overallScore = Math.min(25, s1 + s2 + s3 + s4 + s5 + s6);
 
@@ -317,8 +313,8 @@ export function buildStaffSupervisionProfiles(sessions: SupervisionSession[]): S
     const effectiveCount = sess.filter((s) => s.supervisionOutcome === "very_effective" || s.supervisionOutcome === "effective").length;
     const safeguardingCount = sess.filter((s) => s.safeguardingDiscussed).length;
 
-    const effectivenessRate = pct(effectiveCount, total);
-    const safeguardingRate = pct(safeguardingCount, total);
+    const effectivenessRate = rate(effectiveCount, total);
+    const safeguardingRate = rate(safeguardingCount, total);
 
     // Score 0-10: frequency(0-2), effectiveness(0-3), safeguarding(0-3), consistency(0-2)
     let freqScore = 0;
@@ -326,14 +322,14 @@ export function buildStaffSupervisionProfiles(sessions: SupervisionSession[]): S
     else if (total >= 5) freqScore = 1;
 
     let effScore = 0;
-    if (effectivenessRate >= 80) effScore = 3;
-    else if (effectivenessRate >= 60) effScore = 2;
-    else if (effectivenessRate >= 40) effScore = 1;
+    if (meets(effectivenessRate, 80)) effScore = 3;
+    else if (meets(effectivenessRate, 60)) effScore = 2;
+    else if (meets(effectivenessRate, 40)) effScore = 1;
 
     let safScore = 0;
-    if (safeguardingRate >= 80) safScore = 3;
-    else if (safeguardingRate >= 60) safScore = 2;
-    else if (safeguardingRate >= 40) safScore = 1;
+    if (meets(safeguardingRate, 80)) safScore = 3;
+    else if (meets(safeguardingRate, 60)) safScore = 2;
+    else if (meets(safeguardingRate, 40)) safScore = 1;
 
     // Consistency: same supervisor
     const uniqueSupervisors = new Set(sess.map((s) => s.supervisorId)).size;

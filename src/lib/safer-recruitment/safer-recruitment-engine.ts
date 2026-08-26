@@ -19,6 +19,7 @@
    ────────────────────────────────────────────────────────────── */
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -128,18 +129,25 @@ export interface StaffSaferRecruitmentTraining {
 export interface SaferRecruitmentQualityResult {
   overallScore: number;
   totalRecords: number;
-  dbsCheckCompletedRate: number;
-  referencesVerifiedRate: number;
-  interviewConductedRate: number;
-  identityConfirmedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dbsCheckCompletedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  referencesVerifiedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  interviewConductedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  identityConfirmedRate: number | null;
 }
 
 export interface SaferRecruitmentComplianceResult {
   overallScore: number;
   totalRecords: number;
-  documentationRate: number;
-  timelyRecordingRate: number;
-  dbsCheckCompletedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dbsCheckCompletedRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
 }
@@ -158,12 +166,18 @@ export interface SaferRecruitmentPolicyResult {
 export interface StaffSaferRecruitmentReadinessResult {
   overallScore: number;
   totalStaff: number;
-  safeguardingRecruitmentRate: number;
-  dbsProcessKnowledgeRate: number;
-  interviewTechniquesRate: number;
-  referenceVerificationRate: number;
-  disqualificationAwarenessRate: number;
-  whistleblowingAwarenessRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingRecruitmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dbsProcessKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  interviewTechniquesRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  referenceVerificationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  disqualificationAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  whistleblowingAwarenessRate: number | null;
 }
 
 export interface StaffRecruitmentProfile {
@@ -195,11 +209,6 @@ export interface SaferRecruitmentIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -218,24 +227,24 @@ export function evaluateSaferRecruitmentQuality(
     return {
       overallScore: 0,
       totalRecords: 0,
-      dbsCheckCompletedRate: 0,
-      referencesVerifiedRate: 0,
-      interviewConductedRate: 0,
-      identityConfirmedRate: 0,
+      dbsCheckCompletedRate: null,
+      referencesVerifiedRate: null,
+      interviewConductedRate: null,
+      identityConfirmedRate: null,
     };
   }
 
-  const dbsCheckCompletedRate = pct(records.filter((r) => r.dbsCheckCompleted).length, n);
-  const referencesVerifiedRate = pct(records.filter((r) => r.referencesVerified).length, n);
-  const interviewConductedRate = pct(records.filter((r) => r.interviewConducted).length, n);
-  const identityConfirmedRate = pct(records.filter((r) => r.identityConfirmed).length, n);
+  const dbsCheckCompletedRate = rate(records.filter((r) => r.dbsCheckCompleted).length, n);
+  const referencesVerifiedRate = rate(records.filter((r) => r.referencesVerified).length, n);
+  const interviewConductedRate = rate(records.filter((r) => r.interviewConducted).length, n);
+  const identityConfirmedRate = rate(records.filter((r) => r.identityConfirmed).length, n);
 
   // Weights: dbsCheckCompletedRate 7 + referencesVerifiedRate 6 + interviewConductedRate 6 + identityConfirmedRate 6 = 25
   let score = 0;
-  score += (dbsCheckCompletedRate / 100) * 7;
-  score += (referencesVerifiedRate / 100) * 6;
-  score += (interviewConductedRate / 100) * 6;
-  score += (identityConfirmedRate / 100) * 6;
+  score += (dbsCheckCompletedRate! / 100) * 7;
+  score += (referencesVerifiedRate! / 100) * 6;
+  score += (interviewConductedRate! / 100) * 6;
+  score += (identityConfirmedRate! / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -260,17 +269,17 @@ export function evaluateSaferRecruitmentCompliance(
     return {
       overallScore: 0,
       totalRecords: 0,
-      documentationRate: 0,
-      timelyRecordingRate: 0,
-      dbsCheckCompletedRate: 0,
+      documentationRate: null,
+      timelyRecordingRate: null,
+      dbsCheckCompletedRate: null,
       categoryDiversityRatio: 0,
       uniqueCategories: 0,
     };
   }
 
-  const documentationRate = pct(records.filter((r) => r.documentationComplete).length, n);
-  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, n);
-  const dbsCheckCompletedRate = pct(records.filter((r) => r.dbsCheckCompleted).length, n);
+  const documentationRate = rate(records.filter((r) => r.documentationComplete).length, n);
+  const timelyRecordingRate = rate(records.filter((r) => r.timelyRecording).length, n);
+  const dbsCheckCompletedRate = rate(records.filter((r) => r.dbsCheckCompleted).length, n);
 
   const uniqueCategoriesSet = new Set(records.map((r) => r.category));
   const uniqueCategories = uniqueCategoriesSet.size;
@@ -278,9 +287,9 @@ export function evaluateSaferRecruitmentCompliance(
 
   // Weights: documentationRate 8 + timelyRecordingRate 7 + dbsCheckCompletedRate 5 + categoryDiversityRatio 5 = 25
   let score = 0;
-  score += (documentationRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (dbsCheckCompletedRate / 100) * 5;
+  score += (documentationRate! / 100) * 8;
+  score += (timelyRecordingRate! / 100) * 7;
+  score += (dbsCheckCompletedRate! / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -347,30 +356,30 @@ export function evaluateStaffSaferRecruitmentReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      safeguardingRecruitmentRate: 0,
-      dbsProcessKnowledgeRate: 0,
-      interviewTechniquesRate: 0,
-      referenceVerificationRate: 0,
-      disqualificationAwarenessRate: 0,
-      whistleblowingAwarenessRate: 0,
+      safeguardingRecruitmentRate: null,
+      dbsProcessKnowledgeRate: null,
+      interviewTechniquesRate: null,
+      referenceVerificationRate: null,
+      disqualificationAwarenessRate: null,
+      whistleblowingAwarenessRate: null,
     };
   }
 
-  const safeguardingRecruitmentRate = pct(training.filter((t) => t.safeguardingRecruitment).length, n);
-  const dbsProcessKnowledgeRate = pct(training.filter((t) => t.dbsProcessKnowledge).length, n);
-  const interviewTechniquesRate = pct(training.filter((t) => t.interviewTechniques).length, n);
-  const referenceVerificationRate = pct(training.filter((t) => t.referenceVerification).length, n);
-  const disqualificationAwarenessRate = pct(training.filter((t) => t.disqualificationAwareness).length, n);
-  const whistleblowingAwarenessRate = pct(training.filter((t) => t.whistleblowingAwareness).length, n);
+  const safeguardingRecruitmentRate = rate(training.filter((t) => t.safeguardingRecruitment).length, n);
+  const dbsProcessKnowledgeRate = rate(training.filter((t) => t.dbsProcessKnowledge).length, n);
+  const interviewTechniquesRate = rate(training.filter((t) => t.interviewTechniques).length, n);
+  const referenceVerificationRate = rate(training.filter((t) => t.referenceVerification).length, n);
+  const disqualificationAwarenessRate = rate(training.filter((t) => t.disqualificationAwareness).length, n);
+  const whistleblowingAwarenessRate = rate(training.filter((t) => t.whistleblowingAwareness).length, n);
 
   // Weights: 6+5+5+4+3+2 = 25
   let score = 0;
-  score += (safeguardingRecruitmentRate / 100) * 6;
-  score += (dbsProcessKnowledgeRate / 100) * 5;
-  score += (interviewTechniquesRate / 100) * 5;
-  score += (referenceVerificationRate / 100) * 4;
-  score += (disqualificationAwarenessRate / 100) * 3;
-  score += (whistleblowingAwarenessRate / 100) * 2;
+  score += (safeguardingRecruitmentRate! / 100) * 6;
+  score += (dbsProcessKnowledgeRate! / 100) * 5;
+  score += (interviewTechniquesRate! / 100) * 5;
+  score += (referenceVerificationRate! / 100) * 4;
+  score += (disqualificationAwarenessRate! / 100) * 3;
+  score += (whistleblowingAwarenessRate! / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -405,14 +414,14 @@ export function buildStaffRecruitmentProfiles(
   return Array.from(staffMap.values()).map((staff) => {
     const totalRecords = staff.records.length;
 
-    const dbsCheckCompletedRate = pct(
+    const dbsCheckCompletedRate = rate(
       staff.records.filter((r) => r.dbsCheckCompleted).length,
       totalRecords,
-    );
-    const referencesVerifiedRate = pct(
+    )!;
+    const referencesVerifiedRate = rate(
       staff.records.filter((r) => r.referencesVerified).length,
       totalRecords,
-    );
+    )!;
 
     const uniqueCategoriesSet = new Set(staff.records.map((r) => r.category));
     const categoriesCovered = Array.from(uniqueCategoriesSet);
@@ -420,19 +429,19 @@ export function buildStaffRecruitmentProfiles(
     // frequency: >=10 records -> 2, >=5 -> 1, else 0
     let frequencyScore = 0;
     if (totalRecords >= 10) frequencyScore = 2;
-    else if (totalRecords >= 5) frequencyScore = 1;
+    else if (meets(totalRecords, 5)) frequencyScore = 1;
 
     // rate1 (dbsCheckCompletedRate): >=80 -> 3, >=60 -> 2, >=40 -> 1, else 0
     let rate1Score = 0;
-    if (dbsCheckCompletedRate >= 80) rate1Score = 3;
-    else if (dbsCheckCompletedRate >= 60) rate1Score = 2;
-    else if (dbsCheckCompletedRate >= 40) rate1Score = 1;
+    if (meets(dbsCheckCompletedRate, 80)) rate1Score = 3;
+    else if (meets(dbsCheckCompletedRate, 60)) rate1Score = 2;
+    else if (meets(dbsCheckCompletedRate, 40)) rate1Score = 1;
 
     // rate2 (referencesVerifiedRate): same thresholds
     let rate2Score = 0;
-    if (referencesVerifiedRate >= 80) rate2Score = 3;
-    else if (referencesVerifiedRate >= 60) rate2Score = 2;
-    else if (referencesVerifiedRate >= 40) rate2Score = 1;
+    if (meets(referencesVerifiedRate, 80)) rate2Score = 3;
+    else if (meets(referencesVerifiedRate, 60)) rate2Score = 2;
+    else if (meets(referencesVerifiedRate, 40)) rate2Score = 1;
 
     // diversity (unique categories): >=4 -> 2, >=2 -> 1, else 0
     let diversityBonus = 0;
@@ -515,16 +524,16 @@ export function generateSaferRecruitmentIntelligence(
     strengths.push("Staff safer recruitment readiness is strong (score " + staffResult.overallScore + "/25)");
   }
 
-  if (periodRecords.length > 0 && qualityResult.dbsCheckCompletedRate >= 90) {
+  if (periodRecords.length > 0 && meets(qualityResult.dbsCheckCompletedRate, 90)) {
     strengths.push("DBS checks completed at " + qualityResult.dbsCheckCompletedRate + "% — robust vetting in place");
   }
-  if (periodRecords.length > 0 && qualityResult.referencesVerifiedRate >= 90) {
+  if (periodRecords.length > 0 && meets(qualityResult.referencesVerifiedRate, 90)) {
     strengths.push("References verified at " + qualityResult.referencesVerifiedRate + "% — thorough reference checking");
   }
-  if (periodRecords.length > 0 && qualityResult.interviewConductedRate >= 90) {
+  if (periodRecords.length > 0 && meets(qualityResult.interviewConductedRate, 90)) {
     strengths.push("Interviews conducted at " + qualityResult.interviewConductedRate + "% — consistent interview practice");
   }
-  if (periodRecords.length > 0 && complianceResult.documentationRate >= 90) {
+  if (periodRecords.length > 0 && meets(complianceResult.documentationRate, 90)) {
     strengths.push("Recruitment documentation at " + complianceResult.documentationRate + "% — comprehensive records");
   }
 
@@ -550,13 +559,13 @@ export function generateSaferRecruitmentIntelligence(
     areasForImprovement.push("Staff safer recruitment readiness needs improvement (score " + staffResult.overallScore + "/25)");
   }
 
-  if (periodRecords.length > 0 && qualityResult.dbsCheckCompletedRate < 80) {
+  if (periodRecords.length > 0 && below(qualityResult.dbsCheckCompletedRate, 80)) {
     areasForImprovement.push("DBS check completion at " + qualityResult.dbsCheckCompletedRate + "% — must achieve 100% for safeguarding compliance");
   }
-  if (periodRecords.length > 0 && qualityResult.referencesVerifiedRate < 80) {
+  if (periodRecords.length > 0 && below(qualityResult.referencesVerifiedRate, 80)) {
     areasForImprovement.push("Reference verification at " + qualityResult.referencesVerifiedRate + "% — all references must be verified before appointment");
   }
-  if (periodRecords.length > 0 && qualityResult.identityConfirmedRate < 80) {
+  if (periodRecords.length > 0 && below(qualityResult.identityConfirmedRate, 80)) {
     areasForImprovement.push("Identity confirmation at " + qualityResult.identityConfirmedRate + "% — identity must be verified for all candidates");
   }
   if (periodRecords.length === 0) {
@@ -580,27 +589,27 @@ export function generateSaferRecruitmentIntelligence(
     actions.push("URGENT: No staff safer recruitment training records — schedule training for all staff involved in recruitment");
   }
 
-  if (periodRecords.length > 0 && qualityResult.dbsCheckCompletedRate < 100) {
+  if (periodRecords.length > 0 && below(qualityResult.dbsCheckCompletedRate, 100)) {
     actions.push("URGENT: DBS check completion at " + qualityResult.dbsCheckCompletedRate + "% — ensure DBS checks are completed for all candidates before appointment");
   }
 
-  if (periodRecords.length > 0 && qualityResult.referencesVerifiedRate < 50) {
+  if (periodRecords.length > 0 && below(qualityResult.referencesVerifiedRate, 50)) {
     actions.push("HIGH: Reference verification at " + qualityResult.referencesVerifiedRate + "% — strengthen reference checking procedures");
   }
 
-  if (periodRecords.length > 0 && complianceResult.documentationRate < 50) {
+  if (periodRecords.length > 0 && below(complianceResult.documentationRate, 50)) {
     actions.push("HIGH: Documentation rate at " + complianceResult.documentationRate + "% — all recruitment activities must be fully documented");
   }
 
-  if (periodRecords.length > 0 && complianceResult.timelyRecordingRate < 50) {
+  if (periodRecords.length > 0 && below(complianceResult.timelyRecordingRate, 50)) {
     actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — recruitment records must be completed promptly");
   }
 
-  if (periodRecords.length > 0 && qualityResult.interviewConductedRate < 50) {
+  if (periodRecords.length > 0 && below(qualityResult.interviewConductedRate, 50)) {
     actions.push("MEDIUM: Interview rate at " + qualityResult.interviewConductedRate + "% — all candidates must be formally interviewed");
   }
 
-  if (staff.length > 0 && staffResult.safeguardingRecruitmentRate < 50) {
+  if (staff.length > 0 && below(staffResult.safeguardingRecruitmentRate, 50)) {
     actions.push("MEDIUM: Safeguarding recruitment training at " + staffResult.safeguardingRecruitmentRate + "% — schedule training for all recruiting staff");
   }
 

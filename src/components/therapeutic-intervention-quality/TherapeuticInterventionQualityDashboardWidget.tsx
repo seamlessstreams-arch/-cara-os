@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { TherapeuticInterventionQualityIntelligence } from "@/lib/therapeutic-intervention-quality";
+import { formatRate } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -110,15 +111,15 @@ export function TherapeuticInterventionQualityDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Sessions</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.quality.progressRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.quality.progressRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Progress</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.quality.engagementRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.quality.engagementRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Engaged</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.compliance.documentedRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.compliance.documentedRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Documented</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -159,19 +160,19 @@ export function TherapeuticInterventionQualityDashboardWidget() {
         <Section title="Therapeutic Quality">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <Stat label="Total Sessions" value={data.quality.totalSessions} />
-            <Stat label="Progress Rate" value={`${data.quality.progressRate}%`} />
-            <Stat label="Engagement Rate" value={`${data.quality.engagementRate}%`} />
-            <Stat label="Goals Reviewed" value={`${data.quality.goalsReviewedRate}%`} />
-            <Stat label="Relationship" value={`${data.quality.relationshipRate}%`} />
+            <Stat label="Progress Rate" value={`${formatRate(data.quality.progressRate)}`} />
+            <Stat label="Engagement Rate" value={`${formatRate(data.quality.engagementRate)}`} />
+            <Stat label="Goals Reviewed" value={`${formatRate(data.quality.goalsReviewedRate)}`} />
+            <Stat label="Relationship" value={`${formatRate(data.quality.relationshipRate)}`} />
           </div>
         </Section>
 
         <Section title="Compliance">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <Stat label="Documented" value={`${data.compliance.documentedRate}%`} />
-            <Stat label="Staff Supported" value={`${data.compliance.staffSupportedRate}%`} />
-            <Stat label="Feedback Given" value={`${data.compliance.feedbackRate}%`} />
-            <Stat label="Therapy Diversity" value={`${data.compliance.therapyDiversityRatio}%`} />
+            <Stat label="Documented" value={`${formatRate(data.compliance.documentedRate)}`} />
+            <Stat label="Staff Supported" value={`${formatRate(data.compliance.staffSupportedRate)}`} />
+            <Stat label="Feedback Given" value={`${formatRate(data.compliance.feedbackRate)}`} />
+            <Stat label="Therapy Diversity" value={`${formatRate(data.compliance.therapyDiversityRatio)}`} />
           </div>
         </Section>
 
@@ -190,12 +191,12 @@ export function TherapeuticInterventionQualityDashboardWidget() {
         <Section title="Staff Therapeutic Readiness">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <Stat label="Staff Trained" value={data.staffReadiness.totalStaff} />
-            <Stat label="Awareness" value={`${data.staffReadiness.therapeuticAwarenessRate}%`} />
-            <Stat label="Trauma-Informed" value={`${data.staffReadiness.traumaInformedPracticeRate}%`} />
-            <Stat label="Attachment Theory" value={`${data.staffReadiness.attachmentTheoryRate}%`} />
-            <Stat label="Communication" value={`${data.staffReadiness.therapeuticCommunicationRate}%`} />
-            <Stat label="Boundaries" value={`${data.staffReadiness.boundaryManagementRate}%`} />
-            <Stat label="Reflective Practice" value={`${data.staffReadiness.reflectivePracticeRate}%`} />
+            <Stat label="Awareness" value={`${formatRate(data.staffReadiness.therapeuticAwarenessRate)}`} />
+            <Stat label="Trauma-Informed" value={`${formatRate(data.staffReadiness.traumaInformedPracticeRate)}`} />
+            <Stat label="Attachment Theory" value={`${formatRate(data.staffReadiness.attachmentTheoryRate)}`} />
+            <Stat label="Communication" value={`${formatRate(data.staffReadiness.therapeuticCommunicationRate)}`} />
+            <Stat label="Boundaries" value={`${formatRate(data.staffReadiness.boundaryManagementRate)}`} />
+            <Stat label="Reflective Practice" value={`${formatRate(data.staffReadiness.reflectivePracticeRate)}`} />
           </div>
         </Section>
 

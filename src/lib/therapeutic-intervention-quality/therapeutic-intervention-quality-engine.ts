@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // Therapeutic Intervention Quality Intelligence Engine
 // Pure deterministic — no AI, no external calls, no randomness, no Date.now()
 
@@ -113,18 +114,26 @@ export interface StaffTherapeuticTraining {
 export interface QualityResult {
   overallScore: number;
   totalSessions: number;
-  progressRate: number;
-  engagementRate: number;
-  goalsReviewedRate: number;
-  relationshipRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  progressRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  engagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  goalsReviewedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  relationshipRate: number | null;
 }
 
 export interface ComplianceResult {
   overallScore: number;
-  documentedRate: number;
-  staffSupportedRate: number;
-  feedbackRate: number;
-  therapyDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffSupportedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feedbackRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  therapyDiversityRatio: number | null;
 }
 
 export interface PolicyResult {
@@ -141,12 +150,18 @@ export interface PolicyResult {
 export interface StaffReadinessResult {
   overallScore: number;
   totalStaff: number;
-  therapeuticAwarenessRate: number;
-  traumaInformedPracticeRate: number;
-  attachmentTheoryRate: number;
-  therapeuticCommunicationRate: number;
-  boundaryManagementRate: number;
-  reflectivePracticeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  therapeuticAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  traumaInformedPracticeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  attachmentTheoryRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  therapeuticCommunicationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  boundaryManagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reflectivePracticeRate: number | null;
 }
 
 export interface ChildTherapyProfile {
@@ -177,11 +192,6 @@ export interface TherapeuticInterventionQualityIntelligence {
 
 // -- Helpers -------------------------------------------------------------------
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -207,10 +217,10 @@ export function evaluateQuality(
     return {
       overallScore: 0,
       totalSessions: 0,
-      progressRate: 0,
-      engagementRate: 0,
-      goalsReviewedRate: 0,
-      relationshipRate: 0,
+      progressRate: null,
+      engagementRate: null,
+      goalsReviewedRate: null,
+      relationshipRate: null,
     };
   }
 
@@ -228,20 +238,20 @@ export function evaluateQuality(
     if (s.therapeuticRelationshipStrong) relationshipCount++;
   }
 
-  const progressRate = pct(progressCount, sessions.length);
-  const engagementRate = pct(engagedCount, sessions.length);
-  const goalsReviewedRate = pct(goalsCount, sessions.length);
-  const relationshipRate = pct(relationshipCount, sessions.length);
+  const progressRate = rate(progressCount, sessions.length);
+  const engagementRate = rate(engagedCount, sessions.length);
+  const goalsReviewedRate = rate(goalsCount, sessions.length);
+  const relationshipRate = rate(relationshipCount, sessions.length);
 
   let score = 0;
   // Progress rate (significant + good) -> 0-7
-  score += Math.round((progressRate / 100) * 7);
+  score += Math.round((progressRate! / 100) * 7);
   // Engagement rate -> 0-6
-  score += Math.round((engagementRate / 100) * 6);
+  score += Math.round((engagementRate! / 100) * 6);
   // Goals reviewed rate -> 0-6
-  score += Math.round((goalsReviewedRate / 100) * 6);
+  score += Math.round((goalsReviewedRate! / 100) * 6);
   // Therapeutic relationship rate -> 0-6
-  score += Math.round((relationshipRate / 100) * 6);
+  score += Math.round((relationshipRate! / 100) * 6);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -268,9 +278,9 @@ export function evaluateCompliance(
   if (sessions.length === 0) {
     return {
       overallScore: 0,
-      documentedRate: 0,
-      staffSupportedRate: 0,
-      feedbackRate: 0,
+      documentedRate: null,
+      staffSupportedRate: null,
+      feedbackRate: null,
       therapyDiversityRatio: 0,
     };
   }
@@ -287,20 +297,20 @@ export function evaluateCompliance(
     therapyTypes.add(s.therapyType);
   }
 
-  const documentedRate = pct(documentedCount, sessions.length);
-  const staffSupportedRate = pct(staffSupportedCount, sessions.length);
-  const feedbackRate = pct(feedbackCount, sessions.length);
-  const therapyDiversityRatio = pct(therapyTypes.size, 8);
+  const documentedRate = rate(documentedCount, sessions.length);
+  const staffSupportedRate = rate(staffSupportedCount, sessions.length);
+  const feedbackRate = rate(feedbackCount, sessions.length);
+  const therapyDiversityRatio = rate(therapyTypes.size, 8);
 
   let score = 0;
   // Documented in plan rate -> 0-8
-  score += Math.round((documentedRate / 100) * 8);
+  score += Math.round((documentedRate! / 100) * 8);
   // Staff supported rate -> 0-7
-  score += Math.round((staffSupportedRate / 100) * 7);
+  score += Math.round((staffSupportedRate! / 100) * 7);
   // Feedback given rate -> 0-5
-  score += Math.round((feedbackRate / 100) * 5);
+  score += Math.round((feedbackRate! / 100) * 5);
   // Therapy diversity ratio -> 0-5
-  score += Math.round((therapyDiversityRatio / 100) * 5);
+  score += Math.round((therapyDiversityRatio! / 100) * 5);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -380,12 +390,12 @@ export function evaluateStaffReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      therapeuticAwarenessRate: 0,
-      traumaInformedPracticeRate: 0,
-      attachmentTheoryRate: 0,
-      therapeuticCommunicationRate: 0,
-      boundaryManagementRate: 0,
-      reflectivePracticeRate: 0,
+      therapeuticAwarenessRate: null,
+      traumaInformedPracticeRate: null,
+      attachmentTheoryRate: null,
+      therapeuticCommunicationRate: null,
+      boundaryManagementRate: null,
+      reflectivePracticeRate: null,
     };
   }
 
@@ -405,20 +415,20 @@ export function evaluateStaffReadiness(
     if (t.reflectivePractice) reflective++;
   }
 
-  const therapeuticAwarenessRate = pct(awareness, training.length);
-  const traumaInformedPracticeRate = pct(trauma, training.length);
-  const attachmentTheoryRate = pct(attachment, training.length);
-  const therapeuticCommunicationRate = pct(communication, training.length);
-  const boundaryManagementRate = pct(boundary, training.length);
-  const reflectivePracticeRate = pct(reflective, training.length);
+  const therapeuticAwarenessRate = rate(awareness, training.length);
+  const traumaInformedPracticeRate = rate(trauma, training.length);
+  const attachmentTheoryRate = rate(attachment, training.length);
+  const therapeuticCommunicationRate = rate(communication, training.length);
+  const boundaryManagementRate = rate(boundary, training.length);
+  const reflectivePracticeRate = rate(reflective, training.length);
 
   let score = 0;
-  score += Math.round((therapeuticAwarenessRate / 100) * 6);
-  score += Math.round((traumaInformedPracticeRate / 100) * 5);
-  score += Math.round((attachmentTheoryRate / 100) * 5);
-  score += Math.round((therapeuticCommunicationRate / 100) * 4);
-  score += Math.round((boundaryManagementRate / 100) * 3);
-  score += Math.round((reflectivePracticeRate / 100) * 2);
+  score += Math.round((therapeuticAwarenessRate! / 100) * 6);
+  score += Math.round(((traumaInformedPracticeRate ?? 0) / 100) * 5);
+  score += Math.round(((attachmentTheoryRate ?? 0) / 100) * 5);
+  score += Math.round(((therapeuticCommunicationRate ?? 0) / 100) * 4);
+  score += Math.round(((boundaryManagementRate ?? 0) / 100) * 3);
+  score += Math.round(((reflectivePracticeRate ?? 0) / 100) * 2);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -465,31 +475,31 @@ export function buildChildTherapyProfiles(
         s.progressLevel === "significant_progress" ||
         s.progressLevel === "good_progress",
     ).length;
-    const progressRate = pct(progressCount, totalSessions);
+    const progressRate = rate(progressCount, totalSessions)!;
 
     const engagedCount = childSessions.filter((s) => s.childEngaged).length;
-    const engagementRate = pct(engagedCount, totalSessions);
+    const engagementRate = rate(engagedCount, totalSessions)!;
 
     // Score 0-10
     let score = 0;
 
     // Progress rate (0-4)
-    score += Math.round((progressRate / 100) * 4);
+    score += Math.round(((progressRate ?? 0) / 100) * 4);
 
     // Engagement rate (0-3)
-    score += Math.round((engagementRate / 100) * 3);
+    score += Math.round(((engagementRate ?? 0) / 100) * 3);
 
     // Goals reviewed rate (0-2)
     const goalsCount = childSessions.filter((s) => s.goalsReviewed).length;
-    const goalsRate = pct(goalsCount, totalSessions);
-    score += Math.round((goalsRate / 100) * 2);
+    const goalsRate = rate(goalsCount, totalSessions)!;
+    score += Math.round(((goalsRate ?? 0) / 100) * 2);
 
     // Therapeutic relationship rate (0-1)
     const relCount = childSessions.filter(
       (s) => s.therapeuticRelationshipStrong,
     ).length;
-    const relRate = pct(relCount, totalSessions);
-    score += Math.round((relRate / 100) * 1);
+    const relRate = rate(relCount, totalSessions)!;
+    score += Math.round(((relRate ?? 0) / 100) * 1);
 
     return {
       childId,
@@ -530,7 +540,7 @@ export function generateTherapeuticInterventionQualityIntelligence(
 
   // -- Strengths --
   const strengths: string[] = [];
-  if (sessions.length > 0 && quality.progressRate >= 75) {
+  if (sessions.length > 0 && meets(quality.progressRate, 75)) {
     strengths.push(
       "High therapeutic progress rate — " +
         quality.progressRate +
@@ -590,35 +600,35 @@ export function generateTherapeuticInterventionQualityIntelligence(
       "No therapy sessions recorded in period — children may not be receiving therapeutic support",
     );
   }
-  if (sessions.length > 0 && quality.progressRate < 50) {
+  if (sessions.length > 0 && below(quality.progressRate, 50)) {
     areasForImprovement.push(
       "Therapeutic progress rate at " +
         quality.progressRate +
         "% — review intervention effectiveness",
     );
   }
-  if (sessions.length > 0 && quality.engagementRate < 80) {
+  if (sessions.length > 0 && below(quality.engagementRate, 80)) {
     areasForImprovement.push(
       "Child engagement rate at " +
         quality.engagementRate +
         "% — explore barriers to engagement",
     );
   }
-  if (sessions.length > 0 && quality.goalsReviewedRate < 80) {
+  if (sessions.length > 0 && below(quality.goalsReviewedRate, 80)) {
     areasForImprovement.push(
       "Goals reviewed in only " +
         quality.goalsReviewedRate +
         "% of sessions — target 100%",
     );
   }
-  if (sessions.length > 0 && compliance.documentedRate < 100) {
+  if (sessions.length > 0 && below(compliance.documentedRate, 100)) {
     areasForImprovement.push(
       "Documentation rate at " +
         compliance.documentedRate +
         "% — all sessions must be recorded in care plans",
     );
   }
-  if (sessions.length > 0 && compliance.feedbackRate < 80) {
+  if (sessions.length > 0 && below(compliance.feedbackRate, 80)) {
     areasForImprovement.push(
       "Feedback rate at " +
         compliance.feedbackRate +
@@ -645,14 +655,14 @@ export function generateTherapeuticInterventionQualityIntelligence(
       "No staff therapeutic training records — all staff must be trained",
     );
   }
-  if (training.length > 0 && staffReadiness.therapeuticAwarenessRate < 100) {
+  if (training.length > 0 && below(staffReadiness.therapeuticAwarenessRate, 100)) {
     areasForImprovement.push(
       "Only " +
         staffReadiness.therapeuticAwarenessRate +
         "% of staff trained in therapeutic awareness — all staff require this training",
     );
   }
-  if (training.length > 0 && staffReadiness.traumaInformedPracticeRate < 75) {
+  if (training.length > 0 && below(staffReadiness.traumaInformedPracticeRate, 75)) {
     areasForImprovement.push(
       "Trauma-informed practice training completed by only " +
         staffReadiness.traumaInformedPracticeRate +
@@ -709,14 +719,14 @@ export function generateTherapeuticInterventionQualityIntelligence(
       "URGENT: Arrange therapeutic awareness training for all staff immediately",
     );
   }
-  if (training.length > 0 && staffReadiness.traumaInformedPracticeRate < 100) {
+  if (training.length > 0 && below(staffReadiness.traumaInformedPracticeRate, 100)) {
     actions.push(
       "Ensure all staff complete trauma-informed practice training — currently " +
         staffReadiness.traumaInformedPracticeRate +
         "%",
     );
   }
-  if (training.length > 0 && staffReadiness.attachmentTheoryRate < 100) {
+  if (training.length > 0 && below(staffReadiness.attachmentTheoryRate, 100)) {
     actions.push(
       "Ensure all staff complete attachment theory training — currently " +
         staffReadiness.attachmentTheoryRate +

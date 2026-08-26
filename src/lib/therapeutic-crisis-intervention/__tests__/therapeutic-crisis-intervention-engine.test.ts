@@ -6,7 +6,6 @@ import {
   evaluateCrisisPolicy,
   evaluateStaffCrisisReadiness,
   buildChildCrisisProfiles,
-  pct,
   getRating,
   getInterventionTypeLabel,
   getIncidentSeverityLabel,
@@ -76,16 +75,6 @@ function makeTraining(overrides: Partial<StaffCrisisTraining> = {}): StaffCrisis
 
 // -- pct ----------------------------------------------------------------------
 
-describe("pct", () => {
-  it("returns 0 for 0/0", () => expect(pct(0, 0)).toBe(0));
-  it("calculates correctly", () => expect(pct(3, 4)).toBe(75));
-  it("rounds to nearest integer", () => expect(pct(1, 3)).toBe(33));
-  it("returns 100 for equal values", () => expect(pct(5, 5)).toBe(100));
-  it("returns 0 for 0 numerator", () => expect(pct(0, 10)).toBe(0));
-  it("handles large numbers", () => expect(pct(999, 1000)).toBe(100));
-  it("rounds 50.5 up", () => expect(pct(1, 2)).toBe(50));
-});
-
 // -- getRating ----------------------------------------------------------------
 
 describe("getRating", () => {
@@ -140,9 +129,9 @@ describe("evaluateDeescalationEffectiveness", () => {
   it("returns 25 for empty incidents (no crises = ideal)", () => {
     const result = evaluateDeescalationEffectiveness([]);
     expect(result.overallScore).toBe(25);
-    expect(result.deescalationAttemptRate).toBe(0);
-    expect(result.deescalationSuccessRate).toBe(0);
-    expect(result.physicalInterventionRate).toBe(0);
+    expect(result.deescalationAttemptRate).toBeNull();
+    expect(result.deescalationSuccessRate).toBeNull();
+    expect(result.physicalInterventionRate).toBeNull();
   });
 
   it("returns zero severity distribution counts for empty incidents", () => {
@@ -267,11 +256,11 @@ describe("evaluatePostIncidentPractice", () => {
   it("returns 25 for empty incidents (no incidents to review)", () => {
     const result = evaluatePostIncidentPractice([]);
     expect(result.overallScore).toBe(25);
-    expect(result.childDebriefRate).toBe(0);
-    expect(result.staffDebriefRate).toBe(0);
-    expect(result.bodyMapCompletionRate).toBe(0);
-    expect(result.timelyRecordingRate).toBe(0);
-    expect(result.lessonsLearnedRate).toBe(0);
+    expect(result.childDebriefRate).toBeNull();
+    expect(result.staffDebriefRate).toBeNull();
+    expect(result.bodyMapCompletionRate).toBeNull();
+    expect(result.timelyRecordingRate).toBeNull();
+    expect(result.lessonsLearnedRate).toBeNull();
   });
 
   it("scores high for exemplary post-incident handling", () => {
@@ -307,11 +296,11 @@ describe("evaluatePostIncidentPractice", () => {
     expect(result.bodyMapCompletionRate).toBe(50);
   });
 
-  it("returns 0 body map rate when no physical incidents but ignoring non-physical", () => {
+  it("returns null body map rate when no physical incidents but ignoring non-physical", () => {
     const result = evaluatePostIncidentPractice([
       makeIncident({ physicalInterventionUsed: false, bodyMapCompleted: false }),
     ]);
-    expect(result.bodyMapCompletionRate).toBe(0);
+    expect(result.bodyMapCompletionRate).toBeNull();
   });
 
   it("gives body map bonus when no physical interventions exist", () => {
@@ -524,12 +513,12 @@ describe("evaluateStaffCrisisReadiness", () => {
     const result = evaluateStaffCrisisReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.therapeuticApproachRate).toBe(0);
-    expect(result.deescalationRate).toBe(0);
-    expect(result.physicalInterventionRate).toBe(0);
-    expect(result.postIncidentSupportRate).toBe(0);
-    expect(result.recordKeepingRate).toBe(0);
-    expect(result.bodyMappingRate).toBe(0);
+    expect(result.therapeuticApproachRate).toBeNull();
+    expect(result.deescalationRate).toBeNull();
+    expect(result.physicalInterventionRate).toBeNull();
+    expect(result.postIncidentSupportRate).toBeNull();
+    expect(result.recordKeepingRate).toBeNull();
+    expect(result.bodyMappingRate).toBeNull();
   });
 
   it("scores high for fully trained staff", () => {

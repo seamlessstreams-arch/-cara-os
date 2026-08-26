@@ -6,7 +6,6 @@ export {
   getSanctionTypeLabel,
   getSanctionOutcomeLabel,
   getRatingLabel,
-  pct,
   getRating,
   evaluateSanctionQuality,
   evaluateSanctionCompliance,

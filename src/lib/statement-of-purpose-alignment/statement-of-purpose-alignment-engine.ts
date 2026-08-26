@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // Cara -- Statement of Purpose Alignment Intelligence Engine
 //
@@ -112,40 +113,54 @@ export interface OfstedRecommendation {
 export interface AlignmentQualityResult {
   overallScore: number; // 0-25
   totalAssessments: number;
-  fullyAlignedRate: number; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  fullyAlignedRate: number | null; // pct
   notAlignedCount: number;
-  strongEvidenceRate: number; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  strongEvidenceRate: number | null; // pct
   actionsRequiredCount: number;
-  actionsTakenRate: number; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionsTakenRate: number | null; // pct
   sectionDistribution: Record<SoPSection, number>;
 }
 
 export interface ReviewCurrencyResult {
   overallScore: number; // 0-25
   totalReviews: number;
-  currentRate: number; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  currentRate: number | null; // pct
   overdueCount: number;
-  childrenConsultedRate: number; // pct
-  staffConsultedRate: number; // pct
-  regulatoryRate: number; // pct
-  allSectionsRate: number; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  childrenConsultedRate: number | null; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffConsultedRate: number | null; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  regulatoryRate: number | null; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  allSectionsRate: number | null; // pct
 }
 
 export interface StakeholderAwarenessResult {
   overallScore: number; // 0-25
   totalFeedback: number;
-  awareRate: number; // pct
-  reflectsRealityRate: number; // pct
-  valuesEvidentRate: number; // pct
-  suggestionsRate: number; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  awareRate: number | null; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  reflectsRealityRate: number | null; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  valuesEvidentRate: number | null; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  suggestionsRate: number | null; // pct
   stakeholderDistribution: Record<StakeholderType, number>;
 }
 
 export interface OfstedResponseResult {
   overallScore: number; // 0-25
   totalRecommendations: number;
-  addressedRate: number; // pct
-  evidenceRate: number; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  addressedRate: number | null; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  evidenceRate: number | null; // pct
   outstandingCount: number;
 }
 
@@ -177,11 +192,6 @@ export interface StatementOfPurposeAlignmentIntelligence {
 // -- Helpers ------------------------------------------------------------------
 
 /** Calculate percentage, returning 0 if denominator is 0. */
-export function pct(numerator: number, denominator: number): number {
-  if (denominator === 0) return 0;
-  return Math.round((numerator / denominator) * 100);
-}
-
 /** Map overall score (0-100) to Ofsted-style rating. */
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -291,11 +301,11 @@ export function evaluateAlignmentQuality(
     return {
       overallScore: 0,
       totalAssessments: 0,
-      fullyAlignedRate: 0,
+      fullyAlignedRate: null,
       notAlignedCount: 0,
-      strongEvidenceRate: 0,
+      strongEvidenceRate: null,
       actionsRequiredCount: 0,
-      actionsTakenRate: 0,
+      actionsTakenRate: null,
       sectionDistribution,
     };
   }
@@ -306,15 +316,15 @@ export function evaluateAlignmentQuality(
   const actionsRequired = assessments.filter((a) => a.actionRequired);
   const actionsTaken = actionsRequired.filter((a) => a.actionTaken === true);
 
-  const fullyAlignedRate = pct(fullyAligned.length, assessments.length);
-  const strongEvidenceRate = pct(strongEvidence.length, assessments.length);
-  const actionsTakenRate = pct(actionsTaken.length, actionsRequired.length);
+  const fullyAlignedRate = rate(fullyAligned.length, assessments.length);
+  const strongEvidenceRate = rate(strongEvidence.length, assessments.length);
+  const actionsTakenRate = rate(actionsTaken.length, actionsRequired.length);
 
   // Scoring components
-  const alignedScore = Math.round((fullyAlignedRate / 100) * 8);
-  const evidenceScore = Math.round((strongEvidenceRate / 100) * 6);
+  const alignedScore = Math.round((fullyAlignedRate! / 100) * 8);
+  const evidenceScore = Math.round((strongEvidenceRate! / 100) * 6);
   const actionsScore = actionsRequired.length > 0
-    ? Math.round((actionsTakenRate / 100) * 5)
+    ? Math.round(((actionsTakenRate ?? 0) / 100) * 5)
     : 5; // no actions required = full marks
 
   let score = alignedScore + evidenceScore + actionsScore;
@@ -349,12 +359,12 @@ export function evaluateReviewCurrency(
     return {
       overallScore: 0,
       totalReviews: 0,
-      currentRate: 0,
+      currentRate: null,
       overdueCount: 0,
-      childrenConsultedRate: 0,
-      staffConsultedRate: 0,
-      regulatoryRate: 0,
-      allSectionsRate: 0,
+      childrenConsultedRate: null,
+      staffConsultedRate: null,
+      regulatoryRate: null,
+      allSectionsRate: null,
     };
   }
 
@@ -365,18 +375,18 @@ export function evaluateReviewCurrency(
   const regulatory = reviews.filter((r) => r.regulatoryChangesIncorporated);
   const allSections = reviews.filter((r) => r.allSectionsReviewed);
 
-  const currentRate = pct(current.length, reviews.length);
-  const childrenConsultedRate = pct(childrenConsulted.length, reviews.length);
-  const staffConsultedRate = pct(staffConsulted.length, reviews.length);
-  const regulatoryRate = pct(regulatory.length, reviews.length);
-  const allSectionsRate = pct(allSections.length, reviews.length);
+  const currentRate = rate(current.length, reviews.length);
+  const childrenConsultedRate = rate(childrenConsulted.length, reviews.length);
+  const staffConsultedRate = rate(staffConsulted.length, reviews.length);
+  const regulatoryRate = rate(regulatory.length, reviews.length);
+  const allSectionsRate = rate(allSections.length, reviews.length);
 
   // Scoring components
-  const currentScore = Math.round((currentRate / 100) * 7);
-  const childrenScore = Math.round((childrenConsultedRate / 100) * 5);
-  const staffScore = Math.round((staffConsultedRate / 100) * 4);
-  const regulatoryScore = Math.round((regulatoryRate / 100) * 4);
-  const allSectionsScore = Math.round((allSectionsRate / 100) * 3);
+  const currentScore = Math.round((currentRate! / 100) * 7);
+  const childrenScore = Math.round((childrenConsultedRate! / 100) * 5);
+  const staffScore = Math.round((staffConsultedRate! / 100) * 4);
+  const regulatoryScore = Math.round((regulatoryRate! / 100) * 4);
+  const allSectionsScore = Math.round((allSectionsRate! / 100) * 3);
 
   let score = currentScore + childrenScore + staffScore + regulatoryScore + allSectionsScore;
 
@@ -418,10 +428,10 @@ export function evaluateStakeholderAwareness(
     return {
       overallScore: 0,
       totalFeedback: 0,
-      awareRate: 0,
-      reflectsRealityRate: 0,
-      valuesEvidentRate: 0,
-      suggestionsRate: 0,
+      awareRate: null,
+      reflectsRealityRate: null,
+      valuesEvidentRate: null,
+      suggestionsRate: null,
       stakeholderDistribution,
     };
   }
@@ -431,16 +441,16 @@ export function evaluateStakeholderAwareness(
   const valuesEvident = feedback.filter((f) => f.valuesEvident);
   const suggestions = feedback.filter((f) => f.suggestionsProvided);
 
-  const awareRate = pct(aware.length, feedback.length);
-  const reflectsRealityRate = pct(reflectsReality.length, feedback.length);
-  const valuesEvidentRate = pct(valuesEvident.length, feedback.length);
-  const suggestionsRate = pct(suggestions.length, feedback.length);
+  const awareRate = rate(aware.length, feedback.length);
+  const reflectsRealityRate = rate(reflectsReality.length, feedback.length);
+  const valuesEvidentRate = rate(valuesEvident.length, feedback.length);
+  const suggestionsRate = rate(suggestions.length, feedback.length);
 
   // Scoring components
-  const awareScore = Math.round((awareRate / 100) * 7);
-  const realityScore = Math.round((reflectsRealityRate / 100) * 7);
-  const valuesScore = Math.round((valuesEvidentRate / 100) * 6);
-  const suggestionsScore = Math.round((suggestionsRate / 100) * 5);
+  const awareScore = Math.round((awareRate! / 100) * 7);
+  const realityScore = Math.round((reflectsRealityRate! / 100) * 7);
+  const valuesScore = Math.round((valuesEvidentRate! / 100) * 6);
+  const suggestionsScore = Math.round((suggestionsRate! / 100) * 5);
 
   const score = awareScore + realityScore + valuesScore + suggestionsScore;
 
@@ -469,8 +479,8 @@ export function evaluateOfstedResponse(
     return {
       overallScore: 25,
       totalRecommendations: 0,
-      addressedRate: 0,
-      evidenceRate: 0,
+      addressedRate: null,
+      evidenceRate: null,
       outstandingCount: 0,
     };
   }
@@ -479,12 +489,12 @@ export function evaluateOfstedResponse(
   const withEvidence = recommendations.filter((r) => r.evidenceOfChange);
   const outstanding = recommendations.filter((r) => !r.addressed);
 
-  const addressedRate = pct(addressed.length, recommendations.length);
-  const evidenceRate = pct(withEvidence.length, recommendations.length);
+  const addressedRate = rate(addressed.length, recommendations.length);
+  const evidenceRate = rate(withEvidence.length, recommendations.length);
 
   // Scoring components
-  const addressedScore = Math.round((addressedRate / 100) * 12);
-  const evidenceScore = Math.round((evidenceRate / 100) * 8);
+  const addressedScore = Math.round((addressedRate! / 100) * 12);
+  const evidenceScore = Math.round((evidenceRate! / 100) * 8);
 
   let score = addressedScore + evidenceScore;
 
@@ -602,12 +612,12 @@ export function generateStatementOfPurposeAlignmentIntelligence(
       "Strong alignment between the Statement of Purpose and actual care delivery across most sections",
     );
   }
-  if (alignmentQuality.fullyAlignedRate >= 80 && alignmentQuality.totalAssessments > 0) {
+  if (meets(alignmentQuality.fullyAlignedRate, 80) && alignmentQuality.totalAssessments > 0) {
     strengths.push(
       `${alignmentQuality.fullyAlignedRate}% of assessed sections are fully aligned with the Statement of Purpose`,
     );
   }
-  if (alignmentQuality.strongEvidenceRate >= 70 && alignmentQuality.totalAssessments > 0) {
+  if (meets(alignmentQuality.strongEvidenceRate, 70) && alignmentQuality.totalAssessments > 0) {
     strengths.push(
       "Strong evidence base underpins alignment assessments across most sections",
     );
@@ -627,12 +637,12 @@ export function generateStatementOfPurposeAlignmentIntelligence(
       "Stakeholders demonstrate strong awareness of the Statement of Purpose and its values",
     );
   }
-  if (stakeholderAwareness.awareRate >= 90 && stakeholderAwareness.totalFeedback > 0) {
+  if (meets(stakeholderAwareness.awareRate, 90) && stakeholderAwareness.totalFeedback > 0) {
     strengths.push(
       "High stakeholder awareness of the Statement of Purpose across all groups",
     );
   }
-  if (stakeholderAwareness.reflectsRealityRate >= 90 && stakeholderAwareness.totalFeedback > 0) {
+  if (meets(stakeholderAwareness.reflectsRealityRate, 90) && stakeholderAwareness.totalFeedback > 0) {
     strengths.push(
       "Stakeholders confirm the Statement of Purpose accurately reflects the reality of care provided",
     );
@@ -666,17 +676,17 @@ export function generateStatementOfPurposeAlignmentIntelligence(
       `${alignmentQuality.notAlignedCount} section(s) assessed as not aligned with the Statement of Purpose`,
     );
   }
-  if (alignmentQuality.fullyAlignedRate < 60 && alignmentQuality.totalAssessments > 0) {
+  if (below(alignmentQuality.fullyAlignedRate, 60) && alignmentQuality.totalAssessments > 0) {
     areasForImprovement.push(
       `Only ${alignmentQuality.fullyAlignedRate}% of sections are fully aligned -- targeted improvement needed`,
     );
   }
-  if (alignmentQuality.strongEvidenceRate < 50 && alignmentQuality.totalAssessments > 0) {
+  if (below(alignmentQuality.strongEvidenceRate, 50) && alignmentQuality.totalAssessments > 0) {
     areasForImprovement.push(
       `Only ${alignmentQuality.strongEvidenceRate}% of assessments supported by strong evidence`,
     );
   }
-  if (alignmentQuality.actionsTakenRate < 80 && alignmentQuality.actionsRequiredCount > 0) {
+  if (below(alignmentQuality.actionsTakenRate, 80) && alignmentQuality.actionsRequiredCount > 0) {
     areasForImprovement.push(
       `Only ${alignmentQuality.actionsTakenRate}% of required alignment actions have been completed`,
     );
@@ -691,12 +701,12 @@ export function generateStatementOfPurposeAlignmentIntelligence(
       `${reviewCurrency.overdueCount} review(s) of the Statement of Purpose are overdue`,
     );
   }
-  if (reviewCurrency.childrenConsultedRate < 80 && reviewCurrency.totalReviews > 0) {
+  if (below(reviewCurrency.childrenConsultedRate, 80) && reviewCurrency.totalReviews > 0) {
     areasForImprovement.push(
       `Children consulted in only ${reviewCurrency.childrenConsultedRate}% of reviews -- their voice must inform the Statement of Purpose`,
     );
   }
-  if (reviewCurrency.staffConsultedRate < 80 && reviewCurrency.totalReviews > 0) {
+  if (below(reviewCurrency.staffConsultedRate, 80) && reviewCurrency.totalReviews > 0) {
     areasForImprovement.push(
       `Staff consulted in only ${reviewCurrency.staffConsultedRate}% of reviews`,
     );
@@ -706,12 +716,12 @@ export function generateStatementOfPurposeAlignmentIntelligence(
       "No stakeholder feedback gathered on Statement of Purpose awareness or alignment",
     );
   }
-  if (stakeholderAwareness.awareRate < 70 && stakeholderAwareness.totalFeedback > 0) {
+  if (below(stakeholderAwareness.awareRate, 70) && stakeholderAwareness.totalFeedback > 0) {
     areasForImprovement.push(
       `Only ${stakeholderAwareness.awareRate}% of stakeholders are aware of the Statement of Purpose`,
     );
   }
-  if (stakeholderAwareness.reflectsRealityRate < 70 && stakeholderAwareness.totalFeedback > 0) {
+  if (below(stakeholderAwareness.reflectsRealityRate, 70) && stakeholderAwareness.totalFeedback > 0) {
     areasForImprovement.push(
       `Only ${stakeholderAwareness.reflectsRealityRate}% of stakeholders feel the Statement of Purpose reflects reality`,
     );
@@ -735,12 +745,12 @@ export function generateStatementOfPurposeAlignmentIntelligence(
       "Develop and implement action plans for sections assessed as not aligned with the Statement of Purpose",
     );
   }
-  if (alignmentQuality.strongEvidenceRate < 50 && alignmentQuality.totalAssessments > 0) {
+  if (below(alignmentQuality.strongEvidenceRate, 50) && alignmentQuality.totalAssessments > 0) {
     actions.push(
       "Strengthen the evidence base for alignment assessments through documented observations and records",
     );
   }
-  if (alignmentQuality.actionsTakenRate < 100 && alignmentQuality.actionsRequiredCount > 0) {
+  if (below(alignmentQuality.actionsTakenRate, 100) && alignmentQuality.actionsRequiredCount > 0) {
     actions.push(
       "Complete all outstanding alignment actions and document the impact of changes made",
     );
@@ -755,12 +765,12 @@ export function generateStatementOfPurposeAlignmentIntelligence(
       "Urgently complete overdue Statement of Purpose reviews to ensure the document remains current",
     );
   }
-  if (reviewCurrency.childrenConsultedRate < 100 && reviewCurrency.totalReviews > 0) {
+  if (below(reviewCurrency.childrenConsultedRate, 100) && reviewCurrency.totalReviews > 0) {
     actions.push(
       "Ensure children are consulted in all future reviews of the Statement of Purpose using age-appropriate methods",
     );
   }
-  if (reviewCurrency.staffConsultedRate < 100 && reviewCurrency.totalReviews > 0) {
+  if (below(reviewCurrency.staffConsultedRate, 100) && reviewCurrency.totalReviews > 0) {
     actions.push(
       "Include all staff in Statement of Purpose reviews to ensure the team understands and delivers on commitments",
     );
@@ -770,12 +780,12 @@ export function generateStatementOfPurposeAlignmentIntelligence(
       "Gather feedback from children, staff, families, and professionals on their awareness of the Statement of Purpose",
     );
   }
-  if (stakeholderAwareness.awareRate < 70 && stakeholderAwareness.totalFeedback > 0) {
+  if (below(stakeholderAwareness.awareRate, 70) && stakeholderAwareness.totalFeedback > 0) {
     actions.push(
       "Improve communication of the Statement of Purpose to all stakeholders through accessible formats",
     );
   }
-  if (stakeholderAwareness.reflectsRealityRate < 70 && stakeholderAwareness.totalFeedback > 0) {
+  if (below(stakeholderAwareness.reflectsRealityRate, 70) && stakeholderAwareness.totalFeedback > 0) {
     actions.push(
       "Review and update the Statement of Purpose to better reflect the reality of care provided",
     );

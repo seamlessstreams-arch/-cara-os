@@ -6,7 +6,6 @@ export {
   evaluateStaffDevelopment,
   buildStaffSupervisionProfiles,
   getRating,
-  pct,
   getSupervisionTypeLabel,
   getSupervisionFrequencyLabel,
   getSupervisionQualityLabel,

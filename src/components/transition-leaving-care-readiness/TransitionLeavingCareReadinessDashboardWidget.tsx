@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildTransitionProfile { childId: string; childName: string; totalAssessments: number; progressRate: number; pathwayPlanRate: number; overallScore: number; }
 
@@ -85,19 +86,19 @@ export default function TransitionLeavingCareReadinessDashboardWidget() {
       <Section title="Readiness Preparation" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Assessments" value={data.readinessPreparation.totalAssessments} />
-          <Stat label="Progress" value={`${data.readinessPreparation.progressRate}%`} />
-          <Stat label="Pathway Plan" value={`${data.readinessPreparation.pathwayPlanRate}%`} />
-          <Stat label="Personal Advisor" value={`${data.readinessPreparation.personalAdvisorRate}%`} />
-          <Stat label="Child Voice" value={`${data.readinessPreparation.childVoiceRate}%`} />
+          <Stat label="Progress" value={`${formatRate(data.readinessPreparation.progressRate)}`} />
+          <Stat label="Pathway Plan" value={`${formatRate(data.readinessPreparation.pathwayPlanRate)}`} />
+          <Stat label="Personal Advisor" value={`${formatRate(data.readinessPreparation.personalAdvisorRate)}`} />
+          <Stat label="Child Voice" value={`${formatRate(data.readinessPreparation.childVoiceRate)}`} />
         </div>
       </Section>
 
       <Section title="Transition Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Goals Set" value={`${data.transitionCompliance.goalsSetRate}%`} />
-          <Stat label="Documented" value={`${data.transitionCompliance.documentedRate}%`} />
-          <Stat label="Review Scheduled" value={`${data.transitionCompliance.reviewScheduledRate}%`} />
-          <Stat label="Area Diversity" value={`${data.transitionCompliance.areaDiversityRatio}%`} />
+          <Stat label="Goals Set" value={`${formatRate(data.transitionCompliance.goalsSetRate)}`} />
+          <Stat label="Documented" value={`${formatRate(data.transitionCompliance.documentedRate)}`} />
+          <Stat label="Review Scheduled" value={`${formatRate(data.transitionCompliance.reviewScheduledRate)}`} />
+          <Stat label="Area Diversity" value={`${formatRate(data.transitionCompliance.areaDiversityRatio)}`} />
         </div>
       </Section>
 
@@ -120,12 +121,12 @@ export default function TransitionLeavingCareReadinessDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffTransitionReadiness.totalStaff} />
-          <Stat label="Leaving Care Act" value={`${data.staffTransitionReadiness.leavingCareActRate}%`} />
-          <Stat label="Pathway Planning" value={`${data.staffTransitionReadiness.pathwayPlanningRate}%`} />
-          <Stat label="Independence" value={`${data.staffTransitionReadiness.independencePracticalRate}%`} />
-          <Stat label="Financial" value={`${data.staffTransitionReadiness.financialCapabilityRate}%`} />
-          <Stat label="Resilience" value={`${data.staffTransitionReadiness.emotionalResilienceRate}%`} />
-          <Stat label="Housing" value={`${data.staffTransitionReadiness.housingOptionsRate}%`} />
+          <Stat label="Leaving Care Act" value={`${formatRate(data.staffTransitionReadiness.leavingCareActRate)}`} />
+          <Stat label="Pathway Planning" value={`${formatRate(data.staffTransitionReadiness.pathwayPlanningRate)}`} />
+          <Stat label="Independence" value={`${formatRate(data.staffTransitionReadiness.independencePracticalRate)}`} />
+          <Stat label="Financial" value={`${formatRate(data.staffTransitionReadiness.financialCapabilityRate)}`} />
+          <Stat label="Resilience" value={`${formatRate(data.staffTransitionReadiness.emotionalResilienceRate)}`} />
+          <Stat label="Housing" value={`${formatRate(data.staffTransitionReadiness.housingOptionsRate)}`} />
         </div>
       </Section>
 

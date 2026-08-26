@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara Staff Wellbeing Intelligence Engine
 //
@@ -88,19 +89,27 @@ export interface StaffWellbeingQualityResult {
   overallScore: number;
   rating: Rating;
   totalRecords: number;
-  supervisionReceivedRate: number;
-  wellbeingCheckedRate: number;
-  debriefOfferedRate: number;
-  supportAccessedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  supervisionReceivedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  wellbeingCheckedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  debriefOfferedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  supportAccessedRate: number | null;
 }
 
 export interface StaffWellbeingComplianceResult {
   overallScore: number;
   rating: Rating;
-  documentationRate: number;
-  timelyRecordingRate: number;
-  supervisionReceivedRate: number;
-  categoryDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  supervisionReceivedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  categoryDiversityRatio: number | null;
 }
 
 export interface StaffWellbeingPolicyResult {
@@ -119,20 +128,28 @@ export interface StaffWellbeingReadinessResult {
   overallScore: number;
   rating: Rating;
   totalStaff: number;
-  supervisionDeliveryRate: number;
-  wellbeingAssessmentRate: number;
-  debriefingSkillsRate: number;
-  stressManagementRate: number;
-  teamBuildingRate: number;
-  conflictMediationRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  supervisionDeliveryRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  wellbeingAssessmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  debriefingSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  stressManagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  teamBuildingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  conflictMediationRate: number | null;
 }
 
 export interface StaffWellbeingProfile {
   staffId: string;
   staffName: string;
   totalRecords: number;
-  supervisionReceivedRate: number;
-  wellbeingCheckedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  supervisionReceivedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  wellbeingCheckedRate: number | null;
   categoriesCovered: string[];
   overallScore: number;
 }
@@ -155,11 +172,6 @@ export interface StaffWellbeingIntelligence {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -209,16 +221,16 @@ const ALL_CATEGORIES: StaffWellbeingCategory[] = [
 export function evaluateWellbeingQuality(records: StaffWellbeingRecord[]): StaffWellbeingQualityResult {
   const total = records.length;
   if (total === 0) {
-    return { overallScore: 0, rating: "inadequate", totalRecords: 0, supervisionReceivedRate: 0, wellbeingCheckedRate: 0, debriefOfferedRate: 0, supportAccessedRate: 0 };
+    return { overallScore: 0, rating: "inadequate", totalRecords: 0, supervisionReceivedRate: null, wellbeingCheckedRate: null, debriefOfferedRate: null, supportAccessedRate: null };
   }
 
-  const supervisionReceivedRate = pct(records.filter((r) => r.supervisionReceived).length, total);
-  const wellbeingCheckedRate = pct(records.filter((r) => r.wellbeingChecked).length, total);
-  const debriefOfferedRate = pct(records.filter((r) => r.debriefOffered).length, total);
-  const supportAccessedRate = pct(records.filter((r) => r.supportAccessed).length, total);
+  const supervisionReceivedRate = rate(records.filter((r) => r.supervisionReceived).length, total);
+  const wellbeingCheckedRate = rate(records.filter((r) => r.wellbeingChecked).length, total);
+  const debriefOfferedRate = rate(records.filter((r) => r.debriefOffered).length, total);
+  const supportAccessedRate = rate(records.filter((r) => r.supportAccessed).length, total);
 
   // Weighted: supervisionReceivedRate 7 + wellbeingCheckedRate 6 + debriefOfferedRate 6 + supportAccessedRate 6 = 25
-  const raw = (supervisionReceivedRate / 100) * 7 + (wellbeingCheckedRate / 100) * 6 + (debriefOfferedRate / 100) * 6 + (supportAccessedRate / 100) * 6;
+  const raw = (supervisionReceivedRate! / 100) * 7 + (wellbeingCheckedRate! / 100) * 6 + (debriefOfferedRate! / 100) * 6 + (supportAccessedRate! / 100) * 6;
   const overallScore = Math.min(25, Math.round(raw));
 
   return { overallScore, rating: getRating(overallScore * 4), totalRecords: total, supervisionReceivedRate, wellbeingCheckedRate, debriefOfferedRate, supportAccessedRate };
@@ -229,18 +241,18 @@ export function evaluateWellbeingQuality(records: StaffWellbeingRecord[]): Staff
 export function evaluateWellbeingCompliance(records: StaffWellbeingRecord[]): StaffWellbeingComplianceResult {
   const total = records.length;
   if (total === 0) {
-    return { overallScore: 0, rating: "inadequate", documentationRate: 0, timelyRecordingRate: 0, supervisionReceivedRate: 0, categoryDiversityRatio: 0 };
+    return { overallScore: 0, rating: "inadequate", documentationRate: null, timelyRecordingRate: null, supervisionReceivedRate: null, categoryDiversityRatio: 0 };
   }
 
-  const documentationRate = pct(records.filter((r) => r.documentationComplete).length, total);
-  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, total);
-  const supervisionReceivedRate = pct(records.filter((r) => r.supervisionReceived).length, total);
+  const documentationRate = rate(records.filter((r) => r.documentationComplete).length, total);
+  const timelyRecordingRate = rate(records.filter((r) => r.timelyRecording).length, total);
+  const supervisionReceivedRate = rate(records.filter((r) => r.supervisionReceived).length, total);
 
   const uniqueCategories = new Set(records.map((r) => r.category)).size;
-  const categoryDiversityRatio = pct(uniqueCategories, ALL_CATEGORIES.length);
+  const categoryDiversityRatio = rate(uniqueCategories, ALL_CATEGORIES.length);
 
   // Weighted: documentationRate 8 + timelyRecordingRate 7 + supervisionReceivedRate 5 + categoryDiversityRatio 5 = 25
-  const raw = (documentationRate / 100) * 8 + (timelyRecordingRate / 100) * 7 + (supervisionReceivedRate / 100) * 5 + (categoryDiversityRatio / 100) * 5;
+  const raw = (documentationRate! / 100) * 8 + (timelyRecordingRate! / 100) * 7 + (supervisionReceivedRate! / 100) * 5 + ((categoryDiversityRatio ?? 0) / 100) * 5;
   const overallScore = Math.min(25, Math.round(raw));
 
   return { overallScore, rating: getRating(overallScore * 4), documentationRate, timelyRecordingRate, supervisionReceivedRate, categoryDiversityRatio };
@@ -281,24 +293,24 @@ export function evaluateWellbeingPolicy(policy: StaffWellbeingPolicy | null): St
 export function evaluateStaffWellbeingReadiness(staff: StaffWellbeingTraining[]): StaffWellbeingReadinessResult {
   const count = staff.length;
   if (count === 0) {
-    return { overallScore: 0, rating: "inadequate", totalStaff: 0, supervisionDeliveryRate: 0, wellbeingAssessmentRate: 0, debriefingSkillsRate: 0, stressManagementRate: 0, teamBuildingRate: 0, conflictMediationRate: 0 };
+    return { overallScore: 0, rating: "inadequate", totalStaff: 0, supervisionDeliveryRate: null, wellbeingAssessmentRate: null, debriefingSkillsRate: null, stressManagementRate: null, teamBuildingRate: null, conflictMediationRate: null };
   }
 
-  const supervisionDeliveryRate = pct(staff.filter((s) => s.supervisionDelivery).length, count);
-  const wellbeingAssessmentRate = pct(staff.filter((s) => s.wellbeingAssessment).length, count);
-  const debriefingSkillsRate = pct(staff.filter((s) => s.debriefingSkills).length, count);
-  const stressManagementRate = pct(staff.filter((s) => s.stressManagement).length, count);
-  const teamBuildingRate = pct(staff.filter((s) => s.teamBuilding).length, count);
-  const conflictMediationRate = pct(staff.filter((s) => s.conflictMediation).length, count);
+  const supervisionDeliveryRate = rate(staff.filter((s) => s.supervisionDelivery).length, count);
+  const wellbeingAssessmentRate = rate(staff.filter((s) => s.wellbeingAssessment).length, count);
+  const debriefingSkillsRate = rate(staff.filter((s) => s.debriefingSkills).length, count);
+  const stressManagementRate = rate(staff.filter((s) => s.stressManagement).length, count);
+  const teamBuildingRate = rate(staff.filter((s) => s.teamBuilding).length, count);
+  const conflictMediationRate = rate(staff.filter((s) => s.conflictMediation).length, count);
 
   // Weighted: 6+5+5+4+3+2 = 25
   const raw =
-    (supervisionDeliveryRate / 100) * 6 +
-    (wellbeingAssessmentRate / 100) * 5 +
-    (debriefingSkillsRate / 100) * 5 +
-    (stressManagementRate / 100) * 4 +
-    (teamBuildingRate / 100) * 3 +
-    (conflictMediationRate / 100) * 2;
+    (supervisionDeliveryRate! / 100) * 6 +
+    (wellbeingAssessmentRate! / 100) * 5 +
+    (debriefingSkillsRate! / 100) * 5 +
+    (stressManagementRate! / 100) * 4 +
+    (teamBuildingRate! / 100) * 3 +
+    (conflictMediationRate! / 100) * 2;
   const overallScore = Math.min(25, Math.round(raw));
 
   return { overallScore, rating: getRating(overallScore * 4), totalStaff: count, supervisionDeliveryRate, wellbeingAssessmentRate, debriefingSkillsRate, stressManagementRate, teamBuildingRate, conflictMediationRate };
@@ -319,8 +331,8 @@ export function buildStaffWellbeingProfiles(records: StaffWellbeingRecord[]): St
     const staffName = recs[0].staffName;
     const totalRecords = recs.length;
 
-    const supervisionReceivedRate = pct(recs.filter((r) => r.supervisionReceived).length, totalRecords);
-    const wellbeingCheckedRate = pct(recs.filter((r) => r.wellbeingChecked).length, totalRecords);
+    const supervisionReceivedRate = rate(recs.filter((r) => r.supervisionReceived).length, totalRecords);
+    const wellbeingCheckedRate = rate(recs.filter((r) => r.wellbeingChecked).length, totalRecords);
 
     const catsSet = new Set(recs.map((r) => r.category));
     const categoriesCovered = [...catsSet];
@@ -331,13 +343,13 @@ export function buildStaffWellbeingProfiles(records: StaffWellbeingRecord[]): St
     if (totalRecords >= 10) score += 2;
     else if (totalRecords >= 5) score += 1;
 
-    if (supervisionReceivedRate >= 80) score += 3;
-    else if (supervisionReceivedRate >= 60) score += 2;
-    else if (supervisionReceivedRate >= 40) score += 1;
+    if (meets(supervisionReceivedRate, 80)) score += 3;
+    else if (meets(supervisionReceivedRate, 60)) score += 2;
+    else if (meets(supervisionReceivedRate, 40)) score += 1;
 
-    if (wellbeingCheckedRate >= 80) score += 3;
-    else if (wellbeingCheckedRate >= 60) score += 2;
-    else if (wellbeingCheckedRate >= 40) score += 1;
+    if (meets(wellbeingCheckedRate, 80)) score += 3;
+    else if (meets(wellbeingCheckedRate, 60)) score += 2;
+    else if (meets(wellbeingCheckedRate, 40)) score += 1;
 
     const catCount = categoriesCovered.length;
     if (catCount >= 4) score += 2;
@@ -381,36 +393,36 @@ export function generateStaffWellbeingIntelligence(
 
   // Strengths (>=80%)
   const strengths: string[] = [];
-  if (wellbeingQuality.supervisionReceivedRate >= 80) strengths.push("Staff consistently receive supervision as required");
-  if (wellbeingQuality.wellbeingCheckedRate >= 80) strengths.push("Wellbeing check-ins are routinely conducted with staff");
-  if (wellbeingQuality.debriefOfferedRate >= 80) strengths.push("Debriefing is consistently offered following incidents");
-  if (wellbeingQuality.supportAccessedRate >= 80) strengths.push("Staff are accessing available support services");
-  if (wellbeingCompliance.documentationRate >= 80) strengths.push("Wellbeing documentation is thorough and complete");
-  if (wellbeingCompliance.timelyRecordingRate >= 80) strengths.push("Wellbeing records are completed within required timescales");
-  if (staffReadiness.supervisionDeliveryRate >= 80) strengths.push("Managers are well trained in supervision delivery");
-  if (staffReadiness.wellbeingAssessmentRate >= 80) strengths.push("Managers are skilled in wellbeing assessment");
+  if (meets(wellbeingQuality.supervisionReceivedRate, 80)) strengths.push("Staff consistently receive supervision as required");
+  if (meets(wellbeingQuality.wellbeingCheckedRate, 80)) strengths.push("Wellbeing check-ins are routinely conducted with staff");
+  if (meets(wellbeingQuality.debriefOfferedRate, 80)) strengths.push("Debriefing is consistently offered following incidents");
+  if (meets(wellbeingQuality.supportAccessedRate, 80)) strengths.push("Staff are accessing available support services");
+  if (meets(wellbeingCompliance.documentationRate, 80)) strengths.push("Wellbeing documentation is thorough and complete");
+  if (meets(wellbeingCompliance.timelyRecordingRate, 80)) strengths.push("Wellbeing records are completed within required timescales");
+  if (meets(staffReadiness.supervisionDeliveryRate, 80)) strengths.push("Managers are well trained in supervision delivery");
+  if (meets(staffReadiness.wellbeingAssessmentRate, 80)) strengths.push("Managers are skilled in wellbeing assessment");
 
   // Areas for improvement (<60%)
   const areasForImprovement: string[] = [];
-  if (wellbeingQuality.supervisionReceivedRate < 60) areasForImprovement.push("Staff are not consistently receiving supervision");
-  if (wellbeingQuality.wellbeingCheckedRate < 60) areasForImprovement.push("Wellbeing check-ins are not being conducted regularly");
-  if (wellbeingQuality.debriefOfferedRate < 60) areasForImprovement.push("Debriefing is not being offered consistently after incidents");
-  if (wellbeingQuality.supportAccessedRate < 60) areasForImprovement.push("Staff are not accessing available support services");
-  if (wellbeingCompliance.documentationRate < 60) areasForImprovement.push("Wellbeing documentation is incomplete or inconsistent");
-  if (wellbeingCompliance.timelyRecordingRate < 60) areasForImprovement.push("Wellbeing records are not being completed promptly");
-  if (staffReadiness.supervisionDeliveryRate < 60) areasForImprovement.push("Managers need more training in supervision delivery");
-  if (staffReadiness.wellbeingAssessmentRate < 60) areasForImprovement.push("Managers need development in wellbeing assessment skills");
+  if (below(wellbeingQuality.supervisionReceivedRate, 60)) areasForImprovement.push("Staff are not consistently receiving supervision");
+  if (below(wellbeingQuality.wellbeingCheckedRate, 60)) areasForImprovement.push("Wellbeing check-ins are not being conducted regularly");
+  if (below(wellbeingQuality.debriefOfferedRate, 60)) areasForImprovement.push("Debriefing is not being offered consistently after incidents");
+  if (below(wellbeingQuality.supportAccessedRate, 60)) areasForImprovement.push("Staff are not accessing available support services");
+  if (below(wellbeingCompliance.documentationRate, 60)) areasForImprovement.push("Wellbeing documentation is incomplete or inconsistent");
+  if (below(wellbeingCompliance.timelyRecordingRate, 60)) areasForImprovement.push("Wellbeing records are not being completed promptly");
+  if (below(staffReadiness.supervisionDeliveryRate, 60)) areasForImprovement.push("Managers need more training in supervision delivery");
+  if (below(staffReadiness.wellbeingAssessmentRate, 60)) areasForImprovement.push("Managers need development in wellbeing assessment skills");
 
   // Actions
   const actions: string[] = [];
   if (wellbeingPolicy.overallScore === 0) actions.push("URGENT: Establish a staff wellbeing policy — CHR 2015 Reg 31 requires employers to ensure fitness of workers");
   if (staffReadiness.overallScore === 0) actions.push("URGENT: Provide supervision and wellbeing training to all managers — staff cannot be supported without skilled supervisors");
-  if (wellbeingQuality.supervisionReceivedRate < 50) actions.push("Ensure all staff receive regular supervision — SCCIF leadership and management standard requires effective oversight");
-  if (wellbeingQuality.wellbeingCheckedRate < 50) actions.push("Implement systematic wellbeing check-ins for all staff — Health and Safety at Work Act 1974 duty of care");
-  if (wellbeingCompliance.documentationRate < 50) actions.push("Improve wellbeing documentation — all supervision and support must be fully recorded");
-  if (wellbeingCompliance.timelyRecordingRate < 50) actions.push("Review recording timescales — wellbeing records should be completed promptly");
-  if (wellbeingQuality.debriefOfferedRate < 50) actions.push("Ensure debriefing is offered after all significant incidents — Management of H&S Regulations 1999");
-  if (staffReadiness.debriefingSkillsRate < 50) actions.push("Train managers in debriefing skills — effective debriefing prevents secondary trauma");
+  if (below(wellbeingQuality.supervisionReceivedRate, 50)) actions.push("Ensure all staff receive regular supervision — SCCIF leadership and management standard requires effective oversight");
+  if (below(wellbeingQuality.wellbeingCheckedRate, 50)) actions.push("Implement systematic wellbeing check-ins for all staff — Health and Safety at Work Act 1974 duty of care");
+  if (below(wellbeingCompliance.documentationRate, 50)) actions.push("Improve wellbeing documentation — all supervision and support must be fully recorded");
+  if (below(wellbeingCompliance.timelyRecordingRate, 50)) actions.push("Review recording timescales — wellbeing records should be completed promptly");
+  if (below(wellbeingQuality.debriefOfferedRate, 50)) actions.push("Ensure debriefing is offered after all significant incidents — Management of H&S Regulations 1999");
+  if (below(staffReadiness.debriefingSkillsRate, 50)) actions.push("Train managers in debriefing skills — effective debriefing prevents secondary trauma");
 
   const regulatoryLinks: string[] = [
     "CHR 2015 Reg 31 — Fitness of workers",

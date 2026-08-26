@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 /* ──────────────────────────────────────────────────────────────
    Substance Misuse Prevention Intelligence Engine
    Pure deterministic – no AI, no network, no randomness.
@@ -73,19 +74,27 @@ export interface StaffPreventionTraining {
 export interface PreventionQualityResult {
   overallScore: number;
   totalSessions: number;
-  understandingRate: number;
-  engagementRate: number;
-  scenarioRate: number;
-  copingStrategyRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  understandingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  engagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  scenarioRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  copingStrategyRate: number | null;
   rating: Rating;
 }
 
 export interface PreventionComplianceResult {
   overallScore: number;
-  documentedRate: number;
-  staffDeliveredRate: number;
-  followUpRate: number;
-  topicDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffDeliveredRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  followUpRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  topicDiversityRatio: number | null;
   rating: Rating;
 }
 
@@ -104,12 +113,18 @@ export interface PreventionPolicyResult {
 export interface StaffPreventionReadinessResult {
   overallScore: number;
   totalStaff: number;
-  substanceKnowledgeRate: number;
-  riskIndicatorRate: number;
-  motivationalInterviewingRate: number;
-  incidentManagementRate: number;
-  safeguardingLinksRate: number;
-  ageAppropriateDeliveryRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  substanceKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskIndicatorRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  motivationalInterviewingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  incidentManagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingLinksRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  ageAppropriateDeliveryRate: number | null;
   rating: Rating;
 }
 
@@ -117,8 +132,10 @@ export interface ChildPreventionProfile {
   childId: string;
   childName: string;
   totalSessions: number;
-  understandingRate: number;
-  engagementRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  understandingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  engagementRate: number | null;
   topicsCovered: PreventionTopic[];
   overallScore: number;
 }
@@ -141,11 +158,6 @@ export interface SubstanceMisusePreventionIntelligence {
 }
 
 // ── Helpers ────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -203,10 +215,10 @@ export function evaluatePreventionQuality(
     return {
       overallScore: 0,
       totalSessions: 0,
-      understandingRate: 0,
-      engagementRate: 0,
-      scenarioRate: 0,
-      copingStrategyRate: 0,
+      understandingRate: null,
+      engagementRate: null,
+      scenarioRate: null,
+      copingStrategyRate: null,
       rating: "inadequate",
     };
 
@@ -219,16 +231,16 @@ export function evaluatePreventionQuality(
   const scenario = sessions.filter((s) => s.scenarioPracticed).length;
   const coping = sessions.filter((s) => s.copingStrategyIdentified).length;
 
-  const understandingRate = pct(understood, n);
-  const engagementRate = pct(engaged, n);
-  const scenarioRate = pct(scenario, n);
-  const copingStrategyRate = pct(coping, n);
+  const understandingRate = rate(understood, n);
+  const engagementRate = rate(engaged, n);
+  const scenarioRate = rate(scenario, n);
+  const copingStrategyRate = rate(coping, n);
 
   const raw =
-    (understandingRate / 100) * 7 +
-    (engagementRate / 100) * 6 +
-    (scenarioRate / 100) * 6 +
-    (copingStrategyRate / 100) * 6;
+    (understandingRate! / 100) * 7 +
+    (engagementRate! / 100) * 6 +
+    (scenarioRate! / 100) * 6 +
+    (copingStrategyRate! / 100) * 6;
 
   const overallScore = Math.min(25, Math.round(raw));
   return {
@@ -250,9 +262,9 @@ export function evaluatePreventionCompliance(
   if (n === 0)
     return {
       overallScore: 0,
-      documentedRate: 0,
-      staffDeliveredRate: 0,
-      followUpRate: 0,
+      documentedRate: null,
+      staffDeliveredRate: null,
+      followUpRate: null,
       topicDiversityRatio: 0,
       rating: "inadequate",
     };
@@ -262,16 +274,16 @@ export function evaluatePreventionCompliance(
   const followUp = sessions.filter((s) => s.followUpPlanned).length;
   const uniqueTopics = new Set(sessions.map((s) => s.topic)).size;
 
-  const documentedRate = pct(documented, n);
-  const staffDeliveredRate = pct(staffDel, n);
-  const followUpRate = pct(followUp, n);
-  const topicDiversityRatio = pct(uniqueTopics, TOTAL_TOPICS);
+  const documentedRate = rate(documented, n);
+  const staffDeliveredRate = rate(staffDel, n);
+  const followUpRate = rate(followUp, n);
+  const topicDiversityRatio = rate(uniqueTopics, TOTAL_TOPICS);
 
   const raw =
-    (documentedRate / 100) * 8 +
-    (staffDeliveredRate / 100) * 7 +
-    (followUpRate / 100) * 5 +
-    (topicDiversityRatio / 100) * 5;
+    (documentedRate! / 100) * 8 +
+    (staffDeliveredRate! / 100) * 7 +
+    (followUpRate! / 100) * 5 +
+    ((topicDiversityRatio ?? 0) / 100) * 5;
 
   const overallScore = Math.min(25, Math.round(raw));
   return {
@@ -333,12 +345,12 @@ export function evaluateStaffPreventionReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      substanceKnowledgeRate: 0,
-      riskIndicatorRate: 0,
-      motivationalInterviewingRate: 0,
-      incidentManagementRate: 0,
-      safeguardingLinksRate: 0,
-      ageAppropriateDeliveryRate: 0,
+      substanceKnowledgeRate: null,
+      riskIndicatorRate: null,
+      motivationalInterviewingRate: null,
+      incidentManagementRate: null,
+      safeguardingLinksRate: null,
+      ageAppropriateDeliveryRate: null,
       rating: "inadequate",
     };
 
@@ -349,20 +361,20 @@ export function evaluateStaffPreventionReadiness(
   const sl = training.filter((t) => t.safeguardingLinks).length;
   const ad = training.filter((t) => t.ageAppropriateDelivery).length;
 
-  const substanceKnowledgeRate = pct(sk, n);
-  const riskIndicatorRate = pct(ri, n);
-  const motivationalInterviewingRate = pct(mi, n);
-  const incidentManagementRate = pct(im, n);
-  const safeguardingLinksRate = pct(sl, n);
-  const ageAppropriateDeliveryRate = pct(ad, n);
+  const substanceKnowledgeRate = rate(sk, n);
+  const riskIndicatorRate = rate(ri, n);
+  const motivationalInterviewingRate = rate(mi, n);
+  const incidentManagementRate = rate(im, n);
+  const safeguardingLinksRate = rate(sl, n);
+  const ageAppropriateDeliveryRate = rate(ad, n);
 
   const raw =
-    (substanceKnowledgeRate / 100) * 6 +
-    (riskIndicatorRate / 100) * 5 +
-    (motivationalInterviewingRate / 100) * 5 +
-    (incidentManagementRate / 100) * 4 +
-    (safeguardingLinksRate / 100) * 3 +
-    (ageAppropriateDeliveryRate / 100) * 2;
+    (substanceKnowledgeRate! / 100) * 6 +
+    (riskIndicatorRate! / 100) * 5 +
+    (motivationalInterviewingRate! / 100) * 5 +
+    (incidentManagementRate! / 100) * 4 +
+    (safeguardingLinksRate! / 100) * 3 +
+    (ageAppropriateDeliveryRate! / 100) * 2;
 
   const overallScore = Math.min(25, Math.round(raw));
   return {
@@ -408,8 +420,8 @@ export function buildChildPreventionProfiles(
     const engaged = cs.filter((s) => s.childEngaged).length;
     const topics = [...new Set(cs.map((s) => s.topic))] as PreventionTopic[];
 
-    const understandingRate = pct(understood, n);
-    const engagementRate = pct(engaged, n);
+    const understandingRate = rate(understood, n);
+    const engagementRate = rate(engaged, n);
 
     // Frequency score
     let freq = 0;
@@ -418,15 +430,15 @@ export function buildChildPreventionProfiles(
 
     // Rate1: understanding
     let r1 = 0;
-    if (understandingRate >= 80) r1 = 3;
-    else if (understandingRate >= 60) r1 = 2;
-    else if (understandingRate >= 40) r1 = 1;
+    if (meets(understandingRate, 80)) r1 = 3;
+    else if (meets(understandingRate, 60)) r1 = 2;
+    else if (meets(understandingRate, 40)) r1 = 1;
 
     // Rate2: engagement
     let r2 = 0;
-    if (engagementRate >= 80) r2 = 3;
-    else if (engagementRate >= 60) r2 = 2;
-    else if (engagementRate >= 40) r2 = 1;
+    if (meets(engagementRate, 80)) r2 = 3;
+    else if (meets(engagementRate, 60)) r2 = 2;
+    else if (meets(engagementRate, 40)) r2 = 1;
 
     // Diversity
     let div = 0;
@@ -523,19 +535,19 @@ export function generateSubstanceMisusePreventionIntelligence(
     actions.push(
       "URGENT: Arrange substance misuse prevention training for all staff",
     );
-  if (preventionQuality.understandingRate < 50)
+  if (below(preventionQuality.understandingRate, 50))
     actions.push(
       "Review and improve prevention session delivery methods to increase child understanding",
     );
-  if (preventionCompliance.topicDiversityRatio < 50)
+  if (below(preventionCompliance.topicDiversityRatio, 50))
     actions.push(
       "Expand topic coverage to include all substance misuse prevention areas",
     );
-  if (preventionQuality.scenarioRate < 50)
+  if (below(preventionQuality.scenarioRate, 50))
     actions.push(
       "Increase use of scenario-based learning in prevention sessions",
     );
-  if (preventionQuality.copingStrategyRate < 50)
+  if (below(preventionQuality.copingStrategyRate, 50))
     actions.push(
       "Ensure coping strategies are identified and practiced in every prevention session",
     );

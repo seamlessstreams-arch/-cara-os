@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildTransitionProfile { childId: string; childName: string; totalRecords: number; transitionPlanRate: number; childPreparedRate: number; categoriesCovered: string[]; overallScore: number; }
 
@@ -73,19 +74,19 @@ export default function TransitionsDashboardWidget() {
       <Section title="Transition Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Transitions" value={data.transitionQuality.totalTransitions} />
-          <Stat label="Plan In Place" value={`${data.transitionQuality.transitionPlanRate}%`} />
-          <Stat label="Child Prepared" value={`${data.transitionQuality.childPreparedRate}%`} />
-          <Stat label="Receiving Briefed" value={`${data.transitionQuality.receivingBriefedRate}%`} />
-          <Stat label="Handover Complete" value={`${data.transitionQuality.handoverRate}%`} />
+          <Stat label="Plan In Place" value={`${formatRate(data.transitionQuality.transitionPlanRate)}`} />
+          <Stat label="Child Prepared" value={`${formatRate(data.transitionQuality.childPreparedRate)}`} />
+          <Stat label="Receiving Briefed" value={`${formatRate(data.transitionQuality.receivingBriefedRate)}`} />
+          <Stat label="Handover Complete" value={`${formatRate(data.transitionQuality.handoverRate)}`} />
         </div>
       </Section>
 
       <Section title="Transition Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documentation" value={`${data.transitionCompliance.documentationRate}%`} />
-          <Stat label="Timely Process" value={`${data.transitionCompliance.timelyRate}%`} />
-          <Stat label="Handover Rate" value={`${data.transitionCompliance.handoverRate}%`} />
-          <Stat label="Category Coverage" value={`${data.transitionCompliance.categoryDiversityRatio}%`} />
+          <Stat label="Documentation" value={`${formatRate(data.transitionCompliance.documentationRate)}`} />
+          <Stat label="Timely Process" value={`${formatRate(data.transitionCompliance.timelyRate)}`} />
+          <Stat label="Handover Rate" value={`${formatRate(data.transitionCompliance.handoverRate)}`} />
+          <Stat label="Category Coverage" value={`${formatRate(data.transitionCompliance.categoryDiversityRatio)}`} />
         </div>
       </Section>
 
@@ -108,12 +109,12 @@ export default function TransitionsDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
-          <Stat label="Transition Planning" value={`${data.staffReadiness.transitionPlanningRate}%`} />
-          <Stat label="Child Preparation" value={`${data.staffReadiness.childPreparationRate}%`} />
-          <Stat label="Handover Skills" value={`${data.staffReadiness.handoverSkillsRate}%`} />
-          <Stat label="Family Engagement" value={`${data.staffReadiness.familyEngagementRate}%`} />
-          <Stat label="Multi-Agency Working" value={`${data.staffReadiness.multiAgencyWorkingRate}%`} />
-          <Stat label="Emotional Support" value={`${data.staffReadiness.emotionalSupportRate}%`} />
+          <Stat label="Transition Planning" value={`${formatRate(data.staffReadiness.transitionPlanningRate)}`} />
+          <Stat label="Child Preparation" value={`${formatRate(data.staffReadiness.childPreparationRate)}`} />
+          <Stat label="Handover Skills" value={`${formatRate(data.staffReadiness.handoverSkillsRate)}`} />
+          <Stat label="Family Engagement" value={`${formatRate(data.staffReadiness.familyEngagementRate)}`} />
+          <Stat label="Multi-Agency Working" value={`${formatRate(data.staffReadiness.multiAgencyWorkingRate)}`} />
+          <Stat label="Emotional Support" value={`${formatRate(data.staffReadiness.emotionalSupportRate)}`} />
         </div>
       </Section>
 

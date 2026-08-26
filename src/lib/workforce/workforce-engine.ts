@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara Workforce Intelligence Engine
 //
@@ -84,19 +85,27 @@ export interface WorkforceQualityResult {
   overallScore: number;
   rating: Rating;
   totalRecords: number;
-  dbsCurrentRate: number;
-  qualificationMetRate: number;
-  trainingUpToDateRate: number;
-  supervisionCurrentRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dbsCurrentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  qualificationMetRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  trainingUpToDateRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  supervisionCurrentRate: number | null;
 }
 
 export interface WorkforceComplianceResult {
   overallScore: number;
   rating: Rating;
-  documentationRate: number;
-  timelyRecordingRate: number;
-  supervisionCurrentRate: number;
-  categoryDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  supervisionCurrentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  categoryDiversityRatio: number | null;
 }
 
 export interface WorkforcePolicyResult {
@@ -115,20 +124,28 @@ export interface StaffWorkforceReadinessResult {
   overallScore: number;
   rating: Rating;
   totalStaff: number;
-  saferRecruitmentRate: number;
-  dbsProcessKnowledgeRate: number;
-  qualificationAssessmentRate: number;
-  supervisionSkillsRate: number;
-  trainingCoordinationRate: number;
-  regulatoryComplianceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  saferRecruitmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dbsProcessKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  qualificationAssessmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  supervisionSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  trainingCoordinationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  regulatoryComplianceRate: number | null;
 }
 
 export interface StaffWorkforceProfile {
   staffId: string;
   staffName: string;
   totalRecords: number;
-  dbsCurrentRate: number;
-  qualificationMetRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dbsCurrentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  qualificationMetRate: number | null;
   categoriesCovered: string[];
   overallScore: number;
 }
@@ -151,11 +168,6 @@ export interface WorkforceIntelligence {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -205,16 +217,16 @@ const ALL_CATEGORIES: WorkforceCategory[] = [
 export function evaluateWorkforceQuality(records: WorkforceRecord[]): WorkforceQualityResult {
   const total = records.length;
   if (total === 0) {
-    return { overallScore: 0, rating: "inadequate", totalRecords: 0, dbsCurrentRate: 0, qualificationMetRate: 0, trainingUpToDateRate: 0, supervisionCurrentRate: 0 };
+    return { overallScore: 0, rating: "inadequate", totalRecords: 0, dbsCurrentRate: null, qualificationMetRate: null, trainingUpToDateRate: null, supervisionCurrentRate: null };
   }
 
-  const dbsCurrentRate = pct(records.filter((r) => r.dbsCurrent).length, total);
-  const qualificationMetRate = pct(records.filter((r) => r.qualificationMet).length, total);
-  const trainingUpToDateRate = pct(records.filter((r) => r.trainingUpToDate).length, total);
-  const supervisionCurrentRate = pct(records.filter((r) => r.supervisionCurrent).length, total);
+  const dbsCurrentRate = rate(records.filter((r) => r.dbsCurrent).length, total);
+  const qualificationMetRate = rate(records.filter((r) => r.qualificationMet).length, total);
+  const trainingUpToDateRate = rate(records.filter((r) => r.trainingUpToDate).length, total);
+  const supervisionCurrentRate = rate(records.filter((r) => r.supervisionCurrent).length, total);
 
   // Weighted: dbsCurrentRate 7 + qualificationMetRate 6 + trainingUpToDateRate 6 + supervisionCurrentRate 6 = 25
-  const raw = (dbsCurrentRate / 100) * 7 + (qualificationMetRate / 100) * 6 + (trainingUpToDateRate / 100) * 6 + (supervisionCurrentRate / 100) * 6;
+  const raw = (dbsCurrentRate! / 100) * 7 + (qualificationMetRate! / 100) * 6 + (trainingUpToDateRate! / 100) * 6 + (supervisionCurrentRate! / 100) * 6;
   const overallScore = Math.min(25, Math.round(raw));
 
   return { overallScore, rating: getRating(overallScore * 4), totalRecords: total, dbsCurrentRate, qualificationMetRate, trainingUpToDateRate, supervisionCurrentRate };
@@ -225,18 +237,18 @@ export function evaluateWorkforceQuality(records: WorkforceRecord[]): WorkforceQ
 export function evaluateWorkforceCompliance(records: WorkforceRecord[]): WorkforceComplianceResult {
   const total = records.length;
   if (total === 0) {
-    return { overallScore: 0, rating: "inadequate", documentationRate: 0, timelyRecordingRate: 0, supervisionCurrentRate: 0, categoryDiversityRatio: 0 };
+    return { overallScore: 0, rating: "inadequate", documentationRate: null, timelyRecordingRate: null, supervisionCurrentRate: null, categoryDiversityRatio: 0 };
   }
 
-  const documentationRate = pct(records.filter((r) => r.documentationComplete).length, total);
-  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, total);
-  const supervisionCurrentRate = pct(records.filter((r) => r.supervisionCurrent).length, total);
+  const documentationRate = rate(records.filter((r) => r.documentationComplete).length, total);
+  const timelyRecordingRate = rate(records.filter((r) => r.timelyRecording).length, total);
+  const supervisionCurrentRate = rate(records.filter((r) => r.supervisionCurrent).length, total);
 
   const uniqueCategories = new Set(records.map((r) => r.category)).size;
-  const categoryDiversityRatio = pct(uniqueCategories, ALL_CATEGORIES.length);
+  const categoryDiversityRatio = rate(uniqueCategories, ALL_CATEGORIES.length);
 
   // Weighted: documentationRate 8 + timelyRecordingRate 7 + supervisionCurrentRate 5 + categoryDiversityRatio 5 = 25
-  const raw = (documentationRate / 100) * 8 + (timelyRecordingRate / 100) * 7 + (supervisionCurrentRate / 100) * 5 + (categoryDiversityRatio / 100) * 5;
+  const raw = (documentationRate! / 100) * 8 + (timelyRecordingRate! / 100) * 7 + (supervisionCurrentRate! / 100) * 5 + ((categoryDiversityRatio ?? 0) / 100) * 5;
   const overallScore = Math.min(25, Math.round(raw));
 
   return { overallScore, rating: getRating(overallScore * 4), documentationRate, timelyRecordingRate, supervisionCurrentRate, categoryDiversityRatio };
@@ -277,24 +289,24 @@ export function evaluateWorkforcePolicy(policy: WorkforcePolicy | null): Workfor
 export function evaluateStaffWorkforceReadiness(staff: StaffWorkforceTraining[]): StaffWorkforceReadinessResult {
   const count = staff.length;
   if (count === 0) {
-    return { overallScore: 0, rating: "inadequate", totalStaff: 0, saferRecruitmentRate: 0, dbsProcessKnowledgeRate: 0, qualificationAssessmentRate: 0, supervisionSkillsRate: 0, trainingCoordinationRate: 0, regulatoryComplianceRate: 0 };
+    return { overallScore: 0, rating: "inadequate", totalStaff: 0, saferRecruitmentRate: null, dbsProcessKnowledgeRate: null, qualificationAssessmentRate: null, supervisionSkillsRate: null, trainingCoordinationRate: null, regulatoryComplianceRate: null };
   }
 
-  const saferRecruitmentRate = pct(staff.filter((s) => s.saferRecruitment).length, count);
-  const dbsProcessKnowledgeRate = pct(staff.filter((s) => s.dbsProcessKnowledge).length, count);
-  const qualificationAssessmentRate = pct(staff.filter((s) => s.qualificationAssessment).length, count);
-  const supervisionSkillsRate = pct(staff.filter((s) => s.supervisionSkills).length, count);
-  const trainingCoordinationRate = pct(staff.filter((s) => s.trainingCoordination).length, count);
-  const regulatoryComplianceRate = pct(staff.filter((s) => s.regulatoryCompliance).length, count);
+  const saferRecruitmentRate = rate(staff.filter((s) => s.saferRecruitment).length, count);
+  const dbsProcessKnowledgeRate = rate(staff.filter((s) => s.dbsProcessKnowledge).length, count);
+  const qualificationAssessmentRate = rate(staff.filter((s) => s.qualificationAssessment).length, count);
+  const supervisionSkillsRate = rate(staff.filter((s) => s.supervisionSkills).length, count);
+  const trainingCoordinationRate = rate(staff.filter((s) => s.trainingCoordination).length, count);
+  const regulatoryComplianceRate = rate(staff.filter((s) => s.regulatoryCompliance).length, count);
 
   // Weighted: 6+5+5+4+3+2 = 25
   const raw =
-    (saferRecruitmentRate / 100) * 6 +
-    (dbsProcessKnowledgeRate / 100) * 5 +
-    (qualificationAssessmentRate / 100) * 5 +
-    (supervisionSkillsRate / 100) * 4 +
-    (trainingCoordinationRate / 100) * 3 +
-    (regulatoryComplianceRate / 100) * 2;
+    (saferRecruitmentRate! / 100) * 6 +
+    (dbsProcessKnowledgeRate! / 100) * 5 +
+    (qualificationAssessmentRate! / 100) * 5 +
+    (supervisionSkillsRate! / 100) * 4 +
+    (trainingCoordinationRate! / 100) * 3 +
+    (regulatoryComplianceRate! / 100) * 2;
   const overallScore = Math.min(25, Math.round(raw));
 
   return { overallScore, rating: getRating(overallScore * 4), totalStaff: count, saferRecruitmentRate, dbsProcessKnowledgeRate, qualificationAssessmentRate, supervisionSkillsRate, trainingCoordinationRate, regulatoryComplianceRate };
@@ -315,8 +327,8 @@ export function buildStaffWorkforceProfiles(records: WorkforceRecord[]): StaffWo
     const staffName = recs[0].staffName;
     const totalRecords = recs.length;
 
-    const dbsCurrentRate = pct(recs.filter((r) => r.dbsCurrent).length, totalRecords);
-    const qualificationMetRate = pct(recs.filter((r) => r.qualificationMet).length, totalRecords);
+    const dbsCurrentRate = rate(recs.filter((r) => r.dbsCurrent).length, totalRecords);
+    const qualificationMetRate = rate(recs.filter((r) => r.qualificationMet).length, totalRecords);
 
     const catsSet = new Set(recs.map((r) => r.category));
     const categoriesCovered = [...catsSet];
@@ -324,16 +336,16 @@ export function buildStaffWorkforceProfiles(records: WorkforceRecord[]): StaffWo
     // Scoring: freq [>=10 -> 2, >=5 -> 1] + rate1 dbsCurrentRate [>=80 -> 3, >=60 -> 2, >=40 -> 1] + rate2 qualificationMetRate [same] + diversity [>=4 -> 2, >=2 -> 1]
     let score = 0;
 
-    if (totalRecords >= 10) score += 2;
-    else if (totalRecords >= 5) score += 1;
+    if (meets(totalRecords, 10)) score += 2;
+    else if (meets(totalRecords, 5)) score += 1;
 
-    if (dbsCurrentRate >= 80) score += 3;
-    else if (dbsCurrentRate >= 60) score += 2;
-    else if (dbsCurrentRate >= 40) score += 1;
+    if (meets(dbsCurrentRate, 80)) score += 3;
+    else if (meets(dbsCurrentRate, 60)) score += 2;
+    else if (meets(dbsCurrentRate, 40)) score += 1;
 
-    if (qualificationMetRate >= 80) score += 3;
-    else if (qualificationMetRate >= 60) score += 2;
-    else if (qualificationMetRate >= 40) score += 1;
+    if (meets(qualificationMetRate, 80)) score += 3;
+    else if (meets(qualificationMetRate, 60)) score += 2;
+    else if (meets(qualificationMetRate, 40)) score += 1;
 
     const catCount = categoriesCovered.length;
     if (catCount >= 4) score += 2;
@@ -379,36 +391,36 @@ export function generateWorkforceIntelligence(input: {
 
   // Strengths (>=80%)
   const strengths: string[] = [];
-  if (workforceQuality.dbsCurrentRate >= 80) strengths.push("DBS checks are consistently current across the workforce");
-  if (workforceQuality.qualificationMetRate >= 80) strengths.push("Staff qualification levels meet regulatory requirements");
-  if (workforceQuality.trainingUpToDateRate >= 80) strengths.push("Mandatory training is up to date for the majority of staff");
-  if (workforceQuality.supervisionCurrentRate >= 80) strengths.push("Supervision records are maintained within required timescales");
-  if (workforceCompliance.documentationRate >= 80) strengths.push("Workforce documentation is thorough and complete");
-  if (workforceCompliance.timelyRecordingRate >= 80) strengths.push("Recording of workforce compliance is timely and accurate");
-  if (staffReadiness.saferRecruitmentRate >= 80) strengths.push("Staff have strong safer recruitment knowledge");
-  if (staffReadiness.dbsProcessKnowledgeRate >= 80) strengths.push("Staff are well trained in DBS processes and requirements");
+  if (meets(workforceQuality.dbsCurrentRate, 80)) strengths.push("DBS checks are consistently current across the workforce");
+  if (meets(workforceQuality.qualificationMetRate, 80)) strengths.push("Staff qualification levels meet regulatory requirements");
+  if (meets(workforceQuality.trainingUpToDateRate, 80)) strengths.push("Mandatory training is up to date for the majority of staff");
+  if (meets(workforceQuality.supervisionCurrentRate, 80)) strengths.push("Supervision records are maintained within required timescales");
+  if (meets(workforceCompliance.documentationRate, 80)) strengths.push("Workforce documentation is thorough and complete");
+  if (meets(workforceCompliance.timelyRecordingRate, 80)) strengths.push("Recording of workforce compliance is timely and accurate");
+  if (meets(staffReadiness.saferRecruitmentRate, 80)) strengths.push("Staff have strong safer recruitment knowledge");
+  if (meets(staffReadiness.dbsProcessKnowledgeRate, 80)) strengths.push("Staff are well trained in DBS processes and requirements");
 
   // Areas for improvement (<60%)
   const areasForImprovement: string[] = [];
-  if (workforceQuality.dbsCurrentRate < 60) areasForImprovement.push("DBS checks are not consistently current across the workforce");
-  if (workforceQuality.qualificationMetRate < 60) areasForImprovement.push("Staff qualification levels need improvement to meet regulatory standards");
-  if (workforceQuality.trainingUpToDateRate < 60) areasForImprovement.push("Mandatory training compliance is below acceptable levels");
-  if (workforceQuality.supervisionCurrentRate < 60) areasForImprovement.push("Supervision records are not being maintained within required timescales");
-  if (workforceCompliance.documentationRate < 60) areasForImprovement.push("Workforce documentation is incomplete or inconsistent");
-  if (workforceCompliance.timelyRecordingRate < 60) areasForImprovement.push("Recording of workforce compliance is not timely");
-  if (staffReadiness.saferRecruitmentRate < 60) areasForImprovement.push("Staff safer recruitment knowledge needs development");
-  if (staffReadiness.dbsProcessKnowledgeRate < 60) areasForImprovement.push("Staff need more training in DBS processes");
+  if (below(workforceQuality.dbsCurrentRate, 60)) areasForImprovement.push("DBS checks are not consistently current across the workforce");
+  if (below(workforceQuality.qualificationMetRate, 60)) areasForImprovement.push("Staff qualification levels need improvement to meet regulatory standards");
+  if (below(workforceQuality.trainingUpToDateRate, 60)) areasForImprovement.push("Mandatory training compliance is below acceptable levels");
+  if (below(workforceQuality.supervisionCurrentRate, 60)) areasForImprovement.push("Supervision records are not being maintained within required timescales");
+  if (below(workforceCompliance.documentationRate, 60)) areasForImprovement.push("Workforce documentation is incomplete or inconsistent");
+  if (below(workforceCompliance.timelyRecordingRate, 60)) areasForImprovement.push("Recording of workforce compliance is not timely");
+  if (below(staffReadiness.saferRecruitmentRate, 60)) areasForImprovement.push("Staff safer recruitment knowledge needs development");
+  if (below(staffReadiness.dbsProcessKnowledgeRate, 60)) areasForImprovement.push("Staff need more training in DBS processes");
 
   // Actions
   const actions: string[] = [];
   if (workforcePolicy.overallScore === 0) actions.push("URGENT: Establish workforce policies — CHR 2015 Reg 31/32 require documented safer recruitment and staffing procedures");
   if (staffReadiness.overallScore === 0) actions.push("URGENT: Provide workforce management training to all HR/management staff — compliance depends on skilled practitioners");
-  if (workforceQuality.dbsCurrentRate < 50) actions.push("Ensure all staff DBS checks are current — Keeping Children Safe in Education 2024 requires enhanced DBS for all staff");
-  if (workforceQuality.qualificationMetRate < 50) actions.push("Review staff qualification levels — CHR 2015 Reg 32 requires appropriate qualifications");
-  if (workforceCompliance.documentationRate < 50) actions.push("Improve workforce documentation — all compliance records must be fully maintained");
-  if (workforceCompliance.timelyRecordingRate < 50) actions.push("Review recording timescales — workforce compliance should be recorded promptly");
-  if (workforceQuality.trainingUpToDateRate < 50) actions.push("Ensure mandatory training is renewed within required timescales for all staff");
-  if (staffReadiness.supervisionSkillsRate < 50) actions.push("Train management staff in supervision skills — regular supervision is essential for staff development");
+  if (below(workforceQuality.dbsCurrentRate, 50)) actions.push("Ensure all staff DBS checks are current — Keeping Children Safe in Education 2024 requires enhanced DBS for all staff");
+  if (below(workforceQuality.qualificationMetRate, 50)) actions.push("Review staff qualification levels — CHR 2015 Reg 32 requires appropriate qualifications");
+  if (below(workforceCompliance.documentationRate, 50)) actions.push("Improve workforce documentation — all compliance records must be fully maintained");
+  if (below(workforceCompliance.timelyRecordingRate, 50)) actions.push("Review recording timescales — workforce compliance should be recorded promptly");
+  if (below(workforceQuality.trainingUpToDateRate, 50)) actions.push("Ensure mandatory training is renewed within required timescales for all staff");
+  if (below(staffReadiness.supervisionSkillsRate, 50)) actions.push("Train management staff in supervision skills — regular supervision is essential for staff development");
 
   const regulatoryLinks: string[] = [
     "CHR 2015 Reg 31 — Fitness of workers",

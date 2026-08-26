@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // VISITOR & PARTNERSHIP QUALITY INTELLIGENCE ENGINE
 //
@@ -133,11 +134,16 @@ export interface VisitorAction {
 export interface VisitQualityResult {
   overallScore: number;
   totalVisits: number;
-  positiveOutcomeRate: number;
-  reportProvidedRate: number;
-  childSeenRate: number;
-  childSpokenAloneRate: number;
-  cancellationRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveOutcomeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reportProvidedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childSeenRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childSpokenAloneRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  cancellationRate: number | null;
   averageDuration: number;
   visitorDistribution: Record<VisitorType, number>;
   purposeDistribution: Record<VisitPurpose, number>;
@@ -146,30 +152,43 @@ export interface VisitQualityResult {
 export interface PartnershipEffectivenessResult {
   overallScore: number;
   totalAssessments: number;
-  excellentGoodRate: number;
-  informationSharingRate: number;
-  jointPlanningRate: number;
-  responsiveRate: number;
-  attendsReviewsRate: number;
-  childFocusedRate: number;
-  challengeAcceptedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  excellentGoodRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  informationSharingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  jointPlanningRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  responsiveRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  attendsReviewsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childFocusedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  challengeAcceptedRate: number | null;
 }
 
 export interface Reg44ComplianceResult {
   overallScore: number;
   totalVisits: number;
-  childInterviewRate: number;
-  reportTimelyRate: number;
-  issueResolutionRate: number;
-  previousRecsReviewedRate: number;
-  overallPositiveRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childInterviewRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reportTimelyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  issueResolutionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  previousRecsReviewedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  overallPositiveRate: number | null;
   averageIssuesRaised: number;
 }
 
 export interface ActionResponseResult {
   overallScore: number;
   totalActions: number;
-  completedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completedRate: number | null;
   overdueCount: number;
   inProgressCount: number;
   completionByVisitorType: Record<VisitorType, number>;
@@ -204,11 +223,6 @@ export interface VisitorPartnershipQualityIntelligence {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -308,11 +322,11 @@ export function evaluateVisitQuality(visits: VisitRecord[]): VisitQualityResult 
     return {
       overallScore: 0,
       totalVisits: 0,
-      positiveOutcomeRate: 0,
-      reportProvidedRate: 0,
-      childSeenRate: 0,
-      childSpokenAloneRate: 0,
-      cancellationRate: 0,
+      positiveOutcomeRate: null,
+      reportProvidedRate: null,
+      childSeenRate: null,
+      childSpokenAloneRate: null,
+      cancellationRate: null,
       averageDuration: 0,
       visitorDistribution,
       purposeDistribution,
@@ -342,25 +356,25 @@ export function evaluateVisitQuality(visits: VisitRecord[]): VisitQualityResult 
     totalDuration += v.duration;
   }
 
-  const positiveOutcomeRate = pct(positive, visits.length);
-  const reportProvidedRate = pct(reports, visits.length);
-  const childSeenRate = pct(childSeen, visits.length);
-  const childSpokenAloneRate = pct(childAlone, childAloneApplicable);
-  const cancellationRate = pct(cancelled, visits.length);
+  const positiveOutcomeRate = rate(positive, visits.length);
+  const reportProvidedRate = rate(reports, visits.length);
+  const childSeenRate = rate(childSeen, visits.length);
+  const childSpokenAloneRate = rate(childAlone, childAloneApplicable);
+  const cancellationRate = rate(cancelled, visits.length);
   const averageDuration = Math.round(totalDuration / visits.length);
 
   // Scoring: positive outcomes (0-7), child seen (0-5), child spoken alone (0-5),
   // reports provided (0-4), low cancellation bonus (0-4)
   let score = 0;
-  score += Math.round((positiveOutcomeRate / 100) * 7);
-  score += Math.round((childSeenRate / 100) * 5);
-  score += Math.round((childSpokenAloneRate / 100) * 5);
-  score += Math.round((reportProvidedRate / 100) * 4);
+  score += Math.round(((positiveOutcomeRate ?? 0) / 100) * 7);
+  score += Math.round(((childSeenRate ?? 0) / 100) * 5);
+  score += Math.round(((childSpokenAloneRate ?? 0) / 100) * 5);
+  score += Math.round(((reportProvidedRate ?? 0) / 100) * 4);
   // Low cancellation bonus: 4 if 0%, 3 if <10%, 2 if <20%, 1 if <30%, 0 otherwise
   if (cancellationRate === 0) score += 4;
-  else if (cancellationRate < 10) score += 3;
-  else if (cancellationRate < 20) score += 2;
-  else if (cancellationRate < 30) score += 1;
+  else if (below(cancellationRate, 10)) score += 3;
+  else if (below(cancellationRate, 20)) score += 2;
+  else if (below(cancellationRate, 30)) score += 1;
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -383,13 +397,13 @@ export function evaluatePartnershipEffectiveness(
     return {
       overallScore: 0,
       totalAssessments: 0,
-      excellentGoodRate: 0,
-      informationSharingRate: 0,
-      jointPlanningRate: 0,
-      responsiveRate: 0,
-      attendsReviewsRate: 0,
-      childFocusedRate: 0,
-      challengeAcceptedRate: 0,
+      excellentGoodRate: null,
+      informationSharingRate: null,
+      jointPlanningRate: null,
+      responsiveRate: null,
+      attendsReviewsRate: null,
+      childFocusedRate: null,
+      challengeAcceptedRate: null,
     };
   }
 
@@ -411,23 +425,23 @@ export function evaluatePartnershipEffectiveness(
     if (a.challengeAccepted) challengeAccepted++;
   }
 
-  const excellentGoodRate = pct(excellentGood, assessments.length);
-  const informationSharingRate = pct(infoSharing, assessments.length);
-  const jointPlanningRate = pct(jointPlanning, assessments.length);
-  const responsiveRate = pct(responsive, assessments.length);
-  const attendsReviewsRate = pct(attendsReviews, assessments.length);
-  const childFocusedRate = pct(childFocused, assessments.length);
-  const challengeAcceptedRate = pct(challengeAccepted, assessments.length);
+  const excellentGoodRate = rate(excellentGood, assessments.length);
+  const informationSharingRate = rate(infoSharing, assessments.length);
+  const jointPlanningRate = rate(jointPlanning, assessments.length);
+  const responsiveRate = rate(responsive, assessments.length);
+  const attendsReviewsRate = rate(attendsReviews, assessments.length);
+  const childFocusedRate = rate(childFocused, assessments.length);
+  const challengeAcceptedRate = rate(challengeAccepted, assessments.length);
 
   // Scoring: excellent/good rate (0-7), child focused (0-5), info sharing (0-4),
   // responsive (0-4), joint planning (0-3), challenge accepted (0-2)
   let score = 0;
-  score += Math.round((excellentGoodRate / 100) * 7);
-  score += Math.round((childFocusedRate / 100) * 5);
-  score += Math.round((informationSharingRate / 100) * 4);
-  score += Math.round((responsiveRate / 100) * 4);
-  score += Math.round((jointPlanningRate / 100) * 3);
-  score += Math.round((challengeAcceptedRate / 100) * 2);
+  score += Math.round(((excellentGoodRate ?? 0) / 100) * 7);
+  score += Math.round(((childFocusedRate ?? 0) / 100) * 5);
+  score += Math.round(((informationSharingRate ?? 0) / 100) * 4);
+  score += Math.round(((responsiveRate ?? 0) / 100) * 4);
+  score += Math.round(((jointPlanningRate ?? 0) / 100) * 3);
+  score += Math.round(((challengeAcceptedRate ?? 0) / 100) * 2);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -447,11 +461,11 @@ export function evaluateReg44Compliance(reg44s: Reg44Visit[]): Reg44ComplianceRe
     return {
       overallScore: 0,
       totalVisits: 0,
-      childInterviewRate: 0,
-      reportTimelyRate: 0,
-      issueResolutionRate: 0,
-      previousRecsReviewedRate: 0,
-      overallPositiveRate: 0,
+      childInterviewRate: null,
+      reportTimelyRate: null,
+      issueResolutionRate: null,
+      previousRecsReviewedRate: null,
+      overallPositiveRate: null,
       averageIssuesRaised: 0,
     };
   }
@@ -476,21 +490,21 @@ export function evaluateReg44Compliance(reg44s: Reg44Visit[]): Reg44ComplianceRe
     totalIssuesRaised += r.issuesRaised;
   }
 
-  const childInterviewRate = pct(totalInterviewed, totalChildrenPool);
-  const reportTimelyRate = pct(timely, reg44s.length);
-  const issueResolutionRate = pct(totalResolved, totalIssues);
-  const previousRecsReviewedRate = pct(prevsReviewed, reg44s.length);
-  const overallPositiveRate = pct(overallPositive, reg44s.length);
+  const childInterviewRate = rate(totalInterviewed, totalChildrenPool);
+  const reportTimelyRate = rate(timely, reg44s.length);
+  const issueResolutionRate = rate(totalResolved, totalIssues);
+  const previousRecsReviewedRate = rate(prevsReviewed, reg44s.length);
+  const overallPositiveRate = rate(overallPositive, reg44s.length);
   const averageIssuesRaised = Math.round((totalIssuesRaised / reg44s.length) * 10) / 10;
 
   // Scoring: child interview rate (0-7), report timely (0-5), issue resolution (0-5),
   // previous recs reviewed (0-4), overall positive (0-4)
   let score = 0;
-  score += Math.round((childInterviewRate / 100) * 7);
-  score += Math.round((reportTimelyRate / 100) * 5);
-  score += Math.round((issueResolutionRate / 100) * 5);
-  score += Math.round((previousRecsReviewedRate / 100) * 4);
-  score += Math.round((overallPositiveRate / 100) * 4);
+  score += Math.round(((childInterviewRate ?? 0) / 100) * 7);
+  score += Math.round(((reportTimelyRate ?? 0) / 100) * 5);
+  score += Math.round(((issueResolutionRate ?? 0) / 100) * 5);
+  score += Math.round(((previousRecsReviewedRate ?? 0) / 100) * 4);
+  score += Math.round(((overallPositiveRate ?? 0) / 100) * 4);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -518,7 +532,7 @@ export function evaluateActionResponse(actions: VisitorAction[]): ActionResponse
     return {
       overallScore: 0,
       totalActions: 0,
-      completedRate: 0,
+      completedRate: null,
       overdueCount: 0,
       inProgressCount: 0,
       completionByVisitorType,
@@ -545,21 +559,21 @@ export function evaluateActionResponse(actions: VisitorAction[]): ActionResponse
   }
 
   for (const [type, total] of typeTotalCounts) {
-    completionByVisitorType[type] = pct(typeCompletedCounts.get(type) || 0, total);
+    completionByVisitorType[type] = rate(typeCompletedCounts.get(type) || 0, total)!;
   }
 
-  const completedRate = pct(completed, actions.length);
+  const completedRate = rate(completed, actions.length);
 
   // Scoring: completed rate (0-10), low overdue bonus (0-8), in progress bonus (0-7)
   let score = 0;
-  score += Math.round((completedRate / 100) * 10);
+  score += Math.round(((completedRate ?? 0) / 100) * 10);
   // Overdue penalty: 0 overdue = 8, 1 = 5, 2 = 3, 3+ = 0
   if (overdue === 0) score += 8;
   else if (overdue === 1) score += 5;
   else if (overdue === 2) score += 3;
   // In progress bonus: some in progress shows engagement
-  const inProgressRate = pct(inProgress, actions.length);
-  score += Math.round((inProgressRate / 100) * 7);
+  const inProgressRate = rate(inProgress, actions.length);
+  score += Math.round(((inProgressRate ?? 0) / 100) * 7);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -587,19 +601,19 @@ export function buildChildVisitorProfiles(visits: VisitRecord[]): ChildVisitorPr
   return Array.from(childVisits.entries()).map(([childId, cvs]) => {
     const swVisits = cvs.filter((v) => v.visitorType === "social_worker").length;
     const therapistVisits = cvs.filter((v) => v.visitorType === "therapist").length;
-    const childSeenRate = pct(cvs.filter((v) => v.childSeen).length, cvs.length);
-    const positiveOutcomeRate = pct(
+    const childSeenRate = rate(cvs.filter((v) => v.childSeen).length, cvs.length)!;
+    const positiveOutcomeRate = rate(
       cvs.filter((v) => v.outcome === "positive" || v.outcome === "constructive").length,
       cvs.length,
-    );
+    )!;
 
     // Score 0-10
     let score = 0;
     score += Math.min(3, Math.round((cvs.length / 5) * 3)); // visit frequency bonus
     score += Math.min(2, swVisits > 0 ? 2 : 0); // SW visits
     score += Math.min(2, therapistVisits > 0 ? 2 : 0); // therapy visits
-    score += Math.round((childSeenRate / 100) * 2);
-    score += Math.round((positiveOutcomeRate / 100) * 1);
+    score += Math.round(((childSeenRate ?? 0) / 100) * 2);
+    score += Math.round(((positiveOutcomeRate ?? 0) / 100) * 1);
 
     return {
       childId,
@@ -643,42 +657,42 @@ export function generateVisitorPartnershipQualityIntelligence(
 
   // ── Strengths ──
   const strengths: string[] = [];
-  if (visitQuality.childSeenRate >= 90)
+  if (meets(visitQuality.childSeenRate, 90))
     strengths.push("Children seen in " + visitQuality.childSeenRate + "% of visits — strong oversight");
-  if (visitQuality.childSpokenAloneRate >= 80)
+  if (meets(visitQuality.childSpokenAloneRate, 80))
     strengths.push("Children spoken to alone in " + visitQuality.childSpokenAloneRate + "% of applicable visits");
-  if (visitQuality.positiveOutcomeRate >= 80)
+  if (meets(visitQuality.positiveOutcomeRate, 80))
     strengths.push("High positive outcome rate (" + visitQuality.positiveOutcomeRate + "%) from professional visits");
-  if (partnershipEffectiveness.excellentGoodRate >= 80)
+  if (meets(partnershipEffectiveness.excellentGoodRate, 80))
     strengths.push("Strong multi-agency partnership working — " + partnershipEffectiveness.excellentGoodRate + "% rated good or excellent");
-  if (partnershipEffectiveness.childFocusedRate >= 90)
+  if (meets(partnershipEffectiveness.childFocusedRate, 90))
     strengths.push("Partnerships consistently child-focused");
   if (reg44Compliance.reportTimelyRate === 100)
     strengths.push("All Reg 44 reports submitted on time");
-  if (reg44Compliance.issueResolutionRate >= 90)
+  if (meets(reg44Compliance.issueResolutionRate, 90))
     strengths.push("Excellent resolution rate for issues raised by Reg 44 visitor (" + reg44Compliance.issueResolutionRate + "%)");
-  if (actionResponse.completedRate >= 85)
+  if (meets(actionResponse.completedRate, 85))
     strengths.push("Strong action completion rate (" + actionResponse.completedRate + "%) from visitor recommendations");
   if (visitQuality.cancellationRate === 0)
     strengths.push("No visit cancellations or no-shows during the period");
 
   // ── Areas for Improvement ──
   const areasForImprovement: string[] = [];
-  if (visitQuality.childSeenRate < 80)
-    areasForImprovement.push("Children not seen in " + (100 - visitQuality.childSeenRate) + "% of visits");
-  if (visitQuality.cancellationRate > 10)
+  if (below(visitQuality.childSeenRate, 80))
+    areasForImprovement.push("Children not seen in " + (100 - visitQuality.childSeenRate!) + "% of visits");
+  if (above(visitQuality.cancellationRate, 10))
     areasForImprovement.push("Visit cancellation rate at " + visitQuality.cancellationRate + "% — investigate barriers");
-  if (partnershipEffectiveness.informationSharingRate < 80)
+  if (below(partnershipEffectiveness.informationSharingRate, 80))
     areasForImprovement.push("Information sharing with partners effective in only " + partnershipEffectiveness.informationSharingRate + "% of assessments");
-  if (partnershipEffectiveness.jointPlanningRate < 70)
+  if (below(partnershipEffectiveness.jointPlanningRate, 70))
     areasForImprovement.push("Joint planning evident in only " + partnershipEffectiveness.jointPlanningRate + "% of partnerships");
-  if (reg44Compliance.childInterviewRate < 80)
+  if (below(reg44Compliance.childInterviewRate, 80))
     areasForImprovement.push("Reg 44 visitor child interview rate at " + reg44Compliance.childInterviewRate + "% — children should be routinely spoken to");
   if (actionResponse.overdueCount > 0)
     areasForImprovement.push(actionResponse.overdueCount + " overdue action(s) from visitor recommendations");
-  if (visitQuality.reportProvidedRate < 80)
+  if (below(visitQuality.reportProvidedRate, 80))
     areasForImprovement.push("Reports provided for only " + visitQuality.reportProvidedRate + "% of visits");
-  if (reg44Compliance.issueResolutionRate < 70)
+  if (below(reg44Compliance.issueResolutionRate, 70))
     areasForImprovement.push("Issue resolution rate from Reg 44 visits at " + reg44Compliance.issueResolutionRate + "%");
 
   // ── Actions ──
@@ -687,17 +701,17 @@ export function generateVisitorPartnershipQualityIntelligence(
     actions_list.push("URGENT: Address " + actionResponse.overdueCount + " overdue actions from visitor recommendations within 5 working days");
   if (reg44Compliance.totalVisits === 0)
     actions_list.push("URGENT: Ensure Reg 44 visits are being conducted monthly — statutory requirement");
-  if (visitQuality.childSeenRate < 60)
+  if (below(visitQuality.childSeenRate, 60))
     actions_list.push("URGENT: Review visitor protocols — children must be seen and heard during visits");
   if (partnershipEffectiveness.totalAssessments === 0 && visits.length > 0)
     actions_list.push("Complete partnership assessments for key agencies to track multi-agency working quality");
   if (actionResponse.overdueCount > 0 && actionResponse.overdueCount < 3)
     actions_list.push("Complete " + actionResponse.overdueCount + " overdue action(s) from visitor recommendations");
-  if (visitQuality.cancellationRate > 15)
+  if (above(visitQuality.cancellationRate, 15))
     actions_list.push("Develop strategy to reduce visit cancellations — consider booking confirmations and reminders");
-  if (reg44Compliance.reportTimelyRate < 100 && reg44Compliance.totalVisits > 0)
+  if (below(reg44Compliance.reportTimelyRate, 100) && reg44Compliance.totalVisits > 0)
     actions_list.push("Chase outstanding Reg 44 reports — required within 5 working days of visit");
-  if (partnershipEffectiveness.challengeAcceptedRate < 60)
+  if (below(partnershipEffectiveness.challengeAcceptedRate, 60))
     actions_list.push("Develop professional challenge culture with partner agencies — improve constructive dialogue");
 
   const regulatoryLinks: string[] = [

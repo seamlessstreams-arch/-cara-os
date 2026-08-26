@@ -3,7 +3,6 @@
    ────────────────────────────────────────────────────────────── */
 
 export {
-  pct,
   getRating,
   getSupervisionTypeLabel,
   getContentCoverageLabel,

@@ -6,7 +6,6 @@ import {
   evaluatePartnershipAccess,
   evaluateStaffReadiness,
   buildChildEmploymentProfiles,
-  pct,
   getRating,
   getSupportTypeLabel,
   getEngagementLevelLabel,
@@ -88,14 +87,6 @@ function mkTraining(overrides: Partial<StaffEmploymentTraining> = {}): StaffEmpl
 
 // -- pct ----------------------------------------------------------------------
 
-describe("pct", () => {
-  it("returns 0 for 0/0", () => expect(pct(0, 0)).toBe(0));
-  it("calculates correctly", () => expect(pct(3, 4)).toBe(75));
-  it("rounds", () => expect(pct(1, 3)).toBe(33));
-  it("full", () => expect(pct(5, 5)).toBe(100));
-  it("returns 0 for 0/5", () => expect(pct(0, 5)).toBe(0));
-});
-
 // -- getRating ----------------------------------------------------------------
 
 describe("getRating", () => {
@@ -148,10 +139,10 @@ describe("evaluateCareersPlanQuality", () => {
     const result = evaluateCareersPlanQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalProfiles).toBe(0);
-    expect(result.planExistsRate).toBe(0);
-    expect(result.planCurrentRate).toBe(0);
-    expect(result.aspirationsRecordedRate).toBe(0);
-    expect(result.adviserEngagedRate).toBe(0);
+    expect(result.planExistsRate).toBeNull();
+    expect(result.planCurrentRate).toBeNull();
+    expect(result.aspirationsRecordedRate).toBeNull();
+    expect(result.adviserEngagedRate).toBeNull();
   });
 
   it("scores high for all plans in place and current", () => {
@@ -213,8 +204,8 @@ describe("evaluateSkillDevelopment", () => {
     const result = evaluateSkillDevelopment([], 0);
     expect(result.overallScore).toBe(0);
     expect(result.totalSessions).toBe(0);
-    expect(result.engagedRate).toBe(0);
-    expect(result.achievedRate).toBe(0);
+    expect(result.engagedRate).toBeNull();
+    expect(result.achievedRate).toBeNull();
     expect(result.supportTypeVariety).toBe(0);
     expect(result.averageSessionsPerChild).toBe(0);
   });
@@ -304,10 +295,10 @@ describe("evaluatePartnershipAccess", () => {
     const result = evaluatePartnershipAccess([], 0);
     expect(result.overallScore).toBe(0);
     expect(result.totalPartnerships).toBe(0);
-    expect(result.activeRate).toBe(0);
+    expect(result.activeRate).toBeNull();
     expect(result.totalOpportunities).toBe(0);
     expect(result.employerEngagementCount).toBe(0);
-    expect(result.childrenAccessingRate).toBe(0);
+    expect(result.childrenAccessingRate).toBeNull();
   });
 
   it("scores high for active employer partnerships", () => {
@@ -399,12 +390,12 @@ describe("evaluateStaffReadiness", () => {
     const result = evaluateStaffReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.careersGuidanceRate).toBe(0);
-    expect(result.cvInterviewRate).toBe(0);
-    expect(result.financialLiteracyRate).toBe(0);
-    expect(result.apprenticeshipRate).toBe(0);
-    expect(result.labourMarketRate).toBe(0);
-    expect(result.motivationalInterviewingRate).toBe(0);
+    expect(result.careersGuidanceRate).toBeNull();
+    expect(result.cvInterviewRate).toBeNull();
+    expect(result.financialLiteracyRate).toBeNull();
+    expect(result.apprenticeshipRate).toBeNull();
+    expect(result.labourMarketRate).toBeNull();
+    expect(result.motivationalInterviewingRate).toBeNull();
   });
 
   it("scores high for fully trained staff", () => {

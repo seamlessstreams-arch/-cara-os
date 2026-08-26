@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface StaffSupervisionProfile { staffId: string; staffName: string; totalSessions: number; effectivenessRate: number; safeguardingRate: number; overallScore: number; }
 
@@ -85,19 +86,19 @@ export default function StaffSupervisionEffectivenessDashboardWidget() {
       <Section title="Session Effectiveness" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Sessions" value={data.sessionEffectiveness.totalSessions} />
-          <Stat label="Effectiveness" value={`${data.sessionEffectiveness.effectivenessRate}%`} />
-          <Stat label="Safeguarding" value={`${data.sessionEffectiveness.safeguardingRate}%`} />
-          <Stat label="Wellbeing" value={`${data.sessionEffectiveness.wellbeingRate}%`} />
-          <Stat label="Action Points" value={`${data.sessionEffectiveness.actionPointsRate}%`} />
+          <Stat label="Effectiveness" value={`${formatRate(data.sessionEffectiveness.effectivenessRate)}`} />
+          <Stat label="Safeguarding" value={`${formatRate(data.sessionEffectiveness.safeguardingRate)}`} />
+          <Stat label="Wellbeing" value={`${formatRate(data.sessionEffectiveness.wellbeingRate)}`} />
+          <Stat label="Action Points" value={`${formatRate(data.sessionEffectiveness.actionPointsRate)}`} />
         </div>
       </Section>
 
       <Section title="Supervision Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Actions Reviewed" value={`${data.supervisionCompliance.previousActionsReviewedRate}%`} />
-          <Stat label="Documented" value={`${data.supervisionCompliance.documentedRate}%`} />
-          <Stat label="Staff Satisfaction" value={`${data.supervisionCompliance.staffSatisfactionRate}%`} />
-          <Stat label="Type Diversity" value={`${data.supervisionCompliance.typeDiversityRatio}%`} />
+          <Stat label="Actions Reviewed" value={`${formatRate(data.supervisionCompliance.previousActionsReviewedRate)}`} />
+          <Stat label="Documented" value={`${formatRate(data.supervisionCompliance.documentedRate)}`} />
+          <Stat label="Staff Satisfaction" value={`${formatRate(data.supervisionCompliance.staffSatisfactionRate)}`} />
+          <Stat label="Type Diversity" value={`${formatRate(data.supervisionCompliance.typeDiversityRatio)}`} />
         </div>
       </Section>
 
@@ -120,12 +121,12 @@ export default function StaffSupervisionEffectivenessDashboardWidget() {
       <Section title="Supervisor Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Supervisors" value={data.supervisorReadiness.totalSupervisors} />
-          <Stat label="Supervision Skills" value={`${data.supervisorReadiness.supervisionSkillsRate}%`} />
-          <Stat label="Reflective Practice" value={`${data.supervisorReadiness.reflectivePracticeRate}%`} />
-          <Stat label="Safeguarding" value={`${data.supervisorReadiness.safeguardingOversightRate}%`} />
-          <Stat label="Performance Mgmt" value={`${data.supervisorReadiness.performanceManagementRate}%`} />
-          <Stat label="Wellbeing" value={`${data.supervisorReadiness.wellbeingSupportRate}%`} />
-          <Stat label="Documentation" value={`${data.supervisorReadiness.documentationRate}%`} />
+          <Stat label="Supervision Skills" value={`${formatRate(data.supervisorReadiness.supervisionSkillsRate)}`} />
+          <Stat label="Reflective Practice" value={`${formatRate(data.supervisorReadiness.reflectivePracticeRate)}`} />
+          <Stat label="Safeguarding" value={`${formatRate(data.supervisorReadiness.safeguardingOversightRate)}`} />
+          <Stat label="Performance Mgmt" value={`${formatRate(data.supervisorReadiness.performanceManagementRate)}`} />
+          <Stat label="Wellbeing" value={`${formatRate(data.supervisorReadiness.wellbeingSupportRate)}`} />
+          <Stat label="Documentation" value={`${formatRate(data.supervisorReadiness.documentationRate)}`} />
         </div>
       </Section>
 

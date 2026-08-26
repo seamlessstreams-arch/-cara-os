@@ -7,7 +7,6 @@ export {
   getTransportModeLabel,
   getRiskLevelLabel,
   getRatingLabel,
-  pct,
   getRating,
   evaluateJourneyQuality,
   evaluateVehicleSafety,

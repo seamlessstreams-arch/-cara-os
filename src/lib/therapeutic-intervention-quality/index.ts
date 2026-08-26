@@ -5,7 +5,6 @@ export {
   evaluatePolicy,
   evaluateStaffReadiness,
   buildChildTherapyProfiles,
-  pct,
   getRating,
   getTherapyTypeLabel,
   getProgressLevelLabel,

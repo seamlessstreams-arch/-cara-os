@@ -5,7 +5,6 @@ export {
   evaluateSafeguardingPolicy,
   evaluateStaffSafeguardingReadiness,
   buildChildSafeguardingProfiles,
-  pct,
   getRating,
   getReferralTypeLabel,
   getReferralOutcomeLabel,

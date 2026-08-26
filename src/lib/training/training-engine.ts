@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara Training Intelligence Engine
 //
@@ -82,19 +83,27 @@ export interface TrainingQualityResult {
   overallScore: number;
   rating: Rating;
   totalRecords: number;
-  completedOnTimeRate: number;
-  assessmentPassedRate: number;
-  practicalComponentDoneRate: number;
-  certificateObtainedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completedOnTimeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  assessmentPassedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  practicalComponentDoneRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  certificateObtainedRate: number | null;
 }
 
 export interface TrainingComplianceResult {
   overallScore: number;
   rating: Rating;
-  documentationRate: number;
-  timelyRecordingRate: number;
-  completedOnTimeRate: number;
-  categoryDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completedOnTimeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  categoryDiversityRatio: number | null;
 }
 
 export interface TrainingPolicyResult {
@@ -113,20 +122,28 @@ export interface StaffTrainingReadinessResult {
   overallScore: number;
   rating: Rating;
   totalStaff: number;
-  trainingNeedsAssessmentRate: number;
-  deliverySkillsRate: number;
-  complianceMonitoringRate: number;
-  recordManagementRate: number;
-  qualityAssuranceRate: number;
-  budgetManagementRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  trainingNeedsAssessmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  deliverySkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  complianceMonitoringRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  recordManagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  qualityAssuranceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  budgetManagementRate: number | null;
 }
 
 export interface StaffTrainingProfile {
   staffId: string;
   staffName: string;
   totalRecords: number;
-  completedOnTimeRate: number;
-  assessmentPassedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completedOnTimeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  assessmentPassedRate: number | null;
   categoriesCovered: string[];
   overallScore: number;
 }
@@ -149,11 +166,6 @@ export interface TrainingIntelligence {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -203,16 +215,16 @@ const ALL_CATEGORIES: TrainingCategory[] = [
 export function evaluateTrainingQuality(records: TrainingRecord[]): TrainingQualityResult {
   const total = records.length;
   if (total === 0) {
-    return { overallScore: 0, rating: "inadequate", totalRecords: 0, completedOnTimeRate: 0, assessmentPassedRate: 0, practicalComponentDoneRate: 0, certificateObtainedRate: 0 };
+    return { overallScore: 0, rating: "inadequate", totalRecords: 0, completedOnTimeRate: null, assessmentPassedRate: null, practicalComponentDoneRate: null, certificateObtainedRate: null };
   }
 
-  const completedOnTimeRate = pct(records.filter((r) => r.completedOnTime).length, total);
-  const assessmentPassedRate = pct(records.filter((r) => r.assessmentPassed).length, total);
-  const practicalComponentDoneRate = pct(records.filter((r) => r.practicalComponentDone).length, total);
-  const certificateObtainedRate = pct(records.filter((r) => r.certificateObtained).length, total);
+  const completedOnTimeRate = rate(records.filter((r) => r.completedOnTime).length, total);
+  const assessmentPassedRate = rate(records.filter((r) => r.assessmentPassed).length, total);
+  const practicalComponentDoneRate = rate(records.filter((r) => r.practicalComponentDone).length, total);
+  const certificateObtainedRate = rate(records.filter((r) => r.certificateObtained).length, total);
 
   // Weighted: completedOnTimeRate 7 + assessmentPassedRate 6 + practicalComponentDoneRate 6 + certificateObtainedRate 6 = 25
-  const raw = (completedOnTimeRate / 100) * 7 + (assessmentPassedRate / 100) * 6 + (practicalComponentDoneRate / 100) * 6 + (certificateObtainedRate / 100) * 6;
+  const raw = (completedOnTimeRate! / 100) * 7 + (assessmentPassedRate! / 100) * 6 + (practicalComponentDoneRate! / 100) * 6 + (certificateObtainedRate! / 100) * 6;
   const overallScore = Math.min(25, Math.round(raw));
 
   return { overallScore, rating: getRating(overallScore * 4), totalRecords: total, completedOnTimeRate, assessmentPassedRate, practicalComponentDoneRate, certificateObtainedRate };
@@ -223,18 +235,18 @@ export function evaluateTrainingQuality(records: TrainingRecord[]): TrainingQual
 export function evaluateTrainingCompliance(records: TrainingRecord[]): TrainingComplianceResult {
   const total = records.length;
   if (total === 0) {
-    return { overallScore: 0, rating: "inadequate", documentationRate: 0, timelyRecordingRate: 0, completedOnTimeRate: 0, categoryDiversityRatio: 0 };
+    return { overallScore: 0, rating: "inadequate", documentationRate: null, timelyRecordingRate: null, completedOnTimeRate: null, categoryDiversityRatio: 0 };
   }
 
-  const documentationRate = pct(records.filter((r) => r.documentationComplete).length, total);
-  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, total);
-  const completedOnTimeRate = pct(records.filter((r) => r.completedOnTime).length, total);
+  const documentationRate = rate(records.filter((r) => r.documentationComplete).length, total);
+  const timelyRecordingRate = rate(records.filter((r) => r.timelyRecording).length, total);
+  const completedOnTimeRate = rate(records.filter((r) => r.completedOnTime).length, total);
 
   const uniqueCategories = new Set(records.map((r) => r.category)).size;
-  const categoryDiversityRatio = pct(uniqueCategories, ALL_CATEGORIES.length);
+  const categoryDiversityRatio = rate(uniqueCategories, ALL_CATEGORIES.length);
 
   // Weighted: documentationRate 8 + timelyRecordingRate 7 + completedOnTimeRate 5 + categoryDiversityRatio 5 = 25
-  const raw = (documentationRate / 100) * 8 + (timelyRecordingRate / 100) * 7 + (completedOnTimeRate / 100) * 5 + (categoryDiversityRatio / 100) * 5;
+  const raw = (documentationRate! / 100) * 8 + (timelyRecordingRate! / 100) * 7 + (completedOnTimeRate! / 100) * 5 + ((categoryDiversityRatio ?? 0) / 100) * 5;
   const overallScore = Math.min(25, Math.round(raw));
 
   return { overallScore, rating: getRating(overallScore * 4), documentationRate, timelyRecordingRate, completedOnTimeRate, categoryDiversityRatio };
@@ -275,24 +287,24 @@ export function evaluateTrainingPolicy(policy: TrainingPolicy | null): TrainingP
 export function evaluateStaffTrainingReadiness(staff: StaffTrainingCompetency[]): StaffTrainingReadinessResult {
   const count = staff.length;
   if (count === 0) {
-    return { overallScore: 0, rating: "inadequate", totalStaff: 0, trainingNeedsAssessmentRate: 0, deliverySkillsRate: 0, complianceMonitoringRate: 0, recordManagementRate: 0, qualityAssuranceRate: 0, budgetManagementRate: 0 };
+    return { overallScore: 0, rating: "inadequate", totalStaff: 0, trainingNeedsAssessmentRate: null, deliverySkillsRate: null, complianceMonitoringRate: null, recordManagementRate: null, qualityAssuranceRate: null, budgetManagementRate: null };
   }
 
-  const trainingNeedsAssessmentRate = pct(staff.filter((s) => s.trainingNeedsAssessment).length, count);
-  const deliverySkillsRate = pct(staff.filter((s) => s.deliverySkills).length, count);
-  const complianceMonitoringRate = pct(staff.filter((s) => s.complianceMonitoring).length, count);
-  const recordManagementRate = pct(staff.filter((s) => s.recordManagement).length, count);
-  const qualityAssuranceRate = pct(staff.filter((s) => s.qualityAssurance).length, count);
-  const budgetManagementRate = pct(staff.filter((s) => s.budgetManagement).length, count);
+  const trainingNeedsAssessmentRate = rate(staff.filter((s) => s.trainingNeedsAssessment).length, count);
+  const deliverySkillsRate = rate(staff.filter((s) => s.deliverySkills).length, count);
+  const complianceMonitoringRate = rate(staff.filter((s) => s.complianceMonitoring).length, count);
+  const recordManagementRate = rate(staff.filter((s) => s.recordManagement).length, count);
+  const qualityAssuranceRate = rate(staff.filter((s) => s.qualityAssurance).length, count);
+  const budgetManagementRate = rate(staff.filter((s) => s.budgetManagement).length, count);
 
   // Weighted: 6+5+5+4+3+2 = 25
   const raw =
-    (trainingNeedsAssessmentRate / 100) * 6 +
-    (deliverySkillsRate / 100) * 5 +
-    (complianceMonitoringRate / 100) * 5 +
-    (recordManagementRate / 100) * 4 +
-    (qualityAssuranceRate / 100) * 3 +
-    (budgetManagementRate / 100) * 2;
+    (trainingNeedsAssessmentRate! / 100) * 6 +
+    (deliverySkillsRate! / 100) * 5 +
+    (complianceMonitoringRate! / 100) * 5 +
+    (recordManagementRate! / 100) * 4 +
+    (qualityAssuranceRate! / 100) * 3 +
+    (budgetManagementRate! / 100) * 2;
   const overallScore = Math.min(25, Math.round(raw));
 
   return { overallScore, rating: getRating(overallScore * 4), totalStaff: count, trainingNeedsAssessmentRate, deliverySkillsRate, complianceMonitoringRate, recordManagementRate, qualityAssuranceRate, budgetManagementRate };
@@ -313,8 +325,8 @@ export function buildStaffTrainingProfiles(records: TrainingRecord[]): StaffTrai
     const staffName = recs[0].staffName;
     const totalRecords = recs.length;
 
-    const completedOnTimeRate = pct(recs.filter((r) => r.completedOnTime).length, totalRecords);
-    const assessmentPassedRate = pct(recs.filter((r) => r.assessmentPassed).length, totalRecords);
+    const completedOnTimeRate = rate(recs.filter((r) => r.completedOnTime).length, totalRecords);
+    const assessmentPassedRate = rate(recs.filter((r) => r.assessmentPassed).length, totalRecords);
 
     const catsSet = new Set(recs.map((r) => r.category));
     const categoriesCovered = [...catsSet];
@@ -325,13 +337,13 @@ export function buildStaffTrainingProfiles(records: TrainingRecord[]): StaffTrai
     if (totalRecords >= 10) score += 2;
     else if (totalRecords >= 5) score += 1;
 
-    if (completedOnTimeRate >= 80) score += 3;
-    else if (completedOnTimeRate >= 60) score += 2;
-    else if (completedOnTimeRate >= 40) score += 1;
+    if (meets(completedOnTimeRate, 80)) score += 3;
+    else if (meets(completedOnTimeRate, 60)) score += 2;
+    else if (meets(completedOnTimeRate, 40)) score += 1;
 
-    if (assessmentPassedRate >= 80) score += 3;
-    else if (assessmentPassedRate >= 60) score += 2;
-    else if (assessmentPassedRate >= 40) score += 1;
+    if (meets(assessmentPassedRate, 80)) score += 3;
+    else if (meets(assessmentPassedRate, 60)) score += 2;
+    else if (meets(assessmentPassedRate, 40)) score += 1;
 
     const catCount = categoriesCovered.length;
     if (catCount >= 4) score += 2;
@@ -375,36 +387,36 @@ export function generateTrainingIntelligence(
 
   // Strengths (>=80%)
   const strengths: string[] = [];
-  if (trainingQuality.completedOnTimeRate >= 80) strengths.push("Training is consistently completed on time across the home");
-  if (trainingQuality.assessmentPassedRate >= 80) strengths.push("Assessment pass rates are strong across training programmes");
-  if (trainingQuality.practicalComponentDoneRate >= 80) strengths.push("Practical training components are routinely completed");
-  if (trainingQuality.certificateObtainedRate >= 80) strengths.push("Training certificates are consistently obtained and recorded");
-  if (trainingCompliance.documentationRate >= 80) strengths.push("Training documentation is thorough and complete");
-  if (trainingCompliance.timelyRecordingRate >= 80) strengths.push("Training records are kept up to date in a timely manner");
-  if (staffReadiness.trainingNeedsAssessmentRate >= 80) strengths.push("Staff have strong training needs assessment capabilities");
-  if (staffReadiness.deliverySkillsRate >= 80) strengths.push("Training delivery skills are well developed across the team");
+  if (meets(trainingQuality.completedOnTimeRate, 80)) strengths.push("Training is consistently completed on time across the home");
+  if (meets(trainingQuality.assessmentPassedRate, 80)) strengths.push("Assessment pass rates are strong across training programmes");
+  if (meets(trainingQuality.practicalComponentDoneRate, 80)) strengths.push("Practical training components are routinely completed");
+  if (meets(trainingQuality.certificateObtainedRate, 80)) strengths.push("Training certificates are consistently obtained and recorded");
+  if (meets(trainingCompliance.documentationRate, 80)) strengths.push("Training documentation is thorough and complete");
+  if (meets(trainingCompliance.timelyRecordingRate, 80)) strengths.push("Training records are kept up to date in a timely manner");
+  if (meets(staffReadiness.trainingNeedsAssessmentRate, 80)) strengths.push("Staff have strong training needs assessment capabilities");
+  if (meets(staffReadiness.deliverySkillsRate, 80)) strengths.push("Training delivery skills are well developed across the team");
 
   // Areas for improvement (<60%)
   const areasForImprovement: string[] = [];
-  if (trainingQuality.completedOnTimeRate < 60) areasForImprovement.push("Training completion timelines are not being met consistently");
-  if (trainingQuality.assessmentPassedRate < 60) areasForImprovement.push("Assessment pass rates need improvement across training programmes");
-  if (trainingQuality.practicalComponentDoneRate < 60) areasForImprovement.push("Practical training components are not being completed consistently");
-  if (trainingQuality.certificateObtainedRate < 60) areasForImprovement.push("Certificate acquisition needs to be improved");
-  if (trainingCompliance.documentationRate < 60) areasForImprovement.push("Training documentation is incomplete or inconsistent");
-  if (trainingCompliance.timelyRecordingRate < 60) areasForImprovement.push("Training records are not being updated in a timely manner");
-  if (staffReadiness.trainingNeedsAssessmentRate < 60) areasForImprovement.push("Staff training needs assessment capability needs development");
-  if (staffReadiness.deliverySkillsRate < 60) areasForImprovement.push("Training delivery skills need improvement across the team");
+  if (below(trainingQuality.completedOnTimeRate, 60)) areasForImprovement.push("Training completion timelines are not being met consistently");
+  if (below(trainingQuality.assessmentPassedRate, 60)) areasForImprovement.push("Assessment pass rates need improvement across training programmes");
+  if (below(trainingQuality.practicalComponentDoneRate, 60)) areasForImprovement.push("Practical training components are not being completed consistently");
+  if (below(trainingQuality.certificateObtainedRate, 60)) areasForImprovement.push("Certificate acquisition needs to be improved");
+  if (below(trainingCompliance.documentationRate, 60)) areasForImprovement.push("Training documentation is incomplete or inconsistent");
+  if (below(trainingCompliance.timelyRecordingRate, 60)) areasForImprovement.push("Training records are not being updated in a timely manner");
+  if (below(staffReadiness.trainingNeedsAssessmentRate, 60)) areasForImprovement.push("Staff training needs assessment capability needs development");
+  if (below(staffReadiness.deliverySkillsRate, 60)) areasForImprovement.push("Training delivery skills need improvement across the team");
 
   // Actions
   const actions: string[] = [];
   if (trainingPolicy.overallScore === 0) actions.push("URGENT: Establish a mandatory training policy — CHR 2015 Reg 32 requires documented training procedures for all staff");
   if (staffReadiness.overallScore === 0) actions.push("URGENT: Develop training management competencies — effective training delivery depends on skilled coordinators");
-  if (trainingQuality.completedOnTimeRate < 50) actions.push("Ensure all mandatory training is completed within required timescales — CHR 2015 Reg 31 requires staff fitness");
-  if (trainingQuality.assessmentPassedRate < 50) actions.push("Review training assessment processes — staff must demonstrate competency through assessment");
-  if (trainingCompliance.documentationRate < 50) actions.push("Improve training documentation — all training must be fully recorded and evidenced");
-  if (trainingCompliance.timelyRecordingRate < 50) actions.push("Implement systematic recording of training — timely records support Reg 44 reporting");
-  if (trainingQuality.certificateObtainedRate < 50) actions.push("Ensure all training certifications are obtained and filed appropriately");
-  if (staffReadiness.complianceMonitoringRate < 50) actions.push("Strengthen compliance monitoring — regular audits ensure training requirements are met");
+  if (below(trainingQuality.completedOnTimeRate, 50)) actions.push("Ensure all mandatory training is completed within required timescales — CHR 2015 Reg 31 requires staff fitness");
+  if (below(trainingQuality.assessmentPassedRate, 50)) actions.push("Review training assessment processes — staff must demonstrate competency through assessment");
+  if (below(trainingCompliance.documentationRate, 50)) actions.push("Improve training documentation — all training must be fully recorded and evidenced");
+  if (below(trainingCompliance.timelyRecordingRate, 50)) actions.push("Implement systematic recording of training — timely records support Reg 44 reporting");
+  if (below(trainingQuality.certificateObtainedRate, 50)) actions.push("Ensure all training certifications are obtained and filed appropriately");
+  if (below(staffReadiness.complianceMonitoringRate, 50)) actions.push("Strengthen compliance monitoring — regular audits ensure training requirements are met");
 
   const regulatoryLinks: string[] = [
     "CHR 2015 Reg 31 — Fitness of workers",

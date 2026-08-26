@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface StaffRecruitmentProfile { staffId: string; staffName: string; totalRecords: number; dbsCheckCompletedRate: number; referencesVerifiedRate: number; categoriesCovered: string[]; overallScore: number; }
 
@@ -73,18 +74,18 @@ export default function SaferRecruitmentDashboardWidget() {
       <Section title="Recruitment Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Records" value={data.saferRecruitmentQuality.totalRecords} />
-          <Stat label="DBS Checks" value={`${data.saferRecruitmentQuality.dbsCheckCompletedRate}%`} />
-          <Stat label="References" value={`${data.saferRecruitmentQuality.referencesVerifiedRate}%`} />
-          <Stat label="Interviews" value={`${data.saferRecruitmentQuality.interviewConductedRate}%`} />
-          <Stat label="Identity" value={`${data.saferRecruitmentQuality.identityConfirmedRate}%`} />
+          <Stat label="DBS Checks" value={`${formatRate(data.saferRecruitmentQuality.dbsCheckCompletedRate)}`} />
+          <Stat label="References" value={`${formatRate(data.saferRecruitmentQuality.referencesVerifiedRate)}`} />
+          <Stat label="Interviews" value={`${formatRate(data.saferRecruitmentQuality.interviewConductedRate)}`} />
+          <Stat label="Identity" value={`${formatRate(data.saferRecruitmentQuality.identityConfirmedRate)}`} />
         </div>
       </Section>
 
       <Section title="Recruitment Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documentation" value={`${data.saferRecruitmentCompliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${data.saferRecruitmentCompliance.timelyRecordingRate}%`} />
-          <Stat label="DBS Checks" value={`${data.saferRecruitmentCompliance.dbsCheckCompletedRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(data.saferRecruitmentCompliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(data.saferRecruitmentCompliance.timelyRecordingRate)}`} />
+          <Stat label="DBS Checks" value={`${formatRate(data.saferRecruitmentCompliance.dbsCheckCompletedRate)}`} />
           <Stat label="Category Coverage" value={`${data.saferRecruitmentCompliance.categoryDiversityRatio}%`} />
         </div>
       </Section>
@@ -108,12 +109,12 @@ export default function SaferRecruitmentDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
-          <Stat label="Safeguarding" value={`${data.staffReadiness.safeguardingRecruitmentRate}%`} />
-          <Stat label="DBS Process" value={`${data.staffReadiness.dbsProcessKnowledgeRate}%`} />
-          <Stat label="Interview Skills" value={`${data.staffReadiness.interviewTechniquesRate}%`} />
-          <Stat label="Reference Verification" value={`${data.staffReadiness.referenceVerificationRate}%`} />
-          <Stat label="Disqualification" value={`${data.staffReadiness.disqualificationAwarenessRate}%`} />
-          <Stat label="Whistleblowing" value={`${data.staffReadiness.whistleblowingAwarenessRate}%`} />
+          <Stat label="Safeguarding" value={`${formatRate(data.staffReadiness.safeguardingRecruitmentRate)}`} />
+          <Stat label="DBS Process" value={`${formatRate(data.staffReadiness.dbsProcessKnowledgeRate)}`} />
+          <Stat label="Interview Skills" value={`${formatRate(data.staffReadiness.interviewTechniquesRate)}`} />
+          <Stat label="Reference Verification" value={`${formatRate(data.staffReadiness.referenceVerificationRate)}`} />
+          <Stat label="Disqualification" value={`${formatRate(data.staffReadiness.disqualificationAwarenessRate)}`} />
+          <Stat label="Whistleblowing" value={`${formatRate(data.staffReadiness.whistleblowingAwarenessRate)}`} />
         </div>
       </Section>
 

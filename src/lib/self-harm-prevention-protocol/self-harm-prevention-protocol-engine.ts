@@ -1,3 +1,4 @@
+import { below, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // SELF-HARM PREVENTION PROTOCOL INTELLIGENCE ENGINE
 //
@@ -110,39 +111,56 @@ export interface StaffSelfHarmTraining {
 export interface RiskAssessmentQualityResult {
   overallScore: number;
   totalProfiles: number;
-  riskAssessedRate: number;
-  reviewCurrentRate: number;
-  triggersIdentifiedRate: number;
-  professionalSupportRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reviewCurrentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  triggersIdentifiedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  professionalSupportRate: number | null;
 }
 
 export interface SafetyPlanningResult {
   overallScore: number;
   totalProfiles: number;
-  safetyPlanInPlaceRate: number;
-  copingStrategiesRate: number;
-  emergencyContactsRate: number;
-  environmentalComplianceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safetyPlanInPlaceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  copingStrategiesRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  emergencyContactsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  environmentalComplianceRate: number | null;
   totalChecks: number;
 }
 
 export interface IncidentResponseResult {
   overallScore: number;
   totalIncidents: number;
-  immediateActionRate: number;
-  medicalAssessmentRate: number;
-  debriefCompletedRate: number;
-  safetyPlanUpdatedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  immediateActionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  medicalAssessmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  debriefCompletedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safetyPlanUpdatedRate: number | null;
 }
 
 export interface StaffCompetenceResult {
   overallScore: number;
   totalStaff: number;
-  selfHarmAwarenessRate: number;
-  riskAssessmentRate: number;
-  crisisInterventionRate: number;
-  safetyPlanningRate: number;
-  mentalHealthFirstAidRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  selfHarmAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  crisisInterventionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safetyPlanningRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  mentalHealthFirstAidRate: number | null;
 }
 
 export interface ChildSelfHarmProfile {
@@ -174,11 +192,6 @@ export interface SelfHarmPreventionProtocolIntelligence {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -246,10 +259,10 @@ export function evaluateRiskAssessmentQuality(
     return {
       overallScore: 0,
       totalProfiles: 0,
-      riskAssessedRate: 0,
-      reviewCurrentRate: 0,
-      triggersIdentifiedRate: 0,
-      professionalSupportRate: 0,
+      riskAssessedRate: null,
+      reviewCurrentRate: null,
+      triggersIdentifiedRate: null,
+      professionalSupportRate: null,
     };
   }
 
@@ -267,18 +280,18 @@ export function evaluateRiskAssessmentQuality(
     if (p.professionalSupportInPlace) professionalSupport++;
   }
 
-  const riskAssessedRate = pct(riskAssessed, profiles.length);
-  const reviewCurrentRate = pct(reviewCurrent, profiles.length);
-  const triggersIdentifiedRate = pct(triggersIdentified, profiles.length);
-  const professionalSupportRate = pct(professionalSupport, profiles.length);
+  const riskAssessedRate = rate(riskAssessed, profiles.length);
+  const reviewCurrentRate = rate(reviewCurrent, profiles.length);
+  const triggersIdentifiedRate = rate(triggersIdentified, profiles.length);
+  const professionalSupportRate = rate(professionalSupport, profiles.length);
 
   // Scoring: risk assessed per child (0-7), review current (0-6),
   // triggers identified (0-6), professional support (0-6)
   let score = 0;
-  score += Math.round((riskAssessedRate / 100) * 7);
-  score += Math.round((reviewCurrentRate / 100) * 6);
-  score += Math.round((triggersIdentifiedRate / 100) * 6);
-  score += Math.round((professionalSupportRate / 100) * 6);
+  score += Math.round((riskAssessedRate! / 100) * 7);
+  score += Math.round((reviewCurrentRate! / 100) * 6);
+  score += Math.round((triggersIdentifiedRate! / 100) * 6);
+  score += Math.round((professionalSupportRate! / 100) * 6);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -302,10 +315,10 @@ export function evaluateSafetyPlanning(
     return {
       overallScore: 0,
       totalProfiles: 0,
-      safetyPlanInPlaceRate: 0,
-      copingStrategiesRate: 0,
-      emergencyContactsRate: 0,
-      environmentalComplianceRate: 0,
+      safetyPlanInPlaceRate: null,
+      copingStrategiesRate: null,
+      emergencyContactsRate: null,
+      environmentalComplianceRate: null,
       totalChecks: 0,
     };
   }
@@ -325,18 +338,18 @@ export function evaluateSafetyPlanning(
     if (c.overallCompliant) compliantChecks++;
   }
 
-  const safetyPlanInPlaceRate = pct(safetyPlanInPlace, profiles.length);
-  const copingStrategiesRate = pct(copingStrategies, profiles.length);
-  const emergencyContactsRate = pct(emergencyContacts, profiles.length);
-  const environmentalComplianceRate = pct(compliantChecks, checks.length);
+  const safetyPlanInPlaceRate = rate(safetyPlanInPlace, profiles.length);
+  const copingStrategiesRate = rate(copingStrategies, profiles.length);
+  const emergencyContactsRate = rate(emergencyContacts, profiles.length);
+  const environmentalComplianceRate = rate(compliantChecks, checks.length);
 
   // Scoring: safety plan in place (0-7), coping strategies (0-6),
   // emergency contacts (0-6), environmental checks compliant (0-6)
   let score = 0;
-  score += Math.round((safetyPlanInPlaceRate / 100) * 7);
-  score += Math.round((copingStrategiesRate / 100) * 6);
-  score += Math.round((emergencyContactsRate / 100) * 6);
-  score += Math.round((environmentalComplianceRate / 100) * 6);
+  score += Math.round(((safetyPlanInPlaceRate ?? 0) / 100) * 7);
+  score += Math.round(((copingStrategiesRate ?? 0) / 100) * 6);
+  score += Math.round(((emergencyContactsRate ?? 0) / 100) * 6);
+  score += Math.round(((environmentalComplianceRate ?? 0) / 100) * 6);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -360,10 +373,10 @@ export function evaluateIncidentResponse(
     return {
       overallScore: 25,
       totalIncidents: 0,
-      immediateActionRate: 0,
-      medicalAssessmentRate: 0,
-      debriefCompletedRate: 0,
-      safetyPlanUpdatedRate: 0,
+      immediateActionRate: null,
+      medicalAssessmentRate: null,
+      debriefCompletedRate: null,
+      safetyPlanUpdatedRate: null,
     };
   }
 
@@ -379,18 +392,18 @@ export function evaluateIncidentResponse(
     if (inc.safetyPlanUpdated) safetyPlanUpdated++;
   }
 
-  const immediateActionRate = pct(immediateAction, incidents.length);
-  const medicalAssessmentRate = pct(medicalAssessment, incidents.length);
-  const debriefCompletedRate = pct(debriefCompleted, incidents.length);
-  const safetyPlanUpdatedRate = pct(safetyPlanUpdated, incidents.length);
+  const immediateActionRate = rate(immediateAction, incidents.length);
+  const medicalAssessmentRate = rate(medicalAssessment, incidents.length);
+  const debriefCompletedRate = rate(debriefCompleted, incidents.length);
+  const safetyPlanUpdatedRate = rate(safetyPlanUpdated, incidents.length);
 
   // Scoring: immediate action (0-7), medical assessment (0-7),
   // debrief completed (0-6), safety plan updated (0-5)
   let score = 0;
-  score += Math.round((immediateActionRate / 100) * 7);
-  score += Math.round((medicalAssessmentRate / 100) * 7);
-  score += Math.round((debriefCompletedRate / 100) * 6);
-  score += Math.round((safetyPlanUpdatedRate / 100) * 5);
+  score += Math.round((immediateActionRate! / 100) * 7);
+  score += Math.round((medicalAssessmentRate! / 100) * 7);
+  score += Math.round((debriefCompletedRate! / 100) * 6);
+  score += Math.round((safetyPlanUpdatedRate! / 100) * 5);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -413,11 +426,11 @@ export function evaluateStaffCompetence(
     return {
       overallScore: 0,
       totalStaff: 0,
-      selfHarmAwarenessRate: 0,
-      riskAssessmentRate: 0,
-      crisisInterventionRate: 0,
-      safetyPlanningRate: 0,
-      mentalHealthFirstAidRate: 0,
+      selfHarmAwarenessRate: null,
+      riskAssessmentRate: null,
+      crisisInterventionRate: null,
+      safetyPlanningRate: null,
+      mentalHealthFirstAidRate: null,
     };
   }
 
@@ -435,20 +448,20 @@ export function evaluateStaffCompetence(
     if (t.mentalHealthFirstAid) mentalHealthFirstAid++;
   }
 
-  const selfHarmAwarenessRate = pct(awareness, training.length);
-  const riskAssessmentRate = pct(riskAssessment, training.length);
-  const crisisInterventionRate = pct(crisisIntervention, training.length);
-  const safetyPlanningRate = pct(safetyPlanning, training.length);
-  const mentalHealthFirstAidRate = pct(mentalHealthFirstAid, training.length);
+  const selfHarmAwarenessRate = rate(awareness, training.length);
+  const riskAssessmentRate = rate(riskAssessment, training.length);
+  const crisisInterventionRate = rate(crisisIntervention, training.length);
+  const safetyPlanningRate = rate(safetyPlanning, training.length);
+  const mentalHealthFirstAidRate = rate(mentalHealthFirstAid, training.length);
 
   // Scoring: self-harm awareness (0-6), risk assessment (0-6),
   // crisis intervention (0-5), safety planning (0-4), mental health first aid (0-4)
   let score = 0;
-  score += Math.round((selfHarmAwarenessRate / 100) * 6);
-  score += Math.round((riskAssessmentRate / 100) * 6);
-  score += Math.round((crisisInterventionRate / 100) * 5);
-  score += Math.round((safetyPlanningRate / 100) * 4);
-  score += Math.round((mentalHealthFirstAidRate / 100) * 4);
+  score += Math.round((selfHarmAwarenessRate! / 100) * 6);
+  score += Math.round((riskAssessmentRate! / 100) * 6);
+  score += Math.round((crisisInterventionRate! / 100) * 5);
+  score += Math.round((safetyPlanningRate! / 100) * 4);
+  score += Math.round(((mentalHealthFirstAidRate ?? 0) / 100) * 4);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -579,27 +592,27 @@ export function generateSelfHarmPreventionProtocolIntelligence(
   const areasForImprovement: string[] = [];
   if (profiles.length === 0)
     areasForImprovement.push("No child risk profiles documented — all children should have risk assessments");
-  if (profiles.length > 0 && riskAssessmentQuality.reviewCurrentRate < 100)
-    areasForImprovement.push(100 - riskAssessmentQuality.reviewCurrentRate + "% of risk assessment reviews are not current");
-  if (profiles.length > 0 && riskAssessmentQuality.triggersIdentifiedRate < 100)
-    areasForImprovement.push("Triggers not identified for " + (100 - riskAssessmentQuality.triggersIdentifiedRate) + "% of children");
-  if (profiles.length > 0 && safetyPlanning.safetyPlanInPlaceRate < 100)
-    areasForImprovement.push("Safety plans not current for " + (100 - safetyPlanning.safetyPlanInPlaceRate) + "% of children");
-  if (profiles.length > 0 && safetyPlanning.copingStrategiesRate < 100)
-    areasForImprovement.push("Coping strategies not documented for " + (100 - safetyPlanning.copingStrategiesRate) + "% of children");
-  if (incidents.length > 0 && incidentResponse.debriefCompletedRate < 100)
-    areasForImprovement.push("Debrief not completed after " + (100 - incidentResponse.debriefCompletedRate) + "% of incidents");
-  if (incidents.length > 0 && incidentResponse.safetyPlanUpdatedRate < 100)
-    areasForImprovement.push("Safety plan not updated after " + (100 - incidentResponse.safetyPlanUpdatedRate) + "% of incidents");
+  if (profiles.length > 0 && below(riskAssessmentQuality.reviewCurrentRate, 100))
+    areasForImprovement.push(100 - riskAssessmentQuality.reviewCurrentRate! + "% of risk assessment reviews are not current");
+  if (profiles.length > 0 && below(riskAssessmentQuality.triggersIdentifiedRate, 100))
+    areasForImprovement.push("Triggers not identified for " + (100 - riskAssessmentQuality.triggersIdentifiedRate!) + "% of children");
+  if (profiles.length > 0 && below(safetyPlanning.safetyPlanInPlaceRate, 100))
+    areasForImprovement.push("Safety plans not current for " + (100 - safetyPlanning.safetyPlanInPlaceRate!) + "% of children");
+  if (profiles.length > 0 && below(safetyPlanning.copingStrategiesRate, 100))
+    areasForImprovement.push("Coping strategies not documented for " + (100 - safetyPlanning.copingStrategiesRate!) + "% of children");
+  if (incidents.length > 0 && below(incidentResponse.debriefCompletedRate, 100))
+    areasForImprovement.push("Debrief not completed after " + (100 - incidentResponse.debriefCompletedRate!) + "% of incidents");
+  if (incidents.length > 0 && below(incidentResponse.safetyPlanUpdatedRate, 100))
+    areasForImprovement.push("Safety plan not updated after " + (100 - incidentResponse.safetyPlanUpdatedRate!) + "% of incidents");
   if (checks.length === 0)
     areasForImprovement.push("No environmental safety checks recorded — regular checks are required");
-  if (checks.length > 0 && safetyPlanning.environmentalComplianceRate < 100)
-    areasForImprovement.push(100 - safetyPlanning.environmentalComplianceRate + "% of environmental safety checks non-compliant");
+  if (checks.length > 0 && below(safetyPlanning.environmentalComplianceRate, 100))
+    areasForImprovement.push(100 - safetyPlanning.environmentalComplianceRate! + "% of environmental safety checks non-compliant");
   if (training.length === 0)
     areasForImprovement.push("No staff training records for self-harm prevention");
-  if (training.length > 0 && staffCompetence.selfHarmAwarenessRate < 100)
+  if (training.length > 0 && below(staffCompetence.selfHarmAwarenessRate, 100))
     areasForImprovement.push("Self-harm awareness training incomplete — only " + staffCompetence.selfHarmAwarenessRate + "% of staff trained");
-  if (training.length > 0 && staffCompetence.mentalHealthFirstAidRate < 100)
+  if (training.length > 0 && below(staffCompetence.mentalHealthFirstAidRate, 100))
     areasForImprovement.push("Mental health first aid qualification held by only " + staffCompetence.mentalHealthFirstAidRate + "% of staff");
 
   // ── Actions ──
@@ -621,13 +634,13 @@ export function generateSelfHarmPreventionProtocolIntelligence(
     actions.push("Complete debrief for " + notDebriefed.length + " outstanding incident(s)");
   if (profiles.length === 0)
     actions.push("Complete risk assessments for all children — statutory requirement");
-  if (profiles.length > 0 && riskAssessmentQuality.reviewCurrentRate < 100)
+  if (profiles.length > 0 && below(riskAssessmentQuality.reviewCurrentRate, 100))
     actions.push("Bring all risk assessment reviews up to date");
   if (checks.length === 0)
     actions.push("Implement regular environmental safety checks");
   if (training.length === 0)
     actions.push("Arrange self-harm prevention training for all staff");
-  if (training.length > 0 && staffCompetence.crisisInterventionRate < 75)
+  if (training.length > 0 && below(staffCompetence.crisisInterventionRate, 75))
     actions.push("Arrange crisis intervention training — only " + staffCompetence.crisisInterventionRate + "% of staff trained");
 
   const regulatoryLinks: string[] = [

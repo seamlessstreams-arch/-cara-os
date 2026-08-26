@@ -6,7 +6,6 @@ import {
   evaluateTransitionMeetings,
   evaluateStaffTransitionReadiness,
   buildChildTransitionProfiles,
-  pct,
   getRating,
   getTransitionTypeLabel,
   getPathwayStatusLabel,
@@ -89,15 +88,6 @@ function mkTraining(overrides: Partial<StaffTransitionTraining> = {}): StaffTran
 
 // -- pct ----------------------------------------------------------------------
 
-describe("pct", () => {
-  it("returns 0 for 0/0", () => expect(pct(0, 0)).toBe(0));
-  it("calculates correctly", () => expect(pct(3, 4)).toBe(75));
-  it("rounds", () => expect(pct(1, 3)).toBe(33));
-  it("full", () => expect(pct(5, 5)).toBe(100));
-  it("handles large numerator", () => expect(pct(99, 100)).toBe(99));
-  it("handles 1/1", () => expect(pct(1, 1)).toBe(100));
-});
-
 // -- getRating ----------------------------------------------------------------
 
 describe("getRating", () => {
@@ -160,12 +150,12 @@ describe("evaluatePathwayPlanning", () => {
     const result = evaluatePathwayPlanning([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalPlans).toBe(0);
-    expect(result.personalAdviserRate).toBe(0);
-    expect(result.planReviewedRate).toBe(0);
-    expect(result.childViewsRate).toBe(0);
-    expect(result.accommodationRate).toBe(0);
-    expect(result.financialPlanRate).toBe(0);
-    expect(result.healthPassportRate).toBe(0);
+    expect(result.personalAdviserRate).toBeNull();
+    expect(result.planReviewedRate).toBeNull();
+    expect(result.childViewsRate).toBeNull();
+    expect(result.accommodationRate).toBeNull();
+    expect(result.financialPlanRate).toBeNull();
+    expect(result.healthPassportRate).toBeNull();
   });
 
   it("scores max for fully compliant plans", () => {
@@ -267,9 +257,9 @@ describe("evaluateIndependenceSkills", () => {
     const result = evaluateIndependenceSkills([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalAssessments).toBe(0);
-    expect(result.competentPlusRate).toBe(0);
-    expect(result.supportInPlaceRate).toBe(0);
-    expect(result.progressRecordedRate).toBe(0);
+    expect(result.competentPlusRate).toBeNull();
+    expect(result.supportInPlaceRate).toBeNull();
+    expect(result.progressRecordedRate).toBeNull();
     expect(result.skillBreadthScore).toBe(0);
   });
 
@@ -397,11 +387,11 @@ describe("evaluateTransitionMeetings", () => {
     const result = evaluateTransitionMeetings([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalMeetings).toBe(0);
-    expect(result.childAttendedRate).toBe(0);
-    expect(result.minutesRecordedRate).toBe(0);
-    expect(result.actionsAgreedRate).toBe(0);
-    expect(result.socialWorkerPresentRate).toBe(0);
-    expect(result.nextMeetingScheduledRate).toBe(0);
+    expect(result.childAttendedRate).toBeNull();
+    expect(result.minutesRecordedRate).toBeNull();
+    expect(result.actionsAgreedRate).toBeNull();
+    expect(result.socialWorkerPresentRate).toBeNull();
+    expect(result.nextMeetingScheduledRate).toBeNull();
   });
 
   it("scores max for fully compliant meetings", () => {
@@ -504,12 +494,12 @@ describe("evaluateStaffTransitionReadiness", () => {
     const result = evaluateStaffTransitionReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.leavingCarePolicyRate).toBe(0);
-    expect(result.pathwayPlanningRate).toBe(0);
-    expect(result.independenceSkillsRate).toBe(0);
-    expect(result.housingOptionsRate).toBe(0);
-    expect(result.financialCapabilityRate).toBe(0);
-    expect(result.emotionalSupportRate).toBe(0);
+    expect(result.leavingCarePolicyRate).toBeNull();
+    expect(result.pathwayPlanningRate).toBeNull();
+    expect(result.independenceSkillsRate).toBeNull();
+    expect(result.housingOptionsRate).toBeNull();
+    expect(result.financialCapabilityRate).toBeNull();
+    expect(result.emotionalSupportRate).toBeNull();
   });
 
   it("scores max for fully trained staff", () => {

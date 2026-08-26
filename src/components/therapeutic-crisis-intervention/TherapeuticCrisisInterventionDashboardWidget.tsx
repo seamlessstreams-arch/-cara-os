@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { above, formatRate } from "@/lib/metrics/rate";
 import type { TherapeuticCrisisInterventionIntelligence } from "@/lib/therapeutic-crisis-intervention";
 
 const ratingColors: Record<string, string> = {
@@ -110,15 +111,15 @@ export function TherapeuticCrisisInterventionDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Incidents</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.deescalationEffectiveness.deescalationAttemptRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.deescalationEffectiveness.deescalationAttemptRate)}</div>
           <div className="text-xs text-gray-500 mt-1">De-escalated</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.deescalationEffectiveness.deescalationSuccessRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.deescalationEffectiveness.deescalationSuccessRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Resolved</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.postIncidentPractice.childDebriefRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.postIncidentPractice.childDebriefRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Debriefed</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -158,9 +159,9 @@ export function TherapeuticCrisisInterventionDashboardWidget() {
 
         <Section title="De-escalation Effectiveness">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <Stat label="Attempt Rate" value={`${data.deescalationEffectiveness.deescalationAttemptRate}%`} />
-            <Stat label="Success Rate" value={`${data.deescalationEffectiveness.deescalationSuccessRate}%`} />
-            <Stat label="Physical Rate" value={`${data.deescalationEffectiveness.physicalInterventionRate}%`} warn={data.deescalationEffectiveness.physicalInterventionRate > 0} />
+            <Stat label="Attempt Rate" value={`${formatRate(data.deescalationEffectiveness.deescalationAttemptRate)}`} />
+            <Stat label="Success Rate" value={`${formatRate(data.deescalationEffectiveness.deescalationSuccessRate)}`} />
+            <Stat label="Physical Rate" value={`${formatRate(data.deescalationEffectiveness.physicalInterventionRate)}`} warn={above(data.deescalationEffectiveness.physicalInterventionRate, 0)} />
             <Stat label="Low Severity" value={data.deescalationEffectiveness.severityDistribution.low} />
             <Stat label="Medium Severity" value={data.deescalationEffectiveness.severityDistribution.medium} />
             <Stat label="High Severity" value={data.deescalationEffectiveness.severityDistribution.high} warn={data.deescalationEffectiveness.severityDistribution.high > 0} />
@@ -170,11 +171,11 @@ export function TherapeuticCrisisInterventionDashboardWidget() {
 
         <Section title="Post-Incident Practice">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <Stat label="Child Debrief" value={`${data.postIncidentPractice.childDebriefRate}%`} />
-            <Stat label="Staff Debrief" value={`${data.postIncidentPractice.staffDebriefRate}%`} />
-            <Stat label="Body Maps" value={`${data.postIncidentPractice.bodyMapCompletionRate}%`} />
-            <Stat label="Timely Recording" value={`${data.postIncidentPractice.timelyRecordingRate}%`} />
-            <Stat label="Lessons Learned" value={`${data.postIncidentPractice.lessonsLearnedRate}%`} />
+            <Stat label="Child Debrief" value={`${formatRate(data.postIncidentPractice.childDebriefRate)}`} />
+            <Stat label="Staff Debrief" value={`${formatRate(data.postIncidentPractice.staffDebriefRate)}`} />
+            <Stat label="Body Maps" value={`${formatRate(data.postIncidentPractice.bodyMapCompletionRate)}`} />
+            <Stat label="Timely Recording" value={`${formatRate(data.postIncidentPractice.timelyRecordingRate)}`} />
+            <Stat label="Lessons Learned" value={`${formatRate(data.postIncidentPractice.lessonsLearnedRate)}`} />
           </div>
         </Section>
 
@@ -193,12 +194,12 @@ export function TherapeuticCrisisInterventionDashboardWidget() {
         <Section title="Staff Crisis Readiness">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <Stat label="Staff Trained" value={data.staffCrisisReadiness.totalStaff} />
-            <Stat label="Therapeutic" value={`${data.staffCrisisReadiness.therapeuticApproachRate}%`} />
-            <Stat label="De-escalation" value={`${data.staffCrisisReadiness.deescalationRate}%`} />
-            <Stat label="Physical Intervention" value={`${data.staffCrisisReadiness.physicalInterventionRate}%`} />
-            <Stat label="Post-Incident" value={`${data.staffCrisisReadiness.postIncidentSupportRate}%`} />
-            <Stat label="Record Keeping" value={`${data.staffCrisisReadiness.recordKeepingRate}%`} />
-            <Stat label="Body Mapping" value={`${data.staffCrisisReadiness.bodyMappingRate}%`} />
+            <Stat label="Therapeutic" value={`${formatRate(data.staffCrisisReadiness.therapeuticApproachRate)}`} />
+            <Stat label="De-escalation" value={`${formatRate(data.staffCrisisReadiness.deescalationRate)}`} />
+            <Stat label="Physical Intervention" value={`${formatRate(data.staffCrisisReadiness.physicalInterventionRate)}`} />
+            <Stat label="Post-Incident" value={`${formatRate(data.staffCrisisReadiness.postIncidentSupportRate)}`} />
+            <Stat label="Record Keeping" value={`${formatRate(data.staffCrisisReadiness.recordKeepingRate)}`} />
+            <Stat label="Body Mapping" value={`${formatRate(data.staffCrisisReadiness.bodyMappingRate)}`} />
           </div>
         </Section>
 

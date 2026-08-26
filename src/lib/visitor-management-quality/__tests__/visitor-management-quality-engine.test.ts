@@ -6,7 +6,6 @@ import {
   evaluateStaffVisitorReadiness,
   buildChildVisitorProfiles,
   generateVisitorManagementQualityIntelligence,
-  pct,
   getRating,
   getVisitorTypeLabel,
   getVisitQualityLabel,
@@ -74,29 +73,6 @@ function makeTraining(overrides: Partial<StaffVisitorTraining> = {}): StaffVisit
 }
 
 // ── pct() ───────────────────────────────────────────────────────────────────
-
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-
-  it("returns 100 when num equals den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-});
 
 // ── getRating() ─────────────────────────────────────────────────────────────
 
@@ -195,10 +171,10 @@ describe("evaluateVisitorManagementQuality", () => {
     const r = evaluateVisitorManagementQuality([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalVisits).toBe(0);
-    expect(r.qualityRate).toBe(0);
-    expect(r.childConsultedRate).toBe(0);
-    expect(r.safeguardingRate).toBe(0);
-    expect(r.privacyRate).toBe(0);
+    expect(r.qualityRate).toBeNull();
+    expect(r.childConsultedRate).toBeNull();
+    expect(r.safeguardingRate).toBeNull();
+    expect(r.privacyRate).toBeNull();
   });
 
   it("scores 25 for single perfect visit", () => {
@@ -352,9 +328,9 @@ describe("evaluateVisitorManagementCompliance", () => {
   it("returns all zeros for empty visits", () => {
     const r = evaluateVisitorManagementCompliance([]);
     expect(r.overallScore).toBe(0);
-    expect(r.documentedRate).toBe(0);
-    expect(r.staffSupervisedRate).toBe(0);
-    expect(r.feedbackRate).toBe(0);
+    expect(r.documentedRate).toBeNull();
+    expect(r.staffSupervisedRate).toBeNull();
+    expect(r.feedbackRate).toBeNull();
     expect(r.visitorTypeDiversityRatio).toBe(0);
   });
 
@@ -630,12 +606,12 @@ describe("evaluateStaffVisitorReadiness", () => {
     const r = evaluateStaffVisitorReadiness([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalStaff).toBe(0);
-    expect(r.visitorManagementRate).toBe(0);
-    expect(r.safeguardingChecksRate).toBe(0);
-    expect(r.childConsentPracticeRate).toBe(0);
-    expect(r.privacyProtocolRate).toBe(0);
-    expect(r.conflictResolutionRate).toBe(0);
-    expect(r.recordKeepingRate).toBe(0);
+    expect(r.visitorManagementRate).toBeNull();
+    expect(r.safeguardingChecksRate).toBeNull();
+    expect(r.childConsentPracticeRate).toBeNull();
+    expect(r.privacyProtocolRate).toBeNull();
+    expect(r.conflictResolutionRate).toBeNull();
+    expect(r.recordKeepingRate).toBeNull();
   });
 
   it("scores 25 for single fully trained staff", () => {

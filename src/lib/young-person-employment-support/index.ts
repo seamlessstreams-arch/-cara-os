@@ -5,7 +5,6 @@ export {
   evaluatePartnershipAccess,
   evaluateStaffReadiness,
   buildChildEmploymentProfiles,
-  pct,
   getRating,
   getSupportTypeLabel,
   getEngagementLevelLabel,

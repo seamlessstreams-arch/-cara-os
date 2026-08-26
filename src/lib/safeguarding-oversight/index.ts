@@ -38,7 +38,6 @@ export type {
 // -- Intelligence Engine (v2) ------------------------------------------------
 
 export {
-  pct as intelligencePct,
   getRating as getIntelligenceRating,
   getSafeguardingOversightIntelligenceCategoryLabel,
   getSafeguardingOversightIntelligenceOutcomeLabel,

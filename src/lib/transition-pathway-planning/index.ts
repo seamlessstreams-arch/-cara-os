@@ -5,7 +5,6 @@ export {
   evaluateTransitionMeetings,
   evaluateStaffTransitionReadiness,
   buildChildTransitionProfiles,
-  pct,
   getRating,
   getTransitionTypeLabel,
   getPathwayStatusLabel,

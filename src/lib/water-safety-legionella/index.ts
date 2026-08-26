@@ -9,7 +9,6 @@ export {
   evaluateStaffWaterReadiness,
   buildWaterSafetyLocationProfiles,
   generateWaterSafetyLegionellaIntelligence,
-  pct,
   getRating,
   getWaterSourceTypeLabel,
   getCheckOutcomeLabel,

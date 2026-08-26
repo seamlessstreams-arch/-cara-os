@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 /* ──────────────────────────────────────────────────────────────
    Sanctions Intelligence Engine
 
@@ -127,18 +128,25 @@ export interface StaffSanctionTraining {
 
 export interface SanctionQualityEvaluation {
   totalRecords: number;
-  proportionateRate: number;
-  childViewsRate: number;
-  acceptanceRate: number;
-  documentedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  proportionateRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  acceptanceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
   overallScore: number;
 }
 
 export interface SanctionComplianceEvaluation {
   totalRecords: number;
-  parentNotifiedRate: number;
-  staffAppliedRate: number;
-  reviewScheduledRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  parentNotifiedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffAppliedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reviewScheduledRate: number | null;
   typeDiversityRatio: number;
   overallScore: number;
 }
@@ -156,12 +164,18 @@ export interface SanctionPolicyEvaluation {
 
 export interface StaffSanctionReadinessEvaluation {
   totalStaff: number;
-  behaviourManagementRate: number;
-  proportionalityAssessmentRate: number;
-  restorativeApproachRate: number;
-  childRightsAwarenessRate: number;
-  documentationSkillsRate: number;
-  deEscalationFirstRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  behaviourManagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  proportionalityAssessmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  restorativeApproachRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childRightsAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  deEscalationFirstRate: number | null;
   overallScore: number;
 }
 
@@ -170,8 +184,10 @@ export interface ChildSanctionProfile {
   childName: string;
   totalSanctions: number;
   sanctionTypes: string[];
-  proportionateRate: number;
-  childViewsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  proportionateRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewsRate: number | null;
   escalatedCount: number;
   sanctionScore: number;
 }
@@ -196,11 +212,6 @@ export interface SanctionsIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -220,10 +231,10 @@ export function evaluateSanctionQuality(
   if (records.length === 0) {
     return {
       totalRecords: 0,
-      proportionateRate: 0,
-      childViewsRate: 0,
-      acceptanceRate: 0,
-      documentedRate: 0,
+      proportionateRate: null,
+      childViewsRate: null,
+      acceptanceRate: null,
+      documentedRate: null,
       overallScore: 0,
     };
   }
@@ -231,22 +242,22 @@ export function evaluateSanctionQuality(
   const total = records.length;
 
   const proportionate = records.filter((r) => r.proportionateToIncident).length;
-  const proportionateRate = pct(proportionate, total);
+  const proportionateRate = rate(proportionate, total);
 
   const childViews = records.filter((r) => r.childViewsRecorded).length;
-  const childViewsRate = pct(childViews, total);
+  const childViewsRate = rate(childViews, total);
 
   const accepted = records.filter((r) => r.outcome === "accepted_by_child").length;
-  const acceptanceRate = pct(accepted, total);
+  const acceptanceRate = rate(accepted, total);
 
   const documented = records.filter((r) => r.documentedProperly).length;
-  const documentedRate = pct(documented, total);
+  const documentedRate = rate(documented, total);
 
   // Weights: proportionateRate 7 + childViewsRate 6 + acceptanceRate 6 + documentedRate 6 = 25
-  const s1 = Math.round((proportionateRate / 100) * 7);
-  const s2 = Math.round((childViewsRate / 100) * 6);
-  const s3 = Math.round((acceptanceRate / 100) * 6);
-  const s4 = Math.round((documentedRate / 100) * 6);
+  const s1 = Math.round(((proportionateRate ?? 0) / 100) * 7);
+  const s2 = Math.round(((childViewsRate ?? 0) / 100) * 6);
+  const s3 = Math.round(((acceptanceRate ?? 0) / 100) * 6);
+  const s4 = Math.round(((documentedRate ?? 0) / 100) * 6);
 
   const overallScore = clamp(s1 + s2 + s3 + s4, 0, 25);
 
@@ -268,9 +279,9 @@ export function evaluateSanctionCompliance(
   if (records.length === 0) {
     return {
       totalRecords: 0,
-      parentNotifiedRate: 0,
-      staffAppliedRate: 0,
-      reviewScheduledRate: 0,
+      parentNotifiedRate: null,
+      staffAppliedRate: null,
+      reviewScheduledRate: null,
       typeDiversityRatio: 0,
       overallScore: 0,
     };
@@ -279,22 +290,22 @@ export function evaluateSanctionCompliance(
   const total = records.length;
 
   const parentNotified = records.filter((r) => r.parentNotified).length;
-  const parentNotifiedRate = pct(parentNotified, total);
+  const parentNotifiedRate = rate(parentNotified, total);
 
   const staffApplied = records.filter((r) => r.staffApplied).length;
-  const staffAppliedRate = pct(staffApplied, total);
+  const staffAppliedRate = rate(staffApplied, total);
 
   const reviewScheduled = records.filter((r) => r.reviewScheduled).length;
-  const reviewScheduledRate = pct(reviewScheduled, total);
+  const reviewScheduledRate = rate(reviewScheduled, total);
 
   // Type diversity: unique sanction types / 8 (total possible types)
   const uniqueTypes = new Set(records.map((r) => r.sanctionType)).size;
   const typeDiversityRatio = Math.round((uniqueTypes / 8) * 100);
 
   // Weights: parentNotifiedRate 8 + staffAppliedRate 7 + reviewScheduledRate 5 + typeDiversityRatio 5 = 25
-  const s1 = Math.round((parentNotifiedRate / 100) * 8);
-  const s2 = Math.round((staffAppliedRate / 100) * 7);
-  const s3 = Math.round((reviewScheduledRate / 100) * 5);
+  const s1 = Math.round(((parentNotifiedRate ?? 0) / 100) * 8);
+  const s2 = Math.round(((staffAppliedRate ?? 0) / 100) * 7);
+  const s3 = Math.round(((reviewScheduledRate ?? 0) / 100) * 5);
   const s4 = Math.round((typeDiversityRatio / 100) * 5);
 
   const overallScore = clamp(s1 + s2 + s3 + s4, 0, 25);
@@ -357,12 +368,12 @@ export function evaluateStaffSanctionReadiness(
   if (training.length === 0) {
     return {
       totalStaff: 0,
-      behaviourManagementRate: 0,
-      proportionalityAssessmentRate: 0,
-      restorativeApproachRate: 0,
-      childRightsAwarenessRate: 0,
-      documentationSkillsRate: 0,
-      deEscalationFirstRate: 0,
+      behaviourManagementRate: null,
+      proportionalityAssessmentRate: null,
+      restorativeApproachRate: null,
+      childRightsAwarenessRate: null,
+      documentationSkillsRate: null,
+      deEscalationFirstRate: null,
       overallScore: 0,
     };
   }
@@ -370,31 +381,31 @@ export function evaluateStaffSanctionReadiness(
   const total = training.length;
 
   const behaviourManagement = training.filter((t) => t.behaviourManagement).length;
-  const behaviourManagementRate = pct(behaviourManagement, total);
+  const behaviourManagementRate = rate(behaviourManagement, total);
 
   const proportionalityAssessment = training.filter((t) => t.proportionalityAssessment).length;
-  const proportionalityAssessmentRate = pct(proportionalityAssessment, total);
+  const proportionalityAssessmentRate = rate(proportionalityAssessment, total);
 
   const restorativeApproach = training.filter((t) => t.restorativeApproach).length;
-  const restorativeApproachRate = pct(restorativeApproach, total);
+  const restorativeApproachRate = rate(restorativeApproach, total);
 
   const childRightsAwareness = training.filter((t) => t.childRightsAwareness).length;
-  const childRightsAwarenessRate = pct(childRightsAwareness, total);
+  const childRightsAwarenessRate = rate(childRightsAwareness, total);
 
   const documentationSkills = training.filter((t) => t.documentationSkills).length;
-  const documentationSkillsRate = pct(documentationSkills, total);
+  const documentationSkillsRate = rate(documentationSkills, total);
 
   const deEscalationFirst = training.filter((t) => t.deEscalationFirst).length;
-  const deEscalationFirstRate = pct(deEscalationFirst, total);
+  const deEscalationFirstRate = rate(deEscalationFirst, total);
 
   // Weights: behaviourManagement=6 + proportionalityAssessment=5 + restorativeApproach=5
   //          + childRightsAwareness=4 + documentationSkills=3 + deEscalationFirst=2 = 25
-  const s1 = Math.round((behaviourManagementRate / 100) * 6);
-  const s2 = Math.round((proportionalityAssessmentRate / 100) * 5);
-  const s3 = Math.round((restorativeApproachRate / 100) * 5);
-  const s4 = Math.round((childRightsAwarenessRate / 100) * 4);
-  const s5 = Math.round((documentationSkillsRate / 100) * 3);
-  const s6 = Math.round((deEscalationFirstRate / 100) * 2);
+  const s1 = Math.round(((behaviourManagementRate ?? 0) / 100) * 6);
+  const s2 = Math.round(((proportionalityAssessmentRate ?? 0) / 100) * 5);
+  const s3 = Math.round(((restorativeApproachRate ?? 0) / 100) * 5);
+  const s4 = Math.round(((childRightsAwarenessRate ?? 0) / 100) * 4);
+  const s5 = Math.round(((documentationSkillsRate ?? 0) / 100) * 3);
+  const s6 = Math.round(((deEscalationFirstRate ?? 0) / 100) * 2);
 
   const overallScore = clamp(s1 + s2 + s3 + s4 + s5 + s6, 0, 25);
 
@@ -431,10 +442,10 @@ export function buildChildSanctionProfiles(
     const sanctionTypes = Array.from(new Set(childRecords.map((r) => r.sanctionType)));
 
     const proportionate = childRecords.filter((r) => r.proportionateToIncident).length;
-    const proportionateRate = pct(proportionate, total);
+    const proportionateRate = rate(proportionate, total);
 
     const childViews = childRecords.filter((r) => r.childViewsRecorded).length;
-    const childViewsRate = pct(childViews, total);
+    const childViewsRate = rate(childViews, total);
 
     const escalatedCount = childRecords.filter((r) => r.outcome === "escalated").length;
 
@@ -447,15 +458,15 @@ export function buildChildSanctionProfiles(
 
     // rate1 (proportionateRate): >=80 -> 3, >=60 -> 2, >=40 -> 1, else 0
     let rate1 = 0;
-    if (proportionateRate >= 80) rate1 = 3;
-    else if (proportionateRate >= 60) rate1 = 2;
-    else if (proportionateRate >= 40) rate1 = 1;
+    if (meets(proportionateRate, 80)) rate1 = 3;
+    else if (meets(proportionateRate, 60)) rate1 = 2;
+    else if (meets(proportionateRate, 40)) rate1 = 1;
 
     // rate2 (childViewsRate): same thresholds
     let rate2 = 0;
-    if (childViewsRate >= 80) rate2 = 3;
-    else if (childViewsRate >= 60) rate2 = 2;
-    else if (childViewsRate >= 40) rate2 = 1;
+    if (meets(childViewsRate, 80)) rate2 = 3;
+    else if (meets(childViewsRate, 60)) rate2 = 2;
+    else if (meets(childViewsRate, 40)) rate2 = 1;
 
     // noEscalation: 0 escalated outcomes -> 1, else 0
     const noEscalation = escalatedCount === 0 ? 1 : 0;
@@ -527,7 +538,7 @@ export function generateSanctionsIntelligence(
   if (qualityEval.childViewsRate === 100 && qualityEval.totalRecords > 0) {
     strengths.push("Child views recorded for every sanction — demonstrating commitment to UNCRC Article 12");
   }
-  if (qualityEval.acceptanceRate >= 80 && qualityEval.totalRecords > 0) {
+  if (meets(qualityEval.acceptanceRate, 80) && qualityEval.totalRecords > 0) {
     strengths.push("High acceptance rate among children — sanctions are understood and perceived as fair");
   }
   if (complianceEval.parentNotifiedRate === 100 && complianceEval.totalRecords > 0) {
@@ -550,19 +561,19 @@ export function generateSanctionsIntelligence(
     areasForImprovement.push("Staff sanction readiness is insufficient — training in behaviour management, proportionality, and restorative approaches required");
   }
 
-  if (qualityEval.childViewsRate < 100 && qualityEval.totalRecords > 0) {
+  if (below(qualityEval.childViewsRate, 100) && qualityEval.totalRecords > 0) {
     areasForImprovement.push("Child views not consistently recorded — every sanction must include the child's perspective (UNCRC Article 12)");
   }
-  if (qualityEval.proportionateRate < 100 && qualityEval.totalRecords > 0) {
+  if (below(qualityEval.proportionateRate, 100) && qualityEval.totalRecords > 0) {
     areasForImprovement.push("Not all sanctions assessed as proportionate — review individual cases and provide staff guidance on proportionality");
   }
-  if (qualityEval.documentedRate < 100 && qualityEval.totalRecords > 0) {
+  if (below(qualityEval.documentedRate, 100) && qualityEval.totalRecords > 0) {
     areasForImprovement.push("Documentation gaps identified — all sanctions must be properly recorded per CHR 2015 Reg 45");
   }
-  if (complianceEval.parentNotifiedRate < 100 && complianceEval.totalRecords > 0) {
+  if (below(complianceEval.parentNotifiedRate, 100) && complianceEval.totalRecords > 0) {
     areasForImprovement.push("Parents/carers not always notified of sanctions — notification is required for transparency and partnership working");
   }
-  if (complianceEval.reviewScheduledRate < 100 && complianceEval.totalRecords > 0) {
+  if (below(complianceEval.reviewScheduledRate, 100) && complianceEval.totalRecords > 0) {
     areasForImprovement.push("Not all sanctions have reviews scheduled — regular review ensures ongoing proportionality and child welfare");
   }
 
@@ -578,25 +589,25 @@ export function generateSanctionsIntelligence(
   }
 
   // Conditional on rates < 50
-  if (qualityEval.proportionateRate < 50 && qualityEval.totalRecords > 0) {
+  if (below(qualityEval.proportionateRate, 50) && qualityEval.totalRecords > 0) {
     actions.push("Proportionality rate is critically low — conduct an immediate review of all recent sanctions and provide staff supervision on proportionate responses");
   }
-  if (qualityEval.childViewsRate < 50 && qualityEval.totalRecords > 0) {
+  if (below(qualityEval.childViewsRate, 50) && qualityEval.totalRecords > 0) {
     actions.push("Child views recording rate is critically low — implement a mandatory child views section in all sanction records and train staff on capturing children's perspectives");
   }
-  if (qualityEval.acceptanceRate < 50 && qualityEval.totalRecords > 0) {
+  if (below(qualityEval.acceptanceRate, 50) && qualityEval.totalRecords > 0) {
     actions.push("Low acceptance rate indicates children may not understand or agree with sanctions — review approach and consider restorative practices");
   }
-  if (qualityEval.documentedRate < 50 && qualityEval.totalRecords > 0) {
+  if (below(qualityEval.documentedRate, 50) && qualityEval.totalRecords > 0) {
     actions.push("Documentation rate is critically low — implement immediate audit of sanction recording practices and provide documentation training");
   }
-  if (complianceEval.parentNotifiedRate < 50 && complianceEval.totalRecords > 0) {
+  if (below(complianceEval.parentNotifiedRate, 50) && complianceEval.totalRecords > 0) {
     actions.push("Parent notification rate is critically low — establish a systematic notification process for all sanctions");
   }
-  if (complianceEval.staffAppliedRate < 50 && complianceEval.totalRecords > 0) {
+  if (below(complianceEval.staffAppliedRate, 50) && complianceEval.totalRecords > 0) {
     actions.push("Staff application rate is critically low — review staffing arrangements and ensure sanctions are applied by appropriately trained staff");
   }
-  if (complianceEval.reviewScheduledRate < 50 && complianceEval.totalRecords > 0) {
+  if (below(complianceEval.reviewScheduledRate, 50) && complianceEval.totalRecords > 0) {
     actions.push("Review scheduling rate is critically low — implement a mandatory review process for all sanctions within 7 days");
   }
 

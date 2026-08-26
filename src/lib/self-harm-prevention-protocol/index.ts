@@ -5,7 +5,6 @@ export {
   evaluateIncidentResponse,
   evaluateStaffCompetence,
   buildChildSelfHarmProfiles,
-  pct,
   getRating,
   getRiskLevelLabel,
   getSelfHarmTypeLabel,

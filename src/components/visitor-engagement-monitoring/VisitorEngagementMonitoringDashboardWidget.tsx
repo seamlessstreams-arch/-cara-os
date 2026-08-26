@@ -14,6 +14,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useEffect } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 // ── Local Type Definitions ────────────────────────────────────────────────
 
@@ -261,20 +262,20 @@ export default function VisitorEngagementMonitoringDashboardWidget() {
           {/* Visitor Safeguarding */}
           <Section title="Visitor Safeguarding" defaultOpen>
             <Stat label="Total visitor records" value={data.visitorSafeguarding.totalRecords} />
-            <Stat label="Identity verified rate" value={`${data.visitorSafeguarding.identityVerifiedRate}%`} />
-            <Stat label="DBS checked rate" value={`${data.visitorSafeguarding.dbsCheckedRate}%`} />
-            <Stat label="Safeguarding followed rate" value={`${data.visitorSafeguarding.safeguardingFollowedRate}%`} />
-            <Stat label="Signed-in rate" value={`${data.visitorSafeguarding.signedInRate}%`} />
-            <Stat label="Documented in log rate" value={`${data.visitorSafeguarding.documentedInLogRate}%`} />
+            <Stat label="Identity verified rate" value={`${formatRate(data.visitorSafeguarding.identityVerifiedRate)}`} />
+            <Stat label="DBS checked rate" value={`${formatRate(data.visitorSafeguarding.dbsCheckedRate)}`} />
+            <Stat label="Safeguarding followed rate" value={`${formatRate(data.visitorSafeguarding.safeguardingFollowedRate)}`} />
+            <Stat label="Signed-in rate" value={`${formatRate(data.visitorSafeguarding.signedInRate)}`} />
+            <Stat label="Documented in log rate" value={`${formatRate(data.visitorSafeguarding.documentedInLogRate)}`} />
             <Stat label="Score" value={`${data.visitorSafeguarding.score}/25`} />
           </Section>
 
           {/* Visit Quality */}
           <Section title="Visit Quality">
             <Stat label="Total records" value={data.visitQuality.totalRecords} />
-            <Stat label="Positive outcome rate" value={`${data.visitQuality.positiveOutcomeRate}%`} />
-            <Stat label="Child consented rate" value={`${data.visitQuality.childConsentedRate}%`} />
-            <Stat label="Feedback recorded rate" value={`${data.visitQuality.feedbackRecordedRate}%`} />
+            <Stat label="Positive outcome rate" value={`${formatRate(data.visitQuality.positiveOutcomeRate)}`} />
+            <Stat label="Child consented rate" value={`${formatRate(data.visitQuality.childConsentedRate)}`} />
+            <Stat label="Feedback recorded rate" value={`${formatRate(data.visitQuality.feedbackRecordedRate)}`} />
             <Stat label="Score" value={`${data.visitQuality.score}/25`} />
           </Section>
 
@@ -298,12 +299,12 @@ export default function VisitorEngagementMonitoringDashboardWidget() {
           {/* Staff Visitor Readiness */}
           <Section title="Staff Visitor Readiness">
             <Stat label="Total staff" value={data.staffVisitorReadiness.totalStaff} />
-            <Stat label="Visitor management" value={`${data.staffVisitorReadiness.visitorManagementRate}%`} />
-            <Stat label="Safeguarding visitors" value={`${data.staffVisitorReadiness.safeguardingVisitorsRate}%`} />
-            <Stat label="Identity checking" value={`${data.staffVisitorReadiness.identityCheckingRate}%`} />
-            <Stat label="Child protection" value={`${data.staffVisitorReadiness.childProtectionRate}%`} />
-            <Stat label="Conflict management" value={`${data.staffVisitorReadiness.conflictManagementRate}%`} />
-            <Stat label="Record keeping" value={`${data.staffVisitorReadiness.recordKeepingRate}%`} />
+            <Stat label="Visitor management" value={`${formatRate(data.staffVisitorReadiness.visitorManagementRate)}`} />
+            <Stat label="Safeguarding visitors" value={`${formatRate(data.staffVisitorReadiness.safeguardingVisitorsRate)}`} />
+            <Stat label="Identity checking" value={`${formatRate(data.staffVisitorReadiness.identityCheckingRate)}`} />
+            <Stat label="Child protection" value={`${formatRate(data.staffVisitorReadiness.childProtectionRate)}`} />
+            <Stat label="Conflict management" value={`${formatRate(data.staffVisitorReadiness.conflictManagementRate)}`} />
+            <Stat label="Record keeping" value={`${formatRate(data.staffVisitorReadiness.recordKeepingRate)}`} />
             <Stat label="Score" value={`${data.staffVisitorReadiness.score}/25`} />
           </Section>
 
