@@ -12,6 +12,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useEffect } from "react";
+import { below, meets } from "@/lib/metrics/rate";
 
 // ── Local interfaces (mirrors API shape) ──────────────────────────────────
 
@@ -302,12 +303,12 @@ function ChildProfileRow({ profile }: { profile: ChildProfile }) {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className="font-medium text-sm truncate">{profile.childName}</span>
-          {profile.hydrationTargetMetRate < 50 && profile.hydrationRecords > 0 && (
+          {profile.hydrationRecords > 0 && below(profile.hydrationTargetMetRate, 50) && (
             <span className="text-[10px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded">
               Low hydration
             </span>
           )}
-          {profile.satisfactionRate < 50 && profile.totalMeals > 0 && (
+          {profile.totalMeals > 0 && below(profile.satisfactionRate, 50) && (
             <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded">
               Low satisfaction
             </span>
@@ -724,12 +725,12 @@ export function NutritionHydrationMonitoringDashboardWidget() {
                   label="Fully Trained"
                   value={data.staffNutritionReadiness.overallTrainedRate + "%"}
                   bg={
-                    data.staffNutritionReadiness.overallTrainedRate >= 80
+                    meets(data.staffNutritionReadiness.overallTrainedRate, 80)
                       ? "bg-green-50"
                       : "bg-orange-50"
                   }
                   color={
-                    data.staffNutritionReadiness.overallTrainedRate >= 80
+                    meets(data.staffNutritionReadiness.overallTrainedRate, 80)
                       ? "text-green-700"
                       : "text-orange-700"
                   }

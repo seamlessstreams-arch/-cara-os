@@ -1,3 +1,4 @@
+import { below, meanOf, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // MISSING & ABSENT EPISODES INTELLIGENCE ENGINE
 //
@@ -161,33 +162,43 @@ export interface ChildMissingProfile {
 // ── Result Interface ───────────────────────────────────────────────────────
 
 export interface EpisodeManagementResult {
-  returnInterviewCompletionRate: number;
-  returnInterviewTimelyRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  returnInterviewCompletionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  returnInterviewTimelyRate: number | null;
   riskBreakdown: Record<RiskLevel, number>;
-  policeNotificationRate: number;
-  localAuthorityNotificationRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  policeNotificationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  localAuthorityNotificationRate: number | null;
   score: number; // 0-25
 }
 
 export interface PreventionEffectivenessResult {
-  triggerIdentificationRate: number;
-  preventionPlanUpdateRate: number;
-  resolutionRate: number;
-  selfReturnRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  triggerIdentificationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  preventionPlanUpdateRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  resolutionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  selfReturnRate: number | null;
   score: number; // 0-25
 }
 
 export interface MissingPolicyResult {
   fieldsCompliant: number;
   totalFields: number;
-  complianceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  complianceRate: number | null;
   score: number; // 0-25
 }
 
 export interface StaffMissingReadinessResult {
   totalStaff: number;
-  averageCompetencyRate: number;
-  competencyBreakdown: Record<string, number>;
+  averageCompetencyRate: number | null;
+  /** per-area competency rates; null where a training area is unmeasured. */
+  competencyBreakdown: Record<string, number | null>;
   score: number; // 0-25
 }
 
@@ -216,11 +227,6 @@ export interface MissingAbsentEpisodesIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -236,11 +242,11 @@ export function evaluateEpisodeManagement(
   // Empty = 25 (no episodes = ideal — measuring ABSENCE of bad things)
   if (episodes.length === 0) {
     return {
-      returnInterviewCompletionRate: 0,
-      returnInterviewTimelyRate: 0,
+      returnInterviewCompletionRate: null,
+      returnInterviewTimelyRate: null,
       riskBreakdown: { low: 0, medium: 0, high: 0, very_high: 0 },
-      policeNotificationRate: 0,
-      localAuthorityNotificationRate: 0,
+      policeNotificationRate: null,
+      localAuthorityNotificationRate: null,
       score: 25,
     };
   }
@@ -249,8 +255,8 @@ export function evaluateEpisodeManagement(
 
   // Return interview completion rate -> 0-7 (high = good)
   const riCompleted = episodes.filter((e) => e.returnInterviewCompleted).length;
-  const riCompletionRate = pct(riCompleted, total);
-  const riScore = Math.round((riCompletionRate / 100) * 7);
+  const riCompletionRate = rate(riCompleted, total);
+  const riScore = Math.round(((riCompletionRate ?? 0) / 100) * 7);
 
   // Risk levels managed (lower average risk is better) -> 0-6
   const riskBreakdown: Record<RiskLevel, number> = { low: 0, medium: 0, high: 0, very_high: 0 };
@@ -265,14 +271,14 @@ export function evaluateEpisodeManagement(
   // Police/LA notification compliance -> 0-6
   const policeNotified = episodes.filter((e) => e.policeNotified).length;
   const laNotified = episodes.filter((e) => e.localAuthorityNotified).length;
-  const policeRate = pct(policeNotified, total);
-  const laRate = pct(laNotified, total);
-  const notificationScore = Math.round(((policeRate + laRate) / 200) * 6);
+  const policeRate = rate(policeNotified, total);
+  const laRate = rate(laNotified, total);
+  const notificationScore = Math.round((((meanOf([policeRate, laRate]) ?? 0)) / 100) * 6);
 
   // Return interview timeliness -> 0-6
   const riTimely = episodes.filter((e) => e.returnInterviewTimely).length;
-  const riTimelyRate = pct(riTimely, total);
-  const timelyScore = Math.round((riTimelyRate / 100) * 6);
+  const riTimelyRate = rate(riTimely, total);
+  const timelyScore = Math.round(((riTimelyRate ?? 0) / 100) * 6);
 
   const score = Math.max(0, Math.min(25, riScore + riskScore + notificationScore + timelyScore));
 
@@ -294,10 +300,10 @@ export function evaluatePreventionEffectiveness(
   // Empty = 25 (no episodes to prevent)
   if (episodes.length === 0) {
     return {
-      triggerIdentificationRate: 0,
-      preventionPlanUpdateRate: 0,
-      resolutionRate: 0,
-      selfReturnRate: 0,
+      triggerIdentificationRate: null,
+      preventionPlanUpdateRate: null,
+      resolutionRate: null,
+      selfReturnRate: null,
       score: 25,
     };
   }
@@ -306,23 +312,23 @@ export function evaluatePreventionEffectiveness(
 
   // Trigger identification rate -> 0-7
   const triggersIdentified = episodes.filter((e) => e.triggerIdentified).length;
-  const triggerRate = pct(triggersIdentified, total);
-  const triggerScore = Math.round((triggerRate / 100) * 7);
+  const triggerRate = rate(triggersIdentified, total);
+  const triggerScore = Math.round(((triggerRate ?? 0) / 100) * 7);
 
   // Prevention plan update rate -> 0-6
   const plansUpdated = episodes.filter((e) => e.preventionPlanUpdated).length;
-  const planRate = pct(plansUpdated, total);
-  const planScore = Math.round((planRate / 100) * 6);
+  const planRate = rate(plansUpdated, total);
+  const planScore = Math.round(((planRate ?? 0) / 100) * 6);
 
   // Resolution rate (not still_missing) -> 0-6
   const resolved = episodes.filter((e) => e.outcome !== "still_missing").length;
-  const resolutionRate = pct(resolved, total);
-  const resolutionScore = Math.round((resolutionRate / 100) * 6);
+  const resolutionRate = rate(resolved, total);
+  const resolutionScore = Math.round(((resolutionRate ?? 0) / 100) * 6);
 
   // Self-return rate (returned_self = positive) -> 0-6
   const selfReturned = episodes.filter((e) => e.outcome === "returned_self").length;
-  const selfReturnRate = pct(selfReturned, total);
-  const selfReturnScore = Math.round((selfReturnRate / 100) * 6);
+  const selfReturnRate = rate(selfReturned, total);
+  const selfReturnScore = Math.round(((selfReturnRate ?? 0) / 100) * 6);
 
   const score = Math.max(0, Math.min(25, triggerScore + planScore + resolutionScore + selfReturnScore));
 
@@ -345,7 +351,7 @@ export function evaluateMissingPolicy(
     return {
       fieldsCompliant: 0,
       totalFields: 7,
-      complianceRate: 0,
+      complianceRate: null,
       score: 0,
     };
   }
@@ -369,7 +375,7 @@ export function evaluateMissingPolicy(
   // staffGuidanceClear: 2
   if (policy.staffGuidanceClear) { score += 2; fieldsCompliant++; }
 
-  const complianceRate = pct(fieldsCompliant, 7);
+  const complianceRate = rate(fieldsCompliant, 7);
 
   return {
     fieldsCompliant,
@@ -388,7 +394,7 @@ export function evaluateStaffMissingReadiness(
   if (training.length === 0) {
     return {
       totalStaff: 0,
-      averageCompetencyRate: 0,
+      averageCompetencyRate: null,
       competencyBreakdown: {
         missingProtocol: 0,
         riskAssessment: 0,
@@ -411,22 +417,22 @@ export function evaluateStaffMissingReadiness(
   const multiAgencyWorkingCount = training.filter((t) => t.multiAgencyWorking).length;
   const recordKeepingCount = training.filter((t) => t.recordKeeping).length;
 
-  const missingProtocolRate = pct(missingProtocolCount, total);
-  const riskAssessmentRate = pct(riskAssessmentCount, total);
-  const returnInterviewsRate = pct(returnInterviewsCount, total);
-  const preventionStrategiesRate = pct(preventionStrategiesCount, total);
-  const multiAgencyWorkingRate = pct(multiAgencyWorkingCount, total);
-  const recordKeepingRate = pct(recordKeepingCount, total);
+  const missingProtocolRate = rate(missingProtocolCount, total);
+  const riskAssessmentRate = rate(riskAssessmentCount, total);
+  const returnInterviewsRate = rate(returnInterviewsCount, total);
+  const preventionStrategiesRate = rate(preventionStrategiesCount, total);
+  const multiAgencyWorkingRate = rate(multiAgencyWorkingCount, total);
+  const recordKeepingRate = rate(recordKeepingCount, total);
 
   // Weighted scoring: missingProtocol(5) + riskAssessment(5) + returnInterviews(5)
   //                   + preventionStrategies(4) + multiAgencyWorking(3) + recordKeeping(3) = 25
   let score = 0;
-  score += (missingProtocolRate / 100) * 5;
-  score += (riskAssessmentRate / 100) * 5;
-  score += (returnInterviewsRate / 100) * 5;
-  score += (preventionStrategiesRate / 100) * 4;
-  score += (multiAgencyWorkingRate / 100) * 3;
-  score += (recordKeepingRate / 100) * 3;
+  score += ((missingProtocolRate ?? 0) / 100) * 5;
+  score += ((riskAssessmentRate ?? 0) / 100) * 5;
+  score += ((returnInterviewsRate ?? 0) / 100) * 5;
+  score += ((preventionStrategiesRate ?? 0) / 100) * 4;
+  score += ((multiAgencyWorkingRate ?? 0) / 100) * 3;
+  score += ((recordKeepingRate ?? 0) / 100) * 3;
 
   score = Math.max(0, Math.min(25, Math.round(score)));
 
@@ -438,7 +444,7 @@ export function evaluateStaffMissingReadiness(
     multiAgencyWorkingRate,
     recordKeepingRate,
   ];
-  const averageCompetencyRate = Math.round(allRates.reduce((s, r) => s + r, 0) / 6);
+  const averageCompetencyRate = meanOf(allRates) ?? 0; // unmeasured areas drop from the mean; none measured = 0
 
   return {
     totalStaff: total,
@@ -479,10 +485,10 @@ export function buildChildMissingProfiles(
     ).length;
 
     const riCompleted = eps.filter((e) => e.returnInterviewCompleted).length;
-    const returnInterviewRate = pct(riCompleted, totalEpisodes);
+    const returnInterviewRate = rate(riCompleted, totalEpisodes)!;
 
     const triggersIdentified = eps.filter((e) => e.triggerIdentified).length;
-    const triggerIdentifiedRate = pct(triggersIdentified, totalEpisodes);
+    const triggerIdentifiedRate = rate(triggersIdentified, totalEpisodes)!;
 
     // Overall score 0-10 based on:
     // - fewer episodes = better (deduct per episode, cap at -4)
@@ -493,8 +499,8 @@ export function buildChildMissingProfiles(
     overallScore -= Math.min(4, totalEpisodes);
     overallScore -= Math.min(3, highRiskEpisodes * 1.5);
     // Credit back for good practice
-    overallScore += (returnInterviewRate / 100) * 2;
-    overallScore += (triggerIdentifiedRate / 100) * 1;
+    overallScore += ((returnInterviewRate ?? 0) / 100) * 2;
+    overallScore += ((triggerIdentifiedRate ?? 0) / 100) * 1;
     overallScore = Math.max(0, Math.min(10, Math.round(overallScore * 10) / 10));
 
     return {
@@ -531,27 +537,27 @@ function generateStrengths(
     strengths.push("No missing or absent episodes recorded in period — excellent prevention and stability");
   }
 
-  if (totalEpisodes > 0 && episodeMgmt.returnInterviewCompletionRate >= 90) {
+  if (totalEpisodes > 0 && meets(episodeMgmt.returnInterviewCompletionRate, 90)) {
     strengths.push("Excellent return interview completion rate: " + episodeMgmt.returnInterviewCompletionRate + "% of episodes followed up with return home interviews");
   }
 
-  if (totalEpisodes > 0 && episodeMgmt.returnInterviewTimelyRate >= 90) {
+  if (totalEpisodes > 0 && meets(episodeMgmt.returnInterviewTimelyRate, 90)) {
     strengths.push("Return interviews conducted within 72 hours in " + episodeMgmt.returnInterviewTimelyRate + "% of episodes — exceeding statutory guidance");
   }
 
-  if (totalEpisodes > 0 && episodeMgmt.policeNotificationRate >= 90 && episodeMgmt.localAuthorityNotificationRate >= 90) {
+  if (totalEpisodes > 0 && meets(episodeMgmt.policeNotificationRate, 90) && meets(episodeMgmt.localAuthorityNotificationRate, 90)) {
     strengths.push("Strong notification compliance: police and local authority informed in the vast majority of episodes");
   }
 
-  if (totalEpisodes > 0 && prevention.triggerIdentificationRate >= 80) {
+  if (totalEpisodes > 0 && meets(prevention.triggerIdentificationRate, 80)) {
     strengths.push("Trigger identification rate at " + prevention.triggerIdentificationRate + "% — staff understand the reasons behind missing episodes");
   }
 
-  if (totalEpisodes > 0 && prevention.preventionPlanUpdateRate >= 80) {
+  if (totalEpisodes > 0 && meets(prevention.preventionPlanUpdateRate, 80)) {
     strengths.push("Prevention plans updated in " + prevention.preventionPlanUpdateRate + "% of episodes — proactive approach to reducing recurrence");
   }
 
-  if (totalEpisodes > 0 && prevention.selfReturnRate >= 50) {
+  if (totalEpisodes > 0 && meets(prevention.selfReturnRate, 50)) {
     strengths.push("Self-return rate of " + prevention.selfReturnRate + "% suggests children feel safe returning to the home");
   }
 
@@ -559,7 +565,7 @@ function generateStrengths(
     strengths.push("Comprehensive missing persons policy framework in place (" + policyResult.fieldsCompliant + "/" + policyResult.totalFields + " areas covered)");
   }
 
-  if (staffResult.averageCompetencyRate >= 90) {
+  if (meets(staffResult.averageCompetencyRate, 90)) {
     strengths.push("Staff training in missing episodes management is excellent — " + staffResult.averageCompetencyRate + "% average competency rate");
   }
 
@@ -582,31 +588,31 @@ function generateAreasForImprovement(
     areas.push("Overall missing/absent episodes management Requires Improvement (" + overallScore + "/100)");
   }
 
-  if (totalEpisodes > 0 && episodeMgmt.returnInterviewCompletionRate < 70) {
+  if (totalEpisodes > 0 && below(episodeMgmt.returnInterviewCompletionRate, 70)) {
     areas.push("Return interview completion at " + episodeMgmt.returnInterviewCompletionRate + "% — statutory guidance requires interviews for all returned children");
   }
 
-  if (totalEpisodes > 0 && episodeMgmt.returnInterviewTimelyRate < 70) {
+  if (totalEpisodes > 0 && below(episodeMgmt.returnInterviewTimelyRate, 70)) {
     areas.push("Return interview timeliness at " + episodeMgmt.returnInterviewTimelyRate + "% — interviews must be conducted within 72 hours of return");
   }
 
-  if (totalEpisodes > 0 && episodeMgmt.policeNotificationRate < 80) {
+  if (totalEpisodes > 0 && below(episodeMgmt.policeNotificationRate, 80)) {
     areas.push("Police notification rate at " + episodeMgmt.policeNotificationRate + "% — all missing episodes should be reported to police");
   }
 
-  if (totalEpisodes > 0 && episodeMgmt.localAuthorityNotificationRate < 80) {
+  if (totalEpisodes > 0 && below(episodeMgmt.localAuthorityNotificationRate, 80)) {
     areas.push("Local authority notification rate at " + episodeMgmt.localAuthorityNotificationRate + "% — CHR 2015 Reg 34 requires prompt notification");
   }
 
-  if (totalEpisodes > 0 && prevention.triggerIdentificationRate < 60) {
+  if (totalEpisodes > 0 && below(prevention.triggerIdentificationRate, 60)) {
     areas.push("Trigger identification rate at " + prevention.triggerIdentificationRate + "% — understanding triggers is essential for prevention");
   }
 
-  if (totalEpisodes > 0 && prevention.preventionPlanUpdateRate < 60) {
+  if (totalEpisodes > 0 && below(prevention.preventionPlanUpdateRate, 60)) {
     areas.push("Prevention plan update rate at " + prevention.preventionPlanUpdateRate + "% — plans must be reviewed after every episode");
   }
 
-  if (totalEpisodes > 0 && prevention.resolutionRate < 90) {
+  if (totalEpisodes > 0 && below(prevention.resolutionRate, 90)) {
     areas.push("Episode resolution rate at " + prevention.resolutionRate + "% — unresolved episodes require immediate escalation");
   }
 
@@ -616,7 +622,7 @@ function generateAreasForImprovement(
 
   if (staffResult.score === 0) {
     areas.push("No staff training records for missing episodes management — staff readiness cannot be evidenced");
-  } else if (staffResult.averageCompetencyRate < 60) {
+  } else if (below(staffResult.averageCompetencyRate, 60)) {
     areas.push("Staff average competency rate at " + staffResult.averageCompetencyRate + "% — training programme needs strengthening");
   }
 
@@ -649,14 +655,14 @@ function generateActions(
   }
 
   // Poor return interview completion
-  if (totalEpisodes > 0 && episodeMgmt.returnInterviewCompletionRate < 70) {
+  if (totalEpisodes > 0 && below(episodeMgmt.returnInterviewCompletionRate, 70)) {
     actions.push(
       "HIGH: Return interview completion at " + episodeMgmt.returnInterviewCompletionRate + "% — implement tracking system to ensure all returned children receive independent interviews.",
     );
   }
 
   // Poor notification compliance
-  if (totalEpisodes > 0 && (episodeMgmt.policeNotificationRate < 80 || episodeMgmt.localAuthorityNotificationRate < 80)) {
+  if (totalEpisodes > 0 && (below(episodeMgmt.policeNotificationRate, 80) || below(episodeMgmt.localAuthorityNotificationRate, 80))) {
     actions.push(
       "HIGH: Notification compliance below threshold — review and reinforce reporting procedures for police and local authority notifications.",
     );
@@ -678,21 +684,21 @@ function generateActions(
     actions.push(
       "URGENT: No staff training in missing episodes management — implement mandatory training programme for all staff.",
     );
-  } else if (staffResult.averageCompetencyRate < 60) {
+  } else if (below(staffResult.averageCompetencyRate, 60)) {
     actions.push(
       "HIGH: Staff competency at " + staffResult.averageCompetencyRate + "% — schedule refresher training across all 6 competency areas.",
     );
   }
 
   // Trigger identification
-  if (totalEpisodes > 0 && prevention.triggerIdentificationRate < 60) {
+  if (totalEpisodes > 0 && below(prevention.triggerIdentificationRate, 60)) {
     actions.push(
       "MEDIUM: Trigger identification rate at " + prevention.triggerIdentificationRate + "% — train staff in root cause analysis and improve debrief processes.",
     );
   }
 
   // Prevention plans
-  if (totalEpisodes > 0 && prevention.preventionPlanUpdateRate < 60) {
+  if (totalEpisodes > 0 && below(prevention.preventionPlanUpdateRate, 60)) {
     actions.push(
       "MEDIUM: Prevention plans updated in only " + prevention.preventionPlanUpdateRate + "% of episodes — integrate plan reviews into post-episode procedures.",
     );

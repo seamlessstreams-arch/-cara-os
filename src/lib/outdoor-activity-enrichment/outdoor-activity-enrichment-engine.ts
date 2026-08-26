@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // Cara Outdoor Activity & Enrichment Intelligence Engine
 //
@@ -129,10 +130,14 @@ export interface StaffActivityTraining {
 export interface ActivityParticipationResult {
   overallScore: number; // 0-25
   totalActivities: number;
-  outdoorRate: number; // pct
-  communityRate: number; // pct
-  childChoiceRate: number; // pct
-  newExperienceRate: number; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  outdoorRate: number | null; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  communityRate: number | null; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  childChoiceRate: number | null; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  newExperienceRate: number | null; // pct
   averageDuration: number; // minutes
   categoryDistribution: Record<ActivityCategory, number>;
   engagementDistribution: Record<ChildEngagement, number>;
@@ -141,32 +146,46 @@ export interface ActivityParticipationResult {
 export interface EnrichmentQualityResult {
   overallScore: number; // 0-25
   totalPlans: number;
-  currentPlanRate: number; // pct
-  completionRate: number; // pct
-  childContributionRate: number; // pct
-  diverseRangeRate: number; // pct
-  barriersAddressedRate: number; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  currentPlanRate: number | null; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  completionRate: number | null; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  childContributionRate: number | null; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  diverseRangeRate: number | null; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  barriersAddressedRate: number | null; // pct
   averageActivitiesPlanned: number;
 }
 
 export interface RiskManagementResult {
   overallScore: number; // 0-25
   totalAssessments: number;
-  assessmentRate: number; // pct of activities with risk assessments
-  goodOrExcellentRate: number; // pct
-  childViewRate: number; // pct
-  dynamicAssessmentRate: number; // pct
-  benefitsArticulatedRate: number; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  assessmentRate: number | null; // pct of activities with risk assessments
+  /** null when the population is empty — nothing measured, not 0%. */
+  goodOrExcellentRate: number | null; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewRate: number | null; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  dynamicAssessmentRate: number | null; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  benefitsArticulatedRate: number | null; // pct
   averageHazards: number;
 }
 
 export interface StaffReadinessResult {
   overallScore: number; // 0-25
   totalStaff: number;
-  firstAidRate: number; // pct
-  activityLeaderRate: number; // pct
-  riskAssessmentTrainedRate: number; // pct
-  safeguardingRate: number; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  firstAidRate: number | null; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  activityLeaderRate: number | null; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessmentTrainedRate: number | null; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingRate: number | null; // pct
   averageQualifications: number;
 }
 
@@ -174,10 +193,10 @@ export interface ChildEnrichmentProfile {
   childId: string;
   childName: string;
   totalActivities: number;
-  outdoorRate: number;
-  choiceRate: number;
+  outdoorRate: number | null;
+  choiceRate: number | null;
   engagementScore: number; // 0-10 based on engagement distribution
-  planCompletionRate: number;
+  planCompletionRate: number | null;
   overallScore: number; // 0-10
 }
 
@@ -279,11 +298,6 @@ export function getRatingLabel(r: Rating): string {
 
 // -- Utility ------------------------------------------------------------------
 
-export function pct(numerator: number, denominator: number): number {
-  if (denominator === 0) return 0;
-  return Math.round((numerator / denominator) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -315,10 +329,10 @@ export function evaluateActivityParticipation(
     return {
       overallScore: 0,
       totalActivities: 0,
-      outdoorRate: 0,
-      communityRate: 0,
-      childChoiceRate: 0,
-      newExperienceRate: 0,
+      outdoorRate: null,
+      communityRate: null,
+      childChoiceRate: null,
+      newExperienceRate: null,
       averageDuration: 0,
       categoryDistribution: { ...emptyCategoryDist },
       engagementDistribution: { ...emptyEngagementDist },
@@ -329,16 +343,16 @@ export function evaluateActivityParticipation(
 
   // Rates
   const outdoorCount = activities.filter((a) => a.outdoors).length;
-  const outdoorRate = pct(outdoorCount, total);
+  const outdoorRate = rate(outdoorCount, total);
 
   const communityCount = activities.filter((a) => a.communityBased).length;
-  const communityRate = pct(communityCount, total);
+  const communityRate = rate(communityCount, total);
 
   const childChoiceCount = activities.filter((a) => a.childChose).length;
-  const childChoiceRate = pct(childChoiceCount, total);
+  const childChoiceRate = rate(childChoiceCount, total);
 
   const newExpCount = activities.filter((a) => a.newExperience).length;
-  const newExperienceRate = pct(newExpCount, total);
+  const newExperienceRate = rate(newExpCount, total);
 
   const totalDuration = activities.reduce((sum, a) => sum + a.duration, 0);
   const averageDuration = Math.round(totalDuration / total);
@@ -359,28 +373,28 @@ export function evaluateActivityParticipation(
   let score = 0;
 
   // Outdoor rate (0-7)
-  if (outdoorRate >= 80) score += 7;
-  else if (outdoorRate >= 60) score += 5;
-  else if (outdoorRate >= 40) score += 3;
-  else if (outdoorRate >= 20) score += 1;
+  if (meets(outdoorRate, 80)) score += 7;
+  else if (meets(outdoorRate, 60)) score += 5;
+  else if (meets(outdoorRate, 40)) score += 3;
+  else if (meets(outdoorRate, 20)) score += 1;
 
   // Child choice rate (0-6)
-  if (childChoiceRate >= 80) score += 6;
-  else if (childChoiceRate >= 60) score += 4;
-  else if (childChoiceRate >= 40) score += 3;
-  else if (childChoiceRate >= 20) score += 1;
+  if (meets(childChoiceRate, 80)) score += 6;
+  else if (meets(childChoiceRate, 60)) score += 4;
+  else if (meets(childChoiceRate, 40)) score += 3;
+  else if (meets(childChoiceRate, 20)) score += 1;
 
   // Community rate (0-5)
-  if (communityRate >= 80) score += 5;
-  else if (communityRate >= 60) score += 3;
-  else if (communityRate >= 40) score += 2;
-  else if (communityRate >= 20) score += 1;
+  if (meets(communityRate, 80)) score += 5;
+  else if (meets(communityRate, 60)) score += 3;
+  else if (meets(communityRate, 40)) score += 2;
+  else if (meets(communityRate, 20)) score += 1;
 
   // New experience rate (0-4)
-  if (newExperienceRate >= 60) score += 4;
-  else if (newExperienceRate >= 40) score += 3;
-  else if (newExperienceRate >= 20) score += 2;
-  else if (newExperienceRate > 0) score += 1;
+  if (meets(newExperienceRate, 60)) score += 4;
+  else if (meets(newExperienceRate, 40)) score += 3;
+  else if (meets(newExperienceRate, 20)) score += 2;
+  else if (above(newExperienceRate, 0)) score += 1;
 
   // Engagement adjustments: -2 per refused (not not_offered), +1 per enthusiastic (max 3)
   const refusedCount = engagementDistribution.refused;
@@ -415,11 +429,11 @@ export function evaluateEnrichmentQuality(
     return {
       overallScore: 0,
       totalPlans: 0,
-      currentPlanRate: 0,
-      completionRate: 0,
-      childContributionRate: 0,
-      diverseRangeRate: 0,
-      barriersAddressedRate: 0,
+      currentPlanRate: null,
+      completionRate: null,
+      childContributionRate: null,
+      diverseRangeRate: null,
+      barriersAddressedRate: null,
       averageActivitiesPlanned: 0,
     };
   }
@@ -428,7 +442,7 @@ export function evaluateEnrichmentQuality(
 
   // Current plan rate (has a reviewDate)
   const currentPlans = plans.filter((p) => p.reviewDate !== null).length;
-  const currentPlanRate = pct(currentPlans, total);
+  const currentPlanRate = rate(currentPlans, total);
 
   // Completion rate (activitiesCompleted / activitiesPlanned across all plans)
   const totalPlanned = plans.reduce((sum, p) => sum + p.activitiesPlanned, 0);
@@ -436,15 +450,15 @@ export function evaluateEnrichmentQuality(
     (sum, p) => sum + p.activitiesCompleted,
     0,
   );
-  const completionRate = pct(totalCompleted, totalPlanned);
+  const completionRate = rate(totalCompleted, totalPlanned);
 
   // Child contribution rate
   const childContrib = plans.filter((p) => p.childContributed).length;
-  const childContributionRate = pct(childContrib, total);
+  const childContributionRate = rate(childContrib, total);
 
   // Diverse range rate
   const diverseCount = plans.filter((p) => p.diverseRange).length;
-  const diverseRangeRate = pct(diverseCount, total);
+  const diverseRangeRate = rate(diverseCount, total);
 
   // Barriers addressed rate (only among plans with barriers)
   const plansWithBarriers = plans.filter(
@@ -453,7 +467,7 @@ export function evaluateEnrichmentQuality(
   const barriersAddressed = plansWithBarriers.filter(
     (p) => p.barrierAddressed === true,
   ).length;
-  const barriersAddressedRate = pct(
+  const barriersAddressedRate = rate(
     barriersAddressed,
     plansWithBarriers.length,
   );
@@ -465,40 +479,40 @@ export function evaluateEnrichmentQuality(
   let score = 0;
 
   // Plan completion rate (0-8)
-  if (completionRate >= 90) score += 8;
-  else if (completionRate >= 75) score += 6;
-  else if (completionRate >= 50) score += 4;
-  else if (completionRate >= 25) score += 2;
+  if (meets(completionRate, 90)) score += 8;
+  else if (meets(completionRate, 75)) score += 6;
+  else if (meets(completionRate, 50)) score += 4;
+  else if (meets(completionRate, 25)) score += 2;
 
   // Child contribution (0-6)
-  if (childContributionRate >= 90) score += 6;
-  else if (childContributionRate >= 70) score += 4;
-  else if (childContributionRate >= 50) score += 3;
-  else if (childContributionRate >= 25) score += 1;
+  if (meets(childContributionRate, 90)) score += 6;
+  else if (meets(childContributionRate, 70)) score += 4;
+  else if (meets(childContributionRate, 50)) score += 3;
+  else if (meets(childContributionRate, 25)) score += 1;
 
   // Diverse range (0-5)
-  if (diverseRangeRate >= 80) score += 5;
-  else if (diverseRangeRate >= 60) score += 3;
-  else if (diverseRangeRate >= 40) score += 2;
-  else if (diverseRangeRate >= 20) score += 1;
+  if (meets(diverseRangeRate, 80)) score += 5;
+  else if (meets(diverseRangeRate, 60)) score += 3;
+  else if (meets(diverseRangeRate, 40)) score += 2;
+  else if (meets(diverseRangeRate, 20)) score += 1;
 
   // Barriers addressed (0-4)
   if (plansWithBarriers.length === 0) {
     // No barriers = full marks for this dimension
     score += 4;
-  } else if (barriersAddressedRate >= 80) {
+  } else if (meets(barriersAddressedRate, 80)) {
     score += 4;
-  } else if (barriersAddressedRate >= 60) {
+  } else if (meets(barriersAddressedRate, 60)) {
     score += 3;
-  } else if (barriersAddressedRate >= 40) {
+  } else if (meets(barriersAddressedRate, 40)) {
     score += 2;
-  } else if (barriersAddressedRate >= 20) {
+  } else if (meets(barriersAddressedRate, 20)) {
     score += 1;
   }
 
   // Current plans (0-2)
-  if (currentPlanRate >= 80) score += 2;
-  else if (currentPlanRate >= 50) score += 1;
+  if (meets(currentPlanRate, 80)) score += 2;
+  else if (meets(currentPlanRate, 50)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -526,11 +540,11 @@ export function evaluateRiskManagement(
     return {
       overallScore: 0,
       totalAssessments: 0,
-      assessmentRate: 0,
-      goodOrExcellentRate: 0,
-      childViewRate: 0,
-      dynamicAssessmentRate: 0,
-      benefitsArticulatedRate: 0,
+      assessmentRate: null,
+      goodOrExcellentRate: null,
+      childViewRate: null,
+      dynamicAssessmentRate: null,
+      benefitsArticulatedRate: null,
       averageHazards: 0,
     };
   }
@@ -541,25 +555,25 @@ export function evaluateRiskManagement(
   const activitiesWithAssessment = activities.filter((a) =>
     a.riskBenefitAssessed,
   ).length;
-  const assessmentRate = pct(activitiesWithAssessment, activities.length);
+  const assessmentRate = rate(activitiesWithAssessment, activities.length);
 
   // Good or excellent outcome rate
   const goodOrExcellent = assessments.filter(
     (a) => a.outcome === "good" || a.outcome === "excellent",
   ).length;
-  const goodOrExcellentRate = pct(goodOrExcellent, total);
+  const goodOrExcellentRate = rate(goodOrExcellent, total);
 
   // Child view sought rate
   const childView = assessments.filter((a) => a.childViewSought).length;
-  const childViewRate = pct(childView, total);
+  const childViewRate = rate(childView, total);
 
   // Dynamic assessment rate
   const dynamic = assessments.filter((a) => a.dynamicAssessment).length;
-  const dynamicAssessmentRate = pct(dynamic, total);
+  const dynamicAssessmentRate = rate(dynamic, total);
 
   // Benefits articulated rate
   const benefits = assessments.filter((a) => a.benefitsArticulated).length;
-  const benefitsArticulatedRate = pct(benefits, total);
+  const benefitsArticulatedRate = rate(benefits, total);
 
   // Average hazards
   const totalHazards = assessments.reduce(
@@ -572,33 +586,33 @@ export function evaluateRiskManagement(
   let score = 0;
 
   // Assessment rate (0-8)
-  if (assessmentRate >= 90) score += 8;
-  else if (assessmentRate >= 75) score += 6;
-  else if (assessmentRate >= 50) score += 4;
-  else if (assessmentRate >= 25) score += 2;
+  if (meets(assessmentRate, 90)) score += 8;
+  else if (meets(assessmentRate, 75)) score += 6;
+  else if (meets(assessmentRate, 50)) score += 4;
+  else if (meets(assessmentRate, 25)) score += 2;
 
   // Good/excellent outcome rate (0-6)
-  if (goodOrExcellentRate >= 90) score += 6;
-  else if (goodOrExcellentRate >= 70) score += 4;
-  else if (goodOrExcellentRate >= 50) score += 3;
-  else if (goodOrExcellentRate >= 30) score += 1;
+  if (meets(goodOrExcellentRate, 90)) score += 6;
+  else if (meets(goodOrExcellentRate, 70)) score += 4;
+  else if (meets(goodOrExcellentRate, 50)) score += 3;
+  else if (meets(goodOrExcellentRate, 30)) score += 1;
 
   // Child view sought (0-4)
-  if (childViewRate >= 80) score += 4;
-  else if (childViewRate >= 60) score += 3;
-  else if (childViewRate >= 40) score += 2;
-  else if (childViewRate >= 20) score += 1;
+  if (meets(childViewRate, 80)) score += 4;
+  else if (meets(childViewRate, 60)) score += 3;
+  else if (meets(childViewRate, 40)) score += 2;
+  else if (meets(childViewRate, 20)) score += 1;
 
   // Dynamic assessment (0-4)
-  if (dynamicAssessmentRate >= 80) score += 4;
-  else if (dynamicAssessmentRate >= 60) score += 3;
-  else if (dynamicAssessmentRate >= 40) score += 2;
-  else if (dynamicAssessmentRate >= 20) score += 1;
+  if (meets(dynamicAssessmentRate, 80)) score += 4;
+  else if (meets(dynamicAssessmentRate, 60)) score += 3;
+  else if (meets(dynamicAssessmentRate, 40)) score += 2;
+  else if (meets(dynamicAssessmentRate, 20)) score += 1;
 
   // Benefits articulated (0-3)
-  if (benefitsArticulatedRate >= 80) score += 3;
-  else if (benefitsArticulatedRate >= 60) score += 2;
-  else if (benefitsArticulatedRate >= 40) score += 1;
+  if (meets(benefitsArticulatedRate, 80)) score += 3;
+  else if (meets(benefitsArticulatedRate, 60)) score += 2;
+  else if (meets(benefitsArticulatedRate, 40)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -625,10 +639,10 @@ export function evaluateStaffReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      firstAidRate: 0,
-      activityLeaderRate: 0,
-      riskAssessmentTrainedRate: 0,
-      safeguardingRate: 0,
+      firstAidRate: null,
+      activityLeaderRate: null,
+      riskAssessmentTrainedRate: null,
+      safeguardingRate: null,
       averageQualifications: 0,
     };
   }
@@ -637,23 +651,23 @@ export function evaluateStaffReadiness(
 
   // First aid rate
   const firstAidCount = staff.filter((s) => s.firstAidCurrent).length;
-  const firstAidRate = pct(firstAidCount, total);
+  const firstAidRate = rate(firstAidCount, total);
 
   // Activity leader rate
   const leaderCount = staff.filter((s) => s.activityLeaderTrained).length;
-  const activityLeaderRate = pct(leaderCount, total);
+  const activityLeaderRate = rate(leaderCount, total);
 
   // Risk assessment trained rate
   const riskTrainedCount = staff.filter(
     (s) => s.riskAssessmentTrained,
   ).length;
-  const riskAssessmentTrainedRate = pct(riskTrainedCount, total);
+  const riskAssessmentTrainedRate = rate(riskTrainedCount, total);
 
   // Safeguarding rate
   const safeguardingCount = staff.filter(
     (s) => s.safeguardingCurrent,
   ).length;
-  const safeguardingRate = pct(safeguardingCount, total);
+  const safeguardingRate = rate(safeguardingCount, total);
 
   // Average qualifications
   const totalQuals = staff.reduce(
@@ -667,28 +681,28 @@ export function evaluateStaffReadiness(
   let score = 0;
 
   // First aid (0-8)
-  if (firstAidRate >= 90) score += 8;
-  else if (firstAidRate >= 70) score += 6;
-  else if (firstAidRate >= 50) score += 4;
-  else if (firstAidRate >= 25) score += 2;
+  if (meets(firstAidRate, 90)) score += 8;
+  else if (meets(firstAidRate, 70)) score += 6;
+  else if (meets(firstAidRate, 50)) score += 4;
+  else if (meets(firstAidRate, 25)) score += 2;
 
   // Activity leader trained (0-7)
-  if (activityLeaderRate >= 80) score += 7;
-  else if (activityLeaderRate >= 60) score += 5;
-  else if (activityLeaderRate >= 40) score += 3;
-  else if (activityLeaderRate >= 20) score += 1;
+  if (meets(activityLeaderRate, 80)) score += 7;
+  else if (meets(activityLeaderRate, 60)) score += 5;
+  else if (meets(activityLeaderRate, 40)) score += 3;
+  else if (meets(activityLeaderRate, 20)) score += 1;
 
   // Risk assessment trained (0-5)
-  if (riskAssessmentTrainedRate >= 80) score += 5;
-  else if (riskAssessmentTrainedRate >= 60) score += 3;
-  else if (riskAssessmentTrainedRate >= 40) score += 2;
-  else if (riskAssessmentTrainedRate >= 20) score += 1;
+  if (meets(riskAssessmentTrainedRate, 80)) score += 5;
+  else if (meets(riskAssessmentTrainedRate, 60)) score += 3;
+  else if (meets(riskAssessmentTrainedRate, 40)) score += 2;
+  else if (meets(riskAssessmentTrainedRate, 20)) score += 1;
 
   // Safeguarding current (0-5)
-  if (safeguardingRate >= 90) score += 5;
-  else if (safeguardingRate >= 70) score += 3;
-  else if (safeguardingRate >= 50) score += 2;
-  else if (safeguardingRate >= 25) score += 1;
+  if (meets(safeguardingRate, 90)) score += 5;
+  else if (meets(safeguardingRate, 70)) score += 3;
+  else if (meets(safeguardingRate, 50)) score += 2;
+  else if (meets(safeguardingRate, 25)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -726,11 +740,11 @@ export function buildChildEnrichmentProfiles(
 
     // Outdoor rate
     const outdoorCount = childActivities.filter((a) => a.outdoors).length;
-    const outdoorRate = pct(outdoorCount, totalActivities);
+    const outdoorRate = rate(outdoorCount, totalActivities);
 
     // Choice rate
     const choiceCount = childActivities.filter((a) => a.childChose).length;
-    const choiceRate = pct(choiceCount, totalActivities);
+    const choiceRate = rate(choiceCount, totalActivities);
 
     // Engagement score (0-10 based on engagement distribution)
     let engagementScore = 0;
@@ -764,7 +778,7 @@ export function buildChildEnrichmentProfiles(
       (sum, p) => sum + p.activitiesCompleted,
       0,
     );
-    const planCompletionRate = pct(totalCompleted, totalPlanned);
+    const planCompletionRate = rate(totalCompleted, totalPlanned);
 
     // Overall score (0-10)
     let overallScore = 0;
@@ -774,20 +788,20 @@ export function buildChildEnrichmentProfiles(
     else if (totalActivities >= 2) overallScore += 1;
 
     // Outdoor rate (up to 2 points)
-    if (outdoorRate >= 60) overallScore += 2;
-    else if (outdoorRate >= 30) overallScore += 1;
+    if (meets(outdoorRate, 60)) overallScore += 2;
+    else if (meets(outdoorRate, 30)) overallScore += 1;
 
     // Choice rate (up to 2 points)
-    if (choiceRate >= 60) overallScore += 2;
-    else if (choiceRate >= 30) overallScore += 1;
+    if (meets(choiceRate, 60)) overallScore += 2;
+    else if (meets(choiceRate, 30)) overallScore += 1;
 
     // Engagement (up to 2 points)
     if (engagementScore >= 7) overallScore += 2;
     else if (engagementScore >= 4) overallScore += 1;
 
     // Plan completion (up to 2 points)
-    if (planCompletionRate >= 75) overallScore += 2;
-    else if (planCompletionRate >= 40) overallScore += 1;
+    if (meets(planCompletionRate, 75)) overallScore += 2;
+    else if (meets(planCompletionRate, 40)) overallScore += 1;
 
     return {
       childId: child.id,
@@ -812,25 +826,25 @@ function generateStrengths(
 ): string[] {
   const strengths: string[] = [];
 
-  if (activity.outdoorRate >= 70) {
+  if (meets(activity.outdoorRate, 70)) {
     strengths.push(
       "Strong outdoor activity provision — children regularly experience the outdoors",
     );
   }
 
-  if (activity.childChoiceRate >= 70) {
+  if (meets(activity.childChoiceRate, 70)) {
     strengths.push(
       "Excellent child choice rate — children are actively involved in selecting their activities",
     );
   }
 
-  if (activity.communityRate >= 70) {
+  if (meets(activity.communityRate, 70)) {
     strengths.push(
       "High proportion of community-based activities — promoting genuine community integration",
     );
   }
 
-  if (activity.newExperienceRate >= 50) {
+  if (meets(activity.newExperienceRate, 50)) {
     strengths.push(
       "Good exposure to new experiences — children are being offered diverse opportunities",
     );
@@ -842,61 +856,61 @@ function generateStrengths(
     );
   }
 
-  if (enrichment.completionRate >= 80) {
+  if (meets(enrichment.completionRate, 80)) {
     strengths.push(
       "High enrichment plan completion rate — planned activities are being delivered consistently",
     );
   }
 
-  if (enrichment.childContributionRate >= 80) {
+  if (meets(enrichment.childContributionRate, 80)) {
     strengths.push(
       "Children actively contribute to their enrichment plans — strong voice of the child",
     );
   }
 
-  if (enrichment.diverseRangeRate >= 80) {
+  if (meets(enrichment.diverseRangeRate, 80)) {
     strengths.push(
       "Enrichment plans include a diverse range of activities — promoting holistic development",
     );
   }
 
-  if (risk.assessmentRate >= 80) {
+  if (meets(risk.assessmentRate, 80)) {
     strengths.push(
       "Excellent risk-benefit assessment coverage — activities are properly assessed before delivery",
     );
   }
 
-  if (risk.goodOrExcellentRate >= 80) {
+  if (meets(risk.goodOrExcellentRate, 80)) {
     strengths.push(
       "Risk-benefit outcomes are predominantly good or excellent — effective risk management in place",
     );
   }
 
-  if (risk.childViewRate >= 70) {
+  if (meets(risk.childViewRate, 70)) {
     strengths.push(
       "Children's views are sought in risk assessments — child-centred approach to safety",
     );
   }
 
-  if (risk.dynamicAssessmentRate >= 70) {
+  if (meets(risk.dynamicAssessmentRate, 70)) {
     strengths.push(
       "Dynamic risk assessment is well-embedded — staff adapt to changing conditions effectively",
     );
   }
 
-  if (staff.firstAidRate >= 80) {
+  if (meets(staff.firstAidRate, 80)) {
     strengths.push(
       "High first aid coverage among staff — children's safety is well-supported",
     );
   }
 
-  if (staff.activityLeaderRate >= 70) {
+  if (meets(staff.activityLeaderRate, 70)) {
     strengths.push(
       "Good proportion of activity-leader-trained staff — capable of leading a range of activities",
     );
   }
 
-  if (staff.safeguardingRate >= 90) {
+  if (meets(staff.safeguardingRate, 90)) {
     strengths.push(
       "All staff have current safeguarding training — robust safeguarding framework",
     );
@@ -919,25 +933,25 @@ function generateAreasForImprovement(
     );
   }
 
-  if (activity.outdoorRate < 40 && activity.totalActivities > 0) {
+  if (below(activity.outdoorRate, 40) && activity.totalActivities > 0) {
     areas.push(
       `Outdoor activity rate at ${activity.outdoorRate}% — more outdoor experiences are needed`,
     );
   }
 
-  if (activity.childChoiceRate < 50 && activity.totalActivities > 0) {
+  if (below(activity.childChoiceRate, 50) && activity.totalActivities > 0) {
     areas.push(
       `Child choice rate at ${activity.childChoiceRate}% — children should have greater say in activity selection`,
     );
   }
 
-  if (activity.communityRate < 40 && activity.totalActivities > 0) {
+  if (below(activity.communityRate, 40) && activity.totalActivities > 0) {
     areas.push(
       `Only ${activity.communityRate}% of activities are community-based — more activities should take place outside the home`,
     );
   }
 
-  if (activity.newExperienceRate < 20 && activity.totalActivities > 0) {
+  if (below(activity.newExperienceRate, 20) && activity.totalActivities > 0) {
     areas.push(
       `New experience rate at ${activity.newExperienceRate}% — children need more exposure to new activities`,
     );
@@ -955,19 +969,19 @@ function generateAreasForImprovement(
     );
   }
 
-  if (enrichment.completionRate < 50 && enrichment.totalPlans > 0) {
+  if (below(enrichment.completionRate, 50) && enrichment.totalPlans > 0) {
     areas.push(
       `Enrichment plan completion rate at ${enrichment.completionRate}% — planned activities need to be consistently delivered`,
     );
   }
 
-  if (enrichment.childContributionRate < 50 && enrichment.totalPlans > 0) {
+  if (below(enrichment.childContributionRate, 50) && enrichment.totalPlans > 0) {
     areas.push(
       `Child contribution to plans at ${enrichment.childContributionRate}% — children should co-create their enrichment plans`,
     );
   }
 
-  if (enrichment.diverseRangeRate < 50 && enrichment.totalPlans > 0) {
+  if (below(enrichment.diverseRangeRate, 50) && enrichment.totalPlans > 0) {
     areas.push(
       `Only ${enrichment.diverseRangeRate}% of plans include diverse activities — broader range of experiences needed`,
     );
@@ -979,19 +993,19 @@ function generateAreasForImprovement(
     );
   }
 
-  if (risk.assessmentRate < 50 && risk.totalAssessments > 0) {
+  if (below(risk.assessmentRate, 50) && risk.totalAssessments > 0) {
     areas.push(
       `Risk assessment coverage at ${risk.assessmentRate}% — more activities need formal risk-benefit assessment`,
     );
   }
 
-  if (risk.childViewRate < 50 && risk.totalAssessments > 0) {
+  if (below(risk.childViewRate, 50) && risk.totalAssessments > 0) {
     areas.push(
       `Children's views sought in only ${risk.childViewRate}% of risk assessments — child voice must be central to risk management`,
     );
   }
 
-  if (risk.dynamicAssessmentRate < 50 && risk.totalAssessments > 0) {
+  if (below(risk.dynamicAssessmentRate, 50) && risk.totalAssessments > 0) {
     areas.push(
       `Dynamic assessment used in only ${risk.dynamicAssessmentRate}% of cases — staff need to routinely adapt to changing conditions`,
     );
@@ -1003,19 +1017,19 @@ function generateAreasForImprovement(
     );
   }
 
-  if (staff.firstAidRate < 50 && staff.totalStaff > 0) {
+  if (below(staff.firstAidRate, 50) && staff.totalStaff > 0) {
     areas.push(
       `First aid coverage at ${staff.firstAidRate}% — more staff need current first aid certification`,
     );
   }
 
-  if (staff.activityLeaderRate < 40 && staff.totalStaff > 0) {
+  if (below(staff.activityLeaderRate, 40) && staff.totalStaff > 0) {
     areas.push(
       `Activity leader training at ${staff.activityLeaderRate}% — more staff should be trained to lead activities`,
     );
   }
 
-  if (staff.safeguardingRate < 80 && staff.totalStaff > 0) {
+  if (below(staff.safeguardingRate, 80) && staff.totalStaff > 0) {
     areas.push(
       `Safeguarding currency at ${staff.safeguardingRate}% — all staff must have current safeguarding training`,
     );
@@ -1056,67 +1070,67 @@ function generateActions(
     );
   }
 
-  if (staff.firstAidRate < 50 && staff.totalStaff > 0) {
+  if (below(staff.firstAidRate, 50) && staff.totalStaff > 0) {
     actions.push(
       "URGENT: Arrange first aid training — at least 50% of staff should hold current first aid certification",
     );
   }
 
-  if (staff.safeguardingRate < 80 && staff.totalStaff > 0) {
+  if (below(staff.safeguardingRate, 80) && staff.totalStaff > 0) {
     actions.push(
       "URGENT: Update safeguarding training — all staff leading activities must have current safeguarding certification",
     );
   }
 
-  if (activity.outdoorRate < 40 && activity.totalActivities > 0) {
+  if (below(activity.outdoorRate, 40) && activity.totalActivities > 0) {
     actions.push(
       "Increase outdoor activity provision — schedule regular outdoor experiences each week",
     );
   }
 
-  if (activity.childChoiceRate < 50 && activity.totalActivities > 0) {
+  if (below(activity.childChoiceRate, 50) && activity.totalActivities > 0) {
     actions.push(
       "Enhance child choice — introduce activity menus and regular feedback sessions",
     );
   }
 
-  if (activity.communityRate < 40 && activity.totalActivities > 0) {
+  if (below(activity.communityRate, 40) && activity.totalActivities > 0) {
     actions.push(
       "Expand community-based activities — identify local clubs, groups, and venues",
     );
   }
 
-  if (enrichment.completionRate < 50 && enrichment.totalPlans > 0) {
+  if (below(enrichment.completionRate, 50) && enrichment.totalPlans > 0) {
     actions.push(
       "Improve enrichment plan delivery — review barriers to completion and allocate dedicated activity time",
     );
   }
 
-  if (enrichment.childContributionRate < 50 && enrichment.totalPlans > 0) {
+  if (below(enrichment.childContributionRate, 50) && enrichment.totalPlans > 0) {
     actions.push(
       "Increase child participation in planning — use key-working sessions to co-create enrichment plans",
     );
   }
 
-  if (risk.assessmentRate < 50 && risk.totalAssessments > 0) {
+  if (below(risk.assessmentRate, 50) && risk.totalAssessments > 0) {
     actions.push(
       "Improve risk assessment coverage — embed risk-benefit assessment into the activity planning workflow",
     );
   }
 
-  if (risk.childViewRate < 50 && risk.totalAssessments > 0) {
+  if (below(risk.childViewRate, 50) && risk.totalAssessments > 0) {
     actions.push(
       "Include children in risk assessments — seek their views on hazards, benefits, and controls",
     );
   }
 
-  if (risk.dynamicAssessmentRate < 50 && risk.totalAssessments > 0) {
+  if (below(risk.dynamicAssessmentRate, 50) && risk.totalAssessments > 0) {
     actions.push(
       "Train staff in dynamic risk assessment — adapt to conditions on the day of activities",
     );
   }
 
-  if (staff.activityLeaderRate < 40 && staff.totalStaff > 0) {
+  if (below(staff.activityLeaderRate, 40) && staff.totalStaff > 0) {
     actions.push(
       "Invest in activity leader training — equip staff to confidently lead outdoor and enrichment activities",
     );

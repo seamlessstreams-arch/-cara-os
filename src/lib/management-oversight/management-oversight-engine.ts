@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — Management Oversight Intelligence Engine
 //
@@ -90,21 +91,30 @@ export interface StaffOversightTraining {
 export interface OversightQualityResult {
   overallScore: number; // 0-25
   totalRecords: number;
-  thoroughRate: number;
-  actionPlanRate: number;
-  followUpRate: number;
-  childImpactRate: number;
-  staffFeedbackRate: number;
-  documentationRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  thoroughRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionPlanRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  followUpRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childImpactRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffFeedbackRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationRate: number | null;
 }
 
 export interface OversightComplianceResult {
   overallScore: number; // 0-25
   totalRecords: number;
-  frequencyRate: number;
-  coverageRate: number;
-  timelinessRate: number;
-  categoryDiversityRate: number;
+  frequencyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  coverageRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelinessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  categoryDiversityRate: number | null;
 }
 
 export interface OversightPolicyResult {
@@ -121,12 +131,18 @@ export interface OversightPolicyResult {
 export interface StaffReadinessResult {
   overallScore: number; // 0-25
   totalStaff: number;
-  auditSkillsRate: number;
-  qualityAssuranceRate: number;
-  regulatoryAwarenessRate: number;
-  leadershipRate: number;
-  dataAnalysisRate: number;
-  reflectivePracticeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  auditSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  qualityAssuranceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  regulatoryAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  leadershipRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dataAnalysisRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reflectivePracticeRate: number | null;
 }
 
 export interface ChildOversightProfile {
@@ -157,11 +173,6 @@ export interface ManagementOversightIntelligence {
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 /** Calculate percentage, returning 0 if denominator is 0. */
-export function pct(numerator: number, denominator: number): number {
-  if (denominator === 0) return 0;
-  return Math.round((numerator / denominator) * 100);
-}
-
 /** Map overall score (0-100) to Ofsted-style rating. */
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -227,28 +238,28 @@ export function evaluateOversightQuality(
     return {
       overallScore: 0,
       totalRecords: 0,
-      thoroughRate: 0,
-      actionPlanRate: 0,
-      followUpRate: 0,
-      childImpactRate: 0,
-      staffFeedbackRate: 0,
-      documentationRate: 0,
+      thoroughRate: null,
+      actionPlanRate: null,
+      followUpRate: null,
+      childImpactRate: null,
+      staffFeedbackRate: null,
+      documentationRate: null,
     };
   }
 
   const n = records.length;
-  const thoroughRate = pct(records.filter((r) => r.completedThoroughly).length, n);
-  const actionPlanRate = pct(records.filter((r) => r.actionPlanCreated).length, n);
-  const followUpRate = pct(records.filter((r) => r.followUpCompleted).length, n);
-  const childImpactRate = pct(records.filter((r) => r.childImpactAssessed).length, n);
-  const staffFeedbackRate = pct(records.filter((r) => r.staffFeedbackGiven).length, n);
-  const documentationRate = pct(records.filter((r) => r.documentedProperly).length, n);
+  const thoroughRate = rate(records.filter((r) => r.completedThoroughly).length, n);
+  const actionPlanRate = rate(records.filter((r) => r.actionPlanCreated).length, n);
+  const followUpRate = rate(records.filter((r) => r.followUpCompleted).length, n);
+  const childImpactRate = rate(records.filter((r) => r.childImpactAssessed).length, n);
+  const staffFeedbackRate = rate(records.filter((r) => r.staffFeedbackGiven).length, n);
+  const documentationRate = rate(records.filter((r) => r.documentedProperly).length, n);
 
   // Scoring
-  const thoroughScore = Math.round((thoroughRate / 100) * 7);
-  const actionPlanScore = Math.round((actionPlanRate / 100) * 6);
-  const followUpScore = Math.round((followUpRate / 100) * 6);
-  const documentationScore = Math.round((documentationRate / 100) * 6);
+  const thoroughScore = Math.round(((thoroughRate ?? 0) / 100) * 7);
+  const actionPlanScore = Math.round(((actionPlanRate ?? 0) / 100) * 6);
+  const followUpScore = Math.round(((followUpRate ?? 0) / 100) * 6);
+  const documentationScore = Math.round(((documentationRate ?? 0) / 100) * 6);
 
   const overallScore = Math.min(
     25,
@@ -289,10 +300,10 @@ export function evaluateOversightCompliance(
     return {
       overallScore: 0,
       totalRecords: 0,
-      frequencyRate: 0,
-      coverageRate: 0,
-      timelinessRate: 0,
-      categoryDiversityRate: 0,
+      frequencyRate: null,
+      coverageRate: null,
+      timelinessRate: null,
+      categoryDiversityRate: null,
     };
   }
 
@@ -303,10 +314,10 @@ export function evaluateOversightCompliance(
 
   // Coverage: unique children with records / total children expected
   const uniqueChildren = new Set(records.map((r) => r.childId)).size;
-  const coverageRate = totalChildren > 0 ? pct(uniqueChildren, totalChildren) : (uniqueChildren > 0 ? 100 : 0);
+  const coverageRate = totalChildren > 0 ? rate(uniqueChildren, totalChildren) : (uniqueChildren > 0 ? 100 : 0);
 
   // Timeliness: % of records where follow-up was completed (proxy for timely completion)
-  const timelinessRate = pct(records.filter((r) => r.followUpCompleted).length, n);
+  const timelinessRate = rate(records.filter((r) => r.followUpCompleted).length, n);
 
   // Category diversity: unique categories used / total possible categories * 100
   const ALL_CATEGORIES: OversightCategory[] = [
@@ -320,13 +331,13 @@ export function evaluateOversightCompliance(
     "outcomes_tracking",
   ];
   const uniqueCategories = new Set(records.map((r) => r.category)).size;
-  const categoryDiversityRate = pct(uniqueCategories, ALL_CATEGORIES.length);
+  const categoryDiversityRate = rate(uniqueCategories, ALL_CATEGORIES.length);
 
   // Scoring
   const frequencyScore = Math.round((frequencyRate / 100) * 8);
-  const coverageScore = Math.round((coverageRate / 100) * 7);
-  const timelinessScore = Math.round((timelinessRate / 100) * 5);
-  const diversityScore = Math.round((categoryDiversityRate / 100) * 5);
+  const coverageScore = Math.round(((coverageRate ?? 0) / 100) * 7);
+  const timelinessScore = Math.round(((timelinessRate ?? 0) / 100) * 5);
+  const diversityScore = Math.round(((categoryDiversityRate ?? 0) / 100) * 5);
 
   const overallScore = Math.min(
     25,
@@ -420,30 +431,30 @@ export function evaluateStaffReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      auditSkillsRate: 0,
-      qualityAssuranceRate: 0,
-      regulatoryAwarenessRate: 0,
-      leadershipRate: 0,
-      dataAnalysisRate: 0,
-      reflectivePracticeRate: 0,
+      auditSkillsRate: null,
+      qualityAssuranceRate: null,
+      regulatoryAwarenessRate: null,
+      leadershipRate: null,
+      dataAnalysisRate: null,
+      reflectivePracticeRate: null,
     };
   }
 
   const n = staff.length;
-  const auditSkillsRate = pct(staff.filter((s) => s.auditSkills).length, n);
-  const qualityAssuranceRate = pct(staff.filter((s) => s.qualityAssuranceKnowledge).length, n);
-  const regulatoryAwarenessRate = pct(staff.filter((s) => s.regulatoryAwareness).length, n);
-  const leadershipRate = pct(staff.filter((s) => s.leadershipCapability).length, n);
-  const dataAnalysisRate = pct(staff.filter((s) => s.dataAnalysis).length, n);
-  const reflectivePracticeRate = pct(staff.filter((s) => s.reflectivePractice).length, n);
+  const auditSkillsRate = rate(staff.filter((s) => s.auditSkills).length, n);
+  const qualityAssuranceRate = rate(staff.filter((s) => s.qualityAssuranceKnowledge).length, n);
+  const regulatoryAwarenessRate = rate(staff.filter((s) => s.regulatoryAwareness).length, n);
+  const leadershipRate = rate(staff.filter((s) => s.leadershipCapability).length, n);
+  const dataAnalysisRate = rate(staff.filter((s) => s.dataAnalysis).length, n);
+  const reflectivePracticeRate = rate(staff.filter((s) => s.reflectivePractice).length, n);
 
   // Scoring
-  const auditScore = Math.round((auditSkillsRate / 100) * 6);
-  const qaScore = Math.round((qualityAssuranceRate / 100) * 5);
-  const regScore = Math.round((regulatoryAwarenessRate / 100) * 5);
-  const leaderScore = Math.round((leadershipRate / 100) * 4);
-  const dataScore = Math.round((dataAnalysisRate / 100) * 3);
-  const reflectiveScore = Math.round((reflectivePracticeRate / 100) * 2);
+  const auditScore = Math.round(((auditSkillsRate ?? 0) / 100) * 6);
+  const qaScore = Math.round(((qualityAssuranceRate ?? 0) / 100) * 5);
+  const regScore = Math.round(((regulatoryAwarenessRate ?? 0) / 100) * 5);
+  const leaderScore = Math.round(((leadershipRate ?? 0) / 100) * 4);
+  const dataScore = Math.round(((dataAnalysisRate ?? 0) / 100) * 3);
+  const reflectiveScore = Math.round(((reflectivePracticeRate ?? 0) / 100) * 2);
 
   const overallScore = Math.min(
     25,
@@ -496,18 +507,18 @@ export function buildChildOversightProfiles(
     else if (totalRecords >= 5) freq = 1;
 
     // Thoroughness score
-    const thoroughRate = pct(childRecords.filter((r) => r.completedThoroughly).length, totalRecords);
+    const thoroughRate = rate(childRecords.filter((r) => r.completedThoroughly).length, totalRecords);
     let thoroughnessScore = 0;
-    if (thoroughRate >= 80) thoroughnessScore = 3;
-    else if (thoroughRate >= 60) thoroughnessScore = 2;
-    else if (thoroughRate >= 40) thoroughnessScore = 1;
+    if (meets(thoroughRate, 80)) thoroughnessScore = 3;
+    else if (meets(thoroughRate, 60)) thoroughnessScore = 2;
+    else if (meets(thoroughRate, 40)) thoroughnessScore = 1;
 
     // Follow-up score
-    const followUpRate = pct(childRecords.filter((r) => r.followUpCompleted).length, totalRecords);
+    const followUpRate = rate(childRecords.filter((r) => r.followUpCompleted).length, totalRecords);
     let followUpScore = 0;
-    if (followUpRate >= 80) followUpScore = 3;
-    else if (followUpRate >= 60) followUpScore = 2;
-    else if (followUpRate >= 40) followUpScore = 1;
+    if (meets(followUpRate, 80)) followUpScore = 3;
+    else if (meets(followUpRate, 60)) followUpScore = 2;
+    else if (meets(followUpRate, 40)) followUpScore = 1;
 
     // Diversity score
     const uniqueCategories = new Set(childRecords.map((r) => r.category)).size;
@@ -566,32 +577,32 @@ export function generateManagementOversightIntelligence(
   // ── Strengths ──
   const strengths: string[] = [];
 
-  if (oversightQuality.thoroughRate >= 80 && oversightQuality.totalRecords > 0) {
+  if (meets(oversightQuality.thoroughRate, 80) && oversightQuality.totalRecords > 0) {
     strengths.push(
       "Oversight activities are consistently thorough, demonstrating robust management scrutiny",
     );
   }
-  if (oversightQuality.actionPlanRate >= 80 && oversightQuality.totalRecords > 0) {
+  if (meets(oversightQuality.actionPlanRate, 80) && oversightQuality.totalRecords > 0) {
     strengths.push(
       "Action plans are routinely created following oversight activities, ensuring issues are tracked to resolution",
     );
   }
-  if (oversightQuality.followUpRate >= 80 && oversightQuality.totalRecords > 0) {
+  if (meets(oversightQuality.followUpRate, 80) && oversightQuality.totalRecords > 0) {
     strengths.push(
       "Follow-up completion is strong, showing management accountability and drive for improvement",
     );
   }
-  if (oversightQuality.documentationRate >= 80 && oversightQuality.totalRecords > 0) {
+  if (meets(oversightQuality.documentationRate, 80) && oversightQuality.totalRecords > 0) {
     strengths.push(
       "Oversight activities are well-documented, providing a clear audit trail for Ofsted inspection",
     );
   }
-  if (compliance.coverageRate >= 80) {
+  if (meets(compliance.coverageRate, 80)) {
     strengths.push(
       "Oversight covers the majority of children in the home, ensuring no child is overlooked",
     );
   }
-  if (compliance.categoryDiversityRate >= 80) {
+  if (meets(compliance.categoryDiversityRate, 80)) {
     strengths.push(
       "A diverse range of oversight activities is undertaken, reflecting comprehensive management monitoring",
     );
@@ -606,12 +617,12 @@ export function generateManagementOversightIntelligence(
       "Staff demonstrate strong readiness for oversight activities with good skills coverage",
     );
   }
-  if (staffReadiness.auditSkillsRate >= 80 && staffReadiness.totalStaff > 0) {
+  if (meets(staffReadiness.auditSkillsRate, 80) && staffReadiness.totalStaff > 0) {
     strengths.push(
       "Audit skills are well-developed across the staff team, supporting effective quality monitoring",
     );
   }
-  if (staffReadiness.regulatoryAwarenessRate >= 80 && staffReadiness.totalStaff > 0) {
+  if (meets(staffReadiness.regulatoryAwarenessRate, 80) && staffReadiness.totalStaff > 0) {
     strengths.push(
       "Staff have strong regulatory awareness, enabling informed oversight of compliance requirements",
     );
@@ -626,42 +637,42 @@ export function generateManagementOversightIntelligence(
   // ── Areas for Improvement ──
   const areasForImprovement: string[] = [];
 
-  if (oversightQuality.thoroughRate < 60 && oversightQuality.totalRecords > 0) {
+  if (below(oversightQuality.thoroughRate, 60) && oversightQuality.totalRecords > 0) {
     areasForImprovement.push(
       `Only ${oversightQuality.thoroughRate}% of oversight activities completed thoroughly — rigour must improve`,
     );
   }
-  if (oversightQuality.actionPlanRate < 60 && oversightQuality.totalRecords > 0) {
+  if (below(oversightQuality.actionPlanRate, 60) && oversightQuality.totalRecords > 0) {
     areasForImprovement.push(
       `Action plans created in only ${oversightQuality.actionPlanRate}% of oversight activities — improvement actions must be documented`,
     );
   }
-  if (oversightQuality.followUpRate < 60 && oversightQuality.totalRecords > 0) {
+  if (below(oversightQuality.followUpRate, 60) && oversightQuality.totalRecords > 0) {
     areasForImprovement.push(
       `Follow-up completed in only ${oversightQuality.followUpRate}% of cases — management must ensure actions are tracked to completion`,
     );
   }
-  if (oversightQuality.documentationRate < 60 && oversightQuality.totalRecords > 0) {
+  if (below(oversightQuality.documentationRate, 60) && oversightQuality.totalRecords > 0) {
     areasForImprovement.push(
       `Documentation rate at ${oversightQuality.documentationRate}% — all oversight must be properly recorded for regulatory evidence`,
     );
   }
-  if (compliance.coverageRate < 60) {
+  if (below(compliance.coverageRate, 60)) {
     areasForImprovement.push(
       `Oversight coverage of children at ${compliance.coverageRate}% — all children must be included in management monitoring`,
     );
   }
-  if (compliance.categoryDiversityRate < 60) {
+  if (below(compliance.categoryDiversityRate, 60)) {
     areasForImprovement.push(
       `Category diversity at ${compliance.categoryDiversityRate}% — oversight should span all monitoring types including Reg 44/45`,
     );
   }
-  if (staffReadiness.auditSkillsRate < 60 && staffReadiness.totalStaff > 0) {
+  if (below(staffReadiness.auditSkillsRate, 60) && staffReadiness.totalStaff > 0) {
     areasForImprovement.push(
       `Only ${staffReadiness.auditSkillsRate}% of staff have audit skills — training is needed to support effective oversight`,
     );
   }
-  if (staffReadiness.regulatoryAwarenessRate < 60 && staffReadiness.totalStaff > 0) {
+  if (below(staffReadiness.regulatoryAwarenessRate, 60) && staffReadiness.totalStaff > 0) {
     areasForImprovement.push(
       `Regulatory awareness at ${staffReadiness.regulatoryAwarenessRate}% — staff need better understanding of CHR 2015 requirements`,
     );
@@ -694,12 +705,12 @@ export function generateManagementOversightIntelligence(
       "Increase oversight frequency and coverage — develop a monthly monitoring schedule covering all children and activity types",
     );
   }
-  if (compliance.frequencyRate < 50) {
+  if (below(compliance.frequencyRate, 50)) {
     actions.push(
       "Oversight frequency is below expected levels — ensure minimum monthly monitoring activities are completed",
     );
   }
-  if (compliance.categoryDiversityRate < 50) {
+  if (below(compliance.categoryDiversityRate, 50)) {
     actions.push(
       "Diversify oversight activities — ensure Reg 44 visits, Reg 45 reviews, case file audits and practice observations are all undertaken",
     );
@@ -714,7 +725,7 @@ export function generateManagementOversightIntelligence(
       "Create an audit schedule with planned dates for all oversight activities across the year",
     );
   }
-  if (staffReadiness.leadershipRate < 50 && staffReadiness.totalStaff > 0) {
+  if (below(staffReadiness.leadershipRate, 50) && staffReadiness.totalStaff > 0) {
     actions.push(
       "Invest in leadership development for oversight staff to strengthen management capability",
     );

@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // PEER RELATIONSHIP DYNAMICS INTELLIGENCE ENGINE
 //
@@ -123,26 +124,34 @@ export interface StaffPeerTraining {
 export interface InteractionQualityResult {
   totalInteractions: number;
   positiveOutcomeCount: number;
-  positiveOutcomeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveOutcomeRate: number | null;
   resolutionAchievedCount: number;
-  resolutionAchievedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  resolutionAchievedRate: number | null;
   socialSkillPracticedCount: number;
-  socialSkillPracticedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  socialSkillPracticedRate: number | null;
   childReflectedCount: number;
-  childReflectedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childReflectedRate: number | null;
   documentedInLogCount: number;
-  documentedInLogRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedInLogRate: number | null;
   score: number; // 0-25
 }
 
 export interface RelationshipSafetyResult {
   totalInteractions: number;
   negativeInteractionCount: number;
-  negativeInteractionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  negativeInteractionRate: number | null;
   staffMediatedNegativeCount: number;
-  staffMediatedNegativeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffMediatedNegativeRate: number | null;
   followUpPlannedNegativeCount: number;
-  followUpPlannedNegativeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  followUpPlannedNegativeRate: number | null;
   score: number; // 0-25
 }
 
@@ -160,17 +169,23 @@ export interface PeerPolicyResult {
 export interface StaffPeerReadinessResult {
   totalStaff: number;
   conflictResolutionCount: number;
-  conflictResolutionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  conflictResolutionRate: number | null;
   socialSkillsFacilitationCount: number;
-  socialSkillsFacilitationRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  socialSkillsFacilitationRate: number | null;
   antibullyingPracticeCount: number;
-  antibullyingPracticeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  antibullyingPracticeRate: number | null;
   restorativeJusticeCount: number;
-  restorativeJusticeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  restorativeJusticeRate: number | null;
   groupDynamicsCount: number;
-  groupDynamicsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  groupDynamicsRate: number | null;
   traumaInformedRelationshipsCount: number;
-  traumaInformedRelationshipsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  traumaInformedRelationshipsRate: number | null;
   score: number; // 0-25
 }
 
@@ -207,11 +222,6 @@ export interface PeerRelationshipDynamicsIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 function cap(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
@@ -234,15 +244,15 @@ export function evaluateInteractionQuality(
     return {
       totalInteractions: 0,
       positiveOutcomeCount: 0,
-      positiveOutcomeRate: 0,
+      positiveOutcomeRate: null,
       resolutionAchievedCount: 0,
-      resolutionAchievedRate: 0,
+      resolutionAchievedRate: null,
       socialSkillPracticedCount: 0,
-      socialSkillPracticedRate: 0,
+      socialSkillPracticedRate: null,
       childReflectedCount: 0,
-      childReflectedRate: 0,
+      childReflectedRate: null,
       documentedInLogCount: 0,
-      documentedInLogRate: 0,
+      documentedInLogRate: null,
       score: 0,
     };
   }
@@ -250,27 +260,27 @@ export function evaluateInteractionQuality(
   const positiveOutcomeCount = interactions.filter(
     (i) => i.outcomeLevel === "very_positive" || i.outcomeLevel === "positive",
   ).length;
-  const positiveOutcomeRate = pct(positiveOutcomeCount, total);
+  const positiveOutcomeRate = rate(positiveOutcomeCount, total);
 
   const resolutionAchievedCount = interactions.filter((i) => i.resolutionAchieved).length;
-  const resolutionAchievedRate = pct(resolutionAchievedCount, total);
+  const resolutionAchievedRate = rate(resolutionAchievedCount, total);
 
   const socialSkillPracticedCount = interactions.filter((i) => i.socialSkillPracticed).length;
-  const socialSkillPracticedRate = pct(socialSkillPracticedCount, total);
+  const socialSkillPracticedRate = rate(socialSkillPracticedCount, total);
 
   const childReflectedCount = interactions.filter((i) => i.childReflected).length;
-  const childReflectedRate = pct(childReflectedCount, total);
+  const childReflectedRate = rate(childReflectedCount, total);
 
   const documentedInLogCount = interactions.filter((i) => i.documentedInLog).length;
-  const documentedInLogRate = pct(documentedInLogCount, total);
+  const documentedInLogRate = rate(documentedInLogCount, total);
 
   // Weighted scoring: positive outcome (0-7), resolution (0-6), socialSkill (0-6), combined reflected+documented (0-6)
   let score = 0;
-  score += (positiveOutcomeRate / 100) * 7;
-  score += (resolutionAchievedRate / 100) * 6;
-  score += (socialSkillPracticedRate / 100) * 6;
-  const combinedRate = pct(childReflectedCount + documentedInLogCount, total * 2);
-  score += (combinedRate / 100) * 6;
+  score += (positiveOutcomeRate! / 100) * 7;
+  score += (resolutionAchievedRate! / 100) * 6;
+  score += (socialSkillPracticedRate! / 100) * 6;
+  const combinedRate = rate(childReflectedCount + documentedInLogCount, total * 2);
+  score += (combinedRate! / 100) * 6;
 
   score = cap(Math.round(score * 10) / 10, 0, 25);
 
@@ -302,11 +312,11 @@ export function evaluateRelationshipSafety(
     return {
       totalInteractions: 0,
       negativeInteractionCount: 0,
-      negativeInteractionRate: 0,
+      negativeInteractionRate: null,
       staffMediatedNegativeCount: 0,
-      staffMediatedNegativeRate: 0,
+      staffMediatedNegativeRate: null,
       followUpPlannedNegativeCount: 0,
-      followUpPlannedNegativeRate: 0,
+      followUpPlannedNegativeRate: null,
       score: 25,
     };
   }
@@ -314,22 +324,22 @@ export function evaluateRelationshipSafety(
   const negativeTypes: InteractionType[] = ["conflict", "withdrawal", "bullying"];
   const negativeInteractions = interactions.filter((i) => negativeTypes.includes(i.interactionType));
   const negativeInteractionCount = negativeInteractions.length;
-  const negativeInteractionRate = pct(negativeInteractionCount, total);
+  const negativeInteractionRate = rate(negativeInteractionCount, total);
 
   const staffMediatedNegativeCount = negativeInteractions.filter((i) => i.staffMediated).length;
-  const staffMediatedNegativeRate = pct(staffMediatedNegativeCount, negativeInteractionCount);
+  const staffMediatedNegativeRate = rate(staffMediatedNegativeCount, negativeInteractionCount);
 
   const followUpPlannedNegativeCount = negativeInteractions.filter((i) => i.followUpPlanned).length;
-  const followUpPlannedNegativeRate = pct(followUpPlannedNegativeCount, negativeInteractionCount);
+  const followUpPlannedNegativeRate = rate(followUpPlannedNegativeCount, negativeInteractionCount);
 
   // Weighted scoring:
   // negative interaction rate inverted (0-9): score = 9 * (100 - negativeRate) / 100
   // staff mediated rate for negatives (0-8)
   // follow-up planned rate for negatives (0-8)
   let score = 0;
-  score += 9 * (100 - negativeInteractionRate) / 100;
-  score += (staffMediatedNegativeRate / 100) * 8;
-  score += (followUpPlannedNegativeRate / 100) * 8;
+  score += 9 * (100 - (negativeInteractionRate ?? 100)) / 100; // unmeasured earns no safety credit
+  score += ((staffMediatedNegativeRate ?? 0) / 100) * 8;
+  score += ((followUpPlannedNegativeRate ?? 0) / 100) * 8;
 
   score = cap(Math.round(score * 10) / 10, 0, 25);
 
@@ -398,47 +408,47 @@ export function evaluateStaffPeerReadiness(
     return {
       totalStaff: 0,
       conflictResolutionCount: 0,
-      conflictResolutionRate: 0,
+      conflictResolutionRate: null,
       socialSkillsFacilitationCount: 0,
-      socialSkillsFacilitationRate: 0,
+      socialSkillsFacilitationRate: null,
       antibullyingPracticeCount: 0,
-      antibullyingPracticeRate: 0,
+      antibullyingPracticeRate: null,
       restorativeJusticeCount: 0,
-      restorativeJusticeRate: 0,
+      restorativeJusticeRate: null,
       groupDynamicsCount: 0,
-      groupDynamicsRate: 0,
+      groupDynamicsRate: null,
       traumaInformedRelationshipsCount: 0,
-      traumaInformedRelationshipsRate: 0,
+      traumaInformedRelationshipsRate: null,
       score: 0,
     };
   }
 
   const conflictResolutionCount = training.filter((t) => t.conflictResolution).length;
-  const conflictResolutionRate = pct(conflictResolutionCount, totalStaff);
+  const conflictResolutionRate = rate(conflictResolutionCount, totalStaff);
 
   const socialSkillsFacilitationCount = training.filter((t) => t.socialSkillsFacilitation).length;
-  const socialSkillsFacilitationRate = pct(socialSkillsFacilitationCount, totalStaff);
+  const socialSkillsFacilitationRate = rate(socialSkillsFacilitationCount, totalStaff);
 
   const antibullyingPracticeCount = training.filter((t) => t.antibullyingPractice).length;
-  const antibullyingPracticeRate = pct(antibullyingPracticeCount, totalStaff);
+  const antibullyingPracticeRate = rate(antibullyingPracticeCount, totalStaff);
 
   const restorativeJusticeCount = training.filter((t) => t.restorativeJustice).length;
-  const restorativeJusticeRate = pct(restorativeJusticeCount, totalStaff);
+  const restorativeJusticeRate = rate(restorativeJusticeCount, totalStaff);
 
   const groupDynamicsCount = training.filter((t) => t.groupDynamics).length;
-  const groupDynamicsRate = pct(groupDynamicsCount, totalStaff);
+  const groupDynamicsRate = rate(groupDynamicsCount, totalStaff);
 
   const traumaInformedRelationshipsCount = training.filter((t) => t.traumaInformedRelationships).length;
-  const traumaInformedRelationshipsRate = pct(traumaInformedRelationshipsCount, totalStaff);
+  const traumaInformedRelationshipsRate = rate(traumaInformedRelationshipsCount, totalStaff);
 
   // 6 skills weighted: 6+5+5+4+3+2 = 25
   let score = 0;
-  score += (conflictResolutionRate / 100) * 6;
-  score += (socialSkillsFacilitationRate / 100) * 5;
-  score += (antibullyingPracticeRate / 100) * 5;
-  score += (restorativeJusticeRate / 100) * 4;
-  score += (groupDynamicsRate / 100) * 3;
-  score += (traumaInformedRelationshipsRate / 100) * 2;
+  score += (conflictResolutionRate! / 100) * 6;
+  score += (socialSkillsFacilitationRate! / 100) * 5;
+  score += (antibullyingPracticeRate! / 100) * 5;
+  score += (restorativeJusticeRate! / 100) * 4;
+  score += ((groupDynamicsRate ?? 0) / 100) * 3;
+  score += ((traumaInformedRelationshipsRate ?? 0) / 100) * 2;
 
   score = cap(Math.round(score * 10) / 10, 0, 25);
 
@@ -484,35 +494,36 @@ export function buildChildPeerProfiles(
     const positiveCount = child.interactions.filter(
       (i) => i.outcomeLevel === "very_positive" || i.outcomeLevel === "positive",
     ).length;
-    const positiveOutcomeRate = pct(positiveCount, total);
+    const positiveOutcomeRate = rate(positiveCount, total)!;
 
     const skillCount = child.interactions.filter((i) => i.socialSkillPracticed).length;
-    const socialSkillPracticedRate = pct(skillCount, total);
+    const socialSkillPracticedRate = rate(skillCount, total)!;
 
     const negativeTypes: InteractionType[] = ["conflict", "withdrawal", "bullying"];
     const negativeCount = child.interactions.filter((i) => negativeTypes.includes(i.interactionType)).length;
-    const negativeInteractionRate = pct(negativeCount, total);
+    const negativeInteractionRate = rate(negativeCount, total)!;
 
     // Score 0-10: frequency(0-2), positiveOutcome(0-3), socialSkills(0-3), safety(0-2)
     let score = 0;
 
     // frequency: >=10 interactions → 2, >=5 → 1, <5 → 0
-    if (total >= 10) score += 2;
-    else if (total >= 5) score += 1;
+    if (meets(total, 10)) score += 2;
+    else if (meets(total, 5)) score += 1;
 
     // positiveOutcome: based on rate tiers
-    if (positiveOutcomeRate >= 80) score += 3;
-    else if (positiveOutcomeRate >= 60) score += 2;
-    else if (positiveOutcomeRate >= 40) score += 1;
+    if (meets(positiveOutcomeRate, 80)) score += 3;
+    else if (meets(positiveOutcomeRate, 60)) score += 2;
+    else if (meets(positiveOutcomeRate, 40)) score += 1;
 
     // socialSkills: based on skill practiced rate
-    if (socialSkillPracticedRate >= 80) score += 3;
-    else if (socialSkillPracticedRate >= 60) score += 2;
-    else if (socialSkillPracticedRate >= 40) score += 1;
+    if (meets(socialSkillPracticedRate, 80)) score += 3;
+    else if (meets(socialSkillPracticedRate, 60)) score += 2;
+    else if (meets(socialSkillPracticedRate, 40)) score += 1;
 
     // safety: based on low negative interaction rate
-    if (negativeInteractionRate <= 10) score += 2;
-    else if (negativeInteractionRate <= 30) score += 1;
+    // unmeasured (no interactions) earns no safety credit
+    if (negativeInteractionRate !== null && negativeInteractionRate <= 10) score += 2;
+    else if (negativeInteractionRate !== null && negativeInteractionRate <= 30) score += 1;
 
     score = cap(score, 0, 10);
 
@@ -558,13 +569,13 @@ export function generatePeerRelationshipDynamicsIntelligence(
   const actions: string[] = [];
 
   // Strengths logic
-  if (interactionQuality.positiveOutcomeRate >= 80 && interactions.length > 0) {
+  if (meets(interactionQuality.positiveOutcomeRate, 80) && interactions.length > 0) {
     strengths.push("Strong culture of positive peer interactions with " + interactionQuality.positiveOutcomeRate + "% positive outcome rate");
   }
-  if (interactionQuality.resolutionAchievedRate >= 80 && interactions.length > 0) {
+  if (meets(interactionQuality.resolutionAchievedRate, 80) && interactions.length > 0) {
     strengths.push("Excellent conflict resolution practice with " + interactionQuality.resolutionAchievedRate + "% resolution rate");
   }
-  if (interactionQuality.socialSkillPracticedRate >= 80 && interactions.length > 0) {
+  if (meets(interactionQuality.socialSkillPracticedRate, 80) && interactions.length > 0) {
     strengths.push("Consistent social skills development with " + interactionQuality.socialSkillPracticedRate + "% skill practice rate");
   }
 
@@ -580,10 +591,10 @@ export function generatePeerRelationshipDynamicsIntelligence(
   }
 
   // Areas for improvement
-  if (interactions.length > 0 && interactionQuality.positiveOutcomeRate < 60) {
+  if (interactions.length > 0 && below(interactionQuality.positiveOutcomeRate, 60)) {
     areasForImprovement.push("Positive outcome rate at " + interactionQuality.positiveOutcomeRate + "% — below 60% threshold, targeted intervention needed");
   }
-  if (interactions.length > 0 && relationshipSafety.negativeInteractionRate > 30) {
+  if (interactions.length > 0 && above(relationshipSafety.negativeInteractionRate, 30)) {
     areasForImprovement.push("Negative interaction rate at " + relationshipSafety.negativeInteractionRate + "% — exceeds 30% threshold, review safeguarding approach");
   }
 

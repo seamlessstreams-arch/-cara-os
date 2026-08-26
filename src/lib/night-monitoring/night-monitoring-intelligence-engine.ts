@@ -18,6 +18,7 @@
    ────────────────────────────────────────────────────────────── */
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -127,18 +128,25 @@ export interface StaffNightMonitoringTraining {
 export interface NightMonitoringQualityResult {
   overallScore: number;
   totalRecords: number;
-  checkCompletedOnTimeRate: number;
-  observationsRecordedRate: number;
-  incidentEscalatedRate: number;
-  childWelfareConfirmedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  checkCompletedOnTimeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  observationsRecordedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  incidentEscalatedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childWelfareConfirmedRate: number | null;
 }
 
 export interface NightMonitoringComplianceResult {
   overallScore: number;
   totalRecords: number;
-  documentationRate: number;
-  timelyRecordingRate: number;
-  checkCompletedOnTimeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  checkCompletedOnTimeRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
 }
@@ -157,12 +165,18 @@ export interface NightMonitoringPolicyResult {
 export interface StaffNightMonitoringReadinessResult {
   overallScore: number;
   totalStaff: number;
-  nightCareCompetencyRate: number;
-  nightIncidentManagementRate: number;
-  sleepMonitoringSkillsRate: number;
-  nightMedicationHandlingRate: number;
-  childWelfareAssessmentRate: number;
-  nightHandoverProcedureRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  nightCareCompetencyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  nightIncidentManagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  sleepMonitoringSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  nightMedicationHandlingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childWelfareAssessmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  nightHandoverProcedureRate: number | null;
 }
 
 export interface ChildNightMonitoringProfile {
@@ -194,11 +208,6 @@ export interface NightMonitoringIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -214,19 +223,19 @@ export function evaluateNightMonitoringQuality(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, checkCompletedOnTimeRate: 0, observationsRecordedRate: 0, incidentEscalatedRate: 0, childWelfareConfirmedRate: 0 };
+    return { overallScore: 0, totalRecords: 0, checkCompletedOnTimeRate: null, observationsRecordedRate: null, incidentEscalatedRate: null, childWelfareConfirmedRate: null };
   }
 
-  const checkCompletedOnTimeRate = pct(records.filter((r) => r.checkCompletedOnTime).length, n);
-  const observationsRecordedRate = pct(records.filter((r) => r.observationsRecorded).length, n);
-  const incidentEscalatedRate = pct(records.filter((r) => r.incidentEscalated).length, n);
-  const childWelfareConfirmedRate = pct(records.filter((r) => r.childWelfareConfirmed).length, n);
+  const checkCompletedOnTimeRate = rate(records.filter((r) => r.checkCompletedOnTime).length, n);
+  const observationsRecordedRate = rate(records.filter((r) => r.observationsRecorded).length, n);
+  const incidentEscalatedRate = rate(records.filter((r) => r.incidentEscalated).length, n);
+  const childWelfareConfirmedRate = rate(records.filter((r) => r.childWelfareConfirmed).length, n);
 
   let score = 0;
-  score += (checkCompletedOnTimeRate / 100) * 7;
-  score += (observationsRecordedRate / 100) * 6;
-  score += (incidentEscalatedRate / 100) * 6;
-  score += (childWelfareConfirmedRate / 100) * 6;
+  score += (checkCompletedOnTimeRate! / 100) * 7;
+  score += (observationsRecordedRate! / 100) * 6;
+  score += (incidentEscalatedRate! / 100) * 6;
+  score += (childWelfareConfirmedRate! / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -241,21 +250,21 @@ export function evaluateNightMonitoringCompliance(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, documentationRate: 0, timelyRecordingRate: 0, checkCompletedOnTimeRate: 0, categoryDiversityRatio: 0, uniqueCategories: 0 };
+    return { overallScore: 0, totalRecords: 0, documentationRate: null, timelyRecordingRate: null, checkCompletedOnTimeRate: null, categoryDiversityRatio: 0, uniqueCategories: 0 };
   }
 
-  const documentationRate = pct(records.filter((r) => r.documentationComplete).length, n);
-  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, n);
-  const checkCompletedOnTimeRate = pct(records.filter((r) => r.checkCompletedOnTime).length, n);
+  const documentationRate = rate(records.filter((r) => r.documentationComplete).length, n);
+  const timelyRecordingRate = rate(records.filter((r) => r.timelyRecording).length, n);
+  const checkCompletedOnTimeRate = rate(records.filter((r) => r.checkCompletedOnTime).length, n);
 
   const uniqueCategoriesSet = new Set(records.map((r) => r.category));
   const uniqueCategories = uniqueCategoriesSet.size;
   const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
 
   let score = 0;
-  score += (documentationRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (checkCompletedOnTimeRate / 100) * 5;
+  score += (documentationRate! / 100) * 8;
+  score += (timelyRecordingRate! / 100) * 7;
+  score += (checkCompletedOnTimeRate! / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -301,23 +310,23 @@ export function evaluateStaffNightMonitoringReadiness(
   const n = training.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalStaff: 0, nightCareCompetencyRate: 0, nightIncidentManagementRate: 0, sleepMonitoringSkillsRate: 0, nightMedicationHandlingRate: 0, childWelfareAssessmentRate: 0, nightHandoverProcedureRate: 0 };
+    return { overallScore: 0, totalStaff: 0, nightCareCompetencyRate: null, nightIncidentManagementRate: null, sleepMonitoringSkillsRate: null, nightMedicationHandlingRate: null, childWelfareAssessmentRate: null, nightHandoverProcedureRate: null };
   }
 
-  const nightCareCompetencyRate = pct(training.filter((t) => t.nightCareCompetency).length, n);
-  const nightIncidentManagementRate = pct(training.filter((t) => t.nightIncidentManagement).length, n);
-  const sleepMonitoringSkillsRate = pct(training.filter((t) => t.sleepMonitoringSkills).length, n);
-  const nightMedicationHandlingRate = pct(training.filter((t) => t.nightMedicationHandling).length, n);
-  const childWelfareAssessmentRate = pct(training.filter((t) => t.childWelfareAssessment).length, n);
-  const nightHandoverProcedureRate = pct(training.filter((t) => t.nightHandoverProcedure).length, n);
+  const nightCareCompetencyRate = rate(training.filter((t) => t.nightCareCompetency).length, n);
+  const nightIncidentManagementRate = rate(training.filter((t) => t.nightIncidentManagement).length, n);
+  const sleepMonitoringSkillsRate = rate(training.filter((t) => t.sleepMonitoringSkills).length, n);
+  const nightMedicationHandlingRate = rate(training.filter((t) => t.nightMedicationHandling).length, n);
+  const childWelfareAssessmentRate = rate(training.filter((t) => t.childWelfareAssessment).length, n);
+  const nightHandoverProcedureRate = rate(training.filter((t) => t.nightHandoverProcedure).length, n);
 
   let score = 0;
-  score += (nightCareCompetencyRate / 100) * 6;
-  score += (nightIncidentManagementRate / 100) * 5;
-  score += (sleepMonitoringSkillsRate / 100) * 5;
-  score += (nightMedicationHandlingRate / 100) * 4;
-  score += (childWelfareAssessmentRate / 100) * 3;
-  score += (nightHandoverProcedureRate / 100) * 2;
+  score += (nightCareCompetencyRate! / 100) * 6;
+  score += (nightIncidentManagementRate! / 100) * 5;
+  score += (sleepMonitoringSkillsRate! / 100) * 5;
+  score += (nightMedicationHandlingRate! / 100) * 4;
+  score += (childWelfareAssessmentRate! / 100) * 3;
+  score += (nightHandoverProcedureRate! / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -342,8 +351,8 @@ export function buildChildNightMonitoringProfiles(
 
   return Array.from(childMap.values()).map((child) => {
     const totalRecords = child.records.length;
-    const checkCompletedOnTimeRate = pct(child.records.filter((r) => r.checkCompletedOnTime).length, totalRecords);
-    const observationsRecordedRate = pct(child.records.filter((r) => r.observationsRecorded).length, totalRecords);
+    const checkCompletedOnTimeRate = rate(child.records.filter((r) => r.checkCompletedOnTime).length, totalRecords)!;
+    const observationsRecordedRate = rate(child.records.filter((r) => r.observationsRecorded).length, totalRecords)!;
     const uniqueCategoriesSet = new Set(child.records.map((r) => r.category));
     const categoriesCovered = Array.from(uniqueCategoriesSet);
 
@@ -352,14 +361,14 @@ export function buildChildNightMonitoringProfiles(
     else if (totalRecords >= 5) frequencyScore = 1;
 
     let rate1Score = 0;
-    if (checkCompletedOnTimeRate >= 80) rate1Score = 3;
-    else if (checkCompletedOnTimeRate >= 60) rate1Score = 2;
-    else if (checkCompletedOnTimeRate >= 40) rate1Score = 1;
+    if (meets(checkCompletedOnTimeRate, 80)) rate1Score = 3;
+    else if (meets(checkCompletedOnTimeRate, 60)) rate1Score = 2;
+    else if (meets(checkCompletedOnTimeRate, 40)) rate1Score = 1;
 
     let rate2Score = 0;
-    if (observationsRecordedRate >= 80) rate2Score = 3;
-    else if (observationsRecordedRate >= 60) rate2Score = 2;
-    else if (observationsRecordedRate >= 40) rate2Score = 1;
+    if (meets(observationsRecordedRate, 80)) rate2Score = 3;
+    else if (meets(observationsRecordedRate, 60)) rate2Score = 2;
+    else if (meets(observationsRecordedRate, 40)) rate2Score = 1;
 
     let diversityBonus = 0;
     if (categoriesCovered.length >= 4) diversityBonus = 2;
@@ -407,9 +416,9 @@ export function generateNightMonitoringIntelligence(
   if (complianceResult.overallScore >= 20) strengths.push("Night monitoring compliance is strong (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore >= 20) strengths.push("Night monitoring policy framework is robust (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore >= 20) strengths.push("Staff night monitoring readiness is strong (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.checkCompletedOnTimeRate >= 90) strengths.push("Night checks completed on time at " + qualityResult.checkCompletedOnTimeRate + "%");
-  if (periodRecords.length > 0 && qualityResult.observationsRecordedRate >= 90) strengths.push("Observations recorded at " + qualityResult.observationsRecordedRate + "%");
-  if (periodRecords.length > 0 && complianceResult.documentationRate >= 90) strengths.push("Documentation rate at " + complianceResult.documentationRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.checkCompletedOnTimeRate, 90)) strengths.push("Night checks completed on time at " + qualityResult.checkCompletedOnTimeRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.observationsRecordedRate, 90)) strengths.push("Observations recorded at " + qualityResult.observationsRecordedRate + "%");
+  if (periodRecords.length > 0 && meets(complianceResult.documentationRate, 90)) strengths.push("Documentation rate at " + complianceResult.documentationRate + "%");
 
   const areasForImprovement: string[] = [];
   if (overallScore < 40) areasForImprovement.push("Night monitoring rated Inadequate (" + overallScore + "/100) — urgent systemic review required");
@@ -418,7 +427,7 @@ export function generateNightMonitoringIntelligence(
   if (complianceResult.overallScore < 15) areasForImprovement.push("Night monitoring compliance needs improvement (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore < 15) areasForImprovement.push("Night monitoring policy needs strengthening (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore < 15) areasForImprovement.push("Staff night monitoring readiness needs improvement (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.checkCompletedOnTimeRate < 80) areasForImprovement.push("Night check completion at " + qualityResult.checkCompletedOnTimeRate + "% — must improve for child safety");
+  if (periodRecords.length > 0 && below(qualityResult.checkCompletedOnTimeRate, 80)) areasForImprovement.push("Night check completion at " + qualityResult.checkCompletedOnTimeRate + "% — must improve for child safety");
   if (periodRecords.length === 0) areasForImprovement.push("No night monitoring records — monitoring must be documented");
   if (policy === null) areasForImprovement.push("No night monitoring policy in place — statutory requirement");
   if (staff.length === 0) areasForImprovement.push("No staff night monitoring training records — training required");
@@ -426,11 +435,11 @@ export function generateNightMonitoringIntelligence(
   const actions: string[] = [];
   if (policy === null || policyResult.overallScore === 0) actions.push("URGENT: No night monitoring policy — develop and implement comprehensive policy immediately");
   if (staff.length === 0) actions.push("URGENT: No staff night monitoring training — schedule training for all night staff");
-  if (periodRecords.length > 0 && qualityResult.checkCompletedOnTimeRate < 50) actions.push("HIGH: Night check completion at " + qualityResult.checkCompletedOnTimeRate + "% — review check schedules and staffing");
-  if (periodRecords.length > 0 && qualityResult.observationsRecordedRate < 50) actions.push("HIGH: Observations recording at " + qualityResult.observationsRecordedRate + "% — ensure observations are consistently documented");
-  if (periodRecords.length > 0 && complianceResult.documentationRate < 50) actions.push("HIGH: Documentation rate at " + complianceResult.documentationRate + "% — all night activities must be recorded");
-  if (periodRecords.length > 0 && complianceResult.timelyRecordingRate < 50) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
-  if (staff.length > 0 && staffResult.nightCareCompetencyRate < 50) actions.push("MEDIUM: Night care competency at " + staffResult.nightCareCompetencyRate + "% — schedule training for night staff");
+  if (periodRecords.length > 0 && below(qualityResult.checkCompletedOnTimeRate, 50)) actions.push("HIGH: Night check completion at " + qualityResult.checkCompletedOnTimeRate + "% — review check schedules and staffing");
+  if (periodRecords.length > 0 && below(qualityResult.observationsRecordedRate, 50)) actions.push("HIGH: Observations recording at " + qualityResult.observationsRecordedRate + "% — ensure observations are consistently documented");
+  if (periodRecords.length > 0 && below(complianceResult.documentationRate, 50)) actions.push("HIGH: Documentation rate at " + complianceResult.documentationRate + "% — all night activities must be recorded");
+  if (periodRecords.length > 0 && below(complianceResult.timelyRecordingRate, 50)) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
+  if (staff.length > 0 && below(staffResult.nightCareCompetencyRate, 50)) actions.push("MEDIUM: Night care competency at " + staffResult.nightCareCompetencyRate + "% — schedule training for night staff");
   const lowScoreChildren = childProfiles.filter((p) => p.overallScore <= 3);
   if (lowScoreChildren.length > 0) actions.push("MEDIUM: " + lowScoreChildren.length + " child(ren) with low night monitoring scores — review individual overnight provisions");
   if (actions.length === 0) actions.push("No immediate actions required. Night monitoring systems operating within expected standards.");

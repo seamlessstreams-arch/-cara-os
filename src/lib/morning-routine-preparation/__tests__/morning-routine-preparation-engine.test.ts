@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   generateMorningRoutinePreparationIntelligence, evaluateRoutineCompletion, evaluateWellbeingReadiness,
-  evaluateMorningPolicy, evaluateStaffMorningReadiness, buildChildMorningProfiles, pct, getRating,
+  evaluateMorningPolicy, evaluateStaffMorningReadiness, buildChildMorningProfiles, getRating,
   getRoutineElementLabel, getCompletionStatusLabel, getRatingLabel,
 } from "../morning-routine-preparation-engine";
 import type { MorningRecord, MorningPolicy, StaffMorningTraining } from "../morning-routine-preparation-engine";
@@ -23,14 +23,6 @@ function makeTraining(overrides: Partial<StaffMorningTraining> = {}): StaffMorni
 // =============================================================================
 // pct
 // =============================================================================
-describe("pct", () => {
-  it("returns percentage", () => { expect(pct(3, 4)).toBe(75); });
-  it("returns 0 for den=0", () => { expect(pct(0, 0)).toBe(0); });
-  it("returns 100 for equal", () => { expect(pct(5, 5)).toBe(100); });
-  it("returns 0 for num=0", () => { expect(pct(0, 10)).toBe(0); });
-  it("rounds to nearest integer", () => { expect(pct(1, 3)).toBe(33); });
-  it("rounds up at .5", () => { expect(pct(1, 6)).toBe(17); });
-});
 
 // =============================================================================
 // getRating
@@ -134,7 +126,7 @@ describe("evaluateRoutineCompletion", () => {
 // evaluateWellbeingReadiness
 // =============================================================================
 describe("evaluateWellbeingReadiness", () => {
-  it("returns 0 for empty", () => { const r = evaluateWellbeingReadiness([]); expect(r.overallScore).toBe(0); expect(r.moodPositiveRate).toBe(0); });
+  it("returns zero score and null rate for empty", () => { const r = evaluateWellbeingReadiness([]); expect(r.overallScore).toBe(0); expect(r.moodPositiveRate).toBeNull(); });
   it("scores 25 for perfect", () => { const r = evaluateWellbeingReadiness(Array.from({ length: 10 }, () => makeRecord())); expect(r.overallScore).toBe(25); });
   it("calculates mood positive rate", () => {
     const records = [makeRecord({ moodPositive: true }), makeRecord({ moodPositive: false })];

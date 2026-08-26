@@ -36,7 +36,6 @@ export {
   getRatingLabel,
   getMissingFromCareCategoryLabel,
   getMissingFromCareOutcomeLabel,
-  pct,
 } from "./missing-from-care-engine";
 
 export type {

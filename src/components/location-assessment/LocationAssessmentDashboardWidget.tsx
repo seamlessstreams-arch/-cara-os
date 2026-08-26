@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildLocationProfile { childId: string; childName: string; totalAssessments: number; thoroughRate: number; childViewRate: number; overallScore: number; }
 
@@ -85,19 +86,19 @@ export default function LocationAssessmentDashboardWidget() {
       <Section title="Assessment Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Records" value={data.assessmentQuality.totalRecords} />
-          <Stat label="Thorough" value={`${data.assessmentQuality.thoroughRate}%`} />
-          <Stat label="Child View" value={`${data.assessmentQuality.childViewRate}%`} />
-          <Stat label="Risk Identified" value={`${data.assessmentQuality.riskIdentifiedRate}%`} />
-          <Stat label="Mitigations" value={`${data.assessmentQuality.mitigationsRate}%`} />
+          <Stat label="Thorough" value={`${formatRate(data.assessmentQuality.thoroughRate)}`} />
+          <Stat label="Child View" value={`${formatRate(data.assessmentQuality.childViewRate)}`} />
+          <Stat label="Risk Identified" value={`${formatRate(data.assessmentQuality.riskIdentifiedRate)}`} />
+          <Stat label="Mitigations" value={`${formatRate(data.assessmentQuality.mitigationsRate)}`} />
         </div>
       </Section>
 
       <Section title="Assessment Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documentation" value={`${data.assessmentCompliance.documentationRate}%`} />
-          <Stat label="Regulatory" value={`${data.assessmentCompliance.regulatoryRate}%`} />
-          <Stat label="Mitigations" value={`${data.assessmentCompliance.mitigationsRate}%`} />
-          <Stat label="Category Diversity" value={`${data.assessmentCompliance.categoryDiversityRatio}%`} />
+          <Stat label="Documentation" value={`${formatRate(data.assessmentCompliance.documentationRate)}`} />
+          <Stat label="Regulatory" value={`${formatRate(data.assessmentCompliance.regulatoryRate)}`} />
+          <Stat label="Mitigations" value={`${formatRate(data.assessmentCompliance.mitigationsRate)}`} />
+          <Stat label="Category Diversity" value={`${formatRate(data.assessmentCompliance.categoryDiversityRatio)}`} />
         </div>
       </Section>
 
@@ -120,12 +121,12 @@ export default function LocationAssessmentDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffLocationReadiness.totalStaff} />
-          <Stat label="Risk Assessment" value={`${data.staffLocationReadiness.riskAssessmentRate}%`} />
-          <Stat label="Community Mapping" value={`${data.staffLocationReadiness.communityMappingRate}%`} />
-          <Stat label="Safeguarding" value={`${data.staffLocationReadiness.safeguardingRate}%`} />
-          <Stat label="Regulatory" value={`${data.staffLocationReadiness.regulatoryRate}%`} />
-          <Stat label="Child Consultation" value={`${data.staffLocationReadiness.childConsultationRate}%`} />
-          <Stat label="Report Writing" value={`${data.staffLocationReadiness.reportWritingRate}%`} />
+          <Stat label="Risk Assessment" value={`${formatRate(data.staffLocationReadiness.riskAssessmentRate)}`} />
+          <Stat label="Community Mapping" value={`${formatRate(data.staffLocationReadiness.communityMappingRate)}`} />
+          <Stat label="Safeguarding" value={`${formatRate(data.staffLocationReadiness.safeguardingRate)}`} />
+          <Stat label="Regulatory" value={`${formatRate(data.staffLocationReadiness.regulatoryRate)}`} />
+          <Stat label="Child Consultation" value={`${formatRate(data.staffLocationReadiness.childConsultationRate)}`} />
+          <Stat label="Report Writing" value={`${formatRate(data.staffLocationReadiness.reportWritingRate)}`} />
         </div>
       </Section>
 

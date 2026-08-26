@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { NightCareIntelligence } from "@/lib/night-care";
+import { formatRate } from "@/lib/metrics/rate";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -48,11 +49,11 @@ function Section({ title, defaultOpen = false, children }: { title: string; defa
   );
 }
 
-function Stat({ label, value, suffix }: { label: string; value: string | number; suffix?: string }) {
+function Stat({ label, value, suffix }: { label: string; value: string | number | null; suffix?: string }) {
   return (
     <div>
       <span className="text-gray-500 text-sm">{label}:</span>{" "}
-      <span className="font-medium text-sm">{value}{suffix}</span>
+      <span className="font-medium text-sm">{value ?? "—"}{value !== null ? suffix : ""}</span>
     </div>
   );
 }
@@ -129,11 +130,11 @@ export default function NightCareDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Night Records</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.quality.nightCheckCompletedRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.quality.nightCheckCompletedRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Night Checks</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.compliance.documentationRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.compliance.documentationRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Documentation</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">

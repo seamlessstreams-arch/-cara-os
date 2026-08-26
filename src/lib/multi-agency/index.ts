@@ -9,7 +9,6 @@ export {
   evaluateMultiAgencyPolicy,
   evaluateStaffMultiAgencyReadiness,
   buildChildMultiAgencyProfiles,
-  pct,
   getRating,
   getMultiAgencyCategoryLabel,
   getMultiAgencyOutcomeLabel,

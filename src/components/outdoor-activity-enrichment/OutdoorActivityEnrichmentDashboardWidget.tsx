@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { OutdoorActivityEnrichmentIntelligence } from "@/lib/outdoor-activity-enrichment";
+import { formatRate } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -103,15 +104,15 @@ export function OutdoorActivityEnrichmentDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Total Activities</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.activityParticipation.outdoorRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.activityParticipation.outdoorRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Outdoor Rate</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.activityParticipation.childChoiceRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.activityParticipation.childChoiceRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Child Choice</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.activityParticipation.communityRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.activityParticipation.communityRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Community Based</div>
         </div>
       </div>
@@ -151,10 +152,10 @@ export function OutdoorActivityEnrichmentDashboardWidget() {
         <Section title="Activity Participation">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total:</span> <span className="font-medium">{data.activityParticipation.totalActivities}</span></div>
-            <div><span className="text-gray-500">Outdoor:</span> <span className="font-medium">{data.activityParticipation.outdoorRate}%</span></div>
-            <div><span className="text-gray-500">Community:</span> <span className="font-medium">{data.activityParticipation.communityRate}%</span></div>
-            <div><span className="text-gray-500">Child Choice:</span> <span className="font-medium">{data.activityParticipation.childChoiceRate}%</span></div>
-            <div><span className="text-gray-500">New Experiences:</span> <span className="font-medium">{data.activityParticipation.newExperienceRate}%</span></div>
+            <div><span className="text-gray-500">Outdoor:</span> <span className="font-medium">{formatRate(data.activityParticipation.outdoorRate)}</span></div>
+            <div><span className="text-gray-500">Community:</span> <span className="font-medium">{formatRate(data.activityParticipation.communityRate)}</span></div>
+            <div><span className="text-gray-500">Child Choice:</span> <span className="font-medium">{formatRate(data.activityParticipation.childChoiceRate)}</span></div>
+            <div><span className="text-gray-500">New Experiences:</span> <span className="font-medium">{formatRate(data.activityParticipation.newExperienceRate)}</span></div>
             <div><span className="text-gray-500">Avg Duration:</span> <span className="font-medium">{data.activityParticipation.averageDuration} min</span></div>
           </div>
           {data.activityParticipation.totalActivities > 0 && (
@@ -176,11 +177,11 @@ export function OutdoorActivityEnrichmentDashboardWidget() {
         <Section title="Enrichment Quality">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Plans:</span> <span className="font-medium">{data.enrichmentQuality.totalPlans}</span></div>
-            <div><span className="text-gray-500">Current:</span> <span className="font-medium">{data.enrichmentQuality.currentPlanRate}%</span></div>
-            <div><span className="text-gray-500">Completion:</span> <span className="font-medium">{data.enrichmentQuality.completionRate}%</span></div>
-            <div><span className="text-gray-500">Child Input:</span> <span className="font-medium">{data.enrichmentQuality.childContributionRate}%</span></div>
-            <div><span className="text-gray-500">Diverse Range:</span> <span className="font-medium">{data.enrichmentQuality.diverseRangeRate}%</span></div>
-            <div><span className="text-gray-500">Barriers Addressed:</span> <span className="font-medium">{data.enrichmentQuality.barriersAddressedRate}%</span></div>
+            <div><span className="text-gray-500">Current:</span> <span className="font-medium">{formatRate(data.enrichmentQuality.currentPlanRate)}</span></div>
+            <div><span className="text-gray-500">Completion:</span> <span className="font-medium">{formatRate(data.enrichmentQuality.completionRate)}</span></div>
+            <div><span className="text-gray-500">Child Input:</span> <span className="font-medium">{formatRate(data.enrichmentQuality.childContributionRate)}</span></div>
+            <div><span className="text-gray-500">Diverse Range:</span> <span className="font-medium">{formatRate(data.enrichmentQuality.diverseRangeRate)}</span></div>
+            <div><span className="text-gray-500">Barriers Addressed:</span> <span className="font-medium">{formatRate(data.enrichmentQuality.barriersAddressedRate)}</span></div>
             <div><span className="text-gray-500">Avg Planned:</span> <span className="font-medium">{data.enrichmentQuality.averageActivitiesPlanned}</span></div>
           </div>
         </Section>
@@ -188,11 +189,11 @@ export function OutdoorActivityEnrichmentDashboardWidget() {
         <Section title="Risk Management">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Assessments:</span> <span className="font-medium">{data.riskManagement.totalAssessments}</span></div>
-            <div><span className="text-gray-500">Coverage:</span> <span className="font-medium">{data.riskManagement.assessmentRate}%</span></div>
-            <div><span className="text-gray-500">Good/Excellent:</span> <span className="font-medium">{data.riskManagement.goodOrExcellentRate}%</span></div>
-            <div><span className="text-gray-500">Child Views:</span> <span className="font-medium">{data.riskManagement.childViewRate}%</span></div>
-            <div><span className="text-gray-500">Dynamic:</span> <span className="font-medium">{data.riskManagement.dynamicAssessmentRate}%</span></div>
-            <div><span className="text-gray-500">Benefits Stated:</span> <span className="font-medium">{data.riskManagement.benefitsArticulatedRate}%</span></div>
+            <div><span className="text-gray-500">Coverage:</span> <span className="font-medium">{formatRate(data.riskManagement.assessmentRate)}</span></div>
+            <div><span className="text-gray-500">Good/Excellent:</span> <span className="font-medium">{formatRate(data.riskManagement.goodOrExcellentRate)}</span></div>
+            <div><span className="text-gray-500">Child Views:</span> <span className="font-medium">{formatRate(data.riskManagement.childViewRate)}</span></div>
+            <div><span className="text-gray-500">Dynamic:</span> <span className="font-medium">{formatRate(data.riskManagement.dynamicAssessmentRate)}</span></div>
+            <div><span className="text-gray-500">Benefits Stated:</span> <span className="font-medium">{formatRate(data.riskManagement.benefitsArticulatedRate)}</span></div>
             <div><span className="text-gray-500">Avg Hazards:</span> <span className="font-medium">{data.riskManagement.averageHazards}</span></div>
           </div>
         </Section>
@@ -200,10 +201,10 @@ export function OutdoorActivityEnrichmentDashboardWidget() {
         <Section title="Staff Readiness">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Staff:</span> <span className="font-medium">{data.staffReadiness.totalStaff}</span></div>
-            <div><span className="text-gray-500">First Aid:</span> <span className="font-medium">{data.staffReadiness.firstAidRate}%</span></div>
-            <div><span className="text-gray-500">Activity Leader:</span> <span className="font-medium">{data.staffReadiness.activityLeaderRate}%</span></div>
-            <div><span className="text-gray-500">Risk Trained:</span> <span className="font-medium">{data.staffReadiness.riskAssessmentTrainedRate}%</span></div>
-            <div><span className="text-gray-500">Safeguarding:</span> <span className="font-medium">{data.staffReadiness.safeguardingRate}%</span></div>
+            <div><span className="text-gray-500">First Aid:</span> <span className="font-medium">{formatRate(data.staffReadiness.firstAidRate)}</span></div>
+            <div><span className="text-gray-500">Activity Leader:</span> <span className="font-medium">{formatRate(data.staffReadiness.activityLeaderRate)}</span></div>
+            <div><span className="text-gray-500">Risk Trained:</span> <span className="font-medium">{formatRate(data.staffReadiness.riskAssessmentTrainedRate)}</span></div>
+            <div><span className="text-gray-500">Safeguarding:</span> <span className="font-medium">{formatRate(data.staffReadiness.safeguardingRate)}</span></div>
             <div><span className="text-gray-500">Avg Qualifications:</span> <span className="font-medium">{data.staffReadiness.averageQualifications}</span></div>
           </div>
         </Section>

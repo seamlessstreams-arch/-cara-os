@@ -20,8 +20,7 @@ import {
   getPortionConsumedLabel,
   getRatingLabel,
   getRating,
-  pct,
-} from "../nutrition-hydration-monitoring-engine";
+  } from "../nutrition-hydration-monitoring-engine";
 import type {
   MealRecord,
   HydrationRecord,
@@ -112,33 +111,6 @@ const OAK_HOUSE_TRAINING: StaffNutritionTraining[] = [
 // ══════════════════════════════════════════════════════════════════════════════
 // pct
 // ══════════════════════════════════════════════════════════════════════════════
-
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-
-  it("returns 50 for 1/2", () => {
-    expect(pct(1, 2)).toBe(50);
-  });
-
-  it("returns 100 for equal values", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-
-  it("handles large numbers", () => {
-    expect(pct(999, 1000)).toBe(100);
-  });
-});
 
 // ══════════════════════════════════════════════════════════════════════════════
 // getRating
@@ -590,7 +562,7 @@ describe("evaluateHydrationStandards", () => {
     expect(result.strengths.some((s) => s.includes("Consistent hydration encouragement"))).toBe(true);
   });
 
-  it("handles averageCupsVsTargetRate when totalTargetCups is 0", () => {
+  it("handles averageCupsVsTargetRate when totalTargetCups is null", () => {
     const records = [
       makeHydration({ id: "h1", cupsConsumed: 5, targetCups: 0 }),
     ];

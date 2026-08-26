@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // PEER MENTORING EFFECTIVENESS INTELLIGENCE ENGINE
 //
@@ -111,38 +112,55 @@ export interface StaffMentoringTraining {
 export interface PairingQualityResult {
   overallScore: number;
   totalPairings: number;
-  consentRate: number;
-  riskAssessedRate: number;
-  matchCriteriaDefinedRate: number;
-  activePairingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  consentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  matchCriteriaDefinedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  activePairingRate: number | null;
 }
 
 export interface SessionEffectivenessResult {
   overallScore: number;
   totalSessions: number;
-  positiveOutcomeRate: number;
-  goalsDiscussedRate: number;
-  progressMadeRate: number;
-  regularSessionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveOutcomeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  goalsDiscussedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  progressMadeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  regularSessionRate: number | null;
 }
 
 export interface RelationshipSafeguardingResult {
   overallScore: number;
   totalReviews: number;
-  healthyRelationshipRate: number;
-  boundariesRespectedRate: number;
-  noSafeguardingConcernRate: number;
-  bothBenefitingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  healthyRelationshipRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  boundariesRespectedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  noSafeguardingConcernRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  bothBenefitingRate: number | null;
 }
 
 export interface StaffSupportResult {
   overallScore: number;
   totalStaff: number;
-  peerMentoringTrainedRate: number;
-  safeguardingInPeerRate: number;
-  conflictResolutionRate: number;
-  boundarySettingRate: number;
-  supportingMentorsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  peerMentoringTrainedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingInPeerRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  conflictResolutionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  boundarySettingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  supportingMentorsRate: number | null;
 }
 
 export interface ChildMentoringProfile {
@@ -174,11 +192,6 @@ export interface PeerMentoringEffectivenessIntelligence {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -245,10 +258,10 @@ export function evaluatePairingQuality(
     return {
       overallScore: 0,
       totalPairings: 0,
-      consentRate: 0,
-      riskAssessedRate: 0,
-      matchCriteriaDefinedRate: 0,
-      activePairingRate: 0,
+      consentRate: null,
+      riskAssessedRate: null,
+      matchCriteriaDefinedRate: null,
+      activePairingRate: null,
     };
   }
 
@@ -264,17 +277,17 @@ export function evaluatePairingQuality(
     if (p.status === "active") active++;
   }
 
-  const consentRate = pct(consented, pairings.length);
-  const riskAssessedRate = pct(riskAssessed, pairings.length);
-  const matchCriteriaDefinedRate = pct(matchDefined, pairings.length);
-  const activePairingRate = pct(active, pairings.length);
+  const consentRate = rate(consented, pairings.length);
+  const riskAssessedRate = rate(riskAssessed, pairings.length);
+  const matchCriteriaDefinedRate = rate(matchDefined, pairings.length);
+  const activePairingRate = rate(active, pairings.length);
 
   // Scoring: consent (0-7), risk assessed (0-6), match criteria (0-6), active pairings (0-6)
   let score = 0;
-  score += Math.round((consentRate / 100) * 7);
-  score += Math.round((riskAssessedRate / 100) * 6);
-  score += Math.round((matchCriteriaDefinedRate / 100) * 6);
-  score += Math.round((activePairingRate / 100) * 6);
+  score += Math.round((consentRate! / 100) * 7);
+  score += Math.round((riskAssessedRate! / 100) * 6);
+  score += Math.round((matchCriteriaDefinedRate! / 100) * 6);
+  score += Math.round((activePairingRate! / 100) * 6);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -298,10 +311,10 @@ export function evaluateSessionEffectiveness(
     return {
       overallScore: 0,
       totalSessions: 0,
-      positiveOutcomeRate: 0,
-      goalsDiscussedRate: 0,
-      progressMadeRate: 0,
-      regularSessionRate: 0,
+      positiveOutcomeRate: null,
+      goalsDiscussedRate: null,
+      progressMadeRate: null,
+      regularSessionRate: null,
     };
   }
 
@@ -315,9 +328,9 @@ export function evaluateSessionEffectiveness(
     if (s.progressMade) progressMade++;
   }
 
-  const positiveOutcomeRate = pct(positive, sessions.length);
-  const goalsDiscussedRate = pct(goalsDiscussed, sessions.length);
-  const progressMadeRate = pct(progressMade, sessions.length);
+  const positiveOutcomeRate = rate(positive, sessions.length);
+  const goalsDiscussedRate = rate(goalsDiscussed, sessions.length);
+  const progressMadeRate = rate(progressMade, sessions.length);
 
   // Regular sessions: each active pairing should have at least 2 sessions
   const activePairings = pairings.filter((p) => p.status === "active");
@@ -326,14 +339,14 @@ export function evaluateSessionEffectiveness(
     const pairSessions = sessions.filter((s) => s.pairingId === p.id);
     if (pairSessions.length >= 2) pairingsWithRegular++;
   }
-  const regularSessionRate = pct(pairingsWithRegular, activePairings.length);
+  const regularSessionRate = rate(pairingsWithRegular, activePairings.length);
 
   // Scoring: positive outcome (0-7), goals discussed (0-6), progress made (0-6), regular sessions (0-6)
   let score = 0;
-  score += Math.round((positiveOutcomeRate / 100) * 7);
-  score += Math.round((goalsDiscussedRate / 100) * 6);
-  score += Math.round((progressMadeRate / 100) * 6);
-  score += Math.round((regularSessionRate / 100) * 6);
+  score += Math.round((positiveOutcomeRate! / 100) * 7);
+  score += Math.round((goalsDiscussedRate! / 100) * 6);
+  score += Math.round((progressMadeRate! / 100) * 6);
+  score += Math.round(((regularSessionRate ?? 0) / 100) * 6);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -357,10 +370,10 @@ export function evaluateRelationshipSafeguarding(
     return {
       overallScore: 25,
       totalReviews: 0,
-      healthyRelationshipRate: 0,
-      boundariesRespectedRate: 0,
-      noSafeguardingConcernRate: 0,
-      bothBenefitingRate: 0,
+      healthyRelationshipRate: null,
+      boundariesRespectedRate: null,
+      noSafeguardingConcernRate: null,
+      bothBenefitingRate: null,
     };
   }
 
@@ -368,10 +381,10 @@ export function evaluateRelationshipSafeguarding(
     return {
       overallScore: 0,
       totalReviews: 0,
-      healthyRelationshipRate: 0,
-      boundariesRespectedRate: 0,
-      noSafeguardingConcernRate: 0,
-      bothBenefitingRate: 0,
+      healthyRelationshipRate: null,
+      boundariesRespectedRate: null,
+      noSafeguardingConcernRate: null,
+      bothBenefitingRate: null,
     };
   }
 
@@ -387,17 +400,17 @@ export function evaluateRelationshipSafeguarding(
     if (r.mentorBenefiting && r.menteeBenefiting) bothBenefit++;
   }
 
-  const healthyRelationshipRate = pct(healthy, reviews.length);
-  const boundariesRespectedRate = pct(boundaries, reviews.length);
-  const noSafeguardingConcernRate = pct(noConcern, reviews.length);
-  const bothBenefitingRate = pct(bothBenefit, reviews.length);
+  const healthyRelationshipRate = rate(healthy, reviews.length);
+  const boundariesRespectedRate = rate(boundaries, reviews.length);
+  const noSafeguardingConcernRate = rate(noConcern, reviews.length);
+  const bothBenefitingRate = rate(bothBenefit, reviews.length);
 
   // Scoring: healthy (0-7), boundaries (0-6), no concerns (0-6), both benefiting (0-6)
   let score = 0;
-  score += Math.round((healthyRelationshipRate / 100) * 7);
-  score += Math.round((boundariesRespectedRate / 100) * 6);
-  score += Math.round((noSafeguardingConcernRate / 100) * 6);
-  score += Math.round((bothBenefitingRate / 100) * 6);
+  score += Math.round((healthyRelationshipRate! / 100) * 7);
+  score += Math.round((boundariesRespectedRate! / 100) * 6);
+  score += Math.round((noSafeguardingConcernRate! / 100) * 6);
+  score += Math.round((bothBenefitingRate! / 100) * 6);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -420,11 +433,11 @@ export function evaluateStaffSupport(
     return {
       overallScore: 0,
       totalStaff: 0,
-      peerMentoringTrainedRate: 0,
-      safeguardingInPeerRate: 0,
-      conflictResolutionRate: 0,
-      boundarySettingRate: 0,
-      supportingMentorsRate: 0,
+      peerMentoringTrainedRate: null,
+      safeguardingInPeerRate: null,
+      conflictResolutionRate: null,
+      boundarySettingRate: null,
+      supportingMentorsRate: null,
     };
   }
 
@@ -442,19 +455,19 @@ export function evaluateStaffSupport(
     if (t.supportingYoungMentors) supporting++;
   }
 
-  const peerMentoringTrainedRate = pct(peerMentoring, training.length);
-  const safeguardingInPeerRate = pct(safeguarding, training.length);
-  const conflictResolutionRate = pct(conflict, training.length);
-  const boundarySettingRate = pct(boundary, training.length);
-  const supportingMentorsRate = pct(supporting, training.length);
+  const peerMentoringTrainedRate = rate(peerMentoring, training.length);
+  const safeguardingInPeerRate = rate(safeguarding, training.length);
+  const conflictResolutionRate = rate(conflict, training.length);
+  const boundarySettingRate = rate(boundary, training.length);
+  const supportingMentorsRate = rate(supporting, training.length);
 
   // Scoring: peer mentoring (0-6), safeguarding (0-6), conflict (0-5), boundary (0-4), supporting (0-4)
   let score = 0;
-  score += Math.round((peerMentoringTrainedRate / 100) * 6);
-  score += Math.round((safeguardingInPeerRate / 100) * 6);
-  score += Math.round((conflictResolutionRate / 100) * 5);
-  score += Math.round((boundarySettingRate / 100) * 4);
-  score += Math.round((supportingMentorsRate / 100) * 4);
+  score += Math.round((peerMentoringTrainedRate! / 100) * 6);
+  score += Math.round((safeguardingInPeerRate! / 100) * 6);
+  score += Math.round((conflictResolutionRate! / 100) * 5);
+  score += Math.round((boundarySettingRate! / 100) * 4);
+  score += Math.round(((supportingMentorsRate ?? 0) / 100) * 4);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -501,7 +514,7 @@ export function buildChildMentoringProfiles(
     const childSessions = sessions.filter((s) => pairingIds.includes(s.pairingId));
 
     const positiveSessions = childSessions.filter((s) => s.outcome === "positive").length;
-    const positiveOutcomeRate = pct(positiveSessions, childSessions.length);
+    const positiveOutcomeRate = rate(positiveSessions, childSessions.length)!;
 
     // Safeguarding concerns
     const childReviews = reviews.filter((r) => pairingIds.includes(r.pairingId));
@@ -520,7 +533,7 @@ export function buildChildMentoringProfiles(
     else if (activeOrCompleted > 0) score += 1;
 
     // Positive outcome rate (0-3)
-    score += Math.round((positiveOutcomeRate / 100) * 3);
+    score += Math.round(((positiveOutcomeRate ?? 0) / 100) * 3);
 
     // No safeguarding concerns (0-2)
     if (safeguardingConcerns === 0 && childReviews.length > 0) score += 2;
@@ -584,11 +597,11 @@ export function generatePeerMentoringEffectivenessIntelligence(
     strengths.push("Risk assessments completed for all pairings");
   if (pairings.length > 0 && pairingQuality.matchCriteriaDefinedRate === 100)
     strengths.push("Match criteria defined for all pairings");
-  if (sessions.length > 0 && sessionEffectiveness.positiveOutcomeRate >= 90)
+  if (sessions.length > 0 && meets(sessionEffectiveness.positiveOutcomeRate, 90))
     strengths.push("Positive outcomes in " + sessionEffectiveness.positiveOutcomeRate + "% of mentoring sessions");
   if (sessions.length > 0 && sessionEffectiveness.goalsDiscussedRate === 100)
     strengths.push("Goals discussed in every mentoring session");
-  if (sessions.length > 0 && sessionEffectiveness.progressMadeRate >= 80)
+  if (sessions.length > 0 && meets(sessionEffectiveness.progressMadeRate, 80))
     strengths.push("Progress made in " + sessionEffectiveness.progressMadeRate + "% of sessions");
   if (reviews.length > 0 && relationshipSafeguarding.noSafeguardingConcernRate === 100)
     strengths.push("No safeguarding concerns identified in any relationship review");
@@ -603,23 +616,23 @@ export function generatePeerMentoringEffectivenessIntelligence(
   const areasForImprovement: string[] = [];
   if (pairings.length === 0)
     areasForImprovement.push("No peer mentoring pairings established — consider implementing a peer support programme");
-  if (pairings.length > 0 && pairingQuality.consentRate < 100)
-    areasForImprovement.push("Consent not obtained for " + (100 - pairingQuality.consentRate) + "% of pairings");
-  if (pairings.length > 0 && pairingQuality.riskAssessedRate < 100)
-    areasForImprovement.push("Risk assessments missing for " + (100 - pairingQuality.riskAssessedRate) + "% of pairings");
-  if (sessions.length > 0 && sessionEffectiveness.positiveOutcomeRate < 60)
+  if (pairings.length > 0 && below(pairingQuality.consentRate, 100))
+    areasForImprovement.push("Consent not obtained for " + (100 - pairingQuality.consentRate!) + "% of pairings");
+  if (pairings.length > 0 && below(pairingQuality.riskAssessedRate, 100))
+    areasForImprovement.push("Risk assessments missing for " + (100 - pairingQuality.riskAssessedRate!) + "% of pairings");
+  if (sessions.length > 0 && below(sessionEffectiveness.positiveOutcomeRate, 60))
     areasForImprovement.push("Low positive outcome rate at " + sessionEffectiveness.positiveOutcomeRate + "% — review session structure");
-  if (sessions.length > 0 && sessionEffectiveness.goalsDiscussedRate < 80)
+  if (sessions.length > 0 && below(sessionEffectiveness.goalsDiscussedRate, 80))
     areasForImprovement.push("Goals discussed in only " + sessionEffectiveness.goalsDiscussedRate + "% of sessions — target 100%");
   if (sessions.length === 0 && pairings.length > 0)
     areasForImprovement.push("No mentoring sessions recorded despite active pairings");
   if (reviews.length === 0 && pairings.length > 0)
     areasForImprovement.push("No relationship reviews completed — schedule regular safeguarding reviews");
-  if (reviews.length > 0 && relationshipSafeguarding.noSafeguardingConcernRate < 80)
-    areasForImprovement.push("Safeguarding concerns identified in " + (100 - relationshipSafeguarding.noSafeguardingConcernRate) + "% of reviews — requires attention");
+  if (reviews.length > 0 && below(relationshipSafeguarding.noSafeguardingConcernRate, 80))
+    areasForImprovement.push("Safeguarding concerns identified in " + (100 - relationshipSafeguarding.noSafeguardingConcernRate!) + "% of reviews — requires attention");
   if (training.length === 0)
     areasForImprovement.push("No staff training records for peer mentoring support");
-  if (training.length > 0 && staffSupport.safeguardingInPeerRate < 80)
+  if (training.length > 0 && below(staffSupport.safeguardingInPeerRate, 80))
     areasForImprovement.push("Only " + staffSupport.safeguardingInPeerRate + "% of staff trained in safeguarding within peer relationships");
 
   // -- Actions --
@@ -640,17 +653,17 @@ export function generatePeerMentoringEffectivenessIntelligence(
     if (otherConcerns.length > 0)
       actions.push("Review " + otherConcerns.length + " safeguarding concern(s) in peer relationships — ensure action plans in place");
   }
-  if (pairings.length > 0 && pairingQuality.consentRate < 100)
-    actions.push("URGENT: Obtain consent for all peer mentoring pairings — " + (100 - pairingQuality.consentRate) + "% outstanding");
-  if (pairings.length > 0 && pairingQuality.riskAssessedRate < 100)
-    actions.push("Complete risk assessments for all pairings — " + (100 - pairingQuality.riskAssessedRate) + "% outstanding");
+  if (pairings.length > 0 && below(pairingQuality.consentRate, 100))
+    actions.push("URGENT: Obtain consent for all peer mentoring pairings — " + (100 - pairingQuality.consentRate!) + "% outstanding");
+  if (pairings.length > 0 && below(pairingQuality.riskAssessedRate, 100))
+    actions.push("Complete risk assessments for all pairings — " + (100 - pairingQuality.riskAssessedRate!) + "% outstanding");
   if (pairings.length === 0)
     actions.push("Consider establishing peer mentoring or buddy scheme to support children's social development");
   if (reviews.length === 0 && pairings.length > 0)
     actions.push("Schedule relationship reviews for all active pairings — at minimum every half term");
-  if (sessions.length > 0 && sessionEffectiveness.progressMadeRate < 50)
+  if (sessions.length > 0 && below(sessionEffectiveness.progressMadeRate, 50))
     actions.push("Review mentoring session structure — progress made in only " + sessionEffectiveness.progressMadeRate + "% of sessions");
-  if (training.length > 0 && staffSupport.conflictResolutionRate < 75)
+  if (training.length > 0 && below(staffSupport.conflictResolutionRate, 75))
     actions.push("Arrange conflict resolution training — only " + staffSupport.conflictResolutionRate + "% of staff trained");
 
   const regulatoryLinks: string[] = [

@@ -4,7 +4,6 @@
 
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getOversightCategoryLabel,
   getOversightOutcomeLabel,
@@ -75,28 +74,6 @@ function makeTraining(overrides: Partial<StaffOversightTraining> = {}): StaffOve
 // pct
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("calculates percentage correctly", () => {
-    expect(pct(1, 2)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-
-  it("returns 100 for equal values", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-});
-
 // ══════════════════════════════════════════════════════════════════════════════
 // getRating
 // ══════════════════════════════════════════════════════════════════════════════
@@ -154,7 +131,7 @@ describe("evaluateOversightQuality", () => {
     const result = evaluateOversightQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalRecords).toBe(0);
-    expect(result.thoroughRate).toBe(0);
+    expect(result.thoroughRate).toBeNull();
   });
 
   it("returns max score (25) for perfect records", () => {

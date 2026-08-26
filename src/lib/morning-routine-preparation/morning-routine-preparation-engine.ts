@@ -1,3 +1,4 @@
+import { above, below, meanOf, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // Morning Routine & Preparation Intelligence Engine
 //
@@ -122,17 +123,23 @@ export interface StaffMorningTraining {
 export interface RoutineCompletionResult {
   overallScore: number;
   totalRecords: number;
-  completionRate: number;
-  onTimeRate: number;
-  breakfastRate: number;
-  supportDocumentationRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  onTimeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  breakfastRate: number | null;
+  supportDocumentationRate: number | null;
 }
 
 export interface WellbeingReadinessResult {
   overallScore: number;
-  moodPositiveRate: number;
-  parentInformedRate: number;
-  independentCompletionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  moodPositiveRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  parentInformedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  independentCompletionRate: number | null;
 }
 
 export interface MorningPolicyResult {
@@ -149,12 +156,18 @@ export interface MorningPolicyResult {
 export interface StaffMorningReadinessResult {
   overallScore: number;
   totalStaff: number;
-  morningRoutineManagementRate: number;
-  breakfastNutritionRate: number;
-  emotionalRegulationRate: number;
-  timeManagementRate: number;
-  schoolLiaisonRate: number;
-  handoverPracticeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  morningRoutineManagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  breakfastNutritionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  emotionalRegulationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timeManagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  schoolLiaisonRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  handoverPracticeRate: number | null;
 }
 
 export interface ChildMorningProfile {
@@ -186,11 +199,6 @@ export interface MorningRoutinePreparationIntelligence {
 
 // -- Helpers -------------------------------------------------------------------
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -216,10 +224,10 @@ export function evaluateRoutineCompletion(
     return {
       overallScore: 0,
       totalRecords: 0,
-      completionRate: 0,
-      onTimeRate: 0,
-      breakfastRate: 0,
-      supportDocumentationRate: 0,
+      completionRate: null,
+      onTimeRate: null,
+      breakfastRate: null,
+      supportDocumentationRate: null,
     };
   }
 
@@ -228,29 +236,29 @@ export function evaluateRoutineCompletion(
   const completed = records.filter(
     (r) => r.completionStatus === "completed_independently" || r.completionStatus === "completed_with_support",
   ).length;
-  const completionRate = pct(completed, records.length);
-  if (completionRate >= 80) score += 7;
-  else if (completionRate >= 60) score += 5;
-  else if (completionRate >= 40) score += 3;
-  else if (completionRate > 0) score += 1;
+  const completionRate = rate(completed, records.length);
+  if (meets(completionRate, 80)) score += 7;
+  else if (meets(completionRate, 60)) score += 5;
+  else if (meets(completionRate, 40)) score += 3;
+  else if (above(completionRate, 0)) score += 1;
 
   const onTime = records.filter((r) => r.onTimeForSchool).length;
-  const onTimeRate = pct(onTime, records.length);
-  if (onTimeRate >= 80) score += 6;
-  else if (onTimeRate >= 60) score += 4;
-  else if (onTimeRate >= 40) score += 2;
-  else if (onTimeRate > 0) score += 1;
+  const onTimeRate = rate(onTime, records.length);
+  if (meets(onTimeRate, 80)) score += 6;
+  else if (meets(onTimeRate, 60)) score += 4;
+  else if (meets(onTimeRate, 40)) score += 2;
+  else if (above(onTimeRate, 0)) score += 1;
 
   const breakfast = records.filter((r) => r.breakfastEaten).length;
-  const breakfastRate = pct(breakfast, records.length);
-  if (breakfastRate >= 80) score += 6;
-  else if (breakfastRate >= 60) score += 4;
-  else if (breakfastRate >= 40) score += 2;
-  else if (breakfastRate > 0) score += 1;
+  const breakfastRate = rate(breakfast, records.length);
+  if (meets(breakfastRate, 80)) score += 6;
+  else if (meets(breakfastRate, 60)) score += 4;
+  else if (meets(breakfastRate, 40)) score += 2;
+  else if (above(breakfastRate, 0)) score += 1;
 
   const staffSupported = records.filter((r) => r.staffSupported).length;
   const documented = records.filter((r) => r.documentedInLog).length;
-  const supportDocumentationRate = Math.round((pct(staffSupported, records.length) + pct(documented, records.length)) / 2);
+  const supportDocumentationRate = meanOf([rate(staffSupported, records.length), rate(documented, records.length)]) ?? 0;
   if (supportDocumentationRate >= 90) score += 6;
   else if (supportDocumentationRate >= 70) score += 4;
   else if (supportDocumentationRate >= 50) score += 3;
@@ -280,34 +288,34 @@ export function evaluateWellbeingReadiness(
   if (records.length === 0) {
     return {
       overallScore: 0,
-      moodPositiveRate: 0,
-      parentInformedRate: 0,
-      independentCompletionRate: 0,
+      moodPositiveRate: null,
+      parentInformedRate: null,
+      independentCompletionRate: null,
     };
   }
 
   let score = 0;
 
   const moodPositive = records.filter((r) => r.moodPositive).length;
-  const moodPositiveRate = pct(moodPositive, records.length);
-  if (moodPositiveRate >= 90) score += 8;
-  else if (moodPositiveRate >= 70) score += 6;
-  else if (moodPositiveRate >= 50) score += 4;
-  else if (moodPositiveRate > 0) score += 2;
+  const moodPositiveRate = rate(moodPositive, records.length);
+  if (meets(moodPositiveRate, 90)) score += 8;
+  else if (meets(moodPositiveRate, 70)) score += 6;
+  else if (meets(moodPositiveRate, 50)) score += 4;
+  else if (above(moodPositiveRate, 0)) score += 2;
 
   const parentInformed = records.filter((r) => r.parentCarerInformed).length;
-  const parentInformedRate = pct(parentInformed, records.length);
-  if (parentInformedRate >= 90) score += 9;
-  else if (parentInformedRate >= 70) score += 6;
-  else if (parentInformedRate >= 50) score += 4;
-  else if (parentInformedRate > 0) score += 2;
+  const parentInformedRate = rate(parentInformed, records.length);
+  if (meets(parentInformedRate, 90)) score += 9;
+  else if (meets(parentInformedRate, 70)) score += 6;
+  else if (meets(parentInformedRate, 50)) score += 4;
+  else if (above(parentInformedRate, 0)) score += 2;
 
   const independent = records.filter((r) => r.completionStatus === "completed_independently").length;
-  const independentCompletionRate = pct(independent, records.length);
-  if (independentCompletionRate >= 90) score += 8;
-  else if (independentCompletionRate >= 70) score += 6;
-  else if (independentCompletionRate >= 50) score += 4;
-  else if (independentCompletionRate > 0) score += 2;
+  const independentCompletionRate = rate(independent, records.length);
+  if (meets(independentCompletionRate, 90)) score += 8;
+  else if (meets(independentCompletionRate, 70)) score += 6;
+  else if (meets(independentCompletionRate, 50)) score += 4;
+  else if (above(independentCompletionRate, 0)) score += 2;
 
   return {
     overallScore: Math.min(score, 25),
@@ -385,55 +393,55 @@ export function evaluateStaffMorningReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      morningRoutineManagementRate: 0,
-      breakfastNutritionRate: 0,
-      emotionalRegulationRate: 0,
-      timeManagementRate: 0,
-      schoolLiaisonRate: 0,
-      handoverPracticeRate: 0,
+      morningRoutineManagementRate: null,
+      breakfastNutritionRate: null,
+      emotionalRegulationRate: null,
+      timeManagementRate: null,
+      schoolLiaisonRate: null,
+      handoverPracticeRate: null,
     };
   }
 
   let score = 0;
 
   const mrm = training.filter((t) => t.morningRoutineManagement).length;
-  const morningRoutineManagementRate = pct(mrm, training.length);
-  if (morningRoutineManagementRate >= 90) score += 6;
-  else if (morningRoutineManagementRate >= 70) score += 4;
-  else if (morningRoutineManagementRate >= 50) score += 3;
-  else if (morningRoutineManagementRate > 0) score += 1;
+  const morningRoutineManagementRate = rate(mrm, training.length);
+  if (meets(morningRoutineManagementRate, 90)) score += 6;
+  else if (meets(morningRoutineManagementRate, 70)) score += 4;
+  else if (meets(morningRoutineManagementRate, 50)) score += 3;
+  else if (above(morningRoutineManagementRate, 0)) score += 1;
 
   const bn = training.filter((t) => t.breakfastNutrition).length;
-  const breakfastNutritionRate = pct(bn, training.length);
-  if (breakfastNutritionRate >= 90) score += 5;
-  else if (breakfastNutritionRate >= 70) score += 3;
-  else if (breakfastNutritionRate >= 50) score += 2;
-  else if (breakfastNutritionRate > 0) score += 1;
+  const breakfastNutritionRate = rate(bn, training.length);
+  if (meets(breakfastNutritionRate, 90)) score += 5;
+  else if (meets(breakfastNutritionRate, 70)) score += 3;
+  else if (meets(breakfastNutritionRate, 50)) score += 2;
+  else if (above(breakfastNutritionRate, 0)) score += 1;
 
   const er = training.filter((t) => t.emotionalRegulation).length;
-  const emotionalRegulationRate = pct(er, training.length);
-  if (emotionalRegulationRate >= 90) score += 5;
-  else if (emotionalRegulationRate >= 70) score += 3;
-  else if (emotionalRegulationRate >= 50) score += 2;
-  else if (emotionalRegulationRate > 0) score += 1;
+  const emotionalRegulationRate = rate(er, training.length);
+  if (meets(emotionalRegulationRate, 90)) score += 5;
+  else if (meets(emotionalRegulationRate, 70)) score += 3;
+  else if (meets(emotionalRegulationRate, 50)) score += 2;
+  else if (above(emotionalRegulationRate, 0)) score += 1;
 
   const tm = training.filter((t) => t.timeManagement).length;
-  const timeManagementRate = pct(tm, training.length);
-  if (timeManagementRate >= 90) score += 4;
-  else if (timeManagementRate >= 70) score += 3;
-  else if (timeManagementRate >= 50) score += 2;
-  else if (timeManagementRate > 0) score += 1;
+  const timeManagementRate = rate(tm, training.length);
+  if (meets(timeManagementRate, 90)) score += 4;
+  else if (meets(timeManagementRate, 70)) score += 3;
+  else if (meets(timeManagementRate, 50)) score += 2;
+  else if (above(timeManagementRate, 0)) score += 1;
 
   const sl = training.filter((t) => t.schoolLiaison).length;
-  const schoolLiaisonRate = pct(sl, training.length);
-  if (schoolLiaisonRate >= 90) score += 3;
-  else if (schoolLiaisonRate >= 70) score += 2;
-  else if (schoolLiaisonRate >= 50) score += 1;
+  const schoolLiaisonRate = rate(sl, training.length);
+  if (meets(schoolLiaisonRate, 90)) score += 3;
+  else if (meets(schoolLiaisonRate, 70)) score += 2;
+  else if (meets(schoolLiaisonRate, 50)) score += 1;
 
   const hp = training.filter((t) => t.handoverPractice).length;
-  const handoverPracticeRate = pct(hp, training.length);
-  if (handoverPracticeRate >= 90) score += 2;
-  else if (handoverPracticeRate >= 70) score += 1;
+  const handoverPracticeRate = rate(hp, training.length);
+  if (meets(handoverPracticeRate, 90)) score += 2;
+  else if (meets(handoverPracticeRate, 70)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -475,23 +483,23 @@ export function buildChildMorningProfiles(
     const completed = entry.records.filter(
       (r) => r.completionStatus === "completed_independently" || r.completionStatus === "completed_with_support",
     ).length;
-    const completionRate = pct(completed, entry.records.length);
-    if (completionRate >= 80) score += 3;
-    else if (completionRate >= 50) score += 2;
-    else if (completionRate > 0) score += 1;
+    const completionRate = rate(completed, entry.records.length)!;
+    if (meets(completionRate, 80)) score += 3;
+    else if (meets(completionRate, 50)) score += 2;
+    else if (above(completionRate, 0)) score += 1;
 
     // On-time rate (0-3)
     const onTime = entry.records.filter((r) => r.onTimeForSchool).length;
-    const onTimeRate = pct(onTime, entry.records.length);
-    if (onTimeRate >= 80) score += 3;
-    else if (onTimeRate >= 50) score += 2;
-    else if (onTimeRate > 0) score += 1;
+    const onTimeRate = rate(onTime, entry.records.length)!;
+    if (meets(onTimeRate, 80)) score += 3;
+    else if (meets(onTimeRate, 50)) score += 2;
+    else if (above(onTimeRate, 0)) score += 1;
 
     // Breakfast rate (0-2)
     const breakfast = entry.records.filter((r) => r.breakfastEaten).length;
-    const breakfastRate = pct(breakfast, entry.records.length);
-    if (breakfastRate >= 80) score += 2;
-    else if (breakfastRate >= 50) score += 1;
+    const breakfastRate = rate(breakfast, entry.records.length)!;
+    if (meets(breakfastRate, 80)) score += 2;
+    else if (meets(breakfastRate, 50)) score += 1;
 
     return {
       childId: entry.childId,
@@ -533,22 +541,22 @@ export function generateMorningRoutinePreparationIntelligence(
   // -- Strengths
   const strengths: string[] = [];
 
-  if (routineCompletion.completionRate >= 80 && records.length > 0) {
+  if (meets(routineCompletion.completionRate, 80) && records.length > 0) {
     strengths.push("Children consistently completing morning routine tasks");
   }
-  if (routineCompletion.onTimeRate >= 80 && records.length > 0) {
+  if (meets(routineCompletion.onTimeRate, 80) && records.length > 0) {
     strengths.push("Strong punctuality with children consistently on time for school");
   }
-  if (routineCompletion.breakfastRate >= 80 && records.length > 0) {
+  if (meets(routineCompletion.breakfastRate, 80) && records.length > 0) {
     strengths.push("Good nutritional start with breakfast consistently eaten before school");
   }
-  if (wellbeingReadiness.moodPositiveRate >= 90 && records.length > 0) {
+  if (meets(wellbeingReadiness.moodPositiveRate, 90) && records.length > 0) {
     strengths.push("Children starting the day in a positive emotional state");
   }
-  if (wellbeingReadiness.independentCompletionRate >= 80 && records.length > 0) {
+  if (meets(wellbeingReadiness.independentCompletionRate, 80) && records.length > 0) {
     strengths.push("Children demonstrating strong independence in morning routines");
   }
-  if (staffReadiness.morningRoutineManagementRate >= 90 && training.length > 0) {
+  if (meets(staffReadiness.morningRoutineManagementRate, 90) && training.length > 0) {
     strengths.push("Staff team fully trained in morning routine management");
   }
   if (morningPolicy.individualRoutinePlans && policy) {
@@ -558,19 +566,19 @@ export function generateMorningRoutinePreparationIntelligence(
   // -- Areas for improvement
   const areasForImprovement: string[] = [];
 
-  if (routineCompletion.onTimeRate < 60 && records.length > 0) {
+  if (below(routineCompletion.onTimeRate, 60) && records.length > 0) {
     areasForImprovement.push("School punctuality below expected standard — review morning scheduling and transport arrangements");
   }
-  if (routineCompletion.breakfastRate < 60 && records.length > 0) {
+  if (below(routineCompletion.breakfastRate, 60) && records.length > 0) {
     areasForImprovement.push("Breakfast participation needs improvement — review breakfast provision and encouragement strategies");
   }
-  if (wellbeingReadiness.moodPositiveRate < 60 && records.length > 0) {
+  if (below(wellbeingReadiness.moodPositiveRate, 60) && records.length > 0) {
     areasForImprovement.push("Children's morning mood needs attention — review wake-up approaches and emotional support");
   }
-  if (wellbeingReadiness.independentCompletionRate < 50 && records.length > 0) {
+  if (below(wellbeingReadiness.independentCompletionRate, 50) && records.length > 0) {
     areasForImprovement.push("Independence in morning routines needs development — consider graduated support strategies");
   }
-  if (staffReadiness.emotionalRegulationRate < 70 && training.length > 0) {
+  if (below(staffReadiness.emotionalRegulationRate, 70) && training.length > 0) {
     areasForImprovement.push("Staff training on morning emotional regulation needs strengthening");
   }
 
@@ -586,13 +594,13 @@ export function generateMorningRoutinePreparationIntelligence(
   if (training.length === 0) {
     actions.push("URGENT: No staff morning training records — deliver training on morning routine management and school preparation");
   }
-  if (routineCompletion.completionRate < 60 && records.length > 0) {
+  if (below(routineCompletion.completionRate, 60) && records.length > 0) {
     actions.push("Improve morning routine completion rates across the home");
   }
-  if (wellbeingReadiness.parentInformedRate < 70 && records.length > 0) {
+  if (below(wellbeingReadiness.parentInformedRate, 70) && records.length > 0) {
     actions.push("Strengthen parent/carer communication about morning routines");
   }
-  if (routineCompletion.supportDocumentationRate < 70 && records.length > 0) {
+  if (below(routineCompletion.supportDocumentationRate, 70) && records.length > 0) {
     actions.push("Improve documentation of morning support in daily logs");
   }
 

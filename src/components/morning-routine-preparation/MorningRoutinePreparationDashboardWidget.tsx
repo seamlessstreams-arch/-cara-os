@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildMorningProfile { childId: string; childName: string; totalRecords: number; completionRate: number; onTimeRate: number; breakfastRate: number; overallScore: number; }
 
@@ -85,18 +86,18 @@ export default function MorningRoutinePreparationDashboardWidget() {
       <Section title="Routine Completion" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Records" value={data.routineCompletion.totalRecords} />
-          <Stat label="Completion" value={`${data.routineCompletion.completionRate}%`} />
-          <Stat label="On Time" value={`${data.routineCompletion.onTimeRate}%`} />
-          <Stat label="Breakfast" value={`${data.routineCompletion.breakfastRate}%`} />
+          <Stat label="Completion" value={`${formatRate(data.routineCompletion.completionRate)}`} />
+          <Stat label="On Time" value={`${formatRate(data.routineCompletion.onTimeRate)}`} />
+          <Stat label="Breakfast" value={`${formatRate(data.routineCompletion.breakfastRate)}`} />
           <Stat label="Support & Docs" value={`${data.routineCompletion.supportDocumentationRate}%`} />
         </div>
       </Section>
 
       <Section title="Wellbeing & Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Mood Positive" value={`${data.wellbeingReadiness.moodPositiveRate}%`} />
-          <Stat label="Parent Informed" value={`${data.wellbeingReadiness.parentInformedRate}%`} />
-          <Stat label="Independent" value={`${data.wellbeingReadiness.independentCompletionRate}%`} />
+          <Stat label="Mood Positive" value={`${formatRate(data.wellbeingReadiness.moodPositiveRate)}`} />
+          <Stat label="Parent Informed" value={`${formatRate(data.wellbeingReadiness.parentInformedRate)}`} />
+          <Stat label="Independent" value={`${formatRate(data.wellbeingReadiness.independentCompletionRate)}`} />
         </div>
       </Section>
 
@@ -119,12 +120,12 @@ export default function MorningRoutinePreparationDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
-          <Stat label="Routine Mgmt" value={`${data.staffReadiness.morningRoutineManagementRate}%`} />
-          <Stat label="Nutrition" value={`${data.staffReadiness.breakfastNutritionRate}%`} />
-          <Stat label="Emotional Reg" value={`${data.staffReadiness.emotionalRegulationRate}%`} />
-          <Stat label="Time Mgmt" value={`${data.staffReadiness.timeManagementRate}%`} />
-          <Stat label="School Liaison" value={`${data.staffReadiness.schoolLiaisonRate}%`} />
-          <Stat label="Handover" value={`${data.staffReadiness.handoverPracticeRate}%`} />
+          <Stat label="Routine Mgmt" value={`${formatRate(data.staffReadiness.morningRoutineManagementRate)}`} />
+          <Stat label="Nutrition" value={`${formatRate(data.staffReadiness.breakfastNutritionRate)}`} />
+          <Stat label="Emotional Reg" value={`${formatRate(data.staffReadiness.emotionalRegulationRate)}`} />
+          <Stat label="Time Mgmt" value={`${formatRate(data.staffReadiness.timeManagementRate)}`} />
+          <Stat label="School Liaison" value={`${formatRate(data.staffReadiness.schoolLiaisonRate)}`} />
+          <Stat label="Handover" value={`${formatRate(data.staffReadiness.handoverPracticeRate)}`} />
         </div>
       </Section>
 

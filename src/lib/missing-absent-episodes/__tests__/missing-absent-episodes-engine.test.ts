@@ -17,7 +17,6 @@ import {
   getEpisodeOutcomeLabel,
   getRiskLevelLabel,
   getRatingLabel,
-  pct,
   getRating,
 } from "../missing-absent-episodes-engine";
 import type {
@@ -140,37 +139,6 @@ const OAK_HOUSE_TRAINING: StaffMissingTraining[] = [
 // ══════════════════════════════════════════════════════════════════════════════
 // pct()
 // ══════════════════════════════════════════════════════════════════════════════
-
-describe("pct()", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-
-  it("returns 100 when num equals den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(1, 2)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-
-  it("handles large numerator", () => {
-    expect(pct(200, 100)).toBe(200);
-  });
-
-  it("handles pct(0, 0)", () => {
-    expect(pct(0, 0)).toBe(0);
-  });
-});
 
 // ══════════════════════════════════════════════════════════════════════════════
 // getRating()
@@ -302,10 +270,10 @@ describe("evaluateEpisodeManagement()", () => {
 
   it("returns correct rates for empty input", () => {
     const result = evaluateEpisodeManagement([]);
-    expect(result.returnInterviewCompletionRate).toBe(0);
-    expect(result.returnInterviewTimelyRate).toBe(0);
-    expect(result.policeNotificationRate).toBe(0);
-    expect(result.localAuthorityNotificationRate).toBe(0);
+    expect(result.returnInterviewCompletionRate).toBeNull();
+    expect(result.returnInterviewTimelyRate).toBeNull();
+    expect(result.policeNotificationRate).toBeNull();
+    expect(result.localAuthorityNotificationRate).toBeNull();
   });
 
   it("returns empty risk breakdown for empty input", () => {
@@ -410,10 +378,10 @@ describe("evaluatePreventionEffectiveness()", () => {
 
   it("returns zero rates for empty input", () => {
     const result = evaluatePreventionEffectiveness([]);
-    expect(result.triggerIdentificationRate).toBe(0);
-    expect(result.preventionPlanUpdateRate).toBe(0);
-    expect(result.resolutionRate).toBe(0);
-    expect(result.selfReturnRate).toBe(0);
+    expect(result.triggerIdentificationRate).toBeNull();
+    expect(result.preventionPlanUpdateRate).toBeNull();
+    expect(result.resolutionRate).toBeNull();
+    expect(result.selfReturnRate).toBeNull();
   });
 
   it("scores perfect prevention (all true, resolved, self-return)", () => {
@@ -508,7 +476,7 @@ describe("evaluateMissingPolicy()", () => {
     expect(result.score).toBe(0);
     expect(result.fieldsCompliant).toBe(0);
     expect(result.totalFields).toBe(7);
-    expect(result.complianceRate).toBe(0);
+    expect(result.complianceRate).toBeNull();
   });
 
   it("returns score 25 for fully compliant policy", () => {
@@ -667,7 +635,7 @@ describe("evaluateStaffMissingReadiness()", () => {
     const result = evaluateStaffMissingReadiness([]);
     expect(result.score).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.averageCompetencyRate).toBe(0);
+    expect(result.averageCompetencyRate).toBeNull();
   });
 
   it("returns empty competency breakdown for empty input", () => {

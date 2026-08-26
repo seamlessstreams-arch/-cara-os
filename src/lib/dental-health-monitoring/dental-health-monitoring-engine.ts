@@ -171,7 +171,8 @@ export interface ChildDentalSummary {
   childId: string;
   childName: string;
   appointmentCount: number;
-  attendanceRate: number;
+  /** null when this child has no appointments. */
+  attendanceRate: number | null;
   latestHygieneRating: OralHygieneRating | null;
   activeTreatments: number;
   overallScore: number;
@@ -534,7 +535,7 @@ export function buildChildDentalSummaries(
     const childPlans = treatmentPlans.filter((p) => p.childId === child.childId);
 
     const attended = childAppts.filter((a) => a.outcome === "attended").length;
-    const attendanceRate = rate(attended, childAppts.length)!;
+    const attendanceRate = rate(attended, childAppts.length);
 
     // Latest hygiene record by date
     const sortedRecords = [...childRecords].sort(

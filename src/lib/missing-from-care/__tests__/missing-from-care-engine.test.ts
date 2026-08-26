@@ -17,8 +17,7 @@ import {
   getRatingLabel,
   getMissingFromCareCategoryLabel,
   getMissingFromCareOutcomeLabel,
-  pct,
-} from "../missing-from-care-engine";
+  } from "../missing-from-care-engine";
 import type {
   MissingFromCareRecord,
   MissingFromCarePolicy,
@@ -94,40 +93,6 @@ const OAK_HOUSE_TRAINING: StaffMissingFromCareTraining[] = [
 // ══════════════════════════════════════════════════════════════════════════════
 // 1. pct helper
 // ══════════════════════════════════════════════════════════════════════════════
-
-describe("pct helper", () => {
-  it("returns 0 for zero denominator", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 for zero numerator and zero denominator", () => {
-    expect(pct(0, 0)).toBe(0);
-  });
-
-  it("returns 100 for equal numerator and denominator", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(1, 2)).toBe(50);
-  });
-
-  it("rounds correctly for 1/3", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-
-  it("rounds correctly for 2/3", () => {
-    expect(pct(2, 3)).toBe(67);
-  });
-
-  it("returns 0 for zero numerator", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-
-  it("returns 200 for 2x numerator", () => {
-    expect(pct(20, 10)).toBe(200);
-  });
-});
 
 // ══════════════════════════════════════════════════════════════════════════════
 // 2. getRating
@@ -236,10 +201,10 @@ describe("evaluateQuality", () => {
 
   it("returns zero rates for empty records", () => {
     const result = evaluateQuality([]);
-    expect(result.policeNotifiedTimelyRate).toBe(0);
-    expect(result.returnInterviewCompletedRate).toBe(0);
-    expect(result.riskAssessmentUpdatedRate).toBe(0);
-    expect(result.preventionPlanReviewedRate).toBe(0);
+    expect(result.policeNotifiedTimelyRate).toBeNull();
+    expect(result.returnInterviewCompletedRate).toBeNull();
+    expect(result.riskAssessmentUpdatedRate).toBeNull();
+    expect(result.preventionPlanReviewedRate).toBeNull();
   });
 
   it("calculates policeNotifiedTimely rate correctly", () => {
@@ -342,9 +307,9 @@ describe("evaluateCompliance", () => {
 
   it("returns zero rates for empty records", () => {
     const result = evaluateCompliance([]);
-    expect(result.documentationRate).toBe(0);
-    expect(result.timelyRecordingRate).toBe(0);
-    expect(result.returnInterviewCompletedRate).toBe(0);
+    expect(result.documentationRate).toBeNull();
+    expect(result.timelyRecordingRate).toBeNull();
+    expect(result.returnInterviewCompletedRate).toBeNull();
     expect(result.categoryDiversityRatio).toBe(0);
   });
 
@@ -539,12 +504,12 @@ describe("evaluateStaffReadiness", () => {
 
   it("returns zero rates for empty training", () => {
     const result = evaluateStaffReadiness([]);
-    expect(result.missingPersonsResponseRate).toBe(0);
-    expect(result.returnInterviewConductRate).toBe(0);
-    expect(result.riskAssessmentSkillsRate).toBe(0);
-    expect(result.policeNotificationProcessRate).toBe(0);
-    expect(result.patternRecognitionRate).toBe(0);
-    expect(result.preventionPlanningRate).toBe(0);
+    expect(result.missingPersonsResponseRate).toBeNull();
+    expect(result.returnInterviewConductRate).toBeNull();
+    expect(result.riskAssessmentSkillsRate).toBeNull();
+    expect(result.policeNotificationProcessRate).toBeNull();
+    expect(result.patternRecognitionRate).toBeNull();
+    expect(result.preventionPlanningRate).toBeNull();
   });
 
   it("calculates missingPersonsResponse rate correctly", () => {
@@ -1085,28 +1050,28 @@ describe("generateMissingFromCareIntelligence", () => {
 describe("edge cases via evaluators", () => {
   it("handles zero denominator in quality evaluator", () => {
     const result = evaluateQuality([]);
-    expect(result.policeNotifiedTimelyRate).toBe(0);
-    expect(result.returnInterviewCompletedRate).toBe(0);
-    expect(result.riskAssessmentUpdatedRate).toBe(0);
-    expect(result.preventionPlanReviewedRate).toBe(0);
+    expect(result.policeNotifiedTimelyRate).toBeNull();
+    expect(result.returnInterviewCompletedRate).toBeNull();
+    expect(result.riskAssessmentUpdatedRate).toBeNull();
+    expect(result.preventionPlanReviewedRate).toBeNull();
   });
 
   it("handles zero denominator in compliance evaluator", () => {
     const result = evaluateCompliance([]);
-    expect(result.documentationRate).toBe(0);
-    expect(result.timelyRecordingRate).toBe(0);
-    expect(result.returnInterviewCompletedRate).toBe(0);
+    expect(result.documentationRate).toBeNull();
+    expect(result.timelyRecordingRate).toBeNull();
+    expect(result.returnInterviewCompletedRate).toBeNull();
     expect(result.categoryDiversityRatio).toBe(0);
   });
 
   it("handles zero denominator in staff readiness evaluator", () => {
     const result = evaluateStaffReadiness([]);
-    expect(result.missingPersonsResponseRate).toBe(0);
-    expect(result.returnInterviewConductRate).toBe(0);
-    expect(result.riskAssessmentSkillsRate).toBe(0);
-    expect(result.policeNotificationProcessRate).toBe(0);
-    expect(result.patternRecognitionRate).toBe(0);
-    expect(result.preventionPlanningRate).toBe(0);
+    expect(result.missingPersonsResponseRate).toBeNull();
+    expect(result.returnInterviewConductRate).toBeNull();
+    expect(result.riskAssessmentSkillsRate).toBeNull();
+    expect(result.policeNotificationProcessRate).toBeNull();
+    expect(result.patternRecognitionRate).toBeNull();
+    expect(result.preventionPlanningRate).toBeNull();
   });
 
   it("single record with all false booleans scores low in quality", () => {

@@ -6,7 +6,6 @@ import {
   evaluateStaffParticipationReadiness,
   buildChildParticipationProfiles,
   generateParticipationIntelligence,
-  pct,
   getRating,
   getParticipationCategoryLabel,
   getParticipationOutcomeLabel,
@@ -83,14 +82,6 @@ function makeStaff(overrides: Partial<StaffParticipationTraining> = {}): StaffPa
 // ══════════════════════════════════════════════════════════════════════════════
 // pct helper
 // ══════════════════════════════════════════════════════════════════════════════
-
-describe("pct", () => {
-  it("returns percentage", () => expect(pct(3, 4)).toBe(75));
-  it("returns 0 when den is 0", () => expect(pct(5, 0)).toBe(0));
-  it("returns 100 for equal values", () => expect(pct(10, 10)).toBe(100));
-  it("returns 0 for zero numerator", () => expect(pct(0, 10)).toBe(0));
-  it("rounds correctly", () => { expect(pct(1, 3)).toBe(33); expect(pct(2, 3)).toBe(67); });
-});
 
 // ══════════════════════════════════════════════════════════════════════════════
 // getRating

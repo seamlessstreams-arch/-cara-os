@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { above, formatRate } from "@/lib/metrics/rate";
 import type { MedicationAdherenceMonitoringIntelligence } from "@/lib/medication-adherence-monitoring";
 
 const ratingColors: Record<string, string> = {
@@ -44,11 +45,11 @@ function Section({ title, defaultOpen = false, children }: { title: string; defa
   );
 }
 
-function Stat({ label, value, suffix }: { label: string; value: string | number; suffix?: string }) {
+function Stat({ label, value, suffix }: { label: string; value: string | number | null; suffix?: string }) {
   return (
     <div>
       <span className="text-gray-500">{label}:</span>{" "}
-      <span className="font-medium">{value}{suffix}</span>
+      <span className="font-medium">{value ?? "—"}{value !== null ? suffix : ""}</span>
     </div>
   );
 }
@@ -110,15 +111,15 @@ export default function MedicationAdherenceMonitoringDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Records</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.administrationQuality.correctAdministrationRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.administrationQuality.correctAdministrationRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Correct Admin</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.administrationQuality.twoStaffWitnessedRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.administrationQuality.twoStaffWitnessedRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Dual Witnessed</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className={`text-2xl font-bold ${data.medicationSafety.errorRate === 0 ? "text-green-600" : "text-amber-600"}`}>{data.medicationSafety.errorRate}%</div>
+          <div className={`text-2xl font-bold ${data.medicationSafety.errorRate === null ? "text-slate-500" : data.medicationSafety.errorRate === 0 ? "text-green-600" : "text-amber-600"}`}>{formatRate(data.medicationSafety.errorRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Error Rate</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -148,7 +149,7 @@ export default function MedicationAdherenceMonitoringDashboardWidget() {
                     <div>Records: <span className="font-medium">{child.totalRecords}</span></div>
                     <div>Correct Admin: <span className="font-medium">{child.correctAdministrationRate}%</span></div>
                     <div>Documented: <span className="font-medium">{child.documentedImmediatelyRate}%</span></div>
-                    <div>Error Rate: <span className={`font-medium ${child.errorRate > 0 ? "text-amber-600" : "text-green-600"}`}>{child.errorRate}%</span></div>
+                    <div>Error Rate: <span className={`font-medium ${above(child.errorRate, 0) ? "text-amber-600" : "text-green-600"}`}>{child.errorRate}%</span></div>
                   </div>
                 </div>
               ))}

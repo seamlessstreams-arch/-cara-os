@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara Participation Intelligence Engine  (v2 — standardised)
 //
@@ -87,18 +88,26 @@ export interface StaffParticipationTraining {
 export interface ParticipationQualityResult {
   overallScore: number;
   totalRecords: number;
-  childViewRecordedRate: number;
-  viewsActedUponRate: number;
-  advocacyOfferedRate: number;
-  feedbackProvidedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewRecordedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  viewsActedUponRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  advocacyOfferedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feedbackProvidedRate: number | null;
 }
 
 export interface ParticipationComplianceResult {
   overallScore: number;
-  documentationRate: number;
-  timelyRecordingRate: number;
-  viewsActedUponRate: number;
-  categoryDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  viewsActedUponRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  categoryDiversityRatio: number | null;
 }
 
 export interface ParticipationPolicyResult {
@@ -115,20 +124,28 @@ export interface ParticipationPolicyResult {
 export interface StaffParticipationReadinessResult {
   overallScore: number;
   totalStaff: number;
-  childVoiceCaptureRate: number;
-  advocacyKnowledgeRate: number;
-  participationFacilitationRate: number;
-  complaintsAwarenessRate: number;
-  rightsBasedPracticeRate: number;
-  feedbackResponsivenessRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childVoiceCaptureRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  advocacyKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  participationFacilitationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  complaintsAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  rightsBasedPracticeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feedbackResponsivenessRate: number | null;
 }
 
 export interface ChildParticipationProfile {
   childId: string;
   childName: string;
   totalRecords: number;
-  childViewRecordedRate: number;
-  viewsActedUponRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewRecordedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  viewsActedUponRate: number | null;
   categoriesCovered: string[];
   overallScore: number;
 }
@@ -151,11 +168,6 @@ export interface ParticipationIntelligence {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -204,16 +216,16 @@ export function getRatingLabel(r: Rating): string {
 
 export function evaluateParticipationQuality(records: ParticipationRecord[]): ParticipationQualityResult {
   const total = records.length;
-  const childViewRecordedRate = pct(records.filter(r => r.childViewRecorded).length, total);
-  const viewsActedUponRate = pct(records.filter(r => r.viewsActedUpon).length, total);
-  const advocacyOfferedRate = pct(records.filter(r => r.advocacyOffered).length, total);
-  const feedbackProvidedRate = pct(records.filter(r => r.feedbackProvided).length, total);
+  const childViewRecordedRate = rate(records.filter(r => r.childViewRecorded).length, total);
+  const viewsActedUponRate = rate(records.filter(r => r.viewsActedUpon).length, total);
+  const advocacyOfferedRate = rate(records.filter(r => r.advocacyOffered).length, total);
+  const feedbackProvidedRate = rate(records.filter(r => r.feedbackProvided).length, total);
 
   const raw =
-    (childViewRecordedRate / 100) * 7 +
-    (viewsActedUponRate / 100) * 6 +
-    (advocacyOfferedRate / 100) * 6 +
-    (feedbackProvidedRate / 100) * 6;
+    ((childViewRecordedRate ?? 0) / 100) * 7 +
+    ((viewsActedUponRate ?? 0) / 100) * 6 +
+    ((advocacyOfferedRate ?? 0) / 100) * 6 +
+    ((feedbackProvidedRate ?? 0) / 100) * 6;
 
   const overallScore = Math.min(25, Math.round(raw));
 
@@ -225,22 +237,22 @@ export function evaluateParticipationQuality(records: ParticipationRecord[]): Pa
 
 export function evaluateParticipationCompliance(records: ParticipationRecord[]): ParticipationComplianceResult {
   const total = records.length;
-  const documentationRate = pct(records.filter(r => r.documentationComplete).length, total);
-  const timelyRecordingRate = pct(records.filter(r => r.timelyRecording).length, total);
-  const viewsActedUponRate = pct(records.filter(r => r.viewsActedUpon).length, total);
+  const documentationRate = rate(records.filter(r => r.documentationComplete).length, total);
+  const timelyRecordingRate = rate(records.filter(r => r.timelyRecording).length, total);
+  const viewsActedUponRate = rate(records.filter(r => r.viewsActedUpon).length, total);
 
   const ALL_CATEGORIES: ParticipationCategory[] = [
     "care_plan_voice", "advocacy_access", "complaints_awareness", "house_meeting_input",
     "review_participation", "daily_decisions", "feedback_mechanism", "rights_education",
   ];
   const usedCategories = new Set(records.map(r => r.category));
-  const categoryDiversityRatio = pct(usedCategories.size, ALL_CATEGORIES.length);
+  const categoryDiversityRatio = rate(usedCategories.size, ALL_CATEGORIES.length);
 
   const raw =
-    (documentationRate / 100) * 8 +
-    (timelyRecordingRate / 100) * 7 +
-    (viewsActedUponRate / 100) * 5 +
-    (categoryDiversityRatio / 100) * 5;
+    ((documentationRate ?? 0) / 100) * 8 +
+    ((timelyRecordingRate ?? 0) / 100) * 7 +
+    ((viewsActedUponRate ?? 0) / 100) * 5 +
+    ((categoryDiversityRatio ?? 0) / 100) * 5;
 
   const overallScore = Math.min(25, Math.round(raw));
 
@@ -290,20 +302,20 @@ export function evaluateParticipationPolicy(policy: ParticipationPolicy | null):
 
 export function evaluateStaffParticipationReadiness(staff: StaffParticipationTraining[]): StaffParticipationReadinessResult {
   const total = staff.length;
-  const childVoiceCaptureRate = pct(staff.filter(s => s.childVoiceCapture).length, total);
-  const advocacyKnowledgeRate = pct(staff.filter(s => s.advocacyKnowledge).length, total);
-  const participationFacilitationRate = pct(staff.filter(s => s.participationFacilitation).length, total);
-  const complaintsAwarenessRate = pct(staff.filter(s => s.complaintsAwareness).length, total);
-  const rightsBasedPracticeRate = pct(staff.filter(s => s.rightsBasedPractice).length, total);
-  const feedbackResponsivenessRate = pct(staff.filter(s => s.feedbackResponsiveness).length, total);
+  const childVoiceCaptureRate = rate(staff.filter(s => s.childVoiceCapture).length, total);
+  const advocacyKnowledgeRate = rate(staff.filter(s => s.advocacyKnowledge).length, total);
+  const participationFacilitationRate = rate(staff.filter(s => s.participationFacilitation).length, total);
+  const complaintsAwarenessRate = rate(staff.filter(s => s.complaintsAwareness).length, total);
+  const rightsBasedPracticeRate = rate(staff.filter(s => s.rightsBasedPractice).length, total);
+  const feedbackResponsivenessRate = rate(staff.filter(s => s.feedbackResponsiveness).length, total);
 
   const raw =
-    (childVoiceCaptureRate / 100) * 6 +
-    (advocacyKnowledgeRate / 100) * 5 +
-    (participationFacilitationRate / 100) * 5 +
-    (complaintsAwarenessRate / 100) * 4 +
-    (rightsBasedPracticeRate / 100) * 3 +
-    (feedbackResponsivenessRate / 100) * 2;
+    ((childVoiceCaptureRate ?? 0) / 100) * 6 +
+    ((advocacyKnowledgeRate ?? 0) / 100) * 5 +
+    ((participationFacilitationRate ?? 0) / 100) * 5 +
+    ((complaintsAwarenessRate ?? 0) / 100) * 4 +
+    ((rightsBasedPracticeRate ?? 0) / 100) * 3 +
+    ((feedbackResponsivenessRate ?? 0) / 100) * 2;
 
   const overallScore = Math.min(25, Math.round(raw));
 
@@ -325,19 +337,19 @@ export function buildChildParticipationProfiles(records: ParticipationRecord[]):
   for (const [childId, recs] of byChild) {
     const childName = recs[0].childName;
     const totalRecords = recs.length;
-    const childViewRecordedRate = pct(recs.filter(r => r.childViewRecorded).length, totalRecords);
-    const viewsActedUponRate = pct(recs.filter(r => r.viewsActedUpon).length, totalRecords);
+    const childViewRecordedRate = rate(recs.filter(r => r.childViewRecorded).length, totalRecords);
+    const viewsActedUponRate = rate(recs.filter(r => r.viewsActedUpon).length, totalRecords);
     const categoriesCovered = [...new Set(recs.map(r => r.category))];
 
     let score = 0;
-    if (totalRecords >= 10) score += 2;
-    else if (totalRecords >= 5) score += 1;
-    if (childViewRecordedRate >= 80) score += 3;
-    else if (childViewRecordedRate >= 60) score += 2;
-    else if (childViewRecordedRate >= 40) score += 1;
-    if (viewsActedUponRate >= 80) score += 3;
-    else if (viewsActedUponRate >= 60) score += 2;
-    else if (viewsActedUponRate >= 40) score += 1;
+    if (meets(totalRecords, 10)) score += 2;
+    else if (meets(totalRecords, 5)) score += 1;
+    if (meets(childViewRecordedRate, 80)) score += 3;
+    else if (meets(childViewRecordedRate, 60)) score += 2;
+    else if (meets(childViewRecordedRate, 40)) score += 1;
+    if (meets(viewsActedUponRate, 80)) score += 3;
+    else if (meets(viewsActedUponRate, 60)) score += 2;
+    else if (meets(viewsActedUponRate, 40)) score += 1;
     if (categoriesCovered.length >= 4) score += 2;
     else if (categoriesCovered.length >= 2) score += 1;
 
@@ -374,32 +386,32 @@ export function generateParticipationIntelligence(input: {
   const rating = getRating(overallScore);
 
   const strengths: string[] = [];
-  if (participationQuality.childViewRecordedRate >= 80) strengths.push("Excellent child voice capture in participation records");
-  if (participationQuality.viewsActedUponRate >= 80) strengths.push("Children's views consistently acted upon");
-  if (participationQuality.advocacyOfferedRate >= 90) strengths.push("Advocacy consistently offered to all children");
-  if (participationQuality.feedbackProvidedRate >= 80) strengths.push("Strong feedback provision to children");
-  if (participationCompliance.documentationRate >= 90) strengths.push("Excellent participation documentation practices");
-  if (participationCompliance.categoryDiversityRatio >= 75) strengths.push("Good variety of participation methods used");
-  if (participationPolicy.overallScore >= 22) strengths.push("Comprehensive participation and advocacy policies in place");
-  if (staffReadiness.childVoiceCaptureRate >= 80) strengths.push("Staff well-trained in child voice capture");
-  if (staffReadiness.advocacyKnowledgeRate >= 80) strengths.push("Staff knowledgeable about advocacy services");
+  if (meets(participationQuality.childViewRecordedRate, 80)) strengths.push("Excellent child voice capture in participation records");
+  if (meets(participationQuality.viewsActedUponRate, 80)) strengths.push("Children's views consistently acted upon");
+  if (meets(participationQuality.advocacyOfferedRate, 90)) strengths.push("Advocacy consistently offered to all children");
+  if (meets(participationQuality.feedbackProvidedRate, 80)) strengths.push("Strong feedback provision to children");
+  if (meets(participationCompliance.documentationRate, 90)) strengths.push("Excellent participation documentation practices");
+  if (meets(participationCompliance.categoryDiversityRatio, 75)) strengths.push("Good variety of participation methods used");
+  if (meets(participationPolicy.overallScore, 22)) strengths.push("Comprehensive participation and advocacy policies in place");
+  if (meets(staffReadiness.childVoiceCaptureRate, 80)) strengths.push("Staff well-trained in child voice capture");
+  if (meets(staffReadiness.advocacyKnowledgeRate, 80)) strengths.push("Staff knowledgeable about advocacy services");
 
   const areasForImprovement: string[] = [];
-  if (participationQuality.childViewRecordedRate < 60) areasForImprovement.push("Children's views not consistently recorded");
-  if (participationQuality.viewsActedUponRate < 60) areasForImprovement.push("Low rate of acting on children's expressed views");
-  if (participationQuality.advocacyOfferedRate < 60) areasForImprovement.push("Advocacy not consistently offered to children");
-  if (participationCompliance.timelyRecordingRate < 70) areasForImprovement.push("Participation records not completed in a timely manner");
-  if (participationCompliance.categoryDiversityRatio < 50) areasForImprovement.push("Limited variety in participation methods");
-  if (staffReadiness.rightsBasedPracticeRate < 60) areasForImprovement.push("Staff rights-based practice training needs attention");
-  if (staffReadiness.complaintsAwarenessRate < 60) areasForImprovement.push("Staff complaints awareness needs development");
+  if (below(participationQuality.childViewRecordedRate, 60)) areasForImprovement.push("Children's views not consistently recorded");
+  if (below(participationQuality.viewsActedUponRate, 60)) areasForImprovement.push("Low rate of acting on children's expressed views");
+  if (below(participationQuality.advocacyOfferedRate, 60)) areasForImprovement.push("Advocacy not consistently offered to children");
+  if (below(participationCompliance.timelyRecordingRate, 70)) areasForImprovement.push("Participation records not completed in a timely manner");
+  if (below(participationCompliance.categoryDiversityRatio, 50)) areasForImprovement.push("Limited variety in participation methods");
+  if (below(staffReadiness.rightsBasedPracticeRate, 60)) areasForImprovement.push("Staff rights-based practice training needs attention");
+  if (below(staffReadiness.complaintsAwarenessRate, 60)) areasForImprovement.push("Staff complaints awareness needs development");
 
   const actions: string[] = [];
-  if (participationQuality.childViewRecordedRate < 40) actions.push("URGENT: Implement systematic child voice recording in all decisions");
-  if (participationQuality.advocacyOfferedRate < 40) actions.push("URGENT: Ensure independent advocacy is offered to every child");
-  if (participationCompliance.documentationRate < 60) actions.push("URGENT: Ensure all participation activities are properly documented");
+  if (below(participationQuality.childViewRecordedRate, 40)) actions.push("URGENT: Implement systematic child voice recording in all decisions");
+  if (below(participationQuality.advocacyOfferedRate, 40)) actions.push("URGENT: Ensure independent advocacy is offered to every child");
+  if (below(participationCompliance.documentationRate, 60)) actions.push("URGENT: Ensure all participation activities are properly documented");
   if (!policy || participationPolicy.overallScore < 16) actions.push("Review and update participation and advocacy policies");
-  if (staffReadiness.overallScore < 15) actions.push("Prioritise staff training in child voice and participation skills");
-  if (participationQuality.viewsActedUponRate < 50) actions.push("Review barriers to acting on children's expressed views");
+  if (below(staffReadiness.overallScore, 15)) actions.push("Prioritise staff training in child voice and participation skills");
+  if (below(participationQuality.viewsActedUponRate, 50)) actions.push("Review barriers to acting on children's expressed views");
   if (records.length === 0) actions.push("URGENT: No participation records found — establish child voice mechanisms immediately");
 
   const regulatoryLinks = [

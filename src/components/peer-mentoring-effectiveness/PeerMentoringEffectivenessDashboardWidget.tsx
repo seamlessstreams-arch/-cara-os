@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { below, formatRate } from "@/lib/metrics/rate";
 import type { PeerMentoringEffectivenessIntelligence } from "@/lib/peer-mentoring-effectiveness";
 
 const ratingColors: Record<string, string> = {
@@ -105,15 +106,15 @@ export function PeerMentoringEffectivenessDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Sessions</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.sessionEffectiveness.positiveOutcomeRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.sessionEffectiveness.positiveOutcomeRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Positive</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.relationshipSafeguarding.noSafeguardingConcernRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.relationshipSafeguarding.noSafeguardingConcernRate)}</div>
           <div className="text-xs text-gray-500 mt-1">No Concerns</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.pairingQuality.consentRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.pairingQuality.consentRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Consented</div>
         </div>
       </div>
@@ -151,41 +152,41 @@ export function PeerMentoringEffectivenessDashboardWidget() {
         <Section title="Pairing Quality">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Pairings:</span> <span className="font-medium">{data.pairingQuality.totalPairings}</span></div>
-            <div><span className="text-gray-500">Consent:</span> <span className="font-medium">{data.pairingQuality.consentRate}%</span></div>
-            <div><span className="text-gray-500">Risk Assessed:</span> <span className="font-medium">{data.pairingQuality.riskAssessedRate}%</span></div>
-            <div><span className="text-gray-500">Match Criteria:</span> <span className="font-medium">{data.pairingQuality.matchCriteriaDefinedRate}%</span></div>
-            <div><span className="text-gray-500">Active:</span> <span className="font-medium">{data.pairingQuality.activePairingRate}%</span></div>
+            <div><span className="text-gray-500">Consent:</span> <span className="font-medium">{formatRate(data.pairingQuality.consentRate)}</span></div>
+            <div><span className="text-gray-500">Risk Assessed:</span> <span className="font-medium">{formatRate(data.pairingQuality.riskAssessedRate)}</span></div>
+            <div><span className="text-gray-500">Match Criteria:</span> <span className="font-medium">{formatRate(data.pairingQuality.matchCriteriaDefinedRate)}</span></div>
+            <div><span className="text-gray-500">Active:</span> <span className="font-medium">{formatRate(data.pairingQuality.activePairingRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Session Effectiveness">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Sessions:</span> <span className="font-medium">{data.sessionEffectiveness.totalSessions}</span></div>
-            <div><span className="text-gray-500">Positive:</span> <span className="font-medium">{data.sessionEffectiveness.positiveOutcomeRate}%</span></div>
-            <div><span className="text-gray-500">Goals:</span> <span className="font-medium">{data.sessionEffectiveness.goalsDiscussedRate}%</span></div>
-            <div><span className="text-gray-500">Progress:</span> <span className="font-medium">{data.sessionEffectiveness.progressMadeRate}%</span></div>
-            <div><span className="text-gray-500">Regular:</span> <span className="font-medium">{data.sessionEffectiveness.regularSessionRate}%</span></div>
+            <div><span className="text-gray-500">Positive:</span> <span className="font-medium">{formatRate(data.sessionEffectiveness.positiveOutcomeRate)}</span></div>
+            <div><span className="text-gray-500">Goals:</span> <span className="font-medium">{formatRate(data.sessionEffectiveness.goalsDiscussedRate)}</span></div>
+            <div><span className="text-gray-500">Progress:</span> <span className="font-medium">{formatRate(data.sessionEffectiveness.progressMadeRate)}</span></div>
+            <div><span className="text-gray-500">Regular:</span> <span className="font-medium">{formatRate(data.sessionEffectiveness.regularSessionRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Relationship Safeguarding">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Reviews:</span> <span className="font-medium">{data.relationshipSafeguarding.totalReviews}</span></div>
-            <div><span className="text-gray-500">Healthy:</span> <span className="font-medium">{data.relationshipSafeguarding.healthyRelationshipRate}%</span></div>
-            <div><span className="text-gray-500">Boundaries:</span> <span className="font-medium">{data.relationshipSafeguarding.boundariesRespectedRate}%</span></div>
-            <div><span className="text-gray-500">No Concerns:</span> <span className={`font-medium ${data.relationshipSafeguarding.noSafeguardingConcernRate < 100 ? "text-amber-600" : "text-green-600"}`}>{data.relationshipSafeguarding.noSafeguardingConcernRate}%</span></div>
-            <div><span className="text-gray-500">Both Benefit:</span> <span className="font-medium">{data.relationshipSafeguarding.bothBenefitingRate}%</span></div>
+            <div><span className="text-gray-500">Healthy:</span> <span className="font-medium">{formatRate(data.relationshipSafeguarding.healthyRelationshipRate)}</span></div>
+            <div><span className="text-gray-500">Boundaries:</span> <span className="font-medium">{formatRate(data.relationshipSafeguarding.boundariesRespectedRate)}</span></div>
+            <div><span className="text-gray-500">No Concerns:</span> <span className={`font-medium ${below(data.relationshipSafeguarding.noSafeguardingConcernRate, 100) ? "text-amber-600" : "text-green-600"}`}>{formatRate(data.relationshipSafeguarding.noSafeguardingConcernRate)}</span></div>
+            <div><span className="text-gray-500">Both Benefit:</span> <span className="font-medium">{formatRate(data.relationshipSafeguarding.bothBenefitingRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Staff Support">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Staff:</span> <span className="font-medium">{data.staffSupport.totalStaff}</span></div>
-            <div><span className="text-gray-500">Mentoring:</span> <span className="font-medium">{data.staffSupport.peerMentoringTrainedRate}%</span></div>
-            <div><span className="text-gray-500">Safeguarding:</span> <span className="font-medium">{data.staffSupport.safeguardingInPeerRate}%</span></div>
-            <div><span className="text-gray-500">Conflict:</span> <span className="font-medium">{data.staffSupport.conflictResolutionRate}%</span></div>
-            <div><span className="text-gray-500">Boundaries:</span> <span className="font-medium">{data.staffSupport.boundarySettingRate}%</span></div>
-            <div><span className="text-gray-500">Supporting:</span> <span className="font-medium">{data.staffSupport.supportingMentorsRate}%</span></div>
+            <div><span className="text-gray-500">Mentoring:</span> <span className="font-medium">{formatRate(data.staffSupport.peerMentoringTrainedRate)}</span></div>
+            <div><span className="text-gray-500">Safeguarding:</span> <span className="font-medium">{formatRate(data.staffSupport.safeguardingInPeerRate)}</span></div>
+            <div><span className="text-gray-500">Conflict:</span> <span className="font-medium">{formatRate(data.staffSupport.conflictResolutionRate)}</span></div>
+            <div><span className="text-gray-500">Boundaries:</span> <span className="font-medium">{formatRate(data.staffSupport.boundarySettingRate)}</span></div>
+            <div><span className="text-gray-500">Supporting:</span> <span className="font-medium">{formatRate(data.staffSupport.supportingMentorsRate)}</span></div>
           </div>
         </Section>
 

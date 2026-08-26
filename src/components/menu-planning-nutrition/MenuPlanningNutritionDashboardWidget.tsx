@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import type { MenuPlanningNutritionIntelligence } from "@/lib/menu-planning-nutrition";
 
 const ratingColors: Record<string, string> = {
@@ -111,8 +112,8 @@ export function MenuPlanningNutritionDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Feedback Records</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className={`text-2xl font-bold ${data.nutritionCompliance.overallCompliantRate >= 100 ? "text-green-600" : "text-amber-600"}`}>
-            {data.nutritionCompliance.overallCompliantRate}%
+          <div className={`text-2xl font-bold ${meets(data.nutritionCompliance.overallCompliantRate, 100) ? "text-green-600" : "text-amber-600"}`}>
+            {formatRate(data.nutritionCompliance.overallCompliantRate)}
           </div>
           <div className="text-xs text-gray-500 mt-1">Audit Compliance</div>
         </div>
@@ -152,11 +153,11 @@ export function MenuPlanningNutritionDashboardWidget() {
         <Section title="Menu Quality">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
             <div><span className="text-gray-500">Total Menus:</span> <span className="font-medium">{data.menuQuality.totalMenus}</span></div>
-            <div><span className="text-gray-500">Nutritional Balance:</span> <span className="font-medium">{data.menuQuality.nutritionalBalanceRate}%</span></div>
-            <div><span className="text-gray-500">Variety:</span> <span className="font-medium">{data.menuQuality.varietyRate}%</span></div>
-            <div><span className="text-gray-500">Cultural Needs:</span> <span className="font-medium">{data.menuQuality.culturalAccommodationRate}%</span></div>
-            <div><span className="text-gray-500">Children Consulted:</span> <span className="font-medium">{data.menuQuality.childrenConsultedRate}%</span></div>
-            <div><span className="text-gray-500">Special Dietary Met:</span> <span className="font-medium">{data.menuQuality.specialDietaryMetRate}%</span></div>
+            <div><span className="text-gray-500">Nutritional Balance:</span> <span className="font-medium">{formatRate(data.menuQuality.nutritionalBalanceRate)}</span></div>
+            <div><span className="text-gray-500">Variety:</span> <span className="font-medium">{formatRate(data.menuQuality.varietyRate)}</span></div>
+            <div><span className="text-gray-500">Cultural Needs:</span> <span className="font-medium">{formatRate(data.menuQuality.culturalAccommodationRate)}</span></div>
+            <div><span className="text-gray-500">Children Consulted:</span> <span className="font-medium">{formatRate(data.menuQuality.childrenConsultedRate)}</span></div>
+            <div><span className="text-gray-500">Special Dietary Met:</span> <span className="font-medium">{formatRate(data.menuQuality.specialDietaryMetRate)}</span></div>
           </div>
         </Section>
 
@@ -164,31 +165,31 @@ export function MenuPlanningNutritionDashboardWidget() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
             <div><span className="text-gray-500">Total Feedback:</span> <span className="font-medium">{data.childSatisfaction.totalFeedback}</span></div>
             <div><span className="text-gray-500">Avg Enjoyment:</span> <span className="font-medium">{data.childSatisfaction.averageEnjoyment}/5</span></div>
-            <div><span className="text-gray-500">Portion OK:</span> <span className="font-medium">{data.childSatisfaction.portionSatisfactoryRate}%</span></div>
-            <div><span className="text-gray-500">Positive Feedback:</span> <span className="font-medium">{data.childSatisfaction.positiveFeedbackRate}%</span></div>
-            <div><span className="text-gray-500">Response Rate:</span> <span className="font-medium">{data.childSatisfaction.responseRate}%</span></div>
+            <div><span className="text-gray-500">Portion OK:</span> <span className="font-medium">{formatRate(data.childSatisfaction.portionSatisfactoryRate)}</span></div>
+            <div><span className="text-gray-500">Positive Feedback:</span> <span className="font-medium">{formatRate(data.childSatisfaction.positiveFeedbackRate)}</span></div>
+            <div><span className="text-gray-500">Response Rate:</span> <span className="font-medium">{formatRate(data.childSatisfaction.responseRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Child Involvement">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
             <div><span className="text-gray-500">Total Records:</span> <span className="font-medium">{data.childInvolvement.totalRecords}</span></div>
-            <div><span className="text-gray-500">Participation:</span> <span className="font-medium">{data.childInvolvement.participationRate}%</span></div>
+            <div><span className="text-gray-500">Participation:</span> <span className="font-medium">{formatRate(data.childInvolvement.participationRate)}</span></div>
             <div><span className="text-gray-500">Activity Types:</span> <span className="font-medium">{data.childInvolvement.activityVariety}</span></div>
-            <div><span className="text-gray-500">Child Enjoyed:</span> <span className="font-medium">{data.childInvolvement.childEnjoyedRate}%</span></div>
-            <div><span className="text-gray-500">Cooking Activities:</span> <span className="font-medium">{data.childInvolvement.cookingActivityRate}%</span></div>
-            <div><span className="text-gray-500">Staff Support:</span> <span className="font-medium">{data.childInvolvement.staffSupportRate}%</span></div>
+            <div><span className="text-gray-500">Child Enjoyed:</span> <span className="font-medium">{formatRate(data.childInvolvement.childEnjoyedRate)}</span></div>
+            <div><span className="text-gray-500">Cooking Activities:</span> <span className="font-medium">{formatRate(data.childInvolvement.cookingActivityRate)}</span></div>
+            <div><span className="text-gray-500">Staff Support:</span> <span className="font-medium">{formatRate(data.childInvolvement.staffSupportRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Nutrition Compliance">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
             <div><span className="text-gray-500">Total Audits:</span> <span className="font-medium">{data.nutritionCompliance.totalAudits}</span></div>
-            <div><span className="text-gray-500">Five-a-Day:</span> <span className="font-medium">{data.nutritionCompliance.fiveADayRate}%</span></div>
-            <div><span className="text-gray-500">Fresh Food:</span> <span className="font-medium">{data.nutritionCompliance.freshFoodRate}%</span></div>
-            <div><span className="text-gray-500">Sugar Limits:</span> <span className="font-medium">{data.nutritionCompliance.sugarLimitsRate}%</span></div>
-            <div><span className="text-gray-500">Portion Guidance:</span> <span className="font-medium">{data.nutritionCompliance.portionGuidanceRate}%</span></div>
-            <div><span className="text-gray-500">Overall Compliant:</span> <span className={`font-medium ${data.nutritionCompliance.overallCompliantRate >= 100 ? "text-green-600" : "text-amber-600"}`}>{data.nutritionCompliance.overallCompliantRate}%</span></div>
+            <div><span className="text-gray-500">Five-a-Day:</span> <span className="font-medium">{formatRate(data.nutritionCompliance.fiveADayRate)}</span></div>
+            <div><span className="text-gray-500">Fresh Food:</span> <span className="font-medium">{formatRate(data.nutritionCompliance.freshFoodRate)}</span></div>
+            <div><span className="text-gray-500">Sugar Limits:</span> <span className="font-medium">{formatRate(data.nutritionCompliance.sugarLimitsRate)}</span></div>
+            <div><span className="text-gray-500">Portion Guidance:</span> <span className="font-medium">{formatRate(data.nutritionCompliance.portionGuidanceRate)}</span></div>
+            <div><span className="text-gray-500">Overall Compliant:</span> <span className={`font-medium ${meets(data.nutritionCompliance.overallCompliantRate, 100) ? "text-green-600" : "text-amber-600"}`}>{formatRate(data.nutritionCompliance.overallCompliantRate)}</span></div>
           </div>
         </Section>
 

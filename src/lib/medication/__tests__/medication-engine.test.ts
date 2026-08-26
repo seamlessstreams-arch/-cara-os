@@ -4,7 +4,6 @@
 
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getMedicationCategoryLabel,
   getMedicationOutcomeLabel,
@@ -73,32 +72,6 @@ function makeTraining(overrides: Partial<StaffMedicationTraining> = {}): StaffMe
 // ══════════════════════════════════════════════════════════════════════════════
 // pct helper
 // ══════════════════════════════════════════════════════════════════════════════
-
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when both are 0", () => {
-    expect(pct(0, 0)).toBe(0);
-  });
-
-  it("calculates percentage correctly", () => {
-    expect(pct(3, 4)).toBe(75);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-
-  it("returns 100 for equal numerator and denominator", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-});
 
 // ══════════════════════════════════════════════════════════════════════════════
 // getRating
@@ -200,9 +173,9 @@ describe("evaluateMedicationQuality", () => {
   it("returns zeros for empty records (PRESENCE pattern)", () => {
     const result = evaluateMedicationQuality([]);
     expect(result.totalRecords).toBe(0);
-    expect(result.administeredCorrectlyRate).toBe(0);
-    expect(result.signedByTwoStaffRate).toBe(0);
-    expect(result.consentOnFileRate).toBe(0);
+    expect(result.administeredCorrectlyRate).toBeNull();
+    expect(result.signedByTwoStaffRate).toBeNull();
+    expect(result.consentOnFileRate).toBeNull();
     expect(result.errorReportedRate).toBeNull();
     expect(result.overallScore).toBe(0);
     expect(result.rating).toBe("inadequate");
@@ -367,9 +340,9 @@ describe("evaluateMedicationQuality", () => {
 describe("evaluateMedicationCompliance", () => {
   it("returns zeros for empty records (PRESENCE pattern)", () => {
     const result = evaluateMedicationCompliance([]);
-    expect(result.documentationRate).toBe(0);
-    expect(result.timelyRecordingRate).toBe(0);
-    expect(result.signedByTwoStaffRate).toBe(0);
+    expect(result.documentationRate).toBeNull();
+    expect(result.timelyRecordingRate).toBeNull();
+    expect(result.signedByTwoStaffRate).toBeNull();
     expect(result.categoryDiversityRatio).toBe(0);
     expect(result.overallScore).toBe(0);
     expect(result.rating).toBe("inadequate");
@@ -642,12 +615,12 @@ describe("evaluateStaffMedicationReadiness", () => {
     expect(result.totalStaff).toBe(0);
     expect(result.overallScore).toBe(0);
     expect(result.rating).toBe("inadequate");
-    expect(result.medicationAdministrationRate).toBe(0);
-    expect(result.controlledDrugHandlingRate).toBe(0);
-    expect(result.errorReportingRate).toBe(0);
-    expect(result.consentProcessRate).toBe(0);
-    expect(result.storageChecksRate).toBe(0);
-    expect(result.medicationReviewRate).toBe(0);
+    expect(result.medicationAdministrationRate).toBeNull();
+    expect(result.controlledDrugHandlingRate).toBeNull();
+    expect(result.errorReportingRate).toBeNull();
+    expect(result.consentProcessRate).toBeNull();
+    expect(result.storageChecksRate).toBeNull();
+    expect(result.medicationReviewRate).toBeNull();
   });
 
   it("scores 25 for fully trained staff", () => {
@@ -1205,12 +1178,6 @@ describe("Edge Cases", () => {
     ];
     const result = evaluateStaffMedicationReadiness(staff);
     expect(result.overallScore).toBe(0);
-  });
-
-  it("pct handles large numbers correctly", () => {
-    expect(pct(999, 1000)).toBe(100);
-    expect(pct(1, 1000)).toBe(0);
-    expect(pct(5, 1000)).toBe(1);
   });
 
   it("child profile with all false booleans and single record", () => {

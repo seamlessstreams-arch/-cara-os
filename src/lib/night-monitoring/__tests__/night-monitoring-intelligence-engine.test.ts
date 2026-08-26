@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getNightMonitoringCategoryLabel,
   getNightMonitoringOutcomeLabel,
@@ -89,27 +88,6 @@ function makeStaff(overrides: Partial<StaffNightMonitoringTraining> = {}): Staff
 // pct()
 // ═══════════════════════════════════════════════════════════════════════════
 
-describe("pct", () => {
-  it("returns percentage rounded to nearest integer", () => {
-    expect(pct(3, 4)).toBe(75);
-  });
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-  it("returns 100 for 1/1", () => {
-    expect(pct(1, 1)).toBe(100);
-  });
-  it("returns 0 for 0/10", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-  it("rounds correctly (2/3 = 67)", () => {
-    expect(pct(2, 3)).toBe(67);
-  });
-  it("rounds correctly (1/3 = 33)", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-});
-
 // ═══════════════════════════════════════════════════════════════════════════
 // getRating()
 // ═══════════════════════════════════════════════════════════════════════════
@@ -187,10 +165,10 @@ describe("evaluateNightMonitoringQuality", () => {
     const result = evaluateNightMonitoringQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalRecords).toBe(0);
-    expect(result.checkCompletedOnTimeRate).toBe(0);
-    expect(result.observationsRecordedRate).toBe(0);
-    expect(result.incidentEscalatedRate).toBe(0);
-    expect(result.childWelfareConfirmedRate).toBe(0);
+    expect(result.checkCompletedOnTimeRate).toBeNull();
+    expect(result.observationsRecordedRate).toBeNull();
+    expect(result.incidentEscalatedRate).toBeNull();
+    expect(result.childWelfareConfirmedRate).toBeNull();
   });
 
   it("returns 25 for all-perfect records", () => {
@@ -296,9 +274,9 @@ describe("evaluateNightMonitoringCompliance", () => {
     const result = evaluateNightMonitoringCompliance([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalRecords).toBe(0);
-    expect(result.documentationRate).toBe(0);
-    expect(result.timelyRecordingRate).toBe(0);
-    expect(result.checkCompletedOnTimeRate).toBe(0);
+    expect(result.documentationRate).toBeNull();
+    expect(result.timelyRecordingRate).toBeNull();
+    expect(result.checkCompletedOnTimeRate).toBeNull();
     expect(result.categoryDiversityRatio).toBe(0);
     expect(result.uniqueCategories).toBe(0);
   });
@@ -476,12 +454,12 @@ describe("evaluateStaffNightMonitoringReadiness", () => {
     const result = evaluateStaffNightMonitoringReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.nightCareCompetencyRate).toBe(0);
-    expect(result.nightIncidentManagementRate).toBe(0);
-    expect(result.sleepMonitoringSkillsRate).toBe(0);
-    expect(result.nightMedicationHandlingRate).toBe(0);
-    expect(result.childWelfareAssessmentRate).toBe(0);
-    expect(result.nightHandoverProcedureRate).toBe(0);
+    expect(result.nightCareCompetencyRate).toBeNull();
+    expect(result.nightIncidentManagementRate).toBeNull();
+    expect(result.sleepMonitoringSkillsRate).toBeNull();
+    expect(result.nightMedicationHandlingRate).toBeNull();
+    expect(result.childWelfareAssessmentRate).toBeNull();
+    expect(result.nightHandoverProcedureRate).toBeNull();
   });
 
   it("returns 25 for all-true staff", () => {

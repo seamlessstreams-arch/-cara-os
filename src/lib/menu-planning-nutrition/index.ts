@@ -10,7 +10,6 @@ export {
   buildChildNutritionProfiles,
   generateMenuPlanningNutritionIntelligence,
   getRating,
-  pct,
   getMealTypeLabel,
   getNutritionalBalanceLabel,
   getCulturalAccommodationLabel,

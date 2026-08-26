@@ -18,6 +18,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -196,13 +197,17 @@ export interface StaffNutritionTraining {
 export interface MealQualityResult {
   totalMeals: number;
   nutritionQualityGoodPlusCount: number;
-  nutritionQualityGoodPlusRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  nutritionQualityGoodPlusRate: number | null;
   portionConsumedFullMostCount: number;
-  portionConsumedFullMostRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  portionConsumedFullMostRate: number | null;
   dietaryRequirementsMetCount: number;
-  dietaryRequirementsMetRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dietaryRequirementsMetRate: number | null;
   childSatisfiedCount: number;
-  childSatisfiedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childSatisfiedRate: number | null;
   qualityBreakdown: Record<NutritionQuality, number>;
   portionBreakdown: Record<PortionConsumed, number>;
   mealTypeBreakdown: Record<MealType, number>;
@@ -214,11 +219,14 @@ export interface MealQualityResult {
 export interface HydrationStandardsResult {
   totalRecords: number;
   hydrationGoodPlusCount: number;
-  hydrationGoodPlusRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  hydrationGoodPlusRate: number | null;
   targetMetCount: number;
-  targetMetRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  targetMetRate: number | null;
   encouragementGivenCount: number;
-  encouragementGivenRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  encouragementGivenRate: number | null;
   averageCupsConsumed: number;
   averageTargetCups: number;
   averageCupsVsTargetRate: number | null;
@@ -246,19 +254,26 @@ export interface NutritionPolicyResult {
 export interface StaffNutritionReadinessResult {
   totalStaff: number;
   foodHygieneCount: number;
-  foodHygieneRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  foodHygieneRate: number | null;
   dietaryRequirementsCount: number;
-  dietaryRequirementsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dietaryRequirementsRate: number | null;
   allergyAwarenessCount: number;
-  allergyAwarenessRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  allergyAwarenessRate: number | null;
   mealPreparationCount: number;
-  mealPreparationRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  mealPreparationRate: number | null;
   nutritionGuidanceCount: number;
-  nutritionGuidanceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  nutritionGuidanceRate: number | null;
   hydrationMonitoringCount: number;
-  hydrationMonitoringRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  hydrationMonitoringRate: number | null;
   overallTrainedCount: number;
-  overallTrainedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  overallTrainedRate: number | null;
   score: number; // 0-25
   strengths: string[];
   concerns: string[];
@@ -269,12 +284,13 @@ export interface ChildNutritionProfile {
   childName: string;
   totalMeals: number;
   averageNutritionScore: number | null;
-  portionFullMostRate: number;
-  satisfactionRate: number;
-  dietaryRequirementsMetRate: number;
+  portionFullMostRate: number | null;
+  satisfactionRate: number | null;
+  dietaryRequirementsMetRate: number | null;
   hydrationRecords: number;
   averageHydrationCups: number | null;
-  hydrationTargetMetRate: number;
+  /** null when this child has no hydration records. */
+  hydrationTargetMetRate: number | null;
   overallScore: number; // 0-10
 }
 
@@ -302,11 +318,6 @@ export interface NutritionHydrationMonitoringIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
@@ -332,13 +343,13 @@ export function evaluateMealQuality(
     return {
       totalMeals: 0,
       nutritionQualityGoodPlusCount: 0,
-      nutritionQualityGoodPlusRate: 0,
+      nutritionQualityGoodPlusRate: null,
       portionConsumedFullMostCount: 0,
-      portionConsumedFullMostRate: 0,
+      portionConsumedFullMostRate: null,
       dietaryRequirementsMetCount: 0,
-      dietaryRequirementsMetRate: 0,
+      dietaryRequirementsMetRate: null,
       childSatisfiedCount: 0,
-      childSatisfiedRate: 0,
+      childSatisfiedRate: null,
       qualityBreakdown: { excellent: 0, good: 0, adequate: 0, poor: 0, concern: 0 },
       portionBreakdown: { full: 0, most: 0, half: 0, little: 0, none: 0 },
       mealTypeBreakdown: { breakfast: 0, lunch: 0, dinner: 0, snack: 0, supper: 0 },
@@ -352,21 +363,21 @@ export function evaluateMealQuality(
   const nutritionQualityGoodPlusCount = meals.filter(
     (m) => m.nutritionQuality === "excellent" || m.nutritionQuality === "good",
   ).length;
-  const nutritionQualityGoodPlusRate = pct(nutritionQualityGoodPlusCount, totalMeals);
+  const nutritionQualityGoodPlusRate = rate(nutritionQualityGoodPlusCount, totalMeals);
 
   // Portion consumed full/most
   const portionConsumedFullMostCount = meals.filter(
     (m) => m.portionConsumed === "full" || m.portionConsumed === "most",
   ).length;
-  const portionConsumedFullMostRate = pct(portionConsumedFullMostCount, totalMeals);
+  const portionConsumedFullMostRate = rate(portionConsumedFullMostCount, totalMeals);
 
   // Dietary requirements met
   const dietaryRequirementsMetCount = meals.filter((m) => m.dietaryRequirementsMet).length;
-  const dietaryRequirementsMetRate = pct(dietaryRequirementsMetCount, totalMeals);
+  const dietaryRequirementsMetRate = rate(dietaryRequirementsMetCount, totalMeals);
 
   // Child satisfied
   const childSatisfiedCount = meals.filter((m) => m.childSatisfied).length;
-  const childSatisfiedRate = pct(childSatisfiedCount, totalMeals);
+  const childSatisfiedRate = rate(childSatisfiedCount, totalMeals);
 
   // Breakdowns
   const qualityBreakdown: Record<NutritionQuality, number> = {
@@ -393,13 +404,13 @@ export function evaluateMealQuality(
   // Score (out of 25)
   let score = 0;
   // Nutrition quality good+ rate: max 7
-  score += (nutritionQualityGoodPlusRate / 100) * 7;
+  score += (nutritionQualityGoodPlusRate! / 100) * 7;
   // Portion consumed full/most rate: max 6
-  score += (portionConsumedFullMostRate / 100) * 6;
+  score += ((portionConsumedFullMostRate ?? 0) / 100) * 6;
   // Dietary requirements met rate: max 6
-  score += (dietaryRequirementsMetRate / 100) * 6;
+  score += ((dietaryRequirementsMetRate ?? 0) / 100) * 6;
   // Child satisfied rate: max 6
-  score += (childSatisfiedRate / 100) * 6;
+  score += ((childSatisfiedRate ?? 0) / 100) * 6;
 
   score = Math.min(Math.round(score * 10) / 10, 25);
 
@@ -407,27 +418,27 @@ export function evaluateMealQuality(
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (nutritionQualityGoodPlusRate >= 90) {
+  if (meets(nutritionQualityGoodPlusRate, 90)) {
     strengths.push("Excellent nutrition quality: " + nutritionQualityGoodPlusRate + "% of meals rated good or above");
-  } else if (nutritionQualityGoodPlusRate < 70) {
+  } else if (below(nutritionQualityGoodPlusRate, 70)) {
     concerns.push("Nutrition quality at " + nutritionQualityGoodPlusRate + "% good or above — meal planning review needed");
   }
 
-  if (portionConsumedFullMostRate >= 90) {
+  if (meets(portionConsumedFullMostRate, 90)) {
     strengths.push("Strong portion consumption: " + portionConsumedFullMostRate + "% of meals with full or most eaten");
-  } else if (portionConsumedFullMostRate < 70) {
+  } else if (below(portionConsumedFullMostRate, 70)) {
     concerns.push("Portion consumption at " + portionConsumedFullMostRate + "% — children may not be eating enough at mealtimes");
   }
 
-  if (dietaryRequirementsMetRate >= 95) {
+  if (meets(dietaryRequirementsMetRate, 95)) {
     strengths.push("Dietary requirements met in " + dietaryRequirementsMetRate + "% of meals — excellent compliance");
-  } else if (dietaryRequirementsMetRate < 80) {
+  } else if (below(dietaryRequirementsMetRate, 80)) {
     concerns.push("Dietary requirements met in only " + dietaryRequirementsMetRate + "% of meals — regulatory breach risk");
   }
 
-  if (childSatisfiedRate >= 90) {
+  if (meets(childSatisfiedRate, 90)) {
     strengths.push("High child satisfaction: " + childSatisfiedRate + "% of children satisfied with meals");
-  } else if (childSatisfiedRate < 70) {
+  } else if (below(childSatisfiedRate, 70)) {
     concerns.push("Child meal satisfaction at " + childSatisfiedRate + "% — children's preferences may not be adequately considered");
   }
 
@@ -466,14 +477,14 @@ export function evaluateHydrationStandards(
     return {
       totalRecords: 0,
       hydrationGoodPlusCount: 0,
-      hydrationGoodPlusRate: 0,
+      hydrationGoodPlusRate: null,
       targetMetCount: 0,
-      targetMetRate: 0,
+      targetMetRate: null,
       encouragementGivenCount: 0,
-      encouragementGivenRate: 0,
+      encouragementGivenRate: null,
       averageCupsConsumed: 0,
       averageTargetCups: 0,
-      averageCupsVsTargetRate: 0,
+      averageCupsVsTargetRate: null,
       hydrationBreakdown: { excellent: 0, good: 0, adequate: 0, poor: 0 },
       score: 0,
       strengths: [],
@@ -485,15 +496,15 @@ export function evaluateHydrationStandards(
   const hydrationGoodPlusCount = records.filter(
     (r) => r.hydrationLevel === "excellent" || r.hydrationLevel === "good",
   ).length;
-  const hydrationGoodPlusRate = pct(hydrationGoodPlusCount, totalRecords);
+  const hydrationGoodPlusRate = rate(hydrationGoodPlusCount, totalRecords);
 
   // Target met (cupsConsumed >= targetCups)
   const targetMetCount = records.filter((r) => r.cupsConsumed >= r.targetCups).length;
-  const targetMetRate = pct(targetMetCount, totalRecords);
+  const targetMetRate = rate(targetMetCount, totalRecords);
 
   // Encouragement given
   const encouragementGivenCount = records.filter((r) => r.encouragementGiven).length;
-  const encouragementGivenRate = pct(encouragementGivenCount, totalRecords);
+  const encouragementGivenRate = rate(encouragementGivenCount, totalRecords);
 
   // Average cups consumed and target
   const totalCupsConsumed = records.reduce((sum, r) => sum + r.cupsConsumed, 0);
@@ -515,11 +526,11 @@ export function evaluateHydrationStandards(
   // Score (out of 25)
   let score = 0;
   // Hydration good+ rate: max 7
-  score += (hydrationGoodPlusRate / 100) * 7;
+  score += (hydrationGoodPlusRate! / 100) * 7;
   // Target met rate: max 6
-  score += (targetMetRate / 100) * 6;
+  score += (targetMetRate! / 100) * 6;
   // Encouragement rate: max 6
-  score += (encouragementGivenRate / 100) * 6;
+  score += ((encouragementGivenRate ?? 0) / 100) * 6;
   // Average cups vs target: max 6
   const cupsRatio = Math.min((averageCupsVsTargetRate ?? 0) / 100, 1);
   score += cupsRatio * 6;
@@ -530,21 +541,21 @@ export function evaluateHydrationStandards(
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (hydrationGoodPlusRate >= 90) {
+  if (meets(hydrationGoodPlusRate, 90)) {
     strengths.push("Excellent hydration levels: " + hydrationGoodPlusRate + "% of records at good or above");
-  } else if (hydrationGoodPlusRate < 70) {
+  } else if (below(hydrationGoodPlusRate, 70)) {
     concerns.push("Hydration levels at " + hydrationGoodPlusRate + "% good or above — hydration support needs improvement");
   }
 
-  if (targetMetRate >= 90) {
+  if (meets(targetMetRate, 90)) {
     strengths.push("Strong hydration target achievement: " + targetMetRate + "% of children meeting daily targets");
-  } else if (targetMetRate < 70) {
+  } else if (below(targetMetRate, 70)) {
     concerns.push("Only " + targetMetRate + "% of children meeting hydration targets — increased encouragement needed");
   }
 
-  if (encouragementGivenRate >= 90) {
+  if (meets(encouragementGivenRate, 90)) {
     strengths.push("Consistent hydration encouragement: " + encouragementGivenRate + "% of records show staff encouragement");
-  } else if (encouragementGivenRate < 70) {
+  } else if (below(encouragementGivenRate, 70)) {
     concerns.push("Hydration encouragement at " + encouragementGivenRate + "% — staff should actively promote fluid intake");
   }
 
@@ -691,19 +702,19 @@ export function evaluateStaffNutritionReadiness(
     return {
       totalStaff: 0,
       foodHygieneCount: 0,
-      foodHygieneRate: 0,
+      foodHygieneRate: null,
       dietaryRequirementsCount: 0,
-      dietaryRequirementsRate: 0,
+      dietaryRequirementsRate: null,
       allergyAwarenessCount: 0,
-      allergyAwarenessRate: 0,
+      allergyAwarenessRate: null,
       mealPreparationCount: 0,
-      mealPreparationRate: 0,
+      mealPreparationRate: null,
       nutritionGuidanceCount: 0,
-      nutritionGuidanceRate: 0,
+      nutritionGuidanceRate: null,
       hydrationMonitoringCount: 0,
-      hydrationMonitoringRate: 0,
+      hydrationMonitoringRate: null,
       overallTrainedCount: 0,
-      overallTrainedRate: 0,
+      overallTrainedRate: null,
       score: 0,
       strengths: [],
       concerns: ["No staff nutrition training records — staff readiness cannot be assessed"],
@@ -712,22 +723,22 @@ export function evaluateStaffNutritionReadiness(
 
   // Individual field counts
   const foodHygieneCount = training.filter((t) => t.foodHygiene).length;
-  const foodHygieneRate = pct(foodHygieneCount, totalStaff);
+  const foodHygieneRate = rate(foodHygieneCount, totalStaff);
 
   const dietaryRequirementsCount = training.filter((t) => t.dietaryRequirements).length;
-  const dietaryRequirementsRate = pct(dietaryRequirementsCount, totalStaff);
+  const dietaryRequirementsRate = rate(dietaryRequirementsCount, totalStaff);
 
   const allergyAwarenessCount = training.filter((t) => t.allergyAwareness).length;
-  const allergyAwarenessRate = pct(allergyAwarenessCount, totalStaff);
+  const allergyAwarenessRate = rate(allergyAwarenessCount, totalStaff);
 
   const mealPreparationCount = training.filter((t) => t.mealPreparation).length;
-  const mealPreparationRate = pct(mealPreparationCount, totalStaff);
+  const mealPreparationRate = rate(mealPreparationCount, totalStaff);
 
   const nutritionGuidanceCount = training.filter((t) => t.nutritionGuidance).length;
-  const nutritionGuidanceRate = pct(nutritionGuidanceCount, totalStaff);
+  const nutritionGuidanceRate = rate(nutritionGuidanceCount, totalStaff);
 
   const hydrationMonitoringCount = training.filter((t) => t.hydrationMonitoring).length;
-  const hydrationMonitoringRate = pct(hydrationMonitoringCount, totalStaff);
+  const hydrationMonitoringRate = rate(hydrationMonitoringCount, totalStaff);
 
   // Overall trained (all six fields)
   const overallTrainedCount = training.filter(
@@ -739,17 +750,17 @@ export function evaluateStaffNutritionReadiness(
       t.nutritionGuidance &&
       t.hydrationMonitoring,
   ).length;
-  const overallTrainedRate = pct(overallTrainedCount, totalStaff);
+  const overallTrainedRate = rate(overallTrainedCount, totalStaff);
 
   // Score (out of 25) — weighted fields
   // foodHygiene=6, dietaryRequirements=5, allergyAwareness=5, mealPreparation=4, nutritionGuidance=3, hydrationMonitoring=2
   let score = 0;
-  score += (foodHygieneRate / 100) * 6;
-  score += (dietaryRequirementsRate / 100) * 5;
-  score += (allergyAwarenessRate / 100) * 5;
-  score += (mealPreparationRate / 100) * 4;
-  score += (nutritionGuidanceRate / 100) * 3;
-  score += (hydrationMonitoringRate / 100) * 2;
+  score += (foodHygieneRate! / 100) * 6;
+  score += (dietaryRequirementsRate! / 100) * 5;
+  score += ((allergyAwarenessRate ?? 0) / 100) * 5;
+  score += ((mealPreparationRate ?? 0) / 100) * 4;
+  score += ((nutritionGuidanceRate ?? 0) / 100) * 3;
+  score += ((hydrationMonitoringRate ?? 0) / 100) * 2;
 
   score = Math.min(Math.round(score * 10) / 10, 25);
 
@@ -757,33 +768,33 @@ export function evaluateStaffNutritionReadiness(
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (foodHygieneRate >= 90) {
+  if (meets(foodHygieneRate, 90)) {
     strengths.push("Excellent food hygiene training: " + foodHygieneRate + "% of staff trained — Food Safety Act 1990 compliant");
-  } else if (foodHygieneRate < 70) {
+  } else if (below(foodHygieneRate, 70)) {
     concerns.push("Food hygiene training at " + foodHygieneRate + "% — all food-handling staff must be trained per Food Safety Act 1990");
   }
 
-  if (allergyAwarenessRate >= 90) {
+  if (meets(allergyAwarenessRate, 90)) {
     strengths.push("Strong allergy awareness: " + allergyAwarenessRate + "% of staff trained in allergen management");
-  } else if (allergyAwarenessRate < 70) {
+  } else if (below(allergyAwarenessRate, 70)) {
     concerns.push("Allergy awareness at " + allergyAwarenessRate + "% — risk of allergen incidents without adequate training");
   }
 
-  if (dietaryRequirementsRate >= 90) {
+  if (meets(dietaryRequirementsRate, 90)) {
     strengths.push("Dietary requirements training at " + dietaryRequirementsRate + "% — staff can support diverse dietary needs");
-  } else if (dietaryRequirementsRate < 70) {
+  } else if (below(dietaryRequirementsRate, 70)) {
     concerns.push("Dietary requirements training at " + dietaryRequirementsRate + "% — staff may not adequately support children's dietary needs");
   }
 
-  if (mealPreparationRate >= 90) {
+  if (meets(mealPreparationRate, 90)) {
     strengths.push("Meal preparation training at " + mealPreparationRate + "% — staff equipped to prepare nutritious meals");
-  } else if (mealPreparationRate < 70) {
+  } else if (below(mealPreparationRate, 70)) {
     concerns.push("Meal preparation training at " + mealPreparationRate + "% — quality of meals may be compromised");
   }
 
   if (overallTrainedRate === 100) {
     strengths.push("100% of staff fully trained across all nutrition competencies");
-  } else if (overallTrainedRate < 50) {
+  } else if (below(overallTrainedRate, 50)) {
     concerns.push("Only " + overallTrainedRate + "% of staff have complete nutrition training — significant training gap");
   }
 
@@ -847,15 +858,15 @@ export function buildChildNutritionProfiles(
     const portionFullMostCount = childMeals.filter(
       (m) => m.portionConsumed === "full" || m.portionConsumed === "most",
     ).length;
-    const portionFullMostRate = pct(portionFullMostCount, totalMeals);
+    const portionFullMostRate = rate(portionFullMostCount, totalMeals);
 
     // Satisfaction rate
     const satisfiedCount = childMeals.filter((m) => m.childSatisfied).length;
-    const satisfactionRate = pct(satisfiedCount, totalMeals);
+    const satisfactionRate = rate(satisfiedCount, totalMeals);
 
     // Dietary requirements met rate
     const dietaryMetCount = childMeals.filter((m) => m.dietaryRequirementsMet).length;
-    const dietaryRequirementsMetRate = pct(dietaryMetCount, totalMeals);
+    const dietaryRequirementsMetRate = rate(dietaryMetCount, totalMeals);
 
     // Hydration
     const hydrationRecordsCount = childHydration.length;
@@ -863,20 +874,20 @@ export function buildChildNutritionProfiles(
       ? Math.round((childHydration.reduce((sum, r) => sum + r.cupsConsumed, 0) / hydrationRecordsCount) * 10) / 10
       : null;
     const hydrationTargetMetCount = childHydration.filter((r) => r.cupsConsumed >= r.targetCups).length;
-    const hydrationTargetMetRate = pct(hydrationTargetMetCount, hydrationRecordsCount);
+    const hydrationTargetMetRate = rate(hydrationTargetMetCount, hydrationRecordsCount);
 
     // Overall score 0-10
     let overallScore = 0;
     // Nutrition quality contribution (0-3): averageNutritionScore out of 4, scaled to 3
     overallScore += ((averageNutritionScore ?? 0) / 4) * 3;
     // Portion consumption (0-2)
-    overallScore += (portionFullMostRate / 100) * 2;
+    overallScore += ((portionFullMostRate ?? 0) / 100) * 2;
     // Satisfaction (0-2)
-    overallScore += (satisfactionRate / 100) * 2;
+    overallScore += ((satisfactionRate ?? 0) / 100) * 2;
     // Dietary requirements met (0-1.5)
-    overallScore += (dietaryRequirementsMetRate / 100) * 1.5;
+    overallScore += ((dietaryRequirementsMetRate ?? 0) / 100) * 1.5;
     // Hydration target met (0-1.5)
-    overallScore += (hydrationTargetMetRate / 100) * 1.5;
+    overallScore += ((hydrationTargetMetRate ?? 0) / 100) * 1.5;
 
     overallScore = clamp(Math.round(overallScore * 10) / 10, 0, 10);
 
@@ -1055,27 +1066,27 @@ function generateActions(
   }
 
   // Low dietary requirements met
-  if (mealQuality.dietaryRequirementsMetRate < 80 && mealQuality.totalMeals > 0) {
+  if (below(mealQuality.dietaryRequirementsMetRate, 80) && mealQuality.totalMeals > 0) {
     actions.push("HIGH: Dietary requirements met in only " + mealQuality.dietaryRequirementsMetRate + "% of meals — review and update dietary plans for all children");
   }
 
   // Low hydration targets
-  if (hydration.targetMetRate < 70 && hydration.totalRecords > 0) {
+  if (below(hydration.targetMetRate, 70) && hydration.totalRecords > 0) {
     actions.push("HIGH: Only " + hydration.targetMetRate + "% of children meeting hydration targets — increase fluid availability and staff encouragement");
   }
 
   // Staff training gaps
-  if (staff.overallTrainedRate < 50 && staff.totalStaff > 0) {
+  if (below(staff.overallTrainedRate, 50) && staff.totalStaff > 0) {
     actions.push("HIGH: Only " + staff.overallTrainedRate + "% of staff fully trained in nutrition — schedule comprehensive training programme");
   }
 
   // Food hygiene gap
-  if (staff.foodHygieneRate < 70 && staff.totalStaff > 0) {
+  if (below(staff.foodHygieneRate, 70) && staff.totalStaff > 0) {
     actions.push("HIGH: Food hygiene training at " + staff.foodHygieneRate + "% — all food-handling staff require Level 2 food hygiene certification");
   }
 
   // Low child satisfaction
-  if (mealQuality.childSatisfiedRate < 70 && mealQuality.totalMeals > 0) {
+  if (below(mealQuality.childSatisfiedRate, 70) && mealQuality.totalMeals > 0) {
     actions.push("MEDIUM: Child meal satisfaction at " + mealQuality.childSatisfiedRate + "% — conduct menu review with children's input");
   }
 

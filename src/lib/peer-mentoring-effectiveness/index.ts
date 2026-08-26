@@ -5,7 +5,6 @@ export {
   evaluateRelationshipSafeguarding,
   evaluateStaffSupport,
   buildChildMentoringProfiles,
-  pct,
   getRating,
   getMentoringRoleLabel,
   getSessionOutcomeLabel,

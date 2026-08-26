@@ -6,7 +6,6 @@ import {
   evaluatePolicy,
   evaluateStaffReadiness,
   buildChildNightCareProfiles,
-  pct,
   getRating,
   getCategoryLabel,
   getOutcomeLabel,
@@ -71,16 +70,6 @@ function makeTraining(overrides: Partial<NightCareStaffTraining> = {}): NightCar
 // pct
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("pct", () => {
-  it("returns 0 for 0/0", () => expect(pct(0, 0)).toBe(0));
-  it("calculates correctly", () => expect(pct(3, 4)).toBe(75));
-  it("rounds to nearest integer", () => expect(pct(1, 3)).toBe(33));
-  it("returns 100 for equal values", () => expect(pct(5, 5)).toBe(100));
-  it("returns 0 for 0 numerator", () => expect(pct(0, 10)).toBe(0));
-  it("handles large numbers", () => expect(pct(999, 1000)).toBe(100));
-  it("rounds 50.5 correctly", () => expect(pct(1, 2)).toBe(50));
-});
-
 // ══════════════════════════════════════════════════════════════════════════════
 // getRating
 // ══════════════════════════════════════════════════════════════════════════════
@@ -136,10 +125,10 @@ describe("evaluateQuality", () => {
     const result = evaluateQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalRecords).toBe(0);
-    expect(result.nightCheckCompletedRate).toBe(0);
-    expect(result.sleepPatternRecordedRate).toBe(0);
-    expect(result.incidentHandledAppropriatelyRate).toBe(0);
-    expect(result.childComfortCheckedRate).toBe(0);
+    expect(result.nightCheckCompletedRate).toBeNull();
+    expect(result.sleepPatternRecordedRate).toBeNull();
+    expect(result.incidentHandledAppropriatelyRate).toBeNull();
+    expect(result.childComfortCheckedRate).toBeNull();
   });
 
   it("scores 25 for all-true records", () => {
@@ -278,9 +267,9 @@ describe("evaluateCompliance", () => {
     const result = evaluateCompliance([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalRecords).toBe(0);
-    expect(result.documentationRate).toBe(0);
-    expect(result.timelyRecordingRate).toBe(0);
-    expect(result.nightCheckCompletedRate).toBe(0);
+    expect(result.documentationRate).toBeNull();
+    expect(result.timelyRecordingRate).toBeNull();
+    expect(result.nightCheckCompletedRate).toBeNull();
     expect(result.categoryDiversityRatio).toBe(0);
     expect(result.uniqueCategories).toBe(0);
   });
@@ -555,12 +544,12 @@ describe("evaluateStaffReadiness", () => {
     const result = evaluateStaffReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.nightCareCompetencyRate).toBe(0);
-    expect(result.sleepMonitoringSkillsRate).toBe(0);
-    expect(result.nightIncidentResponseRate).toBe(0);
-    expect(result.nightMedicationHandlingRate).toBe(0);
-    expect(result.childComfortTechniquesRate).toBe(0);
-    expect(result.nightHandoverProcedureRate).toBe(0);
+    expect(result.nightCareCompetencyRate).toBeNull();
+    expect(result.sleepMonitoringSkillsRate).toBeNull();
+    expect(result.nightIncidentResponseRate).toBeNull();
+    expect(result.nightMedicationHandlingRate).toBeNull();
+    expect(result.childComfortTechniquesRate).toBeNull();
+    expect(result.nightHandoverProcedureRate).toBeNull();
   });
 
   it("scores 25 for all-true training", () => {

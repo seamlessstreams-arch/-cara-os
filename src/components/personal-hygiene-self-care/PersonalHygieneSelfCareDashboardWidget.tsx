@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildHygieneProfile { childId: string; childName: string; totalRecords: number; independenceRate: number; dignityRate: number; areasCount: number; overallScore: number; }
 
@@ -85,19 +86,19 @@ export default function PersonalHygieneSelfCareDashboardWidget() {
       <Section title="Self-Care Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Records" value={data.selfCareQuality.totalRecords} />
-          <Stat label="Independence" value={`${data.selfCareQuality.independenceRate}%`} />
-          <Stat label="Dignity" value={`${data.selfCareQuality.dignityRate}%`} />
-          <Stat label="Choice Respected" value={`${data.selfCareQuality.choiceRespectedRate}%`} />
-          <Stat label="Products" value={`${data.selfCareQuality.appropriateProductsRate}%`} />
+          <Stat label="Independence" value={`${formatRate(data.selfCareQuality.independenceRate)}`} />
+          <Stat label="Dignity" value={`${formatRate(data.selfCareQuality.dignityRate)}`} />
+          <Stat label="Choice Respected" value={`${formatRate(data.selfCareQuality.choiceRespectedRate)}`} />
+          <Stat label="Products" value={`${formatRate(data.selfCareQuality.appropriateProductsRate)}`} />
         </div>
       </Section>
 
       <Section title="Dignity & Privacy">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Privacy" value={`${data.dignityPrivacy.privacyRate}%`} />
-          <Stat label="Sensitive Staff" value={`${data.dignityPrivacy.sensitiveStaffRate}%`} />
-          <Stat label="Documented" value={`${data.dignityPrivacy.documentedRate}%`} />
-          <Stat label="Dignity" value={`${data.dignityPrivacy.dignityMaintainedRate}%`} />
+          <Stat label="Privacy" value={`${formatRate(data.dignityPrivacy.privacyRate)}`} />
+          <Stat label="Sensitive Staff" value={`${formatRate(data.dignityPrivacy.sensitiveStaffRate)}`} />
+          <Stat label="Documented" value={`${formatRate(data.dignityPrivacy.documentedRate)}`} />
+          <Stat label="Dignity" value={`${formatRate(data.dignityPrivacy.dignityMaintainedRate)}`} />
         </div>
       </Section>
 
@@ -120,12 +121,12 @@ export default function PersonalHygieneSelfCareDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
-          <Stat label="Personal Care" value={`${data.staffReadiness.personalCareSupportRate}%`} />
-          <Stat label="Dignity" value={`${data.staffReadiness.dignityInPracticeRate}%`} />
-          <Stat label="Cultural" value={`${data.staffReadiness.culturalAwarenessRate}%`} />
-          <Stat label="Menstrual Health" value={`${data.staffReadiness.menstrualHealthRate}%`} />
-          <Stat label="Infection Control" value={`${data.staffReadiness.infectionControlRate}%`} />
-          <Stat label="Sensitive Comms" value={`${data.staffReadiness.sensitiveConversationsRate}%`} />
+          <Stat label="Personal Care" value={`${formatRate(data.staffReadiness.personalCareSupportRate)}`} />
+          <Stat label="Dignity" value={`${formatRate(data.staffReadiness.dignityInPracticeRate)}`} />
+          <Stat label="Cultural" value={`${formatRate(data.staffReadiness.culturalAwarenessRate)}`} />
+          <Stat label="Menstrual Health" value={`${formatRate(data.staffReadiness.menstrualHealthRate)}`} />
+          <Stat label="Infection Control" value={`${formatRate(data.staffReadiness.infectionControlRate)}`} />
+          <Stat label="Sensitive Comms" value={`${formatRate(data.staffReadiness.sensitiveConversationsRate)}`} />
         </div>
       </Section>
 

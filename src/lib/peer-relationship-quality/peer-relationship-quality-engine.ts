@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // Peer Relationship Quality Intelligence Engine
 // Pure deterministic — no AI, no external calls, no randomness, no Date.now()
 
@@ -99,18 +100,26 @@ export interface StaffPeerSupportTraining {
 export interface PeerQualityResult {
   overallScore: number;
   totalInteractions: number;
-  positiveRelationshipRate: number;
-  positiveEngagementRate: number;
-  conflictResolutionRate: number;
-  socialSkillsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveRelationshipRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveEngagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  conflictResolutionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  socialSkillsRate: number | null;
 }
 
 export interface PeerComplianceResult {
   overallScore: number;
-  documentedRate: number;
-  staffFacilitatedRate: number;
-  feedbackRate: number;
-  interactionDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffFacilitatedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feedbackRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  interactionDiversityRatio: number | null;
 }
 
 export interface PeerPolicyResult {
@@ -127,20 +136,28 @@ export interface PeerPolicyResult {
 export interface StaffPeerReadinessResult {
   overallScore: number;
   totalStaff: number;
-  relationshipBuildingRate: number;
-  conflictMediationRate: number;
-  antibullyingAwarenessRate: number;
-  socialSkillsFacilitationRate: number;
-  therapeuticGroupWorkRate: number;
-  restorativePracticeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  relationshipBuildingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  conflictMediationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  antibullyingAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  socialSkillsFacilitationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  therapeuticGroupWorkRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  restorativePracticeRate: number | null;
 }
 
 export interface ChildPeerProfile {
   childId: string;
   childName: string;
   totalInteractions: number;
-  positiveRelationshipRate: number;
-  positiveEngagementRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveRelationshipRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveEngagementRate: number | null;
   overallScore: number;
 }
 
@@ -163,11 +180,6 @@ export interface PeerRelationshipQualityIntelligence {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -179,7 +191,7 @@ export function getRating(score: number): Rating {
 
 export function evaluatePeerQuality(interactions: PeerInteraction[]): PeerQualityResult {
   if (interactions.length === 0) {
-    return { overallScore: 0, totalInteractions: 0, positiveRelationshipRate: 0, positiveEngagementRate: 0, conflictResolutionRate: 0, socialSkillsRate: 0 };
+    return { overallScore: 0, totalInteractions: 0, positiveRelationshipRate: null, positiveEngagementRate: null, conflictResolutionRate: null, socialSkillsRate: null };
   }
 
   const total = interactions.length;
@@ -188,15 +200,15 @@ export function evaluatePeerQuality(interactions: PeerInteraction[]): PeerQualit
   const conflictCount = interactions.filter((i) => i.conflictResolvedConstructively).length;
   const socialCount = interactions.filter((i) => i.socialSkillsDemonstrated).length;
 
-  const positiveRelationshipRate = pct(positiveCount, total);
-  const positiveEngagementRate = pct(engagementCount, total);
-  const conflictResolutionRate = pct(conflictCount, total);
-  const socialSkillsRate = pct(socialCount, total);
+  const positiveRelationshipRate = rate(positiveCount, total);
+  const positiveEngagementRate = rate(engagementCount, total);
+  const conflictResolutionRate = rate(conflictCount, total);
+  const socialSkillsRate = rate(socialCount, total);
 
-  const prScore = Math.round((positiveRelationshipRate / 100) * 7);
-  const peScore = Math.round((positiveEngagementRate / 100) * 6);
-  const crScore = Math.round((conflictResolutionRate / 100) * 6);
-  const ssScore = Math.round((socialSkillsRate / 100) * 6);
+  const prScore = Math.round(((positiveRelationshipRate ?? 0) / 100) * 7);
+  const peScore = Math.round(((positiveEngagementRate ?? 0) / 100) * 6);
+  const crScore = Math.round(((conflictResolutionRate ?? 0) / 100) * 6);
+  const ssScore = Math.round(((socialSkillsRate ?? 0) / 100) * 6);
 
   const overallScore = Math.min(25, prScore + peScore + crScore + ssScore);
 
@@ -205,7 +217,7 @@ export function evaluatePeerQuality(interactions: PeerInteraction[]): PeerQualit
 
 export function evaluatePeerCompliance(interactions: PeerInteraction[]): PeerComplianceResult {
   if (interactions.length === 0) {
-    return { overallScore: 0, documentedRate: 0, staffFacilitatedRate: 0, feedbackRate: 0, interactionDiversityRatio: 0 };
+    return { overallScore: 0, documentedRate: null, staffFacilitatedRate: null, feedbackRate: null, interactionDiversityRatio: 0 };
   }
 
   const total = interactions.length;
@@ -213,16 +225,16 @@ export function evaluatePeerCompliance(interactions: PeerInteraction[]): PeerCom
   const staffCount = interactions.filter((i) => i.staffFacilitated).length;
   const feedbackCount = interactions.filter((i) => i.feedbackGiven).length;
   const uniqueTypes = new Set(interactions.map((i) => i.interactionType)).size;
-  const diversityRatio = pct(uniqueTypes, 8);
+  const diversityRatio = rate(uniqueTypes, 8);
 
-  const documentedRate = pct(documentedCount, total);
-  const staffFacilitatedRate = pct(staffCount, total);
-  const feedbackRate = pct(feedbackCount, total);
+  const documentedRate = rate(documentedCount, total);
+  const staffFacilitatedRate = rate(staffCount, total);
+  const feedbackRate = rate(feedbackCount, total);
 
-  const docScore = Math.round((documentedRate / 100) * 8);
-  const sfScore = Math.round((staffFacilitatedRate / 100) * 7);
-  const fbScore = Math.round((feedbackRate / 100) * 5);
-  const divScore = Math.round((diversityRatio / 100) * 5);
+  const docScore = Math.round(((documentedRate ?? 0) / 100) * 8);
+  const sfScore = Math.round(((staffFacilitatedRate ?? 0) / 100) * 7);
+  const fbScore = Math.round(((feedbackRate ?? 0) / 100) * 5);
+  const divScore = Math.round((diversityRatio! / 100) * 5);
 
   const overallScore = Math.min(25, docScore + sfScore + fbScore + divScore);
 
@@ -266,7 +278,7 @@ export function evaluatePeerPolicy(policy: PeerRelationshipPolicy | null): PeerP
 
 export function evaluateStaffPeerReadiness(training: StaffPeerSupportTraining[]): StaffPeerReadinessResult {
   if (training.length === 0) {
-    return { overallScore: 0, totalStaff: 0, relationshipBuildingRate: 0, conflictMediationRate: 0, antibullyingAwarenessRate: 0, socialSkillsFacilitationRate: 0, therapeuticGroupWorkRate: 0, restorativePracticeRate: 0 };
+    return { overallScore: 0, totalStaff: 0, relationshipBuildingRate: null, conflictMediationRate: null, antibullyingAwarenessRate: null, socialSkillsFacilitationRate: null, therapeuticGroupWorkRate: null, restorativePracticeRate: null };
   }
 
   const total = training.length;
@@ -277,19 +289,19 @@ export function evaluateStaffPeerReadiness(training: StaffPeerSupportTraining[])
   const tgCount = training.filter((t) => t.therapeuticGroupWork).length;
   const rpCount = training.filter((t) => t.restorativePractice).length;
 
-  const relationshipBuildingRate = pct(rbCount, total);
-  const conflictMediationRate = pct(cmCount, total);
-  const antibullyingAwarenessRate = pct(abCount, total);
-  const socialSkillsFacilitationRate = pct(sfCount, total);
-  const therapeuticGroupWorkRate = pct(tgCount, total);
-  const restorativePracticeRate = pct(rpCount, total);
+  const relationshipBuildingRate = rate(rbCount, total);
+  const conflictMediationRate = rate(cmCount, total);
+  const antibullyingAwarenessRate = rate(abCount, total);
+  const socialSkillsFacilitationRate = rate(sfCount, total);
+  const therapeuticGroupWorkRate = rate(tgCount, total);
+  const restorativePracticeRate = rate(rpCount, total);
 
-  const s1 = Math.round((relationshipBuildingRate / 100) * 6);
-  const s2 = Math.round((conflictMediationRate / 100) * 5);
-  const s3 = Math.round((antibullyingAwarenessRate / 100) * 5);
-  const s4 = Math.round((socialSkillsFacilitationRate / 100) * 4);
-  const s5 = Math.round((therapeuticGroupWorkRate / 100) * 3);
-  const s6 = Math.round((restorativePracticeRate / 100) * 2);
+  const s1 = Math.round(((relationshipBuildingRate ?? 0) / 100) * 6);
+  const s2 = Math.round(((conflictMediationRate ?? 0) / 100) * 5);
+  const s3 = Math.round(((antibullyingAwarenessRate ?? 0) / 100) * 5);
+  const s4 = Math.round(((socialSkillsFacilitationRate ?? 0) / 100) * 4);
+  const s5 = Math.round(((therapeuticGroupWorkRate ?? 0) / 100) * 3);
+  const s6 = Math.round(((restorativePracticeRate ?? 0) / 100) * 2);
 
   const overallScore = Math.min(25, s1 + s2 + s3 + s4 + s5 + s6);
 
@@ -315,22 +327,22 @@ export function buildChildPeerProfiles(interactions: PeerInteraction[]): ChildPe
     const positiveCount = ints.filter((i) => i.relationshipQuality === "thriving" || i.relationshipQuality === "positive").length;
     const engagementCount = ints.filter((i) => i.positiveEngagement).length;
 
-    const positiveRelationshipRate = pct(positiveCount, total);
-    const positiveEngagementRate = pct(engagementCount, total);
+    const positiveRelationshipRate = rate(positiveCount, total);
+    const positiveEngagementRate = rate(engagementCount, total);
 
     let freqScore = 0;
     if (total >= 10) freqScore = 2;
     else if (total >= 5) freqScore = 1;
 
     let prScore = 0;
-    if (positiveRelationshipRate >= 80) prScore = 3;
-    else if (positiveRelationshipRate >= 60) prScore = 2;
-    else if (positiveRelationshipRate >= 40) prScore = 1;
+    if (meets(positiveRelationshipRate, 80)) prScore = 3;
+    else if (meets(positiveRelationshipRate, 60)) prScore = 2;
+    else if (meets(positiveRelationshipRate, 40)) prScore = 1;
 
     let peScore = 0;
-    if (positiveEngagementRate >= 80) peScore = 3;
-    else if (positiveEngagementRate >= 60) peScore = 2;
-    else if (positiveEngagementRate >= 40) peScore = 1;
+    if (meets(positiveEngagementRate, 80)) peScore = 3;
+    else if (meets(positiveEngagementRate, 60)) peScore = 2;
+    else if (meets(positiveEngagementRate, 40)) peScore = 1;
 
     const uniqueTypes = new Set(ints.map((i) => i.interactionType)).size;
     let divScore = 0;
@@ -369,21 +381,21 @@ export function generatePeerRelationshipQualityIntelligence(
   const areasForImprovement: string[] = [];
   const actions: string[] = [];
 
-  if (peerQuality.positiveRelationshipRate >= 80) strengths.push("Children are forming thriving and positive peer relationships consistently");
-  if (peerQuality.positiveEngagementRate >= 80) strengths.push("High levels of positive engagement observed across peer interactions");
-  if (peerQuality.conflictResolutionRate >= 80) strengths.push("Conflicts are being resolved constructively, demonstrating strong social skills");
-  if (peerCompliance.documentedRate >= 80) strengths.push("Peer interactions and relationship progress are well documented in care plans");
+  if (meets(peerQuality.positiveRelationshipRate, 80)) strengths.push("Children are forming thriving and positive peer relationships consistently");
+  if (meets(peerQuality.positiveEngagementRate, 80)) strengths.push("High levels of positive engagement observed across peer interactions");
+  if (meets(peerQuality.conflictResolutionRate, 80)) strengths.push("Conflicts are being resolved constructively, demonstrating strong social skills");
+  if (meets(peerCompliance.documentedRate, 80)) strengths.push("Peer interactions and relationship progress are well documented in care plans");
 
-  if (interactions.length > 0 && peerQuality.positiveRelationshipRate < 60) areasForImprovement.push("Peer relationship quality needs improvement — review social skills support strategies");
-  if (interactions.length > 0 && peerQuality.conflictResolutionRate < 60) areasForImprovement.push("Conflict resolution skills need strengthening — consider restorative practice approaches");
-  if (interactions.length > 0 && peerQuality.socialSkillsRate < 60) areasForImprovement.push("Social skills demonstration is below expected levels — embed targeted interventions");
-  if (interactions.length > 0 && peerCompliance.staffFacilitatedRate < 60) areasForImprovement.push("Staff facilitation of peer interactions needs improvement");
+  if (interactions.length > 0 && below(peerQuality.positiveRelationshipRate, 60)) areasForImprovement.push("Peer relationship quality needs improvement — review social skills support strategies");
+  if (interactions.length > 0 && below(peerQuality.conflictResolutionRate, 60)) areasForImprovement.push("Conflict resolution skills need strengthening — consider restorative practice approaches");
+  if (interactions.length > 0 && below(peerQuality.socialSkillsRate, 60)) areasForImprovement.push("Social skills demonstration is below expected levels — embed targeted interventions");
+  if (interactions.length > 0 && below(peerCompliance.staffFacilitatedRate, 60)) areasForImprovement.push("Staff facilitation of peer interactions needs improvement");
 
   if (interactions.length === 0) actions.push("No peer interaction records found — begin tracking peer relationships and social engagement");
   if (!policy) actions.push("URGENT: No peer relationship policy in place — develop and implement immediately");
   if (training.length === 0) actions.push("URGENT: No staff peer support training recorded — arrange training for all staff");
-  if (interactions.length > 0 && peerQuality.positiveEngagementRate < 60) actions.push("Develop structured peer engagement activities to improve positive interaction rates");
-  if (interactions.length > 0 && peerCompliance.feedbackRate < 60) actions.push("Improve feedback processes for peer interaction observations");
+  if (interactions.length > 0 && below(peerQuality.positiveEngagementRate, 60)) actions.push("Develop structured peer engagement activities to improve positive interaction rates");
+  if (interactions.length > 0 && below(peerCompliance.feedbackRate, 60)) actions.push("Improve feedback processes for peer interaction observations");
 
   const regulatoryLinks: string[] = [
     "CHR 2015 Regulation 7 — The children's wishes and feelings standard",

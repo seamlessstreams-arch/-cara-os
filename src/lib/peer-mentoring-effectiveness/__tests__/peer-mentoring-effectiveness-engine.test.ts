@@ -6,7 +6,6 @@ import {
   evaluateRelationshipSafeguarding,
   evaluateStaffSupport,
   buildChildMentoringProfiles,
-  pct,
   getRating,
   getMentoringRoleLabel,
   getSessionOutcomeLabel,
@@ -89,15 +88,6 @@ function mkTraining(overrides: Partial<StaffMentoringTraining> = {}): StaffMento
 
 // -- pct ----------------------------------------------------------------------
 
-describe("pct", () => {
-  it("returns 0 for 0/0", () => expect(pct(0, 0)).toBe(0));
-  it("calculates correctly", () => expect(pct(3, 4)).toBe(75));
-  it("rounds", () => expect(pct(1, 3)).toBe(33));
-  it("full", () => expect(pct(5, 5)).toBe(100));
-  it("returns 0 for 0/5", () => expect(pct(0, 5)).toBe(0));
-  it("handles large numerator", () => expect(pct(999, 1000)).toBe(100));
-});
-
 // -- getRating ----------------------------------------------------------------
 
 describe("getRating", () => {
@@ -155,10 +145,10 @@ describe("evaluatePairingQuality", () => {
     const result = evaluatePairingQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalPairings).toBe(0);
-    expect(result.consentRate).toBe(0);
-    expect(result.riskAssessedRate).toBe(0);
-    expect(result.matchCriteriaDefinedRate).toBe(0);
-    expect(result.activePairingRate).toBe(0);
+    expect(result.consentRate).toBeNull();
+    expect(result.riskAssessedRate).toBeNull();
+    expect(result.matchCriteriaDefinedRate).toBeNull();
+    expect(result.activePairingRate).toBeNull();
   });
 
   it("scores high for fully compliant pairings", () => {
@@ -239,10 +229,10 @@ describe("evaluateSessionEffectiveness", () => {
     const result = evaluateSessionEffectiveness([], []);
     expect(result.overallScore).toBe(0);
     expect(result.totalSessions).toBe(0);
-    expect(result.positiveOutcomeRate).toBe(0);
-    expect(result.goalsDiscussedRate).toBe(0);
-    expect(result.progressMadeRate).toBe(0);
-    expect(result.regularSessionRate).toBe(0);
+    expect(result.positiveOutcomeRate).toBeNull();
+    expect(result.goalsDiscussedRate).toBeNull();
+    expect(result.progressMadeRate).toBeNull();
+    expect(result.regularSessionRate).toBeNull();
   });
 
   it("scores high for all positive sessions with goals and progress", () => {
@@ -314,11 +304,11 @@ describe("evaluateSessionEffectiveness", () => {
     expect(result.regularSessionRate).toBe(50);
   });
 
-  it("regular session rate is 0 when no active pairings", () => {
+  it("regular session rate is null when no active pairings", () => {
     const pairings = [mkPairing({ status: "completed" })];
     const sessions = [mkSession()];
     const result = evaluateSessionEffectiveness(sessions, pairings);
-    expect(result.regularSessionRate).toBe(0);
+    expect(result.regularSessionRate).toBeNull();
   });
 
   it("handles cancelled sessions", () => {
@@ -450,11 +440,11 @@ describe("evaluateStaffSupport", () => {
     const result = evaluateStaffSupport([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.peerMentoringTrainedRate).toBe(0);
-    expect(result.safeguardingInPeerRate).toBe(0);
-    expect(result.conflictResolutionRate).toBe(0);
-    expect(result.boundarySettingRate).toBe(0);
-    expect(result.supportingMentorsRate).toBe(0);
+    expect(result.peerMentoringTrainedRate).toBeNull();
+    expect(result.safeguardingInPeerRate).toBeNull();
+    expect(result.conflictResolutionRate).toBeNull();
+    expect(result.boundarySettingRate).toBeNull();
+    expect(result.supportingMentorsRate).toBeNull();
   });
 
   it("scores high for fully trained staff", () => {

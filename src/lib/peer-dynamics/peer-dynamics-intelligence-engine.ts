@@ -19,6 +19,7 @@
    ────────────────────────────────────────────────────────────── */
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -128,18 +129,25 @@ export interface StaffPeerDynamicsTraining {
 export interface PeerDynamicsQualityResult {
   overallScore: number;
   totalRecords: number;
-  childViewCapturedRate: number;
-  restorativeApproachUsedRate: number;
-  positiveOutcomeAchievedRate: number;
-  safetyConsideredFirstRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewCapturedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  restorativeApproachUsedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveOutcomeAchievedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safetyConsideredFirstRate: number | null;
 }
 
 export interface PeerDynamicsComplianceResult {
   overallScore: number;
   totalRecords: number;
-  documentationCompleteRate: number;
-  timelyRecordingRate: number;
-  childViewCapturedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationCompleteRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewCapturedRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
 }
@@ -158,12 +166,18 @@ export interface PeerDynamicsPolicyResult {
 export interface StaffPeerDynamicsReadinessResult {
   overallScore: number;
   totalStaff: number;
-  peerDynamicsAwarenessRate: number;
-  conflictResolutionSkillsRate: number;
-  restorativePracticeSkillsRate: number;
-  groupFacilitationSkillsRate: number;
-  bullyingPreventionKnowledgeRate: number;
-  socialSkillsTeachingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  peerDynamicsAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  conflictResolutionSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  restorativePracticeSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  groupFacilitationSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  bullyingPreventionKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  socialSkillsTeachingRate: number | null;
 }
 
 export interface ChildPeerDynamicsProfile {
@@ -195,11 +209,6 @@ export interface PeerDynamicsIntelligenceResult {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): PeerDynamicsRating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -215,19 +224,19 @@ export function evaluatePeerDynamicsQuality(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, childViewCapturedRate: 0, restorativeApproachUsedRate: 0, positiveOutcomeAchievedRate: 0, safetyConsideredFirstRate: 0 };
+    return { overallScore: 0, totalRecords: 0, childViewCapturedRate: null, restorativeApproachUsedRate: null, positiveOutcomeAchievedRate: null, safetyConsideredFirstRate: null };
   }
 
-  const childViewCapturedRate = pct(records.filter((r) => r.childViewCaptured).length, n);
-  const restorativeApproachUsedRate = pct(records.filter((r) => r.restorativeApproachUsed).length, n);
-  const positiveOutcomeAchievedRate = pct(records.filter((r) => r.positiveOutcomeAchieved).length, n);
-  const safetyConsideredFirstRate = pct(records.filter((r) => r.safetyConsideredFirst).length, n);
+  const childViewCapturedRate = rate(records.filter((r) => r.childViewCaptured).length, n);
+  const restorativeApproachUsedRate = rate(records.filter((r) => r.restorativeApproachUsed).length, n);
+  const positiveOutcomeAchievedRate = rate(records.filter((r) => r.positiveOutcomeAchieved).length, n);
+  const safetyConsideredFirstRate = rate(records.filter((r) => r.safetyConsideredFirst).length, n);
 
   let score = 0;
-  score += (childViewCapturedRate / 100) * 7;
-  score += (restorativeApproachUsedRate / 100) * 6;
-  score += (positiveOutcomeAchievedRate / 100) * 6;
-  score += (safetyConsideredFirstRate / 100) * 6;
+  score += (childViewCapturedRate! / 100) * 7;
+  score += (restorativeApproachUsedRate! / 100) * 6;
+  score += (positiveOutcomeAchievedRate! / 100) * 6;
+  score += (safetyConsideredFirstRate! / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -242,21 +251,21 @@ export function evaluatePeerDynamicsCompliance(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: 0, timelyRecordingRate: 0, childViewCapturedRate: 0, categoryDiversityRatio: 0, uniqueCategories: 0 };
+    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: null, timelyRecordingRate: null, childViewCapturedRate: null, categoryDiversityRatio: 0, uniqueCategories: 0 };
   }
 
-  const documentationCompleteRate = pct(records.filter((r) => r.documentationComplete).length, n);
-  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, n);
-  const childViewCapturedRate = pct(records.filter((r) => r.childViewCaptured).length, n);
+  const documentationCompleteRate = rate(records.filter((r) => r.documentationComplete).length, n);
+  const timelyRecordingRate = rate(records.filter((r) => r.timelyRecording).length, n);
+  const childViewCapturedRate = rate(records.filter((r) => r.childViewCaptured).length, n);
 
   const uniqueCategoriesSet = new Set(records.map((r) => r.category));
   const uniqueCategories = uniqueCategoriesSet.size;
   const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
 
   let score = 0;
-  score += (documentationCompleteRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (childViewCapturedRate / 100) * 5;
+  score += (documentationCompleteRate! / 100) * 8;
+  score += (timelyRecordingRate! / 100) * 7;
+  score += (childViewCapturedRate! / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -302,23 +311,23 @@ export function evaluateStaffPeerDynamicsReadiness(
   const n = training.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalStaff: 0, peerDynamicsAwarenessRate: 0, conflictResolutionSkillsRate: 0, restorativePracticeSkillsRate: 0, groupFacilitationSkillsRate: 0, bullyingPreventionKnowledgeRate: 0, socialSkillsTeachingRate: 0 };
+    return { overallScore: 0, totalStaff: 0, peerDynamicsAwarenessRate: null, conflictResolutionSkillsRate: null, restorativePracticeSkillsRate: null, groupFacilitationSkillsRate: null, bullyingPreventionKnowledgeRate: null, socialSkillsTeachingRate: null };
   }
 
-  const peerDynamicsAwarenessRate = pct(training.filter((t) => t.peerDynamicsAwareness).length, n);
-  const conflictResolutionSkillsRate = pct(training.filter((t) => t.conflictResolutionSkills).length, n);
-  const restorativePracticeSkillsRate = pct(training.filter((t) => t.restorativePracticeSkills).length, n);
-  const groupFacilitationSkillsRate = pct(training.filter((t) => t.groupFacilitationSkills).length, n);
-  const bullyingPreventionKnowledgeRate = pct(training.filter((t) => t.bullyingPreventionKnowledge).length, n);
-  const socialSkillsTeachingRate = pct(training.filter((t) => t.socialSkillsTeaching).length, n);
+  const peerDynamicsAwarenessRate = rate(training.filter((t) => t.peerDynamicsAwareness).length, n);
+  const conflictResolutionSkillsRate = rate(training.filter((t) => t.conflictResolutionSkills).length, n);
+  const restorativePracticeSkillsRate = rate(training.filter((t) => t.restorativePracticeSkills).length, n);
+  const groupFacilitationSkillsRate = rate(training.filter((t) => t.groupFacilitationSkills).length, n);
+  const bullyingPreventionKnowledgeRate = rate(training.filter((t) => t.bullyingPreventionKnowledge).length, n);
+  const socialSkillsTeachingRate = rate(training.filter((t) => t.socialSkillsTeaching).length, n);
 
   let score = 0;
-  score += (peerDynamicsAwarenessRate / 100) * 6;
-  score += (conflictResolutionSkillsRate / 100) * 5;
-  score += (restorativePracticeSkillsRate / 100) * 5;
-  score += (groupFacilitationSkillsRate / 100) * 4;
-  score += (bullyingPreventionKnowledgeRate / 100) * 3;
-  score += (socialSkillsTeachingRate / 100) * 2;
+  score += (peerDynamicsAwarenessRate! / 100) * 6;
+  score += (conflictResolutionSkillsRate! / 100) * 5;
+  score += (restorativePracticeSkillsRate! / 100) * 5;
+  score += (groupFacilitationSkillsRate! / 100) * 4;
+  score += (bullyingPreventionKnowledgeRate! / 100) * 3;
+  score += (socialSkillsTeachingRate! / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -343,8 +352,8 @@ export function buildChildPeerDynamicsProfiles(
 
   return Array.from(childMap.values()).map((child) => {
     const totalRecords = child.records.length;
-    const childViewCapturedRate = pct(child.records.filter((r) => r.childViewCaptured).length, totalRecords);
-    const restorativeApproachUsedRate = pct(child.records.filter((r) => r.restorativeApproachUsed).length, totalRecords);
+    const childViewCapturedRate = rate(child.records.filter((r) => r.childViewCaptured).length, totalRecords)!;
+    const restorativeApproachUsedRate = rate(child.records.filter((r) => r.restorativeApproachUsed).length, totalRecords)!;
     const uniqueCategoriesSet = new Set(child.records.map((r) => r.category));
     const categoriesCovered = Array.from(uniqueCategoriesSet);
 
@@ -353,14 +362,14 @@ export function buildChildPeerDynamicsProfiles(
     else if (totalRecords >= 5) frequencyScore = 1;
 
     let rate1Score = 0;
-    if (childViewCapturedRate >= 80) rate1Score = 3;
-    else if (childViewCapturedRate >= 60) rate1Score = 2;
-    else if (childViewCapturedRate >= 40) rate1Score = 1;
+    if (meets(childViewCapturedRate, 80)) rate1Score = 3;
+    else if (meets(childViewCapturedRate, 60)) rate1Score = 2;
+    else if (meets(childViewCapturedRate, 40)) rate1Score = 1;
 
     let rate2Score = 0;
-    if (restorativeApproachUsedRate >= 80) rate2Score = 3;
-    else if (restorativeApproachUsedRate >= 60) rate2Score = 2;
-    else if (restorativeApproachUsedRate >= 40) rate2Score = 1;
+    if (meets(restorativeApproachUsedRate, 80)) rate2Score = 3;
+    else if (meets(restorativeApproachUsedRate, 60)) rate2Score = 2;
+    else if (meets(restorativeApproachUsedRate, 40)) rate2Score = 1;
 
     let diversityBonus = 0;
     if (categoriesCovered.length >= 4) diversityBonus = 2;
@@ -408,9 +417,9 @@ export function generatePeerDynamicsIntelligenceResult(
   if (complianceResult.overallScore >= 20) strengths.push("Peer dynamics compliance is strong (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore >= 20) strengths.push("Peer dynamics policy framework is robust (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore >= 20) strengths.push("Staff peer dynamics readiness is strong (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.childViewCapturedRate >= 90) strengths.push("Child views captured at " + qualityResult.childViewCapturedRate + "%");
-  if (periodRecords.length > 0 && qualityResult.restorativeApproachUsedRate >= 90) strengths.push("Restorative approaches used at " + qualityResult.restorativeApproachUsedRate + "%");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate >= 90) strengths.push("Documentation rate at " + complianceResult.documentationCompleteRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.childViewCapturedRate, 90)) strengths.push("Child views captured at " + qualityResult.childViewCapturedRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.restorativeApproachUsedRate, 90)) strengths.push("Restorative approaches used at " + qualityResult.restorativeApproachUsedRate + "%");
+  if (periodRecords.length > 0 && meets(complianceResult.documentationCompleteRate, 90)) strengths.push("Documentation rate at " + complianceResult.documentationCompleteRate + "%");
 
   const areasForImprovement: string[] = [];
   if (overallScore < 40) areasForImprovement.push("Peer dynamics management rated Inadequate (" + overallScore + "/100) — urgent systemic review required");
@@ -419,7 +428,7 @@ export function generatePeerDynamicsIntelligenceResult(
   if (complianceResult.overallScore < 15) areasForImprovement.push("Peer dynamics compliance needs improvement (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore < 15) areasForImprovement.push("Peer dynamics policy needs strengthening (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore < 15) areasForImprovement.push("Staff peer dynamics readiness needs improvement (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.childViewCapturedRate < 80) areasForImprovement.push("Child view capture at " + qualityResult.childViewCapturedRate + "% — must improve to ensure child participation");
+  if (periodRecords.length > 0 && below(qualityResult.childViewCapturedRate, 80)) areasForImprovement.push("Child view capture at " + qualityResult.childViewCapturedRate + "% — must improve to ensure child participation");
   if (periodRecords.length === 0) areasForImprovement.push("No peer dynamics records — assessments must be documented");
   if (policy === null) areasForImprovement.push("No peer dynamics policy in place — statutory requirement");
   if (staff.length === 0) areasForImprovement.push("No staff peer dynamics training records — training required");
@@ -427,11 +436,11 @@ export function generatePeerDynamicsIntelligenceResult(
   const actions: string[] = [];
   if (policy === null || policyResult.overallScore === 0) actions.push("URGENT: No peer dynamics policy — develop and implement comprehensive policy immediately");
   if (staff.length === 0) actions.push("URGENT: No staff peer dynamics training — schedule training for all staff");
-  if (periodRecords.length > 0 && qualityResult.childViewCapturedRate < 50) actions.push("HIGH: Child view capture at " + qualityResult.childViewCapturedRate + "% — review processes for capturing child views");
-  if (periodRecords.length > 0 && qualityResult.restorativeApproachUsedRate < 50) actions.push("HIGH: Restorative approach usage at " + qualityResult.restorativeApproachUsedRate + "% — strengthen restorative practice implementation");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate < 50) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all assessments must be recorded");
-  if (periodRecords.length > 0 && complianceResult.timelyRecordingRate < 50) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
-  if (staff.length > 0 && staffResult.peerDynamicsAwarenessRate < 50) actions.push("MEDIUM: Peer dynamics awareness at " + staffResult.peerDynamicsAwarenessRate + "% — schedule training for staff");
+  if (periodRecords.length > 0 && below(qualityResult.childViewCapturedRate, 50)) actions.push("HIGH: Child view capture at " + qualityResult.childViewCapturedRate + "% — review processes for capturing child views");
+  if (periodRecords.length > 0 && below(qualityResult.restorativeApproachUsedRate, 50)) actions.push("HIGH: Restorative approach usage at " + qualityResult.restorativeApproachUsedRate + "% — strengthen restorative practice implementation");
+  if (periodRecords.length > 0 && below(complianceResult.documentationCompleteRate, 50)) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all assessments must be recorded");
+  if (periodRecords.length > 0 && below(complianceResult.timelyRecordingRate, 50)) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
+  if (staff.length > 0 && below(staffResult.peerDynamicsAwarenessRate, 50)) actions.push("MEDIUM: Peer dynamics awareness at " + staffResult.peerDynamicsAwarenessRate + "% — schedule training for staff");
   const lowScoreChildren = childProfiles.filter((p) => p.overallScore <= 3);
   if (lowScoreChildren.length > 0) actions.push("MEDIUM: " + lowScoreChildren.length + " child(ren) with low peer dynamics scores — review individual support plans");
   if (actions.length === 0) actions.push("No immediate actions required. Peer dynamics systems operating within expected standards.");

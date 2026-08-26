@@ -6,7 +6,6 @@ import {
   evaluateMedicationPolicy,
   evaluateStaffMedicationReadiness,
   buildChildMedicationProfiles,
-  pct,
   getRating,
   getMedicationTypeLabel,
   getAdministrationOutcomeLabel,
@@ -68,36 +67,6 @@ function makeTraining(overrides: Partial<StaffMedicationTraining> = {}): StaffMe
 }
 
 // -- pct ----------------------------------------------------------------------
-
-describe("pct", () => {
-  it("returns 0 for 0/0", () => {
-    expect(pct(0, 0)).toBe(0);
-  });
-
-  it("calculates correctly", () => {
-    expect(pct(3, 4)).toBe(75);
-  });
-
-  it("rounds", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-
-  it("returns 100 for full", () => {
-    expect(pct(5, 5)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(1, 2)).toBe(50);
-  });
-
-  it("returns 0 for 0 numerator", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-
-  it("handles large numbers", () => {
-    expect(pct(999, 1000)).toBe(100);
-  });
-});
 
 // -- getRating ----------------------------------------------------------------
 
@@ -164,11 +133,11 @@ describe("evaluateAdministrationQuality", () => {
     const result = evaluateAdministrationQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalRecords).toBe(0);
-    expect(result.correctAdministrationRate).toBe(0);
-    expect(result.twoStaffWitnessedRate).toBe(0);
-    expect(result.documentedImmediatelyRate).toBe(0);
-    expect(result.consentObtainedRate).toBe(0);
-    expect(result.sideEffectsMonitoredRate).toBe(0);
+    expect(result.correctAdministrationRate).toBeNull();
+    expect(result.twoStaffWitnessedRate).toBeNull();
+    expect(result.documentedImmediatelyRate).toBeNull();
+    expect(result.consentObtainedRate).toBeNull();
+    expect(result.sideEffectsMonitoredRate).toBeNull();
   });
 
   it("scores high for perfect records", () => {
@@ -290,9 +259,9 @@ describe("evaluateMedicationSafety", () => {
     const result = evaluateMedicationSafety([]);
     expect(result.overallScore).toBe(25);
     expect(result.totalRecords).toBe(0);
-    expect(result.errorRate).toBe(0);
-    expect(result.storageCorrectRate).toBe(0);
-    expect(result.reviewComplianceRate).toBe(0);
+    expect(result.errorRate).toBeNull();
+    expect(result.storageCorrectRate).toBeNull();
+    expect(result.reviewComplianceRate).toBeNull();
   });
 
   it("scores high for safe records", () => {
@@ -575,12 +544,12 @@ describe("evaluateStaffMedicationReadiness", () => {
     const result = evaluateStaffMedicationReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.medicationAdministrationRate).toBe(0);
-    expect(result.controlledDrugsRate).toBe(0);
-    expect(result.errorReportingRate).toBe(0);
-    expect(result.consentPracticeRate).toBe(0);
-    expect(result.sideEffectRecognitionRate).toBe(0);
-    expect(result.storageComplianceRate).toBe(0);
+    expect(result.medicationAdministrationRate).toBeNull();
+    expect(result.controlledDrugsRate).toBeNull();
+    expect(result.errorReportingRate).toBeNull();
+    expect(result.consentPracticeRate).toBeNull();
+    expect(result.sideEffectRecognitionRate).toBeNull();
+    expect(result.storageComplianceRate).toBeNull();
   });
 
   it("scores high for fully trained staff", () => {

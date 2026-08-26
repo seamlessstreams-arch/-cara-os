@@ -11,6 +11,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useEffect } from "react";
+import { meets } from "@/lib/metrics/rate";
 
 // ── Local interfaces (mirrors API shape) ──────────────────────────────────
 
@@ -301,22 +302,22 @@ export default function MissingAbsentEpisodesDashboardWidget() {
           <Stat
             label="RI Completion"
             value={data.episodeManagement.returnInterviewCompletionRate + "%"}
-            color={data.episodeManagement.returnInterviewCompletionRate >= 90 ? "bg-green-50" : data.episodeManagement.returnInterviewCompletionRate >= 70 ? "bg-yellow-50" : "bg-red-50"}
+            color={meets(data.episodeManagement.returnInterviewCompletionRate, 90) ? "bg-green-50" : meets(data.episodeManagement.returnInterviewCompletionRate, 70) ? "bg-yellow-50" : "bg-red-50"}
           />
           <Stat
             label="RI Timely (72h)"
             value={data.episodeManagement.returnInterviewTimelyRate + "%"}
-            color={data.episodeManagement.returnInterviewTimelyRate >= 90 ? "bg-green-50" : data.episodeManagement.returnInterviewTimelyRate >= 70 ? "bg-yellow-50" : "bg-red-50"}
+            color={meets(data.episodeManagement.returnInterviewTimelyRate, 90) ? "bg-green-50" : meets(data.episodeManagement.returnInterviewTimelyRate, 70) ? "bg-yellow-50" : "bg-red-50"}
           />
           <Stat
             label="Police Notified"
             value={data.episodeManagement.policeNotificationRate + "%"}
-            color={data.episodeManagement.policeNotificationRate >= 90 ? "bg-green-50" : data.episodeManagement.policeNotificationRate >= 70 ? "bg-yellow-50" : "bg-red-50"}
+            color={meets(data.episodeManagement.policeNotificationRate, 90) ? "bg-green-50" : meets(data.episodeManagement.policeNotificationRate, 70) ? "bg-yellow-50" : "bg-red-50"}
           />
           <Stat
             label="LA Notified"
             value={data.episodeManagement.localAuthorityNotificationRate + "%"}
-            color={data.episodeManagement.localAuthorityNotificationRate >= 90 ? "bg-green-50" : data.episodeManagement.localAuthorityNotificationRate >= 70 ? "bg-yellow-50" : "bg-red-50"}
+            color={meets(data.episodeManagement.localAuthorityNotificationRate, 90) ? "bg-green-50" : meets(data.episodeManagement.localAuthorityNotificationRate, 70) ? "bg-yellow-50" : "bg-red-50"}
           />
         </div>
         {/* Risk breakdown */}
@@ -335,22 +336,22 @@ export default function MissingAbsentEpisodesDashboardWidget() {
             <Stat
               label="Triggers Identified"
               value={data.preventionEffectiveness.triggerIdentificationRate + "%"}
-              color={data.preventionEffectiveness.triggerIdentificationRate >= 80 ? "bg-green-50" : "bg-yellow-50"}
+              color={meets(data.preventionEffectiveness.triggerIdentificationRate, 80) ? "bg-green-50" : "bg-yellow-50"}
             />
             <Stat
               label="Plans Updated"
               value={data.preventionEffectiveness.preventionPlanUpdateRate + "%"}
-              color={data.preventionEffectiveness.preventionPlanUpdateRate >= 80 ? "bg-green-50" : "bg-yellow-50"}
+              color={meets(data.preventionEffectiveness.preventionPlanUpdateRate, 80) ? "bg-green-50" : "bg-yellow-50"}
             />
             <Stat
               label="Resolved"
               value={data.preventionEffectiveness.resolutionRate + "%"}
-              color={data.preventionEffectiveness.resolutionRate >= 90 ? "bg-green-50" : "bg-red-50"}
+              color={meets(data.preventionEffectiveness.resolutionRate, 90) ? "bg-green-50" : "bg-red-50"}
             />
             <Stat
               label="Self-Returned"
               value={data.preventionEffectiveness.selfReturnRate + "%"}
-              color={data.preventionEffectiveness.selfReturnRate >= 40 ? "bg-green-50" : "bg-gray-50"}
+              color={meets(data.preventionEffectiveness.selfReturnRate, 40) ? "bg-green-50" : "bg-gray-50"}
             />
           </div>
         </CollapsibleSection>
@@ -363,12 +364,12 @@ export default function MissingAbsentEpisodesDashboardWidget() {
             <Stat
               label="Fields Compliant"
               value={data.missingPolicy.fieldsCompliant + "/" + data.missingPolicy.totalFields}
-              color={data.missingPolicy.complianceRate >= 80 ? "bg-green-50" : "bg-orange-50"}
+              color={meets(data.missingPolicy.complianceRate, 80) ? "bg-green-50" : "bg-orange-50"}
             />
             <Stat
               label="Compliance Rate"
               value={data.missingPolicy.complianceRate + "%"}
-              color={data.missingPolicy.complianceRate >= 80 ? "bg-green-50" : "bg-orange-50"}
+              color={meets(data.missingPolicy.complianceRate, 80) ? "bg-green-50" : "bg-orange-50"}
             />
             <Stat
               label="Policy Score"
@@ -390,7 +391,7 @@ export default function MissingAbsentEpisodesDashboardWidget() {
             <Stat
               label="Avg Competency"
               value={data.staffReadiness.averageCompetencyRate + "%"}
-              color={data.staffReadiness.averageCompetencyRate >= 90 ? "bg-green-50" : data.staffReadiness.averageCompetencyRate >= 70 ? "bg-yellow-50" : "bg-red-50"}
+              color={data.staffReadiness.averageCompetencyRate === null ? "bg-slate-50" : data.staffReadiness.averageCompetencyRate >= 90 ? "bg-green-50" : data.staffReadiness.averageCompetencyRate >= 70 ? "bg-yellow-50" : "bg-red-50"}
             />
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">

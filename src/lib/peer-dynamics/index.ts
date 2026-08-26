@@ -39,7 +39,6 @@ export {
   evaluatePeerDynamicsPolicy,
   evaluateStaffPeerDynamicsReadiness,
   buildChildPeerDynamicsProfiles,
-  pct,
   getRating,
   getPeerDynamicsIntelligenceCategoryLabel,
   getPeerDynamicsIntelligenceOutcomeLabel,

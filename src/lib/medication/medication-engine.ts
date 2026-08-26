@@ -18,7 +18,7 @@
    No AI. No external calls. Pure input → output.
    ────────────────────────────────────────────────────────────── */
 
-import { below, meets, rateOf, weightedMeanOf } from "@/lib/metrics/rate";
+import { rate, below, meets, rateOf, weightedMeanOf } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -125,19 +125,26 @@ export interface MedicationQualityResult {
   overallScore: number;
   rating: Rating;
   totalRecords: number;
-  administeredCorrectlyRate: number;
-  signedByTwoStaffRate: number;
-  consentOnFileRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  administeredCorrectlyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  signedByTwoStaffRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  consentOnFileRate: number | null;
   errorReportedRate: number | null;   // null when no error was identified — nothing to report
 }
 
 export interface MedicationComplianceResult {
   overallScore: number;
   rating: Rating;
-  documentationRate: number;
-  timelyRecordingRate: number;
-  signedByTwoStaffRate: number;
-  categoryDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  signedByTwoStaffRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  categoryDiversityRatio: number | null;
 }
 
 export interface MedicationPolicyResult {
@@ -156,20 +163,28 @@ export interface StaffMedicationReadinessResult {
   overallScore: number;
   rating: Rating;
   totalStaff: number;
-  medicationAdministrationRate: number;
-  controlledDrugHandlingRate: number;
-  errorReportingRate: number;
-  consentProcessRate: number;
-  storageChecksRate: number;
-  medicationReviewRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  medicationAdministrationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  controlledDrugHandlingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  errorReportingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  consentProcessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  storageChecksRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  medicationReviewRate: number | null;
 }
 
 export interface ChildMedicationProfile {
   childId: string;
   childName: string;
   totalRecords: number;
-  administeredCorrectlyRate: number;
-  consentOnFileRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  administeredCorrectlyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  consentOnFileRate: number | null;
   categoriesCovered: string[];
   overallScore: number;
 }
@@ -192,11 +207,6 @@ export interface MedicationIntelligence {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -227,16 +237,16 @@ export function evaluateMedicationQuality(records: MedicationRecord[]): Medicati
       overallScore: 0,
       rating: "inadequate",
       totalRecords: 0,
-      administeredCorrectlyRate: 0,
-      signedByTwoStaffRate: 0,
-      consentOnFileRate: 0,
+      administeredCorrectlyRate: null,
+      signedByTwoStaffRate: null,
+      consentOnFileRate: null,
       errorReportedRate: null,
     };
   }
 
-  const administeredCorrectlyRate = pct(records.filter((r) => r.administeredCorrectly).length, total);
-  const signedByTwoStaffRate = pct(records.filter((r) => r.signedByTwoStaff).length, total);
-  const consentOnFileRate = pct(records.filter((r) => r.consentOnFile).length, total);
+  const administeredCorrectlyRate = rate(records.filter((r) => r.administeredCorrectly).length, total);
+  const signedByTwoStaffRate = rate(records.filter((r) => r.signedByTwoStaff).length, total);
+  const consentOnFileRate = rate(records.filter((r) => r.consentOnFile).length, total);
   // "Of the administrations where an error occurred, how many were reported?"
   // With no errors identified there is nothing to report and no reporting
   // culture to rate — neither a full-marks pass nor a 0% failure.
@@ -273,26 +283,26 @@ export function evaluateMedicationCompliance(records: MedicationRecord[]): Medic
     return {
       overallScore: 0,
       rating: "inadequate",
-      documentationRate: 0,
-      timelyRecordingRate: 0,
-      signedByTwoStaffRate: 0,
+      documentationRate: null,
+      timelyRecordingRate: null,
+      signedByTwoStaffRate: null,
       categoryDiversityRatio: 0,
     };
   }
 
-  const documentationRate = pct(records.filter((r) => r.documentationComplete).length, total);
-  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, total);
-  const signedByTwoStaffRate = pct(records.filter((r) => r.signedByTwoStaff).length, total);
+  const documentationRate = rate(records.filter((r) => r.documentationComplete).length, total);
+  const timelyRecordingRate = rate(records.filter((r) => r.timelyRecording).length, total);
+  const signedByTwoStaffRate = rate(records.filter((r) => r.signedByTwoStaff).length, total);
 
   const uniqueCategories = new Set(records.map((r) => r.category)).size;
-  const categoryDiversityRatio = pct(uniqueCategories, ALL_CATEGORIES.length);
+  const categoryDiversityRatio = rate(uniqueCategories, ALL_CATEGORIES.length);
 
   // Weighted: documentationRate 8 + timelyRecordingRate 7 + signedByTwoStaffRate 5 + categoryDiversityRatio 5 = 25
   const raw =
-    (documentationRate / 100) * 8 +
-    (timelyRecordingRate / 100) * 7 +
-    (signedByTwoStaffRate / 100) * 5 +
-    (categoryDiversityRatio / 100) * 5;
+    (documentationRate! / 100) * 8 +
+    (timelyRecordingRate! / 100) * 7 +
+    (signedByTwoStaffRate! / 100) * 5 +
+    ((categoryDiversityRatio ?? 0) / 100) * 5;
   const overallScore = Math.min(25, Math.round(raw));
 
   return {
@@ -354,30 +364,30 @@ export function evaluateStaffMedicationReadiness(staff: StaffMedicationTraining[
       overallScore: 0,
       rating: "inadequate",
       totalStaff: 0,
-      medicationAdministrationRate: 0,
-      controlledDrugHandlingRate: 0,
-      errorReportingRate: 0,
-      consentProcessRate: 0,
-      storageChecksRate: 0,
-      medicationReviewRate: 0,
+      medicationAdministrationRate: null,
+      controlledDrugHandlingRate: null,
+      errorReportingRate: null,
+      consentProcessRate: null,
+      storageChecksRate: null,
+      medicationReviewRate: null,
     };
   }
 
-  const medicationAdministrationRate = pct(staff.filter((s) => s.medicationAdministration).length, count);
-  const controlledDrugHandlingRate = pct(staff.filter((s) => s.controlledDrugHandling).length, count);
-  const errorReportingRate = pct(staff.filter((s) => s.errorReporting).length, count);
-  const consentProcessRate = pct(staff.filter((s) => s.consentProcess).length, count);
-  const storageChecksRate = pct(staff.filter((s) => s.storageChecks).length, count);
-  const medicationReviewRate = pct(staff.filter((s) => s.medicationReview).length, count);
+  const medicationAdministrationRate = rate(staff.filter((s) => s.medicationAdministration).length, count);
+  const controlledDrugHandlingRate = rate(staff.filter((s) => s.controlledDrugHandling).length, count);
+  const errorReportingRate = rate(staff.filter((s) => s.errorReporting).length, count);
+  const consentProcessRate = rate(staff.filter((s) => s.consentProcess).length, count);
+  const storageChecksRate = rate(staff.filter((s) => s.storageChecks).length, count);
+  const medicationReviewRate = rate(staff.filter((s) => s.medicationReview).length, count);
 
   // Weighted: 6+5+5+4+3+2 = 25
   const raw =
-    (medicationAdministrationRate / 100) * 6 +
-    (controlledDrugHandlingRate / 100) * 5 +
-    (errorReportingRate / 100) * 5 +
-    (consentProcessRate / 100) * 4 +
-    (storageChecksRate / 100) * 3 +
-    (medicationReviewRate / 100) * 2;
+    (medicationAdministrationRate! / 100) * 6 +
+    (controlledDrugHandlingRate! / 100) * 5 +
+    (errorReportingRate! / 100) * 5 +
+    (consentProcessRate! / 100) * 4 +
+    (storageChecksRate! / 100) * 3 +
+    (medicationReviewRate! / 100) * 2;
   const overallScore = Math.min(25, Math.round(raw));
 
   return {
@@ -408,8 +418,8 @@ export function buildChildMedicationProfiles(records: MedicationRecord[]): Child
     const childName = recs[0].childName;
     const totalRecords = recs.length;
 
-    const administeredCorrectlyRate = pct(recs.filter((r) => r.administeredCorrectly).length, totalRecords);
-    const consentOnFileRate = pct(recs.filter((r) => r.consentOnFile).length, totalRecords);
+    const administeredCorrectlyRate = rate(recs.filter((r) => r.administeredCorrectly).length, totalRecords);
+    const consentOnFileRate = rate(recs.filter((r) => r.consentOnFile).length, totalRecords);
 
     const catsSet = new Set(recs.map((r) => r.category));
     const categoriesCovered = [...catsSet];
@@ -418,16 +428,16 @@ export function buildChildMedicationProfiles(records: MedicationRecord[]): Child
     //          + rate2 consentOnFileRate [same] + diversity [>=4 -> 2, >=2 -> 1]
     let score = 0;
 
-    if (totalRecords >= 10) score += 2;
-    else if (totalRecords >= 5) score += 1;
+    if (meets(totalRecords, 10)) score += 2;
+    else if (meets(totalRecords, 5)) score += 1;
 
-    if (administeredCorrectlyRate >= 80) score += 3;
-    else if (administeredCorrectlyRate >= 60) score += 2;
-    else if (administeredCorrectlyRate >= 40) score += 1;
+    if (meets(administeredCorrectlyRate, 80)) score += 3;
+    else if (meets(administeredCorrectlyRate, 60)) score += 2;
+    else if (meets(administeredCorrectlyRate, 40)) score += 1;
 
-    if (consentOnFileRate >= 80) score += 3;
-    else if (consentOnFileRate >= 60) score += 2;
-    else if (consentOnFileRate >= 40) score += 1;
+    if (meets(consentOnFileRate, 80)) score += 3;
+    else if (meets(consentOnFileRate, 60)) score += 2;
+    else if (meets(consentOnFileRate, 40)) score += 1;
 
     const catCount = categoriesCovered.length;
     if (catCount >= 4) score += 2;
@@ -474,36 +484,36 @@ export function generateMedicationIntelligence(
 
   // Strengths (>=80%)
   const strengths: string[] = [];
-  if (medicationQuality.administeredCorrectlyRate >= 80) strengths.push("Medications are consistently administered correctly");
-  if (medicationQuality.signedByTwoStaffRate >= 80) strengths.push("Dual-signature practice is well established");
-  if (medicationQuality.consentOnFileRate >= 80) strengths.push("Consent records are consistently maintained");
+  if (meets(medicationQuality.administeredCorrectlyRate, 80)) strengths.push("Medications are consistently administered correctly");
+  if (meets(medicationQuality.signedByTwoStaffRate, 80)) strengths.push("Dual-signature practice is well established");
+  if (meets(medicationQuality.consentOnFileRate, 80)) strengths.push("Consent records are consistently maintained");
   if (meets(medicationQuality.errorReportedRate, 80)) strengths.push("Error reporting culture is strong and transparent");
-  if (medicationCompliance.documentationRate >= 80) strengths.push("Medication documentation is thorough and complete");
-  if (medicationCompliance.timelyRecordingRate >= 80) strengths.push("Medication records are completed in a timely manner");
-  if (staffReadiness.medicationAdministrationRate >= 80) strengths.push("Staff are well trained in medication administration");
-  if (staffReadiness.controlledDrugHandlingRate >= 80) strengths.push("Strong controlled drug handling competency across the team");
+  if (meets(medicationCompliance.documentationRate, 80)) strengths.push("Medication documentation is thorough and complete");
+  if (meets(medicationCompliance.timelyRecordingRate, 80)) strengths.push("Medication records are completed in a timely manner");
+  if (meets(staffReadiness.medicationAdministrationRate, 80)) strengths.push("Staff are well trained in medication administration");
+  if (meets(staffReadiness.controlledDrugHandlingRate, 80)) strengths.push("Strong controlled drug handling competency across the team");
 
   // Areas for improvement (<60%)
   const areasForImprovement: string[] = [];
-  if (medicationQuality.administeredCorrectlyRate < 60) areasForImprovement.push("Medication administration accuracy needs improvement");
-  if (medicationQuality.signedByTwoStaffRate < 60) areasForImprovement.push("Dual-signature practice is not consistently followed");
-  if (medicationQuality.consentOnFileRate < 60) areasForImprovement.push("Consent records are not consistently maintained");
+  if (below(medicationQuality.administeredCorrectlyRate, 60)) areasForImprovement.push("Medication administration accuracy needs improvement");
+  if (below(medicationQuality.signedByTwoStaffRate, 60)) areasForImprovement.push("Dual-signature practice is not consistently followed");
+  if (below(medicationQuality.consentOnFileRate, 60)) areasForImprovement.push("Consent records are not consistently maintained");
   if (below(medicationQuality.errorReportedRate, 60)) areasForImprovement.push("Error reporting is inconsistent — errors may go unrecorded");
-  if (medicationCompliance.documentationRate < 60) areasForImprovement.push("Medication documentation is incomplete or inconsistent");
-  if (medicationCompliance.timelyRecordingRate < 60) areasForImprovement.push("Medication records are not being completed promptly");
-  if (staffReadiness.medicationAdministrationRate < 60) areasForImprovement.push("Staff need more training in medication administration");
-  if (staffReadiness.controlledDrugHandlingRate < 60) areasForImprovement.push("Staff controlled drug handling skills require development");
+  if (below(medicationCompliance.documentationRate, 60)) areasForImprovement.push("Medication documentation is incomplete or inconsistent");
+  if (below(medicationCompliance.timelyRecordingRate, 60)) areasForImprovement.push("Medication records are not being completed promptly");
+  if (below(staffReadiness.medicationAdministrationRate, 60)) areasForImprovement.push("Staff need more training in medication administration");
+  if (below(staffReadiness.controlledDrugHandlingRate, 60)) areasForImprovement.push("Staff controlled drug handling skills require development");
 
   // Actions
   const actions: string[] = [];
   if (medicationPolicy.overallScore === 0) actions.push("URGENT: Establish a medication management policy — CHR 2015 Reg 23 requires documented medication procedures");
   if (staffReadiness.overallScore === 0) actions.push("URGENT: Provide medication training to all staff — safe administration depends on skilled practitioners");
-  if (medicationQuality.administeredCorrectlyRate < 50) actions.push("Review medication administration procedures and retrain staff on correct techniques");
-  if (medicationQuality.signedByTwoStaffRate < 50) actions.push("Reinforce dual-signature requirement — all controlled drugs must be signed by two staff");
-  if (medicationCompliance.documentationRate < 50) actions.push("Improve medication documentation — all administrations must be fully recorded");
-  if (medicationCompliance.timelyRecordingRate < 50) actions.push("Review recording timescales — medication records should be completed within 1 hour");
-  if (medicationQuality.consentOnFileRate < 50) actions.push("Ensure consent is obtained and documented for every medication — NICE CG76");
-  if (staffReadiness.errorReportingRate < 50) actions.push("Provide error reporting training — all staff must know how to report medication errors");
+  if (below(medicationQuality.administeredCorrectlyRate, 50)) actions.push("Review medication administration procedures and retrain staff on correct techniques");
+  if (below(medicationQuality.signedByTwoStaffRate, 50)) actions.push("Reinforce dual-signature requirement — all controlled drugs must be signed by two staff");
+  if (below(medicationCompliance.documentationRate, 50)) actions.push("Improve medication documentation — all administrations must be fully recorded");
+  if (below(medicationCompliance.timelyRecordingRate, 50)) actions.push("Review recording timescales — medication records should be completed within 1 hour");
+  if (below(medicationQuality.consentOnFileRate, 50)) actions.push("Ensure consent is obtained and documented for every medication — NICE CG76");
+  if (below(staffReadiness.errorReportingRate, 50)) actions.push("Provide error reporting training — all staff must know how to report medication errors");
 
   const regulatoryLinks: string[] = [
     "CHR 2015 Reg 23 — Health and wellbeing (medication)",

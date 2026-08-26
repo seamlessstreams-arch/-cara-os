@@ -5,7 +5,6 @@ export {
   evaluateMorningPolicy,
   evaluateStaffMorningReadiness,
   buildChildMorningProfiles,
-  pct,
   getRating,
   getRoutineElementLabel,
   getCompletionStatusLabel,

@@ -5,7 +5,6 @@ export {
   evaluateNotifiableEventsPolicy,
   evaluateStaffNotifiableEventsReadiness,
   buildChildNotifiableEventsProfiles,
-  pct,
   getRating,
   getNotifiableEventsCategoryLabel,
   getNotifiableEventsOutcomeLabel,

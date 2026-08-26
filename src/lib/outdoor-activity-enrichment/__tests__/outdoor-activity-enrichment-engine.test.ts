@@ -10,7 +10,6 @@ import {
   evaluateStaffReadiness,
   buildChildEnrichmentProfiles,
   generateOutdoorActivityEnrichmentIntelligence,
-  pct,
   getRating,
   getActivityCategoryLabel,
   getRiskBenefitOutcomeLabel,
@@ -117,28 +116,6 @@ function makeStaff(
 // =============================================================================
 // pct()
 // =============================================================================
-
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("calculates percentage correctly", () => {
-    expect(pct(1, 2)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-
-  it("returns 100 for equal numerator and denominator", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-});
 
 // =============================================================================
 // getRating()
@@ -266,10 +243,10 @@ describe("evaluateActivityParticipation", () => {
     const result = evaluateActivityParticipation([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalActivities).toBe(0);
-    expect(result.outdoorRate).toBe(0);
-    expect(result.communityRate).toBe(0);
-    expect(result.childChoiceRate).toBe(0);
-    expect(result.newExperienceRate).toBe(0);
+    expect(result.outdoorRate).toBeNull();
+    expect(result.communityRate).toBeNull();
+    expect(result.childChoiceRate).toBeNull();
+    expect(result.newExperienceRate).toBeNull();
     expect(result.averageDuration).toBe(0);
   });
 
@@ -439,11 +416,11 @@ describe("evaluateEnrichmentQuality", () => {
     const result = evaluateEnrichmentQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalPlans).toBe(0);
-    expect(result.currentPlanRate).toBe(0);
-    expect(result.completionRate).toBe(0);
-    expect(result.childContributionRate).toBe(0);
-    expect(result.diverseRangeRate).toBe(0);
-    expect(result.barriersAddressedRate).toBe(0);
+    expect(result.currentPlanRate).toBeNull();
+    expect(result.completionRate).toBeNull();
+    expect(result.childContributionRate).toBeNull();
+    expect(result.diverseRangeRate).toBeNull();
+    expect(result.barriersAddressedRate).toBeNull();
     expect(result.averageActivitiesPlanned).toBe(0);
   });
 
@@ -503,7 +480,7 @@ describe("evaluateEnrichmentQuality", () => {
     ];
     const result = evaluateEnrichmentQuality(plans);
     // No barriers = 4 points for barriers addressed dimension
-    expect(result.barriersAddressedRate).toBe(0); // Rate is 0 because no barriers
+    expect(result.barriersAddressedRate).toBeNull(); // Rate is 0 because no barriers
     // But score should include 4 points for no-barriers bonus
     expect(result.overallScore).toBeGreaterThanOrEqual(4);
   });
@@ -560,11 +537,11 @@ describe("evaluateRiskManagement", () => {
     const result = evaluateRiskManagement([], []);
     expect(result.overallScore).toBe(0);
     expect(result.totalAssessments).toBe(0);
-    expect(result.assessmentRate).toBe(0);
-    expect(result.goodOrExcellentRate).toBe(0);
-    expect(result.childViewRate).toBe(0);
-    expect(result.dynamicAssessmentRate).toBe(0);
-    expect(result.benefitsArticulatedRate).toBe(0);
+    expect(result.assessmentRate).toBeNull();
+    expect(result.goodOrExcellentRate).toBeNull();
+    expect(result.childViewRate).toBeNull();
+    expect(result.dynamicAssessmentRate).toBeNull();
+    expect(result.benefitsArticulatedRate).toBeNull();
     expect(result.averageHazards).toBe(0);
   });
 
@@ -683,10 +660,10 @@ describe("evaluateStaffReadiness", () => {
     const result = evaluateStaffReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.firstAidRate).toBe(0);
-    expect(result.activityLeaderRate).toBe(0);
-    expect(result.riskAssessmentTrainedRate).toBe(0);
-    expect(result.safeguardingRate).toBe(0);
+    expect(result.firstAidRate).toBeNull();
+    expect(result.activityLeaderRate).toBeNull();
+    expect(result.riskAssessmentTrainedRate).toBeNull();
+    expect(result.safeguardingRate).toBeNull();
     expect(result.averageQualifications).toBe(0);
   });
 
@@ -864,12 +841,12 @@ describe("buildChildEnrichmentProfiles", () => {
     expect(result[0].overallScore).toBeLessThanOrEqual(10);
   });
 
-  it("plan completion rate is 0 when no plans", () => {
+  it("plan completion rate is null when no plans", () => {
     const activities: ActivityRecord[] = [
       makeActivity({ id: "a1", childId: "c1", childName: "A" }),
     ];
     const result = buildChildEnrichmentProfiles(activities, []);
-    expect(result[0].planCompletionRate).toBe(0);
+    expect(result[0].planCompletionRate).toBeNull();
   });
 });
 

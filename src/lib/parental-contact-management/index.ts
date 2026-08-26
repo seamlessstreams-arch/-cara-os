@@ -5,7 +5,6 @@ export {
   evaluateRiskManagement,
   evaluateStaffContactReadiness,
   buildChildContactProfiles,
-  pct,
   getRating,
   getContactTypeLabel,
   getContactOutcomeLabel,

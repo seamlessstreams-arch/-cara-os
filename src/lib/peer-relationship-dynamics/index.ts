@@ -13,7 +13,6 @@ export {
   getOutcomeLevelLabel,
   getRatingLabel,
   getRating,
-  pct,
 } from "./peer-relationship-dynamics-engine";
 
 export type {
