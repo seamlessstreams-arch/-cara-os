@@ -20,7 +20,8 @@ export interface LACReviewInput {
   date: string;
   iro_name: string;
   child_participated: boolean;
-  home_report_submitted: boolean;
+  /** null when the record does not capture whether the home's report went in — unmeasured, never assumed. */
+  home_report_submitted: boolean | null;
   care_plan_agreed: boolean;
   actions: string[];
   next_review_due: string;
@@ -44,7 +45,8 @@ export interface MultiAgencyMeetingInput {
   attendees: string[];
   actions_count: number;
   actions_completed: number;
-  home_report_submitted: boolean;
+  /** null when the record does not capture whether the home's report went in — unmeasured, never assumed. */
+  home_report_submitted: boolean | null;
 }
 
 export interface ChildRef {
@@ -103,7 +105,7 @@ export interface UpcomingReview {
   review_type: string;
   date: string;
   days_until: number;
-  home_report_submitted: boolean;
+  home_report_submitted: boolean | null;
   iro_name: string;
 }
 
@@ -208,10 +210,12 @@ export function computeMultiAgencyIntelligence(input: MultiAgencyEngineInput): M
     ? Math.round((participatingReviews.length / reviewsThisYear.length) * 100)
     : null;
 
-  // Home report submission rate
-  const homeReportSubmitted = reviewsThisYear.filter((r) => r.home_report_submitted);
-  const homeReportRate = reviewsThisYear.length > 0
-    ? Math.round((homeReportSubmitted.length / reviewsThisYear.length) * 100)
+  // Home report submission rate — over reviews where submission is actually
+  // recorded; null-flagged reviews are unmeasured, not assumed submitted
+  const reportMeasuredReviews = reviewsThisYear.filter((r) => r.home_report_submitted !== null);
+  const homeReportSubmitted = reportMeasuredReviews.filter((r) => r.home_report_submitted === true);
+  const homeReportRate = reportMeasuredReviews.length > 0
+    ? Math.round((homeReportSubmitted.length / reportMeasuredReviews.length) * 100)
     : null;
 
   // Meetings this quarter (90-day window ending at today)
@@ -322,10 +326,12 @@ export function computeMultiAgencyIntelligence(input: MultiAgencyEngineInput): M
     }
   }
 
-  // High: Home report not submitted for review due within 5 days
+  // High: Home report explicitly recorded as not submitted for a review due
+  // within 5 days. Unknown (null) must not raise it — that would state a
+  // deficiency the record does not evidence.
   for (const review of lacReviews) {
     const daysUntilReview = daysBetween(today, review.next_review_due);
-    if (daysUntilReview >= 0 && daysUntilReview <= 5 && !review.home_report_submitted) {
+    if (daysUntilReview >= 0 && daysUntilReview <= 5 && review.home_report_submitted === false) {
       const child = children.find((c) => c.id === review.child_id);
       alerts.push({
         severity: "high",

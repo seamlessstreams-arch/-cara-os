@@ -68,87 +68,125 @@ export async function GET(request: NextRequest) {
 
   // ── Health Assessments ────────────────────────────────────────────────
   const health_assessments: HealthAssessmentInput[] = (healthAssessmentsList ?? [])
-    .filter((ha: any) => ha.child_id === childId)
-    .map((ha: any) => ({
+    .filter((ha) => ha.child_id === childId)
+    .map((ha) => ({
       id: ha.id,
-      type: ha.type ?? ha.assessment_type ?? "annual",
-      date: (ha.date ?? ha.assessment_date ?? "").slice(0, 10),
-      status: ha.status ?? "completed",
-      outcome: ha.outcome ?? ha.summary ?? "",
+      type: ha.type,
+      date: (ha.date ?? "").slice(0, 10),
+      status: ha.status,
+      // HealthAssessment has no single outcome field — its findings and notes are the outcome
+      outcome: (ha.key_findings ?? []).join("; ") || ha.notes || "",
     }));
 
   // ── Dental Records ────────────────────────────────────────────────────
   const dental_records: DentalRecordInput[] = (dentalRecordsList ?? [])
-    .filter((d: any) => d.child_id === childId)
-    .map((d: any) => ({
-      id: d.id,
-      date: (d.date ?? d.appointment_date ?? "").slice(0, 10),
-      type: d.type ?? d.visit_type ?? "check_up",
-      outcome: d.outcome ?? d.notes ?? "",
-      next_due: d.next_due ? d.next_due.slice(0, 10) : d.next_appointment ? d.next_appointment.slice(0, 10) : null,
-    }));
+    .filter((d) => d.child_id === childId)
+    .flatMap((d) => {
+      const entries = [...(d.check_ups_history ?? [])].sort((a, b) => a.date.localeCompare(b.date));
+      if (entries.length === 0 && d.last_check_up_date) {
+        entries.push({ date: d.last_check_up_date, dentist: d.dentist_name, findings: d.current_treatment_notes ?? "", treatment_recommended: "", treatment_received: "" });
+      }
+      return entries.map((e, idx) => ({
+        id: `${d.id}-${idx}`,
+        date: (e.date ?? "").slice(0, 10),
+        type: e.treatment_received ? "treatment" : "check_up",
+        outcome: [e.findings, e.treatment_received].filter(Boolean).join("; "),
+        // the summary record's next-due applies to the most recent visit
+        next_due: idx === entries.length - 1 && d.next_check_up_due ? d.next_check_up_due.slice(0, 10) : null,
+      }));
+    });
 
   // ── Opticians Records ─────────────────────────────────────────────────
   const opticians_records: OpticiansRecordInput[] = (opticiansRecordsList ?? [])
-    .filter((o: any) => o.child_id === childId)
-    .map((o: any) => ({
-      id: o.id,
-      date: (o.date ?? o.appointment_date ?? "").slice(0, 10),
-      outcome: o.outcome ?? o.notes ?? "",
-      next_due: o.next_due ? o.next_due.slice(0, 10) : o.next_appointment ? o.next_appointment.slice(0, 10) : null,
-    }));
+    .filter((o) => o.child_id === childId)
+    .flatMap((o) => {
+      const exams = [...(o.exam_history ?? [])].sort((a, b) => a.date.localeCompare(b.date));
+      if (exams.length === 0 && o.last_exam_date) {
+        exams.push({ date: o.last_exam_date, outcome: o.notes ?? "", prescription: "", recommendations: "" });
+      }
+      return exams.map((e, idx) => ({
+        id: `${o.id}-${idx}`,
+        date: (e.date ?? "").slice(0, 10),
+        outcome: e.outcome ?? "",
+        next_due: idx === exams.length - 1 && o.next_exam_due ? o.next_exam_due.slice(0, 10) : null,
+      }));
+    });
 
   // ── Immunisations ─────────────────────────────────────────────────────
+  const VACCINE_STATUS_TO_ENGINE: Record<string, string | null> = {
+    up_to_date: "completed", caught_up_after_gap: "completed",
+    due_now: "due", overdue: "overdue", refused: "declined",
+    medically_exempt: null,
+  };
   const immunisations: ImmunisationInput[] = (immunisationRecordsList ?? [])
-    .filter((i: any) => i.child_id === childId)
-    .map((i: any) => ({
-      id: i.id,
-      vaccine: i.vaccine ?? i.vaccine_name ?? i.name ?? "Unknown",
-      date: (i.date ?? i.administered_date ?? "").slice(0, 10),
-      status: i.status ?? "completed",
-    }));
+    .filter((i) => i.child_id === childId)
+    .flatMap((i) =>
+      (i.records ?? []).flatMap((v, idx) => {
+        const status = VACCINE_STATUS_TO_ENGINE[v.status] ?? null;
+        if (status === null) return [];
+        return [{
+          id: `${i.id}-${idx}`,
+          vaccine: v.vaccine,
+          date: (v.date_given ?? "").slice(0, 10),
+          status,
+        }];
+      }),
+    );
 
   // ── CAMHS ─────────────────────────────────────────────────────────────
-  const camhsRecords = (camhsReferralsList ?? []).filter((c: any) => c.child_id === childId);
+  const CAMHS_STATUS_TO_ENGINE: Record<string, string> = {
+    submitted: "waiting", triaged: "waiting", on_waiting_list: "waiting",
+    re_referred: "waiting", active_engagement: "active", discharged: "discharged",
+  };
+  const camhsRecords = (camhsReferralsList ?? []).filter((c) => c.child_id === childId);
   let camhs: CamhsInput | null = null;
   if (camhsRecords.length > 0) {
-    // Use the most recent / active referral
+    // Use the most recent referral
     const sorted = [...camhsRecords].sort(
-      (a: any, b: any) => new Date(b.referral_date ?? b.date ?? "").getTime() - new Date(a.referral_date ?? a.date ?? "").getTime(),
+      (a, b) => new Date(b.referral_date ?? "").getTime() - new Date(a.referral_date ?? "").getTime(),
     );
-    const c = sorted[0] as any;
+    const c = sorted[0];
     camhs = {
       id: c.id,
-      referral_date: (c.referral_date ?? c.date ?? "").slice(0, 10),
-      status: c.status ?? "active",
-      sessions_attended: c.sessions_attended ?? 0,
-      sessions_offered: c.sessions_offered ?? c.sessions_total ?? 0,
-      engagement_level: c.engagement_level ?? c.engagement ?? "moderate",
-      next_appointment: c.next_appointment ? c.next_appointment.slice(0, 10) : null,
+      referral_date: (c.referral_date ?? "").slice(0, 10),
+      status: CAMHS_STATUS_TO_ENGINE[c.referral_status] ?? "waiting",
+      sessions_attended: c.sessions_held ?? 0,
+      sessions_offered: c.sessions_scheduled ?? 0,
+      engagement_level: c.current_engagement_level,
+      // the referral only records the FIRST appointment; it is the next one
+      // only while it is still ahead of us
+      next_appointment:
+        c.first_appointment_date && c.first_appointment_date.slice(0, 10) >= today
+          ? c.first_appointment_date.slice(0, 10)
+          : null,
     };
   }
 
   // ── Mental Health Check-Ins ───────────────────────────────────────────
+  const SLEEP_QUALITY_TO_SCORE: Record<string, number> = {
+    poor: 1, disrupted: 2, ok: 3, good: 4, great: 5,
+  };
   const mental_health_check_ins: MentalHealthCheckInInput[] = (mentalHealthCheckInsList ?? [])
-    .filter((mh: any) => mh.child_id === childId)
-    .map((mh: any) => ({
+    .filter((mh) => mh.child_id === childId)
+    .map((mh) => ({
       id: mh.id,
-      date: (mh.date ?? mh.check_in_date ?? "").slice(0, 10),
-      overall_mood: mh.overall_mood ?? mh.mood ?? 3,
-      anxiety_level: mh.anxiety_level ?? mh.anxiety ?? 3,
-      sleep_quality: mh.sleep_quality ?? mh.sleep ?? 3,
-      concerns: mh.concerns ?? [],
+      date: (mh.date ?? "").slice(0, 10),
+      overall_mood: mh.mood_rating,
+      // the check-in form does not capture anxiety — unmeasured, not neutral
+      anxiety_level: null,
+      sleep_quality: SLEEP_QUALITY_TO_SCORE[mh.sleep_quality] ?? 3,
+      concerns: mh.whats_heavy?.trim() ? [mh.whats_heavy.trim()] : [],
     }));
 
   // ── Appointments ──────────────────────────────────────────────────────
   const appointments: AppointmentInput[] = (appointmentsList ?? [])
-    .filter((a: any) => a.child_id === childId)
-    .map((a: any) => ({
+    .filter((a) => a.child_id === childId)
+    .map((a) => ({
       id: a.id,
-      date: (a.date ?? a.appointment_date ?? "").slice(0, 10),
-      type: a.type ?? a.appointment_type ?? "gp",
-      attended: a.attended ?? (a.status ? a.status === "attended" : true),
-      rescheduled: a.rescheduled ?? a.status === "rescheduled",
+      date: (a.date ?? "").slice(0, 10),
+      type: a.type,
+      attended: a.status === "attended",
+      rescheduled: a.status === "rescheduled",
     }));
 
   const engineInput: ChildHealthIntelligenceInput = {

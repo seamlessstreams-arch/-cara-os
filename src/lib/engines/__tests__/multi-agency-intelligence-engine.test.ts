@@ -351,6 +351,30 @@ describe("computeMultiAgencyIntelligence — overview", () => {
     expect(result.overview.home_report_rate).toBe(50);
   });
 
+  it("computes the report rate over measured reviews only — null flags are unmeasured, not assumed submitted", () => {
+    const input = makeInput({
+      lacReviews: [
+        makeLACReview({ id: "r1", home_report_submitted: true, date: "2026-04-01" }),
+        makeLACReview({ id: "r2", home_report_submitted: false, date: "2026-03-01" }),
+        makeLACReview({ id: "r3", home_report_submitted: null, date: "2026-02-01" }),
+      ],
+    });
+    const result = computeMultiAgencyIntelligence(input);
+    // 1 of the 2 measured reviews — the null review is excluded from the denominator
+    expect(result.overview.home_report_rate).toBe(50);
+  });
+
+  it("reports the rate as unmeasured when no review records submission", () => {
+    const input = makeInput({
+      lacReviews: [
+        makeLACReview({ id: "r1", home_report_submitted: null, date: "2026-04-01" }),
+        makeLACReview({ id: "r2", home_report_submitted: null, date: "2026-03-01" }),
+      ],
+    });
+    const result = computeMultiAgencyIntelligence(input);
+    expect(result.overview.home_report_rate).toBeNull();
+  });
+
   it("counts meetings this quarter (90-day window)", () => {
     const input = makeInput({
       meetings: [
@@ -649,6 +673,22 @@ describe("computeMultiAgencyIntelligence — alerts", () => {
           child_id: "c1",
           next_review_due: "2026-05-28",
           home_report_submitted: true,
+        }),
+      ],
+    });
+    const result = computeMultiAgencyIntelligence(input);
+    const homeReportAlerts = result.alerts.filter((a) => a.message.includes("Home report"));
+    expect(homeReportAlerts).toHaveLength(0);
+  });
+
+  it("does not raise the report alert when submission is unrecorded — that would state a deficiency the record does not evidence", () => {
+    const input = makeInput({
+      children: [makeChild({ id: "c1" })],
+      lacReviews: [
+        makeLACReview({
+          child_id: "c1",
+          next_review_due: "2026-05-28",
+          home_report_submitted: null,
         }),
       ],
     });

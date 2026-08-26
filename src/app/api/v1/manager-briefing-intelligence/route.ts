@@ -179,7 +179,7 @@ export async function GET() {
     child_debriefed: r.child_debriefed, staff_debriefed: r.staff_debriefed,
     injuries: (r.injuries ?? []).map((inj: any) => ({
       person: inj.person ?? "unknown",
-      description: inj.injury ?? inj.description ?? "",
+      description: inj.injury ?? "",
     })),
     review_status: r.review_status, recorded_by: r.recorded_by,
   }));

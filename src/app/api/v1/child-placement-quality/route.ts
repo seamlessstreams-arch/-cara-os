@@ -13,6 +13,7 @@ import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { dal } from "@/lib/db";
 import { getStaffName } from "@/lib/seed-data";
 import { todayStr } from "@/lib/utils";
+import { ageFromDob } from "@/lib/cara-studio/cara-context-builder";
 import {
   computeChildPlacementQuality,
   type DailyLogInput,
@@ -45,12 +46,14 @@ export async function GET(request: NextRequest) {
   const today = todayStr();
 
   // ── Child info ─────────────────────────────────────────────────────────
-  const child = (youngPeopleList ?? []).find((yp: any) => yp.id === childId) as any;
+  const child = (youngPeopleList ?? []).find((yp) => yp.id === childId);
   if (!child) {
     return NextResponse.json({ error: "Child not found" }, { status: 404 });
   }
-  const childName = (child.name ?? `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim()) || childId;
-  const childAge = child.age ?? 15;
+  const childName = `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim() || childId;
+  // YoungPerson has no age field — derive from date_of_birth (the old phantom
+  // `.age` read meant every child was assessed as 15); 15 only if DOB unparseable
+  const childAge = ageFromDob(child.date_of_birth, today) ?? 15;
   const placementStart = typeof child.placement_start === "string" ? child.placement_start.slice(0, 10) : today;
   const keyWorkerId = child.key_worker_id ?? "";
   const keyWorkerName = keyWorkerId ? getStaffName(keyWorkerId) : "Key Worker";
@@ -73,36 +76,48 @@ export async function GET(request: NextRequest) {
     .map((k: any) => ({
       id: k.id,
       date: typeof k.date === "string" ? k.date.slice(0, 10) : k.date,
-      child_engaged: k.child_engaged ?? (k.mood_after != null && k.mood_before != null ? k.mood_after >= k.mood_before : true),
+      child_engaged: k.mood_after != null && k.mood_before != null ? k.mood_after >= k.mood_before : true,
       mood_before: k.mood_before ?? 3,
       mood_after: k.mood_after ?? 3,
-      themes: Array.isArray(k.topics) ? k.topics : Array.isArray(k.themes) ? k.themes : [],
+      themes: Array.isArray(k.topics) ? k.topics : [],
     }));
 
   // ── Welfare Checks ─────────────────────────────────────────────────────
+  // WelfareCheck records a status, not an outcome; the engine's vocabulary is
+  // ok / concern / not_checked. Asleep and awake are completed checks with
+  // nothing raised; refused and not_in_room mean the child was not seen — an
+  // unknown status makes no claim either way.
+  const WELFARE_STATUS_TO_OUTCOME: Record<string, string> = {
+    ok: "ok",
+    asleep: "ok",
+    awake: "ok",
+    concern: "concern",
+    refused: "not_checked",
+    not_in_room: "not_checked",
+  };
   const welfare_checks: WelfareCheckInput[] = [];
   if (Array.isArray(welfareChecksList)) {
-    (welfareChecksList as any[])
-      .filter((w: any) => w.child_id === childId)
-      .forEach((w: any) => {
+    welfareChecksList
+      .filter((w) => w.child_id === childId)
+      .forEach((w) => {
         welfare_checks.push({
           id: w.id,
-          date: typeof w.date === "string" ? w.date.slice(0, 10) : (w.created_at ?? today).toString().slice(0, 10),
-          outcome: w.outcome ?? w.status ?? "ok",
+          date: (w.check_date ?? "").slice(0, 10),
+          outcome: WELFARE_STATUS_TO_OUTCOME[w.status] ?? "not_checked",
         });
       });
   }
   // Also check welfare check rounds
   if (Array.isArray(welfareCheckRoundsList)) {
-    (welfareCheckRoundsList as any[]).forEach((round: any) => {
+    welfareCheckRoundsList.forEach((round) => {
       if (Array.isArray(round.checks)) {
         round.checks
-          .filter((c: any) => c.child_id === childId)
-          .forEach((c: any) => {
+          .filter((c) => c.child_id === childId)
+          .forEach((c) => {
             welfare_checks.push({
               id: c.id ?? `${round.id}_${c.child_id}`,
-              date: typeof round.date === "string" ? round.date.slice(0, 10) : (round.created_at ?? today).toString().slice(0, 10),
-              outcome: c.outcome ?? c.status ?? "ok",
+              date: (round.round_date ?? "").slice(0, 10),
+              outcome: WELFARE_STATUS_TO_OUTCOME[c.status] ?? "not_checked",
             });
           });
       }
@@ -112,38 +127,22 @@ export async function GET(request: NextRequest) {
   // ── Activities ─────────────────────────────────────────────────────────
   const activities: ActivityInput[] = [];
   if (Array.isArray(activitiesList)) {
-    (activitiesList as any[])
-      .filter((a: any) => {
-        // Check if child participated
-        if (Array.isArray(a.participants)) return a.participants.includes(childId);
-        if (a.child_id === childId) return true;
-        return false;
-      })
-      .forEach((a: any) => {
+    activitiesList
+      .filter((a) => a.child_id === childId)
+      .forEach((a) => {
         activities.push({
           id: a.id,
-          date: typeof a.date === "string" ? a.date.slice(0, 10) : (a.start_date ?? a.created_at ?? today).toString().slice(0, 10),
-          type: a.type ?? a.category ?? "general",
-          child_participated: true, // If they're in participants, they participated
+          date: (a.date ?? "").slice(0, 10),
+          type: a.category ?? "general",
+          child_participated: true, // an Activity record is per-child by shape
         });
       });
   }
 
   // ── Placement Moves ────────────────────────────────────────────────────
+  // YoungPerson records no placement history, so prior moves are unmeasured —
+  // the input stays empty rather than being invented from text matching.
   const placement_moves: PlacementMoveInput[] = [];
-  // Derive from placement history if available
-  if (child.placement_history && typeof child.placement_history === "string" && child.placement_history.length > 0) {
-    // Count mentions of "broke down" or "ended" as unplanned
-    const breakdowns = (child.placement_history.match(/broke down|breakdown|disruption/gi) ?? []).length;
-    for (let i = 0; i < breakdowns; i++) {
-      placement_moves.push({
-        id: `pm_${childId}_${i}`,
-        date: placementStart,
-        reason: "Previous placement breakdown",
-        planned: false,
-      });
-    }
-  }
 
   // ── Compute ────────────────────────────────────────────────────────────
   const result = computeChildPlacementQuality({
