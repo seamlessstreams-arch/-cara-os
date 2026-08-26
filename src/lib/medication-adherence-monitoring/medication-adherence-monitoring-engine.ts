@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // MEDICATION ADHERENCE MONITORING INTELLIGENCE ENGINE
 //
@@ -129,19 +130,27 @@ export interface StaffMedicationTraining {
 export interface AdministrationQualityResult {
   overallScore: number;
   totalRecords: number;
-  correctAdministrationRate: number;
-  twoStaffWitnessedRate: number;
-  documentedImmediatelyRate: number;
-  consentObtainedRate: number;
-  sideEffectsMonitoredRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  correctAdministrationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  twoStaffWitnessedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedImmediatelyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  consentObtainedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  sideEffectsMonitoredRate: number | null;
 }
 
 export interface MedicationSafetyResult {
   overallScore: number;
   totalRecords: number;
-  errorRate: number;
-  storageCorrectRate: number;
-  reviewComplianceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  errorRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  storageCorrectRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reviewComplianceRate: number | null;
 }
 
 export interface MedicationPolicyResult {
@@ -158,12 +167,18 @@ export interface MedicationPolicyResult {
 export interface StaffMedicationReadinessResult {
   overallScore: number;
   totalStaff: number;
-  medicationAdministrationRate: number;
-  controlledDrugsRate: number;
-  errorReportingRate: number;
-  consentPracticeRate: number;
-  sideEffectRecognitionRate: number;
-  storageComplianceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  medicationAdministrationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  controlledDrugsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  errorReportingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  consentPracticeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  sideEffectRecognitionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  storageComplianceRate: number | null;
 }
 
 export interface ChildMedicationProfile {
@@ -171,9 +186,12 @@ export interface ChildMedicationProfile {
   childName: string;
   totalRecords: number;
   overallScore: number;
-  correctAdministrationRate: number;
-  documentedImmediatelyRate: number;
-  errorRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  correctAdministrationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedImmediatelyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  errorRate: number | null;
 }
 
 export interface MedicationAdherenceMonitoringIntelligence {
@@ -194,11 +212,6 @@ export interface MedicationAdherenceMonitoringIntelligence {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -223,11 +236,11 @@ export function evaluateAdministrationQuality(
     return {
       overallScore: 0,
       totalRecords: 0,
-      correctAdministrationRate: 0,
-      twoStaffWitnessedRate: 0,
-      documentedImmediatelyRate: 0,
-      consentObtainedRate: 0,
-      sideEffectsMonitoredRate: 0,
+      correctAdministrationRate: null,
+      twoStaffWitnessedRate: null,
+      documentedImmediatelyRate: null,
+      consentObtainedRate: null,
+      sideEffectsMonitoredRate: null,
     };
   }
 
@@ -245,19 +258,19 @@ export function evaluateAdministrationQuality(
     if (r.sideEffectsMonitored) sideEffects++;
   }
 
-  const correctAdministrationRate = pct(correct, records.length);
-  const twoStaffWitnessedRate = pct(witnessed, records.length);
-  const documentedImmediatelyRate = pct(documented, records.length);
-  const consentObtainedRate = pct(consent, records.length);
-  const sideEffectsMonitoredRate = pct(sideEffects, records.length);
+  const correctAdministrationRate = rate(correct, records.length);
+  const twoStaffWitnessedRate = rate(witnessed, records.length);
+  const documentedImmediatelyRate = rate(documented, records.length);
+  const consentObtainedRate = rate(consent, records.length);
+  const sideEffectsMonitoredRate = rate(sideEffects, records.length);
 
   // Combined consent + side effects average for the 0-6 bucket
-  const consentSideEffectsAvg = (consentObtainedRate + sideEffectsMonitoredRate) / 2;
+  const consentSideEffectsAvg = (consentObtainedRate! + sideEffectsMonitoredRate!) / 2;
 
   let score = 0;
-  score += Math.round((correctAdministrationRate / 100) * 7);
-  score += Math.round((twoStaffWitnessedRate / 100) * 6);
-  score += Math.round((documentedImmediatelyRate / 100) * 6);
+  score += Math.round((correctAdministrationRate! / 100) * 7);
+  score += Math.round((twoStaffWitnessedRate! / 100) * 6);
+  score += Math.round((documentedImmediatelyRate! / 100) * 6);
   score += Math.round((consentSideEffectsAvg / 100) * 6);
 
   return {
@@ -286,9 +299,9 @@ export function evaluateMedicationSafety(
     return {
       overallScore: 25,
       totalRecords: 0,
-      errorRate: 0,
-      storageCorrectRate: 0,
-      reviewComplianceRate: 0,
+      errorRate: null,
+      storageCorrectRate: null,
+      reviewComplianceRate: null,
     };
   }
 
@@ -307,14 +320,14 @@ export function evaluateMedicationSafety(
     if (r.reviewDue >= r.administrationDate) reviewCompliant++;
   }
 
-  const errorRate = pct(errors, records.length);
-  const storageCorrectRate = pct(storageCorrect, records.length);
-  const reviewComplianceRate = pct(reviewCompliant, records.length);
+  const errorRate = rate(errors, records.length);
+  const storageCorrectRate = rate(storageCorrect, records.length);
+  const reviewComplianceRate = rate(reviewCompliant, records.length);
 
   let score = 0;
-  score += Math.round((9 * (100 - errorRate)) / 100);
-  score += Math.round((storageCorrectRate / 100) * 8);
-  score += Math.round((reviewComplianceRate / 100) * 8);
+  score += Math.round((9 * (100 - errorRate!)) / 100);
+  score += Math.round((storageCorrectRate! / 100) * 8);
+  score += Math.round((reviewComplianceRate! / 100) * 8);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -381,12 +394,12 @@ export function evaluateStaffMedicationReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      medicationAdministrationRate: 0,
-      controlledDrugsRate: 0,
-      errorReportingRate: 0,
-      consentPracticeRate: 0,
-      sideEffectRecognitionRate: 0,
-      storageComplianceRate: 0,
+      medicationAdministrationRate: null,
+      controlledDrugsRate: null,
+      errorReportingRate: null,
+      consentPracticeRate: null,
+      sideEffectRecognitionRate: null,
+      storageComplianceRate: null,
     };
   }
 
@@ -406,20 +419,20 @@ export function evaluateStaffMedicationReadiness(
     if (t.storageCompliance) storage++;
   }
 
-  const medicationAdministrationRate = pct(medAdmin, training.length);
-  const controlledDrugsRate = pct(controlled, training.length);
-  const errorReportingRate = pct(errorRep, training.length);
-  const consentPracticeRate = pct(consentPrac, training.length);
-  const sideEffectRecognitionRate = pct(sideEffect, training.length);
-  const storageComplianceRate = pct(storage, training.length);
+  const medicationAdministrationRate = rate(medAdmin, training.length);
+  const controlledDrugsRate = rate(controlled, training.length);
+  const errorReportingRate = rate(errorRep, training.length);
+  const consentPracticeRate = rate(consentPrac, training.length);
+  const sideEffectRecognitionRate = rate(sideEffect, training.length);
+  const storageComplianceRate = rate(storage, training.length);
 
   let score = 0;
-  score += Math.round((medicationAdministrationRate / 100) * 6);
-  score += Math.round((controlledDrugsRate / 100) * 5);
-  score += Math.round((errorReportingRate / 100) * 5);
-  score += Math.round((consentPracticeRate / 100) * 4);
-  score += Math.round((sideEffectRecognitionRate / 100) * 3);
-  score += Math.round((storageComplianceRate / 100) * 2);
+  score += Math.round((medicationAdministrationRate! / 100) * 6);
+  score += Math.round(((controlledDrugsRate ?? 0) / 100) * 5);
+  score += Math.round(((errorReportingRate ?? 0) / 100) * 5);
+  score += Math.round(((consentPracticeRate ?? 0) / 100) * 4);
+  score += Math.round(((sideEffectRecognitionRate ?? 0) / 100) * 3);
+  score += Math.round(((storageComplianceRate ?? 0) / 100) * 2);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -477,9 +490,9 @@ export function buildChildMedicationProfiles(
         r.administrationOutcome === "missed",
     ).length;
 
-    const correctAdministrationRate = pct(correct, total);
-    const documentedImmediatelyRate = pct(documented, total);
-    const errorRate = pct(errorsMissed, total);
+    const correctAdministrationRate = rate(correct, total);
+    const documentedImmediatelyRate = rate(documented, total);
+    const errorRate = rate(errorsMissed, total);
 
     // frequency score 0-2
     let frequencyScore = 0;
@@ -487,13 +500,13 @@ export function buildChildMedicationProfiles(
     else if (total >= 5) frequencyScore = 1;
 
     // correctAdmin score 0-3
-    const correctAdminScore = Math.round((correctAdministrationRate / 100) * 3);
+    const correctAdminScore = Math.round(((correctAdministrationRate ?? 0) / 100) * 3);
 
     // documented score 0-3
-    const documentedScore = Math.round((documentedImmediatelyRate / 100) * 3);
+    const documentedScore = Math.round(((documentedImmediatelyRate ?? 0) / 100) * 3);
 
     // safety score 0-2 (based on low error rate)
-    const safetyScore = Math.round((2 * (100 - errorRate)) / 100);
+    const safetyScore = Math.round((2 * (100 - (errorRate ?? 100))) / 100); // unmeasured earns no safety credit
 
     const overallScore = Math.min(
       10,
@@ -545,7 +558,7 @@ export function generateMedicationAdherenceMonitoringIntelligence(
 
   if (
     records.length > 0 &&
-    administrationQuality.correctAdministrationRate >= 80
+    meets(administrationQuality.correctAdministrationRate, 80)
   ) {
     strengths.push(
       "Strong medication administration with " +
@@ -556,7 +569,7 @@ export function generateMedicationAdherenceMonitoringIntelligence(
 
   if (
     records.length > 0 &&
-    administrationQuality.documentedImmediatelyRate >= 80
+    meets(administrationQuality.documentedImmediatelyRate, 80)
   ) {
     strengths.push(
       "Excellent documentation practice with " +
@@ -567,7 +580,7 @@ export function generateMedicationAdherenceMonitoringIntelligence(
 
   if (
     records.length > 0 &&
-    administrationQuality.twoStaffWitnessedRate >= 80
+    meets(administrationQuality.twoStaffWitnessedRate, 80)
   ) {
     strengths.push(
       "Robust dual verification with " +
@@ -597,7 +610,7 @@ export function generateMedicationAdherenceMonitoringIntelligence(
     );
   }
 
-  if (records.length > 0 && medicationSafety.storageCorrectRate >= 90) {
+  if (records.length > 0 && meets(medicationSafety.storageCorrectRate, 90)) {
     strengths.push(
       "High medication storage compliance at " +
         medicationSafety.storageCorrectRate +
@@ -610,7 +623,7 @@ export function generateMedicationAdherenceMonitoringIntelligence(
 
   if (
     records.length > 0 &&
-    administrationQuality.correctAdministrationRate < 60
+    below(administrationQuality.correctAdministrationRate, 60)
   ) {
     areasForImprovement.push(
       "Correct administration rate at " +
@@ -619,7 +632,7 @@ export function generateMedicationAdherenceMonitoringIntelligence(
     );
   }
 
-  if (records.length > 0 && medicationSafety.errorRate > 10) {
+  if (records.length > 0 && above(medicationSafety.errorRate, 10)) {
     areasForImprovement.push(
       "Medication error rate at " +
         medicationSafety.errorRate +
@@ -629,7 +642,7 @@ export function generateMedicationAdherenceMonitoringIntelligence(
 
   if (
     records.length > 0 &&
-    administrationQuality.twoStaffWitnessedRate < 60
+    below(administrationQuality.twoStaffWitnessedRate, 60)
   ) {
     areasForImprovement.push(
       "Two-staff witness rate at " +
@@ -640,7 +653,7 @@ export function generateMedicationAdherenceMonitoringIntelligence(
 
   if (
     records.length > 0 &&
-    administrationQuality.documentedImmediatelyRate < 60
+    below(administrationQuality.documentedImmediatelyRate, 60)
   ) {
     areasForImprovement.push(
       "Immediate documentation rate at " +
@@ -651,7 +664,7 @@ export function generateMedicationAdherenceMonitoringIntelligence(
 
   if (
     training.length > 0 &&
-    staffMedicationReadiness.controlledDrugsRate < 75
+    below(staffMedicationReadiness.controlledDrugsRate, 75)
   ) {
     areasForImprovement.push(
       "Controlled drugs training at " +
@@ -683,14 +696,14 @@ export function generateMedicationAdherenceMonitoringIntelligence(
 
   if (
     records.length > 0 &&
-    administrationQuality.correctAdministrationRate < 60
+    below(administrationQuality.correctAdministrationRate, 60)
   ) {
     actions.push(
       "Review medication administration procedures — correct administration below 60%",
     );
   }
 
-  if (records.length > 0 && medicationSafety.errorRate > 10) {
+  if (records.length > 0 && above(medicationSafety.errorRate, 10)) {
     actions.push(
       "Investigate medication errors — error rate of " +
         medicationSafety.errorRate +
@@ -707,10 +720,10 @@ export function generateMedicationAdherenceMonitoringIntelligence(
     );
   }
 
-  if (records.length > 0 && medicationSafety.reviewComplianceRate < 80) {
+  if (records.length > 0 && below(medicationSafety.reviewComplianceRate, 80)) {
     actions.push(
       "Schedule medication reviews — " +
-        (100 - medicationSafety.reviewComplianceRate) +
+        (100 - medicationSafety.reviewComplianceRate!) +
         "% of records have overdue reviews",
     );
   }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildPeerProfile { childId: string; childName: string; totalInteractions: number; positiveRelationshipRate: number; positiveEngagementRate: number; overallScore: number; }
 
@@ -85,19 +86,19 @@ export default function PeerRelationshipQualityDashboardWidget() {
       <Section title="Peer Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Interactions" value={data.peerQuality.totalInteractions} />
-          <Stat label="Positive Relationships" value={`${data.peerQuality.positiveRelationshipRate}%`} />
-          <Stat label="Positive Engagement" value={`${data.peerQuality.positiveEngagementRate}%`} />
-          <Stat label="Conflict Resolution" value={`${data.peerQuality.conflictResolutionRate}%`} />
-          <Stat label="Social Skills" value={`${data.peerQuality.socialSkillsRate}%`} />
+          <Stat label="Positive Relationships" value={`${formatRate(data.peerQuality.positiveRelationshipRate)}`} />
+          <Stat label="Positive Engagement" value={`${formatRate(data.peerQuality.positiveEngagementRate)}`} />
+          <Stat label="Conflict Resolution" value={`${formatRate(data.peerQuality.conflictResolutionRate)}`} />
+          <Stat label="Social Skills" value={`${formatRate(data.peerQuality.socialSkillsRate)}`} />
         </div>
       </Section>
 
       <Section title="Peer Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documented" value={`${data.peerCompliance.documentedRate}%`} />
-          <Stat label="Staff Facilitated" value={`${data.peerCompliance.staffFacilitatedRate}%`} />
-          <Stat label="Feedback" value={`${data.peerCompliance.feedbackRate}%`} />
-          <Stat label="Interaction Diversity" value={`${data.peerCompliance.interactionDiversityRatio}%`} />
+          <Stat label="Documented" value={`${formatRate(data.peerCompliance.documentedRate)}`} />
+          <Stat label="Staff Facilitated" value={`${formatRate(data.peerCompliance.staffFacilitatedRate)}`} />
+          <Stat label="Feedback" value={`${formatRate(data.peerCompliance.feedbackRate)}`} />
+          <Stat label="Interaction Diversity" value={`${formatRate(data.peerCompliance.interactionDiversityRatio)}`} />
         </div>
       </Section>
 
@@ -120,12 +121,12 @@ export default function PeerRelationshipQualityDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffPeerReadiness.totalStaff} />
-          <Stat label="Relationship Building" value={`${data.staffPeerReadiness.relationshipBuildingRate}%`} />
-          <Stat label="Conflict Mediation" value={`${data.staffPeerReadiness.conflictMediationRate}%`} />
-          <Stat label="Anti-Bullying" value={`${data.staffPeerReadiness.antibullyingAwarenessRate}%`} />
-          <Stat label="Social Skills" value={`${data.staffPeerReadiness.socialSkillsFacilitationRate}%`} />
-          <Stat label="Group Work" value={`${data.staffPeerReadiness.therapeuticGroupWorkRate}%`} />
-          <Stat label="Restorative Practice" value={`${data.staffPeerReadiness.restorativePracticeRate}%`} />
+          <Stat label="Relationship Building" value={`${formatRate(data.staffPeerReadiness.relationshipBuildingRate)}`} />
+          <Stat label="Conflict Mediation" value={`${formatRate(data.staffPeerReadiness.conflictMediationRate)}`} />
+          <Stat label="Anti-Bullying" value={`${formatRate(data.staffPeerReadiness.antibullyingAwarenessRate)}`} />
+          <Stat label="Social Skills" value={`${formatRate(data.staffPeerReadiness.socialSkillsFacilitationRate)}`} />
+          <Stat label="Group Work" value={`${formatRate(data.staffPeerReadiness.therapeuticGroupWorkRate)}`} />
+          <Stat label="Restorative Practice" value={`${formatRate(data.staffPeerReadiness.restorativePracticeRate)}`} />
         </div>
       </Section>
 

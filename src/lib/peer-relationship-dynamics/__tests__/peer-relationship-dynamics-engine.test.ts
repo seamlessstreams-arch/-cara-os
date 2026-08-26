@@ -17,8 +17,7 @@ import {
   getOutcomeLevelLabel,
   getRatingLabel,
   getRating,
-  pct,
-} from "../peer-relationship-dynamics-engine";
+  } from "../peer-relationship-dynamics-engine";
 import type {
   PeerInteraction,
   PeerPolicy,
@@ -71,33 +70,6 @@ const makeTraining = (overrides: Partial<StaffPeerTraining> = {}): StaffPeerTrai
 // ══════════════════════════════════════════════════════════════════════════════
 // HELPERS
 // ══════════════════════════════════════════════════════════════════════════════
-
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-
-  it("returns 100 when num equals den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-
-  it("handles large numbers", () => {
-    expect(pct(999, 1000)).toBe(100);
-  });
-});
 
 describe("getRating", () => {
   it("returns outstanding for score >= 80", () => {
@@ -220,7 +192,7 @@ describe("evaluateInteractionQuality", () => {
     expect(result.score).toBe(0);
     expect(result.totalInteractions).toBe(0);
     expect(result.positiveOutcomeCount).toBe(0);
-    expect(result.positiveOutcomeRate).toBe(0);
+    expect(result.positiveOutcomeRate).toBeNull();
   });
 
   it("returns max score for all-perfect interactions", () => {
@@ -390,7 +362,7 @@ describe("evaluateRelationshipSafety", () => {
     expect(result.score).toBe(25);
     expect(result.totalInteractions).toBe(0);
     expect(result.negativeInteractionCount).toBe(0);
-    expect(result.negativeInteractionRate).toBe(0);
+    expect(result.negativeInteractionRate).toBeNull();
   });
 
   it("returns high score when no negative interactions exist", () => {
@@ -475,12 +447,12 @@ describe("evaluateRelationshipSafety", () => {
     expect(result.followUpPlannedNegativeRate).toBe(50);
   });
 
-  it("returns 0 staff mediated rate when no negative interactions", () => {
+  it("returns null staff mediated rate when no negative interactions", () => {
     const interactions = [
       makeInteraction({ id: "a", interactionType: "positive_social", staffMediated: true }),
     ];
     const result = evaluateRelationshipSafety(interactions);
-    expect(result.staffMediatedNegativeRate).toBe(0);
+    expect(result.staffMediatedNegativeRate).toBeNull();
   });
 
   it("gives maximum score when all negatives are fully mediated and followed up", () => {

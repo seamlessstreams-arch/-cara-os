@@ -5,7 +5,6 @@ export {
   evaluateMedicationPolicy,
   evaluateStaffMedicationReadiness,
   buildChildMedicationProfiles,
-  pct,
   getRating,
   getMedicationTypeLabel,
   getAdministrationOutcomeLabel,

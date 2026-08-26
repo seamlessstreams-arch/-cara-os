@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   generateLocationAssessmentIntelligence, evaluateAssessmentQuality, evaluateAssessmentCompliance,
-  evaluateLocationPolicy, evaluateStaffLocationReadiness, buildChildLocationProfiles, pct, getRating,
+  evaluateLocationPolicy, evaluateStaffLocationReadiness, buildChildLocationProfiles, getRating,
   getCategoryLabel, getOutcomeLabel, getRatingLabel,
 } from "../location-engine";
 import type { LocationAssessmentRecord, LocationPolicy, StaffLocationTraining } from "../location-engine";
@@ -21,15 +21,6 @@ function makeTraining(overrides: Partial<StaffLocationTraining> = {}): StaffLoca
 }
 
 // ── pct ──────────────────────────────────────────────────────────────────────
-
-describe("pct", () => {
-  it("returns percentage", () => { expect(pct(3, 4)).toBe(75); });
-  it("returns 0 for den=0", () => { expect(pct(0, 0)).toBe(0); });
-  it("returns 100 for equal", () => { expect(pct(5, 5)).toBe(100); });
-  it("returns 0 for num=0", () => { expect(pct(0, 10)).toBe(0); });
-  it("rounds correctly", () => { expect(pct(1, 3)).toBe(33); });
-  it("handles large numbers", () => { expect(pct(999, 1000)).toBe(100); });
-});
 
 // ── getRating ────────────────────────────────────────────────────────────────
 
@@ -84,10 +75,10 @@ describe("evaluateAssessmentQuality", () => {
     const r = evaluateAssessmentQuality([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalRecords).toBe(0);
-    expect(r.thoroughRate).toBe(0);
-    expect(r.childViewRate).toBe(0);
-    expect(r.riskIdentifiedRate).toBe(0);
-    expect(r.mitigationsRate).toBe(0);
+    expect(r.thoroughRate).toBeNull();
+    expect(r.childViewRate).toBeNull();
+    expect(r.riskIdentifiedRate).toBeNull();
+    expect(r.mitigationsRate).toBeNull();
   });
 
   it("scores 25 for perfect records", () => {
@@ -150,9 +141,9 @@ describe("evaluateAssessmentCompliance", () => {
   it("returns 0 for empty", () => {
     const r = evaluateAssessmentCompliance([]);
     expect(r.overallScore).toBe(0);
-    expect(r.documentationRate).toBe(0);
-    expect(r.regulatoryRate).toBe(0);
-    expect(r.mitigationsRate).toBe(0);
+    expect(r.documentationRate).toBeNull();
+    expect(r.regulatoryRate).toBeNull();
+    expect(r.mitigationsRate).toBeNull();
     expect(r.categoryDiversityRatio).toBe(0);
   });
 
@@ -251,12 +242,12 @@ describe("evaluateStaffLocationReadiness", () => {
     const r = evaluateStaffLocationReadiness([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalStaff).toBe(0);
-    expect(r.riskAssessmentRate).toBe(0);
-    expect(r.communityMappingRate).toBe(0);
-    expect(r.safeguardingRate).toBe(0);
-    expect(r.regulatoryRate).toBe(0);
-    expect(r.childConsultationRate).toBe(0);
-    expect(r.reportWritingRate).toBe(0);
+    expect(r.riskAssessmentRate).toBeNull();
+    expect(r.communityMappingRate).toBeNull();
+    expect(r.safeguardingRate).toBeNull();
+    expect(r.regulatoryRate).toBeNull();
+    expect(r.childConsultationRate).toBeNull();
+    expect(r.reportWritingRate).toBeNull();
   });
 
   it("scores 25 for fully trained", () => {

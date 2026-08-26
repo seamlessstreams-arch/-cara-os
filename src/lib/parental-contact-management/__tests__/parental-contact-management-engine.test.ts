@@ -6,7 +6,6 @@ import {
   evaluateRiskManagement,
   evaluateStaffContactReadiness,
   buildChildContactProfiles,
-  pct,
   getRating,
   getContactTypeLabel,
   getContactOutcomeLabel,
@@ -97,14 +96,6 @@ function mkTraining(overrides: Partial<StaffContactTraining> = {}): StaffContact
 }
 
 // -- pct ----------------------------------------------------------------------
-
-describe("pct", () => {
-  it("returns 0 for 0/0", () => expect(pct(0, 0)).toBe(0));
-  it("calculates correctly", () => expect(pct(3, 4)).toBe(75));
-  it("rounds", () => expect(pct(1, 3)).toBe(33));
-  it("full", () => expect(pct(5, 5)).toBe(100));
-  it("returns 0 for 0/5", () => expect(pct(0, 5)).toBe(0));
-});
 
 // -- getRating ----------------------------------------------------------------
 

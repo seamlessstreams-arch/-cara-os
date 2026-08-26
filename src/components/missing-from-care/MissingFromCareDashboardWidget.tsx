@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildMissingProfile { childId: string; childName: string; totalRecords: number; returnInterviewCompletedRate: number; riskAssessmentUpdatedRate: number; categoriesCovered: string[]; overallScore: number; }
 
@@ -73,19 +74,19 @@ export default function MissingFromCareDashboardWidget() {
       <Section title="Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Records" value={data.quality.totalRecords} />
-          <Stat label="Police Notified Timely" value={`${data.quality.policeNotifiedTimelyRate}%`} />
-          <Stat label="Return Interview Done" value={`${data.quality.returnInterviewCompletedRate}%`} />
-          <Stat label="Risk Assessment Updated" value={`${data.quality.riskAssessmentUpdatedRate}%`} />
-          <Stat label="Prevention Plan Reviewed" value={`${data.quality.preventionPlanReviewedRate}%`} />
+          <Stat label="Police Notified Timely" value={`${formatRate(data.quality.policeNotifiedTimelyRate)}`} />
+          <Stat label="Return Interview Done" value={`${formatRate(data.quality.returnInterviewCompletedRate)}`} />
+          <Stat label="Risk Assessment Updated" value={`${formatRate(data.quality.riskAssessmentUpdatedRate)}`} />
+          <Stat label="Prevention Plan Reviewed" value={`${formatRate(data.quality.preventionPlanReviewedRate)}`} />
         </div>
       </Section>
 
       <Section title="Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documentation" value={`${data.compliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${data.compliance.timelyRecordingRate}%`} />
-          <Stat label="Return Interview" value={`${data.compliance.returnInterviewCompletedRate}%`} />
-          <Stat label="Category Coverage" value={`${data.compliance.categoryDiversityRatio}%`} />
+          <Stat label="Documentation" value={`${formatRate(data.compliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(data.compliance.timelyRecordingRate)}`} />
+          <Stat label="Return Interview" value={`${formatRate(data.compliance.returnInterviewCompletedRate)}`} />
+          <Stat label="Category Coverage" value={`${formatRate(data.compliance.categoryDiversityRatio)}`} />
         </div>
       </Section>
 
@@ -107,12 +108,12 @@ export default function MissingFromCareDashboardWidget() {
 
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Missing Persons Response" value={`${data.staffReadiness.missingPersonsResponseRate}%`} />
-          <Stat label="Return Interview Conduct" value={`${data.staffReadiness.returnInterviewConductRate}%`} />
-          <Stat label="Risk Assessment Skills" value={`${data.staffReadiness.riskAssessmentSkillsRate}%`} />
-          <Stat label="Police Notification" value={`${data.staffReadiness.policeNotificationProcessRate}%`} />
-          <Stat label="Pattern Recognition" value={`${data.staffReadiness.patternRecognitionRate}%`} />
-          <Stat label="Prevention Planning" value={`${data.staffReadiness.preventionPlanningRate}%`} />
+          <Stat label="Missing Persons Response" value={`${formatRate(data.staffReadiness.missingPersonsResponseRate)}`} />
+          <Stat label="Return Interview Conduct" value={`${formatRate(data.staffReadiness.returnInterviewConductRate)}`} />
+          <Stat label="Risk Assessment Skills" value={`${formatRate(data.staffReadiness.riskAssessmentSkillsRate)}`} />
+          <Stat label="Police Notification" value={`${formatRate(data.staffReadiness.policeNotificationProcessRate)}`} />
+          <Stat label="Pattern Recognition" value={`${formatRate(data.staffReadiness.patternRecognitionRate)}`} />
+          <Stat label="Prevention Planning" value={`${formatRate(data.staffReadiness.preventionPlanningRate)}`} />
         </div>
       </Section>
 

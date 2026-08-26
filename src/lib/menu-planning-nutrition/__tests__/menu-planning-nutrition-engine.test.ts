@@ -11,7 +11,6 @@ import {
   buildChildNutritionProfiles,
   generateMenuPlanningNutritionIntelligence,
   getRating,
-  pct,
   getMealTypeLabel,
   getNutritionalBalanceLabel,
   getCulturalAccommodationLabel,
@@ -99,29 +98,6 @@ function makeAudit(overrides: Partial<NutritionAudit> = {}): NutritionAudit {
 
 // ── pct() ────────────────────────────────────────────────────────────────────
 
-describe("pct()", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-
-  it("returns 100 when numerator equals denominator", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-
-  it("handles large values", () => {
-    expect(pct(999, 1000)).toBe(100);
-  });
-});
-
 // ── getRating() ──────────────────────────────────────────────────────────────
 
 describe("getRating()", () => {
@@ -202,11 +178,11 @@ describe("evaluateMenuQuality()", () => {
     const result = evaluateMenuQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalMenus).toBe(0);
-    expect(result.nutritionalBalanceRate).toBe(0);
-    expect(result.varietyRate).toBe(0);
-    expect(result.culturalAccommodationRate).toBe(0);
-    expect(result.childrenConsultedRate).toBe(0);
-    expect(result.specialDietaryMetRate).toBe(0);
+    expect(result.nutritionalBalanceRate).toBeNull();
+    expect(result.varietyRate).toBeNull();
+    expect(result.culturalAccommodationRate).toBeNull();
+    expect(result.childrenConsultedRate).toBeNull();
+    expect(result.specialDietaryMetRate).toBeNull();
   });
 
   it("scores maximum for perfect menus", () => {
@@ -266,7 +242,7 @@ describe("evaluateMenuQuality()", () => {
       makeMenu({ id: "m2", culturalAccommodation: "not_applicable" }),
     ];
     const result = evaluateMenuQuality(menus);
-    expect(result.culturalAccommodationRate).toBe(0);
+    expect(result.culturalAccommodationRate).toBeNull();
   });
 
   it("scores children consulted correctly", () => {
@@ -342,9 +318,9 @@ describe("evaluateChildSatisfaction()", () => {
     expect(result.overallScore).toBe(0);
     expect(result.totalFeedback).toBe(0);
     expect(result.averageEnjoyment).toBe(0);
-    expect(result.portionSatisfactoryRate).toBe(0);
-    expect(result.positiveFeedbackRate).toBe(0);
-    expect(result.responseRate).toBe(0);
+    expect(result.portionSatisfactoryRate).toBeNull();
+    expect(result.positiveFeedbackRate).toBeNull();
+    expect(result.responseRate).toBeNull();
   });
 
   it("scores maximum for excellent feedback from all children", () => {
@@ -457,11 +433,11 @@ describe("evaluateChildInvolvement()", () => {
     const result = evaluateChildInvolvement([], 3);
     expect(result.overallScore).toBe(0);
     expect(result.totalRecords).toBe(0);
-    expect(result.participationRate).toBe(0);
+    expect(result.participationRate).toBeNull();
     expect(result.activityVariety).toBe(0);
-    expect(result.childEnjoyedRate).toBe(0);
-    expect(result.cookingActivityRate).toBe(0);
-    expect(result.staffSupportRate).toBe(0);
+    expect(result.childEnjoyedRate).toBeNull();
+    expect(result.cookingActivityRate).toBeNull();
+    expect(result.staffSupportRate).toBeNull();
   });
 
   it("scores maximum for comprehensive involvement", () => {
@@ -573,11 +549,11 @@ describe("evaluateNutritionCompliance()", () => {
     const result = evaluateNutritionCompliance([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalAudits).toBe(0);
-    expect(result.fiveADayRate).toBe(0);
-    expect(result.freshFoodRate).toBe(0);
-    expect(result.sugarLimitsRate).toBe(0);
-    expect(result.portionGuidanceRate).toBe(0);
-    expect(result.overallCompliantRate).toBe(0);
+    expect(result.fiveADayRate).toBeNull();
+    expect(result.freshFoodRate).toBeNull();
+    expect(result.sugarLimitsRate).toBeNull();
+    expect(result.portionGuidanceRate).toBeNull();
+    expect(result.overallCompliantRate).toBeNull();
   });
 
   it("scores maximum for fully compliant audits", () => {

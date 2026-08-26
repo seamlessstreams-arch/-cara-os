@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // Personal Hygiene & Self-Care Intelligence Engine
 // Pure deterministic — no AI, no external calls, no randomness, no Date.now()
 
@@ -99,18 +100,26 @@ export interface StaffHygieneTraining {
 export interface SelfCareQualityResult {
   overallScore: number;
   totalRecords: number;
-  independenceRate: number;
-  dignityRate: number;
-  choiceRespectedRate: number;
-  appropriateProductsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  independenceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dignityRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  choiceRespectedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  appropriateProductsRate: number | null;
 }
 
 export interface DignityPrivacyResult {
   overallScore: number;
-  privacyRate: number;
-  sensitiveStaffRate: number;
-  documentedRate: number;
-  dignityMaintainedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  privacyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  sensitiveStaffRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dignityMaintainedRate: number | null;
 }
 
 export interface HygienePolicyResult {
@@ -127,20 +136,28 @@ export interface HygienePolicyResult {
 export interface StaffHygieneReadinessResult {
   overallScore: number;
   totalStaff: number;
-  personalCareSupportRate: number;
-  dignityInPracticeRate: number;
-  culturalAwarenessRate: number;
-  menstrualHealthRate: number;
-  infectionControlRate: number;
-  sensitiveConversationsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  personalCareSupportRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dignityInPracticeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  culturalAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  menstrualHealthRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  infectionControlRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  sensitiveConversationsRate: number | null;
 }
 
 export interface ChildHygieneProfile {
   childId: string;
   childName: string;
   totalRecords: number;
-  independenceRate: number;
-  dignityRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  independenceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dignityRate: number | null;
   areasCount: number;
   overallScore: number;
 }
@@ -164,11 +181,6 @@ export interface PersonalHygieneSelfCareIntelligence {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -180,7 +192,7 @@ export function getRating(score: number): Rating {
 
 export function evaluateSelfCareQuality(records: HygieneRecord[]): SelfCareQualityResult {
   if (records.length === 0) {
-    return { overallScore: 0, totalRecords: 0, independenceRate: 0, dignityRate: 0, choiceRespectedRate: 0, appropriateProductsRate: 0 };
+    return { overallScore: 0, totalRecords: 0, independenceRate: null, dignityRate: null, choiceRespectedRate: null, appropriateProductsRate: null };
   }
 
   const total = records.length;
@@ -189,16 +201,16 @@ export function evaluateSelfCareQuality(records: HygieneRecord[]): SelfCareQuali
   const choiceCount = records.filter((r) => r.childChoiceRespected).length;
   const productsCount = records.filter((r) => r.appropriateProducts).length;
 
-  const independenceRate = pct(independentCount, total);
-  const dignityRate = pct(dignityCount, total);
-  const choiceRespectedRate = pct(choiceCount, total);
-  const appropriateProductsRate = pct(productsCount, total);
+  const independenceRate = rate(independentCount, total);
+  const dignityRate = rate(dignityCount, total);
+  const choiceRespectedRate = rate(choiceCount, total);
+  const appropriateProductsRate = rate(productsCount, total);
 
   // Weighted: independence(0-7), dignity(0-6), choice(0-6), products(0-6)
-  const independenceScore = Math.round((independenceRate / 100) * 7);
-  const dignityScore = Math.round((dignityRate / 100) * 6);
-  const choiceScore = Math.round((choiceRespectedRate / 100) * 6);
-  const productsScore = Math.round((appropriateProductsRate / 100) * 6);
+  const independenceScore = Math.round(((independenceRate ?? 0) / 100) * 7);
+  const dignityScore = Math.round(((dignityRate ?? 0) / 100) * 6);
+  const choiceScore = Math.round(((choiceRespectedRate ?? 0) / 100) * 6);
+  const productsScore = Math.round(((appropriateProductsRate ?? 0) / 100) * 6);
 
   const overallScore = Math.min(25, independenceScore + dignityScore + choiceScore + productsScore);
 
@@ -207,7 +219,7 @@ export function evaluateSelfCareQuality(records: HygieneRecord[]): SelfCareQuali
 
 export function evaluateDignityPrivacy(records: HygieneRecord[]): DignityPrivacyResult {
   if (records.length === 0) {
-    return { overallScore: 0, privacyRate: 0, sensitiveStaffRate: 0, documentedRate: 0, dignityMaintainedRate: 0 };
+    return { overallScore: 0, privacyRate: null, sensitiveStaffRate: null, documentedRate: null, dignityMaintainedRate: null };
   }
 
   const total = records.length;
@@ -216,16 +228,16 @@ export function evaluateDignityPrivacy(records: HygieneRecord[]): DignityPrivacy
   const documentedCount = records.filter((r) => r.documentedInPlan).length;
   const dignityCount = records.filter((r) => r.dignityMaintained).length;
 
-  const privacyRate = pct(privacyCount, total);
-  const sensitiveStaffRate = pct(sensitiveCount, total);
-  const documentedRate = pct(documentedCount, total);
-  const dignityMaintainedRate = pct(dignityCount, total);
+  const privacyRate = rate(privacyCount, total);
+  const sensitiveStaffRate = rate(sensitiveCount, total);
+  const documentedRate = rate(documentedCount, total);
+  const dignityMaintainedRate = rate(dignityCount, total);
 
   // Weighted: privacy(0-8), sensitiveStaff(0-7), documented(0-5), dignity(0-5)
-  const privacyScore = Math.round((privacyRate / 100) * 8);
-  const sensitiveScore = Math.round((sensitiveStaffRate / 100) * 7);
-  const documentedScore = Math.round((documentedRate / 100) * 5);
-  const dignityScore = Math.round((dignityMaintainedRate / 100) * 5);
+  const privacyScore = Math.round(((privacyRate ?? 0) / 100) * 8);
+  const sensitiveScore = Math.round(((sensitiveStaffRate ?? 0) / 100) * 7);
+  const documentedScore = Math.round(((documentedRate ?? 0) / 100) * 5);
+  const dignityScore = Math.round(((dignityMaintainedRate ?? 0) / 100) * 5);
 
   const overallScore = Math.min(25, privacyScore + sensitiveScore + documentedScore + dignityScore);
 
@@ -269,7 +281,7 @@ export function evaluateHygienePolicy(policy: HygienePolicy | null): HygienePoli
 
 export function evaluateStaffHygieneReadiness(training: StaffHygieneTraining[]): StaffHygieneReadinessResult {
   if (training.length === 0) {
-    return { overallScore: 0, totalStaff: 0, personalCareSupportRate: 0, dignityInPracticeRate: 0, culturalAwarenessRate: 0, menstrualHealthRate: 0, infectionControlRate: 0, sensitiveConversationsRate: 0 };
+    return { overallScore: 0, totalStaff: 0, personalCareSupportRate: null, dignityInPracticeRate: null, culturalAwarenessRate: null, menstrualHealthRate: null, infectionControlRate: null, sensitiveConversationsRate: null };
   }
 
   const total = training.length;
@@ -280,20 +292,20 @@ export function evaluateStaffHygieneReadiness(training: StaffHygieneTraining[]):
   const infectionCount = training.filter((t) => t.infectionControl).length;
   const sensitiveCount = training.filter((t) => t.sensitiveConversations).length;
 
-  const personalCareSupportRate = pct(personalCareCount, total);
-  const dignityInPracticeRate = pct(dignityCount, total);
-  const culturalAwarenessRate = pct(culturalCount, total);
-  const menstrualHealthRate = pct(menstrualCount, total);
-  const infectionControlRate = pct(infectionCount, total);
-  const sensitiveConversationsRate = pct(sensitiveCount, total);
+  const personalCareSupportRate = rate(personalCareCount, total);
+  const dignityInPracticeRate = rate(dignityCount, total);
+  const culturalAwarenessRate = rate(culturalCount, total);
+  const menstrualHealthRate = rate(menstrualCount, total);
+  const infectionControlRate = rate(infectionCount, total);
+  const sensitiveConversationsRate = rate(sensitiveCount, total);
 
   // Weighted: personalCare(0-6), dignity(0-5), cultural(0-5), menstrual(0-4), infection(0-3), sensitive(0-2)
-  const s1 = Math.round((personalCareSupportRate / 100) * 6);
-  const s2 = Math.round((dignityInPracticeRate / 100) * 5);
-  const s3 = Math.round((culturalAwarenessRate / 100) * 5);
-  const s4 = Math.round((menstrualHealthRate / 100) * 4);
-  const s5 = Math.round((infectionControlRate / 100) * 3);
-  const s6 = Math.round((sensitiveConversationsRate / 100) * 2);
+  const s1 = Math.round(((personalCareSupportRate ?? 0) / 100) * 6);
+  const s2 = Math.round(((dignityInPracticeRate ?? 0) / 100) * 5);
+  const s3 = Math.round(((culturalAwarenessRate ?? 0) / 100) * 5);
+  const s4 = Math.round(((menstrualHealthRate ?? 0) / 100) * 4);
+  const s5 = Math.round(((infectionControlRate ?? 0) / 100) * 3);
+  const s6 = Math.round(((sensitiveConversationsRate ?? 0) / 100) * 2);
 
   const overallScore = Math.min(25, s1 + s2 + s3 + s4 + s5 + s6);
 
@@ -320,8 +332,8 @@ export function buildChildHygieneProfiles(records: HygieneRecord[]): ChildHygien
     const dignityCount = recs.filter((r) => r.dignityMaintained).length;
     const uniqueAreas = new Set(recs.map((r) => r.hygieneArea)).size;
 
-    const independenceRate = pct(independentCount, total);
-    const dignityRate = pct(dignityCount, total);
+    const independenceRate = rate(independentCount, total);
+    const dignityRate = rate(dignityCount, total);
 
     // Score 0-10: frequency(0-2), independence(0-3), dignity(0-3), areasCoverage(0-2)
     let freqScore = 0;
@@ -329,14 +341,14 @@ export function buildChildHygieneProfiles(records: HygieneRecord[]): ChildHygien
     else if (total >= 5) freqScore = 1;
 
     let indepScore = 0;
-    if (independenceRate >= 80) indepScore = 3;
-    else if (independenceRate >= 60) indepScore = 2;
-    else if (independenceRate >= 40) indepScore = 1;
+    if (meets(independenceRate, 80)) indepScore = 3;
+    else if (meets(independenceRate, 60)) indepScore = 2;
+    else if (meets(independenceRate, 40)) indepScore = 1;
 
     let digScore = 0;
-    if (dignityRate >= 80) digScore = 3;
-    else if (dignityRate >= 60) digScore = 2;
-    else if (dignityRate >= 40) digScore = 1;
+    if (meets(dignityRate, 80)) digScore = 3;
+    else if (meets(dignityRate, 60)) digScore = 2;
+    else if (meets(dignityRate, 40)) digScore = 1;
 
     let areaScore = 0;
     if (uniqueAreas >= 5) areaScore = 2;
@@ -375,23 +387,23 @@ export function generatePersonalHygieneSelfCareIntelligence(
   const actions: string[] = [];
 
   // Strengths
-  if (selfCareQuality.independenceRate >= 80) strengths.push("Excellent independence in personal hygiene — children are developing strong self-care skills");
-  if (selfCareQuality.dignityRate >= 80) strengths.push("High standards of dignity maintained during personal care support");
-  if (dignityPrivacy.privacyRate >= 80) strengths.push("Privacy is consistently ensured during personal care routines");
-  if (selfCareQuality.choiceRespectedRate >= 80) strengths.push("Children's choices about personal care are consistently respected");
+  if (meets(selfCareQuality.independenceRate, 80)) strengths.push("Excellent independence in personal hygiene — children are developing strong self-care skills");
+  if (meets(selfCareQuality.dignityRate, 80)) strengths.push("High standards of dignity maintained during personal care support");
+  if (meets(dignityPrivacy.privacyRate, 80)) strengths.push("Privacy is consistently ensured during personal care routines");
+  if (meets(selfCareQuality.choiceRespectedRate, 80)) strengths.push("Children's choices about personal care are consistently respected");
 
   // Areas for improvement
-  if (records.length > 0 && selfCareQuality.independenceRate < 60) areasForImprovement.push("Independence rate in personal hygiene needs improvement — consider tailored self-care plans");
-  if (records.length > 0 && selfCareQuality.dignityRate < 60) areasForImprovement.push("Dignity standards during personal care require attention");
-  if (records.length > 0 && dignityPrivacy.privacyRate < 60) areasForImprovement.push("Privacy during personal care needs strengthening");
-  if (records.length > 0 && dignityPrivacy.documentedRate < 60) areasForImprovement.push("Personal care documentation in care plans needs improvement");
+  if (records.length > 0 && below(selfCareQuality.independenceRate, 60)) areasForImprovement.push("Independence rate in personal hygiene needs improvement — consider tailored self-care plans");
+  if (records.length > 0 && below(selfCareQuality.dignityRate, 60)) areasForImprovement.push("Dignity standards during personal care require attention");
+  if (records.length > 0 && below(dignityPrivacy.privacyRate, 60)) areasForImprovement.push("Privacy during personal care needs strengthening");
+  if (records.length > 0 && below(dignityPrivacy.documentedRate, 60)) areasForImprovement.push("Personal care documentation in care plans needs improvement");
 
   // Actions
   if (records.length === 0) actions.push("No personal hygiene records found — begin recording personal care support consistently");
   if (!policy) actions.push("URGENT: No personal care policy in place — develop and implement immediately");
   if (training.length === 0) actions.push("URGENT: No staff personal care training recorded — arrange training for all staff");
-  if (records.length > 0 && selfCareQuality.appropriateProductsRate < 60) actions.push("Review availability of appropriate personal care products for children");
-  if (records.length > 0 && dignityPrivacy.sensitiveStaffRate < 60) actions.push("Improve sensitivity of staff support during personal care — consider targeted training");
+  if (records.length > 0 && below(selfCareQuality.appropriateProductsRate, 60)) actions.push("Review availability of appropriate personal care products for children");
+  if (records.length > 0 && below(dignityPrivacy.sensitiveStaffRate, 60)) actions.push("Improve sensitivity of staff support during personal care — consider targeted training");
 
   const regulatoryLinks: string[] = [
     "CHR 2015 Regulation 10 — The health and wellbeing standard",

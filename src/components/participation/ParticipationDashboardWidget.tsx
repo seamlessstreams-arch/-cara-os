@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildParticipationProfile { childId: string; childName: string; totalRecords: number; childViewRecordedRate: number; viewsActedUponRate: number; categoriesCovered: string[]; overallScore: number; }
 
@@ -73,19 +74,19 @@ export default function ParticipationDashboardWidget() {
       <Section title="Participation Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Records" value={data.participationQuality.totalRecords} />
-          <Stat label="Views Recorded" value={`${data.participationQuality.childViewRecordedRate}%`} />
-          <Stat label="Views Acted Upon" value={`${data.participationQuality.viewsActedUponRate}%`} />
-          <Stat label="Advocacy Offered" value={`${data.participationQuality.advocacyOfferedRate}%`} />
-          <Stat label="Feedback Provided" value={`${data.participationQuality.feedbackProvidedRate}%`} />
+          <Stat label="Views Recorded" value={`${formatRate(data.participationQuality.childViewRecordedRate)}`} />
+          <Stat label="Views Acted Upon" value={`${formatRate(data.participationQuality.viewsActedUponRate)}`} />
+          <Stat label="Advocacy Offered" value={`${formatRate(data.participationQuality.advocacyOfferedRate)}`} />
+          <Stat label="Feedback Provided" value={`${formatRate(data.participationQuality.feedbackProvidedRate)}`} />
         </div>
       </Section>
 
       <Section title="Participation Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documentation" value={`${data.participationCompliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${data.participationCompliance.timelyRecordingRate}%`} />
-          <Stat label="Views Acted Upon" value={`${data.participationCompliance.viewsActedUponRate}%`} />
-          <Stat label="Category Coverage" value={`${data.participationCompliance.categoryDiversityRatio}%`} />
+          <Stat label="Documentation" value={`${formatRate(data.participationCompliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(data.participationCompliance.timelyRecordingRate)}`} />
+          <Stat label="Views Acted Upon" value={`${formatRate(data.participationCompliance.viewsActedUponRate)}`} />
+          <Stat label="Category Coverage" value={`${formatRate(data.participationCompliance.categoryDiversityRatio)}`} />
         </div>
       </Section>
 
@@ -108,12 +109,12 @@ export default function ParticipationDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
-          <Stat label="Child Voice" value={`${data.staffReadiness.childVoiceCaptureRate}%`} />
-          <Stat label="Advocacy Knowledge" value={`${data.staffReadiness.advocacyKnowledgeRate}%`} />
-          <Stat label="Facilitation" value={`${data.staffReadiness.participationFacilitationRate}%`} />
-          <Stat label="Complaints Awareness" value={`${data.staffReadiness.complaintsAwarenessRate}%`} />
-          <Stat label="Rights Practice" value={`${data.staffReadiness.rightsBasedPracticeRate}%`} />
-          <Stat label="Feedback Response" value={`${data.staffReadiness.feedbackResponsivenessRate}%`} />
+          <Stat label="Child Voice" value={`${formatRate(data.staffReadiness.childVoiceCaptureRate)}`} />
+          <Stat label="Advocacy Knowledge" value={`${formatRate(data.staffReadiness.advocacyKnowledgeRate)}`} />
+          <Stat label="Facilitation" value={`${formatRate(data.staffReadiness.participationFacilitationRate)}`} />
+          <Stat label="Complaints Awareness" value={`${formatRate(data.staffReadiness.complaintsAwarenessRate)}`} />
+          <Stat label="Rights Practice" value={`${formatRate(data.staffReadiness.rightsBasedPracticeRate)}`} />
+          <Stat label="Feedback Response" value={`${formatRate(data.staffReadiness.feedbackResponsivenessRate)}`} />
         </div>
       </Section>
 

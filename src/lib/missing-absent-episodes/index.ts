@@ -13,7 +13,6 @@ export {
   getEpisodeOutcomeLabel,
   getRiskLevelLabel,
   getRatingLabel,
-  pct,
   getRating,
 } from "./missing-absent-episodes-engine";
 

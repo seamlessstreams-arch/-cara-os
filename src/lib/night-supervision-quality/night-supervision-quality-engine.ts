@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // NIGHT SUPERVISION QUALITY INTELLIGENCE ENGINE
 //
@@ -123,24 +124,31 @@ export interface StaffNightTraining {
 export interface CheckQualityResult {
   totalChecks: number;
   satisfactoryCount: number;
-  satisfactoryRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  satisfactoryRate: number | null;
   childrenAccountedForCount: number;
-  childrenAccountedForRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childrenAccountedForRate: number | null;
   documentedCount: number;
-  documentedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
   environmentSafeCount: number;
-  environmentSafeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  environmentSafeRate: number | null;
   score: number; // 0-25
 }
 
 export interface NightComplianceResult {
   totalChecks: number;
   responseTimeAdequateCount: number;
-  responseTimeAdequateRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  responseTimeAdequateRate: number | null;
   handoverCount: number;
-  handoverRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  handoverRate: number | null;
   incidentReportCount: number;
-  incidentReportRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  incidentReportRate: number | null;
   uniqueCheckTypes: number;
   checkTypeDiversity: number;
   score: number; // 0-25
@@ -160,17 +168,23 @@ export interface NightPolicyResult {
 export interface StaffNightReadinessResult {
   totalStaff: number;
   nightSupervisionSkillsCount: number;
-  nightSupervisionSkillsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  nightSupervisionSkillsRate: number | null;
   safeguardingAtNightCount: number;
-  safeguardingAtNightRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingAtNightRate: number | null;
   emergencyFirstAidCount: number;
-  emergencyFirstAidRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  emergencyFirstAidRate: number | null;
   fireEvacuationCount: number;
-  fireEvacuationRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  fireEvacuationRate: number | null;
   childProtocolCount: number;
-  childProtocolRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childProtocolRate: number | null;
   documentationSkillsCount: number;
-  documentationSkillsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationSkillsRate: number | null;
   score: number; // 0-25
 }
 
@@ -208,11 +222,6 @@ export interface NightSupervisionQualityIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
@@ -234,35 +243,35 @@ export function evaluateCheckQuality(checks: NightCheck[]): CheckQualityResult {
     return {
       totalChecks: 0,
       satisfactoryCount: 0,
-      satisfactoryRate: 0,
+      satisfactoryRate: null,
       childrenAccountedForCount: 0,
-      childrenAccountedForRate: 0,
+      childrenAccountedForRate: null,
       documentedCount: 0,
-      documentedRate: 0,
+      documentedRate: null,
       environmentSafeCount: 0,
-      environmentSafeRate: 0,
+      environmentSafeRate: null,
       score: 0,
     };
   }
 
   const satisfactoryCount = checks.filter((c) => c.checkOutcome === "satisfactory").length;
-  const satisfactoryRate = pct(satisfactoryCount, totalChecks);
+  const satisfactoryRate = rate(satisfactoryCount, totalChecks);
 
   const childrenAccountedForCount = checks.filter((c) => c.childrenAccountedFor).length;
-  const childrenAccountedForRate = pct(childrenAccountedForCount, totalChecks);
+  const childrenAccountedForRate = rate(childrenAccountedForCount, totalChecks);
 
   const documentedCount = checks.filter((c) => c.documentedImmediately).length;
-  const documentedRate = pct(documentedCount, totalChecks);
+  const documentedRate = rate(documentedCount, totalChecks);
 
   const environmentSafeCount = checks.filter((c) => c.environmentSafe).length;
-  const environmentSafeRate = pct(environmentSafeCount, totalChecks);
+  const environmentSafeRate = rate(environmentSafeCount, totalChecks);
 
   // Sub-scores: satisfactoryRate (0-7), childrenAccountedFor (0-6), documented (0-6), environmentSafe (0-6) = 25
   let score = 0;
-  score += Math.round((satisfactoryRate / 100) * 7 * 10) / 10;
-  score += Math.round((childrenAccountedForRate / 100) * 6 * 10) / 10;
-  score += Math.round((documentedRate / 100) * 6 * 10) / 10;
-  score += Math.round((environmentSafeRate / 100) * 6 * 10) / 10;
+  score += Math.round((satisfactoryRate! / 100) * 7 * 10) / 10;
+  score += Math.round((childrenAccountedForRate! / 100) * 6 * 10) / 10;
+  score += Math.round((documentedRate! / 100) * 6 * 10) / 10;
+  score += Math.round((environmentSafeRate! / 100) * 6 * 10) / 10;
 
   score = clamp(Math.round(score * 10) / 10, 0, 25);
 
@@ -290,11 +299,11 @@ export function evaluateNightCompliance(checks: NightCheck[]): NightComplianceRe
     return {
       totalChecks: 0,
       responseTimeAdequateCount: 0,
-      responseTimeAdequateRate: 0,
+      responseTimeAdequateRate: null,
       handoverCount: 0,
-      handoverRate: 0,
+      handoverRate: null,
       incidentReportCount: 0,
-      incidentReportRate: 0,
+      incidentReportRate: null,
       uniqueCheckTypes: 0,
       checkTypeDiversity: 0,
       score: 0,
@@ -302,13 +311,13 @@ export function evaluateNightCompliance(checks: NightCheck[]): NightComplianceRe
   }
 
   const responseTimeAdequateCount = checks.filter((c) => c.responseTimeAdequate).length;
-  const responseTimeAdequateRate = pct(responseTimeAdequateCount, totalChecks);
+  const responseTimeAdequateRate = rate(responseTimeAdequateCount, totalChecks);
 
   const handoverCount = checks.filter((c) => c.handoverCompleted).length;
-  const handoverRate = pct(handoverCount, totalChecks);
+  const handoverRate = rate(handoverCount, totalChecks);
 
   const incidentReportCount = checks.filter((c) => c.incidentsReported).length;
-  const incidentReportRate = pct(incidentReportCount, totalChecks);
+  const incidentReportRate = rate(incidentReportCount, totalChecks);
 
   const uniqueTypes = new Set(checks.map((c) => c.nightCheckType));
   const uniqueCheckTypes = uniqueTypes.size;
@@ -316,9 +325,9 @@ export function evaluateNightCompliance(checks: NightCheck[]): NightComplianceRe
 
   // Sub-scores: responseTimeRate (0-8), handoverRate (0-7), incidentReportRate (0-5), checkTypeDiversity (0-5) = 25
   let score = 0;
-  score += Math.round((responseTimeAdequateRate / 100) * 8 * 10) / 10;
-  score += Math.round((handoverRate / 100) * 7 * 10) / 10;
-  score += Math.round((incidentReportRate / 100) * 5 * 10) / 10;
+  score += Math.round((responseTimeAdequateRate! / 100) * 8 * 10) / 10;
+  score += Math.round((handoverRate! / 100) * 7 * 10) / 10;
+  score += Math.round((incidentReportRate! / 100) * 5 * 10) / 10;
   score += Math.round((checkTypeDiversity / 100) * 5 * 10) / 10;
 
   score = clamp(Math.round(score * 10) / 10, 0, 25);
@@ -390,48 +399,48 @@ export function evaluateStaffNightReadiness(
     return {
       totalStaff: 0,
       nightSupervisionSkillsCount: 0,
-      nightSupervisionSkillsRate: 0,
+      nightSupervisionSkillsRate: null,
       safeguardingAtNightCount: 0,
-      safeguardingAtNightRate: 0,
+      safeguardingAtNightRate: null,
       emergencyFirstAidCount: 0,
-      emergencyFirstAidRate: 0,
+      emergencyFirstAidRate: null,
       fireEvacuationCount: 0,
-      fireEvacuationRate: 0,
+      fireEvacuationRate: null,
       childProtocolCount: 0,
-      childProtocolRate: 0,
+      childProtocolRate: null,
       documentationSkillsCount: 0,
-      documentationSkillsRate: 0,
+      documentationSkillsRate: null,
       score: 0,
     };
   }
 
   const nightSupervisionSkillsCount = training.filter((t) => t.nightSupervisionSkills).length;
-  const nightSupervisionSkillsRate = pct(nightSupervisionSkillsCount, totalStaff);
+  const nightSupervisionSkillsRate = rate(nightSupervisionSkillsCount, totalStaff);
 
   const safeguardingAtNightCount = training.filter((t) => t.safeguardingAtNight).length;
-  const safeguardingAtNightRate = pct(safeguardingAtNightCount, totalStaff);
+  const safeguardingAtNightRate = rate(safeguardingAtNightCount, totalStaff);
 
   const emergencyFirstAidCount = training.filter((t) => t.emergencyFirstAid).length;
-  const emergencyFirstAidRate = pct(emergencyFirstAidCount, totalStaff);
+  const emergencyFirstAidRate = rate(emergencyFirstAidCount, totalStaff);
 
   const fireEvacuationCount = training.filter((t) => t.fireEvacuation).length;
-  const fireEvacuationRate = pct(fireEvacuationCount, totalStaff);
+  const fireEvacuationRate = rate(fireEvacuationCount, totalStaff);
 
   const childProtocolCount = training.filter((t) => t.childProtocol).length;
-  const childProtocolRate = pct(childProtocolCount, totalStaff);
+  const childProtocolRate = rate(childProtocolCount, totalStaff);
 
   const documentationSkillsCount = training.filter((t) => t.documentationSkills).length;
-  const documentationSkillsRate = pct(documentationSkillsCount, totalStaff);
+  const documentationSkillsRate = rate(documentationSkillsCount, totalStaff);
 
   // 6 skills weighted: 6+5+5+4+3+2 = 25
-  // Each: rate = pct(trained, total), partialScore = round(rate/100 * weight)
+  // Each: rate = rate(trained, total), partialScore = round(rate/100 * weight)
   let score = 0;
-  score += Math.round((nightSupervisionSkillsRate / 100) * 6);
-  score += Math.round((safeguardingAtNightRate / 100) * 5);
-  score += Math.round((emergencyFirstAidRate / 100) * 5);
-  score += Math.round((fireEvacuationRate / 100) * 4);
-  score += Math.round((childProtocolRate / 100) * 3);
-  score += Math.round((documentationSkillsRate / 100) * 2);
+  score += Math.round((nightSupervisionSkillsRate! / 100) * 6);
+  score += Math.round((safeguardingAtNightRate! / 100) * 5);
+  score += Math.round((emergencyFirstAidRate! / 100) * 5);
+  score += Math.round((fireEvacuationRate! / 100) * 4);
+  score += Math.round(((childProtocolRate ?? 0) / 100) * 3);
+  score += Math.round(((documentationSkillsRate ?? 0) / 100) * 2);
 
   score = clamp(score, 0, 25);
 
@@ -482,12 +491,12 @@ export function buildStaffNightProfiles(checks: NightCheck[]): StaffNightProfile
     const satisfactoryCount = staff.checks.filter(
       (c) => c.checkOutcome === "satisfactory",
     ).length;
-    const satisfactoryRate = pct(satisfactoryCount, totalChecks);
+    const satisfactoryRate = rate(satisfactoryCount, totalChecks)!;
 
     const documentedCount = staff.checks.filter(
       (c) => c.documentedImmediately,
     ).length;
-    const documentedRate = pct(documentedCount, totalChecks);
+    const documentedRate = rate(documentedCount, totalChecks)!;
 
     const uniqueTypes = new Set(staff.checks.map((c) => c.nightCheckType));
     const uniqueCheckTypes = uniqueTypes.size;
@@ -500,14 +509,14 @@ export function buildStaffNightProfiles(checks: NightCheck[]): StaffNightProfile
     else if (totalChecks >= 5) score += 1;
 
     // Satisfactory rate (0-3): >=80 → 3, >=60 → 2, >=40 → 1
-    if (satisfactoryRate >= 80) score += 3;
-    else if (satisfactoryRate >= 60) score += 2;
-    else if (satisfactoryRate >= 40) score += 1;
+    if (meets(satisfactoryRate, 80)) score += 3;
+    else if (meets(satisfactoryRate, 60)) score += 2;
+    else if (meets(satisfactoryRate, 40)) score += 1;
 
     // Documented rate (0-3): >=80 → 3, >=60 → 2, >=40 → 1
-    if (documentedRate >= 80) score += 3;
-    else if (documentedRate >= 60) score += 2;
-    else if (documentedRate >= 40) score += 1;
+    if (meets(documentedRate, 80)) score += 3;
+    else if (meets(documentedRate, 60)) score += 2;
+    else if (meets(documentedRate, 40)) score += 1;
 
     // Type diversity (0-2): >=4 types → 2, >=2 types → 1
     if (uniqueCheckTypes >= 4) score += 2;
@@ -606,7 +615,7 @@ function buildStrengths(
 ): string[] {
   const strengths: string[] = [];
 
-  if (checkQuality.satisfactoryRate >= 80) {
+  if (meets(checkQuality.satisfactoryRate, 80)) {
     strengths.push(
       "Strong night check quality with " +
         checkQuality.satisfactoryRate +
@@ -614,7 +623,7 @@ function buildStrengths(
     );
   }
 
-  if (checkQuality.childrenAccountedForRate >= 80) {
+  if (meets(checkQuality.childrenAccountedForRate, 80)) {
     strengths.push(
       "Children consistently accounted for during night checks (" +
         checkQuality.childrenAccountedForRate +
@@ -622,7 +631,7 @@ function buildStrengths(
     );
   }
 
-  if (nightCompliance.handoverRate >= 80) {
+  if (meets(nightCompliance.handoverRate, 80)) {
     strengths.push(
       "Excellent night shift handover completion at " +
         nightCompliance.handoverRate +
@@ -630,7 +639,7 @@ function buildStrengths(
     );
   }
 
-  if (checkQuality.documentedRate >= 80) {
+  if (meets(checkQuality.documentedRate, 80)) {
     strengths.push(
       "Good documentation practice with " +
         checkQuality.documentedRate +
@@ -651,7 +660,7 @@ function buildAreasForImprovement(
 ): string[] {
   const areas: string[] = [];
 
-  if (checkQuality.satisfactoryRate < 80 && checkQuality.totalChecks > 0) {
+  if (below(checkQuality.satisfactoryRate, 80) && checkQuality.totalChecks > 0) {
     areas.push(
       "Satisfactory check rate at " +
         checkQuality.satisfactoryRate +
@@ -659,7 +668,7 @@ function buildAreasForImprovement(
     );
   }
 
-  if (nightCompliance.responseTimeAdequateRate < 80 && nightCompliance.totalChecks > 0) {
+  if (below(nightCompliance.responseTimeAdequateRate, 80) && nightCompliance.totalChecks > 0) {
     areas.push(
       "Response time adequacy at " +
         nightCompliance.responseTimeAdequateRate +
@@ -715,7 +724,7 @@ function buildActions(
   }
 
   if (
-    nightCompliance.responseTimeAdequateRate < 80 &&
+    below(nightCompliance.responseTimeAdequateRate, 80) &&
     nightCompliance.totalChecks > 0
   ) {
     actions.push(
@@ -726,7 +735,7 @@ function buildActions(
   }
 
   if (
-    nightCompliance.incidentReportRate < 80 &&
+    below(nightCompliance.incidentReportRate, 80) &&
     nightCompliance.totalChecks > 0
   ) {
     actions.push(

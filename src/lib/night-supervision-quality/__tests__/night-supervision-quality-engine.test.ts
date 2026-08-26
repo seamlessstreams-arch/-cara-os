@@ -17,8 +17,7 @@ import {
   getCheckOutcomeLabel,
   getRatingLabel,
   getRating,
-  pct,
-} from "../night-supervision-quality-engine";
+  } from "../night-supervision-quality-engine";
 import type {
   NightCheck,
   NightPolicy,
@@ -81,23 +80,6 @@ function makeTraining(overrides: Partial<StaffNightTraining> = {}): StaffNightTr
 }
 
 // ── pct helper ────────────────────────────────────────────────────────────
-
-describe("pct helper", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns correct percentage", () => {
-    expect(pct(3, 4)).toBe(75);
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 6)).toBe(17); // 16.67 → 17
-    expect(pct(2, 3)).toBe(67); // 66.67 → 67
-  });
-});
 
 // ── getRating ─────────────────────────────────────────────────────────────
 
@@ -164,7 +146,7 @@ describe("evaluateCheckQuality", () => {
     const result = evaluateCheckQuality([]);
     expect(result.score).toBe(0);
     expect(result.totalChecks).toBe(0);
-    expect(result.satisfactoryRate).toBe(0);
+    expect(result.satisfactoryRate).toBeNull();
   });
 
   it("returns max score 25 for perfect checks", () => {

@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // Location Assessment Intelligence Engine
 // Pure deterministic — no AI, no external calls, no randomness, no Date.now()
 
@@ -111,18 +112,26 @@ export interface StaffLocationTraining {
 export interface AssessmentQualityResult {
   overallScore: number;
   totalRecords: number;
-  thoroughRate: number;
-  childViewRate: number;
-  riskIdentifiedRate: number;
-  mitigationsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  thoroughRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskIdentifiedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  mitigationsRate: number | null;
 }
 
 export interface AssessmentComplianceResult {
   overallScore: number;
-  documentationRate: number;
-  regulatoryRate: number;
-  mitigationsRate: number;
-  categoryDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  regulatoryRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  mitigationsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  categoryDiversityRatio: number | null;
 }
 
 export interface LocationPolicyResult {
@@ -139,20 +148,28 @@ export interface LocationPolicyResult {
 export interface StaffLocationReadinessResult {
   overallScore: number;
   totalStaff: number;
-  riskAssessmentRate: number;
-  communityMappingRate: number;
-  safeguardingRate: number;
-  regulatoryRate: number;
-  childConsultationRate: number;
-  reportWritingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  communityMappingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  regulatoryRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childConsultationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reportWritingRate: number | null;
 }
 
 export interface ChildLocationProfile {
   childId: string;
   childName: string;
   totalAssessments: number;
-  thoroughRate: number;
-  childViewRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  thoroughRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewRate: number | null;
   overallScore: number;
 }
 
@@ -175,11 +192,6 @@ export interface LocationAssessmentIntelligence {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -191,7 +203,7 @@ export function getRating(score: number): Rating {
 
 export function evaluateAssessmentQuality(records: LocationAssessmentRecord[]): AssessmentQualityResult {
   if (records.length === 0) {
-    return { overallScore: 0, totalRecords: 0, thoroughRate: 0, childViewRate: 0, riskIdentifiedRate: 0, mitigationsRate: 0 };
+    return { overallScore: 0, totalRecords: 0, thoroughRate: null, childViewRate: null, riskIdentifiedRate: null, mitigationsRate: null };
   }
 
   const total = records.length;
@@ -200,15 +212,15 @@ export function evaluateAssessmentQuality(records: LocationAssessmentRecord[]): 
   const riskCount = records.filter((r) => r.riskIdentified).length;
   const mitigationsCount = records.filter((r) => r.mitigationsDocumented).length;
 
-  const thoroughRate = pct(thoroughCount, total);
-  const childViewRate = pct(childViewCount, total);
-  const riskIdentifiedRate = pct(riskCount, total);
-  const mitigationsRate = pct(mitigationsCount, total);
+  const thoroughRate = rate(thoroughCount, total);
+  const childViewRate = rate(childViewCount, total);
+  const riskIdentifiedRate = rate(riskCount, total);
+  const mitigationsRate = rate(mitigationsCount, total);
 
-  const s1 = Math.round((thoroughRate / 100) * 7);
-  const s2 = Math.round((childViewRate / 100) * 6);
-  const s3 = Math.round((riskIdentifiedRate / 100) * 6);
-  const s4 = Math.round((mitigationsRate / 100) * 6);
+  const s1 = Math.round(((thoroughRate ?? 0) / 100) * 7);
+  const s2 = Math.round(((childViewRate ?? 0) / 100) * 6);
+  const s3 = Math.round(((riskIdentifiedRate ?? 0) / 100) * 6);
+  const s4 = Math.round(((mitigationsRate ?? 0) / 100) * 6);
 
   const overallScore = Math.min(25, s1 + s2 + s3 + s4);
 
@@ -217,7 +229,7 @@ export function evaluateAssessmentQuality(records: LocationAssessmentRecord[]): 
 
 export function evaluateAssessmentCompliance(records: LocationAssessmentRecord[]): AssessmentComplianceResult {
   if (records.length === 0) {
-    return { overallScore: 0, documentationRate: 0, regulatoryRate: 0, mitigationsRate: 0, categoryDiversityRatio: 0 };
+    return { overallScore: 0, documentationRate: null, regulatoryRate: null, mitigationsRate: null, categoryDiversityRatio: 0 };
   }
 
   const total = records.length;
@@ -225,16 +237,16 @@ export function evaluateAssessmentCompliance(records: LocationAssessmentRecord[]
   const regulatoryCount = records.filter((r) => r.regulatoryAligned).length;
   const mitigationsCount = records.filter((r) => r.mitigationsDocumented).length;
   const uniqueCategories = new Set(records.map((r) => r.category)).size;
-  const diversityRatio = pct(uniqueCategories, ALL_CATEGORIES.length);
+  const diversityRatio = rate(uniqueCategories, ALL_CATEGORIES.length);
 
-  const documentationRate = pct(documentedCount, total);
-  const regulatoryRate = pct(regulatoryCount, total);
-  const mitigationsRate = pct(mitigationsCount, total);
+  const documentationRate = rate(documentedCount, total);
+  const regulatoryRate = rate(regulatoryCount, total);
+  const mitigationsRate = rate(mitigationsCount, total);
 
-  const s1 = Math.round((documentationRate / 100) * 8);
-  const s2 = Math.round((regulatoryRate / 100) * 7);
-  const s3 = Math.round((mitigationsRate / 100) * 5);
-  const s4 = Math.round((diversityRatio / 100) * 5);
+  const s1 = Math.round(((documentationRate ?? 0) / 100) * 8);
+  const s2 = Math.round(((regulatoryRate ?? 0) / 100) * 7);
+  const s3 = Math.round(((mitigationsRate ?? 0) / 100) * 5);
+  const s4 = Math.round(((diversityRatio ?? 0) / 100) * 5);
 
   const overallScore = Math.min(25, s1 + s2 + s3 + s4);
 
@@ -266,23 +278,23 @@ export function evaluateLocationPolicy(policy: LocationPolicy | null): LocationP
 
 export function evaluateStaffLocationReadiness(training: StaffLocationTraining[]): StaffLocationReadinessResult {
   if (training.length === 0) {
-    return { overallScore: 0, totalStaff: 0, riskAssessmentRate: 0, communityMappingRate: 0, safeguardingRate: 0, regulatoryRate: 0, childConsultationRate: 0, reportWritingRate: 0 };
+    return { overallScore: 0, totalStaff: 0, riskAssessmentRate: null, communityMappingRate: null, safeguardingRate: null, regulatoryRate: null, childConsultationRate: null, reportWritingRate: null };
   }
 
   const total = training.length;
-  const raRate = pct(training.filter((t) => t.riskAssessmentSkills).length, total);
-  const cmRate = pct(training.filter((t) => t.communityMapping).length, total);
-  const saRate = pct(training.filter((t) => t.safeguardingAwareness).length, total);
-  const rkRate = pct(training.filter((t) => t.regulatoryKnowledge).length, total);
-  const ccRate = pct(training.filter((t) => t.childConsultation).length, total);
-  const rwRate = pct(training.filter((t) => t.reportWriting).length, total);
+  const raRate = rate(training.filter((t) => t.riskAssessmentSkills).length, total);
+  const cmRate = rate(training.filter((t) => t.communityMapping).length, total);
+  const saRate = rate(training.filter((t) => t.safeguardingAwareness).length, total);
+  const rkRate = rate(training.filter((t) => t.regulatoryKnowledge).length, total);
+  const ccRate = rate(training.filter((t) => t.childConsultation).length, total);
+  const rwRate = rate(training.filter((t) => t.reportWriting).length, total);
 
-  const s1 = Math.round((raRate / 100) * 6);
-  const s2 = Math.round((cmRate / 100) * 5);
-  const s3 = Math.round((saRate / 100) * 5);
-  const s4 = Math.round((rkRate / 100) * 4);
-  const s5 = Math.round((ccRate / 100) * 3);
-  const s6 = Math.round((rwRate / 100) * 2);
+  const s1 = Math.round(((raRate ?? 0) / 100) * 6);
+  const s2 = Math.round(((cmRate ?? 0) / 100) * 5);
+  const s3 = Math.round(((saRate ?? 0) / 100) * 5);
+  const s4 = Math.round(((rkRate ?? 0) / 100) * 4);
+  const s5 = Math.round(((ccRate ?? 0) / 100) * 3);
+  const s6 = Math.round(((rwRate ?? 0) / 100) * 2);
 
   const overallScore = Math.min(25, s1 + s2 + s3 + s4 + s5 + s6);
 
@@ -308,22 +320,22 @@ export function buildChildLocationProfiles(records: LocationAssessmentRecord[]):
     const thoroughCount = recs.filter((r) => r.thoroughAssessment).length;
     const childViewCount = recs.filter((r) => r.childViewIncorporated).length;
 
-    const thoroughRate = pct(thoroughCount, total);
-    const childViewRate = pct(childViewCount, total);
+    const thoroughRate = rate(thoroughCount, total);
+    const childViewRate = rate(childViewCount, total);
 
     let freqScore = 0;
-    if (total >= 10) freqScore = 2;
-    else if (total >= 5) freqScore = 1;
+    if (meets(total, 10)) freqScore = 2;
+    else if (meets(total, 5)) freqScore = 1;
 
     let thScore = 0;
-    if (thoroughRate >= 80) thScore = 3;
-    else if (thoroughRate >= 60) thScore = 2;
-    else if (thoroughRate >= 40) thScore = 1;
+    if (meets(thoroughRate, 80)) thScore = 3;
+    else if (meets(thoroughRate, 60)) thScore = 2;
+    else if (meets(thoroughRate, 40)) thScore = 1;
 
     let cvScore = 0;
-    if (childViewRate >= 80) cvScore = 3;
-    else if (childViewRate >= 60) cvScore = 2;
-    else if (childViewRate >= 40) cvScore = 1;
+    if (meets(childViewRate, 80)) cvScore = 3;
+    else if (meets(childViewRate, 60)) cvScore = 2;
+    else if (meets(childViewRate, 40)) cvScore = 1;
 
     const uniqueCategories = new Set(recs.map((r) => r.category)).size;
     let divScore = 0;
@@ -362,21 +374,21 @@ export function generateLocationAssessmentIntelligence(
   const areasForImprovement: string[] = [];
   const actions: string[] = [];
 
-  if (assessmentQuality.thoroughRate >= 80) strengths.push("Location assessments are thorough and comprehensive across all areas");
-  if (assessmentQuality.childViewRate >= 80) strengths.push("Children's views are consistently incorporated into location assessments");
-  if (assessmentQuality.riskIdentifiedRate >= 80) strengths.push("Strong risk identification practice ensures location hazards are documented");
-  if (assessmentCompliance.documentationRate >= 80) strengths.push("Assessment documentation is complete and well-maintained");
+  if (meets(assessmentQuality.thoroughRate, 80)) strengths.push("Location assessments are thorough and comprehensive across all areas");
+  if (meets(assessmentQuality.childViewRate, 80)) strengths.push("Children's views are consistently incorporated into location assessments");
+  if (meets(assessmentQuality.riskIdentifiedRate, 80)) strengths.push("Strong risk identification practice ensures location hazards are documented");
+  if (meets(assessmentCompliance.documentationRate, 80)) strengths.push("Assessment documentation is complete and well-maintained");
 
-  if (records.length > 0 && assessmentQuality.thoroughRate < 60) areasForImprovement.push("Assessment thoroughness needs improvement — ensure all Annex A areas are covered");
-  if (records.length > 0 && assessmentQuality.childViewRate < 60) areasForImprovement.push("Children's views are not sufficiently incorporated into location assessments");
-  if (records.length > 0 && assessmentQuality.mitigationsRate < 60) areasForImprovement.push("Mitigations documentation is below expected levels — ensure all identified risks have recorded mitigations");
-  if (records.length > 0 && assessmentCompliance.regulatoryRate < 60) areasForImprovement.push("Regulatory alignment needs strengthening across location assessments");
+  if (records.length > 0 && below(assessmentQuality.thoroughRate, 60)) areasForImprovement.push("Assessment thoroughness needs improvement — ensure all Annex A areas are covered");
+  if (records.length > 0 && below(assessmentQuality.childViewRate, 60)) areasForImprovement.push("Children's views are not sufficiently incorporated into location assessments");
+  if (records.length > 0 && below(assessmentQuality.mitigationsRate, 60)) areasForImprovement.push("Mitigations documentation is below expected levels — ensure all identified risks have recorded mitigations");
+  if (records.length > 0 && below(assessmentCompliance.regulatoryRate, 60)) areasForImprovement.push("Regulatory alignment needs strengthening across location assessments");
 
   if (records.length === 0) actions.push("No location assessment records found — begin tracking location assessments immediately");
   if (!policy) actions.push("URGENT: No location assessment policy in place — develop and implement immediately");
   if (staff.length === 0) actions.push("URGENT: No staff location training recorded — arrange training for all staff");
-  if (records.length > 0 && assessmentQuality.riskIdentifiedRate < 50) actions.push("Improve risk identification processes in location assessments");
-  if (records.length > 0 && assessmentCompliance.documentationRate < 50) actions.push("Strengthen documentation completeness for location assessment records");
+  if (records.length > 0 && below(assessmentQuality.riskIdentifiedRate, 50)) actions.push("Improve risk identification processes in location assessments");
+  if (records.length > 0 && below(assessmentCompliance.documentationRate, 50)) actions.push("Strengthen documentation completeness for location assessment records");
 
   const regulatoryLinks: string[] = [
     "CHR 2015 Reg 12 — The protection of children standard (location risk)",

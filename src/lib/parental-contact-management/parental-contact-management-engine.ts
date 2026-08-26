@@ -190,11 +190,6 @@ export interface ParentalContactManagementIntelligence {
 
 // -- Helpers ------------------------------------------------------------------
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -281,9 +276,9 @@ export function evaluateContactPlanCompliance(
   // Court order compliant = court order plans that are current
   const courtOrderCompliant = courtOrderPlans.filter((p) => p.planCurrent).length;
 
-  const planExistsRate = pct(planExistsCount, plans.length);
-  const planCurrentRate = pct(planCurrentCount, plans.length);
-  const childViewConsideredRate = pct(childViewCount, plans.length);
+  const planExistsRate = rate(planExistsCount, plans.length);
+  const planCurrentRate = rate(planCurrentCount, plans.length);
+  const childViewConsideredRate = rate(childViewCount, plans.length);
   // Null when no plan is court-ordered — nothing to comply with, which is not
   // the same as every order being complied with
   const courtOrderCompliantRate = rate(courtOrderCompliant, courtOrderPlans.length);
@@ -341,16 +336,16 @@ export function evaluateContactQuality(
     if (s.parentCooperative) cooperative++;
   }
 
-  const positiveOutcomeRate = pct(positive, sessions.length);
-  const childPreparedRate = pct(prepared, sessions.length);
-  const childDebriefedRate = pct(debriefed, sessions.length);
-  const parentCooperativeRate = pct(cooperative, sessions.length);
+  const positiveOutcomeRate = rate(positive, sessions.length);
+  const childPreparedRate = rate(prepared, sessions.length);
+  const childDebriefedRate = rate(debriefed, sessions.length);
+  const parentCooperativeRate = rate(cooperative, sessions.length);
 
   let score = 0;
-  score += Math.round((positiveOutcomeRate / 100) * 7);
-  score += Math.round((childPreparedRate / 100) * 6);
-  score += Math.round((childDebriefedRate / 100) * 6);
-  score += Math.round((parentCooperativeRate / 100) * 6);
+  score += Math.round((positiveOutcomeRate! / 100) * 7);
+  score += Math.round((childPreparedRate! / 100) * 6);
+  score += Math.round((childDebriefedRate! / 100) * 6);
+  score += Math.round((parentCooperativeRate! / 100) * 6);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -461,20 +456,20 @@ export function evaluateStaffContactReadiness(
     if (t.courtOrderAwareness) courtOrder++;
   }
 
-  const supervisedContactRate = pct(supervised, training.length);
-  const riskAssessmentRate = pct(riskAssessment, training.length);
-  const prepDebriefRate = pct(prepDebrief, training.length);
-  const safeguardingRate = pct(safeguarding, training.length);
-  const parentalConflictRate = pct(parentalConflict, training.length);
-  const courtOrderRate = pct(courtOrder, training.length);
+  const supervisedContactRate = rate(supervised, training.length);
+  const riskAssessmentRate = rate(riskAssessment, training.length);
+  const prepDebriefRate = rate(prepDebrief, training.length);
+  const safeguardingRate = rate(safeguarding, training.length);
+  const parentalConflictRate = rate(parentalConflict, training.length);
+  const courtOrderRate = rate(courtOrder, training.length);
 
   let score = 0;
-  score += Math.round((supervisedContactRate / 100) * 6);
-  score += Math.round((riskAssessmentRate / 100) * 5);
-  score += Math.round((prepDebriefRate / 100) * 5);
-  score += Math.round((safeguardingRate / 100) * 4);
-  score += Math.round((parentalConflictRate / 100) * 3);
-  score += Math.round((courtOrderRate / 100) * 2);
+  score += Math.round((supervisedContactRate! / 100) * 6);
+  score += Math.round(((riskAssessmentRate ?? 0) / 100) * 5);
+  score += Math.round(((prepDebriefRate ?? 0) / 100) * 5);
+  score += Math.round(((safeguardingRate ?? 0) / 100) * 4);
+  score += Math.round(((parentalConflictRate ?? 0) / 100) * 3);
+  score += Math.round(((courtOrderRate ?? 0) / 100) * 2);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),

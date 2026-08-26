@@ -13,7 +13,6 @@ export {
   getCheckOutcomeLabel,
   getRatingLabel,
   getRating,
-  pct,
 } from "./night-supervision-quality-engine";
 
 export type {

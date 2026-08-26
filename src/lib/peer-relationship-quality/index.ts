@@ -5,7 +5,6 @@ export {
   evaluatePeerPolicy,
   evaluateStaffPeerReadiness,
   buildChildPeerProfiles,
-  pct,
   getRating,
   getInteractionTypeLabel,
   getRelationshipQualityLabel,

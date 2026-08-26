@@ -5,7 +5,6 @@ export {
   evaluateHygienePolicy,
   evaluateStaffHygieneReadiness,
   buildChildHygieneProfiles,
-  pct,
   getRating,
   getHygieneAreaLabel,
   getSupportLevelLabel,

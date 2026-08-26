@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara Missing From Care Intelligence Engine (4-Evaluator Pattern)
 //
@@ -123,18 +124,26 @@ export interface StaffMissingFromCareTraining {
 export interface QualityResult {
   overallScore: number; // 0-25
   totalRecords: number;
-  policeNotifiedTimelyRate: number;
-  returnInterviewCompletedRate: number;
-  riskAssessmentUpdatedRate: number;
-  preventionPlanReviewedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  policeNotifiedTimelyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  returnInterviewCompletedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessmentUpdatedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  preventionPlanReviewedRate: number | null;
 }
 
 export interface ComplianceResult {
   overallScore: number; // 0-25
-  documentationRate: number;
-  timelyRecordingRate: number;
-  returnInterviewCompletedRate: number;
-  categoryDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  returnInterviewCompletedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  categoryDiversityRatio: number | null;
 }
 
 export interface PolicyResult {
@@ -150,12 +159,18 @@ export interface PolicyResult {
 
 export interface StaffReadinessResult {
   overallScore: number; // 0-25
-  missingPersonsResponseRate: number;
-  returnInterviewConductRate: number;
-  riskAssessmentSkillsRate: number;
-  policeNotificationProcessRate: number;
-  patternRecognitionRate: number;
-  preventionPlanningRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  missingPersonsResponseRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  returnInterviewConductRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessmentSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  policeNotificationProcessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  patternRecognitionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  preventionPlanningRate: number | null;
 }
 
 export interface ChildProfile {
@@ -191,11 +206,6 @@ export interface MissingFromCareIntelligence {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
@@ -234,31 +244,31 @@ export function evaluateQuality(records: MissingFromCareRecord[]): QualityResult
     return {
       overallScore: 0,
       totalRecords: 0,
-      policeNotifiedTimelyRate: 0,
-      returnInterviewCompletedRate: 0,
-      riskAssessmentUpdatedRate: 0,
-      preventionPlanReviewedRate: 0,
+      policeNotifiedTimelyRate: null,
+      returnInterviewCompletedRate: null,
+      riskAssessmentUpdatedRate: null,
+      preventionPlanReviewedRate: null,
     };
   }
 
   const policeNotifiedTimelyCount = records.filter((r) => r.policeNotifiedTimely).length;
-  const policeNotifiedTimelyRate = pct(policeNotifiedTimelyCount, totalRecords);
+  const policeNotifiedTimelyRate = rate(policeNotifiedTimelyCount, totalRecords);
 
   const returnInterviewCompletedCount = records.filter((r) => r.returnInterviewCompleted).length;
-  const returnInterviewCompletedRate = pct(returnInterviewCompletedCount, totalRecords);
+  const returnInterviewCompletedRate = rate(returnInterviewCompletedCount, totalRecords);
 
   const riskAssessmentUpdatedCount = records.filter((r) => r.riskAssessmentUpdated).length;
-  const riskAssessmentUpdatedRate = pct(riskAssessmentUpdatedCount, totalRecords);
+  const riskAssessmentUpdatedRate = rate(riskAssessmentUpdatedCount, totalRecords);
 
   const preventionPlanReviewedCount = records.filter((r) => r.preventionPlanReviewed).length;
-  const preventionPlanReviewedRate = pct(preventionPlanReviewedCount, totalRecords);
+  const preventionPlanReviewedRate = rate(preventionPlanReviewedCount, totalRecords);
 
   // Score (out of 25): 7+6+6+6
   let score = 0;
-  score += (policeNotifiedTimelyRate / 100) * 7;
-  score += (returnInterviewCompletedRate / 100) * 6;
-  score += (riskAssessmentUpdatedRate / 100) * 6;
-  score += (preventionPlanReviewedRate / 100) * 6;
+  score += (policeNotifiedTimelyRate! / 100) * 7;
+  score += (returnInterviewCompletedRate! / 100) * 6;
+  score += (riskAssessmentUpdatedRate! / 100) * 6;
+  score += (preventionPlanReviewedRate! / 100) * 6;
 
   score = clamp(Math.round(score * 10) / 10, 0, 25);
 
@@ -284,31 +294,31 @@ export function evaluateCompliance(records: MissingFromCareRecord[]): Compliance
   if (totalRecords === 0) {
     return {
       overallScore: 0,
-      documentationRate: 0,
-      timelyRecordingRate: 0,
-      returnInterviewCompletedRate: 0,
+      documentationRate: null,
+      timelyRecordingRate: null,
+      returnInterviewCompletedRate: null,
       categoryDiversityRatio: 0,
     };
   }
 
   const documentedCount = records.filter((r) => r.documentationComplete).length;
-  const documentationRate = pct(documentedCount, totalRecords);
+  const documentationRate = rate(documentedCount, totalRecords);
 
   const timelyCount = records.filter((r) => r.timelyRecording).length;
-  const timelyRecordingRate = pct(timelyCount, totalRecords);
+  const timelyRecordingRate = rate(timelyCount, totalRecords);
 
   const returnInterviewCount = records.filter((r) => r.returnInterviewCompleted).length;
-  const returnInterviewCompletedRate = pct(returnInterviewCount, totalRecords);
+  const returnInterviewCompletedRate = rate(returnInterviewCount, totalRecords);
 
   const uniqueCategories = new Set(records.map((r) => r.category)).size;
-  const categoryDiversityRatio = pct(uniqueCategories, ALL_CATEGORIES.length);
+  const categoryDiversityRatio = rate(uniqueCategories, ALL_CATEGORIES.length);
 
   // Score (out of 25): 8+7+5+5
   let score = 0;
-  score += (documentationRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (returnInterviewCompletedRate / 100) * 5;
-  score += (categoryDiversityRatio / 100) * 5;
+  score += (documentationRate! / 100) * 8;
+  score += (timelyRecordingRate! / 100) * 7;
+  score += (returnInterviewCompletedRate! / 100) * 5;
+  score += ((categoryDiversityRatio ?? 0) / 100) * 5;
 
   score = clamp(Math.round(score * 10) / 10, 0, 25);
 
@@ -376,41 +386,41 @@ export function evaluateStaffReadiness(
   if (totalStaff === 0) {
     return {
       overallScore: 0,
-      missingPersonsResponseRate: 0,
-      returnInterviewConductRate: 0,
-      riskAssessmentSkillsRate: 0,
-      policeNotificationProcessRate: 0,
-      patternRecognitionRate: 0,
-      preventionPlanningRate: 0,
+      missingPersonsResponseRate: null,
+      returnInterviewConductRate: null,
+      riskAssessmentSkillsRate: null,
+      policeNotificationProcessRate: null,
+      patternRecognitionRate: null,
+      preventionPlanningRate: null,
     };
   }
 
   const missingPersonsResponseCount = training.filter((t) => t.missingPersonsResponse).length;
-  const missingPersonsResponseRate = pct(missingPersonsResponseCount, totalStaff);
+  const missingPersonsResponseRate = rate(missingPersonsResponseCount, totalStaff);
 
   const returnInterviewConductCount = training.filter((t) => t.returnInterviewConduct).length;
-  const returnInterviewConductRate = pct(returnInterviewConductCount, totalStaff);
+  const returnInterviewConductRate = rate(returnInterviewConductCount, totalStaff);
 
   const riskAssessmentSkillsCount = training.filter((t) => t.riskAssessmentSkills).length;
-  const riskAssessmentSkillsRate = pct(riskAssessmentSkillsCount, totalStaff);
+  const riskAssessmentSkillsRate = rate(riskAssessmentSkillsCount, totalStaff);
 
   const policeNotificationProcessCount = training.filter((t) => t.policeNotificationProcess).length;
-  const policeNotificationProcessRate = pct(policeNotificationProcessCount, totalStaff);
+  const policeNotificationProcessRate = rate(policeNotificationProcessCount, totalStaff);
 
   const patternRecognitionCount = training.filter((t) => t.patternRecognition).length;
-  const patternRecognitionRate = pct(patternRecognitionCount, totalStaff);
+  const patternRecognitionRate = rate(patternRecognitionCount, totalStaff);
 
   const preventionPlanningCount = training.filter((t) => t.preventionPlanning).length;
-  const preventionPlanningRate = pct(preventionPlanningCount, totalStaff);
+  const preventionPlanningRate = rate(preventionPlanningCount, totalStaff);
 
   // Score (out of 25): 6+5+5+4+3+2
   let score = 0;
-  score += (missingPersonsResponseRate / 100) * 6;
-  score += (returnInterviewConductRate / 100) * 5;
-  score += (riskAssessmentSkillsRate / 100) * 5;
-  score += (policeNotificationProcessRate / 100) * 4;
-  score += (patternRecognitionRate / 100) * 3;
-  score += (preventionPlanningRate / 100) * 2;
+  score += (missingPersonsResponseRate! / 100) * 6;
+  score += (returnInterviewConductRate! / 100) * 5;
+  score += (riskAssessmentSkillsRate! / 100) * 5;
+  score += (policeNotificationProcessRate! / 100) * 4;
+  score += (patternRecognitionRate! / 100) * 3;
+  score += (preventionPlanningRate! / 100) * 2;
 
   score = clamp(Math.round(score * 10) / 10, 0, 25);
 
@@ -451,10 +461,10 @@ export function buildChildProfiles(records: MissingFromCareRecord[]): ChildProfi
     const totalRecords = child.records.length;
 
     const returnInterviewCount = child.records.filter((r) => r.returnInterviewCompleted).length;
-    const returnInterviewCompletedRate = pct(returnInterviewCount, totalRecords);
+    const returnInterviewCompletedRate = rate(returnInterviewCount, totalRecords)!;
 
     const riskAssessmentCount = child.records.filter((r) => r.riskAssessmentUpdated).length;
-    const riskAssessmentUpdatedRate = pct(riskAssessmentCount, totalRecords);
+    const riskAssessmentUpdatedRate = rate(riskAssessmentCount, totalRecords)!;
 
     const uniqueCategories = new Set(child.records.map((r) => r.category));
     const categoriesCovered = Array.from(uniqueCategories);
@@ -470,20 +480,20 @@ export function buildChildProfiles(records: MissingFromCareRecord[]): ChildProfi
     }
 
     // rate1 (returnInterviewCompletedRate): 0-3
-    if (returnInterviewCompletedRate >= 80) {
+    if (meets(returnInterviewCompletedRate, 80)) {
       score += 3;
-    } else if (returnInterviewCompletedRate >= 60) {
+    } else if (meets(returnInterviewCompletedRate, 60)) {
       score += 2;
-    } else if (returnInterviewCompletedRate >= 40) {
+    } else if (meets(returnInterviewCompletedRate, 40)) {
       score += 1;
     }
 
     // rate2 (riskAssessmentUpdatedRate): 0-3
-    if (riskAssessmentUpdatedRate >= 80) {
+    if (meets(riskAssessmentUpdatedRate, 80)) {
       score += 3;
-    } else if (riskAssessmentUpdatedRate >= 60) {
+    } else if (meets(riskAssessmentUpdatedRate, 60)) {
       score += 2;
-    } else if (riskAssessmentUpdatedRate >= 40) {
+    } else if (meets(riskAssessmentUpdatedRate, 40)) {
       score += 1;
     }
 
@@ -591,23 +601,23 @@ function deriveStrengths(
     strengths.push("Overall missing from care management rated Good (" + overallScore + "/100)");
   }
 
-  if (quality.policeNotifiedTimelyRate >= 80) {
+  if (meets(quality.policeNotifiedTimelyRate, 80)) {
     strengths.push("Strong police notification timeliness: " + quality.policeNotifiedTimelyRate + "% notified within protocol timelines");
   }
 
-  if (quality.returnInterviewCompletedRate >= 80) {
+  if (meets(quality.returnInterviewCompletedRate, 80)) {
     strengths.push("Excellent return interview completion: " + quality.returnInterviewCompletedRate + "% of return interviews completed");
   }
 
-  if (quality.riskAssessmentUpdatedRate >= 80) {
+  if (meets(quality.riskAssessmentUpdatedRate, 80)) {
     strengths.push("Risk assessments consistently updated following episodes: " + quality.riskAssessmentUpdatedRate + "%");
   }
 
-  if (compliance.documentationRate >= 80) {
+  if (meets(compliance.documentationRate, 80)) {
     strengths.push("Strong documentation: " + compliance.documentationRate + "% of records fully documented");
   }
 
-  if (compliance.timelyRecordingRate >= 80) {
+  if (meets(compliance.timelyRecordingRate, 80)) {
     strengths.push("Timely recording practice: " + compliance.timelyRecordingRate + "% of records completed on time");
   }
 
@@ -615,7 +625,7 @@ function deriveStrengths(
     strengths.push("Comprehensive missing from care policy framework with all key elements in place");
   }
 
-  if (staff.missingPersonsResponseRate >= 90) {
+  if (meets(staff.missingPersonsResponseRate, 90)) {
     strengths.push("Excellent missing persons response training: " + staff.missingPersonsResponseRate + "% of staff trained");
   }
 
@@ -637,23 +647,23 @@ function deriveAreasForImprovement(
     areas.push("Overall missing from care management Requires Improvement (" + overallScore + "/100)");
   }
 
-  if (quality.totalRecords > 0 && quality.policeNotifiedTimelyRate < 60) {
+  if (quality.totalRecords > 0 && below(quality.policeNotifiedTimelyRate, 60)) {
     areas.push("Police notification timeliness at " + quality.policeNotifiedTimelyRate + "% — below 60% threshold, protocol review needed");
   }
 
-  if (quality.totalRecords > 0 && quality.returnInterviewCompletedRate < 60) {
+  if (quality.totalRecords > 0 && below(quality.returnInterviewCompletedRate, 60)) {
     areas.push("Return interview completion at " + quality.returnInterviewCompletedRate + "% — statutory requirement not being met consistently");
   }
 
-  if (quality.totalRecords > 0 && quality.riskAssessmentUpdatedRate < 60) {
+  if (quality.totalRecords > 0 && below(quality.riskAssessmentUpdatedRate, 60)) {
     areas.push("Risk assessment update rate at " + quality.riskAssessmentUpdatedRate + "% — assessments should be updated after every episode");
   }
 
-  if (quality.totalRecords > 0 && compliance.documentationRate < 60) {
+  if (quality.totalRecords > 0 && below(compliance.documentationRate, 60)) {
     areas.push("Documentation rate at " + compliance.documentationRate + "% — all missing episodes must be fully documented");
   }
 
-  if (quality.totalRecords > 0 && compliance.timelyRecordingRate < 60) {
+  if (quality.totalRecords > 0 && below(compliance.timelyRecordingRate, 60)) {
     areas.push("Timely recording rate at " + compliance.timelyRecordingRate + "% — records must be completed promptly after episodes");
   }
 
@@ -683,19 +693,19 @@ function deriveActions(
     actions.push("URGENT: No staff missing from care training records — arrange training for all residential staff");
   }
 
-  if (quality.totalRecords > 0 && quality.policeNotifiedTimelyRate < 60) {
+  if (quality.totalRecords > 0 && below(quality.policeNotifiedTimelyRate, 60)) {
     actions.push("Review police notification procedures to improve timeliness from " + quality.policeNotifiedTimelyRate + "%");
   }
 
-  if (quality.totalRecords > 0 && quality.returnInterviewCompletedRate < 60) {
+  if (quality.totalRecords > 0 && below(quality.returnInterviewCompletedRate, 60)) {
     actions.push("Implement consistent return interview process to improve completion from " + quality.returnInterviewCompletedRate + "%");
   }
 
-  if (quality.totalRecords > 0 && compliance.documentationRate < 60) {
+  if (quality.totalRecords > 0 && below(compliance.documentationRate, 60)) {
     actions.push("Ensure all missing episodes are fully documented (" + compliance.documentationRate + "% currently documented)");
   }
 
-  if (quality.totalRecords > 0 && compliance.timelyRecordingRate < 60) {
+  if (quality.totalRecords > 0 && below(compliance.timelyRecordingRate, 60)) {
     actions.push("Improve recording timeliness — currently at " + compliance.timelyRecordingRate + "%");
   }
 

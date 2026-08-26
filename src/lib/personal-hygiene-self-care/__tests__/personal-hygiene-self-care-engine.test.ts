@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   generatePersonalHygieneSelfCareIntelligence, evaluateSelfCareQuality, evaluateDignityPrivacy,
-  evaluateHygienePolicy, evaluateStaffHygieneReadiness, buildChildHygieneProfiles, pct, getRating,
+  evaluateHygienePolicy, evaluateStaffHygieneReadiness, buildChildHygieneProfiles, getRating,
   getHygieneAreaLabel, getSupportLevelLabel, getRatingLabel,
 } from "../personal-hygiene-self-care-engine";
 import type { HygieneRecord, HygienePolicy, StaffHygieneTraining } from "../personal-hygiene-self-care-engine";
@@ -19,13 +19,6 @@ function makeTraining(overrides: Partial<StaffHygieneTraining> = {}): StaffHygie
   _tid++;
   return { id: `ht-${_tid}`, staffId: `staff-${_tid}`, staffName: `Staff ${_tid}`, personalCareSupport: true, dignityInPractice: true, culturalAwareness: true, menstrualHealthAwareness: true, infectionControl: true, sensitiveConversations: true, ...overrides };
 }
-
-describe("pct", () => {
-  it("returns percentage", () => { expect(pct(3, 4)).toBe(75); });
-  it("returns 0 for den=0", () => { expect(pct(0, 0)).toBe(0); });
-  it("returns 100 for equal", () => { expect(pct(5, 5)).toBe(100); });
-  it("returns 0 for num=0", () => { expect(pct(0, 10)).toBe(0); });
-});
 
 describe("getRating", () => {
   it("outstanding >= 80", () => { expect(getRating(80)).toBe("outstanding"); expect(getRating(100)).toBe("outstanding"); });

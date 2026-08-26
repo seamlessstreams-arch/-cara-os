@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildNightMonitoringProfile { childId: string; childName: string; totalRecords: number; checkCompletedOnTimeRate: number; observationsRecordedRate: number; categoriesCovered: string[]; overallScore: number; }
 
@@ -73,18 +74,18 @@ export default function NightMonitoringIntelligenceWidget() {
       <Section title="Monitoring Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Records" value={data.nightMonitoringQuality.totalRecords} />
-          <Stat label="Checks On Time" value={`${data.nightMonitoringQuality.checkCompletedOnTimeRate}%`} />
-          <Stat label="Observations" value={`${data.nightMonitoringQuality.observationsRecordedRate}%`} />
-          <Stat label="Incidents Escalated" value={`${data.nightMonitoringQuality.incidentEscalatedRate}%`} />
-          <Stat label="Welfare Confirmed" value={`${data.nightMonitoringQuality.childWelfareConfirmedRate}%`} />
+          <Stat label="Checks On Time" value={`${formatRate(data.nightMonitoringQuality.checkCompletedOnTimeRate)}`} />
+          <Stat label="Observations" value={`${formatRate(data.nightMonitoringQuality.observationsRecordedRate)}`} />
+          <Stat label="Incidents Escalated" value={`${formatRate(data.nightMonitoringQuality.incidentEscalatedRate)}`} />
+          <Stat label="Welfare Confirmed" value={`${formatRate(data.nightMonitoringQuality.childWelfareConfirmedRate)}`} />
         </div>
       </Section>
 
       <Section title="Monitoring Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documentation" value={`${data.nightMonitoringCompliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${data.nightMonitoringCompliance.timelyRecordingRate}%`} />
-          <Stat label="Checks On Time" value={`${data.nightMonitoringCompliance.checkCompletedOnTimeRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(data.nightMonitoringCompliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(data.nightMonitoringCompliance.timelyRecordingRate)}`} />
+          <Stat label="Checks On Time" value={`${formatRate(data.nightMonitoringCompliance.checkCompletedOnTimeRate)}`} />
           <Stat label="Category Coverage" value={`${data.nightMonitoringCompliance.categoryDiversityRatio}`} />
         </div>
       </Section>
@@ -108,12 +109,12 @@ export default function NightMonitoringIntelligenceWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
-          <Stat label="Night Care" value={`${data.staffReadiness.nightCareCompetencyRate}%`} />
-          <Stat label="Incident Mgmt" value={`${data.staffReadiness.nightIncidentManagementRate}%`} />
-          <Stat label="Sleep Monitoring" value={`${data.staffReadiness.sleepMonitoringSkillsRate}%`} />
-          <Stat label="Medication" value={`${data.staffReadiness.nightMedicationHandlingRate}%`} />
-          <Stat label="Welfare Assessment" value={`${data.staffReadiness.childWelfareAssessmentRate}%`} />
-          <Stat label="Handover" value={`${data.staffReadiness.nightHandoverProcedureRate}%`} />
+          <Stat label="Night Care" value={`${formatRate(data.staffReadiness.nightCareCompetencyRate)}`} />
+          <Stat label="Incident Mgmt" value={`${formatRate(data.staffReadiness.nightIncidentManagementRate)}`} />
+          <Stat label="Sleep Monitoring" value={`${formatRate(data.staffReadiness.sleepMonitoringSkillsRate)}`} />
+          <Stat label="Medication" value={`${formatRate(data.staffReadiness.nightMedicationHandlingRate)}`} />
+          <Stat label="Welfare Assessment" value={`${formatRate(data.staffReadiness.childWelfareAssessmentRate)}`} />
+          <Stat label="Handover" value={`${formatRate(data.staffReadiness.nightHandoverProcedureRate)}`} />
         </div>
       </Section>
 

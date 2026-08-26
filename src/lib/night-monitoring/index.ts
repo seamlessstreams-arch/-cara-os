@@ -5,7 +5,6 @@ export {
   evaluateNightMonitoringPolicy,
   evaluateStaffNightMonitoringReadiness,
   buildChildNightMonitoringProfiles,
-  pct,
   getRating,
   getNightMonitoringCategoryLabel,
   getNightMonitoringOutcomeLabel,

@@ -5,7 +5,6 @@ export {
   evaluateLocationPolicy,
   evaluateStaffLocationReadiness,
   buildChildLocationProfiles,
-  pct,
   getRating,
   getCategoryLabel,
   getOutcomeLabel,

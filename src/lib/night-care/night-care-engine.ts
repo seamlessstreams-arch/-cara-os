@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — Night Care Intelligence Engine
 //
@@ -128,18 +129,25 @@ export interface NightCareStaffTraining {
 export interface QualityResult {
   overallScore: number;
   totalRecords: number;
-  nightCheckCompletedRate: number;
-  sleepPatternRecordedRate: number;
-  incidentHandledAppropriatelyRate: number;
-  childComfortCheckedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  nightCheckCompletedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  sleepPatternRecordedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  incidentHandledAppropriatelyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childComfortCheckedRate: number | null;
 }
 
 export interface ComplianceResult {
   overallScore: number;
   totalRecords: number;
-  documentationRate: number;
-  timelyRecordingRate: number;
-  nightCheckCompletedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  nightCheckCompletedRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
 }
@@ -158,12 +166,18 @@ export interface PolicyResult {
 export interface StaffReadinessResult {
   overallScore: number;
   totalStaff: number;
-  nightCareCompetencyRate: number;
-  sleepMonitoringSkillsRate: number;
-  nightIncidentResponseRate: number;
-  nightMedicationHandlingRate: number;
-  childComfortTechniquesRate: number;
-  nightHandoverProcedureRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  nightCareCompetencyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  sleepMonitoringSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  nightIncidentResponseRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  nightMedicationHandlingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childComfortTechniquesRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  nightHandoverProcedureRate: number | null;
 }
 
 export interface ChildNightCareProfile {
@@ -196,11 +210,6 @@ export interface NightCareIntelligence {
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 /** Calculate percentage, returning 0 if denominator is 0. */
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 /** Map overall score (0-100) to Ofsted-style rating. */
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -226,10 +235,10 @@ export function evaluateQuality(records: NightCareRecord[]): QualityResult {
     return {
       overallScore: 0,
       totalRecords: 0,
-      nightCheckCompletedRate: 0,
-      sleepPatternRecordedRate: 0,
-      incidentHandledAppropriatelyRate: 0,
-      childComfortCheckedRate: 0,
+      nightCheckCompletedRate: null,
+      sleepPatternRecordedRate: null,
+      incidentHandledAppropriatelyRate: null,
+      childComfortCheckedRate: null,
     };
   }
 
@@ -238,16 +247,16 @@ export function evaluateQuality(records: NightCareRecord[]): QualityResult {
   const incidentCount = records.filter((r) => r.incidentHandledAppropriately).length;
   const comfortCount = records.filter((r) => r.childComfortChecked).length;
 
-  const nightCheckCompletedRate = pct(nightCheckCount, records.length);
-  const sleepPatternRecordedRate = pct(sleepPatternCount, records.length);
-  const incidentHandledAppropriatelyRate = pct(incidentCount, records.length);
-  const childComfortCheckedRate = pct(comfortCount, records.length);
+  const nightCheckCompletedRate = rate(nightCheckCount, records.length);
+  const sleepPatternRecordedRate = rate(sleepPatternCount, records.length);
+  const incidentHandledAppropriatelyRate = rate(incidentCount, records.length);
+  const childComfortCheckedRate = rate(comfortCount, records.length);
 
   let score = 0;
-  score += Math.round((nightCheckCompletedRate / 100) * 7);
-  score += Math.round((sleepPatternRecordedRate / 100) * 6);
-  score += Math.round((incidentHandledAppropriatelyRate / 100) * 6);
-  score += Math.round((childComfortCheckedRate / 100) * 6);
+  score += Math.round((nightCheckCompletedRate! / 100) * 7);
+  score += Math.round((sleepPatternRecordedRate! / 100) * 6);
+  score += Math.round((incidentHandledAppropriatelyRate! / 100) * 6);
+  score += Math.round((childComfortCheckedRate! / 100) * 6);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -276,31 +285,31 @@ export function evaluateCompliance(records: NightCareRecord[]): ComplianceResult
     return {
       overallScore: 0,
       totalRecords: 0,
-      documentationRate: 0,
-      timelyRecordingRate: 0,
-      nightCheckCompletedRate: 0,
+      documentationRate: null,
+      timelyRecordingRate: null,
+      nightCheckCompletedRate: null,
       categoryDiversityRatio: 0,
       uniqueCategories: 0,
     };
   }
 
   const documentedCount = records.filter((r) => r.documentationComplete).length;
-  const documentationRate = pct(documentedCount, records.length);
+  const documentationRate = rate(documentedCount, records.length);
 
   const timelyCount = records.filter((r) => r.timelyRecording).length;
-  const timelyRecordingRate = pct(timelyCount, records.length);
+  const timelyRecordingRate = rate(timelyCount, records.length);
 
   const nightCheckCount = records.filter((r) => r.nightCheckCompleted).length;
-  const nightCheckCompletedRate = pct(nightCheckCount, records.length);
+  const nightCheckCompletedRate = rate(nightCheckCount, records.length);
 
   const uniqueCategoriesSet = new Set(records.map((r) => r.category));
   const uniqueCategories = uniqueCategoriesSet.size;
   const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
 
   let score = 0;
-  score += (documentationRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (nightCheckCompletedRate / 100) * 5;
+  score += (documentationRate! / 100) * 8;
+  score += (timelyRecordingRate! / 100) * 7;
+  score += (nightCheckCompletedRate! / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -387,12 +396,12 @@ export function evaluateStaffReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      nightCareCompetencyRate: 0,
-      sleepMonitoringSkillsRate: 0,
-      nightIncidentResponseRate: 0,
-      nightMedicationHandlingRate: 0,
-      childComfortTechniquesRate: 0,
-      nightHandoverProcedureRate: 0,
+      nightCareCompetencyRate: null,
+      sleepMonitoringSkillsRate: null,
+      nightIncidentResponseRate: null,
+      nightMedicationHandlingRate: null,
+      childComfortTechniquesRate: null,
+      nightHandoverProcedureRate: null,
     };
   }
 
@@ -412,20 +421,20 @@ export function evaluateStaffReadiness(
     if (t.nightHandoverProcedure) handoverProcedure++;
   }
 
-  const nightCareCompetencyRate = pct(competency, training.length);
-  const sleepMonitoringSkillsRate = pct(sleepSkills, training.length);
-  const nightIncidentResponseRate = pct(incidentResponse, training.length);
-  const nightMedicationHandlingRate = pct(medicationHandling, training.length);
-  const childComfortTechniquesRate = pct(comfortTechniques, training.length);
-  const nightHandoverProcedureRate = pct(handoverProcedure, training.length);
+  const nightCareCompetencyRate = rate(competency, training.length);
+  const sleepMonitoringSkillsRate = rate(sleepSkills, training.length);
+  const nightIncidentResponseRate = rate(incidentResponse, training.length);
+  const nightMedicationHandlingRate = rate(medicationHandling, training.length);
+  const childComfortTechniquesRate = rate(comfortTechniques, training.length);
+  const nightHandoverProcedureRate = rate(handoverProcedure, training.length);
 
   let score = 0;
-  score += Math.round((nightCareCompetencyRate / 100) * 6);
-  score += Math.round((sleepMonitoringSkillsRate / 100) * 5);
-  score += Math.round((nightIncidentResponseRate / 100) * 5);
-  score += Math.round((nightMedicationHandlingRate / 100) * 4);
-  score += Math.round((childComfortTechniquesRate / 100) * 3);
-  score += Math.round((nightHandoverProcedureRate / 100) * 2);
+  score += Math.round((nightCareCompetencyRate! / 100) * 6);
+  score += Math.round(((sleepMonitoringSkillsRate ?? 0) / 100) * 5);
+  score += Math.round(((nightIncidentResponseRate ?? 0) / 100) * 5);
+  score += Math.round(((nightMedicationHandlingRate ?? 0) / 100) * 4);
+  score += Math.round(((childComfortTechniquesRate ?? 0) / 100) * 3);
+  score += Math.round(((nightHandoverProcedureRate ?? 0) / 100) * 2);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -470,10 +479,10 @@ export function buildChildNightCareProfiles(
     const totalRecords = child.records.length;
 
     const nightCheckCount = child.records.filter((r) => r.nightCheckCompleted).length;
-    const nightCheckCompletedRate = pct(nightCheckCount, totalRecords);
+    const nightCheckCompletedRate = rate(nightCheckCount, totalRecords)!;
 
     const sleepPatternCount = child.records.filter((r) => r.sleepPatternRecorded).length;
-    const sleepPatternRecordedRate = pct(sleepPatternCount, totalRecords);
+    const sleepPatternRecordedRate = rate(sleepPatternCount, totalRecords)!;
 
     const uniqueCategoriesSet = new Set(child.records.map((r) => r.category));
     const uniqueCategories = uniqueCategoriesSet.size;
@@ -481,19 +490,19 @@ export function buildChildNightCareProfiles(
     // frequency: >=10 records -> 2, >=5 -> 1, else 0
     let frequencyScore = 0;
     if (totalRecords >= 10) frequencyScore = 2;
-    else if (totalRecords >= 5) frequencyScore = 1;
+    else if (meets(totalRecords, 5)) frequencyScore = 1;
 
     // rate1 (nightCheckCompletedRate): >=80 -> 3, >=60 -> 2, >=40 -> 1, else 0
     let rate1Score = 0;
-    if (nightCheckCompletedRate >= 80) rate1Score = 3;
-    else if (nightCheckCompletedRate >= 60) rate1Score = 2;
-    else if (nightCheckCompletedRate >= 40) rate1Score = 1;
+    if (meets(nightCheckCompletedRate, 80)) rate1Score = 3;
+    else if (meets(nightCheckCompletedRate, 60)) rate1Score = 2;
+    else if (meets(nightCheckCompletedRate, 40)) rate1Score = 1;
 
     // rate2 (sleepPatternRecordedRate): same thresholds
     let rate2Score = 0;
-    if (sleepPatternRecordedRate >= 80) rate2Score = 3;
-    else if (sleepPatternRecordedRate >= 60) rate2Score = 2;
-    else if (sleepPatternRecordedRate >= 40) rate2Score = 1;
+    if (meets(sleepPatternRecordedRate, 80)) rate2Score = 3;
+    else if (meets(sleepPatternRecordedRate, 60)) rate2Score = 2;
+    else if (meets(sleepPatternRecordedRate, 40)) rate2Score = 1;
 
     // diversity (unique categories): >=4 -> 2, >=2 -> 1, else 0
     let diversityBonus = 0;
@@ -543,28 +552,28 @@ export function generateNightCareIntelligence(
   // ── Strengths ──
   const strengths: string[] = [];
 
-  if (records.length > 0 && quality.nightCheckCompletedRate >= 90) {
+  if (records.length > 0 && meets(quality.nightCheckCompletedRate, 90)) {
     strengths.push(
       "Night checks consistently completed at " +
         quality.nightCheckCompletedRate +
         "%, ensuring children are safe and well overnight",
     );
   }
-  if (records.length > 0 && quality.sleepPatternRecordedRate >= 90) {
+  if (records.length > 0 && meets(quality.sleepPatternRecordedRate, 90)) {
     strengths.push(
       "Sleep patterns recorded at " +
         quality.sleepPatternRecordedRate +
         "%, supporting individual care planning",
     );
   }
-  if (records.length > 0 && quality.incidentHandledAppropriatelyRate >= 90) {
+  if (records.length > 0 && meets(quality.incidentHandledAppropriatelyRate, 90)) {
     strengths.push(
       "Night incidents handled appropriately at " +
         quality.incidentHandledAppropriatelyRate +
         "%, demonstrating staff competence",
     );
   }
-  if (records.length > 0 && quality.childComfortCheckedRate >= 90) {
+  if (records.length > 0 && meets(quality.childComfortCheckedRate, 90)) {
     strengths.push(
       "Child comfort checked at " +
         quality.childComfortCheckedRate +
@@ -612,42 +621,42 @@ export function generateNightCareIntelligence(
       "No night care records found — night care activities must be documented",
     );
   }
-  if (records.length > 0 && quality.nightCheckCompletedRate < 80) {
+  if (records.length > 0 && below(quality.nightCheckCompletedRate, 80)) {
     areasForImprovement.push(
       "Night check completion rate at " +
         quality.nightCheckCompletedRate +
         "% — must improve to ensure child safety",
     );
   }
-  if (records.length > 0 && quality.sleepPatternRecordedRate < 80) {
+  if (records.length > 0 && below(quality.sleepPatternRecordedRate, 80)) {
     areasForImprovement.push(
       "Sleep pattern recording rate at " +
         quality.sleepPatternRecordedRate +
         "% — individual sleep data needed for care planning",
     );
   }
-  if (records.length > 0 && quality.incidentHandledAppropriatelyRate < 80) {
+  if (records.length > 0 && below(quality.incidentHandledAppropriatelyRate, 80)) {
     areasForImprovement.push(
       "Night incident handling rate at " +
         quality.incidentHandledAppropriatelyRate +
         "% — staff require additional incident management support",
     );
   }
-  if (records.length > 0 && quality.childComfortCheckedRate < 80) {
+  if (records.length > 0 && below(quality.childComfortCheckedRate, 80)) {
     areasForImprovement.push(
       "Child comfort check rate at " +
         quality.childComfortCheckedRate +
         "% — children's wellbeing must be consistently monitored",
     );
   }
-  if (records.length > 0 && compliance.documentationRate < 100) {
+  if (records.length > 0 && below(compliance.documentationRate, 100)) {
     areasForImprovement.push(
       "Documentation rate at " +
         compliance.documentationRate +
         "% — all night care activities must be fully recorded",
     );
   }
-  if (records.length > 0 && compliance.timelyRecordingRate < 80) {
+  if (records.length > 0 && below(compliance.timelyRecordingRate, 80)) {
     areasForImprovement.push(
       "Timely recording rate at " +
         compliance.timelyRecordingRate +
@@ -681,14 +690,14 @@ export function generateNightCareIntelligence(
       "No staff night care training records — all staff must be trained",
     );
   }
-  if (training.length > 0 && staffReadiness.nightCareCompetencyRate < 100) {
+  if (training.length > 0 && below(staffReadiness.nightCareCompetencyRate, 100)) {
     areasForImprovement.push(
       "Only " +
         staffReadiness.nightCareCompetencyRate +
         "% of staff trained in night care competency — all staff require this training",
     );
   }
-  if (training.length > 0 && staffReadiness.nightIncidentResponseRate < 75) {
+  if (training.length > 0 && below(staffReadiness.nightIncidentResponseRate, 75)) {
     areasForImprovement.push(
       "Night incident response training completed by only " +
         staffReadiness.nightIncidentResponseRate +
@@ -704,32 +713,32 @@ export function generateNightCareIntelligence(
       "URGENT: Implement structured night care recording immediately",
     );
   }
-  if (records.length > 0 && quality.nightCheckCompletedRate < 80) {
+  if (records.length > 0 && below(quality.nightCheckCompletedRate, 80)) {
     actions.push(
       "URGENT: Review night check procedures and ensure all checks are completed and recorded",
     );
   }
-  if (records.length > 0 && quality.incidentHandledAppropriatelyRate < 80) {
+  if (records.length > 0 && below(quality.incidentHandledAppropriatelyRate, 80)) {
     actions.push(
       "URGENT: Provide night incident management training to all night staff",
     );
   }
-  if (records.length > 0 && quality.sleepPatternRecordedRate < 80) {
+  if (records.length > 0 && below(quality.sleepPatternRecordedRate, 80)) {
     actions.push(
       "Improve sleep pattern recording — integrate into standard night check procedures",
     );
   }
-  if (records.length > 0 && quality.childComfortCheckedRate < 80) {
+  if (records.length > 0 && below(quality.childComfortCheckedRate, 80)) {
     actions.push(
       "Ensure child comfort is checked and recorded during every night care round",
     );
   }
-  if (records.length > 0 && compliance.documentationRate < 100) {
+  if (records.length > 0 && below(compliance.documentationRate, 100)) {
     actions.push(
       "Ensure all night care activities are fully documented before end of shift",
     );
   }
-  if (records.length > 0 && compliance.timelyRecordingRate < 80) {
+  if (records.length > 0 && below(compliance.timelyRecordingRate, 80)) {
     actions.push(
       "Improve timeliness of night care recording — records must be completed promptly",
     );
@@ -749,14 +758,14 @@ export function generateNightCareIntelligence(
       "URGENT: Arrange night care training for all staff immediately",
     );
   }
-  if (training.length > 0 && staffReadiness.nightCareCompetencyRate < 100) {
+  if (training.length > 0 && below(staffReadiness.nightCareCompetencyRate, 100)) {
     actions.push(
       "Ensure all staff complete night care competency training — currently " +
         staffReadiness.nightCareCompetencyRate +
         "%",
     );
   }
-  if (training.length > 0 && staffReadiness.nightIncidentResponseRate < 100) {
+  if (training.length > 0 && below(staffReadiness.nightIncidentResponseRate, 100)) {
     actions.push(
       "Ensure all staff complete night incident response training — currently " +
         staffReadiness.nightIncidentResponseRate +

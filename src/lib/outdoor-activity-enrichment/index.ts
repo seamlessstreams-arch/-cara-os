@@ -9,7 +9,6 @@ export {
   evaluateStaffReadiness,
   buildChildEnrichmentProfiles,
   generateOutdoorActivityEnrichmentIntelligence,
-  pct,
   getRating,
   getActivityCategoryLabel,
   getRiskBenefitOutcomeLabel,

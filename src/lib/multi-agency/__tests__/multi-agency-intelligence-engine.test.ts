@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getMultiAgencyCategoryLabel,
   getMultiAgencyOutcomeLabel,
@@ -69,33 +68,6 @@ function makeStaff(overrides: Partial<StaffMultiAgencyTraining> = {}): StaffMult
 }
 
 // ── pct() ──────────────────────────────────────────────────────────────────
-
-describe("pct()", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(0, 0)).toBe(0);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-
-  it("returns 100 when numerator equals denominator", () => {
-    expect(pct(5, 5)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(1, 2)).toBe(50);
-  });
-
-  it("rounds correctly", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-
-  it("handles large values", () => {
-    expect(pct(999, 1000)).toBe(100);
-  });
-});
 
 // ── getRating() ────────────────────────────────────────────────────────────
 
@@ -207,10 +179,10 @@ describe("evaluateMultiAgencyQuality()", () => {
     const result = evaluateMultiAgencyQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalRecords).toBe(0);
-    expect(result.agencyAttendanceConfirmedRate).toBe(0);
-    expect(result.actionPointsRecordedRate).toBe(0);
-    expect(result.informationSharedAppropriatelyRate).toBe(0);
-    expect(result.childViewRepresentedRate).toBe(0);
+    expect(result.agencyAttendanceConfirmedRate).toBeNull();
+    expect(result.actionPointsRecordedRate).toBeNull();
+    expect(result.informationSharedAppropriatelyRate).toBeNull();
+    expect(result.childViewRepresentedRate).toBeNull();
   });
 
   it("returns 25 for all-true records", () => {
@@ -304,9 +276,9 @@ describe("evaluateMultiAgencyCompliance()", () => {
     const result = evaluateMultiAgencyCompliance([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalRecords).toBe(0);
-    expect(result.documentationCompleteRate).toBe(0);
-    expect(result.timelyRecordingRate).toBe(0);
-    expect(result.agencyAttendanceConfirmedRate).toBe(0);
+    expect(result.documentationCompleteRate).toBeNull();
+    expect(result.timelyRecordingRate).toBeNull();
+    expect(result.agencyAttendanceConfirmedRate).toBeNull();
     expect(result.categoryDiversityRatio).toBe(0);
     expect(result.uniqueCategories).toBe(0);
   });
@@ -499,12 +471,12 @@ describe("evaluateStaffMultiAgencyReadiness()", () => {
     const result = evaluateStaffMultiAgencyReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.multiAgencyWorkingKnowledgeRate).toBe(0);
-    expect(result.informationSharingSkillsRate).toBe(0);
-    expect(result.meetingFacilitationSkillsRate).toBe(0);
-    expect(result.referralProcessKnowledgeRate).toBe(0);
-    expect(result.jointAssessmentSkillsRate).toBe(0);
-    expect(result.professionalBoundariesRate).toBe(0);
+    expect(result.multiAgencyWorkingKnowledgeRate).toBeNull();
+    expect(result.informationSharingSkillsRate).toBeNull();
+    expect(result.meetingFacilitationSkillsRate).toBeNull();
+    expect(result.referralProcessKnowledgeRate).toBeNull();
+    expect(result.jointAssessmentSkillsRate).toBeNull();
+    expect(result.professionalBoundariesRate).toBeNull();
   });
 
   it("returns 25 for full training", () => {

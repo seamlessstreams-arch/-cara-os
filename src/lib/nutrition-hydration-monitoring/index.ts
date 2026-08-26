@@ -16,7 +16,6 @@ export {
   getPortionConsumedLabel,
   getRatingLabel,
   getRating,
-  pct,
 } from "./nutrition-hydration-monitoring-engine";
 
 export type {

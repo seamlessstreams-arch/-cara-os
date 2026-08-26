@@ -18,6 +18,7 @@
    ────────────────────────────────────────────────────────────── */
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -127,18 +128,25 @@ export interface StaffNotifiableEventsTraining {
 export interface NotifiableEventsQualityResult {
   overallScore: number;
   totalRecords: number;
-  notificationTimelyRate: number;
-  correctRecipientsNotifiedRate: number;
-  documentationCompleteRate: number;
-  followUpActionedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  notificationTimelyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  correctRecipientsNotifiedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationCompleteRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  followUpActionedRate: number | null;
 }
 
 export interface NotifiableEventsComplianceResult {
   overallScore: number;
   totalRecords: number;
-  regulatoryBodyNotifiedRate: number;
-  timelyRecordingRate: number;
-  notificationTimelyRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  regulatoryBodyNotifiedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  notificationTimelyRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
 }
@@ -157,12 +165,18 @@ export interface NotifiableEventsPolicyResult {
 export interface StaffNotifiableEventsReadinessResult {
   overallScore: number;
   totalStaff: number;
-  notifiableEventsKnowledgeRate: number;
-  ofstedNotificationProcessRate: number;
-  localAuthorityReportingRate: number;
-  internalEscalationProcedureRate: number;
-  documentationRequirementsRate: number;
-  postIncidentReviewSkillsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  notifiableEventsKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  ofstedNotificationProcessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  localAuthorityReportingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  internalEscalationProcedureRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationRequirementsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  postIncidentReviewSkillsRate: number | null;
 }
 
 export interface ChildNotifiableEventsProfile {
@@ -194,11 +208,6 @@ export interface NotifiableEventsIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -214,19 +223,19 @@ export function evaluateNotifiableEventsQuality(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, notificationTimelyRate: 0, correctRecipientsNotifiedRate: 0, documentationCompleteRate: 0, followUpActionedRate: 0 };
+    return { overallScore: 0, totalRecords: 0, notificationTimelyRate: null, correctRecipientsNotifiedRate: null, documentationCompleteRate: null, followUpActionedRate: null };
   }
 
-  const notificationTimelyRate = pct(records.filter((r) => r.notificationTimely).length, n);
-  const correctRecipientsNotifiedRate = pct(records.filter((r) => r.correctRecipientsNotified).length, n);
-  const documentationCompleteRate = pct(records.filter((r) => r.documentationComplete).length, n);
-  const followUpActionedRate = pct(records.filter((r) => r.followUpActioned).length, n);
+  const notificationTimelyRate = rate(records.filter((r) => r.notificationTimely).length, n);
+  const correctRecipientsNotifiedRate = rate(records.filter((r) => r.correctRecipientsNotified).length, n);
+  const documentationCompleteRate = rate(records.filter((r) => r.documentationComplete).length, n);
+  const followUpActionedRate = rate(records.filter((r) => r.followUpActioned).length, n);
 
   let score = 0;
-  score += (notificationTimelyRate / 100) * 7;
-  score += (correctRecipientsNotifiedRate / 100) * 6;
-  score += (documentationCompleteRate / 100) * 6;
-  score += (followUpActionedRate / 100) * 6;
+  score += (notificationTimelyRate! / 100) * 7;
+  score += (correctRecipientsNotifiedRate! / 100) * 6;
+  score += (documentationCompleteRate! / 100) * 6;
+  score += (followUpActionedRate! / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -241,21 +250,21 @@ export function evaluateNotifiableEventsCompliance(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, regulatoryBodyNotifiedRate: 0, timelyRecordingRate: 0, notificationTimelyRate: 0, categoryDiversityRatio: 0, uniqueCategories: 0 };
+    return { overallScore: 0, totalRecords: 0, regulatoryBodyNotifiedRate: null, timelyRecordingRate: null, notificationTimelyRate: null, categoryDiversityRatio: 0, uniqueCategories: 0 };
   }
 
-  const regulatoryBodyNotifiedRate = pct(records.filter((r) => r.regulatoryBodyNotified).length, n);
-  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, n);
-  const notificationTimelyRate = pct(records.filter((r) => r.notificationTimely).length, n);
+  const regulatoryBodyNotifiedRate = rate(records.filter((r) => r.regulatoryBodyNotified).length, n);
+  const timelyRecordingRate = rate(records.filter((r) => r.timelyRecording).length, n);
+  const notificationTimelyRate = rate(records.filter((r) => r.notificationTimely).length, n);
 
   const uniqueCategoriesSet = new Set(records.map((r) => r.category));
   const uniqueCategories = uniqueCategoriesSet.size;
   const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
 
   let score = 0;
-  score += (regulatoryBodyNotifiedRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (notificationTimelyRate / 100) * 5;
+  score += (regulatoryBodyNotifiedRate! / 100) * 8;
+  score += (timelyRecordingRate! / 100) * 7;
+  score += (notificationTimelyRate! / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -301,23 +310,23 @@ export function evaluateStaffNotifiableEventsReadiness(
   const n = training.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalStaff: 0, notifiableEventsKnowledgeRate: 0, ofstedNotificationProcessRate: 0, localAuthorityReportingRate: 0, internalEscalationProcedureRate: 0, documentationRequirementsRate: 0, postIncidentReviewSkillsRate: 0 };
+    return { overallScore: 0, totalStaff: 0, notifiableEventsKnowledgeRate: null, ofstedNotificationProcessRate: null, localAuthorityReportingRate: null, internalEscalationProcedureRate: null, documentationRequirementsRate: null, postIncidentReviewSkillsRate: null };
   }
 
-  const notifiableEventsKnowledgeRate = pct(training.filter((t) => t.notifiableEventsKnowledge).length, n);
-  const ofstedNotificationProcessRate = pct(training.filter((t) => t.ofstedNotificationProcess).length, n);
-  const localAuthorityReportingRate = pct(training.filter((t) => t.localAuthorityReporting).length, n);
-  const internalEscalationProcedureRate = pct(training.filter((t) => t.internalEscalationProcedure).length, n);
-  const documentationRequirementsRate = pct(training.filter((t) => t.documentationRequirements).length, n);
-  const postIncidentReviewSkillsRate = pct(training.filter((t) => t.postIncidentReviewSkills).length, n);
+  const notifiableEventsKnowledgeRate = rate(training.filter((t) => t.notifiableEventsKnowledge).length, n);
+  const ofstedNotificationProcessRate = rate(training.filter((t) => t.ofstedNotificationProcess).length, n);
+  const localAuthorityReportingRate = rate(training.filter((t) => t.localAuthorityReporting).length, n);
+  const internalEscalationProcedureRate = rate(training.filter((t) => t.internalEscalationProcedure).length, n);
+  const documentationRequirementsRate = rate(training.filter((t) => t.documentationRequirements).length, n);
+  const postIncidentReviewSkillsRate = rate(training.filter((t) => t.postIncidentReviewSkills).length, n);
 
   let score = 0;
-  score += (notifiableEventsKnowledgeRate / 100) * 6;
-  score += (ofstedNotificationProcessRate / 100) * 5;
-  score += (localAuthorityReportingRate / 100) * 5;
-  score += (internalEscalationProcedureRate / 100) * 4;
-  score += (documentationRequirementsRate / 100) * 3;
-  score += (postIncidentReviewSkillsRate / 100) * 2;
+  score += (notifiableEventsKnowledgeRate! / 100) * 6;
+  score += (ofstedNotificationProcessRate! / 100) * 5;
+  score += (localAuthorityReportingRate! / 100) * 5;
+  score += (internalEscalationProcedureRate! / 100) * 4;
+  score += (documentationRequirementsRate! / 100) * 3;
+  score += (postIncidentReviewSkillsRate! / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -342,8 +351,8 @@ export function buildChildNotifiableEventsProfiles(
 
   return Array.from(childMap.values()).map((child) => {
     const totalRecords = child.records.length;
-    const notificationTimelyRate = pct(child.records.filter((r) => r.notificationTimely).length, totalRecords);
-    const correctRecipientsNotifiedRate = pct(child.records.filter((r) => r.correctRecipientsNotified).length, totalRecords);
+    const notificationTimelyRate = rate(child.records.filter((r) => r.notificationTimely).length, totalRecords)!;
+    const correctRecipientsNotifiedRate = rate(child.records.filter((r) => r.correctRecipientsNotified).length, totalRecords)!;
     const uniqueCategoriesSet = new Set(child.records.map((r) => r.category));
     const categoriesCovered = Array.from(uniqueCategoriesSet);
 
@@ -352,14 +361,14 @@ export function buildChildNotifiableEventsProfiles(
     else if (totalRecords >= 5) frequencyScore = 1;
 
     let rate1Score = 0;
-    if (notificationTimelyRate >= 80) rate1Score = 3;
-    else if (notificationTimelyRate >= 60) rate1Score = 2;
-    else if (notificationTimelyRate >= 40) rate1Score = 1;
+    if (meets(notificationTimelyRate, 80)) rate1Score = 3;
+    else if (meets(notificationTimelyRate, 60)) rate1Score = 2;
+    else if (meets(notificationTimelyRate, 40)) rate1Score = 1;
 
     let rate2Score = 0;
-    if (correctRecipientsNotifiedRate >= 80) rate2Score = 3;
-    else if (correctRecipientsNotifiedRate >= 60) rate2Score = 2;
-    else if (correctRecipientsNotifiedRate >= 40) rate2Score = 1;
+    if (meets(correctRecipientsNotifiedRate, 80)) rate2Score = 3;
+    else if (meets(correctRecipientsNotifiedRate, 60)) rate2Score = 2;
+    else if (meets(correctRecipientsNotifiedRate, 40)) rate2Score = 1;
 
     let diversityBonus = 0;
     if (categoriesCovered.length >= 4) diversityBonus = 2;
@@ -407,9 +416,9 @@ export function generateNotifiableEventsIntelligence(
   if (complianceResult.overallScore >= 20) strengths.push("Notification compliance is strong (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore >= 20) strengths.push("Notifiable events policy framework is robust (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore >= 20) strengths.push("Staff notifiable events readiness is strong (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.notificationTimelyRate >= 90) strengths.push("Notification timeliness at " + qualityResult.notificationTimelyRate + "%");
-  if (periodRecords.length > 0 && qualityResult.correctRecipientsNotifiedRate >= 90) strengths.push("Correct recipients notified at " + qualityResult.correctRecipientsNotifiedRate + "%");
-  if (periodRecords.length > 0 && complianceResult.regulatoryBodyNotifiedRate >= 90) strengths.push("Regulatory body notification rate at " + complianceResult.regulatoryBodyNotifiedRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.notificationTimelyRate, 90)) strengths.push("Notification timeliness at " + qualityResult.notificationTimelyRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.correctRecipientsNotifiedRate, 90)) strengths.push("Correct recipients notified at " + qualityResult.correctRecipientsNotifiedRate + "%");
+  if (periodRecords.length > 0 && meets(complianceResult.regulatoryBodyNotifiedRate, 90)) strengths.push("Regulatory body notification rate at " + complianceResult.regulatoryBodyNotifiedRate + "%");
 
   const areasForImprovement: string[] = [];
   if (overallScore < 40) areasForImprovement.push("Notifiable events management rated Inadequate (" + overallScore + "/100) — urgent systemic review required");
@@ -418,7 +427,7 @@ export function generateNotifiableEventsIntelligence(
   if (complianceResult.overallScore < 15) areasForImprovement.push("Notification compliance needs improvement (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore < 15) areasForImprovement.push("Notifiable events policy needs strengthening (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore < 15) areasForImprovement.push("Staff notifiable events readiness needs improvement (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.notificationTimelyRate < 80) areasForImprovement.push("Notification timeliness at " + qualityResult.notificationTimelyRate + "% — must improve for regulatory compliance");
+  if (periodRecords.length > 0 && below(qualityResult.notificationTimelyRate, 80)) areasForImprovement.push("Notification timeliness at " + qualityResult.notificationTimelyRate + "% — must improve for regulatory compliance");
   if (periodRecords.length === 0) areasForImprovement.push("No notifiable events records — recording must be documented");
   if (policy === null) areasForImprovement.push("No notifiable events policy in place — statutory requirement");
   if (staff.length === 0) areasForImprovement.push("No staff notifiable events training records — training required");
@@ -426,11 +435,11 @@ export function generateNotifiableEventsIntelligence(
   const actions: string[] = [];
   if (policy === null || policyResult.overallScore === 0) actions.push("URGENT: No notifiable events policy — develop and implement comprehensive policy immediately");
   if (staff.length === 0) actions.push("URGENT: No staff notifiable events training — schedule training for all staff");
-  if (periodRecords.length > 0 && qualityResult.notificationTimelyRate < 50) actions.push("HIGH: Notification timeliness at " + qualityResult.notificationTimelyRate + "% — review notification procedures");
-  if (periodRecords.length > 0 && qualityResult.correctRecipientsNotifiedRate < 50) actions.push("HIGH: Correct recipients notified at " + qualityResult.correctRecipientsNotifiedRate + "% — ensure notification lists are up to date");
-  if (periodRecords.length > 0 && qualityResult.documentationCompleteRate < 50) actions.push("HIGH: Documentation rate at " + qualityResult.documentationCompleteRate + "% — all notifiable events must be fully documented");
-  if (periodRecords.length > 0 && complianceResult.timelyRecordingRate < 50) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
-  if (staff.length > 0 && staffResult.notifiableEventsKnowledgeRate < 50) actions.push("MEDIUM: Notifiable events knowledge at " + staffResult.notifiableEventsKnowledgeRate + "% — schedule training for staff");
+  if (periodRecords.length > 0 && below(qualityResult.notificationTimelyRate, 50)) actions.push("HIGH: Notification timeliness at " + qualityResult.notificationTimelyRate + "% — review notification procedures");
+  if (periodRecords.length > 0 && below(qualityResult.correctRecipientsNotifiedRate, 50)) actions.push("HIGH: Correct recipients notified at " + qualityResult.correctRecipientsNotifiedRate + "% — ensure notification lists are up to date");
+  if (periodRecords.length > 0 && below(qualityResult.documentationCompleteRate, 50)) actions.push("HIGH: Documentation rate at " + qualityResult.documentationCompleteRate + "% — all notifiable events must be fully documented");
+  if (periodRecords.length > 0 && below(complianceResult.timelyRecordingRate, 50)) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
+  if (staff.length > 0 && below(staffResult.notifiableEventsKnowledgeRate, 50)) actions.push("MEDIUM: Notifiable events knowledge at " + staffResult.notifiableEventsKnowledgeRate + "% — schedule training for staff");
   const lowScoreChildren = childProfiles.filter((p) => p.overallScore <= 3);
   if (lowScoreChildren.length > 0) actions.push("MEDIUM: " + lowScoreChildren.length + " child(ren) with low notifiable events scores — review individual notification provisions");
   if (actions.length === 0) actions.push("No immediate actions required. Notifiable events systems operating within expected standards.");
