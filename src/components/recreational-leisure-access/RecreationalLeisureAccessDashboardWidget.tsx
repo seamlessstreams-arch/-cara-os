@@ -12,6 +12,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useEffect } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 // ── Local interfaces (mirrors API shape) ──────────────────────────────────
 
@@ -265,11 +266,11 @@ export default function RecreationalLeisureAccessDashboardWidget() {
         {/* Activity Engagement Details */}
         <Section title="Activity Engagement">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            <Stat label="Enjoyment" value={`${data.activityEngagement.enjoymentRate}%`} />
-            <Stat label="Participation" value={`${data.activityEngagement.participationRate}%`} />
-            <Stat label="Social Interaction" value={`${data.activityEngagement.socialInteractionRate}%`} />
-            <Stat label="New Skills" value={`${data.activityEngagement.newSkillRate}%`} />
-            <Stat label="In Care Plan" value={`${data.activityEngagement.recordedInPlanRate}%`} />
+            <Stat label="Enjoyment" value={`${formatRate(data.activityEngagement.enjoymentRate)}`} />
+            <Stat label="Participation" value={`${formatRate(data.activityEngagement.participationRate)}`} />
+            <Stat label="Social Interaction" value={`${formatRate(data.activityEngagement.socialInteractionRate)}`} />
+            <Stat label="New Skills" value={`${formatRate(data.activityEngagement.newSkillRate)}`} />
+            <Stat label="In Care Plan" value={`${formatRate(data.activityEngagement.recordedInPlanRate)}`} />
             <Stat label="Total Activities" value={data.activityEngagement.totalActivities} />
           </div>
         </Section>
@@ -278,8 +279,8 @@ export default function RecreationalLeisureAccessDashboardWidget() {
         <Section title="Activity Diversity">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-3">
             <Stat label="Unique Types" value={`${data.activityDiversity.uniqueActivityTypes}/8`} />
-            <Stat label="Barrier Free" value={`${data.activityDiversity.accessBarrierFreeRate}%`} />
-            <Stat label="Staff Support" value={`${data.activityDiversity.staffSupportRate}%`} />
+            <Stat label="Barrier Free" value={`${formatRate(data.activityDiversity.accessBarrierFreeRate)}`} />
+            <Stat label="Staff Support" value={`${formatRate(data.activityDiversity.staffSupportRate)}`} />
           </div>
           <div className="grid grid-cols-4 gap-1">
             {Object.entries(data.activityDiversity.activityTypeBreakdown).map(([type, count]) => (
@@ -328,12 +329,12 @@ export default function RecreationalLeisureAccessDashboardWidget() {
         {/* Staff Readiness Details */}
         <Section title="Staff Readiness">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            <Stat label="Activity Planning" value={`${data.staffLeisureReadiness.activityPlanningRate}%`} />
-            <Stat label="Safeguarding" value={`${data.staffLeisureReadiness.safeguardingInActivitiesRate}%`} />
-            <Stat label="Inclusion" value={`${data.staffLeisureReadiness.inclusionAwarenessRate}%`} />
-            <Stat label="First Aid Outdoors" value={`${data.staffLeisureReadiness.firstAidOutdoorsRate}%`} />
-            <Stat label="Youth Engagement" value={`${data.staffLeisureReadiness.youthEngagementRate}%`} />
-            <Stat label="Community Resources" value={`${data.staffLeisureReadiness.communityResourcesRate}%`} />
+            <Stat label="Activity Planning" value={`${formatRate(data.staffLeisureReadiness.activityPlanningRate)}`} />
+            <Stat label="Safeguarding" value={`${formatRate(data.staffLeisureReadiness.safeguardingInActivitiesRate)}`} />
+            <Stat label="Inclusion" value={`${formatRate(data.staffLeisureReadiness.inclusionAwarenessRate)}`} />
+            <Stat label="First Aid Outdoors" value={`${formatRate(data.staffLeisureReadiness.firstAidOutdoorsRate)}`} />
+            <Stat label="Youth Engagement" value={`${formatRate(data.staffLeisureReadiness.youthEngagementRate)}`} />
+            <Stat label="Community Resources" value={`${formatRate(data.staffLeisureReadiness.communityResourcesRate)}`} />
           </div>
           <div className="mt-2">
             <Stat label="Total Staff" value={data.staffLeisureReadiness.totalStaff} />

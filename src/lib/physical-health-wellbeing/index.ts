@@ -5,7 +5,6 @@ export {
   evaluateHealthPolicy,
   evaluateStaffHealthReadiness,
   buildChildHealthProfiles,
-  pct,
   getRating,
   getHealthAreaLabel,
   getHealthOutcomeLabel,

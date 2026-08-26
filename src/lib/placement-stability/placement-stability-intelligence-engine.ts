@@ -24,6 +24,7 @@
    ────────────────────────────────────────────────────────────── */
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -133,18 +134,25 @@ export interface StaffPlacementStabilityTraining {
 export interface PlacementStabilityQualityResult {
   overallScore: number;
   totalRecords: number;
-  matchingNeedsAssessedRate: number;
-  stabilityPlanInPlaceRate: number;
-  childViewIncorporatedRate: number;
-  riskFactorsIdentifiedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  matchingNeedsAssessedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  stabilityPlanInPlaceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewIncorporatedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskFactorsIdentifiedRate: number | null;
 }
 
 export interface PlacementStabilityComplianceResult {
   overallScore: number;
   totalRecords: number;
-  documentationCompleteRate: number;
-  timelyRecordingRate: number;
-  matchingNeedsAssessedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationCompleteRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  matchingNeedsAssessedRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
 }
@@ -163,12 +171,18 @@ export interface PlacementStabilityPolicyResult {
 export interface StaffPlacementStabilityReadinessResult {
   overallScore: number;
   totalStaff: number;
-  matchingAssessmentSkillsRate: number;
-  stabilityPlanningKnowledgeRate: number;
-  disruptionPreventionSkillsRate: number;
-  transitionSupportSkillsRate: number;
-  childParticipationSkillsRate: number;
-  permanencePlanningKnowledgeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  matchingAssessmentSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  stabilityPlanningKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  disruptionPreventionSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  transitionSupportSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childParticipationSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  permanencePlanningKnowledgeRate: number | null;
 }
 
 export interface ChildPlacementStabilityProfile {
@@ -200,11 +214,6 @@ export interface PlacementStabilityIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -220,19 +229,19 @@ export function evaluatePlacementStabilityQuality(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, matchingNeedsAssessedRate: 0, stabilityPlanInPlaceRate: 0, childViewIncorporatedRate: 0, riskFactorsIdentifiedRate: 0 };
+    return { overallScore: 0, totalRecords: 0, matchingNeedsAssessedRate: null, stabilityPlanInPlaceRate: null, childViewIncorporatedRate: null, riskFactorsIdentifiedRate: null };
   }
 
-  const matchingNeedsAssessedRate = pct(records.filter((r) => r.matchingNeedsAssessed).length, n);
-  const stabilityPlanInPlaceRate = pct(records.filter((r) => r.stabilityPlanInPlace).length, n);
-  const childViewIncorporatedRate = pct(records.filter((r) => r.childViewIncorporated).length, n);
-  const riskFactorsIdentifiedRate = pct(records.filter((r) => r.riskFactorsIdentified).length, n);
+  const matchingNeedsAssessedRate = rate(records.filter((r) => r.matchingNeedsAssessed).length, n);
+  const stabilityPlanInPlaceRate = rate(records.filter((r) => r.stabilityPlanInPlace).length, n);
+  const childViewIncorporatedRate = rate(records.filter((r) => r.childViewIncorporated).length, n);
+  const riskFactorsIdentifiedRate = rate(records.filter((r) => r.riskFactorsIdentified).length, n);
 
   let score = 0;
-  score += (matchingNeedsAssessedRate / 100) * 7;
-  score += (stabilityPlanInPlaceRate / 100) * 6;
-  score += (childViewIncorporatedRate / 100) * 6;
-  score += (riskFactorsIdentifiedRate / 100) * 6;
+  score += (matchingNeedsAssessedRate! / 100) * 7;
+  score += (stabilityPlanInPlaceRate! / 100) * 6;
+  score += (childViewIncorporatedRate! / 100) * 6;
+  score += (riskFactorsIdentifiedRate! / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -247,21 +256,21 @@ export function evaluatePlacementStabilityCompliance(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: 0, timelyRecordingRate: 0, matchingNeedsAssessedRate: 0, categoryDiversityRatio: 0, uniqueCategories: 0 };
+    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: null, timelyRecordingRate: null, matchingNeedsAssessedRate: null, categoryDiversityRatio: 0, uniqueCategories: 0 };
   }
 
-  const documentationCompleteRate = pct(records.filter((r) => r.documentationComplete).length, n);
-  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, n);
-  const matchingNeedsAssessedRate = pct(records.filter((r) => r.matchingNeedsAssessed).length, n);
+  const documentationCompleteRate = rate(records.filter((r) => r.documentationComplete).length, n);
+  const timelyRecordingRate = rate(records.filter((r) => r.timelyRecording).length, n);
+  const matchingNeedsAssessedRate = rate(records.filter((r) => r.matchingNeedsAssessed).length, n);
 
   const uniqueCategoriesSet = new Set(records.map((r) => r.category));
   const uniqueCategories = uniqueCategoriesSet.size;
   const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
 
   let score = 0;
-  score += (documentationCompleteRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (matchingNeedsAssessedRate / 100) * 5;
+  score += (documentationCompleteRate! / 100) * 8;
+  score += (timelyRecordingRate! / 100) * 7;
+  score += (matchingNeedsAssessedRate! / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -307,23 +316,23 @@ export function evaluateStaffPlacementStabilityReadiness(
   const n = training.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalStaff: 0, matchingAssessmentSkillsRate: 0, stabilityPlanningKnowledgeRate: 0, disruptionPreventionSkillsRate: 0, transitionSupportSkillsRate: 0, childParticipationSkillsRate: 0, permanencePlanningKnowledgeRate: 0 };
+    return { overallScore: 0, totalStaff: 0, matchingAssessmentSkillsRate: null, stabilityPlanningKnowledgeRate: null, disruptionPreventionSkillsRate: null, transitionSupportSkillsRate: null, childParticipationSkillsRate: null, permanencePlanningKnowledgeRate: null };
   }
 
-  const matchingAssessmentSkillsRate = pct(training.filter((t) => t.matchingAssessmentSkills).length, n);
-  const stabilityPlanningKnowledgeRate = pct(training.filter((t) => t.stabilityPlanningKnowledge).length, n);
-  const disruptionPreventionSkillsRate = pct(training.filter((t) => t.disruptionPreventionSkills).length, n);
-  const transitionSupportSkillsRate = pct(training.filter((t) => t.transitionSupportSkills).length, n);
-  const childParticipationSkillsRate = pct(training.filter((t) => t.childParticipationSkills).length, n);
-  const permanencePlanningKnowledgeRate = pct(training.filter((t) => t.permanencePlanningKnowledge).length, n);
+  const matchingAssessmentSkillsRate = rate(training.filter((t) => t.matchingAssessmentSkills).length, n);
+  const stabilityPlanningKnowledgeRate = rate(training.filter((t) => t.stabilityPlanningKnowledge).length, n);
+  const disruptionPreventionSkillsRate = rate(training.filter((t) => t.disruptionPreventionSkills).length, n);
+  const transitionSupportSkillsRate = rate(training.filter((t) => t.transitionSupportSkills).length, n);
+  const childParticipationSkillsRate = rate(training.filter((t) => t.childParticipationSkills).length, n);
+  const permanencePlanningKnowledgeRate = rate(training.filter((t) => t.permanencePlanningKnowledge).length, n);
 
   let score = 0;
-  score += (matchingAssessmentSkillsRate / 100) * 6;
-  score += (stabilityPlanningKnowledgeRate / 100) * 5;
-  score += (disruptionPreventionSkillsRate / 100) * 5;
-  score += (transitionSupportSkillsRate / 100) * 4;
-  score += (childParticipationSkillsRate / 100) * 3;
-  score += (permanencePlanningKnowledgeRate / 100) * 2;
+  score += (matchingAssessmentSkillsRate! / 100) * 6;
+  score += (stabilityPlanningKnowledgeRate! / 100) * 5;
+  score += (disruptionPreventionSkillsRate! / 100) * 5;
+  score += (transitionSupportSkillsRate! / 100) * 4;
+  score += (childParticipationSkillsRate! / 100) * 3;
+  score += (permanencePlanningKnowledgeRate! / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -348,8 +357,8 @@ export function buildChildPlacementStabilityProfiles(
 
   return Array.from(childMap.values()).map((child) => {
     const totalRecords = child.records.length;
-    const matchingNeedsAssessedRate = pct(child.records.filter((r) => r.matchingNeedsAssessed).length, totalRecords);
-    const stabilityPlanInPlaceRate = pct(child.records.filter((r) => r.stabilityPlanInPlace).length, totalRecords);
+    const matchingNeedsAssessedRate = rate(child.records.filter((r) => r.matchingNeedsAssessed).length, totalRecords)!;
+    const stabilityPlanInPlaceRate = rate(child.records.filter((r) => r.stabilityPlanInPlace).length, totalRecords)!;
     const uniqueCategoriesSet = new Set(child.records.map((r) => r.category));
     const categoriesCovered = Array.from(uniqueCategoriesSet);
 
@@ -358,14 +367,14 @@ export function buildChildPlacementStabilityProfiles(
     else if (totalRecords >= 5) frequencyScore = 1;
 
     let rate1Score = 0;
-    if (matchingNeedsAssessedRate >= 80) rate1Score = 3;
-    else if (matchingNeedsAssessedRate >= 60) rate1Score = 2;
-    else if (matchingNeedsAssessedRate >= 40) rate1Score = 1;
+    if (meets(matchingNeedsAssessedRate, 80)) rate1Score = 3;
+    else if (meets(matchingNeedsAssessedRate, 60)) rate1Score = 2;
+    else if (meets(matchingNeedsAssessedRate, 40)) rate1Score = 1;
 
     let rate2Score = 0;
-    if (stabilityPlanInPlaceRate >= 80) rate2Score = 3;
-    else if (stabilityPlanInPlaceRate >= 60) rate2Score = 2;
-    else if (stabilityPlanInPlaceRate >= 40) rate2Score = 1;
+    if (meets(stabilityPlanInPlaceRate, 80)) rate2Score = 3;
+    else if (meets(stabilityPlanInPlaceRate, 60)) rate2Score = 2;
+    else if (meets(stabilityPlanInPlaceRate, 40)) rate2Score = 1;
 
     let diversityBonus = 0;
     if (categoriesCovered.length >= 4) diversityBonus = 2;
@@ -413,9 +422,9 @@ export function generatePlacementStabilityIntelligenceReport(
   if (complianceResult.overallScore >= 20) strengths.push("Placement stability compliance is strong (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore >= 20) strengths.push("Placement stability policy framework is robust (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore >= 20) strengths.push("Staff placement stability readiness is strong (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.matchingNeedsAssessedRate >= 90) strengths.push("Matching needs assessment rate at " + qualityResult.matchingNeedsAssessedRate + "%");
-  if (periodRecords.length > 0 && qualityResult.stabilityPlanInPlaceRate >= 90) strengths.push("Stability plans in place at " + qualityResult.stabilityPlanInPlaceRate + "%");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate >= 90) strengths.push("Documentation rate at " + complianceResult.documentationCompleteRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.matchingNeedsAssessedRate, 90)) strengths.push("Matching needs assessment rate at " + qualityResult.matchingNeedsAssessedRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.stabilityPlanInPlaceRate, 90)) strengths.push("Stability plans in place at " + qualityResult.stabilityPlanInPlaceRate + "%");
+  if (periodRecords.length > 0 && meets(complianceResult.documentationCompleteRate, 90)) strengths.push("Documentation rate at " + complianceResult.documentationCompleteRate + "%");
 
   const areasForImprovement: string[] = [];
   if (overallScore < 40) areasForImprovement.push("Placement stability rated Inadequate (" + overallScore + "/100) — urgent systemic review required");
@@ -424,7 +433,7 @@ export function generatePlacementStabilityIntelligenceReport(
   if (complianceResult.overallScore < 15) areasForImprovement.push("Placement stability compliance needs improvement (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore < 15) areasForImprovement.push("Placement stability policy needs strengthening (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore < 15) areasForImprovement.push("Staff placement stability readiness needs improvement (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.matchingNeedsAssessedRate < 80) areasForImprovement.push("Matching needs assessment at " + qualityResult.matchingNeedsAssessedRate + "% — must improve to ensure proper child-home fit");
+  if (periodRecords.length > 0 && below(qualityResult.matchingNeedsAssessedRate, 80)) areasForImprovement.push("Matching needs assessment at " + qualityResult.matchingNeedsAssessedRate + "% — must improve to ensure proper child-home fit");
   if (periodRecords.length === 0) areasForImprovement.push("No placement stability records — stability activities must be documented");
   if (policy === null) areasForImprovement.push("No placement stability policy in place — statutory requirement");
   if (staff.length === 0) areasForImprovement.push("No staff placement stability training records — training required");
@@ -432,11 +441,11 @@ export function generatePlacementStabilityIntelligenceReport(
   const actions: string[] = [];
   if (policy === null || policyResult.overallScore === 0) actions.push("URGENT: No placement stability policy — develop and implement comprehensive policy immediately");
   if (staff.length === 0) actions.push("URGENT: No staff placement stability training — schedule training for all staff");
-  if (periodRecords.length > 0 && qualityResult.matchingNeedsAssessedRate < 50) actions.push("HIGH: Matching needs assessment at " + qualityResult.matchingNeedsAssessedRate + "% — review matching processes");
-  if (periodRecords.length > 0 && qualityResult.stabilityPlanInPlaceRate < 50) actions.push("HIGH: Stability plans at " + qualityResult.stabilityPlanInPlaceRate + "% — ensure stability plans are in place for all children");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate < 50) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all stability records must be completed");
-  if (periodRecords.length > 0 && complianceResult.timelyRecordingRate < 50) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
-  if (staff.length > 0 && staffResult.matchingAssessmentSkillsRate < 50) actions.push("MEDIUM: Matching assessment skills at " + staffResult.matchingAssessmentSkillsRate + "% — schedule training for staff");
+  if (periodRecords.length > 0 && below(qualityResult.matchingNeedsAssessedRate, 50)) actions.push("HIGH: Matching needs assessment at " + qualityResult.matchingNeedsAssessedRate + "% — review matching processes");
+  if (periodRecords.length > 0 && below(qualityResult.stabilityPlanInPlaceRate, 50)) actions.push("HIGH: Stability plans at " + qualityResult.stabilityPlanInPlaceRate + "% — ensure stability plans are in place for all children");
+  if (periodRecords.length > 0 && below(complianceResult.documentationCompleteRate, 50)) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all stability records must be completed");
+  if (periodRecords.length > 0 && below(complianceResult.timelyRecordingRate, 50)) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
+  if (staff.length > 0 && below(staffResult.matchingAssessmentSkillsRate, 50)) actions.push("MEDIUM: Matching assessment skills at " + staffResult.matchingAssessmentSkillsRate + "% — schedule training for staff");
   const lowScoreChildren = childProfiles.filter((p) => p.overallScore <= 3);
   if (lowScoreChildren.length > 0) actions.push("MEDIUM: " + lowScoreChildren.length + " child(ren) with low placement stability scores — review individual care plans");
   if (actions.length === 0) actions.push("No immediate actions required. Placement stability systems operating within expected standards.");

@@ -9,7 +9,6 @@ import {
   evaluatePatternRecognition,
   evaluateTeamLearning,
   generatePostIncidentLearningIntelligence,
-  pct,
   getRating,
   getIncidentTypeLabel,
   getDebriefStatusLabel,
@@ -97,29 +96,6 @@ function makeSession(overrides: Partial<TeamLearningSession> = {}): TeamLearning
 }
 
 // ── pct helper ────────────────────────────────────────────────────────────
-
-describe("pct", () => {
-  it("returns correct percentage", () => {
-    expect(pct(3, 4)).toBe(75);
-  });
-
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 100 when num equals den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-});
 
 // ── getRating ─────────────────────────────────────────────────────────────
 
@@ -244,8 +220,8 @@ describe("evaluateDebriefQuality", () => {
     const result = evaluateDebriefQuality([]);
     expect(result.overallScore).toBe(25);
     expect(result.totalReviews).toBe(0);
-    expect(result.within24hRate).toBe(0);
-    expect(result.completedRate).toBe(0);
+    expect(result.within24hRate).toBeNull();
+    expect(result.completedRate).toBeNull();
   });
 
   it("scores maximum for all-perfect reviews", () => {
@@ -296,12 +272,12 @@ describe("evaluateDebriefQuality", () => {
     expect(result.childDebriefRate).toBe(50);
   });
 
-  it("returns 0 childDebriefRate when no children involved", () => {
+  it("returns null childDebriefRate when no children involved", () => {
     const reviews = [
       makeReview({ childInvolved: false, childDebrief: null }),
     ];
     const result = evaluateDebriefQuality(reviews);
-    expect(result.childDebriefRate).toBe(0);
+    expect(result.childDebriefRate).toBeNull();
   });
 
   it("populates quality distribution correctly", () => {
@@ -650,9 +626,9 @@ describe("evaluateTeamLearning", () => {
     const result = evaluateTeamLearning([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalSessions).toBe(0);
-    expect(result.incidentRelatedRate).toBe(0);
+    expect(result.incidentRelatedRate).toBeNull();
     expect(result.averageAttendance).toBe(0);
-    expect(result.actionCompletionRate).toBe(0);
+    expect(result.actionCompletionRate).toBeNull();
     expect(result.averageActionPoints).toBe(0);
   });
 
@@ -720,7 +696,7 @@ describe("evaluateTeamLearning", () => {
       makeSession({ actionPointsGenerated: 0, actionPointsCompleted: 0 }),
     ];
     const result = evaluateTeamLearning(sessions);
-    expect(result.actionCompletionRate).toBe(0);
+    expect(result.actionCompletionRate).toBeNull();
     expect(result.averageActionPoints).toBe(0);
   });
 

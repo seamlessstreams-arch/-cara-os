@@ -5,7 +5,6 @@ export {
   evaluatePremisesPolicy,
   evaluateStaffPremisesReadiness,
   buildAreaProfiles,
-  pct,
   getRating,
   getPremisesIntelligenceCategoryLabel,
   getPremisesIntelligenceOutcomeLabel,

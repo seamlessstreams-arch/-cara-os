@@ -6,7 +6,6 @@ import {
   evaluateHealthPolicy,
   evaluateStaffHealthReadiness,
   buildChildHealthProfiles,
-  pct,
   getRating,
   getHealthAreaLabel,
   getHealthOutcomeLabel,
@@ -74,27 +73,6 @@ function makeTraining(overrides: Partial<StaffHealthTraining> = {}): StaffHealth
 }
 
 // -- pct ----------------------------------------------------------------------
-
-describe("pct", () => {
-  it("returns 0 for 0/0", () => {
-    expect(pct(0, 0)).toBe(0);
-  });
-  it("calculates correctly", () => {
-    expect(pct(3, 4)).toBe(75);
-  });
-  it("rounds", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-  it("returns 100 for full", () => {
-    expect(pct(5, 5)).toBe(100);
-  });
-  it("handles 0 numerator with non-zero denominator", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-  it("rounds 2/3 to 67", () => {
-    expect(pct(2, 3)).toBe(67);
-  });
-});
 
 // -- getRating ----------------------------------------------------------------
 
@@ -164,10 +142,10 @@ describe("evaluateHealthQuality", () => {
     const result = evaluateHealthQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalRecords).toBe(0);
-    expect(result.outcomeRate).toBe(0);
-    expect(result.appointmentAttendedRate).toBe(0);
-    expect(result.healthPlanRate).toBe(0);
-    expect(result.consentRate).toBe(0);
+    expect(result.outcomeRate).toBeNull();
+    expect(result.appointmentAttendedRate).toBeNull();
+    expect(result.healthPlanRate).toBeNull();
+    expect(result.consentRate).toBeNull();
   });
 
   it("scores 25 for perfect records", () => {
@@ -262,9 +240,9 @@ describe("evaluateHealthCompliance", () => {
     const result = evaluateHealthCompliance([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalRecords).toBe(0);
-    expect(result.staffAccompaniedRate).toBe(0);
-    expect(result.documentedRate).toBe(0);
-    expect(result.followUpRate).toBe(0);
+    expect(result.staffAccompaniedRate).toBeNull();
+    expect(result.documentedRate).toBeNull();
+    expect(result.followUpRate).toBeNull();
     expect(result.areaDiversity).toBe(0);
   });
 
@@ -457,12 +435,12 @@ describe("evaluateStaffHealthReadiness", () => {
     const result = evaluateStaffHealthReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.healthAwarenessRate).toBe(0);
-    expect(result.mentalHealthFirstAidRate).toBe(0);
-    expect(result.consentAndCapacityRate).toBe(0);
-    expect(result.medicationManagementRate).toBe(0);
-    expect(result.appointmentSupportRate).toBe(0);
-    expect(result.healthDocumentationRate).toBe(0);
+    expect(result.healthAwarenessRate).toBeNull();
+    expect(result.mentalHealthFirstAidRate).toBeNull();
+    expect(result.consentAndCapacityRate).toBeNull();
+    expect(result.medicationManagementRate).toBeNull();
+    expect(result.appointmentSupportRate).toBeNull();
+    expect(result.healthDocumentationRate).toBeNull();
   });
 
   it("scores 25 for fully trained staff", () => {

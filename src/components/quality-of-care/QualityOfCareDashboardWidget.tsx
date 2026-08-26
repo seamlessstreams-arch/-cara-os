@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildQualityProfile { childId: string; childName: string; totalReviews: number; meetsStandardRate: number; childViewRate: number; domainsCovered: string[]; overallScore: number; }
 
@@ -73,19 +74,19 @@ export default function QualityOfCareDashboardWidget() {
       <Section title="Review Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Reviews" value={data.reviewQuality.totalReviews} />
-          <Stat label="Meets Standard" value={`${data.reviewQuality.meetsStandardRate}%`} />
-          <Stat label="Evidence Documented" value={`${data.reviewQuality.evidenceDocumentedRate}%`} />
-          <Stat label="Child View Captured" value={`${data.reviewQuality.childViewRate}%`} />
-          <Stat label="Action Plans" value={`${data.reviewQuality.actionPlanRate}%`} />
+          <Stat label="Meets Standard" value={`${formatRate(data.reviewQuality.meetsStandardRate)}`} />
+          <Stat label="Evidence Documented" value={`${formatRate(data.reviewQuality.evidenceDocumentedRate)}`} />
+          <Stat label="Child View Captured" value={`${formatRate(data.reviewQuality.childViewRate)}`} />
+          <Stat label="Action Plans" value={`${formatRate(data.reviewQuality.actionPlanRate)}`} />
         </div>
       </Section>
 
       <Section title="Review Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Follow-Up" value={`${data.reviewCompliance.followUpRate}%`} />
-          <Stat label="Regulatory Aligned" value={`${data.reviewCompliance.regulatoryAlignedRate}%`} />
-          <Stat label="Improvements" value={`${data.reviewCompliance.improvementRate}%`} />
-          <Stat label="Domain Coverage" value={`${data.reviewCompliance.domainDiversityRatio}%`} />
+          <Stat label="Follow-Up" value={`${formatRate(data.reviewCompliance.followUpRate)}`} />
+          <Stat label="Regulatory Aligned" value={`${formatRate(data.reviewCompliance.regulatoryAlignedRate)}`} />
+          <Stat label="Improvements" value={`${formatRate(data.reviewCompliance.improvementRate)}`} />
+          <Stat label="Domain Coverage" value={`${formatRate(data.reviewCompliance.domainDiversityRatio)}`} />
         </div>
       </Section>
 
@@ -108,12 +109,12 @@ export default function QualityOfCareDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
-          <Stat label="Quality Assurance" value={`${data.staffReadiness.qualityAssuranceRate}%`} />
-          <Stat label="Outcomes Monitoring" value={`${data.staffReadiness.outcomesMonitoringRate}%`} />
-          <Stat label="Regulatory Knowledge" value={`${data.staffReadiness.regulatoryKnowledgeRate}%`} />
-          <Stat label="Reflective Practice" value={`${data.staffReadiness.reflectivePracticeRate}%`} />
-          <Stat label="Data Analysis" value={`${data.staffReadiness.dataAnalysisRate}%`} />
-          <Stat label="Child Participation" value={`${data.staffReadiness.childParticipationRate}%`} />
+          <Stat label="Quality Assurance" value={`${formatRate(data.staffReadiness.qualityAssuranceRate)}`} />
+          <Stat label="Outcomes Monitoring" value={`${formatRate(data.staffReadiness.outcomesMonitoringRate)}`} />
+          <Stat label="Regulatory Knowledge" value={`${formatRate(data.staffReadiness.regulatoryKnowledgeRate)}`} />
+          <Stat label="Reflective Practice" value={`${formatRate(data.staffReadiness.reflectivePracticeRate)}`} />
+          <Stat label="Data Analysis" value={`${formatRate(data.staffReadiness.dataAnalysisRate)}`} />
+          <Stat label="Child Participation" value={`${formatRate(data.staffReadiness.childParticipationRate)}`} />
         </div>
       </Section>
 

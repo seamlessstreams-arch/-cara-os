@@ -11,7 +11,6 @@ import {
   evaluatePreventionEffectiveness,
   buildChildMissingProfiles,
   generateReturnHomeInterviewQualityIntelligence,
-  pct,
   getRating,
   getMissingEpisodeCategoryLabel,
   getRHITimelinessLabel,
@@ -104,28 +103,6 @@ function makeMeasure(overrides: Partial<PreventionMeasure> = {}): PreventionMeas
 // ══════════════════════════════════════════════════════════════════════════════
 // pct helper
 // ══════════════════════════════════════════════════════════════════════════════
-
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("calculates percentage correctly", () => {
-    expect(pct(1, 2)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-
-  it("returns 100 for equal numerator/denominator", () => {
-    expect(pct(5, 5)).toBe(100);
-  });
-
-  it("returns 0 for zero numerator", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-});
 
 // ══════════════════════════════════════════════════════════════════════════════
 // getRating
@@ -274,10 +251,10 @@ describe("evaluateInterviewCompliance", () => {
     const result = evaluateInterviewCompliance([], []);
     expect(result.overallScore).toBe(25);
     expect(result.totalEpisodes).toBe(0);
-    expect(result.rhiCompletedRate).toBe(0);
-    expect(result.within72hRate).toBe(0);
+    expect(result.rhiCompletedRate).toBeNull();
+    expect(result.within72hRate).toBeNull();
     expect(result.declinedCount).toBe(0);
-    expect(result.independentRate).toBe(0);
+    expect(result.independentRate).toBeNull();
   });
 
   it("scores a single perfectly handled episode highly", () => {
@@ -532,10 +509,10 @@ describe("evaluateStrategyResponse", () => {
     const result = evaluateStrategyResponse([]);
     expect(result.overallScore).toBe(25);
     expect(result.totalMeetings).toBe(0);
-    expect(result.multiAgencyRate).toBe(0);
-    expect(result.actionPlanRate).toBe(0);
-    expect(result.actionReviewedRate).toBe(0);
-    expect(result.triggerPatternRate).toBe(0);
+    expect(result.multiAgencyRate).toBeNull();
+    expect(result.actionPlanRate).toBeNull();
+    expect(result.actionReviewedRate).toBeNull();
+    expect(result.triggerPatternRate).toBeNull();
     expect(result.averageAttendees).toBe(0);
   });
 
@@ -625,7 +602,7 @@ describe("evaluateStrategyResponse", () => {
       makeMeeting({ id: "sm-02", actionPlanReviewed: null }),
     ];
     const result = evaluateStrategyResponse(meetings);
-    expect(result.actionReviewedRate).toBe(0);
+    expect(result.actionReviewedRate).toBeNull();
   });
 });
 

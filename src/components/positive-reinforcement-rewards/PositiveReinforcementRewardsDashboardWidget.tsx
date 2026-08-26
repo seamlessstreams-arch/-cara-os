@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -214,9 +215,9 @@ export default function PositiveReinforcementRewardsDashboardWidget() {
       <Section title="Praise & Recognition" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Praise" value={data.praiseRecognition.totalPraise} />
-          <Stat label="Positive Response" value={`${data.praiseRecognition.positiveResponseRate}%`} />
-          <Stat label="Specific & Descriptive" value={`${data.praiseRecognition.specificRate}%`} />
-          <Stat label="Linked to Values" value={`${data.praiseRecognition.linkedToValuesRate}%`} />
+          <Stat label="Positive Response" value={`${formatRate(data.praiseRecognition.positiveResponseRate)}`} />
+          <Stat label="Specific & Descriptive" value={`${formatRate(data.praiseRecognition.specificRate)}`} />
+          <Stat label="Linked to Values" value={`${formatRate(data.praiseRecognition.linkedToValuesRate)}`} />
           <Stat label="Praise Type Variety" value={data.praiseRecognition.praiseTypeVariety} />
         </div>
       </Section>
@@ -225,10 +226,10 @@ export default function PositiveReinforcementRewardsDashboardWidget() {
       <Section title="Reward System">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Rewards" value={data.rewardSystem.totalRewards} />
-          <Stat label="Child Chosen" value={`${data.rewardSystem.childChosenRate}%`} />
-          <Stat label="Fair & Consistent" value={`${data.rewardSystem.fairConsistentRate}%`} />
-          <Stat label="Linked to Plan" value={`${data.rewardSystem.linkedToPlanRate}%`} />
-          <Stat label="Positive Response" value={`${data.rewardSystem.positiveResponseRate}%`} />
+          <Stat label="Child Chosen" value={`${formatRate(data.rewardSystem.childChosenRate)}`} />
+          <Stat label="Fair & Consistent" value={`${formatRate(data.rewardSystem.fairConsistentRate)}`} />
+          <Stat label="Linked to Plan" value={`${formatRate(data.rewardSystem.linkedToPlanRate)}`} />
+          <Stat label="Positive Response" value={`${formatRate(data.rewardSystem.positiveResponseRate)}`} />
         </div>
       </Section>
 
@@ -236,10 +237,10 @@ export default function PositiveReinforcementRewardsDashboardWidget() {
       <Section title="Behavioural Impact">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Assessments" value={data.behaviouralImpact.totalAssessments} />
-          <Stat label="Improved Trend" value={`${data.behaviouralImpact.improvedTrendRate}%`} />
-          <Stat label="De-escalation" value={`${data.behaviouralImpact.deEscalationRate}%`} />
-          <Stat label="Low Restraint" value={`${data.behaviouralImpact.lowRestraintRate}%`} />
-          <Stat label="Positive Feeling" value={`${data.behaviouralImpact.positiveChildFeelingRate}%`} />
+          <Stat label="Improved Trend" value={`${formatRate(data.behaviouralImpact.improvedTrendRate)}`} />
+          <Stat label="De-escalation" value={`${formatRate(data.behaviouralImpact.deEscalationRate)}`} />
+          <Stat label="Low Restraint" value={`${formatRate(data.behaviouralImpact.lowRestraintRate)}`} />
+          <Stat label="Positive Feeling" value={`${formatRate(data.behaviouralImpact.positiveChildFeelingRate)}`} />
         </div>
       </Section>
 
@@ -247,12 +248,12 @@ export default function PositiveReinforcementRewardsDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffReinforcementReadiness.totalStaff} />
-          <Stat label="Positive Behaviour" value={`${data.staffReinforcementReadiness.positiveBehaviourRate}%`} />
-          <Stat label="Therapeutic Care" value={`${data.staffReinforcementReadiness.therapeuticCareRate}%`} />
-          <Stat label="De-escalation" value={`${data.staffReinforcementReadiness.deEscalationRate}%`} />
-          <Stat label="Reward Design" value={`${data.staffReinforcementReadiness.rewardDesignRate}%`} />
-          <Stat label="Trauma-Informed" value={`${data.staffReinforcementReadiness.traumaInformedRate}%`} />
-          <Stat label="Consistency" value={`${data.staffReinforcementReadiness.consistencyRate}%`} />
+          <Stat label="Positive Behaviour" value={`${formatRate(data.staffReinforcementReadiness.positiveBehaviourRate)}`} />
+          <Stat label="Therapeutic Care" value={`${formatRate(data.staffReinforcementReadiness.therapeuticCareRate)}`} />
+          <Stat label="De-escalation" value={`${formatRate(data.staffReinforcementReadiness.deEscalationRate)}`} />
+          <Stat label="Reward Design" value={`${formatRate(data.staffReinforcementReadiness.rewardDesignRate)}`} />
+          <Stat label="Trauma-Informed" value={`${formatRate(data.staffReinforcementReadiness.traumaInformedRate)}`} />
+          <Stat label="Consistency" value={`${formatRate(data.staffReinforcementReadiness.consistencyRate)}`} />
         </div>
       </Section>
 

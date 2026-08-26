@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // ROOM STANDARDS & PERSONALISATION INTELLIGENCE ENGINE
 //
@@ -93,10 +94,14 @@ export interface StaffRoomTraining {
 
 export interface RoomConditionsResult {
   totalRooms: number;
-  roomConditionGoodPlusRate: number;
-  furnitureGoodPlusRate: number;
-  essentialAmenitiesRate: number;
-  privacyWindowsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  roomConditionGoodPlusRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  furnitureGoodPlusRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  essentialAmenitiesRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  privacyWindowsRate: number | null;
   score: number; // 0-25
   strengths: string[];
   concerns: string[];
@@ -104,10 +109,14 @@ export interface RoomConditionsResult {
 
 export interface PersonalisationResult {
   totalRooms: number;
-  personalisationGoodPlusRate: number;
-  childChosenDecorRate: number;
-  highPersonalisationRate: number;
-  allPersonalisedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  personalisationGoodPlusRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childChosenDecorRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  highPersonalisationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  allPersonalisedRate: number | null;
   score: number; // 0-25
   strengths: string[];
   concerns: string[];
@@ -115,9 +124,12 @@ export interface PersonalisationResult {
 
 export interface InspectionComplianceResult {
   totalInspections: number;
-  passRate: number;
-  issuesScheduledRate: number;
-  repairsCompletedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  passRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  issuesScheduledRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  repairsCompletedRate: number | null;
   inspectionFrequency: number;
   score: number; // 0-25
   strengths: string[];
@@ -126,12 +138,18 @@ export interface InspectionComplianceResult {
 
 export interface StaffRoomReadinessResult {
   totalStaff: number;
-  roomStandardsRate: number;
-  personalisationImportanceRate: number;
-  privacyAwarenessRate: number;
-  maintenanceReportingRate: number;
-  safetyChecksRate: number;
-  childParticipationRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  roomStandardsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  personalisationImportanceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  privacyAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  maintenanceReportingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safetyChecksRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childParticipationRate: number | null;
   score: number; // 0-25
   strengths: string[];
   concerns: string[];
@@ -171,11 +189,6 @@ export interface RoomStandardsPersonalisationIntelligence {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
@@ -258,10 +271,10 @@ export function evaluateRoomConditions(rooms: RoomRecord[]): RoomConditionsResul
   if (totalRooms === 0) {
     return {
       totalRooms: 0,
-      roomConditionGoodPlusRate: 0,
-      furnitureGoodPlusRate: 0,
-      essentialAmenitiesRate: 0,
-      privacyWindowsRate: 0,
+      roomConditionGoodPlusRate: null,
+      furnitureGoodPlusRate: null,
+      essentialAmenitiesRate: null,
+      privacyWindowsRate: null,
       score: 0,
       strengths: [],
       concerns: ["No room records available — room conditions cannot be assessed"],
@@ -272,36 +285,36 @@ export function evaluateRoomConditions(rooms: RoomRecord[]): RoomConditionsResul
   const roomConditionGoodPlus = rooms.filter(
     (r) => r.roomCondition === "excellent" || r.roomCondition === "good",
   ).length;
-  const roomConditionGoodPlusRate = pct(roomConditionGoodPlus, totalRooms);
+  const roomConditionGoodPlusRate = rate(roomConditionGoodPlus, totalRooms);
 
   // Furniture good+ (new, good)
   const furnitureGoodPlus = rooms.filter(
     (r) => r.furnitureCondition === "new" || r.furnitureCondition === "good",
   ).length;
-  const furnitureGoodPlusRate = pct(furnitureGoodPlus, totalRooms);
+  const furnitureGoodPlusRate = rate(furnitureGoodPlus, totalRooms);
 
   // Essential amenities (lockable storage + adequate lighting + heating adequate)
   const essentialAmenitiesCount = rooms.filter(
     (r) => r.lockableStorage && r.adequateLighting && r.heatingAdequate,
   ).length;
-  const essentialAmenitiesRate = pct(essentialAmenitiesCount, totalRooms);
+  const essentialAmenitiesRate = rate(essentialAmenitiesCount, totalRooms);
 
   // Privacy + windows
   const privacyWindowsCount = rooms.filter(
     (r) => r.privacyMeasures && r.windowsSecure,
   ).length;
-  const privacyWindowsRate = pct(privacyWindowsCount, totalRooms);
+  const privacyWindowsRate = rate(privacyWindowsCount, totalRooms);
 
   // Score (out of 25)
   let score = 0;
   // Room condition good+ rate: max 7
-  score += (roomConditionGoodPlusRate / 100) * 7;
+  score += (roomConditionGoodPlusRate! / 100) * 7;
   // Furniture good+ rate: max 6
-  score += (furnitureGoodPlusRate / 100) * 6;
+  score += (furnitureGoodPlusRate! / 100) * 6;
   // Essential amenities rate: max 6
-  score += (essentialAmenitiesRate / 100) * 6;
+  score += (essentialAmenitiesRate! / 100) * 6;
   // Privacy + windows rate: max 6
-  score += (privacyWindowsRate / 100) * 6;
+  score += ((privacyWindowsRate ?? 0) / 100) * 6;
 
   score = clamp(Math.round(score * 10) / 10, 0, 25);
 
@@ -309,27 +322,27 @@ export function evaluateRoomConditions(rooms: RoomRecord[]): RoomConditionsResul
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (roomConditionGoodPlusRate >= 90) {
+  if (meets(roomConditionGoodPlusRate, 90)) {
     strengths.push("Excellent room conditions: " + roomConditionGoodPlusRate + "% of rooms in good or excellent condition");
-  } else if (roomConditionGoodPlusRate < 70) {
+  } else if (below(roomConditionGoodPlusRate, 70)) {
     concerns.push("Room condition at " + roomConditionGoodPlusRate + "% good or better — maintenance review needed");
   }
 
-  if (furnitureGoodPlusRate >= 90) {
+  if (meets(furnitureGoodPlusRate, 90)) {
     strengths.push("Furniture in good condition: " + furnitureGoodPlusRate + "% of rooms have good or new furniture");
-  } else if (furnitureGoodPlusRate < 70) {
+  } else if (below(furnitureGoodPlusRate, 70)) {
     concerns.push("Furniture condition at " + furnitureGoodPlusRate + "% good or better — replacement programme may be needed");
   }
 
-  if (essentialAmenitiesRate >= 90) {
+  if (meets(essentialAmenitiesRate, 90)) {
     strengths.push("Essential amenities provided in " + essentialAmenitiesRate + "% of rooms (lockable storage, lighting, heating)");
-  } else if (essentialAmenitiesRate < 70) {
+  } else if (below(essentialAmenitiesRate, 70)) {
     concerns.push("Essential amenities at " + essentialAmenitiesRate + "% — lockable storage, lighting, or heating gaps identified");
   }
 
-  if (privacyWindowsRate >= 90) {
+  if (meets(privacyWindowsRate, 90)) {
     strengths.push("Privacy and window security maintained in " + privacyWindowsRate + "% of rooms");
-  } else if (privacyWindowsRate < 70) {
+  } else if (below(privacyWindowsRate, 70)) {
     concerns.push("Privacy and window security at " + privacyWindowsRate + "% — UNCRC Article 16 requires children's privacy");
   }
 
@@ -353,10 +366,10 @@ export function evaluatePersonalisation(rooms: RoomRecord[]): PersonalisationRes
   if (totalRooms === 0) {
     return {
       totalRooms: 0,
-      personalisationGoodPlusRate: 0,
-      childChosenDecorRate: 0,
-      highPersonalisationRate: 0,
-      allPersonalisedRate: 0,
+      personalisationGoodPlusRate: null,
+      childChosenDecorRate: null,
+      highPersonalisationRate: null,
+      allPersonalisedRate: null,
       score: 0,
       strengths: [],
       concerns: ["No room records available — personalisation cannot be assessed"],
@@ -367,34 +380,34 @@ export function evaluatePersonalisation(rooms: RoomRecord[]): PersonalisationRes
   const personalisationGoodPlus = rooms.filter(
     (r) => r.personalisationLevel === "highly_personalised" || r.personalisationLevel === "personalised",
   ).length;
-  const personalisationGoodPlusRate = pct(personalisationGoodPlus, totalRooms);
+  const personalisationGoodPlusRate = rate(personalisationGoodPlus, totalRooms);
 
   // Child chosen decor
   const childChosenDecorCount = rooms.filter((r) => r.childChosenDecor).length;
-  const childChosenDecorRate = pct(childChosenDecorCount, totalRooms);
+  const childChosenDecorRate = rate(childChosenDecorCount, totalRooms);
 
   // High personalisation rate (highly_personalised only)
   const highPersonalisationCount = rooms.filter(
     (r) => r.personalisationLevel === "highly_personalised",
   ).length;
-  const highPersonalisationRate = pct(highPersonalisationCount, totalRooms);
+  const highPersonalisationRate = rate(highPersonalisationCount, totalRooms);
 
   // All personalised rate (any level above "none")
   const allPersonalisedCount = rooms.filter(
     (r) => r.personalisationLevel !== "none",
   ).length;
-  const allPersonalisedRate = pct(allPersonalisedCount, totalRooms);
+  const allPersonalisedRate = rate(allPersonalisedCount, totalRooms);
 
   // Score (out of 25)
   let score = 0;
   // Personalisation good+ rate: max 7
-  score += (personalisationGoodPlusRate / 100) * 7;
+  score += (personalisationGoodPlusRate! / 100) * 7;
   // Child chosen decor rate: max 6
-  score += (childChosenDecorRate / 100) * 6;
+  score += (childChosenDecorRate! / 100) * 6;
   // High personalisation rate: max 6
-  score += (highPersonalisationRate / 100) * 6;
+  score += (highPersonalisationRate! / 100) * 6;
   // All personalised rate: max 6
-  score += (allPersonalisedRate / 100) * 6;
+  score += ((allPersonalisedRate ?? 0) / 100) * 6;
 
   score = clamp(Math.round(score * 10) / 10, 0, 25);
 
@@ -402,27 +415,27 @@ export function evaluatePersonalisation(rooms: RoomRecord[]): PersonalisationRes
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (personalisationGoodPlusRate >= 90) {
+  if (meets(personalisationGoodPlusRate, 90)) {
     strengths.push("Strong personalisation: " + personalisationGoodPlusRate + "% of rooms personalised or highly personalised");
-  } else if (personalisationGoodPlusRate < 70) {
+  } else if (below(personalisationGoodPlusRate, 70)) {
     concerns.push("Personalisation at " + personalisationGoodPlusRate + "% good or better — rooms may feel institutional");
   }
 
-  if (childChosenDecorRate >= 90) {
+  if (meets(childChosenDecorRate, 90)) {
     strengths.push("Children actively involved: " + childChosenDecorRate + "% of rooms have child-chosen decor");
-  } else if (childChosenDecorRate < 70) {
+  } else if (below(childChosenDecorRate, 70)) {
     concerns.push("Child-chosen decor at " + childChosenDecorRate + "% — children should be empowered to personalise their space");
   }
 
-  if (highPersonalisationRate >= 50) {
+  if (meets(highPersonalisationRate, 50)) {
     strengths.push(highPersonalisationRate + "% of rooms are highly personalised — children feel at home");
-  } else if (highPersonalisationRate < 20) {
+  } else if (below(highPersonalisationRate, 20)) {
     concerns.push("Only " + highPersonalisationRate + "% of rooms highly personalised — consider increasing personalisation budget");
   }
 
   if (allPersonalisedRate === 100) {
     strengths.push("All rooms have some level of personalisation — no child living in an unpersonalised room");
-  } else if (allPersonalisedRate < 100) {
+  } else if (below(allPersonalisedRate, 100)) {
     const unpersonalisedCount = totalRooms - allPersonalisedCount;
     concerns.push(unpersonalisedCount + " room(s) with no personalisation — every child's room should reflect their identity");
   }
@@ -449,9 +462,9 @@ export function evaluateInspectionCompliance(
   if (totalInspections === 0) {
     return {
       totalInspections: 0,
-      passRate: 0,
-      issuesScheduledRate: 0,
-      repairsCompletedRate: 0,
+      passRate: null,
+      issuesScheduledRate: null,
+      repairsCompletedRate: null,
       inspectionFrequency: 0,
       score: 0,
       strengths: [],
@@ -461,7 +474,7 @@ export function evaluateInspectionCompliance(
 
   // Pass rate (passed)
   const passedCount = inspections.filter((i) => i.outcome === "passed").length;
-  const passRate = pct(passedCount, totalInspections);
+  const passRate = rate(passedCount, totalInspections);
 
   // Issues found but scheduled for repair
   const inspectionsWithIssues = inspections.filter(
@@ -470,7 +483,7 @@ export function evaluateInspectionCompliance(
   const issuesScheduledCount = inspectionsWithIssues.filter(
     (i) => i.repairsScheduled,
   ).length;
-  const issuesScheduledRate = pct(issuesScheduledCount, inspectionsWithIssues.length);
+  const issuesScheduledRate = rate(issuesScheduledCount, inspectionsWithIssues.length);
 
   // Repairs completed
   const repairsScheduledInspections = inspections.filter(
@@ -479,7 +492,7 @@ export function evaluateInspectionCompliance(
   const repairsCompletedCount = repairsScheduledInspections.filter(
     (i) => i.repairsCompleted,
   ).length;
-  const repairsCompletedRate = pct(repairsCompletedCount, repairsScheduledInspections.length);
+  const repairsCompletedRate = rate(repairsCompletedCount, repairsScheduledInspections.length);
 
   // Inspection frequency (proxy via total count — higher = better, max 6 at 6+)
   const inspectionFrequency = Math.min(totalInspections, 6);
@@ -487,18 +500,18 @@ export function evaluateInspectionCompliance(
   // Score (out of 25)
   let score = 0;
   // Pass rate: max 7
-  score += (passRate / 100) * 7;
+  score += (passRate! / 100) * 7;
   // Issues scheduled rate: max 6 (no issues = full marks)
   if (inspectionsWithIssues.length === 0) {
     score += 6;
   } else {
-    score += (issuesScheduledRate / 100) * 6;
+    score += (issuesScheduledRate! / 100) * 6;
   }
   // Repairs completed rate: max 6 (no repairs needed = full marks)
   if (repairsScheduledInspections.length === 0) {
     score += 6;
   } else {
-    score += (repairsCompletedRate / 100) * 6;
+    score += (repairsCompletedRate! / 100) * 6;
   }
   // Inspection frequency: max 6
   score += (inspectionFrequency / 6) * 6;
@@ -509,21 +522,21 @@ export function evaluateInspectionCompliance(
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (passRate >= 90) {
+  if (meets(passRate, 90)) {
     strengths.push("Excellent inspection pass rate: " + passRate + "% of inspections passed");
-  } else if (passRate < 70) {
+  } else if (below(passRate, 70)) {
     concerns.push("Inspection pass rate at " + passRate + "% — room standards need attention");
   }
 
-  if (issuesScheduledRate >= 90) {
+  if (meets(issuesScheduledRate, 90)) {
     strengths.push("Issues promptly scheduled: " + issuesScheduledRate + "% of identified issues have repairs scheduled");
-  } else if (issuesScheduledRate < 70 && inspectionsWithIssues.length > 0) {
+  } else if (below(issuesScheduledRate, 70) && inspectionsWithIssues.length > 0) {
     concerns.push("Only " + issuesScheduledRate + "% of issues have repairs scheduled — repair tracking needs improvement");
   }
 
-  if (repairsCompletedRate >= 90) {
+  if (meets(repairsCompletedRate, 90)) {
     strengths.push("Repairs completed effectively: " + repairsCompletedRate + "% of scheduled repairs finished");
-  } else if (repairsCompletedRate < 70 && repairsScheduledInspections.length > 0) {
+  } else if (below(repairsCompletedRate, 70) && repairsScheduledInspections.length > 0) {
     concerns.push("Repair completion at " + repairsCompletedRate + "% — outstanding repairs need escalation");
   }
 
@@ -555,12 +568,12 @@ export function evaluateStaffRoomReadiness(
   if (totalStaff === 0) {
     return {
       totalStaff: 0,
-      roomStandardsRate: 0,
-      personalisationImportanceRate: 0,
-      privacyAwarenessRate: 0,
-      maintenanceReportingRate: 0,
-      safetyChecksRate: 0,
-      childParticipationRate: 0,
+      roomStandardsRate: null,
+      personalisationImportanceRate: null,
+      privacyAwarenessRate: null,
+      maintenanceReportingRate: null,
+      safetyChecksRate: null,
+      childParticipationRate: null,
       score: 0,
       strengths: [],
       concerns: ["No staff room training records — staff readiness cannot be assessed"],
@@ -569,31 +582,31 @@ export function evaluateStaffRoomReadiness(
 
   // Rate per field
   const roomStandardsCount = training.filter((t) => t.roomStandards).length;
-  const roomStandardsRate = pct(roomStandardsCount, totalStaff);
+  const roomStandardsRate = rate(roomStandardsCount, totalStaff);
 
   const personalisationImportanceCount = training.filter((t) => t.personalisationImportance).length;
-  const personalisationImportanceRate = pct(personalisationImportanceCount, totalStaff);
+  const personalisationImportanceRate = rate(personalisationImportanceCount, totalStaff);
 
   const privacyAwarenessCount = training.filter((t) => t.privacyAwareness).length;
-  const privacyAwarenessRate = pct(privacyAwarenessCount, totalStaff);
+  const privacyAwarenessRate = rate(privacyAwarenessCount, totalStaff);
 
   const maintenanceReportingCount = training.filter((t) => t.maintenanceReporting).length;
-  const maintenanceReportingRate = pct(maintenanceReportingCount, totalStaff);
+  const maintenanceReportingRate = rate(maintenanceReportingCount, totalStaff);
 
   const safetyChecksCount = training.filter((t) => t.safetyChecks).length;
-  const safetyChecksRate = pct(safetyChecksCount, totalStaff);
+  const safetyChecksRate = rate(safetyChecksCount, totalStaff);
 
   const childParticipationCount = training.filter((t) => t.childParticipation).length;
-  const childParticipationRate = pct(childParticipationCount, totalStaff);
+  const childParticipationRate = rate(childParticipationCount, totalStaff);
 
   // Score (out of 25): roomStandards=6, personalisationImportance=5, privacyAwareness=4, maintenanceReporting=4, safetyChecks=3, childParticipation=3
   let score = 0;
-  score += (roomStandardsRate / 100) * 6;
-  score += (personalisationImportanceRate / 100) * 5;
-  score += (privacyAwarenessRate / 100) * 4;
-  score += (maintenanceReportingRate / 100) * 4;
-  score += (safetyChecksRate / 100) * 3;
-  score += (childParticipationRate / 100) * 3;
+  score += (roomStandardsRate! / 100) * 6;
+  score += (personalisationImportanceRate! / 100) * 5;
+  score += (privacyAwarenessRate! / 100) * 4;
+  score += (maintenanceReportingRate! / 100) * 4;
+  score += (safetyChecksRate! / 100) * 3;
+  score += ((childParticipationRate ?? 0) / 100) * 3;
 
   score = clamp(Math.round(score * 10) / 10, 0, 25);
 
@@ -601,39 +614,39 @@ export function evaluateStaffRoomReadiness(
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (roomStandardsRate >= 90) {
+  if (meets(roomStandardsRate, 90)) {
     strengths.push("Room standards training excellent: " + roomStandardsRate + "% of staff trained");
-  } else if (roomStandardsRate < 70) {
+  } else if (below(roomStandardsRate, 70)) {
     concerns.push("Room standards training at " + roomStandardsRate + "% — core competency gap for CHR 2015 Reg 25");
   }
 
-  if (personalisationImportanceRate >= 90) {
+  if (meets(personalisationImportanceRate, 90)) {
     strengths.push("Staff understand personalisation importance: " + personalisationImportanceRate + "% trained");
-  } else if (personalisationImportanceRate < 70) {
+  } else if (below(personalisationImportanceRate, 70)) {
     concerns.push("Personalisation importance training at " + personalisationImportanceRate + "% — staff may not prioritise child's space");
   }
 
-  if (privacyAwarenessRate >= 90) {
+  if (meets(privacyAwarenessRate, 90)) {
     strengths.push("Privacy awareness strong: " + privacyAwarenessRate + "% of staff trained");
-  } else if (privacyAwarenessRate < 70) {
+  } else if (below(privacyAwarenessRate, 70)) {
     concerns.push("Privacy awareness at " + privacyAwarenessRate + "% — children's right to privacy may be compromised");
   }
 
-  if (maintenanceReportingRate >= 90) {
+  if (meets(maintenanceReportingRate, 90)) {
     strengths.push("Maintenance reporting skills excellent: " + maintenanceReportingRate + "% of staff trained");
-  } else if (maintenanceReportingRate < 70) {
+  } else if (below(maintenanceReportingRate, 70)) {
     concerns.push("Maintenance reporting training at " + maintenanceReportingRate + "% — issues may go unreported");
   }
 
-  if (safetyChecksRate >= 90) {
+  if (meets(safetyChecksRate, 90)) {
     strengths.push("Safety checks training strong: " + safetyChecksRate + "% of staff trained");
-  } else if (safetyChecksRate < 70) {
+  } else if (below(safetyChecksRate, 70)) {
     concerns.push("Safety checks training at " + safetyChecksRate + "% — Health and Safety compliance at risk");
   }
 
-  if (childParticipationRate >= 90) {
+  if (meets(childParticipationRate, 90)) {
     strengths.push("Child participation training excellent: " + childParticipationRate + "% of staff trained");
-  } else if (childParticipationRate < 70) {
+  } else if (below(childParticipationRate, 70)) {
     concerns.push("Child participation training at " + childParticipationRate + "% — staff may not involve children in room decisions");
   }
 
@@ -875,7 +888,7 @@ function generateActions(
   }
 
   // Low child chosen decor
-  if (personalisation.childChosenDecorRate < 70 && personalisation.totalRooms > 0) {
+  if (below(personalisation.childChosenDecorRate, 70) && personalisation.totalRooms > 0) {
     actions.push("HIGH: Only " + personalisation.childChosenDecorRate + "% of rooms have child-chosen decor — involve children in room decisions");
   }
 
@@ -885,12 +898,12 @@ function generateActions(
   }
 
   // Repairs not completed (only flag if there are actually issues requiring repair)
-  if (inspections.repairsCompletedRate < 70 && inspections.totalInspections > 0 && inspections.passRate < 100) {
+  if (below(inspections.repairsCompletedRate, 70) && inspections.totalInspections > 0 && below(inspections.passRate, 100)) {
     actions.push("MEDIUM: Repair completion at " + inspections.repairsCompletedRate + "% — follow up on outstanding repairs");
   }
 
   // Staff training gaps
-  if (staff.roomStandardsRate < 70 && staff.totalStaff > 0) {
+  if (below(staff.roomStandardsRate, 70) && staff.totalStaff > 0) {
     actions.push("MEDIUM: Room standards training at " + staff.roomStandardsRate + "% — schedule staff training");
   }
 

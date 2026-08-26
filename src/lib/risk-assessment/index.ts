@@ -5,7 +5,6 @@ export {
   evaluateRiskAssessmentPolicy,
   evaluateStaffRiskAssessmentReadiness,
   buildChildRiskAssessmentProfiles,
-  pct,
   getRating,
   getRiskAssessmentCategoryLabel,
   getRiskAssessmentOutcomeLabel,

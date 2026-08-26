@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { PostIncidentLearningIntelligence } from "@/lib/post-incident-learning";
+import { formatRate } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -124,9 +125,9 @@ export function PostIncidentLearningDashboardWidget() {
       {/* Key Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <MetricCard value={data.debriefQuality.totalReviews} label="Incidents Reviewed" />
-        <MetricCard value={`${data.debriefQuality.within24hRate}%`} label="Reviewed Within 24h" />
+        <MetricCard value={`${formatRate(data.debriefQuality.within24hRate)}`} label="Reviewed Within 24h" />
         <MetricCard value={data.learningEffectiveness.totalActions} label="Learning Actions" />
-        <MetricCard value={`${data.learningEffectiveness.completedRate}%`} label="Actions Completed" />
+        <MetricCard value={`${formatRate(data.learningEffectiveness.completedRate)}`} label="Actions Completed" />
       </div>
 
       {/* Component Scores */}
@@ -142,12 +143,12 @@ export function PostIncidentLearningDashboardWidget() {
         <Section title="Debrief Quality" defaultOpen>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total Reviews:</span> <span className="font-medium">{data.debriefQuality.totalReviews}</span></div>
-            <div><span className="text-gray-500">Within 24h:</span> <span className="font-medium text-green-600">{data.debriefQuality.within24hRate}%</span></div>
-            <div><span className="text-gray-500">Completed:</span> <span className="font-medium">{data.debriefQuality.completedRate}%</span></div>
-            <div><span className="text-gray-500">Child Debrief:</span> <span className="font-medium">{data.debriefQuality.childDebriefRate}%</span></div>
-            <div><span className="text-gray-500">Staff Debrief:</span> <span className="font-medium">{data.debriefQuality.staffDebriefRate}%</span></div>
-            <div><span className="text-gray-500">Root Cause:</span> <span className="font-medium">{data.debriefQuality.rootCauseRate}%</span></div>
-            <div><span className="text-gray-500">Lessons Documented:</span> <span className="font-medium">{data.debriefQuality.lessonsDocumentedRate}%</span></div>
+            <div><span className="text-gray-500">Within 24h:</span> <span className="font-medium text-green-600">{formatRate(data.debriefQuality.within24hRate)}</span></div>
+            <div><span className="text-gray-500">Completed:</span> <span className="font-medium">{formatRate(data.debriefQuality.completedRate)}</span></div>
+            <div><span className="text-gray-500">Child Debrief:</span> <span className="font-medium">{formatRate(data.debriefQuality.childDebriefRate)}</span></div>
+            <div><span className="text-gray-500">Staff Debrief:</span> <span className="font-medium">{formatRate(data.debriefQuality.staffDebriefRate)}</span></div>
+            <div><span className="text-gray-500">Root Cause:</span> <span className="font-medium">{formatRate(data.debriefQuality.rootCauseRate)}</span></div>
+            <div><span className="text-gray-500">Lessons Documented:</span> <span className="font-medium">{formatRate(data.debriefQuality.lessonsDocumentedRate)}</span></div>
           </div>
           {data.debriefQuality.qualityDistribution && (
             <div className="mt-2">
@@ -168,8 +169,8 @@ export function PostIncidentLearningDashboardWidget() {
         <Section title="Learning Effectiveness">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total Actions:</span> <span className="font-medium">{data.learningEffectiveness.totalActions}</span></div>
-            <div><span className="text-gray-500">Completed:</span> <span className="font-medium text-green-600">{data.learningEffectiveness.completedRate}%</span></div>
-            <div><span className="text-gray-500">Evidence Recorded:</span> <span className="font-medium">{data.learningEffectiveness.evidenceRate}%</span></div>
+            <div><span className="text-gray-500">Completed:</span> <span className="font-medium text-green-600">{formatRate(data.learningEffectiveness.completedRate)}</span></div>
+            <div><span className="text-gray-500">Evidence Recorded:</span> <span className="font-medium">{formatRate(data.learningEffectiveness.evidenceRate)}</span></div>
             <div><span className="text-gray-500">Practice Changes:</span> <span className="font-medium text-blue-600">{data.learningEffectiveness.practiceChangeCount}</span></div>
             <div><span className="text-gray-500">Policy Updates:</span> <span className="font-medium text-purple-600">{data.learningEffectiveness.policyUpdateCount}</span></div>
             <div><span className="text-gray-500">Training Delivered:</span> <span className="font-medium text-indigo-600">{data.learningEffectiveness.trainingDeliveredCount}</span></div>
@@ -193,21 +194,21 @@ export function PostIncidentLearningDashboardWidget() {
         <Section title="Pattern Recognition">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total Patterns:</span> <span className="font-medium">{data.patternRecognition.totalPatterns}</span></div>
-            <div><span className="text-gray-500">Triggers Identified:</span> <span className="font-medium">{data.patternRecognition.triggerIdentifiedRate}%</span></div>
-            <div><span className="text-gray-500">Strategies Updated:</span> <span className="font-medium">{data.patternRecognition.strategiesUpdatedRate}%</span></div>
-            <div><span className="text-gray-500">Multi-Agency:</span> <span className="font-medium">{data.patternRecognition.multiAgencyRate}%</span></div>
+            <div><span className="text-gray-500">Triggers Identified:</span> <span className="font-medium">{formatRate(data.patternRecognition.triggerIdentifiedRate)}</span></div>
+            <div><span className="text-gray-500">Strategies Updated:</span> <span className="font-medium">{formatRate(data.patternRecognition.strategiesUpdatedRate)}</span></div>
+            <div><span className="text-gray-500">Multi-Agency:</span> <span className="font-medium">{formatRate(data.patternRecognition.multiAgencyRate)}</span></div>
             <div><span className="text-gray-500">Escalating:</span> <span className={`font-medium ${data.patternRecognition.escalatingCount > 0 ? "text-red-600" : "text-gray-900"}`}>{data.patternRecognition.escalatingCount}</span></div>
             <div><span className="text-gray-500">Chronic:</span> <span className={`font-medium ${data.patternRecognition.chronicCount > 0 ? "text-red-600" : "text-gray-900"}`}>{data.patternRecognition.chronicCount}</span></div>
-            <div><span className="text-gray-500">Recurring Rate:</span> <span className="font-medium">{data.patternRecognition.recurringRate}%</span></div>
+            <div><span className="text-gray-500">Recurring Rate:</span> <span className="font-medium">{formatRate(data.patternRecognition.recurringRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Team Learning">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total Sessions:</span> <span className="font-medium">{data.teamLearning.totalSessions}</span></div>
-            <div><span className="text-gray-500">Incident Related:</span> <span className="font-medium">{data.teamLearning.incidentRelatedRate}%</span></div>
+            <div><span className="text-gray-500">Incident Related:</span> <span className="font-medium">{formatRate(data.teamLearning.incidentRelatedRate)}</span></div>
             <div><span className="text-gray-500">Avg Attendance:</span> <span className="font-medium">{data.teamLearning.averageAttendance}%</span></div>
-            <div><span className="text-gray-500">Action Completion:</span> <span className="font-medium text-green-600">{data.teamLearning.actionCompletionRate}%</span></div>
+            <div><span className="text-gray-500">Action Completion:</span> <span className="font-medium text-green-600">{formatRate(data.teamLearning.actionCompletionRate)}</span></div>
             <div><span className="text-gray-500">Avg Action Points:</span> <span className="font-medium">{data.teamLearning.averageActionPoints}</span></div>
           </div>
         </Section>

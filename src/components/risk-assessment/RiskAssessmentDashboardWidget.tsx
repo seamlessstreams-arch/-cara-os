@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildRiskProfile { childId: string; childName: string; totalRecords: number; controlMeasuresIdentifiedRate: number; childViewIncludedRate: number; categoriesCovered: string[]; overallScore: number; }
 
@@ -73,19 +74,19 @@ export default function RiskAssessmentDashboardWidget() {
       <Section title="Assessment Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Records" value={data.riskAssessmentQuality.totalRecords} />
-          <Stat label="Control Measures" value={`${data.riskAssessmentQuality.controlMeasuresIdentifiedRate}%`} />
-          <Stat label="Child View" value={`${data.riskAssessmentQuality.childViewIncludedRate}%`} />
-          <Stat label="Review Date Set" value={`${data.riskAssessmentQuality.reviewDateSetRate}%`} />
-          <Stat label="Multi-Agency Input" value={`${data.riskAssessmentQuality.multiAgencyInputRate}%`} />
+          <Stat label="Control Measures" value={`${formatRate(data.riskAssessmentQuality.controlMeasuresIdentifiedRate)}`} />
+          <Stat label="Child View" value={`${formatRate(data.riskAssessmentQuality.childViewIncludedRate)}`} />
+          <Stat label="Review Date Set" value={`${formatRate(data.riskAssessmentQuality.reviewDateSetRate)}`} />
+          <Stat label="Multi-Agency Input" value={`${formatRate(data.riskAssessmentQuality.multiAgencyInputRate)}`} />
         </div>
       </Section>
 
       <Section title="Assessment Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documentation" value={`${data.riskAssessmentCompliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${data.riskAssessmentCompliance.timelyRecordingRate}%`} />
-          <Stat label="Control Measures" value={`${data.riskAssessmentCompliance.controlMeasuresIdentifiedRate}%`} />
-          <Stat label="Category Coverage" value={`${data.riskAssessmentCompliance.categoryDiversityRatio}%`} />
+          <Stat label="Documentation" value={`${formatRate(data.riskAssessmentCompliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(data.riskAssessmentCompliance.timelyRecordingRate)}`} />
+          <Stat label="Control Measures" value={`${formatRate(data.riskAssessmentCompliance.controlMeasuresIdentifiedRate)}`} />
+          <Stat label="Category Coverage" value={`${formatRate(data.riskAssessmentCompliance.categoryDiversityRatio)}`} />
         </div>
       </Section>
 
@@ -108,12 +109,12 @@ export default function RiskAssessmentDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
-          <Stat label="Assessment Skills" value={`${data.staffReadiness.riskAssessmentSkillsRate}%`} />
-          <Stat label="Dynamic Risk" value={`${data.staffReadiness.dynamicRiskManagementRate}%`} />
-          <Stat label="Positive Risk" value={`${data.staffReadiness.positiveRiskTakingRate}%`} />
-          <Stat label="Incident Analysis" value={`${data.staffReadiness.incidentRiskAnalysisRate}%`} />
-          <Stat label="Child View" value={`${data.staffReadiness.childViewInRiskRate}%`} />
-          <Stat label="Multi-Agency" value={`${data.staffReadiness.multiAgencyRiskSharingRate}%`} />
+          <Stat label="Assessment Skills" value={`${formatRate(data.staffReadiness.riskAssessmentSkillsRate)}`} />
+          <Stat label="Dynamic Risk" value={`${formatRate(data.staffReadiness.dynamicRiskManagementRate)}`} />
+          <Stat label="Positive Risk" value={`${formatRate(data.staffReadiness.positiveRiskTakingRate)}`} />
+          <Stat label="Incident Analysis" value={`${formatRate(data.staffReadiness.incidentRiskAnalysisRate)}`} />
+          <Stat label="Child View" value={`${formatRate(data.staffReadiness.childViewInRiskRate)}`} />
+          <Stat label="Multi-Agency" value={`${formatRate(data.staffReadiness.multiAgencyRiskSharingRate)}`} />
         </div>
       </Section>
 

@@ -18,6 +18,7 @@
    ────────────────────────────────────────────────────────────── */
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -127,18 +128,25 @@ export interface StaffQualityEcologyTraining {
 export interface QualityEcologyQualityResult {
   overallScore: number;
   totalRecords: number;
-  qualityCheckPassedRate: number;
-  auditTrailCompleteRate: number;
-  lifecycleCorrectRate: number;
-  recordIntegrityVerifiedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  qualityCheckPassedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  auditTrailCompleteRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  lifecycleCorrectRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  recordIntegrityVerifiedRate: number | null;
 }
 
 export interface QualityEcologyComplianceResult {
   overallScore: number;
   totalRecords: number;
-  documentationCompleteRate: number;
-  timelyRecordingRate: number;
-  qualityCheckPassedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationCompleteRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  qualityCheckPassedRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
 }
@@ -157,12 +165,18 @@ export interface QualityEcologyPolicyResult {
 export interface StaffQualityEcologyReadinessResult {
   overallScore: number;
   totalStaff: number;
-  qualityAssuranceKnowledgeRate: number;
-  recordLockingSkillsRate: number;
-  auditTrailSkillsRate: number;
-  lifecycleManagementSkillsRate: number;
-  qaSamplingSkillsRate: number;
-  amendmentProcedureKnowledgeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  qualityAssuranceKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  recordLockingSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  auditTrailSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  lifecycleManagementSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  qaSamplingSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  amendmentProcedureKnowledgeRate: number | null;
 }
 
 export interface ChildQualityEcologyProfile {
@@ -194,11 +208,6 @@ export interface QualityEcologyIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -214,19 +223,19 @@ export function evaluateQualityEcologyQuality(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, qualityCheckPassedRate: 0, auditTrailCompleteRate: 0, lifecycleCorrectRate: 0, recordIntegrityVerifiedRate: 0 };
+    return { overallScore: 0, totalRecords: 0, qualityCheckPassedRate: null, auditTrailCompleteRate: null, lifecycleCorrectRate: null, recordIntegrityVerifiedRate: null };
   }
 
-  const qualityCheckPassedRate = pct(records.filter((r) => r.qualityCheckPassed).length, n);
-  const auditTrailCompleteRate = pct(records.filter((r) => r.auditTrailComplete).length, n);
-  const lifecycleCorrectRate = pct(records.filter((r) => r.lifecycleCorrect).length, n);
-  const recordIntegrityVerifiedRate = pct(records.filter((r) => r.recordIntegrityVerified).length, n);
+  const qualityCheckPassedRate = rate(records.filter((r) => r.qualityCheckPassed).length, n);
+  const auditTrailCompleteRate = rate(records.filter((r) => r.auditTrailComplete).length, n);
+  const lifecycleCorrectRate = rate(records.filter((r) => r.lifecycleCorrect).length, n);
+  const recordIntegrityVerifiedRate = rate(records.filter((r) => r.recordIntegrityVerified).length, n);
 
   let score = 0;
-  score += (qualityCheckPassedRate / 100) * 7;
-  score += (auditTrailCompleteRate / 100) * 6;
-  score += (lifecycleCorrectRate / 100) * 6;
-  score += (recordIntegrityVerifiedRate / 100) * 6;
+  score += (qualityCheckPassedRate! / 100) * 7;
+  score += (auditTrailCompleteRate! / 100) * 6;
+  score += (lifecycleCorrectRate! / 100) * 6;
+  score += (recordIntegrityVerifiedRate! / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -241,21 +250,21 @@ export function evaluateQualityEcologyCompliance(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: 0, timelyRecordingRate: 0, qualityCheckPassedRate: 0, categoryDiversityRatio: 0, uniqueCategories: 0 };
+    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: null, timelyRecordingRate: null, qualityCheckPassedRate: null, categoryDiversityRatio: 0, uniqueCategories: 0 };
   }
 
-  const documentationCompleteRate = pct(records.filter((r) => r.documentationComplete).length, n);
-  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, n);
-  const qualityCheckPassedRate = pct(records.filter((r) => r.qualityCheckPassed).length, n);
+  const documentationCompleteRate = rate(records.filter((r) => r.documentationComplete).length, n);
+  const timelyRecordingRate = rate(records.filter((r) => r.timelyRecording).length, n);
+  const qualityCheckPassedRate = rate(records.filter((r) => r.qualityCheckPassed).length, n);
 
   const uniqueCategoriesSet = new Set(records.map((r) => r.category));
   const uniqueCategories = uniqueCategoriesSet.size;
   const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
 
   let score = 0;
-  score += (documentationCompleteRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (qualityCheckPassedRate / 100) * 5;
+  score += (documentationCompleteRate! / 100) * 8;
+  score += (timelyRecordingRate! / 100) * 7;
+  score += (qualityCheckPassedRate! / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -301,23 +310,23 @@ export function evaluateStaffQualityEcologyReadiness(
   const n = training.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalStaff: 0, qualityAssuranceKnowledgeRate: 0, recordLockingSkillsRate: 0, auditTrailSkillsRate: 0, lifecycleManagementSkillsRate: 0, qaSamplingSkillsRate: 0, amendmentProcedureKnowledgeRate: 0 };
+    return { overallScore: 0, totalStaff: 0, qualityAssuranceKnowledgeRate: null, recordLockingSkillsRate: null, auditTrailSkillsRate: null, lifecycleManagementSkillsRate: null, qaSamplingSkillsRate: null, amendmentProcedureKnowledgeRate: null };
   }
 
-  const qualityAssuranceKnowledgeRate = pct(training.filter((t) => t.qualityAssuranceKnowledge).length, n);
-  const recordLockingSkillsRate = pct(training.filter((t) => t.recordLockingSkills).length, n);
-  const auditTrailSkillsRate = pct(training.filter((t) => t.auditTrailSkills).length, n);
-  const lifecycleManagementSkillsRate = pct(training.filter((t) => t.lifecycleManagementSkills).length, n);
-  const qaSamplingSkillsRate = pct(training.filter((t) => t.qaSamplingSkills).length, n);
-  const amendmentProcedureKnowledgeRate = pct(training.filter((t) => t.amendmentProcedureKnowledge).length, n);
+  const qualityAssuranceKnowledgeRate = rate(training.filter((t) => t.qualityAssuranceKnowledge).length, n);
+  const recordLockingSkillsRate = rate(training.filter((t) => t.recordLockingSkills).length, n);
+  const auditTrailSkillsRate = rate(training.filter((t) => t.auditTrailSkills).length, n);
+  const lifecycleManagementSkillsRate = rate(training.filter((t) => t.lifecycleManagementSkills).length, n);
+  const qaSamplingSkillsRate = rate(training.filter((t) => t.qaSamplingSkills).length, n);
+  const amendmentProcedureKnowledgeRate = rate(training.filter((t) => t.amendmentProcedureKnowledge).length, n);
 
   let score = 0;
-  score += (qualityAssuranceKnowledgeRate / 100) * 6;
-  score += (recordLockingSkillsRate / 100) * 5;
-  score += (auditTrailSkillsRate / 100) * 5;
-  score += (lifecycleManagementSkillsRate / 100) * 4;
-  score += (qaSamplingSkillsRate / 100) * 3;
-  score += (amendmentProcedureKnowledgeRate / 100) * 2;
+  score += (qualityAssuranceKnowledgeRate! / 100) * 6;
+  score += (recordLockingSkillsRate! / 100) * 5;
+  score += (auditTrailSkillsRate! / 100) * 5;
+  score += (lifecycleManagementSkillsRate! / 100) * 4;
+  score += (qaSamplingSkillsRate! / 100) * 3;
+  score += (amendmentProcedureKnowledgeRate! / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -342,8 +351,8 @@ export function buildChildQualityEcologyProfiles(
 
   return Array.from(childMap.values()).map((child) => {
     const totalRecords = child.records.length;
-    const qualityCheckPassedRate = pct(child.records.filter((r) => r.qualityCheckPassed).length, totalRecords);
-    const auditTrailCompleteRate = pct(child.records.filter((r) => r.auditTrailComplete).length, totalRecords);
+    const qualityCheckPassedRate = rate(child.records.filter((r) => r.qualityCheckPassed).length, totalRecords)!;
+    const auditTrailCompleteRate = rate(child.records.filter((r) => r.auditTrailComplete).length, totalRecords)!;
     const uniqueCategoriesSet = new Set(child.records.map((r) => r.category));
     const categoriesCovered = Array.from(uniqueCategoriesSet);
 
@@ -352,14 +361,14 @@ export function buildChildQualityEcologyProfiles(
     else if (totalRecords >= 5) frequencyScore = 1;
 
     let rate1Score = 0;
-    if (qualityCheckPassedRate >= 80) rate1Score = 3;
-    else if (qualityCheckPassedRate >= 60) rate1Score = 2;
-    else if (qualityCheckPassedRate >= 40) rate1Score = 1;
+    if (meets(qualityCheckPassedRate, 80)) rate1Score = 3;
+    else if (meets(qualityCheckPassedRate, 60)) rate1Score = 2;
+    else if (meets(qualityCheckPassedRate, 40)) rate1Score = 1;
 
     let rate2Score = 0;
-    if (auditTrailCompleteRate >= 80) rate2Score = 3;
-    else if (auditTrailCompleteRate >= 60) rate2Score = 2;
-    else if (auditTrailCompleteRate >= 40) rate2Score = 1;
+    if (meets(auditTrailCompleteRate, 80)) rate2Score = 3;
+    else if (meets(auditTrailCompleteRate, 60)) rate2Score = 2;
+    else if (meets(auditTrailCompleteRate, 40)) rate2Score = 1;
 
     let diversityBonus = 0;
     if (categoriesCovered.length >= 4) diversityBonus = 2;
@@ -407,9 +416,9 @@ export function generateQualityEcologyIntelligence(
   if (complianceResult.overallScore >= 20) strengths.push("Quality compliance is strong (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore >= 20) strengths.push("Quality ecology policy framework is robust (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore >= 20) strengths.push("Staff quality ecology readiness is strong (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.qualityCheckPassedRate >= 90) strengths.push("Quality check pass rate at " + qualityResult.qualityCheckPassedRate + "%");
-  if (periodRecords.length > 0 && qualityResult.auditTrailCompleteRate >= 90) strengths.push("Audit trail completion at " + qualityResult.auditTrailCompleteRate + "%");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate >= 90) strengths.push("Documentation completion rate at " + complianceResult.documentationCompleteRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.qualityCheckPassedRate, 90)) strengths.push("Quality check pass rate at " + qualityResult.qualityCheckPassedRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.auditTrailCompleteRate, 90)) strengths.push("Audit trail completion at " + qualityResult.auditTrailCompleteRate + "%");
+  if (periodRecords.length > 0 && meets(complianceResult.documentationCompleteRate, 90)) strengths.push("Documentation completion rate at " + complianceResult.documentationCompleteRate + "%");
 
   const areasForImprovement: string[] = [];
   if (overallScore < 40) areasForImprovement.push("Quality ecology management rated Inadequate (" + overallScore + "/100) — urgent systemic review required");
@@ -418,7 +427,7 @@ export function generateQualityEcologyIntelligence(
   if (complianceResult.overallScore < 15) areasForImprovement.push("Quality compliance needs improvement (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore < 15) areasForImprovement.push("Quality ecology policy needs strengthening (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore < 15) areasForImprovement.push("Staff quality ecology readiness needs improvement (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.qualityCheckPassedRate < 80) areasForImprovement.push("Quality check pass rate at " + qualityResult.qualityCheckPassedRate + "% — must improve for regulatory compliance");
+  if (periodRecords.length > 0 && below(qualityResult.qualityCheckPassedRate, 80)) areasForImprovement.push("Quality check pass rate at " + qualityResult.qualityCheckPassedRate + "% — must improve for regulatory compliance");
   if (periodRecords.length === 0) areasForImprovement.push("No quality ecology records — recording must be documented");
   if (policy === null) areasForImprovement.push("No quality ecology policy in place — statutory requirement");
   if (staff.length === 0) areasForImprovement.push("No staff quality ecology training records — training required");
@@ -426,11 +435,11 @@ export function generateQualityEcologyIntelligence(
   const actions: string[] = [];
   if (policy === null || policyResult.overallScore === 0) actions.push("URGENT: No quality ecology policy — develop and implement comprehensive policy immediately");
   if (staff.length === 0) actions.push("URGENT: No staff quality ecology training — schedule training for all staff");
-  if (periodRecords.length > 0 && qualityResult.qualityCheckPassedRate < 50) actions.push("HIGH: Quality check pass rate at " + qualityResult.qualityCheckPassedRate + "% — review quality assurance procedures");
-  if (periodRecords.length > 0 && qualityResult.auditTrailCompleteRate < 50) actions.push("HIGH: Audit trail completion at " + qualityResult.auditTrailCompleteRate + "% — ensure all records have complete audit trails");
-  if (periodRecords.length > 0 && qualityResult.lifecycleCorrectRate < 50) actions.push("HIGH: Lifecycle correctness at " + qualityResult.lifecycleCorrectRate + "% — review lifecycle management procedures");
-  if (periodRecords.length > 0 && complianceResult.timelyRecordingRate < 50) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
-  if (staff.length > 0 && staffResult.qualityAssuranceKnowledgeRate < 50) actions.push("MEDIUM: Quality assurance knowledge at " + staffResult.qualityAssuranceKnowledgeRate + "% — schedule training for staff");
+  if (periodRecords.length > 0 && below(qualityResult.qualityCheckPassedRate, 50)) actions.push("HIGH: Quality check pass rate at " + qualityResult.qualityCheckPassedRate + "% — review quality assurance procedures");
+  if (periodRecords.length > 0 && below(qualityResult.auditTrailCompleteRate, 50)) actions.push("HIGH: Audit trail completion at " + qualityResult.auditTrailCompleteRate + "% — ensure all records have complete audit trails");
+  if (periodRecords.length > 0 && below(qualityResult.lifecycleCorrectRate, 50)) actions.push("HIGH: Lifecycle correctness at " + qualityResult.lifecycleCorrectRate + "% — review lifecycle management procedures");
+  if (periodRecords.length > 0 && below(complianceResult.timelyRecordingRate, 50)) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
+  if (staff.length > 0 && below(staffResult.qualityAssuranceKnowledgeRate, 50)) actions.push("MEDIUM: Quality assurance knowledge at " + staffResult.qualityAssuranceKnowledgeRate + "% — schedule training for staff");
   const lowScoreChildren = childProfiles.filter((p) => p.overallScore <= 3);
   if (lowScoreChildren.length > 0) actions.push("MEDIUM: " + lowScoreChildren.length + " child(ren) with low quality ecology scores — review individual quality provisions");
   if (actions.length === 0) actions.push("No immediate actions required. Quality ecology systems operating within expected standards.");

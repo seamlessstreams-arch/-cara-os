@@ -24,6 +24,7 @@
    ────────────────────────────────────────────────────────────── */
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -133,18 +134,25 @@ export interface StaffRegSelfAssessmentTraining {
 export interface RegSelfAssessmentQualityResult {
   overallScore: number;
   totalRecords: number;
-  evidenceRobustRate: number;
-  selfAssessmentAccurateRate: number;
-  actionPlanAlignedRate: number;
-  improvementEvidencedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  evidenceRobustRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  selfAssessmentAccurateRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionPlanAlignedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  improvementEvidencedRate: number | null;
 }
 
 export interface RegSelfAssessmentComplianceResult {
   overallScore: number;
   totalRecords: number;
-  documentationCompleteRate: number;
-  timelyRecordingRate: number;
-  evidenceRobustRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationCompleteRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  evidenceRobustRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
 }
@@ -163,12 +171,18 @@ export interface RegSelfAssessmentPolicyResult {
 export interface StaffRegSelfAssessmentReadinessResult {
   overallScore: number;
   totalStaff: number;
-  selfAssessmentKnowledgeRate: number;
-  evidenceGatheringSkillsRate: number;
-  actionPlanningSkillsRate: number;
-  regulatoryFrameworkKnowledgeRate: number;
-  inspectionPreparationSkillsRate: number;
-  qualityImprovementSkillsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  selfAssessmentKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  evidenceGatheringSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionPlanningSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  regulatoryFrameworkKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  inspectionPreparationSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  qualityImprovementSkillsRate: number | null;
 }
 
 export interface ChildRegSelfAssessmentProfile {
@@ -200,11 +214,6 @@ export interface RegSelfAssessmentIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -220,19 +229,19 @@ export function evaluateRegSelfAssessmentQuality(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, evidenceRobustRate: 0, selfAssessmentAccurateRate: 0, actionPlanAlignedRate: 0, improvementEvidencedRate: 0 };
+    return { overallScore: 0, totalRecords: 0, evidenceRobustRate: null, selfAssessmentAccurateRate: null, actionPlanAlignedRate: null, improvementEvidencedRate: null };
   }
 
-  const evidenceRobustRate = pct(records.filter((r) => r.evidenceRobust).length, n);
-  const selfAssessmentAccurateRate = pct(records.filter((r) => r.selfAssessmentAccurate).length, n);
-  const actionPlanAlignedRate = pct(records.filter((r) => r.actionPlanAligned).length, n);
-  const improvementEvidencedRate = pct(records.filter((r) => r.improvementEvidenced).length, n);
+  const evidenceRobustRate = rate(records.filter((r) => r.evidenceRobust).length, n);
+  const selfAssessmentAccurateRate = rate(records.filter((r) => r.selfAssessmentAccurate).length, n);
+  const actionPlanAlignedRate = rate(records.filter((r) => r.actionPlanAligned).length, n);
+  const improvementEvidencedRate = rate(records.filter((r) => r.improvementEvidenced).length, n);
 
   let score = 0;
-  score += (evidenceRobustRate / 100) * 7;
-  score += (selfAssessmentAccurateRate / 100) * 6;
-  score += (actionPlanAlignedRate / 100) * 6;
-  score += (improvementEvidencedRate / 100) * 6;
+  score += (evidenceRobustRate! / 100) * 7;
+  score += (selfAssessmentAccurateRate! / 100) * 6;
+  score += (actionPlanAlignedRate! / 100) * 6;
+  score += (improvementEvidencedRate! / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -247,21 +256,21 @@ export function evaluateRegSelfAssessmentCompliance(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: 0, timelyRecordingRate: 0, evidenceRobustRate: 0, categoryDiversityRatio: 0, uniqueCategories: 0 };
+    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: null, timelyRecordingRate: null, evidenceRobustRate: null, categoryDiversityRatio: 0, uniqueCategories: 0 };
   }
 
-  const documentationCompleteRate = pct(records.filter((r) => r.documentationComplete).length, n);
-  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, n);
-  const evidenceRobustRate = pct(records.filter((r) => r.evidenceRobust).length, n);
+  const documentationCompleteRate = rate(records.filter((r) => r.documentationComplete).length, n);
+  const timelyRecordingRate = rate(records.filter((r) => r.timelyRecording).length, n);
+  const evidenceRobustRate = rate(records.filter((r) => r.evidenceRobust).length, n);
 
   const uniqueCategoriesSet = new Set(records.map((r) => r.category));
   const uniqueCategories = uniqueCategoriesSet.size;
   const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
 
   let score = 0;
-  score += (documentationCompleteRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (evidenceRobustRate / 100) * 5;
+  score += (documentationCompleteRate! / 100) * 8;
+  score += (timelyRecordingRate! / 100) * 7;
+  score += (evidenceRobustRate! / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -307,23 +316,23 @@ export function evaluateStaffRegSelfAssessmentReadiness(
   const n = training.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalStaff: 0, selfAssessmentKnowledgeRate: 0, evidenceGatheringSkillsRate: 0, actionPlanningSkillsRate: 0, regulatoryFrameworkKnowledgeRate: 0, inspectionPreparationSkillsRate: 0, qualityImprovementSkillsRate: 0 };
+    return { overallScore: 0, totalStaff: 0, selfAssessmentKnowledgeRate: null, evidenceGatheringSkillsRate: null, actionPlanningSkillsRate: null, regulatoryFrameworkKnowledgeRate: null, inspectionPreparationSkillsRate: null, qualityImprovementSkillsRate: null };
   }
 
-  const selfAssessmentKnowledgeRate = pct(training.filter((t) => t.selfAssessmentKnowledge).length, n);
-  const evidenceGatheringSkillsRate = pct(training.filter((t) => t.evidenceGatheringSkills).length, n);
-  const actionPlanningSkillsRate = pct(training.filter((t) => t.actionPlanningSkills).length, n);
-  const regulatoryFrameworkKnowledgeRate = pct(training.filter((t) => t.regulatoryFrameworkKnowledge).length, n);
-  const inspectionPreparationSkillsRate = pct(training.filter((t) => t.inspectionPreparationSkills).length, n);
-  const qualityImprovementSkillsRate = pct(training.filter((t) => t.qualityImprovementSkills).length, n);
+  const selfAssessmentKnowledgeRate = rate(training.filter((t) => t.selfAssessmentKnowledge).length, n);
+  const evidenceGatheringSkillsRate = rate(training.filter((t) => t.evidenceGatheringSkills).length, n);
+  const actionPlanningSkillsRate = rate(training.filter((t) => t.actionPlanningSkills).length, n);
+  const regulatoryFrameworkKnowledgeRate = rate(training.filter((t) => t.regulatoryFrameworkKnowledge).length, n);
+  const inspectionPreparationSkillsRate = rate(training.filter((t) => t.inspectionPreparationSkills).length, n);
+  const qualityImprovementSkillsRate = rate(training.filter((t) => t.qualityImprovementSkills).length, n);
 
   let score = 0;
-  score += (selfAssessmentKnowledgeRate / 100) * 6;
-  score += (evidenceGatheringSkillsRate / 100) * 5;
-  score += (actionPlanningSkillsRate / 100) * 5;
-  score += (regulatoryFrameworkKnowledgeRate / 100) * 4;
-  score += (inspectionPreparationSkillsRate / 100) * 3;
-  score += (qualityImprovementSkillsRate / 100) * 2;
+  score += (selfAssessmentKnowledgeRate! / 100) * 6;
+  score += (evidenceGatheringSkillsRate! / 100) * 5;
+  score += (actionPlanningSkillsRate! / 100) * 5;
+  score += (regulatoryFrameworkKnowledgeRate! / 100) * 4;
+  score += (inspectionPreparationSkillsRate! / 100) * 3;
+  score += (qualityImprovementSkillsRate! / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -348,8 +357,8 @@ export function buildChildRegSelfAssessmentProfiles(
 
   return Array.from(childMap.values()).map((child) => {
     const totalRecords = child.records.length;
-    const evidenceRobustRate = pct(child.records.filter((r) => r.evidenceRobust).length, totalRecords);
-    const selfAssessmentAccurateRate = pct(child.records.filter((r) => r.selfAssessmentAccurate).length, totalRecords);
+    const evidenceRobustRate = rate(child.records.filter((r) => r.evidenceRobust).length, totalRecords)!;
+    const selfAssessmentAccurateRate = rate(child.records.filter((r) => r.selfAssessmentAccurate).length, totalRecords)!;
     const uniqueCategoriesSet = new Set(child.records.map((r) => r.category));
     const categoriesCovered = Array.from(uniqueCategoriesSet);
 
@@ -358,14 +367,14 @@ export function buildChildRegSelfAssessmentProfiles(
     else if (totalRecords >= 5) frequencyScore = 1;
 
     let rate1Score = 0;
-    if (evidenceRobustRate >= 80) rate1Score = 3;
-    else if (evidenceRobustRate >= 60) rate1Score = 2;
-    else if (evidenceRobustRate >= 40) rate1Score = 1;
+    if (meets(evidenceRobustRate, 80)) rate1Score = 3;
+    else if (meets(evidenceRobustRate, 60)) rate1Score = 2;
+    else if (meets(evidenceRobustRate, 40)) rate1Score = 1;
 
     let rate2Score = 0;
-    if (selfAssessmentAccurateRate >= 80) rate2Score = 3;
-    else if (selfAssessmentAccurateRate >= 60) rate2Score = 2;
-    else if (selfAssessmentAccurateRate >= 40) rate2Score = 1;
+    if (meets(selfAssessmentAccurateRate, 80)) rate2Score = 3;
+    else if (meets(selfAssessmentAccurateRate, 60)) rate2Score = 2;
+    else if (meets(selfAssessmentAccurateRate, 40)) rate2Score = 1;
 
     let diversityBonus = 0;
     if (categoriesCovered.length >= 4) diversityBonus = 2;
@@ -413,9 +422,9 @@ export function generateRegSelfAssessmentIntelligence(
   if (complianceResult.overallScore >= 20) strengths.push("Self-assessment compliance is strong (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore >= 20) strengths.push("Regulatory self-assessment policy framework is robust (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore >= 20) strengths.push("Staff self-assessment readiness is strong (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.evidenceRobustRate >= 90) strengths.push("Evidence robustness at " + qualityResult.evidenceRobustRate + "%");
-  if (periodRecords.length > 0 && qualityResult.selfAssessmentAccurateRate >= 90) strengths.push("Self-assessment accuracy at " + qualityResult.selfAssessmentAccurateRate + "%");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate >= 90) strengths.push("Documentation completeness at " + complianceResult.documentationCompleteRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.evidenceRobustRate, 90)) strengths.push("Evidence robustness at " + qualityResult.evidenceRobustRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.selfAssessmentAccurateRate, 90)) strengths.push("Self-assessment accuracy at " + qualityResult.selfAssessmentAccurateRate + "%");
+  if (periodRecords.length > 0 && meets(complianceResult.documentationCompleteRate, 90)) strengths.push("Documentation completeness at " + complianceResult.documentationCompleteRate + "%");
 
   const areasForImprovement: string[] = [];
   if (overallScore < 40) areasForImprovement.push("Regulatory self-assessment management rated Inadequate (" + overallScore + "/100) — urgent systemic review required");
@@ -424,7 +433,7 @@ export function generateRegSelfAssessmentIntelligence(
   if (complianceResult.overallScore < 15) areasForImprovement.push("Self-assessment compliance needs improvement (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore < 15) areasForImprovement.push("Regulatory self-assessment policy needs strengthening (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore < 15) areasForImprovement.push("Staff self-assessment readiness needs improvement (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.evidenceRobustRate < 80) areasForImprovement.push("Evidence robustness at " + qualityResult.evidenceRobustRate + "% — must improve for regulatory compliance");
+  if (periodRecords.length > 0 && below(qualityResult.evidenceRobustRate, 80)) areasForImprovement.push("Evidence robustness at " + qualityResult.evidenceRobustRate + "% — must improve for regulatory compliance");
   if (periodRecords.length === 0) areasForImprovement.push("No regulatory self-assessment records — recording must be documented");
   if (policy === null) areasForImprovement.push("No regulatory self-assessment policy in place — statutory requirement");
   if (staff.length === 0) areasForImprovement.push("No staff self-assessment training records — training required");
@@ -432,11 +441,11 @@ export function generateRegSelfAssessmentIntelligence(
   const actions: string[] = [];
   if (policy === null || policyResult.overallScore === 0) actions.push("URGENT: No regulatory self-assessment policy — develop and implement comprehensive policy immediately");
   if (staff.length === 0) actions.push("URGENT: No staff self-assessment training — schedule training for all staff");
-  if (periodRecords.length > 0 && qualityResult.evidenceRobustRate < 50) actions.push("HIGH: Evidence robustness at " + qualityResult.evidenceRobustRate + "% — review evidence gathering procedures");
-  if (periodRecords.length > 0 && qualityResult.selfAssessmentAccurateRate < 50) actions.push("HIGH: Self-assessment accuracy at " + qualityResult.selfAssessmentAccurateRate + "% — ensure assessments are thorough and accurate");
-  if (periodRecords.length > 0 && qualityResult.actionPlanAlignedRate < 50) actions.push("HIGH: Action plan alignment at " + qualityResult.actionPlanAlignedRate + "% — all action plans must align with identified gaps");
-  if (periodRecords.length > 0 && complianceResult.timelyRecordingRate < 50) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
-  if (staff.length > 0 && staffResult.selfAssessmentKnowledgeRate < 50) actions.push("MEDIUM: Self-assessment knowledge at " + staffResult.selfAssessmentKnowledgeRate + "% — schedule training for staff");
+  if (periodRecords.length > 0 && below(qualityResult.evidenceRobustRate, 50)) actions.push("HIGH: Evidence robustness at " + qualityResult.evidenceRobustRate + "% — review evidence gathering procedures");
+  if (periodRecords.length > 0 && below(qualityResult.selfAssessmentAccurateRate, 50)) actions.push("HIGH: Self-assessment accuracy at " + qualityResult.selfAssessmentAccurateRate + "% — ensure assessments are thorough and accurate");
+  if (periodRecords.length > 0 && below(qualityResult.actionPlanAlignedRate, 50)) actions.push("HIGH: Action plan alignment at " + qualityResult.actionPlanAlignedRate + "% — all action plans must align with identified gaps");
+  if (periodRecords.length > 0 && below(complianceResult.timelyRecordingRate, 50)) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
+  if (staff.length > 0 && below(staffResult.selfAssessmentKnowledgeRate, 50)) actions.push("MEDIUM: Self-assessment knowledge at " + staffResult.selfAssessmentKnowledgeRate + "% — schedule training for staff");
   const lowScoreChildren = childProfiles.filter((p) => p.overallScore <= 3);
   if (lowScoreChildren.length > 0) actions.push("MEDIUM: " + lowScoreChildren.length + " child(ren) with low self-assessment scores — review individual assessment provisions");
   if (actions.length === 0) actions.push("No immediate actions required. Regulatory self-assessment systems operating within expected standards.");

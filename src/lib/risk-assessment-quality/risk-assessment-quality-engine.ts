@@ -2,6 +2,7 @@
 // Pure deterministic — no AI, no external calls, no randomness, no Date.now()
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Type Unions ──────────────────────────────────────────────────────────
 
@@ -109,17 +110,24 @@ export interface StaffRiskAssessmentTraining {
 export interface RiskQualityResult {
   overallScore: number;
   totalAssessments: number;
-  mitigationRate: number;
-  childConsultedRate: number;
-  reviewScheduledRate: number;
-  comprehensiveRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  mitigationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childConsultedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reviewScheduledRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  comprehensiveRate: number | null;
 }
 
 export interface RiskComplianceResult {
   overallScore: number;
-  documentedRate: number;
-  staffAwareRate: number;
-  feedbackRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffAwareRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feedbackRate: number | null;
   riskCategoryDiversityRatio: number;
 }
 
@@ -137,12 +145,18 @@ export interface RiskPolicyResult {
 export interface StaffRiskReadinessResult {
   overallScore: number;
   totalStaff: number;
-  riskIdentificationRate: number;
-  mitigationPlanningRate: number;
-  dynamicRiskAssessmentRate: number;
-  positiveRiskTakingRate: number;
-  incidentManagementRate: number;
-  multiAgencyWorkingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskIdentificationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  mitigationPlanningRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dynamicRiskAssessmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveRiskTakingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  incidentManagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  multiAgencyWorkingRate: number | null;
 }
 
 export interface ChildRiskProfile {
@@ -178,11 +192,6 @@ export interface RiskAssessmentQualityIntelligence {
 
 // ── Helpers ──────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -203,10 +212,10 @@ export function evaluateRiskQuality(assessments: RiskAssessment[]): RiskQualityR
     return {
       overallScore: 0,
       totalAssessments: 0,
-      mitigationRate: 0,
-      childConsultedRate: 0,
-      reviewScheduledRate: 0,
-      comprehensiveRate: 0,
+      mitigationRate: null,
+      childConsultedRate: null,
+      reviewScheduledRate: null,
+      comprehensiveRate: null,
     };
   }
 
@@ -217,17 +226,17 @@ export function evaluateRiskQuality(assessments: RiskAssessment[]): RiskQualityR
     (a) => a.mitigationPlanInPlace && a.childConsulted && a.reviewScheduled,
   ).length;
 
-  const mitigationRate = pct(mitigationCount, total);
-  const childConsultedRate = pct(childConsultedCount, total);
-  const reviewScheduledRate = pct(reviewScheduledCount, total);
-  const comprehensiveRate = pct(comprehensiveCount, total);
+  const mitigationRate = rate(mitigationCount, total);
+  const childConsultedRate = rate(childConsultedCount, total);
+  const reviewScheduledRate = rate(reviewScheduledCount, total);
+  const comprehensiveRate = rate(comprehensiveCount, total);
 
   // Weighted scoring: mitigation 0-7, consulted 0-6, review 0-6, comprehensive 0-6
   let score = 0;
-  score += (mitigationRate / 100) * 7;
-  score += (childConsultedRate / 100) * 6;
-  score += (reviewScheduledRate / 100) * 6;
-  score += (comprehensiveRate / 100) * 6;
+  score += (mitigationRate! / 100) * 7;
+  score += (childConsultedRate! / 100) * 6;
+  score += (reviewScheduledRate! / 100) * 6;
+  score += (comprehensiveRate! / 100) * 6;
 
   score = clamp(Math.round(score * 10) / 10, 0, 25);
 
@@ -249,9 +258,9 @@ export function evaluateRiskCompliance(assessments: RiskAssessment[]): RiskCompl
   if (total === 0) {
     return {
       overallScore: 0,
-      documentedRate: 0,
-      staffAwareRate: 0,
-      feedbackRate: 0,
+      documentedRate: null,
+      staffAwareRate: null,
+      feedbackRate: null,
       riskCategoryDiversityRatio: 0,
     };
   }
@@ -260,9 +269,9 @@ export function evaluateRiskCompliance(assessments: RiskAssessment[]): RiskCompl
   const staffAwareCount = assessments.filter((a) => a.staffAware).length;
   const feedbackCount = assessments.filter((a) => a.feedbackGiven).length;
 
-  const documentedRate = pct(documentedCount, total);
-  const staffAwareRate = pct(staffAwareCount, total);
-  const feedbackRate = pct(feedbackCount, total);
+  const documentedRate = rate(documentedCount, total);
+  const staffAwareRate = rate(staffAwareCount, total);
+  const feedbackRate = rate(feedbackCount, total);
 
   // Diversity: unique categories out of 8 possible
   const uniqueCategories = new Set(assessments.map((a) => a.riskCategory)).size;
@@ -270,9 +279,9 @@ export function evaluateRiskCompliance(assessments: RiskAssessment[]): RiskCompl
 
   // Weighted scoring: documented 0-8, staffAware 0-7, feedback 0-5, diversity 0-5
   let score = 0;
-  score += (documentedRate / 100) * 8;
-  score += (staffAwareRate / 100) * 7;
-  score += (feedbackRate / 100) * 5;
+  score += (documentedRate! / 100) * 8;
+  score += (staffAwareRate! / 100) * 7;
+  score += (feedbackRate! / 100) * 5;
   score += riskCategoryDiversityRatio * 5;
 
   score = clamp(Math.round(score * 10) / 10, 0, 25);
@@ -335,12 +344,12 @@ export function evaluateStaffRiskReadiness(training: StaffRiskAssessmentTraining
     return {
       overallScore: 0,
       totalStaff: 0,
-      riskIdentificationRate: 0,
-      mitigationPlanningRate: 0,
-      dynamicRiskAssessmentRate: 0,
-      positiveRiskTakingRate: 0,
-      incidentManagementRate: 0,
-      multiAgencyWorkingRate: 0,
+      riskIdentificationRate: null,
+      mitigationPlanningRate: null,
+      dynamicRiskAssessmentRate: null,
+      positiveRiskTakingRate: null,
+      incidentManagementRate: null,
+      multiAgencyWorkingRate: null,
     };
   }
 
@@ -351,21 +360,21 @@ export function evaluateStaffRiskReadiness(training: StaffRiskAssessmentTraining
   const incidentManagementCount = training.filter((t) => t.incidentManagement).length;
   const multiAgencyWorkingCount = training.filter((t) => t.multiAgencyWorking).length;
 
-  const riskIdentificationRate = pct(riskIdentificationCount, totalStaff);
-  const mitigationPlanningRate = pct(mitigationPlanningCount, totalStaff);
-  const dynamicRiskAssessmentRate = pct(dynamicRiskAssessmentCount, totalStaff);
-  const positiveRiskTakingRate = pct(positiveRiskTakingCount, totalStaff);
-  const incidentManagementRate = pct(incidentManagementCount, totalStaff);
-  const multiAgencyWorkingRate = pct(multiAgencyWorkingCount, totalStaff);
+  const riskIdentificationRate = rate(riskIdentificationCount, totalStaff);
+  const mitigationPlanningRate = rate(mitigationPlanningCount, totalStaff);
+  const dynamicRiskAssessmentRate = rate(dynamicRiskAssessmentCount, totalStaff);
+  const positiveRiskTakingRate = rate(positiveRiskTakingCount, totalStaff);
+  const incidentManagementRate = rate(incidentManagementCount, totalStaff);
+  const multiAgencyWorkingRate = rate(multiAgencyWorkingCount, totalStaff);
 
   // Weighted scoring: 6+5+5+4+3+2 = 25
   let score = 0;
-  score += (riskIdentificationRate / 100) * 6;
-  score += (mitigationPlanningRate / 100) * 5;
-  score += (dynamicRiskAssessmentRate / 100) * 5;
-  score += (positiveRiskTakingRate / 100) * 4;
-  score += (incidentManagementRate / 100) * 3;
-  score += (multiAgencyWorkingRate / 100) * 2;
+  score += (riskIdentificationRate! / 100) * 6;
+  score += (mitigationPlanningRate! / 100) * 5;
+  score += (dynamicRiskAssessmentRate! / 100) * 5;
+  score += (positiveRiskTakingRate! / 100) * 4;
+  score += (incidentManagementRate! / 100) * 3;
+  score += (multiAgencyWorkingRate! / 100) * 2;
 
   score = clamp(Math.round(score * 10) / 10, 0, 25);
 
@@ -398,8 +407,8 @@ export function buildChildRiskProfiles(assessments: RiskAssessment[]): ChildRisk
 
     const mitigationCount = childAssessments.filter((a) => a.mitigationPlanInPlace).length;
     const consultedCount = childAssessments.filter((a) => a.childConsulted).length;
-    const mitigationRate = pct(mitigationCount, totalAssessments);
-    const consultedRate = pct(consultedCount, totalAssessments);
+    const mitigationRate = rate(mitigationCount, totalAssessments)!;
+    const consultedRate = rate(consultedCount, totalAssessments)!;
 
     // Score 0-10
     let overallScore = 0;
@@ -409,14 +418,14 @@ export function buildChildRiskProfiles(assessments: RiskAssessment[]): ChildRisk
     else if (totalAssessments >= 5) overallScore += 1;
 
     // Mitigation: >=80 -> 3, >=60 -> 2, >=40 -> 1
-    if (mitigationRate >= 80) overallScore += 3;
-    else if (mitigationRate >= 60) overallScore += 2;
-    else if (mitigationRate >= 40) overallScore += 1;
+    if (meets(mitigationRate, 80)) overallScore += 3;
+    else if (meets(mitigationRate, 60)) overallScore += 2;
+    else if (meets(mitigationRate, 40)) overallScore += 1;
 
     // Consulted: >=80 -> 3, >=60 -> 2, >=40 -> 1
-    if (consultedRate >= 80) overallScore += 3;
-    else if (consultedRate >= 60) overallScore += 2;
-    else if (consultedRate >= 40) overallScore += 1;
+    if (meets(consultedRate, 80)) overallScore += 3;
+    else if (meets(consultedRate, 60)) overallScore += 2;
+    else if (meets(consultedRate, 40)) overallScore += 1;
 
     // Diversity: unique categories >= 4 -> 2, >=2 -> 1
     const uniqueCategories = new Set(childAssessments.map((a) => a.riskCategory)).size;
@@ -539,23 +548,23 @@ function aggregateStrengths(
     strengths.push("Overall risk assessment quality rated Good (" + overallScore + "/100)");
   }
 
-  if (quality.mitigationRate >= 90) {
+  if (meets(quality.mitigationRate, 90)) {
     strengths.push("Excellent mitigation planning: " + quality.mitigationRate + "% of assessments have mitigation plans in place");
   }
-  if (quality.childConsultedRate >= 90) {
+  if (meets(quality.childConsultedRate, 90)) {
     strengths.push("Children's voice prioritised: " + quality.childConsultedRate + "% of assessments include child consultation");
   }
-  if (quality.comprehensiveRate >= 80) {
+  if (meets(quality.comprehensiveRate, 80)) {
     strengths.push("Strong comprehensive coverage: " + quality.comprehensiveRate + "% of assessments are fully comprehensive");
   }
 
-  if (compliance.documentedRate >= 90) {
+  if (meets(compliance.documentedRate, 90)) {
     strengths.push("High documentation compliance: " + compliance.documentedRate + "% of assessments documented in care plans");
   }
-  if (compliance.staffAwareRate >= 90) {
+  if (meets(compliance.staffAwareRate, 90)) {
     strengths.push("Excellent staff awareness: " + compliance.staffAwareRate + "% of assessments have staff awareness confirmed");
   }
-  if (compliance.feedbackRate >= 90) {
+  if (meets(compliance.feedbackRate, 90)) {
     strengths.push("Consistent feedback practice: " + compliance.feedbackRate + "% of assessments have feedback given");
   }
 
@@ -563,7 +572,7 @@ function aggregateStrengths(
     strengths.push("Robust risk assessment policy framework with " + policy.overallScore + "/25 coverage");
   }
 
-  if (staff.riskIdentificationRate >= 90) {
+  if (meets(staff.riskIdentificationRate, 90)) {
     strengths.push("Strong risk identification skills: " + staff.riskIdentificationRate + "% of staff trained");
   }
   if (staff.overallScore >= 20) {
@@ -590,20 +599,20 @@ function aggregateAreasForImprovement(
     areas.push("Overall risk assessment quality Requires Improvement (" + overallScore + "/100)");
   }
 
-  if (quality.mitigationRate < 70 && quality.totalAssessments > 0) {
+  if (below(quality.mitigationRate, 70) && quality.totalAssessments > 0) {
     areas.push("Mitigation planning at " + quality.mitigationRate + "% — below 70% threshold. All identified risks must have mitigation plans");
   }
-  if (quality.childConsultedRate < 70 && quality.totalAssessments > 0) {
+  if (below(quality.childConsultedRate, 70) && quality.totalAssessments > 0) {
     areas.push("Child consultation at " + quality.childConsultedRate + "% — UNCRC Article 12 requires children's participation in risk decisions");
   }
-  if (quality.reviewScheduledRate < 70 && quality.totalAssessments > 0) {
+  if (below(quality.reviewScheduledRate, 70) && quality.totalAssessments > 0) {
     areas.push("Review scheduling at " + quality.reviewScheduledRate + "% — risk assessments must be regularly reviewed");
   }
 
-  if (compliance.documentedRate < 70 && quality.totalAssessments > 0) {
+  if (below(compliance.documentedRate, 70) && quality.totalAssessments > 0) {
     areas.push("Documentation rate at " + compliance.documentedRate + "% — risk assessments must be documented in care plans");
   }
-  if (compliance.staffAwareRate < 70 && quality.totalAssessments > 0) {
+  if (below(compliance.staffAwareRate, 70) && quality.totalAssessments > 0) {
     areas.push("Staff awareness at " + compliance.staffAwareRate + "% — all staff must be aware of identified risks");
   }
 
@@ -611,7 +620,7 @@ function aggregateAreasForImprovement(
     areas.push("Risk assessment policy coverage at " + policy.overallScore + "/25 — significant policy gaps identified");
   }
 
-  if (staff.riskIdentificationRate < 70 && staff.totalStaff > 0) {
+  if (below(staff.riskIdentificationRate, 70) && staff.totalStaff > 0) {
     areas.push("Risk identification skills at " + staff.riskIdentificationRate + "% — staff may miss emerging risks");
   }
   if (staff.overallScore < 15 && staff.totalStaff > 0) {
@@ -636,11 +645,11 @@ function generateActions(
     actions.push("URGENT: No risk assessments recorded — all children must have current risk assessments per CHR 2015 Regulation 12");
   }
 
-  if (quality.mitigationRate < 50 && quality.totalAssessments > 0) {
+  if (below(quality.mitigationRate, 50) && quality.totalAssessments > 0) {
     actions.push("URGENT: Only " + quality.mitigationRate + "% of assessments have mitigation plans — immediate action required to safeguard children");
   }
 
-  if (compliance.staffAwareRate < 50 && quality.totalAssessments > 0) {
+  if (below(compliance.staffAwareRate, 50) && quality.totalAssessments > 0) {
     actions.push("URGENT: Only " + compliance.staffAwareRate + "% of staff are aware of risk assessments — conduct immediate briefings");
   }
 
@@ -653,15 +662,15 @@ function generateActions(
     actions.push("HIGH: " + lowScoreChildren.length + " child(ren) with low risk profile scores — review and update individual risk assessments");
   }
 
-  if (quality.childConsultedRate < 70 && quality.totalAssessments > 0) {
+  if (below(quality.childConsultedRate, 70) && quality.totalAssessments > 0) {
     actions.push("HIGH: Child consultation at " + quality.childConsultedRate + "% — embed child voice in all risk assessment processes");
   }
 
-  if (staff.riskIdentificationRate < 70 && staff.totalStaff > 0) {
+  if (below(staff.riskIdentificationRate, 70) && staff.totalStaff > 0) {
     actions.push("MEDIUM: Risk identification training at " + staff.riskIdentificationRate + "% — schedule training for remaining staff");
   }
 
-  if (compliance.feedbackRate < 70 && quality.totalAssessments > 0) {
+  if (below(compliance.feedbackRate, 70) && quality.totalAssessments > 0) {
     actions.push("MEDIUM: Feedback rate at " + compliance.feedbackRate + "% — ensure feedback is given following all risk assessments");
   }
 

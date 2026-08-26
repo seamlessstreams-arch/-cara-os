@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildReg44VisitProfile {
   childId: string;
@@ -197,18 +198,18 @@ export default function Reg44VisitsDashboardWidget() {
       <Section title="Visit Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Records" value={data.visitQuality.totalRecords} />
-          <Stat label="Children Interviewed" value={`${data.visitQuality.childrenInterviewedRate}%`} />
-          <Stat label="Staff Interviewed" value={`${data.visitQuality.staffInterviewedRate}%`} />
-          <Stat label="Records Reviewed" value={`${data.visitQuality.recordsReviewedRate}%`} />
-          <Stat label="Premises Inspected" value={`${data.visitQuality.premisesInspectedRate}%`} />
+          <Stat label="Children Interviewed" value={`${formatRate(data.visitQuality.childrenInterviewedRate)}`} />
+          <Stat label="Staff Interviewed" value={`${formatRate(data.visitQuality.staffInterviewedRate)}`} />
+          <Stat label="Records Reviewed" value={`${formatRate(data.visitQuality.recordsReviewedRate)}`} />
+          <Stat label="Premises Inspected" value={`${formatRate(data.visitQuality.premisesInspectedRate)}`} />
         </div>
       </Section>
 
       <Section title="Visit Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documentation" value={`${data.visitCompliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${data.visitCompliance.timelyRecordingRate}%`} />
-          <Stat label="Children Interviewed" value={`${data.visitCompliance.childrenInterviewedRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(data.visitCompliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(data.visitCompliance.timelyRecordingRate)}`} />
+          <Stat label="Children Interviewed" value={`${formatRate(data.visitCompliance.childrenInterviewedRate)}`} />
           <Stat label="Category Coverage" value={`${Math.round(data.visitCompliance.categoryDiversityRatio * 100)}%`} />
           <Stat label="Unique Categories" value={data.visitCompliance.uniqueCategories} />
         </div>
@@ -241,12 +242,12 @@ export default function Reg44VisitsDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
-          <Stat label="Reg 44 Requirements" value={`${data.staffReadiness.reg44RequirementsRate}%`} />
-          <Stat label="Child Interview Skills" value={`${data.staffReadiness.childInterviewSkillsRate}%`} />
-          <Stat label="Report Writing" value={`${data.staffReadiness.reportWritingRate}%`} />
-          <Stat label="Action Tracking" value={`${data.staffReadiness.actionTrackingRate}%`} />
-          <Stat label="Regulatory Knowledge" value={`${data.staffReadiness.regulatoryKnowledgeRate}%`} />
-          <Stat label="Escalation Procedure" value={`${data.staffReadiness.escalationProcedureRate}%`} />
+          <Stat label="Reg 44 Requirements" value={`${formatRate(data.staffReadiness.reg44RequirementsRate)}`} />
+          <Stat label="Child Interview Skills" value={`${formatRate(data.staffReadiness.childInterviewSkillsRate)}`} />
+          <Stat label="Report Writing" value={`${formatRate(data.staffReadiness.reportWritingRate)}`} />
+          <Stat label="Action Tracking" value={`${formatRate(data.staffReadiness.actionTrackingRate)}`} />
+          <Stat label="Regulatory Knowledge" value={`${formatRate(data.staffReadiness.regulatoryKnowledgeRate)}`} />
+          <Stat label="Escalation Procedure" value={`${formatRate(data.staffReadiness.escalationProcedureRate)}`} />
         </div>
       </Section>
 

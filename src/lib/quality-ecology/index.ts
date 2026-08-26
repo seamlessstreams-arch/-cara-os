@@ -9,7 +9,6 @@ export {
   evaluateQualityEcologyPolicy,
   evaluateStaffQualityEcologyReadiness,
   buildChildQualityEcologyProfiles,
-  pct,
   getRating,
   getQualityEcologyCategoryLabel,
   getQualityEcologyOutcomeLabel,

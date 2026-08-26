@@ -17,8 +17,7 @@ import {
   getParticipationLevelLabel,
   getRatingLabel,
   getRating,
-  pct,
-} from "../recreational-leisure-access-engine";
+  } from "../recreational-leisure-access-engine";
 import type {
   LeisureActivity,
   LeisurePolicy,
@@ -70,33 +69,6 @@ const makeTraining = (overrides: Partial<StaffLeisureTraining> = {}): StaffLeisu
 });
 
 // ── pct() ─────────────────────────────────────────────────────────────────
-
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-
-  it("returns 100 when num equals den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-
-  it("handles large numbers", () => {
-    expect(pct(999, 1000)).toBe(100);
-  });
-});
 
 // ── getRating() ───────────────────────────────────────────────────────────
 
@@ -216,11 +188,11 @@ describe("evaluateActivityEngagement", () => {
     const result = evaluateActivityEngagement([]);
     expect(result.score).toBe(0);
     expect(result.totalActivities).toBe(0);
-    expect(result.enjoymentRate).toBe(0);
-    expect(result.participationRate).toBe(0);
-    expect(result.socialInteractionRate).toBe(0);
-    expect(result.newSkillRate).toBe(0);
-    expect(result.recordedInPlanRate).toBe(0);
+    expect(result.enjoymentRate).toBeNull();
+    expect(result.participationRate).toBeNull();
+    expect(result.socialInteractionRate).toBeNull();
+    expect(result.newSkillRate).toBeNull();
+    expect(result.recordedInPlanRate).toBeNull();
   });
 
   it("returns max score for perfect activities", () => {
@@ -369,8 +341,8 @@ describe("evaluateActivityDiversity", () => {
     expect(result.totalActivities).toBe(0);
     expect(result.uniqueActivityTypes).toBe(0);
     expect(result.uniqueActivityTypeRatio).toBe(0);
-    expect(result.accessBarrierFreeRate).toBe(0);
-    expect(result.staffSupportRate).toBe(0);
+    expect(result.accessBarrierFreeRate).toBeNull();
+    expect(result.staffSupportRate).toBeNull();
   });
 
   it("returns correct unique activity type count", () => {
@@ -650,12 +622,12 @@ describe("evaluateStaffLeisureReadiness", () => {
     const result = evaluateStaffLeisureReadiness([]);
     expect(result.score).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.activityPlanningRate).toBe(0);
-    expect(result.safeguardingInActivitiesRate).toBe(0);
-    expect(result.inclusionAwarenessRate).toBe(0);
-    expect(result.firstAidOutdoorsRate).toBe(0);
-    expect(result.youthEngagementRate).toBe(0);
-    expect(result.communityResourcesRate).toBe(0);
+    expect(result.activityPlanningRate).toBeNull();
+    expect(result.safeguardingInActivitiesRate).toBeNull();
+    expect(result.inclusionAwarenessRate).toBeNull();
+    expect(result.firstAidOutdoorsRate).toBeNull();
+    expect(result.youthEngagementRate).toBeNull();
+    expect(result.communityResourcesRate).toBeNull();
   });
 
   it("returns score 25 for fully trained staff", () => {

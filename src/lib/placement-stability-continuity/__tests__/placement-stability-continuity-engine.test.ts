@@ -9,7 +9,6 @@
 
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getReviewTypeLabel,
   getStabilityStatusLabel,
@@ -88,29 +87,6 @@ function makeTraining(overrides: Partial<StaffPlacementTraining> = {}): StaffPla
 
 // ── pct ────────────────────────────────────────────────────────────────────
 
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-
-  it("returns 100 when num equals den", () => {
-    expect(pct(8, 8)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-});
-
 // ── getRating ──────────────────────────────────────────────────────────────
 
 describe("getRating", () => {
@@ -175,10 +151,10 @@ describe("evaluatePlacementQuality", () => {
   it("returns zeroes for empty reviews", () => {
     const result = evaluatePlacementQuality([]);
     expect(result.totalReviews).toBe(0);
-    expect(result.stabilityRate).toBe(0);
-    expect(result.childParticipatedRate).toBe(0);
-    expect(result.familyEngagedRate).toBe(0);
-    expect(result.continuityRate).toBe(0);
+    expect(result.stabilityRate).toBeNull();
+    expect(result.childParticipatedRate).toBeNull();
+    expect(result.familyEngagedRate).toBeNull();
+    expect(result.continuityRate).toBeNull();
     expect(result.score).toBe(0);
   });
 
@@ -237,9 +213,9 @@ describe("evaluatePlacementCompliance", () => {
   it("returns zeroes for empty reviews", () => {
     const result = evaluatePlacementCompliance([]);
     expect(result.totalReviews).toBe(0);
-    expect(result.documentedRate).toBe(0);
-    expect(result.managementOversightRate).toBe(0);
-    expect(result.actionsTakenRate).toBe(0);
+    expect(result.documentedRate).toBeNull();
+    expect(result.managementOversightRate).toBeNull();
+    expect(result.actionsTakenRate).toBeNull();
     expect(result.reviewTypeDiversityRatio).toBe(0);
     expect(result.score).toBe(0);
   });
@@ -413,12 +389,12 @@ describe("evaluateStaffPlacementReadiness", () => {
   it("returns zeroes for empty staff", () => {
     const result = evaluateStaffPlacementReadiness([]);
     expect(result.totalStaff).toBe(0);
-    expect(result.attachmentTheoryRate).toBe(0);
-    expect(result.therapeuticCaregivingRate).toBe(0);
-    expect(result.disruptionPreventionRate).toBe(0);
-    expect(result.transitionSupportRate).toBe(0);
-    expect(result.familyEngagementRate).toBe(0);
-    expect(result.multiAgencyWorkingRate).toBe(0);
+    expect(result.attachmentTheoryRate).toBeNull();
+    expect(result.therapeuticCaregivingRate).toBeNull();
+    expect(result.disruptionPreventionRate).toBeNull();
+    expect(result.transitionSupportRate).toBeNull();
+    expect(result.familyEngagementRate).toBeNull();
+    expect(result.multiAgencyWorkingRate).toBeNull();
     expect(result.score).toBe(0);
   });
 

@@ -5,7 +5,6 @@ export {
   evaluateBehaviouralImpact,
   evaluateStaffReinforcementReadiness,
   buildChildReinforcementProfiles,
-  pct,
   getRating,
   getPraiseTypeLabel,
   getRewardCategoryLabel,

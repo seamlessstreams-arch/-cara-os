@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara Children's Privacy Intelligence Engine
 //
@@ -81,18 +82,25 @@ export interface StaffPrivacyTraining {
 export interface PrivacyQualityResult {
   overallScore: number;
   totalRecords: number;
-  personalSpaceRespectedRate: number;
-  confidentialityMaintainedRate: number;
-  dignityPreservedRate: number;
-  consentObtainedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  personalSpaceRespectedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  confidentialityMaintainedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dignityPreservedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  consentObtainedRate: number | null;
 }
 
 export interface PrivacyComplianceResult {
   overallScore: number;
   totalRecords: number;
-  documentationRate: number;
-  timelyRecordingRate: number;
-  confidentialityMaintainedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  confidentialityMaintainedRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
 }
@@ -111,20 +119,28 @@ export interface PrivacyPolicyResult {
 export interface StaffPrivacyReadinessResult {
   overallScore: number;
   totalStaff: number;
-  dataProtectionTrainingRate: number;
-  confidentialityAwarenessRate: number;
-  dignityInCareTrainingRate: number;
-  consentPracticeRate: number;
-  digitalPrivacySkillsRate: number;
-  informationSharingKnowledgeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dataProtectionTrainingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  confidentialityAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dignityInCareTrainingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  consentPracticeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  digitalPrivacySkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  informationSharingKnowledgeRate: number | null;
 }
 
 export interface ChildPrivacyProfile {
   childId: string;
   childName: string;
   totalRecords: number;
-  personalSpaceRespectedRate: number;
-  confidentialityMaintainedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  personalSpaceRespectedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  confidentialityMaintainedRate: number | null;
   categoriesCovered: string[];
   overallScore: number;
 }
@@ -147,11 +163,6 @@ export interface PrivacyIntelligence {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -199,24 +210,24 @@ export function evaluatePrivacyQuality(records: PrivacyRecord[]): PrivacyQuality
     return {
       overallScore: 0,
       totalRecords: 0,
-      personalSpaceRespectedRate: 0,
-      confidentialityMaintainedRate: 0,
-      dignityPreservedRate: 0,
-      consentObtainedRate: 0,
+      personalSpaceRespectedRate: null,
+      confidentialityMaintainedRate: null,
+      dignityPreservedRate: null,
+      consentObtainedRate: null,
     };
   }
 
-  const personalSpaceRespectedRate = pct(records.filter((r) => r.personalSpaceRespected).length, total);
-  const confidentialityMaintainedRate = pct(records.filter((r) => r.confidentialityMaintained).length, total);
-  const dignityPreservedRate = pct(records.filter((r) => r.dignityPreserved).length, total);
-  const consentObtainedRate = pct(records.filter((r) => r.consentObtained).length, total);
+  const personalSpaceRespectedRate = rate(records.filter((r) => r.personalSpaceRespected).length, total);
+  const confidentialityMaintainedRate = rate(records.filter((r) => r.confidentialityMaintained).length, total);
+  const dignityPreservedRate = rate(records.filter((r) => r.dignityPreserved).length, total);
+  const consentObtainedRate = rate(records.filter((r) => r.consentObtained).length, total);
 
   // Weighted: personalSpaceRespectedRate(7) + confidentialityMaintainedRate(6) + dignityPreservedRate(6) + consentObtainedRate(6) = 25
   let score = 0;
-  score += (personalSpaceRespectedRate / 100) * 7;
-  score += (confidentialityMaintainedRate / 100) * 6;
-  score += (dignityPreservedRate / 100) * 6;
-  score += (consentObtainedRate / 100) * 6;
+  score += (personalSpaceRespectedRate! / 100) * 7;
+  score += (confidentialityMaintainedRate! / 100) * 6;
+  score += (dignityPreservedRate! / 100) * 6;
+  score += (consentObtainedRate! / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -238,26 +249,26 @@ export function evaluatePrivacyCompliance(records: PrivacyRecord[]): PrivacyComp
     return {
       overallScore: 0,
       totalRecords: 0,
-      documentationRate: 0,
-      timelyRecordingRate: 0,
-      confidentialityMaintainedRate: 0,
+      documentationRate: null,
+      timelyRecordingRate: null,
+      confidentialityMaintainedRate: null,
       categoryDiversityRatio: 0,
       uniqueCategories: 0,
     };
   }
 
-  const documentationRate = pct(records.filter((r) => r.documentationComplete).length, total);
-  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, total);
-  const confidentialityMaintainedRate = pct(records.filter((r) => r.confidentialityMaintained).length, total);
+  const documentationRate = rate(records.filter((r) => r.documentationComplete).length, total);
+  const timelyRecordingRate = rate(records.filter((r) => r.timelyRecording).length, total);
+  const confidentialityMaintainedRate = rate(records.filter((r) => r.confidentialityMaintained).length, total);
 
   const uniqueCategories = new Set(records.map((r) => r.category)).size;
   const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
 
   // Weighted: documentationRate(8) + timelyRecordingRate(7) + confidentialityMaintainedRate(5) + categoryDiversityRatio(5) = 25
   let score = 0;
-  score += (documentationRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (confidentialityMaintainedRate / 100) * 5;
+  score += (documentationRate! / 100) * 8;
+  score += (timelyRecordingRate! / 100) * 7;
+  score += (confidentialityMaintainedRate! / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -319,30 +330,30 @@ export function evaluateStaffPrivacyReadiness(staff: StaffPrivacyTraining[]): St
     return {
       overallScore: 0,
       totalStaff: 0,
-      dataProtectionTrainingRate: 0,
-      confidentialityAwarenessRate: 0,
-      dignityInCareTrainingRate: 0,
-      consentPracticeRate: 0,
-      digitalPrivacySkillsRate: 0,
-      informationSharingKnowledgeRate: 0,
+      dataProtectionTrainingRate: null,
+      confidentialityAwarenessRate: null,
+      dignityInCareTrainingRate: null,
+      consentPracticeRate: null,
+      digitalPrivacySkillsRate: null,
+      informationSharingKnowledgeRate: null,
     };
   }
 
-  const dataProtectionTrainingRate = pct(staff.filter((s) => s.dataProtectionTraining).length, count);
-  const confidentialityAwarenessRate = pct(staff.filter((s) => s.confidentialityAwareness).length, count);
-  const dignityInCareTrainingRate = pct(staff.filter((s) => s.dignityInCareTraining).length, count);
-  const consentPracticeRate = pct(staff.filter((s) => s.consentPractice).length, count);
-  const digitalPrivacySkillsRate = pct(staff.filter((s) => s.digitalPrivacySkills).length, count);
-  const informationSharingKnowledgeRate = pct(staff.filter((s) => s.informationSharingKnowledge).length, count);
+  const dataProtectionTrainingRate = rate(staff.filter((s) => s.dataProtectionTraining).length, count);
+  const confidentialityAwarenessRate = rate(staff.filter((s) => s.confidentialityAwareness).length, count);
+  const dignityInCareTrainingRate = rate(staff.filter((s) => s.dignityInCareTraining).length, count);
+  const consentPracticeRate = rate(staff.filter((s) => s.consentPractice).length, count);
+  const digitalPrivacySkillsRate = rate(staff.filter((s) => s.digitalPrivacySkills).length, count);
+  const informationSharingKnowledgeRate = rate(staff.filter((s) => s.informationSharingKnowledge).length, count);
 
   // Weighted: 6+5+5+4+3+2 = 25
   let score = 0;
-  score += (dataProtectionTrainingRate / 100) * 6;
-  score += (confidentialityAwarenessRate / 100) * 5;
-  score += (dignityInCareTrainingRate / 100) * 5;
-  score += (consentPracticeRate / 100) * 4;
-  score += (digitalPrivacySkillsRate / 100) * 3;
-  score += (informationSharingKnowledgeRate / 100) * 2;
+  score += (dataProtectionTrainingRate! / 100) * 6;
+  score += (confidentialityAwarenessRate! / 100) * 5;
+  score += (dignityInCareTrainingRate! / 100) * 5;
+  score += (consentPracticeRate! / 100) * 4;
+  score += (digitalPrivacySkillsRate! / 100) * 3;
+  score += (informationSharingKnowledgeRate! / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -373,8 +384,8 @@ export function buildChildPrivacyProfiles(records: PrivacyRecord[]): ChildPrivac
     const childName = recs[0].childName;
     const totalRecords = recs.length;
 
-    const personalSpaceRespectedRate = pct(recs.filter((r) => r.personalSpaceRespected).length, totalRecords);
-    const confidentialityMaintainedRate = pct(recs.filter((r) => r.confidentialityMaintained).length, totalRecords);
+    const personalSpaceRespectedRate = rate(recs.filter((r) => r.personalSpaceRespected).length, totalRecords);
+    const confidentialityMaintainedRate = rate(recs.filter((r) => r.confidentialityMaintained).length, totalRecords);
 
     const catsSet = new Set(recs.map((r) => r.category));
     const categoriesCovered = [...catsSet];
@@ -386,13 +397,13 @@ export function buildChildPrivacyProfiles(records: PrivacyRecord[]): ChildPrivac
     if (totalRecords >= 10) score += 2;
     else if (totalRecords >= 5) score += 1;
 
-    if (personalSpaceRespectedRate >= 80) score += 3;
-    else if (personalSpaceRespectedRate >= 60) score += 2;
-    else if (personalSpaceRespectedRate >= 40) score += 1;
+    if (meets(personalSpaceRespectedRate, 80)) score += 3;
+    else if (meets(personalSpaceRespectedRate, 60)) score += 2;
+    else if (meets(personalSpaceRespectedRate, 40)) score += 1;
 
-    if (confidentialityMaintainedRate >= 80) score += 3;
-    else if (confidentialityMaintainedRate >= 60) score += 2;
-    else if (confidentialityMaintainedRate >= 40) score += 1;
+    if (meets(confidentialityMaintainedRate, 80)) score += 3;
+    else if (meets(confidentialityMaintainedRate, 60)) score += 2;
+    else if (meets(confidentialityMaintainedRate, 40)) score += 1;
 
     const catCount = categoriesCovered.length;
     if (catCount >= 4) score += 2;
@@ -449,36 +460,36 @@ export function generatePrivacyIntelligence(input: {
 
   // Strengths (>=80%)
   const strengths: string[] = [];
-  if (privacyQuality.personalSpaceRespectedRate >= 80) strengths.push("Personal space is consistently respected across the home");
-  if (privacyQuality.confidentialityMaintainedRate >= 80) strengths.push("Confidentiality is well maintained in all privacy interactions");
-  if (privacyQuality.dignityPreservedRate >= 80) strengths.push("Children's dignity is consistently preserved in care practices");
-  if (privacyQuality.consentObtainedRate >= 80) strengths.push("Consent is routinely obtained before privacy-related decisions");
-  if (privacyCompliance.documentationRate >= 80) strengths.push("Privacy records are thoroughly documented");
-  if (privacyCompliance.timelyRecordingRate >= 80) strengths.push("Privacy events are recorded in a timely manner");
-  if (staffReadiness.dataProtectionTrainingRate >= 80) strengths.push("Staff are well trained in data protection requirements");
-  if (staffReadiness.confidentialityAwarenessRate >= 80) strengths.push("Strong confidentiality awareness across the team");
+  if (meets(privacyQuality.personalSpaceRespectedRate, 80)) strengths.push("Personal space is consistently respected across the home");
+  if (meets(privacyQuality.confidentialityMaintainedRate, 80)) strengths.push("Confidentiality is well maintained in all privacy interactions");
+  if (meets(privacyQuality.dignityPreservedRate, 80)) strengths.push("Children's dignity is consistently preserved in care practices");
+  if (meets(privacyQuality.consentObtainedRate, 80)) strengths.push("Consent is routinely obtained before privacy-related decisions");
+  if (meets(privacyCompliance.documentationRate, 80)) strengths.push("Privacy records are thoroughly documented");
+  if (meets(privacyCompliance.timelyRecordingRate, 80)) strengths.push("Privacy events are recorded in a timely manner");
+  if (meets(staffReadiness.dataProtectionTrainingRate, 80)) strengths.push("Staff are well trained in data protection requirements");
+  if (meets(staffReadiness.confidentialityAwarenessRate, 80)) strengths.push("Strong confidentiality awareness across the team");
 
   // Areas for improvement (<60%)
   const areasForImprovement: string[] = [];
-  if (privacyQuality.personalSpaceRespectedRate < 60) areasForImprovement.push("Personal space is not being consistently respected");
-  if (privacyQuality.confidentialityMaintainedRate < 60) areasForImprovement.push("Confidentiality is not adequately maintained");
-  if (privacyQuality.dignityPreservedRate < 60) areasForImprovement.push("Children's dignity is not consistently preserved");
-  if (privacyQuality.consentObtainedRate < 60) areasForImprovement.push("Consent is not routinely obtained for privacy-related decisions");
-  if (privacyCompliance.documentationRate < 60) areasForImprovement.push("Privacy documentation is incomplete or inconsistent");
-  if (privacyCompliance.timelyRecordingRate < 60) areasForImprovement.push("Privacy records are not being completed promptly");
-  if (staffReadiness.dataProtectionTrainingRate < 60) areasForImprovement.push("Staff need more training in data protection");
-  if (staffReadiness.confidentialityAwarenessRate < 60) areasForImprovement.push("Staff confidentiality awareness requires development");
+  if (below(privacyQuality.personalSpaceRespectedRate, 60)) areasForImprovement.push("Personal space is not being consistently respected");
+  if (below(privacyQuality.confidentialityMaintainedRate, 60)) areasForImprovement.push("Confidentiality is not adequately maintained");
+  if (below(privacyQuality.dignityPreservedRate, 60)) areasForImprovement.push("Children's dignity is not consistently preserved");
+  if (below(privacyQuality.consentObtainedRate, 60)) areasForImprovement.push("Consent is not routinely obtained for privacy-related decisions");
+  if (below(privacyCompliance.documentationRate, 60)) areasForImprovement.push("Privacy documentation is incomplete or inconsistent");
+  if (below(privacyCompliance.timelyRecordingRate, 60)) areasForImprovement.push("Privacy records are not being completed promptly");
+  if (below(staffReadiness.dataProtectionTrainingRate, 60)) areasForImprovement.push("Staff need more training in data protection");
+  if (below(staffReadiness.confidentialityAwarenessRate, 60)) areasForImprovement.push("Staff confidentiality awareness requires development");
 
   // Actions
   const actions: string[] = [];
   if (privacyPolicy.overallScore === 0) actions.push("URGENT: Establish privacy and data protection policies — CHR 2015 Reg 21 requires documented privacy standards");
   if (staffReadiness.overallScore === 0) actions.push("URGENT: Provide privacy and data protection training to all staff — GDPR and Reg 21 compliance depends on skilled practitioners");
-  if (privacyQuality.personalSpaceRespectedRate < 50) actions.push("Implement structured personal space protocols for all children — Reg 21 requires respect for privacy");
-  if (privacyQuality.confidentialityMaintainedRate < 50) actions.push("Review and strengthen confidentiality procedures — information must be shared on a need-to-know basis");
-  if (privacyCompliance.documentationRate < 50) actions.push("Improve privacy incident documentation — all privacy events must be fully recorded");
-  if (privacyCompliance.timelyRecordingRate < 50) actions.push("Review recording timescales — privacy records should be completed within 24 hours");
-  if (privacyQuality.consentObtainedRate < 50) actions.push("Ensure consent is obtained before privacy-impacting decisions — Human Rights Act 1998 Art 8");
-  if (staffReadiness.dignityInCareTrainingRate < 50) actions.push("Provide dignity-in-care training — children's dignity must be preserved at all times");
+  if (below(privacyQuality.personalSpaceRespectedRate, 50)) actions.push("Implement structured personal space protocols for all children — Reg 21 requires respect for privacy");
+  if (below(privacyQuality.confidentialityMaintainedRate, 50)) actions.push("Review and strengthen confidentiality procedures — information must be shared on a need-to-know basis");
+  if (below(privacyCompliance.documentationRate, 50)) actions.push("Improve privacy incident documentation — all privacy events must be fully recorded");
+  if (below(privacyCompliance.timelyRecordingRate, 50)) actions.push("Review recording timescales — privacy records should be completed within 24 hours");
+  if (below(privacyQuality.consentObtainedRate, 50)) actions.push("Ensure consent is obtained before privacy-impacting decisions — Human Rights Act 1998 Art 8");
+  if (below(staffReadiness.dignityInCareTrainingRate, 50)) actions.push("Provide dignity-in-care training — children's dignity must be preserved at all times");
 
   const regulatoryLinks: string[] = [
     "CHR 2015 Reg 10 — The health and wellbeing standard",

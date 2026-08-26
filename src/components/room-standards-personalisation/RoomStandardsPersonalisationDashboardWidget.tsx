@@ -12,6 +12,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useEffect } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 // ── Local interfaces (mirrors API shape) ──────────────────────────────────
 
@@ -312,12 +313,12 @@ export function RoomStandardsPersonalisationDashboardWidget() {
 
       {/* Key Stats */}
       <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-4">
-        <StatBox label="Condition %" value={`${data.roomConditions.roomConditionGoodPlusRate}%`} color="green" />
-        <StatBox label="Personalised %" value={`${data.personalisation.personalisationGoodPlusRate}%`} color="blue" />
-        <StatBox label="Child Decor" value={`${data.personalisation.childChosenDecorRate}%`} color="blue" />
-        <StatBox label="Pass Rate" value={`${data.inspectionCompliance.passRate}%`} color="green" />
-        <StatBox label="Amenities" value={`${data.roomConditions.essentialAmenitiesRate}%`} color="green" />
-        <StatBox label="Staff Trained" value={`${data.staffRoomReadiness.roomStandardsRate}%`} color="green" />
+        <StatBox label="Condition %" value={`${formatRate(data.roomConditions.roomConditionGoodPlusRate)}`} color="green" />
+        <StatBox label="Personalised %" value={`${formatRate(data.personalisation.personalisationGoodPlusRate)}`} color="blue" />
+        <StatBox label="Child Decor" value={`${formatRate(data.personalisation.childChosenDecorRate)}`} color="blue" />
+        <StatBox label="Pass Rate" value={`${formatRate(data.inspectionCompliance.passRate)}`} color="green" />
+        <StatBox label="Amenities" value={`${formatRate(data.roomConditions.essentialAmenitiesRate)}`} color="green" />
+        <StatBox label="Staff Trained" value={`${formatRate(data.staffRoomReadiness.roomStandardsRate)}`} color="green" />
       </div>
 
       {/* Actions */}
@@ -343,29 +344,29 @@ export function RoomStandardsPersonalisationDashboardWidget() {
         {/* Room Conditions */}
         <CollapsibleSection title="Room Conditions">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            <StatBox label="Good+ Condition" value={`${data.roomConditions.roomConditionGoodPlusRate}%`} color="green" />
-            <StatBox label="Good+ Furniture" value={`${data.roomConditions.furnitureGoodPlusRate}%`} color="green" />
-            <StatBox label="Amenities" value={`${data.roomConditions.essentialAmenitiesRate}%`} color="blue" />
-            <StatBox label="Privacy & Windows" value={`${data.roomConditions.privacyWindowsRate}%`} color="blue" />
+            <StatBox label="Good+ Condition" value={`${formatRate(data.roomConditions.roomConditionGoodPlusRate)}`} color="green" />
+            <StatBox label="Good+ Furniture" value={`${formatRate(data.roomConditions.furnitureGoodPlusRate)}`} color="green" />
+            <StatBox label="Amenities" value={`${formatRate(data.roomConditions.essentialAmenitiesRate)}`} color="blue" />
+            <StatBox label="Privacy & Windows" value={`${formatRate(data.roomConditions.privacyWindowsRate)}`} color="blue" />
           </div>
         </CollapsibleSection>
 
         {/* Personalisation */}
         <CollapsibleSection title="Personalisation">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            <StatBox label="Good+ Personal." value={`${data.personalisation.personalisationGoodPlusRate}%`} color="blue" />
-            <StatBox label="Child Decor" value={`${data.personalisation.childChosenDecorRate}%`} color="blue" />
-            <StatBox label="Highly Personal." value={`${data.personalisation.highPersonalisationRate}%`} color="green" />
-            <StatBox label="All Personalised" value={`${data.personalisation.allPersonalisedRate}%`} color="green" />
+            <StatBox label="Good+ Personal." value={`${formatRate(data.personalisation.personalisationGoodPlusRate)}`} color="blue" />
+            <StatBox label="Child Decor" value={`${formatRate(data.personalisation.childChosenDecorRate)}`} color="blue" />
+            <StatBox label="Highly Personal." value={`${formatRate(data.personalisation.highPersonalisationRate)}`} color="green" />
+            <StatBox label="All Personalised" value={`${formatRate(data.personalisation.allPersonalisedRate)}`} color="green" />
           </div>
         </CollapsibleSection>
 
         {/* Inspections */}
         <CollapsibleSection title="Inspection Compliance">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            <StatBox label="Pass Rate" value={`${data.inspectionCompliance.passRate}%`} color="green" />
-            <StatBox label="Issues Scheduled" value={`${data.inspectionCompliance.issuesScheduledRate}%`} color="blue" />
-            <StatBox label="Repairs Done" value={`${data.inspectionCompliance.repairsCompletedRate}%`} color="green" />
+            <StatBox label="Pass Rate" value={`${formatRate(data.inspectionCompliance.passRate)}`} color="green" />
+            <StatBox label="Issues Scheduled" value={`${formatRate(data.inspectionCompliance.issuesScheduledRate)}`} color="blue" />
+            <StatBox label="Repairs Done" value={`${formatRate(data.inspectionCompliance.repairsCompletedRate)}`} color="green" />
             <StatBox label="Inspections" value={data.inspectionCompliance.totalInspections} />
           </div>
         </CollapsibleSection>
@@ -373,12 +374,12 @@ export function RoomStandardsPersonalisationDashboardWidget() {
         {/* Staff */}
         <CollapsibleSection title="Staff Room Readiness">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            <StatBox label="Room Standards" value={`${data.staffRoomReadiness.roomStandardsRate}%`} color="green" />
-            <StatBox label="Personalisation" value={`${data.staffRoomReadiness.personalisationImportanceRate}%`} color="blue" />
-            <StatBox label="Privacy" value={`${data.staffRoomReadiness.privacyAwarenessRate}%`} color="blue" />
-            <StatBox label="Maintenance" value={`${data.staffRoomReadiness.maintenanceReportingRate}%`} color="green" />
-            <StatBox label="Safety Checks" value={`${data.staffRoomReadiness.safetyChecksRate}%`} color="green" />
-            <StatBox label="Child Particip." value={`${data.staffRoomReadiness.childParticipationRate}%`} color="blue" />
+            <StatBox label="Room Standards" value={`${formatRate(data.staffRoomReadiness.roomStandardsRate)}`} color="green" />
+            <StatBox label="Personalisation" value={`${formatRate(data.staffRoomReadiness.personalisationImportanceRate)}`} color="blue" />
+            <StatBox label="Privacy" value={`${formatRate(data.staffRoomReadiness.privacyAwarenessRate)}`} color="blue" />
+            <StatBox label="Maintenance" value={`${formatRate(data.staffRoomReadiness.maintenanceReportingRate)}`} color="green" />
+            <StatBox label="Safety Checks" value={`${formatRate(data.staffRoomReadiness.safetyChecksRate)}`} color="green" />
+            <StatBox label="Child Particip." value={`${formatRate(data.staffRoomReadiness.childParticipationRate)}`} color="blue" />
           </div>
         </CollapsibleSection>
 

@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara Quality of Care Intelligence Engine
 //
@@ -84,19 +85,27 @@ export interface ReviewQualityResult {
   overallScore: number;
   rating: Rating;
   totalReviews: number;
-  meetsStandardRate: number;
-  evidenceDocumentedRate: number;
-  childViewRate: number;
-  actionPlanRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  meetsStandardRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  evidenceDocumentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionPlanRate: number | null;
 }
 
 export interface ReviewComplianceResult {
   overallScore: number;
   rating: Rating;
-  followUpRate: number;
-  regulatoryAlignedRate: number;
-  improvementRate: number;
-  domainDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  followUpRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  regulatoryAlignedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  improvementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  domainDiversityRatio: number | null;
 }
 
 export interface QualityPolicyResult {
@@ -115,20 +124,28 @@ export interface StaffQualityReadinessResult {
   overallScore: number;
   rating: Rating;
   totalStaff: number;
-  qualityAssuranceRate: number;
-  outcomesMonitoringRate: number;
-  regulatoryKnowledgeRate: number;
-  reflectivePracticeRate: number;
-  dataAnalysisRate: number;
-  childParticipationRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  qualityAssuranceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  outcomesMonitoringRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  regulatoryKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reflectivePracticeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dataAnalysisRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childParticipationRate: number | null;
 }
 
 export interface ChildQualityProfile {
   childId: string;
   childName: string;
   totalReviews: number;
-  meetsStandardRate: number;
-  childViewRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  meetsStandardRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewRate: number | null;
   domainsCovered: string[];
   overallScore: number;
 }
@@ -151,11 +168,6 @@ export interface QualityOfCareIntelligence {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -206,19 +218,19 @@ const ALL_DOMAINS: QualityDomain[] = [
 export function evaluateReviewQuality(records: QualityReviewRecord[]): ReviewQualityResult {
   const total = records.length;
   if (total === 0) {
-    return { overallScore: 0, rating: "inadequate", totalReviews: 0, meetsStandardRate: 0, evidenceDocumentedRate: 0, childViewRate: 0, actionPlanRate: 0 };
+    return { overallScore: 0, rating: "inadequate", totalReviews: 0, meetsStandardRate: null, evidenceDocumentedRate: null, childViewRate: null, actionPlanRate: null };
   }
 
-  const meetsStandardRate = pct(
+  const meetsStandardRate = rate(
     records.filter((r) => r.outcome === "exceeds_standard" || r.outcome === "meets_standard").length,
     total,
   );
-  const evidenceDocumentedRate = pct(records.filter((r) => r.evidenceDocumented).length, total);
-  const childViewRate = pct(records.filter((r) => r.childViewCaptured).length, total);
-  const actionPlanRate = pct(records.filter((r) => r.actionPlanCreated).length, total);
+  const evidenceDocumentedRate = rate(records.filter((r) => r.evidenceDocumented).length, total);
+  const childViewRate = rate(records.filter((r) => r.childViewCaptured).length, total);
+  const actionPlanRate = rate(records.filter((r) => r.actionPlanCreated).length, total);
 
   // Weighted: meetsStandardRate 7 + evidenceDocumentedRate 6 + childViewRate 6 + actionPlanRate 6 = 25
-  const raw = (meetsStandardRate / 100) * 7 + (evidenceDocumentedRate / 100) * 6 + (childViewRate / 100) * 6 + (actionPlanRate / 100) * 6;
+  const raw = (meetsStandardRate! / 100) * 7 + (evidenceDocumentedRate! / 100) * 6 + (childViewRate! / 100) * 6 + (actionPlanRate! / 100) * 6;
   const overallScore = Math.min(25, Math.round(raw));
 
   return { overallScore, rating: getRating(overallScore * 4), totalReviews: total, meetsStandardRate, evidenceDocumentedRate, childViewRate, actionPlanRate };
@@ -229,18 +241,18 @@ export function evaluateReviewQuality(records: QualityReviewRecord[]): ReviewQua
 export function evaluateReviewCompliance(records: QualityReviewRecord[]): ReviewComplianceResult {
   const total = records.length;
   if (total === 0) {
-    return { overallScore: 0, rating: "inadequate", followUpRate: 0, regulatoryAlignedRate: 0, improvementRate: 0, domainDiversityRatio: 0 };
+    return { overallScore: 0, rating: "inadequate", followUpRate: null, regulatoryAlignedRate: null, improvementRate: null, domainDiversityRatio: 0 };
   }
 
-  const followUpRate = pct(records.filter((r) => r.followUpCompleted).length, total);
-  const regulatoryAlignedRate = pct(records.filter((r) => r.regulatoryAligned).length, total);
-  const improvementRate = pct(records.filter((r) => r.improvementIdentified).length, total);
+  const followUpRate = rate(records.filter((r) => r.followUpCompleted).length, total);
+  const regulatoryAlignedRate = rate(records.filter((r) => r.regulatoryAligned).length, total);
+  const improvementRate = rate(records.filter((r) => r.improvementIdentified).length, total);
 
   const uniqueDomains = new Set(records.map((r) => r.domain)).size;
-  const domainDiversityRatio = pct(uniqueDomains, ALL_DOMAINS.length);
+  const domainDiversityRatio = rate(uniqueDomains, ALL_DOMAINS.length);
 
   // Weighted: followUpRate 8 + regulatoryAlignedRate 7 + improvementRate 5 + domainDiversityRatio 5 = 25
-  const raw = (followUpRate / 100) * 8 + (regulatoryAlignedRate / 100) * 7 + (improvementRate / 100) * 5 + (domainDiversityRatio / 100) * 5;
+  const raw = (followUpRate! / 100) * 8 + (regulatoryAlignedRate! / 100) * 7 + (improvementRate! / 100) * 5 + ((domainDiversityRatio ?? 0) / 100) * 5;
   const overallScore = Math.min(25, Math.round(raw));
 
   return { overallScore, rating: getRating(overallScore * 4), followUpRate, regulatoryAlignedRate, improvementRate, domainDiversityRatio };
@@ -281,24 +293,24 @@ export function evaluateQualityPolicy(policy: QualityPolicy | null): QualityPoli
 export function evaluateStaffQualityReadiness(staff: StaffQualityTraining[]): StaffQualityReadinessResult {
   const count = staff.length;
   if (count === 0) {
-    return { overallScore: 0, rating: "inadequate", totalStaff: 0, qualityAssuranceRate: 0, outcomesMonitoringRate: 0, regulatoryKnowledgeRate: 0, reflectivePracticeRate: 0, dataAnalysisRate: 0, childParticipationRate: 0 };
+    return { overallScore: 0, rating: "inadequate", totalStaff: 0, qualityAssuranceRate: null, outcomesMonitoringRate: null, regulatoryKnowledgeRate: null, reflectivePracticeRate: null, dataAnalysisRate: null, childParticipationRate: null };
   }
 
-  const qualityAssuranceRate = pct(staff.filter((s) => s.qualityAssuranceSkills).length, count);
-  const outcomesMonitoringRate = pct(staff.filter((s) => s.outcomesMonitoring).length, count);
-  const regulatoryKnowledgeRate = pct(staff.filter((s) => s.regulatoryKnowledge).length, count);
-  const reflectivePracticeRate = pct(staff.filter((s) => s.reflectivePractice).length, count);
-  const dataAnalysisRate = pct(staff.filter((s) => s.dataAnalysis).length, count);
-  const childParticipationRate = pct(staff.filter((s) => s.childParticipation).length, count);
+  const qualityAssuranceRate = rate(staff.filter((s) => s.qualityAssuranceSkills).length, count);
+  const outcomesMonitoringRate = rate(staff.filter((s) => s.outcomesMonitoring).length, count);
+  const regulatoryKnowledgeRate = rate(staff.filter((s) => s.regulatoryKnowledge).length, count);
+  const reflectivePracticeRate = rate(staff.filter((s) => s.reflectivePractice).length, count);
+  const dataAnalysisRate = rate(staff.filter((s) => s.dataAnalysis).length, count);
+  const childParticipationRate = rate(staff.filter((s) => s.childParticipation).length, count);
 
   // Weighted: 6+5+5+4+3+2 = 25
   const raw =
-    (qualityAssuranceRate / 100) * 6 +
-    (outcomesMonitoringRate / 100) * 5 +
-    (regulatoryKnowledgeRate / 100) * 5 +
-    (reflectivePracticeRate / 100) * 4 +
-    (dataAnalysisRate / 100) * 3 +
-    (childParticipationRate / 100) * 2;
+    (qualityAssuranceRate! / 100) * 6 +
+    (outcomesMonitoringRate! / 100) * 5 +
+    (regulatoryKnowledgeRate! / 100) * 5 +
+    (reflectivePracticeRate! / 100) * 4 +
+    (dataAnalysisRate! / 100) * 3 +
+    (childParticipationRate! / 100) * 2;
   const overallScore = Math.min(25, Math.round(raw));
 
   return { overallScore, rating: getRating(overallScore * 4), totalStaff: count, qualityAssuranceRate, outcomesMonitoringRate, regulatoryKnowledgeRate, reflectivePracticeRate, dataAnalysisRate, childParticipationRate };
@@ -319,11 +331,11 @@ export function buildChildQualityProfiles(records: QualityReviewRecord[]): Child
     const childName = recs[0].childName;
     const totalReviews = recs.length;
 
-    const meetsStandardRate = pct(
+    const meetsStandardRate = rate(
       recs.filter((r) => r.outcome === "exceeds_standard" || r.outcome === "meets_standard").length,
       totalReviews,
     );
-    const childViewRate = pct(recs.filter((r) => r.childViewCaptured).length, totalReviews);
+    const childViewRate = rate(recs.filter((r) => r.childViewCaptured).length, totalReviews);
 
     const domainsSet = new Set(recs.map((r) => r.domain));
     const domainsCovered = [...domainsSet];
@@ -334,13 +346,13 @@ export function buildChildQualityProfiles(records: QualityReviewRecord[]): Child
     if (totalReviews >= 10) score += 2;
     else if (totalReviews >= 5) score += 1;
 
-    if (meetsStandardRate >= 80) score += 3;
-    else if (meetsStandardRate >= 60) score += 2;
-    else if (meetsStandardRate >= 40) score += 1;
+    if (meets(meetsStandardRate, 80)) score += 3;
+    else if (meets(meetsStandardRate, 60)) score += 2;
+    else if (meets(meetsStandardRate, 40)) score += 1;
 
-    if (childViewRate >= 80) score += 3;
-    else if (childViewRate >= 60) score += 2;
-    else if (childViewRate >= 40) score += 1;
+    if (meets(childViewRate, 80)) score += 3;
+    else if (meets(childViewRate, 60)) score += 2;
+    else if (meets(childViewRate, 40)) score += 1;
 
     const domainCount = domainsCovered.length;
     if (domainCount >= 4) score += 2;
@@ -384,37 +396,37 @@ export function generateQualityOfCareIntelligence(
 
   // Strengths (>=80%)
   const strengths: string[] = [];
-  if (reviewQuality.meetsStandardRate >= 80) strengths.push("Quality reviews consistently meet or exceed standards across domains");
-  if (reviewQuality.evidenceDocumentedRate >= 80) strengths.push("Strong evidence documentation supporting quality judgements");
-  if (reviewQuality.childViewRate >= 80) strengths.push("Children's views are consistently captured in quality reviews");
-  if (reviewQuality.actionPlanRate >= 80) strengths.push("Action plans systematically created from quality review findings");
-  if (reviewCompliance.followUpRate >= 80) strengths.push("Excellent follow-up completion on quality review actions");
-  if (reviewCompliance.regulatoryAlignedRate >= 80) strengths.push("Reviews are well aligned with regulatory requirements");
-  if (reviewCompliance.improvementRate >= 80) strengths.push("Continuous improvement culture — improvements consistently identified");
-  if (staffReadiness.qualityAssuranceRate >= 80) strengths.push("Staff are well trained in quality assurance methods");
-  if (staffReadiness.reflectivePracticeRate >= 80) strengths.push("Strong reflective practice culture across the team");
+  if (meets(reviewQuality.meetsStandardRate, 80)) strengths.push("Quality reviews consistently meet or exceed standards across domains");
+  if (meets(reviewQuality.evidenceDocumentedRate, 80)) strengths.push("Strong evidence documentation supporting quality judgements");
+  if (meets(reviewQuality.childViewRate, 80)) strengths.push("Children's views are consistently captured in quality reviews");
+  if (meets(reviewQuality.actionPlanRate, 80)) strengths.push("Action plans systematically created from quality review findings");
+  if (meets(reviewCompliance.followUpRate, 80)) strengths.push("Excellent follow-up completion on quality review actions");
+  if (meets(reviewCompliance.regulatoryAlignedRate, 80)) strengths.push("Reviews are well aligned with regulatory requirements");
+  if (meets(reviewCompliance.improvementRate, 80)) strengths.push("Continuous improvement culture — improvements consistently identified");
+  if (meets(staffReadiness.qualityAssuranceRate, 80)) strengths.push("Staff are well trained in quality assurance methods");
+  if (meets(staffReadiness.reflectivePracticeRate, 80)) strengths.push("Strong reflective practice culture across the team");
 
   // Areas for improvement (<60%)
   const areasForImprovement: string[] = [];
-  if (reviewQuality.meetsStandardRate < 60) areasForImprovement.push("Too many reviews show standards not being met — targeted improvement needed");
-  if (reviewQuality.evidenceDocumentedRate < 60) areasForImprovement.push("Evidence documentation is insufficient to support quality judgements");
-  if (reviewQuality.childViewRate < 60) areasForImprovement.push("Children's views are not being adequately captured in quality reviews");
-  if (reviewQuality.actionPlanRate < 60) areasForImprovement.push("Action planning from quality reviews needs to be more systematic");
-  if (reviewCompliance.followUpRate < 60) areasForImprovement.push("Follow-up on quality review actions is incomplete");
-  if (reviewCompliance.regulatoryAlignedRate < 60) areasForImprovement.push("Reviews need stronger alignment with regulatory requirements");
-  if (staffReadiness.qualityAssuranceRate < 60) areasForImprovement.push("Staff training in quality assurance methods needs improvement");
-  if (staffReadiness.regulatoryKnowledgeRate < 60) areasForImprovement.push("Staff regulatory knowledge is insufficient");
+  if (below(reviewQuality.meetsStandardRate, 60)) areasForImprovement.push("Too many reviews show standards not being met — targeted improvement needed");
+  if (below(reviewQuality.evidenceDocumentedRate, 60)) areasForImprovement.push("Evidence documentation is insufficient to support quality judgements");
+  if (below(reviewQuality.childViewRate, 60)) areasForImprovement.push("Children's views are not being adequately captured in quality reviews");
+  if (below(reviewQuality.actionPlanRate, 60)) areasForImprovement.push("Action planning from quality reviews needs to be more systematic");
+  if (below(reviewCompliance.followUpRate, 60)) areasForImprovement.push("Follow-up on quality review actions is incomplete");
+  if (below(reviewCompliance.regulatoryAlignedRate, 60)) areasForImprovement.push("Reviews need stronger alignment with regulatory requirements");
+  if (below(staffReadiness.qualityAssuranceRate, 60)) areasForImprovement.push("Staff training in quality assurance methods needs improvement");
+  if (below(staffReadiness.regulatoryKnowledgeRate, 60)) areasForImprovement.push("Staff regulatory knowledge is insufficient");
 
   // Actions
   const actions: string[] = [];
   if (qualityPolicy.overallScore === 0) actions.push("URGENT: Establish a quality assurance framework — CHR 2015 Reg 45 requires regular quality of care reviews");
   if (staffReadiness.overallScore === 0) actions.push("URGENT: Provide quality assurance training to all staff — quality monitoring depends on skilled practitioners");
-  if (reviewQuality.meetsStandardRate < 50) actions.push("Review the quality improvement plan — fewer than half of reviews meet standard");
-  if (reviewQuality.childViewRate < 50) actions.push("Implement systematic child voice capture in all quality reviews — SCCIF requires evidence of children's views");
-  if (reviewCompliance.followUpRate < 50) actions.push("Establish a follow-up tracking system for quality review actions");
-  if (reviewCompliance.domainDiversityRatio < 50) actions.push("Ensure quality reviews cover all SCCIF domains — current coverage is too narrow");
-  if (reviewCompliance.regulatoryAlignedRate < 50) actions.push("Align quality review processes with CHR 2015 and SCCIF requirements");
-  if (staffReadiness.reflectivePracticeRate < 50) actions.push("Promote reflective practice through supervision and team meetings");
+  if (below(reviewQuality.meetsStandardRate, 50)) actions.push("Review the quality improvement plan — fewer than half of reviews meet standard");
+  if (below(reviewQuality.childViewRate, 50)) actions.push("Implement systematic child voice capture in all quality reviews — SCCIF requires evidence of children's views");
+  if (below(reviewCompliance.followUpRate, 50)) actions.push("Establish a follow-up tracking system for quality review actions");
+  if (below(reviewCompliance.domainDiversityRatio, 50)) actions.push("Ensure quality reviews cover all SCCIF domains — current coverage is too narrow");
+  if (below(reviewCompliance.regulatoryAlignedRate, 50)) actions.push("Align quality review processes with CHR 2015 and SCCIF requirements");
+  if (below(staffReadiness.reflectivePracticeRate, 50)) actions.push("Promote reflective practice through supervision and team meetings");
 
   const regulatoryLinks: string[] = [
     "CHR 2015 Reg 45 — Review of quality of care",

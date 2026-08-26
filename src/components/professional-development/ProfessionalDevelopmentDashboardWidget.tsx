@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import type {
   ProfessionalDevelopmentIntelligence,
   StaffDevelopmentProfile,
@@ -174,7 +175,7 @@ export function ProfessionalDevelopmentDashboardWidget() {
         <MetricCard
           label="Qualifications In Progress"
           value={data.qualificationProgress.totalQualifications - data.qualificationProgress.overdueCount > 0
-            ? Math.round((data.qualificationProgress.inProgressRate / 100) * data.qualificationProgress.totalQualifications)
+            ? Math.round(((data.qualificationProgress.inProgressRate ?? 0) / 100) * data.qualificationProgress.totalQualifications)
             : 0}
           color="text-indigo-600"
         />
@@ -230,19 +231,19 @@ export function ProfessionalDevelopmentDashboardWidget() {
           <div className="mt-3 rounded-lg border border-gray-200 bg-white p-4 space-y-3">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
               <div>
-                <span className="text-lg font-bold text-gray-900">{data.cpdQuality.impactAssessedRate}%</span>
+                <span className="text-lg font-bold text-gray-900">{formatRate(data.cpdQuality.impactAssessedRate)}</span>
                 <p className="text-xs text-gray-500">Impact Assessed</p>
               </div>
               <div>
-                <span className="text-lg font-bold text-gray-900">{data.cpdQuality.positiveImpactRate}%</span>
+                <span className="text-lg font-bold text-gray-900">{formatRate(data.cpdQuality.positiveImpactRate)}</span>
                 <p className="text-xs text-gray-500">Positive Impact</p>
               </div>
               <div>
-                <span className="text-lg font-bold text-gray-900">{data.cpdQuality.sharedWithTeamRate}%</span>
+                <span className="text-lg font-bold text-gray-900">{formatRate(data.cpdQuality.sharedWithTeamRate)}</span>
                 <p className="text-xs text-gray-500">Shared with Team</p>
               </div>
               <div>
-                <span className="text-lg font-bold text-gray-900">{data.cpdQuality.relevantToRoleRate}%</span>
+                <span className="text-lg font-bold text-gray-900">{formatRate(data.cpdQuality.relevantToRoleRate)}</span>
                 <p className="text-xs text-gray-500">Role Relevant</p>
               </div>
             </div>
@@ -276,19 +277,19 @@ export function ProfessionalDevelopmentDashboardWidget() {
           <div className="mt-3 rounded-lg border border-gray-200 bg-white p-4 space-y-3">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
               <div>
-                <span className="text-lg font-bold text-green-600">{data.qualificationProgress.completedRate}%</span>
+                <span className="text-lg font-bold text-green-600">{formatRate(data.qualificationProgress.completedRate)}</span>
                 <p className="text-xs text-gray-500">Completed</p>
               </div>
               <div>
-                <span className="text-lg font-bold text-blue-600">{data.qualificationProgress.inProgressRate}%</span>
+                <span className="text-lg font-bold text-blue-600">{formatRate(data.qualificationProgress.inProgressRate)}</span>
                 <p className="text-xs text-gray-500">In Progress</p>
               </div>
               <div>
-                <span className="text-lg font-bold text-indigo-600">{data.qualificationProgress.fundedRate}%</span>
+                <span className="text-lg font-bold text-indigo-600">{formatRate(data.qualificationProgress.fundedRate)}</span>
                 <p className="text-xs text-gray-500">Employer Funded</p>
               </div>
               <div>
-                <span className="text-lg font-bold text-purple-600">{data.qualificationProgress.supportRate}%</span>
+                <span className="text-lg font-bold text-purple-600">{formatRate(data.qualificationProgress.supportRate)}</span>
                 <p className="text-xs text-gray-500">Support Provided</p>
               </div>
             </div>
@@ -321,23 +322,23 @@ export function ProfessionalDevelopmentDashboardWidget() {
           <div className="mt-3 rounded-lg border border-gray-200 bg-white p-4">
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-center">
               <div>
-                <span className="text-lg font-bold text-gray-900">{data.supervisionDevelopment.goalsSetRate}%</span>
+                <span className="text-lg font-bold text-gray-900">{formatRate(data.supervisionDevelopment.goalsSetRate)}</span>
                 <p className="text-xs text-gray-500">Goals Set</p>
               </div>
               <div>
-                <span className="text-lg font-bold text-gray-900">{data.supervisionDevelopment.progressReviewedRate}%</span>
+                <span className="text-lg font-bold text-gray-900">{formatRate(data.supervisionDevelopment.progressReviewedRate)}</span>
                 <p className="text-xs text-gray-500">Progress Reviewed</p>
               </div>
               <div>
-                <span className="text-lg font-bold text-gray-900">{data.supervisionDevelopment.trainingNeedsRate}%</span>
+                <span className="text-lg font-bold text-gray-900">{formatRate(data.supervisionDevelopment.trainingNeedsRate)}</span>
                 <p className="text-xs text-gray-500">Training Needs Identified</p>
               </div>
               <div>
-                <span className="text-lg font-bold text-gray-900">{data.supervisionDevelopment.actionPlanRate}%</span>
+                <span className="text-lg font-bold text-gray-900">{formatRate(data.supervisionDevelopment.actionPlanRate)}</span>
                 <p className="text-xs text-gray-500">Action Plans Created</p>
               </div>
               <div>
-                <span className="text-lg font-bold text-gray-900">{data.supervisionDevelopment.actionsCompletedRate}%</span>
+                <span className="text-lg font-bold text-gray-900">{formatRate(data.supervisionDevelopment.actionsCompletedRate)}</span>
                 <p className="text-xs text-gray-500">Actions Completed</p>
               </div>
               <div>
@@ -371,7 +372,7 @@ export function ProfessionalDevelopmentDashboardWidget() {
                 { label: "Induction", value: data.learningCulture.inductionRate },
               ].map((item) => (
                 <div key={item.label} className="text-center py-2">
-                  <span className={`text-lg font-bold ${item.value >= 80 ? "text-green-600" : item.value >= 50 ? "text-amber-600" : "text-red-600"}`}>
+                  <span className={`text-lg font-bold ${meets(item.value, 80) ? "text-green-600" : meets(item.value, 50) ? "text-amber-600" : "text-red-600"}`}>
                     {item.value}%
                   </span>
                   <p className="text-xs text-gray-500">{item.label}</p>
