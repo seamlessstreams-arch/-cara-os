@@ -242,7 +242,7 @@ function CaraStudioContent() {
   const ypQuery = useYoungPeople();
   const children = (ypQuery.data?.data ?? []).map((yp: any) => ({
     id: yp.id,
-    name: yp.preferred_name || yp.first_name || yp.name || "Child",
+    name: yp.preferred_name || yp.first_name || "Child",
   }));
 
   // ── Generate artifact ──────────────────────────────────────────────────────

@@ -36,7 +36,7 @@ export async function GET() {
   // ── Map children ────────────────────────────���────────────────────────────
   const children: ChildRef[] = (youngPeopleList ?? []).map((yp: any) => ({
     id: yp.id,
-    name: yp.preferred_name ?? yp.first_name ?? yp.name ?? "Unknown",
+    name: yp.preferred_name ?? yp.first_name ?? "Unknown",
   }));
 
   // ── Map staff ─────────���──────────────────────────────��───────────────────
@@ -53,7 +53,10 @@ export async function GET() {
     date: r.date,
     iro_name: r.iro ?? "",
     child_participated: r.child_participation === "attended" || r.child_participation === "views_submitted" || r.child_participation === "advocate_attended",
-    home_report_submitted: r.home_report_submitted ?? true,
+    // LACReview does not record whether the home's report went in — unmeasured,
+    // not assumed-submitted (the old `?? true` pinned the rate at 100% and
+    // silenced the report-not-submitted alert for every review)
+    home_report_submitted: null,
     care_plan_agreed: r.care_plan_updated ?? false,
     actions: (r.actions_agreed ?? []).map((a: any) => (typeof a === "string" ? a : a.action ?? "")),
     next_review_due: r.next_review_date ?? "",
@@ -83,7 +86,7 @@ export async function GET() {
       attendees: (m.attendees ?? []).map((a: any) => (typeof a === "string" ? a : a.name ?? "")),
       actions_count: actionsCount,
       actions_completed: actionsCompleted,
-      home_report_submitted: m.home_report_submitted ?? true,
+      home_report_submitted: null,
     };
   });
 

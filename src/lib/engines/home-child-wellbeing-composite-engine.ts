@@ -24,7 +24,7 @@ export interface ChildWellbeingSnapshot {
   meals_eaten_rate: number | null; // 0-100; null = no meals recorded
   dietary_needs_met: boolean;
   // Education
-  attendance_rate: number; // 0-100
+  attendance_rate: number | null; // 0-100; null = no attendance records
   exclusion_days: number;
   // Social connectedness
   friends_count: number; isolation_risk: string; // "none"|"mild"|"moderate"|"high"
@@ -147,7 +147,9 @@ function scoreChild(c: ChildWellbeingSnapshot): { score: number; risks: string[]
   // Education (0-10)
   max += 10;
   let eduScore = 0;
-  if (c.attendance_rate >= 95) eduScore += 6;
+  if (c.attendance_rate === null) {
+    max -= 6; // attendance unmeasured — neither credit nor an education risk
+  } else if (c.attendance_rate >= 95) eduScore += 6;
   else if (c.attendance_rate >= 90) eduScore += 4;
   else if (c.attendance_rate >= 80) eduScore += 2;
   else { eduScore += 0; risks.push("education"); }

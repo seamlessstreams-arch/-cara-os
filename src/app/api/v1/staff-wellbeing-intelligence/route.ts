@@ -46,10 +46,10 @@ export async function GET() {
   // ── Leave Requests ────────────────────────────────────────────────────────
   const leaveRequests: LeaveRequestInput[] = (leaveRequestsList ?? []).map((lr: any) => ({
     staff_id: lr.staff_id,
-    leave_type: lr.leave_type ?? lr.type ?? "annual",
+    leave_type: lr.leave_type ?? "annual",
     start_date: (lr.start_date ?? "").slice(0, 10),
     end_date: (lr.end_date ?? "").slice(0, 10),
-    total_days: lr.total_days ?? lr.days ?? 1,
+    total_days: lr.total_days ?? 1,
     status: lr.status ?? "approved",
   }));
 
@@ -101,44 +101,40 @@ export async function GET() {
 
   // ── Recognition ───────────────────────────────────────────────────────────
   const recognitionRecords: RecognitionInput[] = (staffRecognitionRecordsList ?? []).map((r: any) => ({
-    staff_id: r.staff_member ?? r.staff_id ?? "",
+    staff_id: r.staff_member ?? "",
     date: (r.date ?? "").slice(0, 10),
-    type: r.recognition_type ?? r.type ?? "peer",
+    type: r.recognition_type ?? "peer",
   }));
 
   // ── Grievances ────────────────────────────────────────────────────────────
   const grievanceRecords: GrievanceInput[] = (staffGrievanceRecordsList ?? []).map((g: any) => ({
-    staff_id: g.raised_by ?? g.staff_id ?? "",
-    date: (g.raised_date ?? g.date ?? "").slice(0, 10),
+    staff_id: g.raised_by ?? "",
+    date: (g.raised_date ?? "").slice(0, 10),
     status: g.status ?? "open",
     category: g.category ?? "other",
   }));
 
   // ── Incident Involvement ──────────────────────────────────────────────────
+  // Incident has no staff_id/staff_involved fields (the old reads matched
+  // nothing, so this input was permanently empty and incident exposure never
+  // registered). The reporting staff member is id-keyed; witnesses mix free-text
+  // names with staff ids, so a witness counts only when it matches a real staff
+  // record.
+  const staffIds = new Set((staffList ?? []).map((s: any) => s.id));
   const incidents: IncidentInvolvementInput[] = [];
-  for (const inc of incidentsList ?? []) {
-    const i = inc as any;
-    // Primary staff involved
-    if (i.staff_id) {
+  for (const i of incidentsList ?? []) {
+    const involved = new Set<string>();
+    if (i.reported_by && staffIds.has(i.reported_by)) involved.add(i.reported_by);
+    for (const w of i.witnesses ?? []) {
+      if (staffIds.has(w)) involved.add(w);
+    }
+    for (const sid of involved) {
       incidents.push({
-        staff_id: i.staff_id,
+        staff_id: sid,
         date: (i.date ?? "").slice(0, 10),
         severity: i.severity ?? "medium",
         type: i.type ?? "incident",
       });
-    }
-    // Additional staff witnesses / involved
-    if (Array.isArray(i.staff_involved)) {
-      for (const sid of i.staff_involved) {
-        if (sid !== i.staff_id) {
-          incidents.push({
-            staff_id: sid,
-            date: (i.date ?? "").slice(0, 10),
-            severity: i.severity ?? "medium",
-            type: i.type ?? "incident",
-          });
-        }
-      }
     }
   }
 

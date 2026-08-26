@@ -42,7 +42,7 @@ export async function GET() {
   const hasSEF = selfEvalAreas.length > 0;
   const sefLastUpdated = hasSEF
     ? selfEvalAreas.reduce((latest: string, a: any) => {
-        const d = a.updated_at ?? a.created_at ?? "";
+        const d = a.created_at ?? "";
         return d > latest ? d : latest;
       }, "")
     : null;
@@ -96,10 +96,12 @@ export async function GET() {
 
   const lacReviews = store.lacReviews ?? [];
   const overdueLAC = children.filter((c) => {
-    const reviews = lacReviews.filter((r: any) => r.child_id === c.id);
+    const reviews = lacReviews.filter((r) => r.child_id === c.id);
     if (reviews.length === 0) return true;
-    const latest = [...reviews].sort((a: any, b: any) => (b.review_date ?? "").localeCompare(a.review_date ?? ""))[0];
-    const daysSince = Math.floor((new Date(today).getTime() - new Date((latest as any).review_date ?? "").getTime()) / 86_400_000);
+    // LACReview's date field is `date` — the old `review_date` read (behind an
+    // `as any`) never matched, so every latest review dated as "" and read overdue
+    const latest = [...reviews].sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""))[0];
+    const daysSince = Math.floor((new Date(today).getTime() - new Date(latest.date ?? "").getTime()) / 86_400_000);
     return daysSince > 180;
   }).length;
 

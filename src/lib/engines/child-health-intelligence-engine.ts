@@ -80,7 +80,8 @@ export interface MentalHealthCheckInInput {
   id: string;
   date: string;
   overall_mood: number;     // 1-5
-  anxiety_level: number;    // 1-5
+  /** 1-5; null — the check-in form does not capture anxiety, so it is unmeasured unless a caller supplies it. */
+  anxiety_level: number | null;
   sleep_quality: number;    // 1-5
   concerns: string[];
 }
@@ -315,7 +316,7 @@ export function computeChildHealthIntelligence(
   const older30d = mental_health_check_ins.filter((c) => isWithin(today, c.date, 60) && !isWithin(today, c.date, 30));
 
   const moods = mental_health_check_ins.map((c) => c.overall_mood);
-  const anxieties = mental_health_check_ins.map((c) => c.anxiety_level);
+  const anxieties = mental_health_check_ins.map((c) => c.anxiety_level).filter((v): v is number => v !== null);
   const sleepQuals = mental_health_check_ins.map((c) => c.sleep_quality);
 
   const recentMoodAvg = avg(recent30d.map((c) => c.overall_mood));

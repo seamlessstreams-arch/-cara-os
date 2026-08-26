@@ -32,7 +32,7 @@ export async function GET() {
   const screenings: ExploitationScreeningInput[] = (exploitationScreeningsList ?? []).map((r: any) => ({
     id: r.id,
     child_id: r.child_id,
-    screening_type: r.exploitation_type ?? r.screening_type ?? "cse",
+    screening_type: r.exploitation_type ?? "cse",
     date: typeof r.date === "string" ? r.date.slice(0, 10) : r.date,
     risk_level: mapRiskLevel(r.risk_level),
     screened_by: r.completed_by ?? "",
@@ -44,7 +44,7 @@ export async function GET() {
 
   const localityRisks: LocalityRiskInput[] = (localityRisksList ?? []).map((r: any) => ({
     id: r.id,
-    location_name: r.location ?? r.location_name ?? "",
+    location_name: r.location ?? "",
     location_type: mapLocationType(r.category),
     risk_type: mapRiskType(r.category),
     risk_level: r.risk_level ?? "medium",

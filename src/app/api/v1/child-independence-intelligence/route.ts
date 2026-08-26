@@ -9,6 +9,7 @@ import {
   type PathwayPlanInput,
 } from "@/lib/engines/child-independence-intelligence-engine";
 import { todayStr } from "@/lib/utils";
+import { ageFromDob } from "@/lib/cara-studio/cara-context-builder";
 
 export const dynamic = "force-dynamic";
 
@@ -36,14 +37,16 @@ export async function GET(request: NextRequest) {
   }
 
   const childName = `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim() || "Unknown";
-  const childAge = (child as any).age ?? 17;
+  // YoungPerson has no age field — derive from date_of_birth (the old phantom
+  // `.age` read meant every child was assessed as 17); 17 only if DOB unparseable
+  const childAge = ageFromDob(child.date_of_birth, today) ?? 17;
 
   // ── Independence Skills Records ───────────────────────────────────────
   const independence_records: IndependenceSkillsRecordInput[] = (independenceSkillsRecordsList ?? [])
     .filter((r: any) => r.child_id === childId)
     .map((r: any) => ({
       id: r.id,
-      review_date: (r.review_date ?? r.date ?? "").slice(0, 10),
+      review_date: (r.review_date ?? "").slice(0, 10),
       overall_readiness: r.overall_readiness ?? 0,
       skills: (r.skills ?? []).map((s: any): SkillInput => ({
         id: s.id,
@@ -55,7 +58,7 @@ export async function GET(request: NextRequest) {
       })),
       strengths: r.strengths ?? [],
       areas_for_development: r.areas_for_development ?? [],
-      child_view: r.child_view ?? r.child_voice ?? "",
+      child_view: r.child_view ?? "",
       pathway_notes: r.pathway_notes ?? "",
     }));
 
@@ -65,15 +68,15 @@ export async function GET(request: NextRequest) {
   if (ppRecords.length > 0) {
     const sorted = [...ppRecords].sort(
       (a: any, b: any) =>
-        new Date(b.last_review_date ?? b.date ?? "").getTime() -
-        new Date(a.last_review_date ?? a.date ?? "").getTime(),
+        new Date(b.last_review_date ?? "").getTime() -
+        new Date(a.last_review_date ?? "").getTime(),
     );
     const p = sorted[0] as any;
     pathway_plan = {
       id: p.id,
       status: p.status ?? "active_16_18",
       plan_version: p.plan_version ?? "1.0",
-      last_review_date: (p.last_review_date ?? p.date ?? "").slice(0, 10),
+      last_review_date: (p.last_review_date ?? "").slice(0, 10),
       next_review_date: (p.next_review_date ?? "").slice(0, 10),
       personal_advisor: p.personal_advisor ?? "",
       accommodation: p.accommodation ?? "",

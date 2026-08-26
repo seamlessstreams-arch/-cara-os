@@ -65,29 +65,21 @@ export async function GET() {
   });
 
   // ── Map Reg 45 / Quality of Care Reviews ────────────────────────────────────
-  const reg45Reports: Reg45ReportInput[] = (qualityOfCareReviewsList ?? []).map((r: any) => {
-    // Determine status
-    const status = r.status ?? (r.actions?.length > 0 ? "in_progress" : "not_started");
-
-    // Next review date
-    const nextDue = r.next_review_date ?? "";
-
-    // Progress — estimate from completed actions if available
-    const actions = r.actions ?? [];
-    const completedActions = actions.filter((a: any) => a.status === "completed").length;
-    const progress = actions.length > 0 ? Math.round((completedActions / actions.length) * 100) : null;
-
-    return {
-      id: r.id,
-      period_start: r.date ?? "",
-      period_end: r.next_review_date ?? "",
-      author: r.lead_reviewer ?? "",
-      status: status === "completed" ? "completed" : status === "in_progress" ? "in_progress" : "not_started",
-      submitted_date: status === "completed" ? r.date : null,
-      next_due: nextDue,
-      progress_percentage: status === "completed" ? 100 : progress,
-    };
-  });
+  // A QualityOfCareReview record IS a completed Reg 45 review — it only exists
+  // once the review happened (date, lead reviewer, rating, domains). The old
+  // phantom `r.status` read meant no report ever counted as completed, so every
+  // review on file registered as a not-started deficiency. Its `actions` are
+  // follow-ups FROM the completed review, not report-writing progress.
+  const reg45Reports: Reg45ReportInput[] = (qualityOfCareReviewsList ?? []).map((r: any) => ({
+    id: r.id,
+    period_start: r.date ?? "",
+    period_end: r.next_review_date ?? "",
+    author: r.lead_reviewer ?? "",
+    status: "completed",
+    submitted_date: r.date ?? null,
+    next_due: r.next_review_date ?? "",
+    progress_percentage: 100,
+  }));
 
   // ── Map Notifiable Events ───────────────────────────────────────────────────
   const notifications: NotificationInput[] = (notifiableEventsList ?? []).map((r: any) => {

@@ -195,20 +195,20 @@ export function MultiAgencyCard() {
           </p>
           <div className="grid grid-cols-3 gap-2 text-center text-xs">
             <div>
-              <p className={cn("font-bold tabular-nums", (o.home_report_rate ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-                {o.home_report_rate}%
+              <p className={cn("font-bold tabular-nums", o.home_report_rate === null ? "text-muted-foreground" : o.home_report_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+                {o.home_report_rate === null ? "—" : `${o.home_report_rate}%`}
               </p>
               <p className="text-[10px] text-muted-foreground">Reports</p>
             </div>
             <div>
-              <p className={cn("font-bold tabular-nums", (o.child_participation_rate ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-                {o.child_participation_rate}%
+              <p className={cn("font-bold tabular-nums", o.child_participation_rate === null ? "text-muted-foreground" : o.child_participation_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+                {o.child_participation_rate === null ? "—" : `${o.child_participation_rate}%`}
               </p>
               <p className="text-[10px] text-muted-foreground">Participation</p>
             </div>
             <div>
-              <p className={cn("font-bold tabular-nums", (o.follow_up_completion_rate ?? 0) >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
-                {o.follow_up_completion_rate}%
+              <p className={cn("font-bold tabular-nums", o.follow_up_completion_rate === null ? "text-muted-foreground" : o.follow_up_completion_rate >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]")}>
+                {o.follow_up_completion_rate === null ? "—" : `${o.follow_up_completion_rate}%`}
               </p>
               <p className="text-[10px] text-muted-foreground">Follow-ups</p>
             </div>

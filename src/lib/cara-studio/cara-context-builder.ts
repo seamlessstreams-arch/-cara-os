@@ -38,7 +38,7 @@ export interface CaraChildContext {
   contextText: string;
 }
 
-function ageFromDob(dob: string, today: string): number | null {
+export function ageFromDob(dob: string, today: string): number | null {
   const b = new Date(dob).getTime();
   if (Number.isNaN(b)) return null;
   return Math.floor((new Date(today).getTime() - b) / (365.25 * 86_400_000));

@@ -12,6 +12,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { dal } from "@/lib/db";
 import { todayStr } from "@/lib/utils";
+import { ageFromDob } from "@/lib/cara-studio/cara-context-builder";
 import {
   computeChildSafeguarding,
   type RiskAssessmentInput,
@@ -44,12 +45,14 @@ export async function GET(request: NextRequest) {
     dal.restraints.findAll(),
   ]);
 
-  // ── Child info ─────────────────────────────────────────────────────────
-  const child = (youngPeopleList ?? []).find((yp: any) => yp.id === childId) as any;
-  const childName = (child?.name ?? `${child?.first_name ?? ""} ${child?.last_name ?? ""}`.trim()) || childId;
-  const childAge = child?.age ?? 15;
-
   const today = todayStr();
+
+  // ── Child info ─────────────────────────────────────────────────────────
+  const child = (youngPeopleList ?? []).find((yp) => yp.id === childId);
+  const childName = `${child?.first_name ?? ""} ${child?.last_name ?? ""}`.trim() || childId;
+  // YoungPerson has no age field — derive from date_of_birth (the old phantom
+  // `.age` read meant every child was assessed as 15); 15 only if DOB missing
+  const childAge = (child ? ageFromDob(child.date_of_birth, today) : null) ?? 15;
 
   // ── Risk Assessments ───────────────────────────────────────────────────
   const risk_assessments: RiskAssessmentInput[] = (riskAssessmentsList ?? [])
@@ -77,17 +80,11 @@ export async function GET(request: NextRequest) {
 
   // ── Incidents ──────────────────────────────────────────────────────────
   const incidents: IncidentInput[] = (incidentsList ?? [])
-    .filter((i: any) => {
-      const yp = i.young_person_id ?? i.child_id;
-      if (yp === childId) return true;
-      // Check involved_children array
-      if (Array.isArray(i.involved_children) && i.involved_children.includes(childId)) return true;
-      return false;
-    })
+    .filter((i: any) => i.child_id === childId)
     .map((i: any) => ({
       id: i.id,
-      date: typeof i.date === "string" ? i.date.slice(0, 10) : (i.date_time ?? i.created_at ?? today).toString().slice(0, 10),
-      type: i.type ?? i.category ?? "other",
+      date: (i.date ?? "").slice(0, 10),
+      type: i.type ?? "other",
       severity: i.severity ?? "medium",
       involved_child: true,
     }));
@@ -97,7 +94,7 @@ export async function GET(request: NextRequest) {
     .filter((m: any) => m.child_id === childId)
     .map((m: any) => ({
       id: m.id,
-      date: typeof m.date_missing === "string" ? m.date_missing.slice(0, 10) : (m.date ?? today).toString().slice(0, 10),
+      date: (m.date_missing ?? "").slice(0, 10),
       duration_hours: m.duration_hours ?? null,
       risk_level: m.risk_level ?? "medium",
       returned: m.status === "returned" || m.status === "closed" || !!m.date_returned,
@@ -115,7 +112,7 @@ export async function GET(request: NextRequest) {
       duration_minutes: r.duration ?? 0,
       reason: r.reason ?? "",
       de_escalation_attempts: Array.isArray(r.de_escalation_attempts) ? r.de_escalation_attempts : [],
-      injuries_count: Array.isArray(r.injuries) ? r.injuries.length : (r.injuries_count ?? 0),
+      injuries_count: Array.isArray(r.injuries) ? r.injuries.length : 0,
       child_debriefed: !!r.child_debriefed,
       staff_debriefed: !!r.staff_debriefed,
       review_status: r.review_status ?? "pending",

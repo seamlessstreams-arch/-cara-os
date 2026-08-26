@@ -852,7 +852,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     // ── Children ────────────────────────────────────────────────────────────
     const children: ChildRef__activity_enrichment[] = (store.youngPeople ?? []).map((yp: any) => ({
       id: yp.id,
-      name: (yp.name ?? `${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim()) || yp.id,
+      name: `${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim() || yp.id,
     }));
   
     const childIds = new Set(children.map((c) => c.id));
@@ -1534,7 +1534,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       );
   
       const totalStaffArr = (store.staff ?? []) as any[];
-      const total_staff = totalStaffArr.filter((s: any) => s.status === "active" || s.status === "current").length || totalStaffArr.length;
+      const total_staff = totalStaffArr.filter((s: any) => s.employment_status === "active").length || totalStaffArr.length;
   
       const allergy_plan_records: AllergyPlanInput__allergy_management_food_safety[] = rawAllergyPlans.map((p: any) => ({
         id: p.id ?? "",
@@ -4192,7 +4192,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const eduRecords = (store.eduAttendanceRecords as any[] ?? []).filter((e: any) => e.child_id === childId);
       const attendanceRate = eduRecords.length > 0
         ? Math.round((eduRecords.filter((e: any) => e.present || e.status === "present").length / eduRecords.length) * 100)
-        : (child.school_attendance_rate ?? 90);
+        : null; // YoungPerson carries no attendance figure — unmeasured, not a fabricated 90
       const exclusions = ((store as any).exclusionRecords as any[] ?? []).filter((e: any) => e.child_id === childId);
       const exclusionDays = exclusions.reduce((s: number, e: any) => s + (e.days ?? 1), 0);
   
@@ -6725,7 +6725,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     // ── Total staff ────────────────────────────────────────────────────
     const totalStaff = (store.staff ?? []).filter(
-      (s: any) => s.status === "active",
+      (s: any) => s.employment_status === "active",
     ).length;
   
     const result = computeHomeDataGovernance({
@@ -6751,7 +6751,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const total_children = yp.filter((c: any) => c.status === "current").length;
   
       const staffList = (store.staff ?? []) as any[];
-      const total_staff = staffList.filter((s: any) => s.status === "active" || s.status === "current").length || staffList.length;
+      const total_staff = staffList.filter((s: any) => s.employment_status === "active").length || staffList.length;
   
       const rawPolicies = optionalCollection(store, "dataProtectionPolicyRecords");
       const policy_compliance_records: DataProtectionPolicyRecordInput[] = rawPolicies.map((r: any) => ({
@@ -7587,7 +7587,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const today = todayStr();
   
     const staffList = (store.staff ?? []) as any[];
-    const totalStaff = staffList.filter((s: any) => s.status === "active" || !s.status).length;
+    const totalStaff = staffList.filter((s: any) => s.employment_status === "active").length;
   
     const documents: DocumentInput__document_governance[] = ((store.documents ?? []) as any[])
       .map((d: any) => ({
@@ -7773,8 +7773,10 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const yp = (store.youngPeople ?? []) as any[];
       const total_children = yp.filter((c: any) => c.status === "current").length;
   
-      const staffMembers = optionalCollection(store, "staffMembers");
-      const total_staff = staffMembers.filter((s: any) => s.status === "active" || s.status === "current").length;
+      // store.staff, not the phantom "staffMembers" collection (which is always
+      // empty, so total_staff read 0 here)
+      const staffMembers = (store.staff ?? []) as any[];
+      const total_staff = staffMembers.filter((s: any) => s.employment_status === "active").length;
   
       const rawPat = optionalCollection(store, "patTestingRecords");
       const pat_testing_records: PatTestingInput[] = rawPat.map((p: any) => ({
@@ -9581,7 +9583,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     ).length;
   
     const totalStaff = (store.staff ?? []).filter(
-      (s: any) => s.status === "active" || s.employment_status === "active",
+      (s: any) => s.employment_status === "active",
     ).length;
   
     const result = computeHomeFireSafety({
@@ -9605,7 +9607,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const total_children = yp.filter((c: any) => c.status === "current").length;
   
       const staff = (store.staff ?? []) as any[];
-      const total_staff = staff.filter((s: any) => s.status === "current" || s.status === "active").length || staff.length;
+      const total_staff = staff.filter((s: any) => s.employment_status === "active").length || staff.length;
   
       const rawKitChecks = optionalCollection(store, "kitCheckRecords");
       const kit_check_records: KitCheckInput[] = rawKitChecks.map((k: any) => ({
@@ -12935,7 +12937,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const total_children = yp.filter((c: any) => c.status === "current").length;
   
       const staffList = (store.staff ?? []) as any[];
-      const total_staff = staffList.filter((s: any) => s.status === "active" || s.status === "current").length;
+      const total_staff = staffList.filter((s: any) => s.employment_status === "active").length;
   
       const rawKeyRegister = optionalCollection(store, "keyRegisterRecords");
       const key_register_records: KeyRegisterRecordInput[] = rawKeyRegister.map((k: any) => ({
@@ -15593,7 +15595,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     // ── Children ────────────────────────────────────────────────────────────
     const children: ChildRef__night_safety[] = (store.youngPeople ?? []).map((yp: any) => ({
       id: yp.id,
-      name: (yp.name ?? `${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim()) || yp.id,
+      name: `${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim() || yp.id,
     }));
   
     const childIds = new Set(children.map((c) => c.id));
@@ -16352,7 +16354,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     // ── Total staff ───────────────────────────────────────────────────────
     const totalStaff = (store.staff ?? []).filter(
-      (s: any) => s.status === "active" || s.employment_status === "active",
+      (s: any) => s.employment_status === "active",
     ).length;
   
     const result = computeHomeOnCallGovernance({
@@ -16918,7 +16920,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         const childRaised = agenda.filter((a: any) => {
           const raised = (a.raised_by ?? "").toLowerCase();
           return raised.startsWith("yp_") || childIds.some(id => raised === id) ||
-            youngPeople.some((yp: any) => raised === (yp.name ?? "").toLowerCase() || raised === (yp.first_name ?? "").toLowerCase());
+            youngPeople.some((yp: any) => raised === (yp.first_name ?? "").toLowerCase());
         }).length;
   
         return {
@@ -18637,7 +18639,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const today = todayStr();
   
       const staff = (store.staff ?? []) as any[];
-      const total_staff = staff.filter((s: any) => s.status === "current" || s.status === "active").length;
+      const total_staff = staff.filter((s: any) => s.employment_status === "active").length;
   
       const policies = (store.homePolicies ?? []) as any[];
       const total_policies = policies.length;
@@ -24336,7 +24338,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     // ── Total staff ───────────────────────────────────────────────────────
     const totalStaff = (store.staff ?? []).filter(
-      (s: any) => s.status === "active" || s.employment_status === "active",
+      (s: any) => s.employment_status === "active",
     ).length;
   
     const result = computeHomeStaffSafety({
@@ -24621,7 +24623,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     // ── Total staff ───────────────────────────────────────────────────────
     const totalStaff = (store.staff ?? []).filter(
-      (s: any) => s.status === "active" || s.employment_status === "active",
+      (s: any) => s.employment_status === "active",
     ).length;
   
     const result = computeHomeStaffWellbeing({
@@ -27593,7 +27595,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     // ── Children ────────────────────────────────────────────────────────────
     const children: ChildRef__wellbeing[] = (store.youngPeople ?? []).map((yp: any) => ({
       id: yp.id,
-      name: (yp.name ?? `${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim()) || yp.id,
+      name: `${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim() || yp.id,
     }));
   
     const childIds = new Set(children.map((c) => c.id));
@@ -28147,9 +28149,10 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   },
 
   "workforce-resilience-composite": async () => {
-  
+
     const store = getStore();
     const staff = store.staff ?? [];
+    const today = todayStr();
   
     const staff_snapshots: StaffResilienceSnapshot[] = staff.map((s: any) => {
       const staffId = s.id;
@@ -28193,10 +28196,14 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const latestWb = wellbeingRecords.length > 0 ? wellbeingRecords.sort((a: any, b: any) => (b.date ?? "").localeCompare(a.date ?? ""))[0] : null;
       const wbScore = latestWb?.score ?? latestWb?.wellbeing_score ?? null;
   
-      // DBS / induction
-      const dbsCurrent = !!(s.dbs_current ?? s.dbsCurrent ?? s.dbs_valid);
+      // DBS / induction. StaffMember records dbs_number / dbs_issue_date /
+      // dbs_update_service, not a current flag: current = a number on file plus
+      // Update Service registration or an issue date within the 3-year renewal
+      // cycle (ISO string compare — no Date, so no timezone edge).
+      const threeYearsAgo = `${Number(today.slice(0, 4)) - 3}${today.slice(4)}`;
+      const dbsCurrent = !!s.dbs_number && (!!s.dbs_update_service || (s.dbs_issue_date ?? "") >= threeYearsAgo);
       const inductionRecords = (store.staffInductionRecords as any[] ?? []).filter((ir: any) => ir.staff_id === staffId || ir.staffId === staffId);
-      const inductionCompleted = inductionRecords.some((ir: any) => ir.completed || ir.status === "completed") || !!(s.induction_completed);
+      const inductionCompleted = inductionRecords.some((ir: any) => ir.completed || ir.status === "completed");
   
       return {
         staff_id: staffId,

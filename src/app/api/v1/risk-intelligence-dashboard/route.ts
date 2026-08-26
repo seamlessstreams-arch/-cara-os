@@ -92,7 +92,7 @@ export async function GET(_request: NextRequest) {
       id: m.id,
       child_id: m.child_id,
       child_name: childName,
-      date: (m.date_missing ?? m.date ?? "").slice(0, 10),
+      date: (m.date_missing ?? "").slice(0, 10),
       duration_hours: m.duration_hours ?? 0,
       risk_level: m.risk_level ?? "medium",
       return_interview_completed: m.return_interview_completed ?? false,
@@ -141,6 +141,18 @@ export async function GET(_request: NextRequest) {
   });
 
   // ── Significant Events ────────────────────────────────────────────────
+  // SignificantEvent records severity, not significance; the engine's vocabulary
+  // is routine / significant / critical. A positive event is not a risk signal,
+  // so it maps to routine rather than inflating the repeat-event flags. The old
+  // `se.significance ?? "significant"` read a phantom field, so every event —
+  // including celebrations — counted as significant and none ever read critical.
+  const SEVERITY_TO_SIGNIFICANCE: Record<string, string> = {
+    positive: "routine",
+    routine: "routine",
+    concerning: "significant",
+    serious: "significant",
+    critical: "critical",
+  };
   const significant_events: SignificantEventInput[] = (significantEventsList ?? []).map((se: any) => {
     const child = youngPeopleList.find((yp) => yp.id === se.child_id);
     const childName = child
@@ -152,7 +164,7 @@ export async function GET(_request: NextRequest) {
       child_name: childName,
       date: (se.date ?? se.created_at ?? "").slice(0, 10),
       category: se.category ?? "other",
-      significance: se.significance ?? "significant",
+      significance: SEVERITY_TO_SIGNIFICANCE[se.severity] ?? "significant",
     };
   });
 

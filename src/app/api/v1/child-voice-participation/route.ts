@@ -50,7 +50,7 @@ export async function GET() {
     .filter((yp: any) => yp.status === "current")
     .map((yp: any) => ({
       id: yp.id,
-      name: (yp.name ?? `${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim()) || yp.id,
+      name: `${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim() || yp.id,
     }));
 
   // ── LAC Reviews ────────────────────────────────────────────────────────
@@ -60,7 +60,7 @@ export async function GET() {
     date: typeof r.date === "string" ? r.date.slice(0, 10) : r.date,
     child_participation: mapParticipation(r.child_participation ?? "did_not_participate"),
     child_views_recorded: !!(r.child_views && r.child_views.trim().length > 0),
-    iro_name: r.iro ?? r.iro_name ?? "",
+    iro_name: r.iro ?? "",
   }));
 
   // ── Advocacy Records ───────────────────────────────────────────────────
@@ -85,9 +85,9 @@ export async function GET() {
     id: k.id,
     child_id: k.child_id,
     date: typeof k.date === "string" ? k.date.slice(0, 10) : k.date,
-    child_engaged: k.child_engaged ?? (k.mood_after != null && k.mood_before != null ? k.mood_after >= k.mood_before : true),
-    child_views_captured: k.child_views_captured ?? !!(k.child_voice && k.child_voice.trim().length > 0),
-    themes: Array.isArray(k.topics) ? k.topics : Array.isArray(k.themes) ? k.themes : [],
+    child_engaged: k.mood_after != null && k.mood_before != null ? k.mood_after >= k.mood_before : true,
+    child_views_captured: !!(k.child_voice && k.child_voice.trim().length > 0),
+    themes: Array.isArray(k.topics) ? k.topics : [],
   }));
 
   // ── YP Feedback ────────────────────────────────────────────────────────
