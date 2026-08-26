@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — HOME REGULATORY EVIDENCE COMPLETENESS INTELLIGENCE ENGINE
 //
@@ -115,10 +116,6 @@ export interface RegulatoryEvidenceCompletenessResult {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-export function pct(n: number, d: number): number {
-  return d === 0 ? 0 : Math.round((n / d) * 100);
-}
-
 function ratingFromScore(score: number): RegulatoryEvidenceRating {
   if (score >= 80) return "outstanding";
   if (score >= 65) return "good";
@@ -235,22 +232,22 @@ export function computeRegulatoryEvidenceCompleteness(
   const filingDescribedCount = filing_items.filter(
     (f) => f.has_description,
   ).length;
-  const filingVerifiedRate = pct(filingVerifiedCount, filing_items.length);
-  const filingDescribedRate = pct(filingDescribedCount, filing_items.length);
+  const filingVerifiedRate = rate(filingVerifiedCount, filing_items.length);
+  const filingDescribedRate = rate(filingDescribedCount, filing_items.length);
 
   // ── Document rates ────────────────────────────────────────────────────
   const currentDocs = documents.filter((d) => d.status === "current");
   const signedDocs = documents.filter((d) => d.is_signed);
-  const documentCurrencyRate = pct(currentDocs.length, documents.length);
-  const documentSignedRate = pct(signedDocs.length, documents.length);
+  const documentCurrencyRate = rate(currentDocs.length, documents.length);
+  const documentSignedRate = rate(signedDocs.length, documents.length);
 
   // ── Risk assessment rates ─────────────────────────────────────────────
   const currentRAs = risk_assessments.filter((r) => r.status === "current");
   const rasWithMitigations = risk_assessments.filter(
     (r) => r.has_mitigations,
   );
-  const raCurrencyRate = pct(currentRAs.length, risk_assessments.length);
-  const raMitigationRate = pct(
+  const raCurrencyRate = rate(currentRAs.length, risk_assessments.length);
+  const raMitigationRate = rate(
     rasWithMitigations.length,
     risk_assessments.length,
   );
@@ -264,12 +261,12 @@ export function computeRegulatoryEvidenceCompleteness(
   const highSevWithNotification = highSeverityIncidents.filter(
     (i) => i.has_notification,
   );
-  const incidentReportRate = pct(incidentsWithReport.length, incidents.length);
-  const incidentFollowUpRate = pct(
+  const incidentReportRate = rate(incidentsWithReport.length, incidents.length);
+  const incidentFollowUpRate = rate(
     incidentsWithFollowUp.length,
     incidents.length,
   );
-  const highSevNotificationRate = pct(
+  const highSevNotificationRate = rate(
     highSevWithNotification.length,
     highSeverityIncidents.length,
   );
@@ -294,7 +291,7 @@ export function computeRegulatoryEvidenceCompleteness(
   for (const i of incidents) {
     if (i.child_id) childrenWithEvidence.add(i.child_id);
   }
-  const childEvidenceCoverageRate = pct(
+  const childEvidenceCoverageRate = rate(
     childrenWithEvidence.size,
     total_children,
   );
@@ -306,40 +303,40 @@ export function computeRegulatoryEvidenceCompleteness(
   let score = 52;
 
   // Bonuses
-  if (filingVerifiedRate >= 90) score += 4;
-  else if (filingVerifiedRate >= 75) score += 2;
+  if (meets(filingVerifiedRate, 90)) score += 4;
+  else if (meets(filingVerifiedRate, 75)) score += 2;
 
-  if (filingDescribedRate >= 95) score += 3;
-  else if (filingDescribedRate >= 80) score += 1;
+  if (meets(filingDescribedRate, 95)) score += 3;
+  else if (meets(filingDescribedRate, 80)) score += 1;
 
-  if (documentCurrencyRate >= 95) score += 4;
-  else if (documentCurrencyRate >= 80) score += 2;
+  if (meets(documentCurrencyRate, 95)) score += 4;
+  else if (meets(documentCurrencyRate, 80)) score += 2;
 
-  if (documentSignedRate >= 90) score += 3;
-  else if (documentSignedRate >= 75) score += 1;
+  if (meets(documentSignedRate, 90)) score += 3;
+  else if (meets(documentSignedRate, 75)) score += 1;
 
-  if (raCurrencyRate >= 90) score += 4;
-  else if (raCurrencyRate >= 75) score += 2;
+  if (meets(raCurrencyRate, 90)) score += 4;
+  else if (meets(raCurrencyRate, 75)) score += 2;
 
-  if (raMitigationRate >= 100) score += 3;
-  else if (raMitigationRate >= 80) score += 1;
+  if (meets(raMitigationRate, 100)) score += 3;
+  else if (meets(raMitigationRate, 80)) score += 1;
 
-  if (incidentReportRate >= 100) score += 3;
-  else if (incidentReportRate >= 85) score += 1;
+  if (meets(incidentReportRate, 100)) score += 3;
+  else if (meets(incidentReportRate, 85)) score += 1;
 
-  if (incidentFollowUpRate >= 90) score += 2;
-  else if (incidentFollowUpRate >= 75) score += 1;
+  if (meets(incidentFollowUpRate, 90)) score += 2;
+  else if (meets(incidentFollowUpRate, 75)) score += 1;
 
-  if (highSevNotificationRate >= 100) score += 2;
+  if (meets(highSevNotificationRate, 100)) score += 2;
 
-  if (childEvidenceCoverageRate >= 100) score += 2;
-  else if (childEvidenceCoverageRate >= 80) score += 1;
+  if (meets(childEvidenceCoverageRate, 100)) score += 2;
+  else if (meets(childEvidenceCoverageRate, 80)) score += 1;
 
   // Penalties
-  if (filingVerifiedRate < 40) score -= 5;
-  if (raCurrencyRate < 50) score -= 5;
-  if (incidentReportRate < 50) score -= 5;
-  if (highSevNotificationRate < 50) score -= 8;
+  if (below(filingVerifiedRate, 40)) score -= 5;
+  if (below(raCurrencyRate, 50)) score -= 5;
+  if (below(incidentReportRate, 50)) score -= 5;
+  if (below(highSevNotificationRate, 50)) score -= 8;
 
   // Clamp
   score = Math.max(0, Math.min(100, score));
@@ -350,29 +347,29 @@ export function computeRegulatoryEvidenceCompleteness(
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
 
-  if (filingVerifiedRate >= 90)
+  if (meets(filingVerifiedRate, 90))
     strengths.push("Filing verification rate is excellent");
-  if (filingDescribedRate >= 95)
+  if (meets(filingDescribedRate, 95))
     strengths.push("Filing descriptions are thorough and comprehensive");
-  if (documentCurrencyRate >= 95)
+  if (meets(documentCurrencyRate, 95))
     strengths.push("Document currency is outstanding — nearly all are current");
-  if (documentSignedRate >= 90)
+  if (meets(documentSignedRate, 90))
     strengths.push("Document signing rate demonstrates strong governance");
-  if (raCurrencyRate >= 90)
+  if (meets(raCurrencyRate, 90))
     strengths.push("Risk assessments are well-maintained and current");
-  if (raMitigationRate >= 100)
+  if (meets(raMitigationRate, 100))
     strengths.push(
       "All risk assessments have documented mitigations in place",
     );
-  if (incidentReportRate >= 100)
+  if (meets(incidentReportRate, 100))
     strengths.push("Every incident has a completed report");
-  if (incidentFollowUpRate >= 90)
+  if (meets(incidentFollowUpRate, 90))
     strengths.push("Incident follow-up rate is excellent");
-  if (highSevNotificationRate >= 100)
+  if (meets(highSevNotificationRate, 100))
     strengths.push(
       "All high-severity incidents have appropriate notifications recorded",
     );
-  if (childEvidenceCoverageRate >= 100)
+  if (meets(childEvidenceCoverageRate, 100))
     strengths.push("Every child has at least one piece of evidence on file");
   if (evidenceCategoryCoverage >= 10)
     strengths.push(
@@ -382,64 +379,64 @@ export function computeRegulatoryEvidenceCompleteness(
   // ── Concerns ──────────────────────────────────────────────────────────
   const concerns: string[] = [];
 
-  if (filingVerifiedRate < 40)
+  if (below(filingVerifiedRate, 40))
     concerns.push(
       "Filing verification rate is critically low — most items are unverified",
     );
-  else if (filingVerifiedRate < 75)
+  else if (below(filingVerifiedRate, 75))
     concerns.push(
       "Filing verification rate is below expectations — many items are unverified",
     );
 
-  if (filingDescribedRate < 50)
+  if (below(filingDescribedRate, 50))
     concerns.push(
       "Majority of filing items lack descriptions, reducing evidence value",
     );
 
-  if (documentCurrencyRate < 50)
+  if (below(documentCurrencyRate, 50))
     concerns.push(
       "Over half of documents are not current — significant currency gap",
     );
-  else if (documentCurrencyRate < 80)
+  else if (below(documentCurrencyRate, 80))
     concerns.push("Document currency rate is below the expected standard");
 
-  if (documentSignedRate < 50)
+  if (below(documentSignedRate, 50))
     concerns.push(
       "Most documents are unsigned, undermining accountability and governance",
     );
 
-  if (raCurrencyRate < 50)
+  if (below(raCurrencyRate, 50))
     concerns.push(
       "Risk assessment currency is critically low — most are overdue or archived",
     );
-  else if (raCurrencyRate < 75)
+  else if (below(raCurrencyRate, 75))
     concerns.push("Too many risk assessments are not current");
 
-  if (raMitigationRate < 50)
+  if (below(raMitigationRate, 50))
     concerns.push(
       "Most risk assessments lack documented mitigations — significant safeguarding gap",
     );
 
-  if (incidentReportRate < 50)
+  if (below(incidentReportRate, 50))
     concerns.push(
       "Over half of incidents lack written reports — critical evidence gap",
     );
-  else if (incidentReportRate < 85)
+  else if (below(incidentReportRate, 85))
     concerns.push(
       "Some incidents are missing completed reports",
     );
 
-  if (incidentFollowUpRate < 50)
+  if (below(incidentFollowUpRate, 50))
     concerns.push(
       "Most incidents lack follow-up actions, suggesting poor learning from events",
     );
 
-  if (highSevNotificationRate < 50)
+  if (below(highSevNotificationRate, 50))
     concerns.push(
       "High-severity incidents are not being notified to regulators — serious compliance failure",
     );
 
-  if (childEvidenceCoverageRate < 50 && total_children > 0)
+  if (below(childEvidenceCoverageRate, 50) && total_children > 0)
     concerns.push(
       "Less than half of children have any evidence on file",
     );
@@ -458,7 +455,7 @@ export function computeRegulatoryEvidenceCompleteness(
   }[] = [];
   let rank = 0;
 
-  if (highSevNotificationRate < 50) {
+  if (below(highSevNotificationRate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -468,7 +465,7 @@ export function computeRegulatoryEvidenceCompleteness(
     });
   }
 
-  if (incidentReportRate < 50) {
+  if (below(incidentReportRate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -478,7 +475,7 @@ export function computeRegulatoryEvidenceCompleteness(
     });
   }
 
-  if (raCurrencyRate < 50) {
+  if (below(raCurrencyRate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -488,7 +485,7 @@ export function computeRegulatoryEvidenceCompleteness(
     });
   }
 
-  if (filingVerifiedRate < 40) {
+  if (below(filingVerifiedRate, 40)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -498,7 +495,7 @@ export function computeRegulatoryEvidenceCompleteness(
     });
   }
 
-  if (documentCurrencyRate < 80 && documentCurrencyRate >= 50) {
+  if (below(documentCurrencyRate, 80) && meets(documentCurrencyRate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -508,7 +505,7 @@ export function computeRegulatoryEvidenceCompleteness(
     });
   }
 
-  if (documentSignedRate < 75) {
+  if (below(documentSignedRate, 75)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -518,7 +515,7 @@ export function computeRegulatoryEvidenceCompleteness(
     });
   }
 
-  if (incidentFollowUpRate < 75) {
+  if (below(incidentFollowUpRate, 75)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -528,7 +525,7 @@ export function computeRegulatoryEvidenceCompleteness(
     });
   }
 
-  if (raMitigationRate < 80 && raMitigationRate >= 50) {
+  if (below(raMitigationRate, 80) && meets(raMitigationRate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -539,8 +536,8 @@ export function computeRegulatoryEvidenceCompleteness(
   }
 
   if (
-    childEvidenceCoverageRate < 80 &&
-    childEvidenceCoverageRate >= 50 &&
+    below(childEvidenceCoverageRate, 80) &&
+    meets(childEvidenceCoverageRate, 50) &&
     total_children > 0
   ) {
     recommendations.push({
@@ -552,7 +549,7 @@ export function computeRegulatoryEvidenceCompleteness(
     });
   }
 
-  if (filingDescribedRate < 80 && filingDescribedRate >= 50) {
+  if (below(filingDescribedRate, 80) && meets(filingDescribedRate, 50)) {
     recommendations.push({
       rank: ++rank,
       recommendation:
@@ -576,28 +573,28 @@ export function computeRegulatoryEvidenceCompleteness(
   const insights: { text: string; severity: "critical" | "warning" | "positive" }[] = [];
 
   // Critical insights
-  if (highSevNotificationRate < 50 && highSeverityIncidents.length > 0) {
+  if (below(highSevNotificationRate, 50) && highSeverityIncidents.length > 0) {
     insights.push({
       text: `Only ${highSevNotificationRate}% of high-severity incidents have regulatory notifications — this is a serious compliance breach`,
       severity: "critical",
     });
   }
 
-  if (incidentReportRate < 50 && incidents.length > 0) {
+  if (below(incidentReportRate, 50) && incidents.length > 0) {
     insights.push({
       text: `Only ${incidentReportRate}% of incidents have written reports — inspectors would view this as a significant failing`,
       severity: "critical",
     });
   }
 
-  if (raCurrencyRate < 50 && risk_assessments.length > 0) {
+  if (below(raCurrencyRate, 50) && risk_assessments.length > 0) {
     insights.push({
       text: `Only ${raCurrencyRate}% of risk assessments are current — this undermines safeguarding assurance`,
       severity: "critical",
     });
   }
 
-  if (filingVerifiedRate < 40 && filing_items.length > 0) {
+  if (below(filingVerifiedRate, 40) && filing_items.length > 0) {
     insights.push({
       text: `Filing verification rate of ${filingVerifiedRate}% means most evidence is unconfirmed`,
       severity: "critical",
@@ -606,8 +603,8 @@ export function computeRegulatoryEvidenceCompleteness(
 
   // Warning insights
   if (
-    documentCurrencyRate < 80 &&
-    documentCurrencyRate >= 50 &&
+    below(documentCurrencyRate, 80) &&
+    meets(documentCurrencyRate, 50) &&
     documents.length > 0
   ) {
     insights.push({
@@ -617,8 +614,8 @@ export function computeRegulatoryEvidenceCompleteness(
   }
 
   if (
-    incidentFollowUpRate < 75 &&
-    incidentFollowUpRate >= 50 &&
+    below(incidentFollowUpRate, 75) &&
+    meets(incidentFollowUpRate, 50) &&
     incidents.length > 0
   ) {
     insights.push({
@@ -628,8 +625,8 @@ export function computeRegulatoryEvidenceCompleteness(
   }
 
   if (
-    childEvidenceCoverageRate < 80 &&
-    childEvidenceCoverageRate >= 50 &&
+    below(childEvidenceCoverageRate, 80) &&
+    meets(childEvidenceCoverageRate, 50) &&
     total_children > 0
   ) {
     insights.push({
@@ -639,8 +636,8 @@ export function computeRegulatoryEvidenceCompleteness(
   }
 
   if (
-    filingDescribedRate < 80 &&
-    filingDescribedRate >= 50 &&
+    below(filingDescribedRate, 80) &&
+    meets(filingDescribedRate, 50) &&
     filing_items.length > 0
   ) {
     insights.push({
@@ -650,8 +647,8 @@ export function computeRegulatoryEvidenceCompleteness(
   }
 
   if (
-    raMitigationRate < 80 &&
-    raMitigationRate >= 50 &&
+    below(raMitigationRate, 80) &&
+    meets(raMitigationRate, 50) &&
     risk_assessments.length > 0
   ) {
     insights.push({
@@ -669,9 +666,9 @@ export function computeRegulatoryEvidenceCompleteness(
   }
 
   if (
-    filingVerifiedRate >= 90 &&
-    documentCurrencyRate >= 95 &&
-    raCurrencyRate >= 90
+    meets(filingVerifiedRate, 90) &&
+    meets(documentCurrencyRate, 95) &&
+    meets(raCurrencyRate, 90)
   ) {
     insights.push({
       text: "Core evidence pillars (filing, documents, risk assessments) are all in excellent shape",
@@ -680,8 +677,8 @@ export function computeRegulatoryEvidenceCompleteness(
   }
 
   if (
-    incidentReportRate >= 100 &&
-    incidentFollowUpRate >= 90 &&
+    meets(incidentReportRate, 100) &&
+    meets(incidentFollowUpRate, 90) &&
     incidents.length > 0
   ) {
     insights.push({
@@ -690,7 +687,7 @@ export function computeRegulatoryEvidenceCompleteness(
     });
   }
 
-  if (childEvidenceCoverageRate >= 100 && total_children > 0) {
+  if (meets(childEvidenceCoverageRate, 100) && total_children > 0) {
     insights.push({
       text: "Every child has evidence on record, demonstrating individualised care recording",
       severity: "positive",

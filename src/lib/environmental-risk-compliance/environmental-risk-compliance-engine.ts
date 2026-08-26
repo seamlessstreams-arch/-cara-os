@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // ENVIRONMENTAL RISK COMPLIANCE INTELLIGENCE ENGINE
 //
@@ -130,38 +131,52 @@ export interface RiskAssessmentCoverageResult {
   totalAssessments: number;
   areasCovered: number;
   totalAreas: number;
-  areaCoverageRate: number;
-  reviewCurrentRate: number;
-  mitigationInPlaceRate: number;
-  highCriticalMitigatedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  areaCoverageRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reviewCurrentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  mitigationInPlaceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  highCriticalMitigatedRate: number | null;
 }
 
 export interface SafetyCheckComplianceResult {
   overallScore: number;
   totalChecks: number;
-  compliantRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  compliantRate: number | null;
   nonCompliantCount: number;
-  actionRequiredCompletedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionRequiredCompletedRate: number | null;
   checkFrequencyAdequate: boolean;
 }
 
 export interface RemediationEffectivenessResult {
   overallScore: number;
   totalActions: number;
-  completedOnTimeRate: number;
-  overdueRate: number;
-  verifiedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completedOnTimeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  overdueRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  verifiedRate: number | null;
   inProgressCount: number;
 }
 
 export interface StaffSafetyReadinessResult {
   overallScore: number;
   totalStaff: number;
-  ligatureAwarenessRate: number;
-  coshhTrainedRate: number;
-  fireSafetyRate: number;
-  waterSafetyRate: number;
-  riskAssessmentCompetentRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  ligatureAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  coshhTrainedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  fireSafetyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  waterSafetyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessmentCompetentRate: number | null;
 }
 
 export interface AreaRiskProfile {
@@ -194,11 +209,6 @@ export interface EnvironmentalRiskComplianceIntelligence {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -290,10 +300,10 @@ export function evaluateRiskAssessmentCoverage(
       totalAssessments: 0,
       areasCovered: 0,
       totalAreas: 8,
-      areaCoverageRate: 0,
-      reviewCurrentRate: 0,
-      mitigationInPlaceRate: 0,
-      highCriticalMitigatedRate: 0,
+      areaCoverageRate: null,
+      reviewCurrentRate: null,
+      mitigationInPlaceRate: null,
+      highCriticalMitigatedRate: null,
     };
   }
 
@@ -310,17 +320,17 @@ export function evaluateRiskAssessmentCoverage(
   const highCritical = assessments.filter((a) => a.riskLevel === "high" || a.riskLevel === "critical");
   const highCriticalMitigated = highCritical.filter((a) => a.mitigationInPlace).length;
 
-  const areaCoverageRate = pct(areasCovered, ALL_AREAS.length);
-  const reviewCurrentRate = pct(reviewCurrent, assessments.length);
-  const mitigationInPlaceRate = pct(mitigationInPlace, assessments.length);
-  const highCriticalMitigatedRate = pct(highCriticalMitigated, highCritical.length);
+  const areaCoverageRate = rate(areasCovered, ALL_AREAS.length);
+  const reviewCurrentRate = rate(reviewCurrent, assessments.length);
+  const mitigationInPlaceRate = rate(mitigationInPlace, assessments.length);
+  const highCriticalMitigatedRate = rate(highCriticalMitigated, highCritical.length);
 
   // Scoring
   let score = 0;
-  score += Math.round((areaCoverageRate / 100) * 7);
-  score += Math.round((reviewCurrentRate / 100) * 6);
-  score += Math.round((mitigationInPlaceRate / 100) * 6);
-  score += Math.round((highCriticalMitigatedRate / 100) * 6);
+  score += Math.round(((areaCoverageRate ?? 0) / 100) * 7);
+  score += Math.round((reviewCurrentRate! / 100) * 6);
+  score += Math.round((mitigationInPlaceRate! / 100) * 6);
+  score += Math.round(((highCriticalMitigatedRate ?? 0) / 100) * 6);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -351,9 +361,9 @@ export function evaluateSafetyCheckCompliance(
     return {
       overallScore: 0,
       totalChecks: 0,
-      compliantRate: 0,
+      compliantRate: null,
       nonCompliantCount: 0,
-      actionRequiredCompletedRate: 0,
+      actionRequiredCompletedRate: null,
       checkFrequencyAdequate: false,
     };
   }
@@ -364,18 +374,18 @@ export function evaluateSafetyCheckCompliance(
   const actionRequired = checks.filter((c) => c.actionRequired);
   const actionCompleted = actionRequired.filter((c) => c.actionCompleted).length;
 
-  const compliantRate = pct(compliant, checks.length);
-  const actionRequiredCompletedRate = pct(actionCompleted, actionRequired.length);
+  const compliantRate = rate(compliant, checks.length);
+  const actionRequiredCompletedRate = rate(actionCompleted, actionRequired.length);
 
   // Check frequency: adequate if >= 10 checks in period
   const checkFrequencyAdequate = checks.length >= 10;
 
   // Scoring
   let score = 0;
-  score += Math.round((compliantRate / 100) * 8);
+  score += Math.round((compliantRate! / 100) * 8);
   if (nonCompliant === 0) score += 6;
   else if (nonCompliant <= 1) score += 3;
-  score += Math.round((actionRequiredCompletedRate / 100) * 6);
+  score += Math.round(((actionRequiredCompletedRate ?? 0) / 100) * 6);
   if (checkFrequencyAdequate) score += 5;
   else if (checks.length >= 5) score += 2;
 
@@ -408,9 +418,9 @@ export function evaluateRemediationEffectiveness(
     return {
       overallScore: assessmentsExist ? 0 : 25,
       totalActions: 0,
-      completedOnTimeRate: 0,
-      overdueRate: 0,
-      verifiedRate: 0,
+      completedOnTimeRate: null,
+      overdueRate: null,
+      verifiedRate: null,
       inProgressCount: 0,
     };
   }
@@ -424,16 +434,16 @@ export function evaluateRemediationEffectiveness(
   const verified = actions.filter((a) => a.verified).length;
   const inProgress = actions.filter((a) => a.status === "in_progress").length;
 
-  const completedOnTimeRate = pct(completedOnTime, actions.length);
-  const overdueRate = pct(overdue, actions.length);
-  const verifiedRate = pct(verified, actions.length);
+  const completedOnTimeRate = rate(completedOnTime, actions.length);
+  const overdueRate = rate(overdue, actions.length);
+  const verifiedRate = rate(verified, actions.length);
 
   // Scoring
   let score = 0;
-  score += Math.round((completedOnTimeRate / 100) * 8);
+  score += Math.round((completedOnTimeRate! / 100) * 8);
   if (overdue === 0) score += 6;
-  else if (overdueRate <= 10) score += 3;
-  score += Math.round((verifiedRate / 100) * 6);
+  else if (overdueRate! <= 10) score += 3;
+  score += Math.round((verifiedRate! / 100) * 6);
   if (inProgress > 0) score += 5;
   else if (completed.length === actions.length) score += 5;
 
@@ -465,11 +475,11 @@ export function evaluateStaffSafetyReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      ligatureAwarenessRate: 0,
-      coshhTrainedRate: 0,
-      fireSafetyRate: 0,
-      waterSafetyRate: 0,
-      riskAssessmentCompetentRate: 0,
+      ligatureAwarenessRate: null,
+      coshhTrainedRate: null,
+      fireSafetyRate: null,
+      waterSafetyRate: null,
+      riskAssessmentCompetentRate: null,
     };
   }
 
@@ -487,19 +497,19 @@ export function evaluateStaffSafetyReadiness(
     if (t.riskAssessmentCompetent) riskComp++;
   }
 
-  const ligatureAwarenessRate = pct(ligature, training.length);
-  const coshhTrainedRate = pct(coshh, training.length);
-  const fireSafetyRate = pct(fire, training.length);
-  const waterSafetyRate = pct(water, training.length);
-  const riskAssessmentCompetentRate = pct(riskComp, training.length);
+  const ligatureAwarenessRate = rate(ligature, training.length);
+  const coshhTrainedRate = rate(coshh, training.length);
+  const fireSafetyRate = rate(fire, training.length);
+  const waterSafetyRate = rate(water, training.length);
+  const riskAssessmentCompetentRate = rate(riskComp, training.length);
 
   // Scoring
   let score = 0;
-  score += Math.round((ligatureAwarenessRate / 100) * 6);
-  score += Math.round((coshhTrainedRate / 100) * 5);
-  score += Math.round((fireSafetyRate / 100) * 5);
-  score += Math.round((waterSafetyRate / 100) * 5);
-  score += Math.round((riskAssessmentCompetentRate / 100) * 4);
+  score += Math.round((ligatureAwarenessRate! / 100) * 6);
+  score += Math.round((coshhTrainedRate! / 100) * 5);
+  score += Math.round((fireSafetyRate! / 100) * 5);
+  score += Math.round((waterSafetyRate! / 100) * 5);
+  score += Math.round(((riskAssessmentCompetentRate ?? 0) / 100) * 4);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -551,7 +561,7 @@ export function buildAreaRiskProfiles(
     if (allCurrentReviews) score += 2;
     if (areaChecks.length > 0) {
       const compliant = areaChecks.filter((c) => c.status === "compliant").length;
-      score += Math.round((pct(compliant, areaChecks.length) / 100) * 3);
+      score += Math.round((rate(compliant, areaChecks.length)! / 100) * 3);
     } else if (assessmentCoverage) {
       // Has assessments but no checks — partial credit
       score += 1;
@@ -609,7 +619,7 @@ export function generateEnvironmentalRiskComplianceIntelligence(
     strengths.push("Mitigations in place for all identified hazards");
   if (assessments.length > 0 && riskAssessmentCoverage.highCriticalMitigatedRate === 100)
     strengths.push("All high and critical risks have mitigations in place");
-  if (checks.length > 0 && safetyCheckCompliance.compliantRate >= 90)
+  if (checks.length > 0 && meets(safetyCheckCompliance.compliantRate, 90))
     strengths.push("Safety check compliance rate at " + safetyCheckCompliance.compliantRate + "%");
   if (checks.length > 0 && safetyCheckCompliance.nonCompliantCount === 0)
     strengths.push("No non-compliant safety checks in period");
@@ -624,21 +634,21 @@ export function generateEnvironmentalRiskComplianceIntelligence(
   const areasForImprovement: string[] = [];
   if (assessments.length === 0)
     areasForImprovement.push("No risk assessments documented — all premises areas require assessment");
-  if (assessments.length > 0 && riskAssessmentCoverage.areaCoverageRate < 100)
+  if (assessments.length > 0 && below(riskAssessmentCoverage.areaCoverageRate, 100))
     areasForImprovement.push("Risk assessments only cover " + riskAssessmentCoverage.areaCoverageRate + "% of premises areas — full coverage required");
-  if (assessments.length > 0 && riskAssessmentCoverage.reviewCurrentRate < 80)
+  if (assessments.length > 0 && below(riskAssessmentCoverage.reviewCurrentRate, 80))
     areasForImprovement.push("Only " + riskAssessmentCoverage.reviewCurrentRate + "% of risk assessments have current reviews");
   if (checks.length === 0 && assessments.length > 0)
     areasForImprovement.push("No safety checks completed — regular checks required for compliance");
-  if (checks.length > 0 && safetyCheckCompliance.compliantRate < 80)
+  if (checks.length > 0 && below(safetyCheckCompliance.compliantRate, 80))
     areasForImprovement.push("Safety check compliance at only " + safetyCheckCompliance.compliantRate + "% — target 100%");
   if (checks.length > 0 && safetyCheckCompliance.nonCompliantCount > 0)
     areasForImprovement.push(safetyCheckCompliance.nonCompliantCount + " non-compliant safety check(s) require immediate attention");
-  if (remediations.length > 0 && remediationEffectiveness.overdueRate > 0)
+  if (remediations.length > 0 && above(remediationEffectiveness.overdueRate, 0))
     areasForImprovement.push(remediationEffectiveness.overdueRate + "% of remediation actions are overdue");
   if (training.length === 0)
     areasForImprovement.push("No staff safety training records — all staff require environmental safety training");
-  if (training.length > 0 && staffSafetyReadiness.coshhTrainedRate < 100)
+  if (training.length > 0 && below(staffSafetyReadiness.coshhTrainedRate, 100))
     areasForImprovement.push("COSHH training incomplete — only " + staffSafetyReadiness.coshhTrainedRate + "% of staff trained");
 
   // -- Actions --
@@ -656,13 +666,13 @@ export function generateEnvironmentalRiskComplianceIntelligence(
     actions.push("URGENT: " + overdueRemediations.length + " overdue remediation action(s) — escalate and complete");
   if (assessments.length === 0)
     actions.push("Complete risk assessments for all premises areas — statutory requirement under CHR 2015 Reg 25");
-  if (assessments.length > 0 && riskAssessmentCoverage.reviewCurrentRate < 100)
-    actions.push("Update " + (100 - riskAssessmentCoverage.reviewCurrentRate) + "% of risk assessments with overdue reviews");
+  if (assessments.length > 0 && below(riskAssessmentCoverage.reviewCurrentRate, 100))
+    actions.push("Update " + (100 - riskAssessmentCoverage.reviewCurrentRate!) + "% of risk assessments with overdue reviews");
   if (checks.length === 0 && assessments.length > 0)
     actions.push("Implement regular safety check schedule — water temperatures, fire equipment, window restrictors");
-  if (training.length > 0 && staffSafetyReadiness.ligatureAwarenessRate < 100)
+  if (training.length > 0 && below(staffSafetyReadiness.ligatureAwarenessRate, 100))
     actions.push("Arrange ligature awareness training — only " + staffSafetyReadiness.ligatureAwarenessRate + "% of staff trained");
-  if (training.length > 0 && staffSafetyReadiness.coshhTrainedRate < 100)
+  if (training.length > 0 && below(staffSafetyReadiness.coshhTrainedRate, 100))
     actions.push("Arrange COSHH training — only " + staffSafetyReadiness.coshhTrainedRate + "% of staff trained");
 
   const regulatoryLinks: string[] = [

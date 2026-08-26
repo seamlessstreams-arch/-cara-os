@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { EnvironmentalSustainabilityIntelligence } from "@/lib/environmental-sustainability";
+import { formatRate } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -103,7 +104,7 @@ export default function EnvironmentalSustainabilityDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Total Activities</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.activityEngagement.engagementRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.activityEngagement.engagementRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Engagement Rate</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -151,10 +152,10 @@ export default function EnvironmentalSustainabilityDashboardWidget() {
         <Section title="Activity Engagement">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total:</span> <span className="font-medium">{data.activityEngagement.totalActivities}</span></div>
-            <div><span className="text-gray-500">Engaged:</span> <span className="font-medium">{data.activityEngagement.engagementRate}%</span></div>
-            <div><span className="text-gray-500">Child Initiated:</span> <span className="font-medium">{data.activityEngagement.childInitiatedRate}%</span></div>
-            <div><span className="text-gray-500">Learning Recorded:</span> <span className="font-medium">{data.activityEngagement.learningRecordedRate}%</span></div>
-            <div><span className="text-gray-500">Staff Supported:</span> <span className="font-medium">{data.activityEngagement.staffSupportedRate}%</span></div>
+            <div><span className="text-gray-500">Engaged:</span> <span className="font-medium">{formatRate(data.activityEngagement.engagementRate)}</span></div>
+            <div><span className="text-gray-500">Child Initiated:</span> <span className="font-medium">{formatRate(data.activityEngagement.childInitiatedRate)}</span></div>
+            <div><span className="text-gray-500">Learning Recorded:</span> <span className="font-medium">{formatRate(data.activityEngagement.learningRecordedRate)}</span></div>
+            <div><span className="text-gray-500">Staff Supported:</span> <span className="font-medium">{formatRate(data.activityEngagement.staffSupportedRate)}</span></div>
           </div>
           {data.activityEngagement.totalActivities > 0 && (
             <div className="mt-3">
@@ -177,7 +178,7 @@ export default function EnvironmentalSustainabilityDashboardWidget() {
             <div><span className="text-gray-500">Activities:</span> <span className="font-medium">{data.environmentalPractice.totalActivities}</span></div>
             <div><span className="text-gray-500">Type Diversity:</span> <span className="font-medium">{data.environmentalPractice.activityTypeDiversity}/8</span></div>
             <div><span className="text-gray-500">Per Child:</span> <span className="font-medium">{data.environmentalPractice.frequencyScore}</span></div>
-            <div><span className="text-gray-500">Sustained:</span> <span className="font-medium">{data.environmentalPractice.sustainedEngagementRate}%</span></div>
+            <div><span className="text-gray-500">Sustained:</span> <span className="font-medium">{formatRate(data.environmentalPractice.sustainedEngagementRate)}</span></div>
           </div>
           {data.environmentalPractice.totalActivities > 0 && (
             <div className="mt-3">
@@ -211,12 +212,12 @@ export default function EnvironmentalSustainabilityDashboardWidget() {
         <Section title="Staff Readiness">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Staff:</span> <span className="font-medium">{data.staffReadiness.totalStaff}</span></div>
-            <div><span className="text-gray-500">Env. Awareness:</span> <span className="font-medium">{data.staffReadiness.environmentalAwarenessRate}%</span></div>
-            <div><span className="text-gray-500">Recycling:</span> <span className="font-medium">{data.staffReadiness.recyclingProceduresRate}%</span></div>
-            <div><span className="text-gray-500">Energy:</span> <span className="font-medium">{data.staffReadiness.energyConservationRate}%</span></div>
-            <div><span className="text-gray-500">Sustainable Living:</span> <span className="font-medium">{data.staffReadiness.sustainableLivingRate}%</span></div>
-            <div><span className="text-gray-500">Child Engagement:</span> <span className="font-medium">{data.staffReadiness.childEngagementRate}%</span></div>
-            <div><span className="text-gray-500">Outdoor Learning:</span> <span className="font-medium">{data.staffReadiness.outdoorLearningRate}%</span></div>
+            <div><span className="text-gray-500">Env. Awareness:</span> <span className="font-medium">{formatRate(data.staffReadiness.environmentalAwarenessRate)}</span></div>
+            <div><span className="text-gray-500">Recycling:</span> <span className="font-medium">{formatRate(data.staffReadiness.recyclingProceduresRate)}</span></div>
+            <div><span className="text-gray-500">Energy:</span> <span className="font-medium">{formatRate(data.staffReadiness.energyConservationRate)}</span></div>
+            <div><span className="text-gray-500">Sustainable Living:</span> <span className="font-medium">{formatRate(data.staffReadiness.sustainableLivingRate)}</span></div>
+            <div><span className="text-gray-500">Child Engagement:</span> <span className="font-medium">{formatRate(data.staffReadiness.childEngagementRate)}</span></div>
+            <div><span className="text-gray-500">Outdoor Learning:</span> <span className="font-medium">{formatRate(data.staffReadiness.outdoorLearningRate)}</span></div>
           </div>
         </Section>
 

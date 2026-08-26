@@ -18,6 +18,7 @@
    ────────────────────────────────────────────────────────────── */
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -127,18 +128,25 @@ export interface StaffEscalationThresholdTraining {
 export interface EscalationThresholdQualityResult {
   overallScore: number;
   totalRecords: number;
-  thresholdCorrectlyIdentifiedRate: number;
-  escalationTimelyCompletedRate: number;
-  appropriateRecipientNotifiedRate: number;
-  outcomeRecordedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  thresholdCorrectlyIdentifiedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  escalationTimelyCompletedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  appropriateRecipientNotifiedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  outcomeRecordedRate: number | null;
 }
 
 export interface EscalationThresholdComplianceResult {
   overallScore: number;
   totalRecords: number;
-  documentationCompleteRate: number;
-  timelyRecordingRate: number;
-  thresholdCorrectlyIdentifiedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationCompleteRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  thresholdCorrectlyIdentifiedRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
 }
@@ -157,12 +165,18 @@ export interface EscalationThresholdPolicyResult {
 export interface StaffEscalationThresholdReadinessResult {
   overallScore: number;
   totalStaff: number;
-  escalationProcedureKnowledgeRate: number;
-  thresholdAssessmentSkillsRate: number;
-  safeguardingEscalationSkillsRate: number;
-  multiAgencyReferralSkillsRate: number;
-  professionalDisagreementResolutionRate: number;
-  emergencyResponseSkillsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  escalationProcedureKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  thresholdAssessmentSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingEscalationSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  multiAgencyReferralSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  professionalDisagreementResolutionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  emergencyResponseSkillsRate: number | null;
 }
 
 export interface ChildEscalationThresholdProfile {
@@ -194,11 +208,6 @@ export interface EscalationThresholdIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -214,19 +223,19 @@ export function evaluateEscalationThresholdQuality(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, thresholdCorrectlyIdentifiedRate: 0, escalationTimelyCompletedRate: 0, appropriateRecipientNotifiedRate: 0, outcomeRecordedRate: 0 };
+    return { overallScore: 0, totalRecords: 0, thresholdCorrectlyIdentifiedRate: null, escalationTimelyCompletedRate: null, appropriateRecipientNotifiedRate: null, outcomeRecordedRate: null };
   }
 
-  const thresholdCorrectlyIdentifiedRate = pct(records.filter((r) => r.thresholdCorrectlyIdentified).length, n);
-  const escalationTimelyCompletedRate = pct(records.filter((r) => r.escalationTimelyCompleted).length, n);
-  const appropriateRecipientNotifiedRate = pct(records.filter((r) => r.appropriateRecipientNotified).length, n);
-  const outcomeRecordedRate = pct(records.filter((r) => r.outcomeRecorded).length, n);
+  const thresholdCorrectlyIdentifiedRate = rate(records.filter((r) => r.thresholdCorrectlyIdentified).length, n);
+  const escalationTimelyCompletedRate = rate(records.filter((r) => r.escalationTimelyCompleted).length, n);
+  const appropriateRecipientNotifiedRate = rate(records.filter((r) => r.appropriateRecipientNotified).length, n);
+  const outcomeRecordedRate = rate(records.filter((r) => r.outcomeRecorded).length, n);
 
   let score = 0;
-  score += (thresholdCorrectlyIdentifiedRate / 100) * 7;
-  score += (escalationTimelyCompletedRate / 100) * 6;
-  score += (appropriateRecipientNotifiedRate / 100) * 6;
-  score += (outcomeRecordedRate / 100) * 6;
+  score += (thresholdCorrectlyIdentifiedRate! / 100) * 7;
+  score += (escalationTimelyCompletedRate! / 100) * 6;
+  score += (appropriateRecipientNotifiedRate! / 100) * 6;
+  score += (outcomeRecordedRate! / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -241,21 +250,21 @@ export function evaluateEscalationThresholdCompliance(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: 0, timelyRecordingRate: 0, thresholdCorrectlyIdentifiedRate: 0, categoryDiversityRatio: 0, uniqueCategories: 0 };
+    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: null, timelyRecordingRate: null, thresholdCorrectlyIdentifiedRate: null, categoryDiversityRatio: 0, uniqueCategories: 0 };
   }
 
-  const documentationCompleteRate = pct(records.filter((r) => r.documentationComplete).length, n);
-  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, n);
-  const thresholdCorrectlyIdentifiedRate = pct(records.filter((r) => r.thresholdCorrectlyIdentified).length, n);
+  const documentationCompleteRate = rate(records.filter((r) => r.documentationComplete).length, n);
+  const timelyRecordingRate = rate(records.filter((r) => r.timelyRecording).length, n);
+  const thresholdCorrectlyIdentifiedRate = rate(records.filter((r) => r.thresholdCorrectlyIdentified).length, n);
 
   const uniqueCategoriesSet = new Set(records.map((r) => r.category));
   const uniqueCategories = uniqueCategoriesSet.size;
   const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
 
   let score = 0;
-  score += (documentationCompleteRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (thresholdCorrectlyIdentifiedRate / 100) * 5;
+  score += (documentationCompleteRate! / 100) * 8;
+  score += (timelyRecordingRate! / 100) * 7;
+  score += (thresholdCorrectlyIdentifiedRate! / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -301,23 +310,23 @@ export function evaluateStaffEscalationThresholdReadiness(
   const n = training.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalStaff: 0, escalationProcedureKnowledgeRate: 0, thresholdAssessmentSkillsRate: 0, safeguardingEscalationSkillsRate: 0, multiAgencyReferralSkillsRate: 0, professionalDisagreementResolutionRate: 0, emergencyResponseSkillsRate: 0 };
+    return { overallScore: 0, totalStaff: 0, escalationProcedureKnowledgeRate: null, thresholdAssessmentSkillsRate: null, safeguardingEscalationSkillsRate: null, multiAgencyReferralSkillsRate: null, professionalDisagreementResolutionRate: null, emergencyResponseSkillsRate: null };
   }
 
-  const escalationProcedureKnowledgeRate = pct(training.filter((t) => t.escalationProcedureKnowledge).length, n);
-  const thresholdAssessmentSkillsRate = pct(training.filter((t) => t.thresholdAssessmentSkills).length, n);
-  const safeguardingEscalationSkillsRate = pct(training.filter((t) => t.safeguardingEscalationSkills).length, n);
-  const multiAgencyReferralSkillsRate = pct(training.filter((t) => t.multiAgencyReferralSkills).length, n);
-  const professionalDisagreementResolutionRate = pct(training.filter((t) => t.professionalDisagreementResolution).length, n);
-  const emergencyResponseSkillsRate = pct(training.filter((t) => t.emergencyResponseSkills).length, n);
+  const escalationProcedureKnowledgeRate = rate(training.filter((t) => t.escalationProcedureKnowledge).length, n);
+  const thresholdAssessmentSkillsRate = rate(training.filter((t) => t.thresholdAssessmentSkills).length, n);
+  const safeguardingEscalationSkillsRate = rate(training.filter((t) => t.safeguardingEscalationSkills).length, n);
+  const multiAgencyReferralSkillsRate = rate(training.filter((t) => t.multiAgencyReferralSkills).length, n);
+  const professionalDisagreementResolutionRate = rate(training.filter((t) => t.professionalDisagreementResolution).length, n);
+  const emergencyResponseSkillsRate = rate(training.filter((t) => t.emergencyResponseSkills).length, n);
 
   let score = 0;
-  score += (escalationProcedureKnowledgeRate / 100) * 6;
-  score += (thresholdAssessmentSkillsRate / 100) * 5;
-  score += (safeguardingEscalationSkillsRate / 100) * 5;
-  score += (multiAgencyReferralSkillsRate / 100) * 4;
-  score += (professionalDisagreementResolutionRate / 100) * 3;
-  score += (emergencyResponseSkillsRate / 100) * 2;
+  score += (escalationProcedureKnowledgeRate! / 100) * 6;
+  score += (thresholdAssessmentSkillsRate! / 100) * 5;
+  score += (safeguardingEscalationSkillsRate! / 100) * 5;
+  score += (multiAgencyReferralSkillsRate! / 100) * 4;
+  score += (professionalDisagreementResolutionRate! / 100) * 3;
+  score += (emergencyResponseSkillsRate! / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -342,8 +351,8 @@ export function buildChildEscalationThresholdProfiles(
 
   return Array.from(childMap.values()).map((child) => {
     const totalRecords = child.records.length;
-    const thresholdCorrectlyIdentifiedRate = pct(child.records.filter((r) => r.thresholdCorrectlyIdentified).length, totalRecords);
-    const escalationTimelyCompletedRate = pct(child.records.filter((r) => r.escalationTimelyCompleted).length, totalRecords);
+    const thresholdCorrectlyIdentifiedRate = rate(child.records.filter((r) => r.thresholdCorrectlyIdentified).length, totalRecords)!;
+    const escalationTimelyCompletedRate = rate(child.records.filter((r) => r.escalationTimelyCompleted).length, totalRecords)!;
     const uniqueCategoriesSet = new Set(child.records.map((r) => r.category));
     const categoriesCovered = Array.from(uniqueCategoriesSet);
 
@@ -352,14 +361,14 @@ export function buildChildEscalationThresholdProfiles(
     else if (totalRecords >= 5) frequencyScore = 1;
 
     let rate1Score = 0;
-    if (thresholdCorrectlyIdentifiedRate >= 80) rate1Score = 3;
-    else if (thresholdCorrectlyIdentifiedRate >= 60) rate1Score = 2;
-    else if (thresholdCorrectlyIdentifiedRate >= 40) rate1Score = 1;
+    if (meets(thresholdCorrectlyIdentifiedRate, 80)) rate1Score = 3;
+    else if (meets(thresholdCorrectlyIdentifiedRate, 60)) rate1Score = 2;
+    else if (meets(thresholdCorrectlyIdentifiedRate, 40)) rate1Score = 1;
 
     let rate2Score = 0;
-    if (escalationTimelyCompletedRate >= 80) rate2Score = 3;
-    else if (escalationTimelyCompletedRate >= 60) rate2Score = 2;
-    else if (escalationTimelyCompletedRate >= 40) rate2Score = 1;
+    if (meets(escalationTimelyCompletedRate, 80)) rate2Score = 3;
+    else if (meets(escalationTimelyCompletedRate, 60)) rate2Score = 2;
+    else if (meets(escalationTimelyCompletedRate, 40)) rate2Score = 1;
 
     let diversityBonus = 0;
     if (categoriesCovered.length >= 4) diversityBonus = 2;
@@ -407,8 +416,8 @@ export function generateEscalationThresholdIntelligence(
   if (complianceResult.overallScore >= 20) strengths.push("Escalation compliance is strong (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore >= 20) strengths.push("Escalation policy framework is robust (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore >= 20) strengths.push("Staff escalation readiness is strong (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.thresholdCorrectlyIdentifiedRate >= 90) strengths.push("Threshold identification accuracy at " + qualityResult.thresholdCorrectlyIdentifiedRate + "%");
-  if (periodRecords.length > 0 && qualityResult.escalationTimelyCompletedRate >= 90) strengths.push("Timely escalation completion at " + qualityResult.escalationTimelyCompletedRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.thresholdCorrectlyIdentifiedRate, 90)) strengths.push("Threshold identification accuracy at " + qualityResult.thresholdCorrectlyIdentifiedRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.escalationTimelyCompletedRate, 90)) strengths.push("Timely escalation completion at " + qualityResult.escalationTimelyCompletedRate + "%");
 
   const areasForImprovement: string[] = [];
   if (overallScore < 40) areasForImprovement.push("Escalation management rated Inadequate (" + overallScore + "/100) — urgent systemic review required");
@@ -417,7 +426,7 @@ export function generateEscalationThresholdIntelligence(
   if (complianceResult.overallScore < 15) areasForImprovement.push("Escalation compliance needs improvement (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore < 15) areasForImprovement.push("Escalation policy needs strengthening (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore < 15) areasForImprovement.push("Staff escalation readiness needs improvement (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.escalationTimelyCompletedRate < 80) areasForImprovement.push("Timely escalation at " + qualityResult.escalationTimelyCompletedRate + "% — must improve");
+  if (periodRecords.length > 0 && below(qualityResult.escalationTimelyCompletedRate, 80)) areasForImprovement.push("Timely escalation at " + qualityResult.escalationTimelyCompletedRate + "% — must improve");
   if (periodRecords.length === 0) areasForImprovement.push("No escalation records — escalation management must be documented");
   if (policy === null) areasForImprovement.push("No escalation policy in place — statutory requirement");
   if (staff.length === 0) areasForImprovement.push("No staff escalation training records — training required");
@@ -425,11 +434,11 @@ export function generateEscalationThresholdIntelligence(
   const actions: string[] = [];
   if (policy === null || policyResult.overallScore === 0) actions.push("URGENT: No escalation policy — develop and implement comprehensive escalation framework immediately");
   if (staff.length === 0) actions.push("URGENT: No staff escalation training — schedule training for all care staff");
-  if (periodRecords.length > 0 && qualityResult.thresholdCorrectlyIdentifiedRate < 50) actions.push("HIGH: Threshold identification at " + qualityResult.thresholdCorrectlyIdentifiedRate + "% — review threshold framework and staff competency");
-  if (periodRecords.length > 0 && qualityResult.escalationTimelyCompletedRate < 50) actions.push("HIGH: Timely escalation at " + qualityResult.escalationTimelyCompletedRate + "% — escalations must be completed within required timeframes");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate < 50) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all escalations must be fully documented");
-  if (periodRecords.length > 0 && complianceResult.timelyRecordingRate < 50) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
-  if (staff.length > 0 && staffResult.escalationProcedureKnowledgeRate < 50) actions.push("MEDIUM: Escalation procedure knowledge at " + staffResult.escalationProcedureKnowledgeRate + "% — schedule training");
+  if (periodRecords.length > 0 && below(qualityResult.thresholdCorrectlyIdentifiedRate, 50)) actions.push("HIGH: Threshold identification at " + qualityResult.thresholdCorrectlyIdentifiedRate + "% — review threshold framework and staff competency");
+  if (periodRecords.length > 0 && below(qualityResult.escalationTimelyCompletedRate, 50)) actions.push("HIGH: Timely escalation at " + qualityResult.escalationTimelyCompletedRate + "% — escalations must be completed within required timeframes");
+  if (periodRecords.length > 0 && below(complianceResult.documentationCompleteRate, 50)) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all escalations must be fully documented");
+  if (periodRecords.length > 0 && below(complianceResult.timelyRecordingRate, 50)) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
+  if (staff.length > 0 && below(staffResult.escalationProcedureKnowledgeRate, 50)) actions.push("MEDIUM: Escalation procedure knowledge at " + staffResult.escalationProcedureKnowledgeRate + "% — schedule training");
   const lowScoreChildren = childProfiles.filter((p) => p.overallScore <= 3);
   if (lowScoreChildren.length > 0) actions.push("MEDIUM: " + lowScoreChildren.length + " child(ren) with low escalation management scores — review individual escalation histories");
   if (actions.length === 0) actions.push("No immediate actions required. Escalation management systems operating within expected standards.");

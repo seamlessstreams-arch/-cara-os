@@ -9,7 +9,6 @@ export {
   evaluateFilingCabinetPolicy,
   evaluateStaffFilingCabinetReadiness,
   buildChildFilingCabinetProfiles,
-  pct,
   getRating,
   getFilingCabinetCategoryLabel,
   getFilingCabinetOutcomeLabel,

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { CulturalIdentityCelebrationIntelligence } from "@/lib/cultural-identity-celebration";
+import { formatRate } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -109,7 +110,7 @@ export default function CulturalIdentityCelebrationDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Activities</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.culturalEngagement.engagementRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.culturalEngagement.engagementRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Engagement</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -154,11 +155,11 @@ export default function CulturalIdentityCelebrationDashboardWidget() {
         <Section title="Cultural Engagement">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <Stat label="Activities" value={data.culturalEngagement.totalActivities} />
-            <Stat label="Engagement" value={`${data.culturalEngagement.engagementRate}%`} />
-            <Stat label="Child-Led Choice" value={`${data.culturalEngagement.childLedChoiceRate}%`} />
-            <Stat label="Identity Affirmed" value={`${data.culturalEngagement.identityAffirmedRate}%`} />
-            <Stat label="Documented in Plan" value={`${data.culturalEngagement.documentedInPlanRate}%`} />
-            <Stat label="Reflection Completed" value={`${data.culturalEngagement.reflectionCompletedRate}%`} />
+            <Stat label="Engagement" value={`${formatRate(data.culturalEngagement.engagementRate)}`} />
+            <Stat label="Child-Led Choice" value={`${formatRate(data.culturalEngagement.childLedChoiceRate)}`} />
+            <Stat label="Identity Affirmed" value={`${formatRate(data.culturalEngagement.identityAffirmedRate)}`} />
+            <Stat label="Documented in Plan" value={`${formatRate(data.culturalEngagement.documentedInPlanRate)}`} />
+            <Stat label="Reflection Completed" value={`${formatRate(data.culturalEngagement.reflectionCompletedRate)}`} />
           </div>
         </Section>
 
@@ -167,8 +168,8 @@ export default function CulturalIdentityCelebrationDashboardWidget() {
             <Stat label="Activities" value={data.culturalDiversity.totalActivities} />
             <Stat label="Cultural Areas" value={`${data.culturalDiversity.uniqueCulturalAreas}/8`} />
             <Stat label="Area Coverage" value={`${data.culturalDiversity.culturalAreaRatio}%`} />
-            <Stat label="Staff Facilitated" value={`${data.culturalDiversity.staffFacilitatedRate}%`} />
-            <Stat label="Community Involved" value={`${data.culturalDiversity.communityInvolvedRate}%`} />
+            <Stat label="Staff Facilitated" value={`${formatRate(data.culturalDiversity.staffFacilitatedRate)}`} />
+            <Stat label="Community Involved" value={`${formatRate(data.culturalDiversity.communityInvolvedRate)}`} />
           </div>
         </Section>
 
@@ -187,12 +188,12 @@ export default function CulturalIdentityCelebrationDashboardWidget() {
         <Section title="Staff Cultural Readiness">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <Stat label="Staff" value={data.staffCulturalReadiness.totalStaff} />
-            <Stat label="Cultural Competence" value={`${data.staffCulturalReadiness.culturalCompetenceRate}%`} />
-            <Stat label="Diversity Awareness" value={`${data.staffCulturalReadiness.diversityAwarenessRate}%`} />
-            <Stat label="Religious Literacy" value={`${data.staffCulturalReadiness.religiousLiteracyRate}%`} />
-            <Stat label="Anti-Racism Practice" value={`${data.staffCulturalReadiness.antiRacismPracticeRate}%`} />
-            <Stat label="Identity Support" value={`${data.staffCulturalReadiness.identitySupportRate}%`} />
-            <Stat label="Community Engagement" value={`${data.staffCulturalReadiness.communityEngagementRate}%`} />
+            <Stat label="Cultural Competence" value={`${formatRate(data.staffCulturalReadiness.culturalCompetenceRate)}`} />
+            <Stat label="Diversity Awareness" value={`${formatRate(data.staffCulturalReadiness.diversityAwarenessRate)}`} />
+            <Stat label="Religious Literacy" value={`${formatRate(data.staffCulturalReadiness.religiousLiteracyRate)}`} />
+            <Stat label="Anti-Racism Practice" value={`${formatRate(data.staffCulturalReadiness.antiRacismPracticeRate)}`} />
+            <Stat label="Identity Support" value={`${formatRate(data.staffCulturalReadiness.identitySupportRate)}`} />
+            <Stat label="Community Engagement" value={`${formatRate(data.staffCulturalReadiness.communityEngagementRate)}`} />
           </div>
         </Section>
 

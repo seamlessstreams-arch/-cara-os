@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildConflictProfile { childId: string; childName: string; totalIncidents: number; resolutionRate: number; childVoiceRate: number; overallScore: number; }
 
@@ -85,19 +86,19 @@ export default function ConflictResolutionManagementDashboardWidget() {
       <Section title="Conflict Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Incidents" value={data.conflictQuality.totalIncidents} />
-          <Stat label="Resolution" value={`${data.conflictQuality.resolutionRate}%`} />
-          <Stat label="De-escalation" value={`${data.conflictQuality.deEscalationRate}%`} />
-          <Stat label="Child Voice" value={`${data.conflictQuality.childVoiceRate}%`} />
-          <Stat label="Restorative" value={`${data.conflictQuality.restorativeRate}%`} />
+          <Stat label="Resolution" value={`${formatRate(data.conflictQuality.resolutionRate)}`} />
+          <Stat label="De-escalation" value={`${formatRate(data.conflictQuality.deEscalationRate)}`} />
+          <Stat label="Child Voice" value={`${formatRate(data.conflictQuality.childVoiceRate)}`} />
+          <Stat label="Restorative" value={`${formatRate(data.conflictQuality.restorativeRate)}`} />
         </div>
       </Section>
 
       <Section title="Conflict Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documented" value={`${data.conflictCompliance.documentedRate}%`} />
-          <Stat label="Staff Supported" value={`${data.conflictCompliance.staffSupportedRate}%`} />
-          <Stat label="Feedback" value={`${data.conflictCompliance.feedbackRate}%`} />
-          <Stat label="Type Diversity" value={`${data.conflictCompliance.conflictTypeDiversityRatio}%`} />
+          <Stat label="Documented" value={`${formatRate(data.conflictCompliance.documentedRate)}`} />
+          <Stat label="Staff Supported" value={`${formatRate(data.conflictCompliance.staffSupportedRate)}`} />
+          <Stat label="Feedback" value={`${formatRate(data.conflictCompliance.feedbackRate)}`} />
+          <Stat label="Type Diversity" value={`${formatRate(data.conflictCompliance.conflictTypeDiversityRatio)}`} />
         </div>
       </Section>
 
@@ -120,12 +121,12 @@ export default function ConflictResolutionManagementDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffConflictReadiness.totalStaff} />
-          <Stat label="De-escalation" value={`${data.staffConflictReadiness.deEscalationTechniquesRate}%`} />
-          <Stat label="Restorative" value={`${data.staffConflictReadiness.restorativePracticeRate}%`} />
-          <Stat label="Mediation" value={`${data.staffConflictReadiness.conflictMediationRate}%`} />
-          <Stat label="Trauma-Informed" value={`${data.staffConflictReadiness.traumaInformedResponseRate}%`} />
-          <Stat label="Physical Intervention" value={`${data.staffConflictReadiness.physicalInterventionCertifiedRate}%`} />
-          <Stat label="Reflective Debrief" value={`${data.staffConflictReadiness.reflectiveDebriefRate}%`} />
+          <Stat label="De-escalation" value={`${formatRate(data.staffConflictReadiness.deEscalationTechniquesRate)}`} />
+          <Stat label="Restorative" value={`${formatRate(data.staffConflictReadiness.restorativePracticeRate)}`} />
+          <Stat label="Mediation" value={`${formatRate(data.staffConflictReadiness.conflictMediationRate)}`} />
+          <Stat label="Trauma-Informed" value={`${formatRate(data.staffConflictReadiness.traumaInformedResponseRate)}`} />
+          <Stat label="Physical Intervention" value={`${formatRate(data.staffConflictReadiness.physicalInterventionCertifiedRate)}`} />
+          <Stat label="Reflective Debrief" value={`${formatRate(data.staffConflictReadiness.reflectiveDebriefRate)}`} />
         </div>
       </Section>
 

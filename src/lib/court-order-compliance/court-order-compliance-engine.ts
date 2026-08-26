@@ -1,4 +1,5 @@
 import { seedDay } from "@/lib/seed-date";
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // COURT ORDER COMPLIANCE INTELLIGENCE ENGINE
 //
@@ -123,14 +124,17 @@ export interface OrderComplianceResult {
   activeOrders: number;
   totalConditions: number;
   fullyCompliantConditions: number;
-  fullyCompliantRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  fullyCompliantRate: number | null;
   substantiallyCompliantConditions: number;
   partiallyCompliantConditions: number;
   nonCompliantConditions: number;
   activeOrdersReviewed: number;
-  activeOrdersReviewedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  activeOrdersReviewedRate: number | null;
   conditionsEvidenced: number;
-  conditionsEvidencedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  conditionsEvidencedRate: number | null;
   noNonCompliant: boolean;
   score: number; // 0-25
   strengths: string[];
@@ -140,14 +144,18 @@ export interface OrderComplianceResult {
 export interface ReviewTimelinessResult {
   totalReviews: number;
   onTimeReviews: number;
-  onTimeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  onTimeRate: number | null;
   allMetReviews: number;
-  allMetRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  allMetRate: number | null;
   concernsReviews: number;
-  concernsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  concernsRate: number | null;
   childrenCovered: number;
   totalChildren: number;
-  coverageRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  coverageRate: number | null;
   score: number; // 0-25
   strengths: string[];
   concerns: string[];
@@ -156,11 +164,14 @@ export interface ReviewTimelinessResult {
 export interface LegalEngagementResult {
   totalMeetings: number;
   homeAttendance: number;
-  homeAttendanceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  homeAttendanceRate: number | null;
   childParticipation: number;
-  childParticipationRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childParticipationRate: number | null;
   minutesRecorded: number;
-  minutesRecordedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  minutesRecordedRate: number | null;
   actionsAgreed: number;
   meetingTypeBreakdown: Record<string, number>;
   meetingTypeCount: number;
@@ -172,13 +183,17 @@ export interface LegalEngagementResult {
 export interface StaffLegalKnowledgeResult {
   totalStaff: number;
   courtOrderAwarenessCount: number;
-  courtOrderAwarenessRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  courtOrderAwarenessRate: number | null;
   childrenActKnowledgeCount: number;
-  childrenActKnowledgeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childrenActKnowledgeRate: number | null;
   humanRightsTrainingCount: number;
-  humanRightsTrainingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  humanRightsTrainingRate: number | null;
   allThreeCount: number;
-  allThreeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  allThreeRate: number | null;
   score: number; // 0-25
   strengths: string[];
   concerns: string[];
@@ -217,11 +232,6 @@ export interface CourtOrderComplianceIntelligence {
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 /** Calculate percentage, returning 0 if denominator is 0. */
-export function pct(numerator: number, denominator: number): number {
-  if (denominator === 0) return 0;
-  return Math.round((numerator / denominator) * 100);
-}
-
 /** Map overall score (0-100) to Ofsted-style rating. */
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -291,14 +301,14 @@ export function evaluateOrderCompliance(
       activeOrders: 0,
       totalConditions: 0,
       fullyCompliantConditions: 0,
-      fullyCompliantRate: 0,
+      fullyCompliantRate: null,
       substantiallyCompliantConditions: 0,
       partiallyCompliantConditions: 0,
       nonCompliantConditions: 0,
       activeOrdersReviewed: 0,
-      activeOrdersReviewedRate: 0,
+      activeOrdersReviewedRate: null,
       conditionsEvidenced: 0,
-      conditionsEvidencedRate: 0,
+      conditionsEvidencedRate: null,
       noNonCompliant: false,
       score: 0,
       strengths: [],
@@ -323,29 +333,29 @@ export function evaluateOrderCompliance(
     (c) => c.complianceStatus === "non_compliant",
   ).length;
 
-  const fullyCompliantRate = pct(fullyCompliantConditions, totalConditions);
+  const fullyCompliantRate = rate(fullyCompliantConditions, totalConditions);
 
   // Active orders that have been reviewed (lastReviewDate is set and non-empty)
   const activeOrdersReviewed = activeOrders.filter(
     (o) => o.lastReviewDate && o.lastReviewDate.length > 0,
   ).length;
-  const activeOrdersReviewedRate = pct(activeOrdersReviewed, activeOrders.length);
+  const activeOrdersReviewedRate = rate(activeOrdersReviewed, activeOrders.length);
 
   // Conditions with evidence (lastEvidenced is set and non-empty)
   const conditionsEvidenced = allConditions.filter(
     (c) => c.lastEvidenced && c.lastEvidenced.length > 0,
   ).length;
-  const conditionsEvidencedRate = pct(conditionsEvidenced, totalConditions);
+  const conditionsEvidencedRate = rate(conditionsEvidenced, totalConditions);
 
   const noNonCompliant = nonCompliantConditions === 0;
 
   // Score (out of 25)
   // Fully compliant rate: 0-8
-  const complianceScore = (fullyCompliantRate / 100) * 8;
+  const complianceScore = ((fullyCompliantRate ?? 0) / 100) * 8;
   // Active orders reviewed rate: 0-6
-  const reviewedScore = (activeOrdersReviewedRate / 100) * 6;
+  const reviewedScore = ((activeOrdersReviewedRate ?? 0) / 100) * 6;
   // Conditions evidenced rate: 0-5
-  const evidencedScore = (conditionsEvidencedRate / 100) * 5;
+  const evidencedScore = ((conditionsEvidencedRate ?? 0) / 100) * 5;
   // No non-compliant bonus: 0-6
   const noNonCompliantBonus = noNonCompliant ? 6 : Math.max(0, 6 - nonCompliantConditions * 2);
 
@@ -356,11 +366,11 @@ export function evaluateOrderCompliance(
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (fullyCompliantRate >= 90) {
+  if (meets(fullyCompliantRate, 90)) {
     strengths.push(
       "Excellent court order compliance: " + fullyCompliantRate + "% of conditions fully compliant",
     );
-  } else if (fullyCompliantRate < 70) {
+  } else if (below(fullyCompliantRate, 70)) {
     concerns.push(
       "Court order compliance at " + fullyCompliantRate + "% — below the expected standard for looked-after children",
     );
@@ -370,17 +380,17 @@ export function evaluateOrderCompliance(
     strengths.push(
       "All active court orders have been reviewed, demonstrating robust oversight",
     );
-  } else if (activeOrdersReviewedRate < 80) {
+  } else if (below(activeOrdersReviewedRate, 80)) {
     concerns.push(
       "Only " + activeOrdersReviewedRate + "% of active orders reviewed — Care Planning Regulations require regular review",
     );
   }
 
-  if (conditionsEvidencedRate >= 90) {
+  if (meets(conditionsEvidencedRate, 90)) {
     strengths.push(
       "Strong evidence base: " + conditionsEvidencedRate + "% of conditions have recent evidence recorded",
     );
-  } else if (conditionsEvidencedRate < 70) {
+  } else if (below(conditionsEvidencedRate, 70)) {
     concerns.push(
       "Only " + conditionsEvidencedRate + "% of conditions evidenced — gaps in evidence undermine compliance assurance",
     );
@@ -428,14 +438,14 @@ export function evaluateReviewTimeliness(
     return {
       totalReviews: 0,
       onTimeReviews: 0,
-      onTimeRate: 0,
+      onTimeRate: null,
       allMetReviews: 0,
-      allMetRate: 0,
+      allMetRate: null,
       concernsReviews: 0,
-      concernsRate: 0,
+      concernsRate: null,
       childrenCovered: 0,
       totalChildren: childIds.length,
-      coverageRate: 0,
+      coverageRate: null,
       score: 0,
       strengths: [],
       concerns: ["No condition reviews conducted — court order conditions must be regularly reviewed"],
@@ -447,35 +457,35 @@ export function evaluateReviewTimeliness(
   const onTimeReviews = reviews.filter(
     (r) => r.conditionsReviewed > 0 && r.conditionsMet >= 0,
   ).length;
-  const onTimeRate = pct(onTimeReviews, reviews.length);
+  const onTimeRate = rate(onTimeReviews, reviews.length);
 
   // All met reviews
   const allMetReviews = reviews.filter(
     (r) => r.reviewOutcome === "all_met",
   ).length;
-  const allMetRate = pct(allMetReviews, reviews.length);
+  const allMetRate = rate(allMetReviews, reviews.length);
 
   // Concerns reviews (some_concerns or significant_concerns)
   const concernsReviews = reviews.filter(
     (r) => r.reviewOutcome === "some_concerns" || r.reviewOutcome === "significant_concerns",
   ).length;
-  const concernsRate = pct(concernsReviews, reviews.length);
+  const concernsRate = rate(concernsReviews, reviews.length);
 
   // Coverage: how many children have at least one review
   const childrenWithReviews = new Set(reviews.map((r) => r.childId));
   const childrenCovered = childrenWithReviews.size;
   const totalChildren = childIds.length;
-  const coverageRate = pct(childrenCovered, totalChildren);
+  const coverageRate = rate(childrenCovered, totalChildren);
 
   // Score (out of 25)
   // On-time rate: 0-8
-  const onTimeScore = (onTimeRate / 100) * 8;
+  const onTimeScore = (onTimeRate! / 100) * 8;
   // All-met rate: 0-6
-  const allMetScore = (allMetRate / 100) * 6;
+  const allMetScore = (allMetRate! / 100) * 6;
   // Concerns rate inversely: 0-5 (lower concerns = higher score)
-  const concernsScore = ((100 - concernsRate) / 100) * 5;
+  const concernsScore = ((100 - concernsRate!) / 100) * 5;
   // Coverage: 0-6
-  const coverageScore = (coverageRate / 100) * 6;
+  const coverageScore = ((coverageRate ?? 0) / 100) * 6;
 
   let score = onTimeScore + allMetScore + concernsScore + coverageScore;
   score = Math.min(25, Math.max(0, Math.round(score * 10) / 10));
@@ -484,21 +494,21 @@ export function evaluateReviewTimeliness(
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (onTimeRate >= 90) {
+  if (meets(onTimeRate, 90)) {
     strengths.push(
       "Excellent review completion: " + onTimeRate + "% of condition reviews conducted on time",
     );
-  } else if (onTimeRate < 70) {
+  } else if (below(onTimeRate, 70)) {
     concerns.push(
       "Review completion rate at " + onTimeRate + "% — timely reviews are essential for court order compliance",
     );
   }
 
-  if (allMetRate >= 80) {
+  if (meets(allMetRate, 80)) {
     strengths.push(
       allMetRate + "% of reviews found all conditions met — strong compliance culture",
     );
-  } else if (allMetRate < 50) {
+  } else if (below(allMetRate, 50)) {
     concerns.push(
       "Only " + allMetRate + "% of reviews found all conditions met — significant compliance gaps identified",
     );
@@ -508,13 +518,13 @@ export function evaluateReviewTimeliness(
     strengths.push(
       "All children have received condition reviews, ensuring comprehensive oversight",
     );
-  } else if (coverageRate < 80) {
+  } else if (below(coverageRate, 80)) {
     concerns.push(
       "Only " + coverageRate + "% of children have received condition reviews — some children may have unmonitored conditions",
     );
   }
 
-  if (concernsRate > 30) {
+  if (above(concernsRate, 30)) {
     concerns.push(
       concernsRate + "% of reviews raised concerns — patterns of non-compliance need investigation",
     );
@@ -546,11 +556,11 @@ export function evaluateLegalEngagement(
     return {
       totalMeetings: 0,
       homeAttendance: 0,
-      homeAttendanceRate: 0,
+      homeAttendanceRate: null,
       childParticipation: 0,
-      childParticipationRate: 0,
+      childParticipationRate: null,
       minutesRecorded: 0,
-      minutesRecordedRate: 0,
+      minutesRecordedRate: null,
       actionsAgreed: 0,
       meetingTypeBreakdown: {},
       meetingTypeCount: 0,
@@ -561,13 +571,13 @@ export function evaluateLegalEngagement(
   }
 
   const homeAttendance = meetings.filter((m) => m.attendedByHome).length;
-  const homeAttendanceRate = pct(homeAttendance, meetings.length);
+  const homeAttendanceRate = rate(homeAttendance, meetings.length);
 
   const childParticipation = meetings.filter((m) => m.childParticipated).length;
-  const childParticipationRate = pct(childParticipation, meetings.length);
+  const childParticipationRate = rate(childParticipation, meetings.length);
 
   const minutesRecorded = meetings.filter((m) => m.minutesRecorded).length;
-  const minutesRecordedRate = pct(minutesRecorded, meetings.length);
+  const minutesRecordedRate = rate(minutesRecorded, meetings.length);
 
   const actionsAgreed = meetings.reduce((sum, m) => sum + m.actionsAgreed, 0);
 
@@ -580,11 +590,11 @@ export function evaluateLegalEngagement(
 
   // Score (out of 25)
   // Home attendance: 0-7
-  const attendanceScore = (homeAttendanceRate / 100) * 7;
+  const attendanceScore = (homeAttendanceRate! / 100) * 7;
   // Child participation: 0-6
-  const participationScore = (childParticipationRate / 100) * 6;
+  const participationScore = (childParticipationRate! / 100) * 6;
   // Minutes recorded: 0-5
-  const minutesScore = (minutesRecordedRate / 100) * 5;
+  const minutesScore = (minutesRecordedRate! / 100) * 5;
   // Actions agreed: 0-4 (capped — any positive count is good)
   const actionsScore = actionsAgreed > 0 ? Math.min(4, (actionsAgreed / (meetings.length * 3)) * 4) : null;
   // Variety of meetings: 0-3
@@ -597,31 +607,31 @@ export function evaluateLegalEngagement(
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (homeAttendanceRate >= 90) {
+  if (meets(homeAttendanceRate, 90)) {
     strengths.push(
       "Strong attendance at legal meetings: " + homeAttendanceRate + "% attended by the home",
     );
-  } else if (homeAttendanceRate < 70) {
+  } else if (below(homeAttendanceRate, 70)) {
     concerns.push(
       "Home attendance at legal meetings at " + homeAttendanceRate + "% — consistent representation is required",
     );
   }
 
-  if (childParticipationRate >= 80) {
+  if (meets(childParticipationRate, 80)) {
     strengths.push(
       "Good child participation in legal processes: " + childParticipationRate + "% of meetings included the child's voice",
     );
-  } else if (childParticipationRate < 60) {
+  } else if (below(childParticipationRate, 60)) {
     concerns.push(
       "Child participation at " + childParticipationRate + "% — UNCRC Article 12 requires children's views to be heard",
     );
   }
 
-  if (minutesRecordedRate >= 90) {
+  if (meets(minutesRecordedRate, 90)) {
     strengths.push(
       "Minutes consistently recorded (" + minutesRecordedRate + "%) — strong evidence base for legal proceedings",
     );
-  } else if (minutesRecordedRate < 70) {
+  } else if (below(minutesRecordedRate, 70)) {
     concerns.push(
       "Minutes recorded for only " + minutesRecordedRate + "% of meetings — gaps in records undermine accountability",
     );
@@ -663,13 +673,13 @@ export function evaluateStaffLegalKnowledge(
     return {
       totalStaff: 0,
       courtOrderAwarenessCount: 0,
-      courtOrderAwarenessRate: 0,
+      courtOrderAwarenessRate: null,
       childrenActKnowledgeCount: 0,
-      childrenActKnowledgeRate: 0,
+      childrenActKnowledgeRate: null,
       humanRightsTrainingCount: 0,
-      humanRightsTrainingRate: 0,
+      humanRightsTrainingRate: null,
       allThreeCount: 0,
-      allThreeRate: 0,
+      allThreeRate: null,
       score: 0,
       strengths: [],
       concerns: ["No legal training records found — staff must understand the legal framework for looked-after children"],
@@ -679,28 +689,28 @@ export function evaluateStaffLegalKnowledge(
   const n = training.length;
 
   const courtOrderAwarenessCount = training.filter((t) => t.courtOrderAwareness).length;
-  const courtOrderAwarenessRate = pct(courtOrderAwarenessCount, n);
+  const courtOrderAwarenessRate = rate(courtOrderAwarenessCount, n);
 
   const childrenActKnowledgeCount = training.filter((t) => t.childrenActKnowledge).length;
-  const childrenActKnowledgeRate = pct(childrenActKnowledgeCount, n);
+  const childrenActKnowledgeRate = rate(childrenActKnowledgeCount, n);
 
   const humanRightsTrainingCount = training.filter((t) => t.humanRightsTraining).length;
-  const humanRightsTrainingRate = pct(humanRightsTrainingCount, n);
+  const humanRightsTrainingRate = rate(humanRightsTrainingCount, n);
 
   const allThreeCount = training.filter(
     (t) => t.courtOrderAwareness && t.childrenActKnowledge && t.humanRightsTraining,
   ).length;
-  const allThreeRate = pct(allThreeCount, n);
+  const allThreeRate = rate(allThreeCount, n);
 
   // Score (out of 25)
   // Court order awareness: 0-7
-  const awarenessScore = (courtOrderAwarenessRate / 100) * 7;
+  const awarenessScore = ((courtOrderAwarenessRate ?? 0) / 100) * 7;
   // Children Act knowledge: 0-7
-  const actScore = (childrenActKnowledgeRate / 100) * 7;
+  const actScore = ((childrenActKnowledgeRate ?? 0) / 100) * 7;
   // Human rights training: 0-6
-  const humanRightsScore = (humanRightsTrainingRate / 100) * 6;
+  const humanRightsScore = ((humanRightsTrainingRate ?? 0) / 100) * 6;
   // Overall all-three rate: 0-5
-  const overallRate = (allThreeRate / 100) * 5;
+  const overallRate = ((allThreeRate ?? 0) / 100) * 5;
 
   let score = awarenessScore + actScore + humanRightsScore + overallRate;
   score = Math.min(25, Math.max(0, Math.round(score * 10) / 10));
@@ -709,41 +719,41 @@ export function evaluateStaffLegalKnowledge(
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (courtOrderAwarenessRate >= 90) {
+  if (meets(courtOrderAwarenessRate, 90)) {
     strengths.push(
       "Strong court order awareness: " + courtOrderAwarenessRate + "% of staff trained",
     );
-  } else if (courtOrderAwarenessRate < 70) {
+  } else if (below(courtOrderAwarenessRate, 70)) {
     concerns.push(
       "Court order awareness at " + courtOrderAwarenessRate + "% — staff must understand the legal orders for children in their care",
     );
   }
 
-  if (childrenActKnowledgeRate >= 90) {
+  if (meets(childrenActKnowledgeRate, 90)) {
     strengths.push(
       "Excellent Children Act knowledge: " + childrenActKnowledgeRate + "% of staff trained",
     );
-  } else if (childrenActKnowledgeRate < 70) {
+  } else if (below(childrenActKnowledgeRate, 70)) {
     concerns.push(
       "Children Act knowledge at " + childrenActKnowledgeRate + "% — foundational legal knowledge is essential for all staff",
     );
   }
 
-  if (humanRightsTrainingRate >= 90) {
+  if (meets(humanRightsTrainingRate, 90)) {
     strengths.push(
       "Good human rights training coverage: " + humanRightsTrainingRate + "% of staff trained",
     );
-  } else if (humanRightsTrainingRate < 70) {
+  } else if (below(humanRightsTrainingRate, 70)) {
     concerns.push(
       "Human rights training at " + humanRightsTrainingRate + "% — Article 8 rights require staff understanding",
     );
   }
 
-  if (allThreeRate >= 80) {
+  if (meets(allThreeRate, 80)) {
     strengths.push(
       allThreeRate + "% of staff have completed all three legal training areas — comprehensive knowledge base",
     );
-  } else if (allThreeRate < 50) {
+  } else if (below(allThreeRate, 50)) {
     concerns.push(
       "Only " + allThreeRate + "% of staff have completed all three legal training areas — significant training gaps",
     );
@@ -784,7 +794,7 @@ export function buildChildOrderProfiles(
     const fullyCompliantConditions = allConditions.filter(
       (c) => c.complianceStatus === "fully_compliant",
     ).length;
-    const complianceRate = pct(fullyCompliantConditions, totalConditions);
+    const complianceRate = rate(fullyCompliantConditions, totalConditions)!;
 
     const reviewsConducted = reviews.filter((r) => r.childId === childId).length;
     const meetingsAttended = meetings.filter(
@@ -792,7 +802,7 @@ export function buildChildOrderProfiles(
     ).length;
 
     // Score (0-10): compliance rate (0-4) + reviews conducted (0-3) + meetings (0-3)
-    const complianceScore = totalConditions > 0 ? (complianceRate / 100) * 4 : 4;
+    const complianceScore = totalConditions > 0 ? (complianceRate! / 100) * 4 : 4;
     const reviewScore = reviewsConducted > 0 ? Math.min(3, reviewsConducted) : null;
     const meetingScore = meetingsAttended > 0 ? Math.min(3, meetingsAttended) : null;
 
@@ -908,7 +918,7 @@ export function generateCourtOrderComplianceIntelligence(
     );
   }
 
-  if (reviewTimeliness.concernsRate > 30) {
+  if (above(reviewTimeliness.concernsRate, 30)) {
     actions.push(
       "URGENT: " + reviewTimeliness.concernsRate + "% of reviews raised concerns — investigate patterns and develop remediation plan",
     );
@@ -920,7 +930,7 @@ export function generateCourtOrderComplianceIntelligence(
     );
   }
 
-  if (legalEngagement.homeAttendanceRate < 80 && legalEngagement.totalMeetings > 0) {
+  if (below(legalEngagement.homeAttendanceRate, 80) && legalEngagement.totalMeetings > 0) {
     actions.push(
       "URGENT: Home attendance at legal meetings at " + legalEngagement.homeAttendanceRate + "% — arrange cover to ensure representation at all meetings",
     );
@@ -932,25 +942,25 @@ export function generateCourtOrderComplianceIntelligence(
     );
   }
 
-  if (staffLegalKnowledge.courtOrderAwarenessRate < 80 && staffLegalKnowledge.totalStaff > 0) {
+  if (below(staffLegalKnowledge.courtOrderAwarenessRate, 80) && staffLegalKnowledge.totalStaff > 0) {
     actions.push(
       "URGENT: Court order awareness training at " + staffLegalKnowledge.courtOrderAwarenessRate + "% — schedule training for untrained staff within 10 working days",
     );
   }
 
-  if (staffLegalKnowledge.humanRightsTrainingRate < 80 && staffLegalKnowledge.totalStaff > 0) {
+  if (below(staffLegalKnowledge.humanRightsTrainingRate, 80) && staffLegalKnowledge.totalStaff > 0) {
     actions.push(
       "URGENT: Human rights training at " + staffLegalKnowledge.humanRightsTrainingRate + "% — Article 8 proportionality understanding is essential",
     );
   }
 
-  if (legalEngagement.childParticipationRate < 70 && legalEngagement.totalMeetings > 0) {
+  if (below(legalEngagement.childParticipationRate, 70) && legalEngagement.totalMeetings > 0) {
     actions.push(
       "URGENT: Child participation at " + legalEngagement.childParticipationRate + "% — develop advocacy support to ensure children's voices are heard in legal processes",
     );
   }
 
-  if (orderCompliance.conditionsEvidencedRate < 80 && orderCompliance.totalConditions > 0) {
+  if (below(orderCompliance.conditionsEvidencedRate, 80) && orderCompliance.totalConditions > 0) {
     actions.push(
       "URGENT: Only " + orderCompliance.conditionsEvidencedRate + "% of conditions evidenced — implement evidence tracking for all court order conditions",
     );

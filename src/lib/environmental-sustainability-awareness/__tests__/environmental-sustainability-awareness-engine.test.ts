@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   generateEnvironmentalSustainabilityAwarenessIntelligence, evaluateEcoQuality, evaluateEcoCompliance,
-  evaluateEnvironmentalPolicy, evaluateStaffEnvironmentalReadiness, buildChildEnvironmentalProfiles, pct, getRating,
+  evaluateEnvironmentalPolicy, evaluateStaffEnvironmentalReadiness, buildChildEnvironmentalProfiles, getRating,
   getActivityTypeLabel, getEngagementLevelLabel, getRatingLabel,
 } from "../environmental-sustainability-awareness-engine";
 import type { EcoActivity, EnvironmentalPolicy, StaffEnvironmentalTraining } from "../environmental-sustainability-awareness-engine";
@@ -20,12 +20,6 @@ function makeTraining(overrides: Partial<StaffEnvironmentalTraining> = {}): Staf
   return { id: `et-${_tid}`, staffId: `staff-${_tid}`, staffName: `Staff ${_tid}`, sustainabilityAwareness: true, ecoEducation: true, gardenManagement: true, energyConservation: true, wildlifeKnowledge: true, communityEngagement: true, ...overrides };
 }
 
-describe("pct", () => {
-  it("returns percentage", () => { expect(pct(3, 4)).toBe(75); });
-  it("returns 0 for den=0", () => { expect(pct(0, 0)).toBe(0); });
-  it("returns 100 for equal", () => { expect(pct(5, 5)).toBe(100); });
-  it("returns 0 for num=0", () => { expect(pct(0, 10)).toBe(0); });
-});
 
 describe("getRating", () => {
   it("outstanding >= 80", () => { expect(getRating(80)).toBe("outstanding"); expect(getRating(100)).toBe("outstanding"); });

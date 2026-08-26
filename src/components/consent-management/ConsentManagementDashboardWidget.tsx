@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 // ── Inline types (mirrors engine output) ────────────────────────────────────
 
@@ -223,19 +224,19 @@ export default function ConsentManagementDashboardWidget() {
         {/* Consent Quality */}
         <Section title="Consent Quality">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Stat label="Obtained Rate" value={`${data.consentQuality.obtainedRate}%`} />
-            <Stat label="Child Views Sought" value={`${data.consentQuality.childViewsRate}%`} />
-            <Stat label="Documented" value={`${data.consentQuality.documentedRate}%`} />
-            <Stat label="Expiry Tracked" value={`${data.consentQuality.expiryTrackedRate}%`} />
+            <Stat label="Obtained Rate" value={`${formatRate(data.consentQuality.obtainedRate)}`} />
+            <Stat label="Child Views Sought" value={`${formatRate(data.consentQuality.childViewsRate)}`} />
+            <Stat label="Documented" value={`${formatRate(data.consentQuality.documentedRate)}`} />
+            <Stat label="Expiry Tracked" value={`${formatRate(data.consentQuality.expiryTrackedRate)}`} />
           </div>
         </Section>
 
         {/* Consent Compliance */}
         <Section title="Consent Compliance">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Stat label="Parent Consulted" value={`${data.consentCompliance.parentConsultedRate}%`} />
-            <Stat label="Staff Recorded" value={`${data.consentCompliance.staffRecordedRate}%`} />
-            <Stat label="Review Scheduled" value={`${data.consentCompliance.reviewScheduledRate}%`} />
+            <Stat label="Parent Consulted" value={`${formatRate(data.consentCompliance.parentConsultedRate)}`} />
+            <Stat label="Staff Recorded" value={`${formatRate(data.consentCompliance.staffRecordedRate)}`} />
+            <Stat label="Review Scheduled" value={`${formatRate(data.consentCompliance.reviewScheduledRate)}`} />
             <Stat label="Category Diversity" value={data.consentCompliance.categoryDiversityRatio} />
           </div>
         </Section>
@@ -265,12 +266,12 @@ export default function ConsentManagementDashboardWidget() {
         {/* Staff Readiness */}
         <Section title="Staff Readiness">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            <Stat label="Consent Law" value={`${data.staffReadiness.consentLawRate}%`} />
-            <Stat label="Capacity Assessment" value={`${data.staffReadiness.capacityAssessmentRate}%`} />
-            <Stat label="Gillick Competence" value={`${data.staffReadiness.gillikCompetenceRate}%`} />
-            <Stat label="Documentation Skills" value={`${data.staffReadiness.documentationSkillsRate}%`} />
-            <Stat label="Child Participation" value={`${data.staffReadiness.childParticipationRate}%`} />
-            <Stat label="Escalation Process" value={`${data.staffReadiness.escalationProcessRate}%`} />
+            <Stat label="Consent Law" value={`${formatRate(data.staffReadiness.consentLawRate)}`} />
+            <Stat label="Capacity Assessment" value={`${formatRate(data.staffReadiness.capacityAssessmentRate)}`} />
+            <Stat label="Gillick Competence" value={`${formatRate(data.staffReadiness.gillikCompetenceRate)}`} />
+            <Stat label="Documentation Skills" value={`${formatRate(data.staffReadiness.documentationSkillsRate)}`} />
+            <Stat label="Child Participation" value={`${formatRate(data.staffReadiness.childParticipationRate)}`} />
+            <Stat label="Escalation Process" value={`${formatRate(data.staffReadiness.escalationProcessRate)}`} />
           </div>
         </Section>
 

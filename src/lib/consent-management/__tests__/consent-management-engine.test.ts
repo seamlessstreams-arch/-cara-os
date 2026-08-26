@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getConsentCategoryLabel,
   getConsentStatusLabel,
@@ -69,27 +68,6 @@ function makeTraining(overrides: Partial<StaffConsentTraining> = {}): StaffConse
 
 // ── pct ─────────────────────────────────────────────────────────────────────
 
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("calculates percentage correctly", () => {
-    expect(pct(3, 4)).toBe(75);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-
-  it("returns 100 for equal numerator and denominator", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 5)).toBe(0);
-  });
-});
 
 // ── getRating ───────────────────────────────────────────────────────────────
 
@@ -196,10 +174,10 @@ describe("getRatingLabel", () => {
 describe("evaluateConsentQuality", () => {
   it("returns all zeros for empty records", () => {
     const r = evaluateConsentQuality([]);
-    expect(r.obtainedRate).toBe(0);
-    expect(r.childViewsRate).toBe(0);
-    expect(r.documentedRate).toBe(0);
-    expect(r.expiryTrackedRate).toBe(0);
+    expect(r.obtainedRate).toBeNull();
+    expect(r.childViewsRate).toBeNull();
+    expect(r.documentedRate).toBeNull();
+    expect(r.expiryTrackedRate).toBeNull();
     expect(r.overallScore).toBe(0);
   });
 
@@ -248,9 +226,9 @@ describe("evaluateConsentQuality", () => {
 describe("evaluateConsentCompliance", () => {
   it("returns all zeros for empty records", () => {
     const r = evaluateConsentCompliance([]);
-    expect(r.parentConsultedRate).toBe(0);
-    expect(r.staffRecordedRate).toBe(0);
-    expect(r.reviewScheduledRate).toBe(0);
+    expect(r.parentConsultedRate).toBeNull();
+    expect(r.staffRecordedRate).toBeNull();
+    expect(r.reviewScheduledRate).toBeNull();
     expect(r.categoryDiversityRatio).toBe(0);
     expect(r.overallScore).toBe(0);
   });
@@ -362,12 +340,12 @@ describe("evaluateConsentPolicy", () => {
 describe("evaluateStaffConsentReadiness", () => {
   it("returns all zeros for empty training array", () => {
     const r = evaluateStaffConsentReadiness([]);
-    expect(r.consentLawRate).toBe(0);
-    expect(r.capacityAssessmentRate).toBe(0);
-    expect(r.gillikCompetenceRate).toBe(0);
-    expect(r.documentationSkillsRate).toBe(0);
-    expect(r.childParticipationRate).toBe(0);
-    expect(r.escalationProcessRate).toBe(0);
+    expect(r.consentLawRate).toBeNull();
+    expect(r.capacityAssessmentRate).toBeNull();
+    expect(r.gillikCompetenceRate).toBeNull();
+    expect(r.documentationSkillsRate).toBeNull();
+    expect(r.childParticipationRate).toBeNull();
+    expect(r.escalationProcessRate).toBeNull();
     expect(r.overallScore).toBe(0);
   });
 

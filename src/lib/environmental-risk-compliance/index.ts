@@ -5,7 +5,6 @@ export {
   evaluateRemediationEffectiveness,
   evaluateStaffSafetyReadiness,
   buildAreaRiskProfiles,
-  pct,
   getRating,
   getHazardTypeLabel,
   getRiskLevelLabel,

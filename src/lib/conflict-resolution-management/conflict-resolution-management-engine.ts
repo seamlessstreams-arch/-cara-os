@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // Conflict Resolution Management Intelligence Engine
 // Pure deterministic — no AI, no external calls, no randomness, no Date.now()
 
@@ -99,18 +100,26 @@ export interface StaffConflictResolutionTraining {
 export interface ConflictQualityResult {
   overallScore: number;
   totalIncidents: number;
-  resolutionRate: number;
-  deEscalationRate: number;
-  childVoiceRate: number;
-  restorativeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  resolutionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  deEscalationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childVoiceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  restorativeRate: number | null;
 }
 
 export interface ConflictComplianceResult {
   overallScore: number;
-  documentedRate: number;
-  staffSupportedRate: number;
-  feedbackRate: number;
-  conflictTypeDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffSupportedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feedbackRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  conflictTypeDiversityRatio: number | null;
 }
 
 export interface ConflictPolicyResult {
@@ -127,20 +136,28 @@ export interface ConflictPolicyResult {
 export interface StaffConflictReadinessResult {
   overallScore: number;
   totalStaff: number;
-  deEscalationTechniquesRate: number;
-  restorativePracticeRate: number;
-  conflictMediationRate: number;
-  traumaInformedResponseRate: number;
-  physicalInterventionCertifiedRate: number;
-  reflectiveDebriefRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  deEscalationTechniquesRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  restorativePracticeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  conflictMediationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  traumaInformedResponseRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  physicalInterventionCertifiedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reflectiveDebriefRate: number | null;
 }
 
 export interface ChildConflictProfile {
   childId: string;
   childName: string;
   totalIncidents: number;
-  resolutionRate: number;
-  childVoiceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  resolutionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childVoiceRate: number | null;
   overallScore: number;
 }
 
@@ -163,11 +180,6 @@ export interface ConflictResolutionManagementIntelligence {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -179,7 +191,7 @@ export function getRating(score: number): Rating {
 
 export function evaluateConflictQuality(incidents: ConflictIncident[]): ConflictQualityResult {
   if (incidents.length === 0) {
-    return { overallScore: 0, totalIncidents: 0, resolutionRate: 0, deEscalationRate: 0, childVoiceRate: 0, restorativeRate: 0 };
+    return { overallScore: 0, totalIncidents: 0, resolutionRate: null, deEscalationRate: null, childVoiceRate: null, restorativeRate: null };
   }
 
   const total = incidents.length;
@@ -188,15 +200,15 @@ export function evaluateConflictQuality(incidents: ConflictIncident[]): Conflict
   const childVoiceCount = incidents.filter((i) => i.childVoiceHeard).length;
   const restorativeCount = incidents.filter((i) => i.restorativePractice).length;
 
-  const resolutionRate = pct(resolvedCount, total);
-  const deEscalationRate = pct(deEscalationCount, total);
-  const childVoiceRate = pct(childVoiceCount, total);
-  const restorativeRate = pct(restorativeCount, total);
+  const resolutionRate = rate(resolvedCount, total);
+  const deEscalationRate = rate(deEscalationCount, total);
+  const childVoiceRate = rate(childVoiceCount, total);
+  const restorativeRate = rate(restorativeCount, total);
 
-  const reScore = Math.round((resolutionRate / 100) * 7);
-  const deScore = Math.round((deEscalationRate / 100) * 6);
-  const cvScore = Math.round((childVoiceRate / 100) * 6);
-  const rpScore = Math.round((restorativeRate / 100) * 6);
+  const reScore = Math.round(((resolutionRate ?? 0) / 100) * 7);
+  const deScore = Math.round(((deEscalationRate ?? 0) / 100) * 6);
+  const cvScore = Math.round(((childVoiceRate ?? 0) / 100) * 6);
+  const rpScore = Math.round(((restorativeRate ?? 0) / 100) * 6);
 
   const overallScore = Math.min(25, reScore + deScore + cvScore + rpScore);
 
@@ -205,7 +217,7 @@ export function evaluateConflictQuality(incidents: ConflictIncident[]): Conflict
 
 export function evaluateConflictCompliance(incidents: ConflictIncident[]): ConflictComplianceResult {
   if (incidents.length === 0) {
-    return { overallScore: 0, documentedRate: 0, staffSupportedRate: 0, feedbackRate: 0, conflictTypeDiversityRatio: 0 };
+    return { overallScore: 0, documentedRate: null, staffSupportedRate: null, feedbackRate: null, conflictTypeDiversityRatio: 0 };
   }
 
   const total = incidents.length;
@@ -213,16 +225,16 @@ export function evaluateConflictCompliance(incidents: ConflictIncident[]): Confl
   const staffCount = incidents.filter((i) => i.staffSupported).length;
   const feedbackCount = incidents.filter((i) => i.feedbackGiven).length;
   const uniqueTypes = new Set(incidents.map((i) => i.conflictType)).size;
-  const diversityRatio = pct(uniqueTypes, 8);
+  const diversityRatio = rate(uniqueTypes, 8);
 
-  const documentedRate = pct(documentedCount, total);
-  const staffSupportedRate = pct(staffCount, total);
-  const feedbackRate = pct(feedbackCount, total);
+  const documentedRate = rate(documentedCount, total);
+  const staffSupportedRate = rate(staffCount, total);
+  const feedbackRate = rate(feedbackCount, total);
 
-  const docScore = Math.round((documentedRate / 100) * 8);
-  const sfScore = Math.round((staffSupportedRate / 100) * 7);
-  const fbScore = Math.round((feedbackRate / 100) * 5);
-  const divScore = Math.round((diversityRatio / 100) * 5);
+  const docScore = Math.round(((documentedRate ?? 0) / 100) * 8);
+  const sfScore = Math.round(((staffSupportedRate ?? 0) / 100) * 7);
+  const fbScore = Math.round(((feedbackRate ?? 0) / 100) * 5);
+  const divScore = Math.round((diversityRatio! / 100) * 5);
 
   const overallScore = Math.min(25, docScore + sfScore + fbScore + divScore);
 
@@ -254,23 +266,23 @@ export function evaluateConflictPolicy(policy: ConflictResolutionPolicy | null):
 
 export function evaluateStaffConflictReadiness(training: StaffConflictResolutionTraining[]): StaffConflictReadinessResult {
   if (training.length === 0) {
-    return { overallScore: 0, totalStaff: 0, deEscalationTechniquesRate: 0, restorativePracticeRate: 0, conflictMediationRate: 0, traumaInformedResponseRate: 0, physicalInterventionCertifiedRate: 0, reflectiveDebriefRate: 0 };
+    return { overallScore: 0, totalStaff: 0, deEscalationTechniquesRate: null, restorativePracticeRate: null, conflictMediationRate: null, traumaInformedResponseRate: null, physicalInterventionCertifiedRate: null, reflectiveDebriefRate: null };
   }
 
   const total = training.length;
-  const deRate = pct(training.filter((t) => t.deEscalationTechniques).length, total);
-  const rpRate = pct(training.filter((t) => t.restorativePractice).length, total);
-  const cmRate = pct(training.filter((t) => t.conflictMediation).length, total);
-  const tiRate = pct(training.filter((t) => t.traumaInformedResponse).length, total);
-  const piRate = pct(training.filter((t) => t.physicalInterventionCertified).length, total);
-  const rdRate = pct(training.filter((t) => t.reflectiveDebrief).length, total);
+  const deRate = rate(training.filter((t) => t.deEscalationTechniques).length, total);
+  const rpRate = rate(training.filter((t) => t.restorativePractice).length, total);
+  const cmRate = rate(training.filter((t) => t.conflictMediation).length, total);
+  const tiRate = rate(training.filter((t) => t.traumaInformedResponse).length, total);
+  const piRate = rate(training.filter((t) => t.physicalInterventionCertified).length, total);
+  const rdRate = rate(training.filter((t) => t.reflectiveDebrief).length, total);
 
-  const s1 = Math.round((deRate / 100) * 6);
-  const s2 = Math.round((rpRate / 100) * 5);
-  const s3 = Math.round((cmRate / 100) * 5);
-  const s4 = Math.round((tiRate / 100) * 4);
-  const s5 = Math.round((piRate / 100) * 3);
-  const s6 = Math.round((rdRate / 100) * 2);
+  const s1 = Math.round(((deRate ?? 0) / 100) * 6);
+  const s2 = Math.round(((rpRate ?? 0) / 100) * 5);
+  const s3 = Math.round(((cmRate ?? 0) / 100) * 5);
+  const s4 = Math.round(((tiRate ?? 0) / 100) * 4);
+  const s5 = Math.round(((piRate ?? 0) / 100) * 3);
+  const s6 = Math.round(((rdRate ?? 0) / 100) * 2);
 
   const overallScore = Math.min(25, s1 + s2 + s3 + s4 + s5 + s6);
 
@@ -296,22 +308,22 @@ export function buildChildConflictProfiles(incidents: ConflictIncident[]): Child
     const resolvedCount = acts.filter((i) => i.resolutionOutcome === "fully_resolved" || i.resolutionOutcome === "partially_resolved").length;
     const childVoiceCount = acts.filter((i) => i.childVoiceHeard).length;
 
-    const resolutionRate = pct(resolvedCount, total);
-    const childVoiceRate = pct(childVoiceCount, total);
+    const resolutionRate = rate(resolvedCount, total);
+    const childVoiceRate = rate(childVoiceCount, total);
 
     let freqScore = 0;
     if (total >= 10) freqScore = 2;
     else if (total >= 5) freqScore = 1;
 
     let reScore = 0;
-    if (resolutionRate >= 80) reScore = 3;
-    else if (resolutionRate >= 60) reScore = 2;
-    else if (resolutionRate >= 40) reScore = 1;
+    if (meets(resolutionRate, 80)) reScore = 3;
+    else if (meets(resolutionRate, 60)) reScore = 2;
+    else if (meets(resolutionRate, 40)) reScore = 1;
 
     let cvScore = 0;
-    if (childVoiceRate >= 80) cvScore = 3;
-    else if (childVoiceRate >= 60) cvScore = 2;
-    else if (childVoiceRate >= 40) cvScore = 1;
+    if (meets(childVoiceRate, 80)) cvScore = 3;
+    else if (meets(childVoiceRate, 60)) cvScore = 2;
+    else if (meets(childVoiceRate, 40)) cvScore = 1;
 
     const uniqueTypes = new Set(acts.map((i) => i.conflictType)).size;
     let divScore = 0;
@@ -350,21 +362,21 @@ export function generateConflictResolutionManagementIntelligence(
   const areasForImprovement: string[] = [];
   const actions: string[] = [];
 
-  if (conflictQuality.resolutionRate >= 80) strengths.push("Conflicts are being effectively resolved through appropriate intervention");
-  if (conflictQuality.deEscalationRate >= 80) strengths.push("De-escalation techniques are consistently applied during conflict situations");
-  if (conflictQuality.childVoiceRate >= 80) strengths.push("Children's voices are well represented in conflict resolution processes");
-  if (conflictCompliance.documentedRate >= 80) strengths.push("Conflict incidents are well documented in care plans");
+  if (meets(conflictQuality.resolutionRate, 80)) strengths.push("Conflicts are being effectively resolved through appropriate intervention");
+  if (meets(conflictQuality.deEscalationRate, 80)) strengths.push("De-escalation techniques are consistently applied during conflict situations");
+  if (meets(conflictQuality.childVoiceRate, 80)) strengths.push("Children's voices are well represented in conflict resolution processes");
+  if (meets(conflictCompliance.documentedRate, 80)) strengths.push("Conflict incidents are well documented in care plans");
 
-  if (incidents.length > 0 && conflictQuality.resolutionRate < 60) areasForImprovement.push("Conflict resolution rates need improvement — review de-escalation and mediation approaches");
-  if (incidents.length > 0 && conflictQuality.restorativeRate < 60) areasForImprovement.push("Restorative practice is underutilised — embed restorative approaches in daily conflict management");
-  if (incidents.length > 0 && conflictQuality.childVoiceRate < 60) areasForImprovement.push("Children's voices in conflict resolution need strengthening");
-  if (incidents.length > 0 && conflictCompliance.staffSupportedRate < 60) areasForImprovement.push("Staff support during conflict incidents needs improvement");
+  if (incidents.length > 0 && below(conflictQuality.resolutionRate, 60)) areasForImprovement.push("Conflict resolution rates need improvement — review de-escalation and mediation approaches");
+  if (incidents.length > 0 && below(conflictQuality.restorativeRate, 60)) areasForImprovement.push("Restorative practice is underutilised — embed restorative approaches in daily conflict management");
+  if (incidents.length > 0 && below(conflictQuality.childVoiceRate, 60)) areasForImprovement.push("Children's voices in conflict resolution need strengthening");
+  if (incidents.length > 0 && below(conflictCompliance.staffSupportedRate, 60)) areasForImprovement.push("Staff support during conflict incidents needs improvement");
 
   if (incidents.length === 0) actions.push("No conflict incident records found — begin tracking conflict resolution and management");
   if (!policy) actions.push("URGENT: No conflict resolution policy in place — develop and implement immediately");
   if (training.length === 0) actions.push("URGENT: No staff conflict resolution training recorded — arrange training for all staff");
-  if (incidents.length > 0 && conflictQuality.deEscalationRate < 60) actions.push("Improve de-escalation technique usage across conflict situations");
-  if (incidents.length > 0 && conflictCompliance.feedbackRate < 60) actions.push("Improve feedback processes following conflict incidents");
+  if (incidents.length > 0 && below(conflictQuality.deEscalationRate, 60)) actions.push("Improve de-escalation technique usage across conflict situations");
+  if (incidents.length > 0 && below(conflictCompliance.feedbackRate, 60)) actions.push("Improve feedback processes following conflict incidents");
 
   const regulatoryLinks: string[] = [
     "CHR 2015 Regulation 12 — Positive behaviour support",

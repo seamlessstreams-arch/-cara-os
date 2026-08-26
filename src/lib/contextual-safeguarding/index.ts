@@ -5,7 +5,6 @@ export {
   evaluateContextualSafeguardingPolicy,
   evaluateStaffContextualSafeguardingReadiness,
   buildChildContextualSafeguardingProfiles,
-  pct,
   getRating,
   getContextualSafeguardingCategoryLabel,
   getContextualSafeguardingOutcomeLabel,

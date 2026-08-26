@@ -5,7 +5,6 @@ export {
   evaluateArtsPolicy,
   evaluateStaffCreativeArtsReadiness,
   buildChildCreativeArtsProfiles,
-  pct,
   getRating,
   getArtFormLabel,
   getExpressionLevelLabel,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildEnvironmentalProfile { childId: string; childName: string; totalActivities: number; engagementRate: number; knowledgeRate: number; overallScore: number; }
 
@@ -85,19 +86,19 @@ export default function EnvironmentalSustainabilityAwarenessDashboardWidget() {
       <Section title="Eco Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Activities" value={data.ecoQuality.totalActivities} />
-          <Stat label="Engagement" value={`${data.ecoQuality.engagementRate}%`} />
-          <Stat label="Knowledge" value={`${data.ecoQuality.knowledgeRate}%`} />
-          <Stat label="Initiative" value={`${data.ecoQuality.initiativeRate}%`} />
-          <Stat label="Habits Formed" value={`${data.ecoQuality.habitsRate}%`} />
+          <Stat label="Engagement" value={`${formatRate(data.ecoQuality.engagementRate)}`} />
+          <Stat label="Knowledge" value={`${formatRate(data.ecoQuality.knowledgeRate)}`} />
+          <Stat label="Initiative" value={`${formatRate(data.ecoQuality.initiativeRate)}`} />
+          <Stat label="Habits Formed" value={`${formatRate(data.ecoQuality.habitsRate)}`} />
         </div>
       </Section>
 
       <Section title="Eco Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documented" value={`${data.ecoCompliance.documentedRate}%`} />
-          <Stat label="Staff Supported" value={`${data.ecoCompliance.staffSupportedRate}%`} />
-          <Stat label="Feedback" value={`${data.ecoCompliance.feedbackRate}%`} />
-          <Stat label="Activity Diversity" value={`${data.ecoCompliance.activityDiversityRatio}%`} />
+          <Stat label="Documented" value={`${formatRate(data.ecoCompliance.documentedRate)}`} />
+          <Stat label="Staff Supported" value={`${formatRate(data.ecoCompliance.staffSupportedRate)}`} />
+          <Stat label="Feedback" value={`${formatRate(data.ecoCompliance.feedbackRate)}`} />
+          <Stat label="Activity Diversity" value={`${formatRate(data.ecoCompliance.activityDiversityRatio)}`} />
         </div>
       </Section>
 
@@ -120,12 +121,12 @@ export default function EnvironmentalSustainabilityAwarenessDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffEnvironmentalReadiness.totalStaff} />
-          <Stat label="Sustainability" value={`${data.staffEnvironmentalReadiness.sustainabilityAwarenessRate}%`} />
-          <Stat label="Eco Education" value={`${data.staffEnvironmentalReadiness.ecoEducationRate}%`} />
-          <Stat label="Garden Mgmt" value={`${data.staffEnvironmentalReadiness.gardenManagementRate}%`} />
-          <Stat label="Energy" value={`${data.staffEnvironmentalReadiness.energyConservationRate}%`} />
-          <Stat label="Wildlife" value={`${data.staffEnvironmentalReadiness.wildlifeKnowledgeRate}%`} />
-          <Stat label="Community" value={`${data.staffEnvironmentalReadiness.communityEngagementRate}%`} />
+          <Stat label="Sustainability" value={`${formatRate(data.staffEnvironmentalReadiness.sustainabilityAwarenessRate)}`} />
+          <Stat label="Eco Education" value={`${formatRate(data.staffEnvironmentalReadiness.ecoEducationRate)}`} />
+          <Stat label="Garden Mgmt" value={`${formatRate(data.staffEnvironmentalReadiness.gardenManagementRate)}`} />
+          <Stat label="Energy" value={`${formatRate(data.staffEnvironmentalReadiness.energyConservationRate)}`} />
+          <Stat label="Wildlife" value={`${formatRate(data.staffEnvironmentalReadiness.wildlifeKnowledgeRate)}`} />
+          <Stat label="Community" value={`${formatRate(data.staffEnvironmentalReadiness.communityEngagementRate)}`} />
         </div>
       </Section>
 

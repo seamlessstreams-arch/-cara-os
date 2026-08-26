@@ -5,7 +5,6 @@ export {
   evaluateTreatmentCompliance,
   evaluateStaffDentalReadiness,
   buildChildDentalSummaries,
-  pct,
   getRating,
   getAppointmentTypeLabel,
   getAppointmentOutcomeLabel,

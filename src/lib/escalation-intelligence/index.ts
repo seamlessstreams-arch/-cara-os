@@ -9,7 +9,6 @@ export {
   evaluateEscalationThresholdPolicy,
   evaluateStaffEscalationThresholdReadiness,
   buildChildEscalationThresholdProfiles,
-  pct,
   getRating,
   getEscalationThresholdCategoryLabel,
   getEscalationThresholdOutcomeLabel,

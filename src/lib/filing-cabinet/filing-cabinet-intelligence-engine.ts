@@ -18,6 +18,7 @@
    ────────────────────────────────────────────────────────────── */
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -127,18 +128,25 @@ export interface StaffFilingCabinetTraining {
 export interface FilingCabinetQualityResult {
   overallScore: number;
   totalRecords: number;
-  correctCategoryAssignedRate: number;
-  retentionPolicyAppliedRate: number;
-  sensitivityMarkedRate: number;
-  accessControlSetRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  correctCategoryAssignedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  retentionPolicyAppliedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  sensitivityMarkedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  accessControlSetRate: number | null;
 }
 
 export interface FilingCabinetComplianceResult {
   overallScore: number;
   totalRecords: number;
-  documentationCompleteRate: number;
-  timelyRecordingRate: number;
-  correctCategoryAssignedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationCompleteRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  correctCategoryAssignedRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
 }
@@ -157,12 +165,18 @@ export interface FilingCabinetPolicyResult {
 export interface StaffFilingCabinetReadinessResult {
   overallScore: number;
   totalStaff: number;
-  documentManagementKnowledgeRate: number;
-  dataProtectionSkillsRate: number;
-  retentionPolicyKnowledgeRate: number;
-  accessControlSkillsRate: number;
-  auditTrailSkillsRate: number;
-  documentDestructionProcedureRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentManagementKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dataProtectionSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  retentionPolicyKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  accessControlSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  auditTrailSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentDestructionProcedureRate: number | null;
 }
 
 export interface ChildFilingCabinetProfile {
@@ -194,11 +208,6 @@ export interface FilingCabinetIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -214,19 +223,19 @@ export function evaluateFilingCabinetQuality(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, correctCategoryAssignedRate: 0, retentionPolicyAppliedRate: 0, sensitivityMarkedRate: 0, accessControlSetRate: 0 };
+    return { overallScore: 0, totalRecords: 0, correctCategoryAssignedRate: null, retentionPolicyAppliedRate: null, sensitivityMarkedRate: null, accessControlSetRate: null };
   }
 
-  const correctCategoryAssignedRate = pct(records.filter((r) => r.correctCategoryAssigned).length, n);
-  const retentionPolicyAppliedRate = pct(records.filter((r) => r.retentionPolicyApplied).length, n);
-  const sensitivityMarkedRate = pct(records.filter((r) => r.sensitivityMarked).length, n);
-  const accessControlSetRate = pct(records.filter((r) => r.accessControlSet).length, n);
+  const correctCategoryAssignedRate = rate(records.filter((r) => r.correctCategoryAssigned).length, n);
+  const retentionPolicyAppliedRate = rate(records.filter((r) => r.retentionPolicyApplied).length, n);
+  const sensitivityMarkedRate = rate(records.filter((r) => r.sensitivityMarked).length, n);
+  const accessControlSetRate = rate(records.filter((r) => r.accessControlSet).length, n);
 
   let score = 0;
-  score += (correctCategoryAssignedRate / 100) * 7;
-  score += (retentionPolicyAppliedRate / 100) * 6;
-  score += (sensitivityMarkedRate / 100) * 6;
-  score += (accessControlSetRate / 100) * 6;
+  score += (correctCategoryAssignedRate! / 100) * 7;
+  score += (retentionPolicyAppliedRate! / 100) * 6;
+  score += (sensitivityMarkedRate! / 100) * 6;
+  score += (accessControlSetRate! / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -241,21 +250,21 @@ export function evaluateFilingCabinetCompliance(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: 0, timelyRecordingRate: 0, correctCategoryAssignedRate: 0, categoryDiversityRatio: 0, uniqueCategories: 0 };
+    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: null, timelyRecordingRate: null, correctCategoryAssignedRate: null, categoryDiversityRatio: 0, uniqueCategories: 0 };
   }
 
-  const documentationCompleteRate = pct(records.filter((r) => r.documentationComplete).length, n);
-  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, n);
-  const correctCategoryAssignedRate = pct(records.filter((r) => r.correctCategoryAssigned).length, n);
+  const documentationCompleteRate = rate(records.filter((r) => r.documentationComplete).length, n);
+  const timelyRecordingRate = rate(records.filter((r) => r.timelyRecording).length, n);
+  const correctCategoryAssignedRate = rate(records.filter((r) => r.correctCategoryAssigned).length, n);
 
   const uniqueCategoriesSet = new Set(records.map((r) => r.category));
   const uniqueCategories = uniqueCategoriesSet.size;
   const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
 
   let score = 0;
-  score += (documentationCompleteRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (correctCategoryAssignedRate / 100) * 5;
+  score += (documentationCompleteRate! / 100) * 8;
+  score += (timelyRecordingRate! / 100) * 7;
+  score += (correctCategoryAssignedRate! / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -301,23 +310,23 @@ export function evaluateStaffFilingCabinetReadiness(
   const n = training.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalStaff: 0, documentManagementKnowledgeRate: 0, dataProtectionSkillsRate: 0, retentionPolicyKnowledgeRate: 0, accessControlSkillsRate: 0, auditTrailSkillsRate: 0, documentDestructionProcedureRate: 0 };
+    return { overallScore: 0, totalStaff: 0, documentManagementKnowledgeRate: null, dataProtectionSkillsRate: null, retentionPolicyKnowledgeRate: null, accessControlSkillsRate: null, auditTrailSkillsRate: null, documentDestructionProcedureRate: null };
   }
 
-  const documentManagementKnowledgeRate = pct(training.filter((t) => t.documentManagementKnowledge).length, n);
-  const dataProtectionSkillsRate = pct(training.filter((t) => t.dataProtectionSkills).length, n);
-  const retentionPolicyKnowledgeRate = pct(training.filter((t) => t.retentionPolicyKnowledge).length, n);
-  const accessControlSkillsRate = pct(training.filter((t) => t.accessControlSkills).length, n);
-  const auditTrailSkillsRate = pct(training.filter((t) => t.auditTrailSkills).length, n);
-  const documentDestructionProcedureRate = pct(training.filter((t) => t.documentDestructionProcedure).length, n);
+  const documentManagementKnowledgeRate = rate(training.filter((t) => t.documentManagementKnowledge).length, n);
+  const dataProtectionSkillsRate = rate(training.filter((t) => t.dataProtectionSkills).length, n);
+  const retentionPolicyKnowledgeRate = rate(training.filter((t) => t.retentionPolicyKnowledge).length, n);
+  const accessControlSkillsRate = rate(training.filter((t) => t.accessControlSkills).length, n);
+  const auditTrailSkillsRate = rate(training.filter((t) => t.auditTrailSkills).length, n);
+  const documentDestructionProcedureRate = rate(training.filter((t) => t.documentDestructionProcedure).length, n);
 
   let score = 0;
-  score += (documentManagementKnowledgeRate / 100) * 6;
-  score += (dataProtectionSkillsRate / 100) * 5;
-  score += (retentionPolicyKnowledgeRate / 100) * 5;
-  score += (accessControlSkillsRate / 100) * 4;
-  score += (auditTrailSkillsRate / 100) * 3;
-  score += (documentDestructionProcedureRate / 100) * 2;
+  score += (documentManagementKnowledgeRate! / 100) * 6;
+  score += (dataProtectionSkillsRate! / 100) * 5;
+  score += (retentionPolicyKnowledgeRate! / 100) * 5;
+  score += (accessControlSkillsRate! / 100) * 4;
+  score += (auditTrailSkillsRate! / 100) * 3;
+  score += (documentDestructionProcedureRate! / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -342,8 +351,8 @@ export function buildChildFilingCabinetProfiles(
 
   return Array.from(childMap.values()).map((child) => {
     const totalRecords = child.records.length;
-    const correctCategoryAssignedRate = pct(child.records.filter((r) => r.correctCategoryAssigned).length, totalRecords);
-    const retentionPolicyAppliedRate = pct(child.records.filter((r) => r.retentionPolicyApplied).length, totalRecords);
+    const correctCategoryAssignedRate = rate(child.records.filter((r) => r.correctCategoryAssigned).length, totalRecords)!;
+    const retentionPolicyAppliedRate = rate(child.records.filter((r) => r.retentionPolicyApplied).length, totalRecords)!;
     const uniqueCategoriesSet = new Set(child.records.map((r) => r.category));
     const categoriesCovered = Array.from(uniqueCategoriesSet);
 
@@ -352,14 +361,14 @@ export function buildChildFilingCabinetProfiles(
     else if (totalRecords >= 5) frequencyScore = 1;
 
     let rate1Score = 0;
-    if (correctCategoryAssignedRate >= 80) rate1Score = 3;
-    else if (correctCategoryAssignedRate >= 60) rate1Score = 2;
-    else if (correctCategoryAssignedRate >= 40) rate1Score = 1;
+    if (meets(correctCategoryAssignedRate, 80)) rate1Score = 3;
+    else if (meets(correctCategoryAssignedRate, 60)) rate1Score = 2;
+    else if (meets(correctCategoryAssignedRate, 40)) rate1Score = 1;
 
     let rate2Score = 0;
-    if (retentionPolicyAppliedRate >= 80) rate2Score = 3;
-    else if (retentionPolicyAppliedRate >= 60) rate2Score = 2;
-    else if (retentionPolicyAppliedRate >= 40) rate2Score = 1;
+    if (meets(retentionPolicyAppliedRate, 80)) rate2Score = 3;
+    else if (meets(retentionPolicyAppliedRate, 60)) rate2Score = 2;
+    else if (meets(retentionPolicyAppliedRate, 40)) rate2Score = 1;
 
     let diversityBonus = 0;
     if (categoriesCovered.length >= 4) diversityBonus = 2;
@@ -408,9 +417,9 @@ export function generateFilingCabinetIntelligence(
   if (complianceResult.overallScore >= 20) strengths.push("Filing compliance is strong (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore >= 20) strengths.push("Document management policy framework is robust (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore >= 20) strengths.push("Staff document management readiness is strong (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.correctCategoryAssignedRate >= 90) strengths.push("Correct category assignment rate at " + qualityResult.correctCategoryAssignedRate + "%");
-  if (periodRecords.length > 0 && qualityResult.retentionPolicyAppliedRate >= 90) strengths.push("Retention policy application rate at " + qualityResult.retentionPolicyAppliedRate + "%");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate >= 90) strengths.push("Documentation completion rate at " + complianceResult.documentationCompleteRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.correctCategoryAssignedRate, 90)) strengths.push("Correct category assignment rate at " + qualityResult.correctCategoryAssignedRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.retentionPolicyAppliedRate, 90)) strengths.push("Retention policy application rate at " + qualityResult.retentionPolicyAppliedRate + "%");
+  if (periodRecords.length > 0 && meets(complianceResult.documentationCompleteRate, 90)) strengths.push("Documentation completion rate at " + complianceResult.documentationCompleteRate + "%");
 
   // ── Areas for improvement ─────────────────────────────────────────────
   const areasForImprovement: string[] = [];
@@ -420,7 +429,7 @@ export function generateFilingCabinetIntelligence(
   if (complianceResult.overallScore < 15) areasForImprovement.push("Filing compliance needs improvement (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore < 15) areasForImprovement.push("Document management policy needs strengthening (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore < 15) areasForImprovement.push("Staff document management readiness needs improvement (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.correctCategoryAssignedRate < 80) areasForImprovement.push("Correct category assignment at " + qualityResult.correctCategoryAssignedRate + "% — must improve for compliance");
+  if (periodRecords.length > 0 && below(qualityResult.correctCategoryAssignedRate, 80)) areasForImprovement.push("Correct category assignment at " + qualityResult.correctCategoryAssignedRate + "% — must improve for compliance");
   if (periodRecords.length === 0) areasForImprovement.push("No filing cabinet records — document management must be tracked");
   if (policy === null) areasForImprovement.push("No document management policy in place — statutory requirement");
   if (staff.length === 0) areasForImprovement.push("No staff document management training records — training required");
@@ -429,11 +438,11 @@ export function generateFilingCabinetIntelligence(
   const actions: string[] = [];
   if (policy === null || policyResult.overallScore === 0) actions.push("URGENT: No document management policy — develop and implement comprehensive policy immediately");
   if (staff.length === 0) actions.push("URGENT: No staff document management training — schedule training for all staff");
-  if (periodRecords.length > 0 && qualityResult.correctCategoryAssignedRate < 50) actions.push("HIGH: Correct category assignment at " + qualityResult.correctCategoryAssignedRate + "% — review filing processes");
-  if (periodRecords.length > 0 && qualityResult.retentionPolicyAppliedRate < 50) actions.push("HIGH: Retention policy application at " + qualityResult.retentionPolicyAppliedRate + "% — ensure retention policies are consistently applied");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate < 50) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all records must be fully documented");
-  if (periodRecords.length > 0 && complianceResult.timelyRecordingRate < 50) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be filed promptly");
-  if (staff.length > 0 && staffResult.documentManagementKnowledgeRate < 50) actions.push("MEDIUM: Document management knowledge at " + staffResult.documentManagementKnowledgeRate + "% — schedule training for staff");
+  if (periodRecords.length > 0 && below(qualityResult.correctCategoryAssignedRate, 50)) actions.push("HIGH: Correct category assignment at " + qualityResult.correctCategoryAssignedRate + "% — review filing processes");
+  if (periodRecords.length > 0 && below(qualityResult.retentionPolicyAppliedRate, 50)) actions.push("HIGH: Retention policy application at " + qualityResult.retentionPolicyAppliedRate + "% — ensure retention policies are consistently applied");
+  if (periodRecords.length > 0 && below(complianceResult.documentationCompleteRate, 50)) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all records must be fully documented");
+  if (periodRecords.length > 0 && below(complianceResult.timelyRecordingRate, 50)) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be filed promptly");
+  if (staff.length > 0 && below(staffResult.documentManagementKnowledgeRate, 50)) actions.push("MEDIUM: Document management knowledge at " + staffResult.documentManagementKnowledgeRate + "% — schedule training for staff");
   const lowScoreChildren = childProfiles.filter((p) => p.overallScore <= 3);
   if (lowScoreChildren.length > 0) actions.push("MEDIUM: " + lowScoreChildren.length + " child(ren) with low filing management scores — review individual record-keeping");
   if (actions.length === 0) actions.push("No immediate actions required. Filing cabinet systems operating within expected standards.");

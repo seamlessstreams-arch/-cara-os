@@ -22,6 +22,7 @@
    ────────────────────────────────────────────────────────────── */
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -131,18 +132,25 @@ export interface StaffContextualSafeguardingTraining {
 export interface ContextualSafeguardingQualityResult {
   overallScore: number;
   totalRecords: number;
-  riskAssessmentCompletedRate: number;
-  protectiveFactorsIdentifiedRate: number;
-  multiAgencyInvolvedRate: number;
-  safetyPlanInPlaceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessmentCompletedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  protectiveFactorsIdentifiedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  multiAgencyInvolvedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safetyPlanInPlaceRate: number | null;
 }
 
 export interface ContextualSafeguardingComplianceResult {
   overallScore: number;
   totalRecords: number;
-  documentationCompleteRate: number;
-  timelyRecordingRate: number;
-  riskAssessmentCompletedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationCompleteRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessmentCompletedRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
 }
@@ -161,12 +169,18 @@ export interface ContextualSafeguardingPolicyResult {
 export interface StaffContextualSafeguardingReadinessResult {
   overallScore: number;
   totalStaff: number;
-  contextualSafeguardingKnowledgeRate: number;
-  exploitationAwarenessRate: number;
-  onlineSafetyCompetencyRate: number;
-  multiAgencyWorkingSkillsRate: number;
-  riskAssessmentSkillsRate: number;
-  safetyPlanningSkillsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  contextualSafeguardingKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  exploitationAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  onlineSafetyCompetencyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  multiAgencyWorkingSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessmentSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safetyPlanningSkillsRate: number | null;
 }
 
 export interface ChildContextualSafeguardingProfile {
@@ -198,11 +212,6 @@ export interface ContextualSafeguardingIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -218,19 +227,19 @@ export function evaluateContextualSafeguardingQuality(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, riskAssessmentCompletedRate: 0, protectiveFactorsIdentifiedRate: 0, multiAgencyInvolvedRate: 0, safetyPlanInPlaceRate: 0 };
+    return { overallScore: 0, totalRecords: 0, riskAssessmentCompletedRate: null, protectiveFactorsIdentifiedRate: null, multiAgencyInvolvedRate: null, safetyPlanInPlaceRate: null };
   }
 
-  const riskAssessmentCompletedRate = pct(records.filter((r) => r.riskAssessmentCompleted).length, n);
-  const protectiveFactorsIdentifiedRate = pct(records.filter((r) => r.protectiveFactorsIdentified).length, n);
-  const multiAgencyInvolvedRate = pct(records.filter((r) => r.multiAgencyInvolved).length, n);
-  const safetyPlanInPlaceRate = pct(records.filter((r) => r.safetyPlanInPlace).length, n);
+  const riskAssessmentCompletedRate = rate(records.filter((r) => r.riskAssessmentCompleted).length, n);
+  const protectiveFactorsIdentifiedRate = rate(records.filter((r) => r.protectiveFactorsIdentified).length, n);
+  const multiAgencyInvolvedRate = rate(records.filter((r) => r.multiAgencyInvolved).length, n);
+  const safetyPlanInPlaceRate = rate(records.filter((r) => r.safetyPlanInPlace).length, n);
 
   let score = 0;
-  score += (riskAssessmentCompletedRate / 100) * 7;
-  score += (protectiveFactorsIdentifiedRate / 100) * 6;
-  score += (multiAgencyInvolvedRate / 100) * 6;
-  score += (safetyPlanInPlaceRate / 100) * 6;
+  score += (riskAssessmentCompletedRate! / 100) * 7;
+  score += (protectiveFactorsIdentifiedRate! / 100) * 6;
+  score += (multiAgencyInvolvedRate! / 100) * 6;
+  score += (safetyPlanInPlaceRate! / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -245,21 +254,21 @@ export function evaluateContextualSafeguardingCompliance(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: 0, timelyRecordingRate: 0, riskAssessmentCompletedRate: 0, categoryDiversityRatio: 0, uniqueCategories: 0 };
+    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: null, timelyRecordingRate: null, riskAssessmentCompletedRate: null, categoryDiversityRatio: 0, uniqueCategories: 0 };
   }
 
-  const documentationCompleteRate = pct(records.filter((r) => r.documentationComplete).length, n);
-  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, n);
-  const riskAssessmentCompletedRate = pct(records.filter((r) => r.riskAssessmentCompleted).length, n);
+  const documentationCompleteRate = rate(records.filter((r) => r.documentationComplete).length, n);
+  const timelyRecordingRate = rate(records.filter((r) => r.timelyRecording).length, n);
+  const riskAssessmentCompletedRate = rate(records.filter((r) => r.riskAssessmentCompleted).length, n);
 
   const uniqueCategoriesSet = new Set(records.map((r) => r.category));
   const uniqueCategories = uniqueCategoriesSet.size;
   const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
 
   let score = 0;
-  score += (documentationCompleteRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (riskAssessmentCompletedRate / 100) * 5;
+  score += (documentationCompleteRate! / 100) * 8;
+  score += (timelyRecordingRate! / 100) * 7;
+  score += (riskAssessmentCompletedRate! / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -305,23 +314,23 @@ export function evaluateStaffContextualSafeguardingReadiness(
   const n = training.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalStaff: 0, contextualSafeguardingKnowledgeRate: 0, exploitationAwarenessRate: 0, onlineSafetyCompetencyRate: 0, multiAgencyWorkingSkillsRate: 0, riskAssessmentSkillsRate: 0, safetyPlanningSkillsRate: 0 };
+    return { overallScore: 0, totalStaff: 0, contextualSafeguardingKnowledgeRate: null, exploitationAwarenessRate: null, onlineSafetyCompetencyRate: null, multiAgencyWorkingSkillsRate: null, riskAssessmentSkillsRate: null, safetyPlanningSkillsRate: null };
   }
 
-  const contextualSafeguardingKnowledgeRate = pct(training.filter((t) => t.contextualSafeguardingKnowledge).length, n);
-  const exploitationAwarenessRate = pct(training.filter((t) => t.exploitationAwareness).length, n);
-  const onlineSafetyCompetencyRate = pct(training.filter((t) => t.onlineSafetyCompetency).length, n);
-  const multiAgencyWorkingSkillsRate = pct(training.filter((t) => t.multiAgencyWorkingSkills).length, n);
-  const riskAssessmentSkillsRate = pct(training.filter((t) => t.riskAssessmentSkills).length, n);
-  const safetyPlanningSkillsRate = pct(training.filter((t) => t.safetyPlanningSkills).length, n);
+  const contextualSafeguardingKnowledgeRate = rate(training.filter((t) => t.contextualSafeguardingKnowledge).length, n);
+  const exploitationAwarenessRate = rate(training.filter((t) => t.exploitationAwareness).length, n);
+  const onlineSafetyCompetencyRate = rate(training.filter((t) => t.onlineSafetyCompetency).length, n);
+  const multiAgencyWorkingSkillsRate = rate(training.filter((t) => t.multiAgencyWorkingSkills).length, n);
+  const riskAssessmentSkillsRate = rate(training.filter((t) => t.riskAssessmentSkills).length, n);
+  const safetyPlanningSkillsRate = rate(training.filter((t) => t.safetyPlanningSkills).length, n);
 
   let score = 0;
-  score += (contextualSafeguardingKnowledgeRate / 100) * 6;
-  score += (exploitationAwarenessRate / 100) * 5;
-  score += (onlineSafetyCompetencyRate / 100) * 5;
-  score += (multiAgencyWorkingSkillsRate / 100) * 4;
-  score += (riskAssessmentSkillsRate / 100) * 3;
-  score += (safetyPlanningSkillsRate / 100) * 2;
+  score += (contextualSafeguardingKnowledgeRate! / 100) * 6;
+  score += (exploitationAwarenessRate! / 100) * 5;
+  score += (onlineSafetyCompetencyRate! / 100) * 5;
+  score += (multiAgencyWorkingSkillsRate! / 100) * 4;
+  score += (riskAssessmentSkillsRate! / 100) * 3;
+  score += (safetyPlanningSkillsRate! / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -346,8 +355,8 @@ export function buildChildContextualSafeguardingProfiles(
 
   return Array.from(childMap.values()).map((child) => {
     const totalRecords = child.records.length;
-    const riskAssessmentCompletedRate = pct(child.records.filter((r) => r.riskAssessmentCompleted).length, totalRecords);
-    const protectiveFactorsIdentifiedRate = pct(child.records.filter((r) => r.protectiveFactorsIdentified).length, totalRecords);
+    const riskAssessmentCompletedRate = rate(child.records.filter((r) => r.riskAssessmentCompleted).length, totalRecords)!;
+    const protectiveFactorsIdentifiedRate = rate(child.records.filter((r) => r.protectiveFactorsIdentified).length, totalRecords)!;
     const uniqueCategoriesSet = new Set(child.records.map((r) => r.category));
     const categoriesCovered = Array.from(uniqueCategoriesSet);
 
@@ -356,14 +365,14 @@ export function buildChildContextualSafeguardingProfiles(
     else if (totalRecords >= 5) frequencyScore = 1;
 
     let rate1Score = 0;
-    if (riskAssessmentCompletedRate >= 80) rate1Score = 3;
-    else if (riskAssessmentCompletedRate >= 60) rate1Score = 2;
-    else if (riskAssessmentCompletedRate >= 40) rate1Score = 1;
+    if (meets(riskAssessmentCompletedRate, 80)) rate1Score = 3;
+    else if (meets(riskAssessmentCompletedRate, 60)) rate1Score = 2;
+    else if (meets(riskAssessmentCompletedRate, 40)) rate1Score = 1;
 
     let rate2Score = 0;
-    if (protectiveFactorsIdentifiedRate >= 80) rate2Score = 3;
-    else if (protectiveFactorsIdentifiedRate >= 60) rate2Score = 2;
-    else if (protectiveFactorsIdentifiedRate >= 40) rate2Score = 1;
+    if (meets(protectiveFactorsIdentifiedRate, 80)) rate2Score = 3;
+    else if (meets(protectiveFactorsIdentifiedRate, 60)) rate2Score = 2;
+    else if (meets(protectiveFactorsIdentifiedRate, 40)) rate2Score = 1;
 
     let diversityBonus = 0;
     if (categoriesCovered.length >= 4) diversityBonus = 2;
@@ -411,9 +420,9 @@ export function generateContextualSafeguardingIntelligence(
   if (complianceResult.overallScore >= 20) strengths.push("Contextual safeguarding compliance is strong (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore >= 20) strengths.push("Contextual safeguarding policy framework is robust (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore >= 20) strengths.push("Staff contextual safeguarding readiness is strong (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.riskAssessmentCompletedRate >= 90) strengths.push("Risk assessments completed at " + qualityResult.riskAssessmentCompletedRate + "%");
-  if (periodRecords.length > 0 && qualityResult.protectiveFactorsIdentifiedRate >= 90) strengths.push("Protective factors identified at " + qualityResult.protectiveFactorsIdentifiedRate + "%");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate >= 90) strengths.push("Documentation rate at " + complianceResult.documentationCompleteRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.riskAssessmentCompletedRate, 90)) strengths.push("Risk assessments completed at " + qualityResult.riskAssessmentCompletedRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.protectiveFactorsIdentifiedRate, 90)) strengths.push("Protective factors identified at " + qualityResult.protectiveFactorsIdentifiedRate + "%");
+  if (periodRecords.length > 0 && meets(complianceResult.documentationCompleteRate, 90)) strengths.push("Documentation rate at " + complianceResult.documentationCompleteRate + "%");
 
   const areasForImprovement: string[] = [];
   if (overallScore < 40) areasForImprovement.push("Contextual safeguarding rated Inadequate (" + overallScore + "/100) — urgent systemic review required");
@@ -422,7 +431,7 @@ export function generateContextualSafeguardingIntelligence(
   if (complianceResult.overallScore < 15) areasForImprovement.push("Contextual safeguarding compliance needs improvement (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore < 15) areasForImprovement.push("Contextual safeguarding policy needs strengthening (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore < 15) areasForImprovement.push("Staff contextual safeguarding readiness needs improvement (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.riskAssessmentCompletedRate < 80) areasForImprovement.push("Risk assessment completion at " + qualityResult.riskAssessmentCompletedRate + "% — must improve for child safety");
+  if (periodRecords.length > 0 && below(qualityResult.riskAssessmentCompletedRate, 80)) areasForImprovement.push("Risk assessment completion at " + qualityResult.riskAssessmentCompletedRate + "% — must improve for child safety");
   if (periodRecords.length === 0) areasForImprovement.push("No contextual safeguarding records — assessments must be documented");
   if (policy === null) areasForImprovement.push("No contextual safeguarding policy in place — statutory requirement");
   if (staff.length === 0) areasForImprovement.push("No staff contextual safeguarding training records — training required");
@@ -430,11 +439,11 @@ export function generateContextualSafeguardingIntelligence(
   const actions: string[] = [];
   if (policy === null || policyResult.overallScore === 0) actions.push("URGENT: No contextual safeguarding policy — develop and implement comprehensive policy immediately");
   if (staff.length === 0) actions.push("URGENT: No staff contextual safeguarding training — schedule training for all staff");
-  if (periodRecords.length > 0 && qualityResult.riskAssessmentCompletedRate < 50) actions.push("HIGH: Risk assessment completion at " + qualityResult.riskAssessmentCompletedRate + "% — review assessment schedules and processes");
-  if (periodRecords.length > 0 && qualityResult.multiAgencyInvolvedRate < 50) actions.push("HIGH: Multi-agency involvement at " + qualityResult.multiAgencyInvolvedRate + "% — strengthen partnership working");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate < 50) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all assessments must be recorded");
-  if (periodRecords.length > 0 && complianceResult.timelyRecordingRate < 50) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
-  if (staff.length > 0 && staffResult.contextualSafeguardingKnowledgeRate < 50) actions.push("MEDIUM: Contextual safeguarding knowledge at " + staffResult.contextualSafeguardingKnowledgeRate + "% — schedule training for staff");
+  if (periodRecords.length > 0 && below(qualityResult.riskAssessmentCompletedRate, 50)) actions.push("HIGH: Risk assessment completion at " + qualityResult.riskAssessmentCompletedRate + "% — review assessment schedules and processes");
+  if (periodRecords.length > 0 && below(qualityResult.multiAgencyInvolvedRate, 50)) actions.push("HIGH: Multi-agency involvement at " + qualityResult.multiAgencyInvolvedRate + "% — strengthen partnership working");
+  if (periodRecords.length > 0 && below(complianceResult.documentationCompleteRate, 50)) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all assessments must be recorded");
+  if (periodRecords.length > 0 && below(complianceResult.timelyRecordingRate, 50)) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
+  if (staff.length > 0 && below(staffResult.contextualSafeguardingKnowledgeRate, 50)) actions.push("MEDIUM: Contextual safeguarding knowledge at " + staffResult.contextualSafeguardingKnowledgeRate + "% — schedule training for staff");
   const lowScoreChildren = childProfiles.filter((p) => p.overallScore <= 3);
   if (lowScoreChildren.length > 0) actions.push("MEDIUM: " + lowScoreChildren.length + " child(ren) with low contextual safeguarding scores — review individual assessment provisions");
   if (actions.length === 0) actions.push("No immediate actions required. Contextual safeguarding systems operating within expected standards.");

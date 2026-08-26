@@ -18,6 +18,7 @@
    ────────────────────────────────────────────────────────────── */
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -129,10 +130,14 @@ export interface StaffEnvironmentTraining {
 
 export interface EnvironmentQualityResult {
   totalRecords: number;
-  adequateRate: number;
-  childInvolvedRate: number;
-  documentedRate: number;
-  childFeedbackSoughtRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  adequateRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childInvolvedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childFeedbackSoughtRate: number | null;
   score: number;
   strengths: string[];
   concerns: string[];
@@ -140,10 +145,14 @@ export interface EnvironmentQualityResult {
 
 export interface EnvironmentComplianceResult {
   totalRecords: number;
-  actionTakenRate: number;
-  timelyCompletionRate: number;
-  adequateRate: number;
-  categoryDiversityRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionTakenRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyCompletionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  adequateRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  categoryDiversityRate: number | null;
   uniqueCategories: number;
   score: number;
   strengths: string[];
@@ -165,12 +174,18 @@ export interface EnvironmentPolicyResult {
 
 export interface StaffEnvironmentReadinessResult {
   totalStaff: number;
-  environmentalAwarenessRate: number;
-  healthSafetyKnowledgeRate: number;
-  maintenanceSkillsRate: number;
-  childParticipationRate: number;
-  riskAssessmentRate: number;
-  infectionControlRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  environmentalAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  healthSafetyKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  maintenanceSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childParticipationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  infectionControlRate: number | null;
   score: number;
   strengths: string[];
   concerns: string[];
@@ -206,11 +221,6 @@ export interface EnvironmentIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -228,10 +238,10 @@ export function evaluateEnvironmentQuality(
   if (totalRecords === 0) {
     return {
       totalRecords: 0,
-      adequateRate: 0,
-      childInvolvedRate: 0,
-      documentedRate: 0,
-      childFeedbackSoughtRate: 0,
+      adequateRate: null,
+      childInvolvedRate: null,
+      documentedRate: null,
+      childFeedbackSoughtRate: null,
       score: 0,
       strengths: [],
       concerns: ["No environment records logged — environment quality cannot be assessed"],
@@ -239,50 +249,50 @@ export function evaluateEnvironmentQuality(
   }
 
   const adequateCount = records.filter((r) => r.adequate).length;
-  const adequateRate = pct(adequateCount, totalRecords);
+  const adequateRate = rate(adequateCount, totalRecords);
 
   const childInvolvedCount = records.filter((r) => r.childInvolved).length;
-  const childInvolvedRate = pct(childInvolvedCount, totalRecords);
+  const childInvolvedRate = rate(childInvolvedCount, totalRecords);
 
   const documentedCount = records.filter((r) => r.documented).length;
-  const documentedRate = pct(documentedCount, totalRecords);
+  const documentedRate = rate(documentedCount, totalRecords);
 
   const feedbackCount = records.filter((r) => r.childFeedbackSought).length;
-  const childFeedbackSoughtRate = pct(feedbackCount, totalRecords);
+  const childFeedbackSoughtRate = rate(feedbackCount, totalRecords);
 
   // Weights: adequateRate 7 + childInvolvedRate 6 + documentedRate 6 + childFeedbackSoughtRate 6 = 25
   let score = 0;
-  score += (adequateRate / 100) * 7;
-  score += (childInvolvedRate / 100) * 6;
-  score += (documentedRate / 100) * 6;
-  score += (childFeedbackSoughtRate / 100) * 6;
+  score += (adequateRate! / 100) * 7;
+  score += (childInvolvedRate! / 100) * 6;
+  score += (documentedRate! / 100) * 6;
+  score += (childFeedbackSoughtRate! / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (adequateRate >= 80) {
+  if (meets(adequateRate, 80)) {
     strengths.push("Strong environment adequacy: " + adequateRate + "% of assessments meet standards");
-  } else if (adequateRate < 50) {
+  } else if (below(adequateRate, 50)) {
     concerns.push("Environment adequacy rate at " + adequateRate + "% — significant improvement needed");
   }
 
-  if (childInvolvedRate >= 80) {
+  if (meets(childInvolvedRate, 80)) {
     strengths.push("Excellent child involvement: " + childInvolvedRate + "% of assessments involved children");
-  } else if (childInvolvedRate < 50) {
+  } else if (below(childInvolvedRate, 50)) {
     concerns.push("Child involvement rate at " + childInvolvedRate + "% — children not consistently included in environment decisions");
   }
 
-  if (documentedRate >= 90) {
+  if (meets(documentedRate, 90)) {
     strengths.push("Thorough documentation: " + documentedRate + "% of environment checks fully documented");
-  } else if (documentedRate < 60) {
+  } else if (below(documentedRate, 60)) {
     concerns.push("Documentation rate at " + documentedRate + "% — environment records incomplete");
   }
 
-  if (childFeedbackSoughtRate >= 80) {
+  if (meets(childFeedbackSoughtRate, 80)) {
     strengths.push("Good feedback practice: " + childFeedbackSoughtRate + "% of assessments sought child feedback");
-  } else if (childFeedbackSoughtRate < 50) {
+  } else if (below(childFeedbackSoughtRate, 50)) {
     concerns.push("Child feedback sought at " + childFeedbackSoughtRate + "% — children's views on their environment not consistently gathered");
   }
 
@@ -308,10 +318,10 @@ export function evaluateEnvironmentCompliance(
   if (totalRecords === 0) {
     return {
       totalRecords: 0,
-      actionTakenRate: 0,
-      timelyCompletionRate: 0,
-      adequateRate: 0,
-      categoryDiversityRate: 0,
+      actionTakenRate: null,
+      timelyCompletionRate: null,
+      adequateRate: null,
+      categoryDiversityRate: null,
       uniqueCategories: 0,
       score: 0,
       strengths: [],
@@ -320,45 +330,45 @@ export function evaluateEnvironmentCompliance(
   }
 
   const actionTakenCount = records.filter((r) => r.actionTaken).length;
-  const actionTakenRate = pct(actionTakenCount, totalRecords);
+  const actionTakenRate = rate(actionTakenCount, totalRecords);
 
   const timelyCount = records.filter((r) => r.timelyCompletion).length;
-  const timelyCompletionRate = pct(timelyCount, totalRecords);
+  const timelyCompletionRate = rate(timelyCount, totalRecords);
 
   const adequateCount = records.filter((r) => r.adequate).length;
-  const adequateRate = pct(adequateCount, totalRecords);
+  const adequateRate = rate(adequateCount, totalRecords);
 
   const uniqueCategoriesSet = new Set(records.map((r) => r.category));
   const uniqueCategories = uniqueCategoriesSet.size;
-  const categoryDiversityRate = pct(uniqueCategories, 8);
+  const categoryDiversityRate = rate(uniqueCategories, 8);
 
   // Weights: actionTakenRate 8 + timelyCompletionRate 7 + adequateRate 5 + categoryDiversityRate 5 = 25
   let score = 0;
-  score += (actionTakenRate / 100) * 8;
-  score += (timelyCompletionRate / 100) * 7;
-  score += (adequateRate / 100) * 5;
-  score += (categoryDiversityRate / 100) * 5;
+  score += (actionTakenRate! / 100) * 8;
+  score += (timelyCompletionRate! / 100) * 7;
+  score += (adequateRate! / 100) * 5;
+  score += (categoryDiversityRate! / 100) * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (actionTakenRate >= 90) {
+  if (meets(actionTakenRate, 90)) {
     strengths.push("Excellent action response: " + actionTakenRate + "% of identified issues had actions taken");
-  } else if (actionTakenRate < 50) {
+  } else if (below(actionTakenRate, 50)) {
     concerns.push("Action taken rate at " + actionTakenRate + "% — identified issues not consistently addressed");
   }
 
-  if (timelyCompletionRate >= 90) {
+  if (meets(timelyCompletionRate, 90)) {
     strengths.push("Strong timely completion: " + timelyCompletionRate + "% of environment tasks completed on time");
-  } else if (timelyCompletionRate < 50) {
+  } else if (below(timelyCompletionRate, 50)) {
     concerns.push("Timely completion rate at " + timelyCompletionRate + "% — environment tasks delayed");
   }
 
-  if (adequateRate >= 80) {
+  if (meets(adequateRate, 80)) {
     strengths.push("Good compliance standard: " + adequateRate + "% of checks met adequacy threshold");
-  } else if (adequateRate < 50) {
+  } else if (below(adequateRate, 50)) {
     concerns.push("Adequacy rate at " + adequateRate + "% — environment standards not consistently met");
   }
 
@@ -476,12 +486,12 @@ export function evaluateStaffEnvironmentReadiness(
   if (totalStaff === 0) {
     return {
       totalStaff: 0,
-      environmentalAwarenessRate: 0,
-      healthSafetyKnowledgeRate: 0,
-      maintenanceSkillsRate: 0,
-      childParticipationRate: 0,
-      riskAssessmentRate: 0,
-      infectionControlRate: 0,
+      environmentalAwarenessRate: null,
+      healthSafetyKnowledgeRate: null,
+      maintenanceSkillsRate: null,
+      childParticipationRate: null,
+      riskAssessmentRate: null,
+      infectionControlRate: null,
       score: 0,
       strengths: [],
       concerns: ["No staff training records — URGENT: schedule environment training for all staff"],
@@ -489,70 +499,70 @@ export function evaluateStaffEnvironmentReadiness(
   }
 
   const awarenessCount = training.filter((t) => t.environmentalAwareness).length;
-  const environmentalAwarenessRate = pct(awarenessCount, totalStaff);
+  const environmentalAwarenessRate = rate(awarenessCount, totalStaff);
 
   const hskCount = training.filter((t) => t.healthSafetyKnowledge).length;
-  const healthSafetyKnowledgeRate = pct(hskCount, totalStaff);
+  const healthSafetyKnowledgeRate = rate(hskCount, totalStaff);
 
   const maintCount = training.filter((t) => t.maintenanceSkills).length;
-  const maintenanceSkillsRate = pct(maintCount, totalStaff);
+  const maintenanceSkillsRate = rate(maintCount, totalStaff);
 
   const participationCount = training.filter((t) => t.childParticipation).length;
-  const childParticipationRate = pct(participationCount, totalStaff);
+  const childParticipationRate = rate(participationCount, totalStaff);
 
   const riskCount = training.filter((t) => t.riskAssessment).length;
-  const riskAssessmentRate = pct(riskCount, totalStaff);
+  const riskAssessmentRate = rate(riskCount, totalStaff);
 
   const infectionCount = training.filter((t) => t.infectionControl).length;
-  const infectionControlRate = pct(infectionCount, totalStaff);
+  const infectionControlRate = rate(infectionCount, totalStaff);
 
   // Weights: 6+5+5+4+3+2 = 25
   let score = 0;
-  score += (environmentalAwarenessRate / 100) * 6;
-  score += (healthSafetyKnowledgeRate / 100) * 5;
-  score += (maintenanceSkillsRate / 100) * 5;
-  score += (childParticipationRate / 100) * 4;
-  score += (riskAssessmentRate / 100) * 3;
-  score += (infectionControlRate / 100) * 2;
+  score += (environmentalAwarenessRate! / 100) * 6;
+  score += (healthSafetyKnowledgeRate! / 100) * 5;
+  score += (maintenanceSkillsRate! / 100) * 5;
+  score += (childParticipationRate! / 100) * 4;
+  score += (riskAssessmentRate! / 100) * 3;
+  score += ((infectionControlRate ?? 0) / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (environmentalAwarenessRate >= 80) {
+  if (meets(environmentalAwarenessRate, 80)) {
     strengths.push("Strong environmental awareness: " + environmentalAwarenessRate + "% of staff");
-  } else if (environmentalAwarenessRate < 50) {
+  } else if (below(environmentalAwarenessRate, 50)) {
     concerns.push("Environmental awareness at " + environmentalAwarenessRate + "% — foundational training needed");
   }
 
-  if (healthSafetyKnowledgeRate >= 80) {
+  if (meets(healthSafetyKnowledgeRate, 80)) {
     strengths.push("Good health and safety knowledge: " + healthSafetyKnowledgeRate + "% of staff");
-  } else if (healthSafetyKnowledgeRate < 50) {
+  } else if (below(healthSafetyKnowledgeRate, 50)) {
     concerns.push("Health and safety knowledge at " + healthSafetyKnowledgeRate + "% — staff may not recognise hazards");
   }
 
-  if (maintenanceSkillsRate >= 80) {
+  if (meets(maintenanceSkillsRate, 80)) {
     strengths.push("Staff maintenance skills strong: " + maintenanceSkillsRate + "%");
-  } else if (maintenanceSkillsRate < 50) {
+  } else if (below(maintenanceSkillsRate, 50)) {
     concerns.push("Maintenance skills at " + maintenanceSkillsRate + "% — basic repairs may be delayed");
   }
 
-  if (childParticipationRate >= 80) {
+  if (meets(childParticipationRate, 80)) {
     strengths.push("Good child participation skills: " + childParticipationRate + "% of staff skilled in involving children");
-  } else if (childParticipationRate < 50) {
+  } else if (below(childParticipationRate, 50)) {
     concerns.push("Child participation skills at " + childParticipationRate + "% — children may not be adequately involved in environment decisions");
   }
 
-  if (riskAssessmentRate >= 80) {
+  if (meets(riskAssessmentRate, 80)) {
     strengths.push("Strong risk assessment capability: " + riskAssessmentRate + "% of staff");
-  } else if (riskAssessmentRate < 50) {
+  } else if (below(riskAssessmentRate, 50)) {
     concerns.push("Risk assessment capability at " + riskAssessmentRate + "% — environmental risks may be overlooked");
   }
 
-  if (infectionControlRate >= 80) {
+  if (meets(infectionControlRate, 80)) {
     strengths.push("Good infection control knowledge: " + infectionControlRate + "% of staff");
-  } else if (infectionControlRate < 50) {
+  } else if (below(infectionControlRate, 50)) {
     concerns.push("Infection control knowledge at " + infectionControlRate + "% — hygiene standards may not be maintained");
   }
 
@@ -590,10 +600,10 @@ export function buildChildEnvironmentProfiles(
     const totalRecords = child.records.length;
 
     const adequateCount = child.records.filter((r) => r.adequate).length;
-    const adequateRate = pct(adequateCount, totalRecords);
+    const adequateRate = rate(adequateCount, totalRecords)!;
 
     const involvedCount = child.records.filter((r) => r.childInvolved).length;
-    const childInvolvedRate = pct(involvedCount, totalRecords);
+    const childInvolvedRate = rate(involvedCount, totalRecords)!;
 
     const uniqueCategoriesSet = new Set(child.records.map((r) => r.category));
     const uniqueCategories = uniqueCategoriesSet.size;
@@ -605,15 +615,15 @@ export function buildChildEnvironmentProfiles(
 
     // rate1 (adequateRate): >=80 -> 3, >=60 -> 2, >=40 -> 1, else 0
     let rate1Score = 0;
-    if (adequateRate >= 80) rate1Score = 3;
-    else if (adequateRate >= 60) rate1Score = 2;
-    else if (adequateRate >= 40) rate1Score = 1;
+    if (meets(adequateRate, 80)) rate1Score = 3;
+    else if (meets(adequateRate, 60)) rate1Score = 2;
+    else if (meets(adequateRate, 40)) rate1Score = 1;
 
     // rate2 (childInvolvedRate): same thresholds
     let rate2Score = 0;
-    if (childInvolvedRate >= 80) rate2Score = 3;
-    else if (childInvolvedRate >= 60) rate2Score = 2;
-    else if (childInvolvedRate >= 40) rate2Score = 1;
+    if (meets(childInvolvedRate, 80)) rate2Score = 3;
+    else if (meets(childInvolvedRate, 60)) rate2Score = 2;
+    else if (meets(childInvolvedRate, 40)) rate2Score = 1;
 
     // diversity (unique categories): >=4 -> 2, >=2 -> 1, else 0
     let diversityBonus = 0;
@@ -810,31 +820,31 @@ function generateActions(
   }
 
   // Conditional on rates < 50
-  if (quality.totalRecords > 0 && quality.adequateRate < 50) {
+  if (quality.totalRecords > 0 && below(quality.adequateRate, 50)) {
     actions.push("HIGH: Environment adequacy rate at " + quality.adequateRate + "% — review and improve physical environment standards across the home");
   }
 
-  if (quality.totalRecords > 0 && quality.childInvolvedRate < 50) {
+  if (quality.totalRecords > 0 && below(quality.childInvolvedRate, 50)) {
     actions.push("HIGH: Child involvement rate at " + quality.childInvolvedRate + "% — embed child participation in all environment assessments and decisions");
   }
 
-  if (compliance.totalRecords > 0 && compliance.actionTakenRate < 50) {
+  if (compliance.totalRecords > 0 && below(compliance.actionTakenRate, 50)) {
     actions.push("HIGH: Action taken rate at " + compliance.actionTakenRate + "% — strengthen follow-through on identified environment issues");
   }
 
-  if (compliance.totalRecords > 0 && compliance.timelyCompletionRate < 50) {
+  if (compliance.totalRecords > 0 && below(compliance.timelyCompletionRate, 50)) {
     actions.push("HIGH: Timely completion rate at " + compliance.timelyCompletionRate + "% — review processes to ensure environment tasks are completed promptly");
   }
 
-  if (quality.totalRecords > 0 && quality.documentedRate < 50) {
+  if (quality.totalRecords > 0 && below(quality.documentedRate, 50)) {
     actions.push("MEDIUM: Documentation rate at " + quality.documentedRate + "% — improve environment record-keeping practices");
   }
 
-  if (quality.totalRecords > 0 && quality.childFeedbackSoughtRate < 50) {
+  if (quality.totalRecords > 0 && below(quality.childFeedbackSoughtRate, 50)) {
     actions.push("MEDIUM: Child feedback sought at " + quality.childFeedbackSoughtRate + "% — ensure children's views on their environment are regularly gathered");
   }
 
-  if (staff.totalStaff > 0 && staff.environmentalAwarenessRate < 50) {
+  if (staff.totalStaff > 0 && below(staff.environmentalAwarenessRate, 50)) {
     actions.push("MEDIUM: Staff environmental awareness at " + staff.environmentalAwarenessRate + "% — schedule refresher training on environment standards");
   }
 

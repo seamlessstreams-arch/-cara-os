@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // Digital Literacy Development Intelligence Engine
 // Pure deterministic — no AI, no external calls, no randomness, no Date.now()
 
@@ -99,18 +100,26 @@ export interface StaffDigitalTraining {
 export interface DigitalQualityResult {
   overallScore: number;
   totalSessions: number;
-  competencyRate: number;
-  onlineSafetyRate: number;
-  ageAppropriateRate: number;
-  supervisedAccessRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  competencyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  onlineSafetyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  ageAppropriateRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  supervisedAccessRate: number | null;
 }
 
 export interface DigitalComplianceResult {
   overallScore: number;
-  documentedRate: number;
-  staffSupportedRate: number;
-  progressRecordedRate: number;
-  sessionTypeDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffSupportedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  progressRecordedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  sessionTypeDiversityRatio: number | null;
 }
 
 export interface DigitalPolicyResult {
@@ -127,20 +136,28 @@ export interface DigitalPolicyResult {
 export interface StaffDigitalReadinessResult {
   overallScore: number;
   totalStaff: number;
-  onlineSafetyRate: number;
-  digitalLiteracyRate: number;
-  socialMediaAwarenessRate: number;
-  cyberbullyingResponseRate: number;
-  privacyProtectionRate: number;
-  monitoringSkillsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  onlineSafetyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  digitalLiteracyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  socialMediaAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  cyberbullyingResponseRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  privacyProtectionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  monitoringSkillsRate: number | null;
 }
 
 export interface ChildDigitalProfile {
   childId: string;
   childName: string;
   totalSessions: number;
-  competencyRate: number;
-  onlineSafetyRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  competencyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  onlineSafetyRate: number | null;
   overallScore: number;
 }
 
@@ -163,11 +180,6 @@ export interface DigitalLiteracyDevelopmentIntelligence {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -179,7 +191,7 @@ export function getRating(score: number): Rating {
 
 export function evaluateDigitalQuality(sessions: DigitalSession[]): DigitalQualityResult {
   if (sessions.length === 0) {
-    return { overallScore: 0, totalSessions: 0, competencyRate: 0, onlineSafetyRate: 0, ageAppropriateRate: 0, supervisedAccessRate: 0 };
+    return { overallScore: 0, totalSessions: 0, competencyRate: null, onlineSafetyRate: null, ageAppropriateRate: null, supervisedAccessRate: null };
   }
 
   const total = sessions.length;
@@ -188,15 +200,15 @@ export function evaluateDigitalQuality(sessions: DigitalSession[]): DigitalQuali
   const ageCount = sessions.filter((s) => s.ageAppropriateContent).length;
   const supervisedCount = sessions.filter((s) => s.supervisedAccess).length;
 
-  const competencyRate = pct(competentCount, total);
-  const onlineSafetyRate = pct(safetyCount, total);
-  const ageAppropriateRate = pct(ageCount, total);
-  const supervisedAccessRate = pct(supervisedCount, total);
+  const competencyRate = rate(competentCount, total);
+  const onlineSafetyRate = rate(safetyCount, total);
+  const ageAppropriateRate = rate(ageCount, total);
+  const supervisedAccessRate = rate(supervisedCount, total);
 
-  const compScore = Math.round((competencyRate / 100) * 7);
-  const safetyScore = Math.round((onlineSafetyRate / 100) * 6);
-  const ageScore = Math.round((ageAppropriateRate / 100) * 6);
-  const supScore = Math.round((supervisedAccessRate / 100) * 6);
+  const compScore = Math.round(((competencyRate ?? 0) / 100) * 7);
+  const safetyScore = Math.round(((onlineSafetyRate ?? 0) / 100) * 6);
+  const ageScore = Math.round(((ageAppropriateRate ?? 0) / 100) * 6);
+  const supScore = Math.round(((supervisedAccessRate ?? 0) / 100) * 6);
 
   const overallScore = Math.min(25, compScore + safetyScore + ageScore + supScore);
 
@@ -205,7 +217,7 @@ export function evaluateDigitalQuality(sessions: DigitalSession[]): DigitalQuali
 
 export function evaluateDigitalCompliance(sessions: DigitalSession[]): DigitalComplianceResult {
   if (sessions.length === 0) {
-    return { overallScore: 0, documentedRate: 0, staffSupportedRate: 0, progressRecordedRate: 0, sessionTypeDiversityRatio: 0 };
+    return { overallScore: 0, documentedRate: null, staffSupportedRate: null, progressRecordedRate: null, sessionTypeDiversityRatio: 0 };
   }
 
   const total = sessions.length;
@@ -213,16 +225,16 @@ export function evaluateDigitalCompliance(sessions: DigitalSession[]): DigitalCo
   const staffCount = sessions.filter((s) => s.staffSupported).length;
   const progressCount = sessions.filter((s) => s.progressRecorded).length;
   const uniqueTypes = new Set(sessions.map((s) => s.sessionType)).size;
-  const diversityRatio = pct(uniqueTypes, 8);
+  const diversityRatio = rate(uniqueTypes, 8);
 
-  const documentedRate = pct(documentedCount, total);
-  const staffSupportedRate = pct(staffCount, total);
-  const progressRecordedRate = pct(progressCount, total);
+  const documentedRate = rate(documentedCount, total);
+  const staffSupportedRate = rate(staffCount, total);
+  const progressRecordedRate = rate(progressCount, total);
 
-  const docScore = Math.round((documentedRate / 100) * 8);
-  const staffScore = Math.round((staffSupportedRate / 100) * 7);
-  const progScore = Math.round((progressRecordedRate / 100) * 5);
-  const divScore = Math.round((diversityRatio / 100) * 5);
+  const docScore = Math.round(((documentedRate ?? 0) / 100) * 8);
+  const staffScore = Math.round(((staffSupportedRate ?? 0) / 100) * 7);
+  const progScore = Math.round(((progressRecordedRate ?? 0) / 100) * 5);
+  const divScore = Math.round((diversityRatio! / 100) * 5);
 
   const overallScore = Math.min(25, docScore + staffScore + progScore + divScore);
 
@@ -266,7 +278,7 @@ export function evaluateDigitalPolicy(policy: DigitalPolicy | null): DigitalPoli
 
 export function evaluateStaffDigitalReadiness(training: StaffDigitalTraining[]): StaffDigitalReadinessResult {
   if (training.length === 0) {
-    return { overallScore: 0, totalStaff: 0, onlineSafetyRate: 0, digitalLiteracyRate: 0, socialMediaAwarenessRate: 0, cyberbullyingResponseRate: 0, privacyProtectionRate: 0, monitoringSkillsRate: 0 };
+    return { overallScore: 0, totalStaff: 0, onlineSafetyRate: null, digitalLiteracyRate: null, socialMediaAwarenessRate: null, cyberbullyingResponseRate: null, privacyProtectionRate: null, monitoringSkillsRate: null };
   }
 
   const total = training.length;
@@ -277,19 +289,19 @@ export function evaluateStaffDigitalReadiness(training: StaffDigitalTraining[]):
   const ppCount = training.filter((t) => t.privacyProtection).length;
   const msCount = training.filter((t) => t.monitoringSkills).length;
 
-  const onlineSafetyRate = pct(osCount, total);
-  const digitalLiteracyRate = pct(dlCount, total);
-  const socialMediaAwarenessRate = pct(smCount, total);
-  const cyberbullyingResponseRate = pct(cbCount, total);
-  const privacyProtectionRate = pct(ppCount, total);
-  const monitoringSkillsRate = pct(msCount, total);
+  const onlineSafetyRate = rate(osCount, total);
+  const digitalLiteracyRate = rate(dlCount, total);
+  const socialMediaAwarenessRate = rate(smCount, total);
+  const cyberbullyingResponseRate = rate(cbCount, total);
+  const privacyProtectionRate = rate(ppCount, total);
+  const monitoringSkillsRate = rate(msCount, total);
 
-  const s1 = Math.round((onlineSafetyRate / 100) * 6);
-  const s2 = Math.round((digitalLiteracyRate / 100) * 5);
-  const s3 = Math.round((socialMediaAwarenessRate / 100) * 5);
-  const s4 = Math.round((cyberbullyingResponseRate / 100) * 4);
-  const s5 = Math.round((privacyProtectionRate / 100) * 3);
-  const s6 = Math.round((monitoringSkillsRate / 100) * 2);
+  const s1 = Math.round(((onlineSafetyRate ?? 0) / 100) * 6);
+  const s2 = Math.round(((digitalLiteracyRate ?? 0) / 100) * 5);
+  const s3 = Math.round(((socialMediaAwarenessRate ?? 0) / 100) * 5);
+  const s4 = Math.round(((cyberbullyingResponseRate ?? 0) / 100) * 4);
+  const s5 = Math.round(((privacyProtectionRate ?? 0) / 100) * 3);
+  const s6 = Math.round(((monitoringSkillsRate ?? 0) / 100) * 2);
 
   const overallScore = Math.min(25, s1 + s2 + s3 + s4 + s5 + s6);
 
@@ -315,22 +327,22 @@ export function buildChildDigitalProfiles(sessions: DigitalSession[]): ChildDigi
     const competentCount = sess.filter((s) => s.competencyLevel === "advanced" || s.competencyLevel === "proficient").length;
     const safetyCount = sess.filter((s) => s.onlineSafetyDemonstrated).length;
 
-    const competencyRate = pct(competentCount, total);
-    const onlineSafetyRate = pct(safetyCount, total);
+    const competencyRate = rate(competentCount, total);
+    const onlineSafetyRate = rate(safetyCount, total);
 
     let freqScore = 0;
     if (total >= 10) freqScore = 2;
     else if (total >= 5) freqScore = 1;
 
     let compScore = 0;
-    if (competencyRate >= 80) compScore = 3;
-    else if (competencyRate >= 60) compScore = 2;
-    else if (competencyRate >= 40) compScore = 1;
+    if (meets(competencyRate, 80)) compScore = 3;
+    else if (meets(competencyRate, 60)) compScore = 2;
+    else if (meets(competencyRate, 40)) compScore = 1;
 
     let safetyScore = 0;
-    if (onlineSafetyRate >= 80) safetyScore = 3;
-    else if (onlineSafetyRate >= 60) safetyScore = 2;
-    else if (onlineSafetyRate >= 40) safetyScore = 1;
+    if (meets(onlineSafetyRate, 80)) safetyScore = 3;
+    else if (meets(onlineSafetyRate, 60)) safetyScore = 2;
+    else if (meets(onlineSafetyRate, 40)) safetyScore = 1;
 
     const uniqueTypes = new Set(sess.map((s) => s.sessionType)).size;
     let divBonus = 0;
@@ -369,21 +381,21 @@ export function generateDigitalLiteracyDevelopmentIntelligence(
   const areasForImprovement: string[] = [];
   const actions: string[] = [];
 
-  if (digitalQuality.competencyRate >= 80) strengths.push("Strong digital competency levels — children are demonstrating advanced or proficient skills");
-  if (digitalQuality.onlineSafetyRate >= 80) strengths.push("Online safety is consistently demonstrated across digital sessions");
-  if (digitalQuality.ageAppropriateRate >= 80) strengths.push("Age-appropriate content use is well managed and evidenced");
-  if (digitalCompliance.documentedRate >= 80) strengths.push("Excellent documentation of digital literacy development in care plans");
+  if (meets(digitalQuality.competencyRate, 80)) strengths.push("Strong digital competency levels — children are demonstrating advanced or proficient skills");
+  if (meets(digitalQuality.onlineSafetyRate, 80)) strengths.push("Online safety is consistently demonstrated across digital sessions");
+  if (meets(digitalQuality.ageAppropriateRate, 80)) strengths.push("Age-appropriate content use is well managed and evidenced");
+  if (meets(digitalCompliance.documentedRate, 80)) strengths.push("Excellent documentation of digital literacy development in care plans");
 
-  if (sessions.length > 0 && digitalQuality.competencyRate < 60) areasForImprovement.push("Digital competency levels need improvement — review skill development programme");
-  if (sessions.length > 0 && digitalQuality.onlineSafetyRate < 60) areasForImprovement.push("Online safety not consistently demonstrated — strengthen safety education");
-  if (sessions.length > 0 && digitalCompliance.progressRecordedRate < 60) areasForImprovement.push("Progress recording needs improvement — embed recording into session workflow");
-  if (sessions.length > 0 && digitalQuality.supervisedAccessRate < 60) areasForImprovement.push("Supervised access rates are low — review supervision arrangements");
+  if (sessions.length > 0 && below(digitalQuality.competencyRate, 60)) areasForImprovement.push("Digital competency levels need improvement — review skill development programme");
+  if (sessions.length > 0 && below(digitalQuality.onlineSafetyRate, 60)) areasForImprovement.push("Online safety not consistently demonstrated — strengthen safety education");
+  if (sessions.length > 0 && below(digitalCompliance.progressRecordedRate, 60)) areasForImprovement.push("Progress recording needs improvement — embed recording into session workflow");
+  if (sessions.length > 0 && below(digitalQuality.supervisedAccessRate, 60)) areasForImprovement.push("Supervised access rates are low — review supervision arrangements");
 
   if (sessions.length === 0) actions.push("No digital literacy session records found — develop and implement digital skills programme");
   if (!policy) actions.push("URGENT: No digital literacy policy in place — develop and implement immediately");
   if (training.length === 0) actions.push("URGENT: No staff digital training recorded — arrange training for all staff");
-  if (sessions.length > 0 && digitalCompliance.staffSupportedRate < 60) actions.push("Improve staff support during digital literacy sessions");
-  if (sessions.length > 0 && digitalQuality.onlineSafetyRate < 60) actions.push("Strengthen online safety education across all digital activities");
+  if (sessions.length > 0 && below(digitalCompliance.staffSupportedRate, 60)) actions.push("Improve staff support during digital literacy sessions");
+  if (sessions.length > 0 && below(digitalQuality.onlineSafetyRate, 60)) actions.push("Strengthen online safety education across all digital activities");
 
   const regulatoryLinks: string[] = [
     "CHR 2015 Regulation 5 — Engaging with the wider community (digital inclusion)",

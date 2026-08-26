@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getRatingLabel,
   getEmergencyTypeLabel,
@@ -70,27 +69,6 @@ function makeTraining(overrides: Partial<StaffEmergencyTraining> = {}): StaffEme
 // 1. pct helper
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("calculates 50%", () => {
-    expect(pct(1, 2)).toBe(50);
-  });
-
-  it("calculates 100%", () => {
-    expect(pct(3, 3)).toBe(100);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-
-  it("returns 0 for 0 numerator", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-});
 
 // ══════════════════════════════════════════════════════════════════════════════
 // 2. getRating
@@ -158,10 +136,10 @@ describe("evaluateEmergencyQuality", () => {
   it("returns all zeros for empty drills", () => {
     const result = evaluateEmergencyQuality([]);
     expect(result.totalDrills).toBe(0);
-    expect(result.readinessRate).toBe(0);
-    expect(result.completionRate).toBe(0);
-    expect(result.childBriefingRate).toBe(0);
-    expect(result.debriefRate).toBe(0);
+    expect(result.readinessRate).toBeNull();
+    expect(result.completionRate).toBeNull();
+    expect(result.childBriefingRate).toBeNull();
+    expect(result.debriefRate).toBeNull();
     expect(result.score).toBe(0);
   });
 
@@ -233,9 +211,9 @@ describe("evaluateEmergencyCompliance", () => {
   it("returns all zeros for empty drills", () => {
     const result = evaluateEmergencyCompliance([]);
     expect(result.totalDrills).toBe(0);
-    expect(result.documentedRate).toBe(0);
-    expect(result.staffParticipationRate).toBe(0);
-    expect(result.improvementsRate).toBe(0);
+    expect(result.documentedRate).toBeNull();
+    expect(result.staffParticipationRate).toBeNull();
+    expect(result.improvementsRate).toBeNull();
     expect(result.uniqueDrillTypes).toBe(0);
     expect(result.typeDiversityRatio).toBe(0);
     expect(result.score).toBe(0);
@@ -398,12 +376,12 @@ describe("evaluateStaffEmergencyReadiness", () => {
   it("returns all zeros for empty training", () => {
     const result = evaluateStaffEmergencyReadiness([]);
     expect(result.totalStaff).toBe(0);
-    expect(result.firstAidCertifiedRate).toBe(0);
-    expect(result.fireMarshallTrainedRate).toBe(0);
-    expect(result.evacuationProceduresRate).toBe(0);
-    expect(result.emergencyProtocolsRate).toBe(0);
-    expect(result.safeguardingInEmergenciesRate).toBe(0);
-    expect(result.communicationInCrisisRate).toBe(0);
+    expect(result.firstAidCertifiedRate).toBeNull();
+    expect(result.fireMarshallTrainedRate).toBeNull();
+    expect(result.evacuationProceduresRate).toBeNull();
+    expect(result.emergencyProtocolsRate).toBeNull();
+    expect(result.safeguardingInEmergenciesRate).toBeNull();
+    expect(result.communicationInCrisisRate).toBeNull();
     expect(result.score).toBe(0);
   });
 

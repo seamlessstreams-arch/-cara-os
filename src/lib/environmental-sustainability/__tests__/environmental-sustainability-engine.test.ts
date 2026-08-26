@@ -10,7 +10,6 @@ import {
   evaluateStaffSustainabilityReadiness,
   buildChildSustainabilityProfiles,
   generateEnvironmentalSustainabilityIntelligence,
-  pct,
   getRating,
   getActivityTypeLabel,
   getEngagementLevelLabel,
@@ -86,27 +85,6 @@ function makeTraining(
 // pct()
 // =============================================================================
 
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("calculates percentage correctly", () => {
-    expect(pct(1, 2)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-
-  it("returns 100 for equal numerator and denominator", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-});
 
 // =============================================================================
 // getRating()
@@ -191,10 +169,10 @@ describe("evaluateActivityEngagement", () => {
     const result = evaluateActivityEngagement([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalActivities).toBe(0);
-    expect(result.engagementRate).toBe(0);
-    expect(result.childInitiatedRate).toBe(0);
-    expect(result.learningRecordedRate).toBe(0);
-    expect(result.staffSupportedRate).toBe(0);
+    expect(result.engagementRate).toBeNull();
+    expect(result.childInitiatedRate).toBeNull();
+    expect(result.learningRecordedRate).toBeNull();
+    expect(result.staffSupportedRate).toBeNull();
   });
 
   it("scores perfect data near maximum", () => {
@@ -416,7 +394,7 @@ describe("evaluateEnvironmentalPractice", () => {
     expect(result.totalActivities).toBe(0);
     expect(result.activityTypeDiversity).toBe(0);
     expect(result.frequencyScore).toBe(0);
-    expect(result.sustainedEngagementRate).toBe(0);
+    expect(result.sustainedEngagementRate).toBeNull();
   });
 
   it("scores perfect data near maximum", () => {
@@ -768,12 +746,12 @@ describe("evaluateStaffSustainabilityReadiness", () => {
     const result = evaluateStaffSustainabilityReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.environmentalAwarenessRate).toBe(0);
-    expect(result.recyclingProceduresRate).toBe(0);
-    expect(result.energyConservationRate).toBe(0);
-    expect(result.sustainableLivingRate).toBe(0);
-    expect(result.childEngagementRate).toBe(0);
-    expect(result.outdoorLearningRate).toBe(0);
+    expect(result.environmentalAwarenessRate).toBeNull();
+    expect(result.recyclingProceduresRate).toBeNull();
+    expect(result.energyConservationRate).toBeNull();
+    expect(result.sustainableLivingRate).toBeNull();
+    expect(result.childEngagementRate).toBeNull();
+    expect(result.outdoorLearningRate).toBeNull();
   });
 
   it("scores perfect data near maximum", () => {

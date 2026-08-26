@@ -4,7 +4,6 @@
 
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getAuthorityCategoryLabel,
   getDecisionOutcomeLabel,
@@ -76,28 +75,6 @@ function makeTraining(overrides: Partial<StaffAuthorityTraining> = {}): StaffAut
 // pct helper
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when both are 0", () => {
-    expect(pct(0, 0)).toBe(0);
-  });
-
-  it("returns 100 when num equals den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-});
 
 // ══════════════════════════════════════════════════════════════════════════════
 // getRating
@@ -212,10 +189,10 @@ describe("evaluateAuthorityQuality", () => {
   it("returns all zeros for empty decisions", () => {
     const result = evaluateAuthorityQuality([]);
     expect(result.totalDecisions).toBe(0);
-    expect(result.timelyApprovalRate).toBe(0);
-    expect(result.childConsultedRate).toBe(0);
-    expect(result.documentedRate).toBe(0);
-    expect(result.outcomeRecordedRate).toBe(0);
+    expect(result.timelyApprovalRate).toBeNull();
+    expect(result.childConsultedRate).toBeNull();
+    expect(result.documentedRate).toBeNull();
+    expect(result.outcomeRecordedRate).toBeNull();
     expect(result.score).toBe(0);
   });
 
@@ -286,9 +263,9 @@ describe("evaluateAuthorityCompliance", () => {
   it("returns all zeros for empty decisions", () => {
     const result = evaluateAuthorityCompliance([]);
     expect(result.totalDecisions).toBe(0);
-    expect(result.parentNotifiedRate).toBe(0);
-    expect(result.withinScopeRate).toBe(0);
-    expect(result.staffDecisionRate).toBe(0);
+    expect(result.parentNotifiedRate).toBeNull();
+    expect(result.withinScopeRate).toBeNull();
+    expect(result.staffDecisionRate).toBeNull();
     expect(result.categoryDiversityRatio).toBe(0);
     expect(result.score).toBe(0);
   });
@@ -433,12 +410,12 @@ describe("evaluateStaffAuthorityReadiness", () => {
   it("returns all zeros for empty training", () => {
     const result = evaluateStaffAuthorityReadiness([]);
     expect(result.totalStaff).toBe(0);
-    expect(result.delegatedAuthorityUnderstandingRate).toBe(0);
-    expect(result.decisionMakingConfidenceRate).toBe(0);
-    expect(result.scopeRecognitionRate).toBe(0);
-    expect(result.documentationCompetencyRate).toBe(0);
-    expect(result.escalationAwarenessRate).toBe(0);
-    expect(result.childConsultationSkillsRate).toBe(0);
+    expect(result.delegatedAuthorityUnderstandingRate).toBeNull();
+    expect(result.decisionMakingConfidenceRate).toBeNull();
+    expect(result.scopeRecognitionRate).toBeNull();
+    expect(result.documentationCompetencyRate).toBeNull();
+    expect(result.escalationAwarenessRate).toBeNull();
+    expect(result.childConsultationSkillsRate).toBeNull();
     expect(result.score).toBe(0);
     expect(result.concerns.length).toBeGreaterThan(0);
     expect(result.concerns[0]).toContain("URGENT");

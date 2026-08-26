@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 /* ──────────────────────────────────────────────────────────────
    Education Intelligence Engine
 
@@ -212,11 +213,6 @@ export interface EducationIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -234,10 +230,10 @@ export function evaluateEducationQuality(
   if (totalRecords === 0) {
     return {
       totalRecords: 0,
-      attainmentRate: 0,
-      attendanceRate: 0,
-      noExclusionRate: 0,
-      designatedTeacherRate: 0,
+      attainmentRate: null,
+      attendanceRate: null,
+      noExclusionRate: null,
+      designatedTeacherRate: null,
       score: 0,
       strengths: [],
       concerns: ["No education records — quality cannot be assessed"],
@@ -247,50 +243,50 @@ export function evaluateEducationQuality(
   const attainmentCount = records.filter(
     (r) => r.attainment === "exceeding" || r.attainment === "expected",
   ).length;
-  const attainmentRate = pct(attainmentCount, totalRecords);
+  const attainmentRate = rate(attainmentCount, totalRecords);
 
   const attendanceCount = records.filter((r) => r.attendanceAbove95).length;
-  const attendanceRate = pct(attendanceCount, totalRecords);
+  const attendanceRate = rate(attendanceCount, totalRecords);
 
   const noExclusionCount = records.filter((r) => !r.exclusionThisTerm).length;
-  const noExclusionRate = pct(noExclusionCount, totalRecords);
+  const noExclusionRate = rate(noExclusionCount, totalRecords);
 
   const dtCount = records.filter((r) => r.designatedTeacherEngaged).length;
-  const designatedTeacherRate = pct(dtCount, totalRecords);
+  const designatedTeacherRate = rate(dtCount, totalRecords);
 
   // Weights: attainmentRate 7 + attendanceRate 6 + noExclusionRate 6 + designatedTeacherRate 6 = 25
   let score = 0;
-  score += (attainmentRate / 100) * 7;
-  score += (attendanceRate / 100) * 6;
-  score += (noExclusionRate / 100) * 6;
-  score += (designatedTeacherRate / 100) * 6;
+  score += (attainmentRate! / 100) * 7;
+  score += (attendanceRate! / 100) * 6;
+  score += (noExclusionRate! / 100) * 6;
+  score += (designatedTeacherRate! / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (attainmentRate >= 80) {
+  if (meets(attainmentRate, 80)) {
     strengths.push("Strong attainment: " + attainmentRate + "% of records at expected or exceeding level");
-  } else if (attainmentRate < 50) {
+  } else if (below(attainmentRate, 50)) {
     concerns.push("Attainment at " + attainmentRate + "% — majority of children not meeting expected levels");
   }
 
-  if (attendanceRate >= 80) {
+  if (meets(attendanceRate, 80)) {
     strengths.push("Excellent attendance: " + attendanceRate + "% of records above 95% target");
-  } else if (attendanceRate < 50) {
+  } else if (below(attendanceRate, 50)) {
     concerns.push("Attendance at " + attendanceRate + "% — majority of children below 95% target");
   }
 
-  if (noExclusionRate >= 80) {
+  if (meets(noExclusionRate, 80)) {
     strengths.push("Low exclusion rate: " + noExclusionRate + "% of records with no exclusion this term");
-  } else if (noExclusionRate < 50) {
+  } else if (below(noExclusionRate, 50)) {
     concerns.push("Exclusion rate concerning: only " + noExclusionRate + "% of records free from exclusion");
   }
 
-  if (designatedTeacherRate >= 80) {
+  if (meets(designatedTeacherRate, 80)) {
     strengths.push("Strong designated teacher engagement: " + designatedTeacherRate + "% of records");
-  } else if (designatedTeacherRate < 50) {
+  } else if (below(designatedTeacherRate, 50)) {
     concerns.push("Designated teacher engagement at " + designatedTeacherRate + "% — many children lack school liaison");
   }
 
@@ -316,9 +312,9 @@ export function evaluateEducationCompliance(
   if (totalRecords === 0) {
     return {
       totalRecords: 0,
-      pepRate: 0,
-      pupilPremiumRate: 0,
-      virtualSchoolRate: 0,
+      pepRate: null,
+      pupilPremiumRate: null,
+      virtualSchoolRate: null,
       placementDiversityRatio: 0,
       uniquePlacements: 0,
       score: 0,
@@ -328,13 +324,13 @@ export function evaluateEducationCompliance(
   }
 
   const pepCount = records.filter((r) => r.pepReviewedThisTerm).length;
-  const pepRate = pct(pepCount, totalRecords);
+  const pepRate = rate(pepCount, totalRecords);
 
   const ppCount = records.filter((r) => r.pupilPremiumAllocated).length;
-  const pupilPremiumRate = pct(ppCount, totalRecords);
+  const pupilPremiumRate = rate(ppCount, totalRecords);
 
   const vsCount = records.filter((r) => r.virtualSchoolInvolved).length;
-  const virtualSchoolRate = pct(vsCount, totalRecords);
+  const virtualSchoolRate = rate(vsCount, totalRecords);
 
   const uniquePlacementsSet = new Set(records.map((r) => r.placement));
   const uniquePlacements = uniquePlacementsSet.size;
@@ -342,9 +338,9 @@ export function evaluateEducationCompliance(
 
   // Weights: pepRate 8 + pupilPremiumRate 7 + virtualSchoolRate 5 + placementDiversityRatio 5 = 25
   let score = 0;
-  score += (pepRate / 100) * 8;
-  score += (pupilPremiumRate / 100) * 7;
-  score += (virtualSchoolRate / 100) * 5;
+  score += (pepRate! / 100) * 8;
+  score += (pupilPremiumRate! / 100) * 7;
+  score += (virtualSchoolRate! / 100) * 5;
   score += placementDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -352,21 +348,21 @@ export function evaluateEducationCompliance(
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (pepRate >= 90) {
+  if (meets(pepRate, 90)) {
     strengths.push("Excellent PEP compliance: " + pepRate + "% of records with termly PEP review");
-  } else if (pepRate < 50) {
+  } else if (below(pepRate, 50)) {
     concerns.push("PEP compliance at " + pepRate + "% — statutory PEP reviews not consistently completed");
   }
 
-  if (pupilPremiumRate >= 90) {
+  if (meets(pupilPremiumRate, 90)) {
     strengths.push("Strong Pupil Premium allocation: " + pupilPremiumRate + "% of records with PP+ allocated");
-  } else if (pupilPremiumRate < 50) {
+  } else if (below(pupilPremiumRate, 50)) {
     concerns.push("Pupil Premium allocation at " + pupilPremiumRate + "% — children may be missing PP+ funding");
   }
 
-  if (virtualSchoolRate >= 80) {
+  if (meets(virtualSchoolRate, 80)) {
     strengths.push("Good Virtual School involvement: " + virtualSchoolRate + "% of records");
-  } else if (virtualSchoolRate < 50) {
+  } else if (below(virtualSchoolRate, 50)) {
     concerns.push("Virtual School involvement at " + virtualSchoolRate + "% — insufficient oversight from VSH");
   }
 
@@ -484,12 +480,12 @@ export function evaluateStaffEducationReadiness(
   if (totalStaff === 0) {
     return {
       totalStaff: 0,
-      educationRegulationsRate: 0,
-      pepProcessRate: 0,
-      attendanceSupportRate: 0,
-      senAwarenessRate: 0,
-      virtualSchoolLiaisonRate: 0,
-      educationAdvocacyRate: 0,
+      educationRegulationsRate: null,
+      pepProcessRate: null,
+      attendanceSupportRate: null,
+      senAwarenessRate: null,
+      virtualSchoolLiaisonRate: null,
+      educationAdvocacyRate: null,
       score: 0,
       strengths: [],
       concerns: ["No staff training records — URGENT: schedule education training for all staff"],
@@ -497,70 +493,70 @@ export function evaluateStaffEducationReadiness(
   }
 
   const regCount = training.filter((t) => t.educationRegulations).length;
-  const educationRegulationsRate = pct(regCount, totalStaff);
+  const educationRegulationsRate = rate(regCount, totalStaff);
 
   const pepCount = training.filter((t) => t.pepProcess).length;
-  const pepProcessRate = pct(pepCount, totalStaff);
+  const pepProcessRate = rate(pepCount, totalStaff);
 
   const attCount = training.filter((t) => t.attendanceSupport).length;
-  const attendanceSupportRate = pct(attCount, totalStaff);
+  const attendanceSupportRate = rate(attCount, totalStaff);
 
   const senCount = training.filter((t) => t.senAwareness).length;
-  const senAwarenessRate = pct(senCount, totalStaff);
+  const senAwarenessRate = rate(senCount, totalStaff);
 
   const vsCount = training.filter((t) => t.virtualSchoolLiaison).length;
-  const virtualSchoolLiaisonRate = pct(vsCount, totalStaff);
+  const virtualSchoolLiaisonRate = rate(vsCount, totalStaff);
 
   const advCount = training.filter((t) => t.educationAdvocacy).length;
-  const educationAdvocacyRate = pct(advCount, totalStaff);
+  const educationAdvocacyRate = rate(advCount, totalStaff);
 
   // Weights: 6+5+5+4+3+2 = 25
   let score = 0;
-  score += (educationRegulationsRate / 100) * 6;
-  score += (pepProcessRate / 100) * 5;
-  score += (attendanceSupportRate / 100) * 5;
-  score += (senAwarenessRate / 100) * 4;
-  score += (virtualSchoolLiaisonRate / 100) * 3;
-  score += (educationAdvocacyRate / 100) * 2;
+  score += (educationRegulationsRate! / 100) * 6;
+  score += (pepProcessRate! / 100) * 5;
+  score += (attendanceSupportRate! / 100) * 5;
+  score += (senAwarenessRate! / 100) * 4;
+  score += (virtualSchoolLiaisonRate! / 100) * 3;
+  score += ((educationAdvocacyRate ?? 0) / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (educationRegulationsRate >= 80) {
+  if (meets(educationRegulationsRate, 80)) {
     strengths.push("Strong education regulations knowledge: " + educationRegulationsRate + "% of staff");
-  } else if (educationRegulationsRate < 50) {
+  } else if (below(educationRegulationsRate, 50)) {
     concerns.push("Education regulations training at " + educationRegulationsRate + "% — foundational training needed");
   }
 
-  if (pepProcessRate >= 80) {
+  if (meets(pepProcessRate, 80)) {
     strengths.push("Good PEP process understanding: " + pepProcessRate + "% of staff trained");
-  } else if (pepProcessRate < 50) {
+  } else if (below(pepProcessRate, 50)) {
     concerns.push("PEP process training at " + pepProcessRate + "% — staff may not support PEP reviews effectively");
   }
 
-  if (attendanceSupportRate >= 80) {
+  if (meets(attendanceSupportRate, 80)) {
     strengths.push("Strong attendance support skills: " + attendanceSupportRate + "% of staff trained");
-  } else if (attendanceSupportRate < 50) {
+  } else if (below(attendanceSupportRate, 50)) {
     concerns.push("Attendance support training at " + attendanceSupportRate + "% — staff may not address attendance barriers");
   }
 
-  if (senAwarenessRate >= 80) {
+  if (meets(senAwarenessRate, 80)) {
     strengths.push("Good SEN awareness: " + senAwarenessRate + "% of staff knowledgeable");
-  } else if (senAwarenessRate < 50) {
+  } else if (below(senAwarenessRate, 50)) {
     concerns.push("SEN awareness at " + senAwarenessRate + "% — staff may not recognise additional needs");
   }
 
-  if (virtualSchoolLiaisonRate >= 80) {
+  if (meets(virtualSchoolLiaisonRate, 80)) {
     strengths.push("Strong Virtual School liaison skills: " + virtualSchoolLiaisonRate + "% of staff trained");
-  } else if (virtualSchoolLiaisonRate < 50) {
+  } else if (below(virtualSchoolLiaisonRate, 50)) {
     concerns.push("Virtual School liaison at " + virtualSchoolLiaisonRate + "% — engagement with VSH may be limited");
   }
 
-  if (educationAdvocacyRate >= 80) {
+  if (meets(educationAdvocacyRate, 80)) {
     strengths.push("Good education advocacy skills: " + educationAdvocacyRate + "% of staff competent");
-  } else if (educationAdvocacyRate < 50) {
+  } else if (below(educationAdvocacyRate, 50)) {
     concerns.push("Education advocacy at " + educationAdvocacyRate + "% — children's education may not be championed effectively");
   }
 
@@ -603,10 +599,10 @@ export function buildChildEducationProfiles(
     const attainmentCount = child.records.filter(
       (r) => r.attainment === "exceeding" || r.attainment === "expected",
     ).length;
-    const attainmentRate = pct(attainmentCount, total);
+    const attainmentRate = rate(attainmentCount, total);
 
     const attendanceCount = child.records.filter((r) => r.attendanceAbove95).length;
-    const attendanceRate = pct(attendanceCount, total);
+    const attendanceRate = rate(attendanceCount, total);
 
     const exclusionCount = child.records.filter((r) => r.exclusionThisTerm).length;
 
@@ -617,15 +613,15 @@ export function buildChildEducationProfiles(
 
     // rate1 (attainmentRate): >=80 -> 3, >=60 -> 2, >=40 -> 1, else 0
     let rate1Score = 0;
-    if (attainmentRate >= 80) rate1Score = 3;
-    else if (attainmentRate >= 60) rate1Score = 2;
-    else if (attainmentRate >= 40) rate1Score = 1;
+    if (meets(attainmentRate, 80)) rate1Score = 3;
+    else if (meets(attainmentRate, 60)) rate1Score = 2;
+    else if (meets(attainmentRate, 40)) rate1Score = 1;
 
     // rate2 (attendanceRate): same thresholds
     let rate2Score = 0;
-    if (attendanceRate >= 80) rate2Score = 3;
-    else if (attendanceRate >= 60) rate2Score = 2;
-    else if (attendanceRate >= 40) rate2Score = 1;
+    if (meets(attendanceRate, 80)) rate2Score = 3;
+    else if (meets(attendanceRate, 60)) rate2Score = 2;
+    else if (meets(attendanceRate, 40)) rate2Score = 1;
 
     // noExclusion: 0 exclusions -> 2, else 0
     const noExclusionBonus = exclusionCount === 0 ? 2 : 0;

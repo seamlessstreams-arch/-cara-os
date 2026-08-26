@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // Cara Environmental Sustainability Intelligence Engine
 //
@@ -84,10 +85,14 @@ export interface StaffSustainabilityTraining {
 export interface ActivityEngagementResult {
   overallScore: number; // 0-25
   totalActivities: number;
-  engagementRate: number; // pct
-  childInitiatedRate: number; // pct
-  learningRecordedRate: number; // pct
-  staffSupportedRate: number; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  engagementRate: number | null; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  childInitiatedRate: number | null; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  learningRecordedRate: number | null; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffSupportedRate: number | null; // pct
   engagementDistribution: Record<EngagementLevel, number>;
 }
 
@@ -97,7 +102,8 @@ export interface EnvironmentalPracticeResult {
   activityTypeDiversity: number; // count of distinct types used
   activityTypeDistribution: Record<ActivityType, number>;
   frequencyScore: number | null; // activities per child
-  sustainedEngagementRate: number; // pct of highly_engaged or engaged
+  /** null when the population is empty — nothing measured, not 0%. */
+  sustainedEngagementRate: number | null; // pct of highly_engaged or engaged
 }
 
 export interface SustainabilityPolicyResult {
@@ -115,12 +121,18 @@ export interface SustainabilityPolicyResult {
 export interface StaffReadinessResult {
   overallScore: number; // 0-25
   totalStaff: number;
-  environmentalAwarenessRate: number; // pct
-  recyclingProceduresRate: number; // pct
-  energyConservationRate: number; // pct
-  sustainableLivingRate: number; // pct
-  childEngagementRate: number; // pct
-  outdoorLearningRate: number; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  environmentalAwarenessRate: number | null; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  recyclingProceduresRate: number | null; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  energyConservationRate: number | null; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  sustainableLivingRate: number | null; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  childEngagementRate: number | null; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  outdoorLearningRate: number | null; // pct
 }
 
 export interface ChildSustainabilityProfile {
@@ -195,11 +207,6 @@ export function getRatingLabel(r: Rating): string {
 
 // -- Utility ------------------------------------------------------------------
 
-export function pct(numerator: number, denominator: number): number {
-  if (denominator === 0) return 0;
-  return Math.round((numerator / denominator) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -230,10 +237,10 @@ export function evaluateActivityEngagement(
     return {
       overallScore: 0,
       totalActivities: 0,
-      engagementRate: 0,
-      childInitiatedRate: 0,
-      learningRecordedRate: 0,
-      staffSupportedRate: 0,
+      engagementRate: null,
+      childInitiatedRate: null,
+      learningRecordedRate: null,
+      staffSupportedRate: null,
       engagementDistribution: { ...emptyEngagementDist },
     };
   }
@@ -249,50 +256,50 @@ export function evaluateActivityEngagement(
   // Engagement rate: highly_engaged or engaged
   const engagedCount =
     engagementDistribution.highly_engaged + engagementDistribution.engaged;
-  const engagementRate = pct(engagedCount, total);
+  const engagementRate = rate(engagedCount, total);
 
   // Child-initiated rate
   const childInitiatedCount = activities.filter((a) => a.childInitiated).length;
-  const childInitiatedRate = pct(childInitiatedCount, total);
+  const childInitiatedRate = rate(childInitiatedCount, total);
 
   // Learning outcome recorded rate
   const learningRecordedCount = activities.filter(
     (a) => a.learningOutcomeRecorded,
   ).length;
-  const learningRecordedRate = pct(learningRecordedCount, total);
+  const learningRecordedRate = rate(learningRecordedCount, total);
 
   // Staff supported rate
   const staffSupportedCount = activities.filter(
     (a) => a.staffSupported,
   ).length;
-  const staffSupportedRate = pct(staffSupportedCount, total);
+  const staffSupportedRate = rate(staffSupportedCount, total);
 
   // Scoring
   let score = 0;
 
   // Engagement rate (0-7)
-  if (engagementRate >= 80) score += 7;
-  else if (engagementRate >= 60) score += 5;
-  else if (engagementRate >= 40) score += 3;
-  else if (engagementRate >= 20) score += 1;
+  if (meets(engagementRate, 80)) score += 7;
+  else if (meets(engagementRate, 60)) score += 5;
+  else if (meets(engagementRate, 40)) score += 3;
+  else if (meets(engagementRate, 20)) score += 1;
 
   // Child-initiated rate (0-6)
-  if (childInitiatedRate >= 80) score += 6;
-  else if (childInitiatedRate >= 60) score += 4;
-  else if (childInitiatedRate >= 40) score += 3;
-  else if (childInitiatedRate >= 20) score += 1;
+  if (meets(childInitiatedRate, 80)) score += 6;
+  else if (meets(childInitiatedRate, 60)) score += 4;
+  else if (meets(childInitiatedRate, 40)) score += 3;
+  else if (meets(childInitiatedRate, 20)) score += 1;
 
   // Learning outcome recorded (0-6)
-  if (learningRecordedRate >= 80) score += 6;
-  else if (learningRecordedRate >= 60) score += 4;
-  else if (learningRecordedRate >= 40) score += 3;
-  else if (learningRecordedRate >= 20) score += 1;
+  if (meets(learningRecordedRate, 80)) score += 6;
+  else if (meets(learningRecordedRate, 60)) score += 4;
+  else if (meets(learningRecordedRate, 40)) score += 3;
+  else if (meets(learningRecordedRate, 20)) score += 1;
 
   // Staff supported (0-6)
-  if (staffSupportedRate >= 80) score += 6;
-  else if (staffSupportedRate >= 60) score += 4;
-  else if (staffSupportedRate >= 40) score += 3;
-  else if (staffSupportedRate >= 20) score += 1;
+  if (meets(staffSupportedRate, 80)) score += 6;
+  else if (meets(staffSupportedRate, 60)) score += 4;
+  else if (meets(staffSupportedRate, 40)) score += 3;
+  else if (meets(staffSupportedRate, 20)) score += 1;
 
   return {
     overallScore: Math.max(0, Math.min(score, 25)),
@@ -332,7 +339,7 @@ export function evaluateEnvironmentalPractice(
       activityTypeDiversity: 0,
       activityTypeDistribution: { ...emptyTypeDist },
       frequencyScore: 0,
-      sustainedEngagementRate: 0,
+      sustainedEngagementRate: null,
     };
   }
 
@@ -362,7 +369,7 @@ export function evaluateEnvironmentalPractice(
       a.engagementLevel === "highly_engaged" ||
       a.engagementLevel === "engaged",
   ).length;
-  const sustainedEngagementRate = pct(sustainedCount, total);
+  const sustainedEngagementRate = rate(sustainedCount, total);
 
   // Scoring
   let score = 0;
@@ -371,7 +378,7 @@ export function evaluateEnvironmentalPractice(
   if (activityTypeDiversity >= 7) score += 8;
   else if (activityTypeDiversity >= 5) score += 6;
   else if (activityTypeDiversity >= 3) score += 4;
-  else if (activityTypeDiversity >= 1) score += 2;
+  else if (meets(activityTypeDiversity, 1)) score += 2;
 
   // Frequency: activities per child (0-9)
   if ((frequencyScore ?? 0) >= 6) score += 9;
@@ -381,10 +388,10 @@ export function evaluateEnvironmentalPractice(
   else if ((frequencyScore ?? 0) >= 1) score += 1;
 
   // Sustained engagement (0-8)
-  if (sustainedEngagementRate >= 80) score += 8;
-  else if (sustainedEngagementRate >= 60) score += 6;
-  else if (sustainedEngagementRate >= 40) score += 4;
-  else if (sustainedEngagementRate >= 20) score += 2;
+  if (meets(sustainedEngagementRate, 80)) score += 8;
+  else if (meets(sustainedEngagementRate, 60)) score += 6;
+  else if (meets(sustainedEngagementRate, 40)) score += 4;
+  else if (meets(sustainedEngagementRate, 20)) score += 2;
 
   return {
     overallScore: Math.max(0, Math.min(score, 25)),
@@ -469,12 +476,12 @@ export function evaluateStaffSustainabilityReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      environmentalAwarenessRate: 0,
-      recyclingProceduresRate: 0,
-      energyConservationRate: 0,
-      sustainableLivingRate: 0,
-      childEngagementRate: 0,
-      outdoorLearningRate: 0,
+      environmentalAwarenessRate: null,
+      recyclingProceduresRate: null,
+      energyConservationRate: null,
+      sustainableLivingRate: null,
+      childEngagementRate: null,
+      outdoorLearningRate: null,
     };
   }
 
@@ -483,68 +490,68 @@ export function evaluateStaffSustainabilityReadiness(
   const environmentalAwarenessCount = training.filter(
     (s) => s.environmentalAwareness,
   ).length;
-  const environmentalAwarenessRate = pct(environmentalAwarenessCount, total);
+  const environmentalAwarenessRate = rate(environmentalAwarenessCount, total);
 
   const recyclingProceduresCount = training.filter(
     (s) => s.recyclingProcedures,
   ).length;
-  const recyclingProceduresRate = pct(recyclingProceduresCount, total);
+  const recyclingProceduresRate = rate(recyclingProceduresCount, total);
 
   const energyConservationCount = training.filter(
     (s) => s.energyConservation,
   ).length;
-  const energyConservationRate = pct(energyConservationCount, total);
+  const energyConservationRate = rate(energyConservationCount, total);
 
   const sustainableLivingCount = training.filter(
     (s) => s.sustainableLiving,
   ).length;
-  const sustainableLivingRate = pct(sustainableLivingCount, total);
+  const sustainableLivingRate = rate(sustainableLivingCount, total);
 
   const childEngagementCount = training.filter(
     (s) => s.childEngagement,
   ).length;
-  const childEngagementRate = pct(childEngagementCount, total);
+  const childEngagementRate = rate(childEngagementCount, total);
 
   const outdoorLearningCount = training.filter(
     (s) => s.outdoorLearning,
   ).length;
-  const outdoorLearningRate = pct(outdoorLearningCount, total);
+  const outdoorLearningRate = rate(outdoorLearningCount, total);
 
   // Scoring
   let score = 0;
 
   // Environmental awareness (0-6)
-  if (environmentalAwarenessRate >= 90) score += 6;
-  else if (environmentalAwarenessRate >= 70) score += 4;
-  else if (environmentalAwarenessRate >= 50) score += 3;
-  else if (environmentalAwarenessRate >= 25) score += 1;
+  if (meets(environmentalAwarenessRate, 90)) score += 6;
+  else if (meets(environmentalAwarenessRate, 70)) score += 4;
+  else if (meets(environmentalAwarenessRate, 50)) score += 3;
+  else if (meets(environmentalAwarenessRate, 25)) score += 1;
 
   // Recycling procedures (0-5)
-  if (recyclingProceduresRate >= 90) score += 5;
-  else if (recyclingProceduresRate >= 70) score += 4;
-  else if (recyclingProceduresRate >= 50) score += 2;
-  else if (recyclingProceduresRate >= 25) score += 1;
+  if (meets(recyclingProceduresRate, 90)) score += 5;
+  else if (meets(recyclingProceduresRate, 70)) score += 4;
+  else if (meets(recyclingProceduresRate, 50)) score += 2;
+  else if (meets(recyclingProceduresRate, 25)) score += 1;
 
   // Energy conservation (0-5)
-  if (energyConservationRate >= 90) score += 5;
-  else if (energyConservationRate >= 70) score += 4;
-  else if (energyConservationRate >= 50) score += 2;
-  else if (energyConservationRate >= 25) score += 1;
+  if (meets(energyConservationRate, 90)) score += 5;
+  else if (meets(energyConservationRate, 70)) score += 4;
+  else if (meets(energyConservationRate, 50)) score += 2;
+  else if (meets(energyConservationRate, 25)) score += 1;
 
   // Sustainable living (0-4)
-  if (sustainableLivingRate >= 80) score += 4;
-  else if (sustainableLivingRate >= 60) score += 3;
-  else if (sustainableLivingRate >= 40) score += 2;
-  else if (sustainableLivingRate >= 20) score += 1;
+  if (meets(sustainableLivingRate, 80)) score += 4;
+  else if (meets(sustainableLivingRate, 60)) score += 3;
+  else if (meets(sustainableLivingRate, 40)) score += 2;
+  else if (meets(sustainableLivingRate, 20)) score += 1;
 
   // Child engagement (0-3)
-  if (childEngagementRate >= 80) score += 3;
-  else if (childEngagementRate >= 60) score += 2;
-  else if (childEngagementRate >= 30) score += 1;
+  if (meets(childEngagementRate, 80)) score += 3;
+  else if (meets(childEngagementRate, 60)) score += 2;
+  else if (meets(childEngagementRate, 30)) score += 1;
 
   // Outdoor learning (0-2)
-  if (outdoorLearningRate >= 70) score += 2;
-  else if (outdoorLearningRate >= 40) score += 1;
+  if (meets(outdoorLearningRate, 70)) score += 2;
+  else if (meets(outdoorLearningRate, 40)) score += 1;
 
   return {
     overallScore: Math.max(0, Math.min(score, 25)),
@@ -601,13 +608,13 @@ export function buildChildSustainabilityProfiles(
     const childInitiatedCount = childActivities.filter(
       (a) => a.childInitiated,
     ).length;
-    const childInitiatedRate = pct(childInitiatedCount, totalActivities);
+    const childInitiatedRate = rate(childInitiatedCount, totalActivities)!;
 
     // Learning recorded rate
     const learningCount = childActivities.filter(
       (a) => a.learningOutcomeRecorded,
     ).length;
-    const learningRecordedRate = pct(learningCount, totalActivities);
+    const learningRecordedRate = rate(learningCount, totalActivities)!;
 
     // Activity type diversity
     const types = new Set(childActivities.map((a) => a.activityType));
@@ -626,8 +633,8 @@ export function buildChildSustainabilityProfiles(
     else if (engagementScore >= 1) overallScore += 1;
 
     // Child initiated (up to 2 points)
-    if (childInitiatedRate >= 60) overallScore += 2;
-    else if (childInitiatedRate >= 30) overallScore += 1;
+    if (meets(childInitiatedRate, 60)) overallScore += 2;
+    else if (meets(childInitiatedRate, 30)) overallScore += 1;
 
     // Activity diversity (up to 3 points)
     if (activityTypeDiversity >= 5) overallScore += 3;
@@ -657,25 +664,25 @@ function generateStrengths(
 ): string[] {
   const strengths: string[] = [];
 
-  if (activity.engagementRate >= 70) {
+  if (meets(activity.engagementRate, 70)) {
     strengths.push(
       "High engagement in sustainability activities — children are actively participating in environmental practices",
     );
   }
 
-  if (activity.childInitiatedRate >= 60) {
+  if (meets(activity.childInitiatedRate, 60)) {
     strengths.push(
       "Strong child-initiated sustainability — children are proactively engaging in environmental activities",
     );
   }
 
-  if (activity.learningRecordedRate >= 70) {
+  if (meets(activity.learningRecordedRate, 70)) {
     strengths.push(
       "Good recording of learning outcomes — environmental learning is being captured and built upon",
     );
   }
 
-  if (activity.staffSupportedRate >= 70) {
+  if (meets(activity.staffSupportedRate, 70)) {
     strengths.push(
       "Excellent staff support for sustainability activities — children benefit from guided environmental learning",
     );
@@ -687,7 +694,7 @@ function generateStrengths(
     );
   }
 
-  if (practice.sustainedEngagementRate >= 70) {
+  if (meets(practice.sustainedEngagementRate, 70)) {
     strengths.push(
       "Sustained engagement levels are high — children are consistently motivated in environmental activities",
     );
@@ -711,19 +718,19 @@ function generateStrengths(
     );
   }
 
-  if (staff.environmentalAwarenessRate >= 80) {
+  if (meets(staff.environmentalAwarenessRate, 80)) {
     strengths.push(
       "High staff environmental awareness — team is well-equipped to model sustainable behaviour",
     );
   }
 
-  if (staff.childEngagementRate >= 70) {
+  if (meets(staff.childEngagementRate, 70)) {
     strengths.push(
       "Staff are skilled in engaging children in sustainability — promoting active participation",
     );
   }
 
-  if (staff.outdoorLearningRate >= 70) {
+  if (meets(staff.outdoorLearningRate, 70)) {
     strengths.push(
       "Good outdoor learning capability among staff — supporting nature-based environmental education",
     );
@@ -746,25 +753,25 @@ function generateAreasForImprovement(
     );
   }
 
-  if (activity.engagementRate < 50 && activity.totalActivities > 0) {
+  if (below(activity.engagementRate, 50) && activity.totalActivities > 0) {
     areas.push(
       `Engagement rate at ${activity.engagementRate}% — more children need to be actively participating in sustainability activities`,
     );
   }
 
-  if (activity.childInitiatedRate < 30 && activity.totalActivities > 0) {
+  if (below(activity.childInitiatedRate, 30) && activity.totalActivities > 0) {
     areas.push(
       `Child-initiated rate at ${activity.childInitiatedRate}% — encourage children to lead their own environmental projects`,
     );
   }
 
-  if (activity.learningRecordedRate < 50 && activity.totalActivities > 0) {
+  if (below(activity.learningRecordedRate, 50) && activity.totalActivities > 0) {
     areas.push(
       `Learning outcomes recorded for only ${activity.learningRecordedRate}% of activities — ensure environmental learning is captured`,
     );
   }
 
-  if (activity.staffSupportedRate < 50 && activity.totalActivities > 0) {
+  if (below(activity.staffSupportedRate, 50) && activity.totalActivities > 0) {
     areas.push(
       `Staff supported only ${activity.staffSupportedRate}% of activities — increase staff involvement in sustainability sessions`,
     );
@@ -776,7 +783,7 @@ function generateAreasForImprovement(
     );
   }
 
-  if (practice.sustainedEngagementRate < 50 && practice.totalActivities > 0) {
+  if (below(practice.sustainedEngagementRate, 50) && practice.totalActivities > 0) {
     areas.push(
       `Sustained engagement at ${practice.sustainedEngagementRate}% — consider how to maintain children's interest over time`,
     );
@@ -812,19 +819,19 @@ function generateAreasForImprovement(
     );
   }
 
-  if (staff.environmentalAwarenessRate < 50 && staff.totalStaff > 0) {
+  if (below(staff.environmentalAwarenessRate, 50) && staff.totalStaff > 0) {
     areas.push(
       `Environmental awareness training at ${staff.environmentalAwarenessRate}% — more staff need sustainability training`,
     );
   }
 
-  if (staff.recyclingProceduresRate < 50 && staff.totalStaff > 0) {
+  if (below(staff.recyclingProceduresRate, 50) && staff.totalStaff > 0) {
     areas.push(
       `Recycling procedures training at ${staff.recyclingProceduresRate}% — ensure all staff understand recycling protocols`,
     );
   }
 
-  if (staff.childEngagementRate < 50 && staff.totalStaff > 0) {
+  if (below(staff.childEngagementRate, 50) && staff.totalStaff > 0) {
     areas.push(
       `Child engagement training at ${staff.childEngagementRate}% — staff need skills to involve children in sustainability`,
     );
@@ -883,13 +890,13 @@ function generateActions(
     );
   }
 
-  if (activity.childInitiatedRate < 30 && activity.totalActivities > 0) {
+  if (below(activity.childInitiatedRate, 30) && activity.totalActivities > 0) {
     actions.push(
       "Encourage child-led environmental projects — support children in designing and running their own sustainability initiatives",
     );
   }
 
-  if (activity.learningRecordedRate < 50 && activity.totalActivities > 0) {
+  if (below(activity.learningRecordedRate, 50) && activity.totalActivities > 0) {
     actions.push(
       "Improve learning outcome recording — use simple templates to capture what children learn from each activity",
     );
@@ -901,25 +908,25 @@ function generateActions(
     );
   }
 
-  if (staff.environmentalAwarenessRate < 50 && staff.totalStaff > 0) {
+  if (below(staff.environmentalAwarenessRate, 50) && staff.totalStaff > 0) {
     actions.push(
       "URGENT: Arrange environmental awareness training for all staff — sustainability competence is essential",
     );
   }
 
-  if (staff.recyclingProceduresRate < 50 && staff.totalStaff > 0) {
+  if (below(staff.recyclingProceduresRate, 50) && staff.totalStaff > 0) {
     actions.push(
       "Train staff in recycling procedures — ensure consistent practice across all shifts",
     );
   }
 
-  if (staff.childEngagementRate < 50 && staff.totalStaff > 0) {
+  if (below(staff.childEngagementRate, 50) && staff.totalStaff > 0) {
     actions.push(
       "Develop staff skills in engaging children with sustainability — use workshops and peer learning",
     );
   }
 
-  if (staff.outdoorLearningRate < 40 && staff.totalStaff > 0) {
+  if (below(staff.outdoorLearningRate, 40) && staff.totalStaff > 0) {
     actions.push(
       "Invest in outdoor learning training for staff — equip the team to deliver nature-based activities confidently",
     );

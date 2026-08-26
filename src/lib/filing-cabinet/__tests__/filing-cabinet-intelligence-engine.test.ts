@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getFilingCabinetCategoryLabel,
   getFilingCabinetOutcomeLabel,
@@ -68,31 +67,6 @@ function makeTraining(overrides: Partial<StaffFilingCabinetTraining> = {}): Staf
 
 // ── pct ────────────────────────────────────────────────────────────────────
 
-describe("pct", () => {
-  it("returns 0 for zero denominator", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 for 0/0", () => {
-    expect(pct(0, 0)).toBe(0);
-  });
-
-  it("returns 100 for equal values", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-
-  it("rounds correctly", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-
-  it("handles large numbers", () => {
-    expect(pct(999, 1000)).toBe(100);
-  });
-});
 
 // ── getRating ──────────────────────────────────────────────────────────────
 
@@ -187,10 +161,10 @@ describe("evaluateFilingCabinetQuality", () => {
     const result = evaluateFilingCabinetQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalRecords).toBe(0);
-    expect(result.correctCategoryAssignedRate).toBe(0);
-    expect(result.retentionPolicyAppliedRate).toBe(0);
-    expect(result.sensitivityMarkedRate).toBe(0);
-    expect(result.accessControlSetRate).toBe(0);
+    expect(result.correctCategoryAssignedRate).toBeNull();
+    expect(result.retentionPolicyAppliedRate).toBeNull();
+    expect(result.sensitivityMarkedRate).toBeNull();
+    expect(result.accessControlSetRate).toBeNull();
   });
 
   it("returns 25 for all-true records", () => {
@@ -262,9 +236,9 @@ describe("evaluateFilingCabinetCompliance", () => {
     const result = evaluateFilingCabinetCompliance([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalRecords).toBe(0);
-    expect(result.documentationCompleteRate).toBe(0);
-    expect(result.timelyRecordingRate).toBe(0);
-    expect(result.correctCategoryAssignedRate).toBe(0);
+    expect(result.documentationCompleteRate).toBeNull();
+    expect(result.timelyRecordingRate).toBeNull();
+    expect(result.correctCategoryAssignedRate).toBeNull();
     expect(result.categoryDiversityRatio).toBe(0);
     expect(result.uniqueCategories).toBe(0);
   });
@@ -452,12 +426,12 @@ describe("evaluateStaffFilingCabinetReadiness", () => {
     const result = evaluateStaffFilingCabinetReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.documentManagementKnowledgeRate).toBe(0);
-    expect(result.dataProtectionSkillsRate).toBe(0);
-    expect(result.retentionPolicyKnowledgeRate).toBe(0);
-    expect(result.accessControlSkillsRate).toBe(0);
-    expect(result.auditTrailSkillsRate).toBe(0);
-    expect(result.documentDestructionProcedureRate).toBe(0);
+    expect(result.documentManagementKnowledgeRate).toBeNull();
+    expect(result.dataProtectionSkillsRate).toBeNull();
+    expect(result.retentionPolicyKnowledgeRate).toBeNull();
+    expect(result.accessControlSkillsRate).toBeNull();
+    expect(result.auditTrailSkillsRate).toBeNull();
+    expect(result.documentDestructionProcedureRate).toBeNull();
   });
 
   it("returns 25 for all-true training", () => {

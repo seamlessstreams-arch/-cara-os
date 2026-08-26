@@ -1,3 +1,4 @@
+import { below, rate } from "@/lib/metrics/rate";
 /* ──────────────────────────────────────────────────────────────
    Emergency Preparedness Intelligence Engine
 
@@ -125,24 +126,31 @@ export interface StaffEmergencyTraining {
 export interface EmergencyQualityResult {
   totalDrills: number;
   readinessCount: number;
-  readinessRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  readinessRate: number | null;
   completionCount: number;
-  completionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completionRate: number | null;
   childBriefingCount: number;
-  childBriefingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childBriefingRate: number | null;
   debriefCount: number;
-  debriefRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  debriefRate: number | null;
   score: number; // 0-25
 }
 
 export interface EmergencyComplianceResult {
   totalDrills: number;
   documentedCount: number;
-  documentedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
   staffParticipationCount: number;
-  staffParticipationRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffParticipationRate: number | null;
   improvementsCount: number;
-  improvementsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  improvementsRate: number | null;
   uniqueDrillTypes: number;
   typeDiversityRatio: number;
   score: number; // 0-25
@@ -162,24 +170,31 @@ export interface EmergencyPolicyResult {
 export interface StaffEmergencyReadinessResult {
   totalStaff: number;
   firstAidCertifiedCount: number;
-  firstAidCertifiedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  firstAidCertifiedRate: number | null;
   fireMarshallTrainedCount: number;
-  fireMarshallTrainedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  fireMarshallTrainedRate: number | null;
   evacuationProceduresCount: number;
-  evacuationProceduresRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  evacuationProceduresRate: number | null;
   emergencyProtocolsCount: number;
-  emergencyProtocolsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  emergencyProtocolsRate: number | null;
   safeguardingInEmergenciesCount: number;
-  safeguardingInEmergenciesRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingInEmergenciesRate: number | null;
   communicationInCrisisCount: number;
-  communicationInCrisisRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  communicationInCrisisRate: number | null;
   score: number; // 0-25
 }
 
 export interface DrillTypeSummary {
   drillType: EmergencyType;
   count: number;
-  avgReadiness: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  avgReadiness: number | null;
   lastDate: string;
 }
 
@@ -206,11 +221,6 @@ export interface EmergencyPreparednessIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 function cap(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
@@ -233,13 +243,13 @@ export function evaluateEmergencyQuality(
     return {
       totalDrills: 0,
       readinessCount: 0,
-      readinessRate: 0,
+      readinessRate: null,
       completionCount: 0,
-      completionRate: 0,
+      completionRate: null,
       childBriefingCount: 0,
-      childBriefingRate: 0,
+      childBriefingRate: null,
       debriefCount: 0,
-      debriefRate: 0,
+      debriefRate: null,
       score: 0,
     };
   }
@@ -247,23 +257,23 @@ export function evaluateEmergencyQuality(
   const readinessCount = drills.filter(
     (d) => d.readinessLevel === "excellent" || d.readinessLevel === "good",
   ).length;
-  const readinessRate = pct(readinessCount, total);
+  const readinessRate = rate(readinessCount, total);
 
   const completionCount = drills.filter((d) => d.completedWithinTarget).length;
-  const completionRate = pct(completionCount, total);
+  const completionRate = rate(completionCount, total);
 
   const childBriefingCount = drills.filter((d) => d.childrenBriefed).length;
-  const childBriefingRate = pct(childBriefingCount, total);
+  const childBriefingRate = rate(childBriefingCount, total);
 
   const debriefCount = drills.filter((d) => d.debriefConducted).length;
-  const debriefRate = pct(debriefCount, total);
+  const debriefRate = rate(debriefCount, total);
 
   // Weights: readinessRate 7 + completionRate 6 + childBriefingRate 6 + debriefRate 6 = 25
   let score = 0;
-  score += (readinessRate / 100) * 7;
-  score += (completionRate / 100) * 6;
-  score += (childBriefingRate / 100) * 6;
-  score += (debriefRate / 100) * 6;
+  score += (readinessRate! / 100) * 7;
+  score += (completionRate! / 100) * 6;
+  score += (childBriefingRate! / 100) * 6;
+  score += (debriefRate! / 100) * 6;
 
   score = cap(Math.round(score * 10) / 10, 0, 25);
 
@@ -292,11 +302,11 @@ export function evaluateEmergencyCompliance(
     return {
       totalDrills: 0,
       documentedCount: 0,
-      documentedRate: 0,
+      documentedRate: null,
       staffParticipationCount: 0,
-      staffParticipationRate: 0,
+      staffParticipationRate: null,
       improvementsCount: 0,
-      improvementsRate: 0,
+      improvementsRate: null,
       uniqueDrillTypes: 0,
       typeDiversityRatio: 0,
       score: 0,
@@ -304,13 +314,13 @@ export function evaluateEmergencyCompliance(
   }
 
   const documentedCount = drills.filter((d) => d.documentedProperly).length;
-  const documentedRate = pct(documentedCount, total);
+  const documentedRate = rate(documentedCount, total);
 
   const staffParticipationCount = drills.filter((d) => d.allStaffParticipated).length;
-  const staffParticipationRate = pct(staffParticipationCount, total);
+  const staffParticipationRate = rate(staffParticipationCount, total);
 
   const improvementsCount = drills.filter((d) => d.improvementsIdentified).length;
-  const improvementsRate = pct(improvementsCount, total);
+  const improvementsRate = rate(improvementsCount, total);
 
   const uniqueTypes = new Set(drills.map((d) => d.drillType));
   const uniqueDrillTypes = uniqueTypes.size;
@@ -318,9 +328,9 @@ export function evaluateEmergencyCompliance(
 
   // Weights: documentedRate 8 + staffParticipationRate 7 + improvementsRate 5 + typeDiversityRatio 5 = 25
   let score = 0;
-  score += (documentedRate / 100) * 8;
-  score += (staffParticipationRate / 100) * 7;
-  score += (improvementsRate / 100) * 5;
+  score += (documentedRate! / 100) * 8;
+  score += (staffParticipationRate! / 100) * 7;
+  score += (improvementsRate! / 100) * 5;
   score += typeDiversityRatio * 5;
 
   score = cap(Math.round(score * 10) / 10, 0, 25);
@@ -392,47 +402,47 @@ export function evaluateStaffEmergencyReadiness(
     return {
       totalStaff: 0,
       firstAidCertifiedCount: 0,
-      firstAidCertifiedRate: 0,
+      firstAidCertifiedRate: null,
       fireMarshallTrainedCount: 0,
-      fireMarshallTrainedRate: 0,
+      fireMarshallTrainedRate: null,
       evacuationProceduresCount: 0,
-      evacuationProceduresRate: 0,
+      evacuationProceduresRate: null,
       emergencyProtocolsCount: 0,
-      emergencyProtocolsRate: 0,
+      emergencyProtocolsRate: null,
       safeguardingInEmergenciesCount: 0,
-      safeguardingInEmergenciesRate: 0,
+      safeguardingInEmergenciesRate: null,
       communicationInCrisisCount: 0,
-      communicationInCrisisRate: 0,
+      communicationInCrisisRate: null,
       score: 0,
     };
   }
 
   const firstAidCertifiedCount = training.filter((t) => t.firstAidCertified).length;
-  const firstAidCertifiedRate = pct(firstAidCertifiedCount, totalStaff);
+  const firstAidCertifiedRate = rate(firstAidCertifiedCount, totalStaff);
 
   const fireMarshallTrainedCount = training.filter((t) => t.fireMarshallTrained).length;
-  const fireMarshallTrainedRate = pct(fireMarshallTrainedCount, totalStaff);
+  const fireMarshallTrainedRate = rate(fireMarshallTrainedCount, totalStaff);
 
   const evacuationProceduresCount = training.filter((t) => t.evacuationProcedures).length;
-  const evacuationProceduresRate = pct(evacuationProceduresCount, totalStaff);
+  const evacuationProceduresRate = rate(evacuationProceduresCount, totalStaff);
 
   const emergencyProtocolsCount = training.filter((t) => t.emergencyProtocols).length;
-  const emergencyProtocolsRate = pct(emergencyProtocolsCount, totalStaff);
+  const emergencyProtocolsRate = rate(emergencyProtocolsCount, totalStaff);
 
   const safeguardingInEmergenciesCount = training.filter((t) => t.safeguardingInEmergencies).length;
-  const safeguardingInEmergenciesRate = pct(safeguardingInEmergenciesCount, totalStaff);
+  const safeguardingInEmergenciesRate = rate(safeguardingInEmergenciesCount, totalStaff);
 
   const communicationInCrisisCount = training.filter((t) => t.communicationInCrisis).length;
-  const communicationInCrisisRate = pct(communicationInCrisisCount, totalStaff);
+  const communicationInCrisisRate = rate(communicationInCrisisCount, totalStaff);
 
   // 6 skills weighted: 6+5+5+4+3+2 = 25
   let score = 0;
-  score += (firstAidCertifiedRate / 100) * 6;
-  score += (fireMarshallTrainedRate / 100) * 5;
-  score += (evacuationProceduresRate / 100) * 5;
-  score += (emergencyProtocolsRate / 100) * 4;
-  score += (safeguardingInEmergenciesRate / 100) * 3;
-  score += (communicationInCrisisRate / 100) * 2;
+  score += (firstAidCertifiedRate! / 100) * 6;
+  score += (fireMarshallTrainedRate! / 100) * 5;
+  score += (evacuationProceduresRate! / 100) * 5;
+  score += (emergencyProtocolsRate! / 100) * 4;
+  score += ((safeguardingInEmergenciesRate ?? 0) / 100) * 3;
+  score += ((communicationInCrisisRate ?? 0) / 100) * 2;
 
   score = cap(Math.round(score * 10) / 10, 0, 25);
 
@@ -488,7 +498,7 @@ export function buildDrillTypeSummary(
     result.push({
       drillType,
       count: data.count,
-      avgReadiness: pct(data.readyCount, data.count),
+      avgReadiness: rate(data.readyCount, data.count),
       lastDate: data.lastDate,
     });
   }
@@ -558,22 +568,22 @@ export function generateEmergencyPreparednessIntelligence(
   if (staffReadiness.score === 0) {
     actions.push("URGENT: No staff have completed emergency training — schedule training for all staff as a priority");
   }
-  if (quality.readinessRate < 50 && quality.totalDrills > 0) {
+  if (below(quality.readinessRate, 50) && quality.totalDrills > 0) {
     actions.push("Improve drill readiness levels — more than half of drills show readiness below good");
   }
-  if (compliance.documentedRate < 50 && compliance.totalDrills > 0) {
+  if (below(compliance.documentedRate, 50) && compliance.totalDrills > 0) {
     actions.push("Ensure all emergency drills are properly documented for regulatory compliance");
   }
-  if (compliance.staffParticipationRate < 50 && compliance.totalDrills > 0) {
+  if (below(compliance.staffParticipationRate, 50) && compliance.totalDrills > 0) {
     actions.push("Increase staff participation in emergency drills — all staff must take part regularly");
   }
-  if (quality.childBriefingRate < 50 && quality.totalDrills > 0) {
+  if (below(quality.childBriefingRate, 50) && quality.totalDrills > 0) {
     actions.push("Brief children before and after emergency drills to build awareness and reduce anxiety");
   }
-  if (quality.debriefRate < 50 && quality.totalDrills > 0) {
+  if (below(quality.debriefRate, 50) && quality.totalDrills > 0) {
     actions.push("Conduct debriefs after all emergency drills to capture learning and drive improvement");
   }
-  if (staffReadiness.firstAidCertifiedRate < 50 && staffReadiness.totalStaff > 0) {
+  if (below(staffReadiness.firstAidCertifiedRate, 50) && staffReadiness.totalStaff > 0) {
     actions.push("Ensure at least 50% of staff hold current first aid certification");
   }
 

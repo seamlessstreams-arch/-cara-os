@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   generateDigitalLiteracyDevelopmentIntelligence, evaluateDigitalQuality, evaluateDigitalCompliance,
-  evaluateDigitalPolicy, evaluateStaffDigitalReadiness, buildChildDigitalProfiles, pct, getRating,
+  evaluateDigitalPolicy, evaluateStaffDigitalReadiness, buildChildDigitalProfiles, getRating,
   getSessionTypeLabel, getCompetencyLevelLabel, getRatingLabel,
 } from "../digital-literacy-development-engine";
 import type { DigitalSession, DigitalPolicy, StaffDigitalTraining } from "../digital-literacy-development-engine";
@@ -22,12 +22,6 @@ function makeTraining(overrides: Partial<StaffDigitalTraining> = {}): StaffDigit
 
 // ── pct ──────────────────────────────────────────────────────────────────────
 
-describe("pct", () => {
-  it("returns percentage", () => { expect(pct(3, 4)).toBe(75); });
-  it("returns 0 for den=0", () => { expect(pct(0, 0)).toBe(0); });
-  it("returns 100 for equal", () => { expect(pct(5, 5)).toBe(100); });
-  it("returns 0 for num=0", () => { expect(pct(0, 10)).toBe(0); });
-});
 
 // ── getRating ────────────────────────────────────────────────────────────────
 

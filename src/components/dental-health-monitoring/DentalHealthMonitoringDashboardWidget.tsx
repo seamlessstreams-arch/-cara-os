@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { DentalHealthMonitoringIntelligence } from "@/lib/dental-health-monitoring";
+import { formatRate } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -108,7 +109,7 @@ export default function DentalHealthMonitoringDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Appointments</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.appointmentCompliance.attendanceRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.appointmentCompliance.attendanceRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Attendance</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -153,9 +154,9 @@ export default function DentalHealthMonitoringDashboardWidget() {
         <Section title="Appointment Compliance">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total:</span> <span className="font-medium">{data.appointmentCompliance.totalAppointments}</span></div>
-            <div><span className="text-gray-500">Attended:</span> <span className="font-medium">{data.appointmentCompliance.attendanceRate}%</span></div>
-            <div><span className="text-gray-500">Next Booked:</span> <span className="font-medium">{data.appointmentCompliance.nextAppointmentBookedRate}%</span></div>
-            <div><span className="text-gray-500">Consent:</span> <span className="font-medium">{data.appointmentCompliance.consentRate}%</span></div>
+            <div><span className="text-gray-500">Attended:</span> <span className="font-medium">{formatRate(data.appointmentCompliance.attendanceRate)}</span></div>
+            <div><span className="text-gray-500">Next Booked:</span> <span className="font-medium">{formatRate(data.appointmentCompliance.nextAppointmentBookedRate)}</span></div>
+            <div><span className="text-gray-500">Consent:</span> <span className="font-medium">{formatRate(data.appointmentCompliance.consentRate)}</span></div>
             <div><span className="text-gray-500">Routine:</span> <span className="font-medium">{data.appointmentCompliance.routineCount}</span></div>
             <div><span className="text-gray-500">Emergency:</span> <span className={`font-medium ${data.appointmentCompliance.emergencyCount > 0 ? "text-amber-600" : "text-green-600"}`}>{data.appointmentCompliance.emergencyCount}</span></div>
             <div><span className="text-gray-500">Ratio (R:E):</span> <span className="font-medium">{data.appointmentCompliance.routineToEmergencyRatio}</span></div>
@@ -165,31 +166,31 @@ export default function DentalHealthMonitoringDashboardWidget() {
         <Section title="Oral Hygiene Support">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Records:</span> <span className="font-medium">{data.oralHygieneSupport.totalRecords}</span></div>
-            <div><span className="text-gray-500">Excellent/Good:</span> <span className="font-medium">{data.oralHygieneSupport.excellentGoodRate}%</span></div>
-            <div><span className="text-gray-500">Twice Daily:</span> <span className="font-medium">{data.oralHygieneSupport.twiceDailyBrushingRate}%</span></div>
-            <div><span className="text-gray-500">Dietary Advice:</span> <span className="font-medium">{data.oralHygieneSupport.dietaryAdviceRate}%</span></div>
-            <div><span className="text-gray-500">Mouthwash:</span> <span className="font-medium">{data.oralHygieneSupport.mouthwashUsageRate}%</span></div>
+            <div><span className="text-gray-500">Excellent/Good:</span> <span className="font-medium">{formatRate(data.oralHygieneSupport.excellentGoodRate)}</span></div>
+            <div><span className="text-gray-500">Twice Daily:</span> <span className="font-medium">{formatRate(data.oralHygieneSupport.twiceDailyBrushingRate)}</span></div>
+            <div><span className="text-gray-500">Dietary Advice:</span> <span className="font-medium">{formatRate(data.oralHygieneSupport.dietaryAdviceRate)}</span></div>
+            <div><span className="text-gray-500">Mouthwash:</span> <span className="font-medium">{formatRate(data.oralHygieneSupport.mouthwashUsageRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Treatment Compliance">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Plans:</span> <span className="font-medium">{data.treatmentCompliance.totalPlans}</span></div>
-            <div><span className="text-gray-500">Completion:</span> <span className="font-medium">{data.treatmentCompliance.completionRate}%</span></div>
-            <div><span className="text-gray-500">Parent Consent:</span> <span className="font-medium">{data.treatmentCompliance.parentConsentRate}%</span></div>
-            <div><span className="text-gray-500">SW Notified:</span> <span className="font-medium">{data.treatmentCompliance.socialWorkerNotifiedRate}%</span></div>
-            <div><span className="text-gray-500">Active Progress:</span> <span className="font-medium">{data.treatmentCompliance.activeTreatmentProgressRate}%</span></div>
+            <div><span className="text-gray-500">Completion:</span> <span className="font-medium">{formatRate(data.treatmentCompliance.completionRate)}</span></div>
+            <div><span className="text-gray-500">Parent Consent:</span> <span className="font-medium">{formatRate(data.treatmentCompliance.parentConsentRate)}</span></div>
+            <div><span className="text-gray-500">SW Notified:</span> <span className="font-medium">{formatRate(data.treatmentCompliance.socialWorkerNotifiedRate)}</span></div>
+            <div><span className="text-gray-500">Active Progress:</span> <span className="font-medium">{formatRate(data.treatmentCompliance.activeTreatmentProgressRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Staff Dental Readiness">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Staff:</span> <span className="font-medium">{data.staffDentalReadiness.totalStaff}</span></div>
-            <div><span className="text-gray-500">Awareness:</span> <span className="font-medium">{data.staffDentalReadiness.dentalHealthAwarenessRate}%</span></div>
-            <div><span className="text-gray-500">Hygiene Support:</span> <span className="font-medium">{data.staffDentalReadiness.oralHygieneSupportRate}%</span></div>
-            <div><span className="text-gray-500">Appointments:</span> <span className="font-medium">{data.staffDentalReadiness.appointmentManagementRate}%</span></div>
-            <div><span className="text-gray-500">Consent Process:</span> <span className="font-medium">{data.staffDentalReadiness.consentProcessTrainedRate}%</span></div>
-            <div><span className="text-gray-500">Emergency:</span> <span className="font-medium">{data.staffDentalReadiness.emergencyDentalKnowledgeRate}%</span></div>
+            <div><span className="text-gray-500">Awareness:</span> <span className="font-medium">{formatRate(data.staffDentalReadiness.dentalHealthAwarenessRate)}</span></div>
+            <div><span className="text-gray-500">Hygiene Support:</span> <span className="font-medium">{formatRate(data.staffDentalReadiness.oralHygieneSupportRate)}</span></div>
+            <div><span className="text-gray-500">Appointments:</span> <span className="font-medium">{formatRate(data.staffDentalReadiness.appointmentManagementRate)}</span></div>
+            <div><span className="text-gray-500">Consent Process:</span> <span className="font-medium">{formatRate(data.staffDentalReadiness.consentProcessTrainedRate)}</span></div>
+            <div><span className="text-gray-500">Emergency:</span> <span className="font-medium">{formatRate(data.staffDentalReadiness.emergencyDentalKnowledgeRate)}</span></div>
           </div>
         </Section>
 

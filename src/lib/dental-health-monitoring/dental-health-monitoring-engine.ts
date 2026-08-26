@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // DENTAL HEALTH MONITORING INTELLIGENCE ENGINE
 //
@@ -115,9 +116,12 @@ export interface StaffDentalTraining {
 export interface AppointmentComplianceResult {
   overallScore: number;
   totalAppointments: number;
-  attendanceRate: number;
-  nextAppointmentBookedRate: number;
-  consentRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  attendanceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  nextAppointmentBookedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  consentRate: number | null;
   routineCount: number;
   emergencyCount: number;
   routineToEmergencyRatio: string;
@@ -126,29 +130,41 @@ export interface AppointmentComplianceResult {
 export interface OralHygieneSupportResult {
   overallScore: number;
   totalRecords: number;
-  excellentGoodRate: number;
-  twiceDailyBrushingRate: number;
-  dietaryAdviceRate: number;
-  mouthwashUsageRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  excellentGoodRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  twiceDailyBrushingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dietaryAdviceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  mouthwashUsageRate: number | null;
 }
 
 export interface TreatmentComplianceResult {
   overallScore: number;
   totalPlans: number;
-  completionRate: number;
-  parentConsentRate: number;
-  socialWorkerNotifiedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  parentConsentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  socialWorkerNotifiedRate: number | null;
   activeTreatmentProgressRate: number | null;
 }
 
 export interface StaffDentalReadinessResult {
   overallScore: number;
   totalStaff: number;
-  dentalHealthAwarenessRate: number;
-  oralHygieneSupportRate: number;
-  appointmentManagementRate: number;
-  consentProcessTrainedRate: number;
-  emergencyDentalKnowledgeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dentalHealthAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  oralHygieneSupportRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  appointmentManagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  consentProcessTrainedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  emergencyDentalKnowledgeRate: number | null;
 }
 
 export interface ChildDentalSummary {
@@ -179,11 +195,6 @@ export interface DentalHealthMonitoringIntelligence {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -260,9 +271,9 @@ export function evaluateAppointmentCompliance(
     return {
       overallScore: 0,
       totalAppointments: 0,
-      attendanceRate: 0,
-      nextAppointmentBookedRate: 0,
-      consentRate: 0,
+      attendanceRate: null,
+      nextAppointmentBookedRate: null,
+      consentRate: null,
       routineCount: 0,
       emergencyCount: 0,
       routineToEmergencyRatio: "0:0",
@@ -283,9 +294,9 @@ export function evaluateAppointmentCompliance(
     if (a.appointmentType === "emergency") emergencyCount++;
   }
 
-  const attendanceRate = pct(attended, appointments.length);
-  const nextAppointmentBookedRate = pct(nextBooked, appointments.length);
-  const consentRate = pct(consentObtained, appointments.length);
+  const attendanceRate = rate(attended, appointments.length);
+  const nextAppointmentBookedRate = rate(nextBooked, appointments.length);
+  const consentRate = rate(consentObtained, appointments.length);
 
   // Ratio formatting
   const routineToEmergencyRatio = `${routineCount}:${emergencyCount}`;
@@ -293,15 +304,15 @@ export function evaluateAppointmentCompliance(
   // Scoring: attendance (0-8), next booked (0-7), consent (0-5),
   // routine vs emergency balance (0-5) — higher routine ratio is better
   let score = 0;
-  score += Math.round((attendanceRate / 100) * 8);
-  score += Math.round((nextAppointmentBookedRate / 100) * 7);
-  score += Math.round((consentRate / 100) * 5);
+  score += Math.round((attendanceRate! / 100) * 8);
+  score += Math.round((nextAppointmentBookedRate! / 100) * 7);
+  score += Math.round((consentRate! / 100) * 5);
 
   // Routine to emergency ratio scoring
   const totalRoutineEmergency = routineCount + emergencyCount;
   if (totalRoutineEmergency > 0) {
-    const routineRatio = pct(routineCount, totalRoutineEmergency);
-    score += Math.round((routineRatio / 100) * 5);
+    const routineRatio = rate(routineCount, totalRoutineEmergency);
+    score += Math.round((routineRatio! / 100) * 5);
   } else {
     // All appointments are other types (treatment, orthodontic, etc.)
     // Give partial credit
@@ -331,10 +342,10 @@ export function evaluateOralHygieneSupport(
     return {
       overallScore: 0,
       totalRecords: 0,
-      excellentGoodRate: 0,
-      twiceDailyBrushingRate: 0,
-      dietaryAdviceRate: 0,
-      mouthwashUsageRate: 0,
+      excellentGoodRate: null,
+      twiceDailyBrushingRate: null,
+      dietaryAdviceRate: null,
+      mouthwashUsageRate: null,
     };
   }
 
@@ -350,18 +361,18 @@ export function evaluateOralHygieneSupport(
     if (r.mouthwashUsed) mouthwash++;
   }
 
-  const excellentGoodRate = pct(excellentGood, records.length);
-  const twiceDailyBrushingRate = pct(twiceDaily, records.length);
-  const dietaryAdviceRate = pct(dietaryAdvice, records.length);
-  const mouthwashUsageRate = pct(mouthwash, records.length);
+  const excellentGoodRate = rate(excellentGood, records.length);
+  const twiceDailyBrushingRate = rate(twiceDaily, records.length);
+  const dietaryAdviceRate = rate(dietaryAdvice, records.length);
+  const mouthwashUsageRate = rate(mouthwash, records.length);
 
   // Scoring: excellent/good rate (0-8), twice daily brushing (0-7),
   // dietary advice (0-5), mouthwash (0-5)
   let score = 0;
-  score += Math.round((excellentGoodRate / 100) * 8);
-  score += Math.round((twiceDailyBrushingRate / 100) * 7);
-  score += Math.round((dietaryAdviceRate / 100) * 5);
-  score += Math.round((mouthwashUsageRate / 100) * 5);
+  score += Math.round((excellentGoodRate! / 100) * 8);
+  score += Math.round((twiceDailyBrushingRate! / 100) * 7);
+  score += Math.round((dietaryAdviceRate! / 100) * 5);
+  score += Math.round((mouthwashUsageRate! / 100) * 5);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -384,10 +395,10 @@ export function evaluateTreatmentCompliance(
     return {
       overallScore: 0,
       totalPlans: 0,
-      completionRate: 0,
-      parentConsentRate: 0,
-      socialWorkerNotifiedRate: 0,
-      activeTreatmentProgressRate: 0,
+      completionRate: null,
+      parentConsentRate: null,
+      socialWorkerNotifiedRate: null,
+      activeTreatmentProgressRate: null,
     };
   }
 
@@ -410,13 +421,13 @@ export function evaluateTreatmentCompliance(
 
   for (const p of activePlans) {
     if (p.appointmentsRequired > 0) {
-      activeProgressSum += pct(p.appointmentsCompleted, p.appointmentsRequired);
+      activeProgressSum += rate(p.appointmentsCompleted, p.appointmentsRequired)!;
     }
   }
 
-  const completionRate = pct(totalCompleted, totalRequired);
-  const parentConsentRate = pct(parentConsent, plans.length);
-  const socialWorkerNotifiedRate = pct(swNotified, plans.length);
+  const completionRate = rate(totalCompleted, totalRequired);
+  const parentConsentRate = rate(parentConsent, plans.length);
+  const socialWorkerNotifiedRate = rate(swNotified, plans.length);
   const activeTreatmentProgressRate = activePlans.length > 0
     ? Math.round(activeProgressSum / activePlans.length)
     : null;
@@ -424,9 +435,9 @@ export function evaluateTreatmentCompliance(
   // Scoring: completion (0-8), parent consent (0-7), SW notified (0-5),
   // active progress (0-5)
   let score = 0;
-  score += Math.round((completionRate / 100) * 8);
-  score += Math.round((parentConsentRate / 100) * 7);
-  score += Math.round((socialWorkerNotifiedRate / 100) * 5);
+  score += Math.round(((completionRate ?? 0) / 100) * 8);
+  score += Math.round(((parentConsentRate ?? 0) / 100) * 7);
+  score += Math.round(((socialWorkerNotifiedRate ?? 0) / 100) * 5);
   score += Math.round(((activeTreatmentProgressRate ?? 0) / 100) * 5);
 
   return {
@@ -450,11 +461,11 @@ export function evaluateStaffDentalReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      dentalHealthAwarenessRate: 0,
-      oralHygieneSupportRate: 0,
-      appointmentManagementRate: 0,
-      consentProcessTrainedRate: 0,
-      emergencyDentalKnowledgeRate: 0,
+      dentalHealthAwarenessRate: null,
+      oralHygieneSupportRate: null,
+      appointmentManagementRate: null,
+      consentProcessTrainedRate: null,
+      emergencyDentalKnowledgeRate: null,
     };
   }
 
@@ -472,20 +483,20 @@ export function evaluateStaffDentalReadiness(
     if (t.emergencyDentalKnowledge) emergencyKnowledge++;
   }
 
-  const dentalHealthAwarenessRate = pct(awareness, training.length);
-  const oralHygieneSupportRate = pct(hygieneSupport, training.length);
-  const appointmentManagementRate = pct(appointmentMgmt, training.length);
-  const consentProcessTrainedRate = pct(consentProcess, training.length);
-  const emergencyDentalKnowledgeRate = pct(emergencyKnowledge, training.length);
+  const dentalHealthAwarenessRate = rate(awareness, training.length);
+  const oralHygieneSupportRate = rate(hygieneSupport, training.length);
+  const appointmentManagementRate = rate(appointmentMgmt, training.length);
+  const consentProcessTrainedRate = rate(consentProcess, training.length);
+  const emergencyDentalKnowledgeRate = rate(emergencyKnowledge, training.length);
 
   // Scoring: awareness (0-6), hygiene support (0-6), appointment management (0-5),
   // consent process (0-4), emergency dental (0-4)
   let score = 0;
-  score += Math.round((dentalHealthAwarenessRate / 100) * 6);
-  score += Math.round((oralHygieneSupportRate / 100) * 6);
-  score += Math.round((appointmentManagementRate / 100) * 5);
-  score += Math.round((consentProcessTrainedRate / 100) * 4);
-  score += Math.round((emergencyDentalKnowledgeRate / 100) * 4);
+  score += Math.round((dentalHealthAwarenessRate! / 100) * 6);
+  score += Math.round((oralHygieneSupportRate! / 100) * 6);
+  score += Math.round((appointmentManagementRate! / 100) * 5);
+  score += Math.round((consentProcessTrainedRate! / 100) * 4);
+  score += Math.round(((emergencyDentalKnowledgeRate ?? 0) / 100) * 4);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -523,7 +534,7 @@ export function buildChildDentalSummaries(
     const childPlans = treatmentPlans.filter((p) => p.childId === child.childId);
 
     const attended = childAppts.filter((a) => a.outcome === "attended").length;
-    const attendanceRate = pct(attended, childAppts.length);
+    const attendanceRate = rate(attended, childAppts.length)!;
 
     // Latest hygiene record by date
     const sortedRecords = [...childRecords].sort(
@@ -541,8 +552,8 @@ export function buildChildDentalSummaries(
     // Attendance (0-3)
     if (childAppts.length > 0) {
       if (attendanceRate === 100) score += 3;
-      else if (attendanceRate >= 75) score += 2;
-      else if (attendanceRate >= 50) score += 1;
+      else if (meets(attendanceRate, 75)) score += 2;
+      else if (meets(attendanceRate, 50)) score += 1;
     }
 
     // Hygiene rating (0-3)
@@ -560,7 +571,7 @@ export function buildChildDentalSummaries(
     const inProgressPlans = childPlans.filter((p) => p.status === "in_progress");
     if (inProgressPlans.length > 0) {
       const allOnTrack = inProgressPlans.every(
-        (p) => p.appointmentsRequired > 0 && pct(p.appointmentsCompleted, p.appointmentsRequired) >= 25,
+        (p) => p.appointmentsRequired > 0 && meets(rate(p.appointmentsCompleted, p.appointmentsRequired), 25),
       );
       if (allOnTrack) score += 2;
       else score += 1;
@@ -636,25 +647,25 @@ export function generateDentalHealthMonitoringIntelligence(
   const areasForImprovement: string[] = [];
   if (appointments.length === 0)
     areasForImprovement.push("URGENT: No dental appointment records — all children must have regular dental checkups");
-  if (appointments.length > 0 && appointmentCompliance.attendanceRate < 100)
+  if (appointments.length > 0 && below(appointmentCompliance.attendanceRate, 100))
     areasForImprovement.push("Dental appointment attendance at " + appointmentCompliance.attendanceRate + "% — should be 100%");
-  if (appointments.length > 0 && appointmentCompliance.nextAppointmentBookedRate < 100)
+  if (appointments.length > 0 && below(appointmentCompliance.nextAppointmentBookedRate, 100))
     areasForImprovement.push("Only " + appointmentCompliance.nextAppointmentBookedRate + "% of children have next appointment booked");
-  if (appointments.length > 0 && appointmentCompliance.consentRate < 100)
+  if (appointments.length > 0 && below(appointmentCompliance.consentRate, 100))
     areasForImprovement.push("Consent obtained for only " + appointmentCompliance.consentRate + "% of appointments");
   if (hygieneRecords.length === 0)
     areasForImprovement.push("URGENT: No oral hygiene records — regular monitoring of children's dental hygiene is required");
-  if (hygieneRecords.length > 0 && oralHygieneSupport.excellentGoodRate < 75)
+  if (hygieneRecords.length > 0 && below(oralHygieneSupport.excellentGoodRate, 75))
     areasForImprovement.push("Only " + oralHygieneSupport.excellentGoodRate + "% of hygiene assessments rated excellent or good");
-  if (hygieneRecords.length > 0 && oralHygieneSupport.twiceDailyBrushingRate < 100)
+  if (hygieneRecords.length > 0 && below(oralHygieneSupport.twiceDailyBrushingRate, 100))
     areasForImprovement.push("Twice daily brushing rate at " + oralHygieneSupport.twiceDailyBrushingRate + "% — all children should brush twice daily");
-  if (treatmentPlans.length > 0 && treatmentCompliance.parentConsentRate < 100)
+  if (treatmentPlans.length > 0 && below(treatmentCompliance.parentConsentRate, 100))
     areasForImprovement.push("Parent consent missing for some treatment plans — " + treatmentCompliance.parentConsentRate + "% obtained");
   if (staffTraining.length === 0)
     areasForImprovement.push("URGENT: No staff dental training records — all staff require dental health awareness training");
-  if (staffTraining.length > 0 && staffDentalReadiness.dentalHealthAwarenessRate < 100)
+  if (staffTraining.length > 0 && below(staffDentalReadiness.dentalHealthAwarenessRate, 100))
     areasForImprovement.push("Dental health awareness training at " + staffDentalReadiness.dentalHealthAwarenessRate + "% — all staff should be trained");
-  if (staffTraining.length > 0 && staffDentalReadiness.oralHygieneSupportRate < 100)
+  if (staffTraining.length > 0 && below(staffDentalReadiness.oralHygieneSupportRate, 100))
     areasForImprovement.push("Oral hygiene support training at " + staffDentalReadiness.oralHygieneSupportRate + "% — all staff should be trained");
 
   // ── Actions ──
@@ -677,12 +688,12 @@ export function generateDentalHealthMonitoringIntelligence(
     actions.push("Address " + refusedAppointments.length + " refused dental appointment(s) — explore child's concerns and provide support");
 
   // Consent
-  if (appointments.length > 0 && appointmentCompliance.consentRate < 100)
-    actions.push("Obtain consent for all outstanding dental appointments — " + (100 - appointmentCompliance.consentRate) + "% without consent");
+  if (appointments.length > 0 && below(appointmentCompliance.consentRate, 100))
+    actions.push("Obtain consent for all outstanding dental appointments — " + (100 - appointmentCompliance.consentRate!) + "% without consent");
 
   // Treatment
-  if (treatmentPlans.length > 0 && treatmentCompliance.socialWorkerNotifiedRate < 100)
-    actions.push("Notify social workers for all active treatment plans — " + (100 - treatmentCompliance.socialWorkerNotifiedRate) + "% not yet notified");
+  if (treatmentPlans.length > 0 && below(treatmentCompliance.socialWorkerNotifiedRate, 100))
+    actions.push("Notify social workers for all active treatment plans — " + (100 - treatmentCompliance.socialWorkerNotifiedRate!) + "% not yet notified");
   const declinedPlans = treatmentPlans.filter((p) => p.status === "declined");
   if (declinedPlans.length > 0)
     actions.push("Review " + declinedPlans.length + " declined treatment plan(s) — ensure child's voice is heard and best interests considered");
@@ -691,12 +702,12 @@ export function generateDentalHealthMonitoringIntelligence(
   const poorHygiene = hygieneRecords.filter((r) => r.overallRating === "poor");
   if (poorHygiene.length > 0)
     actions.push("URGENT: " + poorHygiene.length + " poor oral hygiene assessment(s) — implement targeted support plans");
-  if (hygieneRecords.length > 0 && oralHygieneSupport.dietaryAdviceRate < 80)
+  if (hygieneRecords.length > 0 && below(oralHygieneSupport.dietaryAdviceRate, 80))
     actions.push("Increase dietary advice provision — currently at " + oralHygieneSupport.dietaryAdviceRate + "%, target 100%");
 
   // Staff
-  if (staffTraining.length > 0 && staffDentalReadiness.emergencyDentalKnowledgeRate < 100)
-    actions.push("Complete emergency dental knowledge training for all staff — " + (100 - staffDentalReadiness.emergencyDentalKnowledgeRate) + "% untrained");
+  if (staffTraining.length > 0 && below(staffDentalReadiness.emergencyDentalKnowledgeRate, 100))
+    actions.push("Complete emergency dental knowledge training for all staff — " + (100 - staffDentalReadiness.emergencyDentalKnowledgeRate!) + "% untrained");
 
   // Emergency appointments
   if (appointmentCompliance.emergencyCount > 0)

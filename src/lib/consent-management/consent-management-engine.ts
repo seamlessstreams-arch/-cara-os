@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 /* ──────────────────────────────────────────────────────────────
    Consent Management Intelligence Engine
 
@@ -86,17 +87,24 @@ export interface StaffConsentTraining {
 // ── Result interfaces ───────────────────────────────────────────────────────
 
 export interface ConsentQualityResult {
-  obtainedRate: number;
-  childViewsRate: number;
-  documentedRate: number;
-  expiryTrackedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  obtainedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  expiryTrackedRate: number | null;
   overallScore: number;
 }
 
 export interface ConsentComplianceResult {
-  parentConsultedRate: number;
-  staffRecordedRate: number;
-  reviewScheduledRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  parentConsultedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffRecordedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reviewScheduledRate: number | null;
   categoryDiversityRatio: number;
   overallScore: number;
 }
@@ -113,12 +121,18 @@ export interface ConsentPolicyResult {
 }
 
 export interface StaffConsentReadinessResult {
-  consentLawRate: number;
-  capacityAssessmentRate: number;
-  gillikCompetenceRate: number;
-  documentationSkillsRate: number;
-  childParticipationRate: number;
-  escalationProcessRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  consentLawRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  capacityAssessmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  gillikCompetenceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childParticipationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  escalationProcessRate: number | null;
   overallScore: number;
 }
 
@@ -126,8 +140,10 @@ export interface ChildConsentProfile {
   childId: string;
   childName: string;
   totalRecords: number;
-  obtainedRate: number;
-  childViewsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  obtainedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewsRate: number | null;
   uniqueCategories: number;
   overallScore: number;
 }
@@ -150,11 +166,6 @@ export interface ConsentManagementIntelligence {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -207,7 +218,7 @@ export function getRatingLabel(r: Rating): string {
 
 export function evaluateConsentQuality(records: ConsentRecord[]): ConsentQualityResult {
   if (records.length === 0) {
-    return { obtainedRate: 0, childViewsRate: 0, documentedRate: 0, expiryTrackedRate: 0, overallScore: 0 };
+    return { obtainedRate: null, childViewsRate: null, documentedRate: null, expiryTrackedRate: null, overallScore: 0 };
   }
 
   const obtained = records.filter((r) => r.status === "obtained").length;
@@ -215,16 +226,16 @@ export function evaluateConsentQuality(records: ConsentRecord[]): ConsentQuality
   const documented = records.filter((r) => r.consentDocumented).length;
   const expiryTracked = records.filter((r) => r.expiryTracked).length;
 
-  const obtainedRate = pct(obtained, records.length);
-  const childViewsRate = pct(childViews, records.length);
-  const documentedRate = pct(documented, records.length);
-  const expiryTrackedRate = pct(expiryTracked, records.length);
+  const obtainedRate = rate(obtained, records.length);
+  const childViewsRate = rate(childViews, records.length);
+  const documentedRate = rate(documented, records.length);
+  const expiryTrackedRate = rate(expiryTracked, records.length);
 
   const raw =
-    (obtainedRate / 100) * 7 +
-    (childViewsRate / 100) * 6 +
-    (documentedRate / 100) * 6 +
-    (expiryTrackedRate / 100) * 6;
+    (obtainedRate! / 100) * 7 +
+    (childViewsRate! / 100) * 6 +
+    (documentedRate! / 100) * 6 +
+    (expiryTrackedRate! / 100) * 6;
 
   const overallScore = Math.min(Math.round(raw * 10) / 10, 25);
 
@@ -235,7 +246,7 @@ export function evaluateConsentQuality(records: ConsentRecord[]): ConsentQuality
 
 export function evaluateConsentCompliance(records: ConsentRecord[]): ConsentComplianceResult {
   if (records.length === 0) {
-    return { parentConsultedRate: 0, staffRecordedRate: 0, reviewScheduledRate: 0, categoryDiversityRatio: 0, overallScore: 0 };
+    return { parentConsultedRate: null, staffRecordedRate: null, reviewScheduledRate: null, categoryDiversityRatio: 0, overallScore: 0 };
   }
 
   const parentConsulted = records.filter((r) => r.parentCarerConsulted).length;
@@ -243,15 +254,15 @@ export function evaluateConsentCompliance(records: ConsentRecord[]): ConsentComp
   const reviewScheduled = records.filter((r) => r.reviewScheduled).length;
   const uniqueCategories = new Set(records.map((r) => r.category)).size;
 
-  const parentConsultedRate = pct(parentConsulted, records.length);
-  const staffRecordedRate = pct(staffRecorded, records.length);
-  const reviewScheduledRate = pct(reviewScheduled, records.length);
+  const parentConsultedRate = rate(parentConsulted, records.length);
+  const staffRecordedRate = rate(staffRecorded, records.length);
+  const reviewScheduledRate = rate(reviewScheduled, records.length);
   const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
 
   const raw =
-    (parentConsultedRate / 100) * 8 +
-    (staffRecordedRate / 100) * 7 +
-    (reviewScheduledRate / 100) * 5 +
+    (parentConsultedRate! / 100) * 8 +
+    (staffRecordedRate! / 100) * 7 +
+    (reviewScheduledRate! / 100) * 5 +
     Math.min(categoryDiversityRatio, 1) * 5;
 
   const overallScore = Math.min(Math.round(raw * 10) / 10, 25);
@@ -301,12 +312,12 @@ export function evaluateConsentPolicy(policy: ConsentPolicy | null): ConsentPoli
 export function evaluateStaffConsentReadiness(training: StaffConsentTraining[]): StaffConsentReadinessResult {
   if (training.length === 0) {
     return {
-      consentLawRate: 0,
-      capacityAssessmentRate: 0,
-      gillikCompetenceRate: 0,
-      documentationSkillsRate: 0,
-      childParticipationRate: 0,
-      escalationProcessRate: 0,
+      consentLawRate: null,
+      capacityAssessmentRate: null,
+      gillikCompetenceRate: null,
+      documentationSkillsRate: null,
+      childParticipationRate: null,
+      escalationProcessRate: null,
       overallScore: 0,
     };
   }
@@ -318,20 +329,20 @@ export function evaluateStaffConsentReadiness(training: StaffConsentTraining[]):
   const childPart = training.filter((t) => t.childParticipation).length;
   const escalation = training.filter((t) => t.escalationProcess).length;
 
-  const consentLawRate = pct(consentLaw, training.length);
-  const capacityAssessmentRate = pct(capacity, training.length);
-  const gillikCompetenceRate = pct(gillik, training.length);
-  const documentationSkillsRate = pct(docs, training.length);
-  const childParticipationRate = pct(childPart, training.length);
-  const escalationProcessRate = pct(escalation, training.length);
+  const consentLawRate = rate(consentLaw, training.length);
+  const capacityAssessmentRate = rate(capacity, training.length);
+  const gillikCompetenceRate = rate(gillik, training.length);
+  const documentationSkillsRate = rate(docs, training.length);
+  const childParticipationRate = rate(childPart, training.length);
+  const escalationProcessRate = rate(escalation, training.length);
 
   const raw =
-    (consentLawRate / 100) * 6 +
-    (capacityAssessmentRate / 100) * 5 +
-    (gillikCompetenceRate / 100) * 5 +
-    (documentationSkillsRate / 100) * 4 +
-    (childParticipationRate / 100) * 3 +
-    (escalationProcessRate / 100) * 2;
+    (consentLawRate! / 100) * 6 +
+    (capacityAssessmentRate! / 100) * 5 +
+    (gillikCompetenceRate! / 100) * 5 +
+    (documentationSkillsRate! / 100) * 4 +
+    (childParticipationRate! / 100) * 3 +
+    (escalationProcessRate! / 100) * 2;
 
   const overallScore = Math.min(Math.round(raw * 10) / 10, 25);
 
@@ -366,8 +377,8 @@ export function buildChildConsentProfiles(records: ConsentRecord[]): ChildConsen
     const childViews = childRecords.filter((r) => r.childViewsSought).length;
     const uniqueCategories = new Set(childRecords.map((r) => r.category)).size;
 
-    const obtainedRate = pct(obtained, totalRecords);
-    const childViewsRate = pct(childViews, totalRecords);
+    const obtainedRate = rate(obtained, totalRecords);
+    const childViewsRate = rate(childViews, totalRecords);
 
     // Score 0–10
     let score = 0;
@@ -377,14 +388,14 @@ export function buildChildConsentProfiles(records: ConsentRecord[]): ChildConsen
     else if (totalRecords >= 5) score += 1;
 
     // rate1 (obtainedRate): >= 80 -> 3, >= 60 -> 2, >= 40 -> 1, else 0
-    if (obtainedRate >= 80) score += 3;
-    else if (obtainedRate >= 60) score += 2;
-    else if (obtainedRate >= 40) score += 1;
+    if (meets(obtainedRate, 80)) score += 3;
+    else if (meets(obtainedRate, 60)) score += 2;
+    else if (meets(obtainedRate, 40)) score += 1;
 
     // rate2 (childViewsRate): same thresholds
-    if (childViewsRate >= 80) score += 3;
-    else if (childViewsRate >= 60) score += 2;
-    else if (childViewsRate >= 40) score += 1;
+    if (meets(childViewsRate, 80)) score += 3;
+    else if (meets(childViewsRate, 60)) score += 2;
+    else if (meets(childViewsRate, 40)) score += 1;
 
     // diversity (unique categories): >= 4 -> 2, >= 2 -> 1, else 0
     if (uniqueCategories >= 4) score += 2;
@@ -466,22 +477,22 @@ export function generateConsentManagementIntelligence(
   }
 
   // Conditional on rates < 50
-  if (records.length > 0 && consentQuality.obtainedRate < 50) {
+  if (records.length > 0 && below(consentQuality.obtainedRate, 50)) {
     actions.push("Increase the rate of obtained consents — currently below 50%, review all pending and expired consent records");
   }
-  if (records.length > 0 && consentQuality.childViewsRate < 50) {
+  if (records.length > 0 && below(consentQuality.childViewsRate, 50)) {
     actions.push("Improve child participation in consent processes — child views are sought in fewer than 50% of records");
   }
-  if (records.length > 0 && consentQuality.documentedRate < 50) {
+  if (records.length > 0 && below(consentQuality.documentedRate, 50)) {
     actions.push("Strengthen consent documentation — fewer than 50% of consent decisions are properly documented");
   }
-  if (records.length > 0 && consentCompliance.parentConsultedRate < 50) {
+  if (records.length > 0 && below(consentCompliance.parentConsultedRate, 50)) {
     actions.push("Ensure parents and carers are consulted on consent decisions — consultation rate is below 50%");
   }
-  if (records.length > 0 && consentCompliance.staffRecordedRate < 50) {
+  if (records.length > 0 && below(consentCompliance.staffRecordedRate, 50)) {
     actions.push("Improve staff recording of consent decisions — recording rate is below 50%");
   }
-  if (records.length > 0 && consentCompliance.reviewScheduledRate < 50) {
+  if (records.length > 0 && below(consentCompliance.reviewScheduledRate, 50)) {
     actions.push("Schedule regular reviews for consent records — review scheduling rate is below 50%");
   }
 
