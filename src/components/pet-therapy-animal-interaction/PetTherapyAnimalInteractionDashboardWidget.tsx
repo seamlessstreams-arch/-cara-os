@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -187,44 +188,44 @@ export default function PetTherapyAnimalInteractionDashboardWidget() {
       <Section title="Session Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Sessions" value={data.sessionQuality.totalSessions} />
-          <Stat label="Therapeutic Benefit" value={`${data.sessionQuality.therapeuticBenefitRate}%`} />
-          <Stat label="Child Engagement" value={`${data.sessionQuality.childEngagementRate}%`} />
-          <Stat label="Risk Assessed" value={`${data.sessionQuality.riskAssessmentRate}%`} />
-          <Stat label="Supervision" value={`${data.sessionQuality.supervisionRate}%`} />
-          <Stat label="Hygiene" value={`${data.sessionQuality.hygieneRate}%`} />
+          <Stat label="Therapeutic Benefit" value={`${formatRate(data.sessionQuality.therapeuticBenefitRate)}`} />
+          <Stat label="Child Engagement" value={`${formatRate(data.sessionQuality.childEngagementRate)}`} />
+          <Stat label="Risk Assessed" value={`${formatRate(data.sessionQuality.riskAssessmentRate)}`} />
+          <Stat label="Supervision" value={`${formatRate(data.sessionQuality.supervisionRate)}`} />
+          <Stat label="Hygiene" value={`${formatRate(data.sessionQuality.hygieneRate)}`} />
         </div>
       </Section>
 
       <Section title="Animal Welfare">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Checks" value={data.animalWelfare.totalChecks} />
-          <Stat label="Welfare Good+" value={`${data.animalWelfare.welfareGoodRate}%`} />
-          <Stat label="Veterinary" value={`${data.animalWelfare.veterinaryRate}%`} />
-          <Stat label="Vaccinations" value={`${data.animalWelfare.vaccinationRate}%`} />
-          <Stat label="Living Conditions" value={`${data.animalWelfare.livingConditionsRate}%`} />
+          <Stat label="Welfare Good+" value={`${formatRate(data.animalWelfare.welfareGoodRate)}`} />
+          <Stat label="Veterinary" value={`${formatRate(data.animalWelfare.veterinaryRate)}`} />
+          <Stat label="Vaccinations" value={`${formatRate(data.animalWelfare.vaccinationRate)}`} />
+          <Stat label="Living Conditions" value={`${formatRate(data.animalWelfare.livingConditionsRate)}`} />
         </div>
       </Section>
 
       <Section title="Risk Management">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Assessments" value={data.riskManagement.totalAssessments} />
-          <Stat label="Allergy Screening" value={`${data.riskManagement.allergyScreeningRate}%`} />
-          <Stat label="Zoonotic Risk" value={`${data.riskManagement.zoonoticRiskRate}%`} />
-          <Stat label="Hygiene Protocol" value={`${data.riskManagement.hygieneProtocolRate}%`} />
-          <Stat label="Insurance" value={`${data.riskManagement.insuranceRate}%`} />
-          <Stat label="Emergency Plan" value={`${data.riskManagement.emergencyPlanRate}%`} />
+          <Stat label="Allergy Screening" value={`${formatRate(data.riskManagement.allergyScreeningRate)}`} />
+          <Stat label="Zoonotic Risk" value={`${formatRate(data.riskManagement.zoonoticRiskRate)}`} />
+          <Stat label="Hygiene Protocol" value={`${formatRate(data.riskManagement.hygieneProtocolRate)}`} />
+          <Stat label="Insurance" value={`${formatRate(data.riskManagement.insuranceRate)}`} />
+          <Stat label="Emergency Plan" value={`${formatRate(data.riskManagement.emergencyPlanRate)}`} />
         </div>
       </Section>
 
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffAnimalReadiness.totalStaff} />
-          <Stat label="Animal Handling" value={`${data.staffAnimalReadiness.animalHandlingRate}%`} />
-          <Stat label="Therapeutic Use" value={`${data.staffAnimalReadiness.therapeuticUseRate}%`} />
-          <Stat label="Welfare Awareness" value={`${data.staffAnimalReadiness.animalWelfareRate}%`} />
-          <Stat label="Risk Assessment" value={`${data.staffAnimalReadiness.riskAssessmentRate}%`} />
-          <Stat label="Hygiene" value={`${data.staffAnimalReadiness.hygieneRate}%`} />
-          <Stat label="Allergy" value={`${data.staffAnimalReadiness.allergyRate}%`} />
+          <Stat label="Animal Handling" value={`${formatRate(data.staffAnimalReadiness.animalHandlingRate)}`} />
+          <Stat label="Therapeutic Use" value={`${formatRate(data.staffAnimalReadiness.therapeuticUseRate)}`} />
+          <Stat label="Welfare Awareness" value={`${formatRate(data.staffAnimalReadiness.animalWelfareRate)}`} />
+          <Stat label="Risk Assessment" value={`${formatRate(data.staffAnimalReadiness.riskAssessmentRate)}`} />
+          <Stat label="Hygiene" value={`${formatRate(data.staffAnimalReadiness.hygieneRate)}`} />
+          <Stat label="Allergy" value={`${formatRate(data.staffAnimalReadiness.allergyRate)}`} />
         </div>
       </Section>
 

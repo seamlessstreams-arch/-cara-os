@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildPrivacyProfile { childId: string; childName: string; totalRecords: number; personalSpaceRespectedRate: number; confidentialityMaintainedRate: number; categoriesCovered: string[]; overallScore: number; }
 
@@ -73,18 +74,18 @@ export default function PrivacyDashboardWidget() {
       <Section title="Privacy Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Records" value={data.privacyQuality.totalRecords} />
-          <Stat label="Personal Space" value={`${data.privacyQuality.personalSpaceRespectedRate}%`} />
-          <Stat label="Confidentiality" value={`${data.privacyQuality.confidentialityMaintainedRate}%`} />
-          <Stat label="Dignity" value={`${data.privacyQuality.dignityPreservedRate}%`} />
-          <Stat label="Consent" value={`${data.privacyQuality.consentObtainedRate}%`} />
+          <Stat label="Personal Space" value={`${formatRate(data.privacyQuality.personalSpaceRespectedRate)}`} />
+          <Stat label="Confidentiality" value={`${formatRate(data.privacyQuality.confidentialityMaintainedRate)}`} />
+          <Stat label="Dignity" value={`${formatRate(data.privacyQuality.dignityPreservedRate)}`} />
+          <Stat label="Consent" value={`${formatRate(data.privacyQuality.consentObtainedRate)}`} />
         </div>
       </Section>
 
       <Section title="Privacy Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documentation" value={`${data.privacyCompliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${data.privacyCompliance.timelyRecordingRate}%`} />
-          <Stat label="Confidentiality" value={`${data.privacyCompliance.confidentialityMaintainedRate}%`} />
+          <Stat label="Documentation" value={`${formatRate(data.privacyCompliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(data.privacyCompliance.timelyRecordingRate)}`} />
+          <Stat label="Confidentiality" value={`${formatRate(data.privacyCompliance.confidentialityMaintainedRate)}`} />
           <Stat label="Category Coverage" value={`${data.privacyCompliance.categoryDiversityRatio}`} />
           <Stat label="Unique Categories" value={data.privacyCompliance.uniqueCategories} />
         </div>
@@ -109,12 +110,12 @@ export default function PrivacyDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
-          <Stat label="Data Protection" value={`${data.staffReadiness.dataProtectionTrainingRate}%`} />
-          <Stat label="Confidentiality" value={`${data.staffReadiness.confidentialityAwarenessRate}%`} />
-          <Stat label="Dignity in Care" value={`${data.staffReadiness.dignityInCareTrainingRate}%`} />
-          <Stat label="Consent Practice" value={`${data.staffReadiness.consentPracticeRate}%`} />
-          <Stat label="Digital Privacy" value={`${data.staffReadiness.digitalPrivacySkillsRate}%`} />
-          <Stat label="Info Sharing" value={`${data.staffReadiness.informationSharingKnowledgeRate}%`} />
+          <Stat label="Data Protection" value={`${formatRate(data.staffReadiness.dataProtectionTrainingRate)}`} />
+          <Stat label="Confidentiality" value={`${formatRate(data.staffReadiness.confidentialityAwarenessRate)}`} />
+          <Stat label="Dignity in Care" value={`${formatRate(data.staffReadiness.dignityInCareTrainingRate)}`} />
+          <Stat label="Consent Practice" value={`${formatRate(data.staffReadiness.consentPracticeRate)}`} />
+          <Stat label="Digital Privacy" value={`${formatRate(data.staffReadiness.digitalPrivacySkillsRate)}`} />
+          <Stat label="Info Sharing" value={`${formatRate(data.staffReadiness.informationSharingKnowledgeRate)}`} />
         </div>
       </Section>
 

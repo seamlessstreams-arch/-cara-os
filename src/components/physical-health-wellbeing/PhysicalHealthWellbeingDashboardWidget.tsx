@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { PhysicalHealthWellbeingIntelligence } from "@/lib/physical-health-wellbeing";
+import { formatRate } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -110,11 +111,11 @@ export default function PhysicalHealthWellbeingDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Health Records</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.healthQuality.appointmentAttendedRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.healthQuality.appointmentAttendedRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Attendance</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.healthQuality.outcomeRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.healthQuality.outcomeRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Good+ Outcomes</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -155,18 +156,18 @@ export default function PhysicalHealthWellbeingDashboardWidget() {
         <Section title="Health Quality">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <Stat label="Records" value={data.healthQuality.totalRecords} />
-            <Stat label="Good+ Outcomes" value={`${data.healthQuality.outcomeRate}%`} />
-            <Stat label="Attended" value={`${data.healthQuality.appointmentAttendedRate}%`} />
-            <Stat label="Plans Updated" value={`${data.healthQuality.healthPlanRate}%`} />
-            <Stat label="Consent" value={`${data.healthQuality.consentRate}%`} />
+            <Stat label="Good+ Outcomes" value={`${formatRate(data.healthQuality.outcomeRate)}`} />
+            <Stat label="Attended" value={`${formatRate(data.healthQuality.appointmentAttendedRate)}`} />
+            <Stat label="Plans Updated" value={`${formatRate(data.healthQuality.healthPlanRate)}`} />
+            <Stat label="Consent" value={`${formatRate(data.healthQuality.consentRate)}`} />
           </div>
         </Section>
 
         <Section title="Health Compliance">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <Stat label="Staff Accompanied" value={`${data.healthCompliance.staffAccompaniedRate}%`} />
-            <Stat label="Documented" value={`${data.healthCompliance.documentedRate}%`} />
-            <Stat label="Follow-up" value={`${data.healthCompliance.followUpRate}%`} />
+            <Stat label="Staff Accompanied" value={`${formatRate(data.healthCompliance.staffAccompaniedRate)}`} />
+            <Stat label="Documented" value={`${formatRate(data.healthCompliance.documentedRate)}`} />
+            <Stat label="Follow-up" value={`${formatRate(data.healthCompliance.followUpRate)}`} />
             <Stat label="Area Diversity" value={data.healthCompliance.areaDiversity.toFixed(2)} />
           </div>
         </Section>
@@ -186,12 +187,12 @@ export default function PhysicalHealthWellbeingDashboardWidget() {
         <Section title="Staff Health Readiness">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
             <Stat label="Staff" value={data.staffHealthReadiness.totalStaff} />
-            <Stat label="Health Awareness" value={`${data.staffHealthReadiness.healthAwarenessRate}%`} />
-            <Stat label="MH First Aid" value={`${data.staffHealthReadiness.mentalHealthFirstAidRate}%`} />
-            <Stat label="Consent & Capacity" value={`${data.staffHealthReadiness.consentAndCapacityRate}%`} />
-            <Stat label="Medication Mgmt" value={`${data.staffHealthReadiness.medicationManagementRate}%`} />
-            <Stat label="Appointment Support" value={`${data.staffHealthReadiness.appointmentSupportRate}%`} />
-            <Stat label="Documentation" value={`${data.staffHealthReadiness.healthDocumentationRate}%`} />
+            <Stat label="Health Awareness" value={`${formatRate(data.staffHealthReadiness.healthAwarenessRate)}`} />
+            <Stat label="MH First Aid" value={`${formatRate(data.staffHealthReadiness.mentalHealthFirstAidRate)}`} />
+            <Stat label="Consent & Capacity" value={`${formatRate(data.staffHealthReadiness.consentAndCapacityRate)}`} />
+            <Stat label="Medication Mgmt" value={`${formatRate(data.staffHealthReadiness.medicationManagementRate)}`} />
+            <Stat label="Appointment Support" value={`${formatRate(data.staffHealthReadiness.appointmentSupportRate)}`} />
+            <Stat label="Documentation" value={`${formatRate(data.staffHealthReadiness.healthDocumentationRate)}`} />
           </div>
         </Section>
 

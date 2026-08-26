@@ -1,3 +1,4 @@
+import { below, meanOf, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — Return Home Interview Quality Intelligence Engine
 //
@@ -116,39 +117,53 @@ export interface PreventionMeasure {
 export interface InterviewComplianceResult {
   overallScore: number; // 0-25
   totalEpisodes: number;
-  rhiCompletedRate: number; // %
-  within72hRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  rhiCompletedRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  within72hRate: number | null; // %
   declinedCount: number;
-  independentRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  independentRate: number | null; // %
   qualityDistribution: Record<InterviewQuality, number>;
 }
 
 export interface InterviewDepthResult {
   overallScore: number; // 0-25
   totalInterviews: number;
-  childViewsRate: number; // %
-  pushFactorsRate: number; // %
-  pullFactorsRate: number; // %
-  safetyPlanCreatedRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewsRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  pushFactorsRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  pullFactorsRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  safetyPlanCreatedRate: number | null; // %
   referralsMadeCount: number;
-  policeInfoSharedRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  policeInfoSharedRate: number | null; // %
 }
 
 export interface StrategyResponseResult {
   overallScore: number; // 0-25
   totalMeetings: number;
-  multiAgencyRate: number; // %
-  actionPlanRate: number; // %
-  actionReviewedRate: number; // %
-  triggerPatternRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  multiAgencyRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionPlanRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionReviewedRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  triggerPatternRate: number | null; // %
   averageAttendees: number;
 }
 
 export interface PreventionEffectivenessResult {
   overallScore: number; // 0-25
   totalMeasures: number;
-  effectiveRate: number; // %
-  reviewedRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  effectiveRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  reviewedRate: number | null; // %
   uniqueChildren: number;
   // Note: frequencyBonus is internal to scoring
 }
@@ -157,7 +172,8 @@ export interface ChildMissingProfile {
   childId: string;
   childName: string;
   episodeCount: number;
-  rhiCompletedRate: number; // %
+  /** null when this child has no measurable population for it. */
+  rhiCompletedRate: number | null; // %
   averageDuration: number | null; // hours
   commonFactors: PushPullFactor[];
   hasSafetyPlan: boolean;
@@ -184,11 +200,6 @@ export interface ReturnHomeInterviewQualityIntelligence {
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 /** Calculate percentage, returning 0 if denominator is 0. */
-export function pct(numerator: number, denominator: number): number {
-  if (denominator === 0) return 0;
-  return Math.round((numerator / denominator) * 100);
-}
-
 /** Map overall score (0-100) to Ofsted-style rating. */
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -289,10 +300,10 @@ export function evaluateInterviewCompliance(
     return {
       overallScore: 25,
       totalEpisodes: 0,
-      rhiCompletedRate: 0,
-      within72hRate: 0,
+      rhiCompletedRate: null,
+      within72hRate: null,
       declinedCount: 0,
-      independentRate: 0,
+      independentRate: null,
       qualityDistribution,
     };
   }
@@ -320,18 +331,18 @@ export function evaluateInterviewCompliance(
     qualityDistribution[interview.quality]++;
   }
 
-  const rhiCompletedRate = pct(completed.length, episodes.length);
-  const within72hRate = pct(within72h.length, episodes.length);
-  const independentRate = pct(independent.length, relevantInterviews.length);
+  const rhiCompletedRate = rate(completed.length, episodes.length);
+  const within72hRate = rate(within72h.length, episodes.length);
+  const independentRate = rate(independent.length, relevantInterviews.length);
 
   // Scoring
   // RHI completed rate: 0-8
-  const completedScore = Math.round((rhiCompletedRate / 100) * 8);
+  const completedScore = Math.round(((rhiCompletedRate ?? 0) / 100) * 8);
   // Within 72h rate: 0-6
-  const timelyScore = Math.round((within72hRate / 100) * 6);
+  const timelyScore = Math.round(((within72hRate ?? 0) / 100) * 6);
   // Independent interviewer: 0-5
   const independentScore = relevantInterviews.length > 0
-    ? Math.round((independentRate / 100) * 5)
+    ? Math.round(((independentRate ?? 0) / 100) * 5)
     : null;
   // Quality average: thorough=3, adequate=2, superficial=1, not_completed=0 -> average -> scale 0-6
   let qualityScore = 0;
@@ -378,12 +389,12 @@ export function evaluateInterviewDepth(
     return {
       overallScore: hasEpisodes ? 0 : 25,
       totalInterviews: 0,
-      childViewsRate: 0,
-      pushFactorsRate: 0,
-      pullFactorsRate: 0,
-      safetyPlanCreatedRate: 0,
+      childViewsRate: null,
+      pushFactorsRate: null,
+      pullFactorsRate: null,
+      safetyPlanCreatedRate: null,
       referralsMadeCount: 0,
-      policeInfoSharedRate: 0,
+      policeInfoSharedRate: null,
     };
   }
 
@@ -409,22 +420,22 @@ export function evaluateInterviewDepth(
     totalReferrals += interview.referralsMade;
   }
 
-  const childViewsRate = pct(childViewsSought.length, interviews.length);
-  const pushFactorsRate = pct(withPushFactors.length, interviews.length);
-  const pullFactorsRate = pct(withPullFactors.length, interviews.length);
-  const safetyPlanCreatedRate = pct(safetyPlanCreated.length, interviews.length);
-  const policeInfoSharedRate = pct(policeInfoShared.length, interviews.length);
+  const childViewsRate = rate(childViewsSought.length, interviews.length);
+  const pushFactorsRate = rate(withPushFactors.length, interviews.length);
+  const pullFactorsRate = rate(withPullFactors.length, interviews.length);
+  const safetyPlanCreatedRate = rate(safetyPlanCreated.length, interviews.length);
+  const policeInfoSharedRate = rate(policeInfoShared.length, interviews.length);
 
   // Scoring
   // Child views: 0-7
-  const childViewsScore = Math.round((childViewsRate / 100) * 7);
+  const childViewsScore = Math.round(((childViewsRate ?? 0) / 100) * 7);
   // Push/pull factors: 0-5 (combined: average of push and pull)
-  const factorsAvg = (pushFactorsRate + pullFactorsRate) / 2;
-  const factorsScore = Math.round((factorsAvg / 100) * 5);
+  const factorsAvg = meanOf([pushFactorsRate, pullFactorsRate]);
+  const factorsScore = Math.round(((factorsAvg ?? 0) / 100) * 5);
   // Safety plan: 0-5
-  const safetyPlanScore = Math.round((safetyPlanCreatedRate / 100) * 5);
+  const safetyPlanScore = Math.round(((safetyPlanCreatedRate ?? 0) / 100) * 5);
   // Police info shared: 0-4
-  const policeScore = Math.round((policeInfoSharedRate / 100) * 4);
+  const policeScore = Math.round(((policeInfoSharedRate ?? 0) / 100) * 4);
   // Referrals made: 0-4 (bonus: any referrals made scores proportionally)
   const referralsScore = totalReferrals > 0
     ? Math.min(4, Math.round((totalReferrals / interviews.length) * 2))
@@ -461,10 +472,10 @@ export function evaluateStrategyResponse(
     return {
       overallScore: 25,
       totalMeetings: 0,
-      multiAgencyRate: 0,
-      actionPlanRate: 0,
-      actionReviewedRate: 0,
-      triggerPatternRate: 0,
+      multiAgencyRate: null,
+      actionPlanRate: null,
+      actionReviewedRate: null,
+      triggerPatternRate: null,
       averageAttendees: 0,
     };
   }
@@ -480,23 +491,23 @@ export function evaluateStrategyResponse(
     totalAttendees += m.attendees;
   }
 
-  const multiAgencyRate = pct(multiAgency.length, meetings.length);
-  const actionPlanRate = pct(actionPlan.length, meetings.length);
-  const actionReviewedRate = pct(actionReviewed.length, reviewable.length);
-  const triggerPatternRate = pct(triggerPattern.length, meetings.length);
+  const multiAgencyRate = rate(multiAgency.length, meetings.length);
+  const actionPlanRate = rate(actionPlan.length, meetings.length);
+  const actionReviewedRate = rate(actionReviewed.length, reviewable.length);
+  const triggerPatternRate = rate(triggerPattern.length, meetings.length);
   const averageAttendees =
     Math.round((totalAttendees / meetings.length) * 10) / 10;
 
   // Scoring
   // Multi-agency: 0-7
-  const multiAgencyScore = Math.round((multiAgencyRate / 100) * 7);
+  const multiAgencyScore = Math.round((multiAgencyRate! / 100) * 7);
   // Action plan: 0-6
-  const actionPlanScore = Math.round((actionPlanRate / 100) * 6);
+  const actionPlanScore = Math.round((actionPlanRate! / 100) * 6);
   // Trigger pattern: 0-5
-  const triggerPatternScore = Math.round((triggerPatternRate / 100) * 5);
+  const triggerPatternScore = Math.round((triggerPatternRate! / 100) * 5);
   // Action reviewed: 0-4
   const actionReviewedScore = reviewable.length > 0
-    ? Math.round((actionReviewedRate / 100) * 4)
+    ? Math.round(((actionReviewedRate ?? 0) / 100) * 4)
     : null;
   // Average attendees bonus: 0-3 (>=5 attendees = 3, 3-4 = 2, 2 = 1, <2 = 0)
   let attendeesBonus = 0;
@@ -535,8 +546,8 @@ export function evaluatePreventionEffectiveness(
     return {
       overallScore: hasEpisodes ? 0 : 25,
       totalMeasures: 0,
-      effectiveRate: 0,
-      reviewedRate: 0,
+      effectiveRate: null,
+      reviewedRate: null,
       uniqueChildren: 0,
     };
   }
@@ -546,16 +557,16 @@ export function evaluatePreventionEffectiveness(
   const reviewed = measures.filter((m) => m.reviewedDate !== null);
   const uniqueChildIds = new Set(measures.map((m) => m.childId));
 
-  const effectiveRate = pct(effective.length, withEffectiveness.length);
-  const reviewedRate = pct(reviewed.length, measures.length);
+  const effectiveRate = rate(effective.length, withEffectiveness.length);
+  const reviewedRate = rate(reviewed.length, measures.length);
 
   // Scoring
   // Effective rate: 0-8
   const effectiveScore = withEffectiveness.length > 0
-    ? Math.round((effectiveRate / 100) * 8)
+    ? Math.round(((effectiveRate ?? 0) / 100) * 8)
     : null;
   // Reviewed rate: 0-7
-  const reviewedScore = Math.round((reviewedRate / 100) * 7);
+  const reviewedScore = Math.round((reviewedRate! / 100) * 7);
   // Coverage: 0-5 (based on unique children covered)
   const coverageScore = Math.min(5, uniqueChildIds.size);
   // Frequency bonus: 0-5 (more measures = better prevention effort)
@@ -595,7 +606,7 @@ export function buildChildMissingProfiles(
     const completedInterviews = childInterviews.filter(
       (i) => i.timeliness !== "not_completed",
     );
-    const rhiCompletedRate = pct(completedInterviews.length, episodeCount);
+    const rhiCompletedRate = rate(completedInterviews.length, episodeCount);
 
     // Average duration
     const durations = childEpisodes
@@ -632,7 +643,7 @@ export function buildChildMissingProfiles(
     let score = 5; // baseline for children with no episodes
     if (episodeCount > 0) {
       // RHI completion contributes 0-4
-      const rhiScore = Math.round((rhiCompletedRate / 100) * 4);
+      const rhiScore = Math.round((rhiCompletedRate! / 100) * 4);
       // Safety plan contributes 0-3
       const safetyScore = hasSafetyPlan ? 3 : 0;
       // Factors identified contributes 0-3
@@ -751,47 +762,47 @@ export function generateReturnHomeInterviewQualityIntelligence(
   // ── Areas for Improvement ──
   const areasForImprovement: string[] = [];
 
-  if (interviewCompliance.rhiCompletedRate < 80 && episodes.length > 0) {
+  if (below(interviewCompliance.rhiCompletedRate, 80) && episodes.length > 0) {
     areasForImprovement.push(
       `Only ${interviewCompliance.rhiCompletedRate}% of missing episodes have completed RHIs — all episodes require an interview`,
     );
   }
-  if (interviewCompliance.within72hRate < 80 && episodes.length > 0) {
+  if (below(interviewCompliance.within72hRate, 80) && episodes.length > 0) {
     areasForImprovement.push(
       `Only ${interviewCompliance.within72hRate}% of RHIs completed within 72 hours — statutory guidance requires interviews within this timeframe`,
     );
   }
-  if (interviewCompliance.independentRate < 80 && interviews.length > 0) {
+  if (below(interviewCompliance.independentRate, 80) && interviews.length > 0) {
     areasForImprovement.push(
       `Only ${interviewCompliance.independentRate}% of interviews conducted by independent interviewers`,
     );
   }
-  if (interviewDepth.childViewsRate < 80 && interviews.length > 0) {
+  if (below(interviewDepth.childViewsRate, 80) && interviews.length > 0) {
     areasForImprovement.push(
       `Only ${interviewDepth.childViewsRate}% of interviews sought children's views — the child's voice must be central`,
     );
   }
-  if (interviewDepth.safetyPlanCreatedRate < 80 && interviews.length > 0) {
+  if (below(interviewDepth.safetyPlanCreatedRate, 80) && interviews.length > 0) {
     areasForImprovement.push(
       `Only ${interviewDepth.safetyPlanCreatedRate}% of interviews resulted in a safety plan — all children need a plan to reduce risk`,
     );
   }
-  if (interviewDepth.pushFactorsRate < 60 && interviews.length > 0) {
+  if (below(interviewDepth.pushFactorsRate, 60) && interviews.length > 0) {
     areasForImprovement.push(
       `Push factors identified in only ${interviewDepth.pushFactorsRate}% of interviews — understanding why children leave is essential`,
     );
   }
-  if (interviewDepth.pullFactorsRate < 60 && interviews.length > 0) {
+  if (below(interviewDepth.pullFactorsRate, 60) && interviews.length > 0) {
     areasForImprovement.push(
       `Pull factors identified in only ${interviewDepth.pullFactorsRate}% of interviews — understanding what draws children away needs improvement`,
     );
   }
-  if (strategyResponse.multiAgencyRate < 80 && meetings.length > 0) {
+  if (below(strategyResponse.multiAgencyRate, 80) && meetings.length > 0) {
     areasForImprovement.push(
       `Only ${strategyResponse.multiAgencyRate}% of strategy meetings had multi-agency attendance`,
     );
   }
-  if (strategyResponse.actionPlanRate < 80 && meetings.length > 0) {
+  if (below(strategyResponse.actionPlanRate, 80) && meetings.length > 0) {
     areasForImprovement.push(
       `Only ${strategyResponse.actionPlanRate}% of strategy meetings resulted in action plans`,
     );
@@ -801,7 +812,7 @@ export function generateReturnHomeInterviewQualityIntelligence(
       "No prevention measures recorded despite missing episodes — proactive prevention work is essential",
     );
   }
-  if (preventionEffectiveness.effectiveRate < 60 && measures.length > 0) {
+  if (below(preventionEffectiveness.effectiveRate, 60) && measures.length > 0) {
     areasForImprovement.push(
       `Only ${preventionEffectiveness.effectiveRate}% of prevention measures assessed as effective`,
     );
@@ -815,47 +826,47 @@ export function generateReturnHomeInterviewQualityIntelligence(
   // ── Actions ──
   const actions: string[] = [];
 
-  if (interviewCompliance.rhiCompletedRate < 100 && episodes.length > 0) {
+  if (below(interviewCompliance.rhiCompletedRate, 100) && episodes.length > 0) {
     actions.push(
       "Ensure all missing episodes result in a return home interview, following up where children decline",
     );
   }
-  if (interviewCompliance.within72hRate < 100 && episodes.length > 0) {
+  if (below(interviewCompliance.within72hRate, 100) && episodes.length > 0) {
     actions.push(
       "Implement tracking to ensure all RHIs are completed within 72 hours of the child's return",
     );
   }
-  if (interviewCompliance.independentRate < 100 && interviews.length > 0) {
+  if (below(interviewCompliance.independentRate, 100) && interviews.length > 0) {
     actions.push(
       "Arrange independent interviewers for all return home interviews to ensure impartiality",
     );
   }
-  if (interviewDepth.childViewsRate < 100 && interviews.length > 0) {
+  if (below(interviewDepth.childViewsRate, 100) && interviews.length > 0) {
     actions.push(
       "Ensure children's views are actively sought in every return home interview using age-appropriate methods",
     );
   }
-  if (interviewDepth.safetyPlanCreatedRate < 100 && interviews.length > 0) {
+  if (below(interviewDepth.safetyPlanCreatedRate, 100) && interviews.length > 0) {
     actions.push(
       "Create or update safety plans for all children following missing episodes",
     );
   }
-  if (interviewDepth.pushFactorsRate < 80 && interviews.length > 0) {
+  if (below(interviewDepth.pushFactorsRate, 80) && interviews.length > 0) {
     actions.push(
       "Train staff to explore push factors (reasons for leaving) more thoroughly during RHIs",
     );
   }
-  if (interviewDepth.pullFactorsRate < 80 && interviews.length > 0) {
+  if (below(interviewDepth.pullFactorsRate, 80) && interviews.length > 0) {
     actions.push(
       "Train staff to explore pull factors (what draws children away) more thoroughly during RHIs",
     );
   }
-  if (strategyResponse.multiAgencyRate < 100 && meetings.length > 0) {
+  if (below(strategyResponse.multiAgencyRate, 100) && meetings.length > 0) {
     actions.push(
       "Ensure multi-agency attendance at all strategy meetings, including police, social care and health",
     );
   }
-  if (strategyResponse.actionPlanRate < 100 && meetings.length > 0) {
+  if (below(strategyResponse.actionPlanRate, 100) && meetings.length > 0) {
     actions.push(
       "Ensure all strategy meetings produce clear, time-bound action plans",
     );
@@ -865,7 +876,7 @@ export function generateReturnHomeInterviewQualityIntelligence(
       "Develop and implement prevention measures for children with missing episodes",
     );
   }
-  if (preventionEffectiveness.reviewedRate < 80 && measures.length > 0) {
+  if (below(preventionEffectiveness.reviewedRate, 80) && measures.length > 0) {
     actions.push(
       "Review all prevention measures to assess effectiveness and update where needed",
     );

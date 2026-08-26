@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { ReturnHomeInterviewQualityIntelligence } from "@/lib/return-home-interview-quality";
+import { formatRate } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -146,19 +147,19 @@ export function ReturnHomeInterviewQualityDashboardWidget() {
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
           <div className="text-2xl font-bold text-gray-900">
-            {data.interviewCompliance.rhiCompletedRate}%
+            {formatRate(data.interviewCompliance.rhiCompletedRate)}
           </div>
           <div className="text-xs text-gray-500 mt-1">RHI Completed</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
           <div className="text-2xl font-bold text-gray-900">
-            {data.interviewCompliance.within72hRate}%
+            {formatRate(data.interviewCompliance.within72hRate)}
           </div>
           <div className="text-xs text-gray-500 mt-1">Within 72 Hours</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
           <div className="text-2xl font-bold text-gray-900">
-            {data.interviewDepth.childViewsRate}%
+            {formatRate(data.interviewDepth.childViewsRate)}
           </div>
           <div className="text-xs text-gray-500 mt-1">Child Views Sought</div>
         </div>
@@ -233,15 +234,15 @@ export function ReturnHomeInterviewQualityDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">RHI Completed:</span>{" "}
-              <span className="font-medium">{data.interviewCompliance.rhiCompletedRate}%</span>
+              <span className="font-medium">{formatRate(data.interviewCompliance.rhiCompletedRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Within 72 Hours:</span>{" "}
-              <span className="font-medium">{data.interviewCompliance.within72hRate}%</span>
+              <span className="font-medium">{formatRate(data.interviewCompliance.within72hRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Independent Rate:</span>{" "}
-              <span className="font-medium">{data.interviewCompliance.independentRate}%</span>
+              <span className="font-medium">{formatRate(data.interviewCompliance.independentRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Declined:</span>{" "}
@@ -273,19 +274,19 @@ export function ReturnHomeInterviewQualityDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">Child Views Sought:</span>{" "}
-              <span className="font-medium">{data.interviewDepth.childViewsRate}%</span>
+              <span className="font-medium">{formatRate(data.interviewDepth.childViewsRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Push Factors Identified:</span>{" "}
-              <span className="font-medium">{data.interviewDepth.pushFactorsRate}%</span>
+              <span className="font-medium">{formatRate(data.interviewDepth.pushFactorsRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Pull Factors Identified:</span>{" "}
-              <span className="font-medium">{data.interviewDepth.pullFactorsRate}%</span>
+              <span className="font-medium">{formatRate(data.interviewDepth.pullFactorsRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Safety Plans Created:</span>{" "}
-              <span className="font-medium">{data.interviewDepth.safetyPlanCreatedRate}%</span>
+              <span className="font-medium">{formatRate(data.interviewDepth.safetyPlanCreatedRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Referrals Made:</span>{" "}
@@ -293,7 +294,7 @@ export function ReturnHomeInterviewQualityDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">Info Shared with Police:</span>{" "}
-              <span className="font-medium">{data.interviewDepth.policeInfoSharedRate}%</span>
+              <span className="font-medium">{formatRate(data.interviewDepth.policeInfoSharedRate)}</span>
             </div>
           </div>
         </Section>
@@ -307,19 +308,19 @@ export function ReturnHomeInterviewQualityDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">Multi-Agency:</span>{" "}
-              <span className="font-medium">{data.strategyResponse.multiAgencyRate}%</span>
+              <span className="font-medium">{formatRate(data.strategyResponse.multiAgencyRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Action Plans Created:</span>{" "}
-              <span className="font-medium">{data.strategyResponse.actionPlanRate}%</span>
+              <span className="font-medium">{formatRate(data.strategyResponse.actionPlanRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Actions Reviewed:</span>{" "}
-              <span className="font-medium">{data.strategyResponse.actionReviewedRate}%</span>
+              <span className="font-medium">{formatRate(data.strategyResponse.actionReviewedRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Trigger Patterns Discussed:</span>{" "}
-              <span className="font-medium">{data.strategyResponse.triggerPatternRate}%</span>
+              <span className="font-medium">{formatRate(data.strategyResponse.triggerPatternRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Avg Attendees:</span>{" "}
@@ -337,11 +338,11 @@ export function ReturnHomeInterviewQualityDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">Effective Rate:</span>{" "}
-              <span className="font-medium">{data.preventionEffectiveness.effectiveRate}%</span>
+              <span className="font-medium">{formatRate(data.preventionEffectiveness.effectiveRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Reviewed Rate:</span>{" "}
-              <span className="font-medium">{data.preventionEffectiveness.reviewedRate}%</span>
+              <span className="font-medium">{formatRate(data.preventionEffectiveness.reviewedRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Unique Children:</span>{" "}

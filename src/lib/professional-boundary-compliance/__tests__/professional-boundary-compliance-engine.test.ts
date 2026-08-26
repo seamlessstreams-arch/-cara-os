@@ -17,8 +17,7 @@ import {
   getComplianceLevelLabel,
   getRatingLabel,
   getRating,
-  pct,
-} from "../professional-boundary-compliance-engine";
+  } from "../professional-boundary-compliance-engine";
 import type {
   BoundaryAudit,
   BoundaryPolicy,
@@ -71,33 +70,6 @@ const makeTraining = (overrides: Partial<StaffBoundaryTraining> = {}): StaffBoun
 // ══════════════════════════════════════════════════════════════════════════════
 // pct() helper
 // ══════════════════════════════════════════════════════════════════════════════
-
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-
-  it("returns 100 when num equals den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-
-  it("handles large numbers", () => {
-    expect(pct(999, 1000)).toBe(100);
-  });
-});
 
 // ══════════════════════════════════════════════════════════════════════════════
 // getRating()
@@ -225,11 +197,11 @@ describe("evaluateBoundaryCompliance", () => {
 
   it("returns zero rates for empty audits", () => {
     const result = evaluateBoundaryCompliance([]);
-    expect(result.complianceRate).toBe(0);
-    expect(result.supervisorVerifiedRate).toBe(0);
-    expect(result.documentedRate).toBe(0);
-    expect(result.correctiveActionRate).toBe(0);
-    expect(result.reflectivePracticeRate).toBe(0);
+    expect(result.complianceRate).toBeNull();
+    expect(result.supervisorVerifiedRate).toBeNull();
+    expect(result.documentedRate).toBeNull();
+    expect(result.correctiveActionRate).toBeNull();
+    expect(result.reflectivePracticeRate).toBeNull();
   });
 
   it("returns zeroed breakdowns for empty audits", () => {
@@ -394,9 +366,9 @@ describe("evaluateChildSafeguarding", () => {
 
   it("returns zero rates for empty audits", () => {
     const result = evaluateChildSafeguarding([]);
-    expect(result.childFeedbackSoughtRate).toBe(0);
-    expect(result.riskAssessedRate).toBe(0);
-    expect(result.nonComplianceRate).toBe(0);
+    expect(result.childFeedbackSoughtRate).toBeNull();
+    expect(result.riskAssessedRate).toBeNull();
+    expect(result.nonComplianceRate).toBeNull();
   });
 
   it("scores perfectly for all-good audits", () => {
@@ -673,12 +645,12 @@ describe("evaluateStaffBoundaryReadiness", () => {
 
   it("returns zero rates for empty training", () => {
     const result = evaluateStaffBoundaryReadiness([]);
-    expect(result.professionalBoundariesRate).toBe(0);
-    expect(result.safeguardingAwarenessRate).toBe(0);
-    expect(result.ethicalConductRate).toBe(0);
-    expect(result.socialMediaSafetyRate).toBe(0);
-    expect(result.reportingProceduresRate).toBe(0);
-    expect(result.reflectivePracticeRate).toBe(0);
+    expect(result.professionalBoundariesRate).toBeNull();
+    expect(result.safeguardingAwarenessRate).toBeNull();
+    expect(result.ethicalConductRate).toBeNull();
+    expect(result.socialMediaSafetyRate).toBeNull();
+    expect(result.reportingProceduresRate).toBeNull();
+    expect(result.reflectivePracticeRate).toBeNull();
   });
 
   it("scores 25 for fully trained staff", () => {

@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getPrivacyCategoryLabel,
   getPrivacyOutcomeLabel,
@@ -68,25 +67,6 @@ function makeTraining(overrides: Partial<StaffPrivacyTraining> = {}): StaffPriva
 // ══════════════════════════════════════════════════════════════════════════════
 // pct
 // ══════════════════════════════════════════════════════════════════════════════
-
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-  it("returns 100 for equal num and den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-  it("returns 0 for 0 numerator", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-});
 
 // ══════════════════════════════════════════════════════════════════════════════
 // getRating
@@ -156,10 +136,10 @@ describe("evaluatePrivacyQuality", () => {
     const result = evaluatePrivacyQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalRecords).toBe(0);
-    expect(result.personalSpaceRespectedRate).toBe(0);
-    expect(result.confidentialityMaintainedRate).toBe(0);
-    expect(result.dignityPreservedRate).toBe(0);
-    expect(result.consentObtainedRate).toBe(0);
+    expect(result.personalSpaceRespectedRate).toBeNull();
+    expect(result.confidentialityMaintainedRate).toBeNull();
+    expect(result.dignityPreservedRate).toBeNull();
+    expect(result.consentObtainedRate).toBeNull();
   });
 
   it("returns max score (25) for all-true records", () => {
@@ -269,9 +249,9 @@ describe("evaluatePrivacyCompliance", () => {
     const result = evaluatePrivacyCompliance([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalRecords).toBe(0);
-    expect(result.documentationRate).toBe(0);
-    expect(result.timelyRecordingRate).toBe(0);
-    expect(result.confidentialityMaintainedRate).toBe(0);
+    expect(result.documentationRate).toBeNull();
+    expect(result.timelyRecordingRate).toBeNull();
+    expect(result.confidentialityMaintainedRate).toBeNull();
     expect(result.categoryDiversityRatio).toBe(0);
     expect(result.uniqueCategories).toBe(0);
   });
@@ -471,12 +451,12 @@ describe("evaluateStaffPrivacyReadiness", () => {
     const result = evaluateStaffPrivacyReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.dataProtectionTrainingRate).toBe(0);
-    expect(result.confidentialityAwarenessRate).toBe(0);
-    expect(result.dignityInCareTrainingRate).toBe(0);
-    expect(result.consentPracticeRate).toBe(0);
-    expect(result.digitalPrivacySkillsRate).toBe(0);
-    expect(result.informationSharingKnowledgeRate).toBe(0);
+    expect(result.dataProtectionTrainingRate).toBeNull();
+    expect(result.confidentialityAwarenessRate).toBeNull();
+    expect(result.dignityInCareTrainingRate).toBeNull();
+    expect(result.consentPracticeRate).toBeNull();
+    expect(result.digitalPrivacySkillsRate).toBeNull();
+    expect(result.informationSharingKnowledgeRate).toBeNull();
   });
 
   it("returns max score for all-true staff", () => {

@@ -13,7 +13,6 @@ export {
   getComplianceLevelLabel,
   getRatingLabel,
   getRating,
-  pct,
 } from "./professional-boundary-compliance-engine";
 
 export type {

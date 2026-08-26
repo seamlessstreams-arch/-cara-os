@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct, getRating, getPlacementStabilityIntelligenceCategoryLabel, getPlacementStabilityIntelligenceOutcomeLabel, getRatingLabel,
+  getRating, getPlacementStabilityIntelligenceCategoryLabel, getPlacementStabilityIntelligenceOutcomeLabel, getRatingLabel,
   evaluatePlacementStabilityQuality, evaluatePlacementStabilityCompliance, evaluatePlacementStabilityPolicyEval,
   evaluateStaffPlacementStabilityReadiness, buildChildPlacementStabilityProfiles, generatePlacementStabilityIntelligenceReport,
 } from "../placement-stability-intelligence-engine";
@@ -26,15 +26,6 @@ function makeStaff(o: Partial<StaffPlacementStabilityTraining> = {}): StaffPlace
 }
 
 // ═══ pct ═══
-describe("pct", () => {
-  it("returns percentage", () => { expect(pct(3, 4)).toBe(75); });
-  it("returns 0 for den=0", () => { expect(pct(5, 0)).toBe(0); });
-  it("100 for 1/1", () => { expect(pct(1, 1)).toBe(100); });
-  it("rounds 2/3 to 67", () => { expect(pct(2, 3)).toBe(67); });
-  it("rounds 1/3 to 33", () => { expect(pct(1, 3)).toBe(33); });
-  it("0 for 0/1", () => { expect(pct(0, 1)).toBe(0); });
-  it("50 for 1/2", () => { expect(pct(1, 2)).toBe(50); });
-});
 
 // ═══ getRating ═══
 describe("getRating", () => {
@@ -193,12 +184,12 @@ describe("evaluateStaffPlacementStabilityReadiness", () => {
   it("empty returns all zero rates", () => {
     const r = evaluateStaffPlacementStabilityReadiness([]);
     expect(r.totalStaff).toBe(0);
-    expect(r.matchingAssessmentSkillsRate).toBe(0);
-    expect(r.stabilityPlanningKnowledgeRate).toBe(0);
-    expect(r.disruptionPreventionSkillsRate).toBe(0);
-    expect(r.transitionSupportSkillsRate).toBe(0);
-    expect(r.childParticipationSkillsRate).toBe(0);
-    expect(r.permanencePlanningKnowledgeRate).toBe(0);
+    expect(r.matchingAssessmentSkillsRate).toBeNull();
+    expect(r.stabilityPlanningKnowledgeRate).toBeNull();
+    expect(r.disruptionPreventionSkillsRate).toBeNull();
+    expect(r.transitionSupportSkillsRate).toBeNull();
+    expect(r.childParticipationSkillsRate).toBeNull();
+    expect(r.permanencePlanningKnowledgeRate).toBeNull();
   });
   it("rates are percentages", () => {
     const staff = [makeStaff({ staffId: "s1" }), makeStaff({ staffId: "s2", matchingAssessmentSkills: false })];

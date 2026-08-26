@@ -17,6 +17,7 @@
    ────────────────────────────────────────────────────────────── */
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -126,18 +127,25 @@ export interface StaffRegulatoryTraining {
 export interface RegulatoryQualityResult {
   overallScore: number;
   totalRecords: number;
-  reportAccurateRate: number;
-  deadlineMetRate: number;
-  evidenceAttachedRate: number;
-  actionPointsAddressedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reportAccurateRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  deadlineMetRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  evidenceAttachedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionPointsAddressedRate: number | null;
 }
 
 export interface RegulatoryComplianceResult {
   overallScore: number;
   totalRecords: number;
-  documentationCompleteRate: number;
-  timelyRecordingRate: number;
-  reportAccurateRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationCompleteRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reportAccurateRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
 }
@@ -156,12 +164,18 @@ export interface RegulatoryPolicyResult {
 export interface StaffRegulatoryReadinessResult {
   overallScore: number;
   totalStaff: number;
-  regulatoryKnowledgeRate: number;
-  reportWritingSkillsRate: number;
-  notificationProcedureKnowledgeRate: number;
-  actionPointManagementSkillsRate: number;
-  complianceAuditSkillsRate: number;
-  inspectionPreparationSkillsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  regulatoryKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reportWritingSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  notificationProcedureKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionPointManagementSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  complianceAuditSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  inspectionPreparationSkillsRate: number | null;
 }
 
 export interface ChildRegulatoryProfile {
@@ -193,11 +207,6 @@ export interface RegulatoryIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -213,19 +222,19 @@ export function evaluateRegulatoryQuality(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, reportAccurateRate: 0, deadlineMetRate: 0, evidenceAttachedRate: 0, actionPointsAddressedRate: 0 };
+    return { overallScore: 0, totalRecords: 0, reportAccurateRate: null, deadlineMetRate: null, evidenceAttachedRate: null, actionPointsAddressedRate: null };
   }
 
-  const reportAccurateRate = pct(records.filter((r) => r.reportAccurate).length, n);
-  const deadlineMetRate = pct(records.filter((r) => r.deadlineMet).length, n);
-  const evidenceAttachedRate = pct(records.filter((r) => r.evidenceAttached).length, n);
-  const actionPointsAddressedRate = pct(records.filter((r) => r.actionPointsAddressed).length, n);
+  const reportAccurateRate = rate(records.filter((r) => r.reportAccurate).length, n);
+  const deadlineMetRate = rate(records.filter((r) => r.deadlineMet).length, n);
+  const evidenceAttachedRate = rate(records.filter((r) => r.evidenceAttached).length, n);
+  const actionPointsAddressedRate = rate(records.filter((r) => r.actionPointsAddressed).length, n);
 
   let score = 0;
-  score += (reportAccurateRate / 100) * 7;
-  score += (deadlineMetRate / 100) * 6;
-  score += (evidenceAttachedRate / 100) * 6;
-  score += (actionPointsAddressedRate / 100) * 6;
+  score += (reportAccurateRate! / 100) * 7;
+  score += (deadlineMetRate! / 100) * 6;
+  score += (evidenceAttachedRate! / 100) * 6;
+  score += (actionPointsAddressedRate! / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -240,21 +249,21 @@ export function evaluateRegulatoryCompliance(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: 0, timelyRecordingRate: 0, reportAccurateRate: 0, categoryDiversityRatio: 0, uniqueCategories: 0 };
+    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: null, timelyRecordingRate: null, reportAccurateRate: null, categoryDiversityRatio: 0, uniqueCategories: 0 };
   }
 
-  const documentationCompleteRate = pct(records.filter((r) => r.documentationComplete).length, n);
-  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, n);
-  const reportAccurateRate = pct(records.filter((r) => r.reportAccurate).length, n);
+  const documentationCompleteRate = rate(records.filter((r) => r.documentationComplete).length, n);
+  const timelyRecordingRate = rate(records.filter((r) => r.timelyRecording).length, n);
+  const reportAccurateRate = rate(records.filter((r) => r.reportAccurate).length, n);
 
   const uniqueCategoriesSet = new Set(records.map((r) => r.category));
   const uniqueCategories = uniqueCategoriesSet.size;
   const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
 
   let score = 0;
-  score += (documentationCompleteRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (reportAccurateRate / 100) * 5;
+  score += (documentationCompleteRate! / 100) * 8;
+  score += (timelyRecordingRate! / 100) * 7;
+  score += (reportAccurateRate! / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -300,23 +309,23 @@ export function evaluateStaffRegulatoryReadiness(
   const n = training.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalStaff: 0, regulatoryKnowledgeRate: 0, reportWritingSkillsRate: 0, notificationProcedureKnowledgeRate: 0, actionPointManagementSkillsRate: 0, complianceAuditSkillsRate: 0, inspectionPreparationSkillsRate: 0 };
+    return { overallScore: 0, totalStaff: 0, regulatoryKnowledgeRate: null, reportWritingSkillsRate: null, notificationProcedureKnowledgeRate: null, actionPointManagementSkillsRate: null, complianceAuditSkillsRate: null, inspectionPreparationSkillsRate: null };
   }
 
-  const regulatoryKnowledgeRate = pct(training.filter((t) => t.regulatoryKnowledge).length, n);
-  const reportWritingSkillsRate = pct(training.filter((t) => t.reportWritingSkills).length, n);
-  const notificationProcedureKnowledgeRate = pct(training.filter((t) => t.notificationProcedureKnowledge).length, n);
-  const actionPointManagementSkillsRate = pct(training.filter((t) => t.actionPointManagementSkills).length, n);
-  const complianceAuditSkillsRate = pct(training.filter((t) => t.complianceAuditSkills).length, n);
-  const inspectionPreparationSkillsRate = pct(training.filter((t) => t.inspectionPreparationSkills).length, n);
+  const regulatoryKnowledgeRate = rate(training.filter((t) => t.regulatoryKnowledge).length, n);
+  const reportWritingSkillsRate = rate(training.filter((t) => t.reportWritingSkills).length, n);
+  const notificationProcedureKnowledgeRate = rate(training.filter((t) => t.notificationProcedureKnowledge).length, n);
+  const actionPointManagementSkillsRate = rate(training.filter((t) => t.actionPointManagementSkills).length, n);
+  const complianceAuditSkillsRate = rate(training.filter((t) => t.complianceAuditSkills).length, n);
+  const inspectionPreparationSkillsRate = rate(training.filter((t) => t.inspectionPreparationSkills).length, n);
 
   let score = 0;
-  score += (regulatoryKnowledgeRate / 100) * 6;
-  score += (reportWritingSkillsRate / 100) * 5;
-  score += (notificationProcedureKnowledgeRate / 100) * 5;
-  score += (actionPointManagementSkillsRate / 100) * 4;
-  score += (complianceAuditSkillsRate / 100) * 3;
-  score += (inspectionPreparationSkillsRate / 100) * 2;
+  score += (regulatoryKnowledgeRate! / 100) * 6;
+  score += (reportWritingSkillsRate! / 100) * 5;
+  score += (notificationProcedureKnowledgeRate! / 100) * 5;
+  score += (actionPointManagementSkillsRate! / 100) * 4;
+  score += (complianceAuditSkillsRate! / 100) * 3;
+  score += (inspectionPreparationSkillsRate! / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -341,8 +350,8 @@ export function buildChildRegulatoryProfiles(
 
   return Array.from(childMap.values()).map((child) => {
     const totalRecords = child.records.length;
-    const reportAccurateRate = pct(child.records.filter((r) => r.reportAccurate).length, totalRecords);
-    const deadlineMetRate = pct(child.records.filter((r) => r.deadlineMet).length, totalRecords);
+    const reportAccurateRate = rate(child.records.filter((r) => r.reportAccurate).length, totalRecords)!;
+    const deadlineMetRate = rate(child.records.filter((r) => r.deadlineMet).length, totalRecords)!;
     const uniqueCategoriesSet = new Set(child.records.map((r) => r.category));
     const categoriesCovered = Array.from(uniqueCategoriesSet);
 
@@ -351,14 +360,14 @@ export function buildChildRegulatoryProfiles(
     else if (totalRecords >= 5) frequencyScore = 1;
 
     let rate1Score = 0;
-    if (reportAccurateRate >= 80) rate1Score = 3;
-    else if (reportAccurateRate >= 60) rate1Score = 2;
-    else if (reportAccurateRate >= 40) rate1Score = 1;
+    if (meets(reportAccurateRate, 80)) rate1Score = 3;
+    else if (meets(reportAccurateRate, 60)) rate1Score = 2;
+    else if (meets(reportAccurateRate, 40)) rate1Score = 1;
 
     let rate2Score = 0;
-    if (deadlineMetRate >= 80) rate2Score = 3;
-    else if (deadlineMetRate >= 60) rate2Score = 2;
-    else if (deadlineMetRate >= 40) rate2Score = 1;
+    if (meets(deadlineMetRate, 80)) rate2Score = 3;
+    else if (meets(deadlineMetRate, 60)) rate2Score = 2;
+    else if (meets(deadlineMetRate, 40)) rate2Score = 1;
 
     let diversityBonus = 0;
     if (categoriesCovered.length >= 4) diversityBonus = 2;
@@ -406,9 +415,9 @@ export function generateRegulatoryIntelligence(
   if (complianceResult.overallScore >= 20) strengths.push("Regulatory compliance is strong (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore >= 20) strengths.push("Regulatory policy framework is robust (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore >= 20) strengths.push("Staff regulatory readiness is strong (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.reportAccurateRate >= 90) strengths.push("Report accuracy at " + qualityResult.reportAccurateRate + "%");
-  if (periodRecords.length > 0 && qualityResult.deadlineMetRate >= 90) strengths.push("Deadline compliance at " + qualityResult.deadlineMetRate + "%");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate >= 90) strengths.push("Documentation completion rate at " + complianceResult.documentationCompleteRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.reportAccurateRate, 90)) strengths.push("Report accuracy at " + qualityResult.reportAccurateRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.deadlineMetRate, 90)) strengths.push("Deadline compliance at " + qualityResult.deadlineMetRate + "%");
+  if (periodRecords.length > 0 && meets(complianceResult.documentationCompleteRate, 90)) strengths.push("Documentation completion rate at " + complianceResult.documentationCompleteRate + "%");
 
   const areasForImprovement: string[] = [];
   if (overallScore < 40) areasForImprovement.push("Regulatory compliance rated Inadequate (" + overallScore + "/100) — urgent systemic review required");
@@ -417,7 +426,7 @@ export function generateRegulatoryIntelligence(
   if (complianceResult.overallScore < 15) areasForImprovement.push("Regulatory compliance needs improvement (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore < 15) areasForImprovement.push("Regulatory policy needs strengthening (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore < 15) areasForImprovement.push("Staff regulatory readiness needs improvement (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.reportAccurateRate < 80) areasForImprovement.push("Report accuracy at " + qualityResult.reportAccurateRate + "% — must improve for regulatory compliance");
+  if (periodRecords.length > 0 && below(qualityResult.reportAccurateRate, 80)) areasForImprovement.push("Report accuracy at " + qualityResult.reportAccurateRate + "% — must improve for regulatory compliance");
   if (periodRecords.length === 0) areasForImprovement.push("No regulatory records — recording must be documented");
   if (policy === null) areasForImprovement.push("No regulatory policy in place — statutory requirement");
   if (staff.length === 0) areasForImprovement.push("No staff regulatory training records — training required");
@@ -425,11 +434,11 @@ export function generateRegulatoryIntelligence(
   const actions: string[] = [];
   if (policy === null || policyResult.overallScore === 0) actions.push("URGENT: No regulatory policy — develop and implement comprehensive policy immediately");
   if (staff.length === 0) actions.push("URGENT: No staff regulatory training — schedule training for all staff");
-  if (periodRecords.length > 0 && qualityResult.reportAccurateRate < 50) actions.push("HIGH: Report accuracy at " + qualityResult.reportAccurateRate + "% — review reporting procedures");
-  if (periodRecords.length > 0 && qualityResult.deadlineMetRate < 50) actions.push("HIGH: Deadline compliance at " + qualityResult.deadlineMetRate + "% — ensure deadlines are tracked and met");
-  if (periodRecords.length > 0 && qualityResult.evidenceAttachedRate < 50) actions.push("HIGH: Evidence attachment rate at " + qualityResult.evidenceAttachedRate + "% — all regulatory records must include evidence");
-  if (periodRecords.length > 0 && complianceResult.timelyRecordingRate < 50) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
-  if (staff.length > 0 && staffResult.regulatoryKnowledgeRate < 50) actions.push("MEDIUM: Regulatory knowledge at " + staffResult.regulatoryKnowledgeRate + "% — schedule training for staff");
+  if (periodRecords.length > 0 && below(qualityResult.reportAccurateRate, 50)) actions.push("HIGH: Report accuracy at " + qualityResult.reportAccurateRate + "% — review reporting procedures");
+  if (periodRecords.length > 0 && below(qualityResult.deadlineMetRate, 50)) actions.push("HIGH: Deadline compliance at " + qualityResult.deadlineMetRate + "% — ensure deadlines are tracked and met");
+  if (periodRecords.length > 0 && below(qualityResult.evidenceAttachedRate, 50)) actions.push("HIGH: Evidence attachment rate at " + qualityResult.evidenceAttachedRate + "% — all regulatory records must include evidence");
+  if (periodRecords.length > 0 && below(complianceResult.timelyRecordingRate, 50)) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
+  if (staff.length > 0 && below(staffResult.regulatoryKnowledgeRate, 50)) actions.push("MEDIUM: Regulatory knowledge at " + staffResult.regulatoryKnowledgeRate + "% — schedule training for staff");
   const lowScoreChildren = childProfiles.filter((p) => p.overallScore <= 3);
   if (lowScoreChildren.length > 0) actions.push("MEDIUM: " + lowScoreChildren.length + " child(ren) with low regulatory scores — review individual compliance provisions");
   if (actions.length === 0) actions.push("No immediate actions required. Regulatory systems operating within expected standards.");

@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getReg44VisitCategoryLabel,
   getReg44VisitOutcomeLabel,
@@ -71,24 +70,6 @@ function makeTraining(o: Partial<StaffReg44VisitTraining> = {}): StaffReg44Visit
 }
 
 // == pct ======================================================================
-
-describe("pct", () => {
-  it("returns 0 for den=0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-  it("correct percentage", () => {
-    expect(pct(3, 4)).toBe(75);
-  });
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-  it("100 for equal values", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-  it("0 for num=0", () => {
-    expect(pct(0, 5)).toBe(0);
-  });
-});
 
 // == getRating ================================================================
 
@@ -185,10 +166,10 @@ describe("evaluateReg44VisitQuality", () => {
     const r = evaluateReg44VisitQuality([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalRecords).toBe(0);
-    expect(r.childrenInterviewedRate).toBe(0);
-    expect(r.staffInterviewedRate).toBe(0);
-    expect(r.recordsReviewedRate).toBe(0);
-    expect(r.premisesInspectedRate).toBe(0);
+    expect(r.childrenInterviewedRate).toBeNull();
+    expect(r.staffInterviewedRate).toBeNull();
+    expect(r.recordsReviewedRate).toBeNull();
+    expect(r.premisesInspectedRate).toBeNull();
   });
 
   it("max 25 with perfect records", () => {

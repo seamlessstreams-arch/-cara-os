@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // Placement Stability Continuity Intelligence Engine
 // Pure deterministic — no AI, no external calls, no randomness, no Date.now()
 //
@@ -118,18 +119,25 @@ export interface StaffPlacementTraining {
 
 export interface PlacementQualityResult {
   totalReviews: number;
-  stabilityRate: number;
-  childParticipatedRate: number;
-  familyEngagedRate: number;
-  continuityRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  stabilityRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childParticipatedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  familyEngagedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  continuityRate: number | null;
   score: number;
 }
 
 export interface PlacementComplianceResult {
   totalReviews: number;
-  documentedRate: number;
-  managementOversightRate: number;
-  actionsTakenRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  managementOversightRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionsTakenRate: number | null;
   reviewTypeDiversityRatio: number;
   score: number;
 }
@@ -147,12 +155,18 @@ export interface PlacementPolicyResult {
 
 export interface StaffPlacementReadinessResult {
   totalStaff: number;
-  attachmentTheoryRate: number;
-  therapeuticCaregivingRate: number;
-  disruptionPreventionRate: number;
-  transitionSupportRate: number;
-  familyEngagementRate: number;
-  multiAgencyWorkingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  attachmentTheoryRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  therapeuticCaregivingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  disruptionPreventionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  transitionSupportRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  familyEngagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  multiAgencyWorkingRate: number | null;
   score: number;
 }
 
@@ -160,8 +174,10 @@ export interface ChildPlacementProfile {
   childId: string;
   childName: string;
   totalReviews: number;
-  stabilityRate: number;
-  childParticipatedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  stabilityRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childParticipatedRate: number | null;
   reviewTypes: ReviewType[];
   overallScore: number;
 }
@@ -185,11 +201,6 @@ export interface PlacementStabilityContinuityIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -205,10 +216,10 @@ export function evaluatePlacementQuality(
   if (reviews.length === 0) {
     return {
       totalReviews: 0,
-      stabilityRate: 0,
-      childParticipatedRate: 0,
-      familyEngagedRate: 0,
-      continuityRate: 0,
+      stabilityRate: null,
+      childParticipatedRate: null,
+      familyEngagedRate: null,
+      continuityRate: null,
       score: 0,
     };
   }
@@ -218,25 +229,25 @@ export function evaluatePlacementQuality(
     (r) => r.stabilityStatus === "stable" || r.stabilityStatus === "mostly_stable",
   ).length;
 
-  const stabilityRate = pct(stableCount, total);
-  const childParticipatedRate = pct(
+  const stabilityRate = rate(stableCount, total);
+  const childParticipatedRate = rate(
     reviews.filter((r) => r.childParticipated).length,
     total,
   );
-  const familyEngagedRate = pct(
+  const familyEngagedRate = rate(
     reviews.filter((r) => r.familyEngaged).length,
     total,
   );
-  const continuityRate = pct(
+  const continuityRate = rate(
     reviews.filter((r) => r.continuityMaintained).length,
     total,
   );
 
   // Scoring: stability 0-7, childParticipated 0-6, familyEngaged 0-6, continuity 0-6 = max 25
-  const stabilityScore = Math.round((Math.min(stabilityRate, 100) / 100) * 7);
-  const participatedScore = Math.round((Math.min(childParticipatedRate, 100) / 100) * 6);
-  const familyScore = Math.round((Math.min(familyEngagedRate, 100) / 100) * 6);
-  const continuityScore = Math.round((Math.min(continuityRate, 100) / 100) * 6);
+  const stabilityScore = Math.round((Math.min(stabilityRate!, 100) / 100) * 7);
+  const participatedScore = Math.round((Math.min(childParticipatedRate!, 100) / 100) * 6);
+  const familyScore = Math.round((Math.min(familyEngagedRate!, 100) / 100) * 6);
+  const continuityScore = Math.round((Math.min(continuityRate!, 100) / 100) * 6);
 
   const score = Math.min(25, stabilityScore + participatedScore + familyScore + continuityScore);
 
@@ -258,24 +269,24 @@ export function evaluatePlacementCompliance(
   if (reviews.length === 0) {
     return {
       totalReviews: 0,
-      documentedRate: 0,
-      managementOversightRate: 0,
-      actionsTakenRate: 0,
+      documentedRate: null,
+      managementOversightRate: null,
+      actionsTakenRate: null,
       reviewTypeDiversityRatio: 0,
       score: 0,
     };
   }
 
   const total = reviews.length;
-  const documentedRate = pct(
+  const documentedRate = rate(
     reviews.filter((r) => r.documentedInPlan).length,
     total,
   );
-  const managementOversightRate = pct(
+  const managementOversightRate = rate(
     reviews.filter((r) => r.managementOversight).length,
     total,
   );
-  const actionsTakenRate = pct(
+  const actionsTakenRate = rate(
     reviews.filter((r) => r.actionsTaken).length,
     total,
   );
@@ -283,9 +294,9 @@ export function evaluatePlacementCompliance(
   const reviewTypeDiversityRatio = Math.round((uniqueTypes / 8) * 100);
 
   // Scoring: documented 0-8, managementOversight 0-7, actionsTaken 0-5, diversity 0-5 = max 25
-  const documentedScore = Math.round((Math.min(documentedRate, 100) / 100) * 8);
-  const oversightScore = Math.round((Math.min(managementOversightRate, 100) / 100) * 7);
-  const actionsScore = Math.round((Math.min(actionsTakenRate, 100) / 100) * 5);
+  const documentedScore = Math.round((Math.min(documentedRate!, 100) / 100) * 8);
+  const oversightScore = Math.round((Math.min(managementOversightRate!, 100) / 100) * 7);
+  const actionsScore = Math.round((Math.min(actionsTakenRate!, 100) / 100) * 5);
   const diversityScore = Math.round((Math.min(reviewTypeDiversityRatio, 100) / 100) * 5);
 
   const score = Math.min(25, documentedScore + oversightScore + actionsScore + diversityScore);
@@ -348,31 +359,31 @@ export function evaluateStaffPlacementReadiness(
   if (staff.length === 0) {
     return {
       totalStaff: 0,
-      attachmentTheoryRate: 0,
-      therapeuticCaregivingRate: 0,
-      disruptionPreventionRate: 0,
-      transitionSupportRate: 0,
-      familyEngagementRate: 0,
-      multiAgencyWorkingRate: 0,
+      attachmentTheoryRate: null,
+      therapeuticCaregivingRate: null,
+      disruptionPreventionRate: null,
+      transitionSupportRate: null,
+      familyEngagementRate: null,
+      multiAgencyWorkingRate: null,
       score: 0,
     };
   }
 
   const total = staff.length;
-  const attachmentTheoryRate = pct(staff.filter((s) => s.attachmentTheory).length, total);
-  const therapeuticCaregivingRate = pct(staff.filter((s) => s.therapeuticCaregiving).length, total);
-  const disruptionPreventionRate = pct(staff.filter((s) => s.disruptionPrevention).length, total);
-  const transitionSupportRate = pct(staff.filter((s) => s.transitionSupport).length, total);
-  const familyEngagementRate = pct(staff.filter((s) => s.familyEngagement).length, total);
-  const multiAgencyWorkingRate = pct(staff.filter((s) => s.multiAgencyWorking).length, total);
+  const attachmentTheoryRate = rate(staff.filter((s) => s.attachmentTheory).length, total);
+  const therapeuticCaregivingRate = rate(staff.filter((s) => s.therapeuticCaregiving).length, total);
+  const disruptionPreventionRate = rate(staff.filter((s) => s.disruptionPrevention).length, total);
+  const transitionSupportRate = rate(staff.filter((s) => s.transitionSupport).length, total);
+  const familyEngagementRate = rate(staff.filter((s) => s.familyEngagement).length, total);
+  const multiAgencyWorkingRate = rate(staff.filter((s) => s.multiAgencyWorking).length, total);
 
   // Weights: 6+5+5+4+3+2 = 25
-  const s1 = Math.round((Math.min(attachmentTheoryRate, 100) / 100) * 6);
-  const s2 = Math.round((Math.min(therapeuticCaregivingRate, 100) / 100) * 5);
-  const s3 = Math.round((Math.min(disruptionPreventionRate, 100) / 100) * 5);
-  const s4 = Math.round((Math.min(transitionSupportRate, 100) / 100) * 4);
-  const s5 = Math.round((Math.min(familyEngagementRate, 100) / 100) * 3);
-  const s6 = Math.round((Math.min(multiAgencyWorkingRate, 100) / 100) * 2);
+  const s1 = Math.round((Math.min(attachmentTheoryRate!, 100) / 100) * 6);
+  const s2 = Math.round((Math.min(therapeuticCaregivingRate!, 100) / 100) * 5);
+  const s3 = Math.round((Math.min(disruptionPreventionRate!, 100) / 100) * 5);
+  const s4 = Math.round((Math.min(transitionSupportRate!, 100) / 100) * 4);
+  const s5 = Math.round((Math.min(familyEngagementRate!, 100) / 100) * 3);
+  const s6 = Math.round((Math.min(multiAgencyWorkingRate!, 100) / 100) * 2);
 
   const score = Math.min(25, s1 + s2 + s3 + s4 + s5 + s6);
 
@@ -411,9 +422,9 @@ export function buildChildPlacementProfiles(
     const stableCount = childReviews.filter(
       (r) => r.stabilityStatus === "stable" || r.stabilityStatus === "mostly_stable",
     ).length;
-    const stabilityRate = pct(stableCount, totalReviews);
+    const stabilityRate = rate(stableCount, totalReviews);
 
-    const childParticipatedRate = pct(
+    const childParticipatedRate = rate(
       childReviews.filter((r) => r.childParticipated).length,
       totalReviews,
     );
@@ -425,10 +436,10 @@ export function buildChildPlacementProfiles(
     const frequencyScore = totalReviews >= 10 ? 2 : totalReviews >= 5 ? 1 : 0;
 
     // stabilityScore: >=80 -> 3, >=60 -> 2, >=40 -> 1, else 0
-    const stabilityScore = stabilityRate >= 80 ? 3 : stabilityRate >= 60 ? 2 : stabilityRate >= 40 ? 1 : 0;
+    const stabilityScore = meets(stabilityRate, 80) ? 3 : meets(stabilityRate, 60) ? 2 : meets(stabilityRate, 40) ? 1 : 0;
 
     // participationScore: >=80 -> 3, >=60 -> 2, >=40 -> 1, else 0
-    const participationScore = childParticipatedRate >= 80 ? 3 : childParticipatedRate >= 60 ? 2 : childParticipatedRate >= 40 ? 1 : 0;
+    const participationScore = meets(childParticipatedRate, 80) ? 3 : meets(childParticipatedRate, 60) ? 2 : meets(childParticipatedRate, 40) ? 1 : 0;
 
     // diversityBonus: >=4 types -> 2, >=2 types -> 1, else 0
     const diversityBonus = uniqueTypes.size >= 4 ? 2 : uniqueTypes.size >= 2 ? 1 : 0;
@@ -474,22 +485,22 @@ export function generatePlacementStabilityContinuityIntelligence(
   // ── Strengths ──
   const strengths: string[] = [];
 
-  if (placementQuality.stabilityRate >= 80) {
+  if (meets(placementQuality.stabilityRate, 80)) {
     strengths.push("High placement stability rate indicates children are settled and secure in their placements");
   }
-  if (placementQuality.childParticipatedRate >= 80) {
+  if (meets(placementQuality.childParticipatedRate, 80)) {
     strengths.push("Children are consistently participating in their placement reviews, reflecting a child-centred approach");
   }
-  if (placementQuality.familyEngagedRate >= 80) {
+  if (meets(placementQuality.familyEngagedRate, 80)) {
     strengths.push("Strong family engagement in placement reviews supports continuity and connectedness");
   }
-  if (placementQuality.continuityRate >= 80) {
+  if (meets(placementQuality.continuityRate, 80)) {
     strengths.push("Continuity of care is being well maintained across placement reviews");
   }
-  if (placementCompliance.documentedRate >= 80) {
+  if (meets(placementCompliance.documentedRate, 80)) {
     strengths.push("Placement plans are well documented with clear records maintained");
   }
-  if (placementCompliance.managementOversightRate >= 80) {
+  if (meets(placementCompliance.managementOversightRate, 80)) {
     strengths.push("Strong management oversight of placement stability processes");
   }
   if (placementCompliance.reviewTypeDiversityRatio >= 75) {
@@ -505,22 +516,22 @@ export function generatePlacementStabilityContinuityIntelligence(
   // ── Areas for Improvement ──
   const areasForImprovement: string[] = [];
 
-  if (placementQuality.stabilityRate < 60) {
+  if (below(placementQuality.stabilityRate, 60)) {
     areasForImprovement.push("Placement stability rate is below expected levels — disruption prevention strategies need strengthening");
   }
-  if (placementQuality.childParticipatedRate < 60) {
+  if (below(placementQuality.childParticipatedRate, 60)) {
     areasForImprovement.push("Child participation in placement reviews needs improvement to meet the wishes and feelings standard");
   }
-  if (placementQuality.familyEngagedRate < 60) {
+  if (below(placementQuality.familyEngagedRate, 60)) {
     areasForImprovement.push("Family engagement in the placement review process requires development");
   }
-  if (placementQuality.continuityRate < 60) {
+  if (below(placementQuality.continuityRate, 60)) {
     areasForImprovement.push("Continuity of care is not consistently maintained across reviews");
   }
-  if (placementCompliance.documentedRate < 60) {
+  if (below(placementCompliance.documentedRate, 60)) {
     areasForImprovement.push("Documentation of placement plans needs to be more consistently completed");
   }
-  if (placementCompliance.managementOversightRate < 60) {
+  if (below(placementCompliance.managementOversightRate, 60)) {
     areasForImprovement.push("Management oversight of placement stability processes should be increased");
   }
   if (placementCompliance.reviewTypeDiversityRatio < 50) {
@@ -565,33 +576,33 @@ export function generatePlacementStabilityContinuityIntelligence(
   if (staffReadiness.score === 0) {
     actions.push("URGENT: No staff have completed placement stability training — develop and deliver a comprehensive training programme");
   } else {
-    if (staffReadiness.attachmentTheoryRate < 80) {
+    if (below(staffReadiness.attachmentTheoryRate, 80)) {
       actions.push("URGENT: Prioritise attachment theory training for all staff to support placement stability");
     }
-    if (staffReadiness.therapeuticCaregivingRate < 80) {
+    if (below(staffReadiness.therapeuticCaregivingRate, 80)) {
       actions.push("Schedule therapeutic caregiving training to strengthen placement support skills");
     }
-    if (staffReadiness.disruptionPreventionRate < 80) {
+    if (below(staffReadiness.disruptionPreventionRate, 80)) {
       actions.push("URGENT: Deliver disruption prevention training to all care staff");
     }
-    if (staffReadiness.transitionSupportRate < 80) {
+    if (below(staffReadiness.transitionSupportRate, 80)) {
       actions.push("Provide transition support training to improve placement change outcomes");
     }
-    if (staffReadiness.familyEngagementRate < 80) {
+    if (below(staffReadiness.familyEngagementRate, 80)) {
       actions.push("Develop family engagement skills through targeted training");
     }
-    if (staffReadiness.multiAgencyWorkingRate < 80) {
+    if (below(staffReadiness.multiAgencyWorkingRate, 80)) {
       actions.push("Arrange multi-agency working training to improve collaborative practice");
     }
   }
 
-  if (placementQuality.stabilityRate < 60) {
+  if (below(placementQuality.stabilityRate, 60)) {
     actions.push("Convene a placement stability review meeting to address disruption concerns");
   }
-  if (placementQuality.childParticipatedRate < 60) {
+  if (below(placementQuality.childParticipatedRate, 60)) {
     actions.push("Implement strategies to increase child participation in placement reviews");
   }
-  if (placementCompliance.documentedRate < 60) {
+  if (below(placementCompliance.documentedRate, 60)) {
     actions.push("Establish an audit process for placement plan documentation");
   }
 

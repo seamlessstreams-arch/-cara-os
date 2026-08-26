@@ -18,6 +18,7 @@
    ────────────────────────────────────────────────────────────── */
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -127,18 +128,25 @@ export interface StaffPremisesTraining {
 export interface PremisesIntelligenceQualityResult {
   overallScore: number;
   totalRecords: number;
-  hazardIdentifiedRate: number;
-  riskMitigatedRate: number;
-  maintenanceCompletedRate: number;
-  childFriendlyAssessedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  hazardIdentifiedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskMitigatedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  maintenanceCompletedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childFriendlyAssessedRate: number | null;
 }
 
 export interface PremisesIntelligenceComplianceResult {
   overallScore: number;
   totalRecords: number;
-  documentationCompleteRate: number;
-  timelyRecordingRate: number;
-  hazardIdentifiedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationCompleteRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  hazardIdentifiedRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
 }
@@ -157,12 +165,18 @@ export interface PremisesIntelligencePolicyResult {
 export interface StaffPremisesReadinessResult {
   overallScore: number;
   totalStaff: number;
-  healthSafetyKnowledgeRate: number;
-  fireSafetyTrainingRate: number;
-  maintenanceSkillsRate: number;
-  riskAssessmentSkillsRate: number;
-  firstAidTrainingRate: number;
-  accessibilityAwarenessRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  healthSafetyKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  fireSafetyTrainingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  maintenanceSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessmentSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  firstAidTrainingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  accessibilityAwarenessRate: number | null;
 }
 
 export interface AreaProfile {
@@ -194,11 +208,6 @@ export interface PremisesIntelligenceResult {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): PremisesIntelligenceRating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -214,19 +223,19 @@ export function evaluatePremisesQuality(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, hazardIdentifiedRate: 0, riskMitigatedRate: 0, maintenanceCompletedRate: 0, childFriendlyAssessedRate: 0 };
+    return { overallScore: 0, totalRecords: 0, hazardIdentifiedRate: null, riskMitigatedRate: null, maintenanceCompletedRate: null, childFriendlyAssessedRate: null };
   }
 
-  const hazardIdentifiedRate = pct(records.filter((r) => r.hazardIdentified).length, n);
-  const riskMitigatedRate = pct(records.filter((r) => r.riskMitigated).length, n);
-  const maintenanceCompletedRate = pct(records.filter((r) => r.maintenanceCompleted).length, n);
-  const childFriendlyAssessedRate = pct(records.filter((r) => r.childFriendlyAssessed).length, n);
+  const hazardIdentifiedRate = rate(records.filter((r) => r.hazardIdentified).length, n);
+  const riskMitigatedRate = rate(records.filter((r) => r.riskMitigated).length, n);
+  const maintenanceCompletedRate = rate(records.filter((r) => r.maintenanceCompleted).length, n);
+  const childFriendlyAssessedRate = rate(records.filter((r) => r.childFriendlyAssessed).length, n);
 
   let score = 0;
-  score += (hazardIdentifiedRate / 100) * 7;
-  score += (riskMitigatedRate / 100) * 6;
-  score += (maintenanceCompletedRate / 100) * 6;
-  score += (childFriendlyAssessedRate / 100) * 6;
+  score += (hazardIdentifiedRate! / 100) * 7;
+  score += (riskMitigatedRate! / 100) * 6;
+  score += (maintenanceCompletedRate! / 100) * 6;
+  score += (childFriendlyAssessedRate! / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -241,21 +250,21 @@ export function evaluatePremisesCompliance(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: 0, timelyRecordingRate: 0, hazardIdentifiedRate: 0, categoryDiversityRatio: 0, uniqueCategories: 0 };
+    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: null, timelyRecordingRate: null, hazardIdentifiedRate: null, categoryDiversityRatio: 0, uniqueCategories: 0 };
   }
 
-  const documentationCompleteRate = pct(records.filter((r) => r.documentationComplete).length, n);
-  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, n);
-  const hazardIdentifiedRate = pct(records.filter((r) => r.hazardIdentified).length, n);
+  const documentationCompleteRate = rate(records.filter((r) => r.documentationComplete).length, n);
+  const timelyRecordingRate = rate(records.filter((r) => r.timelyRecording).length, n);
+  const hazardIdentifiedRate = rate(records.filter((r) => r.hazardIdentified).length, n);
 
   const uniqueCategoriesSet = new Set(records.map((r) => r.category));
   const uniqueCategories = uniqueCategoriesSet.size;
   const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
 
   let score = 0;
-  score += (documentationCompleteRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (hazardIdentifiedRate / 100) * 5;
+  score += (documentationCompleteRate! / 100) * 8;
+  score += (timelyRecordingRate! / 100) * 7;
+  score += (hazardIdentifiedRate! / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -301,23 +310,23 @@ export function evaluateStaffPremisesReadiness(
   const n = training.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalStaff: 0, healthSafetyKnowledgeRate: 0, fireSafetyTrainingRate: 0, maintenanceSkillsRate: 0, riskAssessmentSkillsRate: 0, firstAidTrainingRate: 0, accessibilityAwarenessRate: 0 };
+    return { overallScore: 0, totalStaff: 0, healthSafetyKnowledgeRate: null, fireSafetyTrainingRate: null, maintenanceSkillsRate: null, riskAssessmentSkillsRate: null, firstAidTrainingRate: null, accessibilityAwarenessRate: null };
   }
 
-  const healthSafetyKnowledgeRate = pct(training.filter((t) => t.healthSafetyKnowledge).length, n);
-  const fireSafetyTrainingRate = pct(training.filter((t) => t.fireSafetyTraining).length, n);
-  const maintenanceSkillsRate = pct(training.filter((t) => t.maintenanceSkills).length, n);
-  const riskAssessmentSkillsRate = pct(training.filter((t) => t.riskAssessmentSkills).length, n);
-  const firstAidTrainingRate = pct(training.filter((t) => t.firstAidTraining).length, n);
-  const accessibilityAwarenessRate = pct(training.filter((t) => t.accessibilityAwareness).length, n);
+  const healthSafetyKnowledgeRate = rate(training.filter((t) => t.healthSafetyKnowledge).length, n);
+  const fireSafetyTrainingRate = rate(training.filter((t) => t.fireSafetyTraining).length, n);
+  const maintenanceSkillsRate = rate(training.filter((t) => t.maintenanceSkills).length, n);
+  const riskAssessmentSkillsRate = rate(training.filter((t) => t.riskAssessmentSkills).length, n);
+  const firstAidTrainingRate = rate(training.filter((t) => t.firstAidTraining).length, n);
+  const accessibilityAwarenessRate = rate(training.filter((t) => t.accessibilityAwareness).length, n);
 
   let score = 0;
-  score += (healthSafetyKnowledgeRate / 100) * 6;
-  score += (fireSafetyTrainingRate / 100) * 5;
-  score += (maintenanceSkillsRate / 100) * 5;
-  score += (riskAssessmentSkillsRate / 100) * 4;
-  score += (firstAidTrainingRate / 100) * 3;
-  score += (accessibilityAwarenessRate / 100) * 2;
+  score += (healthSafetyKnowledgeRate! / 100) * 6;
+  score += (fireSafetyTrainingRate! / 100) * 5;
+  score += (maintenanceSkillsRate! / 100) * 5;
+  score += (riskAssessmentSkillsRate! / 100) * 4;
+  score += (firstAidTrainingRate! / 100) * 3;
+  score += (accessibilityAwarenessRate! / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -342,27 +351,27 @@ export function buildAreaProfiles(
 
   return Array.from(areaMap.entries()).map(([category, recs]) => {
     const totalRecords = recs.length;
-    const hazardIdentifiedRate = pct(recs.filter((r) => r.hazardIdentified).length, totalRecords);
-    const maintenanceCompletedRate = pct(recs.filter((r) => r.maintenanceCompleted).length, totalRecords);
-    const riskMitigatedRate = pct(recs.filter((r) => r.riskMitigated).length, totalRecords);
+    const hazardIdentifiedRate = rate(recs.filter((r) => r.hazardIdentified).length, totalRecords)!;
+    const maintenanceCompletedRate = rate(recs.filter((r) => r.maintenanceCompleted).length, totalRecords)!;
+    const riskMitigatedRate = rate(recs.filter((r) => r.riskMitigated).length, totalRecords)!;
 
     let frequencyScore = 0;
     if (totalRecords >= 10) frequencyScore = 2;
     else if (totalRecords >= 5) frequencyScore = 1;
 
     let rate1Score = 0;
-    if (hazardIdentifiedRate >= 80) rate1Score = 3;
-    else if (hazardIdentifiedRate >= 60) rate1Score = 2;
-    else if (hazardIdentifiedRate >= 40) rate1Score = 1;
+    if (meets(hazardIdentifiedRate, 80)) rate1Score = 3;
+    else if (meets(hazardIdentifiedRate, 60)) rate1Score = 2;
+    else if (meets(hazardIdentifiedRate, 40)) rate1Score = 1;
 
     let rate2Score = 0;
-    if (maintenanceCompletedRate >= 80) rate2Score = 3;
-    else if (maintenanceCompletedRate >= 60) rate2Score = 2;
-    else if (maintenanceCompletedRate >= 40) rate2Score = 1;
+    if (meets(maintenanceCompletedRate, 80)) rate2Score = 3;
+    else if (meets(maintenanceCompletedRate, 60)) rate2Score = 2;
+    else if (meets(maintenanceCompletedRate, 40)) rate2Score = 1;
 
     let riskBonus = 0;
-    if (riskMitigatedRate >= 80) riskBonus = 2;
-    else if (riskMitigatedRate >= 40) riskBonus = 1;
+    if (meets(riskMitigatedRate, 80)) riskBonus = 2;
+    else if (meets(riskMitigatedRate, 40)) riskBonus = 1;
 
     const overallScore = Math.min(10, frequencyScore + rate1Score + rate2Score + riskBonus);
 
@@ -414,9 +423,9 @@ export function generatePremisesIntelligenceReport(
   if (complianceResult.overallScore >= 20) strengths.push("Premises compliance is strong (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore >= 20) strengths.push("Premises policy framework is robust (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore >= 20) strengths.push("Staff premises readiness is strong (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.hazardIdentifiedRate >= 90) strengths.push("Hazard identification rate at " + qualityResult.hazardIdentifiedRate + "%");
-  if (periodRecords.length > 0 && qualityResult.maintenanceCompletedRate >= 90) strengths.push("Maintenance completion rate at " + qualityResult.maintenanceCompletedRate + "%");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate >= 90) strengths.push("Documentation rate at " + complianceResult.documentationCompleteRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.hazardIdentifiedRate, 90)) strengths.push("Hazard identification rate at " + qualityResult.hazardIdentifiedRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.maintenanceCompletedRate, 90)) strengths.push("Maintenance completion rate at " + qualityResult.maintenanceCompletedRate + "%");
+  if (periodRecords.length > 0 && meets(complianceResult.documentationCompleteRate, 90)) strengths.push("Documentation rate at " + complianceResult.documentationCompleteRate + "%");
 
   const areasForImprovement: string[] = [];
   if (overallScore < 40) areasForImprovement.push("Premises intelligence rated Inadequate (" + overallScore + "/100) — urgent systemic review required");
@@ -425,7 +434,7 @@ export function generatePremisesIntelligenceReport(
   if (complianceResult.overallScore < 15) areasForImprovement.push("Premises compliance needs improvement (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore < 15) areasForImprovement.push("Premises policy needs strengthening (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore < 15) areasForImprovement.push("Staff premises readiness needs improvement (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.hazardIdentifiedRate < 80) areasForImprovement.push("Hazard identification at " + qualityResult.hazardIdentifiedRate + "% — must improve for child safety");
+  if (periodRecords.length > 0 && below(qualityResult.hazardIdentifiedRate, 80)) areasForImprovement.push("Hazard identification at " + qualityResult.hazardIdentifiedRate + "% — must improve for child safety");
   if (periodRecords.length === 0) areasForImprovement.push("No premises records — inspections must be documented");
   if (policy === null) areasForImprovement.push("No premises policy in place — statutory requirement");
   if (staff.length === 0) areasForImprovement.push("No staff premises training records — training required");
@@ -433,11 +442,11 @@ export function generatePremisesIntelligenceReport(
   const actions: string[] = [];
   if (policy === null || policyResult.overallScore === 0) actions.push("URGENT: No premises policy — develop and implement comprehensive policy immediately");
   if (staff.length === 0) actions.push("URGENT: No staff premises training — schedule training for all premises staff");
-  if (periodRecords.length > 0 && qualityResult.hazardIdentifiedRate < 50) actions.push("HIGH: Hazard identification at " + qualityResult.hazardIdentifiedRate + "% — review inspection procedures and checklists");
-  if (periodRecords.length > 0 && qualityResult.maintenanceCompletedRate < 50) actions.push("HIGH: Maintenance completion at " + qualityResult.maintenanceCompletedRate + "% — ensure maintenance tasks are followed through");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate < 50) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all premises checks must be recorded");
-  if (periodRecords.length > 0 && complianceResult.timelyRecordingRate < 50) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
-  if (staff.length > 0 && staffResult.healthSafetyKnowledgeRate < 50) actions.push("MEDIUM: Health & safety knowledge at " + staffResult.healthSafetyKnowledgeRate + "% — schedule training for premises staff");
+  if (periodRecords.length > 0 && below(qualityResult.hazardIdentifiedRate, 50)) actions.push("HIGH: Hazard identification at " + qualityResult.hazardIdentifiedRate + "% — review inspection procedures and checklists");
+  if (periodRecords.length > 0 && below(qualityResult.maintenanceCompletedRate, 50)) actions.push("HIGH: Maintenance completion at " + qualityResult.maintenanceCompletedRate + "% — ensure maintenance tasks are followed through");
+  if (periodRecords.length > 0 && below(complianceResult.documentationCompleteRate, 50)) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all premises checks must be recorded");
+  if (periodRecords.length > 0 && below(complianceResult.timelyRecordingRate, 50)) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
+  if (staff.length > 0 && below(staffResult.healthSafetyKnowledgeRate, 50)) actions.push("MEDIUM: Health & safety knowledge at " + staffResult.healthSafetyKnowledgeRate + "% — schedule training for premises staff");
   const lowScoreAreas = areaProfiles.filter((p) => p.overallScore <= 3);
   if (lowScoreAreas.length > 0) actions.push("MEDIUM: " + lowScoreAreas.length + " area(s) with low premises scores — review individual area conditions");
   if (actions.length === 0) actions.push("No immediate actions required. Premises systems operating within expected standards.");

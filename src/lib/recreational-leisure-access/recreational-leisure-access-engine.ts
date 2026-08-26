@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // RECREATIONAL & LEISURE ACCESS INTELLIGENCE ENGINE
 //
@@ -123,26 +124,34 @@ export interface StaffLeisureTraining {
 export interface ActivityEngagementResult {
   totalActivities: number;
   enjoymentCount: number;
-  enjoymentRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  enjoymentRate: number | null;
   participationCount: number;
-  participationRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  participationRate: number | null;
   socialInteractionCount: number;
-  socialInteractionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  socialInteractionRate: number | null;
   newSkillCount: number;
-  newSkillRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  newSkillRate: number | null;
   recordedInPlanCount: number;
-  recordedInPlanRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  recordedInPlanRate: number | null;
   score: number; // 0-25
 }
 
 export interface ActivityDiversityResult {
   totalActivities: number;
   uniqueActivityTypes: number;
-  uniqueActivityTypeRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  uniqueActivityTypeRatio: number | null;
   accessBarrierFreeCount: number;
-  accessBarrierFreeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  accessBarrierFreeRate: number | null;
   staffSupportCount: number;
-  staffSupportRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffSupportRate: number | null;
   activityTypeBreakdown: Record<ActivityType, number>;
   score: number; // 0-25
 }
@@ -162,17 +171,23 @@ export interface LeisurePolicyResult {
 export interface StaffLeisureReadinessResult {
   totalStaff: number;
   activityPlanningCount: number;
-  activityPlanningRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  activityPlanningRate: number | null;
   safeguardingInActivitiesCount: number;
-  safeguardingInActivitiesRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingInActivitiesRate: number | null;
   inclusionAwarenessCount: number;
-  inclusionAwarenessRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  inclusionAwarenessRate: number | null;
   firstAidOutdoorsCount: number;
-  firstAidOutdoorsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  firstAidOutdoorsRate: number | null;
   youthEngagementCount: number;
-  youthEngagementRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  youthEngagementRate: number | null;
   communityResourcesCount: number;
-  communityResourcesRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  communityResourcesRate: number | null;
   score: number; // 0-25
 }
 
@@ -210,11 +225,6 @@ export interface RecreationalLeisureAccessIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
@@ -237,35 +247,35 @@ export function evaluateActivityEngagement(
     return {
       totalActivities: 0,
       enjoymentCount: 0,
-      enjoymentRate: 0,
+      enjoymentRate: null,
       participationCount: 0,
-      participationRate: 0,
+      participationRate: null,
       socialInteractionCount: 0,
-      socialInteractionRate: 0,
+      socialInteractionRate: null,
       newSkillCount: 0,
-      newSkillRate: 0,
+      newSkillRate: null,
       recordedInPlanCount: 0,
-      recordedInPlanRate: 0,
+      recordedInPlanRate: null,
       score: 0,
     };
   }
 
   const enjoymentCount = activities.filter((a) => a.childEnjoyed).length;
-  const enjoymentRate = pct(enjoymentCount, totalActivities);
+  const enjoymentRate = rate(enjoymentCount, totalActivities);
 
   const participationCount = activities.filter(
     (a) => a.participationLevel === "enthusiastic" || a.participationLevel === "willing",
   ).length;
-  const participationRate = pct(participationCount, totalActivities);
+  const participationRate = rate(participationCount, totalActivities);
 
   const socialInteractionCount = activities.filter((a) => a.socialInteraction).length;
-  const socialInteractionRate = pct(socialInteractionCount, totalActivities);
+  const socialInteractionRate = rate(socialInteractionCount, totalActivities);
 
   const newSkillCount = activities.filter((a) => a.newSkillDeveloped).length;
-  const newSkillRate = pct(newSkillCount, totalActivities);
+  const newSkillRate = rate(newSkillCount, totalActivities);
 
   const recordedInPlanCount = activities.filter((a) => a.recordedInPlan).length;
-  const recordedInPlanRate = pct(recordedInPlanCount, totalActivities);
+  const recordedInPlanRate = rate(recordedInPlanCount, totalActivities);
 
   // Score (out of 25)
   // Enjoyment rate: max 7
@@ -273,12 +283,12 @@ export function evaluateActivityEngagement(
   // Social interaction rate: max 6
   // Combined newSkill + recordedInPlan: max 6
   let score = 0;
-  score += (enjoymentRate / 100) * 7;
-  score += (participationRate / 100) * 6;
-  score += (socialInteractionRate / 100) * 6;
+  score += (enjoymentRate! / 100) * 7;
+  score += (participationRate! / 100) * 6;
+  score += (socialInteractionRate! / 100) * 6;
 
-  const combinedSkillPlanRate = pct(newSkillCount + recordedInPlanCount, totalActivities * 2);
-  score += (combinedSkillPlanRate / 100) * 6;
+  const combinedSkillPlanRate = rate(newSkillCount + recordedInPlanCount, totalActivities * 2);
+  score += (combinedSkillPlanRate! / 100) * 6;
 
   score = clamp(Math.round(score * 10) / 10, 0, 25);
 
@@ -322,9 +332,9 @@ export function evaluateActivityDiversity(
       uniqueActivityTypes: 0,
       uniqueActivityTypeRatio: 0,
       accessBarrierFreeCount: 0,
-      accessBarrierFreeRate: 0,
+      accessBarrierFreeRate: null,
       staffSupportCount: 0,
-      staffSupportRate: 0,
+      staffSupportRate: null,
       activityTypeBreakdown: emptyBreakdown,
       score: 0,
     };
@@ -338,22 +348,22 @@ export function evaluateActivityDiversity(
 
   const uniqueActivityTypes = Object.values(activityTypeBreakdown).filter((v) => v > 0).length;
   const totalPossibleTypes = 8;
-  const uniqueActivityTypeRatio = pct(uniqueActivityTypes, totalPossibleTypes);
+  const uniqueActivityTypeRatio = rate(uniqueActivityTypes, totalPossibleTypes);
 
   const accessBarrierFreeCount = activities.filter((a) => a.accessBarrierFree).length;
-  const accessBarrierFreeRate = pct(accessBarrierFreeCount, totalActivities);
+  const accessBarrierFreeRate = rate(accessBarrierFreeCount, totalActivities);
 
   const staffSupportCount = activities.filter((a) => a.staffSupported).length;
-  const staffSupportRate = pct(staffSupportCount, totalActivities);
+  const staffSupportRate = rate(staffSupportCount, totalActivities);
 
   // Score (out of 25)
   // Unique activity types ratio (types out of 8): max 8
   // Access barrier free rate: max 9
   // Staff support rate: max 8
   let score = 0;
-  score += (uniqueActivityTypeRatio / 100) * 8;
-  score += (accessBarrierFreeRate / 100) * 9;
-  score += (staffSupportRate / 100) * 8;
+  score += ((uniqueActivityTypeRatio ?? 0) / 100) * 8;
+  score += (accessBarrierFreeRate! / 100) * 9;
+  score += (staffSupportRate! / 100) * 8;
 
   score = clamp(Math.round(score * 10) / 10, 0, 25);
 
@@ -425,48 +435,48 @@ export function evaluateStaffLeisureReadiness(
     return {
       totalStaff: 0,
       activityPlanningCount: 0,
-      activityPlanningRate: 0,
+      activityPlanningRate: null,
       safeguardingInActivitiesCount: 0,
-      safeguardingInActivitiesRate: 0,
+      safeguardingInActivitiesRate: null,
       inclusionAwarenessCount: 0,
-      inclusionAwarenessRate: 0,
+      inclusionAwarenessRate: null,
       firstAidOutdoorsCount: 0,
-      firstAidOutdoorsRate: 0,
+      firstAidOutdoorsRate: null,
       youthEngagementCount: 0,
-      youthEngagementRate: 0,
+      youthEngagementRate: null,
       communityResourcesCount: 0,
-      communityResourcesRate: 0,
+      communityResourcesRate: null,
       score: 0,
     };
   }
 
   const activityPlanningCount = training.filter((t) => t.activityPlanning).length;
-  const activityPlanningRate = pct(activityPlanningCount, totalStaff);
+  const activityPlanningRate = rate(activityPlanningCount, totalStaff);
 
   const safeguardingInActivitiesCount = training.filter((t) => t.safeguardingInActivities).length;
-  const safeguardingInActivitiesRate = pct(safeguardingInActivitiesCount, totalStaff);
+  const safeguardingInActivitiesRate = rate(safeguardingInActivitiesCount, totalStaff);
 
   const inclusionAwarenessCount = training.filter((t) => t.inclusionAwareness).length;
-  const inclusionAwarenessRate = pct(inclusionAwarenessCount, totalStaff);
+  const inclusionAwarenessRate = rate(inclusionAwarenessCount, totalStaff);
 
   const firstAidOutdoorsCount = training.filter((t) => t.firstAidOutdoors).length;
-  const firstAidOutdoorsRate = pct(firstAidOutdoorsCount, totalStaff);
+  const firstAidOutdoorsRate = rate(firstAidOutdoorsCount, totalStaff);
 
   const youthEngagementCount = training.filter((t) => t.youthEngagement).length;
-  const youthEngagementRate = pct(youthEngagementCount, totalStaff);
+  const youthEngagementRate = rate(youthEngagementCount, totalStaff);
 
   const communityResourcesCount = training.filter((t) => t.communityResources).length;
-  const communityResourcesRate = pct(communityResourcesCount, totalStaff);
+  const communityResourcesRate = rate(communityResourcesCount, totalStaff);
 
   // Score (out of 25)
   // 6 skills weighted: 6+5+5+4+3+2 = 25
   let score = 0;
-  score += (activityPlanningRate / 100) * 6;
-  score += (safeguardingInActivitiesRate / 100) * 5;
-  score += (inclusionAwarenessRate / 100) * 5;
-  score += (firstAidOutdoorsRate / 100) * 4;
-  score += (youthEngagementRate / 100) * 3;
-  score += (communityResourcesRate / 100) * 2;
+  score += (activityPlanningRate! / 100) * 6;
+  score += (safeguardingInActivitiesRate! / 100) * 5;
+  score += (inclusionAwarenessRate! / 100) * 5;
+  score += (firstAidOutdoorsRate! / 100) * 4;
+  score += ((youthEngagementRate ?? 0) / 100) * 3;
+  score += ((communityResourcesRate ?? 0) / 100) * 2;
 
   score = clamp(Math.round(score * 10) / 10, 0, 25);
 
@@ -638,11 +648,11 @@ function aggregateStrengths(
     strengths.push("Overall recreational and leisure access rated Good (" + overallScore + "/100)");
   }
 
-  if (engagement.enjoymentRate >= 80) {
+  if (meets(engagement.enjoymentRate, 80)) {
     strengths.push("High enjoyment rate: " + engagement.enjoymentRate + "% of children enjoyed their activities");
   }
 
-  if (engagement.participationRate >= 80) {
+  if (meets(engagement.participationRate, 80)) {
     strengths.push("Strong participation: " + engagement.participationRate + "% of activities had enthusiastic or willing participation");
   }
 
@@ -650,15 +660,15 @@ function aggregateStrengths(
     strengths.push("Excellent activity diversity: " + diversity.uniqueActivityTypes + " different activity types offered");
   }
 
-  if (engagement.socialInteractionRate >= 80) {
+  if (meets(engagement.socialInteractionRate, 80)) {
     strengths.push("Good social interaction: " + engagement.socialInteractionRate + "% of activities involved social engagement");
   }
 
-  if (diversity.accessBarrierFreeRate >= 90) {
+  if (meets(diversity.accessBarrierFreeRate, 90)) {
     strengths.push("Inclusive access: " + diversity.accessBarrierFreeRate + "% of activities are barrier-free");
   }
 
-  if (diversity.staffSupportRate >= 90) {
+  if (meets(diversity.staffSupportRate, 90)) {
     strengths.push("Consistent staff support: " + diversity.staffSupportRate + "% of activities had staff support");
   }
 
@@ -674,11 +684,11 @@ function aggregateAreasForImprovement(
 ): string[] {
   const areas: string[] = [];
 
-  if (engagement.totalActivities > 0 && engagement.enjoymentRate < 60) {
+  if (engagement.totalActivities > 0 && below(engagement.enjoymentRate, 60)) {
     areas.push("Enjoyment rate at " + engagement.enjoymentRate + "% — children may not be engaged in activities that match their interests");
   }
 
-  if (engagement.totalActivities > 0 && engagement.participationRate < 60) {
+  if (engagement.totalActivities > 0 && below(engagement.participationRate, 60)) {
     areas.push("Participation rate at " + engagement.participationRate + "% — many children are reluctant or refusing to participate");
   }
 
@@ -686,12 +696,12 @@ function aggregateAreasForImprovement(
     areas.push("Limited activity diversity: only " + diversity.uniqueActivityTypes + " activity type(s) offered — children need a wider range of opportunities");
   }
 
-  if (engagement.totalActivities > 0 && engagement.socialInteractionRate < 50) {
+  if (engagement.totalActivities > 0 && below(engagement.socialInteractionRate, 50)) {
     areas.push("Low social interaction rate (" + engagement.socialInteractionRate + "%) — activities should promote more peer engagement");
   }
 
-  if (diversity.totalActivities > 0 && diversity.accessBarrierFreeRate < 70) {
-    areas.push("Access barriers present in " + (100 - diversity.accessBarrierFreeRate) + "% of activities — review inclusivity");
+  if (diversity.totalActivities > 0 && below(diversity.accessBarrierFreeRate, 70)) {
+    areas.push("Access barriers present in " + (100 - diversity.accessBarrierFreeRate!) + "% of activities — review inclusivity");
   }
 
   return areas;
@@ -719,11 +729,11 @@ function generateActions(
     actions.push("URGENT: No staff leisure training records — arrange leisure activity training for all staff");
   }
 
-  if (engagement.totalActivities > 0 && engagement.enjoymentRate < 60) {
+  if (engagement.totalActivities > 0 && below(engagement.enjoymentRate, 60)) {
     actions.push("Review activity offerings: enjoyment rate at " + engagement.enjoymentRate + "% — consult children about their preferences");
   }
 
-  if (engagement.totalActivities > 0 && engagement.participationRate < 60) {
+  if (engagement.totalActivities > 0 && below(engagement.participationRate, 60)) {
     actions.push("Address participation barriers: only " + engagement.participationRate + "% of activities had willing participation");
   }
 

@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // Positive Reinforcement & Rewards Intelligence Engine
 //
@@ -178,39 +179,56 @@ export interface StaffReinforcementTraining {
 export interface PraiseRecognitionResult {
   overallScore: number;
   totalPraise: number;
-  positiveResponseRate: number;
-  specificRate: number;
-  linkedToValuesRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveResponseRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  specificRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  linkedToValuesRate: number | null;
   praiseTypeVariety: number;
 }
 
 export interface RewardSystemResult {
   overallScore: number;
   totalRewards: number;
-  childChosenRate: number;
-  fairConsistentRate: number;
-  linkedToPlanRate: number;
-  positiveResponseRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childChosenRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  fairConsistentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  linkedToPlanRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveResponseRate: number | null;
 }
 
 export interface BehaviouralImpactResult {
   overallScore: number;
   totalAssessments: number;
-  improvedTrendRate: number;
-  deEscalationRate: number;
-  lowRestraintRate: number;
-  positiveChildFeelingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  improvedTrendRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  deEscalationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  lowRestraintRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveChildFeelingRate: number | null;
 }
 
 export interface StaffReinforcementReadinessResult {
   overallScore: number;
   totalStaff: number;
-  positiveBehaviourRate: number;
-  therapeuticCareRate: number;
-  deEscalationRate: number;
-  rewardDesignRate: number;
-  traumaInformedRate: number;
-  consistencyRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveBehaviourRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  therapeuticCareRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  deEscalationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  rewardDesignRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  traumaInformedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  consistencyRate: number | null;
 }
 
 export interface ChildReinforcementProfile {
@@ -219,7 +237,8 @@ export interface ChildReinforcementProfile {
   totalPraise: number;
   totalRewards: number;
   behaviourTrend: BehaviourTrend | "not_assessed";
-  positiveResponseRate: number;
+  /** null when this child has no measurable population for it. */
+  positiveResponseRate: number | null;
   overallScore: number;
 }
 
@@ -241,11 +260,6 @@ export interface PositiveReinforcementRewardsIntelligence {
 }
 
 // -- Helpers -------------------------------------------------------------------
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -272,9 +286,9 @@ export function evaluatePraiseRecognition(
     return {
       overallScore: 0,
       totalPraise: 0,
-      positiveResponseRate: 0,
-      specificRate: 0,
-      linkedToValuesRate: 0,
+      positiveResponseRate: null,
+      specificRate: null,
+      linkedToValuesRate: null,
       praiseTypeVariety: 0,
     };
   }
@@ -284,25 +298,25 @@ export function evaluatePraiseRecognition(
   const positive = records.filter(
     (r) => r.childResponse === "very_positive" || r.childResponse === "positive",
   ).length;
-  const positiveResponseRate = pct(positive, records.length);
-  if (positiveResponseRate >= 80) score += 7;
-  else if (positiveResponseRate >= 60) score += 5;
-  else if (positiveResponseRate >= 40) score += 3;
-  else if (positiveResponseRate > 0) score += 1;
+  const positiveResponseRate = rate(positive, records.length);
+  if (meets(positiveResponseRate, 80)) score += 7;
+  else if (meets(positiveResponseRate, 60)) score += 5;
+  else if (meets(positiveResponseRate, 40)) score += 3;
+  else if (above(positiveResponseRate, 0)) score += 1;
 
   const specific = records.filter((r) => r.specificAndDescriptive).length;
-  const specificRate = pct(specific, records.length);
-  if (specificRate >= 90) score += 6;
-  else if (specificRate >= 70) score += 4;
-  else if (specificRate >= 50) score += 3;
-  else if (specificRate > 0) score += 1;
+  const specificRate = rate(specific, records.length);
+  if (meets(specificRate, 90)) score += 6;
+  else if (meets(specificRate, 70)) score += 4;
+  else if (meets(specificRate, 50)) score += 3;
+  else if (above(specificRate, 0)) score += 1;
 
   const linked = records.filter((r) => r.linkedToValues).length;
-  const linkedToValuesRate = pct(linked, records.length);
-  if (linkedToValuesRate >= 90) score += 6;
-  else if (linkedToValuesRate >= 70) score += 4;
-  else if (linkedToValuesRate >= 50) score += 3;
-  else if (linkedToValuesRate > 0) score += 1;
+  const linkedToValuesRate = rate(linked, records.length);
+  if (meets(linkedToValuesRate, 90)) score += 6;
+  else if (meets(linkedToValuesRate, 70)) score += 4;
+  else if (meets(linkedToValuesRate, 50)) score += 3;
+  else if (above(linkedToValuesRate, 0)) score += 1;
 
   const uniqueTypes = new Set(records.map((r) => r.praiseType)).size;
   if (uniqueTypes >= 5) score += 6;
@@ -337,44 +351,44 @@ export function evaluateRewardSystem(
     return {
       overallScore: 0,
       totalRewards: 0,
-      childChosenRate: 0,
-      fairConsistentRate: 0,
-      linkedToPlanRate: 0,
-      positiveResponseRate: 0,
+      childChosenRate: null,
+      fairConsistentRate: null,
+      linkedToPlanRate: null,
+      positiveResponseRate: null,
     };
   }
 
   let score = 0;
 
   const childChosen = records.filter((r) => r.childChosenReward).length;
-  const childChosenRate = pct(childChosen, records.length);
-  if (childChosenRate >= 90) score += 7;
-  else if (childChosenRate >= 70) score += 5;
-  else if (childChosenRate >= 50) score += 3;
-  else if (childChosenRate > 0) score += 1;
+  const childChosenRate = rate(childChosen, records.length);
+  if (meets(childChosenRate, 90)) score += 7;
+  else if (meets(childChosenRate, 70)) score += 5;
+  else if (meets(childChosenRate, 50)) score += 3;
+  else if (above(childChosenRate, 0)) score += 1;
 
   const fair = records.filter((r) => r.fairAndConsistent).length;
-  const fairConsistentRate = pct(fair, records.length);
-  if (fairConsistentRate >= 90) score += 6;
-  else if (fairConsistentRate >= 70) score += 4;
-  else if (fairConsistentRate >= 50) score += 3;
-  else if (fairConsistentRate > 0) score += 1;
+  const fairConsistentRate = rate(fair, records.length);
+  if (meets(fairConsistentRate, 90)) score += 6;
+  else if (meets(fairConsistentRate, 70)) score += 4;
+  else if (meets(fairConsistentRate, 50)) score += 3;
+  else if (above(fairConsistentRate, 0)) score += 1;
 
   const linkedToPlan = records.filter((r) => r.linkedToBehaviourPlan).length;
-  const linkedToPlanRate = pct(linkedToPlan, records.length);
-  if (linkedToPlanRate >= 90) score += 6;
-  else if (linkedToPlanRate >= 70) score += 4;
-  else if (linkedToPlanRate >= 50) score += 3;
-  else if (linkedToPlanRate > 0) score += 1;
+  const linkedToPlanRate = rate(linkedToPlan, records.length);
+  if (meets(linkedToPlanRate, 90)) score += 6;
+  else if (meets(linkedToPlanRate, 70)) score += 4;
+  else if (meets(linkedToPlanRate, 50)) score += 3;
+  else if (above(linkedToPlanRate, 0)) score += 1;
 
   const positive = records.filter(
     (r) => r.childResponse === "very_positive" || r.childResponse === "positive",
   ).length;
-  const positiveResponseRate = pct(positive, records.length);
-  if (positiveResponseRate >= 80) score += 6;
-  else if (positiveResponseRate >= 60) score += 4;
-  else if (positiveResponseRate >= 40) score += 3;
-  else if (positiveResponseRate > 0) score += 1;
+  const positiveResponseRate = rate(positive, records.length);
+  if (meets(positiveResponseRate, 80)) score += 6;
+  else if (meets(positiveResponseRate, 60)) score += 4;
+  else if (meets(positiveResponseRate, 40)) score += 3;
+  else if (above(positiveResponseRate, 0)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -402,10 +416,10 @@ export function evaluateBehaviouralImpact(
     return {
       overallScore: 0,
       totalAssessments: 0,
-      improvedTrendRate: 0,
-      deEscalationRate: 0,
-      lowRestraintRate: 0,
-      positiveChildFeelingRate: 0,
+      improvedTrendRate: null,
+      deEscalationRate: null,
+      lowRestraintRate: null,
+      positiveChildFeelingRate: null,
     };
   }
 
@@ -416,40 +430,40 @@ export function evaluateBehaviouralImpact(
       o.behaviourTrend === "significantly_improved" ||
       o.behaviourTrend === "improved",
   ).length;
-  const improvedTrendRate = pct(improved, outcomes.length);
-  if (improvedTrendRate >= 80) score += 7;
-  else if (improvedTrendRate >= 60) score += 5;
-  else if (improvedTrendRate >= 40) score += 3;
-  else if (improvedTrendRate > 0) score += 1;
+  const improvedTrendRate = rate(improved, outcomes.length);
+  if (meets(improvedTrendRate, 80)) score += 7;
+  else if (meets(improvedTrendRate, 60)) score += 5;
+  else if (meets(improvedTrendRate, 40)) score += 3;
+  else if (above(improvedTrendRate, 0)) score += 1;
 
   const deEscalation = outcomes.filter(
     (o) => o.deEscalationSuccessful,
   ).length;
-  const deEscalationRate = pct(deEscalation, outcomes.length);
-  if (deEscalationRate >= 90) score += 6;
-  else if (deEscalationRate >= 70) score += 4;
-  else if (deEscalationRate >= 50) score += 3;
-  else if (deEscalationRate > 0) score += 1;
+  const deEscalationRate = rate(deEscalation, outcomes.length);
+  if (meets(deEscalationRate, 90)) score += 6;
+  else if (meets(deEscalationRate, 70)) score += 4;
+  else if (meets(deEscalationRate, 50)) score += 3;
+  else if (above(deEscalationRate, 0)) score += 1;
 
   const lowRestraint = outcomes.filter(
     (o) => o.restraintCount === 0,
   ).length;
-  const lowRestraintRate = pct(lowRestraint, outcomes.length);
-  if (lowRestraintRate >= 90) score += 6;
-  else if (lowRestraintRate >= 70) score += 4;
-  else if (lowRestraintRate >= 50) score += 3;
-  else if (lowRestraintRate > 0) score += 1;
+  const lowRestraintRate = rate(lowRestraint, outcomes.length);
+  if (meets(lowRestraintRate, 90)) score += 6;
+  else if (meets(lowRestraintRate, 70)) score += 4;
+  else if (meets(lowRestraintRate, 50)) score += 3;
+  else if (above(lowRestraintRate, 0)) score += 1;
 
   const positiveFeelings = outcomes.filter(
     (o) =>
       o.childReportedFeeling === "very_positive" ||
       o.childReportedFeeling === "positive",
   ).length;
-  const positiveChildFeelingRate = pct(positiveFeelings, outcomes.length);
-  if (positiveChildFeelingRate >= 80) score += 6;
-  else if (positiveChildFeelingRate >= 60) score += 4;
-  else if (positiveChildFeelingRate >= 40) score += 3;
-  else if (positiveChildFeelingRate > 0) score += 1;
+  const positiveChildFeelingRate = rate(positiveFeelings, outcomes.length);
+  if (meets(positiveChildFeelingRate, 80)) score += 6;
+  else if (meets(positiveChildFeelingRate, 60)) score += 4;
+  else if (meets(positiveChildFeelingRate, 40)) score += 3;
+  else if (above(positiveChildFeelingRate, 0)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -479,55 +493,55 @@ export function evaluateStaffReinforcementReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      positiveBehaviourRate: 0,
-      therapeuticCareRate: 0,
-      deEscalationRate: 0,
-      rewardDesignRate: 0,
-      traumaInformedRate: 0,
-      consistencyRate: 0,
+      positiveBehaviourRate: null,
+      therapeuticCareRate: null,
+      deEscalationRate: null,
+      rewardDesignRate: null,
+      traumaInformedRate: null,
+      consistencyRate: null,
     };
   }
 
   let score = 0;
 
   const pbs = training.filter((t) => t.positiveBehaviourSupport).length;
-  const positiveBehaviourRate = pct(pbs, training.length);
-  if (positiveBehaviourRate >= 90) score += 6;
-  else if (positiveBehaviourRate >= 70) score += 4;
-  else if (positiveBehaviourRate >= 50) score += 3;
-  else if (positiveBehaviourRate > 0) score += 1;
+  const positiveBehaviourRate = rate(pbs, training.length);
+  if (meets(positiveBehaviourRate, 90)) score += 6;
+  else if (meets(positiveBehaviourRate, 70)) score += 4;
+  else if (meets(positiveBehaviourRate, 50)) score += 3;
+  else if (above(positiveBehaviourRate, 0)) score += 1;
 
   const therapeutic = training.filter((t) => t.therapeuticCareApproach).length;
-  const therapeuticCareRate = pct(therapeutic, training.length);
-  if (therapeuticCareRate >= 90) score += 5;
-  else if (therapeuticCareRate >= 70) score += 3;
-  else if (therapeuticCareRate >= 50) score += 2;
-  else if (therapeuticCareRate > 0) score += 1;
+  const therapeuticCareRate = rate(therapeutic, training.length);
+  if (meets(therapeuticCareRate, 90)) score += 5;
+  else if (meets(therapeuticCareRate, 70)) score += 3;
+  else if (meets(therapeuticCareRate, 50)) score += 2;
+  else if (above(therapeuticCareRate, 0)) score += 1;
 
   const deEscalation = training.filter((t) => t.deEscalationTechniques).length;
-  const deEscalationRate = pct(deEscalation, training.length);
-  if (deEscalationRate >= 90) score += 5;
-  else if (deEscalationRate >= 70) score += 3;
-  else if (deEscalationRate >= 50) score += 2;
-  else if (deEscalationRate > 0) score += 1;
+  const deEscalationRate = rate(deEscalation, training.length);
+  if (meets(deEscalationRate, 90)) score += 5;
+  else if (meets(deEscalationRate, 70)) score += 3;
+  else if (meets(deEscalationRate, 50)) score += 2;
+  else if (above(deEscalationRate, 0)) score += 1;
 
   const rewardDesign = training.filter((t) => t.rewardSystemDesign).length;
-  const rewardDesignRate = pct(rewardDesign, training.length);
-  if (rewardDesignRate >= 90) score += 4;
-  else if (rewardDesignRate >= 70) score += 3;
-  else if (rewardDesignRate >= 50) score += 2;
-  else if (rewardDesignRate > 0) score += 1;
+  const rewardDesignRate = rate(rewardDesign, training.length);
+  if (meets(rewardDesignRate, 90)) score += 4;
+  else if (meets(rewardDesignRate, 70)) score += 3;
+  else if (meets(rewardDesignRate, 50)) score += 2;
+  else if (above(rewardDesignRate, 0)) score += 1;
 
   const traumaInformed = training.filter((t) => t.traumaInformedPraise).length;
-  const traumaInformedRate = pct(traumaInformed, training.length);
-  if (traumaInformedRate >= 90) score += 3;
-  else if (traumaInformedRate >= 70) score += 2;
-  else if (traumaInformedRate >= 50) score += 1;
+  const traumaInformedRate = rate(traumaInformed, training.length);
+  if (meets(traumaInformedRate, 90)) score += 3;
+  else if (meets(traumaInformedRate, 70)) score += 2;
+  else if (meets(traumaInformedRate, 50)) score += 1;
 
   const consistency = training.filter((t) => t.consistencyInApproach).length;
-  const consistencyRate = pct(consistency, training.length);
-  if (consistencyRate >= 90) score += 2;
-  else if (consistencyRate >= 70) score += 1;
+  const consistencyRate = rate(consistency, training.length);
+  if (meets(consistencyRate, 90)) score += 2;
+  else if (meets(consistencyRate, 70)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -614,10 +628,10 @@ export function buildChildReinforcementProfiles(
     const positiveInteractions = allInteractions.filter(
       (r) => r === "very_positive" || r === "positive",
     ).length;
-    const interactionRate = pct(positiveInteractions, allInteractions.length);
-    if (interactionRate >= 80) score += 3;
-    else if (interactionRate >= 50) score += 2;
-    else if (interactionRate > 0) score += 1;
+    const interactionRate = rate(positiveInteractions, allInteractions.length);
+    if (meets(interactionRate, 80)) score += 3;
+    else if (meets(interactionRate, 50)) score += 2;
+    else if (above(interactionRate, 0)) score += 1;
 
     // Behaviour trend (0-2)
     const latestOutcome =
@@ -684,43 +698,43 @@ export function generatePositiveReinforcementRewardsIntelligence(
   // -- Strengths ---------------------------------------------------------------
   const strengths: string[] = [];
 
-  if (praiseRecognition.positiveResponseRate >= 80 && praise.length > 0) {
+  if (meets(praiseRecognition.positiveResponseRate, 80) && praise.length > 0) {
     strengths.push(
       "Children responding very positively to praise and recognition strategies",
     );
   }
-  if (praiseRecognition.specificRate >= 90 && praise.length > 0) {
+  if (meets(praiseRecognition.specificRate, 90) && praise.length > 0) {
     strengths.push(
       "Praise consistently specific and descriptive — high quality reinforcement",
     );
   }
-  if (rewardSystem.childChosenRate >= 90 && rewards.length > 0) {
+  if (meets(rewardSystem.childChosenRate, 90) && rewards.length > 0) {
     strengths.push(
       "Reward system child-led — children choosing their own rewards",
     );
   }
-  if (rewardSystem.fairConsistentRate >= 90 && rewards.length > 0) {
+  if (meets(rewardSystem.fairConsistentRate, 90) && rewards.length > 0) {
     strengths.push(
       "Reward system applied fairly and consistently across all children",
     );
   }
-  if (behaviouralImpact.improvedTrendRate >= 80 && outcomes.length > 0) {
+  if (meets(behaviouralImpact.improvedTrendRate, 80) && outcomes.length > 0) {
     strengths.push(
       "Strong evidence of improved behaviour trends linked to positive reinforcement",
     );
   }
-  if (behaviouralImpact.lowRestraintRate >= 90 && outcomes.length > 0) {
+  if (meets(behaviouralImpact.lowRestraintRate, 90) && outcomes.length > 0) {
     strengths.push(
       "Very low restraint rate — positive approaches reducing need for physical intervention",
     );
   }
-  if (behaviouralImpact.deEscalationRate >= 90 && outcomes.length > 0) {
+  if (meets(behaviouralImpact.deEscalationRate, 90) && outcomes.length > 0) {
     strengths.push(
       "De-escalation strategies highly effective across the team",
     );
   }
   if (
-    staffReinforcementReadiness.positiveBehaviourRate >= 90 &&
+    meets(staffReinforcementReadiness.positiveBehaviourRate, 90) &&
     training.length > 0
   ) {
     strengths.push(
@@ -731,33 +745,33 @@ export function generatePositiveReinforcementRewardsIntelligence(
   // -- Areas for improvement ---------------------------------------------------
   const areasForImprovement: string[] = [];
 
-  if (praiseRecognition.specificRate < 70 && praise.length > 0) {
+  if (below(praiseRecognition.specificRate, 70) && praise.length > 0) {
     areasForImprovement.push(
       "Praise not consistently specific and descriptive — risk of generic reinforcement",
     );
   }
-  if (praiseRecognition.linkedToValuesRate < 70 && praise.length > 0) {
+  if (below(praiseRecognition.linkedToValuesRate, 70) && praise.length > 0) {
     areasForImprovement.push(
       "Praise not consistently linked to home values and expectations",
     );
   }
-  if (rewardSystem.childChosenRate < 70 && rewards.length > 0) {
+  if (below(rewardSystem.childChosenRate, 70) && rewards.length > 0) {
     areasForImprovement.push(
       "Children not consistently involved in choosing their rewards",
     );
   }
-  if (rewardSystem.linkedToPlanRate < 70 && rewards.length > 0) {
+  if (below(rewardSystem.linkedToPlanRate, 70) && rewards.length > 0) {
     areasForImprovement.push(
       "Rewards not consistently linked to individual behaviour plans",
     );
   }
-  if (behaviouralImpact.deEscalationRate < 70 && outcomes.length > 0) {
+  if (below(behaviouralImpact.deEscalationRate, 70) && outcomes.length > 0) {
     areasForImprovement.push(
       "De-escalation success rate below expected standard",
     );
   }
   if (
-    staffReinforcementReadiness.traumaInformedRate < 70 &&
+    below(staffReinforcementReadiness.traumaInformedRate, 70) &&
     training.length > 0
   ) {
     areasForImprovement.push(
@@ -765,7 +779,7 @@ export function generatePositiveReinforcementRewardsIntelligence(
     );
   }
   if (
-    behaviouralImpact.positiveChildFeelingRate < 50 &&
+    below(behaviouralImpact.positiveChildFeelingRate, 50) &&
     outcomes.length > 0
   ) {
     areasForImprovement.push(
@@ -813,7 +827,7 @@ export function generatePositiveReinforcementRewardsIntelligence(
     );
   }
   if (
-    rewardSystem.fairConsistentRate < 50 &&
+    below(rewardSystem.fairConsistentRate, 50) &&
     rewards.length > 0
   ) {
     actions.push(

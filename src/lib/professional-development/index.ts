@@ -11,7 +11,6 @@ export {
   getTrainingImpactLabel,
   getLearningStyleLabel,
   getRatingLabel,
-  pct,
   getRating,
 } from "./professional-development-engine";
 

@@ -13,7 +13,6 @@ export {
   getRiskLevelLabel,
   getRatingLabel,
   getRating,
-  pct,
 } from "./risk-assessment-quality-engine";
 
 export type {

@@ -10,7 +10,6 @@ import {
   evaluateStaffAnimalReadiness,
   buildChildAnimalProfiles,
   generatePetTherapyAnimalInteractionIntelligence,
-  pct,
   getRating,
   getAnimalTypeLabel,
   getSessionTypeLabel,
@@ -95,29 +94,6 @@ function makeTraining(overrides: Partial<StaffAnimalTraining> = {}): StaffAnimal
 // =============================================================================
 // pct helper
 // =============================================================================
-
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("calculates correct percentage", () => {
-    expect(pct(3, 4)).toBe(75);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-
-  it("returns 100 for equal values", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 0 for numerator 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-});
 
 // =============================================================================
 // getRating
@@ -214,11 +190,11 @@ describe("evaluateSessionQuality", () => {
     const result = evaluateSessionQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalSessions).toBe(0);
-    expect(result.therapeuticBenefitRate).toBe(0);
-    expect(result.childEngagementRate).toBe(0);
-    expect(result.riskAssessmentRate).toBe(0);
-    expect(result.supervisionRate).toBe(0);
-    expect(result.hygieneRate).toBe(0);
+    expect(result.therapeuticBenefitRate).toBeNull();
+    expect(result.childEngagementRate).toBeNull();
+    expect(result.riskAssessmentRate).toBeNull();
+    expect(result.supervisionRate).toBeNull();
+    expect(result.hygieneRate).toBeNull();
   });
 
   it("gives maximum score for all-perfect sessions", () => {
@@ -409,10 +385,10 @@ describe("evaluateAnimalWelfare", () => {
     const result = evaluateAnimalWelfare([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalChecks).toBe(0);
-    expect(result.welfareGoodRate).toBe(0);
-    expect(result.veterinaryRate).toBe(0);
-    expect(result.vaccinationRate).toBe(0);
-    expect(result.livingConditionsRate).toBe(0);
+    expect(result.welfareGoodRate).toBeNull();
+    expect(result.veterinaryRate).toBeNull();
+    expect(result.vaccinationRate).toBeNull();
+    expect(result.livingConditionsRate).toBeNull();
   });
 
   it("gives maximum score for all-perfect checks", () => {
@@ -551,11 +527,11 @@ describe("evaluateRiskManagement", () => {
     const result = evaluateRiskManagement([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalAssessments).toBe(0);
-    expect(result.allergyScreeningRate).toBe(0);
-    expect(result.zoonoticRiskRate).toBe(0);
-    expect(result.hygieneProtocolRate).toBe(0);
-    expect(result.insuranceRate).toBe(0);
-    expect(result.emergencyPlanRate).toBe(0);
+    expect(result.allergyScreeningRate).toBeNull();
+    expect(result.zoonoticRiskRate).toBeNull();
+    expect(result.hygieneProtocolRate).toBeNull();
+    expect(result.insuranceRate).toBeNull();
+    expect(result.emergencyPlanRate).toBeNull();
   });
 
   it("gives maximum score for all-perfect assessments", () => {
@@ -714,12 +690,12 @@ describe("evaluateStaffAnimalReadiness", () => {
     const result = evaluateStaffAnimalReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.animalHandlingRate).toBe(0);
-    expect(result.therapeuticUseRate).toBe(0);
-    expect(result.animalWelfareRate).toBe(0);
-    expect(result.riskAssessmentRate).toBe(0);
-    expect(result.hygieneRate).toBe(0);
-    expect(result.allergyRate).toBe(0);
+    expect(result.animalHandlingRate).toBeNull();
+    expect(result.therapeuticUseRate).toBeNull();
+    expect(result.animalWelfareRate).toBeNull();
+    expect(result.riskAssessmentRate).toBeNull();
+    expect(result.hygieneRate).toBeNull();
+    expect(result.allergyRate).toBeNull();
   });
 
   it("gives maximum score for all-perfect training", () => {

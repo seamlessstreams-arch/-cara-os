@@ -503,7 +503,7 @@ describe("evaluatePlacementDuration", () => {
     expect(result.unplannedEndingRate).toBe(50);
   });
 
-  it("returns 0 planned/unplanned rates when no endings exist", () => {
+  it("returns null planned/unplanned rates when no endings exist", () => {
     const placements: Placement[] = [
       makePlacement({ id: "p1", status: "active" }),
     ];

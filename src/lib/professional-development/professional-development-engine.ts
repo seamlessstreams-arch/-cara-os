@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — Professional Development Intelligence Engine
 //
@@ -138,45 +139,66 @@ export interface CPDQualityResult {
   totalRecords: number;
   totalHours: number;
   averageHoursPerStaff: number | null;
-  impactAssessedRate: number;   // pct
-  positiveImpactRate: number;   // pct
-  sharedWithTeamRate: number;   // pct
-  relevantToRoleRate: number;   // pct
-  certificateRate: number;      // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  impactAssessedRate: number | null;   // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveImpactRate: number | null;   // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  sharedWithTeamRate: number | null;   // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  relevantToRoleRate: number | null;   // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  certificateRate: number | null;      // pct
   categoryDistribution: Record<CPDCategory, number>;
 }
 
 export interface QualificationProgressResult {
   overallScore: number;         // 0-25
   totalQualifications: number;
-  completedRate: number;        // pct
-  inProgressRate: number;       // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  completedRate: number | null;        // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  inProgressRate: number | null;       // pct
   overdueCount: number;
-  fundedRate: number;           // pct
-  supportRate: number;          // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  fundedRate: number | null;           // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  supportRate: number | null;          // pct
   levelDistribution: Record<QualificationLevel, number>;
 }
 
 export interface SupervisionDevelopmentResult {
   overallScore: number;         // 0-25
   totalSupervisions: number;
-  goalsSetRate: number;         // pct
-  progressReviewedRate: number; // pct
-  trainingNeedsRate: number;    // pct
-  actionPlanRate: number;       // pct
-  actionsCompletedRate: number; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  goalsSetRate: number | null;         // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  progressReviewedRate: number | null; // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  trainingNeedsRate: number | null;    // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionPlanRate: number | null;       // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionsCompletedRate: number | null; // pct
 }
 
 export interface LearningCultureResult {
   overallScore: number;         // 0-25
   totalAssessments: number;
-  teamMeetingRate: number;      // pct
-  sharedLearningRate: number;   // pct
-  reflectiveRate: number;       // pct
-  feedbackCultureRate: number;  // pct
-  innovationRate: number;       // pct
-  budgetRate: number;           // pct
-  inductionRate: number;        // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  teamMeetingRate: number | null;      // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  sharedLearningRate: number | null;   // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  reflectiveRate: number | null;       // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  feedbackCultureRate: number | null;  // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  innovationRate: number | null;       // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  budgetRate: number | null;           // pct
+  /** null when the population is empty — nothing measured, not 0%. */
+  inductionRate: number | null;        // pct
 }
 
 export interface StaffDevelopmentProfile {
@@ -186,7 +208,8 @@ export interface StaffDevelopmentProfile {
   qualificationsInProgress: number;
   qualificationsCompleted: number;
   hasOverdueQualification: boolean;
-  impactAssessmentRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  impactAssessmentRate: number | null;
   overallScore: number;         // 0-10
 }
 
@@ -290,10 +313,6 @@ export function getRatingLabel(r: Rating): string {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  return den === 0 ? 0 : Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -337,11 +356,11 @@ export function evaluateCPDQuality(
       totalRecords: 0,
       totalHours: 0,
       averageHoursPerStaff: 0,
-      impactAssessedRate: 0,
-      positiveImpactRate: 0,
-      sharedWithTeamRate: 0,
-      relevantToRoleRate: 0,
-      certificateRate: 0,
+      impactAssessedRate: null,
+      positiveImpactRate: null,
+      sharedWithTeamRate: null,
+      relevantToRoleRate: null,
+      certificateRate: null,
       categoryDistribution: emptyDistribution,
     };
   }
@@ -352,21 +371,21 @@ export function evaluateCPDQuality(
     : null;
 
   const impactAssessedCount = records.filter((r) => r.impactAssessed).length;
-  const impactAssessedRate = pct(impactAssessedCount, totalRecords);
+  const impactAssessedRate = rate(impactAssessedCount, totalRecords);
 
   const positiveImpactCount = records.filter(
     (r) => r.impact === "significant_improvement" || r.impact === "some_improvement",
   ).length;
-  const positiveImpactRate = pct(positiveImpactCount, totalRecords);
+  const positiveImpactRate = rate(positiveImpactCount, totalRecords);
 
   const sharedCount = records.filter((r) => r.sharedWithTeam).length;
-  const sharedWithTeamRate = pct(sharedCount, totalRecords);
+  const sharedWithTeamRate = rate(sharedCount, totalRecords);
 
   const relevantCount = records.filter((r) => r.relevantToRole).length;
-  const relevantToRoleRate = pct(relevantCount, totalRecords);
+  const relevantToRoleRate = rate(relevantCount, totalRecords);
 
   const certCount = records.filter((r) => r.certificateObtained).length;
-  const certificateRate = pct(certCount, totalRecords);
+  const certificateRate = rate(certCount, totalRecords);
 
   // Category distribution
   const categoryDistribution: Record<CPDCategory, number> = {
@@ -386,10 +405,10 @@ export function evaluateCPDQuality(
   }
 
   // Scoring
-  const impactAssessedScore = Math.round((impactAssessedRate / 100) * 7);
-  const positiveImpactScore = Math.round((positiveImpactRate / 100) * 5);
-  const sharedScore = Math.round((sharedWithTeamRate / 100) * 5);
-  const relevantScore = Math.round((relevantToRoleRate / 100) * 4);
+  const impactAssessedScore = Math.round(((impactAssessedRate ?? 0) / 100) * 7);
+  const positiveImpactScore = Math.round(((positiveImpactRate ?? 0) / 100) * 5);
+  const sharedScore = Math.round(((sharedWithTeamRate ?? 0) / 100) * 5);
+  const relevantScore = Math.round(((relevantToRoleRate ?? 0) / 100) * 4);
   const hoursBonus = (averageHoursPerStaff ?? 0) >= 30 ? 4 : Math.round(((averageHoursPerStaff ?? 0) / 30) * 4);
 
   const overallScore = Math.min(25, impactAssessedScore + positiveImpactScore + sharedScore + relevantScore + hoursBonus);
@@ -430,11 +449,11 @@ export function evaluateQualificationProgress(
     return {
       overallScore: 0,
       totalQualifications: 0,
-      completedRate: 0,
-      inProgressRate: 0,
+      completedRate: null,
+      inProgressRate: null,
       overdueCount: 0,
-      fundedRate: 0,
-      supportRate: 0,
+      fundedRate: null,
+      supportRate: null,
       levelDistribution: emptyLevels,
     };
   }
@@ -445,10 +464,10 @@ export function evaluateQualificationProgress(
   const fundedCount = qualifications.filter((q) => q.fundedByEmployer).length;
   const supportCount = qualifications.filter((q) => q.supportProvided).length;
 
-  const completedRate = pct(completedCount, totalQualifications);
-  const inProgressRate = pct(inProgressCount, totalQualifications);
-  const fundedRate = pct(fundedCount, totalQualifications);
-  const supportRate = pct(supportCount, totalQualifications);
+  const completedRate = rate(completedCount, totalQualifications);
+  const inProgressRate = rate(inProgressCount, totalQualifications);
+  const fundedRate = rate(fundedCount, totalQualifications);
+  const supportRate = rate(supportCount, totalQualifications);
 
   // Level distribution
   const levelDistribution: Record<QualificationLevel, number> = {
@@ -460,10 +479,10 @@ export function evaluateQualificationProgress(
   }
 
   // Scoring
-  const completedScore = Math.round((completedRate / 100) * 8);
-  const inProgressScore = Math.round((inProgressRate / 100) * 5);
-  const fundedScore = Math.round((fundedRate / 100) * 4);
-  const supportScore = Math.round((supportRate / 100) * 4);
+  const completedScore = Math.round((completedRate! / 100) * 8);
+  const inProgressScore = Math.round((inProgressRate! / 100) * 5);
+  const fundedScore = Math.round((fundedRate! / 100) * 4);
+  const supportScore = Math.round((supportRate! / 100) * 4);
   const overduePenalty = Math.min(overdueCount * 3, 4);
 
   const rawScore = completedScore + inProgressScore + fundedScore + supportScore - overduePenalty;
@@ -499,11 +518,11 @@ export function evaluateSupervisionDevelopment(
     return {
       overallScore: 0,
       totalSupervisions: 0,
-      goalsSetRate: 0,
-      progressReviewedRate: 0,
-      trainingNeedsRate: 0,
-      actionPlanRate: 0,
-      actionsCompletedRate: 0,
+      goalsSetRate: null,
+      progressReviewedRate: null,
+      trainingNeedsRate: null,
+      actionPlanRate: null,
+      actionsCompletedRate: null,
     };
   }
 
@@ -516,18 +535,18 @@ export function evaluateSupervisionDevelopment(
   const supervisionsWithPrior = supervisions.filter((s) => s.previousActionsCompleted !== null);
   const actionsCompletedCount = supervisionsWithPrior.filter((s) => s.previousActionsCompleted === true).length;
 
-  const goalsSetRate = pct(goalsSetCount, totalSupervisions);
-  const progressReviewedRate = pct(progressReviewedCount, totalSupervisions);
-  const trainingNeedsRate = pct(trainingNeedsCount, totalSupervisions);
-  const actionPlanRate = pct(actionPlanCount, totalSupervisions);
-  const actionsCompletedRate = pct(actionsCompletedCount, supervisionsWithPrior.length);
+  const goalsSetRate = rate(goalsSetCount, totalSupervisions);
+  const progressReviewedRate = rate(progressReviewedCount, totalSupervisions);
+  const trainingNeedsRate = rate(trainingNeedsCount, totalSupervisions);
+  const actionPlanRate = rate(actionPlanCount, totalSupervisions);
+  const actionsCompletedRate = rate(actionsCompletedCount, supervisionsWithPrior.length);
 
   // Scoring
-  const goalsScore = Math.round((goalsSetRate / 100) * 7);
-  const progressScore = Math.round((progressReviewedRate / 100) * 6);
-  const trainingNeedsScore = Math.round((trainingNeedsRate / 100) * 5);
-  const actionPlanScore = Math.round((actionPlanRate / 100) * 4);
-  const actionsCompletedScore = Math.round((actionsCompletedRate / 100) * 3);
+  const goalsScore = Math.round((goalsSetRate! / 100) * 7);
+  const progressScore = Math.round((progressReviewedRate! / 100) * 6);
+  const trainingNeedsScore = Math.round((trainingNeedsRate! / 100) * 5);
+  const actionPlanScore = Math.round((actionPlanRate! / 100) * 4);
+  const actionsCompletedScore = Math.round(((actionsCompletedRate ?? 0) / 100) * 3);
 
   const overallScore = Math.min(25, goalsScore + progressScore + trainingNeedsScore + actionPlanScore + actionsCompletedScore);
 
@@ -559,13 +578,13 @@ export function evaluateLearningCulture(
     return {
       overallScore: 0,
       totalAssessments: 0,
-      teamMeetingRate: 0,
-      sharedLearningRate: 0,
-      reflectiveRate: 0,
-      feedbackCultureRate: 0,
-      innovationRate: 0,
-      budgetRate: 0,
-      inductionRate: 0,
+      teamMeetingRate: null,
+      sharedLearningRate: null,
+      reflectiveRate: null,
+      feedbackCultureRate: null,
+      innovationRate: null,
+      budgetRate: null,
+      inductionRate: null,
     };
   }
 
@@ -578,24 +597,24 @@ export function evaluateLearningCulture(
   const trainingCalendarCount = assessments.filter((a) => a.trainingCalendarExists).length;
   const inductionCount = assessments.filter((a) => a.inductionProgramRobust).length;
 
-  const teamMeetingRate = pct(teamMeetingCount, totalAssessments);
-  const sharedLearningRate = pct(sharedLearningCount, totalAssessments);
-  const reflectiveRate = pct(reflectiveCount, totalAssessments);
-  const feedbackCultureRate = pct(feedbackCount, totalAssessments);
-  const innovationRate = pct(innovationCount, totalAssessments);
-  const budgetRate = pct(budgetCount, totalAssessments);
-  const calendarRate = pct(trainingCalendarCount, totalAssessments);
-  const inductionRate = pct(inductionCount, totalAssessments);
+  const teamMeetingRate = rate(teamMeetingCount, totalAssessments);
+  const sharedLearningRate = rate(sharedLearningCount, totalAssessments);
+  const reflectiveRate = rate(reflectiveCount, totalAssessments);
+  const feedbackCultureRate = rate(feedbackCount, totalAssessments);
+  const innovationRate = rate(innovationCount, totalAssessments);
+  const budgetRate = rate(budgetCount, totalAssessments);
+  const calendarRate = rate(trainingCalendarCount, totalAssessments);
+  const inductionRate = rate(inductionCount, totalAssessments);
 
   // Scoring: reflective practice + feedback culture = 3.5 each, others = 3 each
-  const reflectiveScore = (reflectiveRate / 100) * 3.5;
-  const feedbackScore = (feedbackCultureRate / 100) * 3.5;
-  const teamMeetingScore = (teamMeetingRate / 100) * 3;
-  const sharedLearningScore = (sharedLearningRate / 100) * 3;
-  const innovationScore = (innovationRate / 100) * 3;
-  const budgetScore = (budgetRate / 100) * 3;
-  const calendarScore = (calendarRate / 100) * 3;
-  const inductionScore = (inductionRate / 100) * 3;
+  const reflectiveScore = (reflectiveRate! / 100) * 3.5;
+  const feedbackScore = (feedbackCultureRate! / 100) * 3.5;
+  const teamMeetingScore = (teamMeetingRate! / 100) * 3;
+  const sharedLearningScore = (sharedLearningRate! / 100) * 3;
+  const innovationScore = (innovationRate! / 100) * 3;
+  const budgetScore = (budgetRate! / 100) * 3;
+  const calendarScore = (calendarRate! / 100) * 3;
+  const inductionScore = ((inductionRate ?? 0) / 100) * 3;
 
   const raw = reflectiveScore + feedbackScore + teamMeetingScore + sharedLearningScore
     + innovationScore + budgetScore + calendarScore + inductionScore;
@@ -647,7 +666,7 @@ export function buildStaffDevelopmentProfiles(
     const hasOverdueQualification = staffQuals.some((q) => q.status === "overdue");
 
     const assessedCount = staffCPD.filter((r) => r.impactAssessed).length;
-    const impactAssessmentRate = pct(assessedCount, staffCPD.length);
+    const impactAssessmentRate = rate(assessedCount, staffCPD.length);
 
     // Overall score: blend of hours (3), impact assessment (3), qualifications (2), no overdue (2)
     let score = 0;
@@ -655,9 +674,9 @@ export function buildStaffDevelopmentProfiles(
     else if (totalCPDHours >= 20) score += 2;
     else if (totalCPDHours >= 10) score += 1;
 
-    if (impactAssessmentRate >= 80) score += 3;
-    else if (impactAssessmentRate >= 50) score += 2;
-    else if (impactAssessmentRate >= 20) score += 1;
+    if (meets(impactAssessmentRate, 80)) score += 3;
+    else if (meets(impactAssessmentRate, 50)) score += 2;
+    else if (meets(impactAssessmentRate, 20)) score += 1;
 
     if (qualificationsCompleted >= 2) score += 2;
     else if (qualificationsCompleted >= 1 || qualificationsInProgress >= 1) score += 1;
@@ -711,31 +730,31 @@ export function generateProfessionalDevelopmentIntelligence(
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
 
-  if (cpdQuality.impactAssessedRate >= 80) {
+  if (meets(cpdQuality.impactAssessedRate, 80)) {
     strengths.push("Strong culture of impact assessment — staff routinely evaluate learning outcomes");
   }
-  if (cpdQuality.sharedWithTeamRate >= 75) {
+  if (meets(cpdQuality.sharedWithTeamRate, 75)) {
     strengths.push("Excellent knowledge sharing — staff regularly disseminate learning to colleagues");
   }
   if ((cpdQuality.averageHoursPerStaff ?? 0) >= 30) {
     strengths.push("CPD hours exceed target of 30 hours per staff member annually");
   }
-  if (qualificationProgress.completedRate >= 70) {
+  if (meets(qualificationProgress.completedRate, 70)) {
     strengths.push("High qualification completion rate demonstrates commitment to professional growth");
   }
-  if (qualificationProgress.fundedRate >= 80) {
+  if (meets(qualificationProgress.fundedRate, 80)) {
     strengths.push("Employer invests strongly in qualification funding for staff");
   }
-  if (supervisionDevelopment.goalsSetRate >= 85) {
+  if (meets(supervisionDevelopment.goalsSetRate, 85)) {
     strengths.push("Development goals consistently set in supervision sessions");
   }
-  if (supervisionDevelopment.actionsCompletedRate >= 80) {
+  if (meets(supervisionDevelopment.actionsCompletedRate, 80)) {
     strengths.push("Supervision action plans are followed through effectively");
   }
   if (learningCulture.overallScore >= 20) {
     strengths.push("Strong organisational learning culture with embedded reflective practice");
   }
-  if (cpdQuality.relevantToRoleRate >= 90) {
+  if (meets(cpdQuality.relevantToRoleRate, 90)) {
     strengths.push("CPD activities are highly relevant to staff roles and responsibilities");
   }
   if (qualificationProgress.overdueCount === 0 && qualificationProgress.totalQualifications > 0) {
@@ -749,12 +768,12 @@ export function generateProfessionalDevelopmentIntelligence(
   // ── Areas for Improvement ──────────────────────────────────────────────
   const areasForImprovement: string[] = [];
 
-  if (cpdQuality.impactAssessedRate < 50 && cpdQuality.totalRecords > 0) {
+  if (below(cpdQuality.impactAssessedRate, 50) && cpdQuality.totalRecords > 0) {
     areasForImprovement.push(
       `Impact assessment rate at ${cpdQuality.impactAssessedRate}% — embed impact evaluation into all CPD activities`,
     );
   }
-  if (cpdQuality.sharedWithTeamRate < 50 && cpdQuality.totalRecords > 0) {
+  if (below(cpdQuality.sharedWithTeamRate, 50) && cpdQuality.totalRecords > 0) {
     areasForImprovement.push(
       `Only ${cpdQuality.sharedWithTeamRate}% of learning shared with team — introduce team learning sessions`,
     );
@@ -769,12 +788,12 @@ export function generateProfessionalDevelopmentIntelligence(
       `${qualificationProgress.overdueCount} overdue qualification${qualificationProgress.overdueCount !== 1 ? "s" : ""} — review support and timescales`,
     );
   }
-  if (supervisionDevelopment.goalsSetRate < 70 && supervisionDevelopment.totalSupervisions > 0) {
+  if (below(supervisionDevelopment.goalsSetRate, 70) && supervisionDevelopment.totalSupervisions > 0) {
     areasForImprovement.push(
       `Development goals set in only ${supervisionDevelopment.goalsSetRate}% of supervisions — ensure goals are set each session`,
     );
   }
-  if (supervisionDevelopment.actionPlanRate < 60 && supervisionDevelopment.totalSupervisions > 0) {
+  if (below(supervisionDevelopment.actionPlanRate, 60) && supervisionDevelopment.totalSupervisions > 0) {
     areasForImprovement.push(
       `Action plans created in only ${supervisionDevelopment.actionPlanRate}% of supervisions`,
     );
@@ -784,7 +803,7 @@ export function generateProfessionalDevelopmentIntelligence(
       "Learning culture requires development — consider embedding reflective practice and team learning",
     );
   }
-  if (qualificationProgress.supportRate < 60 && qualificationProgress.totalQualifications > 0) {
+  if (below(qualificationProgress.supportRate, 60) && qualificationProgress.totalQualifications > 0) {
     areasForImprovement.push(
       `Only ${qualificationProgress.supportRate}% of staff receiving qualification support — review mentoring and study time`,
     );
@@ -807,27 +826,27 @@ export function generateProfessionalDevelopmentIntelligence(
     );
   }
 
-  if (cpdQuality.impactAssessedRate < 30 && cpdQuality.totalRecords > 0) {
+  if (below(cpdQuality.impactAssessedRate, 30) && cpdQuality.totalRecords > 0) {
     actions.push(
       "URGENT: Impact assessment rate critically low — implement mandatory post-training evaluation forms",
     );
   }
 
-  if (supervisionDevelopment.goalsSetRate < 50 && supervisionDevelopment.totalSupervisions > 0) {
+  if (below(supervisionDevelopment.goalsSetRate, 50) && supervisionDevelopment.totalSupervisions > 0) {
     actions.push(
       "URGENT: Development goals absent from majority of supervisions — retrain supervisors on development-focused supervision",
     );
   }
 
-  if (cpdQuality.sharedWithTeamRate < 30 && cpdQuality.totalRecords > 0) {
+  if (below(cpdQuality.sharedWithTeamRate, 30) && cpdQuality.totalRecords > 0) {
     actions.push("Introduce monthly team learning sessions to increase knowledge sharing");
   }
 
-  if (learningCulture.reflectiveRate < 50 && learningCulture.totalAssessments > 0) {
+  if (below(learningCulture.reflectiveRate, 50) && learningCulture.totalAssessments > 0) {
     actions.push("Embed reflective practice into daily routines — introduce reflective journals and group reflections");
   }
 
-  if (qualificationProgress.fundedRate < 50 && qualificationProgress.totalQualifications > 0) {
+  if (below(qualificationProgress.fundedRate, 50) && qualificationProgress.totalQualifications > 0) {
     actions.push("Review training budget allocation — increase employer funding for staff qualifications");
   }
 

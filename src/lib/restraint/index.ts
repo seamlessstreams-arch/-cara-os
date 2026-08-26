@@ -1,5 +1,4 @@
 export {
-  pct,
   getRating,
   getRestraintCategoryLabel,
   getRestraintOutcomeLabel,

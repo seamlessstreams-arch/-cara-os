@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // PROFESSIONAL BOUNDARY COMPLIANCE INTELLIGENCE ENGINE
 //
@@ -120,11 +121,16 @@ export interface StaffBoundaryTraining {
 
 export interface BoundaryComplianceResult {
   totalAudits: number;
-  complianceRate: number;
-  supervisorVerifiedRate: number;
-  documentedRate: number;
-  correctiveActionRate: number;
-  reflectivePracticeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  complianceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  supervisorVerifiedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  correctiveActionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reflectivePracticeRate: number | null;
   areaBreakdown: Record<BoundaryArea, number>;
   complianceLevelBreakdown: Record<ComplianceLevel, number>;
   score: number; // 0-25
@@ -132,9 +138,12 @@ export interface BoundaryComplianceResult {
 
 export interface ChildSafeguardingResult {
   totalAudits: number;
-  childFeedbackSoughtRate: number;
-  riskAssessedRate: number;
-  nonComplianceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childFeedbackSoughtRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  nonComplianceRate: number | null;
   score: number; // 0-25
 }
 
@@ -151,12 +160,18 @@ export interface BoundaryPolicyResult {
 
 export interface StaffBoundaryReadinessResult {
   totalStaff: number;
-  professionalBoundariesRate: number;
-  safeguardingAwarenessRate: number;
-  ethicalConductRate: number;
-  socialMediaSafetyRate: number;
-  reportingProceduresRate: number;
-  reflectivePracticeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  professionalBoundariesRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  ethicalConductRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  socialMediaSafetyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reportingProceduresRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reflectivePracticeRate: number | null;
   score: number; // 0-25
 }
 
@@ -193,11 +208,6 @@ export interface ProfessionalBoundaryComplianceIntelligence {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
@@ -241,11 +251,11 @@ export function evaluateBoundaryCompliance(
   if (totalAudits === 0) {
     return {
       totalAudits: 0,
-      complianceRate: 0,
-      supervisorVerifiedRate: 0,
-      documentedRate: 0,
-      correctiveActionRate: 0,
-      reflectivePracticeRate: 0,
+      complianceRate: null,
+      supervisorVerifiedRate: null,
+      documentedRate: null,
+      correctiveActionRate: null,
+      reflectivePracticeRate: null,
       areaBreakdown,
       complianceLevelBreakdown,
       score: 25,
@@ -261,31 +271,31 @@ export function evaluateBoundaryCompliance(
   // Compliance rate: fully_compliant + mostly_compliant
   const compliantCount =
     complianceLevelBreakdown.fully_compliant + complianceLevelBreakdown.mostly_compliant;
-  const complianceRate = pct(compliantCount, totalAudits);
+  const complianceRate = rate(compliantCount, totalAudits);
 
   // Supervisor verified rate
   const supervisorVerifiedCount = audits.filter((a) => a.supervisorVerified).length;
-  const supervisorVerifiedRate = pct(supervisorVerifiedCount, totalAudits);
+  const supervisorVerifiedRate = rate(supervisorVerifiedCount, totalAudits);
 
   // Documented rate
   const documentedCount = audits.filter((a) => a.documentedAppropriately).length;
-  const documentedRate = pct(documentedCount, totalAudits);
+  const documentedRate = rate(documentedCount, totalAudits);
 
   // Corrective action rate
   const correctiveActionCount = audits.filter((a) => a.correctiveActionTaken).length;
-  const correctiveActionRate = pct(correctiveActionCount, totalAudits);
+  const correctiveActionRate = rate(correctiveActionCount, totalAudits);
 
   // Reflective practice rate
   const reflectivePracticeCount = audits.filter((a) => a.reflectivePracticeCompleted).length;
-  const reflectivePracticeRate = pct(reflectivePracticeCount, totalAudits);
+  const reflectivePracticeRate = rate(reflectivePracticeCount, totalAudits);
 
   // Score (out of 25)
   // Weighted: compliance rate (0-8), supervisor verified rate (0-6), documented rate (0-6), combined corrective+reflective (0-5)
   let score = 0;
-  score += (complianceRate / 100) * 8;
-  score += (supervisorVerifiedRate / 100) * 6;
-  score += (documentedRate / 100) * 6;
-  const combinedCorrRefl = (correctiveActionRate + reflectivePracticeRate) / 2;
+  score += (complianceRate! / 100) * 8;
+  score += (supervisorVerifiedRate! / 100) * 6;
+  score += ((documentedRate ?? 0) / 100) * 6;
+  const combinedCorrRefl = (correctiveActionRate! + reflectivePracticeRate!) / 2;
   score += (combinedCorrRefl / 100) * 5;
 
   score = clamp(Math.round(score * 10) / 10, 0, 25);
@@ -315,31 +325,31 @@ export function evaluateChildSafeguarding(
   if (totalAudits === 0) {
     return {
       totalAudits: 0,
-      childFeedbackSoughtRate: 0,
-      riskAssessedRate: 0,
-      nonComplianceRate: 0,
+      childFeedbackSoughtRate: null,
+      riskAssessedRate: null,
+      nonComplianceRate: null,
       score: 25,
     };
   }
 
   // Child feedback sought rate
   const childFeedbackCount = audits.filter((a) => a.childFeedbackSought).length;
-  const childFeedbackSoughtRate = pct(childFeedbackCount, totalAudits);
+  const childFeedbackSoughtRate = rate(childFeedbackCount, totalAudits);
 
   // Risk assessed rate
   const riskAssessedCount = audits.filter((a) => a.riskAssessed).length;
-  const riskAssessedRate = pct(riskAssessedCount, totalAudits);
+  const riskAssessedRate = rate(riskAssessedCount, totalAudits);
 
   // Non-compliance rate
   const nonCompliantCount = audits.filter((a) => a.complianceLevel === "non_compliant").length;
-  const nonComplianceRate = pct(nonCompliantCount, totalAudits);
+  const nonComplianceRate = rate(nonCompliantCount, totalAudits);
 
   // Score (out of 25)
   // Weighted: child feedback sought rate (0-9), risk assessed rate (0-8), non-compliance rate inverted (0-8)
   let score = 0;
-  score += (childFeedbackSoughtRate / 100) * 9;
-  score += (riskAssessedRate / 100) * 8;
-  score += 8 * ((100 - nonComplianceRate) / 100);
+  score += (childFeedbackSoughtRate! / 100) * 9;
+  score += (riskAssessedRate! / 100) * 8;
+  score += 8 * ((100 - nonComplianceRate!) / 100);
 
   score = clamp(Math.round(score * 10) / 10, 0, 25);
 
@@ -407,43 +417,43 @@ export function evaluateStaffBoundaryReadiness(
   if (totalStaff === 0) {
     return {
       totalStaff: 0,
-      professionalBoundariesRate: 0,
-      safeguardingAwarenessRate: 0,
-      ethicalConductRate: 0,
-      socialMediaSafetyRate: 0,
-      reportingProceduresRate: 0,
-      reflectivePracticeRate: 0,
+      professionalBoundariesRate: null,
+      safeguardingAwarenessRate: null,
+      ethicalConductRate: null,
+      socialMediaSafetyRate: null,
+      reportingProceduresRate: null,
+      reflectivePracticeRate: null,
       score: 0,
     };
   }
 
   // Calculate rates for each skill
   const professionalBoundariesCount = training.filter((t) => t.professionalBoundaries).length;
-  const professionalBoundariesRate = pct(professionalBoundariesCount, totalStaff);
+  const professionalBoundariesRate = rate(professionalBoundariesCount, totalStaff);
 
   const safeguardingAwarenessCount = training.filter((t) => t.safeguardingAwareness).length;
-  const safeguardingAwarenessRate = pct(safeguardingAwarenessCount, totalStaff);
+  const safeguardingAwarenessRate = rate(safeguardingAwarenessCount, totalStaff);
 
   const ethicalConductCount = training.filter((t) => t.ethicalConduct).length;
-  const ethicalConductRate = pct(ethicalConductCount, totalStaff);
+  const ethicalConductRate = rate(ethicalConductCount, totalStaff);
 
   const socialMediaSafetyCount = training.filter((t) => t.socialMediaSafety).length;
-  const socialMediaSafetyRate = pct(socialMediaSafetyCount, totalStaff);
+  const socialMediaSafetyRate = rate(socialMediaSafetyCount, totalStaff);
 
   const reportingProceduresCount = training.filter((t) => t.reportingProcedures).length;
-  const reportingProceduresRate = pct(reportingProceduresCount, totalStaff);
+  const reportingProceduresRate = rate(reportingProceduresCount, totalStaff);
 
   const reflectivePracticeCount = training.filter((t) => t.reflectivePractice).length;
-  const reflectivePracticeRate = pct(reflectivePracticeCount, totalStaff);
+  const reflectivePracticeRate = rate(reflectivePracticeCount, totalStaff);
 
   // Score (out of 25): 6 skills weighted 6+5+5+4+3+2 = 25
   let score = 0;
-  score += (professionalBoundariesRate / 100) * 6;
-  score += (safeguardingAwarenessRate / 100) * 5;
-  score += (ethicalConductRate / 100) * 5;
-  score += (socialMediaSafetyRate / 100) * 4;
-  score += (reportingProceduresRate / 100) * 3;
-  score += (reflectivePracticeRate / 100) * 2;
+  score += (professionalBoundariesRate! / 100) * 6;
+  score += (safeguardingAwarenessRate! / 100) * 5;
+  score += (ethicalConductRate! / 100) * 5;
+  score += (socialMediaSafetyRate! / 100) * 4;
+  score += (reportingProceduresRate! / 100) * 3;
+  score += ((reflectivePracticeRate ?? 0) / 100) * 2;
 
   score = clamp(Math.round(score * 10) / 10, 0, 25);
 
@@ -487,34 +497,34 @@ export function buildStaffBoundaryProfiles(
     const compliantCount = entry.audits.filter(
       (a) => a.complianceLevel === "fully_compliant" || a.complianceLevel === "mostly_compliant",
     ).length;
-    const complianceRate = pct(compliantCount, totalAudits);
+    const complianceRate = rate(compliantCount, totalAudits)!;
 
     // Documented rate
     const documentedCount = entry.audits.filter((a) => a.documentedAppropriately).length;
-    const documentedRate = pct(documentedCount, totalAudits);
+    const documentedRate = rate(documentedCount, totalAudits)!;
 
     // Supervisor verified rate
     const supervisorVerifiedCount = entry.audits.filter((a) => a.supervisorVerified).length;
-    const supervisorVerifiedRate = pct(supervisorVerifiedCount, totalAudits);
+    const supervisorVerifiedRate = rate(supervisorVerifiedCount, totalAudits)!;
 
     // Per-staff score 0-10: compliance rate (0-4 based on tiers), documented (0-3), supervisorVerified (0-3)
     let boundaryScore = 0;
 
     // Compliance rate tiers (0-4)
-    if (complianceRate >= 90) boundaryScore += 4;
-    else if (complianceRate >= 75) boundaryScore += 3;
-    else if (complianceRate >= 50) boundaryScore += 2;
-    else if (complianceRate > 0) boundaryScore += 1;
+    if (meets(complianceRate, 90)) boundaryScore += 4;
+    else if (meets(complianceRate, 75)) boundaryScore += 3;
+    else if (meets(complianceRate, 50)) boundaryScore += 2;
+    else if (above(complianceRate, 0)) boundaryScore += 1;
 
     // Documented (0-3)
-    if (documentedRate >= 90) boundaryScore += 3;
-    else if (documentedRate >= 70) boundaryScore += 2;
-    else if (documentedRate >= 50) boundaryScore += 1;
+    if (meets(documentedRate, 90)) boundaryScore += 3;
+    else if (meets(documentedRate, 70)) boundaryScore += 2;
+    else if (meets(documentedRate, 50)) boundaryScore += 1;
 
     // Supervisor verified (0-3)
-    if (supervisorVerifiedRate >= 90) boundaryScore += 3;
-    else if (supervisorVerifiedRate >= 70) boundaryScore += 2;
-    else if (supervisorVerifiedRate >= 50) boundaryScore += 1;
+    if (meets(supervisorVerifiedRate, 90)) boundaryScore += 3;
+    else if (meets(supervisorVerifiedRate, 70)) boundaryScore += 2;
+    else if (meets(supervisorVerifiedRate, 50)) boundaryScore += 1;
 
     boundaryScore = clamp(boundaryScore, 0, 10);
 
@@ -599,15 +609,15 @@ function aggregateStrengths(
 ): string[] {
   const strengths: string[] = [];
 
-  if (compliance.complianceRate >= 80) {
+  if (meets(compliance.complianceRate, 80)) {
     strengths.push("Strong professional boundary compliance at " + compliance.complianceRate + "% — staff consistently maintain appropriate boundaries");
   }
 
-  if (compliance.supervisorVerifiedRate >= 80) {
+  if (meets(compliance.supervisorVerifiedRate, 80)) {
     strengths.push("Effective supervision oversight with " + compliance.supervisorVerifiedRate + "% of boundary audits verified by supervisors");
   }
 
-  if (compliance.documentedRate >= 80) {
+  if (meets(compliance.documentedRate, 80)) {
     strengths.push("Thorough boundary documentation at " + compliance.documentedRate + "% — clear audit trail maintained");
   }
 
@@ -623,11 +633,11 @@ function aggregateAreasForImprovement(
 ): string[] {
   const areas: string[] = [];
 
-  if (audits.length > 0 && compliance.complianceRate < 60) {
+  if (audits.length > 0 && below(compliance.complianceRate, 60)) {
     areas.push("Professional boundary compliance at " + compliance.complianceRate + "% — below acceptable threshold, staff require additional guidance and monitoring");
   }
 
-  if (audits.length > 0 && safeguarding.childFeedbackSoughtRate < 60) {
+  if (audits.length > 0 && below(safeguarding.childFeedbackSoughtRate, 60)) {
     areas.push("Child feedback sought in only " + safeguarding.childFeedbackSoughtRate + "% of boundary audits — children's voices must be central to safeguarding practice");
   }
 

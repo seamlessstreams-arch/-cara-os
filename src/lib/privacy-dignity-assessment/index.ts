@@ -5,7 +5,6 @@ export {
   evaluateConfidentialityCompliance,
   evaluateStaffPrivacyReadiness,
   buildChildPrivacyProfiles,
-  pct,
   getRating,
   getPrivacyDomainLabel,
   getComplianceStatusLabel,

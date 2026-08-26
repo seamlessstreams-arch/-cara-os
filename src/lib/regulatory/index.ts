@@ -9,7 +9,6 @@ export {
   evaluateRegulatoryPolicy,
   evaluateStaffRegulatoryReadiness,
   buildChildRegulatoryProfiles,
-  pct,
   getRating,
   getRegulatoryCategoryLabel,
   getRegulatoryOutcomeLabel,

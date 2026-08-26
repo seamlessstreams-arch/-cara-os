@@ -5,7 +5,6 @@ export {
   evaluateReg44VisitPolicy,
   evaluateStaffReg44VisitReadiness,
   buildChildReg44VisitProfiles,
-  pct,
   getRating,
   getReg44VisitCategoryLabel,
   getReg44VisitOutcomeLabel,

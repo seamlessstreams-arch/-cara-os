@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getPrivacyDomainLabel,
   getComplianceStatusLabel,
@@ -96,21 +95,6 @@ function makeTraining(
 }
 
 // -- pct -----------------------------------------------------------------------
-
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-  it("returns 100 for equal values", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-});
 
 // -- getRating -----------------------------------------------------------------
 

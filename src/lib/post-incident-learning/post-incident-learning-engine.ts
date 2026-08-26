@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — Post-Incident Learning Intelligence Engine
 //
@@ -120,20 +121,28 @@ export interface TeamLearningSession {
 export interface DebriefQualityResult {
   overallScore: number;
   totalReviews: number;
-  within24hRate: number;
-  completedRate: number;
-  childDebriefRate: number;
-  staffDebriefRate: number;
-  rootCauseRate: number;
-  lessonsDocumentedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  within24hRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childDebriefRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffDebriefRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  rootCauseRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  lessonsDocumentedRate: number | null;
   qualityDistribution: Record<ReviewQuality, number>;
 }
 
 export interface LearningEffectivenessResult {
   overallScore: number;
   totalActions: number;
-  completedRate: number;
-  evidenceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  evidenceRate: number | null;
   practiceChangeCount: number;
   policyUpdateCount: number;
   trainingDeliveredCount: number;
@@ -143,28 +152,36 @@ export interface LearningEffectivenessResult {
 export interface PatternRecognitionResult {
   overallScore: number;
   totalPatterns: number;
-  triggerIdentifiedRate: number;
-  strategiesUpdatedRate: number;
-  multiAgencyRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  triggerIdentifiedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  strategiesUpdatedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  multiAgencyRate: number | null;
   escalatingCount: number;
   chronicCount: number;
-  recurringRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  recurringRate: number | null;
 }
 
 export interface TeamLearningResult {
   overallScore: number;
   totalSessions: number;
-  incidentRelatedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  incidentRelatedRate: number | null;
   averageAttendance: number;
-  actionCompletionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionCompletionRate: number | null;
   averageActionPoints: number;
 }
 
 export interface IncidentLearningProfile {
   incidentType: IncidentType;
   reviewCount: number;
-  debriefRate: number;
-  lessonsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  debriefRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  lessonsRate: number | null;
   recurrencePattern: RecurrencePattern | null;
   overallScore: number;
 }
@@ -187,11 +204,6 @@ export interface PostIncidentLearningIntelligence {
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 function clamp(v: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, v));
@@ -300,12 +312,12 @@ export function evaluateDebriefQuality(
     return {
       overallScore: 25,
       totalReviews: 0,
-      within24hRate: 0,
-      completedRate: 0,
-      childDebriefRate: 0,
-      staffDebriefRate: 0,
-      rootCauseRate: 0,
-      lessonsDocumentedRate: 0,
+      within24hRate: null,
+      completedRate: null,
+      childDebriefRate: null,
+      staffDebriefRate: null,
+      rootCauseRate: null,
+      lessonsDocumentedRate: null,
       qualityDistribution: { thorough: 0, adequate: 0, superficial: 0, not_completed: 0 },
     };
   }
@@ -314,30 +326,30 @@ export function evaluateDebriefQuality(
 
   // Within 24h
   const within24h = reviews.filter((r) => r.debriefStatus === "completed_within_24h").length;
-  const within24hRate = pct(within24h, total);
+  const within24hRate = rate(within24h, total);
 
   // Completed (within 24h + late)
   const completed = reviews.filter(
     (r) => r.debriefStatus === "completed_within_24h" || r.debriefStatus === "completed_late",
   ).length;
-  const completedRate = pct(completed, total);
+  const completedRate = rate(completed, total);
 
   // Child debrief rate — only for reviews where child was involved
   const childApplicable = reviews.filter((r) => r.childInvolved);
   const childDebriefed = childApplicable.filter((r) => r.childDebrief === true).length;
-  const childDebriefRate = pct(childDebriefed, childApplicable.length);
+  const childDebriefRate = rate(childDebriefed, childApplicable.length);
 
   // Staff debrief rate
   const staffDebriefed = reviews.filter((r) => r.staffDebrief).length;
-  const staffDebriefRate = pct(staffDebriefed, total);
+  const staffDebriefRate = rate(staffDebriefed, total);
 
   // Root cause identification rate
   const rootCauseCount = reviews.filter((r) => r.rootCauseIdentified).length;
-  const rootCauseRate = pct(rootCauseCount, total);
+  const rootCauseRate = rate(rootCauseCount, total);
 
   // Lessons documented rate
   const lessonsCount = reviews.filter((r) => r.lessonsDocumented).length;
-  const lessonsDocumentedRate = pct(lessonsCount, total);
+  const lessonsDocumentedRate = rate(lessonsCount, total);
 
   // Quality distribution
   const qualityDistribution: Record<ReviewQuality, number> = {
@@ -352,11 +364,11 @@ export function evaluateDebriefQuality(
 
   // Scoring
   let score = 0;
-  score += (within24hRate / 100) * 7;       // 0-7
-  score += (childDebriefRate / 100) * 5;     // 0-5
-  score += (rootCauseRate / 100) * 5;        // 0-5
-  score += (lessonsDocumentedRate / 100) * 4; // 0-4
-  score += (staffDebriefRate / 100) * 4;     // 0-4
+  score += ((within24hRate ?? 0) / 100) * 7;       // 0-7
+  score += ((childDebriefRate ?? 0) / 100) * 5;     // 0-5
+  score += ((rootCauseRate ?? 0) / 100) * 5;        // 0-5
+  score += ((lessonsDocumentedRate ?? 0) / 100) * 4; // 0-4
+  score += ((staffDebriefRate ?? 0) / 100) * 4;     // 0-4
 
   return {
     overallScore: Math.round(clamp(score, 0, 25) * 10) / 10,
@@ -402,8 +414,8 @@ export function evaluateLearningEffectiveness(
     return {
       overallScore: hasReviews ? 0 : 25,
       totalActions: 0,
-      completedRate: 0,
-      evidenceRate: 0,
+      completedRate: null,
+      evidenceRate: null,
       practiceChangeCount: 0,
       policyUpdateCount: 0,
       trainingDeliveredCount: 0,
@@ -415,11 +427,11 @@ export function evaluateLearningEffectiveness(
 
   // Completed rate
   const completedCount = actions.filter((a) => a.completedDate !== null).length;
-  const completedRate = pct(completedCount, total);
+  const completedRate = rate(completedCount, total);
 
   // Evidence rate
   const evidenceCount = actions.filter((a) => a.evidenceRecorded).length;
-  const evidenceRate = pct(evidenceCount, total);
+  const evidenceRate = rate(evidenceCount, total);
 
   // Outcome counts
   const outcomeDistribution: Record<LearningOutcome, number> = { ...emptyDistribution };
@@ -433,8 +445,8 @@ export function evaluateLearningEffectiveness(
 
   // Scoring
   let score = 0;
-  score += (completedRate / 100) * 8;             // 0-8
-  score += (evidenceRate / 100) * 6;              // 0-6
+  score += ((completedRate ?? 0) / 100) * 8;             // 0-8
+  score += ((evidenceRate ?? 0) / 100) * 6;              // 0-6
   score += Math.min(practiceChangeCount, 5);      // 0-5
   score += Math.min(policyUpdateCount, 3);        // 0-3
   score += Math.min(trainingDeliveredCount, 3);   // 0-3
@@ -471,12 +483,12 @@ export function evaluatePatternRecognition(
     return {
       overallScore: 25,
       totalPatterns: 0,
-      triggerIdentifiedRate: 0,
-      strategiesUpdatedRate: 0,
-      multiAgencyRate: 0,
+      triggerIdentifiedRate: null,
+      strategiesUpdatedRate: null,
+      multiAgencyRate: null,
       escalatingCount: 0,
       chronicCount: 0,
-      recurringRate: 0,
+      recurringRate: null,
     };
   }
 
@@ -484,15 +496,15 @@ export function evaluatePatternRecognition(
 
   // Trigger identification rate
   const triggerCount = patterns.filter((p) => p.triggerIdentified).length;
-  const triggerIdentifiedRate = pct(triggerCount, total);
+  const triggerIdentifiedRate = rate(triggerCount, total);
 
   // Strategies updated rate
   const strategiesCount = patterns.filter((p) => p.strategiesUpdated).length;
-  const strategiesUpdatedRate = pct(strategiesCount, total);
+  const strategiesUpdatedRate = rate(strategiesCount, total);
 
   // Multi-agency involvement rate
   const multiAgencyCount = patterns.filter((p) => p.multiAgencyInvolved).length;
-  const multiAgencyRate = pct(multiAgencyCount, total);
+  const multiAgencyRate = rate(multiAgencyCount, total);
 
   // Escalating and chronic counts
   const escalatingCount = patterns.filter((p) => p.recurrencePattern === "escalating").length;
@@ -505,13 +517,13 @@ export function evaluatePatternRecognition(
       p.recurrencePattern === "escalating" ||
       p.recurrencePattern === "chronic",
   ).length;
-  const recurringRate = pct(recurringPatterns, total);
+  const recurringRate = rate(recurringPatterns, total);
 
   // Scoring
   let score = 0;
-  score += (triggerIdentifiedRate / 100) * 7;      // 0-7
-  score += (strategiesUpdatedRate / 100) * 6;      // 0-6
-  score += (multiAgencyRate / 100) * 5;            // 0-5
+  score += ((triggerIdentifiedRate ?? 0) / 100) * 7;      // 0-7
+  score += ((strategiesUpdatedRate ?? 0) / 100) * 6;      // 0-6
+  score += ((multiAgencyRate ?? 0) / 100) * 5;            // 0-5
   score -= escalatingCount * 4;                     // penalty
   score -= chronicCount * 2;                        // penalty
 
@@ -547,9 +559,9 @@ export function evaluateTeamLearning(
     return {
       overallScore: 0,
       totalSessions: 0,
-      incidentRelatedRate: 0,
+      incidentRelatedRate: null,
       averageAttendance: 0,
-      actionCompletionRate: 0,
+      actionCompletionRate: null,
       averageActionPoints: 0,
     };
   }
@@ -558,7 +570,7 @@ export function evaluateTeamLearning(
 
   // Incident-related rate
   const incidentRelated = sessions.filter((s) => s.incidentRelated).length;
-  const incidentRelatedRate = pct(incidentRelated, total);
+  const incidentRelatedRate = rate(incidentRelated, total);
 
   // Average attendance (as percentage)
   const attendanceRates = sessions.map((s) =>
@@ -571,7 +583,7 @@ export function evaluateTeamLearning(
   // Action completion rate
   const totalGenerated = sessions.reduce((sum, s) => sum + s.actionPointsGenerated, 0);
   const totalCompleted = sessions.reduce((sum, s) => sum + s.actionPointsCompleted, 0);
-  const actionCompletionRate = pct(totalCompleted, totalGenerated);
+  const actionCompletionRate = rate(totalCompleted, totalGenerated);
 
   // Average action points per session
   const averageActionPoints = Math.round((totalGenerated / total) * 10) / 10;
@@ -579,8 +591,8 @@ export function evaluateTeamLearning(
   // Scoring
   let score = 0;
   score += (averageAttendance / 100) * 7;          // 0-7
-  score += (actionCompletionRate / 100) * 6;       // 0-6
-  score += (incidentRelatedRate / 100) * 5;        // 0-5
+  score += ((actionCompletionRate ?? 0) / 100) * 6;       // 0-6
+  score += ((incidentRelatedRate ?? 0) / 100) * 5;        // 0-5
 
   // Frequency bonus: 1pt per session, max 4
   score += Math.min(total, 4);                      // 0-4
@@ -633,17 +645,17 @@ function buildIncidentProfiles(
         r.debriefStatus === "completed_within_24h" ||
         r.debriefStatus === "completed_late",
     ).length;
-    const debriefRate = pct(debriefedCount, reviewCount);
+    const debriefRate = rate(debriefedCount, reviewCount);
 
     const lessonsCount = revs.filter((r) => r.lessonsDocumented).length;
-    const lessonsRate = pct(lessonsCount, reviewCount);
+    const lessonsRate = rate(lessonsCount, reviewCount);
 
     const recurrencePattern = data.pattern?.recurrencePattern ?? null;
 
     // Score 0-10: debrief (0-4) + lessons (0-3) + pattern penalty
     let profileScore = 0;
-    profileScore += (debriefRate / 100) * 4;
-    profileScore += (lessonsRate / 100) * 3;
+    profileScore += ((debriefRate ?? 0) / 100) * 4;
+    profileScore += ((lessonsRate ?? 0) / 100) * 3;
 
     // Bonus for no recurring pattern or first occurrence
     if (recurrencePattern === null || recurrencePattern === "first_occurrence") {
@@ -701,28 +713,28 @@ export function generatePostIncidentLearningIntelligence(
 
   // ── Strengths ──
   const strengths: string[] = [];
-  if (debrief.within24hRate >= 80 && debrief.totalReviews > 0) {
+  if (meets(debrief.within24hRate, 80) && debrief.totalReviews > 0) {
     strengths.push("Excellent debrief timeliness — reviews consistently completed within 24 hours");
   }
-  if (debrief.childDebriefRate >= 80 && debrief.totalReviews > 0) {
+  if (meets(debrief.childDebriefRate, 80) && debrief.totalReviews > 0) {
     strengths.push("Children are meaningfully included in post-incident debriefs, respecting their right to be heard");
   }
-  if (debrief.rootCauseRate >= 80 && debrief.totalReviews > 0) {
+  if (meets(debrief.rootCauseRate, 80) && debrief.totalReviews > 0) {
     strengths.push("Root cause analysis is consistently conducted, enabling deeper understanding of incidents");
   }
-  if (debrief.lessonsDocumentedRate >= 80 && debrief.totalReviews > 0) {
+  if (meets(debrief.lessonsDocumentedRate, 80) && debrief.totalReviews > 0) {
     strengths.push("Lessons are well-documented following incidents, supporting organisational learning");
   }
-  if (learning.completedRate >= 80 && learning.totalActions > 0) {
+  if (meets(learning.completedRate, 80) && learning.totalActions > 0) {
     strengths.push("Strong follow-through on learning actions — identified improvements are being implemented");
   }
-  if (learning.evidenceRate >= 80 && learning.totalActions > 0) {
+  if (meets(learning.evidenceRate, 80) && learning.totalActions > 0) {
     strengths.push("Evidence of learning is consistently recorded, demonstrating accountability");
   }
-  if (pattern.triggerIdentifiedRate >= 80 && pattern.totalPatterns > 0) {
+  if (meets(pattern.triggerIdentifiedRate, 80) && pattern.totalPatterns > 0) {
     strengths.push("Triggers for recurring incidents are well-identified, supporting preventative approaches");
   }
-  if (pattern.strategiesUpdatedRate >= 80 && pattern.totalPatterns > 0) {
+  if (meets(pattern.strategiesUpdatedRate, 80) && pattern.totalPatterns > 0) {
     strengths.push("Strategies are regularly updated in response to incident patterns");
   }
   if (pattern.escalatingCount === 0 && pattern.chronicCount === 0 && pattern.totalPatterns > 0) {
@@ -731,7 +743,7 @@ export function generatePostIncidentLearningIntelligence(
   if (team.averageAttendance >= 80 && team.totalSessions > 0) {
     strengths.push("Strong staff attendance at team learning sessions, building collective knowledge");
   }
-  if (team.actionCompletionRate >= 80 && team.totalSessions > 0) {
+  if (meets(team.actionCompletionRate, 80) && team.totalSessions > 0) {
     strengths.push("Team learning action points are consistently completed, embedding improvements");
   }
   if (debrief.totalReviews === 0) {
@@ -740,25 +752,25 @@ export function generatePostIncidentLearningIntelligence(
 
   // ── Areas for Improvement ──
   const areasForImprovement: string[] = [];
-  if (debrief.within24hRate < 60 && debrief.totalReviews > 0) {
+  if (below(debrief.within24hRate, 60) && debrief.totalReviews > 0) {
     areasForImprovement.push("Post-incident reviews need to be completed more promptly — within 24 hours where possible");
   }
-  if (debrief.childDebriefRate < 60 && debrief.totalReviews > 0) {
+  if (below(debrief.childDebriefRate, 60) && debrief.totalReviews > 0) {
     areasForImprovement.push("Children should be more routinely included in post-incident debriefs where appropriate");
   }
-  if (debrief.staffDebriefRate < 70 && debrief.totalReviews > 0) {
+  if (below(debrief.staffDebriefRate, 70) && debrief.totalReviews > 0) {
     areasForImprovement.push("Staff debriefs are not consistently conducted after incidents");
   }
-  if (debrief.rootCauseRate < 60 && debrief.totalReviews > 0) {
+  if (below(debrief.rootCauseRate, 60) && debrief.totalReviews > 0) {
     areasForImprovement.push("Root cause analysis needs to be more consistently applied to understand incident drivers");
   }
-  if (debrief.lessonsDocumentedRate < 60 && debrief.totalReviews > 0) {
+  if (below(debrief.lessonsDocumentedRate, 60) && debrief.totalReviews > 0) {
     areasForImprovement.push("Lessons from incidents are not being consistently documented");
   }
-  if (learning.completedRate < 60 && learning.totalActions > 0) {
+  if (below(learning.completedRate, 60) && learning.totalActions > 0) {
     areasForImprovement.push("Learning actions are identified but not consistently completed");
   }
-  if (learning.evidenceRate < 60 && learning.totalActions > 0) {
+  if (below(learning.evidenceRate, 60) && learning.totalActions > 0) {
     areasForImprovement.push("Evidence of learning implementation needs to be more consistently recorded");
   }
   if (pattern.escalatingCount > 0) {
@@ -767,7 +779,7 @@ export function generatePostIncidentLearningIntelligence(
   if (pattern.chronicCount > 0) {
     areasForImprovement.push(`${pattern.chronicCount} chronic incident pattern(s) identified — sustained intervention required`);
   }
-  if (pattern.triggerIdentifiedRate < 60 && pattern.totalPatterns > 0) {
+  if (below(pattern.triggerIdentifiedRate, 60) && pattern.totalPatterns > 0) {
     areasForImprovement.push("Triggers for recurring incidents need to be more consistently identified");
   }
   if (team.totalSessions === 0) {
@@ -776,7 +788,7 @@ export function generatePostIncidentLearningIntelligence(
   if (team.averageAttendance < 60 && team.totalSessions > 0) {
     areasForImprovement.push("Staff attendance at team learning sessions needs to improve");
   }
-  if (team.actionCompletionRate < 60 && team.totalSessions > 0) {
+  if (below(team.actionCompletionRate, 60) && team.totalSessions > 0) {
     areasForImprovement.push("Action points from team learning sessions are not being consistently completed");
   }
 
@@ -789,28 +801,28 @@ export function generatePostIncidentLearningIntelligence(
   if (pattern.escalatingCount > 0) {
     actions_list.push("URGENT: Conduct multi-agency strategy meeting for escalating incident patterns");
   }
-  if (learning.totalActions > 0 && learning.completedRate < 50) {
+  if (learning.totalActions > 0 && below(learning.completedRate, 50)) {
     actions_list.push("HIGH: Review and prioritise outstanding learning actions for completion");
   }
-  if (debrief.childDebriefRate < 50 && debrief.totalReviews > 0) {
+  if (below(debrief.childDebriefRate, 50) && debrief.totalReviews > 0) {
     actions_list.push("HIGH: Review debrief processes to ensure children are supported to participate");
   }
-  if (debrief.rootCauseRate < 50 && debrief.totalReviews > 0) {
+  if (below(debrief.rootCauseRate, 50) && debrief.totalReviews > 0) {
     actions_list.push("HIGH: Provide staff training on root cause analysis techniques");
   }
   if (team.totalSessions === 0) {
     actions_list.push("HIGH: Establish regular team learning sessions with incident-focused agenda items");
   }
-  if (pattern.triggerIdentifiedRate < 50 && pattern.totalPatterns > 0) {
+  if (below(pattern.triggerIdentifiedRate, 50) && pattern.totalPatterns > 0) {
     actions_list.push("MEDIUM: Invest in trigger analysis for recurring incident patterns");
   }
   if (team.averageAttendance < 60 && team.totalSessions > 0) {
     actions_list.push("MEDIUM: Review scheduling of team learning sessions to maximise attendance");
   }
-  if (debrief.lessonsDocumentedRate < 60 && debrief.totalReviews > 0) {
+  if (below(debrief.lessonsDocumentedRate, 60) && debrief.totalReviews > 0) {
     actions_list.push("MEDIUM: Introduce a structured lessons-learned template for post-incident reviews");
   }
-  if (learning.evidenceRate < 50 && learning.totalActions > 0) {
+  if (below(learning.evidenceRate, 50) && learning.totalActions > 0) {
     actions_list.push("LOW: Develop an evidence recording framework for learning action completion");
   }
 

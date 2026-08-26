@@ -7,7 +7,6 @@
 
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getRoomConditionLabel,
   getPersonalisationLevelLabel,
@@ -148,29 +147,6 @@ const OAK_HOUSE_POLICY: RoomPolicy = makePolicy();
 // ══════════════════════════════════════════════════════════════════════════════
 // HELPERS
 // ══════════════════════════════════════════════════════════════════════════════
-
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-
-  it("returns 100 when num equals den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-});
 
 describe("getRating", () => {
   it("returns outstanding for score >= 80", () => {
@@ -626,7 +602,7 @@ describe("evaluateInspectionCompliance", () => {
     ];
     const result = evaluateInspectionCompliance(inspections);
     // No issues = issuesScheduledRate should be 0 (0/0 = 0 via pct)
-    expect(result.issuesScheduledRate).toBe(0);
+    expect(result.issuesScheduledRate).toBeNull();
   });
 
   it("handles repairs completed when none scheduled", () => {
@@ -634,7 +610,7 @@ describe("evaluateInspectionCompliance", () => {
       makeInspection({ outcome: "passed", repairsScheduled: false }),
     ];
     const result = evaluateInspectionCompliance(inspections);
-    expect(result.repairsCompletedRate).toBe(0);
+    expect(result.repairsCompletedRate).toBeNull();
   });
 
   it("handles Chamberlain House demo inspections", () => {

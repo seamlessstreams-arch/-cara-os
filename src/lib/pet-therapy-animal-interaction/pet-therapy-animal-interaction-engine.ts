@@ -1,3 +1,4 @@
+import { above, below, meanOf, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // Pet Therapy & Animal Interaction Intelligence Engine
 //
@@ -180,41 +181,61 @@ export interface StaffAnimalTraining {
 export interface SessionQualityResult {
   overallScore: number;
   totalSessions: number;
-  therapeuticBenefitRate: number;
-  childEngagementRate: number;
-  riskAssessmentRate: number;
-  supervisionRate: number;
-  hygieneRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  therapeuticBenefitRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childEngagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  supervisionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  hygieneRate: number | null;
 }
 
 export interface AnimalWelfareResult {
   overallScore: number;
   totalChecks: number;
-  welfareGoodRate: number;
-  veterinaryRate: number;
-  vaccinationRate: number;
-  livingConditionsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  welfareGoodRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  veterinaryRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  vaccinationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  livingConditionsRate: number | null;
 }
 
 export interface RiskManagementResult {
   overallScore: number;
   totalAssessments: number;
-  allergyScreeningRate: number;
-  zoonoticRiskRate: number;
-  hygieneProtocolRate: number;
-  insuranceRate: number;
-  emergencyPlanRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  allergyScreeningRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  zoonoticRiskRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  hygieneProtocolRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  insuranceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  emergencyPlanRate: number | null;
 }
 
 export interface StaffAnimalReadinessResult {
   overallScore: number;
   totalStaff: number;
-  animalHandlingRate: number;
-  therapeuticUseRate: number;
-  animalWelfareRate: number;
-  riskAssessmentRate: number;
-  hygieneRate: number;
-  allergyRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  animalHandlingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  therapeuticUseRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  animalWelfareRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  hygieneRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  allergyRate: number | null;
 }
 
 export interface ChildAnimalProfile {
@@ -245,11 +266,6 @@ export interface PetTherapyAnimalInteractionIntelligence {
 
 // -- Helpers -------------------------------------------------------------------
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -275,11 +291,11 @@ export function evaluateSessionQuality(
     return {
       overallScore: 0,
       totalSessions: 0,
-      therapeuticBenefitRate: 0,
-      childEngagementRate: 0,
-      riskAssessmentRate: 0,
-      supervisionRate: 0,
-      hygieneRate: 0,
+      therapeuticBenefitRate: null,
+      childEngagementRate: null,
+      riskAssessmentRate: null,
+      supervisionRate: null,
+      hygieneRate: null,
     };
   }
 
@@ -290,37 +306,37 @@ export function evaluateSessionQuality(
       s.therapeuticBenefit === "significant" ||
       s.therapeuticBenefit === "moderate",
   ).length;
-  const therapeuticBenefitRate = pct(beneficial, sessions.length);
-  if (therapeuticBenefitRate >= 80) score += 7;
-  else if (therapeuticBenefitRate >= 60) score += 5;
-  else if (therapeuticBenefitRate >= 40) score += 3;
-  else if (therapeuticBenefitRate > 0) score += 1;
+  const therapeuticBenefitRate = rate(beneficial, sessions.length);
+  if (meets(therapeuticBenefitRate, 80)) score += 7;
+  else if (meets(therapeuticBenefitRate, 60)) score += 5;
+  else if (meets(therapeuticBenefitRate, 40)) score += 3;
+  else if (above(therapeuticBenefitRate, 0)) score += 1;
 
   const engaged = sessions.filter((s) => s.childEngaged).length;
-  const childEngagementRate = pct(engaged, sessions.length);
-  if (childEngagementRate >= 90) score += 6;
-  else if (childEngagementRate >= 70) score += 4;
-  else if (childEngagementRate >= 50) score += 3;
-  else if (childEngagementRate > 0) score += 1;
+  const childEngagementRate = rate(engaged, sessions.length);
+  if (meets(childEngagementRate, 90)) score += 6;
+  else if (meets(childEngagementRate, 70)) score += 4;
+  else if (meets(childEngagementRate, 50)) score += 3;
+  else if (above(childEngagementRate, 0)) score += 1;
 
   const riskAssessed = sessions.filter(
     (s) => s.riskAssessmentCompleted,
   ).length;
-  const riskAssessmentRate = pct(riskAssessed, sessions.length);
-  if (riskAssessmentRate >= 90) score += 6;
-  else if (riskAssessmentRate >= 70) score += 4;
-  else if (riskAssessmentRate >= 50) score += 3;
-  else if (riskAssessmentRate > 0) score += 1;
+  const riskAssessmentRate = rate(riskAssessed, sessions.length);
+  if (meets(riskAssessmentRate, 90)) score += 6;
+  else if (meets(riskAssessmentRate, 70)) score += 4;
+  else if (meets(riskAssessmentRate, 50)) score += 3;
+  else if (above(riskAssessmentRate, 0)) score += 1;
 
   const supervised = sessions.filter(
     (s) => s.supervisedThroughout,
   ).length;
-  const supervisionRate = pct(supervised, sessions.length);
+  const supervisionRate = rate(supervised, sessions.length);
   const hygienic = sessions.filter(
     (s) => s.hygieneProtocolFollowed,
   ).length;
-  const hygieneRate = pct(hygienic, sessions.length);
-  const combinedSafetyRate = Math.round((supervisionRate + hygieneRate) / 2);
+  const hygieneRate = rate(hygienic, sessions.length);
+  const combinedSafetyRate = meanOf([supervisionRate, hygieneRate]) ?? 0; // unmeasured earns no bonus
   if (combinedSafetyRate >= 90) score += 6;
   else if (combinedSafetyRate >= 70) score += 4;
   else if (combinedSafetyRate >= 50) score += 3;
@@ -353,10 +369,10 @@ export function evaluateAnimalWelfare(
     return {
       overallScore: 0,
       totalChecks: 0,
-      welfareGoodRate: 0,
-      veterinaryRate: 0,
-      vaccinationRate: 0,
-      livingConditionsRate: 0,
+      welfareGoodRate: null,
+      veterinaryRate: null,
+      vaccinationRate: null,
+      livingConditionsRate: null,
     };
   }
 
@@ -365,34 +381,34 @@ export function evaluateAnimalWelfare(
   const good = checks.filter(
     (c) => c.welfareStatus === "excellent" || c.welfareStatus === "good",
   ).length;
-  const welfareGoodRate = pct(good, checks.length);
-  if (welfareGoodRate >= 90) score += 7;
-  else if (welfareGoodRate >= 70) score += 5;
-  else if (welfareGoodRate >= 50) score += 3;
-  else if (welfareGoodRate > 0) score += 1;
+  const welfareGoodRate = rate(good, checks.length);
+  if (meets(welfareGoodRate, 90)) score += 7;
+  else if (meets(welfareGoodRate, 70)) score += 5;
+  else if (meets(welfareGoodRate, 50)) score += 3;
+  else if (above(welfareGoodRate, 0)) score += 1;
 
   const vet = checks.filter((c) => c.veterinaryUpToDate).length;
-  const veterinaryRate = pct(vet, checks.length);
-  if (veterinaryRate >= 90) score += 6;
-  else if (veterinaryRate >= 70) score += 4;
-  else if (veterinaryRate >= 50) score += 3;
-  else if (veterinaryRate > 0) score += 1;
+  const veterinaryRate = rate(vet, checks.length);
+  if (meets(veterinaryRate, 90)) score += 6;
+  else if (meets(veterinaryRate, 70)) score += 4;
+  else if (meets(veterinaryRate, 50)) score += 3;
+  else if (above(veterinaryRate, 0)) score += 1;
 
   const vax = checks.filter((c) => c.vaccinationsCurrentt).length;
-  const vaccinationRate = pct(vax, checks.length);
-  if (vaccinationRate >= 90) score += 6;
-  else if (vaccinationRate >= 70) score += 4;
-  else if (vaccinationRate >= 50) score += 3;
-  else if (vaccinationRate > 0) score += 1;
+  const vaccinationRate = rate(vax, checks.length);
+  if (meets(vaccinationRate, 90)) score += 6;
+  else if (meets(vaccinationRate, 70)) score += 4;
+  else if (meets(vaccinationRate, 50)) score += 3;
+  else if (above(vaccinationRate, 0)) score += 1;
 
   const conditions = checks.filter(
     (c) => c.livingConditionsAdequate,
   ).length;
-  const livingConditionsRate = pct(conditions, checks.length);
-  if (livingConditionsRate >= 90) score += 6;
-  else if (livingConditionsRate >= 70) score += 4;
-  else if (livingConditionsRate >= 50) score += 3;
-  else if (livingConditionsRate > 0) score += 1;
+  const livingConditionsRate = rate(conditions, checks.length);
+  if (meets(livingConditionsRate, 90)) score += 6;
+  else if (meets(livingConditionsRate, 70)) score += 4;
+  else if (meets(livingConditionsRate, 50)) score += 3;
+  else if (above(livingConditionsRate, 0)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -420,11 +436,11 @@ export function evaluateRiskManagement(
     return {
       overallScore: 0,
       totalAssessments: 0,
-      allergyScreeningRate: 0,
-      zoonoticRiskRate: 0,
-      hygieneProtocolRate: 0,
-      insuranceRate: 0,
-      emergencyPlanRate: 0,
+      allergyScreeningRate: null,
+      zoonoticRiskRate: null,
+      hygieneProtocolRate: null,
+      insuranceRate: null,
+      emergencyPlanRate: null,
     };
   }
 
@@ -433,39 +449,39 @@ export function evaluateRiskManagement(
   const allergy = assessments.filter(
     (a) => a.allergyScreeningCompleted,
   ).length;
-  const allergyScreeningRate = pct(allergy, assessments.length);
-  if (allergyScreeningRate >= 90) score += 7;
-  else if (allergyScreeningRate >= 70) score += 5;
-  else if (allergyScreeningRate >= 50) score += 3;
-  else if (allergyScreeningRate > 0) score += 1;
+  const allergyScreeningRate = rate(allergy, assessments.length);
+  if (meets(allergyScreeningRate, 90)) score += 7;
+  else if (meets(allergyScreeningRate, 70)) score += 5;
+  else if (meets(allergyScreeningRate, 50)) score += 3;
+  else if (above(allergyScreeningRate, 0)) score += 1;
 
   const zoonotic = assessments.filter(
     (a) => a.zoonoticRiskAssessed,
   ).length;
-  const zoonoticRiskRate = pct(zoonotic, assessments.length);
-  if (zoonoticRiskRate >= 90) score += 6;
-  else if (zoonoticRiskRate >= 70) score += 4;
-  else if (zoonoticRiskRate >= 50) score += 3;
-  else if (zoonoticRiskRate > 0) score += 1;
+  const zoonoticRiskRate = rate(zoonotic, assessments.length);
+  if (meets(zoonoticRiskRate, 90)) score += 6;
+  else if (meets(zoonoticRiskRate, 70)) score += 4;
+  else if (meets(zoonoticRiskRate, 50)) score += 3;
+  else if (above(zoonoticRiskRate, 0)) score += 1;
 
   const hygiene = assessments.filter(
     (a) => a.hygieneProtocolInPlace,
   ).length;
-  const hygieneProtocolRate = pct(hygiene, assessments.length);
-  if (hygieneProtocolRate >= 90) score += 6;
-  else if (hygieneProtocolRate >= 70) score += 4;
-  else if (hygieneProtocolRate >= 50) score += 3;
-  else if (hygieneProtocolRate > 0) score += 1;
+  const hygieneProtocolRate = rate(hygiene, assessments.length);
+  if (meets(hygieneProtocolRate, 90)) score += 6;
+  else if (meets(hygieneProtocolRate, 70)) score += 4;
+  else if (meets(hygieneProtocolRate, 50)) score += 3;
+  else if (above(hygieneProtocolRate, 0)) score += 1;
 
   const insurance = assessments.filter(
     (a) => a.insuranceCurrent,
   ).length;
-  const insuranceRate = pct(insurance, assessments.length);
+  const insuranceRate = rate(insurance, assessments.length);
   const emergency = assessments.filter(
     (a) => a.emergencyPlanInPlace,
   ).length;
-  const emergencyPlanRate = pct(emergency, assessments.length);
-  const combinedRate = Math.round((insuranceRate + emergencyPlanRate) / 2);
+  const emergencyPlanRate = rate(emergency, assessments.length);
+  const combinedRate = meanOf([insuranceRate, emergencyPlanRate]) ?? 0;
   if (combinedRate >= 90) score += 6;
   else if (combinedRate >= 70) score += 4;
   else if (combinedRate >= 50) score += 3;
@@ -500,57 +516,57 @@ export function evaluateStaffAnimalReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      animalHandlingRate: 0,
-      therapeuticUseRate: 0,
-      animalWelfareRate: 0,
-      riskAssessmentRate: 0,
-      hygieneRate: 0,
-      allergyRate: 0,
+      animalHandlingRate: null,
+      therapeuticUseRate: null,
+      animalWelfareRate: null,
+      riskAssessmentRate: null,
+      hygieneRate: null,
+      allergyRate: null,
     };
   }
 
   let score = 0;
 
   const handling = training.filter((t) => t.animalHandling).length;
-  const animalHandlingRate = pct(handling, training.length);
-  if (animalHandlingRate >= 90) score += 6;
-  else if (animalHandlingRate >= 70) score += 4;
-  else if (animalHandlingRate >= 50) score += 3;
-  else if (animalHandlingRate > 0) score += 1;
+  const animalHandlingRate = rate(handling, training.length);
+  if (meets(animalHandlingRate, 90)) score += 6;
+  else if (meets(animalHandlingRate, 70)) score += 4;
+  else if (meets(animalHandlingRate, 50)) score += 3;
+  else if (above(animalHandlingRate, 0)) score += 1;
 
   const therapeutic = training.filter(
     (t) => t.therapeuticAnimalUse,
   ).length;
-  const therapeuticUseRate = pct(therapeutic, training.length);
-  if (therapeuticUseRate >= 90) score += 5;
-  else if (therapeuticUseRate >= 70) score += 3;
-  else if (therapeuticUseRate >= 50) score += 2;
-  else if (therapeuticUseRate > 0) score += 1;
+  const therapeuticUseRate = rate(therapeutic, training.length);
+  if (meets(therapeuticUseRate, 90)) score += 5;
+  else if (meets(therapeuticUseRate, 70)) score += 3;
+  else if (meets(therapeuticUseRate, 50)) score += 2;
+  else if (above(therapeuticUseRate, 0)) score += 1;
 
   const welfare = training.filter((t) => t.animalWelfare).length;
-  const animalWelfareRate = pct(welfare, training.length);
-  if (animalWelfareRate >= 90) score += 5;
-  else if (animalWelfareRate >= 70) score += 3;
-  else if (animalWelfareRate >= 50) score += 2;
-  else if (animalWelfareRate > 0) score += 1;
+  const animalWelfareRate = rate(welfare, training.length);
+  if (meets(animalWelfareRate, 90)) score += 5;
+  else if (meets(animalWelfareRate, 70)) score += 3;
+  else if (meets(animalWelfareRate, 50)) score += 2;
+  else if (above(animalWelfareRate, 0)) score += 1;
 
   const risk = training.filter((t) => t.riskAssessment).length;
-  const riskAssessmentRate = pct(risk, training.length);
-  if (riskAssessmentRate >= 90) score += 4;
-  else if (riskAssessmentRate >= 70) score += 3;
-  else if (riskAssessmentRate >= 50) score += 2;
-  else if (riskAssessmentRate > 0) score += 1;
+  const riskAssessmentRate = rate(risk, training.length);
+  if (meets(riskAssessmentRate, 90)) score += 4;
+  else if (meets(riskAssessmentRate, 70)) score += 3;
+  else if (meets(riskAssessmentRate, 50)) score += 2;
+  else if (above(riskAssessmentRate, 0)) score += 1;
 
   const hygiene = training.filter((t) => t.hygieneProtocols).length;
-  const hygieneRate = pct(hygiene, training.length);
-  if (hygieneRate >= 90) score += 3;
-  else if (hygieneRate >= 70) score += 2;
-  else if (hygieneRate >= 50) score += 1;
+  const hygieneRate = rate(hygiene, training.length);
+  if (meets(hygieneRate, 90)) score += 3;
+  else if (meets(hygieneRate, 70)) score += 2;
+  else if (meets(hygieneRate, 50)) score += 1;
 
   const allergy = training.filter((t) => t.allergyAwareness).length;
-  const allergyRate = pct(allergy, training.length);
-  if (allergyRate >= 90) score += 2;
-  else if (allergyRate >= 70) score += 1;
+  const allergyRate = rate(allergy, training.length);
+  if (meets(allergyRate, 90)) score += 2;
+  else if (meets(allergyRate, 70)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -599,16 +615,16 @@ export function buildChildAnimalProfiles(
         s.therapeuticBenefit === "significant" ||
         s.therapeuticBenefit === "moderate",
     ).length;
-    const benefitRate = pct(beneficial, entry.sessions.length);
-    if (benefitRate >= 80) score += 3;
-    else if (benefitRate >= 50) score += 2;
-    else if (benefitRate > 0) score += 1;
+    const benefitRate = rate(beneficial, entry.sessions.length);
+    if (meets(benefitRate, 80)) score += 3;
+    else if (meets(benefitRate, 50)) score += 2;
+    else if (above(benefitRate, 0)) score += 1;
 
     // Engagement (0-2)
     const engaged = entry.sessions.filter((s) => s.childEngaged).length;
-    const engagementRate = pct(engaged, entry.sessions.length);
-    if (engagementRate >= 80) score += 2;
-    else if (engagementRate >= 50) score += 1;
+    const engagementRate = rate(engaged, entry.sessions.length)!;
+    if (meets(engagementRate, 80)) score += 2;
+    else if (meets(engagementRate, 50)) score += 1;
 
     // Safety (risk + supervision + hygiene) (0-2)
     const safeSession = entry.sessions.filter(
@@ -617,15 +633,15 @@ export function buildChildAnimalProfiles(
         s.supervisedThroughout &&
         s.hygieneProtocolFollowed,
     ).length;
-    const safeRate = pct(safeSession, entry.sessions.length);
-    if (safeRate >= 90) score += 2;
-    else if (safeRate >= 50) score += 1;
+    const safeRate = rate(safeSession, entry.sessions.length);
+    if (meets(safeRate, 90)) score += 2;
+    else if (meets(safeRate, 50)) score += 1;
 
     return {
       childId: entry.childId,
       childName: entry.childName,
       totalSessions: entry.sessions.length,
-      therapeuticBenefitPositive: benefitRate >= 50,
+      therapeuticBenefitPositive: meets(benefitRate, 50),
       engagementRate,
       overallScore: Math.min(Math.max(score, 0), 10),
     };
@@ -661,33 +677,33 @@ export function generatePetTherapyAnimalInteractionIntelligence(
   // -- Strengths ---------------------------------------------------------------
   const strengths: string[] = [];
 
-  if (sessionQuality.therapeuticBenefitRate >= 80 && sessions.length > 0) {
+  if (meets(sessionQuality.therapeuticBenefitRate, 80) && sessions.length > 0) {
     strengths.push(
       "Strong therapeutic benefit from animal-assisted sessions — children benefiting significantly",
     );
   }
-  if (sessionQuality.childEngagementRate >= 90 && sessions.length > 0) {
+  if (meets(sessionQuality.childEngagementRate, 90) && sessions.length > 0) {
     strengths.push(
       "Excellent child engagement with animal therapy sessions",
     );
   }
-  if (animalWelfare.welfareGoodRate >= 90 && welfareChecks.length > 0) {
+  if (meets(animalWelfare.welfareGoodRate, 90) && welfareChecks.length > 0) {
     strengths.push(
       "Animal welfare standards consistently excellent or good",
     );
   }
-  if (animalWelfare.veterinaryRate >= 90 && welfareChecks.length > 0) {
+  if (meets(animalWelfare.veterinaryRate, 90) && welfareChecks.length > 0) {
     strengths.push(
       "Veterinary care consistently up to date for all animals",
     );
   }
-  if (riskManagement.allergyScreeningRate >= 90 && riskAssessments.length > 0) {
+  if (meets(riskManagement.allergyScreeningRate, 90) && riskAssessments.length > 0) {
     strengths.push(
       "Comprehensive allergy screening completed for all animal interactions",
     );
   }
   if (
-    staffAnimalReadiness.animalHandlingRate >= 90 &&
+    meets(staffAnimalReadiness.animalHandlingRate, 90) &&
     training.length > 0
   ) {
     strengths.push(
@@ -695,14 +711,14 @@ export function generatePetTherapyAnimalInteractionIntelligence(
     );
   }
   if (
-    staffAnimalReadiness.therapeuticUseRate >= 90 &&
+    meets(staffAnimalReadiness.therapeuticUseRate, 90) &&
     training.length > 0
   ) {
     strengths.push(
       "Staff team trained in therapeutic animal-assisted interventions",
     );
   }
-  if (sessionQuality.riskAssessmentRate >= 90 && sessions.length > 0) {
+  if (meets(sessionQuality.riskAssessmentRate, 90) && sessions.length > 0) {
     strengths.push(
       "Risk assessments consistently completed before animal sessions",
     );
@@ -711,28 +727,28 @@ export function generatePetTherapyAnimalInteractionIntelligence(
   // -- Areas for improvement ---------------------------------------------------
   const areasForImprovement: string[] = [];
 
-  if (sessionQuality.therapeuticBenefitRate < 60 && sessions.length > 0) {
+  if (below(sessionQuality.therapeuticBenefitRate, 60) && sessions.length > 0) {
     areasForImprovement.push(
       "Therapeutic benefit from animal sessions below expected standard — review session structure",
     );
   }
-  if (sessionQuality.riskAssessmentRate < 70 && sessions.length > 0) {
+  if (below(sessionQuality.riskAssessmentRate, 70) && sessions.length > 0) {
     areasForImprovement.push(
       "Risk assessments not consistently completed before animal sessions",
     );
   }
-  if (animalWelfare.welfareGoodRate < 70 && welfareChecks.length > 0) {
+  if (below(animalWelfare.welfareGoodRate, 70) && welfareChecks.length > 0) {
     areasForImprovement.push(
       "Animal welfare standards below expected level — review animal care practices",
     );
   }
-  if (riskManagement.hygieneProtocolRate < 70 && riskAssessments.length > 0) {
+  if (below(riskManagement.hygieneProtocolRate, 70) && riskAssessments.length > 0) {
     areasForImprovement.push(
       "Hygiene protocols not consistently in place for animal interactions",
     );
   }
   if (
-    staffAnimalReadiness.therapeuticUseRate < 70 &&
+    below(staffAnimalReadiness.therapeuticUseRate, 70) &&
     training.length > 0
   ) {
     areasForImprovement.push(
@@ -740,7 +756,7 @@ export function generatePetTherapyAnimalInteractionIntelligence(
     );
   }
   if (
-    staffAnimalReadiness.allergyRate < 70 &&
+    below(staffAnimalReadiness.allergyRate, 70) &&
     training.length > 0
   ) {
     areasForImprovement.push(
@@ -779,12 +795,12 @@ export function generatePetTherapyAnimalInteractionIntelligence(
       `URGENT: ${poorWelfare.length} animal welfare concern(s) identified — review animal care arrangements immediately`,
     );
   }
-  if (riskManagement.insuranceRate < 100 && riskAssessments.length > 0) {
+  if (below(riskManagement.insuranceRate, 100) && riskAssessments.length > 0) {
     actions.push(
       "Ensure insurance cover is current for all animal interactions",
     );
   }
-  if (sessionQuality.hygieneRate < 70 && sessions.length > 0) {
+  if (below(sessionQuality.hygieneRate, 70) && sessions.length > 0) {
     actions.push(
       "Improve hygiene protocol compliance during animal sessions",
     );

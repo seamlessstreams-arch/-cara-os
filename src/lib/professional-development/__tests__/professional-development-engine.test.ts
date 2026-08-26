@@ -4,7 +4,6 @@
 
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getCPDCategoryLabel,
   getQualificationLevelLabel,
@@ -110,33 +109,6 @@ function makeLearningCulture(overrides: Partial<LearningCulture> = {}): Learning
 // ══════════════════════════════════════════════════════════════════════════════
 // Helper Functions
 // ══════════════════════════════════════════════════════════════════════════════
-
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-
-  it("returns 100 when num equals den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-
-  it("handles large numbers", () => {
-    expect(pct(999, 1000)).toBe(100);
-  });
-});
 
 describe("getRating", () => {
   it("returns outstanding for 80", () => {
@@ -276,11 +248,11 @@ describe("evaluateCPDQuality", () => {
     expect(result.totalRecords).toBe(0);
     expect(result.totalHours).toBe(0);
     expect(result.averageHoursPerStaff).toBe(0);
-    expect(result.impactAssessedRate).toBe(0);
-    expect(result.positiveImpactRate).toBe(0);
-    expect(result.sharedWithTeamRate).toBe(0);
-    expect(result.relevantToRoleRate).toBe(0);
-    expect(result.certificateRate).toBe(0);
+    expect(result.impactAssessedRate).toBeNull();
+    expect(result.positiveImpactRate).toBeNull();
+    expect(result.sharedWithTeamRate).toBeNull();
+    expect(result.relevantToRoleRate).toBeNull();
+    expect(result.certificateRate).toBeNull();
   });
 
   it("returns max score for perfect data", () => {
@@ -388,7 +360,7 @@ describe("evaluateQualificationProgress", () => {
     const result = evaluateQualificationProgress([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalQualifications).toBe(0);
-    expect(result.completedRate).toBe(0);
+    expect(result.completedRate).toBeNull();
     expect(result.overdueCount).toBe(0);
   });
 
@@ -491,11 +463,11 @@ describe("evaluateSupervisionDevelopment", () => {
     const result = evaluateSupervisionDevelopment([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalSupervisions).toBe(0);
-    expect(result.goalsSetRate).toBe(0);
-    expect(result.progressReviewedRate).toBe(0);
-    expect(result.trainingNeedsRate).toBe(0);
-    expect(result.actionPlanRate).toBe(0);
-    expect(result.actionsCompletedRate).toBe(0);
+    expect(result.goalsSetRate).toBeNull();
+    expect(result.progressReviewedRate).toBeNull();
+    expect(result.trainingNeedsRate).toBeNull();
+    expect(result.actionPlanRate).toBeNull();
+    expect(result.actionsCompletedRate).toBeNull();
   });
 
   it("returns max score for perfect data", () => {
@@ -518,7 +490,7 @@ describe("evaluateSupervisionDevelopment", () => {
     ];
     const result = evaluateSupervisionDevelopment(sups);
     // With null previousActionsCompleted, den is 0 for that metric → pct = 0
-    expect(result.actionsCompletedRate).toBe(0);
+    expect(result.actionsCompletedRate).toBeNull();
     // But other metrics still score
     expect(result.goalsSetRate).toBe(100);
   });
@@ -580,13 +552,13 @@ describe("evaluateLearningCulture", () => {
     const result = evaluateLearningCulture([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalAssessments).toBe(0);
-    expect(result.teamMeetingRate).toBe(0);
-    expect(result.sharedLearningRate).toBe(0);
-    expect(result.reflectiveRate).toBe(0);
-    expect(result.feedbackCultureRate).toBe(0);
-    expect(result.innovationRate).toBe(0);
-    expect(result.budgetRate).toBe(0);
-    expect(result.inductionRate).toBe(0);
+    expect(result.teamMeetingRate).toBeNull();
+    expect(result.sharedLearningRate).toBeNull();
+    expect(result.reflectiveRate).toBeNull();
+    expect(result.feedbackCultureRate).toBeNull();
+    expect(result.innovationRate).toBeNull();
+    expect(result.budgetRate).toBeNull();
+    expect(result.inductionRate).toBeNull();
   });
 
   it("returns max score for all-true assessment", () => {

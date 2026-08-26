@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // Privacy & Dignity Assessment Intelligence Engine
 //
@@ -194,48 +195,69 @@ export interface StaffPrivacyTraining {
 export interface PersonalPrivacyResult {
   overallScore: number;
   totalAudits: number;
-  fullyCompliantRate: number;
-  knockingObservedRate: number;
-  lockableStorageRate: number;
-  personalSpaceRate: number;
-  passedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  fullyCompliantRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  knockingObservedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  lockableStorageRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  personalSpaceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  passedRate: number | null;
 }
 
 export interface CommunicationPrivacyResult {
   overallScore: number;
   totalFeedback: number;
-  feelsPrivacyRespectedRate: number;
-  canMakePrivateCallsRate: number;
-  belongingsSafeRate: number;
-  feelsBedroomIsOwnRate: number;
-  positiveRatingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feelsPrivacyRespectedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  canMakePrivateCallsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  belongingsSafeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feelsBedroomIsOwnRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveRatingRate: number | null;
 }
 
 export interface ConfidentialityComplianceResult {
   overallScore: number;
   totalIncidents: number;
-  investigationCompletedRate: number;
-  actionTakenRate: number;
-  childInformedRate: number;
-  preventiveMeasuresRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  investigationCompletedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionTakenRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childInformedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  preventiveMeasuresRate: number | null;
 }
 
 export interface StaffPrivacyReadinessResult {
   overallScore: number;
   totalStaff: number;
-  privacyRightsRate: number;
-  knockingPolicyRate: number;
-  confidentialityRate: number;
-  dataProtectionRate: number;
-  bodyAutonomyRate: number;
-  digitalPrivacyRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  privacyRightsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  knockingPolicyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  confidentialityRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dataProtectionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  bodyAutonomyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  digitalPrivacyRate: number | null;
 }
 
 export interface ChildPrivacyProfile {
   childId: string;
   childName: string;
   feedbackCount: number;
-  positiveRate: number;
+  /** null when this child has no measurable population for it. */
+  positiveRate: number | null;
   feelsRespected: boolean;
   incidentCount: number;
   overallScore: number;
@@ -259,11 +281,6 @@ export interface PrivacyDignityIntelligence {
 }
 
 // -- Helpers -------------------------------------------------------------------
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -291,11 +308,11 @@ export function evaluatePersonalPrivacy(
     return {
       overallScore: 0,
       totalAudits: 0,
-      fullyCompliantRate: 0,
-      knockingObservedRate: 0,
-      lockableStorageRate: 0,
-      personalSpaceRate: 0,
-      passedRate: 0,
+      fullyCompliantRate: null,
+      knockingObservedRate: null,
+      lockableStorageRate: null,
+      personalSpaceRate: null,
+      passedRate: null,
     };
   }
 
@@ -304,46 +321,46 @@ export function evaluatePersonalPrivacy(
   const fullyCompliant = audits.filter(
     (a) => a.complianceStatus === "fully_compliant",
   ).length;
-  const fullyCompliantRate = pct(fullyCompliant, audits.length);
-  if (fullyCompliantRate >= 90) score += 7;
-  else if (fullyCompliantRate >= 70) score += 5;
-  else if (fullyCompliantRate >= 50) score += 3;
-  else if (fullyCompliantRate > 0) score += 1;
+  const fullyCompliantRate = rate(fullyCompliant, audits.length);
+  if (meets(fullyCompliantRate, 90)) score += 7;
+  else if (meets(fullyCompliantRate, 70)) score += 5;
+  else if (meets(fullyCompliantRate, 50)) score += 3;
+  else if (above(fullyCompliantRate, 0)) score += 1;
 
   const knockingObserved = audits.filter(
     (a) => a.knockingPolicyObserved,
   ).length;
-  const knockingObservedRate = pct(knockingObserved, audits.length);
-  if (knockingObservedRate >= 90) score += 6;
-  else if (knockingObservedRate >= 70) score += 4;
-  else if (knockingObservedRate >= 50) score += 3;
-  else if (knockingObservedRate > 0) score += 1;
+  const knockingObservedRate = rate(knockingObserved, audits.length);
+  if (meets(knockingObservedRate, 90)) score += 6;
+  else if (meets(knockingObservedRate, 70)) score += 4;
+  else if (meets(knockingObservedRate, 50)) score += 3;
+  else if (above(knockingObservedRate, 0)) score += 1;
 
   const lockableStorage = audits.filter(
     (a) => a.lockableStorageProvided,
   ).length;
-  const lockableStorageRate = pct(lockableStorage, audits.length);
-  if (lockableStorageRate >= 90) score += 5;
-  else if (lockableStorageRate >= 70) score += 3;
-  else if (lockableStorageRate >= 50) score += 2;
-  else if (lockableStorageRate > 0) score += 1;
+  const lockableStorageRate = rate(lockableStorage, audits.length);
+  if (meets(lockableStorageRate, 90)) score += 5;
+  else if (meets(lockableStorageRate, 70)) score += 3;
+  else if (meets(lockableStorageRate, 50)) score += 2;
+  else if (above(lockableStorageRate, 0)) score += 1;
 
   const personalSpace = audits.filter(
     (a) => a.personalSpaceRespected,
   ).length;
-  const personalSpaceRate = pct(personalSpace, audits.length);
-  if (personalSpaceRate >= 90) score += 4;
-  else if (personalSpaceRate >= 70) score += 3;
-  else if (personalSpaceRate >= 50) score += 2;
-  else if (personalSpaceRate > 0) score += 1;
+  const personalSpaceRate = rate(personalSpace, audits.length);
+  if (meets(personalSpaceRate, 90)) score += 4;
+  else if (meets(personalSpaceRate, 70)) score += 3;
+  else if (meets(personalSpaceRate, 50)) score += 2;
+  else if (above(personalSpaceRate, 0)) score += 1;
 
   const passed = audits.filter(
     (a) => a.auditOutcome === "passed",
   ).length;
-  const passedRate = pct(passed, audits.length);
-  if (passedRate >= 90) score += 3;
-  else if (passedRate >= 70) score += 2;
-  else if (passedRate >= 50) score += 1;
+  const passedRate = rate(passed, audits.length);
+  if (meets(passedRate, 90)) score += 3;
+  else if (meets(passedRate, 70)) score += 2;
+  else if (meets(passedRate, 50)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -373,51 +390,51 @@ export function evaluateCommunicationPrivacy(
     return {
       overallScore: 0,
       totalFeedback: 0,
-      feelsPrivacyRespectedRate: 0,
-      canMakePrivateCallsRate: 0,
-      belongingsSafeRate: 0,
-      feelsBedroomIsOwnRate: 0,
-      positiveRatingRate: 0,
+      feelsPrivacyRespectedRate: null,
+      canMakePrivateCallsRate: null,
+      belongingsSafeRate: null,
+      feelsBedroomIsOwnRate: null,
+      positiveRatingRate: null,
     };
   }
 
   let score = 0;
 
   const respected = feedback.filter((f) => f.feelsPrivacyRespected).length;
-  const feelsPrivacyRespectedRate = pct(respected, feedback.length);
-  if (feelsPrivacyRespectedRate >= 90) score += 7;
-  else if (feelsPrivacyRespectedRate >= 70) score += 5;
-  else if (feelsPrivacyRespectedRate >= 50) score += 3;
-  else if (feelsPrivacyRespectedRate > 0) score += 1;
+  const feelsPrivacyRespectedRate = rate(respected, feedback.length);
+  if (meets(feelsPrivacyRespectedRate, 90)) score += 7;
+  else if (meets(feelsPrivacyRespectedRate, 70)) score += 5;
+  else if (meets(feelsPrivacyRespectedRate, 50)) score += 3;
+  else if (above(feelsPrivacyRespectedRate, 0)) score += 1;
 
   const privateCalls = feedback.filter((f) => f.canMakePrivateCalls).length;
-  const canMakePrivateCallsRate = pct(privateCalls, feedback.length);
-  if (canMakePrivateCallsRate >= 90) score += 6;
-  else if (canMakePrivateCallsRate >= 70) score += 4;
-  else if (canMakePrivateCallsRate >= 50) score += 3;
-  else if (canMakePrivateCallsRate > 0) score += 1;
+  const canMakePrivateCallsRate = rate(privateCalls, feedback.length);
+  if (meets(canMakePrivateCallsRate, 90)) score += 6;
+  else if (meets(canMakePrivateCallsRate, 70)) score += 4;
+  else if (meets(canMakePrivateCallsRate, 50)) score += 3;
+  else if (above(canMakePrivateCallsRate, 0)) score += 1;
 
   const belongings = feedback.filter((f) => f.belongingsSafe).length;
-  const belongingsSafeRate = pct(belongings, feedback.length);
-  if (belongingsSafeRate >= 90) score += 5;
-  else if (belongingsSafeRate >= 70) score += 3;
-  else if (belongingsSafeRate >= 50) score += 2;
-  else if (belongingsSafeRate > 0) score += 1;
+  const belongingsSafeRate = rate(belongings, feedback.length);
+  if (meets(belongingsSafeRate, 90)) score += 5;
+  else if (meets(belongingsSafeRate, 70)) score += 3;
+  else if (meets(belongingsSafeRate, 50)) score += 2;
+  else if (above(belongingsSafeRate, 0)) score += 1;
 
   const bedroom = feedback.filter((f) => f.feelsBedroomIsOwn).length;
-  const feelsBedroomIsOwnRate = pct(bedroom, feedback.length);
-  if (feelsBedroomIsOwnRate >= 90) score += 4;
-  else if (feelsBedroomIsOwnRate >= 70) score += 3;
-  else if (feelsBedroomIsOwnRate >= 50) score += 2;
-  else if (feelsBedroomIsOwnRate > 0) score += 1;
+  const feelsBedroomIsOwnRate = rate(bedroom, feedback.length);
+  if (meets(feelsBedroomIsOwnRate, 90)) score += 4;
+  else if (meets(feelsBedroomIsOwnRate, 70)) score += 3;
+  else if (meets(feelsBedroomIsOwnRate, 50)) score += 2;
+  else if (above(feelsBedroomIsOwnRate, 0)) score += 1;
 
   const positive = feedback.filter(
     (f) => f.rating === "very_positive" || f.rating === "positive",
   ).length;
-  const positiveRatingRate = pct(positive, feedback.length);
-  if (positiveRatingRate >= 90) score += 3;
-  else if (positiveRatingRate >= 70) score += 2;
-  else if (positiveRatingRate >= 50) score += 1;
+  const positiveRatingRate = rate(positive, feedback.length);
+  if (meets(positiveRatingRate, 90)) score += 3;
+  else if (meets(positiveRatingRate, 70)) score += 2;
+  else if (meets(positiveRatingRate, 50)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -446,10 +463,10 @@ export function evaluateConfidentialityCompliance(
     return {
       overallScore: 25,
       totalIncidents: 0,
-      investigationCompletedRate: 0,
-      actionTakenRate: 0,
-      childInformedRate: 0,
-      preventiveMeasuresRate: 0,
+      investigationCompletedRate: null,
+      actionTakenRate: null,
+      childInformedRate: null,
+      preventiveMeasuresRate: null,
     };
   }
 
@@ -458,34 +475,34 @@ export function evaluateConfidentialityCompliance(
   const investigated = incidents.filter(
     (i) => i.investigationCompleted,
   ).length;
-  const investigationCompletedRate = pct(investigated, incidents.length);
-  if (investigationCompletedRate >= 90) score += 8;
-  else if (investigationCompletedRate >= 70) score += 6;
-  else if (investigationCompletedRate >= 50) score += 4;
-  else if (investigationCompletedRate > 0) score += 2;
+  const investigationCompletedRate = rate(investigated, incidents.length);
+  if (meets(investigationCompletedRate, 90)) score += 8;
+  else if (meets(investigationCompletedRate, 70)) score += 6;
+  else if (meets(investigationCompletedRate, 50)) score += 4;
+  else if (above(investigationCompletedRate, 0)) score += 2;
 
   const actioned = incidents.filter((i) => i.actionTaken).length;
-  const actionTakenRate = pct(actioned, incidents.length);
-  if (actionTakenRate >= 90) score += 7;
-  else if (actionTakenRate >= 70) score += 5;
-  else if (actionTakenRate >= 50) score += 3;
-  else if (actionTakenRate > 0) score += 1;
+  const actionTakenRate = rate(actioned, incidents.length);
+  if (meets(actionTakenRate, 90)) score += 7;
+  else if (meets(actionTakenRate, 70)) score += 5;
+  else if (meets(actionTakenRate, 50)) score += 3;
+  else if (above(actionTakenRate, 0)) score += 1;
 
   const informed = incidents.filter((i) => i.childInformed).length;
-  const childInformedRate = pct(informed, incidents.length);
-  if (childInformedRate >= 90) score += 5;
-  else if (childInformedRate >= 70) score += 3;
-  else if (childInformedRate >= 50) score += 2;
-  else if (childInformedRate > 0) score += 1;
+  const childInformedRate = rate(informed, incidents.length);
+  if (meets(childInformedRate, 90)) score += 5;
+  else if (meets(childInformedRate, 70)) score += 3;
+  else if (meets(childInformedRate, 50)) score += 2;
+  else if (above(childInformedRate, 0)) score += 1;
 
   const preventive = incidents.filter(
     (i) => i.preventiveMeasuresImplemented,
   ).length;
-  const preventiveMeasuresRate = pct(preventive, incidents.length);
-  if (preventiveMeasuresRate >= 90) score += 5;
-  else if (preventiveMeasuresRate >= 70) score += 3;
-  else if (preventiveMeasuresRate >= 50) score += 2;
-  else if (preventiveMeasuresRate > 0) score += 1;
+  const preventiveMeasuresRate = rate(preventive, incidents.length);
+  if (meets(preventiveMeasuresRate, 90)) score += 5;
+  else if (meets(preventiveMeasuresRate, 70)) score += 3;
+  else if (meets(preventiveMeasuresRate, 50)) score += 2;
+  else if (above(preventiveMeasuresRate, 0)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -515,12 +532,12 @@ export function evaluateStaffPrivacyReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      privacyRightsRate: 0,
-      knockingPolicyRate: 0,
-      confidentialityRate: 0,
-      dataProtectionRate: 0,
-      bodyAutonomyRate: 0,
-      digitalPrivacyRate: 0,
+      privacyRightsRate: null,
+      knockingPolicyRate: null,
+      confidentialityRate: null,
+      dataProtectionRate: null,
+      bodyAutonomyRate: null,
+      digitalPrivacyRate: null,
     };
   }
 
@@ -529,53 +546,53 @@ export function evaluateStaffPrivacyReadiness(
   const privacyRights = training.filter(
     (t) => t.privacyRightsAwareness,
   ).length;
-  const privacyRightsRate = pct(privacyRights, training.length);
-  if (privacyRightsRate >= 90) score += 6;
-  else if (privacyRightsRate >= 70) score += 4;
-  else if (privacyRightsRate >= 50) score += 3;
-  else if (privacyRightsRate > 0) score += 1;
+  const privacyRightsRate = rate(privacyRights, training.length);
+  if (meets(privacyRightsRate, 90)) score += 6;
+  else if (meets(privacyRightsRate, 70)) score += 4;
+  else if (meets(privacyRightsRate, 50)) score += 3;
+  else if (above(privacyRightsRate, 0)) score += 1;
 
   const knockingPolicy = training.filter(
     (t) => t.knockingPolicyTrained,
   ).length;
-  const knockingPolicyRate = pct(knockingPolicy, training.length);
-  if (knockingPolicyRate >= 90) score += 5;
-  else if (knockingPolicyRate >= 70) score += 3;
-  else if (knockingPolicyRate >= 50) score += 2;
-  else if (knockingPolicyRate > 0) score += 1;
+  const knockingPolicyRate = rate(knockingPolicy, training.length);
+  if (meets(knockingPolicyRate, 90)) score += 5;
+  else if (meets(knockingPolicyRate, 70)) score += 3;
+  else if (meets(knockingPolicyRate, 50)) score += 2;
+  else if (above(knockingPolicyRate, 0)) score += 1;
 
   const confidentiality = training.filter(
     (t) => t.confidentialityTrained,
   ).length;
-  const confidentialityRate = pct(confidentiality, training.length);
-  if (confidentialityRate >= 90) score += 5;
-  else if (confidentialityRate >= 70) score += 3;
-  else if (confidentialityRate >= 50) score += 2;
-  else if (confidentialityRate > 0) score += 1;
+  const confidentialityRate = rate(confidentiality, training.length);
+  if (meets(confidentialityRate, 90)) score += 5;
+  else if (meets(confidentialityRate, 70)) score += 3;
+  else if (meets(confidentialityRate, 50)) score += 2;
+  else if (above(confidentialityRate, 0)) score += 1;
 
   const dataProtection = training.filter(
     (t) => t.dataProtectionTrained,
   ).length;
-  const dataProtectionRate = pct(dataProtection, training.length);
-  if (dataProtectionRate >= 90) score += 4;
-  else if (dataProtectionRate >= 70) score += 3;
-  else if (dataProtectionRate >= 50) score += 2;
-  else if (dataProtectionRate > 0) score += 1;
+  const dataProtectionRate = rate(dataProtection, training.length);
+  if (meets(dataProtectionRate, 90)) score += 4;
+  else if (meets(dataProtectionRate, 70)) score += 3;
+  else if (meets(dataProtectionRate, 50)) score += 2;
+  else if (above(dataProtectionRate, 0)) score += 1;
 
   const bodyAutonomy = training.filter(
     (t) => t.bodyAutonomyTrained,
   ).length;
-  const bodyAutonomyRate = pct(bodyAutonomy, training.length);
-  if (bodyAutonomyRate >= 90) score += 3;
-  else if (bodyAutonomyRate >= 70) score += 2;
-  else if (bodyAutonomyRate >= 50) score += 1;
+  const bodyAutonomyRate = rate(bodyAutonomy, training.length);
+  if (meets(bodyAutonomyRate, 90)) score += 3;
+  else if (meets(bodyAutonomyRate, 70)) score += 2;
+  else if (meets(bodyAutonomyRate, 50)) score += 1;
 
   const digitalPrivacy = training.filter(
     (t) => t.digitalPrivacyTrained,
   ).length;
-  const digitalPrivacyRate = pct(digitalPrivacy, training.length);
-  if (digitalPrivacyRate >= 90) score += 2;
-  else if (digitalPrivacyRate >= 70) score += 1;
+  const digitalPrivacyRate = rate(digitalPrivacy, training.length);
+  if (meets(digitalPrivacyRate, 90)) score += 2;
+  else if (meets(digitalPrivacyRate, 70)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -616,7 +633,7 @@ export function buildChildPrivacyProfiles(
     const positive = childFeedback.filter(
       (f) => f.rating === "very_positive" || f.rating === "positive",
     ).length;
-    const positiveRate = pct(positive, feedbackCount);
+    const positiveRate = rate(positive, feedbackCount);
     const feelsRespected =
       feedbackCount > 0 &&
       childFeedback.every((f) => f.feelsPrivacyRespected);
@@ -628,11 +645,11 @@ export function buildChildPrivacyProfiles(
     // Positive feedback (0-4)
     if (feedbackCount === 0) {
       score += 0;
-    } else if (positiveRate >= 90) {
+    } else if (meets(positiveRate, 90)) {
       score += 4;
-    } else if (positiveRate >= 70) {
+    } else if (meets(positiveRate, 70)) {
       score += 3;
-    } else if (positiveRate >= 50) {
+    } else if (meets(positiveRate, 50)) {
       score += 2;
     } else {
       score += 1;
@@ -691,22 +708,22 @@ export function generatePrivacyDignityIntelligence(
   // -- Strengths ---------------------------------------------------------------
   const strengths: string[] = [];
 
-  if (personalPrivacy.fullyCompliantRate >= 80) {
+  if (meets(personalPrivacy.fullyCompliantRate, 80)) {
     strengths.push(
       "Strong privacy audit compliance — over 80% of audits fully compliant",
     );
   }
-  if (personalPrivacy.knockingObservedRate >= 90) {
+  if (meets(personalPrivacy.knockingObservedRate, 90)) {
     strengths.push(
       "Excellent knocking policy adherence observed across the home",
     );
   }
-  if (communicationPrivacy.feelsPrivacyRespectedRate >= 80) {
+  if (meets(communicationPrivacy.feelsPrivacyRespectedRate, 80)) {
     strengths.push(
       "Children consistently report feeling their privacy is respected",
     );
   }
-  if (communicationPrivacy.canMakePrivateCallsRate >= 80) {
+  if (meets(communicationPrivacy.canMakePrivateCallsRate, 80)) {
     strengths.push(
       "Children have good access to private communication facilities",
     );
@@ -717,14 +734,14 @@ export function generatePrivacyDignityIntelligence(
     );
   }
   if (
-    staffPrivacyReadiness.privacyRightsRate >= 90 &&
-    staffPrivacyReadiness.confidentialityRate >= 90
+    meets(staffPrivacyReadiness.privacyRightsRate, 90) &&
+    meets(staffPrivacyReadiness.confidentialityRate, 90)
   ) {
     strengths.push(
       "Staff demonstrate strong privacy rights awareness and confidentiality training",
     );
   }
-  if (communicationPrivacy.positiveRatingRate >= 80) {
+  if (meets(communicationPrivacy.positiveRatingRate, 80)) {
     strengths.push(
       "High proportion of positive privacy feedback from children",
     );
@@ -733,18 +750,18 @@ export function generatePrivacyDignityIntelligence(
   // -- Areas for improvement ---------------------------------------------------
   const areasForImprovement: string[] = [];
 
-  if (personalPrivacy.fullyCompliantRate < 60 && audits.length > 0) {
+  if (below(personalPrivacy.fullyCompliantRate, 60) && audits.length > 0) {
     areasForImprovement.push(
       "Privacy audit compliance below 60% — review privacy practices across all domains",
     );
   }
-  if (personalPrivacy.lockableStorageRate < 70 && audits.length > 0) {
+  if (below(personalPrivacy.lockableStorageRate, 70) && audits.length > 0) {
     areasForImprovement.push(
       "Lockable storage provision needs improvement — ensure all children have secure personal storage",
     );
   }
   if (
-    communicationPrivacy.canMakePrivateCallsRate < 70 &&
+    below(communicationPrivacy.canMakePrivateCallsRate, 70) &&
     feedback.length > 0
   ) {
     areasForImprovement.push(
@@ -752,7 +769,7 @@ export function generatePrivacyDignityIntelligence(
     );
   }
   if (
-    communicationPrivacy.feelsBedroomIsOwnRate < 70 &&
+    below(communicationPrivacy.feelsBedroomIsOwnRate, 70) &&
     feedback.length > 0
   ) {
     areasForImprovement.push(
@@ -761,13 +778,13 @@ export function generatePrivacyDignityIntelligence(
   }
   if (
     confidentialityCompliance.totalIncidents > 0 &&
-    confidentialityCompliance.preventiveMeasuresRate < 70
+    below(confidentialityCompliance.preventiveMeasuresRate, 70)
   ) {
     areasForImprovement.push(
       "Preventive measures not consistently implemented after privacy incidents",
     );
   }
-  if (staffPrivacyReadiness.digitalPrivacyRate < 60 && training.length > 0) {
+  if (below(staffPrivacyReadiness.digitalPrivacyRate, 60) && training.length > 0) {
     areasForImprovement.push(
       "Digital privacy training coverage is insufficient across staff team",
     );
@@ -793,24 +810,24 @@ export function generatePrivacyDignityIntelligence(
   }
   if (
     confidentialityCompliance.totalIncidents > 0 &&
-    confidentialityCompliance.investigationCompletedRate < 50
+    below(confidentialityCompliance.investigationCompletedRate, 50)
   ) {
     actions.push(
       "URGENT: Over half of privacy incidents lack completed investigations",
     );
   }
-  if (personalPrivacy.knockingObservedRate < 50 && audits.length > 0) {
+  if (below(personalPrivacy.knockingObservedRate, 50) && audits.length > 0) {
     actions.push(
       "Reinforce knocking policy through team meeting and supervision",
     );
   }
-  if (staffPrivacyReadiness.bodyAutonomyRate < 70 && training.length > 0) {
+  if (below(staffPrivacyReadiness.bodyAutonomyRate, 70) && training.length > 0) {
     actions.push(
       "Schedule body autonomy training for staff not yet completed",
     );
   }
   if (
-    communicationPrivacy.belongingsSafeRate < 70 &&
+    below(communicationPrivacy.belongingsSafeRate, 70) &&
     feedback.length > 0
   ) {
     actions.push(

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { PrivacyDignityIntelligence } from "@/lib/privacy-dignity-assessment";
+import { formatRate } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -113,7 +114,7 @@ export function PrivacyDignityAssessmentDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Staff Trained</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.personalPrivacy.fullyCompliantRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.personalPrivacy.fullyCompliantRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Compliant</div>
         </div>
       </div>
@@ -150,44 +151,44 @@ export function PrivacyDignityAssessmentDashboardWidget() {
         <Section title="Personal Privacy">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Audits:</span> <span className="font-medium">{data.personalPrivacy.totalAudits}</span></div>
-            <div><span className="text-gray-500">Compliant:</span> <span className="font-medium">{data.personalPrivacy.fullyCompliantRate}%</span></div>
-            <div><span className="text-gray-500">Knocking:</span> <span className="font-medium">{data.personalPrivacy.knockingObservedRate}%</span></div>
-            <div><span className="text-gray-500">Lockable Storage:</span> <span className="font-medium">{data.personalPrivacy.lockableStorageRate}%</span></div>
-            <div><span className="text-gray-500">Personal Space:</span> <span className="font-medium">{data.personalPrivacy.personalSpaceRate}%</span></div>
-            <div><span className="text-gray-500">Passed:</span> <span className="font-medium">{data.personalPrivacy.passedRate}%</span></div>
+            <div><span className="text-gray-500">Compliant:</span> <span className="font-medium">{formatRate(data.personalPrivacy.fullyCompliantRate)}</span></div>
+            <div><span className="text-gray-500">Knocking:</span> <span className="font-medium">{formatRate(data.personalPrivacy.knockingObservedRate)}</span></div>
+            <div><span className="text-gray-500">Lockable Storage:</span> <span className="font-medium">{formatRate(data.personalPrivacy.lockableStorageRate)}</span></div>
+            <div><span className="text-gray-500">Personal Space:</span> <span className="font-medium">{formatRate(data.personalPrivacy.personalSpaceRate)}</span></div>
+            <div><span className="text-gray-500">Passed:</span> <span className="font-medium">{formatRate(data.personalPrivacy.passedRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Communication Privacy">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Feedback:</span> <span className="font-medium">{data.communicationPrivacy.totalFeedback}</span></div>
-            <div><span className="text-gray-500">Respected:</span> <span className="font-medium">{data.communicationPrivacy.feelsPrivacyRespectedRate}%</span></div>
-            <div><span className="text-gray-500">Private Calls:</span> <span className="font-medium">{data.communicationPrivacy.canMakePrivateCallsRate}%</span></div>
-            <div><span className="text-gray-500">Belongings Safe:</span> <span className="font-medium">{data.communicationPrivacy.belongingsSafeRate}%</span></div>
-            <div><span className="text-gray-500">Bedroom Own:</span> <span className="font-medium">{data.communicationPrivacy.feelsBedroomIsOwnRate}%</span></div>
-            <div><span className="text-gray-500">Positive:</span> <span className="font-medium">{data.communicationPrivacy.positiveRatingRate}%</span></div>
+            <div><span className="text-gray-500">Respected:</span> <span className="font-medium">{formatRate(data.communicationPrivacy.feelsPrivacyRespectedRate)}</span></div>
+            <div><span className="text-gray-500">Private Calls:</span> <span className="font-medium">{formatRate(data.communicationPrivacy.canMakePrivateCallsRate)}</span></div>
+            <div><span className="text-gray-500">Belongings Safe:</span> <span className="font-medium">{formatRate(data.communicationPrivacy.belongingsSafeRate)}</span></div>
+            <div><span className="text-gray-500">Bedroom Own:</span> <span className="font-medium">{formatRate(data.communicationPrivacy.feelsBedroomIsOwnRate)}</span></div>
+            <div><span className="text-gray-500">Positive:</span> <span className="font-medium">{formatRate(data.communicationPrivacy.positiveRatingRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Confidentiality Compliance">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Incidents:</span> <span className="font-medium">{data.confidentialityCompliance.totalIncidents}</span></div>
-            <div><span className="text-gray-500">Investigated:</span> <span className="font-medium">{data.confidentialityCompliance.investigationCompletedRate}%</span></div>
-            <div><span className="text-gray-500">Actioned:</span> <span className="font-medium">{data.confidentialityCompliance.actionTakenRate}%</span></div>
-            <div><span className="text-gray-500">Child Informed:</span> <span className="font-medium">{data.confidentialityCompliance.childInformedRate}%</span></div>
-            <div><span className="text-gray-500">Preventive:</span> <span className="font-medium">{data.confidentialityCompliance.preventiveMeasuresRate}%</span></div>
+            <div><span className="text-gray-500">Investigated:</span> <span className="font-medium">{formatRate(data.confidentialityCompliance.investigationCompletedRate)}</span></div>
+            <div><span className="text-gray-500">Actioned:</span> <span className="font-medium">{formatRate(data.confidentialityCompliance.actionTakenRate)}</span></div>
+            <div><span className="text-gray-500">Child Informed:</span> <span className="font-medium">{formatRate(data.confidentialityCompliance.childInformedRate)}</span></div>
+            <div><span className="text-gray-500">Preventive:</span> <span className="font-medium">{formatRate(data.confidentialityCompliance.preventiveMeasuresRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Staff Privacy Readiness">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Staff:</span> <span className="font-medium">{data.staffPrivacyReadiness.totalStaff}</span></div>
-            <div><span className="text-gray-500">Privacy Rights:</span> <span className="font-medium">{data.staffPrivacyReadiness.privacyRightsRate}%</span></div>
-            <div><span className="text-gray-500">Knocking Policy:</span> <span className="font-medium">{data.staffPrivacyReadiness.knockingPolicyRate}%</span></div>
-            <div><span className="text-gray-500">Confidentiality:</span> <span className="font-medium">{data.staffPrivacyReadiness.confidentialityRate}%</span></div>
-            <div><span className="text-gray-500">Data Protection:</span> <span className="font-medium">{data.staffPrivacyReadiness.dataProtectionRate}%</span></div>
-            <div><span className="text-gray-500">Body Autonomy:</span> <span className="font-medium">{data.staffPrivacyReadiness.bodyAutonomyRate}%</span></div>
-            <div><span className="text-gray-500">Digital Privacy:</span> <span className="font-medium">{data.staffPrivacyReadiness.digitalPrivacyRate}%</span></div>
+            <div><span className="text-gray-500">Privacy Rights:</span> <span className="font-medium">{formatRate(data.staffPrivacyReadiness.privacyRightsRate)}</span></div>
+            <div><span className="text-gray-500">Knocking Policy:</span> <span className="font-medium">{formatRate(data.staffPrivacyReadiness.knockingPolicyRate)}</span></div>
+            <div><span className="text-gray-500">Confidentiality:</span> <span className="font-medium">{formatRate(data.staffPrivacyReadiness.confidentialityRate)}</span></div>
+            <div><span className="text-gray-500">Data Protection:</span> <span className="font-medium">{formatRate(data.staffPrivacyReadiness.dataProtectionRate)}</span></div>
+            <div><span className="text-gray-500">Body Autonomy:</span> <span className="font-medium">{formatRate(data.staffPrivacyReadiness.bodyAutonomyRate)}</span></div>
+            <div><span className="text-gray-500">Digital Privacy:</span> <span className="font-medium">{formatRate(data.staffPrivacyReadiness.digitalPrivacyRate)}</span></div>
           </div>
         </Section>
 

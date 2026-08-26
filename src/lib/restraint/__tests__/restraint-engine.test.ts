@@ -4,7 +4,6 @@
 
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getRestraintCategoryLabel,
   getRestraintOutcomeLabel,
@@ -73,37 +72,6 @@ function makeStaff(overrides: Partial<StaffRestraintTraining> = {}): StaffRestra
 // ══════════════════════════════════════════════════════════════════════════════
 // pct helper
 // ══════════════════════════════════════════════════════════════════════════════
-
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when both are 0", () => {
-    expect(pct(0, 0)).toBe(0);
-  });
-
-  it("returns 100 when num equals den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-
-  it("returns 0 for 0 numerator with positive denominator", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-
-  it("handles large numbers", () => {
-    expect(pct(999, 1000)).toBe(100);
-  });
-});
 
 // ══════════════════════════════════════════════════════════════════════════════
 // getRating
@@ -230,10 +198,10 @@ describe("evaluateRestraintQuality", () => {
   it("returns all zeros and score 0 for empty records", () => {
     const result = evaluateRestraintQuality([]);
     expect(result.totalRecords).toBe(0);
-    expect(result.deEscalationAttemptedRate).toBe(0);
-    expect(result.debriefCompletedRate).toBe(0);
-    expect(result.bodyMapRecordedRate).toBe(0);
-    expect(result.parentNotifiedRate).toBe(0);
+    expect(result.deEscalationAttemptedRate).toBeNull();
+    expect(result.debriefCompletedRate).toBeNull();
+    expect(result.bodyMapRecordedRate).toBeNull();
+    expect(result.parentNotifiedRate).toBeNull();
     expect(result.overallScore).toBe(0);
   });
 
@@ -337,9 +305,9 @@ describe("evaluateRestraintQuality", () => {
 describe("evaluateRestraintCompliance", () => {
   it("returns all zeros and score 0 for empty records", () => {
     const result = evaluateRestraintCompliance([]);
-    expect(result.documentationRate).toBe(0);
-    expect(result.timelyRecordingRate).toBe(0);
-    expect(result.debriefCompletedRate).toBe(0);
+    expect(result.documentationRate).toBeNull();
+    expect(result.timelyRecordingRate).toBeNull();
+    expect(result.debriefCompletedRate).toBeNull();
     expect(result.categoryDiversityRatio).toBe(0);
     expect(result.overallScore).toBe(0);
   });
@@ -533,12 +501,12 @@ describe("evaluateStaffRestraintReadiness", () => {
   it("returns all zeros and score 0 for empty staff", () => {
     const result = evaluateStaffRestraintReadiness([]);
     expect(result.totalStaff).toBe(0);
-    expect(result.approvedTechniqueTrainingRate).toBe(0);
-    expect(result.deEscalationSkillsRate).toBe(0);
-    expect(result.postIncidentDebriefRate).toBe(0);
-    expect(result.bodyMapRecordingRate).toBe(0);
-    expect(result.notificationProceduresRate).toBe(0);
-    expect(result.reductionStrategyKnowledgeRate).toBe(0);
+    expect(result.approvedTechniqueTrainingRate).toBeNull();
+    expect(result.deEscalationSkillsRate).toBeNull();
+    expect(result.postIncidentDebriefRate).toBeNull();
+    expect(result.bodyMapRecordingRate).toBeNull();
+    expect(result.notificationProceduresRate).toBeNull();
+    expect(result.reductionStrategyKnowledgeRate).toBeNull();
     expect(result.overallScore).toBe(0);
   });
 

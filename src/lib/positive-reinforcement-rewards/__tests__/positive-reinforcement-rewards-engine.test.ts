@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getPraiseTypeLabel,
   getRewardCategoryLabel,
@@ -88,24 +87,6 @@ function makeTraining(overrides: Partial<StaffReinforcementTraining> = {}): Staf
 
 // -- pct() --------------------------------------------------------------------
 
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-  it("calculates percentage correctly", () => {
-    expect(pct(3, 4)).toBe(75);
-  });
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-  it("returns 100 when num equals den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-  it("returns 0 when num is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-});
-
 // -- getRating() ---------------------------------------------------------------
 
 describe("getRating", () => {
@@ -183,9 +164,9 @@ describe("evaluatePraiseRecognition", () => {
     const r = evaluatePraiseRecognition([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalPraise).toBe(0);
-    expect(r.positiveResponseRate).toBe(0);
-    expect(r.specificRate).toBe(0);
-    expect(r.linkedToValuesRate).toBe(0);
+    expect(r.positiveResponseRate).toBeNull();
+    expect(r.specificRate).toBeNull();
+    expect(r.linkedToValuesRate).toBeNull();
     expect(r.praiseTypeVariety).toBe(0);
   });
 
@@ -294,10 +275,10 @@ describe("evaluateRewardSystem", () => {
     const r = evaluateRewardSystem([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalRewards).toBe(0);
-    expect(r.childChosenRate).toBe(0);
-    expect(r.fairConsistentRate).toBe(0);
-    expect(r.linkedToPlanRate).toBe(0);
-    expect(r.positiveResponseRate).toBe(0);
+    expect(r.childChosenRate).toBeNull();
+    expect(r.fairConsistentRate).toBeNull();
+    expect(r.linkedToPlanRate).toBeNull();
+    expect(r.positiveResponseRate).toBeNull();
   });
 
   it("scores maximum for outstanding reward system", () => {
@@ -392,10 +373,10 @@ describe("evaluateBehaviouralImpact", () => {
     const r = evaluateBehaviouralImpact([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalAssessments).toBe(0);
-    expect(r.improvedTrendRate).toBe(0);
-    expect(r.deEscalationRate).toBe(0);
-    expect(r.lowRestraintRate).toBe(0);
-    expect(r.positiveChildFeelingRate).toBe(0);
+    expect(r.improvedTrendRate).toBeNull();
+    expect(r.deEscalationRate).toBeNull();
+    expect(r.lowRestraintRate).toBeNull();
+    expect(r.positiveChildFeelingRate).toBeNull();
   });
 
   it("scores maximum for outstanding behavioural impact", () => {

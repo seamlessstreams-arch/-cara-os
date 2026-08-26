@@ -5,7 +5,6 @@ export {
   evaluateRiskManagement,
   evaluateStaffAnimalReadiness,
   buildChildAnimalProfiles,
-  pct,
   getRating,
   getAnimalTypeLabel,
   getSessionTypeLabel,

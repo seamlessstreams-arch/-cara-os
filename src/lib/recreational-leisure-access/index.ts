@@ -13,7 +13,6 @@ export {
   getParticipationLevelLabel,
   getRatingLabel,
   getRating,
-  pct,
 } from "./recreational-leisure-access-engine";
 
 export type {

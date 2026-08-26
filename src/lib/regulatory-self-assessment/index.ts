@@ -9,7 +9,6 @@ export {
   evaluateRegSelfAssessmentPolicy,
   evaluateStaffRegSelfAssessmentReadiness,
   buildChildRegSelfAssessmentProfiles,
-  pct,
   getRating,
   getRegSelfAssessmentCategoryLabel,
   getRegSelfAssessmentOutcomeLabel,

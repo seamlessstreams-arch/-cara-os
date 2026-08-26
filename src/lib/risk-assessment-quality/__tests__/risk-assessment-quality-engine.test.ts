@@ -18,8 +18,7 @@ import {
   getRiskLevelLabel,
   getRatingLabel,
   getRating,
-  pct,
-} from "../risk-assessment-quality-engine";
+  } from "../risk-assessment-quality-engine";
 import type {
   RiskAssessment,
   RiskAssessmentPolicy,
@@ -91,28 +90,6 @@ const OAK_HOUSE_TRAINING: StaffRiskAssessmentTraining[] = [
 ];
 
 // ── Helper Tests ──────────────────────────────────────────────────────────
-
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns correct percentage", () => {
-    expect(pct(3, 4)).toBe(75);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-
-  it("returns 100 for equal numerator and denominator", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-});
 
 describe("getRating", () => {
   it("returns outstanding for score >= 80", () => {
@@ -198,10 +175,10 @@ describe("evaluateRiskQuality", () => {
     const result = evaluateRiskQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalAssessments).toBe(0);
-    expect(result.mitigationRate).toBe(0);
-    expect(result.childConsultedRate).toBe(0);
-    expect(result.reviewScheduledRate).toBe(0);
-    expect(result.comprehensiveRate).toBe(0);
+    expect(result.mitigationRate).toBeNull();
+    expect(result.childConsultedRate).toBeNull();
+    expect(result.reviewScheduledRate).toBeNull();
+    expect(result.comprehensiveRate).toBeNull();
   });
 
   it("scores 25 for perfect assessments", () => {
@@ -271,9 +248,9 @@ describe("evaluateRiskCompliance", () => {
   it("returns all zeros for empty assessments", () => {
     const result = evaluateRiskCompliance([]);
     expect(result.overallScore).toBe(0);
-    expect(result.documentedRate).toBe(0);
-    expect(result.staffAwareRate).toBe(0);
-    expect(result.feedbackRate).toBe(0);
+    expect(result.documentedRate).toBeNull();
+    expect(result.staffAwareRate).toBeNull();
+    expect(result.feedbackRate).toBeNull();
     expect(result.riskCategoryDiversityRatio).toBe(0);
   });
 
@@ -429,12 +406,12 @@ describe("evaluateStaffRiskReadiness", () => {
     const result = evaluateStaffRiskReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.riskIdentificationRate).toBe(0);
-    expect(result.mitigationPlanningRate).toBe(0);
-    expect(result.dynamicRiskAssessmentRate).toBe(0);
-    expect(result.positiveRiskTakingRate).toBe(0);
-    expect(result.incidentManagementRate).toBe(0);
-    expect(result.multiAgencyWorkingRate).toBe(0);
+    expect(result.riskIdentificationRate).toBeNull();
+    expect(result.mitigationPlanningRate).toBeNull();
+    expect(result.dynamicRiskAssessmentRate).toBeNull();
+    expect(result.positiveRiskTakingRate).toBeNull();
+    expect(result.incidentManagementRate).toBeNull();
+    expect(result.multiAgencyWorkingRate).toBeNull();
   });
 
   it("scores 25 for fully trained staff", () => {

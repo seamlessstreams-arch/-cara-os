@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildPlacementProfile { childId: string; childName: string; totalReviews: number; stabilityRate: number; childParticipatedRate: number; overallScore: number; }
 
@@ -85,18 +86,18 @@ export default function PlacementStabilityContinuityDashboardWidget() {
       <Section title="Placement Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Reviews" value={data.placementQuality.totalReviews} />
-          <Stat label="Stability" value={`${data.placementQuality.stabilityRate}%`} />
-          <Stat label="Child Participated" value={`${data.placementQuality.childParticipatedRate}%`} />
-          <Stat label="Family Engaged" value={`${data.placementQuality.familyEngagedRate}%`} />
-          <Stat label="Continuity" value={`${data.placementQuality.continuityRate}%`} />
+          <Stat label="Stability" value={`${formatRate(data.placementQuality.stabilityRate)}`} />
+          <Stat label="Child Participated" value={`${formatRate(data.placementQuality.childParticipatedRate)}`} />
+          <Stat label="Family Engaged" value={`${formatRate(data.placementQuality.familyEngagedRate)}`} />
+          <Stat label="Continuity" value={`${formatRate(data.placementQuality.continuityRate)}`} />
         </div>
       </Section>
 
       <Section title="Placement Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documented" value={`${data.placementCompliance.documentedRate}%`} />
-          <Stat label="Management Oversight" value={`${data.placementCompliance.managementOversightRate}%`} />
-          <Stat label="Actions Taken" value={`${data.placementCompliance.actionsTakenRate}%`} />
+          <Stat label="Documented" value={`${formatRate(data.placementCompliance.documentedRate)}`} />
+          <Stat label="Management Oversight" value={`${formatRate(data.placementCompliance.managementOversightRate)}`} />
+          <Stat label="Actions Taken" value={`${formatRate(data.placementCompliance.actionsTakenRate)}`} />
           <Stat label="Review Type Diversity" value={`${data.placementCompliance.reviewTypeDiversityRatio}%`} />
         </div>
       </Section>
@@ -120,12 +121,12 @@ export default function PlacementStabilityContinuityDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
-          <Stat label="Attachment Theory" value={`${data.staffReadiness.attachmentTheoryRate}%`} />
-          <Stat label="Therapeutic Care" value={`${data.staffReadiness.therapeuticCaregivingRate}%`} />
-          <Stat label="Disruption Prevention" value={`${data.staffReadiness.disruptionPreventionRate}%`} />
-          <Stat label="Transition Support" value={`${data.staffReadiness.transitionSupportRate}%`} />
-          <Stat label="Family Engagement" value={`${data.staffReadiness.familyEngagementRate}%`} />
-          <Stat label="Multi-Agency" value={`${data.staffReadiness.multiAgencyWorkingRate}%`} />
+          <Stat label="Attachment Theory" value={`${formatRate(data.staffReadiness.attachmentTheoryRate)}`} />
+          <Stat label="Therapeutic Care" value={`${formatRate(data.staffReadiness.therapeuticCaregivingRate)}`} />
+          <Stat label="Disruption Prevention" value={`${formatRate(data.staffReadiness.disruptionPreventionRate)}`} />
+          <Stat label="Transition Support" value={`${formatRate(data.staffReadiness.transitionSupportRate)}`} />
+          <Stat label="Family Engagement" value={`${formatRate(data.staffReadiness.familyEngagementRate)}`} />
+          <Stat label="Multi-Agency" value={`${formatRate(data.staffReadiness.multiAgencyWorkingRate)}`} />
         </div>
       </Section>
 

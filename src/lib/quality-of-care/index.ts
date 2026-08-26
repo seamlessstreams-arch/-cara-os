@@ -5,7 +5,6 @@ export {
   evaluateQualityPolicy,
   evaluateStaffQualityReadiness,
   buildChildQualityProfiles,
-  pct,
   getRating,
   getQualityDomainLabel,
   getReviewOutcomeLabel,

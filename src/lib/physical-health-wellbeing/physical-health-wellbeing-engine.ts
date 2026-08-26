@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // PHYSICAL HEALTH & WELLBEING INTELLIGENCE ENGINE
 //
@@ -75,11 +76,6 @@ export function getRatingLabel(v: Rating): string { return RATING_LABELS[v]; }
 
 // -- Helpers ------------------------------------------------------------------
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -132,18 +128,25 @@ export interface StaffHealthTraining {
 export interface HealthQualityResult {
   overallScore: number;
   totalRecords: number;
-  outcomeRate: number;
-  appointmentAttendedRate: number;
-  healthPlanRate: number;
-  consentRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  outcomeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  appointmentAttendedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  healthPlanRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  consentRate: number | null;
 }
 
 export interface HealthComplianceResult {
   overallScore: number;
   totalRecords: number;
-  staffAccompaniedRate: number;
-  documentedRate: number;
-  followUpRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffAccompaniedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  followUpRate: number | null;
   areaDiversity: number;
 }
 
@@ -161,12 +164,18 @@ export interface HealthPolicyResult {
 export interface StaffHealthReadinessResult {
   overallScore: number;
   totalStaff: number;
-  healthAwarenessRate: number;
-  mentalHealthFirstAidRate: number;
-  consentAndCapacityRate: number;
-  medicationManagementRate: number;
-  appointmentSupportRate: number;
-  healthDocumentationRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  healthAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  mentalHealthFirstAidRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  consentAndCapacityRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  medicationManagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  appointmentSupportRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  healthDocumentationRate: number | null;
 }
 
 export interface ChildHealthProfile {
@@ -209,10 +218,10 @@ export function evaluateHealthQuality(records: HealthRecord[]): HealthQualityRes
     return {
       overallScore: 0,
       totalRecords: 0,
-      outcomeRate: 0,
-      appointmentAttendedRate: 0,
-      healthPlanRate: 0,
-      consentRate: 0,
+      outcomeRate: null,
+      appointmentAttendedRate: null,
+      healthPlanRate: null,
+      consentRate: null,
     };
   }
 
@@ -223,16 +232,16 @@ export function evaluateHealthQuality(records: HealthRecord[]): HealthQualityRes
   const healthPlan = records.filter((r) => r.healthPlanUpdated).length;
   const consent = records.filter((r) => r.consentObtained).length;
 
-  const outcomeRate = pct(excellentGood, records.length);
-  const appointmentAttendedRate = pct(attended, records.length);
-  const healthPlanRate = pct(healthPlan, records.length);
-  const consentRate = pct(consent, records.length);
+  const outcomeRate = rate(excellentGood, records.length)!;
+  const appointmentAttendedRate = rate(attended, records.length);
+  const healthPlanRate = rate(healthPlan, records.length);
+  const consentRate = rate(consent, records.length);
 
   let score = 0;
-  score += Math.round((outcomeRate / 100) * 7);
-  score += Math.round((appointmentAttendedRate / 100) * 6);
-  score += Math.round((healthPlanRate / 100) * 6);
-  score += Math.round((consentRate / 100) * 6);
+  score += Math.round((outcomeRate! / 100) * 7);
+  score += Math.round((appointmentAttendedRate! / 100) * 6);
+  score += Math.round((healthPlanRate! / 100) * 6);
+  score += Math.round((consentRate! / 100) * 6);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -255,9 +264,9 @@ export function evaluateHealthCompliance(records: HealthRecord[]): HealthComplia
     return {
       overallScore: 0,
       totalRecords: 0,
-      staffAccompaniedRate: 0,
-      documentedRate: 0,
-      followUpRate: 0,
+      staffAccompaniedRate: null,
+      documentedRate: null,
+      followUpRate: null,
       areaDiversity: 0,
     };
   }
@@ -267,15 +276,15 @@ export function evaluateHealthCompliance(records: HealthRecord[]): HealthComplia
   const followUp = records.filter((r) => r.followUpScheduled).length;
   const uniqueAreas = new Set(records.map((r) => r.healthArea)).size;
 
-  const staffAccompaniedRate = pct(staffAccompanied, records.length);
-  const documentedRate = pct(documented, records.length);
-  const followUpRate = pct(followUp, records.length);
+  const staffAccompaniedRate = rate(staffAccompanied, records.length);
+  const documentedRate = rate(documented, records.length);
+  const followUpRate = rate(followUp, records.length);
   const areaDiversity = uniqueAreas / 8;
 
   let score = 0;
-  score += Math.round((staffAccompaniedRate / 100) * 8);
-  score += Math.round((documentedRate / 100) * 7);
-  score += Math.round((followUpRate / 100) * 5);
+  score += Math.round((staffAccompaniedRate! / 100) * 8);
+  score += Math.round((documentedRate! / 100) * 7);
+  score += Math.round((followUpRate! / 100) * 5);
   score += Math.round(areaDiversity * 5);
 
   return {
@@ -340,12 +349,12 @@ export function evaluateStaffHealthReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      healthAwarenessRate: 0,
-      mentalHealthFirstAidRate: 0,
-      consentAndCapacityRate: 0,
-      medicationManagementRate: 0,
-      appointmentSupportRate: 0,
-      healthDocumentationRate: 0,
+      healthAwarenessRate: null,
+      mentalHealthFirstAidRate: null,
+      consentAndCapacityRate: null,
+      medicationManagementRate: null,
+      appointmentSupportRate: null,
+      healthDocumentationRate: null,
     };
   }
 
@@ -365,20 +374,20 @@ export function evaluateStaffHealthReadiness(
     if (t.healthDocumentation) healthDocumentation++;
   }
 
-  const healthAwarenessRate = pct(healthAwareness, training.length);
-  const mentalHealthFirstAidRate = pct(mentalHealthFirstAid, training.length);
-  const consentAndCapacityRate = pct(consentAndCapacity, training.length);
-  const medicationManagementRate = pct(medicationManagement, training.length);
-  const appointmentSupportRate = pct(appointmentSupport, training.length);
-  const healthDocumentationRate = pct(healthDocumentation, training.length);
+  const healthAwarenessRate = rate(healthAwareness, training.length);
+  const mentalHealthFirstAidRate = rate(mentalHealthFirstAid, training.length);
+  const consentAndCapacityRate = rate(consentAndCapacity, training.length);
+  const medicationManagementRate = rate(medicationManagement, training.length);
+  const appointmentSupportRate = rate(appointmentSupport, training.length);
+  const healthDocumentationRate = rate(healthDocumentation, training.length);
 
   let score = 0;
-  score += Math.round((healthAwarenessRate / 100) * 6);
-  score += Math.round((mentalHealthFirstAidRate / 100) * 5);
-  score += Math.round((consentAndCapacityRate / 100) * 5);
-  score += Math.round((medicationManagementRate / 100) * 4);
-  score += Math.round((appointmentSupportRate / 100) * 3);
-  score += Math.round((healthDocumentationRate / 100) * 2);
+  score += Math.round((healthAwarenessRate! / 100) * 6);
+  score += Math.round(((mentalHealthFirstAidRate ?? 0) / 100) * 5);
+  score += Math.round(((consentAndCapacityRate ?? 0) / 100) * 5);
+  score += Math.round(((medicationManagementRate ?? 0) / 100) * 4);
+  score += Math.round(((appointmentSupportRate ?? 0) / 100) * 3);
+  score += Math.round(((healthDocumentationRate ?? 0) / 100) * 2);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -423,8 +432,8 @@ export function buildChildHealthProfiles(records: HealthRecord[]): ChildHealthPr
     const attended = childRecords.filter((r) => r.appointmentAttended).length;
     const uniqueAreas = new Set(childRecords.map((r) => r.healthArea)).size;
 
-    const outcomeRate = pct(excellentGood, recordCount);
-    const appointmentRate = pct(attended, recordCount);
+    const outcomeRate = rate(excellentGood, recordCount)!;
+    const appointmentRate = rate(attended, recordCount)!;
 
     // frequency (0-2)
     let frequencyScore = 0;
@@ -433,15 +442,15 @@ export function buildChildHealthProfiles(records: HealthRecord[]): ChildHealthPr
 
     // outcomeRate (0-3)
     let outcomeScore = 0;
-    if (outcomeRate >= 80) outcomeScore = 3;
-    else if (outcomeRate >= 60) outcomeScore = 2;
-    else if (outcomeRate >= 40) outcomeScore = 1;
+    if (meets(outcomeRate, 80)) outcomeScore = 3;
+    else if (meets(outcomeRate, 60)) outcomeScore = 2;
+    else if (meets(outcomeRate, 40)) outcomeScore = 1;
 
     // appointmentRate (0-3)
     let appointmentScore = 0;
-    if (appointmentRate >= 80) appointmentScore = 3;
-    else if (appointmentRate >= 60) appointmentScore = 2;
-    else if (appointmentRate >= 40) appointmentScore = 1;
+    if (meets(appointmentRate, 80)) appointmentScore = 3;
+    else if (meets(appointmentRate, 60)) appointmentScore = 2;
+    else if (meets(appointmentRate, 40)) appointmentScore = 1;
 
     // diversity (0-2)
     let diversityScore = 0;
@@ -489,16 +498,16 @@ export function generatePhysicalHealthWellbeingIntelligence(
 
   // -- Strengths (when rate >= 80) --
   const strengths: string[] = [];
-  if (records.length > 0 && healthQuality.outcomeRate >= 80) {
+  if (records.length > 0 && meets(healthQuality.outcomeRate, 80)) {
     strengths.push("Strong health outcomes across recorded appointments and reviews");
   }
-  if (records.length > 0 && healthQuality.appointmentAttendedRate >= 80) {
+  if (records.length > 0 && meets(healthQuality.appointmentAttendedRate, 80)) {
     strengths.push("Appointments consistently attended");
   }
-  if (records.length > 0 && healthQuality.healthPlanRate >= 80) {
+  if (records.length > 0 && meets(healthQuality.healthPlanRate, 80)) {
     strengths.push("Health plans regularly updated");
   }
-  if (records.length > 0 && healthCompliance.documentedRate >= 80) {
+  if (records.length > 0 && meets(healthCompliance.documentedRate, 80)) {
     strengths.push("Excellent health documentation");
   }
 
@@ -513,10 +522,10 @@ export function generatePhysicalHealthWellbeingIntelligence(
   if (training.length === 0) {
     actions.push("URGENT: Arrange health awareness and support training for all staff");
   }
-  if (records.length > 0 && healthCompliance.followUpRate < 80) {
+  if (records.length > 0 && below(healthCompliance.followUpRate, 80)) {
     actions.push("Improve follow-up scheduling for health appointments and reviews");
   }
-  if (records.length > 0 && healthQuality.consentRate < 80) {
+  if (records.length > 0 && below(healthQuality.consentRate, 80)) {
     actions.push("Strengthen consent processes for health-related activities");
   }
 
@@ -525,16 +534,16 @@ export function generatePhysicalHealthWellbeingIntelligence(
   if (records.length === 0) {
     areasForImprovement.push("No health records available — unable to evaluate physical health provision");
   }
-  if (records.length > 0 && healthQuality.outcomeRate < 80) {
+  if (records.length > 0 && below(healthQuality.outcomeRate, 80)) {
     areasForImprovement.push("Health outcome rate at " + healthQuality.outcomeRate + "% — target 80%+");
   }
-  if (records.length > 0 && healthQuality.appointmentAttendedRate < 80) {
+  if (records.length > 0 && below(healthQuality.appointmentAttendedRate, 80)) {
     areasForImprovement.push("Appointment attendance at " + healthQuality.appointmentAttendedRate + "% — target 80%+");
   }
-  if (records.length > 0 && healthCompliance.staffAccompaniedRate < 80) {
+  if (records.length > 0 && below(healthCompliance.staffAccompaniedRate, 80)) {
     areasForImprovement.push("Staff accompaniment rate at " + healthCompliance.staffAccompaniedRate + "% — children should be supported at health appointments");
   }
-  if (records.length > 0 && healthCompliance.documentedRate < 80) {
+  if (records.length > 0 && below(healthCompliance.documentedRate, 80)) {
     areasForImprovement.push("Health documentation at " + healthCompliance.documentedRate + "% — all health events must be recorded");
   }
   if (!policy) {

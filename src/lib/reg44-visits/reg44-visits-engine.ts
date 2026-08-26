@@ -17,6 +17,7 @@
 // ==============================================================================
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // -- Types --------------------------------------------------------------------
 
@@ -82,18 +83,25 @@ export interface StaffReg44VisitTraining {
 export interface Reg44VisitQualityResult {
   overallScore: number;
   totalRecords: number;
-  childrenInterviewedRate: number;
-  staffInterviewedRate: number;
-  recordsReviewedRate: number;
-  premisesInspectedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childrenInterviewedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffInterviewedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  recordsReviewedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  premisesInspectedRate: number | null;
 }
 
 export interface Reg44VisitComplianceResult {
   overallScore: number;
   totalRecords: number;
-  documentationRate: number;
-  timelyRecordingRate: number;
-  childrenInterviewedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childrenInterviewedRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
 }
@@ -112,20 +120,28 @@ export interface Reg44VisitPolicyResult {
 export interface StaffReg44VisitReadinessResult {
   overallScore: number;
   totalStaff: number;
-  reg44RequirementsRate: number;
-  childInterviewSkillsRate: number;
-  reportWritingRate: number;
-  actionTrackingRate: number;
-  regulatoryKnowledgeRate: number;
-  escalationProcedureRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reg44RequirementsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childInterviewSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reportWritingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionTrackingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  regulatoryKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  escalationProcedureRate: number | null;
 }
 
 export interface ChildReg44VisitProfile {
   childId: string;
   childName: string;
   totalRecords: number;
-  childrenInterviewedRate: number;
-  staffInterviewedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childrenInterviewedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffInterviewedRate: number | null;
   categoriesCovered: string[];
   overallScore: number;
 }
@@ -148,11 +164,6 @@ export interface Reg44VisitIntelligence {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -202,24 +213,24 @@ export function evaluateReg44VisitQuality(records: Reg44VisitRecord[]): Reg44Vis
     return {
       overallScore: 0,
       totalRecords: 0,
-      childrenInterviewedRate: 0,
-      staffInterviewedRate: 0,
-      recordsReviewedRate: 0,
-      premisesInspectedRate: 0,
+      childrenInterviewedRate: null,
+      staffInterviewedRate: null,
+      recordsReviewedRate: null,
+      premisesInspectedRate: null,
     };
   }
 
-  const childrenInterviewedRate = pct(records.filter((r) => r.childrenInterviewed).length, total);
-  const staffInterviewedRate = pct(records.filter((r) => r.staffInterviewed).length, total);
-  const recordsReviewedRate = pct(records.filter((r) => r.recordsReviewed).length, total);
-  const premisesInspectedRate = pct(records.filter((r) => r.premisesInspected).length, total);
+  const childrenInterviewedRate = rate(records.filter((r) => r.childrenInterviewed).length, total);
+  const staffInterviewedRate = rate(records.filter((r) => r.staffInterviewed).length, total);
+  const recordsReviewedRate = rate(records.filter((r) => r.recordsReviewed).length, total);
+  const premisesInspectedRate = rate(records.filter((r) => r.premisesInspected).length, total);
 
   // Weighted: childrenInterviewedRate(7) + staffInterviewedRate(6) + recordsReviewedRate(6) + premisesInspectedRate(6) = 25
   let score = 0;
-  score += (childrenInterviewedRate / 100) * 7;
-  score += (staffInterviewedRate / 100) * 6;
-  score += (recordsReviewedRate / 100) * 6;
-  score += (premisesInspectedRate / 100) * 6;
+  score += (childrenInterviewedRate! / 100) * 7;
+  score += (staffInterviewedRate! / 100) * 6;
+  score += (recordsReviewedRate! / 100) * 6;
+  score += (premisesInspectedRate! / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -241,26 +252,26 @@ export function evaluateReg44VisitCompliance(records: Reg44VisitRecord[]): Reg44
     return {
       overallScore: 0,
       totalRecords: 0,
-      documentationRate: 0,
-      timelyRecordingRate: 0,
-      childrenInterviewedRate: 0,
+      documentationRate: null,
+      timelyRecordingRate: null,
+      childrenInterviewedRate: null,
       categoryDiversityRatio: 0,
       uniqueCategories: 0,
     };
   }
 
-  const documentationRate = pct(records.filter((r) => r.documentationComplete).length, total);
-  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, total);
-  const childrenInterviewedRate = pct(records.filter((r) => r.childrenInterviewed).length, total);
+  const documentationRate = rate(records.filter((r) => r.documentationComplete).length, total);
+  const timelyRecordingRate = rate(records.filter((r) => r.timelyRecording).length, total);
+  const childrenInterviewedRate = rate(records.filter((r) => r.childrenInterviewed).length, total);
 
   const uniqueCategories = new Set(records.map((r) => r.category)).size;
   const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
 
   // Weighted: documentationRate(8) + timelyRecordingRate(7) + childrenInterviewedRate(5) + categoryDiversityRatio(5) = 25
   let score = 0;
-  score += (documentationRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (childrenInterviewedRate / 100) * 5;
+  score += (documentationRate! / 100) * 8;
+  score += (timelyRecordingRate! / 100) * 7;
+  score += (childrenInterviewedRate! / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -322,30 +333,30 @@ export function evaluateStaffReg44VisitReadiness(staff: StaffReg44VisitTraining[
     return {
       overallScore: 0,
       totalStaff: 0,
-      reg44RequirementsRate: 0,
-      childInterviewSkillsRate: 0,
-      reportWritingRate: 0,
-      actionTrackingRate: 0,
-      regulatoryKnowledgeRate: 0,
-      escalationProcedureRate: 0,
+      reg44RequirementsRate: null,
+      childInterviewSkillsRate: null,
+      reportWritingRate: null,
+      actionTrackingRate: null,
+      regulatoryKnowledgeRate: null,
+      escalationProcedureRate: null,
     };
   }
 
-  const reg44RequirementsRate = pct(staff.filter((s) => s.reg44Requirements).length, count);
-  const childInterviewSkillsRate = pct(staff.filter((s) => s.childInterviewSkills).length, count);
-  const reportWritingRate = pct(staff.filter((s) => s.reportWriting).length, count);
-  const actionTrackingRate = pct(staff.filter((s) => s.actionTracking).length, count);
-  const regulatoryKnowledgeRate = pct(staff.filter((s) => s.regulatoryKnowledge).length, count);
-  const escalationProcedureRate = pct(staff.filter((s) => s.escalationProcedure).length, count);
+  const reg44RequirementsRate = rate(staff.filter((s) => s.reg44Requirements).length, count);
+  const childInterviewSkillsRate = rate(staff.filter((s) => s.childInterviewSkills).length, count);
+  const reportWritingRate = rate(staff.filter((s) => s.reportWriting).length, count);
+  const actionTrackingRate = rate(staff.filter((s) => s.actionTracking).length, count);
+  const regulatoryKnowledgeRate = rate(staff.filter((s) => s.regulatoryKnowledge).length, count);
+  const escalationProcedureRate = rate(staff.filter((s) => s.escalationProcedure).length, count);
 
   // Weighted: 6+5+5+4+3+2 = 25
   let score = 0;
-  score += (reg44RequirementsRate / 100) * 6;
-  score += (childInterviewSkillsRate / 100) * 5;
-  score += (reportWritingRate / 100) * 5;
-  score += (actionTrackingRate / 100) * 4;
-  score += (regulatoryKnowledgeRate / 100) * 3;
-  score += (escalationProcedureRate / 100) * 2;
+  score += (reg44RequirementsRate! / 100) * 6;
+  score += (childInterviewSkillsRate! / 100) * 5;
+  score += (reportWritingRate! / 100) * 5;
+  score += (actionTrackingRate! / 100) * 4;
+  score += (regulatoryKnowledgeRate! / 100) * 3;
+  score += (escalationProcedureRate! / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -376,8 +387,8 @@ export function buildChildReg44VisitProfiles(records: Reg44VisitRecord[]): Child
     const childName = recs[0].childName;
     const totalRecords = recs.length;
 
-    const childrenInterviewedRate = pct(recs.filter((r) => r.childrenInterviewed).length, totalRecords);
-    const staffInterviewedRate = pct(recs.filter((r) => r.staffInterviewed).length, totalRecords);
+    const childrenInterviewedRate = rate(recs.filter((r) => r.childrenInterviewed).length, totalRecords);
+    const staffInterviewedRate = rate(recs.filter((r) => r.staffInterviewed).length, totalRecords);
 
     const catsSet = new Set(recs.map((r) => r.category));
     const categoriesCovered = [...catsSet] as string[];
@@ -389,13 +400,13 @@ export function buildChildReg44VisitProfiles(records: Reg44VisitRecord[]): Child
     if (totalRecords >= 10) score += 2;
     else if (totalRecords >= 5) score += 1;
 
-    if (childrenInterviewedRate >= 80) score += 3;
-    else if (childrenInterviewedRate >= 60) score += 2;
-    else if (childrenInterviewedRate >= 40) score += 1;
+    if (meets(childrenInterviewedRate, 80)) score += 3;
+    else if (meets(childrenInterviewedRate, 60)) score += 2;
+    else if (meets(childrenInterviewedRate, 40)) score += 1;
 
-    if (staffInterviewedRate >= 80) score += 3;
-    else if (staffInterviewedRate >= 60) score += 2;
-    else if (staffInterviewedRate >= 40) score += 1;
+    if (meets(staffInterviewedRate, 80)) score += 3;
+    else if (meets(staffInterviewedRate, 60)) score += 2;
+    else if (meets(staffInterviewedRate, 40)) score += 1;
 
     const catCount = categoriesCovered.length;
     if (catCount >= 4) score += 2;
@@ -444,36 +455,36 @@ export function generateReg44VisitIntelligence(input: {
 
   // Strengths (>=80%)
   const strengths: string[] = [];
-  if (visitQuality.childrenInterviewedRate >= 80) strengths.push("Children are consistently interviewed during Reg 44 visits");
-  if (visitQuality.staffInterviewedRate >= 80) strengths.push("Staff interviews are routinely conducted as part of visit programme");
-  if (visitQuality.recordsReviewedRate >= 80) strengths.push("Records are thoroughly reviewed during independent visits");
-  if (visitQuality.premisesInspectedRate >= 80) strengths.push("Premises inspections are consistently carried out during visits");
-  if (visitCompliance.documentationRate >= 80) strengths.push("Visit documentation is comprehensive and complete");
-  if (visitCompliance.timelyRecordingRate >= 80) strengths.push("Visit reports are produced in a timely manner");
-  if (staffReadiness.reg44RequirementsRate >= 80) strengths.push("Staff demonstrate strong understanding of Reg 44 requirements");
-  if (staffReadiness.childInterviewSkillsRate >= 80) strengths.push("Staff are well trained in child interview skills");
+  if (meets(visitQuality.childrenInterviewedRate, 80)) strengths.push("Children are consistently interviewed during Reg 44 visits");
+  if (meets(visitQuality.staffInterviewedRate, 80)) strengths.push("Staff interviews are routinely conducted as part of visit programme");
+  if (meets(visitQuality.recordsReviewedRate, 80)) strengths.push("Records are thoroughly reviewed during independent visits");
+  if (meets(visitQuality.premisesInspectedRate, 80)) strengths.push("Premises inspections are consistently carried out during visits");
+  if (meets(visitCompliance.documentationRate, 80)) strengths.push("Visit documentation is comprehensive and complete");
+  if (meets(visitCompliance.timelyRecordingRate, 80)) strengths.push("Visit reports are produced in a timely manner");
+  if (meets(staffReadiness.reg44RequirementsRate, 80)) strengths.push("Staff demonstrate strong understanding of Reg 44 requirements");
+  if (meets(staffReadiness.childInterviewSkillsRate, 80)) strengths.push("Staff are well trained in child interview skills");
 
   // Areas for improvement (<60%)
   const areasForImprovement: string[] = [];
-  if (visitQuality.childrenInterviewedRate < 60) areasForImprovement.push("Children are not being consistently interviewed during Reg 44 visits");
-  if (visitQuality.staffInterviewedRate < 60) areasForImprovement.push("Staff interviews are not routinely included in visit programme");
-  if (visitQuality.recordsReviewedRate < 60) areasForImprovement.push("Records review during visits needs to be more systematic");
-  if (visitQuality.premisesInspectedRate < 60) areasForImprovement.push("Premises inspections are not consistently undertaken");
-  if (visitCompliance.documentationRate < 60) areasForImprovement.push("Visit documentation is incomplete or inconsistent");
-  if (visitCompliance.timelyRecordingRate < 60) areasForImprovement.push("Visit reports are not being completed in a timely manner");
-  if (staffReadiness.reg44RequirementsRate < 60) areasForImprovement.push("Staff understanding of Reg 44 requirements needs development");
-  if (staffReadiness.childInterviewSkillsRate < 60) areasForImprovement.push("Staff child interview skills training requires improvement");
+  if (below(visitQuality.childrenInterviewedRate, 60)) areasForImprovement.push("Children are not being consistently interviewed during Reg 44 visits");
+  if (below(visitQuality.staffInterviewedRate, 60)) areasForImprovement.push("Staff interviews are not routinely included in visit programme");
+  if (below(visitQuality.recordsReviewedRate, 60)) areasForImprovement.push("Records review during visits needs to be more systematic");
+  if (below(visitQuality.premisesInspectedRate, 60)) areasForImprovement.push("Premises inspections are not consistently undertaken");
+  if (below(visitCompliance.documentationRate, 60)) areasForImprovement.push("Visit documentation is incomplete or inconsistent");
+  if (below(visitCompliance.timelyRecordingRate, 60)) areasForImprovement.push("Visit reports are not being completed in a timely manner");
+  if (below(staffReadiness.reg44RequirementsRate, 60)) areasForImprovement.push("Staff understanding of Reg 44 requirements needs development");
+  if (below(staffReadiness.childInterviewSkillsRate, 60)) areasForImprovement.push("Staff child interview skills training requires improvement");
 
   // Actions
   const actions: string[] = [];
   if (visitPolicy.overallScore === 0) actions.push("URGENT: Establish a formal Reg 44 visits policy -- CHR 2015 Reg 44 requires documented independent visit procedures");
   if (staffReadiness.overallScore === 0) actions.push("URGENT: Provide Reg 44 training to all staff -- proper visit conduct depends on skilled practitioners");
-  if (visitQuality.childrenInterviewedRate < 50) actions.push("Implement systematic child interviews in all Reg 44 visits -- children's views must be sought (SCCIF)");
-  if (visitQuality.staffInterviewedRate < 50) actions.push("Ensure staff interviews are included in visit programme -- Reg 44 requires comprehensive assessment");
-  if (visitCompliance.documentationRate < 50) actions.push("Improve visit documentation -- reports must be comprehensive and timely (Reg 44/45)");
-  if (visitCompliance.timelyRecordingRate < 50) actions.push("Review visit recording timescales -- reports should be completed promptly after each visit");
-  if (visitQuality.premisesInspectedRate < 50) actions.push("Include premises inspection in all visits to monitor home environment and safety");
-  if (staffReadiness.escalationProcedureRate < 50) actions.push("Train staff in escalation procedures for concerns raised during Reg 44 visits");
+  if (below(visitQuality.childrenInterviewedRate, 50)) actions.push("Implement systematic child interviews in all Reg 44 visits -- children's views must be sought (SCCIF)");
+  if (below(visitQuality.staffInterviewedRate, 50)) actions.push("Ensure staff interviews are included in visit programme -- Reg 44 requires comprehensive assessment");
+  if (below(visitCompliance.documentationRate, 50)) actions.push("Improve visit documentation -- reports must be comprehensive and timely (Reg 44/45)");
+  if (below(visitCompliance.timelyRecordingRate, 50)) actions.push("Review visit recording timescales -- reports should be completed promptly after each visit");
+  if (below(visitQuality.premisesInspectedRate, 50)) actions.push("Include premises inspection in all visits to monitor home environment and safety");
+  if (below(staffReadiness.escalationProcedureRate, 50)) actions.push("Train staff in escalation procedures for concerns raised during Reg 44 visits");
 
   const regulatoryLinks: string[] = [
     "CHR 2015 Reg 44 — Independent person: visits and reports",

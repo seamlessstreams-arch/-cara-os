@@ -45,7 +45,6 @@ export type {
 // ── New Intelligence Engine ───────────────────────────────────────────────
 
 export {
-  pct,
   getRating,
   getPlacementStabilityIntelligenceCategoryLabel,
   getPlacementStabilityIntelligenceOutcomeLabel,

@@ -5,7 +5,6 @@ export {
   evaluatePreventionEffectiveness,
   buildChildMissingProfiles,
   generateReturnHomeInterviewQualityIntelligence,
-  pct,
   getRating,
   getMissingEpisodeCategoryLabel,
   getRHITimelinessLabel,
