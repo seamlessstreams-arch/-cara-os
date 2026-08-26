@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { formatRate, meets } from "@/lib/metrics/rate";
 import type {
   HomeAtmosphereEthosIntelligence,
   ChildAtmosphereProfile,
@@ -61,14 +62,14 @@ function ScoreBar({ label, score, max, color }: { label: string; score: number; 
 
 // ── Progress Bar ─────────────────────────────────────────────────────────────
 
-function ProgressBar({ value, max, color }: { value: number; max: number; color: string }) {
-  const pctVal = max > 0 ? Math.round((value / max) * 100) : 0;
+function ProgressBar({ value, max, color }: { value: number | null; max: number; color: string }) {
+  const pctVal = value !== null && max > 0 ? Math.round((value / max) * 100) : null;
   return (
     <div className="flex items-center gap-2 w-full">
       <div className="flex-1 h-2 rounded-full bg-gray-200 overflow-hidden">
-        <div className={`h-full rounded-full ${color}`} style={{ width: `${pctVal}%` }} />
+        <div className={`h-full rounded-full ${color}`} style={{ width: `${pctVal ?? 0}%` }} />
       </div>
-      <span className="text-xs font-medium text-gray-600 w-10 text-right">{pctVal}%</span>
+      <span className="text-xs font-medium text-gray-600 w-10 text-right">{pctVal !== null ? `${pctVal}%` : "—"}</span>
     </div>
   );
 }
@@ -251,7 +252,7 @@ export function HomeAtmosphereEthosDashboardWidget() {
           <div className="mt-3 rounded-lg border border-gray-200 bg-white p-4 space-y-3">
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-center">
               <div>
-                <span className={`text-lg font-bold ${data.warmthCulture.excellentGoodRate >= 80 ? "text-green-600" : "text-amber-600"}`}>{data.warmthCulture.excellentGoodRate}%</span>
+                <span className={`text-lg font-bold ${meets(data.warmthCulture.excellentGoodRate, 80) ? "text-green-600" : "text-amber-600"}`}>{formatRate(data.warmthCulture.excellentGoodRate)}</span>
                 <p className="text-xs text-gray-500">Excellent/Good</p>
               </div>
               <div>
@@ -259,7 +260,7 @@ export function HomeAtmosphereEthosDashboardWidget() {
                 <p className="text-xs text-gray-500">Warmth Score</p>
               </div>
               <div>
-                <span className="text-lg font-bold text-blue-600">{data.warmthCulture.calmScore}%</span>
+                <span className="text-lg font-bold text-blue-600">{formatRate(data.warmthCulture.calmScore)}</span>
                 <p className="text-xs text-gray-500">Calm/Safety</p>
               </div>
             </div>
@@ -267,21 +268,21 @@ export function HomeAtmosphereEthosDashboardWidget() {
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-700">Respect</span>
-                  <span className="font-medium">{data.warmthCulture.respectScore}%</span>
+                  <span className="font-medium">{formatRate(data.warmthCulture.respectScore)}</span>
                 </div>
                 <ProgressBar value={data.warmthCulture.respectScore} max={100} color="bg-purple-500" />
               </div>
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-700">Fun</span>
-                  <span className="font-medium">{data.warmthCulture.funScore}%</span>
+                  <span className="font-medium">{formatRate(data.warmthCulture.funScore)}</span>
                 </div>
                 <ProgressBar value={data.warmthCulture.funScore} max={100} color="bg-amber-500" />
               </div>
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-700">Nurture</span>
-                  <span className="font-medium">{data.warmthCulture.nurtureScore}%</span>
+                  <span className="font-medium">{formatRate(data.warmthCulture.nurtureScore)}</span>
                 </div>
                 <ProgressBar value={data.warmthCulture.nurtureScore} max={100} color="bg-rose-500" />
               </div>
@@ -320,19 +321,19 @@ export function HomeAtmosphereEthosDashboardWidget() {
           <div className="mt-3 rounded-lg border border-gray-200 bg-white p-4 space-y-3">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
               <div>
-                <span className={`text-lg font-bold ${data.childExperience.positiveRate >= 80 ? "text-green-600" : "text-amber-600"}`}>{data.childExperience.positiveRate}%</span>
+                <span className={`text-lg font-bold ${meets(data.childExperience.positiveRate, 80) ? "text-green-600" : "text-amber-600"}`}>{formatRate(data.childExperience.positiveRate)}</span>
                 <p className="text-xs text-gray-500">Positive Rate</p>
               </div>
               <div>
-                <span className={`text-lg font-bold ${data.childExperience.feelsSafeRate >= 90 ? "text-green-600" : "text-red-600"}`}>{data.childExperience.feelsSafeRate}%</span>
+                <span className={`text-lg font-bold ${meets(data.childExperience.feelsSafeRate, 90) ? "text-green-600" : "text-red-600"}`}>{formatRate(data.childExperience.feelsSafeRate)}</span>
                 <p className="text-xs text-gray-500">Feels Safe</p>
               </div>
               <div>
-                <span className="text-lg font-bold text-blue-600">{data.childExperience.feelsAtHomeRate}%</span>
+                <span className="text-lg font-bold text-blue-600">{formatRate(data.childExperience.feelsAtHomeRate)}</span>
                 <p className="text-xs text-gray-500">At Home</p>
               </div>
               <div>
-                <span className="text-lg font-bold text-purple-600">{data.childExperience.canBeThemselvesRate}%</span>
+                <span className="text-lg font-bold text-purple-600">{formatRate(data.childExperience.canBeThemselvesRate)}</span>
                 <p className="text-xs text-gray-500">Be Themselves</p>
               </div>
             </div>
@@ -340,21 +341,21 @@ export function HomeAtmosphereEthosDashboardWidget() {
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-700">Feels Listened To</span>
-                  <span className="font-medium">{data.childExperience.feelsListenedToRate}%</span>
+                  <span className="font-medium">{formatRate(data.childExperience.feelsListenedToRate)}</span>
                 </div>
                 <ProgressBar value={data.childExperience.feelsListenedToRate} max={100} color="bg-blue-500" />
               </div>
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-700">Has Privacy</span>
-                  <span className="font-medium">{data.childExperience.hasPrivacyRate}%</span>
+                  <span className="font-medium">{formatRate(data.childExperience.hasPrivacyRate)}</span>
                 </div>
                 <ProgressBar value={data.childExperience.hasPrivacyRate} max={100} color="bg-indigo-500" />
               </div>
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-700">Enjoys Living Here</span>
-                  <span className="font-medium">{data.childExperience.enjoysLivingRate}%</span>
+                  <span className="font-medium">{formatRate(data.childExperience.enjoysLivingRate)}</span>
                 </div>
                 <ProgressBar value={data.childExperience.enjoysLivingRate} max={100} color="bg-green-500" />
               </div>
@@ -380,11 +381,11 @@ export function HomeAtmosphereEthosDashboardWidget() {
                 <p className="text-xs text-gray-500">Areas Audited</p>
               </div>
               <div>
-                <span className={`text-lg font-bold ${data.environmentQuality.cleanRate >= 90 ? "text-green-600" : "text-amber-600"}`}>{data.environmentQuality.cleanRate}%</span>
+                <span className={`text-lg font-bold ${meets(data.environmentQuality.cleanRate, 90) ? "text-green-600" : "text-amber-600"}`}>{formatRate(data.environmentQuality.cleanRate)}</span>
                 <p className="text-xs text-gray-500">Clean</p>
               </div>
               <div>
-                <span className={`text-lg font-bold ${data.environmentQuality.repairsActionedRate >= 80 ? "text-green-600" : "text-amber-600"}`}>{data.environmentQuality.repairsActionedRate}%</span>
+                <span className={`text-lg font-bold ${meets(data.environmentQuality.repairsActionedRate, 80) ? "text-green-600" : "text-amber-600"}`}>{formatRate(data.environmentQuality.repairsActionedRate)}</span>
                 <p className="text-xs text-gray-500">Repairs Actioned</p>
               </div>
             </div>
@@ -392,28 +393,28 @@ export function HomeAtmosphereEthosDashboardWidget() {
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-700">Personalised</span>
-                  <span className="font-medium">{data.environmentQuality.personalisedRate}%</span>
+                  <span className="font-medium">{formatRate(data.environmentQuality.personalisedRate)}</span>
                 </div>
                 <ProgressBar value={data.environmentQuality.personalisedRate} max={100} color="bg-purple-500" />
               </div>
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-700">Welcoming</span>
-                  <span className="font-medium">{data.environmentQuality.welcomingRate}%</span>
+                  <span className="font-medium">{formatRate(data.environmentQuality.welcomingRate)}</span>
                 </div>
                 <ProgressBar value={data.environmentQuality.welcomingRate} max={100} color="bg-blue-500" />
               </div>
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-700">Child Contributed</span>
-                  <span className="font-medium">{data.environmentQuality.childContributedRate}%</span>
+                  <span className="font-medium">{formatRate(data.environmentQuality.childContributedRate)}</span>
                 </div>
                 <ProgressBar value={data.environmentQuality.childContributedRate} max={100} color="bg-emerald-500" />
               </div>
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-700">Sensory Considered</span>
-                  <span className="font-medium">{data.environmentQuality.sensoryConsideredRate}%</span>
+                  <span className="font-medium">{formatRate(data.environmentQuality.sensoryConsideredRate)}</span>
                 </div>
                 <ProgressBar value={data.environmentQuality.sensoryConsideredRate} max={100} color="bg-teal-500" />
               </div>
@@ -439,11 +440,11 @@ export function HomeAtmosphereEthosDashboardWidget() {
                 <p className="text-xs text-gray-500">Records</p>
               </div>
               <div>
-                <span className={`text-lg font-bold ${data.staffPractice.therapeuticRate >= 80 ? "text-green-600" : "text-amber-600"}`}>{data.staffPractice.therapeuticRate}%</span>
+                <span className={`text-lg font-bold ${meets(data.staffPractice.therapeuticRate, 80) ? "text-green-600" : "text-amber-600"}`}>{formatRate(data.staffPractice.therapeuticRate)}</span>
                 <p className="text-xs text-gray-500">Therapeutic</p>
               </div>
               <div>
-                <span className={`text-lg font-bold ${data.staffPractice.boundariesRate >= 90 ? "text-green-600" : "text-amber-600"}`}>{data.staffPractice.boundariesRate}%</span>
+                <span className={`text-lg font-bold ${meets(data.staffPractice.boundariesRate, 90) ? "text-green-600" : "text-amber-600"}`}>{formatRate(data.staffPractice.boundariesRate)}</span>
                 <p className="text-xs text-gray-500">Boundaries</p>
               </div>
             </div>
@@ -451,28 +452,28 @@ export function HomeAtmosphereEthosDashboardWidget() {
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-700">Child-Centred Language</span>
-                  <span className="font-medium">{data.staffPractice.childCentredRate}%</span>
+                  <span className="font-medium">{formatRate(data.staffPractice.childCentredRate)}</span>
                 </div>
                 <ProgressBar value={data.staffPractice.childCentredRate} max={100} color="bg-blue-500" />
               </div>
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-700">Warm Interactions</span>
-                  <span className="font-medium">{data.staffPractice.warmInteractionRate}%</span>
+                  <span className="font-medium">{formatRate(data.staffPractice.warmInteractionRate)}</span>
                 </div>
                 <ProgressBar value={data.staffPractice.warmInteractionRate} max={100} color="bg-rose-500" />
               </div>
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-700">Positive Reinforcement</span>
-                  <span className="font-medium">{data.staffPractice.positiveReinforcementRate}%</span>
+                  <span className="font-medium">{formatRate(data.staffPractice.positiveReinforcementRate)}</span>
                 </div>
                 <ProgressBar value={data.staffPractice.positiveReinforcementRate} max={100} color="bg-amber-500" />
               </div>
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-700">Reflective Practice</span>
-                  <span className="font-medium">{data.staffPractice.reflectiveRate}%</span>
+                  <span className="font-medium">{formatRate(data.staffPractice.reflectiveRate)}</span>
                 </div>
                 <ProgressBar value={data.staffPractice.reflectiveRate} max={100} color="bg-violet-500" />
               </div>

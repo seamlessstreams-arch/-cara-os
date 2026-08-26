@@ -18,6 +18,7 @@
    ────────────────────────────────────────────────────────────── */
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -127,18 +128,25 @@ export interface StaffLessonsLearnedTraining {
 export interface LessonsLearnedQualityResult {
   overallScore: number;
   totalRecords: number;
-  rootCauseIdentifiedRate: number;
-  lessonsDocumentedRate: number;
-  staffBriefingCompletedRate: number;
-  improvementMeasurableRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  rootCauseIdentifiedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  lessonsDocumentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffBriefingCompletedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  improvementMeasurableRate: number | null;
 }
 
 export interface LessonsLearnedComplianceResult {
   overallScore: number;
   totalRecords: number;
-  documentationCompleteRate: number;
-  timelyRecordingRate: number;
-  rootCauseIdentifiedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationCompleteRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  rootCauseIdentifiedRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
 }
@@ -157,12 +165,18 @@ export interface LessonsLearnedPolicyResult {
 export interface StaffLessonsLearnedReadinessResult {
   overallScore: number;
   totalStaff: number;
-  reflectivePracticeSkillsRate: number;
-  rootCauseAnalysisKnowledgeRate: number;
-  documentationSkillsRate: number;
-  improvementPlanningSkillsRate: number;
-  debriefFacilitationSkillsRate: number;
-  knowledgeSharingAbilityRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reflectivePracticeSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  rootCauseAnalysisKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  improvementPlanningSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  debriefFacilitationSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  knowledgeSharingAbilityRate: number | null;
 }
 
 export interface ChildLessonsLearnedProfile {
@@ -194,11 +208,6 @@ export interface LessonsLearnedIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -214,19 +223,19 @@ export function evaluateLessonsLearnedQuality(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, rootCauseIdentifiedRate: 0, lessonsDocumentedRate: 0, staffBriefingCompletedRate: 0, improvementMeasurableRate: 0 };
+    return { overallScore: 0, totalRecords: 0, rootCauseIdentifiedRate: null, lessonsDocumentedRate: null, staffBriefingCompletedRate: null, improvementMeasurableRate: null };
   }
 
-  const rootCauseIdentifiedRate = pct(records.filter((r) => r.rootCauseIdentified).length, n);
-  const lessonsDocumentedRate = pct(records.filter((r) => r.lessonsDocumented).length, n);
-  const staffBriefingCompletedRate = pct(records.filter((r) => r.staffBriefingCompleted).length, n);
-  const improvementMeasurableRate = pct(records.filter((r) => r.improvementMeasurable).length, n);
+  const rootCauseIdentifiedRate = rate(records.filter((r) => r.rootCauseIdentified).length, n);
+  const lessonsDocumentedRate = rate(records.filter((r) => r.lessonsDocumented).length, n);
+  const staffBriefingCompletedRate = rate(records.filter((r) => r.staffBriefingCompleted).length, n);
+  const improvementMeasurableRate = rate(records.filter((r) => r.improvementMeasurable).length, n);
 
   let score = 0;
-  score += (rootCauseIdentifiedRate / 100) * 7;
-  score += (lessonsDocumentedRate / 100) * 6;
-  score += (staffBriefingCompletedRate / 100) * 6;
-  score += (improvementMeasurableRate / 100) * 6;
+  score += (rootCauseIdentifiedRate! / 100) * 7;
+  score += (lessonsDocumentedRate! / 100) * 6;
+  score += (staffBriefingCompletedRate! / 100) * 6;
+  score += (improvementMeasurableRate! / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -241,21 +250,21 @@ export function evaluateLessonsLearnedCompliance(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: 0, timelyRecordingRate: 0, rootCauseIdentifiedRate: 0, categoryDiversityRatio: 0, uniqueCategories: 0 };
+    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: null, timelyRecordingRate: null, rootCauseIdentifiedRate: null, categoryDiversityRatio: 0, uniqueCategories: 0 };
   }
 
-  const documentationCompleteRate = pct(records.filter((r) => r.documentationComplete).length, n);
-  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, n);
-  const rootCauseIdentifiedRate = pct(records.filter((r) => r.rootCauseIdentified).length, n);
+  const documentationCompleteRate = rate(records.filter((r) => r.documentationComplete).length, n);
+  const timelyRecordingRate = rate(records.filter((r) => r.timelyRecording).length, n);
+  const rootCauseIdentifiedRate = rate(records.filter((r) => r.rootCauseIdentified).length, n);
 
   const uniqueCategoriesSet = new Set(records.map((r) => r.category));
   const uniqueCategories = uniqueCategoriesSet.size;
   const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
 
   let score = 0;
-  score += (documentationCompleteRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (rootCauseIdentifiedRate / 100) * 5;
+  score += (documentationCompleteRate! / 100) * 8;
+  score += (timelyRecordingRate! / 100) * 7;
+  score += (rootCauseIdentifiedRate! / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -301,23 +310,23 @@ export function evaluateStaffLessonsLearnedReadiness(
   const n = training.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalStaff: 0, reflectivePracticeSkillsRate: 0, rootCauseAnalysisKnowledgeRate: 0, documentationSkillsRate: 0, improvementPlanningSkillsRate: 0, debriefFacilitationSkillsRate: 0, knowledgeSharingAbilityRate: 0 };
+    return { overallScore: 0, totalStaff: 0, reflectivePracticeSkillsRate: null, rootCauseAnalysisKnowledgeRate: null, documentationSkillsRate: null, improvementPlanningSkillsRate: null, debriefFacilitationSkillsRate: null, knowledgeSharingAbilityRate: null };
   }
 
-  const reflectivePracticeSkillsRate = pct(training.filter((t) => t.reflectivePracticeSkills).length, n);
-  const rootCauseAnalysisKnowledgeRate = pct(training.filter((t) => t.rootCauseAnalysisKnowledge).length, n);
-  const documentationSkillsRate = pct(training.filter((t) => t.documentationSkills).length, n);
-  const improvementPlanningSkillsRate = pct(training.filter((t) => t.improvementPlanningSkills).length, n);
-  const debriefFacilitationSkillsRate = pct(training.filter((t) => t.debriefFacilitationSkills).length, n);
-  const knowledgeSharingAbilityRate = pct(training.filter((t) => t.knowledgeSharingAbility).length, n);
+  const reflectivePracticeSkillsRate = rate(training.filter((t) => t.reflectivePracticeSkills).length, n);
+  const rootCauseAnalysisKnowledgeRate = rate(training.filter((t) => t.rootCauseAnalysisKnowledge).length, n);
+  const documentationSkillsRate = rate(training.filter((t) => t.documentationSkills).length, n);
+  const improvementPlanningSkillsRate = rate(training.filter((t) => t.improvementPlanningSkills).length, n);
+  const debriefFacilitationSkillsRate = rate(training.filter((t) => t.debriefFacilitationSkills).length, n);
+  const knowledgeSharingAbilityRate = rate(training.filter((t) => t.knowledgeSharingAbility).length, n);
 
   let score = 0;
-  score += (reflectivePracticeSkillsRate / 100) * 6;
-  score += (rootCauseAnalysisKnowledgeRate / 100) * 5;
-  score += (documentationSkillsRate / 100) * 5;
-  score += (improvementPlanningSkillsRate / 100) * 4;
-  score += (debriefFacilitationSkillsRate / 100) * 3;
-  score += (knowledgeSharingAbilityRate / 100) * 2;
+  score += (reflectivePracticeSkillsRate! / 100) * 6;
+  score += (rootCauseAnalysisKnowledgeRate! / 100) * 5;
+  score += (documentationSkillsRate! / 100) * 5;
+  score += (improvementPlanningSkillsRate! / 100) * 4;
+  score += (debriefFacilitationSkillsRate! / 100) * 3;
+  score += (knowledgeSharingAbilityRate! / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -342,8 +351,8 @@ export function buildChildLessonsLearnedProfiles(
 
   return Array.from(childMap.values()).map((child) => {
     const totalRecords = child.records.length;
-    const rootCauseIdentifiedRate = pct(child.records.filter((r) => r.rootCauseIdentified).length, totalRecords);
-    const lessonsDocumentedRate = pct(child.records.filter((r) => r.lessonsDocumented).length, totalRecords);
+    const rootCauseIdentifiedRate = rate(child.records.filter((r) => r.rootCauseIdentified).length, totalRecords)!;
+    const lessonsDocumentedRate = rate(child.records.filter((r) => r.lessonsDocumented).length, totalRecords)!;
     const uniqueCategoriesSet = new Set(child.records.map((r) => r.category));
     const categoriesCovered = Array.from(uniqueCategoriesSet);
 
@@ -352,14 +361,14 @@ export function buildChildLessonsLearnedProfiles(
     else if (totalRecords >= 5) frequencyScore = 1;
 
     let rate1Score = 0;
-    if (rootCauseIdentifiedRate >= 80) rate1Score = 3;
-    else if (rootCauseIdentifiedRate >= 60) rate1Score = 2;
-    else if (rootCauseIdentifiedRate >= 40) rate1Score = 1;
+    if (meets(rootCauseIdentifiedRate, 80)) rate1Score = 3;
+    else if (meets(rootCauseIdentifiedRate, 60)) rate1Score = 2;
+    else if (meets(rootCauseIdentifiedRate, 40)) rate1Score = 1;
 
     let rate2Score = 0;
-    if (lessonsDocumentedRate >= 80) rate2Score = 3;
-    else if (lessonsDocumentedRate >= 60) rate2Score = 2;
-    else if (lessonsDocumentedRate >= 40) rate2Score = 1;
+    if (meets(lessonsDocumentedRate, 80)) rate2Score = 3;
+    else if (meets(lessonsDocumentedRate, 60)) rate2Score = 2;
+    else if (meets(lessonsDocumentedRate, 40)) rate2Score = 1;
 
     let diversityBonus = 0;
     if (categoriesCovered.length >= 4) diversityBonus = 2;
@@ -407,9 +416,9 @@ export function generateLessonsLearnedIntelligence(
   if (complianceResult.overallScore >= 20) strengths.push("Lessons learned compliance is strong (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore >= 20) strengths.push("Lessons learned policy framework is robust (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore >= 20) strengths.push("Staff lessons learned readiness is strong (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.rootCauseIdentifiedRate >= 90) strengths.push("Root cause identification rate at " + qualityResult.rootCauseIdentifiedRate + "%");
-  if (periodRecords.length > 0 && qualityResult.lessonsDocumentedRate >= 90) strengths.push("Lessons documented at " + qualityResult.lessonsDocumentedRate + "%");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate >= 90) strengths.push("Documentation rate at " + complianceResult.documentationCompleteRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.rootCauseIdentifiedRate, 90)) strengths.push("Root cause identification rate at " + qualityResult.rootCauseIdentifiedRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.lessonsDocumentedRate, 90)) strengths.push("Lessons documented at " + qualityResult.lessonsDocumentedRate + "%");
+  if (periodRecords.length > 0 && meets(complianceResult.documentationCompleteRate, 90)) strengths.push("Documentation rate at " + complianceResult.documentationCompleteRate + "%");
 
   const areasForImprovement: string[] = [];
   if (overallScore < 40) areasForImprovement.push("Lessons learned rated Inadequate (" + overallScore + "/100) — urgent systemic review required");
@@ -418,7 +427,7 @@ export function generateLessonsLearnedIntelligence(
   if (complianceResult.overallScore < 15) areasForImprovement.push("Lessons learned compliance needs improvement (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore < 15) areasForImprovement.push("Lessons learned policy needs strengthening (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore < 15) areasForImprovement.push("Staff lessons learned readiness needs improvement (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.rootCauseIdentifiedRate < 80) areasForImprovement.push("Root cause identification at " + qualityResult.rootCauseIdentifiedRate + "% — must improve for learning culture");
+  if (periodRecords.length > 0 && below(qualityResult.rootCauseIdentifiedRate, 80)) areasForImprovement.push("Root cause identification at " + qualityResult.rootCauseIdentifiedRate + "% — must improve for learning culture");
   if (periodRecords.length === 0) areasForImprovement.push("No lessons learned records — lessons must be documented");
   if (policy === null) areasForImprovement.push("No lessons learned policy in place — statutory requirement");
   if (staff.length === 0) areasForImprovement.push("No staff lessons learned training records — training required");
@@ -426,11 +435,11 @@ export function generateLessonsLearnedIntelligence(
   const actions: string[] = [];
   if (policy === null || policyResult.overallScore === 0) actions.push("URGENT: No lessons learned policy — develop and implement comprehensive policy immediately");
   if (staff.length === 0) actions.push("URGENT: No staff lessons learned training — schedule training for all staff");
-  if (periodRecords.length > 0 && qualityResult.rootCauseIdentifiedRate < 50) actions.push("HIGH: Root cause identification at " + qualityResult.rootCauseIdentifiedRate + "% — review analysis processes");
-  if (periodRecords.length > 0 && qualityResult.lessonsDocumentedRate < 50) actions.push("HIGH: Lessons documented at " + qualityResult.lessonsDocumentedRate + "% — ensure lessons are consistently recorded");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate < 50) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all lessons must be recorded");
-  if (periodRecords.length > 0 && complianceResult.timelyRecordingRate < 50) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
-  if (staff.length > 0 && staffResult.reflectivePracticeSkillsRate < 50) actions.push("MEDIUM: Reflective practice skills at " + staffResult.reflectivePracticeSkillsRate + "% — schedule training for staff");
+  if (periodRecords.length > 0 && below(qualityResult.rootCauseIdentifiedRate, 50)) actions.push("HIGH: Root cause identification at " + qualityResult.rootCauseIdentifiedRate + "% — review analysis processes");
+  if (periodRecords.length > 0 && below(qualityResult.lessonsDocumentedRate, 50)) actions.push("HIGH: Lessons documented at " + qualityResult.lessonsDocumentedRate + "% — ensure lessons are consistently recorded");
+  if (periodRecords.length > 0 && below(complianceResult.documentationCompleteRate, 50)) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all lessons must be recorded");
+  if (periodRecords.length > 0 && below(complianceResult.timelyRecordingRate, 50)) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
+  if (staff.length > 0 && below(staffResult.reflectivePracticeSkillsRate, 50)) actions.push("MEDIUM: Reflective practice skills at " + staffResult.reflectivePracticeSkillsRate + "% — schedule training for staff");
   const lowScoreChildren = childProfiles.filter((p) => p.overallScore <= 3);
   if (lowScoreChildren.length > 0) actions.push("MEDIUM: " + lowScoreChildren.length + " child(ren) with low lessons learned scores — review individual learning plans");
   if (actions.length === 0) actions.push("No immediate actions required. Lessons learned systems operating within expected standards.");

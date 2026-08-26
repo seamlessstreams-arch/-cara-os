@@ -4,7 +4,6 @@
 
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   evaluateWarmthCulture,
   evaluateChildExperience,
@@ -99,33 +98,6 @@ const DEMO_STAFF: StaffCultureRecord[] = [
 // ══════════════════════════════════════════════════════════════════════════════
 // 1. pct helper
 // ══════════════════════════════════════════════════════════════════════════════
-
-describe("pct helper", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 100 when num equals den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(1, 2)).toBe(50);
-  });
-
-  it("rounds correctly", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 5)).toBe(0);
-  });
-
-  it("handles large numbers", () => {
-    expect(pct(999, 1000)).toBe(100);
-  });
-});
 
 // ══════════════════════════════════════════════════════════════════════════════
 // 2. getRating
@@ -256,7 +228,7 @@ describe("evaluateWarmthCulture", () => {
     const result = evaluateWarmthCulture([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalObservations).toBe(0);
-    expect(result.excellentGoodRate).toBe(0);
+    expect(result.excellentGoodRate).toBeNull();
     expect(result.warmthScore).toBe(0);
     expect(result.calmScore).toBe(0);
     expect(result.respectScore).toBe(0);
@@ -379,13 +351,13 @@ describe("evaluateChildExperience", () => {
     const result = evaluateChildExperience([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalFeedback).toBe(0);
-    expect(result.positiveRate).toBe(0);
-    expect(result.feelsAtHomeRate).toBe(0);
-    expect(result.feelsListenedToRate).toBe(0);
-    expect(result.feelsSafeRate).toBe(0);
-    expect(result.hasPrivacyRate).toBe(0);
-    expect(result.enjoysLivingRate).toBe(0);
-    expect(result.canBeThemselvesRate).toBe(0);
+    expect(result.positiveRate).toBeNull();
+    expect(result.feelsAtHomeRate).toBeNull();
+    expect(result.feelsListenedToRate).toBeNull();
+    expect(result.feelsSafeRate).toBeNull();
+    expect(result.hasPrivacyRate).toBeNull();
+    expect(result.enjoysLivingRate).toBeNull();
+    expect(result.canBeThemselvesRate).toBeNull();
   });
 
   it("counts total feedback", () => {
@@ -477,12 +449,12 @@ describe("evaluateEnvironmentQuality", () => {
     const result = evaluateEnvironmentQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalAudits).toBe(0);
-    expect(result.cleanRate).toBe(0);
-    expect(result.personalisedRate).toBe(0);
-    expect(result.welcomingRate).toBe(0);
-    expect(result.childContributedRate).toBe(0);
-    expect(result.repairsActionedRate).toBe(0);
-    expect(result.sensoryConsideredRate).toBe(0);
+    expect(result.cleanRate).toBeNull();
+    expect(result.personalisedRate).toBeNull();
+    expect(result.welcomingRate).toBeNull();
+    expect(result.childContributedRate).toBeNull();
+    expect(result.repairsActionedRate).toBeNull();
+    expect(result.sensoryConsideredRate).toBeNull();
   });
 
   it("counts total audits", () => {
@@ -552,7 +524,7 @@ describe("evaluateEnvironmentQuality", () => {
       { id: "p1", auditDate: "2026-01-01", auditor: "Test", area: "communal_lounge", clean: true, personalised: true, welcoming: true, ageAppropriate: true, sensoryConsidered: true, childContributed: true, repairsNeeded: false, repairsActioned: null },
     ];
     const result = evaluateEnvironmentQuality(noRepairs);
-    expect(result.repairsActionedRate).toBe(0);
+    expect(result.repairsActionedRate).toBeNull();
   });
 
   it("handles all repairs actioned", () => {
@@ -580,12 +552,12 @@ describe("evaluateStaffPractice", () => {
     const result = evaluateStaffPractice([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalRecords).toBe(0);
-    expect(result.therapeuticRate).toBe(0);
-    expect(result.childCentredRate).toBe(0);
-    expect(result.warmInteractionRate).toBe(0);
-    expect(result.positiveReinforcementRate).toBe(0);
-    expect(result.reflectiveRate).toBe(0);
-    expect(result.boundariesRate).toBe(0);
+    expect(result.therapeuticRate).toBeNull();
+    expect(result.childCentredRate).toBeNull();
+    expect(result.warmInteractionRate).toBeNull();
+    expect(result.positiveReinforcementRate).toBeNull();
+    expect(result.reflectiveRate).toBeNull();
+    expect(result.boundariesRate).toBeNull();
   });
 
   it("counts total records", () => {

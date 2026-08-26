@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // Independent Living Skills Intelligence Engine
 // Pure deterministic — no AI, no external calls, no randomness, no Date.now()
 
@@ -99,18 +100,26 @@ export interface StaffLivingSkillsTraining {
 export interface LivingSkillsQualityResult {
   overallScore: number;
   totalSessions: number;
-  competencyRate: number;
-  engagementRate: number;
-  progressRate: number;
-  confidenceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  competencyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  engagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  progressRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  confidenceRate: number | null;
 }
 
 export interface LivingSkillsComplianceResult {
   overallScore: number;
-  documentedRate: number;
-  staffSupportedRate: number;
-  feedbackRate: number;
-  skillTypeDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffSupportedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feedbackRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  skillTypeDiversityRatio: number | null;
 }
 
 export interface LivingSkillsPolicyResult {
@@ -127,20 +136,28 @@ export interface LivingSkillsPolicyResult {
 export interface StaffLivingSkillsReadinessResult {
   overallScore: number;
   totalStaff: number;
-  independencePromotionRate: number;
-  practicalSkillsTeachingRate: number;
-  riskEnablementRate: number;
-  pathwayPlanningRate: number;
-  communityAccessRate: number;
-  motivationalApproachesRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  independencePromotionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  practicalSkillsTeachingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskEnablementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  pathwayPlanningRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  communityAccessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  motivationalApproachesRate: number | null;
 }
 
 export interface ChildLivingSkillsProfile {
   childId: string;
   childName: string;
   totalSessions: number;
-  competencyRate: number;
-  engagementRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  competencyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  engagementRate: number | null;
   overallScore: number;
 }
 
@@ -163,11 +180,6 @@ export interface IndependentLivingSkillsIntelligence {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -179,7 +191,7 @@ export function getRating(score: number): Rating {
 
 export function evaluateLivingSkillsQuality(sessions: SkillsSession[]): LivingSkillsQualityResult {
   if (sessions.length === 0) {
-    return { overallScore: 0, totalSessions: 0, competencyRate: 0, engagementRate: 0, progressRate: 0, confidenceRate: 0 };
+    return { overallScore: 0, totalSessions: 0, competencyRate: null, engagementRate: null, progressRate: null, confidenceRate: null };
   }
 
   const total = sessions.length;
@@ -188,15 +200,15 @@ export function evaluateLivingSkillsQuality(sessions: SkillsSession[]): LivingSk
   const progressCount = sessions.filter((s) => s.progressMade).length;
   const confidenceCount = sessions.filter((s) => s.confidenceBuilt).length;
 
-  const competencyRate = pct(competentCount, total);
-  const engagementRate = pct(engagedCount, total);
-  const progressRate = pct(progressCount, total);
-  const confidenceRate = pct(confidenceCount, total);
+  const competencyRate = rate(competentCount, total);
+  const engagementRate = rate(engagedCount, total);
+  const progressRate = rate(progressCount, total);
+  const confidenceRate = rate(confidenceCount, total);
 
-  const compScore = Math.round((competencyRate / 100) * 7);
-  const engScore = Math.round((engagementRate / 100) * 6);
-  const progScore = Math.round((progressRate / 100) * 6);
-  const confScore = Math.round((confidenceRate / 100) * 6);
+  const compScore = Math.round(((competencyRate ?? 0) / 100) * 7);
+  const engScore = Math.round(((engagementRate ?? 0) / 100) * 6);
+  const progScore = Math.round(((progressRate ?? 0) / 100) * 6);
+  const confScore = Math.round(((confidenceRate ?? 0) / 100) * 6);
 
   const overallScore = Math.min(25, compScore + engScore + progScore + confScore);
 
@@ -205,7 +217,7 @@ export function evaluateLivingSkillsQuality(sessions: SkillsSession[]): LivingSk
 
 export function evaluateLivingSkillsCompliance(sessions: SkillsSession[]): LivingSkillsComplianceResult {
   if (sessions.length === 0) {
-    return { overallScore: 0, documentedRate: 0, staffSupportedRate: 0, feedbackRate: 0, skillTypeDiversityRatio: 0 };
+    return { overallScore: 0, documentedRate: null, staffSupportedRate: null, feedbackRate: null, skillTypeDiversityRatio: 0 };
   }
 
   const total = sessions.length;
@@ -213,16 +225,16 @@ export function evaluateLivingSkillsCompliance(sessions: SkillsSession[]): Livin
   const staffCount = sessions.filter((s) => s.staffSupported).length;
   const feedbackCount = sessions.filter((s) => s.feedbackGiven).length;
   const uniqueTypes = new Set(sessions.map((s) => s.skillType)).size;
-  const diversityRatio = pct(uniqueTypes, 8);
+  const diversityRatio = rate(uniqueTypes, 8);
 
-  const documentedRate = pct(documentedCount, total);
-  const staffSupportedRate = pct(staffCount, total);
-  const feedbackRate = pct(feedbackCount, total);
+  const documentedRate = rate(documentedCount, total);
+  const staffSupportedRate = rate(staffCount, total);
+  const feedbackRate = rate(feedbackCount, total);
 
-  const docScore = Math.round((documentedRate / 100) * 8);
-  const staffScore = Math.round((staffSupportedRate / 100) * 7);
-  const fbScore = Math.round((feedbackRate / 100) * 5);
-  const divScore = Math.round((diversityRatio / 100) * 5);
+  const docScore = Math.round(((documentedRate ?? 0) / 100) * 8);
+  const staffScore = Math.round(((staffSupportedRate ?? 0) / 100) * 7);
+  const fbScore = Math.round(((feedbackRate ?? 0) / 100) * 5);
+  const divScore = Math.round((diversityRatio! / 100) * 5);
 
   const overallScore = Math.min(25, docScore + staffScore + fbScore + divScore);
 
@@ -266,7 +278,7 @@ export function evaluateLivingSkillsPolicy(policy: LivingSkillsPolicy | null): L
 
 export function evaluateStaffLivingSkillsReadiness(training: StaffLivingSkillsTraining[]): StaffLivingSkillsReadinessResult {
   if (training.length === 0) {
-    return { overallScore: 0, totalStaff: 0, independencePromotionRate: 0, practicalSkillsTeachingRate: 0, riskEnablementRate: 0, pathwayPlanningRate: 0, communityAccessRate: 0, motivationalApproachesRate: 0 };
+    return { overallScore: 0, totalStaff: 0, independencePromotionRate: null, practicalSkillsTeachingRate: null, riskEnablementRate: null, pathwayPlanningRate: null, communityAccessRate: null, motivationalApproachesRate: null };
   }
 
   const total = training.length;
@@ -277,19 +289,19 @@ export function evaluateStaffLivingSkillsReadiness(training: StaffLivingSkillsTr
   const caCount = training.filter((t) => t.communityAccess).length;
   const maCount = training.filter((t) => t.motivationalApproaches).length;
 
-  const independencePromotionRate = pct(ipCount, total);
-  const practicalSkillsTeachingRate = pct(psCount, total);
-  const riskEnablementRate = pct(reCount, total);
-  const pathwayPlanningRate = pct(ppCount, total);
-  const communityAccessRate = pct(caCount, total);
-  const motivationalApproachesRate = pct(maCount, total);
+  const independencePromotionRate = rate(ipCount, total);
+  const practicalSkillsTeachingRate = rate(psCount, total);
+  const riskEnablementRate = rate(reCount, total);
+  const pathwayPlanningRate = rate(ppCount, total);
+  const communityAccessRate = rate(caCount, total);
+  const motivationalApproachesRate = rate(maCount, total);
 
-  const s1 = Math.round((independencePromotionRate / 100) * 6);
-  const s2 = Math.round((practicalSkillsTeachingRate / 100) * 5);
-  const s3 = Math.round((riskEnablementRate / 100) * 5);
-  const s4 = Math.round((pathwayPlanningRate / 100) * 4);
-  const s5 = Math.round((communityAccessRate / 100) * 3);
-  const s6 = Math.round((motivationalApproachesRate / 100) * 2);
+  const s1 = Math.round(((independencePromotionRate ?? 0) / 100) * 6);
+  const s2 = Math.round(((practicalSkillsTeachingRate ?? 0) / 100) * 5);
+  const s3 = Math.round(((riskEnablementRate ?? 0) / 100) * 5);
+  const s4 = Math.round(((pathwayPlanningRate ?? 0) / 100) * 4);
+  const s5 = Math.round(((communityAccessRate ?? 0) / 100) * 3);
+  const s6 = Math.round(((motivationalApproachesRate ?? 0) / 100) * 2);
 
   const overallScore = Math.min(25, s1 + s2 + s3 + s4 + s5 + s6);
 
@@ -315,22 +327,22 @@ export function buildChildLivingSkillsProfiles(sessions: SkillsSession[]): Child
     const competentCount = sess.filter((s) => s.competencyLevel === "independent" || s.competencyLevel === "mostly_independent").length;
     const engagedCount = sess.filter((s) => s.childEngaged).length;
 
-    const competencyRate = pct(competentCount, total);
-    const engagementRate = pct(engagedCount, total);
+    const competencyRate = rate(competentCount, total);
+    const engagementRate = rate(engagedCount, total);
 
     let freqScore = 0;
     if (total >= 10) freqScore = 2;
     else if (total >= 5) freqScore = 1;
 
     let compScore = 0;
-    if (competencyRate >= 80) compScore = 3;
-    else if (competencyRate >= 60) compScore = 2;
-    else if (competencyRate >= 40) compScore = 1;
+    if (meets(competencyRate, 80)) compScore = 3;
+    else if (meets(competencyRate, 60)) compScore = 2;
+    else if (meets(competencyRate, 40)) compScore = 1;
 
     let engScore = 0;
-    if (engagementRate >= 80) engScore = 3;
-    else if (engagementRate >= 60) engScore = 2;
-    else if (engagementRate >= 40) engScore = 1;
+    if (meets(engagementRate, 80)) engScore = 3;
+    else if (meets(engagementRate, 60)) engScore = 2;
+    else if (meets(engagementRate, 40)) engScore = 1;
 
     const uniqueTypes = new Set(sess.map((s) => s.skillType)).size;
     let divScore = 0;
@@ -369,21 +381,21 @@ export function generateIndependentLivingSkillsIntelligence(
   const areasForImprovement: string[] = [];
   const actions: string[] = [];
 
-  if (livingSkillsQuality.competencyRate >= 80) strengths.push("Strong competency levels — children are developing practical independence skills effectively");
-  if (livingSkillsQuality.engagementRate >= 80) strengths.push("Children are consistently engaged and motivated in living skills sessions");
-  if (livingSkillsQuality.progressRate >= 80) strengths.push("Excellent progress being made across living skills development");
-  if (livingSkillsCompliance.documentedRate >= 80) strengths.push("Living skills development is well documented in care and pathway plans");
+  if (meets(livingSkillsQuality.competencyRate, 80)) strengths.push("Strong competency levels — children are developing practical independence skills effectively");
+  if (meets(livingSkillsQuality.engagementRate, 80)) strengths.push("Children are consistently engaged and motivated in living skills sessions");
+  if (meets(livingSkillsQuality.progressRate, 80)) strengths.push("Excellent progress being made across living skills development");
+  if (meets(livingSkillsCompliance.documentedRate, 80)) strengths.push("Living skills development is well documented in care and pathway plans");
 
-  if (sessions.length > 0 && livingSkillsQuality.competencyRate < 60) areasForImprovement.push("Competency levels need improvement — review teaching approaches and differentiation");
-  if (sessions.length > 0 && livingSkillsQuality.engagementRate < 60) areasForImprovement.push("Child engagement in living skills sessions is low — explore motivational strategies");
-  if (sessions.length > 0 && livingSkillsCompliance.feedbackRate < 60) areasForImprovement.push("Feedback on living skills progress not consistently given — improve review process");
-  if (sessions.length > 0 && livingSkillsQuality.confidenceRate < 60) areasForImprovement.push("Confidence building through living skills is insufficient — embed strengths-based practice");
+  if (sessions.length > 0 && below(livingSkillsQuality.competencyRate, 60)) areasForImprovement.push("Competency levels need improvement — review teaching approaches and differentiation");
+  if (sessions.length > 0 && below(livingSkillsQuality.engagementRate, 60)) areasForImprovement.push("Child engagement in living skills sessions is low — explore motivational strategies");
+  if (sessions.length > 0 && below(livingSkillsCompliance.feedbackRate, 60)) areasForImprovement.push("Feedback on living skills progress not consistently given — improve review process");
+  if (sessions.length > 0 && below(livingSkillsQuality.confidenceRate, 60)) areasForImprovement.push("Confidence building through living skills is insufficient — embed strengths-based practice");
 
   if (sessions.length === 0) actions.push("No living skills session records found — develop and implement independence programme");
   if (!policy) actions.push("URGENT: No living skills policy in place — develop and implement immediately");
   if (training.length === 0) actions.push("URGENT: No staff living skills training recorded — arrange training for all staff");
-  if (sessions.length > 0 && livingSkillsCompliance.staffSupportedRate < 60) actions.push("Improve staff support and involvement in living skills sessions");
-  if (sessions.length > 0 && livingSkillsQuality.progressRate < 60) actions.push("Strengthen progress tracking and outcome measurement for living skills");
+  if (sessions.length > 0 && below(livingSkillsCompliance.staffSupportedRate, 60)) actions.push("Improve staff support and involvement in living skills sessions");
+  if (sessions.length > 0 && below(livingSkillsQuality.progressRate, 60)) actions.push("Strengthen progress tracking and outcome measurement for living skills");
 
   const regulatoryLinks: string[] = [
     "CHR 2015 Regulation 5 — Engaging with the wider community",

@@ -11,7 +11,6 @@ import {
   evaluateInformationGovernance,
   buildStaffCommunicationProfiles,
   generateHandoverCommunicationQualityIntelligence,
-  pct,
   getRating,
   getHandoverTypeLabel,
   getHandoverFormatLabel,
@@ -115,28 +114,6 @@ function makeAssessment(
 }
 
 // ── pct ──────────────────────────────────────────────────────────────────
-
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("calculates correct percentage", () => {
-    expect(pct(3, 4)).toBe(75);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-
-  it("returns 100 for equal numerator and denominator", () => {
-    expect(pct(5, 5)).toBe(100);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-});
 
 // ── getRating ────────────────────────────────────────────────────────────
 
@@ -244,11 +221,11 @@ describe("evaluateHandoverQuality", () => {
     const result = evaluateHandoverQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalHandovers).toBe(0);
-    expect(result.thoroughRate).toBe(0);
-    expect(result.childUpdatesRate).toBe(0);
-    expect(result.riskUpdatesRate).toBe(0);
-    expect(result.medicationUpdatesRate).toBe(0);
-    expect(result.timelinessRate).toBe(0);
+    expect(result.thoroughRate).toBeNull();
+    expect(result.childUpdatesRate).toBeNull();
+    expect(result.riskUpdatesRate).toBeNull();
+    expect(result.medicationUpdatesRate).toBeNull();
+    expect(result.timelinessRate).toBeNull();
     expect(result.averageDuration).toBe(0);
   });
 
@@ -359,9 +336,9 @@ describe("evaluateCommunicationEffectiveness", () => {
     const result = evaluateCommunicationEffectiveness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalCommunications).toBe(0);
-    expect(result.acknowledgedRate).toBe(0);
-    expect(result.actionCompletionRate).toBe(0);
-    expect(result.criticalAcknowledgedRate).toBe(0);
+    expect(result.acknowledgedRate).toBeNull();
+    expect(result.actionCompletionRate).toBeNull();
+    expect(result.criticalAcknowledgedRate).toBeNull();
     expect(result.averageResponseTime).toBeNull();
   });
 
@@ -541,11 +518,11 @@ describe("evaluateTeamMeetingQuality", () => {
     expect(result.overallScore).toBe(0);
     expect(result.totalMeetings).toBe(0);
     expect(result.averageAttendance).toBe(0);
-    expect(result.agendaUsedRate).toBe(0);
-    expect(result.minutesTakenRate).toBe(0);
-    expect(result.actionCompletionRate).toBe(0);
-    expect(result.childrenDiscussedRate).toBe(0);
-    expect(result.safeguardingRate).toBe(0);
+    expect(result.agendaUsedRate).toBeNull();
+    expect(result.minutesTakenRate).toBeNull();
+    expect(result.actionCompletionRate).toBeNull();
+    expect(result.childrenDiscussedRate).toBeNull();
+    expect(result.safeguardingRate).toBeNull();
   });
 
   it("returns max score for perfect meetings", () => {
@@ -619,7 +596,7 @@ describe("evaluateTeamMeetingQuality", () => {
     expect(result.actionCompletionRate).toBe(80);
   });
 
-  it("returns 0 action completion when no actions generated", () => {
+  it("returns null action completion when no actions generated", () => {
     const meetings = [
       makeMeeting({
         actionPointsGenerated: 0,
@@ -627,7 +604,7 @@ describe("evaluateTeamMeetingQuality", () => {
       }),
     ];
     const result = evaluateTeamMeetingQuality(meetings);
-    expect(result.actionCompletionRate).toBe(0);
+    expect(result.actionCompletionRate).toBeNull();
   });
 
   it("counts total meetings", () => {
@@ -661,12 +638,12 @@ describe("evaluateInformationGovernance", () => {
     const result = evaluateInformationGovernance([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalAssessments).toBe(0);
-    expect(result.dataProtectionRate).toBe(0);
-    expect(result.secureStorageRate).toBe(0);
-    expect(result.needToKnowRate).toBe(0);
-    expect(result.consentRate).toBe(0);
-    expect(result.staffTrainedRate).toBe(0);
-    expect(result.breachProcessRate).toBe(0);
+    expect(result.dataProtectionRate).toBeNull();
+    expect(result.secureStorageRate).toBeNull();
+    expect(result.needToKnowRate).toBeNull();
+    expect(result.consentRate).toBeNull();
+    expect(result.staffTrainedRate).toBeNull();
+    expect(result.breachProcessRate).toBeNull();
   });
 
   it("returns max score for fully compliant assessments", () => {

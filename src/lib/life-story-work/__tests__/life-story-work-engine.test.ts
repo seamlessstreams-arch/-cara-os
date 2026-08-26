@@ -10,7 +10,6 @@ import {
   evaluateLifeStoryPolicy,
   evaluateStaffLifeStoryReadiness,
   buildChildLifeStoryProfiles,
-  pct,
   getRating,
   getSessionTypeLabel,
   getEngagementLevelLabel,
@@ -97,27 +96,6 @@ function makeTraining(overrides: Partial<StaffLifeStoryTraining> = {}): StaffLif
 // pct()
 // =============================================================================
 
-describe("pct", () => {
-  it("returns percentage rounded to integer", () => {
-    expect(pct(3, 4)).toBe(75);
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(0, 0)).toBe(0);
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 100 when num equals den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 0 when num is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-});
-
 // =============================================================================
 // getRating()
 // =============================================================================
@@ -196,11 +174,11 @@ describe("evaluateSessionQuality", () => {
     const r = evaluateSessionQuality([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalSessions).toBe(0);
-    expect(r.engagementRate).toBe(0);
-    expect(r.therapeuticRate).toBe(0);
-    expect(r.childLedRate).toBe(0);
-    expect(r.recordedRate).toBe(0);
-    expect(r.followUpRate).toBe(0);
+    expect(r.engagementRate).toBeNull();
+    expect(r.therapeuticRate).toBeNull();
+    expect(r.childLedRate).toBeNull();
+    expect(r.recordedRate).toBeNull();
+    expect(r.followUpRate).toBeNull();
   });
 
   it("scores 25 for perfect sessions", () => {
@@ -302,9 +280,9 @@ describe("evaluateMemoryRecordKeeping", () => {
     const r = evaluateMemoryRecordKeeping([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalItems).toBe(0);
-    expect(r.secureStorageRate).toBe(0);
-    expect(r.childAccessRate).toBe(0);
-    expect(r.qualityCheckedRate).toBe(0);
+    expect(r.secureStorageRate).toBeNull();
+    expect(r.childAccessRate).toBeNull();
+    expect(r.qualityCheckedRate).toBeNull();
   });
 
   it("scores 25 for perfect records", () => {
@@ -503,12 +481,12 @@ describe("evaluateStaffLifeStoryReadiness", () => {
     const r = evaluateStaffLifeStoryReadiness([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalStaff).toBe(0);
-    expect(r.lifeStoryWorkRate).toBe(0);
-    expect(r.therapeuticNarrativeRate).toBe(0);
-    expect(r.traumaInformedRate).toBe(0);
-    expect(r.culturalSensitivityRate).toBe(0);
-    expect(r.childLedApproachRate).toBe(0);
-    expect(r.memoryKeepingRate).toBe(0);
+    expect(r.lifeStoryWorkRate).toBeNull();
+    expect(r.therapeuticNarrativeRate).toBeNull();
+    expect(r.traumaInformedRate).toBeNull();
+    expect(r.culturalSensitivityRate).toBeNull();
+    expect(r.childLedApproachRate).toBeNull();
+    expect(r.memoryKeepingRate).toBeNull();
   });
 
   it("scores 25 for fully trained staff", () => {

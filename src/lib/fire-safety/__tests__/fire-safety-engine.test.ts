@@ -4,7 +4,6 @@
 
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getFireSafetyCategoryLabel,
   getFireSafetyOutcomeLabel,
@@ -73,29 +72,6 @@ function makeTraining(overrides: Partial<FireSafetyStaffTraining> = {}): FireSaf
 // ══════════════════════════════════════════════════════════════════════════════
 // pct helper
 // ══════════════════════════════════════════════════════════════════════════════
-
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when both are 0", () => {
-    expect(pct(0, 0)).toBe(0);
-  });
-
-  it("returns 100 when num equals den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-});
 
 // ══════════════════════════════════════════════════════════════════════════════
 // getRating helper
@@ -168,10 +144,10 @@ describe("evaluateFireSafetyQuality", () => {
     const result = evaluateFireSafetyQuality([]);
     expect(result.totalRecords).toBe(0);
     expect(result.score).toBe(0);
-    expect(result.drillCompletedSuccessfullyRate).toBe(0);
-    expect(result.allChildrenAccountedRate).toBe(0);
-    expect(result.evacuationTimeRecordedRate).toBe(0);
-    expect(result.equipmentFunctionalRate).toBe(0);
+    expect(result.drillCompletedSuccessfullyRate).toBeNull();
+    expect(result.allChildrenAccountedRate).toBeNull();
+    expect(result.evacuationTimeRecordedRate).toBeNull();
+    expect(result.equipmentFunctionalRate).toBeNull();
     expect(result.concerns).toHaveLength(1);
   });
 
@@ -306,8 +282,8 @@ describe("evaluateFireSafetyCompliance", () => {
     const result = evaluateFireSafetyCompliance([]);
     expect(result.totalRecords).toBe(0);
     expect(result.score).toBe(0);
-    expect(result.documentationRate).toBe(0);
-    expect(result.timelyRecordingRate).toBe(0);
+    expect(result.documentationRate).toBeNull();
+    expect(result.timelyRecordingRate).toBeNull();
     expect(result.categoryDiversityRatio).toBe(0);
     expect(result.concerns).toHaveLength(1);
   });
@@ -610,7 +586,7 @@ describe("evaluateFireSafetyStaffReadiness", () => {
     const result = evaluateFireSafetyStaffReadiness([]);
     expect(result.totalStaff).toBe(0);
     expect(result.score).toBe(0);
-    expect(result.fireWardenTrainingRate).toBe(0);
+    expect(result.fireWardenTrainingRate).toBeNull();
     expect(result.concerns).toHaveLength(1);
     expect(result.concerns[0]).toContain("URGENT");
   });

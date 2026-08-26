@@ -6,7 +6,6 @@ import {
   evaluateStaffHouseMeetingReadiness,
   buildChildHouseMeetingProfiles,
   generateHouseMeetingsIntelligence,
-  pct,
   getRating,
   getHouseMeetingCategoryLabel,
   getHouseMeetingOutcomeLabel,
@@ -84,25 +83,6 @@ function makeStaff(overrides: Partial<StaffHouseMeetingTraining> = {}): StaffHou
 // pct helper
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("pct", () => {
-  it("returns percentage", () => {
-    expect(pct(3, 4)).toBe(75);
-  });
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-  it("returns 100 for equal values", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-  it("returns 0 for zero numerator", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-});
-
 // ══════════════════════════════════════════════════════════════════════════════
 // getRating
 // ══════════════════════════════════════════════════════════════════════════════
@@ -160,7 +140,7 @@ describe("evaluateHouseMeetingQuality", () => {
     const result = evaluateHouseMeetingQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalMeetings).toBe(0);
-    expect(result.childAgendaContributionRate).toBe(0);
+    expect(result.childAgendaContributionRate).toBeNull();
   });
 
   it("returns 0 when all flags are false", () => {

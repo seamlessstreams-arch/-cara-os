@@ -35,7 +35,6 @@ export {
   evaluateIncidentPolicy,
   evaluateStaffIncidentReadiness,
   buildChildIncidentProfiles,
-  pct,
   getRating,
   getIncidentCategoryLabel,
   getIncidentOutcomeLabel,

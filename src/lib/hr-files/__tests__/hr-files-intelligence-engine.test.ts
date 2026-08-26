@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getHrFilesCategoryLabel,
   getHrFilesOutcomeLabel,
@@ -67,32 +66,6 @@ function makeTraining(overrides: Partial<StaffHrFilesTraining> = {}): StaffHrFil
 }
 
 // ── pct ────────────────────────────────────────────────────────────────────
-
-describe("pct", () => {
-  it("returns 0 for zero denominator", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 for 0/0", () => {
-    expect(pct(0, 0)).toBe(0);
-  });
-
-  it("returns 100 for equal values", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-
-  it("rounds correctly", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-
-  it("handles large numbers", () => {
-    expect(pct(999, 1000)).toBe(100);
-  });
-});
 
 // ── getRating ──────────────────────────────────────────────────────────────
 
@@ -187,10 +160,10 @@ describe("evaluateHrFilesQuality", () => {
     const result = evaluateHrFilesQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalRecords).toBe(0);
-    expect(result.recordAccurateRate).toBe(0);
-    expect(result.signaturesObtainedRate).toBe(0);
-    expect(result.actionPointsDocumentedRate).toBe(0);
-    expect(result.timeframesMetRate).toBe(0);
+    expect(result.recordAccurateRate).toBeNull();
+    expect(result.signaturesObtainedRate).toBeNull();
+    expect(result.actionPointsDocumentedRate).toBeNull();
+    expect(result.timeframesMetRate).toBeNull();
   });
 
   it("returns 25 for all-true records", () => {
@@ -262,9 +235,9 @@ describe("evaluateHrFilesCompliance", () => {
     const result = evaluateHrFilesCompliance([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalRecords).toBe(0);
-    expect(result.documentationCompleteRate).toBe(0);
-    expect(result.timelyRecordingRate).toBe(0);
-    expect(result.recordAccurateRate).toBe(0);
+    expect(result.documentationCompleteRate).toBeNull();
+    expect(result.timelyRecordingRate).toBeNull();
+    expect(result.recordAccurateRate).toBeNull();
     expect(result.categoryDiversityRatio).toBe(0);
     expect(result.uniqueCategories).toBe(0);
   });
@@ -457,12 +430,12 @@ describe("evaluateStaffHrFilesReadiness", () => {
     const result = evaluateStaffHrFilesReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.hrPolicyKnowledgeRate).toBe(0);
-    expect(result.supervisionSkillsRate).toBe(0);
-    expect(result.saferRecruitmentKnowledgeRate).toBe(0);
-    expect(result.trainingComplianceSkillsRate).toBe(0);
-    expect(result.absenceManagementSkillsRate).toBe(0);
-    expect(result.performanceReviewSkillsRate).toBe(0);
+    expect(result.hrPolicyKnowledgeRate).toBeNull();
+    expect(result.supervisionSkillsRate).toBeNull();
+    expect(result.saferRecruitmentKnowledgeRate).toBeNull();
+    expect(result.trainingComplianceSkillsRate).toBeNull();
+    expect(result.absenceManagementSkillsRate).toBeNull();
+    expect(result.performanceReviewSkillsRate).toBeNull();
   });
 
   it("returns 25 for all-true training", () => {

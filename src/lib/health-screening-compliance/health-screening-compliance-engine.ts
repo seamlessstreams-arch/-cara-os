@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // HEALTH SCREENING COMPLIANCE INTELLIGENCE ENGINE
 //
@@ -128,11 +129,14 @@ export interface HealthTraining {
 export interface ScreeningComplianceResult {
   overallScore: number;
   totalScreenings: number;
-  onTimeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  onTimeRate: number | null;
   overdueCount: number;
   declinedCount: number;
-  referralFollowUpRate: number;
-  documentedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  referralFollowUpRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
   typeDistribution: Record<ScreeningType, number>;
   outcomeDistribution: Record<ScreeningOutcome, number>;
 }
@@ -140,9 +144,12 @@ export interface ScreeningComplianceResult {
 export interface GPAccessResult {
   overallScore: number;
   totalChildren: number;
-  registeredRate: number;
-  namedNurseRate: number;
-  healthPassportRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  registeredRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  namedNurseRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  healthPassportRate: number | null;
   pendingRegistrations: number;
   notRegisteredCount: number;
 }
@@ -150,23 +157,34 @@ export interface GPAccessResult {
 export interface HealthPlanningResult {
   overallScore: number;
   totalPlans: number;
-  needsAddressedRate: number;
-  childContributionRate: number;
-  socialWorkerInformedRate: number;
-  sdqCompletionRate: number;
-  reviewRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  needsAddressedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childContributionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  socialWorkerInformedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  sdqCompletionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reviewRate: number | null;
   averageSDQScore: number | null;
 }
 
 export interface StaffHealthReadinessResult {
   overallScore: number;
   totalStaff: number;
-  firstAidRate: number;
-  medicationTrainedRate: number;
-  mentalHealthRate: number;
-  epilepsyRate: number;
-  allergyRate: number;
-  healthPromotionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  firstAidRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  medicationTrainedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  mentalHealthRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  epilepsyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  allergyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  healthPromotionRate: number | null;
 }
 
 export interface ChildHealthProfile {
@@ -199,11 +217,6 @@ export interface HealthScreeningComplianceIntelligence {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -317,11 +330,11 @@ export function evaluateScreeningCompliance(
     return {
       overallScore: 0,
       totalScreenings: 0,
-      onTimeRate: 0,
+      onTimeRate: null,
       overdueCount: 0,
       declinedCount: 0,
-      referralFollowUpRate: 0,
-      documentedRate: 0,
+      referralFollowUpRate: null,
+      documentedRate: null,
       typeDistribution,
       outcomeDistribution,
     };
@@ -352,16 +365,16 @@ export function evaluateScreeningCompliance(
     if (s.documentedInCareFile) documented++;
   }
 
-  const onTimeRate = pct(onTime, screenings.length);
-  const referralFollowUpRate = pct(referralsFollowed, referralsMade);
-  const documentedRate = pct(documented, screenings.length);
+  const onTimeRate = rate(onTime, screenings.length);
+  const referralFollowUpRate = rate(referralsFollowed, referralsMade);
+  const documentedRate = rate(documented, screenings.length);
 
   // Scoring: on-time rate (0-8), documented (0-6), referral follow-up (0-5),
   // low overdue penalty (0-3), low declined penalty (0-3)
   let score = 0;
-  score += Math.round((onTimeRate / 100) * 8);
-  score += Math.round((documentedRate / 100) * 6);
-  score += Math.round((referralFollowUpRate / 100) * 5);
+  score += Math.round(((onTimeRate ?? 0) / 100) * 8);
+  score += Math.round(((documentedRate ?? 0) / 100) * 6);
+  score += Math.round(((referralFollowUpRate ?? 0) / 100) * 5);
   // Bonus for few overdues: 3 if 0, 2 if 1, 1 if 2, 0 if 3+
   score += Math.max(0, 3 - overdue);
   // Bonus for few declines: 3 if 0, 2 if 1, 1 if 2, 0 if 3+
@@ -387,9 +400,9 @@ export function evaluateGPAccess(
     return {
       overallScore: 0,
       totalChildren: 0,
-      registeredRate: 0,
-      namedNurseRate: 0,
-      healthPassportRate: 0,
+      registeredRate: null,
+      namedNurseRate: null,
+      healthPassportRate: null,
       pendingRegistrations: 0,
       notRegisteredCount: 0,
     };
@@ -409,16 +422,16 @@ export function evaluateGPAccess(
     if (r.healthPassportUpToDate) healthPassport++;
   }
 
-  const registeredRate = pct(registered, registrations.length);
-  const namedNurseRate = pct(namedNurse, registrations.length);
-  const healthPassportRate = pct(healthPassport, registrations.length);
+  const registeredRate = rate(registered, registrations.length);
+  const namedNurseRate = rate(namedNurse, registrations.length);
+  const healthPassportRate = rate(healthPassport, registrations.length);
 
   // Scoring: registered rate (0-8), health passport (0-6), named nurse (0-5),
   // penalty per not_registered: -3 each (capped)
   let score = 0;
-  score += Math.round((registeredRate / 100) * 8);
-  score += Math.round((healthPassportRate / 100) * 6);
-  score += Math.round((namedNurseRate / 100) * 5);
+  score += Math.round((registeredRate! / 100) * 8);
+  score += Math.round((healthPassportRate! / 100) * 6);
+  score += Math.round((namedNurseRate! / 100) * 5);
   // Bonus for no pending/not registered: up to 6
   score += Math.max(0, 3 - pending);
   score += Math.max(0, 3 - notRegistered);
@@ -441,11 +454,11 @@ export function evaluateHealthPlanning(
     return {
       overallScore: 0,
       totalPlans: 0,
-      needsAddressedRate: 0,
-      childContributionRate: 0,
-      socialWorkerInformedRate: 0,
-      sdqCompletionRate: 0,
-      reviewRate: 0,
+      needsAddressedRate: null,
+      childContributionRate: null,
+      socialWorkerInformedRate: null,
+      sdqCompletionRate: null,
+      reviewRate: null,
       averageSDQScore: null,
     };
   }
@@ -472,21 +485,21 @@ export function evaluateHealthPlanning(
     }
   }
 
-  const needsAddressedRate = pct(totalAddressed, totalNeeds);
-  const childContributionRate = pct(childContributed, plans.length);
-  const socialWorkerInformedRate = pct(swInformed, plans.length);
-  const sdqCompletionRate = pct(sdqCompleted, plans.length);
-  const reviewRate = pct(reviewed, plans.length);
+  const needsAddressedRate = rate(totalAddressed, totalNeeds);
+  const childContributionRate = rate(childContributed, plans.length);
+  const socialWorkerInformedRate = rate(swInformed, plans.length);
+  const sdqCompletionRate = rate(sdqCompleted, plans.length);
+  const reviewRate = rate(reviewed, plans.length);
   const averageSDQScore = sdqCount > 0 ? Math.round((sdqTotal / sdqCount) * 10) / 10 : null;
 
   // Scoring: needs addressed (0-7), child contribution (0-5), SDQ completion (0-5),
   // social worker informed (0-4), review rate (0-4)
   let score = 0;
-  score += Math.round((needsAddressedRate / 100) * 7);
-  score += Math.round((childContributionRate / 100) * 5);
-  score += Math.round((sdqCompletionRate / 100) * 5);
-  score += Math.round((socialWorkerInformedRate / 100) * 4);
-  score += Math.round((reviewRate / 100) * 4);
+  score += Math.round(((needsAddressedRate ?? 0) / 100) * 7);
+  score += Math.round(((childContributionRate ?? 0) / 100) * 5);
+  score += Math.round(((sdqCompletionRate ?? 0) / 100) * 5);
+  score += Math.round(((socialWorkerInformedRate ?? 0) / 100) * 4);
+  score += Math.round(((reviewRate ?? 0) / 100) * 4);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -507,12 +520,12 @@ export function evaluateStaffHealthReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      firstAidRate: 0,
-      medicationTrainedRate: 0,
-      mentalHealthRate: 0,
-      epilepsyRate: 0,
-      allergyRate: 0,
-      healthPromotionRate: 0,
+      firstAidRate: null,
+      medicationTrainedRate: null,
+      mentalHealthRate: null,
+      epilepsyRate: null,
+      allergyRate: null,
+      healthPromotionRate: null,
     };
   }
 
@@ -532,22 +545,22 @@ export function evaluateStaffHealthReadiness(
     if (t.healthPromotionTrained) healthPromo++;
   }
 
-  const firstAidRate = pct(firstAid, training.length);
-  const medicationTrainedRate = pct(medication, training.length);
-  const mentalHealthRate = pct(mentalHealth, training.length);
-  const epilepsyRate = pct(epilepsy, training.length);
-  const allergyRate = pct(allergy, training.length);
-  const healthPromotionRate = pct(healthPromo, training.length);
+  const firstAidRate = rate(firstAid, training.length);
+  const medicationTrainedRate = rate(medication, training.length);
+  const mentalHealthRate = rate(mentalHealth, training.length);
+  const epilepsyRate = rate(epilepsy, training.length);
+  const allergyRate = rate(allergy, training.length);
+  const healthPromotionRate = rate(healthPromo, training.length);
 
   // Scoring: first aid (0-7), medication (0-6), mental health first aid (0-5),
   // epilepsy (0-3), allergy (0-2), health promotion (0-2)
   let score = 0;
-  score += Math.round((firstAidRate / 100) * 7);
-  score += Math.round((medicationTrainedRate / 100) * 6);
-  score += Math.round((mentalHealthRate / 100) * 5);
-  score += Math.round((epilepsyRate / 100) * 3);
-  score += Math.round((allergyRate / 100) * 2);
-  score += Math.round((healthPromotionRate / 100) * 2);
+  score += Math.round((firstAidRate! / 100) * 7);
+  score += Math.round(((medicationTrainedRate ?? 0) / 100) * 6);
+  score += Math.round(((mentalHealthRate ?? 0) / 100) * 5);
+  score += Math.round(((epilepsyRate ?? 0) / 100) * 3);
+  score += Math.round(((allergyRate ?? 0) / 100) * 2);
+  score += Math.round(((healthPromotionRate ?? 0) / 100) * 2);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -603,7 +616,7 @@ export function buildChildHealthProfiles(
       totalNeeds += p.healthNeedsIdentified;
       totalAddressed += p.healthNeedsAddressed;
     }
-    const needsAddressedRate = pct(totalAddressed, totalNeeds);
+    const needsAddressedRate = rate(totalAddressed, totalNeeds)!;
 
     // Latest SDQ
     const sdqPlans = childPlans.filter((p) => p.SDQScore !== null);
@@ -617,7 +630,7 @@ export function buildChildHealthProfiles(
     if (hasHealthPassport) score += 1;
     if (overdueCount === 0) score += 2;
     score += Math.min(2, Math.round((completed / Math.max(childScreenings.length, 1)) * 2));
-    score += Math.min(2, Math.round((needsAddressedRate / 100) * 2));
+    score += Math.min(2, Math.round(((needsAddressedRate ?? 0) / 100) * 2));
     if (latestSDQ !== null && latestSDQ <= 13) score += 1; // Normal SDQ range
 
     return {
@@ -663,23 +676,23 @@ export function generateHealthScreeningComplianceIntelligence(
 
   // ── Strengths ──
   const strengths: string[] = [];
-  if (screeningCompliance.onTimeRate >= 90)
+  if (meets(screeningCompliance.onTimeRate, 90))
     strengths.push("Excellent screening compliance with " + screeningCompliance.onTimeRate + "% completed on time");
   if (gpAccess.registeredRate === 100)
     strengths.push("All children registered with a GP");
-  if (gpAccess.healthPassportRate >= 90)
+  if (meets(gpAccess.healthPassportRate, 90))
     strengths.push("Health passports well maintained across the home");
-  if (healthPlanning.childContributionRate >= 80)
+  if (meets(healthPlanning.childContributionRate, 80))
     strengths.push("Strong child voice in health planning with " + healthPlanning.childContributionRate + "% contribution rate");
-  if (healthPlanning.sdqCompletionRate >= 90)
+  if (meets(healthPlanning.sdqCompletionRate, 90))
     strengths.push("Consistent SDQ completion supporting emotional wellbeing monitoring");
   if (staffHealthReadiness.firstAidRate === 100)
     strengths.push("All staff hold current first aid certification");
-  if (staffHealthReadiness.mentalHealthRate >= 75)
+  if (meets(staffHealthReadiness.mentalHealthRate, 75))
     strengths.push("Good proportion of staff trained in mental health first aid");
   if (screeningCompliance.referralFollowUpRate === 100 && screenings.some((s) => s.referralMade))
     strengths.push("All health referrals followed up appropriately");
-  if (screeningCompliance.documentedRate >= 95)
+  if (meets(screeningCompliance.documentedRate, 95))
     strengths.push("Health screenings consistently documented in care files");
 
   // ── Areas for Improvement ──
@@ -688,15 +701,15 @@ export function generateHealthScreeningComplianceIntelligence(
     areasForImprovement.push(screeningCompliance.overdueCount + " health screening(s) currently overdue requiring immediate attention");
   if (gpAccess.notRegisteredCount > 0)
     areasForImprovement.push(gpAccess.notRegisteredCount + " child(ren) not registered with a GP");
-  if (gpAccess.namedNurseRate < 100)
+  if (below(gpAccess.namedNurseRate, 100))
     areasForImprovement.push("Not all children have a named nurse — currently " + gpAccess.namedNurseRate + "%");
-  if (healthPlanning.needsAddressedRate < 80)
+  if (below(healthPlanning.needsAddressedRate, 80))
     areasForImprovement.push("Health needs addressed rate at " + healthPlanning.needsAddressedRate + "% — target 80%+");
-  if (healthPlanning.sdqCompletionRate < 80)
+  if (below(healthPlanning.sdqCompletionRate, 80))
     areasForImprovement.push("SDQ completion rate at " + healthPlanning.sdqCompletionRate + "% — consider embedding into review cycle");
-  if (staffHealthReadiness.firstAidRate < 100)
+  if (below(staffHealthReadiness.firstAidRate, 100))
     areasForImprovement.push("First aid certification not current for all staff — " + staffHealthReadiness.firstAidRate + "%");
-  if (staffHealthReadiness.medicationTrainedRate < 80)
+  if (below(staffHealthReadiness.medicationTrainedRate, 80))
     areasForImprovement.push("Medication training coverage at " + staffHealthReadiness.medicationTrainedRate + "% — aim for 80%+");
   if (screeningCompliance.declinedCount > 0)
     areasForImprovement.push(screeningCompliance.declinedCount + " screening(s) declined — review consent and engagement approach");
@@ -709,15 +722,15 @@ export function generateHealthScreeningComplianceIntelligence(
     actions.push("URGENT: Address " + screeningCompliance.overdueCount + " overdue screenings — schedule within 5 working days");
   if (screeningCompliance.overdueCount > 0 && screeningCompliance.overdueCount < 3)
     actions.push("Schedule outstanding overdue screening(s) within 10 working days");
-  if (staffHealthReadiness.firstAidRate < 75)
-    actions.push("URGENT: Arrange first aid training — " + (100 - staffHealthReadiness.firstAidRate) + "% of staff uncertified");
-  if (healthPlanning.reviewRate < 80)
+  if (below(staffHealthReadiness.firstAidRate, 75))
+    actions.push("URGENT: Arrange first aid training — " + (100 - staffHealthReadiness.firstAidRate!) + "% of staff uncertified");
+  if (below(healthPlanning.reviewRate, 80))
     actions.push("Review health action plans due for review — current rate " + healthPlanning.reviewRate + "%");
-  if (gpAccess.healthPassportRate < 80)
+  if (below(gpAccess.healthPassportRate, 80))
     actions.push("Update health passports for all children — current rate " + gpAccess.healthPassportRate + "%");
-  if (healthPlanning.childContributionRate < 60)
+  if (below(healthPlanning.childContributionRate, 60))
     actions.push("Strengthen child participation in health planning — explore age-appropriate methods");
-  if (staffHealthReadiness.mentalHealthRate < 50)
+  if (below(staffHealthReadiness.mentalHealthRate, 50))
     actions.push("Book mental health first aid training for staff — only " + staffHealthReadiness.mentalHealthRate + "% trained");
   if (screeningCompliance.declinedCount > 2)
     actions.push("Review consent and engagement strategies for children declining health screenings");

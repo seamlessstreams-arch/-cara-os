@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getMealTypeLabel,
   getNutritionRatingLabel,
@@ -75,16 +74,6 @@ function makeTraining(overrides: Partial<StaffNutritionTraining> = {}): StaffNut
 
 // -- pct -----------------------------------------------------------------------
 
-describe("pct", () => {
-  it("returns 0 for zero denominator", () => expect(pct(5, 0)).toBe(0));
-  it("rounds correctly", () => expect(pct(1, 3)).toBe(33));
-  it("returns 100 for equal values", () => expect(pct(10, 10)).toBe(100));
-  it("returns 50 for half", () => expect(pct(5, 10)).toBe(50));
-  it("returns 0 for zero numerator", () => expect(pct(0, 10)).toBe(0));
-  it("handles large numbers", () => expect(pct(999, 1000)).toBe(100));
-  it("rounds 2/3 to 67", () => expect(pct(2, 3)).toBe(67));
-});
-
 // -- getRating -----------------------------------------------------------------
 
 describe("getRating", () => {
@@ -128,10 +117,10 @@ describe("evaluateMealQuality", () => {
     const r = evaluateMealQuality([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalRecords).toBe(0);
-    expect(r.nutritionRate).toBe(0);
-    expect(r.dietaryNeedsMetRate).toBe(0);
-    expect(r.childChoiceRate).toBe(0);
-    expect(r.freshIngredientsRate).toBe(0);
+    expect(r.nutritionRate).toBeNull();
+    expect(r.dietaryNeedsMetRate).toBeNull();
+    expect(r.childChoiceRate).toBeNull();
+    expect(r.freshIngredientsRate).toBeNull();
   });
 
   it("returns max score for all-excellent records", () => {
@@ -264,9 +253,9 @@ describe("evaluateNutritionCompliance", () => {
     const r = evaluateNutritionCompliance([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalRecords).toBe(0);
-    expect(r.portionAppropriateRate).toBe(0);
-    expect(r.documentedRate).toBe(0);
-    expect(r.childSatisfiedRate).toBe(0);
+    expect(r.portionAppropriateRate).toBeNull();
+    expect(r.documentedRate).toBeNull();
+    expect(r.childSatisfiedRate).toBeNull();
     expect(r.mealTypeDiversity).toBe(0);
   });
 
@@ -538,12 +527,12 @@ describe("evaluateStaffNutritionReadiness", () => {
     const r = evaluateStaffNutritionReadiness([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalStaff).toBe(0);
-    expect(r.foodHygieneRate).toBe(0);
-    expect(r.nutritionalPlanningRate).toBe(0);
-    expect(r.allergyAwarenessRate).toBe(0);
-    expect(r.culturalDietaryNeedsRate).toBe(0);
-    expect(r.portionControlRate).toBe(0);
-    expect(r.mealPreparationRate).toBe(0);
+    expect(r.foodHygieneRate).toBeNull();
+    expect(r.nutritionalPlanningRate).toBeNull();
+    expect(r.allergyAwarenessRate).toBeNull();
+    expect(r.culturalDietaryNeedsRate).toBeNull();
+    expect(r.portionControlRate).toBeNull();
+    expect(r.mealPreparationRate).toBeNull();
   });
 
   it("returns max score for fully trained staff", () => {

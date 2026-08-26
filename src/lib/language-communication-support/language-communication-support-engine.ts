@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // LANGUAGE, COMMUNICATION & SUPPORT INTELLIGENCE ENGINE
 //
@@ -114,39 +115,56 @@ export interface StaffCommunicationTraining {
 export interface NeedsAssessmentResult {
   overallScore: number;
   totalProfiles: number;
-  communicationPlanRate: number;
-  planCurrentRate: number;
-  interpreterAvailableRate: number;
-  deviceProvidedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  communicationPlanRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  planCurrentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  interpreterAvailableRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  deviceProvidedRate: number | null;
 }
 
 export interface SupportProvisionResult {
   overallScore: number;
   totalSessions: number;
-  qualityGoodPlusRate: number;
-  childEngagedRate: number;
-  progressNotedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  qualityGoodPlusRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childEngagedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  progressNotedRate: number | null;
   averageSessionsPerChild: number | null;
 }
 
 export interface EnvironmentAccessibilityResult {
   overallScore: number;
   totalAudits: number;
-  easyReadRate: number;
-  visualAidsRate: number;
-  signageAccessibleRate: number;
-  childViewsAccessibleRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  easyReadRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  visualAidsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  signageAccessibleRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewsAccessibleRate: number | null;
 }
 
 export interface StaffCompetenceResult {
   overallScore: number;
   totalStaff: number;
-  awarenessRate: number;
-  signLanguageRate: number;
-  augmentativeDeviceRate: number;
-  easyReadRate: number;
-  autismCommunicationRate: number;
-  interpreterWorkingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  awarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  signLanguageRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  augmentativeDeviceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  easyReadRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  autismCommunicationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  interpreterWorkingRate: number | null;
 }
 
 export interface ChildCommunicationProfileResult {
@@ -179,11 +197,6 @@ export interface LanguageCommunicationSupportIntelligence {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -256,10 +269,10 @@ export function evaluateNeedsAssessment(
     return {
       overallScore: 0,
       totalProfiles: 0,
-      communicationPlanRate: 0,
-      planCurrentRate: 0,
-      interpreterAvailableRate: 0,
-      deviceProvidedRate: 0,
+      communicationPlanRate: null,
+      planCurrentRate: null,
+      interpreterAvailableRate: null,
+      deviceProvidedRate: null,
     };
   }
 
@@ -286,18 +299,18 @@ export function evaluateNeedsAssessment(
   }
 
   const planDenominator = withNeeds.length > 0 ? withNeeds.length : profiles.length;
-  const communicationPlanRate = pct(plansExist, planDenominator);
+  const communicationPlanRate = rate(plansExist, planDenominator);
   const reviewablePlans = profiles.filter((p) => p.planReviewStatus !== "not_applicable").length;
-  const planCurrentRate = pct(planCurrent, reviewablePlans);
-  const interpreterAvailableRate = pct(interpreterAvailable, interpreterRequired);
-  const deviceProvidedRate = pct(deviceProvided, deviceNeeded);
+  const planCurrentRate = rate(planCurrent, reviewablePlans);
+  const interpreterAvailableRate = rate(interpreterAvailable, interpreterRequired);
+  const deviceProvidedRate = rate(deviceProvided, deviceNeeded);
 
   // Scoring: plans exist (0-7), review current (0-6), interpreter available (0-6), device provided (0-6)
   let score = 0;
-  score += Math.round((communicationPlanRate / 100) * 7);
-  score += Math.round((planCurrentRate / 100) * 6);
-  score += Math.round((interpreterAvailableRate / 100) * 6);
-  score += Math.round((deviceProvidedRate / 100) * 6);
+  score += Math.round(((communicationPlanRate ?? 0) / 100) * 7);
+  score += Math.round(((planCurrentRate ?? 0) / 100) * 6);
+  score += Math.round(((interpreterAvailableRate ?? 0) / 100) * 6);
+  score += Math.round(((deviceProvidedRate ?? 0) / 100) * 6);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -322,9 +335,9 @@ export function evaluateSupportProvision(
     return {
       overallScore: 0,
       totalSessions: 0,
-      qualityGoodPlusRate: 0,
-      childEngagedRate: 0,
-      progressNotedRate: 0,
+      qualityGoodPlusRate: null,
+      childEngagedRate: null,
+      progressNotedRate: null,
       averageSessionsPerChild: 0,
     };
   }
@@ -339,18 +352,18 @@ export function evaluateSupportProvision(
     if (s.childProgressNoted) progressNoted++;
   }
 
-  const qualityGoodPlusRate = pct(qualityGoodPlus, sessions.length);
-  const childEngagedRate = pct(childEngaged, sessions.length);
-  const progressNotedRate = pct(progressNoted, sessions.length);
+  const qualityGoodPlusRate = rate(qualityGoodPlus, sessions.length);
+  const childEngagedRate = rate(childEngaged, sessions.length);
+  const progressNotedRate = rate(progressNoted, sessions.length);
   const averageSessionsPerChild = profileCount > 0
     ? Math.round((sessions.length / profileCount) * 10) / 10
     : null;
 
   // Scoring: quality good+ (0-7), child engaged (0-6), progress noted (0-6), session regularity (0-6)
   let score = 0;
-  score += Math.round((qualityGoodPlusRate / 100) * 7);
-  score += Math.round((childEngagedRate / 100) * 6);
-  score += Math.round((progressNotedRate / 100) * 6);
+  score += Math.round((qualityGoodPlusRate! / 100) * 7);
+  score += Math.round((childEngagedRate! / 100) * 6);
+  score += Math.round((progressNotedRate! / 100) * 6);
 
   // Session regularity: based on average sessions per child with needs
   if ((averageSessionsPerChild ?? 0) >= 4) score += 6;
@@ -380,10 +393,10 @@ export function evaluateEnvironmentAccessibility(
     return {
       overallScore: 0,
       totalAudits: 0,
-      easyReadRate: 0,
-      visualAidsRate: 0,
-      signageAccessibleRate: 0,
-      childViewsAccessibleRate: 0,
+      easyReadRate: null,
+      visualAidsRate: null,
+      signageAccessibleRate: null,
+      childViewsAccessibleRate: null,
     };
   }
 
@@ -399,17 +412,17 @@ export function evaluateEnvironmentAccessibility(
     if (a.childViewsSoughtAccessibly) childViews++;
   }
 
-  const easyReadRate = pct(easyRead, audits.length);
-  const visualAidsRate = pct(visualAids, audits.length);
-  const signageAccessibleRate = pct(signage, audits.length);
-  const childViewsAccessibleRate = pct(childViews, audits.length);
+  const easyReadRate = rate(easyRead, audits.length);
+  const visualAidsRate = rate(visualAids, audits.length);
+  const signageAccessibleRate = rate(signage, audits.length);
+  const childViewsAccessibleRate = rate(childViews, audits.length);
 
   // Scoring: easy read (0-7), visual aids (0-6), signage (0-6), child views (0-6)
   let score = 0;
-  score += Math.round((easyReadRate / 100) * 7);
-  score += Math.round((visualAidsRate / 100) * 6);
-  score += Math.round((signageAccessibleRate / 100) * 6);
-  score += Math.round((childViewsAccessibleRate / 100) * 6);
+  score += Math.round((easyReadRate! / 100) * 7);
+  score += Math.round((visualAidsRate! / 100) * 6);
+  score += Math.round((signageAccessibleRate! / 100) * 6);
+  score += Math.round((childViewsAccessibleRate! / 100) * 6);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -433,12 +446,12 @@ export function evaluateStaffCompetence(
     return {
       overallScore: 0,
       totalStaff: 0,
-      awarenessRate: 0,
-      signLanguageRate: 0,
-      augmentativeDeviceRate: 0,
-      easyReadRate: 0,
-      autismCommunicationRate: 0,
-      interpreterWorkingRate: 0,
+      awarenessRate: null,
+      signLanguageRate: null,
+      augmentativeDeviceRate: null,
+      easyReadRate: null,
+      autismCommunicationRate: null,
+      interpreterWorkingRate: null,
     };
   }
 
@@ -458,21 +471,21 @@ export function evaluateStaffCompetence(
     if (t.interpreterWorkingTrained) interpreterWorking++;
   }
 
-  const awarenessRate = pct(awareness, training.length);
-  const signLanguageRate = pct(signLanguage, training.length);
-  const augmentativeDeviceRate = pct(augmentativeDevice, training.length);
-  const easyReadRate = pct(easyRead, training.length);
-  const autismCommunicationRate = pct(autismCommunication, training.length);
-  const interpreterWorkingRate = pct(interpreterWorking, training.length);
+  const awarenessRate = rate(awareness, training.length);
+  const signLanguageRate = rate(signLanguage, training.length);
+  const augmentativeDeviceRate = rate(augmentativeDevice, training.length);
+  const easyReadRate = rate(easyRead, training.length);
+  const autismCommunicationRate = rate(autismCommunication, training.length);
+  const interpreterWorkingRate = rate(interpreterWorking, training.length);
 
   // Scoring: awareness (0-6), sign language (0-5), augmentative device (0-5), easy read (0-4), autism (0-3), interpreter (0-2)
   let score = 0;
-  score += Math.round((awarenessRate / 100) * 6);
-  score += Math.round((signLanguageRate / 100) * 5);
-  score += Math.round((augmentativeDeviceRate / 100) * 5);
-  score += Math.round((easyReadRate / 100) * 4);
-  score += Math.round((autismCommunicationRate / 100) * 3);
-  score += Math.round((interpreterWorkingRate / 100) * 2);
+  score += Math.round((awarenessRate! / 100) * 6);
+  score += Math.round(((signLanguageRate ?? 0) / 100) * 5);
+  score += Math.round(((augmentativeDeviceRate ?? 0) / 100) * 5);
+  score += Math.round(((easyReadRate ?? 0) / 100) * 4);
+  score += Math.round(((autismCommunicationRate ?? 0) / 100) * 3);
+  score += Math.round(((interpreterWorkingRate ?? 0) / 100) * 2);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -519,9 +532,9 @@ export function buildChildCommunicationProfiles(
     // Session engagement (0-3)
     if (childSessions.length > 0) {
       const engaged = childSessions.filter((s) => s.childEngaged).length;
-      score += Math.round((pct(engaged, childSessions.length) / 100) * 2);
+      score += Math.round((rate(engaged, childSessions.length)! / 100) * 2);
       const progress = childSessions.filter((s) => s.childProgressNoted).length;
-      if (pct(progress, childSessions.length) >= 50) score += 1;
+      if (meets(rate(progress, childSessions.length), 50)) score += 1;
     } else if (p.communicationNeed === "none") {
       score += 3; // No sessions needed
     }
@@ -529,7 +542,7 @@ export function buildChildCommunicationProfiles(
     // Session quality (0-2)
     if (childSessions.length > 0) {
       const goodPlus = childSessions.filter((s) => s.quality === "excellent" || s.quality === "good").length;
-      score += Math.round((pct(goodPlus, childSessions.length) / 100) * 2);
+      score += Math.round((rate(goodPlus, childSessions.length)! / 100) * 2);
     }
 
     return {
@@ -585,11 +598,11 @@ export function generateLanguageCommunicationSupportIntelligence(
     strengths.push("Interpreter access provided for all children who require it");
   if (profiles.some((p) => p.augmentativeDeviceNeeded) && needsAssessment.deviceProvidedRate === 100)
     strengths.push("Augmentative communication devices provided for all children who need them");
-  if (sessions.length > 0 && supportProvision.qualityGoodPlusRate >= 85)
+  if (sessions.length > 0 && meets(supportProvision.qualityGoodPlusRate, 85))
     strengths.push("High quality communication support — " + supportProvision.qualityGoodPlusRate + "% of sessions rated good or excellent");
-  if (sessions.length > 0 && supportProvision.childEngagedRate >= 90)
+  if (sessions.length > 0 && meets(supportProvision.childEngagedRate, 90))
     strengths.push("Strong child engagement — " + supportProvision.childEngagedRate + "% of sessions show active participation");
-  if (sessions.length > 0 && supportProvision.progressNotedRate >= 80)
+  if (sessions.length > 0 && meets(supportProvision.progressNotedRate, 80))
     strengths.push("Progress noted in " + supportProvision.progressNotedRate + "% of support sessions");
   if (audits.length > 0 && environmentAccessibility.easyReadRate === 100)
     strengths.push("Easy read materials consistently available across the home");
@@ -602,27 +615,27 @@ export function generateLanguageCommunicationSupportIntelligence(
   const areasForImprovement: string[] = [];
   if (profiles.length === 0)
     areasForImprovement.push("No communication profiles documented — all children should have communication needs assessed");
-  if (withNeeds.length > 0 && needsAssessment.communicationPlanRate < 100)
-    areasForImprovement.push("Communication plans missing for " + (100 - needsAssessment.communicationPlanRate) + "% of children with identified needs");
-  if (withNeeds.length > 0 && needsAssessment.planCurrentRate < 100 && needsAssessment.planCurrentRate > 0)
+  if (withNeeds.length > 0 && below(needsAssessment.communicationPlanRate, 100))
+    areasForImprovement.push("Communication plans missing for " + (100 - needsAssessment.communicationPlanRate!) + "% of children with identified needs");
+  if (withNeeds.length > 0 && below(needsAssessment.planCurrentRate, 100) && above(needsAssessment.planCurrentRate, 0))
     areasForImprovement.push("Only " + needsAssessment.planCurrentRate + "% of communication plans are current — reviews overdue");
-  if (profiles.some((p) => p.interpreterRequired) && needsAssessment.interpreterAvailableRate < 100)
+  if (profiles.some((p) => p.interpreterRequired) && below(needsAssessment.interpreterAvailableRate, 100))
     areasForImprovement.push("Interpreter access not met for all children who require it — " + needsAssessment.interpreterAvailableRate + "% availability");
-  if (profiles.some((p) => p.augmentativeDeviceNeeded) && needsAssessment.deviceProvidedRate < 100)
+  if (profiles.some((p) => p.augmentativeDeviceNeeded) && below(needsAssessment.deviceProvidedRate, 100))
     areasForImprovement.push("Augmentative devices not provided for all children who need them — " + needsAssessment.deviceProvidedRate + "% provided");
-  if (sessions.length > 0 && supportProvision.qualityGoodPlusRate < 60)
+  if (sessions.length > 0 && below(supportProvision.qualityGoodPlusRate, 60))
     areasForImprovement.push("Support session quality below expectations — only " + supportProvision.qualityGoodPlusRate + "% rated good or excellent");
-  if (sessions.length > 0 && supportProvision.childEngagedRate < 70)
+  if (sessions.length > 0 && below(supportProvision.childEngagedRate, 70))
     areasForImprovement.push("Low child engagement in support sessions — only " + supportProvision.childEngagedRate + "% engaged");
   if (sessions.length === 0 && withNeeds.length > 0)
     areasForImprovement.push("No communication support sessions recorded despite children with identified needs");
   if (audits.length === 0)
     areasForImprovement.push("No communication environment audits completed — schedule regular accessibility checks");
-  if (audits.length > 0 && environmentAccessibility.easyReadRate < 100)
+  if (audits.length > 0 && below(environmentAccessibility.easyReadRate, 100))
     areasForImprovement.push("Easy read materials not consistently available — found in " + environmentAccessibility.easyReadRate + "% of audits");
   if (training.length === 0)
     areasForImprovement.push("No staff communication training records — all staff require communication awareness training");
-  if (training.length > 0 && staffCompetence.awarenessRate < 80)
+  if (training.length > 0 && below(staffCompetence.awarenessRate, 80))
     areasForImprovement.push("Only " + staffCompetence.awarenessRate + "% of staff have communication needs awareness training");
 
   // -- Actions --
@@ -647,9 +660,9 @@ export function generateLanguageCommunicationSupportIntelligence(
     actions.push("Schedule communication environment accessibility audits — recommended quarterly");
   if (training.length === 0)
     actions.push("Arrange communication awareness training for all staff — statutory requirement under Equality Act 2010");
-  if (training.length > 0 && staffCompetence.autismCommunicationRate < 75)
+  if (training.length > 0 && below(staffCompetence.autismCommunicationRate, 75))
     actions.push("Arrange autism communication training — only " + staffCompetence.autismCommunicationRate + "% of staff trained");
-  if (training.length > 0 && staffCompetence.signLanguageRate < 50)
+  if (training.length > 0 && below(staffCompetence.signLanguageRate, 50))
     actions.push("Arrange basic sign language training — only " + staffCompetence.signLanguageRate + "% of staff trained");
 
   const regulatoryLinks: string[] = [

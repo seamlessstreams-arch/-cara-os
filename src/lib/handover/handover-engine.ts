@@ -19,6 +19,7 @@
    ────────────────────────────────────────────────────────────── */
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -127,10 +128,14 @@ export interface StaffHandoverTraining {
 
 export interface HandoverQualityResult {
   totalRecords: number;
-  allChildrenCoveredRate: number;
-  medicationStatusUpdatedRate: number;
-  incidentsCommunicatedRate: number;
-  tasksHandedOverRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  allChildrenCoveredRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  medicationStatusUpdatedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  incidentsCommunicatedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  tasksHandedOverRate: number | null;
   score: number;
   strengths: string[];
   concerns: string[];
@@ -138,9 +143,12 @@ export interface HandoverQualityResult {
 
 export interface HandoverComplianceResult {
   totalRecords: number;
-  documentationRate: number;
-  timelyRecordingRate: number;
-  allChildrenCoveredRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  allChildrenCoveredRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
   score: number;
@@ -163,12 +171,18 @@ export interface HandoverPolicyResult {
 
 export interface StaffHandoverReadinessResult {
   totalStaff: number;
-  handoverCommunicationRate: number;
-  medicationHandoverSkillsRate: number;
-  incidentReportingRate: number;
-  taskPrioritisationRate: number;
-  childStatusAssessmentRate: number;
-  handoverDocumentationRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  handoverCommunicationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  medicationHandoverSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  incidentReportingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  taskPrioritisationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childStatusAssessmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  handoverDocumentationRate: number | null;
   score: number;
   strengths: string[];
   concerns: string[];
@@ -204,11 +218,6 @@ export interface HandoverIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -226,10 +235,10 @@ export function evaluateHandoverQuality(
   if (totalRecords === 0) {
     return {
       totalRecords: 0,
-      allChildrenCoveredRate: 0,
-      medicationStatusUpdatedRate: 0,
-      incidentsCommunicatedRate: 0,
-      tasksHandedOverRate: 0,
+      allChildrenCoveredRate: null,
+      medicationStatusUpdatedRate: null,
+      incidentsCommunicatedRate: null,
+      tasksHandedOverRate: null,
       score: 0,
       strengths: [],
       concerns: ["No handover records found — handover quality cannot be assessed"],
@@ -237,50 +246,50 @@ export function evaluateHandoverQuality(
   }
 
   const coveredCount = records.filter((r) => r.allChildrenCovered).length;
-  const allChildrenCoveredRate = pct(coveredCount, totalRecords);
+  const allChildrenCoveredRate = rate(coveredCount, totalRecords);
 
   const medCount = records.filter((r) => r.medicationStatusUpdated).length;
-  const medicationStatusUpdatedRate = pct(medCount, totalRecords);
+  const medicationStatusUpdatedRate = rate(medCount, totalRecords);
 
   const incidentCount = records.filter((r) => r.incidentsCommunicated).length;
-  const incidentsCommunicatedRate = pct(incidentCount, totalRecords);
+  const incidentsCommunicatedRate = rate(incidentCount, totalRecords);
 
   const taskCount = records.filter((r) => r.tasksHandedOver).length;
-  const tasksHandedOverRate = pct(taskCount, totalRecords);
+  const tasksHandedOverRate = rate(taskCount, totalRecords);
 
   // Weights: allChildrenCoveredRate 7 + medicationStatusUpdatedRate 6 + incidentsCommunicatedRate 6 + tasksHandedOverRate 6 = 25
   let score = 0;
-  score += (allChildrenCoveredRate / 100) * 7;
-  score += (medicationStatusUpdatedRate / 100) * 6;
-  score += (incidentsCommunicatedRate / 100) * 6;
-  score += (tasksHandedOverRate / 100) * 6;
+  score += (allChildrenCoveredRate! / 100) * 7;
+  score += (medicationStatusUpdatedRate! / 100) * 6;
+  score += (incidentsCommunicatedRate! / 100) * 6;
+  score += (tasksHandedOverRate! / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (allChildrenCoveredRate >= 80) {
+  if (meets(allChildrenCoveredRate, 80)) {
     strengths.push("Strong child coverage in handovers: " + allChildrenCoveredRate + "% of handovers cover all children");
-  } else if (allChildrenCoveredRate < 50) {
+  } else if (below(allChildrenCoveredRate, 50)) {
     concerns.push("Child coverage rate at " + allChildrenCoveredRate + "% — not all children consistently included in handovers");
   }
 
-  if (medicationStatusUpdatedRate >= 80) {
+  if (meets(medicationStatusUpdatedRate, 80)) {
     strengths.push("Excellent medication handover: " + medicationStatusUpdatedRate + "% of handovers include medication updates");
-  } else if (medicationStatusUpdatedRate < 50) {
+  } else if (below(medicationStatusUpdatedRate, 50)) {
     concerns.push("Medication update rate at " + medicationStatusUpdatedRate + "% — medication safety at risk");
   }
 
-  if (incidentsCommunicatedRate >= 80) {
+  if (meets(incidentsCommunicatedRate, 80)) {
     strengths.push("Good incident communication: " + incidentsCommunicatedRate + "% of handovers include incident briefing");
-  } else if (incidentsCommunicatedRate < 50) {
+  } else if (below(incidentsCommunicatedRate, 50)) {
     concerns.push("Incident communication rate at " + incidentsCommunicatedRate + "% — critical information may not transfer between shifts");
   }
 
-  if (tasksHandedOverRate >= 80) {
+  if (meets(tasksHandedOverRate, 80)) {
     strengths.push("Strong task handover: " + tasksHandedOverRate + "% of handovers include task transfer");
-  } else if (tasksHandedOverRate < 50) {
+  } else if (below(tasksHandedOverRate, 50)) {
     concerns.push("Task handover rate at " + tasksHandedOverRate + "% — tasks may be dropped between shifts");
   }
 
@@ -306,9 +315,9 @@ export function evaluateHandoverCompliance(
   if (totalRecords === 0) {
     return {
       totalRecords: 0,
-      documentationRate: 0,
-      timelyRecordingRate: 0,
-      allChildrenCoveredRate: 0,
+      documentationRate: null,
+      timelyRecordingRate: null,
+      allChildrenCoveredRate: null,
       categoryDiversityRatio: 0,
       uniqueCategories: 0,
       score: 0,
@@ -318,13 +327,13 @@ export function evaluateHandoverCompliance(
   }
 
   const docCount = records.filter((r) => r.documentationComplete).length;
-  const documentationRate = pct(docCount, totalRecords);
+  const documentationRate = rate(docCount, totalRecords);
 
   const timelyCount = records.filter((r) => r.timelyRecording).length;
-  const timelyRecordingRate = pct(timelyCount, totalRecords);
+  const timelyRecordingRate = rate(timelyCount, totalRecords);
 
   const coveredCount = records.filter((r) => r.allChildrenCovered).length;
-  const allChildrenCoveredRate = pct(coveredCount, totalRecords);
+  const allChildrenCoveredRate = rate(coveredCount, totalRecords);
 
   const uniqueCategoriesSet = new Set(records.map((r) => r.category));
   const uniqueCategories = uniqueCategoriesSet.size;
@@ -332,9 +341,9 @@ export function evaluateHandoverCompliance(
 
   // Weights: documentationRate 8 + timelyRecordingRate 7 + allChildrenCoveredRate 5 + categoryDiversityRatio 5 = 25
   let score = 0;
-  score += (documentationRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (allChildrenCoveredRate / 100) * 5;
+  score += (documentationRate! / 100) * 8;
+  score += (timelyRecordingRate! / 100) * 7;
+  score += (allChildrenCoveredRate! / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -342,21 +351,21 @@ export function evaluateHandoverCompliance(
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (documentationRate >= 90) {
+  if (meets(documentationRate, 90)) {
     strengths.push("Excellent documentation: " + documentationRate + "% of handovers fully documented");
-  } else if (documentationRate < 50) {
+  } else if (below(documentationRate, 50)) {
     concerns.push("Documentation rate at " + documentationRate + "% — handover records are incomplete");
   }
 
-  if (timelyRecordingRate >= 90) {
+  if (meets(timelyRecordingRate, 90)) {
     strengths.push("Timely recording: " + timelyRecordingRate + "% of handovers recorded on time");
-  } else if (timelyRecordingRate < 50) {
+  } else if (below(timelyRecordingRate, 50)) {
     concerns.push("Timely recording rate at " + timelyRecordingRate + "% — handovers not recorded promptly");
   }
 
-  if (allChildrenCoveredRate >= 90) {
+  if (meets(allChildrenCoveredRate, 90)) {
     strengths.push("Comprehensive child coverage: " + allChildrenCoveredRate + "% of handovers cover all children");
-  } else if (allChildrenCoveredRate < 50) {
+  } else if (below(allChildrenCoveredRate, 50)) {
     concerns.push("Child coverage at " + allChildrenCoveredRate + "% — gaps in information transfer for some children");
   }
 
@@ -474,12 +483,12 @@ export function evaluateStaffHandoverReadiness(
   if (totalStaff === 0) {
     return {
       totalStaff: 0,
-      handoverCommunicationRate: 0,
-      medicationHandoverSkillsRate: 0,
-      incidentReportingRate: 0,
-      taskPrioritisationRate: 0,
-      childStatusAssessmentRate: 0,
-      handoverDocumentationRate: 0,
+      handoverCommunicationRate: null,
+      medicationHandoverSkillsRate: null,
+      incidentReportingRate: null,
+      taskPrioritisationRate: null,
+      childStatusAssessmentRate: null,
+      handoverDocumentationRate: null,
       score: 0,
       strengths: [],
       concerns: ["No staff training records — URGENT: schedule handover training for all staff"],
@@ -487,70 +496,70 @@ export function evaluateStaffHandoverReadiness(
   }
 
   const commCount = training.filter((t) => t.handoverCommunication).length;
-  const handoverCommunicationRate = pct(commCount, totalStaff);
+  const handoverCommunicationRate = rate(commCount, totalStaff);
 
   const medCount = training.filter((t) => t.medicationHandoverSkills).length;
-  const medicationHandoverSkillsRate = pct(medCount, totalStaff);
+  const medicationHandoverSkillsRate = rate(medCount, totalStaff);
 
   const incidentCount = training.filter((t) => t.incidentReporting).length;
-  const incidentReportingRate = pct(incidentCount, totalStaff);
+  const incidentReportingRate = rate(incidentCount, totalStaff);
 
   const taskCount = training.filter((t) => t.taskPrioritisation).length;
-  const taskPrioritisationRate = pct(taskCount, totalStaff);
+  const taskPrioritisationRate = rate(taskCount, totalStaff);
 
   const childCount = training.filter((t) => t.childStatusAssessment).length;
-  const childStatusAssessmentRate = pct(childCount, totalStaff);
+  const childStatusAssessmentRate = rate(childCount, totalStaff);
 
   const docCount = training.filter((t) => t.handoverDocumentation).length;
-  const handoverDocumentationRate = pct(docCount, totalStaff);
+  const handoverDocumentationRate = rate(docCount, totalStaff);
 
   // Weights: 6+5+5+4+3+2 = 25
   let score = 0;
-  score += (handoverCommunicationRate / 100) * 6;
-  score += (medicationHandoverSkillsRate / 100) * 5;
-  score += (incidentReportingRate / 100) * 5;
-  score += (taskPrioritisationRate / 100) * 4;
-  score += (childStatusAssessmentRate / 100) * 3;
-  score += (handoverDocumentationRate / 100) * 2;
+  score += (handoverCommunicationRate! / 100) * 6;
+  score += (medicationHandoverSkillsRate! / 100) * 5;
+  score += (incidentReportingRate! / 100) * 5;
+  score += (taskPrioritisationRate! / 100) * 4;
+  score += (childStatusAssessmentRate! / 100) * 3;
+  score += ((handoverDocumentationRate ?? 0) / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (handoverCommunicationRate >= 80) {
+  if (meets(handoverCommunicationRate, 80)) {
     strengths.push("Strong handover communication skills: " + handoverCommunicationRate + "% of staff");
-  } else if (handoverCommunicationRate < 50) {
+  } else if (below(handoverCommunicationRate, 50)) {
     concerns.push("Handover communication skills at " + handoverCommunicationRate + "% — foundational training needed");
   }
 
-  if (medicationHandoverSkillsRate >= 80) {
+  if (meets(medicationHandoverSkillsRate, 80)) {
     strengths.push("Good medication handover skills: " + medicationHandoverSkillsRate + "% of staff competent");
-  } else if (medicationHandoverSkillsRate < 50) {
+  } else if (below(medicationHandoverSkillsRate, 50)) {
     concerns.push("Medication handover skills at " + medicationHandoverSkillsRate + "% — medication safety training required");
   }
 
-  if (incidentReportingRate >= 80) {
+  if (meets(incidentReportingRate, 80)) {
     strengths.push("Strong incident reporting skills: " + incidentReportingRate + "% of staff");
-  } else if (incidentReportingRate < 50) {
+  } else if (below(incidentReportingRate, 50)) {
     concerns.push("Incident reporting skills at " + incidentReportingRate + "% — staff may fail to relay critical incidents");
   }
 
-  if (taskPrioritisationRate >= 80) {
+  if (meets(taskPrioritisationRate, 80)) {
     strengths.push("Good task prioritisation skills: " + taskPrioritisationRate + "% of staff");
-  } else if (taskPrioritisationRate < 50) {
+  } else if (below(taskPrioritisationRate, 50)) {
     concerns.push("Task prioritisation skills at " + taskPrioritisationRate + "% — task handover may be incomplete");
   }
 
-  if (childStatusAssessmentRate >= 80) {
+  if (meets(childStatusAssessmentRate, 80)) {
     strengths.push("Child status assessment skills strong: " + childStatusAssessmentRate + "% of staff");
-  } else if (childStatusAssessmentRate < 50) {
+  } else if (below(childStatusAssessmentRate, 50)) {
     concerns.push("Child status assessment skills at " + childStatusAssessmentRate + "% — children's needs may not be fully communicated");
   }
 
-  if (handoverDocumentationRate >= 80) {
+  if (meets(handoverDocumentationRate, 80)) {
     strengths.push("Good handover documentation skills: " + handoverDocumentationRate + "% of staff");
-  } else if (handoverDocumentationRate < 50) {
+  } else if (below(handoverDocumentationRate, 50)) {
     concerns.push("Handover documentation skills at " + handoverDocumentationRate + "% — records may be incomplete");
   }
 
@@ -588,10 +597,10 @@ export function buildChildHandoverProfiles(
     const totalRecords = child.records.length;
 
     const coveredCount = child.records.filter((r) => r.allChildrenCovered).length;
-    const allChildrenCoveredRate = pct(coveredCount, totalRecords);
+    const allChildrenCoveredRate = rate(coveredCount, totalRecords)!;
 
     const medCount = child.records.filter((r) => r.medicationStatusUpdated).length;
-    const medicationStatusUpdatedRate = pct(medCount, totalRecords);
+    const medicationStatusUpdatedRate = rate(medCount, totalRecords)!;
 
     const uniqueCategoriesSet = new Set(child.records.map((r) => r.category));
     const uniqueCategories = uniqueCategoriesSet.size;
@@ -599,19 +608,19 @@ export function buildChildHandoverProfiles(
     // frequency: >=10 records -> 2, >=5 -> 1, else 0
     let frequencyScore = 0;
     if (totalRecords >= 10) frequencyScore = 2;
-    else if (totalRecords >= 5) frequencyScore = 1;
+    else if (meets(totalRecords, 5)) frequencyScore = 1;
 
     // rate1 (allChildrenCoveredRate): >=80 -> 3, >=60 -> 2, >=40 -> 1, else 0
     let rate1Score = 0;
-    if (allChildrenCoveredRate >= 80) rate1Score = 3;
-    else if (allChildrenCoveredRate >= 60) rate1Score = 2;
-    else if (allChildrenCoveredRate >= 40) rate1Score = 1;
+    if (meets(allChildrenCoveredRate, 80)) rate1Score = 3;
+    else if (meets(allChildrenCoveredRate, 60)) rate1Score = 2;
+    else if (meets(allChildrenCoveredRate, 40)) rate1Score = 1;
 
     // rate2 (medicationStatusUpdatedRate): same thresholds
     let rate2Score = 0;
-    if (medicationStatusUpdatedRate >= 80) rate2Score = 3;
-    else if (medicationStatusUpdatedRate >= 60) rate2Score = 2;
-    else if (medicationStatusUpdatedRate >= 40) rate2Score = 1;
+    if (meets(medicationStatusUpdatedRate, 80)) rate2Score = 3;
+    else if (meets(medicationStatusUpdatedRate, 60)) rate2Score = 2;
+    else if (meets(medicationStatusUpdatedRate, 40)) rate2Score = 1;
 
     // diversity (unique categories): >=4 -> 2, >=2 -> 1, else 0
     let diversityBonus = 0;
@@ -803,27 +812,27 @@ function generateActions(
     actions.push("URGENT: No staff handover training records — schedule handover training for all staff immediately");
   }
 
-  if (quality.totalRecords > 0 && quality.allChildrenCoveredRate < 50) {
+  if (quality.totalRecords > 0 && below(quality.allChildrenCoveredRate, 50)) {
     actions.push("HIGH: Child coverage rate at " + quality.allChildrenCoveredRate + "% — ensure all children are included in every handover");
   }
 
-  if (quality.totalRecords > 0 && quality.medicationStatusUpdatedRate < 50) {
+  if (quality.totalRecords > 0 && below(quality.medicationStatusUpdatedRate, 50)) {
     actions.push("HIGH: Medication update rate at " + quality.medicationStatusUpdatedRate + "% — medication safety at risk, review handover protocol");
   }
 
-  if (compliance.totalRecords > 0 && compliance.documentationRate < 50) {
+  if (compliance.totalRecords > 0 && below(compliance.documentationRate, 50)) {
     actions.push("HIGH: Documentation rate at " + compliance.documentationRate + "% — strengthen handover recording practices");
   }
 
-  if (compliance.totalRecords > 0 && compliance.timelyRecordingRate < 50) {
+  if (compliance.totalRecords > 0 && below(compliance.timelyRecordingRate, 50)) {
     actions.push("MEDIUM: Timely recording rate at " + compliance.timelyRecordingRate + "% — handovers must be recorded promptly");
   }
 
-  if (quality.totalRecords > 0 && quality.incidentsCommunicatedRate < 50) {
+  if (quality.totalRecords > 0 && below(quality.incidentsCommunicatedRate, 50)) {
     actions.push("MEDIUM: Incident communication rate at " + quality.incidentsCommunicatedRate + "% — embed incident briefing in every handover");
   }
 
-  if (staff.totalStaff > 0 && staff.handoverCommunicationRate < 50) {
+  if (staff.totalStaff > 0 && below(staff.handoverCommunicationRate, 50)) {
     actions.push("MEDIUM: Staff communication skills at " + staff.handoverCommunicationRate + "% — schedule refresher training on handover communication");
   }
 

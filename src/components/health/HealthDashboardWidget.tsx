@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 /* ──────────────────────────────────────────────────────────────
    HealthDashboardWidget — Health Intelligence dashboard card
@@ -168,11 +169,11 @@ export default function HealthDashboardWidget() {
           <p className="text-xs text-gray-500">Assessments</p>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <p className="text-2xl font-bold text-gray-900">{data.healthQuality.completedOnTimeRate}%</p>
+          <p className="text-2xl font-bold text-gray-900">{formatRate(data.healthQuality.completedOnTimeRate)}</p>
           <p className="text-xs text-gray-500">On Time</p>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <p className="text-2xl font-bold text-gray-900">{data.healthCompliance.documentedRate}%</p>
+          <p className="text-2xl font-bold text-gray-900">{formatRate(data.healthCompliance.documentedRate)}</p>
           <p className="text-xs text-gray-500">Documented</p>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">

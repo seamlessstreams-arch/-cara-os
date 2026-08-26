@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara House Meetings Intelligence Engine  (v2 — standardised)
 //
@@ -87,18 +88,26 @@ export interface StaffHouseMeetingTraining {
 export interface HouseMeetingQualityResult {
   overallScore: number;
   totalMeetings: number;
-  childAgendaContributionRate: number;
-  minutesRecordedRate: number;
-  childAttendanceRate: number;
-  actionsReviewedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childAgendaContributionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  minutesRecordedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childAttendanceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionsReviewedRate: number | null;
 }
 
 export interface HouseMeetingComplianceResult {
   overallScore: number;
-  documentationRate: number;
-  timelyRecordingRate: number;
-  childAttendanceRate: number;
-  categoryDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childAttendanceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  categoryDiversityRatio: number | null;
 }
 
 export interface HouseMeetingPolicyResult {
@@ -115,20 +124,28 @@ export interface HouseMeetingPolicyResult {
 export interface StaffHouseMeetingReadinessResult {
   overallScore: number;
   totalStaff: number;
-  meetingFacilitationRate: number;
-  childParticipationRate: number;
-  minutesTakingRate: number;
-  actionTrackingRate: number;
-  conflictResolutionRate: number;
-  inclusivePracticeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  meetingFacilitationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childParticipationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  minutesTakingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionTrackingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  conflictResolutionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  inclusivePracticeRate: number | null;
 }
 
 export interface ChildHouseMeetingProfile {
   childId: string;
   childName: string;
   totalRecords: number;
-  childAgendaContributionRate: number;
-  childAttendanceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childAgendaContributionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childAttendanceRate: number | null;
   categoriesCovered: string[];
   overallScore: number;
 }
@@ -151,11 +168,6 @@ export interface HouseMeetingsIntelligence {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -204,16 +216,16 @@ export function getRatingLabel(r: Rating): string {
 
 export function evaluateHouseMeetingQuality(records: HouseMeetingRecord[]): HouseMeetingQualityResult {
   const total = records.length;
-  const childAgendaContributionRate = pct(records.filter(r => r.childContributedToAgenda).length, total);
-  const minutesRecordedRate = pct(records.filter(r => r.minutesRecorded).length, total);
-  const childAttendanceRate = pct(records.filter(r => r.childAttended).length, total);
-  const actionsReviewedRate = pct(records.filter(r => r.actionsReviewed).length, total);
+  const childAgendaContributionRate = rate(records.filter(r => r.childContributedToAgenda).length, total);
+  const minutesRecordedRate = rate(records.filter(r => r.minutesRecorded).length, total);
+  const childAttendanceRate = rate(records.filter(r => r.childAttended).length, total);
+  const actionsReviewedRate = rate(records.filter(r => r.actionsReviewed).length, total);
 
   const raw =
-    (childAgendaContributionRate / 100) * 7 +
-    (minutesRecordedRate / 100) * 6 +
-    (childAttendanceRate / 100) * 6 +
-    (actionsReviewedRate / 100) * 6;
+    ((childAgendaContributionRate ?? 0) / 100) * 7 +
+    ((minutesRecordedRate ?? 0) / 100) * 6 +
+    ((childAttendanceRate ?? 0) / 100) * 6 +
+    ((actionsReviewedRate ?? 0) / 100) * 6;
 
   const overallScore = Math.min(25, Math.round(raw));
 
@@ -225,22 +237,22 @@ export function evaluateHouseMeetingQuality(records: HouseMeetingRecord[]): Hous
 
 export function evaluateHouseMeetingCompliance(records: HouseMeetingRecord[]): HouseMeetingComplianceResult {
   const total = records.length;
-  const documentationRate = pct(records.filter(r => r.documentationComplete).length, total);
-  const timelyRecordingRate = pct(records.filter(r => r.timelyRecording).length, total);
-  const childAttendanceRate = pct(records.filter(r => r.childAttended).length, total);
+  const documentationRate = rate(records.filter(r => r.documentationComplete).length, total);
+  const timelyRecordingRate = rate(records.filter(r => r.timelyRecording).length, total);
+  const childAttendanceRate = rate(records.filter(r => r.childAttended).length, total);
 
   const ALL_CATEGORIES: HouseMeetingCategory[] = [
     "house_meeting", "childrens_council", "menu_planning", "activity_planning",
     "rules_review", "agenda_setting", "action_review", "special_topic",
   ];
   const usedCategories = new Set(records.map(r => r.category));
-  const categoryDiversityRatio = pct(usedCategories.size, ALL_CATEGORIES.length);
+  const categoryDiversityRatio = rate(usedCategories.size, ALL_CATEGORIES.length);
 
   const raw =
-    (documentationRate / 100) * 8 +
-    (timelyRecordingRate / 100) * 7 +
-    (childAttendanceRate / 100) * 5 +
-    (categoryDiversityRatio / 100) * 5;
+    ((documentationRate ?? 0) / 100) * 8 +
+    ((timelyRecordingRate ?? 0) / 100) * 7 +
+    ((childAttendanceRate ?? 0) / 100) * 5 +
+    ((categoryDiversityRatio ?? 0) / 100) * 5;
 
   const overallScore = Math.min(25, Math.round(raw));
 
@@ -290,20 +302,20 @@ export function evaluateHouseMeetingPolicy(policy: HouseMeetingPolicy | null): H
 
 export function evaluateStaffHouseMeetingReadiness(staff: StaffHouseMeetingTraining[]): StaffHouseMeetingReadinessResult {
   const total = staff.length;
-  const meetingFacilitationRate = pct(staff.filter(s => s.meetingFacilitation).length, total);
-  const childParticipationRate = pct(staff.filter(s => s.childParticipation).length, total);
-  const minutesTakingRate = pct(staff.filter(s => s.minutesTaking).length, total);
-  const actionTrackingRate = pct(staff.filter(s => s.actionTracking).length, total);
-  const conflictResolutionRate = pct(staff.filter(s => s.conflictResolution).length, total);
-  const inclusivePracticeRate = pct(staff.filter(s => s.inclusivePractice).length, total);
+  const meetingFacilitationRate = rate(staff.filter(s => s.meetingFacilitation).length, total);
+  const childParticipationRate = rate(staff.filter(s => s.childParticipation).length, total);
+  const minutesTakingRate = rate(staff.filter(s => s.minutesTaking).length, total);
+  const actionTrackingRate = rate(staff.filter(s => s.actionTracking).length, total);
+  const conflictResolutionRate = rate(staff.filter(s => s.conflictResolution).length, total);
+  const inclusivePracticeRate = rate(staff.filter(s => s.inclusivePractice).length, total);
 
   const raw =
-    (meetingFacilitationRate / 100) * 6 +
-    (childParticipationRate / 100) * 5 +
-    (minutesTakingRate / 100) * 5 +
-    (actionTrackingRate / 100) * 4 +
-    (conflictResolutionRate / 100) * 3 +
-    (inclusivePracticeRate / 100) * 2;
+    ((meetingFacilitationRate ?? 0) / 100) * 6 +
+    ((childParticipationRate ?? 0) / 100) * 5 +
+    ((minutesTakingRate ?? 0) / 100) * 5 +
+    ((actionTrackingRate ?? 0) / 100) * 4 +
+    ((conflictResolutionRate ?? 0) / 100) * 3 +
+    ((inclusivePracticeRate ?? 0) / 100) * 2;
 
   const overallScore = Math.min(25, Math.round(raw));
 
@@ -325,8 +337,8 @@ export function buildChildHouseMeetingProfiles(records: HouseMeetingRecord[]): C
   for (const [childId, recs] of byChild) {
     const childName = recs[0].childName;
     const totalRecords = recs.length;
-    const childAgendaContributionRate = pct(recs.filter(r => r.childContributedToAgenda).length, totalRecords);
-    const childAttendanceRate = pct(recs.filter(r => r.childAttended).length, totalRecords);
+    const childAgendaContributionRate = rate(recs.filter(r => r.childContributedToAgenda).length, totalRecords);
+    const childAttendanceRate = rate(recs.filter(r => r.childAttended).length, totalRecords);
     const categoriesCovered = [...new Set(recs.map(r => r.category))];
 
     // Scoring: freq + rate1 + rate2 + diversity = 0-10
@@ -335,13 +347,13 @@ export function buildChildHouseMeetingProfiles(records: HouseMeetingRecord[]): C
     if (totalRecords >= 10) score += 2;
     else if (totalRecords >= 5) score += 1;
     // Rate 1 — childAgendaContributionRate
-    if (childAgendaContributionRate >= 80) score += 3;
-    else if (childAgendaContributionRate >= 60) score += 2;
-    else if (childAgendaContributionRate >= 40) score += 1;
+    if (meets(childAgendaContributionRate, 80)) score += 3;
+    else if (meets(childAgendaContributionRate, 60)) score += 2;
+    else if (meets(childAgendaContributionRate, 40)) score += 1;
     // Rate 2 — childAttendanceRate
-    if (childAttendanceRate >= 80) score += 3;
-    else if (childAttendanceRate >= 60) score += 2;
-    else if (childAttendanceRate >= 40) score += 1;
+    if (meets(childAttendanceRate, 80)) score += 3;
+    else if (meets(childAttendanceRate, 60)) score += 2;
+    else if (meets(childAttendanceRate, 40)) score += 1;
     // Category diversity
     if (categoriesCovered.length >= 4) score += 2;
     else if (categoriesCovered.length >= 2) score += 1;
@@ -380,35 +392,35 @@ export function generateHouseMeetingsIntelligence(input: {
 
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
-  if (houseMeetingQuality.childAgendaContributionRate >= 80) strengths.push("Excellent child contribution to meeting agendas");
-  if (houseMeetingQuality.minutesRecordedRate >= 90) strengths.push("Consistent recording of meeting minutes");
-  if (houseMeetingQuality.childAttendanceRate >= 80) strengths.push("High child attendance at house meetings");
-  if (houseMeetingQuality.actionsReviewedRate >= 80) strengths.push("Actions from meetings consistently reviewed");
-  if (houseMeetingCompliance.documentationRate >= 90) strengths.push("Strong meeting documentation practices");
-  if (houseMeetingCompliance.categoryDiversityRatio >= 75) strengths.push("Good variety of meeting types used");
-  if (houseMeetingPolicy.overallScore >= 22) strengths.push("Comprehensive meeting governance policies in place");
-  if (staffReadiness.meetingFacilitationRate >= 80) strengths.push("Staff well-trained in meeting facilitation");
-  if (staffReadiness.childParticipationRate >= 80) strengths.push("Staff skilled in promoting child participation");
+  if (meets(houseMeetingQuality.childAgendaContributionRate, 80)) strengths.push("Excellent child contribution to meeting agendas");
+  if (meets(houseMeetingQuality.minutesRecordedRate, 90)) strengths.push("Consistent recording of meeting minutes");
+  if (meets(houseMeetingQuality.childAttendanceRate, 80)) strengths.push("High child attendance at house meetings");
+  if (meets(houseMeetingQuality.actionsReviewedRate, 80)) strengths.push("Actions from meetings consistently reviewed");
+  if (meets(houseMeetingCompliance.documentationRate, 90)) strengths.push("Strong meeting documentation practices");
+  if (meets(houseMeetingCompliance.categoryDiversityRatio, 75)) strengths.push("Good variety of meeting types used");
+  if (meets(houseMeetingPolicy.overallScore, 22)) strengths.push("Comprehensive meeting governance policies in place");
+  if (meets(staffReadiness.meetingFacilitationRate, 80)) strengths.push("Staff well-trained in meeting facilitation");
+  if (meets(staffReadiness.childParticipationRate, 80)) strengths.push("Staff skilled in promoting child participation");
 
   // ── Areas for improvement ─────────────────────────────────────────────
   const areasForImprovement: string[] = [];
-  if (houseMeetingQuality.childAgendaContributionRate < 60) areasForImprovement.push("Children not sufficiently contributing to meeting agendas");
-  if (houseMeetingQuality.minutesRecordedRate < 80) areasForImprovement.push("Meeting minutes not consistently recorded");
-  if (houseMeetingQuality.childAttendanceRate < 60) areasForImprovement.push("Low child attendance at house meetings");
-  if (houseMeetingQuality.actionsReviewedRate < 60) areasForImprovement.push("Actions from previous meetings not regularly reviewed");
-  if (houseMeetingCompliance.timelyRecordingRate < 70) areasForImprovement.push("Meeting records not completed in a timely manner");
-  if (houseMeetingCompliance.categoryDiversityRatio < 50) areasForImprovement.push("Limited variety in meeting types — consider expanding");
-  if (staffReadiness.conflictResolutionRate < 60) areasForImprovement.push("Staff conflict resolution skills need development");
-  if (staffReadiness.inclusivePracticeRate < 60) areasForImprovement.push("Staff inclusive practice training needs attention");
+  if (below(houseMeetingQuality.childAgendaContributionRate, 60)) areasForImprovement.push("Children not sufficiently contributing to meeting agendas");
+  if (below(houseMeetingQuality.minutesRecordedRate, 80)) areasForImprovement.push("Meeting minutes not consistently recorded");
+  if (below(houseMeetingQuality.childAttendanceRate, 60)) areasForImprovement.push("Low child attendance at house meetings");
+  if (below(houseMeetingQuality.actionsReviewedRate, 60)) areasForImprovement.push("Actions from previous meetings not regularly reviewed");
+  if (below(houseMeetingCompliance.timelyRecordingRate, 70)) areasForImprovement.push("Meeting records not completed in a timely manner");
+  if (below(houseMeetingCompliance.categoryDiversityRatio, 50)) areasForImprovement.push("Limited variety in meeting types — consider expanding");
+  if (below(staffReadiness.conflictResolutionRate, 60)) areasForImprovement.push("Staff conflict resolution skills need development");
+  if (below(staffReadiness.inclusivePracticeRate, 60)) areasForImprovement.push("Staff inclusive practice training needs attention");
 
   // ── Actions ───────────────────────────────────────────────────────────
   const actions: string[] = [];
-  if (houseMeetingQuality.childAttendanceRate < 40) actions.push("URGENT: Review barriers to child attendance at house meetings");
-  if (houseMeetingQuality.childAgendaContributionRate < 40) actions.push("URGENT: Implement strategies to encourage child agenda contributions");
-  if (houseMeetingCompliance.documentationRate < 60) actions.push("URGENT: Ensure all house meetings are properly documented");
+  if (below(houseMeetingQuality.childAttendanceRate, 40)) actions.push("URGENT: Review barriers to child attendance at house meetings");
+  if (below(houseMeetingQuality.childAgendaContributionRate, 40)) actions.push("URGENT: Implement strategies to encourage child agenda contributions");
+  if (below(houseMeetingCompliance.documentationRate, 60)) actions.push("URGENT: Ensure all house meetings are properly documented");
   if (!policy || houseMeetingPolicy.overallScore < 16) actions.push("Review and update house meeting governance policies");
-  if (staffReadiness.overallScore < 15) actions.push("Prioritise staff training in meeting facilitation and participation skills");
-  if (houseMeetingQuality.actionsReviewedRate < 50) actions.push("Implement action review as standing agenda item for all meetings");
+  if (below(staffReadiness.overallScore, 15)) actions.push("Prioritise staff training in meeting facilitation and participation skills");
+  if (below(houseMeetingQuality.actionsReviewedRate, 50)) actions.push("Implement action review as standing agenda item for all meetings");
   if (records.length === 0) actions.push("URGENT: No house meeting records found — establish regular meeting schedule immediately");
 
   // ── Regulatory links ──────────────────────────────────────────────────

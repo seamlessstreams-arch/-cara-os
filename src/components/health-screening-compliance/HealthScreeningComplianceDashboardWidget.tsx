@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { HealthScreeningComplianceIntelligence } from "@/lib/health-screening-compliance";
+import { formatRate } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -101,7 +102,7 @@ export function HealthScreeningComplianceDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Screenings</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.screeningCompliance.onTimeRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.screeningCompliance.onTimeRate)}</div>
           <div className="text-xs text-gray-500 mt-1">On Time</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -109,11 +110,11 @@ export function HealthScreeningComplianceDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Overdue</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.gpAccess.registeredRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.gpAccess.registeredRate)}</div>
           <div className="text-xs text-gray-500 mt-1">GP Registered</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.healthPlanning.sdqCompletionRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.healthPlanning.sdqCompletionRate)}</div>
           <div className="text-xs text-gray-500 mt-1">SDQ Complete</div>
         </div>
       </div>
@@ -154,20 +155,20 @@ export function HealthScreeningComplianceDashboardWidget() {
         <Section title="Screening Compliance">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total:</span> <span className="font-medium">{data.screeningCompliance.totalScreenings}</span></div>
-            <div><span className="text-gray-500">On Time:</span> <span className="font-medium">{data.screeningCompliance.onTimeRate}%</span></div>
+            <div><span className="text-gray-500">On Time:</span> <span className="font-medium">{formatRate(data.screeningCompliance.onTimeRate)}</span></div>
             <div><span className="text-gray-500">Overdue:</span> <span className={`font-medium ${data.screeningCompliance.overdueCount > 0 ? "text-red-600" : "text-green-600"}`}>{data.screeningCompliance.overdueCount}</span></div>
             <div><span className="text-gray-500">Declined:</span> <span className={`font-medium ${data.screeningCompliance.declinedCount > 0 ? "text-amber-600" : "text-green-600"}`}>{data.screeningCompliance.declinedCount}</span></div>
-            <div><span className="text-gray-500">Referral Follow-up:</span> <span className="font-medium">{data.screeningCompliance.referralFollowUpRate}%</span></div>
-            <div><span className="text-gray-500">Documented:</span> <span className="font-medium">{data.screeningCompliance.documentedRate}%</span></div>
+            <div><span className="text-gray-500">Referral Follow-up:</span> <span className="font-medium">{formatRate(data.screeningCompliance.referralFollowUpRate)}</span></div>
+            <div><span className="text-gray-500">Documented:</span> <span className="font-medium">{formatRate(data.screeningCompliance.documentedRate)}</span></div>
           </div>
         </Section>
 
         <Section title="GP Access">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Children:</span> <span className="font-medium">{data.gpAccess.totalChildren}</span></div>
-            <div><span className="text-gray-500">Registered:</span> <span className="font-medium">{data.gpAccess.registeredRate}%</span></div>
-            <div><span className="text-gray-500">Named Nurse:</span> <span className="font-medium">{data.gpAccess.namedNurseRate}%</span></div>
-            <div><span className="text-gray-500">Health Passport:</span> <span className="font-medium">{data.gpAccess.healthPassportRate}%</span></div>
+            <div><span className="text-gray-500">Registered:</span> <span className="font-medium">{formatRate(data.gpAccess.registeredRate)}</span></div>
+            <div><span className="text-gray-500">Named Nurse:</span> <span className="font-medium">{formatRate(data.gpAccess.namedNurseRate)}</span></div>
+            <div><span className="text-gray-500">Health Passport:</span> <span className="font-medium">{formatRate(data.gpAccess.healthPassportRate)}</span></div>
             <div><span className="text-gray-500">Pending:</span> <span className={`font-medium ${data.gpAccess.pendingRegistrations > 0 ? "text-amber-600" : "text-green-600"}`}>{data.gpAccess.pendingRegistrations}</span></div>
             <div><span className="text-gray-500">Not Registered:</span> <span className={`font-medium ${data.gpAccess.notRegisteredCount > 0 ? "text-red-600" : "text-green-600"}`}>{data.gpAccess.notRegisteredCount}</span></div>
           </div>
@@ -176,11 +177,11 @@ export function HealthScreeningComplianceDashboardWidget() {
         <Section title="Health Planning">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Plans:</span> <span className="font-medium">{data.healthPlanning.totalPlans}</span></div>
-            <div><span className="text-gray-500">Needs Addressed:</span> <span className="font-medium">{data.healthPlanning.needsAddressedRate}%</span></div>
-            <div><span className="text-gray-500">Child Voice:</span> <span className="font-medium">{data.healthPlanning.childContributionRate}%</span></div>
-            <div><span className="text-gray-500">SW Informed:</span> <span className="font-medium">{data.healthPlanning.socialWorkerInformedRate}%</span></div>
-            <div><span className="text-gray-500">SDQ Complete:</span> <span className="font-medium">{data.healthPlanning.sdqCompletionRate}%</span></div>
-            <div><span className="text-gray-500">Reviewed:</span> <span className="font-medium">{data.healthPlanning.reviewRate}%</span></div>
+            <div><span className="text-gray-500">Needs Addressed:</span> <span className="font-medium">{formatRate(data.healthPlanning.needsAddressedRate)}</span></div>
+            <div><span className="text-gray-500">Child Voice:</span> <span className="font-medium">{formatRate(data.healthPlanning.childContributionRate)}</span></div>
+            <div><span className="text-gray-500">SW Informed:</span> <span className="font-medium">{formatRate(data.healthPlanning.socialWorkerInformedRate)}</span></div>
+            <div><span className="text-gray-500">SDQ Complete:</span> <span className="font-medium">{formatRate(data.healthPlanning.sdqCompletionRate)}</span></div>
+            <div><span className="text-gray-500">Reviewed:</span> <span className="font-medium">{formatRate(data.healthPlanning.reviewRate)}</span></div>
             {data.healthPlanning.averageSDQScore !== null && (
               <div><span className="text-gray-500">Avg SDQ:</span> <span className={`font-medium ${data.healthPlanning.averageSDQScore <= 13 ? "text-green-600" : data.healthPlanning.averageSDQScore <= 16 ? "text-amber-600" : "text-red-600"}`}>{data.healthPlanning.averageSDQScore}</span></div>
             )}
@@ -190,12 +191,12 @@ export function HealthScreeningComplianceDashboardWidget() {
         <Section title="Staff Health Readiness">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Staff:</span> <span className="font-medium">{data.staffHealthReadiness.totalStaff}</span></div>
-            <div><span className="text-gray-500">First Aid:</span> <span className="font-medium">{data.staffHealthReadiness.firstAidRate}%</span></div>
-            <div><span className="text-gray-500">Medication:</span> <span className="font-medium">{data.staffHealthReadiness.medicationTrainedRate}%</span></div>
-            <div><span className="text-gray-500">Mental Health:</span> <span className="font-medium">{data.staffHealthReadiness.mentalHealthRate}%</span></div>
-            <div><span className="text-gray-500">Epilepsy:</span> <span className="font-medium">{data.staffHealthReadiness.epilepsyRate}%</span></div>
-            <div><span className="text-gray-500">Allergy:</span> <span className="font-medium">{data.staffHealthReadiness.allergyRate}%</span></div>
-            <div><span className="text-gray-500">Health Promotion:</span> <span className="font-medium">{data.staffHealthReadiness.healthPromotionRate}%</span></div>
+            <div><span className="text-gray-500">First Aid:</span> <span className="font-medium">{formatRate(data.staffHealthReadiness.firstAidRate)}</span></div>
+            <div><span className="text-gray-500">Medication:</span> <span className="font-medium">{formatRate(data.staffHealthReadiness.medicationTrainedRate)}</span></div>
+            <div><span className="text-gray-500">Mental Health:</span> <span className="font-medium">{formatRate(data.staffHealthReadiness.mentalHealthRate)}</span></div>
+            <div><span className="text-gray-500">Epilepsy:</span> <span className="font-medium">{formatRate(data.staffHealthReadiness.epilepsyRate)}</span></div>
+            <div><span className="text-gray-500">Allergy:</span> <span className="font-medium">{formatRate(data.staffHealthReadiness.allergyRate)}</span></div>
+            <div><span className="text-gray-500">Health Promotion:</span> <span className="font-medium">{formatRate(data.staffHealthReadiness.healthPromotionRate)}</span></div>
           </div>
         </Section>
 

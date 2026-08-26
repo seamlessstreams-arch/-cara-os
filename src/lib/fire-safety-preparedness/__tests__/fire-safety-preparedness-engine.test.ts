@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getDrillTypeLabel,
   getDrillOutcomeLabel,
@@ -25,24 +24,6 @@ import type {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-  it("returns 100 for equal numerator and denominator", () => {
-    expect(pct(3, 3)).toBe(100);
-  });
-  it("returns 50 for half", () => {
-    expect(pct(1, 2)).toBe(50);
-  });
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 5)).toBe(0);
-  });
-});
 
 describe("getRating", () => {
   it("returns outstanding for 80+", () => {

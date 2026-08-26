@@ -6,7 +6,6 @@ import {
   evaluatePolicy,
   evaluateStaffReadiness,
   buildChildProfiles,
-  pct,
   getRating,
   getHygieneAreaLabel,
   getCompetencyLevelLabel,
@@ -68,24 +67,6 @@ function mkTraining(overrides: Partial<StaffHygieneTraining> = {}): StaffHygiene
 }
 
 // ── pct ──────────────────────────────────────────────────────────────────
-
-describe("pct", () => {
-  it("returns 0 for 0/0", () => {
-    expect(pct(0, 0)).toBe(0);
-  });
-  it("calculates correctly", () => {
-    expect(pct(3, 4)).toBe(75);
-  });
-  it("rounds", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-  it("returns 100 for equal values", () => {
-    expect(pct(5, 5)).toBe(100);
-  });
-  it("returns 0 for 0 numerator", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-});
 
 // ── getRating ────────────────────────────────────────────────────────────
 
@@ -149,10 +130,10 @@ describe("evaluateQuality", () => {
     const r = evaluateQuality([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalSessions).toBe(0);
-    expect(r.competencyRate).toBe(0);
-    expect(r.participationRate).toBe(0);
-    expect(r.dignityRate).toBe(0);
-    expect(r.progressRate).toBe(0);
+    expect(r.competencyRate).toBeNull();
+    expect(r.participationRate).toBeNull();
+    expect(r.dignityRate).toBeNull();
+    expect(r.progressRate).toBeNull();
   });
 
   it("scores 25 for perfect sessions", () => {
@@ -224,9 +205,9 @@ describe("evaluateCompliance", () => {
   it("returns zeros for empty sessions", () => {
     const r = evaluateCompliance([]);
     expect(r.overallScore).toBe(0);
-    expect(r.documentedRate).toBe(0);
-    expect(r.staffSupportedRate).toBe(0);
-    expect(r.feedbackRate).toBe(0);
+    expect(r.documentedRate).toBeNull();
+    expect(r.staffSupportedRate).toBeNull();
+    expect(r.feedbackRate).toBeNull();
     expect(r.hygieneAreaDiversityRatio).toBe(0);
   });
 
@@ -357,12 +338,12 @@ describe("evaluateStaffReadiness", () => {
     const r = evaluateStaffReadiness([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalStaff).toBe(0);
-    expect(r.personalCareSkillsRate).toBe(0);
-    expect(r.dignityAndPrivacyRate).toBe(0);
-    expect(r.infectionControlRate).toBe(0);
-    expect(r.ageAppropriateSupportRate).toBe(0);
-    expect(r.culturalAwarenessRate).toBe(0);
-    expect(r.safeguardingInPersonalCareRate).toBe(0);
+    expect(r.personalCareSkillsRate).toBeNull();
+    expect(r.dignityAndPrivacyRate).toBeNull();
+    expect(r.infectionControlRate).toBeNull();
+    expect(r.ageAppropriateSupportRate).toBeNull();
+    expect(r.culturalAwarenessRate).toBeNull();
+    expect(r.safeguardingInPersonalCareRate).toBeNull();
   });
 
   it("scores 25 for fully trained staff", () => {

@@ -6,7 +6,6 @@ import {
   evaluateEnvironmentAccessibility,
   evaluateStaffCompetence,
   buildChildCommunicationProfiles,
-  pct,
   getRating,
   getCommunicationNeedLabel,
   getSupportTypeLabel,
@@ -87,14 +86,6 @@ function mkTraining(overrides: Partial<StaffCommunicationTraining> = {}): StaffC
 
 // -- pct ----------------------------------------------------------------------
 
-describe("pct", () => {
-  it("returns 0 for 0/0", () => expect(pct(0, 0)).toBe(0));
-  it("calculates correctly", () => expect(pct(3, 4)).toBe(75));
-  it("rounds correctly", () => expect(pct(1, 3)).toBe(33));
-  it("full percentage", () => expect(pct(5, 5)).toBe(100));
-  it("returns 0 for 0/n", () => expect(pct(0, 10)).toBe(0));
-});
-
 // -- getRating ----------------------------------------------------------------
 
 describe("getRating", () => {
@@ -161,10 +152,10 @@ describe("evaluateNeedsAssessment", () => {
     const result = evaluateNeedsAssessment([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalProfiles).toBe(0);
-    expect(result.communicationPlanRate).toBe(0);
-    expect(result.planCurrentRate).toBe(0);
-    expect(result.interpreterAvailableRate).toBe(0);
-    expect(result.deviceProvidedRate).toBe(0);
+    expect(result.communicationPlanRate).toBeNull();
+    expect(result.planCurrentRate).toBeNull();
+    expect(result.interpreterAvailableRate).toBeNull();
+    expect(result.deviceProvidedRate).toBeNull();
   });
 
   it("scores high for all plans in place and current", () => {
@@ -194,10 +185,10 @@ describe("evaluateNeedsAssessment", () => {
     expect(result.interpreterAvailableRate).toBe(50);
   });
 
-  it("returns 0 interpreter rate when none required", () => {
+  it("returns null interpreter rate when none required", () => {
     const profiles = [mkProfile({ interpreterRequired: false, interpreterAvailable: false })];
     const result = evaluateNeedsAssessment(profiles);
-    expect(result.interpreterAvailableRate).toBe(0);
+    expect(result.interpreterAvailableRate).toBeNull();
   });
 
   it("tracks device provision rate", () => {
@@ -209,10 +200,10 @@ describe("evaluateNeedsAssessment", () => {
     expect(result.deviceProvidedRate).toBe(50);
   });
 
-  it("returns 0 device rate when none needed", () => {
+  it("returns null device rate when none needed", () => {
     const profiles = [mkProfile({ augmentativeDeviceNeeded: false, augmentativeDeviceProvided: false })];
     const result = evaluateNeedsAssessment(profiles);
-    expect(result.deviceProvidedRate).toBe(0);
+    expect(result.deviceProvidedRate).toBeNull();
   });
 
   it("handles mix of needs and no-needs children", () => {
@@ -260,9 +251,9 @@ describe("evaluateSupportProvision", () => {
     const result = evaluateSupportProvision([], 2);
     expect(result.overallScore).toBe(0);
     expect(result.totalSessions).toBe(0);
-    expect(result.qualityGoodPlusRate).toBe(0);
-    expect(result.childEngagedRate).toBe(0);
-    expect(result.progressNotedRate).toBe(0);
+    expect(result.qualityGoodPlusRate).toBeNull();
+    expect(result.childEngagedRate).toBeNull();
+    expect(result.progressNotedRate).toBeNull();
     expect(result.averageSessionsPerChild).toBe(0);
   });
 
@@ -323,7 +314,7 @@ describe("evaluateSupportProvision", () => {
     expect(manyResult.overallScore).toBeGreaterThan(fewResult.overallScore);
   });
 
-  it("returns 0 average sessions when profileCount is 0", () => {
+  it("returns null average sessions when profileCount is null", () => {
     const sessions = [mkSession()];
     const result = evaluateSupportProvision(sessions, 0);
     expect(result.averageSessionsPerChild).toBeNull();
@@ -355,10 +346,10 @@ describe("evaluateEnvironmentAccessibility", () => {
     const result = evaluateEnvironmentAccessibility([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalAudits).toBe(0);
-    expect(result.easyReadRate).toBe(0);
-    expect(result.visualAidsRate).toBe(0);
-    expect(result.signageAccessibleRate).toBe(0);
-    expect(result.childViewsAccessibleRate).toBe(0);
+    expect(result.easyReadRate).toBeNull();
+    expect(result.visualAidsRate).toBeNull();
+    expect(result.signageAccessibleRate).toBeNull();
+    expect(result.childViewsAccessibleRate).toBeNull();
   });
 
   it("scores high for fully accessible environment", () => {
@@ -423,12 +414,12 @@ describe("evaluateStaffCompetence", () => {
     const result = evaluateStaffCompetence([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.awarenessRate).toBe(0);
-    expect(result.signLanguageRate).toBe(0);
-    expect(result.augmentativeDeviceRate).toBe(0);
-    expect(result.easyReadRate).toBe(0);
-    expect(result.autismCommunicationRate).toBe(0);
-    expect(result.interpreterWorkingRate).toBe(0);
+    expect(result.awarenessRate).toBeNull();
+    expect(result.signLanguageRate).toBeNull();
+    expect(result.augmentativeDeviceRate).toBeNull();
+    expect(result.easyReadRate).toBeNull();
+    expect(result.autismCommunicationRate).toBeNull();
+    expect(result.interpreterWorkingRate).toBeNull();
   });
 
   it("scores high for fully trained staff", () => {

@@ -51,7 +51,6 @@ export {
   evaluateLeavingCarePolicy,
   evaluateStaffLeavingCareReadiness,
   buildChildLeavingCareProfiles,
-  pct as leavingCarePct,
   getRatingIntel,
   getLeavingCareCategoryLabel,
   getLeavingCareOutcomeLabel,

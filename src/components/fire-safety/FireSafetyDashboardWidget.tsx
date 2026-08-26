@@ -12,6 +12,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useEffect } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 // ── Local interfaces (mirrors API shape) ──────────────────────────────────
 
@@ -313,18 +314,18 @@ export default function FireSafetyDashboardWidget() {
           {/* Quality */}
           <Section title="Quality Evaluation" defaultOpen>
             <StatRow label="Total records" value={data.quality.totalRecords} />
-            <StatRow label="Drill completion rate" value={`${data.quality.drillCompletedSuccessfullyRate}%`} />
-            <StatRow label="Children accounted rate" value={`${data.quality.allChildrenAccountedRate}%`} />
-            <StatRow label="Evacuation time recorded" value={`${data.quality.evacuationTimeRecordedRate}%`} />
-            <StatRow label="Equipment functional" value={`${data.quality.equipmentFunctionalRate}%`} />
+            <StatRow label="Drill completion rate" value={`${formatRate(data.quality.drillCompletedSuccessfullyRate)}`} />
+            <StatRow label="Children accounted rate" value={`${formatRate(data.quality.allChildrenAccountedRate)}`} />
+            <StatRow label="Evacuation time recorded" value={`${formatRate(data.quality.evacuationTimeRecordedRate)}`} />
+            <StatRow label="Equipment functional" value={`${formatRate(data.quality.equipmentFunctionalRate)}`} />
             <StatRow label="Score" value={`${data.quality.score}/25`} />
           </Section>
 
           {/* Compliance */}
           <Section title="Compliance Evaluation">
-            <StatRow label="Documentation rate" value={`${data.compliance.documentationRate}%`} />
-            <StatRow label="Timely recording rate" value={`${data.compliance.timelyRecordingRate}%`} />
-            <StatRow label="Children accounted rate" value={`${data.compliance.allChildrenAccountedRate}%`} />
+            <StatRow label="Documentation rate" value={`${formatRate(data.compliance.documentationRate)}`} />
+            <StatRow label="Timely recording rate" value={`${formatRate(data.compliance.timelyRecordingRate)}`} />
+            <StatRow label="Children accounted rate" value={`${formatRate(data.compliance.allChildrenAccountedRate)}`} />
             <StatRow label="Category diversity" value={`${data.compliance.uniqueCategories}/8`} />
             <StatRow label="Score" value={`${data.compliance.score}/25`} />
           </Section>
@@ -344,12 +345,12 @@ export default function FireSafetyDashboardWidget() {
           {/* Staff Readiness */}
           <Section title="Staff Fire Safety Readiness">
             <StatRow label="Total staff" value={data.staffReadiness.totalStaff} />
-            <StatRow label="Fire warden training" value={`${data.staffReadiness.fireWardenTrainingRate}%`} />
-            <StatRow label="Evacuation procedure knowledge" value={`${data.staffReadiness.evacuationProcedureKnowledgeRate}%`} />
-            <StatRow label="Fire extinguisher use" value={`${data.staffReadiness.fireExtinguisherUseRate}%`} />
-            <StatRow label="Fire risk assessment" value={`${data.staffReadiness.fireRiskAssessmentRate}%`} />
-            <StatRow label="Alarm system knowledge" value={`${data.staffReadiness.alarmSystemKnowledgeRate}%`} />
-            <StatRow label="First aid fire injury" value={`${data.staffReadiness.firstAidFireInjuryRate}%`} />
+            <StatRow label="Fire warden training" value={`${formatRate(data.staffReadiness.fireWardenTrainingRate)}`} />
+            <StatRow label="Evacuation procedure knowledge" value={`${formatRate(data.staffReadiness.evacuationProcedureKnowledgeRate)}`} />
+            <StatRow label="Fire extinguisher use" value={`${formatRate(data.staffReadiness.fireExtinguisherUseRate)}`} />
+            <StatRow label="Fire risk assessment" value={`${formatRate(data.staffReadiness.fireRiskAssessmentRate)}`} />
+            <StatRow label="Alarm system knowledge" value={`${formatRate(data.staffReadiness.alarmSystemKnowledgeRate)}`} />
+            <StatRow label="First aid fire injury" value={`${formatRate(data.staffReadiness.firstAidFireInjuryRate)}`} />
             <StatRow label="Score" value={`${data.staffReadiness.score}/25`} />
           </Section>
 

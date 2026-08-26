@@ -5,7 +5,6 @@ export {
   evaluateEvacuationPlanning,
   evaluateStaffFireReadiness,
   buildChildFireSafetySummaries,
-  pct,
   getRating,
   getDrillTypeLabel,
   getDrillOutcomeLabel,

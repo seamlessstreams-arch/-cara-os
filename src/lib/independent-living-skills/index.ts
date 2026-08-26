@@ -5,7 +5,6 @@ export {
   evaluateLivingSkillsPolicy,
   evaluateStaffLivingSkillsReadiness,
   buildChildLivingSkillsProfiles,
-  pct,
   getRating,
   getSkillTypeLabel,
   getCompetencyLevelLabel,

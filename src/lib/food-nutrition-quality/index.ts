@@ -5,7 +5,6 @@ export {
   evaluateNutritionPolicy,
   evaluateStaffNutritionReadiness,
   buildChildNutritionProfiles,
-  pct,
   getRating,
   getMealTypeLabel,
   getNutritionRatingLabel,

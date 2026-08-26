@@ -1,3 +1,4 @@
+import { above, below, meanOf, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // Life Story Work Intelligence Engine
 //
@@ -157,19 +158,27 @@ export interface StaffLifeStoryTraining {
 export interface SessionQualityResult {
   overallScore: number;
   totalSessions: number;
-  engagementRate: number;
-  therapeuticRate: number;
-  childLedRate: number;
-  recordedRate: number;
-  followUpRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  engagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  therapeuticRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childLedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  recordedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  followUpRate: number | null;
 }
 
 export interface MemoryRecordKeepingResult {
   overallScore: number;
   totalItems: number;
-  secureStorageRate: number;
-  childAccessRate: number;
-  qualityCheckedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  secureStorageRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childAccessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  qualityCheckedRate: number | null;
 }
 
 export interface LifeStoryPolicyResult {
@@ -186,12 +195,18 @@ export interface LifeStoryPolicyResult {
 export interface StaffLifeStoryReadinessResult {
   overallScore: number;
   totalStaff: number;
-  lifeStoryWorkRate: number;
-  therapeuticNarrativeRate: number;
-  traumaInformedRate: number;
-  culturalSensitivityRate: number;
-  childLedApproachRate: number;
-  memoryKeepingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  lifeStoryWorkRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  therapeuticNarrativeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  traumaInformedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  culturalSensitivityRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childLedApproachRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  memoryKeepingRate: number | null;
 }
 
 export interface ChildLifeStoryProfile {
@@ -199,8 +214,10 @@ export interface ChildLifeStoryProfile {
   childName: string;
   totalSessions: number;
   totalMemoryItems: number;
-  engagementRate: number;
-  therapeuticRate: number;
+  /** null when this child has no measurable population for it. */
+  engagementRate: number | null;
+  /** null when this child has no measurable population for it. */
+  therapeuticRate: number | null;
   overallScore: number;
 }
 
@@ -222,11 +239,6 @@ export interface LifeStoryWorkIntelligence {
 }
 
 // -- Helpers -------------------------------------------------------------------
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -253,11 +265,11 @@ export function evaluateSessionQuality(
     return {
       overallScore: 0,
       totalSessions: 0,
-      engagementRate: 0,
-      therapeuticRate: 0,
-      childLedRate: 0,
-      recordedRate: 0,
-      followUpRate: 0,
+      engagementRate: null,
+      therapeuticRate: null,
+      childLedRate: null,
+      recordedRate: null,
+      followUpRate: null,
     };
   }
 
@@ -266,31 +278,31 @@ export function evaluateSessionQuality(
   const engaged = sessions.filter(
     (s) => s.engagementLevel === "highly_engaged" || s.engagementLevel === "engaged",
   ).length;
-  const engagementRate = pct(engaged, sessions.length);
-  if (engagementRate >= 80) score += 7;
-  else if (engagementRate >= 60) score += 5;
-  else if (engagementRate >= 40) score += 3;
-  else if (engagementRate > 0) score += 1;
+  const engagementRate = rate(engaged, sessions.length);
+  if (meets(engagementRate, 80)) score += 7;
+  else if (meets(engagementRate, 60)) score += 5;
+  else if (meets(engagementRate, 40)) score += 3;
+  else if (above(engagementRate, 0)) score += 1;
 
   const therapeutic = sessions.filter((s) => s.therapeuticApproachUsed).length;
-  const therapeuticRate = pct(therapeutic, sessions.length);
-  if (therapeuticRate >= 90) score += 6;
-  else if (therapeuticRate >= 70) score += 4;
-  else if (therapeuticRate >= 50) score += 3;
-  else if (therapeuticRate > 0) score += 1;
+  const therapeuticRate = rate(therapeutic, sessions.length);
+  if (meets(therapeuticRate, 90)) score += 6;
+  else if (meets(therapeuticRate, 70)) score += 4;
+  else if (meets(therapeuticRate, 50)) score += 3;
+  else if (above(therapeuticRate, 0)) score += 1;
 
   const childLed = sessions.filter((s) => s.childLedPace).length;
-  const childLedRate = pct(childLed, sessions.length);
-  if (childLedRate >= 90) score += 6;
-  else if (childLedRate >= 70) score += 4;
-  else if (childLedRate >= 50) score += 3;
-  else if (childLedRate > 0) score += 1;
+  const childLedRate = rate(childLed, sessions.length);
+  if (meets(childLedRate, 90)) score += 6;
+  else if (meets(childLedRate, 70)) score += 4;
+  else if (meets(childLedRate, 50)) score += 3;
+  else if (above(childLedRate, 0)) score += 1;
 
   const recorded = sessions.filter((s) => s.recordedInCasefile).length;
-  const recordedRate = pct(recorded, sessions.length);
+  const recordedRate = rate(recorded, sessions.length);
   const followUp = sessions.filter((s) => s.followUpPlanned).length;
-  const followUpRate = pct(followUp, sessions.length);
-  const combinedRate = Math.round((recordedRate + followUpRate) / 2);
+  const followUpRate = rate(followUp, sessions.length);
+  const combinedRate = meanOf([recordedRate, followUpRate]) ?? 0; // unmeasured earns no bonus
   if (combinedRate >= 90) score += 6;
   else if (combinedRate >= 70) score += 4;
   else if (combinedRate >= 50) score += 3;
@@ -322,34 +334,34 @@ export function evaluateMemoryRecordKeeping(
     return {
       overallScore: 0,
       totalItems: 0,
-      secureStorageRate: 0,
-      childAccessRate: 0,
-      qualityCheckedRate: 0,
+      secureStorageRate: null,
+      childAccessRate: null,
+      qualityCheckedRate: null,
     };
   }
 
   let score = 0;
 
   const secure = records.filter((r) => r.securelyStored).length;
-  const secureStorageRate = pct(secure, records.length);
-  if (secureStorageRate >= 90) score += 8;
-  else if (secureStorageRate >= 70) score += 6;
-  else if (secureStorageRate >= 50) score += 4;
-  else if (secureStorageRate > 0) score += 2;
+  const secureStorageRate = rate(secure, records.length);
+  if (meets(secureStorageRate, 90)) score += 8;
+  else if (meets(secureStorageRate, 70)) score += 6;
+  else if (meets(secureStorageRate, 50)) score += 4;
+  else if (above(secureStorageRate, 0)) score += 2;
 
   const accessible = records.filter((r) => r.childAccessible).length;
-  const childAccessRate = pct(accessible, records.length);
-  if (childAccessRate >= 90) score += 9;
-  else if (childAccessRate >= 70) score += 7;
-  else if (childAccessRate >= 50) score += 4;
-  else if (childAccessRate > 0) score += 2;
+  const childAccessRate = rate(accessible, records.length);
+  if (meets(childAccessRate, 90)) score += 9;
+  else if (meets(childAccessRate, 70)) score += 7;
+  else if (meets(childAccessRate, 50)) score += 4;
+  else if (above(childAccessRate, 0)) score += 2;
 
   const checked = records.filter((r) => r.qualityChecked).length;
-  const qualityCheckedRate = pct(checked, records.length);
-  if (qualityCheckedRate >= 90) score += 8;
-  else if (qualityCheckedRate >= 70) score += 6;
-  else if (qualityCheckedRate >= 50) score += 4;
-  else if (qualityCheckedRate > 0) score += 2;
+  const qualityCheckedRate = rate(checked, records.length);
+  if (meets(qualityCheckedRate, 90)) score += 8;
+  else if (meets(qualityCheckedRate, 70)) score += 6;
+  else if (meets(qualityCheckedRate, 50)) score += 4;
+  else if (above(qualityCheckedRate, 0)) score += 2;
 
   return {
     overallScore: Math.min(score, 25),
@@ -428,55 +440,55 @@ export function evaluateStaffLifeStoryReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      lifeStoryWorkRate: 0,
-      therapeuticNarrativeRate: 0,
-      traumaInformedRate: 0,
-      culturalSensitivityRate: 0,
-      childLedApproachRate: 0,
-      memoryKeepingRate: 0,
+      lifeStoryWorkRate: null,
+      therapeuticNarrativeRate: null,
+      traumaInformedRate: null,
+      culturalSensitivityRate: null,
+      childLedApproachRate: null,
+      memoryKeepingRate: null,
     };
   }
 
   let score = 0;
 
   const lsw = training.filter((t) => t.lifeStoryWork).length;
-  const lifeStoryWorkRate = pct(lsw, training.length);
-  if (lifeStoryWorkRate >= 90) score += 6;
-  else if (lifeStoryWorkRate >= 70) score += 4;
-  else if (lifeStoryWorkRate >= 50) score += 3;
-  else if (lifeStoryWorkRate > 0) score += 1;
+  const lifeStoryWorkRate = rate(lsw, training.length);
+  if (meets(lifeStoryWorkRate, 90)) score += 6;
+  else if (meets(lifeStoryWorkRate, 70)) score += 4;
+  else if (meets(lifeStoryWorkRate, 50)) score += 3;
+  else if (above(lifeStoryWorkRate, 0)) score += 1;
 
   const tn = training.filter((t) => t.therapeuticNarrative).length;
-  const therapeuticNarrativeRate = pct(tn, training.length);
-  if (therapeuticNarrativeRate >= 90) score += 5;
-  else if (therapeuticNarrativeRate >= 70) score += 3;
-  else if (therapeuticNarrativeRate >= 50) score += 2;
-  else if (therapeuticNarrativeRate > 0) score += 1;
+  const therapeuticNarrativeRate = rate(tn, training.length);
+  if (meets(therapeuticNarrativeRate, 90)) score += 5;
+  else if (meets(therapeuticNarrativeRate, 70)) score += 3;
+  else if (meets(therapeuticNarrativeRate, 50)) score += 2;
+  else if (above(therapeuticNarrativeRate, 0)) score += 1;
 
   const ti = training.filter((t) => t.traumaInformed).length;
-  const traumaInformedRate = pct(ti, training.length);
-  if (traumaInformedRate >= 90) score += 5;
-  else if (traumaInformedRate >= 70) score += 3;
-  else if (traumaInformedRate >= 50) score += 2;
-  else if (traumaInformedRate > 0) score += 1;
+  const traumaInformedRate = rate(ti, training.length);
+  if (meets(traumaInformedRate, 90)) score += 5;
+  else if (meets(traumaInformedRate, 70)) score += 3;
+  else if (meets(traumaInformedRate, 50)) score += 2;
+  else if (above(traumaInformedRate, 0)) score += 1;
 
   const cs = training.filter((t) => t.culturalSensitivity).length;
-  const culturalSensitivityRate = pct(cs, training.length);
-  if (culturalSensitivityRate >= 90) score += 4;
-  else if (culturalSensitivityRate >= 70) score += 3;
-  else if (culturalSensitivityRate >= 50) score += 2;
-  else if (culturalSensitivityRate > 0) score += 1;
+  const culturalSensitivityRate = rate(cs, training.length);
+  if (meets(culturalSensitivityRate, 90)) score += 4;
+  else if (meets(culturalSensitivityRate, 70)) score += 3;
+  else if (meets(culturalSensitivityRate, 50)) score += 2;
+  else if (above(culturalSensitivityRate, 0)) score += 1;
 
   const cla = training.filter((t) => t.childLedApproach).length;
-  const childLedApproachRate = pct(cla, training.length);
-  if (childLedApproachRate >= 90) score += 3;
-  else if (childLedApproachRate >= 70) score += 2;
-  else if (childLedApproachRate >= 50) score += 1;
+  const childLedApproachRate = rate(cla, training.length);
+  if (meets(childLedApproachRate, 90)) score += 3;
+  else if (meets(childLedApproachRate, 70)) score += 2;
+  else if (meets(childLedApproachRate, 50)) score += 1;
 
   const mk = training.filter((t) => t.memoryKeeping).length;
-  const memoryKeepingRate = pct(mk, training.length);
-  if (memoryKeepingRate >= 90) score += 2;
-  else if (memoryKeepingRate >= 70) score += 1;
+  const memoryKeepingRate = rate(mk, training.length);
+  if (meets(memoryKeepingRate, 90)) score += 2;
+  else if (meets(memoryKeepingRate, 70)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -527,16 +539,16 @@ export function buildChildLifeStoryProfiles(
     const engaged = entry.sessions.filter(
       (s) => s.engagementLevel === "highly_engaged" || s.engagementLevel === "engaged",
     ).length;
-    const engagementRate = pct(engaged, entry.sessions.length);
-    if (engagementRate >= 80) score += 3;
-    else if (engagementRate >= 50) score += 2;
-    else if (engagementRate > 0) score += 1;
+    const engagementRate = rate(engaged, entry.sessions.length);
+    if (meets(engagementRate, 80)) score += 3;
+    else if (meets(engagementRate, 50)) score += 2;
+    else if (above(engagementRate, 0)) score += 1;
 
     // Therapeutic approach (0-2)
     const therapeutic = entry.sessions.filter((s) => s.therapeuticApproachUsed).length;
-    const therapeuticRate = pct(therapeutic, entry.sessions.length);
-    if (therapeuticRate >= 80) score += 2;
-    else if (therapeuticRate >= 50) score += 1;
+    const therapeuticRate = rate(therapeutic, entry.sessions.length);
+    if (meets(therapeuticRate, 80)) score += 2;
+    else if (meets(therapeuticRate, 50)) score += 1;
 
     // Memory items (0-2)
     if (entry.records.length >= 5) score += 2;
@@ -583,37 +595,37 @@ export function generateLifeStoryWorkIntelligence(
   // -- Strengths ---------------------------------------------------------------
   const strengths: string[] = [];
 
-  if (sessionQuality.engagementRate >= 80 && sessions.length > 0) {
+  if (meets(sessionQuality.engagementRate, 80) && sessions.length > 0) {
     strengths.push(
       "Children highly engaged in life story work sessions",
     );
   }
-  if (sessionQuality.therapeuticRate >= 90 && sessions.length > 0) {
+  if (meets(sessionQuality.therapeuticRate, 90) && sessions.length > 0) {
     strengths.push(
       "Therapeutic approaches consistently used in life story sessions",
     );
   }
-  if (sessionQuality.childLedRate >= 90 && sessions.length > 0) {
+  if (meets(sessionQuality.childLedRate, 90) && sessions.length > 0) {
     strengths.push(
       "Life story work consistently child-led at the child's pace",
     );
   }
-  if (memoryRecordKeeping.secureStorageRate >= 90 && records.length > 0) {
+  if (meets(memoryRecordKeeping.secureStorageRate, 90) && records.length > 0) {
     strengths.push(
       "Memory items securely stored and well maintained",
     );
   }
-  if (memoryRecordKeeping.childAccessRate >= 90 && records.length > 0) {
+  if (meets(memoryRecordKeeping.childAccessRate, 90) && records.length > 0) {
     strengths.push(
       "Children have good access to their memory items and life story materials",
     );
   }
-  if (staffReadiness.lifeStoryWorkRate >= 90 && training.length > 0) {
+  if (meets(staffReadiness.lifeStoryWorkRate, 90) && training.length > 0) {
     strengths.push(
       "Staff team fully trained in life story work approaches",
     );
   }
-  if (staffReadiness.traumaInformedRate >= 90 && training.length > 0) {
+  if (meets(staffReadiness.traumaInformedRate, 90) && training.length > 0) {
     strengths.push(
       "Staff team trained in trauma-informed life story work",
     );
@@ -627,27 +639,27 @@ export function generateLifeStoryWorkIntelligence(
   // -- Areas for improvement ---------------------------------------------------
   const areasForImprovement: string[] = [];
 
-  if (sessionQuality.engagementRate < 60 && sessions.length > 0) {
+  if (below(sessionQuality.engagementRate, 60) && sessions.length > 0) {
     areasForImprovement.push(
       "Child engagement in life story sessions needs improvement — review approaches and timing",
     );
   }
-  if (sessionQuality.recordedRate < 70 && sessions.length > 0) {
+  if (below(sessionQuality.recordedRate, 70) && sessions.length > 0) {
     areasForImprovement.push(
       "Life story sessions not consistently recorded in casefiles",
     );
   }
-  if (memoryRecordKeeping.qualityCheckedRate < 70 && records.length > 0) {
+  if (below(memoryRecordKeeping.qualityCheckedRate, 70) && records.length > 0) {
     areasForImprovement.push(
       "Quality checking of memory items needs strengthening",
     );
   }
-  if (staffReadiness.therapeuticNarrativeRate < 70 && training.length > 0) {
+  if (below(staffReadiness.therapeuticNarrativeRate, 70) && training.length > 0) {
     areasForImprovement.push(
       "Staff training on therapeutic narrative approaches needs improvement",
     );
   }
-  if (staffReadiness.culturalSensitivityRate < 70 && training.length > 0) {
+  if (below(staffReadiness.culturalSensitivityRate, 70) && training.length > 0) {
     areasForImprovement.push(
       "Staff cultural sensitivity training for life story work needs strengthening",
     );
@@ -676,17 +688,17 @@ export function generateLifeStoryWorkIntelligence(
       "URGENT: No staff life story work training records — deliver training on life story work approaches",
     );
   }
-  if (sessionQuality.followUpRate < 70 && sessions.length > 0) {
+  if (below(sessionQuality.followUpRate, 70) && sessions.length > 0) {
     actions.push(
       "Improve follow-up planning after life story sessions to maintain continuity",
     );
   }
-  if (memoryRecordKeeping.secureStorageRate < 80 && records.length > 0) {
+  if (below(memoryRecordKeeping.secureStorageRate, 80) && records.length > 0) {
     actions.push(
       "Review secure storage arrangements for children's memory items",
     );
   }
-  if (sessionQuality.childLedRate < 70 && sessions.length > 0) {
+  if (below(sessionQuality.childLedRate, 70) && sessions.length > 0) {
     actions.push(
       "Ensure life story work is consistently child-led and at the child's pace",
     );

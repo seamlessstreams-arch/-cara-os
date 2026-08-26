@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — Handover & Communication Quality Intelligence Engine
 //
@@ -112,11 +113,16 @@ export interface InformationGovernance {
 export interface HandoverQualityResult {
   overallScore: number; // 0-25
   totalHandovers: number;
-  thoroughRate: number; // %
-  childUpdatesRate: number; // %
-  riskUpdatesRate: number; // %
-  medicationUpdatesRate: number; // %
-  timelinessRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  thoroughRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  childUpdatesRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskUpdatesRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  medicationUpdatesRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelinessRate: number | null; // %
   averageDuration: number;
   formatDistribution: Record<HandoverFormat, number>;
 }
@@ -124,9 +130,12 @@ export interface HandoverQualityResult {
 export interface CommunicationEffectivenessResult {
   overallScore: number; // 0-25
   totalCommunications: number;
-  acknowledgedRate: number; // %
-  actionCompletionRate: number; // %
-  criticalAcknowledgedRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  acknowledgedRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionCompletionRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  criticalAcknowledgedRate: number | null; // %
   averageResponseTime: number | null;
   priorityDistribution: Record<InformationPriority, number>;
 }
@@ -135,22 +144,33 @@ export interface TeamMeetingQualityResult {
   overallScore: number; // 0-25
   totalMeetings: number;
   averageAttendance: number; // %
-  agendaUsedRate: number; // %
-  minutesTakenRate: number; // %
-  actionCompletionRate: number; // %
-  childrenDiscussedRate: number; // %
-  safeguardingRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  agendaUsedRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  minutesTakenRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  actionCompletionRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  childrenDiscussedRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingRate: number | null; // %
 }
 
 export interface InformationGovernanceResult {
   overallScore: number; // 0-25
   totalAssessments: number;
-  dataProtectionRate: number; // %
-  secureStorageRate: number; // %
-  needToKnowRate: number; // %
-  consentRate: number; // %
-  staffTrainedRate: number; // %
-  breachProcessRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  dataProtectionRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  secureStorageRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  needToKnowRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  consentRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffTrainedRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  breachProcessRate: number | null; // %
 }
 
 export interface StaffCommunicationProfile {
@@ -183,11 +203,6 @@ export interface HandoverCommunicationQualityIntelligence {
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
 /** Calculate percentage, returning 0 if denominator is 0. */
-export function pct(numerator: number, denominator: number): number {
-  if (denominator === 0) return 0;
-  return Math.round((numerator / denominator) * 100);
-}
-
 /** Map overall score (0-100) to Ofsted-style rating. */
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -298,11 +313,11 @@ export function evaluateHandoverQuality(
     return {
       overallScore: 0,
       totalHandovers: 0,
-      thoroughRate: 0,
-      childUpdatesRate: 0,
-      riskUpdatesRate: 0,
-      medicationUpdatesRate: 0,
-      timelinessRate: 0,
+      thoroughRate: null,
+      childUpdatesRate: null,
+      riskUpdatesRate: null,
+      medicationUpdatesRate: null,
+      timelinessRate: null,
       averageDuration: 0,
       formatDistribution: { ...emptyFormat },
     };
@@ -325,20 +340,20 @@ export function evaluateHandoverQuality(
     formatDist[h.format] = (formatDist[h.format] || 0) + 1;
   }
 
-  const thoroughRate = pct(thorough.length, handovers.length);
-  const childUpdatesRate = pct(childUpdates.length, handovers.length);
-  const riskUpdatesRate = pct(riskUpdates.length, handovers.length);
-  const medicationUpdatesRate = pct(medicationUpdates.length, handovers.length);
-  const timelinessRate = pct(onTime.length, handovers.length);
+  const thoroughRate = rate(thorough.length, handovers.length);
+  const childUpdatesRate = rate(childUpdates.length, handovers.length);
+  const riskUpdatesRate = rate(riskUpdates.length, handovers.length);
+  const medicationUpdatesRate = rate(medicationUpdates.length, handovers.length);
+  const timelinessRate = rate(onTime.length, handovers.length);
   const averageDuration =
     Math.round((totalDuration / handovers.length) * 10) / 10;
 
   // Scoring
-  const thoroughScore = Math.round((thoroughRate / 100) * 7);
-  const childScore = Math.round((childUpdatesRate / 100) * 5);
-  const riskScore = Math.round((riskUpdatesRate / 100) * 5);
-  const medScore = Math.round((medicationUpdatesRate / 100) * 4);
-  const timeScore = Math.round((timelinessRate / 100) * 4);
+  const thoroughScore = Math.round(((thoroughRate ?? 0) / 100) * 7);
+  const childScore = Math.round(((childUpdatesRate ?? 0) / 100) * 5);
+  const riskScore = Math.round(((riskUpdatesRate ?? 0) / 100) * 5);
+  const medScore = Math.round(((medicationUpdatesRate ?? 0) / 100) * 4);
+  const timeScore = Math.round(((timelinessRate ?? 0) / 100) * 4);
 
   const overallScore = Math.min(
     25,
@@ -383,9 +398,9 @@ export function evaluateCommunicationEffectiveness(
     return {
       overallScore: 0,
       totalCommunications: 0,
-      acknowledgedRate: 0,
-      actionCompletionRate: 0,
-      criticalAcknowledgedRate: 0,
+      acknowledgedRate: null,
+      actionCompletionRate: null,
+      criticalAcknowledgedRate: null,
       averageResponseTime: null,
       priorityDistribution: { ...emptyPriority },
     };
@@ -419,17 +434,17 @@ export function evaluateCommunicationEffectiveness(
     priorityDist[c.priority] = (priorityDist[c.priority] || 0) + 1;
   }
 
-  const acknowledgedRate = pct(acknowledged.length, communications.length);
-  const actionCompletionRate = pct(actionCompleted.length, actionRequired.length);
-  const criticalAcknowledgedRate = pct(
+  const acknowledgedRate = rate(acknowledged.length, communications.length);
+  const actionCompletionRate = rate(actionCompleted.length, actionRequired.length);
+  const criticalAcknowledgedRate = rate(
     criticalAcknowledged.length,
     critical.length,
   );
 
   // Scoring
-  const ackScore = Math.round((acknowledgedRate / 100) * 7);
-  const actionScore = Math.round((actionCompletionRate / 100) * 6);
-  const criticalScore = Math.round((criticalAcknowledgedRate / 100) * 6);
+  const ackScore = Math.round(((acknowledgedRate ?? 0) / 100) * 7);
+  const actionScore = Math.round(((actionCompletionRate ?? 0) / 100) * 6);
+  const criticalScore = Math.round(((criticalAcknowledgedRate ?? 0) / 100) * 6);
 
   let responseBonus = 0;
   if (averageResponseTime !== null) {
@@ -475,11 +490,11 @@ export function evaluateTeamMeetingQuality(
       overallScore: 0,
       totalMeetings: 0,
       averageAttendance: 0,
-      agendaUsedRate: 0,
-      minutesTakenRate: 0,
-      actionCompletionRate: 0,
-      childrenDiscussedRate: 0,
-      safeguardingRate: 0,
+      agendaUsedRate: null,
+      minutesTakenRate: null,
+      actionCompletionRate: null,
+      childrenDiscussedRate: null,
+      safeguardingRate: null,
     };
   }
 
@@ -507,25 +522,25 @@ export function evaluateTeamMeetingQuality(
     0,
   );
 
-  const agendaUsedRate = pct(agendaUsed.length, meetings.length);
-  const minutesTakenRate = pct(minutesTaken.length, meetings.length);
-  const actionCompletionRate = pct(totalCompleted, totalGenerated);
-  const childrenDiscussedRate = pct(
+  const agendaUsedRate = rate(agendaUsed.length, meetings.length);
+  const minutesTakenRate = rate(minutesTaken.length, meetings.length);
+  const actionCompletionRate = rate(totalCompleted, totalGenerated);
+  const childrenDiscussedRate = rate(
     childrenDiscussed.length,
     meetings.length,
   );
-  const safeguardingRate = pct(
+  const safeguardingRate = rate(
     safeguardingDiscussed.length,
     meetings.length,
   );
 
   // Scoring
   const attendanceScore = Math.round((averageAttendance / 100) * 6);
-  const agendaScore = Math.round((agendaUsedRate / 100) * 5);
-  const minutesScore = Math.round((minutesTakenRate / 100) * 4);
-  const actionScore = Math.round((actionCompletionRate / 100) * 4);
-  const childrenScore = Math.round((childrenDiscussedRate / 100) * 3);
-  const safeguardingScore = Math.round((safeguardingRate / 100) * 3);
+  const agendaScore = Math.round(((agendaUsedRate ?? 0) / 100) * 5);
+  const minutesScore = Math.round(((minutesTakenRate ?? 0) / 100) * 4);
+  const actionScore = Math.round(((actionCompletionRate ?? 0) / 100) * 4);
+  const childrenScore = Math.round(((childrenDiscussedRate ?? 0) / 100) * 3);
+  const safeguardingScore = Math.round(((safeguardingRate ?? 0) / 100) * 3);
 
   const overallScore = Math.min(
     25,
@@ -567,12 +582,12 @@ export function evaluateInformationGovernance(
     return {
       overallScore: 0,
       totalAssessments: 0,
-      dataProtectionRate: 0,
-      secureStorageRate: 0,
-      needToKnowRate: 0,
-      consentRate: 0,
-      staffTrainedRate: 0,
-      breachProcessRate: 0,
+      dataProtectionRate: null,
+      secureStorageRate: null,
+      needToKnowRate: null,
+      consentRate: null,
+      staffTrainedRate: null,
+      breachProcessRate: null,
     };
   }
 
@@ -591,23 +606,23 @@ export function evaluateInformationGovernance(
   const staffTrained = assessments.filter((a) => a.staffTrainedIG);
 
   const n = assessments.length;
-  const dataProtectionRate = pct(dataProtection.length, n);
-  const secureStorageRate = pct(secureStorage.length, n);
-  const needToKnowRate = pct(needToKnow.length, n);
-  const consentRate = pct(consent.length, n);
-  const staffTrainedRate = pct(staffTrained.length, n);
-  const breachProcessRate = pct(breachProcess.length, n);
-  const thirdPartyRate = pct(thirdParty.length, n);
+  const dataProtectionRate = rate(dataProtection.length, n);
+  const secureStorageRate = rate(secureStorage.length, n);
+  const needToKnowRate = rate(needToKnow.length, n);
+  const consentRate = rate(consent.length, n);
+  const staffTrainedRate = rate(staffTrained.length, n);
+  const breachProcessRate = rate(breachProcess.length, n);
+  const thirdPartyRate = rate(thirdParty.length, n);
 
   // Weighted scoring: dataProtection=4, secureStorage=4, rest=3.4 each (5 fields)
   // 4 + 4 + 3.4*5 = 25
-  const dpScore = (dataProtectionRate / 100) * 4;
-  const ssScore = (secureStorageRate / 100) * 4;
-  const ntkScore = (needToKnowRate / 100) * 3.4;
-  const conScore = (consentRate / 100) * 3.4;
-  const tpScore = (thirdPartyRate / 100) * 3.4;
-  const brScore = (breachProcessRate / 100) * 3.4;
-  const stScore = (staffTrainedRate / 100) * 3.4;
+  const dpScore = ((dataProtectionRate ?? 0) / 100) * 4;
+  const ssScore = ((secureStorageRate ?? 0) / 100) * 4;
+  const ntkScore = ((needToKnowRate ?? 0) / 100) * 3.4;
+  const conScore = ((consentRate ?? 0) / 100) * 3.4;
+  const tpScore = ((thirdPartyRate ?? 0) / 100) * 3.4;
+  const brScore = ((breachProcessRate ?? 0) / 100) * 3.4;
+  const stScore = ((staffTrainedRate ?? 0) / 100) * 3.4;
 
   const overallScore = Math.min(
     25,
@@ -648,17 +663,17 @@ export function buildStaffCommunicationProfiles(
     const thoroughHandovers = staffHandovers.filter(
       (h) => h.completionQuality === "thorough",
     );
-    const thoroughRate = pct(thoroughHandovers.length, staffHandovers.length);
+    const thoroughRate = rate(thoroughHandovers.length, staffHandovers.length)!;
 
     const staffComms = communications.filter((c) => c.sender === staffId);
     const staffAck = staffComms.filter((c) => c.acknowledged);
-    const acknowledgedRate = pct(staffAck.length, staffComms.length);
+    const acknowledgedRate = rate(staffAck.length, staffComms.length)!;
 
     // Score (0-10): handover thoroughness (0-5) + communication acknowledged (0-5)
     const handoverScore =
-      staffHandovers.length > 0 ? (thoroughRate / 100) * 5 : 5; // no handovers = neutral
+      staffHandovers.length > 0 ? (thoroughRate! / 100) * 5 : 5; // no handovers = neutral
     const commScore =
-      staffComms.length > 0 ? (acknowledgedRate / 100) * 5 : 5; // no comms = neutral
+      staffComms.length > 0 ? (acknowledgedRate! / 100) * 5 : 5; // no comms = neutral
     const overallScore =
       Math.round((handoverScore + commScore) * 10) / 10;
 
@@ -738,17 +753,17 @@ export function generateHandoverCommunicationQualityIntelligence(
       "Information governance practices are robust with strong data protection and secure storage compliance",
     );
   }
-  if (handoverQuality.childUpdatesRate >= 90 && handovers.length > 0) {
+  if (meets(handoverQuality.childUpdatesRate, 90) && handovers.length > 0) {
     strengths.push(
       "Child updates are consistently included in handovers, supporting individualised care",
     );
   }
-  if (handoverQuality.riskUpdatesRate >= 90 && handovers.length > 0) {
+  if (meets(handoverQuality.riskUpdatesRate, 90) && handovers.length > 0) {
     strengths.push(
       "Risk information is reliably communicated during handovers, supporting safeguarding",
     );
   }
-  if (handoverQuality.medicationUpdatesRate >= 90 && handovers.length > 0) {
+  if (meets(handoverQuality.medicationUpdatesRate, 90) && handovers.length > 0) {
     strengths.push(
       "Medication updates are consistently shared during handovers, reducing risk of medication errors",
     );
@@ -781,7 +796,7 @@ export function generateHandoverCommunicationQualityIntelligence(
     );
   }
   if (
-    handoverQuality.thoroughRate < 80 &&
+    below(handoverQuality.thoroughRate, 80) &&
     handoverQuality.totalHandovers > 0
   ) {
     areasForImprovement.push(
@@ -789,7 +804,7 @@ export function generateHandoverCommunicationQualityIntelligence(
     );
   }
   if (
-    handoverQuality.childUpdatesRate < 90 &&
+    below(handoverQuality.childUpdatesRate, 90) &&
     handoverQuality.totalHandovers > 0
   ) {
     areasForImprovement.push(
@@ -797,7 +812,7 @@ export function generateHandoverCommunicationQualityIntelligence(
     );
   }
   if (
-    handoverQuality.riskUpdatesRate < 90 &&
+    below(handoverQuality.riskUpdatesRate, 90) &&
     handoverQuality.totalHandovers > 0
   ) {
     areasForImprovement.push(
@@ -805,7 +820,7 @@ export function generateHandoverCommunicationQualityIntelligence(
     );
   }
   if (
-    handoverQuality.medicationUpdatesRate < 90 &&
+    below(handoverQuality.medicationUpdatesRate, 90) &&
     handoverQuality.totalHandovers > 0
   ) {
     areasForImprovement.push(
@@ -813,7 +828,7 @@ export function generateHandoverCommunicationQualityIntelligence(
     );
   }
   if (
-    communicationEffectiveness.acknowledgedRate < 80 &&
+    below(communicationEffectiveness.acknowledgedRate, 80) &&
     communicationEffectiveness.totalCommunications > 0
   ) {
     areasForImprovement.push(
@@ -821,7 +836,7 @@ export function generateHandoverCommunicationQualityIntelligence(
     );
   }
   if (
-    communicationEffectiveness.actionCompletionRate < 80 &&
+    below(communicationEffectiveness.actionCompletionRate, 80) &&
     communicationEffectiveness.totalCommunications > 0
   ) {
     areasForImprovement.push(
@@ -829,7 +844,7 @@ export function generateHandoverCommunicationQualityIntelligence(
     );
   }
   if (
-    communicationEffectiveness.criticalAcknowledgedRate < 100 &&
+    below(communicationEffectiveness.criticalAcknowledgedRate, 100) &&
     communicationEffectiveness.totalCommunications > 0
   ) {
     areasForImprovement.push(
@@ -850,7 +865,7 @@ export function generateHandoverCommunicationQualityIntelligence(
     );
   }
   if (
-    teamMeetingQuality.safeguardingRate < 100 &&
+    below(teamMeetingQuality.safeguardingRate, 100) &&
     teamMeetingQuality.totalMeetings > 0
   ) {
     areasForImprovement.push(
@@ -863,7 +878,7 @@ export function generateHandoverCommunicationQualityIntelligence(
     );
   }
   if (
-    informationGovernance.dataProtectionRate < 100 &&
+    below(informationGovernance.dataProtectionRate, 100) &&
     informationGovernance.totalAssessments > 0
   ) {
     areasForImprovement.push(
@@ -871,7 +886,7 @@ export function generateHandoverCommunicationQualityIntelligence(
     );
   }
   if (
-    informationGovernance.staffTrainedRate < 100 &&
+    below(informationGovernance.staffTrainedRate, 100) &&
     informationGovernance.totalAssessments > 0
   ) {
     areasForImprovement.push(
@@ -888,7 +903,7 @@ export function generateHandoverCommunicationQualityIntelligence(
     );
   }
   if (
-    handoverQuality.thoroughRate < 80 &&
+    below(handoverQuality.thoroughRate, 80) &&
     handoverQuality.totalHandovers > 0
   ) {
     actions.push(
@@ -896,7 +911,7 @@ export function generateHandoverCommunicationQualityIntelligence(
     );
   }
   if (
-    handoverQuality.riskUpdatesRate < 90 &&
+    below(handoverQuality.riskUpdatesRate, 90) &&
     handoverQuality.totalHandovers > 0
   ) {
     actions.push(
@@ -904,7 +919,7 @@ export function generateHandoverCommunicationQualityIntelligence(
     );
   }
   if (
-    handoverQuality.medicationUpdatesRate < 90 &&
+    below(handoverQuality.medicationUpdatesRate, 90) &&
     handoverQuality.totalHandovers > 0
   ) {
     actions.push(
@@ -912,7 +927,7 @@ export function generateHandoverCommunicationQualityIntelligence(
     );
   }
   if (
-    communicationEffectiveness.acknowledgedRate < 100 &&
+    below(communicationEffectiveness.acknowledgedRate, 100) &&
     communicationEffectiveness.totalCommunications > 0
   ) {
     actions.push(
@@ -920,7 +935,7 @@ export function generateHandoverCommunicationQualityIntelligence(
     );
   }
   if (
-    communicationEffectiveness.criticalAcknowledgedRate < 100 &&
+    below(communicationEffectiveness.criticalAcknowledgedRate, 100) &&
     communicationEffectiveness.totalCommunications > 0
   ) {
     actions.push(
@@ -928,7 +943,7 @@ export function generateHandoverCommunicationQualityIntelligence(
     );
   }
   if (
-    communicationEffectiveness.actionCompletionRate < 80 &&
+    below(communicationEffectiveness.actionCompletionRate, 80) &&
     communicationEffectiveness.totalCommunications > 0
   ) {
     actions.push(
@@ -949,7 +964,7 @@ export function generateHandoverCommunicationQualityIntelligence(
     );
   }
   if (
-    teamMeetingQuality.agendaUsedRate < 100 &&
+    below(teamMeetingQuality.agendaUsedRate, 100) &&
     teamMeetingQuality.totalMeetings > 0
   ) {
     actions.push(
@@ -957,7 +972,7 @@ export function generateHandoverCommunicationQualityIntelligence(
     );
   }
   if (
-    teamMeetingQuality.minutesTakenRate < 100 &&
+    below(teamMeetingQuality.minutesTakenRate, 100) &&
     teamMeetingQuality.totalMeetings > 0
   ) {
     actions.push(
@@ -970,7 +985,7 @@ export function generateHandoverCommunicationQualityIntelligence(
     );
   }
   if (
-    informationGovernance.staffTrainedRate < 100 &&
+    below(informationGovernance.staffTrainedRate, 100) &&
     informationGovernance.totalAssessments > 0
   ) {
     actions.push(
@@ -978,7 +993,7 @@ export function generateHandoverCommunicationQualityIntelligence(
     );
   }
   if (
-    informationGovernance.dataProtectionRate < 100 &&
+    below(informationGovernance.dataProtectionRate, 100) &&
     informationGovernance.totalAssessments > 0
   ) {
     actions.push(

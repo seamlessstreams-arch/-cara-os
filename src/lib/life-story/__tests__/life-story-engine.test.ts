@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct, getRating, getSessionTypeLabel, getEngagementLabel, getRatingLabel,
+  getRating, getSessionTypeLabel, getEngagementLabel, getRatingLabel,
   evaluateSessionQuality, evaluateIdentityCulture, evaluateLifeStoryPolicy,
   evaluateStaffLifeStoryReadiness, buildChildLifeStoryProfiles,
   generateLifeStoryIntelligence,
@@ -22,14 +22,6 @@ function makeTraining(o: Partial<StaffLifeStoryTraining> = {}): StaffLifeStoryTr
 }
 
 // ── pct ────────────────────────────────────────────────────────────────────
-
-describe("pct", () => {
-  it("returns 0 for den=0", () => { expect(pct(5, 0)).toBe(0); });
-  it("correct pct", () => { expect(pct(3, 4)).toBe(75); });
-  it("rounds", () => { expect(pct(1, 3)).toBe(33); });
-  it("100 for equal", () => { expect(pct(10, 10)).toBe(100); });
-  it("0 for num=0", () => { expect(pct(0, 5)).toBe(0); });
-});
 
 // ── getRating ──────────────────────────────────────────────────────────────
 

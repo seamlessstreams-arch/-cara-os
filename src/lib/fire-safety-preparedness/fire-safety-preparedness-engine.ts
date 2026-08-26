@@ -12,7 +12,7 @@
 //             CHR 2015 Reg 25, SCCIF, NMS 10, Health and Safety at Work Act 1974
 // ==============================================================================
 
-import { below, meets, rateOf, weightedMeanOf } from "@/lib/metrics/rate";
+import { above, below, meets, rate, rateOf, weightedMeanOf } from "@/lib/metrics/rate";
 
 // -- Type unions ---------------------------------------------------------------
 
@@ -252,11 +252,6 @@ export interface FireSafetyPreparednessIntelligence {
 
 // -- Helpers -------------------------------------------------------------------
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -311,22 +306,22 @@ export function evaluateFireDrillCompliance(
   }
 
   const successful = drills.filter((d) => d.outcome === "successful").length;
-  const successRate = pct(successful, drills.length);
+  const successRate = rate(successful, drills.length);
   let successPoints = 0;
-  if (successRate >= 90) successPoints = 7;
-  else if (successRate >= 70) successPoints = 5;
-  else if (successRate >= 50) successPoints = 3;
-  else if (successRate > 0) successPoints = 1;
+  if (meets(successRate, 90)) successPoints = 7;
+  else if (meets(successRate, 70)) successPoints = 5;
+  else if (meets(successRate, 50)) successPoints = 3;
+  else if (above(successRate, 0)) successPoints = 1;
 
   const fullParticipation = drills.filter(
     (d) => d.allChildrenParticipated && d.allStaffParticipated,
   ).length;
-  const fullParticipationRate = pct(fullParticipation, drills.length);
+  const fullParticipationRate = rate(fullParticipation, drills.length);
   let participationPoints = 0;
-  if (fullParticipationRate >= 90) participationPoints = 6;
-  else if (fullParticipationRate >= 70) participationPoints = 4;
-  else if (fullParticipationRate >= 50) participationPoints = 3;
-  else if (fullParticipationRate > 0) participationPoints = 1;
+  if (meets(fullParticipationRate, 90)) participationPoints = 6;
+  else if (meets(fullParticipationRate, 70)) participationPoints = 4;
+  else if (meets(fullParticipationRate, 50)) participationPoints = 3;
+  else if (above(fullParticipationRate, 0)) participationPoints = 1;
 
   const uniqueTypes = new Set(drills.map((d) => d.drillType));
   const drillTypeVariety = uniqueTypes.size;
@@ -393,12 +388,12 @@ export function evaluateEquipmentChecks(
   }
 
   const passed = checks.filter((c) => c.outcome === "pass").length;
-  const passRate = pct(passed, checks.length);
+  const passRate = rate(passed, checks.length);
   let passPoints = 0;
-  if (passRate >= 95) passPoints = 8;
-  else if (passRate >= 80) passPoints = 6;
-  else if (passRate >= 60) passPoints = 4;
-  else if (passRate > 0) passPoints = 2;
+  if (meets(passRate, 95)) passPoints = 8;
+  else if (meets(passRate, 80)) passPoints = 6;
+  else if (meets(passRate, 60)) passPoints = 4;
+  else if (above(passRate, 0)) passPoints = 2;
 
   const uniqueTypes = new Set(checks.map((c) => c.equipmentType));
   const equipmentTypesCovered = uniqueTypes.size;
@@ -421,12 +416,16 @@ export function evaluateEquipmentChecks(
   const majorFaults = checks.filter(
     (c) => c.outcome === "major_fault" || c.outcome === "out_of_service",
   ).length;
-  const majorFaultRate = pct(majorFaults, checks.length);
+  const majorFaultRate = rate(majorFaults, checks.length);
   let majorFaultPoints = 0;
-  if (majorFaultRate === 0) majorFaultPoints = 5;
-  else if (majorFaultRate <= 5) majorFaultPoints = 3;
-  else if (majorFaultRate <= 15) majorFaultPoints = 2;
-  else if (majorFaultRate <= 30) majorFaultPoints = 1;
+  // unmeasured (no checks) earns no fault-free credit — the old pct fabricated
+  // 0% here and awarded the full 5 points
+  if (majorFaultRate !== null) {
+    if (majorFaultRate === 0) majorFaultPoints = 5;
+    else if (majorFaultRate <= 5) majorFaultPoints = 3;
+    else if (majorFaultRate <= 15) majorFaultPoints = 2;
+    else if (majorFaultRate <= 30) majorFaultPoints = 1;
+  }
 
   return {
     overallScore: scaleToBand(
@@ -474,34 +473,34 @@ export function evaluateEvacuationPlanning(
   const currentOrNotRequired = plans.filter(
     (p) => p.peepStatus === "current" || p.peepStatus === "not_required",
   ).length;
-  const peepCurrentRate = pct(currentOrNotRequired, plans.length);
-  if (peepCurrentRate >= 90) score += 7;
-  else if (peepCurrentRate >= 70) score += 5;
-  else if (peepCurrentRate >= 50) score += 3;
-  else if (peepCurrentRate > 0) score += 1;
+  const peepCurrentRate = rate(currentOrNotRequired, plans.length);
+  if (meets(peepCurrentRate, 90)) score += 7;
+  else if (meets(peepCurrentRate, 70)) score += 5;
+  else if (meets(peepCurrentRate, 50)) score += 3;
+  else if (above(peepCurrentRate, 0)) score += 1;
 
   const assemblyKnown = plans.filter((p) => p.assemblyPointKnown).length;
-  const assemblyPointRate = pct(assemblyKnown, plans.length);
-  if (assemblyPointRate >= 90) score += 6;
-  else if (assemblyPointRate >= 70) score += 4;
-  else if (assemblyPointRate >= 50) score += 3;
-  else if (assemblyPointRate > 0) score += 1;
+  const assemblyPointRate = rate(assemblyKnown, plans.length);
+  if (meets(assemblyPointRate, 90)) score += 6;
+  else if (meets(assemblyPointRate, 70)) score += 4;
+  else if (meets(assemblyPointRate, 50)) score += 3;
+  else if (above(assemblyPointRate, 0)) score += 1;
 
   const escapeAccessible = plans.filter(
     (p) => p.escapeRouteAccessible,
   ).length;
-  const escapeRouteRate = pct(escapeAccessible, plans.length);
-  if (escapeRouteRate >= 90) score += 6;
-  else if (escapeRouteRate >= 70) score += 4;
-  else if (escapeRouteRate >= 50) score += 3;
-  else if (escapeRouteRate > 0) score += 1;
+  const escapeRouteRate = rate(escapeAccessible, plans.length);
+  if (meets(escapeRouteRate, 90)) score += 6;
+  else if (meets(escapeRouteRate, 70)) score += 4;
+  else if (meets(escapeRouteRate, 50)) score += 3;
+  else if (above(escapeRouteRate, 0)) score += 1;
 
   const nightPlan = plans.filter((p) => p.nightEvacuationPlan).length;
-  const nightPlanRate = pct(nightPlan, plans.length);
-  if (nightPlanRate >= 90) score += 6;
-  else if (nightPlanRate >= 70) score += 4;
-  else if (nightPlanRate >= 50) score += 3;
-  else if (nightPlanRate > 0) score += 1;
+  const nightPlanRate = rate(nightPlan, plans.length);
+  if (meets(nightPlanRate, 90)) score += 6;
+  else if (meets(nightPlanRate, 70)) score += 4;
+  else if (meets(nightPlanRate, 50)) score += 3;
+  else if (above(nightPlanRate, 0)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -543,45 +542,45 @@ export function evaluateStaffFireReadiness(
   let score = 0;
 
   const awareness = training.filter((t) => t.fireAwareness).length;
-  const fireAwarenessRate = pct(awareness, training.length);
-  if (fireAwarenessRate >= 90) score += 6;
-  else if (fireAwarenessRate >= 70) score += 4;
-  else if (fireAwarenessRate >= 50) score += 3;
-  else if (fireAwarenessRate > 0) score += 1;
+  const fireAwarenessRate = rate(awareness, training.length);
+  if (meets(fireAwarenessRate, 90)) score += 6;
+  else if (meets(fireAwarenessRate, 70)) score += 4;
+  else if (meets(fireAwarenessRate, 50)) score += 3;
+  else if (above(fireAwarenessRate, 0)) score += 1;
 
   const marshal = training.filter((t) => t.fireMarshalTrained).length;
-  const fireMarshalRate = pct(marshal, training.length);
-  if (fireMarshalRate >= 90) score += 5;
-  else if (fireMarshalRate >= 70) score += 3;
-  else if (fireMarshalRate >= 50) score += 2;
-  else if (fireMarshalRate > 0) score += 1;
+  const fireMarshalRate = rate(marshal, training.length);
+  if (meets(fireMarshalRate, 90)) score += 5;
+  else if (meets(fireMarshalRate, 70)) score += 3;
+  else if (meets(fireMarshalRate, 50)) score += 2;
+  else if (above(fireMarshalRate, 0)) score += 1;
 
   const evacuation = training.filter((t) => t.evacuationProcedures).length;
-  const evacuationRate = pct(evacuation, training.length);
-  if (evacuationRate >= 90) score += 5;
-  else if (evacuationRate >= 70) score += 3;
-  else if (evacuationRate >= 50) score += 2;
-  else if (evacuationRate > 0) score += 1;
+  const evacuationRate = rate(evacuation, training.length);
+  if (meets(evacuationRate, 90)) score += 5;
+  else if (meets(evacuationRate, 70)) score += 3;
+  else if (meets(evacuationRate, 50)) score += 2;
+  else if (above(evacuationRate, 0)) score += 1;
 
   const extinguisher = training.filter((t) => t.extinguisherUse).length;
-  const extinguisherRate = pct(extinguisher, training.length);
-  if (extinguisherRate >= 90) score += 4;
-  else if (extinguisherRate >= 70) score += 3;
-  else if (extinguisherRate >= 50) score += 2;
-  else if (extinguisherRate > 0) score += 1;
+  const extinguisherRate = rate(extinguisher, training.length);
+  if (meets(extinguisherRate, 90)) score += 4;
+  else if (meets(extinguisherRate, 70)) score += 3;
+  else if (meets(extinguisherRate, 50)) score += 2;
+  else if (above(extinguisherRate, 0)) score += 1;
 
   const peep = training.filter((t) => t.peepAwareness).length;
-  const peepAwarenessRate = pct(peep, training.length);
-  if (peepAwarenessRate >= 90) score += 3;
-  else if (peepAwarenessRate >= 70) score += 2;
-  else if (peepAwarenessRate >= 50) score += 1;
+  const peepAwarenessRate = rate(peep, training.length);
+  if (meets(peepAwarenessRate, 90)) score += 3;
+  else if (meets(peepAwarenessRate, 70)) score += 2;
+  else if (meets(peepAwarenessRate, 50)) score += 1;
 
   const nightResponse = training.filter(
     (t) => t.nightResponseTrained,
   ).length;
-  const nightResponseRate = pct(nightResponse, training.length);
-  if (nightResponseRate >= 90) score += 2;
-  else if (nightResponseRate >= 70) score += 1;
+  const nightResponseRate = rate(nightResponse, training.length);
+  if (meets(nightResponseRate, 90)) score += 2;
+  else if (meets(nightResponseRate, 70)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),

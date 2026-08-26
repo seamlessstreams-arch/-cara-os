@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildLifeStoryProfile { childId: string; childName: string; totalSessions: number; completionRate: number; childLedRate: number; sessionTypesCovered: string[]; overallScore: number; }
 
@@ -74,19 +75,19 @@ export default function LifeStoryDashboardWidget() {
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Sessions" value={data.sessionQuality.totalSessions} />
           <Stat label="Completed" value={data.sessionQuality.completedSessions} />
-          <Stat label="Completion" value={`${data.sessionQuality.completionRate}%`} />
-          <Stat label="Child-Led" value={`${data.sessionQuality.childLedRate}%`} />
-          <Stat label="Engagement" value={`${data.sessionQuality.engagementRate}%`} />
-          <Stat label="Documentation" value={`${data.sessionQuality.documentationRate}%`} />
+          <Stat label="Completion" value={`${formatRate(data.sessionQuality.completionRate)}`} />
+          <Stat label="Child-Led" value={`${formatRate(data.sessionQuality.childLedRate)}`} />
+          <Stat label="Engagement" value={`${formatRate(data.sessionQuality.engagementRate)}`} />
+          <Stat label="Documentation" value={`${formatRate(data.sessionQuality.documentationRate)}`} />
         </div>
       </Section>
 
       <Section title="Identity & Culture">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Identity Addressed" value={`${data.identityCulture.identityAddressedRate}%`} />
-          <Stat label="Cultural Activity" value={`${data.identityCulture.culturalActivityRate}%`} />
-          <Stat label="Family Explored" value={`${data.identityCulture.familyExploredRate}%`} />
-          <Stat label="Photographs" value={`${data.identityCulture.photographRate}%`} />
+          <Stat label="Identity Addressed" value={`${formatRate(data.identityCulture.identityAddressedRate)}`} />
+          <Stat label="Cultural Activity" value={`${formatRate(data.identityCulture.culturalActivityRate)}`} />
+          <Stat label="Family Explored" value={`${formatRate(data.identityCulture.familyExploredRate)}`} />
+          <Stat label="Photographs" value={`${formatRate(data.identityCulture.photographRate)}`} />
         </div>
       </Section>
 
@@ -109,12 +110,12 @@ export default function LifeStoryDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
-          <Stat label="Life Story Work" value={`${data.staffReadiness.lifeStoryWorkRate}%`} />
-          <Stat label="Identity Support" value={`${data.staffReadiness.identitySupportRate}%`} />
-          <Stat label="Cultural Competency" value={`${data.staffReadiness.culturalCompetencyRate}%`} />
-          <Stat label="Therapeutic Approach" value={`${data.staffReadiness.therapeuticApproachRate}%`} />
-          <Stat label="Memory Keeping" value={`${data.staffReadiness.memoryKeepingRate}%`} />
-          <Stat label="Family Work" value={`${data.staffReadiness.familyWorkSkillsRate}%`} />
+          <Stat label="Life Story Work" value={`${formatRate(data.staffReadiness.lifeStoryWorkRate)}`} />
+          <Stat label="Identity Support" value={`${formatRate(data.staffReadiness.identitySupportRate)}`} />
+          <Stat label="Cultural Competency" value={`${formatRate(data.staffReadiness.culturalCompetencyRate)}`} />
+          <Stat label="Therapeutic Approach" value={`${formatRate(data.staffReadiness.therapeuticApproachRate)}`} />
+          <Stat label="Memory Keeping" value={`${formatRate(data.staffReadiness.memoryKeepingRate)}`} />
+          <Stat label="Family Work" value={`${formatRate(data.staffReadiness.familyWorkSkillsRate)}`} />
         </div>
       </Section>
 

@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // Hygiene Personal Care Intelligence Engine
 // Pure deterministic — no AI, no external calls, no randomness, no Date.now()
 
@@ -103,18 +104,26 @@ export interface StaffHygieneTraining {
 export interface QualityResult {
   overallScore: number;
   totalSessions: number;
-  competencyRate: number;
-  participationRate: number;
-  dignityRate: number;
-  progressRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  competencyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  participationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dignityRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  progressRate: number | null;
 }
 
 export interface ComplianceResult {
   overallScore: number;
-  documentedRate: number;
-  staffSupportedRate: number;
-  feedbackRate: number;
-  hygieneAreaDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffSupportedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feedbackRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  hygieneAreaDiversityRatio: number | null;
 }
 
 export interface PolicyResult {
@@ -131,12 +140,18 @@ export interface PolicyResult {
 export interface StaffReadinessResult {
   overallScore: number;
   totalStaff: number;
-  personalCareSkillsRate: number;
-  dignityAndPrivacyRate: number;
-  infectionControlRate: number;
-  ageAppropriateSupportRate: number;
-  culturalAwarenessRate: number;
-  safeguardingInPersonalCareRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  personalCareSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dignityAndPrivacyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  infectionControlRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  ageAppropriateSupportRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  culturalAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingInPersonalCareRate: number | null;
 }
 
 export interface ChildProfile {
@@ -167,11 +182,6 @@ export interface HygienePersonalCareIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -190,10 +200,10 @@ export function evaluateQuality(sessions: HygieneSession[]): QualityResult {
     return {
       overallScore: 0,
       totalSessions: 0,
-      competencyRate: 0,
-      participationRate: 0,
-      dignityRate: 0,
-      progressRate: 0,
+      competencyRate: null,
+      participationRate: null,
+      dignityRate: null,
+      progressRate: null,
     };
   }
 
@@ -209,16 +219,16 @@ export function evaluateQuality(sessions: HygieneSession[]): QualityResult {
     if (s.progressNoted) progress++;
   }
 
-  const competencyRate = pct(competent, sessions.length);
-  const participationRate = pct(participated, sessions.length);
-  const dignityRate = pct(dignity, sessions.length);
-  const progressRate = pct(progress, sessions.length);
+  const competencyRate = rate(competent, sessions.length);
+  const participationRate = rate(participated, sessions.length);
+  const dignityRate = rate(dignity, sessions.length);
+  const progressRate = rate(progress, sessions.length);
 
   let score = 0;
-  score += Math.round((competencyRate / 100) * 7);
-  score += Math.round((participationRate / 100) * 6);
-  score += Math.round((dignityRate / 100) * 6);
-  score += Math.round((progressRate / 100) * 6);
+  score += Math.round((competencyRate! / 100) * 7);
+  score += Math.round((participationRate! / 100) * 6);
+  score += Math.round((dignityRate! / 100) * 6);
+  score += Math.round((progressRate! / 100) * 6);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -238,9 +248,9 @@ export function evaluateCompliance(sessions: HygieneSession[]): ComplianceResult
   if (sessions.length === 0) {
     return {
       overallScore: 0,
-      documentedRate: 0,
-      staffSupportedRate: 0,
-      feedbackRate: 0,
+      documentedRate: null,
+      staffSupportedRate: null,
+      feedbackRate: null,
       hygieneAreaDiversityRatio: 0,
     };
   }
@@ -257,16 +267,16 @@ export function evaluateCompliance(sessions: HygieneSession[]): ComplianceResult
     areasUsed.add(s.hygieneArea);
   }
 
-  const documentedRate = pct(documented, sessions.length);
-  const staffSupportedRate = pct(staffSupported, sessions.length);
-  const feedbackRate = pct(feedback, sessions.length);
-  const hygieneAreaDiversityRatio = pct(areasUsed.size, 8);
+  const documentedRate = rate(documented, sessions.length);
+  const staffSupportedRate = rate(staffSupported, sessions.length);
+  const feedbackRate = rate(feedback, sessions.length);
+  const hygieneAreaDiversityRatio = rate(areasUsed.size, 8);
 
   let score = 0;
-  score += Math.round((documentedRate / 100) * 8);
-  score += Math.round((staffSupportedRate / 100) * 7);
-  score += Math.round((feedbackRate / 100) * 5);
-  score += Math.round((hygieneAreaDiversityRatio / 100) * 5);
+  score += Math.round((documentedRate! / 100) * 8);
+  score += Math.round((staffSupportedRate! / 100) * 7);
+  score += Math.round((feedbackRate! / 100) * 5);
+  score += Math.round((hygieneAreaDiversityRatio! / 100) * 5);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -327,12 +337,12 @@ export function evaluateStaffReadiness(training: StaffHygieneTraining[]): StaffR
     return {
       overallScore: 0,
       totalStaff: 0,
-      personalCareSkillsRate: 0,
-      dignityAndPrivacyRate: 0,
-      infectionControlRate: 0,
-      ageAppropriateSupportRate: 0,
-      culturalAwarenessRate: 0,
-      safeguardingInPersonalCareRate: 0,
+      personalCareSkillsRate: null,
+      dignityAndPrivacyRate: null,
+      infectionControlRate: null,
+      ageAppropriateSupportRate: null,
+      culturalAwarenessRate: null,
+      safeguardingInPersonalCareRate: null,
     };
   }
 
@@ -352,20 +362,20 @@ export function evaluateStaffReadiness(training: StaffHygieneTraining[]): StaffR
     if (t.safeguardingInPersonalCare) safeguarding++;
   }
 
-  const personalCareSkillsRate = pct(personalCareSkills, training.length);
-  const dignityAndPrivacyRate = pct(dignityAndPrivacy, training.length);
-  const infectionControlRate = pct(infectionControl, training.length);
-  const ageAppropriateSupportRate = pct(ageAppropriateSupport, training.length);
-  const culturalAwarenessRate = pct(culturalAwareness, training.length);
-  const safeguardingInPersonalCareRate = pct(safeguarding, training.length);
+  const personalCareSkillsRate = rate(personalCareSkills, training.length);
+  const dignityAndPrivacyRate = rate(dignityAndPrivacy, training.length);
+  const infectionControlRate = rate(infectionControl, training.length);
+  const ageAppropriateSupportRate = rate(ageAppropriateSupport, training.length);
+  const culturalAwarenessRate = rate(culturalAwareness, training.length);
+  const safeguardingInPersonalCareRate = rate(safeguarding, training.length);
 
   let score = 0;
-  score += Math.round((personalCareSkillsRate / 100) * 6);
-  score += Math.round((dignityAndPrivacyRate / 100) * 5);
-  score += Math.round((infectionControlRate / 100) * 5);
-  score += Math.round((ageAppropriateSupportRate / 100) * 4);
-  score += Math.round((culturalAwarenessRate / 100) * 3);
-  score += Math.round((safeguardingInPersonalCareRate / 100) * 2);
+  score += Math.round((personalCareSkillsRate! / 100) * 6);
+  score += Math.round(((dignityAndPrivacyRate ?? 0) / 100) * 5);
+  score += Math.round(((infectionControlRate ?? 0) / 100) * 5);
+  score += Math.round(((ageAppropriateSupportRate ?? 0) / 100) * 4);
+  score += Math.round(((culturalAwarenessRate ?? 0) / 100) * 3);
+  score += Math.round(((safeguardingInPersonalCareRate ?? 0) / 100) * 2);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -401,8 +411,8 @@ export function buildChildProfiles(sessions: HygieneSession[]): ChildProfile[] {
     const participated = childSessions.filter((s) => s.childParticipated).length;
     const areasUsed = new Set(childSessions.map((s) => s.hygieneArea));
 
-    const competencyRate = pct(competent, childSessions.length);
-    const participationRate = pct(participated, childSessions.length);
+    const competencyRate = rate(competent, childSessions.length)!;
+    const participationRate = rate(participated, childSessions.length)!;
 
     let score = 0;
 
@@ -411,14 +421,14 @@ export function buildChildProfiles(sessions: HygieneSession[]): ChildProfile[] {
     else if (childSessions.length >= 5) score += 1;
 
     // Competency (0-3)
-    if (competencyRate >= 80) score += 3;
-    else if (competencyRate >= 60) score += 2;
-    else if (competencyRate >= 40) score += 1;
+    if (meets(competencyRate, 80)) score += 3;
+    else if (meets(competencyRate, 60)) score += 2;
+    else if (meets(competencyRate, 40)) score += 1;
 
     // Participation (0-3)
-    if (participationRate >= 80) score += 3;
-    else if (participationRate >= 60) score += 2;
-    else if (participationRate >= 40) score += 1;
+    if (meets(participationRate, 80)) score += 3;
+    else if (meets(participationRate, 60)) score += 2;
+    else if (meets(participationRate, 40)) score += 1;
 
     // Diversity (0-2)
     if (areasUsed.size >= 4) score += 2;
@@ -463,13 +473,13 @@ export function generateHygienePersonalCareIntelligence(
 
   // ── Strengths ──
   const strengths: string[] = [];
-  if (sessions.length > 0 && quality.competencyRate >= 80)
+  if (sessions.length > 0 && meets(quality.competencyRate, 80))
     strengths.push("Strong competency levels — " + quality.competencyRate + "% of sessions show independent or mostly independent skills");
   if (sessions.length > 0 && quality.participationRate === 100)
     strengths.push("100% child participation across all hygiene sessions");
   if (sessions.length > 0 && quality.dignityRate === 100)
     strengths.push("Dignity maintained in all sessions — exemplary practice");
-  if (sessions.length > 0 && quality.progressRate >= 80)
+  if (sessions.length > 0 && meets(quality.progressRate, 80))
     strengths.push("Progress noted in " + quality.progressRate + "% of sessions — strong developmental tracking");
   if (sessions.length > 0 && compliance.documentedRate === 100)
     strengths.push("All sessions documented in care plans — excellent record keeping");
@@ -492,21 +502,21 @@ export function generateHygienePersonalCareIntelligence(
   const areasForImprovement: string[] = [];
   if (sessions.length === 0)
     areasForImprovement.push("URGENT: No hygiene session records — personal care monitoring must be established immediately");
-  if (sessions.length > 0 && quality.competencyRate < 50)
+  if (sessions.length > 0 && below(quality.competencyRate, 50))
     areasForImprovement.push("Low competency rate at " + quality.competencyRate + "% — targeted skill development programmes needed");
-  if (sessions.length > 0 && quality.participationRate < 80)
+  if (sessions.length > 0 && below(quality.participationRate, 80))
     areasForImprovement.push("Child participation at " + quality.participationRate + "% — explore barriers to engagement");
-  if (sessions.length > 0 && quality.dignityRate < 100)
+  if (sessions.length > 0 && below(quality.dignityRate, 100))
     areasForImprovement.push("URGENT: Dignity maintained in only " + quality.dignityRate + "% of sessions — immediate review required under Regulation 10");
-  if (sessions.length > 0 && quality.progressRate < 60)
+  if (sessions.length > 0 && below(quality.progressRate, 60))
     areasForImprovement.push("Progress noted in only " + quality.progressRate + "% of sessions — review developmental tracking approach");
-  if (sessions.length > 0 && compliance.documentedRate < 100)
+  if (sessions.length > 0 && below(compliance.documentedRate, 100))
     areasForImprovement.push("Documentation rate at " + compliance.documentedRate + "% — all sessions must be documented in care plans");
-  if (sessions.length > 0 && compliance.staffSupportedRate < 80)
+  if (sessions.length > 0 && below(compliance.staffSupportedRate, 80))
     areasForImprovement.push("Staff support rate at " + compliance.staffSupportedRate + "% — ensure adequate staffing for personal care");
-  if (sessions.length > 0 && compliance.feedbackRate < 80)
+  if (sessions.length > 0 && below(compliance.feedbackRate, 80))
     areasForImprovement.push("Feedback given in only " + compliance.feedbackRate + "% of sessions — children need consistent feedback");
-  if (sessions.length > 0 && compliance.hygieneAreaDiversityRatio < 50)
+  if (sessions.length > 0 && below(compliance.hygieneAreaDiversityRatio, 50))
     areasForImprovement.push("Only " + compliance.hygieneAreaDiversityRatio + "% of hygiene areas covered — expand personal care programme");
   if (!policy)
     areasForImprovement.push("URGENT: No hygiene policy in place — required under CHR 2015 Regulation 6");
@@ -518,11 +528,11 @@ export function generateHygienePersonalCareIntelligence(
     areasForImprovement.push("No infection control procedure — required under NICE guidance");
   if (staffTraining.length === 0)
     areasForImprovement.push("URGENT: No staff training records — all staff require personal care training");
-  if (staffTraining.length > 0 && staffReadiness.personalCareSkillsRate < 100)
+  if (staffTraining.length > 0 && below(staffReadiness.personalCareSkillsRate, 100))
     areasForImprovement.push("Personal care skills training at " + staffReadiness.personalCareSkillsRate + "% — all staff should be trained");
-  if (staffTraining.length > 0 && staffReadiness.dignityAndPrivacyRate < 100)
+  if (staffTraining.length > 0 && below(staffReadiness.dignityAndPrivacyRate, 100))
     areasForImprovement.push("Dignity and privacy training at " + staffReadiness.dignityAndPrivacyRate + "% — all staff must understand dignity requirements");
-  if (staffTraining.length > 0 && staffReadiness.infectionControlRate < 100)
+  if (staffTraining.length > 0 && below(staffReadiness.infectionControlRate, 100))
     areasForImprovement.push("Infection control training at " + staffReadiness.infectionControlRate + "% — all staff should complete this module");
 
   // ── Actions ──
@@ -535,17 +545,17 @@ export function generateHygienePersonalCareIntelligence(
   if (staffTraining.length === 0)
     actions.push("URGENT: Arrange personal care training for all staff immediately");
 
-  if (sessions.length > 0 && quality.dignityRate < 100)
+  if (sessions.length > 0 && below(quality.dignityRate, 100))
     actions.push("URGENT: Review all sessions where dignity was not maintained — conduct staff debrief and implement safeguards under Regulation 10");
-  if (sessions.length > 0 && quality.competencyRate < 50)
+  if (sessions.length > 0 && below(quality.competencyRate, 50))
     actions.push("Develop individualised skill-building plans to improve children's personal care competencies");
-  if (sessions.length > 0 && quality.participationRate < 80)
+  if (sessions.length > 0 && below(quality.participationRate, 80))
     actions.push("Explore barriers to child participation and develop engagement strategies");
-  if (sessions.length > 0 && compliance.documentedRate < 100)
-    actions.push("Ensure all personal care sessions are documented in children's care plans — " + (100 - compliance.documentedRate) + "% currently undocumented");
-  if (sessions.length > 0 && compliance.feedbackRate < 80)
+  if (sessions.length > 0 && below(compliance.documentedRate, 100))
+    actions.push("Ensure all personal care sessions are documented in children's care plans — " + (100 - compliance.documentedRate!) + "% currently undocumented");
+  if (sessions.length > 0 && below(compliance.feedbackRate, 80))
     actions.push("Implement consistent feedback protocol for all personal care sessions");
-  if (sessions.length > 0 && compliance.hygieneAreaDiversityRatio < 50)
+  if (sessions.length > 0 && below(compliance.hygieneAreaDiversityRatio, 50))
     actions.push("Expand personal care programme to cover all 8 hygiene areas");
 
   if (policy && !policy.culturalSensitivityPolicy)
@@ -555,10 +565,10 @@ export function generateHygienePersonalCareIntelligence(
   if (policy && !policy.regularReview)
     actions.push("Establish a regular review cycle for the hygiene and personal care policy");
 
-  if (staffTraining.length > 0 && staffReadiness.safeguardingInPersonalCareRate < 100)
-    actions.push("Complete safeguarding in personal care training for all staff — " + (100 - staffReadiness.safeguardingInPersonalCareRate) + "% untrained");
-  if (staffTraining.length > 0 && staffReadiness.culturalAwarenessRate < 100)
-    actions.push("Arrange cultural awareness training for remaining staff — " + (100 - staffReadiness.culturalAwarenessRate) + "% untrained");
+  if (staffTraining.length > 0 && below(staffReadiness.safeguardingInPersonalCareRate, 100))
+    actions.push("Complete safeguarding in personal care training for all staff — " + (100 - staffReadiness.safeguardingInPersonalCareRate!) + "% untrained");
+  if (staffTraining.length > 0 && below(staffReadiness.culturalAwarenessRate, 100))
+    actions.push("Arrange cultural awareness training for remaining staff — " + (100 - staffReadiness.culturalAwarenessRate!) + "% untrained");
 
   const regulatoryLinks: string[] = [
     "CHR 2015 Regulation 6 — Health and well-being (personal care)",

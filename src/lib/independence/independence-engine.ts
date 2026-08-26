@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // Independence Intelligence Engine
 //
@@ -139,19 +140,27 @@ export interface StaffIndependenceTraining {
 export interface IndependenceQualityResult {
   overallScore: number;
   totalRecords: number;
-  individualPlanRate: number;
-  ageAppropriateRate: number;
-  childEngagedRate: number;
-  progressRecordedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  individualPlanRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  ageAppropriateRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childEngagedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  progressRecordedRate: number | null;
 }
 
 export interface IndependenceComplianceResult {
   overallScore: number;
   totalRecords: number;
-  documentationCompleteRate: number;
-  pathwayPlanAlignedRate: number;
-  positiveOutcomeRate: number;
-  categoryDiversityRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationCompleteRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  pathwayPlanAlignedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveOutcomeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  categoryDiversityRate: number | null;
 }
 
 export interface IndependencePolicyResult {
@@ -168,12 +177,18 @@ export interface IndependencePolicyResult {
 export interface StaffIndependenceReadinessResult {
   overallScore: number;
   totalStaff: number;
-  independencePlanningRate: number;
-  lifeSkillsTeachingRate: number;
-  pathwayKnowledgeRate: number;
-  motivationalSkillsRate: number;
-  communityResourcesRate: number;
-  transitionSupportRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  independencePlanningRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  lifeSkillsTeachingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  pathwayKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  motivationalSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  communityResourcesRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  transitionSupportRate: number | null;
 }
 
 export interface ChildIndependenceProfile {
@@ -205,11 +220,6 @@ export interface IndependenceIntelligence {
 
 // -- Helpers -------------------------------------------------------------------
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -235,42 +245,42 @@ export function evaluateIndependenceQuality(
     return {
       overallScore: 0,
       totalRecords: 0,
-      individualPlanRate: 0,
-      ageAppropriateRate: 0,
-      childEngagedRate: 0,
-      progressRecordedRate: 0,
+      individualPlanRate: null,
+      ageAppropriateRate: null,
+      childEngagedRate: null,
+      progressRecordedRate: null,
     };
   }
 
   let score = 0;
 
   const planCount = records.filter((r) => r.individualPlanInPlace).length;
-  const individualPlanRate = pct(planCount, records.length);
-  if (individualPlanRate >= 90) score += 7;
-  else if (individualPlanRate >= 70) score += 5;
-  else if (individualPlanRate >= 50) score += 3;
-  else if (individualPlanRate > 0) score += 1;
+  const individualPlanRate = rate(planCount, records.length);
+  if (meets(individualPlanRate, 90)) score += 7;
+  else if (meets(individualPlanRate, 70)) score += 5;
+  else if (meets(individualPlanRate, 50)) score += 3;
+  else if (above(individualPlanRate, 0)) score += 1;
 
   const ageCount = records.filter((r) => r.ageAppropriate).length;
-  const ageAppropriateRate = pct(ageCount, records.length);
-  if (ageAppropriateRate >= 90) score += 6;
-  else if (ageAppropriateRate >= 70) score += 4;
-  else if (ageAppropriateRate >= 50) score += 3;
-  else if (ageAppropriateRate > 0) score += 1;
+  const ageAppropriateRate = rate(ageCount, records.length);
+  if (meets(ageAppropriateRate, 90)) score += 6;
+  else if (meets(ageAppropriateRate, 70)) score += 4;
+  else if (meets(ageAppropriateRate, 50)) score += 3;
+  else if (above(ageAppropriateRate, 0)) score += 1;
 
   const engagedCount = records.filter((r) => r.childEngaged).length;
-  const childEngagedRate = pct(engagedCount, records.length);
-  if (childEngagedRate >= 90) score += 6;
-  else if (childEngagedRate >= 70) score += 4;
-  else if (childEngagedRate >= 50) score += 3;
-  else if (childEngagedRate > 0) score += 1;
+  const childEngagedRate = rate(engagedCount, records.length);
+  if (meets(childEngagedRate, 90)) score += 6;
+  else if (meets(childEngagedRate, 70)) score += 4;
+  else if (meets(childEngagedRate, 50)) score += 3;
+  else if (above(childEngagedRate, 0)) score += 1;
 
   const progressCount = records.filter((r) => r.progressRecorded).length;
-  const progressRecordedRate = pct(progressCount, records.length);
-  if (progressRecordedRate >= 90) score += 6;
-  else if (progressRecordedRate >= 70) score += 4;
-  else if (progressRecordedRate >= 50) score += 3;
-  else if (progressRecordedRate > 0) score += 1;
+  const progressRecordedRate = rate(progressCount, records.length);
+  if (meets(progressRecordedRate, 90)) score += 6;
+  else if (meets(progressRecordedRate, 70)) score += 4;
+  else if (meets(progressRecordedRate, 50)) score += 3;
+  else if (above(progressRecordedRate, 0)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -298,44 +308,44 @@ export function evaluateIndependenceCompliance(
     return {
       overallScore: 0,
       totalRecords: 0,
-      documentationCompleteRate: 0,
-      pathwayPlanAlignedRate: 0,
-      positiveOutcomeRate: 0,
-      categoryDiversityRate: 0,
+      documentationCompleteRate: null,
+      pathwayPlanAlignedRate: null,
+      positiveOutcomeRate: null,
+      categoryDiversityRate: null,
     };
   }
 
   let score = 0;
 
   const docCount = records.filter((r) => r.documentationComplete).length;
-  const documentationCompleteRate = pct(docCount, records.length);
-  if (documentationCompleteRate >= 90) score += 8;
-  else if (documentationCompleteRate >= 70) score += 6;
-  else if (documentationCompleteRate >= 50) score += 4;
-  else if (documentationCompleteRate > 0) score += 2;
+  const documentationCompleteRate = rate(docCount, records.length);
+  if (meets(documentationCompleteRate, 90)) score += 8;
+  else if (meets(documentationCompleteRate, 70)) score += 6;
+  else if (meets(documentationCompleteRate, 50)) score += 4;
+  else if (above(documentationCompleteRate, 0)) score += 2;
 
   const pathwayCount = records.filter((r) => r.pathwayPlanAligned).length;
-  const pathwayPlanAlignedRate = pct(pathwayCount, records.length);
-  if (pathwayPlanAlignedRate >= 90) score += 7;
-  else if (pathwayPlanAlignedRate >= 70) score += 5;
-  else if (pathwayPlanAlignedRate >= 50) score += 3;
-  else if (pathwayPlanAlignedRate > 0) score += 1;
+  const pathwayPlanAlignedRate = rate(pathwayCount, records.length);
+  if (meets(pathwayPlanAlignedRate, 90)) score += 7;
+  else if (meets(pathwayPlanAlignedRate, 70)) score += 5;
+  else if (meets(pathwayPlanAlignedRate, 50)) score += 3;
+  else if (above(pathwayPlanAlignedRate, 0)) score += 1;
 
   const positiveCount = records.filter(
     (r) => r.outcome === "mastered" || r.outcome === "progressing",
   ).length;
-  const positiveOutcomeRate = pct(positiveCount, records.length);
-  if (positiveOutcomeRate >= 90) score += 5;
-  else if (positiveOutcomeRate >= 70) score += 4;
-  else if (positiveOutcomeRate >= 50) score += 3;
-  else if (positiveOutcomeRate > 0) score += 1;
+  const positiveOutcomeRate = rate(positiveCount, records.length);
+  if (meets(positiveOutcomeRate, 90)) score += 5;
+  else if (meets(positiveOutcomeRate, 70)) score += 4;
+  else if (meets(positiveOutcomeRate, 50)) score += 3;
+  else if (above(positiveOutcomeRate, 0)) score += 1;
 
   const uniqueCategories = new Set(records.map((r) => r.category));
-  const categoryDiversityRate = pct(uniqueCategories.size, ALL_CATEGORIES.length);
-  if (categoryDiversityRate >= 90) score += 5;
-  else if (categoryDiversityRate >= 70) score += 4;
-  else if (categoryDiversityRate >= 50) score += 3;
-  else if (categoryDiversityRate > 0) score += 1;
+  const categoryDiversityRate = rate(uniqueCategories.size, ALL_CATEGORIES.length);
+  if (meets(categoryDiversityRate, 90)) score += 5;
+  else if (meets(categoryDiversityRate, 70)) score += 4;
+  else if (meets(categoryDiversityRate, 50)) score += 3;
+  else if (above(categoryDiversityRate, 0)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -415,55 +425,55 @@ export function evaluateStaffIndependenceReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      independencePlanningRate: 0,
-      lifeSkillsTeachingRate: 0,
-      pathwayKnowledgeRate: 0,
-      motivationalSkillsRate: 0,
-      communityResourcesRate: 0,
-      transitionSupportRate: 0,
+      independencePlanningRate: null,
+      lifeSkillsTeachingRate: null,
+      pathwayKnowledgeRate: null,
+      motivationalSkillsRate: null,
+      communityResourcesRate: null,
+      transitionSupportRate: null,
     };
   }
 
   let score = 0;
 
   const planningCount = staff.filter((s) => s.independencePlanning).length;
-  const independencePlanningRate = pct(planningCount, staff.length);
-  if (independencePlanningRate >= 90) score += 6;
-  else if (independencePlanningRate >= 70) score += 4;
-  else if (independencePlanningRate >= 50) score += 3;
-  else if (independencePlanningRate > 0) score += 1;
+  const independencePlanningRate = rate(planningCount, staff.length);
+  if (meets(independencePlanningRate, 90)) score += 6;
+  else if (meets(independencePlanningRate, 70)) score += 4;
+  else if (meets(independencePlanningRate, 50)) score += 3;
+  else if (above(independencePlanningRate, 0)) score += 1;
 
   const teachingCount = staff.filter((s) => s.lifeSkillsTeaching).length;
-  const lifeSkillsTeachingRate = pct(teachingCount, staff.length);
-  if (lifeSkillsTeachingRate >= 90) score += 5;
-  else if (lifeSkillsTeachingRate >= 70) score += 3;
-  else if (lifeSkillsTeachingRate >= 50) score += 2;
-  else if (lifeSkillsTeachingRate > 0) score += 1;
+  const lifeSkillsTeachingRate = rate(teachingCount, staff.length);
+  if (meets(lifeSkillsTeachingRate, 90)) score += 5;
+  else if (meets(lifeSkillsTeachingRate, 70)) score += 3;
+  else if (meets(lifeSkillsTeachingRate, 50)) score += 2;
+  else if (above(lifeSkillsTeachingRate, 0)) score += 1;
 
   const pathwayCount = staff.filter((s) => s.pathwayKnowledge).length;
-  const pathwayKnowledgeRate = pct(pathwayCount, staff.length);
-  if (pathwayKnowledgeRate >= 90) score += 5;
-  else if (pathwayKnowledgeRate >= 70) score += 3;
-  else if (pathwayKnowledgeRate >= 50) score += 2;
-  else if (pathwayKnowledgeRate > 0) score += 1;
+  const pathwayKnowledgeRate = rate(pathwayCount, staff.length);
+  if (meets(pathwayKnowledgeRate, 90)) score += 5;
+  else if (meets(pathwayKnowledgeRate, 70)) score += 3;
+  else if (meets(pathwayKnowledgeRate, 50)) score += 2;
+  else if (above(pathwayKnowledgeRate, 0)) score += 1;
 
   const motivationalCount = staff.filter((s) => s.motivationalSkills).length;
-  const motivationalSkillsRate = pct(motivationalCount, staff.length);
-  if (motivationalSkillsRate >= 90) score += 4;
-  else if (motivationalSkillsRate >= 70) score += 3;
-  else if (motivationalSkillsRate >= 50) score += 2;
-  else if (motivationalSkillsRate > 0) score += 1;
+  const motivationalSkillsRate = rate(motivationalCount, staff.length);
+  if (meets(motivationalSkillsRate, 90)) score += 4;
+  else if (meets(motivationalSkillsRate, 70)) score += 3;
+  else if (meets(motivationalSkillsRate, 50)) score += 2;
+  else if (above(motivationalSkillsRate, 0)) score += 1;
 
   const communityCount = staff.filter((s) => s.communityResources).length;
-  const communityResourcesRate = pct(communityCount, staff.length);
-  if (communityResourcesRate >= 90) score += 3;
-  else if (communityResourcesRate >= 70) score += 2;
-  else if (communityResourcesRate >= 50) score += 1;
+  const communityResourcesRate = rate(communityCount, staff.length);
+  if (meets(communityResourcesRate, 90)) score += 3;
+  else if (meets(communityResourcesRate, 70)) score += 2;
+  else if (meets(communityResourcesRate, 50)) score += 1;
 
   const transitionCount = staff.filter((s) => s.transitionSupport).length;
-  const transitionSupportRate = pct(transitionCount, staff.length);
-  if (transitionSupportRate >= 90) score += 2;
-  else if (transitionSupportRate >= 70) score += 1;
+  const transitionSupportRate = rate(transitionCount, staff.length);
+  if (meets(transitionSupportRate, 90)) score += 2;
+  else if (meets(transitionSupportRate, 70)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -495,10 +505,10 @@ export function buildChildIndependenceProfiles(
     const childName = childNames.get(childId) ?? childId;
 
     const planCount = childRecords.filter((r) => r.individualPlanInPlace).length;
-    const individualPlanRate = pct(planCount, childRecords.length);
+    const individualPlanRate = rate(planCount, childRecords.length)!;
 
     const engagedCount = childRecords.filter((r) => r.childEngaged).length;
-    const childEngagedRate = pct(engagedCount, childRecords.length);
+    const childEngagedRate = rate(engagedCount, childRecords.length)!;
 
     const uniqueCategories = new Set(childRecords.map((r) => r.category)).size;
 
@@ -510,14 +520,14 @@ export function buildChildIndependenceProfiles(
     else if (childRecords.length >= 5) score += 1;
 
     // Individual plan rate (0-3)
-    if (individualPlanRate >= 80) score += 3;
-    else if (individualPlanRate >= 60) score += 2;
-    else if (individualPlanRate > 0) score += 1;
+    if (meets(individualPlanRate, 80)) score += 3;
+    else if (meets(individualPlanRate, 60)) score += 2;
+    else if (above(individualPlanRate, 0)) score += 1;
 
     // Child engaged rate (0-3)
-    if (childEngagedRate >= 80) score += 3;
-    else if (childEngagedRate >= 60) score += 2;
-    else if (childEngagedRate > 0) score += 1;
+    if (meets(childEngagedRate, 80)) score += 3;
+    else if (meets(childEngagedRate, 60)) score += 2;
+    else if (above(childEngagedRate, 0)) score += 1;
 
     // Diversity (0-2): >=4 unique categories -> 2, >=2 -> 1
     if (uniqueCategories >= 4) score += 2;
@@ -563,27 +573,27 @@ export function generateIndependenceIntelligence(
   // -- Strengths ---------------------------------------------------------------
   const strengths: string[] = [];
 
-  if (independenceQuality.individualPlanRate >= 80) {
+  if (meets(independenceQuality.individualPlanRate, 80)) {
     strengths.push(
       "Strong individual independence planning — children consistently have personalised plans in place",
     );
   }
-  if (independenceQuality.childEngagedRate >= 80) {
+  if (meets(independenceQuality.childEngagedRate, 80)) {
     strengths.push(
       "Excellent child engagement — children are actively participating in their independence development",
     );
   }
-  if (independenceQuality.ageAppropriateRate >= 80) {
+  if (meets(independenceQuality.ageAppropriateRate, 80)) {
     strengths.push(
       "Independence activities are consistently age-appropriate and tailored to individual needs",
     );
   }
-  if (independenceCompliance.documentationCompleteRate >= 80) {
+  if (meets(independenceCompliance.documentationCompleteRate, 80)) {
     strengths.push(
       "Documentation standards are high — independence assessments are thoroughly recorded",
     );
   }
-  if (independenceCompliance.pathwayPlanAlignedRate >= 80) {
+  if (meets(independenceCompliance.pathwayPlanAlignedRate, 80)) {
     strengths.push(
       "Independence work is well-aligned with pathway planning and transition goals",
     );
@@ -602,27 +612,27 @@ export function generateIndependenceIntelligence(
   // -- Areas for improvement ---------------------------------------------------
   const areasForImprovement: string[] = [];
 
-  if (independenceQuality.childEngagedRate < 60 && records.length > 0) {
+  if (below(independenceQuality.childEngagedRate, 60) && records.length > 0) {
     areasForImprovement.push(
       "Child engagement in independence activities is below expectations — review how activities are structured and whether children have meaningful choice",
     );
   }
-  if (independenceCompliance.documentationCompleteRate < 60 && records.length > 0) {
+  if (below(independenceCompliance.documentationCompleteRate, 60) && records.length > 0) {
     areasForImprovement.push(
       "Documentation of independence assessments needs strengthening — ensure all assessments are fully recorded",
     );
   }
-  if (independenceCompliance.pathwayPlanAlignedRate < 60 && records.length > 0) {
+  if (below(independenceCompliance.pathwayPlanAlignedRate, 60) && records.length > 0) {
     areasForImprovement.push(
       "Independence work is insufficiently aligned with pathway plans — strengthen links between daily activities and transition goals",
     );
   }
-  if (independenceCompliance.categoryDiversityRate < 60 && records.length > 0) {
+  if (below(independenceCompliance.categoryDiversityRate, 60) && records.length > 0) {
     areasForImprovement.push(
       "Limited range of independence categories covered — broaden activities to include cooking, money, hygiene, travel, health, social, and education skills",
     );
   }
-  if (staffIndependenceReadiness.motivationalSkillsRate < 60 && staff.length > 0) {
+  if (below(staffIndependenceReadiness.motivationalSkillsRate, 60) && staff.length > 0) {
     areasForImprovement.push(
       "Motivational skills training needs improvement across the staff team to better support children's independence journey",
     );
@@ -646,12 +656,12 @@ export function generateIndependenceIntelligence(
       "URGENT: No staff independence training records — deliver independence planning, life skills teaching, and transition support training to all staff",
     );
   }
-  if (independenceQuality.individualPlanRate < 50 && records.length > 0) {
+  if (below(independenceQuality.individualPlanRate, 50) && records.length > 0) {
     actions.push(
       "Review individual independence plans — too few children have personalised plans in place for their independence journey",
     );
   }
-  if (independenceCompliance.positiveOutcomeRate < 50 && records.length > 0) {
+  if (below(independenceCompliance.positiveOutcomeRate, 50) && records.length > 0) {
     actions.push(
       "Positive outcome rate is low — review independence teaching methods and consider additional support or alternative approaches",
     );

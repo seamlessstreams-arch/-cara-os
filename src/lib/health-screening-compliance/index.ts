@@ -5,7 +5,6 @@ export {
   evaluateStaffHealthReadiness,
   buildChildHealthProfiles,
   generateHealthScreeningComplianceIntelligence,
-  pct,
   getRating,
   getScreeningTypeLabel,
   getScreeningStatusLabel,

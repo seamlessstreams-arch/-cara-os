@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   generateIndependentLivingSkillsIntelligence, evaluateLivingSkillsQuality, evaluateLivingSkillsCompliance,
-  evaluateLivingSkillsPolicy, evaluateStaffLivingSkillsReadiness, buildChildLivingSkillsProfiles, pct, getRating,
+  evaluateLivingSkillsPolicy, evaluateStaffLivingSkillsReadiness, buildChildLivingSkillsProfiles, getRating,
   getSkillTypeLabel, getCompetencyLevelLabel, getRatingLabel,
 } from "../independent-living-skills-engine";
 import type { SkillsSession, LivingSkillsPolicy, StaffLivingSkillsTraining } from "../independent-living-skills-engine";
@@ -21,14 +21,6 @@ function makeTraining(overrides: Partial<StaffLivingSkillsTraining> = {}): Staff
 }
 
 // ── pct ──────────────────────────────────────────────────────────────────────
-
-describe("pct", () => {
-  it("returns percentage", () => { expect(pct(3, 4)).toBe(75); });
-  it("returns 0 for den=0", () => { expect(pct(0, 0)).toBe(0); });
-  it("returns 100 for equal", () => { expect(pct(5, 5)).toBe(100); });
-  it("returns 0 for num=0", () => { expect(pct(0, 10)).toBe(0); });
-  it("rounds correctly", () => { expect(pct(1, 3)).toBe(33); });
-});
 
 // ── getRating ────────────────────────────────────────────────────────────────
 
@@ -73,8 +65,8 @@ describe("evaluateLivingSkillsQuality", () => {
   it("returns 0 for empty", () => {
     const r = evaluateLivingSkillsQuality([]);
     expect(r.overallScore).toBe(0); expect(r.totalSessions).toBe(0);
-    expect(r.competencyRate).toBe(0); expect(r.engagementRate).toBe(0);
-    expect(r.progressRate).toBe(0); expect(r.confidenceRate).toBe(0);
+    expect(r.competencyRate).toBeNull(); expect(r.engagementRate).toBeNull();
+    expect(r.progressRate).toBeNull(); expect(r.confidenceRate).toBeNull();
   });
   it("scores 25 for perfect", () => {
     expect(evaluateLivingSkillsQuality(Array.from({ length: 10 }, () => makeSession())).overallScore).toBe(25);
@@ -117,10 +109,12 @@ describe("evaluateLivingSkillsQuality", () => {
 // ── evaluateLivingSkillsCompliance ───────────────────────────────────────────
 
 describe("evaluateLivingSkillsCompliance", () => {
-  it("returns 0 for empty", () => {
+  it("returns zero score and null rates for empty", () => {
     const r = evaluateLivingSkillsCompliance([]);
-    expect(r.overallScore).toBe(0); expect(r.documentedRate).toBe(0);
-    expect(r.staffSupportedRate).toBe(0); expect(r.feedbackRate).toBe(0);
+    expect(r.overallScore).toBe(0);
+    expect(r.documentedRate).toBeNull();
+    expect(r.staffSupportedRate).toBeNull();
+    expect(r.feedbackRate).toBeNull();
     expect(r.skillTypeDiversityRatio).toBe(0);
   });
   it("calculates documented rate", () => {
@@ -204,7 +198,7 @@ describe("evaluateStaffLivingSkillsReadiness", () => {
   it("returns 0 for empty", () => {
     const r = evaluateStaffLivingSkillsReadiness([]);
     expect(r.overallScore).toBe(0); expect(r.totalStaff).toBe(0);
-    expect(r.independencePromotionRate).toBe(0); expect(r.practicalSkillsTeachingRate).toBe(0);
+    expect(r.independencePromotionRate).toBeNull(); expect(r.practicalSkillsTeachingRate).toBeNull();
   });
   it("scores 25 for fully trained", () => {
     expect(evaluateStaffLivingSkillsReadiness(Array.from({ length: 5 }, () => makeTraining())).overallScore).toBe(25);

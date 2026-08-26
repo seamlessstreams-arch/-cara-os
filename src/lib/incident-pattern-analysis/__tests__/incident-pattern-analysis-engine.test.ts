@@ -11,7 +11,6 @@ import {
   buildChildIncidentProfiles,
   generateIncidentPatternAnalysisIntelligence,
   getRating,
-  pct,
   getIncidentCategoryLabel,
   getIncidentSeverityLabel,
   getResponseQualityLabel,
@@ -109,29 +108,6 @@ function makePattern(overrides: Partial<PatternIndicator> = {}): PatternIndicato
 // ══════════════════════════════════════════════════════════════════════════════
 // pct()
 // ══════════════════════════════════════════════════════════════════════════════
-
-describe("pct", () => {
-  it("should return 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("should return 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-
-  it("should return 100 when num equals den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("should return 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-
-  it("should round to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-});
 
 // ══════════════════════════════════════════════════════════════════════════════
 // getRating()
@@ -258,10 +234,10 @@ describe("evaluateIncidentResponse", () => {
     expect(result.totalIncidents).toBe(0);
     expect(result.criticalIncidentCount).toBe(0);
     expect(result.majorIncidentCount).toBe(0);
-    expect(result.responseQualityRate).toBe(0);
-    expect(result.deEscalationSuccessRate).toBe(0);
-    expect(result.childDebriefRate).toBe(0);
-    expect(result.restraintRate).toBe(0);
+    expect(result.responseQualityRate).toBeNull();
+    expect(result.deEscalationSuccessRate).toBeNull();
+    expect(result.childDebriefRate).toBeNull();
+    expect(result.restraintRate).toBeNull();
     expect(result.averageResponseTimeMins).toBe(0);
   });
 
@@ -406,10 +382,10 @@ describe("evaluateNotificationCompliance", () => {
     const result = evaluateNotificationCompliance([]);
     expect(result.overallScore).toBe(25);
     expect(result.totalNotifiable).toBe(0);
-    expect(result.timelyCompleteRate).toBe(0);
+    expect(result.timelyCompleteRate).toBeNull();
     expect(result.lateNotificationCount).toBe(0);
     expect(result.notNotifiedCount).toBe(0);
-    expect(result.managersInformedRate).toBe(0);
+    expect(result.managersInformedRate).toBeNull();
   });
 
   it("should score well for all timely and complete notifications", () => {
@@ -513,7 +489,7 @@ describe("evaluatePatternAnalysis", () => {
     expect(result.trendsAnalysed).toBe(0);
     expect(result.escalatingChildCount).toBe(0);
     expect(result.predominantCategory).toBe("none");
-    expect(result.lessonsIdentifiedRate).toBe(0);
+    expect(result.lessonsIdentifiedRate).toBeNull();
     expect(result.triggerPatternsIdentified).toBe(0);
     expect(result.environmentalFactorsCount).toBe(0);
   });
@@ -621,10 +597,10 @@ describe("evaluatePostIncident", () => {
     const result = evaluatePostIncident([]);
     expect(result.overallScore).toBe(25);
     expect(result.totalPostIncident).toBe(0);
-    expect(result.debriefCompletionRate).toBe(0);
-    expect(result.supportPlanUpdateRate).toBe(0);
-    expect(result.medicalAttentionRate).toBe(0);
-    expect(result.externalReferralRate).toBe(0);
+    expect(result.debriefCompletionRate).toBeNull();
+    expect(result.supportPlanUpdateRate).toBeNull();
+    expect(result.medicalAttentionRate).toBeNull();
+    expect(result.externalReferralRate).toBeNull();
     expect(result.noActionCount).toBe(0);
   });
 

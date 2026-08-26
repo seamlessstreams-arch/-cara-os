@@ -5,7 +5,6 @@ export {
   evaluateEnvironmentAccessibility,
   evaluateStaffCompetence,
   buildChildCommunicationProfiles,
-  pct,
   getRating,
   getCommunicationNeedLabel,
   getSupportTypeLabel,

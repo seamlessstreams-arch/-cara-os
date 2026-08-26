@@ -19,6 +19,7 @@
    ────────────────────────────────────────────────────────────── */
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -127,10 +128,14 @@ export interface FireSafetyStaffTraining {
 
 export interface FireSafetyQualityResult {
   totalRecords: number;
-  drillCompletedSuccessfullyRate: number;
-  allChildrenAccountedRate: number;
-  evacuationTimeRecordedRate: number;
-  equipmentFunctionalRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  drillCompletedSuccessfullyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  allChildrenAccountedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  evacuationTimeRecordedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  equipmentFunctionalRate: number | null;
   score: number;
   strengths: string[];
   concerns: string[];
@@ -138,9 +143,12 @@ export interface FireSafetyQualityResult {
 
 export interface FireSafetyComplianceResult {
   totalRecords: number;
-  documentationRate: number;
-  timelyRecordingRate: number;
-  allChildrenAccountedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  allChildrenAccountedRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
   score: number;
@@ -163,12 +171,18 @@ export interface FireSafetyPolicyResult {
 
 export interface FireSafetyStaffReadinessResult {
   totalStaff: number;
-  fireWardenTrainingRate: number;
-  evacuationProcedureKnowledgeRate: number;
-  fireExtinguisherUseRate: number;
-  fireRiskAssessmentRate: number;
-  alarmSystemKnowledgeRate: number;
-  firstAidFireInjuryRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  fireWardenTrainingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  evacuationProcedureKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  fireExtinguisherUseRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  fireRiskAssessmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  alarmSystemKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  firstAidFireInjuryRate: number | null;
   score: number;
   strengths: string[];
   concerns: string[];
@@ -204,11 +218,6 @@ export interface FireSafetyIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -226,10 +235,10 @@ export function evaluateFireSafetyQuality(
   if (totalRecords === 0) {
     return {
       totalRecords: 0,
-      drillCompletedSuccessfullyRate: 0,
-      allChildrenAccountedRate: 0,
-      evacuationTimeRecordedRate: 0,
-      equipmentFunctionalRate: 0,
+      drillCompletedSuccessfullyRate: null,
+      allChildrenAccountedRate: null,
+      evacuationTimeRecordedRate: null,
+      equipmentFunctionalRate: null,
       score: 0,
       strengths: [],
       concerns: ["No fire safety records — quality cannot be assessed"],
@@ -237,50 +246,50 @@ export function evaluateFireSafetyQuality(
   }
 
   const drillCount = records.filter((r) => r.drillCompletedSuccessfully).length;
-  const drillCompletedSuccessfullyRate = pct(drillCount, totalRecords);
+  const drillCompletedSuccessfullyRate = rate(drillCount, totalRecords);
 
   const accountedCount = records.filter((r) => r.allChildrenAccounted).length;
-  const allChildrenAccountedRate = pct(accountedCount, totalRecords);
+  const allChildrenAccountedRate = rate(accountedCount, totalRecords);
 
   const evacTimeCount = records.filter((r) => r.evacuationTimeRecorded).length;
-  const evacuationTimeRecordedRate = pct(evacTimeCount, totalRecords);
+  const evacuationTimeRecordedRate = rate(evacTimeCount, totalRecords);
 
   const equipCount = records.filter((r) => r.equipmentFunctional).length;
-  const equipmentFunctionalRate = pct(equipCount, totalRecords);
+  const equipmentFunctionalRate = rate(equipCount, totalRecords);
 
   // Weights: drillCompletedSuccessfullyRate 7 + allChildrenAccountedRate 6 + evacuationTimeRecordedRate 6 + equipmentFunctionalRate 6 = 25
   let score = 0;
-  score += (drillCompletedSuccessfullyRate / 100) * 7;
-  score += (allChildrenAccountedRate / 100) * 6;
-  score += (evacuationTimeRecordedRate / 100) * 6;
-  score += (equipmentFunctionalRate / 100) * 6;
+  score += (drillCompletedSuccessfullyRate! / 100) * 7;
+  score += (allChildrenAccountedRate! / 100) * 6;
+  score += (evacuationTimeRecordedRate! / 100) * 6;
+  score += (equipmentFunctionalRate! / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (drillCompletedSuccessfullyRate >= 80) {
+  if (meets(drillCompletedSuccessfullyRate, 80)) {
     strengths.push("Strong drill completion: " + drillCompletedSuccessfullyRate + "% of drills completed successfully");
-  } else if (drillCompletedSuccessfullyRate < 50) {
+  } else if (below(drillCompletedSuccessfullyRate, 50)) {
     concerns.push("Drill completion rate at " + drillCompletedSuccessfullyRate + "% — drills not consistently successful");
   }
 
-  if (allChildrenAccountedRate >= 80) {
+  if (meets(allChildrenAccountedRate, 80)) {
     strengths.push("Excellent child accountability: " + allChildrenAccountedRate + "% of records show all children accounted for");
-  } else if (allChildrenAccountedRate < 50) {
+  } else if (below(allChildrenAccountedRate, 50)) {
     concerns.push("Child accountability rate at " + allChildrenAccountedRate + "% — children not consistently accounted for");
   }
 
-  if (evacuationTimeRecordedRate >= 90) {
+  if (meets(evacuationTimeRecordedRate, 90)) {
     strengths.push("Thorough evacuation time recording: " + evacuationTimeRecordedRate + "% of records have evacuation times");
-  } else if (evacuationTimeRecordedRate < 60) {
+  } else if (below(evacuationTimeRecordedRate, 60)) {
     concerns.push("Evacuation time recording at " + evacuationTimeRecordedRate + "% — evacuation times not consistently recorded");
   }
 
-  if (equipmentFunctionalRate >= 80) {
+  if (meets(equipmentFunctionalRate, 80)) {
     strengths.push("Good equipment functionality: " + equipmentFunctionalRate + "% of checks show equipment functional");
-  } else if (equipmentFunctionalRate < 50) {
+  } else if (below(equipmentFunctionalRate, 50)) {
     concerns.push("Equipment functionality at " + equipmentFunctionalRate + "% — equipment not consistently functional");
   }
 
@@ -306,9 +315,9 @@ export function evaluateFireSafetyCompliance(
   if (totalRecords === 0) {
     return {
       totalRecords: 0,
-      documentationRate: 0,
-      timelyRecordingRate: 0,
-      allChildrenAccountedRate: 0,
+      documentationRate: null,
+      timelyRecordingRate: null,
+      allChildrenAccountedRate: null,
       categoryDiversityRatio: 0,
       uniqueCategories: 0,
       score: 0,
@@ -318,13 +327,13 @@ export function evaluateFireSafetyCompliance(
   }
 
   const docCount = records.filter((r) => r.documentationComplete).length;
-  const documentationRate = pct(docCount, totalRecords);
+  const documentationRate = rate(docCount, totalRecords);
 
   const timelyCount = records.filter((r) => r.timelyRecording).length;
-  const timelyRecordingRate = pct(timelyCount, totalRecords);
+  const timelyRecordingRate = rate(timelyCount, totalRecords);
 
   const accountedCount = records.filter((r) => r.allChildrenAccounted).length;
-  const allChildrenAccountedRate = pct(accountedCount, totalRecords);
+  const allChildrenAccountedRate = rate(accountedCount, totalRecords);
 
   const uniqueCategoriesSet = new Set(records.map((r) => r.category));
   const uniqueCategories = uniqueCategoriesSet.size;
@@ -332,9 +341,9 @@ export function evaluateFireSafetyCompliance(
 
   // Weights: documentationRate 8 + timelyRecordingRate 7 + allChildrenAccountedRate 5 + categoryDiversityRatio 5 = 25
   let score = 0;
-  score += (documentationRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (allChildrenAccountedRate / 100) * 5;
+  score += (documentationRate! / 100) * 8;
+  score += (timelyRecordingRate! / 100) * 7;
+  score += (allChildrenAccountedRate! / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -342,21 +351,21 @@ export function evaluateFireSafetyCompliance(
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (documentationRate >= 90) {
+  if (meets(documentationRate, 90)) {
     strengths.push("Excellent documentation: " + documentationRate + "% of fire safety records fully documented");
-  } else if (documentationRate < 50) {
+  } else if (below(documentationRate, 50)) {
     concerns.push("Documentation rate at " + documentationRate + "% — fire safety records incomplete");
   }
 
-  if (timelyRecordingRate >= 90) {
+  if (meets(timelyRecordingRate, 90)) {
     strengths.push("Timely recording: " + timelyRecordingRate + "% of fire safety activities recorded promptly");
-  } else if (timelyRecordingRate < 50) {
+  } else if (below(timelyRecordingRate, 50)) {
     concerns.push("Timely recording rate at " + timelyRecordingRate + "% — records not completed promptly");
   }
 
-  if (allChildrenAccountedRate >= 90) {
+  if (meets(allChildrenAccountedRate, 90)) {
     strengths.push("Strong child accountability in compliance: " + allChildrenAccountedRate + "% of records show all children accounted for");
-  } else if (allChildrenAccountedRate < 50) {
+  } else if (below(allChildrenAccountedRate, 50)) {
     concerns.push("Child accountability in compliance at " + allChildrenAccountedRate + "% — accountability procedures need strengthening");
   }
 
@@ -474,12 +483,12 @@ export function evaluateFireSafetyStaffReadiness(
   if (totalStaff === 0) {
     return {
       totalStaff: 0,
-      fireWardenTrainingRate: 0,
-      evacuationProcedureKnowledgeRate: 0,
-      fireExtinguisherUseRate: 0,
-      fireRiskAssessmentRate: 0,
-      alarmSystemKnowledgeRate: 0,
-      firstAidFireInjuryRate: 0,
+      fireWardenTrainingRate: null,
+      evacuationProcedureKnowledgeRate: null,
+      fireExtinguisherUseRate: null,
+      fireRiskAssessmentRate: null,
+      alarmSystemKnowledgeRate: null,
+      firstAidFireInjuryRate: null,
       score: 0,
       strengths: [],
       concerns: ["No staff training records — URGENT: schedule fire safety training for all staff"],
@@ -487,70 +496,70 @@ export function evaluateFireSafetyStaffReadiness(
   }
 
   const wardenCount = training.filter((t) => t.fireWardenTraining).length;
-  const fireWardenTrainingRate = pct(wardenCount, totalStaff);
+  const fireWardenTrainingRate = rate(wardenCount, totalStaff);
 
   const evacCount = training.filter((t) => t.evacuationProcedureKnowledge).length;
-  const evacuationProcedureKnowledgeRate = pct(evacCount, totalStaff);
+  const evacuationProcedureKnowledgeRate = rate(evacCount, totalStaff);
 
   const extinguisherCount = training.filter((t) => t.fireExtinguisherUse).length;
-  const fireExtinguisherUseRate = pct(extinguisherCount, totalStaff);
+  const fireExtinguisherUseRate = rate(extinguisherCount, totalStaff);
 
   const riskCount = training.filter((t) => t.fireRiskAssessment).length;
-  const fireRiskAssessmentRate = pct(riskCount, totalStaff);
+  const fireRiskAssessmentRate = rate(riskCount, totalStaff);
 
   const alarmCount = training.filter((t) => t.alarmSystemKnowledge).length;
-  const alarmSystemKnowledgeRate = pct(alarmCount, totalStaff);
+  const alarmSystemKnowledgeRate = rate(alarmCount, totalStaff);
 
   const firstAidCount = training.filter((t) => t.firstAidFireInjury).length;
-  const firstAidFireInjuryRate = pct(firstAidCount, totalStaff);
+  const firstAidFireInjuryRate = rate(firstAidCount, totalStaff);
 
   // Weights: 6+5+5+4+3+2 = 25
   let score = 0;
-  score += (fireWardenTrainingRate / 100) * 6;
-  score += (evacuationProcedureKnowledgeRate / 100) * 5;
-  score += (fireExtinguisherUseRate / 100) * 5;
-  score += (fireRiskAssessmentRate / 100) * 4;
-  score += (alarmSystemKnowledgeRate / 100) * 3;
-  score += (firstAidFireInjuryRate / 100) * 2;
+  score += (fireWardenTrainingRate! / 100) * 6;
+  score += (evacuationProcedureKnowledgeRate! / 100) * 5;
+  score += (fireExtinguisherUseRate! / 100) * 5;
+  score += (fireRiskAssessmentRate! / 100) * 4;
+  score += (alarmSystemKnowledgeRate! / 100) * 3;
+  score += ((firstAidFireInjuryRate ?? 0) / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (fireWardenTrainingRate >= 80) {
+  if (meets(fireWardenTrainingRate, 80)) {
     strengths.push("Strong fire warden training: " + fireWardenTrainingRate + "% of staff trained");
-  } else if (fireWardenTrainingRate < 50) {
+  } else if (below(fireWardenTrainingRate, 50)) {
     concerns.push("Fire warden training at " + fireWardenTrainingRate + "% — more staff need fire warden certification");
   }
 
-  if (evacuationProcedureKnowledgeRate >= 80) {
+  if (meets(evacuationProcedureKnowledgeRate, 80)) {
     strengths.push("Good evacuation procedure knowledge: " + evacuationProcedureKnowledgeRate + "% of staff");
-  } else if (evacuationProcedureKnowledgeRate < 50) {
+  } else if (below(evacuationProcedureKnowledgeRate, 50)) {
     concerns.push("Evacuation procedure knowledge at " + evacuationProcedureKnowledgeRate + "% — staff training gap");
   }
 
-  if (fireExtinguisherUseRate >= 80) {
+  if (meets(fireExtinguisherUseRate, 80)) {
     strengths.push("Staff confident with fire extinguishers: " + fireExtinguisherUseRate + "%");
-  } else if (fireExtinguisherUseRate < 50) {
+  } else if (below(fireExtinguisherUseRate, 50)) {
     concerns.push("Fire extinguisher training at " + fireExtinguisherUseRate + "% — practical training needed");
   }
 
-  if (fireRiskAssessmentRate >= 80) {
+  if (meets(fireRiskAssessmentRate, 80)) {
     strengths.push("Good fire risk assessment skills: " + fireRiskAssessmentRate + "% of staff");
-  } else if (fireRiskAssessmentRate < 50) {
+  } else if (below(fireRiskAssessmentRate, 50)) {
     concerns.push("Fire risk assessment skills at " + fireRiskAssessmentRate + "% — upskilling required");
   }
 
-  if (alarmSystemKnowledgeRate >= 80) {
+  if (meets(alarmSystemKnowledgeRate, 80)) {
     strengths.push("Strong alarm system knowledge: " + alarmSystemKnowledgeRate + "% of staff");
-  } else if (alarmSystemKnowledgeRate < 50) {
+  } else if (below(alarmSystemKnowledgeRate, 50)) {
     concerns.push("Alarm system knowledge at " + alarmSystemKnowledgeRate + "% — staff need familiarisation");
   }
 
-  if (firstAidFireInjuryRate >= 80) {
+  if (meets(firstAidFireInjuryRate, 80)) {
     strengths.push("Good first aid for fire injury skills: " + firstAidFireInjuryRate + "% of staff");
-  } else if (firstAidFireInjuryRate < 50) {
+  } else if (below(firstAidFireInjuryRate, 50)) {
     concerns.push("First aid for fire injury at " + firstAidFireInjuryRate + "% — training recommended");
   }
 
@@ -588,10 +597,10 @@ export function buildChildFireSafetyProfiles(
     const totalRecords = child.records.length;
 
     const drillCount = child.records.filter((r) => r.drillCompletedSuccessfully).length;
-    const drillCompletedSuccessfullyRate = pct(drillCount, totalRecords);
+    const drillCompletedSuccessfullyRate = rate(drillCount, totalRecords)!;
 
     const accountedCount = child.records.filter((r) => r.allChildrenAccounted).length;
-    const allChildrenAccountedRate = pct(accountedCount, totalRecords);
+    const allChildrenAccountedRate = rate(accountedCount, totalRecords)!;
 
     const uniqueCategoriesSet = new Set(child.records.map((r) => r.category));
     const uniqueCategories = uniqueCategoriesSet.size;
@@ -599,19 +608,19 @@ export function buildChildFireSafetyProfiles(
     // frequency: >=10 records -> 2, >=5 -> 1, else 0
     let frequencyScore = 0;
     if (totalRecords >= 10) frequencyScore = 2;
-    else if (totalRecords >= 5) frequencyScore = 1;
+    else if (meets(totalRecords, 5)) frequencyScore = 1;
 
     // rate1 (drillCompletedSuccessfullyRate): >=80 -> 3, >=60 -> 2, >=40 -> 1, else 0
     let rate1Score = 0;
-    if (drillCompletedSuccessfullyRate >= 80) rate1Score = 3;
-    else if (drillCompletedSuccessfullyRate >= 60) rate1Score = 2;
-    else if (drillCompletedSuccessfullyRate >= 40) rate1Score = 1;
+    if (meets(drillCompletedSuccessfullyRate, 80)) rate1Score = 3;
+    else if (meets(drillCompletedSuccessfullyRate, 60)) rate1Score = 2;
+    else if (meets(drillCompletedSuccessfullyRate, 40)) rate1Score = 1;
 
     // rate2 (allChildrenAccountedRate): same thresholds
     let rate2Score = 0;
-    if (allChildrenAccountedRate >= 80) rate2Score = 3;
-    else if (allChildrenAccountedRate >= 60) rate2Score = 2;
-    else if (allChildrenAccountedRate >= 40) rate2Score = 1;
+    if (meets(allChildrenAccountedRate, 80)) rate2Score = 3;
+    else if (meets(allChildrenAccountedRate, 60)) rate2Score = 2;
+    else if (meets(allChildrenAccountedRate, 40)) rate2Score = 1;
 
     // diversity (unique categories): >=4 -> 2, >=2 -> 1, else 0
     let diversityBonus = 0;
@@ -806,31 +815,31 @@ function generateActions(
   }
 
   // Conditional on rates < 50
-  if (quality.totalRecords > 0 && quality.drillCompletedSuccessfullyRate < 50) {
+  if (quality.totalRecords > 0 && below(quality.drillCompletedSuccessfullyRate, 50)) {
     actions.push("HIGH: Drill completion rate at " + quality.drillCompletedSuccessfullyRate + "% — review drill procedures and ensure drills are completed successfully");
   }
 
-  if (quality.totalRecords > 0 && quality.allChildrenAccountedRate < 50) {
+  if (quality.totalRecords > 0 && below(quality.allChildrenAccountedRate, 50)) {
     actions.push("HIGH: Child accountability rate at " + quality.allChildrenAccountedRate + "% — strengthen roll-call and accountability procedures");
   }
 
-  if (compliance.totalRecords > 0 && compliance.documentationRate < 50) {
+  if (compliance.totalRecords > 0 && below(compliance.documentationRate, 50)) {
     actions.push("HIGH: Documentation rate at " + compliance.documentationRate + "% — ensure all fire safety activities are fully documented");
   }
 
-  if (compliance.totalRecords > 0 && compliance.timelyRecordingRate < 50) {
+  if (compliance.totalRecords > 0 && below(compliance.timelyRecordingRate, 50)) {
     actions.push("HIGH: Timely recording rate at " + compliance.timelyRecordingRate + "% — records must be completed promptly after activities");
   }
 
-  if (quality.totalRecords > 0 && quality.evacuationTimeRecordedRate < 50) {
+  if (quality.totalRecords > 0 && below(quality.evacuationTimeRecordedRate, 50)) {
     actions.push("MEDIUM: Evacuation time recording at " + quality.evacuationTimeRecordedRate + "% — record evacuation times for all drills");
   }
 
-  if (quality.totalRecords > 0 && quality.equipmentFunctionalRate < 50) {
+  if (quality.totalRecords > 0 && below(quality.equipmentFunctionalRate, 50)) {
     actions.push("MEDIUM: Equipment functionality at " + quality.equipmentFunctionalRate + "% — arrange urgent equipment inspections and repairs");
   }
 
-  if (staff.totalStaff > 0 && staff.fireWardenTrainingRate < 50) {
+  if (staff.totalStaff > 0 && below(staff.fireWardenTrainingRate, 50)) {
     actions.push("MEDIUM: Fire warden training at " + staff.fireWardenTrainingRate + "% — schedule fire warden training for more staff");
   }
 

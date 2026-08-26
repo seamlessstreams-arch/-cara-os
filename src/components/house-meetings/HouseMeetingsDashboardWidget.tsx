@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildHouseMeetingProfile { childId: string; childName: string; totalRecords: number; childAgendaContributionRate: number; childAttendanceRate: number; categoriesCovered: string[]; overallScore: number; }
 
@@ -73,19 +74,19 @@ export default function HouseMeetingsDashboardWidget() {
       <Section title="Meeting Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Meetings" value={data.houseMeetingQuality.totalMeetings} />
-          <Stat label="Child Agenda" value={`${data.houseMeetingQuality.childAgendaContributionRate}%`} />
-          <Stat label="Minutes Recorded" value={`${data.houseMeetingQuality.minutesRecordedRate}%`} />
-          <Stat label="Child Attendance" value={`${data.houseMeetingQuality.childAttendanceRate}%`} />
-          <Stat label="Actions Reviewed" value={`${data.houseMeetingQuality.actionsReviewedRate}%`} />
+          <Stat label="Child Agenda" value={`${formatRate(data.houseMeetingQuality.childAgendaContributionRate)}`} />
+          <Stat label="Minutes Recorded" value={`${formatRate(data.houseMeetingQuality.minutesRecordedRate)}`} />
+          <Stat label="Child Attendance" value={`${formatRate(data.houseMeetingQuality.childAttendanceRate)}`} />
+          <Stat label="Actions Reviewed" value={`${formatRate(data.houseMeetingQuality.actionsReviewedRate)}`} />
         </div>
       </Section>
 
       <Section title="Meeting Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documentation" value={`${data.houseMeetingCompliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${data.houseMeetingCompliance.timelyRecordingRate}%`} />
-          <Stat label="Child Attendance" value={`${data.houseMeetingCompliance.childAttendanceRate}%`} />
-          <Stat label="Category Coverage" value={`${data.houseMeetingCompliance.categoryDiversityRatio}%`} />
+          <Stat label="Documentation" value={`${formatRate(data.houseMeetingCompliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(data.houseMeetingCompliance.timelyRecordingRate)}`} />
+          <Stat label="Child Attendance" value={`${formatRate(data.houseMeetingCompliance.childAttendanceRate)}`} />
+          <Stat label="Category Coverage" value={`${formatRate(data.houseMeetingCompliance.categoryDiversityRatio)}`} />
         </div>
       </Section>
 
@@ -108,12 +109,12 @@ export default function HouseMeetingsDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
-          <Stat label="Facilitation" value={`${data.staffReadiness.meetingFacilitationRate}%`} />
-          <Stat label="Child Participation" value={`${data.staffReadiness.childParticipationRate}%`} />
-          <Stat label="Minutes Taking" value={`${data.staffReadiness.minutesTakingRate}%`} />
-          <Stat label="Action Tracking" value={`${data.staffReadiness.actionTrackingRate}%`} />
-          <Stat label="Conflict Resolution" value={`${data.staffReadiness.conflictResolutionRate}%`} />
-          <Stat label="Inclusive Practice" value={`${data.staffReadiness.inclusivePracticeRate}%`} />
+          <Stat label="Facilitation" value={`${formatRate(data.staffReadiness.meetingFacilitationRate)}`} />
+          <Stat label="Child Participation" value={`${formatRate(data.staffReadiness.childParticipationRate)}`} />
+          <Stat label="Minutes Taking" value={`${formatRate(data.staffReadiness.minutesTakingRate)}`} />
+          <Stat label="Action Tracking" value={`${formatRate(data.staffReadiness.actionTrackingRate)}`} />
+          <Stat label="Conflict Resolution" value={`${formatRate(data.staffReadiness.conflictResolutionRate)}`} />
+          <Stat label="Inclusive Practice" value={`${formatRate(data.staffReadiness.inclusivePracticeRate)}`} />
         </div>
       </Section>
 

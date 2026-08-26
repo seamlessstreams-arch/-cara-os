@@ -10,7 +10,6 @@ export {
   buildChildIncidentProfiles,
   generateIncidentPatternAnalysisIntelligence,
   getRating,
-  pct,
   getIncidentCategoryLabel,
   getIncidentSeverityLabel,
   getResponseQualityLabel,

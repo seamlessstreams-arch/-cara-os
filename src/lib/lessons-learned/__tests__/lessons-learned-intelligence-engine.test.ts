@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct, getRating, getLessonsLearnedCategoryLabel, getLessonsLearnedOutcomeLabel, getRatingLabel,
+  getRating, getLessonsLearnedCategoryLabel, getLessonsLearnedOutcomeLabel, getRatingLabel,
   evaluateLessonsLearnedQuality, evaluateLessonsLearnedCompliance, evaluateLessonsLearnedPolicy,
   evaluateStaffLessonsLearnedReadiness, buildChildLessonsLearnedProfiles, generateLessonsLearnedIntelligence,
 } from "../lessons-learned-intelligence-engine";
@@ -26,15 +26,6 @@ function makeStaff(o: Partial<StaffLessonsLearnedTraining> = {}): StaffLessonsLe
 }
 
 // ═══ pct ═══
-describe("pct", () => {
-  it("returns percentage", () => { expect(pct(3, 4)).toBe(75); });
-  it("returns 0 for den=0", () => { expect(pct(5, 0)).toBe(0); });
-  it("100 for 1/1", () => { expect(pct(1, 1)).toBe(100); });
-  it("rounds 2/3 to 67", () => { expect(pct(2, 3)).toBe(67); });
-  it("rounds 1/3 to 33", () => { expect(pct(1, 3)).toBe(33); });
-  it("0 for 0/0", () => { expect(pct(0, 0)).toBe(0); });
-  it("0 for 0/5", () => { expect(pct(0, 5)).toBe(0); });
-});
 
 // ═══ getRating ═══
 describe("getRating", () => {
@@ -203,8 +194,8 @@ describe("evaluateStaffLessonsLearnedReadiness", () => {
   it("empty returns zero rates", () => {
     const r = evaluateStaffLessonsLearnedReadiness([]);
     expect(r.totalStaff).toBe(0);
-    expect(r.reflectivePracticeSkillsRate).toBe(0);
-    expect(r.rootCauseAnalysisKnowledgeRate).toBe(0);
+    expect(r.reflectivePracticeSkillsRate).toBeNull();
+    expect(r.rootCauseAnalysisKnowledgeRate).toBeNull();
   });
   it("3 staff mixed", () => {
     const staff = [

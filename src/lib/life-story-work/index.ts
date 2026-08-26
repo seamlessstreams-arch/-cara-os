@@ -5,7 +5,6 @@ export {
   evaluateLifeStoryPolicy,
   evaluateStaffLifeStoryReadiness,
   buildChildLifeStoryProfiles,
-  pct,
   getRating,
   getSessionTypeLabel,
   getEngagementLevelLabel,

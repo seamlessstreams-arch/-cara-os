@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildLivingSkillsProfile { childId: string; childName: string; totalSessions: number; competencyRate: number; engagementRate: number; overallScore: number; }
 
@@ -85,19 +86,19 @@ export default function IndependentLivingSkillsDashboardWidget() {
       <Section title="Living Skills Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Sessions" value={data.livingSkillsQuality.totalSessions} />
-          <Stat label="Competency" value={`${data.livingSkillsQuality.competencyRate}%`} />
-          <Stat label="Engagement" value={`${data.livingSkillsQuality.engagementRate}%`} />
-          <Stat label="Progress" value={`${data.livingSkillsQuality.progressRate}%`} />
-          <Stat label="Confidence" value={`${data.livingSkillsQuality.confidenceRate}%`} />
+          <Stat label="Competency" value={`${formatRate(data.livingSkillsQuality.competencyRate)}`} />
+          <Stat label="Engagement" value={`${formatRate(data.livingSkillsQuality.engagementRate)}`} />
+          <Stat label="Progress" value={`${formatRate(data.livingSkillsQuality.progressRate)}`} />
+          <Stat label="Confidence" value={`${formatRate(data.livingSkillsQuality.confidenceRate)}`} />
         </div>
       </Section>
 
       <Section title="Living Skills Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documented" value={`${data.livingSkillsCompliance.documentedRate}%`} />
-          <Stat label="Staff Supported" value={`${data.livingSkillsCompliance.staffSupportedRate}%`} />
-          <Stat label="Feedback" value={`${data.livingSkillsCompliance.feedbackRate}%`} />
-          <Stat label="Skill Diversity" value={`${data.livingSkillsCompliance.skillTypeDiversityRatio}%`} />
+          <Stat label="Documented" value={`${formatRate(data.livingSkillsCompliance.documentedRate)}`} />
+          <Stat label="Staff Supported" value={`${formatRate(data.livingSkillsCompliance.staffSupportedRate)}`} />
+          <Stat label="Feedback" value={`${formatRate(data.livingSkillsCompliance.feedbackRate)}`} />
+          <Stat label="Skill Diversity" value={`${formatRate(data.livingSkillsCompliance.skillTypeDiversityRatio)}`} />
         </div>
       </Section>
 
@@ -120,12 +121,12 @@ export default function IndependentLivingSkillsDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffLivingSkillsReadiness.totalStaff} />
-          <Stat label="Independence Promotion" value={`${data.staffLivingSkillsReadiness.independencePromotionRate}%`} />
-          <Stat label="Practical Skills" value={`${data.staffLivingSkillsReadiness.practicalSkillsTeachingRate}%`} />
-          <Stat label="Risk Enablement" value={`${data.staffLivingSkillsReadiness.riskEnablementRate}%`} />
-          <Stat label="Pathway Planning" value={`${data.staffLivingSkillsReadiness.pathwayPlanningRate}%`} />
-          <Stat label="Community Access" value={`${data.staffLivingSkillsReadiness.communityAccessRate}%`} />
-          <Stat label="Motivational" value={`${data.staffLivingSkillsReadiness.motivationalApproachesRate}%`} />
+          <Stat label="Independence Promotion" value={`${formatRate(data.staffLivingSkillsReadiness.independencePromotionRate)}`} />
+          <Stat label="Practical Skills" value={`${formatRate(data.staffLivingSkillsReadiness.practicalSkillsTeachingRate)}`} />
+          <Stat label="Risk Enablement" value={`${formatRate(data.staffLivingSkillsReadiness.riskEnablementRate)}`} />
+          <Stat label="Pathway Planning" value={`${formatRate(data.staffLivingSkillsReadiness.pathwayPlanningRate)}`} />
+          <Stat label="Community Access" value={`${formatRate(data.staffLivingSkillsReadiness.communityAccessRate)}`} />
+          <Stat label="Motivational" value={`${formatRate(data.staffLivingSkillsReadiness.motivationalApproachesRate)}`} />
         </div>
       </Section>
 

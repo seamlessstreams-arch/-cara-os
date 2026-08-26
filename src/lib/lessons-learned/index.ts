@@ -9,7 +9,6 @@ export {
   evaluateLessonsLearnedPolicy,
   evaluateStaffLessonsLearnedReadiness,
   buildChildLessonsLearnedProfiles,
-  pct,
   getRating,
   getLessonsLearnedCategoryLabel,
   getLessonsLearnedOutcomeLabel,

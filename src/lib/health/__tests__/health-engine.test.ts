@@ -4,7 +4,6 @@
 
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getAssessmentTypeLabel,
   getOutcomeLabel,
@@ -75,28 +74,6 @@ function makeTraining(overrides: Partial<StaffHealthTraining> = {}): StaffHealth
 // pct
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("pct", () => {
-  it("calculates percentage correctly", () => {
-    expect(pct(3, 4)).toBe(75);
-  });
-
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-
-  it("returns 100 for equal numerator and denominator", () => {
-    expect(pct(7, 7)).toBe(100);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-});
-
 // ══════════════════════════════════════════════════════════════════════════════
 // getRating
 // ══════════════════════════════════════════════════════════════════════════════
@@ -164,10 +141,10 @@ describe("evaluateHealthQuality", () => {
     const result = evaluateHealthQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalRecords).toBe(0);
-    expect(result.completedOnTimeRate).toBe(0);
-    expect(result.childConsentRate).toBe(0);
-    expect(result.actionPlanRate).toBe(0);
-    expect(result.followUpRate).toBe(0);
+    expect(result.completedOnTimeRate).toBeNull();
+    expect(result.childConsentRate).toBeNull();
+    expect(result.actionPlanRate).toBeNull();
+    expect(result.followUpRate).toBeNull();
   });
 
   it("scores maximum for perfect records", () => {
@@ -254,9 +231,9 @@ describe("evaluateHealthCompliance", () => {
     const result = evaluateHealthCompliance([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalRecords).toBe(0);
-    expect(result.documentedRate).toBe(0);
-    expect(result.gpNotifiedRate).toBe(0);
-    expect(result.parentInformedRate).toBe(0);
+    expect(result.documentedRate).toBeNull();
+    expect(result.gpNotifiedRate).toBeNull();
+    expect(result.parentInformedRate).toBeNull();
     expect(result.typeDiversityRatio).toBe(0);
   });
 
@@ -441,12 +418,12 @@ describe("evaluateStaffHealthReadiness", () => {
     const result = evaluateStaffHealthReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.healthAssessmentProcessRate).toBe(0);
-    expect(result.mentalHealthAwarenessRate).toBe(0);
-    expect(result.medicationAdministrationRate).toBe(0);
-    expect(result.consentAndCapacityRate).toBe(0);
-    expect(result.firstAidCertifiedRate).toBe(0);
-    expect(result.healthPromotionSkillsRate).toBe(0);
+    expect(result.healthAssessmentProcessRate).toBeNull();
+    expect(result.mentalHealthAwarenessRate).toBeNull();
+    expect(result.medicationAdministrationRate).toBeNull();
+    expect(result.consentAndCapacityRate).toBeNull();
+    expect(result.firstAidCertifiedRate).toBeNull();
+    expect(result.healthPromotionSkillsRate).toBeNull();
   });
 
   it("scores maximum for fully trained staff", () => {
