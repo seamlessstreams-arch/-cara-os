@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getCulturalAreaLabel,
   getEngagementLevelLabel,
@@ -69,18 +68,6 @@ function makeTraining(overrides: Partial<StaffCulturalTraining> = {}): StaffCult
 
 // -- pct -----------------------------------------------------------------------
 
-describe("pct", () => {
-  it("returns null for a zero denominator — nothing measured, not 0%", () => {
-    expect(pct(5, 0)).toBeNull();
-    expect(pct(5, 0)).not.toBe(0); // 0% is a claim about a population that does not exist
-  });
-  it("rounds correctly", () => expect(pct(1, 3)).toBe(33));
-  it("returns 100 for equal values", () => expect(pct(10, 10)).toBe(100));
-  it("returns 50 for half", () => expect(pct(5, 10)).toBe(50));
-  it("returns 0 for zero numerator", () => expect(pct(0, 10)).toBe(0));
-  it("handles large numbers", () => expect(pct(999, 1000)).toBe(100));
-  it("rounds 2/3 to 67", () => expect(pct(2, 3)).toBe(67));
-});
 
 // -- getRating -----------------------------------------------------------------
 
@@ -159,11 +146,11 @@ describe("evaluateCulturalEngagement", () => {
     const r = evaluateCulturalEngagement([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalActivities).toBe(0);
-    expect(r.engagementRate).toBe(0);
-    expect(r.childLedChoiceRate).toBe(0);
-    expect(r.identityAffirmedRate).toBe(0);
-    expect(r.documentedInPlanRate).toBe(0);
-    expect(r.reflectionCompletedRate).toBe(0);
+    expect(r.engagementRate).toBeNull();
+    expect(r.childLedChoiceRate).toBeNull();
+    expect(r.identityAffirmedRate).toBeNull();
+    expect(r.documentedInPlanRate).toBeNull();
+    expect(r.reflectionCompletedRate).toBeNull();
   });
 
   it("returns max score for all-excellent activities", () => {
@@ -329,8 +316,8 @@ describe("evaluateCulturalDiversity", () => {
     expect(r.totalActivities).toBe(0);
     expect(r.uniqueCulturalAreas).toBe(0);
     expect(r.culturalAreaRatio).toBe(0);
-    expect(r.staffFacilitatedRate).toBe(0);
-    expect(r.communityInvolvedRate).toBe(0);
+    expect(r.staffFacilitatedRate).toBeNull();
+    expect(r.communityInvolvedRate).toBeNull();
   });
 
   it("returns max score for activities covering all areas with staff and community", () => {
@@ -599,12 +586,12 @@ describe("evaluateStaffCulturalReadiness", () => {
     const r = evaluateStaffCulturalReadiness([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalStaff).toBe(0);
-    expect(r.culturalCompetenceRate).toBe(0);
-    expect(r.diversityAwarenessRate).toBe(0);
-    expect(r.religiousLiteracyRate).toBe(0);
-    expect(r.antiRacismPracticeRate).toBe(0);
-    expect(r.identitySupportRate).toBe(0);
-    expect(r.communityEngagementRate).toBe(0);
+    expect(r.culturalCompetenceRate).toBeNull();
+    expect(r.diversityAwarenessRate).toBeNull();
+    expect(r.religiousLiteracyRate).toBeNull();
+    expect(r.antiRacismPracticeRate).toBeNull();
+    expect(r.identitySupportRate).toBeNull();
+    expect(r.communityEngagementRate).toBeNull();
   });
 
   it("returns max score for fully trained staff", () => {

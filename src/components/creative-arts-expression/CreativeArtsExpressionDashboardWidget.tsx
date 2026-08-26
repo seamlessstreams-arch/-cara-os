@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildCreativeArtsProfile { childId: string; childName: string; totalSessions: number; expressionRate: number; creativityRate: number; overallScore: number; }
 
@@ -85,19 +86,19 @@ export default function CreativeArtsExpressionDashboardWidget() {
       <Section title="Arts Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Sessions" value={data.artsQuality.totalSessions} />
-          <Stat label="Expression" value={`${data.artsQuality.expressionRate}%`} />
-          <Stat label="Creativity" value={`${data.artsQuality.creativityRate}%`} />
-          <Stat label="Confidence" value={`${data.artsQuality.confidenceRate}%`} />
-          <Stat label="Therapeutic" value={`${data.artsQuality.therapeuticRate}%`} />
+          <Stat label="Expression" value={`${formatRate(data.artsQuality.expressionRate)}`} />
+          <Stat label="Creativity" value={`${formatRate(data.artsQuality.creativityRate)}`} />
+          <Stat label="Confidence" value={`${formatRate(data.artsQuality.confidenceRate)}`} />
+          <Stat label="Therapeutic" value={`${formatRate(data.artsQuality.therapeuticRate)}`} />
         </div>
       </Section>
 
       <Section title="Arts Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documented" value={`${data.artsCompliance.documentedRate}%`} />
-          <Stat label="Staff Facilitated" value={`${data.artsCompliance.staffFacilitatedRate}%`} />
-          <Stat label="Feedback" value={`${data.artsCompliance.feedbackRate}%`} />
-          <Stat label="Art Form Diversity" value={`${data.artsCompliance.artFormDiversityRatio}%`} />
+          <Stat label="Documented" value={`${formatRate(data.artsCompliance.documentedRate)}`} />
+          <Stat label="Staff Facilitated" value={`${formatRate(data.artsCompliance.staffFacilitatedRate)}`} />
+          <Stat label="Feedback" value={`${formatRate(data.artsCompliance.feedbackRate)}`} />
+          <Stat label="Art Form Diversity" value={`${formatRate(data.artsCompliance.artFormDiversityRatio)}`} />
         </div>
       </Section>
 
@@ -120,12 +121,12 @@ export default function CreativeArtsExpressionDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffCreativeArtsReadiness.totalStaff} />
-          <Stat label="Arts Facilitation" value={`${data.staffCreativeArtsReadiness.artsFacilitationRate}%`} />
-          <Stat label="Therapeutic Arts" value={`${data.staffCreativeArtsReadiness.therapeuticArtsAwarenessRate}%`} />
-          <Stat label="Confidence Building" value={`${data.staffCreativeArtsReadiness.creativeConfidenceBuildingRate}%`} />
-          <Stat label="Inclusive Practice" value={`${data.staffCreativeArtsReadiness.inclusivePracticeRate}%`} />
-          <Stat label="Cultural Arts" value={`${data.staffCreativeArtsReadiness.culturalArtsFormsRate}%`} />
-          <Stat label="Safeguarding" value={`${data.staffCreativeArtsReadiness.safeguardingInArtsRate}%`} />
+          <Stat label="Arts Facilitation" value={`${formatRate(data.staffCreativeArtsReadiness.artsFacilitationRate)}`} />
+          <Stat label="Therapeutic Arts" value={`${formatRate(data.staffCreativeArtsReadiness.therapeuticArtsAwarenessRate)}`} />
+          <Stat label="Confidence Building" value={`${formatRate(data.staffCreativeArtsReadiness.creativeConfidenceBuildingRate)}`} />
+          <Stat label="Inclusive Practice" value={`${formatRate(data.staffCreativeArtsReadiness.inclusivePracticeRate)}`} />
+          <Stat label="Cultural Arts" value={`${formatRate(data.staffCreativeArtsReadiness.culturalArtsFormsRate)}`} />
+          <Stat label="Safeguarding" value={`${formatRate(data.staffCreativeArtsReadiness.safeguardingInArtsRate)}`} />
         </div>
       </Section>
 

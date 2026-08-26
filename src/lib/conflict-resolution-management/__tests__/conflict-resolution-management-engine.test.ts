@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getConflictTypeLabel,
   getResolutionOutcomeLabel,
@@ -74,13 +73,6 @@ function makeTraining(overrides: Partial<StaffConflictResolutionTraining> = {}):
 
 // ── pct ──────────────────────────────────────────────────────────────────────
 
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => { expect(pct(5, 0)).toBe(0); });
-  it("returns correct percentage", () => { expect(pct(3, 4)).toBe(75); });
-  it("rounds to nearest integer", () => { expect(pct(1, 3)).toBe(33); });
-  it("returns 100 for equal values", () => { expect(pct(10, 10)).toBe(100); });
-  it("returns 0 for 0 numerator", () => { expect(pct(0, 10)).toBe(0); });
-});
 
 // ── getRating ────────────────────────────────────────────────────────────────
 
@@ -128,7 +120,7 @@ describe("evaluateConflictQuality", () => {
     const r = evaluateConflictQuality([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalIncidents).toBe(0);
-    expect(r.resolutionRate).toBe(0);
+    expect(r.resolutionRate).toBeNull();
   });
 
   it("scores max 25 with perfect data", () => {
@@ -177,7 +169,7 @@ describe("evaluateConflictCompliance", () => {
   it("returns all zeros for empty array", () => {
     const r = evaluateConflictCompliance([]);
     expect(r.overallScore).toBe(0);
-    expect(r.documentedRate).toBe(0);
+    expect(r.documentedRate).toBeNull();
   });
 
   it("scores max 25 with full compliance and diversity", () => {

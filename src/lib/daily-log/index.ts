@@ -4,7 +4,6 @@
 
 export {
   ALL_CATEGORIES,
-  pct,
   getRating,
   getDailyLogCategoryLabel,
   getDailyLogOutcomeLabel,

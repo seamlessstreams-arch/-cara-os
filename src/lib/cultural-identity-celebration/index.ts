@@ -5,7 +5,6 @@ export {
   evaluateCulturalPolicy,
   evaluateStaffCulturalReadiness,
   buildChildCulturalProfiles,
-  pct,
   getRating,
   getCulturalAreaLabel,
   getEngagementLevelLabel,

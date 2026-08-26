@@ -1117,7 +1117,7 @@ describe("computeRegulatoryEvidenceCompleteness", () => {
             documents: [makeDocument({ id: "d-1" })], // need something to avoid special case
           }),
         );
-        expect(result.filing_verified_rate).toBe(0);
+        expect(result.filing_verified_rate).toBeNull();
       });
 
       it("returns 100 when all verified", () => {
@@ -1154,7 +1154,7 @@ describe("computeRegulatoryEvidenceCompleteness", () => {
             documents: [makeDocument({ id: "d-1" })],
           }),
         );
-        expect(result.filing_described_rate).toBe(0);
+        expect(result.filing_described_rate).toBeNull();
       });
     });
 
@@ -1179,7 +1179,7 @@ describe("computeRegulatoryEvidenceCompleteness", () => {
             filing_items: [makeFilingItem({ id: "f-1" })],
           }),
         );
-        expect(result.document_currency_rate).toBe(0);
+        expect(result.document_currency_rate).toBeNull();
       });
 
       it("counts only status === 'current'", () => {
@@ -1214,7 +1214,7 @@ describe("computeRegulatoryEvidenceCompleteness", () => {
             filing_items: [makeFilingItem({ id: "f-1" })],
           }),
         );
-        expect(result.document_signed_rate).toBe(0);
+        expect(result.document_signed_rate).toBeNull();
       });
     });
 
@@ -1238,7 +1238,7 @@ describe("computeRegulatoryEvidenceCompleteness", () => {
             filing_items: [makeFilingItem({ id: "f-1" })],
           }),
         );
-        expect(result.risk_assessment_currency_rate).toBe(0);
+        expect(result.risk_assessment_currency_rate).toBeNull();
       });
     });
 
@@ -1278,7 +1278,7 @@ describe("computeRegulatoryEvidenceCompleteness", () => {
             filing_items: [makeFilingItem({ id: "f-1" })],
           }),
         );
-        expect(result.incident_report_rate).toBe(0);
+        expect(result.incident_report_rate).toBeNull();
       });
     });
 
@@ -1333,7 +1333,7 @@ describe("computeRegulatoryEvidenceCompleteness", () => {
             ],
           }),
         );
-        expect(result.high_severity_notification_rate).toBe(0);
+        expect(result.high_severity_notification_rate).toBeNull();
       });
 
       it("ignores low and medium severity for this rate", () => {
@@ -1460,7 +1460,7 @@ describe("computeRegulatoryEvidenceCompleteness", () => {
             filing_items: [makeFilingItem({ id: "f-1", child_id: "child-1" })],
           }),
         );
-        expect(result.child_evidence_coverage_rate).toBe(0);
+        expect(result.child_evidence_coverage_rate).toBeNull();
       });
 
       it("can exceed 100 when more unique children than total_children", () => {
@@ -2997,13 +2997,13 @@ describe("computeRegulatoryEvidenceCompleteness", () => {
           // no documents, no RA, no incidents
         }),
       );
-      expect(result.document_currency_rate).toBe(0);
-      expect(result.document_signed_rate).toBe(0);
-      expect(result.risk_assessment_currency_rate).toBe(0);
-      expect(result.risk_mitigation_rate).toBe(0);
-      expect(result.incident_report_rate).toBe(0);
-      expect(result.incident_follow_up_rate).toBe(0);
-      expect(result.high_severity_notification_rate).toBe(0);
+      expect(result.document_currency_rate).toBeNull();
+      expect(result.document_signed_rate).toBeNull();
+      expect(result.risk_assessment_currency_rate).toBeNull();
+      expect(result.risk_mitigation_rate).toBeNull();
+      expect(result.incident_report_rate).toBeNull();
+      expect(result.incident_follow_up_rate).toBeNull();
+      expect(result.high_severity_notification_rate).toBeNull();
     });
 
     it("handles filing items with null child_id", () => {
@@ -3454,22 +3454,28 @@ describe("computeRegulatoryEvidenceCompleteness", () => {
       expect(result).toHaveProperty("insights");
     });
 
-    it("all rates are numbers", () => {
+    it("all rates are numbers or null (unmeasured)", () => {
       const result = computeRegulatoryEvidenceCompleteness(
         baseInput({
           filing_items: [makeFilingItem({ id: "f-1" })],
         }),
       );
-      expect(typeof result.filing_verified_rate).toBe("number");
-      expect(typeof result.filing_described_rate).toBe("number");
-      expect(typeof result.document_currency_rate).toBe("number");
-      expect(typeof result.document_signed_rate).toBe("number");
-      expect(typeof result.risk_assessment_currency_rate).toBe("number");
-      expect(typeof result.risk_mitigation_rate).toBe("number");
-      expect(typeof result.incident_report_rate).toBe("number");
-      expect(typeof result.incident_follow_up_rate).toBe("number");
-      expect(typeof result.high_severity_notification_rate).toBe("number");
-      expect(typeof result.child_evidence_coverage_rate).toBe("number");
+      // With only filing items supplied, other populations are unmeasured —
+      // each rate is a number or an honest null, never a fabricated 0.
+      for (const v of [
+        result.filing_verified_rate,
+        result.filing_described_rate,
+        result.document_currency_rate,
+        result.document_signed_rate,
+        result.risk_assessment_currency_rate,
+        result.risk_mitigation_rate,
+        result.incident_report_rate,
+        result.incident_follow_up_rate,
+        result.high_severity_notification_rate,
+        result.child_evidence_coverage_rate,
+      ]) {
+        expect(v === null || typeof v === "number").toBe(true);
+      }
     });
 
     it("strengths, concerns, recommendations, insights are arrays", () => {

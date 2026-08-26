@@ -21,6 +21,7 @@
    ────────────────────────────────────────────────────────────── */
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -143,10 +144,14 @@ export interface StaffContactTraining {
 
 export interface ContactQualityResult {
   totalRecords: number;
-  childPreparedRate: number;
-  contactPlanFollowedRate: number;
-  childViewCapturedRate: number;
-  safetyMeasuresRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childPreparedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  contactPlanFollowedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewCapturedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safetyMeasuresRate: number | null;
   score: number;
   strengths: string[];
   concerns: string[];
@@ -154,10 +159,14 @@ export interface ContactQualityResult {
 
 export interface ContactComplianceResult {
   totalRecords: number;
-  documentationCompleteRate: number;
-  timelyRecordingRate: number;
-  completedOutcomeRate: number;
-  categoryDiversityRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationCompleteRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  completedOutcomeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  categoryDiversityRate: number | null;
   uniqueCategories: number;
   score: number;
   strengths: string[];
@@ -179,12 +188,18 @@ export interface ContactPolicyResult {
 
 export interface StaffContactReadinessResult {
   totalStaff: number;
-  contactSupervisionRate: number;
-  safeguardingAwarenessRate: number;
-  childCommunicationRate: number;
-  familyMediationRate: number;
-  riskManagementRate: number;
-  recordKeepingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  contactSupervisionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childCommunicationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  familyMediationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskManagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  recordKeepingRate: number | null;
   score: number;
   strengths: string[];
   concerns: string[];
@@ -220,11 +235,6 @@ export interface ContactIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -242,10 +252,10 @@ export function evaluateContactQuality(
   if (totalRecords === 0) {
     return {
       totalRecords: 0,
-      childPreparedRate: 0,
-      contactPlanFollowedRate: 0,
-      childViewCapturedRate: 0,
-      safetyMeasuresRate: 0,
+      childPreparedRate: null,
+      contactPlanFollowedRate: null,
+      childViewCapturedRate: null,
+      safetyMeasuresRate: null,
       score: 0,
       strengths: [],
       concerns: ["No contact records found — contact quality cannot be assessed"],
@@ -253,50 +263,50 @@ export function evaluateContactQuality(
   }
 
   const preparedCount = records.filter((r) => r.childPrepared).length;
-  const childPreparedRate = pct(preparedCount, totalRecords);
+  const childPreparedRate = rate(preparedCount, totalRecords);
 
   const planFollowedCount = records.filter((r) => r.contactPlanFollowed).length;
-  const contactPlanFollowedRate = pct(planFollowedCount, totalRecords);
+  const contactPlanFollowedRate = rate(planFollowedCount, totalRecords);
 
   const viewCapturedCount = records.filter((r) => r.childViewCaptured).length;
-  const childViewCapturedRate = pct(viewCapturedCount, totalRecords);
+  const childViewCapturedRate = rate(viewCapturedCount, totalRecords);
 
   const safetyCount = records.filter((r) => r.safetyMeasuresInPlace).length;
-  const safetyMeasuresRate = pct(safetyCount, totalRecords);
+  const safetyMeasuresRate = rate(safetyCount, totalRecords);
 
   // Weights: childPreparedRate 7 + contactPlanFollowedRate 6 + childViewCapturedRate 6 + safetyMeasuresRate 6 = 25
   let score = 0;
-  score += (childPreparedRate / 100) * 7;
-  score += (contactPlanFollowedRate / 100) * 6;
-  score += (childViewCapturedRate / 100) * 6;
-  score += (safetyMeasuresRate / 100) * 6;
+  score += (childPreparedRate! / 100) * 7;
+  score += (contactPlanFollowedRate! / 100) * 6;
+  score += (childViewCapturedRate! / 100) * 6;
+  score += (safetyMeasuresRate! / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (childPreparedRate >= 80) {
+  if (meets(childPreparedRate, 80)) {
     strengths.push("Strong child preparation: " + childPreparedRate + "% of children prepared before contact");
-  } else if (childPreparedRate < 50) {
+  } else if (below(childPreparedRate, 50)) {
     concerns.push("Child preparation rate at " + childPreparedRate + "% — children not consistently prepared for contact");
   }
 
-  if (contactPlanFollowedRate >= 80) {
+  if (meets(contactPlanFollowedRate, 80)) {
     strengths.push("Excellent contact plan adherence: " + contactPlanFollowedRate + "% of sessions followed the contact plan");
-  } else if (contactPlanFollowedRate < 50) {
+  } else if (below(contactPlanFollowedRate, 50)) {
     concerns.push("Contact plan adherence at " + contactPlanFollowedRate + "% — plans not consistently followed");
   }
 
-  if (childViewCapturedRate >= 80) {
+  if (meets(childViewCapturedRate, 80)) {
     strengths.push("Good child voice capture: " + childViewCapturedRate + "% of contacts recorded child's views");
-  } else if (childViewCapturedRate < 50) {
+  } else if (below(childViewCapturedRate, 50)) {
     concerns.push("Child view capture rate at " + childViewCapturedRate + "% — child's voice not consistently recorded");
   }
 
-  if (safetyMeasuresRate >= 80) {
+  if (meets(safetyMeasuresRate, 80)) {
     strengths.push("Strong safety compliance: " + safetyMeasuresRate + "% of contacts had safety measures in place");
-  } else if (safetyMeasuresRate < 50) {
+  } else if (below(safetyMeasuresRate, 50)) {
     concerns.push("Safety measures rate at " + safetyMeasuresRate + "% — safety arrangements not consistently in place");
   }
 
@@ -322,10 +332,10 @@ export function evaluateContactCompliance(
   if (totalRecords === 0) {
     return {
       totalRecords: 0,
-      documentationCompleteRate: 0,
-      timelyRecordingRate: 0,
-      completedOutcomeRate: 0,
-      categoryDiversityRate: 0,
+      documentationCompleteRate: null,
+      timelyRecordingRate: null,
+      completedOutcomeRate: null,
+      categoryDiversityRate: null,
       uniqueCategories: 0,
       score: 0,
       strengths: [],
@@ -334,46 +344,46 @@ export function evaluateContactCompliance(
   }
 
   const docCompleteCount = records.filter((r) => r.documentationComplete).length;
-  const documentationCompleteRate = pct(docCompleteCount, totalRecords);
+  const documentationCompleteRate = rate(docCompleteCount, totalRecords);
 
   const timelyCount = records.filter((r) => r.timelyRecording).length;
-  const timelyRecordingRate = pct(timelyCount, totalRecords);
+  const timelyRecordingRate = rate(timelyCount, totalRecords);
 
   // completedOutcomeRate: percentage of records with both quality indicators true
   const completedCount = records.filter((r) => r.childPrepared && r.contactPlanFollowed).length;
-  const completedOutcomeRate = pct(completedCount, totalRecords);
+  const completedOutcomeRate = rate(completedCount, totalRecords);
 
   const uniqueCategoriesSet = new Set(records.map((r) => r.category));
   const uniqueCategories = uniqueCategoriesSet.size;
-  const categoryDiversityRate = pct(uniqueCategories, ALL_CATEGORIES.length);
+  const categoryDiversityRate = rate(uniqueCategories, ALL_CATEGORIES.length);
 
   // Weights: documentationCompleteRate 8 + timelyRecordingRate 7 + completedOutcomeRate 5 + categoryDiversityRate 5 = 25
   let score = 0;
-  score += (documentationCompleteRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (completedOutcomeRate / 100) * 5;
-  score += (categoryDiversityRate / 100) * 5;
+  score += (documentationCompleteRate! / 100) * 8;
+  score += (timelyRecordingRate! / 100) * 7;
+  score += (completedOutcomeRate! / 100) * 5;
+  score += ((categoryDiversityRate ?? 0) / 100) * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (documentationCompleteRate >= 90) {
+  if (meets(documentationCompleteRate, 90)) {
     strengths.push("Excellent documentation: " + documentationCompleteRate + "% of contact records fully documented");
-  } else if (documentationCompleteRate < 50) {
+  } else if (below(documentationCompleteRate, 50)) {
     concerns.push("Documentation rate at " + documentationCompleteRate + "% — contact records incomplete");
   }
 
-  if (timelyRecordingRate >= 90) {
+  if (meets(timelyRecordingRate, 90)) {
     strengths.push("Timely recording: " + timelyRecordingRate + "% of contacts recorded promptly");
-  } else if (timelyRecordingRate < 50) {
+  } else if (below(timelyRecordingRate, 50)) {
     concerns.push("Timely recording rate at " + timelyRecordingRate + "% — records not completed promptly");
   }
 
-  if (completedOutcomeRate >= 80) {
+  if (meets(completedOutcomeRate, 80)) {
     strengths.push("High completion quality: " + completedOutcomeRate + "% of contacts fully completed with preparation and plan adherence");
-  } else if (completedOutcomeRate < 50) {
+  } else if (below(completedOutcomeRate, 50)) {
     concerns.push("Completion quality at " + completedOutcomeRate + "% — contacts not consistently meeting quality standards");
   }
 
@@ -491,12 +501,12 @@ export function evaluateStaffContactReadiness(
   if (totalStaff === 0) {
     return {
       totalStaff: 0,
-      contactSupervisionRate: 0,
-      safeguardingAwarenessRate: 0,
-      childCommunicationRate: 0,
-      familyMediationRate: 0,
-      riskManagementRate: 0,
-      recordKeepingRate: 0,
+      contactSupervisionRate: null,
+      safeguardingAwarenessRate: null,
+      childCommunicationRate: null,
+      familyMediationRate: null,
+      riskManagementRate: null,
+      recordKeepingRate: null,
       score: 0,
       strengths: [],
       concerns: ["No staff training records — URGENT: schedule contact training for all staff"],
@@ -504,70 +514,70 @@ export function evaluateStaffContactReadiness(
   }
 
   const supervisionCount = staff.filter((s) => s.contactSupervision).length;
-  const contactSupervisionRate = pct(supervisionCount, totalStaff);
+  const contactSupervisionRate = rate(supervisionCount, totalStaff);
 
   const safeguardingCount = staff.filter((s) => s.safeguardingAwareness).length;
-  const safeguardingAwarenessRate = pct(safeguardingCount, totalStaff);
+  const safeguardingAwarenessRate = rate(safeguardingCount, totalStaff);
 
   const communicationCount = staff.filter((s) => s.childCommunication).length;
-  const childCommunicationRate = pct(communicationCount, totalStaff);
+  const childCommunicationRate = rate(communicationCount, totalStaff);
 
   const mediationCount = staff.filter((s) => s.familyMediation).length;
-  const familyMediationRate = pct(mediationCount, totalStaff);
+  const familyMediationRate = rate(mediationCount, totalStaff);
 
   const riskCount = staff.filter((s) => s.riskManagement).length;
-  const riskManagementRate = pct(riskCount, totalStaff);
+  const riskManagementRate = rate(riskCount, totalStaff);
 
   const recordCount = staff.filter((s) => s.recordKeeping).length;
-  const recordKeepingRate = pct(recordCount, totalStaff);
+  const recordKeepingRate = rate(recordCount, totalStaff);
 
   // Weights: 6+5+5+4+3+2 = 25
   let score = 0;
-  score += (contactSupervisionRate / 100) * 6;
-  score += (safeguardingAwarenessRate / 100) * 5;
-  score += (childCommunicationRate / 100) * 5;
-  score += (familyMediationRate / 100) * 4;
-  score += (riskManagementRate / 100) * 3;
-  score += (recordKeepingRate / 100) * 2;
+  score += (contactSupervisionRate! / 100) * 6;
+  score += (safeguardingAwarenessRate! / 100) * 5;
+  score += (childCommunicationRate! / 100) * 5;
+  score += (familyMediationRate! / 100) * 4;
+  score += (riskManagementRate! / 100) * 3;
+  score += ((recordKeepingRate ?? 0) / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (contactSupervisionRate >= 80) {
+  if (meets(contactSupervisionRate, 80)) {
     strengths.push("Strong contact supervision skills: " + contactSupervisionRate + "% of staff");
-  } else if (contactSupervisionRate < 50) {
+  } else if (below(contactSupervisionRate, 50)) {
     concerns.push("Contact supervision skills at " + contactSupervisionRate + "% — foundational training needed");
   }
 
-  if (safeguardingAwarenessRate >= 80) {
+  if (meets(safeguardingAwarenessRate, 80)) {
     strengths.push("Good safeguarding awareness: " + safeguardingAwarenessRate + "% of staff");
-  } else if (safeguardingAwarenessRate < 50) {
+  } else if (below(safeguardingAwarenessRate, 50)) {
     concerns.push("Safeguarding awareness at " + safeguardingAwarenessRate + "% — critical training gap");
   }
 
-  if (childCommunicationRate >= 80) {
+  if (meets(childCommunicationRate, 80)) {
     strengths.push("Strong child communication skills: " + childCommunicationRate + "% of staff");
-  } else if (childCommunicationRate < 50) {
+  } else if (below(childCommunicationRate, 50)) {
     concerns.push("Child communication skills at " + childCommunicationRate + "% — staff may struggle to engage children during contact");
   }
 
-  if (familyMediationRate >= 80) {
+  if (meets(familyMediationRate, 80)) {
     strengths.push("Good family mediation competence: " + familyMediationRate + "% of staff");
-  } else if (familyMediationRate < 50) {
+  } else if (below(familyMediationRate, 50)) {
     concerns.push("Family mediation skills at " + familyMediationRate + "% — staff may not manage family dynamics effectively");
   }
 
-  if (riskManagementRate >= 80) {
+  if (meets(riskManagementRate, 80)) {
     strengths.push("Strong risk management skills: " + riskManagementRate + "% of staff");
-  } else if (riskManagementRate < 50) {
+  } else if (below(riskManagementRate, 50)) {
     concerns.push("Risk management skills at " + riskManagementRate + "% — contact risks may not be managed appropriately");
   }
 
-  if (recordKeepingRate >= 80) {
+  if (meets(recordKeepingRate, 80)) {
     strengths.push("Good record keeping: " + recordKeepingRate + "% of staff competent in contact recording");
-  } else if (recordKeepingRate < 50) {
+  } else if (below(recordKeepingRate, 50)) {
     concerns.push("Record keeping skills at " + recordKeepingRate + "% — contact records may be incomplete");
   }
 
@@ -605,10 +615,10 @@ export function buildChildContactProfiles(
     const totalContacts = child.records.length;
 
     const preparedCount = child.records.filter((r) => r.childPrepared).length;
-    const childPreparedRate = pct(preparedCount, totalContacts);
+    const childPreparedRate = rate(preparedCount, totalContacts)!;
 
     const viewCount = child.records.filter((r) => r.childViewCaptured).length;
-    const childViewCapturedRate = pct(viewCount, totalContacts);
+    const childViewCapturedRate = rate(viewCount, totalContacts)!;
 
     const uniqueCategoriesSet = new Set(child.records.map((r) => r.category));
     const uniqueCategories = uniqueCategoriesSet.size;
@@ -620,15 +630,15 @@ export function buildChildContactProfiles(
 
     // rate1 (childPreparedRate): >=80 -> 3, >=60 -> 2, >=40 -> 1, else 0
     let rate1Score = 0;
-    if (childPreparedRate >= 80) rate1Score = 3;
-    else if (childPreparedRate >= 60) rate1Score = 2;
-    else if (childPreparedRate >= 40) rate1Score = 1;
+    if (meets(childPreparedRate, 80)) rate1Score = 3;
+    else if (meets(childPreparedRate, 60)) rate1Score = 2;
+    else if (meets(childPreparedRate, 40)) rate1Score = 1;
 
     // rate2 (childViewCapturedRate): same thresholds
     let rate2Score = 0;
-    if (childViewCapturedRate >= 80) rate2Score = 3;
-    else if (childViewCapturedRate >= 60) rate2Score = 2;
-    else if (childViewCapturedRate >= 40) rate2Score = 1;
+    if (meets(childViewCapturedRate, 80)) rate2Score = 3;
+    else if (meets(childViewCapturedRate, 60)) rate2Score = 2;
+    else if (meets(childViewCapturedRate, 40)) rate2Score = 1;
 
     // diversity (unique categories): >=4 -> 2, >=2 -> 1, else 0
     let diversityBonus = 0;
@@ -825,31 +835,31 @@ function generateActions(
   }
 
   // Conditional on rates < 50
-  if (quality.totalRecords > 0 && quality.childPreparedRate < 50) {
+  if (quality.totalRecords > 0 && below(quality.childPreparedRate, 50)) {
     actions.push("HIGH: Child preparation rate at " + quality.childPreparedRate + "% — embed preparation routines before all contact sessions");
   }
 
-  if (quality.totalRecords > 0 && quality.childViewCapturedRate < 50) {
+  if (quality.totalRecords > 0 && below(quality.childViewCapturedRate, 50)) {
     actions.push("HIGH: Child view capture rate at " + quality.childViewCapturedRate + "% — ensure children's wishes are recorded for every contact");
   }
 
-  if (compliance.totalRecords > 0 && compliance.documentationCompleteRate < 50) {
+  if (compliance.totalRecords > 0 && below(compliance.documentationCompleteRate, 50)) {
     actions.push("HIGH: Documentation rate at " + compliance.documentationCompleteRate + "% — strengthen contact recording practices");
   }
 
-  if (compliance.totalRecords > 0 && compliance.timelyRecordingRate < 50) {
+  if (compliance.totalRecords > 0 && below(compliance.timelyRecordingRate, 50)) {
     actions.push("HIGH: Timely recording rate at " + compliance.timelyRecordingRate + "% — ensure records completed within 24 hours of contact");
   }
 
-  if (quality.totalRecords > 0 && quality.contactPlanFollowedRate < 50) {
+  if (quality.totalRecords > 0 && below(quality.contactPlanFollowedRate, 50)) {
     actions.push("MEDIUM: Contact plan adherence at " + quality.contactPlanFollowedRate + "% — review contact plans with staff");
   }
 
-  if (quality.totalRecords > 0 && quality.safetyMeasuresRate < 50) {
+  if (quality.totalRecords > 0 && below(quality.safetyMeasuresRate, 50)) {
     actions.push("MEDIUM: Safety measures rate at " + quality.safetyMeasuresRate + "% — review and reinforce safety protocols");
   }
 
-  if (staff.totalStaff > 0 && staff.contactSupervisionRate < 50) {
+  if (staff.totalStaff > 0 && below(staff.contactSupervisionRate, 50)) {
     actions.push("MEDIUM: Staff supervision skills at " + staff.contactSupervisionRate + "% — schedule refresher training on contact supervision");
   }
 

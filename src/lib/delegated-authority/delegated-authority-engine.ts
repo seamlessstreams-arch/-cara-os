@@ -19,6 +19,7 @@
    ────────────────────────────────────────────────────────────── */
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -129,10 +130,14 @@ export interface StaffAuthorityTraining {
 
 export interface AuthorityQualityResult {
   totalDecisions: number;
-  timelyApprovalRate: number;
-  childConsultedRate: number;
-  documentedRate: number;
-  outcomeRecordedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyApprovalRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childConsultedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  outcomeRecordedRate: number | null;
   score: number;
   strengths: string[];
   concerns: string[];
@@ -140,9 +145,12 @@ export interface AuthorityQualityResult {
 
 export interface AuthorityComplianceResult {
   totalDecisions: number;
-  parentNotifiedRate: number;
-  withinScopeRate: number;
-  staffDecisionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  parentNotifiedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  withinScopeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffDecisionRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
   score: number;
@@ -165,12 +173,18 @@ export interface AuthorityPolicyResult {
 
 export interface StaffAuthorityReadinessResult {
   totalStaff: number;
-  delegatedAuthorityUnderstandingRate: number;
-  decisionMakingConfidenceRate: number;
-  scopeRecognitionRate: number;
-  documentationCompetencyRate: number;
-  escalationAwarenessRate: number;
-  childConsultationSkillsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  delegatedAuthorityUnderstandingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  decisionMakingConfidenceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  scopeRecognitionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationCompetencyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  escalationAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childConsultationSkillsRate: number | null;
   score: number;
   strengths: string[];
   concerns: string[];
@@ -206,11 +220,6 @@ export interface DelegatedAuthorityIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -228,10 +237,10 @@ export function evaluateAuthorityQuality(
   if (totalDecisions === 0) {
     return {
       totalDecisions: 0,
-      timelyApprovalRate: 0,
-      childConsultedRate: 0,
-      documentedRate: 0,
-      outcomeRecordedRate: 0,
+      timelyApprovalRate: null,
+      childConsultedRate: null,
+      documentedRate: null,
+      outcomeRecordedRate: null,
       score: 0,
       strengths: [],
       concerns: ["No authority decisions recorded — decision quality cannot be assessed"],
@@ -239,50 +248,50 @@ export function evaluateAuthorityQuality(
   }
 
   const timelyCount = decisions.filter((d) => d.outcome === "approved_timely").length;
-  const timelyApprovalRate = pct(timelyCount, totalDecisions);
+  const timelyApprovalRate = rate(timelyCount, totalDecisions);
 
   const consultedCount = decisions.filter((d) => d.childConsulted).length;
-  const childConsultedRate = pct(consultedCount, totalDecisions);
+  const childConsultedRate = rate(consultedCount, totalDecisions);
 
   const documentedCount = decisions.filter((d) => d.decisionDocumented).length;
-  const documentedRate = pct(documentedCount, totalDecisions);
+  const documentedRate = rate(documentedCount, totalDecisions);
 
   const outcomeCount = decisions.filter((d) => d.outcomeRecorded).length;
-  const outcomeRecordedRate = pct(outcomeCount, totalDecisions);
+  const outcomeRecordedRate = rate(outcomeCount, totalDecisions);
 
   // Weights: timelyApprovalRate 7 + childConsultedRate 6 + documentedRate 6 + outcomeRecordedRate 6 = 25
   let score = 0;
-  score += (timelyApprovalRate / 100) * 7;
-  score += (childConsultedRate / 100) * 6;
-  score += (documentedRate / 100) * 6;
-  score += (outcomeRecordedRate / 100) * 6;
+  score += (timelyApprovalRate! / 100) * 7;
+  score += (childConsultedRate! / 100) * 6;
+  score += (documentedRate! / 100) * 6;
+  score += (outcomeRecordedRate! / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (timelyApprovalRate >= 80) {
+  if (meets(timelyApprovalRate, 80)) {
     strengths.push("Strong timely decision-making: " + timelyApprovalRate + "% of decisions approved promptly");
-  } else if (timelyApprovalRate < 50) {
+  } else if (below(timelyApprovalRate, 50)) {
     concerns.push("Timely approval rate at " + timelyApprovalRate + "% — decisions may be delayed unnecessarily");
   }
 
-  if (childConsultedRate >= 80) {
+  if (meets(childConsultedRate, 80)) {
     strengths.push("Excellent child consultation: " + childConsultedRate + "% of decisions involved the child");
-  } else if (childConsultedRate < 50) {
+  } else if (below(childConsultedRate, 50)) {
     concerns.push("Child consultation rate at " + childConsultedRate + "% — children not consistently involved in decisions");
   }
 
-  if (documentedRate >= 90) {
+  if (meets(documentedRate, 90)) {
     strengths.push("Thorough documentation: " + documentedRate + "% of decisions fully documented");
-  } else if (documentedRate < 60) {
+  } else if (below(documentedRate, 60)) {
     concerns.push("Documentation rate at " + documentedRate + "% — decision records incomplete");
   }
 
-  if (outcomeRecordedRate >= 80) {
+  if (meets(outcomeRecordedRate, 80)) {
     strengths.push("Good outcome tracking: " + outcomeRecordedRate + "% of decisions have recorded outcomes");
-  } else if (outcomeRecordedRate < 50) {
+  } else if (below(outcomeRecordedRate, 50)) {
     concerns.push("Outcome recording at " + outcomeRecordedRate + "% — decision outcomes not tracked consistently");
   }
 
@@ -308,9 +317,9 @@ export function evaluateAuthorityCompliance(
   if (totalDecisions === 0) {
     return {
       totalDecisions: 0,
-      parentNotifiedRate: 0,
-      withinScopeRate: 0,
-      staffDecisionRate: 0,
+      parentNotifiedRate: null,
+      withinScopeRate: null,
+      staffDecisionRate: null,
       categoryDiversityRatio: 0,
       uniqueCategories: 0,
       score: 0,
@@ -320,13 +329,13 @@ export function evaluateAuthorityCompliance(
   }
 
   const parentNotifiedCount = decisions.filter((d) => d.parentNotified).length;
-  const parentNotifiedRate = pct(parentNotifiedCount, totalDecisions);
+  const parentNotifiedRate = rate(parentNotifiedCount, totalDecisions);
 
   const withinScopeCount = decisions.filter((d) => d.withinDelegatedScope).length;
-  const withinScopeRate = pct(withinScopeCount, totalDecisions);
+  const withinScopeRate = rate(withinScopeCount, totalDecisions);
 
   const staffDecisionCount = decisions.filter((d) => d.staffMadeDecision).length;
-  const staffDecisionRate = pct(staffDecisionCount, totalDecisions);
+  const staffDecisionRate = rate(staffDecisionCount, totalDecisions);
 
   const uniqueCategoriesSet = new Set(decisions.map((d) => d.category));
   const uniqueCategories = uniqueCategoriesSet.size;
@@ -334,9 +343,9 @@ export function evaluateAuthorityCompliance(
 
   // Weights: parentNotifiedRate 8 + withinScopeRate 7 + staffDecisionRate 5 + categoryDiversityRatio 5 = 25
   let score = 0;
-  score += (parentNotifiedRate / 100) * 8;
-  score += (withinScopeRate / 100) * 7;
-  score += (staffDecisionRate / 100) * 5;
+  score += (parentNotifiedRate! / 100) * 8;
+  score += (withinScopeRate! / 100) * 7;
+  score += (staffDecisionRate! / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -344,21 +353,21 @@ export function evaluateAuthorityCompliance(
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (parentNotifiedRate >= 90) {
+  if (meets(parentNotifiedRate, 90)) {
     strengths.push("Excellent parental notification: " + parentNotifiedRate + "% of decisions communicated to parents/LA");
-  } else if (parentNotifiedRate < 50) {
+  } else if (below(parentNotifiedRate, 50)) {
     concerns.push("Parent notification rate at " + parentNotifiedRate + "% — parents/LA not consistently informed");
   }
 
-  if (withinScopeRate >= 90) {
+  if (meets(withinScopeRate, 90)) {
     strengths.push("Strong scope adherence: " + withinScopeRate + "% of decisions within delegated authority");
-  } else if (withinScopeRate < 70) {
+  } else if (below(withinScopeRate, 70)) {
     concerns.push("Within-scope rate at " + withinScopeRate + "% — some decisions may exceed delegated authority");
   }
 
-  if (staffDecisionRate >= 80) {
+  if (meets(staffDecisionRate, 80)) {
     strengths.push("Staff empowerment evident: " + staffDecisionRate + "% of decisions made by staff");
-  } else if (staffDecisionRate < 50) {
+  } else if (below(staffDecisionRate, 50)) {
     concerns.push("Staff decision rate at " + staffDecisionRate + "% — staff may lack confidence in decision-making");
   }
 
@@ -476,12 +485,12 @@ export function evaluateStaffAuthorityReadiness(
   if (totalStaff === 0) {
     return {
       totalStaff: 0,
-      delegatedAuthorityUnderstandingRate: 0,
-      decisionMakingConfidenceRate: 0,
-      scopeRecognitionRate: 0,
-      documentationCompetencyRate: 0,
-      escalationAwarenessRate: 0,
-      childConsultationSkillsRate: 0,
+      delegatedAuthorityUnderstandingRate: null,
+      decisionMakingConfidenceRate: null,
+      scopeRecognitionRate: null,
+      documentationCompetencyRate: null,
+      escalationAwarenessRate: null,
+      childConsultationSkillsRate: null,
       score: 0,
       strengths: [],
       concerns: ["No staff training records — URGENT: schedule delegated authority training for all staff"],
@@ -489,70 +498,70 @@ export function evaluateStaffAuthorityReadiness(
   }
 
   const understandingCount = training.filter((t) => t.delegatedAuthorityUnderstanding).length;
-  const delegatedAuthorityUnderstandingRate = pct(understandingCount, totalStaff);
+  const delegatedAuthorityUnderstandingRate = rate(understandingCount, totalStaff);
 
   const confidenceCount = training.filter((t) => t.decisionMakingConfidence).length;
-  const decisionMakingConfidenceRate = pct(confidenceCount, totalStaff);
+  const decisionMakingConfidenceRate = rate(confidenceCount, totalStaff);
 
   const scopeCount = training.filter((t) => t.scopeRecognition).length;
-  const scopeRecognitionRate = pct(scopeCount, totalStaff);
+  const scopeRecognitionRate = rate(scopeCount, totalStaff);
 
   const docCount = training.filter((t) => t.documentationCompetency).length;
-  const documentationCompetencyRate = pct(docCount, totalStaff);
+  const documentationCompetencyRate = rate(docCount, totalStaff);
 
   const escalationCount = training.filter((t) => t.escalationAwareness).length;
-  const escalationAwarenessRate = pct(escalationCount, totalStaff);
+  const escalationAwarenessRate = rate(escalationCount, totalStaff);
 
   const consultationCount = training.filter((t) => t.childConsultationSkills).length;
-  const childConsultationSkillsRate = pct(consultationCount, totalStaff);
+  const childConsultationSkillsRate = rate(consultationCount, totalStaff);
 
   // Weights: 6+5+5+4+3+2 = 25
   let score = 0;
-  score += (delegatedAuthorityUnderstandingRate / 100) * 6;
-  score += (decisionMakingConfidenceRate / 100) * 5;
-  score += (scopeRecognitionRate / 100) * 5;
-  score += (documentationCompetencyRate / 100) * 4;
-  score += (escalationAwarenessRate / 100) * 3;
-  score += (childConsultationSkillsRate / 100) * 2;
+  score += (delegatedAuthorityUnderstandingRate! / 100) * 6;
+  score += (decisionMakingConfidenceRate! / 100) * 5;
+  score += (scopeRecognitionRate! / 100) * 5;
+  score += (documentationCompetencyRate! / 100) * 4;
+  score += (escalationAwarenessRate! / 100) * 3;
+  score += ((childConsultationSkillsRate ?? 0) / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
   const strengths: string[] = [];
   const concerns: string[] = [];
 
-  if (delegatedAuthorityUnderstandingRate >= 80) {
+  if (meets(delegatedAuthorityUnderstandingRate, 80)) {
     strengths.push("Strong understanding of delegated authority: " + delegatedAuthorityUnderstandingRate + "% of staff");
-  } else if (delegatedAuthorityUnderstandingRate < 50) {
+  } else if (below(delegatedAuthorityUnderstandingRate, 50)) {
     concerns.push("Delegated authority understanding at " + delegatedAuthorityUnderstandingRate + "% — foundational training needed");
   }
 
-  if (decisionMakingConfidenceRate >= 80) {
+  if (meets(decisionMakingConfidenceRate, 80)) {
     strengths.push("Staff confident in decision-making: " + decisionMakingConfidenceRate + "%");
-  } else if (decisionMakingConfidenceRate < 50) {
+  } else if (below(decisionMakingConfidenceRate, 50)) {
     concerns.push("Decision-making confidence at " + decisionMakingConfidenceRate + "% — staff may hesitate on day-to-day decisions");
   }
 
-  if (scopeRecognitionRate >= 80) {
+  if (meets(scopeRecognitionRate, 80)) {
     strengths.push("Good scope recognition: " + scopeRecognitionRate + "% of staff understand authority boundaries");
-  } else if (scopeRecognitionRate < 50) {
+  } else if (below(scopeRecognitionRate, 50)) {
     concerns.push("Scope recognition at " + scopeRecognitionRate + "% — staff unclear about what they can decide");
   }
 
-  if (documentationCompetencyRate >= 80) {
+  if (meets(documentationCompetencyRate, 80)) {
     strengths.push("Strong documentation skills: " + documentationCompetencyRate + "% of staff competent in recording decisions");
-  } else if (documentationCompetencyRate < 50) {
+  } else if (below(documentationCompetencyRate, 50)) {
     concerns.push("Documentation competency at " + documentationCompetencyRate + "% — decision records may be incomplete");
   }
 
-  if (escalationAwarenessRate >= 80) {
+  if (meets(escalationAwarenessRate, 80)) {
     strengths.push("Good escalation awareness: " + escalationAwarenessRate + "% of staff know when to refer up");
-  } else if (escalationAwarenessRate < 50) {
+  } else if (below(escalationAwarenessRate, 50)) {
     concerns.push("Escalation awareness at " + escalationAwarenessRate + "% — staff may not refer appropriately");
   }
 
-  if (childConsultationSkillsRate >= 80) {
+  if (meets(childConsultationSkillsRate, 80)) {
     strengths.push("Child consultation skills strong: " + childConsultationSkillsRate + "% of staff skilled in consulting children");
-  } else if (childConsultationSkillsRate < 50) {
+  } else if (below(childConsultationSkillsRate, 50)) {
     concerns.push("Child consultation skills at " + childConsultationSkillsRate + "% — children may not be adequately involved");
   }
 
@@ -590,10 +599,10 @@ export function buildChildAuthorityProfiles(
     const totalDecisions = child.decisions.length;
 
     const timelyCount = child.decisions.filter((d) => d.outcome === "approved_timely").length;
-    const timelyApprovalRate = pct(timelyCount, totalDecisions);
+    const timelyApprovalRate = rate(timelyCount, totalDecisions)!;
 
     const consultedCount = child.decisions.filter((d) => d.childConsulted).length;
-    const childConsultedRate = pct(consultedCount, totalDecisions);
+    const childConsultedRate = rate(consultedCount, totalDecisions)!;
 
     const uniqueCategoriesSet = new Set(child.decisions.map((d) => d.category));
     const uniqueCategories = uniqueCategoriesSet.size;
@@ -605,15 +614,15 @@ export function buildChildAuthorityProfiles(
 
     // rate1 (timelyApprovalRate): >=80 -> 3, >=60 -> 2, >=40 -> 1, else 0
     let rate1Score = 0;
-    if (timelyApprovalRate >= 80) rate1Score = 3;
-    else if (timelyApprovalRate >= 60) rate1Score = 2;
-    else if (timelyApprovalRate >= 40) rate1Score = 1;
+    if (meets(timelyApprovalRate, 80)) rate1Score = 3;
+    else if (meets(timelyApprovalRate, 60)) rate1Score = 2;
+    else if (meets(timelyApprovalRate, 40)) rate1Score = 1;
 
     // rate2 (childConsultedRate): same thresholds
     let rate2Score = 0;
-    if (childConsultedRate >= 80) rate2Score = 3;
-    else if (childConsultedRate >= 60) rate2Score = 2;
-    else if (childConsultedRate >= 40) rate2Score = 1;
+    if (meets(childConsultedRate, 80)) rate2Score = 3;
+    else if (meets(childConsultedRate, 60)) rate2Score = 2;
+    else if (meets(childConsultedRate, 40)) rate2Score = 1;
 
     // diversity (unique categories): >=4 -> 2, >=2 -> 1, else 0
     let diversityBonus = 0;
@@ -810,31 +819,31 @@ function generateActions(
   }
 
   // Conditional on rates < 50
-  if (quality.totalDecisions > 0 && quality.timelyApprovalRate < 50) {
+  if (quality.totalDecisions > 0 && below(quality.timelyApprovalRate, 50)) {
     actions.push("HIGH: Timely approval rate at " + quality.timelyApprovalRate + "% — review decision-making processes to reduce delays");
   }
 
-  if (quality.totalDecisions > 0 && quality.childConsultedRate < 50) {
+  if (quality.totalDecisions > 0 && below(quality.childConsultedRate, 50)) {
     actions.push("HIGH: Child consultation rate at " + quality.childConsultedRate + "% — embed child participation in all decision-making");
   }
 
-  if (compliance.totalDecisions > 0 && compliance.parentNotifiedRate < 50) {
+  if (compliance.totalDecisions > 0 && below(compliance.parentNotifiedRate, 50)) {
     actions.push("HIGH: Parent notification rate at " + compliance.parentNotifiedRate + "% — strengthen communication with parents/LA");
   }
 
-  if (compliance.totalDecisions > 0 && compliance.withinScopeRate < 50) {
+  if (compliance.totalDecisions > 0 && below(compliance.withinScopeRate, 50)) {
     actions.push("HIGH: Within-scope rate at " + compliance.withinScopeRate + "% — review delegated authority boundaries with staff");
   }
 
-  if (quality.totalDecisions > 0 && quality.documentedRate < 50) {
+  if (quality.totalDecisions > 0 && below(quality.documentedRate, 50)) {
     actions.push("MEDIUM: Documentation rate at " + quality.documentedRate + "% — improve decision recording practices");
   }
 
-  if (quality.totalDecisions > 0 && quality.outcomeRecordedRate < 50) {
+  if (quality.totalDecisions > 0 && below(quality.outcomeRecordedRate, 50)) {
     actions.push("MEDIUM: Outcome recording at " + quality.outcomeRecordedRate + "% — ensure all decisions have recorded outcomes");
   }
 
-  if (staff.totalStaff > 0 && staff.delegatedAuthorityUnderstandingRate < 50) {
+  if (staff.totalStaff > 0 && below(staff.delegatedAuthorityUnderstandingRate, 50)) {
     actions.push("MEDIUM: Staff understanding at " + staff.delegatedAuthorityUnderstandingRate + "% — schedule refresher training on delegated authority");
   }
 

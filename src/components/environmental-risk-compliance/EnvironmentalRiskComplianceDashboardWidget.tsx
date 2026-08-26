@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { above, formatRate } from "@/lib/metrics/rate";
 import type { EnvironmentalRiskComplianceIntelligence } from "@/lib/environmental-risk-compliance";
 
 const ratingColors: Record<string, string> = {
@@ -105,7 +106,7 @@ export function EnvironmentalRiskComplianceDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Safety Checks</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.safetyCheckCompliance.compliantRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.safetyCheckCompliance.compliantRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Compliant</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -113,7 +114,7 @@ export function EnvironmentalRiskComplianceDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Remediations</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.riskAssessmentCoverage.areaCoverageRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.riskAssessmentCoverage.areaCoverageRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Area Coverage</div>
         </div>
       </div>
@@ -153,19 +154,19 @@ export function EnvironmentalRiskComplianceDashboardWidget() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Assessments:</span> <span className="font-medium">{data.riskAssessmentCoverage.totalAssessments}</span></div>
             <div><span className="text-gray-500">Areas Covered:</span> <span className="font-medium">{data.riskAssessmentCoverage.areasCovered}/{data.riskAssessmentCoverage.totalAreas}</span></div>
-            <div><span className="text-gray-500">Coverage:</span> <span className="font-medium">{data.riskAssessmentCoverage.areaCoverageRate}%</span></div>
-            <div><span className="text-gray-500">Reviews Current:</span> <span className="font-medium">{data.riskAssessmentCoverage.reviewCurrentRate}%</span></div>
-            <div><span className="text-gray-500">Mitigated:</span> <span className="font-medium">{data.riskAssessmentCoverage.mitigationInPlaceRate}%</span></div>
-            <div><span className="text-gray-500">High/Critical:</span> <span className="font-medium">{data.riskAssessmentCoverage.highCriticalMitigatedRate}%</span></div>
+            <div><span className="text-gray-500">Coverage:</span> <span className="font-medium">{formatRate(data.riskAssessmentCoverage.areaCoverageRate)}</span></div>
+            <div><span className="text-gray-500">Reviews Current:</span> <span className="font-medium">{formatRate(data.riskAssessmentCoverage.reviewCurrentRate)}</span></div>
+            <div><span className="text-gray-500">Mitigated:</span> <span className="font-medium">{formatRate(data.riskAssessmentCoverage.mitigationInPlaceRate)}</span></div>
+            <div><span className="text-gray-500">High/Critical:</span> <span className="font-medium">{formatRate(data.riskAssessmentCoverage.highCriticalMitigatedRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Safety Check Compliance">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Total Checks:</span> <span className="font-medium">{data.safetyCheckCompliance.totalChecks}</span></div>
-            <div><span className="text-gray-500">Compliant:</span> <span className="font-medium">{data.safetyCheckCompliance.compliantRate}%</span></div>
+            <div><span className="text-gray-500">Compliant:</span> <span className="font-medium">{formatRate(data.safetyCheckCompliance.compliantRate)}</span></div>
             <div><span className="text-gray-500">Non-Compliant:</span> <span className={`font-medium ${data.safetyCheckCompliance.nonCompliantCount > 0 ? "text-red-600" : "text-green-600"}`}>{data.safetyCheckCompliance.nonCompliantCount}</span></div>
-            <div><span className="text-gray-500">Actions Done:</span> <span className="font-medium">{data.safetyCheckCompliance.actionRequiredCompletedRate}%</span></div>
+            <div><span className="text-gray-500">Actions Done:</span> <span className="font-medium">{formatRate(data.safetyCheckCompliance.actionRequiredCompletedRate)}</span></div>
             <div><span className="text-gray-500">Frequency OK:</span> <span className={`font-medium ${data.safetyCheckCompliance.checkFrequencyAdequate ? "text-green-600" : "text-amber-600"}`}>{data.safetyCheckCompliance.checkFrequencyAdequate ? "Yes" : "No"}</span></div>
           </div>
         </Section>
@@ -173,9 +174,9 @@ export function EnvironmentalRiskComplianceDashboardWidget() {
         <Section title="Remediation Effectiveness">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Actions:</span> <span className="font-medium">{data.remediationEffectiveness.totalActions}</span></div>
-            <div><span className="text-gray-500">On Time:</span> <span className="font-medium">{data.remediationEffectiveness.completedOnTimeRate}%</span></div>
-            <div><span className="text-gray-500">Overdue:</span> <span className={`font-medium ${data.remediationEffectiveness.overdueRate > 0 ? "text-red-600" : "text-green-600"}`}>{data.remediationEffectiveness.overdueRate}%</span></div>
-            <div><span className="text-gray-500">Verified:</span> <span className="font-medium">{data.remediationEffectiveness.verifiedRate}%</span></div>
+            <div><span className="text-gray-500">On Time:</span> <span className="font-medium">{formatRate(data.remediationEffectiveness.completedOnTimeRate)}</span></div>
+            <div><span className="text-gray-500">Overdue:</span> <span className={`font-medium ${above(data.remediationEffectiveness.overdueRate, 0) ? "text-red-600" : "text-green-600"}`}>{formatRate(data.remediationEffectiveness.overdueRate)}</span></div>
+            <div><span className="text-gray-500">Verified:</span> <span className="font-medium">{formatRate(data.remediationEffectiveness.verifiedRate)}</span></div>
             <div><span className="text-gray-500">In Progress:</span> <span className="font-medium">{data.remediationEffectiveness.inProgressCount}</span></div>
           </div>
         </Section>
@@ -183,11 +184,11 @@ export function EnvironmentalRiskComplianceDashboardWidget() {
         <Section title="Staff Safety Readiness">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Staff:</span> <span className="font-medium">{data.staffSafetyReadiness.totalStaff}</span></div>
-            <div><span className="text-gray-500">Ligature:</span> <span className="font-medium">{data.staffSafetyReadiness.ligatureAwarenessRate}%</span></div>
-            <div><span className="text-gray-500">COSHH:</span> <span className="font-medium">{data.staffSafetyReadiness.coshhTrainedRate}%</span></div>
-            <div><span className="text-gray-500">Fire Safety:</span> <span className="font-medium">{data.staffSafetyReadiness.fireSafetyRate}%</span></div>
-            <div><span className="text-gray-500">Water Safety:</span> <span className="font-medium">{data.staffSafetyReadiness.waterSafetyRate}%</span></div>
-            <div><span className="text-gray-500">Risk Competent:</span> <span className="font-medium">{data.staffSafetyReadiness.riskAssessmentCompetentRate}%</span></div>
+            <div><span className="text-gray-500">Ligature:</span> <span className="font-medium">{formatRate(data.staffSafetyReadiness.ligatureAwarenessRate)}</span></div>
+            <div><span className="text-gray-500">COSHH:</span> <span className="font-medium">{formatRate(data.staffSafetyReadiness.coshhTrainedRate)}</span></div>
+            <div><span className="text-gray-500">Fire Safety:</span> <span className="font-medium">{formatRate(data.staffSafetyReadiness.fireSafetyRate)}</span></div>
+            <div><span className="text-gray-500">Water Safety:</span> <span className="font-medium">{formatRate(data.staffSafetyReadiness.waterSafetyRate)}</span></div>
+            <div><span className="text-gray-500">Risk Competent:</span> <span className="font-medium">{formatRate(data.staffSafetyReadiness.riskAssessmentCompetentRate)}</span></div>
           </div>
         </Section>
 

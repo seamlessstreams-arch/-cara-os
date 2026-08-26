@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // Cara -- Disability & Reasonable Adjustments Intelligence Engine
 //
@@ -105,13 +106,17 @@ export interface AdjustmentImplementationResult {
   overallScore: number;
   totalAdjustments: number;
   inPlaceCount: number;
-  inPlaceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  inPlaceRate: number | null;
   reviewCurrentCount: number;
-  reviewCurrentRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reviewCurrentRate: number | null;
   ehcpCount: number;
-  ehcpRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  ehcpRate: number | null;
   professionalInvolvedCount: number;
-  professionalInvolvedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  professionalInvolvedRate: number | null;
   statusBreakdown: Record<string, number>;
   disabilityTypeBreakdown: Record<string, number>;
 }
@@ -119,34 +124,48 @@ export interface AdjustmentImplementationResult {
 export interface AccessibilityComplianceResult {
   overallScore: number;
   totalAudits: number;
-  physicalAccessRate: number;
-  sensoryAdaptationRate: number;
-  communicationAidsRate: number;
-  signageAccessibleRate: number;
-  overallComplianceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  physicalAccessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  sensoryAdaptationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  communicationAidsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  signageAccessibleRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  overallComplianceRate: number | null;
 }
 
 export interface EquipmentProvisionResult {
   overallScore: number;
   totalEquipment: number;
   goodConditionCount: number;
-  goodConditionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  goodConditionRate: number | null;
   maintenanceCurrentCount: number;
-  maintenanceCurrentRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  maintenanceCurrentRate: number | null;
   replacementBacklog: number;
-  replacementBacklogRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  replacementBacklogRate: number | null;
   conditionBreakdown: Record<string, number>;
 }
 
 export interface StaffDisabilityReadinessResult {
   overallScore: number;
   totalStaff: number;
-  awarenessRate: number;
-  adjustmentsTrainingRate: number;
-  ehcpUnderstandingRate: number;
-  communicationStrategiesRate: number;
-  personalCareRate: number;
-  emergencyEvacuationRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  awarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  adjustmentsTrainingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  ehcpUnderstandingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  communicationStrategiesRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  personalCareRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  emergencyEvacuationRate: number | null;
 }
 
 export interface ChildAdjustmentSummary {
@@ -181,11 +200,6 @@ export interface DisabilityReasonableAdjustmentsIntelligenceResult {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -280,13 +294,13 @@ export function evaluateAdjustmentImplementation(
       overallScore: 0,
       totalAdjustments: 0,
       inPlaceCount: 0,
-      inPlaceRate: 0,
+      inPlaceRate: null,
       reviewCurrentCount: 0,
-      reviewCurrentRate: 0,
+      reviewCurrentRate: null,
       ehcpCount: 0,
-      ehcpRate: 0,
+      ehcpRate: null,
       professionalInvolvedCount: 0,
-      professionalInvolvedRate: 0,
+      professionalInvolvedRate: null,
       statusBreakdown: {},
       disabilityTypeBreakdown: {},
     };
@@ -297,20 +311,20 @@ export function evaluateAdjustmentImplementation(
   const inPlaceCount = adjustments.filter(
     (a) => a.adjustmentStatus === "in_place",
   ).length;
-  const inPlaceRate = pct(inPlaceCount, total);
+  const inPlaceRate = rate(inPlaceCount, total);
 
   const reviewCurrentCount = adjustments.filter(
     (a) => a.reviewCurrent,
   ).length;
-  const reviewCurrentRate = pct(reviewCurrentCount, total);
+  const reviewCurrentRate = rate(reviewCurrentCount, total);
 
   const ehcpCount = adjustments.filter((a) => a.ehcpInPlace).length;
-  const ehcpRate = pct(ehcpCount, total);
+  const ehcpRate = rate(ehcpCount, total);
 
   const professionalInvolvedCount = adjustments.filter(
     (a) => a.professionalInvolved,
   ).length;
-  const professionalInvolvedRate = pct(professionalInvolvedCount, total);
+  const professionalInvolvedRate = rate(professionalInvolvedCount, total);
 
   // Status breakdown
   const statusBreakdown: Record<string, number> = {};
@@ -328,10 +342,10 @@ export function evaluateAdjustmentImplementation(
 
   // Score: in-place rate (30%) + review current (25%) + EHCP (25%) + professional (20%)
   const rawScore =
-    (inPlaceRate / 100) * 0.3 +
-    (reviewCurrentRate / 100) * 0.25 +
-    (ehcpRate / 100) * 0.25 +
-    (professionalInvolvedRate / 100) * 0.2;
+    ((inPlaceRate ?? 0) / 100) * 0.3 +
+    ((reviewCurrentRate ?? 0) / 100) * 0.25 +
+    ((ehcpRate ?? 0) / 100) * 0.25 +
+    ((professionalInvolvedRate ?? 0) / 100) * 0.2;
   const overallScore = Math.round(rawScore * 25);
 
   return {
@@ -361,43 +375,43 @@ export function evaluateAccessibilityCompliance(
     return {
       overallScore: 0,
       totalAudits: 0,
-      physicalAccessRate: 0,
-      sensoryAdaptationRate: 0,
-      communicationAidsRate: 0,
-      signageAccessibleRate: 0,
-      overallComplianceRate: 0,
+      physicalAccessRate: null,
+      sensoryAdaptationRate: null,
+      communicationAidsRate: null,
+      signageAccessibleRate: null,
+      overallComplianceRate: null,
     };
   }
 
   const total = audits.length;
 
-  const physicalAccessRate = pct(
+  const physicalAccessRate = rate(
     audits.filter((a) => a.physicalAccessCompliant).length,
     total,
   );
-  const sensoryAdaptationRate = pct(
+  const sensoryAdaptationRate = rate(
     audits.filter((a) => a.sensoryEnvironmentAdapted).length,
     total,
   );
-  const communicationAidsRate = pct(
+  const communicationAidsRate = rate(
     audits.filter((a) => a.communicationAidsAvailable).length,
     total,
   );
-  const signageAccessibleRate = pct(
+  const signageAccessibleRate = rate(
     audits.filter((a) => a.signageAccessible).length,
     total,
   );
-  const overallComplianceRate = pct(
+  const overallComplianceRate = rate(
     audits.filter((a) => a.overallCompliant).length,
     total,
   );
 
   // Score: physical (25%) + sensory (25%) + communication (25%) + overall compliance (25%)
   const rawScore =
-    (physicalAccessRate / 100) * 0.25 +
-    (sensoryAdaptationRate / 100) * 0.25 +
-    (communicationAidsRate / 100) * 0.25 +
-    (overallComplianceRate / 100) * 0.25;
+    ((physicalAccessRate ?? 0) / 100) * 0.25 +
+    ((sensoryAdaptationRate ?? 0) / 100) * 0.25 +
+    ((communicationAidsRate ?? 0) / 100) * 0.25 +
+    ((overallComplianceRate ?? 0) / 100) * 0.25;
   const overallScore = Math.round(rawScore * 25);
 
   return {
@@ -423,11 +437,11 @@ export function evaluateEquipmentProvision(
       overallScore: 0,
       totalEquipment: 0,
       goodConditionCount: 0,
-      goodConditionRate: 0,
+      goodConditionRate: null,
       maintenanceCurrentCount: 0,
-      maintenanceCurrentRate: 0,
+      maintenanceCurrentRate: null,
       replacementBacklog: 0,
-      replacementBacklogRate: 0,
+      replacementBacklogRate: null,
       conditionBreakdown: {},
     };
   }
@@ -437,17 +451,17 @@ export function evaluateEquipmentProvision(
   const goodConditionCount = equipment.filter(
     (e) => e.condition === "good",
   ).length;
-  const goodConditionRate = pct(goodConditionCount, total);
+  const goodConditionRate = rate(goodConditionCount, total);
 
   const maintenanceCurrentCount = equipment.filter(
     (e) => e.maintenanceCurrent,
   ).length;
-  const maintenanceCurrentRate = pct(maintenanceCurrentCount, total);
+  const maintenanceCurrentRate = rate(maintenanceCurrentCount, total);
 
   const replacementBacklog = equipment.filter(
     (e) => e.replacementNeeded,
   ).length;
-  const replacementBacklogRate = pct(replacementBacklog, total);
+  const replacementBacklogRate = rate(replacementBacklog, total);
 
   // Condition breakdown
   const conditionBreakdown: Record<string, number> = {};
@@ -457,10 +471,10 @@ export function evaluateEquipmentProvision(
   }
 
   // Score: good condition (35%) + maintenance current (40%) + low replacement backlog (25%)
-  const backlogPenalty = replacementBacklogRate / 100;
+  const backlogPenalty = (replacementBacklogRate ?? 0) / 100;
   const rawScore =
-    (goodConditionRate / 100) * 0.35 +
-    (maintenanceCurrentRate / 100) * 0.4 +
+    ((goodConditionRate ?? 0) / 100) * 0.35 +
+    ((maintenanceCurrentRate ?? 0) / 100) * 0.4 +
     (1 - backlogPenalty) * 0.25;
   const overallScore = Math.round(rawScore * 25);
 
@@ -489,38 +503,38 @@ export function evaluateStaffDisabilityReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      awarenessRate: 0,
-      adjustmentsTrainingRate: 0,
-      ehcpUnderstandingRate: 0,
-      communicationStrategiesRate: 0,
-      personalCareRate: 0,
-      emergencyEvacuationRate: 0,
+      awarenessRate: null,
+      adjustmentsTrainingRate: null,
+      ehcpUnderstandingRate: null,
+      communicationStrategiesRate: null,
+      personalCareRate: null,
+      emergencyEvacuationRate: null,
     };
   }
 
   const total = training.length;
 
-  const awarenessRate = pct(
+  const awarenessRate = rate(
     training.filter((t) => t.disabilityAwareness).length,
     total,
   );
-  const adjustmentsTrainingRate = pct(
+  const adjustmentsTrainingRate = rate(
     training.filter((t) => t.reasonableAdjustmentsTrained).length,
     total,
   );
-  const ehcpUnderstandingRate = pct(
+  const ehcpUnderstandingRate = rate(
     training.filter((t) => t.ehcpUnderstanding).length,
     total,
   );
-  const communicationStrategiesRate = pct(
+  const communicationStrategiesRate = rate(
     training.filter((t) => t.communicationStrategies).length,
     total,
   );
-  const personalCareRate = pct(
+  const personalCareRate = rate(
     training.filter((t) => t.personalCareTrained).length,
     total,
   );
-  const emergencyEvacuationRate = pct(
+  const emergencyEvacuationRate = rate(
     training.filter((t) => t.emergencyEvacuationTrained).length,
     total,
   );
@@ -528,12 +542,12 @@ export function evaluateStaffDisabilityReadiness(
   // Score: each of the 6 areas weighted roughly equally (16.67% each)
   // Using simple average of 6 rates
   const avgRate =
-    (awarenessRate +
-      adjustmentsTrainingRate +
-      ehcpUnderstandingRate +
-      communicationStrategiesRate +
-      personalCareRate +
-      emergencyEvacuationRate) /
+    (awarenessRate! +
+      adjustmentsTrainingRate! +
+      ehcpUnderstandingRate! +
+      communicationStrategiesRate! +
+      personalCareRate! +
+      emergencyEvacuationRate!) /
     6;
   const overallScore = Math.round((avgRate / 100) * 25);
 
@@ -681,17 +695,17 @@ export function generateDisabilityReasonableAdjustmentsIntelligence(
   // -- Strengths (conditional) ------------------------------------------------
   const strengths: string[] = [];
 
-  if (adjustmentResult.inPlaceRate >= 80) {
+  if (meets(adjustmentResult.inPlaceRate, 80)) {
     strengths.push(
       "High proportion of reasonable adjustments are in place, demonstrating strong implementation of individual support plans",
     );
   }
-  if (accessibilityResult.overallComplianceRate >= 80) {
+  if (meets(accessibilityResult.overallComplianceRate, 80)) {
     strengths.push(
       "Good accessibility compliance across audits, with the home environment well-adapted for children with disabilities",
     );
   }
-  if (equipmentResult.goodConditionRate >= 80 && equipmentResult.totalEquipment > 0) {
+  if (meets(equipmentResult.goodConditionRate, 80) && equipmentResult.totalEquipment > 0) {
     strengths.push(
       "Specialist equipment is well-maintained and in good condition, ensuring children can access the support they need",
     );
@@ -701,23 +715,23 @@ export function generateDisabilityReasonableAdjustmentsIntelligence(
       "Strong staff disability training coverage, with the team well-prepared to support children with additional needs",
     );
   }
-  if (adjustmentResult.ehcpRate >= 80) {
+  if (meets(adjustmentResult.ehcpRate, 80)) {
     strengths.push(
       "EHCPs are in place for the majority of children, ensuring statutory duties are met",
     );
   }
-  if (adjustmentResult.professionalInvolvedRate >= 80) {
+  if (meets(adjustmentResult.professionalInvolvedRate, 80)) {
     strengths.push(
       "Professionals are actively involved in the majority of reasonable adjustments, supporting evidence-based planning",
     );
   }
-  if (adjustmentResult.reviewCurrentRate >= 80) {
+  if (meets(adjustmentResult.reviewCurrentRate, 80)) {
     strengths.push(
       "Reviews of reasonable adjustments are current, indicating proactive oversight of support plans",
     );
   }
   if (
-    equipmentResult.maintenanceCurrentRate >= 90 &&
+    meets(equipmentResult.maintenanceCurrentRate, 90) &&
     equipmentResult.totalEquipment > 0
   ) {
     strengths.push(
@@ -728,12 +742,12 @@ export function generateDisabilityReasonableAdjustmentsIntelligence(
   // -- Areas for improvement (conditional) ------------------------------------
   const areasForImprovement: string[] = [];
 
-  if (adjustmentResult.reviewCurrentRate < 60 && adjustmentResult.totalAdjustments > 0) {
+  if (below(adjustmentResult.reviewCurrentRate, 60) && adjustmentResult.totalAdjustments > 0) {
     areasForImprovement.push(
       `Only ${adjustmentResult.reviewCurrentRate}% of adjustment reviews are current -- regular reviews are needed to ensure plans remain effective`,
     );
   }
-  if (accessibilityResult.overallComplianceRate < 60 && accessibilityResult.totalAudits > 0) {
+  if (below(accessibilityResult.overallComplianceRate, 60) && accessibilityResult.totalAudits > 0) {
     areasForImprovement.push(
       `Accessibility compliance is at ${accessibilityResult.overallComplianceRate}% -- the home environment needs improvement to meet the needs of children with disabilities`,
     );
@@ -743,27 +757,27 @@ export function generateDisabilityReasonableAdjustmentsIntelligence(
       `${equipmentResult.replacementBacklog} item(s) of equipment need replacement -- delays may affect children's access to necessary support`,
     );
   }
-  if (staffResult.awarenessRate < 80 && staffResult.totalStaff > 0) {
+  if (below(staffResult.awarenessRate, 80) && staffResult.totalStaff > 0) {
     areasForImprovement.push(
       `Only ${staffResult.awarenessRate}% of staff have completed disability awareness training`,
     );
   }
-  if (staffResult.emergencyEvacuationRate < 80 && staffResult.totalStaff > 0) {
+  if (below(staffResult.emergencyEvacuationRate, 80) && staffResult.totalStaff > 0) {
     areasForImprovement.push(
       `Only ${staffResult.emergencyEvacuationRate}% of staff are trained in emergency evacuation procedures for children with disabilities`,
     );
   }
-  if (adjustmentResult.ehcpRate < 60 && adjustmentResult.totalAdjustments > 0) {
+  if (below(adjustmentResult.ehcpRate, 60) && adjustmentResult.totalAdjustments > 0) {
     areasForImprovement.push(
       `EHCPs are only in place for ${adjustmentResult.ehcpRate}% of adjustments -- ensure statutory duties under the SEN Code of Practice are met`,
     );
   }
-  if (adjustmentResult.inPlaceRate < 60 && adjustmentResult.totalAdjustments > 0) {
+  if (below(adjustmentResult.inPlaceRate, 60) && adjustmentResult.totalAdjustments > 0) {
     areasForImprovement.push(
       `Only ${adjustmentResult.inPlaceRate}% of adjustments are currently in place -- several remain pending or under review`,
     );
   }
-  if (equipmentResult.maintenanceCurrentRate < 80 && equipmentResult.totalEquipment > 0) {
+  if (below(equipmentResult.maintenanceCurrentRate, 80) && equipmentResult.totalEquipment > 0) {
     areasForImprovement.push(
       `Only ${equipmentResult.maintenanceCurrentRate}% of equipment has current maintenance -- ensure all specialist equipment is regularly checked`,
     );
@@ -795,14 +809,14 @@ export function generateDisabilityReasonableAdjustmentsIntelligence(
   }
 
   // URGENT for low in-place rate
-  if (adjustmentResult.inPlaceRate < 40 && adjustments.length > 0) {
+  if (below(adjustmentResult.inPlaceRate, 40) && adjustments.length > 0) {
     actions.push(
       "URGENT: Fewer than 40% of reasonable adjustments are in place -- expedite implementation of all outstanding adjustments",
     );
   }
 
   // URGENT for critical equipment needs
-  if (equipmentResult.replacementBacklogRate >= 50 && equipment.length > 0) {
+  if (meets(equipmentResult.replacementBacklogRate, 50) && equipment.length > 0) {
     actions.push(
       "URGENT: Over half of specialist equipment needs replacement -- prioritise procurement to avoid impact on children's welfare",
     );
@@ -810,21 +824,21 @@ export function generateDisabilityReasonableAdjustmentsIntelligence(
 
   // Non-urgent actions
   if (
-    adjustmentResult.reviewCurrentRate < 80 &&
+    below(adjustmentResult.reviewCurrentRate, 80) &&
     adjustmentResult.totalAdjustments > 0 &&
-    adjustmentResult.reviewCurrentRate >= 0
+    meets(adjustmentResult.reviewCurrentRate, 0)
   ) {
     actions.push(
       "Schedule reviews for all reasonable adjustments that are not current to ensure plans remain effective",
     );
   }
-  if (adjustmentResult.ehcpRate < 80 && adjustments.length > 0) {
+  if (below(adjustmentResult.ehcpRate, 80) && adjustments.length > 0) {
     actions.push(
       "Ensure EHCPs are pursued and in place for all eligible children in line with the SEN Code of Practice 2015",
     );
   }
   if (
-    accessibilityResult.overallComplianceRate < 80 &&
+    below(accessibilityResult.overallComplianceRate, 80) &&
     audits.length > 0
   ) {
     actions.push(
@@ -833,23 +847,23 @@ export function generateDisabilityReasonableAdjustmentsIntelligence(
   }
   if (
     equipmentResult.replacementBacklog > 0 &&
-    equipmentResult.replacementBacklogRate < 50
+    below(equipmentResult.replacementBacklogRate, 50)
   ) {
     actions.push(
       "Replace specialist equipment flagged for replacement to maintain children's access to necessary support",
     );
   }
-  if (staffResult.awarenessRate < 80 && staffResult.totalStaff > 0) {
+  if (below(staffResult.awarenessRate, 80) && staffResult.totalStaff > 0) {
     actions.push(
       "Enrol remaining staff on disability awareness training to meet best practice standards",
     );
   }
-  if (staffResult.ehcpUnderstandingRate < 80 && staffResult.totalStaff > 0) {
+  if (below(staffResult.ehcpUnderstandingRate, 80) && staffResult.totalStaff > 0) {
     actions.push(
       "Provide EHCP understanding training to ensure all staff can contribute to statutory planning processes",
     );
   }
-  if (staffResult.emergencyEvacuationRate < 80 && staffResult.totalStaff > 0) {
+  if (below(staffResult.emergencyEvacuationRate, 80) && staffResult.totalStaff > 0) {
     actions.push(
       "Arrange emergency evacuation training for staff not yet trained, including PEEP development for each child",
     );

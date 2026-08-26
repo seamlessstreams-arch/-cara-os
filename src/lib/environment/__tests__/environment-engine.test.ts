@@ -4,7 +4,6 @@
 
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getEnvironmentCategoryLabel,
   getEnvironmentOutcomeLabel,
@@ -75,28 +74,6 @@ function makeTraining(overrides: Partial<StaffEnvironmentTraining> = {}): StaffE
 // pct helper
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when both are 0", () => {
-    expect(pct(0, 0)).toBe(0);
-  });
-
-  it("returns 100 when num equals den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-});
 
 // ══════════════════════════════════════════════════════════════════════════════
 // getRating
@@ -215,10 +192,10 @@ describe("evaluateEnvironmentQuality", () => {
   it("returns all zeros for empty records", () => {
     const result = evaluateEnvironmentQuality([]);
     expect(result.totalRecords).toBe(0);
-    expect(result.adequateRate).toBe(0);
-    expect(result.childInvolvedRate).toBe(0);
-    expect(result.documentedRate).toBe(0);
-    expect(result.childFeedbackSoughtRate).toBe(0);
+    expect(result.adequateRate).toBeNull();
+    expect(result.childInvolvedRate).toBeNull();
+    expect(result.documentedRate).toBeNull();
+    expect(result.childFeedbackSoughtRate).toBeNull();
     expect(result.score).toBe(0);
   });
 
@@ -300,10 +277,10 @@ describe("evaluateEnvironmentCompliance", () => {
   it("returns all zeros for empty records", () => {
     const result = evaluateEnvironmentCompliance([]);
     expect(result.totalRecords).toBe(0);
-    expect(result.actionTakenRate).toBe(0);
-    expect(result.timelyCompletionRate).toBe(0);
-    expect(result.adequateRate).toBe(0);
-    expect(result.categoryDiversityRate).toBe(0);
+    expect(result.actionTakenRate).toBeNull();
+    expect(result.timelyCompletionRate).toBeNull();
+    expect(result.adequateRate).toBeNull();
+    expect(result.categoryDiversityRate).toBeNull();
     expect(result.score).toBe(0);
   });
 
@@ -518,12 +495,12 @@ describe("evaluateStaffEnvironmentReadiness", () => {
   it("returns all zeros for empty training", () => {
     const result = evaluateStaffEnvironmentReadiness([]);
     expect(result.totalStaff).toBe(0);
-    expect(result.environmentalAwarenessRate).toBe(0);
-    expect(result.healthSafetyKnowledgeRate).toBe(0);
-    expect(result.maintenanceSkillsRate).toBe(0);
-    expect(result.childParticipationRate).toBe(0);
-    expect(result.riskAssessmentRate).toBe(0);
-    expect(result.infectionControlRate).toBe(0);
+    expect(result.environmentalAwarenessRate).toBeNull();
+    expect(result.healthSafetyKnowledgeRate).toBeNull();
+    expect(result.maintenanceSkillsRate).toBeNull();
+    expect(result.childParticipationRate).toBeNull();
+    expect(result.riskAssessmentRate).toBeNull();
+    expect(result.infectionControlRate).toBeNull();
     expect(result.score).toBe(0);
     expect(result.concerns.length).toBeGreaterThan(0);
     expect(result.concerns[0]).toContain("URGENT");

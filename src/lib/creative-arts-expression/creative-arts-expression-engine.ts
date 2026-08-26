@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // Creative Arts Expression Intelligence Engine
 // Pure deterministic — no AI, no external calls, no randomness, no Date.now()
 
@@ -99,18 +100,26 @@ export interface StaffCreativeArtsTraining {
 export interface ArtsQualityResult {
   overallScore: number;
   totalSessions: number;
-  expressionRate: number;
-  creativityRate: number;
-  confidenceRate: number;
-  therapeuticRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  expressionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  creativityRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  confidenceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  therapeuticRate: number | null;
 }
 
 export interface ArtsComplianceResult {
   overallScore: number;
-  documentedRate: number;
-  staffFacilitatedRate: number;
-  feedbackRate: number;
-  artFormDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffFacilitatedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feedbackRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  artFormDiversityRatio: number | null;
 }
 
 export interface ArtsPolicyResult {
@@ -127,20 +136,28 @@ export interface ArtsPolicyResult {
 export interface StaffCreativeArtsReadinessResult {
   overallScore: number;
   totalStaff: number;
-  artsFacilitationRate: number;
-  therapeuticArtsAwarenessRate: number;
-  creativeConfidenceBuildingRate: number;
-  inclusivePracticeRate: number;
-  culturalArtsFormsRate: number;
-  safeguardingInArtsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  artsFacilitationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  therapeuticArtsAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  creativeConfidenceBuildingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  inclusivePracticeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  culturalArtsFormsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingInArtsRate: number | null;
 }
 
 export interface ChildCreativeArtsProfile {
   childId: string;
   childName: string;
   totalSessions: number;
-  expressionRate: number;
-  creativityRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  expressionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  creativityRate: number | null;
   overallScore: number;
 }
 
@@ -163,11 +180,6 @@ export interface CreativeArtsExpressionIntelligence {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -179,7 +191,7 @@ export function getRating(score: number): Rating {
 
 export function evaluateArtsQuality(sessions: ArtsSession[]): ArtsQualityResult {
   if (sessions.length === 0) {
-    return { overallScore: 0, totalSessions: 0, expressionRate: 0, creativityRate: 0, confidenceRate: 0, therapeuticRate: 0 };
+    return { overallScore: 0, totalSessions: 0, expressionRate: null, creativityRate: null, confidenceRate: null, therapeuticRate: null };
   }
 
   const total = sessions.length;
@@ -188,15 +200,15 @@ export function evaluateArtsQuality(sessions: ArtsSession[]): ArtsQualityResult 
   const confidenceCount = sessions.filter((s) => s.confidenceGrown).length;
   const therapeuticCount = sessions.filter((s) => s.therapeuticBenefit).length;
 
-  const expressionRate = pct(expressiveCount, total);
-  const creativityRate = pct(creativityCount, total);
-  const confidenceRate = pct(confidenceCount, total);
-  const therapeuticRate = pct(therapeuticCount, total);
+  const expressionRate = rate(expressiveCount, total);
+  const creativityRate = rate(creativityCount, total);
+  const confidenceRate = rate(confidenceCount, total);
+  const therapeuticRate = rate(therapeuticCount, total);
 
-  const exScore = Math.round((expressionRate / 100) * 7);
-  const crScore = Math.round((creativityRate / 100) * 6);
-  const coScore = Math.round((confidenceRate / 100) * 6);
-  const thScore = Math.round((therapeuticRate / 100) * 6);
+  const exScore = Math.round(((expressionRate ?? 0) / 100) * 7);
+  const crScore = Math.round(((creativityRate ?? 0) / 100) * 6);
+  const coScore = Math.round(((confidenceRate ?? 0) / 100) * 6);
+  const thScore = Math.round(((therapeuticRate ?? 0) / 100) * 6);
 
   const overallScore = Math.min(25, exScore + crScore + coScore + thScore);
 
@@ -205,7 +217,7 @@ export function evaluateArtsQuality(sessions: ArtsSession[]): ArtsQualityResult 
 
 export function evaluateArtsCompliance(sessions: ArtsSession[]): ArtsComplianceResult {
   if (sessions.length === 0) {
-    return { overallScore: 0, documentedRate: 0, staffFacilitatedRate: 0, feedbackRate: 0, artFormDiversityRatio: 0 };
+    return { overallScore: 0, documentedRate: null, staffFacilitatedRate: null, feedbackRate: null, artFormDiversityRatio: 0 };
   }
 
   const total = sessions.length;
@@ -213,16 +225,16 @@ export function evaluateArtsCompliance(sessions: ArtsSession[]): ArtsComplianceR
   const staffCount = sessions.filter((s) => s.staffFacilitated).length;
   const feedbackCount = sessions.filter((s) => s.feedbackGiven).length;
   const uniqueForms = new Set(sessions.map((s) => s.artForm)).size;
-  const diversityRatio = pct(uniqueForms, 8);
+  const diversityRatio = rate(uniqueForms, 8);
 
-  const documentedRate = pct(documentedCount, total);
-  const staffFacilitatedRate = pct(staffCount, total);
-  const feedbackRate = pct(feedbackCount, total);
+  const documentedRate = rate(documentedCount, total);
+  const staffFacilitatedRate = rate(staffCount, total);
+  const feedbackRate = rate(feedbackCount, total);
 
-  const docScore = Math.round((documentedRate / 100) * 8);
-  const sfScore = Math.round((staffFacilitatedRate / 100) * 7);
-  const fbScore = Math.round((feedbackRate / 100) * 5);
-  const divScore = Math.round((diversityRatio / 100) * 5);
+  const docScore = Math.round(((documentedRate ?? 0) / 100) * 8);
+  const sfScore = Math.round(((staffFacilitatedRate ?? 0) / 100) * 7);
+  const fbScore = Math.round(((feedbackRate ?? 0) / 100) * 5);
+  const divScore = Math.round((diversityRatio! / 100) * 5);
 
   const overallScore = Math.min(25, docScore + sfScore + fbScore + divScore);
 
@@ -254,23 +266,23 @@ export function evaluateArtsPolicy(policy: CreativeArtsPolicy | null): ArtsPolic
 
 export function evaluateStaffCreativeArtsReadiness(training: StaffCreativeArtsTraining[]): StaffCreativeArtsReadinessResult {
   if (training.length === 0) {
-    return { overallScore: 0, totalStaff: 0, artsFacilitationRate: 0, therapeuticArtsAwarenessRate: 0, creativeConfidenceBuildingRate: 0, inclusivePracticeRate: 0, culturalArtsFormsRate: 0, safeguardingInArtsRate: 0 };
+    return { overallScore: 0, totalStaff: 0, artsFacilitationRate: null, therapeuticArtsAwarenessRate: null, creativeConfidenceBuildingRate: null, inclusivePracticeRate: null, culturalArtsFormsRate: null, safeguardingInArtsRate: null };
   }
 
   const total = training.length;
-  const afRate = pct(training.filter((t) => t.artsFacilitation).length, total);
-  const taRate = pct(training.filter((t) => t.therapeuticArtsAwareness).length, total);
-  const ccRate = pct(training.filter((t) => t.creativeConfidenceBuilding).length, total);
-  const ipRate = pct(training.filter((t) => t.inclusivePractice).length, total);
-  const caRate = pct(training.filter((t) => t.culturalArtsForms).length, total);
-  const saRate = pct(training.filter((t) => t.safeguardingInArts).length, total);
+  const afRate = rate(training.filter((t) => t.artsFacilitation).length, total);
+  const taRate = rate(training.filter((t) => t.therapeuticArtsAwareness).length, total);
+  const ccRate = rate(training.filter((t) => t.creativeConfidenceBuilding).length, total);
+  const ipRate = rate(training.filter((t) => t.inclusivePractice).length, total);
+  const caRate = rate(training.filter((t) => t.culturalArtsForms).length, total);
+  const saRate = rate(training.filter((t) => t.safeguardingInArts).length, total);
 
-  const s1 = Math.round((afRate / 100) * 6);
-  const s2 = Math.round((taRate / 100) * 5);
-  const s3 = Math.round((ccRate / 100) * 5);
-  const s4 = Math.round((ipRate / 100) * 4);
-  const s5 = Math.round((caRate / 100) * 3);
-  const s6 = Math.round((saRate / 100) * 2);
+  const s1 = Math.round(((afRate ?? 0) / 100) * 6);
+  const s2 = Math.round(((taRate ?? 0) / 100) * 5);
+  const s3 = Math.round(((ccRate ?? 0) / 100) * 5);
+  const s4 = Math.round(((ipRate ?? 0) / 100) * 4);
+  const s5 = Math.round(((caRate ?? 0) / 100) * 3);
+  const s6 = Math.round(((saRate ?? 0) / 100) * 2);
 
   const overallScore = Math.min(25, s1 + s2 + s3 + s4 + s5 + s6);
 
@@ -296,22 +308,22 @@ export function buildChildCreativeArtsProfiles(sessions: ArtsSession[]): ChildCr
     const expressiveCount = acts.filter((s) => s.expressionLevel === "highly_expressive" || s.expressionLevel === "expressive").length;
     const creativityCount = acts.filter((s) => s.creativityDemonstrated).length;
 
-    const expressionRate = pct(expressiveCount, total);
-    const creativityRate = pct(creativityCount, total);
+    const expressionRate = rate(expressiveCount, total);
+    const creativityRate = rate(creativityCount, total);
 
     let freqScore = 0;
     if (total >= 10) freqScore = 2;
     else if (total >= 5) freqScore = 1;
 
     let exScore = 0;
-    if (expressionRate >= 80) exScore = 3;
-    else if (expressionRate >= 60) exScore = 2;
-    else if (expressionRate >= 40) exScore = 1;
+    if (meets(expressionRate, 80)) exScore = 3;
+    else if (meets(expressionRate, 60)) exScore = 2;
+    else if (meets(expressionRate, 40)) exScore = 1;
 
     let crScore = 0;
-    if (creativityRate >= 80) crScore = 3;
-    else if (creativityRate >= 60) crScore = 2;
-    else if (creativityRate >= 40) crScore = 1;
+    if (meets(creativityRate, 80)) crScore = 3;
+    else if (meets(creativityRate, 60)) crScore = 2;
+    else if (meets(creativityRate, 40)) crScore = 1;
 
     const uniqueForms = new Set(acts.map((s) => s.artForm)).size;
     let divScore = 0;
@@ -350,21 +362,21 @@ export function generateCreativeArtsExpressionIntelligence(
   const areasForImprovement: string[] = [];
   const actions: string[] = [];
 
-  if (artsQuality.expressionRate >= 80) strengths.push("Children are highly expressive and engaged in creative arts activities");
-  if (artsQuality.creativityRate >= 80) strengths.push("Strong creativity demonstrated across arts sessions");
-  if (artsQuality.confidenceRate >= 80) strengths.push("Creative arts activities are effectively building children's confidence");
-  if (artsCompliance.documentedRate >= 80) strengths.push("Creative arts activities are well documented in care plans");
+  if (meets(artsQuality.expressionRate, 80)) strengths.push("Children are highly expressive and engaged in creative arts activities");
+  if (meets(artsQuality.creativityRate, 80)) strengths.push("Strong creativity demonstrated across arts sessions");
+  if (meets(artsQuality.confidenceRate, 80)) strengths.push("Creative arts activities are effectively building children's confidence");
+  if (meets(artsCompliance.documentedRate, 80)) strengths.push("Creative arts activities are well documented in care plans");
 
-  if (sessions.length > 0 && artsQuality.expressionRate < 60) areasForImprovement.push("Creative expression levels need improvement — diversify art forms and approaches");
-  if (sessions.length > 0 && artsQuality.therapeuticRate < 60) areasForImprovement.push("Therapeutic benefit from creative arts is below expected levels — embed therapeutic arts practice");
-  if (sessions.length > 0 && artsQuality.creativityRate < 60) areasForImprovement.push("Creativity development needs strengthening across the cohort");
-  if (sessions.length > 0 && artsCompliance.staffFacilitatedRate < 60) areasForImprovement.push("Staff facilitation of creative arts activities needs improvement");
+  if (sessions.length > 0 && below(artsQuality.expressionRate, 60)) areasForImprovement.push("Creative expression levels need improvement — diversify art forms and approaches");
+  if (sessions.length > 0 && below(artsQuality.therapeuticRate, 60)) areasForImprovement.push("Therapeutic benefit from creative arts is below expected levels — embed therapeutic arts practice");
+  if (sessions.length > 0 && below(artsQuality.creativityRate, 60)) areasForImprovement.push("Creativity development needs strengthening across the cohort");
+  if (sessions.length > 0 && below(artsCompliance.staffFacilitatedRate, 60)) areasForImprovement.push("Staff facilitation of creative arts activities needs improvement");
 
   if (sessions.length === 0) actions.push("No creative arts sessions recorded — begin tracking arts engagement and expression");
   if (!policy) actions.push("URGENT: No creative arts policy in place — develop and implement immediately");
   if (training.length === 0) actions.push("URGENT: No staff creative arts training recorded — arrange training for all staff");
-  if (sessions.length > 0 && artsQuality.confidenceRate < 60) actions.push("Focus on confidence-building through creative arts — tailor sessions to individual strengths");
-  if (sessions.length > 0 && artsCompliance.feedbackRate < 60) actions.push("Improve feedback processes for creative arts sessions");
+  if (sessions.length > 0 && below(artsQuality.confidenceRate, 60)) actions.push("Focus on confidence-building through creative arts — tailor sessions to individual strengths");
+  if (sessions.length > 0 && below(artsCompliance.feedbackRate, 60)) actions.push("Improve feedback processes for creative arts sessions");
 
   const regulatoryLinks: string[] = [
     "CHR 2015 Regulation 6 — Health and well-being standard (creative expression)",

@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // Environmental Sustainability Awareness Intelligence Engine
 // Pure deterministic — no AI, no external calls, no randomness, no Date.now()
 
@@ -99,18 +100,26 @@ export interface StaffEnvironmentalTraining {
 export interface EcoQualityResult {
   overallScore: number;
   totalActivities: number;
-  engagementRate: number;
-  knowledgeRate: number;
-  initiativeRate: number;
-  habitsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  engagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  knowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  initiativeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  habitsRate: number | null;
 }
 
 export interface EcoComplianceResult {
   overallScore: number;
-  documentedRate: number;
-  staffSupportedRate: number;
-  feedbackRate: number;
-  activityDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffSupportedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feedbackRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  activityDiversityRatio: number | null;
 }
 
 export interface EnvironmentalPolicyResult {
@@ -127,20 +136,28 @@ export interface EnvironmentalPolicyResult {
 export interface StaffEnvironmentalReadinessResult {
   overallScore: number;
   totalStaff: number;
-  sustainabilityAwarenessRate: number;
-  ecoEducationRate: number;
-  gardenManagementRate: number;
-  energyConservationRate: number;
-  wildlifeKnowledgeRate: number;
-  communityEngagementRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  sustainabilityAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  ecoEducationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  gardenManagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  energyConservationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  wildlifeKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  communityEngagementRate: number | null;
 }
 
 export interface ChildEnvironmentalProfile {
   childId: string;
   childName: string;
   totalActivities: number;
-  engagementRate: number;
-  knowledgeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  engagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  knowledgeRate: number | null;
   overallScore: number;
 }
 
@@ -163,11 +180,6 @@ export interface EnvironmentalSustainabilityAwarenessIntelligence {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -179,7 +191,7 @@ export function getRating(score: number): Rating {
 
 export function evaluateEcoQuality(activities: EcoActivity[]): EcoQualityResult {
   if (activities.length === 0) {
-    return { overallScore: 0, totalActivities: 0, engagementRate: 0, knowledgeRate: 0, initiativeRate: 0, habitsRate: 0 };
+    return { overallScore: 0, totalActivities: 0, engagementRate: null, knowledgeRate: null, initiativeRate: null, habitsRate: null };
   }
 
   const total = activities.length;
@@ -188,15 +200,15 @@ export function evaluateEcoQuality(activities: EcoActivity[]): EcoQualityResult 
   const initiativeCount = activities.filter((a) => a.initiativeTaken).length;
   const habitsCount = activities.filter((a) => a.habitsFormed).length;
 
-  const engagementRate = pct(engagedCount, total);
-  const knowledgeRate = pct(knowledgeCount, total);
-  const initiativeRate = pct(initiativeCount, total);
-  const habitsRate = pct(habitsCount, total);
+  const engagementRate = rate(engagedCount, total);
+  const knowledgeRate = rate(knowledgeCount, total);
+  const initiativeRate = rate(initiativeCount, total);
+  const habitsRate = rate(habitsCount, total);
 
-  const enScore = Math.round((engagementRate / 100) * 7);
-  const knScore = Math.round((knowledgeRate / 100) * 6);
-  const inScore = Math.round((initiativeRate / 100) * 6);
-  const haScore = Math.round((habitsRate / 100) * 6);
+  const enScore = Math.round(((engagementRate ?? 0) / 100) * 7);
+  const knScore = Math.round(((knowledgeRate ?? 0) / 100) * 6);
+  const inScore = Math.round(((initiativeRate ?? 0) / 100) * 6);
+  const haScore = Math.round(((habitsRate ?? 0) / 100) * 6);
 
   const overallScore = Math.min(25, enScore + knScore + inScore + haScore);
 
@@ -205,7 +217,7 @@ export function evaluateEcoQuality(activities: EcoActivity[]): EcoQualityResult 
 
 export function evaluateEcoCompliance(activities: EcoActivity[]): EcoComplianceResult {
   if (activities.length === 0) {
-    return { overallScore: 0, documentedRate: 0, staffSupportedRate: 0, feedbackRate: 0, activityDiversityRatio: 0 };
+    return { overallScore: 0, documentedRate: null, staffSupportedRate: null, feedbackRate: null, activityDiversityRatio: 0 };
   }
 
   const total = activities.length;
@@ -213,16 +225,16 @@ export function evaluateEcoCompliance(activities: EcoActivity[]): EcoComplianceR
   const staffCount = activities.filter((a) => a.staffSupported).length;
   const feedbackCount = activities.filter((a) => a.feedbackGiven).length;
   const uniqueTypes = new Set(activities.map((a) => a.activityType)).size;
-  const diversityRatio = pct(uniqueTypes, 8);
+  const diversityRatio = rate(uniqueTypes, 8);
 
-  const documentedRate = pct(documentedCount, total);
-  const staffSupportedRate = pct(staffCount, total);
-  const feedbackRate = pct(feedbackCount, total);
+  const documentedRate = rate(documentedCount, total);
+  const staffSupportedRate = rate(staffCount, total);
+  const feedbackRate = rate(feedbackCount, total);
 
-  const docScore = Math.round((documentedRate / 100) * 8);
-  const sfScore = Math.round((staffSupportedRate / 100) * 7);
-  const fbScore = Math.round((feedbackRate / 100) * 5);
-  const divScore = Math.round((diversityRatio / 100) * 5);
+  const docScore = Math.round(((documentedRate ?? 0) / 100) * 8);
+  const sfScore = Math.round(((staffSupportedRate ?? 0) / 100) * 7);
+  const fbScore = Math.round(((feedbackRate ?? 0) / 100) * 5);
+  const divScore = Math.round((diversityRatio! / 100) * 5);
 
   const overallScore = Math.min(25, docScore + sfScore + fbScore + divScore);
 
@@ -254,23 +266,23 @@ export function evaluateEnvironmentalPolicy(policy: EnvironmentalPolicy | null):
 
 export function evaluateStaffEnvironmentalReadiness(training: StaffEnvironmentalTraining[]): StaffEnvironmentalReadinessResult {
   if (training.length === 0) {
-    return { overallScore: 0, totalStaff: 0, sustainabilityAwarenessRate: 0, ecoEducationRate: 0, gardenManagementRate: 0, energyConservationRate: 0, wildlifeKnowledgeRate: 0, communityEngagementRate: 0 };
+    return { overallScore: 0, totalStaff: 0, sustainabilityAwarenessRate: null, ecoEducationRate: null, gardenManagementRate: null, energyConservationRate: null, wildlifeKnowledgeRate: null, communityEngagementRate: null };
   }
 
   const total = training.length;
-  const saRate = pct(training.filter((t) => t.sustainabilityAwareness).length, total);
-  const eeRate = pct(training.filter((t) => t.ecoEducation).length, total);
-  const gmRate = pct(training.filter((t) => t.gardenManagement).length, total);
-  const ecRate = pct(training.filter((t) => t.energyConservation).length, total);
-  const wkRate = pct(training.filter((t) => t.wildlifeKnowledge).length, total);
-  const ceRate = pct(training.filter((t) => t.communityEngagement).length, total);
+  const saRate = rate(training.filter((t) => t.sustainabilityAwareness).length, total);
+  const eeRate = rate(training.filter((t) => t.ecoEducation).length, total);
+  const gmRate = rate(training.filter((t) => t.gardenManagement).length, total);
+  const ecRate = rate(training.filter((t) => t.energyConservation).length, total);
+  const wkRate = rate(training.filter((t) => t.wildlifeKnowledge).length, total);
+  const ceRate = rate(training.filter((t) => t.communityEngagement).length, total);
 
-  const s1 = Math.round((saRate / 100) * 6);
-  const s2 = Math.round((eeRate / 100) * 5);
-  const s3 = Math.round((gmRate / 100) * 5);
-  const s4 = Math.round((ecRate / 100) * 4);
-  const s5 = Math.round((wkRate / 100) * 3);
-  const s6 = Math.round((ceRate / 100) * 2);
+  const s1 = Math.round(((saRate ?? 0) / 100) * 6);
+  const s2 = Math.round(((eeRate ?? 0) / 100) * 5);
+  const s3 = Math.round(((gmRate ?? 0) / 100) * 5);
+  const s4 = Math.round(((ecRate ?? 0) / 100) * 4);
+  const s5 = Math.round(((wkRate ?? 0) / 100) * 3);
+  const s6 = Math.round(((ceRate ?? 0) / 100) * 2);
 
   const overallScore = Math.min(25, s1 + s2 + s3 + s4 + s5 + s6);
 
@@ -296,22 +308,22 @@ export function buildChildEnvironmentalProfiles(activities: EcoActivity[]): Chil
     const engagedCount = acts.filter((a) => a.engagementLevel === "highly_engaged" || a.engagementLevel === "engaged").length;
     const knowledgeCount = acts.filter((a) => a.knowledgeDemonstrated).length;
 
-    const engagementRate = pct(engagedCount, total);
-    const knowledgeRate = pct(knowledgeCount, total);
+    const engagementRate = rate(engagedCount, total);
+    const knowledgeRate = rate(knowledgeCount, total);
 
     let freqScore = 0;
     if (total >= 10) freqScore = 2;
     else if (total >= 5) freqScore = 1;
 
     let enScore = 0;
-    if (engagementRate >= 80) enScore = 3;
-    else if (engagementRate >= 60) enScore = 2;
-    else if (engagementRate >= 40) enScore = 1;
+    if (meets(engagementRate, 80)) enScore = 3;
+    else if (meets(engagementRate, 60)) enScore = 2;
+    else if (meets(engagementRate, 40)) enScore = 1;
 
     let knScore = 0;
-    if (knowledgeRate >= 80) knScore = 3;
-    else if (knowledgeRate >= 60) knScore = 2;
-    else if (knowledgeRate >= 40) knScore = 1;
+    if (meets(knowledgeRate, 80)) knScore = 3;
+    else if (meets(knowledgeRate, 60)) knScore = 2;
+    else if (meets(knowledgeRate, 40)) knScore = 1;
 
     const uniqueTypes = new Set(acts.map((a) => a.activityType)).size;
     let divScore = 0;
@@ -350,21 +362,21 @@ export function generateEnvironmentalSustainabilityAwarenessIntelligence(
   const areasForImprovement: string[] = [];
   const actions: string[] = [];
 
-  if (ecoQuality.engagementRate >= 80) strengths.push("Children are highly engaged in environmental and sustainability activities");
-  if (ecoQuality.knowledgeRate >= 80) strengths.push("Strong environmental knowledge demonstrated across activities");
-  if (ecoQuality.initiativeRate >= 80) strengths.push("Children are showing initiative in eco-friendly behaviours and projects");
-  if (ecoCompliance.documentedRate >= 80) strengths.push("Environmental activities are well documented in care plans");
+  if (meets(ecoQuality.engagementRate, 80)) strengths.push("Children are highly engaged in environmental and sustainability activities");
+  if (meets(ecoQuality.knowledgeRate, 80)) strengths.push("Strong environmental knowledge demonstrated across activities");
+  if (meets(ecoQuality.initiativeRate, 80)) strengths.push("Children are showing initiative in eco-friendly behaviours and projects");
+  if (meets(ecoCompliance.documentedRate, 80)) strengths.push("Environmental activities are well documented in care plans");
 
-  if (activities.length > 0 && ecoQuality.engagementRate < 60) areasForImprovement.push("Environmental engagement needs improvement — diversify activities to increase participation");
-  if (activities.length > 0 && ecoQuality.habitsRate < 60) areasForImprovement.push("Sustainable habit formation is below expected levels — embed eco-routines into daily life");
-  if (activities.length > 0 && ecoQuality.knowledgeRate < 60) areasForImprovement.push("Environmental knowledge development needs strengthening across the cohort");
-  if (activities.length > 0 && ecoCompliance.staffSupportedRate < 60) areasForImprovement.push("Staff support for environmental activities needs improvement");
+  if (activities.length > 0 && below(ecoQuality.engagementRate, 60)) areasForImprovement.push("Environmental engagement needs improvement — diversify activities to increase participation");
+  if (activities.length > 0 && below(ecoQuality.habitsRate, 60)) areasForImprovement.push("Sustainable habit formation is below expected levels — embed eco-routines into daily life");
+  if (activities.length > 0 && below(ecoQuality.knowledgeRate, 60)) areasForImprovement.push("Environmental knowledge development needs strengthening across the cohort");
+  if (activities.length > 0 && below(ecoCompliance.staffSupportedRate, 60)) areasForImprovement.push("Staff support for environmental activities needs improvement");
 
   if (activities.length === 0) actions.push("No environmental activity records found — begin tracking eco-engagement and sustainability education");
   if (!policy) actions.push("URGENT: No environmental sustainability policy in place — develop and implement immediately");
   if (training.length === 0) actions.push("URGENT: No staff environmental training recorded — arrange training for all staff");
-  if (activities.length > 0 && ecoQuality.initiativeRate < 60) actions.push("Encourage children to take more initiative in environmental projects");
-  if (activities.length > 0 && ecoCompliance.feedbackRate < 60) actions.push("Improve feedback processes for environmental activities");
+  if (activities.length > 0 && below(ecoQuality.initiativeRate, 60)) actions.push("Encourage children to take more initiative in environmental projects");
+  if (activities.length > 0 && below(ecoCompliance.feedbackRate, 60)) actions.push("Improve feedback processes for environmental activities");
 
   const regulatoryLinks: string[] = [
     "CHR 2015 Regulation 5 — Engaging with the wider community",

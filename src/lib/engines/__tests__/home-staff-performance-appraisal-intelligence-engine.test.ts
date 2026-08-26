@@ -655,7 +655,7 @@ describe("Bonus 5 — Feedback quality (max +5)", () => {
 describe("Penalty 1 — Overdue appraisals", () => {
   const staffIds = ["s1","s2","s3","s4","s5","s6","s7","s8"];
 
-  // Helper: create appraisals with a given overdue pct, all 8 staff covered
+  // Helper: create appraisals with a given overdue all 8 staff covered
   function buildAppraisals(overdue: number, completed: number) {
     const result: AppraisalRecordInput[] = [];
     for (let i = 0; i < overdue; i++) {

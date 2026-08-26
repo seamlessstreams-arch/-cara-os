@@ -6,7 +6,6 @@ import {
   evaluatePreventionPlanning,
   evaluateStaffReadiness,
   buildChildExclusionProfiles,
-  pct,
   getRating,
   getExclusionTypeLabel,
   getDisruptionTypeLabel,
@@ -92,14 +91,6 @@ function mkTraining(overrides: Partial<StaffExclusionTraining> = {}): StaffExclu
 
 // -- pct ----------------------------------------------------------------------
 
-describe("pct", () => {
-  it("returns 0 for 0/0", () => expect(pct(0, 0)).toBe(0));
-  it("calculates correctly", () => expect(pct(3, 4)).toBe(75));
-  it("rounds", () => expect(pct(1, 3)).toBe(33));
-  it("full", () => expect(pct(5, 5)).toBe(100));
-  it("returns 0 for 0/n", () => expect(pct(0, 10)).toBe(0));
-  it("handles large values", () => expect(pct(999, 1000)).toBe(100));
-});
 
 // -- getRating ----------------------------------------------------------------
 
@@ -272,7 +263,7 @@ describe("evaluateEducationContinuity", () => {
   it("handles not_applicable reintegration", () => {
     const exclusions = [mkExclusion({ reintegrationStatus: "not_applicable" })];
     const result = evaluateEducationContinuity(exclusions);
-    expect(result.reintegrationSuccessRate).toBe(0); // 0/0 = 0 via pct
+    expect(result.reintegrationSuccessRate).toBeNull(); // 0/0 = 0 via pct
   });
 
   it("calculates mixed exclusion rates", () => {

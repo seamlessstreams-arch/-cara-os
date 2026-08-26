@@ -6,7 +6,6 @@ import {
   evaluateRemediationEffectiveness,
   evaluateStaffSafetyReadiness,
   buildAreaRiskProfiles,
-  pct,
   getRating,
   getHazardTypeLabel,
   getRiskLevelLabel,
@@ -91,28 +90,6 @@ function mkTraining(overrides: Partial<StaffSafetyTraining> = {}): StaffSafetyTr
 
 // -- pct() helper -------------------------------------------------------------
 
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-
-  it("returns 100 when num equals den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-});
 
 // -- getRating() --------------------------------------------------------------
 
@@ -203,10 +180,10 @@ describe("evaluateRiskAssessmentCoverage", () => {
     expect(r.overallScore).toBe(0);
     expect(r.totalAssessments).toBe(0);
     expect(r.areasCovered).toBe(0);
-    expect(r.areaCoverageRate).toBe(0);
-    expect(r.reviewCurrentRate).toBe(0);
-    expect(r.mitigationInPlaceRate).toBe(0);
-    expect(r.highCriticalMitigatedRate).toBe(0);
+    expect(r.areaCoverageRate).toBeNull();
+    expect(r.reviewCurrentRate).toBeNull();
+    expect(r.mitigationInPlaceRate).toBeNull();
+    expect(r.highCriticalMitigatedRate).toBeNull();
   });
 
   it("returns totalAreas as 8", () => {
@@ -257,7 +234,7 @@ describe("evaluateRiskAssessmentCoverage", () => {
       mkAssessment({ id: "1", riskLevel: "low", mitigationInPlace: false }),
     ];
     const r = evaluateRiskAssessmentCoverage(assessments);
-    expect(r.highCriticalMitigatedRate).toBe(0); // pct(0,0) = 0
+    expect(r.highCriticalMitigatedRate).toBeNull(); // pct(0,0) = 0
   });
 
   it("calculates highCriticalMitigatedRate — partial", () => {
@@ -298,9 +275,9 @@ describe("evaluateSafetyCheckCompliance", () => {
     const r = evaluateSafetyCheckCompliance([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalChecks).toBe(0);
-    expect(r.compliantRate).toBe(0);
+    expect(r.compliantRate).toBeNull();
     expect(r.nonCompliantCount).toBe(0);
-    expect(r.actionRequiredCompletedRate).toBe(0);
+    expect(r.actionRequiredCompletedRate).toBeNull();
     expect(r.checkFrequencyAdequate).toBe(false);
   });
 
@@ -343,7 +320,7 @@ describe("evaluateSafetyCheckCompliance", () => {
   it("returns 0 actionRequiredCompletedRate when no actions required", () => {
     const checks = [mkCheck({ id: "1", actionRequired: false })];
     const r = evaluateSafetyCheckCompliance(checks);
-    expect(r.actionRequiredCompletedRate).toBe(0); // pct(0,0) = 0
+    expect(r.actionRequiredCompletedRate).toBeNull(); // pct(0,0) = 0
   });
 
   it("checkFrequencyAdequate is true for >= 10 checks", () => {
@@ -404,9 +381,9 @@ describe("evaluateRemediationEffectiveness", () => {
 
   it("returns correct metrics for empty result", () => {
     const r = evaluateRemediationEffectiveness([], true);
-    expect(r.completedOnTimeRate).toBe(0);
-    expect(r.overdueRate).toBe(0);
-    expect(r.verifiedRate).toBe(0);
+    expect(r.completedOnTimeRate).toBeNull();
+    expect(r.overdueRate).toBeNull();
+    expect(r.verifiedRate).toBeNull();
     expect(r.inProgressCount).toBe(0);
   });
 
@@ -492,11 +469,11 @@ describe("evaluateStaffSafetyReadiness", () => {
     const r = evaluateStaffSafetyReadiness([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalStaff).toBe(0);
-    expect(r.ligatureAwarenessRate).toBe(0);
-    expect(r.coshhTrainedRate).toBe(0);
-    expect(r.fireSafetyRate).toBe(0);
-    expect(r.waterSafetyRate).toBe(0);
-    expect(r.riskAssessmentCompetentRate).toBe(0);
+    expect(r.ligatureAwarenessRate).toBeNull();
+    expect(r.coshhTrainedRate).toBeNull();
+    expect(r.fireSafetyRate).toBeNull();
+    expect(r.waterSafetyRate).toBeNull();
+    expect(r.riskAssessmentCompetentRate).toBeNull();
   });
 
   it("returns 100% rates when all staff fully trained", () => {

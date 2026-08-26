@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { ExclusionDisruptionManagementIntelligence } from "@/lib/exclusion-disruption-management";
+import { formatRate } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -109,7 +110,7 @@ export function ExclusionDisruptionManagementDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Prevention Plans</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.preventionEffectiveness.outcomesResolvedRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.preventionEffectiveness.outcomesResolvedRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Resolved</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -154,41 +155,41 @@ export function ExclusionDisruptionManagementDashboardWidget() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Exclusions:</span> <span className="font-medium">{data.preventionEffectiveness.totalExclusions}</span></div>
             <div><span className="text-gray-500">Disruptions:</span> <span className="font-medium">{data.preventionEffectiveness.totalDisruptions}</span></div>
-            <div><span className="text-gray-500">Strategies Used:</span> <span className="font-medium">{data.preventionEffectiveness.preventionStrategiesUsedRate}%</span></div>
-            <div><span className="text-gray-500">Multi-Agency:</span> <span className="font-medium">{data.preventionEffectiveness.multiAgencyInvolvedRate}%</span></div>
-            <div><span className="text-gray-500">Resolved:</span> <span className="font-medium">{data.preventionEffectiveness.outcomesResolvedRate}%</span></div>
-            <div><span className="text-gray-500">Lessons:</span> <span className="font-medium">{data.preventionEffectiveness.lessonsIdentifiedRate}%</span></div>
+            <div><span className="text-gray-500">Strategies Used:</span> <span className="font-medium">{formatRate(data.preventionEffectiveness.preventionStrategiesUsedRate)}</span></div>
+            <div><span className="text-gray-500">Multi-Agency:</span> <span className="font-medium">{formatRate(data.preventionEffectiveness.multiAgencyInvolvedRate)}</span></div>
+            <div><span className="text-gray-500">Resolved:</span> <span className="font-medium">{formatRate(data.preventionEffectiveness.outcomesResolvedRate)}</span></div>
+            <div><span className="text-gray-500">Lessons:</span> <span className="font-medium">{formatRate(data.preventionEffectiveness.lessonsIdentifiedRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Education Continuity">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Exclusions:</span> <span className="font-medium">{data.educationContinuity.totalExclusions}</span></div>
-            <div><span className="text-gray-500">Alt Provision:</span> <span className="font-medium">{data.educationContinuity.alternativeProvisionRate}%</span></div>
-            <div><span className="text-gray-500">Continuity:</span> <span className="font-medium">{data.educationContinuity.educationContinuityRate}%</span></div>
-            <div><span className="text-gray-500">PEP Reviewed:</span> <span className="font-medium">{data.educationContinuity.pepReviewedRate}%</span></div>
-            <div><span className="text-gray-500">Reintegration:</span> <span className="font-medium">{data.educationContinuity.reintegrationSuccessRate}%</span></div>
+            <div><span className="text-gray-500">Alt Provision:</span> <span className="font-medium">{formatRate(data.educationContinuity.alternativeProvisionRate)}</span></div>
+            <div><span className="text-gray-500">Continuity:</span> <span className="font-medium">{formatRate(data.educationContinuity.educationContinuityRate)}</span></div>
+            <div><span className="text-gray-500">PEP Reviewed:</span> <span className="font-medium">{formatRate(data.educationContinuity.pepReviewedRate)}</span></div>
+            <div><span className="text-gray-500">Reintegration:</span> <span className="font-medium">{formatRate(data.educationContinuity.reintegrationSuccessRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Prevention Planning">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Plans:</span> <span className="font-medium">{data.preventionPlanning.totalPlans}</span></div>
-            <div><span className="text-gray-500">Triggers:</span> <span className="font-medium">{data.preventionPlanning.triggersIdentifiedRate}%</span></div>
-            <div><span className="text-gray-500">School Engaged:</span> <span className="font-medium">{data.preventionPlanning.schoolEngagedRate}%</span></div>
-            <div><span className="text-gray-500">Review Current:</span> <span className="font-medium">{data.preventionPlanning.reviewCurrentRate}%</span></div>
+            <div><span className="text-gray-500">Triggers:</span> <span className="font-medium">{formatRate(data.preventionPlanning.triggersIdentifiedRate)}</span></div>
+            <div><span className="text-gray-500">School Engaged:</span> <span className="font-medium">{formatRate(data.preventionPlanning.schoolEngagedRate)}</span></div>
+            <div><span className="text-gray-500">Review Current:</span> <span className="font-medium">{formatRate(data.preventionPlanning.reviewCurrentRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Staff Readiness">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Staff:</span> <span className="font-medium">{data.staffReadiness.totalStaff}</span></div>
-            <div><span className="text-gray-500">Exclusion Guidance:</span> <span className="font-medium">{data.staffReadiness.exclusionGuidanceRate}%</span></div>
-            <div><span className="text-gray-500">Education Advocacy:</span> <span className="font-medium">{data.staffReadiness.educationAdvocacyRate}%</span></div>
-            <div><span className="text-gray-500">Alt Provision:</span> <span className="font-medium">{data.staffReadiness.alternativeProvisionRate}%</span></div>
-            <div><span className="text-gray-500">Reintegration:</span> <span className="font-medium">{data.staffReadiness.reintegrationRate}%</span></div>
-            <div><span className="text-gray-500">Multi-Agency:</span> <span className="font-medium">{data.staffReadiness.multiAgencyRate}%</span></div>
-            <div><span className="text-gray-500">Trauma-Informed:</span> <span className="font-medium">{data.staffReadiness.traumaInformedRate}%</span></div>
+            <div><span className="text-gray-500">Exclusion Guidance:</span> <span className="font-medium">{formatRate(data.staffReadiness.exclusionGuidanceRate)}</span></div>
+            <div><span className="text-gray-500">Education Advocacy:</span> <span className="font-medium">{formatRate(data.staffReadiness.educationAdvocacyRate)}</span></div>
+            <div><span className="text-gray-500">Alt Provision:</span> <span className="font-medium">{formatRate(data.staffReadiness.alternativeProvisionRate)}</span></div>
+            <div><span className="text-gray-500">Reintegration:</span> <span className="font-medium">{formatRate(data.staffReadiness.reintegrationRate)}</span></div>
+            <div><span className="text-gray-500">Multi-Agency:</span> <span className="font-medium">{formatRate(data.staffReadiness.multiAgencyRate)}</span></div>
+            <div><span className="text-gray-500">Trauma-Informed:</span> <span className="font-medium">{formatRate(data.staffReadiness.traumaInformedRate)}</span></div>
           </div>
         </Section>
 

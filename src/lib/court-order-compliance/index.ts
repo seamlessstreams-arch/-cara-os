@@ -10,7 +10,6 @@ export {
   buildChildOrderProfiles,
   generateCourtOrderComplianceIntelligence,
   generateDemoData,
-  pct,
   getRating,
   getOrderTypeLabel,
   getComplianceStatusLabel,

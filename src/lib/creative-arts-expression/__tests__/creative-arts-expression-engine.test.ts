@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getArtFormLabel,
   getExpressionLevelLabel,
@@ -74,23 +73,6 @@ function makeTraining(overrides: Partial<StaffCreativeArtsTraining> = {}): Staff
 
 // ── pct ──────────────────────────────────────────────────────────────────────
 
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-  it("returns correct percentage", () => {
-    expect(pct(3, 4)).toBe(75);
-  });
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-  it("returns 100 for equal values", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-  it("returns 0 for 0 numerator", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-});
 
 // ── getRating ────────────────────────────────────────────────────────────────
 
@@ -150,10 +132,10 @@ describe("evaluateArtsQuality", () => {
     const r = evaluateArtsQuality([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalSessions).toBe(0);
-    expect(r.expressionRate).toBe(0);
-    expect(r.creativityRate).toBe(0);
-    expect(r.confidenceRate).toBe(0);
-    expect(r.therapeuticRate).toBe(0);
+    expect(r.expressionRate).toBeNull();
+    expect(r.creativityRate).toBeNull();
+    expect(r.confidenceRate).toBeNull();
+    expect(r.therapeuticRate).toBeNull();
   });
 
   it("scores max 25 with all perfect data", () => {
@@ -203,9 +185,9 @@ describe("evaluateArtsCompliance", () => {
   it("returns all zeros for empty array", () => {
     const r = evaluateArtsCompliance([]);
     expect(r.overallScore).toBe(0);
-    expect(r.documentedRate).toBe(0);
-    expect(r.staffFacilitatedRate).toBe(0);
-    expect(r.feedbackRate).toBe(0);
+    expect(r.documentedRate).toBeNull();
+    expect(r.staffFacilitatedRate).toBeNull();
+    expect(r.feedbackRate).toBeNull();
     expect(r.artFormDiversityRatio).toBe(0);
   });
 
@@ -302,7 +284,7 @@ describe("evaluateStaffCreativeArtsReadiness", () => {
     const r = evaluateStaffCreativeArtsReadiness([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalStaff).toBe(0);
-    expect(r.artsFacilitationRate).toBe(0);
+    expect(r.artsFacilitationRate).toBeNull();
   });
 
   it("scores 25 with all staff fully trained", () => {

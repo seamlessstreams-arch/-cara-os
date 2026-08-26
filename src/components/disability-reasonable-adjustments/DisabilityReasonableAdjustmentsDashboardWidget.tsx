@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { DisabilityReasonableAdjustmentsIntelligenceResult } from "@/lib/disability-reasonable-adjustments";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ApiResponse {
   data: DisabilityReasonableAdjustmentsIntelligenceResult & {
@@ -202,28 +203,28 @@ export default function DisabilityReasonableAdjustmentsDashboardWidget() {
               <span className="text-gray-500">In Place:</span>{" "}
               <span className="font-medium">
                 {data.adjustmentImplementation.inPlaceCount} (
-                {data.adjustmentImplementation.inPlaceRate}%)
+                {formatRate(data.adjustmentImplementation.inPlaceRate)})
               </span>
             </div>
             <div>
               <span className="text-gray-500">Reviews Current:</span>{" "}
               <span className="font-medium">
                 {data.adjustmentImplementation.reviewCurrentCount} (
-                {data.adjustmentImplementation.reviewCurrentRate}%)
+                {formatRate(data.adjustmentImplementation.reviewCurrentRate)})
               </span>
             </div>
             <div>
               <span className="text-gray-500">EHCP In Place:</span>{" "}
               <span className="font-medium">
                 {data.adjustmentImplementation.ehcpCount} (
-                {data.adjustmentImplementation.ehcpRate}%)
+                {formatRate(data.adjustmentImplementation.ehcpRate)})
               </span>
             </div>
             <div>
               <span className="text-gray-500">Professional Involved:</span>{" "}
               <span className="font-medium">
                 {data.adjustmentImplementation.professionalInvolvedCount} (
-                {data.adjustmentImplementation.professionalInvolvedRate}%)
+                {formatRate(data.adjustmentImplementation.professionalInvolvedRate)})
               </span>
             </div>
           </div>
@@ -241,31 +242,31 @@ export default function DisabilityReasonableAdjustmentsDashboardWidget() {
             <div>
               <span className="text-gray-500">Physical Access:</span>{" "}
               <span className="font-medium">
-                {data.accessibilityCompliance.physicalAccessRate}%
+                {formatRate(data.accessibilityCompliance.physicalAccessRate)}
               </span>
             </div>
             <div>
               <span className="text-gray-500">Sensory Adaptation:</span>{" "}
               <span className="font-medium">
-                {data.accessibilityCompliance.sensoryAdaptationRate}%
+                {formatRate(data.accessibilityCompliance.sensoryAdaptationRate)}
               </span>
             </div>
             <div>
               <span className="text-gray-500">Communication Aids:</span>{" "}
               <span className="font-medium">
-                {data.accessibilityCompliance.communicationAidsRate}%
+                {formatRate(data.accessibilityCompliance.communicationAidsRate)}
               </span>
             </div>
             <div>
               <span className="text-gray-500">Signage Accessible:</span>{" "}
               <span className="font-medium">
-                {data.accessibilityCompliance.signageAccessibleRate}%
+                {formatRate(data.accessibilityCompliance.signageAccessibleRate)}
               </span>
             </div>
             <div>
               <span className="text-gray-500">Overall Compliance:</span>{" "}
               <span className="font-medium">
-                {data.accessibilityCompliance.overallComplianceRate}%
+                {formatRate(data.accessibilityCompliance.overallComplianceRate)}
               </span>
             </div>
           </div>
@@ -284,14 +285,14 @@ export default function DisabilityReasonableAdjustmentsDashboardWidget() {
               <span className="text-gray-500">Good Condition:</span>{" "}
               <span className="font-medium">
                 {data.equipmentProvision.goodConditionCount} (
-                {data.equipmentProvision.goodConditionRate}%)
+                {formatRate(data.equipmentProvision.goodConditionRate)})
               </span>
             </div>
             <div>
               <span className="text-gray-500">Maintenance Current:</span>{" "}
               <span className="font-medium">
                 {data.equipmentProvision.maintenanceCurrentCount} (
-                {data.equipmentProvision.maintenanceCurrentRate}%)
+                {formatRate(data.equipmentProvision.maintenanceCurrentRate)})
               </span>
             </div>
             <div>
@@ -317,37 +318,37 @@ export default function DisabilityReasonableAdjustmentsDashboardWidget() {
             <div>
               <span className="text-gray-500">Disability Awareness:</span>{" "}
               <span className="font-medium">
-                {data.staffDisabilityReadiness.awarenessRate}%
+                {formatRate(data.staffDisabilityReadiness.awarenessRate)}
               </span>
             </div>
             <div>
               <span className="text-gray-500">Adjustments Trained:</span>{" "}
               <span className="font-medium">
-                {data.staffDisabilityReadiness.adjustmentsTrainingRate}%
+                {formatRate(data.staffDisabilityReadiness.adjustmentsTrainingRate)}
               </span>
             </div>
             <div>
               <span className="text-gray-500">EHCP Understanding:</span>{" "}
               <span className="font-medium">
-                {data.staffDisabilityReadiness.ehcpUnderstandingRate}%
+                {formatRate(data.staffDisabilityReadiness.ehcpUnderstandingRate)}
               </span>
             </div>
             <div>
               <span className="text-gray-500">Communication:</span>{" "}
               <span className="font-medium">
-                {data.staffDisabilityReadiness.communicationStrategiesRate}%
+                {formatRate(data.staffDisabilityReadiness.communicationStrategiesRate)}
               </span>
             </div>
             <div>
               <span className="text-gray-500">Personal Care:</span>{" "}
               <span className="font-medium">
-                {data.staffDisabilityReadiness.personalCareRate}%
+                {formatRate(data.staffDisabilityReadiness.personalCareRate)}
               </span>
             </div>
             <div>
               <span className="text-gray-500">Emergency Evacuation:</span>{" "}
               <span className="font-medium">
-                {data.staffDisabilityReadiness.emergencyEvacuationRate}%
+                {formatRate(data.staffDisabilityReadiness.emergencyEvacuationRate)}
               </span>
             </div>
           </div>

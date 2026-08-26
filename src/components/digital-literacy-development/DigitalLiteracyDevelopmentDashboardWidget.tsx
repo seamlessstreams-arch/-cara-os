@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildDigitalProfile { childId: string; childName: string; totalSessions: number; competencyRate: number; onlineSafetyRate: number; overallScore: number; }
 
@@ -85,19 +86,19 @@ export default function DigitalLiteracyDevelopmentDashboardWidget() {
       <Section title="Digital Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Sessions" value={data.digitalQuality.totalSessions} />
-          <Stat label="Competency" value={`${data.digitalQuality.competencyRate}%`} />
-          <Stat label="Online Safety" value={`${data.digitalQuality.onlineSafetyRate}%`} />
-          <Stat label="Age Appropriate" value={`${data.digitalQuality.ageAppropriateRate}%`} />
-          <Stat label="Supervised Access" value={`${data.digitalQuality.supervisedAccessRate}%`} />
+          <Stat label="Competency" value={`${formatRate(data.digitalQuality.competencyRate)}`} />
+          <Stat label="Online Safety" value={`${formatRate(data.digitalQuality.onlineSafetyRate)}`} />
+          <Stat label="Age Appropriate" value={`${formatRate(data.digitalQuality.ageAppropriateRate)}`} />
+          <Stat label="Supervised Access" value={`${formatRate(data.digitalQuality.supervisedAccessRate)}`} />
         </div>
       </Section>
 
       <Section title="Digital Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documented" value={`${data.digitalCompliance.documentedRate}%`} />
-          <Stat label="Staff Supported" value={`${data.digitalCompliance.staffSupportedRate}%`} />
-          <Stat label="Progress Recorded" value={`${data.digitalCompliance.progressRecordedRate}%`} />
-          <Stat label="Session Diversity" value={`${data.digitalCompliance.sessionTypeDiversityRatio}%`} />
+          <Stat label="Documented" value={`${formatRate(data.digitalCompliance.documentedRate)}`} />
+          <Stat label="Staff Supported" value={`${formatRate(data.digitalCompliance.staffSupportedRate)}`} />
+          <Stat label="Progress Recorded" value={`${formatRate(data.digitalCompliance.progressRecordedRate)}`} />
+          <Stat label="Session Diversity" value={`${formatRate(data.digitalCompliance.sessionTypeDiversityRatio)}`} />
         </div>
       </Section>
 
@@ -120,12 +121,12 @@ export default function DigitalLiteracyDevelopmentDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffDigitalReadiness.totalStaff} />
-          <Stat label="Online Safety" value={`${data.staffDigitalReadiness.onlineSafetyRate}%`} />
-          <Stat label="Digital Literacy" value={`${data.staffDigitalReadiness.digitalLiteracyRate}%`} />
-          <Stat label="Social Media" value={`${data.staffDigitalReadiness.socialMediaAwarenessRate}%`} />
-          <Stat label="Cyberbullying" value={`${data.staffDigitalReadiness.cyberbullyingResponseRate}%`} />
-          <Stat label="Privacy" value={`${data.staffDigitalReadiness.privacyProtectionRate}%`} />
-          <Stat label="Monitoring" value={`${data.staffDigitalReadiness.monitoringSkillsRate}%`} />
+          <Stat label="Online Safety" value={`${formatRate(data.staffDigitalReadiness.onlineSafetyRate)}`} />
+          <Stat label="Digital Literacy" value={`${formatRate(data.staffDigitalReadiness.digitalLiteracyRate)}`} />
+          <Stat label="Social Media" value={`${formatRate(data.staffDigitalReadiness.socialMediaAwarenessRate)}`} />
+          <Stat label="Cyberbullying" value={`${formatRate(data.staffDigitalReadiness.cyberbullyingResponseRate)}`} />
+          <Stat label="Privacy" value={`${formatRate(data.staffDigitalReadiness.privacyProtectionRate)}`} />
+          <Stat label="Monitoring" value={`${formatRate(data.staffDigitalReadiness.monitoringSkillsRate)}`} />
         </div>
       </Section>
 

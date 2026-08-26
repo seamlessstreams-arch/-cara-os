@@ -12,6 +12,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useEffect } from "react";
+import { formatRate, meets } from "@/lib/metrics/rate";
 
 interface ChildProfile {
   childId: string;
@@ -185,20 +186,20 @@ export default function EducationDashboardWidget() {
       {/* Key Metrics */}
       <div className="grid grid-cols-4 divide-x divide-gray-100 border-b border-gray-100">
         <div className="p-3 text-center">
-          <p className="text-lg font-bold text-gray-900">{data.educationQuality.attainmentRate}%</p>
+          <p className="text-lg font-bold text-gray-900">{formatRate(data.educationQuality.attainmentRate)}</p>
           <p className="text-[10px] text-gray-500">Attainment</p>
         </div>
         <div className="p-3 text-center">
-          <p className="text-lg font-bold text-gray-900">{data.educationQuality.attendanceRate}%</p>
+          <p className="text-lg font-bold text-gray-900">{formatRate(data.educationQuality.attendanceRate)}</p>
           <p className="text-[10px] text-gray-500">Attendance</p>
         </div>
         <div className="p-3 text-center">
-          <p className="text-lg font-bold text-gray-900">{data.educationCompliance.pepRate}%</p>
+          <p className="text-lg font-bold text-gray-900">{formatRate(data.educationCompliance.pepRate)}</p>
           <p className="text-[10px] text-gray-500">PEP Rate</p>
         </div>
         <div className="p-3 text-center">
-          <p className={`text-lg font-bold ${data.educationQuality.noExclusionRate < 80 ? "text-amber-600" : "text-gray-900"}`}>
-            {data.educationQuality.noExclusionRate}%
+          <p className={`text-lg font-bold ${data.educationQuality.noExclusionRate !== null && data.educationQuality.noExclusionRate < 80 ? "text-amber-600" : "text-gray-900"}`}>
+            {formatRate(data.educationQuality.noExclusionRate)}
           </p>
           <p className="text-[10px] text-gray-500">No Exclusion</p>
         </div>
@@ -228,8 +229,8 @@ export default function EducationDashboardWidget() {
                     </span>
                   )}
                   <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                    child.educationScore >= 8 ? "bg-emerald-100 text-emerald-700" :
-                    child.educationScore >= 5 ? "bg-blue-100 text-blue-700" :
+                    meets(child.educationScore, 8) ? "bg-emerald-100 text-emerald-700" :
+                    meets(child.educationScore, 5) ? "bg-blue-100 text-blue-700" :
                     "bg-amber-100 text-amber-700"
                   }`}>
                     {child.educationScore}/10

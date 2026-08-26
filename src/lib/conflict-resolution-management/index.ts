@@ -5,7 +5,6 @@ export {
   evaluateConflictPolicy,
   evaluateStaffConflictReadiness,
   buildChildConflictProfiles,
-  pct,
   getRating,
   getConflictTypeLabel,
   getResolutionOutcomeLabel,

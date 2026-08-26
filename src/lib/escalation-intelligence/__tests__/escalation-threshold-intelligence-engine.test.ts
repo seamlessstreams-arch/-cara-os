@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getEscalationThresholdCategoryLabel,
   getEscalationThresholdOutcomeLabel,
@@ -50,11 +49,6 @@ const ALL_CATEGORIES: EscalationThresholdRecord["category"][] = [
 
 /* ── pct() ───────────────────────────────────────────────────── */
 
-describe("pct()", () => {
-  it("returns 0 when denominator is 0", () => { expect(pct(0, 0)).toBe(0); expect(pct(5, 0)).toBe(0); });
-  it("calculates percentage correctly", () => { expect(pct(1, 2)).toBe(50); expect(pct(3, 4)).toBe(75); expect(pct(10, 10)).toBe(100); });
-  it("rounds to nearest integer", () => { expect(pct(1, 3)).toBe(33); expect(pct(2, 3)).toBe(67); });
-});
 
 /* ── getRating() ─────────────────────────────────────────────── */
 
@@ -86,7 +80,7 @@ describe("evaluateEscalationThresholdQuality()", () => {
   it("returns 0 for empty records", () => {
     const r = evaluateEscalationThresholdQuality([]);
     expect(r.overallScore).toBe(0); expect(r.totalRecords).toBe(0);
-    expect(r.thresholdCorrectlyIdentifiedRate).toBe(0); expect(r.escalationTimelyCompletedRate).toBe(0);
+    expect(r.thresholdCorrectlyIdentifiedRate).toBeNull(); expect(r.escalationTimelyCompletedRate).toBeNull();
   });
   it("returns 25 for all-true records", () => {
     const r = evaluateEscalationThresholdQuality([makeRecord(), makeRecord({ id: "et-002" })]);

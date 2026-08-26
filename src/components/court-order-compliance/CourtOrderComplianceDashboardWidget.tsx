@@ -12,6 +12,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useEffect } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 // ── Local interfaces (mirrors API shape) ──────────────────────────────────
 
@@ -386,7 +387,7 @@ export function CourtOrderComplianceDashboardWidget() {
                 <ComplianceGauge label="All Met" value={data.reviewTimeliness.allMetRate} />
                 <ComplianceGauge label="Coverage" value={data.reviewTimeliness.coverageRate} />
                 <div className={`rounded-lg p-2.5 text-center ${data.reviewTimeliness.concernsRate <= 20 ? "text-green-700 bg-green-100" : "text-red-700 bg-red-100"}`}>
-                  <div className="text-xl font-bold">{data.reviewTimeliness.concernsRate}%</div>
+                  <div className="text-xl font-bold">{formatRate(data.reviewTimeliness.concernsRate)}</div>
                   <div className="text-[10px] font-medium mt-0.5">Concerns Rate</div>
                 </div>
               </div>

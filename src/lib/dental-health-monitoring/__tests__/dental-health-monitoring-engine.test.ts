@@ -6,7 +6,6 @@ import {
   evaluateTreatmentCompliance,
   evaluateStaffDentalReadiness,
   buildChildDentalSummaries,
-  pct,
   getRating,
   getAppointmentTypeLabel,
   getAppointmentOutcomeLabel,
@@ -88,29 +87,6 @@ function mkStaffTraining(overrides: Partial<StaffDentalTraining> = {}): StaffDen
 
 // ── pct ──────────────────────────────────────────────────────────────────
 
-describe("pct", () => {
-  it("returns 0 for 0/0", () => {
-    expect(pct(0, 0)).toBe(0);
-  });
-  it("calculates correctly", () => {
-    expect(pct(3, 4)).toBe(75);
-  });
-  it("rounds", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-  it("returns 100 for full", () => {
-    expect(pct(5, 5)).toBe(100);
-  });
-  it("handles 0 numerator with non-zero denominator", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-  it("handles 1/1", () => {
-    expect(pct(1, 1)).toBe(100);
-  });
-  it("rounds 2/3 to 67", () => {
-    expect(pct(2, 3)).toBe(67);
-  });
-});
 
 // ── getRating ────────────────────────────────────────────────────────────
 
@@ -197,9 +173,9 @@ describe("evaluateAppointmentCompliance", () => {
     const result = evaluateAppointmentCompliance([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalAppointments).toBe(0);
-    expect(result.attendanceRate).toBe(0);
-    expect(result.nextAppointmentBookedRate).toBe(0);
-    expect(result.consentRate).toBe(0);
+    expect(result.attendanceRate).toBeNull();
+    expect(result.nextAppointmentBookedRate).toBeNull();
+    expect(result.consentRate).toBeNull();
     expect(result.routineCount).toBe(0);
     expect(result.emergencyCount).toBe(0);
     expect(result.routineToEmergencyRatio).toBe("0:0");
@@ -294,10 +270,10 @@ describe("evaluateOralHygieneSupport", () => {
     const result = evaluateOralHygieneSupport([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalRecords).toBe(0);
-    expect(result.excellentGoodRate).toBe(0);
-    expect(result.twiceDailyBrushingRate).toBe(0);
-    expect(result.dietaryAdviceRate).toBe(0);
-    expect(result.mouthwashUsageRate).toBe(0);
+    expect(result.excellentGoodRate).toBeNull();
+    expect(result.twiceDailyBrushingRate).toBeNull();
+    expect(result.dietaryAdviceRate).toBeNull();
+    expect(result.mouthwashUsageRate).toBeNull();
   });
 
   it("scores 25 for perfect hygiene records", () => {
@@ -392,10 +368,10 @@ describe("evaluateTreatmentCompliance", () => {
     const result = evaluateTreatmentCompliance([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalPlans).toBe(0);
-    expect(result.completionRate).toBe(0);
-    expect(result.parentConsentRate).toBe(0);
-    expect(result.socialWorkerNotifiedRate).toBe(0);
-    expect(result.activeTreatmentProgressRate).toBe(0);
+    expect(result.completionRate).toBeNull();
+    expect(result.parentConsentRate).toBeNull();
+    expect(result.socialWorkerNotifiedRate).toBeNull();
+    expect(result.activeTreatmentProgressRate).toBeNull();
   });
 
   it("scores 25 for fully completed plans", () => {
@@ -507,11 +483,11 @@ describe("evaluateStaffDentalReadiness", () => {
     const result = evaluateStaffDentalReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.dentalHealthAwarenessRate).toBe(0);
-    expect(result.oralHygieneSupportRate).toBe(0);
-    expect(result.appointmentManagementRate).toBe(0);
-    expect(result.consentProcessTrainedRate).toBe(0);
-    expect(result.emergencyDentalKnowledgeRate).toBe(0);
+    expect(result.dentalHealthAwarenessRate).toBeNull();
+    expect(result.oralHygieneSupportRate).toBeNull();
+    expect(result.appointmentManagementRate).toBeNull();
+    expect(result.consentProcessTrainedRate).toBeNull();
+    expect(result.emergencyDentalKnowledgeRate).toBeNull();
   });
 
   it("scores 25 for fully trained staff", () => {

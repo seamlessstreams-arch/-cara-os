@@ -5,7 +5,6 @@
 import { describe, it, expect } from "vitest";
 import {
   ALL_CATEGORIES,
-  pct,
   getRating,
   getDailyLogCategoryLabel,
   getDailyLogOutcomeLabel,
@@ -76,28 +75,6 @@ function makeTraining(overrides: Partial<StaffDailyLogTraining> = {}): StaffDail
 // pct helper
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when both are 0", () => {
-    expect(pct(0, 0)).toBe(0);
-  });
-
-  it("returns 100 when num equals den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-});
 
 // ══════════════════════════════════════════════════════════════════════════════
 // getRating
@@ -170,10 +147,10 @@ describe("evaluateDailyLogQuality", () => {
   it("returns zeros and inadequate for empty records", () => {
     const result = evaluateDailyLogQuality([]);
     expect(result.totalRecords).toBe(0);
-    expect(result.detailedObservationRate).toBe(0);
-    expect(result.childMoodRate).toBe(0);
-    expect(result.keyworkerInformedRate).toBe(0);
-    expect(result.actionFollowedUpRate).toBe(0);
+    expect(result.detailedObservationRate).toBeNull();
+    expect(result.childMoodRate).toBeNull();
+    expect(result.keyworkerInformedRate).toBeNull();
+    expect(result.actionFollowedUpRate).toBeNull();
     expect(result.score).toBe(0);
     expect(result.concerns).toHaveLength(1);
   });
@@ -279,9 +256,9 @@ describe("evaluateDailyLogCompliance", () => {
   it("returns zeros for empty records", () => {
     const result = evaluateDailyLogCompliance([]);
     expect(result.totalRecords).toBe(0);
-    expect(result.documentationRate).toBe(0);
-    expect(result.timelyRecordingRate).toBe(0);
-    expect(result.keyworkerInformedRate).toBe(0);
+    expect(result.documentationRate).toBeNull();
+    expect(result.timelyRecordingRate).toBeNull();
+    expect(result.keyworkerInformedRate).toBeNull();
     expect(result.categoryDiversityRatio).toBe(0);
     expect(result.uniqueCategories).toBe(0);
     expect(result.score).toBe(0);
@@ -476,12 +453,12 @@ describe("evaluateStaffDailyLogReadiness", () => {
   it("returns zeros for empty staff", () => {
     const result = evaluateStaffDailyLogReadiness([]);
     expect(result.totalStaff).toBe(0);
-    expect(result.observationSkillsRate).toBe(0);
-    expect(result.recordKeepingRate).toBe(0);
-    expect(result.childCommunicationRate).toBe(0);
-    expect(result.safeguardingAwarenessRate).toBe(0);
-    expect(result.handoverPracticeRate).toBe(0);
-    expect(result.reflectiveWritingRate).toBe(0);
+    expect(result.observationSkillsRate).toBeNull();
+    expect(result.recordKeepingRate).toBeNull();
+    expect(result.childCommunicationRate).toBeNull();
+    expect(result.safeguardingAwarenessRate).toBeNull();
+    expect(result.handoverPracticeRate).toBeNull();
+    expect(result.reflectiveWritingRate).toBeNull();
     expect(result.score).toBe(0);
     expect(result.concerns).toHaveLength(1);
     expect(result.concerns[0]).toContain("URGENT");

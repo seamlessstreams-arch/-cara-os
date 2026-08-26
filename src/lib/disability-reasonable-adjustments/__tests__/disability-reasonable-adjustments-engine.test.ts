@@ -5,7 +5,6 @@
 
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getDisabilityTypeLabel,
   getAdjustmentStatusLabel,
@@ -102,32 +101,6 @@ function makeTraining(overrides: Partial<StaffDisabilityTraining> = {}): StaffDi
 // pct() helper
 // ==============================================================================
 
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-
-  it("returns 100 when num equals den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for 1/2", () => {
-    expect(pct(1, 2)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-
-  it("handles large numbers", () => {
-    expect(pct(999, 1000)).toBe(100);
-  });
-});
 
 // ==============================================================================
 // getRating() helper
@@ -276,10 +249,10 @@ describe("evaluateAdjustmentImplementation", () => {
     const result = evaluateAdjustmentImplementation([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalAdjustments).toBe(0);
-    expect(result.inPlaceRate).toBe(0);
-    expect(result.reviewCurrentRate).toBe(0);
-    expect(result.ehcpRate).toBe(0);
-    expect(result.professionalInvolvedRate).toBe(0);
+    expect(result.inPlaceRate).toBeNull();
+    expect(result.reviewCurrentRate).toBeNull();
+    expect(result.ehcpRate).toBeNull();
+    expect(result.professionalInvolvedRate).toBeNull();
   });
 
   it("returns score 25 for perfect data", () => {
@@ -368,10 +341,10 @@ describe("evaluateAccessibilityCompliance", () => {
     const result = evaluateAccessibilityCompliance([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalAudits).toBe(0);
-    expect(result.physicalAccessRate).toBe(0);
-    expect(result.sensoryAdaptationRate).toBe(0);
-    expect(result.communicationAidsRate).toBe(0);
-    expect(result.overallComplianceRate).toBe(0);
+    expect(result.physicalAccessRate).toBeNull();
+    expect(result.sensoryAdaptationRate).toBeNull();
+    expect(result.communicationAidsRate).toBeNull();
+    expect(result.overallComplianceRate).toBeNull();
   });
 
   it("returns score 25 for perfect data", () => {
@@ -448,8 +421,8 @@ describe("evaluateEquipmentProvision", () => {
     const result = evaluateEquipmentProvision([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalEquipment).toBe(0);
-    expect(result.goodConditionRate).toBe(0);
-    expect(result.maintenanceCurrentRate).toBe(0);
+    expect(result.goodConditionRate).toBeNull();
+    expect(result.maintenanceCurrentRate).toBeNull();
     expect(result.replacementBacklog).toBe(0);
   });
 
@@ -534,12 +507,12 @@ describe("evaluateStaffDisabilityReadiness", () => {
     const result = evaluateStaffDisabilityReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.awarenessRate).toBe(0);
-    expect(result.adjustmentsTrainingRate).toBe(0);
-    expect(result.ehcpUnderstandingRate).toBe(0);
-    expect(result.communicationStrategiesRate).toBe(0);
-    expect(result.personalCareRate).toBe(0);
-    expect(result.emergencyEvacuationRate).toBe(0);
+    expect(result.awarenessRate).toBeNull();
+    expect(result.adjustmentsTrainingRate).toBeNull();
+    expect(result.ehcpUnderstandingRate).toBeNull();
+    expect(result.communicationStrategiesRate).toBeNull();
+    expect(result.personalCareRate).toBeNull();
+    expect(result.emergencyEvacuationRate).toBeNull();
   });
 
   it("returns score 25 for perfect data", () => {
@@ -1137,9 +1110,6 @@ describe("generateDisabilityReasonableAdjustmentsIntelligence", () => {
 // ==============================================================================
 
 describe("edge cases", () => {
-  it("pct handles 0/0 gracefully", () => {
-    expect(pct(0, 0)).toBe(0);
-  });
 
   it("getRating at boundary 0", () => {
     expect(getRating(0)).toBe("inadequate");

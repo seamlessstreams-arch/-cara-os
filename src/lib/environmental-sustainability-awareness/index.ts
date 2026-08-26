@@ -5,7 +5,6 @@ export {
   evaluateEnvironmentalPolicy,
   evaluateStaffEnvironmentalReadiness,
   buildChildEnvironmentalProfiles,
-  pct,
   getRating,
   getActivityTypeLabel,
   getEngagementLevelLabel,

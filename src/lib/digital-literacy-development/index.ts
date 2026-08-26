@@ -5,7 +5,6 @@ export {
   evaluateDigitalPolicy,
   evaluateStaffDigitalReadiness,
   buildChildDigitalProfiles,
-  pct,
   getRating,
   getSessionTypeLabel,
   getCompetencyLevelLabel,

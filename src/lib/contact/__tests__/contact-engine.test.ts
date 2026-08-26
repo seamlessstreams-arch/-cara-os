@@ -4,7 +4,6 @@
 
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getCategoryLabel,
   getOutcomeLabel,
@@ -75,28 +74,6 @@ function makeTraining(overrides: Partial<StaffContactTraining> = {}): StaffConta
 // pct helper
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when both are 0", () => {
-    expect(pct(0, 0)).toBe(0);
-  });
-
-  it("returns 100 when num equals den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-});
 
 // ══════════════════════════════════════════════════════════════════════════════
 // getRating
@@ -211,10 +188,10 @@ describe("evaluateContactQuality", () => {
   it("returns all zeros for empty records", () => {
     const result = evaluateContactQuality([]);
     expect(result.totalRecords).toBe(0);
-    expect(result.childPreparedRate).toBe(0);
-    expect(result.contactPlanFollowedRate).toBe(0);
-    expect(result.childViewCapturedRate).toBe(0);
-    expect(result.safetyMeasuresRate).toBe(0);
+    expect(result.childPreparedRate).toBeNull();
+    expect(result.contactPlanFollowedRate).toBeNull();
+    expect(result.childViewCapturedRate).toBeNull();
+    expect(result.safetyMeasuresRate).toBeNull();
     expect(result.score).toBe(0);
   });
 
@@ -323,10 +300,10 @@ describe("evaluateContactCompliance", () => {
   it("returns all zeros for empty records", () => {
     const result = evaluateContactCompliance([]);
     expect(result.totalRecords).toBe(0);
-    expect(result.documentationCompleteRate).toBe(0);
-    expect(result.timelyRecordingRate).toBe(0);
-    expect(result.completedOutcomeRate).toBe(0);
-    expect(result.categoryDiversityRate).toBe(0);
+    expect(result.documentationCompleteRate).toBeNull();
+    expect(result.timelyRecordingRate).toBeNull();
+    expect(result.completedOutcomeRate).toBeNull();
+    expect(result.categoryDiversityRate).toBeNull();
     expect(result.uniqueCategories).toBe(0);
     expect(result.score).toBe(0);
   });
@@ -516,12 +493,12 @@ describe("evaluateStaffContactReadiness", () => {
   it("returns all zeros for empty training", () => {
     const result = evaluateStaffContactReadiness([]);
     expect(result.totalStaff).toBe(0);
-    expect(result.contactSupervisionRate).toBe(0);
-    expect(result.safeguardingAwarenessRate).toBe(0);
-    expect(result.childCommunicationRate).toBe(0);
-    expect(result.familyMediationRate).toBe(0);
-    expect(result.riskManagementRate).toBe(0);
-    expect(result.recordKeepingRate).toBe(0);
+    expect(result.contactSupervisionRate).toBeNull();
+    expect(result.safeguardingAwarenessRate).toBeNull();
+    expect(result.childCommunicationRate).toBeNull();
+    expect(result.familyMediationRate).toBeNull();
+    expect(result.riskManagementRate).toBeNull();
+    expect(result.recordKeepingRate).toBeNull();
     expect(result.score).toBe(0);
     expect(result.concerns.length).toBeGreaterThan(0);
     expect(result.concerns[0]).toContain("URGENT");

@@ -5,7 +5,6 @@ export {
   evaluatePreventionPlanning,
   evaluateStaffReadiness,
   buildChildExclusionProfiles,
-  pct,
   getRating,
   getExclusionTypeLabel,
   getDisruptionTypeLabel,

@@ -14,7 +14,6 @@ import {
   buildChildOrderProfiles,
   generateCourtOrderComplianceIntelligence,
   generateDemoData,
-  pct,
   getRating,
   getOrderTypeLabel,
   getComplianceStatusLabel,
@@ -109,28 +108,6 @@ const { orders: OAK_ORDERS, reviews: OAK_REVIEWS, meetings: OAK_MEETINGS, traini
 // 1. pct() helper
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("pct()", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-
-  it("returns 100 when numerator equals denominator", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-});
 
 // ══════════════════════════════════════════════════════════════════════════════
 // 2. getRating()
@@ -312,14 +289,14 @@ describe("evaluateOrderCompliance()", () => {
     const orders = [makeOrder({ conditions: [] })];
     const result = evaluateOrderCompliance(orders);
     expect(result.totalConditions).toBe(0);
-    expect(result.fullyCompliantRate).toBe(0);
+    expect(result.fullyCompliantRate).toBeNull();
   });
 
   it("handles inactive orders correctly", () => {
     const orders = [makeOrder({ isActive: false, lastReviewDate: "" })];
     const result = evaluateOrderCompliance(orders);
     expect(result.activeOrders).toBe(0);
-    expect(result.activeOrdersReviewedRate).toBe(0);
+    expect(result.activeOrdersReviewedRate).toBeNull();
   });
 });
 

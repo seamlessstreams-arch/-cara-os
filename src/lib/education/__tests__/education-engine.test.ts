@@ -4,7 +4,6 @@
 
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getPlacementLabel,
   getAttainmentLabel,
@@ -75,27 +74,6 @@ function makeTraining(overrides: Partial<StaffEducationTraining> = {}): StaffEdu
 // pct helper
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when both are 0", () => {
-    expect(pct(0, 0)).toBe(0);
-  });
-
-  it("calculates percentage correctly", () => {
-    expect(pct(3, 4)).toBe(75);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-
-  it("returns 100 for equal numerator and denominator", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-});
 
 // ══════════════════════════════════════════════════════════════════════════════
 // getRating
@@ -160,10 +138,10 @@ describe("evaluateEducationQuality", () => {
   it("returns all zeros for empty records", () => {
     const result = evaluateEducationQuality([]);
     expect(result.totalRecords).toBe(0);
-    expect(result.attainmentRate).toBe(0);
-    expect(result.attendanceRate).toBe(0);
-    expect(result.noExclusionRate).toBe(0);
-    expect(result.designatedTeacherRate).toBe(0);
+    expect(result.attainmentRate).toBeNull();
+    expect(result.attendanceRate).toBeNull();
+    expect(result.noExclusionRate).toBeNull();
+    expect(result.designatedTeacherRate).toBeNull();
     expect(result.score).toBe(0);
   });
 
@@ -260,9 +238,9 @@ describe("evaluateEducationCompliance", () => {
   it("returns all zeros for empty records", () => {
     const result = evaluateEducationCompliance([]);
     expect(result.totalRecords).toBe(0);
-    expect(result.pepRate).toBe(0);
-    expect(result.pupilPremiumRate).toBe(0);
-    expect(result.virtualSchoolRate).toBe(0);
+    expect(result.pepRate).toBeNull();
+    expect(result.pupilPremiumRate).toBeNull();
+    expect(result.virtualSchoolRate).toBeNull();
     expect(result.placementDiversityRatio).toBe(0);
     expect(result.score).toBe(0);
   });

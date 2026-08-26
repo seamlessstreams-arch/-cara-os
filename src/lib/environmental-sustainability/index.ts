@@ -9,7 +9,6 @@ export {
   evaluateStaffSustainabilityReadiness,
   buildChildSustainabilityProfiles,
   generateEnvironmentalSustainabilityIntelligence,
-  pct,
   getRating,
   getActivityTypeLabel,
   getEngagementLevelLabel,

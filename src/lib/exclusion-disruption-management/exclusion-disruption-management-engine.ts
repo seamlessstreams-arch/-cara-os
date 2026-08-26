@@ -1,3 +1,4 @@
+import { below, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // EXCLUSION & DISRUPTION MANAGEMENT INTELLIGENCE ENGINE
 //
@@ -117,39 +118,57 @@ export interface PreventionEffectivenessResult {
   overallScore: number;
   totalDisruptions: number;
   totalExclusions: number;
-  preventionStrategiesUsedRate: number;
-  multiAgencyInvolvedRate: number;
-  outcomesResolvedRate: number;
-  lessonsIdentifiedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  preventionStrategiesUsedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  multiAgencyInvolvedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  outcomesResolvedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  lessonsIdentifiedRate: number | null;
 }
 
 export interface EducationContinuityResult {
   overallScore: number;
   totalExclusions: number;
-  alternativeProvisionRate: number;
-  educationContinuityRate: number;
-  pepReviewedRate: number;
-  reintegrationSuccessRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  alternativeProvisionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  educationContinuityRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  pepReviewedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reintegrationSuccessRate: number | null;
 }
 
 export interface PreventionPlanningResult {
   overallScore: number;
   totalPlans: number;
-  plansExistRate: number;
-  triggersIdentifiedRate: number;
-  schoolEngagedRate: number;
-  reviewCurrentRate: number;
+  /** null when no plans exist to measure. */
+  plansExistRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  triggersIdentifiedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  schoolEngagedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reviewCurrentRate: number | null;
 }
 
 export interface StaffReadinessResult {
   overallScore: number;
   totalStaff: number;
-  exclusionGuidanceRate: number;
-  educationAdvocacyRate: number;
-  alternativeProvisionRate: number;
-  reintegrationRate: number;
-  multiAgencyRate: number;
-  traumaInformedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  exclusionGuidanceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  educationAdvocacyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  alternativeProvisionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reintegrationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  multiAgencyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  traumaInformedRate: number | null;
 }
 
 export interface ChildExclusionProfile {
@@ -181,11 +200,6 @@ export interface ExclusionDisruptionManagementIntelligence {
 }
 
 // -- Helpers ------------------------------------------------------------------
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -258,10 +272,10 @@ export function evaluatePreventionEffectiveness(
       overallScore: 25,
       totalDisruptions: 0,
       totalExclusions: 0,
-      preventionStrategiesUsedRate: 0,
-      multiAgencyInvolvedRate: 0,
-      outcomesResolvedRate: 0,
-      lessonsIdentifiedRate: 0,
+      preventionStrategiesUsedRate: null,
+      multiAgencyInvolvedRate: null,
+      outcomesResolvedRate: null,
+      lessonsIdentifiedRate: null,
     };
   }
 
@@ -273,17 +287,17 @@ export function evaluatePreventionEffectiveness(
   const resolved = disruptions.filter((d) => d.outcomeResolved).length;
   const lessons = disruptions.filter((d) => d.lessonsIdentified).length;
 
-  const preventionStrategiesUsedRate = pct(strategiesUsed, totalDisruptions);
-  const multiAgencyInvolvedRate = pct(multiAgency, totalDisruptions);
-  const outcomesResolvedRate = pct(resolved, totalDisruptions);
-  const lessonsIdentifiedRate = pct(lessons, totalDisruptions);
+  const preventionStrategiesUsedRate = rate(strategiesUsed, totalDisruptions);
+  const multiAgencyInvolvedRate = rate(multiAgency, totalDisruptions);
+  const outcomesResolvedRate = rate(resolved, totalDisruptions);
+  const lessonsIdentifiedRate = rate(lessons, totalDisruptions);
 
   // Scoring: strategies used (0-7), multi-agency (0-6), outcomes resolved (0-6), lessons (0-6)
   let score = 0;
-  score += Math.round((preventionStrategiesUsedRate / 100) * 7);
-  score += Math.round((multiAgencyInvolvedRate / 100) * 6);
-  score += Math.round((outcomesResolvedRate / 100) * 6);
-  score += Math.round((lessonsIdentifiedRate / 100) * 6);
+  score += Math.round(((preventionStrategiesUsedRate ?? 0) / 100) * 7);
+  score += Math.round(((multiAgencyInvolvedRate ?? 0) / 100) * 6);
+  score += Math.round(((outcomesResolvedRate ?? 0) / 100) * 6);
+  score += Math.round(((lessonsIdentifiedRate ?? 0) / 100) * 6);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -307,10 +321,10 @@ export function evaluateEducationContinuity(
     return {
       overallScore: 25,
       totalExclusions: 0,
-      alternativeProvisionRate: 0,
-      educationContinuityRate: 0,
-      pepReviewedRate: 0,
-      reintegrationSuccessRate: 0,
+      alternativeProvisionRate: null,
+      educationContinuityRate: null,
+      pepReviewedRate: null,
+      reintegrationSuccessRate: null,
     };
   }
 
@@ -320,17 +334,17 @@ export function evaluateEducationContinuity(
   const reintegrationApplicable = exclusions.filter((e) => e.reintegrationStatus !== "not_applicable");
   const reintegrationSuccess = reintegrationApplicable.filter((e) => e.reintegrationStatus === "successful").length;
 
-  const alternativeProvisionRate = pct(altProvision, exclusions.length);
-  const educationContinuityRate = pct(continuity, exclusions.length);
-  const pepReviewedRate = pct(pepReviewed, exclusions.length);
-  const reintegrationSuccessRate = pct(reintegrationSuccess, reintegrationApplicable.length);
+  const alternativeProvisionRate = rate(altProvision, exclusions.length);
+  const educationContinuityRate = rate(continuity, exclusions.length);
+  const pepReviewedRate = rate(pepReviewed, exclusions.length);
+  const reintegrationSuccessRate = rate(reintegrationSuccess, reintegrationApplicable.length);
 
   // Scoring: alternative provision (0-7), education continuity (0-7), PEP reviewed (0-6), reintegration (0-5)
   let score = 0;
-  score += Math.round((alternativeProvisionRate / 100) * 7);
-  score += Math.round((educationContinuityRate / 100) * 7);
-  score += Math.round((pepReviewedRate / 100) * 6);
-  score += Math.round((reintegrationSuccessRate / 100) * 5);
+  score += Math.round((alternativeProvisionRate! / 100) * 7);
+  score += Math.round((educationContinuityRate! / 100) * 7);
+  score += Math.round((pepReviewedRate! / 100) * 6);
+  score += Math.round(((reintegrationSuccessRate ?? 0) / 100) * 5);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -353,10 +367,10 @@ export function evaluatePreventionPlanning(
     return {
       overallScore: 0,
       totalPlans: 0,
-      plansExistRate: 0,
-      triggersIdentifiedRate: 0,
-      schoolEngagedRate: 0,
-      reviewCurrentRate: 0,
+      plansExistRate: null,
+      triggersIdentifiedRate: null,
+      schoolEngagedRate: null,
+      reviewCurrentRate: null,
     };
   }
 
@@ -365,16 +379,16 @@ export function evaluatePreventionPlanning(
   const reviewCurrent = plans.filter((p) => p.reviewCurrent).length;
 
   const plansExistRate = 100; // plans exist if we have them
-  const triggersIdentifiedRate = pct(triggers, plans.length);
-  const schoolEngagedRate = pct(schoolEngaged, plans.length);
-  const reviewCurrentRate = pct(reviewCurrent, plans.length);
+  const triggersIdentifiedRate = rate(triggers, plans.length);
+  const schoolEngagedRate = rate(schoolEngaged, plans.length);
+  const reviewCurrentRate = rate(reviewCurrent, plans.length);
 
   // Scoring: plans exist (0-7), triggers identified (0-6), school engaged (0-6), review current (0-6)
   let score = 0;
   score += Math.round((plansExistRate / 100) * 7);
-  score += Math.round((triggersIdentifiedRate / 100) * 6);
-  score += Math.round((schoolEngagedRate / 100) * 6);
-  score += Math.round((reviewCurrentRate / 100) * 6);
+  score += Math.round((triggersIdentifiedRate! / 100) * 6);
+  score += Math.round((schoolEngagedRate! / 100) * 6);
+  score += Math.round((reviewCurrentRate! / 100) * 6);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -397,12 +411,12 @@ export function evaluateStaffReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      exclusionGuidanceRate: 0,
-      educationAdvocacyRate: 0,
-      alternativeProvisionRate: 0,
-      reintegrationRate: 0,
-      multiAgencyRate: 0,
-      traumaInformedRate: 0,
+      exclusionGuidanceRate: null,
+      educationAdvocacyRate: null,
+      alternativeProvisionRate: null,
+      reintegrationRate: null,
+      multiAgencyRate: null,
+      traumaInformedRate: null,
     };
   }
 
@@ -422,22 +436,22 @@ export function evaluateStaffReadiness(
     if (t.traumaInformedBehaviour) traumaInformed++;
   }
 
-  const exclusionGuidanceRate = pct(guidance, training.length);
-  const educationAdvocacyRate = pct(advocacy, training.length);
-  const alternativeProvisionRate = pct(altProvision, training.length);
-  const reintegrationRate = pct(reintegration, training.length);
-  const multiAgencyRate = pct(multiAgency, training.length);
-  const traumaInformedRate = pct(traumaInformed, training.length);
+  const exclusionGuidanceRate = rate(guidance, training.length);
+  const educationAdvocacyRate = rate(advocacy, training.length);
+  const alternativeProvisionRate = rate(altProvision, training.length);
+  const reintegrationRate = rate(reintegration, training.length);
+  const multiAgencyRate = rate(multiAgency, training.length);
+  const traumaInformedRate = rate(traumaInformed, training.length);
 
   // Scoring: exclusion guidance (0-6), education advocacy (0-5), alternative provision (0-5),
   // reintegration (0-4), multi-agency (0-3), trauma-informed (0-2)
   let score = 0;
-  score += Math.round((exclusionGuidanceRate / 100) * 6);
-  score += Math.round((educationAdvocacyRate / 100) * 5);
-  score += Math.round((alternativeProvisionRate / 100) * 5);
-  score += Math.round((reintegrationRate / 100) * 4);
-  score += Math.round((multiAgencyRate / 100) * 3);
-  score += Math.round((traumaInformedRate / 100) * 2);
+  score += Math.round((exclusionGuidanceRate! / 100) * 6);
+  score += Math.round(((educationAdvocacyRate ?? 0) / 100) * 5);
+  score += Math.round(((alternativeProvisionRate ?? 0) / 100) * 5);
+  score += Math.round(((reintegrationRate ?? 0) / 100) * 4);
+  score += Math.round(((multiAgencyRate ?? 0) / 100) * 3);
+  score += Math.round(((traumaInformedRate ?? 0) / 100) * 2);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -502,7 +516,7 @@ export function buildChildExclusionProfiles(
     // Education continuity maintained for all exclusions
     if (childExclusions.length > 0) {
       const continuity = childExclusions.filter((e) => e.educationContinuityMaintained).length;
-      score += Math.round((pct(continuity, childExclusions.length) / 100) * 2);
+      score += Math.round((rate(continuity, childExclusions.length)! / 100) * 2);
     } else {
       score += 2; // No exclusions = continuity maintained by default
     }
@@ -585,19 +599,19 @@ export function generateExclusionDisruptionManagementIntelligence(
     areasForImprovement.push("No prevention plans documented — all children should have exclusion prevention plans");
   if (training.length === 0)
     areasForImprovement.push("No staff training records for exclusion and disruption management");
-  if (exclusions.length > 0 && educationContinuity.alternativeProvisionRate < 100)
-    areasForImprovement.push("Alternative provision not arranged for " + (100 - educationContinuity.alternativeProvisionRate) + "% of exclusions");
-  if (exclusions.length > 0 && educationContinuity.pepReviewedRate < 100)
-    areasForImprovement.push("PEP not reviewed for " + (100 - educationContinuity.pepReviewedRate) + "% of exclusions");
-  if (disruptions.length > 0 && preventionEffectiveness.multiAgencyInvolvedRate < 80)
+  if (exclusions.length > 0 && below(educationContinuity.alternativeProvisionRate, 100))
+    areasForImprovement.push("Alternative provision not arranged for " + (100 - educationContinuity.alternativeProvisionRate!) + "% of exclusions");
+  if (exclusions.length > 0 && below(educationContinuity.pepReviewedRate, 100))
+    areasForImprovement.push("PEP not reviewed for " + (100 - educationContinuity.pepReviewedRate!) + "% of exclusions");
+  if (disruptions.length > 0 && below(preventionEffectiveness.multiAgencyInvolvedRate, 80))
     areasForImprovement.push("Multi-agency involvement in only " + preventionEffectiveness.multiAgencyInvolvedRate + "% of disruption episodes — target 100%");
-  if (disruptions.length > 0 && preventionEffectiveness.lessonsIdentifiedRate < 80)
+  if (disruptions.length > 0 && below(preventionEffectiveness.lessonsIdentifiedRate, 80))
     areasForImprovement.push("Lessons identified in only " + preventionEffectiveness.lessonsIdentifiedRate + "% of disruption episodes");
-  if (plans.length > 0 && preventionPlanning.triggersIdentifiedRate < 100)
-    areasForImprovement.push("Triggers not identified in " + (100 - preventionPlanning.triggersIdentifiedRate) + "% of prevention plans");
-  if (plans.length > 0 && preventionPlanning.reviewCurrentRate < 100)
-    areasForImprovement.push(100 - preventionPlanning.reviewCurrentRate + "% of prevention plans are overdue for review");
-  if (training.length > 0 && staffReadiness.traumaInformedRate < 75)
+  if (plans.length > 0 && below(preventionPlanning.triggersIdentifiedRate, 100))
+    areasForImprovement.push("Triggers not identified in " + (100 - preventionPlanning.triggersIdentifiedRate!) + "% of prevention plans");
+  if (plans.length > 0 && below(preventionPlanning.reviewCurrentRate, 100))
+    areasForImprovement.push(100 - preventionPlanning.reviewCurrentRate! + "% of prevention plans are overdue for review");
+  if (training.length > 0 && below(staffReadiness.traumaInformedRate, 75))
     areasForImprovement.push("Only " + staffReadiness.traumaInformedRate + "% of staff trained in trauma-informed behaviour — target 100%");
 
   // -- Actions --
@@ -616,11 +630,11 @@ export function generateExclusionDisruptionManagementIntelligence(
     actions.push("URGENT: Social worker not notified for " + unnotifiedSW.length + " exclusion(s) — statutory requirement");
   if (plans.length === 0)
     actions.push("Develop prevention plans for all children — required for proactive exclusion management");
-  if (exclusions.length > 0 && educationContinuity.alternativeProvisionRate < 100)
+  if (exclusions.length > 0 && below(educationContinuity.alternativeProvisionRate, 100))
     actions.push("Arrange alternative provision for all future exclusions — education continuity is a statutory duty");
-  if (training.length > 0 && staffReadiness.exclusionGuidanceRate < 75)
+  if (training.length > 0 && below(staffReadiness.exclusionGuidanceRate, 75))
     actions.push("Arrange exclusion guidance training — only " + staffReadiness.exclusionGuidanceRate + "% of staff trained");
-  if (disruptions.length > 0 && preventionEffectiveness.lessonsIdentifiedRate < 100)
+  if (disruptions.length > 0 && below(preventionEffectiveness.lessonsIdentifiedRate, 100))
     actions.push("Ensure lessons are identified and recorded for all disruption episodes");
 
   const regulatoryLinks: string[] = [
