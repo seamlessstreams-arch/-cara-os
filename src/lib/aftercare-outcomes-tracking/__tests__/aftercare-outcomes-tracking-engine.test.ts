@@ -6,7 +6,6 @@ import {
   evaluateEducationEmployment,
   evaluateWellbeingSupport,
   buildCareLeaverProfiles,
-  pct,
   getRating,
   getLeavingReasonLabel,
   getHousingStatusLabel,
@@ -94,14 +93,6 @@ function mkService(overrides: Partial<SupportService> = {}): SupportService {
 
 // -- pct ----------------------------------------------------------------------
 
-describe("pct", () => {
-  it("returns 0 for 0/0", () => expect(pct(0, 0)).toBe(0));
-  it("calculates correctly", () => expect(pct(3, 4)).toBe(75));
-  it("rounds", () => expect(pct(1, 3)).toBe(33));
-  it("full", () => expect(pct(5, 5)).toBe(100));
-  it("handles large numerator", () => expect(pct(99, 100)).toBe(99));
-  it("handles 1/1", () => expect(pct(1, 1)).toBe(100));
-});
 
 // -- getRating ----------------------------------------------------------------
 

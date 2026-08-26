@@ -4,7 +4,6 @@
 
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getActivityCategoryLabel,
   getActivityOutcomeLabel,
@@ -75,28 +74,6 @@ function makeTraining(overrides: Partial<StaffActivityTraining> = {}): StaffActi
 // pct helper
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when both are 0", () => {
-    expect(pct(0, 0)).toBe(0);
-  });
-
-  it("returns 100 when num equals den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-});
 
 // ══════════════════════════════════════════════════════════════════════════════
 // getRating
@@ -211,10 +188,10 @@ describe("evaluateActivityQuality", () => {
   it("returns all zeros for empty records", () => {
     const result = evaluateActivityQuality([]);
     expect(result.totalRecords).toBe(0);
-    expect(result.childChoiceRate).toBe(0);
-    expect(result.ageAppropriateRate).toBe(0);
-    expect(result.inclusiveRate).toBe(0);
-    expect(result.enjoymentRate).toBe(0);
+    expect(result.childChoiceRate).toBeNull();
+    expect(result.ageAppropriateRate).toBeNull();
+    expect(result.inclusiveRate).toBeNull();
+    expect(result.enjoymentRate).toBeNull();
     expect(result.score).toBe(0);
   });
 
@@ -335,9 +312,9 @@ describe("evaluateActivityCompliance", () => {
   it("returns all zeros for empty records", () => {
     const result = evaluateActivityCompliance([]);
     expect(result.totalRecords).toBe(0);
-    expect(result.documentationRate).toBe(0);
-    expect(result.riskAssessedRate).toBe(0);
-    expect(result.childChoiceRate).toBe(0);
+    expect(result.documentationRate).toBeNull();
+    expect(result.riskAssessedRate).toBeNull();
+    expect(result.childChoiceRate).toBeNull();
     expect(result.categoryDiversityRatio).toBe(0);
     expect(result.score).toBe(0);
   });
@@ -548,12 +525,12 @@ describe("evaluateStaffActivityReadiness", () => {
   it("returns all zeros for empty training", () => {
     const result = evaluateStaffActivityReadiness([]);
     expect(result.totalStaff).toBe(0);
-    expect(result.activityPlanningRate).toBe(0);
-    expect(result.safeguardingAwarenessRate).toBe(0);
-    expect(result.inclusionSkillsRate).toBe(0);
-    expect(result.riskManagementRate).toBe(0);
-    expect(result.communityLinksRate).toBe(0);
-    expect(result.firstAidRate).toBe(0);
+    expect(result.activityPlanningRate).toBeNull();
+    expect(result.safeguardingAwarenessRate).toBeNull();
+    expect(result.inclusionSkillsRate).toBeNull();
+    expect(result.riskManagementRate).toBeNull();
+    expect(result.communityLinksRate).toBeNull();
+    expect(result.firstAidRate).toBeNull();
     expect(result.score).toBe(0);
     expect(result.concerns.length).toBeGreaterThan(0);
     expect(result.concerns[0]).toContain("URGENT");

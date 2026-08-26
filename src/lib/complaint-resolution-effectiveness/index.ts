@@ -13,7 +13,6 @@ export {
   getResolutionOutcomeLabel,
   getRatingLabel,
   getRating,
-  pct,
 } from "./complaint-resolution-effectiveness-engine";
 
 export type {

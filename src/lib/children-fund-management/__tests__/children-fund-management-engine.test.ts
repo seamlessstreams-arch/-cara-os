@@ -10,7 +10,6 @@ import {
   evaluateAuditCompliance,
   buildChildFinancialProfiles,
   generateChildrenFundManagementIntelligence,
-  pct,
   getRating,
   getTransactionTypeLabel,
   getAccountStatusLabel,
@@ -102,18 +101,6 @@ function makeAudit(overrides: Partial<FinancialAudit> = {}): FinancialAudit {
 // pct helper
 // ==============================================================================
 
-describe("pct", () => {
-  it("calculates percentage correctly", () => {
-    expect(pct(3, 4)).toBe(75);
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 0 for zero denominator", () => {
-    expect(pct(5, 0)).toBe(0);
-    expect(pct(0, 0)).toBe(0);
-  });
-});
 
 // ==============================================================================
 // getRating
@@ -150,10 +137,10 @@ describe("evaluateAccountManagement", () => {
     const result = evaluateAccountManagement([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalAccounts).toBe(0);
-    expect(result.activeRate).toBe(0);
-    expect(result.reconciledRate).toBe(0);
-    expect(result.childAccessRate).toBe(0);
-    expect(result.signedAgreementRate).toBe(0);
+    expect(result.activeRate).toBeNull();
+    expect(result.reconciledRate).toBeNull();
+    expect(result.childAccessRate).toBeNull();
+    expect(result.signedAgreementRate).toBeNull();
     expect(result.overdueCount).toBe(0);
     expect(result.averageBalance).toBe(0);
     expect(result.totalSavings).toBe(0);
@@ -250,9 +237,9 @@ describe("evaluateTransactionIntegrity", () => {
     const result = evaluateTransactionIntegrity([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalTransactions).toBe(0);
-    expect(result.receiptRate).toBe(0);
-    expect(result.consentRate).toBe(0);
-    expect(result.twoSignatureRate).toBe(0);
+    expect(result.receiptRate).toBeNull();
+    expect(result.consentRate).toBeNull();
+    expect(result.twoSignatureRate).toBeNull();
     expect(result.averageTransaction).toBe(0);
   });
 
@@ -341,10 +328,10 @@ describe("evaluateFinancialLiteracy", () => {
     const result = evaluateFinancialLiteracy([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalSessions).toBe(0);
-    expect(result.engagementRate).toBe(0);
-    expect(result.practicalRate).toBe(0);
-    expect(result.ageAppropriateRate).toBe(0);
-    expect(result.topicCoverage).toBe(0);
+    expect(result.engagementRate).toBeNull();
+    expect(result.practicalRate).toBeNull();
+    expect(result.ageAppropriateRate).toBeNull();
+    expect(result.topicCoverage).toBeNull();
   });
 
   it("scores high-quality sessions highly", () => {
@@ -429,11 +416,11 @@ describe("evaluateAuditCompliance", () => {
     const result = evaluateAuditCompliance([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalAudits).toBe(0);
-    expect(result.allReconciledRate).toBe(0);
-    expect(result.receiptCompliantRate).toBe(0);
-    expect(result.twoSigCompliantRate).toBe(0);
-    expect(result.discrepancyRate).toBe(0);
-    expect(result.policyCompliantRate).toBe(0);
+    expect(result.allReconciledRate).toBeNull();
+    expect(result.receiptCompliantRate).toBeNull();
+    expect(result.twoSigCompliantRate).toBeNull();
+    expect(result.discrepancyRate).toBeNull();
+    expect(result.policyCompliantRate).toBeNull();
   });
 
   it("scores fully compliant audits highly", () => {
@@ -459,7 +446,7 @@ describe("evaluateAuditCompliance", () => {
       makeAudit({ discrepanciesFound: 0, discrepanciesResolved: 0 }),
     ];
     const result = evaluateAuditCompliance(audits);
-    expect(result.discrepancyRate).toBe(0);
+    expect(result.discrepancyRate).toBeNull();
   });
 
   it("detects non-compliant audits", () => {

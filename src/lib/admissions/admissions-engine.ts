@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara Admissions Intelligence Engine
 //
@@ -83,19 +84,27 @@ export interface AdmissionQualityResult {
   overallScore: number;
   rating: Rating;
   totalAdmissions: number;
-  thoroughAssessmentRate: number;
-  childConsultedRate: number;
-  impactConsideredRate: number;
-  transitionPlanRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  thoroughAssessmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childConsultedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  impactConsideredRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  transitionPlanRate: number | null;
 }
 
 export interface AdmissionComplianceResult {
   overallScore: number;
   rating: Rating;
-  documentationRate: number;
-  timelyRate: number;
-  impactAssessmentRate: number;
-  categoryDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  impactAssessmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  categoryDiversityRatio: number | null;
 }
 
 export interface AdmissionPolicyResult {
@@ -114,20 +123,28 @@ export interface StaffAdmissionReadinessResult {
   overallScore: number;
   rating: Rating;
   totalStaff: number;
-  assessmentSkillsRate: number;
-  matchingExpertiseRate: number;
-  transitionPlanningRate: number;
-  childParticipationRate: number;
-  riskAssessmentRate: number;
-  familyEngagementRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  assessmentSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  matchingExpertiseRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  transitionPlanningRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childParticipationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  familyEngagementRate: number | null;
 }
 
 export interface ChildAdmissionProfile {
   childId: string;
   childName: string;
   totalRecords: number;
-  thoroughRate: number;
-  childConsultedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  thoroughRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childConsultedRate: number | null;
   categoriesCovered: string[];
   overallScore: number;
 }
@@ -150,11 +167,6 @@ export interface AdmissionsIntelligence {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -205,16 +217,16 @@ const ALL_CATEGORIES: AdmissionCategory[] = [
 export function evaluateAdmissionQuality(records: AdmissionRecord[]): AdmissionQualityResult {
   const total = records.length;
   if (total === 0) {
-    return { overallScore: 0, rating: "inadequate", totalAdmissions: 0, thoroughAssessmentRate: 0, childConsultedRate: 0, impactConsideredRate: 0, transitionPlanRate: 0 };
+    return { overallScore: 0, rating: "inadequate", totalAdmissions: 0, thoroughAssessmentRate: null, childConsultedRate: null, impactConsideredRate: null, transitionPlanRate: null };
   }
 
-  const thoroughAssessmentRate = pct(records.filter((r) => r.thoroughAssessment).length, total);
-  const childConsultedRate = pct(records.filter((r) => r.childConsulted).length, total);
-  const impactConsideredRate = pct(records.filter((r) => r.impactOnResidentsConsidered).length, total);
-  const transitionPlanRate = pct(records.filter((r) => r.transitionPlanInPlace).length, total);
+  const thoroughAssessmentRate = rate(records.filter((r) => r.thoroughAssessment).length, total);
+  const childConsultedRate = rate(records.filter((r) => r.childConsulted).length, total);
+  const impactConsideredRate = rate(records.filter((r) => r.impactOnResidentsConsidered).length, total);
+  const transitionPlanRate = rate(records.filter((r) => r.transitionPlanInPlace).length, total);
 
   // Weighted: thoroughAssessmentRate 7 + childConsultedRate 6 + impactConsideredRate 6 + transitionPlanRate 6 = 25
-  const raw = (thoroughAssessmentRate / 100) * 7 + (childConsultedRate / 100) * 6 + (impactConsideredRate / 100) * 6 + (transitionPlanRate / 100) * 6;
+  const raw = ((thoroughAssessmentRate ?? 0) / 100) * 7 + ((childConsultedRate ?? 0) / 100) * 6 + ((impactConsideredRate ?? 0) / 100) * 6 + ((transitionPlanRate ?? 0) / 100) * 6;
   const overallScore = Math.min(25, Math.round(raw));
 
   return { overallScore, rating: getRating(overallScore * 4), totalAdmissions: total, thoroughAssessmentRate, childConsultedRate, impactConsideredRate, transitionPlanRate };
@@ -225,18 +237,18 @@ export function evaluateAdmissionQuality(records: AdmissionRecord[]): AdmissionQ
 export function evaluateAdmissionCompliance(records: AdmissionRecord[]): AdmissionComplianceResult {
   const total = records.length;
   if (total === 0) {
-    return { overallScore: 0, rating: "inadequate", documentationRate: 0, timelyRate: 0, impactAssessmentRate: 0, categoryDiversityRatio: 0 };
+    return { overallScore: 0, rating: "inadequate", documentationRate: null, timelyRate: null, impactAssessmentRate: null, categoryDiversityRatio: 0 };
   }
 
-  const documentationRate = pct(records.filter((r) => r.documentationComplete).length, total);
-  const timelyRate = pct(records.filter((r) => r.timelyProcess).length, total);
-  const impactAssessmentRate = pct(records.filter((r) => r.impactOnResidentsConsidered).length, total);
+  const documentationRate = rate(records.filter((r) => r.documentationComplete).length, total);
+  const timelyRate = rate(records.filter((r) => r.timelyProcess).length, total);
+  const impactAssessmentRate = rate(records.filter((r) => r.impactOnResidentsConsidered).length, total);
 
   const uniqueCategories = new Set(records.map((r) => r.category)).size;
-  const categoryDiversityRatio = pct(uniqueCategories, ALL_CATEGORIES.length);
+  const categoryDiversityRatio = rate(uniqueCategories, ALL_CATEGORIES.length);
 
   // Weighted: documentationRate 8 + timelyRate 7 + impactAssessmentRate 5 + categoryDiversityRatio 5 = 25
-  const raw = (documentationRate / 100) * 8 + (timelyRate / 100) * 7 + (impactAssessmentRate / 100) * 5 + (categoryDiversityRatio / 100) * 5;
+  const raw = ((documentationRate ?? 0) / 100) * 8 + ((timelyRate ?? 0) / 100) * 7 + ((impactAssessmentRate ?? 0) / 100) * 5 + ((categoryDiversityRatio ?? 0) / 100) * 5;
   const overallScore = Math.min(25, Math.round(raw));
 
   return { overallScore, rating: getRating(overallScore * 4), documentationRate, timelyRate, impactAssessmentRate, categoryDiversityRatio };
@@ -277,24 +289,24 @@ export function evaluateAdmissionPolicy(policy: AdmissionPolicy | null): Admissi
 export function evaluateStaffAdmissionReadiness(staff: StaffAdmissionTraining[]): StaffAdmissionReadinessResult {
   const count = staff.length;
   if (count === 0) {
-    return { overallScore: 0, rating: "inadequate", totalStaff: 0, assessmentSkillsRate: 0, matchingExpertiseRate: 0, transitionPlanningRate: 0, childParticipationRate: 0, riskAssessmentRate: 0, familyEngagementRate: 0 };
+    return { overallScore: 0, rating: "inadequate", totalStaff: 0, assessmentSkillsRate: null, matchingExpertiseRate: null, transitionPlanningRate: null, childParticipationRate: null, riskAssessmentRate: null, familyEngagementRate: null };
   }
 
-  const assessmentSkillsRate = pct(staff.filter((s) => s.assessmentSkills).length, count);
-  const matchingExpertiseRate = pct(staff.filter((s) => s.matchingExpertise).length, count);
-  const transitionPlanningRate = pct(staff.filter((s) => s.transitionPlanning).length, count);
-  const childParticipationRate = pct(staff.filter((s) => s.childParticipationSkills).length, count);
-  const riskAssessmentRate = pct(staff.filter((s) => s.riskAssessment).length, count);
-  const familyEngagementRate = pct(staff.filter((s) => s.familyEngagement).length, count);
+  const assessmentSkillsRate = rate(staff.filter((s) => s.assessmentSkills).length, count);
+  const matchingExpertiseRate = rate(staff.filter((s) => s.matchingExpertise).length, count);
+  const transitionPlanningRate = rate(staff.filter((s) => s.transitionPlanning).length, count);
+  const childParticipationRate = rate(staff.filter((s) => s.childParticipationSkills).length, count);
+  const riskAssessmentRate = rate(staff.filter((s) => s.riskAssessment).length, count);
+  const familyEngagementRate = rate(staff.filter((s) => s.familyEngagement).length, count);
 
   // Weighted: 6+5+5+4+3+2 = 25
   const raw =
-    (assessmentSkillsRate / 100) * 6 +
-    (matchingExpertiseRate / 100) * 5 +
-    (transitionPlanningRate / 100) * 5 +
-    (childParticipationRate / 100) * 4 +
-    (riskAssessmentRate / 100) * 3 +
-    (familyEngagementRate / 100) * 2;
+    ((assessmentSkillsRate ?? 0) / 100) * 6 +
+    ((matchingExpertiseRate ?? 0) / 100) * 5 +
+    ((transitionPlanningRate ?? 0) / 100) * 5 +
+    ((childParticipationRate ?? 0) / 100) * 4 +
+    ((riskAssessmentRate ?? 0) / 100) * 3 +
+    ((familyEngagementRate ?? 0) / 100) * 2;
   const overallScore = Math.min(25, Math.round(raw));
 
   return { overallScore, rating: getRating(overallScore * 4), totalStaff: count, assessmentSkillsRate, matchingExpertiseRate, transitionPlanningRate, childParticipationRate, riskAssessmentRate, familyEngagementRate };
@@ -315,8 +327,8 @@ export function buildChildAdmissionProfiles(records: AdmissionRecord[]): ChildAd
     const childName = recs[0].childName;
     const totalRecords = recs.length;
 
-    const thoroughRate = pct(recs.filter((r) => r.thoroughAssessment).length, totalRecords);
-    const childConsultedRate = pct(recs.filter((r) => r.childConsulted).length, totalRecords);
+    const thoroughRate = rate(recs.filter((r) => r.thoroughAssessment).length, totalRecords);
+    const childConsultedRate = rate(recs.filter((r) => r.childConsulted).length, totalRecords);
 
     const catsSet = new Set(recs.map((r) => r.category));
     const categoriesCovered = [...catsSet];
@@ -327,13 +339,13 @@ export function buildChildAdmissionProfiles(records: AdmissionRecord[]): ChildAd
     if (totalRecords >= 10) score += 2;
     else if (totalRecords >= 5) score += 1;
 
-    if (thoroughRate >= 80) score += 3;
-    else if (thoroughRate >= 60) score += 2;
-    else if (thoroughRate >= 40) score += 1;
+    if (meets(thoroughRate, 80)) score += 3;
+    else if (meets(thoroughRate, 60)) score += 2;
+    else if (meets(thoroughRate, 40)) score += 1;
 
-    if (childConsultedRate >= 80) score += 3;
-    else if (childConsultedRate >= 60) score += 2;
-    else if (childConsultedRate >= 40) score += 1;
+    if (meets(childConsultedRate, 80)) score += 3;
+    else if (meets(childConsultedRate, 60)) score += 2;
+    else if (meets(childConsultedRate, 40)) score += 1;
 
     const catCount = categoriesCovered.length;
     if (catCount >= 4) score += 2;
@@ -377,36 +389,36 @@ export function generateAdmissionsIntelligence(
 
   // Strengths (>=80%)
   const strengths: string[] = [];
-  if (admissionQuality.thoroughAssessmentRate >= 80) strengths.push("Thorough pre-admission assessments consistently completed");
-  if (admissionQuality.childConsultedRate >= 80) strengths.push("Children are consistently consulted during the admissions process");
-  if (admissionQuality.impactConsideredRate >= 80) strengths.push("Impact on existing residents is systematically assessed before admission");
-  if (admissionQuality.transitionPlanRate >= 80) strengths.push("Transition plans are routinely in place for new admissions");
-  if (admissionCompliance.documentationRate >= 80) strengths.push("Admissions documentation is thorough and complete");
-  if (admissionCompliance.timelyRate >= 80) strengths.push("Admissions processes are completed within required timescales");
-  if (staffReadiness.assessmentSkillsRate >= 80) strengths.push("Staff are well trained in assessment skills for admissions");
-  if (staffReadiness.matchingExpertiseRate >= 80) strengths.push("Strong matching expertise across the team");
+  if (meets(admissionQuality.thoroughAssessmentRate, 80)) strengths.push("Thorough pre-admission assessments consistently completed");
+  if (meets(admissionQuality.childConsultedRate, 80)) strengths.push("Children are consistently consulted during the admissions process");
+  if (meets(admissionQuality.impactConsideredRate, 80)) strengths.push("Impact on existing residents is systematically assessed before admission");
+  if (meets(admissionQuality.transitionPlanRate, 80)) strengths.push("Transition plans are routinely in place for new admissions");
+  if (meets(admissionCompliance.documentationRate, 80)) strengths.push("Admissions documentation is thorough and complete");
+  if (meets(admissionCompliance.timelyRate, 80)) strengths.push("Admissions processes are completed within required timescales");
+  if (meets(staffReadiness.assessmentSkillsRate, 80)) strengths.push("Staff are well trained in assessment skills for admissions");
+  if (meets(staffReadiness.matchingExpertiseRate, 80)) strengths.push("Strong matching expertise across the team");
 
   // Areas for improvement (<60%)
   const areasForImprovement: string[] = [];
-  if (admissionQuality.thoroughAssessmentRate < 60) areasForImprovement.push("Pre-admission assessments are not consistently thorough");
-  if (admissionQuality.childConsultedRate < 60) areasForImprovement.push("Children are not being adequately consulted during admissions");
-  if (admissionQuality.impactConsideredRate < 60) areasForImprovement.push("Impact on existing children is not being systematically considered");
-  if (admissionQuality.transitionPlanRate < 60) areasForImprovement.push("Transition planning needs to be more consistently applied");
-  if (admissionCompliance.documentationRate < 60) areasForImprovement.push("Admissions documentation is incomplete or inconsistent");
-  if (admissionCompliance.timelyRate < 60) areasForImprovement.push("Admissions processes are taking too long to complete");
-  if (staffReadiness.assessmentSkillsRate < 60) areasForImprovement.push("Staff assessment skills training needs improvement");
-  if (staffReadiness.matchingExpertiseRate < 60) areasForImprovement.push("Staff matching expertise requires development");
+  if (below(admissionQuality.thoroughAssessmentRate, 60)) areasForImprovement.push("Pre-admission assessments are not consistently thorough");
+  if (below(admissionQuality.childConsultedRate, 60)) areasForImprovement.push("Children are not being adequately consulted during admissions");
+  if (below(admissionQuality.impactConsideredRate, 60)) areasForImprovement.push("Impact on existing children is not being systematically considered");
+  if (below(admissionQuality.transitionPlanRate, 60)) areasForImprovement.push("Transition planning needs to be more consistently applied");
+  if (below(admissionCompliance.documentationRate, 60)) areasForImprovement.push("Admissions documentation is incomplete or inconsistent");
+  if (below(admissionCompliance.timelyRate, 60)) areasForImprovement.push("Admissions processes are taking too long to complete");
+  if (below(staffReadiness.assessmentSkillsRate, 60)) areasForImprovement.push("Staff assessment skills training needs improvement");
+  if (below(staffReadiness.matchingExpertiseRate, 60)) areasForImprovement.push("Staff matching expertise requires development");
 
   // Actions
   const actions: string[] = [];
   if (admissionPolicy.overallScore === 0) actions.push("URGENT: Establish a formal admissions policy — CHR 2015 Reg 12/14/20 require documented matching and placement processes");
   if (staffReadiness.overallScore === 0) actions.push("URGENT: Provide admissions and matching training to all staff — proper assessments depend on skilled practitioners");
-  if (admissionQuality.childConsultedRate < 50) actions.push("Implement systematic child consultation in all admissions — existing children's views must be sought (SCCIF)");
-  if (admissionQuality.impactConsideredRate < 50) actions.push("Ensure impact assessments are completed for every admission — CHR 2015 Reg 20 requires matching consideration");
-  if (admissionCompliance.documentationRate < 50) actions.push("Improve admissions documentation — placement plans must be comprehensive (Reg 14)");
-  if (admissionCompliance.timelyRate < 50) actions.push("Review admissions timescales — assessments should be completed before or within 72 hours of emergency placement");
-  if (admissionQuality.transitionPlanRate < 50) actions.push("Develop transition plans for all new admissions to support settling-in");
-  if (staffReadiness.familyEngagementRate < 50) actions.push("Train staff in family engagement during admissions — families should be involved from the start");
+  if (below(admissionQuality.childConsultedRate, 50)) actions.push("Implement systematic child consultation in all admissions — existing children's views must be sought (SCCIF)");
+  if (below(admissionQuality.impactConsideredRate, 50)) actions.push("Ensure impact assessments are completed for every admission — CHR 2015 Reg 20 requires matching consideration");
+  if (below(admissionCompliance.documentationRate, 50)) actions.push("Improve admissions documentation — placement plans must be comprehensive (Reg 14)");
+  if (below(admissionCompliance.timelyRate, 50)) actions.push("Review admissions timescales — assessments should be completed before or within 72 hours of emergency placement");
+  if (below(admissionQuality.transitionPlanRate, 50)) actions.push("Develop transition plans for all new admissions to support settling-in");
+  if (below(staffReadiness.familyEngagementRate, 50)) actions.push("Train staff in family engagement during admissions — families should be involved from the start");
 
   const regulatoryLinks: string[] = [
     "CHR 2015 Reg 12 — The protection of children standard (matching)",

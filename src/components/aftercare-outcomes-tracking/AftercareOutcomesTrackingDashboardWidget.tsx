@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { above, below, formatRate } from "@/lib/metrics/rate";
 import type { AftercareOutcomesTrackingIntelligence } from "@/lib/aftercare-outcomes-tracking";
 
 const ratingColors: Record<string, string> = {
@@ -131,15 +132,15 @@ export function AftercareOutcomesTrackingDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Contacts</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.housingStability.stableHousingRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.housingStability.stableHousingRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Stable Housing</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.educationEmployment.engagedRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.educationEmployment.engagedRate)}</div>
           <div className="text-xs text-gray-500 mt-1">ETE Engaged</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.wellbeingSupport.thrivingStableRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.wellbeingSupport.thrivingStableRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Thriving/Stable</div>
         </div>
       </div>
@@ -176,40 +177,40 @@ export function AftercareOutcomesTrackingDashboardWidget() {
         <Section title="Keeping in Touch">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Contacts:</span> <span className="font-medium">{data.keepingInTouch.totalContacts}</span></div>
-            <div><span className="text-gray-500">Regular Rate:</span> <span className="font-medium">{data.keepingInTouch.regularContactRate}%</span></div>
-            <div><span className="text-gray-500">Child Initiated:</span> <span className="font-medium">{data.keepingInTouch.childInitiatedRate}%</span></div>
-            <div><span className="text-gray-500">Concerns Followed Up:</span> <span className={`font-medium ${data.keepingInTouch.concernsFollowedUpRate < 100 && data.keepingInTouch.totalContacts > 0 ? "text-amber-600" : "text-green-600"}`}>{data.keepingInTouch.concernsFollowedUpRate}%</span></div>
-            <div><span className="text-gray-500">Wellbeing Recorded:</span> <span className="font-medium">{data.keepingInTouch.wellbeingRecordedRate}%</span></div>
+            <div><span className="text-gray-500">Regular Rate:</span> <span className="font-medium">{formatRate(data.keepingInTouch.regularContactRate)}</span></div>
+            <div><span className="text-gray-500">Child Initiated:</span> <span className="font-medium">{formatRate(data.keepingInTouch.childInitiatedRate)}</span></div>
+            <div><span className="text-gray-500">Concerns Followed Up:</span> <span className={`font-medium ${below(data.keepingInTouch.concernsFollowedUpRate, 100) && data.keepingInTouch.totalContacts > 0 ? "text-amber-600" : "text-green-600"}`}>{formatRate(data.keepingInTouch.concernsFollowedUpRate)}</span></div>
+            <div><span className="text-gray-500">Wellbeing Recorded:</span> <span className="font-medium">{formatRate(data.keepingInTouch.wellbeingRecordedRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Housing Stability">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Leavers:</span> <span className="font-medium">{data.housingStability.totalLeavers}</span></div>
-            <div><span className="text-gray-500">Stable Housing:</span> <span className="font-medium">{data.housingStability.stableHousingRate}%</span></div>
-            <div><span className="text-gray-500">Pathway Plan:</span> <span className="font-medium">{data.housingStability.pathwayPlanRate}%</span></div>
-            <div><span className="text-gray-500">Personal Adviser:</span> <span className="font-medium">{data.housingStability.personalAdviserRate}%</span></div>
-            <div><span className="text-gray-500">Homeless:</span> <span className={`font-medium ${data.housingStability.homelessnessRate > 0 ? "text-red-600" : "text-green-600"}`}>{data.housingStability.homelessnessRate}%</span></div>
+            <div><span className="text-gray-500">Stable Housing:</span> <span className="font-medium">{formatRate(data.housingStability.stableHousingRate)}</span></div>
+            <div><span className="text-gray-500">Pathway Plan:</span> <span className="font-medium">{formatRate(data.housingStability.pathwayPlanRate)}</span></div>
+            <div><span className="text-gray-500">Personal Adviser:</span> <span className="font-medium">{formatRate(data.housingStability.personalAdviserRate)}</span></div>
+            <div><span className="text-gray-500">Homeless:</span> <span className={`font-medium ${above(data.housingStability.homelessnessRate, 0) ? "text-red-600" : "text-green-600"}`}>{formatRate(data.housingStability.homelessnessRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Education & Employment">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Leavers:</span> <span className="font-medium">{data.educationEmployment.totalLeavers}</span></div>
-            <div><span className="text-gray-500">ETE Engaged:</span> <span className="font-medium">{data.educationEmployment.engagedRate}%</span></div>
-            <div><span className="text-gray-500">NEET Rate:</span> <span className={`font-medium ${data.educationEmployment.neetRate > 0 ? "text-red-600" : "text-green-600"}`}>{data.educationEmployment.neetRate}%</span></div>
-            <div><span className="text-gray-500">In Education:</span> <span className="font-medium">{data.educationEmployment.educationContinuedRate}%</span></div>
-            <div><span className="text-gray-500">In Training:</span> <span className="font-medium">{data.educationEmployment.trainingAccessRate}%</span></div>
+            <div><span className="text-gray-500">ETE Engaged:</span> <span className="font-medium">{formatRate(data.educationEmployment.engagedRate)}</span></div>
+            <div><span className="text-gray-500">NEET Rate:</span> <span className={`font-medium ${above(data.educationEmployment.neetRate, 0) ? "text-red-600" : "text-green-600"}`}>{formatRate(data.educationEmployment.neetRate)}</span></div>
+            <div><span className="text-gray-500">In Education:</span> <span className="font-medium">{formatRate(data.educationEmployment.educationContinuedRate)}</span></div>
+            <div><span className="text-gray-500">In Training:</span> <span className="font-medium">{formatRate(data.educationEmployment.trainingAccessRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Wellbeing & Support">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Assessments:</span> <span className="font-medium">{data.wellbeingSupport.totalAssessments}</span></div>
-            <div><span className="text-gray-500">Assessed Rate:</span> <span className="font-medium">{data.wellbeingSupport.assessmentsDoneRate}%</span></div>
-            <div><span className="text-gray-500">Thriving/Stable:</span> <span className="font-medium">{data.wellbeingSupport.thrivingStableRate}%</span></div>
-            <div><span className="text-gray-500">Services Accessed:</span> <span className="font-medium">{data.wellbeingSupport.supportServicesAccessedRate}%</span></div>
-            <div><span className="text-gray-500">Mental Health:</span> <span className="font-medium">{data.wellbeingSupport.mentalHealthSupportedRate}%</span></div>
+            <div><span className="text-gray-500">Assessed Rate:</span> <span className="font-medium">{formatRate(data.wellbeingSupport.assessmentsDoneRate)}</span></div>
+            <div><span className="text-gray-500">Thriving/Stable:</span> <span className="font-medium">{formatRate(data.wellbeingSupport.thrivingStableRate)}</span></div>
+            <div><span className="text-gray-500">Services Accessed:</span> <span className="font-medium">{formatRate(data.wellbeingSupport.supportServicesAccessedRate)}</span></div>
+            <div><span className="text-gray-500">Mental Health:</span> <span className="font-medium">{formatRate(data.wellbeingSupport.mentalHealthSupportedRate)}</span></div>
           </div>
         </Section>
 

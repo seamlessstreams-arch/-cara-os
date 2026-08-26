@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct, getRating, getChildrenOutcomesCategoryLabel, getChildrenOutcomesOutcomeLabel, getRatingLabel,
+  getRating, getChildrenOutcomesCategoryLabel, getChildrenOutcomesOutcomeLabel, getRatingLabel,
   evaluateChildrenOutcomesQuality, evaluateChildrenOutcomesCompliance, evaluateChildrenOutcomesPolicy,
   evaluateStaffChildrenOutcomesReadiness, buildChildOutcomesProfiles, generateChildrenOutcomesIntelligence,
 } from "../children-outcomes-intelligence-engine";
@@ -26,13 +26,6 @@ function makeStaff(o: Partial<StaffChildrenOutcomesTraining> = {}): StaffChildre
 }
 
 // ═══ pct ═══
-describe("pct", () => {
-  it("returns percentage", () => { expect(pct(3, 4)).toBe(75); });
-  it("returns 0 for den=0", () => { expect(pct(5, 0)).toBe(0); });
-  it("100 for 1/1", () => { expect(pct(1, 1)).toBe(100); });
-  it("rounds 2/3 to 67", () => { expect(pct(2, 3)).toBe(67); });
-  it("rounds 1/3 to 33", () => { expect(pct(1, 3)).toBe(33); });
-});
 
 // ═══ getRating ═══
 describe("getRating", () => {

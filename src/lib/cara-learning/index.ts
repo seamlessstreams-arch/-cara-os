@@ -9,7 +9,6 @@ export {
   evaluateCaraLearningPolicy,
   evaluateStaffCaraLearningReadiness,
   buildChildCaraLearningProfiles,
-  pct,
   getRating,
   getCaraLearningCategoryLabel,
   getCaraLearningOutcomeLabel,

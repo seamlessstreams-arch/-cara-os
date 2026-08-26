@@ -10,7 +10,6 @@
 
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getLossTypeLabel,
   getSupportTypeLabel,
@@ -113,28 +112,6 @@ function makeTraining(overrides: Partial<StaffBereavementTraining> = {}): StaffB
 // pct()
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-
-  it("returns 100 when num equals den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-});
 
 // ══════════════════════════════════════════════════════════════════════════════
 // getRating()
@@ -381,9 +358,9 @@ describe("evaluateSupportQuality", () => {
     const result = evaluateSupportQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalInterventions).toBe(0);
-    expect(result.childEngagedRate).toBe(0);
-    expect(result.positiveOutcomeRate).toBe(0);
-    expect(result.followUpCompletedRate).toBe(0);
+    expect(result.childEngagedRate).toBeNull();
+    expect(result.positiveOutcomeRate).toBeNull();
+    expect(result.followUpCompletedRate).toBeNull();
     expect(result.supportTypeVariety).toBe(0);
   });
 
@@ -412,7 +389,7 @@ describe("evaluateSupportQuality", () => {
     expect(result.positiveOutcomeRate).toBe(0);
     expect(result.supportTypeVariety).toBe(1);
     // followUpCompletedRate = pct(0, 0) = 0 since no follow-ups scheduled
-    expect(result.followUpCompletedRate).toBe(0);
+    expect(result.followUpCompletedRate).toBeNull();
   });
 
   it("counts partially_positive as positive outcome", () => {
@@ -631,12 +608,12 @@ describe("evaluateStaffBereavementReadiness", () => {
     const result = evaluateStaffBereavementReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.griefAwarenessRate).toBe(0);
-    expect(result.therapeuticResponseRate).toBe(0);
-    expect(result.memoryWorkSkillsRate).toBe(0);
-    expect(result.culturalSensitivityRate).toBe(0);
-    expect(result.childDevelopmentGriefRate).toBe(0);
-    expect(result.referralPathwaysRate).toBe(0);
+    expect(result.griefAwarenessRate).toBeNull();
+    expect(result.therapeuticResponseRate).toBeNull();
+    expect(result.memoryWorkSkillsRate).toBeNull();
+    expect(result.culturalSensitivityRate).toBeNull();
+    expect(result.childDevelopmentGriefRate).toBeNull();
+    expect(result.referralPathwaysRate).toBeNull();
   });
 
   it("returns 25 when all staff have all training", () => {

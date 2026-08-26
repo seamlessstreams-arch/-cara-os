@@ -6,7 +6,6 @@ import {
   evaluateStaffBehaviourIntelligenceReadiness,
   buildChildBehaviourIntelligenceProfiles,
   generateBehaviourIntelligenceReport,
-  pct,
   getRating,
   getBehaviourIntelligenceCategoryLabel,
   getBehaviourIntelligenceOutcomeLabel,
@@ -72,15 +71,6 @@ const ALL_CATEGORIES: BehaviourIntelligenceCategory[] = [
 // pct
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("pct", () => {
-  it("computes correct percentage", () => { expect(pct(3, 4)).toBe(75); });
-  it("returns 0 when den is 0", () => { expect(pct(5, 0)).toBe(0); });
-  it("rounds to nearest integer", () => { expect(pct(1, 3)).toBe(33); expect(pct(2, 3)).toBe(67); });
-  it("handles 100%", () => { expect(pct(10, 10)).toBe(100); });
-  it("handles 0 numerator", () => { expect(pct(0, 10)).toBe(0); });
-  it("handles large values", () => { expect(pct(999, 1000)).toBe(100); });
-  it("handles 1/1", () => { expect(pct(1, 1)).toBe(100); });
-});
 
 // ══════════════════════════════════════════════════════════════════════════════
 // getRating
@@ -135,10 +125,10 @@ describe("evaluateBehaviourIntelligenceQuality", () => {
     const result = evaluateBehaviourIntelligenceQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalRecords).toBe(0);
-    expect(result.childViewIncludedRate).toBe(0);
-    expect(result.deEscalationAttemptedRate).toBe(0);
-    expect(result.positiveReinforcementUsedRate).toBe(0);
-    expect(result.supportPlanFollowedRate).toBe(0);
+    expect(result.childViewIncludedRate).toBeNull();
+    expect(result.deEscalationAttemptedRate).toBeNull();
+    expect(result.positiveReinforcementUsedRate).toBeNull();
+    expect(result.supportPlanFollowedRate).toBeNull();
   });
 
   it("scores max (25) for all-true records", () => {
@@ -226,9 +216,9 @@ describe("evaluateBehaviourIntelligenceCompliance", () => {
     const result = evaluateBehaviourIntelligenceCompliance([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalRecords).toBe(0);
-    expect(result.documentationCompleteRate).toBe(0);
-    expect(result.timelyRecordingRate).toBe(0);
-    expect(result.childViewIncludedRate).toBe(0);
+    expect(result.documentationCompleteRate).toBeNull();
+    expect(result.timelyRecordingRate).toBeNull();
+    expect(result.childViewIncludedRate).toBeNull();
     expect(result.categoryDiversityRatio).toBe(0);
     expect(result.uniqueCategories).toBe(0);
   });
@@ -398,12 +388,12 @@ describe("evaluateStaffBehaviourIntelligenceReadiness", () => {
     const result = evaluateStaffBehaviourIntelligenceReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.behaviourManagementKnowledgeRate).toBe(0);
-    expect(result.deEscalationSkillsRate).toBe(0);
-    expect(result.restorativePracticeSkillsRate).toBe(0);
-    expect(result.physicalInterventionTrainingRate).toBe(0);
-    expect(result.traumaInformedApproachRate).toBe(0);
-    expect(result.behaviourAnalysisSkillsRate).toBe(0);
+    expect(result.behaviourManagementKnowledgeRate).toBeNull();
+    expect(result.deEscalationSkillsRate).toBeNull();
+    expect(result.restorativePracticeSkillsRate).toBeNull();
+    expect(result.physicalInterventionTrainingRate).toBeNull();
+    expect(result.traumaInformedApproachRate).toBeNull();
+    expect(result.behaviourAnalysisSkillsRate).toBeNull();
   });
 
   it("scores max (25) for all-skilled staff", () => {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildBehaviourProfile { childId: string; childName: string; totalRecords: number; positiveApproachRate: number; childViewRate: number; categoriesCovered: string[]; overallScore: number; }
 
@@ -73,19 +74,19 @@ export default function BehaviourDashboardWidget() {
       <Section title="Behaviour Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Records" value={data.behaviourQuality.totalRecords} />
-          <Stat label="Positive Approach" value={`${data.behaviourQuality.positiveApproachRate}%`} />
-          <Stat label="De-escalation" value={`${data.behaviourQuality.deEscalationRate}%`} />
-          <Stat label="Child View" value={`${data.behaviourQuality.childViewRate}%`} />
-          <Stat label="Support Plan" value={`${data.behaviourQuality.supportPlanRate}%`} />
+          <Stat label="Positive Approach" value={`${formatRate(data.behaviourQuality.positiveApproachRate)}`} />
+          <Stat label="De-escalation" value={`${formatRate(data.behaviourQuality.deEscalationRate)}`} />
+          <Stat label="Child View" value={`${formatRate(data.behaviourQuality.childViewRate)}`} />
+          <Stat label="Support Plan" value={`${formatRate(data.behaviourQuality.supportPlanRate)}`} />
         </div>
       </Section>
 
       <Section title="Behaviour Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documentation" value={`${data.behaviourCompliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${data.behaviourCompliance.timelyRecordingRate}%`} />
-          <Stat label="Support Plan Followed" value={`${data.behaviourCompliance.supportPlanFollowedRate}%`} />
-          <Stat label="Category Coverage" value={`${data.behaviourCompliance.categoryDiversityRatio}%`} />
+          <Stat label="Documentation" value={`${formatRate(data.behaviourCompliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(data.behaviourCompliance.timelyRecordingRate)}`} />
+          <Stat label="Support Plan Followed" value={`${formatRate(data.behaviourCompliance.supportPlanFollowedRate)}`} />
+          <Stat label="Category Coverage" value={`${formatRate(data.behaviourCompliance.categoryDiversityRatio)}`} />
         </div>
       </Section>
 
@@ -108,12 +109,12 @@ export default function BehaviourDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
-          <Stat label="Positive Approaches" value={`${data.staffReadiness.positiveApproachesRate}%`} />
-          <Stat label="De-escalation Skills" value={`${data.staffReadiness.deEscalationSkillsRate}%`} />
-          <Stat label="Trauma-Informed" value={`${data.staffReadiness.traumaInformedRate}%`} />
-          <Stat label="Restorative Practice" value={`${data.staffReadiness.restorativePracticeRate}%`} />
-          <Stat label="Risk Assessment" value={`${data.staffReadiness.riskAssessmentRate}%`} />
-          <Stat label="Record Keeping" value={`${data.staffReadiness.recordKeepingRate}%`} />
+          <Stat label="Positive Approaches" value={`${formatRate(data.staffReadiness.positiveApproachesRate)}`} />
+          <Stat label="De-escalation Skills" value={`${formatRate(data.staffReadiness.deEscalationSkillsRate)}`} />
+          <Stat label="Trauma-Informed" value={`${formatRate(data.staffReadiness.traumaInformedRate)}`} />
+          <Stat label="Restorative Practice" value={`${formatRate(data.staffReadiness.restorativePracticeRate)}`} />
+          <Stat label="Risk Assessment" value={`${formatRate(data.staffReadiness.riskAssessmentRate)}`} />
+          <Stat label="Record Keeping" value={`${formatRate(data.staffReadiness.recordKeepingRate)}`} />
         </div>
       </Section>
 

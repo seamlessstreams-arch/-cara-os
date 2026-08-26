@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { AllergenDietaryManagementIntelligence } from "@/lib/allergen-dietary-management";
+import { formatRate } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -113,7 +114,7 @@ export function AllergenDietaryManagementDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Incidents</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.staffCompetence.fullyCompetentRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.staffCompetence.fullyCompetentRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Staff Competent</div>
         </div>
       </div>
@@ -152,11 +153,11 @@ export function AllergenDietaryManagementDashboardWidget() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Children:</span> <span className="font-medium">{data.allergenDocumentation.totalChildren}</span></div>
             <div><span className="text-gray-500">With Allergens:</span> <span className="font-medium">{data.allergenDocumentation.childrenWithAllergens}</span></div>
-            <div><span className="text-gray-500">Emergency Plans:</span> <span className="font-medium">{data.allergenDocumentation.emergencyPlanCurrentRate}%</span></div>
-            <div><span className="text-gray-500">EpiPen Available:</span> <span className="font-medium">{data.allergenDocumentation.epiPenAvailableRate}%</span></div>
-            <div><span className="text-gray-500">GP Notified:</span> <span className="font-medium">{data.allergenDocumentation.gpNotifiedRate}%</span></div>
-            <div><span className="text-gray-500">SW Notified:</span> <span className="font-medium">{data.allergenDocumentation.socialWorkerNotifiedRate}%</span></div>
-            <div><span className="text-gray-500">Reviews Current:</span> <span className="font-medium">{data.allergenDocumentation.reviewUpToDateRate}%</span></div>
+            <div><span className="text-gray-500">Emergency Plans:</span> <span className="font-medium">{formatRate(data.allergenDocumentation.emergencyPlanCurrentRate)}</span></div>
+            <div><span className="text-gray-500">EpiPen Available:</span> <span className="font-medium">{formatRate(data.allergenDocumentation.epiPenAvailableRate)}</span></div>
+            <div><span className="text-gray-500">GP Notified:</span> <span className="font-medium">{formatRate(data.allergenDocumentation.gpNotifiedRate)}</span></div>
+            <div><span className="text-gray-500">SW Notified:</span> <span className="font-medium">{formatRate(data.allergenDocumentation.socialWorkerNotifiedRate)}</span></div>
+            <div><span className="text-gray-500">Reviews Current:</span> <span className="font-medium">{formatRate(data.allergenDocumentation.reviewUpToDateRate)}</span></div>
             <div><span className="text-gray-500">Life-Threatening:</span> <span className={`font-medium ${data.allergenDocumentation.lifeThreatening > 0 ? "text-red-600" : "text-green-600"}`}>{data.allergenDocumentation.lifeThreatening}</span></div>
           </div>
         </Section>
@@ -164,21 +165,21 @@ export function AllergenDietaryManagementDashboardWidget() {
         <Section title="Meal Safety">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Meals:</span> <span className="font-medium">{data.mealSafety.totalMeals}</span></div>
-            <div><span className="text-gray-500">Labelled:</span> <span className="font-medium">{data.mealSafety.allergenLabelledRate}%</span></div>
-            <div><span className="text-gray-500">Dietary Met:</span> <span className="font-medium">{data.mealSafety.dietaryMetRate}%</span></div>
-            <div><span className="text-gray-500">Cross-Contam:</span> <span className="font-medium">{data.mealSafety.crossContaminationPreventedRate}%</span></div>
-            <div><span className="text-gray-500">Child Consulted:</span> <span className="font-medium">{data.mealSafety.childConsultedRate}%</span></div>
-            <div><span className="text-gray-500">Fully Compliant:</span> <span className="font-medium">{data.mealSafety.fullyCompliantRate}%</span></div>
+            <div><span className="text-gray-500">Labelled:</span> <span className="font-medium">{formatRate(data.mealSafety.allergenLabelledRate)}</span></div>
+            <div><span className="text-gray-500">Dietary Met:</span> <span className="font-medium">{formatRate(data.mealSafety.dietaryMetRate)}</span></div>
+            <div><span className="text-gray-500">Cross-Contam:</span> <span className="font-medium">{formatRate(data.mealSafety.crossContaminationPreventedRate)}</span></div>
+            <div><span className="text-gray-500">Child Consulted:</span> <span className="font-medium">{formatRate(data.mealSafety.childConsultedRate)}</span></div>
+            <div><span className="text-gray-500">Fully Compliant:</span> <span className="font-medium">{formatRate(data.mealSafety.fullyCompliantRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Incident Response">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Incidents:</span> <span className="font-medium">{data.incidentResponse.totalIncidents}</span></div>
-            <div><span className="text-gray-500">Timely:</span> <span className="font-medium">{data.incidentResponse.timelyResponseRate}%</span></div>
-            <div><span className="text-gray-500">Plan Followed:</span> <span className="font-medium">{data.incidentResponse.emergencyPlanFollowedRate}%</span></div>
-            <div><span className="text-gray-500">Root Cause:</span> <span className="font-medium">{data.incidentResponse.rootCauseIdentifiedRate}%</span></div>
-            <div><span className="text-gray-500">Preventive:</span> <span className="font-medium">{data.incidentResponse.preventiveMeasuresRate}%</span></div>
+            <div><span className="text-gray-500">Timely:</span> <span className="font-medium">{formatRate(data.incidentResponse.timelyResponseRate)}</span></div>
+            <div><span className="text-gray-500">Plan Followed:</span> <span className="font-medium">{formatRate(data.incidentResponse.emergencyPlanFollowedRate)}</span></div>
+            <div><span className="text-gray-500">Root Cause:</span> <span className="font-medium">{formatRate(data.incidentResponse.rootCauseIdentifiedRate)}</span></div>
+            <div><span className="text-gray-500">Preventive:</span> <span className="font-medium">{formatRate(data.incidentResponse.preventiveMeasuresRate)}</span></div>
             <div><span className="text-gray-500">Hospital Visits:</span> <span className={`font-medium ${data.incidentResponse.hospitalVisitCount > 0 ? "text-red-600" : "text-green-600"}`}>{data.incidentResponse.hospitalVisitCount}</span></div>
           </div>
         </Section>
@@ -186,12 +187,12 @@ export function AllergenDietaryManagementDashboardWidget() {
         <Section title="Staff Competence">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Staff:</span> <span className="font-medium">{data.staffCompetence.totalStaff}</span></div>
-            <div><span className="text-gray-500">Awareness:</span> <span className="font-medium">{data.staffCompetence.allergenAwarenessRate}%</span></div>
-            <div><span className="text-gray-500">EpiPen:</span> <span className="font-medium">{data.staffCompetence.epiPenTrainedRate}%</span></div>
-            <div><span className="text-gray-500">Food Hygiene:</span> <span className="font-medium">{data.staffCompetence.foodHygieneRate}%</span></div>
-            <div><span className="text-gray-500">Cross-Contam:</span> <span className="font-medium">{data.staffCompetence.crossContaminationTrainedRate}%</span></div>
-            <div><span className="text-gray-500">Anaphylaxis:</span> <span className="font-medium">{data.staffCompetence.anaphylaxisTrainedRate}%</span></div>
-            <div><span className="text-gray-500">Competent:</span> <span className="font-medium">{data.staffCompetence.fullyCompetentRate}%</span></div>
+            <div><span className="text-gray-500">Awareness:</span> <span className="font-medium">{formatRate(data.staffCompetence.allergenAwarenessRate)}</span></div>
+            <div><span className="text-gray-500">EpiPen:</span> <span className="font-medium">{formatRate(data.staffCompetence.epiPenTrainedRate)}</span></div>
+            <div><span className="text-gray-500">Food Hygiene:</span> <span className="font-medium">{formatRate(data.staffCompetence.foodHygieneRate)}</span></div>
+            <div><span className="text-gray-500">Cross-Contam:</span> <span className="font-medium">{formatRate(data.staffCompetence.crossContaminationTrainedRate)}</span></div>
+            <div><span className="text-gray-500">Anaphylaxis:</span> <span className="font-medium">{formatRate(data.staffCompetence.anaphylaxisTrainedRate)}</span></div>
+            <div><span className="text-gray-500">Competent:</span> <span className="font-medium">{formatRate(data.staffCompetence.fullyCompetentRate)}</span></div>
           </div>
         </Section>
 

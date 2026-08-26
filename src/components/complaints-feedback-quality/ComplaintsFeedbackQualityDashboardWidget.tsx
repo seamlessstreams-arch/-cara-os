@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { ComplaintsFeedbackQualityIntelligence } from "@/lib/complaints-feedback-quality";
+import { formatRate } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -145,13 +146,13 @@ export function ComplaintsFeedbackQualityDashboardWidget() {
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
           <div className="text-2xl font-bold text-gray-900">
-            {data.complaintHandling.resolvedWithinTimescaleRate}%
+            {formatRate(data.complaintHandling.resolvedWithinTimescaleRate)}
           </div>
           <div className="text-xs text-gray-500 mt-1">Resolved in Time</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
           <div className="text-2xl font-bold text-gray-900">
-            {data.policyCompliance.complianceRate}%
+            {formatRate(data.policyCompliance.complianceRate)}
           </div>
           <div className="text-xs text-gray-500 mt-1">Policy Compliance</div>
         </div>
@@ -214,15 +215,15 @@ export function ComplaintsFeedbackQualityDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">Resolved in Time:</span>{" "}
-              <span className="font-medium">{data.complaintHandling.resolvedWithinTimescaleRate}%</span>
+              <span className="font-medium">{formatRate(data.complaintHandling.resolvedWithinTimescaleRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Child Informed:</span>{" "}
-              <span className="font-medium">{data.complaintHandling.childInformedRate}%</span>
+              <span className="font-medium">{formatRate(data.complaintHandling.childInformedRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Child Supported:</span>{" "}
-              <span className="font-medium">{data.complaintHandling.childSupportedRate}%</span>
+              <span className="font-medium">{formatRate(data.complaintHandling.childSupportedRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Avg Resolution Days:</span>{" "}
@@ -244,15 +245,15 @@ export function ComplaintsFeedbackQualityDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">Acknowledged:</span>{" "}
-              <span className="font-medium">{data.feedbackCulture.acknowledgedRate}%</span>
+              <span className="font-medium">{formatRate(data.feedbackCulture.acknowledgedRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Acted Upon:</span>{" "}
-              <span className="font-medium">{data.feedbackCulture.actedUponRate}%</span>
+              <span className="font-medium">{formatRate(data.feedbackCulture.actedUponRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Timely Response:</span>{" "}
-              <span className="font-medium">{data.feedbackCulture.responseTimelyRate}%</span>
+              <span className="font-medium">{formatRate(data.feedbackCulture.responseTimelyRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Child Feedback:</span>{" "}
@@ -274,15 +275,15 @@ export function ComplaintsFeedbackQualityDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">Implemented:</span>{" "}
-              <span className="font-medium">{data.learningOutcomes.implementedRate}%</span>
+              <span className="font-medium">{formatRate(data.learningOutcomes.implementedRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Impact Assessed:</span>{" "}
-              <span className="font-medium">{data.learningOutcomes.impactAssessedRate}%</span>
+              <span className="font-medium">{formatRate(data.learningOutcomes.impactAssessedRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Shared with Team:</span>{" "}
-              <span className="font-medium">{data.learningOutcomes.sharedWithTeamRate}%</span>
+              <span className="font-medium">{formatRate(data.learningOutcomes.sharedWithTeamRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Policy Changes:</span>{" "}

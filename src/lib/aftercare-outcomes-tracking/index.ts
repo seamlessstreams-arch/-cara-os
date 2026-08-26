@@ -5,7 +5,6 @@ export {
   evaluateEducationEmployment,
   evaluateWellbeingSupport,
   buildCareLeaverProfiles,
-  pct,
   getRating,
   getLeavingReasonLabel,
   getHousingStatusLabel,

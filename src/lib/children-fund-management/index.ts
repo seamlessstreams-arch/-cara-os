@@ -9,7 +9,6 @@ export {
   evaluateAuditCompliance,
   buildChildFinancialProfiles,
   generateChildrenFundManagementIntelligence,
-  pct,
   getRating,
   getTransactionTypeLabel,
   getAccountStatusLabel,

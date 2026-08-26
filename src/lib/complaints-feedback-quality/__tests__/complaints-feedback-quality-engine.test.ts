@@ -11,7 +11,6 @@ import {
   evaluatePolicyCompliance,
   buildChildComplaintProfiles,
   generateComplaintsFeedbackQualityIntelligence,
-  pct,
   getRating,
   getComplaintCategoryLabel,
   getComplaintStatusLabel,
@@ -110,27 +109,6 @@ function makePolicy(overrides: Partial<ComplaintsPolicy> = {}): ComplaintsPolicy
 // pct helper
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("calculates percentage correctly", () => {
-    expect(pct(1, 2)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-
-  it("returns 100 for equal numerator/denominator", () => {
-    expect(pct(5, 5)).toBe(100);
-  });
-
-  it("returns 0 for zero numerator", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-});
 
 // ══════════════════════════════════════════════════════════════════════════════
 // getRating
@@ -339,7 +317,7 @@ describe("evaluateComplaintHandling", () => {
     const result = evaluateComplaintHandling([]);
     expect(result.overallScore).toBe(25);
     expect(result.totalComplaints).toBe(0);
-    expect(result.resolvedWithinTimescaleRate).toBe(0);
+    expect(result.resolvedWithinTimescaleRate).toBeNull();
     expect(result.escalationCount).toBe(0);
   });
 
@@ -479,7 +457,7 @@ describe("evaluateFeedbackCulture", () => {
     const result = evaluateFeedbackCulture([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalFeedback).toBe(0);
-    expect(result.acknowledgedRate).toBe(0);
+    expect(result.acknowledgedRate).toBeNull();
     expect(result.childFeedbackCount).toBe(0);
     expect(result.complimentCount).toBe(0);
     expect(result.suggestionCount).toBe(0);
@@ -672,7 +650,7 @@ describe("evaluatePolicyCompliance", () => {
     expect(result.advocacyAccessible).toBe(false);
     expect(result.independentPerson).toBe(false);
     expect(result.auditCompleted).toBe(false);
-    expect(result.complianceRate).toBe(0);
+    expect(result.complianceRate).toBeNull();
   });
 
   it("returns score 25 for fully compliant policy", () => {

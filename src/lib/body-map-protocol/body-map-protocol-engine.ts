@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // BODY MAP PROTOCOL INTELLIGENCE ENGINE
 //
@@ -139,12 +140,18 @@ export interface SafeguardingEscalation {
 export interface RecordingQualityResult {
   overallScore: number;
   totalRecords: number;
-  thoroughRate: number;
-  childExplanationRate: number;
-  timelyRecordingRate: number;
-  photographRate: number;
-  managerInformedRate: number;
-  followUpCompletedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  thoroughRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childExplanationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  photographRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  managerInformedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  followUpCompletedRate: number | null;
   markTypeDistribution: Record<MarkType, number>;
   originDistribution: Record<MarkOrigin, number>;
   regionDistribution: Record<BodyRegion, number>;
@@ -153,30 +160,44 @@ export interface RecordingQualityResult {
 export interface AuditComplianceResult {
   overallScore: number;
   totalAudits: number;
-  protocolAccessibleRate: number;
-  staffTrainedRate: number;
-  storageSecureRate: number;
-  crossReferencedRate: number;
-  overallCompliantRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  protocolAccessibleRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffTrainedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  storageSecureRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  crossReferencedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  overallCompliantRate: number | null;
 }
 
 export interface StaffCompetenceResult {
   overallScore: number;
   totalStaff: number;
-  bodyMapTrainedRate: number;
-  safeguardingRate: number;
-  photographyRate: number;
-  documentationRate: number;
-  escalationRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  bodyMapTrainedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  photographyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  escalationRate: number | null;
 }
 
 export interface EscalationEffectivenessResult {
   overallScore: number;
   totalEscalations: number;
-  referralMadeRate: number;
-  outcomeRecordedRate: number;
-  timelyRate: number;
-  appropriateRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  referralMadeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  outcomeRecordedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  appropriateRate: number | null;
 }
 
 export interface ChildBodyMapProfile {
@@ -208,11 +229,6 @@ export interface BodyMapProtocolIntelligence {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -309,12 +325,12 @@ export function evaluateRecordingQuality(records: BodyMapRecord[]): RecordingQua
     return {
       overallScore: 25, // No marks to record = excellent
       totalRecords: 0,
-      thoroughRate: 0,
-      childExplanationRate: 0,
-      timelyRecordingRate: 0,
-      photographRate: 0,
-      managerInformedRate: 0,
-      followUpCompletedRate: 0,
+      thoroughRate: null,
+      childExplanationRate: null,
+      timelyRecordingRate: null,
+      photographRate: null,
+      managerInformedRate: null,
+      followUpCompletedRate: null,
       markTypeDistribution,
       originDistribution,
       regionDistribution,
@@ -345,21 +361,21 @@ export function evaluateRecordingQuality(records: BodyMapRecord[]): RecordingQua
     }
   }
 
-  const thoroughRate = pct(thorough, records.length);
-  const childExplanationRate = pct(childExplanation, records.length);
-  const timelyRecordingRate = pct(timely, records.length);
-  const photographRate = pct(photograph, records.length);
-  const managerInformedRate = pct(managerInformed, records.length);
-  const followUpCompletedRate = pct(followUpCompleted, followUpRequired);
+  const thoroughRate = rate(thorough, records.length);
+  const childExplanationRate = rate(childExplanation, records.length);
+  const timelyRecordingRate = rate(timely, records.length);
+  const photographRate = rate(photograph, records.length);
+  const managerInformedRate = rate(managerInformed, records.length);
+  const followUpCompletedRate = rate(followUpCompleted, followUpRequired);
 
   // Scoring: thorough rate (0-7), child explanation (0-5), timely (0-5),
   // manager informed (0-4), follow-up completed (0-4)
   let score = 0;
-  score += Math.round((thoroughRate / 100) * 7);
-  score += Math.round((childExplanationRate / 100) * 5);
-  score += Math.round((timelyRecordingRate / 100) * 5);
-  score += Math.round((managerInformedRate / 100) * 4);
-  score += Math.round((followUpCompletedRate / 100) * 4);
+  score += Math.round(((thoroughRate ?? 0) / 100) * 7);
+  score += Math.round(((childExplanationRate ?? 0) / 100) * 5);
+  score += Math.round(((timelyRecordingRate ?? 0) / 100) * 5);
+  score += Math.round(((managerInformedRate ?? 0) / 100) * 4);
+  score += Math.round(((followUpCompletedRate ?? 0) / 100) * 4);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -381,11 +397,11 @@ export function evaluateAuditCompliance(audits: BodyMapAudit[]): AuditCompliance
     return {
       overallScore: 0,
       totalAudits: 0,
-      protocolAccessibleRate: 0,
-      staffTrainedRate: 0,
-      storageSecureRate: 0,
-      crossReferencedRate: 0,
-      overallCompliantRate: 0,
+      protocolAccessibleRate: null,
+      staffTrainedRate: null,
+      storageSecureRate: null,
+      crossReferencedRate: null,
+      overallCompliantRate: null,
     };
   }
 
@@ -403,20 +419,20 @@ export function evaluateAuditCompliance(audits: BodyMapAudit[]): AuditCompliance
     if (a.overallCompliant) overallCompliant++;
   }
 
-  const protocolAccessibleRate = pct(protocolAccessible, audits.length);
-  const staffTrainedRate = pct(staffTrained, audits.length);
-  const storageSecureRate = pct(storageSecure, audits.length);
-  const crossReferencedRate = pct(crossReferenced, audits.length);
-  const overallCompliantRate = pct(overallCompliant, audits.length);
+  const protocolAccessibleRate = rate(protocolAccessible, audits.length);
+  const staffTrainedRate = rate(staffTrained, audits.length);
+  const storageSecureRate = rate(storageSecure, audits.length);
+  const crossReferencedRate = rate(crossReferenced, audits.length);
+  const overallCompliantRate = rate(overallCompliant, audits.length);
 
   // Scoring: overall compliant (0-7), storage secure (0-5), protocol accessible (0-4),
   // cross referenced (0-5), staff trained (0-4)
   let score = 0;
-  score += Math.round((overallCompliantRate / 100) * 7);
-  score += Math.round((storageSecureRate / 100) * 5);
-  score += Math.round((protocolAccessibleRate / 100) * 4);
-  score += Math.round((crossReferencedRate / 100) * 5);
-  score += Math.round((staffTrainedRate / 100) * 4);
+  score += Math.round(((overallCompliantRate ?? 0) / 100) * 7);
+  score += Math.round(((storageSecureRate ?? 0) / 100) * 5);
+  score += Math.round(((protocolAccessibleRate ?? 0) / 100) * 4);
+  score += Math.round(((crossReferencedRate ?? 0) / 100) * 5);
+  score += Math.round(((staffTrainedRate ?? 0) / 100) * 4);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -434,11 +450,11 @@ export function evaluateStaffCompetence(training: BodyMapTraining[]): StaffCompe
     return {
       overallScore: 0,
       totalStaff: 0,
-      bodyMapTrainedRate: 0,
-      safeguardingRate: 0,
-      photographyRate: 0,
-      documentationRate: 0,
-      escalationRate: 0,
+      bodyMapTrainedRate: null,
+      safeguardingRate: null,
+      photographyRate: null,
+      documentationRate: null,
+      escalationRate: null,
     };
   }
 
@@ -456,20 +472,20 @@ export function evaluateStaffCompetence(training: BodyMapTraining[]): StaffCompe
     if (t.escalationProcedure) escalation++;
   }
 
-  const bodyMapTrainedRate = pct(bodyMapTrained, training.length);
-  const safeguardingRate = pct(safeguarding, training.length);
-  const photographyRate = pct(photography, training.length);
-  const documentationRate = pct(documentation, training.length);
-  const escalationRate = pct(escalation, training.length);
+  const bodyMapTrainedRate = rate(bodyMapTrained, training.length);
+  const safeguardingRate = rate(safeguarding, training.length);
+  const photographyRate = rate(photography, training.length);
+  const documentationRate = rate(documentation, training.length);
+  const escalationRate = rate(escalation, training.length);
 
   // Scoring: body map trained (0-7), safeguarding (0-6), escalation (0-5),
   // documentation (0-4), photography (0-3)
   let score = 0;
-  score += Math.round((bodyMapTrainedRate / 100) * 7);
-  score += Math.round((safeguardingRate / 100) * 6);
-  score += Math.round((escalationRate / 100) * 5);
-  score += Math.round((documentationRate / 100) * 4);
-  score += Math.round((photographyRate / 100) * 3);
+  score += Math.round(((bodyMapTrainedRate ?? 0) / 100) * 7);
+  score += Math.round(((safeguardingRate ?? 0) / 100) * 6);
+  score += Math.round(((escalationRate ?? 0) / 100) * 5);
+  score += Math.round(((documentationRate ?? 0) / 100) * 4);
+  score += Math.round(((photographyRate ?? 0) / 100) * 3);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -491,10 +507,10 @@ export function evaluateEscalationEffectiveness(
     return {
       overallScore: 25,
       totalEscalations: 0,
-      referralMadeRate: 0,
-      outcomeRecordedRate: 0,
-      timelyRate: 0,
-      appropriateRate: 0,
+      referralMadeRate: null,
+      outcomeRecordedRate: null,
+      timelyRate: null,
+      appropriateRate: null,
     };
   }
 
@@ -509,19 +525,19 @@ export function evaluateEscalationEffectiveness(
     if (concerningOrigins.length > 0) return {
       overallScore: 0,
       totalEscalations: 0,
-      referralMadeRate: 0,
-      outcomeRecordedRate: 0,
-      timelyRate: 0,
-      appropriateRate: 0,
+      referralMadeRate: null,
+      outcomeRecordedRate: null,
+      timelyRate: null,
+      appropriateRate: null,
     };
     // No escalations, no concerning marks = good
     return {
       overallScore: 25,
       totalEscalations: 0,
-      referralMadeRate: 0,
-      outcomeRecordedRate: 0,
-      timelyRate: 0,
-      appropriateRate: 0,
+      referralMadeRate: null,
+      outcomeRecordedRate: null,
+      timelyRate: null,
+      appropriateRate: null,
     };
   }
 
@@ -537,17 +553,17 @@ export function evaluateEscalationEffectiveness(
     if (e.appropriateResponse) appropriate++;
   }
 
-  const referralMadeRate = pct(referrals, escalations.length);
-  const outcomeRecordedRate = pct(outcomes, escalations.length);
-  const timelyRate = pct(timely, escalations.length);
-  const appropriateRate = pct(appropriate, escalations.length);
+  const referralMadeRate = rate(referrals, escalations.length);
+  const outcomeRecordedRate = rate(outcomes, escalations.length);
+  const timelyRate = rate(timely, escalations.length);
+  const appropriateRate = rate(appropriate, escalations.length);
 
   // Scoring: timely (0-8), appropriate response (0-7), referral (0-5), outcome recorded (0-5)
   let score = 0;
-  score += Math.round((timelyRate / 100) * 8);
-  score += Math.round((appropriateRate / 100) * 7);
-  score += Math.round((referralMadeRate / 100) * 5);
-  score += Math.round((outcomeRecordedRate / 100) * 5);
+  score += Math.round(((timelyRate ?? 0) / 100) * 8);
+  score += Math.round(((appropriateRate ?? 0) / 100) * 7);
+  score += Math.round(((referralMadeRate ?? 0) / 100) * 5);
+  score += Math.round(((outcomeRecordedRate ?? 0) / 100) * 5);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -578,7 +594,7 @@ export function buildChildBodyMapProfiles(
     const childEscalations = escalations.filter((e) => e.childId === childId);
 
     const thorough = childRecords.filter((r) => r.documentationQuality === "thorough").length;
-    const thoroughRate = pct(thorough, childRecords.length);
+    const thoroughRate = rate(thorough, childRecords.length)!;
 
     const unexplained = childRecords.filter(
       (r) => r.markOrigin === "accidental_unexplained" || r.markOrigin === "unknown",
@@ -596,12 +612,12 @@ export function buildChildBodyMapProfiles(
 
     // Score 0-10
     let score = 0;
-    score += Math.round((thoroughRate / 100) * 4);
+    score += Math.round(((thoroughRate ?? 0) / 100) * 4);
     if (unexplained === 0) score += 3;
     else if (unexplained === 1) score += 1;
     if (childEscalations.length > 0) {
       const escalationTimely = childEscalations.filter((e) => e.timelyEscalation).length;
-      score += Math.round((pct(escalationTimely, childEscalations.length) / 100) * 3);
+      score += Math.round((rate(escalationTimely, childEscalations.length)! / 100) * 3);
     } else if (unexplained === 0) {
       score += 3;
     }
@@ -650,11 +666,11 @@ export function generateBodyMapProtocolIntelligence(
   const strengths: string[] = [];
   if (records.length === 0)
     strengths.push("No body map records in period — no physical marks reported");
-  if (records.length > 0 && recordingQuality.thoroughRate >= 90)
+  if (records.length > 0 && meets(recordingQuality.thoroughRate, 90))
     strengths.push("Excellent documentation quality with " + recordingQuality.thoroughRate + "% thorough records");
-  if (records.length > 0 && recordingQuality.timelyRecordingRate >= 95)
+  if (records.length > 0 && meets(recordingQuality.timelyRecordingRate, 95))
     strengths.push("Consistent timely recording of body maps");
-  if (records.length > 0 && recordingQuality.childExplanationRate >= 90)
+  if (records.length > 0 && meets(recordingQuality.childExplanationRate, 90))
     strengths.push("Child's voice consistently sought and recorded in body map documentation");
   if (records.length > 0 && recordingQuality.managerInformedRate === 100)
     strengths.push("Manager informed of all body map recordings");
@@ -669,19 +685,19 @@ export function generateBodyMapProtocolIntelligence(
 
   // ── Areas for Improvement ──
   const areasForImprovement: string[] = [];
-  if (records.length > 0 && recordingQuality.thoroughRate < 80)
+  if (records.length > 0 && below(recordingQuality.thoroughRate, 80))
     areasForImprovement.push("Documentation quality at " + recordingQuality.thoroughRate + "% thorough — target 80%+");
-  if (records.length > 0 && recordingQuality.childExplanationRate < 80)
+  if (records.length > 0 && below(recordingQuality.childExplanationRate, 80))
     areasForImprovement.push("Child explanation sought/recorded in only " + recordingQuality.childExplanationRate + "% of body maps");
-  if (records.length > 0 && recordingQuality.timelyRecordingRate < 90)
+  if (records.length > 0 && below(recordingQuality.timelyRecordingRate, 90))
     areasForImprovement.push("Timely recording at " + recordingQuality.timelyRecordingRate + "% — all marks should be recorded immediately");
   if (audits.length === 0)
     areasForImprovement.push("No body map protocol audits completed — schedule at least quarterly");
-  if (staffCompetence.bodyMapTrainedRate < 100 && training.length > 0)
+  if (below(staffCompetence.bodyMapTrainedRate, 100) && training.length > 0)
     areasForImprovement.push("Body map training coverage at " + staffCompetence.bodyMapTrainedRate + "% — all staff must be trained");
-  if (records.length > 0 && recordingQuality.photographRate < 50)
+  if (records.length > 0 && below(recordingQuality.photographRate, 50))
     areasForImprovement.push("Photographs taken in only " + recordingQuality.photographRate + "% of body maps — consider increasing photographic evidence");
-  if (records.length > 0 && recordingQuality.followUpCompletedRate < 80)
+  if (records.length > 0 && below(recordingQuality.followUpCompletedRate, 80))
     areasForImprovement.push("Follow-up completion rate at " + recordingQuality.followUpCompletedRate + "%");
 
   // ── Actions ──
@@ -692,17 +708,17 @@ export function generateBodyMapProtocolIntelligence(
   );
   if (unexplainedRecords.length > 0 && escalations.length === 0)
     actions.push("URGENT: " + unexplainedRecords.length + " unexplained/concerning marks recorded without safeguarding escalation — review immediately");
-  if (records.length > 0 && recordingQuality.managerInformedRate < 100)
+  if (records.length > 0 && below(recordingQuality.managerInformedRate, 100))
     actions.push("URGENT: Ensure manager is informed of ALL body map recordings — statutory requirement");
-  if (staffCompetence.totalStaff > 0 && staffCompetence.bodyMapTrainedRate < 75)
-    actions.push("URGENT: Arrange body map training for untrained staff — " + (100 - staffCompetence.bodyMapTrainedRate) + "% require training");
+  if (staffCompetence.totalStaff > 0 && below(staffCompetence.bodyMapTrainedRate, 75))
+    actions.push("URGENT: Arrange body map training for untrained staff — " + (100 - (staffCompetence.bodyMapTrainedRate ?? 0)) + "% require training");
   if (audits.length === 0)
     actions.push("Schedule body map protocol audit within 4 weeks");
-  if (records.length > 0 && recordingQuality.timelyRecordingRate < 80)
+  if (records.length > 0 && below(recordingQuality.timelyRecordingRate, 80))
     actions.push("Review timeliness of body map recording — consider same-shift recording policy");
-  if (escalations.length > 0 && escalationEffectiveness.timelyRate < 80)
-    actions.push("Review escalation timeliness — " + (100 - escalationEffectiveness.timelyRate) + "% were not escalated promptly");
-  if (records.length > 0 && recordingQuality.childExplanationRate < 60)
+  if (escalations.length > 0 && below(escalationEffectiveness.timelyRate, 80))
+    actions.push("Review escalation timeliness — " + (100 - (escalationEffectiveness.timelyRate ?? 0)) + "% were not escalated promptly");
+  if (records.length > 0 && below(recordingQuality.childExplanationRate, 60))
     actions.push("Reinforce importance of seeking and recording child's explanation for all marks");
 
   const regulatoryLinks: string[] = [

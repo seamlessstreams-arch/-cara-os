@@ -6,7 +6,6 @@ import {
   evaluateIncidentResponse,
   evaluateStaffCompetence,
   buildChildAllergenSummaries,
-  pct,
   getRating,
   getAllergenTypeLabel,
   getDietaryRequirementLabel,
@@ -95,20 +94,6 @@ function mkTraining(overrides: Partial<StaffAllergenTraining> = {}): StaffAllerg
 
 // ── pct ───────────────────────────────────────────────────────────────────
 
-describe("pct", () => {
-  it("returns 0 for 0/0", () => {
-    expect(pct(0, 0)).toBe(0);
-  });
-  it("calculates correctly", () => {
-    expect(pct(3, 4)).toBe(75);
-  });
-  it("rounds", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-  it("returns 100 for full", () => {
-    expect(pct(5, 5)).toBe(100);
-  });
-});
 
 // ── getRating ─────────────────────────────────────────────────────────────
 
@@ -223,7 +208,7 @@ describe("evaluateAllergenDocumentation", () => {
     ];
     const result = evaluateAllergenDocumentation(profiles);
     // Mild doesn't need EpiPen, so rate shouldn't penalise
-    expect(result.epiPenAvailableRate).toBe(0); // 0/0 = 0
+    expect(result.epiPenAvailableRate).toBeNull(); // 0/0 = 0
   });
 
   it("handles profile with no allergens", () => {

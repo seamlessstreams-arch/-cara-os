@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // After Care Support Quality Intelligence Engine
 // Pure deterministic — no AI, no external calls, no randomness, no Date.now()
 
@@ -119,18 +120,26 @@ export interface StaffAfterCareTraining {
 export interface AfterCareSupportQualityResult {
   overallScore: number;
   totalSessions: number;
-  engagementRate: number;
-  needsAssessedRate: number;
-  goalsSetRate: number;
-  progressRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  engagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  needsAssessedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  goalsSetRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  progressRate: number | null;
 }
 
 export interface AfterCareSupportComplianceResult {
   overallScore: number;
-  documentedRate: number;
-  staffSupportedRate: number;
-  feedbackRate: number;
-  supportTypeDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffSupportedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feedbackRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  supportTypeDiversityRatio: number | null;
 }
 
 export interface AfterCareSupportPolicyResult {
@@ -147,20 +156,28 @@ export interface AfterCareSupportPolicyResult {
 export interface StaffAfterCareReadinessResult {
   overallScore: number;
   totalStaff: number;
-  leavingCareKnowledgeRate: number;
-  pathwayPlanningRate: number;
-  housingAdviceRate: number;
-  employmentSupportRate: number;
-  benefitsAndFinanceRate: number;
-  emotionalResilienceRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  leavingCareKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  pathwayPlanningRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  housingAdviceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  employmentSupportRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  benefitsAndFinanceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  emotionalResilienceRate: number | null;
 }
 
 export interface ChildAfterCareProfile {
   childId: string;
   childName: string;
   totalSessions: number;
-  engagementRate: number;
-  goalsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  engagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  goalsRate: number | null;
   overallScore: number;
 }
 
@@ -183,11 +200,6 @@ export interface AfterCareSupportQualityIntelligence {
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -206,10 +218,10 @@ export function evaluateAfterCareSupportQuality(
     return {
       overallScore: 0,
       totalSessions: 0,
-      engagementRate: 0,
-      needsAssessedRate: 0,
-      goalsSetRate: 0,
-      progressRate: 0,
+      engagementRate: null,
+      needsAssessedRate: null,
+      goalsSetRate: null,
+      progressRate: null,
     };
   }
 
@@ -220,17 +232,17 @@ export function evaluateAfterCareSupportQuality(
   const goalsSetCount = sessions.filter((s) => s.goalsSet).length;
   const progressCount = sessions.filter((s) => s.progressTracked).length;
 
-  const engagementRate = pct(engagedCount, total);
-  const needsAssessedRate = pct(needsAssessedCount, total);
-  const goalsSetRate = pct(goalsSetCount, total);
-  const progressRate = pct(progressCount, total);
+  const engagementRate = rate(engagedCount, total);
+  const needsAssessedRate = rate(needsAssessedCount, total);
+  const goalsSetRate = rate(goalsSetCount, total);
+  const progressRate = rate(progressCount, total);
 
   const score = Math.min(
     25,
-    Math.round((engagementRate / 100) * 7) +
-      Math.round((needsAssessedRate / 100) * 6) +
-      Math.round((goalsSetRate / 100) * 6) +
-      Math.round((progressRate / 100) * 6),
+    Math.round(((engagementRate ?? 0) / 100) * 7) +
+      Math.round(((needsAssessedRate ?? 0) / 100) * 6) +
+      Math.round(((goalsSetRate ?? 0) / 100) * 6) +
+      Math.round(((progressRate ?? 0) / 100) * 6),
   );
 
   return {
@@ -253,9 +265,9 @@ export function evaluateAfterCareSupportCompliance(
   if (total === 0) {
     return {
       overallScore: 0,
-      documentedRate: 0,
-      staffSupportedRate: 0,
-      feedbackRate: 0,
+      documentedRate: null,
+      staffSupportedRate: null,
+      feedbackRate: null,
       supportTypeDiversityRatio: 0,
     };
   }
@@ -264,19 +276,19 @@ export function evaluateAfterCareSupportCompliance(
   const staffSupportedCount = sessions.filter((s) => s.staffSupported).length;
   const feedbackCount = sessions.filter((s) => s.feedbackGiven).length;
 
-  const documentedRate = pct(documentedCount, total);
-  const staffSupportedRate = pct(staffSupportedCount, total);
-  const feedbackRate = pct(feedbackCount, total);
+  const documentedRate = rate(documentedCount, total);
+  const staffSupportedRate = rate(staffSupportedCount, total);
+  const feedbackRate = rate(feedbackCount, total);
 
   const uniqueTypes = new Set(sessions.map((s) => s.supportType)).size;
-  const supportTypeDiversityRatio = pct(uniqueTypes, 8);
+  const supportTypeDiversityRatio = rate(uniqueTypes, 8);
 
   const score = Math.min(
     25,
-    Math.round((documentedRate / 100) * 8) +
-      Math.round((staffSupportedRate / 100) * 7) +
-      Math.round((feedbackRate / 100) * 5) +
-      Math.round((supportTypeDiversityRatio / 100) * 5),
+    Math.round(((documentedRate ?? 0) / 100) * 8) +
+      Math.round(((staffSupportedRate ?? 0) / 100) * 7) +
+      Math.round(((feedbackRate ?? 0) / 100) * 5) +
+      Math.round(((supportTypeDiversityRatio ?? 0) / 100) * 5),
   );
 
   return {
@@ -340,48 +352,48 @@ export function evaluateStaffAfterCareReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      leavingCareKnowledgeRate: 0,
-      pathwayPlanningRate: 0,
-      housingAdviceRate: 0,
-      employmentSupportRate: 0,
-      benefitsAndFinanceRate: 0,
-      emotionalResilienceRate: 0,
+      leavingCareKnowledgeRate: null,
+      pathwayPlanningRate: null,
+      housingAdviceRate: null,
+      employmentSupportRate: null,
+      benefitsAndFinanceRate: null,
+      emotionalResilienceRate: null,
     };
   }
 
-  const leavingCareKnowledgeRate = pct(
+  const leavingCareKnowledgeRate = rate(
     training.filter((t) => t.leavingCareKnowledge).length,
     total,
   );
-  const pathwayPlanningRate = pct(
+  const pathwayPlanningRate = rate(
     training.filter((t) => t.pathwayPlanning).length,
     total,
   );
-  const housingAdviceRate = pct(
+  const housingAdviceRate = rate(
     training.filter((t) => t.housingAdvice).length,
     total,
   );
-  const employmentSupportRate = pct(
+  const employmentSupportRate = rate(
     training.filter((t) => t.employmentSupport).length,
     total,
   );
-  const benefitsAndFinanceRate = pct(
+  const benefitsAndFinanceRate = rate(
     training.filter((t) => t.benefitsAndFinance).length,
     total,
   );
-  const emotionalResilienceRate = pct(
+  const emotionalResilienceRate = rate(
     training.filter((t) => t.emotionalResilience).length,
     total,
   );
 
   const score = Math.min(
     25,
-    Math.round((leavingCareKnowledgeRate / 100) * 6) +
-      Math.round((pathwayPlanningRate / 100) * 5) +
-      Math.round((housingAdviceRate / 100) * 5) +
-      Math.round((employmentSupportRate / 100) * 4) +
-      Math.round((benefitsAndFinanceRate / 100) * 3) +
-      Math.round((emotionalResilienceRate / 100) * 2),
+    Math.round(((leavingCareKnowledgeRate ?? 0) / 100) * 6) +
+      Math.round(((pathwayPlanningRate ?? 0) / 100) * 5) +
+      Math.round(((housingAdviceRate ?? 0) / 100) * 5) +
+      Math.round(((employmentSupportRate ?? 0) / 100) * 4) +
+      Math.round(((benefitsAndFinanceRate ?? 0) / 100) * 3) +
+      Math.round(((emotionalResilienceRate ?? 0) / 100) * 2),
   );
 
   return {
@@ -418,10 +430,10 @@ export function buildChildAfterCareProfiles(
     const engagedCount = childSessions.filter(
       (s) => s.engagementLevel === "highly_engaged" || s.engagementLevel === "engaged",
     ).length;
-    const engagementRate = pct(engagedCount, totalSessions);
+    const engagementRate = rate(engagedCount, totalSessions);
 
     const goalsCount = childSessions.filter((s) => s.goalsSet).length;
-    const goalsRate = pct(goalsCount, totalSessions);
+    const goalsRate = rate(goalsCount, totalSessions);
 
     const uniqueTypes = new Set(childSessions.map((s) => s.supportType)).size;
 
@@ -433,14 +445,14 @@ export function buildChildAfterCareProfiles(
     else if (totalSessions >= 5) score += 1;
 
     // Engagement
-    if (engagementRate >= 80) score += 3;
-    else if (engagementRate >= 60) score += 2;
-    else if (engagementRate >= 40) score += 1;
+    if (meets(engagementRate, 80)) score += 3;
+    else if (meets(engagementRate, 60)) score += 2;
+    else if (meets(engagementRate, 40)) score += 1;
 
     // Goals
-    if (goalsRate >= 80) score += 3;
-    else if (goalsRate >= 60) score += 2;
-    else if (goalsRate >= 40) score += 1;
+    if (meets(goalsRate, 80)) score += 3;
+    else if (meets(goalsRate, 60)) score += 2;
+    else if (meets(goalsRate, 40)) score += 1;
 
     // Support type diversity
     if (uniqueTypes >= 4) score += 2;
@@ -488,25 +500,25 @@ export function generateAfterCareSupportQualityIntelligence(
 
   // Strengths
   const strengths: string[] = [];
-  if (afterCareSupportQuality.engagementRate >= 80) {
+  if (meets(afterCareSupportQuality.engagementRate, 80)) {
     strengths.push("High engagement rate — " + afterCareSupportQuality.engagementRate + "% of sessions show strong young person engagement");
   }
-  if (afterCareSupportQuality.needsAssessedRate >= 80) {
+  if (meets(afterCareSupportQuality.needsAssessedRate, 80)) {
     strengths.push("Needs consistently assessed in " + afterCareSupportQuality.needsAssessedRate + "% of after care sessions");
   }
-  if (afterCareSupportQuality.goalsSetRate >= 80) {
+  if (meets(afterCareSupportQuality.goalsSetRate, 80)) {
     strengths.push("Goals set in " + afterCareSupportQuality.goalsSetRate + "% of sessions — strong forward planning");
   }
-  if (afterCareSupportQuality.progressRate >= 80) {
+  if (meets(afterCareSupportQuality.progressRate, 80)) {
     strengths.push("Progress tracked in " + afterCareSupportQuality.progressRate + "% of sessions — consistent monitoring");
   }
-  if (afterCareSupportCompliance.documentedRate >= 80) {
+  if (meets(afterCareSupportCompliance.documentedRate, 80)) {
     strengths.push("After care support is well documented in care plans");
   }
-  if (afterCareSupportCompliance.staffSupportedRate >= 80) {
+  if (meets(afterCareSupportCompliance.staffSupportedRate, 80)) {
     strengths.push("Staff support is consistently provided during after care sessions");
   }
-  if (afterCareSupportCompliance.feedbackRate >= 80) {
+  if (meets(afterCareSupportCompliance.feedbackRate, 80)) {
     strengths.push("Feedback routinely given to young people following sessions");
   }
   if (afterCareSupportPolicy.overallScore >= 20) {
@@ -518,25 +530,25 @@ export function generateAfterCareSupportQualityIntelligence(
 
   // Areas for improvement
   const areasForImprovement: string[] = [];
-  if (afterCareSupportQuality.engagementRate < 60) {
+  if (below(afterCareSupportQuality.engagementRate, 60)) {
     areasForImprovement.push("Engagement rate is below 60% — review how sessions are structured to improve participation");
   }
-  if (afterCareSupportQuality.needsAssessedRate < 60) {
+  if (below(afterCareSupportQuality.needsAssessedRate, 60)) {
     areasForImprovement.push("Needs assessment rate needs improvement — ensure all sessions include a needs review");
   }
-  if (afterCareSupportQuality.goalsSetRate < 60) {
+  if (below(afterCareSupportQuality.goalsSetRate, 60)) {
     areasForImprovement.push("Goal-setting rate is low — ensure clear goals are established in each session");
   }
-  if (afterCareSupportQuality.progressRate < 60) {
+  if (below(afterCareSupportQuality.progressRate, 60)) {
     areasForImprovement.push("Progress tracking is insufficient — implement systematic progress monitoring");
   }
-  if (afterCareSupportCompliance.documentedRate < 60) {
+  if (below(afterCareSupportCompliance.documentedRate, 60)) {
     areasForImprovement.push("Documentation of after care support in care plans needs improvement");
   }
-  if (afterCareSupportCompliance.staffSupportedRate < 60) {
+  if (below(afterCareSupportCompliance.staffSupportedRate, 60)) {
     areasForImprovement.push("Staff support during after care sessions is inconsistent");
   }
-  if (afterCareSupportCompliance.feedbackRate < 60) {
+  if (below(afterCareSupportCompliance.feedbackRate, 60)) {
     areasForImprovement.push("Feedback provision to young people after sessions needs improvement");
   }
   if (afterCareSupportPolicy.overallScore < 15) {
@@ -557,13 +569,13 @@ export function generateAfterCareSupportQualityIntelligence(
   if (training.length === 0) {
     actions.push("URGENT: No staff training records for after care support — arrange training programme");
   }
-  if (afterCareSupportCompliance.supportTypeDiversityRatio < 50) {
+  if (below(afterCareSupportCompliance.supportTypeDiversityRatio, 50)) {
     actions.push("MEDIUM: Diversify support types — consider housing, employment, education, and wellbeing sessions");
   }
-  if (afterCareSupportQuality.engagementRate < 60 && sessions.length > 0) {
+  if (below(afterCareSupportQuality.engagementRate, 60) && sessions.length > 0) {
     actions.push("HIGH: Review session delivery methods to improve young person engagement");
   }
-  if (afterCareSupportQuality.goalsSetRate < 60 && sessions.length > 0) {
+  if (below(afterCareSupportQuality.goalsSetRate, 60) && sessions.length > 0) {
     actions.push("HIGH: Implement structured goal-setting in all after care sessions");
   }
 

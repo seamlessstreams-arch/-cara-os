@@ -5,7 +5,6 @@ export {
   evaluateStaffCompetence,
   evaluateEscalationEffectiveness,
   buildChildBodyMapProfiles,
-  pct,
   getRating,
   getMarkTypeLabel,
   getMarkOriginLabel,

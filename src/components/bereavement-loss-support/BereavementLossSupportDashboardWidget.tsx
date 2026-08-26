@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { BereavementLossSupportIntelligence } from "@/lib/bereavement-loss-support";
+import { formatRate } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -112,7 +113,7 @@ export function BereavementLossSupportDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Interventions</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.supportQuality.childEngagedRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.supportQuality.childEngagedRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Child Engagement</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">

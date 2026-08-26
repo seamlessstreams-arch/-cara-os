@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { ClothingAppearanceProvisionIntelligence } from "@/lib/clothing-appearance-provision";
+import { formatRate } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -101,11 +102,11 @@ export function ClothingAppearanceProvisionDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Assessments</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.quality.qualityRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.quality.qualityRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Quality Rate</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.quality.childChoiceRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.quality.childChoiceRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Child Choice</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -145,42 +146,42 @@ export function ClothingAppearanceProvisionDashboardWidget() {
         <Section title="Quality">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Assessments:</span> <span className="font-medium">{data.quality.totalAssessments}</span></div>
-            <div><span className="text-gray-500">Quality Rate:</span> <span className="font-medium">{data.quality.qualityRate}%</span></div>
-            <div><span className="text-gray-500">Child Choice:</span> <span className="font-medium">{data.quality.childChoiceRate}%</span></div>
-            <div><span className="text-gray-500">Age Appropriate:</span> <span className="font-medium">{data.quality.ageAppropriateRate}%</span></div>
-            <div><span className="text-gray-500">Cultural:</span> <span className="font-medium">{data.quality.culturalRate}%</span></div>
+            <div><span className="text-gray-500">Quality Rate:</span> <span className="font-medium">{formatRate(data.quality.qualityRate)}</span></div>
+            <div><span className="text-gray-500">Child Choice:</span> <span className="font-medium">{formatRate(data.quality.childChoiceRate)}</span></div>
+            <div><span className="text-gray-500">Age Appropriate:</span> <span className="font-medium">{formatRate(data.quality.ageAppropriateRate)}</span></div>
+            <div><span className="text-gray-500">Cultural:</span> <span className="font-medium">{formatRate(data.quality.culturalRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Compliance">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div><span className="text-gray-500">Documented:</span> <span className="font-medium">{data.compliance.documentedRate}%</span></div>
-            <div><span className="text-gray-500">Staff Assessed:</span> <span className="font-medium">{data.compliance.staffAssessedRate}%</span></div>
-            <div><span className="text-gray-500">Feedback:</span> <span className="font-medium">{data.compliance.feedbackRate}%</span></div>
-            <div><span className="text-gray-500">Category Diversity:</span> <span className="font-medium">{data.compliance.categoryDiversityRatio}%</span></div>
+            <div><span className="text-gray-500">Documented:</span> <span className="font-medium">{formatRate(data.compliance.documentedRate)}</span></div>
+            <div><span className="text-gray-500">Staff Assessed:</span> <span className="font-medium">{formatRate(data.compliance.staffAssessedRate)}</span></div>
+            <div><span className="text-gray-500">Feedback:</span> <span className="font-medium">{formatRate(data.compliance.feedbackRate)}</span></div>
+            <div><span className="text-gray-500">Category Diversity:</span> <span className="font-medium">{formatRate(data.compliance.categoryDiversityRatio)}</span></div>
           </div>
         </Section>
 
         <Section title="Clothing Policy">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div><span className="text-gray-500">Provision Strategy:</span> <span className="font-medium">{data.policy.clothingProvisionStrategyRate}%</span></div>
-            <div><span className="text-gray-500">Budget Framework:</span> <span className="font-medium">{data.policy.clothingBudgetFrameworkRate}%</span></div>
-            <div><span className="text-gray-500">Seasonal Review:</span> <span className="font-medium">{data.policy.seasonalReviewProcedureRate}%</span></div>
-            <div><span className="text-gray-500">Child Choice:</span> <span className="font-medium">{data.policy.childChoiceGuidanceRate}%</span></div>
-            <div><span className="text-gray-500">Cultural/Religious:</span> <span className="font-medium">{data.policy.culturalAndReligiousAccommodationRate}%</span></div>
-            <div><span className="text-gray-500">Laundry/Maintenance:</span> <span className="font-medium">{data.policy.laundryAndMaintenancePlanRate}%</span></div>
-            <div><span className="text-gray-500">Regular Review:</span> <span className="font-medium">{data.policy.regularReviewRate}%</span></div>
+            <div><span className="text-gray-500">Provision Strategy:</span> <span className="font-medium">{formatRate(data.policy.clothingProvisionStrategyRate)}</span></div>
+            <div><span className="text-gray-500">Budget Framework:</span> <span className="font-medium">{formatRate(data.policy.clothingBudgetFrameworkRate)}</span></div>
+            <div><span className="text-gray-500">Seasonal Review:</span> <span className="font-medium">{formatRate(data.policy.seasonalReviewProcedureRate)}</span></div>
+            <div><span className="text-gray-500">Child Choice:</span> <span className="font-medium">{formatRate(data.policy.childChoiceGuidanceRate)}</span></div>
+            <div><span className="text-gray-500">Cultural/Religious:</span> <span className="font-medium">{formatRate(data.policy.culturalAndReligiousAccommodationRate)}</span></div>
+            <div><span className="text-gray-500">Laundry/Maintenance:</span> <span className="font-medium">{formatRate(data.policy.laundryAndMaintenancePlanRate)}</span></div>
+            <div><span className="text-gray-500">Regular Review:</span> <span className="font-medium">{formatRate(data.policy.regularReviewRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Staff Readiness">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div><span className="text-gray-500">Clothing Assessment:</span> <span className="font-medium">{data.staffReadiness.clothingAssessmentRate}%</span></div>
-            <div><span className="text-gray-500">Child Choice:</span> <span className="font-medium">{data.staffReadiness.childChoiceFacilitationRate}%</span></div>
-            <div><span className="text-gray-500">Budget Mgmt:</span> <span className="font-medium">{data.staffReadiness.budgetManagementRate}%</span></div>
-            <div><span className="text-gray-500">Cultural Awareness:</span> <span className="font-medium">{data.staffReadiness.culturalAwarenessRate}%</span></div>
-            <div><span className="text-gray-500">Age Appropriate:</span> <span className="font-medium">{data.staffReadiness.ageAppropriateGuidanceRate}%</span></div>
-            <div><span className="text-gray-500">Record Keeping:</span> <span className="font-medium">{data.staffReadiness.recordKeepingRate}%</span></div>
+            <div><span className="text-gray-500">Clothing Assessment:</span> <span className="font-medium">{formatRate(data.staffReadiness.clothingAssessmentRate)}</span></div>
+            <div><span className="text-gray-500">Child Choice:</span> <span className="font-medium">{formatRate(data.staffReadiness.childChoiceFacilitationRate)}</span></div>
+            <div><span className="text-gray-500">Budget Mgmt:</span> <span className="font-medium">{formatRate(data.staffReadiness.budgetManagementRate)}</span></div>
+            <div><span className="text-gray-500">Cultural Awareness:</span> <span className="font-medium">{formatRate(data.staffReadiness.culturalAwarenessRate)}</span></div>
+            <div><span className="text-gray-500">Age Appropriate:</span> <span className="font-medium">{formatRate(data.staffReadiness.ageAppropriateGuidanceRate)}</span></div>
+            <div><span className="text-gray-500">Record Keeping:</span> <span className="font-medium">{formatRate(data.staffReadiness.recordKeepingRate)}</span></div>
           </div>
         </Section>
 

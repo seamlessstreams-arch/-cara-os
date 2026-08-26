@@ -18,8 +18,7 @@ import {
   getResolutionOutcomeLabel,
   getRatingLabel,
   getRating,
-  pct,
-} from "../complaint-resolution-effectiveness-engine";
+  } from "../complaint-resolution-effectiveness-engine";
 import type {
   ComplaintRecord,
   ComplaintPolicy,
@@ -83,18 +82,6 @@ function makeTraining(overrides: Partial<StaffComplaintTraining> = {}): StaffCom
 
 // -- pct helper ---------------------------------------------------------------
 
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("calculates percentage correctly", () => {
-    expect(pct(3, 4)).toBe(75);
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(10, 10)).toBe(100);
-    expect(pct(0, 10)).toBe(0);
-  });
-});
 
 // -- getRating ----------------------------------------------------------------
 
@@ -156,10 +143,10 @@ describe("evaluateResolutionQuality", () => {
   it("returns 0 for empty records (PRESENCE pattern)", () => {
     const result = evaluateResolutionQuality([]);
     expect(result.overallScore).toBe(0);
-    expect(result.resolutionRate).toBe(0);
-    expect(result.childInformedRate).toBe(0);
-    expect(result.lessonsLearnedRate).toBe(0);
-    expect(result.actionsTakenRate).toBe(0);
+    expect(result.resolutionRate).toBeNull();
+    expect(result.childInformedRate).toBeNull();
+    expect(result.lessonsLearnedRate).toBeNull();
+    expect(result.actionsTakenRate).toBeNull();
   });
 
   it("scores maximum 25 when all records are fully positive", () => {
@@ -228,9 +215,9 @@ describe("evaluateComplaintCompliance", () => {
   it("returns 0 for empty records (PRESENCE pattern)", () => {
     const result = evaluateComplaintCompliance([]);
     expect(result.overallScore).toBe(0);
-    expect(result.resolvedWithinTimescaleRate).toBe(0);
-    expect(result.documentedRate).toBe(0);
-    expect(result.complainantSatisfiedRate).toBe(0);
+    expect(result.resolvedWithinTimescaleRate).toBeNull();
+    expect(result.documentedRate).toBeNull();
+    expect(result.complainantSatisfiedRate).toBeNull();
     expect(result.sourceDiversity).toBe(0);
   });
 
@@ -365,12 +352,12 @@ describe("evaluateStaffComplaintReadiness", () => {
     const result = evaluateStaffComplaintReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.complaintHandlingRate).toBe(0);
-    expect(result.childFocusedResolutionRate).toBe(0);
-    expect(result.conflictResolutionRate).toBe(0);
-    expect(result.documentationSkillsRate).toBe(0);
-    expect(result.advocacyAwarenessRate).toBe(0);
-    expect(result.regulatoryRequirementsRate).toBe(0);
+    expect(result.complaintHandlingRate).toBeNull();
+    expect(result.childFocusedResolutionRate).toBeNull();
+    expect(result.conflictResolutionRate).toBeNull();
+    expect(result.documentationSkillsRate).toBeNull();
+    expect(result.advocacyAwarenessRate).toBeNull();
+    expect(result.regulatoryRequirementsRate).toBeNull();
   });
 
   it("returns 25 when all staff have all skills", () => {

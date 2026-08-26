@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildAllegationProfile { childId: string; childName: string; totalRecords: number; ladoReferralRate: number; childSupportRate: number; categoriesCovered: string[]; overallScore: number; }
 
@@ -73,19 +74,19 @@ export default function AllegationsDashboardWidget() {
       <Section title="Allegation Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Allegations" value={data.allegationQuality.totalAllegations} />
-          <Stat label="LADO Referral" value={`${data.allegationQuality.ladoReferralRate}%`} />
-          <Stat label="Ofsted Notified" value={`${data.allegationQuality.ofstedNotifiedRate}%`} />
-          <Stat label="Child Support" value={`${data.allegationQuality.childSupportRate}%`} />
-          <Stat label="Staff Support" value={`${data.allegationQuality.staffSupportRate}%`} />
+          <Stat label="LADO Referral" value={`${formatRate(data.allegationQuality.ladoReferralRate)}`} />
+          <Stat label="Ofsted Notified" value={`${formatRate(data.allegationQuality.ofstedNotifiedRate)}`} />
+          <Stat label="Child Support" value={`${formatRate(data.allegationQuality.childSupportRate)}`} />
+          <Stat label="Staff Support" value={`${formatRate(data.allegationQuality.staffSupportRate)}`} />
         </div>
       </Section>
 
       <Section title="Allegation Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documentation" value={`${data.allegationCompliance.documentationRate}%`} />
-          <Stat label="Timely Investigation" value={`${data.allegationCompliance.timelyInvestigationRate}%`} />
-          <Stat label="Child Support" value={`${data.allegationCompliance.childSupportRate}%`} />
-          <Stat label="Category Coverage" value={`${data.allegationCompliance.categoryDiversityRatio}%`} />
+          <Stat label="Documentation" value={`${formatRate(data.allegationCompliance.documentationRate)}`} />
+          <Stat label="Timely Investigation" value={`${formatRate(data.allegationCompliance.timelyInvestigationRate)}`} />
+          <Stat label="Child Support" value={`${formatRate(data.allegationCompliance.childSupportRate)}`} />
+          <Stat label="Category Coverage" value={`${formatRate(data.allegationCompliance.categoryDiversityRatio)}`} />
         </div>
       </Section>
 
@@ -108,12 +109,12 @@ export default function AllegationsDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
-          <Stat label="Safeguarding" value={`${data.staffReadiness.safeguardingKnowledgeRate}%`} />
-          <Stat label="Allegation Procedures" value={`${data.staffReadiness.allegationProceduresRate}%`} />
-          <Stat label="LADO Process" value={`${data.staffReadiness.ladoProcessRate}%`} />
-          <Stat label="Investigation Skills" value={`${data.staffReadiness.investigationSkillsRate}%`} />
-          <Stat label="Child Protection" value={`${data.staffReadiness.childProtectionRate}%`} />
-          <Stat label="Record Keeping" value={`${data.staffReadiness.recordKeepingRate}%`} />
+          <Stat label="Safeguarding" value={`${formatRate(data.staffReadiness.safeguardingKnowledgeRate)}`} />
+          <Stat label="Allegation Procedures" value={`${formatRate(data.staffReadiness.allegationProceduresRate)}`} />
+          <Stat label="LADO Process" value={`${formatRate(data.staffReadiness.ladoProcessRate)}`} />
+          <Stat label="Investigation Skills" value={`${formatRate(data.staffReadiness.investigationSkillsRate)}`} />
+          <Stat label="Child Protection" value={`${formatRate(data.staffReadiness.childProtectionRate)}`} />
+          <Stat label="Record Keeping" value={`${formatRate(data.staffReadiness.recordKeepingRate)}`} />
         </div>
       </Section>
 

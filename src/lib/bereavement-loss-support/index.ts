@@ -5,7 +5,6 @@ export {
   evaluateStaffBereavementReadiness,
   buildChildGriefProfiles,
   generateBereavementLossSupportIntelligence,
-  pct,
   getRating,
   getLossTypeLabel,
   getSupportTypeLabel,

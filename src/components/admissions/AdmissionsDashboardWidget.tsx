@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildAdmissionProfile { childId: string; childName: string; totalRecords: number; thoroughRate: number; childConsultedRate: number; categoriesCovered: string[]; overallScore: number; }
 
@@ -73,19 +74,19 @@ export default function AdmissionsDashboardWidget() {
       <Section title="Admission Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Admissions" value={data.admissionQuality.totalAdmissions} />
-          <Stat label="Thorough Assessment" value={`${data.admissionQuality.thoroughAssessmentRate}%`} />
-          <Stat label="Child Consulted" value={`${data.admissionQuality.childConsultedRate}%`} />
-          <Stat label="Impact Considered" value={`${data.admissionQuality.impactConsideredRate}%`} />
-          <Stat label="Transition Plan" value={`${data.admissionQuality.transitionPlanRate}%`} />
+          <Stat label="Thorough Assessment" value={`${formatRate(data.admissionQuality.thoroughAssessmentRate)}`} />
+          <Stat label="Child Consulted" value={`${formatRate(data.admissionQuality.childConsultedRate)}`} />
+          <Stat label="Impact Considered" value={`${formatRate(data.admissionQuality.impactConsideredRate)}`} />
+          <Stat label="Transition Plan" value={`${formatRate(data.admissionQuality.transitionPlanRate)}`} />
         </div>
       </Section>
 
       <Section title="Admission Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documentation" value={`${data.admissionCompliance.documentationRate}%`} />
-          <Stat label="Timely Process" value={`${data.admissionCompliance.timelyRate}%`} />
-          <Stat label="Impact Assessment" value={`${data.admissionCompliance.impactAssessmentRate}%`} />
-          <Stat label="Category Coverage" value={`${data.admissionCompliance.categoryDiversityRatio}%`} />
+          <Stat label="Documentation" value={`${formatRate(data.admissionCompliance.documentationRate)}`} />
+          <Stat label="Timely Process" value={`${formatRate(data.admissionCompliance.timelyRate)}`} />
+          <Stat label="Impact Assessment" value={`${formatRate(data.admissionCompliance.impactAssessmentRate)}`} />
+          <Stat label="Category Coverage" value={`${formatRate(data.admissionCompliance.categoryDiversityRatio)}`} />
         </div>
       </Section>
 
@@ -108,12 +109,12 @@ export default function AdmissionsDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
-          <Stat label="Assessment Skills" value={`${data.staffReadiness.assessmentSkillsRate}%`} />
-          <Stat label="Matching Expertise" value={`${data.staffReadiness.matchingExpertiseRate}%`} />
-          <Stat label="Transition Planning" value={`${data.staffReadiness.transitionPlanningRate}%`} />
-          <Stat label="Child Participation" value={`${data.staffReadiness.childParticipationRate}%`} />
-          <Stat label="Risk Assessment" value={`${data.staffReadiness.riskAssessmentRate}%`} />
-          <Stat label="Family Engagement" value={`${data.staffReadiness.familyEngagementRate}%`} />
+          <Stat label="Assessment Skills" value={`${formatRate(data.staffReadiness.assessmentSkillsRate)}`} />
+          <Stat label="Matching Expertise" value={`${formatRate(data.staffReadiness.matchingExpertiseRate)}`} />
+          <Stat label="Transition Planning" value={`${formatRate(data.staffReadiness.transitionPlanningRate)}`} />
+          <Stat label="Child Participation" value={`${formatRate(data.staffReadiness.childParticipationRate)}`} />
+          <Stat label="Risk Assessment" value={`${formatRate(data.staffReadiness.riskAssessmentRate)}`} />
+          <Stat label="Family Engagement" value={`${formatRate(data.staffReadiness.familyEngagementRate)}`} />
         </div>
       </Section>
 

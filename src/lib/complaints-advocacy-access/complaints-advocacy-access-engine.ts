@@ -288,10 +288,6 @@ export interface ComplaintsAdvocacyAccessIntelligence {
 // -- Helpers -------------------------------------------------------------------
 
 // Was `if (den === 0) return 0;`: nothing recorded read as 0%.
-export function pct(num: number, den: number): number | null {
-  return rate(num, den);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -317,10 +313,10 @@ export function evaluateComplaintsHandling(
     return {
       overallScore: 25,
       totalComplaints: 0,
-      resolvedRate: 0,
-      resolvedWithinTimescaleRate: 0,
-      advocacyOfferedRate: 0,
-      satisfactionRate: 0,
+      resolvedRate: null,
+      resolvedWithinTimescaleRate: null,
+      advocacyOfferedRate: null,
+      satisfactionRate: null,
       averageDaysToResolve: 0,
     };
   }
@@ -330,7 +326,7 @@ export function evaluateComplaintsHandling(
   const resolved = complaints.filter(
     (c) => c.status === "resolved" || c.status === "withdrawn",
   ).length;
-  const resolvedRate = pct(resolved, complaints.length);
+  const resolvedRate = rate(resolved, complaints.length);
   if (meets(resolvedRate, 90)) score += 7;
   else if (meets(resolvedRate, 70)) score += 5;
   else if (meets(resolvedRate, 50)) score += 3;
@@ -339,7 +335,7 @@ export function evaluateComplaintsHandling(
   const timely = complaints.filter(
     (c) => c.resolvedWithinTimescale,
   ).length;
-  const resolvedWithinTimescaleRate = pct(timely, complaints.length);
+  const resolvedWithinTimescaleRate = rate(timely, complaints.length);
   if (meets(resolvedWithinTimescaleRate, 90)) score += 6;
   else if (meets(resolvedWithinTimescaleRate, 70)) score += 4;
   else if (meets(resolvedWithinTimescaleRate, 50)) score += 3;
@@ -348,7 +344,7 @@ export function evaluateComplaintsHandling(
   const advocacyOffered = complaints.filter(
     (c) => c.advocacyOffered,
   ).length;
-  const advocacyOfferedRate = pct(advocacyOffered, complaints.length);
+  const advocacyOfferedRate = rate(advocacyOffered, complaints.length);
   if (meets(advocacyOfferedRate, 90)) score += 6;
   else if (meets(advocacyOfferedRate, 70)) score += 4;
   else if (meets(advocacyOfferedRate, 50)) score += 3;
@@ -359,7 +355,7 @@ export function evaluateComplaintsHandling(
       c.childSatisfaction === "very_satisfied" ||
       c.childSatisfaction === "satisfied",
   ).length;
-  const satisfactionRate = pct(satisfied, complaints.length);
+  const satisfactionRate = rate(satisfied, complaints.length);
   if (meets(satisfactionRate, 80)) score += 6;
   else if (meets(satisfactionRate, 60)) score += 4;
   else if (meets(satisfactionRate, 40)) score += 3;
@@ -398,18 +394,18 @@ export function evaluateAdvocacyAccess(
     return {
       overallScore: 0,
       totalReferrals: 0,
-      contactMadeRate: 0,
-      independentRate: 0,
-      childInformedRate: 0,
-      timelyAccessRate: 0,
-      ongoingSupportRate: 0,
+      contactMadeRate: null,
+      independentRate: null,
+      childInformedRate: null,
+      timelyAccessRate: null,
+      ongoingSupportRate: null,
     };
   }
 
   let score = 0;
 
   const contactMade = records.filter((r) => r.contactMade).length;
-  const contactMadeRate = pct(contactMade, records.length);
+  const contactMadeRate = rate(contactMade, records.length);
   if (meets(contactMadeRate, 90)) score += 7;
   else if (meets(contactMadeRate, 70)) score += 5;
   else if (meets(contactMadeRate, 50)) score += 3;
@@ -418,7 +414,7 @@ export function evaluateAdvocacyAccess(
   const independent = records.filter(
     (r) => r.independentFromHome,
   ).length;
-  const independentRate = pct(independent, records.length);
+  const independentRate = rate(independent, records.length);
   if (meets(independentRate, 90)) score += 6;
   else if (meets(independentRate, 70)) score += 4;
   else if (meets(independentRate, 50)) score += 3;
@@ -427,7 +423,7 @@ export function evaluateAdvocacyAccess(
   const childInformed = records.filter(
     (r) => r.childInformed,
   ).length;
-  const childInformedRate = pct(childInformed, records.length);
+  const childInformedRate = rate(childInformed, records.length);
   if (meets(childInformedRate, 90)) score += 6;
   else if (meets(childInformedRate, 70)) score += 4;
   else if (meets(childInformedRate, 50)) score += 3;
@@ -436,14 +432,14 @@ export function evaluateAdvocacyAccess(
   const timely = records.filter(
     (r) => r.accessWithinTimescale,
   ).length;
-  const timelyAccessRate = pct(timely, records.length);
+  const timelyAccessRate = rate(timely, records.length);
   if (meets(timelyAccessRate, 90)) score += 6;
   else if (meets(timelyAccessRate, 70)) score += 4;
   else if (meets(timelyAccessRate, 50)) score += 3;
   else if (above(timelyAccessRate, 0)) score += 1;
 
   const ongoing = records.filter((r) => r.ongoingSupport).length;
-  const ongoingSupportRate = pct(ongoing, records.length);
+  const ongoingSupportRate = rate(ongoing, records.length);
 
   return {
     overallScore: Math.min(score, 25),
@@ -525,12 +521,12 @@ export function evaluateStaffComplaintsReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      complaintsProcedureRate: 0,
-      advocacyReferralRate: 0,
-      childRightsRate: 0,
-      conflictResolutionRate: 0,
-      recordKeepingRate: 0,
-      escalationRate: 0,
+      complaintsProcedureRate: null,
+      advocacyReferralRate: null,
+      childRightsRate: null,
+      conflictResolutionRate: null,
+      recordKeepingRate: null,
+      escalationRate: null,
     };
   }
 
@@ -539,14 +535,14 @@ export function evaluateStaffComplaintsReadiness(
   const procedure = training.filter(
     (t) => t.complaintsProcedure,
   ).length;
-  const complaintsProcedureRate = pct(procedure, training.length);
+  const complaintsProcedureRate = rate(procedure, training.length);
   if (meets(complaintsProcedureRate, 90)) score += 6;
   else if (meets(complaintsProcedureRate, 70)) score += 4;
   else if (meets(complaintsProcedureRate, 50)) score += 3;
   else if (above(complaintsProcedureRate, 0)) score += 1;
 
   const advocacy = training.filter((t) => t.advocacyReferral).length;
-  const advocacyReferralRate = pct(advocacy, training.length);
+  const advocacyReferralRate = rate(advocacy, training.length);
   if (meets(advocacyReferralRate, 90)) score += 5;
   else if (meets(advocacyReferralRate, 70)) score += 3;
   else if (meets(advocacyReferralRate, 50)) score += 2;
@@ -555,7 +551,7 @@ export function evaluateStaffComplaintsReadiness(
   const rights = training.filter(
     (t) => t.childRightsAwareness,
   ).length;
-  const childRightsRate = pct(rights, training.length);
+  const childRightsRate = rate(rights, training.length);
   if (meets(childRightsRate, 90)) score += 5;
   else if (meets(childRightsRate, 70)) score += 3;
   else if (meets(childRightsRate, 50)) score += 2;
@@ -564,7 +560,7 @@ export function evaluateStaffComplaintsReadiness(
   const conflict = training.filter(
     (t) => t.conflictResolution,
   ).length;
-  const conflictResolutionRate = pct(conflict, training.length);
+  const conflictResolutionRate = rate(conflict, training.length);
   if (meets(conflictResolutionRate, 90)) score += 4;
   else if (meets(conflictResolutionRate, 70)) score += 3;
   else if (meets(conflictResolutionRate, 50)) score += 2;
@@ -573,7 +569,7 @@ export function evaluateStaffComplaintsReadiness(
   const recordKeeping = training.filter(
     (t) => t.recordKeeping,
   ).length;
-  const recordKeepingRate = pct(recordKeeping, training.length);
+  const recordKeepingRate = rate(recordKeeping, training.length);
   if (meets(recordKeepingRate, 90)) score += 3;
   else if (meets(recordKeepingRate, 70)) score += 2;
   else if (meets(recordKeepingRate, 50)) score += 1;
@@ -581,7 +577,7 @@ export function evaluateStaffComplaintsReadiness(
   const escalation = training.filter(
     (t) => t.escalationProcess,
   ).length;
-  const escalationRate = pct(escalation, training.length);
+  const escalationRate = rate(escalation, training.length);
   if (meets(escalationRate, 90)) score += 2;
   else if (meets(escalationRate, 70)) score += 1;
 
@@ -659,9 +655,9 @@ export function buildChildComplaintsSummaries(
     ).length;
     if (entry.complaints.length === 0) {
       score += 3;
-    } else if (meets(pct(satisfied, entry.complaints.length), 80)) {
+    } else if (meets(rate(satisfied, entry.complaints.length), 80)) {
       score += 3;
-    } else if (meets(pct(satisfied, entry.complaints.length), 50)) {
+    } else if (meets(rate(satisfied, entry.complaints.length), 50)) {
       score += 2;
     } else if (satisfied > 0) {
       score += 1;
@@ -687,7 +683,7 @@ export function buildChildComplaintsSummaries(
       advocacyAccessed: entry.advocacy.length > 0,
       satisfactionPositive:
         entry.complaints.length === 0 ||
-        meets(pct(satisfied, entry.complaints.length), 50),
+        meets(rate(satisfied, entry.complaints.length), 50),
       overallScore: Math.min(Math.max(score, 0), 10),
     };
   });

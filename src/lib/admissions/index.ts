@@ -5,7 +5,6 @@ export {
   evaluateAdmissionPolicy,
   evaluateStaffAdmissionReadiness,
   buildChildAdmissionProfiles,
-  pct,
   getRating,
   getAdmissionCategoryLabel,
   getAdmissionOutcomeLabel,

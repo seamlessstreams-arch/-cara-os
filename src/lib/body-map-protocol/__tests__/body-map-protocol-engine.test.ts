@@ -6,7 +6,6 @@ import {
   evaluateStaffCompetence,
   evaluateEscalationEffectiveness,
   buildChildBodyMapProfiles,
-  pct,
   getRating,
   getMarkTypeLabel,
   getMarkOriginLabel,
@@ -98,23 +97,6 @@ function mkEscalation(overrides: Partial<SafeguardingEscalation> = {}): Safeguar
 
 // ── pct helper ────────────────────────────────────────────────────────────
 
-describe("pct", () => {
-  it("returns 0 for 0/0", () => {
-    expect(pct(0, 0)).toBe(0);
-  });
-
-  it("calculates percentage correctly", () => {
-    expect(pct(3, 4)).toBe(75);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-
-  it("returns 100 for full", () => {
-    expect(pct(5, 5)).toBe(100);
-  });
-});
 
 // ── getRating ─────────────────────────────────────────────────────────────
 

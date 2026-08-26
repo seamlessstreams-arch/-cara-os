@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // Cara -- Children's Fund Management Intelligence Engine
 //
@@ -136,10 +137,14 @@ export interface FinancialAudit {
 export interface AccountManagementResult {
   overallScore: number; // 0-25
   totalAccounts: number;
-  activeRate: number; // %
-  reconciledRate: number; // %
-  childAccessRate: number; // %
-  signedAgreementRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  activeRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  reconciledRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  childAccessRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  signedAgreementRate: number | null; // %
   overdueCount: number;
   averageBalance: number;
   totalSavings: number;
@@ -148,9 +153,12 @@ export interface AccountManagementResult {
 export interface TransactionIntegrityResult {
   overallScore: number; // 0-25
   totalTransactions: number;
-  receiptRate: number; // %
-  consentRate: number; // %
-  twoSignatureRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  receiptRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  consentRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  twoSignatureRate: number | null; // %
   averageTransaction: number;
   typeDistribution: Record<TransactionType, number>;
 }
@@ -158,21 +166,30 @@ export interface TransactionIntegrityResult {
 export interface FinancialLiteracyResult {
   overallScore: number; // 0-25
   totalSessions: number;
-  engagementRate: number; // %
-  practicalRate: number; // %
-  ageAppropriateRate: number; // %
-  topicCoverage: number; // % of topics covered
+  /** null when the population is empty — nothing measured, not 0%. */
+  engagementRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  practicalRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  ageAppropriateRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  topicCoverage: number | null; // % of topics covered
   topicDistribution: Record<FinancialLiteracyTopic, number>;
 }
 
 export interface AuditComplianceResult {
   overallScore: number; // 0-25
   totalAudits: number;
-  allReconciledRate: number; // %
-  receiptCompliantRate: number; // %
-  twoSigCompliantRate: number; // %
-  discrepancyRate: number; // % of found that were resolved
-  policyCompliantRate: number; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  allReconciledRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  receiptCompliantRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  twoSigCompliantRate: number | null; // %
+  /** null when the population is empty — nothing measured, not 0%. */
+  discrepancyRate: number | null; // % of found that were resolved
+  /** null when the population is empty — nothing measured, not 0%. */
+  policyCompliantRate: number | null; // %
 }
 
 export interface ChildFinancialProfile {
@@ -207,11 +224,6 @@ export interface ChildrenFundManagementIntelligence {
 // -- Helpers ------------------------------------------------------------------
 
 /** Calculate percentage, returning 0 if denominator is 0. */
-export function pct(numerator: number, denominator: number): number {
-  if (denominator === 0) return 0;
-  return Math.round((numerator / denominator) * 100);
-}
-
 /** Map overall score (0-100) to Ofsted-style rating. */
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -329,10 +341,10 @@ export function evaluateAccountManagement(
     return {
       overallScore: 0,
       totalAccounts: 0,
-      activeRate: 0,
-      reconciledRate: 0,
-      childAccessRate: 0,
-      signedAgreementRate: 0,
+      activeRate: null,
+      reconciledRate: null,
+      childAccessRate: null,
+      signedAgreementRate: null,
       overdueCount: 0,
       averageBalance: 0,
       totalSavings: 0,
@@ -350,18 +362,18 @@ export function evaluateAccountManagement(
   const totalBalance = accounts.reduce((sum, a) => sum + a.balance, 0);
   const totalSavings = accounts.reduce((sum, a) => sum + a.savingsBalance, 0);
 
-  const activeRate = pct(active.length, accounts.length);
-  const reconciledRate = pct(reconciled.length, accounts.length);
-  const childAccessRate = pct(withAccess.length, accounts.length);
-  const signedAgreementRate = pct(withAgreement.length, accounts.length);
+  const activeRate = rate(active.length, accounts.length);
+  const reconciledRate = rate(reconciled.length, accounts.length);
+  const childAccessRate = rate(withAccess.length, accounts.length);
+  const signedAgreementRate = rate(withAgreement.length, accounts.length);
   const averageBalance =
     Math.round((totalBalance / accounts.length) * 100) / 100;
 
   // Scoring
-  const activeScore = Math.round((activeRate / 100) * 6);
-  const reconciledScore = Math.round((reconciledRate / 100) * 6);
-  const accessScore = Math.round((childAccessRate / 100) * 5);
-  const agreementScore = Math.round((signedAgreementRate / 100) * 4);
+  const activeScore = Math.round(((activeRate ?? 0) / 100) * 6);
+  const reconciledScore = Math.round(((reconciledRate ?? 0) / 100) * 6);
+  const accessScore = Math.round(((childAccessRate ?? 0) / 100) * 5);
+  const agreementScore = Math.round(((signedAgreementRate ?? 0) / 100) * 4);
   const overduePenalty = Math.min(overdue.length * 3, 10);
 
   const overallScore = Math.min(
@@ -413,9 +425,9 @@ export function evaluateTransactionIntegrity(
     return {
       overallScore: 0,
       totalTransactions: 0,
-      receiptRate: 0,
-      consentRate: 0,
-      twoSignatureRate: 0,
+      receiptRate: null,
+      consentRate: null,
+      twoSignatureRate: null,
       averageTransaction: 0,
       typeDistribution: { ...emptyDist },
     };
@@ -436,16 +448,16 @@ export function evaluateTransactionIntegrity(
     typeDist[t.transactionType] = (typeDist[t.transactionType] || 0) + 1;
   }
 
-  const receiptRate = pct(withReceipt.length, transactions.length);
-  const consentRate = pct(withConsent.length, transactions.length);
-  const twoSignatureRate = pct(withTwoSig.length, transactions.length);
+  const receiptRate = rate(withReceipt.length, transactions.length);
+  const consentRate = rate(withConsent.length, transactions.length);
+  const twoSignatureRate = rate(withTwoSig.length, transactions.length);
   const averageTransaction =
     Math.round((totalAmount / transactions.length) * 100) / 100;
 
   // Scoring
-  const receiptScore = Math.round((receiptRate / 100) * 8);
-  const consentScore = Math.round((consentRate / 100) * 8);
-  const twoSigScore = Math.round((twoSignatureRate / 100) * 9);
+  const receiptScore = Math.round(((receiptRate ?? 0) / 100) * 8);
+  const consentScore = Math.round(((consentRate ?? 0) / 100) * 8);
+  const twoSigScore = Math.round(((twoSignatureRate ?? 0) / 100) * 9);
 
   const overallScore = Math.min(
     25,
@@ -492,10 +504,10 @@ export function evaluateFinancialLiteracy(
     return {
       overallScore: 0,
       totalSessions: 0,
-      engagementRate: 0,
-      practicalRate: 0,
-      ageAppropriateRate: 0,
-      topicCoverage: 0,
+      engagementRate: null,
+      practicalRate: null,
+      ageAppropriateRate: null,
+      topicCoverage: null,
       topicDistribution: { ...emptyDist },
     };
   }
@@ -511,16 +523,16 @@ export function evaluateFinancialLiteracy(
     topicsCovered.add(s.topic);
   }
 
-  const engagementRate = pct(engaged.length, sessions.length);
-  const practicalRate = pct(practical.length, sessions.length);
-  const ageAppropriateRate = pct(ageAppropriate.length, sessions.length);
-  const topicCoverage = pct(topicsCovered.size, ALL_LITERACY_TOPICS.length);
+  const engagementRate = rate(engaged.length, sessions.length);
+  const practicalRate = rate(practical.length, sessions.length);
+  const ageAppropriateRate = rate(ageAppropriate.length, sessions.length);
+  const topicCoverage = rate(topicsCovered.size, ALL_LITERACY_TOPICS.length);
 
   // Scoring
-  const engagementScore = Math.round((engagementRate / 100) * 6);
-  const practicalScore = Math.round((practicalRate / 100) * 6);
-  const ageScore = Math.round((ageAppropriateRate / 100) * 5);
-  const coverageScore = Math.round((topicCoverage / 100) * 8);
+  const engagementScore = Math.round(((engagementRate ?? 0) / 100) * 6);
+  const practicalScore = Math.round(((practicalRate ?? 0) / 100) * 6);
+  const ageScore = Math.round(((ageAppropriateRate ?? 0) / 100) * 5);
+  const coverageScore = Math.round(((topicCoverage ?? 0) / 100) * 8);
 
   const overallScore = Math.min(
     25,
@@ -560,11 +572,11 @@ export function evaluateAuditCompliance(
     return {
       overallScore: 0,
       totalAudits: 0,
-      allReconciledRate: 0,
-      receiptCompliantRate: 0,
-      twoSigCompliantRate: 0,
-      discrepancyRate: 0,
-      policyCompliantRate: 0,
+      allReconciledRate: null,
+      receiptCompliantRate: null,
+      twoSigCompliantRate: null,
+      discrepancyRate: null,
+      policyCompliantRate: null,
     };
   }
 
@@ -579,18 +591,18 @@ export function evaluateAuditCompliance(
     0,
   );
 
-  const allReconciledRate = pct(reconciled.length, audits.length);
-  const receiptCompliantRate = pct(receiptCompliant.length, audits.length);
-  const twoSigCompliantRate = pct(twoSigCompliant.length, audits.length);
-  const discrepancyRate = pct(totalResolved, totalFound);
-  const policyCompliantRate = pct(policyCompliant.length, audits.length);
+  const allReconciledRate = rate(reconciled.length, audits.length);
+  const receiptCompliantRate = rate(receiptCompliant.length, audits.length);
+  const twoSigCompliantRate = rate(twoSigCompliant.length, audits.length);
+  const discrepancyRate = rate(totalResolved, totalFound);
+  const policyCompliantRate = rate(policyCompliant.length, audits.length);
 
   // Scoring
-  const reconciledScore = Math.round((allReconciledRate / 100) * 5);
-  const receiptScore = Math.round((receiptCompliantRate / 100) * 5);
-  const twoSigScore = Math.round((twoSigCompliantRate / 100) * 5);
-  const discrepancyScore = Math.round((discrepancyRate / 100) * 5);
-  const policyScore = Math.round((policyCompliantRate / 100) * 5);
+  const reconciledScore = Math.round(((allReconciledRate ?? 0) / 100) * 5);
+  const receiptScore = Math.round(((receiptCompliantRate ?? 0) / 100) * 5);
+  const twoSigScore = Math.round(((twoSigCompliantRate ?? 0) / 100) * 5);
+  const discrepancyScore = Math.round(((discrepancyRate ?? 0) / 100) * 5);
+  const policyScore = Math.round(((policyCompliantRate ?? 0) / 100) * 5);
 
   const overallScore = Math.min(
     25,
@@ -631,7 +643,7 @@ export function buildChildFinancialProfiles(
         t.childConsent === "informed_consent" ||
         t.childConsent === "not_applicable",
     );
-    const consentRate = pct(consentedTransactions.length, childTransactions.length);
+    const consentRate = rate(consentedTransactions.length, childTransactions.length)!;
 
     // Score (0-10):
     //   account active = 2
@@ -641,7 +653,7 @@ export function buildChildFinancialProfiles(
     let score = 0;
     if (account.accountStatus === "active") score += 2;
     if (account.childHasAccess) score += 2;
-    score += Math.round((consentRate / 100) * 3);
+    score += Math.round(((consentRate ?? 0) / 100) * 3);
     const sessionScore =
       childSessions.length >= 3 ? 3 : childSessions.length >= 1 ? 2 : 0;
     score += sessionScore;
@@ -719,7 +731,7 @@ export function generateChildrenFundManagementIntelligence(
       "Audit compliance is robust with thorough reconciliation and discrepancy resolution",
     );
   }
-  if (accountManagement.childAccessRate >= 90 && accounts.length > 0) {
+  if (meets(accountManagement.childAccessRate, 90) && accounts.length > 0) {
     strengths.push(
       "Children have good access to their own funds, supporting autonomy and independence",
     );
@@ -729,12 +741,12 @@ export function generateChildrenFundManagementIntelligence(
       "All children have signed agreements in place for their accounts, demonstrating informed participation",
     );
   }
-  if (transactionIntegrity.receiptRate >= 95 && transactions.length > 0) {
+  if (meets(transactionIntegrity.receiptRate, 95) && transactions.length > 0) {
     strengths.push(
       "Receipt retention is excellent, providing a clear audit trail for all financial transactions",
     );
   }
-  if (transactionIntegrity.twoSignatureRate >= 95 && transactions.length > 0) {
+  if (meets(transactionIntegrity.twoSignatureRate, 95) && transactions.length > 0) {
     strengths.push(
       "Two-signature authorisation is consistently applied, reducing the risk of financial mismanagement",
     );
@@ -744,12 +756,12 @@ export function generateChildrenFundManagementIntelligence(
       "Children's consent is obtained for all transactions, respecting their right to financial participation",
     );
   }
-  if (financialLiteracy.topicCoverage >= 75 && sessions.length > 0) {
+  if (meets(financialLiteracy.topicCoverage, 75) && sessions.length > 0) {
     strengths.push(
       "Financial literacy sessions cover a broad range of topics, preparing children for financial independence",
     );
   }
-  if (financialLiteracy.practicalRate >= 90 && sessions.length > 0) {
+  if (meets(financialLiteracy.practicalRate, 90) && sessions.length > 0) {
     strengths.push(
       "Financial literacy sessions include practical components, making learning applicable to real life",
     );
@@ -771,7 +783,7 @@ export function generateChildrenFundManagementIntelligence(
       "No child accounts found -- individual financial accounts must be maintained for each child",
     );
   }
-  if (accountManagement.activeRate < 80 && accounts.length > 0) {
+  if (below(accountManagement.activeRate, 80) && accounts.length > 0) {
     areasForImprovement.push(
       `Only ${accountManagement.activeRate}% of accounts are active -- inactive accounts should be reviewed`,
     );
@@ -781,12 +793,12 @@ export function generateChildrenFundManagementIntelligence(
       `${accountManagement.overdueCount} account(s) have overdue reconciliation -- all accounts must be reconciled on schedule`,
     );
   }
-  if (accountManagement.childAccessRate < 90 && accounts.length > 0) {
+  if (below(accountManagement.childAccessRate, 90) && accounts.length > 0) {
     areasForImprovement.push(
       `Only ${accountManagement.childAccessRate}% of children have access to their own funds -- this restricts autonomy`,
     );
   }
-  if (accountManagement.signedAgreementRate < 100 && accounts.length > 0) {
+  if (below(accountManagement.signedAgreementRate, 100) && accounts.length > 0) {
     areasForImprovement.push(
       `Signed agreements in place for only ${accountManagement.signedAgreementRate}% of accounts`,
     );
@@ -796,17 +808,17 @@ export function generateChildrenFundManagementIntelligence(
       "No financial transactions recorded -- all pocket money and allowances must be documented",
     );
   }
-  if (transactionIntegrity.receiptRate < 90 && transactions.length > 0) {
+  if (below(transactionIntegrity.receiptRate, 90) && transactions.length > 0) {
     areasForImprovement.push(
       `Receipt retention at ${transactionIntegrity.receiptRate}% -- all transactions should have receipts retained`,
     );
   }
-  if (transactionIntegrity.consentRate < 90 && transactions.length > 0) {
+  if (below(transactionIntegrity.consentRate, 90) && transactions.length > 0) {
     areasForImprovement.push(
       `Children's consent rate at ${transactionIntegrity.consentRate}% -- informed consent should be sought for all transactions`,
     );
   }
-  if (transactionIntegrity.twoSignatureRate < 90 && transactions.length > 0) {
+  if (below(transactionIntegrity.twoSignatureRate, 90) && transactions.length > 0) {
     areasForImprovement.push(
       `Two-signature authorisation at ${transactionIntegrity.twoSignatureRate}% -- dual authorisation is required for financial accountability`,
     );
@@ -816,17 +828,17 @@ export function generateChildrenFundManagementIntelligence(
       "No financial literacy sessions recorded -- children should receive regular financial education",
     );
   }
-  if (financialLiteracy.engagementRate < 80 && sessions.length > 0) {
+  if (below(financialLiteracy.engagementRate, 80) && sessions.length > 0) {
     areasForImprovement.push(
       `Child engagement in financial literacy at ${financialLiteracy.engagementRate}% -- sessions should be more engaging`,
     );
   }
-  if (financialLiteracy.topicCoverage < 50 && sessions.length > 0) {
+  if (below(financialLiteracy.topicCoverage, 50) && sessions.length > 0) {
     areasForImprovement.push(
       `Only ${financialLiteracy.topicCoverage}% of financial literacy topics covered -- broader curriculum needed`,
     );
   }
-  if (financialLiteracy.practicalRate < 80 && sessions.length > 0) {
+  if (below(financialLiteracy.practicalRate, 80) && sessions.length > 0) {
     areasForImprovement.push(
       `Only ${financialLiteracy.practicalRate}% of sessions include practical components -- hands-on learning is essential`,
     );
@@ -836,13 +848,13 @@ export function generateChildrenFundManagementIntelligence(
       "No financial audits completed -- quarterly audits are required under Reg 39",
     );
   }
-  if (auditCompliance.policyCompliantRate < 100 && audits.length > 0) {
+  if (below(auditCompliance.policyCompliantRate, 100) && audits.length > 0) {
     areasForImprovement.push(
       `Policy compliance at ${auditCompliance.policyCompliantRate}% across audits -- all audits should demonstrate full policy compliance`,
     );
   }
   if (
-    auditCompliance.discrepancyRate < 100 &&
+    below(auditCompliance.discrepancyRate, 100) &&
     auditCompliance.totalAudits > 0 &&
     audits.some((a) => a.discrepanciesFound > 0)
   ) {
@@ -864,27 +876,27 @@ export function generateChildrenFundManagementIntelligence(
       "Reconcile all overdue accounts immediately and establish a monitoring system to prevent future overdue reconciliations",
     );
   }
-  if (accountManagement.childAccessRate < 90 && accounts.length > 0) {
+  if (below(accountManagement.childAccessRate, 90) && accounts.length > 0) {
     actions.push(
       "Review access arrangements for each child and ensure age-appropriate access to their own funds",
     );
   }
-  if (accountManagement.signedAgreementRate < 100 && accounts.length > 0) {
+  if (below(accountManagement.signedAgreementRate, 100) && accounts.length > 0) {
     actions.push(
       "Obtain signed agreements from all children for their financial accounts, explaining their rights and the home's responsibilities",
     );
   }
-  if (transactionIntegrity.receiptRate < 90 && transactions.length > 0) {
+  if (below(transactionIntegrity.receiptRate, 90) && transactions.length > 0) {
     actions.push(
       "Implement a receipts protocol requiring staff to retain and file receipts for all transactions at point of purchase",
     );
   }
-  if (transactionIntegrity.consentRate < 90 && transactions.length > 0) {
+  if (below(transactionIntegrity.consentRate, 90) && transactions.length > 0) {
     actions.push(
       "Train staff on obtaining and recording children's informed consent before processing transactions",
     );
   }
-  if (transactionIntegrity.twoSignatureRate < 90 && transactions.length > 0) {
+  if (below(transactionIntegrity.twoSignatureRate, 90) && transactions.length > 0) {
     actions.push(
       "Enforce two-signature authorisation for all financial transactions and audit compliance monthly",
     );
@@ -894,12 +906,12 @@ export function generateChildrenFundManagementIntelligence(
       "Develop a financial literacy programme with age-appropriate sessions covering budgeting, saving, banking and spending decisions",
     );
   }
-  if (financialLiteracy.engagementRate < 80 && sessions.length > 0) {
+  if (below(financialLiteracy.engagementRate, 80) && sessions.length > 0) {
     actions.push(
       "Review financial literacy delivery methods to increase child engagement, incorporating interactive and practical activities",
     );
   }
-  if (financialLiteracy.topicCoverage < 50 && sessions.length > 0) {
+  if (below(financialLiteracy.topicCoverage, 50) && sessions.length > 0) {
     actions.push(
       "Expand financial literacy curriculum to cover all core topics including online financial safety, benefits and debt awareness",
     );
@@ -909,13 +921,13 @@ export function generateChildrenFundManagementIntelligence(
       "Schedule quarterly financial audits with an independent auditor and establish a discrepancy resolution process",
     );
   }
-  if (auditCompliance.policyCompliantRate < 100 && audits.length > 0) {
+  if (below(auditCompliance.policyCompliantRate, 100) && audits.length > 0) {
     actions.push(
       "Review and update the financial procedures policy, ensuring all staff are trained and audits demonstrate compliance",
     );
   }
   if (
-    auditCompliance.discrepancyRate < 100 &&
+    below(auditCompliance.discrepancyRate, 100) &&
     auditCompliance.totalAudits > 0 &&
     audits.some((a) => a.discrepanciesFound > 0)
   ) {

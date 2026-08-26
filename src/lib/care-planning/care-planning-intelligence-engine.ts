@@ -19,6 +19,7 @@
    ────────────────────────────────────────────────────────────── */
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -128,18 +129,25 @@ export interface StaffCarePlanningCompetency {
 export interface CarePlanningQualityResult {
   overallScore: number;
   totalRecords: number;
-  childViewIncorporatedRate: number;
-  measurableOutcomesSetRate: number;
-  multiAgencyInputIncludedRate: number;
-  reviewDateSetRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewIncorporatedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  measurableOutcomesSetRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  multiAgencyInputIncludedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reviewDateSetRate: number | null;
 }
 
 export interface CarePlanningComplianceResult {
   overallScore: number;
   totalRecords: number;
-  documentationCompleteRate: number;
-  timelyRecordingRate: number;
-  childViewIncorporatedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationCompleteRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewIncorporatedRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
 }
@@ -158,12 +166,18 @@ export interface CarePlanningPolicyResult {
 export interface StaffCarePlanningCompetencyResult {
   overallScore: number;
   totalStaff: number;
-  carePlanWritingSkillsRate: number;
-  outcomeFocusedPlanningRate: number;
-  multiAgencyCoordinationRate: number;
-  childParticipationSkillsRate: number;
-  riskAssessmentIntegrationRate: number;
-  reviewFacilitationSkillsRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  carePlanWritingSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  outcomeFocusedPlanningRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  multiAgencyCoordinationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childParticipationSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessmentIntegrationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  reviewFacilitationSkillsRate: number | null;
 }
 
 export interface ChildCarePlanningProfile {
@@ -195,11 +209,6 @@ export interface CarePlanningIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): CarePlanningRating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -214,19 +223,19 @@ export function evaluateCarePlanningQuality(
 ): CarePlanningQualityResult {
   const n = records.length;
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, childViewIncorporatedRate: 0, measurableOutcomesSetRate: 0, multiAgencyInputIncludedRate: 0, reviewDateSetRate: 0 };
+    return { overallScore: 0, totalRecords: 0, childViewIncorporatedRate: null, measurableOutcomesSetRate: null, multiAgencyInputIncludedRate: null, reviewDateSetRate: null };
   }
 
-  const childViewIncorporatedRate = pct(records.filter((r) => r.childViewIncorporated).length, n);
-  const measurableOutcomesSetRate = pct(records.filter((r) => r.measurableOutcomesSet).length, n);
-  const multiAgencyInputIncludedRate = pct(records.filter((r) => r.multiAgencyInputIncluded).length, n);
-  const reviewDateSetRate = pct(records.filter((r) => r.reviewDateSet).length, n);
+  const childViewIncorporatedRate = rate(records.filter((r) => r.childViewIncorporated).length, n);
+  const measurableOutcomesSetRate = rate(records.filter((r) => r.measurableOutcomesSet).length, n);
+  const multiAgencyInputIncludedRate = rate(records.filter((r) => r.multiAgencyInputIncluded).length, n);
+  const reviewDateSetRate = rate(records.filter((r) => r.reviewDateSet).length, n);
 
   let score = 0;
-  score += (childViewIncorporatedRate / 100) * 7;
-  score += (measurableOutcomesSetRate / 100) * 6;
-  score += (multiAgencyInputIncludedRate / 100) * 6;
-  score += (reviewDateSetRate / 100) * 6;
+  score += ((childViewIncorporatedRate ?? 0) / 100) * 7;
+  score += ((measurableOutcomesSetRate ?? 0) / 100) * 6;
+  score += ((multiAgencyInputIncludedRate ?? 0) / 100) * 6;
+  score += ((reviewDateSetRate ?? 0) / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -240,20 +249,20 @@ export function evaluateCarePlanningCompliance(
 ): CarePlanningComplianceResult {
   const n = records.length;
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: 0, timelyRecordingRate: 0, childViewIncorporatedRate: 0, categoryDiversityRatio: 0, uniqueCategories: 0 };
+    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: null, timelyRecordingRate: null, childViewIncorporatedRate: null, categoryDiversityRatio: 0, uniqueCategories: 0 };
   }
 
-  const documentationCompleteRate = pct(records.filter((r) => r.documentationComplete).length, n);
-  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, n);
-  const childViewIncorporatedRate = pct(records.filter((r) => r.childViewIncorporated).length, n);
+  const documentationCompleteRate = rate(records.filter((r) => r.documentationComplete).length, n);
+  const timelyRecordingRate = rate(records.filter((r) => r.timelyRecording).length, n);
+  const childViewIncorporatedRate = rate(records.filter((r) => r.childViewIncorporated).length, n);
   const uniqueCategoriesSet = new Set(records.map((r) => r.category));
   const uniqueCategories = uniqueCategoriesSet.size;
   const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
 
   let score = 0;
-  score += (documentationCompleteRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (childViewIncorporatedRate / 100) * 5;
+  score += ((documentationCompleteRate ?? 0) / 100) * 8;
+  score += ((timelyRecordingRate ?? 0) / 100) * 7;
+  score += ((childViewIncorporatedRate ?? 0) / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -298,23 +307,23 @@ export function evaluateStaffCarePlanningCompetency(
 ): StaffCarePlanningCompetencyResult {
   const n = staff.length;
   if (n === 0) {
-    return { overallScore: 0, totalStaff: 0, carePlanWritingSkillsRate: 0, outcomeFocusedPlanningRate: 0, multiAgencyCoordinationRate: 0, childParticipationSkillsRate: 0, riskAssessmentIntegrationRate: 0, reviewFacilitationSkillsRate: 0 };
+    return { overallScore: 0, totalStaff: 0, carePlanWritingSkillsRate: null, outcomeFocusedPlanningRate: null, multiAgencyCoordinationRate: null, childParticipationSkillsRate: null, riskAssessmentIntegrationRate: null, reviewFacilitationSkillsRate: null };
   }
 
-  const carePlanWritingSkillsRate = pct(staff.filter((s) => s.carePlanWritingSkills).length, n);
-  const outcomeFocusedPlanningRate = pct(staff.filter((s) => s.outcomeFocusedPlanning).length, n);
-  const multiAgencyCoordinationRate = pct(staff.filter((s) => s.multiAgencyCoordination).length, n);
-  const childParticipationSkillsRate = pct(staff.filter((s) => s.childParticipationSkills).length, n);
-  const riskAssessmentIntegrationRate = pct(staff.filter((s) => s.riskAssessmentIntegration).length, n);
-  const reviewFacilitationSkillsRate = pct(staff.filter((s) => s.reviewFacilitationSkills).length, n);
+  const carePlanWritingSkillsRate = rate(staff.filter((s) => s.carePlanWritingSkills).length, n);
+  const outcomeFocusedPlanningRate = rate(staff.filter((s) => s.outcomeFocusedPlanning).length, n);
+  const multiAgencyCoordinationRate = rate(staff.filter((s) => s.multiAgencyCoordination).length, n);
+  const childParticipationSkillsRate = rate(staff.filter((s) => s.childParticipationSkills).length, n);
+  const riskAssessmentIntegrationRate = rate(staff.filter((s) => s.riskAssessmentIntegration).length, n);
+  const reviewFacilitationSkillsRate = rate(staff.filter((s) => s.reviewFacilitationSkills).length, n);
 
   let score = 0;
-  score += (carePlanWritingSkillsRate / 100) * 6;
-  score += (outcomeFocusedPlanningRate / 100) * 5;
-  score += (multiAgencyCoordinationRate / 100) * 5;
-  score += (childParticipationSkillsRate / 100) * 4;
-  score += (riskAssessmentIntegrationRate / 100) * 3;
-  score += (reviewFacilitationSkillsRate / 100) * 2;
+  score += ((carePlanWritingSkillsRate ?? 0) / 100) * 6;
+  score += ((outcomeFocusedPlanningRate ?? 0) / 100) * 5;
+  score += ((multiAgencyCoordinationRate ?? 0) / 100) * 5;
+  score += ((childParticipationSkillsRate ?? 0) / 100) * 4;
+  score += ((riskAssessmentIntegrationRate ?? 0) / 100) * 3;
+  score += ((reviewFacilitationSkillsRate ?? 0) / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -335,8 +344,8 @@ export function buildChildCarePlanningProfiles(
 
   return Array.from(childMap.values()).map((child) => {
     const totalRecords = child.records.length;
-    const childViewIncorporatedRate = pct(child.records.filter((r) => r.childViewIncorporated).length, totalRecords);
-    const measurableOutcomesSetRate = pct(child.records.filter((r) => r.measurableOutcomesSet).length, totalRecords);
+    const childViewIncorporatedRate = rate(child.records.filter((r) => r.childViewIncorporated).length, totalRecords)!;
+    const measurableOutcomesSetRate = rate(child.records.filter((r) => r.measurableOutcomesSet).length, totalRecords)!;
     const categoriesCovered = Array.from(new Set(child.records.map((r) => r.category)));
 
     let frequencyScore = 0;
@@ -344,14 +353,14 @@ export function buildChildCarePlanningProfiles(
     else if (totalRecords >= 5) frequencyScore = 1;
 
     let rate1Score = 0;
-    if (childViewIncorporatedRate >= 80) rate1Score = 3;
-    else if (childViewIncorporatedRate >= 60) rate1Score = 2;
-    else if (childViewIncorporatedRate >= 40) rate1Score = 1;
+    if (meets(childViewIncorporatedRate, 80)) rate1Score = 3;
+    else if (meets(childViewIncorporatedRate, 60)) rate1Score = 2;
+    else if (meets(childViewIncorporatedRate, 40)) rate1Score = 1;
 
     let rate2Score = 0;
-    if (measurableOutcomesSetRate >= 80) rate2Score = 3;
-    else if (measurableOutcomesSetRate >= 60) rate2Score = 2;
-    else if (measurableOutcomesSetRate >= 40) rate2Score = 1;
+    if (meets(measurableOutcomesSetRate, 80)) rate2Score = 3;
+    else if (meets(measurableOutcomesSetRate, 60)) rate2Score = 2;
+    else if (meets(measurableOutcomesSetRate, 40)) rate2Score = 1;
 
     let diversityBonus = 0;
     if (categoriesCovered.length >= 4) diversityBonus = 2;
@@ -396,8 +405,8 @@ export function generateCarePlanningIntelligenceReport(
   if (complianceResult.overallScore >= 20) strengths.push("Care planning compliance is strong (" + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore >= 20) strengths.push("Care planning policy framework is robust (" + policyResult.overallScore + "/25)");
   if (staffResult.overallScore >= 20) strengths.push("Staff care planning competency is strong (" + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.childViewIncorporatedRate >= 90) strengths.push("Child view incorporation rate at " + qualityResult.childViewIncorporatedRate + "%");
-  if (periodRecords.length > 0 && qualityResult.measurableOutcomesSetRate >= 90) strengths.push("Measurable outcomes setting at " + qualityResult.measurableOutcomesSetRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.childViewIncorporatedRate, 90)) strengths.push("Child view incorporation rate at " + qualityResult.childViewIncorporatedRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.measurableOutcomesSetRate, 90)) strengths.push("Measurable outcomes setting at " + qualityResult.measurableOutcomesSetRate + "%");
 
   const areasForImprovement: string[] = [];
   if (overallScore < 40) areasForImprovement.push("Care planning rated Inadequate (" + overallScore + "/100) — urgent systemic review required");
@@ -406,7 +415,7 @@ export function generateCarePlanningIntelligenceReport(
   if (complianceResult.overallScore < 15) areasForImprovement.push("Care planning compliance needs improvement (" + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore < 15) areasForImprovement.push("Care planning policy needs strengthening (" + policyResult.overallScore + "/25)");
   if (staffResult.overallScore < 15) areasForImprovement.push("Staff competency needs improvement (" + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.childViewIncorporatedRate < 80) areasForImprovement.push("Child view incorporation at " + qualityResult.childViewIncorporatedRate + "% — must ensure children shape their own care plans");
+  if (periodRecords.length > 0 && below(qualityResult.childViewIncorporatedRate, 80)) areasForImprovement.push("Child view incorporation at " + qualityResult.childViewIncorporatedRate + "% — must ensure children shape their own care plans");
   if (periodRecords.length === 0) areasForImprovement.push("No care planning records — all care plans must be documented");
   if (policy === null) areasForImprovement.push("No care planning policy in place — statutory requirement under CHR 2015 Reg 14");
   if (staff.length === 0) areasForImprovement.push("No staff care planning competency records — training required");
@@ -414,11 +423,11 @@ export function generateCarePlanningIntelligenceReport(
   const actions: string[] = [];
   if (policy === null || policyResult.overallScore === 0) actions.push("URGENT: No care planning policy — develop and implement care planning framework immediately (CHR 2015 Reg 14)");
   if (staff.length === 0) actions.push("URGENT: No staff care planning competency records — schedule care planning training for all staff");
-  if (periodRecords.length > 0 && qualityResult.childViewIncorporatedRate < 50) actions.push("HIGH: Child view incorporation at " + qualityResult.childViewIncorporatedRate + "% — all care plans must reflect the child's wishes and feelings");
-  if (periodRecords.length > 0 && qualityResult.measurableOutcomesSetRate < 50) actions.push("HIGH: Measurable outcomes at " + qualityResult.measurableOutcomesSetRate + "% — ensure all care plans contain SMART objectives");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate < 50) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all care planning activities must be recorded");
-  if (periodRecords.length > 0 && complianceResult.timelyRecordingRate < 50) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
-  if (staff.length > 0 && staffResult.carePlanWritingSkillsRate < 50) actions.push("MEDIUM: Care plan writing skills at " + staffResult.carePlanWritingSkillsRate + "% — schedule training");
+  if (periodRecords.length > 0 && below(qualityResult.childViewIncorporatedRate, 50)) actions.push("HIGH: Child view incorporation at " + qualityResult.childViewIncorporatedRate + "% — all care plans must reflect the child's wishes and feelings");
+  if (periodRecords.length > 0 && below(qualityResult.measurableOutcomesSetRate, 50)) actions.push("HIGH: Measurable outcomes at " + qualityResult.measurableOutcomesSetRate + "% — ensure all care plans contain SMART objectives");
+  if (periodRecords.length > 0 && below(complianceResult.documentationCompleteRate, 50)) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all care planning activities must be recorded");
+  if (periodRecords.length > 0 && below(complianceResult.timelyRecordingRate, 50)) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
+  if (staff.length > 0 && below(staffResult.carePlanWritingSkillsRate, 50)) actions.push("MEDIUM: Care plan writing skills at " + staffResult.carePlanWritingSkillsRate + "% — schedule training");
   const lowScoreChildren = childProfiles.filter((p) => p.overallScore <= 3);
   if (lowScoreChildren.length > 0) actions.push("MEDIUM: " + lowScoreChildren.length + " child(ren) with low care planning scores — review individual care plans");
   if (actions.length === 0) actions.push("No immediate actions required. Care planning operating within expected standards.");

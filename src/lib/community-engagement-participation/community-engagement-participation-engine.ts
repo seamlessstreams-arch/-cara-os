@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // Community Engagement & Participation Intelligence Engine
 // Pure deterministic — no AI, no external calls, no randomness, no Date.now()
 
@@ -99,18 +100,26 @@ export interface StaffCommunityTraining {
 export interface EngagementQualityResult {
   overallScore: number;
   totalActivities: number;
-  participationRate: number;
-  childInitiatedRate: number;
-  socialSkillsRate: number;
-  communityLinksRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  participationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childInitiatedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  socialSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  communityLinksRate: number | null;
 }
 
 export interface EngagementComplianceResult {
   overallScore: number;
-  documentedRate: number;
-  staffSupportedRate: number;
-  feedbackRate: number;
-  activityDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffSupportedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feedbackRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  activityDiversityRatio: number | null;
 }
 
 export interface CommunityPolicyResult {
@@ -127,20 +136,28 @@ export interface CommunityPolicyResult {
 export interface StaffCommunityReadinessResult {
   overallScore: number;
   totalStaff: number;
-  communityEngagementRate: number;
-  socialInclusionRate: number;
-  safeguardingInCommunityRate: number;
-  activityPlanningRate: number;
-  partnershipWorkingRate: number;
-  documentationRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  communityEngagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  socialInclusionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingInCommunityRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  activityPlanningRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  partnershipWorkingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationRate: number | null;
 }
 
 export interface ChildCommunityProfile {
   childId: string;
   childName: string;
   totalActivities: number;
-  participationRate: number;
-  childInitiatedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  participationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childInitiatedRate: number | null;
   overallScore: number;
 }
 
@@ -163,11 +180,6 @@ export interface CommunityEngagementParticipationIntelligence {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -179,7 +191,7 @@ export function getRating(score: number): Rating {
 
 export function evaluateEngagementQuality(activities: CommunityActivity[]): EngagementQualityResult {
   if (activities.length === 0) {
-    return { overallScore: 0, totalActivities: 0, participationRate: 0, childInitiatedRate: 0, socialSkillsRate: 0, communityLinksRate: 0 };
+    return { overallScore: 0, totalActivities: 0, participationRate: null, childInitiatedRate: null, socialSkillsRate: null, communityLinksRate: null };
   }
 
   const total = activities.length;
@@ -188,15 +200,15 @@ export function evaluateEngagementQuality(activities: CommunityActivity[]): Enga
   const socialSkillsCount = activities.filter((a) => a.socialSkillsDeveloped).length;
   const linksCount = activities.filter((a) => a.communityLinksStrengthened).length;
 
-  const participationRate = pct(participatingCount, total);
-  const childInitiatedRate = pct(childInitiatedCount, total);
-  const socialSkillsRate = pct(socialSkillsCount, total);
-  const communityLinksRate = pct(linksCount, total);
+  const participationRate = rate(participatingCount, total);
+  const childInitiatedRate = rate(childInitiatedCount, total);
+  const socialSkillsRate = rate(socialSkillsCount, total);
+  const communityLinksRate = rate(linksCount, total);
 
-  const partScore = Math.round((participationRate / 100) * 7);
-  const initScore = Math.round((childInitiatedRate / 100) * 6);
-  const socScore = Math.round((socialSkillsRate / 100) * 6);
-  const linkScore = Math.round((communityLinksRate / 100) * 6);
+  const partScore = Math.round(((participationRate ?? 0) / 100) * 7);
+  const initScore = Math.round(((childInitiatedRate ?? 0) / 100) * 6);
+  const socScore = Math.round(((socialSkillsRate ?? 0) / 100) * 6);
+  const linkScore = Math.round(((communityLinksRate ?? 0) / 100) * 6);
 
   const overallScore = Math.min(25, partScore + initScore + socScore + linkScore);
 
@@ -205,7 +217,7 @@ export function evaluateEngagementQuality(activities: CommunityActivity[]): Enga
 
 export function evaluateEngagementCompliance(activities: CommunityActivity[]): EngagementComplianceResult {
   if (activities.length === 0) {
-    return { overallScore: 0, documentedRate: 0, staffSupportedRate: 0, feedbackRate: 0, activityDiversityRatio: 0 };
+    return { overallScore: 0, documentedRate: null, staffSupportedRate: null, feedbackRate: null, activityDiversityRatio: 0 };
   }
 
   const total = activities.length;
@@ -213,16 +225,16 @@ export function evaluateEngagementCompliance(activities: CommunityActivity[]): E
   const staffCount = activities.filter((a) => a.staffSupported).length;
   const feedbackCount = activities.filter((a) => a.feedbackObtained).length;
   const uniqueTypes = new Set(activities.map((a) => a.activityType)).size;
-  const diversityRatio = pct(uniqueTypes, 8);
+  const diversityRatio = rate(uniqueTypes, 8);
 
-  const documentedRate = pct(documentedCount, total);
-  const staffSupportedRate = pct(staffCount, total);
-  const feedbackRate = pct(feedbackCount, total);
+  const documentedRate = rate(documentedCount, total);
+  const staffSupportedRate = rate(staffCount, total);
+  const feedbackRate = rate(feedbackCount, total);
 
-  const docScore = Math.round((documentedRate / 100) * 8);
-  const staffScore = Math.round((staffSupportedRate / 100) * 7);
-  const fbScore = Math.round((feedbackRate / 100) * 5);
-  const divScore = Math.round((diversityRatio / 100) * 5);
+  const docScore = Math.round(((documentedRate ?? 0) / 100) * 8);
+  const staffScore = Math.round(((staffSupportedRate ?? 0) / 100) * 7);
+  const fbScore = Math.round(((feedbackRate ?? 0) / 100) * 5);
+  const divScore = Math.round(((diversityRatio ?? 0) / 100) * 5);
 
   const overallScore = Math.min(25, docScore + staffScore + fbScore + divScore);
 
@@ -266,7 +278,7 @@ export function evaluateCommunityPolicy(policy: CommunityPolicy | null): Communi
 
 export function evaluateStaffCommunityReadiness(training: StaffCommunityTraining[]): StaffCommunityReadinessResult {
   if (training.length === 0) {
-    return { overallScore: 0, totalStaff: 0, communityEngagementRate: 0, socialInclusionRate: 0, safeguardingInCommunityRate: 0, activityPlanningRate: 0, partnershipWorkingRate: 0, documentationRate: 0 };
+    return { overallScore: 0, totalStaff: 0, communityEngagementRate: null, socialInclusionRate: null, safeguardingInCommunityRate: null, activityPlanningRate: null, partnershipWorkingRate: null, documentationRate: null };
   }
 
   const total = training.length;
@@ -277,19 +289,19 @@ export function evaluateStaffCommunityReadiness(training: StaffCommunityTraining
   const pwCount = training.filter((t) => t.partnershipWorking).length;
   const docCount = training.filter((t) => t.documentationSkills).length;
 
-  const communityEngagementRate = pct(ceCount, total);
-  const socialInclusionRate = pct(siCount, total);
-  const safeguardingInCommunityRate = pct(sgCount, total);
-  const activityPlanningRate = pct(apCount, total);
-  const partnershipWorkingRate = pct(pwCount, total);
-  const documentationRate = pct(docCount, total);
+  const communityEngagementRate = rate(ceCount, total);
+  const socialInclusionRate = rate(siCount, total);
+  const safeguardingInCommunityRate = rate(sgCount, total);
+  const activityPlanningRate = rate(apCount, total);
+  const partnershipWorkingRate = rate(pwCount, total);
+  const documentationRate = rate(docCount, total);
 
-  const s1 = Math.round((communityEngagementRate / 100) * 6);
-  const s2 = Math.round((socialInclusionRate / 100) * 5);
-  const s3 = Math.round((safeguardingInCommunityRate / 100) * 5);
-  const s4 = Math.round((activityPlanningRate / 100) * 4);
-  const s5 = Math.round((partnershipWorkingRate / 100) * 3);
-  const s6 = Math.round((documentationRate / 100) * 2);
+  const s1 = Math.round(((communityEngagementRate ?? 0) / 100) * 6);
+  const s2 = Math.round(((socialInclusionRate ?? 0) / 100) * 5);
+  const s3 = Math.round(((safeguardingInCommunityRate ?? 0) / 100) * 5);
+  const s4 = Math.round(((activityPlanningRate ?? 0) / 100) * 4);
+  const s5 = Math.round(((partnershipWorkingRate ?? 0) / 100) * 3);
+  const s6 = Math.round(((documentationRate ?? 0) / 100) * 2);
 
   const overallScore = Math.min(25, s1 + s2 + s3 + s4 + s5 + s6);
 
@@ -315,22 +327,22 @@ export function buildChildCommunityProfiles(activities: CommunityActivity[]): Ch
     const participatingCount = acts.filter((a) => a.participationLevel === "highly_engaged" || a.participationLevel === "regular_participant").length;
     const childInitiatedCount = acts.filter((a) => a.childInitiated).length;
 
-    const participationRate = pct(participatingCount, total);
-    const childInitiatedRate = pct(childInitiatedCount, total);
+    const participationRate = rate(participatingCount, total);
+    const childInitiatedRate = rate(childInitiatedCount, total);
 
     let freqScore = 0;
     if (total >= 10) freqScore = 2;
     else if (total >= 5) freqScore = 1;
 
     let partScore = 0;
-    if (participationRate >= 80) partScore = 3;
-    else if (participationRate >= 60) partScore = 2;
-    else if (participationRate >= 40) partScore = 1;
+    if (meets(participationRate, 80)) partScore = 3;
+    else if (meets(participationRate, 60)) partScore = 2;
+    else if (meets(participationRate, 40)) partScore = 1;
 
     let initScore = 0;
-    if (childInitiatedRate >= 80) initScore = 3;
-    else if (childInitiatedRate >= 60) initScore = 2;
-    else if (childInitiatedRate >= 40) initScore = 1;
+    if (meets(childInitiatedRate, 80)) initScore = 3;
+    else if (meets(childInitiatedRate, 60)) initScore = 2;
+    else if (meets(childInitiatedRate, 40)) initScore = 1;
 
     const uniqueTypes = new Set(acts.map((a) => a.activityType)).size;
     let divScore = 0;
@@ -369,21 +381,21 @@ export function generateCommunityEngagementParticipationIntelligence(
   const areasForImprovement: string[] = [];
   const actions: string[] = [];
 
-  if (engagementQuality.participationRate >= 80) strengths.push("Strong community participation — children are actively engaged in community activities");
-  if (engagementQuality.childInitiatedRate >= 80) strengths.push("Children are consistently initiating their own community engagement choices");
-  if (engagementQuality.socialSkillsRate >= 80) strengths.push("Social skills development is consistently evidenced through community activities");
-  if (engagementCompliance.documentedRate >= 80) strengths.push("Excellent documentation of community engagement in care plans");
+  if (meets(engagementQuality.participationRate, 80)) strengths.push("Strong community participation — children are actively engaged in community activities");
+  if (meets(engagementQuality.childInitiatedRate, 80)) strengths.push("Children are consistently initiating their own community engagement choices");
+  if (meets(engagementQuality.socialSkillsRate, 80)) strengths.push("Social skills development is consistently evidenced through community activities");
+  if (meets(engagementCompliance.documentedRate, 80)) strengths.push("Excellent documentation of community engagement in care plans");
 
-  if (activities.length > 0 && engagementQuality.participationRate < 60) areasForImprovement.push("Community participation rates need improvement — review barriers to engagement");
-  if (activities.length > 0 && engagementQuality.childInitiatedRate < 60) areasForImprovement.push("Children's own choices not consistently driving community engagement — embed voice");
-  if (activities.length > 0 && engagementCompliance.feedbackRate < 60) areasForImprovement.push("Feedback on community activities not consistently obtained — improve review process");
-  if (activities.length > 0 && engagementQuality.communityLinksRate < 60) areasForImprovement.push("Community links not consistently strengthened — develop partnership approach");
+  if (activities.length > 0 && below(engagementQuality.participationRate, 60)) areasForImprovement.push("Community participation rates need improvement — review barriers to engagement");
+  if (activities.length > 0 && below(engagementQuality.childInitiatedRate, 60)) areasForImprovement.push("Children's own choices not consistently driving community engagement — embed voice");
+  if (activities.length > 0 && below(engagementCompliance.feedbackRate, 60)) areasForImprovement.push("Feedback on community activities not consistently obtained — improve review process");
+  if (activities.length > 0 && below(engagementQuality.communityLinksRate, 60)) areasForImprovement.push("Community links not consistently strengthened — develop partnership approach");
 
   if (activities.length === 0) actions.push("No community activity records found — develop and implement engagement programme");
   if (!policy) actions.push("URGENT: No community engagement policy in place — develop and implement immediately");
   if (training.length === 0) actions.push("URGENT: No staff community training recorded — arrange training for all staff");
-  if (activities.length > 0 && engagementCompliance.staffSupportedRate < 60) actions.push("Improve staff support for community activities");
-  if (activities.length > 0 && engagementQuality.socialSkillsRate < 60) actions.push("Strengthen social skills development through community engagement");
+  if (activities.length > 0 && below(engagementCompliance.staffSupportedRate, 60)) actions.push("Improve staff support for community activities");
+  if (activities.length > 0 && below(engagementQuality.socialSkillsRate, 60)) actions.push("Strengthen social skills development through community engagement");
 
   const regulatoryLinks: string[] = [
     "CHR 2015 Regulation 6 — Health and well-being standard",

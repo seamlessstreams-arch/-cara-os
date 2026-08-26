@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   generateCommunityEngagementParticipationIntelligence, evaluateEngagementQuality, evaluateEngagementCompliance,
-  evaluateCommunityPolicy, evaluateStaffCommunityReadiness, buildChildCommunityProfiles, pct, getRating,
+  evaluateCommunityPolicy, evaluateStaffCommunityReadiness, buildChildCommunityProfiles, getRating,
   getActivityTypeLabel, getParticipationLevelLabel, getRatingLabel,
 } from "../community-engagement-participation-engine";
 import type { CommunityActivity, CommunityPolicy, StaffCommunityTraining } from "../community-engagement-participation-engine";
@@ -20,12 +20,6 @@ function makeTraining(overrides: Partial<StaffCommunityTraining> = {}): StaffCom
   return { id: `ct-${_tid}`, staffId: `staff-${_tid}`, staffName: `Staff ${_tid}`, communityEngagement: true, socialInclusion: true, safeguardingInCommunity: true, activityPlanning: true, partnershipWorking: true, documentationSkills: true, ...overrides };
 }
 
-describe("pct", () => {
-  it("returns percentage", () => { expect(pct(3, 4)).toBe(75); });
-  it("returns 0 for den=0", () => { expect(pct(0, 0)).toBe(0); });
-  it("returns 100 for equal", () => { expect(pct(5, 5)).toBe(100); });
-  it("returns 0 for num=0", () => { expect(pct(0, 10)).toBe(0); });
-});
 
 describe("getRating", () => {
   it("outstanding >= 80", () => { expect(getRating(80)).toBe("outstanding"); expect(getRating(100)).toBe("outstanding"); });
