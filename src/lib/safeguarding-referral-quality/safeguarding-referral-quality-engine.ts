@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // Safeguarding Referral Quality Intelligence Engine
 // Pure deterministic — no AI, no external calls, no randomness, no Date.now()
 
@@ -99,18 +100,26 @@ export interface StaffSafeguardingTraining {
 export interface ReferralQualityResult {
   overallScore: number;
   totalReferrals: number;
-  appropriateOutcomeRate: number;
-  timelyResponseRate: number;
-  multiAgencyRate: number;
-  childInformedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  appropriateOutcomeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyResponseRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  multiAgencyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childInformedRate: number | null;
 }
 
 export interface ReferralComplianceResult {
   overallScore: number;
-  documentedRate: number;
-  managementOversightRate: number;
-  lessonsLearnedRate: number;
-  referralTypeDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  managementOversightRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  lessonsLearnedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  referralTypeDiversityRatio: number | null;
 }
 
 export interface SafeguardingPolicyResult {
@@ -127,20 +136,28 @@ export interface SafeguardingPolicyResult {
 export interface StaffSafeguardingReadinessResult {
   overallScore: number;
   totalStaff: number;
-  safeguardingLevel3Rate: number;
-  referralProcessesRate: number;
-  multiAgencyWorkingRate: number;
-  recognisingAbuseRate: number;
-  recordKeepingRate: number;
-  whistleblowingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingLevel3Rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  referralProcessesRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  multiAgencyWorkingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  recognisingAbuseRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  recordKeepingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  whistleblowingRate: number | null;
 }
 
 export interface ChildSafeguardingProfile {
   childId: string;
   childName: string;
   totalReferrals: number;
-  appropriateOutcomeRate: number;
-  timelyResponseRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  appropriateOutcomeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyResponseRate: number | null;
   overallScore: number;
 }
 
@@ -163,11 +180,6 @@ export interface SafeguardingReferralQualityIntelligence {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -179,7 +191,7 @@ export function getRating(score: number): Rating {
 
 export function evaluateReferralQuality(referrals: SafeguardingReferral[]): ReferralQualityResult {
   if (referrals.length === 0) {
-    return { overallScore: 0, totalReferrals: 0, appropriateOutcomeRate: 0, timelyResponseRate: 0, multiAgencyRate: 0, childInformedRate: 0 };
+    return { overallScore: 0, totalReferrals: 0, appropriateOutcomeRate: null, timelyResponseRate: null, multiAgencyRate: null, childInformedRate: null };
   }
 
   const total = referrals.length;
@@ -188,15 +200,15 @@ export function evaluateReferralQuality(referrals: SafeguardingReferral[]): Refe
   const multiAgencyCount = referrals.filter((r) => r.multiAgencyEngaged).length;
   const informedCount = referrals.filter((r) => r.childInformed).length;
 
-  const appropriateOutcomeRate = pct(appropriateCount, total);
-  const timelyResponseRate = pct(timelyCount, total);
-  const multiAgencyRate = pct(multiAgencyCount, total);
-  const childInformedRate = pct(informedCount, total);
+  const appropriateOutcomeRate = rate(appropriateCount, total);
+  const timelyResponseRate = rate(timelyCount, total);
+  const multiAgencyRate = rate(multiAgencyCount, total);
+  const childInformedRate = rate(informedCount, total);
 
-  const appScore = Math.round((appropriateOutcomeRate / 100) * 7);
-  const timScore = Math.round((timelyResponseRate / 100) * 6);
-  const maScore = Math.round((multiAgencyRate / 100) * 6);
-  const infScore = Math.round((childInformedRate / 100) * 6);
+  const appScore = Math.round(((appropriateOutcomeRate ?? 0) / 100) * 7);
+  const timScore = Math.round(((timelyResponseRate ?? 0) / 100) * 6);
+  const maScore = Math.round(((multiAgencyRate ?? 0) / 100) * 6);
+  const infScore = Math.round(((childInformedRate ?? 0) / 100) * 6);
 
   const overallScore = Math.min(25, appScore + timScore + maScore + infScore);
 
@@ -205,7 +217,7 @@ export function evaluateReferralQuality(referrals: SafeguardingReferral[]): Refe
 
 export function evaluateReferralCompliance(referrals: SafeguardingReferral[]): ReferralComplianceResult {
   if (referrals.length === 0) {
-    return { overallScore: 0, documentedRate: 0, managementOversightRate: 0, lessonsLearnedRate: 0, referralTypeDiversityRatio: 0 };
+    return { overallScore: 0, documentedRate: null, managementOversightRate: null, lessonsLearnedRate: null, referralTypeDiversityRatio: 0 };
   }
 
   const total = referrals.length;
@@ -213,16 +225,16 @@ export function evaluateReferralCompliance(referrals: SafeguardingReferral[]): R
   const oversightCount = referrals.filter((r) => r.managementOversight).length;
   const lessonsCount = referrals.filter((r) => r.lessonsLearned).length;
   const uniqueTypes = new Set(referrals.map((r) => r.referralType)).size;
-  const diversityRatio = pct(uniqueTypes, 8);
+  const diversityRatio = rate(uniqueTypes, 8);
 
-  const documentedRate = pct(documentedCount, total);
-  const managementOversightRate = pct(oversightCount, total);
-  const lessonsLearnedRate = pct(lessonsCount, total);
+  const documentedRate = rate(documentedCount, total);
+  const managementOversightRate = rate(oversightCount, total);
+  const lessonsLearnedRate = rate(lessonsCount, total);
 
-  const docScore = Math.round((documentedRate / 100) * 8);
-  const ovScore = Math.round((managementOversightRate / 100) * 7);
-  const lesScore = Math.round((lessonsLearnedRate / 100) * 5);
-  const divScore = Math.round((diversityRatio / 100) * 5);
+  const docScore = Math.round(((documentedRate ?? 0) / 100) * 8);
+  const ovScore = Math.round(((managementOversightRate ?? 0) / 100) * 7);
+  const lesScore = Math.round(((lessonsLearnedRate ?? 0) / 100) * 5);
+  const divScore = Math.round((diversityRatio! / 100) * 5);
 
   const overallScore = Math.min(25, docScore + ovScore + lesScore + divScore);
 
@@ -266,7 +278,7 @@ export function evaluateSafeguardingPolicy(policy: SafeguardingPolicy | null): S
 
 export function evaluateStaffSafeguardingReadiness(training: StaffSafeguardingTraining[]): StaffSafeguardingReadinessResult {
   if (training.length === 0) {
-    return { overallScore: 0, totalStaff: 0, safeguardingLevel3Rate: 0, referralProcessesRate: 0, multiAgencyWorkingRate: 0, recognisingAbuseRate: 0, recordKeepingRate: 0, whistleblowingRate: 0 };
+    return { overallScore: 0, totalStaff: 0, safeguardingLevel3Rate: null, referralProcessesRate: null, multiAgencyWorkingRate: null, recognisingAbuseRate: null, recordKeepingRate: null, whistleblowingRate: null };
   }
 
   const total = training.length;
@@ -277,19 +289,19 @@ export function evaluateStaffSafeguardingReadiness(training: StaffSafeguardingTr
   const rkCount = training.filter((t) => t.recordKeeping).length;
   const wbCount = training.filter((t) => t.whistleblowing).length;
 
-  const safeguardingLevel3Rate = pct(sg3Count, total);
-  const referralProcessesRate = pct(rpCount, total);
-  const multiAgencyWorkingRate = pct(maCount, total);
-  const recognisingAbuseRate = pct(raCount, total);
-  const recordKeepingRate = pct(rkCount, total);
-  const whistleblowingRate = pct(wbCount, total);
+  const safeguardingLevel3Rate = rate(sg3Count, total);
+  const referralProcessesRate = rate(rpCount, total);
+  const multiAgencyWorkingRate = rate(maCount, total);
+  const recognisingAbuseRate = rate(raCount, total);
+  const recordKeepingRate = rate(rkCount, total);
+  const whistleblowingRate = rate(wbCount, total);
 
-  const s1 = Math.round((safeguardingLevel3Rate / 100) * 6);
-  const s2 = Math.round((referralProcessesRate / 100) * 5);
-  const s3 = Math.round((multiAgencyWorkingRate / 100) * 5);
-  const s4 = Math.round((recognisingAbuseRate / 100) * 4);
-  const s5 = Math.round((recordKeepingRate / 100) * 3);
-  const s6 = Math.round((whistleblowingRate / 100) * 2);
+  const s1 = Math.round(((safeguardingLevel3Rate ?? 0) / 100) * 6);
+  const s2 = Math.round(((referralProcessesRate ?? 0) / 100) * 5);
+  const s3 = Math.round(((multiAgencyWorkingRate ?? 0) / 100) * 5);
+  const s4 = Math.round(((recognisingAbuseRate ?? 0) / 100) * 4);
+  const s5 = Math.round(((recordKeepingRate ?? 0) / 100) * 3);
+  const s6 = Math.round(((whistleblowingRate ?? 0) / 100) * 2);
 
   const overallScore = Math.min(25, s1 + s2 + s3 + s4 + s5 + s6);
 
@@ -315,22 +327,22 @@ export function buildChildSafeguardingProfiles(referrals: SafeguardingReferral[]
     const appropriateCount = refs.filter((r) => r.referralOutcome === "appropriate_action" || r.referralOutcome === "investigation_opened").length;
     const timelyCount = refs.filter((r) => r.timelyResponse).length;
 
-    const appropriateOutcomeRate = pct(appropriateCount, total);
-    const timelyResponseRate = pct(timelyCount, total);
+    const appropriateOutcomeRate = rate(appropriateCount, total);
+    const timelyResponseRate = rate(timelyCount, total);
 
     let freqScore = 0;
     if (total >= 10) freqScore = 2;
     else if (total >= 5) freqScore = 1;
 
     let appScore = 0;
-    if (appropriateOutcomeRate >= 80) appScore = 3;
-    else if (appropriateOutcomeRate >= 60) appScore = 2;
-    else if (appropriateOutcomeRate >= 40) appScore = 1;
+    if (meets(appropriateOutcomeRate, 80)) appScore = 3;
+    else if (meets(appropriateOutcomeRate, 60)) appScore = 2;
+    else if (meets(appropriateOutcomeRate, 40)) appScore = 1;
 
     let timScore = 0;
-    if (timelyResponseRate >= 80) timScore = 3;
-    else if (timelyResponseRate >= 60) timScore = 2;
-    else if (timelyResponseRate >= 40) timScore = 1;
+    if (meets(timelyResponseRate, 80)) timScore = 3;
+    else if (meets(timelyResponseRate, 60)) timScore = 2;
+    else if (meets(timelyResponseRate, 40)) timScore = 1;
 
     const uniqueTypes = new Set(refs.map((r) => r.referralType)).size;
     let divScore = 0;
@@ -369,21 +381,21 @@ export function generateSafeguardingReferralQualityIntelligence(
   const areasForImprovement: string[] = [];
   const actions: string[] = [];
 
-  if (referralQuality.appropriateOutcomeRate >= 80) strengths.push("Strong safeguarding referral outcomes — referrals consistently result in appropriate action");
-  if (referralQuality.timelyResponseRate >= 80) strengths.push("Timely responses to safeguarding concerns are consistently achieved");
-  if (referralQuality.multiAgencyRate >= 80) strengths.push("Multi-agency engagement is strong across safeguarding referrals");
-  if (referralCompliance.documentedRate >= 80) strengths.push("Excellent documentation of safeguarding referrals and outcomes");
+  if (meets(referralQuality.appropriateOutcomeRate, 80)) strengths.push("Strong safeguarding referral outcomes — referrals consistently result in appropriate action");
+  if (meets(referralQuality.timelyResponseRate, 80)) strengths.push("Timely responses to safeguarding concerns are consistently achieved");
+  if (meets(referralQuality.multiAgencyRate, 80)) strengths.push("Multi-agency engagement is strong across safeguarding referrals");
+  if (meets(referralCompliance.documentedRate, 80)) strengths.push("Excellent documentation of safeguarding referrals and outcomes");
 
-  if (referrals.length > 0 && referralQuality.appropriateOutcomeRate < 60) areasForImprovement.push("Referral outcomes need improvement — review threshold application and referral quality");
-  if (referrals.length > 0 && referralQuality.timelyResponseRate < 60) areasForImprovement.push("Timeliness of safeguarding responses needs improvement — review escalation processes");
-  if (referrals.length > 0 && referralQuality.childInformedRate < 60) areasForImprovement.push("Children not consistently informed about safeguarding processes — embed participation");
-  if (referrals.length > 0 && referralCompliance.managementOversightRate < 60) areasForImprovement.push("Management oversight of referrals needs strengthening");
+  if (referrals.length > 0 && below(referralQuality.appropriateOutcomeRate, 60)) areasForImprovement.push("Referral outcomes need improvement — review threshold application and referral quality");
+  if (referrals.length > 0 && below(referralQuality.timelyResponseRate, 60)) areasForImprovement.push("Timeliness of safeguarding responses needs improvement — review escalation processes");
+  if (referrals.length > 0 && below(referralQuality.childInformedRate, 60)) areasForImprovement.push("Children not consistently informed about safeguarding processes — embed participation");
+  if (referrals.length > 0 && below(referralCompliance.managementOversightRate, 60)) areasForImprovement.push("Management oversight of referrals needs strengthening");
 
   if (referrals.length === 0) actions.push("No safeguarding referral records found — ensure all concerns are recorded and tracked");
   if (!policy) actions.push("URGENT: No safeguarding policy in place — develop and implement immediately");
   if (training.length === 0) actions.push("URGENT: No staff safeguarding training recorded — arrange training for all staff");
-  if (referrals.length > 0 && referralCompliance.lessonsLearnedRate < 60) actions.push("Strengthen learning from safeguarding cases and referral outcomes");
-  if (referrals.length > 0 && referralQuality.multiAgencyRate < 60) actions.push("Improve multi-agency engagement in safeguarding referrals");
+  if (referrals.length > 0 && below(referralCompliance.lessonsLearnedRate, 60)) actions.push("Strengthen learning from safeguarding cases and referral outcomes");
+  if (referrals.length > 0 && below(referralQuality.multiAgencyRate, 60)) actions.push("Improve multi-agency engagement in safeguarding referrals");
 
   const regulatoryLinks: string[] = [
     "CHR 2015 Regulation 12 — The protection of children standard",

@@ -13,7 +13,6 @@ export {
   getWellbeingScoreLabel,
   getRatingLabel,
   getRating,
-  pct,
 } from "./staff-wellbeing-resilience-engine";
 
 export type {

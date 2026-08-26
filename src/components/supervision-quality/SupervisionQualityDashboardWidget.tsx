@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { SupervisionQualityIntelligence } from "@/lib/supervision-quality";
+import { formatRate } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -124,19 +125,19 @@ export function SupervisionQualityDashboardWidget() {
       {/* Key Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.sessionQuality.outstandingGoodRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.sessionQuality.outstandingGoodRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Session Quality</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.scheduleCompliance.onScheduleRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.scheduleCompliance.onScheduleRate)}</div>
           <div className="text-xs text-gray-500 mt-1">On Schedule</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.actionTracking.completedOnTimeRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.actionTracking.completedOnTimeRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Actions On Time</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.staffDevelopment.improvementRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.staffDevelopment.improvementRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Staff Improvement</div>
         </div>
       </div>
@@ -180,19 +181,19 @@ export function SupervisionQualityDashboardWidget() {
         <Section title="Session Quality">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
             <div><span className="text-gray-500">Total Sessions:</span> <span className="font-medium">{data.sessionQuality.totalSessions}</span></div>
-            <div><span className="text-gray-500">Outstanding/Good:</span> <span className="font-medium">{data.sessionQuality.outstandingGoodRate}%</span></div>
-            <div><span className="text-gray-500">Reflective Rate:</span> <span className="font-medium">{data.sessionQuality.reflectiveRate}%</span></div>
-            <div><span className="text-gray-500">Safeguarding Discussed:</span> <span className="font-medium">{data.sessionQuality.safeguardingDiscussionRate}%</span></div>
+            <div><span className="text-gray-500">Outstanding/Good:</span> <span className="font-medium">{formatRate(data.sessionQuality.outstandingGoodRate)}</span></div>
+            <div><span className="text-gray-500">Reflective Rate:</span> <span className="font-medium">{formatRate(data.sessionQuality.reflectiveRate)}</span></div>
+            <div><span className="text-gray-500">Safeguarding Discussed:</span> <span className="font-medium">{formatRate(data.sessionQuality.safeguardingDiscussionRate)}</span></div>
             <div><span className="text-gray-500">Avg Duration:</span> <span className="font-medium">{data.sessionQuality.averageDurationMinutes} mins</span></div>
-            <div><span className="text-gray-500">Recording Compliance:</span> <span className="font-medium">{data.sessionQuality.recordingComplianceRate}%</span></div>
-            <div><span className="text-gray-500">Sign-Off Rate:</span> <span className="font-medium">{data.sessionQuality.signOffRate}%</span></div>
+            <div><span className="text-gray-500">Recording Compliance:</span> <span className="font-medium">{formatRate(data.sessionQuality.recordingComplianceRate)}</span></div>
+            <div><span className="text-gray-500">Sign-Off Rate:</span> <span className="font-medium">{formatRate(data.sessionQuality.signOffRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Schedule Compliance">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
             <div><span className="text-gray-500">Total Staff:</span> <span className="font-medium">{data.scheduleCompliance.totalStaff}</span></div>
-            <div><span className="text-gray-500">On Schedule:</span> <span className="font-medium">{data.scheduleCompliance.onScheduleRate}%</span></div>
+            <div><span className="text-gray-500">On Schedule:</span> <span className="font-medium">{formatRate(data.scheduleCompliance.onScheduleRate)}</span></div>
             <div><span className="text-gray-500">Overdue:</span> <span className={`font-medium ${data.scheduleCompliance.overdueCount > 0 ? "text-red-600" : "text-green-600"}`}>{data.scheduleCompliance.overdueCount}</span></div>
             <div><span className="text-gray-500">Max Consecutive Missed:</span> <span className={`font-medium ${data.scheduleCompliance.consecutiveMissedMax > 1 ? "text-amber-600" : "text-green-600"}`}>{data.scheduleCompliance.consecutiveMissedMax}</span></div>
             <div><span className="text-gray-500">Avg Days Between:</span> <span className="font-medium">{data.scheduleCompliance.averageDaysBetweenSessions}</span></div>
@@ -202,9 +203,9 @@ export function SupervisionQualityDashboardWidget() {
         <Section title="Action Tracking">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
             <div><span className="text-gray-500">Total Actions:</span> <span className="font-medium">{data.actionTracking.totalActions}</span></div>
-            <div><span className="text-gray-500">On Time:</span> <span className="font-medium">{data.actionTracking.completedOnTimeRate}%</span></div>
+            <div><span className="text-gray-500">On Time:</span> <span className="font-medium">{formatRate(data.actionTracking.completedOnTimeRate)}</span></div>
             <div><span className="text-gray-500">Overdue:</span> <span className={`font-medium ${data.actionTracking.overdueCount > 0 ? "text-red-600" : "text-green-600"}`}>{data.actionTracking.overdueCount}</span></div>
-            <div><span className="text-gray-500">Safeguarding Completion:</span> <span className="font-medium">{data.actionTracking.safeguardingActionCompletionRate}%</span></div>
+            <div><span className="text-gray-500">Safeguarding Completion:</span> <span className="font-medium">{formatRate(data.actionTracking.safeguardingActionCompletionRate)}</span></div>
           </div>
           {Object.keys(data.actionTracking.byCategory).length > 0 && (
             <div className="mt-2">
@@ -223,10 +224,10 @@ export function SupervisionQualityDashboardWidget() {
         <Section title="Staff Development">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
             <div><span className="text-gray-500">Total Outcomes:</span> <span className="font-medium">{data.staffDevelopment.totalOutcomes}</span></div>
-            <div><span className="text-gray-500">Improvement Rate:</span> <span className="font-medium">{data.staffDevelopment.improvementRate}%</span></div>
-            <div><span className="text-gray-500">With Plan:</span> <span className="font-medium">{data.staffDevelopment.withPlanRate}%</span></div>
+            <div><span className="text-gray-500">Improvement Rate:</span> <span className="font-medium">{formatRate(data.staffDevelopment.improvementRate)}</span></div>
+            <div><span className="text-gray-500">With Plan:</span> <span className="font-medium">{formatRate(data.staffDevelopment.withPlanRate)}</span></div>
             <div><span className="text-gray-500">Avg Skill Improvement:</span> <span className="font-medium">{data.staffDevelopment.averageSkillImprovement}</span></div>
-            <div><span className="text-gray-500">Wellbeing Concern Rate:</span> <span className={`font-medium ${(data.staffDevelopment.wellbeingConcernRate ?? 0) > 10 ? "text-amber-600" : "text-green-600"}`}>{data.staffDevelopment.wellbeingConcernRate}%</span></div>
+            <div><span className="text-gray-500">Wellbeing Concern Rate:</span> <span className={`font-medium ${(data.staffDevelopment.wellbeingConcernRate ?? 0) > 10 ? "text-amber-600" : "text-green-600"}`}>{formatRate(data.staffDevelopment.wellbeingConcernRate)}</span></div>
           </div>
         </Section>
 

@@ -1,3 +1,4 @@
+import { below, meanOf, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // VISITOR ENGAGEMENT MONITORING INTELLIGENCE ENGINE
 //
@@ -122,19 +123,27 @@ export interface StaffVisitorTraining {
 
 export interface VisitorSafeguardingEvaluation {
   totalRecords: number;
-  identityVerifiedRate: number;
-  dbsCheckedRate: number;
-  safeguardingFollowedRate: number;
-  signedInRate: number;
-  documentedInLogRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  identityVerifiedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  dbsCheckedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingFollowedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  signedInRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedInLogRate: number | null;
   score: number;
 }
 
 export interface VisitQualityEvaluation {
   totalRecords: number;
-  positiveOutcomeRate: number;
-  childConsentedRate: number;
-  feedbackRecordedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveOutcomeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childConsentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feedbackRecordedRate: number | null;
   score: number;
 }
 
@@ -152,20 +161,28 @@ export interface VisitorPolicyEvaluation {
 
 export interface StaffVisitorReadinessEvaluation {
   totalStaff: number;
-  visitorManagementRate: number;
-  safeguardingVisitorsRate: number;
-  identityCheckingRate: number;
-  childProtectionRate: number;
-  conflictManagementRate: number;
-  recordKeepingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  visitorManagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingVisitorsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  identityCheckingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childProtectionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  conflictManagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  recordKeepingRate: number | null;
   score: number;
 }
 
 export interface VisitorTypeBreakdownEntry {
   visitorType: VisitorType;
   count: number;
-  positiveRate: number;
-  safeguardingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  positiveRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingRate: number | null;
 }
 
 export interface VisitorEngagementMonitoringIntelligence {
@@ -187,11 +204,6 @@ export interface VisitorEngagementMonitoringIntelligence {
 
 // ── Helpers ──────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
@@ -212,11 +224,11 @@ export function evaluateVisitorSafeguarding(
   if (records.length === 0) {
     return {
       totalRecords: 0,
-      identityVerifiedRate: 0,
-      dbsCheckedRate: 0,
-      safeguardingFollowedRate: 0,
-      signedInRate: 0,
-      documentedInLogRate: 0,
+      identityVerifiedRate: null,
+      dbsCheckedRate: null,
+      safeguardingFollowedRate: null,
+      signedInRate: null,
+      documentedInLogRate: null,
       score: 25,
     };
   }
@@ -224,30 +236,30 @@ export function evaluateVisitorSafeguarding(
   const total = records.length;
 
   const identityVerifiedCount = records.filter((r) => r.identityVerified).length;
-  const identityVerifiedRate = pct(identityVerifiedCount, total);
+  const identityVerifiedRate = rate(identityVerifiedCount, total);
 
   const dbsCheckedCount = records.filter((r) => r.dbsChecked).length;
-  const dbsCheckedRate = pct(dbsCheckedCount, total);
+  const dbsCheckedRate = rate(dbsCheckedCount, total);
 
   const safeguardingFollowedCount = records.filter((r) => r.safeguardingFollowed).length;
-  const safeguardingFollowedRate = pct(safeguardingFollowedCount, total);
+  const safeguardingFollowedRate = rate(safeguardingFollowedCount, total);
 
   const signedInCount = records.filter((r) => r.signedIn).length;
-  const signedInRate = pct(signedInCount, total);
+  const signedInRate = rate(signedInCount, total);
 
   const documentedInLogCount = records.filter((r) => r.documentedInLog).length;
-  const documentedInLogRate = pct(documentedInLogCount, total);
+  const documentedInLogRate = rate(documentedInLogCount, total);
 
   // Weighted scoring:
   // Identity verified rate: 0-7
-  const identityScore = Math.round((identityVerifiedRate / 100) * 7);
+  const identityScore = Math.round(((identityVerifiedRate ?? 0) / 100) * 7);
   // DBS checked rate: 0-6
-  const dbsScore = Math.round((dbsCheckedRate / 100) * 6);
+  const dbsScore = Math.round(((dbsCheckedRate ?? 0) / 100) * 6);
   // Safeguarding followed rate: 0-6
-  const safeguardingScore = Math.round((safeguardingFollowedRate / 100) * 6);
+  const safeguardingScore = Math.round(((safeguardingFollowedRate ?? 0) / 100) * 6);
   // Combined signedIn + documentedInLog: 0-6
-  const combinedSignDocAvg = (signedInRate + documentedInLogRate) / 2;
-  const combinedScore = Math.round((combinedSignDocAvg / 100) * 6);
+  const combinedSignDocAvg = meanOf([signedInRate, documentedInLogRate]);
+  const combinedScore = Math.round(((combinedSignDocAvg ?? 0) / 100) * 6);
 
   const score = clamp(identityScore + dbsScore + safeguardingScore + combinedScore, 0, 25);
 
@@ -271,9 +283,9 @@ export function evaluateVisitQuality(
   if (records.length === 0) {
     return {
       totalRecords: 0,
-      positiveOutcomeRate: 0,
-      childConsentedRate: 0,
-      feedbackRecordedRate: 0,
+      positiveOutcomeRate: null,
+      childConsentedRate: null,
+      feedbackRecordedRate: null,
       score: 0,
     };
   }
@@ -283,21 +295,21 @@ export function evaluateVisitQuality(
   const positiveCount = records.filter(
     (r) => r.visitOutcome === "very_positive" || r.visitOutcome === "positive",
   ).length;
-  const positiveOutcomeRate = pct(positiveCount, total);
+  const positiveOutcomeRate = rate(positiveCount, total);
 
   const childConsentedCount = records.filter((r) => r.childConsented).length;
-  const childConsentedRate = pct(childConsentedCount, total);
+  const childConsentedRate = rate(childConsentedCount, total);
 
   const feedbackRecordedCount = records.filter((r) => r.feedbackRecorded).length;
-  const feedbackRecordedRate = pct(feedbackRecordedCount, total);
+  const feedbackRecordedRate = rate(feedbackRecordedCount, total);
 
   // Weighted scoring:
   // Positive outcome rate: 0-8
-  const positiveScore = Math.round((positiveOutcomeRate / 100) * 8);
+  const positiveScore = Math.round(((positiveOutcomeRate ?? 0) / 100) * 8);
   // Child consented rate: 0-9
-  const consentScore = Math.round((childConsentedRate / 100) * 9);
+  const consentScore = Math.round(((childConsentedRate ?? 0) / 100) * 9);
   // Feedback recorded rate: 0-8
-  const feedbackScore = Math.round((feedbackRecordedRate / 100) * 8);
+  const feedbackScore = Math.round(((feedbackRecordedRate ?? 0) / 100) * 8);
 
   const score = clamp(positiveScore + consentScore + feedbackScore, 0, 25);
 
@@ -362,12 +374,12 @@ export function evaluateStaffVisitorReadiness(
   if (training.length === 0) {
     return {
       totalStaff: 0,
-      visitorManagementRate: 0,
-      safeguardingVisitorsRate: 0,
-      identityCheckingRate: 0,
-      childProtectionRate: 0,
-      conflictManagementRate: 0,
-      recordKeepingRate: 0,
+      visitorManagementRate: null,
+      safeguardingVisitorsRate: null,
+      identityCheckingRate: null,
+      childProtectionRate: null,
+      conflictManagementRate: null,
+      recordKeepingRate: null,
       score: 0,
     };
   }
@@ -375,30 +387,30 @@ export function evaluateStaffVisitorReadiness(
   const total = training.length;
 
   const visitorManagementCount = training.filter((t) => t.visitorManagement).length;
-  const visitorManagementRate = pct(visitorManagementCount, total);
+  const visitorManagementRate = rate(visitorManagementCount, total);
 
   const safeguardingVisitorsCount = training.filter((t) => t.safeguardingVisitors).length;
-  const safeguardingVisitorsRate = pct(safeguardingVisitorsCount, total);
+  const safeguardingVisitorsRate = rate(safeguardingVisitorsCount, total);
 
   const identityCheckingCount = training.filter((t) => t.identityChecking).length;
-  const identityCheckingRate = pct(identityCheckingCount, total);
+  const identityCheckingRate = rate(identityCheckingCount, total);
 
   const childProtectionCount = training.filter((t) => t.childProtection).length;
-  const childProtectionRate = pct(childProtectionCount, total);
+  const childProtectionRate = rate(childProtectionCount, total);
 
   const conflictManagementCount = training.filter((t) => t.conflictManagement).length;
-  const conflictManagementRate = pct(conflictManagementCount, total);
+  const conflictManagementRate = rate(conflictManagementCount, total);
 
   const recordKeepingCount = training.filter((t) => t.recordKeeping).length;
-  const recordKeepingRate = pct(recordKeepingCount, total);
+  const recordKeepingRate = rate(recordKeepingCount, total);
 
   // 6 skills weighted: 6+5+5+4+3+2 = 25
-  const vmScore = Math.round((visitorManagementRate / 100) * 6);
-  const svScore = Math.round((safeguardingVisitorsRate / 100) * 5);
-  const icScore = Math.round((identityCheckingRate / 100) * 5);
-  const cpScore = Math.round((childProtectionRate / 100) * 4);
-  const cmScore = Math.round((conflictManagementRate / 100) * 3);
-  const rkScore = Math.round((recordKeepingRate / 100) * 2);
+  const vmScore = Math.round(((visitorManagementRate ?? 0) / 100) * 6);
+  const svScore = Math.round(((safeguardingVisitorsRate ?? 0) / 100) * 5);
+  const icScore = Math.round(((identityCheckingRate ?? 0) / 100) * 5);
+  const cpScore = Math.round(((childProtectionRate ?? 0) / 100) * 4);
+  const cmScore = Math.round(((conflictManagementRate ?? 0) / 100) * 3);
+  const rkScore = Math.round(((recordKeepingRate ?? 0) / 100) * 2);
 
   const score = clamp(vmScore + svScore + icScore + cpScore + cmScore + rkScore, 0, 25);
 
@@ -439,8 +451,8 @@ export function buildVisitorTypeBreakdown(
     result.push({
       visitorType,
       count,
-      positiveRate: pct(positiveCount, count),
-      safeguardingRate: pct(safeguardingCount, count),
+      positiveRate: rate(positiveCount, count),
+      safeguardingRate: rate(safeguardingCount, count),
     });
   }
 
@@ -478,35 +490,35 @@ export function generateVisitorEngagementMonitoringIntelligence(
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
 
-  if (visitorSafeguarding.identityVerifiedRate >= 80 && visitorSafeguarding.totalRecords > 0) {
+  if (meets(visitorSafeguarding.identityVerifiedRate, 80) && visitorSafeguarding.totalRecords > 0) {
     strengths.push("Strong identity verification practices — visitors are consistently verified before access is granted");
   }
 
-  if (visitQuality.childConsentedRate >= 80 && visitQuality.totalRecords > 0) {
+  if (meets(visitQuality.childConsentedRate, 80) && visitQuality.totalRecords > 0) {
     strengths.push("Children's wishes are respected — consent is routinely sought and recorded before visits take place");
   }
 
-  if (visitorSafeguarding.safeguardingFollowedRate >= 80 && visitorSafeguarding.totalRecords > 0) {
+  if (meets(visitorSafeguarding.safeguardingFollowedRate, 80) && visitorSafeguarding.totalRecords > 0) {
     strengths.push("Robust safeguarding protocols during visits — safeguarding procedures are consistently followed");
   }
 
-  if (visitorSafeguarding.dbsCheckedRate >= 80 && visitorSafeguarding.totalRecords > 0) {
+  if (meets(visitorSafeguarding.dbsCheckedRate, 80) && visitorSafeguarding.totalRecords > 0) {
     strengths.push("DBS checking is thorough — the home verifies visitor suitability before allowing access");
   }
 
-  if (visitorSafeguarding.signedInRate >= 80 && visitorSafeguarding.totalRecords > 0) {
+  if (meets(visitorSafeguarding.signedInRate, 80) && visitorSafeguarding.totalRecords > 0) {
     strengths.push("Visitor sign-in compliance is strong — access to the home is well controlled");
   }
 
-  if (visitorSafeguarding.documentedInLogRate >= 80 && visitorSafeguarding.totalRecords > 0) {
+  if (meets(visitorSafeguarding.documentedInLogRate, 80) && visitorSafeguarding.totalRecords > 0) {
     strengths.push("Visitor logs are well maintained — visits are accurately documented for oversight and audit");
   }
 
-  if (visitQuality.positiveOutcomeRate >= 80 && visitQuality.totalRecords > 0) {
+  if (meets(visitQuality.positiveOutcomeRate, 80) && visitQuality.totalRecords > 0) {
     strengths.push("Visit outcomes are overwhelmingly positive — visitors and children benefit from well-managed engagement");
   }
 
-  if (visitQuality.feedbackRecordedRate >= 80 && visitQuality.totalRecords > 0) {
+  if (meets(visitQuality.feedbackRecordedRate, 80) && visitQuality.totalRecords > 0) {
     strengths.push("Feedback is routinely recorded after visits — the home actively monitors engagement quality");
   }
 
@@ -521,35 +533,35 @@ export function generateVisitorEngagementMonitoringIntelligence(
   // ── Areas for Improvement ─────────────────────────────────────────────
   const areasForImprovement: string[] = [];
 
-  if (visitQuality.totalRecords > 0 && visitQuality.positiveOutcomeRate < 60) {
+  if (visitQuality.totalRecords > 0 && below(visitQuality.positiveOutcomeRate, 60)) {
     areasForImprovement.push("Positive visit outcomes are below 60% — visit planning and support arrangements should be reviewed");
   }
 
-  if (visitorSafeguarding.totalRecords > 0 && visitorSafeguarding.safeguardingFollowedRate < 80) {
+  if (visitorSafeguarding.totalRecords > 0 && below(visitorSafeguarding.safeguardingFollowedRate, 80)) {
     areasForImprovement.push("Safeguarding procedures are not consistently followed during visits — this must be addressed as a priority");
   }
 
-  if (visitorSafeguarding.totalRecords > 0 && visitorSafeguarding.identityVerifiedRate < 80) {
+  if (visitorSafeguarding.totalRecords > 0 && below(visitorSafeguarding.identityVerifiedRate, 80)) {
     areasForImprovement.push("Identity verification is inconsistent — not all visitors are being checked before entry");
   }
 
-  if (visitorSafeguarding.totalRecords > 0 && visitorSafeguarding.dbsCheckedRate < 80) {
+  if (visitorSafeguarding.totalRecords > 0 && below(visitorSafeguarding.dbsCheckedRate, 80)) {
     areasForImprovement.push("DBS checking rates are below expected standards — visitor suitability checks need improvement");
   }
 
-  if (visitQuality.totalRecords > 0 && visitQuality.childConsentedRate < 80) {
+  if (visitQuality.totalRecords > 0 && below(visitQuality.childConsentedRate, 80)) {
     areasForImprovement.push("Child consent is not being consistently obtained before visits — the voice of the child must be prioritised");
   }
 
-  if (visitQuality.totalRecords > 0 && visitQuality.feedbackRecordedRate < 80) {
+  if (visitQuality.totalRecords > 0 && below(visitQuality.feedbackRecordedRate, 80)) {
     areasForImprovement.push("Post-visit feedback is not being consistently recorded — monitoring of engagement quality is incomplete");
   }
 
-  if (visitorSafeguarding.totalRecords > 0 && visitorSafeguarding.signedInRate < 80) {
+  if (visitorSafeguarding.totalRecords > 0 && below(visitorSafeguarding.signedInRate, 80)) {
     areasForImprovement.push("Visitor sign-in compliance is below standard — access control must be tightened");
   }
 
-  if (visitorSafeguarding.totalRecords > 0 && visitorSafeguarding.documentedInLogRate < 80) {
+  if (visitorSafeguarding.totalRecords > 0 && below(visitorSafeguarding.documentedInLogRate, 80)) {
     areasForImprovement.push("Visitor log documentation is incomplete — all visits must be recorded in the visitor log");
   }
 
@@ -568,35 +580,35 @@ export function generateVisitorEngagementMonitoringIntelligence(
     actions.push("[URGENT] Establish staff training records for visitor management — no training data is currently held");
   }
 
-  if (visitorSafeguarding.totalRecords > 0 && visitorSafeguarding.safeguardingFollowedRate < 80) {
+  if (visitorSafeguarding.totalRecords > 0 && below(visitorSafeguarding.safeguardingFollowedRate, 80)) {
     actions.push("Review and reinforce safeguarding procedures for all visits — compliance is below the expected threshold");
   }
 
-  if (visitorSafeguarding.totalRecords > 0 && visitorSafeguarding.identityVerifiedRate < 80) {
+  if (visitorSafeguarding.totalRecords > 0 && below(visitorSafeguarding.identityVerifiedRate, 80)) {
     actions.push("Implement mandatory identity verification for all visitors before entry to the home");
   }
 
-  if (visitorSafeguarding.totalRecords > 0 && visitorSafeguarding.dbsCheckedRate < 80) {
+  if (visitorSafeguarding.totalRecords > 0 && below(visitorSafeguarding.dbsCheckedRate, 80)) {
     actions.push("Ensure DBS checks are completed and verified for all visitors who require them");
   }
 
-  if (visitQuality.totalRecords > 0 && visitQuality.childConsentedRate < 80) {
+  if (visitQuality.totalRecords > 0 && below(visitQuality.childConsentedRate, 80)) {
     actions.push("Ensure child consent is obtained and documented before every visit takes place");
   }
 
-  if (visitQuality.totalRecords > 0 && visitQuality.positiveOutcomeRate < 60) {
+  if (visitQuality.totalRecords > 0 && below(visitQuality.positiveOutcomeRate, 60)) {
     actions.push("Review visit planning arrangements to improve the quality and outcomes of visits");
   }
 
-  if (visitQuality.totalRecords > 0 && visitQuality.feedbackRecordedRate < 80) {
+  if (visitQuality.totalRecords > 0 && below(visitQuality.feedbackRecordedRate, 80)) {
     actions.push("Introduce a systematic process for recording feedback after every visit");
   }
 
-  if (visitorSafeguarding.totalRecords > 0 && visitorSafeguarding.signedInRate < 80) {
+  if (visitorSafeguarding.totalRecords > 0 && below(visitorSafeguarding.signedInRate, 80)) {
     actions.push("Enforce visitor sign-in procedures at all entry points to the home");
   }
 
-  if (visitorSafeguarding.totalRecords > 0 && visitorSafeguarding.documentedInLogRate < 80) {
+  if (visitorSafeguarding.totalRecords > 0 && below(visitorSafeguarding.documentedInLogRate, 80)) {
     actions.push("Ensure all visits are documented in the visitor log without exception");
   }
 

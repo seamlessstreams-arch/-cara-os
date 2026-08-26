@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 /* ──────────────────────────────────────────────────────────────
    Supervision Dashboard Widget
@@ -172,19 +173,19 @@ export default function SupervisionDashboardWidget() {
       {/* Key Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.supervisionQuality.contentRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.supervisionQuality.contentRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Content Quality</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.supervisionCompliance.documentedRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.supervisionCompliance.documentedRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Documented</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.supervisionQuality.reflectiveRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.supervisionQuality.reflectiveRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Reflective</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.supervisionQuality.safeguardingRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.supervisionQuality.safeguardingRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Safeguarding</div>
         </div>
       </div>

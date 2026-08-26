@@ -19,6 +19,7 @@
    ────────────────────────────────────────────────────────────── */
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -128,18 +129,25 @@ export interface StaffVoiceOfChildTraining {
 export interface VoiceOfChildQualityResult {
   overallScore: number;
   totalRecords: number;
-  wishesFeelingsRecordedRate: number;
-  childDirectlyConsultedRate: number;
-  voiceInfluencedOutcomeRate: number;
-  ageAppropriateMethodRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  wishesFeelingsRecordedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childDirectlyConsultedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  voiceInfluencedOutcomeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  ageAppropriateMethodRate: number | null;
 }
 
 export interface VoiceOfChildComplianceResult {
   overallScore: number;
   totalRecords: number;
-  documentationCompleteRate: number;
-  timelyRecordingRate: number;
-  wishesFeelingsRecordedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationCompleteRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  wishesFeelingsRecordedRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
 }
@@ -158,12 +166,18 @@ export interface VoiceOfChildPolicyResult {
 export interface StaffVoiceOfChildReadinessResult {
   overallScore: number;
   totalStaff: number;
-  wishesFeelingsCaptureRate: number;
-  activeListeningSkillsRate: number;
-  ageAppropriateEngagementRate: number;
-  advocacyAwarenessRate: number;
-  participationFacilitationRate: number;
-  nonVerbalCommunicationRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  wishesFeelingsCaptureRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  activeListeningSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  ageAppropriateEngagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  advocacyAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  participationFacilitationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  nonVerbalCommunicationRate: number | null;
 }
 
 export interface ChildVoiceOfChildProfile {
@@ -195,11 +209,6 @@ export interface VoiceOfChildIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -215,19 +224,19 @@ export function evaluateVoiceOfChildQuality(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, wishesFeelingsRecordedRate: 0, childDirectlyConsultedRate: 0, voiceInfluencedOutcomeRate: 0, ageAppropriateMethodRate: 0 };
+    return { overallScore: 0, totalRecords: 0, wishesFeelingsRecordedRate: null, childDirectlyConsultedRate: null, voiceInfluencedOutcomeRate: null, ageAppropriateMethodRate: null };
   }
 
-  const wishesFeelingsRecordedRate = pct(records.filter((r) => r.wishesFeelingsRecorded).length, n);
-  const childDirectlyConsultedRate = pct(records.filter((r) => r.childDirectlyConsulted).length, n);
-  const voiceInfluencedOutcomeRate = pct(records.filter((r) => r.voiceInfluencedOutcome).length, n);
-  const ageAppropriateMethodRate = pct(records.filter((r) => r.ageAppropriateMethod).length, n);
+  const wishesFeelingsRecordedRate = rate(records.filter((r) => r.wishesFeelingsRecorded).length, n);
+  const childDirectlyConsultedRate = rate(records.filter((r) => r.childDirectlyConsulted).length, n);
+  const voiceInfluencedOutcomeRate = rate(records.filter((r) => r.voiceInfluencedOutcome).length, n);
+  const ageAppropriateMethodRate = rate(records.filter((r) => r.ageAppropriateMethod).length, n);
 
   let score = 0;
-  score += (wishesFeelingsRecordedRate / 100) * 7;
-  score += (childDirectlyConsultedRate / 100) * 6;
-  score += (voiceInfluencedOutcomeRate / 100) * 6;
-  score += (ageAppropriateMethodRate / 100) * 6;
+  score += (wishesFeelingsRecordedRate! / 100) * 7;
+  score += (childDirectlyConsultedRate! / 100) * 6;
+  score += (voiceInfluencedOutcomeRate! / 100) * 6;
+  score += (ageAppropriateMethodRate! / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -242,21 +251,21 @@ export function evaluateVoiceOfChildCompliance(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: 0, timelyRecordingRate: 0, wishesFeelingsRecordedRate: 0, categoryDiversityRatio: 0, uniqueCategories: 0 };
+    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: null, timelyRecordingRate: null, wishesFeelingsRecordedRate: null, categoryDiversityRatio: 0, uniqueCategories: 0 };
   }
 
-  const documentationCompleteRate = pct(records.filter((r) => r.documentationComplete).length, n);
-  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, n);
-  const wishesFeelingsRecordedRate = pct(records.filter((r) => r.wishesFeelingsRecorded).length, n);
+  const documentationCompleteRate = rate(records.filter((r) => r.documentationComplete).length, n);
+  const timelyRecordingRate = rate(records.filter((r) => r.timelyRecording).length, n);
+  const wishesFeelingsRecordedRate = rate(records.filter((r) => r.wishesFeelingsRecorded).length, n);
 
   const uniqueCategoriesSet = new Set(records.map((r) => r.category));
   const uniqueCategories = uniqueCategoriesSet.size;
   const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
 
   let score = 0;
-  score += (documentationCompleteRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (wishesFeelingsRecordedRate / 100) * 5;
+  score += (documentationCompleteRate! / 100) * 8;
+  score += (timelyRecordingRate! / 100) * 7;
+  score += (wishesFeelingsRecordedRate! / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -302,23 +311,23 @@ export function evaluateStaffVoiceOfChildReadiness(
   const n = training.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalStaff: 0, wishesFeelingsCaptureRate: 0, activeListeningSkillsRate: 0, ageAppropriateEngagementRate: 0, advocacyAwarenessRate: 0, participationFacilitationRate: 0, nonVerbalCommunicationRate: 0 };
+    return { overallScore: 0, totalStaff: 0, wishesFeelingsCaptureRate: null, activeListeningSkillsRate: null, ageAppropriateEngagementRate: null, advocacyAwarenessRate: null, participationFacilitationRate: null, nonVerbalCommunicationRate: null };
   }
 
-  const wishesFeelingsCaptureRate = pct(training.filter((t) => t.wishesFeelingsCapture).length, n);
-  const activeListeningSkillsRate = pct(training.filter((t) => t.activeListeningSkills).length, n);
-  const ageAppropriateEngagementRate = pct(training.filter((t) => t.ageAppropriateEngagement).length, n);
-  const advocacyAwarenessRate = pct(training.filter((t) => t.advocacyAwareness).length, n);
-  const participationFacilitationRate = pct(training.filter((t) => t.participationFacilitation).length, n);
-  const nonVerbalCommunicationRate = pct(training.filter((t) => t.nonVerbalCommunication).length, n);
+  const wishesFeelingsCaptureRate = rate(training.filter((t) => t.wishesFeelingsCapture).length, n);
+  const activeListeningSkillsRate = rate(training.filter((t) => t.activeListeningSkills).length, n);
+  const ageAppropriateEngagementRate = rate(training.filter((t) => t.ageAppropriateEngagement).length, n);
+  const advocacyAwarenessRate = rate(training.filter((t) => t.advocacyAwareness).length, n);
+  const participationFacilitationRate = rate(training.filter((t) => t.participationFacilitation).length, n);
+  const nonVerbalCommunicationRate = rate(training.filter((t) => t.nonVerbalCommunication).length, n);
 
   let score = 0;
-  score += (wishesFeelingsCaptureRate / 100) * 6;
-  score += (activeListeningSkillsRate / 100) * 5;
-  score += (ageAppropriateEngagementRate / 100) * 5;
-  score += (advocacyAwarenessRate / 100) * 4;
-  score += (participationFacilitationRate / 100) * 3;
-  score += (nonVerbalCommunicationRate / 100) * 2;
+  score += (wishesFeelingsCaptureRate! / 100) * 6;
+  score += (activeListeningSkillsRate! / 100) * 5;
+  score += (ageAppropriateEngagementRate! / 100) * 5;
+  score += (advocacyAwarenessRate! / 100) * 4;
+  score += (participationFacilitationRate! / 100) * 3;
+  score += (nonVerbalCommunicationRate! / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -343,8 +352,8 @@ export function buildChildVoiceOfChildProfiles(
 
   return Array.from(childMap.values()).map((child) => {
     const totalRecords = child.records.length;
-    const wishesFeelingsRecordedRate = pct(child.records.filter((r) => r.wishesFeelingsRecorded).length, totalRecords);
-    const childDirectlyConsultedRate = pct(child.records.filter((r) => r.childDirectlyConsulted).length, totalRecords);
+    const wishesFeelingsRecordedRate = rate(child.records.filter((r) => r.wishesFeelingsRecorded).length, totalRecords)!;
+    const childDirectlyConsultedRate = rate(child.records.filter((r) => r.childDirectlyConsulted).length, totalRecords)!;
     const uniqueCategoriesSet = new Set(child.records.map((r) => r.category));
     const categoriesCovered = Array.from(uniqueCategoriesSet);
 
@@ -353,14 +362,14 @@ export function buildChildVoiceOfChildProfiles(
     else if (totalRecords >= 5) frequencyScore = 1;
 
     let rate1Score = 0;
-    if (wishesFeelingsRecordedRate >= 80) rate1Score = 3;
-    else if (wishesFeelingsRecordedRate >= 60) rate1Score = 2;
-    else if (wishesFeelingsRecordedRate >= 40) rate1Score = 1;
+    if (meets(wishesFeelingsRecordedRate, 80)) rate1Score = 3;
+    else if (meets(wishesFeelingsRecordedRate, 60)) rate1Score = 2;
+    else if (meets(wishesFeelingsRecordedRate, 40)) rate1Score = 1;
 
     let rate2Score = 0;
-    if (childDirectlyConsultedRate >= 80) rate2Score = 3;
-    else if (childDirectlyConsultedRate >= 60) rate2Score = 2;
-    else if (childDirectlyConsultedRate >= 40) rate2Score = 1;
+    if (meets(childDirectlyConsultedRate, 80)) rate2Score = 3;
+    else if (meets(childDirectlyConsultedRate, 60)) rate2Score = 2;
+    else if (meets(childDirectlyConsultedRate, 40)) rate2Score = 1;
 
     let diversityBonus = 0;
     if (categoriesCovered.length >= 4) diversityBonus = 2;
@@ -408,8 +417,8 @@ export function generateVoiceOfChildIntelligenceReport(
   if (complianceResult.overallScore >= 20) strengths.push("Voice compliance is strong (" + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore >= 20) strengths.push("Voice policy framework is robust (" + policyResult.overallScore + "/25)");
   if (staffResult.overallScore >= 20) strengths.push("Staff voice capture readiness is strong (" + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.wishesFeelingsRecordedRate >= 90) strengths.push("Wishes and feelings recorded at " + qualityResult.wishesFeelingsRecordedRate + "%");
-  if (periodRecords.length > 0 && qualityResult.voiceInfluencedOutcomeRate >= 90) strengths.push("Voice influenced outcomes at " + qualityResult.voiceInfluencedOutcomeRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.wishesFeelingsRecordedRate, 90)) strengths.push("Wishes and feelings recorded at " + qualityResult.wishesFeelingsRecordedRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.voiceInfluencedOutcomeRate, 90)) strengths.push("Voice influenced outcomes at " + qualityResult.voiceInfluencedOutcomeRate + "%");
 
   const areasForImprovement: string[] = [];
   if (overallScore < 40) areasForImprovement.push("Voice of child practice rated Inadequate (" + overallScore + "/100) — urgent systemic review required");
@@ -418,7 +427,7 @@ export function generateVoiceOfChildIntelligenceReport(
   if (complianceResult.overallScore < 15) areasForImprovement.push("Voice compliance needs improvement (" + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore < 15) areasForImprovement.push("Voice policy needs strengthening (" + policyResult.overallScore + "/25)");
   if (staffResult.overallScore < 15) areasForImprovement.push("Staff voice readiness needs improvement (" + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.voiceInfluencedOutcomeRate < 80) areasForImprovement.push("Voice influenced outcomes at " + qualityResult.voiceInfluencedOutcomeRate + "% — children's views must more consistently shape decisions");
+  if (periodRecords.length > 0 && below(qualityResult.voiceInfluencedOutcomeRate, 80)) areasForImprovement.push("Voice influenced outcomes at " + qualityResult.voiceInfluencedOutcomeRate + "% — children's views must more consistently shape decisions");
   if (periodRecords.length === 0) areasForImprovement.push("No voice of child records — participation must be documented");
   if (policy === null) areasForImprovement.push("No voice of child policy in place — statutory requirement under CHR 2015 Reg 7");
   if (staff.length === 0) areasForImprovement.push("No staff voice training records — training required");
@@ -426,11 +435,11 @@ export function generateVoiceOfChildIntelligenceReport(
   const actions: string[] = [];
   if (policy === null || policyResult.overallScore === 0) actions.push("URGENT: No voice of child policy — develop and implement wishes and feelings framework immediately (CHR 2015 Reg 7)");
   if (staff.length === 0) actions.push("URGENT: No staff voice training — schedule participation and voice capture training for all care staff");
-  if (periodRecords.length > 0 && qualityResult.wishesFeelingsRecordedRate < 50) actions.push("HIGH: Wishes and feelings recorded at " + qualityResult.wishesFeelingsRecordedRate + "% — all interactions must capture the child's voice");
-  if (periodRecords.length > 0 && qualityResult.childDirectlyConsultedRate < 50) actions.push("HIGH: Direct consultation at " + qualityResult.childDirectlyConsultedRate + "% — ensure children are directly asked their views");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate < 50) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all voice capture must be properly documented");
-  if (periodRecords.length > 0 && complianceResult.timelyRecordingRate < 50) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — voice records must be completed promptly");
-  if (staff.length > 0 && staffResult.wishesFeelingsCaptureRate < 50) actions.push("MEDIUM: Wishes capture skills at " + staffResult.wishesFeelingsCaptureRate + "% — schedule training");
+  if (periodRecords.length > 0 && below(qualityResult.wishesFeelingsRecordedRate, 50)) actions.push("HIGH: Wishes and feelings recorded at " + qualityResult.wishesFeelingsRecordedRate + "% — all interactions must capture the child's voice");
+  if (periodRecords.length > 0 && below(qualityResult.childDirectlyConsultedRate, 50)) actions.push("HIGH: Direct consultation at " + qualityResult.childDirectlyConsultedRate + "% — ensure children are directly asked their views");
+  if (periodRecords.length > 0 && below(complianceResult.documentationCompleteRate, 50)) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all voice capture must be properly documented");
+  if (periodRecords.length > 0 && below(complianceResult.timelyRecordingRate, 50)) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — voice records must be completed promptly");
+  if (staff.length > 0 && below(staffResult.wishesFeelingsCaptureRate, 50)) actions.push("MEDIUM: Wishes capture skills at " + staffResult.wishesFeelingsCaptureRate + "% — schedule training");
   const lowScoreChildren = childProfiles.filter((p) => p.overallScore <= 3);
   if (lowScoreChildren.length > 0) actions.push("MEDIUM: " + lowScoreChildren.length + " child(ren) with low voice participation scores — review individual participation plans");
   if (actions.length === 0) actions.push("No immediate actions required. Voice of child systems operating within expected standards.");

@@ -12,6 +12,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useEffect } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 // ── Local Type Definitions ────────────────────────────────────────────────
 
@@ -328,43 +329,43 @@ export function TransportTravelArrangementsDashboardWidget() {
           {/* Journey Quality */}
           <Section title="Journey Quality" defaultOpen>
             <Stat label="Total journeys" value={data.journeyQuality.totalJourneys} />
-            <Stat label="On-time rate" value={`${data.journeyQuality.onTimeRate}%`} />
-            <Stat label="Risk assessment rate" value={`${data.journeyQuality.riskAssessmentRate}%`} />
-            <Stat label="Seatbelt rate" value={`${data.journeyQuality.seatbeltRate}%`} />
-            <Stat label="Child comfortable rate" value={`${data.journeyQuality.childComfortableRate}%`} />
+            <Stat label="On-time rate" value={`${formatRate(data.journeyQuality.onTimeRate)}`} />
+            <Stat label="Risk assessment rate" value={`${formatRate(data.journeyQuality.riskAssessmentRate)}`} />
+            <Stat label="Seatbelt rate" value={`${formatRate(data.journeyQuality.seatbeltRate)}`} />
+            <Stat label="Child comfortable rate" value={`${formatRate(data.journeyQuality.childComfortableRate)}`} />
           </Section>
 
           {/* Vehicle Safety */}
           <Section title="Vehicle Safety">
             <Stat label="Total checks" value={data.vehicleSafety.totalChecks} />
-            <Stat label="MOT current" value={`${data.vehicleSafety.motCurrentRate}%`} />
-            <Stat label="Insurance current" value={`${data.vehicleSafety.insuranceCurrentRate}%`} />
-            <Stat label="Roadworthy" value={`${data.vehicleSafety.roadworthyRate}%`} />
-            <Stat label="First aid kit" value={`${data.vehicleSafety.firstAidKitRate}%`} />
-            <Stat label="Child lock enabled" value={`${data.vehicleSafety.childLockRate}%`} />
-            <Stat label="Clean and tidy" value={`${data.vehicleSafety.cleanAndTidyRate}%`} />
+            <Stat label="MOT current" value={`${formatRate(data.vehicleSafety.motCurrentRate)}`} />
+            <Stat label="Insurance current" value={`${formatRate(data.vehicleSafety.insuranceCurrentRate)}`} />
+            <Stat label="Roadworthy" value={`${formatRate(data.vehicleSafety.roadworthyRate)}`} />
+            <Stat label="First aid kit" value={`${formatRate(data.vehicleSafety.firstAidKitRate)}`} />
+            <Stat label="Child lock enabled" value={`${formatRate(data.vehicleSafety.childLockRate)}`} />
+            <Stat label="Clean and tidy" value={`${formatRate(data.vehicleSafety.cleanAndTidyRate)}`} />
           </Section>
 
           {/* Travel Policy */}
           <Section title="Travel Policy">
-            <Stat label="Driver checks" value={`${data.travelPolicy.driverChecksRate}%`} />
-            <Stat label="Insurance verified" value={`${data.travelPolicy.insuranceVerifiedRate}%`} />
-            <Stat label="Risk assessment protocol" value={`${data.travelPolicy.riskAssessmentProtocolRate}%`} />
-            <Stat label="Lone driving policy" value={`${data.travelPolicy.loneDrivingPolicyRate}%`} />
-            <Stat label="Breakdown procedure" value={`${data.travelPolicy.breakdownProcedureRate}%`} />
-            <Stat label="Child consent" value={`${data.travelPolicy.childConsentRate}%`} />
-            <Stat label="Route planning" value={`${data.travelPolicy.routePlanningRate}%`} />
+            <Stat label="Driver checks" value={`${formatRate(data.travelPolicy.driverChecksRate)}`} />
+            <Stat label="Insurance verified" value={`${formatRate(data.travelPolicy.insuranceVerifiedRate)}`} />
+            <Stat label="Risk assessment protocol" value={`${formatRate(data.travelPolicy.riskAssessmentProtocolRate)}`} />
+            <Stat label="Lone driving policy" value={`${formatRate(data.travelPolicy.loneDrivingPolicyRate)}`} />
+            <Stat label="Breakdown procedure" value={`${formatRate(data.travelPolicy.breakdownProcedureRate)}`} />
+            <Stat label="Child consent" value={`${formatRate(data.travelPolicy.childConsentRate)}`} />
+            <Stat label="Route planning" value={`${formatRate(data.travelPolicy.routePlanningRate)}`} />
           </Section>
 
           {/* Staff Readiness */}
           <Section title="Staff Travel Readiness">
             <Stat label="Total staff" value={data.staffTravelReadiness.totalStaff} />
-            <Stat label="Driving assessment" value={`${data.staffTravelReadiness.drivingAssessmentRate}%`} />
-            <Stat label="Child transport safety" value={`${data.staffTravelReadiness.childTransportSafetyRate}%`} />
-            <Stat label="First aid training" value={`${data.staffTravelReadiness.firstAidTrainingRate}%`} />
-            <Stat label="Risk assessment" value={`${data.staffTravelReadiness.riskAssessmentRate}%`} />
-            <Stat label="Breakdown procedure" value={`${data.staffTravelReadiness.breakdownProcedureRate}%`} />
-            <Stat label="Child comfort awareness" value={`${data.staffTravelReadiness.childComfortAwarenessRate}%`} />
+            <Stat label="Driving assessment" value={`${formatRate(data.staffTravelReadiness.drivingAssessmentRate)}`} />
+            <Stat label="Child transport safety" value={`${formatRate(data.staffTravelReadiness.childTransportSafetyRate)}`} />
+            <Stat label="First aid training" value={`${formatRate(data.staffTravelReadiness.firstAidTrainingRate)}`} />
+            <Stat label="Risk assessment" value={`${formatRate(data.staffTravelReadiness.riskAssessmentRate)}`} />
+            <Stat label="Breakdown procedure" value={`${formatRate(data.staffTravelReadiness.breakdownProcedureRate)}`} />
+            <Stat label="Child comfort awareness" value={`${formatRate(data.staffTravelReadiness.childComfortAwarenessRate)}`} />
           </Section>
 
           {/* Child Travel Profiles */}

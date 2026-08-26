@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // SEXUAL HEALTH & RELATIONSHIPS EDUCATION INTELLIGENCE ENGINE
 //
@@ -161,11 +162,6 @@ export interface SexualHealthRelationshipsEducationIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -288,8 +284,8 @@ export function evaluateRSEDelivery(sessions: RSESession[]): number {
       s.ageAppropriateness === "fully_appropriate" ||
       s.ageAppropriateness === "mostly_appropriate",
   ).length;
-  const ageRate = pct(ageAppropriate, sessions.length);
-  score += Math.round((ageRate / 100) * 6);
+  const ageRate = rate(ageAppropriate, sessions.length);
+  score += Math.round((ageRate! / 100) * 6);
 
   // 3. Engagement rate (0-6): highly engaged or engaged
   const engaged = sessions.filter(
@@ -297,15 +293,15 @@ export function evaluateRSEDelivery(sessions: RSESession[]): number {
       s.childEngagement === "highly_engaged" ||
       s.childEngagement === "engaged",
   ).length;
-  const engagementRate = pct(engaged, sessions.length);
-  score += Math.round((engagementRate / 100) * 6);
+  const engagementRate = rate(engaged, sessions.length);
+  score += Math.round(((engagementRate ?? 0) / 100) * 6);
 
   // 4. Follow-up completion rate (0-6): of those requiring follow-up, how many completed
   const needsFollowUp = sessions.filter((s) => s.followUpRequired);
   if (needsFollowUp.length > 0) {
     const followUpCompleted = needsFollowUp.filter((s) => s.followUpCompleted).length;
-    const followUpRate = pct(followUpCompleted, needsFollowUp.length);
-    score += Math.round((followUpRate / 100) * 6);
+    const followUpRate = rate(followUpCompleted, needsFollowUp.length);
+    score += Math.round((followUpRate! / 100) * 6);
   } else {
     // No follow-up needed is a good thing — full marks
     score += 6;
@@ -323,23 +319,23 @@ export function evaluateSexualHealthAccess(referrals: SexualHealthReferral[]): n
 
   // 1. Service accessed rate (0-7)
   const accessed = referrals.filter((r) => r.serviceAccessed).length;
-  const accessRate = pct(accessed, referrals.length);
-  score += Math.round((accessRate / 100) * 7);
+  const accessRate = rate(accessed, referrals.length);
+  score += Math.round((accessRate! / 100) * 7);
 
   // 2. Confidentiality maintained rate (0-6)
   const confidential = referrals.filter((r) => r.confidentialityMaintained).length;
-  const confidentialityRate = pct(confidential, referrals.length);
-  score += Math.round((confidentialityRate / 100) * 6);
+  const confidentialityRate = rate(confidential, referrals.length);
+  score += Math.round((confidentialityRate! / 100) * 6);
 
   // 3. Consent obtained rate (0-6)
   const consented = referrals.filter((r) => r.consentObtained).length;
-  const consentRate = pct(consented, referrals.length);
-  score += Math.round((consentRate / 100) * 6);
+  const consentRate = rate(consented, referrals.length);
+  score += Math.round((consentRate! / 100) * 6);
 
   // 4. Outcome recorded rate (0-6)
   const recorded = referrals.filter((r) => r.outcomeRecorded).length;
-  const outcomeRate = pct(recorded, referrals.length);
-  score += Math.round((outcomeRate / 100) * 6);
+  const outcomeRate = rate(recorded, referrals.length);
+  score += Math.round((outcomeRate! / 100) * 6);
 
   return Math.max(0, Math.min(25, score));
 }
@@ -384,27 +380,27 @@ export function evaluateStaffRSEReadiness(training: StaffRSETraining[]): number 
   // Rate-based scoring for each field
   // rseDeliveryTrained (0-5)
   const rseDelivery = training.filter((t) => t.rseDeliveryTrained).length;
-  score += Math.round((pct(rseDelivery, total) / 100) * 5);
+  score += Math.round((rate(rseDelivery, total)! / 100) * 5);
 
   // safeguardingSexual (0-5)
   const safeguarding = training.filter((t) => t.safeguardingSexual).length;
-  score += Math.round((pct(safeguarding, total) / 100) * 5);
+  score += Math.round((rate(safeguarding, total)! / 100) * 5);
 
   // consentEducation (0-4)
   const consent = training.filter((t) => t.consentEducation).length;
-  score += Math.round((pct(consent, total) / 100) * 4);
+  score += Math.round((rate(consent, total)! / 100) * 4);
 
   // lgbtqAwareness (0-4)
   const lgbtq = training.filter((t) => t.lgbtqAwareness).length;
-  score += Math.round((pct(lgbtq, total) / 100) * 4);
+  score += Math.round((rate(lgbtq, total)! / 100) * 4);
 
   // cseCseAwareness (0-4)
   const cse = training.filter((t) => t.cseCseAwareness).length;
-  score += Math.round((pct(cse, total) / 100) * 4);
+  score += Math.round((rate(cse, total)! / 100) * 4);
 
   // ageAppropriateCommunication (0-3)
   const ageCom = training.filter((t) => t.ageAppropriateCommunication).length;
-  score += Math.round((pct(ageCom, total) / 100) * 3);
+  score += Math.round((rate(ageCom, total)! / 100) * 3);
 
   return Math.max(0, Math.min(25, score));
 }
@@ -529,11 +525,11 @@ function generateStrengths(
 
   // Consent in sessions
   if (sessions.length > 0) {
-    const consentRate = pct(
+    const consentRate = rate(
       sessions.filter((s) => s.consentObtained).length,
       sessions.length,
     );
-    if (consentRate >= 90) {
+    if (meets(consentRate, 90)) {
       strengths.push(
         "Consent is consistently obtained before RSE sessions, demonstrating respect for children's autonomy",
       );
@@ -542,7 +538,7 @@ function generateStrengths(
 
   // Confidentiality in referrals
   if (referrals.length > 0) {
-    const confidentialityRate = pct(
+    const confidentialityRate = rate(
       referrals.filter((r) => r.confidentialityMaintained).length,
       referrals.length,
     );
@@ -604,8 +600,8 @@ function generateAreasForImprovement(
     const engaged = sessions.filter(
       (s) => s.childEngagement === "highly_engaged" || s.childEngagement === "engaged",
     ).length;
-    const engagementRate = pct(engaged, sessions.length);
-    if (engagementRate < 60) {
+    const engagementRate = rate(engaged, sessions.length);
+    if (below(engagementRate, 60)) {
       areas.push(
         `Only ${engagementRate}% of RSE sessions show good engagement — review delivery methods and consider children's preferences`,
       );
@@ -617,8 +613,8 @@ function generateAreasForImprovement(
     const needsFollowUp = sessions.filter((s) => s.followUpRequired);
     if (needsFollowUp.length > 0) {
       const completed = needsFollowUp.filter((s) => s.followUpCompleted).length;
-      const followUpRate = pct(completed, needsFollowUp.length);
-      if (followUpRate < 80) {
+      const followUpRate = rate(completed, needsFollowUp.length);
+      if (below(followUpRate, 80)) {
         areas.push(
           `Follow-up completion rate is ${followUpRate}% — all required follow-ups must be completed promptly`,
         );
@@ -628,11 +624,11 @@ function generateAreasForImprovement(
 
   // Service access gaps
   if (referrals.length > 0) {
-    const accessRate = pct(
+    const accessRate = rate(
       referrals.filter((r) => r.serviceAccessed).length,
       referrals.length,
     );
-    if (accessRate < 80) {
+    if (below(accessRate, 80)) {
       areas.push(
         `Only ${accessRate}% of sexual health referrals resulted in service access — investigate and remove barriers`,
       );
@@ -641,11 +637,11 @@ function generateAreasForImprovement(
 
   // Training gaps
   if (training.length > 0) {
-    const lgbtqRate = pct(
+    const lgbtqRate = rate(
       training.filter((t) => t.lgbtqAwareness).length,
       training.length,
     );
-    if (lgbtqRate < 75) {
+    if (below(lgbtqRate, 75)) {
       areas.push(
         `Only ${lgbtqRate}% of staff have LGBTQ+ awareness training — all staff must be equipped to support LGBTQ+ young people`,
       );
@@ -704,21 +700,21 @@ function generateActions(
 
   // Staff training gaps
   if (training.length > 0) {
-    const rseDeliveryRate = pct(
+    const rseDeliveryRate = rate(
       training.filter((t) => t.rseDeliveryTrained).length,
       training.length,
     );
-    if (rseDeliveryRate < 80) {
+    if (below(rseDeliveryRate, 80)) {
       actions.push(
         `MEDIUM: Schedule RSE delivery training for staff — only ${rseDeliveryRate}% are currently trained.`,
       );
     }
 
-    const safeguardingRate = pct(
+    const safeguardingRate = rate(
       training.filter((t) => t.safeguardingSexual).length,
       training.length,
     );
-    if (safeguardingRate < 80) {
+    if (below(safeguardingRate, 80)) {
       actions.push(
         `MEDIUM: Ensure all staff complete safeguarding (sexual) training — current compliance is ${safeguardingRate}%.`,
       );
@@ -737,8 +733,8 @@ function generateActions(
     const engaged = sessions.filter(
       (s) => s.childEngagement === "highly_engaged" || s.childEngagement === "engaged",
     ).length;
-    const engagementRate = pct(engaged, sessions.length);
-    if (engagementRate < 50) {
+    const engagementRate = rate(engaged, sessions.length);
+    if (below(engagementRate, 50)) {
       actions.push(
         "MEDIUM: Review RSE delivery methods to improve child engagement — consider one-to-one sessions, external professionals, or age-appropriate resources.",
       );
@@ -747,11 +743,11 @@ function generateActions(
 
   // Referral access issues
   if (referrals.length > 0) {
-    const accessRate = pct(
+    const accessRate = rate(
       referrals.filter((r) => r.serviceAccessed).length,
       referrals.length,
     );
-    if (accessRate < 70) {
+    if (below(accessRate, 70)) {
       actions.push(
         "HIGH: Investigate barriers to sexual health service access. Liaise with local health services to improve referral pathways.",
       );

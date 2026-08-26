@@ -10,7 +10,6 @@
 
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getSpiritualActivityTypeLabel,
   getEngagementLevelLabel,
@@ -92,29 +91,6 @@ function makeTraining(overrides: Partial<StaffSpiritualWellbeingTraining> = {}):
 // ══════════════════════════════════════════════════════════════════════════════
 // pct()
 // ══════════════════════════════════════════════════════════════════════════════
-
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-
-  it("returns 100 when num equals den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-});
 
 // ══════════════════════════════════════════════════════════════════════════════
 // getRating()
@@ -239,10 +215,10 @@ describe("evaluateSpiritualQuality", () => {
     const result = evaluateSpiritualQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalActivities).toBe(0);
-    expect(result.engagementRate).toBe(0);
-    expect(result.childChoiceRate).toBe(0);
-    expect(result.culturalConsiderationRate).toBe(0);
-    expect(result.wellbeingBenefitRate).toBe(0);
+    expect(result.engagementRate).toBeNull();
+    expect(result.childChoiceRate).toBeNull();
+    expect(result.culturalConsiderationRate).toBeNull();
+    expect(result.wellbeingBenefitRate).toBeNull();
   });
 
   it("returns perfect score for all ideal activities", () => {
@@ -334,9 +310,9 @@ describe("evaluateSpiritualCompliance", () => {
   it("returns all zeros for empty array", () => {
     const result = evaluateSpiritualCompliance([]);
     expect(result.overallScore).toBe(0);
-    expect(result.documentedRate).toBe(0);
-    expect(result.staffSupportedRate).toBe(0);
-    expect(result.feedbackRate).toBe(0);
+    expect(result.documentedRate).toBeNull();
+    expect(result.staffSupportedRate).toBeNull();
+    expect(result.feedbackRate).toBeNull();
     expect(result.activityDiversityRatio).toBe(0);
   });
 
@@ -589,12 +565,12 @@ describe("evaluateStaffSpiritualReadiness", () => {
     const result = evaluateStaffSpiritualReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.spiritualAwarenessRate).toBe(0);
-    expect(result.culturalCompetencyRate).toBe(0);
-    expect(result.faithDiversityKnowledgeRate).toBe(0);
-    expect(result.childCentredSpiritualSupportRate).toBe(0);
-    expect(result.ethicalBoundariesRate).toBe(0);
-    expect(result.reflectivePracticeRate).toBe(0);
+    expect(result.spiritualAwarenessRate).toBeNull();
+    expect(result.culturalCompetencyRate).toBeNull();
+    expect(result.faithDiversityKnowledgeRate).toBeNull();
+    expect(result.childCentredSpiritualSupportRate).toBeNull();
+    expect(result.ethicalBoundariesRate).toBeNull();
+    expect(result.reflectivePracticeRate).toBeNull();
   });
 
   it("returns 25 when all staff have all training", () => {

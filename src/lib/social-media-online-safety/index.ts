@@ -5,7 +5,6 @@ export {
   evaluateOnlineSafetyPolicy,
   evaluateStaffOnlineSafetyReadiness,
   buildChildOnlineSafetyProfiles,
-  pct,
   getRating,
   getOnlineSafetyTopicLabel,
   getComprehensionLevelLabel,

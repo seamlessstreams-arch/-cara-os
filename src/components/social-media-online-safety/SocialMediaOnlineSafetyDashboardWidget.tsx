@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface ChildOnlineSafetyProfile { childId: string; childName: string; totalSessions: number; comprehensionRate: number; engagementRate: number; overallScore: number; }
 
@@ -73,19 +74,19 @@ export default function SocialMediaOnlineSafetyDashboardWidget() {
       <Section title="Online Safety Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Sessions" value={data.onlineSafetyQuality.totalSessions} />
-          <Stat label="Comprehension" value={`${data.onlineSafetyQuality.comprehensionRate}%`} />
-          <Stat label="Engagement" value={`${data.onlineSafetyQuality.engagementRate}%`} />
-          <Stat label="Practical" value={`${data.onlineSafetyQuality.practicalRate}%`} />
-          <Stat label="Safety Plan" value={`${data.onlineSafetyQuality.safetyPlanRate}%`} />
+          <Stat label="Comprehension" value={`${formatRate(data.onlineSafetyQuality.comprehensionRate)}`} />
+          <Stat label="Engagement" value={`${formatRate(data.onlineSafetyQuality.engagementRate)}`} />
+          <Stat label="Practical" value={`${formatRate(data.onlineSafetyQuality.practicalRate)}`} />
+          <Stat label="Safety Plan" value={`${formatRate(data.onlineSafetyQuality.safetyPlanRate)}`} />
         </div>
       </Section>
 
       <Section title="Online Safety Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documented" value={`${data.onlineSafetyCompliance.documentedRate}%`} />
-          <Stat label="Staff Delivered" value={`${data.onlineSafetyCompliance.staffDeliveredRate}%`} />
-          <Stat label="Feedback" value={`${data.onlineSafetyCompliance.feedbackRate}%`} />
-          <Stat label="Topic Diversity" value={`${data.onlineSafetyCompliance.topicDiversityRatio}%`} />
+          <Stat label="Documented" value={`${formatRate(data.onlineSafetyCompliance.documentedRate)}`} />
+          <Stat label="Staff Delivered" value={`${formatRate(data.onlineSafetyCompliance.staffDeliveredRate)}`} />
+          <Stat label="Feedback" value={`${formatRate(data.onlineSafetyCompliance.feedbackRate)}`} />
+          <Stat label="Topic Diversity" value={`${formatRate(data.onlineSafetyCompliance.topicDiversityRatio)}`} />
         </div>
       </Section>
 
@@ -108,12 +109,12 @@ export default function SocialMediaOnlineSafetyDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffOnlineSafetyReadiness.totalStaff} />
-          <Stat label="E-Safety" value={`${data.staffOnlineSafetyReadiness.esafetyKnowledgeRate}%`} />
-          <Stat label="Social Media" value={`${data.staffOnlineSafetyReadiness.socialMediaAwarenessRate}%`} />
-          <Stat label="Grooming Recognition" value={`${data.staffOnlineSafetyReadiness.onlineGroomingRecognitionRate}%`} />
-          <Stat label="Incident Response" value={`${data.staffOnlineSafetyReadiness.incidentResponseRate}%`} />
-          <Stat label="Age-Appropriate" value={`${data.staffOnlineSafetyReadiness.ageAppropriateGuidanceRate}%`} />
-          <Stat label="Digital Tools" value={`${data.staffOnlineSafetyReadiness.digitalToolsCompetencyRate}%`} />
+          <Stat label="E-Safety" value={`${formatRate(data.staffOnlineSafetyReadiness.esafetyKnowledgeRate)}`} />
+          <Stat label="Social Media" value={`${formatRate(data.staffOnlineSafetyReadiness.socialMediaAwarenessRate)}`} />
+          <Stat label="Grooming Recognition" value={`${formatRate(data.staffOnlineSafetyReadiness.onlineGroomingRecognitionRate)}`} />
+          <Stat label="Incident Response" value={`${formatRate(data.staffOnlineSafetyReadiness.incidentResponseRate)}`} />
+          <Stat label="Age-Appropriate" value={`${formatRate(data.staffOnlineSafetyReadiness.ageAppropriateGuidanceRate)}`} />
+          <Stat label="Digital Tools" value={`${formatRate(data.staffOnlineSafetyReadiness.digitalToolsCompetencyRate)}`} />
         </div>
       </Section>
 

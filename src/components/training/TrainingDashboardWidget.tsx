@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface StaffTrainingProfile { staffId: string; staffName: string; totalRecords: number; completedOnTimeRate: number; assessmentPassedRate: number; categoriesCovered: string[]; overallScore: number; }
 
@@ -73,19 +74,19 @@ export default function TrainingDashboardWidget() {
       <Section title="Training Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Records" value={data.trainingQuality.totalRecords} />
-          <Stat label="Completed On Time" value={`${data.trainingQuality.completedOnTimeRate}%`} />
-          <Stat label="Assessment Passed" value={`${data.trainingQuality.assessmentPassedRate}%`} />
-          <Stat label="Practical Done" value={`${data.trainingQuality.practicalComponentDoneRate}%`} />
-          <Stat label="Certificate Obtained" value={`${data.trainingQuality.certificateObtainedRate}%`} />
+          <Stat label="Completed On Time" value={`${formatRate(data.trainingQuality.completedOnTimeRate)}`} />
+          <Stat label="Assessment Passed" value={`${formatRate(data.trainingQuality.assessmentPassedRate)}`} />
+          <Stat label="Practical Done" value={`${formatRate(data.trainingQuality.practicalComponentDoneRate)}`} />
+          <Stat label="Certificate Obtained" value={`${formatRate(data.trainingQuality.certificateObtainedRate)}`} />
         </div>
       </Section>
 
       <Section title="Training Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documentation" value={`${data.trainingCompliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${data.trainingCompliance.timelyRecordingRate}%`} />
-          <Stat label="Completed On Time" value={`${data.trainingCompliance.completedOnTimeRate}%`} />
-          <Stat label="Category Coverage" value={`${data.trainingCompliance.categoryDiversityRatio}%`} />
+          <Stat label="Documentation" value={`${formatRate(data.trainingCompliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(data.trainingCompliance.timelyRecordingRate)}`} />
+          <Stat label="Completed On Time" value={`${formatRate(data.trainingCompliance.completedOnTimeRate)}`} />
+          <Stat label="Category Coverage" value={`${formatRate(data.trainingCompliance.categoryDiversityRatio)}`} />
         </div>
       </Section>
 
@@ -108,12 +109,12 @@ export default function TrainingDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
-          <Stat label="Needs Assessment" value={`${data.staffReadiness.trainingNeedsAssessmentRate}%`} />
-          <Stat label="Delivery Skills" value={`${data.staffReadiness.deliverySkillsRate}%`} />
-          <Stat label="Compliance Monitoring" value={`${data.staffReadiness.complianceMonitoringRate}%`} />
-          <Stat label="Record Management" value={`${data.staffReadiness.recordManagementRate}%`} />
-          <Stat label="Quality Assurance" value={`${data.staffReadiness.qualityAssuranceRate}%`} />
-          <Stat label="Budget Management" value={`${data.staffReadiness.budgetManagementRate}%`} />
+          <Stat label="Needs Assessment" value={`${formatRate(data.staffReadiness.trainingNeedsAssessmentRate)}`} />
+          <Stat label="Delivery Skills" value={`${formatRate(data.staffReadiness.deliverySkillsRate)}`} />
+          <Stat label="Compliance Monitoring" value={`${formatRate(data.staffReadiness.complianceMonitoringRate)}`} />
+          <Stat label="Record Management" value={`${formatRate(data.staffReadiness.recordManagementRate)}`} />
+          <Stat label="Quality Assurance" value={`${formatRate(data.staffReadiness.qualityAssuranceRate)}`} />
+          <Stat label="Budget Management" value={`${formatRate(data.staffReadiness.budgetManagementRate)}`} />
         </div>
       </Section>
 

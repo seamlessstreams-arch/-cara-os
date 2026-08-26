@@ -17,8 +17,7 @@ import {
   getWellbeingScoreLabel,
   getRatingLabel,
   getRating,
-  pct,
-} from "../staff-wellbeing-resilience-engine";
+  } from "../staff-wellbeing-resilience-engine";
 import type {
   WellbeingAssessment,
   WellbeingPolicy,
@@ -74,33 +73,6 @@ const makeTraining = (overrides: Partial<StaffResilienceTraining> = {}): StaffRe
 // ══════════════════════════════════════════════════════════════════════════════
 // HELPERS
 // ══════════════════════════════════════════════════════════════════════════════
-
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-
-  it("returns 100 when num equals den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(5, 10)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-
-  it("handles large numbers", () => {
-    expect(pct(999, 1000)).toBe(100);
-  });
-});
 
 describe("getRating", () => {
   it("returns outstanding for score >= 80", () => {
@@ -222,10 +194,10 @@ describe("evaluateWellbeingQuality", () => {
     const result = evaluateWellbeingQuality([]);
     expect(result.score).toBe(0);
     expect(result.totalAssessments).toBe(0);
-    expect(result.wellbeingRate).toBe(0);
-    expect(result.stressManagedRate).toBe(0);
-    expect(result.supportProvidedRate).toBe(0);
-    expect(result.workloadReviewedRate).toBe(0);
+    expect(result.wellbeingRate).toBeNull();
+    expect(result.stressManagedRate).toBeNull();
+    expect(result.supportProvidedRate).toBeNull();
+    expect(result.workloadReviewedRate).toBeNull();
   });
 
   it("returns max score for all-perfect assessments", () => {
@@ -378,9 +350,9 @@ describe("evaluateWellbeingCompliance", () => {
     const result = evaluateWellbeingCompliance([]);
     expect(result.score).toBe(0);
     expect(result.totalAssessments).toBe(0);
-    expect(result.actionPlanRate).toBe(0);
-    expect(result.followUpRate).toBe(0);
-    expect(result.feedbackRate).toBe(0);
+    expect(result.actionPlanRate).toBeNull();
+    expect(result.followUpRate).toBeNull();
+    expect(result.feedbackRate).toBeNull();
     expect(result.wellbeingTypeDiversityRatio).toBe(0);
   });
 

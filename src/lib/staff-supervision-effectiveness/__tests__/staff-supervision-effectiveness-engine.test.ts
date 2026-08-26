@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   generateStaffSupervisionEffectivenessIntelligence, evaluateSessionEffectiveness, evaluateSupervisionCompliance,
-  evaluateSupervisionPolicy, evaluateSupervisorReadiness, buildStaffSupervisionProfiles, pct, getRating,
+  evaluateSupervisionPolicy, evaluateSupervisorReadiness, buildStaffSupervisionProfiles, getRating,
   getSupervisionTypeLabel, getSupervisionOutcomeLabel, getRatingLabel,
 } from "../staff-supervision-effectiveness-engine";
 import type { SupervisionSession, SupervisionPolicy, SupervisorTraining } from "../staff-supervision-effectiveness-engine";
@@ -19,13 +19,6 @@ function makeTraining(overrides: Partial<SupervisorTraining> = {}): SupervisorTr
   _tid++;
   return { id: `st-${_tid}`, staffId: `sup-${_tid}`, staffName: `Supervisor ${_tid}`, supervisionSkills: true, reflectivePractice: true, safeguardingOversight: true, performanceManagement: true, wellbeingSupport: true, documentationSkills: true, ...overrides };
 }
-
-describe("pct", () => {
-  it("returns percentage", () => { expect(pct(3, 4)).toBe(75); });
-  it("returns 0 for den=0", () => { expect(pct(0, 0)).toBe(0); });
-  it("returns 100 for equal", () => { expect(pct(5, 5)).toBe(100); });
-  it("returns 0 for num=0", () => { expect(pct(0, 10)).toBe(0); });
-});
 
 describe("getRating", () => {
   it("outstanding >= 80", () => { expect(getRating(80)).toBe("outstanding"); expect(getRating(100)).toBe("outstanding"); });

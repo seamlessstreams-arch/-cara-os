@@ -12,6 +12,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useEffect } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 // ── Local Type Definitions ────────────────────────────────────────────────
 
@@ -328,17 +329,17 @@ export default function SanctionsDashboardWidget() {
           {/* Sanction Quality */}
           <Section title="Sanction Quality" defaultOpen>
             <Stat label="Total sanctions" value={data.sanctionQuality.totalRecords} />
-            <Stat label="Proportionate rate" value={`${data.sanctionQuality.proportionateRate}%`} />
-            <Stat label="Child views recorded" value={`${data.sanctionQuality.childViewsRate}%`} />
-            <Stat label="Acceptance rate" value={`${data.sanctionQuality.acceptanceRate}%`} />
-            <Stat label="Documented properly" value={`${data.sanctionQuality.documentedRate}%`} />
+            <Stat label="Proportionate rate" value={`${formatRate(data.sanctionQuality.proportionateRate)}`} />
+            <Stat label="Child views recorded" value={`${formatRate(data.sanctionQuality.childViewsRate)}`} />
+            <Stat label="Acceptance rate" value={`${formatRate(data.sanctionQuality.acceptanceRate)}`} />
+            <Stat label="Documented properly" value={`${formatRate(data.sanctionQuality.documentedRate)}`} />
           </Section>
 
           {/* Sanction Compliance */}
           <Section title="Sanction Compliance">
-            <Stat label="Parent notified" value={`${data.sanctionCompliance.parentNotifiedRate}%`} />
-            <Stat label="Staff applied" value={`${data.sanctionCompliance.staffAppliedRate}%`} />
-            <Stat label="Review scheduled" value={`${data.sanctionCompliance.reviewScheduledRate}%`} />
+            <Stat label="Parent notified" value={`${formatRate(data.sanctionCompliance.parentNotifiedRate)}`} />
+            <Stat label="Staff applied" value={`${formatRate(data.sanctionCompliance.staffAppliedRate)}`} />
+            <Stat label="Review scheduled" value={`${formatRate(data.sanctionCompliance.reviewScheduledRate)}`} />
             <Stat label="Type diversity" value={`${data.sanctionCompliance.typeDiversityRatio}%`} />
           </Section>
 
@@ -356,12 +357,12 @@ export default function SanctionsDashboardWidget() {
           {/* Staff Readiness */}
           <Section title="Staff Sanction Readiness">
             <Stat label="Total staff" value={data.staffSanctionReadiness.totalStaff} />
-            <Stat label="Behaviour management" value={`${data.staffSanctionReadiness.behaviourManagementRate}%`} />
-            <Stat label="Proportionality assessment" value={`${data.staffSanctionReadiness.proportionalityAssessmentRate}%`} />
-            <Stat label="Restorative approach" value={`${data.staffSanctionReadiness.restorativeApproachRate}%`} />
-            <Stat label="Child rights awareness" value={`${data.staffSanctionReadiness.childRightsAwarenessRate}%`} />
-            <Stat label="Documentation skills" value={`${data.staffSanctionReadiness.documentationSkillsRate}%`} />
-            <Stat label="De-escalation first" value={`${data.staffSanctionReadiness.deEscalationFirstRate}%`} />
+            <Stat label="Behaviour management" value={`${formatRate(data.staffSanctionReadiness.behaviourManagementRate)}`} />
+            <Stat label="Proportionality assessment" value={`${formatRate(data.staffSanctionReadiness.proportionalityAssessmentRate)}`} />
+            <Stat label="Restorative approach" value={`${formatRate(data.staffSanctionReadiness.restorativeApproachRate)}`} />
+            <Stat label="Child rights awareness" value={`${formatRate(data.staffSanctionReadiness.childRightsAwarenessRate)}`} />
+            <Stat label="Documentation skills" value={`${formatRate(data.staffSanctionReadiness.documentationSkillsRate)}`} />
+            <Stat label="De-escalation first" value={`${formatRate(data.staffSanctionReadiness.deEscalationFirstRate)}`} />
           </Section>
 
           {/* Child Sanction Profiles */}

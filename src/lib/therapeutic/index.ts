@@ -9,7 +9,6 @@ export {
   evaluateTherapeuticPolicy,
   evaluateStaffTherapeuticReadiness,
   buildChildTherapeuticProfiles,
-  pct,
   getRating,
   getTherapeuticCategoryLabel,
   getTherapeuticOutcomeLabel,

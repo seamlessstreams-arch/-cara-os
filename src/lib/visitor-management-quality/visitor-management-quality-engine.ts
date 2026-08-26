@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // Visitor Management Quality Intelligence Engine
 // Pure deterministic — no AI, no external calls, no randomness, no Date.now()
 
@@ -119,18 +120,26 @@ export interface StaffVisitorTraining {
 export interface VisitorManagementQualityResult {
   overallScore: number;
   totalVisits: number;
-  qualityRate: number;
-  childConsultedRate: number;
-  safeguardingRate: number;
-  privacyRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  qualityRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childConsultedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  privacyRate: number | null;
 }
 
 export interface VisitorManagementComplianceResult {
   overallScore: number;
-  documentedRate: number;
-  staffSupervisedRate: number;
-  feedbackRate: number;
-  visitorTypeDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffSupervisedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feedbackRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  visitorTypeDiversityRatio: number | null;
 }
 
 export interface VisitorManagementPolicyResult {
@@ -147,20 +156,28 @@ export interface VisitorManagementPolicyResult {
 export interface StaffVisitorReadinessResult {
   overallScore: number;
   totalStaff: number;
-  visitorManagementRate: number;
-  safeguardingChecksRate: number;
-  childConsentPracticeRate: number;
-  privacyProtocolRate: number;
-  conflictResolutionRate: number;
-  recordKeepingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  visitorManagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingChecksRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childConsentPracticeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  privacyProtocolRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  conflictResolutionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  recordKeepingRate: number | null;
 }
 
 export interface ChildVisitorProfile {
   childId: string;
   childName: string;
   totalVisits: number;
-  qualityRate: number;
-  consultedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  qualityRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  consultedRate: number | null;
   overallScore: number;
 }
 
@@ -183,11 +200,6 @@ export interface VisitorManagementQualityIntelligence {
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -206,10 +218,10 @@ export function evaluateVisitorManagementQuality(
     return {
       overallScore: 0,
       totalVisits: 0,
-      qualityRate: 0,
-      childConsultedRate: 0,
-      safeguardingRate: 0,
-      privacyRate: 0,
+      qualityRate: null,
+      childConsultedRate: null,
+      safeguardingRate: null,
+      privacyRate: null,
     };
   }
 
@@ -220,17 +232,17 @@ export function evaluateVisitorManagementQuality(
   const safeguardingCount = visits.filter((v) => v.safeguardingChecked).length;
   const privacyCount = visits.filter((v) => v.privacyMaintained).length;
 
-  const qualityRate = pct(qualityCount, total);
-  const childConsultedRate = pct(consultedCount, total);
-  const safeguardingRate = pct(safeguardingCount, total);
-  const privacyRate = pct(privacyCount, total);
+  const qualityRate = rate(qualityCount, total);
+  const childConsultedRate = rate(consultedCount, total);
+  const safeguardingRate = rate(safeguardingCount, total);
+  const privacyRate = rate(privacyCount, total);
 
   const score = Math.min(
     25,
-    Math.round((qualityRate / 100) * 7) +
-      Math.round((childConsultedRate / 100) * 6) +
-      Math.round((safeguardingRate / 100) * 6) +
-      Math.round((privacyRate / 100) * 6),
+    Math.round((qualityRate! / 100) * 7) +
+      Math.round((childConsultedRate! / 100) * 6) +
+      Math.round((safeguardingRate! / 100) * 6) +
+      Math.round((privacyRate! / 100) * 6),
   );
 
   return {
@@ -253,9 +265,9 @@ export function evaluateVisitorManagementCompliance(
   if (total === 0) {
     return {
       overallScore: 0,
-      documentedRate: 0,
-      staffSupervisedRate: 0,
-      feedbackRate: 0,
+      documentedRate: null,
+      staffSupervisedRate: null,
+      feedbackRate: null,
       visitorTypeDiversityRatio: 0,
     };
   }
@@ -264,19 +276,19 @@ export function evaluateVisitorManagementCompliance(
   const supervisedCount = visits.filter((v) => v.staffSupervised).length;
   const feedbackCount = visits.filter((v) => v.feedbackRecorded).length;
 
-  const documentedRate = pct(documentedCount, total);
-  const staffSupervisedRate = pct(supervisedCount, total);
-  const feedbackRate = pct(feedbackCount, total);
+  const documentedRate = rate(documentedCount, total);
+  const staffSupervisedRate = rate(supervisedCount, total);
+  const feedbackRate = rate(feedbackCount, total);
 
   const uniqueTypes = new Set(visits.map((v) => v.visitorType)).size;
-  const visitorTypeDiversityRatio = pct(uniqueTypes, 8);
+  const visitorTypeDiversityRatio = rate(uniqueTypes, 8);
 
   const score = Math.min(
     25,
-    Math.round((documentedRate / 100) * 8) +
-      Math.round((staffSupervisedRate / 100) * 7) +
-      Math.round((feedbackRate / 100) * 5) +
-      Math.round((visitorTypeDiversityRatio / 100) * 5),
+    Math.round((documentedRate! / 100) * 8) +
+      Math.round((staffSupervisedRate! / 100) * 7) +
+      Math.round((feedbackRate! / 100) * 5) +
+      Math.round((visitorTypeDiversityRatio! / 100) * 5),
   );
 
   return {
@@ -340,48 +352,48 @@ export function evaluateStaffVisitorReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      visitorManagementRate: 0,
-      safeguardingChecksRate: 0,
-      childConsentPracticeRate: 0,
-      privacyProtocolRate: 0,
-      conflictResolutionRate: 0,
-      recordKeepingRate: 0,
+      visitorManagementRate: null,
+      safeguardingChecksRate: null,
+      childConsentPracticeRate: null,
+      privacyProtocolRate: null,
+      conflictResolutionRate: null,
+      recordKeepingRate: null,
     };
   }
 
-  const visitorManagementRate = pct(
+  const visitorManagementRate = rate(
     training.filter((t) => t.visitorManagement).length,
     total,
   );
-  const safeguardingChecksRate = pct(
+  const safeguardingChecksRate = rate(
     training.filter((t) => t.safeguardingChecks).length,
     total,
   );
-  const childConsentPracticeRate = pct(
+  const childConsentPracticeRate = rate(
     training.filter((t) => t.childConsentPractice).length,
     total,
   );
-  const privacyProtocolRate = pct(
+  const privacyProtocolRate = rate(
     training.filter((t) => t.privacyProtocol).length,
     total,
   );
-  const conflictResolutionRate = pct(
+  const conflictResolutionRate = rate(
     training.filter((t) => t.conflictResolution).length,
     total,
   );
-  const recordKeepingRate = pct(
+  const recordKeepingRate = rate(
     training.filter((t) => t.recordKeeping).length,
     total,
   );
 
   const score = Math.min(
     25,
-    Math.round((visitorManagementRate / 100) * 6) +
-      Math.round((safeguardingChecksRate / 100) * 5) +
-      Math.round((childConsentPracticeRate / 100) * 5) +
-      Math.round((privacyProtocolRate / 100) * 4) +
-      Math.round((conflictResolutionRate / 100) * 3) +
-      Math.round((recordKeepingRate / 100) * 2),
+    Math.round((visitorManagementRate! / 100) * 6) +
+      Math.round((safeguardingChecksRate! / 100) * 5) +
+      Math.round((childConsentPracticeRate! / 100) * 5) +
+      Math.round((privacyProtocolRate! / 100) * 4) +
+      Math.round((conflictResolutionRate! / 100) * 3) +
+      Math.round(((recordKeepingRate ?? 0) / 100) * 2),
   );
 
   return {
@@ -418,10 +430,10 @@ export function buildChildVisitorProfiles(
     const qualityCount = childVisits.filter(
       (v) => v.visitQuality === "excellent" || v.visitQuality === "good",
     ).length;
-    const qualityRate = pct(qualityCount, totalVisits);
+    const qualityRate = rate(qualityCount, totalVisits);
 
     const consultedCount = childVisits.filter((v) => v.childConsulted).length;
-    const consultedRate = pct(consultedCount, totalVisits);
+    const consultedRate = rate(consultedCount, totalVisits);
 
     const uniqueTypes = new Set(childVisits.map((v) => v.visitorType)).size;
 
@@ -433,14 +445,14 @@ export function buildChildVisitorProfiles(
     else if (totalVisits >= 5) score += 1;
 
     // Quality rate
-    if (qualityRate >= 80) score += 3;
-    else if (qualityRate >= 60) score += 2;
-    else if (qualityRate >= 40) score += 1;
+    if (meets(qualityRate, 80)) score += 3;
+    else if (meets(qualityRate, 60)) score += 2;
+    else if (meets(qualityRate, 40)) score += 1;
 
     // Consulted
-    if (consultedRate >= 80) score += 3;
-    else if (consultedRate >= 60) score += 2;
-    else if (consultedRate >= 40) score += 1;
+    if (meets(consultedRate, 80)) score += 3;
+    else if (meets(consultedRate, 60)) score += 2;
+    else if (meets(consultedRate, 40)) score += 1;
 
     // Diversity
     if (uniqueTypes >= 4) score += 2;
@@ -488,25 +500,25 @@ export function generateVisitorManagementQualityIntelligence(
 
   // Strengths
   const strengths: string[] = [];
-  if (visitorManagementQuality.qualityRate >= 80) {
+  if (meets(visitorManagementQuality.qualityRate, 80)) {
     strengths.push("High rate of quality visitor experiences — children benefiting from well-managed visits");
   }
-  if (visitorManagementQuality.childConsultedRate >= 80) {
+  if (meets(visitorManagementQuality.childConsultedRate, 80)) {
     strengths.push("Strong child consultation practice — children's views are actively sought about visitors");
   }
-  if (visitorManagementQuality.safeguardingRate >= 80) {
+  if (meets(visitorManagementQuality.safeguardingRate, 80)) {
     strengths.push("Safeguarding checks are consistently completed for all visitors");
   }
-  if (visitorManagementQuality.privacyRate >= 80) {
+  if (meets(visitorManagementQuality.privacyRate, 80)) {
     strengths.push("Privacy and dignity are well maintained during visits");
   }
-  if (visitorManagementCompliance.documentedRate >= 80) {
+  if (meets(visitorManagementCompliance.documentedRate, 80)) {
     strengths.push("Visitor records are well documented in the visitor log");
   }
-  if (visitorManagementCompliance.staffSupervisedRate >= 80) {
+  if (meets(visitorManagementCompliance.staffSupervisedRate, 80)) {
     strengths.push("Staff supervision of visits is consistently maintained");
   }
-  if (visitorManagementCompliance.feedbackRate >= 80) {
+  if (meets(visitorManagementCompliance.feedbackRate, 80)) {
     strengths.push("Feedback is routinely recorded following visitor sessions");
   }
   if (visitorManagementPolicy.overallScore >= 20) {
@@ -518,25 +530,25 @@ export function generateVisitorManagementQualityIntelligence(
 
   // Areas for improvement
   const areasForImprovement: string[] = [];
-  if (visitorManagementQuality.qualityRate < 60) {
+  if (below(visitorManagementQuality.qualityRate, 60)) {
     areasForImprovement.push("Visit quality rate is below 60% — review visitor management and support arrangements");
   }
-  if (visitorManagementQuality.childConsultedRate < 60) {
+  if (below(visitorManagementQuality.childConsultedRate, 60)) {
     areasForImprovement.push("Child consultation rate is low — ensure children's views shape visitor arrangements");
   }
-  if (visitorManagementQuality.safeguardingRate < 60) {
+  if (below(visitorManagementQuality.safeguardingRate, 60)) {
     areasForImprovement.push("Safeguarding check rate needs improvement — ensure all visitors are properly checked");
   }
-  if (visitorManagementQuality.privacyRate < 60) {
+  if (below(visitorManagementQuality.privacyRate, 60)) {
     areasForImprovement.push("Privacy maintenance during visits needs improvement — review privacy protocols");
   }
-  if (visitorManagementCompliance.documentedRate < 60) {
+  if (below(visitorManagementCompliance.documentedRate, 60)) {
     areasForImprovement.push("Documentation of visits in the visitor log needs improvement");
   }
-  if (visitorManagementCompliance.staffSupervisedRate < 60) {
+  if (below(visitorManagementCompliance.staffSupervisedRate, 60)) {
     areasForImprovement.push("Staff supervision during visits needs to be more consistent");
   }
-  if (visitorManagementCompliance.feedbackRate < 60) {
+  if (below(visitorManagementCompliance.feedbackRate, 60)) {
     areasForImprovement.push("Feedback recording after visitor sessions needs improvement");
   }
   if (visitorManagementPolicy.overallScore < 15) {
@@ -557,10 +569,10 @@ export function generateVisitorManagementQualityIntelligence(
   if (training.length === 0) {
     actions.push("URGENT: No staff training records for visitor management — arrange training programme");
   }
-  if (visitorManagementQuality.safeguardingRate < 60) {
+  if (below(visitorManagementQuality.safeguardingRate, 60)) {
     actions.push("HIGH: Increase safeguarding check compliance — review individual visitor check procedures");
   }
-  if (visitorManagementCompliance.visitorTypeDiversityRatio < 50) {
+  if (below(visitorManagementCompliance.visitorTypeDiversityRatio, 50)) {
     actions.push("MEDIUM: Diversify visitor types — consider independent visitors, advocates, and professional visitors");
   }
 

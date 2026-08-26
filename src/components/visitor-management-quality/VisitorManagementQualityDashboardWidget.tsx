@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 // ── Local Interfaces (mirrors API shape) ──────────────────────────────────
 
@@ -247,10 +248,10 @@ export default function VisitorManagementQualityDashboardWidget() {
         {/* Visit Quality */}
         <Section title="Visit Quality" defaultOpen>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Stat label="Quality Visits" value={`${data.visitorManagementQuality.qualityRate}%`} />
-            <Stat label="Children Consulted" value={`${data.visitorManagementQuality.childConsultedRate}%`} />
-            <Stat label="Safeguarding Checked" value={`${data.visitorManagementQuality.safeguardingRate}%`} />
-            <Stat label="Privacy Maintained" value={`${data.visitorManagementQuality.privacyRate}%`} />
+            <Stat label="Quality Visits" value={`${formatRate(data.visitorManagementQuality.qualityRate)}`} />
+            <Stat label="Children Consulted" value={`${formatRate(data.visitorManagementQuality.childConsultedRate)}`} />
+            <Stat label="Safeguarding Checked" value={`${formatRate(data.visitorManagementQuality.safeguardingRate)}`} />
+            <Stat label="Privacy Maintained" value={`${formatRate(data.visitorManagementQuality.privacyRate)}`} />
           </div>
           <p className="text-xs text-gray-400">
             Total visits: {data.visitorManagementQuality.totalVisits}
@@ -260,10 +261,10 @@ export default function VisitorManagementQualityDashboardWidget() {
         {/* Visit Compliance */}
         <Section title="Visit Compliance">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Stat label="Documented" value={`${data.visitorManagementCompliance.documentedRate}%`} />
-            <Stat label="Staff Supervised" value={`${data.visitorManagementCompliance.staffSupervisedRate}%`} />
-            <Stat label="Feedback Recorded" value={`${data.visitorManagementCompliance.feedbackRate}%`} />
-            <Stat label="Type Diversity" value={`${data.visitorManagementCompliance.visitorTypeDiversityRatio}%`} />
+            <Stat label="Documented" value={`${formatRate(data.visitorManagementCompliance.documentedRate)}`} />
+            <Stat label="Staff Supervised" value={`${formatRate(data.visitorManagementCompliance.staffSupervisedRate)}`} />
+            <Stat label="Feedback Recorded" value={`${formatRate(data.visitorManagementCompliance.feedbackRate)}`} />
+            <Stat label="Type Diversity" value={`${formatRate(data.visitorManagementCompliance.visitorTypeDiversityRatio)}`} />
           </div>
         </Section>
 
@@ -310,27 +311,27 @@ export default function VisitorManagementQualityDashboardWidget() {
             </div>
             <div>
               <span className="text-gray-500">Visitor Management:</span>{" "}
-              <span className="font-medium">{data.staffVisitorReadiness.visitorManagementRate}%</span>
+              <span className="font-medium">{formatRate(data.staffVisitorReadiness.visitorManagementRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Safeguarding Checks:</span>{" "}
-              <span className="font-medium">{data.staffVisitorReadiness.safeguardingChecksRate}%</span>
+              <span className="font-medium">{formatRate(data.staffVisitorReadiness.safeguardingChecksRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Child Consent:</span>{" "}
-              <span className="font-medium">{data.staffVisitorReadiness.childConsentPracticeRate}%</span>
+              <span className="font-medium">{formatRate(data.staffVisitorReadiness.childConsentPracticeRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Privacy Protocol:</span>{" "}
-              <span className="font-medium">{data.staffVisitorReadiness.privacyProtocolRate}%</span>
+              <span className="font-medium">{formatRate(data.staffVisitorReadiness.privacyProtocolRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Conflict Resolution:</span>{" "}
-              <span className="font-medium">{data.staffVisitorReadiness.conflictResolutionRate}%</span>
+              <span className="font-medium">{formatRate(data.staffVisitorReadiness.conflictResolutionRate)}</span>
             </div>
             <div>
               <span className="text-gray-500">Record Keeping:</span>{" "}
-              <span className="font-medium">{data.staffVisitorReadiness.recordKeepingRate}%</span>
+              <span className="font-medium">{formatRate(data.staffVisitorReadiness.recordKeepingRate)}</span>
             </div>
           </div>
         </Section>

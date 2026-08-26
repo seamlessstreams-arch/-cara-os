@@ -1,3 +1,4 @@
+import { rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — Supervision Quality Intelligence Engine
 //
@@ -194,11 +195,6 @@ export interface SupervisionQualityIntelligence {
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 function clamp(v: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, v));
 }
@@ -311,12 +307,12 @@ export function evaluateSessionQuality(
     return {
       overallScore: 0,
       totalSessions: 0,
-      outstandingGoodRate: 0,
-      reflectiveRate: 0,
-      safeguardingDiscussionRate: 0,
+      outstandingGoodRate: null,
+      reflectiveRate: null,
+      safeguardingDiscussionRate: null,
       averageDurationMinutes: 0,
-      recordingComplianceRate: 0,
-      signOffRate: 0,
+      recordingComplianceRate: null,
+      signOffRate: null,
     };
   }
 
@@ -326,7 +322,7 @@ export function evaluateSessionQuality(
   const outstandingGoodCount = sessions.filter(
     (s) => s.quality === "outstanding" || s.quality === "good",
   ).length;
-  const outstandingGoodRate = pct(outstandingGoodCount, total);
+  const outstandingGoodRate = rate(outstandingGoodCount, total);
 
   // Reflective practice rate (deeply_reflective or reflective)
   const reflectiveCount = sessions.filter(
@@ -334,13 +330,13 @@ export function evaluateSessionQuality(
       s.reflectivePracticeLevel === "deeply_reflective" ||
       s.reflectivePracticeLevel === "reflective",
   ).length;
-  const reflectiveRate = pct(reflectiveCount, total);
+  const reflectiveRate = rate(reflectiveCount, total);
 
   // Safeguarding discussion rate
   const safeguardingCount = sessions.filter(
     (s) => s.safeguardingDiscussed,
   ).length;
-  const safeguardingDiscussionRate = pct(safeguardingCount, total);
+  const safeguardingDiscussionRate = rate(safeguardingCount, total);
 
   // Average duration
   const totalDuration = sessions.reduce((sum, s) => sum + (s.durationMinutes ?? 0), 0);
@@ -348,31 +344,31 @@ export function evaluateSessionQuality(
 
   // Recording compliance (recorded timely)
   const recordedTimelyCount = sessions.filter((s) => s.recordedTimely).length;
-  const recordingComplianceRate = pct(recordedTimelyCount, total);
+  const recordingComplianceRate = rate(recordedTimelyCount, total);
 
   // Sign-off rate (both staff and supervisor signed off)
   const signedOffCount = sessions.filter(
     (s) => s.staffSignedOff && s.supervisorSignedOff,
   ).length;
-  const signOffRate = pct(signedOffCount, total);
+  const signOffRate = rate(signedOffCount, total);
 
   // Scoring: 0-25
   let score = 0;
 
   // Outstanding/good rate: up to 8 points
-  score += (outstandingGoodRate / 100) * 8;
+  score += ((outstandingGoodRate ?? 0) / 100) * 8;
 
   // Reflective practice: up to 6 points
-  score += (reflectiveRate / 100) * 6;
+  score += ((reflectiveRate ?? 0) / 100) * 6;
 
   // Safeguarding discussion: up to 5 points
-  score += (safeguardingDiscussionRate / 100) * 5;
+  score += ((safeguardingDiscussionRate ?? 0) / 100) * 5;
 
   // Recording compliance: up to 3 points
-  score += (recordingComplianceRate / 100) * 3;
+  score += ((recordingComplianceRate ?? 0) / 100) * 3;
 
   // Sign-off rate: up to 3 points
-  score += (signOffRate / 100) * 3;
+  score += ((signOffRate ?? 0) / 100) * 3;
 
   return {
     overallScore: clamp(Math.round(score * 10) / 10, 0, 25),
@@ -399,7 +395,7 @@ export function evaluateScheduleCompliance(
     return {
       overallScore: 0,
       totalStaff: 0,
-      onScheduleRate: 0,
+      onScheduleRate: null,
       overdueCount: 0,
       consecutiveMissedMax: 0,
       averageDaysBetweenSessions: 0,
@@ -410,7 +406,7 @@ export function evaluateScheduleCompliance(
 
   // On-schedule rate: not overdue
   const onScheduleCount = schedules.filter((s) => !s.overdue).length;
-  const onScheduleRate = pct(onScheduleCount, totalStaff);
+  const onScheduleRate = rate(onScheduleCount, totalStaff);
 
   // Overdue count
   const overdueCount = schedules.filter((s) => s.overdue).length;
@@ -443,7 +439,7 @@ export function evaluateScheduleCompliance(
   let score = 0;
 
   // On-schedule rate: up to 20 points
-  score += (onScheduleRate / 100) * 20;
+  score += ((onScheduleRate ?? 0) / 100) * 20;
 
   // Bonus: +5 if 100% on schedule
   if (onScheduleRate === 100) score += 5;
@@ -481,9 +477,9 @@ export function evaluateActionTracking(
     return {
       overallScore: 0,
       totalActions: 0,
-      completedOnTimeRate: 0,
+      completedOnTimeRate: null,
       overdueCount: 0,
-      safeguardingActionCompletionRate: 0,
+      safeguardingActionCompletionRate: null,
       byCategory: {},
     };
   }
@@ -494,7 +490,7 @@ export function evaluateActionTracking(
   const completedOnTimeCount = actions.filter(
     (a) => a.status === "completed_on_time",
   ).length;
-  const completedOnTimeRate = pct(completedOnTimeCount, total);
+  const completedOnTimeRate = rate(completedOnTimeCount, total);
 
   // Overdue count
   const overdueCount = actions.filter((a) => a.status === "overdue").length;
@@ -507,7 +503,7 @@ export function evaluateActionTracking(
     (a) =>
       a.status === "completed_on_time" || a.status === "completed_late",
   ).length;
-  const safeguardingActionCompletionRate = pct(
+  const safeguardingActionCompletionRate = rate(
     safeguardingCompleted,
     safeguardingActions.length,
   );
@@ -522,11 +518,11 @@ export function evaluateActionTracking(
   let score = 0;
 
   // Completed on time rate: up to 12 points
-  score += (completedOnTimeRate / 100) * 12;
+  score += ((completedOnTimeRate ?? 0) / 100) * 12;
 
   // Safeguarding action completion: up to 8 points
   if (safeguardingActions.length > 0) {
-    score += (safeguardingActionCompletionRate / 100) * 8;
+    score += (safeguardingActionCompletionRate! / 100) * 8;
   } else {
     // No safeguarding actions — neutral, give 4 of 8
     score += 4;
@@ -566,14 +562,14 @@ export function evaluateStaffDevelopment(
       s.wellbeingCheck === "significant_concerns" ||
       s.wellbeingCheck === "urgent_referral",
   ).length;
-  const wellbeingConcernRate = pct(wellbeingConcernCount, sessions.length);
+  const wellbeingConcernRate = rate(wellbeingConcernCount, sessions.length);
 
   if (outcomes.length === 0) {
     return {
       overallScore: 0,
       totalOutcomes: 0,
-      improvementRate: 0,
-      withPlanRate: 0,
+      improvementRate: null,
+      withPlanRate: null,
       averageSkillImprovement: 0,
       wellbeingConcernRate,
     };
@@ -585,11 +581,11 @@ export function evaluateStaffDevelopment(
   const improvedCount = outcomes.filter(
     (o) => o.currentLevel > o.startLevel,
   ).length;
-  const improvementRate = pct(improvedCount, total);
+  const improvementRate = rate(improvedCount, total);
 
   // With improvement plan rate
   const withPlanCount = outcomes.filter((o) => o.improvementPlan).length;
-  const withPlanRate = pct(withPlanCount, total);
+  const withPlanRate = rate(withPlanCount, total);
 
   // Average skill improvement
   const totalImprovement = outcomes.reduce(
@@ -603,22 +599,22 @@ export function evaluateStaffDevelopment(
   let score = 0;
 
   // Improvement rate: up to 10 points
-  score += (improvementRate / 100) * 10;
+  score += ((improvementRate ?? 0) / 100) * 10;
 
   // With plan rate: up to 5 points
-  score += (withPlanRate / 100) * 5;
+  score += ((withPlanRate ?? 0) / 100) * 5;
 
   // Average skill improvement: up to 5 points (1 level improvement = 5 pts)
   score += clamp(averageSkillImprovement, 0, 1) * 5;
 
   // Wellbeing management: up to 5 points
   // Lower concern rate = better (concerns handled or absent)
-  if (wellbeingConcernRate <= 5) {
-    score += 5;
-  } else if (wellbeingConcernRate <= 15) {
-    score += 3;
-  } else if (wellbeingConcernRate <= 30) {
-    score += 1;
+  // unmeasured wellbeing concerns earn no credit — the old pct fabricated 0%
+  // here and awarded the full 5 points
+  if (wellbeingConcernRate !== null) {
+    if (wellbeingConcernRate <= 5) score += 5;
+    else if (wellbeingConcernRate <= 15) score += 3;
+    else if (wellbeingConcernRate <= 30) score += 1;
   }
 
   return {

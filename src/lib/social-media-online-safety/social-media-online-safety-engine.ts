@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // Social Media Online Safety Intelligence Engine
 // Pure deterministic — no AI, no external calls, no randomness, no Date.now()
 
@@ -99,18 +100,26 @@ export interface StaffOnlineSafetyTraining {
 export interface OnlineSafetyQualityResult {
   overallScore: number;
   totalSessions: number;
-  comprehensionRate: number;
-  engagementRate: number;
-  practicalRate: number;
-  safetyPlanRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  comprehensionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  engagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  practicalRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safetyPlanRate: number | null;
 }
 
 export interface OnlineSafetyComplianceResult {
   overallScore: number;
-  documentedRate: number;
-  staffDeliveredRate: number;
-  feedbackRate: number;
-  topicDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffDeliveredRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  feedbackRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  topicDiversityRatio: number | null;
 }
 
 export interface OnlineSafetyPolicyResult {
@@ -127,20 +136,28 @@ export interface OnlineSafetyPolicyResult {
 export interface StaffOnlineSafetyReadinessResult {
   overallScore: number;
   totalStaff: number;
-  esafetyKnowledgeRate: number;
-  socialMediaAwarenessRate: number;
-  onlineGroomingRecognitionRate: number;
-  incidentResponseRate: number;
-  ageAppropriateGuidanceRate: number;
-  digitalToolsCompetencyRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  esafetyKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  socialMediaAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  onlineGroomingRecognitionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  incidentResponseRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  ageAppropriateGuidanceRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  digitalToolsCompetencyRate: number | null;
 }
 
 export interface ChildOnlineSafetyProfile {
   childId: string;
   childName: string;
   totalSessions: number;
-  comprehensionRate: number;
-  engagementRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  comprehensionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  engagementRate: number | null;
   overallScore: number;
 }
 
@@ -163,11 +180,6 @@ export interface SocialMediaOnlineSafetyIntelligence {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -179,7 +191,7 @@ export function getRating(score: number): Rating {
 
 export function evaluateOnlineSafetyQuality(sessions: OnlineSafetySession[]): OnlineSafetyQualityResult {
   if (sessions.length === 0) {
-    return { overallScore: 0, totalSessions: 0, comprehensionRate: 0, engagementRate: 0, practicalRate: 0, safetyPlanRate: 0 };
+    return { overallScore: 0, totalSessions: 0, comprehensionRate: null, engagementRate: null, practicalRate: null, safetyPlanRate: null };
   }
 
   const total = sessions.length;
@@ -188,15 +200,15 @@ export function evaluateOnlineSafetyQuality(sessions: OnlineSafetySession[]): On
   const practicalCount = sessions.filter((s) => s.practicalDemonstration).length;
   const safetyPlanCount = sessions.filter((s) => s.safetyPlanUpdated).length;
 
-  const comprehensionRate = pct(comprehensionCount, total);
-  const engagementRate = pct(engagementCount, total);
-  const practicalRate = pct(practicalCount, total);
-  const safetyPlanRate = pct(safetyPlanCount, total);
+  const comprehensionRate = rate(comprehensionCount, total);
+  const engagementRate = rate(engagementCount, total);
+  const practicalRate = rate(practicalCount, total);
+  const safetyPlanRate = rate(safetyPlanCount, total);
 
-  const cpScore = Math.round((comprehensionRate / 100) * 7);
-  const enScore = Math.round((engagementRate / 100) * 6);
-  const prScore = Math.round((practicalRate / 100) * 6);
-  const spScore = Math.round((safetyPlanRate / 100) * 6);
+  const cpScore = Math.round(((comprehensionRate ?? 0) / 100) * 7);
+  const enScore = Math.round(((engagementRate ?? 0) / 100) * 6);
+  const prScore = Math.round(((practicalRate ?? 0) / 100) * 6);
+  const spScore = Math.round(((safetyPlanRate ?? 0) / 100) * 6);
 
   const overallScore = Math.min(25, cpScore + enScore + prScore + spScore);
 
@@ -205,7 +217,7 @@ export function evaluateOnlineSafetyQuality(sessions: OnlineSafetySession[]): On
 
 export function evaluateOnlineSafetyCompliance(sessions: OnlineSafetySession[]): OnlineSafetyComplianceResult {
   if (sessions.length === 0) {
-    return { overallScore: 0, documentedRate: 0, staffDeliveredRate: 0, feedbackRate: 0, topicDiversityRatio: 0 };
+    return { overallScore: 0, documentedRate: null, staffDeliveredRate: null, feedbackRate: null, topicDiversityRatio: 0 };
   }
 
   const total = sessions.length;
@@ -213,16 +225,16 @@ export function evaluateOnlineSafetyCompliance(sessions: OnlineSafetySession[]):
   const staffCount = sessions.filter((s) => s.staffDelivered).length;
   const feedbackCount = sessions.filter((s) => s.feedbackGiven).length;
   const uniqueTopics = new Set(sessions.map((s) => s.topic)).size;
-  const diversityRatio = pct(uniqueTopics, 8);
+  const diversityRatio = rate(uniqueTopics, 8);
 
-  const documentedRate = pct(documentedCount, total);
-  const staffDeliveredRate = pct(staffCount, total);
-  const feedbackRate = pct(feedbackCount, total);
+  const documentedRate = rate(documentedCount, total);
+  const staffDeliveredRate = rate(staffCount, total);
+  const feedbackRate = rate(feedbackCount, total);
 
-  const docScore = Math.round((documentedRate / 100) * 8);
-  const sdScore = Math.round((staffDeliveredRate / 100) * 7);
-  const fbScore = Math.round((feedbackRate / 100) * 5);
-  const divScore = Math.round((diversityRatio / 100) * 5);
+  const docScore = Math.round(((documentedRate ?? 0) / 100) * 8);
+  const sdScore = Math.round(((staffDeliveredRate ?? 0) / 100) * 7);
+  const fbScore = Math.round(((feedbackRate ?? 0) / 100) * 5);
+  const divScore = Math.round((diversityRatio! / 100) * 5);
 
   const overallScore = Math.min(25, docScore + sdScore + fbScore + divScore);
 
@@ -254,23 +266,23 @@ export function evaluateOnlineSafetyPolicy(policy: OnlineSafetyPolicy | null): O
 
 export function evaluateStaffOnlineSafetyReadiness(training: StaffOnlineSafetyTraining[]): StaffOnlineSafetyReadinessResult {
   if (training.length === 0) {
-    return { overallScore: 0, totalStaff: 0, esafetyKnowledgeRate: 0, socialMediaAwarenessRate: 0, onlineGroomingRecognitionRate: 0, incidentResponseRate: 0, ageAppropriateGuidanceRate: 0, digitalToolsCompetencyRate: 0 };
+    return { overallScore: 0, totalStaff: 0, esafetyKnowledgeRate: null, socialMediaAwarenessRate: null, onlineGroomingRecognitionRate: null, incidentResponseRate: null, ageAppropriateGuidanceRate: null, digitalToolsCompetencyRate: null };
   }
 
   const total = training.length;
-  const ekRate = pct(training.filter((t) => t.esafetyKnowledge).length, total);
-  const smRate = pct(training.filter((t) => t.socialMediaAwareness).length, total);
-  const ogRate = pct(training.filter((t) => t.onlineGroomingRecognition).length, total);
-  const irRate = pct(training.filter((t) => t.incidentResponse).length, total);
-  const agRate = pct(training.filter((t) => t.ageAppropriateGuidance).length, total);
-  const dtRate = pct(training.filter((t) => t.digitalToolsCompetency).length, total);
+  const ekRate = rate(training.filter((t) => t.esafetyKnowledge).length, total);
+  const smRate = rate(training.filter((t) => t.socialMediaAwareness).length, total);
+  const ogRate = rate(training.filter((t) => t.onlineGroomingRecognition).length, total);
+  const irRate = rate(training.filter((t) => t.incidentResponse).length, total);
+  const agRate = rate(training.filter((t) => t.ageAppropriateGuidance).length, total);
+  const dtRate = rate(training.filter((t) => t.digitalToolsCompetency).length, total);
 
-  const s1 = Math.round((ekRate / 100) * 6);
-  const s2 = Math.round((smRate / 100) * 5);
-  const s3 = Math.round((ogRate / 100) * 5);
-  const s4 = Math.round((irRate / 100) * 4);
-  const s5 = Math.round((agRate / 100) * 3);
-  const s6 = Math.round((dtRate / 100) * 2);
+  const s1 = Math.round(((ekRate ?? 0) / 100) * 6);
+  const s2 = Math.round(((smRate ?? 0) / 100) * 5);
+  const s3 = Math.round(((ogRate ?? 0) / 100) * 5);
+  const s4 = Math.round(((irRate ?? 0) / 100) * 4);
+  const s5 = Math.round(((agRate ?? 0) / 100) * 3);
+  const s6 = Math.round(((dtRate ?? 0) / 100) * 2);
 
   const overallScore = Math.min(25, s1 + s2 + s3 + s4 + s5 + s6);
 
@@ -296,22 +308,22 @@ export function buildChildOnlineSafetyProfiles(sessions: OnlineSafetySession[]):
     const comprehensionCount = acts.filter((s) => s.comprehensionLevel === "excellent" || s.comprehensionLevel === "good").length;
     const engagementCount = acts.filter((s) => s.childEngaged).length;
 
-    const comprehensionRate = pct(comprehensionCount, total);
-    const engagementRate = pct(engagementCount, total);
+    const comprehensionRate = rate(comprehensionCount, total);
+    const engagementRate = rate(engagementCount, total);
 
     let freqScore = 0;
     if (total >= 10) freqScore = 2;
     else if (total >= 5) freqScore = 1;
 
     let cpScore = 0;
-    if (comprehensionRate >= 80) cpScore = 3;
-    else if (comprehensionRate >= 60) cpScore = 2;
-    else if (comprehensionRate >= 40) cpScore = 1;
+    if (meets(comprehensionRate, 80)) cpScore = 3;
+    else if (meets(comprehensionRate, 60)) cpScore = 2;
+    else if (meets(comprehensionRate, 40)) cpScore = 1;
 
     let enScore = 0;
-    if (engagementRate >= 80) enScore = 3;
-    else if (engagementRate >= 60) enScore = 2;
-    else if (engagementRate >= 40) enScore = 1;
+    if (meets(engagementRate, 80)) enScore = 3;
+    else if (meets(engagementRate, 60)) enScore = 2;
+    else if (meets(engagementRate, 40)) enScore = 1;
 
     const uniqueTopics = new Set(acts.map((s) => s.topic)).size;
     let divScore = 0;
@@ -350,21 +362,21 @@ export function generateSocialMediaOnlineSafetyIntelligence(
   const areasForImprovement: string[] = [];
   const actions: string[] = [];
 
-  if (onlineSafetyQuality.comprehensionRate >= 80) strengths.push("Children demonstrate strong understanding of online safety concepts");
-  if (onlineSafetyQuality.engagementRate >= 80) strengths.push("High engagement levels in online safety education sessions");
-  if (onlineSafetyQuality.practicalRate >= 80) strengths.push("Children are effectively applying online safety skills in practice");
-  if (onlineSafetyCompliance.documentedRate >= 80) strengths.push("Online safety education is well documented in care plans");
+  if (meets(onlineSafetyQuality.comprehensionRate, 80)) strengths.push("Children demonstrate strong understanding of online safety concepts");
+  if (meets(onlineSafetyQuality.engagementRate, 80)) strengths.push("High engagement levels in online safety education sessions");
+  if (meets(onlineSafetyQuality.practicalRate, 80)) strengths.push("Children are effectively applying online safety skills in practice");
+  if (meets(onlineSafetyCompliance.documentedRate, 80)) strengths.push("Online safety education is well documented in care plans");
 
-  if (sessions.length > 0 && onlineSafetyQuality.comprehensionRate < 60) areasForImprovement.push("Online safety comprehension needs improvement — adapt teaching methods to individual needs");
-  if (sessions.length > 0 && onlineSafetyQuality.safetyPlanRate < 60) areasForImprovement.push("Safety plan updates are insufficient — ensure each session feeds into individual safety plans");
-  if (sessions.length > 0 && onlineSafetyQuality.engagementRate < 60) areasForImprovement.push("Engagement in online safety sessions needs strengthening");
-  if (sessions.length > 0 && onlineSafetyCompliance.staffDeliveredRate < 60) areasForImprovement.push("Staff delivery of online safety sessions needs improvement");
+  if (sessions.length > 0 && below(onlineSafetyQuality.comprehensionRate, 60)) areasForImprovement.push("Online safety comprehension needs improvement — adapt teaching methods to individual needs");
+  if (sessions.length > 0 && below(onlineSafetyQuality.safetyPlanRate, 60)) areasForImprovement.push("Safety plan updates are insufficient — ensure each session feeds into individual safety plans");
+  if (sessions.length > 0 && below(onlineSafetyQuality.engagementRate, 60)) areasForImprovement.push("Engagement in online safety sessions needs strengthening");
+  if (sessions.length > 0 && below(onlineSafetyCompliance.staffDeliveredRate, 60)) areasForImprovement.push("Staff delivery of online safety sessions needs improvement");
 
   if (sessions.length === 0) actions.push("No online safety sessions recorded — begin tracking e-safety education immediately");
   if (!policy) actions.push("URGENT: No online safety policy in place — develop and implement immediately");
   if (training.length === 0) actions.push("URGENT: No staff online safety training recorded — arrange training for all staff");
-  if (sessions.length > 0 && onlineSafetyQuality.practicalRate < 60) actions.push("Increase practical demonstrations in online safety sessions");
-  if (sessions.length > 0 && onlineSafetyCompliance.feedbackRate < 60) actions.push("Improve feedback processes for online safety education");
+  if (sessions.length > 0 && below(onlineSafetyQuality.practicalRate, 60)) actions.push("Increase practical demonstrations in online safety sessions");
+  if (sessions.length > 0 && below(onlineSafetyCompliance.feedbackRate, 60)) actions.push("Improve feedback processes for online safety education");
 
   const regulatoryLinks: string[] = [
     "CHR 2015 Regulation 12 — Positive behaviour support (online safety)",

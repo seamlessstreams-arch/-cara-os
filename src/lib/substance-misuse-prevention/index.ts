@@ -5,7 +5,6 @@ export {
   evaluatePreventionPolicy,
   evaluateStaffPreventionReadiness,
   buildChildPreventionProfiles,
-  pct,
   getRating,
   getPreventionTopicLabel,
   getUnderstandingLevelLabel,

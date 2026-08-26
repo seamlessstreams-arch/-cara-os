@@ -11,7 +11,6 @@ import {
   buildStaffSupervisionProfiles,
   generateSupervisionQualityIntelligence,
   getRating,
-  pct,
   getSupervisionTypeLabel,
   getSupervisionFrequencyLabel,
   getSupervisionQualityLabel,
@@ -238,28 +237,6 @@ describe("getRating", () => {
   });
 });
 
-describe("pct", () => {
-  it("calculates percentage correctly", () => {
-    expect(pct(1, 2)).toBe(50);
-    expect(pct(3, 4)).toBe(75);
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-    expect(pct(0, 0)).toBe(0);
-  });
-
-  it("returns 100 for 1/1", () => {
-    expect(pct(1, 1)).toBe(100);
-  });
-
-  it("returns 0 for 0/n", () => {
-    expect(pct(0, 5)).toBe(0);
-  });
-});
-
 // ══════════════════════════════════════════════════════════════════════════════
 // evaluateSessionQuality
 // ══════════════════════════════════════════════════════════════════════════════
@@ -269,12 +246,12 @@ describe("evaluateSessionQuality", () => {
     const result = evaluateSessionQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalSessions).toBe(0);
-    expect(result.outstandingGoodRate).toBe(0);
-    expect(result.reflectiveRate).toBe(0);
-    expect(result.safeguardingDiscussionRate).toBe(0);
+    expect(result.outstandingGoodRate).toBeNull();
+    expect(result.reflectiveRate).toBeNull();
+    expect(result.safeguardingDiscussionRate).toBeNull();
     expect(result.averageDurationMinutes).toBe(0);
-    expect(result.recordingComplianceRate).toBe(0);
-    expect(result.signOffRate).toBe(0);
+    expect(result.recordingComplianceRate).toBeNull();
+    expect(result.signOffRate).toBeNull();
   });
 
   it("calculates outstanding/good rate correctly", () => {
@@ -411,7 +388,7 @@ describe("evaluateScheduleCompliance", () => {
     const result = evaluateScheduleCompliance([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.onScheduleRate).toBe(0);
+    expect(result.onScheduleRate).toBeNull();
     expect(result.overdueCount).toBe(0);
     expect(result.consecutiveMissedMax).toBe(0);
     expect(result.averageDaysBetweenSessions).toBe(0);
@@ -530,9 +507,9 @@ describe("evaluateActionTracking", () => {
     const result = evaluateActionTracking([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalActions).toBe(0);
-    expect(result.completedOnTimeRate).toBe(0);
+    expect(result.completedOnTimeRate).toBeNull();
     expect(result.overdueCount).toBe(0);
-    expect(result.safeguardingActionCompletionRate).toBe(0);
+    expect(result.safeguardingActionCompletionRate).toBeNull();
     expect(result.byCategory).toEqual({});
   });
 
@@ -654,10 +631,10 @@ describe("evaluateStaffDevelopment", () => {
     const result = evaluateStaffDevelopment([], []);
     expect(result.overallScore).toBe(0);
     expect(result.totalOutcomes).toBe(0);
-    expect(result.improvementRate).toBe(0);
-    expect(result.withPlanRate).toBe(0);
+    expect(result.improvementRate).toBeNull();
+    expect(result.withPlanRate).toBeNull();
     expect(result.averageSkillImprovement).toBe(0);
-    expect(result.wellbeingConcernRate).toBe(0);
+    expect(result.wellbeingConcernRate).toBeNull();
   });
 
   it("calculates improvement rate correctly", () => {

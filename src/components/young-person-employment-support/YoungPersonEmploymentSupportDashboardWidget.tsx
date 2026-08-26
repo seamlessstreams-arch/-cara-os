@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { YoungPersonEmploymentSupportIntelligence } from "@/lib/young-person-employment-support";
+import { formatRate } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -101,7 +102,7 @@ export function YoungPersonEmploymentSupportDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Young People</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.careersPlanQuality.planExistsRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.careersPlanQuality.planExistsRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Plans in Place</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
@@ -113,7 +114,7 @@ export function YoungPersonEmploymentSupportDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Partnerships</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.skillDevelopment.engagedRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.skillDevelopment.engagedRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Engaged</div>
         </div>
       </div>
@@ -150,18 +151,18 @@ export function YoungPersonEmploymentSupportDashboardWidget() {
         <Section title="Careers Plan Quality">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Profiles:</span> <span className="font-medium">{data.careersPlanQuality.totalProfiles}</span></div>
-            <div><span className="text-gray-500">Plan Exists:</span> <span className="font-medium">{data.careersPlanQuality.planExistsRate}%</span></div>
-            <div><span className="text-gray-500">Plan Current:</span> <span className="font-medium">{data.careersPlanQuality.planCurrentRate}%</span></div>
-            <div><span className="text-gray-500">Aspirations:</span> <span className="font-medium">{data.careersPlanQuality.aspirationsRecordedRate}%</span></div>
-            <div><span className="text-gray-500">Adviser Engaged:</span> <span className="font-medium">{data.careersPlanQuality.adviserEngagedRate}%</span></div>
+            <div><span className="text-gray-500">Plan Exists:</span> <span className="font-medium">{formatRate(data.careersPlanQuality.planExistsRate)}</span></div>
+            <div><span className="text-gray-500">Plan Current:</span> <span className="font-medium">{formatRate(data.careersPlanQuality.planCurrentRate)}</span></div>
+            <div><span className="text-gray-500">Aspirations:</span> <span className="font-medium">{formatRate(data.careersPlanQuality.aspirationsRecordedRate)}</span></div>
+            <div><span className="text-gray-500">Adviser Engaged:</span> <span className="font-medium">{formatRate(data.careersPlanQuality.adviserEngagedRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Skill Development">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Sessions:</span> <span className="font-medium">{data.skillDevelopment.totalSessions}</span></div>
-            <div><span className="text-gray-500">Engaged:</span> <span className="font-medium">{data.skillDevelopment.engagedRate}%</span></div>
-            <div><span className="text-gray-500">Achieved:</span> <span className="font-medium">{data.skillDevelopment.achievedRate}%</span></div>
+            <div><span className="text-gray-500">Engaged:</span> <span className="font-medium">{formatRate(data.skillDevelopment.engagedRate)}</span></div>
+            <div><span className="text-gray-500">Achieved:</span> <span className="font-medium">{formatRate(data.skillDevelopment.achievedRate)}</span></div>
             <div><span className="text-gray-500">Support Types:</span> <span className="font-medium">{data.skillDevelopment.supportTypeVariety}</span></div>
             <div><span className="text-gray-500">Avg/Child:</span> <span className="font-medium">{data.skillDevelopment.averageSessionsPerChild}</span></div>
           </div>
@@ -170,22 +171,22 @@ export function YoungPersonEmploymentSupportDashboardWidget() {
         <Section title="Partnership Access">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Partnerships:</span> <span className="font-medium">{data.partnershipAccess.totalPartnerships}</span></div>
-            <div><span className="text-gray-500">Active:</span> <span className="font-medium">{data.partnershipAccess.activeRate}%</span></div>
+            <div><span className="text-gray-500">Active:</span> <span className="font-medium">{formatRate(data.partnershipAccess.activeRate)}</span></div>
             <div><span className="text-gray-500">Opportunities:</span> <span className="font-medium">{data.partnershipAccess.totalOpportunities}</span></div>
             <div><span className="text-gray-500">Employers:</span> <span className="font-medium">{data.partnershipAccess.employerEngagementCount}</span></div>
-            <div><span className="text-gray-500">Children Accessing:</span> <span className="font-medium">{data.partnershipAccess.childrenAccessingRate}%</span></div>
+            <div><span className="text-gray-500">Children Accessing:</span> <span className="font-medium">{formatRate(data.partnershipAccess.childrenAccessingRate)}</span></div>
           </div>
         </Section>
 
         <Section title="Staff Readiness">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
             <div><span className="text-gray-500">Staff:</span> <span className="font-medium">{data.staffReadiness.totalStaff}</span></div>
-            <div><span className="text-gray-500">Careers Guidance:</span> <span className="font-medium">{data.staffReadiness.careersGuidanceRate}%</span></div>
-            <div><span className="text-gray-500">CV/Interview:</span> <span className="font-medium">{data.staffReadiness.cvInterviewRate}%</span></div>
-            <div><span className="text-gray-500">Financial Literacy:</span> <span className="font-medium">{data.staffReadiness.financialLiteracyRate}%</span></div>
-            <div><span className="text-gray-500">Apprenticeship:</span> <span className="font-medium">{data.staffReadiness.apprenticeshipRate}%</span></div>
-            <div><span className="text-gray-500">Labour Market:</span> <span className="font-medium">{data.staffReadiness.labourMarketRate}%</span></div>
-            <div><span className="text-gray-500">Motivational:</span> <span className="font-medium">{data.staffReadiness.motivationalInterviewingRate}%</span></div>
+            <div><span className="text-gray-500">Careers Guidance:</span> <span className="font-medium">{formatRate(data.staffReadiness.careersGuidanceRate)}</span></div>
+            <div><span className="text-gray-500">CV/Interview:</span> <span className="font-medium">{formatRate(data.staffReadiness.cvInterviewRate)}</span></div>
+            <div><span className="text-gray-500">Financial Literacy:</span> <span className="font-medium">{formatRate(data.staffReadiness.financialLiteracyRate)}</span></div>
+            <div><span className="text-gray-500">Apprenticeship:</span> <span className="font-medium">{formatRate(data.staffReadiness.apprenticeshipRate)}</span></div>
+            <div><span className="text-gray-500">Labour Market:</span> <span className="font-medium">{formatRate(data.staffReadiness.labourMarketRate)}</span></div>
+            <div><span className="text-gray-500">Motivational:</span> <span className="font-medium">{formatRate(data.staffReadiness.motivationalInterviewingRate)}</span></div>
           </div>
         </Section>
 

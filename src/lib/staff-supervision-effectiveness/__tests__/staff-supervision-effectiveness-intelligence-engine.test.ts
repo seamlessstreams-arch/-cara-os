@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct, getRating, getStaffSupervisionEffectivenessCategoryLabel, getStaffSupervisionEffectivenessOutcomeLabel, getRatingLabel,
+  getRating, getStaffSupervisionEffectivenessCategoryLabel, getStaffSupervisionEffectivenessOutcomeLabel, getRatingLabel,
   evaluateStaffSupervisionEffectivenessQuality, evaluateStaffSupervisionEffectivenessCompliance, evaluateStaffSupervisionEffectivenessPolicy,
   evaluateStaffSupervisionEffectivenessReadiness, buildStaffSupervisionProfiles, generateStaffSupervisionEffectivenessIntelligence,
 } from "../staff-supervision-effectiveness-intelligence-engine";
@@ -26,16 +26,6 @@ function makeTraining(o: Partial<StaffSupervisionEffectivenessTraining> = {}): S
 }
 
 // ═══ pct ═══
-describe("pct", () => {
-  it("returns percentage", () => { expect(pct(3, 4)).toBe(75); });
-  it("returns 0 for den=0", () => { expect(pct(5, 0)).toBe(0); });
-  it("100 for 1/1", () => { expect(pct(1, 1)).toBe(100); });
-  it("rounds 2/3 to 67", () => { expect(pct(2, 3)).toBe(67); });
-  it("rounds 1/3 to 33", () => { expect(pct(1, 3)).toBe(33); });
-  it("0 for 0/0", () => { expect(pct(0, 0)).toBe(0); });
-  it("0 for 0/10", () => { expect(pct(0, 10)).toBe(0); });
-  it("50 for 1/2", () => { expect(pct(1, 2)).toBe(50); });
-});
 
 // ═══ getRating ═══
 describe("getRating", () => {
@@ -107,10 +97,10 @@ describe("evaluateStaffSupervisionEffectivenessQuality", () => {
   });
   it("empty returns all zeros", () => {
     const r = evaluateStaffSupervisionEffectivenessQuality([]);
-    expect(r.safeguardingDiscussedRate).toBe(0);
-    expect(r.wellbeingCheckedRate).toBe(0);
-    expect(r.actionPointsSetRate).toBe(0);
-    expect(r.previousActionsReviewedRate).toBe(0);
+    expect(r.safeguardingDiscussedRate).toBeNull();
+    expect(r.wellbeingCheckedRate).toBeNull();
+    expect(r.actionPointsSetRate).toBeNull();
+    expect(r.previousActionsReviewedRate).toBeNull();
   });
   it("single record all false returns 0", () => {
     const r = evaluateStaffSupervisionEffectivenessQuality([makeRecord({ safeguardingDiscussed: false, wellbeingChecked: false, actionPointsSet: false, previousActionsReviewed: false })]);
@@ -169,9 +159,9 @@ describe("evaluateStaffSupervisionEffectivenessCompliance", () => {
   it("empty returns all zeros", () => {
     const r = evaluateStaffSupervisionEffectivenessCompliance([]);
     expect(r.totalRecords).toBe(0);
-    expect(r.documentationCompleteRate).toBe(0);
-    expect(r.timelyRecordingRate).toBe(0);
-    expect(r.safeguardingDiscussedRate).toBe(0);
+    expect(r.documentationCompleteRate).toBeNull();
+    expect(r.timelyRecordingRate).toBeNull();
+    expect(r.safeguardingDiscussedRate).toBeNull();
     expect(r.categoryDiversityRatio).toBe(0);
     expect(r.uniqueCategories).toBe(0);
   });
@@ -253,12 +243,12 @@ describe("evaluateStaffSupervisionEffectivenessReadiness", () => {
   it("empty array returns all zeros", () => {
     const r = evaluateStaffSupervisionEffectivenessReadiness([]);
     expect(r.totalSupervisors).toBe(0);
-    expect(r.supervisionFacilitationSkillsRate).toBe(0);
-    expect(r.reflectivePracticeKnowledgeRate).toBe(0);
-    expect(r.safeguardingSupervisionSkillsRate).toBe(0);
-    expect(r.performanceManagementSkillsRate).toBe(0);
-    expect(r.mentoringCoachingSkillsRate).toBe(0);
-    expect(r.documentationStandardsRate).toBe(0);
+    expect(r.supervisionFacilitationSkillsRate).toBeNull();
+    expect(r.reflectivePracticeKnowledgeRate).toBeNull();
+    expect(r.safeguardingSupervisionSkillsRate).toBeNull();
+    expect(r.performanceManagementSkillsRate).toBeNull();
+    expect(r.mentoringCoachingSkillsRate).toBeNull();
+    expect(r.documentationStandardsRate).toBeNull();
   });
   it("totalSupervisors reflects count", () => {
     expect(evaluateStaffSupervisionEffectivenessReadiness([makeTraining({ staffId: "s1" }), makeTraining({ staffId: "s2" }), makeTraining({ staffId: "s3" })]).totalSupervisors).toBe(3);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface StaffWellbeingProfile { staffId: string; staffName: string; totalRecords: number; supervisionReceivedRate: number; wellbeingCheckedRate: number; categoriesCovered: string[]; overallScore: number; }
 
@@ -73,19 +74,19 @@ export default function StaffWellbeingDashboardWidget() {
       <Section title="Wellbeing Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Records" value={data.wellbeingQuality.totalRecords} />
-          <Stat label="Supervision Received" value={`${data.wellbeingQuality.supervisionReceivedRate}%`} />
-          <Stat label="Wellbeing Checked" value={`${data.wellbeingQuality.wellbeingCheckedRate}%`} />
-          <Stat label="Debrief Offered" value={`${data.wellbeingQuality.debriefOfferedRate}%`} />
-          <Stat label="Support Accessed" value={`${data.wellbeingQuality.supportAccessedRate}%`} />
+          <Stat label="Supervision Received" value={`${formatRate(data.wellbeingQuality.supervisionReceivedRate)}`} />
+          <Stat label="Wellbeing Checked" value={`${formatRate(data.wellbeingQuality.wellbeingCheckedRate)}`} />
+          <Stat label="Debrief Offered" value={`${formatRate(data.wellbeingQuality.debriefOfferedRate)}`} />
+          <Stat label="Support Accessed" value={`${formatRate(data.wellbeingQuality.supportAccessedRate)}`} />
         </div>
       </Section>
 
       <Section title="Wellbeing Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documentation" value={`${data.wellbeingCompliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${data.wellbeingCompliance.timelyRecordingRate}%`} />
-          <Stat label="Supervision Received" value={`${data.wellbeingCompliance.supervisionReceivedRate}%`} />
-          <Stat label="Category Coverage" value={`${data.wellbeingCompliance.categoryDiversityRatio}%`} />
+          <Stat label="Documentation" value={`${formatRate(data.wellbeingCompliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(data.wellbeingCompliance.timelyRecordingRate)}`} />
+          <Stat label="Supervision Received" value={`${formatRate(data.wellbeingCompliance.supervisionReceivedRate)}`} />
+          <Stat label="Category Coverage" value={`${formatRate(data.wellbeingCompliance.categoryDiversityRatio)}`} />
         </div>
       </Section>
 
@@ -108,12 +109,12 @@ export default function StaffWellbeingDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
-          <Stat label="Supervision Delivery" value={`${data.staffReadiness.supervisionDeliveryRate}%`} />
-          <Stat label="Wellbeing Assessment" value={`${data.staffReadiness.wellbeingAssessmentRate}%`} />
-          <Stat label="Debriefing Skills" value={`${data.staffReadiness.debriefingSkillsRate}%`} />
-          <Stat label="Stress Management" value={`${data.staffReadiness.stressManagementRate}%`} />
-          <Stat label="Team Building" value={`${data.staffReadiness.teamBuildingRate}%`} />
-          <Stat label="Conflict Mediation" value={`${data.staffReadiness.conflictMediationRate}%`} />
+          <Stat label="Supervision Delivery" value={`${formatRate(data.staffReadiness.supervisionDeliveryRate)}`} />
+          <Stat label="Wellbeing Assessment" value={`${formatRate(data.staffReadiness.wellbeingAssessmentRate)}`} />
+          <Stat label="Debriefing Skills" value={`${formatRate(data.staffReadiness.debriefingSkillsRate)}`} />
+          <Stat label="Stress Management" value={`${formatRate(data.staffReadiness.stressManagementRate)}`} />
+          <Stat label="Team Building" value={`${formatRate(data.staffReadiness.teamBuildingRate)}`} />
+          <Stat label="Conflict Mediation" value={`${formatRate(data.staffReadiness.conflictMediationRate)}`} />
         </div>
       </Section>
 

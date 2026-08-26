@@ -1,3 +1,4 @@
+import { below, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // TRANSPORT & TRAVEL ARRANGEMENTS INTELLIGENCE ENGINE
 //
@@ -153,10 +154,14 @@ export interface StaffTravelTraining {
 
 export interface JourneyQualityEvaluation {
   totalJourneys: number;
-  onTimeRate: number;
-  riskAssessmentRate: number;
-  seatbeltRate: number;
-  childComfortableRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  onTimeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  seatbeltRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childComfortableRate: number | null;
   journeysByType: Record<string, number>;
   journeysByMode: Record<string, number>;
   journeyQualityScore: number;
@@ -164,35 +169,54 @@ export interface JourneyQualityEvaluation {
 
 export interface VehicleSafetyEvaluation {
   totalChecks: number;
-  motCurrentRate: number;
-  insuranceCurrentRate: number;
-  roadworthyRate: number;
-  firstAidKitRate: number;
-  childLockRate: number;
-  cleanAndTidyRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  motCurrentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  insuranceCurrentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  roadworthyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  firstAidKitRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childLockRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  cleanAndTidyRate: number | null;
   vehicleSafetyScore: number;
 }
 
 export interface TravelPolicyEvaluation {
   totalPolicies: number;
-  driverChecksRate: number;
-  insuranceVerifiedRate: number;
-  riskAssessmentProtocolRate: number;
-  loneDrivingPolicyRate: number;
-  breakdownProcedureRate: number;
-  childConsentRate: number;
-  routePlanningRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  driverChecksRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  insuranceVerifiedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessmentProtocolRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  loneDrivingPolicyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  breakdownProcedureRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childConsentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  routePlanningRate: number | null;
   travelPolicyScore: number;
 }
 
 export interface StaffTravelReadinessEvaluation {
   totalStaff: number;
-  drivingAssessmentRate: number;
-  childTransportSafetyRate: number;
-  firstAidTrainingRate: number;
-  riskAssessmentRate: number;
-  breakdownProcedureRate: number;
-  childComfortAwarenessRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  drivingAssessmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childTransportSafetyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  firstAidTrainingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  breakdownProcedureRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childComfortAwarenessRate: number | null;
   staffTravelReadinessScore: number;
 }
 
@@ -201,10 +225,14 @@ export interface ChildTravelProfile {
   childName: string;
   totalJourneys: number;
   travelTypes: string[];
-  onTimeRate: number;
-  riskAssessmentRate: number;
-  seatbeltRate: number;
-  comfortRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  onTimeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessmentRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  seatbeltRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  comfortRate: number | null;
   travelScore: number;
 }
 
@@ -228,11 +256,6 @@ export interface TransportTravelArrangementsIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -252,10 +275,10 @@ export function evaluateJourneyQuality(
   if (records.length === 0) {
     return {
       totalJourneys: 0,
-      onTimeRate: 0,
-      riskAssessmentRate: 0,
-      seatbeltRate: 0,
-      childComfortableRate: 0,
+      onTimeRate: null,
+      riskAssessmentRate: null,
+      seatbeltRate: null,
+      childComfortableRate: null,
       journeysByType: {},
       journeysByMode: {},
       journeyQualityScore: 0,
@@ -278,22 +301,22 @@ export function evaluateJourneyQuality(
 
   // Rates
   const onTime = records.filter((r) => r.journeyOnTime).length;
-  const onTimeRate = pct(onTime, total);
+  const onTimeRate = rate(onTime, total);
 
   const riskAssessed = records.filter((r) => r.riskAssessmentCompleted).length;
-  const riskAssessmentRate = pct(riskAssessed, total);
+  const riskAssessmentRate = rate(riskAssessed, total);
 
   const seatbelt = records.filter((r) => r.seatbeltUsed).length;
-  const seatbeltRate = pct(seatbelt, total);
+  const seatbeltRate = rate(seatbelt, total);
 
   const comfortable = records.filter((r) => r.childComfortable).length;
-  const childComfortableRate = pct(comfortable, total);
+  const childComfortableRate = rate(comfortable, total);
 
   // Scoring: on-time 0-7, risk assessment 0-6, seatbelt 0-6, child comfortable 0-6
-  const onTimeScore = Math.round((onTimeRate / 100) * 7);
-  const riskScore = Math.round((riskAssessmentRate / 100) * 6);
-  const seatbeltScore = Math.round((seatbeltRate / 100) * 6);
-  const comfortScore = Math.round((childComfortableRate / 100) * 6);
+  const onTimeScore = Math.round(((onTimeRate ?? 0) / 100) * 7);
+  const riskScore = Math.round(((riskAssessmentRate ?? 0) / 100) * 6);
+  const seatbeltScore = Math.round(((seatbeltRate ?? 0) / 100) * 6);
+  const comfortScore = Math.round(((childComfortableRate ?? 0) / 100) * 6);
 
   const journeyQualityScore = clamp(
     onTimeScore + riskScore + seatbeltScore + comfortScore,
@@ -321,12 +344,12 @@ export function evaluateVehicleSafety(
   if (checks.length === 0) {
     return {
       totalChecks: 0,
-      motCurrentRate: 0,
-      insuranceCurrentRate: 0,
-      roadworthyRate: 0,
-      firstAidKitRate: 0,
-      childLockRate: 0,
-      cleanAndTidyRate: 0,
+      motCurrentRate: null,
+      insuranceCurrentRate: null,
+      roadworthyRate: null,
+      firstAidKitRate: null,
+      childLockRate: null,
+      cleanAndTidyRate: null,
       vehicleSafetyScore: 0,
     };
   }
@@ -334,32 +357,32 @@ export function evaluateVehicleSafety(
   const total = checks.length;
 
   const motCurrent = checks.filter((c) => c.motCurrent).length;
-  const motCurrentRate = pct(motCurrent, total);
+  const motCurrentRate = rate(motCurrent, total);
 
   const insuranceCurrent = checks.filter((c) => c.insuranceCurrent).length;
-  const insuranceCurrentRate = pct(insuranceCurrent, total);
+  const insuranceCurrentRate = rate(insuranceCurrent, total);
 
   const roadworthy = checks.filter((c) => c.roadworthyCondition).length;
-  const roadworthyRate = pct(roadworthy, total);
+  const roadworthyRate = rate(roadworthy, total);
 
   const firstAidKit = checks.filter((c) => c.firstAidKitPresent).length;
-  const firstAidKitRate = pct(firstAidKit, total);
+  const firstAidKitRate = rate(firstAidKit, total);
 
   const childLock = checks.filter((c) => c.childLockEnabled).length;
-  const childLockRate = pct(childLock, total);
+  const childLockRate = rate(childLock, total);
 
   const cleanTidy = checks.filter((c) => c.cleanAndTidy).length;
-  const cleanAndTidyRate = pct(cleanTidy, total);
+  const cleanAndTidyRate = rate(cleanTidy, total);
 
   // Scoring: MOT 0-7, insurance 0-6, roadworthy 0-6, combined (first aid + child lock + clean) 0-6
-  const motScore = Math.round((motCurrentRate / 100) * 7);
-  const insuranceScore = Math.round((insuranceCurrentRate / 100) * 6);
-  const roadworthyScore = Math.round((roadworthyRate / 100) * 6);
+  const motScore = Math.round(((motCurrentRate ?? 0) / 100) * 7);
+  const insuranceScore = Math.round(((insuranceCurrentRate ?? 0) / 100) * 6);
+  const roadworthyScore = Math.round(((roadworthyRate ?? 0) / 100) * 6);
 
   // Combined: first aid kit (0-2), child lock (0-2), clean and tidy (0-2)
-  const firstAidScore = Math.round((firstAidKitRate / 100) * 2);
-  const childLockScore = Math.round((childLockRate / 100) * 2);
-  const cleanScore = Math.round((cleanAndTidyRate / 100) * 2);
+  const firstAidScore = Math.round(((firstAidKitRate ?? 0) / 100) * 2);
+  const childLockScore = Math.round(((childLockRate ?? 0) / 100) * 2);
+  const cleanScore = Math.round(((cleanAndTidyRate ?? 0) / 100) * 2);
   const combinedScore = firstAidScore + childLockScore + cleanScore;
 
   const vehicleSafetyScore = clamp(
@@ -388,13 +411,13 @@ export function evaluateTravelPolicy(
   if (policies.length === 0) {
     return {
       totalPolicies: 0,
-      driverChecksRate: 0,
-      insuranceVerifiedRate: 0,
-      riskAssessmentProtocolRate: 0,
-      loneDrivingPolicyRate: 0,
-      breakdownProcedureRate: 0,
-      childConsentRate: 0,
-      routePlanningRate: 0,
+      driverChecksRate: null,
+      insuranceVerifiedRate: null,
+      riskAssessmentProtocolRate: null,
+      loneDrivingPolicyRate: null,
+      breakdownProcedureRate: null,
+      childConsentRate: null,
+      routePlanningRate: null,
       travelPolicyScore: 0,
     };
   }
@@ -402,36 +425,36 @@ export function evaluateTravelPolicy(
   const total = policies.length;
 
   const driverChecks = policies.filter((p) => p.driverChecksCompleted).length;
-  const driverChecksRate = pct(driverChecks, total);
+  const driverChecksRate = rate(driverChecks, total);
 
   const insuranceVerified = policies.filter((p) => p.insuranceVerified).length;
-  const insuranceVerifiedRate = pct(insuranceVerified, total);
+  const insuranceVerifiedRate = rate(insuranceVerified, total);
 
   const riskProtocol = policies.filter((p) => p.riskAssessmentProtocol).length;
-  const riskAssessmentProtocolRate = pct(riskProtocol, total);
+  const riskAssessmentProtocolRate = rate(riskProtocol, total);
 
   const loneDriving = policies.filter((p) => p.loneDrivingPolicy).length;
-  const loneDrivingPolicyRate = pct(loneDriving, total);
+  const loneDrivingPolicyRate = rate(loneDriving, total);
 
   const breakdown = policies.filter((p) => p.breakdownProcedure).length;
-  const breakdownProcedureRate = pct(breakdown, total);
+  const breakdownProcedureRate = rate(breakdown, total);
 
   const childConsent = policies.filter((p) => p.childConsentObtained).length;
-  const childConsentRate = pct(childConsent, total);
+  const childConsentRate = rate(childConsent, total);
 
   const routePlanning = policies.filter((p) => p.routePlanningRequired).length;
-  const routePlanningRate = pct(routePlanning, total);
+  const routePlanningRate = rate(routePlanning, total);
 
   // Scoring: 7 boolean fields, roughly 3-4 points each, total 25
   // driverChecks: 0-4, insurance: 0-4, riskProtocol: 0-4, loneDriving: 0-3,
   // breakdown: 0-4, childConsent: 0-3, routePlanning: 0-3
-  const s1 = Math.round((driverChecksRate / 100) * 4);
-  const s2 = Math.round((insuranceVerifiedRate / 100) * 4);
-  const s3 = Math.round((riskAssessmentProtocolRate / 100) * 4);
-  const s4 = Math.round((loneDrivingPolicyRate / 100) * 3);
-  const s5 = Math.round((breakdownProcedureRate / 100) * 4);
-  const s6 = Math.round((childConsentRate / 100) * 3);
-  const s7 = Math.round((routePlanningRate / 100) * 3);
+  const s1 = Math.round(((driverChecksRate ?? 0) / 100) * 4);
+  const s2 = Math.round(((insuranceVerifiedRate ?? 0) / 100) * 4);
+  const s3 = Math.round(((riskAssessmentProtocolRate ?? 0) / 100) * 4);
+  const s4 = Math.round(((loneDrivingPolicyRate ?? 0) / 100) * 3);
+  const s5 = Math.round(((breakdownProcedureRate ?? 0) / 100) * 4);
+  const s6 = Math.round(((childConsentRate ?? 0) / 100) * 3);
+  const s7 = Math.round(((routePlanningRate ?? 0) / 100) * 3);
 
   const travelPolicyScore = clamp(s1 + s2 + s3 + s4 + s5 + s6 + s7, 0, 25);
 
@@ -456,12 +479,12 @@ export function evaluateStaffTravelReadiness(
   if (staff.length === 0) {
     return {
       totalStaff: 0,
-      drivingAssessmentRate: 0,
-      childTransportSafetyRate: 0,
-      firstAidTrainingRate: 0,
-      riskAssessmentRate: 0,
-      breakdownProcedureRate: 0,
-      childComfortAwarenessRate: 0,
+      drivingAssessmentRate: null,
+      childTransportSafetyRate: null,
+      firstAidTrainingRate: null,
+      riskAssessmentRate: null,
+      breakdownProcedureRate: null,
+      childComfortAwarenessRate: null,
       staffTravelReadinessScore: 0,
     };
   }
@@ -469,31 +492,31 @@ export function evaluateStaffTravelReadiness(
   const total = staff.length;
 
   const drivingAssessment = staff.filter((s) => s.drivingAssessment).length;
-  const drivingAssessmentRate = pct(drivingAssessment, total);
+  const drivingAssessmentRate = rate(drivingAssessment, total);
 
   const childTransportSafety = staff.filter((s) => s.childTransportSafety).length;
-  const childTransportSafetyRate = pct(childTransportSafety, total);
+  const childTransportSafetyRate = rate(childTransportSafety, total);
 
   const firstAidTraining = staff.filter((s) => s.firstAidTraining).length;
-  const firstAidTrainingRate = pct(firstAidTraining, total);
+  const firstAidTrainingRate = rate(firstAidTraining, total);
 
   const riskAssessment = staff.filter((s) => s.riskAssessment).length;
-  const riskAssessmentRate = pct(riskAssessment, total);
+  const riskAssessmentRate = rate(riskAssessment, total);
 
   const breakdownProcedure = staff.filter((s) => s.breakdownProcedure).length;
-  const breakdownProcedureRate = pct(breakdownProcedure, total);
+  const breakdownProcedureRate = rate(breakdownProcedure, total);
 
   const childComfortAwareness = staff.filter((s) => s.childComfortAwareness).length;
-  const childComfortAwarenessRate = pct(childComfortAwareness, total);
+  const childComfortAwarenessRate = rate(childComfortAwareness, total);
 
   // Weighted scoring: drivingAssessment=6, childTransportSafety=5, firstAidTraining=5,
   // riskAssessment=4, breakdownProcedure=3, childComfortAwareness=2 (total max = 25)
-  const s1 = Math.round((drivingAssessmentRate / 100) * 6);
-  const s2 = Math.round((childTransportSafetyRate / 100) * 5);
-  const s3 = Math.round((firstAidTrainingRate / 100) * 5);
-  const s4 = Math.round((riskAssessmentRate / 100) * 4);
-  const s5 = Math.round((breakdownProcedureRate / 100) * 3);
-  const s6 = Math.round((childComfortAwarenessRate / 100) * 2);
+  const s1 = Math.round(((drivingAssessmentRate ?? 0) / 100) * 6);
+  const s2 = Math.round(((childTransportSafetyRate ?? 0) / 100) * 5);
+  const s3 = Math.round(((firstAidTrainingRate ?? 0) / 100) * 5);
+  const s4 = Math.round(((riskAssessmentRate ?? 0) / 100) * 4);
+  const s5 = Math.round(((breakdownProcedureRate ?? 0) / 100) * 3);
+  const s6 = Math.round(((childComfortAwarenessRate ?? 0) / 100) * 2);
 
   const staffTravelReadinessScore = clamp(s1 + s2 + s3 + s4 + s5 + s6, 0, 25);
 
@@ -531,23 +554,23 @@ export function buildChildTravelProfiles(
     const travelTypes = Array.from(new Set(childRecords.map((r) => r.travelType)));
 
     const onTime = childRecords.filter((r) => r.journeyOnTime).length;
-    const onTimeRate = pct(onTime, total);
+    const onTimeRate = rate(onTime, total);
 
     const riskAssessed = childRecords.filter((r) => r.riskAssessmentCompleted).length;
-    const riskAssessmentRate = pct(riskAssessed, total);
+    const riskAssessmentRate = rate(riskAssessed, total);
 
     const seatbelt = childRecords.filter((r) => r.seatbeltUsed).length;
-    const seatbeltRate = pct(seatbelt, total);
+    const seatbeltRate = rate(seatbelt, total);
 
     const comfortable = childRecords.filter((r) => r.childComfortable).length;
-    const comfortRate = pct(comfortable, total);
+    const comfortRate = rate(comfortable, total);
 
     // Score 0-10: on-time (0-3), risk assessment (0-3), seatbelt (0-2), comfort (0-2)
     let travelScore = 0;
-    travelScore += Math.round((onTimeRate / 100) * 3);
-    travelScore += Math.round((riskAssessmentRate / 100) * 3);
-    travelScore += Math.round((seatbeltRate / 100) * 2);
-    travelScore += Math.round((comfortRate / 100) * 2);
+    travelScore += Math.round(((onTimeRate ?? 0) / 100) * 3);
+    travelScore += Math.round(((riskAssessmentRate ?? 0) / 100) * 3);
+    travelScore += Math.round(((seatbeltRate ?? 0) / 100) * 2);
+    travelScore += Math.round(((comfortRate ?? 0) / 100) * 2);
     travelScore = clamp(travelScore, 0, 10);
 
     profiles.push({
@@ -628,63 +651,63 @@ export function generateTransportTravelArrangementsIntelligence(
 
   if (journeyEval.totalJourneys === 0)
     areasForImprovement.push("No travel records found — all journeys must be documented");
-  if (journeyEval.onTimeRate < 100 && journeyEval.totalJourneys > 0)
+  if (below(journeyEval.onTimeRate, 100) && journeyEval.totalJourneys > 0)
     areasForImprovement.push("Not all journeys completed on time — punctuality affects children's schedules and wellbeing");
-  if (journeyEval.riskAssessmentRate < 100 && journeyEval.totalJourneys > 0)
+  if (below(journeyEval.riskAssessmentRate, 100) && journeyEval.totalJourneys > 0)
     areasForImprovement.push("Risk assessments not completed for all journeys — this is a safeguarding concern");
-  if (journeyEval.seatbeltRate < 100 && journeyEval.totalJourneys > 0)
+  if (below(journeyEval.seatbeltRate, 100) && journeyEval.totalJourneys > 0)
     areasForImprovement.push("Seatbelt use not confirmed on all journeys — safety compliance must improve");
-  if (journeyEval.childComfortableRate < 100 && journeyEval.totalJourneys > 0)
+  if (below(journeyEval.childComfortableRate, 100) && journeyEval.totalJourneys > 0)
     areasForImprovement.push("Not all children reported as comfortable during travel — review transport arrangements");
   if (vehicleEval.totalChecks === 0)
     areasForImprovement.push("No vehicle checks recorded — regular vehicle inspections are required");
-  if (vehicleEval.motCurrentRate < 100 && vehicleEval.totalChecks > 0)
+  if (below(vehicleEval.motCurrentRate, 100) && vehicleEval.totalChecks > 0)
     areasForImprovement.push("Not all vehicles have current MOT — legal compliance issue");
-  if (vehicleEval.insuranceCurrentRate < 100 && vehicleEval.totalChecks > 0)
+  if (below(vehicleEval.insuranceCurrentRate, 100) && vehicleEval.totalChecks > 0)
     areasForImprovement.push("Not all vehicles have current insurance — must be resolved immediately");
-  if (vehicleEval.roadworthyRate < 100 && vehicleEval.totalChecks > 0)
+  if (below(vehicleEval.roadworthyRate, 100) && vehicleEval.totalChecks > 0)
     areasForImprovement.push("Not all vehicles confirmed roadworthy — unsafe vehicles must not transport children");
   if (policyEval.totalPolicies === 0)
     areasForImprovement.push("No travel policies on record — comprehensive transport policy required");
-  if (policyEval.childConsentRate < 100 && policyEval.totalPolicies > 0)
+  if (below(policyEval.childConsentRate, 100) && policyEval.totalPolicies > 0)
     areasForImprovement.push("Child consent not obtained for all travel arrangements — children's views must be sought");
-  if (policyEval.riskAssessmentProtocolRate < 100 && policyEval.totalPolicies > 0)
+  if (below(policyEval.riskAssessmentProtocolRate, 100) && policyEval.totalPolicies > 0)
     areasForImprovement.push("Risk assessment protocol not fully implemented across all policies");
   if (staffEval.totalStaff === 0)
     areasForImprovement.push("No staff travel training records — all transport staff must have documented training");
-  if (staffEval.drivingAssessmentRate < 100 && staffEval.totalStaff > 0)
+  if (below(staffEval.drivingAssessmentRate, 100) && staffEval.totalStaff > 0)
     areasForImprovement.push("Not all staff have completed driving assessments — untrained staff must not drive children");
-  if (staffEval.childTransportSafetyRate < 100 && staffEval.totalStaff > 0)
+  if (below(staffEval.childTransportSafetyRate, 100) && staffEval.totalStaff > 0)
     areasForImprovement.push("Not all staff trained in child transport safety");
-  if (staffEval.firstAidTrainingRate < 100 && staffEval.totalStaff > 0)
+  if (below(staffEval.firstAidTrainingRate, 100) && staffEval.totalStaff > 0)
     areasForImprovement.push("Not all transport staff are first aid trained");
 
   // ── Actions ────────────────────────────────────────────────────────────
   const actions: string[] = [];
 
-  if (journeyEval.riskAssessmentRate < 100 && journeyEval.totalJourneys > 0)
+  if (below(journeyEval.riskAssessmentRate, 100) && journeyEval.totalJourneys > 0)
     actions.push("Ensure risk assessments are completed before every journey without exception");
-  if (journeyEval.seatbeltRate < 100 && journeyEval.totalJourneys > 0)
+  if (below(journeyEval.seatbeltRate, 100) && journeyEval.totalJourneys > 0)
     actions.push("Implement mandatory seatbelt checks for all journeys and record compliance");
-  if (journeyEval.onTimeRate < 80 && journeyEval.totalJourneys > 0)
+  if (below(journeyEval.onTimeRate, 80) && journeyEval.totalJourneys > 0)
     actions.push("Review journey planning and scheduling to improve punctuality");
-  if (journeyEval.childComfortableRate < 100 && journeyEval.totalJourneys > 0)
+  if (below(journeyEval.childComfortableRate, 100) && journeyEval.totalJourneys > 0)
     actions.push("Consult with children about their travel comfort and make adjustments");
-  if (vehicleEval.motCurrentRate < 100 && vehicleEval.totalChecks > 0)
+  if (below(vehicleEval.motCurrentRate, 100) && vehicleEval.totalChecks > 0)
     actions.push("Arrange MOT tests for vehicles with expired certificates immediately");
-  if (vehicleEval.insuranceCurrentRate < 100 && vehicleEval.totalChecks > 0)
+  if (below(vehicleEval.insuranceCurrentRate, 100) && vehicleEval.totalChecks > 0)
     actions.push("Renew expired vehicle insurance — uninsured vehicles must not be used");
-  if (vehicleEval.roadworthyRate < 100 && vehicleEval.totalChecks > 0)
+  if (below(vehicleEval.roadworthyRate, 100) && vehicleEval.totalChecks > 0)
     actions.push("Remove non-roadworthy vehicles from service and arrange repairs");
   if (policyEval.totalPolicies === 0)
     actions.push("Develop and implement a comprehensive transport and travel policy");
-  if (policyEval.childConsentRate < 100 && policyEval.totalPolicies > 0)
+  if (below(policyEval.childConsentRate, 100) && policyEval.totalPolicies > 0)
     actions.push("Obtain child consent for all travel arrangements as part of care planning");
-  if (staffEval.drivingAssessmentRate < 100 && staffEval.totalStaff > 0)
+  if (below(staffEval.drivingAssessmentRate, 100) && staffEval.totalStaff > 0)
     actions.push("Schedule driving assessments for all staff who transport children");
-  if (staffEval.childTransportSafetyRate < 100 && staffEval.totalStaff > 0)
+  if (below(staffEval.childTransportSafetyRate, 100) && staffEval.totalStaff > 0)
     actions.push("Arrange child transport safety training for untrained staff");
-  if (staffEval.firstAidTrainingRate < 100 && staffEval.totalStaff > 0)
+  if (below(staffEval.firstAidTrainingRate, 100) && staffEval.totalStaff > 0)
     actions.push("Arrange first aid training for transport staff who have not completed it");
   if (vehicleEval.totalChecks === 0)
     actions.push("Establish a vehicle inspection schedule and record all checks");

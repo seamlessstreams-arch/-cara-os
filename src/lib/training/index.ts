@@ -5,7 +5,6 @@ export {
   evaluateTrainingPolicy,
   evaluateStaffTrainingReadiness,
   buildStaffTrainingProfiles,
-  pct,
   getRating,
   getTrainingCategoryLabel,
   getTrainingOutcomeLabel,

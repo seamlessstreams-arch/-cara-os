@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct, getRating,
+  getRating,
   getVisitorTypeLabel, getVisitPurposeLabel, getVisitOutcomeLabel,
   getPartnershipRatingLabel, getActionStatusLabel, getRatingLabel,
   evaluateVisitQuality, evaluatePartnershipEffectiveness,
@@ -12,14 +12,6 @@ import type {
 } from "../visitor-partnership-quality-engine";
 
 // ── Helpers ──
-
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => { expect(pct(5, 0)).toBe(0); });
-  it("calculates correctly", () => { expect(pct(3, 4)).toBe(75); });
-  it("rounds", () => { expect(pct(1, 3)).toBe(33); });
-  it("returns 100 for equal", () => { expect(pct(10, 10)).toBe(100); });
-  it("returns 0 for zero num", () => { expect(pct(0, 5)).toBe(0); });
-});
 
 describe("getRating", () => {
   it("outstanding >= 80", () => { expect(getRating(80)).toBe("outstanding"); });

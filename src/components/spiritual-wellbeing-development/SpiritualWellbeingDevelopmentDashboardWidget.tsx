@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { SpiritualWellbeingDevelopmentIntelligence } from "@/lib/spiritual-wellbeing-development";
+import { formatRate } from "@/lib/metrics/rate";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -108,11 +109,11 @@ export function SpiritualWellbeingDevelopmentDashboardWidget() {
           <div className="text-xs text-gray-500 mt-1">Activities</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.spiritualQuality.engagementRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.spiritualQuality.engagementRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Engagement</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.spiritualQuality.childChoiceRate}%</div>
+          <div className="text-2xl font-bold text-gray-900">{formatRate(data.spiritualQuality.childChoiceRate)}</div>
           <div className="text-xs text-gray-500 mt-1">Child Choice</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">

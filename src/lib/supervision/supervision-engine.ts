@@ -1,3 +1,4 @@
+import { meets, rate } from "@/lib/metrics/rate";
 /* ──────────────────────────────────────────────────────────────
    Supervision Intelligence Engine
 
@@ -163,11 +164,6 @@ export interface SupervisionIntelligence {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -223,10 +219,10 @@ export function evaluateSupervisionQuality(
   if (sessions.length === 0) {
     return {
       overallScore: 0,
-      contentRate: 0,
-      reflectiveRate: 0,
-      safeguardingRate: 0,
-      wellbeingRate: 0,
+      contentRate: null,
+      reflectiveRate: null,
+      safeguardingRate: null,
+      wellbeingRate: null,
       contentWeight: 0,
       reflectiveWeight: 0,
       safeguardingWeight: 0,
@@ -239,22 +235,22 @@ export function evaluateSupervisionQuality(
   const contentCount = sessions.filter(
     (s) => s.contentCoverage === "comprehensive" || s.contentCoverage === "adequate",
   ).length;
-  const contentRate = pct(contentCount, total);
+  const contentRate = rate(contentCount, total);
 
   const reflectiveCount = sessions.filter((s) => s.reflectivePracticeIncluded).length;
-  const reflectiveRate = pct(reflectiveCount, total);
+  const reflectiveRate = rate(reflectiveCount, total);
 
   const safeguardingCount = sessions.filter((s) => s.safeguardingDiscussed).length;
-  const safeguardingRate = pct(safeguardingCount, total);
+  const safeguardingRate = rate(safeguardingCount, total);
 
   const wellbeingCount = sessions.filter((s) => s.wellbeingChecked).length;
-  const wellbeingRate = pct(wellbeingCount, total);
+  const wellbeingRate = rate(wellbeingCount, total);
 
   // Weights: content 7, reflective 6, safeguarding 6, wellbeing 6 = 25
-  const contentWeight = Math.round((contentRate / 100) * 7 * 10) / 10;
-  const reflectiveWeight = Math.round((reflectiveRate / 100) * 6 * 10) / 10;
-  const safeguardingWeight = Math.round((safeguardingRate / 100) * 6 * 10) / 10;
-  const wellbeingWeight = Math.round((wellbeingRate / 100) * 6 * 10) / 10;
+  const contentWeight = Math.round(((contentRate ?? 0) / 100) * 7 * 10) / 10;
+  const reflectiveWeight = Math.round(((reflectiveRate ?? 0) / 100) * 6 * 10) / 10;
+  const safeguardingWeight = Math.round(((safeguardingRate ?? 0) / 100) * 6 * 10) / 10;
+  const wellbeingWeight = Math.round(((wellbeingRate ?? 0) / 100) * 6 * 10) / 10;
 
   const overallScore = Math.round(
     (contentWeight + reflectiveWeight + safeguardingWeight + wellbeingWeight) * 10,
@@ -281,9 +277,9 @@ export function evaluateSupervisionCompliance(
   if (sessions.length === 0) {
     return {
       overallScore: 0,
-      documentedRate: 0,
-      withinTimescaleRate: 0,
-      actionsReviewedRate: 0,
+      documentedRate: null,
+      withinTimescaleRate: null,
+      actionsReviewedRate: null,
       typeDiversityRatio: 0,
       documentedWeight: 0,
       withinTimescaleWeight: 0,
@@ -295,21 +291,21 @@ export function evaluateSupervisionCompliance(
   const total = sessions.length;
 
   const documentedCount = sessions.filter((s) => s.documentedProperly).length;
-  const documentedRate = pct(documentedCount, total);
+  const documentedRate = rate(documentedCount, total);
 
   const timescaleCount = sessions.filter((s) => s.withinTimescale).length;
-  const withinTimescaleRate = pct(timescaleCount, total);
+  const withinTimescaleRate = rate(timescaleCount, total);
 
   const actionsCount = sessions.filter((s) => s.actionsFromPrevious).length;
-  const actionsReviewedRate = pct(actionsCount, total);
+  const actionsReviewedRate = rate(actionsCount, total);
 
   const uniqueTypes = new Set(sessions.map((s) => s.supervisionType)).size;
   const typeDiversityRatio = Math.round((uniqueTypes / 8) * 100) / 100;
 
   // Weights: documented 8, timescale 7, actions 5, diversity 5 = 25
-  const documentedWeight = Math.round((documentedRate / 100) * 8 * 10) / 10;
-  const withinTimescaleWeight = Math.round((withinTimescaleRate / 100) * 7 * 10) / 10;
-  const actionsReviewedWeight = Math.round((actionsReviewedRate / 100) * 5 * 10) / 10;
+  const documentedWeight = Math.round(((documentedRate ?? 0) / 100) * 8 * 10) / 10;
+  const withinTimescaleWeight = Math.round(((withinTimescaleRate ?? 0) / 100) * 7 * 10) / 10;
+  const actionsReviewedWeight = Math.round(((actionsReviewedRate ?? 0) / 100) * 5 * 10) / 10;
   const typeDiversityWeight = Math.round(typeDiversityRatio * 5 * 10) / 10;
 
   const overallScore = Math.round(
@@ -377,32 +373,32 @@ export function evaluateStaffSupervisionReadiness(
   if (training.length === 0) {
     return {
       overallScore: 0,
-      supervisorySkillsRate: 0,
-      reflectivePracticeRate: 0,
-      safeguardingKnowledgeRate: 0,
-      wellbeingSupportRate: 0,
-      documentationCompetencyRate: 0,
-      feedbackDeliveryRate: 0,
+      supervisorySkillsRate: null,
+      reflectivePracticeRate: null,
+      safeguardingKnowledgeRate: null,
+      wellbeingSupportRate: null,
+      documentationCompetencyRate: null,
+      feedbackDeliveryRate: null,
     };
   }
 
   const total = training.length;
 
-  const supervisorySkillsRate = pct(training.filter((t) => t.supervisorySkills).length, total);
-  const reflectivePracticeRate = pct(training.filter((t) => t.reflectivePractice).length, total);
-  const safeguardingKnowledgeRate = pct(training.filter((t) => t.safeguardingKnowledge).length, total);
-  const wellbeingSupportRate = pct(training.filter((t) => t.wellbeingSupport).length, total);
-  const documentationCompetencyRate = pct(training.filter((t) => t.documentationCompetency).length, total);
-  const feedbackDeliveryRate = pct(training.filter((t) => t.feedbackDelivery).length, total);
+  const supervisorySkillsRate = rate(training.filter((t) => t.supervisorySkills).length, total);
+  const reflectivePracticeRate = rate(training.filter((t) => t.reflectivePractice).length, total);
+  const safeguardingKnowledgeRate = rate(training.filter((t) => t.safeguardingKnowledge).length, total);
+  const wellbeingSupportRate = rate(training.filter((t) => t.wellbeingSupport).length, total);
+  const documentationCompetencyRate = rate(training.filter((t) => t.documentationCompetency).length, total);
+  const feedbackDeliveryRate = rate(training.filter((t) => t.feedbackDelivery).length, total);
 
   // Weights: supervisory 6, reflective 5, safeguarding 5, wellbeing 4, documentation 3, feedback 2 = 25
   const score =
-    Math.round((supervisorySkillsRate / 100) * 6 * 10) / 10 +
-    Math.round((reflectivePracticeRate / 100) * 5 * 10) / 10 +
-    Math.round((safeguardingKnowledgeRate / 100) * 5 * 10) / 10 +
-    Math.round((wellbeingSupportRate / 100) * 4 * 10) / 10 +
-    Math.round((documentationCompetencyRate / 100) * 3 * 10) / 10 +
-    Math.round((feedbackDeliveryRate / 100) * 2 * 10) / 10;
+    Math.round(((supervisorySkillsRate ?? 0) / 100) * 6 * 10) / 10 +
+    Math.round(((reflectivePracticeRate ?? 0) / 100) * 5 * 10) / 10 +
+    Math.round(((safeguardingKnowledgeRate ?? 0) / 100) * 5 * 10) / 10 +
+    Math.round(((wellbeingSupportRate ?? 0) / 100) * 4 * 10) / 10 +
+    Math.round(((documentationCompetencyRate ?? 0) / 100) * 3 * 10) / 10 +
+    Math.round(((feedbackDeliveryRate ?? 0) / 100) * 2 * 10) / 10;
 
   return {
     overallScore: Math.round(score * 10) / 10,
@@ -443,19 +439,19 @@ export function buildStaffSupervisionProfiles(
     const contentCount = staffSessions.filter(
       (s) => s.contentCoverage === "comprehensive" || s.contentCoverage === "adequate",
     ).length;
-    const contentRate = pct(contentCount, sessionCount);
+    const contentRate = rate(contentCount, sessionCount);
     let contentScore = 0;
-    if (contentRate >= 80) contentScore = 3;
-    else if (contentRate >= 60) contentScore = 2;
-    else if (contentRate >= 40) contentScore = 1;
+    if (meets(contentRate, 80)) contentScore = 3;
+    else if (meets(contentRate, 60)) contentScore = 2;
+    else if (meets(contentRate, 40)) contentScore = 1;
 
     // reflectiveRate: same thresholds
     const reflectiveCount = staffSessions.filter((s) => s.reflectivePracticeIncluded).length;
-    const reflectiveRate = pct(reflectiveCount, sessionCount);
+    const reflectiveRate = rate(reflectiveCount, sessionCount);
     let reflectiveScore = 0;
-    if (reflectiveRate >= 80) reflectiveScore = 3;
-    else if (reflectiveRate >= 60) reflectiveScore = 2;
-    else if (reflectiveRate >= 40) reflectiveScore = 1;
+    if (meets(reflectiveRate, 80)) reflectiveScore = 3;
+    else if (meets(reflectiveRate, 60)) reflectiveScore = 2;
+    else if (meets(reflectiveRate, 40)) reflectiveScore = 1;
 
     // diversity: unique types >=4 -> 2, >=2 -> 1, else 0
     const uniqueTypes = new Set(staffSessions.map((s) => s.supervisionType)).size;

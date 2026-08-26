@@ -12,7 +12,7 @@
 //             KCSIE 2024, UNCRC Article 33, Drug Strategy 2021
 // ==============================================================================
 
-import { rateOf, meets, below } from "@/lib/metrics/rate";
+import { above, below, meets, rate, rateOf } from "@/lib/metrics/rate";
 
 // -- Type unions ---------------------------------------------------------------
 
@@ -209,30 +209,43 @@ export interface RiskScreeningResult {
 export interface EducationPreventionResult {
   overallScore: number;
   totalSessions: number;
-  highEngagementRate: number;
-  resourcesProvidedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  highEngagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  resourcesProvidedRate: number | null;
   sessionTypeVariety: number;
-  childrenReachedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childrenReachedRate: number | null;
 }
 
 export interface InterventionSupportResult {
   overallScore: number;
   totalInterventions: number;
-  engagedRate: number;
-  recoveryPlanRate: number;
-  followUpRate: number;
-  parentNotifiedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  engagedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  recoveryPlanRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  followUpRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  parentNotifiedRate: number | null;
 }
 
 export interface StaffSubstanceReadinessResult {
   overallScore: number;
   totalStaff: number;
-  substanceAwarenessRate: number;
-  riskScreeningRate: number;
-  harmReductionRate: number;
-  motivationalRate: number;
-  referralPathwayRate: number;
-  emergencyResponseRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  substanceAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskScreeningRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  harmReductionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  motivationalRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  referralPathwayRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  emergencyResponseRate: number | null;
 }
 
 export interface ChildSubstanceSummary {
@@ -264,11 +277,6 @@ export interface SubstanceMisuseAwarenessIntelligence {
 }
 
 // -- Helpers -------------------------------------------------------------------
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -314,17 +322,17 @@ export function evaluateRiskScreening(
   maxScore += 7;
 
   const reviewCurrent = profiles.filter((p) => p.reviewCurrent).length;
-  const reviewCurrentRate = pct(reviewCurrent, profiles.length);
+  const reviewCurrentRate = rate(reviewCurrent, profiles.length);
   maxScore += 6;
-  if (reviewCurrentRate >= 90) score += 6;
-  else if (reviewCurrentRate >= 70) score += 4;
-  else if (reviewCurrentRate >= 50) score += 3;
-  else if (reviewCurrentRate > 0) score += 1;
+  if (meets(reviewCurrentRate, 90)) score += 6;
+  else if (meets(reviewCurrentRate, 70)) score += 4;
+  else if (meets(reviewCurrentRate, 50)) score += 3;
+  else if (above(reviewCurrentRate, 0)) score += 1;
 
   const noConcerns = profiles.filter(
     (p) => p.screeningOutcome === "no_concerns",
   ).length;
-  const noConcernsRate = pct(noConcerns, profiles.length);
+  const noConcernsRate = rate(noConcerns, profiles.length);
 
   // Harm reduction for those with concerns
   const withConcerns = profiles.filter(
@@ -389,10 +397,10 @@ export function evaluateEducationPrevention(
     return {
       overallScore: 0,
       totalSessions: 0,
-      highEngagementRate: 0,
-      resourcesProvidedRate: 0,
+      highEngagementRate: null,
+      resourcesProvidedRate: null,
       sessionTypeVariety: 0,
-      childrenReachedRate: 0,
+      childrenReachedRate: null,
     };
   }
 
@@ -401,20 +409,20 @@ export function evaluateEducationPrevention(
   const highEngagement = sessions.filter(
     (s) => s.childEngagement === "high",
   ).length;
-  const highEngagementRate = pct(highEngagement, sessions.length);
-  if (highEngagementRate >= 80) score += 7;
-  else if (highEngagementRate >= 60) score += 5;
-  else if (highEngagementRate >= 40) score += 3;
-  else if (highEngagementRate > 0) score += 1;
+  const highEngagementRate = rate(highEngagement, sessions.length);
+  if (meets(highEngagementRate, 80)) score += 7;
+  else if (meets(highEngagementRate, 60)) score += 5;
+  else if (meets(highEngagementRate, 40)) score += 3;
+  else if (above(highEngagementRate, 0)) score += 1;
 
   const resourcesProvided = sessions.filter(
     (s) => s.resourcesProvided,
   ).length;
-  const resourcesProvidedRate = pct(resourcesProvided, sessions.length);
-  if (resourcesProvidedRate >= 90) score += 6;
-  else if (resourcesProvidedRate >= 70) score += 4;
-  else if (resourcesProvidedRate >= 50) score += 3;
-  else if (resourcesProvidedRate > 0) score += 1;
+  const resourcesProvidedRate = rate(resourcesProvided, sessions.length);
+  if (meets(resourcesProvidedRate, 90)) score += 6;
+  else if (meets(resourcesProvidedRate, 70)) score += 4;
+  else if (meets(resourcesProvidedRate, 50)) score += 3;
+  else if (above(resourcesProvidedRate, 0)) score += 1;
 
   // Session type variety
   const uniqueTypes = new Set(sessions.map((s) => s.sessionType));
@@ -427,11 +435,11 @@ export function evaluateEducationPrevention(
   // Children reached
   const uniqueChildren = new Set(sessions.flatMap((s) => s.childrenAttended));
   const childrenReachedRate =
-    totalChildren > 0 ? pct(uniqueChildren.size, totalChildren) : 0;
-  if (childrenReachedRate >= 90) score += 6;
-  else if (childrenReachedRate >= 70) score += 4;
-  else if (childrenReachedRate >= 50) score += 3;
-  else if (childrenReachedRate > 0) score += 1;
+    totalChildren > 0 ? rate(uniqueChildren.size, totalChildren) : 0;
+  if (meets(childrenReachedRate, 90)) score += 6;
+  else if (meets(childrenReachedRate, 70)) score += 4;
+  else if (meets(childrenReachedRate, 50)) score += 3;
+  else if (above(childrenReachedRate, 0)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -459,10 +467,10 @@ export function evaluateInterventionSupport(
     return {
       overallScore: 25,
       totalInterventions: 0,
-      engagedRate: 0,
-      recoveryPlanRate: 0,
-      followUpRate: 0,
-      parentNotifiedRate: 0,
+      engagedRate: null,
+      recoveryPlanRate: null,
+      followUpRate: null,
+      parentNotifiedRate: null,
     };
   }
 
@@ -474,38 +482,38 @@ export function evaluateInterventionSupport(
       i.interventionOutcome === "completed" ||
       i.interventionOutcome === "ongoing",
   ).length;
-  const engagedRate = pct(engaged, interventions.length);
-  if (engagedRate >= 90) score += 7;
-  else if (engagedRate >= 70) score += 5;
-  else if (engagedRate >= 50) score += 3;
-  else if (engagedRate > 0) score += 1;
+  const engagedRate = rate(engaged, interventions.length);
+  if (meets(engagedRate, 90)) score += 7;
+  else if (meets(engagedRate, 70)) score += 5;
+  else if (meets(engagedRate, 50)) score += 3;
+  else if (above(engagedRate, 0)) score += 1;
 
   const recoveryPlan = interventions.filter(
     (i) => i.recoveryPlanInPlace,
   ).length;
-  const recoveryPlanRate = pct(recoveryPlan, interventions.length);
-  if (recoveryPlanRate >= 90) score += 7;
-  else if (recoveryPlanRate >= 70) score += 5;
-  else if (recoveryPlanRate >= 50) score += 3;
-  else if (recoveryPlanRate > 0) score += 1;
+  const recoveryPlanRate = rate(recoveryPlan, interventions.length);
+  if (meets(recoveryPlanRate, 90)) score += 7;
+  else if (meets(recoveryPlanRate, 70)) score += 5;
+  else if (meets(recoveryPlanRate, 50)) score += 3;
+  else if (above(recoveryPlanRate, 0)) score += 1;
 
   const followUp = interventions.filter(
     (i) => i.followUpScheduled,
   ).length;
-  const followUpRate = pct(followUp, interventions.length);
-  if (followUpRate >= 90) score += 6;
-  else if (followUpRate >= 70) score += 4;
-  else if (followUpRate >= 50) score += 3;
-  else if (followUpRate > 0) score += 1;
+  const followUpRate = rate(followUp, interventions.length);
+  if (meets(followUpRate, 90)) score += 6;
+  else if (meets(followUpRate, 70)) score += 4;
+  else if (meets(followUpRate, 50)) score += 3;
+  else if (above(followUpRate, 0)) score += 1;
 
   const parentNotified = interventions.filter(
     (i) => i.parentNotified,
   ).length;
-  const parentNotifiedRate = pct(parentNotified, interventions.length);
-  if (parentNotifiedRate >= 90) score += 5;
-  else if (parentNotifiedRate >= 70) score += 3;
-  else if (parentNotifiedRate >= 50) score += 2;
-  else if (parentNotifiedRate > 0) score += 1;
+  const parentNotifiedRate = rate(parentNotified, interventions.length);
+  if (meets(parentNotifiedRate, 90)) score += 5;
+  else if (meets(parentNotifiedRate, 70)) score += 3;
+  else if (meets(parentNotifiedRate, 50)) score += 2;
+  else if (above(parentNotifiedRate, 0)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -535,63 +543,63 @@ export function evaluateStaffSubstanceReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      substanceAwarenessRate: 0,
-      riskScreeningRate: 0,
-      harmReductionRate: 0,
-      motivationalRate: 0,
-      referralPathwayRate: 0,
-      emergencyResponseRate: 0,
+      substanceAwarenessRate: null,
+      riskScreeningRate: null,
+      harmReductionRate: null,
+      motivationalRate: null,
+      referralPathwayRate: null,
+      emergencyResponseRate: null,
     };
   }
 
   let score = 0;
 
   const awareness = training.filter((t) => t.substanceAwareness).length;
-  const substanceAwarenessRate = pct(awareness, training.length);
-  if (substanceAwarenessRate >= 90) score += 6;
-  else if (substanceAwarenessRate >= 70) score += 4;
-  else if (substanceAwarenessRate >= 50) score += 3;
-  else if (substanceAwarenessRate > 0) score += 1;
+  const substanceAwarenessRate = rate(awareness, training.length);
+  if (meets(substanceAwarenessRate, 90)) score += 6;
+  else if (meets(substanceAwarenessRate, 70)) score += 4;
+  else if (meets(substanceAwarenessRate, 50)) score += 3;
+  else if (above(substanceAwarenessRate, 0)) score += 1;
 
   const screening = training.filter((t) => t.riskScreeningTrained).length;
-  const riskScreeningRate = pct(screening, training.length);
-  if (riskScreeningRate >= 90) score += 5;
-  else if (riskScreeningRate >= 70) score += 3;
-  else if (riskScreeningRate >= 50) score += 2;
-  else if (riskScreeningRate > 0) score += 1;
+  const riskScreeningRate = rate(screening, training.length);
+  if (meets(riskScreeningRate, 90)) score += 5;
+  else if (meets(riskScreeningRate, 70)) score += 3;
+  else if (meets(riskScreeningRate, 50)) score += 2;
+  else if (above(riskScreeningRate, 0)) score += 1;
 
   const harmReduction = training.filter(
     (t) => t.harmReductionTrained,
   ).length;
-  const harmReductionRate = pct(harmReduction, training.length);
-  if (harmReductionRate >= 90) score += 5;
-  else if (harmReductionRate >= 70) score += 3;
-  else if (harmReductionRate >= 50) score += 2;
-  else if (harmReductionRate > 0) score += 1;
+  const harmReductionRate = rate(harmReduction, training.length);
+  if (meets(harmReductionRate, 90)) score += 5;
+  else if (meets(harmReductionRate, 70)) score += 3;
+  else if (meets(harmReductionRate, 50)) score += 2;
+  else if (above(harmReductionRate, 0)) score += 1;
 
   const motivational = training.filter(
     (t) => t.motivationalInterviewing,
   ).length;
-  const motivationalRate = pct(motivational, training.length);
-  if (motivationalRate >= 90) score += 4;
-  else if (motivationalRate >= 70) score += 3;
-  else if (motivationalRate >= 50) score += 2;
-  else if (motivationalRate > 0) score += 1;
+  const motivationalRate = rate(motivational, training.length);
+  if (meets(motivationalRate, 90)) score += 4;
+  else if (meets(motivationalRate, 70)) score += 3;
+  else if (meets(motivationalRate, 50)) score += 2;
+  else if (above(motivationalRate, 0)) score += 1;
 
   const referral = training.filter(
     (t) => t.referralPathwayKnowledge,
   ).length;
-  const referralPathwayRate = pct(referral, training.length);
-  if (referralPathwayRate >= 90) score += 3;
-  else if (referralPathwayRate >= 70) score += 2;
-  else if (referralPathwayRate >= 50) score += 1;
+  const referralPathwayRate = rate(referral, training.length);
+  if (meets(referralPathwayRate, 90)) score += 3;
+  else if (meets(referralPathwayRate, 70)) score += 2;
+  else if (meets(referralPathwayRate, 50)) score += 1;
 
   const emergency = training.filter(
     (t) => t.emergencyResponseTrained,
   ).length;
-  const emergencyResponseRate = pct(emergency, training.length);
-  if (emergencyResponseRate >= 90) score += 2;
-  else if (emergencyResponseRate >= 70) score += 1;
+  const emergencyResponseRate = rate(emergency, training.length);
+  if (meets(emergencyResponseRate, 90)) score += 2;
+  else if (meets(emergencyResponseRate, 70)) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
@@ -700,7 +708,7 @@ export function generateSubstanceMisuseAwarenessIntelligence(
       "Substance risk assessments consistently reviewed and kept current",
     );
   }
-  if (educationPrevention.highEngagementRate >= 80 && sessions.length > 0) {
+  if (meets(educationPrevention.highEngagementRate, 80) && sessions.length > 0) {
     strengths.push(
       "High levels of child engagement in substance awareness sessions",
     );
@@ -711,7 +719,7 @@ export function generateSubstanceMisuseAwarenessIntelligence(
     );
   }
   if (
-    interventionSupport.engagedRate >= 80 &&
+    meets(interventionSupport.engagedRate, 80) &&
     interventions.length > 0
   ) {
     strengths.push(
@@ -719,7 +727,7 @@ export function generateSubstanceMisuseAwarenessIntelligence(
     );
   }
   if (
-    staffSubstanceReadiness.substanceAwarenessRate >= 90 &&
+    meets(staffSubstanceReadiness.substanceAwarenessRate, 90) &&
     training.length > 0
   ) {
     strengths.push(
@@ -749,7 +757,7 @@ export function generateSubstanceMisuseAwarenessIntelligence(
     );
   }
   if (
-    educationPrevention.childrenReachedRate < 70 &&
+    below(educationPrevention.childrenReachedRate, 70) &&
     sessions.length > 0
   ) {
     areasForImprovement.push(
@@ -757,7 +765,7 @@ export function generateSubstanceMisuseAwarenessIntelligence(
     );
   }
   if (
-    interventionSupport.recoveryPlanRate < 70 &&
+    below(interventionSupport.recoveryPlanRate, 70) &&
     interventions.length > 0
   ) {
     areasForImprovement.push(
@@ -765,7 +773,7 @@ export function generateSubstanceMisuseAwarenessIntelligence(
     );
   }
   if (
-    staffSubstanceReadiness.harmReductionRate < 70 &&
+    below(staffSubstanceReadiness.harmReductionRate, 70) &&
     training.length > 0
   ) {
     areasForImprovement.push(
@@ -773,7 +781,7 @@ export function generateSubstanceMisuseAwarenessIntelligence(
     );
   }
   if (
-    staffSubstanceReadiness.motivationalRate < 60 &&
+    below(staffSubstanceReadiness.motivationalRate, 60) &&
     training.length > 0
   ) {
     areasForImprovement.push(
@@ -800,7 +808,7 @@ export function generateSubstanceMisuseAwarenessIntelligence(
     );
   }
   if (
-    interventionSupport.engagedRate < 50 &&
+    below(interventionSupport.engagedRate, 50) &&
     interventions.length > 0
   ) {
     actions.push(
@@ -821,7 +829,7 @@ export function generateSubstanceMisuseAwarenessIntelligence(
     );
   }
   if (
-    educationPrevention.resourcesProvidedRate < 50 &&
+    below(educationPrevention.resourcesProvidedRate, 50) &&
     sessions.length > 0
   ) {
     actions.push(

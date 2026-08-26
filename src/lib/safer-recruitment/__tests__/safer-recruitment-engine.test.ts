@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getSaferRecruitmentCategoryLabel,
   getSaferRecruitmentOutcomeLabel,
@@ -89,29 +88,6 @@ function makeFullStaff(): StaffSaferRecruitmentTraining {
 
 // ── pct ────────────────────────────────────────────────────────────────────
 
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 100 for equal values", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for half", () => {
-    expect(pct(1, 2)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-});
-
 // ── getRating ──────────────────────────────────────────────────────────────
 
 describe("getRating", () => {
@@ -173,10 +149,10 @@ describe("evaluateSaferRecruitmentQuality", () => {
     const result = evaluateSaferRecruitmentQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalRecords).toBe(0);
-    expect(result.dbsCheckCompletedRate).toBe(0);
-    expect(result.referencesVerifiedRate).toBe(0);
-    expect(result.interviewConductedRate).toBe(0);
-    expect(result.identityConfirmedRate).toBe(0);
+    expect(result.dbsCheckCompletedRate).toBeNull();
+    expect(result.referencesVerifiedRate).toBeNull();
+    expect(result.interviewConductedRate).toBeNull();
+    expect(result.identityConfirmedRate).toBeNull();
   });
 
   it("returns 25 for perfect records", () => {
@@ -244,9 +220,9 @@ describe("evaluateSaferRecruitmentCompliance", () => {
     const result = evaluateSaferRecruitmentCompliance([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalRecords).toBe(0);
-    expect(result.documentationRate).toBe(0);
-    expect(result.timelyRecordingRate).toBe(0);
-    expect(result.dbsCheckCompletedRate).toBe(0);
+    expect(result.documentationRate).toBeNull();
+    expect(result.timelyRecordingRate).toBeNull();
+    expect(result.dbsCheckCompletedRate).toBeNull();
     expect(result.categoryDiversityRatio).toBe(0);
     expect(result.uniqueCategories).toBe(0);
   });
@@ -386,12 +362,12 @@ describe("evaluateStaffSaferRecruitmentReadiness", () => {
     const result = evaluateStaffSaferRecruitmentReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.safeguardingRecruitmentRate).toBe(0);
-    expect(result.dbsProcessKnowledgeRate).toBe(0);
-    expect(result.interviewTechniquesRate).toBe(0);
-    expect(result.referenceVerificationRate).toBe(0);
-    expect(result.disqualificationAwarenessRate).toBe(0);
-    expect(result.whistleblowingAwarenessRate).toBe(0);
+    expect(result.safeguardingRecruitmentRate).toBeNull();
+    expect(result.dbsProcessKnowledgeRate).toBeNull();
+    expect(result.interviewTechniquesRate).toBeNull();
+    expect(result.referenceVerificationRate).toBeNull();
+    expect(result.disqualificationAwarenessRate).toBeNull();
+    expect(result.whistleblowingAwarenessRate).toBeNull();
   });
 
   it("returns 25 for all-skilled staff", () => {

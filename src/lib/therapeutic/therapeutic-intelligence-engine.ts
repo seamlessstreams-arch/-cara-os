@@ -18,6 +18,7 @@
    ────────────────────────────────────────────────────────────── */
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -127,18 +128,25 @@ export interface StaffTherapeuticTraining {
 export interface TherapeuticQualityResult {
   overallScore: number;
   totalRecords: number;
-  therapeuticGoalAlignedRate: number;
-  voiceOfChildIncludedRate: number;
-  evidenceBasedApproachRate: number;
-  wellbeingImpactRecordedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  therapeuticGoalAlignedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  voiceOfChildIncludedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  evidenceBasedApproachRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  wellbeingImpactRecordedRate: number | null;
 }
 
 export interface TherapeuticComplianceResult {
   overallScore: number;
   totalRecords: number;
-  documentationCompleteRate: number;
-  timelyRecordingRate: number;
-  therapeuticGoalAlignedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationCompleteRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  therapeuticGoalAlignedRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
 }
@@ -157,12 +165,18 @@ export interface TherapeuticPolicyResult {
 export interface StaffTherapeuticReadinessResult {
   overallScore: number;
   totalStaff: number;
-  therapeuticCareKnowledgeRate: number;
-  traumaInformedPracticeRate: number;
-  emotionalRegulationSkillsRate: number;
-  mentalHealthAwarenessRate: number;
-  crisisDeEscalationRate: number;
-  therapeuticRelationshipBuildingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  therapeuticCareKnowledgeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  traumaInformedPracticeRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  emotionalRegulationSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  mentalHealthAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  crisisDeEscalationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  therapeuticRelationshipBuildingRate: number | null;
 }
 
 export interface ChildTherapeuticProfile {
@@ -194,11 +208,6 @@ export interface TherapeuticIntelligence {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -214,19 +223,19 @@ export function evaluateTherapeuticQuality(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, therapeuticGoalAlignedRate: 0, voiceOfChildIncludedRate: 0, evidenceBasedApproachRate: 0, wellbeingImpactRecordedRate: 0 };
+    return { overallScore: 0, totalRecords: 0, therapeuticGoalAlignedRate: null, voiceOfChildIncludedRate: null, evidenceBasedApproachRate: null, wellbeingImpactRecordedRate: null };
   }
 
-  const therapeuticGoalAlignedRate = pct(records.filter((r) => r.therapeuticGoalAligned).length, n);
-  const voiceOfChildIncludedRate = pct(records.filter((r) => r.voiceOfChildIncluded).length, n);
-  const evidenceBasedApproachRate = pct(records.filter((r) => r.evidenceBasedApproach).length, n);
-  const wellbeingImpactRecordedRate = pct(records.filter((r) => r.wellbeingImpactRecorded).length, n);
+  const therapeuticGoalAlignedRate = rate(records.filter((r) => r.therapeuticGoalAligned).length, n);
+  const voiceOfChildIncludedRate = rate(records.filter((r) => r.voiceOfChildIncluded).length, n);
+  const evidenceBasedApproachRate = rate(records.filter((r) => r.evidenceBasedApproach).length, n);
+  const wellbeingImpactRecordedRate = rate(records.filter((r) => r.wellbeingImpactRecorded).length, n);
 
   let score = 0;
-  score += (therapeuticGoalAlignedRate / 100) * 7;
-  score += (voiceOfChildIncludedRate / 100) * 6;
-  score += (evidenceBasedApproachRate / 100) * 6;
-  score += (wellbeingImpactRecordedRate / 100) * 6;
+  score += (therapeuticGoalAlignedRate! / 100) * 7;
+  score += (voiceOfChildIncludedRate! / 100) * 6;
+  score += (evidenceBasedApproachRate! / 100) * 6;
+  score += (wellbeingImpactRecordedRate! / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -241,21 +250,21 @@ export function evaluateTherapeuticCompliance(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: 0, timelyRecordingRate: 0, therapeuticGoalAlignedRate: 0, categoryDiversityRatio: 0, uniqueCategories: 0 };
+    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: null, timelyRecordingRate: null, therapeuticGoalAlignedRate: null, categoryDiversityRatio: 0, uniqueCategories: 0 };
   }
 
-  const documentationCompleteRate = pct(records.filter((r) => r.documentationComplete).length, n);
-  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, n);
-  const therapeuticGoalAlignedRate = pct(records.filter((r) => r.therapeuticGoalAligned).length, n);
+  const documentationCompleteRate = rate(records.filter((r) => r.documentationComplete).length, n);
+  const timelyRecordingRate = rate(records.filter((r) => r.timelyRecording).length, n);
+  const therapeuticGoalAlignedRate = rate(records.filter((r) => r.therapeuticGoalAligned).length, n);
 
   const uniqueCategoriesSet = new Set(records.map((r) => r.category));
   const uniqueCategories = uniqueCategoriesSet.size;
   const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
 
   let score = 0;
-  score += (documentationCompleteRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (therapeuticGoalAlignedRate / 100) * 5;
+  score += (documentationCompleteRate! / 100) * 8;
+  score += (timelyRecordingRate! / 100) * 7;
+  score += (therapeuticGoalAlignedRate! / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -301,23 +310,23 @@ export function evaluateStaffTherapeuticReadiness(
   const n = training.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalStaff: 0, therapeuticCareKnowledgeRate: 0, traumaInformedPracticeRate: 0, emotionalRegulationSkillsRate: 0, mentalHealthAwarenessRate: 0, crisisDeEscalationRate: 0, therapeuticRelationshipBuildingRate: 0 };
+    return { overallScore: 0, totalStaff: 0, therapeuticCareKnowledgeRate: null, traumaInformedPracticeRate: null, emotionalRegulationSkillsRate: null, mentalHealthAwarenessRate: null, crisisDeEscalationRate: null, therapeuticRelationshipBuildingRate: null };
   }
 
-  const therapeuticCareKnowledgeRate = pct(training.filter((t) => t.therapeuticCareKnowledge).length, n);
-  const traumaInformedPracticeRate = pct(training.filter((t) => t.traumaInformedPractice).length, n);
-  const emotionalRegulationSkillsRate = pct(training.filter((t) => t.emotionalRegulationSkills).length, n);
-  const mentalHealthAwarenessRate = pct(training.filter((t) => t.mentalHealthAwareness).length, n);
-  const crisisDeEscalationRate = pct(training.filter((t) => t.crisisDeEscalation).length, n);
-  const therapeuticRelationshipBuildingRate = pct(training.filter((t) => t.therapeuticRelationshipBuilding).length, n);
+  const therapeuticCareKnowledgeRate = rate(training.filter((t) => t.therapeuticCareKnowledge).length, n);
+  const traumaInformedPracticeRate = rate(training.filter((t) => t.traumaInformedPractice).length, n);
+  const emotionalRegulationSkillsRate = rate(training.filter((t) => t.emotionalRegulationSkills).length, n);
+  const mentalHealthAwarenessRate = rate(training.filter((t) => t.mentalHealthAwareness).length, n);
+  const crisisDeEscalationRate = rate(training.filter((t) => t.crisisDeEscalation).length, n);
+  const therapeuticRelationshipBuildingRate = rate(training.filter((t) => t.therapeuticRelationshipBuilding).length, n);
 
   let score = 0;
-  score += (therapeuticCareKnowledgeRate / 100) * 6;
-  score += (traumaInformedPracticeRate / 100) * 5;
-  score += (emotionalRegulationSkillsRate / 100) * 5;
-  score += (mentalHealthAwarenessRate / 100) * 4;
-  score += (crisisDeEscalationRate / 100) * 3;
-  score += (therapeuticRelationshipBuildingRate / 100) * 2;
+  score += (therapeuticCareKnowledgeRate! / 100) * 6;
+  score += (traumaInformedPracticeRate! / 100) * 5;
+  score += (emotionalRegulationSkillsRate! / 100) * 5;
+  score += (mentalHealthAwarenessRate! / 100) * 4;
+  score += (crisisDeEscalationRate! / 100) * 3;
+  score += (therapeuticRelationshipBuildingRate! / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -342,8 +351,8 @@ export function buildChildTherapeuticProfiles(
 
   return Array.from(childMap.values()).map((child) => {
     const totalRecords = child.records.length;
-    const therapeuticGoalAlignedRate = pct(child.records.filter((r) => r.therapeuticGoalAligned).length, totalRecords);
-    const voiceOfChildIncludedRate = pct(child.records.filter((r) => r.voiceOfChildIncluded).length, totalRecords);
+    const therapeuticGoalAlignedRate = rate(child.records.filter((r) => r.therapeuticGoalAligned).length, totalRecords)!;
+    const voiceOfChildIncludedRate = rate(child.records.filter((r) => r.voiceOfChildIncluded).length, totalRecords)!;
     const uniqueCategoriesSet = new Set(child.records.map((r) => r.category));
     const categoriesCovered = Array.from(uniqueCategoriesSet);
 
@@ -352,14 +361,14 @@ export function buildChildTherapeuticProfiles(
     else if (totalRecords >= 5) frequencyScore = 1;
 
     let rate1Score = 0;
-    if (therapeuticGoalAlignedRate >= 80) rate1Score = 3;
-    else if (therapeuticGoalAlignedRate >= 60) rate1Score = 2;
-    else if (therapeuticGoalAlignedRate >= 40) rate1Score = 1;
+    if (meets(therapeuticGoalAlignedRate, 80)) rate1Score = 3;
+    else if (meets(therapeuticGoalAlignedRate, 60)) rate1Score = 2;
+    else if (meets(therapeuticGoalAlignedRate, 40)) rate1Score = 1;
 
     let rate2Score = 0;
-    if (voiceOfChildIncludedRate >= 80) rate2Score = 3;
-    else if (voiceOfChildIncludedRate >= 60) rate2Score = 2;
-    else if (voiceOfChildIncludedRate >= 40) rate2Score = 1;
+    if (meets(voiceOfChildIncludedRate, 80)) rate2Score = 3;
+    else if (meets(voiceOfChildIncludedRate, 60)) rate2Score = 2;
+    else if (meets(voiceOfChildIncludedRate, 40)) rate2Score = 1;
 
     let diversityBonus = 0;
     if (categoriesCovered.length >= 4) diversityBonus = 2;
@@ -407,8 +416,8 @@ export function generateTherapeuticIntelligence(
   if (complianceResult.overallScore >= 20) strengths.push("Therapeutic compliance is strong (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore >= 20) strengths.push("Therapeutic policy framework is robust (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore >= 20) strengths.push("Staff therapeutic readiness is strong (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.therapeuticGoalAlignedRate >= 90) strengths.push("Therapeutic goal alignment at " + qualityResult.therapeuticGoalAlignedRate + "%");
-  if (periodRecords.length > 0 && qualityResult.voiceOfChildIncludedRate >= 90) strengths.push("Voice of child included at " + qualityResult.voiceOfChildIncludedRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.therapeuticGoalAlignedRate, 90)) strengths.push("Therapeutic goal alignment at " + qualityResult.therapeuticGoalAlignedRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.voiceOfChildIncludedRate, 90)) strengths.push("Voice of child included at " + qualityResult.voiceOfChildIncludedRate + "%");
 
   const areasForImprovement: string[] = [];
   if (overallScore < 40) areasForImprovement.push("Therapeutic support rated Inadequate (" + overallScore + "/100) — urgent systemic review required");
@@ -417,7 +426,7 @@ export function generateTherapeuticIntelligence(
   if (complianceResult.overallScore < 15) areasForImprovement.push("Therapeutic compliance needs improvement (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore < 15) areasForImprovement.push("Therapeutic policy needs strengthening (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore < 15) areasForImprovement.push("Staff therapeutic readiness needs improvement (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.voiceOfChildIncludedRate < 80) areasForImprovement.push("Voice of child inclusion at " + qualityResult.voiceOfChildIncludedRate + "% — must improve");
+  if (periodRecords.length > 0 && below(qualityResult.voiceOfChildIncludedRate, 80)) areasForImprovement.push("Voice of child inclusion at " + qualityResult.voiceOfChildIncludedRate + "% — must improve");
   if (periodRecords.length === 0) areasForImprovement.push("No therapeutic records — therapeutic support must be documented");
   if (policy === null) areasForImprovement.push("No therapeutic policy in place — statutory requirement");
   if (staff.length === 0) areasForImprovement.push("No staff therapeutic training records — training required");
@@ -425,11 +434,11 @@ export function generateTherapeuticIntelligence(
   const actions: string[] = [];
   if (policy === null || policyResult.overallScore === 0) actions.push("URGENT: No therapeutic policy — develop and implement comprehensive therapeutic care model immediately");
   if (staff.length === 0) actions.push("URGENT: No staff therapeutic training — schedule training for all care staff");
-  if (periodRecords.length > 0 && qualityResult.therapeuticGoalAlignedRate < 50) actions.push("HIGH: Therapeutic goal alignment at " + qualityResult.therapeuticGoalAlignedRate + "% — review care plans and therapeutic goals");
-  if (periodRecords.length > 0 && qualityResult.voiceOfChildIncludedRate < 50) actions.push("HIGH: Voice of child inclusion at " + qualityResult.voiceOfChildIncludedRate + "% — ensure children's views are captured in therapeutic work");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate < 50) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all therapeutic activities must be recorded");
-  if (periodRecords.length > 0 && complianceResult.timelyRecordingRate < 50) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
-  if (staff.length > 0 && staffResult.therapeuticCareKnowledgeRate < 50) actions.push("MEDIUM: Therapeutic care knowledge at " + staffResult.therapeuticCareKnowledgeRate + "% — schedule training");
+  if (periodRecords.length > 0 && below(qualityResult.therapeuticGoalAlignedRate, 50)) actions.push("HIGH: Therapeutic goal alignment at " + qualityResult.therapeuticGoalAlignedRate + "% — review care plans and therapeutic goals");
+  if (periodRecords.length > 0 && below(qualityResult.voiceOfChildIncludedRate, 50)) actions.push("HIGH: Voice of child inclusion at " + qualityResult.voiceOfChildIncludedRate + "% — ensure children's views are captured in therapeutic work");
+  if (periodRecords.length > 0 && below(complianceResult.documentationCompleteRate, 50)) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all therapeutic activities must be recorded");
+  if (periodRecords.length > 0 && below(complianceResult.timelyRecordingRate, 50)) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
+  if (staff.length > 0 && below(staffResult.therapeuticCareKnowledgeRate, 50)) actions.push("MEDIUM: Therapeutic care knowledge at " + staffResult.therapeuticCareKnowledgeRate + "% — schedule training");
   const lowScoreChildren = childProfiles.filter((p) => p.overallScore <= 3);
   if (lowScoreChildren.length > 0) actions.push("MEDIUM: " + lowScoreChildren.length + " child(ren) with low therapeutic engagement scores — review individual therapeutic plans");
   if (actions.length === 0) actions.push("No immediate actions required. Therapeutic support systems operating within expected standards.");

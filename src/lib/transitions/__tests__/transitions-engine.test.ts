@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct, getRating, getTransitionCategoryLabel, getTransitionOutcomeLabel, getRatingLabel,
+  getRating, getTransitionCategoryLabel, getTransitionOutcomeLabel, getRatingLabel,
   evaluateTransitionQuality, evaluateTransitionCompliance, evaluateTransitionPolicy,
   evaluateStaffTransitionReadiness, buildChildTransitionProfiles,
   generateTransitionsIntelligence,
@@ -24,14 +24,6 @@ function makeTraining(o: Partial<StaffTransitionTraining> = {}): StaffTransition
 // ══════════════════════════════════════════════════════════════════════════════
 // pct
 // ══════════════════════════════════════════════════════════════════════════════
-
-describe("pct", () => {
-  it("returns 0 for den=0", () => { expect(pct(5, 0)).toBe(0); });
-  it("correct pct", () => { expect(pct(3, 4)).toBe(75); });
-  it("rounds", () => { expect(pct(1, 3)).toBe(33); });
-  it("100 for equal", () => { expect(pct(10, 10)).toBe(100); });
-  it("0 for num=0", () => { expect(pct(0, 5)).toBe(0); });
-});
 
 // ══════════════════════════════════════════════════════════════════════════════
 // getRating
@@ -85,8 +77,8 @@ describe("evaluateTransitionQuality", () => {
   it("zeros for empty", () => {
     const r = evaluateTransitionQuality([]);
     expect(r.overallScore).toBe(0); expect(r.totalTransitions).toBe(0);
-    expect(r.transitionPlanRate).toBe(0); expect(r.childPreparedRate).toBe(0);
-    expect(r.receivingBriefedRate).toBe(0); expect(r.handoverRate).toBe(0);
+    expect(r.transitionPlanRate).toBeNull(); expect(r.childPreparedRate).toBeNull();
+    expect(r.receivingBriefedRate).toBeNull(); expect(r.handoverRate).toBeNull();
     expect(r.rating).toBe("inadequate");
   });
   it("max 25 with perfect records", () => {

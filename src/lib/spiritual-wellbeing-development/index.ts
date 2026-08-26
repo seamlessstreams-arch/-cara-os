@@ -5,7 +5,6 @@ export {
   evaluateStaffSpiritualReadiness,
   buildChildSpiritualProfiles,
   generateSpiritualWellbeingDevelopmentIntelligence,
-  pct,
   getRating,
   getSpiritualActivityTypeLabel,
   getEngagementLevelLabel,

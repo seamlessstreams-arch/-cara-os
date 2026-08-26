@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara Safeguarding Intelligence Engine  (v2 — standardised)
 //
@@ -86,18 +87,26 @@ export interface StaffSafeguardingTraining {
 export interface SafeguardingQualityResult {
   overallScore: number;
   totalRecords: number;
-  timelyResponseRate: number;
-  childViewCapturedRate: number;
-  multiAgencyEngagedRate: number;
-  riskAssessmentUpdatedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyResponseRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewCapturedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  multiAgencyEngagedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessmentUpdatedRate: number | null;
 }
 
 export interface SafeguardingComplianceResult {
   overallScore: number;
-  documentationRate: number;
-  timelyRecordingRate: number;
-  childViewCapturedRate: number;
-  categoryDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewCapturedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  categoryDiversityRatio: number | null;
 }
 
 export interface SafeguardingPolicyResult {
@@ -114,20 +123,28 @@ export interface SafeguardingPolicyResult {
 export interface StaffSafeguardingReadinessResult {
   overallScore: number;
   totalStaff: number;
-  safeguardingLevel3Rate: number;
-  childProtectionAwarenessRate: number;
-  preventDutyTrainingRate: number;
-  onlineSafetyTrainingRate: number;
-  concernRecordingSkillsRate: number;
-  multiAgencyWorkingKnowledgeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingLevel3Rate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childProtectionAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  preventDutyTrainingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  onlineSafetyTrainingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  concernRecordingSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  multiAgencyWorkingKnowledgeRate: number | null;
 }
 
 export interface ChildSafeguardingProfile {
   childId: string;
   childName: string;
   totalRecords: number;
-  timelyResponseRate: number;
-  childViewCapturedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyResponseRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewCapturedRate: number | null;
   categoriesCovered: string[];
   overallScore: number;
 }
@@ -150,11 +167,6 @@ export interface SafeguardingIntelligence {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -203,16 +215,16 @@ export function getRatingLabel(r: Rating): string {
 
 export function evaluateSafeguardingQuality(records: SafeguardingRecord[]): SafeguardingQualityResult {
   const total = records.length;
-  const timelyResponseRate = pct(records.filter(r => r.timelyResponse).length, total);
-  const childViewCapturedRate = pct(records.filter(r => r.childViewCaptured).length, total);
-  const multiAgencyEngagedRate = pct(records.filter(r => r.multiAgencyEngaged).length, total);
-  const riskAssessmentUpdatedRate = pct(records.filter(r => r.riskAssessmentUpdated).length, total);
+  const timelyResponseRate = rate(records.filter(r => r.timelyResponse).length, total);
+  const childViewCapturedRate = rate(records.filter(r => r.childViewCaptured).length, total);
+  const multiAgencyEngagedRate = rate(records.filter(r => r.multiAgencyEngaged).length, total);
+  const riskAssessmentUpdatedRate = rate(records.filter(r => r.riskAssessmentUpdated).length, total);
 
   const raw =
-    (timelyResponseRate / 100) * 7 +
-    (childViewCapturedRate / 100) * 6 +
-    (multiAgencyEngagedRate / 100) * 6 +
-    (riskAssessmentUpdatedRate / 100) * 6;
+    ((timelyResponseRate ?? 0) / 100) * 7 +
+    ((childViewCapturedRate ?? 0) / 100) * 6 +
+    ((multiAgencyEngagedRate ?? 0) / 100) * 6 +
+    ((riskAssessmentUpdatedRate ?? 0) / 100) * 6;
 
   const overallScore = Math.min(25, Math.round(raw));
 
@@ -224,22 +236,22 @@ export function evaluateSafeguardingQuality(records: SafeguardingRecord[]): Safe
 
 export function evaluateSafeguardingCompliance(records: SafeguardingRecord[]): SafeguardingComplianceResult {
   const total = records.length;
-  const documentationRate = pct(records.filter(r => r.documentationComplete).length, total);
-  const timelyRecordingRate = pct(records.filter(r => r.timelyRecording).length, total);
-  const childViewCapturedRate = pct(records.filter(r => r.childViewCaptured).length, total);
+  const documentationRate = rate(records.filter(r => r.documentationComplete).length, total);
+  const timelyRecordingRate = rate(records.filter(r => r.timelyRecording).length, total);
+  const childViewCapturedRate = rate(records.filter(r => r.childViewCaptured).length, total);
 
   const ALL_CATEGORIES: SafeguardingCategory[] = [
     "concern_raised", "referral_made", "strategy_meeting", "risk_assessment",
     "chronology_update", "multi_agency_contact", "child_protection_review", "preventive_action",
   ];
   const usedCategories = new Set(records.map(r => r.category));
-  const categoryDiversityRatio = pct(usedCategories.size, ALL_CATEGORIES.length);
+  const categoryDiversityRatio = rate(usedCategories.size, ALL_CATEGORIES.length);
 
   const raw =
-    (documentationRate / 100) * 8 +
-    (timelyRecordingRate / 100) * 7 +
-    (childViewCapturedRate / 100) * 5 +
-    (categoryDiversityRatio / 100) * 5;
+    ((documentationRate ?? 0) / 100) * 8 +
+    ((timelyRecordingRate ?? 0) / 100) * 7 +
+    ((childViewCapturedRate ?? 0) / 100) * 5 +
+    ((categoryDiversityRatio ?? 0) / 100) * 5;
 
   const overallScore = Math.min(25, Math.round(raw));
 
@@ -289,20 +301,20 @@ export function evaluateSafeguardingPolicy(policy: SafeguardingPolicy | null): S
 
 export function evaluateStaffSafeguardingReadiness(staff: StaffSafeguardingTraining[]): StaffSafeguardingReadinessResult {
   const total = staff.length;
-  const safeguardingLevel3Rate = pct(staff.filter(s => s.safeguardingLevel3).length, total);
-  const childProtectionAwarenessRate = pct(staff.filter(s => s.childProtectionAwareness).length, total);
-  const preventDutyTrainingRate = pct(staff.filter(s => s.preventDutyTraining).length, total);
-  const onlineSafetyTrainingRate = pct(staff.filter(s => s.onlineSafetyTraining).length, total);
-  const concernRecordingSkillsRate = pct(staff.filter(s => s.concernRecordingSkills).length, total);
-  const multiAgencyWorkingKnowledgeRate = pct(staff.filter(s => s.multiAgencyWorkingKnowledge).length, total);
+  const safeguardingLevel3Rate = rate(staff.filter(s => s.safeguardingLevel3).length, total);
+  const childProtectionAwarenessRate = rate(staff.filter(s => s.childProtectionAwareness).length, total);
+  const preventDutyTrainingRate = rate(staff.filter(s => s.preventDutyTraining).length, total);
+  const onlineSafetyTrainingRate = rate(staff.filter(s => s.onlineSafetyTraining).length, total);
+  const concernRecordingSkillsRate = rate(staff.filter(s => s.concernRecordingSkills).length, total);
+  const multiAgencyWorkingKnowledgeRate = rate(staff.filter(s => s.multiAgencyWorkingKnowledge).length, total);
 
   const raw =
-    (safeguardingLevel3Rate / 100) * 6 +
-    (childProtectionAwarenessRate / 100) * 5 +
-    (preventDutyTrainingRate / 100) * 5 +
-    (onlineSafetyTrainingRate / 100) * 4 +
-    (concernRecordingSkillsRate / 100) * 3 +
-    (multiAgencyWorkingKnowledgeRate / 100) * 2;
+    ((safeguardingLevel3Rate ?? 0) / 100) * 6 +
+    ((childProtectionAwarenessRate ?? 0) / 100) * 5 +
+    ((preventDutyTrainingRate ?? 0) / 100) * 5 +
+    ((onlineSafetyTrainingRate ?? 0) / 100) * 4 +
+    ((concernRecordingSkillsRate ?? 0) / 100) * 3 +
+    ((multiAgencyWorkingKnowledgeRate ?? 0) / 100) * 2;
 
   const overallScore = Math.min(25, Math.round(raw));
 
@@ -324,19 +336,19 @@ export function buildChildSafeguardingProfiles(records: SafeguardingRecord[]): C
   for (const [childId, recs] of byChild) {
     const childName = recs[0].childName;
     const totalRecords = recs.length;
-    const timelyResponseRate = pct(recs.filter(r => r.timelyResponse).length, totalRecords);
-    const childViewCapturedRate = pct(recs.filter(r => r.childViewCaptured).length, totalRecords);
+    const timelyResponseRate = rate(recs.filter(r => r.timelyResponse).length, totalRecords);
+    const childViewCapturedRate = rate(recs.filter(r => r.childViewCaptured).length, totalRecords);
     const categoriesCovered = [...new Set(recs.map(r => r.category))];
 
     let score = 0;
-    if (totalRecords >= 10) score += 2;
-    else if (totalRecords >= 5) score += 1;
-    if (timelyResponseRate >= 80) score += 3;
-    else if (timelyResponseRate >= 60) score += 2;
-    else if (timelyResponseRate >= 40) score += 1;
-    if (childViewCapturedRate >= 80) score += 3;
-    else if (childViewCapturedRate >= 60) score += 2;
-    else if (childViewCapturedRate >= 40) score += 1;
+    if (meets(totalRecords, 10)) score += 2;
+    else if (meets(totalRecords, 5)) score += 1;
+    if (meets(timelyResponseRate, 80)) score += 3;
+    else if (meets(timelyResponseRate, 60)) score += 2;
+    else if (meets(timelyResponseRate, 40)) score += 1;
+    if (meets(childViewCapturedRate, 80)) score += 3;
+    else if (meets(childViewCapturedRate, 60)) score += 2;
+    else if (meets(childViewCapturedRate, 40)) score += 1;
     if (categoriesCovered.length >= 4) score += 2;
     else if (categoriesCovered.length >= 2) score += 1;
 
@@ -373,32 +385,32 @@ export function generateSafeguardingIntelligence(input: {
   const rating = getRating(overallScore);
 
   const strengths: string[] = [];
-  if (safeguardingQuality.timelyResponseRate >= 80) strengths.push("Excellent timely response to safeguarding concerns");
-  if (safeguardingQuality.childViewCapturedRate >= 80) strengths.push("Children's views consistently captured in safeguarding processes");
-  if (safeguardingQuality.multiAgencyEngagedRate >= 90) strengths.push("Strong multi-agency engagement in safeguarding matters");
-  if (safeguardingQuality.riskAssessmentUpdatedRate >= 80) strengths.push("Risk assessments consistently updated following concerns");
-  if (safeguardingCompliance.documentationRate >= 90) strengths.push("Excellent safeguarding documentation practices");
-  if (safeguardingCompliance.categoryDiversityRatio >= 75) strengths.push("Good breadth of safeguarding activity categories recorded");
-  if (safeguardingPolicy.overallScore >= 22) strengths.push("Comprehensive safeguarding policies and procedures in place");
-  if (staffReadiness.safeguardingLevel3Rate >= 80) strengths.push("Staff well-trained to safeguarding Level 3");
-  if (staffReadiness.childProtectionAwarenessRate >= 80) strengths.push("Staff demonstrate strong child protection awareness");
+  if (meets(safeguardingQuality.timelyResponseRate, 80)) strengths.push("Excellent timely response to safeguarding concerns");
+  if (meets(safeguardingQuality.childViewCapturedRate, 80)) strengths.push("Children's views consistently captured in safeguarding processes");
+  if (meets(safeguardingQuality.multiAgencyEngagedRate, 90)) strengths.push("Strong multi-agency engagement in safeguarding matters");
+  if (meets(safeguardingQuality.riskAssessmentUpdatedRate, 80)) strengths.push("Risk assessments consistently updated following concerns");
+  if (meets(safeguardingCompliance.documentationRate, 90)) strengths.push("Excellent safeguarding documentation practices");
+  if (meets(safeguardingCompliance.categoryDiversityRatio, 75)) strengths.push("Good breadth of safeguarding activity categories recorded");
+  if (meets(safeguardingPolicy.overallScore, 22)) strengths.push("Comprehensive safeguarding policies and procedures in place");
+  if (meets(staffReadiness.safeguardingLevel3Rate, 80)) strengths.push("Staff well-trained to safeguarding Level 3");
+  if (meets(staffReadiness.childProtectionAwarenessRate, 80)) strengths.push("Staff demonstrate strong child protection awareness");
 
   const areasForImprovement: string[] = [];
-  if (safeguardingQuality.timelyResponseRate < 60) areasForImprovement.push("Safeguarding responses not consistently timely");
-  if (safeguardingQuality.childViewCapturedRate < 60) areasForImprovement.push("Children's views not consistently captured in safeguarding");
-  if (safeguardingQuality.multiAgencyEngagedRate < 60) areasForImprovement.push("Multi-agency engagement needs strengthening");
-  if (safeguardingCompliance.timelyRecordingRate < 70) areasForImprovement.push("Safeguarding records not completed in a timely manner");
-  if (safeguardingCompliance.categoryDiversityRatio < 50) areasForImprovement.push("Limited range of safeguarding activities recorded");
-  if (staffReadiness.preventDutyTrainingRate < 60) areasForImprovement.push("Prevent duty training needs attention");
-  if (staffReadiness.onlineSafetyTrainingRate < 60) areasForImprovement.push("Online safety training coverage needs improvement");
+  if (below(safeguardingQuality.timelyResponseRate, 60)) areasForImprovement.push("Safeguarding responses not consistently timely");
+  if (below(safeguardingQuality.childViewCapturedRate, 60)) areasForImprovement.push("Children's views not consistently captured in safeguarding");
+  if (below(safeguardingQuality.multiAgencyEngagedRate, 60)) areasForImprovement.push("Multi-agency engagement needs strengthening");
+  if (below(safeguardingCompliance.timelyRecordingRate, 70)) areasForImprovement.push("Safeguarding records not completed in a timely manner");
+  if (below(safeguardingCompliance.categoryDiversityRatio, 50)) areasForImprovement.push("Limited range of safeguarding activities recorded");
+  if (below(staffReadiness.preventDutyTrainingRate, 60)) areasForImprovement.push("Prevent duty training needs attention");
+  if (below(staffReadiness.onlineSafetyTrainingRate, 60)) areasForImprovement.push("Online safety training coverage needs improvement");
 
   const actions: string[] = [];
-  if (safeguardingQuality.timelyResponseRate < 40) actions.push("URGENT: Implement systematic timely response protocol for all safeguarding concerns");
-  if (safeguardingQuality.childViewCapturedRate < 40) actions.push("URGENT: Ensure children's views are captured in every safeguarding process");
-  if (safeguardingCompliance.documentationRate < 60) actions.push("URGENT: Ensure all safeguarding activities are properly documented");
+  if (below(safeguardingQuality.timelyResponseRate, 40)) actions.push("URGENT: Implement systematic timely response protocol for all safeguarding concerns");
+  if (below(safeguardingQuality.childViewCapturedRate, 40)) actions.push("URGENT: Ensure children's views are captured in every safeguarding process");
+  if (below(safeguardingCompliance.documentationRate, 60)) actions.push("URGENT: Ensure all safeguarding activities are properly documented");
   if (!policy || safeguardingPolicy.overallScore < 16) actions.push("Review and update safeguarding policies and procedures");
-  if (staffReadiness.overallScore < 15) actions.push("Prioritise staff safeguarding training programme");
-  if (safeguardingQuality.riskAssessmentUpdatedRate < 50) actions.push("Review risk assessment update process following concerns");
+  if (below(staffReadiness.overallScore, 15)) actions.push("Prioritise staff safeguarding training programme");
+  if (below(safeguardingQuality.riskAssessmentUpdatedRate, 50)) actions.push("Review risk assessment update process following concerns");
   if (records.length === 0) actions.push("URGENT: No safeguarding records found — ensure robust concern recording mechanisms are in place");
 
   const regulatoryLinks = [

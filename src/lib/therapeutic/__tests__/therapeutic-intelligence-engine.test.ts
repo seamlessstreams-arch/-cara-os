@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct, getRating, getTherapeuticCategoryLabel, getTherapeuticOutcomeLabel, getRatingLabel,
+  getRating, getTherapeuticCategoryLabel, getTherapeuticOutcomeLabel, getRatingLabel,
   evaluateTherapeuticQuality, evaluateTherapeuticCompliance, evaluateTherapeuticPolicy,
   evaluateStaffTherapeuticReadiness, buildChildTherapeuticProfiles, generateTherapeuticIntelligence,
 } from "../therapeutic-intelligence-engine";
@@ -24,12 +24,6 @@ function allFalsePolicy(): TherapeuticPolicy {
 function makeStaff(o: Partial<StaffTherapeuticTraining> = {}): StaffTherapeuticTraining {
   return { staffId: "s1", therapeuticCareKnowledge: true, traumaInformedPractice: true, emotionalRegulationSkills: true, mentalHealthAwareness: true, crisisDeEscalation: true, therapeuticRelationshipBuilding: true, ...o };
 }
-
-describe("pct", () => {
-  it("returns percentage", () => { expect(pct(3, 4)).toBe(75); });
-  it("0 for den=0", () => { expect(pct(5, 0)).toBe(0); });
-  it("rounds 2/3 to 67", () => { expect(pct(2, 3)).toBe(67); });
-});
 
 describe("getRating", () => {
   it("outstanding ≥80", () => { expect(getRating(80)).toBe("outstanding"); });

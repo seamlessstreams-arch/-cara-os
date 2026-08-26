@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { formatRate } from "@/lib/metrics/rate";
 
 interface StaffWorkforceProfile { staffId: string; staffName: string; totalRecords: number; dbsCurrentRate: number; qualificationMetRate: number; categoriesCovered: string[]; overallScore: number; }
 
@@ -73,19 +74,19 @@ export default function WorkforceDashboardWidget() {
       <Section title="Workforce Quality" defaultOpen>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Records" value={data.workforceQuality.totalRecords} />
-          <Stat label="DBS Current" value={`${data.workforceQuality.dbsCurrentRate}%`} />
-          <Stat label="Qualification Met" value={`${data.workforceQuality.qualificationMetRate}%`} />
-          <Stat label="Training Up To Date" value={`${data.workforceQuality.trainingUpToDateRate}%`} />
-          <Stat label="Supervision Current" value={`${data.workforceQuality.supervisionCurrentRate}%`} />
+          <Stat label="DBS Current" value={`${formatRate(data.workforceQuality.dbsCurrentRate)}`} />
+          <Stat label="Qualification Met" value={`${formatRate(data.workforceQuality.qualificationMetRate)}`} />
+          <Stat label="Training Up To Date" value={`${formatRate(data.workforceQuality.trainingUpToDateRate)}`} />
+          <Stat label="Supervision Current" value={`${formatRate(data.workforceQuality.supervisionCurrentRate)}`} />
         </div>
       </Section>
 
       <Section title="Workforce Compliance">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Stat label="Documentation" value={`${data.workforceCompliance.documentationRate}%`} />
-          <Stat label="Timely Recording" value={`${data.workforceCompliance.timelyRecordingRate}%`} />
-          <Stat label="Supervision Current" value={`${data.workforceCompliance.supervisionCurrentRate}%`} />
-          <Stat label="Category Coverage" value={`${data.workforceCompliance.categoryDiversityRatio}%`} />
+          <Stat label="Documentation" value={`${formatRate(data.workforceCompliance.documentationRate)}`} />
+          <Stat label="Timely Recording" value={`${formatRate(data.workforceCompliance.timelyRecordingRate)}`} />
+          <Stat label="Supervision Current" value={`${formatRate(data.workforceCompliance.supervisionCurrentRate)}`} />
+          <Stat label="Category Coverage" value={`${formatRate(data.workforceCompliance.categoryDiversityRatio)}`} />
         </div>
       </Section>
 
@@ -108,12 +109,12 @@ export default function WorkforceDashboardWidget() {
       <Section title="Staff Readiness">
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <Stat label="Total Staff" value={data.staffReadiness.totalStaff} />
-          <Stat label="Safer Recruitment" value={`${data.staffReadiness.saferRecruitmentRate}%`} />
-          <Stat label="DBS Process" value={`${data.staffReadiness.dbsProcessKnowledgeRate}%`} />
-          <Stat label="Qualification Assessment" value={`${data.staffReadiness.qualificationAssessmentRate}%`} />
-          <Stat label="Supervision Skills" value={`${data.staffReadiness.supervisionSkillsRate}%`} />
-          <Stat label="Training Coordination" value={`${data.staffReadiness.trainingCoordinationRate}%`} />
-          <Stat label="Regulatory Compliance" value={`${data.staffReadiness.regulatoryComplianceRate}%`} />
+          <Stat label="Safer Recruitment" value={`${formatRate(data.staffReadiness.saferRecruitmentRate)}`} />
+          <Stat label="DBS Process" value={`${formatRate(data.staffReadiness.dbsProcessKnowledgeRate)}`} />
+          <Stat label="Qualification Assessment" value={`${formatRate(data.staffReadiness.qualificationAssessmentRate)}`} />
+          <Stat label="Supervision Skills" value={`${formatRate(data.staffReadiness.supervisionSkillsRate)}`} />
+          <Stat label="Training Coordination" value={`${formatRate(data.staffReadiness.trainingCoordinationRate)}`} />
+          <Stat label="Regulatory Compliance" value={`${formatRate(data.staffReadiness.regulatoryComplianceRate)}`} />
         </div>
       </Section>
 

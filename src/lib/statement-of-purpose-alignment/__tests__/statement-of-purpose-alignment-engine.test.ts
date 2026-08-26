@@ -11,7 +11,6 @@ import {
   evaluateOfstedResponse,
   buildSectionProfiles,
   generateStatementOfPurposeAlignmentIntelligence,
-  pct,
   getRating,
   getSoPSectionLabel,
   getAlignmentLevelLabel,
@@ -90,29 +89,6 @@ function makeRecommendation(overrides: Partial<OfstedRecommendation> = {}): Ofst
 }
 
 // -- pct() --------------------------------------------------------------------
-
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-
-  it("returns 100 when numerator equals denominator", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 50 for 1/2", () => {
-    expect(pct(1, 2)).toBe(50);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-    expect(pct(2, 3)).toBe(67);
-  });
-});
 
 // -- getRating() --------------------------------------------------------------
 
@@ -213,11 +189,11 @@ describe("evaluateAlignmentQuality", () => {
     const result = evaluateAlignmentQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalAssessments).toBe(0);
-    expect(result.fullyAlignedRate).toBe(0);
+    expect(result.fullyAlignedRate).toBeNull();
     expect(result.notAlignedCount).toBe(0);
-    expect(result.strongEvidenceRate).toBe(0);
+    expect(result.strongEvidenceRate).toBeNull();
     expect(result.actionsRequiredCount).toBe(0);
-    expect(result.actionsTakenRate).toBe(0);
+    expect(result.actionsTakenRate).toBeNull();
   });
 
   it("returns sectionDistribution with all 12 sections", () => {
@@ -297,7 +273,7 @@ describe("evaluateAlignmentQuality", () => {
     const result = evaluateAlignmentQuality(assessments);
     // actionsScore = 5 (no actions required = full)
     expect(result.actionsRequiredCount).toBe(0);
-    expect(result.actionsTakenRate).toBe(0); // pct(0, 0) = 0
+    expect(result.actionsTakenRate).toBeNull(); // pct(0, 0) = 0
   });
 
   it("counts section distribution correctly", () => {
@@ -341,12 +317,12 @@ describe("evaluateReviewCurrency", () => {
     const result = evaluateReviewCurrency([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalReviews).toBe(0);
-    expect(result.currentRate).toBe(0);
+    expect(result.currentRate).toBeNull();
     expect(result.overdueCount).toBe(0);
-    expect(result.childrenConsultedRate).toBe(0);
-    expect(result.staffConsultedRate).toBe(0);
-    expect(result.regulatoryRate).toBe(0);
-    expect(result.allSectionsRate).toBe(0);
+    expect(result.childrenConsultedRate).toBeNull();
+    expect(result.staffConsultedRate).toBeNull();
+    expect(result.regulatoryRate).toBeNull();
+    expect(result.allSectionsRate).toBeNull();
   });
 
   it("scores maximum for perfect reviews", () => {
@@ -448,10 +424,10 @@ describe("evaluateStakeholderAwareness", () => {
     const result = evaluateStakeholderAwareness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalFeedback).toBe(0);
-    expect(result.awareRate).toBe(0);
-    expect(result.reflectsRealityRate).toBe(0);
-    expect(result.valuesEvidentRate).toBe(0);
-    expect(result.suggestionsRate).toBe(0);
+    expect(result.awareRate).toBeNull();
+    expect(result.reflectsRealityRate).toBeNull();
+    expect(result.valuesEvidentRate).toBeNull();
+    expect(result.suggestionsRate).toBeNull();
   });
 
   it("returns stakeholderDistribution with all 6 types", () => {
@@ -536,8 +512,8 @@ describe("evaluateOfstedResponse", () => {
     const result = evaluateOfstedResponse([]);
     expect(result.overallScore).toBe(25);
     expect(result.totalRecommendations).toBe(0);
-    expect(result.addressedRate).toBe(0);
-    expect(result.evidenceRate).toBe(0);
+    expect(result.addressedRate).toBeNull();
+    expect(result.evidenceRate).toBeNull();
     expect(result.outstandingCount).toBe(0);
   });
 

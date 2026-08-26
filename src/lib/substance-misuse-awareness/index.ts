@@ -5,7 +5,6 @@ export {
   evaluateInterventionSupport,
   evaluateStaffSubstanceReadiness,
   buildChildSubstanceSummaries,
-  pct,
   getRating,
   getSubstanceTypeLabel,
   getRiskLevelLabel,

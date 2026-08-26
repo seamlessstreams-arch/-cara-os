@@ -6,7 +6,6 @@ import {
   evaluatePolicy,
   evaluateStaffReadiness,
   buildChildTherapyProfiles,
-  pct,
   getRating,
   getTherapyTypeLabel,
   getProgressLevelLabel,
@@ -69,16 +68,6 @@ function makeTraining(overrides: Partial<StaffTherapeuticTraining> = {}): StaffT
 
 // -- pct ----------------------------------------------------------------------
 
-describe("pct", () => {
-  it("returns 0 for 0/0", () => expect(pct(0, 0)).toBe(0));
-  it("calculates correctly", () => expect(pct(3, 4)).toBe(75));
-  it("rounds to nearest integer", () => expect(pct(1, 3)).toBe(33));
-  it("returns 100 for equal values", () => expect(pct(5, 5)).toBe(100));
-  it("returns 0 for 0 numerator", () => expect(pct(0, 10)).toBe(0));
-  it("handles large numbers", () => expect(pct(999, 1000)).toBe(100));
-  it("rounds 50.5 up", () => expect(pct(1, 2)).toBe(50));
-});
-
 // -- getRating ----------------------------------------------------------------
 
 describe("getRating", () => {
@@ -128,10 +117,10 @@ describe("evaluateQuality", () => {
     const result = evaluateQuality([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalSessions).toBe(0);
-    expect(result.progressRate).toBe(0);
-    expect(result.engagementRate).toBe(0);
-    expect(result.goalsReviewedRate).toBe(0);
-    expect(result.relationshipRate).toBe(0);
+    expect(result.progressRate).toBeNull();
+    expect(result.engagementRate).toBeNull();
+    expect(result.goalsReviewedRate).toBeNull();
+    expect(result.relationshipRate).toBeNull();
   });
 
   it("scores high for excellent sessions", () => {
@@ -247,9 +236,9 @@ describe("evaluateCompliance", () => {
   it("returns 0 for empty sessions", () => {
     const result = evaluateCompliance([]);
     expect(result.overallScore).toBe(0);
-    expect(result.documentedRate).toBe(0);
-    expect(result.staffSupportedRate).toBe(0);
-    expect(result.feedbackRate).toBe(0);
+    expect(result.documentedRate).toBeNull();
+    expect(result.staffSupportedRate).toBeNull();
+    expect(result.feedbackRate).toBeNull();
     expect(result.therapyDiversityRatio).toBe(0);
   });
 
@@ -482,12 +471,12 @@ describe("evaluateStaffReadiness", () => {
     const result = evaluateStaffReadiness([]);
     expect(result.overallScore).toBe(0);
     expect(result.totalStaff).toBe(0);
-    expect(result.therapeuticAwarenessRate).toBe(0);
-    expect(result.traumaInformedPracticeRate).toBe(0);
-    expect(result.attachmentTheoryRate).toBe(0);
-    expect(result.therapeuticCommunicationRate).toBe(0);
-    expect(result.boundaryManagementRate).toBe(0);
-    expect(result.reflectivePracticeRate).toBe(0);
+    expect(result.therapeuticAwarenessRate).toBeNull();
+    expect(result.traumaInformedPracticeRate).toBeNull();
+    expect(result.attachmentTheoryRate).toBeNull();
+    expect(result.therapeuticCommunicationRate).toBeNull();
+    expect(result.boundaryManagementRate).toBeNull();
+    expect(result.reflectivePracticeRate).toBeNull();
   });
 
   it("scores high for fully trained staff", () => {

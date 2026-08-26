@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  pct, getRating, getSafeguardingOversightIntelligenceCategoryLabel, getSafeguardingOversightIntelligenceOutcomeLabel, getIntelligenceRatingLabel,
+  getRating, getSafeguardingOversightIntelligenceCategoryLabel, getSafeguardingOversightIntelligenceOutcomeLabel, getIntelligenceRatingLabel,
   evaluateSafeguardingOversightQuality, evaluateSafeguardingOversightCompliance, evaluateSafeguardingOversightPolicy,
   evaluateStaffSafeguardingOversightReadiness, buildChildSafeguardingOversightProfiles, generateSafeguardingOversightIntelligenceResult,
 } from "../safeguarding-oversight-intelligence-engine";
@@ -26,15 +26,6 @@ function makeStaff(o: Partial<StaffSafeguardingOversightTraining> = {}): StaffSa
 }
 
 // ═══ pct ═══
-describe("pct", () => {
-  it("returns percentage", () => { expect(pct(3, 4)).toBe(75); });
-  it("returns 0 for den=0", () => { expect(pct(5, 0)).toBe(0); });
-  it("100 for 1/1", () => { expect(pct(1, 1)).toBe(100); });
-  it("rounds 2/3 to 67", () => { expect(pct(2, 3)).toBe(67); });
-  it("rounds 1/3 to 33", () => { expect(pct(1, 3)).toBe(33); });
-  it("0 for 0/5", () => { expect(pct(0, 5)).toBe(0); });
-  it("50 for 1/2", () => { expect(pct(1, 2)).toBe(50); });
-});
 
 // ═══ getRating ═══
 describe("getRating", () => {
@@ -93,10 +84,10 @@ describe("evaluateSafeguardingOversightQuality", () => {
     const r = evaluateSafeguardingOversightQuality([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalRecords).toBe(0);
-    expect(r.riskAssessmentCompletedRate).toBe(0);
-    expect(r.safeguardingLeadInformedRate).toBe(0);
-    expect(r.multiAgencyEngagedRate).toBe(0);
-    expect(r.childViewCapturedRate).toBe(0);
+    expect(r.riskAssessmentCompletedRate).toBeNull();
+    expect(r.safeguardingLeadInformedRate).toBeNull();
+    expect(r.multiAgencyEngagedRate).toBeNull();
+    expect(r.childViewCapturedRate).toBeNull();
   });
   it("25 for perfect", () => { expect(evaluateSafeguardingOversightQuality(makeRecords(5)).overallScore).toBe(25); });
   it("0 for all-false", () => {
@@ -151,9 +142,9 @@ describe("evaluateSafeguardingOversightCompliance", () => {
     const r = evaluateSafeguardingOversightCompliance([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalRecords).toBe(0);
-    expect(r.documentationCompleteRate).toBe(0);
-    expect(r.timelyRecordingRate).toBe(0);
-    expect(r.riskAssessmentCompletedRate).toBe(0);
+    expect(r.documentationCompleteRate).toBeNull();
+    expect(r.timelyRecordingRate).toBeNull();
+    expect(r.riskAssessmentCompletedRate).toBeNull();
     expect(r.categoryDiversityRatio).toBe(0);
     expect(r.uniqueCategories).toBe(0);
   });
@@ -264,12 +255,12 @@ describe("evaluateStaffSafeguardingOversightReadiness", () => {
     const r = evaluateStaffSafeguardingOversightReadiness([]);
     expect(r.overallScore).toBe(0);
     expect(r.totalStaff).toBe(0);
-    expect(r.safeguardingAwarenessRate).toBe(0);
-    expect(r.recognisingSignsRate).toBe(0);
-    expect(r.referralProceduresRate).toBe(0);
-    expect(r.recordKeepingSkillsRate).toBe(0);
-    expect(r.multiAgencyWorkingRate).toBe(0);
-    expect(r.onlineSafetyKnowledgeRate).toBe(0);
+    expect(r.safeguardingAwarenessRate).toBeNull();
+    expect(r.recognisingSignsRate).toBeNull();
+    expect(r.referralProceduresRate).toBeNull();
+    expect(r.recordKeepingSkillsRate).toBeNull();
+    expect(r.multiAgencyWorkingRate).toBeNull();
+    expect(r.onlineSafetyKnowledgeRate).toBeNull();
   });
   it("25 for all-true", () => { expect(evaluateStaffSafeguardingOversightReadiness([makeStaff()]).overallScore).toBe(25); });
   it("0 for all-false", () => {

@@ -1,3 +1,4 @@
+import { above, below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // THERAPEUTIC CRISIS INTERVENTION INTELLIGENCE ENGINE
 //
@@ -146,19 +147,27 @@ export interface StaffCrisisTraining {
 
 export interface DeescalationEffectivenessResult {
   overallScore: number;
-  deescalationAttemptRate: number;
-  deescalationSuccessRate: number;
-  physicalInterventionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  deescalationAttemptRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  deescalationSuccessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  physicalInterventionRate: number | null;
   severityDistribution: Record<IncidentSeverity, number>;
 }
 
 export interface PostIncidentPracticeResult {
   overallScore: number;
-  childDebriefRate: number;
-  staffDebriefRate: number;
-  bodyMapCompletionRate: number;
-  timelyRecordingRate: number;
-  lessonsLearnedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childDebriefRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  staffDebriefRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  bodyMapCompletionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  lessonsLearnedRate: number | null;
 }
 
 export interface CrisisPolicyResult {
@@ -175,12 +184,18 @@ export interface CrisisPolicyResult {
 export interface StaffCrisisReadinessResult {
   overallScore: number;
   totalStaff: number;
-  therapeuticApproachRate: number;
-  deescalationRate: number;
-  physicalInterventionRate: number;
-  postIncidentSupportRate: number;
-  recordKeepingRate: number;
-  bodyMappingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  therapeuticApproachRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  deescalationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  physicalInterventionRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  postIncidentSupportRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  recordKeepingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  bodyMappingRate: number | null;
 }
 
 export interface ChildCrisisProfile {
@@ -212,11 +227,6 @@ export interface TherapeuticCrisisInterventionIntelligence {
 
 // -- Helpers -------------------------------------------------------------------
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -241,9 +251,9 @@ export function evaluateDeescalationEffectiveness(
   if (incidents.length === 0) {
     return {
       overallScore: 25,
-      deescalationAttemptRate: 0,
-      deescalationSuccessRate: 0,
-      physicalInterventionRate: 0,
+      deescalationAttemptRate: null,
+      deescalationSuccessRate: null,
+      physicalInterventionRate: null,
       severityDistribution: { low: 0, medium: 0, high: 0, critical: 0 },
     };
   }
@@ -265,32 +275,32 @@ export function evaluateDeescalationEffectiveness(
     sevCounts[inc.severity]++;
   }
 
-  const deescalationAttemptRate = pct(deescAttempted, incidents.length);
-  const deescalationSuccessRate = pct(deescSuccessful, incidents.length);
-  const physicalInterventionRate = pct(physicalUsed, incidents.length);
+  const deescalationAttemptRate = rate(deescAttempted, incidents.length);
+  const deescalationSuccessRate = rate(deescSuccessful, incidents.length);
+  const physicalInterventionRate = rate(physicalUsed, incidents.length);
 
   // De-escalation attempt rate -> 0-7
   let score = 0;
-  score += Math.round((deescalationAttemptRate / 100) * 7);
+  score += Math.round((deescalationAttemptRate! / 100) * 7);
 
   // Successful/partially_successful de-escalation rate -> 0-6
-  score += Math.round((deescalationSuccessRate / 100) * 6);
+  score += Math.round((deescalationSuccessRate! / 100) * 6);
 
   // Low physical intervention usage rate -> 0-6
   if (physicalInterventionRate === 0) score += 6;
-  else if (physicalInterventionRate <= 15) score += 5;
-  else if (physicalInterventionRate <= 30) score += 4;
-  else if (physicalInterventionRate <= 50) score += 2;
-  else if (physicalInterventionRate <= 75) score += 1;
+  else if (physicalInterventionRate! <= 15) score += 5;
+  else if (physicalInterventionRate! <= 30) score += 4;
+  else if (physicalInterventionRate! <= 50) score += 2;
+  else if (physicalInterventionRate! <= 75) score += 1;
 
   // Severity distribution (lower is better) -> 0-6
   const total = incidents.length;
-  const lowMedRate = pct(sevCounts.low + sevCounts.medium, total);
-  if (lowMedRate >= 90) score += 6;
-  else if (lowMedRate >= 75) score += 5;
-  else if (lowMedRate >= 60) score += 4;
-  else if (lowMedRate >= 40) score += 2;
-  else if (lowMedRate >= 20) score += 1;
+  const lowMedRate = rate(sevCounts.low + sevCounts.medium, total);
+  if (meets(lowMedRate, 90)) score += 6;
+  else if (meets(lowMedRate, 75)) score += 5;
+  else if (meets(lowMedRate, 60)) score += 4;
+  else if (meets(lowMedRate, 40)) score += 2;
+  else if (meets(lowMedRate, 20)) score += 1;
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -316,11 +326,11 @@ export function evaluatePostIncidentPractice(
   if (incidents.length === 0) {
     return {
       overallScore: 25,
-      childDebriefRate: 0,
-      staffDebriefRate: 0,
-      bodyMapCompletionRate: 0,
-      timelyRecordingRate: 0,
-      lessonsLearnedRate: 0,
+      childDebriefRate: null,
+      staffDebriefRate: null,
+      bodyMapCompletionRate: null,
+      timelyRecordingRate: null,
+      lessonsLearnedRate: null,
     };
   }
 
@@ -343,28 +353,28 @@ export function evaluatePostIncidentPractice(
     }
   }
 
-  const childDebriefRate = pct(childDebriefs, incidents.length);
-  const staffDebriefRate = pct(staffDebriefs, incidents.length);
-  const bodyMapCompletionRate = pct(bodyMapsCompleted, physicalIncidents.length);
-  const timelyRecordingRate = pct(timelyRecords, incidents.length);
-  const lessonsLearnedRate = pct(lessonsLearned, incidents.length);
+  const childDebriefRate = rate(childDebriefs, incidents.length);
+  const staffDebriefRate = rate(staffDebriefs, incidents.length);
+  const bodyMapCompletionRate = rate(bodyMapsCompleted, physicalIncidents.length);
+  const timelyRecordingRate = rate(timelyRecords, incidents.length);
+  const lessonsLearnedRate = rate(lessonsLearned, incidents.length);
 
   // Child debrief completion rate -> 0-7
   let score = 0;
-  score += Math.round((childDebriefRate / 100) * 7);
+  score += Math.round(((childDebriefRate ?? 0) / 100) * 7);
 
   // Staff debrief completion rate -> 0-6
-  score += Math.round((staffDebriefRate / 100) * 6);
+  score += Math.round(((staffDebriefRate ?? 0) / 100) * 6);
 
   // Body map completion (when physical intervention used) -> 0-6
   if (physicalIncidents.length === 0) {
     score += 6; // No physical interventions = best case
   } else {
-    score += Math.round((bodyMapCompletionRate / 100) * 6);
+    score += Math.round((bodyMapCompletionRate! / 100) * 6);
   }
 
   // Timely recording + lessons learned -> 0-6
-  const combinedRate = Math.round((timelyRecordingRate + lessonsLearnedRate) / 2);
+  const combinedRate = Math.round((timelyRecordingRate! + lessonsLearnedRate!) / 2);
   score += Math.round((combinedRate / 100) * 6);
 
   return {
@@ -446,12 +456,12 @@ export function evaluateStaffCrisisReadiness(
     return {
       overallScore: 0,
       totalStaff: 0,
-      therapeuticApproachRate: 0,
-      deescalationRate: 0,
-      physicalInterventionRate: 0,
-      postIncidentSupportRate: 0,
-      recordKeepingRate: 0,
-      bodyMappingRate: 0,
+      therapeuticApproachRate: null,
+      deescalationRate: null,
+      physicalInterventionRate: null,
+      postIncidentSupportRate: null,
+      recordKeepingRate: null,
+      bodyMappingRate: null,
     };
   }
 
@@ -471,20 +481,20 @@ export function evaluateStaffCrisisReadiness(
     if (t.bodyMapping) bodyMapping++;
   }
 
-  const therapeuticApproachRate = pct(therapeutic, training.length);
-  const deescalationRate = pct(deescalation, training.length);
-  const physicalInterventionRate = pct(physical, training.length);
-  const postIncidentSupportRate = pct(postIncident, training.length);
-  const recordKeepingRate = pct(recordKeeping, training.length);
-  const bodyMappingRate = pct(bodyMapping, training.length);
+  const therapeuticApproachRate = rate(therapeutic, training.length);
+  const deescalationRate = rate(deescalation, training.length);
+  const physicalInterventionRate = rate(physical, training.length);
+  const postIncidentSupportRate = rate(postIncident, training.length);
+  const recordKeepingRate = rate(recordKeeping, training.length);
+  const bodyMappingRate = rate(bodyMapping, training.length);
 
   let score = 0;
-  score += Math.round((therapeuticApproachRate / 100) * 5);
-  score += Math.round((deescalationRate / 100) * 5);
-  score += Math.round((physicalInterventionRate / 100) * 5);
-  score += Math.round((postIncidentSupportRate / 100) * 4);
-  score += Math.round((recordKeepingRate / 100) * 3);
-  score += Math.round((bodyMappingRate / 100) * 3);
+  score += Math.round((therapeuticApproachRate! / 100) * 5);
+  score += Math.round(((deescalationRate ?? 0) / 100) * 5);
+  score += Math.round(((physicalInterventionRate ?? 0) / 100) * 5);
+  score += Math.round(((postIncidentSupportRate ?? 0) / 100) * 4);
+  score += Math.round(((recordKeepingRate ?? 0) / 100) * 3);
+  score += Math.round(((bodyMappingRate ?? 0) / 100) * 3);
 
   return {
     overallScore: Math.min(25, Math.max(0, score)),
@@ -535,12 +545,12 @@ export function buildChildCrisisProfiles(
         i.deescalationOutcome === "successful" ||
         i.deescalationOutcome === "partially_successful",
     ).length;
-    const deescalationSuccessRate = pct(deescSuccessful, totalIncidents);
+    const deescalationSuccessRate = rate(deescSuccessful, totalIncidents)!;
 
     const debriefed = childIncidents.filter(
       (i) => i.childDebrief,
     ).length;
-    const debriefRate = pct(debriefed, totalIncidents);
+    const debriefRate = rate(debriefed, totalIncidents)!;
 
     // Score 0-10
     let score = 0;
@@ -552,15 +562,15 @@ export function buildChildCrisisProfiles(
     else if (totalIncidents <= 5) score += 1;
 
     // Low physical intervention rate (0-2)
-    const physRate = pct(physicalInterventions, totalIncidents);
+    const physRate = rate(physicalInterventions, totalIncidents)!;
     if (physRate === 0) score += 2;
-    else if (physRate <= 25) score += 1;
+    else if (physRate! <= 25) score += 1;
 
     // De-escalation success rate (0-3)
-    score += Math.round((deescalationSuccessRate / 100) * 3);
+    score += Math.round((deescalationSuccessRate! / 100) * 3);
 
     // Debrief rate (0-2)
-    score += Math.round((debriefRate / 100) * 2);
+    score += Math.round((debriefRate! / 100) * 2);
 
     return {
       childId,
@@ -617,7 +627,7 @@ export function generateTherapeuticCrisisInterventionIntelligence(
   }
   if (
     incidents.length > 0 &&
-    deescalationEffectiveness.deescalationSuccessRate >= 75
+    meets(deescalationEffectiveness.deescalationSuccessRate, 75)
   ) {
     strengths.push(
       "High de-escalation success rate — " +
@@ -671,17 +681,17 @@ export function generateTherapeuticCrisisInterventionIntelligence(
   const areasForImprovement: string[] = [];
   if (
     incidents.length > 0 &&
-    deescalationEffectiveness.deescalationAttemptRate < 100
+    below(deescalationEffectiveness.deescalationAttemptRate, 100)
   ) {
     areasForImprovement.push(
       "De-escalation not attempted in " +
-        (100 - deescalationEffectiveness.deescalationAttemptRate) +
+        (100 - deescalationEffectiveness.deescalationAttemptRate!) +
         "% of incidents — must be first response",
     );
   }
   if (
     incidents.length > 0 &&
-    deescalationEffectiveness.physicalInterventionRate > 30
+    above(deescalationEffectiveness.physicalInterventionRate, 30)
   ) {
     areasForImprovement.push(
       "Physical intervention rate at " +
@@ -710,14 +720,14 @@ export function generateTherapeuticCrisisInterventionIntelligence(
       "De-escalation protocol missing from crisis policy",
     );
   }
-  if (incidents.length > 0 && postIncidentPractice.childDebriefRate < 80) {
+  if (incidents.length > 0 && below(postIncidentPractice.childDebriefRate, 80)) {
     areasForImprovement.push(
       "Child debrief rate at " +
         postIncidentPractice.childDebriefRate +
         "% — target 100%",
     );
   }
-  if (incidents.length > 0 && postIncidentPractice.staffDebriefRate < 80) {
+  if (incidents.length > 0 && below(postIncidentPractice.staffDebriefRate, 80)) {
     areasForImprovement.push(
       "Staff debrief rate at " +
         postIncidentPractice.staffDebriefRate +
@@ -729,7 +739,7 @@ export function generateTherapeuticCrisisInterventionIntelligence(
       "No staff crisis training records — all staff must be trained",
     );
   }
-  if (training.length > 0 && staffCrisisReadiness.deescalationRate < 100) {
+  if (training.length > 0 && below(staffCrisisReadiness.deescalationRate, 100)) {
     areasForImprovement.push(
       "Only " +
         staffCrisisReadiness.deescalationRate +
@@ -738,7 +748,7 @@ export function generateTherapeuticCrisisInterventionIntelligence(
   }
   if (
     training.length > 0 &&
-    staffCrisisReadiness.therapeuticApproachRate < 75
+    below(staffCrisisReadiness.therapeuticApproachRate, 75)
   ) {
     areasForImprovement.push(
       "Therapeutic approach training completed by only " +
@@ -783,7 +793,7 @@ export function generateTherapeuticCrisisInterventionIntelligence(
   }
   if (
     physicalIncidents.length > 0 &&
-    deescalationEffectiveness.physicalInterventionRate > 50
+    above(deescalationEffectiveness.physicalInterventionRate, 50)
   ) {
     actions.push(
       "URGENT: Physical intervention used in " +
@@ -811,7 +821,7 @@ export function generateTherapeuticCrisisInterventionIntelligence(
   }
   if (
     training.length > 0 &&
-    staffCrisisReadiness.physicalInterventionRate < 100
+    below(staffCrisisReadiness.physicalInterventionRate, 100)
   ) {
     actions.push(
       "Ensure all staff are trained in physical intervention techniques — currently " +
@@ -821,7 +831,7 @@ export function generateTherapeuticCrisisInterventionIntelligence(
   }
   if (
     training.length > 0 &&
-    staffCrisisReadiness.bodyMappingRate < 100
+    below(staffCrisisReadiness.bodyMappingRate, 100)
   ) {
     actions.push(
       "Ensure all staff are trained in body mapping — currently " +

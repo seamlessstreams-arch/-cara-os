@@ -4,7 +4,6 @@
 
 import { describe, it, expect } from "vitest";
 import {
-  pct,
   getRating,
   getSupervisionTypeLabel,
   getContentCoverageLabel,
@@ -75,28 +74,6 @@ function makeTraining(overrides: Partial<StaffSupervisionTraining> = {}): StaffS
 // pct
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("pct", () => {
-  it("returns correct percentage", () => {
-    expect(pct(3, 4)).toBe(75);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("returns 100 when num equals den", () => {
-    expect(pct(10, 10)).toBe(100);
-  });
-
-  it("returns 0 when numerator is 0", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-});
-
 // ══════════════════════════════════════════════════════════════════════════════
 // getRating
 // ══════════════════════════════════════════════════════════════════════════════
@@ -163,10 +140,10 @@ describe("evaluateSupervisionQuality", () => {
   it("returns all zeros for empty sessions", () => {
     const result = evaluateSupervisionQuality([]);
     expect(result.overallScore).toBe(0);
-    expect(result.contentRate).toBe(0);
-    expect(result.reflectiveRate).toBe(0);
-    expect(result.safeguardingRate).toBe(0);
-    expect(result.wellbeingRate).toBe(0);
+    expect(result.contentRate).toBeNull();
+    expect(result.reflectiveRate).toBeNull();
+    expect(result.safeguardingRate).toBeNull();
+    expect(result.wellbeingRate).toBeNull();
   });
 
   it("returns max score for all-perfect sessions", () => {
@@ -266,9 +243,9 @@ describe("evaluateSupervisionCompliance", () => {
   it("returns all zeros for empty sessions", () => {
     const result = evaluateSupervisionCompliance([]);
     expect(result.overallScore).toBe(0);
-    expect(result.documentedRate).toBe(0);
-    expect(result.withinTimescaleRate).toBe(0);
-    expect(result.actionsReviewedRate).toBe(0);
+    expect(result.documentedRate).toBeNull();
+    expect(result.withinTimescaleRate).toBeNull();
+    expect(result.actionsReviewedRate).toBeNull();
     expect(result.typeDiversityRatio).toBe(0);
   });
 
@@ -447,7 +424,7 @@ describe("evaluateStaffSupervisionReadiness", () => {
   it("returns 0 for empty training array", () => {
     const result = evaluateStaffSupervisionReadiness([]);
     expect(result.overallScore).toBe(0);
-    expect(result.supervisorySkillsRate).toBe(0);
+    expect(result.supervisorySkillsRate).toBeNull();
   });
 
   it("returns 25 for fully trained staff", () => {

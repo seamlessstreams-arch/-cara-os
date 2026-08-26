@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara Transitions Intelligence Engine
 //
@@ -84,19 +85,27 @@ export interface TransitionQualityResult {
   overallScore: number;
   rating: Rating;
   totalTransitions: number;
-  transitionPlanRate: number;
-  childPreparedRate: number;
-  receivingBriefedRate: number;
-  handoverRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  transitionPlanRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childPreparedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  receivingBriefedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  handoverRate: number | null;
 }
 
 export interface TransitionComplianceResult {
   overallScore: number;
   rating: Rating;
-  documentationRate: number;
-  timelyRate: number;
-  handoverRate: number;
-  categoryDiversityRatio: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  handoverRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  categoryDiversityRatio: number | null;
 }
 
 export interface TransitionPolicyResult {
@@ -115,20 +124,28 @@ export interface StaffTransitionReadinessResult {
   overallScore: number;
   rating: Rating;
   totalStaff: number;
-  transitionPlanningRate: number;
-  childPreparationRate: number;
-  handoverSkillsRate: number;
-  familyEngagementRate: number;
-  multiAgencyWorkingRate: number;
-  emotionalSupportRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  transitionPlanningRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childPreparationRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  handoverSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  familyEngagementRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  multiAgencyWorkingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  emotionalSupportRate: number | null;
 }
 
 export interface ChildTransitionProfile {
   childId: string;
   childName: string;
   totalRecords: number;
-  transitionPlanRate: number;
-  childPreparedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  transitionPlanRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childPreparedRate: number | null;
   categoriesCovered: string[];
   overallScore: number;
 }
@@ -151,11 +168,6 @@ export interface TransitionsIntelligence {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -206,16 +218,16 @@ const ALL_CATEGORIES: TransitionCategory[] = [
 export function evaluateTransitionQuality(records: TransitionRecord[]): TransitionQualityResult {
   const total = records.length;
   if (total === 0) {
-    return { overallScore: 0, rating: "inadequate", totalTransitions: 0, transitionPlanRate: 0, childPreparedRate: 0, receivingBriefedRate: 0, handoverRate: 0 };
+    return { overallScore: 0, rating: "inadequate", totalTransitions: 0, transitionPlanRate: null, childPreparedRate: null, receivingBriefedRate: null, handoverRate: null };
   }
 
-  const transitionPlanRate = pct(records.filter((r) => r.transitionPlanInPlace).length, total);
-  const childPreparedRate = pct(records.filter((r) => r.childPrepared).length, total);
-  const receivingBriefedRate = pct(records.filter((r) => r.receivingServiceBriefed).length, total);
-  const handoverRate = pct(records.filter((r) => r.handoverComplete).length, total);
+  const transitionPlanRate = rate(records.filter((r) => r.transitionPlanInPlace).length, total);
+  const childPreparedRate = rate(records.filter((r) => r.childPrepared).length, total);
+  const receivingBriefedRate = rate(records.filter((r) => r.receivingServiceBriefed).length, total);
+  const handoverRate = rate(records.filter((r) => r.handoverComplete).length, total);
 
   // Weighted: transitionPlanRate 7 + childPreparedRate 6 + receivingBriefedRate 6 + handoverRate 6 = 25
-  const raw = (transitionPlanRate / 100) * 7 + (childPreparedRate / 100) * 6 + (receivingBriefedRate / 100) * 6 + (handoverRate / 100) * 6;
+  const raw = (transitionPlanRate! / 100) * 7 + (childPreparedRate! / 100) * 6 + (receivingBriefedRate! / 100) * 6 + (handoverRate! / 100) * 6;
   const overallScore = Math.min(25, Math.round(raw));
 
   return { overallScore, rating: getRating(overallScore * 4), totalTransitions: total, transitionPlanRate, childPreparedRate, receivingBriefedRate, handoverRate };
@@ -226,18 +238,18 @@ export function evaluateTransitionQuality(records: TransitionRecord[]): Transiti
 export function evaluateTransitionCompliance(records: TransitionRecord[]): TransitionComplianceResult {
   const total = records.length;
   if (total === 0) {
-    return { overallScore: 0, rating: "inadequate", documentationRate: 0, timelyRate: 0, handoverRate: 0, categoryDiversityRatio: 0 };
+    return { overallScore: 0, rating: "inadequate", documentationRate: null, timelyRate: null, handoverRate: null, categoryDiversityRatio: 0 };
   }
 
-  const documentationRate = pct(records.filter((r) => r.documentationComplete).length, total);
-  const timelyRate = pct(records.filter((r) => r.timelyProcess).length, total);
-  const handoverRate = pct(records.filter((r) => r.handoverComplete).length, total);
+  const documentationRate = rate(records.filter((r) => r.documentationComplete).length, total);
+  const timelyRate = rate(records.filter((r) => r.timelyProcess).length, total);
+  const handoverRate = rate(records.filter((r) => r.handoverComplete).length, total);
 
   const uniqueCategories = new Set(records.map((r) => r.category)).size;
-  const categoryDiversityRatio = pct(uniqueCategories, ALL_CATEGORIES.length);
+  const categoryDiversityRatio = rate(uniqueCategories, ALL_CATEGORIES.length);
 
   // Weighted: documentationRate 8 + timelyRate 7 + handoverRate 5 + categoryDiversityRatio 5 = 25
-  const raw = (documentationRate / 100) * 8 + (timelyRate / 100) * 7 + (handoverRate / 100) * 5 + (categoryDiversityRatio / 100) * 5;
+  const raw = (documentationRate! / 100) * 8 + (timelyRate! / 100) * 7 + (handoverRate! / 100) * 5 + ((categoryDiversityRatio ?? 0) / 100) * 5;
   const overallScore = Math.min(25, Math.round(raw));
 
   return { overallScore, rating: getRating(overallScore * 4), documentationRate, timelyRate, handoverRate, categoryDiversityRatio };
@@ -278,24 +290,24 @@ export function evaluateTransitionPolicy(policy: TransitionPolicy | null): Trans
 export function evaluateStaffTransitionReadiness(staff: StaffTransitionTraining[]): StaffTransitionReadinessResult {
   const count = staff.length;
   if (count === 0) {
-    return { overallScore: 0, rating: "inadequate", totalStaff: 0, transitionPlanningRate: 0, childPreparationRate: 0, handoverSkillsRate: 0, familyEngagementRate: 0, multiAgencyWorkingRate: 0, emotionalSupportRate: 0 };
+    return { overallScore: 0, rating: "inadequate", totalStaff: 0, transitionPlanningRate: null, childPreparationRate: null, handoverSkillsRate: null, familyEngagementRate: null, multiAgencyWorkingRate: null, emotionalSupportRate: null };
   }
 
-  const transitionPlanningRate = pct(staff.filter((s) => s.transitionPlanning).length, count);
-  const childPreparationRate = pct(staff.filter((s) => s.childPreparation).length, count);
-  const handoverSkillsRate = pct(staff.filter((s) => s.handoverSkills).length, count);
-  const familyEngagementRate = pct(staff.filter((s) => s.familyEngagement).length, count);
-  const multiAgencyWorkingRate = pct(staff.filter((s) => s.multiAgencyWorking).length, count);
-  const emotionalSupportRate = pct(staff.filter((s) => s.emotionalSupport).length, count);
+  const transitionPlanningRate = rate(staff.filter((s) => s.transitionPlanning).length, count);
+  const childPreparationRate = rate(staff.filter((s) => s.childPreparation).length, count);
+  const handoverSkillsRate = rate(staff.filter((s) => s.handoverSkills).length, count);
+  const familyEngagementRate = rate(staff.filter((s) => s.familyEngagement).length, count);
+  const multiAgencyWorkingRate = rate(staff.filter((s) => s.multiAgencyWorking).length, count);
+  const emotionalSupportRate = rate(staff.filter((s) => s.emotionalSupport).length, count);
 
   // Weighted: 6+5+5+4+3+2 = 25
   const raw =
-    (transitionPlanningRate / 100) * 6 +
-    (childPreparationRate / 100) * 5 +
-    (handoverSkillsRate / 100) * 5 +
-    (familyEngagementRate / 100) * 4 +
-    (multiAgencyWorkingRate / 100) * 3 +
-    (emotionalSupportRate / 100) * 2;
+    (transitionPlanningRate! / 100) * 6 +
+    (childPreparationRate! / 100) * 5 +
+    (handoverSkillsRate! / 100) * 5 +
+    (familyEngagementRate! / 100) * 4 +
+    (multiAgencyWorkingRate! / 100) * 3 +
+    (emotionalSupportRate! / 100) * 2;
   const overallScore = Math.min(25, Math.round(raw));
 
   return { overallScore, rating: getRating(overallScore * 4), totalStaff: count, transitionPlanningRate, childPreparationRate, handoverSkillsRate, familyEngagementRate, multiAgencyWorkingRate, emotionalSupportRate };
@@ -316,8 +328,8 @@ export function buildChildTransitionProfiles(records: TransitionRecord[]): Child
     const childName = recs[0].childName;
     const totalRecords = recs.length;
 
-    const transitionPlanRate = pct(recs.filter((r) => r.transitionPlanInPlace).length, totalRecords);
-    const childPreparedRate = pct(recs.filter((r) => r.childPrepared).length, totalRecords);
+    const transitionPlanRate = rate(recs.filter((r) => r.transitionPlanInPlace).length, totalRecords);
+    const childPreparedRate = rate(recs.filter((r) => r.childPrepared).length, totalRecords);
 
     const catsSet = new Set(recs.map((r) => r.category));
     const categoriesCovered = [...catsSet];
@@ -325,16 +337,16 @@ export function buildChildTransitionProfiles(records: TransitionRecord[]): Child
     // Scoring: freq [>=10->2, >=5->1] + rate1 transitionPlanRate [>=80->3, >=60->2, >=40->1] + rate2 childPreparedRate [same] + diversity [>=4->2, >=2->1]
     let score = 0;
 
-    if (totalRecords >= 10) score += 2;
-    else if (totalRecords >= 5) score += 1;
+    if (meets(totalRecords, 10)) score += 2;
+    else if (meets(totalRecords, 5)) score += 1;
 
-    if (transitionPlanRate >= 80) score += 3;
-    else if (transitionPlanRate >= 60) score += 2;
-    else if (transitionPlanRate >= 40) score += 1;
+    if (meets(transitionPlanRate, 80)) score += 3;
+    else if (meets(transitionPlanRate, 60)) score += 2;
+    else if (meets(transitionPlanRate, 40)) score += 1;
 
-    if (childPreparedRate >= 80) score += 3;
-    else if (childPreparedRate >= 60) score += 2;
-    else if (childPreparedRate >= 40) score += 1;
+    if (meets(childPreparedRate, 80)) score += 3;
+    else if (meets(childPreparedRate, 60)) score += 2;
+    else if (meets(childPreparedRate, 40)) score += 1;
 
     const catCount = categoriesCovered.length;
     if (catCount >= 4) score += 2;
@@ -378,36 +390,36 @@ export function generateTransitionsIntelligence(
 
   // Strengths (>=80%)
   const strengths: string[] = [];
-  if (transitionQuality.transitionPlanRate >= 80) strengths.push("Transition plans are consistently in place before moves");
-  if (transitionQuality.childPreparedRate >= 80) strengths.push("Children are well prepared ahead of transitions");
-  if (transitionQuality.receivingBriefedRate >= 80) strengths.push("Receiving services are routinely briefed before transitions");
-  if (transitionQuality.handoverRate >= 80) strengths.push("Handovers are thorough and well managed");
-  if (transitionCompliance.documentationRate >= 80) strengths.push("Transition documentation is comprehensive and complete");
-  if (transitionCompliance.timelyRate >= 80) strengths.push("Transitions are completed within required timescales");
-  if (staffReadiness.transitionPlanningRate >= 80) strengths.push("Staff are well trained in transition planning");
-  if (staffReadiness.childPreparationRate >= 80) strengths.push("Strong child preparation skills across the team");
+  if (meets(transitionQuality.transitionPlanRate, 80)) strengths.push("Transition plans are consistently in place before moves");
+  if (meets(transitionQuality.childPreparedRate, 80)) strengths.push("Children are well prepared ahead of transitions");
+  if (meets(transitionQuality.receivingBriefedRate, 80)) strengths.push("Receiving services are routinely briefed before transitions");
+  if (meets(transitionQuality.handoverRate, 80)) strengths.push("Handovers are thorough and well managed");
+  if (meets(transitionCompliance.documentationRate, 80)) strengths.push("Transition documentation is comprehensive and complete");
+  if (meets(transitionCompliance.timelyRate, 80)) strengths.push("Transitions are completed within required timescales");
+  if (meets(staffReadiness.transitionPlanningRate, 80)) strengths.push("Staff are well trained in transition planning");
+  if (meets(staffReadiness.childPreparationRate, 80)) strengths.push("Strong child preparation skills across the team");
 
   // Areas for improvement (<60%)
   const areasForImprovement: string[] = [];
-  if (transitionQuality.transitionPlanRate < 60) areasForImprovement.push("Transition plans are not consistently in place before moves");
-  if (transitionQuality.childPreparedRate < 60) areasForImprovement.push("Children are not being adequately prepared for transitions");
-  if (transitionQuality.receivingBriefedRate < 60) areasForImprovement.push("Receiving services are not consistently briefed before transitions");
-  if (transitionQuality.handoverRate < 60) areasForImprovement.push("Handover processes need improvement");
-  if (transitionCompliance.documentationRate < 60) areasForImprovement.push("Transition documentation is incomplete or inconsistent");
-  if (transitionCompliance.timelyRate < 60) areasForImprovement.push("Transitions are taking too long to complete");
-  if (staffReadiness.transitionPlanningRate < 60) areasForImprovement.push("Staff transition planning skills require development");
-  if (staffReadiness.childPreparationRate < 60) areasForImprovement.push("Staff child preparation training needs improvement");
+  if (below(transitionQuality.transitionPlanRate, 60)) areasForImprovement.push("Transition plans are not consistently in place before moves");
+  if (below(transitionQuality.childPreparedRate, 60)) areasForImprovement.push("Children are not being adequately prepared for transitions");
+  if (below(transitionQuality.receivingBriefedRate, 60)) areasForImprovement.push("Receiving services are not consistently briefed before transitions");
+  if (below(transitionQuality.handoverRate, 60)) areasForImprovement.push("Handover processes need improvement");
+  if (below(transitionCompliance.documentationRate, 60)) areasForImprovement.push("Transition documentation is incomplete or inconsistent");
+  if (below(transitionCompliance.timelyRate, 60)) areasForImprovement.push("Transitions are taking too long to complete");
+  if (below(staffReadiness.transitionPlanningRate, 60)) areasForImprovement.push("Staff transition planning skills require development");
+  if (below(staffReadiness.childPreparationRate, 60)) areasForImprovement.push("Staff child preparation training needs improvement");
 
   // Actions
   const actions: string[] = [];
   if (transitionPolicy.overallScore === 0) actions.push("URGENT: Establish a formal transitions policy — CHR 2015 Reg 5 and Reg 14 require documented transition and care planning processes");
   if (staffReadiness.overallScore === 0) actions.push("URGENT: Provide transition planning and handover training to all staff — effective transitions depend on skilled practitioners");
-  if (transitionQuality.childPreparedRate < 50) actions.push("Implement systematic child preparation for all transitions — children must be supported through placement changes");
-  if (transitionQuality.receivingBriefedRate < 50) actions.push("Ensure receiving services are briefed before every transition — SCCIF requires effective multi-agency coordination");
-  if (transitionCompliance.documentationRate < 50) actions.push("Improve transition documentation — placement plans and handover records must be comprehensive (Reg 14)");
-  if (transitionCompliance.timelyRate < 50) actions.push("Review transition timescales — moves should be planned and executed within agreed timeframes");
-  if (transitionQuality.transitionPlanRate < 50) actions.push("Develop transition plans for all placement moves to support continuity of care");
-  if (staffReadiness.familyEngagementRate < 50) actions.push("Train staff in family engagement during transitions — families should be involved throughout the process");
+  if (below(transitionQuality.childPreparedRate, 50)) actions.push("Implement systematic child preparation for all transitions — children must be supported through placement changes");
+  if (below(transitionQuality.receivingBriefedRate, 50)) actions.push("Ensure receiving services are briefed before every transition — SCCIF requires effective multi-agency coordination");
+  if (below(transitionCompliance.documentationRate, 50)) actions.push("Improve transition documentation — placement plans and handover records must be comprehensive (Reg 14)");
+  if (below(transitionCompliance.timelyRate, 50)) actions.push("Review transition timescales — moves should be planned and executed within agreed timeframes");
+  if (below(transitionQuality.transitionPlanRate, 50)) actions.push("Develop transition plans for all placement moves to support continuity of care");
+  if (below(staffReadiness.familyEngagementRate, 50)) actions.push("Train staff in family engagement during transitions — families should be involved throughout the process");
 
   const regulatoryLinks: string[] = [
     "CHR 2015 Reg 5 — Engaging with the wider system to benefit children",

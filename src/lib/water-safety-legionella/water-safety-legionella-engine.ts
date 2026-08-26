@@ -1,3 +1,4 @@
+import { below, meets, rate } from "@/lib/metrics/rate";
 // ==============================================================================
 // WATER SAFETY & LEGIONELLA INTELLIGENCE ENGINE
 //
@@ -160,13 +161,16 @@ export interface StaffWaterSafetyTraining {
 export interface TemperatureComplianceResult {
   totalChecks: number;
   passCount: number;
-  passRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  passRate: number | null;
   withinSafeRangeCount: number;
-  withinSafeRangeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  withinSafeRangeRate: number | null;
   issueCount: number;
   correctiveActionCount: number;
-  correctiveActionRate: number;
-  sourceTypeCoverage: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  correctiveActionRate: number | null;
+  sourceTypeCoverage: number | null;
   bySourceType: Record<string, number>;
   byOutcome: Record<string, number>;
   score: number;
@@ -175,14 +179,18 @@ export interface TemperatureComplianceResult {
 export interface LegionellaManagementResult {
   totalAssessments: number;
   lowRiskCount: number;
-  lowRiskRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  lowRiskRate: number | null;
   flushingScheduleCount: number;
-  flushingScheduleRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  flushingScheduleRate: number | null;
   waterTreatmentCount: number;
-  waterTreatmentRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  waterTreatmentRate: number | null;
   deadLegsIdentifiedCount: number;
   deadLegsRemovedCount: number;
-  deadLegsManagementRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  deadLegsManagementRate: number | null;
   byRiskLevel: Record<string, number>;
   score: number;
 }
@@ -202,25 +210,33 @@ export interface WaterSafetyPolicyResult {
 export interface StaffWaterReadinessResult {
   totalStaff: number;
   legionellaAwarenessCount: number;
-  legionellaAwarenessRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  legionellaAwarenessRate: number | null;
   temperatureMonitoringCount: number;
-  temperatureMonitoringRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  temperatureMonitoringRate: number | null;
   scaldingPreventionCount: number;
-  scaldingPreventionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  scaldingPreventionRate: number | null;
   bathSupervisionCount: number;
-  bathSupervisionRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  bathSupervisionRate: number | null;
   emergencyResponseCount: number;
-  emergencyResponseRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  emergencyResponseRate: number | null;
   recordKeepingCount: number;
-  recordKeepingRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  recordKeepingRate: number | null;
   score: number;
 }
 
 export interface WaterSafetyLocationProfile {
   location: string;
   checkCount: number;
-  passRate: number;
-  withinSafeRangeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  passRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  withinSafeRangeRate: number | null;
   averageTemperature: number | null;
   assessmentCount: number;
   latestRiskLevel: RiskLevel | null;
@@ -246,11 +262,6 @@ export interface WaterSafetyLegionellaIntelligence {
 }
 
 // -- Helpers -------------------------------------------------------------------
-
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
 
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
@@ -285,13 +296,13 @@ export function evaluateTemperatureCompliance(
     return {
       totalChecks: 0,
       passCount: 0,
-      passRate: 0,
+      passRate: null,
       withinSafeRangeCount: 0,
-      withinSafeRangeRate: 0,
+      withinSafeRangeRate: null,
       issueCount: 0,
       correctiveActionCount: 0,
-      correctiveActionRate: 0,
-      sourceTypeCoverage: 0,
+      correctiveActionRate: null,
+      sourceTypeCoverage: null,
       bySourceType: {},
       byOutcome: {},
       score: 0,
@@ -302,13 +313,13 @@ export function evaluateTemperatureCompliance(
 
   // Pass rate
   const passCount = checks.filter((c) => c.outcome === "pass").length;
-  const passRate = pct(passCount, total);
+  const passRate = rate(passCount, total);
 
   // Within safe range rate
   const withinSafeRangeCount = checks.filter(
     (c) => c.withinSafeRange
   ).length;
-  const withinSafeRangeRate = pct(withinSafeRangeCount, total);
+  const withinSafeRangeRate = rate(withinSafeRangeCount, total);
 
   // Issues and corrective actions
   const issueChecks = checks.filter(
@@ -321,7 +332,7 @@ export function evaluateTemperatureCompliance(
   const correctiveActionCount = issueChecks.filter(
     (c) => c.correctiveAction
   ).length;
-  const correctiveActionRate = pct(correctiveActionCount, issueCount);
+  const correctiveActionRate = rate(correctiveActionCount, issueCount);
 
   // Source type coverage
   const coveredTypes = new Set(checks.map((c) => c.sourceType));
@@ -341,13 +352,13 @@ export function evaluateTemperatureCompliance(
 
   // Scoring: 0-25
   // Pass rate: 0-7
-  const passScore = Math.round((passRate / 100) * 7);
+  const passScore = Math.round(((passRate ?? 0) / 100) * 7);
 
   // Within safe range rate: 0-6
-  const safeRangeScore = Math.round((withinSafeRangeRate / 100) * 6);
+  const safeRangeScore = Math.round(((withinSafeRangeRate ?? 0) / 100) * 6);
 
   // Corrective action rate when issues found: 0-6
-  const correctiveScore = Math.round((correctiveActionRate / 100) * 6);
+  const correctiveScore = Math.round(((correctiveActionRate ?? 0) / 100) * 6);
 
   // Source type coverage: 0-6 (based on proportion of all types covered)
   const coverageScore = Math.round(
@@ -385,14 +396,14 @@ export function evaluateLegionellaManagement(
     return {
       totalAssessments: 0,
       lowRiskCount: 0,
-      lowRiskRate: 0,
+      lowRiskRate: null,
       flushingScheduleCount: 0,
-      flushingScheduleRate: 0,
+      flushingScheduleRate: null,
       waterTreatmentCount: 0,
-      waterTreatmentRate: 0,
+      waterTreatmentRate: null,
       deadLegsIdentifiedCount: 0,
       deadLegsRemovedCount: 0,
-      deadLegsManagementRate: 0,
+      deadLegsManagementRate: null,
       byRiskLevel: {},
       score: 0,
     };
@@ -404,19 +415,19 @@ export function evaluateLegionellaManagement(
   const lowRiskCount = assessments.filter(
     (a) => a.riskLevel === "low"
   ).length;
-  const lowRiskRate = pct(lowRiskCount, total);
+  const lowRiskRate = rate(lowRiskCount, total);
 
   // Flushing schedule rate
   const flushingScheduleCount = assessments.filter(
     (a) => a.flushingScheduleInPlace
   ).length;
-  const flushingScheduleRate = pct(flushingScheduleCount, total);
+  const flushingScheduleRate = rate(flushingScheduleCount, total);
 
   // Water treatment rate
   const waterTreatmentCount = assessments.filter(
     (a) => a.waterTreatmentActive
   ).length;
-  const waterTreatmentRate = pct(waterTreatmentCount, total);
+  const waterTreatmentRate = rate(waterTreatmentCount, total);
 
   // Dead legs management
   const deadLegsIdentifiedCount = assessments.filter(
@@ -425,7 +436,7 @@ export function evaluateLegionellaManagement(
   const deadLegsRemovedCount = assessments.filter(
     (a) => a.deadLegsRemoved
   ).length;
-  const deadLegsManagementRate = pct(
+  const deadLegsManagementRate = rate(
     deadLegsRemovedCount,
     deadLegsIdentifiedCount
   );
@@ -438,16 +449,16 @@ export function evaluateLegionellaManagement(
 
   // Scoring: 0-25
   // Low risk rate: 0-7
-  const lowRiskScore = Math.round((lowRiskRate / 100) * 7);
+  const lowRiskScore = Math.round(((lowRiskRate ?? 0) / 100) * 7);
 
   // Flushing schedule rate: 0-6
-  const flushingScore = Math.round((flushingScheduleRate / 100) * 6);
+  const flushingScore = Math.round(((flushingScheduleRate ?? 0) / 100) * 6);
 
   // Water treatment rate: 0-6
-  const treatmentScore = Math.round((waterTreatmentRate / 100) * 6);
+  const treatmentScore = Math.round(((waterTreatmentRate ?? 0) / 100) * 6);
 
   // Dead legs management rate: 0-6
-  const deadLegsScore = Math.round((deadLegsManagementRate / 100) * 6);
+  const deadLegsScore = Math.round(((deadLegsManagementRate ?? 0) / 100) * 6);
 
   const score = clamp(
     lowRiskScore + flushingScore + treatmentScore + deadLegsScore,
@@ -519,22 +530,22 @@ export function evaluateWaterSafetyPolicy(
   // scaldingPrevention=4, bathSupervision=3, emergencyProcedures=3, recordKeeping=2
   // Total weights = 25
 
-  const policyCurrentRate = pct(policyCurrentCount, total);
-  const tempScheduleRate = pct(temperatureScheduleCount, total);
-  const legionellaPlanRate = pct(legionellaPlanCount, total);
-  const scaldingRate = pct(scaldingPreventionCount, total);
-  const bathRate = pct(bathSupervisionCount, total);
-  const emergencyRate = pct(emergencyProceduresCount, total);
-  const recordRate = pct(recordKeepingCount, total);
+  const policyCurrentRate = rate(policyCurrentCount, total);
+  const tempScheduleRate = rate(temperatureScheduleCount, total);
+  const legionellaPlanRate = rate(legionellaPlanCount, total);
+  const scaldingRate = rate(scaldingPreventionCount, total);
+  const bathRate = rate(bathSupervisionCount, total);
+  const emergencyRate = rate(emergencyProceduresCount, total);
+  const recordRate = rate(recordKeepingCount, total);
 
   const score = clamp(
-    Math.round((policyCurrentRate / 100) * 5) +
-      Math.round((tempScheduleRate / 100) * 4) +
-      Math.round((legionellaPlanRate / 100) * 4) +
-      Math.round((scaldingRate / 100) * 4) +
-      Math.round((bathRate / 100) * 3) +
-      Math.round((emergencyRate / 100) * 3) +
-      Math.round((recordRate / 100) * 2),
+    Math.round(((policyCurrentRate ?? 0) / 100) * 5) +
+      Math.round(((tempScheduleRate ?? 0) / 100) * 4) +
+      Math.round(((legionellaPlanRate ?? 0) / 100) * 4) +
+      Math.round(((scaldingRate ?? 0) / 100) * 4) +
+      Math.round(((bathRate ?? 0) / 100) * 3) +
+      Math.round(((emergencyRate ?? 0) / 100) * 3) +
+      Math.round(((recordRate ?? 0) / 100) * 2),
     0,
     25
   );
@@ -561,17 +572,17 @@ export function evaluateStaffWaterReadiness(
     return {
       totalStaff: 0,
       legionellaAwarenessCount: 0,
-      legionellaAwarenessRate: 0,
+      legionellaAwarenessRate: null,
       temperatureMonitoringCount: 0,
-      temperatureMonitoringRate: 0,
+      temperatureMonitoringRate: null,
       scaldingPreventionCount: 0,
-      scaldingPreventionRate: 0,
+      scaldingPreventionRate: null,
       bathSupervisionCount: 0,
-      bathSupervisionRate: 0,
+      bathSupervisionRate: null,
       emergencyResponseCount: 0,
-      emergencyResponseRate: 0,
+      emergencyResponseRate: null,
       recordKeepingCount: 0,
-      recordKeepingRate: 0,
+      recordKeepingRate: null,
       score: 0,
     };
   }
@@ -581,32 +592,32 @@ export function evaluateStaffWaterReadiness(
   const legionellaAwarenessCount = training.filter(
     (t) => t.legionellaAwareness
   ).length;
-  const legionellaAwarenessRate = pct(legionellaAwarenessCount, total);
+  const legionellaAwarenessRate = rate(legionellaAwarenessCount, total);
 
   const temperatureMonitoringCount = training.filter(
     (t) => t.temperatureMonitoring
   ).length;
-  const temperatureMonitoringRate = pct(temperatureMonitoringCount, total);
+  const temperatureMonitoringRate = rate(temperatureMonitoringCount, total);
 
   const scaldingPreventionCount = training.filter(
     (t) => t.scaldingPrevention
   ).length;
-  const scaldingPreventionRate = pct(scaldingPreventionCount, total);
+  const scaldingPreventionRate = rate(scaldingPreventionCount, total);
 
   const bathSupervisionCount = training.filter(
     (t) => t.bathSupervision
   ).length;
-  const bathSupervisionRate = pct(bathSupervisionCount, total);
+  const bathSupervisionRate = rate(bathSupervisionCount, total);
 
   const emergencyResponseCount = training.filter(
     (t) => t.emergencyResponse
   ).length;
-  const emergencyResponseRate = pct(emergencyResponseCount, total);
+  const emergencyResponseRate = rate(emergencyResponseCount, total);
 
   const recordKeepingCount = training.filter(
     (t) => t.recordKeeping
   ).length;
-  const recordKeepingRate = pct(recordKeepingCount, total);
+  const recordKeepingRate = rate(recordKeepingCount, total);
 
   // Rate-based scoring per field:
   // legionellaAwareness=6, temperatureMonitoring=5, scaldingPrevention=5,
@@ -614,12 +625,12 @@ export function evaluateStaffWaterReadiness(
   // Total weights = 25
 
   const score = clamp(
-    Math.round((legionellaAwarenessRate / 100) * 6) +
-      Math.round((temperatureMonitoringRate / 100) * 5) +
-      Math.round((scaldingPreventionRate / 100) * 5) +
-      Math.round((bathSupervisionRate / 100) * 4) +
-      Math.round((emergencyResponseRate / 100) * 3) +
-      Math.round((recordKeepingRate / 100) * 2),
+    Math.round(((legionellaAwarenessRate ?? 0) / 100) * 6) +
+      Math.round(((temperatureMonitoringRate ?? 0) / 100) * 5) +
+      Math.round(((scaldingPreventionRate ?? 0) / 100) * 5) +
+      Math.round(((bathSupervisionRate ?? 0) / 100) * 4) +
+      Math.round(((emergencyResponseRate ?? 0) / 100) * 3) +
+      Math.round(((recordKeepingRate ?? 0) / 100) * 2),
     0,
     25
   );
@@ -687,12 +698,12 @@ export function buildWaterSafetyLocationProfiles(
     const passCount = data.checks.filter(
       (c) => c.outcome === "pass"
     ).length;
-    const passRate = pct(passCount, checkCount);
+    const passRate = rate(passCount, checkCount);
 
     const safeRangeCount = data.checks.filter(
       (c) => c.withinSafeRange
     ).length;
-    const withinSafeRangeRate = pct(safeRangeCount, checkCount);
+    const withinSafeRangeRate = rate(safeRangeCount, checkCount);
 
     const avgTemp =
       checkCount > 0
@@ -721,8 +732,8 @@ export function buildWaterSafetyLocationProfiles(
 
     // Location score 0-10: passRate contributes 4, safeRangeRate contributes 3,
     // low risk level contributes 3
-    const passScore = Math.round((passRate / 100) * 4);
-    const safeScore = Math.round((withinSafeRangeRate / 100) * 3);
+    const passScore = Math.round(((passRate ?? 0) / 100) * 4);
+    const safeScore = Math.round(((withinSafeRangeRate ?? 0) / 100) * 3);
     const riskScore =
       latestRiskLevel === "low"
         ? 3
@@ -787,11 +798,11 @@ export function generateWaterSafetyLegionellaIntelligence(
   // -- Strengths ---------------------------------------------------------------
   const strengths: string[] = [];
 
-  if (tempEval.passRate >= 90 && tempEval.totalChecks > 0)
+  if (meets(tempEval.passRate, 90) && tempEval.totalChecks > 0)
     strengths.push(
       "Water temperature checks show an excellent pass rate, demonstrating effective monitoring"
     );
-  if (tempEval.withinSafeRangeRate >= 90 && tempEval.totalChecks > 0)
+  if (meets(tempEval.withinSafeRangeRate, 90) && tempEval.totalChecks > 0)
     strengths.push(
       "Water temperatures are consistently within safe ranges across the home"
     );
@@ -802,7 +813,7 @@ export function generateWaterSafetyLegionellaIntelligence(
     strengths.push(
       "All temperature issues have had corrective actions taken promptly"
     );
-  if (tempEval.sourceTypeCoverage >= 5)
+  if (meets(tempEval.sourceTypeCoverage, 5))
     strengths.push(
       "Comprehensive coverage of water source types in temperature monitoring"
     );
@@ -855,19 +866,19 @@ export function generateWaterSafetyLegionellaIntelligence(
     areasForImprovement.push(
       "No water temperature checks recorded — this is a critical monitoring gap"
     );
-  if (tempEval.passRate < 80 && tempEval.totalChecks > 0)
+  if (below(tempEval.passRate, 80) && tempEval.totalChecks > 0)
     areasForImprovement.push(
       "Water temperature check pass rate is below acceptable levels"
     );
-  if (tempEval.withinSafeRangeRate < 80 && tempEval.totalChecks > 0)
+  if (below(tempEval.withinSafeRangeRate, 80) && tempEval.totalChecks > 0)
     areasForImprovement.push(
       "Too many water sources are outside safe temperature ranges"
     );
-  if (tempEval.correctiveActionRate < 100 && tempEval.issueCount > 0)
+  if (below(tempEval.correctiveActionRate, 100) && tempEval.issueCount > 0)
     areasForImprovement.push(
       "Not all temperature issues have had corrective actions documented"
     );
-  if (tempEval.sourceTypeCoverage < 3 && tempEval.totalChecks > 0)
+  if (below(tempEval.sourceTypeCoverage, 3) && tempEval.totalChecks > 0)
     areasForImprovement.push(
       "Temperature monitoring covers too few water source types"
     );
@@ -876,28 +887,28 @@ export function generateWaterSafetyLegionellaIntelligence(
       "No legionella risk assessment on record — this is a serious compliance gap"
     );
   if (
-    legionellaEval.lowRiskRate < 50 &&
+    below(legionellaEval.lowRiskRate, 50) &&
     legionellaEval.totalAssessments > 0
   )
     areasForImprovement.push(
       "Legionella risk levels are elevated across assessments"
     );
   if (
-    legionellaEval.flushingScheduleRate < 100 &&
+    below(legionellaEval.flushingScheduleRate, 100) &&
     legionellaEval.totalAssessments > 0
   )
     areasForImprovement.push(
       "Not all assessments have flushing schedules in place"
     );
   if (
-    legionellaEval.waterTreatmentRate < 100 &&
+    below(legionellaEval.waterTreatmentRate, 100) &&
     legionellaEval.totalAssessments > 0
   )
     areasForImprovement.push(
       "Water treatment is not active across all assessments"
     );
   if (
-    legionellaEval.deadLegsManagementRate < 100 &&
+    below(legionellaEval.deadLegsManagementRate, 100) &&
     legionellaEval.deadLegsIdentifiedCount > 0
   )
     areasForImprovement.push(
@@ -915,15 +926,15 @@ export function generateWaterSafetyLegionellaIntelligence(
     areasForImprovement.push(
       "No staff water safety training records found"
     );
-  if (staffEval.legionellaAwarenessRate < 80 && staffEval.totalStaff > 0)
+  if (below(staffEval.legionellaAwarenessRate, 80) && staffEval.totalStaff > 0)
     areasForImprovement.push(
       "Legionella awareness training is not reaching all staff"
     );
-  if (staffEval.scaldingPreventionRate < 80 && staffEval.totalStaff > 0)
+  if (below(staffEval.scaldingPreventionRate, 80) && staffEval.totalStaff > 0)
     areasForImprovement.push(
       "Scalding prevention training needs to reach more staff"
     );
-  if (staffEval.bathSupervisionRate < 80 && staffEval.totalStaff > 0)
+  if (below(staffEval.bathSupervisionRate, 80) && staffEval.totalStaff > 0)
     areasForImprovement.push(
       "Bath supervision training coverage is insufficient"
     );
@@ -935,15 +946,15 @@ export function generateWaterSafetyLegionellaIntelligence(
     actions.push(
       "Implement a water temperature monitoring programme immediately"
     );
-  if (tempEval.passRate < 80 && tempEval.totalChecks > 0)
+  if (below(tempEval.passRate, 80) && tempEval.totalChecks > 0)
     actions.push(
       "Investigate and rectify water sources failing temperature checks"
     );
-  if (tempEval.correctiveActionRate < 100 && tempEval.issueCount > 0)
+  if (below(tempEval.correctiveActionRate, 100) && tempEval.issueCount > 0)
     actions.push(
       "Ensure all temperature issues have documented corrective actions"
     );
-  if (tempEval.sourceTypeCoverage < 3 && tempEval.totalChecks > 0)
+  if (below(tempEval.sourceTypeCoverage, 3) && tempEval.totalChecks > 0)
     actions.push(
       "Extend temperature monitoring to cover more water source types"
     );
@@ -952,21 +963,21 @@ export function generateWaterSafetyLegionellaIntelligence(
       "Commission a legionella risk assessment without delay"
     );
   if (
-    legionellaEval.flushingScheduleRate < 100 &&
+    below(legionellaEval.flushingScheduleRate, 100) &&
     legionellaEval.totalAssessments > 0
   )
     actions.push(
       "Establish flushing schedules for all water systems"
     );
   if (
-    legionellaEval.waterTreatmentRate < 100 &&
+    below(legionellaEval.waterTreatmentRate, 100) &&
     legionellaEval.totalAssessments > 0
   )
     actions.push(
       "Ensure active water treatment is maintained across all systems"
     );
   if (
-    legionellaEval.deadLegsManagementRate < 100 &&
+    below(legionellaEval.deadLegsManagementRate, 100) &&
     legionellaEval.deadLegsIdentifiedCount > 0
   )
     actions.push(
@@ -984,15 +995,15 @@ export function generateWaterSafetyLegionellaIntelligence(
     actions.push(
       "Arrange water safety training for all staff as a priority"
     );
-  if (staffEval.legionellaAwarenessRate < 100 && staffEval.totalStaff > 0)
+  if (below(staffEval.legionellaAwarenessRate, 100) && staffEval.totalStaff > 0)
     actions.push(
       "Provide legionella awareness training to all untrained staff"
     );
-  if (staffEval.scaldingPreventionRate < 100 && staffEval.totalStaff > 0)
+  if (below(staffEval.scaldingPreventionRate, 100) && staffEval.totalStaff > 0)
     actions.push(
       "Ensure all staff complete scalding prevention training"
     );
-  if (staffEval.bathSupervisionRate < 100 && staffEval.totalStaff > 0)
+  if (below(staffEval.bathSupervisionRate, 100) && staffEval.totalStaff > 0)
     actions.push(
       "Ensure all staff complete bath supervision training"
     );

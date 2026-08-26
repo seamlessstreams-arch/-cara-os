@@ -22,6 +22,7 @@
    ────────────────────────────────────────────────────────────── */
 
 import { withinPeriod } from "@/lib/date-period";
+import { below, meets, rate } from "@/lib/metrics/rate";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -131,18 +132,25 @@ export interface StaffSafeguardingOversightTraining {
 export interface SafeguardingOversightQualityResult {
   overallScore: number;
   totalRecords: number;
-  riskAssessmentCompletedRate: number;
-  safeguardingLeadInformedRate: number;
-  multiAgencyEngagedRate: number;
-  childViewCapturedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessmentCompletedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingLeadInformedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  multiAgencyEngagedRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  childViewCapturedRate: number | null;
 }
 
 export interface SafeguardingOversightComplianceResult {
   overallScore: number;
   totalRecords: number;
-  documentationCompleteRate: number;
-  timelyRecordingRate: number;
-  riskAssessmentCompletedRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  documentationCompleteRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  timelyRecordingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  riskAssessmentCompletedRate: number | null;
   categoryDiversityRatio: number;
   uniqueCategories: number;
 }
@@ -161,12 +169,18 @@ export interface SafeguardingOversightPolicyResult {
 export interface StaffSafeguardingOversightReadinessResult {
   overallScore: number;
   totalStaff: number;
-  safeguardingAwarenessRate: number;
-  recognisingSignsRate: number;
-  referralProceduresRate: number;
-  recordKeepingSkillsRate: number;
-  multiAgencyWorkingRate: number;
-  onlineSafetyKnowledgeRate: number;
+  /** null when the population is empty — nothing measured, not 0%. */
+  safeguardingAwarenessRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  recognisingSignsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  referralProceduresRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  recordKeepingSkillsRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  multiAgencyWorkingRate: number | null;
+  /** null when the population is empty — nothing measured, not 0%. */
+  onlineSafetyKnowledgeRate: number | null;
 }
 
 export interface ChildSafeguardingOversightProfile {
@@ -198,11 +212,6 @@ export interface SafeguardingOversightIntelligenceResult {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-export function pct(num: number, den: number): number {
-  if (den === 0) return 0;
-  return Math.round((num / den) * 100);
-}
-
 export function getRating(score: number): Rating {
   if (score >= 80) return "outstanding";
   if (score >= 60) return "good";
@@ -218,19 +227,19 @@ export function evaluateSafeguardingOversightQuality(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, riskAssessmentCompletedRate: 0, safeguardingLeadInformedRate: 0, multiAgencyEngagedRate: 0, childViewCapturedRate: 0 };
+    return { overallScore: 0, totalRecords: 0, riskAssessmentCompletedRate: null, safeguardingLeadInformedRate: null, multiAgencyEngagedRate: null, childViewCapturedRate: null };
   }
 
-  const riskAssessmentCompletedRate = pct(records.filter((r) => r.riskAssessmentCompleted).length, n);
-  const safeguardingLeadInformedRate = pct(records.filter((r) => r.safeguardingLeadInformed).length, n);
-  const multiAgencyEngagedRate = pct(records.filter((r) => r.multiAgencyEngaged).length, n);
-  const childViewCapturedRate = pct(records.filter((r) => r.childViewCaptured).length, n);
+  const riskAssessmentCompletedRate = rate(records.filter((r) => r.riskAssessmentCompleted).length, n);
+  const safeguardingLeadInformedRate = rate(records.filter((r) => r.safeguardingLeadInformed).length, n);
+  const multiAgencyEngagedRate = rate(records.filter((r) => r.multiAgencyEngaged).length, n);
+  const childViewCapturedRate = rate(records.filter((r) => r.childViewCaptured).length, n);
 
   let score = 0;
-  score += (riskAssessmentCompletedRate / 100) * 7;
-  score += (safeguardingLeadInformedRate / 100) * 6;
-  score += (multiAgencyEngagedRate / 100) * 6;
-  score += (childViewCapturedRate / 100) * 6;
+  score += (riskAssessmentCompletedRate! / 100) * 7;
+  score += (safeguardingLeadInformedRate! / 100) * 6;
+  score += (multiAgencyEngagedRate! / 100) * 6;
+  score += (childViewCapturedRate! / 100) * 6;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -245,21 +254,21 @@ export function evaluateSafeguardingOversightCompliance(
   const n = records.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: 0, timelyRecordingRate: 0, riskAssessmentCompletedRate: 0, categoryDiversityRatio: 0, uniqueCategories: 0 };
+    return { overallScore: 0, totalRecords: 0, documentationCompleteRate: null, timelyRecordingRate: null, riskAssessmentCompletedRate: null, categoryDiversityRatio: 0, uniqueCategories: 0 };
   }
 
-  const documentationCompleteRate = pct(records.filter((r) => r.documentationComplete).length, n);
-  const timelyRecordingRate = pct(records.filter((r) => r.timelyRecording).length, n);
-  const riskAssessmentCompletedRate = pct(records.filter((r) => r.riskAssessmentCompleted).length, n);
+  const documentationCompleteRate = rate(records.filter((r) => r.documentationComplete).length, n);
+  const timelyRecordingRate = rate(records.filter((r) => r.timelyRecording).length, n);
+  const riskAssessmentCompletedRate = rate(records.filter((r) => r.riskAssessmentCompleted).length, n);
 
   const uniqueCategoriesSet = new Set(records.map((r) => r.category));
   const uniqueCategories = uniqueCategoriesSet.size;
   const categoryDiversityRatio = Math.round((uniqueCategories / 8) * 100) / 100;
 
   let score = 0;
-  score += (documentationCompleteRate / 100) * 8;
-  score += (timelyRecordingRate / 100) * 7;
-  score += (riskAssessmentCompletedRate / 100) * 5;
+  score += (documentationCompleteRate! / 100) * 8;
+  score += (timelyRecordingRate! / 100) * 7;
+  score += (riskAssessmentCompletedRate! / 100) * 5;
   score += categoryDiversityRatio * 5;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
@@ -305,23 +314,23 @@ export function evaluateStaffSafeguardingOversightReadiness(
   const n = training.length;
 
   if (n === 0) {
-    return { overallScore: 0, totalStaff: 0, safeguardingAwarenessRate: 0, recognisingSignsRate: 0, referralProceduresRate: 0, recordKeepingSkillsRate: 0, multiAgencyWorkingRate: 0, onlineSafetyKnowledgeRate: 0 };
+    return { overallScore: 0, totalStaff: 0, safeguardingAwarenessRate: null, recognisingSignsRate: null, referralProceduresRate: null, recordKeepingSkillsRate: null, multiAgencyWorkingRate: null, onlineSafetyKnowledgeRate: null };
   }
 
-  const safeguardingAwarenessRate = pct(training.filter((t) => t.safeguardingAwareness).length, n);
-  const recognisingSignsRate = pct(training.filter((t) => t.recognisingSigns).length, n);
-  const referralProceduresRate = pct(training.filter((t) => t.referralProcedures).length, n);
-  const recordKeepingSkillsRate = pct(training.filter((t) => t.recordKeepingSkills).length, n);
-  const multiAgencyWorkingRate = pct(training.filter((t) => t.multiAgencyWorking).length, n);
-  const onlineSafetyKnowledgeRate = pct(training.filter((t) => t.onlineSafetyKnowledge).length, n);
+  const safeguardingAwarenessRate = rate(training.filter((t) => t.safeguardingAwareness).length, n);
+  const recognisingSignsRate = rate(training.filter((t) => t.recognisingSigns).length, n);
+  const referralProceduresRate = rate(training.filter((t) => t.referralProcedures).length, n);
+  const recordKeepingSkillsRate = rate(training.filter((t) => t.recordKeepingSkills).length, n);
+  const multiAgencyWorkingRate = rate(training.filter((t) => t.multiAgencyWorking).length, n);
+  const onlineSafetyKnowledgeRate = rate(training.filter((t) => t.onlineSafetyKnowledge).length, n);
 
   let score = 0;
-  score += (safeguardingAwarenessRate / 100) * 6;
-  score += (recognisingSignsRate / 100) * 5;
-  score += (referralProceduresRate / 100) * 5;
-  score += (recordKeepingSkillsRate / 100) * 4;
-  score += (multiAgencyWorkingRate / 100) * 3;
-  score += (onlineSafetyKnowledgeRate / 100) * 2;
+  score += (safeguardingAwarenessRate! / 100) * 6;
+  score += (recognisingSignsRate! / 100) * 5;
+  score += (referralProceduresRate! / 100) * 5;
+  score += (recordKeepingSkillsRate! / 100) * 4;
+  score += (multiAgencyWorkingRate! / 100) * 3;
+  score += (onlineSafetyKnowledgeRate! / 100) * 2;
   score = Math.round(score * 10) / 10;
   score = Math.max(0, Math.min(25, score));
 
@@ -346,8 +355,8 @@ export function buildChildSafeguardingOversightProfiles(
 
   return Array.from(childMap.values()).map((child) => {
     const totalRecords = child.records.length;
-    const riskAssessmentCompletedRate = pct(child.records.filter((r) => r.riskAssessmentCompleted).length, totalRecords);
-    const safeguardingLeadInformedRate = pct(child.records.filter((r) => r.safeguardingLeadInformed).length, totalRecords);
+    const riskAssessmentCompletedRate = rate(child.records.filter((r) => r.riskAssessmentCompleted).length, totalRecords)!;
+    const safeguardingLeadInformedRate = rate(child.records.filter((r) => r.safeguardingLeadInformed).length, totalRecords)!;
     const uniqueCategoriesSet = new Set(child.records.map((r) => r.category));
     const categoriesCovered = Array.from(uniqueCategoriesSet);
 
@@ -356,14 +365,14 @@ export function buildChildSafeguardingOversightProfiles(
     else if (totalRecords >= 5) frequencyScore = 1;
 
     let rate1Score = 0;
-    if (riskAssessmentCompletedRate >= 80) rate1Score = 3;
-    else if (riskAssessmentCompletedRate >= 60) rate1Score = 2;
-    else if (riskAssessmentCompletedRate >= 40) rate1Score = 1;
+    if (meets(riskAssessmentCompletedRate, 80)) rate1Score = 3;
+    else if (meets(riskAssessmentCompletedRate, 60)) rate1Score = 2;
+    else if (meets(riskAssessmentCompletedRate, 40)) rate1Score = 1;
 
     let rate2Score = 0;
-    if (safeguardingLeadInformedRate >= 80) rate2Score = 3;
-    else if (safeguardingLeadInformedRate >= 60) rate2Score = 2;
-    else if (safeguardingLeadInformedRate >= 40) rate2Score = 1;
+    if (meets(safeguardingLeadInformedRate, 80)) rate2Score = 3;
+    else if (meets(safeguardingLeadInformedRate, 60)) rate2Score = 2;
+    else if (meets(safeguardingLeadInformedRate, 40)) rate2Score = 1;
 
     let diversityBonus = 0;
     if (categoriesCovered.length >= 4) diversityBonus = 2;
@@ -411,9 +420,9 @@ export function generateSafeguardingOversightIntelligenceResult(
   if (complianceResult.overallScore >= 20) strengths.push("Safeguarding oversight compliance is strong (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore >= 20) strengths.push("Safeguarding policy framework is robust (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore >= 20) strengths.push("Staff safeguarding readiness is strong (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.riskAssessmentCompletedRate >= 90) strengths.push("Risk assessments completed at " + qualityResult.riskAssessmentCompletedRate + "%");
-  if (periodRecords.length > 0 && qualityResult.safeguardingLeadInformedRate >= 90) strengths.push("Designated safeguarding lead informed at " + qualityResult.safeguardingLeadInformedRate + "%");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate >= 90) strengths.push("Documentation rate at " + complianceResult.documentationCompleteRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.riskAssessmentCompletedRate, 90)) strengths.push("Risk assessments completed at " + qualityResult.riskAssessmentCompletedRate + "%");
+  if (periodRecords.length > 0 && meets(qualityResult.safeguardingLeadInformedRate, 90)) strengths.push("Designated safeguarding lead informed at " + qualityResult.safeguardingLeadInformedRate + "%");
+  if (periodRecords.length > 0 && meets(complianceResult.documentationCompleteRate, 90)) strengths.push("Documentation rate at " + complianceResult.documentationCompleteRate + "%");
 
   const areasForImprovement: string[] = [];
   if (overallScore < 40) areasForImprovement.push("Safeguarding oversight rated Inadequate (" + overallScore + "/100) — urgent systemic review required");
@@ -422,7 +431,7 @@ export function generateSafeguardingOversightIntelligenceResult(
   if (complianceResult.overallScore < 15) areasForImprovement.push("Safeguarding oversight compliance needs improvement (score " + complianceResult.overallScore + "/25)");
   if (policyResult.overallScore < 15) areasForImprovement.push("Safeguarding policy needs strengthening (score " + policyResult.overallScore + "/25)");
   if (staffResult.overallScore < 15) areasForImprovement.push("Staff safeguarding readiness needs improvement (score " + staffResult.overallScore + "/25)");
-  if (periodRecords.length > 0 && qualityResult.riskAssessmentCompletedRate < 80) areasForImprovement.push("Risk assessment completion at " + qualityResult.riskAssessmentCompletedRate + "% — must improve for child safety");
+  if (periodRecords.length > 0 && below(qualityResult.riskAssessmentCompletedRate, 80)) areasForImprovement.push("Risk assessment completion at " + qualityResult.riskAssessmentCompletedRate + "% — must improve for child safety");
   if (periodRecords.length === 0) areasForImprovement.push("No safeguarding oversight records — assessments must be documented");
   if (policy === null) areasForImprovement.push("No safeguarding policy in place — statutory requirement");
   if (staff.length === 0) areasForImprovement.push("No staff safeguarding training records — training required");
@@ -430,11 +439,11 @@ export function generateSafeguardingOversightIntelligenceResult(
   const actions: string[] = [];
   if (policy === null || policyResult.overallScore === 0) actions.push("URGENT: No safeguarding policy — develop and implement comprehensive policy immediately");
   if (staff.length === 0) actions.push("URGENT: No staff safeguarding training — schedule training for all staff");
-  if (periodRecords.length > 0 && qualityResult.riskAssessmentCompletedRate < 50) actions.push("HIGH: Risk assessment completion at " + qualityResult.riskAssessmentCompletedRate + "% — review assessment schedules and processes");
-  if (periodRecords.length > 0 && qualityResult.multiAgencyEngagedRate < 50) actions.push("HIGH: Multi-agency engagement at " + qualityResult.multiAgencyEngagedRate + "% — strengthen partnership working");
-  if (periodRecords.length > 0 && complianceResult.documentationCompleteRate < 50) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all assessments must be recorded");
-  if (periodRecords.length > 0 && complianceResult.timelyRecordingRate < 50) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
-  if (staff.length > 0 && staffResult.safeguardingAwarenessRate < 50) actions.push("MEDIUM: Safeguarding awareness at " + staffResult.safeguardingAwarenessRate + "% — schedule training for staff");
+  if (periodRecords.length > 0 && below(qualityResult.riskAssessmentCompletedRate, 50)) actions.push("HIGH: Risk assessment completion at " + qualityResult.riskAssessmentCompletedRate + "% — review assessment schedules and processes");
+  if (periodRecords.length > 0 && below(qualityResult.multiAgencyEngagedRate, 50)) actions.push("HIGH: Multi-agency engagement at " + qualityResult.multiAgencyEngagedRate + "% — strengthen partnership working");
+  if (periodRecords.length > 0 && below(complianceResult.documentationCompleteRate, 50)) actions.push("HIGH: Documentation rate at " + complianceResult.documentationCompleteRate + "% — all assessments must be recorded");
+  if (periodRecords.length > 0 && below(complianceResult.timelyRecordingRate, 50)) actions.push("MEDIUM: Timely recording at " + complianceResult.timelyRecordingRate + "% — records must be completed promptly");
+  if (staff.length > 0 && below(staffResult.safeguardingAwarenessRate, 50)) actions.push("MEDIUM: Safeguarding awareness at " + staffResult.safeguardingAwarenessRate + "% — schedule training for staff");
   const lowScoreChildren = childProfiles.filter((p) => p.overallScore <= 3);
   if (lowScoreChildren.length > 0) actions.push("MEDIUM: " + lowScoreChildren.length + " child(ren) with low safeguarding oversight scores — review individual provisions");
   if (actions.length === 0) actions.push("No immediate actions required. Safeguarding oversight systems operating within expected standards.");

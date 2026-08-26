@@ -7,7 +7,6 @@ import {
   getSanctionTypeLabel,
   getSanctionOutcomeLabel,
   getRatingLabel,
-  pct,
   getRating,
   evaluateSanctionQuality,
   evaluateSanctionCompliance,
@@ -147,28 +146,6 @@ describe("getRatingLabel", () => {
 // Helpers
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("pct", () => {
-  it("returns 0 when denominator is 0", () => {
-    expect(pct(5, 0)).toBe(0);
-  });
-
-  it("calculates percentage correctly", () => {
-    expect(pct(3, 4)).toBe(75);
-  });
-
-  it("rounds to nearest integer", () => {
-    expect(pct(1, 3)).toBe(33);
-  });
-
-  it("returns 100 for equal numerator and denominator", () => {
-    expect(pct(7, 7)).toBe(100);
-  });
-
-  it("returns 0 for zero numerator", () => {
-    expect(pct(0, 10)).toBe(0);
-  });
-});
-
 describe("getRating", () => {
   it("returns outstanding for score >= 80", () => {
     expect(getRating(80)).toBe("outstanding");
@@ -199,10 +176,10 @@ describe("evaluateSanctionQuality", () => {
   it("returns all zeros for empty records", () => {
     const result = evaluateSanctionQuality([]);
     expect(result.totalRecords).toBe(0);
-    expect(result.proportionateRate).toBe(0);
-    expect(result.childViewsRate).toBe(0);
-    expect(result.acceptanceRate).toBe(0);
-    expect(result.documentedRate).toBe(0);
+    expect(result.proportionateRate).toBeNull();
+    expect(result.childViewsRate).toBeNull();
+    expect(result.acceptanceRate).toBeNull();
+    expect(result.documentedRate).toBeNull();
     expect(result.overallScore).toBe(0);
   });
 
@@ -284,9 +261,9 @@ describe("evaluateSanctionCompliance", () => {
   it("returns all zeros for empty records", () => {
     const result = evaluateSanctionCompliance([]);
     expect(result.totalRecords).toBe(0);
-    expect(result.parentNotifiedRate).toBe(0);
-    expect(result.staffAppliedRate).toBe(0);
-    expect(result.reviewScheduledRate).toBe(0);
+    expect(result.parentNotifiedRate).toBeNull();
+    expect(result.staffAppliedRate).toBeNull();
+    expect(result.reviewScheduledRate).toBeNull();
     expect(result.typeDiversityRatio).toBe(0);
     expect(result.overallScore).toBe(0);
   });
@@ -503,12 +480,12 @@ describe("evaluateStaffSanctionReadiness", () => {
   it("returns all zeros for empty training array", () => {
     const result = evaluateStaffSanctionReadiness([]);
     expect(result.totalStaff).toBe(0);
-    expect(result.behaviourManagementRate).toBe(0);
-    expect(result.proportionalityAssessmentRate).toBe(0);
-    expect(result.restorativeApproachRate).toBe(0);
-    expect(result.childRightsAwarenessRate).toBe(0);
-    expect(result.documentationSkillsRate).toBe(0);
-    expect(result.deEscalationFirstRate).toBe(0);
+    expect(result.behaviourManagementRate).toBeNull();
+    expect(result.proportionalityAssessmentRate).toBeNull();
+    expect(result.restorativeApproachRate).toBeNull();
+    expect(result.childRightsAwarenessRate).toBeNull();
+    expect(result.documentationSkillsRate).toBeNull();
+    expect(result.deEscalationFirstRate).toBeNull();
     expect(result.overallScore).toBe(0);
   });
 
