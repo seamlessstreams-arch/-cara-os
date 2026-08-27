@@ -3,6 +3,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
+import type { Incident } from "@/types";
 import { _testing } from "@/components/cara/cara-incident-analytics";
 
 const { TREND_CONFIG, computeIncidentAnalytics } = _testing;
@@ -14,51 +15,55 @@ function daysBack(n: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-function makeInc(id: string, overrides: Record<string, unknown>) {
+/** The fixture supplies only what these assertions exercise; `Partial<Incident>`
+ *  still checks every field name and value against the real record. */
+function makeInc(id: string, overrides: Partial<Incident>): Incident {
   return {
     id,
     home_id: "home_oak",
+    reference: `INC-${id}`,
     type: "behaviour_incident",
     severity: "medium",
     child_id: "yp_alex",
     date: daysBack(5),
     time: "18:00",
-    description: "Test incident",
     location: null,
-    witnessed_by: [],
-    reported_by: "staff_darren",
+    description: "Test incident",
     immediate_action: "",
-    injuries: null,
-    police_involved: false,
-    ambulance_called: false,
+    reported_by: "staff_darren",
+    witnesses: [],
+    body_map_required: false,
+    body_map_completed: false,
+    body_map_url: null,
+    notifications: [],
     requires_oversight: true,
     oversight_note: null,
     oversight_by: null,
     oversight_at: null,
     status: "open",
-    notified_to: [],
-    linked_placement_id: null,
-    linked_risk_assessment_id: null,
+    outcome: null,
+    lessons_learned: null,
+    linked_task_ids: [],
+    linked_document_ids: [],
+    cara_oversight_used: false,
     created_at: "",
     updated_at: "",
     created_by: "staff_darren",
     updated_by: "staff_darren",
-    version: 1,
-    change_history: [],
     ...overrides,
   };
 }
 
+
 // Spread across 30-day and 90-day windows, multiple children, types, times
-const INCIDENTS = [
+const INCIDENTS: Incident[] = ([
   makeInc("i1", { type: "behaviour_incident", severity: "high",   child_id: "yp_alex",   date: daysBack(3),  time: "19:00", oversight_by: "staff_darren" }),
   makeInc("i2", { type: "physical_intervention", severity: "high", child_id: "yp_alex",   date: daysBack(7),  time: "20:00" }),
   makeInc("i3", { type: "self_harm",  severity: "critical", child_id: "yp_jordan", date: daysBack(10), time: "09:00" }),
   makeInc("i4", { type: "behaviour_incident", severity: "medium", child_id: "yp_casey",  date: daysBack(15), time: "14:00", oversight_by: "staff_darren" }),
   makeInc("i5", { type: "safeguarding_concern", severity: "high", child_id: "yp_riley",  date: daysBack(50), time: "16:00" }),
   makeInc("i6", { type: "behaviour_incident", severity: "low",   child_id: "yp_casey",  date: daysBack(70), time: "11:00" }),
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-] as any[];
+]);
 
 describe("CaraIncidentAnalytics", () => {
   describe("TREND_CONFIG", () => {

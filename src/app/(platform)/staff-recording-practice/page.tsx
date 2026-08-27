@@ -109,7 +109,7 @@ export default function StaffRecordingPracticePage() {
                   <CardContent>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1">
                       {(Object.entries(DIM_LABELS) as [string, string][]).map(([dim, label]) => {
-                        const v = (p.dimension_averages as any)[dim] as number;
+                        const v = p.dimension_averages[dim as keyof typeof p.dimension_averages] as number;
                         return (
                           <div key={dim} className="flex items-center justify-between text-[11px]">
                             <span className={cn(dim === p.weakest_dimension ? "font-semibold text-amber-700" : "text-[var(--cs-text-muted)]")}>{label}</span>

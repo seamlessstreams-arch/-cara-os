@@ -897,22 +897,19 @@ async function fetchReportData(reportId: string): Promise<{
   // answered with an invented report about a named child.
   if (!sb) return isDemoReportId(reportId) ? getDemoReportDataForChallenge(reportId) : null;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: report, error: reportError } = await (sb.from("child_reports") as any)
+  const { data: report, error: reportError } = await ((sb.from("child_reports")))
     .select("*")
     .eq("id", reportId)
     .single();
 
   if (reportError || !report) return null;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: sections } = await (sb.from("child_report_sections") as any)
+  const { data: sections } = await ((sb.from("child_report_sections")))
     .select("*")
     .eq("report_id", reportId)
     .order("order", { ascending: true });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: evidence } = await (sb.from("child_report_evidence") as any)
+  const { data: evidence } = await ((sb.from("child_report_evidence")))
     .select("*")
     .eq("report_id", reportId);
 

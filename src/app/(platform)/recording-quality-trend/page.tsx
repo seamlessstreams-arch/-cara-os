@@ -118,7 +118,7 @@ export default function RecordingQualityTrendPage() {
                       <td className="py-1 pr-2 whitespace-nowrap">{p.week_start.slice(5)}</td>
                       <td className="py-1 px-1 text-right tabular-nums text-muted-foreground">{p.count}</td>
                       {Object.keys(DIM_LABELS).map((dim) => {
-                        const v = (p.dimension_averages as any)[dim] as number;
+                        const v = p.dimension_averages[dim as keyof typeof p.dimension_averages] as number;
                         return <td key={dim} className={cn("py-1 px-1 text-right tabular-nums", v >= 70 ? "text-[var(--cs-text-secondary)]" : "text-amber-700 font-medium")}>{v}</td>;
                       })}
                     </tr>

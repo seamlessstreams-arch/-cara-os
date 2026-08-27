@@ -80,14 +80,14 @@ function CheckStatusIcon({ check }: { check: CheckSummary }) {
 }
 
 function MatchBand({ band }: { band: string }) {
-  const colours: Record<string, string> = {
+  const colours: Record<string, React.ComponentProps<typeof Badge>["variant"]> = {
     strong: "success",
     promising: "secondary",
     explore: "secondary",
     limited: "outline",
   };
   return (
-    <Badge variant={(colours[band] ?? "outline") as any} className="capitalize text-xs">
+    <Badge variant={((colours[band] ?? "outline"))} className="capitalize text-xs">
       {band.replace("_", " ")}
     </Badge>
   );

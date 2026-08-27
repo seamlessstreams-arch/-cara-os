@@ -1003,6 +1003,20 @@ const UNPROVISIONED_HOME: Home = {
   created_at: new Date().toISOString(),
 };
 
+/** Website early-access sign-ups. The dal used to conjure this collection at
+ *  runtime because the store had no such field. */
+export interface EarlyAccessRequest {
+  id: string;
+  name: string;
+  organisation: string;
+  role: string;
+  email: string;
+  number_of_homes: string;
+  looking_for: string;
+  source: string;
+  created_at: string;
+}
+
 const store = {
   home: { ...HOME } as Home,
   staff: [...STAFF] as StaffMember[],
@@ -1299,6 +1313,7 @@ const store = {
   // here does not survive; keep [] to avoid implying otherwise.
   restraints: [] as RestraintRecord[],
   notifiableEvents: [] as NotifiableEvent[],
+  earlyAccessRequests: [] as EarlyAccessRequest[],
   nightLogs: [] as NightLogEntry[],
   // NOTE: reassigned later in this file (`store.behaviourLog = [...]`) — the
   // dead-cells seed block owns beh_001+, then the Practice OS demo arc
@@ -4233,7 +4248,7 @@ store.caraRestorativeConversations = [
   },
 ];
 
-store.reflectiveSupervisions = [
+store.reflectiveSupervisions = ([
   {
     id: "rsup_001", staff_id: "staff_edward", staff_name: "Daniel Frost", supervisor_id: "staff_darren", supervisor_name: "Olivia Hayes",
     date: daysFromNow(-21), type: "1:1", wellbeing_score: 4, confidence_level: 4,
@@ -4309,7 +4324,7 @@ store.reflectiveSupervisions = [
     actions: [{ action: "Discuss team-leader development pathway", owner: "staff_darren", due: daysFromNow(30), done: false }],
     follow_up_date: daysFromNow(12), created_at: daysFromNow(-30),
   },
-] as any;
+]);
 
 // Checks — Amara
 store.candidateChecks = [

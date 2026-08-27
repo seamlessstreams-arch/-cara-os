@@ -97,7 +97,7 @@ export async function generateViaGateway(request: GatewayRequest): Promise<Gatew
 
   try {
     const result = await generateText({
-      model: model as any,
+      model: (model),
       system: fullSystem,
       prompt: request.userPrompt,
       maxOutputTokens: request.maxOutputTokens ?? 2000,
@@ -146,7 +146,7 @@ export function streamViaGateway(request: GatewayRequest) {
   const fullSystem = `${CARA_SYSTEM_PREAMBLE}\n\n${request.systemPrompt}`;
 
   return streamText({
-    model: model as any,
+    model: (model),
     system: fullSystem,
     prompt: request.userPrompt,
     maxOutputTokens: request.maxOutputTokens ?? 2000,

@@ -14,7 +14,7 @@
  * ══════════════════════════════════════════════════════════════════════════════
  */
 
-import { db, getStore } from "./store";
+import { db, getStore, type EarlyAccessRequest } from "./store";
 import { facilityStore } from "./facility-store";
 import { createServerClient } from "@/lib/supabase/server";
 import * as sq from "@/lib/supabase/queries";
@@ -42,6 +42,16 @@ function sb() {
 // ─────────────────────────────────────────────────────────────────────────────
 // CORE COLLECTIONS — Supabase-backed with in-memory fallback
 // ─────────────────────────────────────────────────────────────────────────────
+
+/** `generic_records` is not in the generated Database types, so its columns
+ *  resolve to `never`. Declaring the row here keeps the reads below checked
+ *  against a real shape instead of turning checking off with `any`. */
+interface GenericRecordRow {
+  id: string;
+  data: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
 
 export const dal = {
   // ── Home ──────────────────────────────────────────────────────────────────
@@ -905,7 +915,7 @@ export const dal = {
     // persistReflectiveSupervision side-channel the route still calls.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async create(record: any) {
-      const s = getStore() as any;
+      const s = (getStore());
       s.reflectiveSupervisions = s.reflectiveSupervisions ?? [];
       s.reflectiveSupervisions.push(record);
       return record;
@@ -1002,7 +1012,7 @@ export const dal = {
     // still call directly. When a table lands, add `if (sb()) return sq...` here.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async create(review: any) {
-      const s = getStore() as any;
+      const s = (getStore());
       s.caraRecordingReviews = s.caraRecordingReviews ?? [];
       s.caraRecordingReviews.push(review);
       return review;
@@ -1075,7 +1085,7 @@ export const dal = {
     // the route's list[0]-replace mutation exactly.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async upsert(updated: any) {
-      const s = getStore() as any;
+      const s = (getStore());
       const list = s.employerValuesProfiles ?? [];
       if (list[0]) list[0] = updated; else list.push(updated);
       s.employerValuesProfiles = list;
@@ -1593,20 +1603,20 @@ export const dal = {
     // DEMO-ONLY CRUD via whole-array replace (mirrors rota/patterns exactly).
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async create(pattern: any) {
-      const s = getStore() as any;
+      const s = (getStore());
       s.shiftPatterns = [...(s.shiftPatterns ?? []), pattern];
       return pattern;
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async update(id: string, pattern: any) {
-      const s = getStore() as any;
-      const list = (s.shiftPatterns ?? []) as any[];
+      const s = (getStore());
+      const list = ((s.shiftPatterns ?? []));
       s.shiftPatterns = list.map((p) => (p.id === id ? pattern : p));
       return pattern;
     },
     async remove(id: string) {
-      const s = getStore() as any;
-      const list = (s.shiftPatterns ?? []) as any[];
+      const s = (getStore());
+      const list = ((s.shiftPatterns ?? []));
       s.shiftPatterns = list.filter((p) => p.id !== id);
     },
   },
@@ -1637,7 +1647,7 @@ export const dal = {
     async findById(id: string) { return getStore().externalAiDeclarations.find((r) => r.id === id) ?? null; },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async create(decl: any) {
-      const s = getStore() as any;
+      const s = (getStore());
       s.externalAiDeclarations = s.externalAiDeclarations ?? [];
       s.externalAiDeclarations.push(decl);
       return decl;
@@ -1645,8 +1655,8 @@ export const dal = {
     // Replace-by-id (mirrors the PATCH review mutation exactly).
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async update(id: string, record: any) {
-      const s = getStore() as any;
-      const list = (s.externalAiDeclarations ?? []) as any[];
+      const s = (getStore());
+      const list = ((s.externalAiDeclarations ?? []));
       const idx = list.findIndex((d) => d.id === id);
       if (idx !== -1) list[idx] = record;
       return record;
@@ -1657,7 +1667,7 @@ export const dal = {
     async findAll() { return getStore().caraPostIncidentReflections ?? []; },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async create(rec: any) {
-      const s = getStore() as any;
+      const s = (getStore());
       s.caraPostIncidentReflections = s.caraPostIncidentReflections ?? [];
       s.caraPostIncidentReflections.push(rec);
       return rec;
@@ -1668,7 +1678,7 @@ export const dal = {
     async findAll() { return getStore().caraRestorativeConversations ?? []; },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async create(rec: any) {
-      const s = getStore() as any;
+      const s = (getStore());
       s.caraRestorativeConversations = s.caraRestorativeConversations ?? [];
       s.caraRestorativeConversations.push(rec);
       return rec;
@@ -1679,13 +1689,13 @@ export const dal = {
     async findAll() { return getStore().caraPromptBank ?? []; },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async create(entry: any) {
-      const s = getStore() as any;
+      const s = (getStore());
       s.caraPromptBank = s.caraPromptBank ?? [];
       s.caraPromptBank.push(entry);
       return entry;
     },
     async remove(id: string) {
-      const s = getStore() as any;
+      const s = (getStore());
       s.caraPromptBank = (s.caraPromptBank ?? []).filter((p: any) => p.id !== id);
     },
   },
@@ -1694,7 +1704,7 @@ export const dal = {
     async findAll() { return getStore().knowledgeGovernance ?? []; },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async create(record: any) {
-      const s = getStore() as any;
+      const s = (getStore());
       s.knowledgeGovernance = s.knowledgeGovernance ?? [];
       s.knowledgeGovernance.push(record);
       return record;
@@ -1705,7 +1715,7 @@ export const dal = {
     async findAll() { return getStore().professionalChallenges ?? []; },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async create(challenge: any) {
-      const s = getStore() as any;
+      const s = (getStore());
       s.professionalChallenges = s.professionalChallenges ?? [];
       s.professionalChallenges.push(challenge);
       return challenge;
@@ -1716,7 +1726,7 @@ export const dal = {
     async findAll() { return getStore().regulationProfiles ?? []; },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async create(profile: any) {
-      const s = getStore() as any;
+      const s = (getStore());
       s.regulationProfiles = s.regulationProfiles ?? [];
       s.regulationProfiles.push(profile);
       return profile;
@@ -1727,7 +1737,7 @@ export const dal = {
     async findAll() { return getStore().adultRegulationReflections ?? []; },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async create(reflection: any) {
-      const s = getStore() as any;
+      const s = (getStore());
       s.adultRegulationReflections = s.adultRegulationReflections ?? [];
       s.adultRegulationReflections.push(reflection);
       return reflection;
@@ -1738,7 +1748,7 @@ export const dal = {
     async findAll() { return getStore().voiceConcernLoops ?? []; },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async create(loop: any) {
-      const s = getStore() as any;
+      const s = (getStore());
       s.voiceConcernLoops = s.voiceConcernLoops ?? [];
       s.voiceConcernLoops.push(loop);
       return loop;
@@ -1746,14 +1756,9 @@ export const dal = {
   },
 
   earlyAccessRequests: {
-    // Phantom store field — the route lazy-creates it; cast + default here too.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async findAll() { return (getStore() as any).earlyAccessRequests ?? []; },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async create(record: any) {
-      const s = getStore() as any;
-      s.earlyAccessRequests = s.earlyAccessRequests ?? [];
-      s.earlyAccessRequests.push(record);
+    async findAll() { return getStore().earlyAccessRequests; },
+    async create(record: EarlyAccessRequest) {
+      getStore().earlyAccessRequests.push(record);
       return record;
     },
   },
@@ -2078,9 +2083,9 @@ export function genericTable<T extends { id: string }>(
       const c = sb();
       if (c && recordType) {
         try {
-          const r = await sq.getGenericRecordById(c, id);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          return { id: (r as any).id, ...(r as any).data, created_at: (r as any).created_at } as T;
+          const r = (await sq.getGenericRecordById(c, id)) as GenericRecordRow | null;
+          if (!r) return null;
+          return { id: r.id, ...r.data, created_at: r.created_at } as unknown as T;
         } catch { return null; }
       }
       return memoryGetAll().find((item) => item.id === id) ?? null;
@@ -2099,8 +2104,11 @@ export function genericTable<T extends { id: string }>(
           staff_id: staff_id ?? null,
           created_by: created_by ?? null,
         });
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return { id: (row as any).id, ...rest, created_at: (row as any).created_at } as T;
+        const created = row as GenericRecordRow | null;
+        // The insert returned nothing, so nothing was stored — say so rather
+        // than handing back a record shape the caller will treat as saved.
+        if (!created) throw new Error(`generic_records insert returned no row for ${recordType}`);
+        return { id: created.id, ...rest, created_at: created.created_at } as T;
       }
       return memoryCreate(data);
     },
@@ -2109,12 +2117,17 @@ export function genericTable<T extends { id: string }>(
     async update(id: string, data: any): Promise<T | null> {
       const c = sb();
       if (c && recordType) {
-        const existing = await sq.getGenericRecordById(c, id);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const merged = { ...(existing as any).data, ...data };
-        const row = await sq.updateGenericRecord(c, id, { data: merged, updated_by: data.updated_by ?? null });
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return { id: (row as any).id, ...merged, updated_at: (row as any).updated_at } as T;
+        const existing = (await sq.getGenericRecordById(c, id)) as GenericRecordRow | null;
+        // Updating a record that is not there is a miss, not a crash — this
+        // used to read `.data` straight off a null and throw a 500.
+        if (!existing) return null;
+        const merged = { ...existing.data, ...data };
+        const updated = (await sq.updateGenericRecord(c, id, {
+          data: merged,
+          updated_by: data.updated_by ?? null,
+        })) as GenericRecordRow | null;
+        if (!updated) return null;
+        return { id: updated.id, ...merged, updated_at: updated.updated_at } as T;
       }
       return memoryUpdate ? memoryUpdate(id, data) : null;
     },

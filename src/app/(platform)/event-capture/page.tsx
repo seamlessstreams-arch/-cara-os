@@ -8,6 +8,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { CaptureOutcome } from "@/lib/event-capture/capture-event-service";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -144,7 +145,7 @@ function CaptureEventForm() {
   ];
   const capture = useMutation({
     mutationFn: (vars: { draft: any; force?: boolean }) =>
-      api.post<{ data?: unknown }>("/api/v1/event-capture", { draft: vars.draft, force: vars.force }),
+      api.post<{ data?: CaptureOutcome }>("/api/v1/event-capture", { draft: vars.draft, force: vars.force }),
     onSuccess: () => {
       for (const key of SPINE_VIEWS) qc.invalidateQueries({ queryKey: [key] });
     },
@@ -154,11 +155,11 @@ function CaptureEventForm() {
   const [riskLevel, setRiskLevel] = useState<string>("low");
   const [summary, setSummary] = useState<string>("");
 
-  const outcome = capture.data?.data as any;
+  const outcome = (capture.data?.data);
   const fieldCls = "w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm";
 
   const submit = (force = false) =>
-    capture.mutate({ draft: { eventType: eventType as any, childId, riskLevel: riskLevel as any, summary }, force });
+    capture.mutate({ draft: { eventType: (eventType), childId, riskLevel: (riskLevel), summary }, force });
 
   return (
     <Card className="overflow-hidden border-brand/30">
@@ -204,7 +205,7 @@ function CaptureEventForm() {
   );
 }
 
-function CaptureOutcomeView({ outcome, onForce, forcing }: { outcome: any; onForce: () => void; forcing: boolean }) {
+function CaptureOutcomeView({ outcome, onForce, forcing }: { outcome: CaptureOutcome; onForce: () => void; forcing: boolean }) {
   const c = outcome.capture;
   return (
     <div className="space-y-2 pt-1">
