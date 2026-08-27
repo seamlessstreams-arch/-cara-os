@@ -15,6 +15,8 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
+import type { Incident } from "@/types";
+import type { BehaviourEntry, MissingEpisode } from "@/types/extended";
 import { dal } from "@/lib/db";
 import { getYPName } from "@/lib/seed-data";
 import type { ManagerPatternInsight, PatternInsightType } from "@/lib/cara-heart/types";
@@ -171,7 +173,7 @@ function detectPatternInsights(signal: PracticeSignal): ManagerPatternInsight[] 
 
 // ── Store → PracticeSignal converters ─────────────────────────────────────────
 
-function incidentsToSignals(incidents: any[]): PracticeSignal[] {
+function incidentsToSignals(incidents: Incident[]): PracticeSignal[] {
   const cutoff = cutoffDate(30);
   return incidents
     .filter((inc) => inc.date >= cutoff)
@@ -192,10 +194,10 @@ function incidentsToSignals(incidents: any[]): PracticeSignal[] {
     }));
 }
 
-function behaviourLogToSignals(entries: any[]): PracticeSignal[] {
+function behaviourLogToSignals(entries: BehaviourEntry[]): PracticeSignal[] {
   const cutoff = cutoffDate(30);
   return entries
-    .filter((e) => e.direction === "concerning" && e.date >= cutoff)
+    .filter((e) => e.direction === "concern" && e.date >= cutoff)
     .map((e) => ({
       id: e.id as string,
       childId: e.child_id as string,
@@ -211,7 +213,7 @@ function behaviourLogToSignals(entries: any[]): PracticeSignal[] {
     }));
 }
 
-function missingEpisodesToSignals(episodes: any[]): PracticeSignal[] {
+function missingEpisodesToSignals(episodes: MissingEpisode[]): PracticeSignal[] {
   const cutoff = cutoffDate(30);
   return episodes
     .filter((ep) => ep.date_missing >= cutoff)

@@ -47,7 +47,7 @@ export async function GET() {
     medication: e.medication ?? "Unknown medication",
     lessons_learned: e.lessons_learned ?? "",
     remedial_actions: Array.isArray(e.remedial_actions)
-      ? e.remedial_actions.map((a: any) => ({ status: a?.status ?? "pending" }))
+      ? e.remedial_actions.map((a) => ({ status: a?.status ?? "pending" }))
       : [],
     duty_of_candour: !!e.duty_of_candour,
     duty_of_candour_completed: e.duty_of_candour_completed ?? null,

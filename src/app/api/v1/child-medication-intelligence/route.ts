@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
       severity: e.severity ?? "no_harm",
       status: e.status ?? "reported",
       has_remedial_actions: Array.isArray(e.remedial_actions) && e.remedial_actions.length > 0,
-      remedial_actions_completed: Array.isArray(e.remedial_actions) ? e.remedial_actions.filter((a: any) => a.status === "completed").length : 0,
+      remedial_actions_completed: Array.isArray(e.remedial_actions) ? e.remedial_actions.filter((a) => a.status === "completed").length : 0,
       remedial_actions_total: Array.isArray(e.remedial_actions) ? e.remedial_actions.length : 0,
     }));
 

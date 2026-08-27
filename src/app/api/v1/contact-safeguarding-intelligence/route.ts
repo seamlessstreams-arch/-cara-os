@@ -102,6 +102,13 @@ function isContactLinkedTrigger(trigger: string, antecedent: string): boolean {
   );
 }
 
+// The store records a concerning behaviour entry as "concern"; this surface
+// and the page that reads it both speak "concerning". Untranslated, every
+// filter below — and the page's own — compared against a word no store row
+// carries, so a contact-linked concerning behaviour was never flagged.
+const behaviourDirection = (d: unknown): string =>
+  d === "concern" || d === "concerning" ? "concerning" : "positive";
+
 function contactSignal(
   behaviours: ContactLinkedBehaviour[],
   concernedSessions: ConcernedContactSession[]
@@ -194,7 +201,7 @@ export async function GET() {
           id: b.id,
           date: toDate(b.date),
           title: b.title ?? b.behaviour ?? "Behaviour entry",
-          direction: b.direction ?? "concerning",
+          direction: behaviourDirection(b.direction),
           intensity: (b.intensity as IncidentIntensity) ?? "low",
           trigger: b.trigger ?? "",
           antecedent: b.antecedent ?? "",
@@ -221,7 +228,7 @@ export async function GET() {
           id: b.id,
           date: bDate,
           title: b.title ?? b.behaviour ?? "Behaviour entry",
-          direction: b.direction ?? "concerning",
+          direction: behaviourDirection(b.direction),
           intensity: (b.intensity as IncidentIntensity) ?? "low",
           trigger: b.trigger ?? "",
           antecedent: b.antecedent ?? "",

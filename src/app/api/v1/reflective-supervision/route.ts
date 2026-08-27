@@ -23,10 +23,10 @@ const SUPERVISEE_ROLES = new Set(["registered_manager", "deputy_manager", "team_
 function staffName(s: any): string {
   return s.full_name || [s.first_name, s.last_name].filter(Boolean).join(" ") || s.id;
 }
-function superviseeStaff(staffList: any[]): StaffLite[] {
+function superviseeStaff(staffList: any): StaffLite[] {
   return (((staffList ?? [])))
-    .filter((s) => s.employment_status !== "left" && SUPERVISEE_ROLES.has(String(s.role)))
-    .map((s) => ({ id: s.id, name: staffName(s), role: s.role ?? s.job_title ?? null }));
+    .filter((s: any) => s.employment_status !== "left" && SUPERVISEE_ROLES.has(String(s.role)))
+    .map((s: any) => ({ id: s.id, name: staffName(s), role: s.role ?? s.job_title ?? null }));
 }
 
 export async function GET() {

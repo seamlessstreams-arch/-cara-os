@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
       reason: r.reason ?? "unknown",
       restraint_type: r.restraint_type ?? "other",
       staff_involved: Array.isArray(r.staff_involved)
-        ? r.staff_involved.map((s: any) => ({
+        ? r.staff_involved.map((s) => ({
             staff_id: s.staff_id ?? "unknown",
             role: s.role ?? "unknown",
             team_teach_trained: !!s.team_teach_trained,
@@ -62,9 +62,9 @@ export async function GET(request: NextRequest) {
         : [],
       de_escalation_attempts: Array.isArray(r.de_escalation_attempts) ? r.de_escalation_attempts : [],
       injuries: Array.isArray(r.injuries)
-        ? r.injuries.map((inj: any) => ({
+        ? r.injuries.map((inj) => ({
             person: inj.person ?? "unknown",
-            description: inj.description ?? inj.injury ?? "",
+            description: inj.injury ?? "",
           }))
         : [],
       child_debriefed: !!r.child_debriefed,

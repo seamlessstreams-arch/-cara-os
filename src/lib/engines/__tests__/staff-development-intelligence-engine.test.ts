@@ -246,6 +246,17 @@ describe("overview", () => {
     expect(r.overview.mandatory_qual_compliance_rate).toBe(50);
   });
 
+  it("leaves an exempt qualification out of the compliance rate entirely", () => {
+    const s1 = makeStaff();
+    const q1 = makeQualification(s1.id, { mandatory: true, status: "completed" });
+    const q2 = makeQualification(s1.id, { mandatory: true, status: "exempt" });
+    const r = run({ staff: [s1], qualifications: [q1, q2] });
+    // An exemption means the requirement does not apply, so the rate is 1 of 1
+    // — not 1 of 2, which would report the home short of a qualification
+    // nobody was required to hold.
+    expect(r.overview.mandatory_qual_compliance_rate).toBe(100);
+  });
+
   it("counts qualifications in progress and mandatory not started", () => {
     const s1 = makeStaff();
     const q1 = makeQualification(s1.id, { mandatory: true, status: "not_started" });

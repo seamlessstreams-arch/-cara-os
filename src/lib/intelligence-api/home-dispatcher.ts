@@ -26890,7 +26890,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         unit: "incidents",
         polarity: "lower_better",
         description: "Behaviour-log entries recorded as concerning.",
-        dates: datesFrom((store.behaviourLog), (r) => r.direction === "concerning"),
+        dates: datesFrom((store.behaviourLog), (r) => r.direction === "concern"),
       },
       {
         key: "sanctions",

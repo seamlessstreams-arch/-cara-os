@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
   const denied = assertChildHomeAccess(identity, childId);
   if (denied) return denied;
   const forChild = (cid: any) => !childId || String(cid) === childId;
-  const ladoForChild = (ids: any[]) => !childId || (Array.isArray(ids) && ids.map(String).includes(childId));
+  const ladoForChild = (ids: any) => !childId || (Array.isArray(ids) && ids.map(String).includes(childId));
 
   const ypById = new Map<string, string>(
     (youngPeopleList ?? []).map((y) => [String(y.id), y.preferred_name || y.first_name || "Unknown"]),
