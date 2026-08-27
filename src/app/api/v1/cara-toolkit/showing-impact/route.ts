@@ -21,10 +21,10 @@ export async function GET() {
       dal.riskAssessments.findAll(),
       dal.youngPeople.findAll(),
     ]);
-  const youngPeople = (youngPeopleList as any[]) ?? [];
-  const keyWorkingSessions = (keyWorkingSessionsList as any[]) ?? [];
-  const incidents = (incidentsList as any[]) ?? [];
-  const riskAssessments = (riskAssessmentsList as any[]) ?? [];
+  const youngPeople = ((youngPeopleList)) ?? [];
+  const keyWorkingSessions = ((keyWorkingSessionsList)) ?? [];
+  const incidents = ((incidentsList)) ?? [];
+  const riskAssessments = ((riskAssessmentsList)) ?? [];
 
   const sixMonthsAgo = new Date(
     new Date().getTime() - 180 * 86_400_000
@@ -34,7 +34,7 @@ export async function GET() {
   ).toISOString().slice(0, 10);
 
   const activeChildren = youngPeople.filter(
-    (y) => y.status !== "moved_on" && y.status !== "discharged"
+    (y) => y.status === "current" || y.status === "emergency"
   );
 
   const childSummaries: ChildImpactSummary[] = activeChildren.map((yp) => {

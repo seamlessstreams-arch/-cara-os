@@ -321,7 +321,7 @@ export async function GET(
     today,
     child_id: childId,
     child_name: childName,
-    placement_start: (yp as any).placement_start ?? today,
+    placement_start: ((yp)).placement_start ?? today,
     risk_assessments,
     outcome_targets,
     incidents,

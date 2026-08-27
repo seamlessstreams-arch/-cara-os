@@ -40,14 +40,14 @@ export async function GET(request: NextRequest) {
   const today = todayStr();
 
   // ── Child info ─────────────────────────────────────────────────────────
-  const child = (youngPeopleList ?? []).find((yp) => yp.id === childId) as any;
+  const child = ((youngPeopleList ?? []).find((yp) => yp.id === childId));
   if (!child) {
     return NextResponse.json({ error: "Child not found" }, { status: 404 });
   }
-  const childName = (child.name ?? `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim()) || childId;
+  const childName = `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim() || childId;
 
   // ── Medications ────────────────────────────────────────────────────────
-  const medications: MedicationInput[] = ((medicationsList ?? []) as any[])
+  const medications: MedicationInput[] = (((medicationsList ?? [])))
     .filter((m) => m.child_id === childId)
     .map((m) => ({
       id: m.id,
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Administrations ────────────────────────────────────────────────────
-  const administrations: AdministrationInput[] = ((medicationAdministrationsList ?? []) as any[])
+  const administrations: AdministrationInput[] = (((medicationAdministrationsList ?? [])))
     .filter((a) => a.child_id === childId)
     .map((a) => ({
       id: a.id,
@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Medication Errors ──────────────────────────────────────────────────
-  const errors: MedErrorInput[] = ((medicationErrorsList ?? []) as any[])
+  const errors: MedErrorInput[] = (((medicationErrorsList ?? [])))
     .filter((e) => e.child_id === childId)
     .map((e) => ({
       id: e.id,

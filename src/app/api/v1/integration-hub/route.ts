@@ -28,7 +28,21 @@ export async function GET() {
   // No live registry exists — `integrations` was a phantom field (never on the
   // store), so this has always been []. The defensive mapping below is kept for
   // the day a real adapter registry lands; until then the static scaffold wins.
-  const integrations = [] as any[];
+  // Shape of a row the adapter registry will return once it lands. Declaring it
+  // keeps the mapper below type-checked instead of resting on `any`.
+  type RegistryRow = {
+    id: string;
+    name?: string;
+    kind?: string;
+    status?: string;
+    last_sync?: string | null;
+    supports_idempotency?: boolean;
+    retry?: { max_attempts?: number; backoff_seconds?: number };
+    error_log?: { at?: string | null; message?: string }[];
+    sync_status?: string;
+    manual_override?: boolean;
+  };
+  const integrations: RegistryRow[] = [];
 
   // No live registry in the demo store → fall back to the static default scaffold
   // by calling the engine with no adapters supplied.
@@ -48,7 +62,7 @@ export async function GET() {
       max_attempts: Number(x.retry?.max_attempts ?? 3),
       backoff_seconds: Number(x.retry?.backoff_seconds ?? 30),
     },
-    error_log: ((x.error_log ?? []) as any[]).map((e) => ({
+    error_log: (((x.error_log ?? []))).map((e) => ({
       at: d(e.at) ?? "",
       message: e.message ?? "",
     })),

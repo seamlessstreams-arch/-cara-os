@@ -31,13 +31,13 @@ export async function GET() {
       dal.youngPeople.findAll(),
     ]);
 
-  const children: ChildRef[] = ((youngPeopleList ?? []) as any[]).map((yp) => ({
+  const children: ChildRef[] = (((youngPeopleList ?? []))).map((yp) => ({
     id: yp.id,
     name: yp.preferred_name || `${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim() || yp.id,
   }));
 
-  const complaints: ComplaintCorrInput[] = ((complaintsList ?? []) as any[])
-    .filter((c) => c.child_id)
+  const complaints: ComplaintCorrInput[] = (((complaintsList ?? [])))
+    .filter((c): c is typeof c & { child_id: string } => !!c.child_id)
     .map((c) => ({
       child_id: c.child_id,
       date: d(c.date_received ?? c.created_at),
@@ -46,8 +46,8 @@ export async function GET() {
       status: c.status ?? "received",
     }));
 
-  const incidents: IncidentCorrInput[] = ((incidentsList ?? []) as any[])
-    .filter((i) => i.child_id)
+  const incidents: IncidentCorrInput[] = (((incidentsList ?? [])))
+    .filter((i): i is typeof i & { child_id: string } => !!i.child_id)
     .map((i) => ({
       child_id: i.child_id,
       date: d(i.date ?? i.created_at),

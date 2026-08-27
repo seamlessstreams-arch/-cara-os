@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
   const now = new Date().toISOString();
 
   // ── 1. The young person (same create path the manual form has always used) ─
-  const yp = await dal.youngPeople.create({
+  const yp = await dal.youngPeople.create(({
     first_name: firstName,
     last_name: lastName,
     preferred_name: ((b.preferred_name as string) || "").trim() || null,
@@ -64,10 +64,8 @@ export async function POST(req: NextRequest) {
     local_authority: localAuthority,
     legal_status: (b.legal_status as string) || null,
     status: "current",
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const child = yp as any;
+  }));
+  const child = (yp);
   if (!child?.id) {
     return NextResponse.json({ error: "Could not create the young person record." }, { status: 500 });
   }
@@ -106,8 +104,7 @@ export async function POST(req: NextRequest) {
       // Dual-mode: in-memory store + best-effort generic_records write-through,
       // so the draft RAs survive on a live tenant (the same durable path the
       // /risk-assessments route uses) rather than vanishing on cold start.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const created = createRiskAssessmentRecord(d as any) as any;
+      const created = (createRiskAssessmentRecord((d)));
       return { id: created.id as string, domain: created.domain as string };
     });
   }
@@ -135,8 +132,7 @@ export async function POST(req: NextRequest) {
       created_at: now,
       updated_at: now,
     };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const created = createTaskRecord(task) as any;
+    const created = (createTaskRecord(task));
     return { id: (created?.id as string) ?? task.id, title: t.title, due_date: t.due_date, priority: t.priority };
   });
 

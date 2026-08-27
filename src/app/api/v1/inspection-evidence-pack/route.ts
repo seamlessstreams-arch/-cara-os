@@ -30,7 +30,7 @@ export async function GET() {
   // store) and passed in so the pack generator stays a pure mapping. Mirrors the
   // /api/v1/sop-reality-check and /api/v1/org-risk routes exactly.
   const nowIso = new Date().toISOString();
-  const sopChildren = ((youngPeopleList ?? []) as any[])
+  const sopChildren = (((youngPeopleList ?? [])))
     .filter((yp) => yp.status === "current")
     .map((yp) => ({
       id: yp.id as string,
@@ -65,8 +65,8 @@ export async function GET() {
 
   const input: EvidencePackInput = {
     today,
-    home_id: (homeRec as any)?.id ?? "home_oak",
-    home_name: (homeRec as any)?.name?.trim() || "This home",
+    home_id: ((homeRec))?.id ?? "home_oak",
+    home_name: ((homeRec))?.name?.trim() || "This home",
     period_from: periodFrom,
     period_to: periodTo,
     generated_by: "system",

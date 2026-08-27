@@ -48,7 +48,7 @@ export async function GET() {
   const events = buildEventStream(mapStoreToEventInput(store)).events;
 
   // ── Supervisions (Reg 33) ──────────────────────────────────────────────
-  const supervisions: ComplianceSupervisionInput[] = ((await safeList(dal.supervisions.findAll())) as any[]).map((s) => ({
+  const supervisions: ComplianceSupervisionInput[] = (((await safeList(dal.supervisions.findAll())))).map((s) => ({
     id: s.id,
     staff_id: s.staff_id ?? "",
     type: s.type ?? "supervision",
@@ -58,7 +58,7 @@ export async function GET() {
   }));
 
   // ── Mandatory training records ──────────────────────────────────────────
-  const trainingRecords: ComplianceTrainingInput[] = ((await safeList(dal.training.findAll())) as any[]).map((t) => ({
+  const trainingRecords: ComplianceTrainingInput[] = (((await safeList(dal.training.findAll())))).map((t) => ({
     id: t.id,
     staff_id: t.staff_id ?? "",
     course_name: t.course_name ?? t.category ?? "Training",

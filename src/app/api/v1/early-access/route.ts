@@ -59,7 +59,10 @@ export async function POST(req: Request) {
   if (supabase) {
     try {
       // Cast: this table is added by migration 407 and isn't in the generated Database types.
-      await (supabase as any).from("early_access_requests").insert(record);
+      const earlyAccessTable = supabase.from("early_access_requests") as unknown as {
+        insert: (row: Record<string, unknown>) => Promise<unknown>;
+      };
+      await earlyAccessTable.insert(record);
     } catch {
       // TODO(supabase): run migration 407_early_access_requests.sql to enable durable storage.
     }

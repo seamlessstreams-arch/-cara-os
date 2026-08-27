@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
 
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
-  const body = __parsed.data as any;
+  const body = (__parsed.data);
   const staffName = String(body.staffName ?? "the staff member");
   const context = String(body.context ?? "").slice(0, 600);
 

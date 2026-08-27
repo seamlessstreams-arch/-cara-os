@@ -29,7 +29,7 @@ export async function GET() {
       dal.supervisions.findAll(),
       dal.audits.findAll(),
     ]);
-    const children = ((youngPeopleList ?? []) as any[])
+    const children = (((youngPeopleList ?? [])))
       .filter((yp) => yp.status === "current")
       .map((yp) => ({
         id: yp.id as string,
@@ -39,7 +39,7 @@ export async function GET() {
     const data = buildSopRealityCheck({
       now: new Date().toISOString(),
       children,
-      carePlans: (carePlansList ?? []) as any[],
+      carePlans: ((carePlansList ?? [])),
       dailyLog: (dailyLogList ?? []) as { child_id: string; date?: string }[],
       keyWorkingSessions: keyWorkingSessionsList ?? [],
       incidents: incidentsList ?? [],

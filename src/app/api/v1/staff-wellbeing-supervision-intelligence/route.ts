@@ -84,7 +84,7 @@ export async function GET() {
   const reflectiveSupervisionsList = await dal.reflectiveSupervisions.findAll();
   const today = todayStr();
 
-  const rawSupervisions = (reflectiveSupervisionsList as any[] ?? []);
+  const rawSupervisions = ((reflectiveSupervisionsList) ?? []);
 
   const profiles: StaffWellbeingProfile[] = rawSupervisions.map((rec) => {
     const sessionDate = typeof rec.date === "string" ? rec.date.slice(0, 10) : today;

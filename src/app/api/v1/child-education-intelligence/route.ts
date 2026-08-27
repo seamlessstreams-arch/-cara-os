@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
   const sortedEdu = [...childEduRecords].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
   );
-  const schoolName = (sortedEdu[0] as any)?.school ?? null;
+  const schoolName = ((sortedEdu[0]))?.school ?? null;
 
   // ── Education Records ─────────────────────────────────────────────────
   const education_records: EducationRecordInput[] = childEduRecords.map((r) => ({
@@ -80,15 +80,15 @@ export async function GET(request: NextRequest) {
   const ehcpRecords = (ehcpRecordsList ?? []).filter((r) => r.child_id === childId);
   let ehcp: EhcpInput | null = null;
   if (ehcpRecords.length > 0) {
-    const e = ehcpRecords[0] as any;
+    const e = (ehcpRecords[0]);
     ehcp = {
       id: e.id,
-      status: e.status ?? "active",
-      plan_type: e.plan_type ?? "ehcp",
-      review_date: e.review_date ? e.review_date.slice(0, 10) : null,
-      annual_review_due: e.annual_review_due ? e.annual_review_due.slice(0, 10) : null,
-      needs_areas: e.needs_areas ?? [],
-      provision_in_place: e.provision_in_place ?? false,
+      status: e.plan_status ?? "active",
+      plan_type: "ehcp", // the record IS an EHCP — there is no other plan type on it
+      review_date: e.last_annual_review_date ? e.last_annual_review_date.slice(0, 10) : null,
+      annual_review_due: e.next_annual_review_due ? e.next_annual_review_due.slice(0, 10) : null,
+      needs_areas: [e.primary_need, ...(e.secondary_needs ?? [])].filter(Boolean),
+      provision_in_place: (e.provisions_listed?.length ?? 0) > 0,
     };
   }
 

@@ -44,7 +44,7 @@ export async function GET() {
     dal.candidateValuesProfiles.findAll(),
     dal.employerValuesProfiles.findAll(),
   ]);
-  const vacancies = ((vacanciesList ?? []) as any[]).map((v) => ({ id: v.id, title: v.title, status: v.status }));
+  const vacancies = (((vacanciesList ?? []))).map((v) => ({ id: v.id, title: v.title, status: v.status }));
   const profiles: any[] = profilesList ?? [];
   const candidates = ((candidateValuesProfilesList ?? []) as CandidateValuesProfile[]).map((c) => {
     const p = profiles.find((x) => x.id === c.candidate_id);
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
   const user_id = identity.userId;
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
-  const body = __parsed.data as any;
+  const body = (__parsed.data);
   const [vacanciesList, candidateValuesProfilesList, employerValuesProfilesList] = await Promise.all([
     dal.vacancies.findAll(),
     dal.candidateValuesProfiles.findAll(),

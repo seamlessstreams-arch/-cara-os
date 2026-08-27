@@ -36,14 +36,14 @@ export async function GET(request: NextRequest) {
   const today = todayStr();
 
   // ── Child info ─────────────────────────────────────────────────────────
-  const child = (youngPeopleList ?? []).find((yp) => yp.id === childId) as any;
+  const child = ((youngPeopleList ?? []).find((yp) => yp.id === childId));
   if (!child) {
     return NextResponse.json({ error: "Child not found" }, { status: 404 });
   }
-  const childName = (child.name ?? `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim()) || childId;
+  const childName = `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim() || childId;
 
   // ── Keyworking Sessions ────────────────────────────────────────────────
-  const sessions: KeyworkSessionInput[] = ((keyWorkingSessionsList ?? []) as any[])
+  const sessions: KeyworkSessionInput[] = (((keyWorkingSessionsList ?? [])))
     .filter((s) => s.child_id === childId)
     .map((s) => ({
       id: s.id,

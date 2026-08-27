@@ -43,11 +43,11 @@ export async function GET() {
     ]);
   const today = todayStr();
 
-  const staff          = (staffList as any[]) ?? [];
-  const supervisions   = (reflectiveSupervisionsList as any[]) ?? [];
-  const training       = (trainingRecordsList as any[]) ?? [];
-  const shifts         = (shiftsList as any[]) ?? [];
-  const leaveRequests  = (leaveRequestsList as any[]) ?? [];
+  const staff          = ((staffList)) ?? [];
+  const supervisions   = ((reflectiveSupervisionsList)) ?? [];
+  const training       = ((trainingRecordsList)) ?? [];
+  const shifts         = ((shiftsList)) ?? [];
+  const leaveRequests  = ((leaveRequestsList)) ?? [];
 
   // ── Staffing indicators ───────────────────────────────────────────────────
 

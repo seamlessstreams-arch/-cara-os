@@ -164,8 +164,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Build query with filters
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let query = (sb.from("child_reports") as any)
+    let query = ((sb.from("child_reports")))
       .select("*")
       .eq("home_id", homeId)
       .order("created_at", { ascending: false })

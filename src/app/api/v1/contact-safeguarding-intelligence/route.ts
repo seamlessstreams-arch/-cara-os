@@ -129,7 +129,7 @@ export async function GET() {
 
   // ── Child name map ──────────────────────────────────────────────────────────
   const ypMap = new Map(
-    ((youngPeopleList as any[]) ?? []).map((yp) => [
+    (((youngPeopleList)) ?? []).map((yp) => [
       yp.id,
       `${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim() || "Unknown",
     ])
@@ -137,7 +137,7 @@ export async function GET() {
 
   // ── Index family time sessions by child ────────────────────────────────────
   const sessionsByChild = new Map<string, any[]>();
-  for (const s of (familyTimeSessionsList as any[]) ?? []) {
+  for (const s of ((familyTimeSessionsList)) ?? []) {
     const list = sessionsByChild.get(s.child_id) ?? [];
     list.push(s);
     sessionsByChild.set(s.child_id, list);
@@ -145,7 +145,7 @@ export async function GET() {
 
   // ── Index behaviour log by child ───────────────────────────────────────────
   const behaviourByChild = new Map<string, any[]>();
-  for (const b of (behaviourLogList as any[]) ?? []) {
+  for (const b of ((behaviourLogList)) ?? []) {
     if (!b.child_id) continue;
     const list = behaviourByChild.get(b.child_id) ?? [];
     list.push(b);

@@ -36,14 +36,14 @@ export async function GET(request: NextRequest) {
   const today = todayStr();
 
   // ── Child info ─────────────────────────────────────────────────────────
-  const child = (youngPeopleList ?? []).find((yp) => yp.id === childId) as any;
+  const child = ((youngPeopleList ?? []).find((yp) => yp.id === childId));
   if (!child) {
     return NextResponse.json({ error: "Child not found" }, { status: 404 });
   }
-  const childName = (child.name ?? `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim()) || childId;
+  const childName = `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim() || childId;
 
   // ── Restraints ─────────────────────────────────────────────────────────
-  const restraints: RestraintInput[] = ((restraintsList ?? []) as any[])
+  const restraints: RestraintInput[] = (((restraintsList ?? [])))
     .filter((r) => r.child_id === childId)
     .map((r) => ({
       id: r.id,

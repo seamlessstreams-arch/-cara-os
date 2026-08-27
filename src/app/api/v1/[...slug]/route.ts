@@ -576,8 +576,7 @@ function resolveAccessor(slug: string): AsyncCollection | null {
 
   // Dal-routed core entities: reads via the dual-mode dal (real table on, store off);
   // writes via dal where available, else the store.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const dalCol = DAL_MAP[collectionName] as any;
+  const dalCol = (DAL_MAP[collectionName]);
   if (dalCol) {
     return {
       findAll: async () => asList(await dalCol.findAll()),
@@ -641,19 +640,19 @@ function resolveAccessor(slug: string): AsyncCollection | null {
     },
     create: async (data: Record<string, unknown>) => {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { id: _id, child_id, staff_id, created_by, ...rest } = data as any;
+        const { id: _id, child_id, staff_id, created_by, ...rest } = (data);
         void _id;
-        const row = await sq.createGenericRecord(c, {
+        // generic_records is not in the generated Database types; declare what
+        // the insert returns rather than turning checking off with `any`.
+        const row = (await sq.createGenericRecord(c, {
           home_id: homeId(),
           record_type: collectionName,
           data: rest,
-          child_id: child_id ?? null,
-          staff_id: staff_id ?? null,
-          created_by: created_by ?? null,
-        });
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return { id: (row as any).id, ...rest, created_at: (row as any).created_at };
+          child_id: typeof child_id === "string" ? child_id : undefined,
+          staff_id: typeof staff_id === "string" ? staff_id : undefined,
+          created_by: typeof created_by === "string" ? created_by : undefined,
+        })) as { id?: string; created_at?: string } | null;
+        return { id: row?.id, ...rest, created_at: row?.created_at };
       } catch (err) {
         // Live: a failed durable insert must surface (500), never pretend-save
         // into the ephemeral store. Demo: the store IS the data — fall back.
@@ -673,9 +672,10 @@ async function updateGeneric(c: any, id: string, data: Record<string, unknown>) 
   try { existing = await sq.getGenericRecordById(c, id); } catch { return null; }
   if (!existing) return null;
   const merged = { ...existing.data, ...data };
-  const row = await sq.updateGenericRecord(c, id, { data: merged, updated_by: (data.updated_by as string) ?? null });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return { id: (row as any).id, ...merged, updated_at: (row as any).updated_at };
+  // generic_records is not in the generated Database types; declare the row
+  // shape rather than turning checking off with `any`.
+  const row = (await sq.updateGenericRecord(c, id, { data: merged, updated_by: (data.updated_by as string) ?? null })) as { id?: string; updated_at?: string } | null;
+  return { id: row?.id, ...merged, updated_at: row?.updated_at };
 }
 
 function json(data: unknown, status = 200) {

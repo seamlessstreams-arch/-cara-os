@@ -25,7 +25,7 @@ export async function GET() {
       entry_count: sessionEntries(s.id).length,
       type_label: INCIDENT_TYPES.find((t) => t.key === s.incident_type)?.label ?? s.incident_type,
     }));
-  const children = ((youngPeopleList ?? []) as any[])
+  const children = (((youngPeopleList ?? [])))
     .filter((c) => c.status === "current")
     .map((c) => ({ id: c.id, name: c.preferred_name || [c.first_name, c.last_name].filter(Boolean).join(" ") }));
   return NextResponse.json({
@@ -36,7 +36,7 @@ export async function GET() {
 export async function POST(req: Request) {
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
-  const body = __parsed.data as any;
+  const body = (__parsed.data);
   const child_id = String(body.child_id ?? "").trim();
   const incident_type = String(body.incident_type ?? "").trim();
   const risk = String(body.immediate_risk_level ?? "medium");
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "Select an incident type." }, { status: 400 });
   }
   const youngPeopleList = await dal.youngPeople.findAll();
-  if (!((youngPeopleList ?? []) as any[]).some((c) => c.id === child_id)) {
+  if (!(((youngPeopleList ?? []))).some((c) => c.id === child_id)) {
     return NextResponse.json({ ok: false, error: "Unknown child." }, { status: 400 });
   }
 

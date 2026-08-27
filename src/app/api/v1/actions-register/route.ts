@@ -23,7 +23,7 @@ export async function GET() {
   const [houseMeetingsList, keyWorkingSessionsList, lacReviewsList, medicationErrorsList, multiAgencyMeetingsList, qaAuditRecordsList, reg44VisitReportsList, supervisionsList, youngPeopleList] = await Promise.all([dal.houseMeetings.findAll(), dal.keyWorkingSessions.findAll(), dal.lacReviews.findAll(), dal.medicationErrors.findAll(), dal.multiAgencyMeetings.findAll(), dal.qaAuditRecords.findAll(), dal.reg44VisitReports.findAll(), dal.supervisions.findAll(), dal.youngPeople.findAll()]);
   const today = todayStr();
 
-  const yp = (youngPeopleList ?? []) as any[];
+  const yp = ((youngPeopleList ?? []));
   const childName = (id?: string | null): string | undefined => {
     if (!id) return undefined;
     const c = yp.find((c) => c.id === id);

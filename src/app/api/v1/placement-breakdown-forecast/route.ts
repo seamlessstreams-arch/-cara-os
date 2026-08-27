@@ -44,7 +44,7 @@ export async function GET() {
 
   // ── Current placements only — a breakdown forecast is meaningless for
   //    ended or not-yet-started placements ─────────────────────────────────
-  const children: ChildInput[] = ((youngPeopleList ?? []) as any[])
+  const children: ChildInput[] = (((youngPeopleList ?? [])))
     .filter((yp) => yp.status === "current")
     .map((yp) => ({
       id: yp.id,
@@ -55,45 +55,45 @@ export async function GET() {
       risk_flags: Array.isArray(yp.risk_flags) ? yp.risk_flags : [],
     }));
 
-  const incidents: IncidentInput[] = ((incidentsList ?? []) as any[]).map((i) => ({
+  const incidents: IncidentInput[] = (((incidentsList ?? []))).map((i) => ({
     child_id: i.child_id ?? "",
     date: d(i.date ?? i.created_at),
     severity: i.severity ?? "low",
   }));
 
-  const missingEpisodes: MissingInput[] = ((missingEpisodesList ?? []) as any[]).map((m) => ({
+  const missingEpisodes: MissingInput[] = (((missingEpisodesList ?? []))).map((m) => ({
     child_id: m.child_id ?? "",
     date_missing: d(m.date_missing ?? m.created_at),
     risk_level: m.risk_level ?? "low",
     return_interview_completed: !!m.return_interview_completed,
   }));
 
-  const restraints: RestraintInput[] = ((restraintsList ?? []) as any[]).map((r) => ({
+  const restraints: RestraintInput[] = (((restraintsList ?? []))).map((r) => ({
     child_id: r.child_id ?? "",
     date: d(r.date ?? r.created_at),
   }));
 
-  const sanctions: SanctionInput[] = ((sanctionRewardsList ?? []) as any[]).map((s) => ({
+  const sanctions: SanctionInput[] = (((sanctionRewardsList ?? []))).map((s) => ({
     child_id: s.child_id ?? "",
     date: d(s.date ?? s.created_at),
     direction: s.direction ?? "sanction",
     proportionate: s.proportionate !== false,
   }));
 
-  const behaviour: BehaviourInput[] = ((behaviourLogList ?? []) as any[]).map((b) => ({
+  const behaviour: BehaviourInput[] = (((behaviourLogList ?? []))).map((b) => ({
     child_id: b.child_id ?? "",
     date: d(b.date ?? b.created_at),
     direction: b.direction ?? "concern",
     intensity: b.intensity ?? "low",
   }));
 
-  const education: EducationInput[] = ((educationRecordsList ?? []) as any[]).map((e) => ({
+  const education: EducationInput[] = (((educationRecordsList ?? []))).map((e) => ({
     child_id: e.child_id ?? "",
     date: d(e.date ?? e.created_at),
     attendance_status: e.attendance_status ?? null,
   }));
 
-  const keyworking: KeyworkingInput[] = ((keyWorkingSessionsList ?? []) as any[]).map((k) => ({
+  const keyworking: KeyworkingInput[] = (((keyWorkingSessionsList ?? []))).map((k) => ({
     child_id: k.child_id ?? "",
     date: d(k.date ?? k.created_at),
     mood_before: typeof k.mood_before === "number" ? k.mood_before : 3,

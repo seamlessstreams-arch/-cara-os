@@ -11,8 +11,8 @@ export async function GET() {
     ]);
     const today = todayStr();
 
-    const youngPeople = (youngPeopleList as any[]) ?? [];
-    const outcomeTargets = (outcomeTargetsList as any[]) ?? [];
+    const youngPeople = ((youngPeopleList)) ?? [];
+    const outcomeTargets = ((outcomeTargetsList)) ?? [];
 
     const activeYP = youngPeople.filter((yp) => yp.status === "current");
     const activeTargets = outcomeTargets.filter((t) => t.status === "active");

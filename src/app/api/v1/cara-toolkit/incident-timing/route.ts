@@ -73,12 +73,12 @@ export async function GET() {
   const incidents = await safeList(dal.incidents.findAll());
 
   // ── Parse incidents with a valid time ────────────────────────────────────
-  const parsed = incidents
+  const parsed = (incidents
     .map((inc) => {
       const hour = parseHour(inc.time);
       return hour !== null ? { ...inc, hour } : null;
     })
-    .filter(Boolean) as any[];
+    .filter(Boolean));
 
   const total = parsed.length;
 

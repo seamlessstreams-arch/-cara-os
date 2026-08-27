@@ -49,11 +49,11 @@ export async function GET(request: NextRequest) {
   ]);
 
   // ── Child info ─────────────────────────────────────────────────────────
-  const child = youngPeople.find((yp) => yp.id === childId) as any;
+  const child = (youngPeople.find((yp) => yp.id === childId));
   if (!child) {
     return NextResponse.json({ error: "Child not found" }, { status: 404 });
   }
-  const childName = (child.name ?? `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim()) || childId;
+  const childName = `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim() || childId;
 
   // ── Missing Episodes ───────────────────────────────────────────────────
   const episodes: MissingEpisodeInput[] = missingEpisodes

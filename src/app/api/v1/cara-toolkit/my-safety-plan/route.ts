@@ -38,14 +38,14 @@ export async function GET() {
       dal.staff.findAll(),
       dal.youngPeople.findAll(),
     ]);
-  const youngPeople = (youngPeopleList as any[]) ?? [];
-  const riskAssessments = (riskAssessmentsList as any[]) ?? [];
-  const keyWorkingSessions = (keyWorkingSessionsList as any[]) ?? [];
+  const youngPeople = ((youngPeopleList)) ?? [];
+  const riskAssessments = ((riskAssessmentsList)) ?? [];
+  const keyWorkingSessions = ((keyWorkingSessionsList)) ?? [];
 
   const today = todayStr();
 
   const childPlans: ChildSafetyPlan[] = youngPeople
-    .filter((yp) => yp.status !== "moved_on" && yp.status !== "discharged")
+    .filter((yp) => yp.status === "current" || yp.status === "emergency")
     .map((yp) => {
       const childRAs = riskAssessments.filter((r) => r.child_id === yp.id);
       const childKW = keyWorkingSessions
@@ -70,7 +70,7 @@ export async function GET() {
       ).length;
       const overdueReviewCount = riskDomains.filter((d) => d.overdueReview).length;
 
-      const staffMember = (staffList as any[])?.find(
+      const staffMember = ((staffList))?.find(
         (s) => s.id === yp.key_worker_id
       );
       const keyWorker = staffMember

@@ -82,10 +82,10 @@ export async function GET() {
     ]);
   const today = todayStr();
 
-  const incidents       = (incidentsList as any[]) ?? [];
-  const reg44Reports    = (reg44VisitReportsList as any[]) ?? [];
-  const supervisions    = (reflectiveSupervisionsList as any[]) ?? [];
-  const youngPeople     = (youngPeopleList as any[]) ?? [];
+  const incidents       = ((incidentsList)) ?? [];
+  const reg44Reports    = ((reg44VisitReportsList)) ?? [];
+  const supervisions    = ((reflectiveSupervisionsList)) ?? [];
+  const youngPeople     = ((youngPeopleList)) ?? [];
 
   const ypMap = new Map(youngPeople.map((yp) => [yp.id, yp]));
 
@@ -131,7 +131,7 @@ export async function GET() {
       lessonLearned: hasLesson
         ? String(inc.lessons_learned)
         : "Learning not yet recorded for this incident. Add the lesson to support team improvement.",
-      actionRequired: hasLesson || hasOversight,
+      actionRequired: !!(hasLesson || hasOversight),
       actionDescription,
       actionStatus,
       actionOwner: inc.oversight_by ?? null,

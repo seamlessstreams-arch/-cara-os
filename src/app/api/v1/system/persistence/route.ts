@@ -59,8 +59,7 @@ export async function GET() {
 
         for (let attempt = 0; attempt <= expected.length; attempt++) {
           if (remaining.length === 0) break;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const { error } = await (c.from(table as any) as any)
+          const { error } = await ((c.from((table))))
             .select(remaining.join(","), { head: true })
             .limit(1);
           if (!error) break;
@@ -81,8 +80,7 @@ export async function GET() {
           ...(await Promise.all(
             batch.map(async ({ table, migration, columns }) => {
               try {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const { count, error } = await (c.from(table as any) as any)
+                const { count, error } = await ((c.from((table))))
                   .select("*", { count: "exact", head: true });
                 // Only probe columns on a table that is actually there — on a
                 // missing one every column is trivially absent, and saying so

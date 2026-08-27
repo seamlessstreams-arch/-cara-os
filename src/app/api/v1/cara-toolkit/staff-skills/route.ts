@@ -16,9 +16,9 @@ export async function GET() {
       dal.staff.findAll(),
       dal.trainingRecords.findAll(),
     ]);
-  const staff = (staffList as any[]) ?? [];
-  const trainingRecords = (trainingRecordsList as any[]) ?? [];
-  const supervisions = (reflectiveSupervisionsList as any[]) ?? [];
+  const staff = ((staffList)) ?? [];
+  const trainingRecords = ((trainingRecordsList)) ?? [];
+  const supervisions = ((reflectiveSupervisionsList)) ?? [];
   const today = todayStr();
 
   const activeStaff = staff.filter(
@@ -30,12 +30,13 @@ export async function GET() {
     const mandatory = staffTraining.filter((t) => t.is_mandatory === true);
     const compliant = mandatory.filter(
       (t) =>
-        t.status === "completed" &&
+        (t.status === "compliant" || t.status === "expiring_soon") &&
         (!t.expiry_date || t.expiry_date >= today)
     );
     const overdue = mandatory.filter(
       (t) =>
-        t.status !== "completed" ||
+        t.status === "expired" ||
+        t.status === "not_started" ||
         (t.expiry_date && t.expiry_date < today)
     );
 
@@ -53,7 +54,8 @@ export async function GET() {
       latestSup?.wellbeing_score != null
         ? Number(latestSup.wellbeing_score)
         : null;
-    const confidenceLevel: string | null = latestSup?.confidence_level ?? null;
+    const confidenceLevel: string | null =
+      latestSup?.confidence_level != null ? String(latestSup.confidence_level) : null;
     const lastSupervision: string | null = latestSup?.date ?? null;
 
     // Development areas from all supervisions

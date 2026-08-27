@@ -59,9 +59,8 @@ export async function GET(request: NextRequest) {
   }
 
   const childName = `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim() || "Unknown";
-  const placementStart = (child as any).placement_start_date
-    ?? (child as any).admission_date
-    ?? (child as any).created_at
+  const placementStart = ((child)).placement_start
+    ?? ((child)).created_at
     ?? "2025-01-01";
 
   // ── Therapy Sessions ──────────────────────────────────────────────────────

@@ -22,11 +22,11 @@ export async function GET() {
     ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
     const ninetyStr = ninetyDaysAgo.toISOString().split("T")[0];
 
-    const youngPeople = (youngPeopleList as any[]) ?? [];
-    const outcomeTargets = (outcomeTargetsList as any[]) ?? [];
-    const keyWorkingSessions = (keyWorkingSessionsList as any[]) ?? [];
-    const incidents = (incidentsList as any[]) ?? [];
-    const missingEpisodes = (missingEpisodesList as any[]) ?? [];
+    const youngPeople = ((youngPeopleList)) ?? [];
+    const outcomeTargets = ((outcomeTargetsList)) ?? [];
+    const keyWorkingSessions = ((keyWorkingSessionsList)) ?? [];
+    const incidents = ((incidentsList)) ?? [];
+    const missingEpisodes = ((missingEpisodesList)) ?? [];
 
     const activeYP = youngPeople.filter((yp) => yp.status === "current");
 

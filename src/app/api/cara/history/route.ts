@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - days);
 
-  const { data, error } = await (supabase.from("cara_requests") as any)
+  const { data, error } = await ((supabase.from("cara_requests")))
     .select(
       "id, command_id, module, created_at, cara_outputs(id, status, confidence, generated_text, guardrail_flagged)",
     )
@@ -74,7 +74,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ data: getDemoHistory() });
   }
 
-  const entries: HistoryEntry[] = ((data as any[]) ?? []).map((row) => {
+  const entries: HistoryEntry[] = (((data)) ?? []).map((row) => {
     const output = row.cara_outputs?.[0] ?? null;
     return {
       requestId: row.id,

@@ -28,7 +28,7 @@ export async function GET() {
     const totalHandovers = recentHandovers.length;
     const completedHandovers = recentHandovers.filter((h) => h.completed_at !== null).length;
     const unsignedHandovers = recentHandovers.filter(
-      (h) => h.completed_at !== null && (!h.sign_offs || (h.sign_offs as any[]).length === 0)
+      (h) => h.completed_at !== null && (!h.sign_offs || ((h.sign_offs)).length === 0)
     ).length;
     const handoversWithFlags = recentHandovers.filter((h) => (h.flags as string[])?.length > 0).length;
     const handoversWithIncidents = recentHandovers.filter(
@@ -65,7 +65,7 @@ export async function GET() {
       });
     }
     for (const h of recentHandovers) {
-      for (const update of (h.child_updates as any[]) ?? []) {
+      for (const update of ((h.child_updates)) ?? []) {
         const entry = childAlertMap.get(update.child_id as string);
         if (!entry) continue;
         entry.alerts.push(...((update.alerts as string[]) ?? []));
@@ -114,7 +114,7 @@ export async function GET() {
         to: h.shift_to as string,
         completed: h.completed_at !== null,
         flagCount: (h.flags as string[])?.length ?? 0,
-        signOffCount: (h.sign_offs as any[])?.length ?? 0,
+        signOffCount: ((h.sign_offs))?.length ?? 0,
         linkedIncidents: (h.linked_incident_ids as string[])?.length ?? 0,
         generalNotes: (h.general_notes as string)?.slice(0, 80) ?? null,
       }));

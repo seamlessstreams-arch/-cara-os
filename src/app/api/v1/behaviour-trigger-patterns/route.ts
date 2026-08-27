@@ -28,14 +28,14 @@ export async function GET() {
       dal.youngPeople.findAll(),
     ]);
 
-  const children: BehaviourChildRef[] = ((youngPeopleList ?? []) as any[])
+  const children: BehaviourChildRef[] = (((youngPeopleList ?? [])))
     .filter((yp) => yp.status === "current")
     .map((yp) => ({
       id: yp.id,
       name: yp.preferred_name || `${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim() || yp.id,
     }));
 
-  const entries: BehaviourEntryInput[] = ((behaviourLogList ?? []) as any[])
+  const entries: BehaviourEntryInput[] = (((behaviourLogList ?? [])))
     .filter((b) => b.child_id)
     .map((b) => ({
       child_id: b.child_id,

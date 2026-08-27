@@ -126,7 +126,7 @@ export async function GET(request: Request) {
     if (isSupabaseEnabled()) {
       const sb = createServerClient();
       if (sb) {
-        let query = (sb.from("cara_insights") as any)
+        let query = ((sb.from("cara_insights")))
           .select("*")
           .order("detected_at", { ascending: false })
           .limit(limit);

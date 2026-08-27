@@ -40,19 +40,19 @@ export async function GET() {
   const thirtyAgo = new Date(new Date().getTime() - 30 * 86_400_000).toISOString().slice(0, 10);
   const ninetyAgo = new Date(new Date().getTime() - 90 * 86_400_000).toISOString().slice(0, 10);
 
-  const youngPeople = (youngPeopleList as any[]) ?? [];
+  const youngPeople = ((youngPeopleList)) ?? [];
   const activeChildren = youngPeople.filter(
-    (y) => y.status !== "moved_on" && y.status !== "discharged"
+    (y) => y.status === "current" || y.status === "emergency"
   );
 
-  const incidents = (incidentsList as any[]) ?? [];
-  const keyWorkingSessions = (keyWorkingSessionsList as any[]) ?? [];
-  const reflectiveSupervisions = (reflectiveSupervisionsList as any[]) ?? [];
-  const reg44 = (reg44VisitReportsList as any[]) ?? [];
-  const riskAssessments = (riskAssessmentsList as any[]) ?? [];
-  const trainingRecords = (trainingRecordsList as any[]) ?? [];
-  const staff = (staffList as any[]) ?? [];
-  const debriefs = (debriefRecordsList as any[]) ?? [];
+  const incidents = ((incidentsList)) ?? [];
+  const keyWorkingSessions = ((keyWorkingSessionsList)) ?? [];
+  const reflectiveSupervisions = ((reflectiveSupervisionsList)) ?? [];
+  const reg44 = ((reg44VisitReportsList)) ?? [];
+  const riskAssessments = ((riskAssessmentsList)) ?? [];
+  const trainingRecords = ((trainingRecordsList)) ?? [];
+  const staff = ((staffList)) ?? [];
+  const debriefs = ((debriefRecordsList)) ?? [];
 
   // ── Dimension 1: Quality of relationships ────────────────────────────────
   const recentKeyWork = keyWorkingSessions.filter((k) => (k.date ?? "") >= thirtyAgo).length;
@@ -79,10 +79,10 @@ export async function GET() {
 
   // ── Dimension 2: Safety and risk management ───────────────────────────────
   const openHighRisk = riskAssessments.filter(
-    (r) => (r.current_level === "high" || r.current_level === "critical") && r.status !== "closed"
+    (r) => (r.current_level === "high" || r.current_level === "very_high") && (r.status === "current" || r.status === "under_review")
   ).length;
   const overdueRAs = riskAssessments.filter(
-    (r) => r.review_date && r.review_date < today && r.status !== "closed"
+    (r) => r.review_date && r.review_date < today && (r.status === "current" || r.status === "under_review")
   ).length;
   const openCriticalIncidents = incidents.filter(
     (i) => i.severity === "critical" && i.status !== "closed"
@@ -159,7 +159,7 @@ export async function GET() {
   // ── Dimension 4: Staff development and wellbeing ─────────────────────────
   const mandatory = trainingRecords.filter((t) => t.is_mandatory === true);
   const compliant = mandatory.filter(
-    (t) => t.status === "completed" && (!t.expiry_date || t.expiry_date >= today)
+    (t) => (t.status === "compliant" || t.status === "expiring_soon") && (!t.expiry_date || t.expiry_date >= today)
   );
   const trainingRate = rate(compliant.length, mandatory.length);
   const wellbeingScores = reflectiveSupervisions

@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
 
     const taskId = `task_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
-    const { data: inserted, error: insertError } = await (supabase.from("tasks") as any)
+    const { data: inserted, error: insertError } = await ((supabase.from("tasks")))
       .insert({
         id: taskId,
         home_id: homeId ?? null,
@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
 
       // Link to Cara output if provided
       if (outputId) {
-        await (supabase.from("cara_task_links") as any).insert({
+        await ((supabase.from("cara_task_links"))).insert({
           id: `cara_tl_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
           output_id: outputId,
           task_id: inserted.id,

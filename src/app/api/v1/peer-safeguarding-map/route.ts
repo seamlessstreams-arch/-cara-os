@@ -110,7 +110,7 @@ export async function GET() {
 
   // ── Child name map ──────────────────────────────────────────────────────────
   const ypMap = new Map(
-    ((youngPeopleList as any[]) ?? []).map((yp) => [
+    (((youngPeopleList)) ?? []).map((yp) => [
       yp.id,
       yp.preferred_name ??
         (`${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim() || "Unknown"),
@@ -119,7 +119,7 @@ export async function GET() {
 
   // ── Staff name map ──────────────────────────────────────────────────────────
   const staffMap = new Map(
-    ((staffList as any[]) ?? []).map((s) => [
+    (((staffList)) ?? []).map((s) => [
       s.id,
       s.full_name ?? (`${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || s.id),
     ])
@@ -128,14 +128,14 @@ export async function GET() {
   // ── Pair profiles ───────────────────────────────────────────────────────────
   const pairs: PeerPairProfile[] = [];
 
-  for (const p of (peerDynamicsList as any[]) ?? []) {
+  for (const p of ((peerDynamicsList)) ?? []) {
     const riskLevel: RiskLevel =
       (["none", "low", "medium", "high"].includes(p.risk_level)
         ? p.risk_level
         : "none") as RiskLevel;
 
     // Recent entries (last 60 days), newest first
-    const allEntries: PairEntry[] = ((p.entries ?? []) as any[]).map(
+    const allEntries: PairEntry[] = (((p.entries ?? []))).map(
       (e) => ({
         id: e.id ?? "",
         date: toDate(e.date),
@@ -200,7 +200,7 @@ export async function GET() {
   );
 
   // ── Latest group assessment ─────────────────────────────────────────────────
-  const groupAssessments = ((peerGroupDynamicsList as any[]) ?? [])
+  const groupAssessments = (((peerGroupDynamicsList)) ?? [])
     .map((g) => ({
       id: g.id ?? "",
       assessmentDate: toDate(g.assessment_date),

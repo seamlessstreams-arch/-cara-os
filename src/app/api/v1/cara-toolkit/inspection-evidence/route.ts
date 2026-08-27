@@ -53,19 +53,19 @@ export async function GET() {
   const thirtyAgo = new Date(new Date().getTime() - 30 * 86_400_000).toISOString().slice(0, 10);
   const ninetyAgo = new Date(new Date().getTime() - 90 * 86_400_000).toISOString().slice(0, 10);
 
-  const youngPeople = (youngPeopleList as any[]) ?? [];
-  const incidents = (incidentsList as any[]) ?? [];
-  const keyWorkingSessions = (keyWorkingSessionsList as any[]) ?? [];
-  const staff = (staffList as any[]) ?? [];
-  const trainingRecords = (trainingRecordsList as any[]) ?? [];
-  const reflectiveSupervisions = (reflectiveSupervisionsList as any[]) ?? [];
-  const reg44 = (reg44VisitReportsList as any[]) ?? [];
-  const riskAssessments = (riskAssessmentsList as any[]) ?? [];
-  const missingEpisodes = (missingEpisodesList as any[]) ?? [];
-  const debriefs = (debriefRecordsList as any[]) ?? [];
+  const youngPeople = ((youngPeopleList)) ?? [];
+  const incidents = ((incidentsList)) ?? [];
+  const keyWorkingSessions = ((keyWorkingSessionsList)) ?? [];
+  const staff = ((staffList)) ?? [];
+  const trainingRecords = ((trainingRecordsList)) ?? [];
+  const reflectiveSupervisions = ((reflectiveSupervisionsList)) ?? [];
+  const reg44 = ((reg44VisitReportsList)) ?? [];
+  const riskAssessments = ((riskAssessmentsList)) ?? [];
+  const missingEpisodes = ((missingEpisodesList)) ?? [];
+  const debriefs = ((debriefRecordsList)) ?? [];
 
   const activeChildren = youngPeople.filter(
-    (y) => y.status !== "moved_on" && y.status !== "discharged"
+    (y) => y.status === "current" || y.status === "emergency"
   );
   const activeStaff = staff.filter(
     (s) => s.employment_status !== "left" && s.is_active !== false
@@ -111,15 +111,15 @@ export async function GET() {
     (i) => i.severity === "critical" && i.status !== "closed"
   ).length;
   const missingWithRHI = missingEpisodes.filter(
-    (m) => !m.current_missing && m.return_interview_completed === true
+    (m) => !!m.date_returned && m.return_interview_completed === true
   ).length;
-  const totalReturned = missingEpisodes.filter((m) => !m.current_missing).length;
+  const totalReturned = missingEpisodes.filter((m) => !!m.date_returned).length;
   // No returned episodes means no return home interviews were due.
   const rhiRate = rate(missingWithRHI, totalReturned);
   const s2 = [
     openCritical === 0,
     totalReturned > 0 ? meets(rhiRate, 80) : null,
-    riskAssessments.filter((r) => r.status !== "closed").length > 0,
+    riskAssessments.filter((r) => r.status === "current" || r.status === "under_review").length > 0,
   ];
   const section2: EvidenceSection = {
     id: "safeguarding",
@@ -129,7 +129,7 @@ export async function GET() {
     keyFindings: [
       `${incidents.length} incidents on record`,
       `Return home interview completion rate: ${formatRate(rhiRate, "no returned episodes to interview")}`,
-      `${riskAssessments.filter((r) => r.status !== "closed").length} active risk assessments`,
+      `${riskAssessments.filter((r) => r.status === "current" || r.status === "under_review").length} active risk assessments`,
     ],
     evidenceStrengths: [
       openCritical === 0 ? "No open critical incidents" : "",
@@ -187,7 +187,7 @@ export async function GET() {
   );
   const mandatory = trainingRecords.filter((t) => t.is_mandatory === true);
   const compliant = mandatory.filter(
-    (t) => t.status === "completed" && (!t.expiry_date || t.expiry_date >= today)
+    (t) => (t.status === "compliant" || t.status === "expiring_soon") && (!t.expiry_date || t.expiry_date >= today)
   );
   // An empty mandatory training register is nothing recorded, not full compliance.
   const trainingRate = rateOf(compliant, mandatory);
