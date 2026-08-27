@@ -23,7 +23,7 @@ export async function GET() {
   const today = todayStr();
 
   // ── Staff ─────────────────────────────────────────────────────────────────
-  const staffMembers: StaffMemberInput[] = (staffList ?? []).map((s: any) => ({
+  const staffMembers: StaffMemberInput[] = (staffList ?? []).map((s) => ({
     id: s.id,
     name: `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || s.name || "Unknown",
     role: s.role ?? s.job_title ?? "Residential Care Worker",
@@ -33,7 +33,7 @@ export async function GET() {
   }));
 
   // ── Shifts ────────────────────────────────────────────────────────────────
-  const shifts: ShiftInput[] = (shiftsList ?? []).map((s: any) => ({
+  const shifts: ShiftInput[] = (shiftsList ?? []).map((s) => ({
     staff_id: s.staff_id,
     date: (s.date ?? s.shift_date ?? "").slice(0, 10),
     shift_type: s.shift_type ?? "day",
@@ -44,7 +44,7 @@ export async function GET() {
   }));
 
   // ── Leave Requests ────────────────────────────────────────────────────────
-  const leaveRequests: LeaveRequestInput[] = (leaveRequestsList ?? []).map((lr: any) => ({
+  const leaveRequests: LeaveRequestInput[] = (leaveRequestsList ?? []).map((lr) => ({
     staff_id: lr.staff_id,
     leave_type: lr.leave_type ?? "annual",
     start_date: (lr.start_date ?? "").slice(0, 10),
@@ -54,7 +54,7 @@ export async function GET() {
   }));
 
   // ── Supervisions ──────────────────────────────────────────────────────────
-  const supervisions: SupervisionInput[] = (supervisionsList ?? []).map((sv: any) => ({
+  const supervisions: SupervisionInput[] = (supervisionsList ?? []).map((sv) => ({
     staff_id: sv.staff_id,
     scheduled_date: (sv.scheduled_date ?? sv.date ?? "").slice(0, 10),
     actual_date: sv.actual_date ? sv.actual_date.slice(0, 10) : null,
@@ -64,7 +64,7 @@ export async function GET() {
   }));
 
   // ── Sickness Records ──────────────────────────────────────────────────────
-  const sicknessRecords: SicknessInput[] = (staffSicknessRecordsList ?? []).map((s: any) => ({
+  const sicknessRecords: SicknessInput[] = (staffSicknessRecordsList ?? []).map((s) => ({
     staff_id: s.staff_id,
     date_started: (s.date_started ?? "").slice(0, 10),
     date_ended: s.date_ended ? s.date_ended.slice(0, 10) : null,
@@ -77,7 +77,7 @@ export async function GET() {
   }));
 
   // ── Wellbeing Checks ──────────────────────────────────────────────────────
-  const wellbeingChecks: WellbeingCheckInput[] = (staffWellbeingRecordsList ?? []).map((w: any) => ({
+  const wellbeingChecks: WellbeingCheckInput[] = (staffWellbeingRecordsList ?? []).map((w) => ({
     staff_id: w.staff_id,
     date: (w.date ?? "").slice(0, 10),
     overall_score: w.overall_score ?? 5,
@@ -90,7 +90,7 @@ export async function GET() {
   }));
 
   // ── Debriefs ──────────────────────────────────────────────────────────────
-  const debriefRecords: DebriefInput[] = (staffDebriefRecordsList ?? []).map((d: any) => ({
+  const debriefRecords: DebriefInput[] = (staffDebriefRecordsList ?? []).map((d) => ({
     date: (d.date ?? "").slice(0, 10),
     staff_involved: d.staff_involved ?? [],
     emotional_impact: d.emotional_impact ?? "moderate",
@@ -100,14 +100,14 @@ export async function GET() {
   }));
 
   // ── Recognition ───────────────────────────────────────────────────────────
-  const recognitionRecords: RecognitionInput[] = (staffRecognitionRecordsList ?? []).map((r: any) => ({
+  const recognitionRecords: RecognitionInput[] = (staffRecognitionRecordsList ?? []).map((r) => ({
     staff_id: r.staff_member ?? "",
     date: (r.date ?? "").slice(0, 10),
     type: r.recognition_type ?? "peer",
   }));
 
   // ── Grievances ────────────────────────────────────────────────────────────
-  const grievanceRecords: GrievanceInput[] = (staffGrievanceRecordsList ?? []).map((g: any) => ({
+  const grievanceRecords: GrievanceInput[] = (staffGrievanceRecordsList ?? []).map((g) => ({
     staff_id: g.raised_by ?? "",
     date: (g.raised_date ?? "").slice(0, 10),
     status: g.status ?? "open",
@@ -120,7 +120,7 @@ export async function GET() {
   // registered). The reporting staff member is id-keyed; witnesses mix free-text
   // names with staff ids, so a witness counts only when it matches a real staff
   // record.
-  const staffIds = new Set((staffList ?? []).map((s: any) => s.id));
+  const staffIds = new Set((staffList ?? []).map((s) => s.id));
   const incidents: IncidentInvolvementInput[] = [];
   for (const i of incidentsList ?? []) {
     const involved = new Set<string>();

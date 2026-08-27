@@ -156,9 +156,13 @@ export async function GET() {
   // 2. BEHAVIOUR
   // ═══════════════════════════════════════════════════════════════════════════
 
-  const bhEntries: BehaviourEntryInput[] = behaviourLogList.map((e: any) => ({
+  const bhEntries: BehaviourEntryInput[] = behaviourLogList.map((e) => ({
     id: e.id, child_id: e.child_id, date: e.date, time: e.time,
-    direction: e.direction, intensity: e.intensity, title: e.title,
+    // the store holds both "concern" and "concerning" spellings — test the one
+    // unambiguous value
+    direction: e.direction === "positive" ? "positive" : "concerning",
+    intensity: e.intensity === "moderate" ? "medium" : e.intensity === "critical" ? "severe" : e.intensity,
+    title: e.title,
     antecedent: e.antecedent, behaviour: e.behaviour, consequence: e.consequence,
     trigger: e.trigger, strategy_used: e.strategy_used, outcome: e.outcome,
     recorded_by: e.recorded_by,
@@ -171,13 +175,13 @@ export async function GET() {
     body_map_completed: i.body_map_completed, reported_by: i.reported_by,
   }));
 
-  const bhRestraints: BhRestraint[] = restraintsList.map((r: any) => ({
+  const bhRestraints: BhRestraint[] = restraintsList.map((r) => ({
     id: r.id, child_id: r.child_id, date: r.date, start_time: r.start_time,
     end_time: r.end_time, duration: r.duration, reason: r.reason,
     restraint_type: r.restraint_type, antecedent: r.antecedent,
     de_escalation_attempts: r.de_escalation_attempts,
     child_debriefed: r.child_debriefed, staff_debriefed: r.staff_debriefed,
-    injuries: (r.injuries ?? []).map((inj: any) => ({
+    injuries: (r.injuries ?? []).map((inj) => ({
       person: inj.person ?? "unknown",
       description: inj.injury ?? "",
     })),
@@ -384,7 +388,7 @@ export async function GET() {
   // 7. COMPLAINTS
   // ═══════════════════════════════════════════════════════════════════════════
 
-  const cmComplaints: ComplaintInput[] = (complaintOutcomeRecordsList ?? []).map((c: any) => ({
+  const cmComplaints: ComplaintInput[] = (complaintOutcomeRecordsList ?? []).map((c) => ({
     id: c.id,
     complaint_date: typeof c.complaint_date === "string" ? c.complaint_date.slice(0, 10) : c.complaint_date,
     complainant: c.complainant, source: c.source, theme: c.theme,
@@ -414,14 +418,14 @@ export async function GET() {
   // 8. QUALITY ASSURANCE
   // ═══════════════════════════════════════════════════════════════════════════
 
-  const qaAudits: QAAuditInput[] = (qaAuditRecordsList ?? []).map((r: any) => ({
+  const qaAudits: QAAuditInput[] = (qaAuditRecordsList ?? []).map((r) => ({
     id: r.id, title: r.title ?? "Untitled Audit", date: r.date ?? "",
     auditor: r.auditor ?? "", scope: r.scope ?? "general",
     overall_rating: r.overall_rating ?? "good", score: r.score ?? 0,
     findings: Array.isArray(r.findings) ? r.findings : [],
     strengths: Array.isArray(r.strengths) ? r.strengths : [],
     areas_for_improvement: Array.isArray(r.areas_for_improvement) ? r.areas_for_improvement : [],
-    actions: Array.isArray(r.actions) ? r.actions.map((a: any): QAAuditActionInput => ({
+    actions: Array.isArray(r.actions) ? r.actions.map((a): QAAuditActionInput => ({
       action: a.action ?? "", owner: a.owner ?? "",
       deadline: a.deadline ?? "", status: a.status ?? "pending",
     })) : [],

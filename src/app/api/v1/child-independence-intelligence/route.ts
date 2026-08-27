@@ -43,12 +43,12 @@ export async function GET(request: NextRequest) {
 
   // ── Independence Skills Records ───────────────────────────────────────
   const independence_records: IndependenceSkillsRecordInput[] = (independenceSkillsRecordsList ?? [])
-    .filter((r: any) => r.child_id === childId)
-    .map((r: any) => ({
+    .filter((r) => r.child_id === childId)
+    .map((r) => ({
       id: r.id,
       review_date: (r.review_date ?? "").slice(0, 10),
       overall_readiness: r.overall_readiness ?? 0,
-      skills: (r.skills ?? []).map((s: any): SkillInput => ({
+      skills: (r.skills ?? []).map((s): SkillInput => ({
         id: s.id,
         name: s.name ?? "Unknown",
         category: s.category ?? "other",
@@ -63,11 +63,11 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Pathway Plan ──────────────────────────────────────────────────────
-  const ppRecords = (pathwayPlansList ?? []).filter((p: any) => p.child_id === childId);
+  const ppRecords = (pathwayPlansList ?? []).filter((p) => p.child_id === childId);
   let pathway_plan: PathwayPlanInput | null = null;
   if (ppRecords.length > 0) {
     const sorted = [...ppRecords].sort(
-      (a: any, b: any) =>
+      (a, b) =>
         new Date(b.last_review_date ?? "").getTime() -
         new Date(a.last_review_date ?? "").getTime(),
     );

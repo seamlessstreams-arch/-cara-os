@@ -25,8 +25,8 @@ export async function GET() {
       dal.youngPeople.findAll(),
     ]);
 
-  const referrals: AdvocacyInput[] = (advocacyRecordsList ?? []).map((r: any) => {
-    const visits: { date: string; summary: string; outcome: string }[] = r.visits ?? [];
+  const referrals: AdvocacyInput[] = (advocacyRecordsList ?? []).map((r) => {
+    const visits = r.visits ?? [];
     const lastVisit = visits.length > 0
       ? visits.reduce((latest, v) => (v.date > latest ? v.date : latest), visits[0].date)
       : null;
@@ -53,14 +53,14 @@ export async function GET() {
     };
   });
 
-  const children: ChildRef[] = (youngPeopleList ?? []).map((yp: any) => ({
+  const children: ChildRef[] = (youngPeopleList ?? []).map((yp) => ({
     id: yp.id,
     name: yp.preferred_name ?? `${yp.first_name} ${yp.last_name}`,
   }));
 
   const staff: StaffRef[] = (staffList ?? [])
-    .filter((s: any) => s.is_active)
-    .map((s: any) => ({
+    .filter((s) => s.is_active)
+    .map((s) => ({
       id: s.id,
       name: s.full_name ?? `${s.first_name} ${s.last_name}`,
     }));

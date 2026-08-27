@@ -56,8 +56,8 @@ export async function GET(request: NextRequest) {
 
   // ── Risk Assessments ───────────────────────────────────────────────────
   const risk_assessments: RiskAssessmentInput[] = (riskAssessmentsList ?? [])
-    .filter((r: any) => r.child_id === childId)
-    .map((r: any) => ({
+    .filter((r) => r.child_id === childId)
+    .map((r) => ({
       id: r.id,
       domain: r.domain ?? "unknown",
       current_level: (r.current_level ?? "medium") as RiskLevel,
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
       triggers: Array.isArray(r.triggers) ? r.triggers : [],
       indicators: Array.isArray(r.indicators) ? r.indicators : [],
       mitigations: Array.isArray(r.mitigations)
-        ? r.mitigations.map((m: any) => ({
+        ? r.mitigations.map((m) => ({
             strategy: m.strategy ?? "",
             effectiveness: (m.effectiveness ?? "not_yet_assessed") as MitigationEffectiveness,
           }))
@@ -80,8 +80,8 @@ export async function GET(request: NextRequest) {
 
   // ── Incidents ──────────────────────────────────────────────────────────
   const incidents: IncidentInput[] = (incidentsList ?? [])
-    .filter((i: any) => i.child_id === childId)
-    .map((i: any) => ({
+    .filter((i) => i.child_id === childId)
+    .map((i) => ({
       id: i.id,
       date: (i.date ?? "").slice(0, 10),
       type: i.type ?? "other",
@@ -91,8 +91,8 @@ export async function GET(request: NextRequest) {
 
   // ── Missing Episodes ───────────────────────────────────────────────────
   const missing_episodes: MissingEpisodeInput[] = (missingEpisodesList ?? [])
-    .filter((m: any) => m.child_id === childId)
-    .map((m: any) => ({
+    .filter((m) => m.child_id === childId)
+    .map((m) => ({
       id: m.id,
       date: (m.date_missing ?? "").slice(0, 10),
       duration_hours: m.duration_hours ?? null,
@@ -105,8 +105,8 @@ export async function GET(request: NextRequest) {
 
   // ── Restraints ─────────────────────────────────────────────────────────
   const restraints: RestraintInput[] = (restraintsList ?? [])
-    .filter((r: any) => r.child_id === childId)
-    .map((r: any) => ({
+    .filter((r) => r.child_id === childId)
+    .map((r) => ({
       id: r.id,
       date: typeof r.date === "string" ? r.date.slice(0, 10) : r.date,
       duration_minutes: r.duration ?? 0,

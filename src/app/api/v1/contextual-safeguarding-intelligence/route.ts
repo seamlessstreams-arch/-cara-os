@@ -29,7 +29,7 @@ export async function GET() {
       dal.youngPeople.findAll(),
     ]);
 
-  const screenings: ExploitationScreeningInput[] = (exploitationScreeningsList ?? []).map((r: any) => ({
+  const screenings: ExploitationScreeningInput[] = (exploitationScreeningsList ?? []).map((r) => ({
     id: r.id,
     child_id: r.child_id,
     screening_type: r.exploitation_type ?? "cse",
@@ -42,24 +42,24 @@ export async function GET() {
     next_screening_due: typeof r.next_review_date === "string" ? r.next_review_date.slice(0, 10) : (r.next_review_date ?? ""),
   }));
 
-  const localityRisks: LocalityRiskInput[] = (localityRisksList ?? []).map((r: any) => ({
+  const localityRisks: LocalityRiskInput[] = (localityRisksList ?? []).map((r) => ({
     id: r.id,
     location_name: r.location ?? "",
     location_type: mapLocationType(r.category),
     risk_type: mapRiskType(r.category),
     risk_level: r.risk_level ?? "medium",
     last_reviewed: typeof r.last_reviewed === "string" ? r.last_reviewed.slice(0, 10) : (r.last_reviewed ?? ""),
-    mitigations: (r.mitigations ?? []).map((m: any) => typeof m === "string" ? m : m.measure ?? ""),
+    mitigations: (r.mitigations ?? []).map((m) => typeof m === "string" ? m : m.measure ?? ""),
   }));
 
-  const children: ChildRef[] = (youngPeopleList ?? []).map((yp: any) => ({
+  const children: ChildRef[] = (youngPeopleList ?? []).map((yp) => ({
     id: yp.id,
     name: yp.preferred_name ?? `${yp.first_name} ${yp.last_name}`,
   }));
 
   const staff: StaffRef[] = (staffList ?? [])
-    .filter((s: any) => s.is_active)
-    .map((s: any) => ({
+    .filter((s) => s.is_active)
+    .map((s) => ({
       id: s.id,
       name: s.full_name ?? `${s.first_name} ${s.last_name}`,
     }));

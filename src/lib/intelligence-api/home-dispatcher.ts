@@ -1268,8 +1268,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         status: r.status ?? "pending_referral",
         has_visits: Array.isArray(r.visits) && r.visits.length > 0,
         visit_count: Array.isArray(r.visits) ? r.visits.length : 0,
-        private_session_count: Array.isArray(r.visits) ? r.visits.filter((v: any) => v.private_session).length : 0,
-        actions_raised_count: Array.isArray(r.visits) ? r.visits.reduce((sum: number, v: any) => sum + (Array.isArray(v.actions_raised) ? v.actions_raised.length : 0), 0) : 0,
+        private_session_count: Array.isArray(r.visits) ? r.visits.filter((v) => v.private_session).length : 0,
+        actions_raised_count: Array.isArray(r.visits) ? r.visits.reduce((sum: number, v) => sum + (Array.isArray(v.actions_raised) ? v.actions_raised.length : 0), 0) : 0,
         has_child_view: !!(r.child_view && r.child_view.trim().length > 0),
         has_home_response: !!(r.home_response && r.home_response.trim().length > 0),
         issues_raised_count: Array.isArray(r.issues_raised) ? r.issues_raised.length : 0,
@@ -1601,7 +1601,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       // neither collection exists in the store — declared-absent, [] as always
       const rawEmergency = optionalCollection(store, "emergencyResponseRecords");
-      const emergency_response_records: EmergencyResponseInput[] = rawEmergency.map((e: any) => ({
+      const emergency_response_records: EmergencyResponseInput[] = rawEmergency.map((e) => ({
         id: e.id ?? "",
         drill_date: (e.drill_date ?? today).toString(),
         drill_type: e.drill_type ?? "tabletop",
@@ -2125,17 +2125,17 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
           has_placement_history: !!(r.placement_history && r.placement_history.trim()),
           behaviour_count: behaviours.length,
           behaviours_with_need_count: behaviours.filter(
-            (b: any) => b.underlying_need && b.underlying_need.trim(),
+            (b) => b.underlying_need && b.underlying_need.trim(),
           ).length,
           behaviours_with_response_count: behaviours.filter(
-            (b: any) => b.recommended_response && b.recommended_response.trim(),
+            (b) => b.recommended_response && b.recommended_response.trim(),
           ).length,
           key_relationship_count: relationships.length,
           strong_relationship_count: relationships.filter(
-            (rel: any) => rel.quality === "strong",
+            (rel) => rel.quality === "strong",
           ).length,
           strained_relationship_count: relationships.filter(
-            (rel: any) => rel.quality === "strained",
+            (rel) => rel.quality === "strained",
           ).length,
           therapeutic_approach_count: Array.isArray(r.therapeutic_approach) ? r.therapeutic_approach.length : 0,
           staff_guidance_count: Array.isArray(r.staff_guidance) ? r.staff_guidance.length : 0,
@@ -3002,15 +3002,15 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
           child_id: r.child_id,
           status: r.status || "active",
           primary_behaviour_count: primaryBehaviours.length,
-          high_severity_behaviour_count: primaryBehaviours.filter((b: any) => b.severity === "high").length,
-          worsening_behaviour_count: primaryBehaviours.filter((b: any) => b.trend === "worsening").length,
+          high_severity_behaviour_count: primaryBehaviours.filter((b) => b.severity === "high").length,
+          worsening_behaviour_count: primaryBehaviours.filter((b) => b.trend === "worsening").length,
           known_trigger_count: triggers.length,
-          high_likelihood_trigger_count: triggers.filter((t: any) => t.likelihood === "high").length,
+          high_likelihood_trigger_count: triggers.filter((t) => t.likelihood === "high").length,
           early_warning_count: Array.isArray(r.early_warnings) ? r.early_warnings.length : 0,
           de_escalation_stage_count: deEscalation.length,
           positive_strategy_count: positiveStrategies.length,
           effective_strategy_count: positiveStrategies.filter(
-            (s: any) => s.effectiveness === "highly_effective" || s.effectiveness === "effective",
+            (s) => s.effectiveness === "highly_effective" || s.effectiveness === "effective",
           ).length,
           reward_count: Array.isArray(r.rewards) ? r.rewards.length : 0,
           boundary_count: Array.isArray(r.boundaries) ? r.boundaries.length : 0,
@@ -3022,7 +3022,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
           professional_input_count: profInput.length,
           staff_guidance_count: Array.isArray(r.staff_guidance) ? r.staff_guidance.length : 0,
           restrictive_intervention_count: restrictive.length,
-          restrictive_last_resort_count: restrictive.filter((ri: any) => ri.last_resort === true).length,
+          restrictive_last_resort_count: restrictive.filter((ri) => ri.last_resort === true).length,
           review_count: reviews.length,
           has_review_date: !!r.review_date,
           review_date: r.review_date ? r.review_date.toString().slice(0, 10) : "",
@@ -3421,7 +3421,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
           : 0,
         effective_strategies: Array.isArray(bsp.positive_strategies)
           ? bsp.positive_strategies.filter(
-              (s: any) =>
+              (s) =>
                 s.effectiveness === "highly_effective" ||
                 s.effectiveness === "effective",
             ).length
@@ -3503,7 +3503,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       last_checked: (g.last_checked ?? "").toString().slice(0, 10),
       next_check_due: (g.next_check_due ?? "").toString().slice(0, 10),
       items_count: g.items?.length ?? 0,
-      items_present_count: g.items?.filter?.((i: any) => i.present)?.length ?? 0,
+      items_present_count: g.items?.filter?.((i) => i.present)?.length ?? 0,
       overall_status: g.overall_status ?? "incomplete",
     }));
   
@@ -3530,7 +3530,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       child_present: !!(r.child_present),
       items_found: !r.nothing_found && (r.items_found?.length ?? 0) > 0,
       follow_up_required: !!(r.follow_up_required),
-      follow_up_completed: r.follow_up_actions?.every?.((a: any) => a.status === "completed") ?? false,
+      follow_up_completed: r.follow_up_actions?.every?.((a) => a.status === "completed") ?? false,
       child_distress_level: r.child_distress_level ?? "none",
     }));
   
@@ -3977,14 +3977,14 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
         const agenda = Array.isArray(m.agenda) ? m.agenda : [];
         const totalAgendaItems = agenda.length;
-        const childRaisedTopics = agenda.filter((a: any) =>
+        const childRaisedTopics = agenda.filter((a) =>
           typeof a.raised_by === "string" && a.raised_by.startsWith("yp_")
         ).length;
   
         const childFeedback = Array.isArray(m.child_feedback) ? m.child_feedback : [];
   
         const prevActions = Array.isArray(m.actions_from_previous) ? m.actions_from_previous : [];
-        const prevCompleted = prevActions.filter((a: any) => !!a.completed).length;
+        const prevCompleted = prevActions.filter((a) => !!a.completed).length;
   
         const newActions = Array.isArray(m.new_actions) ? m.new_actions : [];
   
@@ -4902,21 +4902,21 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const today = todayStr();
   
     // ── Transport Logs ──────────────────────────────────────────────────
-    const transport_logs: TransportLogInput__community_access[] = (store.transportLogRecords ?? []).map((l: any) => ({
+    const transport_logs: TransportLogInput__community_access[] = (store.transportLogRecords ?? []).map((l) => ({
       id: l.id,
       date: (l.date ?? "").toString().slice(0, 10),
       driver_licence_checked: !!(l.driver_licence_checked),
       vehicle_checked: !!(l.vehicle_checked),
       incident_during_journey: !!(l.incident_during_journey),
       behaviour_during_journey: l.behaviour_during_journey ?? "good",
-      passengers: (l.passengers ?? []).map((p: any) => ({ child_id: p.child_id ?? p.id ?? "" })),
+      passengers: (l.passengers ?? []).map((p) => ({ child_id: p.young_person_id ?? "" })),
     }));
   
     // ── Transport Risk Assessments ──────────────────────────────────────
-    const transport_ras: TransportRAInput__community_access[] = (store.transportRAs ?? []).map((ra: any) => ({
+    const transport_ras: TransportRAInput__community_access[] = (store.transportRAs ?? []).map((ra) => ({
       id: ra.id,
       signedOffByRM: !!(ra.signedOffByRM),
-      hazards: (ra.hazards ?? []).map((h: any) => ({ description: h.description ?? "" })),
+      hazards: (ra.hazards ?? []).map((h) => ({ description: h.hazard ?? "" })),
       emergencyProcedure: ra.emergencyProcedure ?? "",
       breakdownProcedure: ra.breakdownProcedure ?? "",
       nextReviewDate: (ra.nextReviewDate ?? "").toString().slice(0, 10),
@@ -4924,31 +4924,31 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     }));
   
     // ── Independent Travel Records ──────────────────────────────────────
-    const independent_travel_records: IndependentTravelInput__community_access[] = (store.independentTravelRecords ?? []).map((r: any) => ({
+    const independent_travel_records: IndependentTravelInput__community_access[] = (store.independentTravelRecords ?? []).map((r) => ({
       id: r.id,
       child_id: r.child_id ?? "",
       current_stage: r.current_stage ?? "stage_1_accompanied",
-      routes_mastered: (r.routes_mastered ?? []).map((rm: any) => ({ route: rm.route ?? rm.name ?? "" })),
+      routes_mastered: (r.routes_mastered ?? []).map((rm) => ({ route: [rm.from, rm.to].filter(Boolean).join(" → ") })),
       child_confidence: r.child_confidence ?? "cautious",
       child_voice: r.child_voice ?? "",
       review_date: (r.review_date ?? "").toString().slice(0, 10),
     }));
   
     // ── Trip Plans ──────────────────────────────────────────────────────
-    const trip_plans: TripPlanInput[] = (store.tripPlans ?? []).map((t: any) => ({
+    const trip_plans: TripPlanInput[] = (store.tripPlans ?? []).map((t) => ({
       id: t.id,
       start_date: (t.start_date ?? "").toString().slice(0, 10),
       manager_approval: !!(t.manager_approval),
-      social_worker_approval: (t.social_worker_approval ?? []).map((sw: any) => ({ approved: !!(sw.approved) })),
+      social_worker_approval: (t.social_worker_approval ?? []).map((sw) => ({ approved: !!(sw.approved) })),
       risk_assessment: t.risk_assessment ? { completed: !!(t.risk_assessment.completed) } : null,
       children_views: t.children_views ?? "",
-      post_trip_evaluation: t.post_trip_evaluation ? { completed: !!(t.post_trip_evaluation.completed) } : null,
-      young_people: (t.young_people ?? []).map((yp: any) => ({ child_id: yp.child_id ?? yp.id ?? "" })),
+      post_trip_evaluation: t.post_trip_evaluation ? { completed: t.post_trip_evaluation.rating != null } : null,
+      young_people: (t.young_people ?? []).map((yp) => ({ child_id: yp.child_id ?? "" })),
       status: t.status ?? "planning",
     }));
   
     // ── Community Engagements ───────────────────────────────────────────
-    const community_engagements: CommunityEngagementInput[] = (store.communityEngagements ?? []).map((e: any) => ({
+    const community_engagements: CommunityEngagementInput[] = (store.communityEngagements ?? []).map((e) => ({
       id: e.id,
       date: (e.date ?? "").toString().slice(0, 10),
       young_people: e.young_people ?? [],
@@ -5133,9 +5133,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       ((store.developmentPlans ?? []))
     ).map((dp) => {
       const actions = Array.isArray(dp.actions) ? dp.actions : [];
-      const completedActions = actions.filter((a: any) => !!(a.completed)).length;
+      const completedActions = actions.filter((a) => !!(a.completed)).length;
       const overdueActions = actions.filter(
-        (a: any) =>
+        (a) =>
           !a.completed &&
           a.target_date &&
           a.target_date.toString().slice(0, 10) < today,
@@ -5246,9 +5246,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
           // no quality rating is recorded — the engine's neutral midpoint holds
           quality_rating: 3,
           child_voice_captured:
-            !!(a.child_view && a.child_view.trim()) || visits.some((v: any) => v.private_session === true),
+            !!(a.child_view && a.child_view.trim()) || visits.some((v) => v.private_session === true),
           outcomes_documented:
-            visits.some((v: any) => Array.isArray(v.actions_raised) && v.actions_raised.length > 0),
+            visits.some((v) => Array.isArray(v.actions_raised) && v.actions_raised.length > 0),
           created_at: (a.created_at ?? today).toString(),
         };
       });
@@ -7080,7 +7080,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       last_reviewed: (da.last_reviewed ?? "").toString().slice(0, 10),
       next_review: (da.next_review ?? "").toString().slice(0, 10),
       items: (Array.isArray(da.items) ? da.items : []).map(
-        (item: any): DelegatedAuthorityItemInput => ({
+        (item): DelegatedAuthorityItemInput => ({
           category: (item.category ?? "medical").toString(),
           status: (item.status ?? "pending").toString(),
           detail: (item.detail ?? "").toString(),
@@ -8255,7 +8255,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         status: p.status ?? "draft",
         next_review_date: (p.next_review_date ?? "").toString().slice(0, 10),
         read_acknowledgement_count: Array.isArray(p.read_acknowledgements)
-          ? p.read_acknowledgements.filter((a: any) => a.acknowledged).length
+          ? p.read_acknowledgements.filter((a) => a.acknowledged).length
           : 0,
         total_staff_required: typeof p.total_staff_required === "number" ? p.total_staff_required : 0,
         has_statutory_basis: !!(p.statutory_basis),
@@ -8455,7 +8455,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         staff_debriefed: !!r.staff_debriefed,
         review_status: r.review_status ?? "pending",
         de_escalation_attempts: Array.isArray(r.de_escalation_attempts) ? r.de_escalation_attempts : [],
-        injuries: Array.isArray(r.injuries) ? r.injuries.map((inj: any) => ({ person: inj.person ?? "", description: inj.description ?? "" })) : [],
+        injuries: Array.isArray(r.injuries) ? r.injuries.map((inj) => ({ person: inj.person ?? "", description: inj.injury ?? "" })) : [],
         body_map_completed: !!r.body_map_completed,
         created_at: (r.created_at ?? today).toString(),
       }));
@@ -8919,7 +8919,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       previous_risk_level: s.previous_risk_level ? (s.previous_risk_level).toString() : null,
       status: (s.status ?? "initial_screening").toString(),
       risk_indicators: (Array.isArray(s.risk_indicators) ? s.risk_indicators : []).map(
-        (ri: any): RiskIndicatorInput => ({
+        (ri): RiskIndicatorInput => ({
           indicator: (ri.indicator ?? "").toString(),
           present: !!(ri.present),
           notes: (ri.notes ?? "").toString(),
@@ -10781,8 +10781,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
           signed_off_by: h.signed_off_by ?? null,
           sign_off_count: signOffs.length,
           child_update_count: childUpdates.length,
-          child_updates_with_mood: childUpdates.filter((cu: any) => cu.mood_score != null).length,
-          child_updates_with_alerts: childUpdates.filter((cu: any) =>
+          child_updates_with_mood: childUpdates.filter((cu) => cu.mood_score != null).length,
+          child_updates_with_alerts: childUpdates.filter((cu) =>
             Array.isArray(cu.alerts) && cu.alerts.length > 0
           ).length,
           total_children: totalChildren,
@@ -11591,7 +11591,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         review_date: (r.review_date ?? today).toString().slice(0, 10),
         overall_readiness: typeof r.overall_readiness === "number" ? r.overall_readiness : 0,
         skills_count: Array.isArray(r.skills) ? r.skills.length : 0,
-        skills_progressing: Array.isArray(r.skills) ? r.skills.filter((s: any) => ["developing", "competent", "independent"].includes(s.proficiency)).length : 0,
+        skills_progressing: Array.isArray(r.skills) ? r.skills.filter((s) => ["developing", "competent", "independent"].includes(s.proficiency)).length : 0,
         has_child_view: typeof r.child_view === "string" && r.child_view.trim().length > 0,
       }));
   
@@ -12405,7 +12405,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         review_date: (r.review_date ?? today).toString().slice(0, 10),
         reviewer: r.reviewer ?? "",
         overall_readiness: typeof r.overall_readiness === "number" ? r.overall_readiness : 0,
-        skills: Array.isArray(r.skills) ? r.skills.map((s: any): IndependenceSkillInput => ({
+        skills: Array.isArray(r.skills) ? r.skills.map((s): IndependenceSkillInput => ({
           id: s.id ?? "",
           name: s.name ?? "",
           category: s.category ?? "general",
@@ -13929,7 +13929,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         has_description: !!(r.description && r.description.trim().length > 0),
         has_intelligence: !!(r.intelligence && r.intelligence.trim().length > 0),
         mitigations_count: Array.isArray(r.mitigations) ? r.mitigations.length : 0,
-        effective_mitigations: Array.isArray(r.mitigations) ? r.mitigations.filter((m: any) => m.effectiveness === "effective").length : 0,
+        effective_mitigations: Array.isArray(r.mitigations) ? r.mitigations.filter((m) => m.effectiveness === "effective").length : 0,
         last_reviewed: r.last_reviewed ? r.last_reviewed.toString().slice(0, 10) : "",
         next_review: r.next_review ? r.next_review.toString().slice(0, 10) : "",
         has_impact_assessment: !!(r.impact_on_yp && r.impact_on_yp.trim().length > 0),
@@ -13946,7 +13946,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         previous_risk_level: s.previous_risk_level ?? "low",
         status: s.status ?? "open",
         risk_indicators_count: Array.isArray(s.risk_indicators) ? s.risk_indicators.length : 0,
-        indicators_present: Array.isArray(s.risk_indicators) ? s.risk_indicators.filter((i: any) => i.present).length : 0,
+        indicators_present: Array.isArray(s.risk_indicators) ? s.risk_indicators.filter((i) => i.present).length : 0,
         protective_factors_count: Array.isArray(s.protective_factors) ? s.protective_factors.length : 0,
         has_safety_plan: !!(s.safety_plan && s.safety_plan.trim().length > 0),
         has_direct_work: !!(s.direct_work && s.direct_work.trim().length > 0),
@@ -14063,7 +14063,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         child_interactions_count: (w.child_interactions ?? []).length,
         staff_interactions_count: (w.staff_interactions ?? []).length,
         environmental_checks_good: (w.environmental_checks ?? []).filter(
-          (c: any) => c.status === "good"
+          (c) => c.status === "good"
         ).length,
         environmental_checks_total: (w.environmental_checks ?? []).length,
         immediate_actions_count: (w.immediate_actions_taken ?? []).length,
@@ -14199,7 +14199,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       check_type: (x.check_type ?? "weekly").toString(),
       status: (x.status ?? "balanced") as StockCheckInput["status"],
       items_count: Array.isArray(x.items) ? x.items.length : 0,
-      discrepancy_count: Array.isArray(x.items) ? x.items.filter((i: any) => i.discrepancy).length : 0,
+      discrepancy_count: Array.isArray(x.items) ? x.items.filter((i) => i.discrepancy).length : 0,
     }));
   
     // ── Medication Storage Audits ───────────────────────────────────────
@@ -14218,7 +14218,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       record_keeping_pass: !!(x.record_keeping_pass),
       next_audit_due: (x.next_audit_due ?? "").toString().slice(0, 10),
       open_follow_ups: Array.isArray(x.follow_up_actions)
-        ? x.follow_up_actions.filter((a: any) => a.status !== "done").length
+        ? x.follow_up_actions.filter((a) => a.status !== "done").length
         : 0,
     }));
   
@@ -15325,7 +15325,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       meeting_date: (m.meeting_date ?? "").toString().slice(0, 10),
       meeting_type: (m.meeting_type ?? "").toString(),
       child_attended: !!(m.child_attended),
-      agencies_present: Array.isArray(m.agencies_present) ? m.agencies_present.map((a: any) => a.toString()) : [],
+      agencies_present: Array.isArray(m.agencies_present) ? m.agencies_present.map((a) => a.toString()) : [],
       actions_for_home_count: m.actions_for_home?.length ?? 0,
       report_submitted: !!(m.report_submitted),
       home_contribution: (m.home_contribution ?? "").toString(),
@@ -15850,7 +15850,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         check_count: Array.isArray(nl.checks) ? nl.checks.length : 0,
         incident_count: Array.isArray(nl.incidents) ? nl.incidents.length : 0,
         security_issues: Array.isArray(nl.security_checks)
-          ? nl.security_checks.filter((sc: any) => sc.status === "issue").length
+          ? nl.security_checks.filter((sc) => sc.status === "issue").length
           : 0,
         has_concerns: !!nl.concerns,
       });
@@ -16512,7 +16512,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       on_call_staff: (s.on_call_staff ?? "").toString(),
       backup_staff: (s.backup_staff ?? "").toString(),
       calls_received: (Array.isArray(s.calls_received) ? s.calls_received : []).map(
-        (c: any): OnCallCallInput => ({
+        (c): OnCallCallInput => ({
           datetime: (c.datetime ?? "").toString(),
           from_contact: (c.from_contact ?? "").toString(),
           call_type: (c.call_type ?? "routine").toString(),
@@ -17147,7 +17147,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       strengths: Array.isArray(p.strengths) ? p.strengths : [],
       concerns: Array.isArray(p.concerns) ? p.concerns : [],
       strategies: Array.isArray(p.strategies) ? p.strategies : [],
-      entries: (Array.isArray(p.entries) ? p.entries : []).map((e: any): PeerEntryInput => ({
+      entries: (Array.isArray(p.entries) ? p.entries : []).map((e): PeerEntryInput => ({
         id: e.id ?? "",
         date: (e.date ?? "").toString().slice(0, 10),
         type: (e.type ?? "observation").toString(),
@@ -17347,12 +17347,12 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         exclusions: typeof p.exclusions === "number" ? p.exclusions : 0,
         exclusion_days: typeof p.exclusion_days === "number" ? p.exclusion_days : 0,
         target_count: Array.isArray(p.targets) ? p.targets.length : 0,
-        targets_on_track_count: Array.isArray(p.targets) ? p.targets.filter((t: any) => t.progress === "on_track").length : 0,
-        targets_exceeded_count: Array.isArray(p.targets) ? p.targets.filter((t: any) => t.progress === "exceeded").length : 0,
+        targets_on_track_count: Array.isArray(p.targets) ? p.targets.filter((t) => t.progress === "on_track").length : 0,
+        targets_exceeded_count: Array.isArray(p.targets) ? p.targets.filter((t) => t.progress === "exceeded").length : 0,
         has_child_views: !!(p.child_views && p.child_views.trim().length > 0),
         has_carer_views: !!(p.carer_views && p.carer_views.trim().length > 0),
         actions_total: Array.isArray(p.actions) ? p.actions.length : 0,
-        actions_completed: Array.isArray(p.actions) ? p.actions.filter((a: any) => a.status === "completed").length : 0,
+        actions_completed: Array.isArray(p.actions) ? p.actions.filter((a) => a.status === "completed").length : 0,
         pupil_premium_allocated: p.pupil_premium?.annual_allocation ?? 0,
         pupil_premium_spent: p.pupil_premium?.spent_to_date ?? 0,
         has_sen: p.sen_status !== "none" && !!p.sen_status,
@@ -17998,12 +17998,12 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
           overall_risk: r.overall_risk || "medium",
           has_decision_rationale: !!(r.decision_rationale && r.decision_rationale.trim()),
           impact_on_existing_count: impacts.length,
-          impact_high_risk_count: impacts.filter((i: any) => i.risk_level === "high").length,
-          impact_with_child_view_count: impacts.filter((i: any) => i.child_view && i.child_view.trim()).length,
-          impact_with_mitigation_count: impacts.filter((i: any) => Array.isArray(i.mitigations) && i.mitigations.length > 0).length,
+          impact_high_risk_count: impacts.filter((i) => i.risk_level === "high").length,
+          impact_with_child_view_count: impacts.filter((i) => i.child_view && i.child_view.trim()).length,
+          impact_with_mitigation_count: impacts.filter((i) => Array.isArray(i.mitigations) && i.mitigations.length > 0).length,
           compatibility_factor_count: compats.length,
-          compatibility_positive_count: compats.filter((c: any) => c.rating === "positive").length,
-          compatibility_concern_count: compats.filter((c: any) => c.rating === "concern").length,
+          compatibility_positive_count: compats.filter((c) => c.rating === "positive").length,
+          compatibility_concern_count: compats.filter((c) => c.rating === "concern").length,
           staffing_implication_count: Array.isArray(r.staffing_implications) ? r.staffing_implications.length : 0,
           environmental_consideration_count: Array.isArray(r.environmental_considerations) ? r.environmental_considerations.length : 0,
           safeguarding_consideration_count: Array.isArray(r.safeguarding_considerations) ? r.safeguarding_considerations.length : 0,
@@ -18030,7 +18030,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       id: p.id, child_id: p.child_id ?? "",
       completed_date: (p.referral_date ?? "").toString().slice(0, 10),
       risk_assessment_included: !!(p.risk_considerations?.length),
-      all_sections_complete: p.status === "complete" || !!(p.items?.every?.((i: any) => i.completed)),
+      all_sections_complete: p.status === "complete" || !!(p.items?.every?.((i) => i.completed)),
       placing_authority_consulted: !!(p.local_authority),
       child_visited_home: !!(p.impact_assessment_done),
     }));
@@ -18040,13 +18040,13 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       provided_date: (w.preparedDate ?? w.admissionDate ?? "").toString().slice(0, 10),
       personalised: !!(w.personalTouches?.length),
       child_friendly: w.status === "delivered" || !!(w.childFeedback),
-      photos_included: !!(w.items?.some?.((i: any) => i.category === "photos" || i.item?.toLowerCase?.().includes?.("photo"))),
+      photos_included: !!(w.items?.some?.((i) => /\bphotos?\b/i.test(i.item ?? ""))), // WelcomeItemCategory has no photos value — match the item text by word
     }));
   
     const welcome_tours: WelcomeTourInput[] = ((store.welcomeTours)).map((t) => ({
       id: t.id, child_id: t.child_id ?? "",
       tour_date: (t.tourDate ?? t.arrivalDate ?? "").toString().slice(0, 10),
-      completed: !!(t.toursteps?.length && t.toursteps.every((s: any) => s.shown)),
+      completed: !!(t.toursteps?.length && t.toursteps.every((s) => s.shown)),
       child_feedback_captured: !!(t.bedroomFirstSighting || t.childChoseFirstActivity),
       buddy_assigned: !!(t.meetingChildrenDuringTour?.length),
     }));
@@ -18059,7 +18059,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         : false,
       child_views_recorded: !!(r.child_view_on_safety || r.what_would_help),
       actions_identified: r.actions_agreed?.length ?? 0,
-      actions_completed: r.actions_agreed?.filter?.((a: any) => a.status === "completed")?.length ?? 0,
+      actions_completed: r.actions_agreed?.filter?.((a) => a.status === "completed")?.length ?? 0,
     }));
   
     const placement_objectives: PlacementObjectiveInput[] = ((store.placementObjectives)).map((o) => ({
@@ -19376,10 +19376,10 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         meeting_status: m.meeting_status ?? "scheduled",
         date: (m.date ?? today).toString().slice(0, 10),
         attendees_count: Array.isArray(m.attendees) ? m.attendees.length : 0,
-        attendees_present: Array.isArray(m.attendees) ? m.attendees.filter((a: any) => a.attended).length : 0,
+        attendees_present: Array.isArray(m.attendees) ? m.attendees.filter((a) => a.attended).length : 0,
         child_participated: !!(m.child_participation && m.child_participation.trim().length > 0),
         action_items_count: Array.isArray(m.action_items) ? m.action_items.length : 0,
-        actions_completed: Array.isArray(m.action_items) ? m.action_items.filter((a: any) => a.status === "completed").length : 0,
+        actions_completed: Array.isArray(m.action_items) ? m.action_items.filter((a) => a.status === "completed").length : 0,
         has_decisions: Array.isArray(m.decisions_reached) && m.decisions_reached.length > 0,
         has_next_date: !!(m.next_meeting_date && m.next_meeting_date.trim().length > 0),
       }));
@@ -19404,7 +19404,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const audits: QAAuditInput[] = (((store.qaAuditRecords ?? [])))
       .map((a) => {
         const actions: QAActionInput[] = Array.isArray(a.actions)
-          ? a.actions.map((act: any) => ({
+          ? a.actions.map((act) => ({
               status: act.status ?? "pending",
               deadline: (act.deadline ?? "").toString().slice(0, 10),
             }))
@@ -19991,7 +19991,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         }
   
         // Map recommendations
-        const recs: Reg44RecInput[] = (v.recommendations ?? []).map((r: any) => ({
+        const recs: Reg44RecInput[] = (v.recommendations ?? []).map((r) => ({
           id: r.id ?? "",
           recommendation: r.recommendation ?? "",
           priority: r.priority ?? "medium",
@@ -20132,7 +20132,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const qaAudits = ((store.qaAuditRecords) ?? []);
     const qaCompleted = qaAudits.length; // an audit record exists only once conducted
     const qaActions = qaAudits.flatMap((a) => a.actions ?? []);
-    const qaActionsResolved = qaActions.filter((a: any) => a.resolved || a.status === "resolved").length;
+    const qaActionsResolved = qaActions.filter((a) => a.status === "completed").length;
   
     // Notifiable events
     const notifiable = ((store.notifiableEvents) ?? []);
@@ -20201,10 +20201,10 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         overall_judgement: v.overall_judgement ?? "N/A",
         strengths_count: Array.isArray(v.strengths) ? v.strengths.length : 0,
         areas_for_development_count: Array.isArray(v.areas_for_development) ? v.areas_for_development.length : 0,
-        recommendations: (v.recommendations ?? []).map((rec: any) => ({
+        recommendations: (v.recommendations ?? []).map((rec) => ({
           id: rec.id,
           priority: rec.priority ?? "medium",
-          status: rec.status ?? "not_started",
+          status: rec.status === "outstanding" ? "not_started" : rec.status ?? "not_started",
           completed_at: rec.completed_at ?? null,
         })),
         report_sent_to_ofsted: !!v.report_sent_to_ofsted,
@@ -20624,7 +20624,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
           date: r.date ? r.date.toString().slice(0, 10) : "",
           duration_minutes: typeof r.duration === "number" ? r.duration : 0,
           staff_count: staffArr.length,
-          all_staff_team_teach_trained: staffArr.length > 0 && staffArr.every((s: any) => s.team_teach_trained),
+          all_staff_team_teach_trained: staffArr.length > 0 && staffArr.every((s) => s.team_teach_trained),
           reason: r.reason || "",
           restraint_type: r.restraint_type || "",
           de_escalation_attempt_count: Array.isArray(r.de_escalation_attempts) ? r.de_escalation_attempts.length : 0,
@@ -20967,7 +20967,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         assessed_date: (ra.assessed_date ?? "").toString().slice(0, 10),
         review_date: (ra.review_date ?? "").toString().slice(0, 10),
         mitigations: Array.isArray(ra.mitigations)
-          ? ra.mitigations.map((m: any): RiskMitigationInput => ({
+          ? ra.mitigations.map((m): RiskMitigationInput => ({
               strategy: (m.strategy ?? "").toString(),
               effectiveness: (m.effectiveness ?? "effective").toString(),
             }))
@@ -21012,11 +21012,11 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
           previous_risk_level: r.previous_risk_level || "medium",
           has_risk_description: !!(r.risk_description && r.risk_description.trim()),
           trigger_count: triggers.length,
-          high_likelihood_trigger_count: triggers.filter((t: any) => t.likelihood === "high").length,
+          high_likelihood_trigger_count: triggers.filter((t) => t.likelihood === "high").length,
           warning_signal_count: Array.isArray(r.warning_signals) ? r.warning_signals.length : 0,
           strategy_count: strategies.length,
           effective_strategy_count: strategies.filter(
-            (s: any) => s.effectiveness === "effective",
+            (s) => s.effectiveness === "effective",
           ).length,
           has_emergency_plan: !!(r.emergency_plan && r.emergency_plan.trim()),
           protective_factor_count: Array.isArray(r.protective_factors) ? r.protective_factors.length : 0,
@@ -22462,7 +22462,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const records: SiblingContactRecordInput[] = raw.map((r) => {
         const recentContacts = Array.isArray(r.recent_contacts) ? r.recent_contacts : [];
-        const recentWithin30 = recentContacts.filter((c: any) => {
+        const recentWithin30 = recentContacts.filter((c) => {
           if (!c.date) return false;
           return (todayMs - new Date(c.date).getTime()) <= 30 * 86400000;
         }).length;
@@ -22662,9 +22662,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         const checksCompleted = Array.isArray(r.checks_completed) ? r.checks_completed.length : 0;
         const isWakingNight = r.shift_type === "waking_night";
         const expectedChecks = isWakingNight ? 5 : 2;
-        const uniqueYP = new Set(disturbances.map((d: any) => d.young_person).filter(Boolean));
-        const totalDuration = disturbances.reduce((sum: number, d: any) => sum + (typeof d.duration === "number" ? d.duration : 0), 0);
-        const allHaveAction = disturbances.length === 0 || disturbances.every((d: any) => d.action_taken && d.action_taken.trim());
+        const uniqueYP = new Set(disturbances.map((d) => d.young_person).filter(Boolean));
+        const totalDuration = disturbances.reduce((sum: number, d) => sum + (typeof d.duration === "number" ? d.duration : 0), 0);
+        const allHaveAction = disturbances.length === 0 || disturbances.every((d) => d.action_taken && d.action_taken.trim());
   
         return {
           id: r.id,
@@ -22709,7 +22709,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       end_time: (l.end_time ?? "07:00").toString(),
       disturbance_level: (l.disturbance_level ?? "none").toString(),
       disturbances: (Array.isArray(l.disturbances) ? l.disturbances : []).map(
-        (d: any): SleepDisturbanceInput__sleep_quality => ({
+        (d): SleepDisturbanceInput__sleep_quality => ({
           time: (d.time ?? "").toString(),
           young_person: (d.young_person ?? "").toString(),
           description: (d.description ?? "").toString(),
@@ -23029,8 +23029,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
           has_key_decisions: Array.isArray(r.key_decisions) && r.key_decisions.length > 0,
           key_decision_count: Array.isArray(r.key_decisions) ? r.key_decisions.length : 0,
           action_item_count: actions.length,
-          action_completed_count: actions.filter((a: any) => a.status === "completed").length,
-          action_overdue_count: actions.filter((a: any) => a.status === "overdue").length,
+          action_completed_count: actions.filter((a) => a.status === "completed").length,
+          action_overdue_count: actions.filter((a) => a.status === "overdue").length,
           child_aware: !!r.child_aware,
           has_child_views: !!(r.child_views && r.child_views.trim()),
           follow_up_required: !!r.follow_up_required,
@@ -23484,7 +23484,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const inductions: InductionInput__staff_development[] = (((store.inductionRecords ?? [])))
       .map((i) => {
         const items = Array.isArray(i.items) ? i.items : [];
-        const completedItems = items.filter((item: any) => item.status === "completed").length;
+        const completedItems = items.filter((item) => item.status === "completed").length;
         return {
           id: i.id,
           staff_id: i.staff_id ?? "",
@@ -23696,7 +23696,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       overall_status: (r.overall_status ?? "not_started").toString(),
       tasks_total: Array.isArray(r.tasks) ? r.tasks.length : 0,
       tasks_completed: Array.isArray(r.tasks)
-        ? r.tasks.filter((t: any) => t.status === "completed").length
+        ? r.tasks.filter((t) => t.status === "completed").length
         : 0,
     }));
   
@@ -24503,7 +24503,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       staff_member: (r.staff_member ?? "").toString(),
       role: (r.role ?? "").toString(),
       scenarios: Array.isArray(r.scenarios)
-        ? r.scenarios.map((s: any) => ({
+        ? r.scenarios.map((s) => ({
             scenario: (s.scenario ?? "").toString(),
             risk: (s.risk ?? "medium").toString(),
             controls: Array.isArray(s.controls) ? s.controls : [],
@@ -24514,10 +24514,10 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       reviewed_date: (r.reviewed_date ?? "").toString().slice(0, 10),
       next_review_date: (r.next_review_date ?? "").toString().slice(0, 10),
       training_completed: Array.isArray(r.training_completed)
-        ? r.training_completed.map((t: any) => ({
+        ? r.training_completed.map((t) => ({
             course: (t.course ?? "").toString(),
             date: (t.date ?? "").toString(),
-            provider: (t.provider ?? "").toString(),
+            provider: "", // provider is not recorded on the LWRA course entry
           }))
         : [],
       emergency_protocols: Array.isArray(r.emergency_protocols) ? r.emergency_protocols : [],
@@ -24592,7 +24592,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
           const actionsAgreed = Array.isArray(s.actions_agreed) ? s.actions_agreed : [];
           const actionsIdentified = actionsAgreed.length;
           const actionsCompleted = actionsAgreed.filter(
-            (a: any) => a.status === "completed",
+            (a) => a.status === "completed",
           ).length;
           return {
             id: s.id ?? "",
@@ -24637,7 +24637,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
           cases_discussed: Array.isArray(s.cases_discussed) ? s.cases_discussed.length : (s.cases_discussed ?? 0),
           concerns_raised: Array.isArray(s.risk_themes) ? s.risk_themes.length : 0,
           actions_identified: actionsAgreed.length,
-          actions_completed: actionsAgreed.filter((a: any) => a.status === "completed").length,
+          actions_completed: 0, // per-action status is not recorded on agreed actions
           competence_assessed: !!(s.supervisor_observations && s.supervisor_observations.trim().length > 0),
           created_at: (s.date ?? today).toString(),
         };
@@ -28333,7 +28333,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         role_title: p.role_title ?? "",
         urgency: p.urgency ?? "twelve_months",
         review_date: (p.review_date ?? today).toString().slice(0, 10),
-        candidates: (Array.isArray(p.candidates) ? p.candidates : []).map((c: any) => ({
+        candidates: (Array.isArray(p.candidates) ? p.candidates : []).map((c) => ({
           staff_id: c.staff_id ?? "",
           readiness_score: c.readiness_score ?? 0,
           ready_now: !!(c.ready_now),
@@ -28357,7 +28357,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
           target_completion_date: (i.target_completion_date ?? today).toString().slice(0, 10),
           probation_passed: !!(i.probation_passed),
           total_items: items.length,
-          completed_items: items.filter((item: any) => item.status === "completed").length,
+          completed_items: items.filter((item) => item.status === "completed").length,
         };
       });
   

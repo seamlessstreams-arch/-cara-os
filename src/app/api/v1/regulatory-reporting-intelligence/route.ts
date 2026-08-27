@@ -27,10 +27,10 @@ export async function GET() {
     ]);
 
   // ── Map Reg 44 visit reports ────────────────────────────────────────────────
-  const reg44Reports: Reg44ReportInput[] = (reg44VisitReportsList ?? []).map((r: any) => {
+  const reg44Reports: Reg44ReportInput[] = (reg44VisitReportsList ?? []).map((r) => {
     const recommendations = r.recommendations ?? [];
     const completedCount = recommendations.filter(
-      (rec: any) => rec.status === "completed"
+      (rec) => rec.status === "completed"
     ).length;
 
     // Determine status from the report
@@ -70,7 +70,7 @@ export async function GET() {
   // phantom `r.status` read meant no report ever counted as completed, so every
   // review on file registered as a not-started deficiency. Its `actions` are
   // follow-ups FROM the completed review, not report-writing progress.
-  const reg45Reports: Reg45ReportInput[] = (qualityOfCareReviewsList ?? []).map((r: any) => ({
+  const reg45Reports: Reg45ReportInput[] = (qualityOfCareReviewsList ?? []).map((r) => ({
     id: r.id,
     period_start: r.date ?? "",
     period_end: r.next_review_date ?? "",
@@ -82,7 +82,7 @@ export async function GET() {
   }));
 
   // ── Map Notifiable Events ───────────────────────────────────────────────────
-  const notifications: NotificationInput[] = (notifiableEventsList ?? []).map((r: any) => {
+  const notifications: NotificationInput[] = (notifiableEventsList ?? []).map((r) => {
     const ofstedStatus = r.ofsted_status ?? "pending";
     const notifiedDate = r.ofsted?.notified_date ?? null;
     const notifiedWithin24h = ofstedStatus === "notified_within_24h";
@@ -109,7 +109,7 @@ export async function GET() {
   });
 
   // ── Map Staff ───────────────────────────────────────────────────────────────
-  const staff: StaffRef[] = (staffList ?? []).map((s: any) => ({
+  const staff: StaffRef[] = (staffList ?? []).map((s) => ({
     id: s.id,
     name: s.name ?? `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim(),
   }));

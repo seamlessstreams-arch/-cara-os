@@ -129,7 +129,7 @@ export default function CaraPracticeLibraryPage() {
             )}
 
             {/* core prompts */}
-            {[["co_regulation", HeartHandshake], ["deescalation", HeartHandshake], ["child_voice", MessageCircle]].map(([cat, Icon]: any) => {
+            {([["co_regulation", HeartHandshake], ["deescalation", HeartHandshake], ["child_voice", MessageCircle]] as [string, typeof HeartHandshake][]).map(([cat, Icon]) => {
               const list = coreByCategory.get(cat) ?? [];
               if (!list.length) return null;
               return (

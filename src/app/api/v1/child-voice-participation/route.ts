@@ -47,14 +47,14 @@ export async function GET() {
 
   // ── Children ───────────────────────────────────────────────────────────
   const children: ChildInfo[] = (youngPeopleList ?? [])
-    .filter((yp: any) => yp.status === "current")
-    .map((yp: any) => ({
+    .filter((yp) => yp.status === "current")
+    .map((yp) => ({
       id: yp.id,
       name: `${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim() || yp.id,
     }));
 
   // ── LAC Reviews ────────────────────────────────────────────────────────
-  const lac_reviews: LacReviewInput[] = (lacReviewsList ?? []).map((r: any) => ({
+  const lac_reviews: LacReviewInput[] = (lacReviewsList ?? []).map((r) => ({
     id: r.id,
     child_id: r.child_id,
     date: typeof r.date === "string" ? r.date.slice(0, 10) : r.date,
@@ -64,9 +64,9 @@ export async function GET() {
   }));
 
   // ── Advocacy Records ───────────────────────────────────────────────────
-  const advocacy_records: AdvocacyInput[] = (advocacyRecordsList ?? []).map((r: any) => {
+  const advocacy_records: AdvocacyInput[] = (advocacyRecordsList ?? []).map((r) => {
     const visits = Array.isArray(r.visits) ? r.visits : [];
-    const privateSessions = visits.filter((v: any) => v.private_session).length;
+    const privateSessions = visits.filter((v) => v.private_session).length;
 
     return {
       id: r.id,
@@ -81,7 +81,7 @@ export async function GET() {
   });
 
   // ── Key Work Sessions ──────────────────────────────────────────────────
-  const key_work_sessions: KeyWorkSessionInput[] = (keyWorkingSessionsList ?? []).map((k: any) => ({
+  const key_work_sessions: KeyWorkSessionInput[] = (keyWorkingSessionsList ?? []).map((k) => ({
     id: k.id,
     child_id: k.child_id,
     date: typeof k.date === "string" ? k.date.slice(0, 10) : k.date,
