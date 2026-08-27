@@ -5,7 +5,7 @@ import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { HolisticProgressRating } from "@/lib/engines/home-holistic-child-progress-intelligence-engine";
+import type { HolisticProgressRating, HolisticChildProgressResult } from "@/lib/engines/home-holistic-child-progress-intelligence-engine";
 
 const RATING_STYLES: Record<HolisticProgressRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -23,12 +23,12 @@ export function HomeHolisticChildProgressIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-holistic-child-progress-intelligence");
       if (!res.ok) throw new Error("Failed to fetch holistic child progress intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HolisticChildProgressResult }>;
     },
     refetchInterval: 60_000,
   });
   if (isLoading) return <Card className="overflow-hidden border-slate-200"><CardContent className="flex items-center justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></CardContent></Card>;
-  let d = data?.data ?? data;
+  let d = data?.data;
   if (!d) return null;
   // Calm reframe: an empty-with-children engine result (inadequate + score<=15) is
   // 'not yet recorded', not a failing home — render it as honest, neutral insufficient_data.
@@ -70,16 +70,16 @@ export function HomeHolisticChildProgressIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.children_with_data > 0 ? "text-blue-600" : "text-slate-600")}>{d.children_with_data}</p>
               <p className="text-[9px] text-muted-foreground">Children</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.outcome_improvement_rate >= 70 ? "bg-green-50" : d.outcome_improvement_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.outcome_improvement_rate >= 70 ? "text-[--cs-success]" : d.outcome_improvement_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.outcome_improvement_rate)}</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.outcome_improvement_rate === null ? "bg-slate-50" : d.outcome_improvement_rate >= 70 ? "bg-green-50" : d.outcome_improvement_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.outcome_improvement_rate === null ? "text-muted-foreground" : d.outcome_improvement_rate >= 70 ? "text-[--cs-success]" : d.outcome_improvement_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.outcome_improvement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Improved</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.education_engagement_rate >= 90 ? "bg-green-50" : d.education_engagement_rate >= 75 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.education_engagement_rate >= 90 ? "text-[--cs-success]" : d.education_engagement_rate >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.education_engagement_rate)}</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.education_engagement_rate === null ? "bg-slate-50" : d.education_engagement_rate >= 90 ? "bg-green-50" : d.education_engagement_rate >= 75 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.education_engagement_rate === null ? "text-muted-foreground" : d.education_engagement_rate >= 90 ? "text-[--cs-success]" : d.education_engagement_rate >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.education_engagement_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Engaged</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.key_work_completion_rate >= 90 ? "bg-green-50" : d.key_work_completion_rate >= 75 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.key_work_completion_rate >= 90 ? "text-[--cs-success]" : d.key_work_completion_rate >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.key_work_completion_rate)}</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.key_work_completion_rate === null ? "bg-slate-50" : d.key_work_completion_rate >= 90 ? "bg-green-50" : d.key_work_completion_rate >= 75 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.key_work_completion_rate === null ? "text-muted-foreground" : d.key_work_completion_rate >= 90 ? "text-[--cs-success]" : d.key_work_completion_rate >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.key_work_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Key Work</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.average_attendance >= 95 ? "bg-green-50" : d.average_attendance >= 85 ? "bg-amber-50" : "bg-red-50")}>
@@ -94,8 +94,8 @@ export function HomeHolisticChildProgressIntelligenceCard() {
         )}
         {d.strengths?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold text-green-700 flex items-center gap-1"><Sparkles className="h-3 w-3" /> Strengths ({d.strengths.length})</p>{d.strengths.slice(0, 3).map((s: string, i: number) => (<div key={i} className="rounded border border-[--cs-success-soft] bg-[--cs-success-bg] p-2.5 text-xs text-[--cs-success] leading-relaxed">{s}</div>))}</div>)}
         {d.concerns?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold text-red-700 flex items-center gap-1"><AlertCircle className="h-3 w-3" /> Concerns ({d.concerns.length})</p>{d.concerns.slice(0, 3).map((c: string, i: number) => (<div key={i} className="rounded border border-[--cs-risk-soft] bg-[--cs-risk-bg] p-2.5 text-xs text-[--cs-risk] leading-relaxed">{c}</div>))}</div>)}
-        {d.recommendations?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><AlertTriangle className="h-3 w-3 text-amber-600" /> Recommendations ({d.recommendations.length})</p>{d.recommendations.slice(0, 3).map((rec: any) => (<div key={rec.rank} className={cn("rounded border p-2.5 text-xs leading-relaxed", REC_STYLES[rec.urgency] ?? REC_STYLES.planned)}><div className="flex items-start justify-between gap-2"><span>{rec.recommendation}</span>{rec.regulatory_ref && <span className="text-[10px] font-mono shrink-0 opacity-60">{rec.regulatory_ref}</span>}</div></div>))}</div>)}
-        {d.insights?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold flex items-center gap-1 text-purple-700"><Brain className="h-3 w-3" /> Cara Progress Intelligence</p>{d.insights.slice(0, 3).map((insight: any, i: number) => (<div key={i} className={cn("rounded border p-2.5 text-xs leading-relaxed", INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.warning)}>{insight.text}</div>))}</div>)}
+        {d.recommendations?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><AlertTriangle className="h-3 w-3 text-amber-600" /> Recommendations ({d.recommendations.length})</p>{d.recommendations.slice(0, 3).map((rec) => (<div key={rec.rank} className={cn("rounded border p-2.5 text-xs leading-relaxed", REC_STYLES[rec.urgency] ?? REC_STYLES.planned)}><div className="flex items-start justify-between gap-2"><span>{rec.recommendation}</span>{rec.regulatory_ref && <span className="text-[10px] font-mono shrink-0 opacity-60">{rec.regulatory_ref}</span>}</div></div>))}</div>)}
+        {d.insights?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold flex items-center gap-1 text-purple-700"><Brain className="h-3 w-3" /> Cara Progress Intelligence</p>{d.insights.slice(0, 3).map((insight, i) => (<div key={i} className={cn("rounded border p-2.5 text-xs leading-relaxed", INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.warning)}>{insight.text}</div>))}</div>)}
       </CardContent>
     </Card>
   );

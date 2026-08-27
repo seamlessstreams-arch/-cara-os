@@ -29,7 +29,7 @@ function useHomeQualityAssuranceIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-quality-assurance-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home quality assurance intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeQAResult }>;
     },
     refetchInterval: 60_000,
   });

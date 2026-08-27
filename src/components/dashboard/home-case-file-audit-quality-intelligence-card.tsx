@@ -15,7 +15,7 @@ function useHomeCaseFileAuditQualityIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-case-file-audit-quality-intelligence");
       if (!res.ok) throw new Error("Failed to fetch case file audit quality intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: CaseFileAuditResult }>;
     },
     refetchInterval: 60_000,
   });

@@ -14,7 +14,7 @@ function useHomeMultidisciplinaryFormulationIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-multidisciplinary-formulation-intelligence");
       if (!res.ok) throw new Error("Failed to fetch multidisciplinary formulation intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: FormulationResult }>;
     },
     refetchInterval: 60_000,
   });

@@ -24,7 +24,7 @@ export function HomeDigitalLiteracyOnlineSafetyIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-digital-literacy-online-safety-intelligence");
       if (!res.ok) throw new Error("Failed to fetch digital literacy & online safety intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: DigitalSafetyResult }>;
     },
     refetchInterval: 60_000,
   });

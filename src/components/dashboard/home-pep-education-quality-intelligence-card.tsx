@@ -16,7 +16,7 @@ function useHomePepEducationQualityIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-pep-education-quality-intelligence");
       if (!res.ok) throw new Error("Failed to fetch PEP education quality intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: PepEducationResult }>;
     },
     refetchInterval: 60_000,
   });

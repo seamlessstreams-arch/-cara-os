@@ -25,7 +25,7 @@ export function HomeLadoAllegationManagementIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-lado-allegation-management-intelligence");
       if (!res.ok) throw new Error("Failed to fetch LADO & allegation management intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: LadoAllegationResult }>;
     },
     refetchInterval: 60_000,
   });

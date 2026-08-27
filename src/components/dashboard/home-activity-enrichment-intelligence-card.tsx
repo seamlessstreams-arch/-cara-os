@@ -84,7 +84,7 @@ export function HomeActivityEnrichmentIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-activity-enrichment-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home activity enrichment intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeActivityEnrichmentResult }>;
     },
     refetchInterval: 60_000,
   });

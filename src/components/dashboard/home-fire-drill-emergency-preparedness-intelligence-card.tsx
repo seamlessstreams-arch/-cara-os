@@ -16,7 +16,7 @@ function useHomeFireDrillEmergencyPreparednessIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-fire-drill-emergency-preparedness-intelligence");
       if (!res.ok) throw new Error("Failed to fetch fire drill emergency preparedness intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: FireDrillPreparednessResult }>;
     },
     refetchInterval: 60_000,
   });

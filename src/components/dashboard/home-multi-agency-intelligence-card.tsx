@@ -28,7 +28,7 @@ function useHomeMultiAgencyIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-multi-agency-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home multi-agency intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeMultiAgencyResult }>;
     },
     refetchInterval: 60_000,
   });

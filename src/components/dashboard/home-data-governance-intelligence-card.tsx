@@ -16,8 +16,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import type { DataGovernanceRating } from "@/lib/engines/home-data-governance-intelligence-engine";
-import type { HomeDataGovernanceResult } from "@/lib/engines/home-data-governance-intelligence-engine";
+import type { DataGovernanceRating, HomeDataGovernanceResult } from "@/lib/engines/home-data-governance-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -53,7 +52,7 @@ export function HomeDataGovernanceIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-data-governance-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home data governance intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeDataGovernanceResult }>;
     },
     refetchInterval: 60_000,
   });

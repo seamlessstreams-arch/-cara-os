@@ -54,7 +54,7 @@ export function HomeHandoverContinuityIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-handover-continuity-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home handover continuity intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeHandoverResult }>;
     },
     refetchInterval: 60_000,
   });

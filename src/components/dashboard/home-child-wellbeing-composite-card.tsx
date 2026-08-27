@@ -14,7 +14,7 @@ function useHomeChildWellbeingComposite() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-child-wellbeing-composite");
       if (!res.ok) throw new Error("Failed to fetch child wellbeing composite");
-      return res.json();
+      return res.json() as Promise<{ data: HomeChildWellbeingCompositeResult }>;
     },
     refetchInterval: 120_000,
   });

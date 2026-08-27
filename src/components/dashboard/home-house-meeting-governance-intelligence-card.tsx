@@ -6,8 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { HouseMeetingRating } from "@/lib/engines/home-house-meeting-governance-intelligence-engine";
-import type { HouseMeetingGovernanceResult } from "@/lib/engines/home-house-meeting-governance-intelligence-engine";
+import type { HouseMeetingRating, HouseMeetingGovernanceResult } from "@/lib/engines/home-house-meeting-governance-intelligence-engine";
 
 const RATING_STYLES: Record<HouseMeetingRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -27,7 +26,7 @@ export function HomeHouseMeetingGovernanceIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-house-meeting-governance-intelligence");
       if (!res.ok) throw new Error("Failed to fetch house meeting governance intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HouseMeetingGovernanceResult }>;
     },
     refetchInterval: 60_000,
   });

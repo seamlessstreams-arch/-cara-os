@@ -28,7 +28,7 @@ function useHomeParticipationIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-participation-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home participation intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeParticipationResult }>;
     },
     refetchInterval: 60_000,
   });

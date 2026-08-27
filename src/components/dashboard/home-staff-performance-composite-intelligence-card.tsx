@@ -1,10 +1,12 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import type { StaffPerformanceRating } from "@/lib/engines/home-staff-performance-composite-intelligence-engine";
+import type { StaffPerformanceRating, StaffPerformanceCompositeResult } from "@/lib/engines/home-staff-performance-composite-intelligence-engine";
 
 function useHomeStaffPerformanceCompositeIntelligence() {
   return useQuery({
@@ -12,7 +14,7 @@ function useHomeStaffPerformanceCompositeIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-staff-performance-composite-intelligence");
       if (!res.ok) throw new Error("Failed to fetch staff performance composite intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: StaffPerformanceCompositeResult }>;
     },
     refetchInterval: 60_000,
   });
@@ -31,7 +33,7 @@ const INSIGHT_STYLES: Record<string, string> = { critical: "border-[--cs-risk-so
 export function HomeStaffPerformanceCompositeIntelligenceCard() {
   const { data, isLoading } = useHomeStaffPerformanceCompositeIntelligence();
   if (isLoading) return <Card className="overflow-hidden border-slate-200"><CardContent className="flex items-center justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></CardContent></Card>;
-  let d = data?.data ?? data;
+  let d = data?.data;
   if (!d) return null;
   // Calm reframe: an empty-with-children engine result (inadequate + score<=15) is
   // 'not yet recorded', not a failing home — render it as honest, neutral insufficient_data.
@@ -69,36 +71,36 @@ export function HomeStaffPerformanceCompositeIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.performance_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.appraisal_completion_rate >= 90 ? "bg-green-50" : d.appraisal_completion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.appraisal_completion_rate >= 90 ? "text-[--cs-success]" : d.appraisal_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.appraisal_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.appraisal_completion_rate === null ? "bg-slate-50" : d.appraisal_completion_rate >= 90 ? "bg-green-50" : d.appraisal_completion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.appraisal_completion_rate === null ? "text-muted-foreground" : d.appraisal_completion_rate >= 90 ? "text-[--cs-success]" : d.appraisal_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.appraisal_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Appraisal</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.supervision_completion_rate >= 95 ? "bg-green-50" : d.supervision_completion_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.supervision_completion_rate >= 95 ? "text-[--cs-success]" : d.supervision_completion_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.supervision_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.supervision_completion_rate === null ? "bg-slate-50" : d.supervision_completion_rate >= 95 ? "bg-green-50" : d.supervision_completion_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.supervision_completion_rate === null ? "text-muted-foreground" : d.supervision_completion_rate >= 95 ? "text-[--cs-success]" : d.supervision_completion_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.supervision_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Supervision</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.safeguarding_discussion_rate >= 95 ? "bg-green-50" : d.safeguarding_discussion_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.safeguarding_discussion_rate >= 95 ? "text-[--cs-success]" : d.safeguarding_discussion_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.safeguarding_discussion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.safeguarding_discussion_rate === null ? "bg-slate-50" : d.safeguarding_discussion_rate >= 95 ? "bg-green-50" : d.safeguarding_discussion_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.safeguarding_discussion_rate === null ? "text-muted-foreground" : d.safeguarding_discussion_rate >= 95 ? "text-[--cs-success]" : d.safeguarding_discussion_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.safeguarding_discussion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Safeguard</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.training_compliance_rate >= 90 ? "bg-green-50" : d.training_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.training_compliance_rate >= 90 ? "text-[--cs-success]" : d.training_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.training_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.training_compliance_rate === null ? "bg-slate-50" : d.training_compliance_rate >= 90 ? "bg-green-50" : d.training_compliance_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.training_compliance_rate === null ? "text-muted-foreground" : d.training_compliance_rate >= 90 ? "text-[--cs-success]" : d.training_compliance_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.training_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Training</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.expired_mandatory_count === 0 ? "bg-green-50" : "bg-red-50")}>
               <p className={cn("text-sm font-bold tabular-nums", d.expired_mandatory_count === 0 ? "text-[--cs-success]" : "text-[--cs-risk]")}>{d.expired_mandatory_count}</p>
               <p className="text-[9px] text-muted-foreground">Expired</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.action_completion_rate >= 90 ? "bg-green-50" : d.action_completion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.action_completion_rate >= 90 ? "text-[--cs-success]" : d.action_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.action_completion_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.action_completion_rate === null ? "bg-slate-50" : d.action_completion_rate >= 90 ? "bg-green-50" : d.action_completion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.action_completion_rate === null ? "text-muted-foreground" : d.action_completion_rate >= 90 ? "text-[--cs-success]" : d.action_completion_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.action_completion_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Actions</p>
             </div>
           </div>
         )}
         {d.strengths?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold text-green-700 flex items-center gap-1"><Sparkles className="h-3 w-3" /> Strengths ({d.strengths.length})</p>{d.strengths.slice(0, 3).map((s: string, i: number) => (<div key={i} className="rounded border border-[--cs-success-soft] bg-[--cs-success-bg] p-2.5 text-xs text-[--cs-success] leading-relaxed">{s}</div>))}</div>)}
         {d.concerns?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold text-red-700 flex items-center gap-1"><AlertCircle className="h-3 w-3" /> Concerns ({d.concerns.length})</p>{d.concerns.slice(0, 3).map((c: string, i: number) => (<div key={i} className="rounded border border-[--cs-risk-soft] bg-[--cs-risk-bg] p-2.5 text-xs text-[--cs-risk] leading-relaxed">{c}</div>))}</div>)}
-        {d.recommendations?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><AlertTriangle className="h-3 w-3 text-amber-600" /> Recommendations ({d.recommendations.length})</p>{d.recommendations.slice(0, 3).map((rec: any) => (<div key={rec.rank} className={cn("rounded border p-2.5 text-xs leading-relaxed", REC_STYLES[rec.urgency] ?? REC_STYLES.planned)}><div className="flex items-start justify-between gap-2"><span>{rec.recommendation}</span>{rec.regulatory_ref && <span className="text-[10px] font-mono shrink-0 opacity-60">{rec.regulatory_ref}</span>}</div></div>))}</div>)}
-        {d.insights?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold flex items-center gap-1 text-purple-700"><Brain className="h-3 w-3" /> Cara Staff Performance Intelligence</p>{d.insights.slice(0, 3).map((insight: any, i: number) => (<div key={i} className={cn("rounded border p-2.5 text-xs leading-relaxed", INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.warning)}>{insight.text}</div>))}</div>)}
+        {d.recommendations?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><AlertTriangle className="h-3 w-3 text-amber-600" /> Recommendations ({d.recommendations.length})</p>{d.recommendations.slice(0, 3).map((rec) => (<div key={rec.rank} className={cn("rounded border p-2.5 text-xs leading-relaxed", REC_STYLES[rec.urgency] ?? REC_STYLES.planned)}><div className="flex items-start justify-between gap-2"><span>{rec.recommendation}</span>{rec.regulatory_ref && <span className="text-[10px] font-mono shrink-0 opacity-60">{rec.regulatory_ref}</span>}</div></div>))}</div>)}
+        {d.insights?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold flex items-center gap-1 text-purple-700"><Brain className="h-3 w-3" /> Cara Staff Performance Intelligence</p>{d.insights.slice(0, 3).map((insight, i) => (<div key={i} className={cn("rounded border p-2.5 text-xs leading-relaxed", INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.warning)}>{insight.text}</div>))}</div>)}
       </CardContent>
     </Card>
   );

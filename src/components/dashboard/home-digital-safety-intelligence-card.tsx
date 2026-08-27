@@ -49,7 +49,7 @@ export function HomeDigitalSafetyIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-digital-safety-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home digital safety intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeDigitalSafetyResult }>;
     },
     refetchInterval: 60_000,
   });

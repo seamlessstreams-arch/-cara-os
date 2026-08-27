@@ -48,7 +48,7 @@ export function HomeEmergencyPreparednessIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-emergency-preparedness-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home emergency preparedness intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeEmergencyResult }>;
     },
     refetchInterval: 60_000,
   });

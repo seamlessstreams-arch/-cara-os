@@ -48,7 +48,7 @@ export function HomeEducationEngagementIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-education-engagement-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home education engagement intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeEducationEngagementResult }>;
     },
     refetchInterval: 60_000,
   });

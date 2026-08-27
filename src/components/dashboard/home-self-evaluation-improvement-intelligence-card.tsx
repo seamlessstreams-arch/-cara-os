@@ -26,7 +26,7 @@ export function HomeSelfEvaluationImprovementIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-self-evaluation-improvement-intelligence");
       if (!res.ok) throw new Error("Failed to fetch self-evaluation improvement intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: SelfEvaluationResult }>;
     },
     refetchInterval: 60_000,
   });

@@ -16,7 +16,7 @@ function useHomeAnnualHealthAssessmentIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-annual-health-assessment-intelligence");
       if (!res.ok) throw new Error("Failed to fetch annual health assessment intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: AnnualHealthAssessmentResult }>;
     },
     refetchInterval: 60_000,
   });

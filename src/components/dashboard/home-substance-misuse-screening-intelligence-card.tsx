@@ -26,7 +26,7 @@ export function HomeSubstanceMisuseScreeningIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-substance-misuse-screening-intelligence");
       if (!res.ok) throw new Error("Failed to fetch substance misuse screening intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: SubstanceMisuseResult }>;
     },
     refetchInterval: 60_000,
   });

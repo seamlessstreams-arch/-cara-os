@@ -29,7 +29,7 @@ function useHomeChildVoiceIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-child-voice-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home child voice intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeChildVoiceResult }>;
     },
     refetchInterval: 60_000,
   });

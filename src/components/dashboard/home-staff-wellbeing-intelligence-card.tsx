@@ -28,7 +28,7 @@ function useHomeStaffWellbeingIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-staff-wellbeing-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home staff wellbeing intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeStaffWellbeingResult }>;
     },
     refetchInterval: 60_000,
   });

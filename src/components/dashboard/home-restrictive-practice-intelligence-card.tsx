@@ -28,7 +28,7 @@ function useHomeRestrictivePracticeIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-restrictive-practice-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home restrictive practice intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeRestrictivePracticeResult }>;
     },
     refetchInterval: 60_000,
   });

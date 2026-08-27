@@ -28,7 +28,7 @@ function useHomePlacementStabilityDepthIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-placement-stability-depth-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home placement stability depth intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomePlacementStabilityDepthResult }>;
     },
     refetchInterval: 60_000,
   });

@@ -28,7 +28,7 @@ function useHomeStaffSafetyIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-staff-safety-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home staff safety intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeStaffSafetyResult }>;
     },
     refetchInterval: 60_000,
   });

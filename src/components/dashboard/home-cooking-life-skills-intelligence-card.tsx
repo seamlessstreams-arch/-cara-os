@@ -6,8 +6,7 @@ import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ChefHat } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import type { CookingSkillsRating } from "@/lib/engines/home-cooking-life-skills-intelligence-engine";
-import type { CookingLifeSkillsResult } from "@/lib/engines/home-cooking-life-skills-intelligence-engine";
+import type { CookingSkillsRating, CookingLifeSkillsResult } from "@/lib/engines/home-cooking-life-skills-intelligence-engine";
 
 const RATING_STYLES: Record<CookingSkillsRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -27,7 +26,7 @@ export function HomeCookingLifeSkillsIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-cooking-life-skills-intelligence");
       if (!res.ok) throw new Error("Failed to fetch cooking life skills intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: CookingLifeSkillsResult }>;
     },
     refetchInterval: 60_000,
   });

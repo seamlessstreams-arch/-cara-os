@@ -23,7 +23,7 @@ export function HomeLessonsLearnedImprovementIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-lessons-learned-improvement-intelligence");
       if (!res.ok) throw new Error("Failed to fetch lessons learned & improvement intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: LessonsLearnedResult }>;
     },
     refetchInterval: 60_000,
   });

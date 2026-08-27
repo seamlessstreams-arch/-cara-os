@@ -31,7 +31,7 @@ function useHomeRiskLandscapeIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-risk-landscape-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home risk landscape intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeRiskLandscapeResult }>;
     },
     refetchInterval: 60_000,
   });

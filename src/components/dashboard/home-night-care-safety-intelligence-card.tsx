@@ -29,7 +29,7 @@ function useHomeNightCareSafetyIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-night-care-safety-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home night care safety intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeNightCareSafetyResult }>;
     },
     refetchInterval: 60_000,
   });

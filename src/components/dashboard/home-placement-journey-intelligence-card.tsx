@@ -16,7 +16,7 @@ function useHomePlacementJourneyIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-placement-journey-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home placement journey intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomePlacementJourneyResult }>;
     },
     refetchInterval: 60_000,
   });

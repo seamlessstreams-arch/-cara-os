@@ -64,7 +64,7 @@ export function HomeHealthWellbeingIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-health-wellbeing-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home health wellbeing intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeHealthWellbeingResult }>;
     },
     refetchInterval: 60_000,
   });

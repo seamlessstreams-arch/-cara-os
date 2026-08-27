@@ -29,7 +29,7 @@ function useHomeRiskAssessmentIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-risk-assessment-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home risk assessment intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeRiskAssessmentResult }>;
     },
     refetchInterval: 60_000,
   });

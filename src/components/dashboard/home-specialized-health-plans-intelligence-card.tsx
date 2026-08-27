@@ -29,7 +29,7 @@ function useHomeSpecializedHealthPlansIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-specialized-health-plans-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home specialized health plans intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeSpecializedHealthPlansResult }>;
     },
     refetchInterval: 60_000,
   });

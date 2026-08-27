@@ -1,10 +1,12 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import type { AutomationROIRating } from "@/lib/engines/home-automation-roi-intelligence-engine";
+import type { AutomationROIRating, AutomationROIResult } from "@/lib/engines/home-automation-roi-intelligence-engine";
 
 function useHomeAutomationROIIntelligence() {
   return useQuery({
@@ -12,7 +14,7 @@ function useHomeAutomationROIIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-automation-roi-intelligence");
       if (!res.ok) throw new Error("Failed to fetch automation ROI intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: AutomationROIResult }>;
     },
     refetchInterval: 60_000,
   });
@@ -31,7 +33,7 @@ const INSIGHT_STYLES: Record<string, string> = { critical: "border-[--cs-risk-so
 export function HomeAutomationROIIntelligenceCard() {
   const { data, isLoading } = useHomeAutomationROIIntelligence();
   if (isLoading) return <Card className="overflow-hidden border-slate-200"><CardContent className="flex items-center justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></CardContent></Card>;
-  let d = data?.data ?? data;
+  let d = data?.data;
   if (!d) return null;
   // Calm reframe: an empty-with-children engine result (inadequate + score<=15) is
   // 'not yet recorded', not a failing home — render it as honest, neutral insufficient_data.
@@ -73,16 +75,16 @@ export function HomeAutomationROIIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.total_time_saved > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.total_time_saved}m</p>
               <p className="text-[9px] text-muted-foreground">Saved</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.route_success_rate >= 90 ? "bg-green-50" : d.route_success_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.route_success_rate >= 90 ? "text-[--cs-success]" : d.route_success_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.route_success_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.route_success_rate === null ? "bg-slate-50" : d.route_success_rate >= 90 ? "bg-green-50" : d.route_success_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.route_success_rate === null ? "text-muted-foreground" : d.route_success_rate >= 90 ? "text-[--cs-success]" : d.route_success_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.route_success_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Routes</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.automation_coverage >= 80 ? "bg-green-50" : d.automation_coverage >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.automation_coverage >= 80 ? "text-[--cs-success]" : d.automation_coverage >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.automation_coverage}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.automation_coverage === null ? "bg-slate-50" : d.automation_coverage >= 80 ? "bg-green-50" : d.automation_coverage >= 60 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.automation_coverage === null ? "text-muted-foreground" : d.automation_coverage >= 80 ? "text-[--cs-success]" : d.automation_coverage >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.automation_coverage)}</p>
               <p className="text-[9px] text-muted-foreground">Coverage</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.error_rate <= 5 ? "bg-green-50" : d.error_rate <= 15 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.error_rate <= 5 ? "text-[--cs-success]" : d.error_rate <= 15 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.error_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.error_rate === null ? "bg-slate-50" : d.error_rate <= 5 ? "bg-green-50" : d.error_rate <= 15 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.error_rate === null ? "text-muted-foreground" : d.error_rate <= 5 ? "text-[--cs-success]" : d.error_rate <= 15 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.error_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Errors</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.route_type_diversity >= 3 ? "bg-green-50" : "bg-amber-50")}>
@@ -97,8 +99,8 @@ export function HomeAutomationROIIntelligenceCard() {
         )}
         {d.strengths?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold text-green-700 flex items-center gap-1"><Sparkles className="h-3 w-3" /> Strengths ({d.strengths.length})</p>{d.strengths.slice(0, 3).map((s: string, i: number) => (<div key={i} className="rounded border border-[--cs-success-soft] bg-[--cs-success-bg] p-2.5 text-xs text-[--cs-success] leading-relaxed">{s}</div>))}</div>)}
         {d.concerns?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold text-red-700 flex items-center gap-1"><AlertCircle className="h-3 w-3" /> Concerns ({d.concerns.length})</p>{d.concerns.slice(0, 3).map((c: string, i: number) => (<div key={i} className="rounded border border-[--cs-risk-soft] bg-[--cs-risk-bg] p-2.5 text-xs text-[--cs-risk] leading-relaxed">{c}</div>))}</div>)}
-        {d.recommendations?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><AlertTriangle className="h-3 w-3 text-amber-600" /> Recommendations ({d.recommendations.length})</p>{d.recommendations.slice(0, 3).map((rec: any) => (<div key={rec.rank} className={cn("rounded border p-2.5 text-xs leading-relaxed", REC_STYLES[rec.urgency] ?? REC_STYLES.planned)}><div className="flex items-start justify-between gap-2"><span>{rec.recommendation}</span>{rec.regulatory_ref && <span className="text-[10px] font-mono shrink-0 opacity-60">{rec.regulatory_ref}</span>}</div></div>))}</div>)}
-        {d.insights?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold flex items-center gap-1 text-purple-700"><Brain className="h-3 w-3" /> Cara Automation Intelligence</p>{d.insights.slice(0, 3).map((insight: any, i: number) => (<div key={i} className={cn("rounded border p-2.5 text-xs leading-relaxed", INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.warning)}>{insight.text}</div>))}</div>)}
+        {d.recommendations?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><AlertTriangle className="h-3 w-3 text-amber-600" /> Recommendations ({d.recommendations.length})</p>{d.recommendations.slice(0, 3).map((rec) => (<div key={rec.rank} className={cn("rounded border p-2.5 text-xs leading-relaxed", REC_STYLES[rec.urgency] ?? REC_STYLES.planned)}><div className="flex items-start justify-between gap-2"><span>{rec.recommendation}</span>{rec.regulatory_ref && <span className="text-[10px] font-mono shrink-0 opacity-60">{rec.regulatory_ref}</span>}</div></div>))}</div>)}
+        {d.insights?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold flex items-center gap-1 text-purple-700"><Brain className="h-3 w-3" /> Cara Automation Intelligence</p>{d.insights.slice(0, 3).map((insight, i) => (<div key={i} className={cn("rounded border p-2.5 text-xs leading-relaxed", INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.warning)}>{insight.text}</div>))}</div>)}
       </CardContent>
     </Card>
   );

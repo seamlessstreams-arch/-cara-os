@@ -35,7 +35,7 @@ function useHomeBehaviourIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-behaviour-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home behaviour intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeBehaviourResult }>;
     },
     refetchInterval: 60_000,
   });

@@ -22,8 +22,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { MeetingRating } from "@/lib/engines/home-meeting-governance-intelligence-engine";
-import type { HomeMeetingGovernanceResult } from "@/lib/engines/home-meeting-governance-intelligence-engine";
+import type { MeetingRating, HomeMeetingGovernanceResult } from "@/lib/engines/home-meeting-governance-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -59,7 +58,7 @@ export function HomeMeetingGovernanceIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-meeting-governance-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home meeting governance intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeMeetingGovernanceResult }>;
     },
     refetchInterval: 60_000,
   });

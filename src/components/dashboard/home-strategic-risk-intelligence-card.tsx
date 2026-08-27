@@ -26,7 +26,7 @@ export function HomeStrategicRiskIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-strategic-risk-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home strategic risk intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeStrategicRiskResult }>;
     },
     refetchInterval: 60_000,
   });

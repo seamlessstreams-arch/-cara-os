@@ -29,7 +29,7 @@ function useHomeChildrensRightsParticipationIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-childrens-rights-participation-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home childrens rights participation intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeChildrensRightsResult }>;
     },
     refetchInterval: 60_000,
   });

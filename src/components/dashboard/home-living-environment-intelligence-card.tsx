@@ -48,7 +48,7 @@ export function HomeLivingEnvironmentIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-living-environment-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home living environment intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeLivingEnvironmentResult }>;
     },
     refetchInterval: 60_000,
   });

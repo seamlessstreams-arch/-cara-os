@@ -26,7 +26,7 @@ export function HomeSensoryTherapeuticEnvironmentIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-sensory-therapeutic-environment-intelligence");
       if (!res.ok) throw new Error("Failed to fetch sensory & therapeutic environment intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: SensoryTherapeuticResult }>;
     },
     refetchInterval: 60_000,
   });

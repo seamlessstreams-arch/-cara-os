@@ -16,8 +16,7 @@ import {
   Target, CheckCheck, Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { IndependenceRating } from "@/lib/engines/home-independence-intelligence-engine";
-import type { HomeIndependenceResult } from "@/lib/engines/home-independence-intelligence-engine";
+import type { IndependenceRating, HomeIndependenceResult } from "@/lib/engines/home-independence-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -53,7 +52,7 @@ export function HomeIndependenceIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-independence-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home independence intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeIndependenceResult }>;
     },
     refetchInterval: 60_000,
   });

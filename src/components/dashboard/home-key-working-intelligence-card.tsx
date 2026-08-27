@@ -68,7 +68,7 @@ export function HomeKeyWorkingIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-key-working-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home key working intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeKeyWorkingResult }>;
     },
     refetchInterval: 60_000,
   });

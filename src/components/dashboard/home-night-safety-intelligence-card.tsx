@@ -28,7 +28,7 @@ function useHomeNightSafetyIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-night-safety-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home night safety intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeNightSafetyResult }>;
     },
     refetchInterval: 60_000,
   });

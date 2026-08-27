@@ -1,10 +1,12 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import type { SleepNightCareRating } from "@/lib/engines/home-sleep-night-care-intelligence-engine";
+import type { SleepNightCareRating, SleepNightCareResult } from "@/lib/engines/home-sleep-night-care-intelligence-engine";
 
 const RATING_STYLES: Record<SleepNightCareRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -22,12 +24,12 @@ export function HomeSleepNightCareIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-sleep-night-care-intelligence");
       if (!res.ok) throw new Error("Failed to fetch sleep night care intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: SleepNightCareResult }>;
     },
     refetchInterval: 60_000,
   });
   if (isLoading) return <Card className="overflow-hidden border-slate-200"><CardContent className="flex items-center justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></CardContent></Card>;
-  let d = data?.data ?? data;
+  let d = data?.data;
   if (!d) return null;
   // Calm reframe: an empty-with-children engine result (inadequate + score<=15) is
   // 'not yet recorded', not a failing home — render it as honest, neutral insufficient_data.
@@ -69,20 +71,20 @@ export function HomeSleepNightCareIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.total_logs > 0 ? "text-[--cs-success]" : "text-[--cs-warning]")}>{d.total_logs}</p>
               <p className="text-[9px] text-muted-foreground">Logs</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.check_compliance_rate >= 95 ? "bg-green-50" : d.check_compliance_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.check_compliance_rate >= 95 ? "text-[--cs-success]" : d.check_compliance_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.check_compliance_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.check_compliance_rate === null ? "bg-slate-50" : d.check_compliance_rate >= 95 ? "bg-green-50" : d.check_compliance_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.check_compliance_rate === null ? "text-muted-foreground" : d.check_compliance_rate >= 95 ? "text-[--cs-success]" : d.check_compliance_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.check_compliance_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Checks</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.building_security_rate >= 98 ? "bg-green-50" : d.building_security_rate >= 90 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.building_security_rate >= 98 ? "text-[--cs-success]" : d.building_security_rate >= 90 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.building_security_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.building_security_rate === null ? "bg-slate-50" : d.building_security_rate >= 98 ? "bg-green-50" : d.building_security_rate >= 90 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.building_security_rate === null ? "text-muted-foreground" : d.building_security_rate >= 98 ? "text-[--cs-success]" : d.building_security_rate >= 90 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.building_security_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Secure</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.quiet_night_rate >= 70 ? "bg-green-50" : d.quiet_night_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.quiet_night_rate >= 70 ? "text-[--cs-success]" : d.quiet_night_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.quiet_night_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.quiet_night_rate === null ? "bg-slate-50" : d.quiet_night_rate >= 70 ? "bg-green-50" : d.quiet_night_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.quiet_night_rate === null ? "text-muted-foreground" : d.quiet_night_rate >= 70 ? "text-[--cs-success]" : d.quiet_night_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.quiet_night_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Quiet</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.handover_quality_rate >= 90 ? "bg-green-50" : d.handover_quality_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.handover_quality_rate >= 90 ? "text-[--cs-success]" : d.handover_quality_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.handover_quality_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.handover_quality_rate === null ? "bg-slate-50" : d.handover_quality_rate >= 90 ? "bg-green-50" : d.handover_quality_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.handover_quality_rate === null ? "text-muted-foreground" : d.handover_quality_rate >= 90 ? "text-[--cs-success]" : d.handover_quality_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.handover_quality_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Handover</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.significant_disturbance_count === 0 ? "bg-green-50" : "bg-red-50")}>
@@ -93,8 +95,8 @@ export function HomeSleepNightCareIntelligenceCard() {
         )}
         {d.strengths?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold text-green-700 flex items-center gap-1"><Sparkles className="h-3 w-3" /> Strengths ({d.strengths.length})</p>{d.strengths.slice(0, 3).map((s: string, i: number) => (<div key={i} className="rounded border border-[--cs-success-soft] bg-[--cs-success-bg] p-2.5 text-xs text-[--cs-success] leading-relaxed">{s}</div>))}</div>)}
         {d.concerns?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold text-red-700 flex items-center gap-1"><AlertCircle className="h-3 w-3" /> Concerns ({d.concerns.length})</p>{d.concerns.slice(0, 3).map((c: string, i: number) => (<div key={i} className="rounded border border-[--cs-risk-soft] bg-[--cs-risk-bg] p-2.5 text-xs text-[--cs-risk] leading-relaxed">{c}</div>))}</div>)}
-        {d.recommendations?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><AlertTriangle className="h-3 w-3 text-amber-600" /> Recommendations ({d.recommendations.length})</p>{d.recommendations.slice(0, 3).map((rec: any) => (<div key={rec.rank} className={cn("rounded border p-2.5 text-xs leading-relaxed", REC_STYLES[rec.urgency] ?? REC_STYLES.planned)}><div className="flex items-start justify-between gap-2"><span>{rec.recommendation}</span>{rec.regulatory_ref && <span className="text-[10px] font-mono shrink-0 opacity-60">{rec.regulatory_ref}</span>}</div></div>))}</div>)}
-        {d.insights?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold flex items-center gap-1 text-purple-700"><Brain className="h-3 w-3" /> Cara Sleep & Night Care Intelligence</p>{d.insights.slice(0, 3).map((insight: any, i: number) => (<div key={i} className={cn("rounded border p-2.5 text-xs leading-relaxed", INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.warning)}>{insight.text}</div>))}</div>)}
+        {d.recommendations?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><AlertTriangle className="h-3 w-3 text-amber-600" /> Recommendations ({d.recommendations.length})</p>{d.recommendations.slice(0, 3).map((rec) => (<div key={rec.rank} className={cn("rounded border p-2.5 text-xs leading-relaxed", REC_STYLES[rec.urgency] ?? REC_STYLES.planned)}><div className="flex items-start justify-between gap-2"><span>{rec.recommendation}</span>{rec.regulatory_ref && <span className="text-[10px] font-mono shrink-0 opacity-60">{rec.regulatory_ref}</span>}</div></div>))}</div>)}
+        {d.insights?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold flex items-center gap-1 text-purple-700"><Brain className="h-3 w-3" /> Cara Sleep & Night Care Intelligence</p>{d.insights.slice(0, 3).map((insight, i) => (<div key={i} className={cn("rounded border p-2.5 text-xs leading-relaxed", INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.warning)}>{insight.text}</div>))}</div>)}
       </CardContent>
     </Card>
   );

@@ -16,7 +16,7 @@ function useHomeFinancialLiteracyMoneyManagementIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-financial-literacy-money-management-intelligence");
       if (!res.ok) throw new Error("Failed to fetch financial literacy & money management intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: FinancialLiteracyResult }>;
     },
     refetchInterval: 60_000,
   });

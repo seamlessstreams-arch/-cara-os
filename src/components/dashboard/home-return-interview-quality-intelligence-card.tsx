@@ -16,7 +16,7 @@ function useHomeReturnInterviewQualityIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-return-interview-quality-intelligence");
       if (!res.ok) throw new Error("Failed to fetch return interview quality intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: ReturnInterviewQualityResult }>;
     },
     refetchInterval: 60_000,
   });

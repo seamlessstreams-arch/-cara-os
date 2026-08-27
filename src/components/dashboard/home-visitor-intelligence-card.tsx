@@ -30,7 +30,7 @@ function useHomeVisitorIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-visitor-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home visitor intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeVisitorResult }>;
     },
     refetchInterval: 60_000,
   });

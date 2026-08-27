@@ -16,7 +16,7 @@ function useHomeGovernanceManagementOversightIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-governance-management-oversight-intelligence");
       if (!res.ok) throw new Error("Failed to fetch governance & management oversight intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: GovernanceOversightResult }>;
     },
     refetchInterval: 60_000,
   });

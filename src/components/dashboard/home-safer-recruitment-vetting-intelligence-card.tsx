@@ -26,7 +26,7 @@ export function HomeSaferRecruitmentVettingIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-safer-recruitment-vetting-intelligence");
       if (!res.ok) throw new Error("Failed to fetch safer recruitment & vetting intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: SaferRecruitmentResult }>;
     },
     refetchInterval: 60_000,
   });

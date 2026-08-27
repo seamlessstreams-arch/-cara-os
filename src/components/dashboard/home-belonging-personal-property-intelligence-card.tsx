@@ -16,7 +16,7 @@ function useHomeBelongingPersonalPropertyIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-belonging-personal-property-intelligence");
       if (!res.ok) throw new Error("Failed to fetch belonging & personal property intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: BelongingPropertyResult }>;
     },
     refetchInterval: 60_000,
   });

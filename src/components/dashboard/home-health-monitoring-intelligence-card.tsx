@@ -54,7 +54,7 @@ export function HomeHealthMonitoringIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-health-monitoring-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home health monitoring intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeHealthMonitoringResult }>;
     },
     refetchInterval: 60_000,
   });

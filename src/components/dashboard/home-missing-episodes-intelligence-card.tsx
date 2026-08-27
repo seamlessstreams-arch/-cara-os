@@ -17,8 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatRate, meets } from "@/lib/metrics/rate";
-import type { MissingEpisodesRating } from "@/lib/engines/home-missing-episodes-intelligence-engine";
-import type { HomeMissingEpisodesResult } from "@/lib/engines/home-missing-episodes-intelligence-engine";
+import type { MissingEpisodesRating, HomeMissingEpisodesResult } from "@/lib/engines/home-missing-episodes-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -54,7 +53,7 @@ export function HomeMissingEpisodesIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-missing-episodes-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home missing episodes intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeMissingEpisodesResult }>;
     },
     refetchInterval: 60_000,
   });

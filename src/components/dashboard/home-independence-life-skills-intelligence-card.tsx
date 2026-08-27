@@ -17,8 +17,7 @@ import {
   ChefHat, WashingMachine, Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { IndependenceLifeSkillsRating } from "@/lib/engines/home-independence-life-skills-intelligence-engine";
-import type { HomeIndependenceLifeSkillsResult } from "@/lib/engines/home-independence-life-skills-intelligence-engine";
+import type { IndependenceLifeSkillsRating, HomeIndependenceLifeSkillsResult } from "@/lib/engines/home-independence-life-skills-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -54,7 +53,7 @@ export function HomeIndependenceLifeSkillsIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-independence-life-skills-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home independence life skills intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeIndependenceLifeSkillsResult }>;
     },
     refetchInterval: 60_000,
   });

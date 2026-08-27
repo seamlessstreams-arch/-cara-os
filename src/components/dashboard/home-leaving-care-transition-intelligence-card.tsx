@@ -24,7 +24,7 @@ export function HomeLeavingCareTransitionIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-leaving-care-transition-intelligence");
       if (!res.ok) throw new Error("Failed to fetch leaving care & transition intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: LeavingCareResult }>;
     },
     refetchInterval: 60_000,
   });

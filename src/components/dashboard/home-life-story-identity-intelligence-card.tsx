@@ -24,7 +24,7 @@ export function HomeLifeStoryIdentityIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-life-story-identity-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home life story identity intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeLifeStoryIdentityResult }>;
     },
     refetchInterval: 60_000,
   });
