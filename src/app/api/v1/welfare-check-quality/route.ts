@@ -12,9 +12,9 @@ export async function GET() {
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     const sevenStr = sevenDaysAgo.toISOString().split("T")[0];
 
-    const youngPeople = (youngPeopleList as any[]) ?? [];
-    const welfareRounds = (welfareCheckRoundsList as any[]) ?? [];
-    const welfareChecks = (welfareChecksList as any[]) ?? [];
+    const youngPeople = ((youngPeopleList)) ?? [];
+    const welfareRounds = ((welfareCheckRoundsList)) ?? [];
+    const welfareChecks = ((welfareChecksList)) ?? [];
 
     const activeYP = youngPeople.filter((yp) => yp.status === "current");
     const recentRounds = welfareRounds.filter((r) => (r.round_date as string) >= sevenStr);

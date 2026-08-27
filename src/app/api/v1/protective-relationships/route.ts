@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { db } from "@/lib/db/store";
 import { dal } from "@/lib/db";
+import type { YoungPerson } from "@/types";
 import { generateId } from "@/lib/utils";
 import { getYPName } from "@/lib/seed-data";
 import {
@@ -14,8 +15,8 @@ import { computeSocialConvoy } from "@/lib/protective-relationships/social-convo
 
 export const dynamic = "force-dynamic";
 
-function toChildrenList(youngPeopleList: unknown[]) {
-  return ((youngPeopleList ?? []) as any[])
+function toChildrenList(youngPeopleList: YoungPerson[]) {
+  return (((youngPeopleList ?? [])))
     .filter((yp) => yp.status === "current")
     .map((yp) => ({
       id: yp.id,

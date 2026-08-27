@@ -30,7 +30,7 @@ export async function GET() {
       dal.youngPeople.findAll(),
     ]);
 
-  const children: ContinuityChildInput[] = ((youngPeopleList ?? []) as any[])
+  const children: ContinuityChildInput[] = (((youngPeopleList ?? [])))
     .filter((yp) => yp.status === "current")
     .map((yp) => ({
       id: yp.id,
@@ -39,13 +39,13 @@ export async function GET() {
       secondary_worker_id: yp.secondary_worker_id ?? null,
     }));
 
-  const staff: ContinuityStaffInput[] = ((staffList ?? []) as any[]).map((s) => ({
+  const staff: ContinuityStaffInput[] = (((staffList ?? []))).map((s) => ({
     id: s.id,
     name: s.full_name || `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || s.id,
     active: s.is_active ?? (s.employment_status ? s.employment_status === "active" : true),
   }));
 
-  const sessions: ContinuitySessionInput[] = ((keyWorkingSessionsList ?? []) as any[])
+  const sessions: ContinuitySessionInput[] = (((keyWorkingSessionsList ?? [])))
     .filter((k) => k.child_id && k.staff_id)
     .map((k) => ({
       child_id: k.child_id,

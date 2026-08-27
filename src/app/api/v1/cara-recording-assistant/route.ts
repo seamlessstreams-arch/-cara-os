@@ -37,7 +37,7 @@ export async function GET() {
     .sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)))
     .slice(0, 10)
     .map((r) => ({ ...r, child_name: childName(r.child_id), staff_name: staffNameOf(r.user_id) }));
-  const children = ((youngPeopleList ?? []) as any[])
+  const children = (((youngPeopleList ?? [])))
     .filter((c) => c.status === "current")
     .map((c) => ({ id: c.id, name: c.preferred_name || [c.first_name, c.last_name].filter(Boolean).join(" ") }));
   return NextResponse.json({ data: { record_types: RECORD_TYPES, children, recent, disclaimer: RECORDING_DISCLAIMER } });
@@ -46,7 +46,7 @@ export async function GET() {
 export async function POST(req: Request) {
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
-  const body = __parsed.data as any;
+  const body = (__parsed.data);
   const user_id = currentUserId(req);
   const raw_text = String(body.raw_text ?? "").trim();
   const record_type = RECORD_TYPES.some((t) => t.key === body.record_type) ? String(body.record_type) : "other";

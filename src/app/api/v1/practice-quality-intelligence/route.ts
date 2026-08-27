@@ -122,7 +122,7 @@ export async function GET() {
 
   // ── Child name map ──────────────────────────────────────────────────────────
   const ypMap = new Map(
-    ((youngPeopleList as any[]) ?? []).map((yp) => [
+    (((youngPeopleList)) ?? []).map((yp) => [
       yp.id,
       yp.preferred_name ??
         (`${yp.first_name ?? ""} ${yp.last_name ?? ""}`.trim() || "Unknown"),
@@ -131,7 +131,7 @@ export async function GET() {
 
   // ── Staff name map ──────────────────────────────────────────────────────────
   const staffMap = new Map(
-    ((staffList as any[]) ?? []).map((s) => [
+    (((staffList)) ?? []).map((s) => [
       s.id,
       s.full_name ?? (`${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || s.id),
     ])
@@ -139,7 +139,7 @@ export async function GET() {
 
   // ── Parse assessments ─────────────────────────────────────────────────────
   const assessmentsByChild = new Map<string, any[]>();
-  for (const a of (caraPracticeAssessmentsList as any[]) ?? []) {
+  for (const a of ((caraPracticeAssessmentsList)) ?? []) {
     if (!a.child_id) continue;
     const list = assessmentsByChild.get(a.child_id) ?? [];
     list.push(a);

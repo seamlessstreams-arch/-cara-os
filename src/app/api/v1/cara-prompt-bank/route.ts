@@ -30,7 +30,7 @@ export async function GET() {
 export async function POST(req: Request) {
   const __parsed2 = await readJsonBody(req);
   if (!__parsed2.ok) return __parsed2.response;
-  const body = __parsed2.data as any;
+  const body = (__parsed2.data);
   const prompt_text = String(body.prompt_text ?? "").trim();
   const category = CATEGORIES.includes(String(body.category)) ? String(body.category) : "co_regulation";
   const incident_type = INCIDENT_TYPES.some((t) => t.key === body.incident_type) ? String(body.incident_type) : null;
@@ -59,7 +59,7 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
-  const body = __parsed.data as any;
+  const body = (__parsed.data);
   const id = String(body.id ?? "").trim();
   const bank: PromptBankEntry[] = await dal.caraPromptBank.findAll();
   const entry = bank.find((p) => p.id === id);

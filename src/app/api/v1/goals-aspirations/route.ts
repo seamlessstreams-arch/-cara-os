@@ -12,9 +12,9 @@ export async function GET() {
     ]);
     const today = todayStr();
 
-    const youngPeople = (youngPeopleList as any[]) ?? [];
-    const outcomeTargets = (outcomeTargetsList as any[]) ?? [];
-    const keyWorkingSessions = (keyWorkingSessionsList as any[]) ?? [];
+    const youngPeople = ((youngPeopleList)) ?? [];
+    const outcomeTargets = ((outcomeTargetsList)) ?? [];
+    const keyWorkingSessions = ((keyWorkingSessionsList)) ?? [];
 
     const activeYP = youngPeople.filter((yp) => yp.status === "current");
 

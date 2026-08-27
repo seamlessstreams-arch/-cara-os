@@ -48,7 +48,7 @@ export async function GET() {
   const items: ComplianceItemInput[] = [];
 
   // ── 1. Certificates (from the primary building record) ───────────────────────
-  const bld = ((buildingsList ?? []) as any[])[0];
+  const bld = (((buildingsList ?? [])))[0];
   if (bld) {
     items.push({
       key: "cert_gas", label: "Gas Safety Certificate", category: CAT.cert,
@@ -68,7 +68,7 @@ export async function GET() {
   // ── 2. Routine safety checks (buildingChecks — latest per check_type) ────────
   const FIRE_TYPES = new Set(["fire_alarm_test", "emergency_lighting", "fire_door_check"]);
   const byType = new Map<string, any>();
-  for (const c of (buildingChecksList ?? []) as any[]) {
+  for (const c of ((buildingChecksList ?? []))) {
     const t = String(c.check_type ?? "check");
     const prev = byType.get(t);
     if (!prev || String(c.check_date ?? "") > String(prev.check_date ?? "")) byType.set(t, c);
@@ -91,7 +91,7 @@ export async function GET() {
   }
 
   // ── 3. Drills (most recent fire drill → its next-due date) ───────────────────
-  const drills = ((fireDrillsList ?? []) as any[]).slice().sort((a, b) => String(b.date ?? "").localeCompare(String(a.date ?? "")));
+  const drills = (((fireDrillsList ?? []))).slice().sort((a, b) => String(b.date ?? "").localeCompare(String(a.date ?? "")));
   if (drills.length > 0) {
     const latest = drills[0];
     items.push({
@@ -104,7 +104,7 @@ export async function GET() {
 
   // ── 4. Compliance-relevant planned maintenance ───────────────────────────────
   const MAINT_CATS = new Set(["hvac", "electrical", "security", "gas"]);
-  for (const m of (maintenanceList ?? []) as any[]) {
+  for (const m of ((maintenanceList ?? []))) {
     if (!MAINT_CATS.has(String(m.category ?? "").toLowerCase())) continue;
     const status = String(m.status ?? "").toLowerCase();
     items.push({

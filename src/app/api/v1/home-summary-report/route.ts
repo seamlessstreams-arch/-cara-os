@@ -125,7 +125,7 @@ export async function GET(request: Request) {
     ]);
     const total_children = youngPeople.filter((c) => c.status === "current").length || youngPeople.length;
     const total_staff = staffList.length;
-    const home_name = (home as any)?.name ?? "Oak House";
+    const home_name = ((home))?.name ?? "Oak House";
 
     const results = await Promise.allSettled(SECTION_ENGINES.map(([route, section]) => fetchSignal(baseUrl, route, section)));
     const signals = results

@@ -51,7 +51,7 @@ export async function GET() {
   const store = getStore();
   const today = todayStr();
 
-  const yp = ((await safeList(dal.youngPeople.findAll())) as any[]).filter((c) => c.status === "current");
+  const yp = (((await safeList(dal.youngPeople.findAll())))).filter((c) => c.status === "current");
   const children = yp.map((c) => ({
     id: String(c.id),
     name: c.preferred_name || [c.first_name, c.last_name].filter(Boolean).join(" ") || String(c.id),
@@ -61,7 +61,7 @@ export async function GET() {
 
   const plans: PlanRecordInput[] = [];
   for (const reg of REGISTRY) {
-    const recs = (store as any)[reg.key];
+    const recs = (store as unknown as Record<string, unknown>)[reg.key];
     if (!Array.isArray(recs)) continue;
     for (const r of recs) {
       const child = r?.[reg.childField];

@@ -106,7 +106,7 @@ export async function GET(req: Request) {
     dal.employerValuesProfiles.findAll(),
     dal.candidateValuesProfiles.findAll(),
   ]);
-  const vacancy = (vacanciesList ?? []).find((v) => v.id === (profile as any).vacancy_id);
+  const vacancy = (vacanciesList ?? []).find((v) => v.id === ((profile)).vacancy_id);
   const roleApplied = vacancy?.title ?? "Residential Care Worker";
 
   const checksSummary = checks.map((c) => ({

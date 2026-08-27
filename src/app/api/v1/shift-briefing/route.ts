@@ -53,7 +53,7 @@ async function safeList(p: Promise<any[]>): Promise<any[]> {
 }
 
 export async function GET() {
-  const store = getStore() as any;
+  const store = (getStore());
   const now = new Date();
   const today = now.toISOString().slice(0, 10);
   const [y, m, d] = today.split("-").map(Number);
@@ -70,7 +70,7 @@ export async function GET() {
   ]);
 
   // Children name map (current only)
-  const yp = ((allYoungPeople) as any[]).filter((c) => c.status === "current");
+  const yp = (((allYoungPeople))).filter((c) => c.status === "current");
   const childName = new Map<string, string>(
     yp.map((c) => [String(c.id), c.preferred_name || [c.first_name, c.last_name].filter(Boolean).join(" ") || String(c.id)]),
   );
@@ -78,7 +78,7 @@ export async function GET() {
   const nameOf = (id: any) => (id ? childName.get(String(id)) ?? null : null);
 
   // ── On duty (today's shifts) ───────────────────────────────────────────────
-  const on_duty: OnDutyInput[] = ((allShifts) as any[])
+  const on_duty: OnDutyInput[] = (((allShifts)))
     .filter((s) => String(s.date).slice(0, 10) === today)
     .map((s) => ({
       staff_id: String(s.staff_id),
@@ -92,7 +92,7 @@ export async function GET() {
     }));
 
   // ── Tasks ──────────────────────────────────────────────────────────────────
-  const tasks: TaskInput[] = ((allTasks) as any[]).map((t) => ({
+  const tasks: TaskInput[] = (((allTasks))).map((t) => ({
     id: String(t.id),
     title: t.title ?? t.name ?? "Task",
     due_date: t.due_date ?? null,
@@ -105,7 +105,7 @@ export async function GET() {
   // ── Plan reviews due (verified registry, current children only) ────────────
   const reviews: ReviewInput[] = [];
   for (const reg of REVIEW_REGISTRY) {
-    const recs = store[reg.key];
+    const recs = (store as unknown as Record<string, unknown>)[reg.key];
     if (!Array.isArray(recs)) continue;
     for (const r of recs) {
       const cid = r?.[reg.childField];
@@ -124,7 +124,7 @@ export async function GET() {
   }
 
   // ── Active medications ─────────────────────────────────────────────────────
-  const medications: MedInput[] = ((allMedications) as any[])
+  const medications: MedInput[] = (((allMedications)))
     .filter((mm) => {
       if (mm.is_active === false) return false;
       const start = mm.start_date ? String(mm.start_date).slice(0, 10) : null;
@@ -145,7 +145,7 @@ export async function GET() {
 
   // ── Events (overnight / recent) ────────────────────────────────────────────
   const events: EventInput[] = [];
-  for (const l of (allDailyLog) as any[]) {
+  for (const l of ((allDailyLog))) {
     events.push({
       id: String(l.id),
       kind: "log",
@@ -157,7 +157,7 @@ export async function GET() {
       is_significant: !!l.is_significant,
     });
   }
-  for (const i of (allIncidents) as any[]) {
+  for (const i of ((allIncidents))) {
     events.push({
       id: String(i.id),
       kind: "incident",

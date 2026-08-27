@@ -97,21 +97,21 @@ export async function GET(): Promise<NextResponse<PracticeFlagIntelligenceRespon
   const [caraPracticeFlagsList, caraStaffWellbeingSignalsList, caraThresholdConsultationsList, staffList, youngPeopleList] = await Promise.all([dal.caraPracticeFlags.findAll(), dal.caraStaffWellbeingSignals.findAll(), dal.caraThresholdConsultations.findAll(), dal.staff.findAll(), dal.youngPeople.findAll()]);
 
   const ypMap = new Map(
-    ((youngPeopleList as any[]) ?? []).map((yp) => [
+    (((youngPeopleList)) ?? []).map((yp) => [
       yp.id,
       `${yp.first_name} ${yp.last_name}`.trim() || "Unknown",
     ])
   );
 
   const staffMap = new Map(
-    ((staffList as any[]) ?? []).map((s) => [
+    (((staffList)) ?? []).map((s) => [
       s.id,
       s.full_name ?? (`${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || s.id),
     ])
   );
 
   // ── Practice flags ────────────────────────────────────────────────────────
-  const rawFlags = (caraPracticeFlagsList as any[]) ?? [];
+  const rawFlags = ((caraPracticeFlagsList)) ?? [];
   const unresolvedRaw = rawFlags.filter((f) => !f.resolved);
 
   const allFlags: PracticeFlagEntry[] = unresolvedRaw.map((f): PracticeFlagEntry => ({
@@ -147,7 +147,7 @@ export async function GET(): Promise<NextResponse<PracticeFlagIntelligenceRespon
   );
 
   // ── Threshold consultations ───────────────────────────────────────────────
-  const rawConsultations = (caraThresholdConsultationsList as any[]) ?? [];
+  const rawConsultations = ((caraThresholdConsultationsList)) ?? [];
   const thresholdConsultations: ThresholdConsultationEntry[] = rawConsultations
     .filter((c) => !c.manager_decision)
     .map((c): ThresholdConsultationEntry => ({
@@ -165,7 +165,7 @@ export async function GET(): Promise<NextResponse<PracticeFlagIntelligenceRespon
     }));
 
   // ── Staff wellbeing signals ───────────────────────────────────────────────
-  const rawWellbeing = (caraStaffWellbeingSignalsList as any[]) ?? [];
+  const rawWellbeing = ((caraStaffWellbeingSignalsList)) ?? [];
   const staffWellbeingSignals: StaffWellbeingSignalEntry[] = rawWellbeing
     .filter((s) => !s.resolved)
     .map((s): StaffWellbeingSignalEntry => ({

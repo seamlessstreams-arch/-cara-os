@@ -28,9 +28,9 @@ export async function GET() {
       dal.incidents.findAll(),
       dal.youngPeople.findAll(),
     ]);
-  const behaviourLog = (behaviourLogList as any[]) ?? [];
-  const incidents = (incidentsList as any[]) ?? [];
-  const youngPeople = (youngPeopleList as any[]) ?? [];
+  const behaviourLog = ((behaviourLogList)) ?? [];
+  const incidents = ((incidentsList)) ?? [];
+  const youngPeople = ((youngPeopleList)) ?? [];
 
   // Global trigger counts
   const triggerMap = new Map<string, number>();
@@ -71,7 +71,7 @@ export async function GET() {
   const childProfiles: ChildBehaviourProfile[] = childIds.map((childId) => {
     const childEntries = behaviourLog.filter((e) => e.child_id === childId);
     const highIntensity = childEntries.filter(
-      (e) => e.intensity === "high" || e.intensity === "severe"
+      (e) => e.intensity === "high" || e.intensity === "critical"
     ).length;
     const linkedIncidents = incidents.filter(
       (i) => i.child_id === childId
@@ -133,7 +133,7 @@ export async function GET() {
   });
 
   const highIntensityTotal = behaviourLog.filter(
-    (e) => e.intensity === "high" || e.intensity === "severe"
+    (e) => e.intensity === "high" || e.intensity === "critical"
   ).length;
 
   const insights: string[] = [];

@@ -71,10 +71,13 @@ export async function GET(request: NextRequest) {
         new Date(b.last_review_date ?? "").getTime() -
         new Date(a.last_review_date ?? "").getTime(),
     );
-    const p = sorted[0] as any;
+    const p = (sorted[0]);
     pathway_plan = {
       id: p.id,
-      status: p.status ?? "active_16_18",
+      status:
+        p.status === "active_18plus_formerly_looked_after" ? "active_18_21"
+        : p.status === "closed_at_25" ? "closed"
+        : p.status ?? "active_16_18",
       plan_version: p.plan_version ?? "1.0",
       last_review_date: (p.last_review_date ?? "").slice(0, 10),
       next_review_date: (p.next_review_date ?? "").slice(0, 10),

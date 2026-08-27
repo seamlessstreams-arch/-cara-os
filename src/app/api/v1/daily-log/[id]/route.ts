@@ -9,8 +9,7 @@ export const dynamic = "force-dynamic";
 async function getDailyLogEntry(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const all = await dal.dailyLog.findAll();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const entry = (all as any[]).find((e) => e.id === id);
+  const entry = ((all)).find((e) => e.id === id);
   if (!entry) return NextResponse.json({ error: "Entry not found" }, { status: 404 });
   return NextResponse.json({ data: entry });
 }

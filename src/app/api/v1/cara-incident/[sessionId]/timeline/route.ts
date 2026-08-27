@@ -17,7 +17,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ sessionId: str
 
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
-  const body = __parsed.data as any;
+  const body = (__parsed.data);
   const raw_text = String(body.raw_text ?? "").trim();
   const entry_type = String(body.entry_type ?? "observation");
 

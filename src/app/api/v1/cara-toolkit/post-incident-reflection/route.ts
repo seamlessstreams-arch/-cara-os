@@ -24,8 +24,8 @@ export async function GET() {
       dal.debriefRecords.findAll(),
       dal.incidents.findAll(),
     ]);
-  const incidents = (incidentsList as any[]) ?? [];
-  const debriefRecords = (debriefRecordsList as any[]) ?? [];
+  const incidents = ((incidentsList)) ?? [];
+  const debriefRecords = ((debriefRecordsList)) ?? [];
   const today = todayStr();
 
   // Index debriefs by linked_incident_id

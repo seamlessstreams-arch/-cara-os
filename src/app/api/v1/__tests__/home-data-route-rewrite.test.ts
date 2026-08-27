@@ -9,7 +9,7 @@ import { GET } from "@/app/api/v1/[...slug]/route";
 // forcing them through the intelligence dispatcher → "Unknown intelligence engine"
 // → HTTP 404 on those (UI-consumed) views. The catch-all now falls back to the
 // data-collection accessor when there's no matching engine.
-const ctx = (slug: string[]) => ({ params: Promise.resolve({ slug }) }) as any;
+const ctx = (slug: string[]) => (({ params: Promise.resolve({ slug }) }));
 const req = (path: string) => new NextRequest(`http://localhost${path}`);
 
 describe("catch-all /api/v1 — home-* data routes caught by the rewrite", () => {

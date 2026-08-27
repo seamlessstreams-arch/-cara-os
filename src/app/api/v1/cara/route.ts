@@ -301,7 +301,7 @@ function deterministicRiChallengeQuestion() {
 // "Generate Plan with Cara" panel: a genuine, evidence-grounded summary instead
 // of a placeholder. Cara structures; the manager and staff member agree the plan.
 function deterministicStaffDevelopmentSummary(): string {
-  const store = getStore() as any;
+  const store = (getStore());
 
   const staff = (store.staff ?? []).map((s: any) => ({
     id: s.id,

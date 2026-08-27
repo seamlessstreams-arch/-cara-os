@@ -26,10 +26,10 @@ export async function GET() {
 
   const possessions: PossessionInput[] = [];
   for (const record of belongingsRecordsList ?? []) {
-    for (const item of (record as any).items ?? []) {
+    for (const item of ((record)).items ?? []) {
       possessions.push({
         id: item.id,
-        child_id: (record as any).child_id,
+        child_id: ((record)).child_id,
         item_name: item.description ?? "",
         category: mapCategory(item.category ?? "other"),
         date_logged: typeof item.date_logged === "string" ? item.date_logged.slice(0, 10) : "",

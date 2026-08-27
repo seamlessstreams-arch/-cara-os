@@ -33,7 +33,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ sessionId: str
 
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
-  const body = __parsed.data as any;
+  const body = (__parsed.data);
   const user_id = currentUserId(req);
   const entries = sessionEntries(session.id);
   const gate = computeIncidentQualityGate({ session, entries });

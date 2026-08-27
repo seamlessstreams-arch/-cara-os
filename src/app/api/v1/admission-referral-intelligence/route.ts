@@ -44,7 +44,7 @@ export async function GET() {
 
   // ── Occupancy ───────────────────────────────────────────────────────────────
   const currentOccupancy = (youngPeopleList ?? []).length;
-  const maxOccupancy = (home as any)?.max_beds ?? 3; // registered capacity (from the home record)
+  const maxOccupancy = ((home))?.max_beds ?? 3; // registered capacity (from the home record)
 
   // ── Run engine ──────────────────────────────────────────────────────────────
   const result = computeAdmissionReferralIntelligence({

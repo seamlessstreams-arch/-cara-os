@@ -105,7 +105,7 @@ export async function GET() {
   const today = todayStr();
 
   const youngPeople = (youngPeopleList ?? []) as YoungPerson[];
-  const rawSessions = (keyWorkingSessionsList as any[]) ?? [];
+  const rawSessions = ((keyWorkingSessionsList)) ?? [];
 
   const ypMap = new Map(
     youngPeople.map((yp) => [yp.id, `${yp.first_name} ${yp.last_name}`.trim() || "Unknown"])

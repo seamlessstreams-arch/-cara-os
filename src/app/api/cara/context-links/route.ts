@@ -84,7 +84,7 @@ export async function GET(request: Request) {
     if (isSupabaseEnabled()) {
       const sb = createServerClient();
       if (sb) {
-        const { data, error } = await (sb.from("cara_context_links") as any)
+        const { data, error } = await ((sb.from("cara_context_links")))
           .select("*")
           .or(`source_table.eq.${sourceTable},target_table.eq.${sourceTable}`)
           .or(`source_id.eq.${recordId},target_id.eq.${recordId}`)

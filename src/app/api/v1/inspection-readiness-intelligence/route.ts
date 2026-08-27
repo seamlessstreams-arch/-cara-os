@@ -72,7 +72,7 @@ export async function GET() {
       .filter((sv) => sv.staff_id === s.id && sv.status === "completed")
       .sort((a, b) => b.actual_date?.localeCompare(a.actual_date ?? "") ?? 0)[0];
     if (!lastSup) return true;
-    const lastDate = (lastSup as any).actual_date ?? "";
+    const lastDate = ((lastSup)).actual_date ?? "";
     const daysSince = Math.floor((new Date(today).getTime() - new Date(lastDate).getTime()) / 86_400_000);
     return daysSince > 42;
   });
@@ -145,7 +145,7 @@ export async function GET() {
       }).length,
     },
     reg45_status: {
-      last_report_date: (lastReg45Date as any)?.created_at?.slice(0, 10) ?? null,
+      last_report_date: ((lastReg45Date))?.created_at?.slice(0, 10) ?? null,
       next_due_date: null,
       report_submitted_on_time: true,
     },
@@ -327,7 +327,7 @@ function buildDomainMetrics(store: Pick<ReturnType<typeof getStore>, "behaviourL
     high_alerts: 0,
     overdue_count: openQaActions.length,
     evidence_count: qaAudits.length,
-    last_updated: qaAudits.length > 0 ? (qaAudits[qaAudits.length - 1] as any).date?.slice(0, 10) : null,
+    last_updated: qaAudits.length > 0 ? ((qaAudits[qaAudits.length - 1])).date?.slice(0, 10) : null,
   });
 
   return metrics;

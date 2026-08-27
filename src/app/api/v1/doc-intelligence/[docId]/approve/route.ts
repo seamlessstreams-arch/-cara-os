@@ -57,8 +57,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ doc
       };
       // the store regenerates ids on create — record the AUTHORITATIVE id the
       // store returns, or the links here would point at a task that doesn't exist
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const created = createTaskRecord(task) as any;
+      const created = (createTaskRecord(task));
       const createdId = (created?.id as string) ?? task.id;
       createdTaskIds.push(createdId);
 

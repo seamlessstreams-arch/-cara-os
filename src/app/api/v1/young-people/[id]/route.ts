@@ -29,29 +29,22 @@ async function getYoungPerson(
   // medications, daily log, care forms) read from their real Supabase tables when
   // enabled, the in-memory store otherwise. Chronology + missing-episodes stay on the
   // store until their own batches (their writes aren't yet write-through to Supabase).
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const yp = (await dal.youngPeople.findById(id)) as any;
+  const yp = ((await dal.youngPeople.findById(id)));
   if (!yp) return NextResponse.json({ error: "Young person not found" }, { status: 404 });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const allStaff   = (await dal.staff.findAll()) as any[];
+  const allStaff   = ((await dal.staff.findAll()));
   const today      = todayStr();
 
   const keyWorker       = yp.key_worker_id ? (allStaff.find((s) => s.id === yp.key_worker_id) ?? null) : null;
   const secondaryWorker = yp.secondary_worker_id ? (allStaff.find((s) => s.id === yp.secondary_worker_id) ?? null) : null;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const incidents        = ((await dal.incidents.findAll()) as any[]).filter((i) => i.child_id === id);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const tasks            = ((await dal.tasks.findAll()) as any[]).filter((t) => t.linked_child_id === id);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const medications      = (await dal.medications.findByChild(id)) as any[];
+  const incidents        = (((await dal.incidents.findAll()))).filter((i) => i.child_id === id);
+  const tasks            = (((await dal.tasks.findAll()))).filter((t) => t.linked_child_id === id);
+  const medications      = ((await dal.medications.findByChild(id)));
   const missingEpisodes  = db.missingEpisodes.findByChild(id);
   const chronology       = db.chronology.findByChild(id);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const careForms        = ((await dal.careForms.findAll()) as any[]).filter((f) => f.linked_child_id === id);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const dailyLog         = ((await dal.dailyLog.findByChild(id)) as any[]).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10);
+  const careForms        = (((await dal.careForms.findAll()))).filter((f) => f.linked_child_id === id);
+  const dailyLog         = (((await dal.dailyLog.findByChild(id)))).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10);
 
   return NextResponse.json({
     data: {
@@ -140,8 +133,7 @@ async function updateYoungPerson(
   auditFromRequest(req, {
     entityType: "young_person",
     entityId: id,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    homeId: ((existing as any).home_id as string) ?? null,
+    homeId: (((existing)).home_id as string) ?? null,
     action: "update",
     before: existing as unknown as Record<string, unknown>,
     after: updated as unknown as Record<string, unknown>,
@@ -178,8 +170,7 @@ async function archiveYoungPerson(
   auditFromRequest(req, {
     entityType: "young_person",
     entityId: id,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    homeId: ((existing as any).home_id as string) ?? null,
+    homeId: (((existing)).home_id as string) ?? null,
     action: "delete",
     before: existing as unknown as Record<string, unknown>,
     after: updated as unknown as Record<string, unknown>,
