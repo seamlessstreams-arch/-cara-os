@@ -1,5 +1,6 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
+import { storageFailure } from "@/lib/http/storage-error";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
 import { voiceEntries, nextFallbackId } from "@/lib/intelligence/fallback-store";
@@ -31,7 +32,7 @@ export async function GET(request: NextRequest) {
   if (category) query = query.eq("category", category);
 
   const { data, error } = await query.limit(100);
-  if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
+  if (error) return storageFailure("Child voice records", error);
 
   return NextResponse.json({ ok: true, entries: data ?? [], persisted: true });
 }
@@ -81,7 +82,7 @@ export async function POST(request: NextRequest) {
       created_by: actorUserId ?? null,
     }).select().single();
 
-    if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
+    if (error) return storageFailure("Child voice records", error);
 
     await writeIntelligenceAudit({
       homeId,

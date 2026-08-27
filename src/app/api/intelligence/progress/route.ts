@@ -1,5 +1,6 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
+import { storageFailure } from "@/lib/http/storage-error";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
 import {
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest) {
     let query = supabase.from("child_progress_goals").select("*").order("created_at", { ascending: false });
     if (childId) query = query.eq("child_id", childId);
     const { data, error } = await query.limit(50);
-    if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
+    if (error) return storageFailure("Child progress records", error);
     return NextResponse.json({ ok: true, data: data ?? [], persisted: true });
   }
 
@@ -51,7 +52,7 @@ export async function GET(request: NextRequest) {
     let query = supabase.from("child_outcome_snapshots").select("*").order("snapshot_date", { ascending: false });
     if (childId) query = query.eq("child_id", childId);
     const { data, error } = await query.limit(20);
-    if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
+    if (error) return storageFailure("Child progress records", error);
     return NextResponse.json({ ok: true, data: data ?? [], persisted: true });
   }
 
@@ -59,7 +60,7 @@ export async function GET(request: NextRequest) {
   let query = supabase.from("child_progress_entries").select("*").order("entry_date", { ascending: false });
   if (childId) query = query.eq("child_id", childId);
   const { data, error } = await query.limit(100);
-  if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
+  if (error) return storageFailure("Child progress records", error);
   return NextResponse.json({ ok: true, data: data ?? [], persisted: true });
 }
 
@@ -138,7 +139,7 @@ export async function POST(request: NextRequest) {
         target_date: payload.targetDate ?? null,
         created_by: actorUserId ?? null,
       }).select().single();
-      if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
+      if (error) return storageFailure("Child progress records", error);
 
       await writeIntelligenceAudit({ homeId, entityType: "child_progress_goal", entityId: data?.id, action: "goal_created", actorUserId, actorRole });
       return NextResponse.json({ ok: true, data, persisted: true });
@@ -157,7 +158,7 @@ export async function POST(request: NextRequest) {
         evidence_source_id: payload.evidenceSourceId ?? null,
         created_by: actorUserId ?? null,
       }).select().single();
-      if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
+      if (error) return storageFailure("Child progress records", error);
 
       await writeIntelligenceAudit({ homeId, entityType: "child_progress_entry", entityId: data?.id, action: "progress_entry_created", actorUserId, actorRole });
       return NextResponse.json({ ok: true, data, persisted: true });
@@ -178,7 +179,7 @@ export async function POST(request: NextRequest) {
         summary: payload.summary ?? null,
         created_by: actorUserId ?? null,
       }).select().single();
-      if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
+      if (error) return storageFailure("Child progress records", error);
 
       await writeIntelligenceAudit({ homeId, entityType: "child_outcome_snapshot", entityId: data?.id, action: "outcome_snapshot_created", actorUserId, actorRole });
       return NextResponse.json({ ok: true, data, persisted: true });

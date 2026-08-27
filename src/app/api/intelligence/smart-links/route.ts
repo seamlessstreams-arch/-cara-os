@@ -1,5 +1,6 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
+import { storageFailure } from "@/lib/http/storage-error";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
 import { suggestSmartLinks, type SmartLinkContext } from "@/lib/intelligence/smart-linking";
@@ -23,9 +24,7 @@ export async function GET(request: NextRequest) {
   if (sourceId) query = query.eq("source_id", sourceId);
 
   const { data, error } = await query.limit(50);
-  if (error) {
-    console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 });
-  }
+  if (error) return storageFailure("Linked records", error);
 
   return NextResponse.json({ ok: true, links: data ?? [], persisted: true });
 }
@@ -75,9 +74,7 @@ export async function POST(request: NextRequest) {
       created_by: actorUserId ?? null,
     }).select().single();
 
-    if (error) {
-      console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 });
-    }
+    if (error) return storageFailure("Linked records", error);
 
     await writeIntelligenceAudit({
       homeId,
