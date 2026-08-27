@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
   const supabase = loose(supabaseRaw);
 
   // Fetch outputs in pending statuses
-  const { data, error } = await (supabase.from("cara_outputs") as any)
+  const { data, error } = await ((supabase.from("cara_outputs")))
     .select(
       "id, request_id, generated_text, confidence, status, guardrail_flagged, guardrail_summary, created_at, cara_requests(command_id, user_id)",
     )
@@ -81,18 +81,25 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ data: getDemoPending() });
   }
 
-  const outputs: PendingOutput[] = ((data as any[]) ?? []).map((row) => ({
+  const outputs: PendingOutput[] = ((data) ?? []).map((row) => {
+    // PostgREST returns an embedded relation as an array unless it can see the
+    // join is to-one, and the generated types say array here. Reading
+    // `.command_id` straight off it was always undefined, so every pending
+    // output reported command "unknown" with no user against it.
+    const request = Array.isArray(row.cara_requests) ? row.cara_requests[0] : row.cara_requests;
+    return {
     id: row.id,
     requestId: row.request_id,
-    commandId: row.cara_requests?.command_id ?? "unknown",
+    commandId: request?.command_id ?? "unknown",
     generatedText: row.generated_text ?? "",
     confidence: row.confidence ?? "medium",
     status: row.status,
-    userId: row.cara_requests?.user_id ?? "",
+    userId: request?.user_id ?? "",
     createdAt: row.created_at,
     guardrailFlagged: row.guardrail_flagged ?? false,
     guardrailSummary: row.guardrail_summary ?? null,
-  }));
+    };
+  });
 
   return NextResponse.json({ data: outputs });
 }

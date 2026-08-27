@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { YoungPerson } from "@/types";
 import { dal } from "@/lib/db";
 import type {
   ChildRiskDomain,
@@ -18,7 +19,7 @@ function daysBetween(a: string, b: string): number {
   return Math.round(Math.abs(d1 - d2) / 86_400_000);
 }
 
-function initials(yp: any): string {
+function initials(yp: YoungPerson): string {
   const f = ((yp.first_name || yp.preferred_name || "?")[0] ?? "?").toUpperCase();
   const l = ((yp.last_name || "?")[0] ?? "?").toUpperCase();
   return `${f}.${l}.`;

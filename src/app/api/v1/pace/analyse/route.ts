@@ -27,7 +27,7 @@ export function GET(req: Request) {
 
 export async function POST(req: Request) {
   const url = new URL(req.url);
-  let body: any = {};
+  let body: Record<string, unknown> = {};
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   try { body = __parsed.data; } catch { body = {}; }
@@ -36,7 +36,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Provide the record text to analyse." }, { status: 400 });
   }
   const context = ctxOf(body.context);
-  const input = { text, context, childId: body.childId ?? null, staffId: body.staffId ?? null, homeId: body.homeId ?? null, riskPresentHint: !!body.riskPresentHint };
+  const input = { text, context, childId: body.childId == null ? null : String(body.childId), staffId: body.staffId == null ? null : String(body.staffId), homeId: body.homeId == null ? null : String(body.homeId), riskPresentHint: !!body.riskPresentHint };
   if (url.searchParams.get("mode") === "recording") {
     return NextResponse.json({ data: assistRecording(input) });
   }

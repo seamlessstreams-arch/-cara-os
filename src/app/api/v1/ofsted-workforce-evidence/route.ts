@@ -10,14 +10,15 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
+import type { StaffMember } from "@/types";
 import { dal } from "@/lib/db";
 import { computeSupervisionOverview, type ReflectiveSupervisionRecord, type StaffLite } from "@/lib/engines/supervision-engine";
 import { computeOfstedWorkforceEvidence, type DomainInput } from "@/lib/engines/ofsted-workforce-evidence-engine";
 import { todayStr } from "@/lib/utils";
 
 const SUPERVISEE_ROLES = new Set(["registered_manager", "deputy_manager", "team_leader", "residential_care_worker", "bank_staff"]);
-const staffName = (s: any) => s.full_name || [s.first_name, s.last_name].filter(Boolean).join(" ") || s.id;
-const iso = (d: any) => (d ? String(d).slice(0, 10) : null);
+const staffName = (s: StaffMember) => s.full_name || [s.first_name, s.last_name].filter(Boolean).join(" ") || s.id;
+const iso = (d: unknown) => (d ? String(d).slice(0, 10) : null);
 const pct = (n: number, d: number) => (d > 0 ? Math.round((n / d) * 100) : null);
 
 export async function GET() {

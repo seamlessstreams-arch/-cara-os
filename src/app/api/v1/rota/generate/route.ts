@@ -26,7 +26,7 @@ export async function POST(req: Request) {
       dal.staff.findAll(),
       dal.staffSicknessRecords.findAll(),
     ]);
-  let body: any = {};
+  let body: Record<string, unknown> = {};
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   try { body = __parsed.data; } catch { body = {}; }

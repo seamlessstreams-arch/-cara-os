@@ -34,7 +34,7 @@ export async function GET() {
     if (!v) return undefined;
     return typeof v === "string" && v.startsWith("staff_") ? getStaffName(v) : v;
   };
-  const iso = (v: any): string | undefined => (v ? String(v).slice(0, 10) : undefined);
+  const iso = (v: unknown): string | undefined => (v ? String(v).slice(0, 10) : undefined);
   const arr = (v: any): any[] => (Array.isArray(v) ? v : []);
 
   const actions: ActionInput[] = [];

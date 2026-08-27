@@ -10,6 +10,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
+import type { StaffMember } from "@/types";
 import { dal } from "@/lib/db";
 import { computeSupervisionOverview, type ReflectiveSupervisionRecord, type StaffLite } from "@/lib/engines/supervision-engine";
 import { computeWorkforceCommand, type WorkforceCommandInput } from "@/lib/engines/workforce-command-engine";
@@ -19,8 +20,8 @@ const SUPERVISEE_ROLES = new Set(["registered_manager", "deputy_manager", "team_
 const APPOINTED_STAGES = new Set(["appointed", "onboarding"]);
 const CLOSED_STAGES = new Set(["appointed", "onboarding", "unsuccessful", "withdrawn"]);
 const CLOSED_TASK = new Set(["completed", "cancelled", "closed", "done"]);
-const staffName = (s: any) => s.full_name || [s.first_name, s.last_name].filter(Boolean).join(" ") || s.id;
-const iso = (d: any) => (d ? String(d).slice(0, 10) : null);
+const staffName = (s: StaffMember) => s.full_name || [s.first_name, s.last_name].filter(Boolean).join(" ") || s.id;
+const iso = (d: unknown) => (d ? String(d).slice(0, 10) : null);
 
 async function fetchJson(baseUrl: string, route: string): Promise<any | null> {
   try {

@@ -11,6 +11,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
+import type { StaffMember } from "@/types";
 import { dal } from "@/lib/db";
 import { computeSupervisionOverview, type ReflectiveSupervisionRecord, type StaffLite } from "@/lib/engines/supervision-engine";
 import { computeRetentionRisk, type StaffSignalsInput } from "@/lib/engines/retention-risk-engine";
@@ -18,7 +19,7 @@ import { todayStr } from "@/lib/utils";
 
 const SUPERVISEE_ROLES = new Set(["registered_manager", "deputy_manager", "team_leader", "residential_care_worker", "bank_staff"]);
 
-function staffName(s: any): string {
+function staffName(s: StaffMember): string {
   return s.full_name || [s.first_name, s.last_name].filter(Boolean).join(" ") || s.id;
 }
 function iso(d: any): string | null {
