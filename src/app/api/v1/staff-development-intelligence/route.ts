@@ -23,7 +23,7 @@ export async function GET() {
   const [appraisalsList, competencyProfilesList, developmentPlansList, inductionRecordsList, qualificationsList, staffList] = await Promise.all([dal.appraisals.findAll(), dal.competencyProfiles.findAll(), dal.developmentPlans.findAll(), dal.inductionRecords.findAll(), dal.qualifications.findAll(), dal.staff.findAll()]);
 
   // ── Map staff ───────────────────────────────────────────────────────────
-  const staff: StaffInput[] = (staffList ?? []).map((s: any) => ({
+  const staff: StaffInput[] = (staffList ?? []).map((s) => ({
     id: s.id,
     name: s.full_name ?? `${s.first_name} ${s.last_name}`,
     role: s.job_title ?? s.role ?? "Staff",
@@ -32,12 +32,12 @@ export async function GET() {
   }));
 
   // ── Map appraisals ────────────────────────────────────────────────────
-  const appraisals: AppraisalInput[] = (appraisalsList ?? []).map((a: any) => ({
+  const appraisals: AppraisalInput[] = (appraisalsList ?? []).map((a) => ({
     id: a.id,
     staff_id: a.staff_id,
-    appraisal_type: a.appraisal_type,
+    appraisal_type: a.appraisal_type === "pip" ? "performance_improvement" : a.appraisal_type,
     appraisal_date: a.appraisal_date,
-    status: a.status,
+    status: a.status === "in_progress" ? "scheduled" : a.status,
     overall_rating: a.overall_rating ?? undefined,
     competency_scores: a.competency_scores ?? {},
     signed_by_staff: Boolean(a.signed_by_staff),
@@ -45,7 +45,7 @@ export async function GET() {
   }));
 
   // ── Map competency profiles ───────────────────────────────────────────
-  const competency_profiles: CompetencyProfileInput[] = (competencyProfilesList ?? []).map((p: any) => ({
+  const competency_profiles: CompetencyProfileInput[] = (competencyProfilesList ?? []).map((p) => ({
     id: p.id,
     staff_id: p.staff_id,
     current_stage: p.current_stage ?? "",
@@ -57,23 +57,23 @@ export async function GET() {
   }));
 
   // ── Map qualifications ────────────────────────────────────────────────
-  const qualifications: QualificationInput[] = (qualificationsList ?? []).map((q: any) => ({
+  const qualifications: QualificationInput[] = (qualificationsList ?? []).map((q) => ({
     id: q.id,
     staff_id: q.staff_id,
     qualification_name: q.qualification_name,
     level: q.level ?? undefined,
     mandatory: Boolean(q.mandatory),
-    status: q.status,
+    status: q.status === "exempt" ? "completed" : q.status,
     started_at: q.started_at ?? undefined,
     completed_at: q.completed_at ?? undefined,
     expiry_date: q.expiry_date ?? undefined,
   }));
 
   // ── Map inductions ────────────────────────────────────────────────────
-  const inductions: InductionInput[] = (inductionRecordsList ?? []).map((i: any) => {
+  const inductions: InductionInput[] = (inductionRecordsList ?? []).map((i) => {
     const items: any[] = i.items ?? [];
-    const completedItems = items.filter((item: any) => item.status === "completed" || item.status === "signed_off").length;
-    const overdueItems = items.filter((item: any) => item.status === "not_started" || item.status === "in_progress").length;
+    const completedItems = items.filter((item) => item.status === "completed" || item.status === "signed_off").length;
+    const overdueItems = items.filter((item) => item.status === "not_started" || item.status === "in_progress").length;
     return {
       id: i.id,
       staff_id: i.staff_id,
@@ -88,7 +88,7 @@ export async function GET() {
   });
 
   // ── Map development plans ─────────────────────────────────────────────
-  const development_plans: DevelopmentPlanInput[] = (developmentPlansList ?? []).map((dp: any) => {
+  const development_plans: DevelopmentPlanInput[] = (developmentPlansList ?? []).map((dp) => {
     const actions: any[] = dp.actions ?? [];
     return {
       id: dp.id,
@@ -98,7 +98,7 @@ export async function GET() {
       to_stage: dp.to_stage ?? "",
       status: dp.status as DevelopmentPlanInput["status"],
       total_actions: actions.length,
-      completed_actions: actions.filter((a: any) => a.completed).length,
+      completed_actions: actions.filter((a) => a.completed).length,
     };
   });
 

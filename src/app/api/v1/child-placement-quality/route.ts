@@ -60,8 +60,8 @@ export async function GET(request: NextRequest) {
 
   // ── Daily Logs ─────────────────────────────────────────────────────────
   const daily_logs: DailyLogInput[] = (dailyLogList ?? [])
-    .filter((l: any) => l.child_id === childId)
-    .map((l: any) => ({
+    .filter((l) => l.child_id === childId)
+    .map((l) => ({
       id: l.id,
       date: typeof l.date === "string" ? l.date.slice(0, 10) : l.date,
       entry_type: l.entry_type ?? "general",
@@ -72,8 +72,8 @@ export async function GET(request: NextRequest) {
 
   // ── Key Work Sessions ──────────────────────────────────────────────────
   const key_work_sessions: KeyWorkInput[] = (keyWorkingSessionsList ?? [])
-    .filter((k: any) => k.child_id === childId)
-    .map((k: any) => ({
+    .filter((k) => k.child_id === childId)
+    .map((k) => ({
       id: k.id,
       date: typeof k.date === "string" ? k.date.slice(0, 10) : k.date,
       child_engaged: k.mood_after != null && k.mood_before != null ? k.mood_after >= k.mood_before : true,

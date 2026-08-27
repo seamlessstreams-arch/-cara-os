@@ -24,11 +24,11 @@ export async function GET() {
   const lastReg44 = reg44Reports.length > 0
     ? [...reg44Reports].sort((a, b) => b.visit_date.localeCompare(a.visit_date))[0]
     : null;
-  const reg44Actions = store.reg44ActionRecords?.filter((a: any) => a.status !== "completed") ?? [];
+  const reg44Actions = store.reg44ActionRecords?.filter((a) => a.status !== "completed") ?? [];
 
   const reg45Evidence = store.reg45EvidenceQueue ?? [];
   const lastReg45Date = reg45Evidence.length > 0
-    ? [...reg45Evidence].sort((a: any, b: any) => (b.created_at ?? "").localeCompare(a.created_at ?? ""))[0]
+    ? [...reg45Evidence].sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""))[0]
     : null;
 
   const notifiable = store.notifiableEvents ?? [];
@@ -36,31 +36,31 @@ export async function GET() {
     (n) => n.ofsted_status === "pending",
   ).length;
   const quarterStart = `${today.slice(0, 4)}-${String(Math.floor((parseInt(today.slice(5, 7)) - 1) / 3) * 3 + 1).padStart(2, "0")}-01`;
-  const notificationsThisQ = notifiable.filter((n: any) => n.date >= quarterStart).length;
+  const notificationsThisQ = notifiable.filter((n) => n.date >= quarterStart).length;
 
   const selfEvalAreas = store.selfEvaluationAreas ?? [];
   const hasSEF = selfEvalAreas.length > 0;
   const sefLastUpdated = hasSEF
-    ? selfEvalAreas.reduce((latest: string, a: any) => {
+    ? selfEvalAreas.reduce((latest: string, a) => {
         const d = a.created_at ?? "";
         return d > latest ? d : latest;
       }, "")
     : null;
-  const sefActions = selfEvalAreas.flatMap((a: any) => a.actions ?? []);
-  const sefCompleted = sefActions.filter((a: any) => a.status === "completed").length;
+  const sefActions = selfEvalAreas.flatMap((a) => a.actions ?? []);
+  const sefCompleted = sefActions.filter((a) => a.status === "completed").length;
   // Null on empty (no actions to score) — an empty action plan is not 0% complete.
   const sefCompletionRate = sefActions.length > 0 ? Math.round((sefCompleted / sefActions.length) * 100) : null;
 
   const complaints = store.complaintOutcomeRecords ?? [];
-  const openComplaints = complaints.filter((c: any) => !c.date_resolved).length;
-  const complaintsThisQ = complaints.filter((c: any) => (c.complaint_date ?? c.created_at ?? "") >= quarterStart).length;
-  const resolvedComplaints = complaints.filter((c: any) => c.date_resolved && c.response_time_days);
+  const openComplaints = complaints.filter((c) => !c.date_resolved).length;
+  const complaintsThisQ = complaints.filter((c) => (c.complaint_date ?? c.created_at ?? "") >= quarterStart).length;
+  const resolvedComplaints = complaints.filter((c) => c.date_resolved && c.response_time_days);
   // Null when no complaints have been RESOLVED — "0 days to resolve" reads as
   // instant/perfect. above() in the engine treats null as "no signal".
   const avgResolution = resolvedComplaints.length > 0
-    ? Math.round(resolvedComplaints.reduce((s: number, c: any) => s + (c.response_time_days ?? 0), 0) / resolvedComplaints.length)
+    ? Math.round(resolvedComplaints.reduce((s: number, c) => s + (c.response_time_days ?? 0), 0) / resolvedComplaints.length)
     : null;
-  const escalated = complaints.filter((c: any) => c.ofsted_notified || c.escalated).length;
+  const escalated = complaints.filter((c) => c.ofsted_notified || c.escalated).length;
 
   const dbsCompliant = staff.filter((s) => s.dbs_number && s.dbs_issue_date).length;
   const dbsRate = rate(dbsCompliant, staff.length);
@@ -69,8 +69,8 @@ export async function GET() {
   const supervisions = store.supervisions ?? [];
   const supervisionsDue = staff.filter((s) => {
     const lastSup = supervisions
-      .filter((sv: any) => sv.staff_id === s.id && sv.status === "completed")
-      .sort((a: any, b: any) => b.actual_date?.localeCompare(a.actual_date ?? "") ?? 0)[0];
+      .filter((sv) => sv.staff_id === s.id && sv.status === "completed")
+      .sort((a, b) => b.actual_date?.localeCompare(a.actual_date ?? "") ?? 0)[0];
     if (!lastSup) return true;
     const lastDate = (lastSup as any).actual_date ?? "";
     const daysSince = Math.floor((new Date(today).getTime() - new Date(lastDate).getTime()) / 86_400_000);
@@ -79,19 +79,19 @@ export async function GET() {
   const supRate = rate(staff.length - supervisionsDue.length, staff.length);
 
   const training = store.trainingRecords ?? [];
-  const mandatoryTraining = training.filter((t: any) => t.is_mandatory);
+  const mandatoryTraining = training.filter((t) => t.is_mandatory);
   const completedTraining = mandatoryTraining.filter((t) => t.status === "compliant").length;
   const trainingRate = rate(completedTraining, mandatoryTraining.length);
   const trainingOverdue = mandatoryTraining.filter((t) => t.status === "expired").length;
 
   const careForms = store.careForms ?? [];
   const currentPlans = children.filter((c) =>
-    careForms.some((f: any) => f.linked_child_id === c.id && (f.status === "active" || f.status === "approved")),
+    careForms.some((f) => f.linked_child_id === c.id && (f.status === "active" || f.status === "approved")),
   ).length;
 
   const riskAssessments = store.riskAssessments ?? [];
   const childrenWithRA = children.filter((c) =>
-    riskAssessments.some((r: any) => r.child_id === c.id && r.status === "current"),
+    riskAssessments.some((r) => r.child_id === c.id && r.status === "current"),
   ).length;
 
   const lacReviews = store.lacReviews ?? [];
@@ -107,24 +107,24 @@ export async function GET() {
 
   const healthAssessments = store.healthAssessments ?? [];
   const childrenWithHealth = children.filter((c) =>
-    healthAssessments.some((h: any) => h.child_id === c.id),
+    healthAssessments.some((h) => h.child_id === c.id),
   ).length;
 
   const pepRecords = store.educationRecords?.filter((r) => r.record_type === "pep_meeting") ?? [];
   const pepCompletion = rateOf(
-    children.filter((c) => pepRecords.some((p: any) => p.child_id === c.id)),
+    children.filter((c) => pepRecords.some((p) => p.child_id === c.id)),
     children,
   );
 
   const missingEpisodes = store.missingEpisodes ?? [];
-  const missingThisQ = missingEpisodes.filter((m: any) => (m.date_missing ?? "") >= quarterStart).length;
-  const returnInterviews = missingEpisodes.filter((m: any) => m.status !== "active");
-  const riCompleted = returnInterviews.filter((m: any) => m.return_interview_completed).length;
+  const missingThisQ = missingEpisodes.filter((m) => (m.date_missing ?? "") >= quarterStart).length;
+  const returnInterviews = missingEpisodes.filter((m) => m.status !== "active");
+  const riCompleted = returnInterviews.filter((m) => m.return_interview_completed).length;
   const riRate = rate(riCompleted, returnInterviews.length);
 
   const exploitationScreenings = store.exploitationScreenings ?? [];
   const currentScreenings = children.filter((c) =>
-    exploitationScreenings.some((e: any) => e.child_id === c.id),
+    exploitationScreenings.some((e) => e.child_id === c.id),
   ).length;
 
   const safeguardingReferrals = 0; // derived from incidents/disclosures
@@ -150,7 +150,7 @@ export async function GET() {
       report_submitted_on_time: true,
     },
     notifiable_events: {
-      pending_notifications: notifiable.filter((n: any) => n.ofsted_status === "pending").length,
+      pending_notifications: notifiable.filter((n) => n.ofsted_status === "pending").length,
       overdue_notifications: overdueNotifications,
       total_this_quarter: notificationsThisQ,
     },
@@ -213,10 +213,10 @@ function buildDomainMetrics(store: Pick<ReturnType<typeof getStore>, "behaviourL
 
   // ── Safeguarding: are incidents being kept on top of? ───────────────────────
   const incidents = store.incidents ?? [];
-  const openIncidents = incidents.filter((i: any) => i.status !== "closed");
-  const criticalIncidents = openIncidents.filter((i: any) => i.severity === "critical").length;
-  const highIncidents = openIncidents.filter((i: any) => i.severity === "high").length;
-  const staleIncidents = openIncidents.filter((i: any) => daysSince(i.date) > 7);
+  const openIncidents = incidents.filter((i) => i.status !== "closed");
+  const criticalIncidents = openIncidents.filter((i) => i.severity === "critical").length;
+  const highIncidents = openIncidents.filter((i) => i.severity === "high").length;
+  const staleIncidents = openIncidents.filter((i) => daysSince(i.date) > 7);
   metrics.push({
     domain: "safeguarding",
     domain_label: "Safeguarding",
@@ -233,7 +233,7 @@ function buildDomainMetrics(store: Pick<ReturnType<typeof getStore>, "behaviourL
   // before, what was tried, and what happened after.
   const behaviourLog = store.behaviourLog ?? [];
   const fullyRecorded = behaviourLog.filter(
-    (b: any) => b.antecedent && b.behaviour && b.consequence && b.strategy_used && b.outcome,
+    (b) => b.antecedent && b.behaviour && b.consequence && b.strategy_used && b.outcome,
   );
   metrics.push({
     domain: "behaviour",
@@ -248,8 +248,8 @@ function buildDomainMetrics(store: Pick<ReturnType<typeof getStore>, "behaviourL
 
   // ── Education: children with a PEP on file ─────────────────────────────────
   const educationRecords = store.educationRecords ?? [];
-  const currentChildren = store.youngPeople?.filter((yp: any) => yp.status === "current") ?? [];
-  const childrenWithPep = currentChildren.filter((c: any) =>
+  const currentChildren = store.youngPeople?.filter((yp) => yp.status === "current") ?? [];
+  const childrenWithPep = currentChildren.filter((c) =>
     educationRecords.some((r) => r.child_id === c.id && r.record_type === "pep_meeting"),
   );
   metrics.push({
@@ -265,12 +265,12 @@ function buildDomainMetrics(store: Pick<ReturnType<typeof getStore>, "behaviourL
 
   // ── Medication: doses given as scheduled ───────────────────────────────────
   const medAdmin = store.medicationAdministrations ?? [];
-  const recentAdmin = medAdmin.filter((a: any) => {
+  const recentAdmin = medAdmin.filter((a) => {
     const d = daysSince(a.scheduled_time);
     return d >= 0 && d <= 7;
   });
   const given = recentAdmin.filter((a) => a.status === "given").length;
-  const missed = recentAdmin.filter((a: any) => a.status === "missed");
+  const missed = recentAdmin.filter((a) => a.status === "missed");
   metrics.push({
     domain: "medication",
     domain_label: "Medication Management",
@@ -286,14 +286,14 @@ function buildDomainMetrics(store: Pick<ReturnType<typeof getStore>, "behaviourL
   });
 
   // ── Workforce: the staff-file checks that actually exist ───────────────────
-  const staff = store.staff?.filter((s: any) => s.is_active) ?? [];
+  const staff = store.staff?.filter((s) => s.is_active) ?? [];
   const supervisions = store.supervisions ?? [];
   const training = store.trainingRecords ?? [];
-  const mandatory = training.filter((t: any) => t.is_mandatory);
-  const dbsOk = staff.filter((s: any) => s.dbs_number && s.dbs_issue_date);
-  const supervisedRecently = staff.filter((s: any) =>
+  const mandatory = training.filter((t) => t.is_mandatory);
+  const dbsOk = staff.filter((s) => s.dbs_number && s.dbs_issue_date);
+  const supervisedRecently = staff.filter((s) =>
     supervisions.some(
-      (sv: any) => sv.staff_id === s.id && sv.status === "completed" && daysSince(sv.actual_date ?? "") <= 42,
+      (sv) => sv.staff_id === s.id && sv.status === "completed" && daysSince(sv.actual_date ?? "") <= 42,
     ),
   );
   const trainingCurrent = mandatory.filter((t) => t.status === "compliant");
@@ -316,9 +316,9 @@ function buildDomainMetrics(store: Pick<ReturnType<typeof getStore>, "behaviourL
   // ── Quality assurance: the audits' own scores ──────────────────────────────
   const qaAudits = store.qaAuditRecords ?? [];
   const qaScores = qaAudits
-    .map((a: any) => (typeof a.score === "number" ? a.score : null))
+    .map((a) => (typeof a.score === "number" ? a.score : null))
     .filter((n: number | null) => n !== null);
-  const openQaActions = qaAudits.flatMap((a: any) => a.actions ?? []).filter((a: any) => a.status !== "completed");
+  const openQaActions = qaAudits.flatMap((a) => a.actions ?? []).filter((a) => a.status !== "completed");
   metrics.push({
     domain: "quality_assurance",
     domain_label: "Quality Assurance",

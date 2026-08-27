@@ -34,7 +34,7 @@ export async function GET(_request: NextRequest) {
   }));
 
   // ── Risk Assessments ──────────────────────────────────────────────────
-  const risk_assessments: RiskAssessmentInput[] = (riskAssessmentsList ?? []).map((ra: any) => {
+  const risk_assessments: RiskAssessmentInput[] = (riskAssessmentsList ?? []).map((ra) => {
     const child = youngPeopleList.find((yp) => yp.id === ra.child_id);
     const childName = child
       ? `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim()
@@ -53,7 +53,7 @@ export async function GET(_request: NextRequest) {
       has_child_views: !!(ra.child_views),
       has_contingency_plan: !!(ra.contingency_plan),
       linked_incidents_count: (ra.linked_incidents ?? []).length,
-      mitigations: (ra.mitigations ?? []).map((m: any) => ({
+      mitigations: (ra.mitigations ?? []).map((m) => ({
         strategy: m.strategy ?? "",
         effectiveness: m.effectiveness ?? "not_assessed",
       })),
@@ -61,7 +61,7 @@ export async function GET(_request: NextRequest) {
   });
 
   // ── Exploitation Screenings ───────────────────────────────────────────
-  const exploitation_screenings: ExploitationScreeningInput[] = (exploitationScreeningsList ?? []).map((es: any) => {
+  const exploitation_screenings: ExploitationScreeningInput[] = (exploitationScreeningsList ?? []).map((es) => {
     const child = youngPeopleList.find((yp) => yp.id === es.child_id);
     const childName = child
       ? `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim()
@@ -83,7 +83,7 @@ export async function GET(_request: NextRequest) {
   });
 
   // ── Missing Episodes ──────────────────────────────────────────────────
-  const missing_episodes: MissingEpisodeInput[] = (missingEpisodesList ?? []).map((m: any) => {
+  const missing_episodes: MissingEpisodeInput[] = (missingEpisodesList ?? []).map((m) => {
     const child = youngPeopleList.find((yp) => yp.id === m.child_id);
     const childName = child
       ? `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim()
@@ -102,7 +102,7 @@ export async function GET(_request: NextRequest) {
   });
 
   // ── Incidents ─────────────────────────────────────────────────────────
-  const incident_entries: IncidentInput[] = (incidentsList ?? []).map((i: any) => {
+  const incident_entries: IncidentInput[] = (incidentsList ?? []).map((i) => {
     const child = youngPeopleList.find((yp) => yp.id === i.child_id);
     const childName = child
       ? `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim()
@@ -121,7 +121,7 @@ export async function GET(_request: NextRequest) {
   });
 
   // ── Restraints ────────────────────────────────────────────────────────
-  const restraint_entries: RestraintInput[] = (restraintsList ?? []).map((r: any) => {
+  const restraint_entries: RestraintInput[] = (restraintsList ?? []).map((r) => {
     const child = youngPeopleList.find((yp) => yp.id === r.child_id);
     const childName = child
       ? `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim()
@@ -153,7 +153,7 @@ export async function GET(_request: NextRequest) {
     serious: "significant",
     critical: "critical",
   };
-  const significant_events: SignificantEventInput[] = (significantEventsList ?? []).map((se: any) => {
+  const significant_events: SignificantEventInput[] = (significantEventsList ?? []).map((se) => {
     const child = youngPeopleList.find((yp) => yp.id === se.child_id);
     const childName = child
       ? `${child.first_name ?? ""} ${child.last_name ?? ""}`.trim()

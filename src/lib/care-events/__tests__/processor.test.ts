@@ -913,7 +913,7 @@ describe("Regulation 40 triage", () => {
       const event = makeEvent({ category: "missing_episode", title: "Alex missing from home", content: "Alex left without permission at 19:00.", event_date: "2026-06-02", event_time: "19:00", is_safeguarding: true });
       processCareEvent(event);
 
-      const episode = getStore().missingEpisodes.find((m: any) => m.care_event_id === event.id);
+      const episode = getStore().missingEpisodes.find((m) => (m as never as { care_event_id?: string }).care_event_id === event.id);
       expect(episode).toBeDefined();
 
       const live = buildLiveEventStream(getStore());
@@ -940,13 +940,13 @@ describe("Regulation 40 triage", () => {
       const event = makeEvent({ category: "physical_intervention", title: "PI on Alex", content: "Two-person standing hold after escalation in the lounge.", event_date: "2026-06-02", event_time: "17:00", child_id: "yp_alex" });
       processCareEvent(event);
       const live = buildLiveEventStream(getStore());
-      const restraint = getStore().restraints.find((r: any) => r.care_event_id === event.id);
+      const restraint = getStore().restraints.find((r) => (r as never as { care_event_id?: string }).care_event_id === event.id);
       expect(restraint).toBeDefined();
       const resEv = live.events.find((e) => e.id === `evt_res_${restraint!.id}`);
       expect(resEv).toBeDefined();
       expect(resEv!.eventType).toBe("physical_intervention");
       expect(resEv!.structuredTags).toContain("spine_capture");
-      const incident = getStore().incidents.find((i: any) => i.care_event_id === event.id);
+      const incident = getStore().incidents.find((i) => (i as never as { care_event_id?: string }).care_event_id === event.id);
       if (incident) {
         const incEv = live.events.find((e) => e.id === `evt_inc_${incident.id}`);
         expect(incEv).toBeDefined();
@@ -958,7 +958,7 @@ describe("Regulation 40 triage", () => {
       getStore().cornerstoneEvents.length = 0;
       const event = makeEvent({ category: "education", title: "School attendance concern", content: "Missed lessons; teacher raised an attendance concern.", event_date: "2026-06-02", child_id: "yp_jordan" });
       processCareEvent(event);
-      const rec = getStore().educationRecords.find((r: any) => r.care_event_id === event.id);
+      const rec = getStore().educationRecords.find((r) => (r as never as { care_event_id?: string }).care_event_id === event.id);
       expect(rec).toBeDefined();
       const ev = buildLiveEventStream(getStore()).events.find((e) => e.id === `evt_edu_${rec!.id}`);
       expect(ev).toBeDefined();

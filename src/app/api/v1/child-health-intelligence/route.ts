@@ -41,8 +41,8 @@ export async function GET(request: NextRequest) {
 
   // ── Medications ───────────────────────────────────────────────────────
   const medications: MedicationInput[] = (medicationsList ?? [])
-    .filter((m: any) => m.young_person_id === childId || m.child_id === childId)
-    .map((m: any) => ({
+    .filter((m) => m.young_person_id === childId || m.child_id === childId)
+    .map((m) => ({
       id: m.id,
       name: m.name ?? m.medication_name ?? "Unknown",
       type: m.type ?? m.medication_type ?? "regular",
@@ -57,8 +57,8 @@ export async function GET(request: NextRequest) {
 
   // ── Medication Administrations ────────────────────────────────────────
   const medication_administrations: MedicationAdminInput[] = (medicationAdministrationsList ?? [])
-    .filter((a: any) => a.child_id === childId || medications.some((m) => m.id === a.medication_id))
-    .map((a: any) => ({
+    .filter((a) => a.child_id === childId || medications.some((m) => m.id === a.medication_id))
+    .map((a) => ({
       id: a.id,
       medication_id: a.medication_id ?? "",
       date: (a.date ?? a.scheduled_time ?? a.actual_time ?? "").slice(0, 10),

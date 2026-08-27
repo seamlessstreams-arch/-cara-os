@@ -34,19 +34,19 @@ export async function GET() {
   const [lacReviewsList, multiAgencyMeetingsList, professionalNetworkContactsList, staffList, youngPeopleList] = await Promise.all([dal.lacReviews.findAll(), dal.multiAgencyMeetings.findAll(), dal.professionalNetworkContacts.findAll(), dal.staff.findAll(), dal.youngPeople.findAll()]);
 
   // ── Map children ────────────────────────────���────────────────────────────
-  const children: ChildRef[] = (youngPeopleList ?? []).map((yp: any) => ({
+  const children: ChildRef[] = (youngPeopleList ?? []).map((yp) => ({
     id: yp.id,
     name: yp.preferred_name ?? yp.first_name ?? "Unknown",
   }));
 
   // ── Map staff ─────────���──────────────────────────────��───────────────────
-  const staff: StaffRef[] = (staffList ?? []).map((s: any) => ({
+  const staff: StaffRef[] = (staffList ?? []).map((s) => ({
     id: s.id,
     name: s.name ?? `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim(),
   }));
 
   // ── Map LAC reviews ──────────��───────────────────────────────────��───────
-  const lacReviews: LACReviewInput[] = (lacReviewsList ?? []).map((r: any) => ({
+  const lacReviews: LACReviewInput[] = (lacReviewsList ?? []).map((r) => ({
     id: r.id,
     child_id: r.child_id,
     review_type: r.review_type ?? "subsequent",
@@ -58,12 +58,12 @@ export async function GET() {
     // silenced the report-not-submitted alert for every review)
     home_report_submitted: null,
     care_plan_agreed: r.care_plan_updated ?? false,
-    actions: (r.actions_agreed ?? []).map((a: any) => (typeof a === "string" ? a : a.action ?? "")),
+    actions: (r.actions_agreed ?? []).map((a) => (typeof a === "string" ? a : a.action ?? "")),
     next_review_due: r.next_review_date ?? "",
   }));
 
   // ── Map professional contacts ────────────────────────────────────────────
-  const professionalContacts: ProfessionalContactInput[] = (professionalNetworkContactsList ?? []).map((p: any) => ({
+  const professionalContacts: ProfessionalContactInput[] = (professionalNetworkContactsList ?? []).map((p) => ({
     id: p.id,
     child_id: p.child_id,
     professional_role: p.role ?? "other",
@@ -74,7 +74,7 @@ export async function GET() {
   }));
 
   // ── Map multi-agency meetings ────────��───────────────────────────────────
-  const meetings: MultiAgencyMeetingInput[] = (multiAgencyMeetingsList ?? []).map((m: any) => {
+  const meetings: MultiAgencyMeetingInput[] = (multiAgencyMeetingsList ?? []).map((m) => {
     const actionItems = m.action_items ?? [];
     const actionsCount = actionItems.length;
     const actionsCompleted = actionItems.filter((a: { status?: string }) => a.status === "completed").length;
@@ -83,7 +83,7 @@ export async function GET() {
       meeting_type: m.meeting_type ?? "professionals_meeting",
       date: m.date,
       child_id: m.child_id,
-      attendees: (m.attendees ?? []).map((a: any) => (typeof a === "string" ? a : a.name ?? "")),
+      attendees: (m.attendees ?? []).map((a) => (typeof a === "string" ? a : a.name ?? "")),
       actions_count: actionsCount,
       actions_completed: actionsCompleted,
       home_report_submitted: null,

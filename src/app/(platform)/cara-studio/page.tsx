@@ -240,7 +240,7 @@ function CaraStudioContent() {
 
   // ── Real children in placement — so generation grounds in THEIR records ────
   const ypQuery = useYoungPeople();
-  const children = (ypQuery.data?.data ?? []).map((yp: any) => ({
+  const children = (ypQuery.data?.data ?? []).map((yp) => ({
     id: yp.id,
     name: yp.preferred_name || yp.first_name || "Child",
   }));
