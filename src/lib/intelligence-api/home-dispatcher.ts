@@ -26105,7 +26105,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const today = todayStr();
   
     // ── Behaviour Log ───────────────────────────────────────────
-    const behaviour_log: BehaviourLogInput__therapeutic_climate[] = ((store.behaviourLog ?? []) as any[])
+    const behaviour_log: BehaviourLogInput__therapeutic_climate[] = (((store.behaviourLog ?? [])))
       .map((b) => ({
         id: b.id ?? "",
         child_id: b.child_id ?? "",
@@ -26115,7 +26115,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       }));
   
     // ── Restraints ──────────────────────────────────────────────
-    const restraints: RestraintInput__therapeutic_climate[] = ((store.restraints ?? []) as any[])
+    const restraints: RestraintInput__therapeutic_climate[] = (((store.restraints ?? [])))
       .map((r) => ({
         id: r.id ?? "",
         child_id: r.child_id ?? "",
@@ -26128,7 +26128,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       }));
   
     // ── Incidents ───────────────────────────────────────────────
-    const incidents: ClimateIncidentInput[] = ((store.incidents ?? []) as any[])
+    const incidents: ClimateIncidentInput[] = (((store.incidents ?? [])))
       .map((inc) => ({
         id: inc.id ?? "",
         child_id: inc.child_id ?? "",
@@ -26137,7 +26137,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       }));
   
     // ── Missing Episodes ────────────────────────────────────────
-    const missing_episodes: ClimateMissingInput[] = ((store.missingEpisodes ?? []) as any[])
+    const missing_episodes: ClimateMissingInput[] = (((store.missingEpisodes ?? [])))
       .map((ep) => ({
         id: ep.id ?? "",
         child_id: ep.child_id ?? "",
@@ -26167,7 +26167,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const store = getStore();
       const today = todayStr();
   
-      const yp = (store.youngPeople ?? []) as any[];
+      const yp = ((store.youngPeople ?? []));
       const total_children = yp.filter((c) => c.status === "current").length;
   
       const rawTherapySessions = optionalCollection(store, "therapySessionRecords");
@@ -26304,7 +26304,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const today = todayStr();
   
     // ── Behaviour Map Entries ──────────────────────────────────────────
-    const behaviour_map_entries: BehaviourMapInput[] = (store.behaviourMapEntries as any[]).map((e) => ({
+    const behaviour_map_entries: BehaviourMapInput[] = ((store.behaviourMapEntries)).map((e) => ({
       id: e.id,
       child_id: e.child_id,
       date: (e.date ?? "").toString().slice(0, 10),
@@ -26315,7 +26315,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     }));
   
     // ── Sensory Profiles ───────────────────────────────────────────────
-    const sensory_profiles: SensoryProfileInput__therapeutic_progress[] = (store.sensoryProfileRecords as any[]).map((p) => ({
+    const sensory_profiles: SensoryProfileInput__therapeutic_progress[] = ((store.sensoryProfileRecords)).map((p) => ({
       id: p.id,
       child_id: p.child_id,
       assessment_date: (p.assessment_date ?? "").toString().slice(0, 10),
@@ -26327,7 +26327,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     }));
   
     // ── Sleep Assessments ──────────────────────────────────────────────
-    const sleep_assessments: SleepAssessmentInput__therapeutic_progress[] = (store.sleepAssessmentRecords as any[]).map((a) => ({
+    const sleep_assessments: SleepAssessmentInput__therapeutic_progress[] = ((store.sleepAssessmentRecords)).map((a) => ({
       id: a.id,
       child_id: a.child_id,
       assessment_date: (a.assessment_date ?? "").toString().slice(0, 10),
@@ -26340,7 +26340,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     }));
   
     // ── Emotional Vocabulary Records ───────────────────────────────────
-    const emotional_vocab_records: EmotionalVocabInput[] = (store.emotionalVocabRecords as any[]).map((r) => ({
+    const emotional_vocab_records: EmotionalVocabInput[] = ((store.emotionalVocabRecords)).map((r) => ({
       id: r.id,
       child_id: r.child_id,
       recorded_date: (r.recorded_date ?? "").toString().slice(0, 10),
@@ -26352,7 +26352,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     }));
   
     // ── Bereavement Records ────────────────────────────────────────────
-    const bereavement_records: BereavementInput[] = (store.bereavementRecords as any[]).map((r) => ({
+    const bereavement_records: BereavementInput[] = ((store.bereavementRecords)).map((r) => ({
       id: r.id,
       child_id: r.child_id,
       record_date: (r.record_date ?? "").toString().slice(0, 10),
@@ -26365,7 +26365,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     }));
   
     // ── Attachment Profiles ────────────────────────────────────────────
-    const attachment_profiles: AttachmentProfileInput__therapeutic_progress[] = (store.attachmentProfiles as any[]).map((p) => ({
+    const attachment_profiles: AttachmentProfileInput__therapeutic_progress[] = ((store.attachmentProfiles)).map((p) => ({
       id: p.id,
       child_id: p.child_id,
       assessment_date: (p.assessment_date ?? "").toString().slice(0, 10),
@@ -26378,7 +26378,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     }));
   
     // ── Self-Soothing Toolkits ─────────────────────────────────────────
-    const self_soothing_toolkits: SelfSoothingToolkitInput[] = (store.selfSoothingToolkits as any[]).map((t) => ({
+    const self_soothing_toolkits: SelfSoothingToolkitInput[] = ((store.selfSoothingToolkits)).map((t) => ({
       id: t.id,
       child_id: t.child_id,
       last_updated: (t.last_updated ?? "").toString().slice(0, 10),
@@ -26417,38 +26417,38 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const today = todayStr();
   
     // Therapeutic child impact → TherapeuticImpactInput[]
-    const rawImpact = (store.therapeuticChildImpact as any[] ?? []);
+    const rawImpact = ((store.therapeuticChildImpact) ?? []);
     // Mapped to the engine's REAL interfaces (was silent drift: emitted counts
     // and dates the engine never reads; its booleans arrived undefined).
     const impacts: TherapeuticImpactInput[] = rawImpact.map((t) => ({
       id: t.id ?? "",
       child_id: t.child_id ?? "",
-      has_key_outcomes: ((t.keyOutcomes ?? []) as any[]).length > 0,
+      has_key_outcomes: (((t.keyOutcomes ?? []))).length > 0,
       has_evidence_of_progress: !!(t.evidenceOfProgress),
-      model_applications_count: ((t.modelApplication ?? []) as any[]).length,
+      model_applications_count: (((t.modelApplication ?? []))).length,
     }));
 
     // Wellbeing pulse survey records → WellbeingPulseInput[]
-    const rawPulse = (store.wellbeingPulseSurveyRecords as any[] ?? []);
+    const rawPulse = ((store.wellbeingPulseSurveyRecords) ?? []);
     const pulses: WellbeingPulseInput[] = rawPulse.map((w) => ({
       id: w.id ?? "",
       child_id: w.child_id ?? "",
       date: (w.date ?? "").toString().slice(0, 10),
       overall_score: w.overall_score ?? 0,
-      trend: w.trend ?? w.trend_vs_last ?? "stable",
+      trend: w.trend_vs_last ?? "stable",
       follow_up_needed: !!(w.follow_up_needed),
-      follow_up_actioned: !!(w.follow_up_actioned ?? ((w.actions_arising ?? []) as any[]).length > 0),
+      follow_up_actioned: (w.actions_arising?.length ?? 0) > 0,
     }));
 
     // Self-soothing toolkits → SelfSoothingInput[]
-    const rawSoothing = (store.selfSoothingToolkits as any[] ?? []);
+    const rawSoothing = ((store.selfSoothingToolkits) ?? []);
     const toolkits: SelfSoothingInput[] = rawSoothing.map((s) => {
       const totalStrategies =
-        ((s.sensory_strategies ?? []) as any[]).length +
-        ((s.breathing_strategies ?? []) as any[]).length +
-        ((s.movement_strategies ?? []) as any[]).length +
-        ((s.distraction_strategies ?? []) as any[]).length +
-        ((s.co_regulation_strategies ?? []) as any[]).length;
+        (((s.sensory_strategies ?? []))).length +
+        (((s.breathing_strategies ?? []))).length +
+        (((s.movement_strategies ?? []))).length +
+        (((s.distraction_strategies ?? []))).length +
+        (((s.co_regulation_strategies ?? []))).length;
       const reviewedRecently = (() => {
         const d = (s.last_updated ?? s.review_date ?? "").toString().slice(0, 10);
         if (!d) return false;
@@ -26459,26 +26459,26 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         id: s.id ?? "",
         child_id: s.child_id ?? "",
         strategies_count: totalStrategies,
-        child_contributed: !!(s.child_contributed ?? s.child_chose_all),
+        child_contributed: !!s.child_chose_all,
         recently_reviewed: reviewedRecently,
       };
     });
 
     // Grief records → GriefSupportInput[]
-    const rawGrief = (store.griefRecords as any[] ?? []);
+    const rawGrief = ((store.griefRecords) ?? []);
     const grief_records: GriefSupportInput[] = rawGrief.map((g) => ({
       id: g.id ?? "",
       child_id: g.child_id ?? "",
-      has_external_support: ((g.external_support_in_place ?? []) as any[]).length > 0,
-      has_home_support: ((g.home_based_support ?? []) as any[]).length > 0,
+      has_external_support: (((g.external_support_in_place ?? []))).length > 0,
+      has_home_support: (((g.home_based_support ?? []))).length > 0,
       has_commemoration_activities:
-        ((g.traditions_and_rituals ?? []) as any[]).length > 0 || !!(g.anniversary_acknowledgement),
+        (((g.traditions_and_rituals ?? []))).length > 0 || !!(g.anniversary_acknowledgement),
       key_worker_involved: !!(g.key_worker_involvement),
     }));
   
     const result = computeTherapeuticWellbeingImpact({
       today,
-      total_children: (children as any[]).length,
+      total_children: ((children)).length,
       therapeutic_impacts: impacts,
       wellbeing_pulses: pulses,
       self_soothing: toolkits,
@@ -26495,31 +26495,35 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const store = getStore();
       const today = todayStr();
   
-      const yp = (store.youngPeople ?? []) as any[];
+      const yp = ((store.youngPeople ?? []));
       const total_children = yp.filter((c) => c.status === "current").length;
   
-      const rawTransitionPlanning = (store.transitionPlanningRecords ?? []) as any[];
+      const rawTransitionPlanning = ((store.transitionPlanningRecords ?? []));
       const transition_planning_records: TransitionPlanningInput[] = rawTransitionPlanning.map((t) => ({
         // The seed records the transition area, a goal, a key worker, progress notes,
         // a status and a review date — derive the engine's fields from those.
         id: t.id ?? "",
         child_id: t.child_id ?? "",
-        plan_date: (t.plan_date ?? t.start_date ?? today).toString(),
-        transition_type: t.transition_type ?? t.area ?? "placement_move",
-        goals_set: t.goals_set ?? (typeof t.goal === "string" && t.goal.trim().length > 0),
+        plan_date: (t.start_date ?? today).toString(),
+        transition_type:
+        t.area === "education_employment" ? "education"
+        : t.area === "independent_living" || t.area === "financial" ? "independence"
+        : t.area === "housing" ? "step_down"
+        : "placement_move", // health_wellbeing / relationships / legal_rights / identity
+        goals_set: typeof t.goal === "string" && t.goal.trim().length > 0,
         // Progress notes document the child's lived experience/voice within the transition.
-        child_voice_captured: t.child_voice_captured ?? (typeof t.progress === "string" && t.progress.trim().length > 0),
+        child_voice_captured: typeof t.progress === "string" && t.progress.trim().length > 0,
         // Transition planning for a looked-after child sits within a multi-agency framework
         // (SW / personal adviser / education / health — evidenced in the pathway plans).
-        multi_agency_involved: t.multi_agency_involved ?? true,
-        key_worker_assigned: t.key_worker_assigned ?? !!t.key_worker,
-        reviewed: t.reviewed ?? (typeof t.review_date === "string" && t.review_date.length > 0),
-        next_review_date: (t.next_review_date ?? t.review_date ?? "").toString(),
-        active: t.active ?? !["achieved", "completed", "closed", "cancelled"].includes(t.status ?? ""),
+        multi_agency_involved: false, // agency involvement is not recorded on the plan
+        key_worker_assigned: !!t.key_worker,
+        reviewed: typeof t.review_date === "string" && t.review_date.length > 0,
+        next_review_date: (t.review_date ?? "").toString(),
+        active: !["achieved", "completed", "closed", "cancelled"].includes(t.status ?? ""),
         created_at: (t.created_at ?? today).toString(),
       }));
   
-      const rawPathwayPlans = (store.pathwayPlans ?? []) as any[];
+      const rawPathwayPlans = ((store.pathwayPlans ?? []));
       const hasStr = (v: any) => typeof v === "string" && v.trim().length > 0;
       const hasArr = (v: any) => Array.isArray(v) && v.length > 0;
       const pathway_plans: PathwayPlanInput__transition_leaving_care_readiness[] = rawPathwayPlans.map((p) => ({
@@ -26528,34 +26532,34 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         // support_network[], personal_advisor, last_review_date, status).
         id: p.id ?? "",
         child_id: p.child_id ?? "",
-        plan_date: (p.plan_date ?? p.created_at ?? today).toString(),
-        accommodation_plan: p.accommodation_plan ?? hasStr(p.accommodation),
-        education_employment_plan: p.education_employment_plan ?? hasStr(p.education_employment_training),
-        financial_plan: p.financial_plan ?? hasArr(p.financial_support),
-        health_plan: p.health_plan ?? hasArr(p.health_needs),
-        support_network_identified: p.support_network_identified ?? hasArr(p.support_network),
-        personal_advisor_assigned: p.personal_advisor_assigned ?? hasStr(p.personal_advisor),
-        last_reviewed: (p.last_reviewed ?? p.last_review_date ?? "").toString(),
-        current: p.current ?? (typeof p.status === "string" && p.status.startsWith("active")),
+        plan_date: (p.created_at ?? today).toString(),
+        accommodation_plan: hasStr(p.accommodation),
+        education_employment_plan: hasStr(p.education_employment_training),
+        financial_plan: hasArr(p.financial_support),
+        health_plan: hasArr(p.health_needs),
+        support_network_identified: hasArr(p.support_network),
+        personal_advisor_assigned: hasStr(p.personal_advisor),
+        last_reviewed: (p.last_review_date ?? "").toString(),
+        current: typeof p.status === "string" && p.status.startsWith("active"),
         created_at: (p.created_at ?? today).toString(),
       }));
   
-      const rawLeavingCarePackages = (store.leavingCarePackages ?? []) as any[];
+      const rawLeavingCarePackages = ((store.leavingCarePackages ?? []));
       const leaving_care_packages: LeavingCarePackageInput__transition_leaving_care_readiness[] = rawLeavingCarePackages.map((l) => ({
         id: l.id ?? "",
         child_id: l.child_id ?? "",
-        package_date: (l.package_date ?? today).toString(),
-        housing_arranged: !!l.housing_arranged,
-        financial_support_confirmed: !!l.financial_support_confirmed,
-        education_training_plan: !!l.education_training_plan,
-        health_passport_provided: !!l.health_passport_provided,
-        emotional_support_plan: !!l.emotional_support_plan,
-        life_skills_assessed: !!l.life_skills_assessed,
-        documentation_complete: !!l.documentation_complete,
+        package_date: (l.reviewed_date ?? today).toString(),
+        housing_arranged: !!(l.housing_pathway && l.housing_pathway.trim()),
+        financial_support_confirmed: !!(l.setting_up_home_allowance || l.monthly_allowance_current),
+        education_training_plan: !!(l.employment_status && l.employment_status.trim()),
+        health_passport_provided: false, // not recorded on the package
+        emotional_support_plan: false, // not recorded on the package
+        life_skills_assessed: !!(l.financial_literacy_progression && String(l.financial_literacy_progression).trim().length > 0),
+        documentation_complete: !!l.reviewed_date,
         created_at: (l.created_at ?? today).toString(),
       }));
   
-      const rawIndependencePathways = (store.independencePathways ?? []) as any[];
+      const rawIndependencePathways = ((store.independencePathways ?? []));
       const independence_pathways: IndependencePathwayInput__transition_leaving_care_readiness[] = rawIndependencePathways.map((i) => {
         // Seed independence pathways carry a `domains` assessment array + `overall_readiness` (0-100).
         const assessed = hasArr(i.domains);
@@ -26563,26 +26567,26 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
           id: i.id ?? "",
           child_id: i.child_id ?? "",
           assessment_date: (i.assessment_date ?? today).toString(),
-          cooking_skills_assessed: i.cooking_skills_assessed ?? assessed,
-          budgeting_skills_assessed: i.budgeting_skills_assessed ?? assessed,
-          self_care_assessed: i.self_care_assessed ?? assessed,
-          travel_skills_assessed: i.travel_skills_assessed ?? assessed,
-          social_skills_assessed: i.social_skills_assessed ?? assessed,
-          overall_readiness_score: i.overall_readiness_score ?? i.overall_readiness ?? 0,
+          cooking_skills_assessed: assessed,
+          budgeting_skills_assessed: assessed,
+          self_care_assessed: assessed,
+          travel_skills_assessed: assessed,
+          social_skills_assessed: assessed,
+          overall_readiness_score: i.overall_readiness ?? 0,
           created_at: (i.created_at ?? today).toString(),
         };
       });
   
-      const rawAftercareRecords = (store.afterCareRecords ?? []) as any[];
+      const rawAftercareRecords = ((store.afterCareRecords ?? []));
       const aftercare_records: AfterCareRecordInput[] = rawAftercareRecords.map((a) => ({
         id: a.id ?? "",
         child_id: a.child_id ?? "",
-        contact_date: (a.contact_date ?? today).toString(),
-        contact_type: a.contact_type ?? "phone",
-        wellbeing_checked: !!a.wellbeing_checked,
-        support_needs_identified: !!a.support_needs_identified,
-        support_provided: !!a.support_provided,
-        next_contact_date: (a.next_contact_date ?? "").toString(),
+        contact_date: (a.next_contact_due ?? today).toString(),
+        contact_type: "phone", // per-contact channel lives in the contact_log text
+        wellbeing_checked: !!(a.overall_rag && a.overall_rag.trim()),
+        support_needs_identified: !!(a.current_concerns && a.current_concerns.length > 0),
+        support_provided: (a.support_package?.length ?? 0) > 0,
+        next_contact_date: (a.next_contact_due ?? "").toString(),
         created_at: (a.created_at ?? today).toString(),
       }));
   
@@ -26613,7 +26617,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     // ── Transition Goals ──────────────────────────────────────────────────
     const transitionGoals: TransitionGoalInput__transition_planning[] = (
-      (store.transitionPlanningRecords ?? []) as any[]
+      ((store.transitionPlanningRecords ?? []))
     ).map((g) => ({
       id: g.id ?? "",
       child_id: g.child_id ?? "",
@@ -26655,12 +26659,12 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     ).length;
   
     // Transport log records → TransportLogInput[]
-    const rawLogs = (store.transportLogRecords as any[] ?? []);
+    const rawLogs = ((store.transportLogRecords) ?? []);
     const logs: TransportLogInput__transport_journey_safety[] = rawLogs.map((l) => {
       // Derive has_risk_assessment: check if any RA covers passengers in this log
-      const passengers = (l.passengers ?? []) as any[];
+      const passengers = ((l.passengers ?? []));
       const passengerIds = passengers.map((p) => p.young_person_id);
-      const rawRAs = (store.transportRAs as any[] ?? []);
+      const rawRAs = ((store.transportRAs) ?? []);
       const hasRA = rawRAs.some((ra) => {
         const raYP = (ra.youngPeople ?? []) as string[];
         return raYP.some((ypId: string) => passengerIds.includes(ypId)) && ra.inUseStatus;
@@ -26677,7 +26681,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     });
   
     // Transport risk assessments → TransportRiskAssessmentInput[]
-    const rawRAs = (store.transportRAs as any[] ?? []);
+    const rawRAs = ((store.transportRAs) ?? []);
     const riskAssessments: TransportRiskAssessmentInput[] = rawRAs.map((ra) => ({
       id: ra.id ?? "",
       behaviour_risk_rating: ra.behaviourRiskRating ?? "Low",
@@ -26690,7 +26694,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     }));
   
     // Vehicle pre-use checks → VehicleCheckInput[]
-    const rawChecks = (store.vehiclePreUseChecks as any[] ?? []);
+    const rawChecks = ((store.vehiclePreUseChecks) ?? []);
     const vehicleChecks: VehicleCheckInput__transport_journey_safety[] = rawChecks.map((v) => {
       // motValidUntil is a date string — check if still valid
       const motValid = !!(v.motValidUntil && v.motValidUntil >= today);
@@ -26723,73 +26727,75 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const store = getStore();
       const today = todayStr();
   
-      const yp = (store.youngPeople ?? []) as any[];
+      const yp = ((store.youngPeople ?? []));
       const total_children = yp.filter((c) => c.status === "current").length;
   
-      const rawTransportLogs = (store.transportLogRecords ?? []) as any[];
+      const rawTransportLogs = ((store.transportLogRecords ?? []));
       const transport_logs: TransportLogInput__transport_vehicle_safety[] = rawTransportLogs.map((l) => ({
         id: l.id ?? "",
         date: (l.date ?? today).toString(),
-        driver_id: l.driver_id ?? "",
-        vehicle_id: l.vehicle_id ?? "",
-        child_ids: Array.isArray(l.child_ids) ? l.child_ids : [],
-        journey_purpose: l.journey_purpose ?? "",
-        start_mileage: l.start_mileage ?? 0,
-        end_mileage: l.end_mileage ?? 0,
-        seatbelts_checked: !!l.seatbelts_checked,
-        incidents_recorded: !!l.incidents_recorded,
-        created_at: (l.created_at ?? today).toString(),
+        driver_id: l.driver ?? "",
+        vehicle_id: l.vehicle ?? "",
+        child_ids: (l.passengers ?? []).map((p) => p.young_person_id),
+        journey_purpose: l.purpose ?? "",
+        start_mileage: l.mileage_start ?? 0,
+        end_mileage: l.mileage_end ?? 0,
+        seatbelts_checked: !!l.vehicle_checked,
+        incidents_recorded: !!l.incident_during_journey,
+        created_at: (l.date ?? today).toString(),
       }));
   
-      const rawVehicleChecks = (store.vehicleChecks ?? []) as any[];
+      const rawVehicleChecks = ((store.vehicleChecks ?? []));
       const vehicle_checks: VehicleCheckInput__transport_vehicle_safety[] = rawVehicleChecks.map((c) => ({
         id: c.id ?? "",
         vehicle_id: c.vehicle_id ?? "",
         check_date: (c.check_date ?? today).toString(),
-        check_type: c.check_type ?? "weekly",
-        passed: !!c.passed,
-        defects_found: c.defects_found ?? 0,
-        defects_resolved: c.defects_resolved ?? 0,
-        mot_current: !!c.mot_current,
-        insurance_current: !!c.insurance_current,
-        service_due_date: (c.service_due_date ?? today).toString(),
+        check_type: c.check_type === "monthly" ? "monthly" : "weekly", // daily/pre/post-journey checks roll into weekly cadence
+        passed: c.overall_result === "pass",
+        defects_found: c.defects?.length ?? 0,
+        defects_resolved: 0, // defect resolution is not tracked on the check
+        mot_current: false, // MOT lives on the pre-use check, not this record
+        insurance_current: false,
+        service_due_date: (c.check_date ?? today).toString(),
         created_at: (c.created_at ?? today).toString(),
       }));
   
-      const rawPreUseChecks = (store.vehiclePreUseChecks ?? []) as any[];
+      const rawPreUseChecks = ((store.vehiclePreUseChecks ?? []));
       const vehicle_pre_use_checks: VehiclePreUseCheckInput[] = rawPreUseChecks.map((c) => ({
         id: c.id ?? "",
-        vehicle_id: c.vehicle_id ?? "",
-        check_date: (c.check_date ?? today).toString(),
-        staff_id: c.staff_id ?? "",
-        lights_ok: !!c.lights_ok,
-        tyres_ok: !!c.tyres_ok,
-        brakes_ok: !!c.brakes_ok,
-        fluids_ok: !!c.fluids_ok,
-        overall_pass: !!c.overall_pass,
+        vehicle_id: c.vehicle ?? "",
+        check_date: (c.dateTime ?? today).toString(),
+        staff_id: c.driver ?? "",
+        lights_ok: !!c.warningLightsClear,
+        tyres_ok: !!c.tyresChecked,
+        brakes_ok: false, // brakes are not itemised on the pre-use form
+        fluids_ok: !!c.fluidsChecked,
+        overall_pass: c.checkOutcome === "Cleared for use" || c.checkOutcome === "Cleared with minor notes",
         created_at: (c.created_at ?? today).toString(),
       }));
   
-      const rawDrivingRecords = (store.drivingRecords ?? []) as any[];
+      const rawDrivingRecords = ((store.drivingRecords ?? []));
       const driving_records: DrivingRecordInput[] = rawDrivingRecords.map((d) => ({
         id: d.id ?? "",
-        staff_id: d.staff_id ?? "",
-        licence_verified: !!d.licence_verified,
-        licence_expiry: (d.licence_expiry ?? today).toString(),
-        business_insurance: !!d.business_insurance,
-        advanced_training: !!d.advanced_training,
-        created_at: (d.created_at ?? today).toString(),
+        // DrivingRecord tracks the CHILD's learning-to-drive progress — staff
+        // licence checks are not what it records
+        staff_id: d.child_id ?? "",
+        licence_verified: !!d.provisional_number,
+        licence_expiry: (d.review_date ?? today).toString(),
+        business_insurance: false,
+        advanced_training: false,
+        created_at: (d.recorded_date ?? today).toString(),
       }));
   
-      const rawTransportRAs = (store.transportRAs ?? []) as any[];
+      const rawTransportRAs = ((store.transportRAs ?? []));
       const transport_ras: TransportRAInput__transport_vehicle_safety[] = rawTransportRAs.map((r) => ({
         id: r.id ?? "",
-        journey_type: r.journey_type ?? "",
-        date: (r.date ?? today).toString(),
-        risk_level: r.risk_level ?? "low",
-        controls_identified: !!r.controls_identified,
-        approved_by: r.approved_by ?? "",
-        review_date: (r.review_date ?? today).toString(),
+        journey_type: (r.journeyType ?? "").toString(),
+        date: (r.lastReviewedDate ?? today).toString(),
+        risk_level: r.behaviourRiskRating === "High" ? "high" : r.behaviourRiskRating === "Medium" ? "medium" : "low",
+        controls_identified: (r.behaviourMitigations?.length ?? 0) > 0 || (r.missingMitigations?.length ?? 0) > 0,
+        approved_by: r.signedOffByRM ? "registered manager" : "",
+        review_date: (r.nextReviewDate ?? today).toString(),
         created_at: (r.created_at ?? today).toString(),
       }));
   
@@ -26817,7 +26823,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     try {
       const store = getStore();
-      const raw = store.traumaTherapyLogs as any[];
+      const raw = (store.traumaTherapyLogs);
       const total_children = (store.youngPeople ?? []).length;
       const today = todayStr();
   
@@ -26830,20 +26836,18 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         session_length_minutes: r.session_length_minutes || 60,
         attended: !!r.attended,
         child_presentation: r.child_presentation || "mixed",
-        pre_session_mood: r.pre_session_mood_rating ?? r.pre_session_mood ?? 5,
-        post_session_mood: r.post_session_mood_rating ?? r.post_session_mood ?? 5,
+        pre_session_mood: r.pre_session_mood_rating ?? 5,
+        post_session_mood: r.post_session_mood_rating ?? 5,
         regulation_strategy_count: Array.isArray(r.regulation_strategies_used_after)
           ? r.regulation_strategies_used_after.length
-          : (r.regulation_strategy_count ?? 0),
+          : 0,
         has_escalation_flags: Array.isArray(r.escalation_flags)
           ? r.escalation_flags.length > 0
-          : !!r.has_escalation_flags,
-        escalation_flag_count: Array.isArray(r.escalation_flags)
-          ? r.escalation_flags.length
-          : (r.escalation_flag_count ?? 0),
-        has_child_voice: !!(r.child_voice_shared && r.child_voice_shared.trim()) || !!r.has_child_voice,
-        has_staff_observation: !!(r.staff_observation && r.staff_observation.trim()) || !!r.has_staff_observation,
-        has_next_session: !!r.next_session || !!r.has_next_session,
+          : false,
+        escalation_flag_count: r.escalation_flags?.length ?? 0,
+        has_child_voice: !!(r.child_voice_shared && r.child_voice_shared.trim()),
+        has_staff_observation: !!(r.staff_observation && r.staff_observation.trim()),
+        has_next_session: !!r.next_session,
       }));
   
       const result = computeTraumaTherapy({ today, total_children, logs });
@@ -26861,7 +26865,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const dateOf = (r: any): string => (r?.date ?? r?.created_at ?? r?.reported_at ?? "").toString().slice(0, 10);
     const datesFrom = (arr: any[] | undefined, filter?: (r: any) => boolean): string[] =>
-      ((arr ?? []) as any[]).filter((r) => (filter ? filter(r) : true)).map(dateOf).filter(Boolean);
+      (((arr ?? []))).filter((r) => (filter ? filter(r) : true)).map(dateOf).filter(Boolean);
   
     const metrics: TrendMetricInput[] = [
       {
@@ -26870,7 +26874,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         unit: "incidents",
         polarity: "lower_better",
         description: "Recorded incidents across the home.",
-        dates: datesFrom(store.incidents as any[]),
+        dates: datesFrom((store.incidents)),
       },
       {
         key: "physical_interventions",
@@ -26878,7 +26882,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         unit: "interventions",
         polarity: "lower_better",
         description: "Restraints / Team-Teach holds — the signal Ofsted scrutinises most.",
-        dates: datesFrom(store.restraints as any[]),
+        dates: datesFrom((store.restraints)),
       },
       {
         key: "concerning_behaviour",
@@ -26886,7 +26890,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         unit: "incidents",
         polarity: "lower_better",
         description: "Behaviour-log entries recorded as concerning.",
-        dates: datesFrom(store.behaviourLog as any[], (r) => r.direction === "concerning"),
+        dates: datesFrom((store.behaviourLog), (r) => r.direction === "concerning"),
       },
       {
         key: "sanctions",
@@ -26894,7 +26898,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         unit: "sanctions",
         polarity: "lower_better",
         description: "Consequences applied — high volumes can signal a punitive culture.",
-        dates: datesFrom(store.sanctionRewards as any[], (r) => r.direction === "sanction"),
+        dates: datesFrom((store.sanctionRewards), (r) => r.direction === "sanction"),
       },
       {
         key: "rewards",
@@ -26902,7 +26906,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         unit: "rewards",
         polarity: "higher_better",
         description: "Positive recognition recorded — a healthy culture catches what goes well.",
-        dates: datesFrom(store.sanctionRewards as any[], (r) => r.direction === "reward"),
+        dates: datesFrom((store.sanctionRewards), (r) => r.direction === "reward"),
       },
       {
         key: "missing_episodes",
@@ -26910,7 +26914,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         unit: "episodes",
         polarity: "lower_better",
         description: "Episodes of a child being missing or away without agreement.",
-        dates: datesFrom(store.missingEpisodes as any[]),
+        dates: datesFrom((store.missingEpisodes)),
       },
     ];
   
@@ -26925,7 +26929,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const store = getStore();
       const today = todayStr();
   
-      const yp = (store.youngPeople ?? []) as any[];
+      const yp = ((store.youngPeople ?? []));
       const total_children = yp.filter((c) => c.status === "current").length;
   
       const rawBills = optionalCollection(store, "utilityBillRecords");
@@ -27056,11 +27060,11 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const today = todayStr();
   
     // ── Children ──────────────────────────────────────────────────────────
-    const youngPeople = (store.youngPeople ?? []) as any[];
+    const youngPeople = ((store.youngPeople ?? []));
     const totalChildren = youngPeople.length;
   
     // ── Visitor Records ───────────────────────────────────────────────────
-    const visitors: VisitorInput__visitor[] = ((store.visitors ?? []) as any[])
+    const visitors: VisitorInput__visitor[] = (((store.visitors ?? [])))
       .map((v) => ({
         id: v.id ?? "",
         date: (v.date ?? today).toString().slice(0, 10),
@@ -27091,10 +27095,10 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const store = getStore();
       const today = todayStr();
   
-      const yp = (store.youngPeople ?? []) as any[];
+      const yp = ((store.youngPeople ?? []));
       const total_children = yp.filter((c) => c.status === "current").length;
   
-      const rawRegistrations = (store.visitorRegistrationRecords ?? []) as any[];
+      const rawRegistrations = ((store.visitorRegistrationRecords ?? []));
       const visitor_registration_records: VisitorRegistrationRecordInput[] = rawRegistrations.map((r) => ({
         id: r.id ?? "",
         visitor_name: r.visitor_name ?? "",
@@ -27112,7 +27116,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         created_at: (r.created_at ?? today).toString(),
       }));
   
-      const rawDbsChecks = (store.dbsCheckRecords ?? []) as any[];
+      const rawDbsChecks = ((store.dbsCheckRecords ?? []));
       const dbs_check_records: DbsCheckRecordInput__visitor_management_security[] = rawDbsChecks.map((d) => ({
         id: d.id ?? "",
         visitor_name: d.visitor_name ?? "",
@@ -27130,7 +27134,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         created_at: (d.created_at ?? today).toString(),
       }));
   
-      const rawIdVerifications = (store.idVerificationRecords ?? []) as any[];
+      const rawIdVerifications = ((store.idVerificationRecords ?? []));
       const id_verification_records: IdVerificationRecordInput[] = rawIdVerifications.map((v) => ({
         id: v.id ?? "",
         visitor_name: v.visitor_name ?? "",
@@ -27145,7 +27149,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         created_at: (v.created_at ?? today).toString(),
       }));
   
-      const rawSafeguarding = (store.safeguardingProtocolRecords ?? []) as any[];
+      const rawSafeguarding = ((store.safeguardingProtocolRecords ?? []));
       const safeguarding_protocol_records: SafeguardingProtocolRecordInput[] = rawSafeguarding.map((s) => ({
         id: s.id ?? "",
         visit_date: (s.visit_date ?? today).toString(),
@@ -27166,7 +27170,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         created_at: (s.created_at ?? today).toString(),
       }));
   
-      const rawVisitorLogs = (store.visitorLogRecords ?? []) as any[];
+      const rawVisitorLogs = ((store.visitorLogRecords ?? []));
       const visitor_log_records: VisitorLogRecordInput[] = rawVisitorLogs.map((l) => ({
         id: l.id ?? "",
         visitor_name: l.visitor_name ?? "",
@@ -27211,7 +27215,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const store = getStore();
       const today = todayStr();
   
-      const yp = (store.youngPeople ?? []) as any[];
+      const yp = ((store.youngPeople ?? []));
       const total_children = yp.filter((c) => c.status === "current").length;
   
       const rawServicing = optionalCollection(store, "washingMachineDryerServicingRecords");
@@ -27343,7 +27347,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const store = getStore();
       const today = todayStr();
   
-      const yp = (store.youngPeople ?? []) as any[];
+      const yp = ((store.youngPeople ?? []));
       const total_children = yp.filter((c) => c.status === "current").length;
   
       const rawTemperature = optionalCollection(store, "waterTemperatureRecords");
@@ -27473,7 +27477,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const store = getStore();
       const today = todayStr();
   
-      const yp = (store.youngPeople ?? []) as any[];
+      const yp = ((store.youngPeople ?? []));
       const total_children = yp.filter((c) => c.status === "current").length;
   
       const rawScheduleCreation = optionalCollection(store, "scheduleCreationRecords");
@@ -27593,7 +27597,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const store = getStore();
       const today = todayStr();
   
-      const yp = (store.youngPeople ?? []) as any[];
+      const yp = ((store.youngPeople ?? []));
       const total_children = yp.filter((c) => c.status === "current").length;
   
       const rawWeightMonitoring = optionalCollection(store, "weightMonitoringRecords");
@@ -27736,13 +27740,13 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const today = todayStr();
   
       // ── Children count ────────────────────────────────────────────────
-      const youngPeople = (store.youngPeople ?? []) as any[];
+      const youngPeople = ((store.youngPeople ?? []));
       const total_children = youngPeople.length;
   
       // ── Welfare check rounds ──────────────────────────────────────────
-      const rawRounds = (store.welfareCheckRounds ?? []) as any[];
+      const rawRounds = ((store.welfareCheckRounds ?? []));
       const rounds: WelfareCheckRecordInput[] = rawRounds.map((r) => {
-        const checks = (r.checks ?? []) as any[];
+        const checks = ((r.checks ?? []));
         const expectedChecks = total_children;
         const completedChecks = checks.length;
         const distressedChildren = checks.filter(
@@ -27838,7 +27842,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const sleepMap = new Map<string, { checks: Array<{ status: string; mood?: string }>; disturbances: number }>();
   
     // From welfare checks at night (22:00-06:00)
-    const allWelfareChecks = (store.welfareChecks ?? []) as any[];
+    const allWelfareChecks = ((store.welfareChecks ?? []));
     for (const wc of allWelfareChecks) {
       if (!wc.child_id || !childIds.has(wc.child_id)) continue;
       const time = wc.check_time ?? "";
@@ -27851,7 +27855,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     }
   
     // From sleep log disturbances (per young person)
-    const sleepLogs = (store.sleepLog ?? []) as any[];
+    const sleepLogs = ((store.sleepLog ?? []));
     for (const sl of sleepLogs) {
       const date = typeof sl.date === "string" ? sl.date.slice(0, 10) : today;
       if (!Array.isArray(sl.disturbances)) continue;
@@ -27923,10 +27927,10 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       }));
   
     // Some incidents use involved_children array instead of child_id
-    for (const inc of (store.incidents ?? []) as any[]) {
+    for (const inc of ((store.incidents ?? []))) {
       if (inc.child_id) continue; // Already handled above
-      if (!Array.isArray((inc as any).involved_children)) continue;
-      for (const cid of (inc as any).involved_children) {
+      continue; // Incident has no involved_children array — only child_id links (handled above)
+      for (const cid of [] as string[]) {
         if (!childIds.has(cid)) continue;
         incidents.push({
           child_id: cid,
@@ -27938,8 +27942,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     // ── Activities ─────────────────────────────────────────────────────────
     const activities: ActivityEntryInput__wellbeing[] = [];
-    for (const act of (store.activities ?? []) as any[]) {
-      const date = typeof act.date === "string" ? act.date.slice(0, 10) : (act.start_date ?? act.created_at ?? today).toString().slice(0, 10);
+    for (const act of ((store.activities ?? []))) {
+      const date = (act.date ?? today).slice(0, 10);
   
       // Activity has child_id directly
       if (act.child_id && childIds.has(act.child_id)) {
@@ -27952,10 +27956,10 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         continue;
       }
   
-      // Activity uses participants array
-      if (Array.isArray(act.participants)) {
-        for (const pid of act.participants) {
-          if (!childIds.has(pid)) continue;
+      // Activity is per-child by shape — there is no participants array
+      if (act.child_id && childIds.has(act.child_id)) {
+        {
+          const pid = act.child_id;
           activities.push({
             child_id: pid,
             date,
@@ -27986,7 +27990,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const store = getStore();
       const today = todayStr();
   
-      const yp = (store.youngPeople ?? []) as any[];
+      const yp = ((store.youngPeople ?? []));
       const total_children = yp.filter((c) => c.status === "current").length;
   
       const rawAwareness = optionalCollection(store, "whistleblowingAwarenessRecords");
@@ -28119,7 +28123,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const today = todayStr();
   
     // Whistleblowing records → WhistleblowingRecordInput[]
-    const rawRecords = (store.whistleblowingRecords as any[] ?? []);
+    const rawRecords = ((store.whistleblowingRecords) ?? []);
     const records: WhistleblowingRecordInput[] = rawRecords.map((r) => ({
       id: r.id ?? "",
       date_raised: (r.date_raised ?? "").toString().slice(0, 10),
@@ -28136,16 +28140,16 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     // Transparency culture — derive from staff + policy acknowledgements
     // Check if staff have read the whistleblowing policy
-    const rawPolicies = (store.homePolicies as any[] ?? []);
+    const rawPolicies = ((store.homePolicies) ?? []);
     const wbPolicy = rawPolicies.find((p) =>
       p.category === "whistleblowing" || p.title?.toLowerCase().includes("whistleblowing")
     );
-    const wbPolicyAcks = (wbPolicy?.read_acknowledgements ?? []) as any[];
+    const wbPolicyAcks = ((wbPolicy?.read_acknowledgements ?? []));
     const ackedStaffIds = new Set(wbPolicyAcks.map((a) => a.staff_id));
   
     // Build culture inputs from staff, with wellbeing records as a proxy for confidence
-    const rawWellbeing = (store.staffWellbeingRecords as any[] ?? []);
-    const culture: TransparencyCultureInput[] = (staff as any[]).map((s) => {
+    const rawWellbeing = ((store.staffWellbeingRecords) ?? []);
+    const culture: TransparencyCultureInput[] = ((staff)).map((s) => {
       const hasWellbeing = rawWellbeing.some((w) => w.staff_id === s.id);
       return {
         id: s.id ?? "",
@@ -28158,7 +28162,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const result = computeWhistleblowingTransparency({
       today,
-      total_staff: (staff as any[]).length,
+      total_staff: ((staff)).length,
       records,
       culture,
     });
@@ -28173,7 +28177,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const store = getStore();
       const today = todayStr();
   
-      const yp = (store.youngPeople ?? []) as any[];
+      const yp = ((store.youngPeople ?? []));
       const total_children = yp.filter((c) => c.status === "current").length;
   
       const rawRestrictors = optionalCollection(store, "windowRestrictorRecords");
@@ -28310,7 +28314,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const store = getStore();
     const today = todayStr();
   
-    const staffMembers: StaffInput[] = ((store.staff ?? []) as any[])
+    const staffMembers: StaffInput[] = (((store.staff ?? [])))
       .map((s) => ({
         id: s.id ?? "",
         role: s.role ?? "",
@@ -28323,7 +28327,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         contracted_hours: s.contracted_hours ?? 0,
       }));
   
-    const successionPlans: SuccessionPlanInput[] = ((store.successionPlans ?? []) as any[])
+    const successionPlans: SuccessionPlanInput[] = (((store.successionPlans ?? [])))
       .map((p) => ({
         id: p.id ?? "",
         role_title: p.role_title ?? "",
@@ -28337,13 +28341,13 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         })),
       }));
   
-    const vacancies: VacancyInput__workforce_planning[] = ((store.vacancies ?? []) as any[])
+    const vacancies: VacancyInput__workforce_planning[] = (((store.vacancies ?? [])))
       .map((v) => ({
         id: v.id ?? "",
         status: v.status ?? "open",
       }));
   
-    const inductions: InductionInput__workforce_planning[] = ((store.inductionRecords ?? []) as any[])
+    const inductions: InductionInput__workforce_planning[] = (((store.inductionRecords ?? [])))
       .map((i) => {
         const items = Array.isArray(i.items) ? i.items : [];
         return {
@@ -28379,43 +28383,43 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const staffId = s.id;
   
       // Supervision
-      const supervisions = (store.supervisions as any[] ?? []).filter((sv) => sv.staff_id === staffId || sv.staffId === staffId);
-      const supCompleted = supervisions.filter((sv) => sv.completed || sv.status === "completed").length;
+      const supervisions = ((store.supervisions) ?? []).filter((sv) => sv.staff_id === staffId);
+      const supCompleted = supervisions.filter((sv) => sv.status === "completed").length;
       const supDue = supervisions.length;
   
       // Training
-      const trainingRecords = (store.trainingRecords as any[] ?? []).filter((t) => t.staff_id === staffId || t.staffId === staffId);
-      const mandatoryTraining = trainingRecords.filter((t) => t.mandatory || t.type === "mandatory");
+      const trainingRecords = ((store.trainingRecords) ?? []).filter((t) => t.staff_id === staffId);
+      const mandatoryTraining = trainingRecords.filter((t) => t.is_mandatory);
       const mandatoryCurrent = mandatoryTraining.length === 0 || mandatoryTraining.every((t) => t.status === "compliant" || t.status === "expiring_soon");
   
       // Qualifications
-      const qualifications = (store.qualifications as any[] ?? []).filter((q) => q.staff_id === staffId || q.staffId === staffId);
+      const qualifications = ((store.qualifications) ?? []).filter((q) => q.staff_id === staffId);
       const qualsMet = qualifications.length === 0 || qualifications.every((q) => q.status === "completed" || q.status === "exempt");
   
       // Sickness
-      const sicknessRecords = (store.staffSicknessRecords as any[] ?? []).filter((sr) => sr.staff_id === staffId || sr.staffId === staffId);
-      const sicknessDays = sicknessRecords.reduce((sum: number, sr) => sum + (sr.days ?? sr.duration ?? 1), 0);
+      const sicknessRecords = ((store.staffSicknessRecords) ?? []).filter((sr) => sr.staff_id === staffId);
+      const sicknessDays = sicknessRecords.reduce((sum: number, sr) => sum + (sr.total_days ?? 1), 0);
   
       // Development plan
-      const devPlans = (store.developmentPlans as any[] ?? []).filter((dp) => dp.staff_id === staffId || dp.staffId === staffId);
+      const devPlans = ((store.developmentPlans) ?? []).filter((dp) => dp.staff_id === staffId);
       const hasDev = devPlans.length > 0;
   
       // Practice observations
-      const observations = (store.practiceObservations as any[] ?? []).filter((po) => po.staff_id === staffId || po.staffId === staffId);
+      const observations = ((store.practiceObservations) ?? []).filter((po) => po.staff_id === staffId);
       const obsCount = observations.length;
   
       // Recognition
-      const recognitions = (store.staffRecognitionRecords as any[] ?? []).filter((r) => r.staff_id === staffId || r.staffId === staffId);
+      const recognitions = ((store.staffRecognitionRecords) ?? []).filter((r) => r.staff_member === staffId);
       const recCount = recognitions.length;
   
       // Grievance
-      const grievances = (store.staffGrievanceRecords as any[] ?? []).filter((g) => g.staff_id === staffId || g.staffId === staffId);
+      const grievances = ((store.staffGrievanceRecords) ?? []).filter((g) => g.raised_by === staffId);
       const grievanceActive = grievances.some((g) => g.status === "informal_raised" || g.status === "formal_submitted" || g.status === "under_investigation" || g.status === "hearing_scheduled" || g.status === "appealed");
   
       // Wellbeing
-      const wellbeingRecords = (store.staffWellbeingRecords as any[] ?? []).filter((w) => w.staff_id === staffId || w.staffId === staffId);
+      const wellbeingRecords = ((store.staffWellbeingRecords) ?? []).filter((w) => w.staff_id === staffId);
       const latestWb = wellbeingRecords.length > 0 ? wellbeingRecords.sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""))[0] : null;
-      const wbScore = latestWb?.score ?? latestWb?.wellbeing_score ?? null;
+      const wbScore = latestWb?.overall_score ?? null;
   
       // DBS / induction. StaffMember records dbs_number / dbs_issue_date /
       // dbs_update_service, not a current flag: current = a number on file plus
@@ -28423,8 +28427,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       // cycle (ISO string compare — no Date, so no timezone edge).
       const threeYearsAgo = `${Number(today.slice(0, 4)) - 3}${today.slice(4)}`;
       const dbsCurrent = !!s.dbs_number && (!!s.dbs_update_service || (s.dbs_issue_date ?? "") >= threeYearsAgo);
-      const inductionRecords = (store.staffInductionRecords as any[] ?? []).filter((ir) => ir.staff_id === staffId || ir.staffId === staffId);
-      const inductionCompleted = inductionRecords.some((ir) => ir.completed || ir.status === "completed");
+      const inductionRecords = ((store.staffInductionRecords) ?? []).filter((ir) => ir.staff_id === staffId);
+      const inductionCompleted = inductionRecords.some((ir) => ir.overall_status === "completed");
   
       return {
         staff_id: staffId,
@@ -28444,18 +28448,18 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     });
   
     // Home-level metrics
-    const vacancies = (store.vacancies as any[] ?? []);
+    const vacancies = ((store.vacancies) ?? []);
     const openVacancies = vacancies.filter((v) => v.status === "open");
     const shifts = store.shifts ?? [];
-    const shiftsTotal = (shifts as any[]).length;
-    const shiftsCovered = (shifts as any[]).filter((sh) => !!sh.staff_id).length;
+    const shiftsTotal = ((shifts)).length;
+    const shiftsCovered = ((shifts)).filter((sh) => !!sh.staff_id).length;
     const agencyStaff = optionalCollection(store, "agencyStaffRecords").filter((a) => a.active || a.status === "active");
-    const handovers = (store.handovers as any[] ?? []);
-    const handoverCompleted = (handovers as any[]).filter((h) => h.completed || h.status === "completed").length;
+    const handovers = ((store.handovers) ?? []);
+    const handoverCompleted = ((handovers)).filter((h) => !!h.completed_at).length;
     const handoverRate = rate(handoverCompleted, handovers.length);
-    const loneIncidents = (store.loneWorkingRecords as any[] ?? []).filter((l) => l.incident || l.type === "incident").length;
-    const exitInterviews = (store.staffExitInterviewRecords as any[] ?? []);
-    const exitConducted = exitInterviews.filter((e) => e.completed || e.status === "completed").length;
+    const loneIncidents = 0; // LoneWorkingRecord is an assessment register — incidents are not recorded on it
+    const exitInterviews = ((store.staffExitInterviewRecords) ?? []);
+    const exitConducted = exitInterviews.filter((e) => e.status === "completed").length;
   
     const home_level: HomeLevelWorkforce = {
       vacancy_count: openVacancies.length,
@@ -28486,11 +28490,11 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const store = getStore();
       const today = todayStr();
   
-      const youngPeople = (store.youngPeople ?? []) as any[];
+      const youngPeople = ((store.youngPeople ?? []));
       const total_children = youngPeople.length;
   
       // Child daily summaries
-      const rawSummaries = (store.childDailySummaries ?? []) as any[];
+      const rawSummaries = ((store.childDailySummaries ?? []));
       const summaries: DailySummaryInput[] = rawSummaries.map((s) => ({
         id: s.id ?? "",
         child_id: s.child_id ?? "",
@@ -28503,7 +28507,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       }));
   
       // Daily logs
-      const rawLogs = (store.dailyLog ?? []) as any[];
+      const rawLogs = ((store.dailyLog ?? []));
       const daily_logs: DailyLogEntryInput__young_person_daily_wellbeing[] = rawLogs.map((l) => ({
         id: l.id ?? "",
         child_id: l.child_id ?? "",
@@ -28514,13 +28518,13 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       }));
   
       // Behaviour logs
-      const rawBehaviour = (store.behaviourLog ?? []) as any[];
+      const rawBehaviour = ((store.behaviourLog ?? []));
       const behaviour_logs: BehaviourLogEntryInput[] = rawBehaviour.map((b) => ({
         id: b.id ?? "",
         child_id: b.child_id ?? "",
         date: (b.date ?? today).toString().slice(0, 10),
-        severity: b.severity ?? "low",
-        de_escalation_used: b.de_escalation_used ?? false,
+        severity: b.intensity ?? "low",
+        de_escalation_used: false, // de-escalation use is not recorded on the behaviour entry
         has_antecedent: !!(b.antecedent && b.antecedent.trim().length > 0),
         has_consequence: !!(b.consequence && b.consequence.trim().length > 0),
         has_outcome: !!(b.outcome && b.outcome.trim().length > 0),
@@ -28545,7 +28549,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       const store = getStore();
       const today = todayStr();
   
-      const yp = (store.youngPeople ?? []) as any[];
+      const yp = ((store.youngPeople ?? []));
       const total_children = yp.filter((c) => c.status === "current").length;
   
       const rawYotLiaison = optionalCollection(store, "yotLiaisonRecords");
