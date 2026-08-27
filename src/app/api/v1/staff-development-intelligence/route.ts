@@ -71,7 +71,7 @@ export async function GET() {
 
   // ── Map inductions ────────────────────────────────────────────────────
   const inductions: InductionInput[] = (inductionRecordsList ?? []).map((i) => {
-    const items: any[] = i.items ?? [];
+    const items = i.items ?? [];
     const completedItems = items.filter((item) => item.status === "completed" || item.status === "signed_off").length;
     const overdueItems = items.filter((item) => item.status === "not_started" || item.status === "in_progress").length;
     return {
@@ -89,7 +89,7 @@ export async function GET() {
 
   // ── Map development plans ─────────────────────────────────────────────
   const development_plans: DevelopmentPlanInput[] = (developmentPlansList ?? []).map((dp) => {
-    const actions: any[] = dp.actions ?? [];
+    const actions = dp.actions ?? [];
     return {
       id: dp.id,
       staff_id: dp.staff_id,

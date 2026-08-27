@@ -46,10 +46,15 @@ export type InductionStatus =
   | "completed"
   | "overdue";
 
+// The store's plans are also "draft" or "superseded". Leaving those out of
+// this input union meant a real plan could not be described to the engine
+// without a cast, and a cast is how a superseded plan gets counted as active.
 export type DevelopmentPlanStatus =
+  | "draft"
   | "active"
   | "completed"
   | "paused"
+  | "superseded"
   | "cancelled";
 
 export interface StaffInput {

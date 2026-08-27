@@ -45,7 +45,7 @@ export async function GET() {
     dal.employerValuesProfiles.findAll(),
   ]);
   const vacancies = (((vacanciesList ?? []))).map((v) => ({ id: v.id, title: v.title, status: v.status }));
-  const profiles: any[] = profilesList ?? [];
+  const profiles = profilesList ?? [];
   const candidates = ((candidateValuesProfilesList ?? []) as CandidateValuesProfile[]).map((c) => {
     const p = profiles.find((x) => x.id === c.candidate_id);
     return { id: c.candidate_id, name: c.candidate_name || (p ? [p.first_name, p.last_name].filter(Boolean).join(" ") : c.candidate_id) };

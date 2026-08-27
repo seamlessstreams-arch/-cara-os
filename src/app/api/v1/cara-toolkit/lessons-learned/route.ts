@@ -147,7 +147,7 @@ export async function GET() {
   // ── Extract lessons from Reg 44 recommendations ───────────────────────────
 
   for (const report of reg44Reports) {
-    const recs: any[] = report.recommendations ?? [];
+    const recs = report.recommendations ?? [];
     for (const rec of recs) {
       if (!rec.recommendation) continue;
 

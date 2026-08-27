@@ -31,7 +31,7 @@ export async function GET() {
   // fell through to the singular home record, preserved here.)
   const home_name = (homeRec as { name?: string } | null)?.name || "the home";
 
-  const allStaff: any[] = staffList ?? [];
+  const allStaff = staffList ?? [];
   const activeStaff = allStaff.filter((s) => s.employment_status !== "left");
   const staff: StaffLite[] = activeStaff
     .filter((s) => SUPERVISEE_ROLES.has(String(s.role)))
@@ -39,11 +39,11 @@ export async function GET() {
 
   const supRecords: ReflectiveSupervisionRecord[] = (reflectiveSupervisionsList ?? []) as ReflectiveSupervisionRecord[];
   const sup = computeSupervisionOverview({ records: supRecords, staff, today });
-  const training: any[] = trainingRecordsList ?? [];
-  const inductions: any[] = inductionRecordsList ?? [];
-  const checks: any[] = candidateChecksList ?? [];
-  const candidates: any[] = candidateProfilesList ?? [];
-  const incidents: any[] = incidentsList ?? [];
+  const training = trainingRecordsList ?? [];
+  const inductions = inductionRecordsList ?? [];
+  const checks = candidateChecksList ?? [];
+  const candidates = candidateProfilesList ?? [];
+  const incidents = incidentsList ?? [];
 
   const domains: DomainInput[] = [];
 
