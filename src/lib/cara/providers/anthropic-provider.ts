@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { CaraProviderCapabilities } from "../core/types";
+import { errorMessage, errorName } from "@/lib/http/error-message";
 import { CaraProviderError, CaraTimeoutError, CaraRateLimitError } from "../core/errors";
 import { DEFAULT_TIMEOUT_MS, DEFAULT_RETRY_CONFIG, PROVIDER_COST_PER_1K } from "../core/constants";
 import {
@@ -284,8 +285,8 @@ export class AnthropicProvider extends BaseCaraProvider {
       }
 
       return response;
-    } catch (error: any) {
-      if (error?.name === "TimeoutError" || error?.name === "AbortError") {
+    } catch (error) {
+      if (errorName(error) === "TimeoutError" || errorName(error) === "AbortError") {
         if (attempt < DEFAULT_RETRY_CONFIG.maxRetries) {
           const delay = DEFAULT_RETRY_CONFIG.baseDelayMs * Math.pow(DEFAULT_RETRY_CONFIG.backoffMultiplier, attempt);
           await new Promise(resolve => setTimeout(resolve, delay));
@@ -293,7 +294,7 @@ export class AnthropicProvider extends BaseCaraProvider {
         }
         throw new CaraTimeoutError("anthropic", DEFAULT_TIMEOUT_MS);
       }
-      throw new CaraProviderError(`Anthropic request failed: ${error?.message}`, "anthropic", true);
+      throw new CaraProviderError(`Anthropic request failed: ${errorMessage(error)}`, "anthropic", true);
     }
   }
 
@@ -302,7 +303,7 @@ export class AnthropicProvider extends BaseCaraProvider {
       throw new CaraRateLimitError("anthropic");
     }
     throw new CaraProviderError(
-      `Anthropic API error: ${data?.error?.message ?? "Unknown error"}`,
+      `Anthropic API error: ${data?.message ?? "Unknown error"}`,
       "anthropic",
       status >= 500,
     );

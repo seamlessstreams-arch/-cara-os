@@ -127,7 +127,7 @@ export function withPermission(
       };
 
       return handler(req, ctx);
-    } catch (error: any) {
+    } catch (error) {
       console.error("[Permission Middleware Error]", error);
       return NextResponse.json(
         { error: "Internal server error" },

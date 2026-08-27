@@ -2,6 +2,7 @@
 // Consolidates 303 home-* API routes into one catch-all to reduce Vercel routing entries.
 
 import type { AdvocacyRecordInput } from "@/lib/engines/home-advocacy-independent-voice-intelligence-engine";
+import { errorMessage } from "@/lib/http/error-message";
 import type { AnnualHealthAssessmentRecordInput } from "@/lib/engines/home-annual-health-assessment-intelligence-engine";
 import type { AttachmentProfileRecordInput } from "@/lib/engines/home-attachment-profile-intelligence-engine";
 import type { BehaviourSupportPlanRecordInput } from "@/lib/engines/home-behaviour-support-plan-intelligence-engine";
@@ -1107,9 +1108,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -1245,9 +1246,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -1277,8 +1278,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeAdvocacyIndependentVoice({ today: todayStr(), total_children, records });
       return NextResponse.json({ data: result });
-    } catch (e: any) {
-      return NextResponse.json({ error: e.message }, { status: 500 });
+    } catch (e) {
+      return NextResponse.json({ error: errorMessage(e) }, { status: 500 });
     }
   
   },
@@ -1496,9 +1497,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -1633,9 +1634,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -1667,8 +1668,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeAnnualHealthAssessment({ today: todayStr(), total_children, assessments });
       return NextResponse.json({ data: result });
-    } catch (e: any) {
-      return NextResponse.json({ error: e.message }, { status: 500 });
+    } catch (e) {
+      return NextResponse.json({ error: errorMessage(e) }, { status: 500 });
     }
   
   },
@@ -1791,9 +1792,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -1950,9 +1951,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -2090,9 +2091,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -2148,8 +2149,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeAttachmentProfile({ today, total_children, profiles });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
-      return NextResponse.json({ error: err.message }, { status: 500 });
+    } catch (err) {
+      return NextResponse.json({ error: errorMessage(err) }, { status: 500 });
     }
   
   },
@@ -2200,9 +2201,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeAutomationROI({ today, total_staff, metrics, routes, events });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -2319,9 +2320,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -2479,9 +2480,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -2622,9 +2623,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -2785,9 +2786,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -2970,9 +2971,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -3031,8 +3032,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeBehaviourSupportPlan({ today, total_children, plans });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
-      return NextResponse.json({ error: err.message }, { status: 500 });
+    } catch (err) {
+      return NextResponse.json({ error: errorMessage(err) }, { status: 500 });
     }
   
   },
@@ -3251,9 +3252,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -3389,9 +3390,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -3678,9 +3679,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeCaraContentQuality({ today, total_staff, total_children, artifacts });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -3743,9 +3744,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeHomeCareEventQuality({ today, total_children, total_staff, events });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -3952,9 +3953,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -4141,9 +4142,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -4555,9 +4556,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -4691,9 +4692,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -4887,9 +4888,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -5094,9 +5095,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -5302,9 +5303,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -5471,9 +5472,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -5608,8 +5609,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeContextualSafeguarding({ today, total_children, risks });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
-      return NextResponse.json({ error: err.message }, { status: 500 });
+    } catch (err) {
+      return NextResponse.json({ error: errorMessage(err) }, { status: 500 });
     }
   
   },
@@ -5779,9 +5780,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -5916,9 +5917,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -6085,9 +6086,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -6198,9 +6199,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -6515,9 +6516,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -6679,9 +6680,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -6936,9 +6937,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -7057,9 +7058,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -7234,9 +7235,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -7283,9 +7284,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeHomeDeprivationOfLiberty({ today, total_children, restrictions });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -7573,9 +7574,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -7982,9 +7983,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -8102,9 +8103,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -8229,9 +8230,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -8424,9 +8425,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -8526,9 +8527,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -8714,9 +8715,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -8853,9 +8854,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -9088,9 +9089,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -9308,9 +9309,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -9364,9 +9365,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeFilingEvidenceGovernance({ today, total_children, filing_items, care_events });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -9621,9 +9622,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -9811,9 +9812,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -10006,9 +10007,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -10130,9 +10131,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -10271,9 +10272,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -10407,9 +10408,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -10619,9 +10620,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -10743,9 +10744,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -10951,9 +10952,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -11213,9 +11214,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -11344,9 +11345,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -11522,9 +11523,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -11597,9 +11598,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeHolisticChildProgress({ today, total_children, outcome_reviews, education_records, key_work_sessions, independence_records });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -11723,9 +11724,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -11866,9 +11867,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -12046,9 +12047,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -12296,9 +12297,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -12443,9 +12444,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeIndependenceSkillsReadiness({ today, total_children, records, pathway_plans });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -12645,9 +12646,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -12726,9 +12727,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeInformationFlowQuality({ today, total_staff, total_children, handovers, daily_logs, care_events, notifications });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -12865,9 +12866,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -12978,9 +12979,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -13148,9 +13149,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -13467,9 +13468,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -13901,9 +13902,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -13970,9 +13971,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeLocalitySafeguarding({ today, total_children, risks, screenings, missing });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -14131,8 +14132,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         administrations,
       });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
-      return NextResponse.json({ error: err.message }, { status: 500 });
+    } catch (err) {
+      return NextResponse.json({ error: errorMessage(err) }, { status: 500 });
     }
   
   },
@@ -14412,9 +14413,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -14586,9 +14587,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -14807,9 +14808,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -14859,8 +14860,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeMissingEpisode({ today, total_children, episodes });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
-      return NextResponse.json({ error: err.message }, { status: 500 });
+    } catch (err) {
+      return NextResponse.json({ error: errorMessage(err) }, { status: 500 });
     }
   
   },
@@ -15018,9 +15019,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -15145,9 +15146,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -15280,9 +15281,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -15403,8 +15404,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeMultidisciplinaryFormulation({ today, total_children, formulations });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
-      return NextResponse.json({ error: err.message }, { status: 500 });
+    } catch (err) {
+      return NextResponse.json({ error: errorMessage(err) }, { status: 500 });
     }
   
   },
@@ -15545,9 +15546,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -15637,8 +15638,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         })),
       });
       return NextResponse.json({ data: result });
-    } catch (e: any) {
-      return NextResponse.json({ error: e.message }, { status: 500 });
+    } catch (e) {
+      return NextResponse.json({ error: errorMessage(e) }, { status: 500 });
     }
   
   },
@@ -16031,9 +16032,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -16110,9 +16111,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeNotificationResponsiveness({ today, total_staff, notifications });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -16356,9 +16357,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -16670,8 +16671,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeOutcomeStarAssessment({ today, total_children, assessments });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
-      return NextResponse.json({ error: err.message }, { status: 500 });
+    } catch (err) {
+      return NextResponse.json({ error: errorMessage(err) }, { status: 500 });
     }
   
   },
@@ -16905,9 +16906,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -17069,9 +17070,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -17323,9 +17324,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -17360,8 +17361,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computePepEducationQuality({ today: todayStr(), total_children, peps });
       return NextResponse.json({ data: result });
-    } catch (e: any) {
-      return NextResponse.json({ error: e.message }, { status: 500 });
+    } catch (e) {
+      return NextResponse.json({ error: errorMessage(e) }, { status: 500 });
     }
   
   },
@@ -17485,9 +17486,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -17633,9 +17634,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -17769,9 +17770,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -17896,9 +17897,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -18015,8 +18016,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computePlacementImpactAssessment({ today, total_children, assessments });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
-      return NextResponse.json({ error: err.message }, { status: 500 });
+    } catch (err) {
+      return NextResponse.json({ error: errorMessage(err) }, { status: 500 });
     }
   
   },
@@ -18380,9 +18381,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -18542,9 +18543,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -18663,9 +18664,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -18791,9 +18792,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -18948,9 +18949,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -19071,9 +19072,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -19112,8 +19113,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computePostIncidentDebrief({ today, total_children, debriefs });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
-      return NextResponse.json({ error: err.message }, { status: 500 });
+    } catch (err) {
+      return NextResponse.json({ error: errorMessage(err) }, { status: 500 });
     }
   
   },
@@ -19333,9 +19334,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -19386,9 +19387,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeProfessionalNetwork({ today, total_children, contacts, meetings });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -19693,9 +19694,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -19795,9 +19796,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeRecruitmentAuditTrail({ today, total_staff, audit_entries, offers, candidates, vacancies });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -19953,9 +19954,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -20340,9 +20341,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeRegulatoryEvidenceCompleteness({ today, total_children, total_staff, filing_items, documents, risk_assessments, incidents });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -20453,9 +20454,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -20599,9 +20600,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -20644,8 +20645,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeRestraintPhysicalIntervention({ today, total_children, restraints });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
-      return NextResponse.json({ error: err.message }, { status: 500 });
+    } catch (err) {
+      return NextResponse.json({ error: errorMessage(err) }, { status: 500 });
     }
   
   },
@@ -20870,9 +20871,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -21033,8 +21034,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeRiskManagementPlan({ today, total_children, plans });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
-      return NextResponse.json({ error: err.message }, { status: 500 });
+    } catch (err) {
+      return NextResponse.json({ error: errorMessage(err) }, { status: 500 });
     }
   
   },
@@ -21578,9 +21579,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeSanctionRewardBalance({ today, total_children, records });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -21703,9 +21704,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -21784,8 +21785,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeSelfHarmSafetyPlan({ today, total_children, plans });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
-      return NextResponse.json({ error: err.message }, { status: 500 });
+    } catch (err) {
+      return NextResponse.json({ error: errorMessage(err) }, { status: 500 });
     }
   
   },
@@ -21904,9 +21905,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -22043,9 +22044,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -22251,9 +22252,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -22394,9 +22395,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -22495,8 +22496,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeSiblingContactProtocol({ today, total_children, records });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
-      return NextResponse.json({ error: err.message }, { status: 500 });
+    } catch (err) {
+      return NextResponse.json({ error: errorMessage(err) }, { status: 500 });
     }
   
   },
@@ -22640,9 +22641,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -22686,8 +22687,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeSleepNightCare({ today, total_children, logs });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
-      return NextResponse.json({ error: err.message }, { status: 500 });
+    } catch (err) {
+      return NextResponse.json({ error: errorMessage(err) }, { status: 500 });
     }
   
   },
@@ -22858,9 +22859,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -22999,9 +23000,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -23044,8 +23045,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeSocialWorkerContact({ today, total_children, contacts });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
-      return NextResponse.json({ error: err.message }, { status: 500 });
+    } catch (err) {
+      return NextResponse.json({ error: errorMessage(err) }, { status: 500 });
     }
   
   },
@@ -23573,9 +23574,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeStaffDisciplinaryConductIntelligence({ today, total_staff, cases });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -23672,9 +23673,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -24232,9 +24233,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         today, total_staff, appraisals, supervisions, training,
       });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -24461,9 +24462,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -24689,9 +24690,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -24807,9 +24808,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -24974,9 +24975,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -25215,9 +25216,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -25264,9 +25265,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         today, total_children, notifications, notifiable_events,
       });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -25529,9 +25530,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -25563,8 +25564,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeSubstanceMisuseScreening({ today: todayStr(), total_children, screenings });
       return NextResponse.json({ data: result });
-    } catch (e: any) {
-      return NextResponse.json({ error: e.message }, { status: 500 });
+    } catch (e) {
+      return NextResponse.json({ error: errorMessage(e) }, { status: 500 });
     }
   
   },
@@ -25695,8 +25696,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       } catch { ai_narrative = null; }
 
       return NextResponse.json({ data: { ...result, ai_narrative } });
-    } catch (err: any) {
-      return NextResponse.json({ error: err?.message ?? "Internal server error" }, { status: 500 });
+    } catch (err) {
+      return NextResponse.json({ error: errorMessage(err) }, { status: 500 });
     }
   },
 
@@ -25825,9 +25826,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeTaskActionCompletion({ today, total_staff, tasks, incidents });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -25946,9 +25947,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -26090,9 +26091,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -26289,9 +26290,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -26601,9 +26602,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -26810,9 +26811,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -26852,8 +26853,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeTraumaTherapy({ today, total_children, logs });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
-      return NextResponse.json({ error: err.message }, { status: 500 });
+    } catch (err) {
+      return NextResponse.json({ error: errorMessage(err) }, { status: 500 });
     }
   
   },
@@ -27045,9 +27046,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -27200,9 +27201,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -27332,9 +27333,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -27462,9 +27463,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -27582,9 +27583,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -27724,9 +27725,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -27785,9 +27786,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
       const result = computeWelfareCheckCompliance({ today, total_children, rounds });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -28107,9 +28108,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -28300,9 +28301,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -28534,9 +28535,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         today, total_children, summaries, daily_logs, behaviour_logs,
       });
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }
@@ -28666,9 +28667,9 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       });
   
       return NextResponse.json({ data: result });
-    } catch (err: any) {
+    } catch (err) {
       return NextResponse.json(
-        { error: err.message ?? "Internal server error" },
+        { error: errorMessage(err) },
         { status: 500 },
       );
     }

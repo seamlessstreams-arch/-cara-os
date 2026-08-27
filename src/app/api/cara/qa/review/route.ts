@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { readJsonBody } from "@/lib/http/read-json";
+import { errorStatus } from "@/lib/http/error-message";
 import { NextRequest, NextResponse } from "next/server";
 import { CaraQualityAssuranceEngine } from "@/lib/cara/qa/qa-engine";
 import { sanitiseErrorForClient } from "@/lib/cara/core/errors";
@@ -58,8 +59,8 @@ export async function POST(req: NextRequest) {
         note: "Quick check uses rule-based analysis. Set fullReview: true for AI-powered review.",
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     const safe = sanitiseErrorForClient(error);
-    return NextResponse.json({ error: safe.message, code: safe.code }, { status: error?.statusCode ?? 500 });
+    return NextResponse.json({ error: safe.message, code: safe.code }, { status: errorStatus(error, 500) });
   }
 }

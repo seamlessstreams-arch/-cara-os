@@ -3,6 +3,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { readJsonBody } from "@/lib/http/read-json";
+import { errorStatus } from "@/lib/http/error-message";
 import { NextRequest, NextResponse } from "next/server";
 import { testProviderConnection } from "@/lib/cara/providers";
 import { sanitiseErrorForClient } from "@/lib/cara/core/errors";
@@ -22,8 +23,8 @@ export async function POST(req: NextRequest) {
       provider: body.provider,
       ...result,
     });
-  } catch (error: any) {
+  } catch (error) {
     const safe = sanitiseErrorForClient(error);
-    return NextResponse.json({ error: safe.message, code: safe.code }, { status: error?.statusCode ?? 500 });
+    return NextResponse.json({ error: safe.message, code: safe.code }, { status: errorStatus(error, 500) });
   }
 }
