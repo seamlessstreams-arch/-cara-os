@@ -751,7 +751,7 @@ export default function AppraisalsPage() {
                 staffId={staffId}
                 staffName={getStaffNameFn(staffId)}
                 appraisals={appraisals}
-                perStaffMeta={perStaffMeta.find((p) => p.staff_id === staffId) as any}
+                perStaffMeta={(perStaffMeta.find((p) => p.staff_id === staffId))}
               />
             ))}
           </div>

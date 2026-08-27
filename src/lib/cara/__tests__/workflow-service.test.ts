@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from "vitest";
 import { _testing } from "@/lib/services/workflow-service";
-import type { CsWorkflowStep } from "@/types/operations";
+import type { CsWorkflowStep, WorkflowTemplateCode } from "@/types/operations";
 
 const { WORKFLOW_TEMPLATES, computeWorkflowProgress, getWorkflowTemplate } = _testing;
 
@@ -74,7 +74,7 @@ describe("Workflow Service", () => {
     });
 
     it("returns undefined for unknown code", () => {
-      const t = getWorkflowTemplate("nonexistent" as any);
+      const t = getWorkflowTemplate("nonexistent" as WorkflowTemplateCode);
       expect(t).toBeUndefined();
     });
   });

@@ -13,6 +13,8 @@ import type {
   CaraSafetyEvent,
   CaraSafetyEventType,
   CaraRiskLevel,
+  CaraTaskType,
+  CaraProviderName,
 } from "../core/types";
 
 // ── CaraAuditLogger ───────────────────────────────────────────────────────
@@ -139,8 +141,8 @@ export class CaraAuditLogger {
       organisationId: string;
       homeId?: string;
       childId?: string;
-      taskType: string;
-      provider?: string;
+      taskType: CaraTaskType;
+      provider?: CaraProviderName;
       blocked: boolean;
     },
   ): CaraSafetyEvent {
@@ -153,8 +155,8 @@ export class CaraAuditLogger {
       organisationId: context.organisationId,
       homeId: context.homeId,
       childId: context.childId,
-      taskType: context.taskType as any,
-      provider: context.provider as any,
+      taskType: (context.taskType),
+      provider: (context.provider),
       blocked: context.blocked,
       createdAt: new Date().toISOString(),
     };

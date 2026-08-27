@@ -55,7 +55,6 @@ function useStaff(params?: { role?: string; status?: string; employment_type?: s
   });
 }
 import { CaraPanel } from "@/components/cara/cara-panel";
-import { CaraUsageBadge } from "@/components/cara/cara-usage-badge";
 import type { Shift, LeaveRequest, StaffMember } from "@/types";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
@@ -180,7 +179,6 @@ function ShiftRow({ shift }: { shift: Shift }) {
       <Badge className={cn("text-[10px] rounded-full border ml-auto shrink-0", sc.colour)}>
         {sc.label}
       </Badge>
-      <CaraUsageBadge caraAssisted={(shift as any).cara_assist_used} sourceTable="timesheets" recordId={shift.id} />
 
       {/* Notes */}
       {shift.notes && (

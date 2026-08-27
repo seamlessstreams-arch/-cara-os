@@ -7,7 +7,6 @@ import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CaraPanel } from "@/components/cara/cara-panel";
-import { CaraUsageBadge } from "@/components/cara/cara-usage-badge";
 import {
   ChevronLeft,
   AlertTriangle,
@@ -668,7 +667,6 @@ export default function CandidateDetailPage() {
                   {candidate.blocker_summary.length} blocker{candidate.blocker_summary.length !== 1 ? "s" : ""}
                 </span>
               )}
-              <CaraUsageBadge caraAssisted={(candidate as any).cara_assist_used} sourceTable="recruitment_candidates" recordId={candidate.id} />
             </div>
             <div className="text-xs text-[var(--cs-text-muted)] mt-0.5">{candidate.role_applied} · {candidate.email}</div>
           </div>

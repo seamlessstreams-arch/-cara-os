@@ -147,7 +147,7 @@ export default function RecordingQualityPage() {
                   <CardContent className="space-y-2">
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1">
                       {(Object.entries(DIM_LABELS) as [keyof typeof DIM_LABELS, string][]).map(([dim, label]) => {
-                        const v = (r.score as any)[dim] as number;
+                        const v = r.score[dim as keyof typeof r.score] as number;
                         return (
                           <div key={dim} className="flex items-center justify-between text-[11px]">
                             <span className="text-[var(--cs-text-muted)]">{label}</span>

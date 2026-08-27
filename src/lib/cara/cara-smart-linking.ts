@@ -90,7 +90,7 @@ export async function writeSmartLinks(
   }));
 
   // Use cara_context_links table (already exists from migration 022)
-  const { error } = await (supabase.from("cara_context_links") as any).insert(rows);
+  const { error } = await ((supabase.from("cara_context_links"))).insert(rows);
   if (error) {
     console.warn("[cara-smart-linking] writeSmartLinks failed:", error.message);
     return { written: 0 };
@@ -122,7 +122,7 @@ export async function flagRecordAsCaraAssisted(
   const column =
     sourceTable === "incidents" ? "cara_oversight_used" : "cara_assist_used";
 
-  const { error } = await (supabase.from(sourceTable) as any)
+  const { error } = await ((supabase.from(sourceTable)))
     .update({ [column]: true })
     .eq("id", sourceRecordId);
 
@@ -153,7 +153,7 @@ export async function getCaraUsageForRecord(
   const supabase = loose(supabaseRaw);
 
   // Query context links that reference this record
-  const { data: links, error } = await (supabase.from("cara_context_links") as any)
+  const { data: links, error } = await ((supabase.from("cara_context_links")))
     .select("output_id, summary, created_at")
     .eq("source_table", sourceTable)
     .eq("source_record_id", sourceRecordId)
@@ -164,7 +164,7 @@ export async function getCaraUsageForRecord(
 
   // Fetch the corresponding outputs
   const outputIds = [...new Set((links as Array<{ output_id: string }>).map((l) => l.output_id))];
-  const { data: outputs } = await (supabase.from("cara_outputs") as any)
+  const { data: outputs } = await ((supabase.from("cara_outputs")))
     .select("id, status, confidence, created_at, request_id")
     .in("id", outputIds);
 
@@ -179,7 +179,7 @@ export async function getCaraUsageForRecord(
 
   let requestMap = new Map<string, { command_id: string }>();
   if (requestIds.length > 0) {
-    const { data: requests } = await (supabase.from("cara_requests") as any)
+    const { data: requests } = await ((supabase.from("cara_requests")))
       .select("id, command_id")
       .in("id", requestIds);
     if (requests) {

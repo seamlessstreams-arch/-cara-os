@@ -236,7 +236,7 @@ export default function HistoryPage() {
           ) : (
             filtered.map((artifact) => {
               const StatusIcon = STATUS_ICON[artifact.status] ?? FileText;
-              const confidence = (artifact as any).evidence_confidence_score ?? 0;
+              const confidence = ((artifact)).evidence_confidence_score ?? 0;
               const childName = demoSeed(DEMO_CHILDREN).find((c) => c.id === artifact.child_id)?.name;
               return (
                 <div

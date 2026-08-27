@@ -324,7 +324,7 @@ export class CaraModelRouter {
     riskLevel: CaraRiskLevel,
     sensitivity: CaraDataSensitivity,
   ): boolean {
-    if (TASKS_REQUIRING_APPROVAL.includes(taskType as any)) return true;
+    if ((TASKS_REQUIRING_APPROVAL as readonly string[]).includes(taskType)) return true;
     if (riskLevel === "critical") return true;
     if (sensitivity === "safeguarding_sensitive") return true;
     if (sensitivity === "legal_sensitive") return true;

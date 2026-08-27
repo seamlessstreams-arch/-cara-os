@@ -464,8 +464,8 @@ describe("CaraAuditLogger", () => {
     const entry = logger.logTaskExecution(mockRequest, mockResult);
     // Entry should only have promptHash, never raw prompt
     expect(entry.promptHash).toBe("abc123");
-    expect((entry as any).prompt).toBeUndefined();
-    expect((entry as any).rawPrompt).toBeUndefined();
+    expect((entry as unknown as Record<string, unknown>).prompt).toBeUndefined();
+    expect((entry as unknown as Record<string, unknown>).rawPrompt).toBeUndefined();
   });
 
   it("filters audit logs by organisation", () => {

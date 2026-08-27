@@ -281,8 +281,9 @@ function StaffReadinessCard({
 // ── Stage Summary Snapshot ───────────────────────────────────────────────────
 
 function StageDistributionBar({ profiles }: { profiles: StaffCompetencyProfile[] }) {
-  const stageCounts: Record<PathwayStage, number> = {} as any;
-  PATHWAY_STAGE_ORDER.forEach((s) => { stageCounts[s] = 0; });
+  const stageCounts = Object.fromEntries(
+    PATHWAY_STAGE_ORDER.map((s) => [s, 0]),
+  ) as Record<PathwayStage, number>;
   profiles.forEach((p) => { stageCounts[p.current_stage]++; });
   const total = profiles.length || 1;
 

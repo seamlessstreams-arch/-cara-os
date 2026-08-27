@@ -350,7 +350,7 @@ function ChildTab() {
           {!profile ? <p className="text-sm text-[var(--cs-text-muted)]">No PACE profile yet for this child. Use Create profile to capture what works.</p> : (
             <>
               {PROFILE_FIELDS.map((f) => {
-                const vals = (profile as any)[f.key] as string[] | undefined;
+                const vals = ((profile))[f.key] as string[] | undefined;
                 return vals && vals.length ? <div key={f.key as string}><p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--cs-text-muted)]">{f.label}</p><List items={vals} /></div> : null;
               })}
               {profile.preferredDebriefStyle && <div><p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--cs-text-muted)]">Preferred debrief style</p><p className="text-sm text-[var(--cs-text-secondary)]">{profile.preferredDebriefStyle}</p></div>}
