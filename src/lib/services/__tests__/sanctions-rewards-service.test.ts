@@ -15,6 +15,7 @@ import {
   SANCTION_STATUS,
   PROHIBITED_SANCTIONS,
 } from "../sanctions-rewards-service";
+import type { RewardRecord, SanctionRecord } from "../sanctions-rewards-service";
 
 const { computeSanctionRewardMetrics, identifyBehaviourManagementAlerts } =
   _testing;
@@ -36,8 +37,7 @@ function daysAgoISO(n: number): string {
 }
 
 /** Build a minimal SanctionRecord with sensible defaults. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function makeSanction(overrides: Record<string, unknown> = {}): any {
+function makeSanction(overrides: Partial<SanctionRecord> = {}): SanctionRecord {
   return {
     id: "sanc-1",
     home_id: "home-1",
@@ -67,8 +67,7 @@ function makeSanction(overrides: Record<string, unknown> = {}): any {
 }
 
 /** Build a minimal RewardRecord with sensible defaults. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function makeReward(overrides: Record<string, unknown> = {}): any {
+function makeReward(overrides: Partial<RewardRecord> = {}): RewardRecord {
   return {
     id: "rew-1",
     home_id: "home-1",

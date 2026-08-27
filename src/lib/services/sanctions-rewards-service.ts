@@ -23,6 +23,12 @@ export interface SanctionRecord {
   home_id: string;
   child_id: string;
   child_name: string;
+  // Permitted sanctions, followed by the Reg 19(3) prohibited ones. The
+  // prohibited values are listed deliberately: a record CAN arrive carrying
+  // one (the column is not constrained, and data can be imported), and
+  // `identifySanctionsAlerts` exists to flag exactly that. Leaving them out
+  // of the union did not stop such a record existing — it only stopped the
+  // detector, and its tests, from being able to describe one.
   sanction_type:
     | "verbal_reminder"
     | "time_out"
@@ -31,7 +37,15 @@ export interface SanctionRecord {
     | "restorative_conversation"
     | "natural_consequence"
     | "additional_chore"
-    | "early_bedtime";
+    | "early_bedtime"
+    | "corporal_punishment"
+    | "food_deprivation"
+    | "restriction_of_contact"
+    | "humiliation"
+    | "medication_as_control"
+    | "financial_penalty"
+    | "group_punishment"
+    | "deprivation_of_sleep";
   reason: string;
   description: string;
   incident_date: string;
@@ -78,7 +92,9 @@ export interface RewardRecord {
 
 // ── Constants ───────────────────────────────────────────────────────────────
 
-export const SANCTION_TYPES: { type: string; label: string }[] = [
+export type SanctionType = SanctionRecord["sanction_type"];
+
+export const SANCTION_TYPES: { type: SanctionType; label: string }[] = [
   { type: "verbal_reminder", label: "Verbal Reminder" },
   { type: "time_out", label: "Time Out" },
   { type: "loss_of_privilege", label: "Loss of Privilege" },
@@ -112,7 +128,7 @@ export const SANCTION_STATUS: { status: string; label: string }[] = [
  * Referenced in training, compliance checks, and SCCIF evidence.
  * Reg 19(3) — no measure of control used which is not permitted.
  */
-export const PROHIBITED_SANCTIONS: { sanction: string; label: string; regulation: string }[] = [
+export const PROHIBITED_SANCTIONS: { sanction: SanctionType; label: string; regulation: string }[] = [
   { sanction: "corporal_punishment", label: "Corporal Punishment", regulation: "Reg 19(3)(a)" },
   { sanction: "food_deprivation", label: "Deprivation of Food or Drink", regulation: "Reg 19(3)(b)" },
   { sanction: "restriction_of_contact", label: "Restriction of Contact with Family/Social Worker", regulation: "Reg 19(3)(c)" },

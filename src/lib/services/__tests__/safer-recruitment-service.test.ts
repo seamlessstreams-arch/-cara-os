@@ -16,13 +16,13 @@ import {
   PREEMPLOYMENT_CHECK_STATUSES,
   RECRUITMENT_STAGES,
 } from "../safer-recruitment-service";
+import type { DBSCheck, PreEmploymentCheck, StaffReference } from "../safer-recruitment-service";
 
 const { computeRecruitmentCompliance, identifyRecruitmentAlerts } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function makeDBSCheck(overrides: Record<string, unknown> = {}): any {
+function makeDBSCheck(overrides: Partial<DBSCheck> = {}): DBSCheck {
   return {
     id: "dbs-1",
     staff_id: "staff-1",
@@ -42,8 +42,7 @@ function makeDBSCheck(overrides: Record<string, unknown> = {}): any {
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function makeReference(overrides: Record<string, unknown> = {}): any {
+function makeReference(overrides: Partial<StaffReference> = {}): StaffReference {
   return {
     id: "ref-1",
     staff_id: "staff-1",
@@ -67,8 +66,7 @@ function makeReference(overrides: Record<string, unknown> = {}): any {
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function makeCheck(overrides: Record<string, unknown> = {}): any {
+function makeCheck(overrides: Partial<PreEmploymentCheck> = {}): PreEmploymentCheck {
   return {
     id: "chk-1",
     staff_id: "staff-1",

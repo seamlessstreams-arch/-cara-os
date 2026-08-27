@@ -15,10 +15,11 @@ import {
   computeDisciplinaryMetrics,
   identifyDisciplinaryAlerts,
 } from "../staff-disciplinary-service";
+import type { DisciplinaryRecord, GrievanceRecord } from "../staff-disciplinary-service";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-const disciplinaryDefaults = {
+const disciplinaryDefaults: DisciplinaryRecord = {
   id: "disc-1",
   home_id: "home-1",
   staff_id: "staff-1",
@@ -53,7 +54,7 @@ const disciplinaryDefaults = {
   updated_at: "2026-05-01T10:00:00Z",
 };
 
-const grievanceDefaults = {
+const grievanceDefaults: GrievanceRecord = {
   id: "griev-1",
   home_id: "home-1",
   staff_id: "staff-2",
@@ -78,14 +79,12 @@ const grievanceDefaults = {
 };
 
 /** Build a minimal disciplinary record with sensible defaults. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function makeDisciplinary(overrides: Record<string, unknown> = {}): any {
+function makeDisciplinary(overrides: Partial<DisciplinaryRecord> = {}): DisciplinaryRecord {
   return { ...disciplinaryDefaults, ...overrides };
 }
 
 /** Build a minimal grievance record with sensible defaults. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function makeGrievance(overrides: Record<string, unknown> = {}): any {
+function makeGrievance(overrides: Partial<GrievanceRecord> = {}): GrievanceRecord {
   return { ...grievanceDefaults, ...overrides };
 }
 

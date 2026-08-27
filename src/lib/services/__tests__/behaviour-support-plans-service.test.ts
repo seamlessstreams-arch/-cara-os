@@ -915,7 +915,7 @@ describe("computeBspMetrics", () => {
 
   it("by_strategy handles empty strategies array", () => {
     const plans = [
-      makePlan({ id: "bsp1", strategies: [] as any }),
+      makePlan({ id: "bsp1", strategies: ([]) }),
     ];
     const m = computeBspMetrics(plans, 10);
     expect(Object.keys(m.by_strategy)).toHaveLength(0);
@@ -974,7 +974,7 @@ describe("computeBspMetrics", () => {
 
   it("by_trigger handles empty triggers array", () => {
     const plans = [
-      makePlan({ id: "bsp1", triggers: [] as any }),
+      makePlan({ id: "bsp1", triggers: ([]) }),
     ];
     const m = computeBspMetrics(plans, 10);
     expect(Object.keys(m.by_trigger)).toHaveLength(0);
@@ -1122,8 +1122,8 @@ describe("computeBspMetrics", () => {
           parent_informed: i % 3 === 0,
           child_views: i % 2 === 0 ? "views" : null,
           incidents_since_last_review: i % 10,
-          strategies: ["preventive", "therapeutic"] as any,
-          triggers: ["anxiety", "frustration"] as any,
+          strategies: (["preventive", "therapeutic"]),
+          triggers: (["anxiety", "frustration"]),
         }),
       );
     }

@@ -83,14 +83,12 @@ const restrictionDefaults: RestrictionRecord = {
 };
 
 /** Build a minimal DoL order with sensible defaults. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function makeOrder(overrides: Record<string, unknown> = {}): any {
+function makeOrder(overrides: Partial<DoLOrder> = {}): DoLOrder {
   return { ...orderDefaults, ...overrides };
 }
 
 /** Build a minimal restriction record with sensible defaults. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function makeRestriction(overrides: Record<string, unknown> = {}): any {
+function makeRestriction(overrides: Partial<RestrictionRecord> = {}): RestrictionRecord {
   return { ...restrictionDefaults, ...overrides };
 }
 

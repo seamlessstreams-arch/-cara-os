@@ -18,6 +18,7 @@ import {
   ENTITLEMENT_STATUS,
   ENTITLEMENT_FREQUENCY,
 } from "../leaving-care-service";
+import type { IndependenceAssessment, LeavingCareEntitlement, PathwayPlan } from "../leaving-care-service";
 
 const { computeLeavingCareMetrics, identifyLeavingCareAlerts } = _testing;
 
@@ -45,8 +46,7 @@ function daysAgoISO(n: number): string {
 }
 
 /** Build a minimal PathwayPlan with sensible defaults. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function makePathwayPlan(overrides: Record<string, unknown> = {}): any {
+function makePathwayPlan(overrides: Partial<PathwayPlan> = {}): PathwayPlan {
   return {
     id: "pp-1",
     home_id: "home-1",
@@ -82,8 +82,7 @@ function makePathwayPlan(overrides: Record<string, unknown> = {}): any {
 }
 
 /** Build a minimal IndependenceAssessment with sensible defaults. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function makeAssessment(overrides: Record<string, unknown> = {}): any {
+function makeAssessment(overrides: Partial<IndependenceAssessment> = {}): IndependenceAssessment {
   return {
     id: "ia-1",
     home_id: "home-1",
@@ -103,8 +102,7 @@ function makeAssessment(overrides: Record<string, unknown> = {}): any {
 }
 
 /** Build a minimal LeavingCareEntitlement with sensible defaults. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function makeEntitlement(overrides: Record<string, unknown> = {}): any {
+function makeEntitlement(overrides: Partial<LeavingCareEntitlement> = {}): LeavingCareEntitlement {
   return {
     id: "ent-1",
     home_id: "home-1",

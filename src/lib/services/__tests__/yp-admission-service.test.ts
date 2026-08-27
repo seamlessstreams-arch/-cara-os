@@ -23,12 +23,12 @@ const {
 
 /** Minimal PreAdmissionItem with only the fields the pure function inspects. */
 function item(is_mandatory: boolean, is_completed: boolean): PreAdmissionItem {
-  return { is_mandatory, is_completed } as any;
+  return { is_mandatory, is_completed } as PreAdmissionItem;
 }
 
 /** Minimal MatchingFactor with score and risk_level. */
 function factor(score: number, risk_level: "low" | "medium" | "high"): MatchingFactor {
-  return { score, risk_level } as any;
+  return { score, risk_level } as MatchingFactor;
 }
 
 // ── validatePhaseTransition ───────────────────────────────────────────────

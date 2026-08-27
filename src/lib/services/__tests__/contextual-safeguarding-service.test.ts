@@ -27,6 +27,8 @@ import {
 import type {
   ExploitationScreening,
   LocalityRiskAssessment,
+  ScreeningType,
+  LocalityRiskType,
 } from "../contextual-safeguarding-service";
 
 const {
@@ -429,8 +431,7 @@ describe("getLabelForScreeningType", () => {
   });
 
   it("returns the raw type string for unknown types", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect(getLabelForScreeningType("unknown_type" as any)).toBe("unknown_type");
+    expect(getLabelForScreeningType("unknown_type" as ScreeningType)).toBe("unknown_type");
   });
 });
 
@@ -452,8 +453,7 @@ describe("getLabelForLocalityRiskType", () => {
   });
 
   it("returns the raw type string for unknown types", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect(getLabelForLocalityRiskType("unknown_risk" as any)).toBe("unknown_risk");
+    expect(getLabelForLocalityRiskType("unknown_risk" as LocalityRiskType)).toBe("unknown_risk");
   });
 });
 
