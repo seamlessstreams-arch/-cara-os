@@ -10,6 +10,7 @@
 export const dynamic = "force-dynamic";
 
 import { persistReflectiveSupervision } from "@/lib/supabase/incident-persist";
+import type { StaffMember } from "@/types";
 import { NextRequest, NextResponse } from "next/server";
 import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
@@ -20,7 +21,7 @@ import { readJsonBody } from "@/lib/http/read-json";
 
 const SUPERVISEE_ROLES = new Set(["registered_manager", "deputy_manager", "team_leader", "residential_care_worker", "bank_staff"]);
 
-function staffName(s: any): string {
+function staffName(s: StaffMember): string {
   return s.full_name || [s.first_name, s.last_name].filter(Boolean).join(" ") || s.id;
 }
 function superviseeStaff(staffList: any): StaffLite[] {

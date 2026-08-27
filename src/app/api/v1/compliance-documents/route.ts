@@ -31,7 +31,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  let body: any = {};
+  let body: Record<string, unknown> = {};
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   try { body = __parsed.data; } catch { body = {}; }
@@ -58,7 +58,7 @@ export async function POST(req: Request) {
     id,
     original_file_name: body.fileName ? String(body.fileName) : `${String(body.title ?? label)}.txt`,
     stored_file_path: "",
-    file_type: fileTypeOf(body.fileName),
+    file_type: fileTypeOf(String(body.fileName ?? "")),
     file_size: text.length,
     uploaded_by: actor,
     uploaded_at: now,

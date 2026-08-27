@@ -26,7 +26,7 @@ export function GET(req: Request) {
 export async function PUT(req: Request) {
   const auth = requirePermission(req, PERMISSIONS.EDIT_YOUNG_PEOPLE);
   if (auth instanceof NextResponse) return auth;
-  let body: any = {};
+  let body: Record<string, unknown> = {};
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   try { body = __parsed.data; } catch { body = {}; }

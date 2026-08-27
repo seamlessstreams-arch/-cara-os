@@ -32,7 +32,7 @@ export async function GET() {
     return c ? (c.preferred_name || [c.first_name, c.last_name].filter(Boolean).join(" ") || id) : undefined;
   };
   const staff = (id?: string | null): string | undefined => (id ? getStaffName(id) : undefined);
-  const iso = (v: any): string | undefined => (v ? String(v).slice(0, 10) : undefined);
+  const iso = (v: unknown): string | undefined => (v ? String(v).slice(0, 10) : undefined);
 
   const complaints: ComplaintInput[] = (((complaintsList ?? []))).map((c) => ({
     id: String(c.id ?? ""),

@@ -90,7 +90,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const staffList = (((await dal.staff.findAll()) ?? []));
-  let body: any = {};
+  let body: Record<string, unknown> = {};
   const __parsed2 = await readJsonBody(req);
   if (!__parsed2.ok) return __parsed2.response;
   try { body = __parsed2.data; } catch { body = {}; }
@@ -102,7 +102,7 @@ export async function POST(req: Request) {
 
 export async function PATCH(req: Request) {
   const [staffList, list] = await Promise.all([dal.staff.findAll(), dal.shiftPatterns.findAll()]) as [any[], ShiftPattern[]];
-  let body: any = {};
+  let body: Record<string, unknown> = {};
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   try { body = __parsed.data; } catch { body = {}; }

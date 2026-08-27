@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { YoungPerson } from "@/types";
 import { dal } from "@/lib/db";
 import type {
   ChildImpactSummary,
@@ -8,7 +9,7 @@ import type {
 
 export const dynamic = "force-dynamic";
 
-function initials(yp: any): string {
+function initials(yp: YoungPerson): string {
   const f = ((yp.first_name || yp.preferred_name || "?")[0] ?? "?").toUpperCase();
   const l = ((yp.last_name || "?")[0] ?? "?").toUpperCase();
   return `${f}.${l}.`;

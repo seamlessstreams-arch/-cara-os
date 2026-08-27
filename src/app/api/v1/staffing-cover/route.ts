@@ -38,7 +38,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  let body: any = {};
+  let body: Record<string, unknown> = {};
   const __parsed2 = await readJsonBody(req);
   if (!__parsed2.ok) return __parsed2.response;
   try { body = __parsed2.data; } catch { body = {}; }
@@ -72,8 +72,8 @@ export async function POST(req: Request) {
   await dal.shiftCoverNotes.create(note);
 
   // Recompute over the same fortnight so the row flips to "logged" in the response.
-  const from = body.from || todayStr();
-  const to = body.to || addDays(from, 13);
+  const from = String(body.from ?? "") || todayStr();
+  const to = String(body.to ?? "") || addDays(from, 13);
   return NextResponse.json({ data: computeCover(await loadCoverShape(), from, to), note });
 }
 
@@ -81,7 +81,7 @@ export async function POST(req: Request) {
 // waking_night_required, from?, to? } — update the home staffing policy
 // ("updatable for need / risk") and recompute the forward picture.
 export async function PATCH(req: Request) {
-  let body: any = {};
+  let body: Record<string, unknown> = {};
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   try { body = __parsed.data; } catch { body = {}; }
@@ -101,7 +101,7 @@ export async function PATCH(req: Request) {
   };
   await dal.staffingPolicy.set(next);
 
-  const from = body.from || todayStr();
-  const to = body.to || addDays(from, 13);
+  const from = String(body.from ?? "") || todayStr();
+  const to = String(body.to ?? "") || addDays(from, 13);
   return NextResponse.json({ data: computeCover(await loadCoverShape(), from, to) });
 }
