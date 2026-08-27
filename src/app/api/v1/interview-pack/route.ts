@@ -26,7 +26,7 @@ export async function GET(req: Request) {
 
   const employer: EmployerValuesProfile | null = (employerValuesProfilesList ?? [])[0] ?? null;
   const candidates: CandidateValuesProfile[] = candidateValuesProfilesList ?? [];
-  const profiles: any[] = candidateProfilesList ?? [];
+  const profiles = candidateProfilesList ?? [];
   const nameFor = (cid: string) => {
     const c = candidates.find((x) => x.candidate_id === cid);
     if (c?.candidate_name) return c.candidate_name;

@@ -24,7 +24,7 @@ export async function GET(req: Request) {
     ]);
   const employer: EmployerValuesProfile | undefined = (employerValuesProfilesList ?? [])[0];
   const candidates: CandidateValuesProfile[] = candidateValuesProfilesList ?? [];
-  const profiles: any[] = candidateProfilesList ?? [];
+  const profiles = candidateProfilesList ?? [];
 
   if (!employer) {
     return NextResponse.json({ data: { employer: null, matches: [], disclaimer: MATCH_DISCLAIMER } });

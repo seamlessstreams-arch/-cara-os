@@ -26,6 +26,7 @@ import type { IncidentType } from "@/lib/constants";
 import { readJsonBody } from "@/lib/http/read-json";
 import { formatRate } from "@/lib/metrics/rate";
 import { todayStr } from "@/lib/utils";
+import type { InductionCheckStatus } from "@/types/extended";
 
 // ─── Deterministic safeguarding scan (no AI key required) ────────────────────
 
@@ -33,6 +34,21 @@ const SAFEGUARDING_TYPES = [
   "safeguarding_concern", "exploitation_concern", "self_harm",
   "missing_from_care", "contextual_safeguarding", "allegation",
 ];
+
+// The store records a finished induction as "signed_off"; the development
+// engine's scale spells it "completed". Untranslated, a signed-off induction
+// matched neither the completed nor the in-progress filter and simply fell
+// out of the counts. Mapping every store value explicitly means a new one
+// cannot slip through the same way.
+const INDUCTION_STATUS: Record<
+  InductionCheckStatus,
+  "not_started" | "in_progress" | "completed" | "overdue"
+> = {
+  not_started: "not_started",
+  in_progress: "in_progress",
+  completed: "completed",
+  signed_off: "completed",
+};
 
 function deterministicSafeguardingScan() {
   const store = getStore();
@@ -325,18 +341,18 @@ function deterministicStaffDevelopmentSummary(): string {
     mandatory: Boolean(q.mandatory), status: q.status, started_at: q.started_at ?? undefined,
     completed_at: q.completed_at ?? undefined, expiry_date: q.expiry_date ?? undefined,
   }));
-  const inductions = (store.inductionRecords ?? []).map((i: any) => {
-    const items: any[] = i.items ?? [];
+  const inductions = (store.inductionRecords ?? []).map((i) => {
+    const items = i.items ?? [];
     return {
       id: i.id, staff_id: i.staff_id, start_date: i.start_date, target_completion_date: i.target_completion_date,
-      overall_status: i.overall_status, total_items: items.length,
+      overall_status: INDUCTION_STATUS[i.overall_status], total_items: items.length,
       completed_items: items.filter((it) => it.status === "completed" || it.status === "signed_off").length,
       overdue_items: items.filter((it) => it.status === "not_started" || it.status === "in_progress").length,
       probation_passed: Boolean(i.probation_passed),
     };
   });
-  const development_plans = (store.developmentPlans ?? []).map((dp: any) => {
-    const actions: any[] = dp.actions ?? [];
+  const development_plans = (store.developmentPlans ?? []).map((dp) => {
+    const actions = dp.actions ?? [];
     return {
       id: dp.id, staff_id: dp.staff_id, title: dp.title, from_stage: dp.from_stage ?? "", to_stage: dp.to_stage ?? "",
       status: dp.status, total_actions: actions.length, completed_actions: actions.filter((a) => a.completed).length,

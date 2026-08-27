@@ -50,7 +50,7 @@ export async function GET() {
     ]);
   const today = todayStr();
 
-  const allStaff: any[] = staffList ?? [];
+  const allStaff = staffList ?? [];
   const staff: StaffLite[] = allStaff
     .filter((s) => s.employment_status !== "left" && SUPERVISEE_ROLES.has(String(s.role)))
     .map((s) => ({ id: s.id, name: staffName(s), role: s.role ?? s.job_title ?? null }));
@@ -60,10 +60,10 @@ export async function GET() {
   const supOverview = computeSupervisionOverview({ records: supRecords, staff, today });
   const supByStaff = new Map(supOverview.by_staff.map((s) => [s.staff_id, s]));
 
-  const training: any[] = trainingRecordsList ?? [];
-  const incidents: any[] = incidentsList ?? [];
-  const shifts: any[] = shiftsList ?? [];
-  const leave: any[] = leaveRequestsList ?? leaveList ?? [];
+  const training = trainingRecordsList ?? [];
+  const incidents = incidentsList ?? [];
+  const shifts = shiftsList ?? [];
+  const leave = leaveRequestsList ?? leaveList ?? [];
 
   const signals: StaffSignalsInput[] = staff.map((s) => {
     const sup = supByStaff.get(s.id);

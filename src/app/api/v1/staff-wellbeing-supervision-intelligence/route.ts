@@ -101,7 +101,7 @@ export async function GET() {
       rec.wellbeing_score <= 3 &&
       daysBetween(followUpDate, today) > 0;
 
-    const rawActions: any[] = rec.actions ?? [];
+    const rawActions = rec.actions ?? [];
     const actions: SupervisionAction[] = rawActions.map((a) => {
       const dueStr = typeof a.due === "string" ? a.due.slice(0, 10) : null;
       const overdue = !a.done && dueStr !== null && daysBetween(dueStr, today) > 0;

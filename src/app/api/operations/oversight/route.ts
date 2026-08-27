@@ -1,4 +1,6 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { enumParam } from "@/lib/http/enum-param";
+import { OVERSIGHT_RECORD_TYPE_VALUES } from "@/types/operations";
 import { NextRequest, NextResponse } from "next/server";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
 import {
@@ -27,35 +29,46 @@ export async function GET(request: NextRequest) {
 
   // Records needing oversight
   if (type === "needed") {
-    const recordType = searchParams.get("recordType") as any;
-    if (!recordType) return NextResponse.json({ error: "recordType required" }, { status: 400 });
-    const result = await getRecordsNeedingOversight(homeId, recordType);
+    const recordType = enumParam(
+      "recordType", searchParams.get("recordType"), OVERSIGHT_RECORD_TYPE_VALUES,
+    );
+    if (!recordType.ok) return recordType.response;
+    if (!recordType.value) return NextResponse.json({ error: "recordType required" }, { status: 400 });
+    const result = await getRecordsNeedingOversight(homeId, recordType.value);
     if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
     return NextResponse.json({ ok: true, data: result.data });
   }
 
   // Cara prompts (client-side generation — no DB needed)
   if (type === "prompts") {
-    const recordType = searchParams.get("recordType") as any;
+    const recordType = enumParam(
+      "recordType", searchParams.get("recordType"), OVERSIGHT_RECORD_TYPE_VALUES,
+    );
+    if (!recordType.ok) return recordType.response;
     const recordSummary = searchParams.get("summary") ?? "";
     const childName = searchParams.get("childName") ?? undefined;
     const childAge = searchParams.get("childAge") ? parseInt(searchParams.get("childAge")!) : undefined;
 
-    if (!recordType) return NextResponse.json({ error: "recordType required" }, { status: 400 });
+    if (!recordType.value) return NextResponse.json({ error: "recordType required" }, { status: 400 });
 
     const prompts = generateOversightPrompts({
-      recordType,
+      recordType: recordType.value,
       recordSummary,
       childName,
       childAge,
-      regulationRefs: OVERSIGHT_REGULATION_REFS[recordType as keyof typeof OVERSIGHT_REGULATION_REFS],
+      regulationRefs: OVERSIGHT_REGULATION_REFS[recordType.value],
     });
     return NextResponse.json({ ok: true, data: prompts });
   }
 
   // List notes
+  const listRecordType = enumParam(
+    "recordType", searchParams.get("recordType"), OVERSIGHT_RECORD_TYPE_VALUES,
+  );
+  if (!listRecordType.ok) return listRecordType.response;
+
   const result = await listOversightNotes(homeId, {
-    recordType: searchParams.get("recordType") as any ?? undefined,
+    recordType: listRecordType.value,
     recordId: searchParams.get("recordId") ?? undefined,
     oversightBy: searchParams.get("oversightBy") ?? undefined,
     limit: parseInt(searchParams.get("limit") ?? "50"),
