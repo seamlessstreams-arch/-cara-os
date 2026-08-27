@@ -112,7 +112,7 @@ function makeNightAnxietySupport(
 function baseInput(
   overrides: Partial<NightCareQualityInput> = {},
 ): NightCareQualityInput {
-  return {
+  return ({
     today: "2025-06-01",
     total_children: 4,
     night_checks: [
@@ -131,7 +131,7 @@ function baseInput(
     ],
     night_anxiety_support: [makeNightAnxietySupport("nas1")],
     ...overrides,
-  } as any;
+  });
 }
 
 /* ── Tests ──────────────────────────────────────────────────────────────────── */

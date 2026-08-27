@@ -237,12 +237,12 @@ const PRACTICE_AREA_LABELS: Record<PracticeArea, string> = {
 
 // ── Label Functions ──────────────────────────────────────────────────────────
 
-export function getActivityTypeLabel(t: ReflectiveActivityType): string {
-  return ACTIVITY_TYPE_LABELS[t] ?? t.replace(/_/g, " ");
+export function getActivityTypeLabel(t: ReflectiveActivityType | string): string {
+  return ACTIVITY_TYPE_LABELS[t as ReflectiveActivityType] ?? t.replace(/_/g, " ");
 }
 
-export function getPracticeAreaLabel(a: PracticeArea): string {
-  return PRACTICE_AREA_LABELS[a] ?? a.replace(/_/g, " ");
+export function getPracticeAreaLabel(a: PracticeArea | string): string {
+  return PRACTICE_AREA_LABELS[a as PracticeArea] ?? a.replace(/_/g, " ");
 }
 
 export function getTeamActivityTypes(): ReflectiveActivityType[] {

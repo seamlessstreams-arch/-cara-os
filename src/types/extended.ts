@@ -1,4 +1,5 @@
 import type { Task, Incident, YoungPerson, Shift } from "./index";
+import type { InterventionCategory } from "./intelligence";
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — EXTENDED TYPES
@@ -495,6 +496,8 @@ export interface Intervention {
   child_id: string;
   title: string;
   description: string;
+  /** Required by the add form; null on records made before it was stored. */
+  category: InterventionCategory | null;
   rationale: string;
   started_at: string;
   review_date: string | null;
@@ -535,6 +538,8 @@ export interface PracticeBankEntry {
   category: "what_works" | "what_to_avoid" | "language" | "preparation" | "repair" | "regulation" | "engagement" | "education" | "general";
   title: string;
   description: string;
+  /** The situation the entry applies to; collected by the add form. */
+  context: string | null;
   evidence: string | null;
   contributed_by: string | null;
   reviewed_by: string | null;

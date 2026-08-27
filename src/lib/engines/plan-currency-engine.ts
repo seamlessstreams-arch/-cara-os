@@ -116,7 +116,7 @@ export function computePlanCurrency(input: PlanCurrencyInput): PlanCurrencyResul
   for (const pt of input.plan_types) byType.set(pt.key, { plan_type: pt.label, plan_type_key: pt.key, ...blank() });
   for (const r of records) {
     const t = byType.get(r.plan_type_key);
-    if (t) add(t as any, r.status);
+    if (t) add((t), r.status);
   }
   const by_plan_type = [...byType.values()].sort((a, b) => b.overdue - a.overdue || b.due_soon - a.due_soon || a.plan_type.localeCompare(b.plan_type));
 

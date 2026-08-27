@@ -63,6 +63,7 @@ export async function POST(req: NextRequest) {
     category: body.category!,
     title: body.title!,
     description: body.description!,
+    context: body.context ?? null,
     evidence: body.evidence ?? null,
     contributed_by: body.contributed_by ?? null,
     reviewed_by: body.reviewed_by ?? null,

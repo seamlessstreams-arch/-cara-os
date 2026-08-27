@@ -59,6 +59,7 @@ export async function POST(req: NextRequest) {
     child_id: body.child_id!,
     title: body.title!,
     description: body.description!,
+    category: body.category ?? null,
     rationale: body.rationale!,
     started_at: body.started_at!,
     review_date: body.review_date ?? null,

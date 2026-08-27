@@ -193,7 +193,7 @@ function run(overrides: Partial<BirthdayCelebrationInput> = {}) {
 }
 
 // Helper: create N records with given factory and overrides
-function makeN<T>(n: number, factory: (o?: any) => T, overrides: Partial<T> = {}): T[] {
+function makeN<T>(n: number, factory: (o?: Partial<T>) => T, overrides: Partial<T> = {}): T[] {
   return Array.from({ length: n }, () => factory(overrides));
 }
 

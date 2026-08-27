@@ -48,12 +48,12 @@ function useIntelligenceSummary() {
   const today = now.toISOString().slice(0, 10);
   const weekAgo = new Date(now.getTime() - 7 * 86400000).toISOString().slice(0, 10);
 
-  const children = (store.youngPeople as any[] || []).filter((yp) => yp.status === "current");
-  const staff = (store.staff as any[] || []);
-  const incidents = (store.incidents as any[] || []).filter((i) => i.date >= weekAgo);
-  const tasks = (store.tasks as any[] || []).filter((t) => t.status !== "completed" && t.status !== "cancelled");
+  const children = ((store.youngPeople) || []).filter((yp) => yp.status === "current");
+  const staff = ((store.staff) || []);
+  const incidents = ((store.incidents) || []).filter((i) => i.date >= weekAgo);
+  const tasks = ((store.tasks) || []).filter((t) => t.status !== "completed" && t.status !== "cancelled");
   const overdueTasks = tasks.filter((t) => t.due_date && t.due_date < today);
-  const todayLogs = (store.dailyLog as any[] || []).filter((l) => l.date === today);
+  const todayLogs = ((store.dailyLog) || []).filter((l) => l.date === today);
   const missingLogs = children.length - new Set(todayLogs.map((l) => l.child_id)).size;
 
   const needsAttention: { icon: string; text: string; level: "red" | "amber" }[] = [];
@@ -63,18 +63,18 @@ function useIntelligenceSummary() {
   // Needs attention
   if (missingLogs > 0) needsAttention.push({ icon: "FileText", text: `${missingLogs} daily log${missingLogs > 1 ? "s" : ""} missing for today`, level: "red" });
   if (overdueTasks.length > 0) needsAttention.push({ icon: "CheckSquare", text: `${overdueTasks.length} overdue task${overdueTasks.length > 1 ? "s" : ""}`, level: "amber" });
-  const needsOversight = (store.incidents as any[] || []).filter((i) => i.requires_oversight && !i.oversight_by).length;
+  const needsOversight = ((store.incidents) || []).filter((i) => i.requires_oversight && !i.oversight_by).length;
   if (needsOversight > 0) needsAttention.push({ icon: "Shield", text: `${needsOversight} incident${needsOversight > 1 ? "s" : ""} awaiting manager oversight`, level: "red" });
 
   // Going well
   if (incidents.length === 0) goingWell.push("No incidents in the last 7 days");
   if (missingLogs === 0) goingWell.push("All daily logs completed today");
   if (overdueTasks.length === 0) goingWell.push("No overdue tasks");
-  const welfareChecks = (store.welfareChecks as any[] || []).filter((w) => w.date >= weekAgo);
+  const welfareChecks = ((store.welfareChecks) || []).filter((w) => w.check_date >= weekAgo);
   if (welfareChecks.length >= children.length) goingWell.push("Welfare checks on track this week");
 
   // Overdue
-  const fireDrills = (store.fireDrills as any[] || []);
+  const fireDrills = ((store.fireDrills) || []);
   const lastDrill = fireDrills.sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""))[0];
   if (lastDrill) {
     const daysSince = -londonDayDiff(lastDrill.date, now);

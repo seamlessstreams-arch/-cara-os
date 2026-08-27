@@ -369,6 +369,7 @@ intelligenceStore.interventions = [
     title: "Proactive 5pm transition support — Alex",
     description:
       "From 4:45pm each day, a consistent named staff member (Samuel where possible) will meet Alex informally — not in a structured way but with activity or company — to bridge the school-to-home transition. The aim is to reduce the activation that appears to occur at this time.",
+    category: null,
     rationale:
       "Cara pattern alert identified consistent dysregulation between 17:00–19:00. Transition periods are known high-risk times for young people with a history of relational trauma. Proactive co-regulation before the window opens is more effective than reactive de-escalation.",
     started_at: seedDay(-10),
@@ -393,6 +394,7 @@ intelligenceStore.interventions = [
     title: "Contact preparation and post-contact recovery plan",
     description:
       "Before each contact session with her mother, Casey's key worker will spend 20 minutes with her to check in, answer any worries, and agree a 'come back to' plan for after. After contact, Casey will have unstructured time with her key worker — no activities planned, just available presence — for at least 45 minutes.",
+    category: null,
     rationale:
       "Pattern alert identified consistent post-contact distress in Casey over 3 weeks. Contact with her mother is meaningful but destabilising. Preparation and recovery time are evidence-based protective approaches for contact-related distress in looked-after children.",
     started_at: seedDay(-1),
@@ -417,6 +419,7 @@ intelligenceStore.interventions = [
     title: "Education aspirations planning — Jordan",
     description:
       "Monthly 1:1 sessions with key worker focused on Jordan's post-16 aspirations, pathway options, and next steps. Sessions will draw on her current GCSE trajectory and use a strengths-based approach to help her build a realistic and ambitious future plan.",
+    category: null,
     rationale:
       "Jordan's sustained education engagement and achievement milestone present an opportunity to build on her protective factors and help her plan proactively for the future. This supports her stability and sense of agency.",
     started_at: seedDay(-5),
@@ -564,6 +567,7 @@ intelligenceStore.practiceBank = [
     title: "Offer activity before conversation",
     description:
       "Alex engages better when a shared activity (washing the car, cooking, going to the shop) precedes any attempt at conversation. Side-by-side activity reduces the pressure of direct eye contact and allows him to open up at his own pace.",
+    context: null,
     evidence: "log_mar_015 — first sustained conversation happened during car washing with Samuel.",
     contributed_by: "staff_lackson",
     reviewed_by: "staff_darren",
@@ -581,6 +585,7 @@ intelligenceStore.practiceBank = [
     title: "Avoid raising concerns or behaviour conversations in the first 30 minutes after school",
     description:
       "Attempting to address issues or concerns with Alex immediately when he arrives back from school consistently results in escalation. He needs at least 30 minutes of low-demand time before any conversation about behaviour, expectations, or incidents.",
+    context: null,
     evidence: "Three incidents in the 5pm window — all preceded by immediate staff engagement on arrival.",
     contributed_by: "staff_darren",
     reviewed_by: "staff_darren",
@@ -598,6 +603,7 @@ intelligenceStore.practiceBank = [
     title: "Box breathing with Casey — effective co-regulation tool",
     description:
       "Casey has responded well to box breathing exercises when introduced during a calm moment (not mid-crisis). She has now used this independently on two occasions. Staff should reinforce this skill and acknowledge when she uses it.",
+    context: null,
     evidence: "inc_jas_001 — Casey used breathing strategies after 15 minutes. Resolved without further escalation.",
     contributed_by: "staff_chervelle",
     reviewed_by: "staff_ryan",
@@ -615,6 +621,7 @@ intelligenceStore.practiceBank = [
     title: "Avoid the word 'fine' — Casey interprets it as dismissal",
     description:
       "Casey has said explicitly that when adults say 'you'll be fine' it makes her feel unheard. Staff should instead use validating language: 'that sounds really hard', 'I can see this is upsetting for you', 'I'm here if you want to talk'.",
+    context: null,
     evidence: "Noted by Casey in key work session — documented in voice record vrc_jas_001.",
     contributed_by: "staff_ryan",
     reviewed_by: null,
@@ -632,6 +639,7 @@ intelligenceStore.practiceBank = [
     title: "Give Jordan 48 hours notice before any significant conversation",
     description:
       "Jordan needs advance notice for any conversation about her future, her placement, or her plan. Springing these topics on her — even positively — triggers anxiety. A 48-hour heads-up, with the option to choose the time and place of the conversation, respects her need for control and reduces the attachment-based anxiety response.",
+    context: null,
     evidence: "Identified through key work sessions with Ryan. Confirmed through observation of two unplanned planning conversations.",
     contributed_by: "staff_ryan",
     reviewed_by: "staff_darren",
@@ -649,6 +657,7 @@ intelligenceStore.practiceBank = [
     title: "Jordan responds well to being asked for her opinion or expertise",
     description:
       "Jordan lights up when staff genuinely ask for her view or advice — on cooking, on what film to watch, on how the home could be improved. This activates her sense of agency and belonging. It should be done authentically, not as a technique.",
+    context: null,
     evidence: "Observed across multiple daily log entries — most recently log_len_008.",
     contributed_by: "staff_ryan",
     reviewed_by: null,

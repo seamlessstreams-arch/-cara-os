@@ -106,7 +106,7 @@ function makeHealthRecordEntry(
 function baseInput(
   overrides: Partial<HealthWellbeingOversightInput> = {},
 ): HealthWellbeingOversightInput {
-  return {
+  return ({
     today: "2025-06-01",
     total_children: 4,
     health_assessments: [
@@ -138,7 +138,7 @@ function baseInput(
       makeHealthRecordEntry("hre2", { child_id: "c2" }),
     ],
     ...overrides,
-  } as any;
+  });
 }
 
 /* ── Tests ──────────────────────────────────────────────────────────────────── */

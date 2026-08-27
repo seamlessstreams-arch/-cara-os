@@ -107,7 +107,7 @@ function makePersonalPassport(
 function baseInput(
   overrides: Partial<CulturalIdentityDiversityInput> = {},
 ): CulturalIdentityDiversityInput {
-  return {
+  return ({
     today: "2025-06-01",
     total_children: 4,
     cultural_identity_plans: [
@@ -152,7 +152,7 @@ function baseInput(
       makePersonalPassport("pp4", { child_id: "c4" }),
     ],
     ...overrides,
-  } as any;
+  });
 }
 
 /* ── Tests ──────────────────────────────────────────────────────────────────── */
@@ -385,7 +385,7 @@ describe("Home Cultural Identity & Diversity Intelligence Engine", () => {
     function neutralInput(
       overrides: Partial<CulturalIdentityDiversityInput> = {},
     ): CulturalIdentityDiversityInput {
-      return {
+      return ({
         today: "2025-06-01",
         total_children: 4,
         cultural_identity_plans: [
@@ -413,7 +413,7 @@ describe("Home Cultural Identity & Diversity Intelligence Engine", () => {
           makePersonalPassport("pp1", { child_id: "c1", photo_current: false }),
         ],
         ...overrides,
-      } as any;
+      });
     }
 
     it("awards +4 for culturalPlanCoverageRate >= 100", () => {

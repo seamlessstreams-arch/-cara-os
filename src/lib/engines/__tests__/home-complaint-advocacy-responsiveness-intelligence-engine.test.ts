@@ -114,7 +114,7 @@ function makeParticipationEntry(
 function baseInput(
   overrides: Partial<ComplaintAdvocacyResponsivenessInput> = {},
 ): ComplaintAdvocacyResponsivenessInput {
-  return {
+  return ({
     today: "2025-06-01",
     total_children: 4,
     complaint_outcomes: [
@@ -139,7 +139,7 @@ function baseInput(
       makeParticipationEntry("pe4", { child_id: "c4" }),
     ],
     ...overrides,
-  } as any;
+  });
 }
 
 /* ── Tests ──────────────────────────────────────────────────────────────────── */
