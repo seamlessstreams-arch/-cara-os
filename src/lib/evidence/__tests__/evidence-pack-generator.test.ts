@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import type { YoungPerson } from "@/types";
 import {
   computeInspectionEvidencePack,
   type EvidencePackInput,
@@ -72,8 +73,16 @@ function emptyInput(): EvidencePackInput {
   };
 }
 
-const ALEX = { id: "yp_alex", name: "Alex", status: "current" };
-const JORDAN = { id: "yp_jordan", name: "Jordan", status: "current" };
+/** Fixtures supply only the fields the assertion under test exercises.
+ *  `Partial<T>` still checks every field name and value against the real
+ *  type, so a typo or a value outside a union fails here just as it would
+ *  in production — only the irrelevant required fields are omitted. */
+function fx<T>(o: NoInfer<Partial<T>>): T {
+  return o as T;
+}
+
+const ALEX = fx<YoungPerson>({ id: "yp_alex", first_name: "Alex", status: "current" });
+const JORDAN = fx<YoungPerson>({ id: "yp_jordan", first_name: "Jordan", status: "current" });
 
 function sectionById(input: EvidencePackInput, id: string) {
   return computeInspectionEvidencePack(input).sections.find((s) => s.id === id);
@@ -100,11 +109,11 @@ describe("evidence pack — practice-intelligence module sections", () => {
     const input = emptyInput();
     input.youngPeople = [ALEX];
     input.restrictionReviews = [
-      {
+      fx({
         id: "rr_strong",
         child_id: "yp_alex",
         review_date: "2026-06-01",
-        restriction_kind: "door_alarm",
+        restriction_kind: "surveillance_monitoring",
         restriction_description: "Night-time door sensor",
         child_wishes_feelings: "Alex says it helps him feel safe at night.",
         least_restrictive_alternatives: "Checks every 30 mins considered but more intrusive.",
@@ -113,7 +122,7 @@ describe("evidence pack — practice-intelligence module sections", () => {
         next_review_date: "2026-09-01",
         manager_decision: "approved",
         created_at: "2026-06-01T08:00:00.000Z",
-      },
+      }),
     ];
     const rights = sectionById(input, "rights_and_restriction");
     expect(rights?.items).toHaveLength(1);
@@ -125,11 +134,11 @@ describe("evidence pack — practice-intelligence module sections", () => {
     const input = emptyInput();
     input.youngPeople = [ALEX];
     input.restrictionReviews = [
-      {
+      fx({
         id: "rr_thin",
         child_id: "yp_alex",
         review_date: "2026-06-01",
-        restriction_kind: "phone_restriction",
+        restriction_kind: "contact_restriction",
         restriction_description: "Phone removed overnight",
         child_wishes_feelings: "",
         least_restrictive_alternatives: "",
@@ -138,7 +147,7 @@ describe("evidence pack — practice-intelligence module sections", () => {
         next_review_date: null,
         manager_decision: "approved",
         created_at: "2026-06-01T08:00:00.000Z",
-      },
+      }),
     ];
     const rights = sectionById(input, "rights_and_restriction");
     expect(rights?.score).toBe(0);
@@ -148,7 +157,7 @@ describe("evidence pack — practice-intelligence module sections", () => {
     const input = emptyInput();
     input.youngPeople = [ALEX];
     input.postIncidentReflections = [
-      {
+      fx({
         id: "pir_1",
         incident_id: "inc_001",
         child_id: "yp_alex",
@@ -156,13 +165,13 @@ describe("evidence pack — practice-intelligence module sections", () => {
         severity: "high",
         status: "in_progress",
         stages: [
-          { key: "a", status: "completed" },
-          { key: "b", status: "completed" },
-          { key: "c", status: "not_started" },
-          { key: "d", status: "not_started" },
+          fx({ key: "incident_recorded", status: "completed" }),
+          fx({ key: "immediate_safety", status: "completed" }),
+          fx({ key: "staff_reflection", status: "not_started" }),
+          fx({ key: "child_debrief", status: "not_started" }),
         ],
         created_at: "2026-06-10T08:00:00.000Z",
-      },
+      }),
     ];
     const learning = sectionById(input, "learning_from_incidents");
     expect(learning?.items).toHaveLength(1);
@@ -175,7 +184,7 @@ describe("evidence pack — practice-intelligence module sections", () => {
     const input = emptyInput();
     input.youngPeople = [ALEX, JORDAN];
     input.stayingSafePlans = [
-      {
+      fx({
         id: "ssp_alex",
         child_id: "yp_alex",
         preferred_name: "Alex",
@@ -184,7 +193,7 @@ describe("evidence pack — practice-intelligence module sections", () => {
         child_contribution: "Alex helped write this.",
         approved_at: "2026-06-01T08:00:00.000Z",
         created_at: "2026-05-01T08:00:00.000Z",
-      },
+      }),
     ];
     const planning = sectionById(input, "child_safety_planning");
     // 1 of 2 children has an active plan → 50
@@ -196,8 +205,8 @@ describe("evidence pack — practice-intelligence module sections", () => {
     const input = emptyInput();
     input.youngPeople = [ALEX, JORDAN];
     input.relationshipEntries = [
-      { id: "re1", child_id: "yp_alex", name: "Nan", category: "family_support", rating: "protective" },
-      { id: "re2", child_id: "yp_alex", name: "Danny", category: "exploitation_risk", rating: "risk" },
+      fx({ id: "re1", child_id: "yp_alex", name: "Nan", category: "family_support", rating: "protective" }),
+      fx({ id: "re2", child_id: "yp_alex", name: "Danny", category: "exploitation_risk", rating: "risk" }),
     ];
     const rels = sectionById(input, "protective_relationships");
     // Alex has a protective relationship; Jordan has none → 1 of 2 → 50
@@ -210,19 +219,19 @@ describe("evidence pack — practice-intelligence module sections", () => {
     const input = emptyInput();
     input.youngPeople = [ALEX];
     input.restrictionReviews = [
-      {
+      fx({
         id: "rr_overdue",
         child_id: "yp_alex",
         review_date: "2026-02-01",
-        restriction_kind: "door_alarm",
+        restriction_kind: "surveillance_monitoring",
         restriction_description: "Sensor",
         next_review_date: "2026-05-01", // before TODAY
         manager_decision: "approved",
         created_at: "2026-02-01T08:00:00.000Z",
-      },
+      }),
     ];
     input.stayingSafePlans = [
-      {
+      fx({
         id: "ssp_unapproved",
         child_id: "yp_alex",
         preferred_name: "Alex",
@@ -230,7 +239,7 @@ describe("evidence pack — practice-intelligence module sections", () => {
         manager_approved: false,
         created_at: "2026-06-01T08:00:00.000Z",
         updated_at: "2026-06-01T08:00:00.000Z",
-      },
+      }),
     ];
     const pack = computeInspectionEvidencePack(input);
     const actionIds = pack.outstanding_actions.map((a) => a.id);
@@ -290,5 +299,69 @@ describe("evidence pack — practice-intelligence module sections", () => {
     // sopScore = (1*100 + 0*50) / 2 = 50; high org penalty (15) → 35 → inadequate
     expect(sec.score).toBe(35);
     expect(sec.rating).toBe("inadequate");
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// These sections read fields the young-person record does not carry
+// (`date_of_placement`, `age`) and an education type spelled `"pep"` rather
+// than `"pep_meeting"`, so the pack asserted a 0-day placement for every child
+// and reported that no child had a PEP. An `any[]` parameter hid all of it.
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("placement history", () => {
+  it("counts the days from the recorded placement start", () => {
+    const input = emptyInput();
+    input.youngPeople = [
+      fx<YoungPerson>({
+        id: "yp_alex",
+        first_name: "Alex",
+        status: "current",
+        placement_start: "2026-06-13",
+      }),
+    ];
+    const section = sectionById(input, "placement_history");
+    expect(section?.items[0].title).toContain("10 days");
+    expect(section?.items[0].summary).toBe("Placed for 10 days.");
+  });
+
+  it("says the start date is missing rather than claiming a 0-day placement", () => {
+    const input = emptyInput();
+    input.youngPeople = [ALEX]; // no placement_start on file
+    const section = sectionById(input, "placement_history");
+    expect(section?.items[0].title).not.toContain("0 days");
+    expect(section?.items[0].summary).toContain("not recorded");
+  });
+
+  it("reports the child's age from date of birth, not as unknown", () => {
+    const input = emptyInput();
+    input.youngPeople = [
+      fx<YoungPerson>({
+        id: "yp_alex",
+        first_name: "Alex",
+        status: "current",
+        date_of_birth: "2011-01-01",
+      }),
+    ];
+    const section = sectionById(input, "child_overview");
+    expect(section?.items[0].summary).toContain("Age 15");
+  });
+});
+
+describe("education notes", () => {
+  it("recognises a pep_meeting record as a PEP", () => {
+    const input = emptyInput();
+    input.youngPeople = [ALEX];
+    input.educationRecords = [
+      fx({
+        id: "edu1",
+        child_id: "yp_alex",
+        record_type: "pep_meeting",
+        date: "2026-06-01",
+      }),
+    ];
+    const section = sectionById(input, "education_notes");
+    // one of one child has a PEP — previously this read as none
+    expect(section?.summary).toContain("100%");
   });
 });

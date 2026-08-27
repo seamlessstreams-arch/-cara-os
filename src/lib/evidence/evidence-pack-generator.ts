@@ -6,11 +6,41 @@
 // CHR 2015 (all regulations). SCCIF: All three judgment areas.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { ageFromDob } from "@/lib/cara-studio/cara-context-builder";
 import type {
   EvidenceSection,
   EvidenceItem,
   InspectionEvidencePack,
 } from "./types";
+import type { PostIncidentReflection } from "@/lib/post-incident-reflection/types";
+import type { RelationshipEntry } from "@/lib/protective-relationships/types";
+import type { RestrictionReview } from "@/lib/rights-restriction/types";
+import type { StayingSafePlan } from "@/lib/staying-safe-plan/types";
+import type {
+  DailyLogEntry,
+  Medication,
+  MedicationAdministration,
+  StaffMember,
+  YoungPerson,
+} from "@/types";
+import type {
+  AdvocacyRecord,
+  Audit,
+  BehaviourEntry,
+  ChronologyEntry,
+  ComplaintOutcomeRecord,
+  ExploitationScreening,
+  HandoverEntry,
+  ImprovementObjective,
+  IndependenceSkillsRecord,
+  LessonLearned,
+  MultiAgencyMeeting,
+  NotifiableEvent,
+  OutcomeReview,
+  ParticipationEntry,
+  SignificantEvent,
+  EducationRecord,
+} from "@/types/extended";
 import type { SopRealityCheck } from "@/lib/sop-reality-check/sop-reality-check-engine";
 import type { OrgRiskDashboard } from "@/lib/org-risk/org-risk-engine";
 import { rate, meanOf, formatRate } from "@/lib/metrics/rate";
@@ -26,57 +56,104 @@ export interface EvidencePackInput {
   generated_by: string;
 
   // Core collections — mirrors store shape
-  youngPeople: any[];
-  staff: any[];
-  careForms: any[];
-  riskAssessments: any[];
-  incidents: any[];
-  missingEpisodes: any[];
-  exploitationScreenings: any[];
-  keyWorkingSessions: any[];
-  keyworkerSessions: any[];
-  educationRecords: any[];
-  healthAssessments: any[];
-  dentalRecords: any[];
-  mentalHealthCheckIns: any[];
-  annualHealthAssessments: any[];
-  familyTimeSessions: any[];
-  contactPlans: any[];
-  multiAgencyMeetings: any[];
-  lacReviews: any[];
-  supervisions: any[];
-  audits: any[];
-  qaAuditRecords: any[];
-  caseFileAudits: any[];
-  tasks: any[];
-  dailyLog: any[];
-  behaviourLog: any[];
-  restraints: any[];
-  significantEvents: any[];
-  notifiableEvents: any[];
-  outcomeTargets: any[];
-  outcomeReviews: any[];
-  trainingRecords: any[];
-  medications: any[];
-  medicationAdministrations: any[];
-  independenceSkillsRecords: any[];
-  disclosures: any[];
-  safeguardingReferrals: any[];
-  complaintOutcomeRecords: any[];
-  chronology: any[];
-  handovers: any[];
-  therapeuticChildImpact: any[];
-  ypFeedback: any[];
-  advocacyRecords: any[];
-  participationEntries: any[];
-  improvementObjectives: any[];
-  lessonsLearned: any[];
+  youngPeople: YoungPerson[];
+  staff: StaffMember[];
+  // TODO(typing): CareForm reads in this generator target fields the struct
+  // does not have; typing this collection surfaces them. Next slice.
+  careForms: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  // TODO(typing): RiskAssessment reads in this generator target fields the struct
+  // does not have; typing this collection surfaces them. Next slice.
+  riskAssessments: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  // TODO(typing): Incident reads in this generator target fields the struct
+  // does not have; typing this collection surfaces them. Next slice.
+  incidents: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  // TODO(typing): MissingEpisode reads in this generator target fields the struct
+  // does not have; typing this collection surfaces them. Next slice.
+  missingEpisodes: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  exploitationScreenings: ExploitationScreening[];
+  // TODO(typing): KeyWorkingSession reads in this generator target fields the struct
+  // does not have; typing this collection surfaces them. Next slice.
+  keyWorkingSessions: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  // TODO(typing): KeyworkerSessionRecord reads in this generator target fields the struct
+  // does not have; typing this collection surfaces them. Next slice.
+  keyworkerSessions: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  educationRecords: EducationRecord[];
+  // TODO(typing): HealthAssessment reads in this generator target fields the struct
+  // does not have; typing this collection surfaces them. Next slice.
+  healthAssessments: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  // TODO(typing): DentalRecord reads in this generator target fields the struct
+  // does not have; typing this collection surfaces them. Next slice.
+  dentalRecords: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  // TODO(typing): MentalHealthCheckIn reads in this generator target fields the struct
+  // does not have; typing this collection surfaces them. Next slice.
+  mentalHealthCheckIns: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  // TODO(typing): AnnualHealthAssessment reads in this generator target fields the struct
+  // does not have; typing this collection surfaces them. Next slice.
+  annualHealthAssessments: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  // TODO(typing): FamilyTimeSession reads in this generator target fields the struct
+  // does not have; typing this collection surfaces them. Next slice.
+  familyTimeSessions: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  // TODO(typing): ContactPlan reads in this generator target fields the struct
+  // does not have; typing this collection surfaces them. Next slice.
+  contactPlans: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  multiAgencyMeetings: MultiAgencyMeeting[];
+  // TODO(typing): LACReview reads in this generator target fields the struct
+  // does not have; typing this collection surfaces them. Next slice.
+  lacReviews: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  // TODO(typing): Supervision reads in this generator target fields the struct
+  // does not have; typing this collection surfaces them. Next slice.
+  supervisions: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  audits: Audit[];
+  // TODO(typing): QAAuditRecord reads in this generator target fields the struct
+  // does not have; typing this collection surfaces them. Next slice.
+  qaAuditRecords: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  // TODO(typing): CaseFileAudit reads in this generator target fields the struct
+  // does not have; typing this collection surfaces them. Next slice.
+  caseFileAudits: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  // TODO(typing): Task reads in this generator target fields the struct
+  // does not have; typing this collection surfaces them. Next slice.
+  tasks: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  dailyLog: DailyLogEntry[];
+  behaviourLog: BehaviourEntry[];
+  // TODO(typing): RestraintRecord reads in this generator target fields the struct
+  // does not have; typing this collection surfaces them. Next slice.
+  restraints: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  significantEvents: SignificantEvent[];
+  notifiableEvents: NotifiableEvent[];
+  // TODO(typing): OutcomeTarget reads in this generator target fields the struct
+  // does not have; typing this collection surfaces them. Next slice.
+  outcomeTargets: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  outcomeReviews: OutcomeReview[];
+  // TODO(typing): TrainingRecord reads in this generator target fields the struct
+  // does not have; typing this collection surfaces them. Next slice.
+  trainingRecords: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  medications: Medication[];
+  medicationAdministrations: MedicationAdministration[];
+  independenceSkillsRecords: IndependenceSkillsRecord[];
+  // TODO(typing): Disclosure reads in this generator target fields the struct
+  // does not have; typing this collection surfaces them. Next slice.
+  disclosures: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  /** Phantom collection: never populated — callers pass []. */
+  safeguardingReferrals: never[];
+  complaintOutcomeRecords: ComplaintOutcomeRecord[];
+  chronology: ChronologyEntry[];
+  handovers: HandoverEntry[];
+  // TODO(typing): TherapeuticChildImpact reads in this generator target fields the struct
+  // does not have; typing this collection surfaces them. Next slice.
+  therapeuticChildImpact: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  // TODO(typing): YPFeedbackEntry reads in this generator target fields the struct
+  // does not have; typing this collection surfaces them. Next slice.
+  ypFeedback: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
+  advocacyRecords: AdvocacyRecord[];
+  participationEntries: ParticipationEntry[];
+  improvementObjectives: ImprovementObjective[];
+  lessonsLearned: LessonLearned[];
 
   // 23/06 Practice Intelligence Update — record-based module evidence
-  restrictionReviews: any[];
-  postIncidentReflections: any[];
-  stayingSafePlans: any[];
-  relationshipEntries: any[];
+  restrictionReviews: RestrictionReview[];
+  postIncidentReflections: PostIncidentReflection[];
+  stayingSafePlans: StayingSafePlan[];
+  relationshipEntries: RelationshipEntry[];
 
   // Whole-home assurance — pre-computed by the route (each engine reads a wide
   // slice of the store) so the generator stays a pure mapping. Optional so every
@@ -119,10 +196,10 @@ function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
-function childNameFrom(youngPeople: any[], id: string | undefined): string {
+function childNameFrom(youngPeople: YoungPerson[], id: string | undefined): string {
   if (!id) return "Child";
   const c = youngPeople.find((yp) => yp.id === id);
-  return c ? (c.name ?? c.first_name ?? "Child") : "Child";
+  return c ? (c.first_name ?? "Child") : "Child";
 }
 
 function hasText(v: unknown): boolean {
@@ -194,14 +271,14 @@ export function computeInspectionEvidencePack(
 
 function buildChildOverview(
   input: EvidencePackInput,
-  children: any[],
+  children: YoungPerson[],
 ): EvidenceSection {
   const items: EvidenceItem[] = children.map((c) => ({
     id: `ev_child_${c.id}`,
     type: "child_profile",
-    title: `Profile: ${c.name ?? c.first_name ?? "Child"} ${c.surname ?? c.last_name ?? ""}`.trim(),
-    date: c.date_of_placement ?? c.created_at ?? input.today,
-    summary: `Age ${c.age ?? "unknown"}, placed since ${c.date_of_placement?.slice(0, 10) ?? "unknown"}. Status: ${c.status ?? "current"}.`,
+    title: `Profile: ${c.first_name ?? "Child"} ${c.last_name ?? ""}`.trim(),
+    date: c.placement_start ?? c.created_at ?? input.today,
+    summary: `Age ${ageFromDob(c.date_of_birth, input.today) ?? "unknown"}, placed since ${c.placement_start?.slice(0, 10) ?? "unknown"}. Status: ${c.status}.`,
     linked_record_type: "young_person",
     linked_record_id: c.id,
     child_id: c.id,
@@ -232,19 +309,22 @@ function buildChildOverview(
 
 function buildPlacementHistory(
   input: EvidencePackInput,
-  children: any[],
+  children: YoungPerson[],
 ): EvidenceSection {
   const items: EvidenceItem[] = children.map((c) => {
-    const placedDate = c.date_of_placement?.slice(0, 10) ?? "";
+    const placedDate = c.placement_start?.slice(0, 10) ?? "";
     const daysPlaced = placedDate
       ? daysBetween(placedDate, input.today)
-      : 0;
+      : null;
     return {
       id: `ev_placement_${c.id}`,
       type: "placement_record",
-      title: `Placement: ${c.name ?? c.first_name ?? "Child"} — ${daysPlaced} days`,
+      title: `Placement: ${c.first_name ?? "Child"}${daysPlaced === null ? "" : ` — ${daysPlaced} days`}`,
       date: placedDate || input.today,
-      summary: `Placed for ${daysPlaced} days. Placement stability maintained.`,
+      summary:
+        daysPlaced === null
+          ? "Placement start date is not recorded, so length of placement cannot be evidenced."
+          : `Placed for ${daysPlaced} days.`,
       linked_record_type: "young_person",
       linked_record_id: c.id,
       child_id: c.id,
@@ -283,7 +363,7 @@ function buildPlacementHistory(
 
 function buildCarePlanProgress(
   input: EvidencePackInput,
-  children: any[],
+  children: YoungPerson[],
 ): EvidenceSection {
   const periodForms = input.careForms.filter((f) =>
     isInPeriod(f.created_at ?? f.date, input.period_from, input.period_to),
@@ -305,7 +385,7 @@ function buildCarePlanProgress(
     input.careForms.some(
       (f) =>
         (f.linked_child_id === c.id || f.child_id === c.id) &&
-        (f.status === "active" || f.status === "approved"),
+        (f.status === "approved"),
     ),
   ).length;
 
@@ -333,7 +413,7 @@ function buildCarePlanProgress(
 
 function buildRiskManagement(
   input: EvidencePackInput,
-  children: any[],
+  children: YoungPerson[],
 ): EvidenceSection {
   const periodRAs = input.riskAssessments.filter((r) =>
     isInPeriod(
@@ -395,7 +475,7 @@ function buildRiskManagement(
 
 function buildSafeguardingActions(
   input: EvidencePackInput,
-  _children: any[],
+  _children: YoungPerson[],
 ): EvidenceSection {
   const items: EvidenceItem[] = [];
 
@@ -465,7 +545,7 @@ function buildSafeguardingActions(
   });
 
   const highRiskScreenings = periodScreenings.filter(
-    (e) => e.risk_level === "high" || e.risk_level === "critical",
+    (e) => e.risk_level === "high" || e.risk_level === "very_high",
   ).length;
   const returnInterviewsDone = periodMissing.filter(
     (m) => m.return_interview_completed,
@@ -503,7 +583,7 @@ function buildSafeguardingActions(
 
 function buildDirectWorkSummary(
   input: EvidencePackInput,
-  children: any[],
+  children: YoungPerson[],
 ): EvidenceSection {
   const allSessions = [
     ...input.keyWorkingSessions,
@@ -554,7 +634,7 @@ function buildDirectWorkSummary(
 
 function buildIncidentsAndResponses(
   input: EvidencePackInput,
-  _children: any[],
+  _children: YoungPerson[],
 ): EvidenceSection {
   const periodIncidents = input.incidents.filter((i) =>
     isInPeriod(
@@ -606,7 +686,7 @@ function buildIncidentsAndResponses(
     (i) => i.severity === "critical",
   ).length;
   const closedCount = periodIncidents.filter(
-    (i) => i.status === "closed" || i.status === "resolved",
+    (i) => i.status === "closed",
   ).length;
   // No incidents recorded is an empty register, not a 100% closure record.
   const closureRate = rate(closedCount, periodIncidents.length);
@@ -636,7 +716,7 @@ function buildIncidentsAndResponses(
 
 function buildEducationNotes(
   input: EvidencePackInput,
-  children: any[],
+  children: YoungPerson[],
 ): EvidenceSection {
   const periodEdu = input.educationRecords.filter((r) =>
     isInPeriod(r.date ?? r.created_at, input.period_from, input.period_to),
@@ -647,7 +727,7 @@ function buildEducationNotes(
     type: "education_record",
     title: r.title ?? r.record_type ?? "Education Record",
     date: r.date?.slice(0, 10) ?? r.created_at?.slice(0, 10) ?? input.today,
-    summary: `Type: ${r.record_type ?? "general"}. ${r.summary ?? r.notes ?? ""}`.slice(0, 200),
+    summary: `Type: ${r.record_type ?? "general"}. ${r.details ?? ""}`.slice(0, 200),
     linked_record_type: "education_record",
     linked_record_id: r.id,
     child_id: r.child_id,
@@ -658,7 +738,7 @@ function buildEducationNotes(
     input.educationRecords.map((r) => r.child_id),
   ).size;
   const pepRecords = input.educationRecords.filter(
-    (r) => r.record_type === "pep",
+    (r) => r.record_type === "pep_meeting",
   );
   const childrenWithPEP = new Set(pepRecords.map((r) => r.child_id)).size;
   const pepRate = rate(childrenWithPEP, children.length);
@@ -688,7 +768,7 @@ function buildEducationNotes(
 
 function buildHealthNotes(
   input: EvidencePackInput,
-  children: any[],
+  children: YoungPerson[],
 ): EvidenceSection {
   const items: EvidenceItem[] = [];
 
@@ -800,7 +880,7 @@ function buildHealthNotes(
 
 function buildFamilyContact(
   input: EvidencePackInput,
-  children: any[],
+  children: YoungPerson[],
 ): EvidenceSection {
   const periodFamilyTime = input.familyTimeSessions.filter((f) =>
     isInPeriod(f.date ?? f.created_at, input.period_from, input.period_to),
@@ -867,7 +947,7 @@ function buildFamilyContact(
 
 function buildProfessionalContact(
   input: EvidencePackInput,
-  _children: any[],
+  _children: YoungPerson[],
 ): EvidenceSection {
   const items: EvidenceItem[] = [];
 
@@ -1038,7 +1118,7 @@ function buildManagementOversight(
 
 function buildAuditTrail(
   input: EvidencePackInput,
-  children: any[],
+  children: YoungPerson[],
 ): EvidenceSection {
   const items: EvidenceItem[] = [];
 
@@ -1111,7 +1191,6 @@ function buildOutstandingActions(
   const overdueTasks = input.tasks.filter((t) => {
     const isOpen =
       t.status !== "completed" &&
-      t.status !== "closed" &&
       t.status !== "cancelled";
     const isOverdue = t.due_date && t.due_date < input.today;
     return isOpen && isOverdue;
@@ -1120,7 +1199,6 @@ function buildOutstandingActions(
   const pendingTasks = input.tasks.filter((t) => {
     const isOpen =
       t.status !== "completed" &&
-      t.status !== "closed" &&
       t.status !== "cancelled";
     return isOpen;
   });
@@ -1136,7 +1214,7 @@ function buildOutstandingActions(
     child_id: t.child_id,
     staff_id: t.assigned_to,
     risk_level:
-      t.priority === "urgent" || t.priority === "critical"
+      t.priority === "urgent"
         ? "high"
         : "medium",
     tags: ["outstanding", "overdue", t.priority ?? "normal"],
@@ -1167,7 +1245,7 @@ function buildOutstandingActions(
 
 function buildEvidenceOfProgress(
   input: EvidencePackInput,
-  _children: any[],
+  _children: YoungPerson[],
 ): EvidenceSection {
   const items: EvidenceItem[] = [];
 
@@ -1322,7 +1400,7 @@ function buildEvidenceOfProgress(
 
 function buildRightsAndRestrictionEvidence(
   input: EvidencePackInput,
-  _children: any[],
+  _children: YoungPerson[],
 ): EvidenceSection {
   const reviews = (input.restrictionReviews ?? []).filter((r) =>
     isInPeriod(r.review_date ?? r.created_at, input.period_from, input.period_to),
@@ -1391,7 +1469,7 @@ function buildRightsAndRestrictionEvidence(
 
 function buildLearningFromIncidents(
   input: EvidencePackInput,
-  _children: any[],
+  _children: YoungPerson[],
 ): EvidenceSection {
   const reflections = (input.postIncidentReflections ?? []).filter((r) =>
     isInPeriod(r.incident_date ?? r.created_at, input.period_from, input.period_to),
@@ -1456,7 +1534,7 @@ function buildLearningFromIncidents(
 
 function buildChildSafetyPlanning(
   input: EvidencePackInput,
-  children: any[],
+  children: YoungPerson[],
 ): EvidenceSection {
   const plans = input.stayingSafePlans ?? [];
 
@@ -1506,7 +1584,7 @@ function buildChildSafetyPlanning(
 
 function buildProtectiveRelationshipsEvidence(
   input: EvidencePackInput,
-  children: any[],
+  children: YoungPerson[],
 ): EvidenceSection {
   const entries = input.relationshipEntries ?? [];
 
@@ -1765,7 +1843,6 @@ function collectOutstandingActions(input: EvidencePackInput): EvidenceItem[] {
     .filter((t) => {
       const isOpen =
         t.status !== "completed" &&
-        t.status !== "closed" &&
         t.status !== "cancelled";
       const isOverdue = t.due_date && t.due_date < input.today;
       return isOpen && isOverdue;
@@ -1783,7 +1860,7 @@ function collectOutstandingActions(input: EvidencePackInput): EvidenceItem[] {
         child_id: t.child_id,
         staff_id: t.assigned_to,
         risk_level:
-          t.priority === "urgent" || t.priority === "critical"
+          t.priority === "urgent"
             ? "high"
             : "medium",
         tags: ["outstanding", "overdue"],
@@ -1817,7 +1894,6 @@ function collectOutstandingActions(input: EvidencePackInput): EvidenceItem[] {
     .filter(
       (i) =>
         i.status !== "closed" &&
-        i.status !== "resolved" &&
         i.severity === "critical",
     )
     .slice(0, 10)
