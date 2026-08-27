@@ -52,7 +52,7 @@ export function HomeComplaintsIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-complaints-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home complaints intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeComplaintsResult }>;
     },
     refetchInterval: 60_000,
   });

@@ -28,7 +28,7 @@ function useHomeStaffLifecycleIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-staff-lifecycle-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home staff lifecycle intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeStaffLifecycleResult }>;
     },
     refetchInterval: 60_000,
   });

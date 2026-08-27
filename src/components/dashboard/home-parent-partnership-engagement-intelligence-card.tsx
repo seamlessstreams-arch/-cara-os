@@ -16,7 +16,7 @@ function useHomeParentPartnershipEngagementIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-parent-partnership-engagement-intelligence");
       if (!res.ok) throw new Error("Failed to fetch parent partnership engagement intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: ParentPartnershipResult }>;
     },
     refetchInterval: 60_000,
   });

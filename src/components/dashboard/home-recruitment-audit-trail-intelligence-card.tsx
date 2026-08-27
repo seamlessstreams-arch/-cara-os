@@ -1,10 +1,12 @@
 "use client";
 
+import { formatRate } from "@/lib/metrics/rate";
+
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ClipboardCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { RecruitmentAuditRating } from "@/lib/engines/home-recruitment-audit-trail-intelligence-engine";
+import type { RecruitmentAuditRating, RecruitmentAuditTrailResult } from "@/lib/engines/home-recruitment-audit-trail-intelligence-engine";
 
 function useHomeRecruitmentAuditTrailIntelligence() {
   return useQuery({
@@ -12,7 +14,7 @@ function useHomeRecruitmentAuditTrailIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-recruitment-audit-trail-intelligence");
       if (!res.ok) throw new Error("Failed to fetch recruitment audit trail intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: RecruitmentAuditTrailResult }>;
     },
     refetchInterval: 60_000,
   });
@@ -31,7 +33,7 @@ const INSIGHT_STYLES: Record<string, string> = { critical: "border-[--cs-risk-so
 export function HomeRecruitmentAuditTrailIntelligenceCard() {
   const { data, isLoading } = useHomeRecruitmentAuditTrailIntelligence();
   if (isLoading) return <Card className="overflow-hidden border-slate-200"><CardContent className="flex items-center justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></CardContent></Card>;
-  let d = data?.data ?? data;
+  let d = data?.data;
   if (!d) return null;
   // Calm reframe: an empty-with-children engine result (inadequate + score<=15) is
   // 'not yet recorded', not a failing home — render it as honest, neutral insufficient_data.
@@ -73,32 +75,32 @@ export function HomeRecruitmentAuditTrailIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.total_audit_entries > 0 ? "text-blue-600" : "text-slate-600")}>{d.total_audit_entries}</p>
               <p className="text-[9px] text-muted-foreground">Entries</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.notes_coverage_rate >= 90 ? "bg-green-50" : d.notes_coverage_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.notes_coverage_rate >= 90 ? "text-[--cs-success]" : d.notes_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.notes_coverage_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.notes_coverage_rate === null ? "bg-slate-50" : d.notes_coverage_rate >= 90 ? "bg-green-50" : d.notes_coverage_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.notes_coverage_rate === null ? "text-muted-foreground" : d.notes_coverage_rate >= 90 ? "text-[--cs-success]" : d.notes_coverage_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.notes_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Notes</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.state_tracking_rate >= 80 ? "bg-green-50" : d.state_tracking_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.state_tracking_rate >= 80 ? "text-[--cs-success]" : d.state_tracking_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.state_tracking_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.state_tracking_rate === null ? "bg-slate-50" : d.state_tracking_rate >= 80 ? "bg-green-50" : d.state_tracking_rate >= 60 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.state_tracking_rate === null ? "text-muted-foreground" : d.state_tracking_rate >= 80 ? "text-[--cs-success]" : d.state_tracking_rate >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.state_tracking_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Tracked</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.audit_completeness_rate >= 90 ? "bg-green-50" : d.audit_completeness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.audit_completeness_rate >= 90 ? "text-[--cs-success]" : d.audit_completeness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.audit_completeness_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.audit_completeness_rate === null ? "bg-slate-50" : d.audit_completeness_rate >= 90 ? "bg-green-50" : d.audit_completeness_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.audit_completeness_rate === null ? "text-muted-foreground" : d.audit_completeness_rate >= 90 ? "text-[--cs-success]" : d.audit_completeness_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.audit_completeness_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Complete</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.offers_with_conditions_rate >= 100 ? "bg-green-50" : d.offers_with_conditions_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.offers_with_conditions_rate >= 100 ? "text-[--cs-success]" : d.offers_with_conditions_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.offers_with_conditions_rate}%</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.offers_with_conditions_rate === null ? "bg-slate-50" : d.offers_with_conditions_rate >= 100 ? "bg-green-50" : d.offers_with_conditions_rate >= 80 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.offers_with_conditions_rate === null ? "text-muted-foreground" : d.offers_with_conditions_rate >= 100 ? "text-[--cs-success]" : d.offers_with_conditions_rate >= 80 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.offers_with_conditions_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Offers</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.average_audit_depth >= 4 ? "bg-green-50" : d.average_audit_depth >= 2 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.average_audit_depth >= 4 ? "text-[--cs-success]" : d.average_audit_depth >= 2 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.average_audit_depth}</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.average_audit_depth === null ? "bg-slate-50" : d.average_audit_depth >= 4 ? "bg-green-50" : d.average_audit_depth >= 2 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.average_audit_depth === null ? "text-muted-foreground" : d.average_audit_depth >= 4 ? "text-[--cs-success]" : d.average_audit_depth >= 2 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.average_audit_depth}</p>
               <p className="text-[9px] text-muted-foreground">Depth</p>
             </div>
           </div>
         )}
         {d.strengths?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold text-green-700 flex items-center gap-1"><Sparkles className="h-3 w-3" /> Strengths ({d.strengths.length})</p>{d.strengths.slice(0, 3).map((s: string, i: number) => (<div key={i} className="rounded border border-[--cs-success-soft] bg-[--cs-success-bg] p-2.5 text-xs text-[--cs-success] leading-relaxed">{s}</div>))}</div>)}
         {d.concerns?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold text-red-700 flex items-center gap-1"><AlertCircle className="h-3 w-3" /> Concerns ({d.concerns.length})</p>{d.concerns.slice(0, 3).map((c: string, i: number) => (<div key={i} className="rounded border border-[--cs-risk-soft] bg-[--cs-risk-bg] p-2.5 text-xs text-[--cs-risk] leading-relaxed">{c}</div>))}</div>)}
-        {d.recommendations?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><AlertTriangle className="h-3 w-3 text-amber-600" /> Recommendations ({d.recommendations.length})</p>{d.recommendations.slice(0, 3).map((rec: any) => (<div key={rec.rank} className={cn("rounded border p-2.5 text-xs leading-relaxed", REC_STYLES[rec.urgency] ?? REC_STYLES.planned)}><div className="flex items-start justify-between gap-2"><span>{rec.recommendation}</span>{rec.regulatory_ref && <span className="text-[10px] font-mono shrink-0 opacity-60">{rec.regulatory_ref}</span>}</div></div>))}</div>)}
-        {d.insights?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold flex items-center gap-1 text-purple-700"><Brain className="h-3 w-3" /> Cara Recruitment Intelligence</p>{d.insights.slice(0, 3).map((insight: any, i: number) => (<div key={i} className={cn("rounded border p-2.5 text-xs leading-relaxed", INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.warning)}>{insight.text}</div>))}</div>)}
+        {d.recommendations?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><AlertTriangle className="h-3 w-3 text-amber-600" /> Recommendations ({d.recommendations.length})</p>{d.recommendations.slice(0, 3).map((rec) => (<div key={rec.rank} className={cn("rounded border p-2.5 text-xs leading-relaxed", REC_STYLES[rec.urgency] ?? REC_STYLES.planned)}><div className="flex items-start justify-between gap-2"><span>{rec.recommendation}</span>{rec.regulatory_ref && <span className="text-[10px] font-mono shrink-0 opacity-60">{rec.regulatory_ref}</span>}</div></div>))}</div>)}
+        {d.insights?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold flex items-center gap-1 text-purple-700"><Brain className="h-3 w-3" /> Cara Recruitment Intelligence</p>{d.insights.slice(0, 3).map((insight, i) => (<div key={i} className={cn("rounded border p-2.5 text-xs leading-relaxed", INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.warning)}>{insight.text}</div>))}</div>)}
       </CardContent>
     </Card>
   );

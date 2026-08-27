@@ -29,7 +29,7 @@ function useHomeCommunityAccessIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-community-access-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home community access intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeCommunityAccessResult }>;
     },
     refetchInterval: 60_000,
   });

@@ -52,7 +52,7 @@ export function HomeShiftPatternIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-shift-pattern-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home shift pattern intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeShiftPatternResult }>;
     },
     refetchInterval: 60_000,
   });

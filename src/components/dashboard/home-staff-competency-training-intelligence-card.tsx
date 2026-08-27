@@ -15,7 +15,7 @@ function useHomeStaffCompetencyTrainingIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-staff-competency-training-intelligence");
       if (!res.ok) throw new Error("Failed to fetch staff competency & training intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: StaffCompetencyResult }>;
     },
     refetchInterval: 60_000,
   });

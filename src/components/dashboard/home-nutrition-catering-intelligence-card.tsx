@@ -28,7 +28,7 @@ function useHomeNutritionCateringIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-nutrition-catering-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home nutrition catering intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeNutritionCateringResult }>;
     },
     refetchInterval: 60_000,
   });

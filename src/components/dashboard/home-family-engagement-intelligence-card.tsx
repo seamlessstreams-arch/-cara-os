@@ -29,7 +29,7 @@ function useHomeFamilyEngagementIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-family-engagement-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home family engagement intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeFamilyEngagementResult }>;
     },
     refetchInterval: 60_000,
   });

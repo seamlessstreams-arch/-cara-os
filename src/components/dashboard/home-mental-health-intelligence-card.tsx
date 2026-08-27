@@ -16,8 +16,7 @@ import {
   SmilePlus, ShieldCheck, CalendarDays,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { MentalHealthRating } from "@/lib/engines/home-mental-health-intelligence-engine";
-import type { HomeMentalHealthResult } from "@/lib/engines/home-mental-health-intelligence-engine";
+import type { MentalHealthRating, HomeMentalHealthResult } from "@/lib/engines/home-mental-health-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -53,7 +52,7 @@ export function HomeMentalHealthIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-mental-health-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home mental health intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeMentalHealthResult }>;
     },
     refetchInterval: 60_000,
   });

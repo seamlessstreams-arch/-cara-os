@@ -5,7 +5,7 @@ import { formatRate } from "@/lib/metrics/rate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Scale } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { SanctionRewardBalanceRating } from "@/lib/engines/home-sanction-reward-balance-intelligence-engine";
+import type { SanctionRewardBalanceRating, SanctionRewardBalanceResult } from "@/lib/engines/home-sanction-reward-balance-intelligence-engine";
 
 const RATING_STYLES: Record<SanctionRewardBalanceRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -23,12 +23,12 @@ export function HomeSanctionRewardBalanceIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-sanction-reward-balance-intelligence");
       if (!res.ok) throw new Error("Failed to fetch sanction reward balance intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: SanctionRewardBalanceResult }>;
     },
     refetchInterval: 60_000,
   });
   if (isLoading) return <Card className="overflow-hidden border-slate-200"><CardContent className="flex items-center justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></CardContent></Card>;
-  let d = data?.data ?? data;
+  let d = data?.data;
   if (!d) return null;
   // Calm reframe: an empty-with-children engine result (inadequate + score<=15) is
   // 'not yet recorded', not a failing home — render it as honest, neutral insufficient_data.
@@ -74,16 +74,16 @@ export function HomeSanctionRewardBalanceIntelligenceCard() {
               <p className={cn("text-sm font-bold tabular-nums", d.sanction_count === 0 ? "text-[--cs-success]" : d.sanction_count <= 3 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{d.sanction_count}</p>
               <p className="text-[9px] text-muted-foreground">Sanctions</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.reward_ratio >= 70 ? "bg-green-50" : d.reward_ratio >= 55 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.reward_ratio >= 70 ? "text-[--cs-success]" : d.reward_ratio >= 55 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.reward_ratio)}</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.reward_ratio === null ? "bg-slate-50" : d.reward_ratio >= 70 ? "bg-green-50" : d.reward_ratio >= 55 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.reward_ratio === null ? "text-muted-foreground" : d.reward_ratio >= 70 ? "text-[--cs-success]" : d.reward_ratio >= 55 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.reward_ratio)}</p>
               <p className="text-[9px] text-muted-foreground">Ratio</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.proportionality_rate >= 98 ? "bg-green-50" : d.proportionality_rate >= 85 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.proportionality_rate >= 98 ? "text-[--cs-success]" : d.proportionality_rate >= 85 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.proportionality_rate)}</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.proportionality_rate === null ? "bg-slate-50" : d.proportionality_rate >= 98 ? "bg-green-50" : d.proportionality_rate >= 85 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.proportionality_rate === null ? "text-muted-foreground" : d.proportionality_rate >= 98 ? "text-[--cs-success]" : d.proportionality_rate >= 85 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.proportionality_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Proport.</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_voice_rate >= 90 ? "bg-green-50" : d.child_voice_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_voice_rate >= 90 ? "text-[--cs-success]" : d.child_voice_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_voice_rate)}</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.child_voice_rate === null ? "bg-slate-50" : d.child_voice_rate >= 90 ? "bg-green-50" : d.child_voice_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.child_voice_rate === null ? "text-muted-foreground" : d.child_voice_rate >= 90 ? "text-[--cs-success]" : d.child_voice_rate >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_voice_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Voice</p>
             </div>
             <div className={cn("text-center rounded-lg p-1.5", d.unique_children > 0 ? "bg-blue-50" : "bg-slate-50")}>
@@ -94,8 +94,8 @@ export function HomeSanctionRewardBalanceIntelligenceCard() {
         )}
         {d.strengths?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold text-green-700 flex items-center gap-1"><Sparkles className="h-3 w-3" /> Strengths ({d.strengths.length})</p>{d.strengths.slice(0, 3).map((s: string, i: number) => (<div key={i} className="rounded border border-[--cs-success-soft] bg-[--cs-success-bg] p-2.5 text-xs text-[--cs-success] leading-relaxed">{s}</div>))}</div>)}
         {d.concerns?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold text-red-700 flex items-center gap-1"><AlertCircle className="h-3 w-3" /> Concerns ({d.concerns.length})</p>{d.concerns.slice(0, 3).map((c: string, i: number) => (<div key={i} className="rounded border border-[--cs-risk-soft] bg-[--cs-risk-bg] p-2.5 text-xs text-[--cs-risk] leading-relaxed">{c}</div>))}</div>)}
-        {d.recommendations?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><AlertTriangle className="h-3 w-3 text-amber-600" /> Recommendations ({d.recommendations.length})</p>{d.recommendations.slice(0, 3).map((rec: any) => (<div key={rec.rank} className={cn("rounded border p-2.5 text-xs leading-relaxed", REC_STYLES[rec.urgency] ?? REC_STYLES.planned)}><div className="flex items-start justify-between gap-2"><span>{rec.recommendation}</span>{rec.regulatory_ref && <span className="text-[10px] font-mono shrink-0 opacity-60">{rec.regulatory_ref}</span>}</div></div>))}</div>)}
-        {d.insights?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold flex items-center gap-1 text-purple-700"><Brain className="h-3 w-3" /> Cara Rewards & Sanctions Intelligence</p>{d.insights.slice(0, 3).map((insight: any, i: number) => (<div key={i} className={cn("rounded border p-2.5 text-xs leading-relaxed", INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.warning)}>{insight.text}</div>))}</div>)}
+        {d.recommendations?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><AlertTriangle className="h-3 w-3 text-amber-600" /> Recommendations ({d.recommendations.length})</p>{d.recommendations.slice(0, 3).map((rec) => (<div key={rec.rank} className={cn("rounded border p-2.5 text-xs leading-relaxed", REC_STYLES[rec.urgency] ?? REC_STYLES.planned)}><div className="flex items-start justify-between gap-2"><span>{rec.recommendation}</span>{rec.regulatory_ref && <span className="text-[10px] font-mono shrink-0 opacity-60">{rec.regulatory_ref}</span>}</div></div>))}</div>)}
+        {d.insights?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold flex items-center gap-1 text-purple-700"><Brain className="h-3 w-3" /> Cara Rewards & Sanctions Intelligence</p>{d.insights.slice(0, 3).map((insight, i) => (<div key={i} className={cn("rounded border p-2.5 text-xs leading-relaxed", INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.warning)}>{insight.text}</div>))}</div>)}
       </CardContent>
     </Card>
   );

@@ -16,7 +16,7 @@ function useHomeStaffDebriefEmotionalSupportIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-staff-debrief-emotional-support-intelligence");
       if (!res.ok) throw new Error("Failed to fetch staff debrief & emotional support intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: StaffDebriefResult }>;
     },
     refetchInterval: 60_000,
   });

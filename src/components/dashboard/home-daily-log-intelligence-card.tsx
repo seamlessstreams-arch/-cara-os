@@ -16,8 +16,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import type { DailyLogRating } from "@/lib/engines/home-daily-log-intelligence-engine";
-import type { HomeDailyLogResult } from "@/lib/engines/home-daily-log-intelligence-engine";
+import type { DailyLogRating, HomeDailyLogResult } from "@/lib/engines/home-daily-log-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -53,7 +52,7 @@ export function HomeDailyLogIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-daily-log-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home daily log intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeDailyLogResult }>;
     },
     refetchInterval: 60_000,
   });

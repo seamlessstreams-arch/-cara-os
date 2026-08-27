@@ -27,7 +27,7 @@ export function HomeHealthAppointmentContinuityIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-health-appointment-continuity-intelligence");
       if (!res.ok) throw new Error("Failed to fetch health appointment continuity intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HealthAppointmentResult }>;
     },
     refetchInterval: 60_000,
   });

@@ -24,7 +24,7 @@ export function HomeLoneWorkingStaffSafetyIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-lone-working-staff-safety-intelligence");
       if (!res.ok) throw new Error("Failed to fetch lone working & staff safety intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: LoneWorkingSafetyResult }>;
     },
     refetchInterval: 60_000,
   });

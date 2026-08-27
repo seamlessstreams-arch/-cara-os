@@ -49,7 +49,7 @@ export function HomeEducationAchievementIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-education-achievement-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home education achievement intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeEducationResult }>;
     },
     refetchInterval: 60_000,
   });

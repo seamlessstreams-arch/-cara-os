@@ -52,7 +52,7 @@ export function HomeSafeguardingPreventionIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-safeguarding-prevention-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home safeguarding prevention intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeSafeguardingPreventionResult }>;
     },
     refetchInterval: 60_000,
   });

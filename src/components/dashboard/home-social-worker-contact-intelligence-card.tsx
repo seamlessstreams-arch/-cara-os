@@ -14,7 +14,7 @@ function useHomeSocialWorkerContactIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-social-worker-contact-intelligence");
       if (!res.ok) throw new Error("Failed to fetch social worker contact intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: SocialWorkerContactResult }>;
     },
     refetchInterval: 60_000,
   });

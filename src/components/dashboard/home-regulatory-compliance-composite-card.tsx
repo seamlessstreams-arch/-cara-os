@@ -15,7 +15,7 @@ function useHomeRegulatoryComplianceComposite() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-regulatory-compliance-composite");
       if (!res.ok) throw new Error("Failed to fetch regulatory compliance composite");
-      return res.json();
+      return res.json() as Promise<{ data: RegulatoryComplianceResult }>;
     },
     refetchInterval: 120_000,
   });

@@ -24,7 +24,7 @@ export function HomeDiversityInclusionEqualityIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-diversity-inclusion-equality-intelligence");
       if (!res.ok) throw new Error("Failed to fetch diversity, inclusion & equality intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: DiversityInclusionResult }>;
     },
     refetchInterval: 60_000,
   });

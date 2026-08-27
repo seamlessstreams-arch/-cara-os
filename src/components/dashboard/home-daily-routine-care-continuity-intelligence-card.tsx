@@ -6,8 +6,7 @@ import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import type { DailyRoutineRating } from "@/lib/engines/home-daily-routine-care-continuity-intelligence-engine";
-import type { DailyRoutineResult } from "@/lib/engines/home-daily-routine-care-continuity-intelligence-engine";
+import type { DailyRoutineRating, DailyRoutineResult } from "@/lib/engines/home-daily-routine-care-continuity-intelligence-engine";
 
 const RATING_STYLES: Record<DailyRoutineRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -27,7 +26,7 @@ export function HomeDailyRoutineCareContinuityIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-daily-routine-care-continuity-intelligence");
       if (!res.ok) throw new Error("Failed to fetch daily routine & care continuity intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: DailyRoutineResult }>;
     },
     refetchInterval: 60_000,
   });

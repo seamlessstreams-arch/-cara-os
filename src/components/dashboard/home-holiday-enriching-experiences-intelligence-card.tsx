@@ -27,7 +27,7 @@ export function HomeHolidayEnrichingExperiencesIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-holiday-enriching-experiences-intelligence");
       if (!res.ok) throw new Error("Failed to fetch holiday & enriching experiences intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HolidayExperiencesResult }>;
     },
     refetchInterval: 60_000,
   });

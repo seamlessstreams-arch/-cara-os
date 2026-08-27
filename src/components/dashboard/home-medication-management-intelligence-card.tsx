@@ -17,8 +17,7 @@ import {
   ShieldCheck, Clock, Eye, Package,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { MedicationManagementRating } from "@/lib/engines/home-medication-management-intelligence-engine";
-import type { HomeMedicationManagementResult } from "@/lib/engines/home-medication-management-intelligence-engine";
+import type { MedicationManagementRating, HomeMedicationManagementResult } from "@/lib/engines/home-medication-management-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -54,7 +53,7 @@ export function HomeMedicationManagementIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-medication-management-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home medication management intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeMedicationManagementResult }>;
     },
     refetchInterval: 60_000,
   });

@@ -53,7 +53,7 @@ export function HomeLACReviewIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-lac-review-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home LAC review intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeLACReviewResult }>;
     },
     refetchInterval: 60_000,
   });

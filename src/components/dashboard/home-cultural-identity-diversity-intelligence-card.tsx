@@ -5,7 +5,7 @@ import { formatRate } from "@/lib/metrics/rate";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import type { CulturalIdentityRating } from "@/lib/engines/home-cultural-identity-diversity-intelligence-engine";
+import type { CulturalIdentityRating, CulturalIdentityDiversityResult } from "@/lib/engines/home-cultural-identity-diversity-intelligence-engine";
 
 const RATING_STYLES: Record<CulturalIdentityRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -23,12 +23,12 @@ export function HomeCulturalIdentityDiversityIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-cultural-identity-diversity-intelligence");
       if (!res.ok) throw new Error("Failed to fetch cultural identity diversity intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: CulturalIdentityDiversityResult }>;
     },
     refetchInterval: 60_000,
   });
   if (isLoading) return <Card className="overflow-hidden border-slate-200"><CardContent className="flex items-center justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></CardContent></Card>;
-  let d = data?.data ?? data;
+  let d = data?.data;
   if (!d) return null;
   // Calm reframe: an empty-with-children engine result (inadequate + score<=15) is
   // 'not yet recorded', not a failing home — render it as honest, neutral insufficient_data.
@@ -66,36 +66,36 @@ export function HomeCulturalIdentityDiversityIntelligenceCard() {
       <CardContent className="space-y-4">
         {d.identity_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-            <div className={cn("text-center rounded-lg p-1.5", d.cultural_plan_coverage_rate >= 80 ? "bg-green-50" : d.cultural_plan_coverage_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.cultural_plan_coverage_rate >= 80 ? "text-[--cs-success]" : d.cultural_plan_coverage_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.cultural_plan_coverage_rate)}</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.cultural_plan_coverage_rate === null ? "bg-slate-50" : d.cultural_plan_coverage_rate >= 80 ? "bg-green-50" : d.cultural_plan_coverage_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.cultural_plan_coverage_rate === null ? "text-muted-foreground" : d.cultural_plan_coverage_rate >= 80 ? "text-[--cs-success]" : d.cultural_plan_coverage_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.cultural_plan_coverage_rate)}</p>
               <p className="text-[9px] text-muted-foreground">ID Plans</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.mentor_assignment_rate >= 80 ? "bg-green-50" : d.mentor_assignment_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.mentor_assignment_rate >= 80 ? "text-[--cs-success]" : d.mentor_assignment_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.mentor_assignment_rate)}</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.mentor_assignment_rate === null ? "bg-slate-50" : d.mentor_assignment_rate >= 80 ? "bg-green-50" : d.mentor_assignment_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.mentor_assignment_rate === null ? "text-muted-foreground" : d.mentor_assignment_rate >= 80 ? "text-[--cs-success]" : d.mentor_assignment_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.mentor_assignment_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Mentors</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.diversity_participation_rate >= 80 ? "bg-green-50" : d.diversity_participation_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.diversity_participation_rate >= 80 ? "text-[--cs-success]" : d.diversity_participation_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.diversity_participation_rate)}</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.diversity_participation_rate === null ? "bg-slate-50" : d.diversity_participation_rate >= 80 ? "bg-green-50" : d.diversity_participation_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.diversity_participation_rate === null ? "text-muted-foreground" : d.diversity_participation_rate >= 80 ? "text-[--cs-success]" : d.diversity_participation_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.diversity_participation_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Diversity</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.life_story_work_rate >= 80 ? "bg-green-50" : d.life_story_work_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.life_story_work_rate >= 80 ? "text-[--cs-success]" : d.life_story_work_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.life_story_work_rate)}</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.life_story_work_rate === null ? "bg-slate-50" : d.life_story_work_rate >= 80 ? "bg-green-50" : d.life_story_work_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.life_story_work_rate === null ? "text-muted-foreground" : d.life_story_work_rate >= 80 ? "text-[--cs-success]" : d.life_story_work_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.life_story_work_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Life Story</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.child_voice_in_plans_rate >= 80 ? "bg-green-50" : d.child_voice_in_plans_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.child_voice_in_plans_rate >= 80 ? "text-[--cs-success]" : d.child_voice_in_plans_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_voice_in_plans_rate)}</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.child_voice_in_plans_rate === null ? "bg-slate-50" : d.child_voice_in_plans_rate >= 80 ? "bg-green-50" : d.child_voice_in_plans_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.child_voice_in_plans_rate === null ? "text-muted-foreground" : d.child_voice_in_plans_rate >= 80 ? "text-[--cs-success]" : d.child_voice_in_plans_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.child_voice_in_plans_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Child Voice</p>
             </div>
-            <div className={cn("text-center rounded-lg p-1.5", d.personal_passport_currency_rate >= 80 ? "bg-green-50" : d.personal_passport_currency_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
-              <p className={cn("text-sm font-bold tabular-nums", d.personal_passport_currency_rate >= 80 ? "text-[--cs-success]" : d.personal_passport_currency_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.personal_passport_currency_rate)}</p>
+            <div className={cn("text-center rounded-lg p-1.5", d.personal_passport_currency_rate === null ? "bg-slate-50" : d.personal_passport_currency_rate >= 80 ? "bg-green-50" : d.personal_passport_currency_rate >= 50 ? "bg-amber-50" : "bg-red-50")}>
+              <p className={cn("text-sm font-bold tabular-nums", d.personal_passport_currency_rate === null ? "text-muted-foreground" : d.personal_passport_currency_rate >= 80 ? "text-[--cs-success]" : d.personal_passport_currency_rate >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{formatRate(d.personal_passport_currency_rate)}</p>
               <p className="text-[9px] text-muted-foreground">Passports</p>
             </div>
           </div>
         )}
         {d.strengths?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold text-green-700 flex items-center gap-1"><Sparkles className="h-3 w-3" /> Strengths ({d.strengths.length})</p>{d.strengths.slice(0, 3).map((s: string, i: number) => (<div key={i} className="rounded border border-[--cs-success-soft] bg-[--cs-success-bg] p-2.5 text-xs text-[--cs-success] leading-relaxed">{s}</div>))}</div>)}
         {d.concerns?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold text-red-700 flex items-center gap-1"><AlertCircle className="h-3 w-3" /> Concerns ({d.concerns.length})</p>{d.concerns.slice(0, 3).map((c: string, i: number) => (<div key={i} className="rounded border border-[--cs-risk-soft] bg-[--cs-risk-bg] p-2.5 text-xs text-[--cs-risk] leading-relaxed">{c}</div>))}</div>)}
-        {d.recommendations?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><AlertTriangle className="h-3 w-3 text-amber-600" /> Recommendations ({d.recommendations.length})</p>{d.recommendations.slice(0, 3).map((rec: any) => (<div key={rec.rank} className={cn("rounded border p-2.5 text-xs leading-relaxed", REC_STYLES[rec.urgency] ?? REC_STYLES.planned)}><div className="flex items-start justify-between gap-2"><span>{rec.recommendation}</span>{rec.regulatory_ref && <span className="text-[10px] font-mono shrink-0 opacity-60">{rec.regulatory_ref}</span>}</div></div>))}</div>)}
-        {d.insights?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold flex items-center gap-1 text-purple-700"><Brain className="h-3 w-3" /> Cara Cultural Identity Intelligence</p>{d.insights.slice(0, 3).map((insight: any, i: number) => (<div key={i} className={cn("rounded border p-2.5 text-xs leading-relaxed", INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.warning)}>{insight.text}</div>))}</div>)}
+        {d.recommendations?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><AlertTriangle className="h-3 w-3 text-amber-600" /> Recommendations ({d.recommendations.length})</p>{d.recommendations.slice(0, 3).map((rec) => (<div key={rec.rank} className={cn("rounded border p-2.5 text-xs leading-relaxed", REC_STYLES[rec.urgency] ?? REC_STYLES.planned)}><div className="flex items-start justify-between gap-2"><span>{rec.recommendation}</span>{rec.regulatory_ref && <span className="text-[10px] font-mono shrink-0 opacity-60">{rec.regulatory_ref}</span>}</div></div>))}</div>)}
+        {d.insights?.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold flex items-center gap-1 text-purple-700"><Brain className="h-3 w-3" /> Cara Cultural Identity Intelligence</p>{d.insights.slice(0, 3).map((insight, i) => (<div key={i} className={cn("rounded border p-2.5 text-xs leading-relaxed", INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.warning)}>{insight.text}</div>))}</div>)}
       </CardContent>
     </Card>
   );

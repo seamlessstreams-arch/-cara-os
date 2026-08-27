@@ -28,7 +28,7 @@ function useHomeSleepQualityIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-sleep-quality-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home sleep quality intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeSleepQualityResult }>;
     },
     refetchInterval: 60_000,
   });

@@ -28,7 +28,7 @@ function useHomePeerDynamicsIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-peer-dynamics-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home peer dynamics intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomePeerDynamicsResult }>;
     },
     refetchInterval: 60_000,
   });

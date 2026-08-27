@@ -53,7 +53,7 @@ export function HomeWorkforcePlanningIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-workforce-planning-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home workforce planning intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeWorkforcePlanningResult }>;
     },
     refetchInterval: 60_000,
   });

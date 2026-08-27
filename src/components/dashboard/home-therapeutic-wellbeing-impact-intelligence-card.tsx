@@ -16,7 +16,7 @@ function useHomeTherapeuticWellbeingImpactIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-therapeutic-wellbeing-impact-intelligence");
       if (!res.ok) throw new Error("Failed to fetch therapeutic wellbeing & impact intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: TherapeuticWellbeingResult }>;
     },
     refetchInterval: 60_000,
   });

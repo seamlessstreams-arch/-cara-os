@@ -17,8 +17,7 @@ import {
   ShieldCheck, ClipboardCheck, Thermometer, Siren,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { MedicationGovernanceRating } from "@/lib/engines/home-medication-governance-intelligence-engine";
-import type { HomeMedicationGovernanceResult } from "@/lib/engines/home-medication-governance-intelligence-engine";
+import type { MedicationGovernanceRating, HomeMedicationGovernanceResult } from "@/lib/engines/home-medication-governance-intelligence-engine";
 import { formatRate } from "@/lib/metrics/rate";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
@@ -55,7 +54,7 @@ export function HomeMedicationGovernanceIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-medication-governance-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home medication governance intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeMedicationGovernanceResult }>;
     },
     refetchInterval: 60_000,
   });

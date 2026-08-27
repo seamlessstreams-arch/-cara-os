@@ -17,8 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { below, formatRate, meets } from "@/lib/metrics/rate";
-import type { IncidentSafetyRating } from "@/lib/engines/home-incident-safety-intelligence-engine";
-import type { HomeIncidentSafetyResult } from "@/lib/engines/home-incident-safety-intelligence-engine";
+import type { IncidentSafetyRating, HomeIncidentSafetyResult } from "@/lib/engines/home-incident-safety-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -68,7 +67,7 @@ export function HomeIncidentSafetyIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-incident-safety-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home incident safety intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeIncidentSafetyResult }>;
     },
     refetchInterval: 60_000,
   });

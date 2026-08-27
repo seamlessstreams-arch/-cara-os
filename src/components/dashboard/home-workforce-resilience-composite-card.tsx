@@ -22,7 +22,7 @@ export function HomeWorkforceResilienceCompositeCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-workforce-resilience-composite");
       if (!res.ok) throw new Error("Failed to fetch workforce resilience composite");
-      return res.json();
+      return res.json() as Promise<{ data: WorkforceResilienceResult }>;
     },
     refetchInterval: 120_000,
   });

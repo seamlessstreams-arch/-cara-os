@@ -53,7 +53,7 @@ export function HomeKeyworkerIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-keyworker-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home keyworker intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeKeyworkerResult }>;
     },
     refetchInterval: 60_000,
   });

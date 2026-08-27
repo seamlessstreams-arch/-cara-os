@@ -53,7 +53,7 @@ export function HomeAdmissionIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-admission-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home admission intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeAdmissionResult }>;
     },
     refetchInterval: 60_000,
   });

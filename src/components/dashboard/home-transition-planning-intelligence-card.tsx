@@ -29,7 +29,7 @@ function useHomeTransitionPlanningIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-transition-planning-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home transition planning intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeTransitionPlanningResult }>;
     },
     refetchInterval: 60_000,
   });

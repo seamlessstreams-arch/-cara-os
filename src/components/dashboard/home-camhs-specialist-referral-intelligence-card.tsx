@@ -15,7 +15,7 @@ function useHomeCamhsSpecialistReferralIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-camhs-specialist-referral-intelligence");
       if (!res.ok) throw new Error("Failed to fetch CAMHS & specialist referral intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: CamhsSpecialistResult }>;
     },
     refetchInterval: 60_000,
   });

@@ -6,8 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ShieldPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { InfectionControlRating } from "@/lib/engines/home-infection-control-health-safety-intelligence-engine";
-import type { InfectionControlResult } from "@/lib/engines/home-infection-control-health-safety-intelligence-engine";
+import type { InfectionControlRating, InfectionControlResult } from "@/lib/engines/home-infection-control-health-safety-intelligence-engine";
 
 const RATING_STYLES: Record<InfectionControlRating, { bg: string; text: string; border: string; label: string }> = {
   outstanding: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300", label: "OUTSTANDING" },
@@ -27,7 +26,7 @@ export function HomeInfectionControlHealthSafetyIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-infection-control-health-safety-intelligence");
       if (!res.ok) throw new Error("Failed to fetch infection control & health safety intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: InfectionControlResult }>;
     },
     refetchInterval: 60_000,
   });

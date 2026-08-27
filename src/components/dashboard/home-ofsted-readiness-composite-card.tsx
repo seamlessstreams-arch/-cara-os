@@ -14,7 +14,7 @@ function useHomeOfstedReadinessComposite() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-ofsted-readiness-composite");
       if (!res.ok) throw new Error("Failed to fetch Ofsted readiness composite");
-      return res.json();
+      return res.json() as Promise<{ data: HomeOfstedReadinessResult }>;
     },
     refetchInterval: 120_000, // 2 minutes — composite is heavier
   });

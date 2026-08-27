@@ -26,7 +26,7 @@ export function HomeStatutoryVisitComplianceIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-statutory-visit-compliance-intelligence");
       if (!res.ok) throw new Error("Failed to fetch statutory visit compliance intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: StatutoryVisitResult }>;
     },
     refetchInterval: 60_000,
   });

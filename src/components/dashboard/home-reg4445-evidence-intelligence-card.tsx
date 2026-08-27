@@ -16,7 +16,7 @@ function useHomeReg4445EvidenceIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-reg4445-evidence-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home reg 44/45 evidence intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeReg4445EvidenceResult }>;
     },
     refetchInterval: 60_000,
   });

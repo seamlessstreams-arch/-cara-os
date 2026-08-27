@@ -17,8 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import type { CulturalIdentityRating } from "@/lib/engines/home-cultural-identity-intelligence-engine";
-import type { HomeCulturalIdentityResult } from "@/lib/engines/home-cultural-identity-intelligence-engine";
+import type { CulturalIdentityRating, HomeCulturalIdentityResult } from "@/lib/engines/home-cultural-identity-intelligence-engine";
 
 // ── Style Maps ──────────────────────────────────────────────────────────────
 
@@ -54,7 +53,7 @@ export function HomeCulturalIdentityIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-cultural-identity-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home cultural identity intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeCulturalIdentityResult }>;
     },
     refetchInterval: 60_000,
   });

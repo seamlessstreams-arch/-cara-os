@@ -29,7 +29,7 @@ function useHomeTherapeuticProgressIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-therapeutic-progress-intelligence");
       if (!res.ok) throw new Error("Failed to fetch home therapeutic progress intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: HomeTherapeuticProgressResult }>;
     },
     refetchInterval: 60_000,
   });

@@ -31,7 +31,7 @@ export function HomeSafeguardingOversightCompositeCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-safeguarding-oversight-composite");
       if (!res.ok) throw new Error("Failed to fetch safeguarding oversight composite");
-      return res.json();
+      return res.json() as Promise<{ data: SafeguardingCompositeResult }>;
     },
     refetchInterval: 120_000,
   });

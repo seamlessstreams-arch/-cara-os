@@ -16,7 +16,7 @@ function useHomeQualityOfCareReviewIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-quality-of-care-review-intelligence");
       if (!res.ok) throw new Error("Failed to fetch quality of care review intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: QualityOfCareReviewResult }>;
     },
     refetchInterval: 60_000,
   });

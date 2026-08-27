@@ -25,7 +25,7 @@ export function HomeAccidentInjurySurveillanceIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-accident-injury-surveillance-intelligence");
       if (!res.ok) throw new Error("Failed to fetch accident injury surveillance intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: AccidentInjuryResult }>;
     },
     refetchInterval: 60_000,
   });

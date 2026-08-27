@@ -15,7 +15,7 @@ function useHomeFoodNutritionHygieneSafetyIntelligence() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-food-nutrition-hygiene-safety-intelligence");
       if (!res.ok) throw new Error("Failed to fetch food, nutrition & hygiene safety intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: FoodHygieneSafetyResult }>;
     },
     refetchInterval: 60_000,
   });

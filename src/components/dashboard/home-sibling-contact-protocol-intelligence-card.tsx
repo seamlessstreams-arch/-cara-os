@@ -24,7 +24,7 @@ export function HomeSiblingContactProtocolIntelligenceCard() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-sibling-contact-protocol-intelligence");
       if (!res.ok) throw new Error("Failed to fetch sibling contact protocol intelligence");
-      return res.json();
+      return res.json() as Promise<{ data: SiblingContactResult }>;
     },
     refetchInterval: 60_000,
   });
