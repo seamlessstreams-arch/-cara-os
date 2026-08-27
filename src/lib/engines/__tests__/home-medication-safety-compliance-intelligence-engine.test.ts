@@ -118,7 +118,7 @@ function makeProtocol(
 }
 
 // Helper: generate N records from a make function with the same overrides
-function repeat<T>(n: number, makeFn: (o?: any) => T, overrides = {}): T[] {
+function repeat<T>(n: number, makeFn: (o?: Partial<T>) => T, overrides: Partial<T> = {}): T[] {
   return Array.from({ length: n }, () => makeFn(overrides));
 }
 

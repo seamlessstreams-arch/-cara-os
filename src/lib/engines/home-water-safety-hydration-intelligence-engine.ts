@@ -1206,8 +1206,8 @@ export function computeWaterSafetyHydration(
 
   // Identify missing outlet types in temperature checks
   const outletTypes = new Set(water_temperature_records.map((t) => t.outlet_type));
-  const expectedOutlets = ["hot_tap", "bath", "shower"];
-  const missingOutlets = expectedOutlets.filter((o) => !outletTypes.has(o as any));
+  const expectedOutlets = ["hot_tap", "bath", "shower"] as const;
+  const missingOutlets = expectedOutlets.filter((o) => !outletTypes.has((o)));
   if (missingOutlets.length > 0 && totalTemperatureRecords > 0) {
     insights.push({
       text: `No temperature checks recorded for ${missingOutlets.join(", ")} outlet${missingOutlets.length !== 1 ? "s" : ""} — water temperature monitoring should cover all outlet types accessible to children to ensure comprehensive scald risk management.`,

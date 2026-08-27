@@ -23,7 +23,7 @@ export function ShiftMode({ onExit }: ShiftModeProps) {
   const store = getStore();
   // The in-memory store is a module singleton; memoized so the timer
   // callbacks that capture this list stay compiler-preservable.
-  const children = useMemo(() => (store.youngPeople as any[] || []).filter((yp) => yp.status === "current"), [store.youngPeople]);
+  const children = useMemo(() => ((store.youngPeople) || []).filter((yp) => yp.status === "current"), [store.youngPeople]);
   const [selectedChild, setSelectedChild] = useState<string | null>(children[0]?.id ?? null);
   const [timerRunning, setTimerRunning] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(0);
@@ -61,8 +61,17 @@ export function ShiftMode({ onExit }: ShiftModeProps) {
   const timeStr = mounted ? now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : "--:--";
   const dateStr = mounted ? now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" }) : "";
 
-  const overdueTasks = (store.tasks as any[] || []).filter((t) => t.status === "pending" && t.due_date && t.due_date < now.toISOString().slice(0, 10)).length;
-  const todayLogs = (store.dailyLog as any[] || []).filter((l) => l.date === now.toISOString().slice(0, 10)).length;
+  // TaskStatus has no "pending", so this filter never matched and Shift Mode
+  // reported zero overdue tasks on every shift. A task is overdue when it is
+  // past its date and has not been finished or called off.
+  const overdueTasks = ((store.tasks) || []).filter(
+    (t) =>
+      t.status !== "completed" &&
+      t.status !== "cancelled" &&
+      t.due_date &&
+      t.due_date < now.toISOString().slice(0, 10),
+  ).length;
+  const todayLogs = ((store.dailyLog) || []).filter((l) => l.date === now.toISOString().slice(0, 10)).length;
   const missingLogs = children.length - todayLogs;
 
   const ACTIONS = [
@@ -139,7 +148,7 @@ export function ShiftMode({ onExit }: ShiftModeProps) {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {ACTIONS.map((action) => {
               const Icon = action.icon;
-              if ((action as any).isTimer) {
+              if (((action)).isTimer) {
                 return (
                   <button
                     key={action.label}

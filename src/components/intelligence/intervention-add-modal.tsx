@@ -194,7 +194,7 @@ export function InterventionAddModal({
 
 
     createIntervention(
-      {
+      ({
         child_id: childId,
         home_id: "home_oak",
         title: title.trim(),
@@ -203,19 +203,12 @@ export function InterventionAddModal({
         rationale: rationale.trim(),
         intended_outcome: intendedOutcome.trim(),
         status: "active",
-        started_by: "staff_darren",
         started_at: todayStr(),
         agreed_by: null,
         review_date: reviewDate || null,
-        actual_outcome: null,
-        effectiveness_rating: null,
-        effectiveness_notes: null,
-        what_changed: null,
-        continue_recommendation: null,
         evidence_refs: [],
-        linked_task_id: null,
         created_by: "staff_darren",
-      } as any,
+      }),
       {
         onSuccess: () => {
           setSuccess(true);

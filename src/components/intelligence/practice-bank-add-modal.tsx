@@ -39,29 +39,21 @@ interface PracticeBankAddModalProps {
 
 // ── Category config ───────────────────────────────────────────────────────────
 
-type CategoryValue =
-  | "approach"
-  | "language"
-  | "avoid"
-  | "preparation"
-  | "deescalation"
-  | "sensory_regulation"
-  | "education_engagement"
-  | "contact_preparation"
-  | "routine"
-  | "other";
+// Eight of the ten values this list used to offer were not values a
+// PracticeBankEntry can hold, so an entry filed under them landed outside
+// every category filter that reads the bank. These are the record's own.
+type CategoryValue = PracticeBankEntry["category"];
 
 const CATEGORIES: { label: string; value: CategoryValue }[] = [
-  { label: "Approach",              value: "approach" },
-  { label: "Language",              value: "language" },
-  { label: "Avoid",                 value: "avoid" },
-  { label: "Preparation",           value: "preparation" },
-  { label: "De-escalation",         value: "deescalation" },
-  { label: "Sensory/Regulation",    value: "sensory_regulation" },
-  { label: "Education Engagement",  value: "education_engagement" },
-  { label: "Contact Preparation",   value: "contact_preparation" },
-  { label: "Routine",               value: "routine" },
-  { label: "Other",                 value: "other" },
+  { label: "What works",              value: "what_works" },
+  { label: "What to avoid",           value: "what_to_avoid" },
+  { label: "Language",                value: "language" },
+  { label: "Preparation",             value: "preparation" },
+  { label: "Regulation & de-escalation", value: "regulation" },
+  { label: "Repair",                  value: "repair" },
+  { label: "Education",               value: "education" },
+  { label: "Engagement",              value: "engagement" },
+  { label: "General",                 value: "general" },
 ];
 
 // ── Field label ───────────────────────────────────────────────────────────────
@@ -177,21 +169,17 @@ export function PracticeBankAddModal({
 
 
     createEntry(
-      {
+      ({
         child_id: childId,
         home_id: "home_oak",
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        category: category as any,
+        category,
         title: title.trim(),
         description: description.trim(),
         context: context.trim() || null,
-        examples: evidence.trim() || null,
-        added_by: "staff_darren",
-        verified_by: null,
+        evidence: evidence.trim() || null,
+        contributed_by: "staff_darren",
         is_active: true,
-        last_used_at: null,
-        effectiveness_notes: null,
-      } as any,
+      }),
       {
         onSuccess: () => {
           setSuccess(true);

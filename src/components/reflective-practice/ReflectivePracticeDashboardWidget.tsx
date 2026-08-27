@@ -293,7 +293,7 @@ export function ReflectivePracticeDashboardWidget() {
                   .sort(([, a], [, b]) => b - a)
                   .map(([type, count]) => (
                     <div key={type} className="flex justify-between items-center">
-                      <span className="text-sm text-gray-700">{getActivityTypeLabel(type as any)}</span>
+                      <span className="text-sm text-gray-700">{getActivityTypeLabel((type))}</span>
                       <span className="text-xs font-medium text-gray-500">{count}</span>
                     </div>
                   ))}
@@ -306,7 +306,7 @@ export function ReflectivePracticeDashboardWidget() {
                   .sort(([, a], [, b]) => b - a)
                   .map(([area, count]) => (
                     <div key={area} className="flex justify-between items-center">
-                      <span className="text-sm text-gray-700">{getPracticeAreaLabel(area as any)}</span>
+                      <span className="text-sm text-gray-700">{getPracticeAreaLabel((area))}</span>
                       <span className="text-xs font-medium text-gray-500">{count}</span>
                     </div>
                   ))}
@@ -399,7 +399,7 @@ export function ReflectivePracticeDashboardWidget() {
                 <div className="space-y-1">
                   {data.teamLearning.topTeamTopics.map((topic, i) => (
                     <div key={i} className="flex justify-between items-center">
-                      <span className="text-sm text-gray-700">{getPracticeAreaLabel(topic.practiceArea as any)}</span>
+                      <span className="text-sm text-gray-700">{getPracticeAreaLabel((topic.practiceArea))}</span>
                       <span className="text-xs font-medium text-gray-500">{topic.count} sessions</span>
                     </div>
                   ))}
