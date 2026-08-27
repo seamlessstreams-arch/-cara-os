@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import type { YoungPerson } from "@/types";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { dal } from "@/lib/db/dal";
@@ -25,8 +26,7 @@ async function safeList(p: Promise<any[]>): Promise<any[]> {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function childrenList(youngPeople: any[]) {
+function childrenList(youngPeople: YoungPerson[]) {
   return youngPeople
     .filter((yp) => yp.status === "current")
     .map((yp) => ({

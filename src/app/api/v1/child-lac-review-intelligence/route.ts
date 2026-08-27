@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
       child_participation: r.child_participation ?? "did_not_participate",
       child_views_recorded: !!(r.child_views && r.child_views.trim().length > 0),
       outcome: r.outcome ?? "placement_continues",
-      actions: (r.actions_agreed ?? []).map((a: any) => ({
+      actions: (r.actions_agreed ?? []).map((a) => ({
         action: a.action ?? "Unnamed action",
         owner: a.owner ?? "Unassigned",
         due_date: a.due_date ?? today,

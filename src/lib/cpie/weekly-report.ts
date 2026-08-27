@@ -154,7 +154,7 @@ function secWellDone(i: WeeklyReportInput, name: string, a: string, b: string, p
 }
 
 function secStruggled(i: WeeklyReportInput, name: string, a: string, b: string, pd: string): SectionOut {
-  const beh = weekly(i.behaviourLog, i.childId, ["date"], a, b).filter((d) => s(d.r.direction) === "concerning");
+  const beh = weekly(i.behaviourLog, i.childId, ["date"], a, b).filter((d) => s(d.r.direction) === "concern");
   const inc = weekly(i.incidents, i.childId, ["date"], a, b).filter((d) => !SAFEGUARDING_TYPES.test(s(d.r.type)) && s(d.r.severity).toLowerCase() !== "critical");
   const events = [...beh, ...inc].sort((x, y) => (x.date < y.date ? -1 : 1));
   const seed = seedOf(i.childId);

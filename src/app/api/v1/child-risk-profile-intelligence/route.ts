@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
       assessed_date: (r.assessed_date ?? today).toString().slice(0, 10),
       review_date: (r.review_date ?? today).toString().slice(0, 10),
       triggers: Array.isArray(r.triggers) ? r.triggers : [],
-      mitigations: Array.isArray(r.mitigations) ? r.mitigations.map((m: any) => ({
+      mitigations: Array.isArray(r.mitigations) ? r.mitigations.map((m) => ({
         strategy: m.strategy ?? "Unknown",
         responsible: m.responsible ?? "Staff",
         effectiveness: m.effectiveness ?? "not_yet_assessed",

@@ -19,11 +19,15 @@ export type AppraisalType =
   | "annual_appraisal"
   | "mid_year"
   | "probation_review"
+  // The store spells a performance-improvement plan "pip".
+  | "pip"
   | "performance_improvement";
 
 export type AppraisalStatus =
   | "completed"
   | "scheduled"
+  // An appraisal the store has opened but not finished.
+  | "in_progress"
   | "overdue"
   | "cancelled";
 
@@ -38,7 +42,9 @@ export type QualificationStatus =
   | "not_started"
   | "in_progress"
   | "completed"
-  | "expired";
+  | "expired"
+  // A person can be exempt from a qualification the role otherwise requires.
+  | "exempt";
 
 export type InductionStatus =
   | "not_started"
@@ -277,7 +283,12 @@ export function computeStaffDevelopmentIntelligence(
   const avgReadiness = meanOf(readinessScores);
 
   // Qualifications
-  const mandatoryQuals = qualifications.filter((q) => q.mandatory);
+  // An exemption means the requirement does not apply to this person, so it
+  // belongs in neither half of the compliance rate. Left in the denominator it
+  // reports the home as short of a qualification nobody had to hold.
+  const mandatoryQuals = qualifications.filter(
+    (q) => q.mandatory && q.status !== "exempt",
+  );
   const mandatoryCompleted = mandatoryQuals.filter((q) => q.status === "completed");
   const mandatoryComplianceRate = rate(mandatoryCompleted.length, mandatoryQuals.length);
 

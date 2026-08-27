@@ -586,8 +586,10 @@ function resolveAccessor(slug: string): AsyncCollection | null {
         : null,
       findById:
         typeof dalCol.findById === "function" ? async (id: string) => (await dalCol.findById(id)) ?? null
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        : async (id: string) => asList(await dalCol.findAll()).find((x: any) => x?.id === id) ?? null,
+        : async (id: string) =>
+            asList(await dalCol.findAll()).find(
+              (x) => typeof x === "object" && x !== null && (x as { id?: unknown }).id === id,
+            ) ?? null,
       create:
         typeof dalCol.create === "function" ? async (d: Record<string, unknown>) => dalCol.create(d)
         : !live && typeof mem.create === "function" ? async (d: Record<string, unknown>) => mem.create!(d) : null,

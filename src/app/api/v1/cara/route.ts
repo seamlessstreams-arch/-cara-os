@@ -319,24 +319,24 @@ function deterministicRiChallengeQuestion() {
 function deterministicStaffDevelopmentSummary(): string {
   const store = (getStore());
 
-  const staff = (store.staff ?? []).map((s: any) => ({
+  const staff = (store.staff ?? []).map((s) => ({
     id: s.id,
     name: s.full_name ?? (`${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || s.id),
     role: s.job_title ?? s.role ?? "Staff",
     is_active: s.employment_status ? s.employment_status === "active" : Boolean(s.is_active),
     start_date: s.start_date,
   }));
-  const appraisals = (store.appraisals ?? []).map((a: any) => ({
+  const appraisals = (store.appraisals ?? []).map((a) => ({
     id: a.id, staff_id: a.staff_id, appraisal_type: a.appraisal_type, appraisal_date: a.appraisal_date,
     status: a.status, overall_rating: a.overall_rating ?? undefined, competency_scores: a.competency_scores ?? {},
     signed_by_staff: Boolean(a.signed_by_staff), next_review_date: a.next_review_date ?? undefined,
   }));
-  const competency_profiles = (store.competencyProfiles ?? []).map((p: any) => ({
+  const competency_profiles = (store.competencyProfiles ?? []).map((p) => ({
     id: p.id, staff_id: p.staff_id, current_stage: p.current_stage ?? "", target_stage: p.target_stage ?? undefined,
     overall_readiness_score: p.overall_readiness_score ?? 0, strengths: p.strengths ?? [],
     development_areas: p.development_areas ?? [], next_review_date: p.next_review_date ?? undefined,
   }));
-  const qualifications = (store.qualifications ?? []).map((q: any) => ({
+  const qualifications = (store.qualifications ?? []).map((q) => ({
     id: q.id, staff_id: q.staff_id, qualification_name: q.qualification_name, level: q.level ?? undefined,
     mandatory: Boolean(q.mandatory), status: q.status, started_at: q.started_at ?? undefined,
     completed_at: q.completed_at ?? undefined, expiry_date: q.expiry_date ?? undefined,

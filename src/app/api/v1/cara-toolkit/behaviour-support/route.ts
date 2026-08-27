@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { YoungPerson } from "@/types";
 import { dal } from "@/lib/db";
 import type {
   BehaviourTrigger,
@@ -10,7 +11,7 @@ import type {
 
 export const dynamic = "force-dynamic";
 
-function initials(youngPeople: any[], childId: string): string {
+function initials(youngPeople: YoungPerson[], childId: string): string {
   const yp = youngPeople.find((y) => y.id === childId);
   if (!yp) return "?";
   const f = ((yp.first_name || yp.preferred_name || "?")[0] ?? "?").toUpperCase();

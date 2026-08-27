@@ -148,7 +148,7 @@ export async function GET() {
   });
 
   const overdueActions = supervisions.flatMap((r) =>
-    (r.actions ?? []).filter((a: any) => !a.done && a.due && daysBetween(String(a.due).slice(0, 10), today) > 0)
+    (r.actions ?? []).filter((a) => !a.done && a.due && daysBetween(String(a.due).slice(0, 10), today) > 0)
   );
 
   const daysSinceLastSupervision =
