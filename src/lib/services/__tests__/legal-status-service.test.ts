@@ -61,8 +61,7 @@ const recordDefaults: LegalRecord = {
   updated_at: "2026-01-01T10:00:00Z",
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function makeRecord(overrides: Record<string, unknown> = {}): any {
+function makeRecord(overrides: Partial<LegalRecord> = {}): LegalRecord {
   return { ...recordDefaults, ...overrides };
 }
 

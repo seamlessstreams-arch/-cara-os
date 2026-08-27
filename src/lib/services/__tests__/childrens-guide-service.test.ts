@@ -739,7 +739,7 @@ describe("computeGuideMetrics", () => {
 
   it("sections_coverage all false when no active guides", () => {
     const guides = [
-      makeGuide({ id: "g1", status: "draft", sections_included: REQUIRED_SECTIONS as any }),
+      makeGuide({ id: "g1", status: "draft", sections_included: (REQUIRED_SECTIONS) }),
     ];
     const m = computeGuideMetrics(guides, [], [], 0);
     for (const s of REQUIRED_SECTIONS) {
@@ -884,13 +884,13 @@ describe("computeGuideMetrics", () => {
         id: "g2",
         status: "active",
         effective_date: daysAgo(5),
-        sections_included: REQUIRED_SECTIONS.slice(0, 3) as any,
+        sections_included: (REQUIRED_SECTIONS.slice(0, 3)),
       }),
       makeGuide({
         id: "g1",
         status: "active",
         effective_date: daysAgo(60),
-        sections_included: [...REQUIRED_SECTIONS] as any,
+        sections_included: ([...REQUIRED_SECTIONS]),
       }),
     ];
     const m = computeGuideMetrics(guides, [], [], 0);

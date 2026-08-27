@@ -6,6 +6,7 @@
 
 import { describe, it, expect } from "vitest";
 import { _testing } from "../daily-recording-service";
+import type { DailyRecord } from "../daily-recording-service";
 
 const {
   assessRecordQuality,
@@ -44,30 +45,7 @@ function qualityInput(overrides: Partial<{
 }
 
 /** Build a minimal DailyRecord for compliance / profile / gap tests. */
-function dailyRecord(overrides: Partial<{
-  id: string;
-  home_id: string;
-  child_id: string | null;
-  record_type: string;
-  shift_type: string | null;
-  author_id: string;
-  content: string;
-  word_count: number;
-  mentions_children: string[];
-  mentions_staff: string[];
-  mood_observations: string | null;
-  behaviour_notes: string | null;
-  medication_notes: string | null;
-  safeguarding_flags: string[];
-  positive_highlights: string[];
-  concerns: string[];
-  attachments_count: number;
-  signed_off_by: string | null;
-  signed_off_at: string | null;
-  quality_score: string | null;
-  created_at: string;
-  updated_at: string;
-}> = {}) {
+function dailyRecord(overrides: Partial<DailyRecord> = {}): DailyRecord {
   return {
     id: overrides.id ?? "rec-1",
     home_id: overrides.home_id ?? "home-1",
@@ -91,8 +69,7 @@ function dailyRecord(overrides: Partial<{
     quality_score: overrides.quality_score ?? null,
     created_at: overrides.created_at ?? "2026-06-01T10:00:00Z",
     updated_at: overrides.updated_at ?? "2026-06-01T10:00:00Z",
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any;
+  };
 }
 
 // ── assessRecordQuality ─────────────────────────────────────────────────
