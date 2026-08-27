@@ -1,4 +1,6 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { enumParam } from "@/lib/http/enum-param";
+import { WORKFLOW_STATUS_VALUES } from "@/types/operations";
 import { NextRequest, NextResponse } from "next/server";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
 import {
@@ -8,6 +10,9 @@ import {
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+
+  const statusParam = enumParam("status", searchParams.get("status"), WORKFLOW_STATUS_VALUES);
+  if (!statusParam.ok) return statusParam.response;
   const homeId = searchParams.get("homeId");
 
   // Return available templates (no homeId needed)
@@ -32,7 +37,7 @@ export async function GET(request: NextRequest) {
   }
 
   const result = await listWorkflows(homeId, {
-    status: searchParams.get("status") as any ?? undefined,
+    status: statusParam.value,
     template_code: searchParams.get("template") ?? undefined,
     linked_child_id: searchParams.get("childId") ?? undefined,
     limit: parseInt(searchParams.get("limit") ?? "50"),

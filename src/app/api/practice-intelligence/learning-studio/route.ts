@@ -7,6 +7,8 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { readJsonBody } from "@/lib/http/read-json";
+import { enumParam } from "@/lib/http/enum-param";
+import { LEARNING_RESOURCE_TYPES } from "@/types/practice-intelligence";
 import { NextRequest, NextResponse } from "next/server";
 import {
   generateLearningResource,
@@ -19,12 +21,15 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
 
+  const typeParam = enumParam("type", searchParams.get("type"), LEARNING_RESOURCE_TYPES);
+  if (!typeParam.ok) return typeParam.response;
+
     if (searchParams.get("groups") === "true") {
       return NextResponse.json({ ok: true, data: getResourceTypeGroups() });
     }
 
     const resources = await listLearningResources({
-      resourceType: (searchParams.get("type") as any) ?? undefined,
+      resourceType: typeParam.value,
       targetAudience: searchParams.get("audience") ?? undefined,
       status: searchParams.get("status") ?? undefined,
       limit: parseInt(searchParams.get("limit") ?? "20", 10),

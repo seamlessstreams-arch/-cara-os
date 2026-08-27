@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { enumParam } from "@/lib/http/enum-param";
+import { AUDIT_ACTION_VALUES } from "@/types/operations";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
 import {
   getHomeAuditTrail, getEntityAuditTrail,
@@ -7,6 +9,9 @@ import {
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+
+  const actionParam = enumParam("action", searchParams.get("action"), AUDIT_ACTION_VALUES);
+  if (!actionParam.ok) return actionParam.response;
   const homeId = searchParams.get("homeId");
   const type = searchParams.get("type");
 
@@ -69,7 +74,7 @@ export async function GET(request: NextRequest) {
   if (!homeId) return NextResponse.json({ error: "homeId required" }, { status: 400 });
   const result = await getHomeAuditTrail(homeId, {
     entityType: searchParams.get("entityType") ?? undefined,
-    action: searchParams.get("action") as any ?? undefined,
+    action: actionParam.value,
     performedBy: searchParams.get("performedBy") ?? undefined,
     from: searchParams.get("from") ?? undefined,
     to: searchParams.get("to") ?? undefined,

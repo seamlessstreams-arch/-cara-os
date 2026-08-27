@@ -16,14 +16,16 @@ function sb(): SB | null {
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-export type CommunicationType =
-  | "handover_summary" | "social_worker_update" | "reg44_section"
-  | "reg45_section" | "incident_notification" | "missing_notification"
-  | "placement_update" | "multi_agency_brief" | "shift_briefing"
-  | "professional_update" | "management_summary" | "ofsted_notification";
-
-export type CommunicationStatus = "draft" | "review" | "approved" | "sent" | "archived";
-
+export const COMMUNICATION_TYPE_VALUES = [
+  "handover_summary", "social_worker_update", "reg44_section", "reg45_section",
+  "incident_notification", "missing_notification", "placement_update", "multi_agency_brief",
+  "shift_briefing", "professional_update", "management_summary", "ofsted_notification"
+] as const;
+export type CommunicationType = (typeof COMMUNICATION_TYPE_VALUES)[number];
+export const COMMUNICATION_STATUS_VALUES = [
+  "draft", "review", "approved", "sent", "archived"
+] as const;
+export type CommunicationStatus = (typeof COMMUNICATION_STATUS_VALUES)[number];
 export interface CommunicationDraft {
   id: string;
   home_id: string;

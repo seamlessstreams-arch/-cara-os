@@ -15,9 +15,10 @@ function sb(): SB | null {
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-export type SettingCategory =
-  | "cara" | "notifications" | "compliance" | "operational" | "display";
-
+export const SETTING_CATEGORY_VALUES = [
+  "cara", "notifications", "compliance", "operational", "display"
+] as const;
+export type SettingCategory = (typeof SETTING_CATEGORY_VALUES)[number];
 export interface SystemSetting {
   id: string;
   home_id: string;

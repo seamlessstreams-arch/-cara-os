@@ -7,6 +7,8 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { readJsonBody } from "@/lib/http/read-json";
+import { enumParam } from "@/lib/http/enum-param";
+import { REGULATION_FRAMEWORKS, SCCIF_THEMES } from "@/types/practice-intelligence";
 import { NextRequest, NextResponse } from "next/server";
 import {
   mapArtifactToRegulations,
@@ -19,6 +21,11 @@ import {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
+
+  const frameworkParam = enumParam("framework", searchParams.get("framework"), REGULATION_FRAMEWORKS);
+  if (!frameworkParam.ok) return frameworkParam.response;
+  const sccifThemeParam = enumParam("sccifTheme", searchParams.get("sccifTheme"), SCCIF_THEMES);
+  if (!sccifThemeParam.ok) return sccifThemeParam.response;
     const mode = searchParams.get("mode") ?? "coverage";
 
     if (mode === "sccif") {
@@ -28,8 +35,8 @@ export async function GET(req: NextRequest) {
 
     if (mode === "mappings") {
       const mappings = await listFrameworkMappings({
-        framework: (searchParams.get("framework") as any) ?? undefined,
-        sccifTheme: (searchParams.get("sccifTheme") as any) ?? undefined,
+        framework: frameworkParam.value,
+        sccifTheme: sccifThemeParam.value,
         artifactType: searchParams.get("artifactType") ?? undefined,
         limit: parseInt(searchParams.get("limit") ?? "50", 10),
       });

@@ -7,6 +7,8 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { readJsonBody } from "@/lib/http/read-json";
+import { enumParam } from "@/lib/http/enum-param";
+import { SESSION_TYPES } from "@/types/practice-intelligence";
 import { NextRequest, NextResponse } from "next/server";
 import {
   generateSession,
@@ -20,13 +22,16 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
 
+  const typeParam = enumParam("type", searchParams.get("type"), SESSION_TYPES);
+  if (!typeParam.ok) return typeParam.response;
+
     if (searchParams.get("groups") === "true") {
       return NextResponse.json({ ok: true, data: getSessionTypeGroups() });
     }
 
     const sessions = await listGeneratedSessions({
       childId: searchParams.get("childId") ?? undefined,
-      sessionType: (searchParams.get("type") as any) ?? undefined,
+      sessionType: typeParam.value,
       status: searchParams.get("status") ?? undefined,
       limit: parseInt(searchParams.get("limit") ?? "20", 10),
     });

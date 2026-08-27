@@ -1,4 +1,6 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { enumParam } from "@/lib/http/enum-param";
+import { EVIDENCE_TYPE_VALUES, REGULATORY_FRAMEWORK_VALUES } from "@/types/operations";
 import { NextRequest, NextResponse } from "next/server";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
 import {
@@ -10,12 +12,17 @@ import {
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+
+  const frameworkParam = enumParam("framework", searchParams.get("framework"), REGULATORY_FRAMEWORK_VALUES);
+  if (!frameworkParam.ok) return frameworkParam.response;
+  const evidenceTypeParam = enumParam("evidenceType", searchParams.get("evidenceType"), EVIDENCE_TYPE_VALUES);
+  if (!evidenceTypeParam.ok) return evidenceTypeParam.response;
   const homeId = searchParams.get("homeId");
   const type = searchParams.get("type");
 
   // Regulation mappings — no homeId needed
   if (type === "regulations") {
-    const framework = searchParams.get("framework") as any ?? undefined;
+    const framework = frameworkParam.value;
     const result = await getRegulationMappings(framework);
     if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
     return NextResponse.json({ ok: true, data: result.data });
@@ -48,7 +55,7 @@ export async function GET(request: NextRequest) {
 
   // List evidence items
   const result = await listEvidence(homeId, {
-    type: searchParams.get("evidenceType") as any ?? undefined,
+    type: evidenceTypeParam.value,
     childId: searchParams.get("childId") ?? undefined,
     staffId: searchParams.get("staffId") ?? undefined,
     regulation_ref: searchParams.get("regulation") ?? undefined,

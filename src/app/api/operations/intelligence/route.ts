@@ -1,4 +1,6 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { enumParam } from "@/lib/http/enum-param";
+import { CARA_RECOMMENDATION_SEVERITY_VALUES, CARA_RECOMMENDATION_STATUS_VALUES, CARA_RECOMMENDATION_TYPE_VALUES } from "@/types/operations";
 import { NextRequest, NextResponse } from "next/server";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
 import {
@@ -9,6 +11,13 @@ import {
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+
+  const recTypeParam = enumParam("recType", searchParams.get("recType"), CARA_RECOMMENDATION_TYPE_VALUES);
+  if (!recTypeParam.ok) return recTypeParam.response;
+  const severityParam = enumParam("severity", searchParams.get("severity"), CARA_RECOMMENDATION_SEVERITY_VALUES);
+  if (!severityParam.ok) return severityParam.response;
+  const statusParam = enumParam("status", searchParams.get("status"), CARA_RECOMMENDATION_STATUS_VALUES);
+  if (!statusParam.ok) return statusParam.response;
   const homeId = searchParams.get("homeId");
   const type = searchParams.get("type");
 
@@ -27,9 +36,9 @@ export async function GET(request: NextRequest) {
 
   // List recommendations with optional filters
   const result = await listRecommendations(homeId, {
-    type: searchParams.get("recType") as any ?? undefined,
-    severity: searchParams.get("severity") as any ?? undefined,
-    status: searchParams.get("status") as any ?? undefined,
+    type: recTypeParam.value,
+    severity: severityParam.value,
+    status: statusParam.value,
     childId: searchParams.get("childId") ?? undefined,
     staffId: searchParams.get("staffId") ?? undefined,
     limit: parseInt(searchParams.get("limit") ?? "50"),

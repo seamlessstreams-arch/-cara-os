@@ -17,11 +17,11 @@ function sb(): SB | null {
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-export type AdmissionPhase =
-  | "referral_intake" | "initial_screening" | "impact_assessment"
-  | "matching_panel" | "pre_admission" | "admission_planning"
-  | "placement_start" | "completed" | "withdrawn";
-
+export const ADMISSION_PHASE_VALUES = [
+  "referral_intake", "initial_screening", "impact_assessment", "matching_panel",
+  "pre_admission", "admission_planning", "placement_start", "completed", "withdrawn"
+] as const;
+export type AdmissionPhase = (typeof ADMISSION_PHASE_VALUES)[number];
 export type ImpactAssessmentOutcome = "suitable" | "unsuitable" | "conditionally_suitable";
 export type PanelDecision = "accept" | "decline" | "defer" | "conditional_accept";
 export type ReferralSource = "local_authority" | "agency" | "emergency" | "internal_transfer" | "court_directed";

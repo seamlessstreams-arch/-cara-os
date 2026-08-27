@@ -229,27 +229,15 @@ export interface CareEventJob {
 
 // ── Audit Log ─────────────────────────────────────────────────────────────────
 
-export type AuditAction =
-  | "care_event_created"
-  | "care_event_submitted"
-  | "care_event_routed"
-  | "care_event_route_failed"
-  | "care_event_route_retried"
-  | "care_event_verified"
-  | "care_event_returned"
-  | "care_event_amended"
-  | "care_event_locked"
-  | "evidence_prompt_completed"
-  | "manager_review_completed"
-  | "reg45_evidence_suggested"
-  | "reg45_evidence_accepted"
-  | "reg45_evidence_rejected"
-  | "annex_a_evidence_suggested"
-  | "annex_a_snapshot_generated"
-  | "export_generated"
-  | "permission_denied"
-  | "validation_failed";
-
+export const AUDIT_ACTION_VALUES = [
+  "care_event_created", "care_event_submitted", "care_event_routed", "care_event_route_failed",
+  "care_event_route_retried", "care_event_verified", "care_event_returned",
+  "care_event_amended", "care_event_locked", "evidence_prompt_completed",
+  "manager_review_completed", "reg45_evidence_suggested", "reg45_evidence_accepted",
+  "reg45_evidence_rejected", "annex_a_evidence_suggested", "annex_a_snapshot_generated",
+  "export_generated", "permission_denied", "validation_failed"
+] as const;
+export type AuditAction = (typeof AUDIT_ACTION_VALUES)[number];
 export interface CareEventAuditLog {
   id: string;
   care_event_id: string;
