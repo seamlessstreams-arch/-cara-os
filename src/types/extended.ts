@@ -842,9 +842,17 @@ export interface CaraAuditEntry {
   created_at: string;
 }
 
-export type CaraRecommendationStatus = "pending" | "actioned" | "dismissed" | "task_created";
-export type CaraRecommendationType = "key_work_session" | "risk_assessment_update" | "social_worker_notification" | "chronology_entry" | "staff_debrief" | "behaviour_plan_update" | "safety_plan" | "evidence_upload" | "management_oversight" | "education_review" | "reflective_supervision" | "family_contact_review" | "missing_follow_up" | "medication_review" | "placement_plan_update";
-
+export const CARA_RECOMMENDATION_STATUS_VALUES = [
+  "pending", "actioned", "dismissed", "task_created"
+] as const;
+export type CaraRecommendationStatus = (typeof CARA_RECOMMENDATION_STATUS_VALUES)[number];
+export const CARA_RECOMMENDATION_TYPE_VALUES = [
+  "key_work_session", "risk_assessment_update", "social_worker_notification",
+  "chronology_entry", "staff_debrief", "behaviour_plan_update", "safety_plan",
+  "evidence_upload", "management_oversight", "education_review", "reflective_supervision",
+  "family_contact_review", "missing_follow_up", "medication_review", "placement_plan_update"
+] as const;
+export type CaraRecommendationType = (typeof CARA_RECOMMENDATION_TYPE_VALUES)[number];
 export interface CaraRecommendation {
   id: string;
   home_id: string;

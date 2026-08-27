@@ -48,17 +48,18 @@ export interface CsUserRoleAssignment {
 
 // ── Form Governance ─────────────────────────────────────────────────────────
 
-export type FormCategory =
-  | "daily_recording" | "incident" | "safeguarding" | "health"
-  | "education" | "placement" | "hr" | "compliance" | "review"
-  | "contact" | "risk_assessment" | "custom";
-
+export const FORM_CATEGORY_VALUES = [
+  "daily_recording", "incident", "safeguarding", "health", "education", "placement", "hr",
+  "compliance", "review", "contact", "risk_assessment", "custom"
+] as const;
+export type FormCategory = (typeof FORM_CATEGORY_VALUES)[number];
 export type FormVersionStatus = "draft" | "pending_approval" | "approved" | "archived" | "rejected";
 
-export type FormSubmissionStatus =
-  | "draft" | "submitted" | "under_review" | "changes_requested"
-  | "approved" | "rejected" | "archived";
-
+export const FORM_SUBMISSION_STATUS_VALUES = [
+  "draft", "submitted", "under_review", "changes_requested", "approved", "rejected",
+  "archived"
+] as const;
+export type FormSubmissionStatus = (typeof FORM_SUBMISSION_STATUS_VALUES)[number];
 export type FormFieldType =
   | "text" | "textarea" | "rich_text" | "number" | "date" | "time"
   | "datetime" | "select" | "multi_select" | "checkbox" | "radio"
@@ -168,19 +169,21 @@ export interface FormAuditLog {
 
 // ── Task Explorer ───────────────────────────────────────────────────────────
 
-export type CsTaskCategory =
-  | "compliance" | "safeguarding" | "medication" | "maintenance"
-  | "staffing" | "training" | "supervision" | "young_person_plans"
-  | "professional_communication" | "finance" | "inspection"
-  | "health_and_safety" | "admin" | "cara_generated";
-
-export type CsTaskPriority = "low" | "medium" | "high" | "urgent" | "critical";
-
-export type CsTaskStatus =
-  | "not_started" | "in_progress" | "blocked" | "on_hold"
-  | "under_review" | "awaiting_sign_off" | "delegated"
-  | "completed" | "cancelled" | "overdue";
-
+export const CS_TASK_CATEGORY_VALUES = [
+  "compliance", "safeguarding", "medication", "maintenance", "staffing", "training",
+  "supervision", "young_person_plans", "professional_communication", "finance", "inspection",
+  "health_and_safety", "admin", "cara_generated"
+] as const;
+export type CsTaskCategory = (typeof CS_TASK_CATEGORY_VALUES)[number];
+export const CS_TASK_PRIORITY_VALUES = [
+  "low", "medium", "high", "urgent", "critical"
+] as const;
+export type CsTaskPriority = (typeof CS_TASK_PRIORITY_VALUES)[number];
+export const CS_TASK_STATUS_VALUES = [
+  "not_started", "in_progress", "blocked", "on_hold", "under_review", "awaiting_sign_off",
+  "delegated", "completed", "cancelled", "overdue"
+] as const;
+export type CsTaskStatus = (typeof CS_TASK_STATUS_VALUES)[number];
 export interface CsTask {
   id: string;
   home_id: string;
@@ -262,7 +265,10 @@ export interface CsTaskEscalationRule {
 
 // ── Workflow Engine ──────────────────────────────────────────────────────────
 
-export type WorkflowStatus = "not_started" | "in_progress" | "blocked" | "completed" | "cancelled";
+export const WORKFLOW_STATUS_VALUES = [
+  "not_started", "in_progress", "blocked", "completed", "cancelled"
+] as const;
+export type WorkflowStatus = (typeof WORKFLOW_STATUS_VALUES)[number];
 export type WorkflowStepStatus = "pending" | "in_progress" | "completed" | "skipped" | "blocked";
 
 export type WorkflowTemplateCode =
@@ -331,12 +337,12 @@ export interface WorkflowTemplateDefinition {
 
 // ── Evidence Management ─────────────────────────────────────────────────────
 
-export type EvidenceType =
-  | "document" | "photograph" | "form_submission" | "daily_log"
-  | "incident_report" | "meeting_minutes" | "correspondence"
-  | "training_certificate" | "policy" | "risk_assessment"
-  | "care_plan" | "review_report" | "external_report";
-
+export const EVIDENCE_TYPE_VALUES = [
+  "document", "photograph", "form_submission", "daily_log", "incident_report",
+  "meeting_minutes", "correspondence", "training_certificate", "policy", "risk_assessment",
+  "care_plan", "review_report", "external_report"
+] as const;
+export type EvidenceType = (typeof EVIDENCE_TYPE_VALUES)[number];
 export type EvidenceLinkType = "supports" | "contradicts" | "supplements" | "supersedes";
 
 export interface CsEvidenceItem {
@@ -376,8 +382,10 @@ export interface CsEvidenceLink {
 
 // ── Regulation Mapping ──────────────────────────────────────────────────────
 
-export type RegulatoryFramework = "CHR2015" | "SCCIF" | "Reg44" | "Reg45" | "AnnexA" | "KCSIE";
-
+export const REGULATORY_FRAMEWORK_VALUES = [
+  "CHR2015", "SCCIF", "Reg44", "Reg45", "AnnexA", "KCSIE"
+] as const;
+export type RegulatoryFramework = (typeof REGULATORY_FRAMEWORK_VALUES)[number];
 export interface CsRegulationMapping {
   id: string;
   framework: RegulatoryFramework;
@@ -393,12 +401,12 @@ export interface CsRegulationMapping {
 
 // ── Management Oversight ────────────────────────────────────────────────────
 
-export type OversightRecordType =
-  | "incident" | "safeguarding" | "missing_episode" | "complaint"
-  | "daily_log" | "medication_error" | "restraint" | "disclosure"
-  | "risk_assessment" | "care_plan_review" | "supervision"
-  | "key_work_session" | "contact_session";
-
+export const OVERSIGHT_RECORD_TYPE_VALUES = [
+  "incident", "safeguarding", "missing_episode", "complaint", "daily_log", "medication_error",
+  "restraint", "disclosure", "risk_assessment", "care_plan_review", "supervision",
+  "key_work_session", "contact_session"
+] as const;
+export type OversightRecordType = (typeof OVERSIGHT_RECORD_TYPE_VALUES)[number];
 export interface CsManagementOversightNote {
   id: string;
   home_id: string;
@@ -429,18 +437,22 @@ export interface CsManagementOversightNote {
 
 // ── Cara Intelligence ───────────────────────────────────────────────────────
 
-export type CaraRecommendationType =
-  | "overdue_form" | "missing_oversight" | "weak_recording"
-  | "staffing_concern" | "pattern_detected" | "compliance_gap"
-  | "training_due" | "supervision_due" | "risk_escalation"
-  | "positive_recognition" | "inspection_prep" | "reg45_evidence"
-  | "handover_quality" | "documentation_gap" | "wellbeing_concern"
-  | "medication_pattern" | "incident_trend" | "placement_risk"
-  | "safeguarding_pattern" | "contact_disruption";
-
-export type CaraRecommendationSeverity = "info" | "low" | "medium" | "high" | "critical";
-export type CaraRecommendationStatus = "active" | "acknowledged" | "actioned" | "dismissed" | "expired";
-
+export const CARA_RECOMMENDATION_TYPE_VALUES = [
+  "overdue_form", "missing_oversight", "weak_recording", "staffing_concern",
+  "pattern_detected", "compliance_gap", "training_due", "supervision_due", "risk_escalation",
+  "positive_recognition", "inspection_prep", "reg45_evidence", "handover_quality",
+  "documentation_gap", "wellbeing_concern", "medication_pattern", "incident_trend",
+  "placement_risk", "safeguarding_pattern", "contact_disruption"
+] as const;
+export type CaraRecommendationType = (typeof CARA_RECOMMENDATION_TYPE_VALUES)[number];
+export const CARA_RECOMMENDATION_SEVERITY_VALUES = [
+  "info", "low", "medium", "high", "critical"
+] as const;
+export type CaraRecommendationSeverity = (typeof CARA_RECOMMENDATION_SEVERITY_VALUES)[number];
+export const CARA_RECOMMENDATION_STATUS_VALUES = [
+  "active", "acknowledged", "actioned", "dismissed", "expired"
+] as const;
+export type CaraRecommendationStatus = (typeof CARA_RECOMMENDATION_STATUS_VALUES)[number];
 export interface CsCaraRecommendation {
   id: string;
   home_id: string;
@@ -522,10 +534,11 @@ export interface CsSystemSetting {
 
 // ── Immutable Audit Log ─────────────────────────────────────────────────────
 
-export type AuditAction =
-  | "create" | "update" | "delete" | "sign_off" | "approve" | "reject"
-  | "escalate" | "view" | "export" | "login" | "logout";
-
+export const AUDIT_ACTION_VALUES = [
+  "create", "update", "delete", "sign_off", "approve", "reject", "escalate", "view", "export",
+  "login", "logout"
+] as const;
+export type AuditAction = (typeof AUDIT_ACTION_VALUES)[number];
 export interface CsAuditLogEntry {
   id: string;
   home_id: string;

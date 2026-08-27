@@ -1,4 +1,6 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { enumParam } from "@/lib/http/enum-param";
+import { ADMISSION_PHASE_VALUES } from "@/lib/services/yp-admission-service";
 import { NextRequest, NextResponse } from "next/server";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
 import {
@@ -8,6 +10,9 @@ import {
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+
+  const phaseParam = enumParam("phase", searchParams.get("phase"), ADMISSION_PHASE_VALUES);
+  if (!phaseParam.ok) return phaseParam.response;
   const homeId = searchParams.get("homeId");
   const type = searchParams.get("type");
 
@@ -26,7 +31,7 @@ export async function GET(request: NextRequest) {
 
   // List workflows
   const result = await listAdmissionWorkflows(homeId, {
-    phase: searchParams.get("phase") as any ?? undefined,
+    phase: phaseParam.value,
     limit: parseInt(searchParams.get("limit") ?? "50"),
   });
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });

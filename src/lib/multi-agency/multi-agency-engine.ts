@@ -47,8 +47,10 @@ export type AgencyType =
   | "immigration"             // UKVI/Home Office (UASC)
   | "other";
 
-export type CommunicationStatus = "active" | "responsive" | "delayed" | "unresponsive" | "escalated";
-
+export const COMMUNICATION_STATUS_VALUES = [
+  "active", "responsive", "delayed", "unresponsive", "escalated"
+] as const;
+export type CommunicationStatus = (typeof COMMUNICATION_STATUS_VALUES)[number];
 export type MeetingType =
   | "lac_review"
   | "pep_meeting"

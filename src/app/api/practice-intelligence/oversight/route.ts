@@ -6,6 +6,8 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { readJsonBody } from "@/lib/http/read-json";
+import { enumParam } from "@/lib/http/enum-param";
+import { OVERSIGHT_TYPES } from "@/types/practice-intelligence";
 import { NextRequest, NextResponse } from "next/server";
 import {
   generateOversightDraft,
@@ -18,8 +20,11 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
 
+  const typeParam = enumParam("type", searchParams.get("type"), OVERSIGHT_TYPES);
+  if (!typeParam.ok) return typeParam.response;
+
     const drafts = await listOversightDrafts({
-      oversightType: (searchParams.get("type") as any) ?? undefined,
+      oversightType: typeParam.value,
       childId: searchParams.get("childId") ?? undefined,
       status: searchParams.get("status") ?? undefined,
       limit: parseInt(searchParams.get("limit") ?? "20", 10),

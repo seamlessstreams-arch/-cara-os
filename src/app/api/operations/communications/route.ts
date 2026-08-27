@@ -1,4 +1,6 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { enumParam } from "@/lib/http/enum-param";
+import { COMMUNICATION_STATUS_VALUES, COMMUNICATION_TYPE_VALUES } from "@/lib/services/communication-intelligence";
 import { NextRequest, NextResponse } from "next/server";
 import {
   listDrafts, getDraft, createDraft, updateDraft,
@@ -10,6 +12,11 @@ import {
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+
+  const commTypeParam = enumParam("commType", searchParams.get("commType"), COMMUNICATION_TYPE_VALUES);
+  if (!commTypeParam.ok) return commTypeParam.response;
+  const statusParam = enumParam("status", searchParams.get("status"), COMMUNICATION_STATUS_VALUES);
+  if (!statusParam.ok) return statusParam.response;
   const homeId = searchParams.get("homeId");
   const type = searchParams.get("type");
 
@@ -37,8 +44,8 @@ export async function GET(request: NextRequest) {
 
   // List
   const result = await listDrafts(homeId, {
-    type: searchParams.get("commType") as any ?? undefined,
-    status: searchParams.get("status") as any ?? undefined,
+    type: commTypeParam.value,
+    status: statusParam.value,
     childId: searchParams.get("childId") ?? undefined,
     limit: parseInt(searchParams.get("limit") ?? "50"),
   });

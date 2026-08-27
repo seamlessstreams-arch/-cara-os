@@ -19,15 +19,14 @@ function sb(): SB | null {
 export type TrainingStatus = "current" | "expiring_soon" | "expired" | "not_started" | "booked";
 export type CompetencyLevel = "not_assessed" | "developing" | "competent" | "proficient" | "expert";
 
-export type TrainingCategory =
-  | "safeguarding" | "first_aid" | "medication" | "fire_safety"
-  | "manual_handling" | "food_hygiene" | "data_protection"
-  | "health_safety" | "equality_diversity" | "mental_health"
-  | "attachment_theory" | "therapeutic_crisis_intervention"
-  | "pace_model" | "restraint_reduction" | "cse_cce"
-  | "substance_misuse" | "self_harm_awareness" | "trauma_informed"
-  | "recording_standards" | "complaints_handling" | "other";
-
+export const TRAINING_CATEGORY_VALUES = [
+  "safeguarding", "first_aid", "medication", "fire_safety", "manual_handling", "food_hygiene",
+  "data_protection", "health_safety", "equality_diversity", "mental_health",
+  "attachment_theory", "therapeutic_crisis_intervention", "pace_model", "restraint_reduction",
+  "cse_cce", "substance_misuse", "self_harm_awareness", "trauma_informed",
+  "recording_standards", "complaints_handling", "other"
+] as const;
+export type TrainingCategory = (typeof TRAINING_CATEGORY_VALUES)[number];
 export interface TrainingRecord {
   id: string;
   staff_id: string;

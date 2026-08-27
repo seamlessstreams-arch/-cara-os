@@ -48,19 +48,12 @@ export type ComplianceLevel =
   | "non_compliant"
   | "not_assessed";
 
-export type EvidenceType =
-  | "policy"
-  | "procedure"
-  | "audit_report"
-  | "inspection_report"
-  | "staff_feedback"
-  | "child_feedback"
-  | "external_review"
-  | "training_record"
-  | "incident_data"
-  | "meeting_minutes"
-  | "other";
-
+export const EVIDENCE_TYPE_VALUES = [
+  "policy", "procedure", "audit_report", "inspection_report", "staff_feedback",
+  "child_feedback", "external_review", "training_record", "incident_data", "meeting_minutes",
+  "other"
+] as const;
+export type EvidenceType = (typeof EVIDENCE_TYPE_VALUES)[number];
 export type ActionPriority = "critical" | "high" | "medium" | "low";
 
 // ── Core Interfaces ────────────────────────────────────────────────────────

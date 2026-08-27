@@ -1,4 +1,6 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { TRAINING_CATEGORY_VALUES } from "@/lib/services/competency-service";
+import { enumParam } from "@/lib/http/enum-param";
 import { NextRequest, NextResponse } from "next/server";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
 import {
@@ -9,6 +11,9 @@ import {
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+
+  const categoryParam = enumParam("category", searchParams.get("category"), TRAINING_CATEGORY_VALUES);
+  if (!categoryParam.ok) return categoryParam.response;
   const homeId = searchParams.get("homeId");
   const type = searchParams.get("type");
 
@@ -39,7 +44,7 @@ export async function GET(request: NextRequest) {
   // Training records (default)
   const result = await listTrainingRecords(homeId, {
     staffId: searchParams.get("staffId") ?? undefined,
-    category: searchParams.get("category") as any ?? undefined,
+    category: categoryParam.value,
     mandatory: searchParams.get("mandatory") === "true" ? true : searchParams.get("mandatory") === "false" ? false : undefined,
     limit: parseInt(searchParams.get("limit") ?? "100"),
   });

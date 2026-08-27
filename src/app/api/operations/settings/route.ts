@@ -1,4 +1,6 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { enumParam } from "@/lib/http/enum-param";
+import { SETTING_CATEGORY_VALUES } from "@/lib/services/system-settings-service";
 import { NextRequest, NextResponse } from "next/server";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
 import {
@@ -8,6 +10,9 @@ import {
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+
+  const categoryParam = enumParam("category", searchParams.get("category"), SETTING_CATEGORY_VALUES);
+  if (!categoryParam.ok) return categoryParam.response;
   const homeId = searchParams.get("homeId");
   const type = searchParams.get("type");
 
@@ -31,7 +36,7 @@ export async function GET(request: NextRequest) {
   }
 
   // List settings
-  const result = await getSettings(homeId, searchParams.get("category") as any ?? undefined);
+  const result = await getSettings(homeId, categoryParam.value);
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
   return NextResponse.json({ ok: true, data: result.data });
 }
