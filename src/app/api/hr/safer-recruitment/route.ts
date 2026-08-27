@@ -14,6 +14,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { storageFailure } from "@/lib/http/storage-error";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { checkHrAccess, type HrRole } from "@/lib/hr/permissions";
@@ -140,9 +141,7 @@ export async function GET(req: NextRequest) {
     .limit(1)
     .maybeSingle();
 
-  if (error) {
-    console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 });
-  }
+  if (error) return storageFailure("Safer recruitment records", error);
   if (!data) {
     return NextResponse.json({
       data: { exists: false, record: null, evaluation: null },
@@ -243,7 +242,7 @@ export async function PATCH(req: NextRequest) {
       .eq("id", recordId)
       .select()
       .single();
-    if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
+    if (error) return storageFailure("Safer recruitment records", error);
     row = data as DbRow;
   } else if (staffId) {
     // Find existing or create new.
@@ -262,7 +261,7 @@ export async function PATCH(req: NextRequest) {
         .eq("id", (existing as DbRow).id)
         .select()
         .single();
-      if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
+      if (error) return storageFailure("Safer recruitment records", error);
       row = data as DbRow;
     } else {
       // Bootstrap a new record with whatever fields were supplied.
@@ -272,7 +271,7 @@ export async function PATCH(req: NextRequest) {
         .insert({ id, staff_id: staffId, ...updates })
         .select()
         .single();
-      if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
+      if (error) return storageFailure("Safer recruitment records", error);
       row = data as DbRow;
     }
   }
@@ -386,9 +385,7 @@ export async function POST(req: NextRequest) {
     .eq("id", recordId)
     .select()
     .single();
-  if (updateError) {
-    console.error("[api] server error:", updateError); return NextResponse.json({ error: "A server error occurred." }, { status: 500 });
-  }
+  if (updateError) return storageFailure("Safer recruitment records", updateError);
 
   const record = rowToRecord(updated as DbRow);
   const evaluation = evaluateSaferRecruitmentGate(record);

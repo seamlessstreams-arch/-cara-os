@@ -11,6 +11,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { storageFailure } from "@/lib/http/storage-error";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { checkHrAccess, type HrRole } from "@/lib/hr/permissions";
@@ -145,9 +146,7 @@ export async function POST(req: NextRequest) {
     ri_oversight_required: resolvedRiOversightRequired,
   });
 
-  if (insertError) {
-    console.error("[api] server error:", insertError); return NextResponse.json({ error: "A server error occurred." }, { status: 500 });
-  }
+  if (insertError) return storageFailure("HR cases", insertError);
 
   // Seed the chronology with the opening event.
   await supabase.from("hr_case_chronology").insert({
@@ -257,7 +256,7 @@ export async function GET(req: NextRequest) {
       .select("id, case_type, status, risk_level, safeguarding_status, opened_at, closed_at")
       .eq("staff_id", staffId)
       .order("opened_at", { ascending: false });
-    if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
+    if (error) return storageFailure("HR cases", error);
     return NextResponse.json({ data });
   }
 
@@ -267,7 +266,7 @@ export async function GET(req: NextRequest) {
       .select("id, staff_id, case_type, status, risk_level, safeguarding_status, opened_at, closed_at")
       .eq("home_id", homeId)
       .order("opened_at", { ascending: false });
-    if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
+    if (error) return storageFailure("HR cases", error);
     return NextResponse.json({ data });
   }
 
@@ -360,9 +359,7 @@ export async function PATCH(req: NextRequest) {
     .eq("id", caseId)
     .select()
     .single();
-  if (updateError) {
-    console.error("[api] server error:", updateError); return NextResponse.json({ error: "A server error occurred." }, { status: 500 });
-  }
+  if (updateError) return storageFailure("HR cases", updateError);
 
   await supabase.from("hr_audit_log").insert({
     id: `hr_aud_${caseId}_edit_${Date.now()}`,

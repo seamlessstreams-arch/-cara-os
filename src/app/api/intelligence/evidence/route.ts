@@ -1,5 +1,6 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
+import { storageFailure } from "@/lib/http/storage-error";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
 import { evidenceItems, nextFallbackId } from "@/lib/intelligence/fallback-store";
@@ -31,9 +32,7 @@ export async function GET(request: NextRequest) {
   if (judgementArea) query = query.eq("judgement_area", judgementArea);
 
   const { data, error } = await query.limit(100);
-  if (error) {
-    console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 });
-  }
+  if (error) return storageFailure("Evidence items", error);
 
   return NextResponse.json({ ok: true, items: data ?? [], persisted: true });
 }
@@ -87,9 +86,7 @@ export async function POST(request: NextRequest) {
       created_by: actorUserId ?? null,
     }).select().single();
 
-    if (error) {
-      console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 });
-    }
+    if (error) return storageFailure("Evidence items", error);
 
     await writeIntelligenceAudit({
       homeId,

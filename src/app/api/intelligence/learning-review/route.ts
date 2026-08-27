@@ -1,5 +1,6 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
+import { storageFailure } from "@/lib/http/storage-error";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
 import { incidentLearningReviews, nextFallbackId } from "@/lib/intelligence/fallback-store";
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest) {
   if (status) query = query.eq("review_status", status);
 
   const { data, error } = await query.limit(50);
-  if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
+  if (error) return storageFailure("Incident learning reviews", error);
 
   return NextResponse.json({ ok: true, reviews: data ?? [], persisted: true });
 }
@@ -77,7 +78,7 @@ export async function POST(request: NextRequest) {
       created_by: actorUserId ?? null,
     }).select().single();
 
-    if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
+    if (error) return storageFailure("Incident learning reviews", error);
 
     await writeIntelligenceAudit({
       homeId,
@@ -136,7 +137,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const { data, error } = await supabase.from("incident_learning_reviews").update(dbUpdates).eq("id", id).select().single();
-    if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
+    if (error) return storageFailure("Incident learning reviews", error);
 
     const action = updates.reviewStatus === "completed" ? "learning_review_completed" : "record_updated";
     await writeIntelligenceAudit({

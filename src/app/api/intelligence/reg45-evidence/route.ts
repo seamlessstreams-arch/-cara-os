@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { storageFailure } from "@/lib/http/storage-error";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { reg45Evidence } from "@/lib/intelligence/fallback-store";
 
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
   if (homeId) query = query.eq("home_id", homeId);
 
   const { data, error } = await query.limit(100);
-  if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
+  if (error) return storageFailure("Regulation 45 evidence", error);
 
   return NextResponse.json({ ok: true, evidence: data ?? [], persisted: true });
 }

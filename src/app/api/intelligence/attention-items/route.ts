@@ -1,5 +1,6 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
+import { storageFailure } from "@/lib/http/storage-error";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
 import { attentionItems, nextFallbackId } from "@/lib/intelligence/fallback-store";
@@ -33,9 +34,7 @@ export async function GET(request: NextRequest) {
   if (category) query = query.eq("category", category);
 
   const { data, error } = await query.limit(100);
-  if (error) {
-    console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 });
-  }
+  if (error) return storageFailure("Manager attention items", error);
 
   return NextResponse.json({ ok: true, items: data ?? [], persisted: true });
 }
@@ -96,9 +95,7 @@ export async function POST(request: NextRequest) {
       created_by: actorUserId ?? null,
     }).select().single();
 
-    if (error) {
-      console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 });
-    }
+    if (error) return storageFailure("Manager attention items", error);
 
     await writeIntelligenceAudit({
       homeId,
@@ -167,9 +164,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const { data, error } = await supabase.from("manager_attention_items").update(updates).eq("id", id).select().single();
-    if (error) {
-      console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 });
-    }
+    if (error) return storageFailure("Manager attention items", error);
 
     const auditAction = status === "escalated" ? "attention_item_escalated" : "attention_item_reviewed";
     await writeIntelligenceAudit({

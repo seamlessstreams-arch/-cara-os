@@ -1,5 +1,6 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
+import { storageFailure } from "@/lib/http/storage-error";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import {
   reg44Actions,
@@ -32,7 +33,7 @@ export async function GET(request: NextRequest) {
   if (status) query = query.eq("status", status);
 
   const { data, error } = await query.limit(200);
-  if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
+  if (error) return storageFailure("Regulation 44 actions", error);
 
   return NextResponse.json({ ok: true, actions: data ?? [], persisted: true });
 }
@@ -82,7 +83,7 @@ export async function POST(request: NextRequest) {
       created_by: actorUserId ?? null,
     }).select().single();
 
-    if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
+    if (error) return storageFailure("Regulation 44 actions", error);
     return NextResponse.json({ ok: true, action: data, persisted: true });
   } catch (err) {
     console.error("[api/intelligence/reg44-actions] POST error:", err);
@@ -108,7 +109,7 @@ export async function PATCH(request: NextRequest) {
       ...updates,
       updated_at: new Date().toISOString(),
     }).eq("id", id).select().single();
-    if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
+    if (error) return storageFailure("Regulation 44 actions", error);
     return NextResponse.json({ ok: true, action: data, persisted: true });
   } catch (err) {
     console.error("[api/intelligence/reg44-actions] PATCH error:", err);

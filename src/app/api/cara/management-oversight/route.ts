@@ -13,6 +13,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { storageFailure } from "@/lib/http/storage-error";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import {
@@ -297,7 +298,7 @@ export async function GET(req: NextRequest) {
       .select("*, oversight_actions(*)")
       .eq("record_id", recordId)
       .order("generated_at", { ascending: false });
-    if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
+    if (error) return storageFailure("Management oversight", error);
     return NextResponse.json({ data });
   }
 
@@ -426,9 +427,7 @@ export async function PATCH(req: NextRequest) {
     .select()
     .single();
 
-  if (updateError) {
-    console.error("[api] server error:", updateError); return NextResponse.json({ error: "A server error occurred." }, { status: 500 });
-  }
+  if (updateError) return storageFailure("Management oversight", updateError);
 
   await supabase.from("oversight_audit_log").insert({
     id: `aud_${reviewId}_${eventType}_${Date.now()}`,

@@ -1,5 +1,6 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
+import { storageFailure } from "@/lib/http/storage-error";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
 import { reg44Visits, nextFallbackId } from "@/lib/intelligence/fallback-store";
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
   if (status) query = query.eq("status", status);
 
   const { data, error } = await query.limit(50);
-  if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
+  if (error) return storageFailure("Regulation 44 visits", error);
 
   return NextResponse.json({ ok: true, visits: data ?? [], persisted: true });
 }
@@ -76,7 +77,7 @@ export async function POST(request: NextRequest) {
       created_by: actorUserId ?? null,
     }).select().single();
 
-    if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
+    if (error) return storageFailure("Regulation 44 visits", error);
 
     await writeIntelligenceAudit({
       homeId,
@@ -135,7 +136,7 @@ export async function PATCH(request: NextRequest) {
       ...updates,
       updated_at: new Date().toISOString(),
     }).eq("id", id).select().single();
-    if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
+    if (error) return storageFailure("Regulation 44 visits", error);
 
     await writeIntelligenceAudit({
       homeId: data?.home_id,
