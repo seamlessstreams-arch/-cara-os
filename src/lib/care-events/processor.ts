@@ -91,7 +91,7 @@ function processDailyLog(event: CareEvent, route: CareEventRoute): void {
     .then((m) => m.logUsageEvent("daily_log", { userLabel: event.staff_id ?? null }))
     .catch(() => {});
   {
-    const e = entry as any;
+    const e = (entry);
     const significant = !!e.is_significant;
     writeThroughSpine({
       eventType: "daily_log",
@@ -483,7 +483,7 @@ function processIncident(event: CareEvent, route: CareEventRoute): void {
   } as never);
 
   {
-    const inc = incident as any;
+    const inc = (incident);
     const isSg = /safeguard/i.test(inc.type ?? "");
     const sev: Record<string, "low" | "medium" | "high" | "critical"> = { low: "low", medium: "medium", high: "high", critical: "critical" };
     let risk = sev[inc.severity] ?? "medium";
@@ -552,7 +552,7 @@ function processMissingEpisode(event: CareEvent, route: CareEventRoute): void {
   // Spine write-through. Care-event episodes carry no `risk_level`, so the
   // projection renders "(undefined risk)"; derive a sensible risk + clean summary.
   {
-    const ep = episode as any;
+    const ep = (episode);
     const risk = event.is_safeguarding ? "critical" : "high";
     writeThroughSpine({
       eventType: "missing",
@@ -620,7 +620,7 @@ function processPhysicalIntervention(event: CareEvent, route: CareEventRoute): v
   } as never);
 
   {
-    const r = record as any;
+    const r = (record);
     const injuries = Array.isArray(r.injuries) ? r.injuries.length : 0;
     const risk = injuries > 0 ? "critical" : "high";
     const tags = ["physical_intervention", r.restraint_type].filter(Boolean) as string[];
@@ -753,7 +753,7 @@ function processEducationRecord(event: CareEvent, route: CareEventRoute): void {
   } as never);
 
   {
-    const r = record as any;
+    const r = (record);
     const status = r.attendance_status ?? "";
     const risk = status === "excluded" ? "high" : status === "absent_unauthorised" ? "medium" : "low";
     const tags = ["education", r.record_type, status].filter(Boolean) as string[];
@@ -995,7 +995,7 @@ function processSafeguardingRecord(event: CareEvent, route: CareEventRoute): voi
   } catch { /* non-critical */ }
 
   {
-    const inc = incident as any;
+    const inc = (incident);
     const tags = ["safeguarding", inc.type, inc.severity].filter(Boolean) as string[];
     if (inc.requires_oversight) tags.push("oversight_required");
     writeThroughSpine({
