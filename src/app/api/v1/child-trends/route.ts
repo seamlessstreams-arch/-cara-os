@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({ data: { children: list, childId, childName, trends } });
-  } catch (err: any) {
+  } catch (err) {
     console.error("[api] server error:", err); return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

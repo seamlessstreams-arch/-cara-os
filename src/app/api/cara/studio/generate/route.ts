@@ -5,6 +5,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { readJsonBody } from "@/lib/http/read-json";
+import { errorStatus } from "@/lib/http/error-message";
 import { NextRequest, NextResponse } from "next/server";
 import { CaraStudioEngine } from "@/lib/cara/studio/studio-engine";
 import { CaraAuditLogger } from "@/lib/cara/audit/audit-logger";
@@ -48,8 +49,8 @@ export async function POST(req: NextRequest) {
         disclaimer: "AI-generated draft — requires human review before use with children",
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     const safe = sanitiseErrorForClient(error);
-    return NextResponse.json({ error: safe.message, code: safe.code }, { status: error?.statusCode ?? 500 });
+    return NextResponse.json({ error: safe.message, code: safe.code }, { status: errorStatus(error, 500) });
   }
 }

@@ -6,6 +6,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { readJsonBody } from "@/lib/http/read-json";
+import { errorStatus } from "@/lib/http/error-message";
 import { NextRequest, NextResponse } from "next/server";
 import { CaraEvidenceEngine } from "@/lib/cara/evidence/evidence-engine";
 import { sanitiseErrorForClient } from "@/lib/cara/core/errors";
@@ -49,8 +50,8 @@ export async function POST(req: NextRequest) {
         disclaimer: "Evidence results require professional judgement before use in official reporting",
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     const safe = sanitiseErrorForClient(error);
-    return NextResponse.json({ error: safe.message, code: safe.code }, { status: error?.statusCode ?? 500 });
+    return NextResponse.json({ error: safe.message, code: safe.code }, { status: errorStatus(error, 500) });
   }
 }

@@ -3,6 +3,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { errorStatus } from "@/lib/http/error-message";
 import { caraCostControl } from "@/lib/cara/cost";
 import { sanitiseErrorForClient } from "@/lib/cara/core/errors";
 
@@ -25,8 +26,8 @@ export async function GET(req: NextRequest) {
       summary,
       limits,
     });
-  } catch (error: any) {
+  } catch (error) {
     const safe = sanitiseErrorForClient(error);
-    return NextResponse.json({ error: safe.message, code: safe.code }, { status: error?.statusCode ?? 500 });
+    return NextResponse.json({ error: safe.message, code: safe.code }, { status: errorStatus(error, 500) });
   }
 }

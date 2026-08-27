@@ -3,6 +3,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { CaraProviderName } from "../core/types";
+import { errorMessage } from "@/lib/http/error-message";
 import { BaseCaraProvider } from "./base-provider";
 import { AnthropicProvider } from "./anthropic-provider";
 import { MistralProvider } from "./mistral-provider";
@@ -97,8 +98,8 @@ export async function testProviderConnection(name: CaraProviderName): Promise<{
       });
     }
     return { available: true, latencyMs: Date.now() - start };
-  } catch (error: any) {
-    return { available: false, latencyMs: Date.now() - start, error: error?.message };
+  } catch (error) {
+    return { available: false, latencyMs: Date.now() - start, error: errorMessage(error) };
   }
 }
 

@@ -6,6 +6,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { CaraProviderCapabilities } from "../core/types";
+import { errorMessage, errorName } from "@/lib/http/error-message";
 import { CaraProviderError, CaraTimeoutError, CaraRateLimitError } from "../core/errors";
 import { DEFAULT_TIMEOUT_MS, DEFAULT_RETRY_CONFIG, PROVIDER_COST_PER_1K } from "../core/constants";
 import {
@@ -248,9 +249,9 @@ export class CohereProvider extends BaseCaraProvider {
         return this.fetchWithRetry(url, init, attempt + 1);
       }
       return response;
-    } catch (error: any) {
-      if (error?.name === "TimeoutError" || error?.name === "AbortError") throw new CaraTimeoutError("cohere", DEFAULT_TIMEOUT_MS);
-      throw new CaraProviderError(`Cohere request failed: ${error?.message}`, "cohere", true);
+    } catch (error) {
+      if (errorName(error) === "TimeoutError" || errorName(error) === "AbortError") throw new CaraTimeoutError("cohere", DEFAULT_TIMEOUT_MS);
+      throw new CaraProviderError(`Cohere request failed: ${errorMessage(error)}`, "cohere", true);
     }
   }
 

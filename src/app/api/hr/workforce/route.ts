@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json(getDemoData(homeId, staffId, view));
-  } catch (_error: any) {
+  } catch (_error) {
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

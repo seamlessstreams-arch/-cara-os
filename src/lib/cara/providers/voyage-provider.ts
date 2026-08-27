@@ -6,6 +6,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { CaraProviderCapabilities } from "../core/types";
+import { errorMessage, errorName } from "@/lib/http/error-message";
 import { CaraProviderError, CaraTimeoutError, CaraRateLimitError } from "../core/errors";
 import { DEFAULT_TIMEOUT_MS, DEFAULT_RETRY_CONFIG, PROVIDER_COST_PER_1K } from "../core/constants";
 import {
@@ -166,14 +167,14 @@ export class VoyageProvider extends BaseCaraProvider {
         return this.fetchWithRetry(url, init, attempt + 1);
       }
       return response;
-    } catch (error: any) {
-      if ((error?.name === "TimeoutError" || error?.name === "AbortError") && attempt < DEFAULT_RETRY_CONFIG.maxRetries) {
+    } catch (error) {
+      if ((errorName(error) === "TimeoutError" || errorName(error) === "AbortError") && attempt < DEFAULT_RETRY_CONFIG.maxRetries) {
         const delay = DEFAULT_RETRY_CONFIG.baseDelayMs * Math.pow(DEFAULT_RETRY_CONFIG.backoffMultiplier, attempt);
         await new Promise(resolve => setTimeout(resolve, delay));
         return this.fetchWithRetry(url, init, attempt + 1);
       }
-      if (error?.name === "TimeoutError" || error?.name === "AbortError") throw new CaraTimeoutError("voyage", DEFAULT_TIMEOUT_MS);
-      throw new CaraProviderError(`Voyage request failed: ${error?.message}`, "voyage", true);
+      if (errorName(error) === "TimeoutError" || errorName(error) === "AbortError") throw new CaraTimeoutError("voyage", DEFAULT_TIMEOUT_MS);
+      throw new CaraProviderError(`Voyage request failed: ${errorMessage(error)}`, "voyage", true);
     }
   }
 

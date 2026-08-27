@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { CaraProviderCapabilities } from "../core/types";
+import { errorMessage, errorName } from "@/lib/http/error-message";
 import { CaraProviderError, CaraTimeoutError, CaraRateLimitError, CaraSafetyBlockError } from "../core/errors";
 import { DEFAULT_TIMEOUT_MS, DEFAULT_RETRY_CONFIG, PROVIDER_COST_PER_1K } from "../core/constants";
 import {
@@ -211,14 +212,14 @@ export class PerplexityProvider extends BaseCaraProvider {
         return this.fetchWithRetry(url, init, attempt + 1);
       }
       return response;
-    } catch (error: any) {
-      if (error?.name === "TimeoutError" || error?.name === "AbortError") throw new CaraTimeoutError("perplexity", DEFAULT_TIMEOUT_MS);
-      throw new CaraProviderError(`Perplexity request failed: ${error?.message}`, "perplexity", true);
+    } catch (error) {
+      if (errorName(error) === "TimeoutError" || errorName(error) === "AbortError") throw new CaraTimeoutError("perplexity", DEFAULT_TIMEOUT_MS);
+      throw new CaraProviderError(`Perplexity request failed: ${errorMessage(error)}`, "perplexity", true);
     }
   }
 
   private handleAPIError(data: any, status: number): never {
     if (status === 429) throw new CaraRateLimitError("perplexity");
-    throw new CaraProviderError(`Perplexity API error: ${data?.error?.message ?? "Unknown"}`, "perplexity", status >= 500);
+    throw new CaraProviderError(`Perplexity API error: ${data?.message ?? "Unknown"}`, "perplexity", status >= 500);
   }
 }

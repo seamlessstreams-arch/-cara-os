@@ -6,6 +6,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { readJsonBody } from "@/lib/http/read-json";
+import { errorStatus } from "@/lib/http/error-message";
 import { NextRequest, NextResponse } from "next/server";
 import { CaraModelRouter } from "@/lib/cara/router/model-router";
 import { CaraAuditLogger } from "@/lib/cara/audit/audit-logger";
@@ -94,9 +95,9 @@ export async function POST(req: NextRequest) {
       generatedAt: result.generatedAt,
       metadata: result.metadata,
     });
-  } catch (error: any) {
+  } catch (error) {
     const safe = sanitiseErrorForClient(error);
-    const status = error?.statusCode ?? 500;
+    const status = errorStatus(error, 500);
     return NextResponse.json({ error: safe.message, code: safe.code }, { status });
   }
 }
