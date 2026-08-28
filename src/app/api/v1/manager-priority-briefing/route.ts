@@ -177,7 +177,7 @@ async function fetchSignal(baseUrl: string, route: string, domain: string): Prom
  * contributors, never a duplicate dashboard.
  */
 async function fetchNativeSignals(baseUrl: string): Promise<EngineSignalInput[]> {
-  const get = async (route: string): Promise<any | null> => {
+  const get = async (route: string): Promise<unknown> => {
     try {
       const res = await fetch(`${baseUrl}/api/v1/${route}`, { cache: "no-store" });
       if (!res.ok) return null;

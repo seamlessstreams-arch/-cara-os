@@ -258,7 +258,7 @@ describe("evaluateSkillDevelopment", () => {
     const assessments: SkillAssessment[] = Array.from({ length: 20 }, (_, i) =>
       makeAssessment({
         id: `a-${i}`,
-        domain: ["cooking_nutrition", "budgeting_finance", "personal_hygiene", "laundry_clothing", "household_tasks", "travel_transport", "communication", "digital_literacy", "health_management", "emotional_regulation"][i % 10] as any,
+        domain: ((["cooking_nutrition", "budgeting_finance", "personal_hygiene", "laundry_clothing", "household_tasks", "travel_transport", "communication", "digital_literacy", "health_management", "emotional_regulation"] as const)[i % 10]),
         competenceLevel: "independent",
         previousLevel: "needs_significant_support",
       }),
@@ -393,8 +393,8 @@ describe("evaluatePracticalLearning", () => {
     const sessions = Array.from({ length: 20 }, (_, i) =>
       makeSession({
         id: `s-${i}`,
-        domain: ["cooking_nutrition", "budgeting_finance", "personal_hygiene", "laundry_clothing", "household_tasks", "travel_transport", "communication", "digital_literacy"][i % 8] as any,
-        teachingMethod: ["one_to_one", "group_session", "practical_activity", "community_based", "peer_mentoring", "online_learning"][i % 6] as any,
+        domain: ((["cooking_nutrition", "budgeting_finance", "personal_hygiene", "laundry_clothing", "household_tasks", "travel_transport", "communication", "digital_literacy"] as const)[i % 8]),
+        teachingMethod: ((["one_to_one", "group_session", "practical_activity", "community_based", "peer_mentoring", "online_learning"] as const)[i % 6]),
         childEngaged: true,
         progressMade: true,
         communityBased: true,
@@ -521,7 +521,7 @@ describe("buildChildIndependenceProfiles", () => {
     const assessments = Array.from({ length: 10 }, (_, i) =>
       makeAssessment({
         id: `a-${i}`,
-        domain: ["cooking_nutrition", "budgeting_finance", "personal_hygiene", "laundry_clothing", "household_tasks", "travel_transport", "communication", "digital_literacy", "health_management", "social_skills"][i] as any,
+        domain: ((["cooking_nutrition", "budgeting_finance", "personal_hygiene", "laundry_clothing", "household_tasks", "travel_transport", "communication", "digital_literacy", "health_management", "social_skills"] as const)[i]),
         competenceLevel: "independent",
       }),
     );
@@ -626,7 +626,7 @@ describe("generateIndependenceLifeSkillsIntelligence", () => {
     const assessments = Array.from({ length: 8 }, (_, i) =>
       makeAssessment({
         id: `a-${i}`,
-        domain: ["cooking_nutrition", "budgeting_finance", "personal_hygiene", "laundry_clothing", "household_tasks", "travel_transport", "communication", "digital_literacy"][i] as any,
+        domain: ((["cooking_nutrition", "budgeting_finance", "personal_hygiene", "laundry_clothing", "household_tasks", "travel_transport", "communication", "digital_literacy"] as const)[i]),
         competenceLevel: "independent",
         previousLevel: "needs_some_support",
       }),
@@ -640,7 +640,7 @@ describe("generateIndependenceLifeSkillsIntelligence", () => {
         childEngaged: true,
         progressMade: true,
         communityBased: i < 5,
-        teachingMethod: ["one_to_one", "group_session", "practical_activity", "community_based", "peer_mentoring"][i % 5] as any,
+        teachingMethod: ((["one_to_one", "group_session", "practical_activity", "community_based", "peer_mentoring"] as const)[i % 5]),
       }),
     );
     const pathways = [makePathway()];

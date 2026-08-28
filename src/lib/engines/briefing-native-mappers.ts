@@ -13,17 +13,51 @@
 
 import type { EngineSignalInput } from "./manager-priority-briefing-engine";
 
+// These four take another route's JSON over HTTP, so the input genuinely is
+// unknown at compile time — but each mapper reads a known handful of fields,
+// and naming them keeps those reads checked instead of turning checking off.
+// The single cast in each sits immediately after the runtime object check.
+
+interface LabelledItem {
+  label?: string;
+  detail?: string;
+}
+
+interface ChildOutcomeRow {
+  childName?: string;
+  overallStatus?: string;
+  relStatus?: string;
+  esStatus?: string;
+  topConcern?: string;
+  topGap?: string;
+}
+
+interface BriefingSource {
+  headline?: unknown;
+  areasLimited?: number;
+  areasDeveloping?: number;
+  childrenNeedingFocus?: number;
+  priorities?: LabelledItem[];
+  inspectionRisks?: LabelledItem[];
+  children?: ChildOutcomeRow[];
+}
+
+
 /** Inspection Intelligence (SCCIF evidence gaps, whole home) → one manager signal. */
-export function mapInspectionToSignal(data: any): EngineSignalInput | null {
-  if (!data || typeof data !== "object") return null;
+export function mapInspectionToSignal(raw: unknown): EngineSignalInput | null {
+  if (!raw || typeof raw !== "object") return null;
+  const data = raw as BriefingSource;
   return {
     engine_key: "inspection-intelligence",
     label: "Inspection readiness (SCCIF)",
     domain: "leadership",
-    rating: data.areasLimited > 0 ? "inadequate" : data.areasDeveloping > 0 ? "requires_improvement" : "good",
+    rating:
+      (data.areasLimited ?? 0) > 0 ? "inadequate"
+      : (data.areasDeveloping ?? 0) > 0 ? "requires_improvement"
+      : "good",
     score: null,
     headline: typeof data.headline === "string" ? data.headline : null,
-    insights: (data.priorities ?? []).map((p: any) => ({
+    insights: (data.priorities ?? []).map((p) => ({
       text: `${p.label}${p.detail ? ` — ${p.detail}` : ""}`,
       severity: "high",
     })),
@@ -33,9 +67,10 @@ export function mapInspectionToSignal(data: any): EngineSignalInput | null {
 }
 
 /** Outcome Intelligence (whole-home rollup) → one manager signal. */
-export function mapOutcomeHomeToSignal(data: any): EngineSignalInput | null {
-  if (!data || typeof data !== "object") return null;
-  const needs = (data.children ?? []).filter((c: any) => c.overallStatus === "needs_focus");
+export function mapOutcomeHomeToSignal(raw: unknown): EngineSignalInput | null {
+  if (!raw || typeof raw !== "object") return null;
+  const data = raw as BriefingSource;
+  const needs = (data.children ?? []).filter((c) => c.overallStatus === "needs_focus");
   return {
     engine_key: "outcome-intelligence-home",
     label: "Outcome intelligence (whole home)",
@@ -43,7 +78,7 @@ export function mapOutcomeHomeToSignal(data: any): EngineSignalInput | null {
     rating: (data.childrenNeedingFocus ?? 0) > 0 ? "requires_improvement" : "good",
     score: null,
     headline: typeof data.headline === "string" ? data.headline : null,
-    insights: needs.map((c: any) => ({
+    insights: needs.map((c) => ({
       text: `${c.childName}'s outcomes need focus${c.topConcern ? ` — ${c.topConcern}` : ""}`,
       severity: "high",
     })),
@@ -53,9 +88,10 @@ export function mapOutcomeHomeToSignal(data: any): EngineSignalInput | null {
 }
 
 /** Relationship Intelligence (whole-home overview) → one manager signal. */
-export function mapRelationshipHomeToSignal(data: any): EngineSignalInput | null {
-  if (!data || typeof data !== "object") return null;
-  const needs = (data.children ?? []).filter((c: any) => c.relStatus === "fragile" || c.esStatus === "concern");
+export function mapRelationshipHomeToSignal(raw: unknown): EngineSignalInput | null {
+  if (!raw || typeof raw !== "object") return null;
+  const data = raw as BriefingSource;
+  const needs = (data.children ?? []).filter((c) => c.relStatus === "fragile" || c.esStatus === "concern");
   return {
     engine_key: "relationship-intelligence-home",
     label: "Relationship intelligence (whole home)",
@@ -63,7 +99,7 @@ export function mapRelationshipHomeToSignal(data: any): EngineSignalInput | null
     rating: needs.length > 0 ? "requires_improvement" : "good",
     score: null,
     headline: typeof data.headline === "string" ? data.headline : null,
-    insights: needs.map((c: any) => ({
+    insights: needs.map((c) => ({
       text: `${c.childName} needs relational or emotional support${c.topGap ? ` — ${c.topGap}` : ""}`,
       severity: c.relStatus === "fragile" ? "high" : "warning",
     })),
@@ -73,8 +109,9 @@ export function mapRelationshipHomeToSignal(data: any): EngineSignalInput | null
 }
 
 /** SOP Reality Check (can the home prove it lives its Statement of Purpose?) → one manager signal. */
-export function mapSopRealityCheckToSignal(data: any): EngineSignalInput | null {
-  if (!data || typeof data !== "object") return null;
+export function mapSopRealityCheckToSignal(raw: unknown): EngineSignalInput | null {
+  if (!raw || typeof raw !== "object") return null;
+  const data = raw as BriefingSource;
   const risks = Array.isArray(data.inspectionRisks) ? data.inspectionRisks : [];
   return {
     engine_key: "sop-reality-check",
@@ -86,7 +123,7 @@ export function mapSopRealityCheckToSignal(data: any): EngineSignalInput | null 
       : "good",
     score: null,
     headline: typeof data.headline === "string" ? data.headline : null,
-    insights: risks.map((r: any) => ({
+    insights: risks.map((r) => ({
       text: `SoP — ${r.label}${r.detail ? `: ${r.detail}` : ""}`,
       severity: "high",
     })),

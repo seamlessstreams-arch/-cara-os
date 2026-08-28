@@ -14,7 +14,7 @@ const d = (v: unknown, fb = ""): string => (v == null ? fb : v.toString().slice(
 describe("child-priority integration (real seed data)", () => {
   const store = getStore();
 
-  const children = (store.youngPeople as any[])
+  const children = ((store.youngPeople))
     .filter((yp) => yp.status === "current")
     .map((yp) => ({
       id: yp.id,
@@ -24,24 +24,24 @@ describe("child-priority integration (real seed data)", () => {
       placement_type: yp.placement_type ?? "unknown",
       risk_flags: Array.isArray(yp.risk_flags) ? yp.risk_flags : [],
     }));
-  const incidents: PriorityIncidentInput[] = (store.incidents as any[])
-    .filter((i) => i.child_id)
+  const incidents: PriorityIncidentInput[] = ((store.incidents))
+    .filter((i): i is typeof i & { child_id: string } => Boolean(i.child_id))
     .map((i) => ({ child_id: i.child_id, date: d(i.date ?? i.created_at), type: i.type ?? "other", severity: i.severity ?? "low" }));
-  const complaints = (store.complaints as any[])
-    .filter((c) => c.child_id)
+  const complaints = ((store.complaints))
+    .filter((c): c is typeof c & { child_id: string } => Boolean(c.child_id))
     .map((c) => ({ child_id: c.child_id, date: d(c.date_received ?? c.created_at), category: c.category ?? "other", includes_safeguarding_element: !!c.includes_safeguarding_element, status: c.status ?? "received" }));
-  const medicationErrors: PriorityMedErrorInput[] = (store.medicationErrors as any[])
-    .filter((e) => e.child_id)
+  const medicationErrors: PriorityMedErrorInput[] = ((store.medicationErrors))
+    .filter((e): e is typeof e & { child_id: string } => Boolean(e.child_id))
     .map((e) => ({ child_id: e.child_id, date: d(e.date_occurred ?? e.created_at), severity: e.severity ?? "no_harm" }));
-  const missingEpisodes = (store.missingEpisodes as any[]).map((m) => ({ child_id: m.child_id ?? "", date_missing: d(m.date_missing ?? m.created_at), risk_level: m.risk_level ?? "low", return_interview_completed: !!m.return_interview_completed }));
-  const restraints = (store.restraints as any[]).map((r) => ({ child_id: r.child_id ?? "", date: d(r.date ?? r.created_at) }));
-  const sanctions = (store.sanctionRewards as any[]).map((s) => ({ child_id: s.child_id ?? "", date: d(s.date ?? s.created_at), direction: s.direction ?? "sanction", proportionate: s.proportionate !== false }));
-  const behaviour = (store.behaviourLog as any[]).map((b) => ({ child_id: b.child_id ?? "", date: d(b.date ?? b.created_at), direction: b.direction ?? "concern", intensity: b.intensity ?? "low" }));
-  const education = (store.educationRecords as any[]).map((e) => ({ child_id: e.child_id ?? "", date: d(e.date ?? e.created_at), attendance_status: e.attendance_status ?? null }));
-  const keyworking = (store.keyWorkingSessions as any[]).map((k) => ({ child_id: k.child_id ?? "", date: d(k.date ?? k.created_at), mood_before: typeof k.mood_before === "number" ? k.mood_before : 3, mood_after: typeof k.mood_after === "number" ? k.mood_after : 3 }));
-  const staff = (store.staff as any[]).map((s) => ({ id: s.id, name: s.full_name ?? s.id, active: s.is_active ?? s.employment_status === "active" }));
-  const keyWorkingSessions = (store.keyWorkingSessions as any[]).filter((k) => k.child_id && k.staff_id).map((k) => ({ child_id: k.child_id, staff_id: k.staff_id, date: d(k.date ?? k.created_at) }));
-  const keyWorkers = (store.youngPeople as any[]).filter((yp) => yp.status === "current").map((yp) => ({ child_id: yp.id, key_worker_id: yp.key_worker_id ?? null, secondary_worker_id: yp.secondary_worker_id ?? null }));
+  const missingEpisodes = ((store.missingEpisodes)).map((m) => ({ child_id: m.child_id ?? "", date_missing: d(m.date_missing ?? m.created_at), risk_level: m.risk_level ?? "low", return_interview_completed: !!m.return_interview_completed }));
+  const restraints = ((store.restraints)).map((r) => ({ child_id: r.child_id ?? "", date: d(r.date ?? r.created_at) }));
+  const sanctions = ((store.sanctionRewards)).map((s) => ({ child_id: s.child_id ?? "", date: d(s.date ?? s.created_at), direction: s.direction ?? "sanction", proportionate: s.proportionate !== false }));
+  const behaviour = ((store.behaviourLog)).map((b) => ({ child_id: b.child_id ?? "", date: d(b.date ?? b.created_at), direction: b.direction ?? "concern", intensity: b.intensity ?? "low" }));
+  const education = ((store.educationRecords)).map((e) => ({ child_id: e.child_id ?? "", date: d(e.date ?? e.created_at), attendance_status: e.attendance_status ?? null }));
+  const keyworking = ((store.keyWorkingSessions)).map((k) => ({ child_id: k.child_id ?? "", date: d(k.date ?? k.created_at), mood_before: typeof k.mood_before === "number" ? k.mood_before : 3, mood_after: typeof k.mood_after === "number" ? k.mood_after : 3 }));
+  const staff = ((store.staff)).map((s) => ({ id: s.id, name: s.full_name ?? s.id, active: s.is_active ?? s.employment_status === "active" }));
+  const keyWorkingSessions = ((store.keyWorkingSessions)).filter((k) => k.child_id && k.staff_id).map((k) => ({ child_id: k.child_id, staff_id: k.staff_id, date: d(k.date ?? k.created_at) }));
+  const keyWorkers = ((store.youngPeople)).filter((yp) => yp.status === "current").map((yp) => ({ child_id: yp.id, key_worker_id: yp.key_worker_id ?? null, secondary_worker_id: yp.secondary_worker_id ?? null }));
 
   const result = computeChildPriority({
     children, incidents, complaints, medicationErrors,
