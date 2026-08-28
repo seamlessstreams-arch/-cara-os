@@ -6,17 +6,17 @@ import { computeStaffRecordingPractice } from "../staff-recording-practice-engin
 
 describe("staff-recording-practice integration (recording quality → by staff)", () => {
   const store = getStore();
-  const nameById = new Map((store.youngPeople as any[]).map((yp) => [yp.id, yp.preferred_name || `${yp.first_name} ${yp.last_name}`.trim()]));
-  const staff = (store.staff as any[]).map((s) => ({ id: s.id, name: s.full_name ?? s.id }));
+  const nameById = new Map(((store.youngPeople)).map((yp) => [yp.id, yp.preferred_name || `${yp.first_name} ${yp.last_name}`.trim()]));
+  const staff = ((store.staff)).map((s) => ({ id: s.id, name: s.full_name ?? s.id }));
 
   const records: RecordInput[] = [
-    ...(store.dailyLog as any[]).map((l) => ({
+    ...((store.dailyLog)).map((l) => ({
       id: l.id, type: "daily_log", text: l.content ?? "",
       expected_fields: ["content"], present_fields: (l.content ?? "").trim() ? ["content"] : [],
       child_name: nameById.get(l.child_id), staff_id: l.staff_id, date: l.date,
       is_risk_related: !!l.is_significant,
     })),
-    ...(store.keyWorkingSessions as any[]).map((k) => ({
+    ...((store.keyWorkingSessions)).map((k) => ({
       id: k.id, type: "keywork", text: `${k.worker_observations ?? ""} ${k.child_voice ?? ""}`.trim(),
       expected_fields: ["worker_observations"], present_fields: (k.worker_observations ?? "").trim() ? ["worker_observations"] : [],
       child_name: nameById.get(k.child_id), staff_id: k.staff_id, date: k.date,

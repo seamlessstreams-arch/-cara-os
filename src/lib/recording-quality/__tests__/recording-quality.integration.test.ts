@@ -6,10 +6,10 @@ import { computeRecordingQuality, type RecordInput } from "../recording-quality-
 
 describe("recording-quality integration (real seed records)", () => {
   const store = getStore();
-  const nameById = new Map((store.youngPeople as any[]).map((yp) => [yp.id, yp.preferred_name || `${yp.first_name} ${yp.last_name}`.trim()]));
+  const nameById = new Map(((store.youngPeople)).map((yp) => [yp.id, yp.preferred_name || `${yp.first_name} ${yp.last_name}`.trim()]));
 
   const records: RecordInput[] = [
-    ...(store.dailyLog as any[]).map((l) => {
+    ...((store.dailyLog)).map((l) => {
       const present: string[] = [];
       if ((l.content ?? "").trim()) present.push("content");
       if (l.mood_score != null) present.push("mood_score");
@@ -21,7 +21,7 @@ describe("recording-quality integration (real seed records)", () => {
         is_risk_related: !!l.is_significant || l.entry_type === "behaviour",
       };
     }),
-    ...(store.incidents as any[]).map((i) => {
+    ...((store.incidents)).map((i) => {
       const present: string[] = [];
       if ((i.description ?? "").trim()) present.push("description");
       if ((i.immediate_action ?? "").trim()) present.push("immediate_action");
@@ -32,7 +32,7 @@ describe("recording-quality integration (real seed records)", () => {
         child_name: nameById.get(i.child_id), staff_id: i.reported_by, date: i.date, is_risk_related: true,
       };
     }),
-    ...(store.keyWorkingSessions as any[]).map((k) => {
+    ...((store.keyWorkingSessions)).map((k) => {
       const present: string[] = [];
       if ((k.worker_observations ?? "").trim()) present.push("worker_observations");
       if ((k.child_voice ?? "").trim()) present.push("child_voice");
