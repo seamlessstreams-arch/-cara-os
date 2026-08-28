@@ -24,10 +24,10 @@ const SUPERVISEE_ROLES = new Set(["registered_manager", "deputy_manager", "team_
 function staffName(s: StaffMember): string {
   return s.full_name || [s.first_name, s.last_name].filter(Boolean).join(" ") || s.id;
 }
-function superviseeStaff(staffList: any): StaffLite[] {
+function superviseeStaff(staffList: StaffMember[] | undefined): StaffLite[] {
   return (((staffList ?? [])))
-    .filter((s: any) => s.employment_status !== "left" && SUPERVISEE_ROLES.has(String(s.role)))
-    .map((s: any) => ({ id: s.id, name: staffName(s), role: s.role ?? s.job_title ?? null }));
+    .filter((s) => s.employment_status !== "left" && SUPERVISEE_ROLES.has(String(s.role)))
+    .map((s) => ({ id: s.id, name: staffName(s), role: s.role ?? s.job_title ?? null }));
 }
 
 export async function GET() {
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
   const staffList = (((await dal.staff.findAll()) ?? []));
   const sm = staffList.find((s) => s.id === staff_id);
   const supervisor = staffList.find((s) => s.id === String(body.supervisor_id ?? "")) ?? null;
-  const clampScore = (n: any) => Math.max(1, Math.min(5, Math.round(Number(n) || 3)));
+  const clampScore = (n: unknown) => Math.max(1, Math.min(5, Math.round(Number(n) || 3)));
 
   const record: ReflectiveSupervisionRecord = {
     id: generateId("rsup"),

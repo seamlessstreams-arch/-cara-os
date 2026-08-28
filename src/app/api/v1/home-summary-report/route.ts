@@ -79,15 +79,16 @@ function labelFor(route: string): string {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function extract(d: any, route: string, section: string): ReportSignalInput | null {
-  if (!d || typeof d !== "object") return null;
+function extract(raw: unknown, route: string, section: string): ReportSignalInput | null {
+  if (!raw || typeof raw !== "object") return null;
+  const d = raw as Record<string, unknown>;
   const ratingKey = Object.keys(d).find((k) => k.endsWith("_rating") || k === "rating");
   const scoreKey = Object.keys(d).find((k) => k.endsWith("_score") || k === "score");
   const rating = ratingKey && d[ratingKey] != null ? String(d[ratingKey]) : null;
   const score = scoreKey && typeof d[scoreKey] === "number" ? d[scoreKey] : null;
   const headline = typeof d.headline === "string" ? d.headline : null;
-  const concerns = Array.isArray(d.concerns) ? d.concerns.filter((c: any) => typeof c === "string" && c.trim()) : [];
-  const strengths = Array.isArray(d.strengths) ? d.strengths.filter((c: any) => typeof c === "string" && c.trim()) : [];
+  const concerns = Array.isArray(d.concerns) ? d.concerns.filter((c: unknown) => typeof c === "string" && c.trim()) : [];
+  const strengths = Array.isArray(d.strengths) ? d.strengths.filter((c: unknown) => typeof c === "string" && c.trim()) : [];
   return { engine_key: route, label: labelFor(route), section, rating, score, headline, concerns, strengths };
 }
 
@@ -102,8 +103,7 @@ async function fetchSignal(baseUrl: string, route: string, section: string): Pro
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function safeList(p: Promise<any[]>): Promise<any[]> {
+async function safeList<T>(p: Promise<T[]>): Promise<T[]> {
   try {
     const r = await p;
     return Array.isArray(r) ? r : [];
