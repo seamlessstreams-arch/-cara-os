@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { requireFields } from "@/lib/http/require-fields";
 import { rejectFutureDates } from "@/lib/http/retrospective-dates";
 import { NextRequest, NextResponse } from "next/server";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
@@ -75,6 +76,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "homeId required" }, { status: 400 });
     }
 
+    // Judgements about what happened, not settings with a sensible default.
+    // Each used to fall back to the compliant answer, so a partial POST built a
+    // record asserting something nobody had stated. Checked here, before the
+    // storage check: whether a request is complete does not depend on whether
+    // Supabase happens to be configured.
+    const CLAIM_FIELDS: Record<string, readonly string[]> = {
+      create_sanction: ["proportionate", "ageAppropriate", "consistentWithPlan", "childInformed"],
+    };
+    const __claims = requireFields(body, CLAIM_FIELDS[String(action)] ?? []);
+    if (__claims) return __claims;
+
     if (!isSupabaseEnabled()) {
       return NextResponse.json({ ok: true, persisted: false });
     }
@@ -91,10 +103,10 @@ export async function POST(request: NextRequest) {
         incident_time: body.incidentTime,
         duration_minutes: body.durationMinutes ?? 0,
         privilege_removed: body.privilegeRemoved,
-        proportionate: body.proportionate ?? true,
-        age_appropriate: body.ageAppropriate ?? true,
-        consistent_with_plan: body.consistentWithPlan ?? true,
-        child_informed: body.childInformed ?? true,
+        proportionate: body.proportionate,
+        age_appropriate: body.ageAppropriate,
+        consistent_with_plan: body.consistentWithPlan,
+        child_informed: body.childInformed,
         child_response: body.childResponse,
         imposed_by: body.imposedBy,
         witnessed_by: body.witnessedBy,
