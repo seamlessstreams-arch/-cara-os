@@ -215,8 +215,8 @@ export function buildPracticeDigest(store: Store): AskCaraPracticeDigest {
   try {
     const srq = buildStaffRecordingPathway(store);
     const profiles = (srq.profiles as unknown as Array<Record<string, unknown>>).map((p) => ({
-      name: String(p.name ?? p.staffName ?? p.staffId ?? "staff member"),
-      signal: String(p.overallSignal ?? p.signal ?? ""),
+      name: String(p.name ?? p.staffId ?? "staff member"),
+      signal: String(p.overallSignal ?? ""),
       acceptanceRate: typeof p.acceptanceRate === "number" ? p.acceptanceRate : undefined,
     }));
     const order: Record<string, number> = { needs_support: 0, developing: 1, progressing: 2 };
