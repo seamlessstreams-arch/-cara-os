@@ -1,49 +1,14 @@
 import { describe, it, expect } from "vitest";
+import type { CsEvidenceItem, CsRegulationMapping } from "@/types/operations";
 import {
   computeInspectionReadiness,
 } from "./evidence-service";
 
 // We define minimal types matching CsEvidenceItem and CsRegulationMapping
 // as they come from @/types/operations which we can't import in tests directly.
-interface TestEvidenceItem {
-  id: string;
-  home_id: string;
-  title: string;
-  description: string | null;
-  evidence_type: string;
-  file_url: string | null;
-  file_name: string | null;
-  file_size: number | null;
-  mime_type: string | null;
-  quality_score: number | null;
-  quality_notes: string | null;
-  linked_child_id: string | null;
-  linked_staff_id: string | null;
-  regulation_refs: string[];
-  sccif_refs: string[];
-  date_of_evidence: string | null;
-  uploaded_by: string | null;
-  verified_by: string | null;
-  verified_at: string | null;
-  tags: string[];
-  created_at: string;
-  updated_at: string;
-}
 
-interface TestRegulationMapping {
-  id: string;
-  framework: string;
-  reference: string;
-  title: string;
-  description: string | null;
-  module_links: string[];
-  evidence_types: string[];
-  parent_ref: string | null;
-  sort_order: number;
-  created_at: string;
-}
 
-function makeEvidence(overrides: Partial<TestEvidenceItem> = {}): TestEvidenceItem {
+function makeEvidence(overrides: Partial<CsEvidenceItem> = {}): CsEvidenceItem {
   return {
     id: "ev-1",
     home_id: "home-1",
@@ -71,7 +36,7 @@ function makeEvidence(overrides: Partial<TestEvidenceItem> = {}): TestEvidenceIt
   };
 }
 
-function makeRegulation(overrides: Partial<TestRegulationMapping> = {}): TestRegulationMapping {
+function makeRegulation(overrides: Partial<CsRegulationMapping> = {}): CsRegulationMapping {
   return {
     id: "reg-1",
     framework: "CHR2015",
@@ -89,8 +54,7 @@ function makeRegulation(overrides: Partial<TestRegulationMapping> = {}): TestReg
 
 describe("computeInspectionReadiness", () => {
   it("returns Inadequate grade with zeroes for empty data", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = computeInspectionReadiness([] as any[], [] as any[]);
+    const result = computeInspectionReadiness([], []);
     expect(result.overallPercentage).toBe(0);
     expect(result.grade).toBe("Inadequate");
     expect(result.modules).toHaveLength(8);
@@ -112,8 +76,7 @@ describe("computeInspectionReadiness", () => {
     const evidence = [
       makeEvidence({ id: "ev-1", regulation_refs: ["CHR2015:Reg12"] }),
     ];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = computeInspectionReadiness(evidence as any[], regs as any[]);
+    const result = computeInspectionReadiness(evidence, regs);
     const safeguardingModule = result.modules.find((m) => m.module === "safeguarding");
     expect(safeguardingModule).toBeDefined();
     // 1 evidence item for 1 regulation: score = 4/10, percentage = 40%
@@ -131,8 +94,7 @@ describe("computeInspectionReadiness", () => {
       makeEvidence({ id: "ev-2", regulation_refs: ["CHR2015:Reg12"] }),
       makeEvidence({ id: "ev-3", regulation_refs: ["CHR2015:Reg12"] }),
     ];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = computeInspectionReadiness(evidence as any[], regs as any[]);
+    const result = computeInspectionReadiness(evidence, regs);
     const safeguardingModule = result.modules.find((m) => m.module === "safeguarding");
     // 3+ items = 10/10 score
     expect(safeguardingModule!.score).toBe(10);
@@ -141,8 +103,7 @@ describe("computeInspectionReadiness", () => {
 
   it("determines grade based on overall percentage", () => {
     // With no regulations, all modules have 0 maxScore so percentage is 0
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = computeInspectionReadiness([] as any[], [] as any[]);
+    const result = computeInspectionReadiness([], []);
     expect(result.grade).toBe("Inadequate"); // 0%
   });
 
@@ -153,8 +114,7 @@ describe("computeInspectionReadiness", () => {
       makeRegulation({ id: "reg-3", framework: "CHR2015", reference: "Reg14", module_links: ["safeguarding"] }),
     ];
     // No evidence at all - safeguarding should be a critical gap
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = computeInspectionReadiness([] as any[], regs as any[]);
+    const result = computeInspectionReadiness([], regs);
     expect(result.criticalGaps.some((g) => g.includes("Safeguarding"))).toBe(true);
   });
 
@@ -167,8 +127,7 @@ describe("computeInspectionReadiness", () => {
       makeEvidence({ id: "ev-2", regulation_refs: ["CHR2015:Reg12"] }),
       makeEvidence({ id: "ev-3", regulation_refs: ["CHR2015:Reg12"] }),
     ];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = computeInspectionReadiness(evidence as any[], regs as any[]);
+    const result = computeInspectionReadiness(evidence, regs);
     expect(result.topStrengths.some((s) => s.includes("Safeguarding"))).toBe(true);
   });
 
@@ -179,8 +138,7 @@ describe("computeInspectionReadiness", () => {
     const evidence = [
       makeEvidence({ id: "ev-1", regulation_refs: ["CHR2015:Reg12"], verified_by: null }),
     ];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = computeInspectionReadiness(evidence as any[], regs as any[]);
+    const result = computeInspectionReadiness(evidence, regs);
     const safeguardingModule = result.modules.find((m) => m.module === "safeguarding");
     expect(safeguardingModule!.gaps.some((g) => g.includes("not yet verified"))).toBe(true);
   });
