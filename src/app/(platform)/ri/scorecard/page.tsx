@@ -34,6 +34,8 @@ function useHomeName(fallback = "This home"): string {
   return data?.home?.name?.trim() || fallback;
 }
 import React, { useState, useMemo } from "react";
+import type { CareForm, DailyLogEntry } from "@/types";
+import type { Audit } from "@/types/extended";
 import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
@@ -110,12 +112,12 @@ function useTraining(params?: { staff_id?: string; status?: string; category?: s
 
 // Types from use-audits
 export interface AuditsResponse {
-  data: any[];
+  data: Audit[];
   meta: { total: number; completed: number; scheduled: number; in_progress: number; overdue: number };
 }
 
 interface FormsListResponse {
-  data: any[];
+  data: CareForm[];
   meta: {
     total: number;
     draft: number;
@@ -579,7 +581,7 @@ export default function ScorecardPage() {
   });
   const { data: dailyLogData } = useQuery({
     queryKey: ["daily-log", { days: 30 }],
-    queryFn: () => api.get<{ data: any[]; meta: { total: number; by_type: Record<string, number> } }>(`/daily-log?days=30`),
+    queryFn: () => api.get<{ data: DailyLogEntry[]; meta: { total: number; by_type: Record<string, number> } }>(`/daily-log?days=30`),
   });
   const { data: recruitmentData } = useRecruitment();
   const { data: ypData } = useYoungPeople("current");

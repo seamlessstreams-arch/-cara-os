@@ -23,7 +23,43 @@ import { todayStr } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-async function fetchChild360(baseUrl: string, childId: string): Promise<any | null> {
+
+// The Child 360 route's JSON, as this pack reads it. It arrives over HTTP so
+// it genuinely is unknown at compile time — naming the fields keeps the reads
+// checked rather than turning checking off for the whole payload.
+interface Child360Payload {
+  child_name?: unknown;
+  headline?: unknown;
+  age_years?: unknown;
+  days_in_placement?: unknown;
+  overall_wellbeing?: unknown;
+  domain_scores?: unknown;
+  priority_actions?: unknown;
+  strengths?: unknown;
+  concerns?: unknown;
+  key_dates?: unknown;
+  safety_profile?: {
+    risk_level?: unknown;
+    active_risk_flags?: unknown;
+    open_incidents_count?: unknown;
+    missing_episodes_90d?: unknown;
+  };
+  health_profile?: {
+    allergies?: unknown;
+    active_medications?: unknown;
+    overdue_appointments?: unknown;
+  };
+  education_profile?: { school_name?: unknown; attendance_rate_30d?: unknown };
+  emotional_wellbeing?: { mood_trend?: unknown; recent_themes?: unknown; voice_captured?: unknown };
+  relationships_profile?: { contact_consistency?: unknown; yp_voice_on_contact?: unknown };
+  outcomes_profile?: {
+    total_active_targets?: unknown;
+    targets_on_track?: unknown;
+    average_progress_pct?: unknown;
+  };
+}
+
+async function fetchChild360(baseUrl: string, childId: string): Promise<Child360Payload | null> {
   try {
     const res = await fetch(`${baseUrl}/api/v1/child-360-intelligence?childId=${encodeURIComponent(childId)}`, { cache: "no-store" });
     if (!res.ok) return null;
@@ -74,7 +110,7 @@ export async function GET(request: NextRequest) {
       const d = await fetchChild360(baseUrl, childId);
       if (child && d) {
         const domain_scores: ReviewDomainScore[] = Array.isArray(d.domain_scores)
-          ? d.domain_scores.map((s: any) => ({
+          ? d.domain_scores.map((s: Record<string, unknown>) => ({
               domain_label: String(s?.domain_label ?? s?.domain ?? ""),
               rag: String(s?.rag ?? ""),
               score: num(s?.score),
@@ -85,7 +121,10 @@ export async function GET(request: NextRequest) {
 
         const input: ChildReviewPackInput = {
           child_id: childId,
-          child_name: d.child_name || child.preferred_name || [child.first_name, child.last_name].filter(Boolean).join(" "),
+          child_name:
+            (typeof d.child_name === "string" ? d.child_name : "") ||
+            child.preferred_name ||
+            [child.first_name, child.last_name].filter(Boolean).join(" "),
           date_of_birth: child.date_of_birth ?? "—",
           age_years: num(d.age_years),
           legal_status: child.legal_status ?? "",
@@ -101,7 +140,7 @@ export async function GET(request: NextRequest) {
 
           voice_captured: !!d.emotional_wellbeing?.voice_captured,
           recent_themes: Array.isArray(d.emotional_wellbeing?.recent_themes)
-            ? d.emotional_wellbeing.recent_themes.filter((t: any) => typeof t === "string" && t.trim())
+            ? d.emotional_wellbeing.recent_themes.filter((t: unknown) => typeof t === "string" && t.trim())
             : [],
           mood_trend: String(d.emotional_wellbeing?.mood_trend ?? "stable"),
 
@@ -110,7 +149,8 @@ export async function GET(request: NextRequest) {
           open_incidents: num(d.safety_profile?.open_incidents_count),
           missing_90d: num(d.safety_profile?.missing_episodes_90d),
 
-          school_name: d.education_profile?.school_name ?? null,
+          school_name:
+            typeof d.education_profile?.school_name === "string" ? d.education_profile.school_name : null,
           attendance_rate_30d: typeof d.education_profile?.attendance_rate_30d === "number" ? d.education_profile.attendance_rate_30d : null,
 
           active_medications: num(d.health_profile?.active_medications),
@@ -124,10 +164,10 @@ export async function GET(request: NextRequest) {
           targets_on_track: num(d.outcomes_profile?.targets_on_track),
           average_progress_pct: num(d.outcomes_profile?.average_progress_pct),
 
-          strengths: Array.isArray(d.strengths) ? d.strengths.filter((x: any) => typeof x === "string") : [],
-          concerns: Array.isArray(d.concerns) ? d.concerns.filter((x: any) => typeof x === "string") : [],
+          strengths: Array.isArray(d.strengths) ? d.strengths.filter((x: unknown) => typeof x === "string") : [],
+          concerns: Array.isArray(d.concerns) ? d.concerns.filter((x: unknown) => typeof x === "string") : [],
           priority_actions: Array.isArray(d.priority_actions)
-            ? d.priority_actions.map((a: any) => ({ action: String(a?.action ?? ""), severity: String(a?.severity ?? "medium") })).filter((a: any) => a.action)
+            ? d.priority_actions.map((a: Record<string, unknown>) => ({ action: String(a?.action ?? ""), severity: String(a?.severity ?? "medium") })).filter((a: any) => a.action)
             : [],
           key_dates: Array.isArray(d.key_dates)
             ? d.key_dates
