@@ -28,17 +28,30 @@ export async function POST(req: NextRequest) {
   const __parsed = await readJsonBody(req);
   if (!__parsed.ok) return __parsed.response;
   const body = __parsed.data;
-  const __missing = requireFields(body, ["incident_id"]);
+  // A physical-intervention debrief is a record of what was done to a child.
+  // These four used to default — to a named Team Teach hold, a standing
+  // position, a nil duration, and an assertion that de-escalation was tried —
+  // so a POST carrying only an incident_id produced a restraint record nobody
+  // had stated. Note every other risk-bearing flag here already defaults to
+  // false; `de_escalation_attempted` was the one defaulting to the answer that
+  // flatters the home.
+  const __missing = requireFields(body, [
+    "incident_id",
+    "technique_used",
+    "body_position",
+    "duration_minutes",
+    "de_escalation_attempted",
+  ]);
   if (__missing) return __missing;
   const record = intelligenceDb.piDebriefs.create({
     home_id:     body.home_id ?? "home_oak",
     incident_id: body.incident_id ?? "",
-    technique_used:              body.technique_used ?? "team_teach_holding",
+    technique_used:              body.technique_used,
     technique_other:             body.technique_other ?? null,
-    duration_minutes:            body.duration_minutes ?? 0,
-    body_position:               body.body_position ?? "standing",
+    duration_minutes:            body.duration_minutes,
+    body_position:               body.body_position,
     staff_involved:              body.staff_involved ?? [],
-    de_escalation_attempted:     body.de_escalation_attempted ?? true,
+    de_escalation_attempted:     body.de_escalation_attempted,
     de_escalation_description:   body.de_escalation_description ?? null,
     injuries:                    body.injuries ?? [],
     medical_assessment_completed:body.medical_assessment_completed ?? false,
