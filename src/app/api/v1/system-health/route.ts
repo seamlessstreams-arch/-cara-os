@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
 
     // Daily-log dates grouped by child.
     const dailyLogDatesByChild: Record<string, string[]> = {};
-    for (const log of (dailyLogList ?? []) as unknown as Array<Record<string, unknown>>) {
+    for (const log of (dailyLogList ?? [])) {
       const cid = String(log.child_id ?? "");
       if (!cid) continue;
       (dailyLogDatesByChild[cid] ??= []).push(day(log.date));
@@ -62,20 +62,20 @@ export async function GET(req: NextRequest) {
 
     // Reviews from risk assessments + LAC reviews.
     const reviews = [
-      ...((riskAssessmentsList ?? []) as unknown as Array<Record<string, unknown>>).map((r) => ({ id: String(r.id), kind: "Risk assessment", next_review_date: day(r.next_review_date ?? r.review_date), child_id: r.child_id ? String(r.child_id) : undefined })),
-      ...((lacReviewsList ?? []) as unknown as Array<Record<string, unknown>>).map((r) => ({ id: String(r.id), kind: "LAC review", next_review_date: day(r.next_review_date ?? r.next_review), child_id: r.child_id ? String(r.child_id) : undefined })),
+      ...(riskAssessmentsList ?? []).map((r) => ({ id: String(r.id), kind: "Risk assessment", next_review_date: day(r.review_date), child_id: r.child_id ? String(r.child_id) : undefined })),
+      ...(lacReviewsList ?? []).map((r) => ({ id: String(r.id), kind: "LAC review", next_review_date: day(r.next_review_date), child_id: r.child_id ? String(r.child_id) : undefined })),
     ].filter((r) => r.next_review_date);
 
     const input: SystemHealthInput = {
       homeId: "home_oak",
       asOf,
-      children: ((youngPeopleList ?? []) as unknown as Array<Record<string, unknown>>)
+      children: (youngPeopleList ?? [])
         .filter((c) => (c.status ?? "current") === "current") // real union: current|planned|ended|emergency — "former"/"discharged" never existed
-        .map((c) => ({ id: String(c.id), name: String(c.preferred_name ?? c.name ?? c.id) })),
-      tasks: ((tasksList ?? []) as unknown as Array<Record<string, unknown>>).map((t) => ({ id: String(t.id), title: String(t.title ?? "Action"), due_date: day(t.due_date), status: String(t.status ?? ""), child_id: t.linked_child_id ? String(t.linked_child_id) : undefined })),
-      incidents: ((incidentsList ?? []) as unknown as Array<Record<string, unknown>>).map((i) => ({ id: String(i.id), type: String(i.type ?? "other"), date: day(i.date), requires_oversight: !!i.requires_oversight, has_oversight: !!(i.oversight_note || i.oversight_by || i.oversight_at), child_id: i.child_id ? String(i.child_id) : undefined, status: String(i.status ?? "open") })),
-      restraints: ((restraintsList ?? []) as unknown as Array<Record<string, unknown>>).map((r) => ({ id: String(r.id), date: day(r.date ?? r.created_at), child_debriefed: !!r.child_debriefed, has_debrief: hasDebrief(r as { id?: string; linked_incident_id?: string; child_id?: string }), child_id: r.child_id ? String(r.child_id) : undefined })),
-      missingEpisodes: ((missingEpisodesList ?? []) as unknown as Array<Record<string, unknown>>).map((m) => ({ id: String(m.id), date: day(m.date_missing ?? m.date ?? m.reported_at), has_return_interview: hasReturnInterview(m as { id?: string; child_id?: string }), child_id: m.child_id ? String(m.child_id) : undefined })),
+        .map((c) => ({ id: String(c.id), name: String(c.preferred_name ?? c.id) })),
+      tasks: (tasksList ?? []).map((t) => ({ id: String(t.id), title: String(t.title ?? "Action"), due_date: day(t.due_date), status: String(t.status ?? ""), child_id: t.linked_child_id ? String(t.linked_child_id) : undefined })),
+      incidents: (incidentsList ?? []).map((i) => ({ id: String(i.id), type: String(i.type ?? "other"), date: day(i.date), requires_oversight: !!i.requires_oversight, has_oversight: !!(i.oversight_note || i.oversight_by || i.oversight_at), child_id: i.child_id ? String(i.child_id) : undefined, status: String(i.status ?? "open") })),
+      restraints: (restraintsList ?? []).map((r) => ({ id: String(r.id), date: day(r.date ?? r.created_at), child_debriefed: !!r.child_debriefed, has_debrief: hasDebrief(r as { id?: string; linked_incident_id?: string; child_id?: string }), child_id: r.child_id ? String(r.child_id) : undefined })),
+      missingEpisodes: (missingEpisodesList ?? []).map((m) => ({ id: String(m.id), date: day(m.date_missing), has_return_interview: hasReturnInterview(m as { id?: string; child_id?: string }), child_id: m.child_id ? String(m.child_id) : undefined })),
       reviews,
       dailyLogDatesByChild,
     };

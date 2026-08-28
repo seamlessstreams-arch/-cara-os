@@ -43,7 +43,7 @@ export function buildChildEvaluations(store: Store, nowIso: string): AskCaraChil
 
   for (const c of current) {
     const childId = String(c.id);
-    const childName = s(c.preferred_name) || s(c.first_name) || s(c.full_name) || childId;
+    const childName = s(c.preferred_name) || s(c.first_name) || childId;
     const pace = (store.childPaceProfiles ?? []).find((p) => p.childId === childId);
     const ev: AskCaraChildEvaluation = { childId };
 
