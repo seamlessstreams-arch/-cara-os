@@ -31,9 +31,11 @@ const FEED_KEYS = [
 ] as const;
 
 function contentSignature(store: Store): string {
-  const st = store as unknown as Record<string, unknown>;
+  // Checked against the store's own collections: a phantom key here would
+  // contribute a constant 0 to the signature, so the twin's cache would never
+  // notice that collection changing.
   return FEED_KEYS.map((k) => {
-    const v = st[k];
+    const v = store[k];
     return Array.isArray(v) ? v.length : 0;
   }).join(":");
 }
@@ -41,7 +43,6 @@ function contentSignature(store: Store): string {
 const cache = new Map<string, { sig: string; twin: ChildTwin }>();
 
 function buildInput(store: Store, childId: string, nowIso: string): ChildTwinInput | null {
-  const st = store as unknown as Record<string, unknown[]>;
   const child = (store.youngPeople ?? []).find((yp: { id: string }) => yp.id === childId) as unknown as Record<string, unknown> | undefined;
   if (!child) return null;
 
@@ -52,7 +53,11 @@ function buildInput(store: Store, childId: string, nowIso: string): ChildTwinInp
     ]),
   );
 
-  const rows = (k: string) => (Array.isArray(st[k]) ? (st[k] as unknown as Record<string, unknown>[]) : []);
+  // The key is checked against the store's own collections — a phantom name
+  // used to return [] in silence (see the ops snapshot fix in #1059). The rows
+  // stay loose because ChildTwinInput takes them that way.
+  const rows = (k: keyof Store) =>
+    (Array.isArray(store[k]) ? store[k] : []) as unknown as Record<string, unknown>[];
 
   return {
     childId,
