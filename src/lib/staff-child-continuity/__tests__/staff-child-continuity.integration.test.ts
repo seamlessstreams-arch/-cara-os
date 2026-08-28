@@ -14,7 +14,7 @@ const d = (v: unknown, fb = ""): string => (v == null ? fb : v.toString().slice(
 describe("staff-child-continuity integration (real seed data)", () => {
   const store = getStore();
 
-  const children: ContinuityChildInput[] = (store.youngPeople as any[])
+  const children: ContinuityChildInput[] = ((store.youngPeople))
     .filter((yp) => yp.status === "current")
     .map((yp) => ({
       id: yp.id,
@@ -22,12 +22,12 @@ describe("staff-child-continuity integration (real seed data)", () => {
       key_worker_id: yp.key_worker_id ?? null,
       secondary_worker_id: yp.secondary_worker_id ?? null,
     }));
-  const staff: ContinuityStaffInput[] = (store.staff as any[]).map((s) => ({
+  const staff: ContinuityStaffInput[] = ((store.staff)).map((s) => ({
     id: s.id,
     name: s.full_name ?? `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim(),
     active: s.is_active ?? s.employment_status === "active",
   }));
-  const sessions: ContinuitySessionInput[] = (store.keyWorkingSessions as any[])
+  const sessions: ContinuitySessionInput[] = ((store.keyWorkingSessions))
     .filter((k) => k.child_id && k.staff_id)
     .map((k) => ({ child_id: k.child_id, staff_id: k.staff_id, date: d(k.date ?? k.created_at) }));
 

@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import type { SkillDomain } from "../independence-life-skills-engine";
 import {
   evaluateSkillDevelopment,
   evaluateGoalProgress,
@@ -561,7 +562,7 @@ describe("generateIndependenceLifeSkillsIntelligence", () => {
   });
 
   it("scores highly for comprehensive data", () => {
-    const domains: Array<any> = ["cooking_nutrition", "budgeting_finance", "personal_hygiene", "laundry_clothing", "household_tasks", "travel_transport", "communication", "digital_literacy"];
+    const domains: SkillDomain[] = ["cooking_nutrition", "budgeting_finance", "personal_hygiene", "laundry_clothing", "household_tasks", "travel_transport", "communication", "digital_literacy"];
     const methods: Array<any> = ["one_to_one", "group_session", "practical_activity", "community_based", "peer_mentoring", "online_learning"];
 
     const assessments = domains.map((d, i) =>
@@ -591,7 +592,7 @@ describe("generateIndependenceLifeSkillsIntelligence", () => {
   });
 
   it("caps overall score at 100", () => {
-    const domains: Array<any> = [
+    const domains: SkillDomain[] = [
       "cooking_nutrition", "budgeting_finance", "personal_hygiene", "laundry_clothing",
       "household_tasks", "travel_transport", "communication", "digital_literacy",
       "health_management", "emotional_regulation",

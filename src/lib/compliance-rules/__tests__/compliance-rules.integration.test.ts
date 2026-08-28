@@ -18,7 +18,7 @@ describe("compliance-rules integration (real seed data)", () => {
   const store = getStore();
   const events = buildEventStream(mapStoreToEventInput(store)).events;
 
-  const supervisions: ComplianceSupervisionInput[] = ((store.supervisions ?? []) as any[]).map((s) => ({
+  const supervisions: ComplianceSupervisionInput[] = (((store.supervisions ?? []))).map((s) => ({
     id: s.id,
     staff_id: s.staff_id,
     type: s.type,
@@ -27,7 +27,7 @@ describe("compliance-rules integration (real seed data)", () => {
     status: s.status,
   }));
 
-  const trainingRecords: ComplianceTrainingInput[] = ((store.trainingRecords ?? []) as any[]).map((t) => ({
+  const trainingRecords: ComplianceTrainingInput[] = (((store.trainingRecords ?? []))).map((t) => ({
     id: t.id,
     staff_id: t.staff_id,
     course_name: t.course_name,
@@ -83,7 +83,7 @@ describe("compliance-rules integration (real seed data)", () => {
   });
 
   it("linked_staff_id on training/supervision fails resolves to a real staff member", () => {
-    const staffIds = new Set(((store.staff ?? []) as any[]).map((s) => s.id));
+    const staffIds = new Set((((store.staff ?? []))).map((s) => s.id));
     const staffLinked = result.rule_results.filter((r) => (r.category === "training-expiry" || r.category === "supervision-due") && r.linked_staff_id);
     for (const r of staffLinked) expect(staffIds.has(r.linked_staff_id!)).toBe(true);
   });
