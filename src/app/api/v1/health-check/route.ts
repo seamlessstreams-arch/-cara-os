@@ -51,13 +51,18 @@ export async function GET(_req: NextRequest) {
     return NextResponse.json({
       data: {
         assessed: false,
-        // Type-valid neutral placeholders; never rendered while assessed:false.
-        overall: 0,
-        safeguarding: 0,
-        medication: 0,
-        staffing: 0,
-        compliance: 0,
-        risk_level: "medium",
+        // Unmeasured, exactly as the measured branch below reports an
+        // unmeasured domain. These were 0 as "placeholders never rendered
+        // while assessed:false" — but that made the two branches disagree in
+        // shape, so a consumer written to the honest-null convention would
+        // null-guard one and quietly accept a failing score from the other.
+        overall: null,
+        safeguarding: null,
+        medication: null,
+        staffing: null,
+        compliance: null,
+        // No records is not a medium-risk finding about the home.
+        risk_level: null,
         action_plan: [],
         note: "No records yet — the home health score appears once children and daily records are added.",
         build: BUILD(),
