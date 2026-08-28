@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
 import {
@@ -80,6 +81,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "homeId required" }, { status: 400 });
     }
 
+    // Judgements about what happened, not settings with a sensible default.
+    // Each used to fall back to the compliant answer, so a partial POST built a
+    // record asserting something nobody had stated. Checked here, before the
+    // storage check: whether a request is complete does not depend on whether
+    // Supabase happens to be configured.
+    const CLAIM_FIELDS: Record<string, readonly string[]> = {
+      create_drill: ["alarmActivated", "allAccountedFor"],
+    };
+    const __claims = requireFields(body, CLAIM_FIELDS[String(action)] ?? []);
+    if (__claims) return __claims;
+
     if (!isSupabaseEnabled()) {
       return NextResponse.json({ ok: true, persisted: false });
     }
@@ -95,8 +107,8 @@ export async function POST(request: NextRequest) {
         children_absent: body.childrenAbsent ?? [],
         evacuation_time_seconds: body.evacuationTimeSeconds ?? 0,
         assembly_point_used: body.assemblyPointUsed ?? "",
-        alarm_activated: body.alarmActivated ?? true,
-        all_accounted_for: body.allAccountedFor ?? true,
+        alarm_activated: body.alarmActivated,
+        all_accounted_for: body.allAccountedFor,
         issues_identified: body.issuesIdentified ?? [],
         improvements_needed: body.improvementsNeeded ?? [],
         conducted_by: body.conductedBy,
