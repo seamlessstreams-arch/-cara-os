@@ -7,6 +7,7 @@
 // deputy 2-on/4-off, waking nights, …). Patterns drive the cover view and the
 // generate-&-publish flow, so editing here flows straight through.
 import { NextResponse } from "next/server";
+import type { StaffMember } from "@/types";
 import { dal } from "@/lib/db";
 import { generateId } from "@/lib/utils";
 import { describePattern, type ShiftPattern, type ShiftPatternKind } from "@/lib/rota/shift-patterns";
@@ -17,9 +18,9 @@ export const dynamic = "force-dynamic";
 const SHIFT_TYPES = new Set(["day", "sleep_in", "waking_night", "short", "handover", "on_call", "training_day"]);
 const TIME_RE = /^([01]?\d|2[0-3]):[0-5]\d$/;
 
-function staffNameMap(staffList: any): Map<string, string> {
+function staffNameMap(staffList: StaffMember[] | undefined): Map<string, string> {
   return new Map<string, string>(
-    (staffList ?? []).map((m: any) => [String(m.id), m.full_name || `${m.first_name ?? ""} ${m.last_name ?? ""}`.trim() || "Unknown"]),
+    (staffList ?? []).map((m) => [String(m.id), m.full_name || `${m.first_name ?? ""} ${m.last_name ?? ""}`.trim() || "Unknown"]),
   );
 }
 
@@ -28,10 +29,10 @@ function withName(p: ShiftPattern, names: Map<string, string>) {
 }
 
 /** Validate + normalise an incoming pattern body. Returns {pattern} or {error}. */
-function buildPattern(body: any, staffList: any, existing?: ShiftPattern): { pattern?: ShiftPattern; error?: string } {
+function buildPattern(body: Record<string, unknown>, staffList: StaffMember[] | undefined, existing?: ShiftPattern): { pattern?: ShiftPattern; error?: string } {
   const staff_id = String(body.staff_id ?? existing?.staff_id ?? "");
   if (!staff_id) return { error: "A staff member is required." };
-  if (!(staffList ?? []).some((m: any) => String(m.id) === staff_id)) return { error: "Unknown staff member." };
+  if (!(staffList ?? []).some((m) => String(m.id) === staff_id)) return { error: "Unknown staff member." };
 
   const kind: ShiftPatternKind = body.kind === "rotating" ? "rotating" : body.kind === "weekly" ? "weekly" : (existing?.kind ?? "weekly");
 

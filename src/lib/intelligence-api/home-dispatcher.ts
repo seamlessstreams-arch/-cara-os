@@ -14429,13 +14429,13 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
     const meetings: HouseMeetingInput__meeting_governance[] = (((store.houseMeetings ?? [])))
       .map((m) => {
-        const agenda: any[] = m.agenda ?? [];
-        const childFeedback: any[] = m.child_feedback ?? [];
-        const actionsFromPrev: any[] = m.actions_from_previous ?? [];
-        const newActions: any[] = m.new_actions ?? [];
-        const childrenPresent: any[] = m.children_present ?? [];
-        const childrenAbsent: any[] = m.children_absent ?? [];
-        const staffPresent: any[] = m.staff_present ?? [];
+        const agenda = m.agenda ?? [];
+        const childFeedback = m.child_feedback ?? [];
+        const actionsFromPrev = m.actions_from_previous ?? [];
+        const newActions = m.new_actions ?? [];
+        const childrenPresent = m.children_present ?? [];
+        const childrenAbsent = m.children_absent ?? [];
+        const staffPresent = m.staff_present ?? [];
   
         return {
           id: m.id ?? "",
@@ -21420,7 +21420,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
           return "requested";
       }
     };
-    const deriveIsSatisfactory = (r: any): boolean | null => {
+    const deriveIsSatisfactory = (r: { status?: string }): boolean | null => {
       if (r.status === "satisfactory") return true;
       if (r.status === "unsatisfactory" || r.status === "concerns_noted") return false;
       return null;
@@ -23843,7 +23843,7 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       reported_timely: !!(i.reported_timely ?? i.timely),
       investigation_completed: !!(i.investigation_completed),
       follow_up_actions: i.follow_up_actions ?? (i.actions ?? []).length ?? 0,
-      follow_up_completed: i.follow_up_completed ?? (i.actions ?? []).filter((a: any) => a.completed).length ?? 0,
+      follow_up_completed: i.follow_up_completed ?? (i.actions ?? []).filter((a: { completed?: boolean }) => a.completed).length ?? 0,
       lessons_learned_documented: !!(i.lessons_learned_documented ?? i.lessons_documented),
       manager_notified: !!(i.manager_notified),
       safeguarding_referral_made: !!(i.safeguarding_referral_made),
@@ -25634,15 +25634,16 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
           .replace(/\b\w/g, (c) => c.toUpperCase());
       }
 
-      function extract(d: any, route: string, section: string): ReportSignalInput | null {
-        if (!d || typeof d !== "object") return null;
+      function extract(raw: unknown, route: string, section: string): ReportSignalInput | null {
+        if (!raw || typeof raw !== "object") return null;
+        const d = raw as Record<string, unknown>;
         const ratingKey = Object.keys(d).find((k) => k.endsWith("_rating") || k === "rating");
         const scoreKey = Object.keys(d).find((k) => k.endsWith("_score") || k === "score");
         const rating = ratingKey && d[ratingKey] != null ? String(d[ratingKey]) : null;
         const score = scoreKey && typeof d[scoreKey] === "number" ? d[scoreKey] : null;
         const headline = typeof d.headline === "string" ? d.headline : null;
-        const concerns = Array.isArray(d.concerns) ? d.concerns.filter((c: any) => typeof c === "string" && c.trim()) : [];
-        const strengths = Array.isArray(d.strengths) ? d.strengths.filter((c: any) => typeof c === "string" && c.trim()) : [];
+        const concerns = Array.isArray(d.concerns) ? d.concerns.filter((c: unknown) => typeof c === "string" && c.trim()) : [];
+        const strengths = Array.isArray(d.strengths) ? d.strengths.filter((c: unknown) => typeof c === "string" && c.trim()) : [];
         return { engine_key: route, label: labelFor(route), section, rating, score, headline, concerns, strengths };
       }
 
@@ -26525,8 +26526,8 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       }));
   
       const rawPathwayPlans = ((store.pathwayPlans ?? []));
-      const hasStr = (v: any) => typeof v === "string" && v.trim().length > 0;
-      const hasArr = (v: any) => Array.isArray(v) && v.length > 0;
+      const hasStr = (v: unknown) => typeof v === "string" && v.trim().length > 0;
+      const hasArr = (v: unknown) => Array.isArray(v) && v.length > 0;
       const pathway_plans: PathwayPlanInput__transition_leaving_care_readiness[] = rawPathwayPlans.map((p) => ({
         // Seed pathway plans carry rich, differently-named fields (accommodation,
         // education_employment_training, financial_support[], health_needs[],
@@ -26864,8 +26865,10 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
     const store = getStore();
     const today = todayStr();
   
-    const dateOf = (r: any): string => (r?.date ?? r?.created_at ?? r?.reported_at ?? "").toString().slice(0, 10);
-    const datesFrom = (arr: any[] | undefined, filter?: (r: any) => boolean): string[] =>
+    type DatedRecord = { date?: unknown; created_at?: unknown; reported_at?: unknown };
+    const dateOf = (r: DatedRecord): string =>
+      (r?.date ?? r?.created_at ?? r?.reported_at ?? "").toString().slice(0, 10);
+    const datesFrom = <T extends DatedRecord>(arr: T[] | undefined, filter?: (r: T) => boolean): string[] =>
       (((arr ?? []))).filter((r) => (filter ? filter(r) : true)).map(dateOf).filter(Boolean);
   
     const metrics: TrendMetricInput[] = [

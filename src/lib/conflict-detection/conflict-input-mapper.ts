@@ -10,7 +10,8 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { buildEventStream } from "@/lib/event-stream/event-projector";
-import { mapStoreToEventInput } from "@/lib/event-stream/store-mapper";
+import { getStore } from "@/lib/db/store";
+import { mapStoreToEventInput, type EventStoreShape } from "@/lib/event-stream/store-mapper";
 import type { CornerstoneEvent } from "@/types/cornerstone-event";
 import type {
   SubjectInterval,
@@ -38,13 +39,18 @@ export interface ConflictMapperOutput {
   staff: SubjectRef[];
 }
 
-export function mapStoreToConflictInput(store: any): ConflictMapperOutput {
+/** The event-stream collections this mapper forwards, plus the two subject
+ *  lists it reads itself. */
+export type ConflictStoreShape = EventStoreShape &
+  Pick<ReturnType<typeof getStore>, "youngPeople" | "staff">;
+
+export function mapStoreToConflictInput(store: ConflictStoreShape): ConflictMapperOutput {
   const events = buildEventStream(mapStoreToEventInput(store)).events;
 
   const intervals: SubjectInterval[] = [];
 
   // Missing episodes → child intervals [missing → returned] (open if still active).
-  for (const m of (store.missingEpisodes ?? []) as any[]) {
+  for (const m of (store.missingEpisodes ?? [])) {
     if (!m?.child_id || !m?.date_missing) continue;
     const risk = MISSING_RISK[m.risk_level] ?? "high";
     intervals.push({
@@ -60,7 +66,7 @@ export function mapStoreToConflictInput(store: any): ConflictMapperOutput {
   }
 
   // Leave requests → staff intervals [start → end] (open if no end recorded).
-  for (const l of (store.leaveRequests ?? []) as any[]) {
+  for (const l of (store.leaveRequests ?? [])) {
     if (!l?.staff_id || !l?.start_date) continue;
     if (EXCLUDED_LEAVE.test((l.status ?? "").toString())) continue;
     intervals.push({
@@ -75,18 +81,18 @@ export function mapStoreToConflictInput(store: any): ConflictMapperOutput {
     });
   }
 
-  const children: SubjectRef[] = ((store.youngPeople ?? []) as any[]).map((yp) => ({
+  const children: SubjectRef[] = (store.youngPeople ?? []).map((yp) => ({
     id: yp.id,
     first_name: yp.first_name ?? "",
     last_name: yp.last_name ?? "",
     preferred_name: yp.preferred_name ?? null,
   }));
 
-  const staff: SubjectRef[] = ((store.staff ?? []) as any[]).map((s) => ({
+  const staff: SubjectRef[] = (store.staff ?? []).map((s) => ({
     id: s.id,
     first_name: s.first_name ?? "",
     last_name: s.last_name ?? "",
-    preferred_name: s.preferred_name ?? null,
+    preferred_name: null,
   }));
 
   return { events, intervals, children, staff };
