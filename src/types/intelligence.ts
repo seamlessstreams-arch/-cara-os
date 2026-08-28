@@ -6,6 +6,46 @@
 // ── Utility / Shared ──────────────────────────────────────────────────────────
 
 /** The ten wellbeing dimensions scored in child experience snapshots. */
+// ─────────────────────────────────────────────────────────────────────────────
+// These eleven were declared here AND in ./extended with different shapes and,
+// for the relational vocabulary, different spellings. Nothing imported this
+// file's copies — but two modals imported the wrong same-named `Intervention`
+// and `PracticeBankEntry` and silently dropped what the user typed (#1047).
+// One source of truth, re-exported so anything reaching for them here gets the
+// definitions the store actually holds.
+// ─────────────────────────────────────────────────────────────────────────────
+import type {
+  ActionOutcome,
+  AlertSeverity,
+  AlertStatus,
+  ChildExperienceSnapshot,
+  DocumentIntelligenceJob,
+  HomeClimateSnapshot,
+  Intervention,
+  InterventionStatus,
+  PatternAlert,
+  PracticeBankEntry,
+  RelationalRecord,
+  RelationalRecordType,
+  VoiceRecord,
+} from "./extended";
+
+export type {
+  ActionOutcome,
+  AlertSeverity,
+  AlertStatus,
+  ChildExperienceSnapshot,
+  DocumentIntelligenceJob,
+  HomeClimateSnapshot,
+  Intervention,
+  InterventionStatus,
+  PatternAlert,
+  PracticeBankEntry,
+  RelationalRecord,
+  RelationalRecordType,
+  VoiceRecord,
+};
+
 export type ExperienceIndicator =
   | 'safety'
   | 'belonging'
@@ -35,8 +75,6 @@ export type PatternAlertType =
   | 'plan_drift'
   | 'voice_absence';
 
-export type AlertSeverity = 'low' | 'medium' | 'high' | 'critical';
-export type AlertStatus = 'active' | 'acknowledged' | 'resolved' | 'dismissed';
 
 export type InterventionCategory =
   | 'behaviour_support'
@@ -49,22 +87,8 @@ export type InterventionCategory =
   | 'communication'
   | 'other';
 
-export type InterventionStatus = 'active' | 'paused' | 'stopped' | 'completed' | 'under_review';
 
 export type ContinueRecommendation = 'continue' | 'adapt' | 'stop' | 'replace';
-
-export type RelationalRecordType =
-  | 'trusted_adult'
-  | 'rupture_repair'
-  | 'deescalation'
-  | 'regulation_strategy'
-  | 'sensory_need'
-  | 'attachment_indicator'
-  | 'avoidance_signal'
-  | 'what_helps'
-  | 'what_harms'
-  | 'voice_moment'
-  | 'participation_record';
 
 export type PracticeBankCategory =
   | 'approach'
@@ -248,40 +272,6 @@ export interface HomeClimateResult {
 
 // child_experience_snapshots
 
-export interface ChildExperienceSnapshot {
-  id: string;
-  home_id: string;
-  child_id: string;
-
-  period_start: string;   // ISO date
-  period_end: string;     // ISO date
-
-  // Indicator scores
-  safety_score: number;
-  belonging_score: number;
-  regulation_score: number;
-  engagement_score: number;
-  relationships_score: number;
-  participation_score: number;
-  health_score: number;
-  education_score: number;
-  stability_score: number;
-  achievement_score: number;
-
-  // Composite
-  overall_score: number;
-  score_delta: number | null;
-
-  // Cara output
-  narrative: string;
-  evidence_refs: EvidenceRef[];
-
-  // Provenance
-  computed_by: string;
-  reviewed_by: string | null;
-
-  created_at: string;
-}
 
 /** Insert payload — id and created_at are server-generated. */
 export type ChildExperienceSnapshotInsert = Omit<ChildExperienceSnapshot, 'id' | 'created_at'>;
@@ -291,161 +281,19 @@ export type ExperienceScoreMap = Record<ExperienceIndicator, number>;
 
 // ── pattern_alerts ────────────────────────────────────────────────────────────
 
-export interface PatternAlert {
-  id: string;
-  home_id: string;
-  child_id: string | null;    // null = home-wide alert
-
-  alert_type: PatternAlertType;
-  title: string;
-  description: string;
-  severity: AlertSeverity;
-
-  status: AlertStatus;
-
-  evidence_refs: EvidenceRef[];
-  period_start: string | null;
-  period_end: string | null;
-  recurrence_count: number;
-
-  first_detected_at: string;
-  last_detected_at: string;
-
-  acknowledged_by: string | null;
-  acknowledged_at: string | null;
-
-  resolved_by: string | null;
-  resolved_at: string | null;
-  resolution_notes: string | null;
-
-  suggested_actions: string[];
-
-  created_at: string;
-}
 
 export type PatternAlertInsert = Omit<PatternAlert, 'id' | 'created_at' | 'first_detected_at' | 'last_detected_at'>;
 
-export type PatternAlertUpdate = Partial<
-  Pick<
-    PatternAlert,
-    | 'status'
-    | 'acknowledged_by'
-    | 'acknowledged_at'
-    | 'resolved_by'
-    | 'resolved_at'
-    | 'resolution_notes'
-    | 'recurrence_count'
-    | 'last_detected_at'
-    | 'evidence_refs'
-    | 'suggested_actions'
-  >
->;
-
 // ── interventions ─────────────────────────────────────────────────────────────
 
-export interface Intervention {
-  id: string;
-  home_id: string;
-  child_id: string;
-
-  title: string;
-  description: string;
-  rationale: string;
-
-  category: InterventionCategory;
-
-  started_by: string | null;
-  started_at: string;         // ISO date
-  agreed_by: string | null;
-  review_date: string | null;
-
-  status: InterventionStatus;
-
-  intended_outcome: string;
-  actual_outcome: string | null;
-  effectiveness_rating: number | null;  // 1–5
-  effectiveness_notes: string | null;
-  what_changed: string | null;
-  continue_recommendation: ContinueRecommendation | null;
-
-  evidence_refs: EvidenceRef[];
-  linked_task_id: string | null;
-
-  created_at: string;
-  updated_at: string;
-  created_by: string | null;
-}
 
 export type InterventionInsert = Omit<Intervention, 'id' | 'created_at' | 'updated_at'>;
 
-export type InterventionUpdate = Partial<
-  Pick<
-    Intervention,
-    | 'status'
-    | 'actual_outcome'
-    | 'effectiveness_rating'
-    | 'effectiveness_notes'
-    | 'what_changed'
-    | 'continue_recommendation'
-    | 'review_date'
-    | 'evidence_refs'
-    | 'linked_task_id'
-    | 'description'
-    | 'rationale'
-  >
->;
-
 // ── relational_records ────────────────────────────────────────────────────────
 
-export interface RelationalRecord {
-  id: string;
-  home_id: string;
-  child_id: string;
-
-  record_type: RelationalRecordType;
-
-  title: string;
-  description: string;
-  staff_id: string | null;
-  context: string | null;
-  evidence: string | null;
-
-  reviewed: boolean;
-  review_date: string | null;
-  is_active: boolean;
-
-  tags: string[];
-
-  created_at: string;
-  updated_at: string;
-  created_by: string | null;
-}
-
-export type RelationalRecordInsert = Omit<RelationalRecord, 'id' | 'created_at' | 'updated_at'>;
 
 // ── practice_bank_entries ─────────────────────────────────────────────────────
 
-export interface PracticeBankEntry {
-  id: string;
-  home_id: string;
-  child_id: string;
-
-  category: PracticeBankCategory;
-
-  title: string;
-  description: string;
-  context: string | null;
-  examples: string | null;
-
-  added_by: string | null;
-  verified_by: string | null;
-  is_active: boolean;
-  last_used_at: string | null;  // ISO date
-  effectiveness_notes: string | null;
-
-  created_at: string;
-  updated_at: string;
-}
 
 export type PracticeBankEntryInsert = Omit<PracticeBankEntry, 'id' | 'created_at' | 'updated_at'>;
 
@@ -461,79 +309,11 @@ export type VoiceRecordMethod =
   | 'written'
   | 'creative_activity';
 
-export interface VoiceRecord {
-  id: string;
-  home_id: string;
-  child_id: string;
-
-  record_date: string;          // ISO date
-  method: VoiceRecordMethod | string;
-  context: string | null;
-
-  wishes_and_feelings: string;
-  what_child_said: string | null;
-  what_child_wants_to_happen: string | null;
-
-  adult_response: string | null;
-  action_taken: string | null;
-  outcome: string | null;
-
-  was_acted_on: boolean | null;
-  acted_on_rationale: string | null;
-
-  linked_to_plan: boolean;
-  linked_plan_ref: string | null;
-
-  captured_by: string | null;
-  reviewed_by: string | null;
-
-  tags: string[];
-
-  created_at: string;
-  updated_at: string;
-}
 
 export type VoiceRecordInsert = Omit<VoiceRecord, 'id' | 'created_at' | 'updated_at'>;
 
 // ── document_intelligence_jobs ────────────────────────────────────────────────
 
-export interface DocumentIntelligenceJob {
-  id: string;
-  home_id: string;
-
-  file_name: string;
-  file_url: string;
-  file_size: number | null;
-  mime_type: string | null;
-
-  raw_text: string | null;
-
-  classification: DocumentClassification | null;
-
-  status: DocumentJobStatus;
-
-  placement_confirmed: boolean;
-  placement_module: string | null;
-  placement_record_id: string | null;
-  placement_confirmed_by: string | null;
-  placement_confirmed_at: string | null;
-
-  form_draft_created: boolean;
-  form_draft_id: string | null;
-
-  chronology_entries_suggested: ChronologySuggestion[];
-  actions_suggested: ActionSuggestion[];
-
-  cara_summary: string | null;
-  cara_confidence: number | null;  // 0–1
-
-  error_message: string | null;
-
-  uploaded_by: string | null;
-
-  created_at: string;
-  updated_at: string;
-}
 
 /** A single chronology entry that Cara suggests adding after document analysis. */
 export interface ChronologySuggestion {
@@ -558,114 +338,15 @@ export type DocumentIntelligenceJobInsert = Omit<
   'id' | 'created_at' | 'updated_at'
 >;
 
-export type DocumentIntelligenceJobUpdate = Partial<
-  Pick<
-    DocumentIntelligenceJob,
-    | 'raw_text'
-    | 'classification'
-    | 'status'
-    | 'placement_confirmed'
-    | 'placement_module'
-    | 'placement_record_id'
-    | 'placement_confirmed_by'
-    | 'placement_confirmed_at'
-    | 'form_draft_created'
-    | 'form_draft_id'
-    | 'chronology_entries_suggested'
-    | 'actions_suggested'
-    | 'cara_summary'
-    | 'cara_confidence'
-    | 'error_message'
-  >
->;
-
 // ── home_climate_snapshots ────────────────────────────────────────────────────
 
-export interface HomeClimateSnapshot {
-  id: string;
-  home_id: string;
-
-  snapshot_date: string;        // ISO date
-  period: ClimateSnapshotPeriod;
-
-  staffing_consistency_score: number | null;
-  incident_frequency_score: number | null;
-  wellbeing_score: number | null;
-  compliance_score: number | null;
-  environment_score: number | null;
-  peer_tension_score: number | null;
-
-  overall_climate_score: number | null;
-  climate_delta: number | null;
-
-  hotspot_flags: string[];
-  narrative: string | null;
-  evidence_summary: Record<string, unknown>;
-
-  created_at: string;
-}
 
 export type HomeClimateSnapshotInsert = Omit<HomeClimateSnapshot, 'id' | 'created_at'>;
 
 // ── action_outcomes ───────────────────────────────────────────────────────────
 
-export interface ActionOutcome {
-  id: string;
-  home_id: string;
-
-  linked_task_id: string | null;
-  linked_incident_id: string | null;
-  linked_supervision_id: string | null;
-  child_id: string | null;
-
-  what_was_agreed: string;
-  why_it_mattered: string;
-
-  owner_id: string | null;
-  due_date: string | null;        // ISO date
-
-  status: ActionOutcomeStatus;
-
-  what_was_done: string | null;
-  what_changed: string | null;
-  did_it_work: DidItWork | null;
-  continue_recommendation: ActionContinueRecommendation | null;
-  effectiveness_notes: string | null;
-
-  evidence_refs: EvidenceRef[];
-
-  escalated: boolean;
-  escalation_reason: string | null;
-
-  review_date: string | null;
-  reviewed_by: string | null;
-  reviewed_at: string | null;
-
-  created_at: string;
-  updated_at: string;
-  created_by: string | null;
-}
 
 export type ActionOutcomeInsert = Omit<ActionOutcome, 'id' | 'created_at' | 'updated_at'>;
-
-export type ActionOutcomeUpdate = Partial<
-  Pick<
-    ActionOutcome,
-    | 'status'
-    | 'what_was_done'
-    | 'what_changed'
-    | 'did_it_work'
-    | 'continue_recommendation'
-    | 'effectiveness_notes'
-    | 'evidence_refs'
-    | 'escalated'
-    | 'escalation_reason'
-    | 'review_date'
-    | 'reviewed_by'
-    | 'reviewed_at'
-    | 'due_date'
-  >
->;
 
 // ── Joined / Enriched Types ───────────────────────────────────────────────────
 
