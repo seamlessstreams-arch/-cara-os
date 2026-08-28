@@ -49,7 +49,7 @@ export interface AutomationRule {
 export interface AutomationCondition {
   field: string;
   operator: "equals" | "not_equals" | "contains" | "greater_than" | "less_than" | "is_empty" | "is_not_empty";
-  value: any;
+  value: unknown;
 }
 
 export interface AutomationActionConfig {
@@ -62,7 +62,7 @@ export interface AutomationRun {
   rule_id: string;
   trigger: AutomationTrigger;
   trigger_data: Record<string, any>;
-  actions_executed: { action: AutomationAction; success: boolean; result?: any; error?: string }[];
+  actions_executed: { action: AutomationAction; success: boolean; result?: unknown; error?: string }[];
   status: "success" | "partial" | "failed";
   duration_ms: number;
   created_at: string;
