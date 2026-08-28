@@ -23,18 +23,27 @@ export function generateNotifications(_staffId: string): CornerstoneNotification
   const notifications: CornerstoneNotification[] = [];
 
   // Overdue tasks
-  const tasks = (store.tasks as any[] || []);
-  const overdue = tasks.filter((t) => t.status === "pending" && t.due_date && t.due_date < today);
+  const tasks = ((store.tasks) || []);
+  // TaskStatus has no "pending", so this never matched and the engine has
+  // never raised an overdue-task notification. Same literal as the Shift Mode
+  // filter fixed in #1047.
+  const overdue = tasks.filter(
+    (t) =>
+      t.status !== "completed" &&
+      t.status !== "cancelled" &&
+      t.due_date &&
+      t.due_date < today,
+  );
   for (const task of overdue.slice(0, 5)) {
     const id = `notif_task_${task.id}`;
     const state = notificationState.get(id) ?? { read: false, dismissed: false };
     if (!state.dismissed) {
-      notifications.push({ id, type: "task_overdue", priority: "high", title: "Task overdue", body: task.title?.slice(0, 80) ?? "Unnamed task", icon: "CheckSquare", action_url: "/tasks", created_at: task.due_date, ...state });
+      notifications.push({ id, type: "task_overdue", priority: "high", title: "Task overdue", body: task.title ? task.title.slice(0, 80) : "Unnamed task", icon: "CheckSquare", action_url: "/tasks", created_at: task.due_date ?? today, ...state });
     }
   }
 
   // Incidents needing oversight
-  const incidents = (store.incidents as any[] || []);
+  const incidents = ((store.incidents) || []);
   const needsOversight = incidents.filter((i) => i.requires_oversight && !i.oversight_by);
   for (const inc of needsOversight.slice(0, 3)) {
     const id = `notif_oversight_${inc.id}`;
@@ -45,8 +54,8 @@ export function generateNotifications(_staffId: string): CornerstoneNotification
   }
 
   // Missing daily logs
-  const children = (store.youngPeople as any[] || []).filter((yp) => yp.status === "current");
-  const todayLogs = (store.dailyLog as any[] || []).filter((l) => l.date === today);
+  const children = ((store.youngPeople) || []).filter((yp) => yp.status === "current");
+  const todayLogs = ((store.dailyLog) || []).filter((l) => l.date === today);
   const loggedChildren = new Set(todayLogs.map((l) => l.child_id));
   const missing = children.filter((c) => !loggedChildren.has(c.id));
   if (missing.length > 0) {
