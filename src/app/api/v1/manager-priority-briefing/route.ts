@@ -124,8 +124,9 @@ function labelFor(route: string): string {
 }
 
 /** Defensively pull the attention-worthy signal payload out of one engine's `data`. */
-function extractSignal(d: any, route: string, domain: string): EngineSignalInput | null {
-  if (!d || typeof d !== "object") return null;
+function extractSignal(raw: unknown, route: string, domain: string): EngineSignalInput | null {
+  if (!raw || typeof raw !== "object") return null;
+  const d = raw as Record<string, unknown>;
   const ratingKey = Object.keys(d).find((k) => k.endsWith("_rating") || k === "rating");
   const scoreKey = Object.keys(d).find((k) => k.endsWith("_score") || k === "score");
   const rating = ratingKey && d[ratingKey] != null ? String(d[ratingKey]) : null;
@@ -134,7 +135,7 @@ function extractSignal(d: any, route: string, domain: string): EngineSignalInput
 
   const insights = Array.isArray(d.insights)
     ? d.insights
-        .map((i: any) => ({
+        .map((i: { text?: unknown; message?: unknown; severity?: unknown; level?: unknown; recommendation?: unknown; action?: unknown; urgency?: unknown; priority?: unknown; regulatory_ref?: unknown; reg_ref?: unknown }) => ({
           text: String(i?.text ?? i?.message ?? (typeof i === "string" ? i : "")),
           severity: String(i?.severity ?? i?.level ?? ""),
         }))
@@ -142,12 +143,12 @@ function extractSignal(d: any, route: string, domain: string): EngineSignalInput
     : [];
 
   const concerns = Array.isArray(d.concerns)
-    ? d.concerns.filter((c: any) => typeof c === "string" && c.trim().length > 0)
+    ? d.concerns.filter((c: unknown) => typeof c === "string" && c.trim().length > 0)
     : [];
 
   const recommendations = Array.isArray(d.recommendations)
     ? d.recommendations
-        .map((r: any) => ({
+        .map((r: { text?: unknown; message?: unknown; severity?: unknown; level?: unknown; recommendation?: unknown; action?: unknown; urgency?: unknown; priority?: unknown; regulatory_ref?: unknown; reg_ref?: unknown }) => ({
           text: String(r?.recommendation ?? r?.text ?? r?.action ?? (typeof r === "string" ? r : "")),
           urgency: String(r?.urgency ?? r?.priority ?? ""),
           regulatory_ref: (r?.regulatory_ref ?? r?.reg_ref ?? null) as string | null,

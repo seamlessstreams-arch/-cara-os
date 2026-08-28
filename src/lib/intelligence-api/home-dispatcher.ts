@@ -3451,7 +3451,10 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
       id: b.id ?? "",
       child_id: b.child_id ?? "",
       date: (b.date ?? "").toString().slice(0, 10),
-      direction: (b.direction ?? "concerning").toString(),
+      // The store spells a concerning entry "concern"; these engines spell it
+      // "concerning" and filter on that, so passing the store value through
+      // meant they counted none. Test the value that has only ONE spelling.
+      direction: b.direction === "positive" ? "positive" : "concerning",
       intensity: (b.intensity ?? "low").toString(),
       has_strategy_used: !!(b.strategy_used),
     }));
@@ -26112,7 +26115,10 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
         id: b.id ?? "",
         child_id: b.child_id ?? "",
         date: (b.date ?? "").toString().slice(0, 10),
-        direction: (b.direction ?? "concerning").toString(),
+        // The store spells a concerning entry "concern"; these engines spell it
+      // "concerning" and filter on that, so passing the store value through
+      // meant they counted none. Test the value that has only ONE spelling.
+      direction: b.direction === "positive" ? "positive" : "concerning",
         intensity: (b.intensity ?? "low").toString(),
       }));
   

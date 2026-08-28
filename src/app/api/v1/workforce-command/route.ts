@@ -33,8 +33,8 @@ async function fetchJson(baseUrl: string, route: string): Promise<any | null> {
 
 export async function GET(req: Request) {
   const today = todayStr();
-  const inDays = (d: any, n: number) => { const v = iso(d); return !!v && v >= today && (Date.parse(v) - Date.parse(today)) / 86_400_000 <= n; };
-  const past = (d: any) => { const v = iso(d); return !!v && v < today; };
+  const inDays = (d: unknown, n: number) => { const v = iso(d); return !!v && v >= today && (Date.parse(v) - Date.parse(today)) / 86_400_000 <= n; };
+  const past = (d: unknown) => { const v = iso(d); return !!v && v < today; };
 
   const [allStaff, candidates, checks, inductions, supRecordsRaw, trainingList, tasksList] = await Promise.all([
     dal.staff.findAll(),
