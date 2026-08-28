@@ -46,14 +46,14 @@ export function getApplicableRules(trigger: AutomationTrigger): AutomationRule[]
 
 // ── Condition evaluation ────────────────────────────────────────────────────
 
-function resolveValue(raw: any): any {
+function resolveValue(raw: unknown): string | number | boolean | null | undefined {
   if (typeof raw === "string" || typeof raw === "number" || typeof raw === "boolean" || raw == null) {
     return raw;
   }
   return String(raw);
 }
 
-function evaluateCondition(condition: AutomationCondition, data: Record<string, any>): boolean {
+function evaluateCondition(condition: AutomationCondition, data: Record<string, unknown>): boolean {
   const fieldValue = resolveValue(data[condition.field]);
   const targetValue = resolveValue(condition.value);
 
@@ -83,15 +83,15 @@ function evaluateCondition(condition: AutomationCondition, data: Record<string, 
   }
 }
 
-function evaluateConditions(conditions: AutomationCondition[] | undefined, data: Record<string, any>): boolean {
+function evaluateConditions(conditions: AutomationCondition[] | undefined, data: Record<string, unknown>): boolean {
   if (!conditions || conditions.length === 0) return true;
   return conditions.every((c) => evaluateCondition(c, data));
 }
 
 // ── Template interpolation ──────────────────────────────────────────────────
 
-function interpolateParams(params: Record<string, any>, data: Record<string, any>): Record<string, any> {
-  const result: Record<string, any> = {};
+function interpolateParams(params: Record<string, unknown>, data: Record<string, unknown>): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(params)) {
     if (typeof value === "string") {
       result[key] = value.replace(/\{\{(\w+)\}\}/g, (_, varName) => {
@@ -100,7 +100,7 @@ function interpolateParams(params: Record<string, any>, data: Record<string, any
     } else if (Array.isArray(value)) {
       result[key] = value;
     } else if (typeof value === "object" && value !== null) {
-      result[key] = interpolateParams(value, data);
+      result[key] = interpolateParams(value as Record<string, unknown>, data);
     } else {
       result[key] = value;
     }
@@ -112,8 +112,8 @@ function interpolateParams(params: Record<string, any>, data: Record<string, any
 
 function simulateAction(
   actionConfig: AutomationActionConfig,
-  data: Record<string, any>,
-): { action: AutomationAction; success: boolean; result?: any; error?: string } {
+  data: Record<string, unknown>,
+): { action: AutomationAction; success: boolean; result?: unknown; error?: string } {
   try {
     const resolvedParams = interpolateParams(actionConfig.params, data);
     return {
@@ -144,7 +144,7 @@ let runCounter = 0;
  */
 export function evaluateRules(
   trigger: AutomationTrigger,
-  triggerData: Record<string, any>,
+  triggerData: Record<string, unknown>,
   rules?: AutomationRule[],
 ): AutomationRun[] {
   const applicableRules = rules

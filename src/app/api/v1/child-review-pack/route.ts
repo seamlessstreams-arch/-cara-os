@@ -34,14 +34,13 @@ async function fetchChild360(baseUrl: string, childId: string): Promise<any | nu
   }
 }
 
-function num(v: any): number {
+function num(v: unknown): number {
   return typeof v === "number" && isFinite(v) ? v : 0;
 }
 
 // Read a dal collection defensively: a transient query failure degrades to an
 // empty list rather than 500-ing the whole route.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function safeList(p: Promise<any[]>): Promise<any[]> {
+async function safeList<T>(p: Promise<T[]>): Promise<T[]> {
   try {
     const r = await p;
     return Array.isArray(r) ? r : [];
