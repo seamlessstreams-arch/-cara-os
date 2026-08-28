@@ -158,9 +158,12 @@ export async function PATCH(req: NextRequest) {
     const patch: Row = { ...rest };
     if (staff_id !== undefined) {
       patch.staff_id = staff_id;
-      // Assigning someone closes the open shift.
+      // Assigning someone closes the open shift — but it does not publish the
+      // rota. "confirmed" is what the Publish action sets, and the rota page
+      // reads it as "already published", so assigning used to settle a shift
+      // nobody had published.
       patch.is_open_shift = false;
-      patch.status = rest.status ?? "confirmed";
+      patch.status = rest.status ?? "scheduled";
     }
 
     const updated = await dal.shifts.update(shiftId, patch);
