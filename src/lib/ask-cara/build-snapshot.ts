@@ -56,12 +56,18 @@ function wioToDigest(w: WeeklyIntelligenceObject, store: ReturnType<typeof getSt
 
 function buildOpsIntelligence(store: ReturnType<typeof getStore>, todayIso: string): AskCaraOpsIntelligence | undefined {
   try {
-    const st = store as unknown as Record<string, unknown[]>;
-    const rows = (k: string) => (Array.isArray(st[k]) ? (st[k] as unknown as Record<string, unknown>[]) : []);
+    // The key is checked against the store's own collections. It used to be a
+    // bare `string`, and `rows("buildingChecks")` — a collection that
+    // does not exist — silently returned [], so Cara never reported an overdue
+    // building-safety check or an action arising from one.
+    const rows = (k: keyof typeof store) => {
+      const v = store[k];
+      return Array.isArray(v) ? (v as unknown as Record<string, unknown>[]) : [];
+    };
     const done = (v: unknown) => ["completed", "closed", "resolved", "done"].includes(s(v).toLowerCase());
 
     // Health & safety / premises
-    const checks = rows("buildingSafetyChecks");
+    const checks = rows("buildingChecks");
     const overdue = checks
       .filter((c) => day(c.due_date) && day(c.due_date) < todayIso && !done(c.status))
       .map((c) => ({ label: s(c.check_type).replace(/_/g, " ") || "check", dueDate: day(c.due_date), area: s(c.area) || undefined }));
@@ -190,19 +196,19 @@ export function buildAskSnapshot(store: ReturnType<typeof getStore>): AskCaraSna
       ...rec(store.riskAssessments).map((r) => ({ id: String(r.id), kind: "Risk assessment", childId: r.child_id ? String(r.child_id) : undefined, nextReviewDate: day(r.next_review_date ?? r.review_date) })),
       ...rec(store.lacReviews).map((r) => ({ id: String(r.id), kind: "LAC review", childId: r.child_id ? String(r.child_id) : undefined, nextReviewDate: day(r.next_review_date ?? r.next_review) })),
     ].filter((r) => r.nextReviewDate),
-    shifts: rec((store as unknown as Record<string, unknown>).shifts).map((sh) => ({ id: String(sh.id), staffId: String(sh.staff_id), date: day(sh.date), shiftType: s(sh.shift_type) || undefined })),
-    keyWork: rec((store as unknown as Record<string, unknown>).keyWorkingSessions).map((k) => ({ childId: String(k.child_id), date: day(k.date ?? k.session_date) })),
+    shifts: rec(store.shifts).map((sh) => ({ id: String(sh.id), staffId: String(sh.staff_id), date: day(sh.date), shiftType: s(sh.shift_type) || undefined })),
+    keyWork: rec(store.keyWorkingSessions).map((k) => ({ childId: String(k.child_id), date: day(k.date ?? k.session_date) })),
     home: (() => {
-      const h = (store as unknown as Record<string, unknown>).home as unknown as Record<string, unknown> | undefined;
+      const h = store.home as unknown as Record<string, unknown> | undefined;
       return h ? { name: s(h.name) || undefined, maxBeds: typeof h.max_beds === "number" ? h.max_beds : undefined, currentOccupancy: typeof h.current_occupancy === "number" ? h.current_occupancy : undefined } : undefined;
     })(),
-    contacts: rec((store as unknown as Record<string, unknown>).professionalNetworkContacts).map((c) => ({ childId: String(c.child_id), role: s(c.role), name: s(c.name), organisation: s(c.organisation) || undefined, phone: s(c.phone) || undefined })),
+    contacts: rec(store.professionalNetworkContacts).map((c) => ({ childId: String(c.child_id), role: s(c.role), name: s(c.name), organisation: s(c.organisation) || undefined, phone: s(c.phone) || undefined })),
     supervisions: [
       ...rec(store.supervisions).map((sv) => ({ staffId: String(sv.staff_id), date: day(sv.actual_date ?? sv.scheduled_date), nextDate: day(sv.next_date) || undefined, status: s(sv.status) || undefined })),
-      ...rec((store as unknown as Record<string, unknown>).reflectiveSupervisions).map((sv) => ({ staffId: String(sv.staff_id), date: day(sv.date), nextDate: day(sv.follow_up_date) || undefined, status: "reflective" })),
+      ...rec(store.reflectiveSupervisions).map((sv) => ({ staffId: String(sv.staff_id), date: day(sv.date), nextDate: day(sv.follow_up_date) || undefined, status: "reflective" })),
     ].filter((sv) => sv.staffId && sv.date),
     training: rec(store.trainingRecords).map((t) => ({ staffId: String(t.staff_id), course: s(t.course_name) || "Training", expiryDate: day(t.expiry_date) || undefined, status: s(t.status) || undefined, mandatory: !!t.is_mandatory })),
-    policies: rec((store as unknown as Record<string, unknown>).homePolicies).map((p) => ({
+    policies: rec(store.homePolicies).map((p) => ({
       id: String(p.id),
       title: s(p.title) || s(p.name) || String(p.id),
       category: s(p.category) || "general",
@@ -268,7 +274,7 @@ export function buildAskSnapshot(store: ReturnType<typeof getStore>): AskCaraSna
     // reads what's coming up and what was recently attended, per child.
     childCalendar: buildChildCalendars(currentChildren.map((c) => String(c.id))),
     // The children's own feedback — their words, sentiment, and our response.
-    feedback: rec((store as unknown as Record<string, unknown>).ypFeedback)
+    feedback: rec(store.ypFeedback)
       .map((f) => ({
         childId: s(f.child_id),
         date: day(f.date),
@@ -285,7 +291,7 @@ export function buildAskSnapshot(store: ReturnType<typeof getStore>): AskCaraSna
     // any collection the specialists don't cover is still answerable.
     catalogue: (() => { try { return buildRecordCatalogue(store); } catch { return undefined; } })(),
     // Health appointments on record (GP / CAMHS / dental …).
-    healthAppointments: rec((store as unknown as Record<string, unknown>).healthRecordEntries)
+    healthAppointments: rec(store.healthRecordEntries)
       .map((h) => ({
         childId: s(h.child_id),
         date: day(h.date),
