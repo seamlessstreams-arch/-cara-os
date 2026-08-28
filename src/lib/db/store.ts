@@ -1018,7 +1018,7 @@ export interface EarlyAccessRequest {
 }
 
 const store = {
-  home: { ...HOME } as Home,
+  home: { ...HOME },
   staff: [...STAFF] as StaffMember[],
   youngPeople: [...YOUNG_PEOPLE] as YoungPerson[],
   tasks: [...TASKS] as Task[],
