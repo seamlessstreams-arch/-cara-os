@@ -171,6 +171,9 @@ jobs:
       - name: Wired-create-dialog guard (a create form submits what the user typed)
         run: node scripts/check-wired-create-dialogs.js
 
+      - name: Rating-ladder guard (no unreachable rating band)
+        run: node scripts/check-rating-ladders.js
+
       - name: Dead-button guard (an actionable-looking button does something)
         run: node scripts/check-dead-buttons.js
 
