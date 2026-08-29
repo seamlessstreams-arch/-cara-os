@@ -16,8 +16,17 @@ export async function GET(req: NextRequest) {
   const audits = await dal.qaAudits.findAll();
   const dailyLogs = await dal.dailyLog.findAll();
   const careForms = await dal.careForms.findAll();
+  const youngPeople = await dal.youngPeople.findAll();
+  // Every per-child figure in this scorecard divides by this. It was the
+  // literal 3 — right only while the home happens to hold three children, and
+  // silently wrong the moment one is admitted or leaves: `coverage = yps /
+  // ypCount` then exceeds 1 and pushes the wellbeing score toward its cap.
+  const currentChildren = youngPeople.filter((yp) => yp.status === "current").length;
 
   const scores = computeRiScores({
+    // No trainingNeeds collection exists in the store or the dal, so there is
+    // nothing to pass. Note the consequence: the score subtracts
+    // `urgentN * 8 + highN * 3`, so that penalty never applies.
     trainingNeeds: [],
     trainingRecords,
     alerts,
@@ -30,8 +39,12 @@ export async function GET(req: NextRequest) {
     challenges,
     careForms,
     dailyLogs,
+    // The engine wants `{ compliance_score }`, and no candidate compliance
+    // SCORE exists anywhere — CandidateProfile carries a compliance_STATUS.
+    // Deriving a number from it here would be inventing one, so this stays
+    // empty and the engine returns null for that dimension, which is honest.
     activeCandidates: [],
-    ypCount: 3,
+    ypCount: currentChildren,
   });
 
   const overall = scores.overall_governance_score;
