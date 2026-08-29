@@ -4,6 +4,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
+import { storageFailure } from "@/lib/http/storage-error";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { checkCaraAccess, type CaraRole } from "@/lib/cara/cara-permissions";
@@ -53,7 +54,11 @@ export async function GET(req: NextRequest) {
     .limit(limit);
 
   if (error) {
-    return NextResponse.json({ data: getDemoAuditEvents() });
+      // A failed read is not an absence of records, and it is certainly not
+      // these invented ones. The table has no migration, so on live this is
+      // the path that runs — it used to answer with demo content that the
+      // page renders exactly as it renders real data.
+    return storageFailure("Cara audit events", error);
   }
 
   return NextResponse.json({ data: data ?? [] });
