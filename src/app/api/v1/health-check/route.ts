@@ -11,11 +11,20 @@ function clamp(n: number, min = 0, max = 100): number {
 // absent (e.g. medication_administrations is not in the lean live baseline).
 // Health-check is the PUBLIC deploy/uptime probe and carries the build marker,
 // so it must never 500 — a missing source simply contributes no data.
+// A read that FAILED and a collection that is genuinely EMPTY are different
+// facts, and this route's job is to tell them apart: it answers `assessed:
+// false` with "No records yet" when everything comes back empty. Swallowing a
+// rejection into [] made a database outage read as a home with nothing on
+// file, on the public deploy probe.
+let readFailed = false;
+
 async function safeList<T>(p: Promise<T[]>): Promise<T[]> {
   try {
     const r = await p;
     return Array.isArray(r) ? r : [];
-  } catch {
+  } catch (err) {
+    console.error("[health-check] a source read failed:", err);
+    readFailed = true;
     return [];
   }
 }
@@ -45,6 +54,34 @@ export async function GET(_req: NextRequest) {
   // Nothing to assess — an empty or newly-provisioned home. Report it honestly
   // instead of fabricating a score. `assessed:false` is what the dashboard/
   // inspection surfaces branch on to show "No data yet".
+  // Reset per request — module scope outlives a single invocation.
+  const failedThisRequest = readFailed;
+  readFailed = false;
+
+  if (failedThisRequest) {
+    return NextResponse.json(
+      {
+        data: {
+          assessed: false,
+          overall: null,
+          safeguarding: null,
+          medication: null,
+          staffing: null,
+          compliance: null,
+          unmeasured: ["safeguarding", "medication", "staffing", "compliance"],
+          risk_level: null,
+          action_plan: [],
+          note:
+            "The home health score could not be assessed — one or more record sources " +
+            "could not be read. This is not the same as the home having no records.",
+          build: BUILD(),
+          last_updated: new Date().toISOString(),
+        },
+      },
+      { status: 503 },
+    );
+  }
+
   const hasData =
     youngPeople.length > 0 || incidents.length > 0 || allMars.length > 0 || shifts.length > 0 || training.length > 0;
   if (!hasData) {
