@@ -156,19 +156,30 @@ function VoiceIntelligenceContent() {
 
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [historyLoading, setHistoryLoading] = useState(true);
+  const [historyError, setHistoryError] = useState<string | null>(null);
 
   // ── Load history on mount ────────────────────────────────────────────────
   const loadHistory = useCallback(async () => {
     setHistoryLoading(true);
+    setHistoryError(null);
     try {
       // No identity in the query string — the route reads it from the session.
       const res = await fetch("/api/cara/voice-history");
       if (res.ok) {
         const data = await res.json();
         setHistory(data.data ?? []);
+        setHistoryError(null);
+      } else {
+        // A failed load is not an empty history. Leaving it to fall through to
+        // "No voice sessions yet" would state, on the child's behalf, that
+        // nothing was ever recorded.
+        const body = await res.json().catch(() => null);
+        setHistoryError(
+          typeof body?.error === "string" ? body.error : "Voice history could not be loaded.",
+        );
       }
     } catch {
-      // Silently fail — history is non-critical
+      setHistoryError("Voice history could not be loaded.");
     } finally {
       setHistoryLoading(false);
     }
@@ -741,6 +752,13 @@ function VoiceIntelligenceContent() {
               {historyLoading ? (
                 <div className="flex items-center gap-2 py-4 text-sm text-[var(--cs-text-muted)]">
                   <Loader2 className="h-4 w-4 animate-spin" /> Loading history...
+                </div>
+              ) : historyError ? (
+                <div className="py-4 text-center text-sm text-[var(--cs-risk)]">
+                  {historyError}
+                  <div className="mt-1 text-xs text-[var(--cs-text-muted)]">
+                    This is not the same as having no sessions — nothing could be read.
+                  </div>
                 </div>
               ) : history.length === 0 ? (
                 <div className="py-4 text-center text-sm text-[var(--cs-text-muted)]">
