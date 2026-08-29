@@ -32,8 +32,11 @@ const ALLOWED = new Set([
 ]);
 
 const BANNED = [
-  /new Date\(\)\.toISOString\(\)\.slice\(0,\s*10\)/,
-  /new Date\(\)\.toISOString\(\)\.split\(["']T["']\)\[0\]/,
+  // `new Date(Date.now())` is the same value written the long way round, and
+  // the pattern only knew the short form. No code writes it today; the point
+  // is that it would have been the same UTC-day bug with nothing objecting.
+  /new Date\((?:Date\.now\(\))?\)\.toISOString\(\)\.slice\(0,\s*10\)/,
+  /new Date\((?:Date\.now\(\))?\)\.toISOString\(\)\.split\(["']T["']\)\[0\]/,
   // The HOUR face of the same class (#908): getHours()/getMinutes() are the
   // RUNTIME zone — UTC on Vercel — so a 22:00 London incident bucketed as
   // 21:00 all summer and shift classification missed the waking-night hour.
