@@ -126,6 +126,9 @@ jobs:
       - name: DAL-persistence guard (every typed table is backed by a migration)
         run: node scripts/check-dal-persistence.js
 
+      - name: Storage-migration ratchet (a queried table must have a migration)
+        run: node scripts/check-storage-migrations.js
+
       - name: API-contract guard (hook endpoints exist, with matching method + shape)
         run: node scripts/check-api-contracts.js
 
