@@ -560,4 +560,11 @@ export interface ServiceResult<T = void> {
   ok: boolean;
   data?: T;
   error?: string;
+  /**
+   * The operation succeeded, but something alongside it did not, and the caller
+   * needs to know. Distinct from `error`: the record IS written. Added for the
+   * controlled-drug case where the administration is recorded but its stock
+   * decrement failed, leaving the running balance disagreeing with the cabinet.
+   */
+  warning?: string;
 }
