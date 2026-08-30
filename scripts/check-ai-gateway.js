@@ -60,6 +60,31 @@ const rules = [
     pattern: /new Anthropic\s*\(/,
     allowed: ["src/lib/anthropic-client.ts"],
   },
+  {
+    // Every rule above is Anthropic-specific, so a call to any OTHER provider
+    // left the system unremarked — and four are implemented here (Cohere,
+    // Mistral, Perplexity, Voyage). The provider files themselves are the
+    // implementations and are expected to reach their own endpoint; what this
+    // catches is anything ELSE calling out to one directly.
+    label: "raw call to a non-Anthropic AI provider endpoint",
+    pattern: /https:\/\/api\.(cohere\.com|mistral\.ai|voyageai\.com|perplexity\.ai|openai\.com)/,
+    allowed: [
+      "src/lib/cara/providers/cohere-provider.ts",
+      "src/lib/cara/providers/mistral-provider.ts",
+      "src/lib/cara/providers/perplexity-provider.ts",
+      "src/lib/cara/providers/voyage-provider.ts",
+    ],
+  },
+  {
+    // The one caller that reaches a non-Anthropic provider outside the
+    // gateway. It is deliberate and documented: Voyage is not on the approved
+    // provider register, and BOTH call sites run redactSensitiveData first, so
+    // no child-identifying text leaves the system. Listed by name so the next
+    // such caller has to be considered rather than inherited.
+    label: "provider call outside the AI gateway",
+    pattern: /getProvider\(\s*["'](?!anthropic|claude)/,
+    allowed: ["src/lib/cara/evidence/evidence-engine.ts"],
+  },
 ];
 
 const textExtensions = new Set([".ts", ".tsx"]);
