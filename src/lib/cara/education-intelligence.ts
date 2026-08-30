@@ -66,7 +66,7 @@ export interface EducationInput {
   // School info
   schoolName: string;
   schoolType: "mainstream" | "special" | "pru" | "alternative_provision" | "eotas" | "neet";
-  inEducation: boolean;
+  inEducation: boolean | null;
 
   // Attendance (last term / 12 weeks)
   attendanceRecords: AttendanceRecord[];
@@ -80,22 +80,22 @@ export interface EducationInput {
   pepDue: boolean; // is next PEP overdue?
 
   // Attainment
-  onTrackForTargets: boolean;
+  onTrackForTargets: boolean | null;
   progressRating: "above_expected" | "expected" | "below_expected" | "significantly_below";
   sendSupport: boolean;
   ehcpInPlace: boolean;
 
   // Support provisions
-  designatedTeacherEngaged: boolean;
-  virtualSchoolInvolved: boolean;
+  designatedTeacherEngaged: boolean | null;
+  virtualSchoolInvolved: boolean | null;
   tutoring: boolean;
   mentoring: boolean;
-  ppPlusEffectivelyUsed: boolean;
+  ppPlusEffectivelyUsed: boolean | null;
 
   // Engagement
-  childEnjoysSChool: boolean;
-  homeworkSupported: boolean;
-  aspirationsDiscussed: boolean;
+  childEnjoysSChool: boolean | null;
+  homeworkSupported: boolean | null;
+  aspirationsDiscussed: boolean | null;
   careerGuidanceAccessed: boolean; // 14+
 
   // Transition planning (if Year 11+)
@@ -143,7 +143,7 @@ export interface EducationStrength {
 export interface RegulatoryFlag {
   regulation: string;
   area: string;
-  status: "met" | "partially_met" | "not_met";
+  status: "met" | "partially_met" | "not_met" | "not_evidenced";
   detail: string;
 }
 
@@ -242,7 +242,10 @@ function getAttendanceBand(pct: number): AttendanceBand {
 // ── Scoring ─────────────────────────────────────────────────────────────────
 
 function scoreAttendance(pct: number, input: EducationInput): number {
-  if (!input.inEducation) return 0; // NEET is critical
+  // Only a recorded NEET zeroes this. If the education status was never
+  // recorded, the attendance data still exists and is still worth scoring —
+  // manufacturing a zero would be as false as manufacturing a pass.
+  if (input.inEducation === false) return 0; // NEET is critical
 
   let score = 0;
 
@@ -274,7 +277,7 @@ function scoreAttendance(pct: number, input: EducationInput): number {
 }
 
 function scoreProgress(input: EducationInput): number {
-  if (!input.inEducation) return 0;
+  if (input.inEducation === false) return 0;
 
   let score = 0;
 
@@ -287,7 +290,7 @@ function scoreProgress(input: EducationInput): number {
   }
 
   // On track
-  if (input.onTrackForTargets) score += 25;
+  if (input.onTrackForTargets === true) score += 25;
 
   // SEND support in place when needed
   if (input.ehcpInPlace) score += 15;
@@ -295,13 +298,13 @@ function scoreProgress(input: EducationInput): number {
   else score += 15; // no SEND need = fine
 
   // Enjoyment / engagement
-  if (input.childEnjoysSChool) score += 10;
+  if (input.childEnjoysSChool === true) score += 10;
 
   return Math.min(100, score);
 }
 
 function scorePEP(input: EducationInput, latestPEP: PEPRecord | undefined): number {
-  if (!input.inEducation) return 0;
+  if (input.inEducation === false) return 0;
 
   let score = 0;
 
@@ -344,15 +347,15 @@ function scorePEP(input: EducationInput, latestPEP: PEPRecord | undefined): numb
 }
 
 function scoreSupport(input: EducationInput): number {
-  if (!input.inEducation) return 10; // some support even if NEET
+  if (input.inEducation === false) return 10; // some support even if NEET
 
   let score = 0;
 
-  if (input.designatedTeacherEngaged) score += 20;
-  if (input.virtualSchoolInvolved) score += 15;
-  if (input.homeworkSupported) score += 15;
-  if (input.aspirationsDiscussed) score += 15;
-  if (input.ppPlusEffectivelyUsed) score += 15;
+  if (input.designatedTeacherEngaged === true) score += 20;
+  if (input.virtualSchoolInvolved === true) score += 15;
+  if (input.homeworkSupported === true) score += 15;
+  if (input.aspirationsDiscussed === true) score += 15;
+  if (input.ppPlusEffectivelyUsed === true) score += 15;
 
   // Age-appropriate
   if (input.age >= 14 && input.careerGuidanceAccessed) score += 10;
@@ -375,11 +378,17 @@ function identifyConcerns(
   const concerns: EducationConcern[] = [];
 
   // NEET
-  if (!input.inEducation) {
+  if (input.inEducation === false) {
     concerns.push({
       severity: "critical",
       category: "provision",
       description: "Child not in education — immediate action to secure provision",
+    });
+  } else if (input.inEducation === null) {
+    concerns.push({
+      severity: "significant",
+      category: "provision",
+      description: "Education status is not recorded — whether this child is in education cannot be evidenced",
     });
   }
 
@@ -468,7 +477,7 @@ function identifyConcerns(
   }
 
   // Designated teacher not engaged
-  if (input.inEducation && !input.designatedTeacherEngaged) {
+  if (input.inEducation === true && input.designatedTeacherEngaged === false) {
     concerns.push({
       severity: "moderate",
       category: "support",
@@ -505,7 +514,7 @@ function identifyStrengths(
 
   if (input.progressRating === "above_expected") {
     strengths.push({ category: "progress", description: "Making above expected progress — thriving academically" });
-  } else if (input.progressRating === "expected" && input.onTrackForTargets) {
+  } else if (input.progressRating === "expected" && input.onTrackForTargets === true) {
     strengths.push({ category: "progress", description: "On track and meeting targets" });
   }
 
@@ -517,11 +526,11 @@ function identifyStrengths(
     strengths.push({ category: "targets", description: "All PEP targets met" });
   }
 
-  if (input.childEnjoysSChool) {
+  if (input.childEnjoysSChool === true) {
     strengths.push({ category: "engagement", description: "Child enjoys school and feels positive about learning" });
   }
 
-  if (input.designatedTeacherEngaged && input.virtualSchoolInvolved) {
+  if (input.designatedTeacherEngaged === true && input.virtualSchoolInvolved === true) {
     strengths.push({ category: "support", description: "Strong network — DT and Virtual School actively engaged" });
   }
 
@@ -542,20 +551,23 @@ function assessRegulatory(
   const flags: RegulatoryFlag[] = [];
 
   // CHR 2015 Reg 8 — Education
-  const reg8Met = input.inEducation &&
+  const reg8Met = input.inEducation === true &&
     (band === "excellent" || band === "good") &&
-    input.designatedTeacherEngaged;
+    input.designatedTeacherEngaged === true;
   flags.push({
     regulation: "CHR 2015 Reg 8",
     area: "Education",
     status: reg8Met ? "met"
-      : input.inEducation ? "partially_met"
+      : input.inEducation === true ? "partially_met"
+      : input.inEducation === null ? "not_evidenced"
       : "not_met",
     detail: reg8Met
       ? "Education provision good with strong attendance and DT engagement"
-      : input.inEducation
+      : input.inEducation === true
         ? "In education but attendance or support needs improvement"
-        : "Child not in education — statutory duty not met",
+        : input.inEducation === null
+          ? "Cannot be evidenced — no record of whether this child is in education"
+          : "Child not in education — statutory duty not met",
   });
 
   // PEP statutory requirement
@@ -578,23 +590,27 @@ function assessRegulatory(
   flags.push({
     regulation: "Children Act 1989 s22(3A)",
     area: "Educational Achievement",
-    status: input.virtualSchoolInvolved && input.ppPlusEffectivelyUsed ? "met"
-      : input.virtualSchoolInvolved ? "partially_met"
+    status: input.virtualSchoolInvolved === true && input.ppPlusEffectivelyUsed === true ? "met"
+      : input.virtualSchoolInvolved === true ? "partially_met"
+      : input.virtualSchoolInvolved === null ? "not_evidenced"
       : "not_met",
-    detail: input.virtualSchoolInvolved
+    detail: input.virtualSchoolInvolved === true
       ? "Virtual School engaged and PP+ effectively deployed"
-      : "Virtual School not sufficiently involved",
+      : input.virtualSchoolInvolved === null
+        ? "Cannot be evidenced — Virtual School involvement is not recorded"
+        : "Virtual School not sufficiently involved",
   });
 
   // SCCIF Education outcomes
-  const sccifEd = input.inEducation &&
+  const sccifEd = input.inEducation === true &&
     (band === "excellent" || band === "good") &&
     (input.progressRating === "above_expected" || input.progressRating === "expected");
   flags.push({
     regulation: "SCCIF",
     area: "Education Outcomes",
     status: sccifEd ? "met"
-      : input.inEducation && input.progressRating !== "significantly_below" ? "partially_met"
+      : input.inEducation === true && input.progressRating !== "significantly_below" ? "partially_met"
+      : input.inEducation === null ? "not_evidenced"
       : "not_met",
     detail: sccifEd
       ? "Educational outcomes positive — attendance and progress good"
@@ -615,8 +631,10 @@ function buildRecommendations(
 ): string[] {
   const recs: string[] = [];
 
-  if (!input.inEducation) {
+  if (input.inEducation === false) {
     recs.push("URGENT: Secure education provision — statutory duty under s22(3A) Children Act 1989");
+  } else if (input.inEducation === null) {
+    recs.push("Record whether this child is in education — the statutory duty cannot be evidenced without it");
   }
 
   if (band === "severe_absence" || band === "persistent_absence") {
@@ -647,11 +665,11 @@ function buildRecommendations(
     recs.push("Review interventions — consider additional tutoring or mentoring");
   }
 
-  if (!input.designatedTeacherEngaged) {
+  if (input.designatedTeacherEngaged === false) {
     recs.push("Engage Designated Teacher — statutory role for LAC in school");
   }
 
-  if (!input.virtualSchoolInvolved) {
+  if (input.virtualSchoolInvolved === false) {
     recs.push("Request Virtual School involvement — statutory duty to promote education");
   }
 
@@ -663,7 +681,7 @@ function buildRecommendations(
     recs.push("Develop post-16 plan — ensure smooth transition");
   }
 
-  if (!input.homeworkSupported) {
+  if (input.homeworkSupported === false) {
     recs.push("Ensure homework environment and support is available");
   }
 
