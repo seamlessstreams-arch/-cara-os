@@ -102,8 +102,18 @@ export default function StaffInductionPage() {
       return;
     }
     const staffEntry = STAFF.find((s) => s.id === indForm.induction_lead);
+    // The induction is keyed by staff_id — `findByStaff` and the development
+    // engine's `inductionByStaff` both look it up that way. A fresh UUID
+    // matches nobody, so an induction recorded for someone already on the
+    // roster could never be found against them. Use their real id when the
+    // name matches; a genuinely new starter, not yet on the roster, still
+    // gets a generated one.
+    const typedName = indForm.staff_name.trim().toLowerCase();
+    const existing = STAFF.find(
+      (s) => (s.full_name ?? "").trim().toLowerCase() === typedName,
+    );
     await createInduction.mutateAsync({
-      staff_id: crypto.randomUUID(),
+      staff_id: existing?.id ?? crypto.randomUUID(),
       staff_name: indForm.staff_name.trim(),
       role: indForm.role.trim(),
       start_date: indForm.start_date,
