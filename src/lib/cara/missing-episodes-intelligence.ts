@@ -46,7 +46,7 @@ export interface MissingEpisode {
   outcome: EpisodeOutcome;
   policeNotified: boolean;
   policeRefNumber?: string;
-  socialWorkerNotified: boolean;
+  socialWorkerNotified: boolean | null;
   ofstedNotified?: boolean; // required for >24h missing
   returnHomeInterview: {
     offered: boolean;
@@ -471,7 +471,7 @@ function scoreResponse(episodes: MissingEpisode[]): number | null {
     // Police notification for missing
     if (ep.category === "missing" && !ep.policeNotified) epScore -= 30;
     // Social worker notification
-    if (!ep.socialWorkerNotified) epScore -= 20;
+    if (ep.socialWorkerNotified === false) epScore -= 20;
     // RHI offered
     if (!ep.returnHomeInterview.offered) epScore -= 25;
     // RHI completed
