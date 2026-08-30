@@ -61,10 +61,10 @@ export interface SanctionRecord {
   type: SanctionType;
   reason: string;
   duration?: string; // e.g. "1 day", "evening"
-  proportionate: boolean;
-  childInformed: boolean;
-  childUnderstood: boolean;
-  linkedToBehaviour: boolean;
+  proportionate: boolean | null;
+  childInformed: boolean | null;
+  childUnderstood: boolean | null;
+  linkedToBehaviour: boolean | null;
   staffMember: string;
   behaviourCategory?: string;
   appealed?: boolean;
@@ -95,8 +95,8 @@ export interface SanctionsRewardsInput {
   bspUpToDate: boolean;
   bspReviewDate?: string;
   childParticipatedInBSP: boolean;
-  sanctionPolicyExplainedToChild: boolean;
-  appealsProcessExplained: boolean;
+  sanctionPolicyExplainedToChild: boolean | null;
+  appealsProcessExplained: boolean | null;
 }
 
 export interface SanctionsRewardsAssessment {
@@ -104,7 +104,7 @@ export interface SanctionsRewardsAssessment {
   overallScore: number;
   overallRating: "excellent" | "good" | "adequate" | "requires_improvement" | "inadequate";
   positivityScore: number;
-  proportionalityScore: number;
+  proportionalityScore: number | null;
   effectivenessScore: number;
   complianceScore: number;
   totalSanctions: number;
@@ -144,7 +144,7 @@ export interface SRStrength {
 export interface RegulatoryFlag {
   regulation: string;
   area: string;
-  status: "met" | "partially_met" | "not_met";
+  status: "met" | "partially_met" | "not_met" | "not_evidenced";
   detail: string;
 }
 
@@ -179,11 +179,16 @@ export function analyseSanctionsRewards(input: SanctionsRewardsInput): Sanctions
   const staffConsistency = analyseStaffConsistency(sanctions, rewards);
 
   // ── Overall ───────────────────────────────────────────────────────────
+  const components: Array<[number | null, number]> = [
+    [positivityScore, 0.30],
+    [proportionalityScore, 0.25],
+    [effectivenessScore, 0.20],
+    [complianceScore, 0.25],
+  ];
+  const computable = components.filter((c): c is [number, number] => c[0] !== null);
+  const weightTotal = computable.reduce((t, [, w]) => t + w, 0);
   const overallScore = Math.round(
-    positivityScore * 0.30 +
-    proportionalityScore * 0.25 +
-    effectivenessScore * 0.20 +
-    complianceScore * 0.25
+    computable.reduce((t, [v, w]) => t + v * w, 0) / weightTotal
   );
   const overallRating = scoreToRating(overallScore);
 
@@ -241,19 +246,29 @@ function scorePositivity(ratio: number, rewardsLast30: number, sanctionsLast30: 
   return 50; // no data
 }
 
-function scoreProportionality(sanctions: SanctionRecord[]): number {
+/** Each sanction is judged only on the questions someone actually answered.
+ *  A sanction with none of them answered is not scored — it cannot be shown to
+ *  be proportionate, and it cannot be shown not to be. Returns null when no
+ *  sanction is scorable. */
+function scoreProportionality(sanctions: SanctionRecord[]): number | null {
   if (sanctions.length === 0) return 100;
-  let score = 0;
+  const scored: number[] = [];
   for (const s of sanctions) {
-    let sScore = 100;
-    if (!s.proportionate) sScore -= 40;
-    if (!s.linkedToBehaviour) sScore -= 20;
-    if (!s.childInformed) sScore -= 20;
-    if (!s.childUnderstood) sScore -= 15;
-    if (s.isProhibited) sScore = 0;
-    score += Math.max(0, sScore);
+    if (s.isProhibited) { scored.push(0); continue; }
+    const judgements: Array<[boolean | null, number]> = [
+      [s.proportionate, 40],
+      [s.linkedToBehaviour, 20],
+      [s.childInformed, 20],
+      [s.childUnderstood, 15],
+    ];
+    const recorded = judgements.filter(([v]) => v !== null);
+    if (recorded.length === 0) continue;
+    const available = recorded.reduce((t, [, w]) => t + w, 0);
+    const forfeited = recorded.reduce((t, [v, w]) => t + (v === false ? w : 0), 0);
+    scored.push(Math.round(((available - forfeited) / available) * 100));
   }
-  return Math.round(score / sanctions.length);
+  if (scored.length === 0) return null;
+  return Math.round(scored.reduce((a, b) => a + b, 0) / scored.length);
 }
 
 function scoreEffectiveness(sanctions: SanctionRecord[], rewards: RewardRecord[]): number {
@@ -303,16 +318,18 @@ function scoreCompliance(input: SanctionsRewardsInput, sanctions: SanctionRecord
   if (input.childParticipatedInBSP) score += 15;
 
   // Policy explained (10 points)
-  if (input.sanctionPolicyExplainedToChild) score += 10;
+  if (input.sanctionPolicyExplainedToChild === true) score += 10;
 
   // Appeals process explained (10 points)
-  if (input.appealsProcessExplained) score += 10;
+  if (input.appealsProcessExplained === true) score += 10;
 
-  // All sanctions linked to behaviour (10 points)
-  if (sanctions.length > 0) {
-    const linked = sanctions.filter(s => s.linkedToBehaviour).length;
-    score += Math.round((linked / sanctions.length) * 10);
-  } else {
+  // Sanctions linked to behaviour (10 points), over those where the link was
+  // actually recorded — an unrecorded link earns nothing and forfeits nothing.
+  const linkRecorded = sanctions.filter(s => s.linkedToBehaviour !== null);
+  if (linkRecorded.length > 0) {
+    const linked = linkRecorded.filter(s => s.linkedToBehaviour === true).length;
+    score += Math.round((linked / linkRecorded.length) * 10);
+  } else if (sanctions.length === 0) {
     score += 10;
   }
 
@@ -435,7 +452,7 @@ function identifyConcerns(
   }
 
   // Not proportionate
-  const disproportionate = sanctions.filter(s => !s.proportionate).length;
+  const disproportionate = sanctions.filter(s => s.proportionate === false).length;
   if (disproportionate > 0 && sanctions.length > 0) {
     const rate = disproportionate / sanctions.length;
     if (rate > 0.2) {
@@ -448,7 +465,7 @@ function identifyConcerns(
   }
 
   // Child not understanding
-  const notUnderstood = sanctions.filter(s => !s.childUnderstood).length;
+  const notUnderstood = sanctions.filter(s => s.childUnderstood === false).length;
   if (notUnderstood > 0 && sanctions.length > 0 && notUnderstood / sanctions.length > 0.3) {
     concerns.push({
       severity: "moderate",
@@ -518,7 +535,10 @@ function identifyStrengths(
     });
   }
 
-  if (sanctions.length > 0 && sanctions.every(s => s.proportionate)) {
+  // "Recorded as proportionate" has to mean recorded. Under the old default an
+  // unanswered proportionality question read as a yes, so this strength was
+  // claimed for sanctions nobody had reviewed.
+  if (sanctions.length > 0 && sanctions.every(s => s.proportionate === true)) {
     strengths.push({
       category: "proportionality",
       description: "All sanctions recorded as proportionate",
@@ -539,7 +559,7 @@ function identifyStrengths(
     });
   }
 
-  if (input.sanctionPolicyExplainedToChild && input.appealsProcessExplained) {
+  if (input.sanctionPolicyExplainedToChild === true && input.appealsProcessExplained === true) {
     strengths.push({
       category: "transparency",
       description: "Child informed of policy and appeals process",
@@ -581,15 +601,21 @@ function assessRegulatory(
   });
 
   // Reg 19 — Behaviour management general
-  const allProportionate = sanctions.length === 0 || sanctions.every(s => s.proportionate);
+  const allProportionate = sanctions.length === 0 || sanctions.every(s => s.proportionate === true);
+  const proportionalityUnrecorded = sanctions.some(s => s.proportionate === null);
   const hasStrategy = input.hasBehaviourSupportPlan || sanctions.length < 3;
+  const reg19Met = allProportionate && hasStrategy && prohibited === 0;
   flags.push({
     regulation: "CHR 2015 Reg 19",
     area: "Behaviour Management",
-    status: (allProportionate && hasStrategy && prohibited === 0) ? "met" :
-      prohibited > 0 ? "not_met" : "partially_met",
-    detail: (allProportionate && hasStrategy && prohibited === 0)
+    status: reg19Met ? "met"
+      : prohibited > 0 ? "not_met"
+      : proportionalityUnrecorded ? "not_evidenced"
+      : "partially_met",
+    detail: reg19Met
       ? "Behaviour management meets regulatory standard"
+      : proportionalityUnrecorded && prohibited === 0
+      ? "Cannot be evidenced — whether every sanction was proportionate is not recorded"
       : "Behaviour management requires improvement",
   });
 
@@ -639,11 +665,11 @@ function buildRecommendations(
     recs.push("Involve child in BSP review — ensure they understand and agree with strategies");
   }
 
-  if (!input.sanctionPolicyExplainedToChild) {
+  if (input.sanctionPolicyExplainedToChild === false) {
     recs.push("Explain sanctions policy to child in age-appropriate way");
   }
 
-  if (!input.appealsProcessExplained) {
+  if (input.appealsProcessExplained === false) {
     recs.push("Ensure child knows how to appeal a sanction they disagree with");
   }
 
@@ -655,7 +681,7 @@ function buildRecommendations(
     recs.push("Behaviour sanctions increasing — review effectiveness of current approach");
   }
 
-  const notLinked = sanctions.filter(s => !s.linkedToBehaviour).length;
+  const notLinked = sanctions.filter(s => s.linkedToBehaviour === false).length;
   if (notLinked > 0 && sanctions.length > 0 && notLinked / sanctions.length > 0.2) {
     recs.push("Ensure all sanctions are clearly linked to specific behaviours");
   }
