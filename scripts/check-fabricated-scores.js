@@ -83,6 +83,26 @@ const BASELINE = new Set(require("./fabricated-scores-baseline.json"));
  */
 const ALLOWED = new Map([
   [
+    "src/app/api/v1/audit-quality-intelligence/route.ts:a.max_score:100",
+    "a CEILING, not a score achieved — `max_score` is what the audit could score out of",
+  ],
+  [
+    "src/lib/engines/home-window-blind-curtain-safety-intelligence-engine.ts:inspectionActionCompletionRate:100",
+    "no remedial actions required is vacuously complete, and the engine's own comment says so; the surrounding expression still returns null when nothing is measured",
+  ],
+  [
+    "src/lib/leaving-care/leaving-care-engine.ts:pathway.planCompletenessRate:100",
+    "suppresses an alert whose message interpolates the rate — unmeasured would render 'Only null%'. Suppression is the lesser wrong here; an explicit unmeasured alert is a product decision, not a guard's",
+  ],
+  [
+    "src/lib/medication-adherence-monitoring/medication-adherence-monitoring-engine.ts:errorRate:100",
+    "INVERTED: safetyScore = 2 * (100 - errorRate) / 100, so 100 earns NO safety credit — the unflattering direction, and commented as such",
+  ],
+  [
+    "src/lib/peer-relationship-dynamics/peer-relationship-dynamics-engine.ts:negativeInteractionRate:100",
+    "INVERTED: the value is subtracted from 100, so the fallback contributes zero rather than a full score",
+  ],
+  [
     "src/lib/cara-practice/cara-practice-engine.ts:gaps:100",
     "gaps come from detectDevelopmentalGaps(text); the function already returns all-null for an empty record, so zero gaps here means analysed-and-clear",
   ],
@@ -576,6 +596,12 @@ function walk(dir, out = []) {
 // batch-2-through-batch-6 burn-down commits).
 const NON_EMPTY_TERNARY = /([a-zA-Z_]\w*(?:\.\w+)*?)(?:\.length)?\s*>\s*0\s*\?[^?:{};]{0,220}?:\s*(\d{2,3})\b/g;
 // `xs.length === 0 ? 92 : <computed>` — and scalar counters (`total === 0 ? 100 : …`).
+// The `??` form of the same lie. rate.ts's own doc says it plainly — "`?? 100`
+// re-introduces exactly the bug this exists to kill" — and the ternary
+// matchers never saw it. Restricted to rate-shaped subjects so pagination
+// defaults (`limit ?? 100`) and ceilings (`max_score ?? 100`) stay out.
+const NULLISH_FULL_SCORE =
+  /(?!\w*(?:max_score|maxScore|target))([a-zA-Z_]\w*(?:\.\w+)*(?:_rate|_pct|_percent|percentage|_score|Rate|Pct|Percentage|Score|[Cc]ompleteness|[Cc]ompliance|[Aa]dherence))\s*\?\?\s*(100)\b/g;
 const EMPTY_TERNARY = /([a-zA-Z_]\w*(?:\.\w+)*?)(?:\.length)?\s*===?\s*0\s*\?\s*(\d{2,3})\b/g;
 // Statement form of the same lie, which the ternary matchers miss:
 //   if (xs.length === 0) return 100;   /   if (!xs.length) return 90;
@@ -692,6 +718,13 @@ for (const dir of SCAN_DIRS) {
         // percentage-form entry at the same site.
         found.push({ key: `${rel}:${m[1]}:1`, rel, line, collection: m[1], value: 1 });
       }
+    }
+    // `<rate-ish> ?? 100` — an unmeasured value coerced to a full score.
+    NULLISH_FULL_SCORE.lastIndex = 0;
+    let mn;
+    while ((mn = NULLISH_FULL_SCORE.exec(src)) !== null) {
+      const line = src.slice(0, mn.index).split("\n").length;
+      found.push({ key: `${rel}:${mn[1]}:100`, rel, line, collection: mn[1], value: 100 });
     }
     // Fab-0 mirror: `X.length > 0 ? <computed metric> : 0`. The compute-gate
     // (COMPUTE_CALL against the body) is what keeps this narrow — without it
