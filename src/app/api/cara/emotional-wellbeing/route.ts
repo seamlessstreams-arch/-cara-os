@@ -104,7 +104,7 @@ async function fetchData(sb: any, childId: string): Promise<EmotionalWellbeingIn
   const selfHarmIncidents: SelfHarmIncident[] = (rawSH ?? []).map((i: any) => ({
     date: i.date,
     severity: i.severity ?? "minor",
-    supportProvided: i.support_provided ?? true,
+    supportProvided: i.support_provided ?? null,
     safetyPlanUpdated: i.safety_plan_updated ?? false,
   }));
 
@@ -142,10 +142,10 @@ async function fetchData(sb: any, childId: string): Promise<EmotionalWellbeingIn
     hasSafetyPlan: config?.safety_plan ?? false,
     safetyPlanReviewed: config?.safety_plan_reviewed ?? false,
     regulatorySDQCompleted: config?.sdq_completed ?? (sdqScores.length > 0),
-    emotionalHealthDiscussedInKeywork: config?.discussed_keywork ?? true,
-    staffTrainedInMentalHealth: config?.staff_trained ?? true,
-    childKnowsHowToGetHelp: config?.child_knows_help ?? true,
-    positiveRelationshipsPresent: config?.positive_relationships ?? true,
+    emotionalHealthDiscussedInKeywork: config?.discussed_keywork ?? null,
+    staffTrainedInMentalHealth: config?.staff_trained ?? null,
+    childKnowsHowToGetHelp: config?.child_knows_help ?? null,
+    positiveRelationshipsPresent: config?.positive_relationships ?? null,
     protectiveFactors: config?.protective_factors ?? [],
     riskFactors: config?.risk_factors ?? [],
   };
