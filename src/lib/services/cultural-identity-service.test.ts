@@ -1,4 +1,5 @@
 import { describe, it, expect } from "vitest";
+import { seedDay } from "@/lib/seed-date";
 import {
   computeIdentityMetrics,
   identifyIdentityAlerts,
@@ -81,8 +82,11 @@ describe("cultural-identity-service", () => {
 
     it("computes populated metrics", () => {
       const profiles = [
-        makeProfile({ id: "p1", child_id: "c1", status: "active", last_reviewed_date: "2026-03-01", community_links: ["Club A"] }),
-        makeProfile({ id: "p2", child_id: "c2", status: "active", last_reviewed_date: "2025-01-01", community_links: [] }),
+        // The review window is 183 days back from NOW, so these dates float
+        // with it. "2026-03-01" was exactly 183 days before 2026-08-31, which
+        // put p1 on the boundary and flipped the rate to 0 for that one day.
+        makeProfile({ id: "p1", child_id: "c1", status: "active", last_reviewed_date: seedDay(-90), community_links: ["Club A"] }),
+        makeProfile({ id: "p2", child_id: "c2", status: "active", last_reviewed_date: seedDay(-400), community_links: [] }),
         makeProfile({ id: "p3", child_id: "c3", status: "archived" }),
       ];
       const actions = [
@@ -93,7 +97,7 @@ describe("cultural-identity-service", () => {
       const m = computeIdentityMetrics(profiles, actions);
       expect(m.children_with_profiles).toBe(2); // only active
       expect(m.total_children).toBe(3);
-      // Reviewed within 6 months: p1 (2026-03-01 is within 183 days of NOW)
+      // Reviewed within 6 months: p1 only
       expect(m.profile_review_rate).toBe(50);
       // All 3 actions are in Q2 2026 (Apr-Jun)
       expect(m.actions_this_quarter).toBe(3);

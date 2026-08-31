@@ -41,7 +41,7 @@ const PERIOD_END = seedDay(-91);
 function makePolicy(overrides?: Partial<WhistleblowingPolicy>): WhistleblowingPolicy {
   return {
     id: "pol-001",
-    lastReviewedDate: "2026-01-15",
+    lastReviewedDate: seedDay(-120),
     staffAwareOfPolicy: true,
     policyAccessible: true,
     namedContactDesignated: true,
@@ -56,7 +56,7 @@ function makePolicy(overrides?: Partial<WhistleblowingPolicy>): WhistleblowingPo
 function makeCulture(overrides?: Partial<ConcernCulture>): ConcernCulture {
   return {
     id: "cult-001",
-    surveyDate: "2026-01-20",
+    surveyDate: seedDay(-115),
     staffConfidenceToReport: 8,
     staffTrustInProcess: 7.5,
     perceivedFairnessOfOutcomes: 7,
@@ -69,7 +69,7 @@ function makeCulture(overrides?: Partial<ConcernCulture>): ConcernCulture {
 function makeConcern(overrides?: Partial<WhistleblowingConcern>): WhistleblowingConcern {
   return {
     id: "wbc-001",
-    reportDate: "2026-02-15",
+    reportDate: seedDay(-160),
     category: "safeguarding",
     severity: "critical",
     status: "resolved",
@@ -1004,8 +1004,8 @@ describe("generateWhistleblowingConcernsIntelligence", () => {
   });
 
   it("filters concerns to period", () => {
-    const outOfPeriod = makeConcern({ id: "oop-1", reportDate: "2025-06-01" });
-    const inPeriod = makeConcern({ id: "ip-1", reportDate: "2026-03-01" });
+    const outOfPeriod = makeConcern({ id: "oop-1", reportDate: seedDay(-300) });
+    const inPeriod = makeConcern({ id: "ip-1", reportDate: seedDay(-146) });
     const result = generateWhistleblowingConcernsIntelligence(
       [outOfPeriod, inPeriod],
       [],
@@ -1019,7 +1019,7 @@ describe("generateWhistleblowingConcernsIntelligence", () => {
   });
 
   it("filters protections to match period concerns", () => {
-    const concern = makeConcern({ id: "wbc-in", reportDate: "2026-02-01" });
+    const concern = makeConcern({ id: "wbc-in", reportDate: seedDay(-174) });
     const matchingProt = makeProtection({ id: "p-match", concernId: "wbc-in" });
     const orphanProt = makeProtection({ id: "p-orphan", concernId: "wbc-out" });
     const result = generateWhistleblowingConcernsIntelligence(
@@ -1085,7 +1085,7 @@ describe("generateWhistleblowingConcernsIntelligence", () => {
   it("returns requires_improvement for scores 40-59", () => {
     const poorConcern = makeConcern({
       id: "wbc-poor",
-      reportDate: "2026-02-01",
+      reportDate: seedDay(-174),
       acknowledgedWithin48Hours: false,
       investigationStartedWithin7Days: false,
       resolvedWithin30Days: false,
@@ -1295,7 +1295,10 @@ describe("edge cases", () => {
   });
 
   it("excludes concern before period start", () => {
-    const concern = makeConcern({ id: "before", reportDate: "2025-12-31" });
+    // One day before PERIOD_START. A fixed date here drifts across the
+    // floating window as the anchor moves — which is the bug this file's
+    // header describes, left behind in the two boundary cases.
+    const concern = makeConcern({ id: "before", reportDate: seedDay(-229) });
     const result = generateWhistleblowingConcernsIntelligence(
       [concern], [], null, null, "home-001", PERIOD_START, PERIOD_END,
     );
@@ -1303,7 +1306,10 @@ describe("edge cases", () => {
   });
 
   it("excludes concern after period end", () => {
-    const concern = makeConcern({ id: "after", reportDate: "2026-06-01" });
+    // One day after PERIOD_END. On 2026-08-31 seedDay(-91) was itself
+    // 2026-06-01, so the "after" concern landed exactly on the boundary and
+    // was counted.
+    const concern = makeConcern({ id: "after", reportDate: seedDay(-90) });
     const result = generateWhistleblowingConcernsIntelligence(
       [concern], [], null, null, "home-001", PERIOD_START, PERIOD_END,
     );
@@ -1338,7 +1344,7 @@ describe("edge cases", () => {
     const concerns = Array.from({ length: 100 }, (_, i) =>
       makeConcern({
         id: `wbc-${i}`,
-        reportDate: "2026-03-01",
+        reportDate: seedDay(-146),
         acknowledgedWithin48Hours: true,
         investigationStartedWithin7Days: true,
         resolvedWithin30Days: true,
@@ -1506,7 +1512,7 @@ describe("strength and concern generation", () => {
   });
 
   it("generates retaliation concern when retaliation reported", () => {
-    const concern = makeConcern({ reportDate: "2026-02-01" });
+    const concern = makeConcern({ reportDate: seedDay(-174) });
     const prot = makeProtection({
       concernId: concern.id,
       retaliationReported: true,
@@ -1557,7 +1563,7 @@ describe("immediate actions", () => {
   });
 
   it("generates urgent action for retaliation", () => {
-    const concern = makeConcern({ reportDate: "2026-02-01" });
+    const concern = makeConcern({ reportDate: seedDay(-174) });
     const prot = makeProtection({
       concernId: concern.id,
       retaliationReported: true,
@@ -1613,7 +1619,7 @@ describe("immediate actions", () => {
     const concerns = [
       makeConcern({
         id: "slow-ack",
-        reportDate: "2026-02-01",
+        reportDate: seedDay(-174),
         acknowledgedWithin48Hours: false,
         investigationStartedWithin7Days: true,
         resolvedWithin30Days: true,
@@ -1654,7 +1660,7 @@ describe("integration: full scenario", () => {
     const concerns = [
       makeConcern({
         id: "bad-1",
-        reportDate: "2026-02-01",
+        reportDate: seedDay(-174),
         severity: "critical",
         acknowledgedWithin48Hours: false,
         investigationStartedWithin7Days: false,
@@ -1689,7 +1695,7 @@ describe("integration: full scenario", () => {
     const concerns = [
       makeConcern({
         id: "good-1",
-        reportDate: "2026-02-01",
+        reportDate: seedDay(-174),
         acknowledgedWithin48Hours: true,
         investigationStartedWithin7Days: true,
         resolvedWithin30Days: true,
@@ -1700,7 +1706,7 @@ describe("integration: full scenario", () => {
       }),
       makeConcern({
         id: "bad-1",
-        reportDate: "2026-03-01",
+        reportDate: seedDay(-146),
         severity: "low",
         acknowledgedWithin48Hours: false,
         investigationStartedWithin7Days: false,
