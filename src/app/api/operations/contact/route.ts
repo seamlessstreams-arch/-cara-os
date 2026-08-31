@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { requireFields } from "@/lib/http/require-fields";
 import { NextRequest, NextResponse } from "next/server";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
 import {
@@ -90,6 +91,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "homeId required" }, { status: 400 });
     }
 
+    // A record that does not state its own result must not be given a passing
+    // one. Each of these defaulted to the favourable answer, so a partial POST
+    // wrote a check that passed, an audit rated good, or a contact that went
+    // well — none of which anyone had recorded. Checked before the storage
+    // check: whether a request is complete does not depend on whether Supabase
+    // happens to be configured.
+    const CLAIM_FIELDS: Record<string, readonly string[]> = {
+      record_contact: ["outcome"],
+    };
+    const __claims = requireFields(body, CLAIM_FIELDS[String(action)] ?? []);
+    if (__claims) return __claims;
+
     if (!isSupabaseEnabled()) {
       return NextResponse.json({ ok: true, persisted: false });
     }
@@ -135,7 +148,7 @@ export async function POST(request: NextRequest) {
         actual_date: body.actualDate,
         duration_minutes: body.durationMinutes,
         location: body.location,
-        outcome: body.outcome ?? "completed",
+        outcome: body.outcome,
         child_mood_before: body.childMoodBefore,
         child_mood_after: body.childMoodAfter,
         child_voice: body.childVoice,

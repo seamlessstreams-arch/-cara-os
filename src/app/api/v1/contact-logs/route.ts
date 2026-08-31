@@ -57,14 +57,21 @@ export async function POST(req: NextRequest) {
   if (!__parsed.ok) return __parsed.response;
   const body = __parsed.data;
 
-  const missing = requireFields(body, ["child_id"]);
+  // require-fields.ts cites this record in its own header as the motivating
+  // case, but only the identity field was ever required. The judgements it
+  // names — a contact log defaulting to outcome "positive" with
+  // safeguarding_concern false — kept defaulting, and the family-contact page
+  // renders them straight out as "Concerns identified: none".
+  const missing = requireFields(body, [
+    "child_id", "outcome", "concerns_identified", "safeguarding_concern",
+  ]);
   if (missing) return missing;
   const record = intelligenceDb.contactLogs.create({
     ...body,
     status:     body.status     ?? "completed",
-    outcome:    body.outcome    ?? "positive",
-    concerns_identified: body.concerns_identified ?? false,
-    safeguarding_concern: body.safeguarding_concern ?? false,
+    outcome:    body.outcome,
+    concerns_identified: body.concerns_identified,
+    safeguarding_concern: body.safeguarding_concern,
     follow_up_required:  body.follow_up_required ?? false,
     social_worker_notified: body.social_worker_notified ?? false,
     photos_shared:  body.photos_shared ?? false,
