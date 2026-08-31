@@ -57,7 +57,9 @@ export async function GET() {
     kind: (x.kind ?? "external_forms") as AdapterKind,
     status: (x.status ?? "not_configured") as AdapterStatus,
     last_sync: d(x.last_sync),
-    supports_idempotency: x.supports_idempotency ?? true,
+    // An adapter whose idempotency support was never recorded must not be
+    // displayed as supporting it — the page renders this as "idempotency on".
+    supports_idempotency: x.supports_idempotency ?? false,
     retry: {
       max_attempts: Number(x.retry?.max_attempts ?? 3),
       backoff_seconds: Number(x.retry?.backoff_seconds ?? 30),
