@@ -75,7 +75,7 @@ async function fetchData(sb: any, childId: string): Promise<HealthInput> {
   const healthAssessments: HealthAssessment[] = (rawAssessments ?? []).map((a: any) => ({
     date: a.date,
     type: a.type ?? "review",
-    completedOnTime: a.completed_on_time ?? true,
+    completedOnTime: a.completed_on_time ?? null,
     actionPlanCreated: a.action_plan_created ?? false,
   }));
 
@@ -102,7 +102,7 @@ async function fetchData(sb: any, childId: string): Promise<HealthInput> {
   const appointments: HealthAppointment[] = (rawAppts ?? []).map((a: any) => ({
     date: a.date,
     type: a.type ?? "gp",
-    attended: a.attended ?? true,
+    attended: a.attended ?? null,
     reason: a.reason ?? undefined,
   }));
 
@@ -114,8 +114,8 @@ async function fetchData(sb: any, childId: string): Promise<HealthInput> {
 
   const medications: Medication[] = (rawMeds ?? []).map((m: any) => ({
     name: m.name,
-    prescribed: m.prescribed ?? true,
-    administeredCorrectly: m.administered_correctly ?? true,
+    prescribed: m.prescribed ?? null,
+    administeredCorrectly: m.administered_correctly ?? null,
     consentInPlace: m.consent ?? false,
     reviewDue: m.review_due ?? false,
   }));
@@ -134,30 +134,30 @@ async function fetchData(sb: any, childId: string): Promise<HealthInput> {
     lastAssessmentDate: config?.last_assessment_date ?? undefined,
     nextAssessmentDue: config?.next_assessment_due ?? undefined,
     assessmentOverdue: config?.assessment_overdue ?? (healthAssessments.length === 0),
-    gpRegistered: config?.gp_registered ?? true,
-    dentistRegistered: config?.dentist_registered ?? true,
-    opticiansRegistered: config?.opticians_registered ?? true,
-    dentalCheckLast6Months: config?.dental_check ?? true,
-    opticalCheckLast12Months: config?.optical_check ?? true,
+    gpRegistered: config?.gp_registered ?? null,
+    dentistRegistered: config?.dentist_registered ?? null,
+    opticiansRegistered: config?.opticians_registered ?? null,
+    dentalCheckLast6Months: config?.dental_check ?? null,
+    opticalCheckLast12Months: config?.optical_check ?? null,
     lastDentalDate: config?.last_dental ?? undefined,
     lastOpticalDate: config?.last_optical ?? undefined,
     immunisations,
     immunisationsUpToDate: config?.immunisations_current ?? (immunisations.every(i => !i.overdue)),
     appointments,
     medications,
-    healthActionPlanInPlace: config?.action_plan ?? true,
-    healthActionPlanReviewed: config?.action_plan_reviewed ?? true,
+    healthActionPlanInPlace: config?.action_plan ?? null,
+    healthActionPlanReviewed: config?.action_plan_reviewed ?? null,
     actionsTotal: config?.actions_total ?? 0,
     actionsCompleted: config?.actions_completed ?? 0,
     substanceMisuseIdentified: config?.substance_misuse ?? false,
     substanceMisuseSupport: config?.substance_support ?? false,
-    healthyEatingSupported: config?.healthy_eating ?? true,
-    physicalActivityRegular: config?.physical_activity ?? true,
-    sleepRoutineGood: config?.sleep_good ?? true,
-    staffHealthTrained: config?.staff_trained ?? true,
-    childUnderstandsHealth: config?.child_understands ?? true,
-    consentFormsComplete: config?.consent_forms ?? true,
-    healthPassportUpToDate: config?.health_passport ?? true,
+    healthyEatingSupported: config?.healthy_eating ?? null,
+    physicalActivityRegular: config?.physical_activity ?? null,
+    sleepRoutineGood: config?.sleep_good ?? null,
+    staffHealthTrained: config?.staff_trained ?? null,
+    childUnderstandsHealth: config?.child_understands ?? null,
+    consentFormsComplete: config?.consent_forms ?? null,
+    healthPassportUpToDate: config?.health_passport ?? null,
   };
 }
 
