@@ -1,4 +1,5 @@
 import { readJsonBody } from "@/lib/http/read-json";
+import { requireFields } from "@/lib/http/require-fields";
 import { rejectFutureDates } from "@/lib/http/retrospective-dates";
 import { NextRequest, NextResponse } from "next/server";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
@@ -58,6 +59,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "homeId required" }, { status: 400 });
     }
 
+    // What a restraint record must state, because no default can recover it:
+    // how long the hold lasted, and whether anyone was hurt. `?? 0` recorded an
+    // unknown duration as an instant one, and `?? []` recorded an unasked
+    // question as "nobody was injured" — an assertion about a child's body.
+    // An explicit 0 or [] is a recorded answer and passes; an omitted field
+    // does not. Checked before the storage check: whether a request is complete
+    // does not depend on whether Supabase happens to be configured.
+    const CLAIM_FIELDS: Record<string, readonly string[]> = {
+      create: ["durationMinutes", "injuriesChild", "injuriesStaff"],
+    };
+    const __claims = requireFields(body, CLAIM_FIELDS[String(action)] ?? []);
+    if (__claims) return __claims;
+
     if (!isSupabaseEnabled()) {
       return NextResponse.json({ ok: true, persisted: false });
     }
@@ -71,14 +85,14 @@ export async function POST(request: NextRequest) {
         incident_time: body.incidentTime,
         restraint_type: body.restraintType,
         technique_used: body.techniqueUsed,
-        duration_minutes: body.durationMinutes ?? 0,
+        duration_minutes: body.durationMinutes,
         staff_involved: body.staffInvolved ?? [],
         antecedent: body.antecedent ?? "",
         behaviour_description: body.behaviourDescription ?? "",
         de_escalation_attempted: body.deEscalationAttempted ?? [],
         outcome: body.outcome ?? "",
-        injuries_child: body.injuriesChild ?? [],
-        injuries_staff: body.injuriesStaff ?? [],
+        injuries_child: body.injuriesChild,
+        injuries_staff: body.injuriesStaff,
         body_map_completed: body.bodyMapCompleted ?? false,
         child_views_obtained: body.childViewsObtained ?? false,
         child_views: body.childViews ?? "",
