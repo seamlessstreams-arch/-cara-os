@@ -111,6 +111,10 @@ async function handleLiveTransition(
     assignedChildIds: profile.assigned_child_ids ?? [],
     assignedStaffIds: [],
     employmentStatus: profile.employment_status ?? "active",
+    // CAUTION: if lifecycle-engine ever honours requiresShift or the
+    // suspension flags below, this hand-built context must switch to
+    // computeShiftActive()/middleware, which derive the honest values.
+    // absence-ok: dead for this engine — attemptTransition reads only role and userId (verified 2026-09-01)
     shiftActive: profile.shift_active ?? true,
     isAgencyStaff: false,
     isSuspended: false,
@@ -232,6 +236,10 @@ async function handleLiveValidTransitions(sb: any, occurrenceId: string) {
     assignedChildIds: profile.assigned_child_ids ?? [],
     assignedStaffIds: [],
     employmentStatus: profile.employment_status ?? "active",
+    // CAUTION: if lifecycle-engine ever honours requiresShift or the
+    // suspension flags below, this hand-built context must switch to
+    // computeShiftActive()/middleware, which derive the honest values.
+    // absence-ok: dead for this engine — attemptTransition reads only role and userId (verified 2026-09-01)
     shiftActive: profile.shift_active ?? true,
     isAgencyStaff: false,
     isSuspended: false,
