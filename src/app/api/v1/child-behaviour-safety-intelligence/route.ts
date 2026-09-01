@@ -144,6 +144,7 @@ export async function GET(request: NextRequest) {
       date: (sr.date ?? "").slice(0, 10),
       direction: sr.direction ?? "reward",
       title: sr.title ?? "",
+      // absence-ok: dead default — SanctionRewardRecord.proportionate is a required boolean (verified 2026-08-31), so the fallback is unreachable
       proportionate: sr.proportionate ?? true,
       child_response: sr.child_response ?? "",
     }));

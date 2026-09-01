@@ -64,6 +64,7 @@ export async function GET() {
     course_name: t.course_name ?? t.category ?? "Training",
     category: t.category ?? "general",
     status: t.status ?? "compliant",
+    // absence-ok: an unrecorded flag treats the course as mandatory — over-requiring compliance is the conservative direction
     is_mandatory: t.is_mandatory ?? true,
     expiry_date: t.expiry_date ? d(t.expiry_date) : null,
   }));

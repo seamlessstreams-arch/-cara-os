@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
     title: body.title ?? "New Resource",
     content: body.content ?? {},
     status: "draft",
+    // absence-ok: unstated provenance defaults to Cara-generated — over-declaring AI authorship is the safe direction for governance transparency
     cara_generated: body.cara_generated ?? true,
     created_by: body.created_by ?? "staff_darren",
     ...body,

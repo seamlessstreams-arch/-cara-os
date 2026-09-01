@@ -42,6 +42,7 @@ export async function GET() {
   const staff: StaffRef[] = (staffList ?? []).map((s) => ({
     id: s.id,
     name: s.full_name ?? `${s.first_name} ${s.last_name}`,
+    // absence-ok: roster read — an unrecorded flag INCLUDES the staff member in appraisal tracking, demanding more evidence, never less
     is_active: s.is_active ?? true,
   }));
 
