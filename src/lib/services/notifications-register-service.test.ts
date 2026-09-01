@@ -5,6 +5,14 @@ import {
   type NotificationRecord,
 } from "./notifications-register-service";
 
+
+/** Date string n days in the future — UTC throughout, so it never lands a day
+ *  off across a DST boundary, and it floats with the clock so "still in the
+ *  future" stays true whenever the suite runs. */
+function daysFromNow(n: number): string {
+  const [y, m, d] = new Date().toISOString().slice(0, 10).split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
+}
 function makeRecord(overrides: Partial<NotificationRecord> = {}): NotificationRecord {
   return {
     id: "nr-1",
@@ -84,7 +92,7 @@ describe("computeNotificationMetrics", () => {
       makeRecord({
         id: "nr-2",
         follow_up_required: true,
-        follow_up_date: "2027-01-01", // future
+        follow_up_date: daysFromNow(120), // future
         follow_up_completed: false,
       }),
     ];

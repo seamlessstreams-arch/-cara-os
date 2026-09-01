@@ -36,6 +36,14 @@ import type { HrLetterType } from "@/lib/hr/types";
 
 // ─── Fixtures ───────────────────────────────────────────────────────────────
 
+
+/** Date string n days in the future — UTC throughout, so it never lands a day
+ *  off across a DST boundary, and it floats with the clock so "still in the
+ *  future" stays true whenever the suite runs. */
+function daysFromNow(n: number): string {
+  const [y, m, d] = new Date().toISOString().slice(0, 10).split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
+}
 function completeRecruitmentRecord(
   overrides: Partial<SaferRecruitmentRecord> = {},
 ): SaferRecruitmentRecord {
@@ -52,7 +60,7 @@ function completeRecruitmentRecord(
     enhancedDbsStatus: "clear",
     enhancedDbsNumber: "DBS-00123456",
     enhancedDbsIssued: "2024-06-01",
-    enhancedDbsRenewalDue: "2027-06-01",
+    enhancedDbsRenewalDue: daysFromNow(270),
     barredListCheckStatus: "complete",
     referencesReceivedCount: 2,
     referencesVerifiedCount: 2,

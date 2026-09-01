@@ -11,6 +11,12 @@ import type {
 
 // -- Factories ----------------------------------------------------------------
 
+/** Date string n days ahead — UTC end to end, floating with the clock. */
+function daysFromNow(n: number): string {
+  const [y, m, d] = new Date().toISOString().slice(0, 10).split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
+}
+
 function makeStatement(overrides: Partial<StatementOfPurpose> = {}): StatementOfPurpose {
   return {
     id: "sop-1",
@@ -18,7 +24,7 @@ function makeStatement(overrides: Partial<StatementOfPurpose> = {}): StatementOf
     version: "2.0",
     title: "Statement of Purpose",
     effective_date: "2025-01-01",
-    review_date: "2027-01-01",
+    review_date: daysFromNow(120),
     last_reviewed_date: "2025-06-01",
     reviewed_by: "Manager",
     approved_by: "Director",
@@ -104,7 +110,7 @@ describe("computeStatementMetrics", () => {
   it("counts active statements and overdue reviews", () => {
     const statements = [
       makeStatement({ id: "s1", status: "active", review_date: "2026-01-01" }), // overdue
-      makeStatement({ id: "s2", status: "active", review_date: "2027-01-01" }), // not overdue
+      makeStatement({ id: "s2", status: "active", review_date: daysFromNow(120) }), // not overdue
       makeStatement({ id: "s3", status: "archived" }),
     ];
     const r = computeStatementMetrics(statements, [], []);
@@ -137,13 +143,17 @@ describe("computeStatementMetrics", () => {
   });
 
   it("counts reviews and amendments this year", () => {
+    const thisYear = new Date().toISOString().slice(0, 4);
+    const lastYear = String(Number(thisYear) - 1);
     const reviews = [
-      makeReview({ id: "r1", review_date: "2026-03-01" }),
-      makeReview({ id: "r2", review_date: "2025-03-01" }),
+      // Calendar-year fixtures derive from the running clock's year — a fixed
+      // year rots, and a fixed day-offset crosses the boundary every January.
+      makeReview({ id: "r1", review_date: `${thisYear}-03-01` }),
+      makeReview({ id: "r2", review_date: `${lastYear}-03-01` }),
     ];
     const amendments = [
-      makeAmendment({ id: "a1", amendment_date: "2026-02-01" }),
-      makeAmendment({ id: "a2", amendment_date: "2025-12-01" }),
+      makeAmendment({ id: "a1", amendment_date: `${thisYear}-02-01` }),
+      makeAmendment({ id: "a2", amendment_date: `${lastYear}-12-01` }),
     ];
     const r = computeStatementMetrics([makeStatement()], reviews, amendments);
     expect(r.reviews_this_year).toBe(1);

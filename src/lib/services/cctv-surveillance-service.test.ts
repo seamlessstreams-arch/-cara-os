@@ -5,6 +5,14 @@ import {
   type CctvRecord,
 } from "./cctv-surveillance-service";
 
+
+/** Date string n days in the future — UTC throughout, so it never lands a day
+ *  off across a DST boundary, and it floats with the clock so "still in the
+ *  future" stays true whenever the suite runs. */
+function daysFromNow(n: number): string {
+  const [y, m, d] = new Date().toISOString().slice(0, 10).split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
+}
 function makeRecord(overrides: Partial<CctvRecord> = {}): CctvRecord {
   return {
     id: "cctv-1",
@@ -26,7 +34,7 @@ function makeRecord(overrides: Partial<CctvRecord> = {}): CctvRecord {
     issues_found: [],
     actions_taken: [],
     reviewed_by: "Manager Smith",
-    next_review_date: "2027-08-01",
+    next_review_date: daysFromNow(330),
     notes: null,
     created_at: "2026-05-01T00:00:00Z",
     updated_at: "2026-05-01T00:00:00Z",

@@ -38,15 +38,19 @@ const { computeIndividualRiskMetrics, identifyIndividualRiskAlerts } = _testing;
 // -- Helpers -----------------------------------------------------------------
 
 function daysAgo(n: number): string {
-  const d = new Date(todayStr());
-  d.setDate(d.getDate() - n);
-  return d.toISOString().slice(0, 10);
+  // UTC throughout: parsing todayStr() gives UTC midnight, so the day shift
+  // must stay in UTC too — a local setDate lands an hour off across a DST
+  // boundary and toISOString().slice(0,10) then names the wrong day.
+  const [y, m, d] = todayStr().split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d - n)).toISOString().slice(0, 10);
 }
 
 function daysFromNow(n: number): string {
-  const d = new Date(todayStr());
-  d.setDate(d.getDate() + n);
-  return d.toISOString().slice(0, 10);
+  // UTC throughout: parsing todayStr() gives UTC midnight, so the day shift
+  // must stay in UTC too — a local setDate lands an hour off across a DST
+  // boundary and toISOString().slice(0,10) then names the wrong day.
+  const [y, m, d] = todayStr().split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
 }
 
 function daysAgoISO(n: number): string {

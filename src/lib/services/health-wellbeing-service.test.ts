@@ -11,6 +11,16 @@ import {
 
 // ── Factories ────────────────────────────────────────────────────────────
 
+function daysFromNow(n: number): string {
+  return daysAgo(-n);
+}
+
+function daysAgo(n: number): string {
+  // UTC throughout — see the DST note in the sibling suites' helpers.
+  const [y, m, d] = new Date().toISOString().slice(0, 10).split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d - n)).toISOString().slice(0, 10);
+}
+
 function makeProfile(overrides: Partial<HealthProfile> = {}): HealthProfile {
   return {
     id: "profile-1",
@@ -24,7 +34,7 @@ function makeProfile(overrides: Partial<HealthProfile> = {}): HealthProfile {
     registered_optician: "Mrs Brown",
     camhs_status: "none",
     last_health_assessment: "2025-01-01",
-    next_health_assessment: "2027-01-01",
+    next_health_assessment: daysFromNow(120),
     health_conditions: [],
     created_at: "2025-01-01T00:00:00Z",
     updated_at: "2025-01-01T00:00:00Z",
@@ -148,9 +158,9 @@ describe("computeHealthCompliance", () => {
 
     // Recent dentist for c1, recent optician for c1
     const appointments = [
-      makeAppointment({ child_id: "c1", appointment_type: "dentist", appointment_date: "2026-05-01", outcome: "attended" }),
-      makeAppointment({ child_id: "c1", appointment_type: "optician", appointment_date: "2026-01-01", outcome: "attended" }),
-      makeAppointment({ child_id: "c2", appointment_type: "gp", appointment_date: "2026-04-01", outcome: "dna" }),
+      makeAppointment({ child_id: "c1", appointment_type: "dentist", appointment_date: daysAgo(60), outcome: "attended" }),
+      makeAppointment({ child_id: "c1", appointment_type: "optician", appointment_date: daysAgo(200), outcome: "attended" }),
+      makeAppointment({ child_id: "c2", appointment_type: "gp", appointment_date: daysAgo(120), outcome: "dna" }),
     ];
 
     const result = computeHealthCompliance(profiles, appointments);
@@ -282,12 +292,12 @@ describe("computeChildHealthSummary", () => {
     const profile = makeProfile({
       immunisation_status: "up_to_date",
       camhs_status: "none",
-      next_health_assessment: "2027-01-01",
+      next_health_assessment: daysFromNow(120),
     });
 
     // Recent dentist visit within 26 weeks
     const appointments = [
-      makeAppointment({ appointment_type: "dentist", outcome: "attended", appointment_date: "2026-05-01" }),
+      makeAppointment({ appointment_type: "dentist", outcome: "attended", appointment_date: daysAgo(60) }),
     ];
 
     const result = computeChildHealthSummary(profile, appointments, []);

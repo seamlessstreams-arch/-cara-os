@@ -12,6 +12,14 @@ import type {
 
 // -- Factory Functions --------------------------------------------------------
 
+
+/** Date string n days in the future — UTC throughout, so it never lands a day
+ *  off across a DST boundary, and it floats with the clock so "still in the
+ *  future" stays true whenever the suite runs. */
+function daysFromNow(n: number): string {
+  const [y, m, d] = new Date().toISOString().slice(0, 10).split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
+}
 function makeEvidence(overrides: Partial<EvidenceEntry> = {}): EvidenceEntry {
   return {
     id: "ev-1",
@@ -34,7 +42,7 @@ function makeEvaluation(overrides: Partial<SelfEvaluation> = {}): SelfEvaluation
     id: "eval-1",
     home_id: "home-1",
     period_from: "2026-01-01",
-    period_to: "2026-12-31",
+    period_to: daysFromNow(120),
     status: "final",
     overall_grade: "good",
     helped_protected_grade: "good",

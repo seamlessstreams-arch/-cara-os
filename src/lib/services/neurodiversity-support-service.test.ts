@@ -6,6 +6,14 @@ import {
   type NeurodiversitySupportRow,
 } from "./neurodiversity-support-service";
 
+
+/** Date string n days in the future — UTC throughout, so it never lands a day
+ *  off across a DST boundary, and it floats with the clock so "still in the
+ *  future" stays true whenever the suite runs. */
+function daysFromNow(n: number): string {
+  const [y, m, d] = new Date().toISOString().slice(0, 10).split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
+}
 function makeRow(overrides: Partial<NeurodiversitySupportRow> = {}): NeurodiversitySupportRow {
   return {
     id: "row-1",
@@ -31,7 +39,7 @@ function makeRow(overrides: Partial<NeurodiversitySupportRow> = {}): Neurodivers
     medication_managed: false,
     medication_details: null,
     transition_plan: true,
-    review_date: "2026-10-01",
+    review_date: daysFromNow(30),
     status: "Active",
     notes: null,
     created_at: "2026-04-01T00:00:00Z",
@@ -68,7 +76,7 @@ describe("computeMetrics", () => {
   it("counts overdue reviews", () => {
     const rows = [
       makeRow({ id: "r-1", status: "Active", review_date: "2026-01-01" }), // overdue
-      makeRow({ id: "r-2", status: "Active", review_date: "2027-01-01" }), // future
+      makeRow({ id: "r-2", status: "Active", review_date: daysFromNow(120) }), // future
     ];
     const m = computeMetrics(rows);
     expect(m.overdue_reviews).toBe(1);
