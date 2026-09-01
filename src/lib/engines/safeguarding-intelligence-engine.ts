@@ -43,7 +43,7 @@ export interface MissingEpisodeInput {
   status: string;
   risk_level: string;
   return_interview_completed: boolean;
-  contextual_safeguarding_risk: boolean;
+  contextual_safeguarding_risk: boolean | null;
 }
 
 export interface RestraintInput {

@@ -22,7 +22,7 @@ export interface MissingEpisodeRecordInput {
   reported_to_la: boolean;
   return_interview_completed: boolean;
   return_interview_within_72hrs: boolean;    // pre-computed: return_interview_date - date_returned <= 3 days
-  has_contextual_safeguarding_risk: boolean;
+  has_contextual_safeguarding_risk: boolean | null;
   has_pattern_notes: boolean;
   status: string;                            // "closed" | "open"
   still_missing: boolean;                    // date_returned is null/empty

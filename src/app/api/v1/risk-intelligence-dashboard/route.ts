@@ -96,7 +96,7 @@ export async function GET(_request: NextRequest) {
       duration_hours: m.duration_hours ?? 0,
       risk_level: m.risk_level ?? "medium",
       return_interview_completed: m.return_interview_completed ?? false,
-      contextual_safeguarding_risk: m.contextual_safeguarding_risk ?? false,
+      contextual_safeguarding_risk: m.contextual_safeguarding_risk ?? null,
       status: m.status ?? "closed",
     };
   });

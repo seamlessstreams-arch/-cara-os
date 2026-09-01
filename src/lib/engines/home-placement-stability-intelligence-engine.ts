@@ -28,7 +28,7 @@ export interface PlacementMissingInput {
   risk_level: string;         // low | medium | high | critical
   duration_hours: number;
   return_interview_completed: boolean;
-  contextual_safeguarding_risk: boolean;
+  contextual_safeguarding_risk: boolean | null;
 }
 
 export interface HomePlacementStabilityInput {

@@ -52,7 +52,7 @@ export interface MissingEpisodeInput {
   risk_level: string;
   returned: boolean;
   return_interview_completed: boolean;
-  contextual_safeguarding_risk: boolean;
+  contextual_safeguarding_risk: boolean | null;
   pattern_notes: string | null;
 }
 
