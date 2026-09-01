@@ -299,9 +299,13 @@ export function computeMetrics(
 } {
   const total = rows.length;
 
+  // Rated over the rows where the question was answered either way — with the
+  // judgement columns tri-state, silence in the denominator would read as "no".
+  // While every field is still a strict boolean this is behaviour-identical.
   const boolRate = (field: keyof LanguageSupportRow) => {
-    const count = rows.filter((r) => r[field] === true).length;
-    return total > 0 ? Math.round((count / total) * 1000) / 10 : null;
+    const recorded = rows.filter((r) => r[field] !== null && r[field] !== undefined);
+    const count = recorded.filter((r) => r[field] === true).length;
+    return recorded.length > 0 ? Math.round((count / recorded.length) * 1000) / 10 : null;
   };
 
   // Support type breakdown
