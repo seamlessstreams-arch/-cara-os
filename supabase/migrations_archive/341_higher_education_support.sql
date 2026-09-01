@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS cs_higher_education_support (
   personal_adviser_involved boolean NOT NULL DEFAULT false,
   pathway_plan_updated      boolean NOT NULL DEFAULT false,
   social_worker_informed    boolean NOT NULL DEFAULT false,
-  young_person_engaged      boolean NOT NULL DEFAULT true,
+  young_person_engaged      boolean,
   mentoring_in_place        boolean NOT NULL DEFAULT false,
   next_milestone_date       date NULL,
   notes                     text NULL,

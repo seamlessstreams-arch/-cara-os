@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS cs_policies (
   reviewed_by                 TEXT,
   review_frequency            TEXT NOT NULL DEFAULT 'annual',
   document_url                TEXT,
-  staff_acknowledgement_required BOOLEAN NOT NULL DEFAULT TRUE,
+  staff_acknowledgement_required boolean,
   created_at                  TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at                  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS cs_policy_acknowledgements (
   staff_id          UUID NOT NULL,
   staff_name        TEXT NOT NULL,
   acknowledged_date DATE NOT NULL,
-  acknowledged      BOOLEAN NOT NULL DEFAULT TRUE,
+  acknowledged      boolean,
   notes             TEXT,
   created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );

@@ -15,12 +15,12 @@ CREATE TABLE IF NOT EXISTS cs_child_online_safety_monitoring (
   check_type       text        NOT NULL CHECK (check_type IN ('Device Check','Internet Filter Review','Social Media Audit','App Review','Screen Time Review','Online Incident','Education Session','Policy Review')),
   risk_level       text        NOT NULL CHECK (risk_level IN ('No Identified Risk','Low','Medium','High','Critical')),
 
-  filtering_active      boolean NOT NULL DEFAULT true,
-  age_appropriate       boolean NOT NULL DEFAULT true,
-  parental_controls     boolean NOT NULL DEFAULT true,
+  filtering_active      boolean,
+  age_appropriate       boolean,
+  parental_controls     boolean,
   social_media_reviewed boolean NOT NULL DEFAULT false,
-  harmful_content_found boolean NOT NULL DEFAULT false,
-  online_contact_risk   boolean NOT NULL DEFAULT false,
+  harmful_content_found boolean,
+  online_contact_risk   boolean,
   cyberbullying_identified boolean NOT NULL DEFAULT false,
 
   action_taken          boolean NOT NULL DEFAULT false,

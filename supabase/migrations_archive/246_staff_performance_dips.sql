@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS cs_staff_performance_dips (
   action_plan_created    boolean NOT NULL DEFAULT false,
   staff_responded        boolean NOT NULL DEFAULT false,
   follow_up_scheduled    boolean NOT NULL DEFAULT false,
-  recorded_promptly      boolean NOT NULL DEFAULT true,
+  recorded_promptly      boolean,
   issues_found     jsonb NOT NULL DEFAULT '[]',
   actions_taken    jsonb NOT NULL DEFAULT '[]',
   next_review_date date,

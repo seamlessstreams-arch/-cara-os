@@ -18,10 +18,10 @@ CREATE TABLE IF NOT EXISTS cs_home_emergency_lighting (
   test_result      text        NOT NULL CHECK (test_result IN ('Pass','Fail','Partial','Not Tested')),
   battery_condition text       NOT NULL CHECK (battery_condition IN ('Good','Fair','Poor','Failed','Replaced','N/A')),
   duration_minutes integer     NULL,
-  illumination_adequate boolean NOT NULL DEFAULT true,
+  illumination_adequate boolean,
 
-  escape_route_covered  boolean NOT NULL DEFAULT true,
-  signage_visible       boolean NOT NULL DEFAULT true,
+  escape_route_covered  boolean,
+  signage_visible       boolean,
   fault_identified      boolean NOT NULL DEFAULT false,
   fault_rectified       boolean NOT NULL DEFAULT false,
 

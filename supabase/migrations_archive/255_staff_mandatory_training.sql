@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS cs_staff_mandatory_training (
   linked_to_development_plan boolean NOT NULL DEFAULT false,
   accessible_format boolean NOT NULL DEFAULT false,
   evaluation_completed boolean NOT NULL DEFAULT false,
-  recorded_promptly boolean NOT NULL DEFAULT true,
+  recorded_promptly boolean,
   issues_found jsonb NOT NULL DEFAULT '[]',
   actions_taken jsonb NOT NULL DEFAULT '[]',
   next_review_date date,

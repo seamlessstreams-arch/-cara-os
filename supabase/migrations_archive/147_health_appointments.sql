@@ -14,7 +14,7 @@ create table if not exists cs_health_appointments (
   appointment_status        text not null default 'pending',
   appointment_outcome       text not null default 'not_applicable',
   consent_status            text not null default 'not_required',
-  child_accompanied         boolean not null default true,
+  child_accompanied         boolean,
   accompanied_by            text,
   child_views_captured      boolean not null default false,
   child_anxious             boolean not null default false,

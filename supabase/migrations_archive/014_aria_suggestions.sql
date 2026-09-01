@@ -42,7 +42,7 @@ create table if not exists aria_suggestions (
                           'draft','awaiting_review','approved','amended_and_approved',
                           'rejected','no_action_required','committed','archived'
                         )),
-  requires_approval     boolean not null default true,
+  requires_approval     boolean,
   reviewer_role         text,
   created_by            text,
   reviewed_by           text,

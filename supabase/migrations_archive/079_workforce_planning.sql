@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS cs_staffing_snapshots (
   staff_on_sickness      integer NOT NULL DEFAULT 0,
   children_in_placement  integer NOT NULL,
   staff_child_ratio      numeric(4,2) NOT NULL,
-  meets_minimum_ratio    boolean NOT NULL DEFAULT true,
+  meets_minimum_ratio    boolean,
   commentary             text,
   recorded_by            text NOT NULL,
   created_at             timestamptz NOT NULL DEFAULT now()

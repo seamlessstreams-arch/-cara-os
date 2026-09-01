@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS cs_lac_reviews (
   permanence_plan_reviewed      boolean NOT NULL DEFAULT false,
   health_reviewed               boolean NOT NULL DEFAULT false,
   education_reviewed            boolean NOT NULL DEFAULT false,
-  within_timescale              boolean NOT NULL DEFAULT true,
+  within_timescale              boolean,
   notes                         text,
   created_at                    timestamptz NOT NULL DEFAULT now(),
   updated_at                    timestamptz NOT NULL DEFAULT now()

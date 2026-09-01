@@ -18,8 +18,8 @@ CREATE TABLE IF NOT EXISTS cs_childrens_absences (
   child_id      text,
   school_name   text NOT NULL DEFAULT '',
 
-  authorised                boolean NOT NULL DEFAULT true,
-  school_notified           boolean NOT NULL DEFAULT true,
+  authorised                boolean,
+  school_notified           boolean,
   social_worker_informed    boolean NOT NULL DEFAULT false,
   parents_informed          boolean NOT NULL DEFAULT false,
   medical_evidence_provided boolean NOT NULL DEFAULT false,

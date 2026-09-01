@@ -183,7 +183,7 @@ create table care_events (
   version                     int not null default 1,
   previous_version_id         uuid references care_events(id),
   amendment_reason            text,
-  is_current_version          boolean not null default true,
+  is_current_version          boolean,
 
   -- ARIA suggestions (stored separately from approved record)
   aria_suggested_summary      text,

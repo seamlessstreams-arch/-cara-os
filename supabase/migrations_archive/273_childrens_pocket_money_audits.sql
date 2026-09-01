@@ -15,7 +15,7 @@ create table if not exists public.cs_childrens_pocket_money_audits (
   child_signed boolean not null default false,
   staff_witnessed boolean not null default false,
   two_signatures_present boolean not null default false,
-  balance_matches_record boolean not null default true,
+  balance_matches_record boolean,
   child_consulted_on_spending boolean not null default false,
   notes text,
   created_at timestamptz not null default now(),

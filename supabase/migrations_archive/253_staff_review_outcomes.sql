@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS cs_staff_review_outcomes (
   safeguarding_discussed boolean NOT NULL DEFAULT false,
   record_shared_with_staff boolean NOT NULL DEFAULT false,
   approved_by_senior boolean NOT NULL DEFAULT false,
-  recorded_promptly boolean NOT NULL DEFAULT true,
+  recorded_promptly boolean,
   issues_found jsonb NOT NULL DEFAULT '[]',
   actions_taken jsonb NOT NULL DEFAULT '[]',
   next_review_date date,

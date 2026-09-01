@@ -10,7 +10,7 @@ create table if not exists public.cs_home_asbestos_management (
   risk_score integer not null default 0,
   management_action text not null,
   management_plan_in_place boolean not null default false,
-  register_updated boolean not null default true,
+  register_updated boolean,
   staff_awareness_confirmed boolean not null default false,
   labelling_in_place boolean not null default false,
   reinspection_date date,

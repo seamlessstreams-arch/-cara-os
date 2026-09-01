@@ -120,7 +120,7 @@ CREATE TABLE IF NOT EXISTS cs_maintenance_requests (
   actual_cost       NUMERIC(10,2),
   completion_date   TIMESTAMPTZ,
   status            TEXT NOT NULL DEFAULT 'open',
-  child_safety_risk BOOLEAN NOT NULL DEFAULT FALSE,
+  child_safety_risk boolean,
   created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );

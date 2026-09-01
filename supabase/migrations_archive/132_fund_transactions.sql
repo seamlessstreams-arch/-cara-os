@@ -15,7 +15,7 @@ create table if not exists cs_fund_transactions (
   transaction_type              text    not null default 'pocket_money',
   fund_category                 text    not null default 'pocket_money',
   amount                        numeric(10,2) not null default 0,
-  is_credit                     boolean not null default true,
+  is_credit                     boolean,
   running_balance               numeric(10,2) not null default 0,
   authorisation_status          text    not null default 'pending_authorisation',
   authorised_by                 text    not null default '',

@@ -163,3 +163,34 @@ describe("identifySocialSkillsAlerts", () => {
     expect(alerts.some((a) => a.type === "no_therapeutic_input" && a.severity === "medium")).toBe(true);
   });
 });
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Tri-state judgements — the vertical template for the services layer
+//
+// The create defaulted all twelve judgements to `true` (matching the archived
+// schema's column defaults, both now dropped), and boolRate divided by every
+// record. Together: a session nobody had reviewed scored 100% on all twelve
+// rates. These pin the honest behaviour end to end.
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe("tri-state judgements", () => {
+  const rec = (child_engaged: boolean | null, id: string) =>
+    makeRecord({ id, child_engaged });
+
+  it("rates over the records where the question was answered", () => {
+    const m = computeSocialSkillsMetrics([rec(true, "a"), rec(null, "b"), rec(null, "c")]);
+    // One answered, answered yes: 100% of what is known — not 33% of a
+    // denominator padded with silence.
+    expect(m.child_engaged_rate).toBe(100);
+  });
+
+  it("still counts a recorded no against the rate", () => {
+    const m = computeSocialSkillsMetrics([rec(true, "a"), rec(false, "b")]);
+    expect(m.child_engaged_rate).toBe(50);
+  });
+
+  it("reports null, not a score, when no record answers the question", () => {
+    const m = computeSocialSkillsMetrics([rec(null, "a"), rec(null, "b")]);
+    expect(m.child_engaged_rate).toBeNull();
+  });
+});

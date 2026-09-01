@@ -30,9 +30,9 @@ CREATE TABLE IF NOT EXISTS cs_home_improvements (
   safety_improvement            boolean NOT NULL DEFAULT false,
   planning_permission_required  boolean NOT NULL DEFAULT false,
   planning_permission_obtained  boolean NOT NULL DEFAULT false,
-  building_regs_compliant       boolean NOT NULL DEFAULT true,
-  fire_safety_maintained        boolean NOT NULL DEFAULT true,
-  disruption_minimised          boolean NOT NULL DEFAULT true,
+  building_regs_compliant       boolean,
+  fire_safety_maintained        boolean,
+  disruption_minimised          boolean,
 
   issues_found   jsonb NOT NULL DEFAULT '[]',
   actions_taken  jsonb NOT NULL DEFAULT '[]',

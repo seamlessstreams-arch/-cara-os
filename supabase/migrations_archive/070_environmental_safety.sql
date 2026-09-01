@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS cs_fire_drills (
   drill_time                text NOT NULL,
   drill_type                text NOT NULL DEFAULT 'planned',
   evacuation_time_seconds   integer NOT NULL,
-  all_evacuated             boolean NOT NULL DEFAULT true,
+  all_evacuated             boolean,
   children_present          integer NOT NULL DEFAULT 0,
   staff_present             integer NOT NULL DEFAULT 0,
   visitors_present          integer NOT NULL DEFAULT 0,

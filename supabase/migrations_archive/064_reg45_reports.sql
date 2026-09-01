@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS cs_reg45_reports (
   evaluations     jsonb   NOT NULL DEFAULT '[]',
   reg44_reports_reviewed integer NOT NULL DEFAULT 0,
   reg44_actions_outstanding integer NOT NULL DEFAULT 0,
-  statement_of_purpose_compliant boolean NOT NULL DEFAULT true,
+  statement_of_purpose_compliant boolean,
   key_strengths   jsonb   NOT NULL DEFAULT '[]',
   areas_for_improvement jsonb NOT NULL DEFAULT '[]',
   status          text    NOT NULL DEFAULT 'draft',

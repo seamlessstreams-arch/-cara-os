@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS cs_exploitation_screenings (
   protective_factors      JSONB NOT NULL DEFAULT '[]',
   location_risks          JSONB NOT NULL DEFAULT '[]',
   peer_associations       JSONB NOT NULL DEFAULT '[]',
-  online_risks_identified BOOLEAN NOT NULL DEFAULT FALSE,
+  online_risks_identified boolean,
   referral_made           BOOLEAN NOT NULL DEFAULT FALSE,
   referral_to             TEXT,
   referral_date           DATE,

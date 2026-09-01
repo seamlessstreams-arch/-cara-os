@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS cs_respite_arrangements (
   handover_completed              boolean NOT NULL DEFAULT false,
   return_debrief                  boolean NOT NULL DEFAULT false,
   child_experience_rating         text NULL,
-  concerns_raised                 boolean NOT NULL DEFAULT false,
+  concerns_raised                 boolean,
   concern_details                 text NULL,
   next_break_date                 date NULL,
   notes                           text NULL,
