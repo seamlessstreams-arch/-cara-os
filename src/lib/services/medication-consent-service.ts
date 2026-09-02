@@ -80,17 +80,19 @@ export interface MedicationConsentRecord {
   child_name: string;
   child_id: string | null;
   medication_name: string;
-  consent_documented: boolean;
-  capacity_assessed: boolean;
-  child_informed: boolean;
-  side_effects_explained: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer. */
+  consent_documented: boolean | null;
+  capacity_assessed: boolean | null;
+  child_informed: boolean | null;
+  side_effects_explained: boolean | null;
   alternatives_discussed: boolean;
-  review_date_set: boolean;
-  social_worker_notified: boolean;
-  gp_consulted: boolean;
+  review_date_set: boolean | null;
+  social_worker_notified: boolean | null;
+  gp_consulted: boolean | null;
   restrictions_noted: boolean;
   self_admin_assessed: boolean;
-  storage_confirmed: boolean;
+  storage_confirmed: boolean | null;
   disposal_arranged: boolean;
   issues_found: string[];
   actions_taken: string[];
@@ -247,11 +249,15 @@ export function identifyMedicationConsentAlerts(
 
   // Controlled drug without consent documented
   for (const r of records) {
-    if (r.medication_type === "controlled_drug" && !r.consent_documented) {
+    // A controlled drug with consent UNRECORDED must alert — unevidenced
+    // consent is the gap that matters most — with wording true to the record.
+    if (r.medication_type === "controlled_drug" && r.consent_documented !== true) {
       alerts.push({
         type: "controlled_drug_no_consent",
         severity: "critical",
-        message: `Controlled drug ${r.medication_name} for ${r.child_name} has no documented consent — obtain immediately`,
+        message: r.consent_documented === false
+          ? `Controlled drug ${r.medication_name} for ${r.child_name} has consent recorded as NOT documented — obtain immediately`
+          : `Controlled drug ${r.medication_name} for ${r.child_name} has no consent documentation recorded — evidence or obtain immediately`,
         id: r.id,
       });
     }
@@ -269,7 +275,7 @@ export function identifyMedicationConsentAlerts(
   }
 
   // Child not informed
-  const noChildInfo = records.filter((r) => !r.child_informed).length;
+  const noChildInfo = records.filter((r) => r.child_informed === false).length;
   if (noChildInfo >= 1) {
     alerts.push({
       type: "child_not_informed",
@@ -280,7 +286,7 @@ export function identifyMedicationConsentAlerts(
   }
 
   // Side effects not explained
-  const noSideEffects = records.filter((r) => !r.side_effects_explained).length;
+  const noSideEffects = records.filter((r) => r.side_effects_explained === false).length;
   if (noSideEffects >= 2) {
     alerts.push({
       type: "side_effects_not_explained",
@@ -291,7 +297,7 @@ export function identifyMedicationConsentAlerts(
   }
 
   // No review date
-  const noReview = records.filter((r) => !r.review_date_set).length;
+  const noReview = records.filter((r) => r.review_date_set === false).length;
   if (noReview >= 2) {
     alerts.push({
       type: "no_review_date",
@@ -379,17 +385,17 @@ export async function createRecord(
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       medication_name: payload.medicationName,
-      consent_documented: payload.consentDocumented ?? true,
-      capacity_assessed: payload.capacityAssessed ?? true,
-      child_informed: payload.childInformed ?? true,
-      side_effects_explained: payload.sideEffectsExplained ?? true,
+      consent_documented: payload.consentDocumented ?? null,
+      capacity_assessed: payload.capacityAssessed ?? null,
+      child_informed: payload.childInformed ?? null,
+      side_effects_explained: payload.sideEffectsExplained ?? null,
       alternatives_discussed: payload.alternativesDiscussed ?? false,
-      review_date_set: payload.reviewDateSet ?? true,
-      social_worker_notified: payload.socialWorkerNotified ?? true,
-      gp_consulted: payload.gpConsulted ?? true,
+      review_date_set: payload.reviewDateSet ?? null,
+      social_worker_notified: payload.socialWorkerNotified ?? null,
+      gp_consulted: payload.gpConsulted ?? null,
       restrictions_noted: payload.restrictionsNoted ?? false,
       self_admin_assessed: payload.selfAdminAssessed ?? false,
-      storage_confirmed: payload.storageConfirmed ?? true,
+      storage_confirmed: payload.storageConfirmed ?? null,
       disposal_arranged: payload.disposalArranged ?? false,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],

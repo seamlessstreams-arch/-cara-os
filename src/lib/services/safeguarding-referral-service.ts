@@ -74,11 +74,13 @@ export interface SafeguardingReferralRecord {
   child_id: string | null;
   referred_to_agency: string;
   referral_reference: string | null;
-  referral_timely: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer. */
+  referral_timely: boolean | null;
   consent_obtained: boolean;
   consent_not_required_reason: string | null;
-  information_shared_appropriately: boolean;
-  manager_informed: boolean;
+  information_shared_appropriately: boolean | null;
+  manager_informed: boolean | null;
   ofsted_notified: boolean;
   lado_consulted: boolean;
   strategy_meeting_held: boolean;
@@ -231,11 +233,15 @@ export function identifySafeguardingReferralAlerts(
 
   // Untimely referral for immediate urgency
   for (const r of records) {
-    if (r.referral_urgency === "immediate" && !r.referral_timely) {
+    // On an IMMEDIATE referral a gap is itself critical — but the message must
+    // not assert a breach nobody recorded.
+    if (r.referral_urgency === "immediate" && r.referral_timely !== true) {
       alerts.push({
         type: "untimely_immediate_referral",
         severity: "critical",
-        message: `Immediate referral for ${r.child_name} on ${r.referral_date} was not timely — review safeguarding response`,
+        message: r.referral_timely === false
+          ? `Immediate referral for ${r.child_name} on ${r.referral_date} was not timely — review safeguarding response`
+          : `Immediate referral for ${r.child_name} on ${r.referral_date} has no timeliness recorded — evidence the response now`,
         id: r.id,
       });
     }
@@ -264,7 +270,7 @@ export function identifySafeguardingReferralAlerts(
   }
 
   // Information not shared appropriately
-  const notShared = records.filter((r) => !r.information_shared_appropriately).length;
+  const notShared = records.filter((r) => r.information_shared_appropriately === false).length;
   if (notShared >= 2) {
     alerts.push({
       type: "information_not_shared",
@@ -365,11 +371,11 @@ export async function createRecord(
       child_id: payload.childId ?? null,
       referred_to_agency: payload.referredToAgency,
       referral_reference: payload.referralReference ?? null,
-      referral_timely: payload.referralTimely ?? true,
+      referral_timely: payload.referralTimely ?? null,
       consent_obtained: payload.consentObtained ?? false,
       consent_not_required_reason: payload.consentNotRequiredReason ?? null,
-      information_shared_appropriately: payload.informationSharedAppropriately ?? true,
-      manager_informed: payload.managerInformed ?? true,
+      information_shared_appropriately: payload.informationSharedAppropriately ?? null,
+      manager_informed: payload.managerInformed ?? null,
       ofsted_notified: payload.ofstedNotified ?? false,
       lado_consulted: payload.ladoConsulted ?? false,
       strategy_meeting_held: payload.strategyMeetingHeld ?? false,

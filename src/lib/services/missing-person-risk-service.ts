@@ -84,7 +84,9 @@ export interface MissingPersonRiskRecord {
   safe_places_identified: boolean;
   escalation_protocol_followed: boolean;
   multi_agency_involved: boolean;
-  exploitation_risk_identified: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer. */
+  exploitation_risk_identified: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   assessed_by: string;
@@ -394,7 +396,7 @@ export async function createRecord(
       safe_places_identified: payload.safePlacesIdentified ?? false,
       escalation_protocol_followed: payload.escalationProtocolFollowed ?? false,
       multi_agency_involved: payload.multiAgencyInvolved ?? false,
-      exploitation_risk_identified: payload.exploitationRiskIdentified ?? false,
+      exploitation_risk_identified: payload.exploitationRiskIdentified ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       assessed_by: payload.assessedBy,

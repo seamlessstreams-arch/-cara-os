@@ -8,36 +8,39 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<SafeguardingReferralRecord>): SafeguardingReferralRecord {
   return {
-    id: overrides?.id ?? "r-1",
-    home_id: overrides?.home_id ?? "home-1",
-    referral_type: overrides?.referral_type ?? "mash_referral",
-    referral_outcome: overrides?.referral_outcome ?? "pending",
-    referral_urgency: overrides?.referral_urgency ?? "routine",
-    concern_category: overrides?.concern_category ?? "other",
-    referral_date: overrides?.referral_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "r-1",
+    home_id: "home-1",
+    referral_type: "mash_referral",
+    referral_outcome: "pending",
+    referral_urgency: "routine",
+    concern_category: "other",
+    referral_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : "child-1",
-    referred_to_agency: overrides?.referred_to_agency ?? "MASH Team",
+    referred_to_agency: "MASH Team",
     referral_reference: "referral_reference" in (overrides ?? {}) ? (overrides!.referral_reference ?? null) : null,
-    referral_timely: overrides?.referral_timely ?? true,
-    consent_obtained: overrides?.consent_obtained ?? true,
+    referral_timely: true,
+    consent_obtained: true,
     consent_not_required_reason: "consent_not_required_reason" in (overrides ?? {}) ? (overrides!.consent_not_required_reason ?? null) : null,
-    information_shared_appropriately: overrides?.information_shared_appropriately ?? true,
-    manager_informed: overrides?.manager_informed ?? true,
-    ofsted_notified: overrides?.ofsted_notified ?? true,
-    lado_consulted: overrides?.lado_consulted ?? true,
-    strategy_meeting_held: overrides?.strategy_meeting_held ?? true,
-    child_informed: overrides?.child_informed ?? true,
-    parents_informed: overrides?.parents_informed ?? true,
-    outcome_communicated: overrides?.outcome_communicated ?? true,
-    follow_up_required: overrides?.follow_up_required ?? false,
-    issues_found: overrides?.issues_found ?? [],
-    actions_taken: overrides?.actions_taken ?? [],
-    referred_by: overrides?.referred_by ?? "Staff A",
+    information_shared_appropriately: true,
+    manager_informed: true,
+    ofsted_notified: true,
+    lado_consulted: true,
+    strategy_meeting_held: true,
+    child_informed: true,
+    parents_informed: true,
+    outcome_communicated: true,
+    follow_up_required: false,
+    issues_found: [],
+    actions_taken: [],
+    referred_by: "Staff A",
     response_date: "response_date" in (overrides ?? {}) ? (overrides!.response_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(),
-    updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(),
+    updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -315,5 +318,23 @@ describe("safeguarding-referral-service", () => {
         expect(types).toContain("outcome_not_communicated");
       });
     });
+  });
+});
+
+// ── Tri-state: a gap on an IMMEDIATE referral alerts, with honest wording ──
+describe("tri-state judgements", () => {
+  it("alerts on an unrecorded timeliness as a gap, not an asserted breach", () => {
+    const alerts = _testing.identifySafeguardingReferralAlerts([
+      makeRecord({ referral_urgency: "immediate", referral_timely: null }),
+    ]);
+    const a = alerts.find((x) => x.type === "untimely_immediate_referral");
+    expect(a?.message).toMatch(/no timeliness recorded/i);
+    expect(a?.message).not.toMatch(/was not timely/i);
+  });
+  it("still asserts the breach when it was recorded", () => {
+    const alerts = _testing.identifySafeguardingReferralAlerts([
+      makeRecord({ referral_urgency: "immediate", referral_timely: false }),
+    ]);
+    expect(alerts.some((x) => /was not timely/i.test(x.message))).toBe(true);
   });
 });
