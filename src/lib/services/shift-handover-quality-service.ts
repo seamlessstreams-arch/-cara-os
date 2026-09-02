@@ -68,18 +68,20 @@ export interface ShiftHandoverQualityRecord {
   handover_date: string;
   outgoing_staff: string;
   incoming_staff: string;
-  medication_info_shared: boolean;
-  safeguarding_updates: boolean;
-  incident_continuity: boolean;
-  care_plan_updates: boolean;
-  risk_info_shared: boolean;
-  appointments_communicated: boolean;
-  behaviour_updates: boolean;
-  emotional_wellbeing_noted: boolean;
-  food_dietary_noted: boolean;
-  contact_updates: boolean;
-  key_tasks_identified: boolean;
-  read_and_signed: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer — rates run over the records where the question was answered. */
+  medication_info_shared: boolean | null;
+  safeguarding_updates: boolean | null;
+  incident_continuity: boolean | null;
+  care_plan_updates: boolean | null;
+  risk_info_shared: boolean | null;
+  appointments_communicated: boolean | null;
+  behaviour_updates: boolean | null;
+  emotional_wellbeing_noted: boolean | null;
+  food_dietary_noted: boolean | null;
+  contact_updates: boolean | null;
+  key_tasks_identified: boolean | null;
+  read_and_signed: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   audited_by: string;
@@ -238,7 +240,8 @@ export function identifyShiftHandoverQualityAlerts(
   }
 
   // Medication info not shared
-  const noMedInfo = records.filter((r) => !r.medication_info_shared).length;
+  // A recorded "no" is a finding; an unanswered question is not.
+  const noMedInfo = records.filter((r) => r.medication_info_shared === false).length;
   if (noMedInfo >= 1) {
     alerts.push({
       type: "medication_not_shared",
@@ -249,7 +252,7 @@ export function identifyShiftHandoverQualityAlerts(
   }
 
   // Risk info not shared
-  const noRiskInfo = records.filter((r) => !r.risk_info_shared).length;
+  const noRiskInfo = records.filter((r) => r.risk_info_shared === false).length;
   if (noRiskInfo >= 1) {
     alerts.push({
       type: "risk_not_shared",
@@ -260,7 +263,7 @@ export function identifyShiftHandoverQualityAlerts(
   }
 
   // Not read and signed
-  const notSigned = records.filter((r) => !r.read_and_signed).length;
+  const notSigned = records.filter((r) => r.read_and_signed === false).length;
   if (notSigned >= 2) {
     alerts.push({
       type: "not_read_signed",
@@ -271,7 +274,7 @@ export function identifyShiftHandoverQualityAlerts(
   }
 
   // Care plan updates not shared
-  const noCarePlan = records.filter((r) => !r.care_plan_updates).length;
+  const noCarePlan = records.filter((r) => r.care_plan_updates === false).length;
   if (noCarePlan >= 3) {
     alerts.push({
       type: "care_plan_not_shared",
@@ -357,18 +360,18 @@ export async function createRecord(
       handover_date: payload.handoverDate,
       outgoing_staff: payload.outgoingStaff,
       incoming_staff: payload.incomingStaff,
-      medication_info_shared: payload.medicationInfoShared ?? true,
-      safeguarding_updates: payload.safeguardingUpdates ?? true,
-      incident_continuity: payload.incidentContinuity ?? true,
-      care_plan_updates: payload.carePlanUpdates ?? true,
-      risk_info_shared: payload.riskInfoShared ?? true,
-      appointments_communicated: payload.appointmentsCommunicated ?? true,
-      behaviour_updates: payload.behaviourUpdates ?? true,
-      emotional_wellbeing_noted: payload.emotionalWellbeingNoted ?? true,
-      food_dietary_noted: payload.foodDietaryNoted ?? true,
-      contact_updates: payload.contactUpdates ?? true,
-      key_tasks_identified: payload.keyTasksIdentified ?? true,
-      read_and_signed: payload.readAndSigned ?? true,
+      medication_info_shared: payload.medicationInfoShared ?? null,
+      safeguarding_updates: payload.safeguardingUpdates ?? null,
+      incident_continuity: payload.incidentContinuity ?? null,
+      care_plan_updates: payload.carePlanUpdates ?? null,
+      risk_info_shared: payload.riskInfoShared ?? null,
+      appointments_communicated: payload.appointmentsCommunicated ?? null,
+      behaviour_updates: payload.behaviourUpdates ?? null,
+      emotional_wellbeing_noted: payload.emotionalWellbeingNoted ?? null,
+      food_dietary_noted: payload.foodDietaryNoted ?? null,
+      contact_updates: payload.contactUpdates ?? null,
+      key_tasks_identified: payload.keyTasksIdentified ?? null,
+      read_and_signed: payload.readAndSigned ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       audited_by: payload.auditedBy,

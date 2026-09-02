@@ -8,31 +8,34 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<ChildDigitalWellbeingRecord>): ChildDigitalWellbeingRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    device_type: overrides?.device_type ?? "smartphone",
-    online_safety_rating: overrides?.online_safety_rating ?? "good",
-    screen_time_compliance: overrides?.screen_time_compliance ?? "within_guidelines",
-    digital_literacy_level: overrides?.digital_literacy_level ?? "competent",
-    assessment_date: overrides?.assessment_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    device_type: "smartphone",
+    online_safety_rating: "good",
+    screen_time_compliance: "within_guidelines",
+    digital_literacy_level: "competent",
+    assessment_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    assessed_by: overrides?.assessed_by ?? "Staff A",
-    parental_controls_active: overrides?.parental_controls_active ?? true,
-    age_appropriate_content: overrides?.age_appropriate_content ?? true,
-    online_safety_educated: overrides?.online_safety_educated ?? true,
-    cyberbullying_screened: overrides?.cyberbullying_screened ?? true,
-    social_media_monitored: overrides?.social_media_monitored ?? true,
-    gaming_monitored: overrides?.gaming_monitored ?? true,
-    privacy_settings_reviewed: overrides?.privacy_settings_reviewed ?? true,
-    digital_agreement_signed: overrides?.digital_agreement_signed ?? true,
-    care_plan_reflects: overrides?.care_plan_reflects ?? true,
-    screen_time_discussed: overrides?.screen_time_discussed ?? true,
-    sleep_impact_assessed: overrides?.sleep_impact_assessed ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
+    assessed_by: "Staff A",
+    parental_controls_active: true,
+    age_appropriate_content: true,
+    online_safety_educated: true,
+    cyberbullying_screened: true,
+    social_media_monitored: true,
+    gaming_monitored: true,
+    privacy_settings_reviewed: true,
+    digital_agreement_signed: true,
+    care_plan_reflects: true,
+    screen_time_discussed: true,
+    sleep_impact_assessed: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: [],
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -127,5 +130,17 @@ describe("child-digital-wellbeing-service", () => {
       expect(types).toContain("social_media_not_monitored");
       expect(types).toContain("sleep_impact_not_assessed");
     });
+  });
+});
+
+// ── Tri-state (promotion kit): an unanswered question is neither yes nor breach ──
+describe("tri-state judgements", () => {
+  it("does not count an unrecorded cyberbullying_screened as a failure", () => {
+    const alerts = _testing.identifyChildDigitalWellbeingAlerts([makeRecord({ cyberbullying_screened: null })]);
+    expect(alerts.some((a) => /cyberbullying/i.test(a.message))).toBe(false);
+  });
+  it("still counts a recorded failure", () => {
+    const alerts = _testing.identifyChildDigitalWellbeingAlerts([makeRecord({ cyberbullying_screened: false })]);
+    expect(alerts.some((a) => /cyberbullying/i.test(a.message))).toBe(true);
   });
 });

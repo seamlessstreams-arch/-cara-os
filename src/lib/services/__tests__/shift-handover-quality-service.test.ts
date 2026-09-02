@@ -8,31 +8,34 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<ShiftHandoverQualityRecord>): ShiftHandoverQualityRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    handover_type: overrides?.handover_type ?? "day_to_night",
-    quality_rating: overrides?.quality_rating ?? "good",
-    completion_status: overrides?.completion_status ?? "fully_complete",
-    handover_format: overrides?.handover_format ?? "verbal_and_written",
-    handover_date: overrides?.handover_date ?? todayStr(),
-    outgoing_staff: overrides?.outgoing_staff ?? "Staff A",
-    incoming_staff: overrides?.incoming_staff ?? "Staff B",
-    medication_info_shared: overrides?.medication_info_shared ?? true,
-    safeguarding_updates: overrides?.safeguarding_updates ?? true,
-    incident_continuity: overrides?.incident_continuity ?? true,
-    care_plan_updates: overrides?.care_plan_updates ?? true,
-    risk_info_shared: overrides?.risk_info_shared ?? true,
-    appointments_communicated: overrides?.appointments_communicated ?? true,
-    behaviour_updates: overrides?.behaviour_updates ?? true,
-    emotional_wellbeing_noted: overrides?.emotional_wellbeing_noted ?? true,
-    food_dietary_noted: overrides?.food_dietary_noted ?? true,
-    contact_updates: overrides?.contact_updates ?? true,
-    key_tasks_identified: overrides?.key_tasks_identified ?? true,
-    read_and_signed: overrides?.read_and_signed ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
-    audited_by: overrides?.audited_by ?? "Manager A",
+    id: "a-1", home_id: "home-1",
+    handover_type: "day_to_night",
+    quality_rating: "good",
+    completion_status: "fully_complete",
+    handover_format: "verbal_and_written",
+    handover_date: todayStr(),
+    outgoing_staff: "Staff A",
+    incoming_staff: "Staff B",
+    medication_info_shared: true,
+    safeguarding_updates: true,
+    incident_continuity: true,
+    care_plan_updates: true,
+    risk_info_shared: true,
+    appointments_communicated: true,
+    behaviour_updates: true,
+    emotional_wellbeing_noted: true,
+    food_dietary_noted: true,
+    contact_updates: true,
+    key_tasks_identified: true,
+    read_and_signed: true,
+    issues_found: [], actions_taken: [],
+    audited_by: "Manager A",
     next_audit_date: "next_audit_date" in (overrides ?? {}) ? (overrides!.next_audit_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
@@ -119,5 +122,17 @@ describe("shift-handover-quality-service", () => {
       expect(types).toContain("not_read_signed");
       expect(types).toContain("care_plan_not_shared");
     });
+  });
+});
+
+// ── Tri-state (promotion kit): an unanswered question is neither yes nor breach ──
+describe("tri-state judgements", () => {
+  it("does not count an unrecorded medication_info_shared as a failure", () => {
+    const alerts = _testing.identifyShiftHandoverQualityAlerts([makeRecord({ medication_info_shared: null })]);
+    expect(alerts.some((a) => /medication info/i.test(a.message))).toBe(false);
+  });
+  it("still counts a recorded failure", () => {
+    const alerts = _testing.identifyShiftHandoverQualityAlerts([makeRecord({ medication_info_shared: false })]);
+    expect(alerts.some((a) => /medication info/i.test(a.message))).toBe(true);
   });
 });

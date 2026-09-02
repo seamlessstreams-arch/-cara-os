@@ -67,18 +67,20 @@ export interface ChildDigitalWellbeingRecord {
   child_name: string;
   child_id: string | null;
   assessed_by: string;
-  parental_controls_active: boolean;
-  age_appropriate_content: boolean;
-  online_safety_educated: boolean;
-  cyberbullying_screened: boolean;
-  social_media_monitored: boolean;
-  gaming_monitored: boolean;
-  privacy_settings_reviewed: boolean;
-  digital_agreement_signed: boolean;
-  care_plan_reflects: boolean;
-  screen_time_discussed: boolean;
-  sleep_impact_assessed: boolean;
-  recorded_promptly: boolean;
+  /** Tri-state judgements/observations: null = not recorded. Absence is never
+   *  an answer — rates run over the records where the question was answered. */
+  parental_controls_active: boolean | null;
+  age_appropriate_content: boolean | null;
+  online_safety_educated: boolean | null;
+  cyberbullying_screened: boolean | null;
+  social_media_monitored: boolean | null;
+  gaming_monitored: boolean | null;
+  privacy_settings_reviewed: boolean | null;
+  digital_agreement_signed: boolean | null;
+  care_plan_reflects: boolean | null;
+  screen_time_discussed: boolean | null;
+  sleep_impact_assessed: boolean | null;
+  recorded_promptly: boolean | null;
   issues_found: string[];
   actions_taken: string[];
   next_review_date: string | null;
@@ -232,7 +234,8 @@ export function identifyChildDigitalWellbeingAlerts(
   }
 
   // Cyberbullying not screened
-  const notScreened = records.filter((r) => !r.cyberbullying_screened).length;
+  // A recorded "no" is a finding; an unanswered question is not.
+  const notScreened = records.filter((r) => r.cyberbullying_screened === false).length;
   if (notScreened >= 1) {
     alerts.push({
       type: "cyberbullying_not_screened",
@@ -243,7 +246,7 @@ export function identifyChildDigitalWellbeingAlerts(
   }
 
   // Online safety not educated
-  const notEducated = records.filter((r) => !r.online_safety_educated).length;
+  const notEducated = records.filter((r) => r.online_safety_educated === false).length;
   if (notEducated >= 1) {
     alerts.push({
       type: "online_safety_not_educated",
@@ -254,7 +257,7 @@ export function identifyChildDigitalWellbeingAlerts(
   }
 
   // Social media not monitored
-  const smNotMonitored = records.filter((r) => !r.social_media_monitored).length;
+  const smNotMonitored = records.filter((r) => r.social_media_monitored === false).length;
   if (smNotMonitored >= 2) {
     alerts.push({
       type: "social_media_not_monitored",
@@ -265,7 +268,7 @@ export function identifyChildDigitalWellbeingAlerts(
   }
 
   // Sleep impact not assessed
-  const sleepNotAssessed = records.filter((r) => !r.sleep_impact_assessed).length;
+  const sleepNotAssessed = records.filter((r) => r.sleep_impact_assessed === false).length;
   if (sleepNotAssessed >= 2) {
     alerts.push({
       type: "sleep_impact_not_assessed",
@@ -352,18 +355,18 @@ export async function createRecord(
       child_name: payload.childName,
       child_id: payload.childId ?? null,
       assessed_by: payload.assessedBy,
-      parental_controls_active: payload.parentalControlsActive ?? true,
-      age_appropriate_content: payload.ageAppropriateContent ?? true,
-      online_safety_educated: payload.onlineSafetyEducated ?? true,
-      cyberbullying_screened: payload.cyberbullyingScreened ?? true,
-      social_media_monitored: payload.socialMediaMonitored ?? true,
-      gaming_monitored: payload.gamingMonitored ?? true,
-      privacy_settings_reviewed: payload.privacySettingsReviewed ?? true,
-      digital_agreement_signed: payload.digitalAgreementSigned ?? true,
-      care_plan_reflects: payload.carePlanReflects ?? true,
-      screen_time_discussed: payload.screenTimeDiscussed ?? true,
-      sleep_impact_assessed: payload.sleepImpactAssessed ?? true,
-      recorded_promptly: payload.recordedPromptly ?? true,
+      parental_controls_active: payload.parentalControlsActive ?? null,
+      age_appropriate_content: payload.ageAppropriateContent ?? null,
+      online_safety_educated: payload.onlineSafetyEducated ?? null,
+      cyberbullying_screened: payload.cyberbullyingScreened ?? null,
+      social_media_monitored: payload.socialMediaMonitored ?? null,
+      gaming_monitored: payload.gamingMonitored ?? null,
+      privacy_settings_reviewed: payload.privacySettingsReviewed ?? null,
+      digital_agreement_signed: payload.digitalAgreementSigned ?? null,
+      care_plan_reflects: payload.carePlanReflects ?? null,
+      screen_time_discussed: payload.screenTimeDiscussed ?? null,
+      sleep_impact_assessed: payload.sleepImpactAssessed ?? null,
+      recorded_promptly: payload.recordedPromptly ?? null,
       issues_found: payload.issuesFound ?? [],
       actions_taken: payload.actionsTaken ?? [],
       next_review_date: payload.nextReviewDate ?? null,
