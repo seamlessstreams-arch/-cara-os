@@ -34,41 +34,43 @@ function qualityInput(overrides: Partial<{
   safeguarding_flags: string[];
 }> = {}) {
   return {
-    content: overrides.content ?? "",
-    word_count: overrides.word_count ?? 0,
+    content: "",
+    word_count: 0,
     mood_observations: overrides.mood_observations ?? null,
     behaviour_notes: overrides.behaviour_notes ?? null,
-    positive_highlights: overrides.positive_highlights ?? [],
-    concerns: overrides.concerns ?? [],
-    safeguarding_flags: overrides.safeguarding_flags ?? [],
+    positive_highlights: [],
+    concerns: [],
+    safeguarding_flags: [],
+      ...overrides,
   };
 }
 
 /** Build a minimal DailyRecord for compliance / profile / gap tests. */
 function dailyRecord(overrides: Partial<DailyRecord> = {}): DailyRecord {
   return {
-    id: overrides.id ?? "rec-1",
-    home_id: overrides.home_id ?? "home-1",
+    id: "rec-1",
+    home_id: "home-1",
     child_id: overrides.child_id ?? null,
-    record_type: overrides.record_type ?? "daily_log",
+    record_type: "daily_log",
     shift_type: overrides.shift_type ?? null,
-    author_id: overrides.author_id ?? "staff-1",
-    content: overrides.content ?? "Some content here for the daily record.",
-    word_count: overrides.word_count ?? 50,
-    mentions_children: overrides.mentions_children ?? [],
-    mentions_staff: overrides.mentions_staff ?? [],
+    author_id: "staff-1",
+    content: "Some content here for the daily record.",
+    word_count: 50,
+    mentions_children: [],
+    mentions_staff: [],
     mood_observations: overrides.mood_observations ?? null,
     behaviour_notes: overrides.behaviour_notes ?? null,
     medication_notes: overrides.medication_notes ?? null,
-    safeguarding_flags: overrides.safeguarding_flags ?? [],
-    positive_highlights: overrides.positive_highlights ?? [],
-    concerns: overrides.concerns ?? [],
-    attachments_count: overrides.attachments_count ?? 0,
+    safeguarding_flags: [],
+    positive_highlights: [],
+    concerns: [],
+    attachments_count: 0,
     signed_off_by: overrides.signed_off_by ?? null,
     signed_off_at: overrides.signed_off_at ?? null,
     quality_score: overrides.quality_score ?? null,
-    created_at: overrides.created_at ?? "2026-06-01T10:00:00Z",
-    updated_at: overrides.updated_at ?? "2026-06-01T10:00:00Z",
+    created_at: "2026-06-01T10:00:00Z",
+    updated_at: "2026-06-01T10:00:00Z",
+      ...overrides,
   };
 }
 

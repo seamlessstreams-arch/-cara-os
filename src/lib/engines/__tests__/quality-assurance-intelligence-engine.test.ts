@@ -42,7 +42,7 @@ function makeAction(overrides: Partial<QAAuditActionInput> = {}): QAAuditActionI
 
 function makeAudit(overrides: Partial<QAAuditInput> = {}): QAAuditInput {
   return {
-    id: overrides.id ?? uid(),
+    id: uid(),
     title: "Test Audit",
     date: "2026-05-20",
     auditor: "Darren",

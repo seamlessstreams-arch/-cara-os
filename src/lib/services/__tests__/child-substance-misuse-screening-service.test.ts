@@ -34,33 +34,36 @@ function makeRow(
 ): ChildSubstanceMisuseScreeningRow {
   return {
     id: "id" in (overrides ?? {}) ? overrides!.id! : crypto.randomUUID(),
-    home_id: overrides?.home_id ?? crypto.randomUUID(),
-    child_name: overrides?.child_name ?? "Child A",
-    screening_date: overrides?.screening_date ?? todayStr(),
-    substance_type: overrides?.substance_type ?? "Cannabis",
-    screening_outcome: overrides?.screening_outcome ?? "No Concern",
+    home_id: crypto.randomUUID(),
+    child_name: "Child A",
+    screening_date: todayStr(),
+    substance_type: "Cannabis",
+    screening_outcome: "No Concern",
     intervention_type:
       "intervention_type" in (overrides ?? {})
         ? (overrides!.intervention_type ?? null)
         : null,
-    referral_made: overrides?.referral_made ?? false,
+    referral_made: false,
     referral_agency:
       "referral_agency" in (overrides ?? {})
         ? (overrides!.referral_agency ?? null)
         : null,
-    risk_assessment_completed: overrides?.risk_assessment_completed ?? true,
-    safety_plan_in_place: overrides?.safety_plan_in_place ?? false,
-    parental_notification: overrides?.parental_notification ?? true,
-    social_worker_notified: overrides?.social_worker_notified ?? true,
+    risk_assessment_completed: true,
+    safety_plan_in_place: false,
+    parental_notification: true,
+    social_worker_notified: true,
     follow_up_date:
       "follow_up_date" in (overrides ?? {})
         ? (overrides!.follow_up_date ?? null)
         : null,
-    assessor_name: overrides?.assessor_name ?? "D. Laville",
+    assessor_name: "D. Laville",
     notes:
       "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(),
-    updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(),
+    updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 

@@ -52,7 +52,7 @@ function makeReviewSchedule(
   overrides: Partial<PolicyReviewScheduleRecordInput> = {},
 ): PolicyReviewScheduleRecordInput {
   return {
-    id: overrides.id ?? uid(),
+    id: uid(),
     policy_id: "pol_1",
     policy_name: "Test Policy",
     category: "safeguarding",
@@ -77,7 +77,7 @@ function makeVersionControl(
   overrides: Partial<PolicyVersionControlRecordInput> = {},
 ): PolicyVersionControlRecordInput {
   return {
-    id: overrides.id ?? uid(),
+    id: uid(),
     policy_id: "pol_1",
     policy_name: "Test Policy",
     version_number: "2.0",
@@ -100,7 +100,7 @@ function makeAcknowledgement(
   overrides: Partial<PolicyAcknowledgementRecordInput> = {},
 ): PolicyAcknowledgementRecordInput {
   return {
-    id: overrides.id ?? uid(),
+    id: uid(),
     policy_id: "pol_1",
     policy_name: "Test Policy",
     staff_id: "staff_1",
@@ -122,7 +122,7 @@ function makeAlignment(
   overrides: Partial<PolicyAlignmentRecordInput> = {},
 ): PolicyAlignmentRecordInput {
   return {
-    id: overrides.id ?? uid(),
+    id: uid(),
     policy_id: "pol_1",
     policy_name: "Test Policy",
     regulation_reference: "CHR 2015 Reg 36",
@@ -144,7 +144,7 @@ function makeAccessibility(
   overrides: Partial<PolicyAccessibilityRecordInput> = {},
 ): PolicyAccessibilityRecordInput {
   return {
-    id: overrides.id ?? uid(),
+    id: uid(),
     policy_id: "pol_1",
     policy_name: "Test Policy",
     digital_copy_available: true,

@@ -8,7 +8,7 @@ import {
 
 function makeCheck(overrides: Partial<NightCheck> = {}): NightCheck {
   return {
-    id: overrides.id ?? "chk-1",
+    id: "chk-1",
     home_id: "home-1",
     check_date: "2025-06-01",
     check_time: "02:00",
@@ -25,7 +25,7 @@ function makeCheck(overrides: Partial<NightCheck> = {}): NightCheck {
 
 function makeSleepRecord(overrides: Partial<SleepRecord> = {}): SleepRecord {
   return {
-    id: overrides.id ?? "sr-1",
+    id: "sr-1",
     home_id: "home-1",
     child_id: "child-1",
     child_name: "Child A",

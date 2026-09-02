@@ -8,25 +8,28 @@ const now = new Date(todayStr());
 
 function makeRow(overrides?: Partial<ParentalContactArrangementRow>): ParentalContactArrangementRow {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    contact_date: overrides?.contact_date ?? todayStr(),
-    contact_type: overrides?.contact_type ?? "face_to_face_supervised",
-    contact_outcome: overrides?.contact_outcome ?? "positive",
-    court_order_status: overrides?.court_order_status ?? "agreed_informally",
-    child_experience: overrides?.child_experience ?? "happy_engaged",
-    parent_carer_name: overrides?.parent_carer_name ?? "Parent A",
-    duration_minutes: overrides?.duration_minutes ?? 60,
-    supervised: overrides?.supervised ?? true,
+    contact_date: todayStr(),
+    contact_type: "face_to_face_supervised",
+    contact_outcome: "positive",
+    court_order_status: "agreed_informally",
+    child_experience: "happy_engaged",
+    parent_carer_name: "Parent A",
+    duration_minutes: 60,
+    supervised: true,
     supervisor_name: "supervisor_name" in (overrides ?? {}) ? (overrides!.supervisor_name ?? null) : null,
-    court_order_complied: overrides?.court_order_complied ?? true,
-    child_views_before: overrides?.child_views_before ?? true,
-    child_views_after: overrides?.child_views_after ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    recorded_in_care_plan: overrides?.recorded_in_care_plan ?? true,
+    court_order_complied: true,
+    child_views_before: true,
+    child_views_after: true,
+    social_worker_informed: true,
+    recorded_in_care_plan: true,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 

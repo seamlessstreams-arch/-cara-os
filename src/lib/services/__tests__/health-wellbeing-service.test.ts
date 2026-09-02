@@ -31,60 +31,69 @@ const {
 /** Build a minimal health appointment for compliance tests. */
 function appointment(overrides?: Partial<HealthAppointment>): HealthAppointment {
   return {
-    id: overrides?.id ?? "appt-1",
-    home_id: overrides?.home_id ?? "home-1",
-    child_id: overrides?.child_id ?? "child-1",
-    appointment_type: overrides?.appointment_type ?? "gp",
-    provider_name: overrides?.provider_name ?? "Dr Smith",
-    appointment_date: overrides?.appointment_date ?? "2026-04-10",
-    outcome: overrides?.outcome ?? "attended",
+    id: "appt-1",
+    home_id: "home-1",
+    child_id: "child-1",
+    appointment_type: "gp",
+    provider_name: "Dr Smith",
+    appointment_date: "2026-04-10",
+    outcome: "attended",
     notes: "notes" in (overrides ?? {}) ? overrides!.notes : null,
-    follow_up_required: overrides?.follow_up_required ?? false,
+    follow_up_required: false,
     follow_up_date: "follow_up_date" in (overrides ?? {}) ? overrides!.follow_up_date : null,
-    consent_obtained: overrides?.consent_obtained ?? true,
+    consent_obtained: true,
     accompanied_by: "accompanied_by" in (overrides ?? {}) ? overrides!.accompanied_by : null,
-    created_at: overrides?.created_at ?? "2026-04-10T08:00:00Z",
-    updated_at: overrides?.updated_at ?? "2026-04-10T08:00:00Z",
+    created_at: "2026-04-10T08:00:00Z",
+    updated_at: "2026-04-10T08:00:00Z",
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
 /** Build a minimal wellbeing assessment for trend tests. */
 function assessment(overrides?: Partial<WellbeingAssessment>): WellbeingAssessment {
   return {
-    id: overrides?.id ?? "assess-1",
-    home_id: overrides?.home_id ?? "home-1",
-    child_id: overrides?.child_id ?? "child-1",
-    assessment_date: overrides?.assessment_date ?? "2026-04-10",
-    assessment_type: overrides?.assessment_type ?? "informal",
+    id: "assess-1",
+    home_id: "home-1",
+    child_id: "child-1",
+    assessment_date: "2026-04-10",
+    assessment_type: "informal",
     sdq_scores: "sdq_scores" in (overrides ?? {}) ? overrides!.sdq_scores : null,
-    overall_wellbeing: overrides?.overall_wellbeing ?? 7,
+    overall_wellbeing: 7,
     sleep_quality: "sleep_quality" in (overrides ?? {}) ? overrides!.sleep_quality : null,
     appetite: "appetite" in (overrides ?? {}) ? overrides!.appetite : null,
     self_care: "self_care" in (overrides ?? {}) ? overrides!.self_care : null,
     notes: "notes" in (overrides ?? {}) ? overrides!.notes : null,
-    assessed_by: overrides?.assessed_by ?? "staff-1",
-    created_at: overrides?.created_at ?? "2026-04-10T08:00:00Z",
+    assessed_by: "staff-1",
+    created_at: "2026-04-10T08:00:00Z",
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
 /** Build a minimal health profile for compliance and summary tests. */
 function profile(overrides?: Partial<HealthProfile>): HealthProfile {
   return {
-    id: overrides?.id ?? "profile-1",
-    home_id: overrides?.home_id ?? "home-1",
-    child_id: overrides?.child_id ?? "child-1",
-    immunisation_status: overrides?.immunisation_status ?? "up_to_date",
-    allergies: overrides?.allergies ?? [],
-    dietary_requirements: overrides?.dietary_requirements ?? [],
-    registered_gp: overrides?.registered_gp ?? "Dr Smith",
-    registered_dentist: overrides?.registered_dentist ?? "Mr Jones",
-    registered_optician: overrides?.registered_optician ?? "Specsavers",
-    camhs_status: overrides?.camhs_status ?? "none",
+    id: "profile-1",
+    home_id: "home-1",
+    child_id: "child-1",
+    immunisation_status: "up_to_date",
+    allergies: [],
+    dietary_requirements: [],
+    registered_gp: "Dr Smith",
+    registered_dentist: "Mr Jones",
+    registered_optician: "Specsavers",
+    camhs_status: "none",
     last_health_assessment: "last_health_assessment" in (overrides ?? {}) ? overrides!.last_health_assessment : null,
     next_health_assessment: "next_health_assessment" in (overrides ?? {}) ? overrides!.next_health_assessment : null,
-    health_conditions: overrides?.health_conditions ?? [],
-    created_at: overrides?.created_at ?? "2026-01-01T00:00:00Z",
-    updated_at: overrides?.updated_at ?? "2026-01-01T00:00:00Z",
+    health_conditions: [],
+    created_at: "2026-01-01T00:00:00Z",
+    updated_at: "2026-01-01T00:00:00Z",
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 

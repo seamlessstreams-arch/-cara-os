@@ -9,7 +9,7 @@ function makeRecord(
   overrides: Partial<SocialSkillsDevelopmentRecord> = {},
 ): SocialSkillsDevelopmentRecord {
   return {
-    id: overrides.id ?? "rec-1",
+    id: "rec-1",
     home_id: "home-1",
     skill_area: "communication",
     competence_level: "developing",

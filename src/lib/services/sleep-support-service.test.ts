@@ -10,7 +10,7 @@ function makeRow(
   overrides: Partial<SleepSupportRow> = {},
 ): SleepSupportRow {
   return {
-    id: overrides.id ?? "row-1",
+    id: "row-1",
     home_id: "home-1",
     child_name: "Child A",
     record_date: "2025-06-01",

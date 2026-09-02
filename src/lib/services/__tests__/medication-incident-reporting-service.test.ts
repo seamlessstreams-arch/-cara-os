@@ -8,25 +8,28 @@ const now = new Date(todayStr());
 
 function makeRow(overrides?: Partial<MedicationIncidentReportRow>): MedicationIncidentReportRow {
   return {
-    id: overrides?.id ?? "r-1", home_id: overrides?.home_id ?? "home-1",
-    child_name: overrides?.child_name ?? "Child A",
+    id: "r-1", home_id: "home-1",
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    incident_date: overrides?.incident_date ?? "2026-05-01",
-    incident_type: overrides?.incident_type ?? "wrong_dose",
-    incident_severity: overrides?.incident_severity ?? "no_harm",
-    investigation_status: overrides?.investigation_status ?? "closed",
-    contributing_factor: overrides?.contributing_factor ?? "human_error",
-    staff_involved: overrides?.staff_involved ?? "Staff A",
-    medication_name: overrides?.medication_name ?? "Paracetamol",
-    gp_notified: overrides?.gp_notified ?? true,
-    parent_notified: overrides?.parent_notified ?? true,
-    social_worker_notified: overrides?.social_worker_notified ?? true,
-    ofsted_notified: overrides?.ofsted_notified ?? true,
-    root_cause_identified: overrides?.root_cause_identified ?? true,
-    learning_shared: overrides?.learning_shared ?? true,
-    duty_of_candour_applied: overrides?.duty_of_candour_applied ?? true,
+    incident_date: "2026-05-01",
+    incident_type: "wrong_dose",
+    incident_severity: "no_harm",
+    investigation_status: "closed",
+    contributing_factor: "human_error",
+    staff_involved: "Staff A",
+    medication_name: "Paracetamol",
+    gp_notified: true,
+    parent_notified: true,
+    social_worker_notified: true,
+    ofsted_notified: true,
+    root_cause_identified: true,
+    learning_shared: true,
+    duty_of_candour_applied: true,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 

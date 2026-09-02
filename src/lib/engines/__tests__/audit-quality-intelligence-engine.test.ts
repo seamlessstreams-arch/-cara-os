@@ -26,7 +26,7 @@ function uid(): string {
 
 function makeAudit(overrides: Partial<AuditInput> = {}): AuditInput {
   return {
-    id: overrides.id ?? uid(),
+    id: uid(),
     title: "Test Audit",
     category: "general",
     date: "2026-05-20",

@@ -8,25 +8,28 @@ const now = new Date(todayStr());
 
 function makeRow(overrides?: Partial<LacHealthAssessmentRow>): LacHealthAssessmentRow {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: "home-1",
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    assessment_date: overrides?.assessment_date ?? todayStr(),
-    assessment_type: overrides?.assessment_type ?? "initial_health_assessment",
-    health_outcome: overrides?.health_outcome ?? "all_actions_met",
-    compliance_status: overrides?.compliance_status ?? "within_timescale",
-    health_domain: overrides?.health_domain ?? "physical_health",
+    assessment_date: todayStr(),
+    assessment_type: "initial_health_assessment",
+    health_outcome: "all_actions_met",
+    compliance_status: "within_timescale",
+    health_domain: "physical_health",
     clinician_name: "clinician_name" in (overrides ?? {}) ? (overrides!.clinician_name ?? null) : null,
     clinic_location: "clinic_location" in (overrides ?? {}) ? (overrides!.clinic_location ?? null) : null,
-    health_action_plan_created: overrides?.health_action_plan_created ?? true,
-    actions_completed: overrides?.actions_completed ?? true,
-    child_attended: overrides?.child_attended ?? true,
-    child_views_captured: overrides?.child_views_captured ?? true,
-    carer_attended: overrides?.carer_attended ?? true,
-    shared_with_social_worker: overrides?.shared_with_social_worker ?? true,
+    health_action_plan_created: true,
+    actions_completed: true,
+    child_attended: true,
+    child_views_captured: true,
+    carer_attended: true,
+    shared_with_social_worker: true,
     next_assessment_due: "next_assessment_due" in (overrides ?? {}) ? (overrides!.next_assessment_due ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: now.toISOString(),
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 

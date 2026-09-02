@@ -8,32 +8,36 @@ const now = new Date(todayStr());
 
 function makeRecord(overrides?: Partial<ContactSupervisionRecord>): ContactSupervisionRecord {
   return {
-    id: overrides?.id ?? "a-1", home_id: overrides?.home_id ?? "home-1",
-    contact_type: overrides?.contact_type ?? "face_to_face",
-    supervision_level: overrides?.supervision_level ?? "full_supervision",
-    child_response: overrides?.child_response ?? "positive",
-    contact_outcome: overrides?.contact_outcome ?? "completed_as_planned",
-    contact_date: overrides?.contact_date ?? todayStr(),
-    child_name: overrides?.child_name ?? "Child A",
+    id: "a-1", home_id: overrides?.home_id ?? "home-1",
+    contact_type: "face_to_face",
+    supervision_level: "full_supervision",
+    child_response: "positive",
+    contact_outcome: "completed_as_planned",
+    contact_date: todayStr(),
+    child_name: "Child A",
     child_id: "child_id" in (overrides ?? {}) ? (overrides!.child_id ?? null) : null,
-    supervised_by: overrides?.supervised_by ?? "Staff A",
-    risk_assessment_current: overrides?.risk_assessment_current ?? true,
-    child_prepared: overrides?.child_prepared ?? true,
-    child_debriefed: overrides?.child_debriefed ?? true,
-    court_order_complied: overrides?.court_order_complied ?? true,
-    safeguarding_concerns: overrides?.safeguarding_concerns ?? false,
-    transport_arranged: overrides?.transport_arranged ?? true,
-    venue_appropriate: overrides?.venue_appropriate ?? true,
-    social_worker_informed: overrides?.social_worker_informed ?? true,
-    care_plan_linked: overrides?.care_plan_linked ?? true,
-    child_views_sought: overrides?.child_views_sought ?? true,
-    recorded_within_24h: overrides?.recorded_within_24h ?? true,
-    recorded_promptly: overrides?.recorded_promptly ?? true,
-    issues_found: overrides?.issues_found ?? [], actions_taken: overrides?.actions_taken ?? [],
-    contact_duration_minutes: overrides?.contact_duration_minutes ?? 60,
+    supervised_by: "Staff A",
+    risk_assessment_current: true,
+    child_prepared: true,
+    child_debriefed: true,
+    court_order_complied: true,
+    safeguarding_concerns: false,
+    transport_arranged: true,
+    venue_appropriate: true,
+    social_worker_informed: true,
+    care_plan_linked: true,
+    child_views_sought: true,
+    recorded_within_24h: true,
+    recorded_promptly: true,
+    issues_found: [], actions_taken: overrides?.actions_taken ?? [],
+    contact_duration_minutes: 60,
     next_review_date: "next_review_date" in (overrides ?? {}) ? (overrides!.next_review_date ?? null) : null,
     notes: "notes" in (overrides ?? {}) ? (overrides!.notes ?? null) : null,
-    created_at: overrides?.created_at ?? now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    created_at: now.toISOString(), updated_at: overrides?.updated_at ?? now.toISOString(),
+    // Overrides win LAST — an explicit null must stay null; the old
+    // `overrides?.x ?? default` converted null back into the default,
+    // fabricating answers inside the test factory itself.
+    ...overrides,
   };
 }
 
@@ -132,3 +136,26 @@ describe("contact-supervision-service", () => {
     });
   });
 });
+
+// ── Tri-state: an unanswered question is neither a yes nor a breach ──────────
+describe("tri-state judgements (promotion kit 200)", () => {
+  it("does not count an unrecorded debrief as a missed one", () => {
+    const rows = [
+      makeRecord({ child_debriefed: null, risk_assessment_current: null }),
+      makeRecord({ child_debriefed: true, risk_assessment_current: true }),
+    ];
+    const alerts = _testing.identifyContactSupervisionAlerts(rows);
+    expect(alerts.some((a) => /debrief/i.test(a.message))).toBe(false);
+    expect(alerts.some((a) => /risk assessment/i.test(a.message))).toBe(false);
+  });
+
+  it("still counts a recorded failure", () => {
+    const rows = [makeRecord({ child_debriefed: false })];
+    const alerts = _testing.identifyContactSupervisionAlerts(rows);
+    expect(alerts.some((a) => /debrief/i.test(a.message))).toBe(true);
+  });
+
+  // The recorded-subset rate behaviour is pinned on
+  // fix/padded-boolrate-denominators (social-skills template tests); asserting
+  // it here would fail until that branch merges and belongs to it, not this.
+});;

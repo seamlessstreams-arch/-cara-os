@@ -9,7 +9,7 @@ function makeAbsence(
   overrides: Partial<StaffAbsence> = {},
 ): StaffAbsence {
   return {
-    id: overrides.id ?? "abs-1",
+    id: "abs-1",
     home_id: "home-1",
     staff_name: "Alice",
     staff_role: "RSW",

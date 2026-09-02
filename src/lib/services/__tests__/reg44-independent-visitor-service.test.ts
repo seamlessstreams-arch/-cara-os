@@ -36,26 +36,26 @@ function makeRow(
   overrides?: Partial<Reg44IndependentVisitorReportRow>,
 ): Reg44IndependentVisitorReportRow {
   return {
-    id: overrides?.id ?? "row-1",
-    home_id: overrides?.home_id ?? "home-1",
-    visitor_name: overrides?.visitor_name ?? "Jane Independent",
-    visit_date: overrides?.visit_date ?? "2026-05-01",
-    report_date: overrides?.report_date ?? "2026-05-02",
-    area_inspected: overrides?.area_inspected ?? "overall_experience",
-    finding_severity: overrides?.finding_severity ?? "minor_observation",
-    finding_summary: overrides?.finding_summary ?? "General observation",
+    id: "row-1",
+    home_id: "home-1",
+    visitor_name: "Jane Independent",
+    visit_date: "2026-05-01",
+    report_date: "2026-05-02",
+    area_inspected: "overall_experience",
+    finding_severity: "minor_observation",
+    finding_summary: "General observation",
     recommendation:
       "recommendation" in (overrides ?? {})
         ? (overrides!.recommendation ?? null)
         : null,
-    action_status: overrides?.action_status ?? "not_started",
-    report_status: overrides?.report_status ?? "submitted",
-    children_spoken_to: overrides?.children_spoken_to ?? 3,
-    staff_spoken_to: overrides?.staff_spoken_to ?? 2,
-    records_reviewed: overrides?.records_reviewed ?? true,
+    action_status: "not_started",
+    report_status: "submitted",
+    children_spoken_to: 3,
+    staff_spoken_to: 2,
+    records_reviewed: true,
     previous_actions_followed_up:
-      overrides?.previous_actions_followed_up ?? true,
-    child_views_captured: overrides?.child_views_captured ?? true,
+      true,
+    child_views_captured: true,
     manager_response:
       "manager_response" in (overrides ?? {})
         ? (overrides!.manager_response ?? null)
@@ -64,8 +64,11 @@ function makeRow(
       "response_date" in (overrides ?? {})
         ? (overrides!.response_date ?? null)
         : null,
-    created_at: overrides?.created_at ?? "2026-05-02T10:00:00Z",
-    updated_at: overrides?.updated_at ?? "2026-05-02T10:00:00Z",
+    created_at: "2026-05-02T10:00:00Z",
+    updated_at: "2026-05-02T10:00:00Z",
+      // Overrides win last: an explicit null stays null — the old
+    // `overrides?.x ?? default` fabricated answers inside the factory.
+    ...overrides,
   };
 }
 
